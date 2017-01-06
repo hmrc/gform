@@ -1,0 +1,4 @@
+# microservice specific routes
+
+GET        /hello-world             uk.gov.hmrc.bforms.controllers.MicroserviceHelloWorld.hello
+GET        /failed                  uk.gov.hmrc.bforms.controllers.MicroserviceHelloWorld.failed
