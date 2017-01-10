@@ -38,16 +38,18 @@ import reactivemongo.api.DefaultDB
 import scala.concurrent.Future
 import uk.gov.hmrc.bforms.repositories.TestRepository
 import uk.gov.hmrc.bforms.controllers.MicroserviceHelloWorld
+import uk.gov.hmrc.bforms.services.FileUploadService
 import uk.gov.hmrc.play.filters.{ NoCacheFilter, RecoveryFilter }
 import uk.gov.hmrc.play.graphite.GraphiteConfig
 import uk.gov.hmrc.play.audit.http.config.ErrorAuditingSettings
-import uk.gov.hmrc.play.config.ControllerConfig
+import uk.gov.hmrc.play.config.{ AppName, ControllerConfig, ServicesConfig }
 import uk.gov.hmrc.play.auth.controllers.AuthParamsControllerConfig
 import uk.gov.hmrc.play.audit.filters.AuditFilter
 import uk.gov.hmrc.play.health.AdminController
 import uk.gov.hmrc.play.http.logging.filters.LoggingFilter
 import uk.gov.hmrc.play.auth.microservice.filters.AuthorisationFilter
 import uk.gov.hmrc.play.microservice.bootstrap.JsonErrorHandling
+import uk.gov.hmrc.bforms.connectors.FusConnector
 
 class ApplicationLoader extends play.api.ApplicationLoader {
   def load(context: Context) = {
@@ -70,7 +72,7 @@ class CustomHttpRequestHandler(
 }
 
 class CustomErrorHandling(
-    val auditConnector: MicroserviceAuditConnector,
+    val auditConnector: MicroserviceAuditConnector.type,
     val appName: String,
     environment: Environment,
     configuration: Configuration,
@@ -97,13 +99,17 @@ class Graphite(configuration: Configuration) extends GraphiteConfig {
 
 trait ApplicationModule extends BuiltInComponents
     with AhcWSComponents
-    with I18nComponents { self =>
+    with I18nComponents
+    with AppName
+    with ServicesConfig { self =>
+
+  override lazy val runModeConfiguration = configuration
+  override lazy val appNameConfiguration = configuration
+  override lazy val mode = environment.mode
 
   Logger.info(s"Starting microservice : $appName : in mode : ${environment.mode}")
 
   new Graphite(configuration).onStart(configurationApp)
-
-  lazy val appName = configuration.getString("appName").getOrElse("APP NAME NOT SET")
 
   override lazy val httpErrorHandler: HttpErrorHandler = new CustomErrorHandling(auditConnector, appName, environment, configuration, sourceMapper, Some(router))
 
@@ -146,13 +152,14 @@ trait ApplicationModule extends BuiltInComponents
 
   lazy val testRepository = new TestRepository()(db)
 
-  lazy val microserviceHelloWorld = new MicroserviceHelloWorld(testRepository)
+  lazy val microserviceHelloWorld = new MicroserviceHelloWorld(testRepository, fileUploadService)
 
   // We need to create explicit AdminController and provide it into injector so Runtime DI could be able
   // to find it when endpoints in health.Routes are being called
   lazy val adminController = new AdminController(configuration)
 
-  lazy val customInjector: Injector = new SimpleInjector(injector) + adminController
+  // Since core libraries are using deprecated play.api.libs.ws.WS we need to add wsApi into injector
+  lazy val customInjector: Injector = new SimpleInjector(injector) + adminController + wsApi
 
   lazy val healthRoutes: health.Routes = health.Routes
 
@@ -161,6 +168,10 @@ trait ApplicationModule extends BuiltInComponents
   lazy val appRoutes = new app.Routes(httpErrorHandler, microserviceHelloWorld)
 
   override lazy val router: Router = new prod.Routes(httpErrorHandler, appRoutes, healthRoutes, metricsController)
+
+  lazy val fusConnector = new FusConnector(baseUrl("file-upload"), WSHttp)
+
+  lazy val fileUploadService = new FileUploadService(fusConnector)
 
   object ControllerConfiguration extends ControllerConfig {
     lazy val controllerConfigs = configuration.underlying.as[Config]("controllers")
@@ -189,7 +200,7 @@ trait ApplicationModule extends BuiltInComponents
     override def controllerNeedsAuth(controllerName: String): Boolean = ControllerConfiguration.paramsForController(controllerName).needsAuth
   }
 
-  val auditConnector = new MicroserviceAuditConnector(wsApi)
+  val auditConnector = MicroserviceAuditConnector
 
   val loggingFilter = MicroserviceLoggingFilter
 

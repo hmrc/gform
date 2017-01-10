@@ -22,16 +22,15 @@ import uk.gov.hmrc.play.auth.microservice.connectors.AuthConnector
 import uk.gov.hmrc.play.config.{ AppName, RunMode, ServicesConfig }
 import uk.gov.hmrc.play.http.hooks.HttpHook
 import uk.gov.hmrc.play.http.ws._
-import uk.gov.hmrc.play.http.HeaderCarrier
-import play.api.libs.ws.WSRequest
+import uk.gov.hmrc.play.audit.http.HttpAuditing
 
-object WSHttp extends WSGet with WSPut with WSPost with WSDelete with WSPatch with AppName {
-  override val hooks: Seq[HttpHook] = NoneRequired
+object WSHttp extends WSGet with WSPut with WSPost with WSDelete with HttpAuditing with AppName {
+  val auditConnector: AuditConnector = MicroserviceAuditConnector
+  override val hooks: Seq[HttpHook] = Seq.empty[HttpHook]
 }
 
-class MicroserviceAuditConnector(val wsApi: play.api.libs.ws.WSAPI) extends AuditConnector with RunMode {
+object MicroserviceAuditConnector extends AuditConnector {
   override lazy val auditingConfig = LoadAuditingConfig(s"auditing")
-  override def buildRequest(url: String)(implicit hc: HeaderCarrier): WSRequest = wsApi.url(url).withHeaders(hc.headers: _*)
 }
 
 object MicroserviceAuthConnector extends AuthConnector with ServicesConfig {

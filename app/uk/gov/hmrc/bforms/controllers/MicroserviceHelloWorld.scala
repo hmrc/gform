@@ -17,21 +17,22 @@
 package uk.gov.hmrc.bforms.controllers
 
 import play.api.Logger
+import play.api.mvc._
+import scala.concurrent.Future
 import uk.gov.hmrc.play.http._
 import uk.gov.hmrc.play.microservice.controller.BaseController
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
-import play.api.mvc._
-import scala.concurrent.Future
 import uk.gov.hmrc.bforms.repositories.TestRepository
+import uk.gov.hmrc.bforms.services.FileUploadService
+
 
 class MicroserviceHelloWorld(
-    testRepository: TestRepository
+    testRepository: TestRepository,
+    fileUploadeService: FileUploadService
 ) extends BaseController {
 
   def hello = Action.async { implicit request =>
-    testRepository.findByName("test").map { t =>
-      Ok("Hello Word " + t)
-    }
+    fileUploadeService.createEnvelop.map(res => Ok(res))
   }
 
   def failed = Action.async { implicit request =>
