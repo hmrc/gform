@@ -14,24 +14,10 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.services
+package uk.gov.hmrc.bforms.typeclasses
 
-import scala.concurrent.ExecutionContext
-import uk.gov.hmrc.play.http.HeaderCarrier
-import uk.gov.hmrc.bforms.connectors.FusConnector
-import uk.gov.hmrc.bforms.typeclasses.{ FusUrl, ServiceUrl, CreateEnvelope }
+trait FusUrl
 
-class FileUploadService(fusConnector: FusConnector) {
-
-  def createEnvelop(
-    implicit
-    hc: HeaderCarrier,
-    ec: ExecutionContext,
-    fusUrl: ServiceUrl[FusUrl]
-  ) = {
-    fusConnector.createEnvelope("testFormTypeId").map { envelopeId =>
-      s"Envelope id: $envelopeId"
-    }
-  }
-
+trait ServiceUrl[T] {
+  def url: String
 }

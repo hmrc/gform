@@ -18,32 +18,29 @@ package uk.gov.hmrc.bforms.connectors
 
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import play.api.libs.json.{ Json, JsObject, JsValue }
 import scala.concurrent.{ ExecutionContext, Future }
-
-import uk.gov.hmrc.play.audit.http.HttpAuditing
-import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpResponse }
-import uk.gov.hmrc.play.http.ws.{ WSDelete, WSPost, WSPut, WSGet }
-import uk.gov.hmrc.play.config.AppName
-
-import uk.gov.hmrc.play.http.hooks.HttpHook
-import uk.gov.hmrc.play.http.ws._
+import play.api.libs.json.{ JsObject, JsValue, Json }
 import play.api.http.HeaderNames
+import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpResponse }
 import uk.gov.hmrc.bforms.model.EnvelopeId
 import uk.gov.hmrc.bforms.exceptions.{ UnexpectedState, InvalidState }
-import uk.gov.hmrc.bforms.WSHttp
+import uk.gov.hmrc.bforms.typeclasses.{ CreateEnvelope, FusUrl, HttpExecutor, ServiceUrl }
 
-class FusConnector(
-    fileUploadBaseUrl: String,
-    http: WSHttp.type
-) {
+class FusConnector() {
 
   val EnvelopeIdExtractor = "envelopes/([\\w\\d-]+)$".r.unanchored
   val formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'")
 
-  def createEnvelope(formTypeRef: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Either[UnexpectedState, EnvelopeId]] = {
-    http.POST[JsValue, HttpResponse](s"$fileUploadBaseUrl/file-upload/envelopes", envelopeRequest(formTypeRef))
+  def createEnvelope(
+    formTypeRef: String
+  )(
+    implicit
+    hc: HeaderCarrier,
+    ec: ExecutionContext,
+    fusUrl: ServiceUrl[FusUrl],
+    httpExecutor: HttpExecutor[CreateEnvelope, JsValue, HttpResponse]
+  ): Future[Either[UnexpectedState, EnvelopeId]] = {
+    httpExecutor.makeCall(envelopeRequest(formTypeRef))
       .map { resp =>
         import HeaderNames._
         resp.header(LOCATION) match {

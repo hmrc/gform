@@ -50,6 +50,8 @@ import uk.gov.hmrc.play.http.logging.filters.LoggingFilter
 import uk.gov.hmrc.play.auth.microservice.filters.AuthorisationFilter
 import uk.gov.hmrc.play.microservice.bootstrap.JsonErrorHandling
 import uk.gov.hmrc.bforms.connectors.FusConnector
+import uk.gov.hmrc.bforms.typeclasses.FusUrl
+import uk.gov.hmrc.bforms.typeclasses.ServiceUrl
 
 class ApplicationLoader extends play.api.ApplicationLoader {
   def load(context: Context) = {
@@ -152,6 +154,10 @@ trait ApplicationModule extends BuiltInComponents
 
   lazy val testRepository = new TestRepository()(db)
 
+  implicit val fusUrl = new ServiceUrl[FusUrl] {
+    val url = baseUrl("file-upload")
+  }
+
   lazy val microserviceHelloWorld = new MicroserviceHelloWorld(testRepository, fileUploadService)
 
   // We need to create explicit AdminController and provide it into injector so Runtime DI could be able
@@ -169,7 +175,7 @@ trait ApplicationModule extends BuiltInComponents
 
   override lazy val router: Router = new prod.Routes(httpErrorHandler, appRoutes, healthRoutes, metricsController)
 
-  lazy val fusConnector = new FusConnector(baseUrl("file-upload"), WSHttp)
+  lazy val fusConnector = new FusConnector()
 
   lazy val fileUploadService = new FileUploadService(fusConnector)
 
