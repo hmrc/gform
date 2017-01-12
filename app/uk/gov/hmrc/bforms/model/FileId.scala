@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.typeclasses
+package uk.gov.hmrc.bforms.model
 
-trait FusUrl
-trait FusFeUrl
-
-trait ServiceUrl[T] {
-  def url: String
+case class FileId(value: String) extends AnyVal {
+  override def toString = value
 }

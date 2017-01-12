@@ -16,21 +16,47 @@
 
 package uk.gov.hmrc.bforms.typeclasses
 
+import akka.util.ByteString
 import play.api.libs.json.{ JsObject, JsValue, Json, Writes }
-import uk.gov.hmrc.bforms.WSHttp
+import scala.concurrent.ExecutionContext
+import uk.gov.hmrc.bforms.{ WSHttp, FusFeUploadWS }
+import uk.gov.hmrc.bforms.model.{ EnvelopeId, FileId }
 import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpReads, HttpResponse }
 import scala.concurrent.Future
 
-trait CreateEnvelope
+case object CreateEnvelope
+case class UploadFile(envelopeId: EnvelopeId, fileId: FileId)
 
-trait HttpExecutor[T, I, O] {
-  def makeCall(body: I)(implicit wts: Writes[I], rds: HttpReads[O], hc: HeaderCarrier): Future[O]
+trait HttpExecutor[U, P, I] {
+  def makeCall(url: ServiceUrl[U], params: P, body: I)(implicit wts: Writes[I], rds: HttpReads[HttpResponse], hc: HeaderCarrier): Future[HttpResponse]
 }
 
 object HttpExecutor {
-  implicit def createEnvelope(implicit fusUrl: ServiceUrl[FusUrl]) = new HttpExecutor[CreateEnvelope, JsValue, HttpResponse] {
-    def makeCall(body: JsValue)(implicit wts: Writes[JsValue], rds: HttpReads[HttpResponse], hc: HeaderCarrier): Future[HttpResponse] = {
-      WSHttp.POST[JsValue, HttpResponse](s"${fusUrl.url}/file-upload/envelopes", body)
+  implicit object createEnvelope extends HttpExecutor[FusUrl, CreateEnvelope.type, JsObject] {
+    def makeCall(fusUrl: ServiceUrl[FusUrl], params: CreateEnvelope.type, body: JsObject)(implicit wts: Writes[JsObject], rds: HttpReads[HttpResponse], hc: HeaderCarrier): Future[HttpResponse] = {
+      WSHttp.POST[JsObject, HttpResponse](s"${fusUrl.url}/file-upload/envelopes", body)
     }
+  }
+
+  implicit object uploadFile extends HttpExecutor[FusFeUrl, UploadFile, Array[Byte]] {
+    def makeCall(fusFeUrl: ServiceUrl[FusFeUrl], params: UploadFile, body: Array[Byte])(implicit wts: Writes[Array[Byte]], rds: HttpReads[HttpResponse], hc: HeaderCarrier): Future[HttpResponse] = {
+      import params._
+      val url = s"${fusFeUrl.url}/file-upload/upload/envelopes/$envelopeId/files/$fileId"
+      FusFeUploadWS.doFormPartPost(url, fileId, "application/xml; charset=UTF-8", ByteString.fromArray(body), Seq("CSRF-token" -> "nocheck"))
+    }
+  }
+
+  def apply[U, P, I](
+    url: ServiceUrl[U],
+    params: P,
+    body: I
+  )(
+    implicit
+    hc: HeaderCarrier,
+    ec: ExecutionContext,
+    httpExecutor: HttpExecutor[U, P, I],
+    wts: Writes[I]
+  ): Future[HttpResponse] = {
+    httpExecutor.makeCall(url, params, body)
   }
 }

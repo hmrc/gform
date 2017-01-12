@@ -16,15 +16,52 @@
 
 package uk.gov.hmrc.bforms
 
+import akka.NotUsed
+import akka.stream.IOResult
+import akka.stream.scaladsl.{ FileIO, Source }
+import akka.util.ByteString
+import com.ning.http.multipart.ByteArrayPartSource
+import java.io.File
+import play.api.libs.json.{ Json, Writes }
+import play.api.mvc.MultipartFormData.{ DataPart, FilePart, Part }
+import play.api.http.HttpVerbs.{ POST => POST_VERB }
+import scala.concurrent.Future
+import uk.gov.hmrc.bforms.model.FileId
 import uk.gov.hmrc.play.audit.http.config.LoadAuditingConfig
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.auth.microservice.connectors.AuthConnector
 import uk.gov.hmrc.play.config.{ AppName, RunMode, ServicesConfig }
+import uk.gov.hmrc.play.http.HttpReads
+import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
+import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpResponse }
 import uk.gov.hmrc.play.http.hooks.HttpHook
 import uk.gov.hmrc.play.http.ws._
 import uk.gov.hmrc.play.audit.http.HttpAuditing
 
 object WSHttp extends WSGet with WSPut with WSPost with WSDelete with HttpAuditing with AppName {
+  val auditConnector: AuditConnector = MicroserviceAuditConnector
+  override val hooks: Seq[HttpHook] = Seq.empty[HttpHook]
+}
+
+object FusFeUploadWS extends WSPost with HttpAuditing with AppName {
+
+  def doFormPartPost(
+    url: String,
+    fileId: FileId,
+    contentType: String,
+    body: ByteString,
+    headers: Seq[(String, String)]
+  )(
+    implicit
+    hc: HeaderCarrier,
+    rds: HttpReads[HttpResponse]
+  ): Future[HttpResponse] = {
+    val source = Source(FilePart(fileId.value, fileId.value, Some(contentType), Source.single(body)) :: Nil)
+    withTracing(POST_VERB, url) {
+      val httpResponse = buildRequest(url).withHeaders(headers: _*).post(source).map(new WSHttpResponse(_))
+      mapErrors(POST_VERB, url, httpResponse).map(rds.read(POST_VERB, url, _))
+    }
+  }
   val auditConnector: AuditConnector = MicroserviceAuditConnector
   override val hooks: Seq[HttpHook] = Seq.empty[HttpHook]
 }

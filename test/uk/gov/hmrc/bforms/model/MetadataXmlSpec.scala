@@ -60,7 +60,7 @@ class MetadataXmlSpec extends FlatSpec with Matchers with StreamlinedXml {
             <store>true</store>
             <source>dfs</source>
             <target>DMS</target>
-            <reconciliation_id> some-recocilliatin-id </reconciliation_id>
+            <reconciliation_id>some-recocilliatin-id</reconciliation_id>
           </header>
           <metadata>
             <attribute>

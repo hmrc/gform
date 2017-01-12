@@ -26,29 +26,15 @@ import uk.gov.hmrc.play.test.UnitSpec
 import uk.gov.hmrc.bforms.typeclasses.{ CreateEnvelope, FusUrl, ServiceUrl, HttpExecutor }
 import org.scalatest._
 
-class FusConnectorSpec extends FlatSpec with Matchers with ScalaFutures with EitherValues {
-
-  implicit val hc: HeaderCarrier = new HeaderCarrier()
-  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
-  implicit val fusUrl: ServiceUrl[FusUrl] = new ServiceUrl[FusUrl] { def url = "dummy" }
-
-  def createHttpExecutor(httpResponse: HttpResponse): HttpExecutor[CreateEnvelope, JsValue, HttpResponse] = {
-    new HttpExecutor[CreateEnvelope, JsValue, HttpResponse] {
-      def makeCall(body: JsValue)(implicit wts: Writes[JsValue], rds: HttpReads[HttpResponse], hc: HeaderCarrier): Future[HttpResponse] = {
-        Future.successful(httpResponse)
-      }
-    }
-  }
+class FusConnectorSpec extends FlatSpec with Matchers with EitherValues {
 
   "createEnvelope" should "return invalid state when response is missing Location header" in {
 
     val responseFromFus = HttpResponse(201, responseHeaders = Map.empty[String, List[String]])
 
-    implicit val httpExecutor = createHttpExecutor(responseFromFus)
+    val res = new FusConnector().extractEnvelopId(responseFromFus)
 
-    val res = new FusConnector().createEnvelope("form-ref-id")
-
-    res.futureValue.left.value should be(InvalidState("Header Location not found"))
+    res.left.value should be(InvalidState("Header Location not found"))
 
   }
 
@@ -56,11 +42,9 @@ class FusConnectorSpec extends FlatSpec with Matchers with ScalaFutures with Eit
 
     val responseFromFus = HttpResponse(201, responseHeaders = Map("Location" -> List("invalid-location")))
 
-    implicit val httpExecutor = createHttpExecutor(responseFromFus)
+    val res = new FusConnector().extractEnvelopId(responseFromFus)
 
-    val res = new FusConnector().createEnvelope("form-ref-id")
-
-    res.futureValue.left.value should be(InvalidState("EnvelopeId in Location header: invalid-location not found"))
+    res.left.value should be(InvalidState("EnvelopeId in Location header: invalid-location not found"))
 
   }
 
@@ -68,11 +52,9 @@ class FusConnectorSpec extends FlatSpec with Matchers with ScalaFutures with Eit
 
     val responseFromFus = HttpResponse(201, responseHeaders = Map("Location" -> List("envelopes/123")))
 
-    implicit val httpExecutor = createHttpExecutor(responseFromFus)
+    val res = new FusConnector().extractEnvelopId(responseFromFus)
 
-    val res = new FusConnector().createEnvelope("form-ref-id")
-
-    res.futureValue.right.value should be(EnvelopeId("123"))
+    res.right.value should be(EnvelopeId("123"))
 
   }
 

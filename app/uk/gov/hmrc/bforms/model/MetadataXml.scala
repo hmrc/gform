@@ -52,7 +52,7 @@ object MetadataXml {
       <store>true</store>
       <source>dfs</source>
       <target>DMS</target>
-      <reconciliation_id> { reconciliationId } </reconciliation_id>
+      <reconciliation_id>{ reconciliationId }</reconciliation_id>
     </header>
   }
 

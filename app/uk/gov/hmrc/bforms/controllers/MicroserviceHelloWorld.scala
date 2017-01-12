@@ -24,13 +24,16 @@ import uk.gov.hmrc.play.microservice.controller.BaseController
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.bforms.repositories.TestRepository
 import uk.gov.hmrc.bforms.services.FileUploadService
-import uk.gov.hmrc.bforms.typeclasses.FusUrl
-import uk.gov.hmrc.bforms.typeclasses.ServiceUrl
+import uk.gov.hmrc.bforms.typeclasses.{ FusUrl, FusFeUrl, ServiceUrl }
 
 class MicroserviceHelloWorld(
     testRepository: TestRepository,
     fileUploadeService: FileUploadService
-)(implicit fusUrl: ServiceUrl[FusUrl]) extends BaseController {
+)(
+    implicit
+    fusUrl: ServiceUrl[FusUrl],
+    fusFeUrl: ServiceUrl[FusFeUrl]
+) extends BaseController {
 
   def hello = Action.async { implicit request =>
     fileUploadeService.createEnvelop.map(res => Ok(res))

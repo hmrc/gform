@@ -20,7 +20,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import scala.concurrent.{ ExecutionContext, Future }
 import play.api.libs.json.{ JsObject, JsValue, Json }
-import play.api.http.HeaderNames
+import play.api.http.HeaderNames.LOCATION
 import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpResponse }
 import uk.gov.hmrc.bforms.model.EnvelopeId
 import uk.gov.hmrc.bforms.exceptions.{ UnexpectedState, InvalidState }
@@ -31,26 +31,16 @@ class FusConnector() {
   val EnvelopeIdExtractor = "envelopes/([\\w\\d-]+)$".r.unanchored
   val formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'")
 
-  def createEnvelope(
-    formTypeRef: String
-  )(
-    implicit
-    hc: HeaderCarrier,
-    ec: ExecutionContext,
-    fusUrl: ServiceUrl[FusUrl],
-    httpExecutor: HttpExecutor[CreateEnvelope, JsValue, HttpResponse]
-  ): Future[Either[UnexpectedState, EnvelopeId]] = {
-    httpExecutor.makeCall(envelopeRequest(formTypeRef))
-      .map { resp =>
-        import HeaderNames._
-        resp.header(LOCATION) match {
-          case Some(location) => location match {
-            case EnvelopeIdExtractor(envelopeId) => Right(EnvelopeId(envelopeId))
-            case otherwise => Left(InvalidState(s"EnvelopeId in $LOCATION header: $location not found"))
-          }
-          case None => Left(InvalidState(s"Header $LOCATION not found"))
-        }
+  def extractEnvelopId(
+    resp: HttpResponse
+  ): Either[UnexpectedState, EnvelopeId] = {
+    resp.header(LOCATION) match {
+      case Some(location) => location match {
+        case EnvelopeIdExtractor(envelopeId) => Right(EnvelopeId(envelopeId))
+        case otherwise => Left(InvalidState(s"EnvelopeId in $LOCATION header: $location not found"))
       }
+      case None => Left(InvalidState(s"Header $LOCATION not found"))
+    }
   }
 
   def envelopeRequest(formTypeRef: String): JsObject = {
