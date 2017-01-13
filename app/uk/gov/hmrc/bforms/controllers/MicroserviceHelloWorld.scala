@@ -16,7 +16,9 @@
 
 package uk.gov.hmrc.bforms.controllers
 
+import cats.implicits._
 import play.api.Logger
+import play.api.libs.json.Json
 import play.api.mvc._
 import scala.concurrent.Future
 import uk.gov.hmrc.play.http._
@@ -36,7 +38,10 @@ class MicroserviceHelloWorld(
 ) extends BaseController {
 
   def hello = Action.async { implicit request =>
-    fileUploadeService.createEnvelop.map(res => Ok(res))
+    fileUploadeService.createEnvelop.fold(
+      error => error.toResult,
+      response => Ok(response)
+    )
   }
 
   def failed = Action.async { implicit request =>

@@ -14,20 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.model
+package uk.gov.hmrc.bforms
 
-import play.api.libs.json.{ Format, JsError, JsString, JsSuccess, Reads, Writes }
+package object core {
+  import cats.data.EitherT
+  import scala.concurrent.Future
+  import uk.gov.hmrc.bforms.exceptions.UnexpectedState
 
-case class EnvelopeId(value: String) extends AnyVal {
-  override def toString = value
-}
-
-object EnvelopeId {
-  val writes = Writes[EnvelopeId](id => JsString(id.value))
-  val reads = Reads[EnvelopeId] {
-    case JsString(value) => JsSuccess(EnvelopeId(value))
-    case otherwise => JsError(s"Invalid envelopeId, expected JsString, got: $otherwise")
-  }
-
-  implicit val format = Format[EnvelopeId](reads, writes)
+  type ServiceResponse[A] = EitherT[Future, UnexpectedState, A]
 }

@@ -40,14 +40,14 @@ import uk.gov.hmrc.play.audit.http.HttpAuditing
 
 object WSHttp extends WSGet with WSPut with WSPost with WSDelete with HttpAuditing with AppName {
   val auditConnector: AuditConnector = MicroserviceAuditConnector
-  override val hooks: Seq[HttpHook] = Seq.empty[HttpHook]
+  override val hooks: Seq[HttpHook] = Seq(AuditingHook)
 }
 
 object FusFeUploadWS extends WSPost with HttpAuditing with AppName {
 
   def doFormPartPost(
     url: String,
-    fileId: FileId,
+    fileName: String,
     contentType: String,
     body: ByteString,
     headers: Seq[(String, String)]
@@ -56,9 +56,10 @@ object FusFeUploadWS extends WSPost with HttpAuditing with AppName {
     hc: HeaderCarrier,
     rds: HttpReads[HttpResponse]
   ): Future[HttpResponse] = {
-    val source = Source(FilePart(fileId.value, fileId.value, Some(contentType), Source.single(body)) :: Nil)
+    val source = Source(FilePart(fileName, fileName, Some(contentType), Source.single(body)) :: Nil)
     withTracing(POST_VERB, url) {
       val httpResponse = buildRequest(url).withHeaders(headers: _*).post(source).map(new WSHttpResponse(_))
+      //executeHooks(url, POST_VERB, Option(Json.stringify(wts.writes(body))), httpResponse)
       mapErrors(POST_VERB, url, httpResponse).map(rds.read(POST_VERB, url, _))
     }
   }

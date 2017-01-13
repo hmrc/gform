@@ -16,12 +16,15 @@
 
 package uk.gov.hmrc.bforms.services
 
+import cats.data.EitherT
+import cats.implicits._
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import scala.concurrent.{ ExecutionContext, Future }
-import uk.gov.hmrc.bforms.exceptions.InvalidState
+import uk.gov.hmrc.bforms.exceptions.{ InvalidState, UnexpectedState }
+import uk.gov.hmrc.bforms.core.ServiceResponse
 import uk.gov.hmrc.bforms.model.{ EnvelopeId, FileId, MetadataXml }
-import uk.gov.hmrc.bforms.typeclasses.{ HttpExecutor, UploadFile }
+import uk.gov.hmrc.bforms.typeclasses.{ HttpExecutor, UploadFile, RouteEnvelopeRequest }
 import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.bforms.connectors.{ FusConnector, FusFeConnector }
 import uk.gov.hmrc.bforms.model._
@@ -62,23 +65,28 @@ class FileUploadService(fusConnector: FusConnector, fusFeConnector: FusFeConnect
     ec: ExecutionContext,
     fusUrl: ServiceUrl[FusUrl],
     fusFeUrl: ServiceUrl[FusFeUrl]
-  ) = {
-    for {
-      envelopeId <- HttpExecutor(fusUrl, CreateEnvelope, fusConnector.envelopeRequest("formTypeRef")).map(fusConnector.extractEnvelopId)
-      res <- { // TODO use cats EitherT to get rid of this pattern matching
-        envelopeId match {
-          case Right(envelopeId) =>
-            val uf = UploadFile(envelopeId, FileId("xmlDocument"))
-            HttpExecutor(fusFeUrl, uf, MetadataXml.getXml("submission-ref", "reconciliation-id", submissionAndPdf).toString().getBytes)
-          case l @ Left(_) => Future.successful(l)
-        }
-      }
+  ): ServiceResponse[String] = {
 
+    val date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("YYYYMMdd"))
+    val fileNamePrefix = s"${submissionAndPdf.submission.submissionRef}-$date"
+
+    val metadataXml = MetadataXml.xmlDec + "\n" + MetadataXml.getXml("submission-ref", "reconciliation-id", submissionAndPdf)
+
+    for {
+      envelopeId <- lift(HttpExecutor(fusUrl, CreateEnvelope(fusConnector.envelopeRequest("formTypeRef"))).map(fusConnector.extractEnvelopId))
+      _ <- fromFutureA(HttpExecutor(fusFeUrl, UploadFile(envelopeId, FileId("xmlDocument"), s"$fileNamePrefix-metadata.xml", "application/xml; charset=UTF-8", metadataXml.getBytes)))
+      _ <- fromFutureA(HttpExecutor(fusFeUrl, UploadFile(envelopeId, FileId("pdf"), s"$fileNamePrefix-iform.pdf", "application/pdf", PdfGenerator.generatePdf("hello world"))))
+      _ <- fromFutureA(HttpExecutor(fusUrl, RouteEnvelopeRequest(envelopeId, "dfs", "DMS")))
     } yield {
-      s"Envelope id: $envelopeId"
+      s"http://localhost:8898/file-transfer/envelopes/$envelopeId"
     }
-    /* fusConnector.createEnvelope("testFormTypeId").map { envelopeId =>
-     *
-     * } */
+  }
+
+  def lift(q: Future[Either[UnexpectedState, EnvelopeId]]): ServiceResponse[EnvelopeId] = {
+    EitherT[Future, UnexpectedState, EnvelopeId](q)
+  }
+
+  def fromFutureA[A](q: Future[A])(implicit ec: ExecutionContext): ServiceResponse[A] = {
+    EitherT[Future, UnexpectedState, A](q.map(Right(_)))
   }
 }

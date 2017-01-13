@@ -21,7 +21,7 @@ import uk.gov.hmrc.bforms.typeclasses.Attribute
 
 object MetadataXml {
 
-  private val xmlDec = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>"""
+  val xmlDec = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>"""
 
   private def createMetadata(sap: SubmissionAndPdf): Elem = {
     val submission = sap.submission
