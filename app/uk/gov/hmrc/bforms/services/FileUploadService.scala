@@ -22,7 +22,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.bforms.exceptions.{ InvalidState, UnexpectedState }
-import uk.gov.hmrc.bforms.core.ServiceResponse
+import uk.gov.hmrc.bforms.core.{ Opt, ServiceResponse }
 import uk.gov.hmrc.bforms.model.{ EnvelopeId, FileId, MetadataXml }
 import uk.gov.hmrc.bforms.typeclasses.{ HttpExecutor, UploadFile, RouteEnvelopeRequest }
 import uk.gov.hmrc.play.http.HeaderCarrier
@@ -82,7 +82,7 @@ class FileUploadService(fusConnector: FusConnector, fusFeConnector: FusFeConnect
     }
   }
 
-  def lift(q: Future[Either[UnexpectedState, EnvelopeId]]): ServiceResponse[EnvelopeId] = {
+  def lift(q: Future[Opt[EnvelopeId]]): ServiceResponse[EnvelopeId] = {
     EitherT[Future, UnexpectedState, EnvelopeId](q)
   }
 

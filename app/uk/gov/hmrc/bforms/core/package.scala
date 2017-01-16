@@ -22,4 +22,5 @@ package object core {
   import uk.gov.hmrc.bforms.exceptions.UnexpectedState
 
   type ServiceResponse[A] = EitherT[Future, UnexpectedState, A]
+  type Opt[A] = Either[UnexpectedState, A]
 }

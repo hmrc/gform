@@ -37,7 +37,7 @@ import play.modules.reactivemongo.ReactiveMongoComponentImpl
 import reactivemongo.api.DefaultDB
 import scala.concurrent.Future
 import uk.gov.hmrc.bforms.repositories.TestRepository
-import uk.gov.hmrc.bforms.controllers.MicroserviceHelloWorld
+import uk.gov.hmrc.bforms.controllers.{ Forms, FormTemplates, MicroserviceHelloWorld }
 import uk.gov.hmrc.bforms.services.FileUploadService
 import uk.gov.hmrc.play.filters.{ NoCacheFilter, RecoveryFilter }
 import uk.gov.hmrc.play.graphite.GraphiteConfig
@@ -163,6 +163,10 @@ trait ApplicationModule extends BuiltInComponents
 
   lazy val microserviceHelloWorld = new MicroserviceHelloWorld(testRepository, fileUploadService)
 
+  lazy val formTemplates = new FormTemplates()
+
+  lazy val forms = new Forms()
+
   // We need to create explicit AdminController and provide it into injector so Runtime DI could be able
   // to find it when endpoints in health.Routes are being called
   lazy val adminController = new AdminController(configuration)
@@ -174,7 +178,7 @@ trait ApplicationModule extends BuiltInComponents
 
   lazy val metricsController = new MetricsController(metrics)
 
-  lazy val appRoutes = new app.Routes(httpErrorHandler, microserviceHelloWorld)
+  lazy val appRoutes = new app.Routes(httpErrorHandler, microserviceHelloWorld, forms, formTemplates)
 
   override lazy val router: Router = new prod.Routes(httpErrorHandler, appRoutes, healthRoutes, metricsController)
 
