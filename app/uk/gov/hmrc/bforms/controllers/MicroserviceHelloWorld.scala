@@ -18,27 +18,41 @@ package uk.gov.hmrc.bforms.controllers
 
 import cats.implicits._
 import play.api.Logger
-import play.api.libs.json.Json
+import play.api.libs.json.{ JsValue, Json }
 import play.api.mvc._
 import scala.concurrent.Future
+import uk.gov.hmrc.bforms.repositories.{ SaveAndRetrieveRepository, TestRepository }
+import uk.gov.hmrc.bforms.services.{ Retrieve, RetrieveService }
 import uk.gov.hmrc.play.http._
 import uk.gov.hmrc.play.microservice.controller.BaseController
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
-import uk.gov.hmrc.bforms.repositories.TestRepository
 import uk.gov.hmrc.bforms.services.FileUploadService
 import uk.gov.hmrc.bforms.typeclasses.{ FusUrl, FusFeUrl, ServiceUrl }
 
 class MicroserviceHelloWorld(
     testRepository: TestRepository,
-    fileUploadeService: FileUploadService
+    fileUploadeService: FileUploadService,
+    repository: SaveAndRetrieveRepository
 )(
     implicit
     fusUrl: ServiceUrl[FusUrl],
     fusFeUrl: ServiceUrl[FusFeUrl]
 ) extends BaseController {
 
+  implicit val retrieve: Retrieve[String, JsValue] = Retrieve.retrieveFormData(repository)
+
+  def hackSubmit(registrationNumber: String) = Action.async { implicit request =>
+    RetrieveService.retrieve(registrationNumber)(retrieve).flatMap {
+      case Left(formData) => fileUploadeService.createEnvelop(formData.toString).fold(
+        error => error.toResult,
+        response => Ok(response)
+      )
+      case Right(()) => Future.successful(Ok(s"No form with registration number $registrationNumber found."))
+    }
+  }
+
   def hello = Action.async { implicit request =>
-    fileUploadeService.createEnvelop.fold(
+    fileUploadeService.createEnvelop("hello world").fold(
       error => error.toResult,
       response => Ok(response)
     )

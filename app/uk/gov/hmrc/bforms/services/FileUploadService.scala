@@ -59,7 +59,7 @@ class FileUploadService(fusConnector: FusConnector, fusFeConnector: FusFeConnect
     pdfSummary = pdfSummary
   )
 
-  def createEnvelop(
+  def createEnvelop(formData: String)(
     implicit
     hc: HeaderCarrier,
     ec: ExecutionContext,
@@ -76,7 +76,7 @@ class FileUploadService(fusConnector: FusConnector, fusFeConnector: FusFeConnect
     for {
       envelopeId <- fromFutureOptA (HttpExecutor(fusUrl, CreateEnvelope(fusConnector.envelopeRequest("formTypeRef"))).map(fusConnector.extractEnvelopId))
       _          <- fromFutureA    (HttpExecutor(fusFeUrl, UploadFile(envelopeId, FileId("xmlDocument"), s"$fileNamePrefix-metadata.xml", "application/xml; charset=UTF-8", metadataXml.getBytes)))
-      _          <- fromFutureA    (HttpExecutor(fusFeUrl, UploadFile(envelopeId, FileId("pdf"), s"$fileNamePrefix-iform.pdf", "application/pdf", PdfGenerator.generatePdf("hello world"))))
+      _          <- fromFutureA    (HttpExecutor(fusFeUrl, UploadFile(envelopeId, FileId("pdf"), s"$fileNamePrefix-iform.pdf", "application/pdf", PdfGenerator.generatePdf(formData))))
       _          <- fromFutureA    (HttpExecutor(fusUrl, RouteEnvelopeRequest(envelopeId, "dfs", "DMS")))
     } yield {
       s"http://localhost:8898/file-transfer/envelopes/$envelopeId"

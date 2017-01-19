@@ -166,7 +166,7 @@ trait ApplicationModule extends BuiltInComponents
     val url = baseUrl("file-upload-frontend")
   }
 
-  lazy val microserviceHelloWorld = new MicroserviceHelloWorld(testRepository, fileUploadService)
+  lazy val microserviceHelloWorld = new MicroserviceHelloWorld(testRepository, fileUploadService, saveAndRetrieveRespository)
   lazy val saveAndRetrieveController = new SaveAndRetrieveController(messagesApi)(saveAndRetrieveRespository)
 
   lazy val formTemplates = new FormTemplates()
