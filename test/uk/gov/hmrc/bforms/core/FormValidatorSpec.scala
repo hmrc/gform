@@ -20,8 +20,9 @@ import cats.instances.either._
 import cats.instances.list._
 import cats.syntax.either._
 import org.scalatest.{ EitherValues, FlatSpec, Matchers }
-import play.api.libs.json.{ JsNull, Json, JsNumber }
+import play.api.libs.json._
 import uk.gov.hmrc.bforms.exceptions.InvalidState
+import uk.gov.hmrc.bforms.model.Schema
 
 class FormValidatorSpec extends FlatSpec with Matchers with EitherValues {
 
@@ -105,12 +106,12 @@ class FormValidatorSpec extends FlatSpec with Matchers with EitherValues {
          |  ]
          |}""".stripMargin
 
-    val schemaRes = SchemaValidator.conform(Json.parse(formSchema))
+    val schemaRes = SchemaValidator.conform(Json.parse(formSchema).as[Schema])
 
     val finalRes =
       for {
         schema <- schemaRes
-        res <- TemplateValidator.conform(schema, Json.parse(formReq)).toEither
+        res <- schema.conform(Json.parse(formReq)).toEither
       } yield res
 
     finalRes.right.value should be(())

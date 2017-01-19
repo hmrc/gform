@@ -18,7 +18,8 @@ package uk.gov.hmrc.bforms.core
 
 import org.scalatest.{ EitherValues, FlatSpec, Matchers }
 import play.api.libs.json.{ JsNull, Json, JsNumber }
-import uk.gov.hmrc.bforms.exceptions.InvalidState
+import uk.gov.hmrc.bforms.exceptions.{ InvalidState, InvalidStateWithJson }
+import uk.gov.hmrc.bforms.model.Schema
 
 class SchemaValidatorSpec extends FlatSpec with Matchers with EitherValues {
 
@@ -37,20 +38,18 @@ class SchemaValidatorSpec extends FlatSpec with Matchers with EitherValues {
          |  ]
          |}""".stripMargin
 
-    val res = SchemaValidator.conform(Json.parse(input))
+    val res = SchemaValidator.conform(Json.parse(input).as[Schema])
     res.right.value should be(SObject(List(Item("formTypeId", SString)), List("formTypeId")))
   }
 
   it should "fail for json not containing 'type' fieldName" in {
-    val res = SchemaValidator.conform(JsNull)
-    res.left.value should be(InvalidState("No 'type' fieldName of type string found in json: null"))
+    val res = SchemaValidator.conform(Schema(Json.obj()))
+    res.left.value should be(InvalidStateWithJson("No 'type' fieldName of type string found in json", Json.obj()))
   }
 
   it should "fail when 'type' fieldName is not a String" in {
-    val res = SchemaValidator.conform(Json.obj("type" -> JsNumber(1)))
-    res.left.value should be(InvalidState("""|No 'type' fieldName of type string found in json: {
-                                             |  "type" : 1
-                                             |}""".stripMargin))
+    val res = SchemaValidator.conform(Schema(Json.obj("type" -> 1)))
+    res.left.value should be(InvalidStateWithJson("No 'type' fieldName of type string found in json", Json.obj("type" -> 1)))
   }
 
   it should "read list of SSobject" in {
@@ -70,7 +69,7 @@ class SchemaValidatorSpec extends FlatSpec with Matchers with EitherValues {
          |  ]
          |}""".stripMargin
 
-    val res = SchemaValidator.conform(Json.parse(input))
+    val res = SchemaValidator.conform(Json.parse(input).as[Schema])
     res.right.value should be(SObject(List(Item("formTypeId", SString), Item("archived", SBoolean)), List("formTypeId")))
   }
 
@@ -163,7 +162,7 @@ class SchemaValidatorSpec extends FlatSpec with Matchers with EitherValues {
          |   ]
          |}""".stripMargin
 
-    val res = SchemaValidator.conform(Json.parse(input))
+    val res = SchemaValidator.conform(Json.parse(input).as[Schema])
 
     res.right.value should be(
       SObject(

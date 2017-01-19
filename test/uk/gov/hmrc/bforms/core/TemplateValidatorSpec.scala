@@ -22,6 +22,7 @@ import cats.syntax.either._
 import org.scalatest.{ EitherValues, FlatSpec, Matchers }
 import play.api.libs.json.{ JsNull, Json, JsNumber }
 import uk.gov.hmrc.bforms.exceptions.InvalidState
+import uk.gov.hmrc.bforms.model.Schema
 
 class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
 
@@ -66,8 +67,8 @@ class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
 
     val res =
       for {
-        schemaRes <- SchemaValidator.conform(Json.parse(schema))
-        tr <- TemplateValidator.conform(schemaRes, Json.parse(template)).toEither
+        schemaRes <- SchemaValidator.conform(Json.parse(schema).as[Schema])
+        tr <- schemaRes.conform(Json.parse(template)).toEither
       } yield tr
 
     res.right.value should be(())
@@ -146,8 +147,8 @@ class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
 
     val res =
       for {
-        schemaRes <- SchemaValidator.conform(Json.parse(schema))
-        tr <- TemplateValidator.conform(schemaRes, Json.parse(template)).toEither
+        schemaRes <- SchemaValidator.conform(Json.parse(schema).as[Schema])
+        tr <- schemaRes.conform(Json.parse(template)).toEither
       } yield tr
 
     res.right.value should be(())
