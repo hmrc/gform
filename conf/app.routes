@@ -3,6 +3,8 @@
 GET        /hello-world             uk.gov.hmrc.bforms.controllers.MicroserviceHelloWorld.hello
 GET        /failed                  uk.gov.hmrc.bforms.controllers.MicroserviceHelloWorld.failed
 
+POST        /retrieveForm/:rn        uk.gov.hmrc.bforms.controllers.SaveAndRetrieveController.retrieveForm(rn : String)
+POST       /saveForm                uk.gov.hmrc.bforms.controllers.SaveAndRetrieveController.saveForm
 GET        /forms                                   uk.gov.hmrc.bforms.controllers.Forms.all
 POST       /forms                                   uk.gov.hmrc.bforms.controllers.Forms.save
 GET        /forms/:formTypeId                       uk.gov.hmrc.bforms.controllers.Forms.allById(formTypeId: String)

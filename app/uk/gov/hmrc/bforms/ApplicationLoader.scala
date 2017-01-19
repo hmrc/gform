@@ -38,6 +38,8 @@ import reactivemongo.api.DefaultDB
 import scala.concurrent.Future
 import uk.gov.hmrc.bforms.repositories.{ FormTemplateRepository, SchemaRepository, TestRepository }
 import uk.gov.hmrc.bforms.controllers.{ Forms, FormTemplates, MicroserviceHelloWorld, Schemas }
+import uk.gov.hmrc.bforms.repositories.{ SaveAndRetrieveRepositoryImpl, TestRepository }
+import uk.gov.hmrc.bforms.controllers.{ MicroserviceHelloWorld, SaveAndRetrieveController }
 import uk.gov.hmrc.bforms.services.FileUploadService
 import uk.gov.hmrc.play.filters.{ NoCacheFilter, RecoveryFilter }
 import uk.gov.hmrc.play.graphite.GraphiteConfig
@@ -152,10 +154,10 @@ trait ApplicationModule extends BuiltInComponents
   lazy val db: () => DefaultDB = reactiveMongoComponent.mongoConnector.db
 
   lazy val testRepository = new TestRepository()(db)
+  lazy val saveAndRetrieveRespository = new SaveAndRetrieveRepositoryImpl()(db)
 
   lazy implicit val schemaRepository = new SchemaRepository()(db)
   lazy implicit val formTemplateRepository = new FormTemplateRepository()(db)
-
   implicit val fusUrl = new ServiceUrl[FusUrl] {
     val url = baseUrl("file-upload")
   }
@@ -165,6 +167,7 @@ trait ApplicationModule extends BuiltInComponents
   }
 
   lazy val microserviceHelloWorld = new MicroserviceHelloWorld(testRepository, fileUploadService)
+  lazy val saveAndRetrieveController = new SaveAndRetrieveController(messagesApi)(saveAndRetrieveRespository)
 
   lazy val formTemplates = new FormTemplates()
 
@@ -183,7 +186,7 @@ trait ApplicationModule extends BuiltInComponents
 
   lazy val metricsController = new MetricsController(metrics)
 
-  lazy val appRoutes = new app.Routes(httpErrorHandler, microserviceHelloWorld, forms, formTemplates, schemas)
+  lazy val appRoutes = new app.Routes(httpErrorHandler, microserviceHelloWorld, saveAndRetrieveController, forms, formTemplates, schemas)
 
   override lazy val router: Router = new prod.Routes(httpErrorHandler, appRoutes, healthRoutes, metricsController)
 
