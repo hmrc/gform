@@ -17,3 +17,6 @@ POST       /formtemplates                       uk.gov.hmrc.bforms.controllers.F
 GET        /formtemplates/:formTypeId           uk.gov.hmrc.bforms.controllers.FormTemplates.allById(formTypeId: String)
 GET        /formtemplates/:formTypeId/:version  uk.gov.hmrc.bforms.controllers.FormTemplates.get(formTypeId: String, version: String)
 DELETE     /formtemplates/:formTypeId/:version  uk.gov.hmrc.bforms.controllers.FormTemplates.delete(formTypeId: String, version: String)
+
+GET        /schemas                             uk.gov.hmrc.bforms.controllers.Schemas.all
+POST       /schemas                             uk.gov.hmrc.bforms.controllers.Schemas.save

@@ -36,8 +36,8 @@ import play.core.SourceMapper
 import play.modules.reactivemongo.ReactiveMongoComponentImpl
 import reactivemongo.api.DefaultDB
 import scala.concurrent.Future
-import uk.gov.hmrc.bforms.repositories.TestRepository
-import uk.gov.hmrc.bforms.controllers.{ Forms, FormTemplates, MicroserviceHelloWorld }
+import uk.gov.hmrc.bforms.repositories.{ FormTemplateRepository, SchemaRepository, TestRepository }
+import uk.gov.hmrc.bforms.controllers.{ Forms, FormTemplates, MicroserviceHelloWorld, Schemas }
 import uk.gov.hmrc.bforms.services.FileUploadService
 import uk.gov.hmrc.play.filters.{ NoCacheFilter, RecoveryFilter }
 import uk.gov.hmrc.play.graphite.GraphiteConfig
@@ -153,6 +153,9 @@ trait ApplicationModule extends BuiltInComponents
 
   lazy val testRepository = new TestRepository()(db)
 
+  lazy implicit val schemaRepository = new SchemaRepository()(db)
+  lazy implicit val formTemplateRepository = new FormTemplateRepository()(db)
+
   implicit val fusUrl = new ServiceUrl[FusUrl] {
     val url = baseUrl("file-upload")
   }
@@ -167,6 +170,8 @@ trait ApplicationModule extends BuiltInComponents
 
   lazy val forms = new Forms()
 
+  lazy val schemas = new Schemas()
+
   // We need to create explicit AdminController and provide it into injector so Runtime DI could be able
   // to find it when endpoints in health.Routes are being called
   lazy val adminController = new AdminController(configuration)
@@ -178,7 +183,7 @@ trait ApplicationModule extends BuiltInComponents
 
   lazy val metricsController = new MetricsController(metrics)
 
-  lazy val appRoutes = new app.Routes(httpErrorHandler, microserviceHelloWorld, forms, formTemplates)
+  lazy val appRoutes = new app.Routes(httpErrorHandler, microserviceHelloWorld, forms, formTemplates, schemas)
 
   override lazy val router: Router = new prod.Routes(httpErrorHandler, appRoutes, healthRoutes, metricsController)
 

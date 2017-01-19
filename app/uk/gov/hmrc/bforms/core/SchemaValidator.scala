@@ -20,10 +20,47 @@ import cats.instances.either._
 import cats.instances.list._
 import cats.syntax.either._
 import cats.syntax.traverse._
+import cats.Monoid
 import play.api.libs.json._
-import uk.gov.hmrc.bforms.exceptions.{ InvalidState, UnexpectedState }
+import uk.gov.hmrc.bforms.exceptions.{ InvalidState, InvalidStateWithJson, UnexpectedState }
+import uk.gov.hmrc.bforms.model.Schema
 
-sealed trait JsonSchema
+sealed trait JsonSchema {
+
+  def conform[A](json: A)(implicit wrt: Writes[A]): ValidationResult = {
+    def loop(schema: JsonSchema, json: JsValue): ValidationResult = {
+      schema match {
+        case SObject(properties, required) =>
+          val validationResults: Seq[ValidationResult] = properties.map {
+            case Item(fieldName, SString) => (json \ fieldName) match {
+              case JsDefined(JsString(_)) => Valid
+              case otherwise => Invalid(s"FieldName '$fieldName' is missing or not a string, got: " + Json.prettyPrint(json))
+            }
+            case Item(fieldName, SBoolean) => (json \ fieldName) match {
+              case JsDefined(JsBoolean(_)) => Valid
+              case otherwise => Invalid(s"FieldName '$fieldName' is missing or not a boolean, got: " + Json.prettyPrint(json))
+            }
+            case Item(fieldName, so @ SObject(_, _)) => (json \ fieldName) match {
+              case JsDefined(jo @ JsObject(contents)) => loop(so, jo)
+              case otherwise => Invalid(s"FieldName '$fieldName' is missing or not an object, got: " + Json.prettyPrint(json))
+            }
+            case Item(fieldName, SArray(so)) => (json \ fieldName) match {
+              case JsDefined(JsArray(objs)) =>
+                val res = objs.map(obj => loop(so, obj)).toList
+                Monoid[ValidationResult].combineAll(res)
+              case otherwise => Invalid(s"FieldName '$fieldName' is missing or not an array, got: " + Json.prettyPrint(json))
+            }
+          }
+          Monoid[ValidationResult].combineAll(validationResults)
+        case SString => Invalid("No SString support on top level")
+        case SBoolean => Invalid("No SString support on top level")
+        case SArray(items) => Invalid("No SArray support on top level")
+      }
+    }
+    loop(this, wrt.writes(json))
+  }
+}
+
 case class SObject(properties: Seq[Item], required: Seq[String]) extends JsonSchema
 case object SString extends JsonSchema
 case object SBoolean extends JsonSchema
@@ -31,7 +68,11 @@ case class SArray(items: SObject) extends JsonSchema
 case class Item(name: String, tpe: JsonSchema)
 
 object SchemaValidator {
-  def conform(json: JsValue): Opt[JsonSchema] = {
+  def conform(schemaRep: Schema): Opt[JsonSchema] = {
+    loop(schemaRep.value)
+  }
+
+  private def loop(json: JsValue): Opt[JsonSchema] = {
     (json \ "type") match {
       case JsDefined(JsString(tpe)) => tpe match {
         case "object" => readObject(json)
@@ -40,16 +81,16 @@ object SchemaValidator {
         case "array" => readArray(json)
         case otherwise => Left(InvalidState(s"Unsupported value for type: '$otherwise'"))
       }
-      case otherwise => Left(InvalidState("No 'type' fieldName of type string found in json: " + Json.prettyPrint(json)))
+      case otherwise => Left(InvalidStateWithJson("No 'type' fieldName of type string found in json", json))
     }
   }
 
-  def readObject(json: JsValue): Opt[SObject] = {
+  private def readObject(json: JsValue): Opt[SObject] = {
     val properties = (json \ "properties") match {
       case JsDefined(JsObject(properties)) =>
-        val res = properties.map { case (property, value) => conform(value).map(x => Item(property, x)) }.toList
+        val res = properties.map { case (property, value) => loop(value).map(x => Item(property, x)) }.toList
         res.sequenceU
-      case otherwise => Left(InvalidState("No 'properties' fieldName of type object found in json: " + Json.prettyPrint(json)))
+      case otherwise => Left(InvalidStateWithJson("No 'properties' fieldName of type object found in json", json))
     }
 
     val required = (json \ "required") match {
@@ -59,7 +100,7 @@ object SchemaValidator {
           case nonString => Left(InvalidState("Required must be array with string"))
         }.toList
         res.sequenceU
-      case otherwise => Left(InvalidState("No 'required' fieldName of type array found in json: " + Json.prettyPrint(json)))
+      case otherwise => Left(InvalidStateWithJson("No 'required' fieldName of type array found in json", json))
     }
 
     for {
@@ -68,10 +109,10 @@ object SchemaValidator {
     } yield SObject(p, r)
   }
 
-  def readArray(json: JsValue): Opt[JsonSchema] = {
+  private def readArray(json: JsValue): Opt[JsonSchema] = {
     (json \ "items") match {
       case JsDefined(items @ JsObject(_)) => readObject(items).map(SArray(_))
-      case otherwise => Left(InvalidState("No 'items' fieldName of type object found in json: " + Json.prettyPrint(json)))
+      case otherwise => Left(InvalidStateWithJson("No 'items' fieldName of type object found in json", json))
     }
   }
 }

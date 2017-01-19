@@ -16,11 +16,32 @@
 
 package uk.gov.hmrc.bforms
 
+import cats.data.EitherT
+import scala.concurrent.{ ExecutionContext, Future }
+import uk.gov.hmrc.bforms.exceptions.UnexpectedState
+
 package object core {
-  import cats.data.EitherT
-  import scala.concurrent.Future
-  import uk.gov.hmrc.bforms.exceptions.UnexpectedState
 
   type ServiceResponse[A] = EitherT[Future, UnexpectedState, A]
   type Opt[A] = Either[UnexpectedState, A]
+
+  def fromFutureOptA[A](fa: Future[Opt[A]]): ServiceResponse[A] = {
+    EitherT[Future, UnexpectedState, A](fa)
+  }
+
+  def fromFutureA[A](fa: Future[A])(implicit ec: ExecutionContext): ServiceResponse[A] = {
+    EitherT[Future, UnexpectedState, A](fa.map(Right(_)))
+  }
+
+  def fromOptA[A](oa: Opt[A])(implicit ec: ExecutionContext): ServiceResponse[A] = {
+    EitherT[Future, UnexpectedState, A](Future.successful(oa))
+  }
+
+  def fromFutureOptionA[A](fo: Future[Option[A]])(invalid: => UnexpectedState)(implicit ec: ExecutionContext): ServiceResponse[A] = {
+    val futureA = fo.map {
+      case Some(a) => Right(a)
+      case None => Left(invalid)
+    }
+    EitherT[Future, UnexpectedState, A](futureA)
+  }
 }

@@ -17,16 +17,19 @@
 package uk.gov.hmrc.bforms.exceptions
 
 import play.api.mvc.Results.BadRequest
-import play.api.libs.json.{ Json, JsPath }
+import play.api.libs.json.{ Json, JsPath, JsValue }
 
 sealed trait UnexpectedState extends Product with Serializable {
-  def message: String = this match {
-    case InvalidState(errorMsg) => errorMsg
+
+  private def toMessage(msg: String) = Json.obj("error" -> msg)
+
+  private def jsonResponse: JsValue = this match {
+    case InvalidState(errorMsg) => toMessage(errorMsg)
+    case InvalidStateWithJson(errorMsg, json) => toMessage(errorMsg) + ("json" -> json)
   }
 
-  def toResult = {
-    BadRequest(Json.obj("error" -> this.message))
-  }
+  def toResult = BadRequest(jsonResponse)
 }
 
 case class InvalidState(errorMsg: String) extends UnexpectedState
+case class InvalidStateWithJson(errorMsg: String, json: JsValue) extends UnexpectedState

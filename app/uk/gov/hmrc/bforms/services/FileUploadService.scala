@@ -22,7 +22,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.bforms.exceptions.{ InvalidState, UnexpectedState }
-import uk.gov.hmrc.bforms.core.{ Opt, ServiceResponse }
+import uk.gov.hmrc.bforms.core._
 import uk.gov.hmrc.bforms.model.{ EnvelopeId, FileId, MetadataXml }
 import uk.gov.hmrc.bforms.typeclasses.{ HttpExecutor, UploadFile, RouteEnvelopeRequest }
 import uk.gov.hmrc.play.http.HeaderCarrier
@@ -72,21 +72,15 @@ class FileUploadService(fusConnector: FusConnector, fusFeConnector: FusFeConnect
 
     val metadataXml = MetadataXml.xmlDec + "\n" + MetadataXml.getXml("submission-ref", "reconciliation-id", submissionAndPdf)
 
+    // format: OFF
     for {
-      envelopeId <- lift(HttpExecutor(fusUrl, CreateEnvelope(fusConnector.envelopeRequest("formTypeRef"))).map(fusConnector.extractEnvelopId))
-      _ <- fromFutureA(HttpExecutor(fusFeUrl, UploadFile(envelopeId, FileId("xmlDocument"), s"$fileNamePrefix-metadata.xml", "application/xml; charset=UTF-8", metadataXml.getBytes)))
-      _ <- fromFutureA(HttpExecutor(fusFeUrl, UploadFile(envelopeId, FileId("pdf"), s"$fileNamePrefix-iform.pdf", "application/pdf", PdfGenerator.generatePdf("hello world"))))
-      _ <- fromFutureA(HttpExecutor(fusUrl, RouteEnvelopeRequest(envelopeId, "dfs", "DMS")))
+      envelopeId <- fromFutureOptA (HttpExecutor(fusUrl, CreateEnvelope(fusConnector.envelopeRequest("formTypeRef"))).map(fusConnector.extractEnvelopId))
+      _          <- fromFutureA    (HttpExecutor(fusFeUrl, UploadFile(envelopeId, FileId("xmlDocument"), s"$fileNamePrefix-metadata.xml", "application/xml; charset=UTF-8", metadataXml.getBytes)))
+      _          <- fromFutureA    (HttpExecutor(fusFeUrl, UploadFile(envelopeId, FileId("pdf"), s"$fileNamePrefix-iform.pdf", "application/pdf", PdfGenerator.generatePdf("hello world"))))
+      _          <- fromFutureA    (HttpExecutor(fusUrl, RouteEnvelopeRequest(envelopeId, "dfs", "DMS")))
     } yield {
       s"http://localhost:8898/file-transfer/envelopes/$envelopeId"
     }
-  }
-
-  def lift(q: Future[Opt[EnvelopeId]]): ServiceResponse[EnvelopeId] = {
-    EitherT[Future, UnexpectedState, EnvelopeId](q)
-  }
-
-  def fromFutureA[A](q: Future[A])(implicit ec: ExecutionContext): ServiceResponse[A] = {
-    EitherT[Future, UnexpectedState, A](q.map(Right(_)))
+    // format: ON
   }
 }

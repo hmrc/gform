@@ -51,36 +51,6 @@ object ValidationResult {
 
 object TemplateValidator {
 
-  def conform(schema: JsonSchema, json: JsValue): ValidationResult = {
-    schema match {
-      case SObject(properties, required) =>
-        val validationResults: Seq[ValidationResult] = properties.map {
-          case Item(fieldName, SString) => (json \ fieldName) match {
-            case JsDefined(JsString(_)) => Valid
-            case otherwise => Invalid(s"FieldName '$fieldName' is missing or not a string, got: " + Json.prettyPrint(json))
-          }
-          case Item(fieldName, SBoolean) => (json \ fieldName) match {
-            case JsDefined(JsBoolean(_)) => Valid
-            case otherwise => Invalid(s"FieldName '$fieldName' is missing or not a boolean, got: " + Json.prettyPrint(json))
-          }
-          case Item(fieldName, so @ SObject(_, _)) => (json \ fieldName) match {
-            case JsDefined(jo @ JsObject(contents)) => conform(so, jo)
-            case otherwise => Invalid(s"FieldName '$fieldName' is missing or not an object, got: " + Json.prettyPrint(json))
-          }
-          case Item(fieldName, SArray(so)) => (json \ fieldName) match {
-            case JsDefined(JsArray(objs)) =>
-              val res = objs.map(obj => conform(so, obj)).toList
-              Monoid[ValidationResult].combineAll(res)
-            case otherwise => Invalid(s"FieldName '$fieldName' is missing or not an array, got: " + Json.prettyPrint(json))
-          }
-        }
-        Monoid[ValidationResult].combineAll(validationResults)
-      case SString => Invalid("No SString support on top level")
-      case SBoolean => Invalid("No SString support on top level")
-      case SArray(items) => Invalid("No SArray support on top level")
-    }
-  }
-
   def extractFields(json: JsValue): Opt[Seq[TemplateField]] = {
     val templateFieldsRaw: Seq[JsResult[List[TemplateField]]] = (json \\ "fields").map(_.validate[List[TemplateField]])
 
