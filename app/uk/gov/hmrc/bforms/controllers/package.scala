@@ -24,12 +24,12 @@ import uk.gov.hmrc.bforms.exceptions.InvalidStateWithJson
 package object controllers {
 
   object JsonWithKey {
-    def apply[A](fieldName: String)(implicit rds: Reads[A]): BodyParser[(String, A)] = {
+    def apply[A, B](fieldName: String, f: String => B)(implicit rds: Reads[A]): BodyParser[(B, A)] = {
       BodyParsers.parse.json[JsObject].validate { json =>
         (json \ fieldName) match {
-          case JsDefined(JsString(formTypeId)) =>
+          case JsDefined(JsString(id)) =>
             rds.reads(json) match {
-              case JsSuccess(a, _) => Right((formTypeId, a))
+              case JsSuccess(a, _) => Right((f(id), a))
               case JsError(error) => Left(InvalidStateWithJson("Cannot parse json", json).toResult)
             }
           case otherwise => Left(InvalidStateWithJson(s"No fieldName '$fieldName' provided in json", json).toResult)

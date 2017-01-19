@@ -21,7 +21,7 @@ import scala.concurrent.ExecutionContext
 import play.api.mvc.Action
 import play.api.libs.json._
 import uk.gov.hmrc.bforms.core._
-import uk.gov.hmrc.bforms.model.{ DbOperationResult, Schema }
+import uk.gov.hmrc.bforms.model.{ DbOperationResult, Schema, SchemaId }
 import uk.gov.hmrc.bforms.typeclasses.Update
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.play.microservice.controller.BaseController
@@ -29,7 +29,7 @@ import uk.gov.hmrc.bforms.repositories.SchemaRepository
 
 object Schemas {
   def saveSchema(
-    schemaId: String,
+    schemaId: SchemaId,
     schema: Schema
   )(
     implicit
@@ -48,7 +48,7 @@ class Schemas()(
     schemaRepository.find().map(schemas => Ok(Json.toJson(schemas)))
   }
 
-  def save = Action.async(JsonWithKey[Schema]("id")) { implicit request =>
+  def save = Action.async(JsonWithKey[Schema, SchemaId]("id", SchemaId.apply)) { implicit request =>
     val (id, schema) = request.body
 
     Schemas.saveSchema(id, schema).fold(

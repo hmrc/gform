@@ -1,4 +1,5 @@
 import sbt.Keys._
+import play.sbt.routes.RoutesKeys._
 import sbt.Tests.{SubProcess, Group}
 import sbt._
 import play.routes.compiler.StaticRoutesGenerator
@@ -35,6 +36,10 @@ trait MicroService {
       libraryDependencies ++= appDependencies,
       evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false)
     )
+    .settings(routesImport ++= Seq(
+              "uk.gov.hmrc.bforms.binders.ValueClassBinder._",
+              "uk.gov.hmrc.bforms.model.FormTypeId"
+              ))
     .configs(IntegrationTest)
     .settings(inConfig(IntegrationTest)(Defaults.itSettings): _*)
     .settings(

@@ -26,12 +26,12 @@ import uk.gov.hmrc.bforms.repositories.{ FormTemplateRepository, SchemaRepositor
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.play.microservice.controller.BaseController
 import uk.gov.hmrc.bforms.core.SchemaValidator
-import uk.gov.hmrc.bforms.model.{ Schema, FormTemplate, DbOperationResult }
+import uk.gov.hmrc.bforms.model.{ Schema, FormTemplate, FormTypeId, DbOperationResult }
 import uk.gov.hmrc.bforms.typeclasses.{ FindOne, Update }
 
 object FormTemplates {
   def saveTemplate(
-    formTypeId: String,
+    formTypeId: FormTypeId,
     formTemplate: FormTemplate
   )(
     implicit
@@ -60,10 +60,10 @@ class FormTemplates()(
 ) extends BaseController {
 
   def all() = Action.async { implicit request =>
-    Future.successful(NotImplemented)
+    formTemplateRepository.find().map(formTemplates => Ok(Json.toJson(formTemplates)))
   }
 
-  def save() = Action.async(JsonWithKey[FormTemplate]("formTypeId")) { implicit request =>
+  def save() = Action.async(JsonWithKey[FormTemplate, FormTypeId]("formTypeId", FormTypeId.apply)) { implicit request =>
 
     val (formTypeId, templateJson) = request.body
 
@@ -73,15 +73,15 @@ class FormTemplates()(
     )
   }
 
-  def allById(formTypeId: String) = Action.async { implicit request =>
+  def allById(formTypeId: FormTypeId) = Action.async { implicit request =>
     Future.successful(NotImplemented)
   }
 
-  def get(formTypeId: String, version: String) = Action.async { implicit request =>
+  def get(formTypeId: FormTypeId, version: String) = Action.async { implicit request =>
     Future.successful(NotImplemented)
   }
 
-  def delete(formTypeId: String, version: String) = Action.async { implicit request =>
+  def delete(formTypeId: FormTypeId, version: String) = Action.async { implicit request =>
     Future.successful(NotImplemented)
   }
 }

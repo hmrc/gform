@@ -18,6 +18,7 @@ package uk.gov.hmrc.bforms.controllers
 
 import play.api.mvc.Action
 import scala.concurrent.Future
+import uk.gov.hmrc.bforms.model.FormTypeId
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
 class Forms() extends BaseController {
@@ -29,27 +30,27 @@ class Forms() extends BaseController {
     Future.successful(NotImplemented)
   }
 
-  def allById(formTypeId: String) = Action.async { implicit request =>
+  def allById(formTypeId: FormTypeId) = Action.async { implicit request =>
     Future.successful(NotImplemented)
   }
 
-  def getByIdAndVersion(formTypeId: String, version: String) = Action.async { implicit request =>
+  def getByIdAndVersion(formTypeId: FormTypeId, version: String) = Action.async { implicit request =>
     Future.successful(NotImplemented)
   }
 
-  def get(formTypeId: String, version: String, id: String) = Action.async { implicit request =>
+  def get(formTypeId: FormTypeId, version: String, id: String) = Action.async { implicit request =>
     Future.successful(NotImplemented)
   }
 
-  def delete(formTypeId: String, version: String, id: String) = Action.async { implicit request =>
+  def delete(formTypeId: FormTypeId, version: String, id: String) = Action.async { implicit request =>
     Future.successful(NotImplemented)
   }
 
-  def submission(formTypeId: String, formId: String) = Action.async { implicit request =>
+  def submission(formTypeId: FormTypeId, formId: String) = Action.async { implicit request =>
     Future.successful(NotImplemented)
   }
 
-  def submissionStatus(formTypeId: String, formId: String) = Action.async { implicit request =>
+  def submissionStatus(formTypeId: FormTypeId, formId: String) = Action.async { implicit request =>
     Future.successful(NotImplemented)
   }
 }
