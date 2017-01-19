@@ -5,3 +5,20 @@ GET        /failed                  uk.gov.hmrc.bforms.controllers.MicroserviceH
 
 POST        /retrieveForm/:rn        uk.gov.hmrc.bforms.controllers.SaveAndRetrieveController.retrieveForm(rn : String)
 POST       /saveForm                uk.gov.hmrc.bforms.controllers.SaveAndRetrieveController.saveForm
+GET        /forms                                   uk.gov.hmrc.bforms.controllers.Forms.all
+POST       /forms                                   uk.gov.hmrc.bforms.controllers.Forms.save
+GET        /forms/:formTypeId                       uk.gov.hmrc.bforms.controllers.Forms.allById(formTypeId: String)
+GET        /forms/:formTypeId/:version              uk.gov.hmrc.bforms.controllers.Forms.getByIdAndVersion(formTypeId: String, version: String)
+GET        /forms/:formTypeId/:version/:id          uk.gov.hmrc.bforms.controllers.Forms.get(formTypeId: String, version: String, id: String)
+DELETE     /forms/:formTypeId/:version/:id          uk.gov.hmrc.bforms.controllers.Forms.delete(formTypeId: String, version: String, id: String)
+POST       /forms/:formTypeId/submission/:formId    uk.gov.hmrc.bforms.controllers.Forms.submission(formTypeId: String, formId: String)
+GET        /forms/:formTypeId/submission/:formId    uk.gov.hmrc.bforms.controllers.Forms.submissionStatus(formTypeId: String, formId: String)
+
+GET        /formtemplates                       uk.gov.hmrc.bforms.controllers.FormTemplates.all
+POST       /formtemplates                       uk.gov.hmrc.bforms.controllers.FormTemplates.save
+GET        /formtemplates/:formTypeId           uk.gov.hmrc.bforms.controllers.FormTemplates.allById(formTypeId: String)
+GET        /formtemplates/:formTypeId/:version  uk.gov.hmrc.bforms.controllers.FormTemplates.get(formTypeId: String, version: String)
+DELETE     /formtemplates/:formTypeId/:version  uk.gov.hmrc.bforms.controllers.FormTemplates.delete(formTypeId: String, version: String)
+
+GET        /schemas                             uk.gov.hmrc.bforms.controllers.Schemas.all
+POST       /schemas                             uk.gov.hmrc.bforms.controllers.Schemas.save

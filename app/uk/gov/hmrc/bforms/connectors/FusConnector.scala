@@ -22,6 +22,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 import play.api.libs.json.{ JsObject, JsValue, Json }
 import play.api.http.HeaderNames.LOCATION
 import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpResponse }
+import uk.gov.hmrc.bforms.core.Opt
 import uk.gov.hmrc.bforms.model.EnvelopeId
 import uk.gov.hmrc.bforms.exceptions.{ UnexpectedState, InvalidState }
 import uk.gov.hmrc.bforms.typeclasses.{ CreateEnvelope, FusUrl, HttpExecutor, ServiceUrl }
@@ -33,7 +34,7 @@ class FusConnector() {
 
   def extractEnvelopId(
     resp: HttpResponse
-  ): Either[UnexpectedState, EnvelopeId] = {
+  ): Opt[EnvelopeId] = {
     resp.header(LOCATION) match {
       case Some(location) => location match {
         case EnvelopeIdExtractor(envelopeId) => Right(EnvelopeId(envelopeId))
