@@ -19,7 +19,7 @@ package uk.gov.hmrc.bforms.model
 import play.api.mvc.Results.Ok
 
 // Represent successful result of DB operation
-trait DbOperationResult {
+sealed trait DbOperationResult {
   def toResult = Ok
 }
 case object UpdateSuccess extends DbOperationResult

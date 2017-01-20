@@ -79,7 +79,7 @@ object SchemaValidator {
         case "string" => Right(SString)
         case "boolean" => Right(SBoolean)
         case "array" => readArray(json)
-        case otherwise => Left(InvalidState(s"Unsupported value for type: '$otherwise'"))
+        case otherwise => Left(InvalidState(s"Unsupported value for 'type' fieldName: '$otherwise'"))
       }
       case otherwise => Left(InvalidStateWithJson("No 'type' fieldName of type string found in json", json))
     }
