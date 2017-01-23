@@ -15,7 +15,6 @@
  */
 
 package uk.gov.hmrc.bforms.controllers
-
 import play.api.i18n.{ I18nSupport, MessagesApi }
 import play.api.libs.json._
 import play.api.mvc.{ Action, Result }
@@ -23,48 +22,30 @@ import uk.gov.hmrc.bforms.model.{ INVALID_DATA, Other, RESPONSE_OK }
 import uk.gov.hmrc.bforms.repositories.SaveAndRetrieveRepository
 import uk.gov.hmrc.bforms.services.{ Retrieve, RetrieveService, Save, SaveService }
 import uk.gov.hmrc.play.microservice.controller.BaseController
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-
 class SaveAndRetrieveController(val messagesApi: MessagesApi)(implicit repository: SaveAndRetrieveRepository) extends SaveAndRetrieveHelperController {
-
-  implicit val save: Save[JsValue] = Save.saveData(repository)
-
+  implicit val save: Save[JsValue, String] = Save.saveData(repository)
   implicit val retrieve: Retrieve[String, JsValue] = Retrieve.retrieveFormData(repository)
-
-  def saveForm = {
-    println("transferred")
-    saveFormData
-  }
-
+  def saveForm(registrationNumber: String) = saveFormData(registrationNumber)
   def retrieveForm(registrationNumber: String) = retrieveFormData(registrationNumber)
-
 }
-
 trait SaveAndRetrieveHelperController extends BaseController with I18nSupport {
-
-  implicit val save: Save[JsValue]
-
+  implicit val save: Save[JsValue, String]
   implicit val retrieve: Retrieve[String, JsValue]
-
-  def saveFormData(): Action[JsValue] = Action.async(parse.json) { implicit request =>
+  def saveFormData(registrationNumber: String)(implicit repo: SaveAndRetrieveRepository): Action[JsValue] = Action.async(parse.json) { implicit request =>
     val messages = messagesApi.preferred(request)
     implicit val reads: Reads[JsValue] = JsPath.read(request.body)
-    println("inside correct controller")
     request.body.validate(reads) match {
       case JsSuccess(req, _) =>
-        SaveService.save(request.body)(save).map {
-          case Left(x) =>
-            Ok(INVALID_DATA.toJson(messages))
-          case Right(()) =>
-            Ok(RESPONSE_OK.toJson(messages))
+        SaveService.save(request.body, registrationNumber)(save).map {
+          case Left(x) => Ok(INVALID_DATA.toJson(messages))
+          case Right(()) => Ok(RESPONSE_OK.toJson(messages))
         }
       case JsError(jsonErrors) =>
         Future.successful(BadRequest(Json.obj("message" -> JsError.toJson(jsonErrors))))
     }
   }
-
   def retrieveFormData(registrationNumber: String) = Action.async { implicit request =>
     RetrieveService.retrieve(registrationNumber)(retrieve).map {
       case Left(x) => Ok(x)
