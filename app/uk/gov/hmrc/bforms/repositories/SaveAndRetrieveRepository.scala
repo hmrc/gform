@@ -15,20 +15,29 @@
  */
 
 package uk.gov.hmrc.bforms.repositories
-
 import com.fasterxml.jackson.annotation.JsonValue
 import play.api.libs.json._
 import reactivemongo.api.DefaultDB
 import reactivemongo.bson.BSONObjectID
 import uk.gov.hmrc.mongo.ReactiveRepository
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-
 class SaveAndRetrieveRepositoryImpl(implicit mongo: () => DefaultDB)
-    extends ReactiveRepository[JsValue, BSONObjectID]("Save_And_Retrieve", mongo, Format.GenericFormat[JsValue]) with SaveAndRetrieveRepository {
-
-  def save(form: JsValue): Future[Either[String, Unit]] = {
+    extends ReactiveRepository[JsValue, BSONObjectID]("Save_And_Retrieve", mongo, Format.GenericFormat[JsValue])
+    with SaveAndRetrieveRepository {
+  private def exists(registrationNumber: String): Future[Boolean] = {
+    find("fields.id" -> "registrationNumber", "fields.value" -> registrationNumber).map {
+      case Nil => true
+      case x => false
+    }
+  }
+  def save(form: JsValue, registrationNumber: String): Future[Either[String, Unit]] = {
+    exists(registrationNumber).flatMap {
+      case true => insertForm(form)
+      case false => updateForm(form, registrationNumber)
+    }
+  }
+  private def insertForm(form: JsValue): Future[Either[String, Unit]] = {
     insert(form).map {
       case x if x.ok =>
         Right(())
@@ -36,31 +45,19 @@ class SaveAndRetrieveRepositoryImpl(implicit mongo: () => DefaultDB)
         Left(x.message)
     }
   }
-
+  private def updateForm(form: JsValue, registrationNumber: String): Future[Either[String, Unit]] = {
+    remove("fields.id" -> "registrationNumber", "fields.value" -> registrationNumber)
+    insertForm(form)
+  }
   def retrieve(registrationNumber: String): Future[List[JsValue]] = {
     find("fields.id" -> "registrationNumber", "fields.value" -> registrationNumber)
   }
-
 }
 
 trait SaveAndRetrieveRepository {
 
-  def save(form: JsValue): Future[Either[String, Unit]]
+  def save(form: JsValue, registrationNumber: String): Future[Either[String, Unit]]
 
   def retrieve(registrationNumber: String): Future[List[JsValue]]
 
 }
-//
-//object ValueClassFormat {
-//  def format: Format[JsValue] = {
-//    new Format[JsValue] {
-//      def reads(json: JsValue): JsResult[JsValue] = {
-//        json match {
-//          case json => JsSuccess(JsString(str))
-//          case unknown => JsError(s"JsString value expected, got: $unknown")
-//        }
-//      }
-//      def writes(a: JsValue): JsValue = JsString(a.toString())
-//    }
-//  }
-//}
