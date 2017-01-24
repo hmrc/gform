@@ -15,49 +15,30 @@
  */
 
 package uk.gov.hmrc.bforms.repositories
-import com.fasterxml.jackson.annotation.JsonValue
 import play.api.libs.json._
 import reactivemongo.api.DefaultDB
 import reactivemongo.bson.BSONObjectID
+import uk.gov.hmrc.bforms.core.Opt
+import uk.gov.hmrc.bforms.model.{ DbOperationResult, SaveAndRetrieve }
 import uk.gov.hmrc.mongo.ReactiveRepository
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-class SaveAndRetrieveRepositoryImpl(implicit mongo: () => DefaultDB)
-    extends ReactiveRepository[JsValue, BSONObjectID]("Save_And_Retrieve", mongo, Format.GenericFormat[JsValue])
-    with SaveAndRetrieveRepository {
-  private def exists(registrationNumber: String): Future[Boolean] = {
-    find("fields.id" -> "registrationNumber", "fields.value" -> registrationNumber).map {
-      case Nil => true
-      case x => false
-    }
+
+class SaveAndRetrieveRepository(implicit mongo: () => DefaultDB)
+    extends ReactiveRepository[JsObject, BSONObjectID]("Save_And_Retrieve", mongo, implicitly[Format[JsObject]]) {
+
+  def save(selector: JsObject, form: SaveAndRetrieve): Future[Opt[DbOperationResult]] = {
+    insertOrUpdateForm(selector, form)
   }
-  def save(form: JsValue, registrationNumber: String): Future[Either[String, Unit]] = {
-    exists(registrationNumber).flatMap {
-      case true => insertForm(form)
-      case false => updateForm(form, registrationNumber)
-    }
+
+  private def insertOrUpdateForm(selector: JsObject, form: SaveAndRetrieve): Future[Opt[DbOperationResult]] = {
+    val update = collection.update(selector = selector, update = form.value, upsert = true, multi = false)
+    checkUpdateResult(update)
   }
-  private def insertForm(form: JsValue): Future[Either[String, Unit]] = {
-    insert(form).map {
-      case x if x.ok =>
-        Right(())
-      case x =>
-        Left(x.message)
-    }
-  }
-  private def updateForm(form: JsValue, registrationNumber: String): Future[Either[String, Unit]] = {
-    remove("fields.id" -> "registrationNumber", "fields.value" -> registrationNumber)
-    insertForm(form)
-  }
-  def retrieve(registrationNumber: String): Future[List[JsValue]] = {
-    find("fields.id" -> "registrationNumber", "fields.value" -> registrationNumber)
+
+  def retrieve(selector: JsObject): Future[Option[SaveAndRetrieve]] = {
+    collection.find(selector).one[SaveAndRetrieve]
   }
 }
 
-trait SaveAndRetrieveRepository {
-
-  def save(form: JsValue, registrationNumber: String): Future[Either[String, Unit]]
-
-  def retrieve(registrationNumber: String): Future[List[JsValue]]
-
-}

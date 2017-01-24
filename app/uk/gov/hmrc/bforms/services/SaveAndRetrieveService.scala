@@ -15,51 +15,24 @@
  */
 
 package uk.gov.hmrc.bforms.services
-import play.api.libs.json.JsValue
-import uk.gov.hmrc.bforms.repositories.SaveAndRetrieveRepository
+import play.api.libs.json.{ JsObject, JsValue, Json }
+import uk.gov.hmrc.bforms.core._
+import uk.gov.hmrc.bforms.model.{ DbOperationResult, SaveAndRetrieve }
+import uk.gov.hmrc.bforms.typeclasses.{ FindOne, Update }
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-trait Save[A, B] {
-  def apply(a: A, b: B): Future[Either[String, Unit]]
-}
-object Save {
-  private def getTaxFormSave[A, B](f: (A, B) => Future[Either[String, Unit]]): Save[A, B] = {
-    new Save[A, B] {
-      override def apply(params: A, rn: B): Future[Either[String, Unit]] = f(params, rn)
-    }
-  }
-  implicit def saveData(implicit repository: SaveAndRetrieveRepository): Save[JsValue, String] = {
-    getTaxFormSave((r: JsValue, rn: String) => repository.save(r, rn))
-  }
-}
+
 object SaveService {
-  def save(formData: JsValue, registrationNumber: String)(implicit save: Save[JsValue, String]): Future[Either[String, Unit]] = {
-    save(formData, registrationNumber).map {
-      case Left(x) => Left(x)
-      case Right(()) => Right(())
-    }
+  def save(formData: SaveAndRetrieve, registrationNumber: String)(implicit save: Update[SaveAndRetrieve]): Future[Opt[DbOperationResult]] = {
+    val selector = Json.obj("fields.id" -> "registrationNumber", "fields.value" -> registrationNumber)
+    save(selector, formData)
   }
 }
-trait Retrieve[A, B] {
-  def apply(a: A): Future[List[B]]
-}
-object Retrieve {
-  private def retrieveData[A, B](f: A => Future[List[B]]): Retrieve[A, B] = {
-    new Retrieve[A, B] {
-      def apply(params: A): Future[List[B]] = f(params)
-    }
-  }
-  implicit def retrieveFormData(implicit repository: SaveAndRetrieveRepository): Retrieve[String, JsValue] = {
-    retrieveData((f: String) => repository.retrieve(f))
-  }
-}
+
 object RetrieveService {
-  def retrieve[A, B <: JsValue](registrationNumber: A)(implicit retrieve: Retrieve[A, B]): Future[Either[JsValue, Unit]] = {
-    retrieve(registrationNumber).map {
-      case Nil =>
-        Right(())
-      case h :: tail =>
-        Left(h)
-    }
+  def retrieve(registrationNumber: String)(implicit find: FindOne[SaveAndRetrieve]): Future[Option[SaveAndRetrieve]] = {
+    val selector = Json.obj("fields.id" -> "registrationNumber", "fields.value" -> registrationNumber)
+    find(selector)
   }
 }

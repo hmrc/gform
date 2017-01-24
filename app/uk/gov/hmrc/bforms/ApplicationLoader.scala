@@ -16,43 +16,37 @@
 
 package uk.gov.hmrc.bforms
 
-import com.kenshoo.play.metrics.{ MetricsFilter, MetricsFilterImpl, MetricsImpl, MetricsController }
+import com.kenshoo.play.metrics.{ MetricsController, MetricsFilter, MetricsFilterImpl, MetricsImpl }
 import com.typesafe.config.Config
 import net.ceedubs.ficus.Ficus._
-import play.api.Logger
-import play.api.http.HttpRequestHandler
-import play.api.inject.{ Injector, SimpleInjector }
-import play.api.{ Environment, LoggerConfigurator }
-import play.api.http.{ DefaultHttpErrorHandler, DefaultHttpRequestHandler, HttpConfiguration, HttpErrorHandler }
-import play.api.libs.ws.ahc.AhcWSComponents
-import play.api.mvc.{ Handler, RequestHeader, Result }
-import play.api.i18n.I18nComponents
 import play.api.ApplicationLoader.Context
-import play.api.{ BuiltInComponentsFromContext, BuiltInComponents, DefaultApplication }
-import play.api.mvc.EssentialFilter
+import play.api.http._
+import play.api.i18n.I18nComponents
+import play.api.inject.{ Injector, SimpleInjector }
+import play.api.libs.ws.ahc.AhcWSComponents
+import play.api.mvc.{ EssentialFilter, Handler, RequestHeader, Result }
 import play.api.routing.Router
-import play.api.{ Application, Configuration }
+import play.api._
 import play.core.SourceMapper
 import play.modules.reactivemongo.ReactiveMongoComponentImpl
 import reactivemongo.api.DefaultDB
-import scala.concurrent.Future
-import uk.gov.hmrc.bforms.repositories.{ FormTemplateRepository, SchemaRepository, TestRepository }
-import uk.gov.hmrc.bforms.controllers.{ Forms, FormTemplates, MicroserviceHelloWorld, Schemas }
-import uk.gov.hmrc.bforms.repositories.{ SaveAndRetrieveRepositoryImpl, TestRepository }
-import uk.gov.hmrc.bforms.controllers.{ MicroserviceHelloWorld, SaveAndRetrieveController }
+import uk.gov.hmrc.bforms.connectors.{ FusConnector, FusFeConnector }
+import uk.gov.hmrc.bforms.controllers._
+import uk.gov.hmrc.bforms.repositories.{ FormTemplateRepository, SaveAndRetrieveRepository, SchemaRepository, TestRepository }
 import uk.gov.hmrc.bforms.services.FileUploadService
+import uk.gov.hmrc.bforms.typeclasses.{ FusFeUrl, FusUrl, ServiceUrl }
+import uk.gov.hmrc.play.audit.filters.AuditFilter
+import uk.gov.hmrc.play.audit.http.config.ErrorAuditingSettings
+import uk.gov.hmrc.play.auth.controllers.AuthParamsControllerConfig
+import uk.gov.hmrc.play.auth.microservice.filters.AuthorisationFilter
+import uk.gov.hmrc.play.config.{ AppName, ControllerConfig, ServicesConfig }
 import uk.gov.hmrc.play.filters.{ NoCacheFilter, RecoveryFilter }
 import uk.gov.hmrc.play.graphite.GraphiteConfig
-import uk.gov.hmrc.play.audit.http.config.ErrorAuditingSettings
-import uk.gov.hmrc.play.config.{ AppName, ControllerConfig, ServicesConfig }
-import uk.gov.hmrc.play.auth.controllers.AuthParamsControllerConfig
-import uk.gov.hmrc.play.audit.filters.AuditFilter
 import uk.gov.hmrc.play.health.AdminController
 import uk.gov.hmrc.play.http.logging.filters.LoggingFilter
-import uk.gov.hmrc.play.auth.microservice.filters.AuthorisationFilter
 import uk.gov.hmrc.play.microservice.bootstrap.JsonErrorHandling
-import uk.gov.hmrc.bforms.connectors.{ FusConnector, FusFeConnector }
-import uk.gov.hmrc.bforms.typeclasses.{ FusUrl, FusFeUrl, ServiceUrl }
+
+import scala.concurrent.Future
 
 class ApplicationLoader extends play.api.ApplicationLoader {
   def load(context: Context) = {
@@ -154,7 +148,7 @@ trait ApplicationModule extends BuiltInComponents
   lazy val db: () => DefaultDB = reactiveMongoComponent.mongoConnector.db
 
   lazy val testRepository = new TestRepository()(db)
-  lazy val saveAndRetrieveRespository = new SaveAndRetrieveRepositoryImpl()(db)
+  lazy implicit val saveAndRetrieveRespository = new SaveAndRetrieveRepository()(db)
 
   lazy implicit val schemaRepository = new SchemaRepository()(db)
   lazy implicit val formTemplateRepository = new FormTemplateRepository()(db)
@@ -166,7 +160,7 @@ trait ApplicationModule extends BuiltInComponents
     val url = baseUrl("file-upload-frontend")
   }
 
-  lazy val microserviceHelloWorld = new MicroserviceHelloWorld(testRepository, fileUploadService, saveAndRetrieveRespository)
+  lazy val microserviceHelloWorld = new MicroserviceHelloWorld(testRepository, fileUploadService)
   lazy val saveAndRetrieveController = new SaveAndRetrieveController(messagesApi)(saveAndRetrieveRespository)
 
   lazy val formTemplates = new FormTemplates()
@@ -186,7 +180,7 @@ trait ApplicationModule extends BuiltInComponents
 
   lazy val metricsController = new MetricsController(metrics)
 
-  lazy val appRoutes = new app.Routes(httpErrorHandler, microserviceHelloWorld, saveAndRetrieveController, forms, formTemplates, schemas)
+  lazy val appRoutes = new app.Routes(httpErrorHandler, saveAndRetrieveController, microserviceHelloWorld, forms, formTemplates, schemas)
 
   override lazy val router: Router = new prod.Routes(httpErrorHandler, appRoutes, healthRoutes, metricsController)
 

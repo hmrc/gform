@@ -17,48 +17,33 @@
 package uk.gov.hmrc.bforms.controllers
 
 import cats.implicits._
-import play.api.Logger
-import play.api.libs.json.{ JsValue, Json }
 import play.api.mvc._
-import scala.concurrent.Future
+import uk.gov.hmrc.bforms.model.SaveAndRetrieve
 import uk.gov.hmrc.bforms.repositories.{ SaveAndRetrieveRepository, TestRepository }
-import uk.gov.hmrc.bforms.services.{ Retrieve, RetrieveService }
-import uk.gov.hmrc.play.http._
-import uk.gov.hmrc.play.microservice.controller.BaseController
+import uk.gov.hmrc.bforms.services.{ FileUploadService, RetrieveService }
+import uk.gov.hmrc.bforms.typeclasses.{ FindOne, FusFeUrl, FusUrl, ServiceUrl }
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
-import uk.gov.hmrc.bforms.services.FileUploadService
-import uk.gov.hmrc.bforms.typeclasses.{ FusUrl, FusFeUrl, ServiceUrl }
+import uk.gov.hmrc.play.microservice.controller.BaseController
+
+import scala.concurrent.Future
 
 class MicroserviceHelloWorld(
     testRepository: TestRepository,
-    fileUploadeService: FileUploadService,
-    repository: SaveAndRetrieveRepository
+    fileUploadeService: FileUploadService
 )(
     implicit
     fusUrl: ServiceUrl[FusUrl],
-    fusFeUrl: ServiceUrl[FusFeUrl]
+    fusFeUrl: ServiceUrl[FusFeUrl],
+    repository: SaveAndRetrieveRepository
 ) extends BaseController {
 
-  implicit val retrieve: Retrieve[String, JsValue] = Retrieve.retrieveFormData(repository)
-
   def hackSubmit(registrationNumber: String) = Action.async { implicit request =>
-    RetrieveService.retrieve(registrationNumber)(retrieve).flatMap {
-      case Left(formData) => fileUploadeService.createEnvelop(formData.toString).fold(
+    RetrieveService.retrieve(registrationNumber).flatMap {
+      case Some(x) => fileUploadeService.createEnvelop(x.toString).fold(
         error => error.toResult,
         response => Ok(response)
       )
-      case Right(()) => Future.successful(Ok(s"No form with registration number $registrationNumber found."))
+      case None => Future.successful(Ok(s"No form with registration number $registrationNumber found."))
     }
-  }
-
-  def hello = Action.async { implicit request =>
-    fileUploadeService.createEnvelop("hello world").fold(
-      error => error.toResult,
-      response => Ok(response)
-    )
-  }
-
-  def failed = Action.async { implicit request =>
-    Future.failed(new JsValidationException("in controller", "validation-error", getClass, Seq()))
   }
 }
