@@ -17,9 +17,10 @@
 package uk.gov.hmrc.bforms.typeclasses
 
 import play.api.libs.json.{ JsObject, Json }
+import uk.gov.hmrc.bforms.model.{ SaveAndRetrieve, Schema }
+import uk.gov.hmrc.bforms.repositories.{ SaveAndRetrieveRepository, SchemaRepository }
+
 import scala.concurrent.{ ExecutionContext, Future }
-import uk.gov.hmrc.bforms.model.Schema
-import uk.gov.hmrc.bforms.repositories.SchemaRepository
 
 trait FindOne[T] {
   def apply(selector: JsObject)(implicit ex: ExecutionContext): Future[Option[T]]
@@ -29,6 +30,12 @@ object FindOne {
   implicit def schema(implicit repo: SchemaRepository) = new FindOne[Schema] {
     def apply(selector: JsObject)(implicit ex: ExecutionContext): Future[Option[Schema]] = {
       repo.findOne(selector, Json.obj())
+    }
+  }
+
+  implicit def saveAndRetrieve(implicit repo: SaveAndRetrieveRepository) = new FindOne[SaveAndRetrieve] {
+    def apply(selector: JsObject)(implicit ex: ExecutionContext): Future[Option[SaveAndRetrieve]] = {
+      repo.retrieve(selector)
     }
   }
 }

@@ -1,8 +1,5 @@
 # microservice specific routes
 
-GET        /hello-world             uk.gov.hmrc.bforms.controllers.MicroserviceHelloWorld.hello
-GET        /failed                  uk.gov.hmrc.bforms.controllers.MicroserviceHelloWorld.failed
-
 POST       /retrieveForm/:rn        uk.gov.hmrc.bforms.controllers.SaveAndRetrieveController.retrieveForm(rn : String)
 POST       /saveForm                uk.gov.hmrc.bforms.controllers.SaveAndRetrieveController.saveForm(rn:String)
 GET        /submit/:rn              uk.gov.hmrc.bforms.controllers.MicroserviceHelloWorld.hackSubmit(rn: String)

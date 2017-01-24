@@ -17,10 +17,11 @@
 package uk.gov.hmrc.bforms.typeclasses
 
 import play.api.libs.json._
-import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.bforms.core.Opt
-import uk.gov.hmrc.bforms.model.{ FormTemplate, Schema, DbOperationResult, UpdateSuccess }
-import uk.gov.hmrc.bforms.repositories.{ FormTemplateRepository, SchemaRepository }
+import uk.gov.hmrc.bforms.model._
+import uk.gov.hmrc.bforms.repositories.{ FormTemplateRepository, SaveAndRetrieveRepository, SchemaRepository }
+
+import scala.concurrent.{ ExecutionContext, Future }
 
 trait Update[T] {
   def apply(selector: JsObject, v: T)(implicit ex: ExecutionContext): Future[Opt[DbOperationResult]]
@@ -30,6 +31,12 @@ object Update {
   implicit def formTemplate(implicit repo: FormTemplateRepository) = new Update[FormTemplate] {
     def apply(selector: JsObject, template: FormTemplate)(implicit ex: ExecutionContext): Future[Opt[DbOperationResult]] = {
       repo.update(selector, template)
+    }
+  }
+
+  implicit def saveForm(implicit repo: SaveAndRetrieveRepository) = new Update[SaveAndRetrieve] {
+    def apply(selector: JsObject, form: SaveAndRetrieve)(implicit ex: ExecutionContext): Future[Opt[DbOperationResult]] = {
+      repo.save(selector, form)
     }
   }
 
