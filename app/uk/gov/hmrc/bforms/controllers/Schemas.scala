@@ -48,7 +48,7 @@ class Schemas()(
     schemaRepository.find().map(schemas => Ok(Json.toJson(schemas)))
   }
 
-  def save = Action.async(JsonWithKey[Schema, SchemaId]("id", SchemaId.apply)) { implicit request =>
+  def save = Action.async(JsonExtractor[SchemaId, Schema]((__ \ "id").read[SchemaId])) { implicit request =>
     val (id, schema) = request.body
 
     Schemas.saveSchema(id, schema).fold(

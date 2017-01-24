@@ -41,4 +41,14 @@ class FormTemplateRepository(implicit mongo: () => DB)
 
     checkUpdateResult(res)
   }
+
+  def findOne(
+    selector: JsObject,
+    projection: JsObject
+  )(
+    implicit
+    ex: ExecutionContext
+  ): Future[Option[FormTemplate]] = {
+    collection.find(selector = selector, projection = projection).one[FormTemplate]
+  }
 }

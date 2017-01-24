@@ -48,7 +48,7 @@ class FormTemplatesSpec extends FlatSpec with Matchers with TypeclassFixtures wi
 
     (findOneCheck.call _).expects().once
 
-    val res: ServiceResponse[DbOperationResult] = FormTemplates.saveTemplate(FormTypeId("abc"), FormTemplate(Json.obj()))
+    val res: ServiceResponse[DbOperationResult] = FormTemplates.saveTemplate(FormTypeId("abc"), "1.0.0", FormTemplate(Json.obj()))
 
     res.value.futureValue.left.value should be(InvalidState("SchemaId http://hmrc.gov.uk/jsonschema/bf-formtemplate# not found"))
 
@@ -81,13 +81,13 @@ class FormTemplatesSpec extends FlatSpec with Matchers with TypeclassFixtures wi
       .callCheck(updateCheck)
       .withChecks { (selector: JsObject, formTemplate: FormTemplate) =>
         formTemplate should be(formTemplateToSave)
-        selector should be(Json.obj("formTypeId" -> "abc"))
+        selector should be(Json.obj("formTypeId" -> "abc", "version" -> "1.0.0"))
       }
 
     (findOneCheck.call _).expects().once
     (updateCheck.call _).expects().once
 
-    val res: ServiceResponse[DbOperationResult] = FormTemplates.saveTemplate(FormTypeId("abc"), formTemplateToSave)
+    val res: ServiceResponse[DbOperationResult] = FormTemplates.saveTemplate(FormTypeId("abc"), "1.0.0", formTemplateToSave)
 
     res.value.futureValue.right.value should be(UpdateSuccess)
   }

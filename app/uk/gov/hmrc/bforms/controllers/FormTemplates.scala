@@ -18,6 +18,7 @@ package uk.gov.hmrc.bforms.controllers
 
 import cats.instances.future._
 import play.api.libs.json._
+import play.api.libs.functional.syntax._
 import play.api.mvc.Action
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.bforms.core._
@@ -32,6 +33,7 @@ import uk.gov.hmrc.bforms.typeclasses.{ FindOne, Update }
 object FormTemplates {
   def saveTemplate(
     formTypeId: FormTypeId,
+    version: String,
     formTemplate: FormTemplate
   )(
     implicit
@@ -47,7 +49,7 @@ object FormTemplates {
       schema     <- fromFutureOptionA (findOne(Json.obj("id" -> schemaId)))(InvalidState(s"SchemaId $schemaId not found"))
       jsonSchema <- fromOptA          (SchemaValidator.conform(schema))
       _          <- fromOptA          (jsonSchema.conform(formTemplate).toEither)
-      res        <- fromFutureOptA    (update(Json.obj("formTypeId" -> formTypeId), formTemplate))
+      res        <- fromFutureOptA    (update(Json.obj("formTypeId" -> formTypeId, "version" -> version), formTemplate))
     } yield res
     // format: ON
   }
@@ -63,22 +65,35 @@ class FormTemplates()(
     formTemplateRepository.find().map(formTemplates => Ok(Json.toJson(formTemplates)))
   }
 
-  def save() = Action.async(JsonWithKey[FormTemplate, FormTypeId]("formTypeId", FormTypeId.apply)) { implicit request =>
+  val formTypeIdAndVersionReads: Reads[(FormTypeId, String)] =
+    ((__ \ "formTypeId").read[FormTypeId] and
+      (__ \ "version").read[String]).apply((_, _))
 
-    val (formTypeId, templateJson) = request.body
+  def save() = Action.async(JsonExtractor[(FormTypeId, String), FormTemplate](formTypeIdAndVersionReads)) { implicit request =>
 
-    FormTemplates.saveTemplate(formTypeId, templateJson).fold(
+    val ((formTypeId, version), templateJson) = request.body
+
+    FormTemplates.saveTemplate(formTypeId, version, templateJson).fold(
       error => error.toResult,
       response => response.toResult
     )
   }
 
   def allById(formTypeId: FormTypeId) = Action.async { implicit request =>
-    Future.successful(NotImplemented)
+    formTemplateRepository.find("formTypeId" -> formTypeId).map(formTemplates => Ok(Json.toJson(formTemplates)))
   }
 
   def get(formTypeId: FormTypeId, version: String) = Action.async { implicit request =>
-    Future.successful(NotImplemented)
+    val FindOne = implicitly[FindOne[FormTemplate]]
+    FindOne(
+      Json.obj(
+        "formTypeId" -> formTypeId,
+        "version" -> version
+      )
+    ).map {
+        case Some(formTemplate) => Ok(formTemplate.value)
+        case None => NoContent
+      }
   }
 
   def delete(formTypeId: FormTypeId, version: String) = Action.async { implicit request =>
