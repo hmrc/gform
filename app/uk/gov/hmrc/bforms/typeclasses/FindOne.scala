@@ -17,31 +17,37 @@
 package uk.gov.hmrc.bforms.typeclasses
 
 import play.api.libs.json.{ JsObject, Json }
-import uk.gov.hmrc.bforms.model.{ FormTemplate, SaveAndRetrieve, Schema }
-import uk.gov.hmrc.bforms.repositories.{ FormTemplateRepository, SaveAndRetrieveRepository, SchemaRepository }
+import uk.gov.hmrc.bforms.model.{ Form, FormTemplate, SaveAndRetrieve, Schema }
+import uk.gov.hmrc.bforms.repositories.{ FormRepository, FormTemplateRepository, SaveAndRetrieveRepository, SchemaRepository }
 
 import scala.concurrent.{ ExecutionContext, Future }
 
 trait FindOne[T] {
-  def apply(selector: JsObject)(implicit ex: ExecutionContext): Future[Option[T]]
+  def apply(selector: JsObject): Future[Option[T]]
 }
 
 object FindOne {
-  implicit def schema(implicit repo: SchemaRepository) = new FindOne[Schema] {
-    def apply(selector: JsObject)(implicit ex: ExecutionContext): Future[Option[Schema]] = {
+  implicit def schema(implicit repo: SchemaRepository, ex: ExecutionContext) = new FindOne[Schema] {
+    def apply(selector: JsObject): Future[Option[Schema]] = {
       repo.findOne(selector, Json.obj())
     }
   }
 
-  implicit def formTemplate(implicit repo: FormTemplateRepository) = new FindOne[FormTemplate] {
-    def apply(selector: JsObject)(implicit ex: ExecutionContext): Future[Option[FormTemplate]] = {
+  implicit def formTemplate(implicit repo: FormTemplateRepository, ex: ExecutionContext) = new FindOne[FormTemplate] {
+    def apply(selector: JsObject): Future[Option[FormTemplate]] = {
       repo.findOne(selector, Json.obj())
     }
   }
 
-  implicit def saveAndRetrieve(implicit repo: SaveAndRetrieveRepository) = new FindOne[SaveAndRetrieve] {
-    def apply(selector: JsObject)(implicit ex: ExecutionContext): Future[Option[SaveAndRetrieve]] = {
+  implicit def saveAndRetrieve(implicit repo: SaveAndRetrieveRepository, ex: ExecutionContext) = new FindOne[SaveAndRetrieve] {
+    def apply(selector: JsObject): Future[Option[SaveAndRetrieve]] = {
       repo.retrieve(selector)
+    }
+  }
+
+  implicit def form(implicit repo: FormRepository, ex: ExecutionContext) = new FindOne[Form] {
+    def apply(selector: JsObject): Future[Option[Form]] = {
+      repo.findOne(selector, Json.obj())
     }
   }
 }

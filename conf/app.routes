@@ -6,12 +6,13 @@ GET        /submit/:rn              uk.gov.hmrc.bforms.controllers.MicroserviceH
 
 GET        /forms                                   uk.gov.hmrc.bforms.controllers.Forms.all
 POST       /forms                                   uk.gov.hmrc.bforms.controllers.Forms.save
+PUT        /forms/:formId                           uk.gov.hmrc.bforms.controllers.Forms.update(formId: FormId)
 GET        /forms/:formTypeId                       uk.gov.hmrc.bforms.controllers.Forms.allById(formTypeId: FormTypeId)
 GET        /forms/:formTypeId/:version              uk.gov.hmrc.bforms.controllers.Forms.getByIdAndVersion(formTypeId: FormTypeId, version: String)
-GET        /forms/:formTypeId/:version/:id          uk.gov.hmrc.bforms.controllers.Forms.get(formTypeId: FormTypeId, version: String, id: String)
-DELETE     /forms/:formTypeId/:version/:id          uk.gov.hmrc.bforms.controllers.Forms.delete(formTypeId: FormTypeId, version: String, id: String)
-POST       /forms/:formTypeId/submission/:formId    uk.gov.hmrc.bforms.controllers.Forms.submission(formTypeId: FormTypeId, formId: String)
-GET        /forms/:formTypeId/submission/:formId    uk.gov.hmrc.bforms.controllers.Forms.submissionStatus(formTypeId: FormTypeId, formId: String)
+GET        /forms/:formTypeId/:version/:formId      uk.gov.hmrc.bforms.controllers.Forms.get(formTypeId: FormTypeId, version: String, formId: FormId)
+DELETE     /forms/:formTypeId/:version/:formId      uk.gov.hmrc.bforms.controllers.Forms.delete(formTypeId: FormTypeId, version: String, formId: FormId)
+POST       /forms/:formTypeId/submission/:formId    uk.gov.hmrc.bforms.controllers.Forms.submission(formTypeId: FormTypeId, formId: FormId)
+GET        /forms/:formTypeId/submission/:formId    uk.gov.hmrc.bforms.controllers.Forms.submissionStatus(formTypeId: FormTypeId, formId: FormId)
 
 GET        /formtemplates                       uk.gov.hmrc.bforms.controllers.FormTemplates.all
 POST       /formtemplates                       uk.gov.hmrc.bforms.controllers.FormTemplates.save

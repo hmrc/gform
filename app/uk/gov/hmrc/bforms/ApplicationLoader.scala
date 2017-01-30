@@ -32,7 +32,7 @@ import play.modules.reactivemongo.ReactiveMongoComponentImpl
 import reactivemongo.api.DefaultDB
 import uk.gov.hmrc.bforms.connectors.{ FusConnector, FusFeConnector }
 import uk.gov.hmrc.bforms.controllers._
-import uk.gov.hmrc.bforms.repositories.{ FormTemplateRepository, SaveAndRetrieveRepository, SchemaRepository, TestRepository }
+import uk.gov.hmrc.bforms.repositories.{ FormRepository, FormTemplateRepository, SaveAndRetrieveRepository, SchemaRepository, TestRepository }
 import uk.gov.hmrc.bforms.services.FileUploadService
 import uk.gov.hmrc.bforms.typeclasses.{ FusFeUrl, FusUrl, ServiceUrl }
 import uk.gov.hmrc.play.audit.filters.AuditFilter
@@ -152,6 +152,8 @@ trait ApplicationModule extends BuiltInComponents
 
   lazy implicit val schemaRepository = new SchemaRepository()(db)
   lazy implicit val formTemplateRepository = new FormTemplateRepository()(db)
+  lazy implicit val formRepository = new FormRepository()(db)
+
   implicit val fusUrl = new ServiceUrl[FusUrl] {
     val url = baseUrl("file-upload")
   }

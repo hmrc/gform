@@ -22,12 +22,7 @@ import cats.syntax.either._
 import cats.syntax.traverse._
 import play.api.libs.json._
 import uk.gov.hmrc.bforms.exceptions.{ InvalidState, UnexpectedState }
-
-case class FormField(id: String, value: String)
-
-object FormField {
-  implicit val reads: Reads[FormField] = Json.reads[FormField]
-}
+import uk.gov.hmrc.bforms.model.FormField
 
 object FormValidator {
   def conform(json: JsValue /* , schema: JsonSchema */ ): Opt[List[FormField]] = {

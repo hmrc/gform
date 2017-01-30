@@ -38,7 +38,7 @@ trait TypeclassFixtures {
     def withChecks(f: JsObject => Unit) = getTC(Some(f))
 
     private def getTC(checkFn: Option[JsObject => Unit]): FindOne[B] = new FindOne[B] {
-      def apply(selector: JsObject)(implicit ex: ExecutionContext): Future[Option[B]] = {
+      def apply(selector: JsObject): Future[Option[B]] = {
         callCheck.foreach(_.call())
         checkFn.foreach(_(selector))
         Future.successful(returnValue)
@@ -57,7 +57,7 @@ trait TypeclassFixtures {
     def withChecks(f: (JsObject, B) => Unit) = getTC(Some(f))
 
     private def getTC(checkFn: Option[(JsObject, B) => Unit]): Update[B] = new Update[B] {
-      def apply(selector: JsObject, v: B)(implicit ex: ExecutionContext): Future[Opt[DbOperationResult]] = {
+      def apply(selector: JsObject, v: B): Future[Opt[DbOperationResult]] = {
         callCheck.foreach(_.call())
         checkFn.foreach(_(selector, v))
         Future.successful(returnValue)
@@ -68,7 +68,7 @@ trait TypeclassFixtures {
   object UpdateTC {
     def response[A](returnValue: Opt[DbOperationResult]) = new UpdateTC[A](None, returnValue)
     def notUsed[B]: Update[B] = new Update[B] {
-      def apply(selector: JsObject, v: B)(implicit ex: ExecutionContext): Future[Opt[DbOperationResult]] = {
+      def apply(selector: JsObject, v: B): Future[Opt[DbOperationResult]] = {
         Future.failed(new NotUsedTypeclassError)
       }
     }

@@ -34,12 +34,13 @@ trait MicroService {
     .settings(
       scalaVersion in ThisBuild := "2.11.8",
       libraryDependencies ++= appDependencies,
-      evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false)
+      evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
+      routesImport ++= Seq(
+        "uk.gov.hmrc.bforms.binders.ValueClassBinder._",
+        "uk.gov.hmrc.bforms.model.FormTypeId",
+        "uk.gov.hmrc.bforms.model.FormId"
+      )
     )
-    .settings(routesImport ++= Seq(
-              "uk.gov.hmrc.bforms.binders.ValueClassBinder._",
-              "uk.gov.hmrc.bforms.model.FormTypeId"
-              ))
     .configs(IntegrationTest)
     .settings(inConfig(IntegrationTest)(Defaults.itSettings): _*)
     .settings(
