@@ -22,7 +22,7 @@ import uk.gov.hmrc.bforms.core._
 import uk.gov.hmrc.bforms.exceptions.InvalidState
 import uk.gov.hmrc.bforms.model.{ DbOperationResult, Form, FormId, FormTemplate, FormTypeId, SaveAndRetrieve }
 import uk.gov.hmrc.bforms.repositories.FormTemplateRepository
-import uk.gov.hmrc.bforms.typeclasses.{ Find, FindOne, Update }
+import uk.gov.hmrc.bforms.typeclasses.{ Find, FindOne, Insert, Update }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -36,6 +36,7 @@ object FormService {
     implicit
     FindOneFormTemplate: FindOne[FormTemplate],
     FindOneForm: FindOne[Form],
+    InsertForm: Insert[Form],
     UpdateForm: Update[Form]
   ): ServiceResponse[DbOperationResult] = {
     val formData = form.formData
@@ -52,13 +53,26 @@ object FormService {
     // format: OFF
     for {
       _              <- operation match {
-        case SaveOperation   => success(())
-        case UpdateOperation => fromFutureOptionA (FindOneForm(formSelector))(InvalidState(s"Form $formSelector not found")).map(_ => ())
+        case SaveOperation |
+             SaveTolerantOperation   => success(())
+        case UpdateOperation |
+             UpdateTolerantOperation => fromFutureOptionA (FindOneForm(formSelector))(InvalidState(s"Form $formSelector not found")).map(_ => ())
       }
       formTemplate   <- fromFutureOptionA (FindOneFormTemplate(templateSelector))(InvalidState(s"FormTemplate $templateSelector not found"))
-      templateFields <- fromOptA          (TemplateValidator.extractFields(formTemplate.value))
-      _              <- fromOptA          (FormValidator.validate(formData.fields.toList, templateFields.toList))
-      dbResult       <- fromFutureOptA    (UpdateForm(formSelector, form))
+      sections       <- fromOptA          (TemplateValidator.extractSections(formTemplate.value))
+      section        <- fromOptA          (TemplateValidator.getMatchingSection(formData.fields, sections))
+      _              <- operation match {
+        case SaveTolerantOperation |
+             UpdateTolerantOperation => success(())
+        case SaveOperation |
+             UpdateOperation         => fromOptA (FormValidator.validate(formData.fields.toList, section))
+      }
+      dbResult       <- operation match {
+        case SaveOperation |
+             SaveTolerantOperation   => fromFutureOptA    (InsertForm(formSelector, form))
+        case UpdateOperation |
+             UpdateTolerantOperation => fromFutureOptA    (UpdateForm(formSelector, form))
+      }
     } yield dbResult
     // format: ON
   }

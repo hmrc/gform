@@ -20,6 +20,7 @@ import cats.implicits._
 import cats.Monoid
 import play.api.libs.json._
 import uk.gov.hmrc.bforms.exceptions.{ InvalidState, UnexpectedState }
+import uk.gov.hmrc.bforms.model.{ FormField, Section }
 
 sealed trait ValidationResult {
   def toEither: Opt[Unit] = this match {
@@ -30,12 +31,6 @@ sealed trait ValidationResult {
 
 case object Valid extends ValidationResult
 case class Invalid(reason: String) extends ValidationResult
-
-case class TemplateField(id: String, mandatory: String, format: Option[String])
-
-object TemplateField {
-  implicit val reads: Reads[TemplateField] = Json.reads[TemplateField]
-}
 
 object ValidationResult {
 
@@ -51,15 +46,33 @@ object ValidationResult {
 
 object TemplateValidator {
 
-  def extractFields(json: JsValue): Opt[Seq[TemplateField]] = {
-    val templateFieldsRaw: Seq[JsResult[List[TemplateField]]] = (json \\ "fields").map(_.validate[List[TemplateField]])
+  def getMatchingSection(formFields: Seq[FormField], sections: Seq[Section]): Opt[Section] = {
+    val formFieldIds: Set[String] = formFields.map(_.id).toSet
+    val sectionOpt: Option[Section] = sections.find { section =>
+      val sectionIds: Set[String] = section.fields.map(_.id).toSet
+      sectionIds == formFieldIds
+    }
 
-    val templateFields: List[Opt[Seq[TemplateField]]] = templateFieldsRaw.map {
+    sectionOpt match {
+      case Some(section) => Right(section)
+      case None =>
+        val sectionsForPrint = sections.map(_.fields.map(_.id))
+
+        Left(InvalidState(s"""|Cannot find a section corresponding to the formFields
+                              |FormFields: $formFieldIds
+                              |Sections: $sectionsForPrint""".stripMargin))
+    }
+  }
+
+  def extractSections(json: JsValue): Opt[Seq[Section]] = {
+
+    val sectionsRaw: JsResult[List[Section]] = (json \ "sections").validate[List[Section]]
+
+    sectionsRaw match {
       case JsSuccess(success, _) => Right(success)
-      case JsError(error) => Left(InvalidState(s"""|Error when reading 'TemplateField' class:
+      case JsError(error) => Left(InvalidState(s"""|Error when reading 'sections' from json:
                                                    |Error: $error
                                                    |Input json: """.stripMargin + Json.prettyPrint(json)))
-    }.toList
-    templateFields.sequenceU.map(_.flatten)
+    }
   }
 }

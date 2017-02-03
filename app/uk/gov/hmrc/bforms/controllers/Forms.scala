@@ -23,7 +23,7 @@ import play.api.mvc.{ Action, Request, RequestHeader }
 import scala.concurrent.Future
 import uk.gov.hmrc.bforms.model.{ Form, FormData, FormId, FormTypeId }
 import uk.gov.hmrc.bforms.repositories.{ FormRepository, FormTemplateRepository }
-import uk.gov.hmrc.bforms.services.{ FormService, MongoOperation, SaveOperation, UpdateOperation }
+import uk.gov.hmrc.bforms.services.{ FormService, MongoOperation, SaveOperation, SaveTolerantOperation, UpdateOperation, UpdateTolerantOperation }
 import uk.gov.hmrc.play.microservice.controller.BaseController
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
@@ -36,9 +36,13 @@ class Forms()(
     Future.successful(NotImplemented)
   }
 
-  def save() = Action.async(parse.json[FormData]) { implicit request =>
+  def save(tolerant: Option[Boolean]) = Action.async(parse.json[FormData]) { implicit request =>
     val _id = FormId(UUID.randomUUID().toString())
-    saveOrUpdate(_id, SaveOperation)
+    val operation = tolerant match {
+      case Some(true) => SaveTolerantOperation
+      case _ => SaveOperation
+    }
+    saveOrUpdate(_id, operation)
   }
 
   def allById(formTypeId: FormTypeId) = Action.async { implicit request =>
@@ -68,8 +72,12 @@ class Forms()(
     )
   }
 
-  def update(formId: FormId) = Action.async(parse.json[FormData]) { implicit request =>
-    saveOrUpdate(formId, UpdateOperation)
+  def update(formId: FormId, tolerant: Option[Boolean]) = Action.async(parse.json[FormData]) { implicit request =>
+    val operation = tolerant match {
+      case Some(true) => UpdateTolerantOperation
+      case _ => UpdateOperation
+    }
+    saveOrUpdate(formId, operation)
   }
 
   def delete(formTypeId: FormTypeId, version: String, formId: FormId) = Action.async { implicit request =>

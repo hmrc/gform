@@ -20,12 +20,13 @@ import play.api.libs.json.JsObject
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.bforms.core.Opt
 import uk.gov.hmrc.bforms.model.{ DbOperationResult, FormTemplate, UpdateSuccess }
-import uk.gov.hmrc.bforms.typeclasses.{ FindOne, Update }
+import uk.gov.hmrc.bforms.typeclasses.{ FindOne, Insert, Update }
 import uk.gov.hmrc.play.http.HeaderCarrier
 
 trait TypeclassCallCheck { def call(): Unit }
 trait FindOneCheck extends TypeclassCallCheck
 trait UpdateCheck extends TypeclassCallCheck
+trait InsertCheck extends TypeclassCallCheck
 
 class NotUsedTypeclassError extends Error
 
@@ -48,6 +49,11 @@ trait TypeclassFixtures {
 
   object FindOneTC {
     def response[A](returnValue: Option[A]) = new FindOneTC(None, returnValue)
+    def notUsed[B]: FindOne[B] = new FindOne[B] {
+      def apply(selector: JsObject): Future[Option[B]] = {
+        Future.failed(new NotUsedTypeclassError)
+      }
+    }
   }
 
   class UpdateTC[B](callCheck: Option[UpdateCheck], returnValue: Opt[DbOperationResult]) {
@@ -68,6 +74,30 @@ trait TypeclassFixtures {
   object UpdateTC {
     def response[A](returnValue: Opt[DbOperationResult]) = new UpdateTC[A](None, returnValue)
     def notUsed[B]: Update[B] = new Update[B] {
+      def apply(selector: JsObject, v: B): Future[Opt[DbOperationResult]] = {
+        Future.failed(new NotUsedTypeclassError)
+      }
+    }
+  }
+
+  class InsertTC[B](callCheck: Option[InsertCheck], returnValue: Opt[DbOperationResult]) {
+    def callCheck(callCheck: InsertCheck) = new InsertTC[B](Some(callCheck), returnValue)
+
+    def noChecks = getTC(None)
+    def withChecks(f: (JsObject, B) => Unit) = getTC(Some(f))
+
+    private def getTC(checkFn: Option[(JsObject, B) => Unit]): Insert[B] = new Insert[B] {
+      def apply(selector: JsObject, v: B): Future[Opt[DbOperationResult]] = {
+        callCheck.foreach(_.call())
+        checkFn.foreach(_(selector, v))
+        Future.successful(returnValue)
+      }
+    }
+  }
+
+  object InsertTC {
+    def response[A](returnValue: Opt[DbOperationResult]) = new InsertTC[A](None, returnValue)
+    def notUsed[B]: Insert[B] = new Insert[B] {
       def apply(selector: JsObject, v: B): Future[Opt[DbOperationResult]] = {
         Future.failed(new NotUsedTypeclassError)
       }

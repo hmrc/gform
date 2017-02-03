@@ -16,13 +16,15 @@
 
 package uk.gov.hmrc.bforms.repositories
 
+import cats.instances.future._
 import play.api.libs.json._
 import reactivemongo.api.{ Cursor, DefaultDB }
 import reactivemongo.api.commands.WriteConcern
 import reactivemongo.bson.BSONObjectID
 import scala.concurrent.ExecutionContext
-import uk.gov.hmrc.bforms.core.Opt
-import uk.gov.hmrc.bforms.model.{ DbOperationResult, Form }
+import uk.gov.hmrc.bforms.core.{ Opt, ServiceResponse, fromFutureOptA }
+import uk.gov.hmrc.bforms.exceptions.UnexpectedState
+import uk.gov.hmrc.bforms.model.{ DbOperationResult, Form, FormId }
 import uk.gov.hmrc.mongo.ReactiveRepository
 
 import scala.concurrent.Future
@@ -50,15 +52,36 @@ class FormRepository(implicit mongo: () => DefaultDB)
     collection.find(selector = selector, projection = projection).cursor[Form]().collect[List]()
   }
 
-  def update(
+  def insert(
     selector: JsObject,
-    update: Form
+    form: Form
   )(
     implicit
     ex: ExecutionContext
   ): Future[Opt[DbOperationResult]] = {
-    val res = collection.update(selector = selector, update = update, writeConcern = WriteConcern.Default, upsert = true, multi = false)
+    val res = collection.update(selector = selector, update = form, writeConcern = WriteConcern.Default, upsert = true, multi = false)
 
     checkUpdateResult(res)
+  }
+
+  def update(
+    selector: JsObject,
+    form: Form
+  )(
+    implicit
+    ex: ExecutionContext
+  ): ServiceResponse[DbOperationResult] = {
+    val formFieldIds: Seq[String] = form.formData.fields.map(_.id)
+    val dropExisting = Json.obj("$pull" -> Json.obj("fields" -> Json.obj("id" -> Json.obj("$in" -> formFieldIds))))
+    val updateFields = Json.obj("$push" -> Json.obj("fields" -> Json.obj("$each" -> form.formData.fields)))
+
+    def runCommand(update: JsObject) = {
+      fromFutureOptA(checkUpdateResult(collection.update(selector = selector, update = update, writeConcern = WriteConcern.Default, upsert = true, multi = false)))
+    }
+
+    for {
+      _ <- runCommand(dropExisting)
+      r <- runCommand(updateFields)
+    } yield r
   }
 }

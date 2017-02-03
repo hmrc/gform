@@ -145,14 +145,14 @@ trait ApplicationModule extends BuiltInComponents
 
   lazy val reactiveMongoComponent = new ReactiveMongoComponentImpl(configurationApp, applicationLifecycle)
 
-  lazy val db: () => DefaultDB = reactiveMongoComponent.mongoConnector.db
+  implicit lazy val db: () => DefaultDB = reactiveMongoComponent.mongoConnector.db
 
-  lazy val testRepository = new TestRepository()(db)
-  lazy implicit val saveAndRetrieveRespository = new SaveAndRetrieveRepository()(db)
+  lazy val testRepository = new TestRepository
+  lazy implicit val saveAndRetrieveRespository = new SaveAndRetrieveRepository
 
-  lazy implicit val schemaRepository = new SchemaRepository()(db)
-  lazy implicit val formTemplateRepository = new FormTemplateRepository()(db)
-  lazy implicit val formRepository = new FormRepository()(db)
+  lazy implicit val schemaRepository = new SchemaRepository
+  lazy implicit val formTemplateRepository = new FormTemplateRepository
+  lazy implicit val formRepository = new FormRepository
 
   implicit val fusUrl = new ServiceUrl[FusUrl] {
     val url = baseUrl("file-upload")

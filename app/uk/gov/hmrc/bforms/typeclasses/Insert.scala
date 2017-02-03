@@ -14,12 +14,24 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms
+package uk.gov.hmrc.bforms.typeclasses
 
-package services {
-  sealed trait MongoOperation extends Product with Serializable
-  case object SaveOperation extends MongoOperation
-  case object SaveTolerantOperation extends MongoOperation
-  case object UpdateOperation extends MongoOperation
-  case object UpdateTolerantOperation extends MongoOperation
+import play.api.libs.json._
+import uk.gov.hmrc.bforms.core.Opt
+import uk.gov.hmrc.bforms.model._
+import uk.gov.hmrc.bforms.repositories.FormRepository
+
+import scala.concurrent.{ ExecutionContext, Future }
+
+trait Insert[T] {
+  def apply(selector: JsObject, v: T): Future[Opt[DbOperationResult]]
+}
+
+object Insert {
+
+  implicit def form(implicit repo: FormRepository, ex: ExecutionContext) = new Insert[Form] {
+    def apply(selector: JsObject, template: Form): Future[Opt[DbOperationResult]] = {
+      repo.insert(selector, template)
+    }
+  }
 }

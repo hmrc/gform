@@ -5,8 +5,8 @@ POST       /saveForm                uk.gov.hmrc.bforms.controllers.SaveAndRetrie
 GET        /submit/:rn              uk.gov.hmrc.bforms.controllers.MicroserviceHelloWorld.hackSubmit(rn: String)
 
 GET        /forms                                   uk.gov.hmrc.bforms.controllers.Forms.all
-POST       /forms                                   uk.gov.hmrc.bforms.controllers.Forms.save
-PUT        /forms/:formId                           uk.gov.hmrc.bforms.controllers.Forms.update(formId: FormId)
+POST       /forms                                   uk.gov.hmrc.bforms.controllers.Forms.save(tolerant: Option[Boolean])
+PUT        /forms/:formId                           uk.gov.hmrc.bforms.controllers.Forms.update(formId: FormId, tolerant: Option[Boolean])
 GET        /forms/:formTypeId                       uk.gov.hmrc.bforms.controllers.Forms.allById(formTypeId: FormTypeId)
 GET        /forms/:formTypeId/:version              uk.gov.hmrc.bforms.controllers.Forms.getByIdAndVersion(formTypeId: FormTypeId, version: String)
 GET        /forms/:formTypeId/:version/:formId      uk.gov.hmrc.bforms.controllers.Forms.get(formTypeId: FormTypeId, version: String, formId: FormId)

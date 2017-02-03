@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms
+package uk.gov.hmrc.bforms.model
 
-package services {
-  sealed trait MongoOperation extends Product with Serializable
-  case object SaveOperation extends MongoOperation
-  case object SaveTolerantOperation extends MongoOperation
-  case object UpdateOperation extends MongoOperation
-  case object UpdateTolerantOperation extends MongoOperation
+import play.api.libs.json.Json
+
+case class Section(
+  title: String,
+  fields: List[FieldValue]
+)
+
+object Section {
+  implicit val format = Json.format[Section]
 }

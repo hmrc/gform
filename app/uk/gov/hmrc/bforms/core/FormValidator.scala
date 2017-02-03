@@ -22,7 +22,7 @@ import cats.syntax.either._
 import cats.syntax.traverse._
 import play.api.libs.json._
 import uk.gov.hmrc.bforms.exceptions.{ InvalidState, UnexpectedState }
-import uk.gov.hmrc.bforms.model.FormField
+import uk.gov.hmrc.bforms.model.{ FormField, Section, FieldValue }
 
 object FormValidator {
   def conform(json: JsValue /* , schema: JsonSchema */ ): Opt[List[FormField]] = {
@@ -40,20 +40,21 @@ object FormValidator {
     }
   }
 
-  def validate(formFields: List[FormField], templateFields: List[TemplateField]): Opt[Unit] = {
+  def validate(formFields: List[FormField], section: Section): Opt[Unit] = {
 
-    val ffSet = formFields.map(_.id).toSet
+    val ffSet = formFields.filterNot(_.value.isEmpty()).map(_.id).toSet
 
     val (templateFieldsMap, requiredFields) =
-      templateFields.foldLeft((Map.empty[String, TemplateField], Set.empty[String])) {
-        case ((acc, reqAcc), templateField) =>
+      section.fields.foldLeft((Map.empty[String, FieldValue], Set.empty[String])) {
+        case ((acc, reqAcc), fieldValue) =>
 
-          val TemplateField(id, mandatory, _) = templateField
-          val accRes = acc + (id -> templateField)
+          val id = fieldValue.id
+          val mandatory = fieldValue.mandatory
+          val accRes = acc + (id -> fieldValue)
 
           val reqAccRes =
             mandatory match {
-              case "true" => reqAcc + id
+              case Some("true") => reqAcc + id
               case _ => reqAcc
             }
           (accRes, reqAccRes)
@@ -63,10 +64,10 @@ object FormValidator {
     val requirementCheck: Opt[Unit] = if (missingRequiredFields.isEmpty) {
       Right(())
     } else {
-      Left(InvalidState(s"Required fields ${missingRequiredFields.mkString} are missing in form submission."))
+      Left(InvalidState(s"Required fields ${missingRequiredFields.mkString(",")} are missing in form submission."))
     }
 
-    val formFieldWithTemplateFields: List[Opt[(FormField, TemplateField)]] =
+    val formFieldWithFieldValues: List[Opt[(FormField, FieldValue)]] =
       formFields.map { formField =>
         templateFieldsMap.get(formField.id) match {
           case Some(templateField) => Right((formField, templateField))
@@ -74,13 +75,13 @@ object FormValidator {
         }
       }
 
-    val formFieldWithTemplateFieldsU: Opt[List[(FormField, TemplateField)]] = formFieldWithTemplateFields.sequenceU
+    val formFieldWithFieldValuesU: Opt[List[(FormField, FieldValue)]] = formFieldWithFieldValues.sequenceU
 
     // TODO - All necessary validation of form fields based on their format
 
     for {
       _ <- requirementCheck
-      _ <- formFieldWithTemplateFieldsU
+      _ <- formFieldWithFieldValuesU
     } yield ()
   }
 }

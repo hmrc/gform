@@ -31,7 +31,7 @@ object Update {
 
   implicit def form(implicit repo: FormRepository, ex: ExecutionContext) = new Update[Form] {
     def apply(selector: JsObject, template: Form): Future[Opt[DbOperationResult]] = {
-      repo.update(selector, template)
+      repo.update(selector, template).value
     }
   }
 

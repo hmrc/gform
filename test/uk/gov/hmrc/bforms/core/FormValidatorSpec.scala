@@ -22,7 +22,7 @@ import cats.syntax.either._
 import org.scalatest.{ EitherValues, FlatSpec, Matchers }
 import play.api.libs.json._
 import uk.gov.hmrc.bforms.exceptions.InvalidState
-import uk.gov.hmrc.bforms.model.{ FormField, Schema }
+import uk.gov.hmrc.bforms.model.{ FieldValue, FormField, Schema, Section }
 
 class FormValidatorSpec extends FlatSpec with Matchers with EitherValues {
 
@@ -117,6 +117,16 @@ class FormValidatorSpec extends FlatSpec with Matchers with EitherValues {
     finalRes.right.value should be(())
   }
 
+  def getMandatoryFieldValue(id: String) = FieldValue(
+    id = id,
+    label = "",
+    value = None,
+    format = None,
+    helpText = None,
+    readOnly = None,
+    mandatory = Some("true")
+  )
+
   "FormValidator.conform" should "parse all fields from from to list of FormField objects" in {
 
     val formReq =
@@ -184,16 +194,12 @@ class FormValidatorSpec extends FlatSpec with Matchers with EitherValues {
         FormField("nameOfBusiness", "Acme Widgets Ltd.")
       )
 
-    val templateFields =
-      List(
-        TemplateField("iptRegNum", "true", None),
-        TemplateField("firstName", "true", None),
-        TemplateField("lastName", "true", None),
-        TemplateField("telephoneNumber", "true", None),
-        TemplateField("nameOfBusiness", "true", None)
-      )
+    val section = Section(
+      title = "",
+      fields = List("iptRegNum", "firstName", "lastName", "telephoneNumber", "nameOfBusiness").map(getMandatoryFieldValue)
+    )
 
-    val res = FormValidator.validate(formFields, templateFields)
+    val res = FormValidator.validate(formFields, section)
 
     res.right.value should be(())
 
@@ -206,9 +212,12 @@ class FormValidatorSpec extends FlatSpec with Matchers with EitherValues {
         FormField("iptRegNum", "12AB3456780")
       )
 
-    val templateFields = List.empty[TemplateField]
+    val section = Section(
+      title = "",
+      fields = List.empty[FieldValue]
+    )
 
-    val res = FormValidator.validate(formFields, templateFields)
+    val res = FormValidator.validate(formFields, section)
 
     res.left.value should be(InvalidState("Field iptRegNum is not part of the template"))
 
@@ -218,11 +227,12 @@ class FormValidatorSpec extends FlatSpec with Matchers with EitherValues {
 
     val formFields = List.empty[FormField]
 
-    val templateFields = List(
-      TemplateField("iptRegNum", "true", None)
+    val section = Section(
+      title = "",
+      fields = List("iptRegNum").map(getMandatoryFieldValue)
     )
 
-    val res = FormValidator.validate(formFields, templateFields)
+    val res = FormValidator.validate(formFields, section)
 
     res.left.value should be(InvalidState("Required fields iptRegNum are missing in form submission."))
 
