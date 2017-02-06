@@ -76,7 +76,7 @@ class FileUploadService(fusConnector: FusConnector, fusFeConnector: FusFeConnect
     for {
       envelopeId <- fromFutureOptA (HttpExecutor(fusUrl, CreateEnvelope(fusConnector.envelopeRequest("formTypeRef"))).map(fusConnector.extractEnvelopId))
       _          <- fromFutureA    (HttpExecutor(fusFeUrl, UploadFile(envelopeId, FileId("xmlDocument"), s"$fileNamePrefix-metadata.xml", "application/xml; charset=UTF-8", metadataXml.getBytes)))
-      _          <- fromFutureA    (HttpExecutor(fusFeUrl, UploadFile(envelopeId, FileId("pdf"), s"$fileNamePrefix-iform.pdf", "application/pdf", PDFBoxExample.generate(formData))))
+      _          <- fromFutureA    (HttpExecutor(fusFeUrl, UploadFile(envelopeId, FileId("pdf"), s"$fileNamePrefix-iform.pdf", "application/pdf", SPDFExample.generateSpdf(formData))))
       _          <- fromFutureA    (HttpExecutor(fusUrl, RouteEnvelopeRequest(envelopeId, "dfs", "DMS")))
     } yield {
       s"http://localhost:8898/file-transfer/envelopes/$envelopeId"

@@ -22,7 +22,8 @@ object MicroServiceBuild extends Build with MicroService {
     "uk.gov.hmrc" %% "logback-json-logger" % "3.1.0",
     "uk.gov.hmrc" %% "domain" % "4.0.0",
     "org.typelevel" %% "cats" % "0.9.0",
-    "org.apache.pdfbox" % "pdfbox" % "2.0.4"
+    "org.apache.pdfbox" % "pdfbox" % "2.0.4",
+    "io.github.cloudify" %% "spdf" % "1.4.0"
   )
 
   def test(scope: String = "test,it") = Seq(

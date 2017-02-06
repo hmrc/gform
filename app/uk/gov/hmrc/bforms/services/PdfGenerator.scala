@@ -21,13 +21,22 @@ import java.io.{ ByteArrayInputStream, ByteArrayOutputStream, InputStream }
 import java.text.Format
 import java.util
 
+import io.github.cloudify.scala.spdf._
+import java.io._
+import java.net._
+import javax.swing.text.html.HTML
+
 import org.apache.pdfbox.pdmodel.PDPageContentStream
 import org.apache.pdfbox.pdmodel.common.PDRectangle
 import org.apache.pdfbox.pdmodel.font.{ PDFont, PDTrueTypeFont, PDType1Font }
 import org.apache.pdfbox.pdmodel.{ PDDocument, PDPage }
 import play.api.libs.json.{ Json, Reads }
+import play.twirl.api.Html
+import uk.gov.hmrc.bforms.model.KeyPair
+import uk.gov.hmrc.play.http.BadRequestException
 
 import scala.collection.mutable.ArrayBuffer
+import scala.concurrent.Future
 
 object PdfGenerator {
 
@@ -72,34 +81,18 @@ object PdfGenerator {
   }
 }
 
-case class KeyPair(id: String, value: String)
-
-object KeyPair {
-  implicit val format: Reads[KeyPair] = Json.reads[KeyPair]
-}
 object PDFBoxExample {
 
   def generate(message: String) = {
     println("InsideGenerate")
-    var text = message //.split("(")(1) //.split(")")(0)
+    var text = message
+    //.split("(")(1) //.split(")")(0)
     //    println("////////////////////////////////////////////////////////")
     //    println("TEXT :" + text)
     //    println("////////////////////////////////////////////////////////")
     val byteArrayOutputStream = new ByteArrayOutputStream()
     val doc = new PDDocument()
     try {
-      val lines = new ArrayBuffer[String]
-      val json = (Json.parse(text) \ "fields").as[List[KeyPair]]
-      //      println("/////////////////////////////////////////////////////////////")
-      //      println(json)
-      //      println("/////////////////////////////////////////////////////////////")
-      lines.+=("\"formTypeId\" : \"LF100\"")
-      lines.+=("\"version\" : \"0.1.0\"")
-      lines.+=("\"fields\" :")
-
-      for (elem <- json) {
-        lines.+=(s" ${elem.id}  : ${elem.value}")
-      }
 
       //      val lines = new util.ArrayList[String]
 
@@ -113,6 +106,7 @@ object PDFBoxExample {
       val leading: Float = 25
 
       val mediaBox: PDRectangle = page.getMediaBox
+      val lines = jsonParser(message)
 
       val margin: Float = 72
       val width: Float = mediaBox.getWidth - 2 * margin
@@ -142,9 +136,42 @@ object PDFBoxExample {
 
     byteArrayOutputStream.toByteArray()
   }
+
+  def jsonParser(formData: String): ArrayBuffer[String] = {
+    val lines = new ArrayBuffer[String]
+    val json = Json.parse(formData)
+    val formTypeId = json \ "formTypeId"
+    val verion = json \ "version"
+    val fields = (json \ "fields").as[List[KeyPair]]
+    //      println("/////////////////////////////////////////////////////////////")
+    //      println(json)
+    //      println("/////////////////////////////////////////////////////////////")
+    lines.+=(s"formTypeId : ${formTypeId.get}")
+    lines.+=(s"version : ${verion.get}")
+    lines.+=(s"fields :")
+
+    for (elem <- fields) {
+      lines.+=(s" ${elem.id}  : ${elem.value}")
+    }
+    lines
+  }
+
 }
 
 object SPDFExample {
+  def generateSpdf(form: String) = {
+    val outputStream = new ByteArrayOutputStream()
+    val pdf = WrappedPdf(Seq("xvfb-run", "wkhtmltopdf"), new PdfConfig {
+      orientation := Landscape
+      pageSize := "Letter"
+      marginTop := "1in"
+      marginBottom := "1in"
+      marginLeft := "1in"
+      marginRight := "1in"
 
-
+    })
+    val page = <html><body><h1>Hello World</h1></body></html>
+    Array(pdf.run(page, outputStream).toByte)
+  }
 }
+
