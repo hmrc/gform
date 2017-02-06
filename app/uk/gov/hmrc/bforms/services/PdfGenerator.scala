@@ -18,11 +18,19 @@ package uk.gov.hmrc.bforms.services
 
 import java.awt.Color
 import java.io.{ ByteArrayInputStream, ByteArrayOutputStream, InputStream }
+import java.text.Format
+import java.util
+
 import org.apache.pdfbox.pdmodel.PDPageContentStream
+import org.apache.pdfbox.pdmodel.common.PDRectangle
 import org.apache.pdfbox.pdmodel.font.{ PDFont, PDTrueTypeFont, PDType1Font }
 import org.apache.pdfbox.pdmodel.{ PDDocument, PDPage }
+import play.api.libs.json.{ Json, Reads }
+
+import scala.collection.mutable.ArrayBuffer
 
 object PdfGenerator {
+
   def generatePdf(message: String): Array[Byte] = {
     val byteArrayOutputStream = new ByteArrayOutputStream()
     val doc = new PDDocument()
@@ -62,4 +70,81 @@ object PdfGenerator {
 
     byteArrayOutputStream.toByteArray()
   }
+}
+
+case class KeyPair(id: String, value: String)
+
+object KeyPair {
+  implicit val format: Reads[KeyPair] = Json.reads[KeyPair]
+}
+object PDFBoxExample {
+
+  def generate(message: String) = {
+    println("InsideGenerate")
+    var text = message //.split("(")(1) //.split(")")(0)
+    //    println("////////////////////////////////////////////////////////")
+    //    println("TEXT :" + text)
+    //    println("////////////////////////////////////////////////////////")
+    val byteArrayOutputStream = new ByteArrayOutputStream()
+    val doc = new PDDocument()
+    try {
+      val lines = new ArrayBuffer[String]
+      val json = (Json.parse(text) \ "fields").as[List[KeyPair]]
+      //      println("/////////////////////////////////////////////////////////////")
+      //      println(json)
+      //      println("/////////////////////////////////////////////////////////////")
+      lines.+=("\"formTypeId\" : \"LF100\"")
+      lines.+=("\"version\" : \"0.1.0\"")
+      lines.+=("\"fields\" :")
+
+      for (elem <- json) {
+        lines.+=(s" ${elem.id}  : ${elem.value}")
+      }
+
+      //      val lines = new util.ArrayList[String]
+
+      val page = new PDPage()
+      doc.addPage(page)
+
+      val contents = new PDPageContentStream(doc, page)
+
+      val font: PDFont = PDType1Font.HELVETICA_BOLD
+      val fontSize: Float = 12
+      val leading: Float = 25
+
+      val mediaBox: PDRectangle = page.getMediaBox
+
+      val margin: Float = 72
+      val width: Float = mediaBox.getWidth - 2 * margin
+      val startX: Float = mediaBox.getLowerLeftX + margin
+      val startY: Float = mediaBox.getUpperRightY - margin
+
+      var lastSpace: Int = -1
+
+      contents.beginText()
+      contents.setFont(font, fontSize)
+      contents.newLineAtOffset(startX, startY)
+      for (line <- lines) {
+        contents.showText(line)
+        contents.newLineAtOffset(0, -leading)
+      }
+      contents.endText()
+      contents.close()
+
+      //      val output = new java.io.File("confirmation.pdf")
+      //      doc.save(output)
+
+      doc.save(byteArrayOutputStream)
+
+    } finally {
+      doc.close()
+    }
+
+    byteArrayOutputStream.toByteArray()
+  }
+}
+
+object SPDFExample {
+
+
 }
