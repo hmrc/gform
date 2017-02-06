@@ -17,26 +17,16 @@
 package uk.gov.hmrc.bforms.services
 
 import java.awt.Color
-import java.io.{ ByteArrayInputStream, ByteArrayOutputStream, InputStream }
-import java.text.Format
-import java.util
+import java.io.ByteArrayOutputStream
 
 import io.github.cloudify.scala.spdf._
-import java.io._
-import java.net._
-import javax.swing.text.html.HTML
-
-import org.apache.pdfbox.pdmodel.PDPageContentStream
 import org.apache.pdfbox.pdmodel.common.PDRectangle
-import org.apache.pdfbox.pdmodel.font.{ PDFont, PDTrueTypeFont, PDType1Font }
-import org.apache.pdfbox.pdmodel.{ PDDocument, PDPage }
-import play.api.libs.json.{ Json, Reads }
-import play.twirl.api.Html
+import org.apache.pdfbox.pdmodel.font.{ PDFont, PDType1Font }
+import org.apache.pdfbox.pdmodel.{ PDDocument, PDPage, PDPageContentStream }
+import play.api.libs.json.Json
 import uk.gov.hmrc.bforms.model.KeyPair
-import uk.gov.hmrc.play.http.BadRequestException
 
 import scala.collection.mutable.ArrayBuffer
-import scala.concurrent.Future
 
 object PdfGenerator {
 
@@ -168,10 +158,36 @@ object SPDFExample {
       marginBottom := "1in"
       marginLeft := "1in"
       marginRight := "1in"
-
     })
-    val page = <html><body><h1>Hello World</h1></body></html>
-    Array(pdf.run(page, outputStream).toByte)
+
+    val data = jsonParser(form)
+
+    println(data)
+
+    val page = uk.gov.hmrc.bforms.views.html.summary.render(data).body //(<html><head><body><a>BOB</a></body></head></html>)
+
+    pdf.run(page, outputStream)
+
+    outputStream.toByteArray
+  }
+
+  def jsonParser(formData: String): ArrayBuffer[String] = {
+    val lines = new ArrayBuffer[String]
+    val json = Json.parse(formData)
+    val formTypeId = json \ "formTypeId"
+    val verion = json \ "version"
+    val fields = (json \ "fields").as[List[KeyPair]]
+    //      println("/////////////////////////////////////////////////////////////")
+    //      println(json)
+    //      println("/////////////////////////////////////////////////////////////")
+    lines.+=(s"formTypeId : ${formTypeId.get}")
+    lines.+=(s"version : ${verion.get}")
+    lines.+=(s"fields :")
+
+    for (elem <- fields) {
+      lines.+=(s" ${elem.id}  : ${elem.value}")
+    }
+    lines
   }
 }
 
