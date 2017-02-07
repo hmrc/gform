@@ -23,7 +23,7 @@ import io.github.cloudify.scala.spdf._
 import org.apache.pdfbox.pdmodel.common.PDRectangle
 import org.apache.pdfbox.pdmodel.font.{ PDFont, PDType1Font }
 import org.apache.pdfbox.pdmodel.{ PDDocument, PDPage, PDPageContentStream }
-import play.api.libs.json.Json
+import play.api.libs.json._
 import uk.gov.hmrc.bforms.model.KeyPair
 
 import scala.collection.mutable.ArrayBuffer
@@ -63,6 +63,12 @@ object PdfGenerator {
 
     byteArrayOutputStream.toByteArray()
   }
+}
+
+case class EnvironmentalBodies(bodyName: String, amount: Int)
+
+object EnvironmentalBodies {
+  implicit val format: Reads[EnvironmentalBodies] = Json.reads[EnvironmentalBodies]
 }
 
 object PDFBoxExample {
@@ -110,6 +116,17 @@ object PDFBoxExample {
     byteArrayOutputStream.toByteArray()
   }
 
+  def environmentalBodies(string: String): List[String] = {
+    var list = new ArrayBuffer[String]()
+    val int = string.indexOf('}')
+    val subString: String = string.substring(0, int)
+    list.+=(subString)
+    if (string.substring(int).isEmpty) {
+      list.++(environmentalBodies(string.substring(int)))
+    }
+    list.toList
+  }
+
   def jsonParser(formData: String): ArrayBuffer[String] = {
     val lines = new ArrayBuffer[String]
     val json = Json.parse(formData)
@@ -121,7 +138,15 @@ object PDFBoxExample {
     lines.+=(s"fields :")
 
     for (elem <- fields) {
-      lines.+=(s" ${elem.id}  : ${elem.value}")
+      if (elem.id == "environmentalBodies") {
+        val envbody = Json.parse(elem.value).as[List[EnvironmentalBodies]]
+        lines.+=("EnvironmentalBodies : - ")
+        for (env <- envbody) {
+          lines.+=(s"bodyName : ${env.bodyName}, amount : ${env.amount}")
+        }
+      } else {
+        lines.+=(s" ${elem.id}  : ${elem.value}")
+      }
     }
     lines
   }
