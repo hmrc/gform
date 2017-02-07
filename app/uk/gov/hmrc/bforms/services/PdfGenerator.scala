@@ -24,7 +24,7 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle
 import org.apache.pdfbox.pdmodel.font.{ PDFont, PDType1Font }
 import org.apache.pdfbox.pdmodel.{ PDDocument, PDPage, PDPageContentStream }
 import play.api.libs.json._
-import uk.gov.hmrc.bforms.model.KeyPair
+import uk.gov.hmrc.bforms.model.FormField
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -73,8 +73,7 @@ object EnvironmentalBodies {
 
 object PDFBoxExample {
 
-  def generate(message: String) = {
-    println("InsideGenerate")
+  def generate(message: JsObject) = {
     var text = message
     val byteArrayOutputStream = new ByteArrayOutputStream()
     val doc = new PDDocument()
@@ -127,12 +126,11 @@ object PDFBoxExample {
     list.toList
   }
 
-  def jsonParser(formData: String): ArrayBuffer[String] = {
+  def jsonParser(json: JsObject): ArrayBuffer[String] = {
     val lines = new ArrayBuffer[String]
-    val json = Json.parse(formData)
     val formTypeId = json \ "formTypeId"
     val verion = json \ "version"
-    val fields = (json \ "fields").as[List[KeyPair]]
+    val fields = (json \ "fields").as[List[FormField]]
     lines.+=(s"formTypeId : ${formTypeId.get}")
     lines.+=(s"version : ${verion.get}")
     lines.+=(s"fields :")
@@ -145,7 +143,7 @@ object PDFBoxExample {
           lines.+=(s"bodyName : ${env.bodyName}, amount : ${env.amount}")
         }
       } else {
-        lines.+=(s" ${elem.id}  : ${elem.value}")
+        lines.+=(s"${elem.id}  : ${elem.value}")
       }
     }
     lines
@@ -177,7 +175,7 @@ object SPDFExample {
     val json = Json.parse(formData)
     val formTypeId = json \ "formTypeId"
     val verion = json \ "version"
-    val fields = (json \ "fields").as[List[KeyPair]]
+    val fields = (json \ "fields").as[List[FormField]]
     lines.+=(s"formTypeId : ${formTypeId.get}")
     lines.+=(s"version : ${verion.get}")
     lines.+=(s"fields :")

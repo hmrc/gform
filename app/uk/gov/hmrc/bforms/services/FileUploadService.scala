@@ -20,15 +20,18 @@ import cats.data.EitherT
 import cats.implicits._
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+
+import play.api.libs.json.JsObject
+
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.bforms.exceptions.{ InvalidState, UnexpectedState }
 import uk.gov.hmrc.bforms.core._
 import uk.gov.hmrc.bforms.model.{ EnvelopeId, FileId, MetadataXml }
-import uk.gov.hmrc.bforms.typeclasses.{ HttpExecutor, UploadFile, RouteEnvelopeRequest }
+import uk.gov.hmrc.bforms.typeclasses.{ HttpExecutor, RouteEnvelopeRequest, UploadFile }
 import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.bforms.connectors.{ FusConnector, FusFeConnector }
 import uk.gov.hmrc.bforms.model._
-import uk.gov.hmrc.bforms.typeclasses.{ FusUrl, FusFeUrl, ServiceUrl, CreateEnvelope }
+import uk.gov.hmrc.bforms.typeclasses.{ CreateEnvelope, FusFeUrl, FusUrl, ServiceUrl }
 
 class FileUploadService(fusConnector: FusConnector, fusFeConnector: FusFeConnector) {
 
@@ -59,7 +62,7 @@ class FileUploadService(fusConnector: FusConnector, fusFeConnector: FusFeConnect
     pdfSummary = pdfSummary
   )
 
-  def createEnvelop(formData: String)(
+  def createEnvelop(formData: JsObject)(
     implicit
     hc: HeaderCarrier,
     ec: ExecutionContext,
