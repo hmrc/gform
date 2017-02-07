@@ -17,6 +17,7 @@
 package uk.gov.hmrc.bforms.typeclasses
 
 import play.api.libs.json.{ JsObject, Json }
+
 import uk.gov.hmrc.bforms.model.{ Form, FormTemplate, SaveAndRetrieve, Schema }
 import uk.gov.hmrc.bforms.repositories.{ FormRepository, FormTemplateRepository, SaveAndRetrieveRepository, SchemaRepository }
 
@@ -50,4 +51,5 @@ object FindOne {
       repo.findOne(selector, Json.obj())
     }
   }
+
 }

@@ -20,15 +20,18 @@ import cats.data.EitherT
 import cats.implicits._
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+
+import play.api.libs.json.JsObject
+
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.bforms.exceptions.{ InvalidState, UnexpectedState }
 import uk.gov.hmrc.bforms.core._
 import uk.gov.hmrc.bforms.model.{ EnvelopeId, FileId, MetadataXml }
-import uk.gov.hmrc.bforms.typeclasses.{ HttpExecutor, UploadFile, RouteEnvelopeRequest }
+import uk.gov.hmrc.bforms.typeclasses.{ HttpExecutor, RouteEnvelopeRequest, UploadFile }
 import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.bforms.connectors.{ FusConnector, FusFeConnector }
 import uk.gov.hmrc.bforms.model._
-import uk.gov.hmrc.bforms.typeclasses.{ FusUrl, FusFeUrl, ServiceUrl, CreateEnvelope }
+import uk.gov.hmrc.bforms.typeclasses.{ CreateEnvelope, FusFeUrl, FusUrl, ServiceUrl }
 
 class FileUploadService(fusConnector: FusConnector, fusFeConnector: FusFeConnector) {
 
@@ -59,7 +62,7 @@ class FileUploadService(fusConnector: FusConnector, fusFeConnector: FusFeConnect
     pdfSummary = pdfSummary
   )
 
-  def createEnvelop(formData: String)(
+  def createEnvelop(formData: JsObject)(
     implicit
     hc: HeaderCarrier,
     ec: ExecutionContext,
@@ -76,7 +79,7 @@ class FileUploadService(fusConnector: FusConnector, fusFeConnector: FusFeConnect
     for {
       envelopeId <- fromFutureOptA (HttpExecutor(fusUrl, CreateEnvelope(fusConnector.envelopeRequest("formTypeRef"))).map(fusConnector.extractEnvelopId))
       _          <- fromFutureA    (HttpExecutor(fusFeUrl, UploadFile(envelopeId, FileId("xmlDocument"), s"$fileNamePrefix-metadata.xml", "application/xml; charset=UTF-8", metadataXml.getBytes)))
-      _          <- fromFutureA    (HttpExecutor(fusFeUrl, UploadFile(envelopeId, FileId("pdf"), s"$fileNamePrefix-iform.pdf", "application/pdf", PdfGenerator.generatePdf(formData))))
+      _          <- fromFutureA    (HttpExecutor(fusFeUrl, UploadFile(envelopeId, FileId("pdf"), s"$fileNamePrefix-iform.pdf", "application/pdf", PDFBoxExample.generate(formData))))
       _          <- fromFutureA    (HttpExecutor(fusUrl, RouteEnvelopeRequest(envelopeId, "dfs", "DMS")))
     } yield {
       s"http://localhost:8898/file-transfer/envelopes/$envelopeId"
