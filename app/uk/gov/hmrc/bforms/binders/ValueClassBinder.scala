@@ -18,18 +18,19 @@ package uk.gov.hmrc.bforms.binders
 
 import play.api.libs.json.{ JsError, JsString, JsSuccess, Reads }
 import play.api.mvc.PathBindable
-import uk.gov.hmrc.bforms.model.FormTypeId
+import uk.gov.hmrc.bforms.model.{ FormId, FormTypeId }
 
 object ValueClassBinder {
 
   implicit val formTypeIdBinder: PathBindable[FormTypeId] = valueClassBinder(_.value)
+  implicit val formIdBinder: PathBindable[FormId] = valueClassBinder(_.value)
 
   def valueClassBinder[A: Reads](fromAtoString: A => String)(implicit stringBinder: PathBindable[String]) = {
 
     def parseString(str: String) = {
       JsString(str).validate[A] match {
         case JsSuccess(a, _) => Right(a)
-        case JsError(_) => Left("No valid value in path: " + str)
+        case JsError(error) => Left(s"No valid value in path: $str. Error: $error")
       }
     }
 

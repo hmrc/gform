@@ -16,10 +16,19 @@
 
 package uk.gov.hmrc.bforms.model
 
-import play.api.mvc.Results.Ok
+import play.api.libs.json._
 
-// Represent successful result of DB operation
-sealed trait DbOperationResult {
-  def toResult = Ok
+case class Form(_id: FormId, formData: FormData)
+
+object Form {
+  implicit def format(implicit formDataReads: OFormat[FormData]) = {
+    val mongoIdReads = FormIdAsMongoId.format
+    val writes = OWrites[Form](form => mongoIdReads.writes(form._id) ++ formDataReads.writes(form.formData))
+    val reads = Reads[Form](json =>
+      for {
+        id <- mongoIdReads.reads(json)
+        data <- formDataReads.reads(json)
+      } yield Form(id, data))
+    OFormat[Form](reads, writes)
+  }
 }
-case object UpdateSuccess extends DbOperationResult

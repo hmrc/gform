@@ -14,12 +14,24 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.model
+package uk.gov.hmrc.bforms.typeclasses
 
-import play.api.mvc.Results.Ok
+import play.api.libs.json._
+import uk.gov.hmrc.bforms.core.Opt
+import uk.gov.hmrc.bforms.model._
+import uk.gov.hmrc.bforms.repositories.FormRepository
 
-// Represent successful result of DB operation
-sealed trait DbOperationResult {
-  def toResult = Ok
+import scala.concurrent.{ ExecutionContext, Future }
+
+trait Insert[T] {
+  def apply(selector: JsObject, v: T): Future[Opt[DbOperationResult]]
 }
-case object UpdateSuccess extends DbOperationResult
+
+object Insert {
+
+  implicit def form(implicit repo: FormRepository, ex: ExecutionContext) = new Insert[Form] {
+    def apply(selector: JsObject, template: Form): Future[Opt[DbOperationResult]] = {
+      repo.insert(selector, template)
+    }
+  }
+}

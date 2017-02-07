@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.model
+package uk.gov.hmrc.bforms
 
-import play.api.mvc.Results.Ok
-
-// Represent successful result of DB operation
-sealed trait DbOperationResult {
-  def toResult = Ok
+package services {
+  sealed trait MongoOperation extends Product with Serializable
+  case object SaveOperation extends MongoOperation
+  case object SaveTolerantOperation extends MongoOperation
+  case object UpdateOperation extends MongoOperation
+  case object UpdateTolerantOperation extends MongoOperation
 }
-case object UpdateSuccess extends DbOperationResult

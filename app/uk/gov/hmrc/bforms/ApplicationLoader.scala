@@ -32,7 +32,7 @@ import play.modules.reactivemongo.ReactiveMongoComponentImpl
 import reactivemongo.api.DefaultDB
 import uk.gov.hmrc.bforms.connectors.{ FusConnector, FusFeConnector }
 import uk.gov.hmrc.bforms.controllers._
-import uk.gov.hmrc.bforms.repositories.{ FormTemplateRepository, SaveAndRetrieveRepository, SchemaRepository, TestRepository }
+import uk.gov.hmrc.bforms.repositories.{ FormRepository, FormTemplateRepository, SaveAndRetrieveRepository, SchemaRepository, TestRepository }
 import uk.gov.hmrc.bforms.services.FileUploadService
 import uk.gov.hmrc.bforms.typeclasses.{ FusFeUrl, FusUrl, ServiceUrl }
 import uk.gov.hmrc.play.audit.filters.AuditFilter
@@ -145,13 +145,15 @@ trait ApplicationModule extends BuiltInComponents
 
   lazy val reactiveMongoComponent = new ReactiveMongoComponentImpl(configurationApp, applicationLifecycle)
 
-  lazy val db: () => DefaultDB = reactiveMongoComponent.mongoConnector.db
+  implicit lazy val db: () => DefaultDB = reactiveMongoComponent.mongoConnector.db
 
-  lazy val testRepository = new TestRepository()(db)
-  lazy implicit val saveAndRetrieveRespository = new SaveAndRetrieveRepository()(db)
+  lazy val testRepository = new TestRepository
+  lazy implicit val saveAndRetrieveRespository = new SaveAndRetrieveRepository
 
-  lazy implicit val schemaRepository = new SchemaRepository()(db)
-  lazy implicit val formTemplateRepository = new FormTemplateRepository()(db)
+  lazy implicit val schemaRepository = new SchemaRepository
+  lazy implicit val formTemplateRepository = new FormTemplateRepository
+  lazy implicit val formRepository = new FormRepository
+
   implicit val fusUrl = new ServiceUrl[FusUrl] {
     val url = baseUrl("file-upload")
   }

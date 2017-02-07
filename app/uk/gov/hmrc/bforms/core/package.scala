@@ -25,6 +25,10 @@ package object core {
   type ServiceResponse[A] = EitherT[Future, UnexpectedState, A]
   type Opt[A] = Either[UnexpectedState, A]
 
+  def success[A](a: A): ServiceResponse[A] = {
+    EitherT[Future, UnexpectedState, A](Future.successful(Right(a)))
+  }
+
   def fromFutureOptA[A](fa: Future[Opt[A]]): ServiceResponse[A] = {
     EitherT[Future, UnexpectedState, A](fa)
   }
@@ -33,7 +37,7 @@ package object core {
     EitherT[Future, UnexpectedState, A](fa.map(Right(_)))
   }
 
-  def fromOptA[A](oa: Opt[A])(implicit ec: ExecutionContext): ServiceResponse[A] = {
+  def fromOptA[A](oa: Opt[A]): ServiceResponse[A] = {
     EitherT[Future, UnexpectedState, A](Future.successful(oa))
   }
 

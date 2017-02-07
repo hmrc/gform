@@ -19,29 +19,39 @@ package uk.gov.hmrc.bforms.typeclasses
 import play.api.libs.json._
 import uk.gov.hmrc.bforms.core.Opt
 import uk.gov.hmrc.bforms.model._
-import uk.gov.hmrc.bforms.repositories.{ FormTemplateRepository, SaveAndRetrieveRepository, SchemaRepository }
+
+import uk.gov.hmrc.bforms.repositories.{ FormRepository, FormTemplateRepository, SaveAndRetrieveRepository, SchemaRepository }
 
 import scala.concurrent.{ ExecutionContext, Future }
 
 trait Update[T] {
-  def apply(selector: JsObject, v: T)(implicit ex: ExecutionContext): Future[Opt[DbOperationResult]]
+  def apply(selector: JsObject, v: T): Future[Opt[DbOperationResult]]
 }
 
 object Update {
-  implicit def formTemplate(implicit repo: FormTemplateRepository) = new Update[FormTemplate] {
-    def apply(selector: JsObject, template: FormTemplate)(implicit ex: ExecutionContext): Future[Opt[DbOperationResult]] = {
+
+  implicit def form(implicit repo: FormRepository, ex: ExecutionContext) = new Update[Form] {
+    def apply(selector: JsObject, template: Form): Future[Opt[DbOperationResult]] = {
+      repo.update(selector, template).value
+    }
+  }
+
+  implicit def formTemplate(implicit repo: FormTemplateRepository, ex: ExecutionContext) = new Update[FormTemplate] {
+    def apply(selector: JsObject, template: FormTemplate): Future[Opt[DbOperationResult]] = {
       repo.update(selector, template)
     }
   }
 
-  implicit def saveForm(implicit repo: SaveAndRetrieveRepository) = new Update[SaveAndRetrieve] {
-    def apply(selector: JsObject, form: SaveAndRetrieve)(implicit ex: ExecutionContext): Future[Opt[DbOperationResult]] = {
+  implicit def saveForm(implicit repo: SaveAndRetrieveRepository, ex: ExecutionContext) = new Update[SaveAndRetrieve] {
+    def apply(selector: JsObject, form: SaveAndRetrieve): Future[Opt[DbOperationResult]] = {
+
       repo.save(selector, form)
     }
   }
 
-  implicit def schema(implicit repo: SchemaRepository) = new Update[Schema] {
-    def apply(selector: JsObject, template: Schema)(implicit ex: ExecutionContext): Future[Opt[DbOperationResult]] = {
+  implicit def schema(implicit repo: SchemaRepository, ex: ExecutionContext) = new Update[Schema] {
+    def apply(selector: JsObject, template: Schema): Future[Opt[DbOperationResult]] = {
+
       repo.update(selector, template)
     }
   }

@@ -27,8 +27,8 @@ class SchemaValidatorSpec extends FlatSpec with Matchers with EitherValues {
 
     val input =
       """|{
-         | "type": "object",
-         | "properties": {
+         |  "type": "object",
+         |  "properties": {
          |    "formTypeId": {
          |      "type": "string"
          |    }

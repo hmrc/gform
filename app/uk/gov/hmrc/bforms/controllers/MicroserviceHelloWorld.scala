@@ -40,6 +40,7 @@ class MicroserviceHelloWorld(
   def hackSubmit(registrationNumber: String) = Action.async { implicit request =>
     RetrieveService.retrieve(registrationNumber).flatMap {
       case Some(x) => fileUploadeService.createEnvelop(x.value.toString()).fold(
+
         error => error.toResult,
         response => Ok(response)
       )
