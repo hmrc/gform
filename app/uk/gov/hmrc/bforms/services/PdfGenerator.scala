@@ -41,12 +41,10 @@ object PdfGenerator {
 
       val contents = new PDPageContentStream(doc, page)
 
-      // fill the entire background with color
       contents.setNonStrokingColor(Color.GREEN)
       contents.addRect(0, 0, page.getMediaBox().getWidth(), page.getMediaBox().getHeight())
       contents.fill()
 
-      // draw a color box in the lower left hand corner
       contents.setNonStrokingColor(Color.DARK_GRAY)
       contents.addRect(10, 10, 100, 100)
       contents.fill()
@@ -58,10 +56,6 @@ object PdfGenerator {
       contents.showText(message)
       contents.endText()
       contents.close()
-
-      //val output = new java.io.File("confirmation.pdf")
-      //doc.save(output)
-
       doc.save(byteArrayOutputStream)
     } finally {
       doc.close()
@@ -76,47 +70,36 @@ object PDFBoxExample {
   def generate(message: String) = {
     println("InsideGenerate")
     var text = message
-    //.split("(")(1) //.split(")")(0)
-    //    println("////////////////////////////////////////////////////////")
-    //    println("TEXT :" + text)
-    //    println("////////////////////////////////////////////////////////")
     val byteArrayOutputStream = new ByteArrayOutputStream()
     val doc = new PDDocument()
     try {
-
-      //      val lines = new util.ArrayList[String]
 
       val page = new PDPage()
       doc.addPage(page)
 
       val contents = new PDPageContentStream(doc, page)
-
       val font: PDFont = PDType1Font.HELVETICA_BOLD
       val fontSize: Float = 12
       val leading: Float = 25
-
       val mediaBox: PDRectangle = page.getMediaBox
       val lines = jsonParser(message)
-
       val margin: Float = 72
       val width: Float = mediaBox.getWidth - 2 * margin
       val startX: Float = mediaBox.getLowerLeftX + margin
       val startY: Float = mediaBox.getUpperRightY - margin
-
       var lastSpace: Int = -1
 
       contents.beginText()
       contents.setFont(font, fontSize)
       contents.newLineAtOffset(startX, startY)
+
       for (line <- lines) {
         contents.showText(line)
+
         contents.newLineAtOffset(0, -leading)
       }
       contents.endText()
       contents.close()
-
-      //      val output = new java.io.File("confirmation.pdf")
-      //      doc.save(output)
 
       doc.save(byteArrayOutputStream)
 
@@ -133,9 +116,6 @@ object PDFBoxExample {
     val formTypeId = json \ "formTypeId"
     val verion = json \ "version"
     val fields = (json \ "fields").as[List[KeyPair]]
-    //      println("/////////////////////////////////////////////////////////////")
-    //      println(json)
-    //      println("/////////////////////////////////////////////////////////////")
     lines.+=(s"formTypeId : ${formTypeId.get}")
     lines.+=(s"version : ${verion.get}")
     lines.+=(s"fields :")
@@ -145,7 +125,6 @@ object PDFBoxExample {
     }
     lines
   }
-
 }
 
 object SPDFExample {
@@ -161,10 +140,7 @@ object SPDFExample {
     })
 
     val data = jsonParser(form)
-
-    println(data)
-
-    val page = uk.gov.hmrc.bforms.views.html.summary.render(data).body //(<html><head><body><a>BOB</a></body></head></html>)
+    val page = uk.gov.hmrc.bforms.views.html.summary.render(data).body
 
     pdf.run(page, outputStream)
 
@@ -177,9 +153,6 @@ object SPDFExample {
     val formTypeId = json \ "formTypeId"
     val verion = json \ "version"
     val fields = (json \ "fields").as[List[KeyPair]]
-    //      println("/////////////////////////////////////////////////////////////")
-    //      println(json)
-    //      println("/////////////////////////////////////////////////////////////")
     lines.+=(s"formTypeId : ${formTypeId.get}")
     lines.+=(s"version : ${verion.get}")
     lines.+=(s"fields :")
