@@ -16,30 +16,10 @@
 
 package uk.gov.hmrc.bforms.model
 
-import java.time.LocalDateTime
+import play.api.libs.json.Json
 
-case class DmsMetaData(
-  formId: FormId,
-  formNino: Option[String],
-  authNino: Option[String],
-  classificationType: String,
-  businessArea: String
-)
+case class RouteEnvelopeRequest(envelopeId: EnvelopeId, application: String, destination: String)
 
-case class Submission(
-  submittedDate: LocalDateTime,
-  submissionRef: SubmissionRef,
-  dmsMetaData: DmsMetaData,
-  submissionMark: Option[String],
-  casKey: Option[String]
-)
-case class PdfSummary(
-  submissionRef: String,
-  numberOfPages: Long,
-  pdfContent: Array[Byte]
-)
-
-case class SubmissionAndPdf(
-  submission: Submission,
-  pdfSummary: PdfSummary
-)
+object RouteEnvelopeRequest {
+  implicit val format = Json.format[RouteEnvelopeRequest]
+}

@@ -18,7 +18,7 @@ package uk.gov.hmrc.bforms.controllers
 
 import cats.implicits._
 import play.api.mvc._
-import uk.gov.hmrc.bforms.model.SaveAndRetrieve
+import uk.gov.hmrc.bforms.model.{ SaveAndRetrieve, SubmissionRef }
 import uk.gov.hmrc.bforms.repositories.{ SaveAndRetrieveRepository, TestRepository }
 import uk.gov.hmrc.bforms.services.{ FileUploadService, RetrieveService }
 import uk.gov.hmrc.bforms.typeclasses.{ FindOne, FusFeUrl, FusUrl, ServiceUrl }
@@ -28,8 +28,7 @@ import uk.gov.hmrc.play.microservice.controller.BaseController
 import scala.concurrent.Future
 
 class MicroserviceHelloWorld(
-    testRepository: TestRepository,
-    fileUploadeService: FileUploadService
+    testRepository: TestRepository
 )(
     implicit
     fusUrl: ServiceUrl[FusUrl],
@@ -39,7 +38,7 @@ class MicroserviceHelloWorld(
 
   def hackSubmit(registrationNumber: String) = Action.async { implicit request =>
     RetrieveService.retrieve(registrationNumber).flatMap {
-      case Some(x) => fileUploadeService.createEnvelop(x.value).fold(
+      case Some(x) => FileUploadService.createEnvelope(SubmissionRef.random, x.value).fold(
         error => error.toResult,
         response => Ok(response)
       )

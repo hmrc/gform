@@ -16,30 +16,6 @@
 
 package uk.gov.hmrc.bforms.model
 
-import java.time.LocalDateTime
+import play.api.libs.json.JsObject
 
-case class DmsMetaData(
-  formId: FormId,
-  formNino: Option[String],
-  authNino: Option[String],
-  classificationType: String,
-  businessArea: String
-)
-
-case class Submission(
-  submittedDate: LocalDateTime,
-  submissionRef: SubmissionRef,
-  dmsMetaData: DmsMetaData,
-  submissionMark: Option[String],
-  casKey: Option[String]
-)
-case class PdfSummary(
-  submissionRef: String,
-  numberOfPages: Long,
-  pdfContent: Array[Byte]
-)
-
-case class SubmissionAndPdf(
-  submission: Submission,
-  pdfSummary: PdfSummary
-)
+case class CreateEnvelope(value: JsObject) extends AnyVal

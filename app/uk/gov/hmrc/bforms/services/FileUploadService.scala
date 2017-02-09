@@ -20,23 +20,22 @@ import cats.data.EitherT
 import cats.implicits._
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-
-import play.api.libs.json.JsObject
+import play.api.http.HeaderNames.LOCATION
+import play.api.libs.json.{ JsObject, Json }
 
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.bforms.exceptions.{ InvalidState, UnexpectedState }
 import uk.gov.hmrc.bforms.core._
-import uk.gov.hmrc.bforms.model.{ EnvelopeId, FileId, MetadataXml }
-import uk.gov.hmrc.bforms.typeclasses.{ HttpExecutor, RouteEnvelopeRequest, UploadFile }
-import uk.gov.hmrc.play.http.HeaderCarrier
-import uk.gov.hmrc.bforms.connectors.{ FusConnector, FusFeConnector }
+import uk.gov.hmrc.bforms.model.{ EnvelopeId, FileId, MetadataXml, RouteEnvelopeRequest, UploadFile }
+import uk.gov.hmrc.bforms.typeclasses.Now
+import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpResponse }
 import uk.gov.hmrc.bforms.model._
-import uk.gov.hmrc.bforms.typeclasses.{ CreateEnvelope, FusFeUrl, FusUrl, ServiceUrl }
+import uk.gov.hmrc.bforms.typeclasses.{ FusFeUrl, FusUrl, Post, ServiceUrl }
 
-class FileUploadService(fusConnector: FusConnector, fusFeConnector: FusFeConnector) {
+object FileUploadService {
 
   val dmsMetaData = DmsMetaData(
-    formId = "some-fomr-id",
+    formId = FormId("some-form-id"),
     formNino = None,
     authNino = None,
     classificationType = "some-classification-type",
@@ -45,7 +44,7 @@ class FileUploadService(fusConnector: FusConnector, fusFeConnector: FusFeConnect
 
   val submission = Submission(
     submittedDate = LocalDateTime.now(),
-    submissionRef = "some-submission-ref",
+    submissionRef = SubmissionRef("some-submission-ref"),
     dmsMetaData = dmsMetaData,
     submissionMark = Some("submission-mark"),
     casKey = Some("some-cas-key")
@@ -62,28 +61,73 @@ class FileUploadService(fusConnector: FusConnector, fusFeConnector: FusFeConnect
     pdfSummary = pdfSummary
   )
 
-  def createEnvelop(formData: JsObject)(
+  def createEnvelope(
+    submissionRef: SubmissionRef,
+    formData: JsObject
+  )(
     implicit
-    hc: HeaderCarrier,
     ec: ExecutionContext,
-    fusUrl: ServiceUrl[FusUrl],
-    fusFeUrl: ServiceUrl[FusFeUrl]
+    uploadFile: Post[UploadFile, HttpResponse],
+    createEnvelope: Post[CreateEnvelope, HttpResponse],
+    routeEnvelope: Post[RouteEnvelopeRequest, HttpResponse],
+    now: Now[LocalDateTime] // this will make sure that the same instance of now is used throughout body if this method
   ): ServiceResponse[String] = {
 
-    val date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("YYYYMMdd"))
+    val date = now().format(DateTimeFormatter.ofPattern("YYYYMMdd"))
     val fileNamePrefix = s"${submissionAndPdf.submission.submissionRef}-$date"
 
-    val metadataXml = MetadataXml.xmlDec + "\n" + MetadataXml.getXml("submission-ref", "reconciliation-id", submissionAndPdf)
+    val reconciliationId = ReconciliationId.create(submissionAndPdf.submission.submissionRef)
+    val metadataXml = MetadataXml.xmlDec + "\n" + MetadataXml.getXml(submissionRef, reconciliationId, submissionAndPdf)
 
     // format: OFF
     for {
-      envelopeId <- fromFutureOptA (HttpExecutor(fusUrl, CreateEnvelope(fusConnector.envelopeRequest("formTypeRef"))).map(fusConnector.extractEnvelopId))
-      _          <- fromFutureA    (HttpExecutor(fusFeUrl, UploadFile(envelopeId, FileId("xmlDocument"), s"$fileNamePrefix-metadata.xml", "application/xml; charset=UTF-8", metadataXml.getBytes)))
-      _          <- fromFutureA    (HttpExecutor(fusFeUrl, UploadFile(envelopeId, FileId("pdf"), s"$fileNamePrefix-iform.pdf", "application/pdf", PDFBoxExample.generate(formData))))
-      _          <- fromFutureA    (HttpExecutor(fusUrl, RouteEnvelopeRequest(envelopeId, "dfs", "DMS")))
+      envelopeId <- fromFutureOptA(createEnvelope(envelopeRequest("formTypeRef")).map(extractEnvelopId))
+      _          <- fromFutureA   (uploadFile(UploadFile(envelopeId, FileId("pdf"), s"$fileNamePrefix-iform.pdf", "application/pdf", PDFBoxExample.generate(formData))))
+      _          <- fromFutureA   (uploadFile(UploadFile(envelopeId, FileId("xmlDocument"), s"$fileNamePrefix-metadata.xml", "application/xml; charset=UTF-8", metadataXml.getBytes)))
+      _          <- fromFutureA   (routeEnvelope(RouteEnvelopeRequest(envelopeId, "dfs", "DMS")))
     } yield {
       s"http://localhost:8898/file-transfer/envelopes/$envelopeId"
     }
     // format: ON
+  }
+
+  def extractEnvelopId(
+    resp: HttpResponse
+  ): Opt[EnvelopeId] = {
+    resp.header(LOCATION) match {
+      case Some(location) => location match {
+        case EnvelopeIdExtractor(envelopeId) => Right(EnvelopeId(envelopeId))
+        case otherwise => Left(InvalidState(s"EnvelopeId in $LOCATION header: $location not found"))
+      }
+      case None => Left(InvalidState(s"Header $LOCATION not found"))
+    }
+  }
+
+  val EnvelopeIdExtractor = "envelopes/([\\w\\d-]+)$".r.unanchored
+  val formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'")
+
+  def envelopeRequest(formTypeRef: String)(implicit now: Now[LocalDateTime]): CreateEnvelope = {
+
+    def envelopeExpiryDate(numberOfDays: Int) = now().plusDays(numberOfDays).format(formatter)
+
+    val json = Json.obj(
+      "constraints" -> Json.obj(
+        "contentTypes" -> Json.arr(
+          "application/pdf",
+          "image/jpeg"
+        ),
+        "maxItems" -> 5,
+        "masSize" -> "30MB",
+        "maxSizePerItem" -> "5MB"
+      ),
+      "callbackUrl" -> "someCallback",
+      "expiryDate" -> s"${envelopeExpiryDate(7)}",
+      "metadata" -> Json.obj(
+        "application" -> "Digital Forms Service",
+        "formTypeRef" -> s"$formTypeRef"
+      )
+    )
+
+    CreateEnvelope(json)
   }
 }

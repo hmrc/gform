@@ -24,7 +24,7 @@ class MetadataXmlSpec extends FlatSpec with Matchers with StreamlinedXml {
   "metadata.xml" should "be generated" in {
 
     val dmsMetaData = DmsMetaData(
-      formId = "some-fomr-id",
+      formId = FormId("some-form-id"),
       formNino = None,
       authNino = None,
       classificationType = "some-classification-type",
@@ -33,7 +33,7 @@ class MetadataXmlSpec extends FlatSpec with Matchers with StreamlinedXml {
 
     val submission = Submission(
       submittedDate = LocalDateTime.of(2012, 12, 3, 12, 45),
-      submissionRef = "some-submission-ref",
+      submissionRef = SubmissionRef("some-submission-ref"),
       dmsMetaData = dmsMetaData,
       submissionMark = Some("submission-mark"),
       casKey = Some("some-cas-key")
@@ -88,7 +88,7 @@ class MetadataXmlSpec extends FlatSpec with Matchers with StreamlinedXml {
               <attribute_name>form_id</attribute_name>
               <attribute_type>string</attribute_type>
               <attribute_values>
-                <attribute_value>some-fomr-id</attribute_value>
+                <attribute_value>some-form-id</attribute_value>
               </attribute_values>
             </attribute>
             <attribute>
@@ -151,7 +151,7 @@ class MetadataXmlSpec extends FlatSpec with Matchers with StreamlinedXml {
         </document>
       </documents>
 
-    val metadataXml = MetadataXml.getXml("some-submission-ref", "some-recocilliatin-id", submissionAndPdf)
+    val metadataXml = MetadataXml.getXml(SubmissionRef("some-submission-ref"), ReconciliationId("some-recocilliatin-id"), submissionAndPdf)
 
     metadataXml should equal(expected)(after being streamlined[Elem])
 

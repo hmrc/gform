@@ -16,30 +16,21 @@
 
 package uk.gov.hmrc.bforms.model
 
+import cats.data.State
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import play.api.libs.json.{ Format, JsError, JsString, JsSuccess, Reads, Writes }
+import scala.util.Random
+import uk.gov.hmrc.bforms.typeclasses.Now
 
-case class DmsMetaData(
-  formId: FormId,
-  formNino: Option[String],
-  authNino: Option[String],
-  classificationType: String,
-  businessArea: String
-)
+case class ReconciliationId(value: String) extends AnyVal {
+  override def toString = value
+}
 
-case class Submission(
-  submittedDate: LocalDateTime,
-  submissionRef: SubmissionRef,
-  dmsMetaData: DmsMetaData,
-  submissionMark: Option[String],
-  casKey: Option[String]
-)
-case class PdfSummary(
-  submissionRef: String,
-  numberOfPages: Long,
-  pdfContent: Array[Byte]
-)
+object ReconciliationId {
 
-case class SubmissionAndPdf(
-  submission: Submission,
-  pdfSummary: PdfSummary
-)
+  def create(submissionRef: SubmissionRef)(implicit now: Now[LocalDateTime]): ReconciliationId = {
+    val dateFormatter = now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
+    ReconciliationId(submissionRef + "-" + dateFormatter)
+  }
+}

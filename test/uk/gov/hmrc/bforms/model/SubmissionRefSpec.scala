@@ -16,30 +16,19 @@
 
 package uk.gov.hmrc.bforms.model
 
-import java.time.LocalDateTime
+import cats.data.StateT
+import cats.data.State
+import uk.gov.hmrc.bforms.model._
+import play.api.libs.json._
+import org.scalatest._
 
-case class DmsMetaData(
-  formId: FormId,
-  formNino: Option[String],
-  authNino: Option[String],
-  classificationType: String,
-  businessArea: String
-)
+class SubmissionRefSpec extends FlatSpec with Matchers {
 
-case class Submission(
-  submittedDate: LocalDateTime,
-  submissionRef: SubmissionRef,
-  dmsMetaData: DmsMetaData,
-  submissionMark: Option[String],
-  casKey: Option[String]
-)
-case class PdfSummary(
-  submissionRef: String,
-  numberOfPages: Long,
-  pdfContent: Array[Byte]
-)
+  "SubmissionRef.createSubmissionRef" should "generate submissionRef" in {
+    val rnd = new scala.util.Random(12)
+    val submissionRef = SubmissionRef.createSubmissionRef(rnd)
 
-case class SubmissionAndPdf(
-  submission: Submission,
-  pdfSummary: PdfSummary
-)
+    submissionRef.value should be("46Q-Z2HW-XIB")
+
+  }
+}

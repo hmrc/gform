@@ -14,32 +14,21 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.model
+package uk.gov.hmrc.bforms.typeclasses
 
 import java.time.LocalDateTime
 
-case class DmsMetaData(
-  formId: FormId,
-  formNino: Option[String],
-  authNino: Option[String],
-  classificationType: String,
-  businessArea: String
-)
+trait Now[T] {
+  def apply(): T
+}
 
-case class Submission(
-  submittedDate: LocalDateTime,
-  submissionRef: SubmissionRef,
-  dmsMetaData: DmsMetaData,
-  submissionMark: Option[String],
-  casKey: Option[String]
-)
-case class PdfSummary(
-  submissionRef: String,
-  numberOfPages: Long,
-  pdfContent: Array[Byte]
-)
+object Now {
 
-case class SubmissionAndPdf(
-  submission: Submission,
-  pdfSummary: PdfSummary
-)
+  def apply[T](value: T): Now[T] = new Now[T] {
+    override val apply: T = value
+  }
+
+  implicit object LocalDateTimeNow extends Now[LocalDateTime] {
+    override val apply: LocalDateTime = LocalDateTime.now()
+  }
+}
