@@ -75,4 +75,16 @@ object TemplateValidator {
                                                    |Input json: """.stripMargin + Json.prettyPrint(json)))
     }
   }
+
+  def extractFormName(json: JsValue): Opt[String] = {
+
+    val formNameRaw: JsResult[String] = (json \ "formName").validate[String]
+
+    formNameRaw match {
+      case JsSuccess(success, _) => Right(success)
+      case JsError(error) => Left(InvalidState(s"""|Error when reading 'formName' from json:
+                                                   |Error: $error
+                                                   |Input json: """.stripMargin + Json.prettyPrint(json)))
+    }
+  }
 }

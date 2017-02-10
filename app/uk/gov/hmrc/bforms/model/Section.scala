@@ -26,3 +26,8 @@ case class Section(
 object Section {
   implicit val format = Json.format[Section]
 }
+
+case class SectionFormField(
+  title: String,
+  fields: List[(FormField, FieldValue)]
+)

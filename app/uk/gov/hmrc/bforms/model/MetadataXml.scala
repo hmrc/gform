@@ -31,15 +31,15 @@ object MetadataXml {
       createAttribute("hmrc_time_of_receipt", submission.submittedDate),
       createAttribute("time_xml_created", submission.submittedDate),
       createAttribute("submission_reference", submission.submissionRef.value),
-      createAttribute("form_id", dmsMetaData.formId.value),
+      createAttribute("form_id", dmsMetaData.formTypeId.value),
       createAttribute("number_pages", pdfSummary.numberOfPages),
       createAttribute("source", "dfs"),
-      createAttribute("customer_id", "???"),
-      createAttribute("submission_mark", submission.submissionMark.getOrElse("???")),
-      createAttribute("cas_key", submission.casKey.getOrElse("???")),
-      createAttribute("classification_type", dmsMetaData.classificationType),
-      createAttribute("business_area", dmsMetaData.businessArea),
-      createAttribute("attachment_count", 123)
+      createAttribute("customer_id", ""),
+      createAttribute("submission_mark", ""), // We are not using CAS
+      createAttribute("cas_key", ""), // We are not using CAS
+      createAttribute("classification_type", ""),
+      createAttribute("business_area", ""),
+      createAttribute("attachment_count", 0)
     )
     <metadata></metadata>.copy(child = attributes)
   }

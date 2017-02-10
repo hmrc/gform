@@ -19,7 +19,7 @@ package uk.gov.hmrc.bforms.typeclasses
 import play.api.libs.json._
 import uk.gov.hmrc.bforms.core.Opt
 import uk.gov.hmrc.bforms.model._
-import uk.gov.hmrc.bforms.repositories.FormRepository
+import uk.gov.hmrc.bforms.repositories.{ FormRepository, SubmissionRepository }
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -31,6 +31,12 @@ object Insert {
 
   implicit def form(implicit repo: FormRepository, ex: ExecutionContext) = new Insert[Form] {
     def apply(selector: JsObject, template: Form): Future[Opt[DbOperationResult]] = {
+      repo.insert(selector, template)
+    }
+  }
+
+  implicit def submission(implicit repo: SubmissionRepository, ex: ExecutionContext) = new Insert[Submission] {
+    def apply(selector: JsObject, template: Submission): Future[Opt[DbOperationResult]] = {
       repo.insert(selector, template)
     }
   }

@@ -24,23 +24,18 @@ class MetadataXmlSpec extends FlatSpec with Matchers with StreamlinedXml {
   "metadata.xml" should "be generated" in {
 
     val dmsMetaData = DmsMetaData(
-      formId = FormId("some-form-id"),
-      formNino = None,
-      authNino = None,
-      classificationType = "some-classification-type",
-      businessArea = "some-business-area"
+      formTypeId = FormTypeId("some-form-type-id")
     )
 
     val submission = Submission(
       submittedDate = LocalDateTime.of(2012, 12, 3, 12, 45),
       submissionRef = SubmissionRef("some-submission-ref"),
-      dmsMetaData = dmsMetaData,
-      submissionMark = Some("submission-mark"),
-      casKey = Some("some-cas-key")
+      formId = FormId("some-form-type-id"),
+      envelopeId = EnvelopeId("some-envelope-id"),
+      dmsMetaData = dmsMetaData
     )
 
     val pdfSummary = PdfSummary(
-      submissionRef = "some-submission-ref",
       numberOfPages = 10L,
       pdfContent = Array.empty[Byte]
     )
@@ -88,7 +83,7 @@ class MetadataXmlSpec extends FlatSpec with Matchers with StreamlinedXml {
               <attribute_name>form_id</attribute_name>
               <attribute_type>string</attribute_type>
               <attribute_values>
-                <attribute_value>some-form-id</attribute_value>
+                <attribute_value>some-form-type-id</attribute_value>
               </attribute_values>
             </attribute>
             <attribute>
@@ -109,42 +104,42 @@ class MetadataXmlSpec extends FlatSpec with Matchers with StreamlinedXml {
               <attribute_name>customer_id</attribute_name>
               <attribute_type>string</attribute_type>
               <attribute_values>
-                <attribute_value>???</attribute_value>
+                <attribute_value></attribute_value>
               </attribute_values>
             </attribute>
             <attribute>
               <attribute_name>submission_mark</attribute_name>
               <attribute_type>string</attribute_type>
               <attribute_values>
-                <attribute_value>submission-mark</attribute_value>
+                <attribute_value></attribute_value>
               </attribute_values>
             </attribute>
             <attribute>
               <attribute_name>cas_key</attribute_name>
               <attribute_type>string</attribute_type>
               <attribute_values>
-                <attribute_value>some-cas-key</attribute_value>
+                <attribute_value></attribute_value>
               </attribute_values>
             </attribute>
             <attribute>
               <attribute_name>classification_type</attribute_name>
               <attribute_type>string</attribute_type>
               <attribute_values>
-                <attribute_value>some-classification-type</attribute_value>
+                <attribute_value></attribute_value>
               </attribute_values>
             </attribute>
             <attribute>
               <attribute_name>business_area</attribute_name>
               <attribute_type>string</attribute_type>
               <attribute_values>
-                <attribute_value>some-business-area</attribute_value>
+                <attribute_value></attribute_value>
               </attribute_values>
             </attribute>
             <attribute>
               <attribute_name>attachment_count</attribute_name>
               <attribute_type>int</attribute_type>
               <attribute_values>
-                <attribute_value>123</attribute_value>
+                <attribute_value>0</attribute_value>
               </attribute_values>
             </attribute>
           </metadata>

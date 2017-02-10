@@ -22,15 +22,19 @@ import play.api.libs.json.Json
 import play.api.mvc.{ Action, Request, RequestHeader }
 import scala.concurrent.Future
 import uk.gov.hmrc.bforms.model.{ Form, FormData, FormId, FormTypeId }
-import uk.gov.hmrc.bforms.repositories.{ FormRepository, FormTemplateRepository }
-import uk.gov.hmrc.bforms.services.{ FormService, MongoOperation, SaveOperation, SaveTolerantOperation, UpdateOperation, UpdateTolerantOperation }
+import uk.gov.hmrc.bforms.repositories.{ FormRepository, FormTemplateRepository, SubmissionRepository }
+import uk.gov.hmrc.bforms.services.{ FormService, SubmissionService, MongoOperation, SaveOperation, SaveTolerantOperation, UpdateOperation, UpdateTolerantOperation }
+import uk.gov.hmrc.bforms.typeclasses.{ FusFeUrl, FusUrl, ServiceUrl }
 import uk.gov.hmrc.play.microservice.controller.BaseController
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
 class Forms()(
     implicit
     formRepo: FormRepository,
-    formTemplateRepo: FormTemplateRepository
+    formTemplateRepo: FormTemplateRepository,
+    submissionRepo: SubmissionRepository,
+    fusUrl: ServiceUrl[FusUrl],
+    fusFeUrl: ServiceUrl[FusFeUrl]
 ) extends BaseController {
   def all() = Action.async { implicit request =>
     Future.successful(NotImplemented)
@@ -85,7 +89,10 @@ class Forms()(
   }
 
   def submission(formTypeId: FormTypeId, formId: FormId) = Action.async { implicit request =>
-    Future.successful(NotImplemented)
+    SubmissionService.submission(formTypeId, formId).fold(
+      error => error.toResult,
+      response => Ok(response)
+    )
   }
 
   def submissionStatus(formTypeId: FormTypeId, formId: FormId) = Action.async { implicit request =>

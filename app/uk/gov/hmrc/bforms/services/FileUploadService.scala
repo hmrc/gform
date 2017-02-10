@@ -34,36 +34,17 @@ import uk.gov.hmrc.bforms.typeclasses.{ FusFeUrl, FusUrl, Post, ServiceUrl }
 
 object FileUploadService {
 
-  val dmsMetaData = DmsMetaData(
-    formId = FormId("some-form-id"),
-    formNino = None,
-    authNino = None,
-    classificationType = "some-classification-type",
-    businessArea = "some-business-area"
-  )
-
-  val submission = Submission(
-    submittedDate = LocalDateTime.now(),
-    submissionRef = SubmissionRef("some-submission-ref"),
-    dmsMetaData = dmsMetaData,
-    submissionMark = Some("submission-mark"),
-    casKey = Some("some-cas-key")
-  )
-
-  val pdfSummary = PdfSummary(
-    submissionRef = "some-submission-ref",
-    numberOfPages = 10L,
-    pdfContent = Array.empty[Byte]
-  )
-
-  val submissionAndPdf = SubmissionAndPdf(
-    submission = submission,
-    pdfSummary = pdfSummary
-  )
-
   def createEnvelope(
-    submissionRef: SubmissionRef,
-    formData: JsObject
+    formTypeId: FormTypeId
+  )(
+    implicit
+    ec: ExecutionContext,
+    createEnvelope: Post[CreateEnvelope, HttpResponse]
+  ): Future[Opt[EnvelopeId]] =
+    createEnvelope(envelopeRequest(formTypeId)).map(extractEnvelopId)
+
+  def submitEnvelope(
+    submissionAndPdf: SubmissionAndPdf
   )(
     implicit
     ec: ExecutionContext,
@@ -73,18 +54,21 @@ object FileUploadService {
     now: Now[LocalDateTime] // this will make sure that the same instance of now is used throughout body if this method
   ): ServiceResponse[String] = {
 
-    val date = now().format(DateTimeFormatter.ofPattern("YYYYMMdd"))
-    val fileNamePrefix = s"${submissionAndPdf.submission.submissionRef}-$date"
+    val submissionRef: SubmissionRef = submissionAndPdf.submission.submissionRef
 
-    val reconciliationId = ReconciliationId.create(submissionAndPdf.submission.submissionRef)
+    val envelopeId = submissionAndPdf.submission.envelopeId
+
+    val date = now().format(DateTimeFormatter.ofPattern("YYYYMMdd"))
+    val fileNamePrefix = s"$submissionRef-$date"
+
+    val reconciliationId = ReconciliationId.create(submissionRef)
     val metadataXml = MetadataXml.xmlDec + "\n" + MetadataXml.getXml(submissionRef, reconciliationId, submissionAndPdf)
 
     // format: OFF
     for {
-      envelopeId <- fromFutureOptA(createEnvelope(envelopeRequest("formTypeRef")).map(extractEnvelopId))
-      _          <- fromFutureA   (uploadFile(UploadFile(envelopeId, FileId("pdf"), s"$fileNamePrefix-iform.pdf", "application/pdf", PDFBoxExample.generate(formData))))
-      _          <- fromFutureA   (uploadFile(UploadFile(envelopeId, FileId("xmlDocument"), s"$fileNamePrefix-metadata.xml", "application/xml; charset=UTF-8", metadataXml.getBytes)))
-      _          <- fromFutureA   (routeEnvelope(RouteEnvelopeRequest(envelopeId, "dfs", "DMS")))
+      _ <- fromFutureA(uploadFile(UploadFile(envelopeId, FileId("pdf"), s"$fileNamePrefix-iform.pdf", "application/pdf", submissionAndPdf.pdfSummary.pdfContent)))
+      _ <- fromFutureA(uploadFile(UploadFile(envelopeId, FileId("xmlDocument"), s"$fileNamePrefix-metadata.xml", "application/xml; charset=UTF-8", metadataXml.getBytes)))
+      _ <- fromFutureA(routeEnvelope(RouteEnvelopeRequest(envelopeId, "dfs", "DMS")))
     } yield {
       s"http://localhost:8898/file-transfer/envelopes/$envelopeId"
     }
@@ -106,7 +90,12 @@ object FileUploadService {
   val EnvelopeIdExtractor = "envelopes/([\\w\\d-]+)$".r.unanchored
   val formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'")
 
-  def envelopeRequest(formTypeRef: String)(implicit now: Now[LocalDateTime]): CreateEnvelope = {
+  def envelopeRequest(
+    formTypeId: FormTypeId
+  )(
+    implicit
+    now: Now[LocalDateTime]
+  ): CreateEnvelope = {
 
     def envelopeExpiryDate(numberOfDays: Int) = now().plusDays(numberOfDays).format(formatter)
 
@@ -124,7 +113,7 @@ object FileUploadService {
       "expiryDate" -> s"${envelopeExpiryDate(7)}",
       "metadata" -> Json.obj(
         "application" -> "Digital Forms Service",
-        "formTypeRef" -> s"$formTypeRef"
+        "formTypeId" -> s"$formTypeId"
       )
     )
 

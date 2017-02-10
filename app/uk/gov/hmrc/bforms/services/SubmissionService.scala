@@ -17,19 +17,72 @@
 package uk.gov.hmrc.bforms.services
 
 import cats.instances.future._
+import cats.instances.either._
+import cats.instances.list._
+import cats.syntax.either._
+import cats.syntax.traverse._
 import play.api.libs.json.{ JsObject, JsValue, Json }
 import uk.gov.hmrc.bforms.core._
-import uk.gov.hmrc.bforms.exceptions.InvalidState
-import uk.gov.hmrc.bforms.model.{ DbOperationResult, DmsMetaData, Form, FormId, FormTemplate, FormTypeId, SaveAndRetrieve, Submission, SubmissionRef }
+import uk.gov.hmrc.bforms.exceptions.{ InvalidState, UnexpectedState }
+import uk.gov.hmrc.bforms.model._
 import uk.gov.hmrc.bforms.repositories.FormTemplateRepository
-import uk.gov.hmrc.bforms.typeclasses.{ Find, FindOne, Insert, Now, ServiceUrl, Update }
+import uk.gov.hmrc.bforms.typeclasses.{ Find, FindOne, FusFeUrl, FusUrl, Insert, Now, Post, ServiceUrl, Update }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import java.time.LocalDateTime
-import uk.gov.hmrc.play.http.HeaderCarrier
+import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpResponse }
 
 object SubmissionService {
+
+  private def getSectionFormFields(
+    form: Form,
+    sections: Seq[Section]
+  ): Opt[List[SectionFormField]] = {
+    val formFields: Map[String, FormField] = form.formData.fields.map(field => field.id -> field).toMap
+
+    val formFieldByFieldValue: FieldValue => Opt[(FormField, FieldValue)] = field => formFields.get(field.id) match {
+      case Some(formField) => Right((formField, field))
+      case None => Left(InvalidState(s"No formField for field.id: ${field.id} found"))
+    }
+
+    val toSectionFormField: Section => Opt[SectionFormField] = section =>
+      section.fields.traverse(formFieldByFieldValue).map(ff => SectionFormField(section.title, ff))
+
+    sections.toList.traverse(toSectionFormField)
+  }
+
+  def getSubmissionAndPdf(
+    envelopeId: EnvelopeId,
+    form: Form,
+    sectionFormFields: List[SectionFormField],
+    formName: String
+  )(
+    implicit
+    now: Now[LocalDateTime]
+  ): SubmissionAndPdf = {
+
+    val pdf: Array[Byte] = PdfGenerator.generate(sectionFormFields, formName)
+
+    val pdfSummary = PdfSummary(
+      numberOfPages = 1L,
+      pdfContent = pdf
+    )
+    val submission = Submission(
+      submittedDate = now(),
+      submissionRef = SubmissionRef.random,
+      envelopeId = envelopeId,
+      formId = form._id,
+      dmsMetaData = DmsMetaData(
+        formTypeId = form.formData.formTypeId
+      )
+    )
+
+    SubmissionAndPdf(
+      submission = submission,
+      pdfSummary = pdfSummary
+    )
+  }
 
   def submission(
     formTypeId: FormTypeId,
@@ -37,26 +90,29 @@ object SubmissionService {
   )(
     implicit
     FindOneForm: FindOne[Form],
-    now: Now[LocalDateTime]
-  ): ServiceResponse[DbOperationResult] = {
-    for {
-      form <- FormService.getByTypeAndId(formTypeId, formId)
-    } yield {
-      Submission(
-        submittedDate = now(),
-        submissionRef = SubmissionRef.random,
-        dmsMetaData = DmsMetaData(
-          formId = form._id,
-          formNino = None,
-          authNino = None,
-          classificationType = "???",
-          businessArea = "???"
-        ),
-        submissionMark = None,
-        casKey = None
-      )
-    }
+    FindOneFormTemplate: FindOne[FormTemplate],
+    InsertSubmission: Insert[Submission],
+    fusUrl: ServiceUrl[FusUrl],
+    fusFeUrl: ServiceUrl[FusFeUrl],
+    hc: HeaderCarrier
+  ): ServiceResponse[String] = {
 
-    ???
+    val templateSelector: Form => JsObject = form => Json.obj(
+      "formTypeId" -> form.formData.formTypeId,
+      "version" -> form.formData.version
+    )
+    for {
+      // format: OFF
+      form              <- FormService.getByTypeAndId(formTypeId, formId)
+      formTemplate      <- fromFutureOptionA  (FindOneFormTemplate(templateSelector(form)))(InvalidState(s"FormTemplate $templateSelector not found"))
+      sections          <- fromOptA           (TemplateValidator.extractSections(formTemplate.value))
+      formName          <- fromOptA           (TemplateValidator.extractFormName(formTemplate.value))
+      envelopeId        <- fromFutureOptA     (FileUploadService.createEnvelope(formTypeId))
+      sectionFormFields <- fromOptA           (getSectionFormFields(form, sections))
+      submissionAndPdf  =  getSubmissionAndPdf(envelopeId, form, sectionFormFields, formName)
+      _                 <- fromFutureA        (InsertSubmission(Json.obj(), submissionAndPdf.submission))
+      res               <- FileUploadService.submitEnvelope(submissionAndPdf)
+    } yield res
+    // format: ON
   }
 }
