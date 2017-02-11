@@ -22,11 +22,12 @@ import cats.instances.list._
 import cats.syntax.either._
 import cats.syntax.traverse._
 import play.api.libs.json.{ JsObject, JsValue, Json }
+import scala.util.Random
 import uk.gov.hmrc.bforms.core._
 import uk.gov.hmrc.bforms.exceptions.{ InvalidState, UnexpectedState }
 import uk.gov.hmrc.bforms.model._
 import uk.gov.hmrc.bforms.repositories.FormTemplateRepository
-import uk.gov.hmrc.bforms.typeclasses.{ Find, FindOne, FusFeUrl, FusUrl, Insert, Now, Post, ServiceUrl, Update }
+import uk.gov.hmrc.bforms.typeclasses.{ Find, FindOne, FusFeUrl, FusUrl, Insert, Now, Post, Rnd, ServiceUrl, Update }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -59,7 +60,8 @@ object SubmissionService {
     formName: String
   )(
     implicit
-    now: Now[LocalDateTime]
+    now: Now[LocalDateTime],
+    rnd: Rnd[Random]
   ): SubmissionAndPdf = {
 
     val pdf: Array[Byte] = PdfGenerator.generate(sectionFormFields, formName)
@@ -89,28 +91,30 @@ object SubmissionService {
     formId: FormId
   )(
     implicit
-    FindOneForm: FindOne[Form],
-    FindOneFormTemplate: FindOne[FormTemplate],
-    InsertSubmission: Insert[Submission],
-    fusUrl: ServiceUrl[FusUrl],
-    fusFeUrl: ServiceUrl[FusFeUrl],
-    hc: HeaderCarrier
+    findOneForm: FindOne[Form],
+    findOneFormTemplate: FindOne[FormTemplate],
+    insertSubmission: Insert[Submission],
+    createEnvelope: Post[CreateEnvelope, HttpResponse],
+    uploadFile: Post[UploadFile, HttpResponse],
+    routeEnvelope: Post[RouteEnvelopeRequest, HttpResponse],
+    now: Now[LocalDateTime],
+    rnd: Rnd[Random]
   ): ServiceResponse[String] = {
 
     val templateSelector: Form => JsObject = form => Json.obj(
       "formTypeId" -> form.formData.formTypeId,
       "version" -> form.formData.version
     )
+    // format: OFF
     for {
-      // format: OFF
       form              <- FormService.getByTypeAndId(formTypeId, formId)
-      formTemplate      <- fromFutureOptionA  (FindOneFormTemplate(templateSelector(form)))(InvalidState(s"FormTemplate $templateSelector not found"))
+      formTemplate      <- fromFutureOptionA  (findOneFormTemplate(templateSelector(form)))(InvalidState(s"FormTemplate $templateSelector not found"))
       sections          <- fromOptA           (TemplateValidator.extractSections(formTemplate.value))
       formName          <- fromOptA           (TemplateValidator.extractFormName(formTemplate.value))
       envelopeId        <- fromFutureOptA     (FileUploadService.createEnvelope(formTypeId))
       sectionFormFields <- fromOptA           (getSectionFormFields(form, sections))
       submissionAndPdf  =  getSubmissionAndPdf(envelopeId, form, sectionFormFields, formName)
-      _                 <- fromFutureA        (InsertSubmission(Json.obj(), submissionAndPdf.submission))
+      _                 <- fromFutureA        (insertSubmission(Json.obj(), submissionAndPdf.submission))
       res               <- FileUploadService.submitEnvelope(submissionAndPdf)
     } yield res
     // format: ON

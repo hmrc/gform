@@ -49,7 +49,6 @@ object FileUploadService {
     implicit
     ec: ExecutionContext,
     uploadFile: Post[UploadFile, HttpResponse],
-    createEnvelope: Post[CreateEnvelope, HttpResponse],
     routeEnvelope: Post[RouteEnvelopeRequest, HttpResponse],
     now: Now[LocalDateTime] // this will make sure that the same instance of now is used throughout body if this method
   ): ServiceResponse[String] = {

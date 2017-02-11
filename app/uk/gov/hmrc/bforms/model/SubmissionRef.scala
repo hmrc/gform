@@ -19,6 +19,7 @@ package uk.gov.hmrc.bforms.model
 import cats.data.State
 import play.api.libs.json.{ Format, JsError, JsString, JsSuccess, Reads, Writes }
 import scala.util.Random
+import uk.gov.hmrc.bforms.typeclasses.Rnd
 
 case class SubmissionRef(value: String) extends AnyVal {
   override def toString = value
@@ -34,7 +35,7 @@ object SubmissionRef {
 
   implicit val format = Format[SubmissionRef](reads, writes)
 
-  def random = createSubmissionRef(scala.util.Random)
+  def random(implicit rnd: Rnd[Random]) = createSubmissionRef(rnd())
 
   def createSubmissionRef(r: Random): SubmissionRef = {
 
