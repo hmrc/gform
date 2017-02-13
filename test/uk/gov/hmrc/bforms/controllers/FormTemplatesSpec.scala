@@ -50,7 +50,7 @@ class FormTemplatesSpec extends FlatSpec with Matchers with TypeclassFixtures wi
 
     val res: ServiceResponse[DbOperationResult] = FormTemplates.saveTemplate(FormTypeId("abc"), "1.0.0", FormTemplate(Json.obj()))
 
-    res.value.futureValue.left.value should be(InvalidState("SchemaId http://hmrc.gov.uk/jsonschema/bf-formtemplate# not found"))
+    futureResult(res.value).left.value should be(InvalidState("SchemaId http://hmrc.gov.uk/jsonschema/bf-formtemplate# not found"))
 
   }
 
@@ -89,6 +89,6 @@ class FormTemplatesSpec extends FlatSpec with Matchers with TypeclassFixtures wi
 
     val res: ServiceResponse[DbOperationResult] = FormTemplates.saveTemplate(FormTypeId("abc"), "1.0.0", formTemplateToSave)
 
-    res.value.futureValue.right.value should be(UpdateSuccess)
+    futureResult(res.value).right.value should be(UpdateSuccess)
   }
 }
