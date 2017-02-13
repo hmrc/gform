@@ -45,6 +45,12 @@ class MetadataXmlSpec extends FlatSpec with Matchers with StreamlinedXml {
       pdfSummary = pdfSummary
     )
 
+    val dmsSubmission = DmsSubmission(
+      customerId = "some-customer-id",
+      classificationType = "some-classification-type",
+      businessArea = "some-business-area"
+    )
+
     val expected =
       <documents xmlns="http://govtalk.gov.uk/hmrc/gis/content/1">
         <document>
@@ -104,7 +110,7 @@ class MetadataXmlSpec extends FlatSpec with Matchers with StreamlinedXml {
               <attribute_name>customer_id</attribute_name>
               <attribute_type>string</attribute_type>
               <attribute_values>
-                <attribute_value></attribute_value>
+                <attribute_value>some-customer-id</attribute_value>
               </attribute_values>
             </attribute>
             <attribute>
@@ -125,14 +131,14 @@ class MetadataXmlSpec extends FlatSpec with Matchers with StreamlinedXml {
               <attribute_name>classification_type</attribute_name>
               <attribute_type>string</attribute_type>
               <attribute_values>
-                <attribute_value></attribute_value>
+                <attribute_value>some-classification-type</attribute_value>
               </attribute_values>
             </attribute>
             <attribute>
               <attribute_name>business_area</attribute_name>
               <attribute_type>string</attribute_type>
               <attribute_values>
-                <attribute_value></attribute_value>
+                <attribute_value>some-business-area</attribute_value>
               </attribute_values>
             </attribute>
             <attribute>
@@ -146,7 +152,7 @@ class MetadataXmlSpec extends FlatSpec with Matchers with StreamlinedXml {
         </document>
       </documents>
 
-    val metadataXml = MetadataXml.getXml(SubmissionRef("some-submission-ref"), ReconciliationId("some-recocilliatin-id"), submissionAndPdf)
+    val metadataXml = MetadataXml.getXml(SubmissionRef("some-submission-ref"), ReconciliationId("some-recocilliatin-id"), submissionAndPdf, dmsSubmission)
 
     metadataXml should equal(expected)(after being streamlined[Elem])
 

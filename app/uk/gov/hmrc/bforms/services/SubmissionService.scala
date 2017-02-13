@@ -111,11 +111,12 @@ object SubmissionService {
       formTemplate      <- fromFutureOptionA  (findOneFormTemplate(templateSelector(form)))(InvalidState(s"FormTemplate $templateSelector not found"))
       sections          <- fromOptA           (TemplateValidator.extractSections(formTemplate.value))
       formName          <- fromOptA           (TemplateValidator.extractFormName(formTemplate.value))
+      dmsSubmission     <- fromOptA           (TemplateValidator.extractDmsSubmission(formTemplate.value))
       envelopeId        <- fromFutureOptA     (FileUploadService.createEnvelope(formTypeId))
       sectionFormFields <- fromOptA           (getSectionFormFields(form, sections))
       submissionAndPdf  =  getSubmissionAndPdf(envelopeId, form, sectionFormFields, formName)
       _                 <- fromFutureA        (insertSubmission(Json.obj(), submissionAndPdf.submission))
-      res               <- FileUploadService.submitEnvelope(submissionAndPdf)
+      res               <- FileUploadService.submitEnvelope(submissionAndPdf, dmsSubmission)
     } yield res
     // format: ON
   }

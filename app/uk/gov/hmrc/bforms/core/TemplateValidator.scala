@@ -20,7 +20,7 @@ import cats.implicits._
 import cats.Monoid
 import play.api.libs.json._
 import uk.gov.hmrc.bforms.exceptions.{ InvalidState, UnexpectedState }
-import uk.gov.hmrc.bforms.model.{ FormField, Section }
+import uk.gov.hmrc.bforms.model.{ DmsSubmission, FormField, Section }
 
 sealed trait ValidationResult {
   def toEither: Opt[Unit] = this match {
@@ -64,25 +64,19 @@ object TemplateValidator {
     }
   }
 
-  def extractSections(json: JsValue): Opt[Seq[Section]] = {
+  def extractSections(json: JsValue): Opt[Seq[Section]] = extract(json, "sections")
 
-    val sectionsRaw: JsResult[List[Section]] = (json \ "sections").validate[List[Section]]
+  def extractFormName(json: JsValue): Opt[String] = extract(json, "formName")
 
-    sectionsRaw match {
+  def extractDmsSubmission(json: JsValue): Opt[DmsSubmission] = extract(json, "dmsSubmission")
+
+  def extract[B: Reads](json: JsValue, key: String): Opt[B] = {
+
+    val keyRaw: JsResult[B] = (json \ key).validate[B]
+
+    keyRaw match {
       case JsSuccess(success, _) => Right(success)
-      case JsError(error) => Left(InvalidState(s"""|Error when reading 'sections' from json:
-                                                   |Error: $error
-                                                   |Input json: """.stripMargin + Json.prettyPrint(json)))
-    }
-  }
-
-  def extractFormName(json: JsValue): Opt[String] = {
-
-    val formNameRaw: JsResult[String] = (json \ "formName").validate[String]
-
-    formNameRaw match {
-      case JsSuccess(success, _) => Right(success)
-      case JsError(error) => Left(InvalidState(s"""|Error when reading 'formName' from json:
+      case JsError(error) => Left(InvalidState(s"""|Error when reading '$key' from json:
                                                    |Error: $error
                                                    |Input json: """.stripMargin + Json.prettyPrint(json)))
     }

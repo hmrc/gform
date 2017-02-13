@@ -44,7 +44,8 @@ object FileUploadService {
     createEnvelope(envelopeRequest(formTypeId)).map(extractEnvelopId)
 
   def submitEnvelope(
-    submissionAndPdf: SubmissionAndPdf
+    submissionAndPdf: SubmissionAndPdf,
+    dmsSubmission: DmsSubmission
   )(
     implicit
     ec: ExecutionContext,
@@ -61,7 +62,7 @@ object FileUploadService {
     val fileNamePrefix = s"$submissionRef-$date"
 
     val reconciliationId = ReconciliationId.create(submissionRef)
-    val metadataXml = MetadataXml.xmlDec + "\n" + MetadataXml.getXml(submissionRef, reconciliationId, submissionAndPdf)
+    val metadataXml = MetadataXml.xmlDec + "\n" + MetadataXml.getXml(submissionRef, reconciliationId, submissionAndPdf, dmsSubmission)
 
     // format: OFF
     for {

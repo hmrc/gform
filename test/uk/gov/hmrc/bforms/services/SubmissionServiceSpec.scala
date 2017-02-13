@@ -45,6 +45,11 @@ class SubmissionServiceSpec extends FlatSpec with Matchers with TypeclassFixture
     Json.obj(
       "formTypeId" -> "IPT100",
       "formName" -> "Insurance Premium Tax Return",
+      "dmsSubmission" -> Json.obj(
+        "customerId" -> "nino",
+        "classificationType" -> "BT-NRU-Environmental",
+        "businessArea" -> "FinanceOpsCorpT"
+      ),
       "sections" -> Json.arr(
         Json.obj(
           "title" -> "Your details",
