@@ -30,9 +30,8 @@ import play.api._
 import play.core.SourceMapper
 import play.modules.reactivemongo.ReactiveMongoComponentImpl
 import reactivemongo.api.DefaultDB
-import uk.gov.hmrc.bforms.connectors.{ FusConnector, FusFeConnector }
 import uk.gov.hmrc.bforms.controllers._
-import uk.gov.hmrc.bforms.repositories.{ FormRepository, FormTemplateRepository, SaveAndRetrieveRepository, SchemaRepository, TestRepository }
+import uk.gov.hmrc.bforms.repositories.{ FormRepository, FormTemplateRepository, SaveAndRetrieveRepository, SchemaRepository, SubmissionRepository, TestRepository }
 import uk.gov.hmrc.bforms.services.FileUploadService
 import uk.gov.hmrc.bforms.typeclasses.{ FusFeUrl, FusUrl, ServiceUrl }
 import uk.gov.hmrc.play.audit.filters.AuditFilter
@@ -153,6 +152,7 @@ trait ApplicationModule extends BuiltInComponents
   lazy implicit val schemaRepository = new SchemaRepository
   lazy implicit val formTemplateRepository = new FormTemplateRepository
   lazy implicit val formRepository = new FormRepository
+  lazy implicit val submissionRepository = new SubmissionRepository
 
   implicit val fusUrl = new ServiceUrl[FusUrl] {
     val url = baseUrl("file-upload")
@@ -162,7 +162,6 @@ trait ApplicationModule extends BuiltInComponents
     val url = baseUrl("file-upload-frontend")
   }
 
-  lazy val microserviceHelloWorld = new MicroserviceHelloWorld(testRepository, fileUploadService)
   lazy val saveAndRetrieveController = new SaveAndRetrieveController(messagesApi)(saveAndRetrieveRespository)
 
   lazy val formTemplates = new FormTemplates()
@@ -182,14 +181,9 @@ trait ApplicationModule extends BuiltInComponents
 
   lazy val metricsController = new MetricsController(metrics)
 
-  lazy val appRoutes = new app.Routes(httpErrorHandler, saveAndRetrieveController, microserviceHelloWorld, forms, formTemplates, schemas)
+  lazy val appRoutes = new app.Routes(httpErrorHandler, saveAndRetrieveController, forms, formTemplates, schemas)
 
   override lazy val router: Router = new prod.Routes(httpErrorHandler, appRoutes, healthRoutes, metricsController)
-
-  lazy val fusConnector = new FusConnector()
-  lazy val fusFeConnector = new FusFeConnector()
-
-  lazy val fileUploadService = new FileUploadService(fusConnector, fusFeConnector)
 
   object ControllerConfiguration extends ControllerConfig {
     lazy val controllerConfigs = configuration.underlying.as[Config]("controllers")

@@ -14,20 +14,21 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.model
+package uk.gov.hmrc.bforms.typeclasses
 
-import play.api.libs.json.Json
+import scala.util.Random
 
-case class Section(
-  title: String,
-  fields: List[FieldValue]
-)
-
-object Section {
-  implicit val format = Json.format[Section]
+trait Rnd[T] {
+  def apply(): T
 }
 
-case class SectionFormField(
-  title: String,
-  fields: List[(FormField, FieldValue)]
-)
+object Rnd {
+
+  def apply[T](value: T): Rnd[T] = new Rnd[T] {
+    override val apply: T = value
+  }
+
+  implicit object RandomRnd extends Rnd[Random] {
+    override val apply: Random = Random
+  }
+}

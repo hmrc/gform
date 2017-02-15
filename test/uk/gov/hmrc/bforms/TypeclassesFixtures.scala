@@ -16,32 +16,59 @@
 
 package uk.gov.hmrc.bforms
 
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.exceptions.TestFailedException
+import org.scalatest.Assertion
+import org.scalatest.Assertions.succeed
+import org.scalactic.source.Position
 import play.api.libs.json.JsObject
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ ExecutionContext, Future, Promise }
+import scala.util.{ Failure, Success }
 import uk.gov.hmrc.bforms.core.Opt
 import uk.gov.hmrc.bforms.model.{ DbOperationResult, FormTemplate, UpdateSuccess }
-import uk.gov.hmrc.bforms.typeclasses.{ FindOne, Insert, Update }
-import uk.gov.hmrc.play.http.HeaderCarrier
+import uk.gov.hmrc.bforms.typeclasses.{ FindOne, Insert, Post, Update }
+import uk.gov.hmrc.play.http.HttpResponse
 
 trait TypeclassCallCheck { def call(): Unit }
 trait FindOneCheck extends TypeclassCallCheck
 trait UpdateCheck extends TypeclassCallCheck
 trait InsertCheck extends TypeclassCallCheck
+trait PostCheck extends TypeclassCallCheck
 
 class NotUsedTypeclassError extends Error
 
-trait TypeclassFixtures {
+trait TypeclassFixtures { self: ScalaFutures =>
+
+  private def noAssertion[A] = (_: A) => succeed
+  private def noAssertion2[A, B] = (_: A, _: B) => succeed
+
+  def futureResult[U](future: Future[U])(implicit pos: Position, ec: ExecutionContext): U = {
+    handleTestFailedException(future).futureValue match {
+      case Left(testFailedException) => throw testFailedException
+      case Right(u) => u
+    }
+  }
+
+  private def handleTestFailedException[U](future: Future[U])(implicit ec: ExecutionContext): Future[Either[TestFailedException, U]] = {
+    val p = Promise[Either[TestFailedException, U]]()
+    future.onComplete {
+      case Failure(t: TestFailedException) => p success Left(t)
+      case Failure(t) => p failure (t)
+      case Success(v) => p success Right(v)
+    }
+    p.future
+  }
 
   class FindOneTC[B](callCheck: Option[FindOneCheck], returnValue: Option[B]) {
     def callCheck(callCheck: FindOneCheck) = new FindOneTC(Some(callCheck), returnValue)
 
-    def noChecks = getTC(None)
-    def withChecks(f: JsObject => Unit) = getTC(Some(f))
+    def noChecks = getTC(noAssertion)
+    def withChecks(f: JsObject => Assertion) = getTC(f)
 
-    private def getTC(checkFn: Option[JsObject => Unit]): FindOne[B] = new FindOne[B] {
+    private def getTC(checkFn: JsObject => Assertion): FindOne[B] = new FindOne[B] {
       def apply(selector: JsObject): Future[Option[B]] = {
         callCheck.foreach(_.call())
-        checkFn.foreach(_(selector))
+        checkFn(selector)
         Future.successful(returnValue)
       }
     }
@@ -59,13 +86,13 @@ trait TypeclassFixtures {
   class UpdateTC[B](callCheck: Option[UpdateCheck], returnValue: Opt[DbOperationResult]) {
     def callCheck(callCheck: UpdateCheck) = new UpdateTC[B](Some(callCheck), returnValue)
 
-    def noChecks = getTC(None)
-    def withChecks(f: (JsObject, B) => Unit) = getTC(Some(f))
+    def noChecks = getTC(noAssertion2)
+    def withChecks(f: (JsObject, B) => Assertion) = getTC(f)
 
-    private def getTC(checkFn: Option[(JsObject, B) => Unit]): Update[B] = new Update[B] {
+    private def getTC(checkFn: (JsObject, B) => Assertion): Update[B] = new Update[B] {
       def apply(selector: JsObject, v: B): Future[Opt[DbOperationResult]] = {
         callCheck.foreach(_.call())
-        checkFn.foreach(_(selector, v))
+        checkFn(selector, v)
         Future.successful(returnValue)
       }
     }
@@ -83,13 +110,13 @@ trait TypeclassFixtures {
   class InsertTC[B](callCheck: Option[InsertCheck], returnValue: Opt[DbOperationResult]) {
     def callCheck(callCheck: InsertCheck) = new InsertTC[B](Some(callCheck), returnValue)
 
-    def noChecks = getTC(None)
-    def withChecks(f: (JsObject, B) => Unit) = getTC(Some(f))
+    def noChecks = getTC(noAssertion2)
+    def withChecks(f: (JsObject, B) => Assertion) = getTC(f)
 
-    private def getTC(checkFn: Option[(JsObject, B) => Unit]): Insert[B] = new Insert[B] {
+    private def getTC(checkFn: (JsObject, B) => Assertion): Insert[B] = new Insert[B] {
       def apply(selector: JsObject, v: B): Future[Opt[DbOperationResult]] = {
         callCheck.foreach(_.call())
-        checkFn.foreach(_(selector, v))
+        checkFn(selector, v)
         Future.successful(returnValue)
       }
     }
@@ -99,6 +126,30 @@ trait TypeclassFixtures {
     def response[A](returnValue: Opt[DbOperationResult]) = new InsertTC[A](None, returnValue)
     def notUsed[B]: Insert[B] = new Insert[B] {
       def apply(selector: JsObject, v: B): Future[Opt[DbOperationResult]] = {
+        Future.failed(new NotUsedTypeclassError)
+      }
+    }
+  }
+
+  class PostTC[A, B](callCheck: Option[PostCheck], returnValue: B) {
+    def callCheck(callCheck: PostCheck) = new PostTC[A, B](Some(callCheck), returnValue)
+
+    def noChecks = getTC(noAssertion)
+    def withChecks(f: A => Assertion) = getTC(f)
+
+    private def getTC(checkFn: A => Assertion): Post[A, B] = new Post[A, B] {
+      def apply(v: A): Future[B] = {
+        callCheck.foreach(_.call())
+        checkFn(v)
+        Future.successful(returnValue)
+      }
+    }
+  }
+
+  object PostTC {
+    def response[A, B](returnValue: B) = new PostTC[A, B](None, returnValue)
+    def notUsed[A, B]: Post[A, B] = new Post[A, B] {
+      def apply(a: A): Future[B] = {
         Future.failed(new NotUsedTypeclassError)
       }
     }

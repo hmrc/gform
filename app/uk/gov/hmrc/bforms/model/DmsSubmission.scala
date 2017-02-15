@@ -18,16 +18,12 @@ package uk.gov.hmrc.bforms.model
 
 import play.api.libs.json.Json
 
-case class Section(
-  title: String,
-  fields: List[FieldValue]
+case class DmsSubmission(
+  customerId: String,
+  classificationType: String,
+  businessArea: String
 )
 
-object Section {
-  implicit val format = Json.format[Section]
+object DmsSubmission {
+  implicit val format = Json.format[DmsSubmission]
 }
-
-case class SectionFormField(
-  title: String,
-  fields: List[(FormField, FieldValue)]
-)

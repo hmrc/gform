@@ -24,39 +24,107 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle
 import org.apache.pdfbox.pdmodel.font.{ PDFont, PDType1Font }
 import org.apache.pdfbox.pdmodel.{ PDDocument, PDPage, PDPageContentStream }
 import play.api.libs.json._
-import uk.gov.hmrc.bforms.model.FormField
+import uk.gov.hmrc.bforms.model.{ FieldValue, FormData, FormField, SectionFormField }
 
 import scala.collection.mutable.ArrayBuffer
 
+sealed trait LayoutElem {
+  def count(c1: Int, c2: Int, c3: Int) = this match {
+    case Text(_) => (this, c1 + 1, c2, c3)
+    case SectionTitle(_) => (this, c1, c2 + 1, c3)
+    case Line => (this, c1, c2, c3 + 1)
+  }
+}
+case class Text(text: String) extends LayoutElem
+case class SectionTitle(title: String) extends LayoutElem
+case object Line extends LayoutElem
+
 object PdfGenerator {
 
-  def generatePdf(message: String): Array[Byte] = {
+  def localisation(str: String): String = {
+    str.split('|') match {
+      case Array() => ""
+      case Array(s, _*) => s.trim
+    }
+  }
+
+  def generate(
+    sectionFormFields: List[SectionFormField],
+    formName: String
+  ): Array[Byte] = {
     val byteArrayOutputStream = new ByteArrayOutputStream()
     val doc = new PDDocument()
     try {
+
       val page = new PDPage()
       doc.addPage(page)
 
-      val font: PDFont = PDType1Font.HELVETICA_BOLD
-
       val contents = new PDPageContentStream(doc, page)
+      val leading: Float = 25
+      val mediaBox: PDRectangle = page.getMediaBox
+      val margin: Float = 72
+      val startX: Float = mediaBox.getLowerLeftX + margin
+      val startY: Float = mediaBox.getUpperRightY - margin
 
-      contents.setNonStrokingColor(Color.GREEN)
-      contents.addRect(0, 0, page.getMediaBox().getWidth(), page.getMediaBox().getHeight())
-      contents.fill()
+      val layoutElems: List[LayoutElem] = sectionFormFields.flatMap { section =>
+        val lines = section.fields.map {
+          case (formField, fieldValue) =>
+            Text(localisation(fieldValue.label) + " : " + formField.value)
+        }
+        SectionTitle(localisation(section.title)) :: lines ::: List(Line)
+      }
 
-      contents.setNonStrokingColor(Color.DARK_GRAY)
-      contents.addRect(10, 10, 100, 100)
-      contents.fill()
+      /**
+       * First Int - number of text fields preceding this LayoutElem
+       * Second Int - number of sections preceding this LayoutElem
+       * Third Int - number of lines preceding this LayoutElem
+       */
+      val layoutElemsWithAccs: List[(LayoutElem, Int, Int, Int)] = layoutElems match {
+        case Nil => Nil
+        case x :: xs => xs.scanLeft((x, 0, 0, 0)) {
+          case ((_, acc1, acc2, acc3), layoutElem) =>
+            layoutElem.count(acc1, acc2, acc3)
+        }
+      }
 
-      contents.setNonStrokingColor(Color.BLACK)
-      contents.beginText()
-      contents.setFont(font, 12)
-      contents.newLineAtOffset(100, 700)
-      contents.showText(message)
-      contents.endText()
+      val offset = 40
+
+      /**
+       * Int denotes position of the LayoutElem as offset from the beginning of the page
+       */
+      val layoutElemsWithPosition: List[(LayoutElem, Int)] = layoutElemsWithAccs.map {
+        case (p, count1, count2, count3) =>
+          (p, offset + count1 * 20 + count2 * 30 + count3 * 10)
+      }
+
+      def renderTextOnPosition(text: String, position: Float, font: PDFont, fontSize: Float) = {
+        contents.beginText()
+        contents.setFont(font, fontSize)
+        contents.newLineAtOffset(startX, startY - position)
+        contents.showText(text)
+        contents.endText()
+      }
+
+      renderTextOnPosition(localisation(formName), 0, PDType1Font.HELVETICA_BOLD, 20)
+
+      layoutElemsWithPosition.map {
+        case (Text(text), position) =>
+          renderTextOnPosition(text, position, PDType1Font.HELVETICA_BOLD, 12)
+        case (SectionTitle(title), position) =>
+          renderTextOnPosition(title, position, PDType1Font.HELVETICA_OBLIQUE, 16)
+        case (Line, position) =>
+          contents.moveTo(margin, startY - position);
+          contents.lineTo(mediaBox.getUpperRightX - margin, startY - position);
+          contents.stroke();
+      }
+
       contents.close()
+
+      /* val output = new java.io.File("confirmation.pdf")
+       * doc.save(output) */
+
       doc.save(byteArrayOutputStream)
+
     } finally {
       doc.close()
     }
@@ -186,4 +254,3 @@ object SPDFExample {
     lines
   }
 }
-

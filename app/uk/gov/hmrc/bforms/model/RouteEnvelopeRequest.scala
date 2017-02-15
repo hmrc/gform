@@ -18,16 +18,8 @@ package uk.gov.hmrc.bforms.model
 
 import play.api.libs.json.Json
 
-case class Section(
-  title: String,
-  fields: List[FieldValue]
-)
+case class RouteEnvelopeRequest(envelopeId: EnvelopeId, application: String, destination: String)
 
-object Section {
-  implicit val format = Json.format[Section]
+object RouteEnvelopeRequest {
+  implicit val format = Json.format[RouteEnvelopeRequest]
 }
-
-case class SectionFormField(
-  title: String,
-  fields: List[(FormField, FieldValue)]
-)

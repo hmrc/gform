@@ -21,9 +21,10 @@ import scala.concurrent.{ ExecutionContext, Future }
 import org.scalatest.concurrent.ScalaFutures
 import uk.gov.hmrc.bforms.exceptions.InvalidState
 import uk.gov.hmrc.bforms.model.EnvelopeId
+import uk.gov.hmrc.bforms.services.FileUploadService
 import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpReads, HttpResponse }
 import uk.gov.hmrc.play.test.UnitSpec
-import uk.gov.hmrc.bforms.typeclasses.{ CreateEnvelope, FusUrl, ServiceUrl, HttpExecutor }
+import uk.gov.hmrc.bforms.typeclasses.{ FusUrl, ServiceUrl }
 import org.scalatest._
 
 class FusConnectorSpec extends FlatSpec with Matchers with EitherValues {
@@ -32,7 +33,7 @@ class FusConnectorSpec extends FlatSpec with Matchers with EitherValues {
 
     val responseFromFus = HttpResponse(201, responseHeaders = Map.empty[String, List[String]])
 
-    val res = new FusConnector().extractEnvelopId(responseFromFus)
+    val res = FileUploadService.extractEnvelopId(responseFromFus)
 
     res.left.value should be(InvalidState("Header Location not found"))
 
@@ -42,7 +43,7 @@ class FusConnectorSpec extends FlatSpec with Matchers with EitherValues {
 
     val responseFromFus = HttpResponse(201, responseHeaders = Map("Location" -> List("invalid-location")))
 
-    val res = new FusConnector().extractEnvelopId(responseFromFus)
+    val res = FileUploadService.extractEnvelopId(responseFromFus)
 
     res.left.value should be(InvalidState("EnvelopeId in Location header: invalid-location not found"))
 
@@ -52,7 +53,7 @@ class FusConnectorSpec extends FlatSpec with Matchers with EitherValues {
 
     val responseFromFus = HttpResponse(201, responseHeaders = Map("Location" -> List("envelopes/123")))
 
-    val res = new FusConnector().extractEnvelopId(responseFromFus)
+    val res = FileUploadService.extractEnvelopId(responseFromFus)
 
     res.right.value should be(EnvelopeId("123"))
 

@@ -16,18 +16,4 @@
 
 package uk.gov.hmrc.bforms.model
 
-import play.api.libs.json.Json
-
-case class Section(
-  title: String,
-  fields: List[FieldValue]
-)
-
-object Section {
-  implicit val format = Json.format[Section]
-}
-
-case class SectionFormField(
-  title: String,
-  fields: List[(FormField, FieldValue)]
-)
+case class UploadFile(envelopeId: EnvelopeId, fileId: FileId, fileName: String, contentType: String, body: Array[Byte])

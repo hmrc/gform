@@ -23,36 +23,36 @@ object MetadataXml {
 
   val xmlDec = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>"""
 
-  private def createMetadata(sap: SubmissionAndPdf): Elem = {
+  private def createMetadata(sap: SubmissionAndPdf, dmsSubmission: DmsSubmission): Elem = {
     val submission = sap.submission
     val dmsMetaData = submission.dmsMetaData
     val pdfSummary = sap.pdfSummary
     val attributes = List(
       createAttribute("hmrc_time_of_receipt", submission.submittedDate),
       createAttribute("time_xml_created", submission.submittedDate),
-      createAttribute("submission_reference", submission.submissionRef),
-      createAttribute("form_id", dmsMetaData.formId),
+      createAttribute("submission_reference", submission.submissionRef.value),
+      createAttribute("form_id", dmsMetaData.formTypeId.value),
       createAttribute("number_pages", pdfSummary.numberOfPages),
       createAttribute("source", "dfs"),
-      createAttribute("customer_id", "???"),
-      createAttribute("submission_mark", submission.submissionMark.getOrElse("???")),
-      createAttribute("cas_key", submission.casKey.getOrElse("???")),
-      createAttribute("classification_type", dmsMetaData.classificationType),
-      createAttribute("business_area", dmsMetaData.businessArea),
-      createAttribute("attachment_count", 123)
+      createAttribute("customer_id", dmsSubmission.customerId),
+      createAttribute("submission_mark", ""), // We are not using CAS
+      createAttribute("cas_key", ""), // We are not using CAS
+      createAttribute("classification_type", dmsSubmission.classificationType),
+      createAttribute("business_area", dmsSubmission.businessArea),
+      createAttribute("attachment_count", 0)
     )
     <metadata></metadata>.copy(child = attributes)
   }
 
-  private def createHeader(submissionRef: String, reconciliationId: String): Elem = {
+  private def createHeader(submissionRef: SubmissionRef, reconciliationId: ReconciliationId): Elem = {
     <header>
-      <title>{ submissionRef }</title>
+      <title>{ submissionRef.value }</title>
       <format>pdf</format>
       <mime_type>application/pdf</mime_type>
       <store>true</store>
       <source>dfs</source>
       <target>DMS</target>
-      <reconciliation_id>{ reconciliationId }</reconciliation_id>
+      <reconciliation_id>{ reconciliationId.value }</reconciliation_id>
     </header>
   }
 
@@ -62,10 +62,10 @@ object MetadataXml {
     </documents>
   }
 
-  def getXml(submissionRef: String, reconciliationId: String, sap: SubmissionAndPdf): Elem = {
+  def getXml(submissionRef: SubmissionRef, reconciliationId: ReconciliationId, sap: SubmissionAndPdf, dmsSubmission: DmsSubmission): Elem = {
     val body = List(
       createHeader(submissionRef, reconciliationId),
-      createMetadata(sap)
+      createMetadata(sap, dmsSubmission)
     )
 
     createDocument(body)

@@ -16,18 +16,21 @@
 
 package uk.gov.hmrc.bforms.model
 
-import play.api.libs.json.Json
+import cats.data.State
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import play.api.libs.json.{ Format, JsError, JsString, JsSuccess, Reads, Writes }
+import scala.util.Random
+import uk.gov.hmrc.bforms.typeclasses.Now
 
-case class Section(
-  title: String,
-  fields: List[FieldValue]
-)
-
-object Section {
-  implicit val format = Json.format[Section]
+case class ReconciliationId(value: String) extends AnyVal {
+  override def toString = value
 }
 
-case class SectionFormField(
-  title: String,
-  fields: List[(FormField, FieldValue)]
-)
+object ReconciliationId {
+
+  def create(submissionRef: SubmissionRef)(implicit now: Now[LocalDateTime]): ReconciliationId = {
+    val dateFormatter = now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
+    ReconciliationId(submissionRef + "-" + dateFormatter)
+  }
+}

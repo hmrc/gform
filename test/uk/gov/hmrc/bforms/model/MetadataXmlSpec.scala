@@ -24,23 +24,18 @@ class MetadataXmlSpec extends FlatSpec with Matchers with StreamlinedXml {
   "metadata.xml" should "be generated" in {
 
     val dmsMetaData = DmsMetaData(
-      formId = "some-fomr-id",
-      formNino = None,
-      authNino = None,
-      classificationType = "some-classification-type",
-      businessArea = "some-business-area"
+      formTypeId = FormTypeId("some-form-type-id")
     )
 
     val submission = Submission(
       submittedDate = LocalDateTime.of(2012, 12, 3, 12, 45),
-      submissionRef = "some-submission-ref",
-      dmsMetaData = dmsMetaData,
-      submissionMark = Some("submission-mark"),
-      casKey = Some("some-cas-key")
+      submissionRef = SubmissionRef("some-submission-ref"),
+      formId = FormId("some-form-type-id"),
+      envelopeId = EnvelopeId("some-envelope-id"),
+      dmsMetaData = dmsMetaData
     )
 
     val pdfSummary = PdfSummary(
-      submissionRef = "some-submission-ref",
       numberOfPages = 10L,
       pdfContent = Array.empty[Byte]
     )
@@ -48,6 +43,12 @@ class MetadataXmlSpec extends FlatSpec with Matchers with StreamlinedXml {
     val submissionAndPdf = SubmissionAndPdf(
       submission = submission,
       pdfSummary = pdfSummary
+    )
+
+    val dmsSubmission = DmsSubmission(
+      customerId = "some-customer-id",
+      classificationType = "some-classification-type",
+      businessArea = "some-business-area"
     )
 
     val expected =
@@ -88,7 +89,7 @@ class MetadataXmlSpec extends FlatSpec with Matchers with StreamlinedXml {
               <attribute_name>form_id</attribute_name>
               <attribute_type>string</attribute_type>
               <attribute_values>
-                <attribute_value>some-fomr-id</attribute_value>
+                <attribute_value>some-form-type-id</attribute_value>
               </attribute_values>
             </attribute>
             <attribute>
@@ -109,21 +110,21 @@ class MetadataXmlSpec extends FlatSpec with Matchers with StreamlinedXml {
               <attribute_name>customer_id</attribute_name>
               <attribute_type>string</attribute_type>
               <attribute_values>
-                <attribute_value>???</attribute_value>
+                <attribute_value>some-customer-id</attribute_value>
               </attribute_values>
             </attribute>
             <attribute>
               <attribute_name>submission_mark</attribute_name>
               <attribute_type>string</attribute_type>
               <attribute_values>
-                <attribute_value>submission-mark</attribute_value>
+                <attribute_value></attribute_value>
               </attribute_values>
             </attribute>
             <attribute>
               <attribute_name>cas_key</attribute_name>
               <attribute_type>string</attribute_type>
               <attribute_values>
-                <attribute_value>some-cas-key</attribute_value>
+                <attribute_value></attribute_value>
               </attribute_values>
             </attribute>
             <attribute>
@@ -144,14 +145,14 @@ class MetadataXmlSpec extends FlatSpec with Matchers with StreamlinedXml {
               <attribute_name>attachment_count</attribute_name>
               <attribute_type>int</attribute_type>
               <attribute_values>
-                <attribute_value>123</attribute_value>
+                <attribute_value>0</attribute_value>
               </attribute_values>
             </attribute>
           </metadata>
         </document>
       </documents>
 
-    val metadataXml = MetadataXml.getXml("some-submission-ref", "some-recocilliatin-id", submissionAndPdf)
+    val metadataXml = MetadataXml.getXml(SubmissionRef("some-submission-ref"), ReconciliationId("some-recocilliatin-id"), submissionAndPdf, dmsSubmission)
 
     metadataXml should equal(expected)(after being streamlined[Elem])
 

@@ -16,18 +16,6 @@
 
 package uk.gov.hmrc.bforms.model
 
-import play.api.libs.json.Json
+import play.api.libs.json.JsObject
 
-case class Section(
-  title: String,
-  fields: List[FieldValue]
-)
-
-object Section {
-  implicit val format = Json.format[Section]
-}
-
-case class SectionFormField(
-  title: String,
-  fields: List[(FormField, FieldValue)]
-)
+case class CreateEnvelope(value: JsObject) extends AnyVal

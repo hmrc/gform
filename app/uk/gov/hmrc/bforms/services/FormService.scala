@@ -86,6 +86,16 @@ object FormService {
     fromFutureA(FindForm(selector))
   }
 
+  def getByTypeAndId(formTypeId: FormTypeId, formId: FormId)(implicit FindOneForm: FindOne[Form]): ServiceResponse[Form] = {
+
+    val selector = Json.obj(
+      "_id" -> formId,
+      "formTypeId" -> formTypeId
+    )
+
+    fromFutureOptionA(FindOneForm(selector))(InvalidState(s"Form formTypeId $formTypeId, formId $formId not found"))
+  }
+
   def getByIdAndVersion(formTypeId: FormTypeId, version: String)(implicit FindForm: Find[Form]): ServiceResponse[List[Form]] = {
 
     val selector = Json.obj(

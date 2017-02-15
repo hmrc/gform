@@ -25,6 +25,7 @@ import uk.gov.hmrc.bforms.{ FindOneCheck, TypeclassFixtures }
 import uk.gov.hmrc.bforms.exceptions.InvalidState
 import uk.gov.hmrc.bforms.model._
 import uk.gov.hmrc.bforms.typeclasses.{ FindOne, Insert, Update }
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class FormServiceSpec extends FlatSpec with Matchers with TypeclassFixtures with ScalaFutures with EitherValues with MockFactory {
 
@@ -116,7 +117,7 @@ class FormServiceSpec extends FlatSpec with Matchers with TypeclassFixtures with
 
     val res = FormService.saveOrUpdate(form, SaveOperation)
 
-    res.value.futureValue.left.value should be(InvalidState("""FormTemplate {"formTypeId":"form-type-id","version":"1.0.0"} not found"""))
+    futureResult(res.value).left.value should be(InvalidState("""FormTemplate {"formTypeId":"form-type-id","version":"1.0.0"} not found"""))
   }
 
   it should "return InvalidState when Form cannot be found when trying to Update the form" in {
@@ -137,7 +138,7 @@ class FormServiceSpec extends FlatSpec with Matchers with TypeclassFixtures with
 
     val res = FormService.saveOrUpdate(form, UpdateOperation)
 
-    res.value.futureValue.left.value should be(InvalidState("""Form {"_id":"form-id"} not found"""))
+    futureResult(res.value).left.value should be(InvalidState("""Form {"_id":"form-id"} not found"""))
   }
 
   it should "return InvalidState when fields in the Form doesn't match the fields in FormTemplate" in {
@@ -146,18 +147,12 @@ class FormServiceSpec extends FlatSpec with Matchers with TypeclassFixtures with
       .response(Some(formTemplateWithOneSection))
       .noChecks
     implicit val findOneForm: FindOne[Form] = FindOneTC.notUsed[Form]
-
-    implicit val insertForm: Insert[Form] = InsertTC
-      .response(Right(UpdateSuccess))
-      .withChecks { (selector: JsObject, form0: Form) =>
-        form0 should be(form)
-        selector should be(Json.obj("_id" -> "form-id"))
-      }
+    implicit val insertForm: Insert[Form] = InsertTC.notUsed[Form]
     implicit val updateForm: Update[Form] = UpdateTC.notUsed[Form]
 
     val res = FormService.saveOrUpdate(form, SaveOperation)
 
-    res.value.futureValue.left.value should be(
+    futureResult(res.value).left.value should be(
       InvalidState(
         """|Cannot find a section corresponding to the formFields
            |FormFields: Set()
@@ -175,7 +170,7 @@ class FormServiceSpec extends FlatSpec with Matchers with TypeclassFixtures with
 
     val res = runSaveTest(formFields, formTemplateWithOneSection, SaveOperation)
 
-    res.value.futureValue.right.value should be(UpdateSuccess)
+    futureResult(res.value).right.value should be(UpdateSuccess)
   }
 
   it should "successfuly save first section of a form with two sections" in {
@@ -187,7 +182,7 @@ class FormServiceSpec extends FlatSpec with Matchers with TypeclassFixtures with
 
     val res = runSaveTest(formFields, formTemplateWithTwoSections, SaveOperation)
 
-    res.value.futureValue.right.value should be(UpdateSuccess)
+    futureResult(res.value).right.value should be(UpdateSuccess)
   }
 
   it should "successfuly save second section of a form with two sections" in {
@@ -200,7 +195,7 @@ class FormServiceSpec extends FlatSpec with Matchers with TypeclassFixtures with
 
     val res = runSaveTest(formFields, formTemplateWithTwoSections, SaveOperation)
 
-    res.value.futureValue.right.value should be(UpdateSuccess)
+    futureResult(res.value).right.value should be(UpdateSuccess)
   }
 
   it should "return InvalidState when mandatory field is empty on Save" in {
@@ -213,7 +208,7 @@ class FormServiceSpec extends FlatSpec with Matchers with TypeclassFixtures with
 
     val res = runSaveTest(formFields, formTemplateWithTwoSections, SaveOperation)
 
-    res.value.futureValue.left.value should be(InvalidState("Required fields accountingPeriodEndDate are missing in form submission."))
+    futureResult(res.value).left.value should be(InvalidState("Required fields accountingPeriodEndDate are missing in form submission."))
   }
 
   it should "allow save incomplete form when needed" in {
@@ -226,7 +221,7 @@ class FormServiceSpec extends FlatSpec with Matchers with TypeclassFixtures with
 
     val res = runSaveTest(formFields, formTemplateWithTwoSections, SaveTolerantOperation)
 
-    res.value.futureValue.right.value should be(UpdateSuccess)
+    futureResult(res.value).right.value should be(UpdateSuccess)
   }
 
   it should "allow update incomplete form when needed" in {
@@ -239,7 +234,7 @@ class FormServiceSpec extends FlatSpec with Matchers with TypeclassFixtures with
 
     val res = runUpdateTest(formFields, formTemplateWithTwoSections, UpdateTolerantOperation)
 
-    res.value.futureValue.right.value should be(UpdateSuccess)
+    futureResult(res.value).right.value should be(UpdateSuccess)
   }
 
   it should "return InvalidState when mandatory field is empty on Update" in {
@@ -252,7 +247,7 @@ class FormServiceSpec extends FlatSpec with Matchers with TypeclassFixtures with
 
     val res = runUpdateTest(formFields, formTemplateWithTwoSections, UpdateOperation)
 
-    res.value.futureValue.left.value should be(InvalidState("Required fields accountingPeriodEndDate are missing in form submission."))
+    futureResult(res.value).left.value should be(InvalidState("Required fields accountingPeriodEndDate are missing in form submission."))
   }
 
   def runSaveTest(formFields: List[FormField], formTemplate: FormTemplate, operation: MongoOperation) = {

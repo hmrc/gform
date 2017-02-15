@@ -14,20 +14,21 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.model
+package uk.gov.hmrc.bforms.typeclasses
 
-import play.api.libs.json.Json
+import java.time.LocalDateTime
 
-case class Section(
-  title: String,
-  fields: List[FieldValue]
-)
-
-object Section {
-  implicit val format = Json.format[Section]
+trait Now[T] {
+  def apply(): T
 }
 
-case class SectionFormField(
-  title: String,
-  fields: List[(FormField, FieldValue)]
-)
+object Now {
+
+  def apply[T](value: T): Now[T] = new Now[T] {
+    override val apply: T = value
+  }
+
+  implicit object LocalDateTimeNow extends Now[LocalDateTime] {
+    override val apply: LocalDateTime = LocalDateTime.now()
+  }
+}

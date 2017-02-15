@@ -16,18 +16,19 @@
 
 package uk.gov.hmrc.bforms.model
 
-import play.api.libs.json.Json
+import cats.data.StateT
+import cats.data.State
+import uk.gov.hmrc.bforms.model._
+import play.api.libs.json._
+import org.scalatest._
 
-case class Section(
-  title: String,
-  fields: List[FieldValue]
-)
+class SubmissionRefSpec extends FlatSpec with Matchers {
 
-object Section {
-  implicit val format = Json.format[Section]
+  "SubmissionRef.createSubmissionRef" should "generate submissionRef" in {
+    val rnd = new scala.util.Random(12)
+    val submissionRef = SubmissionRef.createSubmissionRef(rnd)
+
+    submissionRef.value should be("46Q-Z2HW-XIB")
+
+  }
 }
-
-case class SectionFormField(
-  title: String,
-  fields: List[(FormField, FieldValue)]
-)
