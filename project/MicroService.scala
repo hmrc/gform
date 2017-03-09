@@ -51,7 +51,8 @@ trait MicroService {
       parallelExecution in IntegrationTest := false)
       .settings(resolvers ++= Seq(
         Resolver.bintrayRepo("hmrc", "releases"),
-        Resolver.jcenterRepo
+        Resolver.jcenterRepo,
+        "bintray-djspiewak-maven" at "https://dl.bintray.com/djspiewak/maven"
       ))
 }
 
