@@ -21,6 +21,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{ Millis, Span }
 import org.scalamock.scalatest.MockFactory
 import play.api.libs.json.{ JsObject, Json }
+import uk.gov.hmrc.bforms.models.{ DmsSubmission, FieldValue, Section }
 import uk.gov.hmrc.bforms.{ FindOneCheck, TypeclassFixtures, UpdateCheck }
 import uk.gov.hmrc.bforms.core.ServiceResponse
 import uk.gov.hmrc.bforms.exceptions.InvalidState
@@ -30,6 +31,8 @@ import uk.gov.hmrc.bforms.typeclasses.{ FindOne, Update }
 import scala.concurrent.ExecutionContext.Implicits._
 
 class FormTemplatesSpec extends FlatSpec with Matchers with TypeclassFixtures with ScalaFutures with EitherValues with MockFactory {
+
+  val plainFormTemplate = FormTemplate(FormTypeId(""), "formName", "version", "description", "characterSet", DmsSubmission("customerId", "classificationType", "businessArea"), "submitSuccessUrl", "submitErrorUrl", List.empty[Section])
 
   implicit override val patienceConfig = PatienceConfig(timeout = scaled(Span(500, Millis)), interval = scaled(Span(150, Millis)))
 
@@ -48,7 +51,7 @@ class FormTemplatesSpec extends FlatSpec with Matchers with TypeclassFixtures wi
 
     (findOneCheck.call _).expects().once
 
-    val res: ServiceResponse[DbOperationResult] = FormTemplates.saveTemplate(FormTypeId("abc"), "1.0.0", FormTemplate(Json.obj()))
+    val res: ServiceResponse[DbOperationResult] = FormTemplates.saveTemplate(FormTypeId("abc"), "1.0.0", plainFormTemplate)
 
     futureResult(res.value).left.value should be(InvalidState("SchemaId http://hmrc.gov.uk/jsonschema/bf-formtemplate# not found"))
 
@@ -65,7 +68,7 @@ class FormTemplatesSpec extends FlatSpec with Matchers with TypeclassFixtures wi
           Schema(
             Json.obj(
               "type" -> "object",
-              "properties" -> Json.obj("firstName" -> Json.obj("type" -> "string")),
+              "properties" -> Json.obj("formName" -> Json.obj("type" -> "string")),
               "required" -> Json.arr()
             )
           )
@@ -74,20 +77,18 @@ class FormTemplatesSpec extends FlatSpec with Matchers with TypeclassFixtures wi
       .callCheck(findOneCheck)
       .noChecks
 
-    val formTemplateToSave = FormTemplate(Json.obj("firstName" -> "josef"))
-
     implicit val update: Update[FormTemplate] = UpdateTC
       .response(Right(UpdateSuccess))
       .callCheck(updateCheck)
       .withChecks { (selector: JsObject, formTemplate: FormTemplate) =>
-        formTemplate should be(formTemplateToSave)
+        formTemplate should be(plainFormTemplate)
         selector should be(Json.obj("formTypeId" -> "abc", "version" -> "1.0.0"))
       }
 
     (findOneCheck.call _).expects().once
     (updateCheck.call _).expects().once
 
-    val res: ServiceResponse[DbOperationResult] = FormTemplates.saveTemplate(FormTypeId("abc"), "1.0.0", formTemplateToSave)
+    val res: ServiceResponse[DbOperationResult] = FormTemplates.saveTemplate(FormTypeId("abc"), "1.0.0", plainFormTemplate)
 
     futureResult(res.value).right.value should be(UpdateSuccess)
   }

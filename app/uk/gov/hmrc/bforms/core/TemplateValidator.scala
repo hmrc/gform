@@ -17,9 +17,8 @@
 package uk.gov.hmrc.bforms.core
 
 import cats.Monoid
-import play.api.libs.json._
 import uk.gov.hmrc.bforms.exceptions.InvalidState
-import uk.gov.hmrc.bforms.models.{ DmsSubmission, FormField, Section }
+import uk.gov.hmrc.bforms.models.{ FormField, Section }
 
 sealed trait ValidationResult {
   def toEither: Opt[Unit] = this match {
@@ -60,24 +59,6 @@ object TemplateValidator {
         Left(InvalidState(s"""|Cannot find a section corresponding to the formFields
                               |FormFields: $formFieldIds
                               |Sections: $sectionsForPrint""".stripMargin))
-    }
-  }
-
-  def extractSections(json: JsValue): Opt[Seq[Section]] = extract(json, "sections")
-
-  def extractFormName(json: JsValue): Opt[String] = extract(json, "formName")
-
-  def extractDmsSubmission(json: JsValue): Opt[DmsSubmission] = extract(json, "dmsSubmission")
-
-  def extract[B: Reads](json: JsValue, key: String): Opt[B] = {
-
-    val keyRaw: JsResult[B] = (json \ key).validate[B]
-
-    keyRaw match {
-      case JsSuccess(success, _) => Right(success)
-      case JsError(error) => Left(InvalidState(s"""|Error when reading '$key' from json:
-                                                   |Error: $error
-                                                   |Input json: """.stripMargin + Json.prettyPrint(json)))
     }
   }
 }

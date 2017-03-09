@@ -37,7 +37,7 @@ class FormTemplateRepository(implicit mongo: () => DB)
     implicit
     ex: ExecutionContext
   ): Future[Opt[DbOperationResult]] = {
-    val res = collection.update(selector = selector, update = update.value, writeConcern = WriteConcern.Default, upsert = true, multi = false)
+    val res = collection.update(selector = selector, update = update, writeConcern = WriteConcern.Default, upsert = true, multi = false)
 
     checkUpdateResult(res)
   }

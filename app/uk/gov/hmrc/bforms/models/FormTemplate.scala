@@ -16,16 +16,20 @@
 
 package uk.gov.hmrc.bforms.models
 
-import play.api.libs.json.{ Format, JsError, JsSuccess, Reads, Writes, JsObject }
+import play.api.libs.json.Json
 
-case class FormTemplate(value: JsObject) extends AnyVal
+case class FormTemplate(
+  formTypeId: FormTypeId,
+  formName: String,
+  version: String,
+  description: String,
+  characterSet: String,
+  dmsSubmission: DmsSubmission,
+  submitSuccessUrl: String,
+  submitErrorUrl: String,
+  sections: List[Section]
+)
 
 object FormTemplate {
-  val writes = Writes[FormTemplate](id => id.value)
-  val reads = Reads[FormTemplate] {
-    case o @ JsObject(_) => JsSuccess(FormTemplate(o))
-    case otherwise => JsError(s"Invalid FormTemplate, expected JsObject, got: $otherwise")
-  }
-
-  implicit val format = Format[FormTemplate](reads, writes)
+  implicit val format = Json.format[FormTemplate]
 }

@@ -33,71 +33,31 @@ class FormServiceSpec extends FlatSpec with Matchers with TypeclassFixtures with
 
   val form = Form(FormId("form-id"), FormData(FormTypeId("form-type-id"), "1.0.0", "UTF-8", Seq.empty[FormField]))
 
-  val formTemplateWithOneSection = FormTemplate(
-    Json.obj(
-      "formTypeId" -> "IPT100",
-      "sections" -> Json.arr(
-        Json.obj(
-          "title" -> "Your details",
-          "fields" -> Json.arr(
-            Json.obj(
-              "id" -> "firstName",
-              "label" -> "Your first name",
-              "mandatory" -> "true"
-            ),
-            Json.obj(
-              "id" -> "lastName",
-              "label" -> "Your last name",
-              "mandatory" -> "true"
-            )
-          )
-        )
-      )
+  val plainFormTemplate = FormTemplate(FormTypeId(""), "formName", "version", "description", "characterSet", DmsSubmission("customerId", "classificationType", "businessArea"), "submitSuccessUrl", "submitErrorUrl", List.empty[Section])
+
+  val yourDetailsSection = Section(
+    "Your details",
+    List(
+      FieldValue("firstName", "Your first name", None, None, None, None, Some("true")),
+      FieldValue("lastName", "Your last name", None, None, None, None, Some("true"))
     )
   )
 
-  val formTemplateWithTwoSections = FormTemplate(
-    Json.obj(
-      "formTypeId" -> "IPT100",
-      "sections" -> Json.arr(
-        Json.obj(
-          "title" -> "Your details",
-          "fields" -> Json.arr(
-            Json.obj(
-              "id" -> "firstName",
-              "label" -> "Your first name",
-              "mandatory" -> "true"
-            ),
-            Json.obj(
-              "id" -> "lastName",
-              "label" -> "Your last name",
-              "mandatory" -> "true"
-            )
-          )
-        ),
-        Json.obj(
-          "title" -> "Business details",
-          "fields" -> Json.arr(
-            Json.obj(
-              "id" -> "nameOfBusiness",
-              "label" -> "Name of business",
-              "mandatory" -> "true"
-            ),
-            Json.obj(
-              "id" -> "accountingPeriodStartDate",
-              "label" -> "Accounting period start date",
-              "mandatory" -> "true"
-            ),
-            Json.obj(
-              "id" -> "accountingPeriodEndDate",
-              "label" -> "Accounting period end date",
-              "mandatory" -> "true"
-            )
-          )
-        )
-      )
+  val businessDetailsSection = Section(
+    "Business details",
+    List(
+      FieldValue("nameOfBusiness", "Name of business", None, None, None, None, Some("true")),
+      FieldValue("accountingPeriodStartDate", "Accounting period start date", None, None, None, None, Some("true")),
+      FieldValue("accountingPeriodEndDate", "Accounting period end date", None, None, None, None, Some("true"))
     )
   )
+
+  val oneSection = List(yourDetailsSection)
+  val twoSections = List(yourDetailsSection, businessDetailsSection)
+
+  val formTemplateWithOneSection = plainFormTemplate.copy(sections = oneSection)
+
+  val formTemplateWithTwoSections = plainFormTemplate.copy(sections = twoSections)
 
   "FormService saveOrUpdate" should "return InvalidState when FormTemplate cannot be found" in {
 

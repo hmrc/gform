@@ -91,7 +91,7 @@ class FormTemplates()(
         "version" -> version
       )
     ).map {
-        case Some(formTemplate) => Ok(formTemplate.value)
+        case Some(formTemplate) => Ok(Json.toJson(formTemplate))
         case None => NoContent
       }
   }

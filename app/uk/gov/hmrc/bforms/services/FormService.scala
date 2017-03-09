@@ -58,8 +58,7 @@ object FormService {
              UpdateTolerantOperation => fromFutureOptionA (FindOneForm(formSelector))(InvalidState(s"Form $formSelector not found")).map(_ => ())
       }
       formTemplate   <- fromFutureOptionA (FindOneFormTemplate(templateSelector))(InvalidState(s"FormTemplate $templateSelector not found"))
-      sections       <- fromOptA          (TemplateValidator.extractSections(formTemplate.value))
-      section        <- fromOptA          (TemplateValidator.getMatchingSection(formData.fields, sections))
+      section        <- fromOptA          (TemplateValidator.getMatchingSection(formData.fields, formTemplate.sections))
       _              <- operation match {
         case SaveTolerantOperation |
              UpdateTolerantOperation => success(())
