@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.model
+package uk.gov.hmrc.bforms.models
 
-case class FileId(value: String) extends AnyVal {
-  override def toString = value
-}
+import play.api.libs.json.JsObject
+
+case class CreateEnvelope(value: JsObject) extends AnyVal

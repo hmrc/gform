@@ -22,7 +22,7 @@ import cats.syntax.either._
 import org.scalatest.{ EitherValues, FlatSpec, Matchers }
 import play.api.libs.json.{ JsNull, Json, JsNumber }
 import uk.gov.hmrc.bforms.exceptions.InvalidState
-import uk.gov.hmrc.bforms.model.{ FieldValue, Schema, Section }
+import uk.gov.hmrc.bforms.models.{ FieldValue, Schema, Section }
 
 class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
 

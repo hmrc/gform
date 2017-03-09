@@ -31,7 +31,7 @@ import uk.gov.hmrc.bforms.core.Opt
 import uk.gov.hmrc.bforms.typeclasses.{ FusFeUrl, FusUrl, Now, Post, Rnd, ServiceUrl }
 import uk.gov.hmrc.bforms.{ FindOneCheck, InsertCheck, PostCheck, TypeclassFixtures }
 import uk.gov.hmrc.bforms.exceptions.InvalidState
-import uk.gov.hmrc.bforms.model._
+import uk.gov.hmrc.bforms.models._
 import uk.gov.hmrc.bforms.typeclasses.{ FindOne, Insert, Update }
 import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpResponse }
 import scala.concurrent.ExecutionContext.Implicits.global

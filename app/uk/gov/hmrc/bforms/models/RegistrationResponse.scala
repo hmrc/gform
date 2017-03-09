@@ -14,18 +14,26 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.model
+package uk.gov.hmrc.bforms.models
 
-import play.api.libs.json._
+import play.api.i18n.Messages
+import play.api.libs.json.{ JsObject, Json }
 
-case class SaveAndRetrieve(value: JsObject) extends AnyVal
+/**
+ * Created by daniel-connelly on 17/01/17.
+ */
+sealed trait SaveResponse {
 
-object SaveAndRetrieve {
-  val writes = Writes[SaveAndRetrieve](id => id.value)
-  val reads = Reads[SaveAndRetrieve] {
-    case o @ JsObject(_) => JsSuccess(SaveAndRetrieve(o))
-    case otherwise => JsError(s"Invalid Save and Retrieve format, expected JsObject, got: $otherwise")
+  private def error(msg: String) = Json.obj("error" -> msg)
+
+  def toJson(messages: Messages): JsObject = this match {
+    case RESPONSE_OK => Json.obj()
+    case INVALID_DATA => error(messages("save.invalid.data"))
+    case Other(msg) => error(msg)
   }
 
-  implicit val format = Format[SaveAndRetrieve](reads, writes)
 }
+
+case object RESPONSE_OK extends SaveResponse
+case object INVALID_DATA extends SaveResponse
+case class Other(key: String) extends SaveResponse

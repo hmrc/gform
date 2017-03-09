@@ -25,7 +25,7 @@ import play.api.libs.json.{ JsObject, JsValue, Json }
 import scala.util.Random
 import uk.gov.hmrc.bforms.core._
 import uk.gov.hmrc.bforms.exceptions.InvalidState
-import uk.gov.hmrc.bforms.model._
+import uk.gov.hmrc.bforms.models._
 import uk.gov.hmrc.bforms.typeclasses.{ Find, FindOne, Insert, Now, Post, Rnd, Update }
 
 import scala.concurrent.ExecutionContext.Implicits.global

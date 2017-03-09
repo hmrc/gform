@@ -14,37 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.model
+package uk.gov.hmrc.bforms.models
 
-import java.time.LocalDateTime
-import play.api.libs.json.Json
+import play.api.libs.json._
 
-case class DmsMetaData(
-  formTypeId: FormTypeId
-)
+case class FormData(formTypeId: FormTypeId, version: String, characterSet: String, fields: Seq[FormField])
 
-object DmsMetaData {
-  implicit val format = Json.format[DmsMetaData]
+object FormData {
+
+  implicit val format: OFormat[FormData] = Json.format[FormData]
 }
-
-case class Submission(
-  submittedDate: LocalDateTime,
-  submissionRef: SubmissionRef,
-  formId: FormId,
-  envelopeId: EnvelopeId,
-  dmsMetaData: DmsMetaData
-)
-
-object Submission {
-  implicit val format = Json.format[Submission]
-}
-
-case class PdfSummary(
-  numberOfPages: Long,
-  pdfContent: Array[Byte]
-)
-
-case class SubmissionAndPdf(
-  submission: Submission,
-  pdfSummary: PdfSummary
-)

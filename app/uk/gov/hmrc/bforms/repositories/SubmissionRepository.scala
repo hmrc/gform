@@ -22,7 +22,7 @@ import reactivemongo.api.commands.WriteConcern
 import reactivemongo.bson.BSONObjectID
 import scala.concurrent.ExecutionContext
 import uk.gov.hmrc.bforms.core.{ Opt, fromFutureOptA }
-import uk.gov.hmrc.bforms.model.{ DbOperationResult, Submission, FormId }
+import uk.gov.hmrc.bforms.models.{ DbOperationResult, Submission, FormId }
 import uk.gov.hmrc.mongo.ReactiveRepository
 
 import scala.concurrent.Future

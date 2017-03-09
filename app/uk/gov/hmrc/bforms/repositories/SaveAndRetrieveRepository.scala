@@ -19,7 +19,7 @@ import play.api.libs.json._
 import reactivemongo.api.DefaultDB
 import reactivemongo.bson.BSONObjectID
 import uk.gov.hmrc.bforms.core.Opt
-import uk.gov.hmrc.bforms.model.{ DbOperationResult, SaveAndRetrieve }
+import uk.gov.hmrc.bforms.models.{ DbOperationResult, SaveAndRetrieve }
 import uk.gov.hmrc.mongo.ReactiveRepository
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -41,4 +41,3 @@ class SaveAndRetrieveRepository(implicit mongo: () => DefaultDB)
     collection.find(selector).one[SaveAndRetrieve]
   }
 }
-

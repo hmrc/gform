@@ -26,7 +26,7 @@ import play.api.libs.json.{ Json, Writes }
 import play.api.mvc.MultipartFormData.{ DataPart, FilePart }
 import play.api.http.HttpVerbs.{ POST => POST_VERB }
 import scala.concurrent.Future
-import uk.gov.hmrc.bforms.model.FileId
+import uk.gov.hmrc.bforms.models.FileId
 import uk.gov.hmrc.play.audit.http.config.LoadAuditingConfig
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.auth.microservice.connectors.AuthConnector

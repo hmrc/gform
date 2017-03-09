@@ -14,18 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.model
+package uk.gov.hmrc.bforms.models
 
-import play.api.libs.json.{ Format, JsError, JsSuccess, Reads, Writes, JsObject }
+import play.api.libs.json._
 
-case class Schema(value: JsObject) extends AnyVal
+case class FormField(id: String, value: String)
 
-object Schema {
-  val writes = Writes[Schema](id => id.value)
-  val reads = Reads[Schema] {
-    case o @ JsObject(_) => JsSuccess(Schema(o))
-    case otherwise => JsError(s"Invalid Schema, expected JsObject, got: $otherwise")
-  }
-
-  implicit val format = Format[Schema](reads, writes)
+object FormField {
+  implicit val format: Format[FormField] = Json.format[FormField]
 }

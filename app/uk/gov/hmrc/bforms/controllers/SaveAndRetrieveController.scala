@@ -18,7 +18,7 @@ package uk.gov.hmrc.bforms.controllers
 import play.api.i18n.{ I18nSupport, MessagesApi }
 import play.api.libs.json._
 import play.api.mvc.{ Action, Result }
-import uk.gov.hmrc.bforms.model._
+import uk.gov.hmrc.bforms.models._
 import uk.gov.hmrc.bforms.repositories.SaveAndRetrieveRepository
 import uk.gov.hmrc.bforms.services.{ RetrieveService, SaveService }
 import uk.gov.hmrc.play.microservice.controller.BaseController

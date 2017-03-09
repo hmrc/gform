@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.model
+package uk.gov.hmrc.bforms.models
 
 import cats.data.State
 import play.api.libs.json.{ Format, JsError, JsString, JsSuccess, Reads, Writes }

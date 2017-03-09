@@ -18,7 +18,7 @@ package uk.gov.hmrc.bforms.typeclasses
 
 import play.api.libs.json.{ JsObject, Json }
 import scala.concurrent.{ ExecutionContext, Future }
-import uk.gov.hmrc.bforms.model.Form
+import uk.gov.hmrc.bforms.models.Form
 import uk.gov.hmrc.bforms.repositories.FormRepository
 
 trait Find[T] {

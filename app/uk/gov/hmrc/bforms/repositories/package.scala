@@ -20,7 +20,7 @@ import reactivemongo.api.commands.UpdateWriteResult
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.bforms.core.Opt
 import uk.gov.hmrc.bforms.exceptions.InvalidState
-import uk.gov.hmrc.bforms.model.{ DbOperationResult, UpdateSuccess }
+import uk.gov.hmrc.bforms.models.{ DbOperationResult, UpdateSuccess }
 
 package object repositories {
 

@@ -25,7 +25,7 @@ import play.api.libs.json.JsObject
 import scala.concurrent.{ ExecutionContext, Future, Promise }
 import scala.util.{ Failure, Success }
 import uk.gov.hmrc.bforms.core.Opt
-import uk.gov.hmrc.bforms.model.{ DbOperationResult, FormTemplate, UpdateSuccess }
+import uk.gov.hmrc.bforms.models.{ DbOperationResult, FormTemplate, UpdateSuccess }
 import uk.gov.hmrc.bforms.typeclasses.{ FindOne, Insert, Post, Update }
 import uk.gov.hmrc.play.http.HttpResponse
 

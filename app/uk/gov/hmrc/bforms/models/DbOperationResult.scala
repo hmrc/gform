@@ -14,26 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.model
+package uk.gov.hmrc.bforms.models
 
-import play.api.i18n.Messages
-import play.api.libs.json.{ JsObject, Json }
+import play.api.mvc.Results.Ok
 
-/**
- * Created by daniel-connelly on 17/01/17.
- */
-sealed trait SaveResponse {
-
-  private def error(msg: String) = Json.obj("error" -> msg)
-
-  def toJson(messages: Messages): JsObject = this match {
-    case RESPONSE_OK => Json.obj()
-    case INVALID_DATA => error(messages("save.invalid.data"))
-    case Other(msg) => error(msg)
-  }
-
+// Represent successful result of DB operation
+sealed trait DbOperationResult {
+  def toResult = Ok
 }
-
-case object RESPONSE_OK extends SaveResponse
-case object INVALID_DATA extends SaveResponse
-case class Other(key: String) extends SaveResponse
+case object UpdateSuccess extends DbOperationResult

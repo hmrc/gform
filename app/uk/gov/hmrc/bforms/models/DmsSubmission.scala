@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.model
+package uk.gov.hmrc.bforms.models
 
-import play.api.libs.json._
+import play.api.libs.json.Json
 
-case class FormData(formTypeId: FormTypeId, version: String, characterSet: String, fields: Seq[FormField])
+case class DmsSubmission(
+  customerId: String,
+  classificationType: String,
+  businessArea: String
+)
 
-object FormData {
-
-  implicit val format: OFormat[FormData] = Json.format[FormData]
+object DmsSubmission {
+  implicit val format = Json.format[DmsSubmission]
 }

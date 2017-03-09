@@ -14,8 +14,18 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.model
+package uk.gov.hmrc.bforms.models
 
-import play.api.libs.json.JsObject
+import play.api.libs.json._
 
-case class CreateEnvelope(value: JsObject) extends AnyVal
+case class SaveAndRetrieve(value: JsObject) extends AnyVal
+
+object SaveAndRetrieve {
+  val writes = Writes[SaveAndRetrieve](id => id.value)
+  val reads = Reads[SaveAndRetrieve] {
+    case o @ JsObject(_) => JsSuccess(SaveAndRetrieve(o))
+    case otherwise => JsError(s"Invalid Save and Retrieve format, expected JsObject, got: $otherwise")
+  }
+
+  implicit val format = Format[SaveAndRetrieve](reads, writes)
+}

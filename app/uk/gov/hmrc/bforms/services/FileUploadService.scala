@@ -26,10 +26,10 @@ import play.api.libs.json.{ JsObject, Json }
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.bforms.exceptions.InvalidState
 import uk.gov.hmrc.bforms.core._
-import uk.gov.hmrc.bforms.model.{ EnvelopeId, FileId, MetadataXml, RouteEnvelopeRequest, UploadFile }
+import uk.gov.hmrc.bforms.models.{ EnvelopeId, FileId, MetadataXml, RouteEnvelopeRequest, UploadFile }
 import uk.gov.hmrc.bforms.typeclasses.Now
 import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpResponse }
-import uk.gov.hmrc.bforms.model._
+import uk.gov.hmrc.bforms.models._
 import uk.gov.hmrc.bforms.typeclasses.Post
 
 object FileUploadService {

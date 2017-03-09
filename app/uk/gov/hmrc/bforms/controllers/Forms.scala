@@ -21,7 +21,7 @@ import java.util.UUID
 import play.api.libs.json.Json
 import play.api.mvc.{ Action, Request, RequestHeader }
 import scala.concurrent.Future
-import uk.gov.hmrc.bforms.model.{ Form, FormData, FormId, FormTypeId }
+import uk.gov.hmrc.bforms.models.{ Form, FormData, FormId, FormTypeId }
 import uk.gov.hmrc.bforms.repositories.{ FormRepository, FormTemplateRepository, SubmissionRepository }
 import uk.gov.hmrc.bforms.services.{ FormService, SubmissionService, MongoOperation, SaveOperation, SaveTolerantOperation, UpdateOperation, UpdateTolerantOperation }
 import uk.gov.hmrc.bforms.typeclasses.{ FusFeUrl, FusUrl, ServiceUrl }

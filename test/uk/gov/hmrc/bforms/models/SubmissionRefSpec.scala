@@ -14,12 +14,21 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.model
+package uk.gov.hmrc.bforms.models
 
-import play.api.libs.json.Json
+import cats.data.StateT
+import cats.data.State
+import uk.gov.hmrc.bforms.models._
+import play.api.libs.json._
+import org.scalatest._
 
-case class RouteEnvelopeRequest(envelopeId: EnvelopeId, application: String, destination: String)
+class SubmissionRefSpec extends FlatSpec with Matchers {
 
-object RouteEnvelopeRequest {
-  implicit val format = Json.format[RouteEnvelopeRequest]
+  "SubmissionRef.createSubmissionRef" should "generate submissionRef" in {
+    val rnd = new scala.util.Random(12)
+    val submissionRef = SubmissionRef.createSubmissionRef(rnd)
+
+    submissionRef.value should be("46Q-Z2HW-XIB")
+
+  }
 }

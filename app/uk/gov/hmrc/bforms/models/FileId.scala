@@ -14,21 +14,8 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.model
+package uk.gov.hmrc.bforms.models
 
-import play.api.libs.json._
-
-case class Form(_id: FormId, formData: FormData)
-
-object Form {
-  implicit def format(implicit formDataReads: OFormat[FormData]) = {
-    val mongoIdReads = FormIdAsMongoId.format
-    val writes = OWrites[Form](form => mongoIdReads.writes(form._id) ++ formDataReads.writes(form.formData))
-    val reads = Reads[Form](json =>
-      for {
-        id <- mongoIdReads.reads(json)
-        data <- formDataReads.reads(json)
-      } yield Form(id, data))
-    OFormat[Form](reads, writes)
-  }
+case class FileId(value: String) extends AnyVal {
+  override def toString = value
 }

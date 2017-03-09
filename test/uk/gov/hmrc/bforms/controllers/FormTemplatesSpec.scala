@@ -24,7 +24,7 @@ import play.api.libs.json.{ JsObject, Json }
 import uk.gov.hmrc.bforms.{ FindOneCheck, TypeclassFixtures, UpdateCheck }
 import uk.gov.hmrc.bforms.core.ServiceResponse
 import uk.gov.hmrc.bforms.exceptions.InvalidState
-import uk.gov.hmrc.bforms.model.{ FormTemplate, FormTypeId, DbOperationResult, Schema, UpdateSuccess }
+import uk.gov.hmrc.bforms.models.{ FormTemplate, FormTypeId, DbOperationResult, Schema, UpdateSuccess }
 import uk.gov.hmrc.bforms.typeclasses.{ FindOne, Update }
 
 import scala.concurrent.ExecutionContext.Implicits._

@@ -24,37 +24,37 @@ class ParserSpec extends FlatSpec with Matchers with EitherValues with OptionVal
 
   "Parser" should "parse ${firstName}" in {
     val res = Parser("${firstName}")
-    result(res) should be(Form("firstName"))
+    result(res) should be(FormCtx("firstName"))
   }
 
   it should "parse ${eeitt.firstName}" in {
     val res = Parser("${eeitt.firstName}")
-    result(res) should be(Eeitt("firstName"))
+    result(res) should be(EeittCtx("firstName"))
   }
 
   it should "parse ${form.firstName}" in {
     val res = Parser("${form.firstName}")
-    result(res) should be(Form("firstName"))
+    result(res) should be(FormCtx("firstName"))
   }
 
   it should "parse ${eeitt.firstName + form.secondName}" in {
     val res = Parser("${eeitt.firstName + form.secondName}")
-    result(res) should be(Add(Eeitt("firstName"), Form("secondName")))
+    result(res) should be(Add(EeittCtx("firstName"), FormCtx("secondName")))
   }
 
   it should "parse ${eeitt.firstName * form.secondName}" in {
     val res = Parser("${eeitt.firstName * form.secondName}")
-    result(res) should be(Multiply(Eeitt("firstName"), Form("secondName")))
+    result(res) should be(Multiply(EeittCtx("firstName"), FormCtx("secondName")))
   }
 
   it should "parse ${firstName * secondName}" in {
     val res = Parser("${firstName * secondName}")
-    result(res) should be(Multiply(Form("firstName"), Form("secondName")))
+    result(res) should be(Multiply(FormCtx("firstName"), FormCtx("secondName")))
   }
 
   it should "parse ${firstName * auth.secondName}" in {
     val res = Parser("${firstName * auth.secondName}")
-    result(res) should be(Multiply(Form("firstName"), Auth("secondName")))
+    result(res) should be(Multiply(FormCtx("firstName"), AuthCtx("secondName")))
   }
 
   it should "parse constant" in {

@@ -21,7 +21,7 @@ import play.api.libs.json._
 
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.bforms.{ FusFeUploadWS, WSHttp }
-import uk.gov.hmrc.bforms.model.{ CreateEnvelope, RouteEnvelopeRequest, UploadFile }
+import uk.gov.hmrc.bforms.models.{ CreateEnvelope, RouteEnvelopeRequest, UploadFile }
 import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpResponse }
 
 trait Post[I, O] {

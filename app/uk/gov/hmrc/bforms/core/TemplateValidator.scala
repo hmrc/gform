@@ -19,7 +19,7 @@ package uk.gov.hmrc.bforms.core
 import cats.Monoid
 import play.api.libs.json._
 import uk.gov.hmrc.bforms.exceptions.InvalidState
-import uk.gov.hmrc.bforms.model.{ DmsSubmission, FormField, Section }
+import uk.gov.hmrc.bforms.models.{ DmsSubmission, FormField, Section }
 
 sealed trait ValidationResult {
   def toEither: Opt[Unit] = this match {

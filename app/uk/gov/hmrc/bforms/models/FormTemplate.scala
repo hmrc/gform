@@ -14,21 +14,18 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.model
+package uk.gov.hmrc.bforms.models
 
-import cats.data.StateT
-import cats.data.State
-import uk.gov.hmrc.bforms.model._
-import play.api.libs.json._
-import org.scalatest._
+import play.api.libs.json.{ Format, JsError, JsSuccess, Reads, Writes, JsObject }
 
-class SubmissionRefSpec extends FlatSpec with Matchers {
+case class FormTemplate(value: JsObject) extends AnyVal
 
-  "SubmissionRef.createSubmissionRef" should "generate submissionRef" in {
-    val rnd = new scala.util.Random(12)
-    val submissionRef = SubmissionRef.createSubmissionRef(rnd)
-
-    submissionRef.value should be("46Q-Z2HW-XIB")
-
+object FormTemplate {
+  val writes = Writes[FormTemplate](id => id.value)
+  val reads = Reads[FormTemplate] {
+    case o @ JsObject(_) => JsSuccess(FormTemplate(o))
+    case otherwise => JsError(s"Invalid FormTemplate, expected JsObject, got: $otherwise")
   }
+
+  implicit val format = Format[FormTemplate](reads, writes)
 }

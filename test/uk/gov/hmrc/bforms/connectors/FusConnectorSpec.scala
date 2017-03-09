@@ -20,7 +20,7 @@ import play.api.libs.json.{ JsValue, Writes }
 import scala.concurrent.{ ExecutionContext, Future }
 import org.scalatest.concurrent.ScalaFutures
 import uk.gov.hmrc.bforms.exceptions.InvalidState
-import uk.gov.hmrc.bforms.model.EnvelopeId
+import uk.gov.hmrc.bforms.models.EnvelopeId
 import uk.gov.hmrc.bforms.services.FileUploadService
 import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpReads, HttpResponse }
 import uk.gov.hmrc.play.test.UnitSpec

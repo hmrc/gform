@@ -25,10 +25,10 @@ sealed trait Expr
 
 final case class Add(field1: Expr, field2: Expr) extends Expr
 final case class Multiply(field1: Expr, field2: Expr) extends Expr
-final case class Form(ctx: String) extends Expr
-final case class Auth(ctx: String) extends Expr
-final case class Eeitt(ctx: String) extends Expr
-final case class Constant(ctx: String) extends Expr
+final case class FormCtx(value: String) extends Expr
+final case class AuthCtx(value: String) extends Expr
+final case class EeittCtx(value: String) extends Expr
+final case class Constant(value: String) extends Expr
 
 sealed trait Operation
 final case object Addition extends Operation
@@ -64,12 +64,12 @@ object Parser {
   lazy val contextField: Parser[Expr] = (
     context ~ "." ~ alphabeticOnly ^^ { (loc, ctx, _, fieldName) =>
       ctx match {
-        case FormContext => Form(fieldName)
-        case AuthContext => Auth(fieldName)
-        case EeittContext => Eeitt(fieldName)
+        case FormContext => FormCtx(fieldName)
+        case AuthContext => AuthCtx(fieldName)
+        case EeittContext => EeittCtx(fieldName)
       }
     }
-    | alphabeticOnly ^^ { (loc, fn) => Form(fn) }
+    | alphabeticOnly ^^ { (loc, fn) => FormCtx(fn) }
   )
 
   lazy val alphabeticOnly: Parser[String] = (

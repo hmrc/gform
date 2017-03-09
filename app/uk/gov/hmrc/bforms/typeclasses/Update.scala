@@ -18,7 +18,7 @@ package uk.gov.hmrc.bforms.typeclasses
 
 import play.api.libs.json._
 import uk.gov.hmrc.bforms.core.Opt
-import uk.gov.hmrc.bforms.model._
+import uk.gov.hmrc.bforms.models._
 
 import uk.gov.hmrc.bforms.repositories.{ FormRepository, FormTemplateRepository, SaveAndRetrieveRepository, SchemaRepository }
 

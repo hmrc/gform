@@ -14,12 +14,6 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.model
+package uk.gov.hmrc.bforms.models
 
-import play.api.mvc.Results.Ok
-
-// Represent successful result of DB operation
-sealed trait DbOperationResult {
-  def toResult = Ok
-}
-case object UpdateSuccess extends DbOperationResult
+case class UploadFile(envelopeId: EnvelopeId, fileId: FileId, fileName: String, contentType: String, body: Array[Byte])

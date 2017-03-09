@@ -20,7 +20,7 @@ import cats.instances.future._
 import play.api.libs.json.{ JsObject, JsValue, Json }
 import uk.gov.hmrc.bforms.core._
 import uk.gov.hmrc.bforms.exceptions.InvalidState
-import uk.gov.hmrc.bforms.model.{ DbOperationResult, Form, FormId, FormTemplate, FormTypeId, SaveAndRetrieve }
+import uk.gov.hmrc.bforms.models.{ DbOperationResult, Form, FormId, FormTemplate, FormTypeId, SaveAndRetrieve }
 import uk.gov.hmrc.bforms.typeclasses.{ Find, FindOne, Insert, Update }
 
 import scala.concurrent.ExecutionContext.Implicits.global

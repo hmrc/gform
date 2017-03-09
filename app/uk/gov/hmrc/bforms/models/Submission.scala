@@ -14,18 +14,37 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.model
+package uk.gov.hmrc.bforms.models
 
-import play.api.libs.json.{ Format, JsError, JsSuccess, Reads, Writes, JsObject }
+import java.time.LocalDateTime
+import play.api.libs.json.Json
 
-case class FormTemplate(value: JsObject) extends AnyVal
+case class DmsMetaData(
+  formTypeId: FormTypeId
+)
 
-object FormTemplate {
-  val writes = Writes[FormTemplate](id => id.value)
-  val reads = Reads[FormTemplate] {
-    case o @ JsObject(_) => JsSuccess(FormTemplate(o))
-    case otherwise => JsError(s"Invalid FormTemplate, expected JsObject, got: $otherwise")
-  }
-
-  implicit val format = Format[FormTemplate](reads, writes)
+object DmsMetaData {
+  implicit val format = Json.format[DmsMetaData]
 }
+
+case class Submission(
+  submittedDate: LocalDateTime,
+  submissionRef: SubmissionRef,
+  formId: FormId,
+  envelopeId: EnvelopeId,
+  dmsMetaData: DmsMetaData
+)
+
+object Submission {
+  implicit val format = Json.format[Submission]
+}
+
+case class PdfSummary(
+  numberOfPages: Long,
+  pdfContent: Array[Byte]
+)
+
+case class SubmissionAndPdf(
+  submission: Submission,
+  pdfSummary: PdfSummary
+)
