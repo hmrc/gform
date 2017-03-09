@@ -39,6 +39,17 @@ trait MicroService {
         "uk.gov.hmrc.bforms.binders.ValueClassBinder._",
         "uk.gov.hmrc.bforms.models.FormTypeId",
         "uk.gov.hmrc.bforms.models.FormId"
+      ),
+      scalacOptions ++= Seq(
+        "-Xfatal-warnings",
+        "-Xlint:-missing-interpolator,_",
+        "-Yno-adapted-args",
+        "-Ywarn-numeric-widen",
+        "-Ywarn-value-discard",
+        "-Ywarn-dead-code",
+        "-deprecation",
+        "-feature",
+        "-unchecked"
       )
     )
     .configs(IntegrationTest)

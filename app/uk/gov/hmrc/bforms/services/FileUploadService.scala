@@ -97,7 +97,7 @@ object FileUploadService {
     now: Now[LocalDateTime]
   ): CreateEnvelope = {
 
-    def envelopeExpiryDate(numberOfDays: Int) = now().plusDays(numberOfDays).format(formatter)
+    def envelopeExpiryDate(numberOfDays: Int) = now().plusDays(numberOfDays.toLong).format(formatter)
 
     val json = Json.obj(
       "constraints" -> Json.obj(

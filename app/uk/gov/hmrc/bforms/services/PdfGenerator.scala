@@ -108,9 +108,9 @@ object PdfGenerator {
 
       layoutElemsWithPosition.map {
         case (Text(text), position) =>
-          renderTextOnPosition(text, position, PDType1Font.HELVETICA_BOLD, 12)
+          renderTextOnPosition(text, position.toFloat, PDType1Font.HELVETICA_BOLD, 12)
         case (SectionTitle(title), position) =>
-          renderTextOnPosition(title, position, PDType1Font.HELVETICA_OBLIQUE, 16)
+          renderTextOnPosition(title, position.toFloat, PDType1Font.HELVETICA_OBLIQUE, 16)
         case (Line, position) =>
           contents.moveTo(margin, startY - position);
           contents.lineTo(mediaBox.getUpperRightX - margin, startY - position);
