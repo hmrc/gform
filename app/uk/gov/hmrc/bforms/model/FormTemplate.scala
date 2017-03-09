@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.bforms.model
 
-import play.api.libs.json.{ Format, JsError, JsString, JsSuccess, Reads, Writes, JsObject }
+import play.api.libs.json.{ Format, JsError, JsSuccess, Reads, Writes, JsObject }
 
 case class FormTemplate(value: JsObject) extends AnyVal
 

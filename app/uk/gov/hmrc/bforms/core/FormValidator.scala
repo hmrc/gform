@@ -21,7 +21,7 @@ import cats.instances.list._
 import cats.syntax.either._
 import cats.syntax.traverse._
 import play.api.libs.json._
-import uk.gov.hmrc.bforms.exceptions.{ InvalidState, UnexpectedState }
+import uk.gov.hmrc.bforms.exceptions.InvalidState
 import uk.gov.hmrc.bforms.model.{ FormField, Section, FieldValue }
 
 object FormValidator {

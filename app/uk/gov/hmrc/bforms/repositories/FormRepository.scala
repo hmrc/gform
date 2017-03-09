@@ -23,7 +23,6 @@ import reactivemongo.api.commands.WriteConcern
 import reactivemongo.bson.BSONObjectID
 import scala.concurrent.ExecutionContext
 import uk.gov.hmrc.bforms.core.{ Opt, ServiceResponse, fromFutureOptA }
-import uk.gov.hmrc.bforms.exceptions.UnexpectedState
 import uk.gov.hmrc.bforms.model.{ DbOperationResult, Form, FormId }
 import uk.gov.hmrc.mongo.ReactiveRepository
 

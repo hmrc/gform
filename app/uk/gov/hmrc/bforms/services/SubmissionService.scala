@@ -24,10 +24,9 @@ import cats.syntax.traverse._
 import play.api.libs.json.{ JsObject, JsValue, Json }
 import scala.util.Random
 import uk.gov.hmrc.bforms.core._
-import uk.gov.hmrc.bforms.exceptions.{ InvalidState, UnexpectedState }
+import uk.gov.hmrc.bforms.exceptions.InvalidState
 import uk.gov.hmrc.bforms.model._
-import uk.gov.hmrc.bforms.repositories.FormTemplateRepository
-import uk.gov.hmrc.bforms.typeclasses.{ Find, FindOne, FusFeUrl, FusUrl, Insert, Now, Post, Rnd, ServiceUrl, Update }
+import uk.gov.hmrc.bforms.typeclasses.{ Find, FindOne, Insert, Now, Post, Rnd, Update }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

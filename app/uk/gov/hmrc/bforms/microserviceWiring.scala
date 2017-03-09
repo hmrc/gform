@@ -23,7 +23,7 @@ import akka.util.ByteString
 import com.ning.http.multipart.ByteArrayPartSource
 import java.io.File
 import play.api.libs.json.{ Json, Writes }
-import play.api.mvc.MultipartFormData.{ DataPart, FilePart, Part }
+import play.api.mvc.MultipartFormData.{ DataPart, FilePart }
 import play.api.http.HttpVerbs.{ POST => POST_VERB }
 import scala.concurrent.Future
 import uk.gov.hmrc.bforms.model.FileId

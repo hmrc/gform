@@ -60,7 +60,6 @@ object PdfGenerator {
       doc.addPage(page)
 
       val contents = new PDPageContentStream(doc, page)
-      val leading: Float = 25
       val mediaBox: PDRectangle = page.getMediaBox
       val margin: Float = 72
       val startX: Float = mediaBox.getLowerLeftX + margin
@@ -142,7 +141,6 @@ object EnvironmentalBodies {
 object PDFBoxExample {
 
   def generate(message: JsObject) = {
-    var text = message
     val byteArrayOutputStream = new ByteArrayOutputStream()
     val doc = new PDDocument()
     try {
@@ -157,10 +155,8 @@ object PDFBoxExample {
       val mediaBox: PDRectangle = page.getMediaBox
       val lines = jsonParser(message)
       val margin: Float = 72
-      val width: Float = mediaBox.getWidth - 2 * margin
       val startX: Float = mediaBox.getLowerLeftX + margin
       val startY: Float = mediaBox.getUpperRightY - margin
-      var lastSpace: Int = -1
 
       contents.beginText()
       contents.setFont(font, fontSize)
@@ -184,7 +180,7 @@ object PDFBoxExample {
   }
 
   def environmentalBodies(string: String): List[String] = {
-    var list = new ArrayBuffer[String]()
+    val list = new ArrayBuffer[String]()
     val int = string.indexOf('}')
     val subString: String = string.substring(0, int)
     list.+=(subString)

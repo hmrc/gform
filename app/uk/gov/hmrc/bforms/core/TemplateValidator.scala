@@ -16,10 +16,9 @@
 
 package uk.gov.hmrc.bforms.core
 
-import cats.implicits._
 import cats.Monoid
 import play.api.libs.json._
-import uk.gov.hmrc.bforms.exceptions.{ InvalidState, UnexpectedState }
+import uk.gov.hmrc.bforms.exceptions.InvalidState
 import uk.gov.hmrc.bforms.model.{ DmsSubmission, FormField, Section }
 
 sealed trait ValidationResult {
