@@ -24,13 +24,13 @@ import play.api.http.HeaderNames.LOCATION
 import play.api.libs.json.{ JsObject, Json }
 
 import scala.concurrent.{ ExecutionContext, Future }
-import uk.gov.hmrc.bforms.exceptions.{ InvalidState, UnexpectedState }
+import uk.gov.hmrc.bforms.exceptions.InvalidState
 import uk.gov.hmrc.bforms.core._
-import uk.gov.hmrc.bforms.model.{ EnvelopeId, FileId, MetadataXml, RouteEnvelopeRequest, UploadFile }
+import uk.gov.hmrc.bforms.models.{ EnvelopeId, FileId, MetadataXml, RouteEnvelopeRequest, UploadFile }
 import uk.gov.hmrc.bforms.typeclasses.Now
 import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpResponse }
-import uk.gov.hmrc.bforms.model._
-import uk.gov.hmrc.bforms.typeclasses.{ FusFeUrl, FusUrl, Post, ServiceUrl }
+import uk.gov.hmrc.bforms.models._
+import uk.gov.hmrc.bforms.typeclasses.Post
 
 object FileUploadService {
 
@@ -97,7 +97,7 @@ object FileUploadService {
     now: Now[LocalDateTime]
   ): CreateEnvelope = {
 
-    def envelopeExpiryDate(numberOfDays: Int) = now().plusDays(numberOfDays).format(formatter)
+    def envelopeExpiryDate(numberOfDays: Int) = now().plusDays(numberOfDays.toLong).format(formatter)
 
     val json = Json.obj(
       "constraints" -> Json.obj(

@@ -14,12 +14,20 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.model
+package uk.gov.hmrc.bforms.models
 
-import play.api.mvc.Results.Ok
+import play.api.libs.json.{ Format, JsError, JsString, JsSuccess, Reads, Writes }
 
-// Represent successful result of DB operation
-sealed trait DbOperationResult {
-  def toResult = Ok
+case class SchemaId(value: String) extends AnyVal {
+  override def toString = value
 }
-case object UpdateSuccess extends DbOperationResult
+
+object SchemaId {
+  val writes = Writes[SchemaId](id => JsString(id.value))
+  val reads = Reads[SchemaId] {
+    case JsString(value) => JsSuccess(SchemaId(value))
+    case otherwise => JsError(s"Invalid schemaId, expected JsString, got: $otherwise")
+  }
+
+  implicit val format = Format[SchemaId](reads, writes)
+}

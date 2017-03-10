@@ -14,26 +14,21 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.model
+package uk.gov.hmrc.bforms.models
 
-import play.api.i18n.Messages
-import play.api.libs.json.{ JsObject, Json }
+import cats.data.StateT
+import cats.data.State
+import uk.gov.hmrc.bforms.models._
+import play.api.libs.json._
+import org.scalatest._
 
-/**
- * Created by daniel-connelly on 17/01/17.
- */
-sealed trait SaveResponse {
+class SubmissionRefSpec extends FlatSpec with Matchers {
 
-  private def error(msg: String) = Json.obj("error" -> msg)
+  "SubmissionRef.createSubmissionRef" should "generate submissionRef" in {
+    val rnd = new scala.util.Random(12)
+    val submissionRef = SubmissionRef.createSubmissionRef(rnd)
 
-  def toJson(messages: Messages): JsObject = this match {
-    case RESPONSE_OK => Json.obj()
-    case INVALID_DATA => error(messages("save.invalid.data"))
-    case Other(msg) => error(msg)
+    submissionRef.value should be("46Q-Z2HW-XIB")
+
   }
-
 }
-
-case object RESPONSE_OK extends SaveResponse
-case object INVALID_DATA extends SaveResponse
-case class Other(key: String) extends SaveResponse

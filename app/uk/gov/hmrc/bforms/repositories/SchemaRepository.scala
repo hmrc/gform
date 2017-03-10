@@ -24,7 +24,7 @@ import reactivemongo.api.commands.WriteConcern
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.bforms.core.Opt
 import uk.gov.hmrc.bforms.exceptions.InvalidState
-import uk.gov.hmrc.bforms.model.{ DbOperationResult, Schema, UpdateSuccess }
+import uk.gov.hmrc.bforms.models.{ DbOperationResult, Schema, UpdateSuccess }
 import uk.gov.hmrc.mongo.ReactiveRepository
 
 class SchemaRepository(implicit mongo: () => DB)

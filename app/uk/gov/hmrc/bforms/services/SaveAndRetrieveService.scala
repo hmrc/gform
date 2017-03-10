@@ -17,7 +17,7 @@
 package uk.gov.hmrc.bforms.services
 import play.api.libs.json.{ JsObject, JsValue, Json }
 import uk.gov.hmrc.bforms.core._
-import uk.gov.hmrc.bforms.model.{ DbOperationResult, SaveAndRetrieve }
+import uk.gov.hmrc.bforms.models.{ DbOperationResult, SaveAndRetrieve }
 import uk.gov.hmrc.bforms.typeclasses.{ FindOne, Update }
 
 import scala.concurrent.ExecutionContext.Implicits.global

@@ -20,8 +20,7 @@ import cats.instances.future._
 import play.api.libs.json.{ JsObject, JsValue, Json }
 import uk.gov.hmrc.bforms.core._
 import uk.gov.hmrc.bforms.exceptions.InvalidState
-import uk.gov.hmrc.bforms.model.{ DbOperationResult, Form, FormId, FormTemplate, FormTypeId, SaveAndRetrieve }
-import uk.gov.hmrc.bforms.repositories.FormTemplateRepository
+import uk.gov.hmrc.bforms.models.{ DbOperationResult, Form, FormId, FormTemplate, FormTypeId, SaveAndRetrieve }
 import uk.gov.hmrc.bforms.typeclasses.{ Find, FindOne, Insert, Update }
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -59,8 +58,7 @@ object FormService {
              UpdateTolerantOperation => fromFutureOptionA (FindOneForm(formSelector))(InvalidState(s"Form $formSelector not found")).map(_ => ())
       }
       formTemplate   <- fromFutureOptionA (FindOneFormTemplate(templateSelector))(InvalidState(s"FormTemplate $templateSelector not found"))
-      sections       <- fromOptA          (TemplateValidator.extractSections(formTemplate.value))
-      section        <- fromOptA          (TemplateValidator.getMatchingSection(formData.fields, sections))
+      section        <- fromOptA          (TemplateValidator.getMatchingSection(formData.fields, formTemplate.sections))
       _              <- operation match {
         case SaveTolerantOperation |
              UpdateTolerantOperation => success(())

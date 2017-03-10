@@ -14,8 +14,20 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.model
+package uk.gov.hmrc.bforms.models
 
-import play.api.libs.json.JsObject
+import play.api.libs.json.Json
 
-case class CreateEnvelope(value: JsObject) extends AnyVal
+case class FieldValue(
+  id: String,
+  label: String,
+  value: Option[String],
+  format: Option[String],
+  helpText: Option[String],
+  readOnly: Option[String],
+  mandatory: Option[String]
+)
+
+object FieldValue {
+  implicit val format = Json.format[FieldValue]
+}

@@ -19,7 +19,7 @@ package uk.gov.hmrc.bforms.core
 import org.scalatest.{ EitherValues, FlatSpec, Matchers }
 import play.api.libs.json.{ JsNull, Json, JsNumber }
 import uk.gov.hmrc.bforms.exceptions.{ InvalidState, InvalidStateWithJson }
-import uk.gov.hmrc.bforms.model.Schema
+import uk.gov.hmrc.bforms.models.Schema
 
 class SchemaValidatorSpec extends FlatSpec with Matchers with EitherValues {
 

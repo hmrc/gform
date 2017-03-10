@@ -24,7 +24,7 @@ import reactivemongo.bson.BSONObjectID
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.bforms.core.Opt
 import uk.gov.hmrc.bforms.exceptions.InvalidState
-import uk.gov.hmrc.bforms.model.{ FormTemplate, DbOperationResult, UpdateSuccess }
+import uk.gov.hmrc.bforms.models.{ FormTemplate, DbOperationResult, UpdateSuccess }
 import uk.gov.hmrc.mongo.ReactiveRepository
 
 class FormTemplateRepository(implicit mongo: () => DB)
@@ -37,7 +37,7 @@ class FormTemplateRepository(implicit mongo: () => DB)
     implicit
     ex: ExecutionContext
   ): Future[Opt[DbOperationResult]] = {
-    val res = collection.update(selector = selector, update = update.value, writeConcern = WriteConcern.Default, upsert = true, multi = false)
+    val res = collection.update(selector = selector, update = update, writeConcern = WriteConcern.Default, upsert = true, multi = false)
 
     checkUpdateResult(res)
   }

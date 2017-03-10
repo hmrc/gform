@@ -14,20 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.model
+package uk.gov.hmrc.bforms.models
 
-import play.api.libs.json.Json
+import play.api.libs.json._
 
-case class Section(
-  title: String,
-  fields: List[FieldValue]
-)
+case class FormField(id: String, value: String)
 
-object Section {
-  implicit val format = Json.format[Section]
+object FormField {
+  implicit val format: Format[FormField] = Json.format[FormField]
 }
-
-case class SectionFormField(
-  title: String,
-  fields: List[(FormField, FieldValue)]
-)

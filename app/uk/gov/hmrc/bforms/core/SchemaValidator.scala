@@ -22,8 +22,8 @@ import cats.syntax.either._
 import cats.syntax.traverse._
 import cats.Monoid
 import play.api.libs.json._
-import uk.gov.hmrc.bforms.exceptions.{ InvalidState, InvalidStateWithJson, UnexpectedState }
-import uk.gov.hmrc.bforms.model.Schema
+import uk.gov.hmrc.bforms.exceptions.{ InvalidState, InvalidStateWithJson }
+import uk.gov.hmrc.bforms.models.Schema
 
 sealed trait JsonSchema {
 

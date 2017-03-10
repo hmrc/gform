@@ -21,7 +21,7 @@ import scala.concurrent.ExecutionContext
 import play.api.mvc.Action
 import play.api.libs.json._
 import uk.gov.hmrc.bforms.core._
-import uk.gov.hmrc.bforms.model.{ DbOperationResult, Schema, SchemaId }
+import uk.gov.hmrc.bforms.models.{ DbOperationResult, Schema, SchemaId }
 import uk.gov.hmrc.bforms.typeclasses.Update
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.play.microservice.controller.BaseController

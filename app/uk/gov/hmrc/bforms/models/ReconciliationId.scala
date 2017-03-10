@@ -14,30 +14,23 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.model
+package uk.gov.hmrc.bforms.models
 
-import cats.data.StateT
 import cats.data.State
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import uk.gov.hmrc.bforms.model._
-import play.api.libs.json._
-import org.scalatest._
+import play.api.libs.json.{ Format, JsError, JsString, JsSuccess, Reads, Writes }
+import scala.util.Random
 import uk.gov.hmrc.bforms.typeclasses.Now
 
-class ReconciliationIdSpec extends FlatSpec with Matchers {
+case class ReconciliationId(value: String) extends AnyVal {
+  override def toString = value
+}
 
-  "ReconciliationId.create" should "generate reconciliationId based on submissionRef and current time" in {
+object ReconciliationId {
 
-    val rnd = new scala.util.Random(123)
-
-    implicit val now = Now(LocalDateTime.of(2017, 1, 31, 13, 53, 45))
-
-    val submissionRef = SubmissionRef.createSubmissionRef(rnd)
-
-    val res = ReconciliationId.create(submissionRef)
-
-    res.value should be("0OU-RDFS-NRN-20170131135345")
-
+  def create(submissionRef: SubmissionRef)(implicit now: Now[LocalDateTime]): ReconciliationId = {
+    val dateFormatter = now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
+    ReconciliationId(submissionRef + "-" + dateFormatter)
   }
 }

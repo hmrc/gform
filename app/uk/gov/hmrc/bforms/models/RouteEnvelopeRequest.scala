@@ -14,6 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.model
+package uk.gov.hmrc.bforms.models
 
-case class UploadFile(envelopeId: EnvelopeId, fileId: FileId, fileName: String, contentType: String, body: Array[Byte])
+import play.api.libs.json.Json
+
+case class RouteEnvelopeRequest(envelopeId: EnvelopeId, application: String, destination: String)
+
+object RouteEnvelopeRequest {
+  implicit val format = Json.format[RouteEnvelopeRequest]
+}

@@ -27,7 +27,7 @@ import uk.gov.hmrc.bforms.repositories.{ FormTemplateRepository, SchemaRepositor
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.play.microservice.controller.BaseController
 import uk.gov.hmrc.bforms.core.SchemaValidator
-import uk.gov.hmrc.bforms.model.{ Schema, FormTemplate, FormTypeId, DbOperationResult }
+import uk.gov.hmrc.bforms.models.{ Schema, FormTemplate, FormTypeId, DbOperationResult }
 import uk.gov.hmrc.bforms.typeclasses.{ FindOne, Update }
 
 object FormTemplates {
@@ -44,8 +44,12 @@ object FormTemplates {
     // Hardcoded for now, should be read from formTemplate itself
     val schemaId = "http://hmrc.gov.uk/jsonschema/bf-formtemplate#"
 
+    val fieldNamesValues = formTemplate.sections.flatMap(_.fields.flatMap(_.value))
+
     // format: OFF
     for {
+      exprs      <- fromOptA          (Parser.validateList(fieldNamesValues))
+      _          <- fromOptA          (Expr.validate(exprs, formTemplate).toEither)
       schema     <- fromFutureOptionA (findOne(Json.obj("id" -> schemaId)))(InvalidState(s"SchemaId $schemaId not found"))
       jsonSchema <- fromOptA          (SchemaValidator.conform(schema))
       _          <- fromOptA          (jsonSchema.conform(formTemplate).toEither)
@@ -91,7 +95,7 @@ class FormTemplates()(
         "version" -> version
       )
     ).map {
-        case Some(formTemplate) => Ok(formTemplate.value)
+        case Some(formTemplate) => Ok(Json.toJson(formTemplate))
         case None => NoContent
       }
   }

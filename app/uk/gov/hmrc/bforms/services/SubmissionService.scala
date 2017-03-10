@@ -24,10 +24,9 @@ import cats.syntax.traverse._
 import play.api.libs.json.{ JsObject, JsValue, Json }
 import scala.util.Random
 import uk.gov.hmrc.bforms.core._
-import uk.gov.hmrc.bforms.exceptions.{ InvalidState, UnexpectedState }
-import uk.gov.hmrc.bforms.model._
-import uk.gov.hmrc.bforms.repositories.FormTemplateRepository
-import uk.gov.hmrc.bforms.typeclasses.{ Find, FindOne, FusFeUrl, FusUrl, Insert, Now, Post, Rnd, ServiceUrl, Update }
+import uk.gov.hmrc.bforms.exceptions.InvalidState
+import uk.gov.hmrc.bforms.models._
+import uk.gov.hmrc.bforms.typeclasses.{ Find, FindOne, Insert, Now, Post, Rnd, Update }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -109,14 +108,11 @@ object SubmissionService {
     for {
       form              <- FormService.getByTypeAndId(formTypeId, formId)
       formTemplate      <- fromFutureOptionA  (findOneFormTemplate(templateSelector(form)))(InvalidState(s"FormTemplate $templateSelector not found"))
-      sections          <- fromOptA           (TemplateValidator.extractSections(formTemplate.value))
-      formName          <- fromOptA           (TemplateValidator.extractFormName(formTemplate.value))
-      dmsSubmission     <- fromOptA           (TemplateValidator.extractDmsSubmission(formTemplate.value))
       envelopeId        <- fromFutureOptA     (FileUploadService.createEnvelope(formTypeId))
-      sectionFormFields <- fromOptA           (getSectionFormFields(form, sections))
-      submissionAndPdf  =  getSubmissionAndPdf(envelopeId, form, sectionFormFields, formName)
+      sectionFormFields <- fromOptA           (getSectionFormFields(form, formTemplate.sections))
+      submissionAndPdf  =  getSubmissionAndPdf(envelopeId, form, sectionFormFields, formTemplate.formName)
       _                 <- fromFutureA        (insertSubmission(Json.obj(), submissionAndPdf.submission))
-      res               <- FileUploadService.submitEnvelope(submissionAndPdf, dmsSubmission)
+      res               <- FileUploadService.submitEnvelope(submissionAndPdf, formTemplate.dmsSubmission)
     } yield res
     // format: ON
   }

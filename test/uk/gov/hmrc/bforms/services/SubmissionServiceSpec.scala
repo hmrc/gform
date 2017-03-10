@@ -31,7 +31,7 @@ import uk.gov.hmrc.bforms.core.Opt
 import uk.gov.hmrc.bforms.typeclasses.{ FusFeUrl, FusUrl, Now, Post, Rnd, ServiceUrl }
 import uk.gov.hmrc.bforms.{ FindOneCheck, InsertCheck, PostCheck, TypeclassFixtures }
 import uk.gov.hmrc.bforms.exceptions.InvalidState
-import uk.gov.hmrc.bforms.model._
+import uk.gov.hmrc.bforms.models._
 import uk.gov.hmrc.bforms.typeclasses.{ FindOne, Insert, Update }
 import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpResponse }
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -41,34 +41,18 @@ class SubmissionServiceSpec extends FlatSpec with Matchers with TypeclassFixture
   implicit override val patienceConfig = PatienceConfig(timeout = scaled(Span(15000, Millis)), interval = scaled(Span(300, Millis)))
 
   val form = Form(FormId("form-id"), FormData(FormTypeId("form-type-id"), "1.0.0", "UTF-8", List(FormField("firstName", "Joe"), FormField("lastName", "Doe"))))
-  val formTemplateWithOneSection = FormTemplate(
-    Json.obj(
-      "formTypeId" -> "IPT100",
-      "formName" -> "Insurance Premium Tax Return",
-      "dmsSubmission" -> Json.obj(
-        "customerId" -> "nino",
-        "classificationType" -> "BT-NRU-Environmental",
-        "businessArea" -> "FinanceOpsCorpT"
-      ),
-      "sections" -> Json.arr(
-        Json.obj(
-          "title" -> "Your details",
-          "fields" -> Json.arr(
-            Json.obj(
-              "id" -> "firstName",
-              "label" -> "Your first name",
-              "mandatory" -> "true"
-            ),
-            Json.obj(
-              "id" -> "lastName",
-              "label" -> "Your last name",
-              "mandatory" -> "true"
-            )
-          )
-        )
-      )
+
+  val plainFormTemplate = FormTemplate(FormTypeId("IPT100"), "Insurance Premium Tax Return", "version", "description", "characterSet", DmsSubmission("nino", "BT-NRU-Environmental", "FinanceOpsCorpT"), "submitSuccessUrl", "submitErrorUrl", List.empty[Section])
+
+  val yourDetailsSection = Section(
+    "Your details",
+    List(
+      FieldValue("firstName", "Your first name", None, None, None, None, Some("true")),
+      FieldValue("lastName", "Your last name", None, None, None, None, Some("true"))
     )
   )
+
+  val formTemplateWithOneSection = plainFormTemplate.copy(sections = List(yourDetailsSection))
 
   "SubmissionService submission" should "submit form" in {
 

@@ -14,23 +14,20 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.model
+package uk.gov.hmrc.bforms.models
 
-import cats.data.State
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import play.api.libs.json.{ Format, JsError, JsString, JsSuccess, Reads, Writes }
-import scala.util.Random
-import uk.gov.hmrc.bforms.typeclasses.Now
 
-case class ReconciliationId(value: String) extends AnyVal {
+case class EnvelopeId(value: String) extends AnyVal {
   override def toString = value
 }
 
-object ReconciliationId {
-
-  def create(submissionRef: SubmissionRef)(implicit now: Now[LocalDateTime]): ReconciliationId = {
-    val dateFormatter = now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
-    ReconciliationId(submissionRef + "-" + dateFormatter)
+object EnvelopeId {
+  val writes = Writes[EnvelopeId](id => JsString(id.value))
+  val reads = Reads[EnvelopeId] {
+    case JsString(value) => JsSuccess(EnvelopeId(value))
+    case otherwise => JsError(s"Invalid envelopeId, expected JsString, got: $otherwise")
   }
+
+  implicit val format = Format[EnvelopeId](reads, writes)
 }

@@ -11,6 +11,8 @@ object MicroServiceBuild extends Build with MicroService {
 
   override lazy val appDependencies: Seq[ModuleID] = compile ++ test()
 
+  val ParsebackVersion = "0.3"
+
   val compile = Seq(
     ws,
     "uk.gov.hmrc" %% "play-reactivemongo" % "5.1.0",
@@ -21,6 +23,8 @@ object MicroServiceBuild extends Build with MicroService {
     "uk.gov.hmrc" %% "play-config" % "3.1.0",
     "uk.gov.hmrc" %% "logback-json-logger" % "3.1.0",
     "uk.gov.hmrc" %% "domain" % "4.0.0",
+    "com.codecommit" %% "parseback-core" % ParsebackVersion,
+    "com.codecommit" %% "parseback-cats" % ParsebackVersion,
     "org.typelevel" %% "cats" % "0.9.0",
     "org.apache.pdfbox" % "pdfbox" % "2.0.4",
     "io.github.cloudify" %% "spdf" % "1.4.0"

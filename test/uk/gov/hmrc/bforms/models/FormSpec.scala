@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.model
+package uk.gov.hmrc.bforms.models
 
-import uk.gov.hmrc.bforms.model._
+import uk.gov.hmrc.bforms.models._
 import play.api.libs.json._
 import org.scalatest._
 

@@ -14,18 +14,6 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.model
+package uk.gov.hmrc.bforms.models
 
-import play.api.libs.json.{ Format, JsError, JsString, JsSuccess, Reads, Writes, JsObject }
-
-case class FormTemplate(value: JsObject) extends AnyVal
-
-object FormTemplate {
-  val writes = Writes[FormTemplate](id => id.value)
-  val reads = Reads[FormTemplate] {
-    case o @ JsObject(_) => JsSuccess(FormTemplate(o))
-    case otherwise => JsError(s"Invalid FormTemplate, expected JsObject, got: $otherwise")
-  }
-
-  implicit val format = Format[FormTemplate](reads, writes)
-}
+case class UploadFile(envelopeId: EnvelopeId, fileId: FileId, fileName: String, contentType: String, body: Array[Byte])

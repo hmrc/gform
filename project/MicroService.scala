@@ -37,21 +37,33 @@ trait MicroService {
       evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
       routesImport ++= Seq(
         "uk.gov.hmrc.bforms.binders.ValueClassBinder._",
-        "uk.gov.hmrc.bforms.model.FormTypeId",
-        "uk.gov.hmrc.bforms.model.FormId"
+        "uk.gov.hmrc.bforms.models.FormTypeId",
+        "uk.gov.hmrc.bforms.models.FormId"
+      ),
+      scalacOptions ++= Seq(
+        "-Xfatal-warnings",
+        "-Xlint:-missing-interpolator,_",
+        "-Yno-adapted-args",
+        "-Ywarn-numeric-widen",
+        "-Ywarn-value-discard",
+        "-Ywarn-dead-code",
+        "-deprecation",
+        "-feature",
+        "-unchecked"
       )
     )
     .configs(IntegrationTest)
     .settings(inConfig(IntegrationTest)(Defaults.itSettings): _*)
     .settings(
       Keys.fork in IntegrationTest := false,
-      unmanagedSourceDirectories in IntegrationTest <<= (baseDirectory in IntegrationTest)(base => Seq(base / "it")),
+      unmanagedSourceDirectories in IntegrationTest := Seq((baseDirectory in IntegrationTest).value / "it"),
       addTestReportOption(IntegrationTest, "int-test-reports"),
       testGrouping in IntegrationTest := oneForkedJvmPerTest((definedTests in IntegrationTest).value),
       parallelExecution in IntegrationTest := false)
       .settings(resolvers ++= Seq(
         Resolver.bintrayRepo("hmrc", "releases"),
-        Resolver.jcenterRepo
+        Resolver.jcenterRepo,
+        "bintray-djspiewak-maven" at "https://dl.bintray.com/djspiewak/maven"
       ))
 }
 

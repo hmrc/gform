@@ -14,37 +14,18 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.model
+package uk.gov.hmrc.bforms.models
 
-import java.time.LocalDateTime
-import play.api.libs.json.Json
+import play.api.libs.json._
 
-case class DmsMetaData(
-  formTypeId: FormTypeId
-)
+case class SaveAndRetrieve(value: JsObject) extends AnyVal
 
-object DmsMetaData {
-  implicit val format = Json.format[DmsMetaData]
+object SaveAndRetrieve {
+  val writes = Writes[SaveAndRetrieve](id => id.value)
+  val reads = Reads[SaveAndRetrieve] {
+    case o @ JsObject(_) => JsSuccess(SaveAndRetrieve(o))
+    case otherwise => JsError(s"Invalid Save and Retrieve format, expected JsObject, got: $otherwise")
+  }
+
+  implicit val format = Format[SaveAndRetrieve](reads, writes)
 }
-
-case class Submission(
-  submittedDate: LocalDateTime,
-  submissionRef: SubmissionRef,
-  formId: FormId,
-  envelopeId: EnvelopeId,
-  dmsMetaData: DmsMetaData
-)
-
-object Submission {
-  implicit val format = Json.format[Submission]
-}
-
-case class PdfSummary(
-  numberOfPages: Long,
-  pdfContent: Array[Byte]
-)
-
-case class SubmissionAndPdf(
-  submission: Submission,
-  pdfSummary: PdfSummary
-)

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.model
+package uk.gov.hmrc.bforms.models
 
 import scala.xml.Elem
 import uk.gov.hmrc.bforms.typeclasses.Attribute

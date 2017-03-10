@@ -14,20 +14,22 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.model
+package uk.gov.hmrc.bforms.models
 
 import play.api.libs.json.Json
 
-case class FieldValue(
-  id: String,
-  label: String,
-  value: Option[String],
-  format: Option[String],
-  helpText: Option[String],
-  readOnly: Option[String],
-  mandatory: Option[String]
+case class FormTemplate(
+  formTypeId: FormTypeId,
+  formName: String,
+  version: String,
+  description: String,
+  characterSet: String,
+  dmsSubmission: DmsSubmission,
+  submitSuccessUrl: String,
+  submitErrorUrl: String,
+  sections: List[Section]
 )
 
-object FieldValue {
-  implicit val format = Json.format[FieldValue]
+object FormTemplate {
+  implicit val format = Json.format[FormTemplate]
 }

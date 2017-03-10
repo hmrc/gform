@@ -22,7 +22,7 @@ import cats.syntax.either._
 import org.scalatest.{ EitherValues, FlatSpec, Matchers }
 import play.api.libs.json.{ JsNull, Json, JsNumber }
 import uk.gov.hmrc.bforms.exceptions.InvalidState
-import uk.gov.hmrc.bforms.model.{ FieldValue, Schema, Section }
+import uk.gov.hmrc.bforms.models.{ FieldValue, Schema, Section }
 
 class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
 
@@ -152,120 +152,5 @@ class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
       } yield tr
 
     res.right.value should be(())
-  }
-
-  "TemplateValidator.extractSections" should "extract 'sections' objects from template json converted to Section case class" in {
-
-    val template =
-      """|{
-         |  "formTypeId": "IPT100",
-         |  "sections": [
-         |    {
-         |      "title": "Your details | eich manylion",
-         |      "fields": [
-         |        {
-         |          "id": "iptRegNum",
-         |          "label": "Insurance Premium Tax (IPT) registration number | Treth Premiwm Yswiriant (IPT) rhif cofrestru",
-         |          "readonly": "true",
-         |          "mandatory": "true"
-         |        }
-         |      ]
-         |    },
-         |    {
-         |      "title": "Rate for the period of the Insurance Premium Tax | Gyfradd ar gyfer y cyfnod y Dreth Premiwm Yswiriant",
-         |      "fields": [
-         |        {
-         |          "id": "standardRateIPTDueForThisPeriod",
-         |          "label": "Standard rate IPT due for this period | Cyfradd safonol IPT sy'n ddyledus am y cyfnod hwn",
-         |          "format": "sterling",
-         |          "mandatory": "true"
-         |        },
-         |        {
-         |          "id": "higherRateIPTDueForThisPeriod",
-         |          "label": "Higher rate IPT due for this period | Cyfradd uwch IPT sy'n ddyledus am y cyfnod hwn",
-         |          "format": "sterling",
-         |          "mandatory": "true"
-         |        }
-         |      ]
-         |    }
-         |  ]
-         |}""".stripMargin
-
-    val sectionsE = TemplateValidator.extractSections(Json.parse(template))
-
-    val expectedSections = List(
-      Section("Your details | eich manylion", List(
-        FieldValue(
-          "iptRegNum",
-          "Insurance Premium Tax (IPT) registration number | Treth Premiwm Yswiriant (IPT) rhif cofrestru",
-          None, None, None, None, Some("true")
-        )
-      )),
-      Section(
-        "Rate for the period of the Insurance Premium Tax | Gyfradd ar gyfer y cyfnod y Dreth Premiwm Yswiriant", List(
-          FieldValue(
-            "standardRateIPTDueForThisPeriod",
-            "Standard rate IPT due for this period | Cyfradd safonol IPT sy'n ddyledus am y cyfnod hwn",
-            None, Some("sterling"), None, None, Some("true")
-          ),
-          FieldValue(
-            "higherRateIPTDueForThisPeriod",
-            "Higher rate IPT due for this period | Cyfradd uwch IPT sy'n ddyledus am y cyfnod hwn",
-            None, Some("sterling"), None, None, Some("true")
-          )
-        )
-      )
-    )
-
-    sectionsE.right.value should be(expectedSections)
-  }
-
-  it should "extract nothing from empty json" in {
-
-    val sectionsE = TemplateValidator.extractSections(JsNull)
-
-    sectionsE.left.value should be(
-      InvalidState(
-        """|Error when reading 'sections' from json:
-           |Error: List((,List(ValidationError(List(null is not an object),WrappedArray()))))
-           |Input json: null""".stripMargin
-      )
-    )
-  }
-
-  it should "return error when fieldName 'sections' is not an array" in {
-
-    val template =
-      """|{
-         |  "sections": "some-string"
-         |}""".stripMargin
-
-    val sectionsE = TemplateValidator.extractSections(Json.parse(template))
-
-    sectionsE.left.value should be(
-      InvalidState("""|Error when reading 'sections' from json:
-                      |Error: List((,List(ValidationError(List(error.expected.jsarray),WrappedArray()))))
-                      |Input json: {
-                      |  "sections" : "some-string"
-                      |}""".stripMargin)
-    )
-  }
-
-  it should "return error when fieldName 'sections' array contains no object convertible to Section" in {
-
-    val template =
-      """|{
-         |  "section": ["some-string"]
-         |}""".stripMargin
-
-    val sectionsE = TemplateValidator.extractSections(Json.parse(template))
-
-    sectionsE.left.value should be(
-      InvalidState("""|Error when reading 'sections' from json:
-                      |Error: List((,List(ValidationError(List('sections' is undefined on object: {"section":["some-string"]}),WrappedArray()))))
-                      |Input json: {
-                      |  "section" : [ "some-string" ]
-                      |}""".stripMargin)
-    )
   }
 }

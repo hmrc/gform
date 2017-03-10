@@ -14,18 +14,21 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.model
+package uk.gov.hmrc.bforms.models
 
-import play.api.libs.json.{ Format, JsError, JsString, JsSuccess, Reads, Writes, JsObject }
+import play.api.libs.json._
 
-case class Schema(value: JsObject) extends AnyVal
+case class Form(_id: FormId, formData: FormData)
 
-object Schema {
-  val writes = Writes[Schema](id => id.value)
-  val reads = Reads[Schema] {
-    case o @ JsObject(_) => JsSuccess(Schema(o))
-    case otherwise => JsError(s"Invalid Schema, expected JsObject, got: $otherwise")
+object Form {
+  implicit def format(implicit formDataReads: OFormat[FormData]) = {
+    val mongoIdReads = FormIdAsMongoId.format
+    val writes = OWrites[Form](form => mongoIdReads.writes(form._id) ++ formDataReads.writes(form.formData))
+    val reads = Reads[Form](json =>
+      for {
+        id <- mongoIdReads.reads(json)
+        data <- formDataReads.reads(json)
+      } yield Form(id, data))
+    OFormat[Form](reads, writes)
   }
-
-  implicit val format = Format[Schema](reads, writes)
 }
