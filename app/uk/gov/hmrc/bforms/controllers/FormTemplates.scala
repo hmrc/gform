@@ -44,8 +44,11 @@ object FormTemplates {
     // Hardcoded for now, should be read from formTemplate itself
     val schemaId = "http://hmrc.gov.uk/jsonschema/bf-formtemplate#"
 
+    val fieldNamesValues = formTemplate.sections.flatMap(_.fields.flatMap(_.value))
+
     // format: OFF
     for {
+      exprs      <- fromOptA          (Parser.validateList(fieldNamesValues))
       schema     <- fromFutureOptionA (findOne(Json.obj("id" -> schemaId)))(InvalidState(s"SchemaId $schemaId not found"))
       jsonSchema <- fromOptA          (SchemaValidator.conform(schema))
       _          <- fromOptA          (jsonSchema.conform(formTemplate).toEither)

@@ -17,9 +17,15 @@
 package uk.gov.hmrc.bforms.core
 
 import cats.Eval
+import cats.data.ReaderT
+import cats.instances.either._
+import cats.instances.list._
+import cats.syntax.either._
+import cats.syntax.traverse._
 import parseback._
 import parseback.compat.cats._
 import parseback.util.Catenable
+import uk.gov.hmrc.bforms.exceptions.InvalidState
 
 sealed trait Expr
 
@@ -42,6 +48,30 @@ final case object EeittContext extends Context
 object Parser {
 
   def apply(s: String): Either[List[ParseError], Catenable[Expr]] = expr(LineStream[Eval](s)).value
+
+  private def parse = ReaderT[Opt, String, Catenable[Expr]] { expression =>
+    expr(LineStream[Eval](expression)).value.leftMap { error =>
+      val errors: String = error.map(_.render(expression)).mkString("\n")
+      InvalidState(s"""|Unable to parse expression $expression.
+                       |Errors:
+                       |$errors""".stripMargin)
+    }
+  }
+
+  private def reconstruct(cat: Catenable[Expr]) = ReaderT[Opt, String, Expr] { expression =>
+    cat.uncons match {
+      case Some((expr, _)) => Right(expr)
+      case None => Left(InvalidState(s"Unable to parse expression $expression"))
+    }
+  }
+
+  def validate(expression: String): Opt[Expr] = (for {
+    catenable <- parse
+    expr <- reconstruct(catenable)
+  } yield expr).run(expression)
+
+  def validateList(expressions: List[String]): Opt[List[Expr]] =
+    expressions.map(validate).sequence
 
   implicit val W = Whitespace(() | """\s+""".r)
 
