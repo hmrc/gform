@@ -49,6 +49,7 @@ object FormTemplates {
     // format: OFF
     for {
       exprs      <- fromOptA          (Parser.validateList(fieldNamesValues))
+      _          <- fromOptA          (Expr.validate(exprs, formTemplate).toEither)
       schema     <- fromFutureOptionA (findOne(Json.obj("id" -> schemaId)))(InvalidState(s"SchemaId $schemaId not found"))
       jsonSchema <- fromOptA          (SchemaValidator.conform(schema))
       _          <- fromOptA          (jsonSchema.conform(formTemplate).toEither)

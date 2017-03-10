@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.bforms.core
 
-import cats.Eval
+import cats.{ Eval, Monoid }
 import cats.data.ReaderT
 import cats.instances.either._
 import cats.instances.list._
@@ -26,6 +26,7 @@ import parseback._
 import parseback.compat.cats._
 import parseback.util.Catenable
 import uk.gov.hmrc.bforms.exceptions.InvalidState
+import uk.gov.hmrc.bforms.models.FormTemplate
 
 sealed trait Expr
 
@@ -45,9 +46,41 @@ final case object FormContext extends Context
 final case object AuthContext extends Context
 final case object EeittContext extends Context
 
-object Parser {
+object Expr {
+  def validate(exprs: List[Expr], formTemplate: FormTemplate) = {
 
-  def apply(s: String): Either[List[ParseError], Catenable[Expr]] = expr(LineStream[Eval](s)).value
+    val fieldNamesIds: List[String] = formTemplate.sections.flatMap(_.fields.map(_.id))
+
+    def checkFields(field1: Expr, field2: Expr): ValidationResult = {
+      val checkField1 = checkExpression(field1)
+      val checkField2 = checkExpression(field2)
+      Monoid[ValidationResult].combineAll(List(checkField1, checkField2))
+    }
+
+    def checkExpression(expr: Expr): ValidationResult = {
+      expr match {
+        case Add(field1, field2) => checkFields(field1, field2)
+        case Multiply(field1, field2) => checkFields(field1, field2)
+        case FormCtx(value) =>
+          if (fieldNamesIds.contains(value))
+            Valid
+          else
+            Invalid(s"Form field '$value' is not defined in form template.")
+        case AuthCtx(value) => Valid
+        case EeittCtx(value) => Valid
+        case Constant(_) => Valid
+      }
+    }
+
+    def checkExpressions(exprs: List[Expr]): ValidationResult = {
+      val results = exprs.map(checkExpression)
+      Monoid[ValidationResult].combineAll(results)
+    }
+    checkExpressions(exprs)
+  }
+}
+
+object Parser {
 
   private def parse = ReaderT[Opt, String, Catenable[Expr]] { expression =>
     expr(LineStream[Eval](expression)).value.leftMap { error =>
