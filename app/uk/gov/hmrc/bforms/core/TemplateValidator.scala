@@ -16,31 +16,8 @@
 
 package uk.gov.hmrc.bforms.core
 
-import cats.Monoid
 import uk.gov.hmrc.bforms.exceptions.InvalidState
 import uk.gov.hmrc.bforms.models.{ FormField, Section }
-
-sealed trait ValidationResult {
-  def toEither: Opt[Unit] = this match {
-    case Valid => Right(())
-    case Invalid(reason) => Left(InvalidState(reason))
-  }
-}
-
-case object Valid extends ValidationResult
-case class Invalid(reason: String) extends ValidationResult
-
-object ValidationResult {
-
-  implicit val validationResultMonoid = new Monoid[ValidationResult] {
-    def empty: ValidationResult = Valid
-    def combine(x: ValidationResult, y: ValidationResult): ValidationResult = (x, y) match {
-      case (Valid, Valid) => Valid
-      case (i @ Invalid(_), _) => i
-      case (_, i @ Invalid(_)) => i
-    }
-  }
-}
 
 object TemplateValidator {
 
