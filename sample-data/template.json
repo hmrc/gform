@@ -1,0 +1,78 @@
+{
+  "formTypeId": "IPT100",
+  "formName": "Insurance Premium Tax Return | Yswiriant Ffurflen Dreth Premiwm",
+  "version": "0.2.0",
+  "description": "Fill in your insurance premium tax return form online | Llenwch eich ffurflen dreth premiwm yswiriant ar-lein",
+  "characterSet": "UTF-8",
+  "dmsSubmission": {
+    "customerId": "nino",
+    "classificationType": "BT-NRU-Environmental",
+    "businessArea": "FinanceOpsCorpT"
+  },
+  "submitSuccessUrl": "http://www.google.co.uk",
+  "submitErrorUrl": "http://www.yahoo.co.uk",
+  "sections": [
+    {
+      "title": "Your details | eich manylion",
+      "fields": [
+        {
+          "id": "firstName",
+          "label": "Your first name | Eich enw cyntaf",
+          "mandatory": "true",
+          "value": "sa"
+        },
+        {
+          "id": "iptRegNum",
+          "label": "Insurance Premium Tax (IPT) registration number | Treth Premiwm Yswiriant (IPT) rhif cofrestru",
+          "readonly": "true",
+          "mandatory": "true"
+        },
+        {
+          "id": "lastName",
+          "label": "Your last name | Eich enw olaf",
+          "mandatory": "true"
+        }
+      ]
+    },
+    {
+      "title": "Business details | manylion Busnes",
+      "fields": [
+        {
+          "id": "nameOfBusiness",
+          "label": "Name of business | Enw'r busnes",
+          "mandatory": "true"
+        },
+        {
+          "id": "accountingPeriodStartDate",
+          "label": "Accounting period start date | Dyddiad dechrau'r cyfnod cyfrifeg",
+          "format": "date",
+          "mandatory": "true"
+        },
+        {
+          "id": "accountingPeriodEndDate",
+          "label": "Accounting period end date | Dyddiad diwedd cyfnod Cyfrifeg",
+          "format": "date",
+          "mandatory": "false"
+        }
+      ]
+    },
+    {
+      "title": "Rate for the period of the Insurance Premium Tax | Gyfradd ar gyfer y cyfnod y Dreth Premiwm Yswiriant",
+      "fields": [
+        {
+          "id": "standardRateIPTDueForThisPeriod",
+          "label": "Standard rate IPT due for this period | Cyfradd safonol IPT sy'n ddyledus am y cyfnod hwn",
+          "helpText": "You should deduct any standard credits which are due to you | Dylech ddidynnu unrhyw gredydau safonol sydd yn ddyledus i chi",
+          "format": "sterling",
+          "mandatory": "true"
+        },
+        {
+          "id": "higherRateIPTDueForThisPeriod",
+          "label": "Higher rate IPT due for this period | Cyfradd uwch IPT sy'n ddyledus am y cyfnod hwn",
+          "format": "sterling",
+          "mandatory": "true"
+        }
+      ]
+    }
+  ]
+}
