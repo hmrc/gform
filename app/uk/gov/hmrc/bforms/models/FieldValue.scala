@@ -17,11 +17,12 @@
 package uk.gov.hmrc.bforms.models
 
 import play.api.libs.json.Json
+import uk.gov.hmrc.bforms.core.Expr
 
 case class FieldValue(
   id: String,
   label: String,
-  value: Option[String],
+  value: Option[Expr],
   format: Option[String],
   helpText: Option[String],
   readOnly: Option[String],
