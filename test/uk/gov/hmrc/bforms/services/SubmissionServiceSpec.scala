@@ -47,8 +47,8 @@ class SubmissionServiceSpec extends FlatSpec with Matchers with TypeclassFixture
   val yourDetailsSection = Section(
     "Your details",
     List(
-      FieldValue("firstName", "Your first name", None, None, None, None, Some("true")),
-      FieldValue("lastName", "Your last name", None, None, None, None, Some("true"))
+      FieldValue("firstName", Some(uk.gov.hmrc.bforms.core.Text), "Your first name", None, None, None, None, Some("true")),
+      FieldValue("lastName", Some(uk.gov.hmrc.bforms.core.Text), "Your last name", None, None, None, None, Some("true"))
     )
   )
 

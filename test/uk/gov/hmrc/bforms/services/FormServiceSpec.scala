@@ -19,12 +19,13 @@ package uk.gov.hmrc.bforms.services
 import org.scalamock.scalatest.MockFactory
 import org.scalatest._
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.time.{ Millis, Span }
-import play.api.libs.json.{ JsObject, Json }
-import uk.gov.hmrc.bforms.{ FindOneCheck, TypeclassFixtures }
+import org.scalatest.time.{Millis, Span}
+import play.api.libs.json.{JsObject, Json}
+import uk.gov.hmrc.bforms.{FindOneCheck, TypeclassFixtures}
 import uk.gov.hmrc.bforms.exceptions.InvalidState
 import uk.gov.hmrc.bforms.models._
-import uk.gov.hmrc.bforms.typeclasses.{ FindOne, Insert, Update }
+import uk.gov.hmrc.bforms.typeclasses.{FindOne, Insert, Update}
+
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class FormServiceSpec extends FlatSpec with Matchers with TypeclassFixtures with ScalaFutures with EitherValues with MockFactory {
@@ -38,17 +39,17 @@ class FormServiceSpec extends FlatSpec with Matchers with TypeclassFixtures with
   val yourDetailsSection = Section(
     "Your details",
     List(
-      FieldValue("firstName", "Your first name", None, None, None, None, Some("true")),
-      FieldValue("lastName", "Your last name", None, None, None, None, Some("true"))
+      FieldValue("firstName", Some(uk.gov.hmrc.bforms.core.Text), "Your first name", None, None, None, None, Some("true")),
+      FieldValue("lastName", Some(uk.gov.hmrc.bforms.core.Text), "Your last name", None, None, None, None, Some("true"))
     )
   )
 
   val businessDetailsSection = Section(
     "Business details",
     List(
-      FieldValue("nameOfBusiness", "Name of business", None, None, None, None, Some("true")),
-      FieldValue("accountingPeriodStartDate", "Accounting period start date", None, None, None, None, Some("true")),
-      FieldValue("accountingPeriodEndDate", "Accounting period end date", None, None, None, None, Some("true"))
+      FieldValue("nameOfBusiness", Some(uk.gov.hmrc.bforms.core.Text), "Name of business", None, None, None, None, Some("true")),
+      FieldValue("accountingPeriodStartDate", Some(uk.gov.hmrc.bforms.core.Text), "Accounting period start date", None, None, None, None, Some("true")),
+      FieldValue("accountingPeriodEndDate", Some(uk.gov.hmrc.bforms.core.Text), "Accounting period end date", None, None, None, None, Some("true"))
     )
   )
 

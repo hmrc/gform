@@ -23,6 +23,8 @@ import org.scalatest.{ EitherValues, FlatSpec, Matchers }
 import play.api.libs.json._
 import uk.gov.hmrc.bforms.exceptions.InvalidState
 import uk.gov.hmrc.bforms.models.{ FieldValue, FormField, Schema, Section }
+import uk.gov.hmrc.bforms.models._
+
 
 class FormValidatorSpec extends FlatSpec with Matchers with EitherValues {
 
@@ -119,6 +121,7 @@ class FormValidatorSpec extends FlatSpec with Matchers with EitherValues {
 
   def getMandatoryFieldValue(id: String) = FieldValue(
     id = id,
+    `type` = Some(Text),
     label = "",
     value = None,
     format = None,
