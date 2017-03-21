@@ -21,7 +21,7 @@ import uk.gov.hmrc.bforms.core._
 
 case class FieldValue(
   id: String,
-  `type`: Option[ComponentType.EnumTypeId],
+  `type`: Option[ComponentType],
   label: String,
   value: Option[Expr],
   format: Option[String],

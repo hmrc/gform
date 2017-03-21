@@ -34,6 +34,7 @@ import uk.gov.hmrc.play.http.HttpResponse
 import scala.concurrent.ExecutionContext.Implicits.global
 import play.api.http.HeaderNames.LOCATION
 import uk.gov.hmrc.bforms.core.ComponentType
+import uk.gov.hmrc.bforms.core.{Text => ComponentText}
 
 class SubmissionServiceSpec extends FlatSpec with Matchers with TypeclassFixtures with ScalaFutures with EitherValues with Inside with MockFactory {
 
@@ -46,8 +47,8 @@ class SubmissionServiceSpec extends FlatSpec with Matchers with TypeclassFixture
   val yourDetailsSection = Section(
     "Your details",
     List(
-      FieldValue("firstName", Some(ComponentType.Text), "Your first name", None, None, None, None, Some("true")),
-      FieldValue("lastName", Some(ComponentType.Text), "Your last name", None, None, None, None, Some("true"))
+      FieldValue("firstName", Some(ComponentText), "Your first name", None, None, None, None, Some("true")),
+      FieldValue("lastName", Some(ComponentText), "Your last name", None, None, None, None, Some("true"))
     )
   )
 

@@ -16,14 +16,12 @@
 
 package uk.gov.hmrc.bforms.core
 
-import cats.instances.either._
-import cats.instances.list._
 import cats.syntax.either._
 import org.scalatest.{ EitherValues, FlatSpec, Matchers }
 import play.api.libs.json._
 import uk.gov.hmrc.bforms.exceptions.InvalidState
 import uk.gov.hmrc.bforms.models.{ FieldValue, FormField, Schema, Section }
-import uk.gov.hmrc.bforms.models._
+import uk.gov.hmrc.bforms.core.{Text => ComponentText}
 
 
 class FormValidatorSpec extends FlatSpec with Matchers with EitherValues {
@@ -121,7 +119,7 @@ class FormValidatorSpec extends FlatSpec with Matchers with EitherValues {
 
   def getMandatoryFieldValue(id: String) = FieldValue(
     id = id,
-    `type` = Some(ComponentType.Text),
+    `type` = Some(ComponentText),
     label = "",
     value = None,
     format = None,
