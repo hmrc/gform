@@ -73,7 +73,7 @@ object PdfGenerator {
         SectionTitle(localisation(section.title)) :: lines ::: List(Line)
       }
 
-      /**
+      /*
        * First Int - number of text fields preceding this LayoutElem
        * Second Int - number of sections preceding this LayoutElem
        * Third Int - number of lines preceding this LayoutElem
@@ -88,7 +88,7 @@ object PdfGenerator {
 
       val offset = 40
 
-      /**
+      /*
        * Int denotes position of the LayoutElem as offset from the beginning of the page
        */
       val layoutElemsWithPosition: List[(LayoutElem, Int)] = layoutElemsWithAccs.map {
