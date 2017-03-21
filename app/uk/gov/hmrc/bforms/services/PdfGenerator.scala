@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.bforms.services
 
-import java.awt.Color
 import java.io.ByteArrayOutputStream
 
 import io.github.cloudify.scala.spdf._
@@ -24,7 +23,7 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle
 import org.apache.pdfbox.pdmodel.font.{ PDFont, PDType1Font }
 import org.apache.pdfbox.pdmodel.{ PDDocument, PDPage, PDPageContentStream }
 import play.api.libs.json._
-import uk.gov.hmrc.bforms.models.{ FieldValue, FormData, FormField, SectionFormField }
+import uk.gov.hmrc.bforms.models.{ FormField, SectionFormField }
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -35,8 +34,11 @@ sealed trait LayoutElem {
     case Line => (this, c1, c2, c3 + 1)
   }
 }
+
 case class Text(text: String) extends LayoutElem
+
 case class SectionTitle(title: String) extends LayoutElem
+
 case object Line extends LayoutElem
 
 object PdfGenerator {

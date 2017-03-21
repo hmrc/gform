@@ -121,7 +121,7 @@ class FormValidatorSpec extends FlatSpec with Matchers with EitherValues {
 
   def getMandatoryFieldValue(id: String) = FieldValue(
     id = id,
-    `type` = Some(Text),
+    `type` = Some(ComponentType.Text),
     label = "",
     value = None,
     format = None,

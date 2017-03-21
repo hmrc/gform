@@ -23,27 +23,44 @@ import play.api.libs.functional.syntax._
 /**
  * Created by dimitra on 20/03/17.
  */
-sealed trait ComponentType
-
-case object Text extends ComponentType
-
-case object Date extends ComponentType
-
-case object Address extends ComponentType
 
 object ComponentType {
 
-  implicit val format: OFormat[ComponentType] = {
-    val formatExpr: OFormat[ComponentType] = derived.oformat
+  sealed abstract class EnumTypeId(val name: String) {
 
-    val reads: Reads[ComponentType] = (formatExpr: Reads[ComponentType]) | Reads {
-      case JsString("text") => JsSuccess(Text)
-      case JsString("date") => JsSuccess(Date)
-      case JsString("address") => JsSuccess(Address)
-      case other => JsError(s"Expected Text or Date as String, you entered: $other")
+    def equalsToEnum(that: String) = this.name.equals(that)
+
+    override def toString = name
+  }
+
+  case object Text extends EnumTypeId("text")
+
+  case object Date extends EnumTypeId("date")
+
+  case object Address extends EnumTypeId("address")
+
+  val componentTypes = List(Text, Date, Address)
+
+  implicit val format: OFormat[ComponentType.EnumTypeId] = {
+    val formatExpr: OFormat[ComponentType.EnumTypeId] = derived.oformat
+
+    val reads: Reads[ComponentType.EnumTypeId] = (formatExpr: Reads[ComponentType.EnumTypeId]) | Reads {
+
+      case JsString(str: String) =>
+
+        str match {
+          case Text.name => JsSuccess(Text)
+          case Date.name => JsSuccess(Date)
+          case Address.name => JsSuccess(Address)
+          case other =>
+
+            JsError(s"Expected one of the following types: $componentTypes, you entered: $other")
+        }
+
+      case _ => JsError(s"Expected String as JsValue")
     }
 
-    OFormat[ComponentType](reads, formatExpr)
+    OFormat[ComponentType.EnumTypeId](reads, formatExpr)
   }
 
 }

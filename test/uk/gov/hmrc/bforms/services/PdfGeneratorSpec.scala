@@ -17,15 +17,17 @@
 package uk.gov.hmrc.bforms.services
 
 import org.scalatest._
+import uk.gov.hmrc.bforms.core.ComponentType
 import uk.gov.hmrc.bforms.models._
 
 class PdfGeneratorSpec extends FlatSpec with Matchers {
 
   def getFF(id: String, label: String, value: String) = {
+
     val ff = FormField(id, value)
     val fv = FieldValue(
       id = id,
-      `type` = Some(uk.gov.hmrc.bforms.core.Text),
+      `type` = Some(ComponentType.Text),
       label = label,
       value = None,
       format = None,
