@@ -17,10 +17,9 @@
 package uk.gov.hmrc.bforms.core
 
 import org.scalatest._
-import parseback.ParseError
-import parseback.util.Catenable
+import uk.gov.hmrc.bforms.core.{Text => ComponentText}
 import uk.gov.hmrc.bforms.exceptions.InvalidState
-import uk.gov.hmrc.bforms.models.{ DmsSubmission, FieldValue, FormTemplate, FormTypeId, Section }
+import uk.gov.hmrc.bforms.models._
 
 class ParserSpec extends FlatSpec with Matchers with EitherValues with OptionValues {
 
@@ -80,8 +79,8 @@ class ParserSpec extends FlatSpec with Matchers with EitherValues with OptionVal
   val yourDetailsSection = Section(
     "Your details",
     List(
-      FieldValue("firstName", "Your first name", None, None, None, None, None),
-      FieldValue("lastName", "Your last name", None, None, None, None, None)
+      FieldValue("firstName", Some(ComponentText), "Your first name", None, None, None, None, None),
+      FieldValue("lastName", Some(ComponentText), "Your last name", None, None, None, None, None)
     )
   )
 

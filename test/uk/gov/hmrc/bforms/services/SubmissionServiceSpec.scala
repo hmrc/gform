@@ -17,24 +17,24 @@
 package uk.gov.hmrc.bforms.services
 
 import java.time.LocalDateTime
+
 import org.scalamock.scalatest.MockFactory
 import org.scalatest._
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.matchers.Matcher
-import org.scalatest.time.{ Millis, Span }
-import org.scalatest.exceptions.TestFailedException
-import play.api.http.HeaderNames.LOCATION
-import play.api.libs.json.{ JsObject, Json }
-import scala.concurrent.{ Future, Promise }
-import scala.util.{ Failure, Random, Success }
-import uk.gov.hmrc.bforms.core.Opt
-import uk.gov.hmrc.bforms.typeclasses.{ FusFeUrl, FusUrl, Now, Post, Rnd, ServiceUrl }
-import uk.gov.hmrc.bforms.{ FindOneCheck, InsertCheck, PostCheck, TypeclassFixtures }
-import uk.gov.hmrc.bforms.exceptions.InvalidState
+import org.scalatest.time.{Millis, Span}
+import play.api.libs.json.Json
+
+import scala.util.Random
+import uk.gov.hmrc.bforms.typeclasses.{Now, Post, Rnd}
+import uk.gov.hmrc.bforms.{FindOneCheck, InsertCheck, PostCheck, TypeclassFixtures}
 import uk.gov.hmrc.bforms.models._
-import uk.gov.hmrc.bforms.typeclasses.{ FindOne, Insert, Update }
-import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpResponse }
+import uk.gov.hmrc.bforms.typeclasses.{FindOne, Insert}
+import uk.gov.hmrc.play.http.HttpResponse
+
 import scala.concurrent.ExecutionContext.Implicits.global
+import play.api.http.HeaderNames.LOCATION
+import uk.gov.hmrc.bforms.core.ComponentType
+import uk.gov.hmrc.bforms.core.{Text => ComponentText}
 
 class SubmissionServiceSpec extends FlatSpec with Matchers with TypeclassFixtures with ScalaFutures with EitherValues with Inside with MockFactory {
 
@@ -47,8 +47,8 @@ class SubmissionServiceSpec extends FlatSpec with Matchers with TypeclassFixture
   val yourDetailsSection = Section(
     "Your details",
     List(
-      FieldValue("firstName", "Your first name", None, None, None, None, Some("true")),
-      FieldValue("lastName", "Your last name", None, None, None, None, Some("true"))
+      FieldValue("firstName", Some(ComponentText), "Your first name", None, None, None, None, Some("true")),
+      FieldValue("lastName", Some(ComponentText), "Your last name", None, None, None, None, Some("true"))
     )
   )
 
@@ -76,11 +76,11 @@ class SubmissionServiceSpec extends FlatSpec with Matchers with TypeclassFixture
 
     implicit val postCreateEnvelope = PostTC
       .response[CreateEnvelope, HttpResponse](
-        HttpResponse(
-          responseStatus = 200,
-          responseHeaders = Map(LOCATION -> List("envelopes/123"))
-        )
+      HttpResponse(
+        responseStatus = 200,
+        responseHeaders = Map(LOCATION -> List("envelopes/123"))
       )
+    )
       .callCheck(postCheck)
       .noChecks
 
