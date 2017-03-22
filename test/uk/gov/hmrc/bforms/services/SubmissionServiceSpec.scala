@@ -21,20 +21,20 @@ import java.time.LocalDateTime
 import org.scalamock.scalatest.MockFactory
 import org.scalatest._
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.time.{Millis, Span}
+import org.scalatest.time.{ Millis, Span }
 import play.api.libs.json.Json
 
 import scala.util.Random
-import uk.gov.hmrc.bforms.typeclasses.{Now, Post, Rnd}
-import uk.gov.hmrc.bforms.{FindOneCheck, InsertCheck, PostCheck, TypeclassFixtures}
+import uk.gov.hmrc.bforms.typeclasses.{ Now, Post, Rnd }
+import uk.gov.hmrc.bforms.{ FindOneCheck, InsertCheck, PostCheck, TypeclassFixtures }
 import uk.gov.hmrc.bforms.models._
-import uk.gov.hmrc.bforms.typeclasses.{FindOne, Insert}
+import uk.gov.hmrc.bforms.typeclasses.{ FindOne, Insert }
 import uk.gov.hmrc.play.http.HttpResponse
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import play.api.http.HeaderNames.LOCATION
 import uk.gov.hmrc.bforms.core.ComponentType
-import uk.gov.hmrc.bforms.core.{Text => ComponentText}
+import uk.gov.hmrc.bforms.core.{ Text => ComponentText }
 
 class SubmissionServiceSpec extends FlatSpec with Matchers with TypeclassFixtures with ScalaFutures with EitherValues with Inside with MockFactory {
 
@@ -76,11 +76,11 @@ class SubmissionServiceSpec extends FlatSpec with Matchers with TypeclassFixture
 
     implicit val postCreateEnvelope = PostTC
       .response[CreateEnvelope, HttpResponse](
-      HttpResponse(
-        responseStatus = 200,
-        responseHeaders = Map(LOCATION -> List("envelopes/123"))
+        HttpResponse(
+          responseStatus = 200,
+          responseHeaders = Map(LOCATION -> List("envelopes/123"))
+        )
       )
-    )
       .callCheck(postCheck)
       .noChecks
 

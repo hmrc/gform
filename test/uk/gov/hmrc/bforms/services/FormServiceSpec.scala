@@ -19,13 +19,13 @@ package uk.gov.hmrc.bforms.services
 import org.scalamock.scalatest.MockFactory
 import org.scalatest._
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.time.{Millis, Span}
-import play.api.libs.json.{JsObject, Json}
-import uk.gov.hmrc.bforms.{FindOneCheck, TypeclassFixtures}
+import org.scalatest.time.{ Millis, Span }
+import play.api.libs.json.{ JsObject, Json }
+import uk.gov.hmrc.bforms.{ FindOneCheck, TypeclassFixtures }
 import uk.gov.hmrc.bforms.exceptions.InvalidState
 import uk.gov.hmrc.bforms.models._
-import uk.gov.hmrc.bforms.typeclasses.{FindOne, Insert, Update}
-import uk.gov.hmrc.bforms.core.{Text => ComponentText}
+import uk.gov.hmrc.bforms.typeclasses.{ FindOne, Insert, Update }
+import uk.gov.hmrc.bforms.core.{ Text => ComponentText }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 

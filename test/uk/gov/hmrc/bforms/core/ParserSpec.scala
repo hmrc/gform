@@ -17,7 +17,7 @@
 package uk.gov.hmrc.bforms.core
 
 import org.scalatest._
-import uk.gov.hmrc.bforms.core.{Text => ComponentText}
+import uk.gov.hmrc.bforms.core.{ Text => ComponentText }
 import uk.gov.hmrc.bforms.exceptions.InvalidState
 import uk.gov.hmrc.bforms.models._
 
