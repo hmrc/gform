@@ -38,17 +38,17 @@ class FormServiceSpec extends FlatSpec with Matchers with TypeclassFixtures with
   val yourDetailsSection = Section(
     "Your details",
     List(
-      FieldValue("firstName", "Your first name", None, None, None, None, Some("true")),
-      FieldValue("lastName", "Your last name", None, None, None, None, Some("true"))
+      FieldValue("firstName", None, "Your first name", None, None, None, None, Some("true")),
+      FieldValue("lastName", None, "Your last name", None, None, None, None, Some("true"))
     )
   )
 
   val businessDetailsSection = Section(
     "Business details",
     List(
-      FieldValue("nameOfBusiness", "Name of business", None, None, None, None, Some("true")),
-      FieldValue("accountingPeriodStartDate", "Accounting period start date", None, None, None, None, Some("true")),
-      FieldValue("accountingPeriodEndDate", "Accounting period end date", None, None, None, None, Some("true"))
+      FieldValue("nameOfBusiness", None, "Name of business", None, None, None, None, Some("true")),
+      FieldValue("accountingPeriodStartDate", None, "Accounting period start date", None, None, None, None, Some("true")),
+      FieldValue("accountingPeriodEndDate", None, "Accounting period end date", None, None, None, None, Some("true"))
     )
   )
 

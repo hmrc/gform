@@ -21,6 +21,7 @@ import uk.gov.hmrc.bforms.core.Expr
 
 case class FieldValue(
   id: String,
+  `type`: Option[String],
   label: String,
   value: Option[Expr],
   format: Option[String],

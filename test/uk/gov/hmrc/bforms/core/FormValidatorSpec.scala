@@ -119,12 +119,24 @@ class FormValidatorSpec extends FlatSpec with Matchers with EitherValues {
 
   def getMandatoryFieldValue(id: String) = FieldValue(
     id = id,
+    `type` = None,
     label = "",
     value = None,
     format = None,
     helpText = None,
     readOnly = None,
     mandatory = Some("true")
+  )
+
+  def getAddressFieldValue(id: String) = FieldValue(
+    id = id,
+    `type` = Some("address"),
+    label = "",
+    value = None,
+    format = None,
+    helpText = None,
+    readOnly = None,
+    mandatory = None
   )
 
   "FormValidator.conform" should "parse all fields from from to list of FormField objects" in {
@@ -200,6 +212,36 @@ class FormValidatorSpec extends FlatSpec with Matchers with EitherValues {
     )
 
     val res = FormValidator.validate(formFields, section)
+
+    res.right.value should be(())
+
+  }
+
+  it should "succeed with address component" in {
+
+    val formFields =
+      List(
+        FormField("iptRegNum", "12AB3456780"),
+        FormField("firstName", "John"),
+        FormField("lastName", "Doe"),
+        FormField("telephoneNumber", "+44 (01273) 123456"),
+        FormField("nameOfBusiness", "Acme Widgets Ltd."),
+        FormField("homeAddress.street1", "1"),
+        FormField("homeAddress.street2", "2"),
+        FormField("homeAddress.street3", "3"),
+        FormField("homeAddress.town", "4"),
+        FormField("homeAddress.county", "5"),
+        FormField("homeAddress.postcode", "6")
+      )
+
+    val section = Section(
+      title = "",
+      fields = getAddressFieldValue("homeAddress") :: List("iptRegNum", "firstName", "lastName", "telephoneNumber", "nameOfBusiness").map(getMandatoryFieldValue)
+    )
+
+    val res = FormValidator.validate(formFields, section)
+
+    println("res " + res)
 
     res.right.value should be(())
 

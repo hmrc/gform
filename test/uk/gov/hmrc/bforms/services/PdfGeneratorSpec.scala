@@ -25,6 +25,7 @@ class PdfGeneratorSpec extends FlatSpec with Matchers {
     val ff = FormField(id, value)
     val fv = FieldValue(
       id = id,
+      `type` = None,
       label = label,
       value = None,
       format = None,

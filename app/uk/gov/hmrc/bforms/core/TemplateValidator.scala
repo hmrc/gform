@@ -24,7 +24,12 @@ object TemplateValidator {
   def getMatchingSection(formFields: Seq[FormField], sections: Seq[Section]): Opt[Section] = {
     val formFieldIds: Set[String] = formFields.map(_.id).toSet
     val sectionOpt: Option[Section] = sections.find { section =>
-      val sectionIds: Set[String] = section.fields.map(_.id).toSet
+      val sectionIds: Set[String] = section.fields.flatMap { field =>
+        field.`type` match {
+          case Some("address") => List("street1", "street2", "street3", "town", "county", "postcode").map(suffix => field.id + "." + suffix)
+          case otherwise => List(field.id)
+        }
+      }.toSet
       sectionIds == formFieldIds
     }
 
