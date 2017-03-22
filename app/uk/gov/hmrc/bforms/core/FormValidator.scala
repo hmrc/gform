@@ -48,16 +48,27 @@ object FormValidator {
       section.fields.foldLeft((Map.empty[String, FieldValue], Set.empty[String])) {
         case ((acc, reqAcc), fieldValue) =>
 
-          val id = fieldValue.id
-          val mandatory = fieldValue.mandatory
-          val accRes = acc + (id -> fieldValue)
+          fieldValue.`type` match {
+            case Some(Address) =>
+              val res: Map[String, FieldValue] = List("street1", "street2", "street3", "town", "county", "postcode")
+                .map(suffix => fieldValue.id + "." + suffix -> fieldValue)
+                .toMap
+              val accRes = acc ++ res
 
-          val reqAccRes =
-            mandatory match {
-              case Some("true") => reqAcc + id
-              case _ => reqAcc
-            }
-          (accRes, reqAccRes)
+              (accRes, reqAcc)
+
+            case otherwise =>
+              val id = fieldValue.id
+              val mandatory = fieldValue.mandatory
+              val accRes = acc + (id -> fieldValue)
+
+              val reqAccRes =
+                mandatory match {
+                  case Some("true") => reqAcc + id
+                  case _ => reqAcc
+                }
+              (accRes, reqAccRes)
+          }
       }
 
     val missingRequiredFields = (requiredFields diff ffSet)

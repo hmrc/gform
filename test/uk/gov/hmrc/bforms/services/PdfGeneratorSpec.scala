@@ -19,7 +19,7 @@ package uk.gov.hmrc.bforms.services
 import org.scalatest._
 import uk.gov.hmrc.bforms.core.ComponentType
 import uk.gov.hmrc.bforms.models._
-import uk.gov.hmrc.bforms.core.{Text => ComponentText}
+import uk.gov.hmrc.bforms.core.{ Text => ComponentText }
 
 class PdfGeneratorSpec extends FlatSpec with Matchers {
 
