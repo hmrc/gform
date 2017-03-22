@@ -23,8 +23,8 @@ import play.api.libs.functional.syntax._
 import scala.collection.immutable._
 
 /**
-  * Created by dimitra on 20/03/17.
-  */
+ * Created by dimitra on 20/03/17.
+ */
 
 sealed trait ComponentType
 
@@ -48,11 +48,11 @@ object ComponentType {
 
     val reads: Reads[ComponentType] = (formatExpr: Reads[ComponentType]) | Reads {
 
-      case JsString(str: String) =>
+      case JsString(compTypeAsString) =>
 
-        componentMap.get(str) match {
-          case Some(ct: ComponentType) => JsSuccess(ct)
-          case None => JsError(s"Expected one of the following types: ${componentMap.values} ")
+        componentMap.get(compTypeAsString) match {
+          case Some(componentType) => JsSuccess(componentType)
+          case None => JsError(s"Expected one of the following types: ${componentMap.values}, you entered: $compTypeAsString")
         }
 
       case _ => JsError(s"Expected String as JsValue")
