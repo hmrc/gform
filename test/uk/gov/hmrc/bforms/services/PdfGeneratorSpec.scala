@@ -23,7 +23,7 @@ import uk.gov.hmrc.bforms.core.{ Text => ComponentText }
 
 class PdfGeneratorSpec extends FlatSpec with Matchers {
 
-  def getFF(id: String, label: String, value: String) = {
+  def getFF(id: FieldId, label: String, value: String) = {
 
     val ff = FormField(id, value)
     val fv = FieldValue(
@@ -45,25 +45,25 @@ class PdfGeneratorSpec extends FlatSpec with Matchers {
       SectionFormField(
         "About you",
         List(
-          getFF("firstName", "First Name", "Joe"),
-          getFF("surname", "Surname", "Doe")
+          getFF(FieldId("firstName"), "First Name", "Joe"),
+          getFF(FieldId("surname"), "Surname", "Doe")
         )
       ),
       SectionFormField(
         "Business details",
         List(
-          getFF("businessName", "Business Name", "HMRC"),
-          getFF("businessArea", "Business Area", "Worthing"),
-          getFF("businessNino", "Business Nino", "BA1234556")
+          getFF(FieldId("businessName"), "Business Name", "HMRC"),
+          getFF(FieldId("businessArea"), "Business Area", "Worthing"),
+          getFF(FieldId("businessNino"), "Business Nino", "BA1234556")
         )
       ),
       SectionFormField(
         "Important dates",
         List(
-          getFF("year", "Current year", "2017"),
-          getFF("nextChristmas", "Next christmas", "Monday, December 25, 2017"),
-          getFF("showcase", "Bforms showcase", "12/18/2017"),
-          getFF("summnerSolctice", "Summer solctice", "Wednesday, June 21, 2017")
+          getFF(FieldId("year"), "Current year", "2017"),
+          getFF(FieldId("nextChristmas"), "Next christmas", "Monday, December 25, 2017"),
+          getFF(FieldId("showcase"), "Bforms showcase", "12/18/2017"),
+          getFF(FieldId("summnerSolctice"), "Summer solctice", "Wednesday, June 21, 2017")
         )
       )
     )

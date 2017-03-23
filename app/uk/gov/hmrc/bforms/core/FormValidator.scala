@@ -22,7 +22,7 @@ import cats.syntax.either._
 import cats.syntax.traverse._
 import play.api.libs.json._
 import uk.gov.hmrc.bforms.exceptions.InvalidState
-import uk.gov.hmrc.bforms.models.{ FormField, Section, FieldValue }
+import uk.gov.hmrc.bforms.models.{ FieldId, FieldValue, FormField, Section }
 
 object FormValidator {
   def conform(json: JsValue /* , schema: JsonSchema */ ): Opt[List[FormField]] = {
@@ -45,12 +45,12 @@ object FormValidator {
     val ffSet = formFields.filterNot(_.value.isEmpty()).map(_.id).toSet
 
     val (templateFieldsMap, requiredFields) =
-      section.fields.foldLeft((Map.empty[String, FieldValue], Set.empty[String])) {
+      section.fields.foldLeft((Map.empty[FieldId, FieldValue], Set.empty[FieldId])) {
         case ((acc, reqAcc), fieldValue) =>
 
           fieldValue.`type` match {
             case Some(Address) =>
-              val res: Map[String, FieldValue] = Address.fields(fieldValue.id).map(_ -> fieldValue).toMap
+              val res: Map[FieldId, FieldValue] = Address.fields(fieldValue.id).map(_ -> fieldValue).toMap
               val accRes = acc ++ res
 
               (accRes, reqAcc)

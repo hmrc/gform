@@ -23,7 +23,7 @@ import reactivemongo.api.commands.WriteConcern
 import reactivemongo.bson.BSONObjectID
 import scala.concurrent.ExecutionContext
 import uk.gov.hmrc.bforms.core.{ Opt, ServiceResponse, fromFutureOptA }
-import uk.gov.hmrc.bforms.models.{ DbOperationResult, Form, FormId }
+import uk.gov.hmrc.bforms.models.{ DbOperationResult, FieldId, Form, FormId }
 import uk.gov.hmrc.mongo.ReactiveRepository
 
 import scala.concurrent.Future
@@ -70,7 +70,7 @@ class FormRepository(implicit mongo: () => DefaultDB)
     implicit
     ex: ExecutionContext
   ): ServiceResponse[DbOperationResult] = {
-    val formFieldIds: Seq[String] = form.formData.fields.map(_.id)
+    val formFieldIds: Seq[FieldId] = form.formData.fields.map(_.id)
     val dropExisting = Json.obj("$pull" -> Json.obj("fields" -> Json.obj("id" -> Json.obj("$in" -> formFieldIds))))
     val updateFields = Json.obj("$push" -> Json.obj("fields" -> Json.obj("$each" -> form.formData.fields)))
 

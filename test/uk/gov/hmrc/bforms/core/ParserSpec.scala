@@ -79,8 +79,8 @@ class ParserSpec extends FlatSpec with Matchers with EitherValues with OptionVal
   val yourDetailsSection = Section(
     "Your details",
     List(
-      FieldValue("firstName", Some(ComponentText), "Your first name", None, None, None, None, None),
-      FieldValue("lastName", Some(ComponentText), "Your last name", None, None, None, None, None)
+      FieldValue(FieldId("firstName"), Some(ComponentText), "Your first name", None, None, None, None, None),
+      FieldValue(FieldId("lastName"), Some(ComponentText), "Your last name", None, None, None, None, None)
     )
   )
 

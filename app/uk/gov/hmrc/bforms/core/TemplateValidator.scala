@@ -17,14 +17,14 @@
 package uk.gov.hmrc.bforms.core
 
 import uk.gov.hmrc.bforms.exceptions.InvalidState
-import uk.gov.hmrc.bforms.models.{ FormField, Section }
+import uk.gov.hmrc.bforms.models.{ FieldId, FormField, Section }
 
 object TemplateValidator {
 
   def getMatchingSection(formFields: Seq[FormField], sections: Seq[Section]): Opt[Section] = {
-    val formFieldIds: Set[String] = formFields.map(_.id).toSet
+    val formFieldIds: Set[FieldId] = formFields.map(_.id).toSet
     val sectionOpt: Option[Section] = sections.find { section =>
-      val sectionIds: Set[String] = section.fields.flatMap { field =>
+      val sectionIds: Set[FieldId] = section.fields.flatMap { field =>
         field.`type` match {
           case Some(Address) => Address.fields(field.id)
           case otherwise => List(field.id)

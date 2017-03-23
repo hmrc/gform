@@ -40,17 +40,17 @@ class FormServiceSpec extends FlatSpec with Matchers with TypeclassFixtures with
   val yourDetailsSection = Section(
     "Your details",
     List(
-      FieldValue("firstName", Some(ComponentText), "Your first name", None, None, None, None, Some("true")),
-      FieldValue("lastName", Some(ComponentText), "Your last name", None, None, None, None, Some("true"))
+      FieldValue(FieldId("firstName"), Some(ComponentText), "Your first name", None, None, None, None, Some("true")),
+      FieldValue(FieldId("lastName"), Some(ComponentText), "Your last name", None, None, None, None, Some("true"))
     )
   )
 
   val businessDetailsSection = Section(
     "Business details",
     List(
-      FieldValue("nameOfBusiness", Some(ComponentText), "Name of business", None, None, None, None, Some("true")),
-      FieldValue("accountingPeriodStartDate", Some(ComponentText), "Accounting period start date", None, None, None, None, Some("true")),
-      FieldValue("accountingPeriodEndDate", Some(ComponentText), "Accounting period end date", None, None, None, None, Some("true"))
+      FieldValue(FieldId("nameOfBusiness"), Some(ComponentText), "Name of business", None, None, None, None, Some("true")),
+      FieldValue(FieldId("accountingPeriodStartDate"), Some(ComponentText), "Accounting period start date", None, None, None, None, Some("true")),
+      FieldValue(FieldId("accountingPeriodEndDate"), Some(ComponentText), "Accounting period end date", None, None, None, None, Some("true"))
     )
   )
 
@@ -126,8 +126,8 @@ class FormServiceSpec extends FlatSpec with Matchers with TypeclassFixtures with
   it should "successfuly save form with single section" in {
 
     val formFields = List(
-      FormField("firstName", "John"),
-      FormField("lastName", "Doe")
+      FormField(FieldId("firstName"), "John"),
+      FormField(FieldId("lastName"), "Doe")
     )
 
     val res = runSaveTest(formFields, formTemplateWithOneSection, SaveOperation)
@@ -138,8 +138,8 @@ class FormServiceSpec extends FlatSpec with Matchers with TypeclassFixtures with
   it should "successfuly save first section of a form with two sections" in {
 
     val formFields = List(
-      FormField("firstName", "John"),
-      FormField("lastName", "Doe")
+      FormField(FieldId("firstName"), "John"),
+      FormField(FieldId("lastName"), "Doe")
     )
 
     val res = runSaveTest(formFields, formTemplateWithTwoSections, SaveOperation)
@@ -150,9 +150,9 @@ class FormServiceSpec extends FlatSpec with Matchers with TypeclassFixtures with
   it should "successfuly save second section of a form with two sections" in {
 
     val formFields = List(
-      FormField("nameOfBusiness", "Foldright"),
-      FormField("accountingPeriodStartDate", "1.1.2000"),
-      FormField("accountingPeriodEndDate", "1.1.2000")
+      FormField(FieldId("nameOfBusiness"), "Foldright"),
+      FormField(FieldId("accountingPeriodStartDate"), "1.1.2000"),
+      FormField(FieldId("accountingPeriodEndDate"), "1.1.2000")
     )
 
     val res = runSaveTest(formFields, formTemplateWithTwoSections, SaveOperation)
@@ -163,9 +163,9 @@ class FormServiceSpec extends FlatSpec with Matchers with TypeclassFixtures with
   it should "return InvalidState when mandatory field is empty on Save" in {
 
     val formFields = List(
-      FormField("nameOfBusiness", "Foldright"),
-      FormField("accountingPeriodStartDate", "1.1.2000"),
-      FormField("accountingPeriodEndDate", "")
+      FormField(FieldId("nameOfBusiness"), "Foldright"),
+      FormField(FieldId("accountingPeriodStartDate"), "1.1.2000"),
+      FormField(FieldId("accountingPeriodEndDate"), "")
     )
 
     val res = runSaveTest(formFields, formTemplateWithTwoSections, SaveOperation)
@@ -176,9 +176,9 @@ class FormServiceSpec extends FlatSpec with Matchers with TypeclassFixtures with
   it should "allow save incomplete form when needed" in {
 
     val formFields = List(
-      FormField("nameOfBusiness", "Foldright"),
-      FormField("accountingPeriodStartDate", "1.1.2000"),
-      FormField("accountingPeriodEndDate", "")
+      FormField(FieldId("nameOfBusiness"), "Foldright"),
+      FormField(FieldId("accountingPeriodStartDate"), "1.1.2000"),
+      FormField(FieldId("accountingPeriodEndDate"), "")
     )
 
     val res = runSaveTest(formFields, formTemplateWithTwoSections, SaveTolerantOperation)
@@ -189,9 +189,9 @@ class FormServiceSpec extends FlatSpec with Matchers with TypeclassFixtures with
   it should "allow update incomplete form when needed" in {
 
     val formFields = List(
-      FormField("nameOfBusiness", "Foldright"),
-      FormField("accountingPeriodStartDate", "1.1.2000"),
-      FormField("accountingPeriodEndDate", "")
+      FormField(FieldId("nameOfBusiness"), "Foldright"),
+      FormField(FieldId("accountingPeriodStartDate"), "1.1.2000"),
+      FormField(FieldId("accountingPeriodEndDate"), "")
     )
 
     val res = runUpdateTest(formFields, formTemplateWithTwoSections, UpdateTolerantOperation)
@@ -202,9 +202,9 @@ class FormServiceSpec extends FlatSpec with Matchers with TypeclassFixtures with
   it should "return InvalidState when mandatory field is empty on Update" in {
 
     val formFields = List(
-      FormField("nameOfBusiness", "Foldright"),
-      FormField("accountingPeriodStartDate", "1.1.2000"),
-      FormField("accountingPeriodEndDate", "")
+      FormField(FieldId("nameOfBusiness"), "Foldright"),
+      FormField(FieldId("accountingPeriodStartDate"), "1.1.2000"),
+      FormField(FieldId("accountingPeriodEndDate"), "")
     )
 
     val res = runUpdateTest(formFields, formTemplateWithTwoSections, UpdateOperation)

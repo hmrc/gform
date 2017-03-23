@@ -21,6 +21,7 @@ import play.api.libs.json._
 import play.api.libs.functional.syntax._
 
 import scala.collection.immutable._
+import uk.gov.hmrc.bforms.models.FieldId
 
 /**
  * Created by dimitra on 20/03/17.
@@ -33,7 +34,7 @@ case object Text extends ComponentType
 case object Date extends ComponentType
 
 case object Address extends ComponentType {
-  val fields = (id: String) => List("street1", "street2", "street3", "town", "county", "postcode").map(suffix => id + "." + suffix)
+  val fields = (id: FieldId) => List("street1", "street2", "street3", "town", "county", "postcode").map(id.withSuffix)
 }
 
 object ComponentType {

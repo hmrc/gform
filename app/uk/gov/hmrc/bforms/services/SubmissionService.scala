@@ -39,10 +39,10 @@ object SubmissionService {
     form: Form,
     sections: Seq[Section]
   ): Opt[List[SectionFormField]] = {
-    val formFields: Map[String, FormField] = form.formData.fields.map(field => field.id -> field).toMap
+    val formFields: Map[FieldId, FormField] = form.formData.fields.map(field => field.id -> field).toMap
 
     val formFieldByFieldValue: FieldValue => Opt[List[(FormField, FieldValue)]] = fieldValue => {
-      val fieldValueIds: List[String] =
+      val fieldValueIds: List[FieldId] =
         fieldValue.`type` match {
           case Some(Address) => Address.fields(fieldValue.id)
           case Some(Date) => List(fieldValue.id)

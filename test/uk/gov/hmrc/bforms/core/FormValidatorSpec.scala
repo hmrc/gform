@@ -20,7 +20,7 @@ import cats.syntax.either._
 import org.scalatest.{ EitherValues, FlatSpec, Matchers }
 import play.api.libs.json._
 import uk.gov.hmrc.bforms.exceptions.InvalidState
-import uk.gov.hmrc.bforms.models.{ FieldValue, FormField, Schema, Section }
+import uk.gov.hmrc.bforms.models.{ FieldId, FieldValue, FormField, Schema, Section }
 import uk.gov.hmrc.bforms.core.{ Text => ComponentText }
 
 class FormValidatorSpec extends FlatSpec with Matchers with EitherValues {
@@ -117,7 +117,7 @@ class FormValidatorSpec extends FlatSpec with Matchers with EitherValues {
   }
 
   def getMandatoryFieldValue(id: String) = FieldValue(
-    id = id,
+    id = FieldId(id),
     `type` = Some(ComponentText),
     label = "",
     value = None,
@@ -128,7 +128,7 @@ class FormValidatorSpec extends FlatSpec with Matchers with EitherValues {
   )
 
   def getAddressFieldValue(id: String) = FieldValue(
-    id = id,
+    id = FieldId(id),
     `type` = Some(Address),
     label = "",
     value = None,
@@ -181,15 +181,15 @@ class FormValidatorSpec extends FlatSpec with Matchers with EitherValues {
 
     res.right.value should be(
       List(
-        FormField("iptRegNum", "12AB3456780"),
-        FormField("firstName", "John"),
-        FormField("lastName", "Doe"),
-        FormField("telephoneNumber", "+44 (01273) 123456"),
-        FormField("nameOfBusiness", "Acme Widgets Ltd."),
-        FormField("accountingPeriodStartDate", "2015-08-01"),
-        FormField("accountingPeriodEndDate", "2015-12-01"),
-        FormField("standardRateIPTDueForThisPeriod", "1329345.49"),
-        FormField("higherRateIPTDueForThisPeriod", "58373265.23")
+        FormField(FieldId("iptRegNum"), "12AB3456780"),
+        FormField(FieldId("firstName"), "John"),
+        FormField(FieldId("lastName"), "Doe"),
+        FormField(FieldId("telephoneNumber"), "+44 (01273) 123456"),
+        FormField(FieldId("nameOfBusiness"), "Acme Widgets Ltd."),
+        FormField(FieldId("accountingPeriodStartDate"), "2015-08-01"),
+        FormField(FieldId("accountingPeriodEndDate"), "2015-12-01"),
+        FormField(FieldId("standardRateIPTDueForThisPeriod"), "1329345.49"),
+        FormField(FieldId("higherRateIPTDueForThisPeriod"), "58373265.23")
       )
     )
   }
@@ -198,11 +198,11 @@ class FormValidatorSpec extends FlatSpec with Matchers with EitherValues {
 
     val formFields =
       List(
-        FormField("iptRegNum", "12AB3456780"),
-        FormField("firstName", "John"),
-        FormField("lastName", "Doe"),
-        FormField("telephoneNumber", "+44 (01273) 123456"),
-        FormField("nameOfBusiness", "Acme Widgets Ltd.")
+        FormField(FieldId("iptRegNum"), "12AB3456780"),
+        FormField(FieldId("firstName"), "John"),
+        FormField(FieldId("lastName"), "Doe"),
+        FormField(FieldId("telephoneNumber"), "+44 (01273) 123456"),
+        FormField(FieldId("nameOfBusiness"), "Acme Widgets Ltd.")
       )
 
     val section = Section(
@@ -220,17 +220,17 @@ class FormValidatorSpec extends FlatSpec with Matchers with EitherValues {
 
     val formFields =
       List(
-        FormField("iptRegNum", "12AB3456780"),
-        FormField("firstName", "John"),
-        FormField("lastName", "Doe"),
-        FormField("telephoneNumber", "+44 (01273) 123456"),
-        FormField("nameOfBusiness", "Acme Widgets Ltd."),
-        FormField("homeAddress.street1", "1"),
-        FormField("homeAddress.street2", "2"),
-        FormField("homeAddress.street3", "3"),
-        FormField("homeAddress.town", "4"),
-        FormField("homeAddress.county", "5"),
-        FormField("homeAddress.postcode", "6")
+        FormField(FieldId("iptRegNum"), "12AB3456780"),
+        FormField(FieldId("firstName"), "John"),
+        FormField(FieldId("lastName"), "Doe"),
+        FormField(FieldId("telephoneNumber"), "+44 (01273) 123456"),
+        FormField(FieldId("nameOfBusiness"), "Acme Widgets Ltd."),
+        FormField(FieldId("homeAddress.street1"), "1"),
+        FormField(FieldId("homeAddress.street2"), "2"),
+        FormField(FieldId("homeAddress.street3"), "3"),
+        FormField(FieldId("homeAddress.town"), "4"),
+        FormField(FieldId("homeAddress.county"), "5"),
+        FormField(FieldId("homeAddress.postcode"), "6")
       )
 
     val section = Section(
@@ -250,7 +250,7 @@ class FormValidatorSpec extends FlatSpec with Matchers with EitherValues {
 
     val formFields =
       List(
-        FormField("iptRegNum", "12AB3456780")
+        FormField(FieldId("iptRegNum"), "12AB3456780")
       )
 
     val section = Section(

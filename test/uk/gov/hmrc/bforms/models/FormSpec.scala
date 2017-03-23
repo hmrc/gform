@@ -23,7 +23,7 @@ import org.scalatest._
 class FormSpec extends FlatSpec with Matchers with StreamlinedXml {
   val formId = FormId("my-form-id")
 
-  val formData = FormData(FormTypeId("my-form-type-id"), "0.1.5", "UTF-8", List(FormField("firstName", "Josef")))
+  val formData = FormData(FormTypeId("my-form-type-id"), "0.1.5", "UTF-8", List(FormField(FieldId("firstName"), "Josef")))
 
   val form = Form(formId, formData)
 

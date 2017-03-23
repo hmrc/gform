@@ -40,15 +40,15 @@ class SubmissionServiceSpec extends FlatSpec with Matchers with TypeclassFixture
 
   implicit override val patienceConfig = PatienceConfig(timeout = scaled(Span(15000, Millis)), interval = scaled(Span(300, Millis)))
 
-  val form = Form(FormId("form-id"), FormData(FormTypeId("form-type-id"), "1.0.0", "UTF-8", List(FormField("firstName", "Joe"), FormField("lastName", "Doe"))))
+  val form = Form(FormId("form-id"), FormData(FormTypeId("form-type-id"), "1.0.0", "UTF-8", List(FormField(FieldId("firstName"), "Joe"), FormField(FieldId("lastName"), "Doe"))))
 
   val plainFormTemplate = FormTemplate(FormTypeId("IPT100"), "Insurance Premium Tax Return", "version", "description", "characterSet", DmsSubmission("nino", "BT-NRU-Environmental", "FinanceOpsCorpT"), "submitSuccessUrl", "submitErrorUrl", List.empty[Section])
 
   val yourDetailsSection = Section(
     "Your details",
     List(
-      FieldValue("firstName", Some(ComponentText), "Your first name", None, None, None, None, Some("true")),
-      FieldValue("lastName", Some(ComponentText), "Your last name", None, None, None, None, Some("true"))
+      FieldValue(FieldId("firstName"), Some(ComponentText), "Your first name", None, None, None, None, Some("true")),
+      FieldValue(FieldId("lastName"), Some(ComponentText), "Your last name", None, None, None, None, Some("true"))
     )
   )
 

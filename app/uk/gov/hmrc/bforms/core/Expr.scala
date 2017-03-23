@@ -20,7 +20,7 @@ import cats.Monoid
 import julienrf.json.derived
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
-import uk.gov.hmrc.bforms.models.FormTemplate
+import uk.gov.hmrc.bforms.models.{ FieldId, FormTemplate }
 
 sealed trait Expr
 
@@ -61,7 +61,7 @@ object Expr {
 
   def validate(exprs: List[Expr], formTemplate: FormTemplate) = {
 
-    val fieldNamesIds: List[String] = formTemplate.sections.flatMap(_.fields.map(_.id))
+    val fieldNamesIds: List[FieldId] = formTemplate.sections.flatMap(_.fields.map(_.id))
 
     def checkFields(field1: Expr, field2: Expr): ValidationResult = {
       val checkField1 = checkExpression(field1)
@@ -74,7 +74,7 @@ object Expr {
         case Add(field1, field2) => checkFields(field1, field2)
         case Multiply(field1, field2) => checkFields(field1, field2)
         case FormCtx(value) =>
-          if (fieldNamesIds.contains(value))
+          if (fieldNamesIds.map(_.value).contains(value))
             Valid
           else
             Invalid(s"Form field '$value' is not defined in form template.")

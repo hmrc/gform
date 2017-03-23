@@ -16,10 +16,21 @@
 
 package uk.gov.hmrc.bforms.models
 
-import play.api.libs.json._
+import play.api.libs.json.{ Format, JsError, JsString, JsSuccess, Reads, Writes }
 
-case class FormField(id: FieldId, value: String)
+case class FieldId(value: String) extends AnyVal {
+  override def toString = value
 
-object FormField {
-  implicit val format: Format[FormField] = Json.format[FormField]
+  def withSuffix(suffix: String): FieldId = FieldId(value + "." + suffix)
+}
+
+object FieldId {
+
+  val writes = Writes[FieldId](id => JsString(id.value))
+  val reads = Reads[FieldId] {
+    case JsString(value) => JsSuccess(FieldId(value))
+    case otherwise => JsError(s"Invalid fieldId, expected JsString, got: $otherwise")
+  }
+
+  implicit val format = Format[FieldId](reads, writes)
 }

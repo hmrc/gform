@@ -20,7 +20,7 @@ import play.api.libs.json._
 import uk.gov.hmrc.bforms.core._
 
 case class FieldValue(
-  id: String,
+  id: FieldId,
   `type`: Option[ComponentType],
   label: String,
   value: Option[Expr],
