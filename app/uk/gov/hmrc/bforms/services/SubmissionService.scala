@@ -41,13 +41,26 @@ object SubmissionService {
   ): Opt[List[SectionFormField]] = {
     val formFields: Map[String, FormField] = form.formData.fields.map(field => field.id -> field).toMap
 
-    val formFieldByFieldValue: FieldValue => Opt[(FormField, FieldValue)] = field => formFields.get(field.id) match {
-      case Some(formField) => Right((formField, field))
-      case None => Left(InvalidState(s"No formField for field.id: ${field.id} found"))
+    val formFieldByFieldValue: FieldValue => Opt[List[(FormField, FieldValue)]] = fieldValue => {
+      val fieldValueIds: List[String] =
+        fieldValue.`type` match {
+          case Some(Address) => Address.fields(fieldValue.id)
+          case Some(Date) => List(fieldValue.id)
+          case _ => List(fieldValue.id)
+        }
+
+      val formFieldAndFieldValues: List[Opt[(FormField, FieldValue)]] =
+        fieldValueIds.map { fieldValueId =>
+          formFields.get(fieldValueId) match {
+            case Some(formField) => Right((formField, fieldValue))
+            case None => Left(InvalidState(s"No formField for field.id: ${fieldValue.id} found"))
+          }
+        }
+      formFieldAndFieldValues.sequenceU
     }
 
     val toSectionFormField: Section => Opt[SectionFormField] = section =>
-      section.fields.traverse(formFieldByFieldValue).map(ff => SectionFormField(section.title, ff))
+      section.fields.flatTraverse(formFieldByFieldValue).map(ff => SectionFormField(section.title, ff))
 
     sections.toList.traverse(toSectionFormField)
   }

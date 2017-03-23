@@ -32,7 +32,9 @@ case object Text extends ComponentType
 
 case object Date extends ComponentType
 
-case object Address extends ComponentType
+case object Address extends ComponentType {
+  val fields = (id: String) => List("street1", "street2", "street3", "town", "county", "postcode").map(suffix => id + "." + suffix)
+}
 
 object ComponentType {
 

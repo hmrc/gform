@@ -50,9 +50,7 @@ object FormValidator {
 
           fieldValue.`type` match {
             case Some(Address) =>
-              val res: Map[String, FieldValue] = List("street1", "street2", "street3", "town", "county", "postcode")
-                .map(suffix => fieldValue.id + "." + suffix -> fieldValue)
-                .toMap
+              val res: Map[String, FieldValue] = Address.fields(fieldValue.id).map(_ -> fieldValue).toMap
               val accRes = acc ++ res
 
               (accRes, reqAcc)
