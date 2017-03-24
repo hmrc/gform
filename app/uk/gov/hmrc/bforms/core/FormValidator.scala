@@ -56,7 +56,7 @@ object FormValidator {
               (accRes, reqAcc)
 
             case Some(Date) =>
-              val res: Map[FieldId, FieldValue] = Address.fields(fieldValue.id).map(_ -> fieldValue).toMap
+              val res: Map[FieldId, FieldValue] = Date.fields(fieldValue.id).map(_ -> fieldValue).toMap
               val accRes = acc ++ res
 
               (accRes, reqAcc)
