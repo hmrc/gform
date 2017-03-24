@@ -22,6 +22,7 @@ import cats.instances.list._
 import cats.syntax.either._
 import cats.syntax.traverse._
 import play.api.libs.json.{ JsObject, JsValue, Json }
+
 import scala.util.Random
 import uk.gov.hmrc.bforms.core._
 import uk.gov.hmrc.bforms.exceptions.InvalidState
@@ -31,9 +32,13 @@ import uk.gov.hmrc.bforms.typeclasses.{ Find, FindOne, Insert, Now, Post, Rnd, U
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import java.time.LocalDateTime
+
+import org.slf4j.LoggerFactory
 import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpResponse }
 
 object SubmissionService {
+
+  lazy val log = LoggerFactory.getLogger(SubmissionService.getClass)
 
   private def getSectionFormFields(
     form: Form,
@@ -45,7 +50,7 @@ object SubmissionService {
       val fieldValueIds: List[FieldId] =
         fieldValue.`type` match {
           case Some(Address) => Address.fields(fieldValue.id)
-          case Some(Date) => List(fieldValue.id)
+          case Some(Date) => Date.fields(fieldValue.id)
           case _ => List(fieldValue.id)
         }
 
@@ -119,13 +124,13 @@ object SubmissionService {
     )
     // format: OFF
     for {
-      form              <- FormService.getByTypeAndId(formTypeId, formId)
-      formTemplate      <- fromFutureOptionA  (findOneFormTemplate(templateSelector(form)))(InvalidState(s"FormTemplate $templateSelector not found"))
-      envelopeId        <- fromFutureOptA     (FileUploadService.createEnvelope(formTypeId))
-      sectionFormFields <- fromOptA           (getSectionFormFields(form, formTemplate.sections))
-      submissionAndPdf  =  getSubmissionAndPdf(envelopeId, form, sectionFormFields, formTemplate.formName)
-      _                 <- fromFutureA        (insertSubmission(Json.obj(), submissionAndPdf.submission))
-      res               <- FileUploadService.submitEnvelope(submissionAndPdf, formTemplate.dmsSubmission)
+      form <- FormService.getByTypeAndId(formTypeId, formId)
+      formTemplate <- fromFutureOptionA(findOneFormTemplate(templateSelector(form)))(InvalidState(s"FormTemplate $templateSelector not found"))
+      envelopeId <- fromFutureOptA(FileUploadService.createEnvelope(formTypeId))
+      sectionFormFields <- fromOptA(getSectionFormFields(form, formTemplate.sections))
+      submissionAndPdf = getSubmissionAndPdf(envelopeId, form, sectionFormFields, formTemplate.formName)
+      _ <- fromFutureA(insertSubmission(Json.obj(), submissionAndPdf.submission))
+      res <- FileUploadService.submitEnvelope(submissionAndPdf, formTemplate.dmsSubmission)
     } yield res
     // format: ON
   }
