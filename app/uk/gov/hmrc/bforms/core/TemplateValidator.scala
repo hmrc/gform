@@ -27,6 +27,7 @@ object TemplateValidator {
       val sectionIds: Set[FieldId] = section.fields.flatMap { field =>
         field.`type` match {
           case Some(Address) => Address.fields(field.id)
+          case Some(Date) => Date.fields(field.id)
           case otherwise => List(field.id)
         }
       }.toSet
