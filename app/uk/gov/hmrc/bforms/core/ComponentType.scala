@@ -31,7 +31,9 @@ sealed trait ComponentType
 
 case object Text extends ComponentType
 
-case object Date extends ComponentType
+case object Date extends ComponentType {
+  val fields = (id: FieldId) => List("day", "month", "year").map(id.withSuffix)
+}
 
 case object Address extends ComponentType {
   val fields = (id: FieldId) => List("street1", "street2", "street3", "town", "county", "postcode").map(id.withSuffix)
