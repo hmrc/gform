@@ -21,7 +21,6 @@ import cats.instances.list._
 import cats.syntax.either._
 import org.scalatest.{ EitherValues, FlatSpec, Matchers }
 import play.api.libs.json.{ JsNull, Json, JsNumber }
-import uk.gov.hmrc.bforms.core.{ Text => ComponentText }
 import uk.gov.hmrc.bforms.exceptions.InvalidState
 import uk.gov.hmrc.bforms.models.{ FieldId, FieldValue, FormField, Schema, Section }
 
@@ -158,16 +157,16 @@ class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
   val businessDetailsSection = Section(
     "Business details",
     List(
-      FieldValue(FieldId("nameOfBusiness"), Some(ComponentText), "Name of business", None, None, None, None, Some("true")),
-      FieldValue(FieldId("businessAddress"), Some(Address), "Business address", None, None, None, None, Some("true"))
+      FieldValue(FieldId("nameOfBusiness"), Text, "Name of business", None, None, None, None, true),
+      FieldValue(FieldId("businessAddress"), Address, "Business address", None, None, None, None, true)
     )
   )
 
   val sectionWithDate = Section(
     "Business details",
     List(
-      FieldValue(FieldId("nameOfBusiness"), Some(ComponentText), "Name of business", None, None, None, None, Some("true")),
-      FieldValue(FieldId("startDate"), Some(Date), "Start date", None, None, None, None, Some("true"))
+      FieldValue(FieldId("nameOfBusiness"), Text, "Name of business", None, None, None, None, true),
+      FieldValue(FieldId("startDate"), Date, "Start date", None, None, None, None, true)
     )
   )
 
@@ -280,7 +279,7 @@ class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
     val section = Section(
       "Business details",
       List(
-        FieldValue(FieldId("nameOfBusiness"), Some(ComponentText), "Name of business", None, None, None, None, None)
+        FieldValue(FieldId("nameOfBusiness"), Text, "Name of business", None, None, None, None, false)
       )
     )
 
@@ -297,7 +296,7 @@ class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
     val section = Section(
       "Business details",
       List(
-        FieldValue(FieldId("nameOfBusiness"), Some(ComponentText), "Name of business", None, None, None, None, Some("false"))
+        FieldValue(FieldId("nameOfBusiness"), Text, "Name of business", None, None, None, None, false)
       )
     )
 
@@ -314,7 +313,7 @@ class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
     val section = Section(
       "Business details",
       List(
-        FieldValue(FieldId("nameOfBusiness"), Some(ComponentText), "Name of business", None, None, None, None, Some("true"))
+        FieldValue(FieldId("nameOfBusiness"), Text, "Name of business", None, None, None, None, true)
       )
     )
 

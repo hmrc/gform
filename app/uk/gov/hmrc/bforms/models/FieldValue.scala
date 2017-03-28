@@ -17,19 +17,61 @@
 package uk.gov.hmrc.bforms.models
 
 import play.api.libs.json._
+import play.api.libs.functional.syntax._
 import uk.gov.hmrc.bforms.core._
 
 case class FieldValue(
   id: FieldId,
-  `type`: Option[ComponentType],
+  `type`: ComponentType,
   label: String,
   value: Option[Expr],
   format: Option[String],
   helpText: Option[String],
   readOnly: Option[String],
-  mandatory: Option[String]
+  mandatory: Boolean
 )
 
 object FieldValue {
-  implicit val format = Json.format[FieldValue]
+
+  private val formatFieldValueRaw: OFormat[FieldValueRaw] = Json.format[FieldValueRaw]
+
+  implicit val format: OFormat[FieldValue] = {
+    implicit val formatFieldValue = Json.format[FieldValue]
+
+    val reads: Reads[FieldValue] = (formatFieldValue: Reads[FieldValue]) |
+      (formatFieldValueRaw: Reads[FieldValueRaw]).flatMap(_.toFieldValue)
+
+    OFormat[FieldValue](reads, formatFieldValue)
+  }
+}
+
+private[this] case class FieldValueRaw(
+    id: FieldId,
+    `type`: Option[ComponentType],
+    label: String,
+    value: Option[Expr],
+    format: Option[String],
+    helpText: Option[String],
+    readOnly: Option[String],
+    mandatory: Option[String]
+) {
+
+  private def getFieldValue(mandatory: Boolean) = FieldValue(
+    id = id,
+    `type` = `type`.getOrElse(Text),
+    label = label,
+    value = value,
+    format = format,
+    helpText = helpText,
+    readOnly = readOnly,
+    mandatory = mandatory
+  )
+
+  def toFieldValue = Reads[FieldValue] { _ =>
+    mandatory match {
+      case Some("true") | None => JsSuccess(getFieldValue(true))
+      case Some("false") => JsSuccess(getFieldValue(false))
+      case otherwise => JsError(s"Expected 'true' or 'false' string or nothing for mandatory field value, got: $otherwise")
+    }
+  }
 }

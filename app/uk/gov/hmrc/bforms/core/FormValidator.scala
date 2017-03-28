@@ -49,27 +49,26 @@ object FormValidator {
         case ((acc, reqAcc), fieldValue) =>
 
           fieldValue.`type` match {
-            case Some(Address) =>
+            case Address =>
               val res: Map[FieldId, FieldValue] = Address.fields(fieldValue.id).map(_ -> fieldValue).toMap
               val accRes = acc ++ res
 
               (accRes, reqAcc)
 
-            case Some(Date) =>
+            case Date =>
               val res: Map[FieldId, FieldValue] = Date.fields(fieldValue.id).map(_ -> fieldValue).toMap
               val accRes = acc ++ res
 
               (accRes, reqAcc)
 
-            case otherwise =>
+            case Text =>
               val id = fieldValue.id
-              val mandatory = fieldValue.mandatory
               val accRes = acc + (id -> fieldValue)
 
               val reqAccRes =
-                mandatory match {
-                  case Some("true") => reqAcc + id
-                  case _ => reqAcc
+                fieldValue.mandatory match {
+                  case true => reqAcc + id
+                  case false => reqAcc
                 }
               (accRes, reqAccRes)
           }

@@ -21,7 +21,6 @@ import org.scalatest.{ EitherValues, FlatSpec, Matchers }
 import play.api.libs.json._
 import uk.gov.hmrc.bforms.exceptions.InvalidState
 import uk.gov.hmrc.bforms.models.{ FieldId, FieldValue, FormField, Schema, Section }
-import uk.gov.hmrc.bforms.core.{ Text => ComponentText }
 
 class FormValidatorSpec extends FlatSpec with Matchers with EitherValues {
 
@@ -118,24 +117,24 @@ class FormValidatorSpec extends FlatSpec with Matchers with EitherValues {
 
   def getMandatoryFieldValue(id: String) = FieldValue(
     id = FieldId(id),
-    `type` = Some(ComponentText),
+    `type` = Text,
     label = "",
     value = None,
     format = None,
     helpText = None,
     readOnly = None,
-    mandatory = Some("true")
+    mandatory = true
   )
 
   def getAddressFieldValue(id: String) = FieldValue(
     id = FieldId(id),
-    `type` = Some(Address),
+    `type` = Address,
     label = "",
     value = None,
     format = None,
     helpText = None,
     readOnly = None,
-    mandatory = None
+    mandatory = false
   )
 
   "FormValidator.conform" should "parse all fields from form to list of FormField objects" in {

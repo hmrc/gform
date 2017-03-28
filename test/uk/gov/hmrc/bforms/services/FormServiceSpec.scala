@@ -25,7 +25,7 @@ import uk.gov.hmrc.bforms.{ FindOneCheck, TypeclassFixtures }
 import uk.gov.hmrc.bforms.exceptions.InvalidState
 import uk.gov.hmrc.bforms.models._
 import uk.gov.hmrc.bforms.typeclasses.{ FindOne, Insert, Update }
-import uk.gov.hmrc.bforms.core.{ Text => ComponentText }
+import uk.gov.hmrc.bforms.core.Text
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -40,17 +40,17 @@ class FormServiceSpec extends FlatSpec with Matchers with TypeclassFixtures with
   val yourDetailsSection = Section(
     "Your details",
     List(
-      FieldValue(FieldId("firstName"), Some(ComponentText), "Your first name", None, None, None, None, Some("true")),
-      FieldValue(FieldId("lastName"), Some(ComponentText), "Your last name", None, None, None, None, Some("true"))
+      FieldValue(FieldId("firstName"), Text, "Your first name", None, None, None, None, true),
+      FieldValue(FieldId("lastName"), Text, "Your last name", None, None, None, None, true)
     )
   )
 
   val businessDetailsSection = Section(
     "Business details",
     List(
-      FieldValue(FieldId("nameOfBusiness"), Some(ComponentText), "Name of business", None, None, None, None, Some("true")),
-      FieldValue(FieldId("accountingPeriodStartDate"), Some(ComponentText), "Accounting period start date", None, None, None, None, Some("true")),
-      FieldValue(FieldId("accountingPeriodEndDate"), Some(ComponentText), "Accounting period end date", None, None, None, None, Some("true"))
+      FieldValue(FieldId("nameOfBusiness"), Text, "Name of business", None, None, None, None, true),
+      FieldValue(FieldId("accountingPeriodStartDate"), Text, "Accounting period start date", None, None, None, None, true),
+      FieldValue(FieldId("accountingPeriodEndDate"), Text, "Accounting period end date", None, None, None, None, true)
     )
   )
 

@@ -29,13 +29,13 @@ import scala.collection.mutable.ArrayBuffer
 
 sealed trait LayoutElem {
   def count(c1: Int, c2: Int, c3: Int) = this match {
-    case Text(_) => (this, c1 + 1, c2, c3)
+    case TextElem(_) => (this, c1 + 1, c2, c3)
     case SectionTitle(_) => (this, c1, c2 + 1, c3)
     case Line => (this, c1, c2, c3 + 1)
   }
 }
 
-case class Text(text: String) extends LayoutElem
+case class TextElem(text: String) extends LayoutElem
 
 case class SectionTitle(title: String) extends LayoutElem
 
@@ -70,7 +70,7 @@ object PdfGenerator {
       val layoutElems: List[LayoutElem] = sectionFormFields.flatMap { section =>
         val lines = section.fields.map {
           case (formField, fieldValue) =>
-            Text(localisation(fieldValue.label) + " : " + formField.value)
+            TextElem(localisation(fieldValue.label) + " : " + formField.value)
         }
         SectionTitle(localisation(section.title)) :: lines ::: List(Line)
       }
@@ -109,7 +109,7 @@ object PdfGenerator {
       renderTextOnPosition(localisation(formName), 0, PDType1Font.HELVETICA_BOLD, 20)
 
       layoutElemsWithPosition.map {
-        case (Text(text), position) =>
+        case (TextElem(text), position) =>
           renderTextOnPosition(text, position.toFloat, PDType1Font.HELVETICA_BOLD, 12)
         case (SectionTitle(title), position) =>
           renderTextOnPosition(title, position.toFloat, PDType1Font.HELVETICA_OBLIQUE, 16)

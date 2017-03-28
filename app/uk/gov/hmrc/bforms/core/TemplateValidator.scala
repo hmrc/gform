@@ -25,10 +25,10 @@ object TemplateValidator {
     section.fields.foldLeft((Set.empty[FieldId], Set.empty[FieldId])) {
       case ((mandatoryAcc, optionalAcc), field) =>
         (field.`type`, field.mandatory) match {
-          case (Some(Address), _) => (mandatoryAcc ++ Address.mandatoryFields(field.id), optionalAcc ++ Address.optionalFields(field.id))
-          case (Some(Date), _) => (mandatoryAcc ++ Date.fields(field.id), optionalAcc)
-          case (Some(Text), Some("true")) | (None, Some("true")) => (mandatoryAcc ++ List(field.id), optionalAcc)
-          case (Some(Text), _) | (None, _) => (mandatoryAcc, optionalAcc ++ List(field.id))
+          case (Address, _) => (mandatoryAcc ++ Address.mandatoryFields(field.id), optionalAcc ++ Address.optionalFields(field.id))
+          case (Date, _) => (mandatoryAcc ++ Date.fields(field.id), optionalAcc)
+          case (Text, true) => (mandatoryAcc ++ List(field.id), optionalAcc)
+          case (Text, false) => (mandatoryAcc, optionalAcc ++ List(field.id))
         }
     }
   }
