@@ -21,8 +21,9 @@ import cats.instances.list._
 import cats.syntax.either._
 import org.scalatest.{ EitherValues, FlatSpec, Matchers }
 import play.api.libs.json.{ JsNull, Json, JsNumber }
+import uk.gov.hmrc.bforms.core.{ Text => ComponentText }
 import uk.gov.hmrc.bforms.exceptions.InvalidState
-import uk.gov.hmrc.bforms.models.{ FieldValue, Schema, Section }
+import uk.gov.hmrc.bforms.models.{ FieldId, FieldValue, FormField, Schema, Section }
 
 class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
 
@@ -152,5 +153,176 @@ class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
       } yield tr
 
     res.right.value should be(())
+  }
+
+  val businessDetailsSection = Section(
+    "Business details",
+    List(
+      FieldValue(FieldId("nameOfBusiness"), Some(ComponentText), "Name of business", None, None, None, None, Some("true")),
+      FieldValue(FieldId("businessAddress"), Some(Address), "Business address", None, None, None, None, Some("true"))
+    )
+  )
+
+  val sectionWithDate = Section(
+    "Business details",
+    List(
+      FieldValue(FieldId("nameOfBusiness"), Some(ComponentText), "Name of business", None, None, None, None, Some("true")),
+      FieldValue(FieldId("startDate"), Some(Date), "Start date", None, None, None, None, Some("true"))
+    )
+  )
+
+  "TemplateValidator.getMatchingSection" should "find matching section containing address component" in {
+
+    val formFields = List(
+      FormField(FieldId("nameOfBusiness"), "Apple inc."),
+      FormField(FieldId("businessAddress.street1"), "street1"),
+      FormField(FieldId("businessAddress.street2"), "street2"),
+      FormField(FieldId("businessAddress.street3"), "street3"),
+      FormField(FieldId("businessAddress.town"), "town"),
+      FormField(FieldId("businessAddress.county"), "county"),
+      FormField(FieldId("businessAddress.postcode"), "postcode")
+    )
+    val sections = List(businessDetailsSection)
+    val res = TemplateValidator.getMatchingSection(formFields, sections)
+
+    res should be('right)
+  }
+
+  it should "succeed to find matching section containing address component when optional fields are not present" in {
+
+    val formFields = List(
+      FormField(FieldId("nameOfBusiness"), "Apple inc."),
+      FormField(FieldId("businessAddress.street1"), "street1"),
+      FormField(FieldId("businessAddress.town"), "town"),
+      FormField(FieldId("businessAddress.county"), "county"),
+      FormField(FieldId("businessAddress.postcode"), "postcode")
+    )
+    val sections = List(businessDetailsSection)
+    val res = TemplateValidator.getMatchingSection(formFields, sections)
+
+    res should be('right)
+  }
+
+  it should "fail to find matching section containing address component when mandatory fields are not present" in {
+
+    val formFields = List(
+      FormField(FieldId("nameOfBusiness"), "Apple inc."),
+      FormField(FieldId("businessAddress.town"), "town"),
+      FormField(FieldId("businessAddress.county"), "county"),
+      FormField(FieldId("businessAddress.postcode"), "postcode")
+    )
+    val sections = List(businessDetailsSection)
+    val res = TemplateValidator.getMatchingSection(formFields, sections)
+
+    res should be('left)
+  }
+
+  it should "fail to find matching section containing address component when field not in form template is present" in {
+
+    val formFields = List(
+      FormField(FieldId("nameOfBusiness"), "Apple inc."),
+      FormField(FieldId("businessAddress.street1"), "street1"),
+      FormField(FieldId("businessAddress.town"), "town"),
+      FormField(FieldId("businessAddress.county"), "county"),
+      FormField(FieldId("businessAddress.postcode"), "postcode"),
+      FormField(FieldId("attacker.injected.field"), "); drop all tables;")
+    )
+    val sections = List(businessDetailsSection)
+    val res = TemplateValidator.getMatchingSection(formFields, sections)
+
+    res should be('left)
+  }
+
+  it should "find matching section containing date component" in {
+
+    val formFields = List(
+      FormField(FieldId("nameOfBusiness"), "Apple inc."),
+      FormField(FieldId("startDate.day"), "1"),
+      FormField(FieldId("startDate.month"), "12"),
+      FormField(FieldId("startDate.year"), "2000")
+    )
+    val sections = List(sectionWithDate)
+    val res = TemplateValidator.getMatchingSection(formFields, sections)
+
+    res should be('right)
+  }
+
+  it should "fail to find matching section containing date component when mandatory fields are not present" in {
+
+    val formFields = List(
+      FormField(FieldId("nameOfBusiness"), "Apple inc."),
+      FormField(FieldId("startDate.month"), "12"),
+      FormField(FieldId("startDate.year"), "2000")
+    )
+    val sections = List(sectionWithDate)
+    val res = TemplateValidator.getMatchingSection(formFields, sections)
+
+    res should be('left)
+  }
+
+  it should "fail to find matching section containing date component when field not in form template is present" in {
+
+    val formFields = List(
+      FormField(FieldId("nameOfBusiness"), "Apple inc."),
+      FormField(FieldId("startDate.day"), "1"),
+      FormField(FieldId("startDate.month"), "12"),
+      FormField(FieldId("startDate.year"), "2000"),
+      FormField(FieldId("attacker.injected.field"), "); drop all tables;")
+    )
+    val sections = List(sectionWithDate)
+    val res = TemplateValidator.getMatchingSection(formFields, sections)
+
+    res should be('left)
+  }
+
+  it should "succeed to find matching section containing only text field which is not mandatory" in {
+
+    val section = Section(
+      "Business details",
+      List(
+        FieldValue(FieldId("nameOfBusiness"), Some(ComponentText), "Name of business", None, None, None, None, None)
+      )
+    )
+
+    val formFields = List() // Nothing submitted
+
+    val sections = List(section)
+    val res = TemplateValidator.getMatchingSection(formFields, sections)
+
+    res should be('right)
+  }
+
+  it should "succeed to find matching section containing only text field which is not mandatory 2" in {
+
+    val section = Section(
+      "Business details",
+      List(
+        FieldValue(FieldId("nameOfBusiness"), Some(ComponentText), "Name of business", None, None, None, None, Some("false"))
+      )
+    )
+
+    val formFields = List() // Nothing submitted
+
+    val sections = List(section)
+    val res = TemplateValidator.getMatchingSection(formFields, sections)
+
+    res should be('right)
+  }
+
+  it should "fail to find matching section containing only text field which is mandatory" in {
+
+    val section = Section(
+      "Business details",
+      List(
+        FieldValue(FieldId("nameOfBusiness"), Some(ComponentText), "Name of business", None, None, None, None, Some("true"))
+      )
+    )
+
+    val formFields = List() // Nothing submitted
+
+    val sections = List(section)
+    val res = TemplateValidator.getMatchingSection(formFields, sections)
+
+    res should be('left)
   }
 }

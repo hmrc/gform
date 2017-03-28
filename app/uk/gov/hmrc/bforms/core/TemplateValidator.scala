@@ -21,17 +21,39 @@ import uk.gov.hmrc.bforms.models.{ FieldId, FormField, Section }
 
 object TemplateValidator {
 
+  private def getMandatoryAndOptionalFields(section: Section): (Set[FieldId], Set[FieldId]) = {
+    section.fields.foldLeft((Set.empty[FieldId], Set.empty[FieldId])) {
+      case ((mandatoryAcc, optionalAcc), field) =>
+        (field.`type`, field.mandatory) match {
+          case (Some(Address), _) => (mandatoryAcc ++ Address.mandatoryFields(field.id), optionalAcc ++ Address.optionalFields(field.id))
+          case (Some(Date), _) => (mandatoryAcc ++ Date.fields(field.id), optionalAcc)
+          case (Some(Text), Some("true")) | (None, Some("true")) => (mandatoryAcc ++ List(field.id), optionalAcc)
+          case (Some(Text), _) | (None, _) => (mandatoryAcc, optionalAcc ++ List(field.id))
+        }
+    }
+  }
+
+  /**
+   * Tries to find section in form template corresponding to submitted data.
+   *
+   * Section is determined by these rules:
+   * - all mandatory fields from the section must be present in submission
+   * - optional fields from section don't need to be present in submission
+   * - presence of any other field than those from form template is resulting in failed location of a section
+   */
   def getMatchingSection(formFields: Seq[FormField], sections: Seq[Section]): Opt[Section] = {
     val formFieldIds: Set[FieldId] = formFields.map(_.id).toSet
     val sectionOpt: Option[Section] = sections.find { section =>
-      val sectionIds: Set[FieldId] = section.fields.flatMap { field =>
-        field.`type` match {
-          case Some(Address) => Address.fields(field.id)
-          case Some(Date) => Date.fields(field.id)
-          case otherwise => List(field.id)
-        }
-      }.toSet
-      sectionIds == formFieldIds
+
+      val (mandatorySectionIds, optionalSectionIds) = getMandatoryAndOptionalFields(section)
+
+      val missingMandatoryFields = mandatorySectionIds diff formFieldIds
+
+      val optionalFieldsFromSubmission = formFieldIds diff mandatorySectionIds
+
+      val fieldWhichAreNotFromFormTemplate = optionalFieldsFromSubmission diff optionalSectionIds
+
+      missingMandatoryFields.isEmpty && fieldWhichAreNotFromFormTemplate.isEmpty
     }
 
     sectionOpt match {
