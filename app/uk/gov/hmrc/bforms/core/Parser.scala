@@ -63,7 +63,7 @@ object Parser {
         case Multiplication => Multiply(field1, field2)
       }
     }
-    | dateOnly ^^ { (loc, date) => DateExpr(date.day, date.month, date.year) }
+    | dateOnly ^^ { (loc, dateExpr) => dateExpr }
     | alphabeticOnly ^^ { (loc, const) => Constant(const) }
   )
 
