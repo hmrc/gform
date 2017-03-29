@@ -20,7 +20,7 @@ import cats.instances.future._
 import play.api.libs.json.{ JsObject, JsValue, Json }
 import uk.gov.hmrc.bforms.core._
 import uk.gov.hmrc.bforms.exceptions.InvalidState
-import uk.gov.hmrc.bforms.models.{ DbOperationResult, Form, FormId, FormTemplate, FormTypeId, SaveAndRetrieve }
+import uk.gov.hmrc.bforms.models.{ DbOperationResult, FieldValue, Form, FormId, FormTemplate, FormTypeId, SaveAndRetrieve, Section }
 import uk.gov.hmrc.bforms.typeclasses.{ Find, FindOne, Insert, Update }
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -51,25 +51,22 @@ object FormService {
 
     // format: OFF
     for {
-      _              <- operation match {
-        case SaveOperation |
-             SaveTolerantOperation   => success(())
-        case UpdateOperation |
-             UpdateTolerantOperation => fromFutureOptionA (FindOneForm(formSelector))(InvalidState(s"Form $formSelector not found")).map(_ => ())
+      _            <- operation match {
+        case IsSave()   => success(())
+        case IsUpdate() => fromFutureOptionA(FindOneForm(formSelector))(InvalidState(s"Form $formSelector not found")).map(_ => ())
       }
-      formTemplate   <- fromFutureOptionA (FindOneFormTemplate(templateSelector))(InvalidState(s"FormTemplate $templateSelector not found"))
-      section        <- fromOptA          (TemplateValidator.getMatchingSection(formData.fields, formTemplate.sections))
-      _              <- operation match {
-        case SaveTolerantOperation |
-             UpdateTolerantOperation => success(())
-        case SaveOperation |
-             UpdateOperation         => fromOptA (FormValidator.validate(formData.fields.toList, section))
+      formTemplate <- fromFutureOptionA(FindOneFormTemplate(templateSelector))(InvalidState(s"FormTemplate $templateSelector not found"))
+      section      <- operation match {
+        case IsTolerant() => success(Section("", List.empty[FieldValue])) // We are not using section in tolerant mode
+        case IsStrict()   => fromOptA (TemplateValidator.getMatchingSection(formData.fields, formTemplate.sections))
       }
-      dbResult       <- operation match {
-        case SaveOperation |
-             SaveTolerantOperation   => fromFutureOptA    (InsertForm(formSelector, form))
-        case UpdateOperation |
-             UpdateTolerantOperation => fromFutureOptA    (UpdateForm(formSelector, form))
+      _            <- operation match {
+        case IsTolerant() => success(())
+        case IsStrict()   => fromOptA(FormValidator.validate(formData.fields.toList, section))
+      }
+      dbResult     <- operation match {
+        case IsSave()   => fromFutureOptA(InsertForm(formSelector, form))
+        case IsUpdate() => fromFutureOptA(UpdateForm(formSelector, form))
       }
     } yield dbResult
     // format: ON

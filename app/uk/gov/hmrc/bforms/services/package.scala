@@ -22,4 +22,26 @@ package services {
   case object SaveTolerantOperation extends MongoOperation
   case object UpdateOperation extends MongoOperation
   case object UpdateTolerantOperation extends MongoOperation
+
+  object IsSave {
+    def unapply(operation: MongoOperation): Boolean = operation match {
+      case SaveOperation | SaveTolerantOperation => true
+      case UpdateOperation | UpdateTolerantOperation => false
+    }
+  }
+
+  object IsUpdate {
+    def unapply(operation: MongoOperation): Boolean = !IsSave.unapply(operation)
+  }
+
+  object IsTolerant {
+    def unapply(operation: MongoOperation): Boolean = operation match {
+      case SaveTolerantOperation | UpdateTolerantOperation => true
+      case SaveOperation | UpdateOperation => false
+    }
+  }
+
+  object IsStrict {
+    def unapply(operation: MongoOperation): Boolean = !IsTolerant.unapply(operation)
+  }
 }
