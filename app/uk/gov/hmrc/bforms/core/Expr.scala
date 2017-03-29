@@ -30,6 +30,7 @@ final case class FormCtx(value: String) extends Expr
 final case class AuthCtx(value: String) extends Expr
 final case class EeittCtx(value: String) extends Expr
 final case class Constant(value: String) extends Expr
+final case class DateExpr(day: String, month: String, year: String) extends Expr
 
 sealed trait Operation
 final case object Addition extends Operation
@@ -41,7 +42,6 @@ final case object AuthContext extends Context
 final case object EeittContext extends Context
 
 object Expr {
-
   implicit val format: OFormat[Expr] = {
     val formatExpr: OFormat[Expr] = derived.oformat
 
@@ -80,6 +80,7 @@ object Expr {
             Invalid(s"Form field '$value' is not defined in form template.")
         case AuthCtx(value) => Valid
         case EeittCtx(value) => Valid
+        case DateExpr(_, _, _) => Valid
         case Constant(_) => Valid
       }
     }
@@ -88,6 +89,7 @@ object Expr {
       val results = exprs.map(checkExpression)
       Monoid[ValidationResult].combineAll(results)
     }
+
     checkExpressions(exprs)
   }
 }
