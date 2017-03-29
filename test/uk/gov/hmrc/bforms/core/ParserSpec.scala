@@ -63,6 +63,46 @@ class ParserSpec extends FlatSpec with Matchers with EitherValues with OptionVal
     res.right.value should be(Constant("constant"))
   }
 
+  it should "parse Date" in {
+    val res = Parser.validate("12-01-2015")
+    res.right.value should be(DateExpr("12", "01", "2015"))
+  }
+
+  it should "parse Date as Constant" in {
+    val res = Parser.validate("12012015")
+    res.right.value should be(Constant("12012015"))
+  }
+
+  it should "exception on 1 digit month " in {
+    val res = Parser.validate("12-1-2015")
+    res.left.value should be(
+      InvalidState("""Unable to parse expression 12-1-2015.
+                     |Errors:
+                     |12-1-2015:1: unexpected characters; expected '\s+'
+                     |12-1-2015  ^""".stripMargin)
+    )
+  }
+
+  it should "exception on year digits" in {
+    val res = Parser.validate("12-01-201568")
+    res.left.value should be(
+      InvalidState("""Unable to parse expression 12-01-201568.
+                     |Errors:
+                     |12-01-201568:1: unexpected characters; expected '\s+'
+                     |12-01-201568  ^""".stripMargin)
+    )
+  }
+
+  it should "exception on Date format" in {
+    val res = Parser.validate("65841-351")
+    res.left.value should be(
+      InvalidState("""Unable to parse expression 65841-351.
+                     |Errors:
+                     |65841-351:1: unexpected characters; expected '\s+'
+                     |65841-351     ^""".stripMargin)
+    )
+  }
+
   it should "fail parse unclosed parenthesis" in {
     val res = Parser.validate("${name")
     res.left.value should be(
