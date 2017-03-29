@@ -63,6 +63,7 @@ object Parser {
         case Multiplication => Multiply(field1, field2)
       }
     }
+    | dateOnly ^^ { (loc, date) => DateExpr(date.day, date.month, date.year) }
     | alphabeticOnly ^^ { (loc, const) => Constant(const) }
   )
 
@@ -81,6 +82,14 @@ object Parser {
     }
     | alphabeticOnly ^^ { (loc, fn) => FormCtx(fn) }
   )
+
+  lazy val dateOnly: Parser[DateExpr] = {
+    """^(0[1-9]|[12][0-9]|3[01])[- /.](0[1-9]|1[012])[- /.](19|20)\d\d$""".r ^^ { (loc, str) =>
+
+      val values = str.split("-")
+      DateExpr(values(0), values(1), values(2))
+    }
+  }
 
   lazy val alphabeticOnly: Parser[String] = (
     """\w+""".r ^^ { (loc, str) => str }
