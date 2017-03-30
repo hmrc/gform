@@ -179,7 +179,8 @@ class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
       FormField(FieldId("businessAddress.street3"), "street3"),
       FormField(FieldId("businessAddress.town"), "town"),
       FormField(FieldId("businessAddress.county"), "county"),
-      FormField(FieldId("businessAddress.postcode"), "postcode")
+      FormField(FieldId("businessAddress.postcode"), "postcode"),
+      FormField(FieldId("businessAddress.country"), "country")
     )
     val sections = List(businessDetailsSection)
     val res = TemplateValidator.getMatchingSection(formFields, sections)
@@ -193,7 +194,6 @@ class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
       FormField(FieldId("nameOfBusiness"), "Apple inc."),
       FormField(FieldId("businessAddress.street1"), "street1"),
       FormField(FieldId("businessAddress.town"), "town"),
-      FormField(FieldId("businessAddress.county"), "county"),
       FormField(FieldId("businessAddress.postcode"), "postcode")
     )
     val sections = List(businessDetailsSection)

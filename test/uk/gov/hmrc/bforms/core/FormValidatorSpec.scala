@@ -229,7 +229,8 @@ class FormValidatorSpec extends FlatSpec with Matchers with EitherValues {
         FormField(FieldId("homeAddress.street3"), "3"),
         FormField(FieldId("homeAddress.town"), "4"),
         FormField(FieldId("homeAddress.county"), "5"),
-        FormField(FieldId("homeAddress.postcode"), "6")
+        FormField(FieldId("homeAddress.postcode"), "6"),
+        FormField(FieldId("homeAddress.country"), "7")
       )
 
     val section = Section(
