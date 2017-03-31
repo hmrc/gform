@@ -25,16 +25,20 @@ import cats.syntax.traverse._
 import parseback._
 import parseback.compat.cats._
 import parseback.util.Catenable
+import uk.gov.hmrc.bforms.core.utils.DateHelperFunctions
 import uk.gov.hmrc.bforms.exceptions.InvalidState
+import DateHelperFunctions._
 
 object Parser {
 
   private def parse = ReaderT[Opt, String, Catenable[Expr]] { expression =>
     expr(LineStream[Eval](expression)).value.leftMap { error =>
       val errors: String = error.map(_.render(expression)).mkString("\n")
-      InvalidState(s"""|Unable to parse expression $expression.
-                       |Errors:
-                       |$errors""".stripMargin)
+      InvalidState(
+        s"""|Unable to parse expression $expression.
+            |Errors:
+            |$errors""".stripMargin
+      )
     }
   }
 
@@ -64,7 +68,7 @@ object Parser {
       }
     }
 
-    | dateOnly ^^ { (loc, dateExpr) => dateExpr }
+    | (dateNext | dateLast | dateNumber | dateToday) ^^ { (loc, dateExpr) => dateExpr }
     | alphabeticOnly ^^ { (loc, const) => Constant(const) }
   )
 
@@ -84,17 +88,17 @@ object Parser {
     | alphabeticOnly ^^ { (loc, fn) => FormCtx(fn) }
   )
 
-  lazy val dateOnly: Parser[DateExpr] = {
-    """^(0[1-9]|[12][0-9]|3[01])[- /.](0[1-9]|1[012])[- /.](19|20)\d\d$""".r ^^ { (loc, str) =>
+  lazy val dateNumberFormat = """^(19|20)\d\d[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])$"""
+  lazy val dateNextFormat = """^next[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])$"""
+  lazy val dateLastFormat = """^last[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])$"""
+  lazy val dateTodayFormat = """^today$"""
 
-      val values = str.split("-")
-      DateExpr(values(0), values(1), values(2))
-    }
-  }
+  lazy val dateNumber: Parser[DateExpr] = dateNumberFormat.r ^^ { (loc, str) => numericDateExpr(str) }
+  lazy val dateNext: Parser[DateExpr] = dateNextFormat.r ^^ { (loc, str) => nextDateExpr(str) }
+  lazy val dateLast: Parser[DateExpr] = dateLastFormat.r ^^ { (loc, str) => lastDateExpr(str) }
+  lazy val dateToday: Parser[DateExpr] = dateTodayFormat.r ^^ { (loc, str) => todayDateExpr }
 
-  lazy val alphabeticOnly: Parser[String] = (
-    """\w+""".r ^^ { (loc, str) => str }
-  )
+  lazy val alphabeticOnly: Parser[String] = """\w+""".r ^^ { (loc, str) => str }
 
   lazy val context: Parser[Context] = (
     "form" ^^ { (loc, str) => FormContext }
