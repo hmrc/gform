@@ -64,7 +64,7 @@ object Parser {
       }
     }
     | dateOnly ^^ { (loc, dateExpr) => dateExpr }
-    | alphabeticOnly ^^ { (loc, const) => Constant(const) }
+    | anyConstant ^^ { (loc, const) => const }
   )
 
   lazy val operation: Parser[Operation] = (
@@ -93,6 +93,10 @@ object Parser {
 
   lazy val alphabeticOnly: Parser[String] = (
     """\w+""".r ^^ { (loc, str) => str }
+  )
+
+  lazy val anyConstant: Parser[Constant] = (
+    """[\w,]+""".r ^^ { (loc, str) => Constant(str) }
   )
 
   lazy val context: Parser[Context] = (

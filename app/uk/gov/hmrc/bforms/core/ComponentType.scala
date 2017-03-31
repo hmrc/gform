@@ -16,16 +16,14 @@
 
 package uk.gov.hmrc.bforms.core
 
+import cats.data.NonEmptyList
 import julienrf.json.derived
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
+import play.api.data.validation.ValidationError
 
 import scala.collection.immutable._
 import uk.gov.hmrc.bforms.models.FieldId
-
-/**
- * Created by dimitra on 20/03/17.
- */
 
 sealed trait ComponentType
 
@@ -41,31 +39,37 @@ case object Address extends ComponentType {
   val fields = (id: FieldId) => mandatoryFields(id) ++ optionalFields(id)
 }
 
+sealed trait ChoiceOrientation
+case object Vertical extends ChoiceOrientation
+case object Horizontal extends ChoiceOrientation
+object ChoiceOrientation {
+
+  implicit val formatExpr: OFormat[ChoiceOrientation] = derived.oformat
+}
+
+sealed trait ChoiceType
+final case object Radio extends ChoiceType
+final case object Checkbox extends ChoiceType
+final case object YesNo extends ChoiceType
+
+object ChoiceType {
+  implicit val formatExpr: OFormat[ChoiceType] = derived.oformat
+}
+
+case class Choice(`type`: ChoiceType, options: NonEmptyList[String], orientation: ChoiceOrientation) extends ComponentType
+
 object ComponentType {
 
-  val componentMap: Map[String, ComponentType] =
-    Map(
-      "text" -> Text,
-      "date" -> Date,
-      "address" -> Address
-    )
-
-  implicit val format: OFormat[ComponentType] = {
-    val formatExpr: OFormat[ComponentType] = derived.oformat
-
-    val reads: Reads[ComponentType] = (formatExpr: Reads[ComponentType]) | Reads {
-
-      case JsString(compTypeAsString) =>
-
-        componentMap.get(compTypeAsString) match {
-          case Some(componentType) => JsSuccess(componentType)
-          case None => JsError(s"Expected one of the following types: ${componentMap.values}, you entered: $compTypeAsString")
-        }
-
-      case _ => JsError(s"Expected String as JsValue")
+  implicit def readsNonEmptyList[T: Reads] = Reads[NonEmptyList[T]] { json =>
+    Json.fromJson[List[T]](json).flatMap {
+      case Nil => JsError(ValidationError(s"Required at least one element. Got: $json"))
+      case x :: xs => JsSuccess(NonEmptyList(x, xs))
     }
-
-    OFormat[ComponentType](reads, formatExpr)
   }
 
+  implicit def writesNonEmptyList[T: Writes] = Writes[NonEmptyList[T]] { v =>
+    JsArray((v.head :: v.tail).map(Json.toJson(_)).toList)
+  }
+
+  implicit val formatExpr: OFormat[ComponentType] = derived.oformat
 }

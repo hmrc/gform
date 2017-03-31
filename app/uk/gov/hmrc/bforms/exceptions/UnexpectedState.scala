@@ -29,6 +29,11 @@ sealed trait UnexpectedState extends Product with Serializable {
   }
 
   def toResult = Ok(jsonResponse)
+
+  override def toString = this match {
+    case InvalidState(errorMsg) => errorMsg
+    case InvalidStateWithJson(errorMsg, json) => errorMsg + " " + Json.stringify(json)
+  }
 }
 
 case class InvalidState(errorMsg: String) extends UnexpectedState

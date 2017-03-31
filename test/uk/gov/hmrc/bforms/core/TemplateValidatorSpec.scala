@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.bforms.core
 
+import cats.data.NonEmptyList
 import cats.instances.either._
 import cats.instances.list._
 import cats.syntax.either._
@@ -167,6 +168,42 @@ class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
     List(
       FieldValue(FieldId("nameOfBusiness"), Text, "Name of business", None, None, None, None, true),
       FieldValue(FieldId("startDate"), Date, "Start date", None, None, None, None, true)
+    )
+  )
+
+  val sectionWithCheckbox = Section(
+    "Business details",
+    List(
+      FieldValue(
+        FieldId("nameOfBusiness"), Text, "Name of business", None, None, None, None, true
+      ),
+      FieldValue(
+        FieldId("dutyType"), Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Vertical), "Select the tax type", None, None, None, None, true
+      )
+    )
+  )
+
+  val sectionWithRadio = Section(
+    "Business details",
+    List(
+      FieldValue(
+        FieldId("nameOfBusiness"), Text, "Name of business", None, None, None, None, true
+      ),
+      FieldValue(
+        FieldId("dutyType"), Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical), "Select the tax type", None, None, None, None, true
+      )
+    )
+  )
+
+  val sectionWithYesNo = Section(
+    "Business details",
+    List(
+      FieldValue(
+        FieldId("nameOfBusiness"), Text, "Name of business", None, None, None, None, true
+      ),
+      FieldValue(
+        FieldId("taxType"), Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal), "Gas tax type?", None, Some("yesno"), None, None, true
+      )
     )
   )
 
@@ -323,5 +360,41 @@ class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
     val res = TemplateValidator.getMatchingSection(formFields, sections)
 
     res should be('left)
+  }
+
+  it should "find matching section containing Checkbox component" in {
+
+    val formFields = List(
+      FormField(FieldId("nameOfBusiness"), "Apple inc."),
+      FormField(FieldId("dutyType"), "0,1")
+    )
+    val sections = List(sectionWithCheckbox)
+    val res = TemplateValidator.getMatchingSection(formFields, sections)
+
+    res should be('right)
+  }
+
+  it should "find matching section containing Radio component" in {
+
+    val formFields = List(
+      FormField(FieldId("nameOfBusiness"), "Apple inc."),
+      FormField(FieldId("dutyType"), "0")
+    )
+    val sections = List(sectionWithRadio)
+    val res = TemplateValidator.getMatchingSection(formFields, sections)
+
+    res should be('right)
+  }
+
+  it should "find matching section containing YesNo component" in {
+
+    val formFields = List(
+      FormField(FieldId("nameOfBusiness"), "Apple inc."),
+      FormField(FieldId("taxType"), "0")
+    )
+    val sections = List(sectionWithYesNo)
+    val res = TemplateValidator.getMatchingSection(formFields, sections)
+
+    res should be('right)
   }
 }

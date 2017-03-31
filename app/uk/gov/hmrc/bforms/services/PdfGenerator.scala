@@ -17,14 +17,13 @@
 package uk.gov.hmrc.bforms.services
 
 import java.io.ByteArrayOutputStream
-
 import io.github.cloudify.scala.spdf._
 import org.apache.pdfbox.pdmodel.common.PDRectangle
 import org.apache.pdfbox.pdmodel.font.{ PDFont, PDType1Font }
 import org.apache.pdfbox.pdmodel.{ PDDocument, PDPage, PDPageContentStream }
 import play.api.libs.json._
 import uk.gov.hmrc.bforms.models.{ FieldId, FormField, SectionFormField }
-
+import uk.gov.hmrc.bforms.core.Choice
 import scala.collection.mutable.ArrayBuffer
 
 sealed trait LayoutElem {
@@ -68,9 +67,24 @@ object PdfGenerator {
       val startY: Float = mediaBox.getUpperRightY - margin
 
       val layoutElems: List[LayoutElem] = sectionFormFields.flatMap { section =>
-        val lines = section.fields.map {
+        val lines = section.fields.flatMap {
           case (formField, fieldValue) =>
-            TextElem(localisation(fieldValue.label) + " : " + formField.value)
+            fieldValue.`type` match {
+              case Choice(_, options, _) =>
+                // For Choice we store in 'formField.value' comma separated list of indexes of user selected options
+                val selections = formField.value.split(",").toList
+                // Let's create lookup map for available options where keys will be indexes of the options
+                val optionsAsMap = options.zipWithIndex.map {
+                  case (option, index) =>
+                    index.toString -> option
+                }.toList.toMap
+
+                selections
+                  .flatMap(selection => optionsAsMap.get(selection))
+                  .map(text => TextElem(localisation(fieldValue.label) + " : " + text))
+
+              case _ => List(TextElem(localisation(fieldValue.label) + " : " + formField.value))
+            }
         }
         SectionTitle(localisation(section.title)) :: lines ::: List(Line)
       }

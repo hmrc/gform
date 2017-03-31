@@ -16,9 +16,12 @@
 
 package uk.gov.hmrc.bforms.models
 
+import cats.data.NonEmptyList
+import cats.syntax.either._
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 import uk.gov.hmrc.bforms.core._
+import uk.gov.hmrc.bforms.exceptions.InvalidState
 
 case class FieldValue(
   id: FieldId,
@@ -47,30 +50,93 @@ object FieldValue {
 
 private[this] case class FieldValueRaw(
     id: FieldId,
-    `type`: Option[ComponentType],
+    `type`: Option[ComponentTypeRaw],
     label: String,
     value: Option[Expr],
     format: Option[String],
     helpText: Option[String],
     readOnly: Option[String],
-    mandatory: Option[String]
+    choices: Option[List[String]],
+    mandatory: Option[String],
+    multivalue: Option[String]
 ) {
+  private def getFieldValue(mandatory: Boolean): JsResult[FieldValue] = {
+    val fieldValueOpt = for {
+      componentType <- toComponentType
+    } yield FieldValue(
+      id = id,
+      `type` = componentType,
+      label = label,
+      value = value,
+      format = format,
+      helpText = helpText,
+      readOnly = readOnly,
+      mandatory = mandatory
+    )
 
-  private def getFieldValue(mandatory: Boolean) = FieldValue(
-    id = id,
-    `type` = `type`.getOrElse(Text),
-    label = label,
-    value = value,
-    format = format,
-    helpText = helpText,
-    readOnly = readOnly,
-    mandatory = mandatory
-  )
+    fieldValueOpt match {
+      case Right(fieldValue) => JsSuccess(fieldValue)
+      case Left(error) => JsError(error.toString)
+    }
+  }
+
+  private val toComponentType: Opt[ComponentType] = `type` match {
+    case Some(TextRaw) | None => Right(Text)
+    case Some(DateRaw) => Right(Date)
+    case Some(AddressRaw) => Right(Address)
+    case Some(ChoiceRaw) =>
+      (format, choices, multivalue) match {
+        case (IsOrientation(VerticalOrientation), Some(x :: xs), IsMultivalue(MultivalueYes)) => Right(Choice(Checkbox, NonEmptyList(x, xs), Vertical))
+        case (IsOrientation(VerticalOrientation), Some(x :: xs), IsMultivalue(MultivalueNo)) => Right(Choice(Radio, NonEmptyList(x, xs), Vertical))
+        case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueYes)) => Right(Choice(Checkbox, NonEmptyList(x, xs), Horizontal))
+        case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueNo)) => Right(Choice(Radio, NonEmptyList(x, xs), Horizontal))
+        case (IsOrientation(YesNoOrientation), None, IsMultivalue(MultivalueNo)) => Right(Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal))
+        case (invalidFormat, invalidChoices, invalidMultivalue) => Left(
+          InvalidState(s"""|Unsupported combination of 'format, choices and multivalue':
+                           |Format     : $invalidFormat
+                           |Choices    : $invalidChoices
+                           |Multivalue : $invalidMultivalue
+                           |""".stripMargin)
+        )
+      }
+  }
+
+  private sealed trait OrientationValue
+
+  private final case object VerticalOrientation extends OrientationValue
+  private final case object HorizontalOrientation extends OrientationValue
+  private final case object YesNoOrientation extends OrientationValue
+
+  private final object IsOrientation {
+    def unapply(orientation: Option[String]): Option[OrientationValue] = {
+      orientation match {
+        case Some("vertical") | None => Some(VerticalOrientation)
+        case Some("horizontal") => Some(HorizontalOrientation)
+        case Some("yesno") => Some(YesNoOrientation)
+        case _ => None
+      }
+    }
+  }
+
+  private sealed trait Multivalue
+
+  private final case object MultivalueYes extends Multivalue
+  private final case object MultivalueNo extends Multivalue
+
+  private final object IsMultivalue {
+    def unapply(multivalue: Option[String]): Option[Multivalue] = {
+      multivalue match {
+        case Some("no") | None => Some(MultivalueNo)
+        case Some("yes") => Some(MultivalueYes)
+        case _ => None
+      }
+    }
+  }
 
   def toFieldValue = Reads[FieldValue] { _ =>
     mandatory match {
-      case Some("true") | None => JsSuccess(getFieldValue(true))
-      case Some("false") => JsSuccess(getFieldValue(false))
+      case Some("true") | None => getFieldValue(true)
+      case Some("false") => getFieldValue(false)
       case otherwise => JsError(s"Expected 'true' or 'false' string or nothing for mandatory field value, got: $otherwise")
     }
   }
