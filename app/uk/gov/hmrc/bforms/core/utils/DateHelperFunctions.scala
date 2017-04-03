@@ -16,61 +16,58 @@
 
 package uk.gov.hmrc.bforms.core.utils
 
-import org.joda.time.DateTime
-import org.joda.time.format.DateTimeFormat
+import java.time._
+import java.time.format.DateTimeFormatter
+import uk.gov.hmrc.bforms.typeclasses.Now
 import uk.gov.hmrc.bforms.core.DateExpr
-
 import scala.language.implicitConversions
 
 /**
-  * Created by dimitra on 30/03/17.
-  */
+ * Created by dimitra on 30/03/17.
+ */
 
 object DefaultDateFormatter {
   val formatPattern = "yyyy-MM-dd"
-  val dateFormatter = DateTimeFormat.forPattern(formatPattern)
+  val dateFormatter = DateTimeFormatter.ofPattern(formatPattern)
 }
 
 object DateHelperFunctions {
 
   import DefaultDateFormatter._
 
-  val currentDay = new DateTime
-  val currentYear = currentDay.getYear
-
-  implicit def numericDateExpr(str: String): DateExpr = {
+  def numericDateExpr(str: String): DateExpr = {
     val values = str.split("-")
     DateExpr(values(2), values(1), values(0))
   }
 
-  implicit def nextDateExpr(str: String): DateExpr = {
+  def nextDateExpr(str: String)(implicit now: Now[LocalDate]): DateExpr = {
     val dateParts = numericDateExpr(str)
 
-    convertToDate(str).isAfter(currentDay.getMillis) match {
-      case true => DateExpr(dateParts.day, dateParts.month, currentYear.toString)
-      case false => DateExpr(dateParts.day, dateParts.month, (currentYear + 1).toString)
+    convertToDate(str).isAfter(now.apply()) match {
+      case true => DateExpr(dateParts.day, dateParts.month, now.apply().getYear.toString)
+      case false => DateExpr(dateParts.day, dateParts.month, (now.apply().getYear + 1).toString)
     }
   }
 
-  implicit def lastDateExpr(str: String): DateExpr = {
+  def lastDateExpr(str: String)(implicit now: Now[LocalDate]): DateExpr = {
     val dateParts = numericDateExpr(str)
 
-    convertToDate(str).isAfter(currentDay.getMillis) match {
-      case true => DateExpr(dateParts.day, dateParts.month, (currentYear - 1).toString)
-      case false => DateExpr(dateParts.day, dateParts.month, currentYear.toString)
+    convertToDate(str).isAfter(now.apply()) match {
+      case true => DateExpr(dateParts.day, dateParts.month, (now.apply().getYear - 1).toString)
+      case false => DateExpr(dateParts.day, dateParts.month, now.apply().getYear.toString)
     }
   }
 
-  implicit def todayDateExpr: DateExpr = {
-    numericDateExpr(dateFormatter.print(currentDay.getMillis))
+  def todayDateExpr(implicit now: Now[LocalDate]): DateExpr = {
+    numericDateExpr(now.apply().format(dateFormatter))
   }
 
-  def convertToDate(str: String): DateTime = {
+  def convertToDate(str: String)(implicit now: Now[LocalDate]): LocalDate = {
     val values = str.split("-")
 
-    val nextDateStr = currentYear.toString + "-" + values(1) + "-" + values(2)
+    val nextDateStr = now.apply().getYear.toString + "-" + values(1) + "-" + values(2)
 
-    dateFormatter.parseDateTime(nextDateStr)
+    LocalDate.parse(nextDateStr, dateFormatter)
   }
 
 }

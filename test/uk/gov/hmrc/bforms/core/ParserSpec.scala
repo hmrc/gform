@@ -16,10 +16,13 @@
 
 package uk.gov.hmrc.bforms.core
 
+import java.time.LocalDate
+
 import org.scalatest._
 import uk.gov.hmrc.bforms.core.utils.DateHelperFunctions
 import uk.gov.hmrc.bforms.exceptions.InvalidState
 import uk.gov.hmrc.bforms.models._
+import uk.gov.hmrc.bforms.typeclasses.Now
 
 class ParserSpec extends FlatSpec with Matchers with EitherValues with OptionValues {
 
@@ -115,32 +118,45 @@ class ParserSpec extends FlatSpec with Matchers with EitherValues with OptionVal
   it should "parse next Date setting next year" in {
     val res = Parser.validate("next-01-15")
 
+    implicit val now = Now(LocalDate.now())
+
     res.right.value should be(DateExpr("15", "01",
-      (DateHelperFunctions.currentYear + 1).toString))
+      (now.apply().getYear + 1).toString))
   }
 
   it should "parse next Date setting current year" in {
     val res = Parser.validate("next-04-15")
+    implicit val now = Now(LocalDate.now())
+
     res.right.value should be(DateExpr("15", "04",
-      DateHelperFunctions.currentYear.toString))
+      now.apply().getYear.toString))
   }
 
   it should "parse last Date setting current year" in {
     val res = Parser.validate("last-01-15")
+
+    implicit val localDateNow = Now(LocalDate.now())
+
     res.right.value should be(DateExpr("15", "01",
-      DateHelperFunctions.currentYear.toString))
+      localDateNow.apply().getYear.toString))
   }
 
   it should "parse last Date setting previous year" in {
     val res = Parser.validate("last-04-15")
+
+    implicit val localDateNow = Now(LocalDate.now())
+
     res.right.value should be(DateExpr("15", "04",
-      (DateHelperFunctions.currentYear - 1).toString))
+      (localDateNow.apply().getYear - 1).toString))
   }
 
   it should "parse Date setting current Date" in {
     val res = Parser.validate("today")
-    res.right.value should be(DateExpr("31", "03",
-      DateHelperFunctions.currentYear.toString))
+
+    implicit val localDateNow = Now(LocalDate.now())
+
+    res.right.value should be(DateExpr("03", "04",
+      localDateNow.apply().getYear.toString))
   }
 
   it should "fail parse unclosed parenthesis" in {
