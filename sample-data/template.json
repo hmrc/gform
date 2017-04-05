@@ -1,7 +1,7 @@
 {
   "formTypeId": "IPT100",
   "formName": "Insurance Premium Tax Return | Yswiriant Ffurflen Dreth Premiwm",
-  "version": "0.2.1",
+  "version": "0.2.5",
   "description": "Fill in your insurance premium tax return form online | Llenwch eich ffurflen dreth premiwm yswiriant ar-lein",
   "characterSet": "UTF-8",
   "dmsSubmission": {
@@ -15,6 +15,66 @@
     {
       "title": "Calculation 1/2 | eich calculationewq",
       "fields": [
+        {
+          "type": "choice",
+          "id": "dutyType",
+          "label": "Select the tax type for the duty you need to pay from the below",
+          "choices": [
+            "Tax type 590 - Natural gas",
+            "Tax type 591 - Other gas"
+          ],
+          "value": "1"
+        },
+        {
+          "type": "choice",
+          "id": "dutyTypes",
+          "label": "Select the tax type for the duty you need to pay from the below",
+          "choices": [
+            "Tax type 595 - Natural gas",
+            "Tax type 596 - Other gas",
+            "Tax type 597 - Super gas",
+            "Tax type 598 - Empty gas"
+          ],
+          "multivalue": "yes",
+          "mandatory": "true",
+          "value": "1,2,3"
+        },
+        {
+          "type": "choice",
+          "id": "testChoice",
+          "label": "Test mandatory=false and nothind selected",
+          "choices": [
+            "295 - Natural gas",
+            "296 - SuperOther gas",
+            "297 - SuperBNatural gas",
+            "298 - Full throttle gas"
+          ],
+          "multivalue": "yes",
+          "mandatory": "yes",
+          "value": "0,1,2"
+        },
+        {
+          "type": "choice",
+          "id": "isPremisesAddressBusinessAddress",
+          "label": "Is the address of the premises the same as your business address?",
+          "format": "yesno",
+          "value": "0"
+        },
+        {
+          "type": "choice",
+          "id": "isPremisesAddressBusinessAddress2",
+          "label": "Is the address of the premises the same as your business address again?",
+          "format": "yesno",
+          "value": "1"
+        },
+        {
+          "id": "startDate",
+          "type": "date",
+          "label": "Start date",
+          "helpText": "For example, 31 3 1980",
+          "mandatory": "true",
+          "value": "10-10-2010"
+        },
         {
           "id": "amountA",
           "label": "Amount A | Rhif A",
@@ -45,33 +105,34 @@
           "id": "firstName",
           "label": "Your first name | Eich enw cyntaf",
           "mandatory": "true",
-          "type":"text"
+          "type": "text"
         },
         {
           "id": "iptRegNum",
           "label": "Insurance Premium Tax (IPT) registration number | Treth Premiwm Yswiriant (IPT) rhif cofrestru",
           "readonly": "true",
           "mandatory": "true",
-          "type":"text"
+          "type": "text"
         },
         {
           "id": "lastName",
           "label": "Your last name | Eich enw olaf",
           "mandatory": "true",
-          "type":"text"
-        },
-        {
-          "id": "accPeriodStartDate",
-          "type": "date",
-          "label": "Accounting period start date",
-          "helpText": "For example, 31 3 1980",
-          "mandatory": "true"
+          "type": "text"
         },
         {
           "id": "address",
           "label": "Your Address | Eich enw cyntaf",
           "mandatory": "true",
           "type": "address"
+        },
+        {
+          "id": "accPeriodStartDate",
+          "type": "date",
+          "label": "Accounting period start date",
+          "helpText": "For example, 31 3 1980",
+          "mandatory": "false",
+          "value": "11-11-2011"
         }
       ]
     },

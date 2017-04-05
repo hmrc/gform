@@ -47,6 +47,8 @@
 
     <logger name="uk.gov" level="INFO"/>
 
+    <logger name="org.apache.fontbox" level="INFO"/>>
+
     <logger name="application" level="DEBUG"/>
 
     <logger name="javax.management.mbeanserver" level="INFO"/>
