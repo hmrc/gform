@@ -18,17 +18,18 @@ package uk.gov.hmrc.bforms.models
 
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
-import uk.gov.hmrc.bforms.core._
+import uk.gov.hmrc.bforms.core.{ Format => FormatExpr, _ }
 
 case class FieldValue(
   id: FieldId,
   `type`: ComponentType,
   label: String,
   value: Option[Expr],
-  format: Option[String],
+  format: Option[FormatExpr],
   helpText: Option[String],
   readOnly: Option[String],
-  mandatory: Boolean
+  mandatory: Boolean,
+  offset: Option[Offset]
 )
 
 object FieldValue {
@@ -50,10 +51,11 @@ private[this] case class FieldValueRaw(
     `type`: Option[ComponentType],
     label: String,
     value: Option[Expr],
-    format: Option[String],
+    format: Option[FormatExpr],
     helpText: Option[String],
     readOnly: Option[String],
-    mandatory: Option[String]
+    mandatory: Option[String],
+    offset: Option[Offset]
 ) {
 
   private def getFieldValue(mandatory: Boolean) = FieldValue(
@@ -64,7 +66,8 @@ private[this] case class FieldValueRaw(
     format = format,
     helpText = helpText,
     readOnly = readOnly,
-    mandatory = mandatory
+    mandatory = mandatory,
+    offset = offset
   )
 
   def toFieldValue = Reads[FieldValue] { _ =>

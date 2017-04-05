@@ -123,7 +123,8 @@ class FormValidatorSpec extends FlatSpec with Matchers with EitherValues {
     format = None,
     helpText = None,
     readOnly = None,
-    mandatory = true
+    mandatory = true,
+    offset = None
   )
 
   def getAddressFieldValue(id: String) = FieldValue(
@@ -134,7 +135,8 @@ class FormValidatorSpec extends FlatSpec with Matchers with EitherValues {
     format = None,
     helpText = None,
     readOnly = None,
-    mandatory = false
+    mandatory = false,
+    offset = None
   )
 
   "FormValidator.conform" should "parse all fields from form to list of FormField objects" in {

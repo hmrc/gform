@@ -157,16 +157,16 @@ class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
   val businessDetailsSection = Section(
     "Business details",
     List(
-      FieldValue(FieldId("nameOfBusiness"), Text, "Name of business", None, None, None, None, true),
-      FieldValue(FieldId("businessAddress"), Address, "Business address", None, None, None, None, true)
+      FieldValue(FieldId("nameOfBusiness"), Text, "Name of business", None, None, None, None, true, None),
+      FieldValue(FieldId("businessAddress"), Address, "Business address", None, None, None, None, true, None)
     )
   )
 
   val sectionWithDate = Section(
     "Business details",
     List(
-      FieldValue(FieldId("nameOfBusiness"), Text, "Name of business", None, None, None, None, true),
-      FieldValue(FieldId("startDate"), Date, "Start date", None, None, None, None, true)
+      FieldValue(FieldId("nameOfBusiness"), Text, "Name of business", None, None, None, None, true, None),
+      FieldValue(FieldId("startDate"), Date, "Start date", None, None, None, None, true, None)
     )
   )
 
@@ -279,7 +279,7 @@ class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
     val section = Section(
       "Business details",
       List(
-        FieldValue(FieldId("nameOfBusiness"), Text, "Name of business", None, None, None, None, false)
+        FieldValue(FieldId("nameOfBusiness"), Text, "Name of business", None, None, None, None, false, None)
       )
     )
 
@@ -296,7 +296,7 @@ class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
     val section = Section(
       "Business details",
       List(
-        FieldValue(FieldId("nameOfBusiness"), Text, "Name of business", None, None, None, None, false)
+        FieldValue(FieldId("nameOfBusiness"), Text, "Name of business", None, None, None, None, false, None)
       )
     )
 
@@ -313,7 +313,7 @@ class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
     val section = Section(
       "Business details",
       List(
-        FieldValue(FieldId("nameOfBusiness"), Text, "Name of business", None, None, None, None, true)
+        FieldValue(FieldId("nameOfBusiness"), Text, "Name of business", None, None, None, None, true, None)
       )
     )
 

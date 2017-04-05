@@ -88,10 +88,10 @@ object Parser {
     | alphabeticOnly ^^ { (loc, fn) => FormCtx(fn) }
   )
 
-  lazy val dateNumberFormat = """^(19|20)\d\d[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])$"""
-  lazy val dateNextFormat = """^next[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])$"""
-  lazy val dateLastFormat = """^last[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])$"""
-  lazy val dateTodayFormat = """^today$"""
+  val dateNumberFormat = """^(19|20)\d\d[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])$"""
+  val dateNextFormat = """^next[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])$"""
+  val dateLastFormat = """^last[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])$"""
+  val dateTodayFormat = """^today$"""
 
   lazy val dateNumber: Parser[DateExpr] = dateNumberFormat.r ^^ { (loc, str) => numericDateExpr(str) }
   lazy val dateNext: Parser[DateExpr] = dateNextFormat.r ^^ { (loc, str) => nextDateExpr(str) }
