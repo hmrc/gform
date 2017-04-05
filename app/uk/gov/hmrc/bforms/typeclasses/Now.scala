@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.bforms.typeclasses
 
-import java.time.LocalDateTime
+import java.time.{ LocalDate, LocalDateTime }
 
 trait Now[T] {
   def apply(): T
+
 }
 
 object Now {
@@ -28,7 +29,11 @@ object Now {
     override val apply: T = value
   }
 
+  implicit object LocalDateNow extends Now[LocalDate] {
+    def apply: LocalDate = LocalDate.now()
+  }
+
   implicit object LocalDateTimeNow extends Now[LocalDateTime] {
-    override val apply: LocalDateTime = LocalDateTime.now()
+    def apply: LocalDateTime = LocalDateTime.now()
   }
 }

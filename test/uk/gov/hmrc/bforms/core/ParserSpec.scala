@@ -16,9 +16,13 @@
 
 package uk.gov.hmrc.bforms.core
 
+import java.time.LocalDate
+
 import org.scalatest._
+import uk.gov.hmrc.bforms.core.utils.DateHelperFunctions
 import uk.gov.hmrc.bforms.exceptions.InvalidState
 import uk.gov.hmrc.bforms.models._
+import uk.gov.hmrc.bforms.typeclasses.Now
 
 class ParserSpec extends FlatSpec with Matchers with EitherValues with OptionValues {
 
@@ -62,44 +66,97 @@ class ParserSpec extends FlatSpec with Matchers with EitherValues with OptionVal
     res.right.value should be(Constant("constant"))
   }
 
+  /**
+   * Date cases
+   */
   it should "parse Date" in {
-    val res = Parser.validate("12-01-2015")
-    res.right.value should be(DateExpr("12", "01", "2015"))
+    val res = Parser.validate("2015-01-15")
+    res.right.value should be(DateExpr("15", "01", "2015"))
   }
 
   it should "parse Date as Constant" in {
-    val res = Parser.validate("12012015")
-    res.right.value should be(Constant("12012015"))
+    val res = Parser.validate("20150112")
+    res.right.value should be(Constant("20150112"))
   }
 
-  it should "exception on 1 digit month " in {
-    val res = Parser.validate("12-1-2015")
+  it should "throw exception on 1 digit month " in {
+    val res = Parser.validate("2015-1-12")
     res.left.value should be(
-      InvalidState("""Unable to parse expression 12-1-2015.
-                     |Errors:
-                     |12-1-2015:1: unexpected characters; expected '\s+'
-                     |12-1-2015  ^""".stripMargin)
+      InvalidState(
+        """Unable to parse expression 2015-1-12.
+          |Errors:
+          |2015-1-12:1: unexpected characters; expected '\s+'
+          |2015-1-12    ^""".stripMargin
+      )
     )
   }
 
-  it should "exception on year digits" in {
-    val res = Parser.validate("12-01-201568")
+  it should "throw exception on year digits" in {
+    val res = Parser.validate("201568-01-12")
     res.left.value should be(
-      InvalidState("""Unable to parse expression 12-01-201568.
-                     |Errors:
-                     |12-01-201568:1: unexpected characters; expected '\s+'
-                     |12-01-201568  ^""".stripMargin)
+      InvalidState(
+        """Unable to parse expression 201568-01-12.
+          |Errors:
+          |201568-01-12:1: unexpected characters; expected '\s+'
+          |201568-01-12      ^""".stripMargin
+      )
     )
   }
 
-  it should "exception on Date format" in {
+  it should "throw exception on Date format" in {
     val res = Parser.validate("65841-351")
     res.left.value should be(
-      InvalidState("""Unable to parse expression 65841-351.
-                     |Errors:
-                     |65841-351:1: unexpected characters; expected '\s+'
-                     |65841-351     ^""".stripMargin)
+      InvalidState(
+        """Unable to parse expression 65841-351.
+          |Errors:
+          |65841-351:1: unexpected characters; expected '\s+'
+          |65841-351     ^""".stripMargin
+      )
     )
+  }
+
+  it should "parse next Date setting next year" in {
+    val res = Parser.validate("next-01-15")
+
+    implicit val now = Now(LocalDate.now())
+
+    res.right.value should be(DateExpr("15", "01",
+      (now.apply().getYear + 1).toString))
+  }
+
+  it should "parse next Date setting current year" in {
+    val res = Parser.validate("next-04-15")
+    implicit val now = Now(LocalDate.now())
+
+    res.right.value should be(DateExpr("15", "04",
+      now.apply().getYear.toString))
+  }
+
+  it should "parse last Date setting current year" in {
+    val res = Parser.validate("last-01-15")
+
+    implicit val localDateNow = Now(LocalDate.now())
+
+    res.right.value should be(DateExpr("15", "01",
+      localDateNow.apply().getYear.toString))
+  }
+
+  it should "parse last Date setting previous year" in {
+    val res = Parser.validate("last-04-15")
+
+    implicit val localDateNow = Now(LocalDate.now())
+
+    res.right.value should be(DateExpr("15", "04",
+      (localDateNow.apply().getYear - 1).toString))
+  }
+
+  it should "parse Date setting current Date" in {
+    val res = Parser.validate("today")
+
+    implicit val localDateNow = Now(LocalDate.now())
+
+    res.right.value should be(DateExpr("%02d".format(localDateNow().getDayOfMonth), "%02d".format(localDateNow().getMonthValue()),
+      localDateNow.apply().getYear.toString))
   }
 
   it should "fail parse unclosed parenthesis" in {
@@ -118,8 +175,8 @@ class ParserSpec extends FlatSpec with Matchers with EitherValues with OptionVal
   val yourDetailsSection = Section(
     "Your details",
     List(
-      FieldValue(FieldId("firstName"), Text, "Your first name", None, None, None, None, false),
-      FieldValue(FieldId("lastName"), Text, "Your last name", None, None, None, None, false)
+      FieldValue(FieldId("firstName"), Text, "Your first name", None, None, None, None, false, None),
+      FieldValue(FieldId("lastName"), Text, "Your last name", None, None, None, None, false, None)
     )
   )
 
