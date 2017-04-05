@@ -37,7 +37,7 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text, "Registration number", None, None, None, None, true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text, "Registration number", None, None, None, None, true, None))
   }
 
   it should "parse 'choice' type as Radio with Vertical orientation if no multivalue & no format is provided" in {
@@ -62,7 +62,8 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
         None,
         None,
         None,
-        true
+        true,
+        None
       )
     )
   }
@@ -90,7 +91,8 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
         None,
         None,
         None,
-        true
+        true,
+        None
       )
     )
   }
@@ -116,10 +118,11 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
         Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical),
         "Select the tax type",
         None,
-        Some("vertical"),
+        Some(DateExpression("vertical")),
         None,
         None,
-        true
+        true,
+        None
       )
     )
   }
@@ -145,10 +148,11 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
         Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Horizontal),
         "Select the tax type",
         None,
-        Some("horizontal"),
+        Some(DateExpression("horizontal")),
         None,
         None,
-        true
+        true,
+        None
       )
     )
   }
@@ -176,7 +180,8 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
         None,
         None,
         None,
-        true
+        true,
+        None
       )
     )
   }
@@ -202,10 +207,11 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
         Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Vertical),
         "Select the tax type",
         None,
-        Some("vertical"),
+        Some(DateExpression("vertical")),
         None,
         None,
-        true
+        true,
+        None
       )
     )
   }
@@ -231,10 +237,11 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
         Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Horizontal),
         "Select the tax type",
         None,
-        Some("horizontal"),
+        Some(DateExpression("horizontal")),
         None,
         None,
-        true
+        true,
+        None
       )
     )
   }
@@ -255,10 +262,11 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
         Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal),
         "Gas tax type?",
         None,
-        Some("yesno"),
+        Some(DateExpression("yesno")),
         None,
         None,
-        true
+        true,
+        None
       )
     )
   }
@@ -280,10 +288,11 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
         Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal),
         "Gas tax type?",
         None,
-        Some("yesno"),
+        Some(DateExpression("yesno")),
         None,
         None,
-        true
+        true,
+        None
       )
     )
   }

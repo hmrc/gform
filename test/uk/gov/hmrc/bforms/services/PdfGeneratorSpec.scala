@@ -34,7 +34,8 @@ class PdfGeneratorSpec extends FlatSpec with Matchers {
       format = None,
       helpText = None,
       readOnly = None,
-      mandatory = false
+      mandatory = false,
+      offset = None
     )
     (ff, fv)
   }

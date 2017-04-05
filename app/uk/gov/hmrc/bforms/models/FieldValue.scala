@@ -20,7 +20,7 @@ import cats.data.NonEmptyList
 import cats.syntax.either._
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
-import uk.gov.hmrc.bforms.core._
+import uk.gov.hmrc.bforms.core.{ Format => FormatExpr, _ }
 import uk.gov.hmrc.bforms.exceptions.InvalidState
 
 case class FieldValue(
@@ -28,10 +28,11 @@ case class FieldValue(
   `type`: ComponentType,
   label: String,
   value: Option[Expr],
-  format: Option[String],
+  format: Option[FormatExpr],
   helpText: Option[String],
   readOnly: Option[String],
-  mandatory: Boolean
+  mandatory: Boolean,
+  offset: Option[Offset]
 )
 
 object FieldValue {
@@ -53,11 +54,12 @@ private[this] case class FieldValueRaw(
     `type`: Option[ComponentTypeRaw],
     label: String,
     value: Option[Expr],
-    format: Option[String],
+    format: Option[FormatExpr],
     helpText: Option[String],
     readOnly: Option[String],
     choices: Option[List[String]],
     mandatory: Option[String],
+    offset: Option[Offset],
     multivalue: Option[String]
 ) {
   private def getFieldValue(mandatory: Boolean): JsResult[FieldValue] = {
@@ -71,7 +73,8 @@ private[this] case class FieldValueRaw(
       format = format,
       helpText = helpText,
       readOnly = readOnly,
-      mandatory = mandatory
+      mandatory = mandatory,
+      offset = offset
     )
 
     fieldValueOpt match {
@@ -108,11 +111,11 @@ private[this] case class FieldValueRaw(
   private final case object YesNoOrientation extends OrientationValue
 
   private final object IsOrientation {
-    def unapply(orientation: Option[String]): Option[OrientationValue] = {
+    def unapply(orientation: Option[FormatExpr]): Option[OrientationValue] = {
       orientation match {
-        case Some("vertical") | None => Some(VerticalOrientation)
-        case Some("horizontal") => Some(HorizontalOrientation)
-        case Some("yesno") => Some(YesNoOrientation)
+        case Some(DateExpression("vertical")) | None => Some(VerticalOrientation)
+        case Some(DateExpression("horizontal")) => Some(HorizontalOrientation)
+        case Some(DateExpression("yesno")) => Some(YesNoOrientation)
         case _ => None
       }
     }

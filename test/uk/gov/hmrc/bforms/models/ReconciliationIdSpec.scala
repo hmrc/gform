@@ -16,12 +16,7 @@
 
 package uk.gov.hmrc.bforms.models
 
-import cats.data.StateT
-import cats.data.State
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import uk.gov.hmrc.bforms.models._
-import play.api.libs.json._
 import org.scalatest._
 import uk.gov.hmrc.bforms.typeclasses.Now
 
