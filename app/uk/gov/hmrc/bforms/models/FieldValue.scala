@@ -129,8 +129,8 @@ private[this] case class FieldValueRaw(
   private final object IsMultivalue {
     def unapply(multivalue: Option[String]): Option[Multivalue] = {
       multivalue match {
-        case Some("no") | None => Some(MultivalueNo)
-        case Some("yes") => Some(MultivalueYes)
+        case Some(IsFalseish()) | None => Some(MultivalueNo)
+        case Some(IsTrueish()) => Some(MultivalueYes)
         case _ => None
       }
     }
@@ -138,9 +138,27 @@ private[this] case class FieldValueRaw(
 
   def toFieldValue = Reads[FieldValue] { _ =>
     mandatory match {
-      case Some("true") | None => getFieldValue(true)
-      case Some("false") => getFieldValue(false)
+      case Some(IsTrueish()) | None => getFieldValue(true)
+      case Some(IsFalseish()) => getFieldValue(false)
       case otherwise => JsError(s"Expected 'true' or 'false' string or nothing for mandatory field value, got: $otherwise")
     }
   }
+
+  object IsTrueish {
+    def unapply(maybeBoolean: String): Boolean = {
+      maybeBoolean.toLowerCase match {
+        case "true" | "yes" => true
+        case _ => false
+      }
+    }
+  }
+  object IsFalseish {
+    def unapply(maybeBoolean: String): Boolean = {
+      maybeBoolean.toLowerCase match {
+        case "false" | "no" => true
+        case _ => false
+      }
+    }
+  }
+
 }
