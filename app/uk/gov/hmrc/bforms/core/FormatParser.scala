@@ -54,11 +54,16 @@ object FormatParser {
 
   lazy val expr: Parser[FormatExpr] = (
     generalDateExpression
-    | dateExpression
+    | dateExpressions
     | anyWordExpression
   )
 
   implicit val W = Whitespace(() | """\s+""".r)
+
+  lazy val dateExpressions: Parser[DateExpressions] = (
+    dateExpression ~ "," ~ dateExpressions ^^ { (loc, x, _, xs) => DateExpressions(x :: xs.expressions) }
+    | dateExpression ^^ { (loc, x) => DateExpressions(List(x)) }
+  )
 
   lazy val dateExpression: Parser[DateExpression] = (
     beforeOrAfter ~
@@ -116,7 +121,7 @@ object FormatParser {
 
   lazy val dayParser: Parser[Int] = intParser("""0[1-9]|[12][0-9]|3[01]""")
 
-  lazy val anyInteger: Parser[Int] = intParser("""(\+|-)?\d+$""")
+  lazy val anyInteger: Parser[Int] = intParser("""(\+|-)?\d+""")
 
   private def intParser(str: String): Parser[Int] = (
     str.r ^^ { (loc, number) => number.toInt }

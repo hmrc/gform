@@ -52,8 +52,14 @@ object OffsetFormat {
 
 sealed trait FormatExpr
 final case class TextExpression(value: String) extends FormatExpr
-final case class DateExpression(beforeOrAfter: BeforeOrAfter, dateFormat: DateFormat, offsetFormat: OffsetFormat) extends FormatExpr
+final case class DateExpressions(expressions: List[DateExpression]) extends FormatExpr
 final case object GeneralDate extends FormatExpr
+
+final case class DateExpression(beforeOrAfter: BeforeOrAfter, dateFormat: DateFormat, offsetFormat: OffsetFormat)
+
+object DateExpression {
+  implicit val formatExpr: OFormat[DateExpression] = derived.oformat[DateExpression]
+}
 
 object FormatExpr {
   implicit val format: OFormat[FormatExpr] = {
