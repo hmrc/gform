@@ -29,7 +29,7 @@ import uk.gov.hmrc.bforms.exceptions.InvalidState
  * Created by dimitra on 03/04/17.
  */
 object FormatParser {
-  private def parse = ReaderT[Opt, String, Catenable[Format]] { formatExpr =>
+  private def parse = ReaderT[Opt, String, Catenable[FormatExpr]] { formatExpr =>
     expr(LineStream[Eval](formatExpr)).value.leftMap { error =>
       val errors: String = error.map(_.render(formatExpr)).mkString("\n")
       InvalidState(
@@ -40,43 +40,69 @@ object FormatParser {
     }
   }
 
-  private def reconstruct(cat: Catenable[Format]) = ReaderT[Opt, String, Format] { expression =>
+  private def reconstruct(cat: Catenable[FormatExpr]) = ReaderT[Opt, String, FormatExpr] { expression =>
     cat.uncons match {
       case Some((expr, _)) => Right(expr)
       case None => Left(InvalidState(s"Unable to parse format expression $expression"))
     }
   }
 
-  def validate(expression: String): Opt[Format] = (for {
+  def validate(expression: String): Opt[FormatExpr] = (for {
     catenable <- parse
     expr <- reconstruct(catenable)
   } yield expr).run(expression)
 
-  lazy val expr: Parser[Format] = (
-    anyDate ^^ { (loc, anyDateExpr) => anyDateExpr }
-    | (after | before) ~
+  lazy val expr: Parser[FormatExpr] = (
+    generalDateExpression
+    | dateExpression
+    | anyWordExpression
+  )
+
+  lazy val dateExpression: Parser[DateExpression] = (
+    beforeOrAfter ~
     whiteSpace ~
-    (today | anyDate |
-      dateNext | datePrevious | anyWord) ~
-      whiteSpace ~
-      offset ^^ { (loc, beforeOrAfter, _, anyDateExpr, _, k) => DateExpression(beforeOrAfter + whiteSpace + anyDateExpr.value + whiteSpace + k.value) }
-      | anyWord ^^ { (loc, anyFormat) => anyFormat }
+    dateExpr ~
+    whiteSpace ~
+    offsetExpression ^^ { (loc, beforeOrAfter, _, dateExpr, _, offset) => DateExpression(beforeOrAfter, dateExpr, offset) }
+  )
+
+  lazy val generalDateExpression: Parser[FormatExpr] = (
+    anyDateFormat.r ^^ { (loc, generalDate) => GeneralDate }
+  )
+
+  lazy val beforeOrAfter: Parser[BeforeOrAfter] = (
+    "after" ^^ { (loc, after) => After }
+    | "before" ^^ { (loc, before) => Before }
+  )
+
+  val splitBy = (dateAsStr: String) => dateAsStr.split("-")
+
+  val splitAnyDate = (dateAsStr: String) => AnyDate(splitBy(dateAsStr)(0).toInt, splitBy(dateAsStr)(1).toInt, splitBy(dateAsStr)(2).toInt)
+  val splitNextDate = (dateAsStr: String) => NextDate(splitBy(dateAsStr)(1).toInt, splitBy(dateAsStr)(2).toInt)
+  val splitPreviousDate = (dateAsStr: String) => PreviousDate(splitBy(dateAsStr)(1).toInt, splitBy(dateAsStr)(2).toInt)
+
+  lazy val dateExpr: Parser[DateFormat] = (
+    "today" ^^ { (loc, today) => Today }
+    | anyDateFormat.r ^^ { (loc, anyDate) => splitAnyDate(anyDate) }
+    | dateNextFormat.r ^^ { (loc, nextDate) => splitNextDate(nextDate) }
+    | datePreviousFormat.r ^^ { (loc, previousDate) => splitPreviousDate(previousDate) }
+    | anyWordFormat.r ^^ { (loc, str) => AnyWord(str) }
+  )
+
+  lazy val anyWordExpression: Parser[FormatExpr] = (
+    anyWordFormat.r ^^ { (loc, anyWord) => AnyOtherWord }
+  )
+
+  lazy val offsetExpression: Parser[OffsetDate] = (
+    offsetFormat.r ^^ { (loc, offset) => OffsetDate(offset.toInt) }
   )
 
   val whiteSpace = " "
-  val after = """after"""
-  val before = """before"""
-  val todayFormat = """today"""
+  val anyWordFormat = """\w+"""
+  val offsetFormat = """(\+|-)?\d+$"""
 
   val anyDateFormat = """(19|20)\d\d[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])"""
   val dateNextFormat = """next[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])"""
   val datePreviousFormat = """previous[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])"""
 
-  lazy val today: Parser[DateExpression] = todayFormat.r ^^ { (loc, str) => DateExpression(str) }
-  lazy val anyDate: Parser[DateExpression] = anyDateFormat.r ^^ { (loc, str) => DateExpression(str) }
-  lazy val dateNext: Parser[DateExpression] = dateNextFormat.r ^^ { (loc, str) => DateExpression(str) }
-  lazy val datePrevious: Parser[DateExpression] = datePreviousFormat.r ^^ { (loc, str) => DateExpression(str) }
-
-  val anyWord: Parser[DateExpression] = """\w+""".r ^^ { (loc, str) => DateExpression(str) }
-  val offset: Parser[DateExpression] = """(\+|-)?\d+$""".r ^^ { (loc, str) => DateExpression(str) }
 }

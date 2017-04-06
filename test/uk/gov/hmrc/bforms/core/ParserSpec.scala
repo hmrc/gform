@@ -155,8 +155,11 @@ class ParserSpec extends FlatSpec with Matchers with EitherValues with OptionVal
 
     implicit val localDateNow = Now(LocalDate.now())
 
-    res.right.value should be(DateExpr("%02d".format(localDateNow().getDayOfMonth), "%02d".format(localDateNow().getMonthValue()),
-      localDateNow.apply().getYear.toString))
+    res.right.value should be(DateExpr(
+      "%02d".format(localDateNow().getDayOfMonth),
+      "%02d".format(localDateNow().getMonthValue),
+      localDateNow.apply().getYear.toString
+    ))
   }
 
   it should "fail parse unclosed parenthesis" in {

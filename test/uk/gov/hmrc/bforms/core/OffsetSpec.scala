@@ -25,16 +25,16 @@ import play.api.libs.json.{ JsError, JsSuccess }
 class OffsetSpec extends FlatSpec with Matchers with EitherValues with OptionValues {
 
   val signedIntRegex = """(\+|-)?\d+"""
-  val convertToInt = (str: String) => if (str.matches(signedIntRegex)) JsSuccess(OffsetCase(str.toInt.toString)) else JsError(s"Couldn't parse Integer from offset, $str")
+  val convertToInt = (str: String) => if (str.matches(signedIntRegex)) JsSuccess(OffsetCase(str.toInt)) else JsError(s"Couldn't parse Integer from offset, $str")
 
   "offset as negative integer" should "be parsed successfully" in {
     val result = convertToInt("-5")
-    result shouldEqual JsSuccess(OffsetCase("-5"))
+    result shouldEqual JsSuccess(OffsetCase(-5))
   }
 
   "offset as positive" should "be parsed successfully" in {
     val result = convertToInt("15")
-    result shouldEqual JsSuccess(OffsetCase("15"))
+    result shouldEqual JsSuccess(OffsetCase(15))
   }
 
   "offset as float" should "throw exception" in {

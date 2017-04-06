@@ -20,7 +20,7 @@ import cats.data.NonEmptyList
 import cats.syntax.either._
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
-import uk.gov.hmrc.bforms.core.{ Format => FormatExpr, _ }
+import uk.gov.hmrc.bforms.core._
 import uk.gov.hmrc.bforms.exceptions.InvalidState
 
 case class FieldValue(
@@ -113,9 +113,9 @@ private[this] case class FieldValueRaw(
   private final object IsOrientation {
     def unapply(orientation: Option[FormatExpr]): Option[OrientationValue] = {
       orientation match {
-        case Some(DateExpression("vertical")) | None => Some(VerticalOrientation)
-        case Some(DateExpression("horizontal")) => Some(HorizontalOrientation)
-        case Some(DateExpression("yesno")) => Some(YesNoOrientation)
+        case Some(TextExpression("vertical")) | None => Some(VerticalOrientation)
+        case Some(TextExpression("horizontal")) => Some(HorizontalOrientation)
+        case Some(TextExpression("yesno")) => Some(YesNoOrientation)
         case _ => None
       }
     }

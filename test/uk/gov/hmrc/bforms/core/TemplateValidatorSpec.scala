@@ -202,7 +202,7 @@ class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
         FieldId("nameOfBusiness"), Text, "Name of business", None, None, None, None, true, None
       ),
       FieldValue(
-        FieldId("taxType"), Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal), "Gas tax type?", None, Some(DateExpression("yesno")), None, None, true, None
+        FieldId("taxType"), Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal), "Gas tax type?", None, Some(TextExpression("yesno")), None, None, true, None
       )
     )
   )

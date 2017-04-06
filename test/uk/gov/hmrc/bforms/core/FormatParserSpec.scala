@@ -16,42 +16,42 @@
 
 package uk.gov.hmrc.bforms.core
 
-import org.scalatest.{ EitherValues, FlatSpec, Matchers, OptionValues }
+import org.scalatest.{EitherValues, FlatSpec, Matchers, OptionValues}
 import uk.gov.hmrc.bforms.exceptions.InvalidState
 
 /**
- * Created by dimitra on 03/04/17.
- */
+  * Created by dimitra on 03/04/17.
+  */
 class FormatParserSpec extends FlatSpec with Matchers with EitherValues with OptionValues {
 
   "YYY-MM-DD" should "be passed as it is" in {
     val res = FormatParser.validate("2017-05-06")
-    res.right.value should be(DateExpression("2017-05-06"))
+    res.right.value should be(GeneralDate)
   }
 
   "after today -2" should "be parsed successfully" in {
     val res = FormatParser.validate("after today -2")
-    res.right.value should be(DateExpression("after today -2"))
+    res.right.value should be(DateExpression(After, Today, OffsetDate(-2)))
   }
 
   "after 2017-04-02 -2" should "be parsed successfully" in {
     val res = FormatParser.validate("after 2017-04-02 -2")
-    res.right.value should be(DateExpression("after 2017-04-02 -2"))
+    res.right.value should be(DateExpression(After, AnyDate(2017, 4, 2), OffsetDate(-2)))
   }
 
   "after next-05-06 -2" should "be parsed successfully" in {
     val res = FormatParser.validate("after next-05-06 -2")
-    res.right.value should be(DateExpression("after next-05-06 -2"))
+    res.right.value should be(DateExpression(After, NextDate(5, 6), OffsetDate(-2)))
   }
 
   "after sampleField -2" should "be parsed successfully" in {
     val res = FormatParser.validate("after sampleField -2")
-    res.right.value should be(DateExpression("after sampleField -2"))
+    res.right.value should be(DateExpression(After, AnyWord("sampleField"), OffsetDate(-2)))
   }
 
   "after previous-05-06 0" should "be parsed successfully" in {
     val res = FormatParser.validate("after previous-05-06 0")
-    res.right.value should be(DateExpression("after previous-05-06 0"))
+    res.right.value should be(DateExpression(After, PreviousDate(5, 6), OffsetDate(0)))
   }
 
   "before anyFieldId anotherWord 9" should "throw exception" in {
@@ -82,12 +82,12 @@ class FormatParserSpec extends FlatSpec with Matchers with EitherValues with Opt
 
   "before today -2" should "be parsed successfully" in {
     val res = FormatParser.validate("before today -2")
-    res.right.value should be(DateExpression("before today -2"))
+    res.right.value should be(DateExpression(Before, Today, OffsetDate(-2)))
   }
 
   "before 2017-04-02 -2" should "be parsed successfully" in {
-    val res = FormatParser.validate("after 2017-04-02 -2")
-    res.right.value should be(DateExpression("after 2017-04-02 -2"))
+    val res = FormatParser.validate("before 2017-04-02 -2")
+    res.right.value should be(DateExpression(Before, AnyDate(2017, 4, 2), OffsetDate(-2)))
   }
 
 }
