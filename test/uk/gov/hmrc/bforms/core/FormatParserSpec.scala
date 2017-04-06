@@ -72,10 +72,10 @@ class FormatParserSpec extends FlatSpec with Matchers with EitherValues with Opt
 
     res.left.value should be(
       InvalidState(
-        """Unable to parse format expression after 2016-6-9 9.
-          |Errors:
-          |after 2016-6-9 9:1: unexpected characters; expected ' '
-          |after 2016-6-9 9          ^""".stripMargin
+        """|Unable to parse format expression after 2016-6-9 9.
+           |Errors:
+           |after 2016-6-9 9:1: unexpected characters; expected '0[1-9]|1[012]' or '\s+'
+           |after 2016-6-9 9           ^""".stripMargin
       )
     )
   }

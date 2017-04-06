@@ -242,8 +242,6 @@ class FormValidatorSpec extends FlatSpec with Matchers with EitherValues {
 
     val res = FormValidator.validate(formFields, section)
 
-    println("res " + res)
-
     res.right.value should be(())
 
   }

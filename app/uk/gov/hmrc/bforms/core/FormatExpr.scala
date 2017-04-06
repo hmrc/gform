@@ -52,7 +52,6 @@ object OffsetFormat {
 
 sealed trait FormatExpr
 final case class TextExpression(value: String) extends FormatExpr
-
 final case class DateExpression(beforeOrAfter: BeforeOrAfter, dateFormat: DateFormat, offsetFormat: OffsetFormat) extends FormatExpr
 final case object GeneralDate extends FormatExpr
 

@@ -58,16 +58,32 @@ object FormatParser {
     | anyWordExpression
   )
 
+  implicit val W = Whitespace(() | """\s+""".r)
+
   lazy val dateExpression: Parser[DateExpression] = (
     beforeOrAfter ~
-    whiteSpace ~
     dateExpr ~
-    whiteSpace ~
-    offsetExpression ^^ { (loc, beforeOrAfter, _, dateExpr, _, offset) => DateExpression(beforeOrAfter, dateExpr, offset) }
+    offsetExpression ^^ { (loc, beforeOrAfter, dateExpr, offset) => DateExpression(beforeOrAfter, dateExpr, offset) }
   )
 
   lazy val generalDateExpression: Parser[FormatExpr] = (
-    anyDateFormat.r ^^ { (loc, generalDate) => GeneralDate }
+    anyDateExpression ^^ { (loc, anyDate) => GeneralDate }
+  )
+
+  lazy val anyDateExpression: Parser[AnyDate] = (
+    yearParser ~ monthDay ^^ { (loc, year, month, day) => AnyDate(year, month, day) }
+  )
+
+  lazy val nextDate: Parser[NextDate] = nextOrPrevious("next", NextDate.apply)
+
+  lazy val previousDate: Parser[PreviousDate] = nextOrPrevious("previous", PreviousDate.apply)
+
+  def nextOrPrevious[A](string: String, fn: (Int, Int) => A): Parser[A] = (
+    string ~ monthDay ^^ { (loc, _, month, day) => fn(month, day) }
+  )
+
+  lazy val monthDay: Parser[(Int, Int)] = (
+    delimiter ~ monthParser ~ delimiter ~ dayParser ^^ { (loc, _, month, _, day) => (month, day) }
   )
 
   lazy val beforeOrAfter: Parser[BeforeOrAfter] = (
@@ -75,34 +91,34 @@ object FormatParser {
     | "before" ^^ { (loc, before) => Before }
   )
 
-  val splitBy = (dateAsStr: String) => dateAsStr.split("-")
-
-  val splitAnyDate = (dateAsStr: String) => AnyDate(splitBy(dateAsStr)(0).toInt, splitBy(dateAsStr)(1).toInt, splitBy(dateAsStr)(2).toInt)
-  val splitNextDate = (dateAsStr: String) => NextDate(splitBy(dateAsStr)(1).toInt, splitBy(dateAsStr)(2).toInt)
-  val splitPreviousDate = (dateAsStr: String) => PreviousDate(splitBy(dateAsStr)(1).toInt, splitBy(dateAsStr)(2).toInt)
-
   lazy val dateExpr: Parser[DateFormat] = (
     "today" ^^ { (loc, today) => Today }
-    | anyDateFormat.r ^^ { (loc, anyDate) => splitAnyDate(anyDate) }
-    | dateNextFormat.r ^^ { (loc, nextDate) => splitNextDate(nextDate) }
-    | datePreviousFormat.r ^^ { (loc, previousDate) => splitPreviousDate(previousDate) }
-    | anyWordFormat.r ^^ { (loc, str) => AnyWord(str) }
+    | anyDateExpression
+    | nextDate
+    | previousDate
+    | anyWordFormat ^^ { (loc, str) => AnyWord(str) }
   )
 
   lazy val anyWordExpression: Parser[FormatExpr] = (
-    anyWordFormat.r ^^ { (loc, anyWord) => TextExpression(anyWord) }
+    anyWordFormat ^^ { (loc, anyWord) => TextExpression(anyWord) }
   )
 
   lazy val offsetExpression: Parser[OffsetDate] = (
-    offsetFormat.r ^^ { (loc, offset) => OffsetDate(offset.toInt) }
+    anyInteger ^^ { (loc, offset) => OffsetDate(offset) }
   )
 
-  val whiteSpace = " "
-  val anyWordFormat = """\w+"""
-  val offsetFormat = """(\+|-)?\d+$"""
+  val anyWordFormat = """\w+""".r
+  val delimiter = "[- /.]".r
 
-  val anyDateFormat = """(19|20)\d\d[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])"""
-  val dateNextFormat = """next[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])"""
-  val datePreviousFormat = """previous[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])"""
+  lazy val yearParser: Parser[Int] = intParser("""(19|20)\d\d""")
 
+  lazy val monthParser: Parser[Int] = intParser("""0[1-9]|1[012]""")
+
+  lazy val dayParser: Parser[Int] = intParser("""0[1-9]|[12][0-9]|3[01]""")
+
+  lazy val anyInteger: Parser[Int] = intParser("""(\+|-)?\d+$""")
+
+  private def intParser(str: String): Parser[Int] = (
+    str.r ^^ { (loc, number) => number.toInt }
+  )
 }
