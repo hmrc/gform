@@ -101,7 +101,7 @@ object Parser {
   lazy val alphabeticOnly: Parser[String] = """\w+""".r ^^ { (loc, str) => str }
 
   lazy val anyConstant: Parser[Constant] = (
-    """[\w,]+""".r ^^ { (loc, str) => Constant(str) }
+    """[ \w,]+""".r ^^ { (loc, str) => Constant(str) }
   )
 
   lazy val context: Parser[Context] = (
