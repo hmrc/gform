@@ -90,7 +90,7 @@ object FormatParser {
   )
 
   lazy val anyWordExpression: Parser[FormatExpr] = (
-    anyWordFormat.r ^^ { (loc, anyWord) => AnyOtherWord }
+    anyWordFormat.r ^^ { (loc, anyWord) => TextExpression(anyWord) }
   )
 
   lazy val offsetExpression: Parser[OffsetDate] = (
