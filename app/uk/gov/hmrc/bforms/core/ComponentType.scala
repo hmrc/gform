@@ -46,7 +46,7 @@ case object Vertical extends ChoiceOrientation
 case object Horizontal extends ChoiceOrientation
 object ChoiceOrientation {
 
-  implicit val formatExpr: OFormat[ChoiceOrientation] = derived.oformat
+  implicit val format: OFormat[ChoiceOrientation] = derived.oformat
 }
 
 sealed trait ChoiceType
@@ -55,7 +55,7 @@ final case object Checkbox extends ChoiceType
 final case object YesNo extends ChoiceType
 
 object ChoiceType {
-  implicit val formatExpr: OFormat[ChoiceType] = derived.oformat
+  implicit val format: OFormat[ChoiceType] = derived.oformat
 }
 
 case class Choice(`type`: ChoiceType, options: NonEmptyList[String], orientation: ChoiceOrientation) extends ComponentType
@@ -73,5 +73,5 @@ object ComponentType {
     JsArray((v.head :: v.tail).map(Json.toJson(_)).toList)
   }
 
-  implicit val formatExpr: OFormat[ComponentType] = derived.oformat
+  implicit val format: OFormat[ComponentType] = derived.oformat
 }

@@ -42,9 +42,9 @@ object ComponentTypeRaw {
 
   implicit val format: OFormat[ComponentTypeRaw] = {
 
-    val formatExpr: OFormat[ComponentTypeRaw] = derived.oformat
+    val format: OFormat[ComponentTypeRaw] = derived.oformat
 
-    val reads: Reads[ComponentTypeRaw] = (formatExpr: Reads[ComponentTypeRaw]) | Reads {
+    val reads: Reads[ComponentTypeRaw] = (format: Reads[ComponentTypeRaw]) | Reads {
 
       case JsString(compTypeAsString) =>
 
@@ -56,6 +56,6 @@ object ComponentTypeRaw {
       case otherwise => JsError(s"Expected String as JsValue, got: $otherwise")
     }
 
-    OFormat[ComponentTypeRaw](reads, formatExpr)
+    OFormat[ComponentTypeRaw](reads, format)
   }
 }
