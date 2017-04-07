@@ -28,11 +28,9 @@ case class FieldValue(
   `type`: ComponentType,
   label: String,
   value: Option[Expr],
-  format: Option[FormatExpr],
   helpText: Option[String],
   readOnly: Option[String],
-  mandatory: Boolean,
-  offset: Option[Offset]
+  mandatory: Boolean
 )
 
 object FieldValue {
@@ -70,11 +68,9 @@ private[this] case class FieldValueRaw(
       `type` = componentType,
       label = label,
       value = value,
-      format = format,
       helpText = helpText,
       readOnly = readOnly,
-      mandatory = mandatory,
-      offset = offset
+      mandatory = mandatory
     )
 
     fieldValueOpt match {
@@ -85,7 +81,7 @@ private[this] case class FieldValueRaw(
 
   private val toComponentType: Opt[ComponentType] = `type` match {
     case Some(TextRaw) | None => Right(Text)
-    case Some(DateRaw) => Right(Date)
+    case Some(DateRaw) => Right(Date(format.getOrElse(GeneralDate), offset.getOrElse(OffsetCase(0))))
     case Some(AddressRaw) => Right(Address)
     case Some(ChoiceRaw) =>
       (format, choices, multivalue) match {
