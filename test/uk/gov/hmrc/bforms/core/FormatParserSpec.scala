@@ -25,33 +25,33 @@ import uk.gov.hmrc.bforms.exceptions.InvalidState
 class FormatParserSpec extends FlatSpec with Matchers with EitherValues with OptionValues {
 
   "YYY-MM-DD" should "be passed as it is" in {
-    val res = FormatParser.validate("2017-05-06")
-    res.right.value should be(GeneralDate)
+    val res = FormatParser.validate("anyDate")
+    res.right.value should be(DateFormat(AnyDate))
   }
 
   "after today -2" should "be parsed successfully" in {
     val res = FormatParser.validate("after today -2")
-    res.right.value should be(DateExpressions(List(DateExpression(After, Today, OffsetDate(-2)))))
+    res.right.value should be(DateFormat(DateConstraints(List(DateConstraint(After, Today, OffsetDate(-2))))))
   }
 
   "after 2017-04-02 -2" should "be parsed successfully" in {
     val res = FormatParser.validate("after 2017-04-02 -2")
-    res.right.value should be(DateExpressions(List(DateExpression(After, AnyDate(2017, 4, 2), OffsetDate(-2)))))
+    res.right.value should be(DateFormat(DateConstraints(List(DateConstraint(After, ConcreteDate(2017, 4, 2), OffsetDate(-2))))))
   }
 
   "after next-05-06 -2" should "be parsed successfully" in {
     val res = FormatParser.validate("after next-05-06 -2")
-    res.right.value should be(DateExpressions(List(DateExpression(After, NextDate(5, 6), OffsetDate(-2)))))
+    res.right.value should be(DateFormat(DateConstraints(List(DateConstraint(After, NextDate(5, 6), OffsetDate(-2))))))
   }
 
   "after sampleField -2" should "be parsed successfully" in {
     val res = FormatParser.validate("after sampleField -2")
-    res.right.value should be(DateExpressions(List(DateExpression(After, AnyWord("sampleField"), OffsetDate(-2)))))
+    res.right.value should be(DateFormat(DateConstraints(List(DateConstraint(After, AnyWord("sampleField"), OffsetDate(-2))))))
   }
 
   "after previous-05-06 0" should "be parsed successfully" in {
     val res = FormatParser.validate("after previous-05-06 0")
-    res.right.value should be(DateExpressions(List(DateExpression(After, PreviousDate(5, 6), OffsetDate(0)))))
+    res.right.value should be(DateFormat(DateConstraints(List(DateConstraint(After, PreviousDate(5, 6), OffsetDate(0))))))
   }
 
   "before anyFieldId anotherWord 9" should "throw exception" in {
@@ -82,20 +82,24 @@ class FormatParserSpec extends FlatSpec with Matchers with EitherValues with Opt
 
   "before today -2" should "be parsed successfully" in {
     val res = FormatParser.validate("before today -2")
-    res.right.value should be(DateExpressions(List(DateExpression(Before, Today, OffsetDate(-2)))))
+    res.right.value should be(DateFormat(DateConstraints(List(DateConstraint(Before, Today, OffsetDate(-2))))))
   }
 
   "before 2017-04-02 -2" should "be parsed successfully" in {
     val res = FormatParser.validate("before 2017-04-02 -2")
-    res.right.value should be(DateExpressions(List(DateExpression(Before, AnyDate(2017, 4, 2), OffsetDate(-2)))))
+    res.right.value should be(DateFormat(DateConstraints(List(DateConstraint(Before, ConcreteDate(2017, 4, 2), OffsetDate(-2))))))
   }
 
   "before" should "be parsed successfully" in {
     val res = FormatParser.validate("before 2017-04-02 -2,after next-02-01 +42")
-    res.right.value should be(DateExpressions(List(
-      DateExpression(Before, AnyDate(2017, 4, 2), OffsetDate(-2)),
-      DateExpression(After, NextDate(2, 1), OffsetDate(42))
-    )))
+    res.right.value should be(
+      DateFormat(
+        DateConstraints(List(
+          DateConstraint(Before, ConcreteDate(2017, 4, 2), OffsetDate(-2)),
+          DateConstraint(After, NextDate(2, 1), OffsetDate(42))
+        ))
+      )
+    )
   }
 
 }

@@ -82,7 +82,7 @@ private[this] case class FieldValueRaw(
   private val toComponentType: Opt[ComponentType] = `type` match {
     case Some(TextRaw) | None => Right(Text)
     case Some(DateRaw) =>
-      val finalOffset = offset.getOrElse(OffsetCase(0))
+      val finalOffset = offset.getOrElse(Offset(0))
       format match {
         case Some(DateFormat(format)) => Right(Date(format, finalOffset))
         case None => Right(Date(AnyDate, finalOffset))

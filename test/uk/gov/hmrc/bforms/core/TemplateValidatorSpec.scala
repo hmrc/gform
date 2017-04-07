@@ -158,16 +158,16 @@ class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
   val businessDetailsSection = Section(
     "Business details",
     List(
-      FieldValue(FieldId("nameOfBusiness"), Text, "Name of business", None, None, None, None, true, None),
-      FieldValue(FieldId("businessAddress"), Address, "Business address", None, None, None, None, true, None)
+      FieldValue(FieldId("nameOfBusiness"), Text, "Name of business", None, None, None, true),
+      FieldValue(FieldId("businessAddress"), Address, "Business address", None, None, None, true)
     )
   )
 
   val sectionWithDate = Section(
     "Business details",
     List(
-      FieldValue(FieldId("nameOfBusiness"), Text, "Name of business", None, None, None, None, true, None),
-      FieldValue(FieldId("startDate"), Date, "Start date", None, None, None, None, true, None)
+      FieldValue(FieldId("nameOfBusiness"), Text, "Name of business", None, None, None, true),
+      FieldValue(FieldId("startDate"), Date(AnyDate, Offset(0)), "Start date", None, None, None, true)
     )
   )
 
@@ -175,10 +175,10 @@ class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
     "Business details",
     List(
       FieldValue(
-        FieldId("nameOfBusiness"), Text, "Name of business", None, None, None, None, true, None
+        FieldId("nameOfBusiness"), Text, "Name of business", None, None, None, true
       ),
       FieldValue(
-        FieldId("dutyType"), Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Vertical), "Select the tax type", None, None, None, None, true, None
+        FieldId("dutyType"), Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Vertical), "Select the tax type", None, None, None, true
       )
     )
   )
@@ -187,10 +187,10 @@ class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
     "Business details",
     List(
       FieldValue(
-        FieldId("nameOfBusiness"), Text, "Name of business", None, None, None, None, true, None
+        FieldId("nameOfBusiness"), Text, "Name of business", None, None, None, true
       ),
       FieldValue(
-        FieldId("dutyType"), Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical), "Select the tax type", None, None, None, None, true, None
+        FieldId("dutyType"), Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical), "Select the tax type", None, None, None, true
       )
     )
   )
@@ -199,10 +199,10 @@ class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
     "Business details",
     List(
       FieldValue(
-        FieldId("nameOfBusiness"), Text, "Name of business", None, None, None, None, true, None
+        FieldId("nameOfBusiness"), Text, "Name of business", None, None, None, true
       ),
       FieldValue(
-        FieldId("taxType"), Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal), "Gas tax type?", None, Some(TextExpression("yesno")), None, None, true, None
+        FieldId("taxType"), Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal), "Gas tax type?", None, None, None, true
       )
     )
   )
@@ -316,7 +316,7 @@ class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
     val section = Section(
       "Business details",
       List(
-        FieldValue(FieldId("nameOfBusiness"), Text, "Name of business", None, None, None, None, false, None)
+        FieldValue(FieldId("nameOfBusiness"), Text, "Name of business", None, None, None, false)
       )
     )
 
@@ -333,7 +333,7 @@ class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
     val section = Section(
       "Business details",
       List(
-        FieldValue(FieldId("nameOfBusiness"), Text, "Name of business", None, None, None, None, false, None)
+        FieldValue(FieldId("nameOfBusiness"), Text, "Name of business", None, None, None, false)
       )
     )
 
@@ -350,7 +350,7 @@ class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
     val section = Section(
       "Business details",
       List(
-        FieldValue(FieldId("nameOfBusiness"), Text, "Name of business", None, None, None, None, true, None)
+        FieldValue(FieldId("nameOfBusiness"), Text, "Name of business", None, None, None, true)
       )
     )
 

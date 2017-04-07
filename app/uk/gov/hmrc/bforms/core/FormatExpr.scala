@@ -43,11 +43,10 @@ object DateConstraintInfo {
   implicit val formatExpr: OFormat[DateConstraintInfo] = derived.oformat[DateConstraintInfo]
 }
 
-sealed trait OffsetFormat
-case class OffsetDate(value: Int) extends OffsetFormat
+case class OffsetDate(value: Int) extends AnyVal
 
-object OffsetFormat {
-  implicit val formatExpr: OFormat[OffsetFormat] = derived.oformat[OffsetFormat]
+object OffsetDate {
+  implicit val formatExpr: OFormat[OffsetDate] = Json.format[OffsetDate]
 }
 
 sealed trait FormatExpr
@@ -62,7 +61,7 @@ object DateConstraintType {
   implicit val formatExpr: OFormat[DateConstraintType] = derived.oformat[DateConstraintType]
 }
 
-final case class DateConstraint(beforeOrAfter: BeforeOrAfter, dateFormat: DateConstraintInfo, offsetFormat: OffsetFormat)
+final case class DateConstraint(beforeOrAfter: BeforeOrAfter, dateFormat: DateConstraintInfo, offset: OffsetDate)
 
 object DateConstraint {
   implicit val formatExpr: OFormat[DateConstraint] = derived.oformat[DateConstraint]
