@@ -32,15 +32,15 @@ object BeforeOrAfter {
   implicit val formatExpr: OFormat[BeforeOrAfter] = derived.oformat[BeforeOrAfter]
 }
 
-sealed trait DateFormat
-case object Today extends DateFormat
-case class AnyDate(year: Int, month: Int, day: Int) extends DateFormat
-case class NextDate(month: Int, day: Int) extends DateFormat
-case class PreviousDate(month: Int, day: Int) extends DateFormat
-case class AnyWord(value: String) extends DateFormat
+sealed trait DateConstraintInfo
+case object Today extends DateConstraintInfo
+case class ConcreteDate(year: Int, month: Int, day: Int) extends DateConstraintInfo
+case class NextDate(month: Int, day: Int) extends DateConstraintInfo
+case class PreviousDate(month: Int, day: Int) extends DateConstraintInfo
+case class AnyWord(value: String) extends DateConstraintInfo
 
-object DateFormat {
-  implicit val formatExpr: OFormat[DateFormat] = derived.oformat[DateFormat]
+object DateConstraintInfo {
+  implicit val formatExpr: OFormat[DateConstraintInfo] = derived.oformat[DateConstraintInfo]
 }
 
 sealed trait OffsetFormat
@@ -52,13 +52,20 @@ object OffsetFormat {
 
 sealed trait FormatExpr
 final case class TextExpression(value: String) extends FormatExpr
-final case class DateExpressions(expressions: List[DateExpression]) extends FormatExpr
-final case object GeneralDate extends FormatExpr
+final case class DateFormat(expressions: DateConstraintType) extends FormatExpr
 
-final case class DateExpression(beforeOrAfter: BeforeOrAfter, dateFormat: DateFormat, offsetFormat: OffsetFormat)
+sealed trait DateConstraintType
+final case object AnyDate extends DateConstraintType
+final case class DateConstraints(constraints: List[DateConstraint]) extends DateConstraintType
 
-object DateExpression {
-  implicit val formatExpr: OFormat[DateExpression] = derived.oformat[DateExpression]
+object DateConstraintType {
+  implicit val formatExpr: OFormat[DateConstraintType] = derived.oformat[DateConstraintType]
+}
+
+final case class DateConstraint(beforeOrAfter: BeforeOrAfter, dateFormat: DateConstraintInfo, offsetFormat: OffsetFormat)
+
+object DateConstraint {
+  implicit val formatExpr: OFormat[DateConstraint] = derived.oformat[DateConstraint]
 }
 
 object FormatExpr {

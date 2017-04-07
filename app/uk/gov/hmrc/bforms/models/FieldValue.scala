@@ -81,7 +81,17 @@ private[this] case class FieldValueRaw(
 
   private val toComponentType: Opt[ComponentType] = `type` match {
     case Some(TextRaw) | None => Right(Text)
-    case Some(DateRaw) => Right(Date(format.getOrElse(GeneralDate), offset.getOrElse(OffsetCase(0))))
+    case Some(DateRaw) =>
+      val finalOffset = offset.getOrElse(OffsetCase(0))
+      format match {
+        case Some(DateFormat(format)) => Right(Date(format, finalOffset))
+        case None => Right(Date(AnyDate, finalOffset))
+        case Some(invalidFormat) => Left(
+          InvalidState(s"""|Unsupported type of format for date field
+                           |Id: $id
+                           |Format: $invalidFormat""".stripMargin)
+        )
+      }
     case Some(AddressRaw) => Right(Address)
     case Some(ChoiceRaw) =>
       (format, choices, multivalue) match {

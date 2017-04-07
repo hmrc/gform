@@ -29,7 +29,7 @@ sealed trait ComponentType
 
 case object Text extends ComponentType
 
-case class Date(format: FormatExpr, offset: Offset) extends ComponentType
+case class Date(constraintType: DateConstraintType, offset: Offset) extends ComponentType
 
 case object Date {
   val fields = (id: FieldId) => List("day", "month", "year").map(id.withSuffix)

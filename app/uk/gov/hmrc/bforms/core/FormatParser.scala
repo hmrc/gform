@@ -53,30 +53,34 @@ object FormatParser {
   } yield expr).run(expression)
 
   lazy val expr: Parser[FormatExpr] = (
-    generalDateExpression
-    | dateExpressions
+    dateFormat
     | anyWordExpression
+  )
+
+  lazy val dateFormat: Parser[DateFormat] = (
+    anyDateConstraint ^^ ((loc, constraints) => DateFormat(constraints))
+    | dateConstraints ^^ ((loc, constraints) => DateFormat(constraints))
   )
 
   implicit val W = Whitespace(() | """\s+""".r)
 
-  lazy val dateExpressions: Parser[DateExpressions] = (
-    dateExpression ~ "," ~ dateExpressions ^^ { (loc, x, _, xs) => DateExpressions(x :: xs.expressions) }
-    | dateExpression ^^ { (loc, x) => DateExpressions(List(x)) }
+  lazy val dateConstraints: Parser[DateConstraints] = (
+    dateConstraint ~ "," ~ dateConstraints ^^ { (loc, x, _, xs) => DateConstraints(x :: xs.constraints) }
+    | dateConstraint ^^ { (loc, x) => DateConstraints(List(x)) }
   )
 
-  lazy val dateExpression: Parser[DateExpression] = (
+  lazy val dateConstraint: Parser[DateConstraint] = (
     beforeOrAfter ~
     dateExpr ~
-    offsetExpression ^^ { (loc, beforeOrAfter, dateExpr, offset) => DateExpression(beforeOrAfter, dateExpr, offset) }
+    offsetExpression ^^ { (loc, beforeOrAfter, dateExpr, offset) => DateConstraint(beforeOrAfter, dateExpr, offset) }
   )
 
-  lazy val generalDateExpression: Parser[FormatExpr] = (
-    anyDateExpression ^^ { (loc, anyDate) => GeneralDate }
+  lazy val anyDateConstraint: Parser[DateConstraintType] = (
+    "anyDate" ^^ { (loc, _) => AnyDate }
   )
 
-  lazy val anyDateExpression: Parser[AnyDate] = (
-    yearParser ~ monthDay ^^ { (loc, year, month, day) => AnyDate(year, month, day) }
+  lazy val concreteDate: Parser[ConcreteDate] = (
+    yearParser ~ monthDay ^^ { (loc, year, month, day) => ConcreteDate(year, month, day) }
   )
 
   lazy val nextDate: Parser[NextDate] = nextOrPrevious("next", NextDate.apply)
@@ -96,9 +100,9 @@ object FormatParser {
     | "before" ^^ { (loc, before) => Before }
   )
 
-  lazy val dateExpr: Parser[DateFormat] = (
+  lazy val dateExpr: Parser[DateConstraintInfo] = (
     "today" ^^ { (loc, today) => Today }
-    | anyDateExpression
+    | concreteDate
     | nextDate
     | previousDate
     | anyWordFormat ^^ { (loc, str) => AnyWord(str) }
