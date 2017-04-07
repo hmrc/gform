@@ -16,12 +16,12 @@
 
 package uk.gov.hmrc.bforms.core
 
-import org.scalatest.{EitherValues, FlatSpec, Matchers, OptionValues}
+import org.scalatest.{ EitherValues, FlatSpec, Matchers, OptionValues }
 import uk.gov.hmrc.bforms.exceptions.InvalidState
 
 /**
-  * Created by dimitra on 03/04/17.
-  */
+ * Created by dimitra on 03/04/17.
+ */
 class FormatParserSpec extends FlatSpec with Matchers with EitherValues with OptionValues {
 
   "YYY-MM-DD" should "be passed as it is" in {
