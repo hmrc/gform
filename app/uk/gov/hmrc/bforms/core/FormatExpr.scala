@@ -17,7 +17,6 @@
 package uk.gov.hmrc.bforms.core
 
 import julienrf.json.derived
-import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.bforms.core.parsers.FormatParser
 
@@ -69,9 +68,7 @@ object OffsetDate {
 
 object FormatExpr {
   implicit val format: OFormat[FormatExpr] = {
-    val format: OFormat[FormatExpr] = derived.oformat[FormatExpr]
-
-    val reads: Reads[FormatExpr] = (format: Reads[FormatExpr]) | Reads {
+    val reads: Reads[FormatExpr] = Reads {
       case JsString(formatAsStr) =>
         FormatParser.validate(formatAsStr) match {
           case Right(expr) => JsSuccess(expr)

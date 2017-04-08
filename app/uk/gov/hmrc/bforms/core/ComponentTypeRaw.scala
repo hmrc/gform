@@ -18,7 +18,6 @@ package uk.gov.hmrc.bforms.core
 
 import julienrf.json.derived
 import play.api.libs.json._
-import play.api.libs.functional.syntax._
 
 sealed trait ComponentTypeRaw
 
@@ -44,7 +43,7 @@ object ComponentTypeRaw {
 
     val format: OFormat[ComponentTypeRaw] = derived.oformat
 
-    val reads: Reads[ComponentTypeRaw] = (format: Reads[ComponentTypeRaw]) | Reads {
+    val reads: Reads[ComponentTypeRaw] = Reads {
 
       case JsString(compTypeAsString) =>
 

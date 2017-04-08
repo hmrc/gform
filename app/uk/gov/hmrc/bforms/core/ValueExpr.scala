@@ -19,15 +19,14 @@ package uk.gov.hmrc.bforms.core
 import cats.Monoid
 import julienrf.json.derived
 import play.api.libs.json._
-import play.api.libs.functional.syntax._
 import uk.gov.hmrc.bforms.core.parsers.ValueParser
 import uk.gov.hmrc.bforms.models.{ FieldId, FormTemplate }
 
-sealed trait ExprDeterminer
+sealed trait ValueExpr
 
-final case class TextExpression(expr: Expr) extends ExprDeterminer
-final case class DateExpression(expr: DateValue) extends ExprDeterminer
-final case class ChoiceExpression(expr: ChoiceExpr) extends ExprDeterminer
+final case class TextExpression(expr: Expr) extends ValueExpr
+final case class DateExpression(dateValue: DateValue) extends ValueExpr
+final case class ChoiceExpression(choiceExpr: ChoiceExpr) extends ValueExpr
 
 sealed trait DateValue
 
@@ -91,11 +90,9 @@ final case object FormContext extends Context
 final case object AuthContext extends Context
 final case object EeittContext extends Context
 
-object ExprDeterminer {
-  implicit val format: OFormat[ExprDeterminer] = {
-    val format: OFormat[ExprDeterminer] = derived.oformat
-
-    val reads: Reads[ExprDeterminer] = (format: Reads[ExprDeterminer]) | Reads { json =>
+object ValueExpr {
+  implicit val format: OFormat[ValueExpr] = {
+    val reads: Reads[ValueExpr] = Reads { json =>
       json match {
         case JsString(exprAsStr) =>
           ValueParser.validate(exprAsStr) match {
@@ -106,6 +103,6 @@ object ExprDeterminer {
       }
     }
 
-    OFormat[ExprDeterminer](reads, format)
+    OFormat[ValueExpr](reads, format)
   }
 }

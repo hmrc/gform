@@ -41,8 +41,8 @@ class ExprSpec extends FlatSpec with Matchers with JsResultMatcher {
   }
 
   it should "read Add case class from expression (coming from template designer)" in {
-    val res: JsResult[ExprDeterminer] = implicitly[Reads[ExprDeterminer]].reads(JsString("${fieldA + fieldB}"))
-    res should beJsSuccess[ExprDeterminer](TextExpression(add))
+    val res: JsResult[ValueExpr] = implicitly[Reads[ValueExpr]].reads(JsString("${fieldA + fieldB}"))
+    res should beJsSuccess[ValueExpr](TextExpression(add))
   }
 
   val constant = Constant("constant")
@@ -61,8 +61,8 @@ class ExprSpec extends FlatSpec with Matchers with JsResultMatcher {
   }
 
   it should "read Constant from string (coming from template designer)" in {
-    val res: JsResult[ExprDeterminer] = implicitly[Reads[ExprDeterminer]].reads(JsString("constant"))
-    res should beJsSuccess[ExprDeterminer](TextExpression(Constant("constant")))
+    val res: JsResult[ValueExpr] = implicitly[Reads[ValueExpr]].reads(JsString("constant"))
+    res should beJsSuccess[ValueExpr](TextExpression(Constant("constant")))
   }
 
   val form = FormCtx("form")

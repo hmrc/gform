@@ -31,12 +31,12 @@ import BasicParsers._
 
 object ValueParser {
 
-  def validate(expression: String): Opt[ExprDeterminer] = validateWithParser(expression, exprDeterminer)
+  def validate(expression: String): Opt[ValueExpr] = validateWithParser(expression, exprDeterminer)
 
-  def validateList(expressions: List[String]): Opt[List[ExprDeterminer]] =
+  def validateList(expressions: List[String]): Opt[List[ValueExpr]] =
     expressions.map(validate).sequence
 
-  lazy val exprDeterminer: Parser[ExprDeterminer] = (
+  lazy val exprDeterminer: Parser[ValueExpr] = (
     dateExpression ^^ ((loc, expr) => DateExpression(expr))
     | choiceExpression ^^ ((loc, expr) => ChoiceExpression(expr))
     | expr ^^ ((loc, expr) => TextExpression(expr))
