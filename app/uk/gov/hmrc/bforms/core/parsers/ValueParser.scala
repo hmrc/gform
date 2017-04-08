@@ -31,28 +31,7 @@ import BasicParsers._
 
 object ValueParser {
 
-  private def parse = ReaderT[Opt, String, Catenable[ExprDeterminer]] { expression =>
-    exprDeterminer(LineStream[Eval](expression)).value.leftMap { error =>
-      val errors: String = error.map(_.render(expression)).mkString("\n")
-      InvalidState(
-        s"""|Unable to parse expression $expression.
-            |Errors:
-            |$errors""".stripMargin
-      )
-    }
-  }
-
-  private def reconstruct(cat: Catenable[ExprDeterminer]) = ReaderT[Opt, String, ExprDeterminer] { expression =>
-    cat.uncons match {
-      case Some((expr, _)) => Right(expr)
-      case None => Left(InvalidState(s"Unable to parse expression $expression"))
-    }
-  }
-
-  def validate(expression: String): Opt[ExprDeterminer] = (for {
-    catenable <- parse
-    expr <- reconstruct(catenable)
-  } yield expr).run(expression)
+  def validate(expression: String): Opt[ExprDeterminer] = validateWithParser(expression, exprDeterminer)
 
   def validateList(expressions: List[String]): Opt[List[ExprDeterminer]] =
     expressions.map(validate).sequence

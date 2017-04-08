@@ -60,7 +60,7 @@ class FormatParserSpec extends FlatSpec with Matchers with EitherValues with Opt
 
     res.left.value should be(
       InvalidState(
-        """Unable to parse format expression before anyFieldId anotherWord 9.
+        """Unable to parse expression before anyFieldId anotherWord 9.
           |Errors:
           |before anyFieldId anotherWord 9:1: unexpected characters; expected '(\+|-)?\d+'
           |before anyFieldId anotherWord 9                  ^""".stripMargin
@@ -73,7 +73,7 @@ class FormatParserSpec extends FlatSpec with Matchers with EitherValues with Opt
 
     res.left.value should be(
       InvalidState(
-        """|Unable to parse format expression after 2016-6-9 9.
+        """|Unable to parse expression after 2016-6-9 9.
            |Errors:
            |after 2016-6-9 9:1: unexpected characters; expected '\s+' or ','
            |after 2016-6-9 9            ^""".stripMargin

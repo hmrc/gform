@@ -29,28 +29,7 @@ import BasicParsers._
 
 object FormatParser {
 
-  private def parse = ReaderT[Opt, String, Catenable[FormatExpr]] { formatExpr =>
-    expr(LineStream[Eval](formatExpr)).value.leftMap { error =>
-      val errors: String = error.map(_.render(formatExpr)).mkString("\n")
-      InvalidState(
-        s"""|Unable to parse format expression $formatExpr.
-            |Errors:
-            |$errors""".stripMargin
-      )
-    }
-  }
-
-  private def reconstruct(cat: Catenable[FormatExpr]) = ReaderT[Opt, String, FormatExpr] { expression =>
-    cat.uncons match {
-      case Some((expr, _)) => Right(expr)
-      case None => Left(InvalidState(s"Unable to parse format expression $expression"))
-    }
-  }
-
-  def validate(expression: String): Opt[FormatExpr] = (for {
-    catenable <- parse
-    expr <- reconstruct(catenable)
-  } yield expr).run(expression)
+  def validate(expression: String): Opt[FormatExpr] = validateWithParser(expression, expr)
 
   lazy val expr: Parser[FormatExpr] = (
     dateFormat
