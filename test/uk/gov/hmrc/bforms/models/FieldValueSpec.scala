@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.core
+package uk.gov.hmrc.bforms.models
 
 import cats.data.NonEmptyList
 import cats.syntax.either._
@@ -23,7 +23,6 @@ import org.scalatest.matchers.{ MatchResult, Matcher }
 import org.scalatest.{ EitherValues, FlatSpec, Matchers }
 import play.api.libs.json.{ Reads, _ }
 import uk.gov.hmrc.bforms.exceptions.InvalidState
-import uk.gov.hmrc.bforms.models.{ FieldId, FieldValue, FormField, Schema, Section }
 
 class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsResultMatcher {
 

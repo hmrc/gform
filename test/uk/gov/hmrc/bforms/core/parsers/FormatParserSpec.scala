@@ -19,6 +19,7 @@ package uk.gov.hmrc.bforms.core.parsers
 import org.scalatest.{ EitherValues, FlatSpec, Matchers, OptionValues }
 import uk.gov.hmrc.bforms.exceptions.InvalidState
 import uk.gov.hmrc.bforms.core._
+import uk.gov.hmrc.bforms.models._
 
 /**
  * Created by dimitra on 03/04/17.

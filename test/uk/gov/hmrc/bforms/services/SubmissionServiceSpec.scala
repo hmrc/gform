@@ -25,7 +25,6 @@ import org.scalatest.time.{ Millis, Span }
 import play.api.libs.json.Json
 
 import scala.util.Random
-import uk.gov.hmrc.bforms.core.{ ComponentType, Constant, Text }
 import uk.gov.hmrc.bforms.typeclasses.{ Now, Post, Rnd }
 import uk.gov.hmrc.bforms.{ FindOneCheck, InsertCheck, PostCheck, TypeclassFixtures }
 import uk.gov.hmrc.bforms.models._

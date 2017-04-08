@@ -25,7 +25,6 @@ import uk.gov.hmrc.bforms.{ FindOneCheck, TypeclassFixtures }
 import uk.gov.hmrc.bforms.exceptions.InvalidState
 import uk.gov.hmrc.bforms.models._
 import uk.gov.hmrc.bforms.typeclasses.{ FindOne, Insert, Update }
-import uk.gov.hmrc.bforms.core.{ Text, Constant }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 

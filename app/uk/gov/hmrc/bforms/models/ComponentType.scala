@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.core
+package uk.gov.hmrc.bforms.models
 
 import cats.Monoid
 import cats.data.NonEmptyList
@@ -24,7 +24,8 @@ import play.api.libs.functional.syntax._
 import play.api.data.validation.ValidationError
 
 import scala.collection.immutable._
-import uk.gov.hmrc.bforms.models.{ FieldId, FormTemplate }
+import uk.gov.hmrc.bforms.core._
+import uk.gov.hmrc.bforms.models._
 
 sealed trait ComponentType {
   def validate(formTemplate: FormTemplate): ValidationResult = this match {

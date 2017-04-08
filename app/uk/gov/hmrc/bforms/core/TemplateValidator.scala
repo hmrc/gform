@@ -17,7 +17,7 @@
 package uk.gov.hmrc.bforms.core
 
 import uk.gov.hmrc.bforms.exceptions.InvalidState
-import uk.gov.hmrc.bforms.models.{ FieldId, FormField, Section }
+import uk.gov.hmrc.bforms.models._
 
 object TemplateValidator {
 

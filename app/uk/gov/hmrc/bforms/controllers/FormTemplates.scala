@@ -27,7 +27,7 @@ import uk.gov.hmrc.bforms.repositories.{ FormTemplateRepository, SchemaRepositor
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.play.microservice.controller.BaseController
 import uk.gov.hmrc.bforms.core.SchemaValidator
-import uk.gov.hmrc.bforms.models.{ Schema, FormTemplate, FormTypeId, DbOperationResult }
+import uk.gov.hmrc.bforms.models.{ ComponentType, Schema, FormTemplate, FormTypeId, DbOperationResult }
 import uk.gov.hmrc.bforms.typeclasses.{ FindOne, Update }
 
 object FormTemplates {

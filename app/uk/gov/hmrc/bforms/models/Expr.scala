@@ -14,30 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.core
+package uk.gov.hmrc.bforms.models
 
 import cats.Monoid
 import julienrf.json.derived
 import play.api.libs.json._
-import uk.gov.hmrc.bforms.core.parsers.ValueParser
-import uk.gov.hmrc.bforms.models.{ FieldId, FormTemplate }
-
-sealed trait ValueExpr
-
-final case class TextExpression(expr: Expr) extends ValueExpr
-final case class DateExpression(dateValue: DateValue) extends ValueExpr
-final case class ChoiceExpression(selections: List[Int]) extends ValueExpr
-
-sealed trait DateValue
-
-final case object TodayDateValue extends DateValue
-final case class ExactDateValue(year: Int, month: Int, day: Int) extends DateValue
-final case class NextDateValue(month: Int, day: Int) extends DateValue
-final case class PreviousDateValue(month: Int, day: Int) extends DateValue
-
-object DateValue {
-  implicit val format: OFormat[DateValue] = derived.oformat
-}
+import uk.gov.hmrc.bforms.core.{ Valid, Invalid, ValidationResult }
 
 sealed trait Expr {
   def validate(formTemplate: FormTemplate): ValidationResult = {
@@ -83,20 +65,3 @@ sealed trait Context
 final case object FormContext extends Context
 final case object AuthContext extends Context
 final case object EeittContext extends Context
-
-object ValueExpr {
-  implicit val format: OFormat[ValueExpr] = {
-    val reads: Reads[ValueExpr] = Reads { json =>
-      json match {
-        case JsString(exprAsStr) =>
-          ValueParser.validate(exprAsStr) match {
-            case Right(expr) => JsSuccess(expr)
-            case Left(error) => JsError(error.toString)
-          }
-        case otherwise => JsError(s"Invalid expression. Expected String, got $otherwise")
-      }
-    }
-
-    OFormat[ValueExpr](reads, format)
-  }
-}

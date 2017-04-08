@@ -16,15 +16,11 @@
 
 package uk.gov.hmrc.bforms.core.parsers
 
-import cats.Eval
-import cats.data.ReaderT
 import cats.instances.either._
 import cats.syntax.either._
 import parseback._
-import parseback.compat.cats._
-import parseback.util.Catenable
-import uk.gov.hmrc.bforms.core._
-import uk.gov.hmrc.bforms.exceptions.InvalidState
+import uk.gov.hmrc.bforms.core.Opt
+import uk.gov.hmrc.bforms.models._
 import BasicParsers._
 
 object FormatParser {

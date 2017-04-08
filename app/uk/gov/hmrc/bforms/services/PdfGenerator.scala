@@ -22,8 +22,7 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle
 import org.apache.pdfbox.pdmodel.font.{ PDFont, PDType1Font }
 import org.apache.pdfbox.pdmodel.{ PDDocument, PDPage, PDPageContentStream }
 import play.api.libs.json._
-import uk.gov.hmrc.bforms.models.{ FieldId, FormField, SectionFormField }
-import uk.gov.hmrc.bforms.core.Choice
+import uk.gov.hmrc.bforms.models.{ Choice, FieldId, FormField, SectionFormField }
 import scala.collection.mutable.ArrayBuffer
 
 sealed trait LayoutElem {

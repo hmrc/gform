@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.core
+package uk.gov.hmrc.bforms.models
 
 import org.scalatest._
 import org.scalatest.matchers.{ BeMatcher, MatchResult, Matcher }

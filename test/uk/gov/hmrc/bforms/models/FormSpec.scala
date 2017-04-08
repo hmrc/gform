@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.bforms.models
 
-import uk.gov.hmrc.bforms.models._
 import play.api.libs.json._
 import org.scalatest._
 
