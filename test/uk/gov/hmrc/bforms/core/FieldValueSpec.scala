@@ -37,7 +37,7 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text, "Registration number", None, None, None, true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant("")), "Registration number", None, None, true))
   }
 
   it should "parse 'choice' type as Radio with Vertical orientation if no multivalue & no format is provided" in {
@@ -56,9 +56,8 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
     fieldValue should beJsSuccess(
       FieldValue(
         FieldId("dutyType"),
-        Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical),
+        Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int]),
         "Select the tax type",
-        None,
         None,
         None,
         true
@@ -83,9 +82,8 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
     fieldValue should beJsSuccess(
       FieldValue(
         FieldId("dutyType"),
-        Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical),
+        Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int]),
         "Select the tax type",
-        None,
         None,
         None,
         true
@@ -111,9 +109,8 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
     fieldValue should beJsSuccess(
       FieldValue(
         FieldId("dutyType"),
-        Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical),
+        Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int]),
         "Select the tax type",
-        None,
         None,
         None,
         true
@@ -139,9 +136,8 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
     fieldValue should beJsSuccess(
       FieldValue(
         FieldId("dutyType"),
-        Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Horizontal),
+        Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Horizontal, List.empty[Int]),
         "Select the tax type",
-        None,
         None,
         None,
         true
@@ -166,9 +162,8 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
     fieldValue should beJsSuccess(
       FieldValue(
         FieldId("dutyType"),
-        Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Vertical),
+        Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int]),
         "Select the tax type",
-        None,
         None,
         None,
         true
@@ -194,9 +189,8 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
     fieldValue should beJsSuccess(
       FieldValue(
         FieldId("dutyType"),
-        Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Vertical),
+        Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int]),
         "Select the tax type",
-        None,
         None,
         None,
         true
@@ -222,9 +216,8 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
     fieldValue should beJsSuccess(
       FieldValue(
         FieldId("dutyType"),
-        Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Horizontal),
+        Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Horizontal, List.empty[Int]),
         "Select the tax type",
-        None,
         None,
         None,
         true
@@ -245,9 +238,31 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
     fieldValue should beJsSuccess(
       FieldValue(
         FieldId("taxType"),
-        Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal),
+        Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int]),
         "Gas tax type?",
         None,
+        None,
+        true
+      )
+    )
+  }
+
+  it should "parse 'choice' type as YesNo if 'format=yesno' and 'value=1' are provided" in {
+    val fieldValue = toFieldValue(
+      """|{
+         |  "type": "choice",
+         |  "id":"taxType",
+         |  "label":"Gas tax type?",
+         |  "format":"yesno",
+         |  "value": "1"
+         |}"""
+    )
+
+    fieldValue should beJsSuccess(
+      FieldValue(
+        FieldId("taxType"),
+        Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List(1)),
+        "Gas tax type?",
         None,
         None,
         true
@@ -269,9 +284,8 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
     fieldValue should beJsSuccess(
       FieldValue(
         FieldId("taxType"),
-        Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal),
+        Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int]),
         "Gas tax type?",
-        None,
         None,
         None,
         true

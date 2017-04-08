@@ -31,8 +31,8 @@ import DateHelperFunctions._
 
 object Parser {
 
-  private def parse = ReaderT[Opt, String, Catenable[Expr]] { expression =>
-    expr(LineStream[Eval](expression)).value.leftMap { error =>
+  private def parse = ReaderT[Opt, String, Catenable[ExprDeterminer]] { expression =>
+    exprDeterminer(LineStream[Eval](expression)).value.leftMap { error =>
       val errors: String = error.map(_.render(expression)).mkString("\n")
       InvalidState(
         s"""|Unable to parse expression $expression.
@@ -42,22 +42,40 @@ object Parser {
     }
   }
 
-  private def reconstruct(cat: Catenable[Expr]) = ReaderT[Opt, String, Expr] { expression =>
+  private def reconstruct(cat: Catenable[ExprDeterminer]) = ReaderT[Opt, String, ExprDeterminer] { expression =>
     cat.uncons match {
       case Some((expr, _)) => Right(expr)
       case None => Left(InvalidState(s"Unable to parse expression $expression"))
     }
   }
 
-  def validate(expression: String): Opt[Expr] = (for {
+  def validate(expression: String): Opt[ExprDeterminer] = (for {
     catenable <- parse
     expr <- reconstruct(catenable)
   } yield expr).run(expression)
 
-  def validateList(expressions: List[String]): Opt[List[Expr]] =
+  def validateList(expressions: List[String]): Opt[List[ExprDeterminer]] =
     expressions.map(validate).sequence
 
   implicit val W = Whitespace(() | """\s+""".r)
+
+  lazy val exprDeterminer: Parser[ExprDeterminer] = (
+    dateExpression ^^ ((loc, expr) => DateExpression(expr))
+    | choiceExpression ^^ ((loc, expr) => ChoiceExpression(expr))
+    | expr ^^ ((loc, expr) => TextExpression(expr))
+  )
+
+  lazy val dateExpression: Parser[DateExpr] = (
+    (dateNext | dateLast | dateNumber | dateToday) ^^ { (loc, dateExpr) => dateExpr }
+  )
+
+  import FormatParser.positiveInteger
+  lazy val choiceExpression: Parser[ChoiceExpr] = (
+
+    positiveInteger ~ "," ~ choiceExpression ^^ ((loc, x, _, xs) => ChoiceExpr(x :: xs.selections))
+    | positiveInteger ^^ ((loc, x) => ChoiceExpr(List(x)))
+
+  )
 
   lazy val expr: Parser[Expr] = (
     "${" ~ contextField ~ "}" ^^ { (loc, _, field, _) => field }
@@ -67,8 +85,6 @@ object Parser {
         case Multiplication => Multiply(field1, field2)
       }
     }
-
-    | (dateNext | dateLast | dateNumber | dateToday) ^^ { (loc, dateExpr) => dateExpr }
     | anyConstant ^^ { (loc, const) => const }
   )
 

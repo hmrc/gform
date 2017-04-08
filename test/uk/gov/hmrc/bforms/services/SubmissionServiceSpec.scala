@@ -25,6 +25,7 @@ import org.scalatest.time.{ Millis, Span }
 import play.api.libs.json.Json
 
 import scala.util.Random
+import uk.gov.hmrc.bforms.core.{ ComponentType, Constant, Text }
 import uk.gov.hmrc.bforms.typeclasses.{ Now, Post, Rnd }
 import uk.gov.hmrc.bforms.{ FindOneCheck, InsertCheck, PostCheck, TypeclassFixtures }
 import uk.gov.hmrc.bforms.models._
@@ -33,8 +34,6 @@ import uk.gov.hmrc.play.http.HttpResponse
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import play.api.http.HeaderNames.LOCATION
-import uk.gov.hmrc.bforms.core.ComponentType
-import uk.gov.hmrc.bforms.core.Text
 
 class SubmissionServiceSpec extends FlatSpec with Matchers with TypeclassFixtures with ScalaFutures with EitherValues with Inside with MockFactory {
 
@@ -47,8 +46,8 @@ class SubmissionServiceSpec extends FlatSpec with Matchers with TypeclassFixture
   val yourDetailsSection = Section(
     "Your details",
     List(
-      FieldValue(FieldId("firstName"), Text, "Your first name", None, None, None, true),
-      FieldValue(FieldId("lastName"), Text, "Your last name", None, None, None, true)
+      FieldValue(FieldId("firstName"), Text(Constant("")), "Your first name", None, None, true),
+      FieldValue(FieldId("lastName"), Text(Constant("")), "Your last name", None, None, true)
     )
   )
 

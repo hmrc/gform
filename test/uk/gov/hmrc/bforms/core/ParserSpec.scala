@@ -28,42 +28,52 @@ class ParserSpec extends FlatSpec with Matchers with EitherValues with OptionVal
 
   "Parser" should "parse ${firstName}" in {
     val res = Parser.validate("${firstName}")
-    res.right.value should be(FormCtx("firstName"))
+    res.right.value should be(TextExpression(FormCtx("firstName")))
   }
 
   it should "parse ${eeitt.firstName}" in {
     val res = Parser.validate("${eeitt.firstName}")
-    res.right.value should be(EeittCtx("firstName"))
+    res.right.value should be(TextExpression(EeittCtx("firstName")))
   }
 
   it should "parse ${form.firstName}" in {
     val res = Parser.validate("${form.firstName}")
-    res.right.value should be(FormCtx("firstName"))
+    res.right.value should be(TextExpression(FormCtx("firstName")))
   }
 
   it should "parse ${eeitt.firstName + form.secondName}" in {
     val res = Parser.validate("${eeitt.firstName + form.secondName}")
-    res.right.value should be(Add(EeittCtx("firstName"), FormCtx("secondName")))
+    res.right.value should be(TextExpression(Add(EeittCtx("firstName"), FormCtx("secondName"))))
   }
 
   it should "parse ${eeitt.firstName * form.secondName}" in {
     val res = Parser.validate("${eeitt.firstName * form.secondName}")
-    res.right.value should be(Multiply(EeittCtx("firstName"), FormCtx("secondName")))
+    res.right.value should be(TextExpression(Multiply(EeittCtx("firstName"), FormCtx("secondName"))))
   }
 
   it should "parse ${firstName * secondName}" in {
     val res = Parser.validate("${firstName * secondName}")
-    res.right.value should be(Multiply(FormCtx("firstName"), FormCtx("secondName")))
+    res.right.value should be(TextExpression(Multiply(FormCtx("firstName"), FormCtx("secondName"))))
   }
 
   it should "parse ${firstName * auth.secondName}" in {
     val res = Parser.validate("${firstName * auth.secondName}")
-    res.right.value should be(Multiply(FormCtx("firstName"), AuthCtx("secondName")))
+    res.right.value should be(TextExpression(Multiply(FormCtx("firstName"), AuthCtx("secondName"))))
   }
 
   it should "parse constant" in {
     val res = Parser.validate("constant")
-    res.right.value should be(Constant("constant"))
+    res.right.value should be(TextExpression(Constant("constant")))
+  }
+
+  it should "parse number as a choice selections" in {
+    val res = Parser.validate("1")
+    res.right.value should be(ChoiceExpression(ChoiceExpr(List(1))))
+  }
+
+  it should "parse numbers separated by comma as a choice selections" in {
+    val res = Parser.validate("1,2,3,4")
+    res.right.value should be(ChoiceExpression(ChoiceExpr(List(1, 2, 3, 4))))
   }
 
   /**
@@ -71,12 +81,7 @@ class ParserSpec extends FlatSpec with Matchers with EitherValues with OptionVal
    */
   it should "parse Date" in {
     val res = Parser.validate("2015-01-15")
-    res.right.value should be(DateExpr("15", "01", "2015"))
-  }
-
-  it should "parse Date as Constant" in {
-    val res = Parser.validate("20150112")
-    res.right.value should be(Constant("20150112"))
+    res.right.value should be(DateExpression(DateExpr("15", "01", "2015")))
   }
 
   it should "throw exception on 1 digit month " in {
@@ -85,7 +90,7 @@ class ParserSpec extends FlatSpec with Matchers with EitherValues with OptionVal
       InvalidState(
         """Unable to parse expression 2015-1-12.
           |Errors:
-          |2015-1-12:1: unexpected characters; expected '\s+'
+          |2015-1-12:1: unexpected characters; expected '\s+' or ','
           |2015-1-12    ^""".stripMargin
       )
     )
@@ -97,7 +102,7 @@ class ParserSpec extends FlatSpec with Matchers with EitherValues with OptionVal
       InvalidState(
         """Unable to parse expression 201568-01-12.
           |Errors:
-          |201568-01-12:1: unexpected characters; expected '\s+'
+          |201568-01-12:1: unexpected characters; expected '\s+' or ','
           |201568-01-12      ^""".stripMargin
       )
     )
@@ -109,7 +114,7 @@ class ParserSpec extends FlatSpec with Matchers with EitherValues with OptionVal
       InvalidState(
         """Unable to parse expression 65841-351.
           |Errors:
-          |65841-351:1: unexpected characters; expected '\s+'
+          |65841-351:1: unexpected characters; expected '\s+' or ','
           |65841-351     ^""".stripMargin
       )
     )
@@ -120,16 +125,22 @@ class ParserSpec extends FlatSpec with Matchers with EitherValues with OptionVal
 
     implicit val now = Now(LocalDate.now())
 
-    res.right.value should be(DateExpr("15", "01",
-      (now.apply().getYear + 1).toString))
+    res.right.value should be(
+      DateExpression(
+        DateExpr("15", "01", (now.apply().getYear + 1).toString)
+      )
+    )
   }
 
   it should "parse next Date setting current year" in {
     val res = Parser.validate("next-04-15")
     implicit val now = Now(LocalDate.now())
 
-    res.right.value should be(DateExpr("15", "04",
-      now.apply().getYear.toString))
+    res.right.value should be(
+      DateExpression(
+        DateExpr("15", "04", now.apply().getYear.toString)
+      )
+    )
   }
 
   it should "parse last Date setting current year" in {
@@ -137,8 +148,11 @@ class ParserSpec extends FlatSpec with Matchers with EitherValues with OptionVal
 
     implicit val localDateNow = Now(LocalDate.now())
 
-    res.right.value should be(DateExpr("15", "01",
-      localDateNow.apply().getYear.toString))
+    res.right.value should be(
+      DateExpression(
+        DateExpr("15", "01", localDateNow.apply().getYear.toString)
+      )
+    )
   }
 
   it should "parse last Date setting previous year" in {
@@ -146,8 +160,11 @@ class ParserSpec extends FlatSpec with Matchers with EitherValues with OptionVal
 
     implicit val localDateNow = Now(LocalDate.now())
 
-    res.right.value should be(DateExpr("15", "04",
-      (localDateNow.apply().getYear - 1).toString))
+    res.right.value should be(
+      DateExpression(
+        DateExpr("15", "04", (localDateNow.apply().getYear - 1).toString)
+      )
+    )
   }
 
   it should "parse Date setting current Date" in {
@@ -155,11 +172,15 @@ class ParserSpec extends FlatSpec with Matchers with EitherValues with OptionVal
 
     implicit val localDateNow = Now(LocalDate.now())
 
-    res.right.value should be(DateExpr(
-      "%02d".format(localDateNow().getDayOfMonth),
-      "%02d".format(localDateNow().getMonthValue),
-      localDateNow.apply().getYear.toString
-    ))
+    res.right.value should be(
+      DateExpression(
+        DateExpr(
+          "%02d".format(localDateNow().getDayOfMonth),
+          "%02d".format(localDateNow().getMonthValue),
+          localDateNow.apply().getYear.toString
+        )
+      )
+    )
   }
 
   it should "fail parse unclosed parenthesis" in {
@@ -178,30 +199,30 @@ class ParserSpec extends FlatSpec with Matchers with EitherValues with OptionVal
   val yourDetailsSection = Section(
     "Your details",
     List(
-      FieldValue(FieldId("firstName"), Text, "Your first name", None, None, None, false),
-      FieldValue(FieldId("lastName"), Text, "Your last name", None, None, None, false)
+      FieldValue(FieldId("firstName"), Text(Constant("")), "Your first name", None, None, false),
+      FieldValue(FieldId("lastName"), Text(Constant("")), "Your last name", None, None, false)
     )
   )
 
   val formTemplateWithOneSection = plainFormTemplate.copy(sections = List(yourDetailsSection))
 
   "Expr.validate" should "return Valid if expression include fieldName id present in the form template" in {
-    val res = Expr.validate(List(FormCtx("firstName")), formTemplateWithOneSection)
+    val res = ComponentType.validate(List(Text(FormCtx("firstName"))), formTemplateWithOneSection)
     res should be(Valid)
   }
 
   it should "return Valid if expression Add fields present in the form template" in {
-    val res = Expr.validate(List(Add(FormCtx("firstName"), FormCtx("lastName"))), formTemplateWithOneSection)
+    val res = ComponentType.validate(List(Text(Add(FormCtx("firstName"), FormCtx("lastName")))), formTemplateWithOneSection)
     res should be(Valid)
   }
 
   it should "return Valid if expression Multiply fields present in the form template" in {
-    val res = Expr.validate(List(Multiply(FormCtx("firstName"), FormCtx("lastName"))), formTemplateWithOneSection)
+    val res = ComponentType.validate(List(Text(Multiply(FormCtx("firstName"), FormCtx("lastName")))), formTemplateWithOneSection)
     res should be(Valid)
   }
 
   it should "return Invalid if expression include fieldName id not present in the form template" in {
-    val res = Expr.validate(List(FormCtx("firstNameTypo")), formTemplateWithOneSection)
+    val res = ComponentType.validate(List(Text(FormCtx("firstNameTypo"))), formTemplateWithOneSection)
     res should be(Invalid("Form field 'firstNameTypo' is not defined in form template."))
   }
 }

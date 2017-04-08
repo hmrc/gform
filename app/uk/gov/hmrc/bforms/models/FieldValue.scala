@@ -27,7 +27,6 @@ case class FieldValue(
   id: FieldId,
   `type`: ComponentType,
   label: String,
-  value: Option[Expr],
   helpText: Option[String],
   readOnly: Option[String],
   mandatory: Boolean
@@ -51,7 +50,7 @@ private[this] case class FieldValueRaw(
     id: FieldId,
     `type`: Option[ComponentTypeRaw],
     label: String,
-    value: Option[Expr],
+    value: Option[ExprDeterminer],
     format: Option[FormatExpr],
     helpText: Option[String],
     readOnly: Option[String],
@@ -67,7 +66,6 @@ private[this] case class FieldValueRaw(
       id = id,
       `type` = componentType,
       label = label,
-      value = value,
       helpText = helpText,
       readOnly = readOnly,
       mandatory = mandatory
@@ -80,34 +78,77 @@ private[this] case class FieldValueRaw(
   }
 
   private val toComponentType: Opt[ComponentType] = `type` match {
-    case Some(TextRaw) | None => Right(Text)
-    case Some(DateRaw) =>
-      val finalOffset = offset.getOrElse(Offset(0))
-      format match {
-        case Some(DateFormat(format)) => Right(Date(format, finalOffset))
-        case None => Right(Date(AnyDate, finalOffset))
-        case Some(invalidFormat) => Left(
-          InvalidState(s"""|Unsupported type of format for date field
+    case Some(TextRaw) | None =>
+      value match {
+        case Some(TextExpression(expr)) => Right(Text(expr))
+        case None => Right(Text(Constant("")))
+        case Some(invalidValue) => Left(
+          InvalidState(s"""|Unsupported type of value for text field
                            |Id: $id
-                           |Format: $invalidFormat""".stripMargin)
+                           |Value: $invalidValue""".stripMargin)
         )
       }
+    case Some(DateRaw) =>
+      val finalOffset = offset.getOrElse(Offset(0))
+
+      val valueOpt =
+        value match {
+          case Some(DateExpression(dateExpr)) => Right(Some(dateExpr))
+          case None => Right(None)
+          case Some(invalidValue) => Left(
+            InvalidState(s"""|Unsupported type of value for date field
+                             |Id: $id
+                             |Value: $invalidValue""".stripMargin)
+          )
+        }
+
+      val formatOpt =
+        format match {
+          case Some(DateFormat(format)) => Right(format)
+          case None => Right(AnyDate)
+          case Some(invalidFormat) => Left(
+            InvalidState(s"""|Unsupported type of format for date field
+                             |Id: $id
+                             |Format: $invalidFormat""".stripMargin)
+          )
+        }
+
+      for {
+        value <- valueOpt
+        format <- formatOpt
+      } yield Date(format, finalOffset, value)
     case Some(AddressRaw) => Right(Address)
     case Some(ChoiceRaw) =>
-      (format, choices, multivalue) match {
-        case (IsOrientation(VerticalOrientation), Some(x :: xs), IsMultivalue(MultivalueYes)) => Right(Choice(Checkbox, NonEmptyList(x, xs), Vertical))
-        case (IsOrientation(VerticalOrientation), Some(x :: xs), IsMultivalue(MultivalueNo)) => Right(Choice(Radio, NonEmptyList(x, xs), Vertical))
-        case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueYes)) => Right(Choice(Checkbox, NonEmptyList(x, xs), Horizontal))
-        case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueNo)) => Right(Choice(Radio, NonEmptyList(x, xs), Horizontal))
-        case (IsOrientation(YesNoOrientation), None, IsMultivalue(MultivalueNo)) => Right(Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal))
-        case (invalidFormat, invalidChoices, invalidMultivalue) => Left(
-          InvalidState(s"""|Unsupported combination of 'format, choices and multivalue':
+      (format, choices, multivalue, value) match {
+        case (IsOrientation(VerticalOrientation), Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections)) =>
+          Right(Choice(Checkbox, NonEmptyList(x, xs), Vertical, selections))
+        case (IsOrientation(VerticalOrientation), Some(x :: xs), IsMultivalue(MultivalueNo), Selections(selections)) =>
+          Right(Choice(Radio, NonEmptyList(x, xs), Vertical, selections))
+        case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections)) =>
+          Right(Choice(Checkbox, NonEmptyList(x, xs), Horizontal, selections))
+        case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueNo), Selections(selections)) =>
+          Right(Choice(Radio, NonEmptyList(x, xs), Horizontal, selections))
+        case (IsOrientation(YesNoOrientation), None, IsMultivalue(MultivalueNo), Selections(selections)) =>
+          Right(Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, selections))
+        case (invalidFormat, invalidChoices, invalidMultivalue, invalidValue) => Left(
+          InvalidState(s"""|Unsupported combination of 'format, choices, multivalue and value':
                            |Format     : $invalidFormat
                            |Choices    : $invalidChoices
                            |Multivalue : $invalidMultivalue
+                           |Value      : $invalidValue
                            |""".stripMargin)
         )
       }
+  }
+
+  private final object Selections {
+    def unapply(choiceExpr: Option[ExprDeterminer]): Option[List[Int]] = {
+      choiceExpr match {
+        case Some(ChoiceExpression(expr)) => Some(expr.selections)
+        case None => Some(List.empty[Int])
+        case Some(_) => None
+      }
+    }
   }
 
   private sealed trait OrientationValue
@@ -119,9 +160,9 @@ private[this] case class FieldValueRaw(
   private final object IsOrientation {
     def unapply(orientation: Option[FormatExpr]): Option[OrientationValue] = {
       orientation match {
-        case Some(TextExpression("vertical")) | None => Some(VerticalOrientation)
-        case Some(TextExpression("horizontal")) => Some(HorizontalOrientation)
-        case Some(TextExpression("yesno")) => Some(YesNoOrientation)
+        case Some(TextFormat("vertical")) | None => Some(VerticalOrientation)
+        case Some(TextFormat("horizontal")) => Some(HorizontalOrientation)
+        case Some(TextFormat("yesno")) => Some(YesNoOrientation)
         case _ => None
       }
     }

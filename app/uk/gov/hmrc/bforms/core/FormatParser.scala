@@ -109,7 +109,7 @@ object FormatParser {
   )
 
   lazy val anyWordExpression: Parser[FormatExpr] = (
-    anyWordFormat ^^ { (loc, anyWord) => TextExpression(anyWord) }
+    anyWordFormat ^^ { (loc, anyWord) => TextFormat(anyWord) }
   )
 
   lazy val offsetExpression: Parser[OffsetDate] = (
@@ -124,6 +124,8 @@ object FormatParser {
   lazy val monthParser: Parser[Int] = intParser("""0[1-9]|1[012]""")
 
   lazy val dayParser: Parser[Int] = intParser("""0[1-9]|[12][0-9]|3[01]""")
+
+  lazy val positiveInteger: Parser[Int] = intParser("""\d+""")
 
   lazy val anyInteger: Parser[Int] = intParser("""(\+|-)?\d+""")
 

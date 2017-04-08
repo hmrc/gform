@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.bforms.core
 
+import cats.Monoid
 import cats.data.NonEmptyList
 import julienrf.json.derived
 import play.api.libs.json._
@@ -23,13 +24,20 @@ import play.api.libs.functional.syntax._
 import play.api.data.validation.ValidationError
 
 import scala.collection.immutable._
-import uk.gov.hmrc.bforms.models.FieldId
+import uk.gov.hmrc.bforms.models.{ FieldId, FormTemplate }
 
-sealed trait ComponentType
+sealed trait ComponentType {
+  def validate(formTemplate: FormTemplate): ValidationResult = this match {
+    case Text(expr) => expr.validate(formTemplate)
+    case Date(_, _, _) => Valid
+    case Address => Valid
+    case Choice(_, _, _, _) => Valid
+  }
+}
 
-case object Text extends ComponentType
+case class Text(value: Expr) extends ComponentType
 
-case class Date(constraintType: DateConstraintType, offset: Offset) extends ComponentType
+case class Date(constraintType: DateConstraintType, offset: Offset, value: Option[DateExpr]) extends ComponentType
 
 case object Date {
   val fields = (id: FieldId) => List("day", "month", "year").map(id.withSuffix)
@@ -58,7 +66,7 @@ object ChoiceType {
   implicit val format: OFormat[ChoiceType] = derived.oformat
 }
 
-case class Choice(`type`: ChoiceType, options: NonEmptyList[String], orientation: ChoiceOrientation) extends ComponentType
+case class Choice(`type`: ChoiceType, options: NonEmptyList[String], orientation: ChoiceOrientation, selections: List[Int]) extends ComponentType
 
 object ComponentType {
 
@@ -74,4 +82,9 @@ object ComponentType {
   }
 
   implicit val format: OFormat[ComponentType] = derived.oformat
+
+  def validate(exprs: List[ComponentType], formTemplate: FormTemplate): ValidationResult = {
+    val results = exprs.map(_.validate(formTemplate))
+    Monoid[ValidationResult].combineAll(results)
+  }
 }

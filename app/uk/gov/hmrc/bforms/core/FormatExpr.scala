@@ -23,6 +23,23 @@ import play.api.libs.json._
 /**
  * Created by dimitra on 03/04/17.
  */
+sealed trait FormatExpr
+final case class TextFormat(value: String) extends FormatExpr
+final case class DateFormat(expressions: DateConstraintType) extends FormatExpr
+
+sealed trait DateConstraintType
+final case object AnyDate extends DateConstraintType
+final case class DateConstraints(constraints: List[DateConstraint]) extends DateConstraintType
+
+object DateConstraintType {
+  implicit val format: OFormat[DateConstraintType] = derived.oformat[DateConstraintType]
+}
+
+final case class DateConstraint(beforeOrAfter: BeforeOrAfter, dateFormat: DateConstraintInfo, offset: OffsetDate)
+
+object DateConstraint {
+  implicit val format: OFormat[DateConstraint] = derived.oformat[DateConstraint]
+}
 
 sealed trait BeforeOrAfter
 case object After extends BeforeOrAfter
@@ -47,24 +64,6 @@ case class OffsetDate(value: Int) extends AnyVal
 
 object OffsetDate {
   implicit val formatExpr: OFormat[OffsetDate] = Json.format[OffsetDate]
-}
-
-sealed trait FormatExpr
-final case class TextExpression(value: String) extends FormatExpr
-final case class DateFormat(expressions: DateConstraintType) extends FormatExpr
-
-sealed trait DateConstraintType
-final case object AnyDate extends DateConstraintType
-final case class DateConstraints(constraints: List[DateConstraint]) extends DateConstraintType
-
-object DateConstraintType {
-  implicit val format: OFormat[DateConstraintType] = derived.oformat[DateConstraintType]
-}
-
-final case class DateConstraint(beforeOrAfter: BeforeOrAfter, dateFormat: DateConstraintInfo, offset: OffsetDate)
-
-object DateConstraint {
-  implicit val format: OFormat[DateConstraint] = derived.oformat[DateConstraint]
 }
 
 object FormatExpr {
