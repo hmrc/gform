@@ -61,6 +61,11 @@ object BasicParsers {
     delimiter ~ monthParser ~ delimiter ~ dayParser ^^ { (loc, _, month, _, day) => (month, day) }
   )
 
+  lazy val positiveIntegers: Parser[List[Int]] = (
+    positiveInteger ~ "," ~ positiveIntegers ^^ ((loc, x, _, xs) => x :: xs)
+    | positiveInteger ^^ ((loc, x) => List(x))
+  )
+
   val anyWordFormat = """\w+""".r
   val delimiter = "[- /.]".r
 

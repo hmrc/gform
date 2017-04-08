@@ -26,7 +26,7 @@ sealed trait ValueExpr
 
 final case class TextExpression(expr: Expr) extends ValueExpr
 final case class DateExpression(dateValue: DateValue) extends ValueExpr
-final case class ChoiceExpression(choiceExpr: ChoiceExpr) extends ValueExpr
+final case class ChoiceExpression(selections: List[Int]) extends ValueExpr
 
 sealed trait DateValue
 
@@ -37,12 +37,6 @@ final case class PreviousDateValue(month: Int, day: Int) extends DateValue
 
 object DateValue {
   implicit val format: OFormat[DateValue] = derived.oformat
-}
-
-final case class ChoiceExpr(selections: List[Int])
-
-object ChoiceExpr {
-  implicit val format: Format[ChoiceExpr] = Json.format[ChoiceExpr]
 }
 
 sealed trait Expr {

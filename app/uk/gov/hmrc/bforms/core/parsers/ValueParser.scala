@@ -38,7 +38,7 @@ object ValueParser {
 
   lazy val exprDeterminer: Parser[ValueExpr] = (
     dateExpression ^^ ((loc, expr) => DateExpression(expr))
-    | choiceExpression ^^ ((loc, expr) => ChoiceExpression(expr))
+    | positiveIntegers ^^ ((loc, selections) => ChoiceExpression(selections))
     | expr ^^ ((loc, expr) => TextExpression(expr))
   )
 
@@ -57,11 +57,6 @@ object ValueParser {
   lazy val nextDate: Parser[NextDateValue] = nextOrPrevious("next", NextDateValue.apply)
 
   lazy val lastDate: Parser[PreviousDateValue] = nextOrPrevious("last", PreviousDateValue.apply)
-
-  lazy val choiceExpression: Parser[ChoiceExpr] = (
-    positiveInteger ~ "," ~ choiceExpression ^^ ((loc, x, _, xs) => ChoiceExpr(x :: xs.selections))
-    | positiveInteger ^^ ((loc, x) => ChoiceExpr(List(x)))
-  )
 
   lazy val expr: Parser[Expr] = (
     "${" ~ contextField ~ "}" ^^ { (loc, _, field, _) => field }

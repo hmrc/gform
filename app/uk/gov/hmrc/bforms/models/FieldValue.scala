@@ -144,7 +144,7 @@ private[this] case class FieldValueRaw(
   private final object Selections {
     def unapply(choiceExpr: Option[ValueExpr]): Option[List[Int]] = {
       choiceExpr match {
-        case Some(ChoiceExpression(expr)) => Some(expr.selections)
+        case Some(ChoiceExpression(selections)) => Some(selections)
         case None => Some(List.empty[Int])
         case Some(_) => None
       }

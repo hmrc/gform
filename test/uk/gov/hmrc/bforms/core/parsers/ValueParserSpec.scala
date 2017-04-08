@@ -68,12 +68,12 @@ class ValueParserSpec extends FlatSpec with Matchers with EitherValues with Opti
 
   it should "parse number as a choice selections" in {
     val res = ValueParser.validate("1")
-    res.right.value should be(ChoiceExpression(ChoiceExpr(List(1))))
+    res.right.value should be(ChoiceExpression(List(1)))
   }
 
   it should "parse numbers separated by comma as a choice selections" in {
     val res = ValueParser.validate("1,2,3,4")
-    res.right.value should be(ChoiceExpression(ChoiceExpr(List(1, 2, 3, 4))))
+    res.right.value should be(ChoiceExpression(List(1, 2, 3, 4)))
   }
 
   /**
