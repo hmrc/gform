@@ -20,6 +20,7 @@ import cats.Monoid
 import julienrf.json.derived
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
+import uk.gov.hmrc.bforms.core.parsers.ValueParser
 import uk.gov.hmrc.bforms.models.{ FieldId, FormTemplate }
 
 sealed trait ExprDeterminer
@@ -97,7 +98,7 @@ object ExprDeterminer {
     val reads: Reads[ExprDeterminer] = (format: Reads[ExprDeterminer]) | Reads { json =>
       json match {
         case JsString(exprAsStr) =>
-          Parser.validate(exprAsStr) match {
+          ValueParser.validate(exprAsStr) match {
             case Right(expr) => JsSuccess(expr)
             case Left(error) => JsError(error.toString)
           }

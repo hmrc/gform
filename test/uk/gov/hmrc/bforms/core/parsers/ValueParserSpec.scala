@@ -14,64 +14,65 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.core
+package uk.gov.hmrc.bforms.core.parsers
 
 import java.time.LocalDate
 
 import org.scalatest._
+import uk.gov.hmrc.bforms.core._
 import uk.gov.hmrc.bforms.exceptions.InvalidState
 import uk.gov.hmrc.bforms.models._
 import uk.gov.hmrc.bforms.typeclasses.Now
 
-class ParserSpec extends FlatSpec with Matchers with EitherValues with OptionValues {
+class ValueParserSpec extends FlatSpec with Matchers with EitherValues with OptionValues {
 
-  "Parser" should "parse ${firstName}" in {
-    val res = Parser.validate("${firstName}")
+  "ValueParser" should "parse ${firstName}" in {
+    val res = ValueParser.validate("${firstName}")
     res.right.value should be(TextExpression(FormCtx("firstName")))
   }
 
   it should "parse ${eeitt.firstName}" in {
-    val res = Parser.validate("${eeitt.firstName}")
+    val res = ValueParser.validate("${eeitt.firstName}")
     res.right.value should be(TextExpression(EeittCtx("firstName")))
   }
 
   it should "parse ${form.firstName}" in {
-    val res = Parser.validate("${form.firstName}")
+    val res = ValueParser.validate("${form.firstName}")
     res.right.value should be(TextExpression(FormCtx("firstName")))
   }
 
   it should "parse ${eeitt.firstName + form.secondName}" in {
-    val res = Parser.validate("${eeitt.firstName + form.secondName}")
+    val res = ValueParser.validate("${eeitt.firstName + form.secondName}")
     res.right.value should be(TextExpression(Add(EeittCtx("firstName"), FormCtx("secondName"))))
   }
 
   it should "parse ${eeitt.firstName * form.secondName}" in {
-    val res = Parser.validate("${eeitt.firstName * form.secondName}")
+    val res = ValueParser.validate("${eeitt.firstName * form.secondName}")
     res.right.value should be(TextExpression(Multiply(EeittCtx("firstName"), FormCtx("secondName"))))
   }
 
   it should "parse ${firstName * secondName}" in {
-    val res = Parser.validate("${firstName * secondName}")
+    val res = ValueParser.validate("${firstName * secondName}")
     res.right.value should be(TextExpression(Multiply(FormCtx("firstName"), FormCtx("secondName"))))
   }
 
   it should "parse ${firstName * auth.secondName}" in {
-    val res = Parser.validate("${firstName * auth.secondName}")
+    val res = ValueParser.validate("${firstName * auth.secondName}")
     res.right.value should be(TextExpression(Multiply(FormCtx("firstName"), AuthCtx("secondName"))))
   }
 
   it should "parse constant" in {
-    val res = Parser.validate("constant")
+    val res = ValueParser.validate("constant")
     res.right.value should be(TextExpression(Constant("constant")))
   }
 
   it should "parse number as a choice selections" in {
-    val res = Parser.validate("1")
+    val res = ValueParser.validate("1")
     res.right.value should be(ChoiceExpression(ChoiceExpr(List(1))))
   }
 
   it should "parse numbers separated by comma as a choice selections" in {
-    val res = Parser.validate("1,2,3,4")
+    val res = ValueParser.validate("1,2,3,4")
     res.right.value should be(ChoiceExpression(ChoiceExpr(List(1, 2, 3, 4))))
   }
 
@@ -79,12 +80,12 @@ class ParserSpec extends FlatSpec with Matchers with EitherValues with OptionVal
    * Date cases
    */
   it should "parse Date" in {
-    val res = Parser.validate("2015-01-15")
+    val res = ValueParser.validate("2015-01-15")
     res.right.value should be(DateExpression(ExactDateValue(2015, 1, 15)))
   }
 
   it should "throw exception on 1 digit month " in {
-    val res = Parser.validate("2015-1-12")
+    val res = ValueParser.validate("2015-1-12")
     res.left.value should be(
       InvalidState(
         """Unable to parse expression 2015-1-12.
@@ -96,7 +97,7 @@ class ParserSpec extends FlatSpec with Matchers with EitherValues with OptionVal
   }
 
   it should "throw exception on year digits" in {
-    val res = Parser.validate("201568-01-12")
+    val res = ValueParser.validate("201568-01-12")
     res.left.value should be(
       InvalidState(
         """Unable to parse expression 201568-01-12.
@@ -108,7 +109,7 @@ class ParserSpec extends FlatSpec with Matchers with EitherValues with OptionVal
   }
 
   it should "throw exception on Date format" in {
-    val res = Parser.validate("65841-351")
+    val res = ValueParser.validate("65841-351")
     res.left.value should be(
       InvalidState(
         """Unable to parse expression 65841-351.
@@ -120,7 +121,7 @@ class ParserSpec extends FlatSpec with Matchers with EitherValues with OptionVal
   }
 
   it should "parse next Date setting next year" in {
-    val res = Parser.validate("next-01-15")
+    val res = ValueParser.validate("next-01-15")
 
     res.right.value should be(
       DateExpression(
@@ -130,7 +131,7 @@ class ParserSpec extends FlatSpec with Matchers with EitherValues with OptionVal
   }
 
   it should "parse next Date setting current year" in {
-    val res = Parser.validate("next-04-15")
+    val res = ValueParser.validate("next-04-15")
 
     res.right.value should be(
       DateExpression(
@@ -140,7 +141,7 @@ class ParserSpec extends FlatSpec with Matchers with EitherValues with OptionVal
   }
 
   it should "parse last Date setting current year" in {
-    val res = Parser.validate("last-01-15")
+    val res = ValueParser.validate("last-01-15")
 
     res.right.value should be(
       DateExpression(
@@ -150,7 +151,7 @@ class ParserSpec extends FlatSpec with Matchers with EitherValues with OptionVal
   }
 
   it should "parse last Date setting previous year" in {
-    val res = Parser.validate("last-04-15")
+    val res = ValueParser.validate("last-04-15")
 
     res.right.value should be(
       DateExpression(
@@ -160,7 +161,7 @@ class ParserSpec extends FlatSpec with Matchers with EitherValues with OptionVal
   }
 
   it should "parse Date setting current Date" in {
-    val res = Parser.validate("today")
+    val res = ValueParser.validate("today")
 
     res.right.value should be(
       DateExpression(TodayDateValue)
@@ -168,7 +169,7 @@ class ParserSpec extends FlatSpec with Matchers with EitherValues with OptionVal
   }
 
   it should "fail parse unclosed parenthesis" in {
-    val res = Parser.validate("${name")
+    val res = ValueParser.validate("${name")
     res.left.value should be(
       InvalidState(
         """|Unable to parse expression ${name.

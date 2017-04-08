@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.core
+package uk.gov.hmrc.bforms.core.parsers
 
 import cats.Eval
 import cats.data.ReaderT
@@ -23,13 +23,12 @@ import cats.syntax.either._
 import parseback._
 import parseback.compat.cats._
 import parseback.util.Catenable
+import uk.gov.hmrc.bforms.core._
 import uk.gov.hmrc.bforms.exceptions.InvalidState
 import BasicParsers._
 
-/**
- * Created by dimitra on 03/04/17.
- */
 object FormatParser {
+
   private def parse = ReaderT[Opt, String, Catenable[FormatExpr]] { formatExpr =>
     expr(LineStream[Eval](formatExpr)).value.leftMap { error =>
       val errors: String = error.map(_.render(formatExpr)).mkString("\n")

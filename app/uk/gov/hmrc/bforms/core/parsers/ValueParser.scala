@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bforms.core
+package uk.gov.hmrc.bforms.core.parsers
 
 import cats.Eval
 import cats.data.ReaderT
@@ -25,10 +25,11 @@ import cats.syntax.traverse._
 import parseback._
 import parseback.compat.cats._
 import parseback.util.Catenable
+import uk.gov.hmrc.bforms.core._
 import uk.gov.hmrc.bforms.exceptions.InvalidState
 import BasicParsers._
 
-object Parser {
+object ValueParser {
 
   private def parse = ReaderT[Opt, String, Catenable[ExprDeterminer]] { expression =>
     exprDeterminer(LineStream[Eval](expression)).value.leftMap { error =>

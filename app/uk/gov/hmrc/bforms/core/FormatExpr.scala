@@ -19,6 +19,7 @@ package uk.gov.hmrc.bforms.core
 import julienrf.json.derived
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
+import uk.gov.hmrc.bforms.core.parsers.FormatParser
 
 /**
  * Created by dimitra on 03/04/17.
