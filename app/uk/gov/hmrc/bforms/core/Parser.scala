@@ -25,9 +25,8 @@ import cats.syntax.traverse._
 import parseback._
 import parseback.compat.cats._
 import parseback.util.Catenable
-import uk.gov.hmrc.bforms.core.utils.DateHelperFunctions
 import uk.gov.hmrc.bforms.exceptions.InvalidState
-import DateHelperFunctions._
+import BasicParsers._
 
 object Parser {
 
@@ -57,24 +56,31 @@ object Parser {
   def validateList(expressions: List[String]): Opt[List[ExprDeterminer]] =
     expressions.map(validate).sequence
 
-  implicit val W = Whitespace(() | """\s+""".r)
-
   lazy val exprDeterminer: Parser[ExprDeterminer] = (
     dateExpression ^^ ((loc, expr) => DateExpression(expr))
     | choiceExpression ^^ ((loc, expr) => ChoiceExpression(expr))
     | expr ^^ ((loc, expr) => TextExpression(expr))
   )
 
-  lazy val dateExpression: Parser[DateExpr] = (
-    (dateNext | dateLast | dateNumber | dateToday) ^^ { (loc, dateExpr) => dateExpr }
+  lazy val dateExpression: Parser[DateValue] = (
+    (nextDate | lastDate | exactDate | today) ^^ { (loc, dateExpr) => dateExpr }
   )
 
-  import FormatParser.positiveInteger
-  lazy val choiceExpression: Parser[ChoiceExpr] = (
+  lazy val today: Parser[TodayDateValue.type] = (
+    "today" ^^ { (loc, today) => TodayDateValue }
+  )
 
+  lazy val exactDate: Parser[ExactDateValue] = (
+    yearParser ~ monthDay ^^ { (loc, year, month, day) => ExactDateValue(year, month, day) }
+  )
+
+  lazy val nextDate: Parser[NextDateValue] = nextOrPrevious("next", NextDateValue.apply)
+
+  lazy val lastDate: Parser[PreviousDateValue] = nextOrPrevious("last", PreviousDateValue.apply)
+
+  lazy val choiceExpression: Parser[ChoiceExpr] = (
     positiveInteger ~ "," ~ choiceExpression ^^ ((loc, x, _, xs) => ChoiceExpr(x :: xs.selections))
     | positiveInteger ^^ ((loc, x) => ChoiceExpr(List(x)))
-
   )
 
   lazy val expr: Parser[Expr] = (
@@ -103,16 +109,6 @@ object Parser {
     }
     | alphabeticOnly ^^ { (loc, fn) => FormCtx(fn) }
   )
-
-  val dateNumberFormat = """^(19|20)\d\d[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])$"""
-  val dateNextFormat = """^next[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])$"""
-  val dateLastFormat = """^last[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])$"""
-  val dateTodayFormat = """^today$"""
-
-  lazy val dateNumber: Parser[DateExpr] = dateNumberFormat.r ^^ { (loc, str) => numericDateExpr(str) }
-  lazy val dateNext: Parser[DateExpr] = dateNextFormat.r ^^ { (loc, str) => nextDateExpr(str) }
-  lazy val dateLast: Parser[DateExpr] = dateLastFormat.r ^^ { (loc, str) => lastDateExpr(str) }
-  lazy val dateToday: Parser[DateExpr] = dateTodayFormat.r ^^ { (loc, str) => todayDateExpr }
 
   lazy val alphabeticOnly: Parser[String] = """\w+""".r ^^ { (loc, str) => str }
 

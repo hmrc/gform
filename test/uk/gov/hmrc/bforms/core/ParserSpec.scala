@@ -19,7 +19,6 @@ package uk.gov.hmrc.bforms.core
 import java.time.LocalDate
 
 import org.scalatest._
-import uk.gov.hmrc.bforms.core.utils.DateHelperFunctions
 import uk.gov.hmrc.bforms.exceptions.InvalidState
 import uk.gov.hmrc.bforms.models._
 import uk.gov.hmrc.bforms.typeclasses.Now
@@ -81,7 +80,7 @@ class ParserSpec extends FlatSpec with Matchers with EitherValues with OptionVal
    */
   it should "parse Date" in {
     val res = Parser.validate("2015-01-15")
-    res.right.value should be(DateExpression(DateExpr("15", "01", "2015")))
+    res.right.value should be(DateExpression(ExactDateValue(2015, 1, 15)))
   }
 
   it should "throw exception on 1 digit month " in {
@@ -90,8 +89,8 @@ class ParserSpec extends FlatSpec with Matchers with EitherValues with OptionVal
       InvalidState(
         """Unable to parse expression 2015-1-12.
           |Errors:
-          |2015-1-12:1: unexpected characters; expected '\s+' or ','
-          |2015-1-12    ^""".stripMargin
+          |2015-1-12:1: unexpected characters; expected '0[1-9]|1[012]' or '\s+'
+          |2015-1-12     ^""".stripMargin
       )
     )
   }
@@ -123,22 +122,19 @@ class ParserSpec extends FlatSpec with Matchers with EitherValues with OptionVal
   it should "parse next Date setting next year" in {
     val res = Parser.validate("next-01-15")
 
-    implicit val now = Now(LocalDate.now())
-
     res.right.value should be(
       DateExpression(
-        DateExpr("15", "01", (now.apply().getYear + 1).toString)
+        NextDateValue(1, 15)
       )
     )
   }
 
   it should "parse next Date setting current year" in {
     val res = Parser.validate("next-04-15")
-    implicit val now = Now(LocalDate.now())
 
     res.right.value should be(
       DateExpression(
-        DateExpr("15", "04", now.apply().getYear.toString)
+        NextDateValue(4, 15)
       )
     )
   }
@@ -146,11 +142,9 @@ class ParserSpec extends FlatSpec with Matchers with EitherValues with OptionVal
   it should "parse last Date setting current year" in {
     val res = Parser.validate("last-01-15")
 
-    implicit val localDateNow = Now(LocalDate.now())
-
     res.right.value should be(
       DateExpression(
-        DateExpr("15", "01", localDateNow.apply().getYear.toString)
+        PreviousDateValue(1, 15)
       )
     )
   }
@@ -158,11 +152,9 @@ class ParserSpec extends FlatSpec with Matchers with EitherValues with OptionVal
   it should "parse last Date setting previous year" in {
     val res = Parser.validate("last-04-15")
 
-    implicit val localDateNow = Now(LocalDate.now())
-
     res.right.value should be(
       DateExpression(
-        DateExpr("15", "04", (localDateNow.apply().getYear - 1).toString)
+        PreviousDateValue(4, 15)
       )
     )
   }
@@ -170,16 +162,8 @@ class ParserSpec extends FlatSpec with Matchers with EitherValues with OptionVal
   it should "parse Date setting current Date" in {
     val res = Parser.validate("today")
 
-    implicit val localDateNow = Now(LocalDate.now())
-
     res.right.value should be(
-      DateExpression(
-        DateExpr(
-          "%02d".format(localDateNow().getDayOfMonth),
-          "%02d".format(localDateNow().getMonthValue),
-          localDateNow.apply().getYear.toString
-        )
-      )
+      DateExpression(TodayDateValue)
     )
   }
 

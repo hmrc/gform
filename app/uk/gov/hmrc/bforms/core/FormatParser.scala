@@ -24,6 +24,7 @@ import parseback._
 import parseback.compat.cats._
 import parseback.util.Catenable
 import uk.gov.hmrc.bforms.exceptions.InvalidState
+import BasicParsers._
 
 /**
  * Created by dimitra on 03/04/17.
@@ -62,8 +63,6 @@ object FormatParser {
     | dateConstraints ^^ ((loc, constraints) => DateFormat(constraints))
   )
 
-  implicit val W = Whitespace(() | """\s+""".r)
-
   lazy val dateConstraints: Parser[DateConstraints] = (
     dateConstraint ~ "," ~ dateConstraints ^^ { (loc, x, _, xs) => DateConstraints(x :: xs.constraints) }
     | dateConstraint ^^ { (loc, x) => DateConstraints(List(x)) }
@@ -87,14 +86,6 @@ object FormatParser {
 
   lazy val previousDate: Parser[PreviousDate] = nextOrPrevious("previous", PreviousDate.apply)
 
-  def nextOrPrevious[A](string: String, fn: (Int, Int) => A): Parser[A] = (
-    string ~ monthDay ^^ { (loc, _, month, day) => fn(month, day) }
-  )
-
-  lazy val monthDay: Parser[(Int, Int)] = (
-    delimiter ~ monthParser ~ delimiter ~ dayParser ^^ { (loc, _, month, _, day) => (month, day) }
-  )
-
   lazy val beforeOrAfter: Parser[BeforeOrAfter] = (
     "after" ^^ { (loc, after) => After }
     | "before" ^^ { (loc, before) => Before }
@@ -114,22 +105,5 @@ object FormatParser {
 
   lazy val offsetExpression: Parser[OffsetDate] = (
     anyInteger ^^ { (loc, offset) => OffsetDate(offset) }
-  )
-
-  val anyWordFormat = """\w+""".r
-  val delimiter = "[- /.]".r
-
-  lazy val yearParser: Parser[Int] = intParser("""(19|20)\d\d""")
-
-  lazy val monthParser: Parser[Int] = intParser("""0[1-9]|1[012]""")
-
-  lazy val dayParser: Parser[Int] = intParser("""0[1-9]|[12][0-9]|3[01]""")
-
-  lazy val positiveInteger: Parser[Int] = intParser("""\d+""")
-
-  lazy val anyInteger: Parser[Int] = intParser("""(\+|-)?\d+""")
-
-  private def intParser(str: String): Parser[Int] = (
-    str.r ^^ { (loc, number) => number.toInt }
   )
 }

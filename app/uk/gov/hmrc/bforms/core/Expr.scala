@@ -25,13 +25,18 @@ import uk.gov.hmrc.bforms.models.{ FieldId, FormTemplate }
 sealed trait ExprDeterminer
 
 final case class TextExpression(expr: Expr) extends ExprDeterminer
-final case class DateExpression(expr: DateExpr) extends ExprDeterminer
+final case class DateExpression(expr: DateValue) extends ExprDeterminer
 final case class ChoiceExpression(expr: ChoiceExpr) extends ExprDeterminer
 
-final case class DateExpr(day: String, month: String, year: String)
+sealed trait DateValue
 
-object DateExpr {
-  implicit val format: Format[DateExpr] = Json.format[DateExpr]
+final case object TodayDateValue extends DateValue
+final case class ExactDateValue(year: Int, month: Int, day: Int) extends DateValue
+final case class NextDateValue(month: Int, day: Int) extends DateValue
+final case class PreviousDateValue(month: Int, day: Int) extends DateValue
+
+object DateValue {
+  implicit val format: OFormat[DateValue] = derived.oformat
 }
 
 final case class ChoiceExpr(selections: List[Int])

@@ -1,0 +1,56 @@
+/*
+ * Copyright 2017 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package uk.gov.hmrc.bforms.core
+
+import cats.Eval
+import cats.data.ReaderT
+import cats.instances.either._
+import cats.syntax.either._
+import parseback._
+import parseback.compat.cats._
+import parseback.util.Catenable
+import uk.gov.hmrc.bforms.exceptions.InvalidState
+
+object BasicParsers {
+
+  implicit val W = Whitespace(() | """\s+""".r)
+
+  def nextOrPrevious[A](string: String, fn: (Int, Int) => A): Parser[A] = (
+    string ~ monthDay ^^ { (loc, _, month, day) => fn(month, day) }
+  )
+
+  lazy val monthDay: Parser[(Int, Int)] = (
+    delimiter ~ monthParser ~ delimiter ~ dayParser ^^ { (loc, _, month, _, day) => (month, day) }
+  )
+
+  val anyWordFormat = """\w+""".r
+  val delimiter = "[- /.]".r
+
+  lazy val yearParser: Parser[Int] = intParser("""(19|20)\d\d""")
+
+  lazy val monthParser: Parser[Int] = intParser("""0[1-9]|1[012]""")
+
+  lazy val dayParser: Parser[Int] = intParser("""0[1-9]|[12][0-9]|3[01]""")
+
+  lazy val positiveInteger: Parser[Int] = intParser("""\d+""")
+
+  lazy val anyInteger: Parser[Int] = intParser("""(\+|-)?\d+""")
+
+  private def intParser(str: String): Parser[Int] = (
+    str.r ^^ { (loc, number) => number.toInt }
+  )
+}
