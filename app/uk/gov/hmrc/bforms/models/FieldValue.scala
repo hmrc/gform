@@ -28,11 +28,9 @@ case class FieldValue(
   `type`: ComponentType,
   label: String,
   value: Option[Expr],
-  format: Option[FormatExpr],
   helpText: Option[String],
   readOnly: Option[String],
-  mandatory: Boolean,
-  offset: Option[Offset]
+  mandatory: Boolean
 )
 
 object FieldValue {
@@ -70,11 +68,9 @@ private[this] case class FieldValueRaw(
       `type` = componentType,
       label = label,
       value = value,
-      format = format,
       helpText = helpText,
       readOnly = readOnly,
-      mandatory = mandatory,
-      offset = offset
+      mandatory = mandatory
     )
 
     fieldValueOpt match {
@@ -85,7 +81,17 @@ private[this] case class FieldValueRaw(
 
   private val toComponentType: Opt[ComponentType] = `type` match {
     case Some(TextRaw) | None => Right(Text)
-    case Some(DateRaw) => Right(Date)
+    case Some(DateRaw) =>
+      val finalOffset = offset.getOrElse(Offset(0))
+      format match {
+        case Some(DateFormat(format)) => Right(Date(format, finalOffset))
+        case None => Right(Date(AnyDate, finalOffset))
+        case Some(invalidFormat) => Left(
+          InvalidState(s"""|Unsupported type of format for date field
+                           |Id: $id
+                           |Format: $invalidFormat""".stripMargin)
+        )
+      }
     case Some(AddressRaw) => Right(Address)
     case Some(ChoiceRaw) =>
       (format, choices, multivalue) match {
@@ -129,8 +135,8 @@ private[this] case class FieldValueRaw(
   private final object IsMultivalue {
     def unapply(multivalue: Option[String]): Option[Multivalue] = {
       multivalue match {
-        case Some("no") | None => Some(MultivalueNo)
-        case Some("yes") => Some(MultivalueYes)
+        case Some(IsFalseish()) | None => Some(MultivalueNo)
+        case Some(IsTrueish()) => Some(MultivalueYes)
         case _ => None
       }
     }
@@ -138,9 +144,27 @@ private[this] case class FieldValueRaw(
 
   def toFieldValue = Reads[FieldValue] { _ =>
     mandatory match {
-      case Some("true") | None => getFieldValue(true)
-      case Some("false") => getFieldValue(false)
+      case Some(IsTrueish()) | None => getFieldValue(true)
+      case Some(IsFalseish()) => getFieldValue(false)
       case otherwise => JsError(s"Expected 'true' or 'false' string or nothing for mandatory field value, got: $otherwise")
     }
   }
+
+  object IsTrueish {
+    def unapply(maybeBoolean: String): Boolean = {
+      maybeBoolean.toLowerCase match {
+        case "true" | "yes" => true
+        case _ => false
+      }
+    }
+  }
+  object IsFalseish {
+    def unapply(maybeBoolean: String): Boolean = {
+      maybeBoolean.toLowerCase match {
+        case "false" | "no" => true
+        case _ => false
+      }
+    }
+  }
+
 }

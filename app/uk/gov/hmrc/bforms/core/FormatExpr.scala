@@ -29,39 +29,49 @@ case object After extends BeforeOrAfter
 case object Before extends BeforeOrAfter
 
 object BeforeOrAfter {
-  implicit val formatExpr: OFormat[BeforeOrAfter] = derived.oformat[BeforeOrAfter]
+  implicit val format: OFormat[BeforeOrAfter] = derived.oformat[BeforeOrAfter]
 }
 
-sealed trait DateFormat
-case object Today extends DateFormat
-case class AnyDate(year: Int, month: Int, day: Int) extends DateFormat
-case class NextDate(month: Int, day: Int) extends DateFormat
-case class PreviousDate(month: Int, day: Int) extends DateFormat
-case class AnyWord(value: String) extends DateFormat
+sealed trait DateConstraintInfo
+case object Today extends DateConstraintInfo
+case class ConcreteDate(year: Int, month: Int, day: Int) extends DateConstraintInfo
+case class NextDate(month: Int, day: Int) extends DateConstraintInfo
+case class PreviousDate(month: Int, day: Int) extends DateConstraintInfo
+case class AnyWord(value: String) extends DateConstraintInfo
 
-object DateFormat {
-  implicit val formatExpr: OFormat[DateFormat] = derived.oformat[DateFormat]
+object DateConstraintInfo {
+  implicit val format: OFormat[DateConstraintInfo] = derived.oformat[DateConstraintInfo]
 }
 
-sealed trait OffsetFormat
-case class OffsetDate(value: Int) extends OffsetFormat
+case class OffsetDate(value: Int) extends AnyVal
 
-object OffsetFormat {
-  implicit val formatExpr: OFormat[OffsetFormat] = derived.oformat[OffsetFormat]
+object OffsetDate {
+  implicit val formatExpr: OFormat[OffsetDate] = Json.format[OffsetDate]
 }
 
 sealed trait FormatExpr
 final case class TextExpression(value: String) extends FormatExpr
+final case class DateFormat(expressions: DateConstraintType) extends FormatExpr
 
-final case class DateExpression(beforeOrAfter: BeforeOrAfter, dateFormat: DateFormat, offsetFormat: OffsetFormat) extends FormatExpr
-final case object GeneralDate extends FormatExpr
-final case object AnyOtherWord extends FormatExpr
+sealed trait DateConstraintType
+final case object AnyDate extends DateConstraintType
+final case class DateConstraints(constraints: List[DateConstraint]) extends DateConstraintType
+
+object DateConstraintType {
+  implicit val format: OFormat[DateConstraintType] = derived.oformat[DateConstraintType]
+}
+
+final case class DateConstraint(beforeOrAfter: BeforeOrAfter, dateFormat: DateConstraintInfo, offset: OffsetDate)
+
+object DateConstraint {
+  implicit val format: OFormat[DateConstraint] = derived.oformat[DateConstraint]
+}
 
 object FormatExpr {
   implicit val format: OFormat[FormatExpr] = {
-    val formatExpr: OFormat[FormatExpr] = derived.oformat[FormatExpr]
+    val format: OFormat[FormatExpr] = derived.oformat[FormatExpr]
 
-    val reads: Reads[FormatExpr] = (formatExpr: Reads[FormatExpr]) | Reads {
+    val reads: Reads[FormatExpr] = (format: Reads[FormatExpr]) | Reads {
       case JsString(formatAsStr) =>
         FormatParser.validate(formatAsStr) match {
           case Right(expr) => JsSuccess(expr)
@@ -70,6 +80,6 @@ object FormatExpr {
       case otherwise => JsError(s"Invalid format expression. Expected String, got $otherwise")
     }
 
-    OFormat[FormatExpr](reads, formatExpr)
+    OFormat[FormatExpr](reads, format)
   }
 }

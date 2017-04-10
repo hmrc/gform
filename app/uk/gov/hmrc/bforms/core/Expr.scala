@@ -43,9 +43,9 @@ final case object EeittContext extends Context
 
 object Expr {
   implicit val format: OFormat[Expr] = {
-    val formatExpr: OFormat[Expr] = derived.oformat
+    val format: OFormat[Expr] = derived.oformat
 
-    val reads: Reads[Expr] = (formatExpr: Reads[Expr]) | Reads { json =>
+    val reads: Reads[Expr] = (format: Reads[Expr]) | Reads { json =>
       json match {
         case JsString(exprAsStr) =>
           Parser.validate(exprAsStr) match {
@@ -56,7 +56,7 @@ object Expr {
       }
     }
 
-    OFormat[Expr](reads, formatExpr)
+    OFormat[Expr](reads, format)
   }
 
   def validate(exprs: List[Expr], formTemplate: FormTemplate) = {

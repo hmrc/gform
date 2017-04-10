@@ -50,7 +50,7 @@
             "298 - Full throttle gas"
           ],
           "multivalue": "yes",
-          "mandatory": "yes",
+          "mandatory": "true",
           "value": "0,1,2"
         },
         {
@@ -73,7 +73,7 @@
           "label": "Start date",
           "helpText": "For example, 31 3 1980",
           "mandatory": "true",
-          "value": "10-10-2010"
+          "value": "2010-10-10"
         },
         {
           "id": "amountA",

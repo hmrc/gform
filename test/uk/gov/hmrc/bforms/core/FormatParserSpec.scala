@@ -16,42 +16,42 @@
 
 package uk.gov.hmrc.bforms.core
 
-import org.scalatest.{EitherValues, FlatSpec, Matchers, OptionValues}
+import org.scalatest.{ EitherValues, FlatSpec, Matchers, OptionValues }
 import uk.gov.hmrc.bforms.exceptions.InvalidState
 
 /**
-  * Created by dimitra on 03/04/17.
-  */
+ * Created by dimitra on 03/04/17.
+ */
 class FormatParserSpec extends FlatSpec with Matchers with EitherValues with OptionValues {
 
   "YYY-MM-DD" should "be passed as it is" in {
-    val res = FormatParser.validate("2017-05-06")
-    res.right.value should be(GeneralDate)
+    val res = FormatParser.validate("anyDate")
+    res.right.value should be(DateFormat(AnyDate))
   }
 
   "after today -2" should "be parsed successfully" in {
     val res = FormatParser.validate("after today -2")
-    res.right.value should be(DateExpression(After, Today, OffsetDate(-2)))
+    res.right.value should be(DateFormat(DateConstraints(List(DateConstraint(After, Today, OffsetDate(-2))))))
   }
 
   "after 2017-04-02 -2" should "be parsed successfully" in {
     val res = FormatParser.validate("after 2017-04-02 -2")
-    res.right.value should be(DateExpression(After, AnyDate(2017, 4, 2), OffsetDate(-2)))
+    res.right.value should be(DateFormat(DateConstraints(List(DateConstraint(After, ConcreteDate(2017, 4, 2), OffsetDate(-2))))))
   }
 
   "after next-05-06 -2" should "be parsed successfully" in {
     val res = FormatParser.validate("after next-05-06 -2")
-    res.right.value should be(DateExpression(After, NextDate(5, 6), OffsetDate(-2)))
+    res.right.value should be(DateFormat(DateConstraints(List(DateConstraint(After, NextDate(5, 6), OffsetDate(-2))))))
   }
 
   "after sampleField -2" should "be parsed successfully" in {
     val res = FormatParser.validate("after sampleField -2")
-    res.right.value should be(DateExpression(After, AnyWord("sampleField"), OffsetDate(-2)))
+    res.right.value should be(DateFormat(DateConstraints(List(DateConstraint(After, AnyWord("sampleField"), OffsetDate(-2))))))
   }
 
   "after previous-05-06 0" should "be parsed successfully" in {
     val res = FormatParser.validate("after previous-05-06 0")
-    res.right.value should be(DateExpression(After, PreviousDate(5, 6), OffsetDate(0)))
+    res.right.value should be(DateFormat(DateConstraints(List(DateConstraint(After, PreviousDate(5, 6), OffsetDate(0))))))
   }
 
   "before anyFieldId anotherWord 9" should "throw exception" in {
@@ -61,7 +61,7 @@ class FormatParserSpec extends FlatSpec with Matchers with EitherValues with Opt
       InvalidState(
         """Unable to parse format expression before anyFieldId anotherWord 9.
           |Errors:
-          |before anyFieldId anotherWord 9:1: unexpected characters; expected '(\+|-)?\d+$'
+          |before anyFieldId anotherWord 9:1: unexpected characters; expected '(\+|-)?\d+'
           |before anyFieldId anotherWord 9                  ^""".stripMargin
       )
     )
@@ -72,22 +72,34 @@ class FormatParserSpec extends FlatSpec with Matchers with EitherValues with Opt
 
     res.left.value should be(
       InvalidState(
-        """Unable to parse format expression after 2016-6-9 9.
-          |Errors:
-          |after 2016-6-9 9:1: unexpected characters; expected ' '
-          |after 2016-6-9 9          ^""".stripMargin
+        """|Unable to parse format expression after 2016-6-9 9.
+           |Errors:
+           |after 2016-6-9 9:1: unexpected characters; expected '\s+' or ','
+           |after 2016-6-9 9            ^""".stripMargin
       )
     )
   }
 
   "before today -2" should "be parsed successfully" in {
     val res = FormatParser.validate("before today -2")
-    res.right.value should be(DateExpression(Before, Today, OffsetDate(-2)))
+    res.right.value should be(DateFormat(DateConstraints(List(DateConstraint(Before, Today, OffsetDate(-2))))))
   }
 
   "before 2017-04-02 -2" should "be parsed successfully" in {
     val res = FormatParser.validate("before 2017-04-02 -2")
-    res.right.value should be(DateExpression(Before, AnyDate(2017, 4, 2), OffsetDate(-2)))
+    res.right.value should be(DateFormat(DateConstraints(List(DateConstraint(Before, ConcreteDate(2017, 4, 2), OffsetDate(-2))))))
+  }
+
+  "before" should "be parsed successfully" in {
+    val res = FormatParser.validate("before 2017-04-02 -2,after next-02-01 +42")
+    res.right.value should be(
+      DateFormat(
+        DateConstraints(List(
+          DateConstraint(Before, ConcreteDate(2017, 4, 2), OffsetDate(-2)),
+          DateConstraint(After, NextDate(2, 1), OffsetDate(42))
+        ))
+      )
+    )
   }
 
 }

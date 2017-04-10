@@ -120,11 +120,9 @@ class FormValidatorSpec extends FlatSpec with Matchers with EitherValues {
     `type` = Text,
     label = "",
     value = None,
-    format = None,
     helpText = None,
     readOnly = None,
-    mandatory = true,
-    offset = None
+    mandatory = true
   )
 
   def getAddressFieldValue(id: String) = FieldValue(
@@ -132,11 +130,9 @@ class FormValidatorSpec extends FlatSpec with Matchers with EitherValues {
     `type` = Address,
     label = "",
     value = None,
-    format = None,
     helpText = None,
     readOnly = None,
-    mandatory = false,
-    offset = None
+    mandatory = false
   )
 
   "FormValidator.conform" should "parse all fields from form to list of FormField objects" in {
@@ -241,8 +237,6 @@ class FormValidatorSpec extends FlatSpec with Matchers with EitherValues {
     )
 
     val res = FormValidator.validate(formFields, section)
-
-    println("res " + res)
 
     res.right.value should be(())
 

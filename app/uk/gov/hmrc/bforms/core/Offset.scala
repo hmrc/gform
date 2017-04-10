@@ -23,18 +23,16 @@ import play.api.libs.functional.syntax._
 /**
  * Created by dimitra on 04/04/17.
  */
-sealed trait Offset
-
-final case class OffsetCase(value: Int) extends Offset
+final case class Offset(value: Int) extends AnyVal
 
 object Offset {
 
   val signedIntRegex = """(\+|-)?\d+"""
 
   implicit val offsetHelper: OFormat[Offset] = {
-    val offsetExpr: OFormat[Offset] = derived.oformat
+    val offsetExpr: OFormat[Offset] = Json.format[Offset]
 
-    val convertToInt = (str: String) => if (str.matches(signedIntRegex)) JsSuccess(OffsetCase(str.toInt)) else JsError(s"Couldn't parse Integer from offset, $str")
+    val convertToInt = (str: String) => if (str.matches(signedIntRegex)) JsSuccess(Offset(str.toInt)) else JsError(s"Couldn't parse Integer from offset, $str")
 
     val reads: Reads[Offset] = (offsetExpr: Reads[Offset]) | Reads {
       case JsString(offsetAsStr) =>

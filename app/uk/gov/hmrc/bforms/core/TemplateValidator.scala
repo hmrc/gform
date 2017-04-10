@@ -26,7 +26,7 @@ object TemplateValidator {
       case ((mandatoryAcc, optionalAcc), field) =>
         (field.`type`, field.mandatory) match {
           case (Address, _) => (mandatoryAcc ++ Address.mandatoryFields(field.id), optionalAcc ++ Address.optionalFields(field.id))
-          case (Date, _) => (mandatoryAcc ++ Date.fields(field.id), optionalAcc)
+          case (Date(_, _), _) => (mandatoryAcc ++ Date.fields(field.id), optionalAcc)
           case (Text, true) => (mandatoryAcc + field.id, optionalAcc)
           case (Text, false) => (mandatoryAcc, optionalAcc + field.id)
           case (_, true) => (mandatoryAcc + field.id, optionalAcc)

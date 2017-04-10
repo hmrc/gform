@@ -43,7 +43,7 @@ object SubmissionService {
       val fieldValueIds: List[FieldId] =
         fieldValue.`type` match {
           case Address => Address.fields(fieldValue.id)
-          case Date => Date.fields(fieldValue.id)
+          case Date(_, _) => Date.fields(fieldValue.id)
           case Text | Choice(_, _, _) => List(fieldValue.id)
         }
 
