@@ -131,8 +131,10 @@
           "type": "date",
           "label": "Accounting period start date",
           "helpText": "For example, 31 3 1980",
+          "format":"after 2016-09-05 -1",
+          "offset":"5",
           "mandatory": "false",
-          "value": "2011-11-11"
+          "value": "next-01-15"
         }
       ]
     },
