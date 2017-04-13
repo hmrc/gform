@@ -49,8 +49,8 @@ sealed trait Expr {
 final case class Add(field1: Expr, field2: Expr) extends Expr
 final case class Multiply(field1: Expr, field2: Expr) extends Expr
 final case class FormCtx(value: String) extends Expr
-final case class AuthCtx(value: String) extends Expr
-final case class EeittCtx(value: String) extends Expr
+final case class AuthCtx(value: AuthInfo) extends Expr
+final case class EeittCtx(value: Eeitt) extends Expr
 final case class Constant(value: String) extends Expr
 
 object Expr {
@@ -61,7 +61,20 @@ sealed trait Operation
 final case object Addition extends Operation
 final case object Multiplication extends Operation
 
-sealed trait Context
-final case object FormContext extends Context
-final case object AuthContext extends Context
-final case object EeittContext extends Context
+sealed trait Eeitt
+final case object BusinessUser extends Eeitt
+final case object Agent extends Eeitt
+
+object Eeitt {
+  implicit val format: OFormat[Eeitt] = derived.oformat
+}
+
+sealed trait AuthInfo
+final case object GG extends AuthInfo
+final case object PayeNino extends AuthInfo
+final case object SaUtr extends AuthInfo
+final case object CtUtr extends AuthInfo
+
+object AuthInfo {
+  implicit val format: OFormat[AuthInfo] = derived.oformat
+}

@@ -32,8 +32,8 @@ class ValueParserSpec extends FlatSpec with Matchers with EitherValues with Opti
   }
 
   it should "parse ${eeitt.firstName}" in {
-    val res = ValueParser.validate("${eeitt.firstName}")
-    res.right.value should be(TextExpression(EeittCtx("firstName")))
+    val res = ValueParser.validate("${eeitt.businessUser}")
+    res.right.value should be(TextExpression(EeittCtx(BusinessUser)))
   }
 
   it should "parse ${form.firstName}" in {
@@ -42,13 +42,13 @@ class ValueParserSpec extends FlatSpec with Matchers with EitherValues with Opti
   }
 
   it should "parse ${eeitt.firstName + form.secondName}" in {
-    val res = ValueParser.validate("${eeitt.firstName + form.secondName}")
-    res.right.value should be(TextExpression(Add(EeittCtx("firstName"), FormCtx("secondName"))))
+    val res = ValueParser.validate("${eeitt.businessUser + form.secondName}")
+    res.right.value should be(TextExpression(Add(EeittCtx(BusinessUser), FormCtx("secondName"))))
   }
 
   it should "parse ${eeitt.firstName * form.secondName}" in {
-    val res = ValueParser.validate("${eeitt.firstName * form.secondName}")
-    res.right.value should be(TextExpression(Multiply(EeittCtx("firstName"), FormCtx("secondName"))))
+    val res = ValueParser.validate("${eeitt.businessUser * form.secondName}")
+    res.right.value should be(TextExpression(Multiply(EeittCtx(BusinessUser), FormCtx("secondName"))))
   }
 
   it should "parse ${firstName * secondName}" in {
@@ -57,8 +57,8 @@ class ValueParserSpec extends FlatSpec with Matchers with EitherValues with Opti
   }
 
   it should "parse ${firstName * auth.secondName}" in {
-    val res = ValueParser.validate("${firstName * auth.secondName}")
-    res.right.value should be(TextExpression(Multiply(FormCtx("firstName"), AuthCtx("secondName"))))
+    val res = ValueParser.validate("${firstName * auth.sautr}")
+    res.right.value should be(TextExpression(Multiply(FormCtx("firstName"), AuthCtx(SaUtr))))
   }
 
   it should "parse constant" in {
