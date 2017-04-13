@@ -70,13 +70,9 @@ object ValueParser {
   )
 
   lazy val contextField: Parser[Expr] = (
-    context ~ "." ~ alphabeticOnly ^^ { (loc, ctx, _, fieldName) =>
-      ctx match {
-        case FormContext => FormCtx(fieldName)
-        case AuthContext => AuthCtx(fieldName)
-        case EeittContext => EeittCtx(fieldName)
-      }
-    }
+    "eeitt" ~ "." ~ eeitt ^^ { (loc, _, _, eeitt) => EeittCtx(eeitt) }
+    | "form" ~ "." ~ alphabeticOnly ^^ { (loc, _, _, fieldName) => FormCtx(fieldName) }
+    | "auth" ~ "." ~ authInfo ^^ { (loc, _, _, authInfo) => AuthCtx(authInfo) }
     | alphabeticOnly ^^ { (loc, fn) => FormCtx(fn) }
   )
 
@@ -86,10 +82,15 @@ object ValueParser {
     """[ \w,]+""".r ^^ { (loc, str) => Constant(str) }
   )
 
-  lazy val context: Parser[Context] = (
-    "form" ^^ { (loc, str) => FormContext }
-    | "auth" ^^ { (loc, str) => AuthContext }
-    | "eeitt" ^^ { (loc, str) => EeittContext }
+  lazy val eeitt: Parser[Eeitt] = (
+    "businessUser" ^^ { (loc, _) => BusinessUser }
+    | "agent" ^^ { (loc, _) => Agent }
   )
 
+  lazy val authInfo: Parser[AuthInfo] = (
+    "gg" ^^ { (_, _) => GG }
+    | "payenino" ^^ { (_, _) => PayeNino }
+    | "sautr" ^^ { (_, _) => SaUtr }
+    | "ctutr" ^^ { (_, _) => CtUtr }
+  )
 }
