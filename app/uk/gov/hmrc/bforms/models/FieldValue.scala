@@ -57,7 +57,8 @@ private[this] case class FieldValueRaw(
     choices: Option[List[String]],
     mandatory: Option[String],
     offset: Option[Offset],
-    multivalue: Option[String]
+    multivalue: Option[String],
+    total: Option[String]
 ) {
   private def getFieldValue(mandatory: Boolean): JsResult[FieldValue] = {
     val fieldValueOpt = for {
@@ -79,13 +80,16 @@ private[this] case class FieldValueRaw(
 
   private val toComponentType: Opt[ComponentType] = `type` match {
     case Some(TextRaw) | None =>
-      value match {
-        case Some(TextExpression(expr)) => Right(Text(expr))
-        case None => Right(Text(Constant("")))
-        case Some(invalidValue) => Left(
+      (value, total) match {
+        case (Some(TextExpression(expr)), IsTotal(TotalYes)) => Right(Text(expr, total = true))
+        case (Some(TextExpression(expr)), IsTotal(TotalNo)) => Right(Text(expr, total = false))
+        case (None, IsTotal(TotalYes)) => Right(Text(Constant(""), total = true))
+        case (None, IsTotal(TotalNo)) => Right(Text(Constant(""), total = false))
+        case (Some(invalidValue), invalidTotal) => Left(
           InvalidState(s"""|Unsupported type of value for text field
                            |Id: $id
-                           |Value: $invalidValue""".stripMargin)
+                           |Value: $invalidValue
+                           |Total: $invalidTotal""".stripMargin)
         )
       }
     case Some(DateRaw) =>
@@ -163,6 +167,21 @@ private[this] case class FieldValueRaw(
         case Some(TextFormat("vertical")) | None => Some(VerticalOrientation)
         case Some(TextFormat("horizontal")) => Some(HorizontalOrientation)
         case Some(TextFormat("yesno")) => Some(YesNoOrientation)
+        case _ => None
+      }
+    }
+  }
+
+  private sealed trait Total
+
+  private final case object TotalYes extends Total
+  private final case object TotalNo extends Total
+
+  private final object IsTotal {
+    def unapply(total: Option[String]): Option[Total] = {
+      total match {
+        case Some(IsFalseish()) | None => Some(TotalNo)
+        case Some(IsTrueish()) => Some(TotalYes)
         case _ => None
       }
     }

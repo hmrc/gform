@@ -29,14 +29,14 @@ import uk.gov.hmrc.bforms.models._
 
 sealed trait ComponentType {
   def validate(formTemplate: FormTemplate): ValidationResult = this match {
-    case Text(expr) => expr.validate(formTemplate)
+    case Text(expr, _) => expr.validate(formTemplate)
     case Date(_, _, _) => Valid
     case Address => Valid
     case Choice(_, _, _, _) => Valid
   }
 }
 
-case class Text(value: Expr) extends ComponentType
+case class Text(value: Expr, total: Boolean) extends ComponentType
 
 case class Date(constraintType: DateConstraintType, offset: Offset, value: Option[DateValue]) extends ComponentType
 

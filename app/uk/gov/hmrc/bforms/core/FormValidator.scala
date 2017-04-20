@@ -61,7 +61,7 @@ object FormValidator {
 
               (accRes, reqAcc)
 
-            case Text(_) | Choice(_, _, _, _) =>
+            case Text(_, _) | Choice(_, _, _, _) =>
               val id = fieldValue.id
               val accRes = acc + (id -> fieldValue)
 

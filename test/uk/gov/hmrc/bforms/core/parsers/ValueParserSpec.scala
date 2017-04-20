@@ -184,30 +184,30 @@ class ValueParserSpec extends FlatSpec with Matchers with EitherValues with Opti
   val yourDetailsSection = Section(
     "Your details",
     List(
-      FieldValue(FieldId("firstName"), Text(Constant("")), "Your first name", None, None, false),
-      FieldValue(FieldId("lastName"), Text(Constant("")), "Your last name", None, None, false)
+      FieldValue(FieldId("firstName"), Text(Constant(""), total = false), "Your first name", None, None, false),
+      FieldValue(FieldId("lastName"), Text(Constant(""), total = false), "Your last name", None, None, false)
     )
   )
 
   val formTemplateWithOneSection = plainFormTemplate.copy(sections = List(yourDetailsSection))
 
   "Expr.validate" should "return Valid if expression include fieldName id present in the form template" in {
-    val res = ComponentType.validate(List(Text(FormCtx("firstName"))), formTemplateWithOneSection)
+    val res = ComponentType.validate(List(Text(FormCtx("firstName"), total = false)), formTemplateWithOneSection)
     res should be(Valid)
   }
 
   it should "return Valid if expression Add fields present in the form template" in {
-    val res = ComponentType.validate(List(Text(Add(FormCtx("firstName"), FormCtx("lastName")))), formTemplateWithOneSection)
+    val res = ComponentType.validate(List(Text(Add(FormCtx("firstName"), FormCtx("lastName")), total = false)), formTemplateWithOneSection)
     res should be(Valid)
   }
 
   it should "return Valid if expression Multiply fields present in the form template" in {
-    val res = ComponentType.validate(List(Text(Multiply(FormCtx("firstName"), FormCtx("lastName")))), formTemplateWithOneSection)
+    val res = ComponentType.validate(List(Text(Multiply(FormCtx("firstName"), FormCtx("lastName")), total = false)), formTemplateWithOneSection)
     res should be(Valid)
   }
 
   it should "return Invalid if expression include fieldName id not present in the form template" in {
-    val res = ComponentType.validate(List(Text(FormCtx("firstNameTypo"))), formTemplateWithOneSection)
+    val res = ComponentType.validate(List(Text(FormCtx("firstNameTypo"), total = false)), formTemplateWithOneSection)
     res should be(Invalid("Form field 'firstNameTypo' is not defined in form template."))
   }
 }

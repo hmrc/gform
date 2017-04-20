@@ -36,7 +36,36 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant("")), "Registration number", None, None, true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, None, true))
+  }
+
+  it should "parse 'text' type without total if no total specified" in {
+    val fieldValue = toFieldValue(
+      """|{
+         |  "type": "text",
+         |  "id": "regNum",
+         |  "label": "Registration number",
+         |  "readonly": "true",
+         |  "mandatory": "true"
+         |}"""
+    )
+
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, None, true))
+  }
+
+  it should "parse 'text' type with total specified" in {
+    val fieldValue = toFieldValue(
+      """|{
+         |  "type": "text",
+         |  "id": "regNum",
+         |  "label": "Registration number",
+         |  "readonly": "true",
+         |  "mandatory": "true",
+         |  "total": "yes"
+         |}"""
+    )
+
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = true), "Registration number", None, None, true))
   }
 
   it should "parse 'choice' type as Radio with Vertical orientation if no multivalue & no format is provided" in {

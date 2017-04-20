@@ -45,8 +45,8 @@ class SubmissionServiceSpec extends FlatSpec with Matchers with TypeclassFixture
   val yourDetailsSection = Section(
     "Your details",
     List(
-      FieldValue(FieldId("firstName"), Text(Constant("")), "Your first name", None, None, true),
-      FieldValue(FieldId("lastName"), Text(Constant("")), "Your last name", None, None, true)
+      FieldValue(FieldId("firstName"), Text(Constant(""), total = false), "Your first name", None, None, true),
+      FieldValue(FieldId("lastName"), Text(Constant(""), total = false), "Your last name", None, None, true)
     )
   )
 

@@ -44,7 +44,7 @@ object SubmissionService {
         fieldValue.`type` match {
           case Address => Address.fields(fieldValue.id)
           case Date(_, _, _) => Date.fields(fieldValue.id)
-          case Text(_) | Choice(_, _, _, _) => List(fieldValue.id)
+          case Text(_, _) | Choice(_, _, _, _) => List(fieldValue.id)
         }
 
       val formFieldAndFieldValues: List[Opt[(FormField, FieldValue)]] =
