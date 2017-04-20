@@ -53,6 +53,21 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
     fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, None, true))
   }
 
+  it should "parse 'text' type without total if total false specified" in {
+    val fieldValue = toFieldValue(
+      """|{
+         |  "type": "text",
+         |  "id": "regNum",
+         |  "label": "Registration number",
+         |  "readonly": "true",
+         |  "mandatory": "true",
+         |  "total": "false"
+         |}"""
+    )
+
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, None, true))
+  }
+
   it should "parse 'text' type with total specified" in {
     val fieldValue = toFieldValue(
       """|{
@@ -61,13 +76,44 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
          |  "label": "Registration number",
          |  "readonly": "true",
          |  "mandatory": "true",
-         |  "total": "yes"
+         |  "total": "true"
          |}"""
     )
 
     fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = true), "Registration number", None, None, true))
   }
 
+  it should "parse 'text' type including value without total if total false specified" in {
+    val fieldValue = toFieldValue(
+      """|{
+         |  "type": "text",
+         |  "id": "regNum",
+         |  "label": "Registration number",
+         |  "readonly": "true",
+         |  "mandatory": "true",
+         |  "value": "Ahah",
+         |  "total": "false"
+         |}"""
+    )
+
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant("Ahah"), total = false), "Registration number", None, None, true))
+  }
+
+  it should "parse 'text' type including value with total specified" in {
+    val fieldValue = toFieldValue(
+      """|{
+         |  "type": "text",
+         |  "id": "regNum",
+         |  "label": "Registration number",
+         |  "readonly": "true",
+         |  "mandatory": "true",
+         |  "value": "Ahah",
+         |  "total": "true"
+         |}"""
+    )
+
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant("Ahah"), total = true), "Registration number", None, None, true))
+  }
   it should "parse 'choice' type as Radio with Vertical orientation if no multivalue & no format is provided" in {
     val fieldValue = toFieldValue(
       """|{
