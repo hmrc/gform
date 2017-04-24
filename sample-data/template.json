@@ -94,6 +94,7 @@
           "id": "sum",
           "label": "Sum | Eich sumolaf",
           "mandatory": "true",
+          "total": "true",
           "value": "${amountA + amountB}"
         }
       ]

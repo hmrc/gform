@@ -184,8 +184,8 @@ class ValueParserSpec extends FlatSpec with Matchers with EitherValues with Opti
   val yourDetailsSection = Section(
     "Your details",
     List(
-      FieldValue(FieldId("firstName"), Text(Constant(""), total = false), "Your first name", None, None, false),
-      FieldValue(FieldId("lastName"), Text(Constant(""), total = false), "Your last name", None, None, false)
+      FieldValue(FieldId("firstName"), Text(Constant(""), total = false), "Your first name", None, mandatory = false, editable = true, submissible = true),
+      FieldValue(FieldId("lastName"), Text(Constant(""), total = false), "Your last name", None, mandatory = false, editable = true, submissible = true)
     )
   )
 

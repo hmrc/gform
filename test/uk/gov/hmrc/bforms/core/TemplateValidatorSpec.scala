@@ -106,7 +106,7 @@ class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
          |                "mandatory": {
          |                  "type": "string"
          |                },
-         |                "readonly": {
+         |                "submitmode": {
          |                  "type": "string"
          |                }
          |              },
@@ -138,7 +138,7 @@ class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
          |        {
          |          "id": "iptRegNum",
          |          "label": "Insurance Premium Tax (IPT) registration number | Treth Premiwm Yswiriant (IPT) rhif cofrestru",
-         |          "readonly": "true",
+         |          "submitmode": "standard",
          |          "mandatory": "true"
          |        }
          |      ]
@@ -158,16 +158,16 @@ class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
   val businessDetailsSection = Section(
     "Business details",
     List(
-      FieldValue(FieldId("nameOfBusiness"), Text(Constant(""), total = false), "Name of business", None, None, true),
-      FieldValue(FieldId("businessAddress"), Address, "Business address", None, None, true)
+      FieldValue(FieldId("nameOfBusiness"), Text(Constant(""), total = false), "Name of business", None, mandatory = true, editable = true, submissible = true),
+      FieldValue(FieldId("businessAddress"), Address, "Business address", None, mandatory = true, editable = true, submissible = true)
     )
   )
 
   val sectionWithDate = Section(
     "Business details",
     List(
-      FieldValue(FieldId("nameOfBusiness"), Text(Constant(""), total = false), "Name of business", None, None, true),
-      FieldValue(FieldId("startDate"), Date(AnyDate, Offset(0), None), "Start date", None, None, true)
+      FieldValue(FieldId("nameOfBusiness"), Text(Constant(""), total = false), "Name of business", None, mandatory = true, editable = true, submissible = true),
+      FieldValue(FieldId("startDate"), Date(AnyDate, Offset(0), None), "Start date", None, mandatory = true, editable = true, submissible = true)
     )
   )
 
@@ -175,10 +175,10 @@ class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
     "Business details",
     List(
       FieldValue(
-        FieldId("nameOfBusiness"), Text(Constant(""), total = false), "Name of business", None, None, true
+        FieldId("nameOfBusiness"), Text(Constant(""), total = false), "Name of business", None, mandatory = true, editable = true, submissible = true
       ),
       FieldValue(
-        FieldId("dutyType"), Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int]), "Select the tax type", None, None, true
+        FieldId("dutyType"), Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int]), "Select the tax type", None, mandatory = true, editable = true, submissible = true
       )
     )
   )
@@ -187,10 +187,10 @@ class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
     "Business details",
     List(
       FieldValue(
-        FieldId("nameOfBusiness"), Text(Constant(""), total = false), "Name of business", None, None, true
+        FieldId("nameOfBusiness"), Text(Constant(""), total = false), "Name of business", None, mandatory = true, editable = true, submissible = true
       ),
       FieldValue(
-        FieldId("dutyType"), Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int]), "Select the tax type", None, None, true
+        FieldId("dutyType"), Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int]), "Select the tax type", None, mandatory = true, editable = true, submissible = true
       )
     )
   )
@@ -199,10 +199,10 @@ class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
     "Business details",
     List(
       FieldValue(
-        FieldId("nameOfBusiness"), Text(Constant(""), total = false), "Name of business", None, None, true
+        FieldId("nameOfBusiness"), Text(Constant(""), total = false), "Name of business", None, mandatory = true, editable = true, submissible = true
       ),
       FieldValue(
-        FieldId("taxType"), Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int]), "Gas tax type?", None, None, true
+        FieldId("taxType"), Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int]), "Gas tax type?", None, mandatory = true, editable = true, submissible = true
       )
     )
   )
@@ -316,7 +316,7 @@ class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
     val section = Section(
       "Business details",
       List(
-        FieldValue(FieldId("nameOfBusiness"), Text(Constant(""), total = false), "Name of business", None, None, false)
+        FieldValue(FieldId("nameOfBusiness"), Text(Constant(""), total = false), "Name of business", None, mandatory = false, editable = true, submissible = true)
       )
     )
 
@@ -333,7 +333,7 @@ class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
     val section = Section(
       "Business details",
       List(
-        FieldValue(FieldId("nameOfBusiness"), Text(Constant(""), total = false), "Name of business", None, None, false)
+        FieldValue(FieldId("nameOfBusiness"), Text(Constant(""), total = false), "Name of business", None, mandatory = false, editable = true, submissible = true)
       )
     )
 
@@ -350,7 +350,7 @@ class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
     val section = Section(
       "Business details",
       List(
-        FieldValue(FieldId("nameOfBusiness"), Text(Constant(""), total = false), "Name of business", None, None, true)
+        FieldValue(FieldId("nameOfBusiness"), Text(Constant(""), total = false), "Name of business", None, mandatory = true, editable = true, submissible = true)
       )
     )
 
