@@ -1,0 +1,81 @@
+{
+  "formTypeId": "CE930",
+  "formName": "Gas for use as road fuel",
+  "version": "0.2.5",
+  "description": "Fill in your gas for use as road fuel return form online",
+  "characterSet": "UTF-8",
+  "dmsSubmission": {
+    "customerId": "nino",
+    "classificationType": "BT-NRU-Environmental",
+    "businessArea": "FinanceOpsCorpT"
+  },
+  "submitSuccessUrl": "http://www.google.co.uk",
+  "submitErrorUrl": "http://www.yahoo.co.uk",
+  "sections": [
+    {
+      "title": "Enter the time period for this return",
+      "fields": [
+        {
+          "id": "startDate",
+          "type": "date",
+          "label": "Start date",
+          "mandatory": "true"
+        },
+        {
+          "id": "endDate",
+          "type": "date",
+          "label": "End date",
+          "mandatory": "true"
+        }
+      ]
+    },
+    {
+      "title": "Enter your business details",
+      "description": "This is your registered business address. We will ask you later about additional sites for this return.",
+      "fields": [
+        {
+          "id": "businessName",
+          "type": "text",
+          "label": "Business name",
+          "mandatory": "true"
+        },
+        {
+          "id": "businessAddress",
+          "label": "Business address",
+          "mandatory": "true",
+          "type": "address"
+        },
+        {
+          "id": "businessTelephone [TODO: convert to group]",
+          "type": "text",
+          "label": "Phone number",
+          "mandatory": "true"
+        }
+      ]
+    },
+    {
+      "title": "Choose the type of return",
+      "fields": [
+        {
+          "type": "choice",
+          "label": "Select nil return if you have no duty to pay this return period.",
+          "id": "nilReturn",
+          "choices": [
+            "Submit a return with payment due",
+            "Submit a nil return"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Enter number of sites",
+      "description": "Tell us how many sites are you including in this return.",
+      "fields": []
+    },
+    {
+      "title": "Enter duty detail for sdfv",
+      "description": "Tell us about each site name or location and the duty due on gas sent out, set aside or used as road fuel.",
+      "fields": []
+    }
+  ]
+}
