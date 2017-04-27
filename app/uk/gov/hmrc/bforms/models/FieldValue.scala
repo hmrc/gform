@@ -28,8 +28,9 @@ case class FieldValue(
   `type`: ComponentType,
   label: String,
   helpText: Option[String],
-  readOnly: Option[String],
-  mandatory: Boolean
+  mandatory: Boolean,
+  editable: Boolean,
+  submissible: Boolean
 )
 
 object FieldValue {
@@ -53,13 +54,14 @@ private[this] case class FieldValueRaw(
     value: Option[ValueExpr],
     format: Option[FormatExpr],
     helpText: Option[String],
-    readOnly: Option[String],
+    submitMode: Option[String],
     choices: Option[List[String]],
     mandatory: Option[String],
     offset: Option[Offset],
-    multivalue: Option[String]
+    multivalue: Option[String],
+    total: Option[String]
 ) {
-  private def getFieldValue(mandatory: Boolean): JsResult[FieldValue] = {
+  private def getFieldValue(editable: Boolean, mandatory: Boolean, submissible: Boolean): JsResult[FieldValue] = {
     val fieldValueOpt = for {
       componentType <- toComponentType
     } yield FieldValue(
@@ -67,8 +69,9 @@ private[this] case class FieldValueRaw(
       `type` = componentType,
       label = label,
       helpText = helpText,
-      readOnly = readOnly,
-      mandatory = mandatory
+      mandatory = mandatory,
+      editable = editable,
+      submissible = submissible
     )
 
     fieldValueOpt match {
@@ -79,13 +82,16 @@ private[this] case class FieldValueRaw(
 
   private val toComponentType: Opt[ComponentType] = `type` match {
     case Some(TextRaw) | None =>
-      value match {
-        case Some(TextExpression(expr)) => Right(Text(expr))
-        case None => Right(Text(Constant("")))
-        case Some(invalidValue) => Left(
+      (value, total) match {
+        case (Some(TextExpression(expr)), IsTotal(TotalYes)) => Right(Text(expr, total = true))
+        case (Some(TextExpression(expr)), IsTotal(TotalNo)) => Right(Text(expr, total = false))
+        case (None, IsTotal(TotalYes)) => Right(Text(Constant(""), total = true))
+        case (None, IsTotal(TotalNo)) => Right(Text(Constant(""), total = false))
+        case (Some(invalidValue), invalidTotal) => Left(
           InvalidState(s"""|Unsupported type of value for text field
                            |Id: $id
-                           |Value: $invalidValue""".stripMargin)
+                           |Value: $invalidValue
+                           |Total: $invalidTotal""".stripMargin)
         )
       }
     case Some(DateRaw) =>
@@ -168,6 +174,21 @@ private[this] case class FieldValueRaw(
     }
   }
 
+  private sealed trait Total
+
+  private final case object TotalYes extends Total
+  private final case object TotalNo extends Total
+
+  private final object IsTotal {
+    def unapply(total: Option[String]): Option[Total] = {
+      total match {
+        case Some(IsFalseish()) | None => Some(TotalNo)
+        case Some(IsTrueish()) => Some(TotalYes)
+        case _ => None
+      }
+    }
+  }
+
   private sealed trait Multivalue
 
   private final case object MultivalueYes extends Multivalue
@@ -184,11 +205,38 @@ private[this] case class FieldValueRaw(
   }
 
   def toFieldValue = Reads[FieldValue] { _ =>
-    mandatory match {
-      case Some(IsTrueish()) | None => getFieldValue(true)
-      case Some(IsFalseish()) => getFieldValue(false)
-      case otherwise => JsError(s"Expected 'true' or 'false' string or nothing for mandatory field value, got: $otherwise")
+
+    (submitMode, mandatory) match {
+      case (Some(IsStandard()) | None,
+        Some(IsTrueish()) | None) =>
+        getFieldValue(editable = true, mandatory = true, submissible = true)
+      case (Some(IsReadOnly()),
+        Some(IsTrueish()) | None) =>
+        getFieldValue(editable = false, mandatory = true, submissible = true)
+      case (Some(IsInfo()),
+        Some(IsTrueish()) | None) =>
+        getFieldValue(editable = true, mandatory = true, submissible = false)
+
+      case (Some(IsStandard()) | None,
+        Some(IsFalseish())) =>
+        getFieldValue(editable = true, mandatory = false, submissible = true)
+      case (Some(IsInfo()),
+        Some(IsFalseish())) =>
+        getFieldValue(editable = true, mandatory = false, submissible = false)
+
+      case otherwise => JsError(s"Expected 'standard', 'readonly' or 'info' string or nothing for submitMode and expected 'true' or 'false' string or nothing for mandatory field value, got: $otherwise")
     }
+  }
+
+  // Should we instead do this with an case insensitive extractor
+  object IsStandard {
+    def unapply(maybeStandard: String): Boolean = maybeStandard.toLowerCase == "standard"
+  }
+  object IsReadOnly {
+    def unapply(maybeStandard: String): Boolean = maybeStandard.toLowerCase == "readonly"
+  }
+  object IsInfo {
+    def unapply(maybeStandard: String): Boolean = maybeStandard.toLowerCase == "info"
   }
 
   object IsTrueish {

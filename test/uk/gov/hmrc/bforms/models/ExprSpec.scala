@@ -65,6 +65,12 @@ class ExprSpec extends FlatSpec with Matchers with JsResultMatcher {
     res should beJsSuccess[ValueExpr](TextExpression(Constant("constant")))
   }
 
+  // I expect that this charcetr set should be wider, https://confluence.tools.tax.service.gov.uk/display/AF/Field+Expressions
+  it should "read Constant from string (coming from template designer) including all characters currrently supported" in {
+    val res: JsResult[ValueExpr] = implicitly[Reads[ValueExpr]].reads(JsString("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_ ,"))
+    res should beJsSuccess[ValueExpr](TextExpression(Constant("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_ ,")))
+  }
+
   val form = FormCtx("form")
   val formJson = Json.obj(
     "FormCtx" -> Json.obj("value" -> "form")

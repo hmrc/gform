@@ -36,9 +36,84 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant("")), "Registration number", None, None, true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, mandatory = true, editable = true, submissible = true))
   }
 
+  it should "parse 'text' type without total if no total specified" in {
+    val fieldValue = toFieldValue(
+      """|{
+         |  "type": "text",
+         |  "id": "regNum",
+         |  "label": "Registration number",
+         |  "readonly": "true",
+         |  "mandatory": "true"
+         |}"""
+    )
+
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, mandatory = true, editable = true, submissible = true))
+  }
+
+  it should "parse 'text' type without total if total false specified" in {
+    val fieldValue = toFieldValue(
+      """|{
+         |  "type": "text",
+         |  "id": "regNum",
+         |  "label": "Registration number",
+         |  "readonly": "true",
+         |  "mandatory": "true",
+         |  "total": "false"
+         |}"""
+    )
+
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, mandatory = true, editable = true, submissible = true))
+  }
+
+  it should "parse 'text' type with total specified" in {
+    val fieldValue = toFieldValue(
+      """|{
+         |  "type": "text",
+         |  "id": "regNum",
+         |  "label": "Registration number",
+         |  "readonly": "true",
+         |  "mandatory": "true",
+         |  "total": "true"
+         |}"""
+    )
+
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = true), "Registration number", None, mandatory = true, editable = true, submissible = true))
+  }
+
+  it should "parse 'text' type including value without total if total false specified" in {
+    val fieldValue = toFieldValue(
+      """|{
+         |  "type": "text",
+         |  "id": "regNum",
+         |  "label": "Registration number",
+         |  "readonly": "true",
+         |  "mandatory": "true",
+         |  "value": "Ahah",
+         |  "total": "false"
+         |}"""
+    )
+
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant("Ahah"), total = false), "Registration number", None, mandatory = true, editable = true, submissible = true))
+  }
+
+  it should "parse 'text' type including value with total specified" in {
+    val fieldValue = toFieldValue(
+      """|{
+         |  "type": "text",
+         |  "id": "regNum",
+         |  "label": "Registration number",
+         |  "readonly": "true",
+         |  "mandatory": "true",
+         |  "value": "Ahah",
+         |  "total": "true"
+         |}"""
+    )
+
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant("Ahah"), total = true), "Registration number", None, mandatory = true, editable = true, submissible = true))
+  }
   it should "parse 'choice' type as Radio with Vertical orientation if no multivalue & no format is provided" in {
     val fieldValue = toFieldValue(
       """|{
@@ -58,8 +133,9 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
         Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int]),
         "Select the tax type",
         None,
-        None,
-        true
+        mandatory = true,
+        editable = true,
+        submissible = true
       )
     )
   }
@@ -84,8 +160,9 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
         Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int]),
         "Select the tax type",
         None,
-        None,
-        true
+        mandatory = true,
+        editable = true,
+        submissible = true
       )
     )
   }
@@ -111,8 +188,9 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
         Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int]),
         "Select the tax type",
         None,
-        None,
-        true
+        mandatory = true,
+        editable = true,
+        submissible = true
       )
     )
   }
@@ -138,8 +216,9 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
         Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Horizontal, List.empty[Int]),
         "Select the tax type",
         None,
-        None,
-        true
+        mandatory = true,
+        editable = true,
+        submissible = true
       )
     )
   }
@@ -164,8 +243,9 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
         Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int]),
         "Select the tax type",
         None,
-        None,
-        true
+        mandatory = true,
+        editable = true,
+        submissible = true
       )
     )
   }
@@ -191,8 +271,9 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
         Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int]),
         "Select the tax type",
         None,
-        None,
-        true
+        mandatory = true,
+        editable = true,
+        submissible = true
       )
     )
   }
@@ -218,8 +299,9 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
         Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Horizontal, List.empty[Int]),
         "Select the tax type",
         None,
-        None,
-        true
+        mandatory = true,
+        editable = true,
+        submissible = true
       )
     )
   }
@@ -240,8 +322,9 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
         Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int]),
         "Gas tax type?",
         None,
-        None,
-        true
+        mandatory = true,
+        editable = true,
+        submissible = true
       )
     )
   }
@@ -263,8 +346,9 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
         Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List(1)),
         "Gas tax type?",
         None,
-        None,
-        true
+        mandatory = true,
+        editable = true,
+        submissible = true
       )
     )
   }
@@ -286,8 +370,9 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
         Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int]),
         "Gas tax type?",
         None,
-        None,
-        true
+        mandatory = true,
+        editable = true,
+        submissible = true
       )
     )
   }

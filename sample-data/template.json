@@ -94,6 +94,7 @@
           "id": "sum",
           "label": "Sum | Eich sumolaf",
           "mandatory": "true",
+          "total": "true",
           "value": "${amountA + amountB}"
         }
       ]
@@ -110,7 +111,7 @@
         {
           "id": "iptRegNum",
           "label": "Insurance Premium Tax (IPT) registration number | Treth Premiwm Yswiriant (IPT) rhif cofrestru",
-          "readonly": "true",
+          "submitmode": "readonly",
           "mandatory": "true",
           "type": "text"
         },
@@ -145,6 +146,12 @@
           "id": "nameOfBusiness",
           "label": "Name of business | Enw'r busnes",
           "mandatory": "true"
+        },
+        {
+          "id": "myRef",
+          "label": "My personal reference",
+          "mandatory": "false",
+          "submitmode": "info"
         },
         {
           "id": "accountingPeriodStartDate",

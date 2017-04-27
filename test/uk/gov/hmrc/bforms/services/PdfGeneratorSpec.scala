@@ -26,11 +26,12 @@ class PdfGeneratorSpec extends FlatSpec with Matchers {
     val ff = FormField(id, value)
     val fv = FieldValue(
       id = id,
-      `type` = Text(Constant("")),
+      `type` = Text(Constant(""), total = false),
       label = label,
       helpText = None,
-      readOnly = None,
-      mandatory = false
+      editable = true,
+      mandatory = false,
+      submissible = true
     )
     (ff, fv)
   }

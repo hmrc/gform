@@ -66,7 +66,7 @@ object PdfGenerator {
       val startY: Float = mediaBox.getUpperRightY - margin
 
       val layoutElems: List[LayoutElem] = sectionFormFields.flatMap { section =>
-        val lines = section.fields.flatMap {
+        val lines = section.fields.filter({ case (_, fieldValue) => fieldValue.submissible }).flatMap {
           case (formField, fieldValue) =>
             fieldValue.`type` match {
               case Choice(_, options, _, _) =>
