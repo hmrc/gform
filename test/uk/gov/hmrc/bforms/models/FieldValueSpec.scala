@@ -114,6 +114,102 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
 
     fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant("Ahah"), total = true), "Registration number", None, mandatory = true, editable = true, submissible = true))
   }
+
+  it should "parse as Text with 'mandatory' true as mandatory" in {
+    val fieldValue = toFieldValue(
+      """|{
+         |  "id": "regNum",
+         |  "label": "Registration number",
+         |  "mandatory": "true"
+         |}"""
+    )
+
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, mandatory = true, editable = true, submissible = true))
+  }
+
+  it should "parse as Text with 'mandatory' false as not mandatory" in {
+    val fieldValue = toFieldValue(
+      """|{
+         |  "id": "regNum",
+         |  "label": "Registration number",
+         |  "mandatory": "false"
+         |}"""
+    )
+
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, mandatory = false, editable = true, submissible = true))
+  }
+
+  it should "parse as Text without 'mandatory' as mandatory" in {
+    val fieldValue = toFieldValue(
+      """|{
+         |  "id": "regNum",
+         |  "label": "Registration number"
+         |}"""
+    )
+
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, mandatory = true, editable = true, submissible = true))
+  }
+
+  it should "parse as Text without 'submitMode' as editable and submissible" in {
+    val fieldValue = toFieldValue(
+      """|{
+         |  "id": "regNum",
+         |  "label": "Registration number"
+         |}"""
+    )
+
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, mandatory = true, editable = true, submissible = true))
+  }
+
+  it should "parse as Text with 'submitMode' standard as editable and submissible" in {
+    val fieldValue = toFieldValue(
+      """|{
+         |  "id": "regNum",
+         |  "label": "Registration number",
+         |  "submitMode": "standard"
+         |}"""
+    )
+
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, mandatory = true, editable = true, submissible = true))
+  }
+
+  it should "parse as Text with 'submitMode' readonly as non-editable and submissible" in {
+    val fieldValue = toFieldValue(
+      """|{
+         |  "id": "regNum",
+         |  "label": "Registration number",
+         |  "submitMode": "readonly"
+         |}"""
+    )
+
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, mandatory = true, editable = false, submissible = true))
+  }
+
+  it should "parse as Text with 'submitMode' info as editable and non-submissible" in {
+    val fieldValue = toFieldValue(
+      """|{
+         |  "id": "regNum",
+         |  "label": "Registration number",
+         |  "submitMode": "info"
+         |}"""
+    )
+
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, mandatory = true, editable = true, submissible = false))
+  }
+
+  it should "parse as Text with 'mandatory' false and 'submitMode' info as non-mandatory, editable and non-submissible" in {
+    val fieldValue = toFieldValue(
+      """|{
+         |  "id": "regNum",
+         |  "label": "Registration number",
+         |  "mandatory": "false",
+         |  "submitMode": "info"
+         |}"""
+    )
+
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, mandatory = false, editable = true, submissible = false))
+  }
+
   it should "parse 'choice' type as Radio with Vertical orientation if no multivalue & no format is provided" in {
     val fieldValue = toFieldValue(
       """|{
