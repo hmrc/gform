@@ -29,6 +29,8 @@ case object AddressRaw extends ComponentTypeRaw
 
 case object ChoiceRaw extends ComponentTypeRaw
 
+case object GroupRaw extends ComponentTypeRaw
+
 object ComponentTypeRaw {
 
   val componentMap: Map[String, ComponentTypeRaw] =
@@ -36,7 +38,8 @@ object ComponentTypeRaw {
       "text" -> TextRaw,
       "date" -> DateRaw,
       "address" -> AddressRaw,
-      "choice" -> ChoiceRaw
+      "choice" -> ChoiceRaw,
+      "group" -> GroupRaw
     )
 
   implicit val format: OFormat[ComponentTypeRaw] = {

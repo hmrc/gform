@@ -21,7 +21,7 @@ import cats.syntax.either._
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 import uk.gov.hmrc.bforms.core._
-import uk.gov.hmrc.bforms.exceptions.InvalidState
+import uk.gov.hmrc.bforms.exceptions.{ InvalidState, UnexpectedState }
 
 case class FieldValue(
   id: FieldId,
@@ -35,7 +35,21 @@ case class FieldValue(
 
 object FieldValue {
 
-  private val formatFieldValueRaw: OFormat[FieldValueRaw] = Json.format[FieldValueRaw]
+  implicit val formatFieldValueRaw: OFormat[FieldValueRaw] = (
+    (__ \ 'id).format[FieldId] and
+    (__ \ 'type).formatNullable[ComponentTypeRaw] and
+    (__ \ 'label).format[String] and
+    (__ \ 'value).formatNullable[ValueExpr] and
+    (__ \ 'format).formatNullable[FormatExpr] and
+    (__ \ 'helpText).formatNullable[String] and
+    (__ \ 'submitMode).formatNullable[String] and
+    (__ \ 'choices).formatNullable[List[String]] and
+    (__ \ 'fields).lazyFormatNullable(implicitly[Format[List[FieldValueRaw]]]) and
+    (__ \ 'mandatory).formatNullable[String] and
+    (__ \ 'offset).formatNullable[Offset] and
+    (__ \ 'multivalue).formatNullable[String] and
+    (__ \ 'total).formatNullable[String]
+  )(FieldValueRaw.apply, unlift(FieldValueRaw.unapply))
 
   implicit val format: OFormat[FieldValue] = {
     implicit val formatFieldValue = Json.format[FieldValue]
@@ -47,22 +61,24 @@ object FieldValue {
   }
 }
 
-private[this] case class FieldValueRaw(
+case class FieldValueRaw(
     id: FieldId,
-    `type`: Option[ComponentTypeRaw],
+    `type`: Option[ComponentTypeRaw] = None,
     label: String,
-    value: Option[ValueExpr],
-    format: Option[FormatExpr],
-    helpText: Option[String],
-    submitMode: Option[String],
-    choices: Option[List[String]],
-    mandatory: Option[String],
-    offset: Option[Offset],
-    multivalue: Option[String],
-    total: Option[String]
+    value: Option[ValueExpr] = None,
+    format: Option[FormatExpr] = None,
+    helpText: Option[String] = None,
+    submitMode: Option[String] = None,
+    choices: Option[List[String]] = None,
+    fields: Option[List[FieldValueRaw]] = None,
+    mandatory: Option[String] = None,
+    offset: Option[Offset] = None,
+    multivalue: Option[String] = None,
+    total: Option[String] = None
 ) {
-  private def getFieldValue(editable: Boolean, mandatory: Boolean, submissible: Boolean): JsResult[FieldValue] = {
-    val fieldValueOpt = for {
+
+  private def getFieldValueOpt(editable: Boolean, mandatory: Boolean, submissible: Boolean): Either[UnexpectedState, FieldValue] = {
+    for {
       componentType <- toComponentType
     } yield FieldValue(
       id = id,
@@ -73,8 +89,10 @@ private[this] case class FieldValueRaw(
       editable = editable,
       submissible = submissible
     )
+  }
 
-    fieldValueOpt match {
+  private def getFieldValue(editable: Boolean, mandatory: Boolean, submissible: Boolean): JsResult[FieldValue] = {
+    getFieldValueOpt(editable, mandatory, submissible) match {
       case Right(fieldValue) => JsSuccess(fieldValue)
       case Left(error) => JsError(error.toString)
     }
@@ -123,7 +141,34 @@ private[this] case class FieldValueRaw(
         value <- valueOpt
         format <- formatOpt
       } yield Date(format, finalOffset, value)
+
     case Some(AddressRaw) => Right(Address)
+
+    case Some(GroupRaw) => {
+      fields match {
+        case Some(fvrs) => {
+
+          val unexpectedStateOrFieldValues: List[Either[UnexpectedState, FieldValue]] = fvrs.map {
+            case (fvr) => {
+              val fieldValueOpt: Either[UnexpectedState, FieldValue] = fvr.getFieldValueOpt(true, true, true) // TODO - calculate editable, mandatory and submissible
+              fieldValueOpt
+            }
+          }
+          val unexpectedStateOrGroup: Either[UnexpectedState, Group] = unexpectedStateOrFieldValues.partition(_.isRight) match {
+            case (ueorfvs, Nil) => {
+              Right(Group((ueorfvs).collect { case Right(fv) => fv }))
+            }
+            case (_, ueorfvs) => {
+              val unexpectedStates: List[UnexpectedState] = ueorfvs.collect { case (Left(ue)) => ue }
+              Left(unexpectedStates.head)
+            }
+          }
+          unexpectedStateOrGroup
+        }
+        case _ => Left(InvalidState(s"""Require 'fields' element in Group"""))
+      }
+    }
+
     case Some(ChoiceRaw) =>
       (format, choices, multivalue, value) match {
         case (IsOrientation(VerticalOrientation), Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections)) =>
