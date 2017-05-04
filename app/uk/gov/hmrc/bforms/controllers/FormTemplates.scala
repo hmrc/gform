@@ -20,6 +20,7 @@ import cats.instances.future._
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 import play.api.mvc.Action
+
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.bforms.core._
 import uk.gov.hmrc.bforms.exceptions.InvalidState
@@ -27,7 +28,7 @@ import uk.gov.hmrc.bforms.repositories.{ FormTemplateRepository, SchemaRepositor
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.play.microservice.controller.BaseController
 import uk.gov.hmrc.bforms.core.SchemaValidator
-import uk.gov.hmrc.bforms.models.{ ComponentType, Schema, FormTemplate, FormTypeId, DbOperationResult }
+import uk.gov.hmrc.bforms.models.{ ComponentType, DbOperationResult, FormTemplate, FormTypeId, Schema, Section }
 import uk.gov.hmrc.bforms.typeclasses.{ FindOne, Update }
 
 object FormTemplates {
@@ -44,10 +45,13 @@ object FormTemplates {
     // Hardcoded for now, should be read from formTemplate itself
     val schemaId = "http://hmrc.gov.uk/jsonschema/bf-formtemplate#"
 
-    val exprs = formTemplate.sections.flatMap(_.fields.map(_.`type`))
+    val sectionsList = formTemplate.sections
+
+    val exprs = sectionsList.flatMap(_.fields.map(_.`type`))
 
     // format: OFF
     for {
+      _          <- fromOptA          (Section.validate(sectionsList).toEither)
       _          <- fromOptA          (ComponentType.validate(exprs, formTemplate).toEither)
       schema     <- fromFutureOptionA (findOne(Json.obj("id" -> schemaId)))(InvalidState(s"SchemaId $schemaId not found"))
       jsonSchema <- fromOptA          (SchemaValidator.conform(schema))
