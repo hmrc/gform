@@ -17,6 +17,9 @@
 package uk.gov.hmrc.bforms.models
 
 import play.api.libs.json.Json
+import uk.gov.hmrc.bforms.core.{ Valid, Invalid, ValidationResult }
+
+import scala.collection.immutable.List
 
 case class Section(
   title: String,
@@ -25,6 +28,17 @@ case class Section(
 
 object Section {
   implicit val format = Json.format[Section]
+
+  def validate(sectionsList: List[Section]): ValidationResult = {
+    val fieldIds: List[FieldId] = sectionsList.flatMap(_.fields.map(_.id))
+    val duplicates: List[FieldId] = fieldIds.groupBy(identity).collect { case (fId, List(_, _, _*)) => fId }.toList
+
+    duplicates.isEmpty match {
+      case true => Valid
+      case false => Invalid(s"Some FieldIds are defined more than once: ${duplicates.map(_.value)}")
+    }
+  }
+
 }
 
 case class SectionFormField(

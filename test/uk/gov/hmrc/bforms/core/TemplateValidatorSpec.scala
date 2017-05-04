@@ -17,15 +17,224 @@
 package uk.gov.hmrc.bforms.core
 
 import cats.data.NonEmptyList
-import cats.instances.either._
-import cats.instances.list._
+import uk.gov.hmrc.bforms.models._
 import cats.syntax.either._
 import org.scalatest.{ EitherValues, FlatSpec, Matchers }
-import play.api.libs.json.{ JsNull, Json, JsNumber }
-import uk.gov.hmrc.bforms.exceptions.InvalidState
-import uk.gov.hmrc.bforms.models._
+import play.api.libs.json._
 
 class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
+  "Section.validate" should "validate unique FieldIds" in {
+    val template =
+      """{
+        |  "formTypeId": "IPT100",
+        |  "formName": "Insurance Premium Tax Return | Yswiriant Ffurflen Dreth Premiwm",
+        |  "version": "0.2.5",
+        |  "description": "Fill in your insurance premium tax return form online | Llenwch eich ffurflen dreth premiwm yswiriant ar-lein",
+        |  "characterSet": "UTF-8",
+        |  "dmsSubmission": {
+        |    "customerId": "nino",
+        |    "classificationType": "BT-NRU-Environmental",
+        |    "businessArea": "FinanceOpsCorpT"
+        |  },
+        |  "submitSuccessUrl": "http://www.google.co.uk",
+        |  "submitErrorUrl": "http://www.yahoo.co.uk",
+        |  "sections": [
+        |    {
+        |      "title": "Calculation 1/2 | eich calculationewq",
+        |      "fields": [
+        |        {
+        |          "type": "choice",
+        |          "id": "dutyType",
+        |          "label": "Select the tax type for the duty you need to pay from the below",
+        |          "choices": [
+        |            "Tax type 590 - Natural gas",
+        |            "Tax type 591 - Other gas"
+        |          ],
+        |          "value": "1"
+        |        },
+        |        {
+        |          "type": "choice",
+        |          "id": "dutyType",
+        |          "label": "Select the tax type for the duty you need to pay from the below",
+        |          "choices": [
+        |            "Tax type 590 - Natural gas",
+        |            "Tax type 591 - Other gas"
+        |          ],
+        |          "value": "1"
+        |        },
+        |        {
+        |          "type": "choice",
+        |          "id": "dutyTypes",
+        |          "label": "Select the tax type for the duty you need to pay from the below",
+        |          "choices": [
+        |            "Tax type 595 - Natural gas",
+        |            "Tax type 596 - Other gas",
+        |            "Tax type 597 - Super gas",
+        |            "Tax type 598 - Empty gas"
+        |          ],
+        |          "multivalue": "yes",
+        |          "mandatory": "true",
+        |          "value": "1,2,3"
+        |        },
+        |        {
+        |          "type": "choice",
+        |          "id": "testChoice",
+        |          "label": "Test mandatory=false and nothind selected",
+        |          "choices": [
+        |            "295 - Natural gas",
+        |            "296 - SuperOther gas",
+        |            "297 - SuperBNatural gas",
+        |            "298 - Full throttle gas"
+        |          ],
+        |          "multivalue": "yes",
+        |          "mandatory": "true",
+        |          "value": "0,1,2"
+        |        },
+        |        {
+        |          "type": "choice",
+        |          "id": "isPremisesAddressBusinessAddress",
+        |          "label": "Is the address of the premises the same as your business address?",
+        |          "format": "yesno",
+        |          "value": "0"
+        |        },
+        |        {
+        |          "type": "choice",
+        |          "id": "isPremisesAddressBusinessAddress2",
+        |          "label": "Is the address of the premises the same as your business address again?",
+        |          "format": "yesno",
+        |          "value": "1"
+        |        },
+        |        {
+        |          "type": "choice",
+        |          "id": "isPremisesAddressBusinessAddress2",
+        |          "label": "Is the address of the premises the same as your business address again?",
+        |          "format": "yesno",
+        |          "value": "1"
+        |        },
+        |        {
+        |          "id": "amountA",
+        |          "label": "Amount A | Rhif A",
+        |          "mandatory": "true"
+        |        }
+        |      ]
+        |    },
+        |    {
+        |      "title": "Calculation 2/2 | eich calculationewq",
+        |      "fields": [
+        |        {
+        |          "id": "amountB",
+        |          "label": "Amount B | Rhif B",
+        |          "mandatory": "true"
+        |        },
+        |        {
+        |          "id": "sum",
+        |          "label": "Sum | Eich sumolaf",
+        |          "mandatory": "true",
+        |          "value": "${amountA + amountB}"
+        |        }
+        |      ]
+        |    },
+        |    {
+        |      "title": "Your details | eich manylion",
+        |      "fields": [
+        |        {
+        |          "id": "firstName",
+        |          "label": "Your first name | Eich enw cyntaf",
+        |          "mandatory": "true",
+        |          "type": "text"
+        |        },
+        |        {
+        |          "id": "iptRegNum",
+        |          "label": "Insurance Premium Tax (IPT) registration number | Treth Premiwm Yswiriant (IPT) rhif cofrestru",
+        |          "readonly": "true",
+        |          "mandatory": "true",
+        |          "type": "text"
+        |        },
+        |        {
+        |          "id": "lastName",
+        |          "label": "Your last name | Eich enw olaf",
+        |          "mandatory": "true",
+        |          "type": "text"
+        |        },
+        |        {
+        |          "id": "address",
+        |          "label": "Your Address | Eich enw cyntaf",
+        |          "mandatory": "true",
+        |          "type": "address"
+        |        },
+        |        {
+        |          "id": "accPeriodStartDate",
+        |          "type": "date",
+        |          "label": "Accounting period start date",
+        |          "helpText": "For example, 31 3 1980",
+        |          "format":"after 2016-09-05 -1",
+        |          "offset":"5",
+        |          "mandatory": "false",
+        |          "value": "next-01-15"
+        |        }
+        |      ]
+        |    },
+        |    {
+        |      "title": "Business details | manylion Busnes",
+        |      "fields": [
+        |        {
+        |          "id": "nameOfBusiness",
+        |          "label": "Name of business | Enw'r busnes",
+        |          "mandatory": "true"
+        |        },
+        |        {
+        |          "id": "accountingPeriodStartDate",
+        |          "label": "Accounting period start date | Dyddiad dechrau'r cyfnod cyfrifeg",
+        |          "format": "date",
+        |          "mandatory": "true"
+        |        },
+        |        {
+        |          "id": "accountingPeriodEndDate",
+        |          "label": "Accounting period end date | Dyddiad diwedd cyfnod Cyfrifeg",
+        |          "format": "date",
+        |          "mandatory": "false"
+        |        }
+        |      ]
+        |    },
+        |    {
+        |      "title": "Rate for the period of the Insurance Premium Tax | Gyfradd ar gyfer y cyfnod y Dreth Premiwm Yswiriant",
+        |      "fields": [
+        |        {
+        |          "id": "standardRateIPTDueForThisPeriod",
+        |          "label": "Standard rate IPT due for this period | Cyfradd safonol IPT sy'n ddyledus am y cyfnod hwn",
+        |          "helpText": "You should deduct any standard credits which are due to you | Dylech ddidynnu unrhyw gredydau safonol sydd yn ddyledus i chi",
+        |          "format": "sterling",
+        |          "mandatory": "true"
+        |        },
+        |        {
+        |          "id": "higherRateIPTDueForThisPeriod",
+        |          "label": "Higher rate IPT due for this period | Cyfradd uwch IPT sy'n ddyledus am y cyfnod hwn",
+        |          "format": "sterling",
+        |          "mandatory": "true"
+        |        }
+        |      ]
+        |    }
+        |  ]
+        |}
+        |""".stripMargin
+
+    val formTemplateJsValue = Json.parse(template)
+    val formTemplateJsResult = formTemplateJsValue.validate[FormTemplate]
+
+    formTemplateJsResult match {
+      case JsSuccess(formTempl, _) =>
+        val result = Section.validate(formTempl.sections).toEither
+
+        result.left.value canEqual s"Some FieldIds are defined more than once: ${
+          List(
+            FieldId("isPremisesAddressBusinessAddress2"),
+            FieldId("dutyType")
+          )
+        }"
+
+      case JsError(error) => s"Couldn't convert json to FormTemplate, $error"
+    }
+  }
 
   "TemplateValidator.conform" should "validate template against template schema" in {
 
