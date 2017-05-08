@@ -260,14 +260,14 @@ case class FieldValueRaw(
         getFieldValue(editable = false, mandatory = true, submissible = true)
       case (Some(IsInfo()),
         Some(IsTrueish()) | None) =>
-        getFieldValue(editable = true, mandatory = true, submissible = false)
+        getFieldValue(editable = false, mandatory = true, submissible = false)
 
       case (Some(IsStandard()) | None,
         Some(IsFalseish())) =>
         getFieldValue(editable = true, mandatory = false, submissible = true)
       case (Some(IsInfo()),
         Some(IsFalseish())) =>
-        getFieldValue(editable = true, mandatory = false, submissible = false)
+        getFieldValue(editable = false, mandatory = false, submissible = false)
 
       case otherwise => JsError(s"Expected 'standard', 'readonly' or 'info' string or nothing for submitMode and expected 'true' or 'false' string or nothing for mandatory field value, got: $otherwise")
     }

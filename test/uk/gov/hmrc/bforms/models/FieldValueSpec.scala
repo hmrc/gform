@@ -185,7 +185,7 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
     fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, mandatory = true, editable = false, submissible = true))
   }
 
-  it should "parse as Text with 'submitMode' info as editable and non-submissible" in {
+  it should "parse as Text with 'submitMode' info as non-editable and non-submissible" in {
     val fieldValue = toFieldValue(
       """|{
          |  "id": "regNum",
@@ -194,10 +194,10 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, mandatory = true, editable = true, submissible = false))
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, mandatory = true, editable = false, submissible = false))
   }
 
-  it should "parse as Text with 'mandatory' false and 'submitMode' info as non-mandatory, editable and non-submissible" in {
+  it should "parse as Text with 'mandatory' false and 'submitMode' info as non-mandatory, non-editable and non-submissible" in {
     val fieldValue = toFieldValue(
       """|{
          |  "id": "regNum",
@@ -207,7 +207,7 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, mandatory = false, editable = true, submissible = false))
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, mandatory = false, editable = false, submissible = false))
   }
 
   it should "parse 'choice' type as Radio with Vertical orientation if no multivalue & no format is provided" in {
