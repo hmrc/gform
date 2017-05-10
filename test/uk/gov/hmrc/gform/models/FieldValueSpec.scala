@@ -473,7 +473,7 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
     )
   }
 
-  it should "fail to parse 'choice' type as YesNo if 'choices' are provided" in {
+  it should "parse 'choice' type as YesNo ignoring 'choices' if they are provided" in {
     val fieldValue = toFieldValue(
       """|{
          |  "type": "choice",
@@ -487,10 +487,10 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
          |}"""
     )
 
-    fieldValue should be(jsError)
+    fieldValue should beJsSuccess(FieldValue(FieldId("taxType"), Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int]), "Gas tax type?", None, mandatory = true, editable = true, submissible = true))
   }
 
-  it should "fail to parse 'choice' type as YesNo if 'multivalue=yes' is provided" in {
+  it should "parse 'choice' type as YesNo even though 'multivalue=yes' is provided" in {
     val fieldValue = toFieldValue(
       """|{
          |  "type": "choice",
@@ -501,7 +501,7 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
          |}"""
     )
 
-    fieldValue should be(jsError)
+    fieldValue should beJsSuccess(FieldValue(FieldId("taxType"), Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int]), "Gas tax type?", None, mandatory = true, editable = true, submissible = true))
   }
 
   it should "fail to parse 'choice' type if no 'options' are provided" in {
