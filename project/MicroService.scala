@@ -36,9 +36,9 @@ trait MicroService {
       libraryDependencies ++= appDependencies,
       evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
       routesImport ++= Seq(
-        "uk.gov.hmrc.bforms.binders.ValueClassBinder._",
-        "uk.gov.hmrc.bforms.models.FormTypeId",
-        "uk.gov.hmrc.bforms.models.FormId"
+        "uk.gov.hmrc.gform.binders.ValueClassBinder._",
+        "uk.gov.hmrc.gform.models.FormTypeId",
+        "uk.gov.hmrc.gform.models.FormId"
       ),
       scalacOptions ++= Seq(
         "-Xfatal-warnings",
