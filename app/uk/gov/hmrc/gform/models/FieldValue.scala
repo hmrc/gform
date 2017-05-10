@@ -181,6 +181,8 @@ case class FieldValueRaw(
           Right(Choice(Radio, NonEmptyList(x, xs), Horizontal, selections))
         case (IsOrientation(YesNoOrientation), None, IsMultivalue(MultivalueNo), Selections(selections)) =>
           Right(Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, selections))
+        case (IsOrientation(YesNoOrientation), _, _, Selections(selections)) =>
+          Right(Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, selections))
         case (invalidFormat, invalidChoices, invalidMultivalue, invalidValue) => Left(
           InvalidState(s"""|Unsupported combination of 'format, choices, multivalue and value':
                            |Format     : $invalidFormat
