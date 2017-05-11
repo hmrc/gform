@@ -60,7 +60,7 @@ class PdfGeneratorSpec extends FlatSpec with Matchers {
         List(
           getFF(FieldId("year"), "Current year", "2017"),
           getFF(FieldId("nextChristmas"), "Next christmas", "Monday, December 25, 2017"),
-          getFF(FieldId("showcase"), "Bforms showcase", "12/18/2017"),
+          getFF(FieldId("showcase"), "Gform showcase", "12/18/2017"),
           getFF(FieldId("summnerSolctice"), "Summer solctice", "Wednesday, June 21, 2017")
         )
       )
