@@ -1,0 +1,106 @@
+{
+  "formTypeId": "AL100",
+  "formName": "Aggregates Levy return",
+  "version": "0.1.0",
+  "description": "Fill in your aggregates levy return form online",
+  "characterSet": "UTF-8",
+  "dmsSubmission": {
+    "customerId": "nino",
+    "classificationType": "BT-NRU-Environmental",
+    "businessArea": "FinanceOpsCorpT"
+  },
+  "submitSuccessUrl": "http://www.google.co.uk",
+  "submitErrorUrl": "http://www.yahoo.co.uk",
+  "sections": [
+    {
+      "title": "About you",
+      "description": "Provide your information before telling us about your business",
+      "fields": [
+        {
+          "id": "firstName",
+          "type": "text",
+          "label": "Your first name",
+          "mandatory": "true"
+        },
+        {
+          "id": "lastName",
+          "type": "text",
+          "label": "Your last name",
+          "mandatory": "true"
+        },
+        {
+          "id": "businessTelephone [TODO: convert to group]",
+          "type": "text",
+          "label": "Telephone number",
+          "helpText": "If this is a UK landline or an overseas number, you must include the area or dialling code.",
+          "mandatory": "true"
+        },
+        {
+          "id": "positionInTheCompany",
+          "type": "text",
+          "label": "Position in the company",
+          "helpText": "For example: director, company, secretary, agent",
+          "mandatory": "true"
+        }
+      ]
+    },
+    {
+      "title": "Business details",
+      "description": "This is your registered business address. We will ask you later about additional sites for this return.",
+      "fields": [
+        {
+          "id": "businessName",
+          "type": "text",
+          "label": "Name of business",
+          "mandatory": "true"
+        },
+        {
+          "id": "startDate",
+          "type": "date",
+          "label": "Return period start date",
+          "helpText": "This date is on the letter sent out notifying you that the return is due, for example 01/10/2016.",
+          "mandatory": "true"
+        },
+        {
+          "id": "endDate",
+          "type": "date",
+          "label": "Return period end date",
+          "helpText": "This date is on the letter sent out notifying you that the return is due, for example 31/12/2016.",
+          "mandatory": "true"
+        }
+      ]
+    },
+    {
+      "title": "Aggregates Levy details",
+      "fields": [
+        {
+          "id": "levyDueForThisPeriod",
+          "type": "text",
+          "label": "Levy due for this period",
+          "helpText": "Enter the net levy due after taking account of bad debt or other Aggregates Levy reliefs you have claimed this period. You may also include net errors, within limits, if you declared too much or too little levy previously.",
+          "format": "sterling"
+        },
+        {
+          "id": "taxableAggregateExploitedThisPeriod",
+          "type": "text",
+          "label": "Tonnes of taxable aggregate commercially exploited this period",
+          "helpText": "Include any aggregate that is, or may become, eligible for relief.",
+          "mandatory": "true"
+        },
+        {
+          "id": "TonnesOfRelievedAggregateThisPeriod",
+          "type": "text",
+          "label": "Tonnes of relieved aggregate this period",
+          "helpText": "Include exported aggregate.",
+          "mandatory": "true"
+        },
+        {
+          "id": "TonnesOfExemptAggregateThisPeriod",
+          "type": "text",
+          "label": "Tonnes of exempt aggregate commercially exploited this period",
+          "mandatory": "true"
+        }
+      ]
+    }
+  ]
+}
