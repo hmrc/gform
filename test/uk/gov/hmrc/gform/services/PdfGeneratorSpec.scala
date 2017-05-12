@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.services
 import org.scalatest._
 import uk.gov.hmrc.gform.models._
 
+
 class PdfGeneratorSpec extends FlatSpec with Matchers {
 
   def getFF(id: FieldId, label: String, value: String) = {
@@ -59,7 +60,7 @@ class PdfGeneratorSpec extends FlatSpec with Matchers {
         List(
           getFF(FieldId("year"), "Current year", "2017"),
           getFF(FieldId("nextChristmas"), "Next christmas", "Monday, December 25, 2017"),
-          getFF(FieldId("showcase"), "Bforms showcase", "12/18/2017"),
+          getFF(FieldId("showcase"), "Gform showcase", "12/18/2017"),
           getFF(FieldId("summnerSolctice"), "Summer solctice", "Wednesday, June 21, 2017")
         )
       )
