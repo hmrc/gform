@@ -64,6 +64,8 @@
             "Submit a return with payment due",
             "Submit a nil return"
           ]
+        }
+      ]
     },
     {
       "title": "Enter number of sites",
