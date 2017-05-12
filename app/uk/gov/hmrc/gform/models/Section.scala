@@ -53,7 +53,6 @@ object Section {
       case true => Valid
       case false => Invalid(s"Choice components doesn't have equal number of choices and help texts ${choiceFieldIdResult.keys.toList}")
     }
-
   }
 
   /**
