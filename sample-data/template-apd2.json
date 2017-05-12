@@ -1,0 +1,221 @@
+{
+  "formTypeId": "APD2",
+  "formName": "Air passenger duty duty return",
+  "version": "0.1.0",
+  "description": "Fill in your air passenger duty return form online",
+  "characterSet": "UTF-8",
+  "dmsSubmission": {
+    "customerId": "nino",
+    "classificationType": "BT-NRU-Environmental",
+    "businessArea": "FinanceOpsCorpT"
+  },
+  "submitSuccessUrl": "http://www.google.co.uk",
+  "submitErrorUrl": "http://www.yahoo.co.uk",
+  "sections": [
+    {
+      "title": "About you",
+      "description": "Provide your information before telling us about your business",
+      "fields": [
+        {
+          "id": "firstName",
+          "type": "text",
+          "label": "Your first name",
+          "mandatory": "true"
+        },
+        {
+          "id": "lastName",
+          "type": "text",
+          "label": "Your last name",
+          "mandatory": "true"
+        },
+        {
+          "id": "businessTelephone [TODO: convert to group]",
+          "type": "text",
+          "label": "Telephone number",
+          "helpText": "If this is a UK landline or an overseas number, you must include the area or dialling code.",
+          "mandatory": "true"
+        },
+        {
+          "id": "positionInTheCompany",
+          "type": "text",
+          "label": "Position in the company",
+          "helpText": "For example: director, company, secretary, agent",
+          "mandatory": "true"
+        }
+      ]
+    },
+    {
+      "title": "Business details",
+      "description": "This is your registered business address. We will ask you later about additional sites for this return.",
+      "fields": [
+        {
+          "id": "businessName",
+          "type": "text",
+          "label": "Name of business",
+          "mandatory": "true"
+        },
+        {
+          "id": "startDate",
+          "type": "date",
+          "label": "Return period start date",
+          "helpText": "This date is on the letter sent out notifying you that the return is due, for example 01/10/2016.",
+          "mandatory": "true"
+        },
+        {
+          "id": "endDate",
+          "type": "date",
+          "label": "Return period end date",
+          "helpText": "This date is on the letter sent out notifying you that the return is due, for example 31/12/2016.",
+          "mandatory": "true"
+        },
+        {
+          "type": "choice",
+          "id": "bandRate",
+          "label": "Choose the band rate(s) that chargeable aircraft have flown in this accounting period.",
+          "choices":["Lower band A rate", "Standard band A rate", "Higher band A rate", "Lower band B rate", "Standard band B rate", "Higher band B rate"]
+        }
+      ]
+    },
+    {
+      "title": "Chargeable aircraft flown at lower band A",
+      "fields": [
+        {
+          "id": "numberOfChargeablePassengersFlownLowerA",
+          "type": "text",
+          "label": "Number of chargeable passengers flown",
+          "mandatory": "true"
+        },
+        {
+          "id": "amountOfDutyLowerA",
+          "type": "text",
+          "label": "Amount of duty",
+          "mandatory": "true",
+          "format": "sterling"
+        }
+      ]
+    },
+    {
+      "title": "Chargeable aircraft flown at standard band A",
+      "fields": [
+        {
+          "id": "numberOfChargeablePassengersFlownStandardA",
+          "type": "text",
+          "label": "Number of chargeable passengers flown",
+          "mandatory": "true"
+        },
+        {
+          "id": "amountOfDutyStandardA",
+          "type": "text",
+          "label": "Amount of duty",
+          "mandatory": "true",
+          "format": "sterling"
+        }
+      ]
+    },
+    {
+      "title": "Chargeable aircraft flown at higher band A",
+      "fields": [
+        {
+          "id": "numberOfChargeablePassengersFlownHigherA",
+          "type": "text",
+          "label": "Number of chargeable passengers flown",
+          "mandatory": "true"
+        },
+        {
+          "id": "amountOfDutyHigherA",
+          "type": "text",
+          "label": "Amount of duty",
+          "mandatory": "true",
+          "format": "sterling"
+        }
+      ]
+    },
+    {
+      "title": "Chargeable aircraft flown at lower band B",
+      "fields": [
+        {
+          "id": "numberOfChargeablePassengersFlownLowerB",
+          "type": "text",
+          "label": "Number of chargeable passengers flown",
+          "mandatory": "true"
+        },
+        {
+          "id": "amountOfDutyLowerB",
+          "type": "text",
+          "label": "Amount of duty",
+          "mandatory": "true",
+          "format": "sterling"
+        }
+      ]
+    },
+    {
+      "title": "Chargeable aircraft flown at standard band B",
+      "fields": [
+        {
+          "id": "numberOfChargeablePassengersFlownStandardB",
+          "type": "text",
+          "label": "Number of chargeable passengers flown",
+          "mandatory": "true"
+        },
+        {
+          "id": "amountOfDutyStandardB",
+          "type": "text",
+          "label": "Amount of duty",
+          "mandatory": "true",
+          "format": "sterling"
+        }
+      ]
+    },
+    {
+      "title": "Chargeable aircraft flown at higher band B",
+      "fields": [
+        {
+          "id": "numberOfChargeablePassengersFlownHigherB",
+          "type": "text",
+          "label": "Number of chargeable passengers flown",
+          "mandatory": "true"
+        },
+        {
+          "id": "amountOfDutyHigherB",
+          "type": "text",
+          "label": "Amount of duty",
+          "mandatory": "true",
+          "format": "sterling"
+        }
+      ]
+    },
+    {
+      "title": "Additional details",
+      "fields": [
+        {
+          "id": "exemptPassengers",
+          "type": "text",
+          "label": "How many of the passengers you carried are exempt?",
+          "mandatory": "true"
+        },
+        {
+          "id": "underDeclarations",
+          "type": "text",
+          "label": "Under-declarations",
+          "helpText": "You can correct errors from previous returns if one of these criteria apply: the amount does not exceed £10,000; or if the amount is between £10,000 and £50,000 but does not exceed 1% of the duty due for this return period.",
+          "mandatory": "true",
+          "format": "sterling"
+        },
+        {
+          "id": "overDeclarations",
+          "type": "text",
+          "label": "Over-declarations",
+          "helpText": "You can correct errors from previous returns if one of these criteria apply: the amount does not exceed £10,000; or if the amount is between £10,000 and £50,000 but does not exceed 1% of the duty due for this return period.",
+          "mandatory": "true",
+          "format": "sterling"
+        },
+        {
+          "type": "choice",
+          "id": "specialAccountingScheme",
+          "label": "Are you using a special accounting scheme?",
+          "format": "yesno"
+        }
+      ]
+    }
+  ]
+}

@@ -58,13 +58,11 @@
       "fields": [
         {
           "type": "choice",
-          "label": "Select nil return if you have no duty to pay this return period.",
-          "id": "nilReturn",
-          "choices": [
-            "Submit a return with payment due",
-            "Submit a nil return"
-          ]
+          "id": "isPremisesAddressBusinessAddress",
+          "label": "Is the address of the premises, the same as your business address?",
+          "format": "yesno"
         }
+
       ]
     },
     {

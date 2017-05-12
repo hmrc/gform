@@ -1,0 +1,116 @@
+{
+  "formTypeId": "BD510",
+  "formName": "Promoter's monthly Bingo Duty return",
+  "version": "0.1.0",
+  "description": "Fill in your bingo duty return form online",
+  "characterSet": "UTF-8",
+  "dmsSubmission": {
+    "customerId": "nino",
+    "classificationType": "BT-NRU-Environmental",
+    "businessArea": "FinanceOpsCorpT"
+  },
+  "submitSuccessUrl": "http://www.google.co.uk",
+  "submitErrorUrl": "http://www.yahoo.co.uk",
+  "sections": [
+    {
+      "title": "About you",
+      "description": "Provide your information before telling us about your business",
+      "fields": [
+        {
+          "id": "firstName",
+          "type": "text",
+          "label": "Your first name",
+          "mandatory": "true"
+        },
+        {
+          "id": "lastName",
+          "type": "text",
+          "label": "Your last name",
+          "mandatory": "true"
+        },
+        {
+          "id": "businessTelephone [TODO: convert to group]",
+          "type": "text",
+          "label": "Telephone number",
+          "helpText": "If this is a UK landline or an overseas number, you must include the area or dialling code.",
+          "mandatory": "true"
+        },
+        {
+          "id": "positionInTheCompany",
+          "type": "text",
+          "label": "Position in the company",
+          "helpText": "For example: director, company, secretary, agent",
+          "mandatory": "true"
+        }
+      ]
+    },
+    {
+      "title": "Business details",
+      "description": "This is your registered business address. We will ask you later about additional sites for this return.",
+      "fields": [
+        {
+          "id": "businessName",
+          "type": "text",
+          "label": "Name of business",
+          "mandatory": "true"
+        },
+        {
+          "id": "startDate",
+          "type": "date",
+          "label": "Return period start date",
+          "helpText": "This date is on the letter sent out notifying you that the return is due, for example 01/10/2016.",
+          "mandatory": "true"
+        },
+        {
+          "id": "endDate",
+          "type": "date",
+          "label": "Return period end date",
+          "helpText": "This date is on the letter sent out notifying you that the return is due, for example 31/12/2016.",
+          "mandatory": "true"
+        }
+      ]
+    },
+    {
+      "title": "Return details",
+      "fields": [
+        {
+          "id": "amountDueForPlayingBingo",
+          "type": "text",
+          "label": "Amount due as payments for playing bingo in the return period",
+          "helpText": "Include the total value of all payments due to you or received by you from players taking part in a game of bingo. This includes cards and participation fees but does not include admissions or member fees.",
+          "format": "sterling"
+        },
+        {
+          "id": "amountSpentOnWinnings",
+          "type": "text",
+          "label": "Amount spent on winnings in the return period",
+          "helpText": "Include the total value of all winnings, including money prizes and the VAT-inclusive value of prizes and vouchers.",
+          "mandatory": "true",
+          "format": "sterling"
+        },
+        {
+          "id": "bingoLossesFromPreviousPeriod",
+          "type": "text",
+          "label": "Bingo losses carried forward from the previous return period",
+          "helpText": "Enter any losses you declared in the previous accounting period. Enter 0 if you have no losses.",
+          "mandatory": "true",
+          "format": "sterling"
+        },
+        {
+          "type": "choice",
+          "id": "underdeclarationsInPreviousPeriods",
+          "label": "Have any underdeclarations been made in previous return periods?",
+          "format": "yesno"
+        },
+        {
+          "id": "amountUnderdeclaredInPreviousPeriods",
+          "type": "text",
+          "label": "Amount underdeclared in previous return periods",
+          "helpText": "Enter any duty under-declarations made in previous returns other than those notified in writing to HMRC.",
+          "mandatory": "true",
+          "format": "sterling"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,155 @@
+{
+  "formTypeId": "BD600",
+  "formName": "Promoter's monthly Lottery Duty return",
+  "version": "0.1.0",
+  "description": "Fill in your promoter's monthly lottery duty return form online",
+  "characterSet": "UTF-8",
+  "dmsSubmission": {
+    "customerId": "nino",
+    "classificationType": "BT-NRU-Environmental",
+    "businessArea": "FinanceOpsCorpT"
+  },
+  "submitSuccessUrl": "http://www.google.co.uk",
+  "submitErrorUrl": "http://www.yahoo.co.uk",
+  "sections": [
+    {
+      "title": "About you",
+      "description": "Provide your information before telling us about your business",
+      "fields": [
+        {
+          "id": "firstName",
+          "type": "text",
+          "label": "Your first name",
+          "mandatory": "true"
+        },
+        {
+          "id": "lastName",
+          "type": "text",
+          "label": "Your last name",
+          "mandatory": "true"
+        },
+        {
+          "id": "businessTelephone [TODO: convert to group]",
+          "type": "text",
+          "label": "Telephone number",
+          "helpText": "If this is a UK landline or an overseas number, you must include the area or dialling code.",
+          "mandatory": "true"
+        },
+        {
+          "id": "positionInTheCompany",
+          "type": "text",
+          "label": "Position in the company",
+          "helpText": "For example: director, company, secretary, agent",
+          "mandatory": "true"
+        }
+      ]
+    },
+    {
+      "title": "Business details",
+      "fields": [
+        {
+          "id": "businessName",
+          "type": "text",
+          "label": "Name of business",
+          "mandatory": "true"
+        },
+        {
+          "id": "startDate",
+          "type": "date",
+          "label": "Return period start date",
+          "helpText": "This date is on the letter sent out notifying you that the return is due, for example 01/10/2016.",
+          "mandatory": "true"
+        },
+        {
+          "id": "endDate",
+          "type": "date",
+          "label": "Return period end date",
+          "helpText": "This date is on the letter sent out notifying you that the return is due, for example 31/12/2016.",
+          "mandatory": "true"
+        }
+      ]
+    },
+    {
+      "title": "Return details",
+      "fields": [
+        {
+          "id": "valueOfConsideration",
+          "type": "text",
+          "label": "Value of the consideration given for tickets or chances in the online game in this accounting period",
+          "format": "sterling",
+          "mandatory": "true"
+        },
+        {
+          "id": "valueOfInstant",
+          "type": "text",
+          "label": "Value of the instant tickets or chances in packs becoming settled in this accounting period",
+          "format": "sterling",
+          "mandatory": "true"
+        },
+        {
+          "id": "amountOfLotteryDutyDue",
+          "type": "text",
+          "label": "Amount of lottery duty due in this accounting period",
+          "format": "sterling",
+          "mandatory": "true"
+        },
+        {
+          "type": "choice",
+          "id": "overDeclarationOnPreviousReturns",
+          "label": "Have you made an over-declaration on previous returns?",
+          "format": "yesno",
+          "mandatory": "true"
+        },
+        {
+          "id": "amountOfOverDeclaration",
+          "type": "text",
+          "label": "Amount of over-declaration",
+          "format": "sterling",
+          "mandatory": "true"
+        },
+        {
+          "type": "choice",
+          "id": "claimedRefund",
+          "label": "Have you claimed a refund of this over-declaration?",
+          "format": "yesno",
+          "mandatory": "true"
+        },
+        {
+          "id": "amountOfRefundClaimed",
+          "type": "text",
+          "label": "Amount of refund claimed",
+          "format": "sterling",
+          "mandatory": "true"
+        },
+        {
+          "type": "choice",
+          "id": "underDeclarationOnPreviousReturns",
+          "label": "Have you made an under-declaration on previous returns?",
+          "format": "yesno",
+          "mandatory": "true"
+        },
+        {
+          "id": "amountOfUnderDeclaration",
+          "type": "text",
+          "label": "Amount of under-declaration",
+          "format": "sterling",
+          "mandatory": "true"
+        },
+        {
+          "type": "choice",
+          "id": "repaidUnderDeclaration",
+          "label": "Have you repaid HMRC some or all of this under-declaration",
+          "format": "yesno",
+          "mandatory": "true"
+        },
+        {
+          "id": "amountORepaid",
+          "type": "text",
+          "label": "Amount repaid to HMRC",
+          "format": "sterling",
+          "mandatory": "true"
+        }
+      ]
+    }
+  ]
+}
