@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.gform.models
 
-import cats.kernel.Monoid
 import play.api.libs.json.Json
 import uk.gov.hmrc.gform.core.{ Invalid, Valid, ValidationResult }
 
@@ -40,31 +39,12 @@ object Section {
     }
   }
 
-  def validateHelpText(sectionsList: List[Section]): ValidationResult = {
-    val compHelpText = validateCompHelpText(sectionsList)
-    val choiceHelpText = validateChoiceHelpText(sectionsList)
-
-    Monoid[ValidationResult].combine(compHelpText, choiceHelpText)
-
-  }
-
-  def validateCompHelpText(sectionsList: List[Section]): ValidationResult = {
-    val componentFieldId: Map[FieldId, Boolean] = sectionsList.flatMap(_.fields).map(fv => (fv.id, fv.`type`, fv.helpText))
-      .collect { case (fId, Text(_, _) | Date(_, _, _) | Address | Group(_), Some(helpTextList)) => (fId, helpTextList.size.equals(1)) }
-      .toMap
-
-    val fieldIdResult = componentFieldId.filter(value => value._2.equals(false))
-
-    fieldIdResult.isEmpty match {
-      case true => Valid
-      case false => Invalid(s"Some components have more than one helpText ${fieldIdResult.keys.toList}")
-    }
-  }
-
   def validateChoiceHelpText(sectionsList: List[Section]): ValidationResult = {
-
-    val choiceFieldIdMap: Map[FieldId, Boolean] = sectionsList.flatMap(_.fields).map(fv => (fv.id, fv.`type`, fv.helpText))
-      .collect { case (fId, Choice(_, options, _, _), Some(helpTextList)) => (fId, options.toList.size.equals(helpTextList.size)) }
+    val choiceFieldIdMap: Map[FieldId, Boolean] = sectionsList.flatMap(_.fields).map(fv => (fv.id, fv.`type`))
+      .collect {
+        case (fId, Choice(_, options, _, _, helpTextList @ Some(x :: xs))) =>
+          (fId, options.toList.size.equals(helpTextList.getOrElse(List.empty).size))
+      }
       .toMap
 
     val choiceFieldIdResult = choiceFieldIdMap.filter(value => value._2.equals(false))

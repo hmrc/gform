@@ -32,7 +32,7 @@ sealed trait ComponentType {
     case Text(expr, _) => expr.validate(formTemplate)
     case Date(_, _, _) => Valid
     case Address => Valid
-    case Choice(_, _, _, _) => Valid
+    case Choice(_, _, _, _, _) => Valid
     case Group(fvs) => ComponentType.validate(fvs.map(_.`type`), formTemplate)
   }
 }
@@ -70,7 +70,8 @@ object ChoiceType {
   implicit val format: OFormat[ChoiceType] = derived.oformat
 }
 
-case class Choice(`type`: ChoiceType, options: NonEmptyList[String], orientation: ChoiceOrientation, selections: List[Int]) extends ComponentType
+case class Choice(`type`: ChoiceType, options: NonEmptyList[String], orientation: ChoiceOrientation,
+  selections: List[Int], optionHelpText: Option[List[String]]) extends ComponentType
 
 object ComponentType {
 

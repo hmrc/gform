@@ -387,7 +387,7 @@ class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
         FieldId("nameOfBusiness"), Text(Constant(""), total = false), "Name of business", None, mandatory = true, editable = true, submissible = true
       ),
       FieldValue(
-        FieldId("dutyType"), Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int]), "Select the tax type", None, mandatory = true, editable = true, submissible = true
+        FieldId("dutyType"), Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None), "Select the tax type", None, mandatory = true, editable = true, submissible = true
       )
     )
   )
@@ -399,7 +399,7 @@ class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
         FieldId("nameOfBusiness"), Text(Constant(""), total = false), "Name of business", None, mandatory = true, editable = true, submissible = true
       ),
       FieldValue(
-        FieldId("dutyType"), Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int]), "Select the tax type", None, mandatory = true, editable = true, submissible = true
+        FieldId("dutyType"), Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None), "Select the tax type", None, mandatory = true, editable = true, submissible = true
       )
     )
   )
@@ -411,7 +411,7 @@ class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
         FieldId("nameOfBusiness"), Text(Constant(""), total = false), "Name of business", None, mandatory = true, editable = true, submissible = true
       ),
       FieldValue(
-        FieldId("taxType"), Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int]), "Gas tax type?", None, mandatory = true, editable = true, submissible = true
+        FieldId("taxType"), Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int], None), "Gas tax type?", None, mandatory = true, editable = true, submissible = true
       )
     )
   )
