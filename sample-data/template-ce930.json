@@ -58,12 +58,12 @@
       "fields": [
         {
           "type": "choice",
-          "id": "isPremisesAddressBusinessAddress",
-          "label": "Is the address of the premises, the same as your business address?",
-          "format": "yesno"
-        }
-
-      ]
+          "label": "Select nil return if you have no duty to pay this return period.",
+          "id": "nilReturn",
+          "choices": [
+            "Submit a return with payment due",
+            "Submit a nil return"
+          ]
     },
     {
       "title": "Enter number of sites",
