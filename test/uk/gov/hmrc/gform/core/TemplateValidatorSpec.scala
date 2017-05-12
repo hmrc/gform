@@ -223,7 +223,7 @@ class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
 
     formTemplateJsResult match {
       case JsSuccess(formTempl, _) =>
-        val result = Section.validate(formTempl.sections).toEither
+        val result = Section.validateUniqueFields(formTempl.sections).toEither
 
         result.left.value canEqual s"Some FieldIds are defined more than once: ${
           List(

@@ -27,7 +27,7 @@ case class FieldValue(
   id: FieldId,
   `type`: ComponentType,
   label: String,
-  helpText: Option[String],
+  helpText: Option[List[String]],
   mandatory: Boolean,
   editable: Boolean,
   submissible: Boolean
@@ -41,7 +41,7 @@ object FieldValue {
     (__ \ 'label).format[String] and
     (__ \ 'value).formatNullable[ValueExpr] and
     (__ \ 'format).formatNullable[FormatExpr] and
-    (__ \ 'helpText).formatNullable[String] and
+    (__ \ 'helpText).formatNullable[List[String]] and
     (__ \ 'submitMode).formatNullable[String] and
     (__ \ 'choices).formatNullable[List[String]] and
     (__ \ 'fields).lazyFormatNullable(implicitly[Format[List[FieldValueRaw]]]) and
@@ -67,7 +67,7 @@ case class FieldValueRaw(
     label: String,
     value: Option[ValueExpr] = None,
     format: Option[FormatExpr] = None,
-    helpText: Option[String] = None,
+    helpText: Option[List[String]] = None,
     submitMode: Option[String] = None,
     choices: Option[List[String]] = None,
     fields: Option[List[FieldValueRaw]] = None,

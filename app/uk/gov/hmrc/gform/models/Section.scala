@@ -29,7 +29,7 @@ case class Section(
 object Section {
   implicit val format = Json.format[Section]
 
-  def validate(sectionsList: List[Section]): ValidationResult = {
+  def validateUniqueFields(sectionsList: List[Section]): ValidationResult = {
     val fieldIds: List[FieldId] = sectionsList.flatMap(_.fields.map(_.id))
     val duplicates: List[FieldId] = fieldIds.groupBy(identity).collect { case (fId, List(_, _, _*)) => fId }.toList
 
@@ -37,6 +37,12 @@ object Section {
       case true => Valid
       case false => Invalid(s"Some FieldIds are defined more than once: ${duplicates.map(_.value)}")
     }
+  }
+
+  def validateLabel(sectionsList: List[Section]) = {
+
+    val res =
+
   }
 
 }
