@@ -16,8 +16,9 @@
 
 package uk.gov.hmrc.gform.models
 
+import cats.kernel.Monoid
 import play.api.libs.json.Json
-import uk.gov.hmrc.gform.core.{ Valid, Invalid, ValidationResult }
+import uk.gov.hmrc.gform.core.{ Invalid, Valid, ValidationResult }
 
 import scala.collection.immutable.List
 
@@ -39,11 +40,72 @@ object Section {
     }
   }
 
-  def validateLabel(sectionsList: List[Section]) = {
+  def validateHelpText(sectionsList: List[Section]): ValidationResult = {
+    val compHelpText = validateCompHelpText(sectionsList)
+    val choiceHelpText = validateChoiceHelpText(sectionsList)
 
-    val res =
+    Monoid[ValidationResult].combine(compHelpText, choiceHelpText)
 
   }
+
+  def validateCompHelpText(sectionsList: List[Section]): ValidationResult = {
+    val componentFieldId: Map[FieldId, Boolean] = sectionsList.flatMap(_.fields).map(fv => (fv.id, fv.`type`, fv.helpText))
+      .collect { case (fId, Text(_, _) | Date(_, _, _) | Address | Group(_), Some(helpTextList)) => (fId, helpTextList.size.equals(1)) }
+      .toMap
+
+    val fieldIdResult = componentFieldId.filter(value => value._2.equals(false))
+
+    fieldIdResult.isEmpty match {
+      case true => Valid
+      case false => Invalid(s"Some components have more than one helpText ${fieldIdResult.keys.toList}")
+    }
+  }
+
+  def validateChoiceHelpText(sectionsList: List[Section]): ValidationResult = {
+
+    val choiceFieldIdMap: Map[FieldId, Boolean] = sectionsList.flatMap(_.fields).map(fv => (fv.id, fv.`type`, fv.helpText))
+      .collect { case (fId, Choice(_, options, _, _), Some(helpTextList)) => (fId, options.toList.size.equals(helpTextList.size)) }
+      .toMap
+
+    val choiceFieldIdResult = choiceFieldIdMap.filter(value => value._2.equals(false))
+
+    choiceFieldIdResult.isEmpty match {
+      case true => Valid
+      case false => Invalid(s"Choice components doesn't have equal number of choices and help texts ${choiceFieldIdResult.keys.toList}")
+    }
+
+  }
+
+  /**
+   * The Following Function validates that FieldIds contained in format in Date FieldId,
+   * must exist and must correspond to Date Fields
+   */
+  /* def validateFieldIdInDate(sectionsList: List[Section]): ValidationResult = {
+    val fieldIdDateConstraints: Map[FieldId, List[String]] = sectionsList.flatMap(_.fields).map(fv => (fv.id, fv.`type`))
+      .collect { case (fId, Date(DateConstraints(constrList), _, _)) => (fId, constrList) }
+      .collect { case (fId, List(DateConstraint(_, words @ AnyWord(_), _))) => (fId, List(words.value)) }
+      .toMap
+
+    val fieldIdsList: List[String] = sectionsList.flatMap(_.fields).map(fv => (fv.id, fv.`type`))
+      .collect { case (fId, Date(_, _, _)) => fId.value }
+
+    // each FieldId in AnyWord should be contained in list of FieldIds
+    val fieldIdPairs: Map[FieldId, Boolean] = fieldIdDateConstraints.mapValues { words =>
+      val resultList = words.map { word =>
+        fieldIdsList.contains(word)
+      }
+
+      !resultList.contains(false)
+    }
+
+    val fieldIdResult = fieldIdPairs.filter(value => value._2.equals(false))
+
+    fieldIdResult.isEmpty match {
+      case true => Valid
+      case false => Invalid(s"Some FieldIds are defined in Dates and either they don't exist" +
+        s" or they don't belong to Date Field types ${fieldIdResult.keys.toList}")
+    }
+  }*/
 
 }
 
