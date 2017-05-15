@@ -226,7 +226,7 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
     fieldValue should beJsSuccess(
       FieldValue(
         FieldId("dutyType"),
-        Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int]),
+        Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None),
         "Select the tax type",
         None,
         mandatory = true,
@@ -253,7 +253,7 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
     fieldValue should beJsSuccess(
       FieldValue(
         FieldId("dutyType"),
-        Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int]),
+        Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None),
         "Select the tax type",
         None,
         mandatory = true,
@@ -281,7 +281,7 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
     fieldValue should beJsSuccess(
       FieldValue(
         FieldId("dutyType"),
-        Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int]),
+        Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None),
         "Select the tax type",
         None,
         mandatory = true,
@@ -309,7 +309,7 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
     fieldValue should beJsSuccess(
       FieldValue(
         FieldId("dutyType"),
-        Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Horizontal, List.empty[Int]),
+        Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Horizontal, List.empty[Int], None),
         "Select the tax type",
         None,
         mandatory = true,
@@ -336,7 +336,7 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
     fieldValue should beJsSuccess(
       FieldValue(
         FieldId("dutyType"),
-        Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int]),
+        Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None),
         "Select the tax type",
         None,
         mandatory = true,
@@ -364,7 +364,7 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
     fieldValue should beJsSuccess(
       FieldValue(
         FieldId("dutyType"),
-        Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int]),
+        Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None),
         "Select the tax type",
         None,
         mandatory = true,
@@ -392,7 +392,7 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
     fieldValue should beJsSuccess(
       FieldValue(
         FieldId("dutyType"),
-        Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Horizontal, List.empty[Int]),
+        Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Horizontal, List.empty[Int], None),
         "Select the tax type",
         None,
         mandatory = true,
@@ -415,7 +415,7 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
     fieldValue should beJsSuccess(
       FieldValue(
         FieldId("taxType"),
-        Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int]),
+        Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int], None),
         "Gas tax type?",
         None,
         mandatory = true,
@@ -439,7 +439,7 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
     fieldValue should beJsSuccess(
       FieldValue(
         FieldId("taxType"),
-        Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List(1)),
+        Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List(1), None),
         "Gas tax type?",
         None,
         mandatory = true,
@@ -463,7 +463,7 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
     fieldValue should beJsSuccess(
       FieldValue(
         FieldId("taxType"),
-        Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int]),
+        Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int], None),
         "Gas tax type?",
         None,
         mandatory = true,
@@ -487,7 +487,7 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("taxType"), Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int]), "Gas tax type?", None, mandatory = true, editable = true, submissible = true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("taxType"), Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int], None), "Gas tax type?", None, mandatory = true, editable = true, submissible = true))
   }
 
   it should "parse 'choice' type as YesNo even though 'multivalue=yes' is provided" in {
@@ -501,7 +501,7 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("taxType"), Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int]), "Gas tax type?", None, mandatory = true, editable = true, submissible = true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("taxType"), Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int], None), "Gas tax type?", None, mandatory = true, editable = true, submissible = true))
   }
 
   it should "fail to parse 'choice' type if no 'options' are provided" in {

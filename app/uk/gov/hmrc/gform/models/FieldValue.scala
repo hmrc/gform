@@ -42,6 +42,7 @@ object FieldValue {
     (__ \ 'value).formatNullable[ValueExpr] and
     (__ \ 'format).formatNullable[FormatExpr] and
     (__ \ 'helpText).formatNullable[String] and
+    (__ \ 'optionHelpText).formatNullable[List[String]] and
     (__ \ 'submitMode).formatNullable[String] and
     (__ \ 'choices).formatNullable[List[String]] and
     (__ \ 'fields).lazyFormatNullable(implicitly[Format[List[FieldValueRaw]]]) and
@@ -68,6 +69,7 @@ case class FieldValueRaw(
     value: Option[ValueExpr] = None,
     format: Option[FormatExpr] = None,
     helpText: Option[String] = None,
+    optionHelpText: Option[List[String]] = None,
     submitMode: Option[String] = None,
     choices: Option[List[String]] = None,
     fields: Option[List[FieldValueRaw]] = None,
@@ -170,25 +172,26 @@ case class FieldValueRaw(
     }
 
     case Some(ChoiceRaw) =>
-      (format, choices, multivalue, value) match {
-        case (IsOrientation(VerticalOrientation), Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections)) =>
-          Right(Choice(Checkbox, NonEmptyList(x, xs), Vertical, selections))
-        case (IsOrientation(VerticalOrientation), Some(x :: xs), IsMultivalue(MultivalueNo), Selections(selections)) =>
-          Right(Choice(Radio, NonEmptyList(x, xs), Vertical, selections))
-        case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections)) =>
-          Right(Choice(Checkbox, NonEmptyList(x, xs), Horizontal, selections))
-        case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueNo), Selections(selections)) =>
-          Right(Choice(Radio, NonEmptyList(x, xs), Horizontal, selections))
-        case (IsOrientation(YesNoOrientation), None, IsMultivalue(MultivalueNo), Selections(selections)) =>
-          Right(Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, selections))
-        case (IsOrientation(YesNoOrientation), _, _, Selections(selections)) =>
-          Right(Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, selections))
-        case (invalidFormat, invalidChoices, invalidMultivalue, invalidValue) => Left(
+      (format, choices, multivalue, value, optionHelpText) match {
+        case (IsOrientation(VerticalOrientation), Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections), optionHelpText) =>
+          Right(Choice(Checkbox, NonEmptyList(x, xs), Vertical, selections, optionHelpText))
+        case (IsOrientation(VerticalOrientation), Some(x :: xs), IsMultivalue(MultivalueNo), Selections(selections), optionHelpText) =>
+          Right(Choice(Radio, NonEmptyList(x, xs), Vertical, selections, optionHelpText))
+        case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections), optionHelpText) =>
+          Right(Choice(Checkbox, NonEmptyList(x, xs), Horizontal, selections, optionHelpText))
+        case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueNo), Selections(selections), optionHelpText) =>
+          Right(Choice(Radio, NonEmptyList(x, xs), Horizontal, selections, optionHelpText))
+        case (IsOrientation(YesNoOrientation), None, IsMultivalue(MultivalueNo), Selections(selections), optionHelpText) =>
+          Right(Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, selections, optionHelpText))
+        case (IsOrientation(YesNoOrientation), _, _, Selections(selections), optionHelpText) =>
+          Right(Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, selections, optionHelpText))
+        case (invalidFormat, invalidChoices, invalidMultivalue, invalidValue, invalidHelpText) => Left(
           InvalidState(s"""|Unsupported combination of 'format, choices, multivalue and value':
                            |Format     : $invalidFormat
                            |Choices    : $invalidChoices
                            |Multivalue : $invalidMultivalue
                            |Value      : $invalidValue
+                           |optionHelpText: $invalidHelpText
                            |""".stripMargin)
         )
       }

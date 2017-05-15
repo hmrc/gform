@@ -51,7 +51,8 @@ object FormTemplates {
 
     // format: OFF
     for {
-      _          <- fromOptA          (Section.validate(sectionsList).toEither)
+      _          <- fromOptA          (Section.validateChoiceHelpText(sectionsList).toEither)
+      _          <- fromOptA          (Section.validateUniqueFields(sectionsList).toEither)
       _          <- fromOptA          (ComponentType.validate(exprs, formTemplate).toEither)
       schema     <- fromFutureOptionA (findOne(Json.obj("id" -> schemaId)))(InvalidState(s"SchemaId $schemaId not found"))
       jsonSchema <- fromOptA          (SchemaValidator.conform(schema))

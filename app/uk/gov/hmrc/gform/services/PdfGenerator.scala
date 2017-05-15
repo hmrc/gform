@@ -69,7 +69,7 @@ object PdfGenerator {
         val lines = section.fields.filter({ case (_, fieldValue) => fieldValue.submissible }).flatMap {
           case (formField, fieldValue) =>
             fieldValue.`type` match {
-              case Choice(_, options, _, _) =>
+              case Choice(_, options, _, _, _) =>
                 // For Choice we store in 'formField.value' comma separated list of indexes of user selected options
                 val selections = formField.value.split(",").toList
                 // Let's create lookup map for available options where keys will be indexes of the options
