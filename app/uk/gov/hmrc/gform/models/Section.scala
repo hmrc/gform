@@ -55,7 +55,7 @@ object Section {
     }
   }
 
-  /**
+  /*
    * The Following Function validates that FieldIds contained in format in Date FieldId,
    * must exist and must correspond to Date Fields
    */
