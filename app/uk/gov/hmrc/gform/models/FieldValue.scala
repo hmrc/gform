@@ -62,6 +62,10 @@ object FieldValue {
   }
 }
 
+case class Mandatory(val value: Boolean) extends AnyVal
+case class Editable(val value: Boolean) extends AnyVal
+case class Submissible(val value: Boolean) extends AnyVal
+
 case class FieldValueRaw(
     id: FieldId,
     `type`: Option[ComponentTypeRaw] = None,
@@ -79,25 +83,50 @@ case class FieldValueRaw(
     total: Option[String] = None
 ) {
 
-  private def getFieldValueOpt(editable: Boolean, mandatory: Boolean, submissible: Boolean): Either[UnexpectedState, FieldValue] = {
-    for {
-      componentType <- toComponentType
-    } yield FieldValue(
-      id = id,
-      `type` = componentType,
-      label = label,
-      helpText = helpText,
-      mandatory = mandatory,
-      editable = editable,
-      submissible = submissible
-    )
-  }
+  private def getFieldValue(): Either[UnexpectedState, FieldValue] = {
 
-  private def getFieldValue(editable: Boolean, mandatory: Boolean, submissible: Boolean): JsResult[FieldValue] = {
-    getFieldValueOpt(editable, mandatory, submissible) match {
-      case Right(fieldValue) => JsSuccess(fieldValue)
-      case Left(error) => JsError(error.toString)
+    case class MES(val mandatory: Boolean, val editable: Boolean, val submissible: Boolean)
+
+    val optMandEditSubm: Either[UnexpectedState, (Mandatory, Editable, Submissible)] = (submitMode, mandatory) match {
+      case (Some(IsStandard()) | None,
+        Some(IsTrueish()) | None) =>
+        Right((Mandatory(true), Editable(true), Submissible(true)))
+      case (Some(IsReadOnly()),
+        Some(IsTrueish()) | None) =>
+        Right((Mandatory(true), Editable(false), Submissible(true)))
+      case (Some(IsInfo()),
+        Some(IsTrueish()) | None) =>
+        Right((Mandatory(true), Editable(false), Submissible(false)))
+      case (Some(IsStandard()) | None,
+        Some(IsFalseish())) =>
+        Right((Mandatory(false), Editable(true), Submissible(true)))
+      case (Some(IsInfo()),
+        Some(IsFalseish())) =>
+        Right((Mandatory(false), Editable(false), Submissible(false)))
+      case otherwise => Left(InvalidState(s"Expected 'standard', 'readonly' or 'info' string or nothing for submitMode and expected 'true' or 'false' string or nothing for mandatory field value, got: $otherwise"))
     }
+
+    val optFieldValue: Either[UnexpectedState, FieldValue] = optMandEditSubm match {
+      case Right((m, e, s)) => {
+        val optFv: Either[UnexpectedState, FieldValue] = toComponentType.flatMap {
+          ct =>
+            Right(FieldValue(
+              id = id,
+              `type` = ct,
+              label = label,
+              helpText = helpText,
+              mandatory = m.value,
+              editable = e.value,
+              submissible = s.value
+            ))
+        }
+        optFv
+      }
+      case Left(ue) => Left(ue)
+    }
+
+    optFieldValue
+
   }
 
   private val toComponentType: Opt[ComponentType] = `type` match {
@@ -152,7 +181,7 @@ case class FieldValueRaw(
 
           val unexpectedStateOrFieldValues: List[Either[UnexpectedState, FieldValue]] = fvrs.map {
             case (fvr) => {
-              val fieldValueOpt: Either[UnexpectedState, FieldValue] = fvr.getFieldValueOpt(true, true, true) // TODO - calculate editable, mandatory and submissible
+              val fieldValueOpt: Either[UnexpectedState, FieldValue] = fvr.getFieldValue
               fieldValueOpt
             }
           }
@@ -256,25 +285,9 @@ case class FieldValueRaw(
 
   def toFieldValue = Reads[FieldValue] { _ =>
 
-    (submitMode, mandatory) match {
-      case (Some(IsStandard()) | None,
-        Some(IsTrueish()) | None) =>
-        getFieldValue(editable = true, mandatory = true, submissible = true)
-      case (Some(IsReadOnly()),
-        Some(IsTrueish()) | None) =>
-        getFieldValue(editable = false, mandatory = true, submissible = true)
-      case (Some(IsInfo()),
-        Some(IsTrueish()) | None) =>
-        getFieldValue(editable = false, mandatory = true, submissible = false)
-
-      case (Some(IsStandard()) | None,
-        Some(IsFalseish())) =>
-        getFieldValue(editable = true, mandatory = false, submissible = true)
-      case (Some(IsInfo()),
-        Some(IsFalseish())) =>
-        getFieldValue(editable = false, mandatory = false, submissible = false)
-
-      case otherwise => JsError(s"Expected 'standard', 'readonly' or 'info' string or nothing for submitMode and expected 'true' or 'false' string or nothing for mandatory field value, got: $otherwise")
+    getFieldValue() match {
+      case Right(fieldValue) => JsSuccess(fieldValue)
+      case Left(error) => JsError(error.toString)
     }
   }
 
