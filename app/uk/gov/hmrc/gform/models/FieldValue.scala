@@ -85,8 +85,6 @@ case class FieldValueRaw(
 
   private def getFieldValue(): Either[UnexpectedState, FieldValue] = {
 
-    case class MES(val mandatory: Boolean, val editable: Boolean, val submissible: Boolean)
-
     val optMandEditSubm: Either[UnexpectedState, (Mandatory, Editable, Submissible)] = (submitMode, mandatory) match {
       case (Some(IsStandard()) | None,
         Some(IsTrueish()) | None) =>
