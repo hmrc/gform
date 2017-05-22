@@ -49,8 +49,6 @@ class FieldValueGroupRawSpec extends FlatSpec with Matchers with EitherValues wi
 
   it should "parse a raw group with a non-mandatory raw text to a Group with a non-mandatory Text field" in {
 
-    pending
-
     val fvr = FieldValueRaw(
       id = FieldId("regNum"),
       `type` = Some(TextRaw),
