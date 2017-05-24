@@ -35,11 +35,9 @@ case class FieldValue(
 
 object FieldValue {
 
-  implicit val formatFieldValueRaw: OFormat[FieldValueRaw] = Json.format[FieldValueRaw]
-
   implicit val format: OFormat[FieldValue] = {
     val formatFieldValue = Json.format[FieldValue]
-    val reads: Reads[FieldValue] = (formatFieldValue: Reads[FieldValue]) | formatFieldValueRaw.flatMap(_.toFieldValue)
+    val reads: Reads[FieldValue] = (formatFieldValue: Reads[FieldValue]) | FieldValueRaw.format.flatMap(_.toFieldValue)
     OFormat[FieldValue](reads, formatFieldValue)
   }
 
@@ -48,6 +46,10 @@ object FieldValue {
 case class Mandatory(val value: Boolean) extends AnyVal
 case class Editable(val value: Boolean) extends AnyVal
 case class Submissible(val value: Boolean) extends AnyVal
+
+object FieldValueRaw {
+  implicit val format: OFormat[FieldValueRaw] = Json.format[FieldValueRaw]
+}
 
 case class FieldValueRaw(
     id: FieldId,
