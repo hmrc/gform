@@ -51,8 +51,8 @@ case class FieldValueRaw(
 
   def toFieldValue = Reads[FieldValue] { _ => getFieldValue fold (us => JsError(us.toString), fv => JsSuccess(fv)) }
 
-  private def getFieldValue(): Either[UnexpectedState, FieldValue] = {
-    val optMES: Either[UnexpectedState, (Mandatory, Editable, Submissible)] = (submitMode, mandatory) match {
+  private def getFieldValue(): Opt[FieldValue] = {
+    val optMES: Opt[(Mandatory, Editable, Submissible)] = (submitMode, mandatory) match {
       //format: OFF
       case (Some(IsStandard()) | None, Some(IsTrueish()) | None)  => (Mandatory(true),  Editable(true),  Submissible(true)) .asRight
       case (Some(IsReadOnly()),        Some(IsTrueish()) | None)  => (Mandatory(true),  Editable(false), Submissible(true)) .asRight
@@ -63,9 +63,9 @@ case class FieldValueRaw(
       //format: ON
     }
 
-    val optFieldValue: Either[UnexpectedState, FieldValue] = optMES match {
+    val optFieldValue: Opt[FieldValue] = optMES match {
       case Right((m, e, s)) => {
-        val optFv: Either[UnexpectedState, FieldValue] = toComponentType.flatMap {
+        val optFv: Opt[FieldValue] = toComponentType.flatMap {
           ct =>
             Right(FieldValue(
               id = id,
@@ -135,13 +135,13 @@ case class FieldValueRaw(
       fields match {
         case Some(fvrs) => {
 
-          val unexpectedStateOrFieldValues: List[Either[UnexpectedState, FieldValue]] = fvrs.map {
+          val unexpectedStateOrFieldValues: List[Opt[FieldValue]] = fvrs.map {
             case (fvr) => {
-              val fieldValueOpt: Either[UnexpectedState, FieldValue] = fvr.getFieldValue
+              val fieldValueOpt: Opt[FieldValue] = fvr.getFieldValue
               fieldValueOpt
             }
           }
-          val unexpectedStateOrGroup: Either[UnexpectedState, Group] = unexpectedStateOrFieldValues.partition(_.isRight) match {
+          val unexpectedStateOrGroup: Opt[Group] = unexpectedStateOrFieldValues.partition(_.isRight) match {
             case (ueorfvs, Nil) => {
               Right(Group((ueorfvs).collect { case Right(fv) => fv }))
             }
