@@ -85,32 +85,9 @@ case class FieldValueRaw(
     case Some(TextRaw) | None => textOpt
     case Some(DateRaw) => dateOpt
     case Some(AddressRaw) => Address.asRight
-    case Some(GroupRaw) => {
-      fields match {
-        case Some(fvrs) => {
-
-          val unexpectedStateOrFieldValues: List[Opt[FieldValue]] = fvrs.map {
-            case (fvr) => {
-              val fieldValueOpt: Opt[FieldValue] = fvr.getFieldValue
-              fieldValueOpt
-            }
-          }
-          val unexpectedStateOrGroup: Opt[Group] = unexpectedStateOrFieldValues.partition(_.isRight) match {
-            case (ueorfvs, Nil) => {
-              Right(Group((ueorfvs).collect { case Right(fv) => fv }))
-            }
-            case (_, ueorfvs) => {
-              val unexpectedStates: List[UnexpectedState] = ueorfvs.collect { case (Left(ue)) => ue }
-              Left(unexpectedStates.head)
-            }
-          }
-          unexpectedStateOrGroup
-        }
-        case _ => Left(InvalidState(s"""Require 'fields' element in Group"""))
-      }
-    }
-
+    case Some(GroupRaw) => groupOpt
     case Some(ChoiceRaw) => choiceOpt
+    //TODO: What if there is None
   }
 
   private lazy val textOpt: Opt[Text] = (value, total) match {
@@ -141,6 +118,26 @@ case class FieldValueRaw(
     f <- formatOpt
     o = offset.getOrElse(Offset(0))
   } yield Date(f, o, v)
+
+  private lazy val groupOpt: Opt[Group] = fields match {
+    case Some(fvrs) =>
+      val unexpectedStateOrFieldValues: List[Opt[FieldValue]] = fvrs.map {
+        case (fvr) =>
+          val fieldValueOpt: Opt[FieldValue] = fvr.getFieldValue
+          fieldValueOpt
+      }
+      val unexpectedStateOrGroup: Opt[Group] = unexpectedStateOrFieldValues.partition(_.isRight) match {
+        case (ueorfvs, Nil) => {
+          Right(Group((ueorfvs).collect { case Right(fv) => fv }))
+        }
+        case (_, ueorfvs) => {
+          val unexpectedStates: List[UnexpectedState] = ueorfvs.collect { case (Left(ue)) => ue }
+          Left(unexpectedStates.head)
+        }
+      }
+      unexpectedStateOrGroup
+    case _ => InvalidState(s"""Require 'fields' element in Group""").asLeft
+  }
 
   private lazy val choiceOpt = (format, choices, multivalue, value, optionHelpText) match {
     case (IsOrientation(VerticalOrientation), Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections), oHelpText) =>
