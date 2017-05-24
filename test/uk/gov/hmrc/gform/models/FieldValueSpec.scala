@@ -504,6 +504,49 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
     fieldValue should beJsSuccess(FieldValue(FieldId("taxType"), Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int], None), "Gas tax type?", None, mandatory = true, editable = true, submissible = true))
   }
 
+  it should "parse 'choice' type as inline" in {
+    val fieldValue = toFieldValue(
+      """{
+           "type": "choice",
+           "id": "haveIncludedInvoice",
+           "label": "Original invoice from the supplier",
+           "format": "inline",
+           "choices": ["Yes","No"]
+         }"""
+    )
+
+    fieldValue should beJsSuccess(FieldValue(FieldId("haveIncludedInvoice"), Choice(Inline, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int], None), "Original invoice from the supplier", None, mandatory = true, editable = true, submissible = true))
+  }
+
+  it should "parse 'choice' type as inline with value" in {
+    val fieldValue = toFieldValue(
+      """{
+           "type": "choice",
+           "id": "haveIncludedInvoice",
+           "label": "Original invoice from the supplier",
+           "format": "inline",
+           "choices": ["Yes","No", "Not sure"],
+           "value": "1"
+         }"""
+    )
+
+    fieldValue should beJsSuccess(FieldValue(FieldId("haveIncludedInvoice"), Choice(Inline, NonEmptyList.of("Yes", "No", "Not sure"), Horizontal, List(1), None), "Original invoice from the supplier", None, mandatory = true, editable = true, submissible = true))
+  }
+
+  it should "faile parse 'choice' type when not enough choices" in {
+    val fieldValue = toFieldValue(
+      """{
+           "type": "choice",
+           "id": "haveIncludedInvoice",
+           "label": "Original invoice from the supplier",
+           "format": "inline",
+           "choices": []
+         }"""
+    )
+
+    fieldValue should be(jsError)
+  }
+
   it should "fail to parse 'choice' type if no 'options' are provided" in {
     val fieldValue = toFieldValue(
       """|{

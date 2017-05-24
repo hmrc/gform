@@ -139,6 +139,8 @@ case class FieldValueRaw(
       Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, selections, oHelpText).asRight
     case (IsOrientation(YesNoOrientation), _, _, Selections(selections), oHelpText) =>
       Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, selections, oHelpText).asRight
+    case (IsOrientation(InlineOrientation), Some(x :: xs), None, Selections(selections), oHelpText) =>
+      Choice(Inline, NonEmptyList(x, xs), Horizontal, selections, oHelpText).asRight
     case (invalidFormat, invalidChoices, invalidMultivalue, invalidValue, invalidHelpText) =>
       InvalidState(s"""|Unsupported combination of 'format, choices, multivalue and value':
                          |Format     : $invalidFormat
@@ -164,6 +166,7 @@ case class FieldValueRaw(
   private final case object VerticalOrientation extends OrientationValue
   private final case object HorizontalOrientation extends OrientationValue
   private final case object YesNoOrientation extends OrientationValue
+  private final case object InlineOrientation extends OrientationValue
 
   private final object IsOrientation {
     def unapply(orientation: Option[FormatExpr]): Option[OrientationValue] = {
@@ -171,6 +174,7 @@ case class FieldValueRaw(
         case Some(TextFormat("vertical")) | None => Some(VerticalOrientation)
         case Some(TextFormat("horizontal")) => Some(HorizontalOrientation)
         case Some(TextFormat("yesno")) => Some(YesNoOrientation)
+        case Some(TextFormat("inline")) => Some(InlineOrientation)
         case _ => None
       }
     }
