@@ -119,24 +119,11 @@ case class FieldValueRaw(
     o = offset.getOrElse(Offset(0))
   } yield Date(f, o, v)
 
-  private lazy val groupOpt: Opt[Group] = fields match {
-    case Some(fvrs) =>
-      val unexpectedStateOrFieldValues: List[Opt[FieldValue]] = fvrs.map {
-        case (fvr) =>
-          val fieldValueOpt: Opt[FieldValue] = fvr.getFieldValue
-          fieldValueOpt
-      }
-      val unexpectedStateOrGroup: Opt[Group] = unexpectedStateOrFieldValues.partition(_.isRight) match {
-        case (ueorfvs, Nil) => {
-          Right(Group((ueorfvs).collect { case Right(fv) => fv }))
-        }
-        case (_, ueorfvs) => {
-          val unexpectedStates: List[UnexpectedState] = ueorfvs.collect { case (Left(ue)) => ue }
-          Left(unexpectedStates.head)
-        }
-      }
-      unexpectedStateOrGroup
-    case _ => InvalidState(s"""Require 'fields' element in Group""").asLeft
+  private lazy val groupOpt: Opt[Group] = fields.fold(groupOptErr)(optGroup)
+  private lazy val groupOptErr: Opt[Group] = InvalidState(s"""Require 'fields' element in Group""").asLeft
+  private def optGroup(rawFields: List[FieldValueRaw]): Opt[Group] = rawFields.map(_.getFieldValue()).partition(_.isRight) match {
+    case (ueorfvs, Nil) => Group(ueorfvs.map(_.right.get)).asRight
+    case (_, ueorfvs) => ueorfvs.map(_.left.get).head.asLeft
   }
 
   private lazy val choiceOpt = (format, choices, multivalue, value, optionHelpText) match {
