@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.models
 
 import cats.data.NonEmptyList
-import cats.syntax.either._
+import cats.syntax.all._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.{ InvalidState, UnexpectedState }
@@ -29,6 +29,7 @@ object FieldValueRaw {
   case class Mandatory(val value: Boolean) extends AnyVal
   case class Editable(val value: Boolean) extends AnyVal
   case class Submissible(val value: Boolean) extends AnyVal
+
 }
 
 case class FieldValueRaw(
@@ -48,30 +49,21 @@ case class FieldValueRaw(
     total: Option[String] = None
 ) {
 
-  def toFieldValue = Reads[FieldValue] { _ => getFieldValue fold(us => JsError(us.toString), fv => JsSuccess(fv)) }
+  def toFieldValue = Reads[FieldValue] { _ => getFieldValue fold (us => JsError(us.toString), fv => JsSuccess(fv)) }
 
   private def getFieldValue(): Either[UnexpectedState, FieldValue] = {
-
-    val optMandEditSubm: Either[UnexpectedState, (Mandatory, Editable, Submissible)] = (submitMode, mandatory) match {
-      case (Some(IsStandard()) | None,
-        Some(IsTrueish()) | None) =>
-        Right((Mandatory(true), Editable(true), Submissible(true)))
-      case (Some(IsReadOnly()),
-        Some(IsTrueish()) | None) =>
-        Right((Mandatory(true), Editable(false), Submissible(true)))
-      case (Some(IsInfo()),
-        Some(IsTrueish()) | None) =>
-        Right((Mandatory(true), Editable(false), Submissible(false)))
-      case (Some(IsStandard()) | None,
-        Some(IsFalseish())) =>
-        Right((Mandatory(false), Editable(true), Submissible(true)))
-      case (Some(IsInfo()),
-        Some(IsFalseish())) =>
-        Right((Mandatory(false), Editable(false), Submissible(false)))
-      case otherwise => Left(InvalidState(s"Expected 'standard', 'readonly' or 'info' string or nothing for submitMode and expected 'true' or 'false' string or nothing for mandatory field value, got: $otherwise"))
+    val optMES: Either[UnexpectedState, (Mandatory, Editable, Submissible)] = (submitMode, mandatory) match {
+      //format: OFF
+      case (Some(IsStandard()) | None, Some(IsTrueish()) | None)  => (Mandatory(true),  Editable(true),  Submissible(true)) .asRight
+      case (Some(IsReadOnly()),        Some(IsTrueish()) | None)  => (Mandatory(true),  Editable(false), Submissible(true)) .asRight
+      case (Some(IsInfo()),            Some(IsTrueish()) | None)  => (Mandatory(true),  Editable(false), Submissible(false)).asRight
+      case (Some(IsStandard()) | None, Some(IsFalseish()))        => (Mandatory(false), Editable(true),  Submissible(true)) .asRight
+      case (Some(IsInfo()),            Some(IsFalseish()))        => (Mandatory(false), Editable(false), Submissible(false)).asRight
+      case otherwise                                              => Left(InvalidState(s"Expected 'standard', 'readonly' or 'info' string or nothing for submitMode and expected 'true' or 'false' string or nothing for mandatory field value, got: $otherwise"))
+      //format: ON
     }
 
-    val optFieldValue: Either[UnexpectedState, FieldValue] = optMandEditSubm match {
+    val optFieldValue: Either[UnexpectedState, FieldValue] = optMES match {
       case Right((m, e, s)) => {
         val optFv: Either[UnexpectedState, FieldValue] = toComponentType.flatMap {
           ct =>
