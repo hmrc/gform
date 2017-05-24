@@ -84,9 +84,7 @@ case class FieldValueRaw(
   private lazy val optComponentType: Opt[ComponentType] = `type` match {
     case Some(TextRaw) | None => textOpt
     case Some(DateRaw) => dateOpt
-
-    case Some(AddressRaw) => Right(Address)
-
+    case Some(AddressRaw) => Address.asRight
     case Some(GroupRaw) => {
       fields match {
         case Some(fvrs) => {
@@ -112,30 +110,7 @@ case class FieldValueRaw(
       }
     }
 
-    case Some(ChoiceRaw) =>
-      (format, choices, multivalue, value, optionHelpText) match {
-        case (IsOrientation(VerticalOrientation), Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections), optionHelpText) =>
-          Right(Choice(Checkbox, NonEmptyList(x, xs), Vertical, selections, optionHelpText))
-        case (IsOrientation(VerticalOrientation), Some(x :: xs), IsMultivalue(MultivalueNo), Selections(selections), optionHelpText) =>
-          Right(Choice(Radio, NonEmptyList(x, xs), Vertical, selections, optionHelpText))
-        case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections), optionHelpText) =>
-          Right(Choice(Checkbox, NonEmptyList(x, xs), Horizontal, selections, optionHelpText))
-        case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueNo), Selections(selections), optionHelpText) =>
-          Right(Choice(Radio, NonEmptyList(x, xs), Horizontal, selections, optionHelpText))
-        case (IsOrientation(YesNoOrientation), None, IsMultivalue(MultivalueNo), Selections(selections), optionHelpText) =>
-          Right(Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, selections, optionHelpText))
-        case (IsOrientation(YesNoOrientation), _, _, Selections(selections), optionHelpText) =>
-          Right(Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, selections, optionHelpText))
-        case (invalidFormat, invalidChoices, invalidMultivalue, invalidValue, invalidHelpText) => Left(
-          InvalidState(s"""|Unsupported combination of 'format, choices, multivalue and value':
-                           |Format     : $invalidFormat
-                           |Choices    : $invalidChoices
-                           |Multivalue : $invalidMultivalue
-                           |Value      : $invalidValue
-                           |optionHelpText: $invalidHelpText
-                           |""".stripMargin)
-        )
-      }
+    case Some(ChoiceRaw) => choiceOpt
   }
 
   private lazy val textOpt: Opt[Text] = (value, total) match {
@@ -166,6 +141,29 @@ case class FieldValueRaw(
     f <- formatOpt
     o = offset.getOrElse(Offset(0))
   } yield Date(f, o, v)
+
+  private lazy val choiceOpt = (format, choices, multivalue, value, optionHelpText) match {
+    case (IsOrientation(VerticalOrientation), Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections), oHelpText) =>
+      Choice(Checkbox, NonEmptyList(x, xs), Vertical, selections, oHelpText).asRight
+    case (IsOrientation(VerticalOrientation), Some(x :: xs), IsMultivalue(MultivalueNo), Selections(selections), oHelpText) =>
+      Choice(Radio, NonEmptyList(x, xs), Vertical, selections, oHelpText).asRight
+    case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections), oHelpText) =>
+      Choice(Checkbox, NonEmptyList(x, xs), Horizontal, selections, oHelpText).asRight
+    case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueNo), Selections(selections), oHelpText) =>
+      Choice(Radio, NonEmptyList(x, xs), Horizontal, selections, oHelpText).asRight
+    case (IsOrientation(YesNoOrientation), None, IsMultivalue(MultivalueNo), Selections(selections), oHelpText) =>
+      Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, selections, oHelpText).asRight
+    case (IsOrientation(YesNoOrientation), _, _, Selections(selections), oHelpText) =>
+      Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, selections, oHelpText).asRight
+    case (invalidFormat, invalidChoices, invalidMultivalue, invalidValue, invalidHelpText) =>
+      InvalidState(s"""|Unsupported combination of 'format, choices, multivalue and value':
+                         |Format     : $invalidFormat
+                         |Choices    : $invalidChoices
+                         |Multivalue : $invalidMultivalue
+                         |Value      : $invalidValue
+                         |optionHelpText: $invalidHelpText
+                         |""".stripMargin).asLeft
+  }
 
   private final object Selections {
     def unapply(choiceExpr: Option[ValueExpr]): Option[List[Int]] = {
