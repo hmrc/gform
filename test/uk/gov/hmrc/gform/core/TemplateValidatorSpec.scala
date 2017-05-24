@@ -315,7 +315,7 @@ class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
          |                "mandatory": {
          |                  "type": "string"
          |                },
-         |                "submitmode": {
+         |                "submitMode": {
          |                  "type": "string"
          |                }
          |              },
@@ -347,7 +347,7 @@ class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
          |        {
          |          "id": "iptRegNum",
          |          "label": "Insurance Premium Tax (IPT) registration number | Treth Premiwm Yswiriant (IPT) rhif cofrestru",
-         |          "submitmode": "standard",
+         |          "submitMode": "standard",
          |          "mandatory": "true"
          |        }
          |      ]
