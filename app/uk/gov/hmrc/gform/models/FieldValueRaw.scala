@@ -52,17 +52,6 @@ case class FieldValueRaw(
   def toFieldValue = Reads[FieldValue] { _ => getFieldValue fold (us => JsError(us.toString), fv => JsSuccess(fv)) }
 
   private def getFieldValue(): Opt[FieldValue] = {
-    val optMES: Opt[(Mandatory, Editable, Submissible)] = (submitMode, mandatory) match {
-      //format: OFF
-      case (Some(IsStandard()) | None, Some(IsTrueish()) | None)  => (Mandatory(true),  Editable(true),  Submissible(true)) .asRight
-      case (Some(IsReadOnly()),        Some(IsTrueish()) | None)  => (Mandatory(true),  Editable(false), Submissible(true)) .asRight
-      case (Some(IsInfo()),            Some(IsTrueish()) | None)  => (Mandatory(true),  Editable(false), Submissible(false)).asRight
-      case (Some(IsStandard()) | None, Some(IsFalseish()))        => (Mandatory(false), Editable(true),  Submissible(true)) .asRight
-      case (Some(IsInfo()),            Some(IsFalseish()))        => (Mandatory(false), Editable(false), Submissible(false)).asRight
-      case otherwise                                              => Left(InvalidState(s"Expected 'standard', 'readonly' or 'info' string or nothing for submitMode and expected 'true' or 'false' string or nothing for mandatory field value, got: $otherwise"))
-      //format: ON
-    }
-
     val optFieldValue: Opt[FieldValue] = optMES match {
       case Right((m, e, s)) => {
         val optFv: Opt[FieldValue] = toComponentType.flatMap {
@@ -81,9 +70,18 @@ case class FieldValueRaw(
       }
       case Left(ue) => Left(ue)
     }
-
     optFieldValue
+  }
 
+  private lazy val optMES: Opt[(Mandatory, Editable, Submissible)] = (submitMode, mandatory) match {
+    //format: OFF
+    case (Some(IsStandard()) | None, Some(IsTrueish()) | None)  => (Mandatory(true),  Editable(true),  Submissible(true)) .asRight
+    case (Some(IsReadOnly()),        Some(IsTrueish()) | None)  => (Mandatory(true),  Editable(false), Submissible(true)) .asRight
+    case (Some(IsInfo()),            Some(IsTrueish()) | None)  => (Mandatory(true),  Editable(false), Submissible(false)).asRight
+    case (Some(IsStandard()) | None, Some(IsFalseish()))        => (Mandatory(false), Editable(true),  Submissible(true)) .asRight
+    case (Some(IsInfo()),            Some(IsFalseish()))        => (Mandatory(false), Editable(false), Submissible(false)).asRight
+    case otherwise                                              => Left(InvalidState(s"Expected 'standard', 'readonly' or 'info' string or nothing for submitMode and expected 'true' or 'false' string or nothing for mandatory field value, got: $otherwise"))
+    //format: ON
   }
 
   private lazy val valueOpt: Either[InvalidState, Option[DateValue]] = value match {
