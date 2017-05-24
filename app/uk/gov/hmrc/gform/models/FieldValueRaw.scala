@@ -83,24 +83,7 @@ case class FieldValueRaw(
 
   private lazy val optComponentType: Opt[ComponentType] = `type` match {
     case Some(TextRaw) | None => textOpt
-    case Some(DateRaw) =>
-      val finalOffset = offset.getOrElse(Offset(0))
-
-      val formatOpt =
-        format match {
-          case Some(DateFormat(format)) => Right(format)
-          case None => Right(AnyDate)
-          case Some(invalidFormat) => Left(
-            InvalidState(s"""|Unsupported type of format for date field
-                             |Id: $id
-                             |Format: $invalidFormat""".stripMargin)
-          )
-        }
-
-      for {
-        value <- valueOpt
-        format <- formatOpt
-      } yield Date(format, finalOffset, value)
+    case Some(DateRaw) => dateOpt
 
     case Some(AddressRaw) => Right(Address)
 
@@ -168,6 +151,21 @@ case class FieldValueRaw(
             |Total: $invalidTotal""".stripMargin).asLeft
     //format: ON
   }
+
+  private lazy val formatOpt: Opt[DateConstraintType] = format match {
+    case Some(DateFormat(e)) => e.asRight
+    case None => AnyDate.asRight
+    case Some(invalidFormat) =>
+      InvalidState(s"""|Unsupported type of format for date field
+                       |Id: $id
+                       |Format: $invalidFormat""".stripMargin).asLeft
+  }
+
+  private lazy val dateOpt: Opt[Date] = for {
+    v <- valueOpt
+    f <- formatOpt
+    o = offset.getOrElse(Offset(0))
+  } yield Date(f, o, v)
 
   private final object Selections {
     def unapply(choiceExpr: Option[ValueExpr]): Option[List[Int]] = {
