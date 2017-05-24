@@ -77,7 +77,7 @@ case class FieldValueRaw(
     //format: ON
   }
 
-  private lazy val valueOpt: Either[InvalidState, Option[DateValue]] = value match {
+  private lazy val valueOpt: Opt[Option[DateValue]] = value match {
     case Some(DateExpression(dateExpr)) => dateExpr.some.asRight
     case None => none.asRight
     case Some(invalidValue) => InvalidState(
