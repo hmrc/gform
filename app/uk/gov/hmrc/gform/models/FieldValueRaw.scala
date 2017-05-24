@@ -82,19 +82,7 @@ case class FieldValueRaw(
   }
 
   private lazy val optComponentType: Opt[ComponentType] = `type` match {
-    case Some(TextRaw) | None =>
-      (value, total) match {
-        case (Some(TextExpression(expr)), IsTotal(TotalYes)) => Right(Text(expr, total = true))
-        case (Some(TextExpression(expr)), IsTotal(TotalNo)) => Right(Text(expr, total = false))
-        case (None, IsTotal(TotalYes)) => Right(Text(Constant(""), total = true))
-        case (None, IsTotal(TotalNo)) => Right(Text(Constant(""), total = false))
-        case (Some(invalidValue), invalidTotal) => Left(
-          InvalidState(s"""|Unsupported type of value for text field
-                           |Id: $id
-                           |Value: $invalidValue
-                           |Total: $invalidTotal""".stripMargin)
-        )
-      }
+    case Some(TextRaw) | None => textOpt
     case Some(DateRaw) =>
       val finalOffset = offset.getOrElse(Offset(0))
 
@@ -165,6 +153,20 @@ case class FieldValueRaw(
                            |""".stripMargin)
         )
       }
+  }
+
+  private lazy val textOpt: Opt[Text] = (value, total) match {
+    //format: OFF
+    case (Some(TextExpression(expr)), IsTotal(TotalYes))  => Text(expr, total = true).asRight
+    case (Some(TextExpression(expr)), IsTotal(TotalNo))   => Text(expr, total = false).asRight
+    case (None,                       IsTotal(TotalYes))  => Text(Constant(""), total = true).asRight
+    case (None,                       IsTotal(TotalNo))   => Text(Constant(""), total = false).asRight
+    case (Some(invalidValue),         invalidTotal)       => InvalidState(
+        s"""|Unsupported type of value for text field
+            |Id: $id
+            |Value: $invalidValue
+            |Total: $invalidTotal""".stripMargin).asLeft
+    //format: ON
   }
 
   private final object Selections {
