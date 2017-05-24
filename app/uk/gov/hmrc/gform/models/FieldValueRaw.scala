@@ -53,22 +53,21 @@ case class FieldValueRaw(
 
   private def getFieldValue(): Opt[FieldValue] = optMES match {
     case Right((m, e, s)) => {
-      val optFv: Opt[FieldValue] = toComponentType.flatMap {
-        ct =>
-          Right(FieldValue(
-            id = id,
-            `type` = ct,
-            label = label,
-            helpText = helpText,
-            mandatory = m.value,
-            editable = e.value,
-            submissible = s.value
-          ))
-      }
+      val optFv: Opt[FieldValue] = toComponentType.map(ct => mkFieldValue(m, e, s, ct))
       optFv
     }
     case Left(ue) => Left(ue)
   }
+
+  private def mkFieldValue(m: Mandatory, e: Editable, s: Submissible, ct: ComponentType): FieldValue = FieldValue(
+    id = id,
+    `type` = ct,
+    label = label,
+    helpText = helpText,
+    mandatory = m.value,
+    editable = e.value,
+    submissible = s.value
+  )
 
   private lazy val optMES: Opt[(Mandatory, Editable, Submissible)] = (submitMode, mandatory) match {
     //format: OFF
