@@ -48,13 +48,7 @@ case class FieldValueRaw(
 
   def toFieldValue = Reads[FieldValue] { _ => getFieldValue fold (us => JsError(us.toString), fv => JsSuccess(fv)) }
 
-  private def getFieldValue(): Opt[FieldValue] = optMES match {
-    case Right(mes) => {
-      val optFv: Opt[FieldValue] = toComponentType.map(ct => mkFieldValue(mes, ct))
-      optFv
-    }
-    case Left(ue) => Left(ue)
-  }
+  private def getFieldValue(): Opt[FieldValue] = optMES.flatMap(mes => toComponentType.map(ct => mkFieldValue(mes, ct)))
 
   private def mkFieldValue(mes: MES, ct: ComponentType): FieldValue = FieldValue(
     id = id,
