@@ -86,6 +86,16 @@ case class FieldValueRaw(
 
   }
 
+  private lazy val valueOpt: Either[InvalidState, Option[DateValue]] = value match {
+    case Some(DateExpression(dateExpr)) => dateExpr.some.asRight
+    case None => none.asRight
+    case Some(invalidValue) => InvalidState(
+      s"""|Unsupported type of value for date field
+          |Id: $id
+          |Value: $invalidValue""".stripMargin
+    ).asLeft
+  }
+
   private val toComponentType: Opt[ComponentType] = `type` match {
     case Some(TextRaw) | None =>
       (value, total) match {
@@ -102,17 +112,6 @@ case class FieldValueRaw(
       }
     case Some(DateRaw) =>
       val finalOffset = offset.getOrElse(Offset(0))
-
-      val valueOpt =
-        value match {
-          case Some(DateExpression(dateExpr)) => Right(Some(dateExpr))
-          case None => Right(None)
-          case Some(invalidValue) => Left(
-            InvalidState(s"""|Unsupported type of value for date field
-                             |Id: $id
-                             |Value: $invalidValue""".stripMargin)
-          )
-        }
 
       val formatOpt =
         format match {
