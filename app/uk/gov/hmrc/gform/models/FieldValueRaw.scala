@@ -26,10 +26,7 @@ import FieldValueRaw._
 object FieldValueRaw {
   implicit val format: OFormat[FieldValueRaw] = Json.format[FieldValueRaw]
 
-  case class Mandatory(val value: Boolean) extends AnyVal
-  case class Editable(val value: Boolean) extends AnyVal
-  case class Submissible(val value: Boolean) extends AnyVal
-
+  case class MES(mandatory: Boolean, editable: Boolean, submissible: Boolean)
 }
 
 case class FieldValueRaw(
@@ -52,31 +49,31 @@ case class FieldValueRaw(
   def toFieldValue = Reads[FieldValue] { _ => getFieldValue fold (us => JsError(us.toString), fv => JsSuccess(fv)) }
 
   private def getFieldValue(): Opt[FieldValue] = optMES match {
-    case Right((m, e, s)) => {
-      val optFv: Opt[FieldValue] = toComponentType.map(ct => mkFieldValue(m, e, s, ct))
+    case Right(mes) => {
+      val optFv: Opt[FieldValue] = toComponentType.map(ct => mkFieldValue(mes, ct))
       optFv
     }
     case Left(ue) => Left(ue)
   }
 
-  private def mkFieldValue(m: Mandatory, e: Editable, s: Submissible, ct: ComponentType): FieldValue = FieldValue(
+  private def mkFieldValue(mes: MES, ct: ComponentType): FieldValue = FieldValue(
     id = id,
     `type` = ct,
     label = label,
     helpText = helpText,
-    mandatory = m.value,
-    editable = e.value,
-    submissible = s.value
+    mandatory = mes.mandatory,
+    editable = mes.editable,
+    submissible = mes.submissible
   )
 
-  private lazy val optMES: Opt[(Mandatory, Editable, Submissible)] = (submitMode, mandatory) match {
+  private lazy val optMES: Opt[MES] = (submitMode, mandatory) match {
     //format: OFF
-    case (Some(IsStandard()) | None, Some(IsTrueish()) | None)  => (Mandatory(true),  Editable(true),  Submissible(true)) .asRight
-    case (Some(IsReadOnly()),        Some(IsTrueish()) | None)  => (Mandatory(true),  Editable(false), Submissible(true)) .asRight
-    case (Some(IsInfo()),            Some(IsTrueish()) | None)  => (Mandatory(true),  Editable(false), Submissible(false)).asRight
-    case (Some(IsStandard()) | None, Some(IsFalseish()))        => (Mandatory(false), Editable(true),  Submissible(true)) .asRight
-    case (Some(IsInfo()),            Some(IsFalseish()))        => (Mandatory(false), Editable(false), Submissible(false)).asRight
-    case otherwise                                              => Left(InvalidState(s"Expected 'standard', 'readonly' or 'info' string or nothing for submitMode and expected 'true' or 'false' string or nothing for mandatory field value, got: $otherwise"))
+    case (Some(IsStandard()) | None, Some(IsTrueish()) | None)  => MES(mandatory = true, editable = true, submissible = true).asRight
+    case (Some(IsReadOnly()),        Some(IsTrueish()) | None)  => MES(mandatory = true, editable = false, submissible = true).asRight
+    case (Some(IsInfo()),            Some(IsTrueish()) | None)  => MES(mandatory = true, editable = false, submissible = false).asRight
+    case (Some(IsStandard()) | None, Some(IsFalseish()))        => MES(mandatory = false, editable = true, submissible = true).asRight
+    case (Some(IsInfo()),            Some(IsFalseish()))        => MES(mandatory = false, editable = false, submissible = false).asRight
+    case otherwise                                              => InvalidState(s"Expected 'standard', 'readonly' or 'info' string or nothing for submitMode and expected 'true' or 'false' string or nothing for mandatory field value, got: $otherwise").asLeft
     //format: ON
   }
 
