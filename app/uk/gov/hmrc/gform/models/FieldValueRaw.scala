@@ -20,7 +20,8 @@ import cats.data.NonEmptyList
 import cats.syntax.either._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.Opt
-import uk.gov.hmrc.gform.exceptions.{InvalidState, UnexpectedState}
+import uk.gov.hmrc.gform.exceptions.{ InvalidState, UnexpectedState }
+import FieldValueRaw._
 
 object FieldValueRaw {
   implicit val format: OFormat[FieldValueRaw] = Json.format[FieldValueRaw]
@@ -47,7 +48,12 @@ case class FieldValueRaw(
     total: Option[String] = None
 ) {
 
-  import FieldValueRaw._
+  def toFieldValue = Reads[FieldValue] { _ =>
+    getFieldValue() match {
+      case Right(fieldValue) => JsSuccess(fieldValue)
+      case Left(error) => JsError(error.toString)
+    }
+  }
 
   private def getFieldValue(): Either[UnexpectedState, FieldValue] = {
 
@@ -244,14 +250,6 @@ case class FieldValueRaw(
         case Some(IsTrueish()) => Some(MultivalueYes)
         case _ => None
       }
-    }
-  }
-
-  def toFieldValue = Reads[FieldValue] { _ =>
-
-    getFieldValue() match {
-      case Right(fieldValue) => JsSuccess(fieldValue)
-      case Left(error) => JsError(error.toString)
     }
   }
 
