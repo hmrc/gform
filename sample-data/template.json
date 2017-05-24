@@ -111,7 +111,7 @@
         {
           "id": "iptRegNum",
           "label": "Insurance Premium Tax (IPT) registration number | Treth Premiwm Yswiriant (IPT) rhif cofrestru",
-          "submitmode": "readonly",
+          "submitMode": "readonly",
           "mandatory": "true",
           "type": "text"
         },
@@ -151,7 +151,7 @@
           "id": "myRef",
           "label": "My personal reference",
           "mandatory": "false",
-          "submitmode": "info"
+          "submitMode": "info"
         },
         {
           "id": "accountingPeriodStartDate",
