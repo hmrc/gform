@@ -48,12 +48,7 @@ case class FieldValueRaw(
     total: Option[String] = None
 ) {
 
-  def toFieldValue = Reads[FieldValue] { _ =>
-    getFieldValue() match {
-      case Right(fieldValue) => JsSuccess(fieldValue)
-      case Left(error) => JsError(error.toString)
-    }
-  }
+  def toFieldValue = Reads[FieldValue] { _ => getFieldValue fold(us => JsError(us.toString), fv => JsSuccess(fv)) }
 
   private def getFieldValue(): Either[UnexpectedState, FieldValue] = {
 
