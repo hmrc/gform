@@ -368,7 +368,7 @@ class TemplateValidatorSpec extends Spec {
     "Business details",
     List(
       FieldValue(FieldId("nameOfBusiness"), Text(Constant(""), total = false), "Name of business", None, mandatory = true, editable = true, submissible = true),
-      FieldValue(FieldId("businessAddress"), Address, "Business address", None, mandatory = true, editable = true, submissible = true)
+      FieldValue(FieldId("businessAddress"), Address(international = false), "Business address", None, mandatory = true, editable = true, submissible = true)
     )
   )
 

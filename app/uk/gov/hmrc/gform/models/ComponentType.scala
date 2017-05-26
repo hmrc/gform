@@ -31,7 +31,7 @@ sealed trait ComponentType {
   def validate(formTemplate: FormTemplate): ValidationResult = this match {
     case Text(expr, _) => expr.validate(formTemplate)
     case Date(_, _, _) => Valid
-    case Address => Valid
+    case Address(_) => Valid
     case Choice(_, _, _, _, _) => Valid
     case Group(fvs, _) => ComponentType.validate(fvs.map(_.`type`), formTemplate)
     case FileUpload() => Valid
@@ -49,7 +49,9 @@ case object Date {
   val fields = (id: FieldId) => List("day", "month", "year").map(id.withSuffix)
 }
 
-case object Address extends ComponentType {
+case class Address(international: Boolean) extends ComponentType
+
+case object Address {
   val mandatoryFields = (id: FieldId) => List("street1", "town", "postcode").map(id.withSuffix)
   val optionalFields = (id: FieldId) => List("street2", "street3", "county", "country").map(id.withSuffix)
   val fields = (id: FieldId) => mandatoryFields(id) ++ optionalFields(id)

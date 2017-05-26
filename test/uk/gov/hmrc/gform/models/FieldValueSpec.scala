@@ -206,6 +206,44 @@ class FieldValueSpec extends Spec {
     fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, mandatory = false, editable = false, submissible = false))
   }
 
+  it should "parse as Address with 'international' false  when not specified" in {
+    val fieldValue = toFieldValue(
+      """|{
+         |  "type": "address",
+         |  "id": "homeAddress",
+         |  "label": "Home"
+         |}"""
+    )
+
+    fieldValue should beJsSuccess(FieldValue(FieldId("homeAddress"), Address(international = false), "Home", None, mandatory = true, editable = true, submissible = true))
+  }
+
+  it should "parse as Address with 'international' false when specified yes" in {
+    val fieldValue = toFieldValue(
+      """|{
+         |  "type": "address",
+         |  "id": "homeAddress",
+         |  "label": "Home",
+         |  "international" : "Yes"
+         |}"""
+    )
+
+    fieldValue should beJsSuccess(FieldValue(FieldId("homeAddress"), Address(international = true), "Home", None, mandatory = true, editable = true, submissible = true))
+  }
+
+  it should "parse as Address with 'international' false when specified no" in {
+    val fieldValue = toFieldValue(
+      """|{
+         |  "type": "address",
+         |  "id": "homeAddress",
+         |  "label": "Home",
+         |  "international" : "No"
+         |}"""
+    )
+
+    fieldValue should beJsSuccess(FieldValue(FieldId("homeAddress"), Address(international = false), "Home", None, mandatory = true, editable = true, submissible = true))
+  }
+
   it should "parse 'choice' type as Radio with Vertical orientation if no multivalue & no format is provided" in {
     val fieldValue = toFieldValue(
       """|{

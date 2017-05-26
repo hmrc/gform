@@ -127,7 +127,7 @@ class FormValidatorSpec extends Spec {
 
   def getAddressFieldValue(id: String) = FieldValue(
     id = FieldId(id),
-    `type` = Address,
+    `type` = Address(international = false),
     label = "",
     helpText = None,
     editable = true,
