@@ -22,9 +22,19 @@ import uk.gov.hmrc.gform.core.{ Invalid, Valid, ValidationResult }
 import scala.collection.immutable.List
 
 case class Section(
-  title: String,
-  fields: List[FieldValue]
-)
+    title: String,
+    fields: List[FieldValue]
+) {
+  private def atomicFields(fieldValues: List[FieldValue]): List[FieldValue] = {
+    fieldValues.flatMap { (fieldValue) =>
+      fieldValue.`type` match {
+        case Group(gfvs) => atomicFields(gfvs)
+        case fv @ _ => List(fieldValue)
+      }
+    }
+  }
+  def atomicFields: List[FieldValue] = atomicFields(fields)
+}
 
 object Section {
   implicit val format = Json.format[Section]

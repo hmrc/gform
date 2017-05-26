@@ -58,7 +58,7 @@ object SubmissionService {
     }
 
     val toSectionFormField: Section => Opt[SectionFormField] = section =>
-      section.fields.flatTraverse(formFieldByFieldValue).map(ff => SectionFormField(section.title, ff))
+      section.atomicFields.flatTraverse(formFieldByFieldValue).map(ff => SectionFormField(section.title, ff))
 
     sections.toList.traverse(toSectionFormField)
   }

@@ -32,7 +32,7 @@ import scala.concurrent.ExecutionContext.Implicits._
 
 class FormTemplatesSpec extends FlatSpec with Matchers with TypeclassFixtures with ScalaFutures with EitherValues with MockFactory {
 
-  val plainFormTemplate = FormTemplate(FormTypeId(""), "formName", "version", "description", "characterSet", DmsSubmission("customerId", "classificationType", "businessArea"), "submitSuccessUrl", "submitErrorUrl", List.empty[Section])
+  val plainFormTemplate = FormTemplate(Some("http://schemaId"), FormTypeId(""), "formName", "version", "description", "characterSet", DmsSubmission("customerId", "classificationType", "businessArea"), "submitSuccessUrl", "submitErrorUrl", List.empty[Section])
 
   implicit override val patienceConfig = PatienceConfig(timeout = scaled(Span(500, Millis)), interval = scaled(Span(150, Millis)))
 
@@ -44,7 +44,7 @@ class FormTemplatesSpec extends FlatSpec with Matchers with TypeclassFixtures wi
       .response(Option.empty[Schema]) // No schema will be found
       .callCheck(findOneCheck)
       .withChecks { req: JsObject =>
-        req should be(Json.obj("id" -> "http://hmrc.gov.uk/jsonschema/bf-formtemplate#"))
+        req should be(Json.obj("id" -> "http://schemaId"))
       }
 
     implicit val update: Update[FormTemplate] = UpdateTC.notUsed[FormTemplate]
@@ -53,7 +53,7 @@ class FormTemplatesSpec extends FlatSpec with Matchers with TypeclassFixtures wi
 
     val res: ServiceResponse[DbOperationResult] = FormTemplates.saveTemplate(FormTypeId("abc"), "1.0.0", plainFormTemplate)
 
-    futureResult(res.value).left.value should be(InvalidState("SchemaId http://hmrc.gov.uk/jsonschema/bf-formtemplate# not found"))
+    futureResult(res.value).left.value should be(InvalidState("SchemaId http://schemaId not found"))
 
   }
 

@@ -32,10 +32,11 @@ case class FieldValue(
 object FieldValue {
 
   implicit val format: OFormat[FieldValue] = {
-    val formatFieldValue = Json.format[FieldValue]
+    implicit val formatFieldValue = Json.format[FieldValue]
+
     val reads: Reads[FieldValue] = (formatFieldValue: Reads[FieldValue]) | FieldValueRaw.format.flatMap(_.toFieldValue)
+
     OFormat[FieldValue](reads, formatFieldValue)
   }
-
 }
 
