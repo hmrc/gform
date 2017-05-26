@@ -1,4 +1,5 @@
 {
+  "schemaId": "http://hmrc.gov.uk/jsonschema/gf-formtemplate#",
   "formTypeId": "IPT100",
   "formName": "Insurance Premium Tax Return | Yswiriant Ffurflen Dreth Premiwm",
   "version": "0.2.5",

@@ -24,7 +24,7 @@ import uk.gov.hmrc.gform.models._
 
 class FormValidatorSpec extends FlatSpec with Matchers with EitherValues {
 
-  "TemplateValidator.conform" should "validate form agains form schema" in {
+  "TemplateValidator.conform" should "validate form against form schema" in {
 
     val formSchema =
       """|{

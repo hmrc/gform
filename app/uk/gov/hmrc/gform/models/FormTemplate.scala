@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.models
 import play.api.libs.json.Json
 
 case class FormTemplate(
+  schemaId: Option[String],
   formTypeId: FormTypeId,
   formName: String,
   version: String,
