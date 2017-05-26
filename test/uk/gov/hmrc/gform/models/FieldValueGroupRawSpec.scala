@@ -26,7 +26,8 @@ class FieldValueGroupRawSpec extends FlatSpec with Matchers with EitherValues wi
   val gfvr = FieldValueRaw(
     id = FieldId("groupid"),
     `type` = Some(GroupRaw),
-    label = "Group Label"
+    label = "Group Label",
+    format = Some(TextFormat("vertical"))
   )
 
   "A raw group" should "not parse if it has no fields specified" in {

@@ -21,7 +21,7 @@ import org.scalatest.{EitherValues, FlatSpec, Matchers}
 import play.api.data.validation.ValidationError
 import play.api.libs.json._
 
-class FieldValueGroupSpec extends FlatSpec with Matchers with EitherValues with JsResultMatcher {
+class JsonParseTestGroup extends FlatSpec with Matchers with EitherValues with JsResultMatcher {
 
   val jsonStr =
     """
@@ -43,15 +43,11 @@ class FieldValueGroupSpec extends FlatSpec with Matchers with EitherValues with 
       |        }
     """.stripMargin
 
-  "A raw group" should "not parse if it has no fields specified" in {
+  "A raw group" should "parse" in {
 
-    val res = implicitly[Reads[FieldValue]].reads(Json.parse(jsonStr))
+    val jsResult = implicitly[Reads[FieldValue]].reads(Json.parse(jsonStr))
 
-    println(res)
-
-    res should beJsSuccess(FieldValue(FieldId("gid"),Group(List(FieldValue(FieldId("cid"),Choice(Radio,NonEmptyList.of("A", "B"),Vertical,List(),None),"clabel",None,true,true,true))),"glabel",None,true,true,true))
-
-//    JsSuccess(FieldValue("gid",Group(List(FieldValue("cid",Choice(Radio,NonEmptyList("A", "B"),Vertical,List(),None),"clabel",None,true,true,true))),"glabel",None,true,true,true),"")
+    jsResult should beJsSuccess(FieldValue(FieldId("gid"),Group(List(FieldValue(FieldId("cid"),Choice(Radio,NonEmptyList.of("A", "B"),Vertical,List(),None),"clabel",None,true,true,true))),"glabel",None,true,true,true))
 
 
   }
