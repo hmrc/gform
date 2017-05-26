@@ -42,8 +42,7 @@ object FormTemplates {
     findOne: FindOne[Schema],
     update: Update[FormTemplate]
   ): ServiceResponse[DbOperationResult] = {
-    // Hardcoded for now, should be read from formTemplate itself
-    val schemaId = "http://hmrc.gov.uk/jsonschema/bf-formtemplate#"
+    val schemaId = formTemplate.schemaId.getOrElse("http://hmrc.gov.uk/jsonschema/gf-formtemplate#")
 
     val sectionsList = formTemplate.sections
 

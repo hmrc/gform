@@ -1,8 +1,11 @@
 {
-  "id": "http://hmrc.gov.uk/jsonschema/bf-formtemplate#",
-  "description": "Schema for a BetterForms Form Template",
+  "id": "http://hmrc.gov.uk/jsonschema/gf-formtemplate#",
+  "description": "Schema for Gform Form Descriptions",
   "type": "object",
   "properties": {
+    "schemaId": {
+      "type": "string"
+    },
     "formTypeId": {
       "type": "string"
     },

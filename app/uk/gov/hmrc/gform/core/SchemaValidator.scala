@@ -34,6 +34,7 @@ sealed trait JsonSchema {
           val validationResults: Seq[ValidationResult] = properties.map {
             case Item(fieldName, SString) => (json \ fieldName) match {
               case JsDefined(JsString(_)) => Valid
+              case JsUndefined() if (!required.contains(fieldName)) => Valid
               case otherwise => Invalid(s"FieldName '$fieldName' is missing or not a string, got: " + Json.prettyPrint(json))
             }
             case Item(fieldName, SBoolean) => (json \ fieldName) match {
@@ -81,7 +82,8 @@ object SchemaValidator {
         case "array" => readArray(json)
         case otherwise => Left(InvalidState(s"Unsupported value for 'type' fieldName: '$otherwise'"))
       }
-      case otherwise => Left(InvalidStateWithJson("No 'type' fieldName of type string found in json", json))
+      case JsDefined(_) => Left(InvalidStateWithJson(s"Expected 'type' to be one of 4 strings in json", json))
+      case otherwise => Left(InvalidStateWithJson("No 'type' fieldName found in json", json))
     }
   }
 

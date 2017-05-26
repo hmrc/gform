@@ -44,12 +44,12 @@ class SchemaValidatorSpec extends FlatSpec with Matchers with EitherValues {
 
   it should "fail for json not containing 'type' fieldName" in {
     val res = SchemaValidator.conform(Schema(Json.obj()))
-    res.left.value should be(InvalidStateWithJson("No 'type' fieldName of type string found in json", Json.obj()))
+    res.left.value should be(InvalidStateWithJson("No 'type' fieldName found in json", Json.obj()))
   }
 
   it should "fail when 'type' fieldName is not a String" in {
     val res = SchemaValidator.conform(Schema(Json.obj("type" -> 1)))
-    res.left.value should be(InvalidStateWithJson("No 'type' fieldName of type string found in json", Json.obj("type" -> 1)))
+    res.left.value should be(InvalidStateWithJson("Expected 'type' to be one of 4 strings in json", Json.obj("type" -> 1)))
   }
 
   it should "read list of SSobject" in {
