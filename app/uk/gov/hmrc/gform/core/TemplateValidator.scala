@@ -25,7 +25,7 @@ object TemplateValidator {
     section.atomicFields.foldLeft((Set.empty[FieldId], Set.empty[FieldId])) {
       case ((mandatoryAcc, optionalAcc), field) =>
         (field.`type`, field.mandatory) match {
-          case (Address, _) => (mandatoryAcc ++ Address.mandatoryFields(field.id), optionalAcc ++ Address.optionalFields(field.id))
+          case (Address(_), _) => (mandatoryAcc ++ Address.mandatoryFields(field.id), optionalAcc ++ Address.optionalFields(field.id))
           case (Date(_, _, _), _) => (mandatoryAcc ++ Date.fields(field.id), optionalAcc)
           case (Text(_, _), true) => (mandatoryAcc + field.id, optionalAcc)
           case (Text(_, _), false) => (mandatoryAcc, optionalAcc + field.id)

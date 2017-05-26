@@ -60,7 +60,8 @@ case class FieldValueRaw(
     mandatory: Option[String] = None,
     offset: Option[Offset] = None,
     multivalue: Option[String] = None,
-    total: Option[String] = None
+    total: Option[String] = None,
+    international: Option[String] = None
 ) {
 
   def toFieldValue = Reads[FieldValue] { _ => getFieldValue fold (us => JsError(us.toString), fv => JsSuccess(fv)) }
@@ -101,10 +102,11 @@ case class FieldValueRaw(
   private lazy val componentTypeOpt: Opt[ComponentType] = `type` match {
     case Some(TextRaw) | None => textOpt
     case Some(DateRaw) => dateOpt
-    case Some(AddressRaw) => Address.asRight
+    case Some(AddressRaw) => addressOpt
+    case Some(AddressRaw) => addressOpt
+    case Some(GroupRaw) => groupOpt
     case Some(ChoiceRaw) => choiceOpt
     case Some(FileUploadRaw) => fileUploadOpt
-    case Some(GroupRaw) => groupOpt
     //TODO: What if there is None
   }
 
@@ -115,10 +117,21 @@ case class FieldValueRaw(
     case (None,                       IsTotal(TotalYes))  => Text(Constant(""), total = true).asRight
     case (None,                       IsTotal(TotalNo))   => Text(Constant(""), total = false).asRight
     case (Some(invalidValue),         invalidTotal)       => InvalidState(
-        s"""|Unsupported type of value for text field
-            |Id: $id
-            |Value: $invalidValue
-            |Total: $invalidTotal""".stripMargin).asLeft
+      s"""|Unsupported type of value for text field
+          |Id: $id
+          |Value: $invalidValue
+          |Total: $invalidTotal""".stripMargin).asLeft
+    //format: ON
+  }
+
+  private lazy val addressOpt: Opt[Address] = international match {
+    //format: OFF
+    case IsInternational(InternationalYes) => Address(international = true).asRight
+    case IsInternational(InternationalNo)  => Address(international = false).asRight
+    case invalidInternational       => InvalidState(
+      s"""|Unsupported type of value for address field
+          |Id: $id
+          |Total: $invalidInternational""".stripMargin).asLeft
     //format: ON
   }
 
@@ -248,6 +261,21 @@ case class FieldValueRaw(
       multivalue match {
         case Some(IsFalseish()) | None => Some(MultivalueNo)
         case Some(IsTrueish()) => Some(MultivalueYes)
+        case _ => None
+      }
+    }
+  }
+
+  private sealed trait International
+
+  private final case object InternationalYes extends International
+  private final case object InternationalNo extends International
+
+  private final object IsInternational {
+    def unapply(international: Option[String]): Option[International] = {
+      international match {
+        case Some(IsFalseish()) | None => Some(InternationalNo)
+        case Some(IsTrueish()) => Some(InternationalYes)
         case _ => None
       }
     }
