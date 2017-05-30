@@ -36,7 +36,7 @@ object FieldValueRaw {
     (__ \ 'optionHelpText).formatNullable[List[String]] and
     (__ \ 'submitMode).formatNullable[String] and
     (__ \ 'choices).formatNullable[List[String]] and
-    (__ \ 'fields).lazyFormatNullable(implicitly[Format[List[FieldValueRaw]]]) and
+    (__ \ 'fields).lazyFormatNullable(implicitly[Format[List[FieldValueRaw]]]) and  //Note: recursiveness here prevents macro use
     (__ \ 'mandatory).formatNullable[String] and
     (__ \ 'offset).formatNullable[Offset] and
     (__ \ 'multivalue).formatNullable[String] and
