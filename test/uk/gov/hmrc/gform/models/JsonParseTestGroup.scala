@@ -25,23 +25,24 @@ class JsonParseTestGroup extends FlatSpec with Matchers with EitherValues with J
 
   val jsonStr =
     """
-      |        {
-      |          "type": "group",
-      |          "id": "gid",
-      |          "label": "glabel",
-      |          "fields": [
-      |            {
-      |              "type": "choice",
-      |              "id": "cid",
-      |              "label": "clabel",
-      |              "choices": [
-      |                "A",
-      |                "B"
-      |              ]
-      |            }
-      |          ]
-      |        }
-    """.stripMargin
+      {
+        "type": "group",
+        "id": "gid",
+        "label": "glabel",
+        "fields": [
+          {
+            "type": "choice",
+            "id": "cid",
+            "label": "clabel",
+            "choices": [
+              "A",
+              "B"
+            ]
+          }
+        ]
+      }
+    """
+
 
   "A raw group" should "parse" in {
 
