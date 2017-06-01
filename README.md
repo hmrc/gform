@@ -19,9 +19,9 @@ View data with, for example:
 
     curl http://localhost:9196/gform/formtemplates
     
-Aside from a local service, the backend needs to be accessed through the forntend proxy, for example:
+Aside from a local service, the backend needs to be accessed through the frontend proxy, to try this locally:
 
-    curl http://localhost:9195/summary/test-ons -H "Content-Type: application/json" -H "X-requested-with: foo" -d '@sample-data/schema.json'
+    curl http://localhost:9195/summary/test-only/proxy-to-gform/gform/schemas -H "Content-Type: application/json" -H "X-requested-with: foo" -d '@sample-data/schema.json'
 
 ### License
 
