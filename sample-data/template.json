@@ -143,7 +143,14 @@
           "type": "text"
         },
         {
-          "id": "address",
+          "id": "international address",
+          "label": "Your International Address | Eich enw cyntaf",
+          "mandatory": "true",
+          "type": "address",
+          "international": "yes"
+        },
+        {
+          "id": "home address",
           "label": "Your Address | Eich enw cyntaf",
           "mandatory": "true",
           "type": "address"
