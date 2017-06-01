@@ -1,7 +1,7 @@
 
 # gform
 
-[![Build Status](https://travis-ci.org/hmrc/gform.svg?branch=master)](https://travis-ci.org/hmrc/gform) [ ![Download](https://api.bintray.com/packages/hmrc/releases/gform/images/download.svg) ](https://bintray.com/hmrc/releases/gform/_latestVersion)
+[ ![Download](https://api.bintray.com/packages/hmrc/releases/gform/images/download.svg) ](https://bintray.com/hmrc/releases/gform/_latestVersion)
 
 ### Uploading sample data
 
@@ -18,6 +18,10 @@ View data with, for example:
     curl http://localhost:9196/gform/schemas
 
     curl http://localhost:9196/gform/formtemplates
+    
+Aside from a local service, the backend needs to be accessed through the forntend proxy, for example:
+
+    curl http://localhost:9195/summary/test-ons -H "Content-Type: application/json" -H "X-requested-with: foo" -d '@sample-data/schema.json'
 
 ### License
 
