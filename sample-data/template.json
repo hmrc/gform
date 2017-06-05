@@ -85,7 +85,8 @@
           "type": "choice",
           "id": "isPremisesAddressBusinessAddress2",
           "label": "Is the address of the premises the same as your business address again?",
-          "format": "yesno",
+          "format" : "inline",
+          "choices": ["Yup", "No, it isn't"],
           "value": "1"
         },
         {
