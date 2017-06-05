@@ -43,7 +43,6 @@ class JsonParseTestGroup extends FlatSpec with Matchers with EitherValues with J
       }
     """
 
-
   "A raw group" should "parse" in {
 
     val jsResult = implicitly[Reads[FieldValue]].reads(Json.parse(jsonStr))

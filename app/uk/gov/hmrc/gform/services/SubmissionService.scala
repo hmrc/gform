@@ -45,6 +45,7 @@ object SubmissionService {
           case Address => Address.fields(fieldValue.id)
           case Date(_, _, _) => Date.fields(fieldValue.id)
           case Text(_, _) | Choice(_, _, _, _, _) | Group(_) => List(fieldValue.id) // TODO - added Group just to compile; remove if possible
+          case FileUpload() => List(fieldValue.id)
         }
 
       val formFieldAndFieldValues: List[Opt[(FormField, FieldValue)]] =
