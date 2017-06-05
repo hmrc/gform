@@ -29,6 +29,7 @@ class JsonParseTestGroup extends FlatSpec with Matchers with EitherValues with J
         "type": "group",
         "id": "gid",
         "label": "glabel",
+        "format" : "horizontal",
         "fields": [
           {
             "type": "choice",
@@ -43,12 +44,23 @@ class JsonParseTestGroup extends FlatSpec with Matchers with EitherValues with J
       }
     """
 
-
   "A raw group" should "parse" in {
 
     val jsResult = implicitly[Reads[FieldValue]].reads(Json.parse(jsonStr))
 
-    jsResult should beJsSuccess(FieldValue(FieldId("gid"), Group(List(FieldValue(FieldId("cid"), Choice(Radio, NonEmptyList.of("A", "B"), Vertical, List(), None), "clabel", None, true, true, true))), "glabel", None, true, true, true))
+    jsResult should beJsSuccess(FieldValue(
+      FieldId("gid"),
+      Group(
+        List(
+          FieldValue(
+            FieldId("cid"),
+            Choice(Radio, NonEmptyList.of("A", "B"), Vertical, List(), None), "clabel", None, true, true, true
+          )
+        ),
+        Horizontal
+      ),
+      "glabel", None, true, true, true
+    ))
 
   }
 

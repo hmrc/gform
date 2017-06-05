@@ -36,7 +36,7 @@ object FieldValueRaw {
     (__ \ 'optionHelpText).formatNullable[List[String]] and
     (__ \ 'submitMode).formatNullable[String] and
     (__ \ 'choices).formatNullable[List[String]] and
-    (__ \ 'fields).lazyFormatNullable(implicitly[Format[List[FieldValueRaw]]]) and  //Note: recursiveness here prevents macro use
+    (__ \ 'fields).lazyFormatNullable(implicitly[Format[List[FieldValueRaw]]]) and //Note: recursiveness here prevents macro use
     (__ \ 'mandatory).formatNullable[String] and
     (__ \ 'offset).formatNullable[Offset] and
     (__ \ 'multivalue).formatNullable[String] and
@@ -65,7 +65,7 @@ case class FieldValueRaw(
 
   def toFieldValue = Reads[FieldValue] { _ => getFieldValue fold (us => JsError(us.toString), fv => JsSuccess(fv)) }
 
-  private def getFieldValue(): Opt[FieldValue] = optMES.flatMap(mes => optComponentType.map(ct => mkFieldValue(mes, ct)))
+  private def getFieldValue(): Either[UnexpectedState, FieldValue] = optMES.flatMap(mes => fromRawToFinishedComponentType.map(ct => mkFieldValue(mes, ct)))
 
   private def mkFieldValue(mes: MES, ct: ComponentType): FieldValue = FieldValue(
     id = id,
@@ -98,7 +98,7 @@ case class FieldValueRaw(
     ).asLeft
   }
 
-  private lazy val optComponentType: Opt[ComponentType] = `type` match {
+  private lazy val fromRawToFinishedComponentType: Opt[ComponentType] = `type` match {
     case Some(TextRaw) | None => textOpt
     case Some(DateRaw) => dateOpt
     case Some(AddressRaw) => Address.asRight
@@ -136,11 +136,19 @@ case class FieldValueRaw(
     o = offset.getOrElse(Offset(0))
   } yield Date(f, o, v)
 
-  private lazy val groupOpt: Opt[Group] = fields.fold(groupOptErr)(optGroup)
-  private lazy val groupOptErr: Opt[Group] = InvalidState(s"""Require 'fields' element in Group""").asLeft
-  private def optGroup(rawFields: List[FieldValueRaw]): Opt[Group] = rawFields.map(_.getFieldValue()).partition(_.isRight) match {
-    case (ueorfvs, Nil) => Group(ueorfvs.map(_.right.get)).asRight
-    case (_, ueorfvs) => ueorfvs.map(_.left.get).head.asLeft
+  private lazy val groupOpt: Either[UnexpectedState, Group] = fields.fold(noRawFields)(createGroupFromRawFieldsOrReturnUnexpectedState)
+  private lazy val noRawFields: Either[UnexpectedState, Group] = InvalidState(s"""Require 'fields' element in Group""").asLeft
+  private def createGroupFromRawFieldsOrReturnUnexpectedState(rawFields: List[FieldValueRaw]): Either[UnexpectedState, Group] = {
+
+    val orientation = format match {
+      case IsGroupOrientation(VerticalGroupOrientation) | None => Vertical
+      case IsGroupOrientation(HorizontalGroupOrientation) => Horizontal
+    }
+
+    rawFields.map(_.getFieldValue()).partition(_.isRight) match {
+      case (ueorfvs, Nil) => Group(ueorfvs.map(_.right.get), orientation).asRight
+      case (_, ueorfvs) => ueorfvs.map(_.left.get).head.asLeft
+    }
   }
 
   private lazy val choiceOpt = (format, choices, multivalue, value, optionHelpText) match {
@@ -192,6 +200,21 @@ case class FieldValueRaw(
         case Some(TextFormat("horizontal")) => Some(HorizontalOrientation)
         case Some(TextFormat("yesno")) => Some(YesNoOrientation)
         case Some(TextFormat("inline")) => Some(InlineOrientation)
+        case _ => None
+      }
+    }
+  }
+
+  private sealed trait GroupOrientation
+
+  private final case object VerticalGroupOrientation extends GroupOrientation
+  private final case object HorizontalGroupOrientation extends GroupOrientation
+
+  private final object IsGroupOrientation {
+    def unapply(orientation: Option[FormatExpr]): Option[GroupOrientation] = {
+      orientation match {
+        case Some(TextFormat("vertical")) | None => Some(VerticalGroupOrientation)
+        case Some(TextFormat("horizontal")) => Some(HorizontalGroupOrientation)
         case _ => None
       }
     }

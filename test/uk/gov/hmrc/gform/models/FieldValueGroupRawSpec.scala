@@ -44,7 +44,7 @@ class FieldValueGroupRawSpec extends FlatSpec with Matchers with EitherValues wi
   it should "parse correctly if it has an empty list of fields" in {
 
     gfvr.copy(fields = Some(Nil)).toFieldValue.reads(Json.obj()) should beJsSuccess(
-      FieldValue(FieldId("groupid"), Group(Nil), "Group Label", None, true, true, true)
+      FieldValue(FieldId("groupid"), Group(Nil, Vertical), "Group Label", None, true, true, true)
     )
   }
 
@@ -61,8 +61,8 @@ class FieldValueGroupRawSpec extends FlatSpec with Matchers with EitherValues wi
     val res: JsResult[FieldValue] = gfvr.copy(fields = Some(List(fvr))).toFieldValue.reads(Json.obj())
 
     res match {
-      case JsSuccess(FieldValue(_, Group(List(fv)), _, _, _, _, _), _) => fv.mandatory shouldBe (false)
-      case JsSuccess(FieldValue(_, Group(list @ _), _, _, _, _, _), _) => fail(s"unexpected list ${list} in Group")
+      case JsSuccess(FieldValue(_, Group(List(fv), _), _, _, _, _, _), _) => fv.mandatory shouldBe (false)
+      case JsSuccess(FieldValue(_, Group(list @ _, _), _, _, _, _, _), _) => fail(s"unexpected list ${list} in Group")
       case JsError(s) => fail(s"expected successful parse but got ${s}")
     }
   }
