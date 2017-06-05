@@ -16,18 +16,13 @@
 
 package uk.gov.hmrc.gform.connectors
 
-import play.api.libs.json.{ JsValue, Writes }
-import scala.concurrent.{ ExecutionContext, Future }
-import org.scalatest.concurrent.ScalaFutures
+import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.exceptions.InvalidState
 import uk.gov.hmrc.gform.models.EnvelopeId
 import uk.gov.hmrc.gform.services.FileUploadService
-import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpReads, HttpResponse }
-import uk.gov.hmrc.play.test.UnitSpec
-import uk.gov.hmrc.gform.typeclasses.{ FusUrl, ServiceUrl }
-import org.scalatest._
+import uk.gov.hmrc.play.http.HttpResponse
 
-class FusConnectorSpec extends FlatSpec with Matchers with EitherValues {
+class FusConnectorSpec extends Spec {
 
   "createEnvelope" should "return invalid state when response is missing Location header" in {
 

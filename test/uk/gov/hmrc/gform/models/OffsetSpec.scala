@@ -16,13 +16,10 @@
 
 package uk.gov.hmrc.gform.models
 
-import org.scalatest.{ EitherValues, FlatSpec, Matchers, OptionValues }
 import play.api.libs.json.{ JsError, JsSuccess }
+import uk.gov.hmrc.gform.Spec
 
-/**
- * Created by dimitra on 04/04/17.
- */
-class OffsetSpec extends FlatSpec with Matchers with EitherValues with OptionValues {
+class OffsetSpec extends Spec {
 
   val signedIntRegex = """(\+|-)?\d+"""
   val convertToInt = (str: String) => if (str.matches(signedIntRegex)) JsSuccess(Offset(str.toInt)) else JsError(s"Couldn't parse Integer from offset, $str")

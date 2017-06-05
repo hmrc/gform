@@ -16,19 +16,16 @@
 
 package uk.gov.hmrc.gform.services
 
-import org.scalamock.scalatest.MockFactory
-import org.scalatest._
-import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{ Millis, Span }
 import play.api.libs.json.{ JsObject, Json }
-import uk.gov.hmrc.gform.{ FindOneCheck, TypeclassFixtures }
 import uk.gov.hmrc.gform.exceptions.InvalidState
 import uk.gov.hmrc.gform.models._
 import uk.gov.hmrc.gform.typeclasses.{ FindOne, Insert, Update }
+import uk.gov.hmrc.gform.{ FindOneCheck, Spec, TypeclassFixtures }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class FormServiceSpec extends FlatSpec with Matchers with TypeclassFixtures with ScalaFutures with EitherValues with MockFactory {
+class FormServiceSpec extends Spec with TypeclassFixtures {
 
   implicit override val patienceConfig = PatienceConfig(timeout = scaled(Span(500, Millis)), interval = scaled(Span(150, Millis)))
 

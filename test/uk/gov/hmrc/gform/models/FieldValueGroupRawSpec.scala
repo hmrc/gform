@@ -16,12 +16,11 @@
 
 package uk.gov.hmrc.gform.models
 
-import org.scalatest.{ EitherValues, FlatSpec, Matchers }
 import play.api.data.validation.ValidationError
-import play.api.libs.json
 import play.api.libs.json._
+import uk.gov.hmrc.gform.Spec
 
-class FieldValueGroupRawSpec extends FlatSpec with Matchers with EitherValues with JsResultMatcher {
+class FieldValueGroupRawSpec extends Spec {
 
   val gfvr = FieldValueRaw(
     id = FieldId("groupid"),

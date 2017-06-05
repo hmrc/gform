@@ -16,21 +16,17 @@
 
 package uk.gov.hmrc.gform.controllers
 
-import org.scalatest._
-import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{ Millis, Span }
-import org.scalamock.scalatest.MockFactory
 import play.api.libs.json.{ JsObject, Json }
-import uk.gov.hmrc.gform.models.{ DmsSubmission, FieldValue, Section }
-import uk.gov.hmrc.gform.{ FindOneCheck, TypeclassFixtures, UpdateCheck }
 import uk.gov.hmrc.gform.core.ServiceResponse
 import uk.gov.hmrc.gform.exceptions.InvalidState
-import uk.gov.hmrc.gform.models.{ FormTemplate, FormTypeId, DbOperationResult, Schema, UpdateSuccess }
+import uk.gov.hmrc.gform.models._
 import uk.gov.hmrc.gform.typeclasses.{ FindOne, Update }
+import uk.gov.hmrc.gform.{ FindOneCheck, Spec, TypeclassFixtures, UpdateCheck }
 
 import scala.concurrent.ExecutionContext.Implicits._
 
-class FormTemplatesSpec extends FlatSpec with Matchers with TypeclassFixtures with ScalaFutures with EitherValues with MockFactory {
+class FormTemplatesSpec extends Spec with TypeclassFixtures {
 
   val plainFormTemplate = FormTemplate(Some("http://schemaId"), FormTypeId(""), "formName", "version", "description", "characterSet", DmsSubmission("customerId", "classificationType", "businessArea"), "submitSuccessUrl", "submitErrorUrl", List.empty[Section])
 

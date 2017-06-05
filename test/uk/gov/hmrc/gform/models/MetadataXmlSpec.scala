@@ -17,10 +17,12 @@
 package uk.gov.hmrc.gform.models
 
 import java.time.LocalDateTime
-import org.scalatest._
+
+import uk.gov.hmrc.gform.Spec
+
 import scala.xml.Elem
 
-class MetadataXmlSpec extends FlatSpec with Matchers with StreamlinedXml {
+class MetadataXmlSpec extends Spec {
   "metadata.xml" should "be generated" in {
 
     val dmsMetaData = DmsMetaData(

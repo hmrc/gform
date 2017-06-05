@@ -17,9 +17,9 @@
 package uk.gov.hmrc.gform.models
 
 import play.api.libs.json._
-import org.scalatest._
+import uk.gov.hmrc.gform.Spec
 
-class FormSpec extends FlatSpec with Matchers with StreamlinedXml {
+class FormSpec extends Spec {
   val formId = FormId("my-form-id")
 
   val formData = FormData(FormTypeId("my-form-type-id"), "0.1.5", "UTF-8", List(FormField(FieldId("firstName"), "Josef")))
