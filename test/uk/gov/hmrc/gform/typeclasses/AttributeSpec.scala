@@ -17,11 +17,13 @@
 package uk.gov.hmrc.gform.typeclasses
 
 import java.time.LocalDateTime
-import org.scalatest._
-import scala.xml.Elem
-import scala.xml.Utility.trim
 
-class AttributeSpec extends FlatSpec with Matchers with StreamlinedXml {
+import uk.gov.hmrc.gform.Spec
+
+import scala.xml.Elem
+
+class AttributeSpec extends Spec {
+
   "Attribute typesclass" should "return xml with 'integer' type for Long type" in {
 
     val xml = implicitly[Attribute[Long]].attribute("some-name", List(10))

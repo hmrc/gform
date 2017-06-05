@@ -17,11 +17,10 @@
 package uk.gov.hmrc.gform.models
 
 import cats.data.NonEmptyList
-import org.scalatest.{ EitherValues, FlatSpec, Matchers }
-import play.api.data.validation.ValidationError
 import play.api.libs.json._
+import uk.gov.hmrc.gform.Spec
 
-class JsonParseTestGroup extends FlatSpec with Matchers with EitherValues with JsResultMatcher {
+class JsonParseTestGroup extends Spec {
 
   val jsonStr =
     """

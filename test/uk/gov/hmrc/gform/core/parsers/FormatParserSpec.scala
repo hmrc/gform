@@ -16,15 +16,11 @@
 
 package uk.gov.hmrc.gform.core.parsers
 
-import org.scalatest.{ EitherValues, FlatSpec, Matchers, OptionValues }
+import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.exceptions.InvalidState
-import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.models._
 
-/**
- * Created by dimitra on 03/04/17.
- */
-class FormatParserSpec extends FlatSpec with Matchers with EitherValues with OptionValues {
+class FormatParserSpec extends Spec {
 
   "YYY-MM-DD" should "be passed as it is" in {
     val res = FormatParser.validate("anyDate")

@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.gform.services
 
-import org.scalatest._
+import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.models._
 
-class PdfGeneratorSpec extends FlatSpec with Matchers {
+class PdfGeneratorSpec extends Spec {
 
   def getFF(id: FieldId, label: String, value: String) = {
 

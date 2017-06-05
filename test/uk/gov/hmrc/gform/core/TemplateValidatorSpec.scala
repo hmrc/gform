@@ -17,12 +17,12 @@
 package uk.gov.hmrc.gform.core
 
 import cats.data.NonEmptyList
-import uk.gov.hmrc.gform.models._
 import cats.syntax.either._
-import org.scalatest.{ EitherValues, FlatSpec, Matchers }
 import play.api.libs.json._
+import uk.gov.hmrc.gform.Spec
+import uk.gov.hmrc.gform.models._
 
-class TemplateValidatorSpec extends FlatSpec with Matchers with EitherValues {
+class TemplateValidatorSpec extends Spec {
   "Section.validate" should "validate unique FieldIds" in {
     val template =
       """{

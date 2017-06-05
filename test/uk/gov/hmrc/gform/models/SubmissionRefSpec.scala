@@ -16,13 +16,9 @@
 
 package uk.gov.hmrc.gform.models
 
-import cats.data.StateT
-import cats.data.State
-import uk.gov.hmrc.gform.models._
-import play.api.libs.json._
-import org.scalatest._
+import uk.gov.hmrc.gform.Spec
 
-class SubmissionRefSpec extends FlatSpec with Matchers {
+class SubmissionRefSpec extends Spec {
 
   "SubmissionRef.createSubmissionRef" should "generate submissionRef" in {
     val rnd = new scala.util.Random(12)

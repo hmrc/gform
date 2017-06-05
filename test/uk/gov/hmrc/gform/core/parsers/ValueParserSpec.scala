@@ -16,15 +16,12 @@
 
 package uk.gov.hmrc.gform.core.parsers
 
-import java.time.LocalDate
-
-import org.scalatest._
+import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.exceptions.InvalidState
 import uk.gov.hmrc.gform.models._
-import uk.gov.hmrc.gform.typeclasses.Now
 
-class ValueParserSpec extends FlatSpec with Matchers with EitherValues with OptionValues {
+class ValueParserSpec extends Spec {
 
   "ValueParser" should "parse ${firstName}" in {
     val res = ValueParser.validate("${firstName}")

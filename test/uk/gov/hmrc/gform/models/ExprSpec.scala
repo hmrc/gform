@@ -16,11 +16,10 @@
 
 package uk.gov.hmrc.gform.models
 
-import org.scalatest._
-import org.scalatest.matchers.{ BeMatcher, MatchResult, Matcher }
-import play.api.libs.json.{ Json, JsString, JsResult, JsValue, Reads, Writes }
+import play.api.libs.json._
+import uk.gov.hmrc.gform._
 
-class ExprSpec extends FlatSpec with Matchers with JsResultMatcher {
+class ExprSpec extends Spec {
 
   val add = Add(FormCtx("fieldA"), FormCtx("fieldB"))
   val addJson = Json.obj(
@@ -88,33 +87,3 @@ class ExprSpec extends FlatSpec with Matchers with JsResultMatcher {
 
 }
 
-trait JsResultMatcher {
-
-  /**
-   * Checks to see if `play.api.libs.json.JsResult` is a specific JsSuccess element.
-   */
-  def beJsSuccess[E](element: E): Matcher[JsResult[E]] = new BeJsResult[E](element)
-
-  /**
-   * Checks to see if `play.api.libs.json.JsResult` is a `JsError`.
-   */
-  def jsError[E]: BeMatcher[JsResult[E]] = new IsJsErrorMatcher[E]
-
-  final private class BeJsResult[E](element: E) extends Matcher[JsResult[E]] {
-    def apply(jsResult: JsResult[E]): MatchResult = {
-      MatchResult(
-        jsResult.fold(_ => false, _ == element),
-        s"'$jsResult' did not contain an element matching '$element'.",
-        s"'$jsResult' contained an element matching '$element', but should not have."
-      )
-    }
-  }
-
-  final private class IsJsErrorMatcher[E] extends BeMatcher[JsResult[E]] {
-    def apply(jsResult: JsResult[E]): MatchResult = MatchResult(
-      jsResult.isError,
-      s"'$jsResult' was not an JsError, but should have been.",
-      s"'$jsResult' was an JsError, but should *NOT* have been."
-    )
-  }
-}

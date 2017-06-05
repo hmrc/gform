@@ -17,10 +17,11 @@
 package uk.gov.hmrc.gform.models
 
 import java.time.LocalDateTime
-import org.scalatest._
+
+import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.typeclasses.Now
 
-class ReconciliationIdSpec extends FlatSpec with Matchers {
+class ReconciliationIdSpec extends Spec {
 
   "ReconciliationId.create" should "generate reconciliationId based on submissionRef and current time" in {
 

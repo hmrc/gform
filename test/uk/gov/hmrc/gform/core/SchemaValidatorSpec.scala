@@ -16,12 +16,12 @@
 
 package uk.gov.hmrc.gform.core
 
-import org.scalatest.{ EitherValues, FlatSpec, Matchers }
-import play.api.libs.json.{ JsNull, Json, JsNumber }
-import uk.gov.hmrc.gform.exceptions.{ InvalidState, InvalidStateWithJson }
+import play.api.libs.json.Json
+import uk.gov.hmrc.gform.Spec
+import uk.gov.hmrc.gform.exceptions.InvalidStateWithJson
 import uk.gov.hmrc.gform.models.Schema
 
-class SchemaValidatorSpec extends FlatSpec with Matchers with EitherValues {
+class SchemaValidatorSpec extends Spec {
 
   "SchemaValidator" should "read SSobject" in {
 

@@ -17,14 +17,10 @@
 package uk.gov.hmrc.gform.models
 
 import cats.data.NonEmptyList
-import cats.syntax.either._
-import org.scalactic.source.Position
-import org.scalatest.matchers.{ MatchResult, Matcher }
-import org.scalatest.{ EitherValues, FlatSpec, Matchers }
 import play.api.libs.json.{ Reads, _ }
-import uk.gov.hmrc.gform.exceptions.InvalidState
+import uk.gov.hmrc.gform.Spec
 
-class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsResultMatcher {
+class FieldValueSpec extends Spec {
 
   "FieldValue json object" should "parse as Text if it not include 'type' field" in {
     val fieldValue = toFieldValue(
