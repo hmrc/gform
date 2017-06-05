@@ -65,7 +65,7 @@ case class FieldValueRaw(
 
   def toFieldValue = Reads[FieldValue] { _ => getFieldValue fold (us => JsError(us.toString), fv => JsSuccess(fv)) }
 
-  private def getFieldValue(): Either[UnexpectedState, FieldValue] = optMES.flatMap(mes => componentTypeOpt.map(ct => mkFieldValue(mes, ct)))
+  private def getFieldValue(): Opt[FieldValue] = optMES.flatMap(mes => componentTypeOpt.map(ct => mkFieldValue(mes, ct)))
 
   private def mkFieldValue(mes: MES, ct: ComponentType): FieldValue = FieldValue(
     id = id,
