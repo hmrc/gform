@@ -33,6 +33,7 @@ sealed trait ComponentType {
     case Date(_, _, _) => Valid
     case Address => Valid
     case Choice(_, _, _, _, _) => Valid
+    case FileUpload() => Valid
     case Group(fvs) => ComponentType.validate(fvs.map(_.`type`), formTemplate)
   }
 }
@@ -40,6 +41,8 @@ sealed trait ComponentType {
 case class Text(value: Expr, total: Boolean) extends ComponentType
 
 case class Date(constraintType: DateConstraintType, offset: Offset, value: Option[DateValue]) extends ComponentType
+
+case class FileUpload() extends ComponentType
 
 case class Group(fields: List[FieldValue]) extends ComponentType
 

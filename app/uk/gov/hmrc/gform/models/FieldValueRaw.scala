@@ -36,7 +36,7 @@ object FieldValueRaw {
     (__ \ 'optionHelpText).formatNullable[List[String]] and
     (__ \ 'submitMode).formatNullable[String] and
     (__ \ 'choices).formatNullable[List[String]] and
-    (__ \ 'fields).lazyFormatNullable(implicitly[Format[List[FieldValueRaw]]]) and  //Note: recursiveness here prevents macro use
+    (__ \ 'fields).lazyFormatNullable(implicitly[Format[List[FieldValueRaw]]]) and //Note: recursiveness here prevents macro use
     (__ \ 'mandatory).formatNullable[String] and
     (__ \ 'offset).formatNullable[Offset] and
     (__ \ 'multivalue).formatNullable[String] and
@@ -102,8 +102,9 @@ case class FieldValueRaw(
     case Some(TextRaw) | None => textOpt
     case Some(DateRaw) => dateOpt
     case Some(AddressRaw) => Address.asRight
-    case Some(GroupRaw) => groupOpt
     case Some(ChoiceRaw) => choiceOpt
+    case Some(FileUploadRaw) => fileUploadOpt
+    case Some(GroupRaw) => groupOpt
     //TODO: What if there is None
   }
 
@@ -167,6 +168,8 @@ case class FieldValueRaw(
                          |optionHelpText: $invalidHelpText
                          |""".stripMargin).asLeft
   }
+
+  private lazy val fileUploadOpt: Opt[FileUpload] = FileUpload().asRight
 
   private final object Selections {
     def unapply(choiceExpr: Option[ValueExpr]): Option[List[Int]] = {
