@@ -38,11 +38,11 @@ trait Spec
 
 trait JsResultMatcher { self: Spec =>
 
-  def beJsSuccess[E](element: E): Matcher[JsResult[E]] = new BeJsResult[E](element)
+  def beJsSuccess[E](element: E): Matcher[JsResult[E]] = new BeJsSuccess[E](element)
 
   def jsError[E]: BeMatcher[JsResult[E]] = new IsJsErrorMatcher[E]
 
-  final private class BeJsResult[E](element: E) extends Matcher[JsResult[E]] {
+  final private class BeJsSuccess[E](element: E) extends Matcher[JsResult[E]] {
     def apply(jsResult: JsResult[E]): MatchResult = {
       MatchResult(
         jsResult.fold(_ => false, _ == element),
