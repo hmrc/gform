@@ -41,7 +41,7 @@ case class Text(value: Expr, total: Boolean) extends ComponentType
 
 case class Date(constraintType: DateConstraintType, offset: Offset, value: Option[DateValue]) extends ComponentType
 
-case class Group(fields: List[FieldValue], orientation: ChoiceOrientation) extends ComponentType
+case class Group(fields: List[FieldValue], orientation: Orientation) extends ComponentType
 
 case object Date {
   val fields = (id: FieldId) => List("day", "month", "year").map(id.withSuffix)
@@ -53,12 +53,12 @@ case object Address extends ComponentType {
   val fields = (id: FieldId) => mandatoryFields(id) ++ optionalFields(id)
 }
 
-sealed trait ChoiceOrientation
-case object Vertical extends ChoiceOrientation
-case object Horizontal extends ChoiceOrientation
-object ChoiceOrientation {
+sealed trait Orientation
+case object Vertical extends Orientation
+case object Horizontal extends Orientation
+object Orientation {
 
-  implicit val format: OFormat[ChoiceOrientation] = derived.oformat
+  implicit val format: OFormat[Orientation] = derived.oformat
 }
 
 sealed trait ChoiceType
@@ -71,7 +71,7 @@ object ChoiceType {
   implicit val format: OFormat[ChoiceType] = derived.oformat
 }
 
-case class Choice(`type`: ChoiceType, options: NonEmptyList[String], orientation: ChoiceOrientation,
+case class Choice(`type`: ChoiceType, options: NonEmptyList[String], orientation: Orientation,
   selections: List[Int], optionHelpText: Option[List[String]]) extends ComponentType
 
 object ComponentType {

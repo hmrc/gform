@@ -186,15 +186,15 @@ case class FieldValueRaw(
     }
   }
 
-  private sealed trait OrientationValue
+  private sealed trait ChoiceOrientation
 
-  private final case object VerticalOrientation extends OrientationValue
-  private final case object HorizontalOrientation extends OrientationValue
-  private final case object YesNoOrientation extends OrientationValue
-  private final case object InlineOrientation extends OrientationValue
+  private final case object VerticalOrientation extends ChoiceOrientation
+  private final case object HorizontalOrientation extends ChoiceOrientation
+  private final case object YesNoOrientation extends ChoiceOrientation
+  private final case object InlineOrientation extends ChoiceOrientation
 
   private final object IsOrientation {
-    def unapply(orientation: Option[FormatExpr]): Option[OrientationValue] = {
+    def unapply(orientation: Option[FormatExpr]): Option[ChoiceOrientation] = {
       orientation match {
         case Some(TextFormat("vertical")) | None => Some(VerticalOrientation)
         case Some(TextFormat("horizontal")) => Some(HorizontalOrientation)
