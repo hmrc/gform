@@ -598,7 +598,7 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
       """{
            "type": "fileUpload",
            "id":"attachment1",
-           "label": "Attache evidence of your income"
+           "label": "Attach evidence of your income"
          }"""
     )
 
@@ -606,7 +606,7 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
       FieldValue(
         FieldId("attachment1"),
         FileUpload(),
-        label = "Attache evidence of your income",
+        label = "Attach evidence of your income",
         helpText = None,
         mandatory = true,
         editable = true,
