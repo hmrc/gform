@@ -65,7 +65,7 @@ case class FieldValueRaw(
 
   def toFieldValue = Reads[FieldValue] { _ => getFieldValue fold (us => JsError(us.toString), fv => JsSuccess(fv)) }
 
-  private def getFieldValue(): Opt[FieldValue] = optMES.flatMap(mes => optComponentType.map(ct => mkFieldValue(mes, ct)))
+  private def getFieldValue(): Opt[FieldValue] = optMES.flatMap(mes => componentTypeOpt.map(ct => mkFieldValue(mes, ct)))
 
   private def mkFieldValue(mes: MES, ct: ComponentType): FieldValue = FieldValue(
     id = id,
@@ -98,7 +98,7 @@ case class FieldValueRaw(
     ).asLeft
   }
 
-  private lazy val optComponentType: Opt[ComponentType] = `type` match {
+  private lazy val componentTypeOpt: Opt[ComponentType] = `type` match {
     case Some(TextRaw) | None => textOpt
     case Some(DateRaw) => dateOpt
     case Some(AddressRaw) => Address.asRight
@@ -137,11 +137,19 @@ case class FieldValueRaw(
     o = offset.getOrElse(Offset(0))
   } yield Date(f, o, v)
 
-  private lazy val groupOpt: Opt[Group] = fields.fold(groupOptErr)(optGroup)
-  private lazy val groupOptErr: Opt[Group] = InvalidState(s"""Require 'fields' element in Group""").asLeft
-  private def optGroup(rawFields: List[FieldValueRaw]): Opt[Group] = rawFields.map(_.getFieldValue()).partition(_.isRight) match {
-    case (ueorfvs, Nil) => Group(ueorfvs.map(_.right.get)).asRight
-    case (_, ueorfvs) => ueorfvs.map(_.left.get).head.asLeft
+  private lazy val groupOpt: Opt[Group] = fields.fold(noRawFields)(groupOpt(_))
+  private lazy val noRawFields: Opt[Group] = InvalidState(s"""Require 'fields' element in Group""").asLeft
+  private def groupOpt(rawFields: List[FieldValueRaw]): Opt[Group] = {
+
+    val orientation = format match {
+      case IsGroupOrientation(VerticalGroupOrientation) | None => Vertical
+      case IsGroupOrientation(HorizontalGroupOrientation) => Horizontal
+    }
+
+    rawFields.map(_.getFieldValue()).partition(_.isRight) match {
+      case (ueorfvs, Nil) => Group(ueorfvs.map(_.right.get), orientation).asRight
+      case (_, ueorfvs) => ueorfvs.map(_.left.get).head.asLeft
+    }
   }
 
   private lazy val choiceOpt = (format, choices, multivalue, value, optionHelpText) match {
@@ -181,20 +189,35 @@ case class FieldValueRaw(
     }
   }
 
-  private sealed trait OrientationValue
+  private sealed trait ChoiceOrientation
 
-  private final case object VerticalOrientation extends OrientationValue
-  private final case object HorizontalOrientation extends OrientationValue
-  private final case object YesNoOrientation extends OrientationValue
-  private final case object InlineOrientation extends OrientationValue
+  private final case object VerticalOrientation extends ChoiceOrientation
+  private final case object HorizontalOrientation extends ChoiceOrientation
+  private final case object YesNoOrientation extends ChoiceOrientation
+  private final case object InlineOrientation extends ChoiceOrientation
 
   private final object IsOrientation {
-    def unapply(orientation: Option[FormatExpr]): Option[OrientationValue] = {
+    def unapply(orientation: Option[FormatExpr]): Option[ChoiceOrientation] = {
       orientation match {
         case Some(TextFormat("vertical")) | None => Some(VerticalOrientation)
         case Some(TextFormat("horizontal")) => Some(HorizontalOrientation)
         case Some(TextFormat("yesno")) => Some(YesNoOrientation)
         case Some(TextFormat("inline")) => Some(InlineOrientation)
+        case _ => None
+      }
+    }
+  }
+
+  private sealed trait GroupOrientation
+
+  private final case object VerticalGroupOrientation extends GroupOrientation
+  private final case object HorizontalGroupOrientation extends GroupOrientation
+
+  private final object IsGroupOrientation {
+    def unapply(orientation: Option[FormatExpr]): Option[GroupOrientation] = {
+      orientation match {
+        case Some(TextFormat("vertical")) | None => Some(VerticalGroupOrientation)
+        case Some(TextFormat("horizontal")) => Some(HorizontalGroupOrientation)
         case _ => None
       }
     }

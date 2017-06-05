@@ -17,6 +17,25 @@
       "title": "Calculation 1/2 | eich calculationewq",
       "fields": [
         {
+          "type": "group",
+          "id": "alcIngredientsAndQuantities",
+          "label": "Alcoholic ingredients and quantity",
+          "format": "horizontal",
+          "fields": [
+            {
+              "id": "alcIngDescription",
+              "type": "text",
+              "label": "Description"
+            },
+            {
+              "id": "alcIngQuantityKg",
+              "type": "text",
+              "format": "number",
+              "label": "Quantity in kg"
+            }
+          ]
+        },
+        {
           "type": "choice",
           "id": "dutyType",
           "label": "Select the tax type for the duty you need to pay from the below",
@@ -24,6 +43,7 @@
             "Tax type 590 - Natural gas",
             "Tax type 591 - Other gas"
           ],
+          "optionHelpText": ["Natural gas", "other gas"],
           "value": "1"
         },
         {
