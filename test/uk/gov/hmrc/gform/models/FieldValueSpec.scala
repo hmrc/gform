@@ -593,6 +593,28 @@ class FieldValueSpec extends FlatSpec with Matchers with EitherValues with JsRes
     fieldValue should be(jsError)
   }
 
+  it should "parse 'file upload' " in {
+    val fieldValue = toFieldValue(
+      """{
+           "type": "fileUpload",
+           "id":"attachment1",
+           "label": "Attach evidence of your income"
+         }"""
+    )
+
+    fieldValue should beJsSuccess(
+      FieldValue(
+        FieldId("attachment1"),
+        FileUpload(),
+        label = "Attach evidence of your income",
+        helpText = None,
+        mandatory = true,
+        editable = true,
+        submissible = true
+      )
+    )
+  }
+
   private def toFieldValue(template: String): JsResult[FieldValue] = {
 
     val templateAsJson = Json.parse(template.stripMargin)

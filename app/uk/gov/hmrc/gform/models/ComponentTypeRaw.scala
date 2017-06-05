@@ -29,6 +29,8 @@ case object AddressRaw extends ComponentTypeRaw
 
 case object ChoiceRaw extends ComponentTypeRaw
 
+case object FileUploadRaw extends ComponentTypeRaw
+
 case object GroupRaw extends ComponentTypeRaw
 
 object ComponentTypeRaw {
@@ -39,7 +41,8 @@ object ComponentTypeRaw {
       "date" -> DateRaw,
       "address" -> AddressRaw,
       "choice" -> ChoiceRaw,
-      "group" -> GroupRaw
+      "group" -> GroupRaw,
+      "fileUpload" -> FileUploadRaw
     )
 
   implicit val format: OFormat[ComponentTypeRaw] = {

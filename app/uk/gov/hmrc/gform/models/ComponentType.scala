@@ -34,6 +34,7 @@ sealed trait ComponentType {
     case Address => Valid
     case Choice(_, _, _, _, _) => Valid
     case Group(fvs, _) => ComponentType.validate(fvs.map(_.`type`), formTemplate)
+    case FileUpload() => Valid
   }
 }
 
@@ -42,6 +43,7 @@ case class Text(value: Expr, total: Boolean) extends ComponentType
 case class Date(constraintType: DateConstraintType, offset: Offset, value: Option[DateValue]) extends ComponentType
 
 case class Group(fields: List[FieldValue], orientation: Orientation) extends ComponentType
+case class FileUpload() extends ComponentType
 
 case object Date {
   val fields = (id: FieldId) => List("day", "month", "year").map(id.withSuffix)

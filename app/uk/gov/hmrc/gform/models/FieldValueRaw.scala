@@ -102,8 +102,9 @@ case class FieldValueRaw(
     case Some(TextRaw) | None => textOpt
     case Some(DateRaw) => dateOpt
     case Some(AddressRaw) => Address.asRight
-    case Some(GroupRaw) => groupOpt
     case Some(ChoiceRaw) => choiceOpt
+    case Some(FileUploadRaw) => fileUploadOpt
+    case Some(GroupRaw) => groupOpt
     //TODO: What if there is None
   }
 
@@ -175,6 +176,8 @@ case class FieldValueRaw(
                          |optionHelpText: $invalidHelpText
                          |""".stripMargin).asLeft
   }
+
+  private lazy val fileUploadOpt: Opt[FileUpload] = FileUpload().asRight
 
   private final object Selections {
     def unapply(choiceExpr: Option[ValueExpr]): Option[List[Int]] = {
