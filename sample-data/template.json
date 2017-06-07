@@ -17,6 +17,11 @@
       "title": "Calculation 1/2 | eich calculationewq",
       "fields": [
         {
+          "type": "fileUpload",
+          "id": "facePhoto",
+          "label": "Please upload your face photo"
+        },
+        {
           "type": "group",
           "id": "alcIngredientsAndQuantities",
           "label": "Alcoholic ingredients and quantity",
@@ -130,13 +135,7 @@
           "mandatory": "true",
           "type": "text"
         },
-        {
-          "id": "iptRegNum",
-          "label": "Insurance Premium Tax (IPT) registration number | Treth Premiwm Yswiriant (IPT) rhif cofrestru",
-          "submitMode": "readonly",
-          "mandatory": "true",
-          "type": "text"
-        },
+
         {
           "id": "lastName",
           "label": "Your last name | Eich enw olaf",
