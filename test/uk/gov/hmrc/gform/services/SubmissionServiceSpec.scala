@@ -39,6 +39,7 @@ class SubmissionServiceSpec extends Spec with TypeclassFixtures {
 
   val yourDetailsSection = Section(
     "Your details",
+    None,
     List(
       FieldValue(FieldId("firstName"), Text(Constant(""), total = false), "Your first name", None, mandatory = true, editable = true, submissible = true),
       FieldValue(FieldId("lastName"), Text(Constant(""), total = false), "Your last name", None, mandatory = true, editable = true, submissible = true)
