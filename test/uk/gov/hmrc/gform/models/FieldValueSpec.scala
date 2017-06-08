@@ -218,7 +218,7 @@ class FieldValueSpec extends Spec {
     fieldValue should beJsSuccess(FieldValue(FieldId("homeAddress"), Address(international = false), "Home", None, mandatory = true, editable = true, submissible = true))
   }
 
-  it should "parse as Address with 'international' false when specified yes" in {
+  it should "parse as Address with 'international' true when specified yes" in {
     val fieldValue = toFieldValue(
       """|{
          |  "type": "address",

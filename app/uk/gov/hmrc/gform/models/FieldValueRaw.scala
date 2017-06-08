@@ -40,10 +40,12 @@ object FieldValueRaw {
     (__ \ 'mandatory).formatNullable[String] and
     (__ \ 'offset).formatNullable[Offset] and
     (__ \ 'multivalue).formatNullable[String] and
-    (__ \ 'total).formatNullable[String]
+    (__ \ 'total).formatNullable[String] and
+    (__ \ 'international).formatNullable[String]
   )(FieldValueRaw.apply, unlift(FieldValueRaw.unapply))
 
   case class MES(mandatory: Boolean, editable: Boolean, submissible: Boolean)
+
 }
 
 case class FieldValueRaw(
@@ -102,7 +104,6 @@ case class FieldValueRaw(
   private lazy val componentTypeOpt: Opt[ComponentType] = `type` match {
     case Some(TextRaw) | None => textOpt
     case Some(DateRaw) => dateOpt
-    case Some(AddressRaw) => addressOpt
     case Some(AddressRaw) => addressOpt
     case Some(GroupRaw) => groupOpt
     case Some(ChoiceRaw) => choiceOpt
