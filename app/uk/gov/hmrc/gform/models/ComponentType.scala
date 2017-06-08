@@ -52,8 +52,8 @@ case object Date {
 case class Address(international: Boolean) extends ComponentType
 
 case object Address {
-  val mandatoryFields = (id: FieldId) => List("street1", "town", "postcode").map(id.withSuffix)
-  val optionalFields = (id: FieldId) => List("street2", "street3", "county", "country").map(id.withSuffix)
+  val mandatoryFields = (id: FieldId) => List("street1", "town").map(id.withSuffix)
+  val optionalFields = (id: FieldId) => List("street2", "street3", "county", "uk", "postcode", "country").map(id.withSuffix)
   val fields = (id: FieldId) => mandatoryFields(id) ++ optionalFields(id)
 }
 
