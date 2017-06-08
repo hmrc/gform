@@ -53,6 +53,9 @@
           "title": {
             "type": "string"
           },
+          "shortName": {
+            "type": "string"
+          },
           "fields": {
             "type": "array",
             "items": {

@@ -204,6 +204,7 @@ class FormValidatorSpec extends Spec {
 
     val section = Section(
       title = "",
+      shortName = None,
       fields = List("iptRegNum", "firstName", "lastName", "telephoneNumber", "nameOfBusiness").map(getMandatoryFieldValue)
     )
 
@@ -233,6 +234,7 @@ class FormValidatorSpec extends Spec {
 
     val section = Section(
       title = "",
+      shortName = None,
       fields = getAddressFieldValue("homeAddress") :: List("iptRegNum", "firstName", "lastName", "telephoneNumber", "nameOfBusiness").map(getMandatoryFieldValue)
     )
 
@@ -251,6 +253,7 @@ class FormValidatorSpec extends Spec {
 
     val section = Section(
       title = "",
+      shortName = None,
       fields = List.empty[FieldValue]
     )
 
@@ -266,6 +269,7 @@ class FormValidatorSpec extends Spec {
 
     val section = Section(
       title = "",
+      shortName = None,
       fields = List("iptRegNum").map(getMandatoryFieldValue)
     )
 

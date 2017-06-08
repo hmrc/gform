@@ -23,6 +23,7 @@ import scala.collection.immutable.List
 
 case class Section(
     title: String,
+    shortName: Option[String],
     fields: List[FieldValue]
 ) {
   private def atomicFields(fieldValues: List[FieldValue]): List[FieldValue] = {

@@ -366,6 +366,7 @@ class TemplateValidatorSpec extends Spec {
 
   val businessDetailsSection = Section(
     "Business details",
+    None,
     List(
       FieldValue(FieldId("nameOfBusiness"), Text(Constant(""), total = false), "Name of business", None, mandatory = true, editable = true, submissible = true),
       FieldValue(FieldId("businessAddress"), Address(international = false), "Business address", None, mandatory = true, editable = true, submissible = true)
@@ -374,6 +375,7 @@ class TemplateValidatorSpec extends Spec {
 
   val sectionWithDate = Section(
     "Business details",
+    None,
     List(
       FieldValue(FieldId("nameOfBusiness"), Text(Constant(""), total = false), "Name of business", None, mandatory = true, editable = true, submissible = true),
       FieldValue(FieldId("startDate"), Date(AnyDate, Offset(0), None), "Start date", None, mandatory = true, editable = true, submissible = true)
@@ -382,6 +384,7 @@ class TemplateValidatorSpec extends Spec {
 
   val sectionWithCheckbox = Section(
     "Business details",
+    None,
     List(
       FieldValue(
         FieldId("nameOfBusiness"), Text(Constant(""), total = false), "Name of business", None, mandatory = true, editable = true, submissible = true
@@ -394,6 +397,7 @@ class TemplateValidatorSpec extends Spec {
 
   val sectionWithRadio = Section(
     "Business details",
+    None,
     List(
       FieldValue(
         FieldId("nameOfBusiness"), Text(Constant(""), total = false), "Name of business", None, mandatory = true, editable = true, submissible = true
@@ -406,6 +410,7 @@ class TemplateValidatorSpec extends Spec {
 
   val sectionWithYesNo = Section(
     "Business details",
+    None,
     List(
       FieldValue(
         FieldId("nameOfBusiness"), Text(Constant(""), total = false), "Name of business", None, mandatory = true, editable = true, submissible = true
@@ -524,6 +529,7 @@ class TemplateValidatorSpec extends Spec {
 
     val section = Section(
       "Business details",
+      None,
       List(
         FieldValue(FieldId("nameOfBusiness"), Text(Constant(""), total = false), "Name of business", None, mandatory = false, editable = true, submissible = true)
       )
@@ -541,6 +547,7 @@ class TemplateValidatorSpec extends Spec {
 
     val section = Section(
       "Business details",
+      None,
       List(
         FieldValue(FieldId("nameOfBusiness"), Text(Constant(""), total = false), "Name of business", None, mandatory = false, editable = true, submissible = true)
       )
@@ -558,6 +565,7 @@ class TemplateValidatorSpec extends Spec {
 
     val section = Section(
       "Business details",
+      None,
       List(
         FieldValue(FieldId("nameOfBusiness"), Text(Constant(""), total = false), "Name of business", None, mandatory = true, editable = true, submissible = true)
       )
