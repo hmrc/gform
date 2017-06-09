@@ -7,7 +7,7 @@ import uk.gov.hmrc.versioning.SbtGitVersioning
 
 object MicroServiceBuild extends Build with MicroService {
 
-  val appName = "gform"
+  val appName = "gformmaster"
 
   override lazy val appDependencies: Seq[ModuleID] = compile ++ test()
 

@@ -630,7 +630,7 @@ class FieldValueSpec extends Spec {
   it should "parse 'file upload' " in {
     val fieldValue = toFieldValue(
       """{
-           "type": "fileUpload",
+           "type": "file",
            "id":"attachment1",
            "label": "Attach evidence of your income"
          }"""
