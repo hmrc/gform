@@ -15,6 +15,7 @@
   "sections": [
     {
       "title": "Calculation 1/2 | eich calculationewq",
+      "shortName": "shortName",
       "fields": [
         {
           "type": "fileUpload",
