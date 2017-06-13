@@ -11,3 +11,7 @@ addSbtPlugin("uk.gov.hmrc" % "sbt-distributables" % "1.0.0")
 addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.5.10")
 
 addSbtPlugin("org.scalariform"  % "sbt-scalariform" % "1.6.0")
+
+addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.8.2")
+
+addSbtPlugin("com.timushev.sbt" % "sbt-updates" % "0.3.0") //sbt dependencyUpdates
