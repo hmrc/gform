@@ -50,7 +50,7 @@ import scala.concurrent.Future
 class ApplicationLoader extends play.api.ApplicationLoader {
   def load(context: Context) = {
     LoggerConfigurator(context.environment.classLoader).foreach { _.configure(context.environment) }
-    (new BuiltInComponentsFromContext(context) with ApplicationModule).application
+    new ApplicationModule(context).application
   }
 }
 
@@ -93,7 +93,7 @@ class Graphite(configuration: Configuration) extends GraphiteConfig {
   override def microserviceMetricsConfig(implicit app: Application): Option[Configuration] = configuration.getConfig(s"microservice.metrics")
 }
 
-trait ApplicationModule extends BuiltInComponents
+class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(context)
     with AhcWSComponents
     with I18nComponents
     with AppName
@@ -103,7 +103,7 @@ trait ApplicationModule extends BuiltInComponents
   override lazy val appNameConfiguration = configuration
   override lazy val mode = environment.mode
 
-  Logger.info(s"Starting microservice : $appName : in mode : ${environment.mode}")
+  Logger.info(s"Starting microservice : $appName : in mode : ${environment.mode} at port ${application.configuration.getConfig("http.port")}")
 
   new Graphite(configuration).onStart(configurationApp)
 
@@ -131,7 +131,7 @@ trait ApplicationModule extends BuiltInComponents
   // Don't use uk.gov.hmrc.play.graphite.GraphiteMetricsImpl as it won't allow hot reload due to overridden onStop() method
   lazy val metrics = new MetricsImpl(applicationLifecycle, configuration)
 
-  val metricsFilter: MetricsFilter = new MetricsFilterImpl(metrics)
+  lazy val metricsFilter: MetricsFilter = new MetricsFilterImpl(metrics)
 
   override lazy val httpFilters: Seq[EssentialFilter] = Seq(
     metricsFilter,
@@ -212,10 +212,10 @@ trait ApplicationModule extends BuiltInComponents
     override def controllerNeedsAuth(controllerName: String): Boolean = ControllerConfiguration.paramsForController(controllerName).needsAuth
   }
 
-  val auditConnector = MicroserviceAuditConnector
+  lazy val auditConnector = MicroserviceAuditConnector
 
-  val loggingFilter = MicroserviceLoggingFilter
+  lazy val loggingFilter = MicroserviceLoggingFilter
 
-  val microserviceAuditFilter = MicroserviceAuditFilter
-  val authFilter = MicroserviceAuthFilter
+  lazy val microserviceAuditFilter = MicroserviceAuditFilter
+  lazy val authFilter = MicroserviceAuthFilter
 }

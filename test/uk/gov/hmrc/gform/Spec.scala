@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform
 
 import org.scalamock.scalatest.MockFactory
 import org.scalatest._
-import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.concurrent.{ Eventually, ScalaFutures }
 import org.scalatest.matchers.{ BeMatcher, MatchResult, Matcher }
 import play.api.libs.json._
 
@@ -35,6 +35,7 @@ trait Spec
   with JsResultMatcher
   with MockFactory
   with Inside
+  with Eventually
 
 trait JsResultMatcher { self: Spec =>
 
