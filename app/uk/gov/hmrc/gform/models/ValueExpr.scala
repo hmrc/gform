@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.gform.models
 
-import cats.Monoid
-import julienrf.json.derived
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.parsers.ValueParser
 
@@ -28,18 +26,11 @@ final case class DateExpression(dateValue: DateValue) extends ValueExpr
 final case class ChoiceExpression(selections: List[Int]) extends ValueExpr
 
 object ValueExpr {
-  implicit val format: OFormat[ValueExpr] = {
-    val reads: Reads[ValueExpr] = Reads { json =>
-      json match {
-        case JsString(exprAsStr) =>
-          ValueParser.validate(exprAsStr) match {
-            case Right(expr) => JsSuccess(expr)
-            case Left(error) => JsError(error.toString)
-          }
-        case otherwise => JsError(s"Invalid expression. Expected String, got $otherwise")
-      }
-    }
 
-    OFormat[ValueExpr](reads, format)
+  implicit val reads: Reads[ValueExpr] = Reads {
+    case JsString(exprAsStr) => parseAsJsResult(exprAsStr)
+    case otherwise => JsError(s"Invalid expression. Expected String, got $otherwise")
   }
+
+  private def parseAsJsResult(exprAsStr: String): JsResult[ValueExpr] = ValueParser.validate(exprAsStr) fold (error => JsError(error.toString), expr => JsSuccess(expr))
 }

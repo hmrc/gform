@@ -18,31 +18,31 @@ package uk.gov.hmrc.gform.models
 
 import cats.data.NonEmptyList
 import cats.syntax.all._
-import play.api.libs.json.{ OFormat, _ }
-import uk.gov.hmrc.gform.core.Opt
-import uk.gov.hmrc.gform.exceptions.{ InvalidState, UnexpectedState }
-import FieldValueRaw._
 import play.api.libs.functional.syntax._
+import play.api.libs.json._
+import uk.gov.hmrc.gform.core.Opt
+import uk.gov.hmrc.gform.exceptions.InvalidState
+import uk.gov.hmrc.gform.models.FieldValueRaw._
 
 object FieldValueRaw {
 
-  implicit val format: OFormat[FieldValueRaw] = (
-    (__ \ 'id).format[FieldId] and
-    (__ \ 'type).formatNullable[ComponentTypeRaw] and
-    (__ \ 'label).format[String] and
-    (__ \ 'value).formatNullable[ValueExpr] and
-    (__ \ 'format).formatNullable[FormatExpr] and
-    (__ \ 'helpText).formatNullable[String] and
-    (__ \ 'optionHelpText).formatNullable[List[String]] and
-    (__ \ 'submitMode).formatNullable[String] and
-    (__ \ 'choices).formatNullable[List[String]] and
-    (__ \ 'fields).lazyFormatNullable(implicitly[Format[List[FieldValueRaw]]]) and //Note: recursiveness here prevents macro use
-    (__ \ 'mandatory).formatNullable[String] and
-    (__ \ 'offset).formatNullable[Offset] and
-    (__ \ 'multivalue).formatNullable[String] and
-    (__ \ 'total).formatNullable[String] and
-    (__ \ 'international).formatNullable[String]
-  )(FieldValueRaw.apply, unlift(FieldValueRaw.unapply))
+  implicit val format: Reads[FieldValueRaw] = (
+    (__ \ 'id).read[FieldId] and
+    (__ \ 'type).readNullable[ComponentTypeRaw] and
+    (__ \ 'label).read[String] and
+    (__ \ 'value).readNullable[ValueExpr] and
+    (__ \ 'format).readNullable[FormatExpr] and
+    (__ \ 'helpText).readNullable[String] and
+    (__ \ 'optionHelpText).readNullable[List[String]] and
+    (__ \ 'submitMode).readNullable[String] and
+    (__ \ 'choices).readNullable[List[String]] and
+    (__ \ 'fields).lazyReadNullable(implicitly[Reads[List[FieldValueRaw]]]) and //Note: recursiveness here prevents macro use (see JsonParseTestGroup)
+    (__ \ 'mandatory).readNullable[String] and
+    (__ \ 'offset).readNullable[Offset] and
+    (__ \ 'multivalue).readNullable[String] and
+    (__ \ 'total).readNullable[String] and
+    (__ \ 'international).readNullable[String]
+  )(FieldValueRaw.apply _)
 
   case class MES(mandatory: Boolean, editable: Boolean, submissible: Boolean)
 
