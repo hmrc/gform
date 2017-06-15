@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.models
 
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
+import uk.gov.hmrc.gform.core.parsers.BooleanExprParser
 
 case class IncludeIf(expr: BooleanExpr)
 
@@ -26,8 +27,19 @@ object IncludeIf {
   implicit val writes = Json.writes[IncludeIf]
 
   implicit val reads: Reads[IncludeIf] = Reads { json =>
-    val jsResult: JsResult[BooleanExpr] = IncludeIfExpr.reads.reads(json)
+    val jsResult: JsResult[BooleanExpr] = booleanExprReads.reads(json)
     val res: JsResult[IncludeIf] = jsResult.map(be => IncludeIf(be))
     res
   } | Json.reads[IncludeIf]
+
+  val booleanExprReads: Reads[BooleanExpr] = Reads {
+    case JsString(exprAsStr) => parse(exprAsStr)
+    case otherwise => JsError(s"Invalid expression. Expected String, got $otherwise")
+  }
+
+  private def parse(exprAsStr: String): JsResult[BooleanExpr] =
+    BooleanExprParser.validate(exprAsStr) fold (
+      error => JsError(error.toString),
+      expr => JsSuccess(expr)
+    )
 }
