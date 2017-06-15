@@ -26,12 +26,8 @@ object IncludeIf {
   implicit val writes = Json.writes[IncludeIf]
 
   implicit val reads: Reads[IncludeIf] = Reads { json =>
-    val jsResult: JsResult[IncludeIfExpr] = IncludeIfExpr.reads.reads(json)
-    jsResult.flatMap {
-      case BooleanExpression(expr) => JsSuccess(IncludeIf(expr))
-      case _ => {
-        JsError(s"got ${jsResult} but expected a BooleanExpression")
-      }
-    }
+    val jsResult: JsResult[BooleanExpr] = IncludeIfExpr.reads.reads(json)
+    val res: JsResult[IncludeIf] = jsResult.map(be => IncludeIf(be))
+    res
   } | Json.reads[IncludeIf]
 }
