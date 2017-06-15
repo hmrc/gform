@@ -20,13 +20,14 @@ import parseback._
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.BasicParsers._
 import uk.gov.hmrc.gform.models.{ Or, _ }
+import uk.gov.hmrc.gform.core.parsers.ValueParser._
 
 object BooleanExprParser {
 
-  def validate(expression: String): Opt[IncludeIfExpr] = validateWithParser(expression, exprDeterminer)
+  def validate(expression: String): Opt[BooleanExpr] = validateWithParser(expression, exprDeterminer)
 
-  lazy val exprDeterminer: Parser[IncludeIfExpr] = (
-    booleanExpr ^^ ((loc, expr) => BooleanExpression(expr))
+  lazy val exprDeterminer: Parser[BooleanExpr] = (
+    booleanExpr ^^ ((loc, expr) => expr)
   )
 
   lazy val booleanExpr: Parser[BooleanExpr] = (
@@ -37,17 +38,6 @@ object BooleanExprParser {
     }
     | "True" ^^ { (loc, value) => IsTrue }
     | booleanExpr ~ booleanOperation ~ booleanExpr ^^ { { (loc, expr1, op, expr2) => Or(expr1, expr2) } }
-  )
-
-  lazy val expr: Parser[Expr] = (
-    "${" ~ contextField ~ "}" ^^ { (loc, _, field, _) => field }
-    | "${" ~ contextField ~ operation ~ contextField ~ "}" ^^ { (loc, _, field1, op, field2, _) =>
-      op match {
-        case Addition => Add(field1, field2)
-        case Multiplication => Multiply(field1, field2)
-      }
-    }
-    | anyConstant ^^ { (loc, const) => const }
   )
 
   lazy val comparisonOperation: Parser[Comparison] = (
@@ -61,30 +51,5 @@ object BooleanExprParser {
   lazy val operation: Parser[Operation] = (
     "+" ^^ { (loc, _) => Addition }
     | "*" ^^ { (loc, _) => Multiplication }
-  )
-
-  lazy val contextField: Parser[Expr] = (
-    "eeitt" ~ "." ~ eeitt ^^ { (loc, _, _, eeitt) => EeittCtx(eeitt) }
-    | "form" ~ "." ~ alphabeticOnly ^^ { (loc, _, _, fieldName) => FormCtx(fieldName) }
-    | "auth" ~ "." ~ authInfo ^^ { (loc, _, _, authInfo) => AuthCtx(authInfo) }
-    | alphabeticOnly ^^ { (loc, fn) => FormCtx(fn) }
-  )
-
-  lazy val alphabeticOnly: Parser[String] = """\w+""".r ^^ { (loc, str) => str }
-
-  lazy val anyConstant: Parser[Constant] = (
-    """[ \w,]+""".r ^^ { (loc, str) => Constant(str) }
-  )
-
-  lazy val eeitt: Parser[Eeitt] = (
-    "businessUser" ^^ { (loc, _) => BusinessUser }
-    | "agent" ^^ { (loc, _) => Agent }
-  )
-
-  lazy val authInfo: Parser[AuthInfo] = (
-    "gg" ^^ { (_, _) => GG }
-    | "payenino" ^^ { (_, _) => PayeNino }
-    | "sautr" ^^ { (_, _) => SaUtr }
-    | "ctutr" ^^ { (_, _) => CtUtr }
   )
 }
