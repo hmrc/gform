@@ -21,7 +21,7 @@ import cats.instances.list._
 import cats.syntax.traverse._
 import parseback._
 import uk.gov.hmrc.gform.core.Opt
-import uk.gov.hmrc.gform.models._
+import uk.gov.hmrc.gform.models.{ And, AndOperation, Equality, Equals, Or, OrOperation, _ }
 import BasicParsers._
 
 object ValueParser {
@@ -59,20 +59,27 @@ object ValueParser {
       op match {
         case Addition => Add(field1, field2)
         case Multiplication => Multiply(field1, field2)
+        case Equality => Equals(field1, field2)
+        case OrOperation => Or(field1, field2)
+        case AndOperation => And(field1, field2)
       }
     }
+    | (expr ~ operation ~ expr) ^^ { (loc, expr1, op, expr2) => Or(expr1, expr2) }
     | anyConstant ^^ { (loc, const) => const }
   )
 
   lazy val operation: Parser[Operation] = (
     "+" ^^ { (loc, _) => Addition }
     | "*" ^^ { (loc, _) => Multiplication }
+    | "=" ^^ { (loc, _) => Equality }
+    | "|" ^^ { (loc, _) => OrOperation }
   )
 
   lazy val contextField: Parser[Expr] = (
     "eeitt" ~ "." ~ eeitt ^^ { (loc, _, _, eeitt) => EeittCtx(eeitt) }
     | "form" ~ "." ~ alphabeticOnly ^^ { (loc, _, _, fieldName) => FormCtx(fieldName) }
     | "auth" ~ "." ~ authInfo ^^ { (loc, _, _, authInfo) => AuthCtx(authInfo) }
+    | "const" ~ "." ~ anyConstant ^^ { (loc, _, _, str) => str }
     | alphabeticOnly ^^ { (loc, fn) => FormCtx(fn) }
   )
 

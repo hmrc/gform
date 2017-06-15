@@ -34,6 +34,9 @@ sealed trait Expr {
     this match {
       case Add(field1, field2) => checkFields(field1, field2)
       case Multiply(field1, field2) => checkFields(field1, field2)
+      case Equals(field1, field2) => checkFields(field1, field2)
+      case Or(field1, field2) => checkFields(field1, field2)
+      case And(field1, field2) => checkFields(field1, field2)
       case FormCtx(value) =>
         if (fieldNamesIds.map(_.value).contains(value))
           Valid
@@ -48,6 +51,9 @@ sealed trait Expr {
 
 final case class Add(field1: Expr, field2: Expr) extends Expr
 final case class Multiply(field1: Expr, field2: Expr) extends Expr
+final case class Equals(field1: Expr, field2: Expr) extends Expr
+final case class Or(field1: Expr, field2: Expr) extends Expr
+final case class And(field1: Expr, field2: Expr) extends Expr
 final case class FormCtx(value: String) extends Expr
 final case class AuthCtx(value: AuthInfo) extends Expr
 final case class EeittCtx(value: Eeitt) extends Expr
@@ -60,6 +66,9 @@ object Expr {
 sealed trait Operation
 final case object Addition extends Operation
 final case object Multiplication extends Operation
+final case object OrOperation extends Operation
+final case object AndOperation extends Operation
+final case object Equality extends Operation
 
 sealed trait Eeitt
 final case object BusinessUser extends Eeitt
