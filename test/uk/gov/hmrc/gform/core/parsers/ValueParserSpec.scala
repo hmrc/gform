@@ -99,7 +99,7 @@ class ValueParserSpec extends Spec {
       InvalidState(
         """Unable to parse expression 201568-01-12.
           |Errors:
-          |201568-01-12:1: unexpected characters; expected '+' or '=' or '\s+' or '*' or ',' or '|'
+          |201568-01-12:1: unexpected characters; expected '\s+' or ','
           |201568-01-12      ^""".stripMargin
       )
     )
@@ -111,7 +111,7 @@ class ValueParserSpec extends Spec {
       InvalidState(
         """Unable to parse expression 65841-351.
           |Errors:
-          |65841-351:1: unexpected characters; expected '+' or '=' or '\s+' or '*' or ',' or '|'
+          |65841-351:1: unexpected characters; expected '\s+' or ','
           |65841-351     ^""".stripMargin
       )
     )
@@ -171,7 +171,7 @@ class ValueParserSpec extends Spec {
       InvalidState(
         """|Unable to parse expression ${name.
            |Errors:
-           |${name: unexpected end-of-file; expected '+' or '}' or '=' or '*' or '|'""".stripMargin
+           |${name: unexpected end-of-file; expected '*' or '+' or '}'""".stripMargin
       )
     )
   }
