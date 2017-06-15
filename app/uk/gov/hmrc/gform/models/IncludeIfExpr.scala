@@ -25,10 +25,20 @@ final case class BooleanExpression(expr: BooleanExpr) extends IncludeIfExpr
 
 object IncludeIfExpr {
 
-  implicit val reads: Reads[IncludeIfExpr] = Reads {
+  implicit val reads: Reads[BooleanExpr] = Reads {
     case JsString(exprAsStr) => parse(exprAsStr)
     case otherwise => JsError(s"Invalid expression. Expected String, got $otherwise")
   }
 
-  private def parse(exprAsStr: String): JsResult[IncludeIfExpr] = BooleanExprParser.validate(exprAsStr) fold (error => JsError(error.toString), expr => JsSuccess(expr))
+  private def parse(exprAsStr: String): JsResult[BooleanExpr] =
+    BooleanExprParser.validate(exprAsStr) fold (
+      error => JsError(error.toString),
+      expr => {
+
+        expr match {
+          case BooleanExpression(be) => JsSuccess(be)
+        }
+
+      }
+    )
 }
