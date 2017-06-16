@@ -29,25 +29,26 @@ object MicroServiceBuild extends Build with MicroService {
 
   val compile = Seq(
     ws,
-    "uk.gov.hmrc" %% "play-reactivemongo" % "5.1.0",
-    "uk.gov.hmrc" %% "microservice-bootstrap" % "5.8.0",
-    "uk.gov.hmrc" %% "play-authorisation" % "4.2.0",
-    "uk.gov.hmrc" %% "play-health" % "2.0.0",
-    "uk.gov.hmrc" %% "play-url-binders" % "2.0.0",
-    "uk.gov.hmrc" %% "play-config" % "3.1.0",
+    "uk.gov.hmrc" %% "play-reactivemongo" % playReactivemongoVersion,
+    "uk.gov.hmrc" %% "microservice-bootstrap" % microserviceBootstrapVersion,
+    "uk.gov.hmrc" %% "play-authorisation" % playAuthorisationVersion,
+    "uk.gov.hmrc" %% "play-health" % playHealthVersion,
+    "uk.gov.hmrc" %% "play-url-binders" % playUrlBindersVersion,
+    "uk.gov.hmrc" %% "play-config" % playConfigVersion,
+    "uk.gov.hmrc" %% "play-auditing" % playAuditing,
     "uk.gov.hmrc" %% "logback-json-logger" % playJsonLoggerVersion,
-    "uk.gov.hmrc" %% "domain" % "4.0.0",
+    "uk.gov.hmrc" %% "domain" % domainVersion,
     "com.codecommit" %% "parseback-core" % parsebackVersion,
     "com.codecommit" %% "parseback-cats" % parsebackVersion,
     "org.julienrf" %% "play-json-derived-codecs" % "3.3",
     "org.typelevel" %% "cats" % catsVersion,
-    "org.apache.pdfbox" % "pdfbox" % "2.0.4",
+    "org.apache.pdfbox" % "pdfbox" % pdfboxVersion,
     "io.github.cloudify" %% "spdf" % spdfVersion
   )
 
   def test(scope: String = "test,it") = Seq(
-    "uk.gov.hmrc" %% "hmrctest" % "2.3.0" % scope,
-    "org.scalatest" %% "scalatest" % "3.0.1" % scope,
+    "uk.gov.hmrc" %% "hmrctest" % hmrcTestVersion % scope,
+    "org.scalatest" %% "scalatest" % "3.0.3" % scope,
     "org.pegdown" % "pegdown" % "1.6.0" % scope,
     "com.typesafe.play" %% "play-test" % PlayVersion.current % scope,
     "org.scalamock" %% "scalamock-scalatest-support" % "3.4.2" % scope,
