@@ -223,13 +223,13 @@ class FormValidatorSpec extends Spec {
         FormField(FieldId("lastName"), "Doe"),
         FormField(FieldId("telephoneNumber"), "+44 (01273) 123456"),
         FormField(FieldId("nameOfBusiness"), "Acme Widgets Ltd."),
-        FormField(FieldId("homeAddress.street1"), "1"),
-        FormField(FieldId("homeAddress.street2"), "2"),
-        FormField(FieldId("homeAddress.street3"), "3"),
-        FormField(FieldId("homeAddress.town"), "4"),
-        FormField(FieldId("homeAddress.county"), "5"),
-        FormField(FieldId("homeAddress.postcode"), "6"),
-        FormField(FieldId("homeAddress.country"), "7")
+        FormField(FieldId("homeAddress-street1"), "1"),
+        FormField(FieldId("homeAddress-street2"), "2"),
+        FormField(FieldId("homeAddress-street3"), "3"),
+        FormField(FieldId("homeAddress-town"), "4"),
+        FormField(FieldId("homeAddress-county"), "5"),
+        FormField(FieldId("homeAddress-postcode"), "6"),
+        FormField(FieldId("homeAddress-country"), "7")
       )
 
     val section = Section("", None, None,
