@@ -73,6 +73,7 @@ object ValueParser {
     "eeitt" ~ "." ~ eeitt ^^ { (loc, _, _, eeitt) => EeittCtx(eeitt) }
     | "form" ~ "." ~ alphabeticOnly ^^ { (loc, _, _, fieldName) => FormCtx(fieldName) }
     | "auth" ~ "." ~ authInfo ^^ { (loc, _, _, authInfo) => AuthCtx(authInfo) }
+    | "const" ~ "." ~ anyConstant ^^ { (loc, _, _, str) => str }
     | alphabeticOnly ^^ { (loc, fn) => FormCtx(fn) }
   )
 

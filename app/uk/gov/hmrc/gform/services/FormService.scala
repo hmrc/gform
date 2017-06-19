@@ -57,7 +57,7 @@ object FormService {
       }
       formTemplate <- fromFutureOptionA(FindOneFormTemplate(templateSelector))(InvalidState(s"FormTemplate $templateSelector not found"))
       section      <- operation match {
-        case IsTolerant() => success(Section("", None, List.empty[FieldValue])) // We are not using section in tolerant mode
+        case IsTolerant() => success(Section("", None, None, List.empty[FieldValue])) // We are not using section in tolerant mode
         case IsStrict()   => fromOptA (TemplateValidator.getMatchingSection(formData.fields, formTemplate.sections))
       }
       _            <- operation match {

@@ -18,7 +18,7 @@
       "shortName": "shortName",
       "fields": [
         {
-          "type": "fileUpload",
+          "type": "file",
           "id": "facePhoto",
           "label": "Please upload your face photo"
         },
