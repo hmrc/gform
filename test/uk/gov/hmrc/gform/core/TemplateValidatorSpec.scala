@@ -425,13 +425,13 @@ class TemplateValidatorSpec extends Spec {
 
     val formFields = List(
       FormField(FieldId("nameOfBusiness"), "Apple inc."),
-      FormField(FieldId("businessAddress.street1"), "street1"),
-      FormField(FieldId("businessAddress.street2"), "street2"),
-      FormField(FieldId("businessAddress.street3"), "street3"),
-      FormField(FieldId("businessAddress.town"), "town"),
-      FormField(FieldId("businessAddress.county"), "county"),
-      FormField(FieldId("businessAddress.postcode"), "postcode"),
-      FormField(FieldId("businessAddress.country"), "country")
+      FormField(FieldId("businessAddress-street1"), "street1"),
+      FormField(FieldId("businessAddress-street2"), "street2"),
+      FormField(FieldId("businessAddress-street3"), "street3"),
+      FormField(FieldId("businessAddress-town"), "town"),
+      FormField(FieldId("businessAddress-county"), "county"),
+      FormField(FieldId("businessAddress-postcode"), "postcode"),
+      FormField(FieldId("businessAddress-country"), "country")
     )
     val sections = List(businessDetailsSection)
     val res = TemplateValidator.getMatchingSection(formFields, sections)
@@ -443,9 +443,9 @@ class TemplateValidatorSpec extends Spec {
 
     val formFields = List(
       FormField(FieldId("nameOfBusiness"), "Apple inc."),
-      FormField(FieldId("businessAddress.street1"), "street1"),
-      FormField(FieldId("businessAddress.town"), "town"),
-      FormField(FieldId("businessAddress.postcode"), "postcode")
+      FormField(FieldId("businessAddress-street1"), "street1"),
+      FormField(FieldId("businessAddress-town"), "town"),
+      FormField(FieldId("businessAddress-postcode"), "postcode")
     )
     val sections = List(businessDetailsSection)
     val res = TemplateValidator.getMatchingSection(formFields, sections)
