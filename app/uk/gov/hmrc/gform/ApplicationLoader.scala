@@ -154,11 +154,11 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
   lazy implicit val formRepository = new FormRepository
   lazy implicit val submissionRepository = new SubmissionRepository
 
-  implicit val fusUrl = new ServiceUrl[FusUrl] {
+  lazy implicit val fusUrl = new ServiceUrl[FusUrl] {
     val url = baseUrl("file-upload")
   }
 
-  implicit val fusFeUrl = new ServiceUrl[FusFeUrl] {
+  lazy implicit val fusFeUrl = new ServiceUrl[FusFeUrl] {
     val url = baseUrl("file-upload-frontend")
   }
 
