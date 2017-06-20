@@ -35,6 +35,7 @@ sealed trait ComponentType {
     case Choice(_, _, _, _, _) => Valid
     case Group(fvs, _) => ComponentType.validate(fvs.map(_.`type`), formTemplate)
     case FileUpload() => Valid
+    case InformationMessage(_, _) => Valid
   }
 }
 
@@ -55,6 +56,17 @@ case object Address {
   val mandatoryFields = (id: FieldId) => List("street1").map(id.withJSSafeSuffix)
   val optionalFields = (id: FieldId) => List("street2", "street3", "street4", "uk", "postcode", "country").map(id.withJSSafeSuffix)
   val fields = (id: FieldId) => mandatoryFields(id) ++ optionalFields(id)
+}
+
+case class InformationMessage(infoType: InfoType, infoText: String) extends ComponentType
+
+sealed trait InfoType
+case object StandardInfo extends InfoType
+case object LongInfo extends InfoType
+case object ImportantInfo extends InfoType
+case object BannerInfo extends InfoType
+object InfoType {
+  implicit val format: OFormat[InfoType] = derived.oformat
 }
 
 sealed trait Orientation

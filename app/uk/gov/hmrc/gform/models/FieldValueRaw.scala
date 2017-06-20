@@ -41,7 +41,9 @@ object FieldValueRaw {
     (__ \ 'offset).readNullable[Offset] and
     (__ \ 'multivalue).readNullable[String] and
     (__ \ 'total).readNullable[String] and
-    (__ \ 'international).readNullable[String]
+    (__ \ 'international).readNullable[String] and
+    (__ \ 'infoText).readNullable[String] and
+    (__ \ 'infoType).readNullable[String]
   )(FieldValueRaw.apply _)
 
   case class MES(mandatory: Boolean, editable: Boolean, submissible: Boolean)
@@ -63,7 +65,9 @@ case class FieldValueRaw(
     offset: Option[Offset] = None,
     multivalue: Option[String] = None,
     total: Option[String] = None,
-    international: Option[String] = None
+    international: Option[String] = None,
+    infoText: Option[String] = None,
+    infoType: Option[String] = None
 ) {
 
   def toFieldValue = Reads[FieldValue] { _ => getFieldValue fold (us => JsError(us.toString), fv => JsSuccess(fv)) }
@@ -82,6 +86,7 @@ case class FieldValueRaw(
 
   private lazy val optMES: Opt[MES] = (submitMode, mandatory) match {
     //format: OFF
+    case (_, _) if isThisAnInfoField => MES(mandatory = true, editable = false, submissible = false).asRight
     case (Some(IsStandard()) | None, Some(IsTrueish()) | None)  => MES(mandatory = true, editable = true, submissible = true).asRight
     case (Some(IsReadOnly()),        Some(IsTrueish()) | None)  => MES(mandatory = true, editable = false, submissible = true).asRight
     case (Some(IsInfo()),            Some(IsTrueish()) | None)  => MES(mandatory = true, editable = false, submissible = false).asRight
@@ -108,6 +113,7 @@ case class FieldValueRaw(
     case Some(GroupRaw) => groupOpt
     case Some(ChoiceRaw) => choiceOpt
     case Some(FileUploadRaw) => fileUploadOpt
+    case Some(InfoRaw) => infoOpt
     //TODO: What if there is None
   }
 
@@ -192,6 +198,22 @@ case class FieldValueRaw(
   }
 
   private lazy val fileUploadOpt: Opt[FileUpload] = FileUpload().asRight
+
+  private lazy val infoOpt: Opt[InformationMessage] = (infoType, infoText) match {
+    case (IsInfoType(StandardInfo), Some(infText)) => InformationMessage(StandardInfo, infText).asRight
+    case (IsInfoType(LongInfo), Some(infText)) => InformationMessage(LongInfo, infText).asRight
+    case (IsInfoType(ImportantInfo), Some(infText)) => InformationMessage(ImportantInfo, infText).asRight
+    case (IsInfoType(BannerInfo), Some(infText)) => InformationMessage(BannerInfo, infText).asRight
+    case (infType, infText) => InvalidState(
+      s"""
+         | Invalid or missing arguments in 'info' field. The 'info' field should contain the infoType and
+         | infoText arguments. infoType is one of: standard, long, important or banner.
+         | infoText is the text to display.
+         | InfoType: $infType
+         | InfoText: $infText
+       """.stripMargin
+    ).asLeft
+  }
 
   private final object Selections {
     def unapply(choiceExpr: Option[ValueExpr]): Option[List[Int]] = {
@@ -310,4 +332,20 @@ case class FieldValueRaw(
     }
   }
 
+  private final object IsInfoType {
+    def unapply(arg: Option[String]): Option[InfoType] = {
+      arg match {
+        case Some(infoTypeString) => infoTypeString.toLowerCase match {
+          case "standard" => Some(StandardInfo)
+          case "long" => Some(LongInfo)
+          case "important" => Some(ImportantInfo)
+          case "banner" => Some(BannerInfo)
+          case _ => None
+        }
+        case None => Some(StandardInfo)
+      }
+    }
+  }
+
+  private def isThisAnInfoField : Boolean = `type`.getOrElse(None).isInstanceOf[InfoRaw.type]
 }

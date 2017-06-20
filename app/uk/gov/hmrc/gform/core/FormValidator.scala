@@ -71,6 +71,12 @@ object FormValidator {
                   case false => reqAcc
                 }
               (accRes, reqAccRes)
+
+            case InformationMessage(_, _) =>
+              val id = fieldValue.id
+              val accRes = acc + (id -> fieldValue)
+
+              (accRes, reqAcc)
           }
       }
 
