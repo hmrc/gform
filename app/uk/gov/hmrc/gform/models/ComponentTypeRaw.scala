@@ -33,6 +33,8 @@ case object FileUploadRaw extends ComponentTypeRaw
 
 case object GroupRaw extends ComponentTypeRaw
 
+case object InfoRaw extends ComponentTypeRaw
+
 object ComponentTypeRaw {
 
   val componentMap: Map[String, ComponentTypeRaw] =
@@ -42,7 +44,8 @@ object ComponentTypeRaw {
       "address" -> AddressRaw,
       "choice" -> ChoiceRaw,
       "group" -> GroupRaw,
-      "file" -> FileUploadRaw
+      "file" -> FileUploadRaw,
+      "info" -> InfoRaw
     )
 
   implicit val format: OFormat[ComponentTypeRaw] = {
