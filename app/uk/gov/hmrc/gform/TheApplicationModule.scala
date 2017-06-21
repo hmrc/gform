@@ -14,20 +14,18 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.wshttp
+package uk.gov.hmrc.gform
 
 import uk.gov.hmrc.gform.config.ConfigModule
+import uk.gov.hmrc.gform.fileUpload.FileUploadModule
 import uk.gov.hmrc.gform.theauditing.AuditingModule
-import uk.gov.hmrc.play.http.hooks.HttpHook
-import uk.gov.hmrc.play.http.ws.WSHttp
+import uk.gov.hmrc.gform.time.TimeModule
+import uk.gov.hmrc.gform.wshttp.WSHttpModule
 
-class WSHttpModule(auditingModule: AuditingModule, configModule: ConfigModule) {
-
-  val wSHttp: WSHttp = new uk.gov.hmrc.play.http.ws.WSHttp {
-    override val hooks: Seq[HttpHook] = Nil
-  }
-
-  val auditableWSHttp: WSHttp = new uk.gov.hmrc.play.http.ws.WSHttp {
-    override val hooks: Seq[HttpHook] = Seq(auditingModule.httpAuditingHook)
-  }
+class TheApplicationModule {
+  val configModule = new ConfigModule
+  val auditingModule = new AuditingModule(configModule)
+  val wSHttpModule = new WSHttpModule(auditingModule, configModule)
+  val timeModule = new TimeModule
+  val fileUploadModule = new FileUploadModule(configModule, wSHttpModule, timeModule)
 }
