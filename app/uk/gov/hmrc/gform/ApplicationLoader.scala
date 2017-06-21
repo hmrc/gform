@@ -103,7 +103,7 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
   override lazy val appNameConfiguration = configuration
   override lazy val mode = environment.mode
 
-  Logger.info(s"Starting microservice : $appName : in mode : ${environment.mode} at port ${application.configuration.getConfig("http.port")}")
+  Logger.info(s"Starting microservice : $appName : in mode : ${environment.mode} at port ${application.configuration.getString("http.port")}")
 
   new Graphite(configuration).onStart(configurationApp)
 
