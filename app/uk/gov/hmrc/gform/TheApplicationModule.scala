@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform
 
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.fileUpload.FileUploadModule
-import uk.gov.hmrc.gform.theauditing.AuditingModule
+import uk.gov.hmrc.gform.auditing.AuditingModule
 import uk.gov.hmrc.gform.time.TimeModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 

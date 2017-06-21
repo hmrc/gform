@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.theauditing
+package uk.gov.hmrc.gform.auditing
 
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.play.audit.http.HttpAuditing
