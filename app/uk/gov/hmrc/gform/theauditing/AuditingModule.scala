@@ -22,7 +22,7 @@ import uk.gov.hmrc.play.audit.http.config.{ AuditingConfig, LoadAuditingConfig }
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.http.hooks.HttpHook
 
-class AuditingModule(appConfigModule: ConfigModule) { self =>
+class AuditingModule(configModule: ConfigModule) { self =>
 
   lazy val auditConnector: AuditConnector = new AuditConnector {
     //WARN: LoadAuditingConfig uses play deprecations.
@@ -32,7 +32,7 @@ class AuditingModule(appConfigModule: ConfigModule) { self =>
 
   lazy val httpAuditing: HttpAuditing = new HttpAuditing {
     override def auditConnector: AuditConnector = self.auditConnector
-    override def appName: String = appConfigModule.appConfig.appName
+    override def appName: String = configModule.appConfig.appName
   }
 
   lazy val httpAuditingHook: HttpHook = httpAuditing.AuditingHook
