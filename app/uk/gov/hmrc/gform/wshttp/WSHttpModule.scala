@@ -30,16 +30,16 @@ import scala.concurrent.Future
 
 class WSHttpModule(auditingModule: AuditingModule, configModule: ConfigModule) {
 
-  val wSHttp: WSHttp = new WSHttp {
-    override val hooks: Seq[HttpHook] = Nil
-  }
+  val wSHttp: WSHttp = new WSHttp
 
   val auditableWSHttp: WSHttp = new WSHttp {
     override val hooks: Seq[HttpHook] = Seq(auditingModule.httpAuditingHook)
   }
 }
 
-trait WSHttp extends uk.gov.hmrc.play.http.ws.WSHttp {
+class WSHttp extends uk.gov.hmrc.play.http.ws.WSHttp {
+
+  override val hooks: Seq[HttpHook] = Nil
 
   //TODO: body should be type of Stream not ByteString (do we want to blow up if few people will submit forms at the same time?)
   def POSTFile[O](
