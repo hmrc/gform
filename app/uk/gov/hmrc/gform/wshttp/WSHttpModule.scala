@@ -16,18 +16,49 @@
 
 package uk.gov.hmrc.gform.wshttp
 
-import uk.gov.hmrc.gform.config.ConfigModule
+import akka.stream.scaladsl.Source
+import akka.util.ByteString
+import play.api.http.HttpVerbs.{ POST => POST_VERB }
+import play.api.mvc.MultipartFormData.FilePart
 import uk.gov.hmrc.gform.auditing.AuditingModule
+import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.play.http.hooks.HttpHook
-import uk.gov.hmrc.play.http.ws.WSHttp
+import uk.gov.hmrc.play.http.ws.WSHttpResponse
+import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpReads }
+
+import scala.concurrent.Future
 
 class WSHttpModule(auditingModule: AuditingModule, configModule: ConfigModule) {
 
-  val wSHttp: WSHttp = new uk.gov.hmrc.play.http.ws.WSHttp {
+  val wSHttp: WSHttp = new WSHttp {
     override val hooks: Seq[HttpHook] = Nil
   }
 
-  val auditableWSHttp: WSHttp = new uk.gov.hmrc.play.http.ws.WSHttp {
+  val auditableWSHttp: WSHttp = new WSHttp {
     override val hooks: Seq[HttpHook] = Seq(auditingModule.httpAuditingHook)
   }
+}
+
+trait WSHttp extends uk.gov.hmrc.play.http.ws.WSHttp {
+
+  //TODO: body should be type of Stream not ByteString (do we want to blow up if few people will submit forms at the same time?)
+  def POSTFile[O](
+    url: String,
+    fileName: String,
+    body: ByteString,
+    headers: Seq[(String, String)],
+    contentType: String
+  )(implicit
+    hc: HeaderCarrier,
+    rds: HttpReads[O]): Future[O] = {
+
+    val source = Source(FilePart(fileName, fileName, Some(contentType), Source.single(body)) :: Nil)
+    withTracing(POST_VERB, url) {
+      import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
+      val httpResponse = buildRequest(url).withHeaders(headers: _*).post(source).map(new WSHttpResponse(_))
+      executeHooks(url, POST_VERB, Option(s"""{"info":"multipart upload of $fileName"}"""), httpResponse)
+      mapErrors(POST_VERB, url, httpResponse).map(rds.read(POST_VERB, url, _))
+    }
+  }
+
 }

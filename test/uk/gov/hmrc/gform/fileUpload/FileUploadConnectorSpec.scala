@@ -77,7 +77,7 @@ class FileUploadConnectorSpec extends Spec {
       responseHeaders = headers
     )
     lazy val wSHttp = new StubbedWSHttp(r)
-    lazy val config = Config("http://fileupload.whatever", 30, "20MB", "5MB", 3)
+    lazy val config = Config("http://fileupload.whatever", "http://fileuploadfrontend.whatever", 30, "20MB", "5MB", 3)
     lazy val fileUploadConnector = new FileUploadConnector(config, wSHttp, FrozenTime.frozenPoint)
     implicit lazy val hc: HeaderCarrier = HeaderCarrier()
     lazy val formTypeId = FormTypeId("FormId-13-2-3-1233-3")

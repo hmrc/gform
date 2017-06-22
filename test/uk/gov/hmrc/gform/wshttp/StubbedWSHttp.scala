@@ -17,7 +17,6 @@
 package uk.gov.hmrc.gform.wshttp
 
 import play.api.libs.json.Writes
-import uk.gov.hmrc.play.http.ws.WSHttp
 import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpResponse }
 
 import scala.concurrent.Future
