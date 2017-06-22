@@ -21,31 +21,11 @@ import java.time.format.DateTimeFormatter
 
 import play.api.http.HeaderNames.LOCATION
 import play.api.libs.json.Json
-import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.models.FormTypeId
-import uk.gov.hmrc.gform.time.TimeModule
-import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.play.http.ws.WSHttp
 import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpResponse }
 
 import scala.concurrent.{ ExecutionContext, Future }
-
-class FileUploadModule(configModule: ConfigModule, wSHttpModule: WSHttpModule, timeModule: TimeModule) {
-
-  lazy val fileUploadConnector: FileUploadConnector = new FileUploadConnector(config, wSHttpModule.auditableWSHttp, timeModule.localDateTime())
-
-  private lazy val config: Config = Config(
-    configModule.serviceConfig.baseUrl("file-upload"),
-    ac.formExpiryDays,
-    s"${ac.formMaxAttachments * ac.formMaxAttachmentSizeMB + 10}MB", //heuristic to compute max size
-    s"${ac.formMaxAttachmentSizeMB}MB",
-    ac.formMaxAttachments
-  )
-
-  //TODO: provide separate one here
-  private lazy implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
-  private lazy val ac = configModule.appConfig
-}
 
 class FileUploadConnector(config: Config, wSHttp: WSHttp, now: => LocalDateTime)(implicit ec: ExecutionContext) {
 
@@ -87,15 +67,3 @@ class FileUploadConnector(config: Config, wSHttp: WSHttp, now: => LocalDateTime)
 
   private lazy val baseUrl = config.baseUrl
 }
-
-case class Config(
-  baseUrl: String,
-  expiryDays: Long,
-  maxSize: String,
-  maxSizePerItem: String,
-  maxItems: Int
-)
-
-class SpoiltLocationHeader(val message: String) extends RuntimeException(message)
-
-case class EnvelopeId(value: String)
