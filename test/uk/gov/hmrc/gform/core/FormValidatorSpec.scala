@@ -226,8 +226,7 @@ class FormValidatorSpec extends Spec {
         FormField(FieldId("homeAddress-street1"), "1"),
         FormField(FieldId("homeAddress-street2"), "2"),
         FormField(FieldId("homeAddress-street3"), "3"),
-        FormField(FieldId("homeAddress-town"), "4"),
-        FormField(FieldId("homeAddress-county"), "5"),
+        FormField(FieldId("homeAddress-street4"), "4"),
         FormField(FieldId("homeAddress-postcode"), "6"),
         FormField(FieldId("homeAddress-country"), "7")
       )
