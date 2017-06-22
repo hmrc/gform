@@ -347,5 +347,5 @@ case class FieldValueRaw(
     }
   }
 
-  private def isThisAnInfoField : Boolean = `type`.getOrElse(None).isInstanceOf[InfoRaw.type]
+  private def isThisAnInfoField: Boolean = `type`.getOrElse(None).isInstanceOf[InfoRaw.type]
 }
