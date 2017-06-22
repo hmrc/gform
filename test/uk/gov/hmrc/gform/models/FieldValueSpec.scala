@@ -649,6 +649,166 @@ class FieldValueSpec extends Spec {
     )
   }
 
+  it should "parse info field and select Standard type if infoType not provided" in {
+    val fieldValue = toFieldValue(
+      """
+        |{
+        |  "type": "info",
+        |  "id": "standardInfoFieldID",
+        |  "label": "Label -- standard info field",
+        |  "infoText": "This is a sample text for a standard info field"
+        |}
+      """.stripMargin
+    )
+
+    fieldValue should beJsSuccess(
+      FieldValue(
+        FieldId("standardInfoFieldID"),
+        InformationMessage(StandardInfo, "This is a sample text for a standard info field"),
+        "Label -- standard info field",
+        None,
+        true,
+        false,
+        false
+      )
+    )
+  }
+
+  it should "parse info field and correctly build a standard type info field" in {
+    val fieldValue = toFieldValue(
+      """
+        |{
+        |  "type": "info",
+        |  "id": "standardInfoFieldID",
+        |  "label": "Label -- standard info field",
+        |  "infoType" : "standard",
+        |  "infoText": "This is a sample text for a standard info field"
+        |}
+      """.stripMargin
+    )
+
+    fieldValue should beJsSuccess(
+      FieldValue(
+        FieldId("standardInfoFieldID"),
+        InformationMessage(StandardInfo, "This is a sample text for a standard info field"),
+        "Label -- standard info field",
+        None,
+        true,
+        false,
+        false
+      )
+    )
+  }
+
+  it should "parse info field and correctly build a long type info field" in {
+    val fieldValue = toFieldValue(
+      """
+        |{
+        |  "type": "info",
+        |  "id": "fieldID",
+        |  "label": "Label -- info field",
+        |  "infoType" : "long",
+        |  "infoText": "This is a sample text for an info field"
+        |}
+      """.stripMargin
+    )
+
+    fieldValue should beJsSuccess(
+      FieldValue(
+        FieldId("fieldID"),
+        InformationMessage(LongInfo, "This is a sample text for an info field"),
+        "Label -- info field",
+        None,
+        true,
+        false,
+        false
+      )
+    )
+  }
+
+  it should "parse info field and correctly build an important type info field" in {
+    val fieldValue = toFieldValue(
+      """
+        |{
+        |  "type": "info",
+        |  "id": "fieldID",
+        |  "label": "Label -- info field",
+        |  "infoType" : "important",
+        |  "infoText": "This is a sample text for an info field"
+        |}
+      """.stripMargin
+    )
+
+    fieldValue should beJsSuccess(
+      FieldValue(
+        FieldId("fieldID"),
+        InformationMessage(ImportantInfo, "This is a sample text for an info field"),
+        "Label -- info field",
+        None,
+        true,
+        false,
+        false
+      )
+    )
+  }
+
+  it should "parse info field and correctly build a banner type info field" in {
+    val fieldValue = toFieldValue(
+      """
+        |{
+        |  "type": "info",
+        |  "id": "fieldID",
+        |  "label": "Label -- info field",
+        |  "infoType" : "banner",
+        |  "infoText": "This is a sample text for an info field"
+        |}
+      """.stripMargin
+    )
+
+    fieldValue should beJsSuccess(
+      FieldValue(
+        FieldId("fieldID"),
+        InformationMessage(BannerInfo, "This is a sample text for an info field"),
+        "Label -- info field",
+        None,
+        true,
+        false,
+        false
+      )
+    )
+  }
+
+  it should "fail to parse if info field is not one of a valid types" in {
+    val fieldValue = toFieldValue(
+      """
+        |{
+        |  "type": "info",
+        |  "id": "fieldID",
+        |  "label": "Label -- info field",
+        |  "infoType" : "beg_your_pardon?",
+        |  "infoText": "This is a sample text for an info field"
+        |}
+      """.stripMargin
+    )
+
+    fieldValue should be(jsError)
+  }
+
+  it should "fail to parse info field if infoText argument is missing" in {
+    val fieldValue = toFieldValue(
+      """
+        |{
+        |  "type": "info",
+        |  "id": "fieldID",
+        |  "label": "Label -- info field",
+        |  "infoType" : "beg_your_pardon?"
+        |}
+      """.stripMargin
+    )
+
+    fieldValue should be(jsError)
+  }
+
   private def toFieldValue(template: String): JsResult[FieldValue] = {
 
     val templateAsJson = Json.parse(template.stripMargin)
