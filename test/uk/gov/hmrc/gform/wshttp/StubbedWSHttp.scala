@@ -16,7 +16,11 @@
 
 package uk.gov.hmrc.gform.wshttp
 
+import akka.actor.ActorSystem
+import akka.stream.ActorMaterializer
 import play.api.libs.json.Writes
+import play.api.libs.ws.WSRequest
+import play.api.libs.ws.ahc.AhcWSClient
 import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpResponse }
 
 import scala.concurrent.Future
@@ -25,11 +29,20 @@ import scala.concurrent.Future
  * Stubbed WSHttp which responses always with the same HttpResponse. Use it for test purposes
  */
 class StubbedWSHttp(response: HttpResponse) extends WSHttp {
-  val hooks = Nil
   override def doGet(url: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = Future.successful(response)
   override def doPost[A](url: String, body: A, headers: Seq[(String, String)])(implicit rds: Writes[A], hc: HeaderCarrier) = Future.successful(response)
   override def doFormPost(url: String, body: Map[String, Seq[String]])(implicit hc: HeaderCarrier) = Future.successful(response)
   override def doPostString(url: String, body: String, headers: Seq[(String, String)])(implicit hc: HeaderCarrier) = Future.successful(response)
   override def doEmptyPost[A](url: String)(implicit hc: HeaderCarrier) = Future.successful(response)
   //TODO: PUT, PATCH, DELETE
+}
+
+//If you want to use WSHttp outside play app you must provide your WSClient. Otherwise it blows up.
+//See https://github.com/hmrc/http-verbs/issues/60
+//Don't use it on production ('ws.close()' logic is missing)
+object TestWSHttp extends WSHttp {
+  override def buildRequest[A](url: String)(implicit hc: HeaderCarrier): WSRequest = ws.url(url)
+  private implicit lazy val s: ActorSystem = ActorSystem()
+  private implicit lazy val mat: ActorMaterializer = ActorMaterializer()
+  private lazy val ws = AhcWSClient()(mat)
 }

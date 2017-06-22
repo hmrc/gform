@@ -35,4 +35,5 @@ case class ContentType(value: String)
 object ContentType {
   val `application/pdf` = ContentType("application/pdf")
   val `image/jpeg` = ContentType("image/jpeg")
+  val `text/plain` = ContentType("text/plain")
 }
