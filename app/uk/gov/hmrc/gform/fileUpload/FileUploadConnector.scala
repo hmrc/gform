@@ -65,5 +65,5 @@ class FileUploadConnector(config: Config, wSHttp: WSHttp, now: => LocalDateTime)
     )
   )
 
-  private lazy val baseUrl = config.baseUrl
+  private lazy val baseUrl = config.fileUploadBaseUrl
 }

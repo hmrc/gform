@@ -33,9 +33,11 @@ import scala.concurrent.{ ExecutionContext, Future }
 class FileUploadModule(configModule: ConfigModule, wSHttpModule: WSHttpModule, timeModule: TimeModule) {
 
   lazy val fileUploadConnector: FileUploadConnector = new FileUploadConnector(config, wSHttpModule.auditableWSHttp, timeModule.localDateTime())
+  lazy val fileUploadFrontendConnector: FileUploadFrontendConnector = new FileUploadFrontendConnector(config, wSHttpModule.auditableWSHttp)
 
   private lazy val config: Config = Config(
     configModule.serviceConfig.baseUrl("file-upload"),
+    configModule.serviceConfig.baseUrl("file-upload-frontend"),
     ac.formExpiryDays,
     s"${ac.formMaxAttachments * ac.formMaxAttachmentSizeMB + 10}MB", //heuristic to compute max size
     s"${ac.formMaxAttachmentSizeMB}MB",
