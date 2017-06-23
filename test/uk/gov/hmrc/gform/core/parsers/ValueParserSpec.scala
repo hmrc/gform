@@ -182,8 +182,8 @@ class ValueParserSpec extends Spec {
     "Your details",
     None, None,
     List(
-      FieldValue(FieldId("firstName"), Text(Constant(""), total = false), "Your first name", None, mandatory = false, editable = true, submissible = true),
-      FieldValue(FieldId("lastName"), Text(Constant(""), total = false), "Your last name", None, mandatory = false, editable = true, submissible = true)
+      FieldValue(FieldId("firstName"), Text(Constant(""), total = false), "Your first name", None, None, mandatory = false, editable = true, submissible = true),
+      FieldValue(FieldId("lastName"), Text(Constant(""), total = false), "Your last name", None, None, mandatory = false, editable = true, submissible = true)
     )
   )
 

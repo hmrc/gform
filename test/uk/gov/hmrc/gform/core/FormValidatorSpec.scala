@@ -120,6 +120,7 @@ class FormValidatorSpec extends Spec {
     `type` = Text(Constant(""), total = false),
     label = "",
     helpText = None,
+    None,
     editable = true,
     mandatory = true,
     submissible = true
@@ -130,6 +131,7 @@ class FormValidatorSpec extends Spec {
     `type` = Address(international = false),
     label = "",
     helpText = None,
+    None,
     editable = true,
     mandatory = false,
     submissible = true

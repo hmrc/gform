@@ -24,6 +24,7 @@ case class FieldValue(
   `type`: ComponentType,
   label: String,
   helpText: Option[String],
+  shortName: Option[String],
   mandatory: Boolean,
   editable: Boolean,
   submissible: Boolean
