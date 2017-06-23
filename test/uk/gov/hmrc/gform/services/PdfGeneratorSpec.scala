@@ -29,6 +29,7 @@ class PdfGeneratorSpec extends Spec {
       `type` = Text(Constant(""), total = false),
       label = label,
       helpText = None,
+      shortName = None,
       editable = true,
       mandatory = false,
       submissible = true

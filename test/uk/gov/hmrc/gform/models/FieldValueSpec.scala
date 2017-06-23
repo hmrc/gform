@@ -32,7 +32,7 @@ class FieldValueSpec extends Spec {
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, mandatory = true, editable = true, submissible = true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, None, mandatory = true, editable = true, submissible = true))
   }
 
   it should "parse 'text' type without total if no total specified" in {
@@ -46,7 +46,7 @@ class FieldValueSpec extends Spec {
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, mandatory = true, editable = true, submissible = true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, None, mandatory = true, editable = true, submissible = true))
   }
 
   it should "parse 'text' type without total if total false specified" in {
@@ -61,7 +61,7 @@ class FieldValueSpec extends Spec {
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, mandatory = true, editable = true, submissible = true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, None, mandatory = true, editable = true, submissible = true))
   }
 
   it should "parse 'text' type with total specified" in {
@@ -76,7 +76,7 @@ class FieldValueSpec extends Spec {
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = true), "Registration number", None, mandatory = true, editable = true, submissible = true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = true), "Registration number", None, None, mandatory = true, editable = true, submissible = true))
   }
 
   it should "parse 'text' type including value without total if total false specified" in {
@@ -92,7 +92,7 @@ class FieldValueSpec extends Spec {
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant("Ahah"), total = false), "Registration number", None, mandatory = true, editable = true, submissible = true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant("Ahah"), total = false), "Registration number", None, None, mandatory = true, editable = true, submissible = true))
   }
 
   it should "parse 'text' type including value with total specified" in {
@@ -108,7 +108,7 @@ class FieldValueSpec extends Spec {
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant("Ahah"), total = true), "Registration number", None, mandatory = true, editable = true, submissible = true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant("Ahah"), total = true), "Registration number", None, None, mandatory = true, editable = true, submissible = true))
   }
 
   it should "parse as Text with 'mandatory' true as mandatory" in {
@@ -120,7 +120,7 @@ class FieldValueSpec extends Spec {
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, mandatory = true, editable = true, submissible = true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, None, mandatory = true, editable = true, submissible = true))
   }
 
   it should "parse as Text with 'mandatory' false as not mandatory" in {
@@ -132,7 +132,7 @@ class FieldValueSpec extends Spec {
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, mandatory = false, editable = true, submissible = true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, None, mandatory = false, editable = true, submissible = true))
   }
 
   it should "parse as Text without 'mandatory' as mandatory" in {
@@ -143,7 +143,7 @@ class FieldValueSpec extends Spec {
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, mandatory = true, editable = true, submissible = true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, None, mandatory = true, editable = true, submissible = true))
   }
 
   it should "parse as Text without 'submitMode' as editable and submissible" in {
@@ -154,7 +154,7 @@ class FieldValueSpec extends Spec {
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, mandatory = true, editable = true, submissible = true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, None, mandatory = true, editable = true, submissible = true))
   }
 
   it should "parse as Text with 'submitMode' standard as editable and submissible" in {
@@ -166,7 +166,7 @@ class FieldValueSpec extends Spec {
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, mandatory = true, editable = true, submissible = true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, None, mandatory = true, editable = true, submissible = true))
   }
 
   it should "parse as Text with 'submitMode' readonly as non-editable and submissible" in {
@@ -178,7 +178,7 @@ class FieldValueSpec extends Spec {
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, mandatory = true, editable = false, submissible = true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, None, mandatory = true, editable = false, submissible = true))
   }
 
   it should "parse as Text with 'submitMode' info as non-editable and non-submissible" in {
@@ -190,7 +190,7 @@ class FieldValueSpec extends Spec {
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, mandatory = true, editable = false, submissible = false))
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, None, mandatory = true, editable = false, submissible = false))
   }
 
   it should "parse as Text with 'mandatory' false and 'submitMode' info as non-mandatory, non-editable and non-submissible" in {
@@ -203,7 +203,7 @@ class FieldValueSpec extends Spec {
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, mandatory = false, editable = false, submissible = false))
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, None, mandatory = false, editable = false, submissible = false))
   }
 
   it should "parse as Address with 'international' false  when not specified" in {
@@ -215,7 +215,7 @@ class FieldValueSpec extends Spec {
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("homeAddress"), Address(international = false), "Home", None, mandatory = true, editable = true, submissible = true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("homeAddress"), Address(international = false), "Home", None, None, mandatory = true, editable = true, submissible = true))
   }
 
   it should "parse as Address with 'international' true when specified yes" in {
@@ -228,7 +228,7 @@ class FieldValueSpec extends Spec {
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("homeAddress"), Address(international = true), "Home", None, mandatory = true, editable = true, submissible = true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("homeAddress"), Address(international = true), "Home", None, None, mandatory = true, editable = true, submissible = true))
   }
 
   it should "parse as Address with 'international' false when specified no" in {
@@ -241,7 +241,7 @@ class FieldValueSpec extends Spec {
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("homeAddress"), Address(international = false), "Home", None, mandatory = true, editable = true, submissible = true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("homeAddress"), Address(international = false), "Home", None, None, mandatory = true, editable = true, submissible = true))
   }
 
   it should "parse 'choice' type as Radio with Vertical orientation if no multivalue & no format is provided" in {
@@ -262,6 +262,7 @@ class FieldValueSpec extends Spec {
         FieldId("dutyType"),
         Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None),
         "Select the tax type",
+        None,
         None,
         mandatory = true,
         editable = true,
@@ -289,6 +290,7 @@ class FieldValueSpec extends Spec {
         FieldId("dutyType"),
         Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None),
         "Select the tax type",
+        None,
         None,
         mandatory = true,
         editable = true,
@@ -318,6 +320,7 @@ class FieldValueSpec extends Spec {
         Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None),
         "Select the tax type",
         None,
+        None,
         mandatory = true,
         editable = true,
         submissible = true
@@ -346,6 +349,7 @@ class FieldValueSpec extends Spec {
         Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Horizontal, List.empty[Int], None),
         "Select the tax type",
         None,
+        None,
         mandatory = true,
         editable = true,
         submissible = true
@@ -372,6 +376,7 @@ class FieldValueSpec extends Spec {
         FieldId("dutyType"),
         Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None),
         "Select the tax type",
+        None,
         None,
         mandatory = true,
         editable = true,
@@ -401,6 +406,7 @@ class FieldValueSpec extends Spec {
         Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None),
         "Select the tax type",
         None,
+        None,
         mandatory = true,
         editable = true,
         submissible = true
@@ -429,6 +435,7 @@ class FieldValueSpec extends Spec {
         Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Horizontal, List.empty[Int], None),
         "Select the tax type",
         None,
+        None,
         mandatory = true,
         editable = true,
         submissible = true
@@ -451,6 +458,7 @@ class FieldValueSpec extends Spec {
         FieldId("taxType"),
         Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int], None),
         "Gas tax type?",
+        None,
         None,
         mandatory = true,
         editable = true,
@@ -476,6 +484,7 @@ class FieldValueSpec extends Spec {
         Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List(1), None),
         "Gas tax type?",
         None,
+        None,
         mandatory = true,
         editable = true,
         submissible = true
@@ -500,6 +509,7 @@ class FieldValueSpec extends Spec {
         Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int], None),
         "Gas tax type?",
         None,
+        None,
         mandatory = true,
         editable = true,
         submissible = true
@@ -521,7 +531,7 @@ class FieldValueSpec extends Spec {
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("taxType"), Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int], None), "Gas tax type?", None, mandatory = true, editable = true, submissible = true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("taxType"), Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int], None), "Gas tax type?", None, None, mandatory = true, editable = true, submissible = true))
   }
 
   it should "parse 'choice' type as YesNo even though 'multivalue=yes' is provided" in {
@@ -535,7 +545,7 @@ class FieldValueSpec extends Spec {
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("taxType"), Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int], None), "Gas tax type?", None, mandatory = true, editable = true, submissible = true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("taxType"), Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int], None), "Gas tax type?", None, None, mandatory = true, editable = true, submissible = true))
   }
 
   it should "parse 'choice' type as inline" in {
@@ -549,7 +559,7 @@ class FieldValueSpec extends Spec {
          }"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("haveIncludedInvoice"), Choice(Inline, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int], None), "Original invoice from the supplier", None, mandatory = true, editable = true, submissible = true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("haveIncludedInvoice"), Choice(Inline, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int], None), "Original invoice from the supplier", None, None, mandatory = true, editable = true, submissible = true))
   }
 
   it should "parse 'choice' type as inline with value" in {
@@ -564,7 +574,7 @@ class FieldValueSpec extends Spec {
          }"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("haveIncludedInvoice"), Choice(Inline, NonEmptyList.of("Yes", "No", "Not sure"), Horizontal, List(1), None), "Original invoice from the supplier", None, mandatory = true, editable = true, submissible = true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("haveIncludedInvoice"), Choice(Inline, NonEmptyList.of("Yes", "No", "Not sure"), Horizontal, List(1), None), "Original invoice from the supplier", None, None, mandatory = true, editable = true, submissible = true))
   }
 
   it should "faile parse 'choice' type when not enough choices" in {
@@ -642,6 +652,7 @@ class FieldValueSpec extends Spec {
         FileUpload(),
         label = "Attach evidence of your income",
         helpText = None,
+        None,
         mandatory = true,
         editable = true,
         submissible = true
@@ -666,6 +677,7 @@ class FieldValueSpec extends Spec {
         FieldId("standardInfoFieldID"),
         InformationMessage(StandardInfo, "This is a sample text for a standard info field"),
         "Label -- standard info field",
+        None,
         None,
         true,
         false,
@@ -693,6 +705,7 @@ class FieldValueSpec extends Spec {
         InformationMessage(StandardInfo, "This is a sample text for a standard info field"),
         "Label -- standard info field",
         None,
+        None,
         true,
         false,
         false
@@ -718,6 +731,7 @@ class FieldValueSpec extends Spec {
         FieldId("fieldID"),
         InformationMessage(LongInfo, "This is a sample text for an info field"),
         "Label -- info field",
+        None,
         None,
         true,
         false,
@@ -745,6 +759,7 @@ class FieldValueSpec extends Spec {
         InformationMessage(ImportantInfo, "This is a sample text for an info field"),
         "Label -- info field",
         None,
+        None,
         true,
         false,
         false
@@ -770,6 +785,7 @@ class FieldValueSpec extends Spec {
         FieldId("fieldID"),
         InformationMessage(BannerInfo, "This is a sample text for an info field"),
         "Label -- info field",
+        None,
         None,
         true,
         false,
@@ -807,6 +823,53 @@ class FieldValueSpec extends Spec {
     )
 
     fieldValue should be(jsError)
+  }
+
+  it should "parse as Text field with shortName" in {
+    val shortName = "This is very very very very very very very shortName"
+    val fieldValue = toFieldValue(
+      s"""|{
+         |  "id": "regNum",
+         |  "type" : "text",
+         |  "label": "Registration number",
+         |  "shortName" : "$shortName",
+         |  "readonly": "true",
+         |  "mandatory": "true"
+         |}""".stripMargin
+    )
+
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, Some(shortName), mandatory = true, editable = true, submissible = true))
+  }
+
+  it should "parse as Address with shortName" in {
+    val shortName = "This is very very very very very very very shortName"
+    val fieldValue = toFieldValue(
+      s"""|{
+         |  "type": "address",
+         |  "id": "homeAddress",
+         |  "label": "Home",
+         |  "shortName" : "$shortName"
+         |}"""
+    )
+
+    fieldValue should beJsSuccess(FieldValue(FieldId("homeAddress"), Address(international = false), "Home", None, Some(shortName), mandatory = true, editable = true, submissible = true))
+  }
+
+  it should "parse as Choice field shortName" in {
+    val shortName = "This is very very very very very very very shortName"
+    val fieldValue = toFieldValue(
+      s"""{
+           "type": "choice",
+           "id": "haveIncludedInvoice",
+           "label": "Original invoice from the supplier",
+           "shortName" : "$shortName",
+           "format": "inline",
+           "choices": ["Yes","No", "Not sure"],
+           "value": "1"
+         }"""
+    )
+
+    fieldValue should beJsSuccess(FieldValue(FieldId("haveIncludedInvoice"), Choice(Inline, NonEmptyList.of("Yes", "No", "Not sure"), Horizontal, List(1), None), "Original invoice from the supplier", None, Some(shortName), mandatory = true, editable = true, submissible = true))
   }
 
   private def toFieldValue(template: String): JsResult[FieldValue] = {

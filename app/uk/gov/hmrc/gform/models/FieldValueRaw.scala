@@ -43,7 +43,8 @@ object FieldValueRaw {
     (__ \ 'total).readNullable[String] and
     (__ \ 'international).readNullable[String] and
     (__ \ 'infoText).readNullable[String] and
-    (__ \ 'infoType).readNullable[String]
+    (__ \ 'infoType).readNullable[String] and
+    (__ \ 'shortName).readNullable[String]
   )(FieldValueRaw.apply _)
 
   case class MES(mandatory: Boolean, editable: Boolean, submissible: Boolean)
@@ -67,7 +68,8 @@ case class FieldValueRaw(
     total: Option[String] = None,
     international: Option[String] = None,
     infoText: Option[String] = None,
-    infoType: Option[String] = None
+    infoType: Option[String] = None,
+    shortName: Option[String] = None
 ) {
 
   def toFieldValue = Reads[FieldValue] { _ => getFieldValue fold (us => JsError(us.toString), fv => JsSuccess(fv)) }
@@ -79,6 +81,7 @@ case class FieldValueRaw(
     `type` = ct,
     label = label,
     helpText = helpText,
+    shortName = shortName,
     mandatory = mes.mandatory,
     editable = mes.editable,
     submissible = mes.submissible

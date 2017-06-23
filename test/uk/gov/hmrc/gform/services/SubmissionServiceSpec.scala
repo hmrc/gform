@@ -41,8 +41,8 @@ class SubmissionServiceSpec extends Spec with TypeclassFixtures {
     "Your details",
     None, None,
     List(
-      FieldValue(FieldId("firstName"), Text(Constant(""), total = false), "Your first name", None, mandatory = true, editable = true, submissible = true),
-      FieldValue(FieldId("lastName"), Text(Constant(""), total = false), "Your last name", None, mandatory = true, editable = true, submissible = true)
+      FieldValue(FieldId("firstName"), Text(Constant(""), total = false), "Your first name", None, None, mandatory = true, editable = true, submissible = true),
+      FieldValue(FieldId("lastName"), Text(Constant(""), total = false), "Your last name", None, None, mandatory = true, editable = true, submissible = true)
     )
   )
 
