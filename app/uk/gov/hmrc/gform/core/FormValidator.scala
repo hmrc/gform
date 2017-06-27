@@ -61,7 +61,7 @@ object FormValidator {
 
               (accRes, reqAcc)
 
-            case Text(_, _) | Choice(_, _, _, _, _) | Group(_, _) | FileUpload() => // TODO - added Group just to compile; remove if possible
+            case Text(_, _) | Choice(_, _, _, _, _) | Group(_, _, _, _, _, _) | FileUpload() => // TODO - added Group just to compile; remove if possible
               val id = fieldValue.id
               val accRes = acc + (id -> fieldValue)
 

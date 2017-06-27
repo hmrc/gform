@@ -44,7 +44,11 @@ object FieldValueRaw {
     (__ \ 'international).readNullable[String] and
     (__ \ 'infoText).readNullable[String] and
     (__ \ 'infoType).readNullable[String] and
-    (__ \ 'shortName).readNullable[String]
+    (__ \ 'shortName).readNullable[String] and
+    (__ \ 'repeatsMax).readNullable[Int] and
+    (__ \ 'repeatsMin).readNullable[Int] and
+    (__ \ 'repeatLabel).readNullable[String] and
+    (__ \ 'repeatAddAnotherText).readNullable[String]
   )(FieldValueRaw.apply _)
 
   case class MES(mandatory: Boolean, editable: Boolean, submissible: Boolean)
@@ -69,7 +73,11 @@ case class FieldValueRaw(
     international: Option[String] = None,
     infoText: Option[String] = None,
     infoType: Option[String] = None,
-    shortName: Option[String] = None
+    shortName: Option[String] = None,
+    repeatsMax: Option[Int] = None,
+    repeatsMin: Option[Int] = None,
+    repeatLabel: Option[String] = None,
+    repeatAddAnotherText: Option[String] = None
 ) {
 
   def toFieldValue = Reads[FieldValue] { _ => getFieldValue fold (us => JsError(us.toString), fv => JsSuccess(fv)) }
@@ -170,8 +178,17 @@ case class FieldValueRaw(
     }
 
     rawFields.map(_.getFieldValue()).partition(_.isRight) match {
-      case (ueorfvs, Nil) => Group(ueorfvs.map(_.right.get), orientation).asRight
+      case (ueorfvs, Nil) => validateAndBuildGroupField(ueorfvs.map(_.right.get), orientation)
       case (_, ueorfvs) => ueorfvs.map(_.left.get).head.asLeft
+    }
+  }
+
+  private def validateAndBuildGroupField(fields: List[FieldValue], orientation: Orientation) = {
+    (repeatsMax, repeatsMin) match {
+      case (Some(repMax), Some(repMin)) if repMax < repMin =>
+        InvalidState(s"""repeatsMax should be higher than repeatsMin in Group field""").asLeft
+      case _ =>
+        Group(fields, orientation, repeatsMax, repeatsMin, repeatLabel, repeatAddAnotherText).asRight
     }
   }
 
