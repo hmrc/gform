@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.models
 import cats.Monoid
 import julienrf.json.derived
 import play.api.libs.json._
-import uk.gov.hmrc.gform.core.{ Invalid, Valid, ValidationResult }
+import uk.gov.hmrc.gform.core.{ Valid, Invalid, ValidationResult }
 
 sealed trait BooleanExpr {
   def validate(formTemplate: FormTemplate): ValidationResult = {
@@ -40,21 +40,10 @@ sealed trait BooleanExpr {
 
 final case class Equals(left: Expr, right: Expr) extends BooleanExpr
 final case class Or(left: BooleanExpr, right: BooleanExpr) extends BooleanExpr
-final case class And(left: BooleanExpr, right: BooleanExpr) extends BooleanExpr
 final case object IsTrue extends BooleanExpr
-final case object IsFalse extends BooleanExpr
 
 object BooleanExpr {
   implicit val format: OFormat[BooleanExpr] = derived.oformat
-
-  def isTrue(expr: BooleanExpr, data: Map[FieldId, FormField]): Boolean =
-    expr match {
-      case Equals(FormCtx(fieldId), Constant(value)) if data.get(FieldId(fieldId)).toList.map(_.value).contains(value) => true
-      case Or(expr1, expr2) => isTrue(expr1, data) | isTrue(expr2, data)
-      case And(expr1, expr2) => isTrue(expr1, data) & isTrue(expr2, data)
-      case IsTrue => true
-      case _ => false
-    }
 }
 
 sealed trait Comparison
