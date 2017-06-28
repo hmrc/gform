@@ -16,17 +16,28 @@
 
 package uk.gov.hmrc.gform.services
 
+import java.util.UUID
+
 import cats.instances.future._
-import play.api.libs.json.{ JsObject, JsValue, Json }
+import play.api.libs.json.Json
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.exceptions.InvalidState
-import uk.gov.hmrc.gform.models.{ DbOperationResult, FieldValue, Form, FormId, FormTemplate, FormTypeId, SaveAndRetrieve, Section }
+import uk.gov.hmrc.gform.models._
 import uk.gov.hmrc.gform.typeclasses.{ Find, FindOne, Insert, Update }
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 
 object FormService {
+
+  def insertEmpty(formTypeId: FormTypeId, version: String)(implicit Insert: Insert[Form]): ServiceResponse[Form] = {
+    val formId = FormId(UUID.randomUUID().toString)
+    val selector = Json.obj("_id" -> formId.value)
+    val formData = FormData(formTypeId, version, characterSet = "UTF-8", fields = Nil)
+    val form = Form(formId, formData)
+    fromFutureOptA(
+      Insert(selector, form).map(_.right.map(_ => form))
+    )
+  }
 
   def saveOrUpdate(
     form: Form,
