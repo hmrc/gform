@@ -43,7 +43,7 @@ class FormController()(
     fusFeUrl: ServiceUrl[FusFeUrl]
 ) extends BaseController {
 
-  def newForm(formTypeId: FormTypeId, version: String) = Action.async { implicit request =>
+  def newForm(formTypeId: FormTypeId, version: Version) = Action.async { implicit request =>
 
     val template = FormTemplateService.get(formTypeId, version)
     val envelope = FileUploadService.createEnvelope(formTypeId)
@@ -82,7 +82,7 @@ class FormController()(
     )
   }
 
-  def getByIdAndVersion(formTypeId: FormTypeId, version: String) = Action.async { implicit request =>
+  def getByIdAndVersion(formTypeId: FormTypeId, version: Version) = Action.async { implicit request =>
     FormService.getByIdAndVersion(formTypeId, version).fold(
       error => error.toResult,
       response => {
@@ -92,7 +92,7 @@ class FormController()(
     )
   }
 
-  def get(formTypeId: FormTypeId, version: String, formId: FormId) = Action.async { implicit request =>
+  def get(formTypeId: FormTypeId, version: Version, formId: FormId) = Action.async { implicit request =>
     FormService.get(formTypeId, version, formId).fold(
       error => error.toResult,
       response => Ok(Json.toJson(response.formData))
@@ -107,7 +107,7 @@ class FormController()(
     saveOrUpdate(formId, operation)
   }
 
-  def delete(formTypeId: FormTypeId, version: String, formId: FormId) = Action.async { implicit request =>
+  def delete(formTypeId: FormTypeId, version: Version, formId: FormId) = Action.async { implicit request =>
     Future.successful(NotImplemented)
   }
 

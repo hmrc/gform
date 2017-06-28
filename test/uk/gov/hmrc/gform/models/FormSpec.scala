@@ -22,7 +22,7 @@ import uk.gov.hmrc.gform.Spec
 class FormSpec extends Spec {
   val formId = FormId("my-form-id")
 
-  val formData = FormData(FormTypeId("my-form-type-id"), "0.1.5", "UTF-8", List(FormField(FieldId("firstName"), "Josef")))
+  val formData = FormData(FormTypeId("my-form-type-id"), Version("0.1.5"), "UTF-8", List(FormField(FieldId("firstName"), "Josef")))
 
   val form = Form(formId, formData)
 
