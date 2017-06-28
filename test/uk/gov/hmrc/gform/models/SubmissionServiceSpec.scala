@@ -34,7 +34,7 @@ class SubmissionServiceSpec extends FlatSpec with Matchers with EitherValues {
     schemaId = None,
     formTypeId = FormTypeId(""),
     formName = "IPT100",
-    version = "1.2.3",
+    version = Version("1.2.3"),
     description = "abc",
     characterSet = "UTF-8",
     dmsSubmission = DmsSubmission("nino", "some-classification-type", "some-business-area"),
@@ -51,7 +51,7 @@ class SubmissionServiceSpec extends FlatSpec with Matchers with EitherValues {
     FieldId("nameOfBusiness") -> FormField(FieldId("nameOfBusiness"), "Business Name")
   )
 
-  val formData = Form(FormId("anId"), FormData(FormTypeId("ftid"), "version", "charset", data.values.toSeq))
+  val formData = Form(FormId("anId"), FormData(FormTypeId("ftid"), Version("version"), "charset", data.values.toSeq))
 
   "getSectionFormFields" should "return a Right if formData is present for all fields" in {
 
@@ -61,7 +61,7 @@ class SubmissionServiceSpec extends FlatSpec with Matchers with EitherValues {
 
   it should "return a Left if formData is missing" in {
 
-    val formDataWithoutRequiredField = Form(FormId("anId"), FormData(FormTypeId("ftid"), "version", "charset", (data - FieldId("startDate.month")).values.toSeq))
+    val formDataWithoutRequiredField = Form(FormId("anId"), FormData(FormTypeId("ftid"), Version("version"), "charset", (data - FieldId("startDate.month")).values.toSeq))
 
     val sectionFormFieldsOpt = SubmissionService.getSectionFormFields(formDataWithoutRequiredField, formTemplate)
 
@@ -73,7 +73,7 @@ class SubmissionServiceSpec extends FlatSpec with Matchers with EitherValues {
   it should "return a Right if formData is present for the fields on included Sections" in {
 
     val excludedSection = section0.copy(includeIf = Some(IncludeIf(IsFalse)))
-    val formDataWithoutFieldsOnExludedSection = Form(FormId("anId"), FormData(FormTypeId("ftid"), "version", "charset", (data - FieldId("startDate.month")).values.toSeq))
+    val formDataWithoutFieldsOnExludedSection = Form(FormId("anId"), FormData(FormTypeId("ftid"), Version("version"), "charset", (data - FieldId("startDate.month")).values.toSeq))
     val ftWithExcludedSection0 = formTemplate.copy(sections = List(excludedSection, section1, section2))
 
     SubmissionService.getSectionFormFields(formDataWithoutFieldsOnExludedSection, ftWithExcludedSection0) should be('right)
