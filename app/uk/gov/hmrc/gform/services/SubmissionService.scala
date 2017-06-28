@@ -33,11 +33,11 @@ import uk.gov.hmrc.play.http.HttpResponse
 
 object SubmissionService {
 
-  private def getSectionFormFields(
+  def getSectionFormFields(
     form: Form,
-    sections: Seq[Section]
+    formTemplate: FormTemplate
   ): Opt[List[SectionFormField]] = {
-    val formFields: Map[FieldId, FormField] = form.formData.fields.map(field => field.id -> field).toMap
+    val data: Map[FieldId, FormField] = form.formData.fields.map(field => field.id -> field).toMap
 
     val formFieldByFieldValue: FieldValue => Opt[List[(FormField, FieldValue)]] = fieldValue => {
       val fieldValueIds: List[FieldId] =
@@ -51,7 +51,7 @@ object SubmissionService {
 
       val formFieldAndFieldValues: List[Opt[(FormField, FieldValue)]] =
         fieldValueIds.map { fieldValueId =>
-          formFields.get(fieldValueId) match {
+          data.get(fieldValueId) match {
             case Some(formField) => Right((formField, fieldValue))
             case None => Left(InvalidState(s"No formField for field.id: ${fieldValue.id} found"))
           }
@@ -62,7 +62,9 @@ object SubmissionService {
     val toSectionFormField: Section => Opt[SectionFormField] = section =>
       section.atomicFields.flatTraverse(formFieldByFieldValue).map(ff => SectionFormField(section.title, ff))
 
-    sections.toList.traverse(toSectionFormField)
+    val allSections = formTemplate.sections
+    val sectionsToSubmit = allSections.filter(section => BooleanExpr.isTrue(section.includeIf.getOrElse(IncludeIf(IsTrue)).expr, data))
+    sectionsToSubmit.toList.traverse(toSectionFormField)
   }
 
   def getSubmissionAndPdf(
@@ -122,7 +124,7 @@ object SubmissionService {
       form              <- FormService.getByTypeAndId(formTypeId, formId)
       formTemplate      <- fromFutureOptionA  (findOneFormTemplate(templateSelector(form)))(InvalidState(s"FormTemplate $templateSelector not found"))
       envelopeId        <- fromFutureOptA     (FileUploadService.createEnvelope(formTypeId))
-      sectionFormFields <- fromOptA           (getSectionFormFields(form, formTemplate.sections))
+      sectionFormFields <- fromOptA           (getSectionFormFields(form, formTemplate))
       submissionAndPdf  =  getSubmissionAndPdf(envelopeId, form, sectionFormFields, formTemplate.formName)
       _                 <- fromFutureA        (insertSubmission(Json.obj(), submissionAndPdf.submission))
       res               <- FileUploadService.submitEnvelope(submissionAndPdf, formTemplate.dmsSubmission)
