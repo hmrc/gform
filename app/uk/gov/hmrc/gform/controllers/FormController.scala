@@ -18,17 +18,23 @@ package uk.gov.hmrc.gform.controllers
 
 import cats.instances.future._
 import java.util.UUID
-import play.api.libs.json.Json
+
+import play.api.libs.json.{ Json, OFormat }
 import play.api.mvc.{ Action, Request, RequestHeader }
+
 import scala.concurrent.Future
-import uk.gov.hmrc.gform.models.{ Form, FormData, FormId, FormTypeId }
+import uk.gov.hmrc.gform.models._
 import uk.gov.hmrc.gform.repositories.{ FormRepository, FormTemplateRepository, SubmissionRepository }
-import uk.gov.hmrc.gform.services.{ FormService, SubmissionService, MongoOperation, SaveOperation, SaveTolerantOperation, UpdateOperation, UpdateTolerantOperation }
-import uk.gov.hmrc.gform.typeclasses.{ FusFeUrl, FusUrl, ServiceUrl }
+import uk.gov.hmrc.gform.services._
+import uk.gov.hmrc.gform.typeclasses.{ FindOne, FusFeUrl, FusUrl, ServiceUrl }
 import uk.gov.hmrc.play.microservice.controller.BaseController
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
+import FormController._
+import cats.data.EitherT
+import uk.gov.hmrc.gform.core.{ Opt, ServiceResponse }
+import uk.gov.hmrc.gform.exceptions.UnexpectedState
 
-class Forms()(
+class FormController()(
     implicit
     formRepo: FormRepository,
     formTemplateRepo: FormTemplateRepository,
@@ -36,6 +42,23 @@ class Forms()(
     fusUrl: ServiceUrl[FusUrl],
     fusFeUrl: ServiceUrl[FusFeUrl]
 ) extends BaseController {
+
+  def newForm(formTypeId: FormTypeId, version: String) = Action.async { implicit request =>
+
+    val template = FormTemplateService.get(formTypeId, version)
+    val envelope = FileUploadService.createEnvelope(formTypeId)
+    val form = FormService.insertEmpty(formTypeId, version)
+    val response = for {
+      t <- template
+      e <- envelope
+      f <- form
+    } yield NewFormResponse(f, e, t)
+    response.fold(
+      error => error.toResult,
+      response => Ok(Json.toJson(response))
+    )
+  }
+
   def all() = Action.async { implicit request =>
     Future.successful(NotImplemented)
   }
@@ -114,6 +137,20 @@ class Forms()(
 
   private def formLink(form: Form)(implicit request: RequestHeader) = {
     val Form(formId, formData) = form
-    routes.Forms.get(formData.formTypeId, formData.version, formId).absoluteURL()
+    routes.FormController.get(formData.formTypeId, formData.version, formId).absoluteURL()
   }
+}
+
+object FormController {
+
+  case class NewFormResponse(
+    form: Form,
+    envelopeId: EnvelopeId,
+    formTemplate: FormTemplate
+  )
+
+  object NewFormResponse {
+    implicit val format: OFormat[NewFormResponse] = Json.format[NewFormResponse]
+  }
+
 }

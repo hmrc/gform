@@ -40,8 +40,9 @@ object FileUploadService {
     implicit
     ec: ExecutionContext,
     createEnvelope: Post[CreateEnvelope, HttpResponse]
-  ): Future[Opt[EnvelopeId]] =
+  ): ServiceResponse[EnvelopeId] = fromFutureOptA(
     createEnvelope(envelopeRequest(formTypeId)).map(extractEnvelopId)
+  )
 
   def submitEnvelope(
     submissionAndPdf: SubmissionAndPdf,
