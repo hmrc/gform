@@ -19,8 +19,9 @@ package uk.gov.hmrc.gform.repositories
 import cats.instances.future._
 import play.api.libs.json._
 import reactivemongo.api.{ Cursor, DefaultDB }
-import reactivemongo.api.commands.WriteConcern
+import reactivemongo.api.commands.{ UpdateWriteResult, WriteConcern }
 import reactivemongo.bson.BSONObjectID
+
 import scala.concurrent.ExecutionContext
 import uk.gov.hmrc.gform.core.{ Opt, ServiceResponse, fromFutureOptA }
 import uk.gov.hmrc.gform.models.{ DbOperationResult, FieldId, Form, FormId }
@@ -59,7 +60,6 @@ class FormRepository(implicit mongo: () => DefaultDB)
     ex: ExecutionContext
   ): Future[Opt[DbOperationResult]] = {
     val res = collection.update(selector = selector, update = form, writeConcern = WriteConcern.Default, upsert = true, multi = false)
-
     checkUpdateResult(res)
   }
 

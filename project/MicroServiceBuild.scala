@@ -26,6 +26,8 @@ object MicroServiceBuild extends Build with MicroService {
   val playAuditing = "2.9.0"
   val pdfboxVersion = "2.0.6"
   val spdfVersion = "1.4.0"
+  val shapelessVersion = "2.3.2"
+  val pureConfigVersion = "0.7.2"
 
   val compile = Seq(
     ws,
@@ -43,7 +45,9 @@ object MicroServiceBuild extends Build with MicroService {
     "org.julienrf" %% "play-json-derived-codecs" % "3.3",
     "org.typelevel" %% "cats" % catsVersion,
     "org.apache.pdfbox" % "pdfbox" % pdfboxVersion,
-    "io.github.cloudify" %% "spdf" % spdfVersion
+    "io.github.cloudify" %% "spdf" % spdfVersion,
+    "com.chuusai" %% "shapeless" % shapelessVersion,
+    "com.github.pureconfig" %% "pureconfig" % pureConfigVersion
   )
 
   def test(scope: String = "test,it") = Seq(

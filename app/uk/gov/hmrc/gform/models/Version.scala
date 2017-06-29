@@ -18,9 +18,13 @@ package uk.gov.hmrc.gform.models
 
 import play.api.libs.json._
 
-case class FormData(formTypeId: FormTypeId, version: Version, characterSet: String, fields: Seq[FormField])
+case class Version(value: String)
 
-object FormData {
-
-  implicit val format: OFormat[FormData] = Json.format[FormData]
+object Version {
+  val writes: Writes[Version] = Writes[Version](id => JsString(id.value))
+  val reads: Reads[Version] = Reads[Version] {
+    case JsString(value) => JsSuccess(Version(value))
+    case otherwise => JsError(s"Invalid 'version' field, expected JsString, got: $otherwise")
+  }
+  implicit val format: Format[Version] = Format[Version](reads, writes)
 }

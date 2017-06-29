@@ -166,7 +166,7 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
 
   lazy val formTemplates = new FormTemplates()
 
-  lazy val forms = new Forms()
+  lazy val forms = new FormController()
 
   lazy val schemas = new Schemas()
 

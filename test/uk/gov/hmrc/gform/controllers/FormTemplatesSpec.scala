@@ -28,7 +28,7 @@ import scala.concurrent.ExecutionContext.Implicits._
 
 class FormTemplatesSpec extends Spec with TypeclassFixtures {
 
-  val plainFormTemplate = FormTemplate(Some("http://schemaId"), FormTypeId(""), "formName", "version", "description", "characterSet", DmsSubmission("customerId", "classificationType", "businessArea"), "submitSuccessUrl", "submitErrorUrl", List.empty[Section])
+  val plainFormTemplate = FormTemplate(Some("http://schemaId"), FormTypeId(""), "formName", Version("version"), "description", "characterSet", DmsSubmission("customerId", "classificationType", "businessArea"), "submitSuccessUrl", "submitErrorUrl", List.empty[Section])
 
   implicit override val patienceConfig = PatienceConfig(timeout = scaled(Span(500, Millis)), interval = scaled(Span(150, Millis)))
 
@@ -47,7 +47,7 @@ class FormTemplatesSpec extends Spec with TypeclassFixtures {
 
     (findOneCheck.call _).expects().once
 
-    val res: ServiceResponse[DbOperationResult] = FormTemplates.saveTemplate(FormTypeId("abc"), "1.0.0", plainFormTemplate)
+    val res: ServiceResponse[DbOperationResult] = FormTemplates.saveTemplate(FormTypeId("abc"), Version("1.0.0"), plainFormTemplate)
 
     futureResult(res.value).left.value should be(InvalidState("SchemaId http://schemaId not found"))
 
@@ -84,7 +84,7 @@ class FormTemplatesSpec extends Spec with TypeclassFixtures {
     (findOneCheck.call _).expects().once
     (updateCheck.call _).expects().once
 
-    val res: ServiceResponse[DbOperationResult] = FormTemplates.saveTemplate(FormTypeId("abc"), "1.0.0", plainFormTemplate)
+    val res: ServiceResponse[DbOperationResult] = FormTemplates.saveTemplate(FormTypeId("abc"), Version("1.0.0"), plainFormTemplate)
 
     futureResult(res.value).right.value should be(UpdateSuccess)
   }
