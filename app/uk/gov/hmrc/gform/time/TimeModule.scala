@@ -14,13 +14,9 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.models
+package uk.gov.hmrc.gform.time
+import java.time._
 
-import play.api.libs.json._
-
-case class FormData(formTypeId: FormTypeId, version: Version, characterSet: String, fields: Seq[FormField])
-
-object FormData {
-
-  implicit val format: OFormat[FormData] = Json.format[FormData]
+class TimeModule {
+  def localDateTime(): LocalDateTime = LocalDateTime.now()
 }

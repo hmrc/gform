@@ -14,13 +14,24 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.models
+package uk.gov.hmrc.gform.config
 
-import play.api.libs.json._
+import com.typesafe.config.ConfigFactory
+import pureconfig.{ CamelCase, ConfigFieldMapping, ProductHint }
+import uk.gov.hmrc.gform.Spec
 
-case class FormData(formTypeId: FormTypeId, version: Version, characterSet: String, fields: Seq[FormField])
+case class SampleConf(fooFoo: Int, bar: String)
 
-object FormData {
+class AppConfigSpec extends Spec {
 
-  implicit val format: OFormat[FormData] = Json.format[FormData]
+  behavior of "AppConfig"
+
+  it should "be loadable" in {
+    val appConfig = AppConfig.loadOrThrow()
+    appConfig.appName shouldBe "gform"
+    appConfig.formExpiryDays shouldBe 30
+    appConfig.formMaxAttachments shouldBe 10
+    appConfig.formMaxAttachmentSizeMB shouldBe 15
+  }
+
 }
