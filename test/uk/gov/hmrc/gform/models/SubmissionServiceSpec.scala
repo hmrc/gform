@@ -70,12 +70,32 @@ class SubmissionServiceSpec extends FlatSpec with Matchers with EitherValues {
 
   }
 
-  it should "return a Right if formData is present for the fields on included Sections" in {
+  it should "not complain if formData is present for fields on included Sections" in {
 
     val excludedSection = section0.copy(includeIf = Some(IncludeIf(IsFalse)))
     val formDataWithoutFieldsOnExludedSection = Form(FormId("anId"), FormData(FormTypeId("ftid"), Version("version"), "charset", (data - FieldId("startDate.month")).values.toSeq))
     val ftWithExcludedSection0 = formTemplate.copy(sections = List(excludedSection, section1, section2))
 
     SubmissionService.getSectionFormFields(formDataWithoutFieldsOnExludedSection, ftWithExcludedSection0) should be('right)
+  }
+
+  it should "return only the formData on included Sections" in {
+
+    val dataForAllFormFields = Form(FormId("anId"), FormData(FormTypeId("ftid"), Version("version"), "charset", data.values.toSeq))
+
+    val includedSection = section0.copy(includeIf = Some(IncludeIf(IsTrue)))
+    val ftWithIncludedSection0 = formTemplate.copy(sections = List(includedSection, section1, section2))
+
+    val sectionFormFields1 = SubmissionService.getSectionFormFields(dataForAllFormFields, ftWithIncludedSection0).right.get
+    sectionFormFields1.size shouldBe formTemplate.sections.size
+    sectionFormFields1.map(_.title) should contain("Section for Start Date")
+
+    val excludedSection = section0.copy(includeIf = Some(IncludeIf(IsFalse)))
+    val ftWithExcludedSection0 = formTemplate.copy(sections = List(excludedSection, section1, section2))
+
+    val sectionFormFields: List[SectionFormField] = SubmissionService.getSectionFormFields(dataForAllFormFields, ftWithExcludedSection0).right.get
+    sectionFormFields.size shouldBe formTemplate.sections.size - 1
+    sectionFormFields.map(_.title) should not contain ("Section for Start Date")
+
   }
 }
