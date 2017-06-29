@@ -89,7 +89,7 @@ object FormValidator {
 
     val formFieldWithFieldValues: List[Opt[(FormField, FieldValue)]] =
       formFields.map { formField =>
-        templateFieldsMap.get(formField.id) match {
+        findTemplateFieldId(templateFieldsMap, formField.id) match {
           case Some(templateField) => Right((formField, templateField))
           case None => Left(InvalidState(s"Field ${formField.id} is not part of the template"))
         }
@@ -103,5 +103,16 @@ object FormValidator {
       _ <- requirementCheck
       _ <- formFieldWithFieldValuesU
     } yield ()
+  }
+
+  private def findTemplateFieldId(fieldMap: Map[FieldId, FieldValue], fieldId: FieldId) = {
+    val repeatingGroupFieldId = raw"(.+)_\d+?".r
+
+    val templateFieldId = fieldId.value match {
+      case repeatingGroupFieldId(extractedFieldId) => FieldId(extractedFieldId)
+      case _ => fieldId
+    }
+
+    fieldMap.get(templateFieldId)
   }
 }
