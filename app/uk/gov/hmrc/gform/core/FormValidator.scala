@@ -23,6 +23,7 @@ import cats.syntax.traverse._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.exceptions.InvalidState
 import uk.gov.hmrc.gform.models._
+import uk.gov.hmrc.gform.services.RepeatingComponentService
 
 object FormValidator {
   def conform(json: JsValue /* , schema: JsonSchema */ ): Opt[List[FormField]] = {
@@ -89,7 +90,7 @@ object FormValidator {
 
     val formFieldWithFieldValues: List[Opt[(FormField, FieldValue)]] =
       formFields.map { formField =>
-        findTemplateFieldId(templateFieldsMap, formField.id) match {
+        RepeatingComponentService.findTemplateFieldId(templateFieldsMap, formField.id) match {
           case Some(templateField) => Right((formField, templateField))
           case None => Left(InvalidState(s"Field ${formField.id} is not part of the template"))
         }
@@ -103,16 +104,5 @@ object FormValidator {
       _ <- requirementCheck
       _ <- formFieldWithFieldValuesU
     } yield ()
-  }
-
-  private def findTemplateFieldId(fieldMap: Map[FieldId, FieldValue], fieldId: FieldId) = {
-    val repeatingGroupFieldId = raw"(.+)_\d+?".r
-
-    val templateFieldId = fieldId.value match {
-      case repeatingGroupFieldId(extractedFieldId) => FieldId(extractedFieldId)
-      case _ => fieldId
-    }
-
-    fieldMap.get(templateFieldId)
   }
 }

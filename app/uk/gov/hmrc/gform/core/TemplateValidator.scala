@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.core
 
 import uk.gov.hmrc.gform.exceptions.InvalidState
 import uk.gov.hmrc.gform.models._
+import uk.gov.hmrc.gform.services.RepeatingComponentService
 
 object TemplateValidator {
 
@@ -51,7 +52,11 @@ object TemplateValidator {
 
       val missingMandatoryFields = mandatorySectionIds diff formFieldIds
 
-      val optionalFieldsFromSubmission = discardRepeatingFields(formFieldIds diff mandatorySectionIds, mandatorySectionIds, optionalSectionIds)
+      val optionalFieldsFromSubmission = RepeatingComponentService.discardRepeatingFields(
+        formFieldIds diff mandatorySectionIds,
+        mandatorySectionIds,
+        optionalSectionIds
+      )
 
       val fieldWhichAreNotFromFormTemplate = optionalFieldsFromSubmission diff optionalSectionIds
 
@@ -66,15 +71,6 @@ object TemplateValidator {
         Left(InvalidState(s"""|Cannot find a section corresponding to the formFields
                               |FormFields: $formFieldIds
                               |Sections: $sectionsForPrint""".stripMargin))
-    }
-  }
-
-  private def discardRepeatingFields(extraFieldsReceived: Set[FieldId], mandatoryFields: Set[FieldId], optionalFields: Set[FieldId]) = {
-    extraFieldsReceived.filterNot { extraFieldId =>
-      (mandatoryFields ++ optionalFields).exists { fieldId =>
-        val pattern = s"${fieldId.value}_\\d+?".r
-        pattern.findFirstIn(extraFieldId.value).isDefined
-      }
     }
   }
 }
