@@ -187,6 +187,8 @@ case class FieldValueRaw(
     (repeatsMax, repeatsMin) match {
       case (Some(repMax), Some(repMin)) if repMax < repMin =>
         InvalidState(s"""repeatsMax should be higher than repeatsMin in Group field""").asLeft
+      case (Some(repMax), Some(repMin)) if repMin < 1 =>
+        InvalidState(s"""repeatsMin in Group field cannot be less than 1""").asLeft
       case _ =>
         Group(fields, orientation, repeatsMax, repeatsMin, repeatLabel, repeatAddAnotherText).asRight
     }
