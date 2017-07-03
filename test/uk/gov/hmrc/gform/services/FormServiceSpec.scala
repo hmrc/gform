@@ -29,7 +29,8 @@ class FormServiceSpec extends Spec with TypeclassFixtures {
 
   implicit override val patienceConfig = PatienceConfig(timeout = scaled(Span(500, Millis)), interval = scaled(Span(150, Millis)))
 
-  val form = Form(FormId("form-id"), FormData(FormTypeId("form-type-id"), Version("1.0.0"), "UTF-8", Seq.empty[FormField]))
+
+  val form = Form(FormId("form-id"), FormData("TESTID", FormTypeId("form-type-id"), Version("1.0.0"), "UTF-8", Seq.empty[FormField]))
 
   val plainFormTemplate = FormTemplate(Some("schemaId"), FormTypeId(""), "formName", Version("version"), "description", "characterSet", DmsSubmission("customerId", "classificationType", "businessArea"), "submitSuccessUrl", "submitErrorUrl", List.empty[Section])
 
@@ -211,7 +212,11 @@ class FormServiceSpec extends Spec with TypeclassFixtures {
   }
 
   def runSaveTest(formFields: List[FormField], formTemplate: FormTemplate, operation: MongoOperation) = {
+<<<<<<< HEAD
     val formToSave = Form(FormId("form-id"), FormData(FormTypeId("form-type-id"), Version("1.0.0"), "UTF-8", formFields))
+=======
+    val formToSave = Form(FormId("form-id"), FormData("TESTID", FormTypeId("form-type-id"), "1.0.0", "UTF-8", formFields))
+>>>>>>> changed the FormData case class to handle userId's also added search by userId which returns a list of all form Id's assosiated with user.
 
     implicit val findOneFormTemplate: FindOne[FormTemplate] = FindOneTC
       .response(Some(formTemplate))
@@ -231,9 +236,15 @@ class FormServiceSpec extends Spec with TypeclassFixtures {
   }
 
   def runUpdateTest(formFields: List[FormField], formTemplate: FormTemplate, operation: MongoOperation) = {
+<<<<<<< HEAD
     val formToSave = Form(FormId("form-id"), FormData(FormTypeId("form-type-id"), Version("1.0.0"), "UTF-8", formFields))
 
     val formInDb = Form(FormId("form-id"), FormData(FormTypeId("form-type-id"), Version("1.0.0"), "UTF-8", List.empty[FormField]))
+=======
+    val formToSave = Form(FormId("form-id"), FormData("TESTID", FormTypeId("form-type-id"), "1.0.0", "UTF-8", formFields))
+
+    val formInDb = Form(FormId("form-id"), FormData("TESTID", FormTypeId("form-type-id"), "1.0.0", "UTF-8", List.empty[FormField]))
+>>>>>>> changed the FormData case class to handle userId's also added search by userId which returns a list of all form Id's assosiated with user.
 
     implicit val findOneFormTemplate: FindOne[FormTemplate] = FindOneTC
       .response(Some(formTemplate))
