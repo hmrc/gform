@@ -19,14 +19,25 @@ package uk.gov.hmrc.gform.controllers
 import cats.instances.future._
 import java.util.UUID
 
+<<<<<<< HEAD:app/uk/gov/hmrc/gform/controllers/FormController.scala
 import play.api.libs.json.{ Json, OFormat }
 import play.api.mvc.{ Action, Request, RequestHeader }
+=======
+import play.api.Logger
+import play.api.libs.json.Json
+import play.api.mvc.{ Action, AnyContent, Request, RequestHeader }
+>>>>>>> changed the FormData case class to handle userId's also added search by userId which returns a list of all form Id's assosiated with user.:app/uk/gov/hmrc/gform/controllers/Forms.scala
 
 import scala.concurrent.Future
 import uk.gov.hmrc.gform.models._
 import uk.gov.hmrc.gform.repositories.{ FormRepository, FormTemplateRepository, SubmissionRepository }
+<<<<<<< HEAD:app/uk/gov/hmrc/gform/controllers/FormController.scala
 import uk.gov.hmrc.gform.services._
 import uk.gov.hmrc.gform.typeclasses.{ FindOne, FusFeUrl, FusUrl, ServiceUrl }
+=======
+import uk.gov.hmrc.gform.services.{ FormService, MongoOperation, SaveOperation, SaveTolerantOperation, SubmissionService, UpdateOperation, UpdateTolerantOperation }
+import uk.gov.hmrc.gform.typeclasses.{ FusFeUrl, FusUrl, ServiceUrl }
+>>>>>>> changed the FormData case class to handle userId's also added search by userId which returns a list of all form Id's assosiated with user.:app/uk/gov/hmrc/gform/controllers/Forms.scala
 import uk.gov.hmrc.play.microservice.controller.BaseController
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import FormController._
@@ -65,6 +76,7 @@ class FormController()(
 
   def save(tolerant: Option[Boolean]) = Action.async(parse.json[FormData]) { implicit request =>
     val _id = FormId(UUID.randomUUID().toString())
+    Logger.info("HERE")
     val operation = tolerant match {
       case Some(true) => SaveTolerantOperation
       case _ => SaveOperation
@@ -78,6 +90,16 @@ class FormController()(
       response => {
         val links = response.map(formLink)
         Ok(Json.toJson(links))
+      }
+    )
+  }
+
+  def getByUserId(userId: String) = Action.async { implicit request =>
+    FormService.getByUserId(userId).fold(
+      error => error.toResult,
+      response => {
+        val formId = response.map(_._id)
+        Ok(Json.toJson(formId))
       }
     )
   }
@@ -107,10 +129,13 @@ class FormController()(
     saveOrUpdate(formId, operation)
   }
 
+<<<<<<< HEAD:app/uk/gov/hmrc/gform/controllers/FormController.scala
   def delete(formTypeId: FormTypeId, version: Version, formId: FormId) = Action.async { implicit request =>
     Future.successful(NotImplemented)
   }
 
+=======
+>>>>>>> changed the FormData case class to handle userId's also added search by userId which returns a list of all form Id's assosiated with user.:app/uk/gov/hmrc/gform/controllers/Forms.scala
   def submission(formTypeId: FormTypeId, formId: FormId) = Action.async { implicit request =>
     SubmissionService.submission(formTypeId, formId).fold(
       error => error.toResult,

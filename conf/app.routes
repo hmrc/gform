@@ -15,6 +15,7 @@ GET        /forms/:formTypeId/:version/:formId      uk.gov.hmrc.gform.controller
 DELETE     /forms/:formTypeId/:version/:formId      uk.gov.hmrc.gform.controllers.FormController.delete(formTypeId: FormTypeId, version: Version, formId: FormId)
 POST       /forms/:formTypeId/submission/:formId    uk.gov.hmrc.gform.controllers.FormController.submission(formTypeId: FormTypeId, formId: FormId)
 GET        /forms/:formTypeId/submission/:formId    uk.gov.hmrc.gform.controllers.FormController.submissionStatus(formTypeId: FormTypeId, formId: FormId)
+GET        /forms/:id                               uk.gov.hmrc.gform.controllers.Forms.getByUserId(id: String)
 
 GET        /formtemplates                       uk.gov.hmrc.gform.controllers.FormTemplates.all
 POST       /formtemplates                       uk.gov.hmrc.gform.controllers.FormTemplates.save

@@ -23,16 +23,17 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.exceptions.InvalidState
 import uk.gov.hmrc.gform.models._
-import uk.gov.hmrc.gform.typeclasses.{ Find, FindOne, Insert, Update }
+
+import uk.gov.hmrc.gform.typeclasses._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 object FormService {
 
-  def insertEmpty(formTypeId: FormTypeId, version: Version)(implicit Insert: Insert[Form]): ServiceResponse[Form] = {
+  def insertEmpty(userId: String, formTypeId: FormTypeId, version: Version)(implicit Insert: Insert[Form]): ServiceResponse[Form] = {
     val formId = FormId(UUID.randomUUID().toString)
     val selector = Json.obj("_id" -> formId.value)
-    val formData = FormData(formTypeId, version, characterSet = "UTF-8", fields = Nil)
+    val formData = FormData(userId, formTypeId, version, characterSet = "UTF-8", fields = Nil)
     val form = Form(formId, formData)
     fromFutureOptA(
       Insert(selector, form).map(_.right.map(_ => form))
@@ -112,7 +113,19 @@ object FormService {
     fromFutureA(FindForm(selector))
   }
 
+<<<<<<< HEAD
   def get(formTypeId: FormTypeId, version: Version, formId: FormId)(implicit FindOneForm: FindOne[Form]): ServiceResponse[Form] = {
+=======
+  def getByUserId(userId: String)(implicit FindForm: Find[Form]) = {
+    val selector = Json.obj(
+      "userId" -> userId
+    )
+
+    fromFutureA(FindForm(selector))
+  }
+
+  def get(formTypeId: FormTypeId, version: String, formId: FormId)(implicit FindOneForm: FindOne[Form]): ServiceResponse[Form] = {
+>>>>>>> changed the FormData case class to handle userId's also added search by userId which returns a list of all form Id's assosiated with user.
 
     val selector = Json.obj(
       "_id" -> formId.value,
