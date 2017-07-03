@@ -40,6 +40,10 @@ object BooleanExprParser {
     | booleanExpr ~ booleanOperation ~ booleanExpr ^^ { { (loc, expr1, op, expr2) => Or(expr1, expr2) } }
   )
 
+  lazy val anyConstant: Parser[Constant] = (
+    """[ \w,]+""".r ^^ { (loc, str) => Constant(str) }
+  )
+
   lazy val comparisonOperation: Parser[Comparison] = (
     "=" ^^ { (loc, _) => Equality }
   )
