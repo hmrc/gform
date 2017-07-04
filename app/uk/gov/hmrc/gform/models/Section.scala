@@ -27,15 +27,39 @@ case class Section(
     includeIf: Option[IncludeIf],
     fields: List[FieldValue]
 ) {
-  private def atomicFields(fieldValues: List[FieldValue]): List[FieldValue] = {
+  private def atomicFields(fieldValues: List[FieldValue], data: Map[FieldId, FormField]): List[FieldValue] = {
     fieldValues.flatMap { (fieldValue) =>
       fieldValue.`type` match {
-        case Group(gfvs, _, _, _, _, _) => atomicFields(gfvs)
+        case Group(gfvs, _, repMax, _, _, _) => atomicFields(gfvs, data) ++ findIdsInRepeatingGroup(gfvs, repMax, data)
         case fv @ _ => List(fieldValue)
       }
     }
   }
-  def atomicFields: List[FieldValue] = atomicFields(fields)
+
+  def atomicFields(data: Map[FieldId, FormField]): List[FieldValue] = atomicFields(fields, data)
+
+  private def findIdsInRepeatingGroup(fields: List[FieldValue], repeatsMax: Option[Int], data: Map[FieldId, FormField]): List[FieldValue] = {
+
+    val theList = data.isEmpty match {
+      case true => List() // no data, no way of knowing if we have repeating groups
+      case false => repeatsMax match {
+        case Some(max) => (1 until max).map { i =>
+          fields.flatMap { fieldInGroup =>
+            data.keys.flatMap { key =>
+              val fieldName = s"${i}_${fieldInGroup.id.value}"
+              key.value.startsWith(fieldName) match {
+                case true => List(fieldInGroup.copy(id = FieldId(fieldName)))
+                case false => List()
+              }
+            }.toSet
+          }
+        }.toList.flatten
+        case None => List() // not a repeating group
+      }
+    }
+
+    atomicFields(theList, data)
+  }
 }
 
 object Section {

@@ -46,7 +46,7 @@ object FormValidator {
     val ffSet = formFields.filterNot(_.value.isEmpty()).map(_.id).toSet
 
     val (templateFieldsMap, requiredFields) =
-      section.atomicFields.foldLeft((Map.empty[FieldId, FieldValue], Set.empty[FieldId])) {
+      section.atomicFields(Map.empty).foldLeft((Map.empty[FieldId, FieldValue], Set.empty[FieldId])) {
         case ((acc, reqAcc), fieldValue) =>
 
           fieldValue.`type` match {

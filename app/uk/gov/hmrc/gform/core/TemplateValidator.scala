@@ -23,7 +23,7 @@ import uk.gov.hmrc.gform.services.RepeatingComponentService
 object TemplateValidator {
 
   private def getMandatoryAndOptionalFields(section: Section): (Set[FieldId], Set[FieldId]) = {
-    section.atomicFields.foldLeft((Set.empty[FieldId], Set.empty[FieldId])) {
+    section.atomicFields(Map.empty).foldLeft((Set.empty[FieldId], Set.empty[FieldId])) {
       case ((mandatoryAcc, optionalAcc), field) =>
         (field.`type`, field.mandatory) match {
           case (Address(_), _) => (mandatoryAcc ++ Address.mandatoryFields(field.id), optionalAcc ++ Address.optionalFields(field.id))
