@@ -16,39 +16,38 @@
 
 package uk.gov.hmrc.gform.repositories
 
-import play.api.Logger
 import play.api.libs.json._
 import reactivemongo.api.DB
 import reactivemongo.api.commands.WriteConcern
 import reactivemongo.bson.BSONObjectID
-import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.gform.core.Opt
-import uk.gov.hmrc.gform.exceptions.InvalidState
-import uk.gov.hmrc.gform.models.{ FormTemplate, DbOperationResult, UpdateSuccess }
+import uk.gov.hmrc.gform.models.{ DbOperationResult, FormTemplate }
 import uk.gov.hmrc.mongo.ReactiveRepository
 
-class FormTemplateRepository(implicit mongo: () => DB)
-    extends ReactiveRepository[FormTemplate, BSONObjectID]("formTemplate", mongo, implicitly[Format[FormTemplate]]) {
+import scala.concurrent.{ ExecutionContext, Future }
 
-  def update(
-    selector: JsObject,
-    update: FormTemplate
-  )(
-    implicit
-    ex: ExecutionContext
-  ): Future[Opt[DbOperationResult]] = {
-    val res = collection.update(selector = selector, update = update, writeConcern = WriteConcern.Default, upsert = true, multi = false)
-
-    checkUpdateResult(res)
-  }
-
-  def findOne(
-    selector: JsObject,
-    projection: JsObject
-  )(
-    implicit
-    ex: ExecutionContext
-  ): Future[Option[FormTemplate]] = {
-    collection.find(selector = selector, projection = projection).one[FormTemplate]
-  }
-}
+//class FormTemplateRepository(implicit mongo: () => DB)
+//    extends ReactiveRepository[FormTemplate, BSONObjectID]("formTemplate", mongo, implicitly[Format[FormTemplate]]) {
+//
+//  def update(
+//    selector: JsObject,
+//    update: FormTemplate
+//  )(
+//    implicit
+//    ex: ExecutionContext
+//  ): Future[Opt[DbOperationResult]] = {
+//    val res = collection.update(selector = selector, update = update, writeConcern = WriteConcern.Default, upsert = true, multi = false)
+//
+//    checkResult(res)
+//  }
+//
+//  def findOne(
+//    selector: JsObject,
+//    projection: JsObject
+//  )(
+//    implicit
+//    ex: ExecutionContext
+//  ): Future[Option[FormTemplate]] = {
+//    collection.find(selector = selector, projection = projection).one[FormTemplate]
+//  }
+//}

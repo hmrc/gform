@@ -24,13 +24,13 @@ import reactivemongo.bson.BSONObjectID
 
 import scala.concurrent.ExecutionContext
 import uk.gov.hmrc.gform.core.{ Opt, ServiceResponse, fromFutureOptA }
-import uk.gov.hmrc.gform.models.{ DbOperationResult, FieldId, Form, FormId }
+import uk.gov.hmrc.gform.models._
 import uk.gov.hmrc.mongo.ReactiveRepository
 
 import scala.concurrent.Future
 
-class FormRepository(implicit mongo: () => DefaultDB)
-    extends ReactiveRepository[Form, BSONObjectID]("forms", mongo, implicitly[Format[Form]]) {
+class AbstractRepo[T: Reads: Writes: OWrites](name: String)(implicit mongo: () => DefaultDB, formatT: Format[T], m: Manifest[T])
+    extends ReactiveRepository[T, BSONObjectID](name, mongo, formatT) {
 
   def findOne(
     selector: JsObject,
@@ -38,8 +38,8 @@ class FormRepository(implicit mongo: () => DefaultDB)
   )(
     implicit
     ex: ExecutionContext
-  ): Future[Option[Form]] = {
-    collection.find(selector = selector, projection = projection).one[Form]
+  ): Future[Option[T]] = {
+    collection.find(selector = selector, projection = projection).one[T]
   }
 
   def find(
@@ -48,22 +48,47 @@ class FormRepository(implicit mongo: () => DefaultDB)
   )(
     implicit
     ex: ExecutionContext
-  ): Future[List[Form]] = {
-    collection.find(selector = selector, projection = projection).cursor[Form]().collect[List]()
+  ): Future[List[T]] = {
+    collection.find(selector = selector, projection = projection).cursor[T]().collect[List]()
   }
 
   def insert(
     selector: JsObject,
-    form: Form
+    obj: T
   )(
     implicit
     ex: ExecutionContext
   ): Future[Opt[DbOperationResult]] = {
-    val res = collection.update(selector = selector, update = form, writeConcern = WriteConcern.Default, upsert = true, multi = false)
-    checkUpdateResult(res)
+    val res = collection.update(selector = selector, update = obj, writeConcern = WriteConcern.Default, upsert = true, multi = false)
+
+    checkResult(res)
+
   }
 
   def update(
+    selector: JsObject,
+    update: T
+  )(
+    implicit
+    ex: ExecutionContext
+  ): ServiceResponse[DbOperationResult] = {
+    val res = collection.update(selector = selector, update = update, writeConcern = WriteConcern.Default, upsert = true, multi = false)
+
+    fromFutureOptA(checkResult(res))
+  }
+
+  def delete(selector: JsObject)(
+    implicit
+    ex: ExecutionContext
+  ): ServiceResponse[DbOperationResult] = {
+    fromFutureOptA(checkResult(collection.remove(selector)))
+  }
+
+}
+
+class FormRepository(implicit mongo: () => DefaultDB, formatT: Format[Form]) extends AbstractRepo[Form]("forms") {
+
+  override def update(
     selector: JsObject,
     form: Form
   )(
@@ -75,7 +100,7 @@ class FormRepository(implicit mongo: () => DefaultDB)
     val updateFields = Json.obj("$push" -> Json.obj("fields" -> Json.obj("$each" -> form.formData.fields)))
 
     def runCommand(update: JsObject) = {
-      fromFutureOptA(checkUpdateResult(collection.update(selector = selector, update = update, writeConcern = WriteConcern.Default, upsert = true, multi = false)))
+      fromFutureOptA(checkResult(collection.update(selector = selector, update = update, writeConcern = WriteConcern.Default, upsert = true, multi = false)))
     }
 
     for {
@@ -84,3 +109,70 @@ class FormRepository(implicit mongo: () => DefaultDB)
     } yield r
   }
 }
+
+class SchemaRepository(implicit mongo: () => DefaultDB, formatT: Format[Schema]) extends AbstractRepo[Schema]("schema")
+class FormTemplateRepository(implicit mongo: () => DefaultDB, formatT: Format[FormTemplate]) extends AbstractRepo[FormTemplate]("formTemplate")
+
+//class FormRepository(implicit mongo: () => DefaultDB)
+//    extends ReactiveRepository[Form, BSONObjectID]("forms", mongo, implicitly[Format[Form]]) {
+//
+//  def findOne(
+//    selector: JsObject,
+//    projection: JsObject
+//  )(
+//    implicit
+//    ex: ExecutionContext
+//  ): Future[Option[Form]] = {
+//    collection.find(selector = selector, projection = projection).one[Form]
+//  }
+//
+//  def find(
+//    selector: JsObject,
+//    projection: JsObject
+//  )(
+//    implicit
+//    ex: ExecutionContext
+//  ): Future[List[Form]] = {
+//    collection.find(selector = selector, projection = projection).cursor[Form]().collect[List]()
+//  }
+//
+//  def insert(
+//    selector: JsObject,
+//    form: Form
+//  )(
+//    implicit
+//    ex: ExecutionContext
+//  ): Future[Opt[DbOperationResult]] = {
+//    val res: Future[UpdateWriteResult] = collection.update(selector = selector, update = form, writeConcern = WriteConcern.Default, upsert = true, multi = false)
+//
+//    checkResult(res)
+//  }
+//
+//  def update(
+//    selector: JsObject,
+//    form: Form
+//  )(
+//    implicit
+//    ex: ExecutionContext
+//  ): ServiceResponse[DbOperationResult] = {
+//    val formFieldIds: Seq[FieldId] = form.formData.fields.map(_.id)
+//    val dropExisting = Json.obj("$pull" -> Json.obj("fields" -> Json.obj("id" -> Json.obj("$in" -> formFieldIds))))
+//    val updateFields = Json.obj("$push" -> Json.obj("fields" -> Json.obj("$each" -> form.formData.fields)))
+//
+//    def runCommand(update: JsObject) = {
+//      fromFutureOptA(checkResult(collection.update(selector = selector, update = update, writeConcern = WriteConcern.Default, upsert = true, multi = false)))
+//    }
+//
+//    for {
+//      _ <- runCommand(dropExisting)
+//      r <- runCommand(updateFields)
+//    } yield r
+//  }
+//
+//  def delete(selector: JsObject)(
+//    implicit
+//    ex: ExecutionContext
+//  ): ServiceResponse[DbOperationResult] = {
+//    fromFutureOptA(checkResult(collection.remove(selector)))
+//  }
+//}

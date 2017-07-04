@@ -22,4 +22,4 @@ import play.api.mvc.Results.Ok
 sealed trait DbOperationResult {
   def toResult = Ok
 }
-case object UpdateSuccess extends DbOperationResult
+case object Success extends DbOperationResult

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.models
 
-import play.api.libs.json.{ Format, JsError, JsSuccess, Reads, Writes, JsObject }
+import play.api.libs.json._
 
 case class Schema(value: JsObject) extends AnyVal
 
@@ -27,5 +27,6 @@ object Schema {
     case otherwise => JsError(s"Invalid Schema, expected JsObject, got: $otherwise")
   }
 
+  implicit val oFormat = Json.format[Schema]
   implicit val format = Format[Schema](reads, writes)
 }

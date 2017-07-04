@@ -16,39 +16,38 @@
 
 package uk.gov.hmrc.gform.repositories
 
-import play.api.Logger
 import play.api.libs.json._
 import reactivemongo.api.DB
-import reactivemongo.bson.BSONObjectID
 import reactivemongo.api.commands.WriteConcern
-import scala.concurrent.{ ExecutionContext, Future }
+import reactivemongo.bson.BSONObjectID
 import uk.gov.hmrc.gform.core.Opt
-import uk.gov.hmrc.gform.exceptions.InvalidState
-import uk.gov.hmrc.gform.models.{ DbOperationResult, Schema, UpdateSuccess }
+import uk.gov.hmrc.gform.models.{ DbOperationResult, Schema }
 import uk.gov.hmrc.mongo.ReactiveRepository
 
-class SchemaRepository(implicit mongo: () => DB)
-    extends ReactiveRepository[Schema, BSONObjectID]("schemas", mongo, implicitly[Format[Schema]]) {
+import scala.concurrent.{ ExecutionContext, Future }
 
-  def update(
-    selector: JsObject,
-    update: Schema
-  )(
-    implicit
-    ex: ExecutionContext
-  ): Future[Opt[DbOperationResult]] = {
-    val res = collection.update(selector = selector, update = update.value, writeConcern = WriteConcern.Default, upsert = true, multi = false)
-
-    checkUpdateResult(res)
-  }
-
-  def findOne(
-    selector: JsObject,
-    projection: JsObject
-  )(
-    implicit
-    ex: ExecutionContext
-  ): Future[Option[Schema]] = {
-    collection.find(selector = selector, projection = projection).one[Schema]
-  }
-}
+//class SchemaRepository(implicit mongo: () => DB)
+//    extends ReactiveRepository[Schema, BSONObjectID]("schemas", mongo, implicitly[Format[Schema]]) {
+//
+//  def update(
+//    selector: JsObject,
+//    update: Schema
+//  )(
+//    implicit
+//    ex: ExecutionContext
+//  ): Future[Opt[DbOperationResult]] = {
+//    val res = collection.update(selector = selector, update = update.value, writeConcern = WriteConcern.Default, upsert = true, multi = false)
+//
+//    checkResult(res)
+//  }
+//
+//  def findOne(
+//    selector: JsObject,
+//    projection: JsObject
+//  )(
+//    implicit
+//    ex: ExecutionContext
+//  ): Future[Option[Schema]] = {
+//    collection.find(selector = selector, projection = projection).one[Schema]
+//  }
+//}

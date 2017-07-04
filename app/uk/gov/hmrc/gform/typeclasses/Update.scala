@@ -19,8 +19,7 @@ package uk.gov.hmrc.gform.typeclasses
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.models._
-
-import uk.gov.hmrc.gform.repositories.{ FormRepository, FormTemplateRepository, SaveAndRetrieveRepository, SchemaRepository }
+import uk.gov.hmrc.gform.repositories._
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -30,15 +29,15 @@ trait Update[T] {
 
 object Update {
 
-  implicit def form(implicit repo: FormRepository, ex: ExecutionContext) = new Update[Form] {
+  implicit def form(implicit repo: AbstractRepo[Form], ex: ExecutionContext) = new Update[Form] {
     def apply(selector: JsObject, template: Form): Future[Opt[DbOperationResult]] = {
       repo.update(selector, template).value
     }
   }
 
-  implicit def formTemplate(implicit repo: FormTemplateRepository, ex: ExecutionContext) = new Update[FormTemplate] {
+  implicit def formTemplate(implicit repo: AbstractRepo[FormTemplate], ex: ExecutionContext) = new Update[FormTemplate] {
     def apply(selector: JsObject, template: FormTemplate): Future[Opt[DbOperationResult]] = {
-      repo.update(selector, template)
+      repo.update(selector, template).value
     }
   }
 
@@ -49,10 +48,10 @@ object Update {
     }
   }
 
-  implicit def schema(implicit repo: SchemaRepository, ex: ExecutionContext) = new Update[Schema] {
+  implicit def schema(implicit repo: AbstractRepo[Schema], ex: ExecutionContext) = new Update[Schema] {
     def apply(selector: JsObject, template: Schema): Future[Opt[DbOperationResult]] = {
 
-      repo.update(selector, template)
+      repo.update(selector, template).value
     }
   }
 }
