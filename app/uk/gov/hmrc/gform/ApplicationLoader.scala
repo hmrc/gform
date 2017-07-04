@@ -31,7 +31,8 @@ import play.core.SourceMapper
 import play.modules.reactivemongo.ReactiveMongoComponentImpl
 import reactivemongo.api.DefaultDB
 import uk.gov.hmrc.gform.controllers._
-import uk.gov.hmrc.gform.repositories.{ FormRepository, FormTemplateRepository, SaveAndRetrieveRepository, SchemaRepository, SubmissionRepository, TestRepository }
+import uk.gov.hmrc.gform.models.{ Form, FormData, FormTemplate, Schema }
+import uk.gov.hmrc.gform.repositories._
 import uk.gov.hmrc.gform.services.FileUploadService
 import uk.gov.hmrc.gform.typeclasses.{ FusFeUrl, FusUrl, ServiceUrl }
 import uk.gov.hmrc.play.audit.filters.AuditFilter
@@ -149,9 +150,9 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
   lazy val testRepository = new TestRepository
   lazy implicit val saveAndRetrieveRespository = new SaveAndRetrieveRepository
 
-  lazy implicit val schemaRepository = new SchemaRepository
-  lazy implicit val formTemplateRepository = new FormTemplateRepository
-  lazy implicit val formRepository = new FormRepository
+  lazy implicit val schemaRepository = new SchemaRepository()(db, Schema.format)
+  lazy implicit val formTemplateRepository = new FormTemplateRepository()(db, FormTemplate.format)
+  lazy implicit val formRepository = new FormRepository()(db, Form.format(FormData.format))
   lazy implicit val submissionRepository = new SubmissionRepository
 
   lazy implicit val fusUrl = new ServiceUrl[FusUrl] {
@@ -169,6 +170,8 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
   lazy val forms = new FormController()
 
   lazy val schemas = new Schemas()
+
+  lazy val formFormat = forms
 
   // We need to create explicit AdminController and provide it into injector so Runtime DI could be able
   // to find it when endpoints in health.Routes are being called

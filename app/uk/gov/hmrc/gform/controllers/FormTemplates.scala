@@ -24,7 +24,7 @@ import play.api.mvc.Action
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.exceptions.InvalidState
-import uk.gov.hmrc.gform.repositories.{ FormTemplateRepository, SchemaRepository }
+import uk.gov.hmrc.gform.repositories.{ AbstractRepo, FormTemplateRepository, SchemaRepository }
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.play.microservice.controller.BaseController
 import uk.gov.hmrc.gform.core.SchemaValidator
@@ -64,8 +64,8 @@ object FormTemplates {
 
 class FormTemplates()(
     implicit
-    schemaRepository: SchemaRepository,
-    formTemplateRepository: FormTemplateRepository
+    schemaRepository: AbstractRepo[Schema],
+    formTemplateRepository: AbstractRepo[FormTemplate]
 ) extends BaseController {
 
   def all() = Action.async { implicit request =>

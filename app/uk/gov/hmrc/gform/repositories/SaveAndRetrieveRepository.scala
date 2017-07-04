@@ -34,7 +34,7 @@ class SaveAndRetrieveRepository(implicit mongo: () => DefaultDB)
 
   private def insertOrUpdateForm(selector: JsObject, form: SaveAndRetrieve): Future[Opt[DbOperationResult]] = {
     val update = collection.update(selector = selector, update = form.value, upsert = true, multi = false)
-    checkUpdateResult(update)
+    checkResult(update)
   }
 
   def retrieve(selector: JsObject): Future[Option[SaveAndRetrieve]] = {

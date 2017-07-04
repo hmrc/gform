@@ -17,9 +17,8 @@
 package uk.gov.hmrc.gform.typeclasses
 
 import play.api.libs.json.{ JsObject, Json }
-
 import uk.gov.hmrc.gform.models.{ Form, FormTemplate, SaveAndRetrieve, Schema }
-import uk.gov.hmrc.gform.repositories.{ FormRepository, FormTemplateRepository, SaveAndRetrieveRepository, SchemaRepository }
+import uk.gov.hmrc.gform.repositories._
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -28,13 +27,13 @@ trait FindOne[T] {
 }
 
 object FindOne {
-  implicit def schema(implicit repo: SchemaRepository, ex: ExecutionContext) = new FindOne[Schema] {
+  implicit def schema(implicit repo: AbstractRepo[Schema], ex: ExecutionContext) = new FindOne[Schema] {
     def apply(selector: JsObject): Future[Option[Schema]] = {
       repo.findOne(selector, Json.obj())
     }
   }
 
-  implicit def formTemplate(implicit repo: FormTemplateRepository, ex: ExecutionContext) = new FindOne[FormTemplate] {
+  implicit def formTemplate(implicit repo: AbstractRepo[FormTemplate], ex: ExecutionContext) = new FindOne[FormTemplate] {
     def apply(selector: JsObject): Future[Option[FormTemplate]] = {
       repo.findOne(selector, Json.obj())
     }
@@ -46,7 +45,7 @@ object FindOne {
     }
   }
 
-  implicit def form(implicit repo: FormRepository, ex: ExecutionContext) = new FindOne[Form] {
+  implicit def form(implicit repo: AbstractRepo[Form], ex: ExecutionContext) = new FindOne[Form] {
     def apply(selector: JsObject): Future[Option[Form]] = {
       repo.findOne(selector, Json.obj())
     }

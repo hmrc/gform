@@ -16,23 +16,24 @@
 
 package uk.gov.hmrc.gform
 
-import reactivemongo.api.commands.UpdateWriteResult
+import reactivemongo.api.commands.{ UpdateWriteResult, WriteResult }
+
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.InvalidState
-import uk.gov.hmrc.gform.models.{ DbOperationResult, UpdateSuccess }
+import uk.gov.hmrc.gform.models.{ DbOperationResult, Success }
 
 package object repositories {
 
-  def checkUpdateResult(future: Future[UpdateWriteResult])(
+  def checkResult(future: Future[WriteResult])(
     implicit
     ex: ExecutionContext
   ): Future[Opt[DbOperationResult]] = {
     future.map { r =>
       if (r.ok) {
-        Right(UpdateSuccess)
+        Right(Success)
       } else {
-        Left(InvalidState("Update failed."))
+        Left(InvalidState(r.message))
       }
     }.recover {
       case t: Throwable =>

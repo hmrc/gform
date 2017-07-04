@@ -17,16 +17,17 @@
 package uk.gov.hmrc.gform.typeclasses
 
 import play.api.libs.json.{ JsObject, Json }
+
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.gform.models.Form
-import uk.gov.hmrc.gform.repositories.FormRepository
+import uk.gov.hmrc.gform.repositories.{ AbstractRepo, FormRepository }
 
 trait Find[T] {
   def apply(selector: JsObject, projection: JsObject = Json.obj()): Future[List[T]]
 }
 
 object Find {
-  implicit def form(implicit repo: FormRepository, ex: ExecutionContext) = new Find[Form] {
+  implicit def form(implicit repo: AbstractRepo[Form], ex: ExecutionContext) = new Find[Form] {
     def apply(selector: JsObject, projection: JsObject): Future[List[Form]] = {
       repo.find(selector, Json.obj())
     }

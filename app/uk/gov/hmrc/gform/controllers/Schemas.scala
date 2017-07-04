@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.controllers
 
 import cats.instances.future._
+
 import scala.concurrent.ExecutionContext
 import play.api.mvc.Action
 import play.api.libs.json._
@@ -25,7 +26,7 @@ import uk.gov.hmrc.gform.models.{ DbOperationResult, Schema, SchemaId }
 import uk.gov.hmrc.gform.typeclasses.Update
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.play.microservice.controller.BaseController
-import uk.gov.hmrc.gform.repositories.SchemaRepository
+import uk.gov.hmrc.gform.repositories.{ AbstractRepo, SchemaRepository }
 
 object Schemas {
   def saveSchema(
@@ -42,7 +43,7 @@ object Schemas {
 
 class Schemas()(
     implicit
-    schemaRepository: SchemaRepository
+    schemaRepository: AbstractRepo[Schema]
 ) extends BaseController {
   def all = Action.async { implicit request =>
     schemaRepository.find().map(schemas => Ok(Json.toJson(schemas)))

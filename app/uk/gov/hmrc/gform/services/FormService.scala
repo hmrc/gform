@@ -113,19 +113,16 @@ object FormService {
     fromFutureA(FindForm(selector))
   }
 
-<<<<<<< HEAD
-  def get(formTypeId: FormTypeId, version: Version, formId: FormId)(implicit FindOneForm: FindOne[Form]): ServiceResponse[Form] = {
-=======
-  def getByUserId(userId: String)(implicit FindForm: Find[Form]) = {
+  def getByUserId(userId: String, formTypeId: FormTypeId)(implicit FindOneForm: FindOne[Form]) = {
     val selector = Json.obj(
+      "formTypeId" -> formTypeId.value,
       "userId" -> userId
     )
 
-    fromFutureA(FindForm(selector))
+    fromFutureOptionA(FindOneForm(selector))(InvalidState(s"user _id $userId not found"))
   }
 
-  def get(formTypeId: FormTypeId, version: String, formId: FormId)(implicit FindOneForm: FindOne[Form]): ServiceResponse[Form] = {
->>>>>>> changed the FormData case class to handle userId's also added search by userId which returns a list of all form Id's assosiated with user.
+  def get(formTypeId: FormTypeId, version: Version, formId: FormId)(implicit FindOneForm: FindOne[Form]): ServiceResponse[Form] = {
 
     val selector = Json.obj(
       "_id" -> formId.value,
@@ -134,5 +131,11 @@ object FormService {
     )
 
     fromFutureOptionA(FindOneForm(selector))(InvalidState(s"Form _id ${formId.value}, version: ${version.value}, formTypeId: ${formTypeId.value} not found"))
+  }
+
+  def delete(formId: FormId)(implicit deleteForm: Delete[Form]) = {
+    val formSelector = Json.obj("_id" -> formId.value)
+
+    fromFutureOptA(deleteForm(formSelector))
   }
 }
