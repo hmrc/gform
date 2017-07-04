@@ -56,11 +56,12 @@ object SubmissionService {
             case None => Left(InvalidState(s"No formField for field.id: ${fieldValue.id} found"))
           }
         }
+
       formFieldAndFieldValues.sequenceU
     }
 
     val toSectionFormField: Section => Opt[SectionFormField] = section =>
-      section.atomicFields.flatTraverse(formFieldByFieldValue).map(ff => SectionFormField(section.title, ff))
+      section.atomicFields(data).flatTraverse(formFieldByFieldValue).map(ff => SectionFormField(section.title, ff))
 
     val allSections = formTemplate.sections
     val sectionsToSubmit = allSections.filter(section => BooleanExpr.isTrue(section.includeIf.getOrElse(IncludeIf(IsTrue)).expr, data))
