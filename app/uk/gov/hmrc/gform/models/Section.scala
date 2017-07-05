@@ -40,25 +40,27 @@ case class Section(
 
   private def findIdsInRepeatingGroup(fields: List[FieldValue], repeatsMax: Option[Int], data: Map[FieldId, FormField]): List[FieldValue] = {
 
-    val theList = data.isEmpty match {
-      case true => List() // no data, no way of knowing if we have repeating groups
-      case false => repeatsMax match {
-        case Some(max) => (1 until max).map { i =>
-          fields.flatMap { fieldInGroup =>
-            data.keys.flatMap { key =>
-              val fieldName = s"${i}_${fieldInGroup.id.value}"
-              key.value.startsWith(fieldName) match {
-                case true => List(fieldInGroup.copy(id = FieldId(fieldName)))
-                case false => List()
-              }
-            }.toSet
-          }
-        }.toList.flatten
-        case None => List() // not a repeating group
-      }
+    val result = if (data.isEmpty) {
+      Nil // no data, no way of knowing if we have repeating groups
+    } else {
+      repeatsMax.map(extractRepeatingGroupFieldIds(fields, _, data)).getOrElse(Nil)
     }
 
-    atomicFields(theList, data)
+    atomicFields(result, data)
+  }
+
+  private def extractRepeatingGroupFieldIds(fields: List[FieldValue], repeatsMax: Int, data: Map[FieldId, FormField]): List[FieldValue] = {
+    (1 until repeatsMax).map { i =>
+      fields.flatMap { fieldInGroup =>
+        data.keys.flatMap { key =>
+          val fieldName = s"${i}_${fieldInGroup.id.value}"
+          key.value.startsWith(fieldName) match {
+            case true => List(fieldInGroup.copy(id = FieldId(fieldName)))
+            case false => Nil
+          }
+        }.toSet
+      }
+    }.toList.flatten
   }
 }
 

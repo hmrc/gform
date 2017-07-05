@@ -40,7 +40,6 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
     }
   }
 
-
   it should "fail to parse anything but a constant on the right size" in {
     val res = BooleanExprParser.validate("${abc=form.amountA}")
 
@@ -71,7 +70,8 @@ Errors:
 ${eeitt.businessUserx = XYZ}:1: unexpected characters; expected '=' or '\s+'
 ${eeitt.businessUserx = XYZ}                    ^
     """.trim
-      ))
+      )
+    )
   }
 
   it should "parse ${isPremisesSameAsBusinessAddress=0_0}" in {
