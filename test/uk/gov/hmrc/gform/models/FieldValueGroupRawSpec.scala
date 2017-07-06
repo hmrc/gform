@@ -26,7 +26,7 @@ class FieldValueGroupRawSpec extends Spec {
     id = FieldId("groupid"),
     `type` = Some(GroupRaw),
     label = "Group Label",
-    format = Some(TextFormat("vertical"))
+    format = Some(OrientationFormat("vertical"))
   )
 
   "A raw group" should "not parse if it has no fields specified" in {
