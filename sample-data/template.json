@@ -27,6 +27,10 @@
           "id": "alcIngredientsAndQuantities",
           "label": "Alcoholic ingredients and quantity",
           "format": "horizontal",
+          "repeatsMax": 5,
+          "repeatsMin": 2,
+          "repeatLabel": "Repeat label",
+          "repeatAddAnotherText": "repeatAddAnotherText",
           "fields": [
             {
               "id": "alcIngDescription",

@@ -29,6 +29,10 @@ class JsonParseTestGroup extends Spec {
         "id": "gid",
         "label": "glabel",
         "format" : "horizontal",
+        "repeatsMin":1,
+        "repeatsMax":5,
+        "repeatLabel":"repeatLabel",
+        "repeatAddAnotherText":"repeatAddAnotherText",
         "fields": [
           {
             "type": "choice",
@@ -56,7 +60,8 @@ class JsonParseTestGroup extends Spec {
             Choice(Radio, NonEmptyList.of("A", "B"), Vertical, List(), None), "clabel", None, None, true, true, true
           )
         ),
-        Horizontal
+        Horizontal,
+        Some(5), Some(1), Some("repeatLabel"), Some("repeatAddAnotherText")
       ),
       "glabel", None, None, true, true, true
     ))
