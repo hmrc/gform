@@ -74,7 +74,7 @@ object FormatParser {
   )
 
   lazy val anyWordExpression: Parser[FormatExpr] = (
-    anyWordFormat ^^ { (loc, anyWord) => TextFormat(anyWord) }
+    anyWordFormat ^^ { (loc, anyWord) => OrientationFormat(anyWord) }
   )
 
   lazy val offsetExpression: Parser[OffsetDate] = (

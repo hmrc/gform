@@ -257,10 +257,10 @@ case class FieldValueRaw(
   private final object IsOrientation {
     def unapply(orientation: Option[FormatExpr]): Option[ChoiceOrientation] = {
       orientation match {
-        case Some(TextFormat("vertical")) | None => Some(VerticalOrientation)
-        case Some(TextFormat("horizontal")) => Some(HorizontalOrientation)
-        case Some(TextFormat("yesno")) => Some(YesNoOrientation)
-        case Some(TextFormat("inline")) => Some(InlineOrientation)
+        case Some(OrientationFormat("vertical")) | None => Some(VerticalOrientation)
+        case Some(OrientationFormat("horizontal")) => Some(HorizontalOrientation)
+        case Some(OrientationFormat("yesno")) => Some(YesNoOrientation)
+        case Some(OrientationFormat("inline")) => Some(InlineOrientation)
         case _ => None
       }
     }
@@ -274,8 +274,8 @@ case class FieldValueRaw(
   private final object IsGroupOrientation {
     def unapply(orientation: Option[FormatExpr]): Option[GroupOrientation] = {
       orientation match {
-        case Some(TextFormat("vertical")) | None => Some(VerticalGroupOrientation)
-        case Some(TextFormat("horizontal")) => Some(HorizontalGroupOrientation)
+        case Some(OrientationFormat("vertical")) | None => Some(VerticalGroupOrientation)
+        case Some(OrientationFormat("horizontal")) => Some(HorizontalGroupOrientation)
         case _ => None
       }
     }
