@@ -14,13 +14,18 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.models
+package uk.gov.hmrc.gform
 
-import play.api.libs.json._
+import uk.gov.hmrc.gform.config.ConfigModule
+import uk.gov.hmrc.gform.fileUpload.FileUploadModule
+import uk.gov.hmrc.gform.auditing.AuditingModule
+import uk.gov.hmrc.gform.time.TimeModule
+import uk.gov.hmrc.gform.wshttp.WSHttpModule
 
-case class FormData(formTypeId: FormTypeId, version: Version, characterSet: String, fields: Seq[FormField])
-
-object FormData {
-
-  implicit val format: OFormat[FormData] = Json.format[FormData]
+class TheApplicationModule {
+  val configModule = new ConfigModule
+  val auditingModule = new AuditingModule(configModule)
+  val wSHttpModule = new WSHttpModule(auditingModule, configModule)
+  val timeModule = new TimeModule
+  val fileUploadModule = new FileUploadModule(configModule, wSHttpModule, timeModule)
 }

@@ -17,30 +17,68 @@
 package uk.gov.hmrc.gform.core.parsers
 
 import org.scalatest._
+import uk.gov.hmrc.gform.exceptions.InvalidState
+import uk.gov.hmrc.gform.models._
 
 class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues with OptionValues {
 
-  "IncludeIfParser" should "parse ${isPremisesSameAsBusinessAddress=0} | ${amountA=22}" in {
+  "BooleanExprParser" should "parse or-expressions" in {
     val res = BooleanExprParser.validate("${isPremisesSameAsBusinessAddress=0} | ${amountA=22}")
 
-    println(res)
+    res shouldBe Right(Or(Equals(FormCtx("isPremisesSameAsBusinessAddress"), Constant("0")), Equals(FormCtx("amountA"), Constant("22"))))
+
   }
 
-  "IncludeIfParser" should "parse ${isPremisesSameAsBusinessAddress=amountA} | ${amountA=22}" in {
-    val res = BooleanExprParser.validate("${isPremisesSameAsBusinessAddress=form.amountA} | ${amountA=22}")
+  it should "fail to parse anything but an equals operator" in {
+    val res = BooleanExprParser.validate("${abc>form.amountA}")
+
+    res should be('left)
+
+    res.left.value match {
+      case InvalidState(msg) => msg.contains("expected '=' or '\\s+'") shouldBe true
+      case _ => fail("expected an InvalidState")
+    }
+  }
+
+  it should "fail to parse anything but a constant on the right size" in {
+    val res = BooleanExprParser.validate("${abc=form.amountA}")
 
     println(res)
+    res should be('left)
+
+    def pointToFirstUnexpectedCharacter(parserMsg: String) = {
+      val spacesBeforeCaret = "[ ]+(?=\\^)".r.unanchored.findAllIn(parserMsg).toList.last
+      spacesBeforeCaret.size shouldBe ("${abc=form".size)
+    }
+
+    res.left.value match {
+      case InvalidState(msg) => pointToFirstUnexpectedCharacter(msg)
+      case _ => fail("expected an InvalidState")
+    }
+  }
+
+  it should "parse ${form.isPremisesSameAsBusinessAddress=amountA}" in {
+    val res = BooleanExprParser.validate("${eeitt.businessUserx = XYZ}")
+
+    res should be('left)
+
+    res.left.value should be(
+      InvalidState(
+        """
+Unable to parse expression ${eeitt.businessUserx = XYZ}.
+Errors:
+${eeitt.businessUserx = XYZ}:1: unexpected characters; expected '=' or '\s+'
+${eeitt.businessUserx = XYZ}                    ^
+    """.trim
+      )
+    )
   }
 
   it should "parse ${isPremisesSameAsBusinessAddress=0_0}" in {
-    val res = BooleanExprParser.validate("${isPremisesSameAsBusinessAddress=0_0}")
-
-    println(res)
+    BooleanExprParser.validate("${isPremisesSameAsBusinessAddress=0_0}") shouldBe Right(Equals(FormCtx("isPremisesSameAsBusinessAddress"), Constant("0_0")))
   }
 
   it should "parse True" in {
-    val res = BooleanExprParser.validate("True")
-
-    println(res)
+    BooleanExprParser.validate("True") shouldBe Right(IsTrue)
   }
 }

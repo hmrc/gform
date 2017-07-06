@@ -45,7 +45,7 @@ object SubmissionService {
           case Address(_) => Address.fields(fieldValue.id)
           case Date(_, _, _) => Date.fields(fieldValue.id)
           case FileUpload() => List(fieldValue.id)
-          case Text(_, _) | Choice(_, _, _, _, _) | Group(_, _) => List(fieldValue.id) // TODO - added Group just to compile; remove if possible
+          case Text(_, _) | Choice(_, _, _, _, _) | Group(_, _, _, _, _, _) => List(fieldValue.id) // TODO - added Group just to compile; remove if possible
           case InformationMessage(_, _) => List(fieldValue.id)
         }
 
@@ -56,11 +56,12 @@ object SubmissionService {
             case None => Left(InvalidState(s"No formField for field.id: ${fieldValue.id} found"))
           }
         }
+
       formFieldAndFieldValues.sequenceU
     }
 
     val toSectionFormField: Section => Opt[SectionFormField] = section =>
-      section.atomicFields.flatTraverse(formFieldByFieldValue).map(ff => SectionFormField(section.title, ff))
+      section.atomicFields(data).flatTraverse(formFieldByFieldValue).map(ff => SectionFormField(section.title, ff))
 
     val allSections = formTemplate.sections
     val sectionsToSubmit = allSections.filter(section => BooleanExpr.isTrue(section.includeIf.getOrElse(IncludeIf(IsTrue)).expr, data))

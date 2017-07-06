@@ -28,12 +28,12 @@ import scala.concurrent.Future
 
 object FormTemplateService {
 
-  def get(formTypeId: FormTypeId, version: String)(implicit FindOne: FindOne[FormTemplate]): ServiceResponse[FormTemplate] = {
+  def get(formTypeId: FormTypeId, version: Version)(implicit FindOne: FindOne[FormTemplate]): ServiceResponse[FormTemplate] = {
     val selector = Json.obj(
       "formTypeId" -> formTypeId.value,
-      "version" -> version
+      "version" -> version.value
     )
     val template: Future[Option[FormTemplate]] = FindOne(selector)
-    fromFutureOptionA(template)(InvalidState(s"FormTemplate for (version: $version, formTypeId: $formTypeId) not found"))
+    fromFutureOptionA(template)(InvalidState(s"FormTemplate for (version: ${version.value}, formTypeId: ${formTypeId.value}) not found"))
   }
 }

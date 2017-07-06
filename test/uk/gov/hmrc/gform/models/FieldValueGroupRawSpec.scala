@@ -26,7 +26,7 @@ class FieldValueGroupRawSpec extends Spec {
     id = FieldId("groupid"),
     `type` = Some(GroupRaw),
     label = "Group Label",
-    format = Some(TextFormat("vertical"))
+    format = Some(OrientationFormat("vertical"))
   )
 
   "A raw group" should "not parse if it has no fields specified" in {
@@ -60,8 +60,8 @@ class FieldValueGroupRawSpec extends Spec {
     val res: JsResult[FieldValue] = gfvr.copy(fields = Some(List(fvr))).toFieldValue.reads(Json.obj())
 
     res match {
-      case JsSuccess(FieldValue(_, Group(List(fv), _), _, _, _, _, _, _), _) => fv.mandatory shouldBe (false)
-      case JsSuccess(FieldValue(_, Group(list @ _, _), _, _, _, _, _, _), _) => fail(s"unexpected list ${list} in Group")
+      case JsSuccess(FieldValue(_, Group(List(fv), _, _, _, _, _), _, _, _, _, _, _), _) => fv.mandatory shouldBe (false)
+      case JsSuccess(FieldValue(_, Group(list @ _, _, _, _, _, _), _, _, _, _, _, _), _) => fail(s"unexpected list ${list} in Group")
       case JsError(s) => fail(s"expected successful parse but got ${s}")
     }
   }

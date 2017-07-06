@@ -22,10 +22,12 @@ import org.scalatest.time.{ Millis, Span }
 import play.api.http.HeaderNames.LOCATION
 import play.api.libs.json.Json
 import uk.gov.hmrc.gform._
+import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.models._
 import uk.gov.hmrc.gform.typeclasses._
 import uk.gov.hmrc.play.http.HttpResponse
 
+import scala.collection.immutable.List
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Random
 
@@ -33,9 +35,9 @@ class SubmissionServiceSpec extends Spec with TypeclassFixtures {
 
   implicit override val patienceConfig = PatienceConfig(timeout = scaled(Span(15000, Millis)), interval = scaled(Span(300, Millis)))
 
-  val form = Form(FormId("form-id"), FormData(FormTypeId("form-type-id"), "1.0.0", "UTF-8", List(FormField(FieldId("firstName"), "Joe"), FormField(FieldId("lastName"), "Doe"))))
+  val form = Form(FormId("form-id"), FormData(FormTypeId("form-type-id"), Version("1.0.0"), "UTF-8", List(FormField(FieldId("firstName"), "Joe"), FormField(FieldId("lastName"), "Doe"))))
 
-  val plainFormTemplate = FormTemplate(Some("schemaId"), FormTypeId("IPT100"), "Insurance Premium Tax Return", "version", "description", "characterSet", DmsSubmission("nino", "BT-NRU-Environmental", "FinanceOpsCorpT"), "submitSuccessUrl", "submitErrorUrl", List.empty[Section])
+  val plainFormTemplate = FormTemplate(Some("schemaId"), FormTypeId("IPT100"), "Insurance Premium Tax Return", Version("version"), "description", "characterSet", DmsSubmission("nino", "BT-NRU-Environmental", "FinanceOpsCorpT"), "submitSuccessUrl", "submitErrorUrl", List.empty[Section])
 
   val yourDetailsSection = Section(
     "Your details",
@@ -128,5 +130,103 @@ class SubmissionServiceSpec extends Spec with TypeclassFixtures {
     val res = SubmissionService.submission(FormTypeId("form-type-id"), FormId("form-id"))
 
     futureResult(res.value).right.value should be("http://localhost:8898/file-transfer/envelopes/123")
+  }
+
+  "SubmissionService.getSectionFormFields" should "find repeating group fields" in {
+    val formFields = Seq[FormField](
+      FormField(FieldId("UNO"), "UNO"),
+      FormField(FieldId("1_UNO"), "1_UNO"),
+      FormField(FieldId("2_UNO"), "2_UNO"),
+      FormField(FieldId("3_UNO"), "3_UNO"),
+      FormField(FieldId("4_UNO"), "4_UNO"),
+      FormField(FieldId("DOS"), "DOS"),
+      FormField(FieldId("1_DOS"), "1_DOS"),
+      FormField(FieldId("2_DOS"), "2_DOS"),
+      FormField(FieldId("3_DOS"), "3_DOS"),
+      FormField(FieldId("4_DOS"), "4_DOS")
+    )
+    val formData = FormData(FormTypeId("JustAFormTypeId"), Version("-11"), "UTF-16", formFields)
+    val form = Form(FormId("MIO"), formData)
+
+    val textFieldUno = FieldValue(
+      id = FieldId("UNO"),
+      `type` = Text(Constant("UNO"), false),
+      label = "Editable text label",
+      helpText = None,
+      shortName = None,
+      mandatory = true,
+      editable = true,
+      submissible = true
+    )
+
+    val textFieldDos = textFieldUno.copy(id = FieldId("DOS"), `type` = Text(Constant("DOS"), false))
+
+    val group = Group(
+      fields = List(textFieldUno, textFieldDos),
+      orientation = Horizontal,
+      repeatsMax = Some(2),
+      repeatsMin = Some(1),
+      repeatLabel = Some("repeat label"),
+      repeatAddAnotherText = Some("add group button label")
+    )
+
+    val groupFieldValue = FieldValue(
+      id = FieldId("GroupFieldValueId"),
+      `type` = group,
+      label = "group FieldValue label",
+      helpText = None,
+      shortName = None,
+      mandatory = true,
+      editable = false,
+      submissible = true
+    )
+
+    val section = Section(
+      title = "Section title",
+      shortName = None,
+      includeIf = None,
+      fields = List(groupFieldValue)
+    )
+
+    val formTemplate = FormTemplate(
+      schemaId = Some("2.0"),
+      formTypeId = FormTypeId("JustAFormTypeId"),
+      formName = "formName",
+      version = Version("-11"),
+      description = "formTemplateDescription",
+      characterSet = "UTF-16",
+      dmsSubmission = DmsSubmission("customerId", "classificationType", "businessArea"),
+      submitSuccessUrl = "http://somwehere-nice.net",
+      submitErrorUrl = "http://somwehere-nasty.net",
+      sections = List(section)
+    )
+
+    val expectedResult = List(
+      SectionFormField(
+        "Section title",
+        List(
+          (
+            FormField(FieldId("UNO"), "UNO"),
+            FieldValue(FieldId("UNO"), Text(Constant("UNO"), false), "Editable text label", None, None, true, true, true)
+          ),
+          (
+            FormField(FieldId("DOS"), "DOS"),
+            FieldValue(FieldId("DOS"), Text(Constant("DOS"), false), "Editable text label", None, None, true, true, true)
+          ),
+          (
+            FormField(FieldId("1_UNO"), "1_UNO"),
+            FieldValue(FieldId("1_UNO"), Text(Constant("UNO"), false), "Editable text label", None, None, true, true, true)
+          ),
+          (
+            FormField(FieldId("1_DOS"), "1_DOS"),
+            FieldValue(FieldId("1_DOS"), Text(Constant("DOS"), false), "Editable text label", None, None, true, true, true)
+          )
+        )
+      )
+    )
+
+    val res = SubmissionService.getSectionFormFields(form, formTemplate)
+
+    res.right.value should be(expectedResult)
   }
 }

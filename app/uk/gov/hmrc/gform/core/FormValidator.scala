@@ -23,6 +23,7 @@ import cats.syntax.traverse._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.exceptions.InvalidState
 import uk.gov.hmrc.gform.models._
+import uk.gov.hmrc.gform.services.RepeatingComponentService
 
 object FormValidator {
   def conform(json: JsValue /* , schema: JsonSchema */ ): Opt[List[FormField]] = {
@@ -45,7 +46,7 @@ object FormValidator {
     val ffSet = formFields.filterNot(_.value.isEmpty()).map(_.id).toSet
 
     val (templateFieldsMap, requiredFields) =
-      section.atomicFields.foldLeft((Map.empty[FieldId, FieldValue], Set.empty[FieldId])) {
+      section.atomicFields(Map.empty).foldLeft((Map.empty[FieldId, FieldValue], Set.empty[FieldId])) {
         case ((acc, reqAcc), fieldValue) =>
 
           fieldValue.`type` match {
@@ -61,7 +62,7 @@ object FormValidator {
 
               (accRes, reqAcc)
 
-            case Text(_, _) | Choice(_, _, _, _, _) | Group(_, _) | FileUpload() => // TODO - added Group just to compile; remove if possible
+            case Text(_, _) | Choice(_, _, _, _, _) | Group(_, _, _, _, _, _) | FileUpload() => // TODO - added Group just to compile; remove if possible
               val id = fieldValue.id
               val accRes = acc + (id -> fieldValue)
 
@@ -89,7 +90,7 @@ object FormValidator {
 
     val formFieldWithFieldValues: List[Opt[(FormField, FieldValue)]] =
       formFields.map { formField =>
-        templateFieldsMap.get(formField.id) match {
+        RepeatingComponentService.findTemplateFieldId(templateFieldsMap, formField.id) match {
           case Some(templateField) => Right((formField, templateField))
           case None => Left(InvalidState(s"Field ${formField.id} is not part of the template"))
         }

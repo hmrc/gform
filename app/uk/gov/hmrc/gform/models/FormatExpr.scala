@@ -20,11 +20,8 @@ import julienrf.json.derived
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.parsers.FormatParser
 
-/**
- * Created by dimitra on 03/04/17.
- */
 sealed trait FormatExpr
-final case class TextFormat(value: String) extends FormatExpr
+final case class OrientationFormat(value: String) extends FormatExpr
 final case class DateFormat(expressions: DateConstraintType) extends FormatExpr
 
 sealed trait DateConstraintType

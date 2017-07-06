@@ -29,9 +29,9 @@ class FormServiceSpec extends Spec with TypeclassFixtures {
 
   implicit override val patienceConfig = PatienceConfig(timeout = scaled(Span(500, Millis)), interval = scaled(Span(150, Millis)))
 
-  val form = Form(FormId("form-id"), FormData(FormTypeId("form-type-id"), "1.0.0", "UTF-8", Seq.empty[FormField]))
+  val form = Form(FormId("form-id"), FormData(FormTypeId("form-type-id"), Version("1.0.0"), "UTF-8", Seq.empty[FormField]))
 
-  val plainFormTemplate = FormTemplate(Some("schemaId"), FormTypeId(""), "formName", "version", "description", "characterSet", DmsSubmission("customerId", "classificationType", "businessArea"), "submitSuccessUrl", "submitErrorUrl", List.empty[Section])
+  val plainFormTemplate = FormTemplate(Some("schemaId"), FormTypeId(""), "formName", Version("version"), "description", "characterSet", DmsSubmission("customerId", "classificationType", "businessArea"), "submitSuccessUrl", "submitErrorUrl", List.empty[Section])
 
   val yourDetailsSection = Section(
     "Your details",
@@ -211,7 +211,7 @@ class FormServiceSpec extends Spec with TypeclassFixtures {
   }
 
   def runSaveTest(formFields: List[FormField], formTemplate: FormTemplate, operation: MongoOperation) = {
-    val formToSave = Form(FormId("form-id"), FormData(FormTypeId("form-type-id"), "1.0.0", "UTF-8", formFields))
+    val formToSave = Form(FormId("form-id"), FormData(FormTypeId("form-type-id"), Version("1.0.0"), "UTF-8", formFields))
 
     implicit val findOneFormTemplate: FindOne[FormTemplate] = FindOneTC
       .response(Some(formTemplate))
@@ -231,9 +231,9 @@ class FormServiceSpec extends Spec with TypeclassFixtures {
   }
 
   def runUpdateTest(formFields: List[FormField], formTemplate: FormTemplate, operation: MongoOperation) = {
-    val formToSave = Form(FormId("form-id"), FormData(FormTypeId("form-type-id"), "1.0.0", "UTF-8", formFields))
+    val formToSave = Form(FormId("form-id"), FormData(FormTypeId("form-type-id"), Version("1.0.0"), "UTF-8", formFields))
 
-    val formInDb = Form(FormId("form-id"), FormData(FormTypeId("form-type-id"), "1.0.0", "UTF-8", List.empty[FormField]))
+    val formInDb = Form(FormId("form-id"), FormData(FormTypeId("form-type-id"), Version("1.0.0"), "UTF-8", List.empty[FormField]))
 
     implicit val findOneFormTemplate: FindOne[FormTemplate] = FindOneTC
       .response(Some(formTemplate))

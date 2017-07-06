@@ -22,7 +22,7 @@ case class FormTemplate(
   schemaId: Option[String],
   formTypeId: FormTypeId,
   formName: String,
-  version: String,
+  version: Version,
   description: String,
   characterSet: String,
   dmsSubmission: DmsSubmission,

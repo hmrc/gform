@@ -18,11 +18,12 @@ package uk.gov.hmrc.gform.core
 
 import uk.gov.hmrc.gform.exceptions.InvalidState
 import uk.gov.hmrc.gform.models._
+import uk.gov.hmrc.gform.services.RepeatingComponentService
 
 object TemplateValidator {
 
   private def getMandatoryAndOptionalFields(section: Section): (Set[FieldId], Set[FieldId]) = {
-    section.atomicFields.foldLeft((Set.empty[FieldId], Set.empty[FieldId])) {
+    section.atomicFields(Map.empty).foldLeft((Set.empty[FieldId], Set.empty[FieldId])) {
       case ((mandatoryAcc, optionalAcc), field) =>
         (field.`type`, field.mandatory) match {
           case (Address(_), _) => (mandatoryAcc ++ Address.mandatoryFields(field.id), optionalAcc ++ Address.optionalFields(field.id))
@@ -51,7 +52,11 @@ object TemplateValidator {
 
       val missingMandatoryFields = mandatorySectionIds diff formFieldIds
 
-      val optionalFieldsFromSubmission = formFieldIds diff mandatorySectionIds
+      val optionalFieldsFromSubmission = RepeatingComponentService.discardRepeatingFields(
+        formFieldIds diff mandatorySectionIds,
+        mandatorySectionIds,
+        optionalSectionIds
+      )
 
       val fieldWhichAreNotFromFormTemplate = optionalFieldsFromSubmission diff optionalSectionIds
 

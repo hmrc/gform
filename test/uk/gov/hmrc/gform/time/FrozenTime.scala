@@ -14,13 +14,10 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.models
+package uk.gov.hmrc.gform.time
 
-import play.api.libs.json._
+import java.time.LocalDateTime
 
-case class FormData(formTypeId: FormTypeId, version: Version, characterSet: String, fields: Seq[FormField])
-
-object FormData {
-
-  implicit val format: OFormat[FormData] = Json.format[FormData]
+object FrozenTime {
+  lazy val frozenPoint: LocalDateTime = LocalDateTime.of(2017, 1, 12, 5, 45)
 }
