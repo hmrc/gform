@@ -96,7 +96,7 @@
         {
           "type": "choice",
           "id": "isPremisesAddressBusinessAddress",
-          "label": "Is the address of the premises the same as your business address?",
+          "label": "Is the address of the premises the same as your business address? (Select No will skip section \"Calculation 2/2\")",
           "format": "yesno",
           "value": "0"
         },
@@ -125,6 +125,7 @@
     },
     {
       "title": "Calculation 2/2 | eich calculationewq",
+      "includeIf": "${isPremisesAddressBusinessAddress=0}",
       "fields": [
         {
           "id": "amountB",
