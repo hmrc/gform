@@ -23,6 +23,15 @@
           "label": "Please upload your face photo"
         },
         {
+          "type":"choice",
+          "id":"declaration",
+          "label":"",
+          "choices":["I confirm that I have read and understood the declaration"],
+          "multivalue":"yes",
+          "mandatory":"yes",
+          "errorMessage":"You must confirm that you have read and understand the declaration"
+        },
+        {
           "type": "group",
           "id": "alcIngredientsAndQuantities",
           "label": "Alcoholic ingredients and quantity",
