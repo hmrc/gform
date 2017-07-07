@@ -25,7 +25,12 @@ import play.api.libs.json.OFormat
 
 import play.api.Logger
 import play.api.libs.json.Json
+<<<<<<< HEAD:app/uk/gov/hmrc/gform/controllers/FormController.scala
 import play.api.mvc.{Action, AnyContent, Request, RequestHeader}
+=======
+import play.api.mvc.{ Action, AnyContent, Request, RequestHeader }
+import uk.gov.hmrc.gform.connectors.Save4LaterConnector
+>>>>>>> changing over mongo repository to save 4 later:app/uk/gov/hmrc/gform/controllers/Forms.scala
 
 import uk.gov.hmrc.gform.models._
 
@@ -34,14 +39,21 @@ import scala.concurrent.Future
 import uk.gov.hmrc.gform.services.{FormService, MongoOperation, SaveOperation, SaveTolerantOperation, SubmissionService, UpdateOperation, UpdateTolerantOperation}
 import uk.gov.hmrc.gform.repositories.{AbstractRepo, SubmissionRepository}
 import uk.gov.hmrc.gform.services._
+<<<<<<< HEAD:app/uk/gov/hmrc/gform/controllers/FormController.scala
 import uk.gov.hmrc.gform.typeclasses.{FusFeUrl, FusUrl, ServiceUrl}
 import uk.gov.hmrc.gform.controllers.FormController._
+=======
+import uk.gov.hmrc.gform.typeclasses.{ FusFeUrl, FusUrl, ServiceUrl }
+import uk.gov.hmrc.http.cache.client.ShortLivedCache
+import uk.gov.hmrc.play.microservice.controller.BaseController
+>>>>>>> changing over mongo repository to save 4 later:app/uk/gov/hmrc/gform/controllers/Forms.scala
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
 class FormController()(
     implicit
     formRepo: AbstractRepo[Form],
+    s4l: Save4LaterConnector,
     formTemplateRepo: AbstractRepo[FormTemplate],
     submissionRepo: SubmissionRepository,
     fusUrl: ServiceUrl[FusUrl],
@@ -70,7 +82,6 @@ class FormController()(
 
   def save(tolerant: Option[Boolean]) = Action.async(parse.json[FormData]) { implicit request =>
     val _id = FormId(UUID.randomUUID().toString())
-    Logger.info("HERE")
     val operation = tolerant match {
       case Some(true) => SaveTolerantOperation
       case _ => SaveOperation
@@ -88,8 +99,8 @@ class FormController()(
     )
   }
 
-  def getByUserId(userId: String, formTypeId: FormTypeId) = Action.async { implicit request =>
-    FormService.getByUserId(userId, formTypeId).fold(
+  def getByUserId(userId: UserId, formTypeId: FormTypeId, version: String) = Action.async { implicit request =>
+    FormService.getByUserId(userId, formTypeId, version).fold(
       error => NoContent,
       response => {
         val formId = response._id
@@ -115,6 +126,14 @@ class FormController()(
     )
   }
 
+  def getCache(formTypeId: FormTypeId, version: String, userId: UserId) = Action.async { implicit request =>
+    val formKey = FormKey(userId + formTypeId.value, version)
+    FormService.get(formKey).fold(
+      error => error.toResult,
+      response => Ok(Json.toJson(response))
+    )
+  }
+
   def update(formId: FormId, tolerant: Option[Boolean]) = Action.async(parse.json[FormData]) { implicit request =>
     val operation = tolerant match {
       case Some(true) => UpdateTolerantOperation
@@ -125,6 +144,13 @@ class FormController()(
 
   def submission(formTypeId: FormTypeId, formId: FormId) = Action.async { implicit request =>
     SubmissionService.submission(formTypeId, formId).fold(
+      error => error.toResult,
+      response => Ok(response)
+    )
+  }
+
+  def submissionCache(formTypeId: FormTypeId, userId: UserId, version: String) = Action.async { implicit request =>
+    SubmissionService.submission(formTypeId, userId, version).fold(
       error => error.toResult,
       response => Ok(response)
     )

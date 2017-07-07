@@ -16,10 +16,14 @@
 
 package uk.gov.hmrc.gform.typeclasses
 
+import play.api.Logger
+import uk.gov.hmrc.gform.services._
 import play.api.libs.json._
+import uk.gov.hmrc.gform.connectors.Save4LaterConnector
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.models._
-import uk.gov.hmrc.gform.repositories.{ AbstractRepo, FormRepository, SubmissionRepository }
+import uk.gov.hmrc.gform.repositories.{ AbstractRepo, SubmissionRepository }
+import uk.gov.hmrc.play.http.HeaderCarrier
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -29,9 +33,12 @@ trait Insert[T] {
 
 object Insert {
 
-  implicit def form(implicit repo: AbstractRepo[Form], ex: ExecutionContext) = new Insert[Form] {
+  implicit def form(implicit repo: AbstractRepo[Form], cache: Save4LaterConnector, ex: ExecutionContext, hc: HeaderCarrier) = new Insert[Form] {
     def apply(selector: JsObject, template: Form): Future[Opt[DbOperationResult]] = {
-      repo.insert(selector, template)
+      if (IsEncrypt.is.value)
+        cache.put(FormKey(template.formData.userId + template.formData.formTypeId.value, template.formData.version), template)
+      else
+        repo.insert(selector, template)
     }
   }
 

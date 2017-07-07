@@ -30,6 +30,7 @@ import play.api._
 import play.core.SourceMapper
 import play.modules.reactivemongo.ReactiveMongoComponentImpl
 import reactivemongo.api.DefaultDB
+import uk.gov.hmrc.gform.connectors.Save4LaterConnector
 import uk.gov.hmrc.gform.controllers._
 import uk.gov.hmrc.gform.models.{ Form, FormData, FormTemplate, Schema }
 import uk.gov.hmrc.gform.repositories._
@@ -163,6 +164,7 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
     val url = baseUrl("file-upload-frontend")
   }
 
+  lazy implicit val s4l = new Save4LaterConnector(MicroserviceShortLivedCache)
   lazy val saveAndRetrieveController = new SaveAndRetrieveController(messagesApi)(saveAndRetrieveRespository)
 
   lazy val formTemplates = new FormTemplates()

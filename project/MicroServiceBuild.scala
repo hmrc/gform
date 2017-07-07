@@ -15,6 +15,7 @@ object MicroServiceBuild extends Build with MicroService {
   val microserviceBootstrapVersion = "5.15.0"
   val domainVersion = "4.1.0"
   val hmrcTestVersion = "2.3.0"
+  val httpCachingClientVersion = "6.1.0"
   val playConfigVersion = "4.3.0"
   val playAuthorisationVersion = "4.3.0"
   val playHealthVersion = "2.1.0"
@@ -32,6 +33,8 @@ object MicroServiceBuild extends Build with MicroService {
   val compile = Seq(
     ws,
     "uk.gov.hmrc" %% "play-reactivemongo" % playReactivemongoVersion,
+    "com.github.pureconfig" %% "pureconfig" % "0.7.2",
+    "uk.gov.hmrc" %% "http-caching-client" % httpCachingClientVersion,
     "uk.gov.hmrc" %% "microservice-bootstrap" % microserviceBootstrapVersion,
     "uk.gov.hmrc" %% "play-authorisation" % playAuthorisationVersion,
     "uk.gov.hmrc" %% "play-health" % playHealthVersion,
@@ -49,6 +52,7 @@ object MicroServiceBuild extends Build with MicroService {
     "com.chuusai" %% "shapeless" % shapelessVersion,
     "com.github.pureconfig" %% "pureconfig" % pureConfigVersion
   )
+
 
   def test(scope: String = "test,it") = Seq(
     "uk.gov.hmrc" %% "hmrctest" % hmrcTestVersion % scope,
