@@ -18,24 +18,17 @@ package uk.gov.hmrc.gform.models
 
 import play.api.libs.json._
 
-case class UserId(value: String)
+case class UserId(value: String) extends AnyVal {
+  override def toString = value
+}
 
 object UserId {
 
-  val reads = new Reads[UserId] {
-    override def reads(json: JsValue): JsResult[UserId] = {
-      json match {
-        case JsString(x) => JsSuccess(UserId(x))
-        case _ => JsError("Failed")
-      }
-    }
+  val writes = Writes[UserId](id => JsString(id.value))
+  val reads = Reads[UserId] {
+    case JsString(value) => JsSuccess(UserId(value))
+    case otherwise => JsError(s"Invalid UserId, expected JsString, got: $otherwise")
   }
 
-  val writes = new Writes[UserId] {
-    override def writes(o: UserId): JsValue = {
-      JsString(o.value)
-    }
-  }
-
-  implicit val format: Format[UserId] = Format[UserId](reads, writes)
+  implicit val format = Format[UserId](reads, writes)
 }
