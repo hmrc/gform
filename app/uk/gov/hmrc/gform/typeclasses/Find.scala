@@ -17,19 +17,31 @@
 package uk.gov.hmrc.gform.typeclasses
 
 import play.api.libs.json.{ JsObject, Json }
+import sun.security.krb5.internal.AuthContext
+import uk.gov.hmrc.gform.connectors.Save4LaterConnector
 
 import scala.concurrent.{ ExecutionContext, Future }
-import uk.gov.hmrc.gform.models.Form
+import uk.gov.hmrc.gform.models.{ Form, FormKey, UserId }
 import uk.gov.hmrc.gform.repositories.{ AbstractRepo, FormRepository }
+import uk.gov.hmrc.gform.services.IsEncrypt
+import uk.gov.hmrc.http.cache.client.ShortLivedCache
+import uk.gov.hmrc.play.http.HeaderCarrier
 
 trait Find[T] {
   def apply(selector: JsObject, projection: JsObject = Json.obj()): Future[List[T]]
 }
 
 object Find {
-  implicit def form(implicit repo: AbstractRepo[Form], ex: ExecutionContext) = new Find[Form] {
+  implicit def form(implicit repo: AbstractRepo[Form], cache: Save4LaterConnector, ex: ExecutionContext, hc: HeaderCarrier) = new Find[Form] {
     def apply(selector: JsObject, projection: JsObject): Future[List[Form]] = {
-      repo.find(selector, Json.obj())
+      if (IsEncrypt.is.value) {
+        selector.asOpt[FormKey] match {
+          case Some(x) => cache.find(x)
+          case None => Future.successful(List.empty[Form])
+        }
+      } else {
+        repo.find(selector, projection)
+      }
     }
   }
 }

@@ -19,12 +19,12 @@ package uk.gov.hmrc.gform.services
 import java.util.UUID
 
 import cats.instances.future._
-import play.api.libs.json.Json
+import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.exceptions.InvalidState
 import uk.gov.hmrc.gform.models._
-
 import uk.gov.hmrc.gform.typeclasses._
+import uk.gov.hmrc.play.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -54,12 +54,20 @@ object FormService {
     val formTypeId = formData.formTypeId
     val version = formData.version
 
-    val templateSelector = Json.obj(
-      "formTypeId" -> formTypeId.value,
-      "version" -> version.value
-    )
+    val templateSelector =
+      Json.obj(
+        "formTypeId" -> formTypeId,
+        "version" -> version
+      )
 
-    val formSelector = Json.obj("_id" -> form._id.value)
+    val formSelector = if (IsEncrypt.is.value) {
+      val key = form.formData.userId + form.formData.formTypeId.value
+      Json.obj(
+        "key" -> key,
+        "version" -> form.formData.version
+      )
+    } else
+      Json.obj("_id" -> form._id)
 
     // format: OFF
     for {
@@ -113,16 +121,24 @@ object FormService {
     fromFutureA(FindForm(selector))
   }
 
-  def getByUserId(userId: String, formTypeId: FormTypeId)(implicit FindOneForm: FindOne[Form]) = {
-    val selector = Json.obj(
-      "formTypeId" -> formTypeId.value,
-      "userId" -> userId
-    )
+  def getByUserId(userId: UserId, formTypeId: FormTypeId, version: String)(implicit FindOneForm: FindOne[Form]) = {
+    val selector = if (IsEncrypt.is.value) {
+      val key = userId.value + formTypeId.value
+      Json.obj(
+        "key" -> key,
+        "version" -> version
+      )
+    } else {
+      Json.obj(
+        "formTypeId" -> formTypeId.value,
+        "userId" -> userId
+      )
+    }
 
     fromFutureOptionA(FindOneForm(selector))(InvalidState(s"user _id $userId not found"))
   }
 
-  def get(formTypeId: FormTypeId, version: Version, formId: FormId)(implicit FindOneForm: FindOne[Form]): ServiceResponse[Form] = {
+  def get(formTypeId: FormTypeId, version: Version, formId: FormId)(implicit FindOneForm: FindOne[Form], hc: HeaderCarrier): ServiceResponse[Form] = {
 
     val selector = Json.obj(
       "_id" -> formId.value,
@@ -131,6 +147,16 @@ object FormService {
     )
 
     fromFutureOptionA(FindOneForm(selector))(InvalidState(s"Form _id ${formId.value}, version: ${version.value}, formTypeId: ${formTypeId.value} not found"))
+  }
+
+  def get(formKey: FormKey)(implicit FindOneForm: FindOne[Form], hc: HeaderCarrier): ServiceResponse[Form] = {
+
+    val selector: FormKey => JsObject = form => Json.obj(
+      "key" -> form.key,
+      "version" -> form.version
+    )
+
+    fromFutureOptionA(FindOneForm(selector(formKey)))(InvalidState(s"Form key ${formKey.key} not found"))
   }
 
   def delete(formId: FormId)(implicit deleteForm: Delete[Form]) = {

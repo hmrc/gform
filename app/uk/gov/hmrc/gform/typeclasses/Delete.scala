@@ -18,10 +18,14 @@ package uk.gov.hmrc.gform.typeclasses
 
 import play.api.libs.json.JsObject
 import reactivemongo.bson.BSONObjectID
+import uk.gov.hmrc.gform.connectors.Save4LaterConnector
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.models.{ DbOperationResult, Form, FormTemplate, Schema }
 import uk.gov.hmrc.gform.repositories.{ AbstractRepo, FormRepository, FormTemplateRepository, SchemaRepository }
+import uk.gov.hmrc.gform.services.IsEncrypt
+import uk.gov.hmrc.http.cache.client.ShortLivedCache
 import uk.gov.hmrc.mongo.ReactiveRepository
+import uk.gov.hmrc.play.http.HeaderCarrier
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -32,11 +36,13 @@ trait Delete[T] {
 
 object Delete {
 
-  implicit def form(implicit repo: AbstractRepo[Form], ex: ExecutionContext) = new Delete[Form] {
+  implicit def form(implicit repo: AbstractRepo[Form], cache: Save4LaterConnector, ex: ExecutionContext, hc: HeaderCarrier) = new Delete[Form] {
     override def apply(selector: JsObject): Future[Opt[DbOperationResult]] = {
-      repo.delete(selector).value
+      if (!IsEncrypt.is.value) cache.delete else repo.delete(selector).value
     }
   }
+
+  // Change ^^^^^ to delete the cache.
 
   //  implicit def formTemplate(implicit repo: FormTemplateRepository, ex: ExecutionContext) = new Delete[FormTemplate] {
   //    override def apply(selector: JsObject): Future[Opt[DbOperationResult]] = {

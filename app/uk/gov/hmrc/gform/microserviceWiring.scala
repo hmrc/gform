@@ -22,11 +22,15 @@ import akka.stream.scaladsl.{ FileIO, Source }
 import akka.util.ByteString
 import com.ning.http.multipart.ByteArrayPartSource
 import java.io.File
+
 import play.api.libs.json.{ Json, Writes }
 import play.api.mvc.MultipartFormData.{ DataPart, FilePart }
 import play.api.http.HttpVerbs.{ POST => POST_VERB }
+import uk.gov.hmrc.crypto.ApplicationCrypto
+
 import scala.concurrent.Future
 import uk.gov.hmrc.gform.models.FileId
+import uk.gov.hmrc.http.cache.client.{ ShortLivedCache, ShortLivedHttpCaching }
 import uk.gov.hmrc.play.audit.http.config.LoadAuditingConfig
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.auth.microservice.connectors.AuthConnector
@@ -73,4 +77,19 @@ object MicroserviceAuditConnector extends AuditConnector {
 
 object MicroserviceAuthConnector extends AuthConnector with ServicesConfig {
   override val authBaseUrl = baseUrl("auth")
+}
+
+object MicroserviceShortLivedHttpCaching extends ShortLivedHttpCaching with AppName with ServicesConfig {
+  override lazy val http = WSHttp
+  override lazy val defaultSource = appName
+  override lazy val baseUri = baseUrl("save4later")
+  override lazy val domain = getConfString(
+    "save4later.domain",
+    throw new Exception(s"Could not find config 'save4later.domain'")
+  )
+}
+
+object MicroserviceShortLivedCache extends ShortLivedCache {
+  override implicit lazy val crypto = ApplicationCrypto.JsonCrypto
+  override lazy val shortLiveCache = MicroserviceShortLivedHttpCaching
 }
