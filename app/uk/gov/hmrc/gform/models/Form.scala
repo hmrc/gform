@@ -18,7 +18,11 @@ package uk.gov.hmrc.gform.models
 
 import play.api.libs.json._
 
-case class Form(_id: FormId, formData: FormData)
+case class Form(
+  _id: FormId,
+  formData: FormData
+ //TODO envelopeId must go here
+)
 
 object Form {
   implicit def format(implicit formDataReads: OFormat[FormData]) = {
