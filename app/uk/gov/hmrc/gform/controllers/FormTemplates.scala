@@ -103,10 +103,10 @@ class FormTemplates()(
       }
   }
 
-  def delete(formTypeId: FormTypeId, version: String) = Action.async { implicit request =>
+  def delete(formTypeId: FormTypeId, version: Version) = Action.async { implicit request =>
     formTemplateRepository.remove(
-      "formTypeId" -> formTypeId,
-      "version" -> version
+      "formTypeId" -> formTypeId.value,
+      "version" -> version.value
     ).map { res =>
         res.errmsg match {
           case Some(err) => InternalServerError(Json.toJson(err))
