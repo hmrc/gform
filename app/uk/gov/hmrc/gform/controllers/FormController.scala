@@ -56,14 +56,8 @@ class FormController()(
       f <- form
     } yield NewFormResponse(f, e, t)
     response.fold(
-      error => {
-        Logger.debug("HERE////////////////////////////////////////")
-        error.toResult
-      },
-      response => {
-        Logger.debug("///////////////////////////////////////HERE" + Json.prettyPrint(Json.toJson(response)))
-        Ok(Json.toJson(response))
-      }
+      error => error.toResult,
+      response => Ok(Json.toJson(response))
     )
   }
 
@@ -117,7 +111,6 @@ class FormController()(
   }
 
   def update(formId: FormId, tolerant: Option[Boolean]) = Action.async(parse.json[FormData]) { implicit request =>
-    Logger.info("HAS SOMETHING CHANGED")
     val operation = tolerant match {
       case Some(true) => UpdateTolerantOperation
       case _ => UpdateOperation
