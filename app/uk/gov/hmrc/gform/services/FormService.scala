@@ -81,20 +81,11 @@ object FormService {
         "version" -> version
       )
 
-    val formSelector = if (IsEncrypt.is.value) {
-      val key = form.formData.userId + form.formData.formTypeId.value
-      Json.obj(
-        "key" -> key,
-        "version" -> form.formData.version
-      )
-    } else
-      Json.obj("_id" -> form._id)
-
     // format: OFF
     for {
       _            <- operation match {
         case IsSave()   => success(())
-        case IsUpdate() => fromFutureOptionA(FindOneForm(formSelector))(InvalidState(s"Form $formSelector not found")).map(_ => ())
+        case IsUpdate() => fromFutureOptionA(FindOneForm(formSelector(form._id)))(InvalidState(s"Form ${form._id} not found")).map(_ => ())
       }
       formTemplate <- fromFutureOptionA(FindOneFormTemplate(templateSelector))(InvalidState(s"FormTemplate $templateSelector not found"))
       section      <- operation match {
@@ -106,8 +97,8 @@ object FormService {
         case IsStrict()   => fromOptA(FormValidator.validate(formData.fields.toList, section))
       }
       dbResult     <- operation match {
-        case IsSave()   => fromFutureOptA(InsertForm(formSelector, form))
-        case IsUpdate() => fromFutureOptA(UpdateForm(formSelector, form))
+        case IsSave()   => fromFutureOptA(InsertForm(formSelector(form._id), form))
+        case IsUpdate() => fromFutureOptA(UpdateForm(formSelector(form._id), form))
       }
     } yield dbResult
     // format: ON
@@ -169,6 +160,8 @@ object FormService {
 
     fromFutureOptionA(FindOneForm(selector))(InvalidState(s"Form _id ${formId.value}, version: ${version.value}, formTypeId: ${formTypeId.value} not found"))
   }
+
+
 
   def get(formKey: FormKey)(implicit FindOneForm: FindOne[Form], hc: HeaderCarrier): ServiceResponse[Form] = {
 

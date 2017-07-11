@@ -24,7 +24,7 @@ class FormSpec extends Spec {
 
   val formData = FormData("TESTID", FormTypeId("my-form-type-id"), Version("0.1.5"), "UTF-8", List(FormField(FieldId("firstName"), "Josef")))
 
-  val form = Form(formId, formData)
+  val form = Form(formId, formData, EnvelopeId(""))
 
   val formFormat = implicitly[Format[Form]]
 
