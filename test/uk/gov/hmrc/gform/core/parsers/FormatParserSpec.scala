@@ -100,4 +100,38 @@ class FormatParserSpec extends Spec {
     )
   }
 
+  "number" should "be parsed successfully" in {
+    val res = FormatParser.validate("number")
+    res.right.value should be(TextFormat(Number(11, 2, None)))
+  }
+
+  "number(n,m)" should "be parsed successfully" in {
+    val res = FormatParser.validate("number(3,4)")
+    res.right.value should be(TextFormat(Number(3, 4, None)))
+  }
+
+  "number(n,m,'u')" should "be parsed successfully" in {
+    val res = FormatParser.validate("number(3,4,'u')")
+    res.right.value should be(TextFormat(Number(3, 4, Some("u"))))
+  }
+
+  "positiveNumber" should "be parsed successfully" in {
+    val res = FormatParser.validate("positiveNumber")
+    res.right.value should be(TextFormat(PositiveNumber(11, 2, None)))
+  }
+
+  "positiveNumber(n,m)" should "be parsed successfully" in {
+    val res = FormatParser.validate("positiveNumber(3,4)")
+    res.right.value should be(TextFormat(PositiveNumber(3, 4, None)))
+  }
+
+  "positiveNumber(n,m,'u')" should "be parsed successfully" in {
+    val res = FormatParser.validate("positiveNumber(3,4,'u')")
+    res.right.value should be(TextFormat(PositiveNumber(3, 4, Some("u"))))
+  }
+
+  "positiveWholeNumber" should "be parsed successfully" in {
+    val res = FormatParser.validate("positiveWholeNumber")
+    res.right.value should be(TextFormat(PositiveNumber(11, 0, None)))
+  }
 }
