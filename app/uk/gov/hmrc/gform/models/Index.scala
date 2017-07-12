@@ -16,25 +16,21 @@
 
 package uk.gov.hmrc.gform.models
 
-import play.api.libs.json._
+import play.api.libs.json.{ Json, OFormat, OWrites, Reads }
 
-case class FormId(value: String) extends AnyVal {
-  override def toString = value
-}
+case class Index(formId: FormId, envelopeId: EnvelopeId)
 
-object FormId {
+object Index {
 
-  implicit val format: OFormat[FormId] = OFormat[FormId](reads, writes)
-
-  private lazy val writes: OWrites[FormId] = OWrites[FormId](id => Json.obj("_id" -> id.value))
-  private lazy val reads: Reads[FormId] = Reads[FormId] { (jsObj: JsValue) =>
-    (jsObj \ "_id") match {
-      case JsDefined(JsString(id)) => JsSuccess(FormId(id))
-      case _ => jsObj match {
-        case JsString(x) => JsSuccess(FormId(x))
-        case _ => JsError(s"Invalid formId, expected fieldName '_id', got: $jsObj")
-      }
-    }
+  implicit def format = {
+    val mongoIdReads = FormId.format
+    val envelopeIdReads = EnvelopeId.format
+    val writes = OWrites[Index](index => mongoIdReads.writes(index.formId) ++ Json.obj("envelopeId" -> envelopeIdReads.writes(index.envelopeId)))
+    val reads = Reads[Index](json =>
+      for {
+        id <- mongoIdReads.reads(json)
+        data <- envelopeIdReads.reads(json)
+      } yield Index(id, data))
+    OFormat[Index](reads, writes)
   }
-
 }

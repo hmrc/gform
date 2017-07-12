@@ -153,7 +153,7 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
 
   lazy implicit val schemaRepository = new SchemaRepository()(db, Schema.format)
   lazy implicit val formTemplateRepository = new FormTemplateRepository()(db, FormTemplate.format)
-  lazy implicit val formRepository = new FormRepository()(db, Form.format(FormData.format))
+  lazy implicit val formRepository = new FormRepository()(db, Form.format)
   lazy implicit val submissionRepository = new SubmissionRepository
 
   lazy implicit val fusUrl = new ServiceUrl[FusUrl] {

@@ -21,12 +21,11 @@ import play.api.libs.json._
 case class Schema(value: JsObject) extends AnyVal
 
 object Schema {
-  val writes = Writes[Schema](id => id.value)
+  val writes = OWrites[Schema](id => id.value)
   val reads = Reads[Schema] {
     case o @ JsObject(_) => JsSuccess(Schema(o))
     case otherwise => JsError(s"Invalid Schema, expected JsObject, got: $otherwise")
   }
 
-  implicit val oFormat = Json.format[Schema]
-  implicit val format = Format[Schema](reads, writes)
+  implicit val format = OFormat[Schema](reads, writes)
 }

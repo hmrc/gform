@@ -21,10 +21,11 @@ import play.api.libs.json._
 case class Version(value: String)
 
 object Version {
-  val writes: Writes[Version] = Writes[Version](id => JsString(id.value))
-  val reads: Reads[Version] = Reads[Version] {
+  implicit val format: Format[Version] = Format[Version](reads, writes)
+
+  private lazy val writes = Writes[Version](x => JsString(x.value))
+  private lazy val reads: Reads[Version] = Reads[Version] {
     case JsString(value) => JsSuccess(Version(value))
     case otherwise => JsError(s"Invalid 'version' field, expected JsString, got: $otherwise")
   }
-  implicit val format: Format[Version] = Format[Version](reads, writes)
 }

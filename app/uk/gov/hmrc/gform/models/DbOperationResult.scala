@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.gform.models
 
+import play.api.libs.json.Json
 import play.api.mvc.Results.Ok
 
 // Represent successful result of DB operation
 sealed trait DbOperationResult {
-  def toResult = Ok
+  def toResult = Ok(Json.obj("success" -> "SUCCESSFUL"))
 }
 case object Success extends DbOperationResult

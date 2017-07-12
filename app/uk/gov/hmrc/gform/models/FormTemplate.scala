@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.models
 
-import play.api.libs.json.Json
+import play.api.libs.json.{ Json, OFormat }
 
 case class FormTemplate(
   schemaId: Option[String],
@@ -32,5 +32,5 @@ case class FormTemplate(
 )
 
 object FormTemplate {
-  implicit val format = Json.format[FormTemplate]
+  implicit val format: OFormat[FormTemplate] = Json.format[FormTemplate]
 }

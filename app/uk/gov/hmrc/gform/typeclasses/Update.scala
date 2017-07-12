@@ -35,7 +35,7 @@ object Update {
 
   implicit def form(implicit repo: AbstractRepo[Form], cache: Save4LaterConnector, ex: ExecutionContext, hc: HeaderCarrier) = new Update[Form] {
     def apply(selector: JsObject, template: Form): Future[Opt[DbOperationResult]] = {
-      if (IsEncrypt.is.value) cache.put(FormKey(template.formData.userId + template.formData.formTypeId.value, template.formData.version), template) else repo.update(selector, template).value
+      if (IsEncrypt.is.value) cache.put(FormKey(template.formData.userId + template.formData.formTypeId.value, template.formData.version.value), template) else repo.update(selector, template).value
     }
   }
 
