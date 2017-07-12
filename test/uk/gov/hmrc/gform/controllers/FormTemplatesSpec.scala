@@ -74,7 +74,7 @@ class FormTemplatesSpec extends Spec with TypeclassFixtures {
       .noChecks
 
     implicit val update: Update[FormTemplate] = UpdateTC
-      .response(Right(UpdateSuccess))
+      .response(Right(Success))
       .callCheck(updateCheck)
       .withChecks { (selector: JsObject, formTemplate: FormTemplate) =>
         formTemplate should be(plainFormTemplate)
@@ -86,6 +86,6 @@ class FormTemplatesSpec extends Spec with TypeclassFixtures {
 
     val res: ServiceResponse[DbOperationResult] = FormTemplates.saveTemplate(FormTypeId("abc"), Version("1.0.0"), plainFormTemplate)
 
-    futureResult(res.value).right.value should be(UpdateSuccess)
+    futureResult(res.value).right.value should be(Success)
   }
 }

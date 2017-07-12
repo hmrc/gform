@@ -16,18 +16,18 @@
 
 package uk.gov.hmrc.gform
 
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.exceptions.TestFailedException
+import org.scalactic.source.Position
 import org.scalatest.Assertion
 import org.scalatest.Assertions.succeed
-import org.scalactic.source.Position
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.exceptions.TestFailedException
 import play.api.libs.json.JsObject
+import uk.gov.hmrc.gform.core.Opt
+import uk.gov.hmrc.gform.models.DbOperationResult
+import uk.gov.hmrc.gform.typeclasses.{ FindOne, Insert, Post, Update }
+
 import scala.concurrent.{ ExecutionContext, Future, Promise }
 import scala.util.{ Failure, Success }
-import uk.gov.hmrc.gform.core.Opt
-import uk.gov.hmrc.gform.models.{ DbOperationResult, FormTemplate, UpdateSuccess }
-import uk.gov.hmrc.gform.typeclasses.{ FindOne, Insert, Post, Update }
-import uk.gov.hmrc.play.http.HttpResponse
 
 trait TypeclassCallCheck { def call(): Unit }
 trait FindOneCheck extends TypeclassCallCheck
