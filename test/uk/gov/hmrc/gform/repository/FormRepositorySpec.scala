@@ -31,7 +31,8 @@ class FormRepositorySpec extends UnitSpec with MongoSpecSupport with BeforeAndAf
 
   val testForm = Form(
     FormId("testId"),
-    FormData("12345", FormTypeId("TEST"), Version("0.2.0"), "TEST", Seq(FormField(FieldId("1"), "TEST")))
+    FormData(UserId("12345"), FormTypeId("TEST"), Version("0.2.0"), "TEST", Seq(FormField(FieldId("1"), "TEST"))),
+    EnvelopeId("")
   )
 
   "Saving forms in db" should {
@@ -48,7 +49,8 @@ class FormRepositorySpec extends UnitSpec with MongoSpecSupport with BeforeAndAf
 
       val updateForm = Form(
         FormId("testId"),
-        FormData("12345", FormTypeId("TEST"), "0.2.0", "TEST", Seq(FormField(FieldId("1"), "UPDATETEST")))
+        FormData(UserId("12345"), FormTypeId("TEST"), Version("0.2.0"), "TEST", Seq(FormField(FieldId("1"), "UPDATETEST"))),
+        EnvelopeId("")
       )
 
       repo.insert(Json.obj("_id" -> "testId"), testForm).futureValue

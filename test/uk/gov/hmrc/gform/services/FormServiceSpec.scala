@@ -29,8 +29,7 @@ class FormServiceSpec extends Spec with TypeclassFixtures {
 
   implicit override val patienceConfig = PatienceConfig(timeout = scaled(Span(500, Millis)), interval = scaled(Span(150, Millis)))
 
-
-  val form = Form(FormId("form-id"), FormData("TESTID", FormTypeId("form-type-id"), Version("1.0.0"), "UTF-8", Seq.empty[FormField]))
+  val form = Form(FormId("form-id"), FormData(UserId("TESTID"), FormTypeId("form-type-id"), Version("1.0.0"), "UTF-8", Seq.empty[FormField]), EnvelopeId(""))
 
   val plainFormTemplate = FormTemplate(Some("schemaId"), FormTypeId(""), "formName", Version("version"), "description", "characterSet", DmsSubmission("customerId", "classificationType", "businessArea"), "submitSuccessUrl", "submitErrorUrl", List.empty[Section])
 
@@ -99,7 +98,7 @@ class FormServiceSpec extends Spec with TypeclassFixtures {
 
     val res = FormService.saveOrUpdate(form, UpdateOperation)
 
-    futureResult(res.value).left.value should be(InvalidState("""Form {"_id":"form-id"} not found"""))
+    futureResult(res.value).left.value should be(InvalidState("""Form FormId(form-id) not found"""))
   }
 
   it should "return InvalidState when fields in the Form doesn't match the fields in FormTemplate" in {
@@ -131,7 +130,7 @@ class FormServiceSpec extends Spec with TypeclassFixtures {
 
     val res = runSaveTest(formFields, formTemplateWithOneSection, SaveOperation)
 
-    futureResult(res.value).right.value should be(UpdateSuccess)
+    futureResult(res.value).right.value should be(Success)
   }
 
   it should "successfuly save first section of a form with two sections" in {
@@ -143,7 +142,7 @@ class FormServiceSpec extends Spec with TypeclassFixtures {
 
     val res = runSaveTest(formFields, formTemplateWithTwoSections, SaveOperation)
 
-    futureResult(res.value).right.value should be(UpdateSuccess)
+    futureResult(res.value).right.value should be(Success)
   }
 
   it should "successfuly save second section of a form with two sections" in {
@@ -156,7 +155,7 @@ class FormServiceSpec extends Spec with TypeclassFixtures {
 
     val res = runSaveTest(formFields, formTemplateWithTwoSections, SaveOperation)
 
-    futureResult(res.value).right.value should be(UpdateSuccess)
+    futureResult(res.value).right.value should be(Success)
   }
 
   it should "return InvalidState when mandatory field is empty on Save" in {
@@ -182,7 +181,7 @@ class FormServiceSpec extends Spec with TypeclassFixtures {
 
     val res = runSaveTest(formFields, formTemplateWithTwoSections, SaveTolerantOperation)
 
-    futureResult(res.value).right.value should be(UpdateSuccess)
+    futureResult(res.value).right.value should be(Success)
   }
 
   it should "allow update incomplete form when needed" in {
@@ -195,7 +194,7 @@ class FormServiceSpec extends Spec with TypeclassFixtures {
 
     val res = runUpdateTest(formFields, formTemplateWithTwoSections, UpdateTolerantOperation)
 
-    futureResult(res.value).right.value should be(UpdateSuccess)
+    futureResult(res.value).right.value should be(Success)
   }
 
   it should "return InvalidState when mandatory field is empty on Update" in {
@@ -212,7 +211,7 @@ class FormServiceSpec extends Spec with TypeclassFixtures {
   }
 
   def runSaveTest(formFields: List[FormField], formTemplate: FormTemplate, operation: MongoOperation) = {
-    val formToSave = Form(FormId("form-id"), FormData("TESTID", FormTypeId("form-type-id"), "1.0.0", "UTF-8", formFields))
+    val formToSave = Form(FormId("form-id"), FormData(UserId("TESTID"), FormTypeId("form-type-id"), Version("1.0.0"), "UTF-8", formFields), EnvelopeId(""))
 
     implicit val findOneFormTemplate: FindOne[FormTemplate] = FindOneTC
       .response(Some(formTemplate))
@@ -220,7 +219,7 @@ class FormServiceSpec extends Spec with TypeclassFixtures {
     implicit val findOneForm: FindOne[Form] = FindOneTC.notUsed[Form]
 
     implicit val insertForm: Insert[Form] = InsertTC
-      .response(Right(UpdateSuccess))
+      .response(Right(Success))
       .withChecks { (selector: JsObject, form: Form) =>
         form should be(formToSave)
         selector should be(Json.obj("_id" -> "form-id"))
@@ -232,10 +231,9 @@ class FormServiceSpec extends Spec with TypeclassFixtures {
   }
 
   def runUpdateTest(formFields: List[FormField], formTemplate: FormTemplate, operation: MongoOperation) = {
-    val formInDb = Form(FormId("form-id"), FormData("TESTID", FormTypeId("form-type-id"), "1.0.0", "UTF-8", List.empty[FormField]))
+    val formInDb = Form(FormId("form-id"), FormData(UserId("TESTID"), FormTypeId("form-type-id"), Version("1.0.0"), "UTF-8", List.empty[FormField]), EnvelopeId(""))
 
-    val formToSave = Form(FormId("form-id"), FormData("TESTID", FormTypeId("form-type-id"), "1.0.0", "UTF-8", formFields))
-
+    val formToSave = Form(FormId("form-id"), FormData(UserId("TESTID"), FormTypeId("form-type-id"), Version("1.0.0"), "UTF-8", formFields), EnvelopeId(""))
 
     implicit val findOneFormTemplate: FindOne[FormTemplate] = FindOneTC
       .response(Some(formTemplate))
@@ -250,7 +248,7 @@ class FormServiceSpec extends Spec with TypeclassFixtures {
     implicit val insertForm: Insert[Form] = InsertTC.notUsed[Form]
 
     implicit val updateForm: Update[Form] = UpdateTC
-      .response(Right(UpdateSuccess))
+      .response(Right(Success))
       .withChecks { (selector: JsObject, form: Form) =>
         form should be(formToSave)
         selector should be(Json.obj("_id" -> "form-id"))

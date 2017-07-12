@@ -161,8 +161,6 @@ object FormService {
     fromFutureOptionA(FindOneForm(selector))(InvalidState(s"Form _id ${formId.value}, version: ${version.value}, formTypeId: ${formTypeId.value} not found"))
   }
 
-
-
   def get(formKey: FormKey)(implicit FindOneForm: FindOne[Form], hc: HeaderCarrier): ServiceResponse[Form] = {
 
     val selector: FormKey => JsObject = form => Json.obj(
