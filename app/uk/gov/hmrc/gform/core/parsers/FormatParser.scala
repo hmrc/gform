@@ -29,8 +29,9 @@ object FormatParser {
 
   lazy val expr: Parser[FormatExpr] = (
     dateFormat
-    | anyWordExpression
-  )
+      | textFormat
+      | anyWordExpression
+    )
 
   lazy val dateFormat: Parser[DateFormat] = (
     anyDateConstraint ^^ ((loc, constraints) => DateFormat(constraints))
@@ -80,4 +81,47 @@ object FormatParser {
   lazy val offsetExpression: Parser[OffsetDate] = (
     anyInteger ^^ { (loc, offset) => OffsetDate(offset) }
   )
+
+  lazy val textFormat: Parser[FormatExpr] = (
+      numberFormat
+        | positiveNumberFormat
+        | positiveWholeNumberFormat
+    )
+
+  lazy val numberFormat: Parser[TextFormat] = (
+    "number" ~ numberParameters ^^ { (loc, _, na) => TextFormat(Number(maxWholeDigits = na.maxWholeDigits, maxFractionalDigits = na.maxFractionalDigits, na.unit)) }
+      | "number" ^^ { (loc, _) => TextFormat(Number()) }
+    )
+
+  lazy val positiveNumberFormat: Parser[TextFormat] = (
+    "positiveNumber" ~ numberParameters ^^ { (loc, _, na) => TextFormat(PositiveNumber(maxWholeDigits = na.maxWholeDigits, maxFractionalDigits = na.maxFractionalDigits, na.unit)) }
+      | "positiveNumber" ^^ { (loc, _) => TextFormat(PositiveNumber()) }
+    )
+
+  lazy val positiveWholeNumberFormat: Parser[TextFormat] = (
+    "positiveWholeNumber" ^^ { (loc, _) => TextFormat(PositiveNumber(maxFractionalDigits = 0)) }
+    )
+
+  lazy val numberParameters: Parser[NumberArgs] = (
+    "(" ~ numberIntParameters ~ "," ~ quotedString ~ ")" ^^ { (loc: List[Line], _, nia: NumberIntArgs, _, unit: UnitName, _) => NumberArgs(nia.maxWholeDigits, nia.maxFractionalDigits, unit.u) }
+      | "(" ~ numberIntParameters ~ ")" ^^ { (loc: List[Line], _, nia: NumberIntArgs, _) => NumberArgs(nia.maxWholeDigits, nia.maxFractionalDigits) }
+    )
+
+
+  lazy val numberIntParameters: Parser[NumberIntArgs] = (
+    positiveInteger ~ "," ~ positiveInteger ^^ { (loc: List[Line], whole: Int, _, fractional: Int) => NumberIntArgs(whole, fractional) }
+    )
+
+
+  case class NumberIntArgs(maxWholeDigits: Int = NumberFormat.defaultWholeDigits, maxFractionalDigits: Int = NumberFormat.defaultFactionalDigits)
+
+
+  case class NumberArgs(maxWholeDigits: Int = NumberFormat.defaultWholeDigits, maxFractionalDigits: Int = NumberFormat.defaultFactionalDigits, unit: Option[String] = None)
+
+  lazy val quotedString: Parser[UnitName] = (
+    "'" ~ "[^']+".r ~ "'" ^^ { (loc, _, s, _) => UnitName(Some(s)) }
+    )
+
+  case class UnitName(u: Option[String])
+
 }

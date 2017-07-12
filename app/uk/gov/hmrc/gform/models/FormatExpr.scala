@@ -23,6 +23,7 @@ import uk.gov.hmrc.gform.core.parsers.FormatParser
 sealed trait FormatExpr
 final case class OrientationFormat(value: String) extends FormatExpr
 final case class DateFormat(expressions: DateConstraintType) extends FormatExpr
+final case class TextFormat(number: NumberFormat) extends FormatExpr
 
 sealed trait DateConstraintType
 final case object AnyDate extends DateConstraintType
@@ -61,6 +62,17 @@ case class OffsetDate(value: Int) extends AnyVal
 
 object OffsetDate {
   implicit val formatExpr: OFormat[OffsetDate] = Json.format[OffsetDate]
+}
+
+sealed trait NumberFormat
+final case class Number(maxWholeDigits: Int = NumberFormat.defaultWholeDigits, maxFractionalDigits: Int = NumberFormat.defaultFactionalDigits, unit: Option[String] = None) extends NumberFormat
+final case class PositiveNumber(maxWholeDigits: Int = NumberFormat.defaultWholeDigits, maxFractionalDigits: Int = NumberFormat.defaultFactionalDigits, unit: Option[String] = None) extends NumberFormat
+
+object NumberFormat {
+  val defaultWholeDigits = 11
+  val defaultFactionalDigits = 2
+
+  implicit val format: OFormat[NumberFormat] = derived.oformat[NumberFormat]
 }
 
 object FormatExpr {
