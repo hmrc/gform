@@ -102,7 +102,7 @@ object FormatParser {
 
   lazy val numberArgs: Parser[(Int, Int, Option[String])] = (
     // I have no idea why twoIntegers has to once correspond to a pair of Ints and the other time to two Ints
-    "(" ~ twoIntegers ~ "," ~ quotedString ~ ")" ^^ { (loci, _, wf, _, q, _) => (wf._1, wf._2, Some(q)) }
+    "(" ~ twoIntegers ~ "," ~ quotedString ~ ")" ^^ { (loc, _, wf, _, q, _) => (wf._1, wf._2, Some(q)) }
     | "(" ~ twoIntegers ~ ")" ^^ { (loc, _, w, f, _) => (w, f, None) }
   )
 
