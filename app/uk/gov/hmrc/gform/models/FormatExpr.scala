@@ -65,7 +65,9 @@ object OffsetDate {
 }
 
 sealed trait NumberFormat
+
 final case class Number(maxWholeDigits: Int = NumberFormat.defaultWholeDigits, maxFractionalDigits: Int = NumberFormat.defaultFactionalDigits, unit: Option[String] = None) extends NumberFormat
+
 final case class PositiveNumber(maxWholeDigits: Int = NumberFormat.defaultWholeDigits, maxFractionalDigits: Int = NumberFormat.defaultFactionalDigits, unit: Option[String] = None) extends NumberFormat
 
 object NumberFormat {

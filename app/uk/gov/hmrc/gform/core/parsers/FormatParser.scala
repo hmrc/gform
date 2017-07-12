@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.gform.core.parsers
 
-import cats.instances.either._
-import cats.syntax.either._
 import parseback._
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.models._
@@ -29,9 +27,9 @@ object FormatParser {
 
   lazy val expr: Parser[FormatExpr] = (
     dateFormat
-      | textFormat
-      | anyWordExpression
-    )
+    | textFormat
+    | anyWordExpression
+  )
 
   lazy val dateFormat: Parser[DateFormat] = (
     anyDateConstraint ^^ ((loc, constraints) => DateFormat(constraints))
@@ -83,38 +81,38 @@ object FormatParser {
   )
 
   lazy val textFormat: Parser[FormatExpr] = (
-      numberFormat
-        | positiveNumberFormat
-        | positiveWholeNumberFormat
-    )
+    numberFormat
+    | positiveNumberFormat
+    | positiveWholeNumberFormat
+  )
 
   lazy val numberFormat: Parser[TextFormat] = (
     "number" ~ numberArgs ^^ { (loc, _, na) => TextFormat(Number(maxWholeDigits = na.maxWholeDigits, maxFractionalDigits = na.maxFractionalDigits, na.unit)) }
-      | "number" ^^ { (loc, _) => TextFormat(Number()) }
-    )
+    | "number" ^^ { (loc, _) => TextFormat(Number()) }
+  )
 
   lazy val positiveNumberFormat: Parser[TextFormat] = (
     "positiveNumber" ~ numberArgs ^^ { (loc, _, na) => TextFormat(PositiveNumber(maxWholeDigits = na.maxWholeDigits, maxFractionalDigits = na.maxFractionalDigits, na.unit)) }
-      | "positiveNumber" ^^ { (loc, _) => TextFormat(PositiveNumber()) }
-    )
+    | "positiveNumber" ^^ { (loc, _) => TextFormat(PositiveNumber()) }
+  )
 
   lazy val positiveWholeNumberFormat: Parser[TextFormat] = (
     "positiveWholeNumber" ^^ { (loc, _) => TextFormat(PositiveNumber(maxFractionalDigits = 0)) }
-    )
+  )
 
   lazy val numberArgs: Parser[NumberArgs] = (
     "(" ~ twoIntegers ~ "," ~ quotedString ~ ")" ^^ { (loci, _, ii, _, q, _) => ii.copy(unit = Some(q)) }
-      | "(" ~ twoIntegers ~ ")" ^^ { (loc, _, ii, _) => ii }
-    )
+    | "(" ~ twoIntegers ~ ")" ^^ { (loc, _, ii, _) => ii }
+  )
 
   lazy val twoIntegers: Parser[NumberArgs] = (
     positiveInteger ~ "," ~ positiveInteger ^^ { (loc, whole, _, fractional) => NumberArgs(whole, fractional) }
-    )
+  )
 
   case class NumberArgs(maxWholeDigits: Int, maxFractionalDigits: Int, unit: Option[String] = None)
 
   lazy val quotedString: Parser[String] = (
     "'" ~ "[^']+".r ~ "'" ^^ { (loc, _, s, _) => s }
-    )
+  )
 
 }
