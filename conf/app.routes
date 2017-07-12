@@ -3,34 +3,20 @@
 POST       /retrieveForm/:rn            uk.gov.hmrc.gform.controllers.SaveAndRetrieveController.retrieveForm(rn : String)
 POST       /saveForm/:rn                uk.gov.hmrc.gform.controllers.SaveAndRetrieveController.saveForm(rn:String)
 
-<<<<<<< HEAD
 #TODO: This should be just /form/:formTypeId/:version. Refactor later
-POST       /new-form/:formTypeId/:version           uk.gov.hmrc.gform.controllers.FormController.newForm(formTypeId: FormTypeId, version: Version)
+POST       /new-form/:formTypeId/:version/:userId           uk.gov.hmrc.gform.controllers.FormController.newForm(userId: UserId, formTypeId: FormTypeId, version: Version)
 
 GET        /forms                                   uk.gov.hmrc.gform.controllers.FormController.all
-POST       /forms                                   uk.gov.hmrc.gform.controllers.FormController.save(tolerant: Option[Boolean])
 PUT        /forms/:formId                           uk.gov.hmrc.gform.controllers.FormController.update(formId: FormId, tolerant: Option[Boolean])
 GET        /forms/:formTypeId                       uk.gov.hmrc.gform.controllers.FormController.allById(formTypeId: FormTypeId)
 GET        /forms/:formTypeId/:version              uk.gov.hmrc.gform.controllers.FormController.getByIdAndVersion(formTypeId: FormTypeId, version: Version)
 GET        /forms/:formTypeId/:version/:formId      uk.gov.hmrc.gform.controllers.FormController.get(formTypeId: FormTypeId, version: Version, formId: FormId)
-DELETE     /forms/:formTypeId/:version/:formId      uk.gov.hmrc.gform.controllers.FormController.delete(formTypeId: FormTypeId, version: Version, formId: FormId)
 POST       /forms/:formTypeId/submission/:formId    uk.gov.hmrc.gform.controllers.FormController.submission(formTypeId: FormTypeId, formId: FormId)
 GET        /forms/:formTypeId/submission/:formId    uk.gov.hmrc.gform.controllers.FormController.submissionStatus(formTypeId: FormTypeId, formId: FormId)
-GET        /forms/:id                               uk.gov.hmrc.gform.controllers.Forms.getByUserId(id: String)
-=======
-GET        /forms                                   uk.gov.hmrc.gform.controllers.Forms.all
-POST       /forms                                   uk.gov.hmrc.gform.controllers.Forms.save(tolerant: Option[Boolean])
-PUT        /forms/:formId                           uk.gov.hmrc.gform.controllers.Forms.update(formId: FormId, tolerant: Option[Boolean])
-GET        /forms/:formTypeId                       uk.gov.hmrc.gform.controllers.Forms.allById(formTypeId: FormTypeId)
-DELETE     /forms/:formId/delete                     uk.gov.hmrc.gform.controllers.Forms.delete(formId: FormId)
-GET        /forms/:formTypeId/:version              uk.gov.hmrc.gform.controllers.Forms.getByIdAndVersion(formTypeId: FormTypeId, version: String)
-GET        /forms/user/:id/regime/:formTypeId/:version       uk.gov.hmrc.gform.controllers.Forms.getByUserId(id: UserId, formTypeId: FormTypeId, version: String)
-GET        /forms/:formTypeId/:version/:formId      uk.gov.hmrc.gform.controllers.Forms.get(formTypeId: FormTypeId, version: String, formId: FormId)
-GET        /forms/:formTypeId/:version/:userId/cache      uk.gov.hmrc.gform.controllers.Forms.getCache(formTypeId: FormTypeId, version: String, userId: UserId)
-POST       /forms/:formTypeId/submission/:formId    uk.gov.hmrc.gform.controllers.Forms.submission(formTypeId: FormTypeId, formId: FormId)
-POST       /forms/:formTypeId/submission/:userId/:version       uk.gov.hmrc.gform.controllers.Forms.submissionCache(formTypeId: FormTypeId, userId: UserId, version: String)
-GET        /forms/:formTypeId/submission/:formId    uk.gov.hmrc.gform.controllers.Forms.submissionStatus(formTypeId: FormTypeId, formId: FormId)
->>>>>>> changing over mongo repository to save 4 later
+DELETE     /forms/:formId/delete                    uk.gov.hmrc.gform.controllers.FormController.delete(formId: FormId)
+GET        /forms/user/:id/regime/:formTypeId/:version       uk.gov.hmrc.gform.controllers.FormController.getByUserId(id: UserId, formTypeId: FormTypeId, version: String)
+GET        /forms/:formTypeId/:version/:userId/cache      uk.gov.hmrc.gform.controllers.FormController.getCache(formTypeId: FormTypeId, version: Version, userId: UserId)
+POST       /forms/:formTypeId/submission/:userId/:version       uk.gov.hmrc.gform.controllers.FormController.submissionCache(formTypeId: FormTypeId, userId: UserId, version: String)
 
 GET        /formtemplates                       uk.gov.hmrc.gform.controllers.FormTemplates.all
 POST       /formtemplates                       uk.gov.hmrc.gform.controllers.FormTemplates.save

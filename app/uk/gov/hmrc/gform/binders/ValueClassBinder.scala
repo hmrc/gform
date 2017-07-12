@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.gform.binders
 
-import play.api.libs.json.{JsError, JsString, JsSuccess, Reads}
+import play.api.libs.json.{ JsError, JsString, JsSuccess, Reads }
 import play.api.mvc.PathBindable
-import uk.gov.hmrc.gform.models.{FormId, FormTypeId, UserId, Version}
+import uk.gov.hmrc.gform.models.{ FormId, FormTypeId, UserId, Version }
 
 object ValueClassBinder {
 

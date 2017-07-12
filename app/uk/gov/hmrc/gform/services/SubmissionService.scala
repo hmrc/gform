@@ -32,7 +32,6 @@ import uk.gov.hmrc.gform.typeclasses.{ FindOne, Insert, Now, Post, Rnd }
 import scala.concurrent.ExecutionContext.Implicits.global
 import java.time.LocalDateTime
 
-import play.api.Logger
 import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpResponse }
 
 object SubmissionService {
@@ -154,7 +153,6 @@ object SubmissionService {
     rnd: Rnd[Random]
   ): ServiceResponse[String] = {
 
-    Logger.info(s"//////////////////HERE ${userId.value}")
     val formKey = FormKey(userId.value + formTypeId.value, version)
     val templateSelector: Form => JsObject = form => Json.obj(
       "formTypeId" -> form.formData.formTypeId,
@@ -164,7 +162,7 @@ object SubmissionService {
     for {
       form              <- FormService.get(formKey)
       formTemplate      <- fromFutureOptionA  (findOneFormTemplate(templateSelector(form)))(InvalidState(s"FormTemplate $templateSelector not found"))
-      envelopeId        <- fromFutureOptA     (FileUploadService.createEnvelope(formTypeId))
+      envelopeId        <- FileUploadService.createEnvelope(formTypeId)
       sectionFormFields <- fromOptA           (getSectionFormFields(form, formTemplate))
       submissionAndPdf  =  getSubmissionAndPdf(envelopeId, form, sectionFormFields, formTemplate.formName)
       _                 <- fromFutureA        (insertSubmission(Json.obj(), submissionAndPdf.submission))

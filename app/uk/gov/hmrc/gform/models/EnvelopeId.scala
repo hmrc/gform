@@ -16,16 +16,21 @@
 
 package uk.gov.hmrc.gform.models
 
-import play.api.libs.json.{ Format, JsError, JsString, JsSuccess, Reads, Writes }
+import play.api.libs.json._
 
 case class EnvelopeId(value: String) extends AnyVal {
   override def toString = value
 }
 
 object EnvelopeId {
-  val writes = Writes[EnvelopeId](id => JsString(id.value))
+
+  val writes = Writes[EnvelopeId](x => JsString(x.value))
   val reads = Reads[EnvelopeId] {
     case JsString(value) => JsSuccess(EnvelopeId(value))
+    case JsObject(x) => x.get("envelopeId") match {
+      case Some(JsString(y)) => JsSuccess(EnvelopeId(y))
+      case _ => JsError(s"Invalid envelopeId, expected JsString, got: $x")
+    }
     case otherwise => JsError(s"Invalid envelopeId, expected JsString, got: $otherwise")
   }
 

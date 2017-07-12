@@ -18,25 +18,46 @@ package uk.gov.hmrc.gform.services
 
 import java.util.UUID
 
+import cats.data.EitherT
 import cats.instances.future._
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json.{ JsObject, Json }
 import uk.gov.hmrc.gform.core._
-import uk.gov.hmrc.gform.exceptions.InvalidState
+import uk.gov.hmrc.gform.exceptions.{ InvalidState, UnexpectedState }
 import uk.gov.hmrc.gform.models._
 import uk.gov.hmrc.gform.typeclasses._
 import uk.gov.hmrc.play.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 object FormService {
 
-  def insertEmpty(userId: String, formTypeId: FormTypeId, version: Version)(implicit Insert: Insert[Form]): ServiceResponse[Form] = {
+  def insertEmpty(userId: UserId, formTypeId: FormTypeId, version: Version, envelopeId: EnvelopeId)(implicit Insert: Insert[Form]): ServiceResponse[Form] = {
     val formId = FormId(UUID.randomUUID().toString)
     val selector = Json.obj("_id" -> formId.value)
     val formData = FormData(userId, formTypeId, version, characterSet = "UTF-8", fields = Nil)
-    val form = Form(formId, formData)
+    val form = Form(formId, formData, envelopeId)
     fromFutureOptA(
       Insert(selector, form).map(_.right.map(_ => form))
+    )
+  }
+
+  def updateFormData(formId: FormId, formData: FormData)(
+    implicit
+    FindOneForm: FindOne[Form],
+    InsertForm: Insert[Form],
+    UpdateForm: Update[Form]
+  ): ServiceResponse[DbOperationResult] = {
+    val value = if (IsEncrypt.is.value)
+      formSelector(formData)
+    else
+      formSelector(formId)
+    EitherT(
+
+      FindOneForm(value)
+        .map(_.get)
+        .map(_.copy(formData = formData))
+        .flatMap(f => UpdateForm(formSelector(formId), f))
     )
   }
 
@@ -164,4 +185,14 @@ object FormService {
 
     fromFutureOptA(deleteForm(formSelector))
   }
+
+  private def formSelector(id: FormId) = Json.obj("_id" -> id.value)
+  private def formSelector(form: FormData) = {
+    val key = form.userId + form.formTypeId.value
+    Json.obj(
+      "key" -> key,
+      "version" -> form.version.value
+    )
+  }
+
 }

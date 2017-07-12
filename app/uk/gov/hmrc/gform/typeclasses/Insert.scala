@@ -36,7 +36,7 @@ object Insert {
   implicit def form(implicit repo: AbstractRepo[Form], cache: Save4LaterConnector, ex: ExecutionContext, hc: HeaderCarrier) = new Insert[Form] {
     def apply(selector: JsObject, template: Form): Future[Opt[DbOperationResult]] = {
       if (IsEncrypt.is.value)
-        cache.put(FormKey(template.formData.userId + template.formData.formTypeId.value, template.formData.version), template)
+        cache.put(FormKey(template.formData.userId + template.formData.formTypeId.value, template.formData.version.value), template)
       else
         repo.insert(selector, template)
     }
