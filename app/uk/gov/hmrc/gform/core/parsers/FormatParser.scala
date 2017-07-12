@@ -87,12 +87,12 @@ object FormatParser {
   )
 
   lazy val numberFormat: Parser[TextFormat] = (
-    "number" ~ numberArgs ^^ { (loc, _, na) => TextFormat(Number(maxWholeDigits = na.maxWholeDigits, maxFractionalDigits = na.maxFractionalDigits, na.unit)) }
+    "number" ~ numberArgs ^^ { (loc, _, na) => TextFormat(Number(maxWholeDigits = na._1, maxFractionalDigits = na._2, unit = na._3)) }
     | "number" ^^ { (loc, _) => TextFormat(Number()) }
   )
 
   lazy val positiveNumberFormat: Parser[TextFormat] = (
-    "positiveNumber" ~ numberArgs ^^ { (loc, _, na) => TextFormat(PositiveNumber(maxWholeDigits = na.maxWholeDigits, maxFractionalDigits = na.maxFractionalDigits, na.unit)) }
+    "positiveNumber" ~ numberArgs ^^ { (loc, _, na) => TextFormat(PositiveNumber(maxWholeDigits = na._1, maxFractionalDigits = na._2, unit = na._3)) }
     | "positiveNumber" ^^ { (loc, _) => TextFormat(PositiveNumber()) }
   )
 
@@ -100,16 +100,15 @@ object FormatParser {
     "positiveWholeNumber" ^^ { (loc, _) => TextFormat(PositiveNumber(maxFractionalDigits = 0)) }
   )
 
-  lazy val numberArgs: Parser[NumberArgs] = (
-    "(" ~ twoIntegers ~ "," ~ quotedString ~ ")" ^^ { (loci, _, ii, _, q, _) => ii.copy(unit = Some(q)) }
-    | "(" ~ twoIntegers ~ ")" ^^ { (loc, _, ii, _) => ii }
+  lazy val numberArgs: Parser[(Int, Int, Option[String])] = (
+    // I have no idea why twoIntegers has to once correspond to a pair of Ints and the other time to two Ints
+    "(" ~ twoIntegers ~ "," ~ quotedString ~ ")" ^^ { (loci, _, wf, _, q, _) => (wf._1, wf._2, Some(q)) }
+    | "(" ~ twoIntegers ~ ")" ^^ { (loc, _, w, f, _) => (w, f, None) }
   )
 
-  lazy val twoIntegers: Parser[NumberArgs] = (
-    positiveInteger ~ "," ~ positiveInteger ^^ { (loc, whole, _, fractional) => NumberArgs(whole, fractional) }
+  lazy val twoIntegers: Parser[(Int, Int)] = (
+    positiveInteger ~ "," ~ positiveInteger ^^ { (loc, whole, _, fractional) => (whole, fractional) }
   )
-
-  case class NumberArgs(maxWholeDigits: Int, maxFractionalDigits: Int, unit: Option[String] = None)
 
   lazy val quotedString: Parser[String] = (
     "'" ~ "[^']+".r ~ "'" ^^ { (loc, _, s, _) => s }
