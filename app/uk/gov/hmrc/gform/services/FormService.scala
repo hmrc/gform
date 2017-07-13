@@ -171,10 +171,16 @@ object FormService {
     fromFutureOptionA(FindOneForm(selector(formKey)))(InvalidState(s"Form key ${formKey.key} not found"))
   }
 
-  def delete(formId: FormId)(implicit deleteForm: Delete[Form]) = {
-    val formSelector = Json.obj("_id" -> formId.value)
+  def delete(formTypeId: FormTypeId, version: Version, userId: UserId, formId: FormId)(implicit deleteForm: Delete[Form]) = {
+    val selector = if (IsEncrypt.is.value) {
+      val key = userId.value + formTypeId.value
+      Json.obj(
+        "key" -> key,
+        "version" -> version.value
+      )
+    } else formSelector(formId)
 
-    fromFutureOptA(deleteForm(formSelector))
+    fromFutureOptA(deleteForm(selector))
   }
 
   private def formSelector(id: FormId) = Json.obj("_id" -> id.value)

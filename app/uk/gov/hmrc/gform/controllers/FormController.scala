@@ -132,8 +132,8 @@ class FormController()(
     )
   }
 
-  def delete(formId: FormId): Action[AnyContent] = Action.async { implicit request =>
-    FormService.delete(formId).fold(
+  def delete(formTypeId: FormTypeId, version: Version, userId: UserId, formId: FormId): Action[AnyContent] = Action.async { implicit request =>
+    FormService.delete(formTypeId, version, userId, formId).fold(
       errors => {
         Logger.warn(s"${formId.value} failed to be deleted due to ${errors.toResult}")
         errors.toResult

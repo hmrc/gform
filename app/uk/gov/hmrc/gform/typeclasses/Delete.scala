@@ -38,7 +38,12 @@ object Delete {
 
   implicit def form(implicit repo: AbstractRepo[Form], cache: Save4LaterConnector, ex: ExecutionContext, hc: HeaderCarrier) = new Delete[Form] {
     override def apply(selector: JsObject): Future[Opt[DbOperationResult]] = {
-      if (!IsEncrypt.is.value) cache.delete else repo.delete(selector).value
+      if (IsEncrypt.is.value)
+        selector.asOpt[FormKey] match {
+          case None => Future.successful(Left(InvalidState("Form Key Invalid")))
+          case Some(x) => cache.delete(x)
+        }
+      else repo.delete(selector).value
     }
   }
 

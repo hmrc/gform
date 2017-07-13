@@ -68,7 +68,11 @@ class Save4LaterConnector(cache: ShortLivedCache) extends ServicesConfig {
       }
   }
 
-  def delete(implicit hc: HeaderCarrier, ex: ExecutionContext) = {
-    ??? // Not required I believe !!!
+  def delete(formKey: FormKey)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Opt[DbOperationResult]] = {
+    cache.remove(formKey.key)
+      .map(_ => Right(Success))
+      .recover {
+        case e: Throwable => Left(InvalidState("Delete Failed"))
+      }
   }
 }
