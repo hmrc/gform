@@ -105,10 +105,7 @@ object SubmissionService {
   }
 
   def submission(
-    formTypeId: FormTypeId,
-    userId: UserId,
-    formId: FormId,
-    version: Version
+    formId: FormId
   )(
     implicit
     findOneForm: FindOne[Form],
@@ -128,7 +125,7 @@ object SubmissionService {
     )
     // format: OFF
     for {
-      form              <- FormService.get(formTypeId, version, userId, formId)
+      form              <- FormService.get(formId)
       formTemplate      <- fromFutureOptionA  (findOneFormTemplate(templateSelector(form)))(InvalidState(s"FormTemplate $templateSelector not found"))
       envelopeId        = form.envelopeId
       sectionFormFields <- fromOptA           (getSectionFormFields(form, formTemplate))

@@ -10,11 +10,10 @@ GET        /forms                                   uk.gov.hmrc.gform.controller
 PUT        /forms/:formId                           uk.gov.hmrc.gform.controllers.FormController.update(formId: FormId, tolerant: Option[Boolean])
 GET        /forms/:formTypeId                       uk.gov.hmrc.gform.controllers.FormController.allById(formTypeId: FormTypeId)
 GET        /forms/:formTypeId/:version              uk.gov.hmrc.gform.controllers.FormController.getByIdAndVersion(formTypeId: FormTypeId, version: Version)
-GET        /forms/:formTypeId/:version/:formId/:userId      uk.gov.hmrc.gform.controllers.FormController.get(formTypeId: FormTypeId, version: Version, userId: UserId, formId: FormId)
+GET        /forms/:formId                           uk.gov.hmrc.gform.controllers.FormController.get(formId: FormId)
 POST       /forms/:formTypeId/submission/:formId/:version/:userId    uk.gov.hmrc.gform.controllers.FormController.submission(formTypeId: FormTypeId, version: Version, userId: UserId, formId: FormId)
 GET        /forms/:formTypeId/submission/:formId    uk.gov.hmrc.gform.controllers.FormController.submissionStatus(formTypeId: FormTypeId, formId: FormId)
-POST        /forms/:formTypeId/:version/:userId/:formId/delete                    uk.gov.hmrc.gform.controllers.FormController.delete(formTypeId: FormTypeId, version: Version, userId: UserId, formId: FormId)
-GET        /forms/user/:id/regime/:formTypeId/:version       uk.gov.hmrc.gform.controllers.FormController.getByUserId(id: UserId, formTypeId: FormTypeId, version: String)
+POST       /forms/:formId/delete                    uk.gov.hmrc.gform.controllers.FormController.delete(formId: FormId)
 
 GET        /formtemplates                       uk.gov.hmrc.gform.controllers.FormTemplates.all
 POST       /formtemplates                       uk.gov.hmrc.gform.controllers.FormTemplates.save

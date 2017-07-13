@@ -19,9 +19,9 @@ package uk.gov.hmrc.gform.typeclasses
 import play.api.Logger
 import play.api.libs.json.{ JsObject, Json }
 import uk.gov.hmrc.gform.connectors.Save4LaterConnector
+import uk.gov.hmrc.gform.exceptions.InvalidState
 import uk.gov.hmrc.gform.models._
 import uk.gov.hmrc.gform.repositories._
-import uk.gov.hmrc.gform.services.IsEncrypt
 import uk.gov.hmrc.play.http.HeaderCarrier
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -50,15 +50,8 @@ object FindOne {
   }
 
   implicit def form(implicit repo: AbstractRepo[Form], cache: Save4LaterConnector, ex: ExecutionContext, hc: HeaderCarrier) = new FindOne[Form] {
-    def apply(selector: JsObject): Future[Option[Form]] = {
-      if (IsEncrypt.is.value) {
-        selector.asOpt[FormKey] match {
-          case Some(x) =>
-            cache.findOne(x.key, x.version)
-          case None =>
-            Future.successful(None)
-        }
-      } else repo.findOne(selector, Json.obj())
-    }
+    def apply(selector: JsObject): Future[Option[Form]] =
+      selector.asOpt[FormId]
+        .fold(Future.successful(Option.empty[Form]))(cache.findOne)
   }
 }
