@@ -109,7 +109,7 @@ object FormatParser {
     "(" ~ positiveInteger ~ "," ~ positiveInteger ^^ { (loc, _, whole, _, fractional) => WholeFractional(whole, fractional) }
   )
 
-  case class WholeFractional(w:Int, f:Int)
+  case class WholeFractional(w: Int, f: Int)
 
   lazy val quotedString: Parser[String] = (
     "'" ~ "[^']+".r ~ "'" ^^ { (loc, _, s, _) => s }

@@ -32,7 +32,7 @@ import uk.gov.hmrc.gform.services.{ FormService, MongoOperation, SaveOperation, 
 import uk.gov.hmrc.gform.typeclasses.{ FusFeUrl, FusUrl, ServiceUrl }
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.play.microservice.controller.BaseController
-
+import uk.gov.hmrc.gform.typeclasses._
 import scala.concurrent.Future
 
 class FormController()(
@@ -75,16 +75,6 @@ class FormController()(
     )
   }
 
-  def getByUserId(userId: UserId, formTypeId: FormTypeId, version: String) = Action.async { implicit request =>
-    FormService.getByUserId(userId, formTypeId, version).fold(
-      error => NoContent,
-      response => {
-        val index = Index(response._id, response.envelopeId)
-        Ok(Json.toJson(index))
-      }
-    )
-  }
-
   def getByIdAndVersion(formTypeId: FormTypeId, version: Version) = Action.async { implicit request =>
     FormService.getByIdAndVersion(formTypeId, version).fold(
       error => error.toResult,
@@ -95,15 +85,15 @@ class FormController()(
     )
   }
 
-  def get(formTypeId: FormTypeId, version: Version, userId: UserId, formId: FormId) = Action.async { implicit request =>
-    FormService.get(formTypeId, version, userId, formId).fold(
+  def get(formId: FormId) = Action.async { implicit request =>
+    FormService.get(formId).fold(
       error => error.toResult,
       response => Ok(Json.toJson(response.formData))
     )
   }
 
-  def testEndPoint(formTypeId: FormTypeId, version: Version, userId: UserId, formId: FormId) = Action.async { implicit request =>
-    FormService.get(formTypeId, version, userId, formId).fold(
+  def testEndPoint(formId: FormId) = Action.async { implicit request =>
+    FormService.get(formId).fold(
       error => error.toResult,
       response => Ok(Json.toJson(response))
     )
@@ -118,14 +108,14 @@ class FormController()(
   }
 
   def submission(formTypeId: FormTypeId, version: Version, userId: UserId, formId: FormId) = Action.async { implicit request =>
-    SubmissionService.submission(formTypeId, userId, formId, version).fold(
+    SubmissionService.submission(formId).fold(
       error => error.toResult,
       response => Ok(response)
     )
   }
 
-  def delete(formTypeId: FormTypeId, version: Version, userId: UserId, formId: FormId): Action[AnyContent] = Action.async { implicit request =>
-    FormService.delete(formTypeId, version, userId, formId).fold(
+  def delete(formId: FormId): Action[AnyContent] = Action.async { implicit request =>
+    FormService.delete(formId).fold(
       errors => {
         Logger.warn(s"${formId.value} failed to be deleted due to ${errors.toResult}")
         errors.toResult
@@ -142,7 +132,7 @@ class FormController()(
 
   private def formLink(form: Form)(implicit request: RequestHeader) = {
     val Form(formId, formData, envelopeId) = form
-    routes.FormController.get(formData.formTypeId, formData.version, form.formData.userId, formId).absoluteURL()
+    routes.FormController.get(formId).absoluteURL()
   }
 }
 

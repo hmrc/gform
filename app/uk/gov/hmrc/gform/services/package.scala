@@ -23,11 +23,6 @@ package services {
   case object UpdateOperation extends MongoOperation
   case object UpdateTolerantOperation extends MongoOperation
 
-  object IsEncrypt {
-    case class Encrypt(value: Boolean)
-    lazy val is: Encrypt = pureconfig.loadConfigOrThrow[Encrypt]("feature.encrypt")
-  }
-
   object IsSave {
     def unapply(operation: MongoOperation): Boolean = operation match {
       case SaveOperation | SaveTolerantOperation => true

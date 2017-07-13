@@ -33,13 +33,11 @@ class Save4LaterConnector(cache: ShortLivedCache) extends ServicesConfig {
 
   lazy val http = WSHttp
 
-  def findOne(key: String, version: String)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Option[Form]] = {
+  def findOne(formId: FormId)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Option[Form]] =
+    cache.fetchAndGetEntry[Form](formId.value, "form")
 
-    cache.fetchAndGetEntry[Form](key, version.replace(".", "-"))
-  }
-
-  def find(formKey: FormKey)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[List[Form]] = {
-    cache.fetch(formKey.key).map {
+  def find(formId: FormId)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[List[Form]] = {
+    cache.fetch(formId.value).map {
       case Some(x) =>
         x.data.values.flatMap { json =>
           Json.fromJson[Form](json) match {
@@ -51,25 +49,25 @@ class Save4LaterConnector(cache: ShortLivedCache) extends ServicesConfig {
     }
   }
 
-  def put(formKey: FormKey, form: Form)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Opt[DbOperationResult]] = {
-    findOne(formKey.key, formKey.version).flatMap {
-      case None => save(formKey, form)
+  def put(formId: FormId, form: Form)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Opt[DbOperationResult]] = {
+    findOne(formId).flatMap {
+      case None => save(formId, form)
       case Some(x) =>
         val fields = x.formData.fields ++ form.formData.fields
         val concatenatedFormData: FormData = form.formData.copy(fields = fields)
-        save(formKey, form.copy(formData = concatenatedFormData))
+        save(formId, form.copy(formData = concatenatedFormData))
     }
   }
 
-  def save(formKey: FormKey, form: Form)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Opt[DbOperationResult]] = {
-    cache.cache[Form](formKey.key, formKey.version.replace(".", "-"), form)
+  def save(formId: FormId, form: Form)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Opt[DbOperationResult]] = {
+    cache.cache[Form](formId.value, "form", form)
       .map(_ => Right(Success)).recover {
         case t: Throwable => Left(InvalidState("put Failed"))
       }
   }
 
-  def delete(formKey: FormKey)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Opt[DbOperationResult]] = {
-    cache.remove(formKey.key)
+  def delete(formId: FormId)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Opt[DbOperationResult]] = {
+    cache.remove(formId.value)
       .map(_ => Right(Success))
       .recover {
         case e: Throwable => Left(InvalidState("Delete Failed"))
