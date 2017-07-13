@@ -101,14 +101,15 @@ object FormatParser {
   )
 
   lazy val numberArgs: Parser[(Int, Int, Option[String])] = (
-    // I have no idea why twoIntegers has to once correspond to a pair of Ints and the other time to two Ints
-    "(" ~ twoIntegers ~ "," ~ quotedString ~ ")" ^^ { (loc, _, wf, _, q, _) => (wf._1, wf._2, Some(q)) }
-    | "(" ~ twoIntegers ~ ")" ^^ { (loc, _, w, f, _) => (w, f, None) }
+    wholeFractional ~ "," ~ quotedString ~ ")" ^^ { (loc, wf, _, q, _) => (wf.w, wf.f, Some(q)) }
+    | wholeFractional ~ ")" ^^ { (loc, wf, _) => (wf.w, wf.f, None) }
   )
 
-  lazy val twoIntegers: Parser[(Int, Int)] = (
-    positiveInteger ~ "," ~ positiveInteger ^^ { (loc, whole, _, fractional) => (whole, fractional) }
+  lazy val wholeFractional: Parser[WholeFractional] = (
+    "(" ~ positiveInteger ~ "," ~ positiveInteger ^^ { (loc, _, whole, _, fractional) => WholeFractional(whole, fractional) }
   )
+
+  case class WholeFractional(w:Int, f:Int)
 
   lazy val quotedString: Parser[String] = (
     "'" ~ "[^']+".r ~ "'" ^^ { (loc, _, s, _) => s }
