@@ -1,0 +1,91 @@
+{
+  "formTypeId": "INFO",
+  "formName": "GTest for info component",
+  "version": "1.0.0",
+  "description": "Info component",
+  "characterSet": "UTF-8",
+  "dmsSubmission": {
+    "customerId": "nino",
+    "classificationType": "BT-NRU-Environmental",
+    "businessArea": "FinanceOpsCorpT"
+  },
+  "submitSuccessUrl": "http://www.google.co.uk",
+  "submitErrorUrl": "http://www.yahoo.co.uk",
+  "sections": [
+    {
+      "title": "Info components",
+      "fields": [
+        {
+          "type": "info",
+          "id": "basicInfo",
+          "label": "Basic Info Label",
+          "infoText": "Here is some dummy content to show what this infor component will look like"
+        },
+        {
+          "type": "info",
+          "id": "basicInfoMarkdown",
+          "label": "Basic Info Markdown Label",
+          "infoText": "You are now seeing markdown.\n
+\n
+# This is an H1\n
+## This is an H2\n
+### This is an H3\n
+\n
+Link:\n
+\n
+[This is a link](https://avatars1.githubusercontent.com/u/5755339?v=3&s=200)\n
+\n
+An image: ![Alt Text](/template/assets/images/gov.uk_logotype_crown.png)\n
+\n
+Now some code:\n
+```
+This is some code\n
+Second line of code\n
+Third line of code\n
+```
+\n
+Ordered list\n
+\n
+1. One\n
+2. Two\n
+3. Three\n
+\n
+Unordered list\n
+\n
+* element one\n
+* element two\n
+* element three\n
+\n
+\n
+| Table         | Col           | name  |\n
+| ------------- |:-------------:| -----:|\n
+| col 3 is      | right-aligned | $1600 |\n
+| col 2 is      | centered      |   $12 |\n
+| aa a a a a aa | bbbbbbbbb     |    $1 |\n
+\n"
+        },
+        {
+          "type": "info",
+          "id": "basicInfoLong",
+          "label": "Basic Info Label Long",
+          "infoType": "long",
+          "infoText": "Here is some dummy content to show what this infor component will look like"
+        },
+        {
+          "type": "info",
+          "id": "basicInfoImportant",
+          "label": "Basic Info Label Important",
+          "infoType": "important",
+          "infoText": "Here is some dummy content to show what this infor component will look like"
+        },
+        {
+          "type": "info",
+          "id": "basicInfoBanner",
+          "label": "Basic Info Label Banner",
+          "infoType": "banner",
+          "infoText": "Here is some dummy content to show what this infor component will look like"
+        }
+      ]
+    }
+  ]
+}

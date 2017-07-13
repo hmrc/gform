@@ -1,0 +1,77 @@
+{
+  "formTypeId": "HO10",
+  "formName": "Hydrocarbon oils",
+  "description": "",
+  "version": "1.0.0",
+  "characterSet": "UTF-8",
+  "dmsSubmission": {
+    "customerId": "nino",
+    "classificationType": "BT-NRU-Environmental",
+    "businessArea": "FinanceOpsCorpT"
+  },
+  "submitSuccessUrl": "http://www.google.co.uk",
+  "submitErrorUrl": "http://www.yahoo.co.uk",
+  "sections": [
+    {
+      "title": "Enter your business details",
+      "shortName": "Business details",
+      "fields": [
+        {
+          "id": "business-name",
+          "type": "text",
+          "label": "Business name",
+          "mandatory": "true"
+        },
+        {
+          "id": "business-address",
+          "label": "Business address",
+          "mandatory": "true",
+          "type": "address",
+          "international": "yes"
+        }
+      ]
+    },
+    {
+      "title": "What are the start and end dates for this return?",
+      "shortName": "Start and end dates for this return",
+      "fields": [
+        {
+          "id": "start-date",
+          "type": "date",
+          "label": "Start date",
+          "mandatory": "true",
+          "helpText": "Example: 10 01 2017"
+        },
+        {
+          "id": "end-date",
+          "type": "date",
+          "label": "End date",
+          "mandatory": "true",
+          "helpText": "Example: 10 01 2017"
+        }
+      ]
+    },
+    {
+      "title": "Upload Hydrocarbon oil spreadsheet",
+      "fields": [
+        {
+          "id": "upload-info",
+          "type": "info",
+          "infoText": "
+The document you upload must be:
+\n
+\n
+* less that 10 megabytes (10MB)\n
+* in PDF, JPEG or Excel format
+          "
+        },
+        {
+          "id": "upload-contents-info",
+          "type": "info",
+          "infoText": "Content goes here...",
+          "infoTextLabel": "What the document must contain"
+        }
+      ]
+    }
+  ]
+}

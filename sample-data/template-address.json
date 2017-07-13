@@ -1,0 +1,26 @@
+{
+  "formTypeId": "ADDRESS",
+  "formName": "Adddres component",
+  "version": "1.0.0",
+  "description": "Sample address configuration",
+  "characterSet": "UTF-8",
+  "dmsSubmission": {
+    "customerId": "nino",
+    "classificationType": "BT-NRU-Environmental",
+    "businessArea": "FinanceOpsCorpT"
+  },
+  "submitSuccessUrl": "http://www.google.co.uk",
+  "submitErrorUrl": "http://www.yahoo.co.uk",
+  "sections": [
+    {
+      "title": "Address",
+      "fields": [
+        {
+          "type": "address",
+          "label": "Business address and phone number",
+          "id": "cbusiness-address"
+        }
+      ]
+    }
+  ]
+}

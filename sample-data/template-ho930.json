@@ -1,8 +1,8 @@
 {
-  "formTypeId": "CE930",
-  "formName": "Gas for use as road fuel",
+  "formTypeId": "HO930",
+  "formName": "Biofuels and other fuel substitutes",
   "version": "1.0.0",
-  "description": "Fill in your gas for use as road fuel return form online",
+  "description": "Fill in your biofuels and other fuel substitutes return form online",
   "characterSet": "UTF-8",
   "dmsSubmission": {
     "customerId": "nino",
@@ -33,7 +33,7 @@
     {
       "title": "Enter your business details",
       "shortName": "Your business details",
-      "description": "This is your registered business address.",
+      "description": "This is your registered business address. We will ask you later about additional sites for this return.",
       "fields": [
         {
           "id": "business-name",

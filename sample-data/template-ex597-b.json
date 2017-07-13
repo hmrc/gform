@@ -1,0 +1,235 @@
+{
+  "formTypeId": "EX597",
+  "formName": "Air Passenger Duty",
+  "description": "",
+  "version": "1.0.0",
+  "characterSet": "UTF-8",
+  "dmsSubmission": {
+    "customerId": "nino",
+    "classificationType": "BT-NRU-Environmental",
+    "businessArea": "FinanceOpsCorpT"
+  },
+  "submitSuccessUrl": "http://www.google.co.uk",
+  "submitErrorUrl": "http://www.yahoo.co.uk",
+  "sections": [
+    {
+      "title": "Does your claim cover a production or manufacture period of three months?",
+      "fields": [
+        {
+          "id": "claim-period-choice",
+          "type": "choice",
+          "format": "yesno",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "title": "Enter the time period for this claim",
+      "shortName": "Your accounting period",
+      "fields": [
+        {
+          "id": "start-date",
+          "type": "date",
+          "label": "Start date",
+          "mandatory": "true"
+        },
+        {
+          "id": "end-date",
+          "type": "date",
+          "label": "End date",
+          "mandatory": "true"
+        }
+      ]
+    },
+    {
+      "title": "Upload ‘checklist’ documentation",
+      "description": "As this is your first claim we need you to supply a number of documents.",
+      "fields": [
+        {
+          "id": "upload-info",
+          "type": "info",
+          "infoType": "long",
+          "label": "What do I need to provide?",
+          "infoText": "Content goes here..."
+        }
+      ]
+    },
+    {
+      "title": "Which of the following best describes your claim?",
+      "shortName": "Business activity",
+      "fields": [
+        {
+          "id": "claim-type",
+          "type": "choice",
+          "label": "",
+          "choices": [
+            "I am the manufacturer of an eligible article",
+            "I have supplied duty paid alcohol used in the production of an eligible article"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Enter your business details",
+      "shortName": "Your business details",
+      "description": "This is your registered business address. We will ask you later about additional sites for this return.",
+      "fields": [
+        {
+          "id": "business-name",
+          "type": "text",
+          "label": "Business name",
+          "mandatory": "true"
+        },
+        {
+          "id": "business-address",
+          "label": "Business address",
+          "mandatory": "true",
+          "type": "address",
+          "international": "yes"
+        }
+      ]
+    },
+    {
+      "title": "Tell us where alcohol is used",
+      "shortName": "Where is alcohol used",
+      "fields": [
+        {
+          "id": "usage-name",
+          "type": "text",
+          "label": "Site name",
+          "mandatory": "true"
+        },
+        {
+          "id": "usage-address",
+          "label": "Site address",
+          "mandatory": "true",
+          "type": "address",
+          "international": "yes"
+        }
+      ]
+    },
+    {
+      "title": "Payment details",
+      "description": "Enter the details of the bank or building society account we should make payment to.",
+      "fields": [
+        {
+          "id": "payment-group",
+          "type": "group",
+          "label": "Bank details",
+          "fields": [
+            {
+              "id": "bank-name",
+              "label": "Bank or building society name",
+              "type": "text"
+            },
+            {
+              "id": "bank-account-number",
+              "label": "Account number",
+              "type": "text"
+            },
+            {
+              "id": "bank-sort-code",
+              "label": "Sort code",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "id": "account-holder-group",
+          "type": "group",
+          "repeatsMax": 5,
+          "repeatAddAnotherText": "Add another account holder",
+          "label": "Account holders",
+          "fields": [
+            {
+              "id": "acount-holder-name",
+              "type": "text",
+              "label": "Account holder"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Tell us about the products made or prepared using the alcoholic ingredients you are claiming relief for",
+      "fields": [
+        {
+          "id": "ingredients-choice",
+          "type": "choice",
+          "label": "",
+          "choices": [
+            "Enter product details on screen",
+            "Upload documents that list your products"
+          ]
+        }
+      ]
+    },
+    {
+      "includeIf": "${ingredientsChoice=0}",
+      "title": "Details of final product made",
+      "description": "You can add up to 20 products.",
+      "fields": [
+        {
+          "id": "ingredients-details-group",
+          "type": "group",
+          "repeatsMax": 20,
+          "label": "Alcoholic ingredients and quantity",
+          "format": "horizontal",
+          "fields": [
+            {
+              "id": "ingredient-desc",
+              "type": "text",
+              "label": "Product description"
+            },
+            {
+              "id": "ingredient-quantity",
+              "type": "text",
+              "label": "Quantity in kg"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "includeIf": "${ingredientsChoice=1}",
+      "title": "Upload a document that lists your products",
+      "fields": [
+        {
+          "id": "ingredients-upload-info",
+          "type": "info",
+          "label": "What the document needs to contain?",
+          "infoType": "long",
+          "infoText": "Content goes here..."
+        }
+      ]
+    },
+    {
+      "title": "Alcoholic ingredients, amount used and duty due",
+      "fields": [
+        {
+          "id": "alcohol-type-choice",
+          "label": "What alcohol ingredients have you used in your product?",
+          "choices": [
+            "Spirits",
+            "Beer",
+            "Wine/Made-wine including fortified wine",
+            "Cider and perry"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Upload claim worksheet(s)",
+      "description": "When submitting a claim, you must include a worksheet/ spreadsheet to show how you have calculated your claim amount. A worksheet must also be provided for any over or under claims.",
+      "fields": [
+        {
+          "id": "claim-worksheet-info",
+          "type": "info",
+          "label": "What the worksheet must contain?",
+          "infoType": "long",
+          "infoText": "Content goes here..."
+        }
+      ]
+    }
+  ]
+}
