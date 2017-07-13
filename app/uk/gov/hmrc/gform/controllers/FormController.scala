@@ -102,8 +102,11 @@ class FormController()(
     )
   }
 
-  def testEndPoint(formTypeId: FormTypeId, version: Version, userId: UserId, formId: FormId) = {
-    FormService.get()
+  def testEndPoint(formTypeId: FormTypeId, version: Version, userId: UserId, formId: FormId) = Action.async { implicit request =>
+    FormService.get(formTypeId, version, userId, formId).fold(
+      error => error.toResult,
+      response => Ok(Json.toJson(response))
+    )
   }
 
   def update(formId: FormId, tolerant: Option[Boolean]) = Action.async(parse.json[FormData]) { implicit request =>
