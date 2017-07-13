@@ -106,40 +106,9 @@ object SubmissionService {
 
   def submission(
     formTypeId: FormTypeId,
-    formId: FormId
-  )(
-    implicit
-    findOneForm: FindOne[Form],
-    findOneFormTemplate: FindOne[FormTemplate],
-    insertSubmission: Insert[Submission],
-    createEnvelope: Post[CreateEnvelope, HttpResponse],
-    uploadFile: Post[UploadFile, HttpResponse],
-    routeEnvelope: Post[RouteEnvelopeRequest, HttpResponse],
-    now: Now[LocalDateTime],
-    rnd: Rnd[Random]
-  ): ServiceResponse[String] = {
-
-    val templateSelector: Form => JsObject = form => Json.obj(
-      "formTypeId" -> form.formData.formTypeId,
-      "version" -> form.formData.version
-    )
-    // format: OFF
-    for {
-      form              <- FormService.getByTypeAndId(formTypeId, formId)
-      formTemplate      <- fromFutureOptionA  (findOneFormTemplate(templateSelector(form)))(InvalidState(s"FormTemplate $templateSelector not found"))
-      envelopeId        <- FileUploadService.createEnvelope(formTypeId)
-      sectionFormFields <- fromOptA           (getSectionFormFields(form, formTemplate))
-      submissionAndPdf  =  getSubmissionAndPdf(envelopeId, form, sectionFormFields, formTemplate.formName)
-      _                 <- fromFutureA        (insertSubmission(Json.obj(), submissionAndPdf.submission))
-      res               <- FileUploadService.submitEnvelope(submissionAndPdf, formTemplate.dmsSubmission)
-    } yield res
-    // format: ON
-  }
-
-  def submission(
-    formTypeId: FormTypeId,
     userId: UserId,
-    version: String
+    formId: FormId,
+    version: Version
   )(
     implicit
     findOneForm: FindOne[Form],
@@ -153,14 +122,13 @@ object SubmissionService {
     rnd: Rnd[Random]
   ): ServiceResponse[String] = {
 
-    val formKey = FormKey(userId.value + formTypeId.value, version)
     val templateSelector: Form => JsObject = form => Json.obj(
       "formTypeId" -> form.formData.formTypeId,
       "version" -> form.formData.version
     )
     // format: OFF
     for {
-      form              <- FormService.get(formKey)
+      form              <- FormService.get(formTypeId, version, userId, formId)
       formTemplate      <- fromFutureOptionA  (findOneFormTemplate(templateSelector(form)))(InvalidState(s"FormTemplate $templateSelector not found"))
       envelopeId        = form.envelopeId
       sectionFormFields <- fromOptA           (getSectionFormFields(form, formTemplate))

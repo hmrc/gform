@@ -32,6 +32,8 @@ import scala.concurrent.Future
 
 object FormService {
 
+  val isEncrypt = IsEncrypt.is.value
+
   def insertEmpty(userId: UserId, formTypeId: FormTypeId, version: Version, envelopeId: EnvelopeId)(implicit Insert: Insert[Form]): ServiceResponse[Form] = {
     val formId = FormId(UUID.randomUUID().toString)
     val selector = Json.obj("_id" -> formId.value)
@@ -48,7 +50,7 @@ object FormService {
     InsertForm: Insert[Form],
     UpdateForm: Update[Form]
   ): ServiceResponse[DbOperationResult] = {
-    val value = if (IsEncrypt.is.value)
+    val value = if (isEncrypt)
       formSelector(formData)
     else
       formSelector(formId)
@@ -134,7 +136,7 @@ object FormService {
   }
 
   def getByUserId(userId: UserId, formTypeId: FormTypeId, version: String)(implicit FindOneForm: FindOne[Form]) = {
-    val selector = if (IsEncrypt.is.value) {
+    val selector = if (isEncrypt) {
       val key = userId.value + formTypeId.value
       Json.obj(
         "key" -> key,
@@ -150,9 +152,15 @@ object FormService {
     fromFutureOptionA(FindOneForm(selector))(InvalidState(s"user _id $userId not found"))
   }
 
-  def get(formTypeId: FormTypeId, version: Version, formId: FormId)(implicit FindOneForm: FindOne[Form], hc: HeaderCarrier): ServiceResponse[Form] = {
+  def get(formTypeId: FormTypeId, version: Version, userId: UserId, formId: FormId)(implicit FindOneForm: FindOne[Form], hc: HeaderCarrier): ServiceResponse[Form] = {
 
-    val selector = Json.obj(
+    val selector = if (isEncrypt) {
+      val key = userId.value + formTypeId.value
+      Json.obj(
+        "key" -> key,
+        "version" -> version.value
+      )
+    } else Json.obj(
       "_id" -> formId.value,
       "version" -> version.value,
       "formTypeId" -> formTypeId.value
@@ -161,18 +169,8 @@ object FormService {
     fromFutureOptionA(FindOneForm(selector))(InvalidState(s"Form _id ${formId.value}, version: ${version.value}, formTypeId: ${formTypeId.value} not found"))
   }
 
-  def get(formKey: FormKey)(implicit FindOneForm: FindOne[Form], hc: HeaderCarrier): ServiceResponse[Form] = {
-
-    val selector: FormKey => JsObject = form => Json.obj(
-      "key" -> form.key,
-      "version" -> form.version
-    )
-
-    fromFutureOptionA(FindOneForm(selector(formKey)))(InvalidState(s"Form key ${formKey.key} not found"))
-  }
-
   def delete(formTypeId: FormTypeId, version: Version, userId: UserId, formId: FormId)(implicit deleteForm: Delete[Form]) = {
-    val selector = if (IsEncrypt.is.value) {
+    val selector = if (isEncrypt) {
       val key = userId.value + formTypeId.value
       Json.obj(
         "key" -> key,
@@ -183,7 +181,9 @@ object FormService {
     fromFutureOptA(deleteForm(selector))
   }
 
-  private def formSelector(id: FormId) = Json.obj("_id" -> id.value)
+  private def formSelector(id: FormId) =
+    Json.obj("_id" -> id.value)
+
   private def formSelector(form: FormData) = {
     val key = form.userId + form.formTypeId.value
     Json.obj(

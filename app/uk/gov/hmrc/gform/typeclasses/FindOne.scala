@@ -54,7 +54,6 @@ object FindOne {
       if (IsEncrypt.is.value) {
         selector.asOpt[FormKey] match {
           case Some(x) =>
-            Logger.info("HERE//////////////////////////")
             cache.findOne(x.key, x.version)
           case None =>
             Future.successful(None)
