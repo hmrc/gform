@@ -27,18 +27,6 @@ case class Form(
 
 object Form {
 
-  //  implicit def format = {
-  //    val mongoIdReads = FormIdAsMongoId.format
-  //    val writes = OWrites[Form](form => mongoIdReads.writes(form._id) ++ FormData.format.writes(form.formData) ++ EnvelopeId.format.writes(form.envelopeId))
-  //    val reads = Reads[Form](json =>
-  //      for {
-  //        id <- mongoIdReads.reads(json)
-  //        data <- FormData.format.reads(json)
-  //        envelopeId <- EnvelopeId.format.reads(json)
-  //      } yield Form(id, data, envelopeId))
-  //    OFormat[Form](reads, writes)
-  //  }
-  //
   private val reads: Reads[Form] = (
     (FormId.format: Reads[FormId]) and
     FormData.format and
