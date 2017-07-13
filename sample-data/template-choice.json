@@ -1,0 +1,123 @@
+{
+  "formTypeId": "CHOICE",
+  "formName": "Choice component",
+  "version": "1.0.0",
+  "description": "Sample choice configuration",
+  "characterSet": "UTF-8",
+  "dmsSubmission": {
+    "customerId": "nino",
+    "classificationType": "BT-NRU-Environmental",
+    "businessArea": "FinanceOpsCorpT"
+  },
+  "submitSuccessUrl": "http://www.google.co.uk",
+  "submitErrorUrl": "http://www.yahoo.co.uk",
+  "sections": [
+    {
+      "title": "Choice inline",
+      "fields": [
+        {
+          "type": "choice",
+          "label": "Choice inline",
+          "id": "choice-inline",
+          "format": "inline",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Basic choice",
+      "fields": [
+        {
+          "type": "choice",
+          "label": "Basic choice",
+          "id": "choice-basic",
+          "choices": [
+            "Choice 1",
+            "Choice 2"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Yes/no choice",
+      "fields": [
+        {
+          "type": "choice",
+          "label": "Yes/no choice",
+          "id": "choice-yesno",
+          "format": "yesno"
+        }
+      ]
+    },
+    {
+      "title": "Basic choice (horizontal)",
+      "fields": [
+        {
+          "type": "choice",
+          "label": "Basic choice horizontal",
+          "id": "choice-horizontal",
+          "format": "horizontal",
+          "choices": [
+            "Choice 1",
+            "Choice 2"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Multivalue",
+      "fields": [
+        {
+          "type": "choice",
+          "label": "Multivalue choice",
+          "id": "choice-multi",
+          "multivalue": "yes",
+          "choices": [
+            "Choice 1",
+            "Choice 2"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Choice with helptext",
+      "fields": [
+        {
+          "type": "choice",
+          "label": "Choices with helptext",
+          "id": "choice-helptext",
+          "choices": [
+            "Choice 1",
+            "Choice 2"
+          ],
+          "optionHelpText": [
+            "Some helptext for choice 1",
+            "Some helptext for choice 2"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Multiple choice with helptext",
+      "fields": [
+        {
+          "type": "choice",
+          "label": "Multiple choices with helptext",
+          "id": "choice-helptext-multi",
+          "choices": [
+            "Choice 1",
+            "Choice 2"
+          ],
+          "multivalue": "yes",
+          "optionHelpText": [
+            "Some helptext for choice 1",
+            "Some helptext for choice 2"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "formTypeId": "GROUP",
+  "formName": "Group Component Testing | Yswiriant Ffurflen Dreth Premiwm",
+  "version": "1.0.0",
+  "description": "Group component with two fields | Llenwch eich ffurflen dreth premiwm yswiriant ar-lein",
+  "characterSet": "UTF-8",
+  "dmsSubmission": {
+    "customerId": "nino",
+    "classificationType": "BT-NRU-Environmental",
+    "businessArea": "FinanceOpsCorpT"
+  },
+  "submitSuccessUrl": "http://www.google.co.uk",
+  "submitErrorUrl": "http://www.yahoo.co.uk",
+  "sections": [
+    {
+      "title": "Section Title",
+      "fields": [
+        {
+          "title": "Basic Group",
+          "type": "group",
+          "id": "basicGroup",
+          "label": "Basic Group Label",
+          "fields": [
+            {
+              "id": "basicGroupText",
+              "type": "text",
+              "label": "basic group field label"
+            }
+          ]
+        },
+        {
+          "title": "Basic Group horizontal",
+          "type": "group",
+          "format": "horizontal",
+          "id": "basicGroupH",
+          "label": "Basic Group H Label",
+          "fields": [
+            {
+              "id": "basicGroupTextH1",
+              "type": "text",
+              "label": "basic group field label"
+            },
+            {
+              "id": "basicGroupTextH§1",
+              "type": "text",
+              "label": "basic group field label"
+            }
+          ]
+        },
+        {
+          "title": "Repeating group",
+          "type": "group",
+          "id": "repeatingGroup",
+          "label": "Repeating group label",
+          "repeatsMax": 5,
+          "repeatAddAnotherText": "Add another one please",
+          "fields": [
+            {
+              "id": "repeatingGroupField",
+              "type": "text",
+              "label": "repeated field label"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
