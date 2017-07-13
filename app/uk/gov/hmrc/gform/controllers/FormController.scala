@@ -95,19 +95,15 @@ class FormController()(
     )
   }
 
-  def get(formTypeId: FormTypeId, version: Version, formId: FormId) = Action.async { implicit request =>
-    FormService.get(formTypeId, version, formId).fold(
+  def get(formTypeId: FormTypeId, version: Version, userId: UserId, formId: FormId) = Action.async { implicit request =>
+    FormService.get(formTypeId, version, userId, formId).fold(
       error => error.toResult,
       response => Ok(Json.toJson(response.formData))
     )
   }
 
-  def getCache(formTypeId: FormTypeId, version: Version, userId: UserId) = Action.async { implicit request =>
-    val formKey = FormKey(userId + formTypeId.value, version.value)
-    FormService.get(formKey).fold(
-      error => error.toResult,
-      response => Ok(Json.toJson(response))
-    )
+  def testEndPoint(formTypeId: FormTypeId, version: Version, userId: UserId, formId: FormId) = {
+    FormService.get()
   }
 
   def update(formId: FormId, tolerant: Option[Boolean]) = Action.async(parse.json[FormData]) { implicit request =>
@@ -118,15 +114,8 @@ class FormController()(
     FormService.updateFormData(formId, request.body).fold(er => BadRequest(er.jsonResponse), success => success.toResult)
   }
 
-  def submission(formTypeId: FormTypeId, formId: FormId) = Action.async { implicit request =>
-    SubmissionService.submission(formTypeId, formId).fold(
-      error => error.toResult,
-      response => Ok(response)
-    )
-  }
-
-  def submissionCache(formTypeId: FormTypeId, userId: UserId, version: String) = Action.async { implicit request =>
-    SubmissionService.submission(formTypeId, userId, version).fold(
+  def submission(formTypeId: FormTypeId, version: Version, userId: UserId, formId: FormId) = Action.async { implicit request =>
+    SubmissionService.submission(formTypeId, userId, formId, version).fold(
       error => error.toResult,
       response => Ok(response)
     )
@@ -150,7 +139,7 @@ class FormController()(
 
   private def formLink(form: Form)(implicit request: RequestHeader) = {
     val Form(formId, formData, envelopeId) = form
-    routes.FormController.get(formData.formTypeId, formData.version, formId).absoluteURL()
+    routes.FormController.get(formData.formTypeId, formData.version, form.formData.userId, formId).absoluteURL()
   }
 }
 
