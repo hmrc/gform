@@ -9,7 +9,7 @@ POST       /new-form/:formTypeId/:userId/:formId           uk.gov.hmrc.gform.con
 GET        /forms                                   uk.gov.hmrc.gform.controllers.FormController.all
 PUT        /forms/:formId                           uk.gov.hmrc.gform.controllers.FormController.update(formId: FormId, tolerant: Option[Boolean])
 GET        /forms/:formId                           uk.gov.hmrc.gform.controllers.FormController.get(formId: FormId)
-POST       /forms/:formTypeId/submission/:formId/:version/:userId    uk.gov.hmrc.gform.controllers.FormController.submission(formTypeId: FormTypeId, version: Version, userId: UserId, formId: FormId)
+POST       /forms/submission/:formId                uk.gov.hmrc.gform.controllers.FormController.submission(formId: FormId)
 GET        /forms/:formTypeId/submission/:formId    uk.gov.hmrc.gform.controllers.FormController.submissionStatus(formTypeId: FormTypeId, formId: FormId)
 POST       /forms/:formId/delete                    uk.gov.hmrc.gform.controllers.FormController.delete(formId: FormId)
 

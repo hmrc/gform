@@ -110,7 +110,7 @@ class FormController()(
     FormService.updateFormData(formId, request.body).fold(er => BadRequest(er.jsonResponse), success => success.toResult)
   }
 
-  def submission(formTypeId: FormTypeId, version: Version, userId: UserId, formId: FormId) = Action.async { implicit request =>
+  def submission(formId: FormId) = Action.async { implicit request =>
     SubmissionService.submission(formId).fold(
       error => error.toResult,
       response => Ok(response)
