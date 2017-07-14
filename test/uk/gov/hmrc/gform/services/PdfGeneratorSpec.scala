@@ -26,7 +26,7 @@ class PdfGeneratorSpec extends Spec {
     val ff = FormField(id, value)
     val fv = FieldValue(
       id = id,
-      `type` = Text(Constant(""), total = false),
+      `type` = Text(AnyText, Constant(""), total = false),
       label = label,
       helpText = None,
       shortName = None,

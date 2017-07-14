@@ -128,15 +128,20 @@ case class FieldValueRaw(
     //TODO: What if there is None
   }
 
-  private lazy val textOpt: Opt[Text] = (value, total) match {
+  private lazy val textOpt: Opt[Text] = (format, value, total) match {
     //format: OFF
-    case (Some(TextExpression(expr)), IsTotal(TotalYes))  => Text(expr, total = true).asRight
-    case (Some(TextExpression(expr)), IsTotal(TotalNo))   => Text(expr, total = false).asRight
-    case (None,                       IsTotal(TotalYes))  => Text(Constant(""), total = true).asRight
-    case (None,                       IsTotal(TotalNo))   => Text(Constant(""), total = false).asRight
-    case (Some(invalidValue),         invalidTotal)       => InvalidState(
+    case (Some(TextFormat(f)), Some(TextExpression(expr)), IsTotal(TotalYes))  => Text(f, expr, total = true).asRight
+    case (Some(TextFormat(f)), Some(TextExpression(expr)), IsTotal(TotalNo))   => Text(f, expr, total = false).asRight
+    case (Some(TextFormat(f)), None,                       IsTotal(TotalYes))  => Text(f, Constant(""), total = true).asRight
+    case (Some(TextFormat(f)), None,                       IsTotal(TotalNo))   => Text(f, Constant(""), total = false).asRight
+    case (None,                Some(TextExpression(expr)), IsTotal(TotalYes))  => Text(AnyText, expr, total = true).asRight
+    case (None,                Some(TextExpression(expr)), IsTotal(TotalNo))   => Text(AnyText, expr, total = false).asRight
+    case (None,                None,                       IsTotal(TotalYes))  => Text(AnyText, Constant(""), total = true).asRight
+    case (None,                None,                       IsTotal(TotalNo))   => Text(AnyText, Constant(""), total = false).asRight
+    case (Some(invalidFormat), Some(invalidValue),         invalidTotal)       => InvalidState(
       s"""|Unsupported type of value for text field
           |Id: $id
+          |Format: $invalidFormat
           |Value: $invalidValue
           |Total: $invalidTotal""".stripMargin).asLeft
     //format: ON
@@ -153,7 +158,7 @@ case class FieldValueRaw(
     //format: ON
   }
 
-  private lazy val formatOpt: Opt[DateConstraintType] = format match {
+  private lazy val dateFormatOpt: Opt[DateConstraintType] = format match {
     case Some(DateFormat(e)) => e.asRight
     case None => AnyDate.asRight
     case Some(invalidFormat) =>
@@ -164,7 +169,7 @@ case class FieldValueRaw(
 
   private lazy val dateOpt: Opt[Date] = for {
     v <- valueOpt
-    f <- formatOpt
+    f <- dateFormatOpt
     o = offset.getOrElse(Offset(0))
   } yield Date(f, o, v)
 

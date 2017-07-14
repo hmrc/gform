@@ -32,7 +32,7 @@ class FieldValueSpec extends Spec {
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, None, mandatory = true, editable = true, submissible = true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(AnyText, Constant(""), total = false), "Registration number", None, None, mandatory = true, editable = true, submissible = true))
   }
 
   it should "parse 'text' type without total if no total specified" in {
@@ -46,7 +46,7 @@ class FieldValueSpec extends Spec {
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, None, mandatory = true, editable = true, submissible = true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(AnyText, Constant(""), total = false), "Registration number", None, None, mandatory = true, editable = true, submissible = true))
   }
 
   it should "parse 'text' type without total if total false specified" in {
@@ -61,7 +61,7 @@ class FieldValueSpec extends Spec {
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, None, mandatory = true, editable = true, submissible = true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(AnyText, Constant(""), total = false), "Registration number", None, None, mandatory = true, editable = true, submissible = true))
   }
 
   it should "parse 'text' type with total specified" in {
@@ -76,7 +76,7 @@ class FieldValueSpec extends Spec {
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = true), "Registration number", None, None, mandatory = true, editable = true, submissible = true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(AnyText, Constant(""), total = true), "Registration number", None, None, mandatory = true, editable = true, submissible = true))
   }
 
   it should "parse 'text' type including value without total if total false specified" in {
@@ -92,7 +92,7 @@ class FieldValueSpec extends Spec {
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant("Ahah"), total = false), "Registration number", None, None, mandatory = true, editable = true, submissible = true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(AnyText, Constant("Ahah"), total = false), "Registration number", None, None, mandatory = true, editable = true, submissible = true))
   }
 
   it should "parse 'text' type including value with total specified" in {
@@ -108,7 +108,7 @@ class FieldValueSpec extends Spec {
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant("Ahah"), total = true), "Registration number", None, None, mandatory = true, editable = true, submissible = true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(AnyText, Constant("Ahah"), total = true), "Registration number", None, None, mandatory = true, editable = true, submissible = true))
   }
 
   it should "parse as Text with 'mandatory' true as mandatory" in {
@@ -120,7 +120,7 @@ class FieldValueSpec extends Spec {
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, None, mandatory = true, editable = true, submissible = true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(AnyText, Constant(""), total = false), "Registration number", None, None, mandatory = true, editable = true, submissible = true))
   }
 
   it should "parse as Text with 'mandatory' false as not mandatory" in {
@@ -132,7 +132,7 @@ class FieldValueSpec extends Spec {
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, None, mandatory = false, editable = true, submissible = true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(AnyText, Constant(""), total = false), "Registration number", None, None, mandatory = false, editable = true, submissible = true))
   }
 
   it should "parse as Text without 'mandatory' as mandatory" in {
@@ -143,7 +143,7 @@ class FieldValueSpec extends Spec {
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, None, mandatory = true, editable = true, submissible = true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(AnyText, Constant(""), total = false), "Registration number", None, None, mandatory = true, editable = true, submissible = true))
   }
 
   it should "parse as Text without 'submitMode' as editable and submissible" in {
@@ -154,7 +154,7 @@ class FieldValueSpec extends Spec {
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, None, mandatory = true, editable = true, submissible = true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(AnyText, Constant(""), total = false), "Registration number", None, None, mandatory = true, editable = true, submissible = true))
   }
 
   it should "parse as Text with 'submitMode' standard as editable and submissible" in {
@@ -166,7 +166,7 @@ class FieldValueSpec extends Spec {
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, None, mandatory = true, editable = true, submissible = true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(AnyText, Constant(""), total = false), "Registration number", None, None, mandatory = true, editable = true, submissible = true))
   }
 
   it should "parse as Text with 'submitMode' readonly as non-editable and submissible" in {
@@ -178,7 +178,7 @@ class FieldValueSpec extends Spec {
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, None, mandatory = true, editable = false, submissible = true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(AnyText, Constant(""), total = false), "Registration number", None, None, mandatory = true, editable = false, submissible = true))
   }
 
   it should "parse as Text with 'submitMode' info as non-editable and non-submissible" in {
@@ -190,7 +190,7 @@ class FieldValueSpec extends Spec {
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, None, mandatory = true, editable = false, submissible = false))
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(AnyText, Constant(""), total = false), "Registration number", None, None, mandatory = true, editable = false, submissible = false))
   }
 
   it should "parse as Text with 'mandatory' false and 'submitMode' info as non-mandatory, non-editable and non-submissible" in {
@@ -203,7 +203,7 @@ class FieldValueSpec extends Spec {
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, None, mandatory = false, editable = false, submissible = false))
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(AnyText, Constant(""), total = false), "Registration number", None, None, mandatory = false, editable = false, submissible = false))
   }
 
   it should "parse as Address with 'international' false  when not specified" in {
@@ -838,7 +838,7 @@ class FieldValueSpec extends Spec {
          |}""".stripMargin
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(Constant(""), total = false), "Registration number", None, Some(shortName), mandatory = true, editable = true, submissible = true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(AnyText, Constant(""), total = false), "Registration number", None, Some(shortName), mandatory = true, editable = true, submissible = true))
   }
 
   it should "parse as Address with shortName" in {

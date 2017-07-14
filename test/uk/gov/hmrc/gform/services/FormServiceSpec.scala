@@ -37,8 +37,8 @@ class FormServiceSpec extends Spec with TypeclassFixtures {
     "Your details",
     None, None,
     List(
-      FieldValue(FieldId("firstName"), Text(Constant(""), total = false), "Your first name", None, None, mandatory = true, editable = true, submissible = true),
-      FieldValue(FieldId("lastName"), Text(Constant(""), total = false), "Your last name", None, None, mandatory = true, editable = true, submissible = true)
+      FieldValue(FieldId("firstName"), Text(AnyText, Constant(""), total = false), "Your first name", None, None, mandatory = true, editable = true, submissible = true),
+      FieldValue(FieldId("lastName"), Text(AnyText, Constant(""), total = false), "Your last name", None, None, mandatory = true, editable = true, submissible = true)
     )
   )
 
@@ -46,9 +46,9 @@ class FormServiceSpec extends Spec with TypeclassFixtures {
     "Business details",
     None, None,
     List(
-      FieldValue(FieldId("nameOfBusiness"), Text(Constant(""), total = false), "Name of business", None, None, mandatory = true, editable = true, submissible = true),
-      FieldValue(FieldId("accountingPeriodStartDate"), Text(Constant(""), total = false), "Accounting period start date", None, None, mandatory = true, editable = true, submissible = true),
-      FieldValue(FieldId("accountingPeriodEndDate"), Text(Constant(""), total = false), "Accounting period end date", None, None, mandatory = true, editable = true, submissible = true)
+      FieldValue(FieldId("nameOfBusiness"), Text(AnyText, Constant(""), total = false), "Name of business", None, None, mandatory = true, editable = true, submissible = true),
+      FieldValue(FieldId("accountingPeriodStartDate"), Text(AnyText, Constant(""), total = false), "Accounting period start date", None, None, mandatory = true, editable = true, submissible = true),
+      FieldValue(FieldId("accountingPeriodEndDate"), Text(AnyText, Constant(""), total = false), "Accounting period end date", None, None, mandatory = true, editable = true, submissible = true)
     )
   )
 

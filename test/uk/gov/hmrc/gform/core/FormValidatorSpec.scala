@@ -117,7 +117,7 @@ class FormValidatorSpec extends Spec {
 
   def getMandatoryFieldValue(id: String) = FieldValue(
     id = FieldId(id),
-    `type` = Text(Constant(""), total = false),
+    `type` = Text(AnyText, Constant(""), total = false),
     label = "",
     helpText = None,
     None,

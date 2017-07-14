@@ -29,7 +29,7 @@ import uk.gov.hmrc.gform.models._
 
 sealed trait ComponentType {
   def validate(formTemplate: FormTemplate): ValidationResult = this match {
-    case Text(expr, _) => expr.validate(formTemplate)
+    case Text(_, expr, _) => expr.validate(formTemplate)
     case Date(_, _, _) => Valid
     case Address(_) => Valid
     case Choice(_, _, _, _, _) => Valid
@@ -39,7 +39,7 @@ sealed trait ComponentType {
   }
 }
 
-case class Text(value: Expr, total: Boolean) extends ComponentType
+case class Text(constraint: TextConstraint, value: Expr, total: Boolean) extends ComponentType
 
 case class Date(constraintType: DateConstraintType, offset: Offset, value: Option[DateValue]) extends ComponentType
 
