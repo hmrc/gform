@@ -32,10 +32,9 @@ import scala.concurrent.Future
 
 object FormService {
 
-  def insertEmpty(userId: UserId, formTypeId: FormTypeId, version: Version, envelopeId: EnvelopeId)(implicit Insert: Insert[Form]): ServiceResponse[Form] = {
-    val formId = FormId(UUID.randomUUID().toString)
+  def insertEmpty(userId: UserId, formTypeId: FormTypeId, envelopeId: EnvelopeId, formId: FormId)(implicit Insert: Insert[Form]): ServiceResponse[Form] = {
     val selector = Json.obj("_id" -> formId.value)
-    val formData = FormData(userId, formTypeId, version, characterSet = "UTF-8", fields = Nil)
+    val formData = FormData(userId, formTypeId, characterSet = "UTF-8", fields = Nil)
     val form = Form(formId, formData, envelopeId)
     fromFutureOptA(
       Insert(selector, form).map(_.right.map(_ => form))
@@ -73,8 +72,7 @@ object FormService {
 
     val templateSelector =
       Json.obj(
-        "formTypeId" -> formTypeId,
-        "version" -> version
+        "formTypeId" -> formTypeId
       )
 
     // format: OFF
