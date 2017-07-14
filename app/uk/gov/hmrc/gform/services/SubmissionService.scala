@@ -111,7 +111,6 @@ object SubmissionService {
     findOneForm: FindOne[Form],
     findOneFormTemplate: FindOne[FormTemplate],
     insertSubmission: Insert[Submission],
-    createEnvelope: Post[CreateEnvelope, HttpResponse],
     uploadFile: Post[UploadFile, HttpResponse],
     hc: HeaderCarrier,
     routeEnvelope: Post[RouteEnvelopeRequest, HttpResponse],
