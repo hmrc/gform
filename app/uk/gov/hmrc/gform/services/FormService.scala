@@ -34,7 +34,7 @@ object FormService {
 
   def insertEmpty(userId: UserId, formTypeId: FormTypeId, envelopeId: EnvelopeId, formId: FormId)(implicit Insert: Insert[Form]): ServiceResponse[Form] = {
     val selector = Json.obj("_id" -> formId.value)
-    val formData = FormData(userId, formTypeId, characterSet = "UTF-8", fields = Nil)
+    val formData = FormData(userId, formTypeId, Version("0.3.0"), characterSet = "UTF-8", fields = Nil)
     val form = Form(formId, formData, envelopeId)
     fromFutureOptA(
       Insert(selector, form).map(_.right.map(_ => form))

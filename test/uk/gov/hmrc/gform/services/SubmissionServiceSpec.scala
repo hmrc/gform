@@ -25,7 +25,7 @@ import uk.gov.hmrc.gform._
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.models._
 import uk.gov.hmrc.gform.typeclasses._
-import uk.gov.hmrc.play.http.HttpResponse
+import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpResponse }
 
 import scala.collection.immutable.List
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -35,7 +35,7 @@ class SubmissionServiceSpec extends Spec with TypeclassFixtures {
 
   implicit override val patienceConfig = PatienceConfig(timeout = scaled(Span(15000, Millis)), interval = scaled(Span(300, Millis)))
 
-  val form = Form(FormId("form-id"), FormData(UserId("TESTID"), FormTypeId("form-type-id"), Version("1.0.0"), "UTF-8", List(FormField(FieldId("firstName"), "Joe"), FormField(FieldId("lastName"), "Doe"))), EnvelopeId(""))
+  val form = Form(FormId("form-id"), FormData(UserId("TESTID"), FormTypeId("form-type-id"), Version("1.0.0"), "UTF-8", List(FormField(FieldId("firstName"), "Joe"), FormField(FieldId("lastName"), "Doe"))), EnvelopeId("123"))
 
   val plainFormTemplate = FormTemplate(Some("schemaId"), FormTypeId("IPT100"), "Insurance Premium Tax Return", Version("version"), "description", "characterSet", DmsSubmission("nino", "BT-NRU-Environmental", "FinanceOpsCorpT"), "submitSuccessUrl", "submitErrorUrl", List.empty[Section])
 
@@ -68,16 +68,6 @@ class SubmissionServiceSpec extends Spec with TypeclassFixtures {
     implicit val findOneForm: FindOne[Form] = FindOneTC
       .response(Some(form))
       .callCheck(findOneCheck)
-      .noChecks
-
-    implicit val postCreateEnvelope = PostTC
-      .response[CreateEnvelope, HttpResponse](
-        HttpResponse(
-          responseStatus = 200,
-          responseHeaders = Map(LOCATION -> List("envelopes/123"))
-        )
-      )
-      .callCheck(postCheck)
       .noChecks
 
     implicit val insertSubmission: Insert[Submission] = InsertTC
@@ -125,9 +115,9 @@ class SubmissionServiceSpec extends Spec with TypeclassFixtures {
 
     (findOneCheck.call _).expects().twice
     (insertCheck.call _).expects().once
-    (postCheck.call _).expects().repeat(4)
+    (postCheck.call _).expects().repeat(3)
 
-    val res = SubmissionService.submission(FormTypeId("form-type-id"), FormId("form-id"))
+    val res = SubmissionService.submission(FormId("form-id"))
 
     futureResult(res.value).right.value should be("http://localhost:8898/file-transfer/envelopes/123")
   }
@@ -229,4 +219,6 @@ class SubmissionServiceSpec extends Spec with TypeclassFixtures {
 
     res.right.value should be(expectedResult)
   }
+
+  implicit lazy val hc = new HeaderCarrier()
 }

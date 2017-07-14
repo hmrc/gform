@@ -67,7 +67,7 @@ class FormServiceSpec extends Spec with TypeclassFixtures {
       .response(Option.empty[FormTemplate]) // No FormTemplate will be found
       .callCheck(findOneCheck)
       .withChecks { req: JsObject =>
-        req should be(Json.obj("formTypeId" -> "form-type-id", "version" -> "1.0.0"))
+        req should be(Json.obj("formTypeId" -> "form-type-id"))
       }
     implicit val findOneForm: FindOne[Form] = FindOneTC.notUsed[Form]
     implicit val insertForm: Insert[Form] = InsertTC.notUsed[Form]
@@ -77,7 +77,7 @@ class FormServiceSpec extends Spec with TypeclassFixtures {
 
     val res = FormService.saveOrUpdate(form, SaveOperation)
 
-    futureResult(res.value).left.value should be(InvalidState("""FormTemplate {"formTypeId":"form-type-id","version":"1.0.0"} not found"""))
+    futureResult(res.value).left.value should be(InvalidState("""FormTemplate {"formTypeId":"form-type-id"} not found"""))
   }
 
   it should "return InvalidState when Form cannot be found when trying to Update the form" in {
