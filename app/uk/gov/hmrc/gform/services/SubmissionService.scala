@@ -120,8 +120,7 @@ object SubmissionService {
   ): ServiceResponse[String] = {
 
     val templateSelector: Form => JsObject = form => Json.obj(
-      "formTypeId" -> form.formData.formTypeId,
-      "version" -> form.formData.version
+      "formTypeId" -> form.formData.formTypeId
     )
     // format: OFF
     for {

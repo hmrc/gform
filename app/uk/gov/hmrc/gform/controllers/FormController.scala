@@ -45,18 +45,21 @@ class FormController()(
     fusFeUrl: ServiceUrl[FusFeUrl]
 ) extends BaseController {
 
-  def newForm(userId: UserId, formTypeId: FormTypeId, version: Version) = Action.async { implicit request =>
+  def newForm(userId: UserId, formTypeId: FormTypeId, formId: FormId) = Action.async { implicit request =>
 
-    val template = FormTemplateService.get(formTypeId, version)
+    val template = FormTemplateService.get(formTypeId)
     val envelopeId = FileUploadService.createEnvelope(formTypeId)
-    val form = envelopeId.flatMap(envelopeId => FormService.insertEmpty(userId, formTypeId, version, envelopeId))
+    val form = envelopeId.flatMap(envelopeId => FormService.insertEmpty(userId, formTypeId, envelopeId, formId))
     val response = for {
       t <- template
       e <- envelopeId
       f <- form
     } yield NewFormResponse(f, e, t)
     response.fold(
-      error => error.toResult,
+      error => {
+        Logger.debug("ERROR NEW FORM")
+        error.toResult
+      },
       response => Ok(Json.toJson(response))
     )
   }
@@ -87,8 +90,8 @@ class FormController()(
 
   def get(formId: FormId) = Action.async { implicit request =>
     FormService.get(formId).fold(
-      error => error.toResult,
-      response => Ok(Json.toJson(response.formData))
+      error => NotFound,
+      response => Ok(Json.toJson(response))
     )
   }
 

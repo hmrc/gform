@@ -90,12 +90,11 @@ class FormTemplates()(
     formTemplateRepository.find("formTypeId" -> formTypeId).map(formTemplates => Ok(Json.toJson(formTemplates)))
   }
 
-  def get(formTypeId: FormTypeId, version: Version) = Action.async { implicit request =>
+  def get(formTypeId: FormTypeId) = Action.async { implicit request =>
     val FindOne = implicitly[FindOne[FormTemplate]]
     FindOne(
       Json.obj(
-        "formTypeId" -> formTypeId.value,
-        "version" -> version.value
+        "formTypeId" -> formTypeId.value
       )
     ).map {
         case Some(formTemplate) => Ok(Json.toJson(formTemplate))
