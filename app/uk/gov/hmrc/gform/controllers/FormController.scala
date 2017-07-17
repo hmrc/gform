@@ -49,7 +49,7 @@ class FormController()(
 
     val templateF = FormTemplateService.get(formTypeId)
     val envelopeIdF = FileUploadService.createEnvelope(formTypeId)
-    val formId = FormId(userId.value + formTypeId.value)
+    val formId = FormId(userId, formTypeId)
     val response = for {
       formTemplate <- templateF
       envelopeId <- envelopeIdF
