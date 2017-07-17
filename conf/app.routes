@@ -4,7 +4,7 @@ POST       /retrieveForm/:rn            uk.gov.hmrc.gform.controllers.SaveAndRet
 POST       /saveForm/:rn                uk.gov.hmrc.gform.controllers.SaveAndRetrieveController.saveForm(rn:String)
 
 #TODO: This should be just /form/:formTypeId/:version. Refactor later
-POST       /new-form/:formTypeId/:userId/:formId           uk.gov.hmrc.gform.controllers.FormController.newForm(userId: UserId, formTypeId: FormTypeId, formId: FormId)
+POST       /new-form/:formTypeId/:userId           uk.gov.hmrc.gform.controllers.FormController.newForm(userId: UserId, formTypeId: FormTypeId)
 
 GET        /forms                                   uk.gov.hmrc.gform.controllers.FormController.all
 PUT        /forms/:formId                           uk.gov.hmrc.gform.controllers.FormController.update(formId: FormId, tolerant: Option[Boolean])
