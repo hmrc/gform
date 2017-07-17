@@ -199,13 +199,11 @@
         {
           "id": "accountingPeriodStartDate",
           "label": "Accounting period start date | Dyddiad dechrau'r cyfnod cyfrifeg",
-          "format": "date",
           "mandatory": "true"
         },
         {
           "id": "accountingPeriodEndDate",
           "label": "Accounting period end date | Dyddiad diwedd cyfnod Cyfrifeg",
-          "format": "date",
           "mandatory": "false"
         }
       ]
@@ -217,13 +215,11 @@
           "id": "standardRateIPTDueForThisPeriod",
           "label": "Standard rate IPT due for this period | Cyfradd safonol IPT sy'n ddyledus am y cyfnod hwn",
           "helpText": "You should deduct any standard credits which are due to you | Dylech ddidynnu unrhyw gredydau safonol sydd yn ddyledus i chi",
-          "format": "sterling",
           "mandatory": "true"
         },
         {
           "id": "higherRateIPTDueForThisPeriod",
           "label": "Higher rate IPT due for this period | Cyfradd uwch IPT sy'n ddyledus am y cyfnod hwn",
-          "format": "sterling",
           "mandatory": "true"
         }
       ]
