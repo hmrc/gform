@@ -180,7 +180,7 @@ class ValueParserSpec extends Spec {
 
   val yourDetailsSection = Section(
     "Your details",
-    None, None,
+    None, None, None,
     List(
       FieldValue(FieldId("firstName"), Text(AnyText, Constant(""), total = false), "Your first name", None, None, mandatory = false, editable = true, submissible = true),
       FieldValue(FieldId("lastName"), Text(AnyText, Constant(""), total = false), "Your last name", None, None, mandatory = false, editable = true, submissible = true)
