@@ -65,6 +65,7 @@ class P(json: JsValue) {
   lazy val value: Option[ValueExpr] = (json \ "value").asOpt[ValueExpr]
 
   lazy val format: Option[String] = (json \ "format").asOpt[String] //.map(js => FormatParser.validate(formatAsStr) _.as[FormatExpr])
+
   lazy val formatOpt: Opt[Option[FormatExpr]] = {
     import cats.data._
     import cats.implicits._
