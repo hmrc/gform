@@ -16,25 +16,33 @@
 
 package uk.gov.hmrc.gform.services
 
-import cats.instances.future._
+import java.time.LocalDateTime
+
 import cats.instances.either._
+import cats.instances.future._
 import cats.instances.list._
 import cats.syntax.either._
 import cats.syntax.traverse._
 import play.api.libs.json.{ JsObject, Json }
-
-import scala.util.Random
 import uk.gov.hmrc.gform.core._
-import uk.gov.hmrc.gform.exceptions.InvalidState
+import uk.gov.hmrc.gform.exceptions.{ InvalidState, UnexpectedState }
 import uk.gov.hmrc.gform.models._
-import uk.gov.hmrc.gform.typeclasses.{ FindOne, Insert, Now, Post, Rnd }
-
-import scala.concurrent.ExecutionContext.Implicits.global
-import java.time.LocalDateTime
-
+import uk.gov.hmrc.gform.typeclasses._
 import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpResponse }
 
-object SubmissionService {
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+import scala.util.Random
+
+object SubmissionService extends SubmissionService {
+  lazy val pdfGenerator = PDFGeneratorService
+  lazy val htmlGenerator = HtmlGeneratorService
+}
+
+trait SubmissionService {
+
+  def pdfGenerator: PDFGeneratorService
+  def htmlGenerator: HtmlGeneratorService
 
   def getSectionFormFields(
     form: Form,
@@ -42,33 +50,40 @@ object SubmissionService {
   ): Opt[List[SectionFormField]] = {
     val data: Map[FieldId, FormField] = form.formData.fields.map(field => field.id -> field).toMap
 
-    val formFieldByFieldValue: FieldValue => Opt[List[(FormField, FieldValue)]] = fieldValue => {
+    val formFieldByFieldValue: FieldValue => Opt[(List[FormField], FieldValue)] = fieldValue => {
       val fieldValueIds: List[FieldId] =
         fieldValue.`type` match {
           case Address(_) => Address.fields(fieldValue.id)
           case Date(_, _, _) => Date.fields(fieldValue.id)
           case FileUpload() => List(fieldValue.id)
-          case Text(_, _) | Choice(_, _, _, _, _) | Group(_, _, _, _, _, _) => List(fieldValue.id) // TODO - added Group just to compile; remove if possible
+          case Text(_, _) | Choice(_, _, _, _, _) | Group(_, _, _, _, _, _) => List(fieldValue.id)
           case InformationMessage(_, _) => List(fieldValue.id)
         }
 
-      val formFieldAndFieldValues: List[Opt[(FormField, FieldValue)]] =
+      val formFieldAndFieldValues: Opt[List[FormField]] = {
         fieldValueIds.map { fieldValueId =>
           data.get(fieldValueId) match {
-            case Some(formField) => Right((formField, fieldValue))
+            case Some(formField) => Right(formField)
             case None => Left(InvalidState(s"No formField for field.id: ${fieldValue.id} found"))
           }
+        }.partition(_.isLeft) match {
+          case (Nil, list) => Right(for (Right(formField) <- list) yield formField)
+          case (invalidStates, _) => Left(InvalidState(invalidStates.mkString(", ")))
         }
+      }
 
-      formFieldAndFieldValues.sequenceU
+      formFieldAndFieldValues match {
+        case Right(list) => Right((list, fieldValue))
+        case Left(invalidState) => Left(invalidState)
+      }
     }
 
     val toSectionFormField: Section => Opt[SectionFormField] = section =>
-      section.atomicFields(data).flatTraverse(formFieldByFieldValue).map(ff => SectionFormField(section.title, ff))
+      section.atomicFields(data).traverse(formFieldByFieldValue).map(ff => SectionFormField(section.shortName.getOrElse(section.title), ff))
 
     val allSections = formTemplate.sections
     val sectionsToSubmit = allSections.filter(section => BooleanExpr.isTrue(section.includeIf.getOrElse(IncludeIf(IsTrue)).expr, data))
-    sectionsToSubmit.toList.traverse(toSectionFormField)
+    sectionsToSubmit.traverse(toSectionFormField)
   }
 
   def getSubmissionAndPdf(
@@ -79,29 +94,40 @@ object SubmissionService {
   )(
     implicit
     now: Now[LocalDateTime],
-    rnd: Rnd[Random]
-  ): SubmissionAndPdf = {
+    rnd: Rnd[Random],
+    hc: HeaderCarrier
+  ): Future[SubmissionAndPdf] = {
 
-    val pdf: Array[Byte] = PdfGenerator.generate(sectionFormFields, formName)
+    val html = htmlGenerator.generateDocumentHTML(sectionFormFields, formName)
 
-    val pdfSummary = PdfSummary(
-      numberOfPages = 1L,
-      pdfContent = pdf
-    )
-    val submission = Submission(
-      submittedDate = now(),
-      submissionRef = SubmissionRef.random,
-      envelopeId = envelopeId,
-      formId = form._id,
-      dmsMetaData = DmsMetaData(
-        formTypeId = form.formData.formTypeId
+    pdfGenerator.generatePDF(html).map { pdf =>
+
+      /*
+      val path = java.nio.file.Paths.get("confirmation.pdf")
+      val out = java.nio.file.Files.newOutputStream(path)
+      out.write(pdf)
+      out.close()
+      */
+
+      val pdfSummary = PdfSummary(
+        numberOfPages = 1L,
+        pdfContent = pdf
       )
-    )
+      val submission = Submission(
+        submittedDate = now(),
+        submissionRef = SubmissionRef.random,
+        envelopeId = envelopeId,
+        formId = form._id,
+        dmsMetaData = DmsMetaData(
+          formTypeId = form.formData.formTypeId
+        )
+      )
 
-    SubmissionAndPdf(
-      submission = submission,
-      pdfSummary = pdfSummary
-    )
+      SubmissionAndPdf(
+        submission = submission,
+        pdfSummary = pdfSummary
+      )
+    }
   }
 
   def submission(
@@ -127,7 +153,7 @@ object SubmissionService {
       formTemplate      <- fromFutureOptionA  (findOneFormTemplate(templateSelector(form)))(InvalidState(s"FormTemplate $templateSelector not found"))
       envelopeId        = form.envelopeId
       sectionFormFields <- fromOptA           (getSectionFormFields(form, formTemplate))
-      submissionAndPdf  =  getSubmissionAndPdf(envelopeId, form, sectionFormFields, formTemplate.formName)
+      submissionAndPdf  <- fromFutureA        (getSubmissionAndPdf(envelopeId, form, sectionFormFields, formTemplate.formName))
       _                 <- fromFutureA        (insertSubmission(Json.obj(), submissionAndPdf.submission))
       res               <- FileUploadService.submitEnvelope(submissionAndPdf, formTemplate.dmsSubmission)
     } yield res
