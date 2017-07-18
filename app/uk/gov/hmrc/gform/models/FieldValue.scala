@@ -35,10 +35,9 @@ object FieldValue {
   implicit val format: OFormat[FieldValue] = {
     implicit val formatFieldValue = Json.format[FieldValue]
 
+    val toFieldValue: Reads[FieldValue] = Reads[FieldValue] { (x: JsValue) => new P(x).optFieldValue() fold (us => JsError(us.toString), fv => JsSuccess(fv)) }
 
-    val toFieldValue: Reads[FieldValue] = Reads[FieldValue] { (x: JsValue) => new P(x).optFieldValue() fold(us => JsError(us.toString), fv => JsSuccess(fv)) }
-
-//    val reads: Reads[FieldValue] = (formatFieldValue: Reads[FieldValue]) | toFieldValue
+    //    val reads: Reads[FieldValue] = (formatFieldValue: Reads[FieldValue]) | toFieldValue
     val reads: Reads[FieldValue] = toFieldValue
 
     OFormat[FieldValue](reads, formatFieldValue)
