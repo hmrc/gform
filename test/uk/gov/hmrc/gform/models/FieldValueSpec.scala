@@ -872,6 +872,28 @@ class FieldValueSpec extends Spec {
     fieldValue should beJsSuccess(FieldValue(FieldId("haveIncludedInvoice"), Choice(Inline, NonEmptyList.of("Yes", "No", "Not sure"), Horizontal, List(1), None), "Original invoice from the supplier", None, Some(shortName), mandatory = true, editable = true, submissible = true))
   }
 
+  it should "parse as Date" in {
+    val fieldValue = toFieldValue(
+      s"""
+        {
+          "id": "startDate",
+          "type": "date",
+          "label": "Start date",
+          "helpText": "For example, 31 3 1980",
+          "mandatory": "true",
+          "format": "after 2016-09-05 -1",
+          "value": "2010-10-10"
+        }
+        """
+    )
+
+//    fieldValue should beJsSuccess(FieldValue(FieldId("startDate"), Date(), "Original invoice from the supplier", None, Some(shortName), mandatory = true, editable = true, submissible = true))
+  }
+
+
+
+
+
   private def toFieldValue(template: String): JsResult[FieldValue] = {
 
     val templateAsJson = Json.parse(template.stripMargin)
