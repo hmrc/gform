@@ -21,68 +21,76 @@ import cats.syntax.all._
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.Opt
+import uk.gov.hmrc.gform.core.parsers.FormatParser
 import uk.gov.hmrc.gform.exceptions.InvalidState
 import uk.gov.hmrc.gform.models.FieldValueRaw._
 
 object FieldValueRaw {
-
-  implicit val format: Reads[FieldValueRaw] = (
-    (__ \ 'id).read[FieldId] and
-    (__ \ 'type).readNullable[ComponentTypeRaw] and
-    (__ \ 'label).read[String] and
-    (__ \ 'value).readNullable[ValueExpr] and
-    (__ \ 'format).readNullable[FormatExpr] and
-    (__ \ 'helpText).readNullable[String] and
-    (__ \ 'optionHelpText).readNullable[List[String]] and
-    (__ \ 'submitMode).readNullable[String] and
-    (__ \ 'choices).readNullable[List[String]] and
-    (__ \ 'fields).lazyReadNullable(implicitly[Reads[List[FieldValueRaw]]]) and //Note: recursiveness here prevents macro use (see JsonParseTestGroup)
-    (__ \ 'mandatory).readNullable[String] and
-    (__ \ 'offset).readNullable[Offset] and
-    (__ \ 'multivalue).readNullable[String] and
-    (__ \ 'total).readNullable[String] and
-    (__ \ 'international).readNullable[String] and
-    (__ \ 'infoText).readNullable[String] and
-    (__ \ 'infoType).readNullable[String] and
-    (__ \ 'shortName).readNullable[String] and
-    (__ \ 'repeatsMax).readNullable[Int] and
-    (__ \ 'repeatsMin).readNullable[Int] and
-    (__ \ 'repeatLabel).readNullable[String] and
-    (__ \ 'repeatAddAnotherText).readNullable[String]
-  )(FieldValueRaw.apply _)
+//
+//  implicit val format: Reads[FieldValueRaw] = (
+//    (__ \ 'id).read[FieldId] and
+//    (__ \ 'type).readNullable[ComponentTypeRaw] and
+//    (__ \ 'label).read[String] and
+//    (__ \ 'value).readNullable[ValueExpr] and
+//    (__ \ 'format).readNullable[FormatExpr] and
+//    (__ \ 'helpText).readNullable[String] and
+//    (__ \ 'optionHelpText).readNullable[List[String]] and
+//    (__ \ 'submitMode).readNullable[String] and
+//    (__ \ 'choices).readNullable[List[String]] and
+//    (__ \ 'fields).lazyReadNullable(implicitly[Reads[List[FieldValueRaw]]]) and //Note: recursiveness here prevents macro use (see JsonParseTestGroup)
+//    (__ \ 'mandatory).readNullable[String] and
+//    (__ \ 'offset).readNullable[Offset] and
+//    (__ \ 'multivalue).readNullable[String] and
+//    (__ \ 'total).readNullable[String] and
+//    (__ \ 'international).readNullable[String] and
+//    (__ \ 'infoText).readNullable[String] and
+//    (__ \ 'infoType).readNullable[String] and
+//    (__ \ 'shortName).readNullable[String] and
+//    (__ \ 'repeatsMax).readNullable[Int] and
+//    (__ \ 'repeatsMin).readNullable[Int] and
+//    (__ \ 'repeatLabel).readNullable[String] and
+//    (__ \ 'repeatAddAnotherText).readNullable[String]
+//  )(FieldValueRaw.apply _)
 
   case class MES(mandatory: Boolean, editable: Boolean, submissible: Boolean)
 
 }
 
-case class FieldValueRaw(
-    id: FieldId,
-    `type`: Option[ComponentTypeRaw] = None,
-    label: String,
-    value: Option[ValueExpr] = None,
-    format: Option[FormatExpr] = None,
-    helpText: Option[String] = None,
-    optionHelpText: Option[List[String]] = None,
-    submitMode: Option[String] = None,
-    choices: Option[List[String]] = None,
-    fields: Option[List[FieldValueRaw]] = None,
-    mandatory: Option[String] = None,
-    offset: Option[Offset] = None,
-    multivalue: Option[String] = None,
-    total: Option[String] = None,
-    international: Option[String] = None,
-    infoText: Option[String] = None,
-    infoType: Option[String] = None,
-    shortName: Option[String] = None,
-    repeatsMax: Option[Int] = None,
-    repeatsMin: Option[Int] = None,
-    repeatLabel: Option[String] = None,
-    repeatAddAnotherText: Option[String] = None
-) {
 
-  def toFieldValue = Reads[FieldValue] { _ => getFieldValue fold (us => JsError(us.toString), fv => JsSuccess(fv)) }
 
-  private def getFieldValue(): Opt[FieldValue] = optMES.flatMap(mes => componentTypeOpt.map(ct => mkFieldValue(mes, ct)))
+
+class P(json: JsValue) {
+
+  lazy val id: FieldId = (json \ "id").as[FieldId]
+  lazy val `type`: Option[ComponentTypeRaw] = (json \ "type").asOpt[ComponentTypeRaw]
+  lazy val label: String = (json \ "label").as[String]
+  lazy val value: Option[ValueExpr] = (json \ "value").asOpt[ValueExpr]
+  lazy val format: Option[FormatExpr] = (json \ "format").asOpt[FormatExpr]//.map(js => FormatParser.validate(formatAsStr) _.as[FormatExpr])
+  lazy val helpText: Option[String] = (json \ "helpText").asOpt[String]
+  lazy val optionHelpText: Option[List[String]] = (json \ "optionHelpText").asOpt[List[String]]
+  lazy val submitMode: Option[String] = (json \ "submitMode").asOpt[String]
+  lazy val choices: Option[List[String]] = (json \ "choices").asOpt[List[String]]
+
+  //   fields: Option[List[FieldValueRaw]] = None,
+  lazy val fieldsJson: Option[List[JsValue]] =  (json \ "fields").asOpt[List[JsValue]]
+
+  lazy val fields: Option[List[P]] = fieldsJson.map(_.map(new P(_)))
+
+  lazy val mandatory: Option[String] = (json \ "mandatory").asOpt[String]
+  lazy val offset: Option[Offset] = (json \ "offset").asOpt[Offset]
+  lazy val multivalue: Option[String] = (json \ "multivalue").asOpt[String]
+  lazy val total: Option[String] = (json \ "total").asOpt[String]
+  lazy val international: Option[String] = (json \ "international").asOpt[String]
+  lazy val infoText: Option[String] = (json \ "infoText").asOpt[String]
+  lazy val infoType: Option[String] = (json \ "infoType").asOpt[String]
+  lazy val shortName: Option[String] = (json \ "shortName").asOpt[String]
+  lazy val repeatsMax: Option[Int] = (json \ "repeatsMax").asOpt[Int]
+  lazy val repeatsMin: Option[Int] = (json \ "repeatsMin").asOpt[Int]
+  lazy val repeatLabel: Option[String] = (json \ "repeatLabel").asOpt[String]
+  lazy val repeatAddAnotherText: Option[String] = (json \ "repeatAddAnotherText").asOpt[String]
+
+
+  def optFieldValue(): Opt[FieldValue] = optMES.flatMap(mes => componentTypeOpt.map(ct => mkFieldValue(mes, ct)))
 
   private def mkFieldValue(mes: MES, ct: ComponentType): FieldValue = FieldValue(
     id = id,
@@ -174,15 +182,18 @@ case class FieldValueRaw(
   } yield Date(f, o, v)
 
   private lazy val groupOpt: Opt[Group] = fields.fold(noRawFields)(groupOpt(_))
+
   private lazy val noRawFields: Opt[Group] = InvalidState(s"""Require 'fields' element in Group""").asLeft
-  private def groupOpt(rawFields: List[FieldValueRaw]): Opt[Group] = {
+//  private def groupOpt(rawFields: List[FieldValueRaw]): Opt[Group] = {
+
+  def groupOpt(fields: List[P]): Opt[Group] = {
 
     val orientation = format match {
       case IsGroupOrientation(VerticalGroupOrientation) | None => Vertical
       case IsGroupOrientation(HorizontalGroupOrientation) => Horizontal
     }
 
-    rawFields.map(_.getFieldValue()).partition(_.isRight) match {
+    fields.map(_.optFieldValue()).partition(_.isRight) match {
       case (ueorfvs, Nil) => validateAndBuildGroupField(ueorfvs.map(_.right.get), orientation)
       case (_, ueorfvs) => ueorfvs.map(_.left.get).head.asLeft
     }
@@ -376,3 +387,32 @@ case class FieldValueRaw(
 
   private def isThisAnInfoField: Boolean = `type`.getOrElse(None).isInstanceOf[InfoRaw.type]
 }
+
+
+
+
+
+//case class FieldValueRaw(
+//                          id: FieldId,
+//                          `type`: Option[ComponentTypeRaw] = None,
+//                          label: String,
+//                          value: Option[ValueExpr] = None,
+//                          format: Option[FormatExpr] = None,
+//                          helpText: Option[String] = None,
+//                          optionHelpText: Option[List[String]] = None,
+//                          submitMode: Option[String] = None,
+//                          choices: Option[List[String]] = None,
+//                          fields: Option[List[FieldValueRaw]] = None,
+//                          mandatory: Option[String] = None,
+//                          offset: Option[Offset] = None,
+//                          multivalue: Option[String] = None,
+//                          total: Option[String] = None,
+//                          international: Option[String] = None,
+//                          infoText: Option[String] = None,
+//                          infoType: Option[String] = None,
+//                          shortName: Option[String] = None,
+//                          repeatsMax: Option[Int] = None,
+//                          repeatsMin: Option[Int] = None,
+//                          repeatLabel: Option[String] = None,
+//                          repeatAddAnotherText: Option[String] = None
+//                        )
