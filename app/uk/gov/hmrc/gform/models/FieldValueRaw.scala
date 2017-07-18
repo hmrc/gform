@@ -71,12 +71,6 @@ class P(json: JsValue) {
     format.map(FormatParser.validate).sequence
   }
 
-  //  match {
-  //    case Some(Right(x)) => Right(Some(x))
-  //    case Some(Left(x)) => Left(x)
-  //    case None       => Right(None)
-  //  }
-
   lazy val helpText: Option[String] = (json \ "helpText").asOpt[String]
   lazy val optionHelpText: Option[List[String]] = (json \ "optionHelpText").asOpt[List[String]]
   lazy val submitMode: Option[String] = (json \ "submitMode").asOpt[String]
@@ -88,7 +82,6 @@ class P(json: JsValue) {
   lazy val fields: Option[List[P]] = fieldsJson.map(_.map(new P(_)))
 
   lazy val mandatory: Option[String] = (json \ "mandatory").asOpt[String]
-  lazy val offset: Option[Offset] = (json \ "offset").asOpt[Offset]
   lazy val multivalue: Option[String] = (json \ "multivalue").asOpt[String]
   lazy val total: Option[String] = (json \ "total").asOpt[String]
   lazy val international: Option[String] = (json \ "international").asOpt[String]
@@ -198,7 +191,7 @@ class P(json: JsValue) {
   private lazy val dateOpt: Opt[Date] = for {
     v <- valueOpt
     f <- dateFormatOpt
-    o = offset.getOrElse(Offset(0))
+    o = Offset(0)
   } yield Date(f, o, v)
 
   private lazy val groupOpt: Opt[Group] = fields.fold(noRawFields)(groupOpt(_))
