@@ -18,46 +18,44 @@ package uk.gov.hmrc.gform.models
 
 import cats.data.NonEmptyList
 import cats.syntax.all._
-import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.FormatParser
 import uk.gov.hmrc.gform.exceptions.InvalidState
 import uk.gov.hmrc.gform.models.FieldValueRaw._
 
+import scala.collection.immutable
+
 object FieldValueRaw {
-//
-//  implicit val format: Reads[FieldValueRaw] = (
-//    (__ \ 'id).read[FieldId] and
-//    (__ \ 'type).readNullable[ComponentTypeRaw] and
-//    (__ \ 'label).read[String] and
-//    (__ \ 'value).readNullable[ValueExpr] and
-//    (__ \ 'format).readNullable[FormatExpr] and
-//    (__ \ 'helpText).readNullable[String] and
-//    (__ \ 'optionHelpText).readNullable[List[String]] and
-//    (__ \ 'submitMode).readNullable[String] and
-//    (__ \ 'choices).readNullable[List[String]] and
-//    (__ \ 'fields).lazyReadNullable(implicitly[Reads[List[FieldValueRaw]]]) and //Note: recursiveness here prevents macro use (see JsonParseTestGroup)
-//    (__ \ 'mandatory).readNullable[String] and
-//    (__ \ 'offset).readNullable[Offset] and
-//    (__ \ 'multivalue).readNullable[String] and
-//    (__ \ 'total).readNullable[String] and
-//    (__ \ 'international).readNullable[String] and
-//    (__ \ 'infoText).readNullable[String] and
-//    (__ \ 'infoType).readNullable[String] and
-//    (__ \ 'shortName).readNullable[String] and
-//    (__ \ 'repeatsMax).readNullable[Int] and
-//    (__ \ 'repeatsMin).readNullable[Int] and
-//    (__ \ 'repeatLabel).readNullable[String] and
-//    (__ \ 'repeatAddAnotherText).readNullable[String]
-//  )(FieldValueRaw.apply _)
+  //
+  //  implicit val format: Reads[FieldValueRaw] = (
+  //    (__ \ 'id).read[FieldId] and
+  //    (__ \ 'type).readNullable[ComponentTypeRaw] and
+  //    (__ \ 'label).read[String] and
+  //    (__ \ 'value).readNullable[ValueExpr] and
+  //    (__ \ 'format).readNullable[FormatExpr] and
+  //    (__ \ 'helpText).readNullable[String] and
+  //    (__ \ 'optionHelpText).readNullable[List[String]] and
+  //    (__ \ 'submitMode).readNullable[String] and
+  //    (__ \ 'choices).readNullable[List[String]] and
+  //    (__ \ 'fields).lazyReadNullable(implicitly[Reads[List[FieldValueRaw]]]) and //Note: recursiveness here prevents macro use (see JsonParseTestGroup)
+  //    (__ \ 'mandatory).readNullable[String] and
+  //    (__ \ 'offset).readNullable[Offset] and
+  //    (__ \ 'multivalue).readNullable[String] and
+  //    (__ \ 'total).readNullable[String] and
+  //    (__ \ 'international).readNullable[String] and
+  //    (__ \ 'infoText).readNullable[String] and
+  //    (__ \ 'infoType).readNullable[String] and
+  //    (__ \ 'shortName).readNullable[String] and
+  //    (__ \ 'repeatsMax).readNullable[Int] and
+  //    (__ \ 'repeatsMin).readNullable[Int] and
+  //    (__ \ 'repeatLabel).readNullable[String] and
+  //    (__ \ 'repeatAddAnotherText).readNullable[String]
+  //  )(FieldValueRaw.apply _)
 
   case class MES(mandatory: Boolean, editable: Boolean, submissible: Boolean)
 
 }
-
-
-
 
 class P(json: JsValue) {
 
@@ -65,14 +63,27 @@ class P(json: JsValue) {
   lazy val `type`: Option[ComponentTypeRaw] = (json \ "type").asOpt[ComponentTypeRaw]
   lazy val label: String = (json \ "label").as[String]
   lazy val value: Option[ValueExpr] = (json \ "value").asOpt[ValueExpr]
-  lazy val format: Option[FormatExpr] = (json \ "format").asOpt[FormatExpr]//.map(js => FormatParser.validate(formatAsStr) _.as[FormatExpr])
+
+  lazy val format: Option[String] = (json \ "format").asOpt[String] //.map(js => FormatParser.validate(formatAsStr) _.as[FormatExpr])
+  lazy val formatOpt: Opt[Option[FormatExpr]] = {
+    import cats.data._
+    import cats.implicits._
+    format.map(FormatParser.validate).sequence
+  }
+
+  //  match {
+  //    case Some(Right(x)) => Right(Some(x))
+  //    case Some(Left(x)) => Left(x)
+  //    case None       => Right(None)
+  //  }
+
   lazy val helpText: Option[String] = (json \ "helpText").asOpt[String]
   lazy val optionHelpText: Option[List[String]] = (json \ "optionHelpText").asOpt[List[String]]
   lazy val submitMode: Option[String] = (json \ "submitMode").asOpt[String]
   lazy val choices: Option[List[String]] = (json \ "choices").asOpt[List[String]]
 
   //   fields: Option[List[FieldValueRaw]] = None,
-  lazy val fieldsJson: Option[List[JsValue]] =  (json \ "fields").asOpt[List[JsValue]]
+  lazy val fieldsJson: Option[List[JsValue]] = (json \ "fields").asOpt[List[JsValue]]
 
   lazy val fields: Option[List[P]] = fieldsJson.map(_.map(new P(_)))
 
@@ -88,7 +99,6 @@ class P(json: JsValue) {
   lazy val repeatsMin: Option[Int] = (json \ "repeatsMin").asOpt[Int]
   lazy val repeatLabel: Option[String] = (json \ "repeatLabel").asOpt[String]
   lazy val repeatAddAnotherText: Option[String] = (json \ "repeatAddAnotherText").asOpt[String]
-
 
   def optFieldValue(): Opt[FieldValue] = optMES.flatMap(mes => componentTypeOpt.map(ct => mkFieldValue(mes, ct)))
 
@@ -136,24 +146,29 @@ class P(json: JsValue) {
     //TODO: What if there is None
   }
 
-  private lazy val textOpt: Opt[Text] = (format, value, total) match {
-    //format: OFF
-    case (Some(TextFormat(f)), Some(TextExpression(expr)), IsTotal(TotalYes))  => Text(f, expr, total = true).asRight
-    case (Some(TextFormat(f)), Some(TextExpression(expr)), IsTotal(TotalNo))   => Text(f, expr, total = false).asRight
-    case (Some(TextFormat(f)), None,                       IsTotal(TotalYes))  => Text(f, Constant(""), total = true).asRight
-    case (Some(TextFormat(f)), None,                       IsTotal(TotalNo))   => Text(f, Constant(""), total = false).asRight
-    case (None,                Some(TextExpression(expr)), IsTotal(TotalYes))  => Text(AnyText, expr, total = true).asRight
-    case (None,                Some(TextExpression(expr)), IsTotal(TotalNo))   => Text(AnyText, expr, total = false).asRight
-    case (None,                None,                       IsTotal(TotalYes))  => Text(AnyText, Constant(""), total = true).asRight
-    case (None,                None,                       IsTotal(TotalNo))   => Text(AnyText, Constant(""), total = false).asRight
-    case (Some(invalidFormat), Some(invalidValue),         invalidTotal)       => InvalidState(
-      s"""|Unsupported type of value for text field
-          |Id: $id
-          |Format: $invalidFormat
-          |Value: $invalidValue
-          |Total: $invalidTotal""".stripMargin).asLeft
-    //format: ON
-  }
+  private lazy val textOpt: Opt[Text] =
+    for {
+      format <- formatOpt.right
+      xxx = (format, value, total) match {
+        //format: OFF
+        case (Some(TextFormat(f)), Some(TextExpression(expr)), IsTotal(TotalYes))  => Text(f, expr, total = true).asRight
+        case (Some(TextFormat(f)), Some(TextExpression(expr)), IsTotal(TotalNo))   => Text(f, expr, total = false).asRight
+        case (Some(TextFormat(f)), None,                       IsTotal(TotalYes))  => Text(f, Constant(""), total = true).asRight
+        case (Some(TextFormat(f)), None,                       IsTotal(TotalNo))   => Text(f, Constant(""), total = false).asRight
+        case (None,                Some(TextExpression(expr)), IsTotal(TotalYes))  => Text(AnyText, expr, total = true).asRight
+        case (None,                Some(TextExpression(expr)), IsTotal(TotalNo))   => Text(AnyText, expr, total = false).asRight
+        case (None,                None,                       IsTotal(TotalYes))  => Text(AnyText, Constant(""), total = true).asRight
+        case (None,                None,                       IsTotal(TotalNo))   => Text(AnyText, Constant(""), total = false).asRight
+        case (Some(invalidFormat), Some(invalidValue),         invalidTotal)       => InvalidState(
+          s"""|Unsupported type of value for text field
+              |Id: $id
+              |Format: $invalidFormat
+              |Value: $invalidValue
+              |Total: $invalidTotal""".stripMargin).asLeft
+        //format: ON
+      }
+      result <- xxx.right
+    } yield result
 
   private lazy val addressOpt: Opt[Address] = international match {
     //format: OFF
@@ -166,14 +181,19 @@ class P(json: JsValue) {
     //format: ON
   }
 
-  private lazy val dateFormatOpt: Opt[DateConstraintType] = format match {
-    case Some(DateFormat(e)) => e.asRight
-    case None => AnyDate.asRight
-    case Some(invalidFormat) =>
-      InvalidState(s"""|Unsupported type of format for date field
-                       |Id: $id
-                       |Format: $invalidFormat""".stripMargin).asLeft
-  }
+  private lazy val dateFormatOpt: Opt[DateConstraintType] =
+    for {
+      format <- formatOpt.right
+      xxx = format match {
+        case Some(DateFormat(e)) => e.asRight
+        case None => AnyDate.asRight
+        case Some(invalidFormat) =>
+          InvalidState(s"""|Unsupported type of format for date field
+                           |Id: $id
+                           |Format: $invalidFormat""".stripMargin).asLeft
+      }
+      result <- xxx.right
+    } yield result
 
   private lazy val dateOpt: Opt[Date] = for {
     v <- valueOpt
@@ -184,22 +204,38 @@ class P(json: JsValue) {
   private lazy val groupOpt: Opt[Group] = fields.fold(noRawFields)(groupOpt(_))
 
   private lazy val noRawFields: Opt[Group] = InvalidState(s"""Require 'fields' element in Group""").asLeft
-//  private def groupOpt(rawFields: List[FieldValueRaw]): Opt[Group] = {
+  //  private def groupOpt(rawFields: List[FieldValueRaw]): Opt[Group] = {
 
   def groupOpt(fields: List[P]): Opt[Group] = {
 
-    val orientation = format match {
+    def orientation(format: Option[FormatExpr]) = format match {
       case IsGroupOrientation(VerticalGroupOrientation) | None => Vertical
       case IsGroupOrientation(HorizontalGroupOrientation) => Horizontal
     }
 
-    fields.map(_.optFieldValue()).partition(_.isRight) match {
-      case (ueorfvs, Nil) => validateAndBuildGroupField(ueorfvs.map(_.right.get), orientation)
-      case (_, ueorfvs) => ueorfvs.map(_.left.get).head.asLeft
+    val fieldValueOpts: List[Opt[FieldValue]] = fields.map(_.optFieldValue())
+
+    val fieldValuesOpt: Opt[List[FieldValue]] = {
+      import cats.data._
+      import cats.implicits._
+      fieldValueOpts.sequence
     }
+
+    for {
+      fieldValues <- fieldValuesOpt.right
+      format <- formatOpt.right
+      group <- validateAndBuildGroupField(fieldValues, orientation(format))
+    } yield group
+
+    //
+    //    fieldValueOpts.partition(_.isRight) match {
+    //      case (ueorfvs, Nil) => validateAndBuildGroupField(ueorfvs.map(_.right.get), orientation)
+    //      case (_, ueorfvs) => ueorfvs.map(_.left.get).head.asLeft
+    //    }
+
   }
 
-  private def validateAndBuildGroupField(fields: List[FieldValue], orientation: Orientation) = {
+  private def validateAndBuildGroupField(fields: List[FieldValue], orientation: Orientation): Opt[Group] = {
     (repeatsMax, repeatsMin) match {
       case (Some(repMax), Some(repMin)) if repMax < repMin =>
         InvalidState(s"""repeatsMax should be higher than repeatsMin in Group field""").asLeft
@@ -210,30 +246,35 @@ class P(json: JsValue) {
     }
   }
 
-  private lazy val choiceOpt = (format, choices, multivalue, value, optionHelpText) match {
-    case (IsOrientation(VerticalOrientation), Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections), oHelpText) =>
-      Choice(Checkbox, NonEmptyList(x, xs), Vertical, selections, oHelpText).asRight
-    case (IsOrientation(VerticalOrientation), Some(x :: xs), IsMultivalue(MultivalueNo), Selections(selections), oHelpText) =>
-      Choice(Radio, NonEmptyList(x, xs), Vertical, selections, oHelpText).asRight
-    case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections), oHelpText) =>
-      Choice(Checkbox, NonEmptyList(x, xs), Horizontal, selections, oHelpText).asRight
-    case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueNo), Selections(selections), oHelpText) =>
-      Choice(Radio, NonEmptyList(x, xs), Horizontal, selections, oHelpText).asRight
-    case (IsOrientation(YesNoOrientation), None, IsMultivalue(MultivalueNo), Selections(selections), oHelpText) =>
-      Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, selections, oHelpText).asRight
-    case (IsOrientation(YesNoOrientation), _, _, Selections(selections), oHelpText) =>
-      Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, selections, oHelpText).asRight
-    case (IsOrientation(InlineOrientation), Some(x :: xs), None, Selections(selections), oHelpText) =>
-      Choice(Inline, NonEmptyList(x, xs), Horizontal, selections, oHelpText).asRight
-    case (invalidFormat, invalidChoices, invalidMultivalue, invalidValue, invalidHelpText) =>
-      InvalidState(s"""|Unsupported combination of 'format, choices, multivalue and value':
-                         |Format     : $invalidFormat
-                         |Choices    : $invalidChoices
-                         |Multivalue : $invalidMultivalue
-                         |Value      : $invalidValue
-                         |optionHelpText: $invalidHelpText
-                         |""".stripMargin).asLeft
-  }
+  private lazy val choiceOpt: Opt[Choice] =
+    for {
+      format <- formatOpt.right
+      oChoice: Opt[Choice] = (format, choices, multivalue, value, optionHelpText) match {
+        case (IsOrientation(VerticalOrientation), Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections), oHelpText) =>
+          Choice(Checkbox, NonEmptyList(x, xs), Vertical, selections, oHelpText).asRight
+        case (IsOrientation(VerticalOrientation), Some(x :: xs), IsMultivalue(MultivalueNo), Selections(selections), oHelpText) =>
+          Choice(Radio, NonEmptyList(x, xs), Vertical, selections, oHelpText).asRight
+        case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections), oHelpText) =>
+          Choice(Checkbox, NonEmptyList(x, xs), Horizontal, selections, oHelpText).asRight
+        case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueNo), Selections(selections), oHelpText) =>
+          Choice(Radio, NonEmptyList(x, xs), Horizontal, selections, oHelpText).asRight
+        case (IsOrientation(YesNoOrientation), None, IsMultivalue(MultivalueNo), Selections(selections), oHelpText) =>
+          Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, selections, oHelpText).asRight
+        case (IsOrientation(YesNoOrientation), _, _, Selections(selections), oHelpText) =>
+          Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, selections, oHelpText).asRight
+        case (IsOrientation(InlineOrientation), Some(x :: xs), None, Selections(selections), oHelpText) =>
+          Choice(Inline, NonEmptyList(x, xs), Horizontal, selections, oHelpText).asRight
+        case (invalidFormat, invalidChoices, invalidMultivalue, invalidValue, invalidHelpText) =>
+          InvalidState(s"""|Unsupported combination of 'format, choices, multivalue and value':
+                           |Format     : $invalidFormat
+                           |Choices    : $invalidChoices
+                           |Multivalue : $invalidMultivalue
+                           |Value      : $invalidValue
+                           |optionHelpText: $invalidHelpText
+                           |""".stripMargin).asLeft
+      }
+      result <- oChoice.right
+    } yield result
 
   private lazy val fileUploadOpt: Opt[FileUpload] = FileUpload().asRight
 
@@ -387,10 +428,6 @@ class P(json: JsValue) {
 
   private def isThisAnInfoField: Boolean = `type`.getOrElse(None).isInstanceOf[InfoRaw.type]
 }
-
-
-
-
 
 //case class FieldValueRaw(
 //                          id: FieldId,
