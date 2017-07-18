@@ -19,6 +19,8 @@ package uk.gov.hmrc.gform.services
 import play.twirl.api.Html
 import uk.gov.hmrc.gform.models._
 import scala.collection.immutable.List
+import org.joda.time.DateTime
+import org.joda.time.format.DateTimeFormat
 
 object HtmlGeneratorService extends HtmlGeneratorService {}
 
@@ -60,8 +62,8 @@ trait HtmlGeneratorService {
     val month = formFields.filter(_.id.value.endsWith("month")).head.value
     val year = formFields.filter(_.id.value.endsWith("year")).head.value
 
-    val date = org.joda.time.DateTime.parse(s"${year}-${month}-${day}")
-    val formatter = org.joda.time.format.DateTimeFormat.forPattern("dd MMMM yyyy")
+    val date = DateTime.parse(s"${year}-${month}-${day}")
+    val formatter = DateTimeFormat.forPattern("dd MMMM yyyy")
     (getEnglishText(fieldValue.shortName.getOrElse(fieldValue.label)), Html(formatter.print(date)))
   }
 

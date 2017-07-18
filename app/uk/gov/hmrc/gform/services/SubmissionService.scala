@@ -68,7 +68,7 @@ trait SubmissionService {
           }
         }.partition(_.isLeft) match {
           case (Nil, list) => Right(for (Right(formField) <- list) yield formField)
-          case (invalidStates, _) => Left(InvalidState(invalidStates.mkString(", ")))
+          case (invalidStates, _) => Left(InvalidState((for (Left(invalidState) <- invalidStates) yield invalidState).mkString(", ")))
         }
       }
 
@@ -101,7 +101,7 @@ trait SubmissionService {
     val html = htmlGenerator.generateDocumentHTML(sectionFormFields, formName)
 
     pdfGenerator.generatePDF(html).map { pdf =>
-      
+
       /*
       val path = java.nio.file.Paths.get("confirmation.pdf")
       val out = java.nio.file.Files.newOutputStream(path)
