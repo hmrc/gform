@@ -114,6 +114,7 @@ class TemplateValidatorSpec extends Spec {
         |        {
         |          "id": "amountA",
         |          "label": "Amount A | Rhif A",
+        |          "format": "positiveNumber",
         |          "mandatory": "true"
         |        }
         |      ]
@@ -124,6 +125,7 @@ class TemplateValidatorSpec extends Spec {
         |        {
         |          "id": "amountB",
         |          "label": "Amount B | Rhif B",
+        |          "format": "number",
         |          "mandatory": "true"
         |        },
         |        {
@@ -185,13 +187,13 @@ class TemplateValidatorSpec extends Spec {
         |        {
         |          "id": "accountingPeriodStartDate",
         |          "label": "Accounting period start date | Dyddiad dechrau'r cyfnod cyfrifeg",
-        |          "format": "date",
+        |          "type": "date",
         |          "mandatory": "true"
         |        },
         |        {
         |          "id": "accountingPeriodEndDate",
         |          "label": "Accounting period end date | Dyddiad diwedd cyfnod Cyfrifeg",
-        |          "format": "date",
+        |          "type": "date",
         |          "mandatory": "false"
         |        }
         |      ]
@@ -203,13 +205,12 @@ class TemplateValidatorSpec extends Spec {
         |          "id": "standardRateIPTDueForThisPeriod",
         |          "label": "Standard rate IPT due for this period | Cyfradd safonol IPT sy'n ddyledus am y cyfnod hwn",
         |          "helpText": "You should deduct any standard credits which are due to you | Dylech ddidynnu unrhyw gredydau safonol sydd yn ddyledus i chi",
-        |          "format": "sterling",
+        |          "format": "positiveNumber(8,2)",
         |          "mandatory": "true"
         |        },
         |        {
         |          "id": "higherRateIPTDueForThisPeriod",
         |          "label": "Higher rate IPT due for this period | Cyfradd uwch IPT sy'n ddyledus am y cyfnod hwn",
-        |          "format": "sterling",
         |          "mandatory": "true"
         |        }
         |      ]
@@ -366,28 +367,28 @@ class TemplateValidatorSpec extends Spec {
 
   val businessDetailsSection = Section(
     "Business details",
-    None, None,
+    None, None, None,
     List(
-      FieldValue(FieldId("nameOfBusiness"), Text(Constant(""), total = false), "Name of business", None, None, mandatory = true, editable = true, submissible = true),
+      FieldValue(FieldId("nameOfBusiness"), Text(AnyText, Constant(""), total = false), "Name of business", None, None, mandatory = true, editable = true, submissible = true),
       FieldValue(FieldId("businessAddress"), Address(international = false), "Business address", None, None, mandatory = true, editable = true, submissible = true)
     )
   )
 
   val sectionWithDate = Section(
     "Business details",
-    None, None,
+    None, None, None,
     List(
-      FieldValue(FieldId("nameOfBusiness"), Text(Constant(""), total = false), "Name of business", None, None, mandatory = true, editable = true, submissible = true),
+      FieldValue(FieldId("nameOfBusiness"), Text(AnyText, Constant(""), total = false), "Name of business", None, None, mandatory = true, editable = true, submissible = true),
       FieldValue(FieldId("startDate"), Date(AnyDate, Offset(0), None), "Start date", None, None, mandatory = true, editable = true, submissible = true)
     )
   )
 
   val sectionWithCheckbox = Section(
     "Business details",
-    None, None,
+    None, None, None,
     List(
       FieldValue(
-        FieldId("nameOfBusiness"), Text(Constant(""), total = false), "Name of business", None, None, mandatory = true, editable = true, submissible = true
+        FieldId("nameOfBusiness"), Text(AnyText, Constant(""), total = false), "Name of business", None, None, mandatory = true, editable = true, submissible = true
       ),
       FieldValue(
         FieldId("dutyType"), Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None), "Select the tax type", None, None, mandatory = true, editable = true, submissible = true
@@ -397,10 +398,10 @@ class TemplateValidatorSpec extends Spec {
 
   val sectionWithRadio = Section(
     "Business details",
-    None, None,
+    None, None, None,
     List(
       FieldValue(
-        FieldId("nameOfBusiness"), Text(Constant(""), total = false), "Name of business", None, None, mandatory = true, editable = true, submissible = true
+        FieldId("nameOfBusiness"), Text(AnyText, Constant(""), total = false), "Name of business", None, None, mandatory = true, editable = true, submissible = true
       ),
       FieldValue(
         FieldId("dutyType"), Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None), "Select the tax type", None, None, mandatory = true, editable = true, submissible = true
@@ -410,10 +411,10 @@ class TemplateValidatorSpec extends Spec {
 
   val sectionWithYesNo = Section(
     "Business details",
-    None, None,
+    None, None, None,
     List(
       FieldValue(
-        FieldId("nameOfBusiness"), Text(Constant(""), total = false), "Name of business", None, None, mandatory = true, editable = true, submissible = true
+        FieldId("nameOfBusiness"), Text(AnyText, Constant(""), total = false), "Name of business", None, None, mandatory = true, editable = true, submissible = true
       ),
       FieldValue(
         FieldId("taxType"), Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int], None), "Gas tax type?", None, None, mandatory = true, editable = true, submissible = true
@@ -527,9 +528,9 @@ class TemplateValidatorSpec extends Spec {
 
     val section = Section(
       "Business details",
-      None, None,
+      None, None, None,
       List(
-        FieldValue(FieldId("nameOfBusiness"), Text(Constant(""), total = false), "Name of business", None, None, mandatory = false, editable = true, submissible = true)
+        FieldValue(FieldId("nameOfBusiness"), Text(AnyText, Constant(""), total = false), "Name of business", None, None, mandatory = false, editable = true, submissible = true)
       )
     )
 
@@ -545,9 +546,9 @@ class TemplateValidatorSpec extends Spec {
 
     val section = Section(
       "Business details",
-      None, None,
+      None, None, None,
       List(
-        FieldValue(FieldId("nameOfBusiness"), Text(Constant(""), total = false), "Name of business", None, None, mandatory = false, editable = true, submissible = true)
+        FieldValue(FieldId("nameOfBusiness"), Text(AnyText, Constant(""), total = false), "Name of business", None, None, mandatory = false, editable = true, submissible = true)
       )
     )
 
@@ -563,9 +564,9 @@ class TemplateValidatorSpec extends Spec {
 
     val section = Section(
       "Business details",
-      None, None,
+      None, None, None,
       List(
-        FieldValue(FieldId("nameOfBusiness"), Text(Constant(""), total = false), "Name of business", None, None, mandatory = true, editable = true, submissible = true)
+        FieldValue(FieldId("nameOfBusiness"), Text(AnyText, Constant(""), total = false), "Name of business", None, None, mandatory = true, editable = true, submissible = true)
       )
     )
 

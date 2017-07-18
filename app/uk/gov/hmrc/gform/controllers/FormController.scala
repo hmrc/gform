@@ -16,23 +16,18 @@
 
 package uk.gov.hmrc.gform.controllers
 
-import java.util.UUID
-
-import cats.data.EitherT
 import cats.instances.future._
 import play.api.Logger
-import play.api.libs.json.{ Json, OFormat }
-import play.api.mvc.{ Action, AnyContent, Request, RequestHeader }
+import play.api.libs.json.Json
+import play.api.mvc.{ Action, AnyContent, RequestHeader }
 import uk.gov.hmrc.gform.connectors.Save4LaterConnector
-import uk.gov.hmrc.gform.controllers.FormController._
-import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.models._
 import uk.gov.hmrc.gform.repositories.{ AbstractRepo, SubmissionRepository }
-import uk.gov.hmrc.gform.services.{ FormService, MongoOperation, SaveOperation, SaveTolerantOperation, SubmissionService, UpdateOperation, UpdateTolerantOperation, _ }
+import uk.gov.hmrc.gform.services.{ FormService, SubmissionService, UpdateOperation, UpdateTolerantOperation, _ }
 import uk.gov.hmrc.gform.typeclasses.{ FusFeUrl, FusUrl, ServiceUrl }
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.play.microservice.controller.BaseController
-import uk.gov.hmrc.gform.typeclasses._
+
 import scala.concurrent.Future
 
 class FormController()(
@@ -45,21 +40,18 @@ class FormController()(
     fusFeUrl: ServiceUrl[FusFeUrl]
 ) extends BaseController {
 
-  def newForm(userId: UserId, formTypeId: FormTypeId, formId: FormId) = Action.async { implicit request =>
+  def newForm(userId: UserId, formTypeId: FormTypeId) = Action.async { implicit request =>
 
-    val template = FormTemplateService.get(formTypeId)
-    val envelopeId = FileUploadService.createEnvelope(formTypeId)
-    val form = envelopeId.flatMap(envelopeId => FormService.insertEmpty(userId, formTypeId, envelopeId, formId))
+    val templateF = FormTemplateService.get(formTypeId)
+    val envelopeIdF = FileUploadService.createEnvelope(formTypeId)
+    val formId = FormId(userId, formTypeId)
     val response = for {
-      t <- template
-      e <- envelopeId
-      f <- form
-    } yield NewFormResponse(f, e, t)
+      formTemplate <- templateF
+      envelopeId <- envelopeIdF
+      form <- FormService.insertEmpty(userId, formTypeId, envelopeId, formId)
+    } yield form
     response.fold(
-      error => {
-        Logger.debug("ERROR NEW FORM")
-        error.toResult
-      },
+      error => error.toResult,
       response => Ok(Json.toJson(response))
     )
   }
@@ -107,10 +99,13 @@ class FormController()(
       case Some(true) => UpdateTolerantOperation
       case _ => UpdateOperation
     }
-    FormService.updateFormData(formId, request.body).fold(er => BadRequest(er.jsonResponse), success => success.toResult)
+    FormService.updateFormData(formId, request.body).fold(
+      er => BadRequest(er.jsonResponse),
+      success => success.toResult
+    )
   }
 
-  def submission(formTypeId: FormTypeId, version: Version, userId: UserId, formId: FormId) = Action.async { implicit request =>
+  def submission(formId: FormId) = Action.async { implicit request =>
     SubmissionService.submission(formId).fold(
       error => error.toResult,
       response => Ok(response)
@@ -137,18 +132,4 @@ class FormController()(
     val Form(formId, formData, envelopeId) = form
     routes.FormController.get(formId).absoluteURL()
   }
-}
-
-object FormController {
-
-  case class NewFormResponse(
-    form: Form,
-    envelopeId: EnvelopeId,
-    formTemplate: FormTemplate
-  )
-
-  object NewFormResponse {
-    implicit val format: OFormat[NewFormResponse] = Json.format[NewFormResponse]
-  }
-
 }

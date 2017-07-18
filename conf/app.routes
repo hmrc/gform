@@ -4,12 +4,12 @@ POST       /retrieveForm/:rn            uk.gov.hmrc.gform.controllers.SaveAndRet
 POST       /saveForm/:rn                uk.gov.hmrc.gform.controllers.SaveAndRetrieveController.saveForm(rn:String)
 
 #TODO: This should be just /form/:formTypeId/:version. Refactor later
-POST       /new-form/:formTypeId/:userId/:formId           uk.gov.hmrc.gform.controllers.FormController.newForm(userId: UserId, formTypeId: FormTypeId, formId: FormId)
+POST       /new-form/:formTypeId/:userId           uk.gov.hmrc.gform.controllers.FormController.newForm(userId: UserId, formTypeId: FormTypeId)
 
 GET        /forms                                   uk.gov.hmrc.gform.controllers.FormController.all
 PUT        /forms/:formId                           uk.gov.hmrc.gform.controllers.FormController.update(formId: FormId, tolerant: Option[Boolean])
 GET        /forms/:formId                           uk.gov.hmrc.gform.controllers.FormController.get(formId: FormId)
-POST       /forms/:formTypeId/submission/:formId/:version/:userId    uk.gov.hmrc.gform.controllers.FormController.submission(formTypeId: FormTypeId, version: Version, userId: UserId, formId: FormId)
+POST       /forms/submission/:formId                uk.gov.hmrc.gform.controllers.FormController.submission(formId: FormId)
 GET        /forms/:formTypeId/submission/:formId    uk.gov.hmrc.gform.controllers.FormController.submissionStatus(formTypeId: FormTypeId, formId: FormId)
 POST       /forms/:formId/delete                    uk.gov.hmrc.gform.controllers.FormController.delete(formId: FormId)
 

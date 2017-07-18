@@ -22,13 +22,13 @@ import uk.gov.hmrc.gform.services.SubmissionService
 
 class SubmissionServiceSpec extends FlatSpec with Matchers with EitherValues {
 
-  val section0 = Section("Section for Start Date", None, None, List(
+  val section0 = Section("Section for Start Date", None, None, None, List(
     FieldValue(FieldId("startDate"), Date(AnyDate, Offset(0), None), "Your Start Date", None, None, true, true, true)
   ))
 
-  val section1 = Section("About you", None, None, List(FieldValue(FieldId("firstName"), Text(Constant(""), total = false), "First Name", None, None, true, true, true)))
+  val section1 = Section("About you", None, None, None, List(FieldValue(FieldId("firstName"), Text(AnyText, Constant(""), total = false), "First Name", None, None, true, true, true)))
 
-  val section2 = Section("Business details", None, None, List(FieldValue(FieldId("nameOfBusiness"), Text(Constant(""), total = false), "Name of business", None, None, true, true, true)))
+  val section2 = Section("Business details", None, None, None, List(FieldValue(FieldId("nameOfBusiness"), Text(AnyText, Constant(""), total = false), "Name of business", None, None, true, true, true)))
 
   val formTemplate = FormTemplate(
     schemaId = None,

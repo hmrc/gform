@@ -41,10 +41,10 @@ class SubmissionServiceSpec extends Spec with TypeclassFixtures {
 
   val yourDetailsSection = Section(
     "Your details",
-    None, None,
+    None, None, None,
     List(
-      FieldValue(FieldId("firstName"), Text(Constant(""), total = false), "Your first name", None, None, mandatory = true, editable = true, submissible = true),
-      FieldValue(FieldId("lastName"), Text(Constant(""), total = false), "Your last name", None, None, mandatory = true, editable = true, submissible = true)
+      FieldValue(FieldId("firstName"), Text(AnyText, Constant(""), total = false), "Your first name", None, None, mandatory = true, editable = true, submissible = true),
+      FieldValue(FieldId("lastName"), Text(AnyText, Constant(""), total = false), "Your last name", None, None, mandatory = true, editable = true, submissible = true)
     )
   )
 
@@ -140,7 +140,7 @@ class SubmissionServiceSpec extends Spec with TypeclassFixtures {
 
     val textFieldUno = FieldValue(
       id = FieldId("UNO"),
-      `type` = Text(Constant("UNO"), false),
+      `type` = Text(AnyText, Constant("UNO"), false),
       label = "Editable text label",
       helpText = None,
       shortName = None,
@@ -149,7 +149,7 @@ class SubmissionServiceSpec extends Spec with TypeclassFixtures {
       submissible = true
     )
 
-    val textFieldDos = textFieldUno.copy(id = FieldId("DOS"), `type` = Text(Constant("DOS"), false))
+    val textFieldDos = textFieldUno.copy(id = FieldId("DOS"), `type` = Text(AnyText, Constant("DOS"), false))
 
     val group = Group(
       fields = List(textFieldUno, textFieldDos),
@@ -173,6 +173,7 @@ class SubmissionServiceSpec extends Spec with TypeclassFixtures {
 
     val section = Section(
       title = "Section title",
+      description = None,
       shortName = None,
       includeIf = None,
       fields = List(groupFieldValue)
@@ -197,19 +198,19 @@ class SubmissionServiceSpec extends Spec with TypeclassFixtures {
         List(
           (
             FormField(FieldId("UNO"), "UNO"),
-            FieldValue(FieldId("UNO"), Text(Constant("UNO"), false), "Editable text label", None, None, true, true, true)
+            FieldValue(FieldId("UNO"), Text(AnyText, Constant("UNO"), false), "Editable text label", None, None, true, true, true)
           ),
           (
             FormField(FieldId("DOS"), "DOS"),
-            FieldValue(FieldId("DOS"), Text(Constant("DOS"), false), "Editable text label", None, None, true, true, true)
+            FieldValue(FieldId("DOS"), Text(AnyText, Constant("DOS"), false), "Editable text label", None, None, true, true, true)
           ),
           (
             FormField(FieldId("1_UNO"), "1_UNO"),
-            FieldValue(FieldId("1_UNO"), Text(Constant("UNO"), false), "Editable text label", None, None, true, true, true)
+            FieldValue(FieldId("1_UNO"), Text(AnyText, Constant("UNO"), false), "Editable text label", None, None, true, true, true)
           ),
           (
             FormField(FieldId("1_DOS"), "1_DOS"),
-            FieldValue(FieldId("1_DOS"), Text(Constant("DOS"), false), "Editable text label", None, None, true, true, true)
+            FieldValue(FieldId("1_DOS"), Text(AnyText, Constant("DOS"), false), "Editable text label", None, None, true, true, true)
           )
         )
       )

@@ -56,7 +56,7 @@ trait SubmissionService {
           case Address(_) => Address.fields(fieldValue.id)
           case Date(_, _, _) => Date.fields(fieldValue.id)
           case FileUpload() => List(fieldValue.id)
-          case Text(_, _) | Choice(_, _, _, _, _) | Group(_, _, _, _, _, _) => List(fieldValue.id)
+          case Text(_, _, _) | Choice(_, _, _, _, _) | Group(_, _, _, _, _, _) => List(fieldValue.id)
           case InformationMessage(_, _) => List(fieldValue.id)
         }
 
@@ -101,7 +101,7 @@ trait SubmissionService {
     val html = htmlGenerator.generateDocumentHTML(sectionFormFields, formName)
 
     pdfGenerator.generatePDF(html).map { pdf =>
-
+      
       /*
       val path = java.nio.file.Paths.get("confirmation.pdf")
       val out = java.nio.file.Files.newOutputStream(path)

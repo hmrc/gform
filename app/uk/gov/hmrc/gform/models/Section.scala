@@ -22,6 +22,7 @@ import scala.collection.immutable.List
 
 case class Section(
     title: String,
+    description: Option[String],
     shortName: Option[String],
     includeIf: Option[IncludeIf],
     fields: List[FieldValue]
