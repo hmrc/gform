@@ -881,12 +881,13 @@ class FieldValueSpec extends Spec {
           "label": "Start date",
           "helpText": "For example, 31 3 1980",
           "mandatory": "true",
-          "format": "after 2016-09-05 -1",
+          "format": "after 2016-09-05 -d",
           "value": "2010-10-10"
         }
         """
     )
 
+    println(fieldValue)
 //    fieldValue should beJsSuccess(FieldValue(FieldId("startDate"), Date(), "Original invoice from the supplier", None, Some(shortName), mandatory = true, editable = true, submissible = true))
   }
 
