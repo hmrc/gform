@@ -17,8 +17,7 @@
 package uk.gov.hmrc.gform.models
 
 import play.api.libs.json.Json
-import uk.gov.hmrc.gform.core.{ Invalid, Valid, ValidationResult }
-
+import uk.gov.hmrc.gform.core.{ Invalid, Valid, ValidationResult, Opt }
 import scala.collection.immutable.List
 
 case class Section(
@@ -31,7 +30,7 @@ case class Section(
   private def atomicFields(fieldValues: List[FieldValue], data: Map[FieldId, FormField]): List[FieldValue] = {
     fieldValues.flatMap { (fieldValue) =>
       fieldValue.`type` match {
-        case Group(gfvs, _, repMax, _, _, _) => atomicFields(gfvs, data) ++ findIdsInRepeatingGroup(gfvs, repMax, data)
+        case Group(gfvs, _, repMax, _, _, _) => atomicFields(fixLabels(gfvs), data) ++ findIdsInRepeatingGroup(gfvs, repMax, data)
         case fv @ _ => List(fieldValue)
       }
     }
@@ -56,12 +55,34 @@ case class Section(
         data.keys.flatMap { key =>
           val fieldName = s"${i}_${fieldInGroup.id.value}"
           key.value.startsWith(fieldName) match {
-            case true => List(fieldInGroup.copy(id = FieldId(fieldName)))
+            case true => List(fieldInGroup.copy(
+              id = FieldId(fieldName),
+              label = buildRepeatingText(Some(fieldInGroup.label), i + 1).getOrElse(""),
+              shortName = buildRepeatingText(fieldInGroup.shortName, i + 1)
+            ))
             case false => Nil
           }
         }.toSet
       }
     }.toList.flatten
+  }
+
+  private def fixLabels(fieldValues: List[FieldValue]): List[FieldValue] = {
+    fieldValues.map { field =>
+      if (field.label.contains("$n") || (field.shortName.isDefined && field.shortName.get.contains("$n"))) {
+        field.copy(
+          label = buildRepeatingText(Some(field.label), 1).get,
+          shortName = buildRepeatingText(field.shortName, 1)
+        )
+      } else {
+        field
+      }
+    }
+  }
+
+  private def buildRepeatingText(text: Option[String], index: Int) = text match {
+    case Some(txt) if text.get.contains("$n") => Some(txt.replace("$n", index.toString))
+    case _ => text
   }
 }
 
@@ -129,5 +150,5 @@ object Section {
 
 case class SectionFormField(
   title: String,
-  fields: List[(FormField, FieldValue)]
+  fields: List[(List[FormField], FieldValue)]
 )

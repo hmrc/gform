@@ -16,19 +16,9 @@
 
 package uk.gov.hmrc.gform.fileUpload
 
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-
-import play.api.http.HeaderNames.LOCATION
-import play.api.libs.json.Json
 import uk.gov.hmrc.gform.config.ConfigModule
-import uk.gov.hmrc.gform.models.FormTypeId
 import uk.gov.hmrc.gform.time.TimeModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
-import uk.gov.hmrc.play.http.ws.WSHttp
-import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpResponse }
-
-import scala.concurrent.{ ExecutionContext, Future }
 
 class FileUploadModule(configModule: ConfigModule, wSHttpModule: WSHttpModule, timeModule: TimeModule) {
 

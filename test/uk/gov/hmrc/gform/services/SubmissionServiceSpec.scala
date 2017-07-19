@@ -22,6 +22,7 @@ import org.scalatest.time.{ Millis, Span }
 import play.api.http.HeaderNames.LOCATION
 import play.api.libs.json.Json
 import uk.gov.hmrc.gform._
+import uk.gov.hmrc.gform.connectors.PDFGeneratorConnector
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.models._
 import uk.gov.hmrc.gform.typeclasses._
@@ -29,6 +30,7 @@ import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpResponse }
 
 import scala.collection.immutable.List
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import scala.util.Random
 
 class SubmissionServiceSpec extends Spec with TypeclassFixtures {
@@ -117,7 +119,21 @@ class SubmissionServiceSpec extends Spec with TypeclassFixtures {
     (insertCheck.call _).expects().once
     (postCheck.call _).expects().repeat(3)
 
-    val res = SubmissionService.submission(FormId("form-id"))
+    val testSubmissionService = new SubmissionService {
+      override def htmlGenerator: HtmlGeneratorService = new HtmlGeneratorService {
+        override def generateDocumentHTML(sectionFormFields: List[SectionFormField], formName: String): String = {
+          "HELLO"
+        }
+      }
+      override def pdfGenerator: PDFGeneratorService = new PDFGeneratorService {
+        override def pdfConnector: PDFGeneratorConnector = ???
+
+        override def generatePDF(html: String)(implicit hc: HeaderCarrier): Future[Array[Byte]] = {
+          Future.successful("HELLO".getBytes)
+        }
+      }
+    }
+    val res = testSubmissionService.submission(FormId("form-id"))
 
     futureResult(res.value).right.value should be("http://localhost:8898/file-transfer/envelopes/123")
   }
@@ -197,19 +213,19 @@ class SubmissionServiceSpec extends Spec with TypeclassFixtures {
         "Section title",
         List(
           (
-            FormField(FieldId("UNO"), "UNO"),
+            List(FormField(FieldId("UNO"), "UNO")),
             FieldValue(FieldId("UNO"), Text(AnyText, Constant("UNO"), false), "Editable text label", None, None, true, true, true)
           ),
           (
-            FormField(FieldId("DOS"), "DOS"),
+            List(FormField(FieldId("DOS"), "DOS")),
             FieldValue(FieldId("DOS"), Text(AnyText, Constant("DOS"), false), "Editable text label", None, None, true, true, true)
           ),
           (
-            FormField(FieldId("1_UNO"), "1_UNO"),
+            List(FormField(FieldId("1_UNO"), "1_UNO")),
             FieldValue(FieldId("1_UNO"), Text(AnyText, Constant("UNO"), false), "Editable text label", None, None, true, true, true)
           ),
           (
-            FormField(FieldId("1_DOS"), "1_DOS"),
+            List(FormField(FieldId("1_DOS"), "1_DOS")),
             FieldValue(FieldId("1_DOS"), Text(AnyText, Constant("DOS"), false), "Editable text label", None, None, true, true, true)
           )
         )
