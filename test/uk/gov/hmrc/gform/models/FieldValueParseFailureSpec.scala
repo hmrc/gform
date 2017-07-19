@@ -134,6 +134,23 @@ class FieldValueParseFailureSpec extends Spec {
     fieldValue should be(jsError)
   }
 
+  it should "fail to parse a text" in {
+    val fieldValue = toFieldValue(
+      """{
+           "id": "sum",
+           "label": "Label",
+           "value": "${a - b}"
+           ,
+           "format": "positiveNumber(3,4,'u'"
+          }
+      """
+    )
+
+    print(fieldValue)
+    fieldValue should be(jsError)
+
+  }
+
   private def toFieldValue(template: String): JsResult[FieldValue] = {
 
     val templateAsJson = Json.parse(template.stripMargin)

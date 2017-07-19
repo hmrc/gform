@@ -108,9 +108,9 @@ class P(json: JsValue) {
 
   private lazy val textOpt: Opt[Text] = {
     for {
-      format <- optMaybeFormatExpr.right
-      value <- optMaybeValueExpr
-      optText = (format, value, total) match {
+      maybeFormatExpr <- optMaybeFormatExpr
+      maybeValueExpr <- optMaybeValueExpr
+      optText = (maybeFormatExpr, maybeValueExpr, total) match {
         //format: OFF
         case (Some(TextFormat(f)), Some(TextExpression(expr)), IsTotal(TotalYes))  => Text(f, expr, total = true).asRight
         case (Some(TextFormat(f)), Some(TextExpression(expr)), IsTotal(TotalNo))   => Text(f, expr, total = false).asRight
@@ -121,14 +121,14 @@ class P(json: JsValue) {
         case (None,                None,                       IsTotal(TotalYes))  => Text(AnyText, Constant(""), total = true).asRight
         case (None,                None,                       IsTotal(TotalNo))   => Text(AnyText, Constant(""), total = false).asRight
         case (Some(invalidFormat), Some(invalidValue),         invalidTotal)       => InvalidState(
-          s"""|Unsupported type of value for text field
+          s"""|Unsupported type of format and value for text field
               |Id: $id
               |Format: $invalidFormat
               |Value: $invalidValue
               |Total: $invalidTotal""".stripMargin).asLeft
         //format: ON
       }
-      result <- optText.right
+      result <- optText
     } yield result
   }
 
