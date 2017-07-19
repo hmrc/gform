@@ -143,45 +143,48 @@ class P(json: JsValue) {
     //format: ON
   }
 
-  private lazy val dateConstraintOpt: Opt[DateConstraintType] =
-    for {
-      maybeFormatExpr <- optMaybeFormatExpr
-      optDateConstraintType = (maybeFormatExpr match {
-        case Some(DateFormat(e)) => e.asRight
-        case None => AnyDate.asRight
-        case Some(invalidFormat) =>
-          InvalidState(
-            s"""|Unsupported type of format for date field
+  private lazy val dateOpt: Opt[Date] = {
+
+    lazy val dateConstraintOpt: Opt[DateConstraintType] =
+      for {
+        maybeFormatExpr <- optMaybeFormatExpr
+        optDateConstraintType = (maybeFormatExpr match {
+          case Some(DateFormat(e)) => e.asRight
+          case None => AnyDate.asRight
+          case Some(invalidFormat) =>
+            InvalidState(
+              s"""|Unsupported type of format for date field
+                  |Id: $id
+                  |Format: $invalidFormat""".stripMargin
+            ).asLeft
+        })
+        dateConstraintType <- optDateConstraintType
+      } yield dateConstraintType
+
+    lazy val dateValueOpt: Opt[Option[DateValue]] = {
+
+      for {
+        maybeValueExpr <- optMaybeValueExpr
+        optMaybeDateValue = maybeValueExpr match {
+          case Some(DateExpression(dateExpr)) => dateExpr.some.asRight
+          case None => none.asRight
+          case Some(invalidValue) => InvalidState(
+            s"""|Unsupported type of value for date field
                 |Id: $id
-                |Format: $invalidFormat""".stripMargin
+                |Value: $invalidValue""".stripMargin
           ).asLeft
-      })
-      dateConstraintType <- optDateConstraintType
-    } yield dateConstraintType
+        }
+        maybeDateValue <- optMaybeDateValue
+      } yield maybeDateValue
 
-  private lazy val dateValueOpt: Opt[Option[DateValue]] = {
+    }
 
     for {
-      maybeValueExpr <- optMaybeValueExpr
-      optMaybeDateValue = maybeValueExpr match {
-        case Some(DateExpression(dateExpr)) => dateExpr.some.asRight
-        case None => none.asRight
-        case Some(invalidValue) => InvalidState(
-          s"""|Unsupported type of value for date field
-              |Id: $id
-              |Value: $invalidValue""".stripMargin
-        ).asLeft
-      }
-      maybeDateValue <- optMaybeDateValue
-    } yield maybeDateValue
-
+      maybeDateValue <- dateValueOpt
+      dateConstraintType <- dateConstraintOpt
+      o = Offset(0)
+    } yield Date(dateConstraintType, o, maybeDateValue)
   }
-
-  private lazy val dateOpt: Opt[Date] = for {
-    maybeDateValue <- dateValueOpt
-    f <- dateConstraintOpt
-    o = Offset(0)
-  } yield Date(f, o, maybeDateValue)
 
   private lazy val groupOpt: Opt[Group] = fields.fold(noRawFields)(groupOpt(_))
 
