@@ -1,0 +1,55 @@
+{
+  "schemaId": "http://hmrc.gov.uk/jsonschema/gf-formtemplate#",
+  "formTypeId": "exprtest",
+  "formName": "Insurance Premium Tax Return | Yswiriant Ffurflen Dreth Premiwm",
+  "version": "0.3.0",
+  "description": "Fill in your insurance premium tax return form online | Llenwch eich ffurflen dreth premiwm yswiriant ar-lein",
+  "characterSet": "UTF-8",
+  "dmsSubmission": {
+    "customerId": "nino",
+    "classificationType": "BT-NRU-Environmental",
+    "businessArea": "FinanceOpsCorpT"
+  },
+  "submitSuccessUrl": "http://www.google.co.uk",
+  "submitErrorUrl": "http://www.yahoo.co.uk",
+  "sections": [
+    {
+      "title": "Calculation 1/2 | eich calculationewq",
+      "shortName": "shortName",
+      "fields": [
+        {
+          "id": "startDate",
+          "type": "date",
+          "label": "Date after 2010-10-10",
+          "helpText": "For example, 31 3 1980",
+          "mandatory": "true",
+          "value": "2010-10-11",
+          "format": "after 2010-10-09 +1"
+        },
+        {
+          "id": "amountA",
+          "label": "Amount A | Rhif A",
+          "mandatory": "true"
+        }
+      ]
+    },
+    {
+      "title": "Calculation 2/2 | eich calculationewq",
+      "includeIf": "${amountA=10}",
+      "fields": [
+        {
+          "id": "amountB",
+          "label": "Amount B | Rhif B",
+          "mandatory": "true"
+        },
+        {
+          "id": "sum",
+          "label": "Sum | Eich sumolaf",
+          "mandatory": "true",
+          "total": "true",
+          "value": "${amountA + amountB}"
+        }
+      ]
+    }
+  ]
+}

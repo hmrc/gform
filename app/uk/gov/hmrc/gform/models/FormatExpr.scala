@@ -18,12 +18,17 @@ package uk.gov.hmrc.gform.models
 
 import julienrf.json.derived
 import play.api.libs.json._
-import uk.gov.hmrc.gform.core.parsers.FormatParser
 
 sealed trait FormatExpr
 final case class OrientationFormat(value: String) extends FormatExpr
 final case class DateFormat(expressions: DateConstraintType) extends FormatExpr
 final case class TextFormat(number: TextConstraint) extends FormatExpr
+
+sealed trait ValueExpr
+
+final case class TextExpression(expr: Expr) extends ValueExpr
+final case class DateExpression(dateValue: DateValue) extends ValueExpr
+final case class ChoiceExpression(selections: List[Int]) extends ValueExpr
 
 sealed trait DateConstraintType
 final case object AnyDate extends DateConstraintType
@@ -79,17 +84,3 @@ object TextConstraint {
   implicit val format: OFormat[TextConstraint] = derived.oformat[TextConstraint]
 }
 
-object FormatExpr {
-  implicit val format: OFormat[FormatExpr] = {
-    val reads: Reads[FormatExpr] = Reads {
-      case JsString(formatAsStr) =>
-        FormatParser.validate(formatAsStr) match {
-          case Right(expr) => JsSuccess(expr)
-          case Left(error) => JsError(error.toString)
-        }
-      case otherwise => JsError(s"Invalid format expression. Expected String, got $otherwise")
-    }
-
-    OFormat[FormatExpr](reads, format)
-  }
-}
