@@ -39,11 +39,6 @@ class ExprSpec extends Spec {
     res should beJsSuccess[Expr](add)
   }
 
-  it should "read Add case class from expression (coming from template designer)" in {
-    val res: JsResult[ValueExpr] = implicitly[Reads[ValueExpr]].reads(JsString("${fieldA + fieldB}"))
-    res should beJsSuccess[ValueExpr](TextExpression(add))
-  }
-
   val constant = Constant("constant")
   val constantJson = Json.obj(
     "Constant" -> Json.obj("value" -> "constant")
@@ -57,17 +52,6 @@ class ExprSpec extends Spec {
   it should "read Constant from json (coming from mongo)" in {
     val res: JsResult[Expr] = implicitly[Reads[Expr]].reads(constantJson)
     res should beJsSuccess[Expr](constant)
-  }
-
-  it should "read Constant from string (coming from template designer)" in {
-    val res: JsResult[ValueExpr] = implicitly[Reads[ValueExpr]].reads(JsString("constant"))
-    res should beJsSuccess[ValueExpr](TextExpression(Constant("constant")))
-  }
-
-  // I expect that this charcetr set should be wider, https://confluence.tools.tax.service.gov.uk/display/AF/Field+Expressions
-  it should "read Constant from string (coming from template designer) including all characters currrently supported" in {
-    val res: JsResult[ValueExpr] = implicitly[Reads[ValueExpr]].reads(JsString("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_ ,"))
-    res should beJsSuccess[ValueExpr](TextExpression(Constant("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_ ,")))
   }
 
   val form = FormCtx("form")
