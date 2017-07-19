@@ -20,38 +20,11 @@ import cats.data.NonEmptyList
 import cats.syntax.all._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.Opt
-import uk.gov.hmrc.gform.core.parsers.FormatParser
+import uk.gov.hmrc.gform.core.parsers.{ FormatParser, ValueParser }
 import uk.gov.hmrc.gform.exceptions.InvalidState
 import uk.gov.hmrc.gform.models.FieldValueRaw._
 
-import scala.collection.immutable
-
 object FieldValueRaw {
-  //
-  //  implicit val format: Reads[FieldValueRaw] = (
-  //    (__ \ 'id).read[FieldId] and
-  //    (__ \ 'type).readNullable[ComponentTypeRaw] and
-  //    (__ \ 'label).read[String] and
-  //    (__ \ 'value).readNullable[ValueExpr] and
-  //    (__ \ 'format).readNullable[FormatExpr] and
-  //    (__ \ 'helpText).readNullable[String] and
-  //    (__ \ 'optionHelpText).readNullable[List[String]] and
-  //    (__ \ 'submitMode).readNullable[String] and
-  //    (__ \ 'choices).readNullable[List[String]] and
-  //    (__ \ 'fields).lazyReadNullable(implicitly[Reads[List[FieldValueRaw]]]) and //Note: recursiveness here prevents macro use (see JsonParseTestGroup)
-  //    (__ \ 'mandatory).readNullable[String] and
-  //    (__ \ 'offset).readNullable[Offset] and
-  //    (__ \ 'multivalue).readNullable[String] and
-  //    (__ \ 'total).readNullable[String] and
-  //    (__ \ 'international).readNullable[String] and
-  //    (__ \ 'infoText).readNullable[String] and
-  //    (__ \ 'infoType).readNullable[String] and
-  //    (__ \ 'shortName).readNullable[String] and
-  //    (__ \ 'repeatsMax).readNullable[Int] and
-  //    (__ \ 'repeatsMin).readNullable[Int] and
-  //    (__ \ 'repeatLabel).readNullable[String] and
-  //    (__ \ 'repeatAddAnotherText).readNullable[String]
-  //  )(FieldValueRaw.apply _)
 
   case class MES(mandatory: Boolean, editable: Boolean, submissible: Boolean)
 
@@ -62,12 +35,16 @@ class P(json: JsValue) {
   lazy val id: FieldId = (json \ "id").as[FieldId]
   lazy val `type`: Option[ComponentTypeRaw] = (json \ "type").asOpt[ComponentTypeRaw]
   lazy val label: String = (json \ "label").as[String]
-  lazy val value: Option[ValueExpr] = (json \ "value").asOpt[ValueExpr]
+  lazy val value: Option[String] = (json \ "value").asOpt[String]
 
-  lazy val format: Option[String] = (json \ "format").asOpt[String] //.map(js => FormatParser.validate(formatAsStr) _.as[FormatExpr])
+  lazy val optMaybeValueExpr: Opt[Option[ValueExpr]] = {
+    import cats.implicits._
+    value.map(ValueParser.validate).sequenceU
+  }
 
-  lazy val formatOpt: Opt[Option[FormatExpr]] = {
-    import cats.data._
+  lazy val format: Option[String] = (json \ "format").asOpt[String]
+
+  lazy val optMaybeFormatExpr: Opt[Option[FormatExpr]] = {
     import cats.implicits._
     format.map(FormatParser.validate).sequence
   }
@@ -77,7 +54,6 @@ class P(json: JsValue) {
   lazy val submitMode: Option[String] = (json \ "submitMode").asOpt[String]
   lazy val choices: Option[List[String]] = (json \ "choices").asOpt[List[String]]
 
-  //   fields: Option[List[FieldValueRaw]] = None,
   lazy val fieldsJson: Option[List[JsValue]] = (json \ "fields").asOpt[List[JsValue]]
 
   lazy val fields: Option[List[P]] = fieldsJson.map(_.map(new P(_)))
@@ -119,16 +95,6 @@ class P(json: JsValue) {
     //format: ON
   }
 
-  private lazy val valueOpt: Opt[Option[DateValue]] = value match {
-    case Some(DateExpression(dateExpr)) => dateExpr.some.asRight
-    case None => none.asRight
-    case Some(invalidValue) => InvalidState(
-      s"""|Unsupported type of value for date field
-          |Id: $id
-          |Value: $invalidValue""".stripMargin
-    ).asLeft
-  }
-
   private lazy val componentTypeOpt: Opt[ComponentType] = `type` match {
     case Some(TextRaw) | None => textOpt
     case Some(DateRaw) => dateOpt
@@ -140,10 +106,11 @@ class P(json: JsValue) {
     //TODO: What if there is None
   }
 
-  private lazy val textOpt: Opt[Text] =
+  private lazy val textOpt: Opt[Text] = {
     for {
-      format <- formatOpt.right
-      xxx = (format, value, total) match {
+      format <- optMaybeFormatExpr.right
+      value <- optMaybeValueExpr
+      optText = (format, value, total) match {
         //format: OFF
         case (Some(TextFormat(f)), Some(TextExpression(expr)), IsTotal(TotalYes))  => Text(f, expr, total = true).asRight
         case (Some(TextFormat(f)), Some(TextExpression(expr)), IsTotal(TotalNo))   => Text(f, expr, total = false).asRight
@@ -161,8 +128,9 @@ class P(json: JsValue) {
               |Total: $invalidTotal""".stripMargin).asLeft
         //format: ON
       }
-      result <- xxx.right
+      result <- optText.right
     } yield result
+  }
 
   private lazy val addressOpt: Opt[Address] = international match {
     //format: OFF
@@ -175,30 +143,49 @@ class P(json: JsValue) {
     //format: ON
   }
 
-  private lazy val dateFormatOpt: Opt[DateConstraintType] =
+  private lazy val dateConstraintOpt: Opt[DateConstraintType] =
     for {
-      format <- formatOpt.right
-      xxx = format match {
+      maybeFormatExpr <- optMaybeFormatExpr
+      optDateConstraintType = (maybeFormatExpr match {
         case Some(DateFormat(e)) => e.asRight
         case None => AnyDate.asRight
         case Some(invalidFormat) =>
-          InvalidState(s"""|Unsupported type of format for date field
-                           |Id: $id
-                           |Format: $invalidFormat""".stripMargin).asLeft
+          InvalidState(
+            s"""|Unsupported type of format for date field
+                |Id: $id
+                |Format: $invalidFormat""".stripMargin
+          ).asLeft
+      })
+      dateConstraintType <- optDateConstraintType
+    } yield dateConstraintType
+
+  private lazy val dateValueOpt: Opt[Option[DateValue]] = {
+
+    for {
+      maybeValueExpr <- optMaybeValueExpr
+      optMaybeDateValue = maybeValueExpr match {
+        case Some(DateExpression(dateExpr)) => dateExpr.some.asRight
+        case None => none.asRight
+        case Some(invalidValue) => InvalidState(
+          s"""|Unsupported type of value for date field
+              |Id: $id
+              |Value: $invalidValue""".stripMargin
+        ).asLeft
       }
-      result <- xxx.right
-    } yield result
+      maybeDateValue <- optMaybeDateValue
+    } yield maybeDateValue
+
+  }
 
   private lazy val dateOpt: Opt[Date] = for {
-    v <- valueOpt
-    f <- dateFormatOpt
+    maybeDateValue <- dateValueOpt
+    f <- dateConstraintOpt
     o = Offset(0)
-  } yield Date(f, o, v)
+  } yield Date(f, o, maybeDateValue)
 
   private lazy val groupOpt: Opt[Group] = fields.fold(noRawFields)(groupOpt(_))
 
   private lazy val noRawFields: Opt[Group] = InvalidState(s"""Require 'fields' element in Group""").asLeft
-  //  private def groupOpt(rawFields: List[FieldValueRaw]): Opt[Group] = {
 
   def groupOpt(fields: List[P]): Opt[Group] = {
 
@@ -210,23 +197,15 @@ class P(json: JsValue) {
     val fieldValueOpts: List[Opt[FieldValue]] = fields.map(_.optFieldValue())
 
     val fieldValuesOpt: Opt[List[FieldValue]] = {
-      import cats.data._
       import cats.implicits._
       fieldValueOpts.sequence
     }
 
     for {
       fieldValues <- fieldValuesOpt.right
-      format <- formatOpt.right
+      format <- optMaybeFormatExpr.right
       group <- validateAndBuildGroupField(fieldValues, orientation(format))
     } yield group
-
-    //
-    //    fieldValueOpts.partition(_.isRight) match {
-    //      case (ueorfvs, Nil) => validateAndBuildGroupField(ueorfvs.map(_.right.get), orientation)
-    //      case (_, ueorfvs) => ueorfvs.map(_.left.get).head.asLeft
-    //    }
-
   }
 
   private def validateAndBuildGroupField(fields: List[FieldValue], orientation: Orientation): Opt[Group] = {
@@ -240,10 +219,11 @@ class P(json: JsValue) {
     }
   }
 
-  private lazy val choiceOpt: Opt[Choice] =
+  private lazy val choiceOpt: Opt[Choice] = {
     for {
-      format <- formatOpt.right
-      oChoice: Opt[Choice] = (format, choices, multivalue, value, optionHelpText) match {
+      maybeFormatExpr <- optMaybeFormatExpr
+      maybeValueExpr <- optMaybeValueExpr
+      oChoice: Opt[Choice] = (maybeFormatExpr, choices, multivalue, maybeValueExpr, optionHelpText) match {
         case (IsOrientation(VerticalOrientation), Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections), oHelpText) =>
           Choice(Checkbox, NonEmptyList(x, xs), Vertical, selections, oHelpText).asRight
         case (IsOrientation(VerticalOrientation), Some(x :: xs), IsMultivalue(MultivalueNo), Selections(selections), oHelpText) =>
@@ -269,6 +249,7 @@ class P(json: JsValue) {
       }
       result <- oChoice.right
     } yield result
+  }
 
   private lazy val fileUploadOpt: Opt[FileUpload] = FileUpload().asRight
 
@@ -422,28 +403,3 @@ class P(json: JsValue) {
 
   private def isThisAnInfoField: Boolean = `type`.getOrElse(None).isInstanceOf[InfoRaw.type]
 }
-
-//case class FieldValueRaw(
-//                          id: FieldId,
-//                          `type`: Option[ComponentTypeRaw] = None,
-//                          label: String,
-//                          value: Option[ValueExpr] = None,
-//                          format: Option[FormatExpr] = None,
-//                          helpText: Option[String] = None,
-//                          optionHelpText: Option[List[String]] = None,
-//                          submitMode: Option[String] = None,
-//                          choices: Option[List[String]] = None,
-//                          fields: Option[List[FieldValueRaw]] = None,
-//                          mandatory: Option[String] = None,
-//                          offset: Option[Offset] = None,
-//                          multivalue: Option[String] = None,
-//                          total: Option[String] = None,
-//                          international: Option[String] = None,
-//                          infoText: Option[String] = None,
-//                          infoType: Option[String] = None,
-//                          shortName: Option[String] = None,
-//                          repeatsMax: Option[Int] = None,
-//                          repeatsMin: Option[Int] = None,
-//                          repeatLabel: Option[String] = None,
-//                          repeatAddAnotherText: Option[String] = None
-//                        )
