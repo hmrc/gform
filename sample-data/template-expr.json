@@ -40,6 +40,7 @@
         {
           "id": "amountB",
           "label": "Amount B | Rhif B",
+          "format": "positiveNumber(3,4,'u')",
           "mandatory": "true"
         },
         {
