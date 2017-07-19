@@ -22,15 +22,10 @@ import play.api.libs.json._
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.{ FormatParser, ValueParser }
 import uk.gov.hmrc.gform.exceptions.InvalidState
-import uk.gov.hmrc.gform.models.FieldValueRaw._
 
-object FieldValueRaw {
+case class MES(mandatory: Boolean, editable: Boolean, submissible: Boolean)
 
-  case class MES(mandatory: Boolean, editable: Boolean, submissible: Boolean)
-
-}
-
-class P(json: JsValue) {
+class FieldValueMaker(json: JsValue) {
 
   lazy val id: FieldId = (json \ "id").as[FieldId]
   lazy val `type`: Option[ComponentTypeRaw] = (json \ "type").asOpt[ComponentTypeRaw]
@@ -56,7 +51,7 @@ class P(json: JsValue) {
 
   lazy val fieldsJson: Option[List[JsValue]] = (json \ "fields").asOpt[List[JsValue]]
 
-  lazy val fields: Option[List[P]] = fieldsJson.map(_.map(new P(_)))
+  lazy val fields: Option[List[FieldValueMaker]] = fieldsJson.map(_.map(new FieldValueMaker(_)))
 
   lazy val mandatory: Option[String] = (json \ "mandatory").asOpt[String]
   lazy val multivalue: Option[String] = (json \ "multivalue").asOpt[String]
@@ -190,7 +185,7 @@ class P(json: JsValue) {
 
   private lazy val noRawFields: Opt[Group] = InvalidState(s"""Require 'fields' element in Group""").asLeft
 
-  def groupOpt(fields: List[P]): Opt[Group] = {
+  def groupOpt(fields: List[FieldValueMaker]): Opt[Group] = {
 
     def orientation(format: Option[FormatExpr]) = format match {
       case IsGroupOrientation(VerticalGroupOrientation) | None => Vertical
