@@ -1,0 +1,23 @@
+@(title: String, sections: List[Html])
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>@title</title>
+  <style>
+    body { font-family: sans-serif; }
+    th {
+      text-align: left;
+      background-color: #e7e7e7;
+    }
+    tr:nth-child(even) {background-color: #f2f2f2}
+    table {
+      border: 1px solid black;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+<h2>@title</h2>@{sections}
+</body>
+</html>
