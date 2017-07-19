@@ -11,7 +11,7 @@ To upload the sample schema to a local gform service:
 
 Similarly, to upload a form template:
 
-    curl http://localhost:9196/gform/formtemplates -H "Content-Type: application/json" -d '@sample-data/template.json'
+    curl http://localhost:9196/gform/formtemplates -H "Content-Type: application/json" -d '@sample-data/template-aaa999.json'
 
 View data with, for example:
 
