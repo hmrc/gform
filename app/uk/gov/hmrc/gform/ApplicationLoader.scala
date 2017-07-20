@@ -170,6 +170,7 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
   lazy val formTemplates = new FormTemplates()
 
   lazy val forms = new FormController()
+  lazy val testOnly = new TestOnly(db)
 
   lazy val schemas = new Schemas()
 
@@ -186,7 +187,7 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
 
   lazy val metricsController = new MetricsController(metrics)
 
-  lazy val appRoutes = new app.Routes(httpErrorHandler, saveAndRetrieveController, forms, formTemplates, schemas)
+  lazy val appRoutes = new app.Routes(httpErrorHandler, saveAndRetrieveController, forms, formTemplates, schemas, testOnly)
 
   override lazy val router: Router = new prod.Routes(httpErrorHandler, appRoutes, healthRoutes, metricsController)
 

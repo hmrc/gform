@@ -21,3 +21,7 @@ DELETE     /formtemplates/:formTypeId/:version  uk.gov.hmrc.gform.controllers.Fo
 
 GET        /schemas                             uk.gov.hmrc.gform.controllers.Schemas.all
 POST       /schemas                             uk.gov.hmrc.gform.controllers.Schemas.save
+
+GET       /test-only/remove-templates         uk.gov.hmrc.gform.controllers.TestOnly.removeTemplates()
+GET       /test-only/build-info               uk.gov.hmrc.gform.controllers.TestOnly.buildInfo()
+GET       /test-only/config                   uk.gov.hmrc.gform.controllers.TestOnly.config()
