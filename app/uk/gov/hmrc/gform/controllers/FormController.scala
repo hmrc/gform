@@ -87,7 +87,10 @@ class FormController()(
   def get(formId: FormId) = Action.async { implicit request =>
     FormService.get(formId).fold(
       error => NotFound,
-      response => Ok(Json.toJson(response))
+      response => {
+        Logger.debug(Json.prettyPrint(Json.toJson(response)))
+        Ok(Json.toJson(response))
+      }
     )
   }
 

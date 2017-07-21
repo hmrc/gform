@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.connectors
 
 import com.sun.xml.internal.bind.v2.TODO
+import play.api.Logger
 import play.api.libs.json.{ JsError, JsResult, JsSuccess, Json }
 import reactivemongo.api.commands.{ DefaultWriteResult, WriteResult }
 import uk.gov.hmrc.gform.{ WSHttp, models }
@@ -50,6 +51,7 @@ class Save4LaterConnector(cache: ShortLivedCache) extends ServicesConfig {
   }
 
   def put(formId: FormId, form: Form)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Opt[DbOperationResult]] = {
+    Logger.debug(Json.prettyPrint(Json.toJson(form)) + " Put of form")
     findOne(formId).flatMap {
       case None => save(formId, form)
       case Some(x) =>
