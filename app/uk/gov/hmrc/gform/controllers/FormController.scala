@@ -21,6 +21,7 @@ import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc.{ Action, AnyContent, RequestHeader }
 import uk.gov.hmrc.gform.connectors.Save4LaterConnector
+import uk.gov.hmrc.gform.core.ServiceResponse
 import uk.gov.hmrc.gform.models._
 import uk.gov.hmrc.gform.repositories.{ AbstractRepo, SubmissionRepository }
 import uk.gov.hmrc.gform.services.{ FormService, SubmissionService, UpdateOperation, UpdateTolerantOperation, _ }
@@ -42,16 +43,19 @@ class FormController()(
 
   def newForm(userId: UserId, formTypeId: FormTypeId) = Action.async { implicit request =>
 
-    val templateF = FormTemplateService.get(formTypeId)
-    val envelopeIdF = FileUploadService.createEnvelope(formTypeId)
-    val formId = FormId(userId, formTypeId)
-    val response = for {
-      formTemplate <- templateF
-      envelopeId <- envelopeIdF
-      form <- FormService.insertEmpty(userId, formTypeId, envelopeId, formId)
+    val t: ServiceResponse[FormTemplate] = FormTemplateService.get(formTypeId)
+    val e: ServiceResponse[EnvelopeId] = FileUploadService.createEnvelope(formTypeId)
+    val f: ServiceResponse[Form] = for {
+      _ <- t
+      envelopeId <- e
+      form <- FormService.insertEmpty(userId, formTypeId, envelopeId, FormId(userId, formTypeId))
     } yield form
-    response.fold(
-      error => error.toResult,
+
+    f.fold(
+      error => {
+        Logger.error(s"""\n\n====> ${error.toString}\n\n""")
+        error.toResult
+      },
       response => Ok(Json.toJson(response))
     )
   }

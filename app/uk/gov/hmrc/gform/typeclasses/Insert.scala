@@ -35,10 +35,10 @@ trait Insert[T] {
 object Insert {
 
   implicit def form(implicit cache: Save4LaterConnector, ex: ExecutionContext, hc: HeaderCarrier) = new Insert[Form] {
-    def apply(selector: JsObject, template: Form): Future[Opt[DbOperationResult]] = {
+    def apply(selector: JsObject, form: Form): Future[Opt[DbOperationResult]] = {
       selector.asOpt[FormId].fold[Future[Opt[DbOperationResult]]](
         Future.successful(Left(InvalidState("Failed to insert")))
-      )(x => cache.put(x, template))
+      )(fid => cache.put(fid, form))
     }
   }
 
