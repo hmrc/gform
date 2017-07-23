@@ -872,17 +872,52 @@ class FieldValueSpec extends Spec {
     fieldValue should beJsSuccess(FieldValue(FieldId("haveIncludedInvoice"), Choice(Inline, NonEmptyList.of("Yes", "No", "Not sure"), Horizontal, List(1), None), "Original invoice from the supplier", None, Some(shortName), mandatory = true, editable = true, submissible = true))
   }
 
-  it should "parse as Date " in {
+  it should "parse as Date constraint to April 17" in {
     val fieldValue = toFieldValue(
       s"""
         {
-          "id": "startDate",
+          "id": "aprilDate",
           "type": "date",
-          "label": "Start date",
-          "helpText": "For example, 31 3 1980",
+          "label": "Enter a date in April 2017",
+          "helpText": "For example, 10 4 2017",
           "mandatory": "true",
-          "format": "after 2016-09-05 -2",
-          "value": "2010-10-10"
+          "format": "after 2017-04-02 -2,before 2017-05-02 -1",
+          "value": "2017-04-10"
+        }
+        """
+    )
+
+    fieldValue shouldBe an[JsSuccess[FieldValue]]
+  }
+
+  it should "parse as Date constraint to April 17 without specifying offsets" in {
+    val fieldValue = toFieldValue(
+      s"""
+        {
+          "id": "aprilDate",
+          "type": "date",
+          "label": "Enter a date in April 2017",
+          "helpText": "For example, 10 4 2017",
+          "mandatory": "true",
+          "format": "after 2017-03-31,before 2017-05-01",
+          "value": "2017-04-10"
+        }
+        """
+    )
+
+    fieldValue shouldBe an[JsSuccess[FieldValue]]
+  }
+
+  it should "parse as Date constrained to next 7 days" in {
+    val fieldValue = toFieldValue(
+      s"""
+        {
+          "id": "next7days",
+          "type": "date",
+          "label": "Enter a date in the next 7 days starting today",
+          "helpText": "For example, 10 4 2017",
+          "mandatory": "true",
+          "format": "after today -1,before today +7"
         }
         """
     )
