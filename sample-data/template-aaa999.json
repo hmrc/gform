@@ -109,12 +109,13 @@
           "value": "1"
         },
         {
-          "id": "startDate",
+          "id": "aprilDate",
           "type": "date",
-          "label": "Start date",
-          "helpText": "For example, 31 3 1980",
+          "label": "Enter a date in April 2017",
+          "helpText": "For example, 10 4 2017",
           "mandatory": "true",
-          "value": "2010-10-10"
+          "format": "after 2017-03-31,before 2017-05-01",
+          "value": "2017-04-10"
         },
         {
           "id": "amountA",

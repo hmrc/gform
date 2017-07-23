@@ -18,17 +18,36 @@
       "shortName": "shortName",
       "fields": [
         {
-          "id": "startDate",
+          "id": "aprilDate",
           "type": "date",
-          "label": "Date after 2010-10-10",
-          "helpText": "For example, 31 3 1980",
+          "label": "Enter a date in April 2017",
+          "helpText": "For example, 10 4 2017",
           "mandatory": "true",
-          "value": "2010-10-11",
-          "format": "after 2010-10-09 +1"
+          "format": "after 2017-03-31,before 2017-05-01",
+          "value": "2017-04-10"
+        },
+        {
+          "id": "aftertodaydate",
+          "type": "date",
+          "label": "Enter a date in the future",
+          "helpText": "For example, 10 4 2017",
+          "mandatory": "true",
+          "format": "after today",
+          "value": "2017-04-10"
+        },
+        {
+          "id": "afterthisyeardate",
+          "type": "date",
+          "label": "Enter a date after this year",
+          "helpText": "For example, 10 4 2018",
+          "mandatory": "true",
+          "format": "after yesterday",
+          "value": "2017-04-10"
         },
         {
           "id": "amountA",
           "label": "Amount A | Rhif A",
+          "format": "positiveNumber(3,4)",
           "mandatory": "true"
         }
       ]
@@ -40,7 +59,6 @@
         {
           "id": "amountB",
           "label": "Amount B | Rhif B",
-          "format": "positiveNumber(3,4,'u')",
           "mandatory": "true"
         },
         {

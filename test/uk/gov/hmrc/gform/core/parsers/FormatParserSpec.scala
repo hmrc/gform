@@ -59,7 +59,7 @@ class FormatParserSpec extends Spec {
       InvalidState(
         """Unable to parse expression before anyFieldId anotherWord 9.
           |Errors:
-          |before anyFieldId anotherWord 9:1: unexpected characters; expected '(\+|-)?\d+'
+          |before anyFieldId anotherWord 9:1: unexpected characters; expected '(\+|-)?\d+' or ','
           |before anyFieldId anotherWord 9                  ^""".stripMargin
       )
     )
@@ -88,13 +88,25 @@ class FormatParserSpec extends Spec {
     res.right.value should be(DateFormat(DateConstraints(List(DateConstraint(Before, ConcreteDate(2017, 4, 2), OffsetDate(-2))))))
   }
 
-  "before" should "be parsed successfully" in {
+  "before and after" should "be parsed successfully" in {
     val res = FormatParser.validate("before 2017-04-02 -2,after next-02-01 +42")
     res.right.value should be(
       DateFormat(
         DateConstraints(List(
           DateConstraint(Before, ConcreteDate(2017, 4, 2), OffsetDate(-2)),
           DateConstraint(After, NextDate(2, 1), OffsetDate(42))
+        ))
+      )
+    )
+  }
+
+  "expressions without offset" should "be parsed successfully" in {
+    val res = FormatParser.validate("before 2017-04-02,after next-02-01")
+    res.right.value should be(
+      DateFormat(
+        DateConstraints(List(
+          DateConstraint(Before, ConcreteDate(2017, 4, 2), OffsetDate(0)),
+          DateConstraint(After, NextDate(2, 1), OffsetDate(0))
         ))
       )
     )

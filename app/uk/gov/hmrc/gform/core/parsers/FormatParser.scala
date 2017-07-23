@@ -45,6 +45,10 @@ object FormatParser {
     beforeOrAfter ~
     dateExpr ~
     offsetExpression ^^ { (loc, beforeOrAfter, dateExpr, offset) => DateConstraint(beforeOrAfter, dateExpr, offset) }
+    |
+    beforeOrAfter ~
+    dateExpr ^^ { (loc, beforeOrAfter, dateExpr) => DateConstraint(beforeOrAfter, dateExpr, OffsetDate(0)) }
+
   )
 
   lazy val anyDateConstraint: Parser[DateConstraintType] = (
