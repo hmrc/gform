@@ -222,9 +222,10 @@ class FieldValueMaker(json: JsValue) {
   private def handleJsonValidationResult[A, B](result: JsResult[A])(f: A => Opt[B]) = {
     result match {
       case JsSuccess(a, _) => f(a)
-      case JsError(errors) => InvalidState( errors.map { case (path, validationErrors) =>
-        s"Path: ${path.toString}, Errors: ${validationErrors.map(_.messages.mkString(",")).mkString(",")}"
-      }.mkString(",") ).asLeft
+      case JsError(errors) => InvalidState(errors.map {
+        case (path, validationErrors) =>
+          s"Path: ${path.toString}, Errors: ${validationErrors.map(_.messages.mkString(",")).mkString(",")}"
+      }.mkString(",")).asLeft
     }
   }
 
