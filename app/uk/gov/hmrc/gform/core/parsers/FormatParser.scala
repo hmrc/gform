@@ -73,7 +73,7 @@ object FormatParser {
     | concreteDate
     | nextDate
     | previousDate
-    | anyWordFormat ^^ { (loc, str) => AnyWord(str) }
+  //    | anyWordFormat ^^ { (loc, str) => AnyWord(str) }
   )
 
   lazy val anyWordExpression: Parser[FormatExpr] = (
