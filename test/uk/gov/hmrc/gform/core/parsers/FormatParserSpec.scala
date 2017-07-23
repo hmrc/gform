@@ -42,7 +42,7 @@ class FormatParserSpec extends Spec {
     res.right.value should be(DateFormat(DateConstraints(List(DateConstraint(After, NextDate(5, 6), OffsetDate(-2))))))
   }
 
-  "after sampleField -2" should "be parsed successfully" in {
+  "after sampleField -2" should "be parsed successfully" ignore { //revisit when we implement the support of specifying form fields in date expressions
     val res = FormatParser.validate("after sampleField -2")
     res.right.value should be(DateFormat(DateConstraints(List(DateConstraint(After, AnyWord("sampleField"), OffsetDate(-2))))))
   }
@@ -59,8 +59,8 @@ class FormatParserSpec extends Spec {
       InvalidState(
         """Unable to parse expression before anyFieldId anotherWord 9.
           |Errors:
-          |before anyFieldId anotherWord 9:1: unexpected characters; expected '(\+|-)?\d+' or ','
-          |before anyFieldId anotherWord 9                  ^""".stripMargin
+          |before anyFieldId anotherWord 9:1: unexpected characters; expected 'previous' or 'next' or '(19|20)\d\d' or 'today'
+          |before anyFieldId anotherWord 9       ^""".stripMargin
       )
     )
   }
@@ -72,8 +72,8 @@ class FormatParserSpec extends Spec {
       InvalidState(
         """|Unable to parse expression after 2016-6-9 9.
            |Errors:
-           |after 2016-6-9 9:1: unexpected characters; expected '\s+' or ','
-           |after 2016-6-9 9            ^""".stripMargin
+           |after 2016-6-9 9:1: unexpected characters; expected '0[1-9]|1[012]' or '\s+'
+           |after 2016-6-9 9           ^""".stripMargin
       )
     )
   }
