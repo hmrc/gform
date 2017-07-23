@@ -37,7 +37,7 @@ class FormatParserSpec extends Spec {
     res.right.value should be(DateFormat(DateConstraints(List(DateConstraint(After, ConcreteDate(2017, 4, 2), OffsetDate(-2))))))
   }
 
-  "after next-05-06 -2" should "be parsed successfully" in {
+  "after next-05-06 -2" should "be parsed successfully" ignore { //ignored until handled in gform-frontend
     val res = FormatParser.validate("after next-05-06 -2")
     res.right.value should be(DateFormat(DateConstraints(List(DateConstraint(After, NextDate(5, 6), OffsetDate(-2))))))
   }
@@ -47,7 +47,7 @@ class FormatParserSpec extends Spec {
     res.right.value should be(DateFormat(DateConstraints(List(DateConstraint(After, AnyWord("sampleField"), OffsetDate(-2))))))
   }
 
-  "after previous-05-06 0" should "be parsed successfully" in {
+  "after previous-05-06 0" should "be parsed successfully" ignore { //ignored until handled in gform-frontend
     val res = FormatParser.validate("after previous-05-06 0")
     res.right.value should be(DateFormat(DateConstraints(List(DateConstraint(After, PreviousDate(5, 6), OffsetDate(0))))))
   }
@@ -59,7 +59,7 @@ class FormatParserSpec extends Spec {
       InvalidState(
         """Unable to parse expression before anyFieldId anotherWord 9.
           |Errors:
-          |before anyFieldId anotherWord 9:1: unexpected characters; expected 'previous' or 'next' or '(19|20)\d\d' or 'today'
+          |before anyFieldId anotherWord 9:1: unexpected characters; expected '(19|20)\d\d' or 'today'
           |before anyFieldId anotherWord 9       ^""".stripMargin
       )
     )
@@ -89,24 +89,24 @@ class FormatParserSpec extends Spec {
   }
 
   "before and after" should "be parsed successfully" in {
-    val res = FormatParser.validate("before 2017-04-02 -2,after next-02-01 +42")
+    val res = FormatParser.validate("before 2017-04-02 -2,after 2015-02-01 +42")
     res.right.value should be(
       DateFormat(
         DateConstraints(List(
           DateConstraint(Before, ConcreteDate(2017, 4, 2), OffsetDate(-2)),
-          DateConstraint(After, NextDate(2, 1), OffsetDate(42))
+          DateConstraint(After, ConcreteDate(2015, 2, 1), OffsetDate(42))
         ))
       )
     )
   }
 
   "expressions without offset" should "be parsed successfully" in {
-    val res = FormatParser.validate("before 2017-04-02,after next-02-01")
+    val res = FormatParser.validate("before 2017-04-02,after 2017-02-01")
     res.right.value should be(
       DateFormat(
         DateConstraints(List(
           DateConstraint(Before, ConcreteDate(2017, 4, 2), OffsetDate(0)),
-          DateConstraint(After, NextDate(2, 1), OffsetDate(0))
+          DateConstraint(After, ConcreteDate(2017, 2, 1), OffsetDate(0))
         ))
       )
     )

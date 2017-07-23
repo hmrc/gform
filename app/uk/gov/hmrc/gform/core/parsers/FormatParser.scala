@@ -71,8 +71,8 @@ object FormatParser {
   lazy val dateExpr: Parser[DateConstraintInfo] = (
     "today" ^^ { (loc, today) => Today }
     | concreteDate
-    | nextDate
-    | previousDate
+  //    | nextDate
+  //    | previousDate
   //    | anyWordFormat ^^ { (loc, str) => AnyWord(str) }
   )
 
