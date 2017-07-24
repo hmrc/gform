@@ -16,8 +16,11 @@
 
 package uk.gov.hmrc.gform.models
 
-import play.api.libs.json.Json
-import uk.gov.hmrc.gform.core.{ Invalid, Valid, ValidationResult, Opt }
+import julienrf.json.derived
+import play.api.libs.json._
+import uk.gov.hmrc.gform.core.parsers.{ BasicParsers, ValueParser }
+import uk.gov.hmrc.gform.core.{ Invalid, Opt, Valid, ValidationResult }
+
 import scala.collection.immutable.List
 
 case class Section(
@@ -25,6 +28,7 @@ case class Section(
     description: Option[String],
     shortName: Option[String],
     includeIf: Option[IncludeIf],
+    repeatsMax: Option[TextExpression],
     fields: List[FieldValue]
 ) {
   private def atomicFields(fieldValues: List[FieldValue], data: Map[FieldId, FormField]): List[FieldValue] = {
@@ -87,6 +91,24 @@ case class Section(
 }
 
 object Section {
+
+  implicit val textExpressionFormat: OFormat[TextExpression] = {
+
+    val writes: OWrites[TextExpression] = derived.owrites
+    val reads: Reads[TextExpression] = Reads {
+
+      case JsString(expression) =>
+        BasicParsers.validateWithParser(expression, ValueParser.expr).fold(
+          unexpectedState => JsError(unexpectedState.toString),
+          expr => JsSuccess(TextExpression(expr))
+        )
+
+      case otherwise => JsError(s"Expected String as JsValue, got: $otherwise")
+    }
+
+    OFormat[TextExpression](reads, writes)
+  }
+
   implicit val format = Json.format[Section]
 
   def validateUniqueFields(sectionsList: List[Section]): ValidationResult = {
