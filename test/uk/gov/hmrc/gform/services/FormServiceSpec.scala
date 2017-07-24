@@ -31,7 +31,7 @@ class FormServiceSpec extends Spec with TypeclassFixtures {
 
   val form = Form(FormId("form-id"), FormData(UserId("TESTID"), FormTypeId("form-type-id"), Version("1.0.0"), "UTF-8", Seq.empty[FormField]), EnvelopeId(""))
 
-  val plainFormTemplate = FormTemplate(Some("schemaId"), FormTypeId(""), "formName", Version("version"), "description", "characterSet", DmsSubmission("customerId", "classificationType", "businessArea"), "submitSuccessUrl", "submitErrorUrl", List.empty[Section])
+  val plainFormTemplate = FormTemplate(Some("schemaId"), FormTypeId(""), "formName", Version("version"), "description", "characterSet", DmsSubmission("customerId", "classificationType", "businessArea"), AuthConfig("TEST", None, "TEST"), "submitSuccessUrl", "submitErrorUrl", List.empty[Section])
 
   val yourDetailsSection = Section(
     "Your details",
