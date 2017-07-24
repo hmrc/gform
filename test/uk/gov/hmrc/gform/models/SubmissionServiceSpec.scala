@@ -38,6 +38,7 @@ class SubmissionServiceSpec extends FlatSpec with Matchers with EitherValues {
     description = "abc",
     characterSet = "UTF-8",
     dmsSubmission = DmsSubmission("nino", "some-classification-type", "some-business-area"),
+    AuthConfig("TEST", None, "TEST"),
     submitSuccessUrl = "success-url",
     submitErrorUrl = "error-url",
     sections = List(section0, section1, section2)

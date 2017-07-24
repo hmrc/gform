@@ -18,20 +18,9 @@ package uk.gov.hmrc.gform.models
 
 import play.api.libs.json.{ Json, OFormat }
 
-case class FormTemplate(
-  schemaId: Option[String],
-  formTypeId: FormTypeId,
-  formName: String,
-  version: Version,
-  description: String,
-  characterSet: String,
-  dmsSubmission: DmsSubmission,
-  authConfig: AuthConfig,
-  submitSuccessUrl: String,
-  submitErrorUrl: String,
-  sections: List[Section]
-)
+case class AuthConfig(authModule: String, predicate: Option[String], regimeId: String)
 
-object FormTemplate {
-  implicit val format: OFormat[FormTemplate] = Json.format[FormTemplate]
+object AuthConfig {
+
+  implicit val format: OFormat[AuthConfig] = Json.format[AuthConfig]
 }
