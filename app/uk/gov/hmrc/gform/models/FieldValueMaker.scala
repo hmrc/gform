@@ -60,7 +60,7 @@ class FieldValueMaker(json: JsValue) {
   lazy val infoText: Option[String] = (json \ "infoText").asOpt[String]
   lazy val infoType: Option[String] = (json \ "infoType").asOpt[String]
   lazy val shortName: Option[String] = (json \ "shortName").asOpt[String]
-  lazy val repeatsMax: Option[Int] = (json \ "repeatsMax").asOpt[Int]
+  lazy val repeatsMax: JsResult[Option[Int]] = (json \ "repeatsMax").validateOpt[Int]
   lazy val repeatsMin: Option[Int] = (json \ "repeatsMin").asOpt[Int]
   lazy val repeatLabel: Option[String] = (json \ "repeatLabel").asOpt[String]
   lazy val repeatAddAnotherText: Option[String] = (json \ "repeatAddAnotherText").asOpt[String]
@@ -207,13 +207,24 @@ class FieldValueMaker(json: JsValue) {
   }
 
   private def validateAndBuildGroupField(fields: List[FieldValue], orientation: Orientation): Opt[Group] = {
-    (repeatsMax, repeatsMin) match {
-      case (Some(repMax), Some(repMin)) if repMax < repMin =>
-        InvalidState(s"""repeatsMax should be higher than repeatsMin in Group field""").asLeft
-      case (Some(repMax), Some(repMin)) if repMin < 1 =>
-        InvalidState(s"""repeatsMin in Group field cannot be less than 1""").asLeft
-      case _ =>
-        Group(fields, orientation, repeatsMax, repeatsMin, repeatLabel, repeatAddAnotherText).asRight
+    handleJsonValidationResult(repeatsMax) { validatedRepeatsMax =>
+      (validatedRepeatsMax, repeatsMin) match {
+        case (Some(repMax), Some(repMin)) if repMax < repMin =>
+          InvalidState(s"""repeatsMax should be higher than repeatsMin in Group field""").asLeft
+        case (Some(repMax), Some(repMin)) if repMin < 1 =>
+          InvalidState(s"""repeatsMin in Group field cannot be less than 1""").asLeft
+        case _ =>
+          Group(fields, orientation, validatedRepeatsMax, repeatsMin, repeatLabel, repeatAddAnotherText).asRight
+      }
+    }
+  }
+
+  private def handleJsonValidationResult[A, B](result: JsResult[A])(f: A => Opt[B]) = {
+    result match {
+      case JsSuccess(a, _) => f(a)
+      case JsError(errors) => InvalidState( errors.map { case (path, validationErrors) =>
+        s"Path: ${path.toString}, Errors: ${validationErrors.map(_.messages.mkString(",")).mkString(",")}"
+      }.mkString(",") ).asLeft
     }
   }
 
