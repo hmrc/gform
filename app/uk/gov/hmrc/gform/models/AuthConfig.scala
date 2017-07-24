@@ -19,10 +19,10 @@ package uk.gov.hmrc.gform.models
 import play.api.libs.json.{ Json, OFormat }
 
 case class AuthConfig(
-                       authModule: String,
-                       predicate: Option[String],
-                       regimeId: String
-                     )
+  authModule: String,
+  predicate: Option[String],
+  regimeId: String
+)
 
 object AuthConfig {
 
