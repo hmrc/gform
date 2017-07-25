@@ -95,7 +95,10 @@ object Section {
   implicit val textExpressionFormat: OFormat[TextExpression] = {
 
     val writes: OWrites[TextExpression] = derived.owrites
-    val reads: Reads[TextExpression] = Reads {
+
+    val stdReads = Json.reads[TextExpression]
+
+    val reads: Reads[TextExpression] = stdReads orElse Reads {
 
       case JsString(expression) =>
         BasicParsers.validateWithParser(expression, ValueParser.expr).fold(
