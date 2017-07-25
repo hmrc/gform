@@ -21,7 +21,7 @@ import play.api.libs.json.{ Format, JsError, JsString, JsSuccess, Reads, Writes 
 case class FieldId(value: String) extends AnyVal {
   override def toString = value
 
-  def withSuffix(suffix: String): FieldId = FieldId(value + "." + suffix)
+  def withSuffix(suffix: String): FieldId = FieldId(value + "-" + suffix)
 
   def withJSSafeSuffix(suffix: String): FieldId = FieldId(value + "-" + suffix)
 }
