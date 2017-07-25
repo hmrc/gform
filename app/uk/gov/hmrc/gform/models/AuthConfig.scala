@@ -16,15 +16,52 @@
 
 package uk.gov.hmrc.gform.models
 
-import play.api.libs.json.{ Json, OFormat }
+import play.api.libs.json._
 
 case class AuthConfig(
-  authModule: String,
-  predicate: Option[String],
-  regimeId: String
+  authModule: AuthModule,
+  predicates: Option[List[Predicate]],
+  regimeId: RegimeId
 )
 
 object AuthConfig {
 
   implicit val format: OFormat[AuthConfig] = Json.format[AuthConfig]
+}
+
+case class RegimeId(value: String)
+
+object RegimeId {
+
+  val writes = Writes[RegimeId](id => JsString(id.value))
+  val reads = Reads[RegimeId] {
+    case JsString(value) => JsSuccess(RegimeId(value))
+    case otherwise => JsError(s"Invalid RegimeId, expected JsString, got: $otherwise")
+  }
+
+  implicit val format: Format[RegimeId] = Format[RegimeId](reads, writes)
+}
+
+case class AuthModule(value: String)
+
+object AuthModule {
+  val writes = Writes[AuthModule](id => JsString(id.value))
+  val reads = Reads[AuthModule] {
+    case JsString(value) => JsSuccess(AuthModule(value))
+    case otherwise => JsError(s"Invalid AuthModule, expected JsString, got: $otherwise")
+  }
+
+  implicit val format: Format[AuthModule] = Format[AuthModule](reads, writes)
+}
+
+case class Predicate(enrolment: String, identifiers: List[KeyValue], delegatedAuthRule: String)
+
+object Predicate {
+  implicit val format: OFormat[Predicate] = Json.format[Predicate]
+}
+
+case class KeyValue(key: String, value: String)
+
+object KeyValue {
+  implicit val format: OFormat[KeyValue] = Json.format[KeyValue]
 }
