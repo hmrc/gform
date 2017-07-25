@@ -22,8 +22,10 @@ import uk.gov.hmrc.gform.Spec
 
 class JsonParseTestGroup extends Spec {
 
-  val jsonStr =
-    """
+  "A raw group" should "parse" in {
+
+    val jsonStr =
+      """
       {
         "type": "group",
         "id": "gid",
@@ -43,11 +45,11 @@ class JsonParseTestGroup extends Spec {
               "B"
             ]
           }
-        ]
+        ],
+        "presentationHint" : "collapseGroupUnderLabel"
+
       }
     """
-
-  "A raw group" should "parse" in {
 
     val jsResult = implicitly[Reads[FieldValue]].reads(Json.parse(jsonStr))
 
@@ -63,8 +65,46 @@ class JsonParseTestGroup extends Spec {
         Horizontal,
         Some(5), Some(1), Some("repeatLabel"), Some("repeatAddAnotherText")
       ),
-      "glabel", None, None, true, true, true
+      "glabel", None, None, true, true, true,
+      Some(PresentationHints(List(CollapseGroupUnderLabel)))
     ))
+
+  }
+
+  "A raw group" should "fail to parse if repeatsMin/Max has errors" in {
+
+    val jsonStr =
+      """
+      {
+        "type": "group",
+        "id": "gid",
+        "label": "glabel",
+        "format" : "horizontal",
+        "repeatsMin":6,
+        "repeatsMax":5,
+        "repeatLabel":"repeatLabel",
+        "repeatAddAnotherText":"repeatAddAnotherText",
+        "fields": [
+          {
+            "type": "choice",
+            "id": "cid",
+            "label": "clabel",
+            "choices": [
+              "A",
+              "B"
+            ]
+          }
+        ],
+        "presentationHint" : "collapseGroupUnderLabel"
+
+      }
+    """
+
+    var jsr: JsResult[FieldValue] = null
+    jsr = implicitly[Reads[FieldValue]].reads(Json.parse(jsonStr)); println(jsr); jsr should be(jsError)
+    jsr = implicitly[Reads[FieldValue]].reads(Json.parse(jsonStr.replaceAll("6", """"A""""))); println(jsr); jsr should be(jsError)
+    jsr = implicitly[Reads[FieldValue]].reads(Json.parse(jsonStr.replaceAll("6", "-1"))); println(jsr); jsr should be(jsError)
+    jsr = implicitly[Reads[FieldValue]].reads(Json.parse(jsonStr.replaceAll("5", """"A""""))); println(jsr); jsr should be(jsError)
 
   }
 

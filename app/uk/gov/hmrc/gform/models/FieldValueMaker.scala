@@ -20,7 +20,7 @@ import cats.data.NonEmptyList
 import cats.syntax.all._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.Opt
-import uk.gov.hmrc.gform.core.parsers.{ FormatParser, ValueParser }
+import uk.gov.hmrc.gform.core.parsers.{ FormatParser, PresentationHintParser, ValueParser }
 import uk.gov.hmrc.gform.exceptions.InvalidState
 
 case class MES(mandatory: Boolean, editable: Boolean, submissible: Boolean)
@@ -44,6 +44,13 @@ class FieldValueMaker(json: JsValue) {
     format.map(FormatParser.validate).sequence
   }
 
+  lazy val presentationHint: Option[String] = (json \ "presentationHint").asOpt[String]
+
+  lazy val optMaybePresentationHintExpr: Opt[Option[PresentationHintExpr]] = {
+    import cats.implicits._
+    presentationHint.map(PresentationHintParser.validate).sequence
+  }
+
   lazy val helpText: Option[String] = (json \ "helpText").asOpt[String]
   lazy val optionHelpText: Option[List[String]] = (json \ "optionHelpText").asOpt[List[String]]
   lazy val submitMode: Option[String] = (json \ "submitMode").asOpt[String]
@@ -60,14 +67,19 @@ class FieldValueMaker(json: JsValue) {
   lazy val infoText: Option[String] = (json \ "infoText").asOpt[String]
   lazy val infoType: Option[String] = (json \ "infoType").asOpt[String]
   lazy val shortName: Option[String] = (json \ "shortName").asOpt[String]
-  lazy val repeatsMax: JsResult[Option[Int]] = (json \ "repeatsMax").validateOpt[Int]
-  lazy val repeatsMin: Option[Int] = (json \ "repeatsMin").asOpt[Int]
+  lazy val jsResultMaybeRepeatsMax: JsResult[Option[Int]] = (json \ "repeatsMax").validateOpt[Int]
+  lazy val jsResultMaybeRepeatsMin: JsResult[Option[Int]] = (json \ "repeatsMin").validateOpt[Int]
   lazy val repeatLabel: Option[String] = (json \ "repeatLabel").asOpt[String]
   lazy val repeatAddAnotherText: Option[String] = (json \ "repeatAddAnotherText").asOpt[String]
 
-  def optFieldValue(): Opt[FieldValue] = optMES.flatMap(mes => componentTypeOpt.map(ct => mkFieldValue(mes, ct)))
+  def optFieldValue(): Opt[FieldValue] =
+    for {
+      presHint <- optMaybePresentationHintExpr
+      mes <- optMES
+      ct <- componentTypeOpt
+    } yield mkFieldValue(presHint, mes, ct)
 
-  private def mkFieldValue(mes: MES, ct: ComponentType): FieldValue = FieldValue(
+  private def mkFieldValue(presHint: Option[PresentationHintExpr], mes: MES, ct: ComponentType): FieldValue = FieldValue(
     id = id,
     `type` = ct,
     label = label,
@@ -75,7 +87,8 @@ class FieldValueMaker(json: JsValue) {
     shortName = shortName,
     mandatory = mes.mandatory,
     editable = mes.editable,
-    submissible = mes.submissible
+    submissible = mes.submissible,
+    presentationHint = presHint
   )
 
   private lazy val optMES: Opt[MES] = (submitMode, mandatory) match {
@@ -202,30 +215,30 @@ class FieldValueMaker(json: JsValue) {
     for {
       fieldValues <- fieldValuesOpt.right
       format <- optMaybeFormatExpr.right
-      group <- validateAndBuildGroupField(fieldValues, orientation(format))
+      repMax <- jsResultToOpt(jsResultMaybeRepeatsMax)
+      repMin <- jsResultToOpt(jsResultMaybeRepeatsMin)
+      group <- validateRepeatsAndBuildGroup(repMax, repMin, fieldValues, orientation(format))
     } yield group
   }
 
-  private def validateAndBuildGroupField(fields: List[FieldValue], orientation: Orientation): Opt[Group] = {
-    handleJsonValidationResult(repeatsMax) { validatedRepeatsMax =>
-      (validatedRepeatsMax, repeatsMin) match {
-        case (Some(repMax), Some(repMin)) if repMax < repMin =>
-          InvalidState(s"""repeatsMax should be higher than repeatsMin in Group field""").asLeft
-        case (Some(repMax), Some(repMin)) if repMin < 1 =>
-          InvalidState(s"""repeatsMin in Group field cannot be less than 1""").asLeft
-        case _ =>
-          Group(fields, orientation, validatedRepeatsMax, repeatsMin, repeatLabel, repeatAddAnotherText).asRight
-      }
-    }
-  }
-
-  private def handleJsonValidationResult[A, B](result: JsResult[A])(f: A => Opt[B]) = {
+  private def jsResultToOpt[A](result: JsResult[A]): Opt[A] = {
     result match {
-      case JsSuccess(a, _) => f(a)
+      case JsSuccess(a, _) => a.asRight
       case JsError(errors) => InvalidState(errors.map {
         case (path, validationErrors) =>
           s"Path: ${path.toString}, Errors: ${validationErrors.map(_.messages.mkString(",")).mkString(",")}"
       }.mkString(",")).asLeft
+    }
+  }
+
+  private def validateRepeatsAndBuildGroup(repMax: Option[Int], repMin: Option[Int], fields: List[FieldValue], orientation: Orientation) = {
+    (repMax, repMin) match {
+      case (Some(repMax), Some(repMin)) if repMax < repMin =>
+        InvalidState(s"""repeatsMax should be higher than repeatsMin in Group field""").asLeft
+      case (Some(repMax), Some(repMin)) if repMin < 1 =>
+        InvalidState(s"""repeatsMin in Group field cannot be less than 1""").asLeft
+      case _ =>
+        Group(fields, orientation, repMax, repMin, repeatLabel, repeatAddAnotherText).asRight
     }
   }
 

@@ -27,7 +27,9 @@ case class FieldValue(
   shortName: Option[String],
   mandatory: Boolean,
   editable: Boolean,
-  submissible: Boolean
+  submissible: Boolean,
+  presentationHint: Option[PresentationHintExpr] = Option.empty[PresentationHintExpr]
+
 )
 
 object FieldValue {
