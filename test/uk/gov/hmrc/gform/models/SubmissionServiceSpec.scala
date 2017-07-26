@@ -44,9 +44,9 @@ class SubmissionServiceSpec extends FlatSpec with Matchers with EitherValues {
   )
 
   val data = Map(
-    FieldId("startDate.year") -> FormField(FieldId("startDate.year"), "2010"),
-    FieldId("startDate.day") -> FormField(FieldId("startDate.day"), "10"),
-    FieldId("startDate.month") -> FormField(FieldId("startDate.month"), "10"),
+    FieldId("startDate-year") -> FormField(FieldId("startDate-year"), "2010"),
+    FieldId("startDate-day") -> FormField(FieldId("startDate-day"), "10"),
+    FieldId("startDate-month") -> FormField(FieldId("startDate-month"), "10"),
     FieldId("firstName") -> FormField(FieldId("firstName"), "Pete"),
     FieldId("nameOfBusiness") -> FormField(FieldId("nameOfBusiness"), "Business Name")
   )
@@ -61,7 +61,7 @@ class SubmissionServiceSpec extends FlatSpec with Matchers with EitherValues {
 
   it should "return a Left if formData is missing" in {
 
-    val formDataWithoutRequiredField = Form(FormId("anId"), FormData(UserId("TESTID"), FormTypeId("ftid"), Version("version"), "charset", (data - FieldId("startDate.month")).values.toSeq), EnvelopeId(""))
+    val formDataWithoutRequiredField = Form(FormId("anId"), FormData(UserId("TESTID"), FormTypeId("ftid"), Version("version"), "charset", (data - FieldId("startDate-month")).values.toSeq), EnvelopeId(""))
 
     val sectionFormFieldsOpt = SubmissionService.getSectionFormFields(formDataWithoutRequiredField, formTemplate)
 

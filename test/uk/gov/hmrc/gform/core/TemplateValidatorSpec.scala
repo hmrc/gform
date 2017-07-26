@@ -486,9 +486,9 @@ class TemplateValidatorSpec extends Spec {
 
     val formFields = List(
       FormField(FieldId("nameOfBusiness"), "Apple inc."),
-      FormField(FieldId("startDate.day"), "1"),
-      FormField(FieldId("startDate.month"), "12"),
-      FormField(FieldId("startDate.year"), "2000")
+      FormField(FieldId("startDate-day"), "1"),
+      FormField(FieldId("startDate-month"), "12"),
+      FormField(FieldId("startDate-year"), "2000")
     )
     val sections = List(sectionWithDate)
     val res = TemplateValidator.getMatchingSection(formFields, sections)
