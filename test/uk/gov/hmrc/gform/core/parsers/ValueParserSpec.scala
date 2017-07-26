@@ -176,7 +176,7 @@ class ValueParserSpec extends Spec {
     )
   }
 
-  val plainFormTemplate = FormTemplate(Some("schemaId"), FormTypeId("IPT100"), "Insurance Premium Tax Return", Version("version"), "description", "characterSet", DmsSubmission("nino", "BT-NRU-Environmental", "FinanceOpsCorpT"), AuthConfig("TEST", None, "TEST"), "submitSuccessUrl", "submitErrorUrl", List.empty[Section])
+  val plainFormTemplate = FormTemplate(Some("schemaId"), FormTypeId("IPT100"), "Insurance Premium Tax Return", Version("version"), "description", "characterSet", DmsSubmission("nino", "BT-NRU-Environmental", "FinanceOpsCorpT"), AuthConfig(AuthModule("TEST"), None, RegimeId("TEST")), "submitSuccessUrl", "submitErrorUrl", List.empty[Section])
 
   val yourDetailsSection = Section(
     "Your details",

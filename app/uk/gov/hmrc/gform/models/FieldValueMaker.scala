@@ -409,13 +409,4 @@ class FieldValueMaker(json: JsValue) {
   }
 
   private def isThisAnInfoField: Boolean = `type`.getOrElse(None).isInstanceOf[InfoRaw.type]
-
-  private def parse[T: Reads, R](path: String, validate: T => Opt[R]): Opt[Option[R]] = {
-    val optMaybeString: Opt[Option[T]] = toOpt((json \ path).validateOpt[T])
-    import cats.implicits._
-    for {
-      maybeString <- optMaybeString.right
-      res <- maybeString.map(validate).sequenceU
-    } yield res
-  }
 }
