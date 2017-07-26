@@ -17,17 +17,18 @@
 package uk.gov.hmrc.gform.connectors
 
 import com.sun.xml.internal.bind.v2.TODO
-import play.api.libs.json.{ JsError, JsResult, JsSuccess, Json }
-import reactivemongo.api.commands.{ DefaultWriteResult, WriteResult }
-import uk.gov.hmrc.gform.{ WSHttp, models }
-import uk.gov.hmrc.gform.core.{ Opt, ServiceResponse }
+import play.api.Logger
+import play.api.libs.json.{JsError, JsResult, JsSuccess, Json}
+import reactivemongo.api.commands.{DefaultWriteResult, WriteResult}
+import uk.gov.hmrc.gform.{WSHttp, models}
+import uk.gov.hmrc.gform.core.{Opt, ServiceResponse}
 import uk.gov.hmrc.gform.exceptions.InvalidState
 import uk.gov.hmrc.gform.models._
-import uk.gov.hmrc.http.cache.client.{ CacheMap, ShortLivedCache }
+import uk.gov.hmrc.http.cache.client.{CacheMap, ShortLivedCache}
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http.HeaderCarrier
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
 class Save4LaterConnector(cache: ShortLivedCache) extends ServicesConfig {
 
@@ -49,17 +50,18 @@ class Save4LaterConnector(cache: ShortLivedCache) extends ServicesConfig {
     }
   }
 
-  def put(formId: FormId, form: Form)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Opt[DbOperationResult]] = {
-    findOne(formId).flatMap {
-      case None => save(formId, form)
-      case Some(x) =>
-        val fields = x.formData.fields ++ form.formData.fields
-        val concatenatedFormData: FormData = form.formData.copy(fields = fields)
-        save(formId, form.copy(formData = concatenatedFormData))
-    }
-  }
+//  def put(formId: FormId, form: Form)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Opt[DbOperationResult]] = {
+//    findOne(formId).flatMap {
+//      case None => save(formId, form)
+//      case Some(x) =>
+//        val fields = x.formData.fields ++ form.formData.fields
+//        val concatenatedFormData: FormData = form.formData.copy(fields = fields)
+//        save(formId, form.copy(formData = concatenatedFormData))
+//    }
+//  }
 
-  def save(formId: FormId, form: Form)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Opt[DbOperationResult]] = {
+  def put(formId: FormId, form: Form)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Opt[DbOperationResult]] = {
+    Logger.debug(Json.prettyPrint(Json.toJson(form)) + " Put of form")
     cache.cache[Form](formId.value, "form", form)
       .map(_ => Right(Success)).recover {
         case t: Throwable => Left(InvalidState("put Failed"))
