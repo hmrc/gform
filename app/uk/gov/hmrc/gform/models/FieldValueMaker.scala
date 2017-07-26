@@ -30,25 +30,32 @@ class FieldValueMaker(json: JsValue) {
   lazy val id: FieldId = (json \ "id").as[FieldId]
   lazy val `type`: Option[ComponentTypeRaw] = (json \ "type").asOpt[ComponentTypeRaw]
   lazy val label: String = (json \ "label").as[String]
-  lazy val value: Option[String] = (json \ "value").asOpt[String]
 
   lazy val optMaybeValueExpr: Opt[Option[ValueExpr]] = {
+    val optMaybeValue: Opt[Option[String]] = toOpt((json \ "value").validateOpt[String])
     import cats.implicits._
-    value.map(ValueParser.validate).sequenceU
+    for {
+      maybeString <- optMaybeValue.right
+      res <- maybeString.map(ValueParser.validate).sequenceU
+    } yield res
   }
-
-  lazy val format: Option[String] = (json \ "format").asOpt[String]
 
   lazy val optMaybeFormatExpr: Opt[Option[FormatExpr]] = {
+    val optMaybeFormat: Opt[Option[String]] = toOpt((json \ "format").validateOpt[String])
     import cats.implicits._
-    format.map(FormatParser.validate).sequence
+    for {
+      maybeString <- optMaybeFormat.right
+      res <- maybeString.map(FormatParser.validate).sequenceU
+    } yield res
   }
 
-  lazy val presentationHint: Option[String] = (json \ "presentationHint").asOpt[String]
-
   lazy val optMaybePresentationHintExpr: Opt[Option[PresentationHintExpr]] = {
+    val optMaybePresentationHint: Opt[Option[String]] = toOpt((json \ "presentationHint").validateOpt[String])
     import cats.implicits._
-    presentationHint.map(PresentationHintParser.validate).sequence
+    for {
+      maybeString <- optMaybePresentationHint.right
+      res <- maybeString.map(PresentationHintParser.validate).sequenceU
+    } yield res
   }
 
   lazy val helpText: Option[String] = (json \ "helpText").asOpt[String]
@@ -67,8 +74,8 @@ class FieldValueMaker(json: JsValue) {
   lazy val infoText: Option[String] = (json \ "infoText").asOpt[String]
   lazy val infoType: Option[String] = (json \ "infoType").asOpt[String]
   lazy val shortName: Option[String] = (json \ "shortName").asOpt[String]
-  lazy val jsResultMaybeRepeatsMax: JsResult[Option[Int]] = (json \ "repeatsMax").validateOpt[Int]
-  lazy val jsResultMaybeRepeatsMin: JsResult[Option[Int]] = (json \ "repeatsMin").validateOpt[Int]
+  lazy val optMaybeRepeatsMax: Opt[Option[Int]] = toOpt((json \ "repeatsMax").validateOpt[Int])
+  lazy val optMaybeRepeatsMin: Opt[Option[Int]] = toOpt((json \ "repeatsMin").validateOpt[Int])
   lazy val repeatLabel: Option[String] = (json \ "repeatLabel").asOpt[String]
   lazy val repeatAddAnotherText: Option[String] = (json \ "repeatAddAnotherText").asOpt[String]
 
@@ -78,6 +85,16 @@ class FieldValueMaker(json: JsValue) {
       mes <- optMES
       ct <- componentTypeOpt
     } yield mkFieldValue(presHint, mes, ct)
+
+  private def toOpt[A](result: JsResult[A]): Opt[A] = {
+    result match {
+      case JsSuccess(a, _) => a.asRight
+      case JsError(errors) => InvalidState(errors.map {
+        case (path, validationErrors) =>
+          s"Path: ${path.toString}, Errors: ${validationErrors.map(_.messages.mkString(",")).mkString(",")}"
+      }.mkString(",")).asLeft
+    }
+  }
 
   private def mkFieldValue(presHint: Option[PresentationHintExpr], mes: MES, ct: ComponentType): FieldValue = FieldValue(
     id = id,
@@ -215,20 +232,10 @@ class FieldValueMaker(json: JsValue) {
     for {
       fieldValues <- fieldValuesOpt.right
       format <- optMaybeFormatExpr.right
-      repMax <- jsResultToOpt(jsResultMaybeRepeatsMax)
-      repMin <- jsResultToOpt(jsResultMaybeRepeatsMin)
+      repMax <- optMaybeRepeatsMax
+      repMin <- optMaybeRepeatsMin
       group <- validateRepeatsAndBuildGroup(repMax, repMin, fieldValues, orientation(format))
     } yield group
-  }
-
-  private def jsResultToOpt[A](result: JsResult[A]): Opt[A] = {
-    result match {
-      case JsSuccess(a, _) => a.asRight
-      case JsError(errors) => InvalidState(errors.map {
-        case (path, validationErrors) =>
-          s"Path: ${path.toString}, Errors: ${validationErrors.map(_.messages.mkString(",")).mkString(",")}"
-      }.mkString(",")).asLeft
-    }
   }
 
   private def validateRepeatsAndBuildGroup(repMax: Option[Int], repMin: Option[Int], fields: List[FieldValue], orientation: Orientation) = {
