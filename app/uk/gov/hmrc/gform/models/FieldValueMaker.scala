@@ -31,32 +31,9 @@ class FieldValueMaker(json: JsValue) {
   lazy val `type`: Option[ComponentTypeRaw] = (json \ "type").asOpt[ComponentTypeRaw]
   lazy val label: String = (json \ "label").as[String]
 
-  lazy val optMaybeValueExpr: Opt[Option[ValueExpr]] = {
-    val optMaybeValue: Opt[Option[String]] = toOpt((json \ "value").validateOpt[String])
-    import cats.implicits._
-    for {
-      maybeString <- optMaybeValue.right
-      res <- maybeString.map(ValueParser.validate).sequenceU
-    } yield res
-  }
-
-  lazy val optMaybeFormatExpr: Opt[Option[FormatExpr]] = {
-    val optMaybeFormat: Opt[Option[String]] = toOpt((json \ "format").validateOpt[String])
-    import cats.implicits._
-    for {
-      maybeString <- optMaybeFormat.right
-      res <- maybeString.map(FormatParser.validate).sequenceU
-    } yield res
-  }
-
-  lazy val optMaybePresentationHintExpr: Opt[Option[PresentationHintExpr]] = {
-    val optMaybePresentationHint: Opt[Option[String]] = toOpt((json \ "presentationHint").validateOpt[String])
-    import cats.implicits._
-    for {
-      maybeString <- optMaybePresentationHint.right
-      res <- maybeString.map(PresentationHintParser.validate).sequenceU
-    } yield res
-  }
+  lazy val optMaybeValueExpr: Opt[Option[ValueExpr]] = parse("value", ValueParser.validate)
+  lazy val optMaybeFormatExpr: Opt[Option[FormatExpr]] = parse("format", FormatParser.validate)
+  lazy val optMaybePresentationHintExpr: Opt[Option[PresentationHintExpr]] = parse("presentationHint", PresentationHintParser.validate)
 
   lazy val helpText: Option[String] = (json \ "helpText").asOpt[String]
   lazy val optionHelpText: Option[List[String]] = (json \ "optionHelpText").asOpt[List[String]]
@@ -432,4 +409,13 @@ class FieldValueMaker(json: JsValue) {
   }
 
   private def isThisAnInfoField: Boolean = `type`.getOrElse(None).isInstanceOf[InfoRaw.type]
+
+  private def parse[T: Reads, R](path: String, validate: T => Opt[R]): Opt[Option[R]] = {
+    val optMaybeString: Opt[Option[T]] = toOpt((json \ path).validateOpt[T])
+    import cats.implicits._
+    for {
+      maybeString <- optMaybeString.right
+      res <- maybeString.map(validate).sequenceU
+    } yield res
+  }
 }
