@@ -28,7 +28,7 @@ import scala.concurrent.ExecutionContext.Implicits._
 
 class FormTemplatesSpec extends Spec with TypeclassFixtures {
 
-  val plainFormTemplate = FormTemplate(Some("http://schemaId"), FormTypeId(""), "formName", Version("version"), "description", "characterSet", DmsSubmission("customerId", "classificationType", "businessArea"), AuthConfig("TEST", None, "TEST"), "submitSuccessUrl", "submitErrorUrl", List.empty[Section])
+  val plainFormTemplate = FormTemplate(Some("http://schemaId"), FormTypeId(""), "formName", Version("version"), "description", "characterSet", DmsSubmission("customerId", "classificationType", "businessArea"), AuthConfig(AuthModule("TEST"), None, RegimeId("TEST")), "submitSuccessUrl", "submitErrorUrl", List.empty[Section])
 
   implicit override val patienceConfig = PatienceConfig(timeout = scaled(Span(500, Millis)), interval = scaled(Span(150, Millis)))
 
