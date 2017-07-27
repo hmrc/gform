@@ -10,6 +10,10 @@
     "classificationType": "BT-NRU-Environmental",
     "businessArea": "FinanceOpsCorpT"
   },
+  "authConfig":{
+    "authModule": "legacyEEITTAuth",
+    "regimeId": "GF"
+  },
   "submitSuccessUrl": "http://www.google.co.uk",
   "submitErrorUrl": "http://www.yahoo.co.uk",
   "sections": [
