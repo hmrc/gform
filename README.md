@@ -15,7 +15,7 @@ Similarly, to upload a form template:
 
 To upload eeitt test data: 
     
-    curl http://localhost:9190/eeitt-auth/etmp-data/business-users/live -d '@sample-data/EEITTTestUsers.txt'
+    curl --data-binary '@sample-data/EEITTTestUsers.txt' http://localhost:9191/eeitt/etmp-data/live/business-users
     
 View data with, for example:
 
