@@ -75,7 +75,7 @@ class JsonParseTestPresentationHint extends Spec {
       val jsResult = implicitly[Reads[FieldValue]].reads(Json.parse(startOfJson + snippet))
       println(jsResult)
       jsResult shouldBe a[JsSuccess[_]]
-      jsResult.map(_.presentationHint).get should equal(Some(PresentationHints(List(CollapseGroupUnderLabel, SummariseGroupAsGrid))))
+      jsResult.map(_.presentationHint).get should equal(Some(List(CollapseGroupUnderLabel, SummariseGroupAsGrid)))
     }
   }
 

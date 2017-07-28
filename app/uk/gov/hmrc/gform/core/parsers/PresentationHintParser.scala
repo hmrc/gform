@@ -25,11 +25,11 @@ import uk.gov.hmrc.gform.models._
 
 object PresentationHintParser {
 
-  def validate(expression: String): Opt[PresentationHintExpr] = validateWithParser(expression, presentationHints)
+  def validate(expression: String): Opt[List[PresentationHint]] = validateWithParser(expression, presentationHints)
 
-  lazy val presentationHints: Parser[PresentationHints] = (
-    presentationHint ~ "," ~ presentationHints ^^ { (loc, presHint, _, presHints) => PresentationHints(presHint :: presHints.hints) }
-    | presentationHint ^^ { (loc, presHint) => PresentationHints(List(presHint)) }
+  lazy val presentationHints: Parser[List[PresentationHint]] = (
+    presentationHint ~ "," ~ presentationHints ^^ { (loc, presHint, _, presHints) => presHint :: presHints }
+    | presentationHint ^^ { (loc, presHint) => List(presHint) }
   )
 
   lazy val presentationHint: Parser[PresentationHint] = (

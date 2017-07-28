@@ -33,7 +33,7 @@ class FieldValueMaker(json: JsValue) {
 
   lazy val optMaybeValueExpr: Opt[Option[ValueExpr]] = parse("value", ValueParser.validate)
   lazy val optMaybeFormatExpr: Opt[Option[FormatExpr]] = parse("format", FormatParser.validate)
-  lazy val optMaybePresentationHintExpr: Opt[Option[PresentationHintExpr]] = parse("presentationHint", PresentationHintParser.validate)
+  lazy val optMaybePresentationHintExpr: Opt[Option[List[PresentationHint]]] = parse("presentationHint", PresentationHintParser.validate)
 
   lazy val helpText: Option[String] = (json \ "helpText").asOpt[String]
   lazy val optionHelpText: Option[List[String]] = (json \ "optionHelpText").asOpt[List[String]]
@@ -73,7 +73,7 @@ class FieldValueMaker(json: JsValue) {
     }
   }
 
-  private def mkFieldValue(presHint: Option[PresentationHintExpr], mes: MES, ct: ComponentType): FieldValue = FieldValue(
+  private def mkFieldValue(presHint: Option[List[PresentationHint]], mes: MES, ct: ComponentType): FieldValue = FieldValue(
     id = id,
     `type` = ct,
     label = label,
