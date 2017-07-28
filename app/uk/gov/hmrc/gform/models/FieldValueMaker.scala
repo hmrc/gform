@@ -80,7 +80,7 @@ class FieldValueMaker(json: JsValue) {
 
   private lazy val optMES: Opt[MES] = (submitMode, mandatory) match {
     //format: OFF
-    case (_, _) if isThisAnInfoField => MES(mandatory = true, editable = false, submissible = false).asRight
+    case IsThisAnInfoField()                                    => MES(mandatory = true, editable = false, submissible = false).asRight
     case (Some(IsStandard()) | None, Some(IsTrueish()) | None)  => MES(mandatory = true, editable = true, submissible = true).asRight
     case (Some(IsReadOnly()),        Some(IsTrueish()) | None)  => MES(mandatory = true, editable = false, submissible = true).asRight
     case (Some(IsInfo()),            Some(IsTrueish()) | None)  => MES(mandatory = true, editable = false, submissible = false).asRight
@@ -411,5 +411,8 @@ class FieldValueMaker(json: JsValue) {
     }
   }
 
-  private def isThisAnInfoField: Boolean = `type`.getOrElse(None).isInstanceOf[InfoRaw.type]
+  private final object IsThisAnInfoField {
+    def unapply(ignoredArgs: (Option[String], Option[String])) = `type`.getOrElse(None).isInstanceOf[InfoRaw.type]
+  }
 }
+
