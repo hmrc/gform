@@ -66,7 +66,7 @@ class JsonParseTestGroup extends Spec {
         Some(5), Some(1), Some("repeatLabel"), Some("repeatAddAnotherText")
       ),
       "glabel", None, None, true, true, true,
-      Some(PresentationHints(List(CollapseGroupUnderLabel)))
+      Some(List(CollapseGroupUnderLabel))
     ))
 
   }

@@ -28,7 +28,7 @@ case class FieldValue(
   mandatory: Boolean,
   editable: Boolean,
   submissible: Boolean,
-  presentationHint: Option[PresentationHintExpr] = Option.empty[PresentationHintExpr]
+  presentationHint: Option[List[PresentationHint]] = Option.empty[List[PresentationHint]]
 
 )
 
