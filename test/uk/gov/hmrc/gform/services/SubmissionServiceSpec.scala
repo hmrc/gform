@@ -39,7 +39,7 @@ class SubmissionServiceSpec extends Spec with TypeclassFixtures {
 
   val form = Form(FormId("form-id"), FormData(UserId("TESTID"), FormTypeId("form-type-id"), Version("1.0.0"), "UTF-8", List(FormField(FieldId("firstName"), "Joe"), FormField(FieldId("lastName"), "Doe"))), EnvelopeId("123"))
 
-  val plainFormTemplate = FormTemplate(Some("schemaId"), FormTypeId("IPT100"), "Insurance Premium Tax Return", Version("version"), "description", "characterSet", DmsSubmission("nino", "BT-NRU-Environmental", "FinanceOpsCorpT"), "submitSuccessUrl", "submitErrorUrl", List.empty[Section])
+  val plainFormTemplate = FormTemplate(Some("schemaId"), FormTypeId("IPT100"), "Insurance Premium Tax Return", Version("version"), "description", "characterSet", DmsSubmission("nino", "BT-NRU-Environmental", "FinanceOpsCorpT"), AuthConfig(AuthModule("TEST"), None, RegimeId("TEST")), "submitSuccessUrl", "submitErrorUrl", List.empty[Section])
 
   val yourDetailsSection = Section(
     "Your details",
@@ -203,6 +203,7 @@ class SubmissionServiceSpec extends Spec with TypeclassFixtures {
       description = "formTemplateDescription",
       characterSet = "UTF-16",
       dmsSubmission = DmsSubmission("customerId", "classificationType", "businessArea"),
+      AuthConfig(AuthModule("TEST"), None, RegimeId("TEST")),
       submitSuccessUrl = "http://somwehere-nice.net",
       submitErrorUrl = "http://somwehere-nasty.net",
       sections = List(section)

@@ -16,22 +16,13 @@
 
 package uk.gov.hmrc.gform.models
 
-import play.api.libs.json.{ Json, OFormat }
+import julienrf.json.derived
+import play.api.libs.json._
 
-case class FormTemplate(
-  schemaId: Option[String],
-  formTypeId: FormTypeId,
-  formName: String,
-  version: Version,
-  description: String,
-  characterSet: String,
-  dmsSubmission: DmsSubmission,
-  authConfig: AuthConfig,
-  submitSuccessUrl: String,
-  submitErrorUrl: String,
-  sections: List[Section]
-)
+sealed trait PresentationHint
+case object CollapseGroupUnderLabel extends PresentationHint
+case object SummariseGroupAsGrid extends PresentationHint
 
-object FormTemplate {
-  implicit val format: OFormat[FormTemplate] = Json.format[FormTemplate]
+object PresentationHint {
+  implicit val format: OFormat[PresentationHint] = derived.oformat[PresentationHint]
 }

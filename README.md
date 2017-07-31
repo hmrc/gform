@@ -13,6 +13,10 @@ Similarly, to upload a form template:
 
     curl http://localhost:9196/gform/formtemplates -H "Content-Type: application/json" -d '@sample-data/template-aaa999.json'
 
+To upload eeitt test data: 
+    
+    curl --data-binary '@sample-data/EEITTTestUsers.txt' http://localhost:9191/eeitt/etmp-data/live/business-users
+    
 View data with, for example:
 
     curl http://localhost:9196/gform/schemas

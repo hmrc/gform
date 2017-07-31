@@ -20,6 +20,7 @@ import java.util.UUID
 
 import cats.data.EitherT
 import cats.instances.future._
+import play.api.Logger
 import play.api.libs.json.{ JsObject, Json }
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.exceptions.{ InvalidState, UnexpectedState }
@@ -52,7 +53,10 @@ object FormService {
       FindOneForm(formSelector(formId))
         .map(_.get)
         .map(_.copy(formData = formData))
-        .flatMap(f => UpdateForm(formSelector(formId), f))
+        .flatMap { f =>
+          Logger.debug(Json.prettyPrint(Json.toJson(f)) + "FORMTH")
+          UpdateForm(formSelector(formId), f)
+        }
     )
   }
 

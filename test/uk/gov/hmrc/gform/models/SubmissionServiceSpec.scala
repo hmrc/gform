@@ -38,6 +38,7 @@ class SubmissionServiceSpec extends FlatSpec with Matchers with EitherValues {
     description = "abc",
     characterSet = "UTF-8",
     dmsSubmission = DmsSubmission("nino", "some-classification-type", "some-business-area"),
+    AuthConfig(AuthModule("TEST"), None, RegimeId("TEST")),
     submitSuccessUrl = "success-url",
     submitErrorUrl = "error-url",
     sections = List(section0, section1, section2)
@@ -74,7 +75,7 @@ class SubmissionServiceSpec extends FlatSpec with Matchers with EitherValues {
 
     val excludedSection = section0.copy(includeIf = Some(IncludeIf(IsFalse)))
 
-    val formDataWithoutFieldsOnExludedSection = Form(FormId("anId"), FormData(UserId("TESTID"), FormTypeId("ftid"), Version("version"), "charset", (data - FieldId("startDate.month")).values.toSeq), EnvelopeId(""))
+    val formDataWithoutFieldsOnExludedSection = Form(FormId("anId"), FormData(UserId("TESTID"), FormTypeId("ftid"), Version("version"), "charset", (data - FieldId("startDate-month")).values.toSeq), EnvelopeId(""))
     val ftWithExcludedSection0 = formTemplate.copy(sections = List(excludedSection, section1, section2))
 
     SubmissionService.getSectionFormFields(formDataWithoutFieldsOnExludedSection, ftWithExcludedSection0) should be('right)

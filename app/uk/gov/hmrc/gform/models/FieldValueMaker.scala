@@ -20,7 +20,7 @@ import cats.data.NonEmptyList
 import cats.syntax.all._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.Opt
-import uk.gov.hmrc.gform.core.parsers.{ FormatParser, ValueParser }
+import uk.gov.hmrc.gform.core.parsers.{ FormatParser, PresentationHintParser, ValueParser }
 import uk.gov.hmrc.gform.exceptions.InvalidState
 
 case class MES(mandatory: Boolean, editable: Boolean, submissible: Boolean)
@@ -30,19 +30,10 @@ class FieldValueMaker(json: JsValue) {
   lazy val id: FieldId = (json \ "id").as[FieldId]
   lazy val `type`: Option[ComponentTypeRaw] = (json \ "type").asOpt[ComponentTypeRaw]
   lazy val label: String = (json \ "label").as[String]
-  lazy val value: Option[String] = (json \ "value").asOpt[String]
 
-  lazy val optMaybeValueExpr: Opt[Option[ValueExpr]] = {
-    import cats.implicits._
-    value.map(ValueParser.validate).sequenceU
-  }
-
-  lazy val format: Option[String] = (json \ "format").asOpt[String]
-
-  lazy val optMaybeFormatExpr: Opt[Option[FormatExpr]] = {
-    import cats.implicits._
-    format.map(FormatParser.validate).sequence
-  }
+  lazy val optMaybeValueExpr: Opt[Option[ValueExpr]] = parse("value", ValueParser.validate)
+  lazy val optMaybeFormatExpr: Opt[Option[FormatExpr]] = parse("format", FormatParser.validate)
+  lazy val optMaybePresentationHintExpr: Opt[Option[List[PresentationHint]]] = parse("presentationHint", PresentationHintParser.validate)
 
   lazy val helpText: Option[String] = (json \ "helpText").asOpt[String]
   lazy val optionHelpText: Option[List[String]] = (json \ "optionHelpText").asOpt[List[String]]
@@ -60,14 +51,29 @@ class FieldValueMaker(json: JsValue) {
   lazy val infoText: Option[String] = (json \ "infoText").asOpt[String]
   lazy val infoType: Option[String] = (json \ "infoType").asOpt[String]
   lazy val shortName: Option[String] = (json \ "shortName").asOpt[String]
-  lazy val repeatsMax: JsResult[Option[Int]] = (json \ "repeatsMax").validateOpt[Int]
-  lazy val repeatsMin: Option[Int] = (json \ "repeatsMin").asOpt[Int]
+  lazy val optMaybeRepeatsMax: Opt[Option[Int]] = toOpt((json \ "repeatsMax").validateOpt[Int])
+  lazy val optMaybeRepeatsMin: Opt[Option[Int]] = toOpt((json \ "repeatsMin").validateOpt[Int])
   lazy val repeatLabel: Option[String] = (json \ "repeatLabel").asOpt[String]
   lazy val repeatAddAnotherText: Option[String] = (json \ "repeatAddAnotherText").asOpt[String]
 
-  def optFieldValue(): Opt[FieldValue] = optMES.flatMap(mes => componentTypeOpt.map(ct => mkFieldValue(mes, ct)))
+  def optFieldValue(): Opt[FieldValue] =
+    for {
+      presHint <- optMaybePresentationHintExpr
+      mes <- optMES
+      ct <- componentTypeOpt
+    } yield mkFieldValue(presHint, mes, ct)
 
-  private def mkFieldValue(mes: MES, ct: ComponentType): FieldValue = FieldValue(
+  private def toOpt[A](result: JsResult[A]): Opt[A] = {
+    result match {
+      case JsSuccess(a, _) => a.asRight
+      case JsError(errors) => InvalidState(errors.map {
+        case (path, validationErrors) =>
+          s"Path: ${path.toString}, Errors: ${validationErrors.map(_.messages.mkString(",")).mkString(",")}"
+      }.mkString(",")).asLeft
+    }
+  }
+
+  private def mkFieldValue(presHint: Option[List[PresentationHint]], mes: MES, ct: ComponentType): FieldValue = FieldValue(
     id = id,
     `type` = ct,
     label = label,
@@ -75,18 +81,19 @@ class FieldValueMaker(json: JsValue) {
     shortName = shortName,
     mandatory = mes.mandatory,
     editable = mes.editable,
-    submissible = mes.submissible
+    submissible = mes.submissible,
+    presentationHint = presHint
   )
 
   private lazy val optMES: Opt[MES] = (submitMode, mandatory) match {
     //format: OFF
-    case IsThisAnInfoField()                                    => MES(mandatory = true, editable = false, submissible = false).asRight
-    case (Some(IsStandard()) | None, Some(IsTrueish()) | None)  => MES(mandatory = true, editable = true, submissible = true).asRight
-    case (Some(IsReadOnly()),        Some(IsTrueish()) | None)  => MES(mandatory = true, editable = false, submissible = true).asRight
-    case (Some(IsInfo()),            Some(IsTrueish()) | None)  => MES(mandatory = true, editable = false, submissible = false).asRight
-    case (Some(IsStandard()) | None, Some(IsFalseish()))        => MES(mandatory = false, editable = true, submissible = true).asRight
-    case (Some(IsInfo()),            Some(IsFalseish()))        => MES(mandatory = false, editable = false, submissible = false).asRight
-    case otherwise                                              => InvalidState(s"Expected 'standard', 'readonly' or 'info' string or nothing for submitMode and expected 'true' or 'false' string or nothing for mandatory field value, got: $otherwise").asLeft
+    case IsThisAnInfoField() => MES(mandatory = true, editable = false, submissible = false).asRight
+    case (Some(IsStandard()) | None, Some(IsTrueish()) | None) => MES(mandatory = true, editable = true, submissible = true).asRight
+    case (Some(IsReadOnly()), Some(IsTrueish()) | None) => MES(mandatory = true, editable = false, submissible = true).asRight
+    case (Some(IsInfo()), Some(IsTrueish()) | None) => MES(mandatory = true, editable = false, submissible = false).asRight
+    case (Some(IsStandard()) | None, Some(IsFalseish())) => MES(mandatory = false, editable = true, submissible = true).asRight
+    case (Some(IsInfo()), Some(IsFalseish())) => MES(mandatory = false, editable = false, submissible = false).asRight
+    case otherwise => InvalidState(s"Expected 'standard', 'readonly' or 'info' string or nothing for submitMode and expected 'true' or 'false' string or nothing for mandatory field value, got: $otherwise").asLeft
     //format: ON
   }
 
@@ -107,15 +114,15 @@ class FieldValueMaker(json: JsValue) {
       maybeValueExpr <- optMaybeValueExpr
       optText = (maybeFormatExpr, maybeValueExpr, total) match {
         //format: OFF
-        case (Some(TextFormat(f)), Some(TextExpression(expr)), IsTotal(TotalYes))  => Text(f, expr, total = true).asRight
-        case (Some(TextFormat(f)), Some(TextExpression(expr)), IsTotal(TotalNo))   => Text(f, expr, total = false).asRight
-        case (Some(TextFormat(f)), None,                       IsTotal(TotalYes))  => Text(f, Constant(""), total = true).asRight
-        case (Some(TextFormat(f)), None,                       IsTotal(TotalNo))   => Text(f, Constant(""), total = false).asRight
-        case (None,                Some(TextExpression(expr)), IsTotal(TotalYes))  => Text(AnyText, expr, total = true).asRight
-        case (None,                Some(TextExpression(expr)), IsTotal(TotalNo))   => Text(AnyText, expr, total = false).asRight
-        case (None,                None,                       IsTotal(TotalYes))  => Text(AnyText, Constant(""), total = true).asRight
-        case (None,                None,                       IsTotal(TotalNo))   => Text(AnyText, Constant(""), total = false).asRight
-        case (Some(invalidFormat), Some(invalidValue),         invalidTotal)       => InvalidState(
+        case (Some(TextFormat(f)), Some(TextExpression(expr)), IsTotal(TotalYes)) => Text(f, expr, total = true).asRight
+        case (Some(TextFormat(f)), Some(TextExpression(expr)), IsTotal(TotalNo)) => Text(f, expr, total = false).asRight
+        case (Some(TextFormat(f)), None, IsTotal(TotalYes)) => Text(f, Constant(""), total = true).asRight
+        case (Some(TextFormat(f)), None, IsTotal(TotalNo)) => Text(f, Constant(""), total = false).asRight
+        case (None, Some(TextExpression(expr)), IsTotal(TotalYes)) => Text(AnyText, expr, total = true).asRight
+        case (None, Some(TextExpression(expr)), IsTotal(TotalNo)) => Text(AnyText, expr, total = false).asRight
+        case (None, None, IsTotal(TotalYes)) => Text(AnyText, Constant(""), total = true).asRight
+        case (None, None, IsTotal(TotalNo)) => Text(AnyText, Constant(""), total = false).asRight
+        case (Some(invalidFormat), Some(invalidValue), invalidTotal) => InvalidState(
           s"""|Unsupported type of format and value for text field
               |Id: $id
               |Format: $invalidFormat
@@ -130,8 +137,8 @@ class FieldValueMaker(json: JsValue) {
   private lazy val addressOpt: Opt[Address] = international match {
     //format: OFF
     case IsInternational(InternationalYes) => Address(international = true).asRight
-    case IsInternational(InternationalNo)  => Address(international = false).asRight
-    case invalidInternational       => InvalidState(
+    case IsInternational(InternationalNo) => Address(international = false).asRight
+    case invalidInternational => InvalidState(
       s"""|Unsupported type of value for address field
           |Id: $id
           |Total: $invalidInternational""".stripMargin).asLeft
@@ -202,30 +209,20 @@ class FieldValueMaker(json: JsValue) {
     for {
       fieldValues <- fieldValuesOpt.right
       format <- optMaybeFormatExpr.right
-      group <- validateAndBuildGroupField(fieldValues, orientation(format))
+      repMax <- optMaybeRepeatsMax
+      repMin <- optMaybeRepeatsMin
+      group <- validateRepeatsAndBuildGroup(repMax, repMin, fieldValues, orientation(format))
     } yield group
   }
 
-  private def validateAndBuildGroupField(fields: List[FieldValue], orientation: Orientation): Opt[Group] = {
-    handleJsonValidationResult(repeatsMax) { validatedRepeatsMax =>
-      (validatedRepeatsMax, repeatsMin) match {
-        case (Some(repMax), Some(repMin)) if repMax < repMin =>
-          InvalidState(s"""repeatsMax should be higher than repeatsMin in Group field""").asLeft
-        case (Some(repMax), Some(repMin)) if repMin < 1 =>
-          InvalidState(s"""repeatsMin in Group field cannot be less than 1""").asLeft
-        case _ =>
-          Group(fields, orientation, validatedRepeatsMax, repeatsMin, repeatLabel, repeatAddAnotherText).asRight
-      }
-    }
-  }
-
-  private def handleJsonValidationResult[A, B](result: JsResult[A])(f: A => Opt[B]) = {
-    result match {
-      case JsSuccess(a, _) => f(a)
-      case JsError(errors) => InvalidState(errors.map {
-        case (path, validationErrors) =>
-          s"Path: ${path.toString}, Errors: ${validationErrors.map(_.messages.mkString(",")).mkString(",")}"
-      }.mkString(",")).asLeft
+  private def validateRepeatsAndBuildGroup(repMax: Option[Int], repMin: Option[Int], fields: List[FieldValue], orientation: Orientation) = {
+    (repMax, repMin) match {
+      case (Some(repMax), Some(repMin)) if repMax < repMin =>
+        InvalidState(s"""repeatsMax should be higher than repeatsMin in Group field""").asLeft
+      case (Some(repMax), Some(repMin)) if repMin < 1 =>
+        InvalidState(s"""repeatsMin in Group field cannot be less than 1""").asLeft
+      case _ =>
+        Group(fields, orientation, repMax, repMin, repeatLabel, repeatAddAnotherText).asRight
     }
   }
 
@@ -303,6 +300,7 @@ class FieldValueMaker(json: JsValue) {
         case Some(OrientationFormat("horizontal")) => Some(HorizontalOrientation)
         case Some(OrientationFormat("yesno")) => Some(YesNoOrientation)
         case Some(OrientationFormat("inline")) => Some(InlineOrientation)
+
         case _ => None
       }
     }
@@ -317,7 +315,10 @@ class FieldValueMaker(json: JsValue) {
     def unapply(orientation: Option[FormatExpr]): Option[GroupOrientation] = {
       orientation match {
         case Some(OrientationFormat("vertical")) | None => Some(VerticalGroupOrientation)
-        case Some(OrientationFormat("horizontal")) => Some(HorizontalGroupOrientation)
+        case Some(OrientationFormat("horizontal")) => Some(
+
+          HorizontalGroupOrientation
+        )
         case _ => None
       }
     }
@@ -332,7 +333,9 @@ class FieldValueMaker(json: JsValue) {
     def unapply(total: Option[String]): Option[Total] = {
       total match {
         case Some(IsFalseish()) | None => Some(TotalNo)
-        case Some(IsTrueish()) => Some(TotalYes)
+        case Some(IsTrueish()) =>
+
+          Some(TotalYes)
         case _ => None
       }
     }
@@ -347,7 +350,10 @@ class FieldValueMaker(json: JsValue) {
     def unapply(multivalue: Option[String]): Option[Multivalue] = {
       multivalue match {
         case Some(IsFalseish()) | None => Some(MultivalueNo)
-        case Some(IsTrueish()) => Some(MultivalueYes)
+        case Some(IsTrueish()) => Some(
+
+          MultivalueYes
+        )
         case _ => None
       }
     }
@@ -370,7 +376,9 @@ class FieldValueMaker(json: JsValue) {
 
   // Should we instead do this with an case insensitive extractor
   object IsStandard {
-    def unapply(maybeStandard: String): Boolean = maybeStandard.toLowerCase == "standard"
+    def unapply(maybeStandard: String): Boolean =
+
+      maybeStandard.toLowerCase == "standard"
   }
   object IsReadOnly {
     def unapply(maybeStandard: String): Boolean = maybeStandard.toLowerCase == "readonly"
@@ -413,6 +421,16 @@ class FieldValueMaker(json: JsValue) {
 
   private final object IsThisAnInfoField {
     def unapply(ignoredArgs: (Option[String], Option[String])) = `type`.getOrElse(None).isInstanceOf[InfoRaw.type]
+  }
+
+  private def parse[T: Reads, R](path: String, validate: T => Opt[R]): Opt[Option[R]] = {
+    val optMaybeString: Opt[Option[T]] = toOpt((json \ path).
+      validateOpt[T])
+    import cats.implicits._
+    for {
+      maybeString <- optMaybeString.right
+      res <- maybeString.map(validate).sequenceU
+    } yield res
   }
 }
 

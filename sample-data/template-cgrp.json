@@ -1,6 +1,6 @@
 {
   "schemaId": "http://hmrc.gov.uk/jsonschema/gf-formtemplate#",
-  "formTypeId": "exprtest",
+  "formTypeId": "exprtest5",
   "formName": "Insurance Premium Tax Return | Yswiriant Ffurflen Dreth Premiwm",
   "version": "0.3.0",
   "description": "Fill in your insurance premium tax return form online | Llenwch eich ffurflen dreth premiwm yswiriant ar-lein",
@@ -22,36 +22,28 @@
       "shortName": "shortName",
       "fields": [
         {
-          "id": "aprilDate",
-          "type": "date",
-          "label": "Enter a date in April 2017",
-          "helpText": "For example, 10 4 2017",
-          "mandatory": "true",
-          "format": "after 2017-03-31,before 2017-05-01",
-          "value": "2017-04-10"
-        },
-        {
-          "id": "aftertodaydate",
-          "type": "date",
-          "label": "Enter a date in the future",
-          "helpText": "For example, 10 4 2017",
-          "mandatory": "true",
-          "format": "after today",
-          "value": "2017-04-10"
-        },
-        {
-          "id": "afterthisyeardate",
-          "type": "date",
-          "label": "Enter a date after this year",
-          "helpText": "For example, 10 4 2018",
-          "mandatory": "true",
-          "format": "after yesterday",
-          "value": "2017-04-10"
+          "type": "group",
+          "id": "gid",
+          "label": "glabel",
+          "format" : "horizontal",
+          "repeatsMin":1,
+          "repeatsMax":5,
+          "repeatLabel":"repeatLabel",
+          "repeatAddAnotherText":"repeatAddAnotherText",
+          "fields": [
+            {
+              "type": "text",
+              "id": "tid",
+              "label": "tlabel",
+              "mandatory": "false"
+            }
+          ],
+          "presentationHint" : "collapseGroupUnderLabel,summariseGroupAsGrid"
+
         },
         {
           "id": "amountA",
           "label": "Amount A | Rhif A",
-          "format": "positiveNumber(3,4)",
           "mandatory": "true"
         }
       ]
@@ -63,6 +55,7 @@
         {
           "id": "amountB",
           "label": "Amount B | Rhif B",
+          "format": "positiveNumber(3,4,'u')",
           "mandatory": "true"
         },
         {
