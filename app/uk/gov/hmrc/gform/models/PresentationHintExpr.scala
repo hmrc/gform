@@ -19,15 +19,10 @@ package uk.gov.hmrc.gform.models
 import julienrf.json.derived
 import play.api.libs.json._
 
-sealed trait PresentationHintExpr
-class PresentationHint() extends PresentationHintExpr
-final case class PresentationHints(hints: List[PresentationHint]) extends PresentationHintExpr
-case object CollapseGroupUnderLabel extends PresentationHint()
-case object SummariseGroupAsGrid extends PresentationHint()
+sealed trait PresentationHint
+case object CollapseGroupUnderLabel extends PresentationHint
+case object SummariseGroupAsGrid extends PresentationHint
 
-object PresentationHintExpr {
-  implicit val format: OFormat[PresentationHintExpr] = derived.oformat[PresentationHintExpr]
-}
 object PresentationHint {
   implicit val format: OFormat[PresentationHint] = derived.oformat[PresentationHint]
 }
