@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.connectors
 
 import com.sun.xml.internal.bind.v2.TODO
 import play.api.Logger
-import play.api.libs.json.{ JsError, JsResult, JsSuccess, Json }
+import play.api.libs.json._
 import reactivemongo.api.commands.{ DefaultWriteResult, WriteResult }
 import uk.gov.hmrc.gform.{ WSHttp, models }
 import uk.gov.hmrc.gform.core.{ Opt, ServiceResponse }
@@ -67,6 +67,18 @@ class Save4LaterConnector(cache: ShortLivedCache) extends ServicesConfig {
         case t: Throwable => Left(InvalidState("put Failed"))
       }
   }
+
+  def saveKeyStore(formId: FormId, data: Map[String, JsValue])(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Opt[DbOperationResult]] = {
+    data.foreach(x =>
+      Logger.debug("Something" + Json.prettyPrint(Json.toJson(x._2))))
+    cache.cache[Map[String, JsValue]](formId.value, "keystore", data)
+      .map(_ => Right(Success)).recover {
+        case t: Throwable => Left(InvalidState("put Failed"))
+      }
+  }
+
+  def getKeyStore(formId: FormId)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Option[Map[String, JsValue]]] =
+    cache.fetchAndGetEntry[Map[String, JsValue]](formId.value, "keystore")
 
   def delete(formId: FormId)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Opt[DbOperationResult]] = {
     cache.remove(formId.value)

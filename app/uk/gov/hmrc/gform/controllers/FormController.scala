@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.controllers
 
 import cats.instances.future._
 import play.api.Logger
-import play.api.libs.json.Json
+import play.api.libs.json.{ JsValue, Json }
 import play.api.mvc.{ Action, AnyContent, RequestHeader }
 import uk.gov.hmrc.gform.connectors.Save4LaterConnector
 import uk.gov.hmrc.gform.core.ServiceResponse
@@ -86,6 +86,23 @@ class FormController()(
 
   def get(formId: FormId) = Action.async { implicit request =>
     FormService.get(formId).fold(
+      error => NotFound,
+      response => {
+        Logger.debug(Json.prettyPrint(Json.toJson(response)))
+        Ok(Json.toJson(response))
+      }
+    )
+  }
+
+  def saveKeyStore(formId: FormId) = Action.async(parse.json[Map[String, JsValue]]) { implicit request =>
+    FormService.saveKeyStore(formId, request.body).fold(
+      errors => errors.toResult,
+      success => success.toResult
+    )
+  }
+
+  def getKeyStore(formId: FormId) = Action.async { implicit request =>
+    FormService.getKeyStore(formId).fold(
       error => NotFound,
       response => {
         Logger.debug(Json.prettyPrint(Json.toJson(response)))
