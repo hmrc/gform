@@ -42,6 +42,14 @@ object Insert {
     }
   }
 
+  implicit def keystore(implicit cache: Save4LaterConnector, ex: ExecutionContext, hc: HeaderCarrier) = new Insert[Map[String, JsValue]] {
+    override def apply(selector: JsObject, v: Map[String, JsValue]): Future[Opt[DbOperationResult]] = {
+      selector.asOpt[FormId].fold[Future[Opt[DbOperationResult]]](
+        Future.successful(Left(InvalidState("Failed to insert")))
+      )(fid => cache.saveKeyStore(fid, v))
+    }
+  }
+
   implicit def submission(implicit repo: SubmissionRepository, ex: ExecutionContext) = new Insert[Submission] {
     def apply(selector: JsObject, template: Submission): Future[Opt[DbOperationResult]] = {
       repo.insert(selector, template)
