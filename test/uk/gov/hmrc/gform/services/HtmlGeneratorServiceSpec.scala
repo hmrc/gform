@@ -52,7 +52,8 @@ class HtmlGeneratorServiceSpec extends Spec {
       helpText = None,
       mandatory = true,
       editable = true,
-      submissible = true
+      submissible = true,
+      errorMessage = None
     )
 
     val formList = List(
@@ -77,7 +78,8 @@ class HtmlGeneratorServiceSpec extends Spec {
       helpText = None,
       mandatory = true,
       editable = true,
-      submissible = true
+      submissible = true,
+      errorMessage = None
     )
 
     val formList = List(
@@ -106,7 +108,8 @@ class HtmlGeneratorServiceSpec extends Spec {
       helpText = None,
       mandatory = true,
       editable = true,
-      submissible = true
+      submissible = true,
+      errorMessage = None
     )
 
     val formList = List(
@@ -129,7 +132,8 @@ class HtmlGeneratorServiceSpec extends Spec {
       helpText = None,
       mandatory = true,
       editable = true,
-      submissible = true
+      submissible = true,
+      errorMessage = None
     )
 
     val formList = List(

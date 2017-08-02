@@ -82,7 +82,8 @@ class FieldValueMaker(json: JsValue) {
     mandatory = mes.mandatory,
     editable = mes.editable,
     submissible = mes.submissible,
-    presentationHint = presHint
+    presentationHint = presHint,
+    errorMessage = None
   )
 
   private lazy val optMES: Opt[MES] = (submitMode, mandatory) match {
