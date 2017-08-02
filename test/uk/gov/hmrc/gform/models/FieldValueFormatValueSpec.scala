@@ -30,7 +30,7 @@ class FieldValueFormatValueSpec extends Spec {
           }
       """
     )
-    fieldValue should beJsSuccess(FieldValue(FieldId("sum"), Text(AnyText, Add(FormCtx("amountA"), FormCtx("amountB")), false), "Label", None, None, true, true, true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("sum"), Text(AnyText, Add(FormCtx("amountA"), FormCtx("amountB")), false), "Label", None, None, true, true, true, None))
 
   }
 
@@ -44,7 +44,7 @@ class FieldValueFormatValueSpec extends Spec {
           }
       """
     )
-    fieldValue should beJsSuccess(FieldValue(FieldId("constant"), Text(AnyText, Constant("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_ ,"), false), "Label", None, None, true, true, true))
+    fieldValue should beJsSuccess(FieldValue(FieldId("constant"), Text(AnyText, Constant("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_ ,"), false), "Label", None, None, true, true, true, None))
 
   }
 
