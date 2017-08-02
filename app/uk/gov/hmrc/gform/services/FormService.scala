@@ -16,20 +16,17 @@
 
 package uk.gov.hmrc.gform.services
 
-import java.util.UUID
-
 import cats.data.EitherT
 import cats.instances.future._
 import play.api.Logger
-import play.api.libs.json.{ JsObject, Json }
+import play.api.libs.json.Json
 import uk.gov.hmrc.gform.core._
-import uk.gov.hmrc.gform.exceptions.{ InvalidState, UnexpectedState }
+import uk.gov.hmrc.gform.exceptions.InvalidState
 import uk.gov.hmrc.gform.models._
 import uk.gov.hmrc.gform.typeclasses._
 import uk.gov.hmrc.play.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 
 object FormService {
 

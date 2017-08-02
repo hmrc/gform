@@ -16,15 +16,13 @@
 
 package uk.gov.hmrc.gform.connectors
 
-import com.sun.xml.internal.bind.v2.TODO
 import play.api.Logger
-import play.api.libs.json.{ JsError, JsResult, JsSuccess, Json }
-import reactivemongo.api.commands.{ DefaultWriteResult, WriteResult }
-import uk.gov.hmrc.gform.{ WSHttp, models }
-import uk.gov.hmrc.gform.core.{ Opt, ServiceResponse }
+import play.api.libs.json.{ JsError, JsSuccess, Json }
+import uk.gov.hmrc.gform.WSHttp
+import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.InvalidState
 import uk.gov.hmrc.gform.models._
-import uk.gov.hmrc.http.cache.client.{ CacheMap, ShortLivedCache }
+import uk.gov.hmrc.http.cache.client.ShortLivedCache
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http.HeaderCarrier
 
