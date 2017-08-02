@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.services
 import cats.data.EitherT
 import cats.instances.future._
 import play.api.Logger
+import play.api.libs.json.{ JsObject, JsValue, Json }
 import play.api.libs.json.Json
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.exceptions.InvalidState
@@ -38,6 +39,12 @@ object FormService {
       Insert(selector, form).map(_.right.map(_ => form))
     )
   }
+
+  def saveKeyStore(formId: FormId, data: Map[String, JsValue])(implicit InsertKeyStore: Insert[Map[String, JsValue]]): ServiceResponse[DbOperationResult] =
+    fromFutureOptA(InsertKeyStore(formSelector(formId), data))
+
+  def getKeyStore(formId: FormId)(implicit findOne: FindOne[Map[String, JsValue]]) =
+    fromFutureOptionA(findOne(formSelector(formId)))(InvalidState(s"Form _id ${formId.value}, not found"))
 
   def updateFormData(formId: FormId, formData: FormData)(
     implicit

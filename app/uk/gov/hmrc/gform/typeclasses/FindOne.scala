@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.typeclasses
 
-import play.api.libs.json.{ JsObject, Json }
+import play.api.libs.json.{ JsObject, JsValue, Json }
 import uk.gov.hmrc.gform.connectors.Save4LaterConnector
 import uk.gov.hmrc.gform.models._
 import uk.gov.hmrc.gform.repositories._
@@ -33,6 +33,12 @@ object FindOne {
     def apply(selector: JsObject): Future[Option[Schema]] = {
       repo.findOne(selector, Json.obj())
     }
+  }
+
+  implicit def keyStore(implicit cache: Save4LaterConnector, ex: ExecutionContext, hc: HeaderCarrier) = new FindOne[Map[String, JsValue]] {
+    override def apply(selector: JsObject): Future[Option[Map[String, JsValue]]] =
+      selector.asOpt[FormId]
+        .fold(Future.successful(Option.empty[Map[String, JsValue]]))(cache.getKeyStore)
   }
 
   implicit def formTemplate(implicit repo: AbstractRepo[FormTemplate], ex: ExecutionContext) = new FindOne[FormTemplate] {

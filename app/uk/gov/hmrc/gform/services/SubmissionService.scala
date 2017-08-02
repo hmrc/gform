@@ -206,7 +206,7 @@ trait SubmissionService {
   }
 
   private def buildText(template: Option[String], index: Int, fieldToTrack: VariableInContext,
-                        data: Map[String, String]): Option[String] = {
+    data: Map[String, String]): Option[String] = {
 
     val fieldName = if (index == 1) fieldToTrack.field else s"${index - 1}_${fieldToTrack.field}"
     val textToInsert = data.getOrElse(fieldName, "")
