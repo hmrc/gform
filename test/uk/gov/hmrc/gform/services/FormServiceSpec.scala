@@ -36,6 +36,7 @@ class FormServiceSpec extends Spec with TypeclassFixtures {
   val yourDetailsSection = Section(
     "Your details",
     None, None, None,
+    None, None, None,
     List(
       FieldValue(FieldId("firstName"), Text(AnyText, Constant(""), total = false), "Your first name", None, None, mandatory = true, editable = true, submissible = true, None),
       FieldValue(FieldId("lastName"), Text(AnyText, Constant(""), total = false), "Your last name", None, None, mandatory = true, editable = true, submissible = true, None)
@@ -44,6 +45,7 @@ class FormServiceSpec extends Spec with TypeclassFixtures {
 
   val businessDetailsSection = Section(
     "Business details",
+    None, None, None,
     None, None, None,
     List(
       FieldValue(FieldId("nameOfBusiness"), Text(AnyText, Constant(""), total = false), "Name of business", None, None, mandatory = true, editable = true, submissible = true, None),

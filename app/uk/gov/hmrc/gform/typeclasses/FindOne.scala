@@ -16,10 +16,8 @@
 
 package uk.gov.hmrc.gform.typeclasses
 
-import play.api.Logger
 import play.api.libs.json.{ JsObject, JsValue, Json }
 import uk.gov.hmrc.gform.connectors.Save4LaterConnector
-import uk.gov.hmrc.gform.exceptions.InvalidState
 import uk.gov.hmrc.gform.models._
 import uk.gov.hmrc.gform.repositories._
 import uk.gov.hmrc.play.http.HeaderCarrier
