@@ -74,7 +74,7 @@ object FormatParser {
     //    | nextDate
     //    | previousDate
     //    | anyWordFormat ^^ { (loc, str) => AnyWord(str) }
-    | "${" ~ alphabeticOnly ~ "}" ^^ { (loc, _, field, _) => FormDate(field) }
+    | "${" ~ alphabeticOnly ~ "}" ^^ { (loc, _, field, _) => DateField(FieldId(field)) }
   )
 
   lazy val contextField: Parser[String] = (
