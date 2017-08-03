@@ -123,7 +123,8 @@ class FormValidatorSpec extends Spec {
     None,
     editable = true,
     mandatory = true,
-    submissible = true
+    submissible = true,
+    errorMessage = None
   )
 
   def getAddressFieldValue(id: String) = FieldValue(
@@ -134,7 +135,8 @@ class FormValidatorSpec extends Spec {
     None,
     editable = true,
     mandatory = false,
-    submissible = true
+    submissible = true,
+    errorMessage = None
   )
 
   "FormValidator.conform" should "parse all fields from form to list of FormField objects" in {
