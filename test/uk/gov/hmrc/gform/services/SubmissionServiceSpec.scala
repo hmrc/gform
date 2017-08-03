@@ -19,11 +19,9 @@ package uk.gov.hmrc.gform.services
 import java.time.LocalDateTime
 
 import org.scalatest.time.{ Millis, Span }
-import play.api.http.HeaderNames.LOCATION
 import play.api.libs.json.Json
 import uk.gov.hmrc.gform._
 import uk.gov.hmrc.gform.connectors.PDFGeneratorConnector
-import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.models._
 import uk.gov.hmrc.gform.typeclasses._
 import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpResponse }
@@ -35,6 +33,8 @@ import scala.util.Random
 
 class SubmissionServiceSpec extends Spec with TypeclassFixtures {
 
+  implicit lazy val hc = new HeaderCarrier()
+
   implicit override val patienceConfig = PatienceConfig(timeout = scaled(Span(15000, Millis)), interval = scaled(Span(300, Millis)))
 
   val form = Form(FormId("form-id"), FormData(UserId("TESTID"), FormTypeId("form-type-id"), Version("1.0.0"), "UTF-8", List(FormField(FieldId("firstName"), "Joe"), FormField(FieldId("lastName"), "Doe"))), EnvelopeId("123"))
@@ -43,10 +43,10 @@ class SubmissionServiceSpec extends Spec with TypeclassFixtures {
 
   val yourDetailsSection = Section(
     "Your details",
-    None, None, None,
+    None, None, None, None, None, None,
     List(
-      FieldValue(FieldId("firstName"), Text(AnyText, Constant(""), total = false), "Your first name", None, None, mandatory = true, editable = true, submissible = true),
-      FieldValue(FieldId("lastName"), Text(AnyText, Constant(""), total = false), "Your last name", None, None, mandatory = true, editable = true, submissible = true)
+      FieldValue(FieldId("firstName"), Text(AnyText, Constant(""), total = false), "Your first name", None, None, mandatory = true, editable = true, submissible = true, None),
+      FieldValue(FieldId("lastName"), Text(AnyText, Constant(""), total = false), "Your last name", None, None, mandatory = true, editable = true, submissible = true, None)
     )
   )
 
@@ -133,7 +133,7 @@ class SubmissionServiceSpec extends Spec with TypeclassFixtures {
         }
       }
     }
-    val res = testSubmissionService.submission(FormId("form-id"))
+    lazy implicit val res = testSubmissionService.submission(FormId("form-id"))
 
     futureResult(res.value).right.value should be("http://localhost:8898/file-transfer/envelopes/123")
   }
@@ -162,7 +162,8 @@ class SubmissionServiceSpec extends Spec with TypeclassFixtures {
       shortName = None,
       mandatory = true,
       editable = true,
-      submissible = true
+      submissible = true,
+      errorMessage = None
     )
 
     val textFieldDos = textFieldUno.copy(id = FieldId("DOS"), `type` = Text(AnyText, Constant("DOS"), false))
@@ -184,7 +185,8 @@ class SubmissionServiceSpec extends Spec with TypeclassFixtures {
       shortName = None,
       mandatory = true,
       editable = false,
-      submissible = true
+      submissible = true,
+      errorMessage = None
     )
 
     val section = Section(
@@ -192,6 +194,7 @@ class SubmissionServiceSpec extends Spec with TypeclassFixtures {
       description = None,
       shortName = None,
       includeIf = None,
+      None, None, None,
       fields = List(groupFieldValue)
     )
 
@@ -215,19 +218,19 @@ class SubmissionServiceSpec extends Spec with TypeclassFixtures {
         List(
           (
             List(FormField(FieldId("UNO"), "UNO")),
-            FieldValue(FieldId("UNO"), Text(AnyText, Constant("UNO"), false), "Editable text label", None, None, true, true, true)
+            FieldValue(FieldId("UNO"), Text(AnyText, Constant("UNO"), false), "Editable text label", None, None, true, true, true, None)
           ),
           (
             List(FormField(FieldId("DOS"), "DOS")),
-            FieldValue(FieldId("DOS"), Text(AnyText, Constant("DOS"), false), "Editable text label", None, None, true, true, true)
+            FieldValue(FieldId("DOS"), Text(AnyText, Constant("DOS"), false), "Editable text label", None, None, true, true, true, None)
           ),
           (
             List(FormField(FieldId("1_UNO"), "1_UNO")),
-            FieldValue(FieldId("1_UNO"), Text(AnyText, Constant("UNO"), false), "Editable text label", None, None, true, true, true)
+            FieldValue(FieldId("1_UNO"), Text(AnyText, Constant("UNO"), false), "Editable text label", None, None, true, true, true, None)
           ),
           (
             List(FormField(FieldId("1_DOS"), "1_DOS")),
-            FieldValue(FieldId("1_DOS"), Text(AnyText, Constant("DOS"), false), "Editable text label", None, None, true, true, true)
+            FieldValue(FieldId("1_DOS"), Text(AnyText, Constant("DOS"), false), "Editable text label", None, None, true, true, true, None)
           )
         )
       )
@@ -238,5 +241,4 @@ class SubmissionServiceSpec extends Spec with TypeclassFixtures {
     res.right.value should be(expectedResult)
   }
 
-  implicit lazy val hc = new HeaderCarrier()
 }

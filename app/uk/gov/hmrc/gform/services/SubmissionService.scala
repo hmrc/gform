@@ -81,7 +81,7 @@ trait SubmissionService {
     val toSectionFormField: Section => Opt[SectionFormField] = section =>
       section.atomicFields(data).traverse(formFieldByFieldValue).map(ff => SectionFormField(section.shortName.getOrElse(section.title), ff))
 
-    val allSections = formTemplate.sections
+    val allSections = RepeatingComponentService.getAllSections(form, formTemplate)
     val sectionsToSubmit = allSections.filter(section => BooleanExpr.isTrue(section.includeIf.getOrElse(IncludeIf(IsTrue)).expr, data))
     sectionsToSubmit.traverse(toSectionFormField)
   }
@@ -101,7 +101,6 @@ trait SubmissionService {
     val html = htmlGenerator.generateDocumentHTML(sectionFormFields, formName)
 
     pdfGenerator.generatePDF(html).map { pdf =>
-
       /*
       val path = java.nio.file.Paths.get("confirmation.pdf")
       val out = java.nio.file.Files.newOutputStream(path)

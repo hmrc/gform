@@ -49,6 +49,7 @@ class FieldValueSpec2 extends Spec {
         mandatory = true,
         editable = true,
         submissible = true,
+        None,
         Some(List(CollapseGroupUnderLabel))
       )
     )

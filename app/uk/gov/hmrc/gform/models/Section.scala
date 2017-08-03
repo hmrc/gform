@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.gform.models
 
-import play.api.libs.json.Json
-import uk.gov.hmrc.gform.core.{ Invalid, Valid, ValidationResult, Opt }
+import play.api.libs.json._
+import uk.gov.hmrc.gform.core.{ Invalid, Valid, ValidationResult }
 import scala.collection.immutable.List
 
 case class Section(
@@ -25,6 +25,9 @@ case class Section(
     description: Option[String],
     shortName: Option[String],
     includeIf: Option[IncludeIf],
+    repeatsMax: Option[TextExpression],
+    repeatsMin: Option[TextExpression],
+    fieldToTrack: Option[VariableInContext],
     fields: List[FieldValue]
 ) {
   private def atomicFields(fieldValues: List[FieldValue], data: Map[FieldId, FormField]): List[FieldValue] = {
@@ -87,7 +90,25 @@ case class Section(
 }
 
 object Section {
-  implicit val format = Json.format[Section]
+  implicit val format: OFormat[Section] = {
+    val writes: OWrites[Section] = Json.writes[Section]
+    val reads: Reads[Section] = Reads { json =>
+      for {
+      // format: OFF
+        title        <- (json \ "title").validate[String]
+        description  <- (json \ "description").validateOpt[String]
+        shortName    <- (json \ "shortName").validateOpt[String]
+        includeIf    <- (json \ "includeIf").validateOpt[IncludeIf]
+        repeatsMax   <- (json \ "repeatsMax").validateOpt[TextExpression]
+        repeatsMin   <- (json \ "repeatsMin").validateOpt[TextExpression]
+        fieldToTrack <- (json \ "fieldToTrack").validateOpt[VariableInContext]
+        fields       <- (json \ "fields").validate[List[FieldValue]]
+        _            <- validateRepeatingSectionFields(repeatsMax, repeatsMin, fieldToTrack)
+        // format: ON
+      } yield Section(title, description, shortName, includeIf, repeatsMax, repeatsMin, fieldToTrack, fields)
+    }
+    OFormat[Section](reads, writes)
+  }
 
   def validateUniqueFields(sectionsList: List[Section]): ValidationResult = {
     val fieldIds: List[FieldId] = sectionsList.flatMap(_.fields.map(_.id))
@@ -112,6 +133,18 @@ object Section {
     choiceFieldIdResult.isEmpty match {
       case true => Valid
       case false => Invalid(s"Choice components doesn't have equal number of choices and help texts ${choiceFieldIdResult.keys.toList}")
+    }
+  }
+
+  private def validateRepeatingSectionFields(repeatsMax: Option[TextExpression], repeatsMin: Option[TextExpression], fieldToTrack: Option[VariableInContext]) = {
+
+    (repeatsMax, repeatsMin, fieldToTrack) match {
+      case (None, Some(_), Some(_)) | (None, Some(_), None) | (None, None, Some(_)) =>
+        JsError("The repeatsMax field is required for repeating sections")
+      case (Some(_), _, None) =>
+        JsError("The fieldToTrack field is required when repeatsMax is present in a repeating section")
+      case _ =>
+        JsSuccess("Success")
     }
   }
 
@@ -152,3 +185,19 @@ case class SectionFormField(
   title: String,
   fields: List[(List[FormField], FieldValue)]
 )
+
+case class VariableInContext(field: String)
+
+object VariableInContext {
+  implicit val format: OFormat[VariableInContext] = {
+    val writes: OWrites[VariableInContext] = Json.writes[VariableInContext]
+    val reads: Reads[VariableInContext] = Reads { json =>
+      json.validate[String] match {
+        case JsSuccess(string, _) => JsSuccess(VariableInContext(string))
+        case JsError(_) => (json \ "field").validate[VariableInContext]
+      }
+    }
+    OFormat[VariableInContext](reads, writes)
+  }
+}
+

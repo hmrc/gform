@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.models
 
 import julienrf.json.derived
 import play.api.libs.json._
+import uk.gov.hmrc.gform.core.parsers.{ BasicParsers, ValueParser }
 
 sealed trait FormatExpr
 final case class OrientationFormat(value: String) extends FormatExpr
@@ -83,5 +84,21 @@ object TextConstraint {
   val defaultFactionalDigits = 2
 
   implicit val format: OFormat[TextConstraint] = derived.oformat[TextConstraint]
+}
+
+object TextExpression {
+  implicit val format: OFormat[TextExpression] = {
+    val writes: OWrites[TextExpression] = derived.owrites
+    val stdReads = Json.reads[TextExpression]
+    val reads: Reads[TextExpression] = stdReads orElse Reads {
+      case JsString(expression) =>
+        BasicParsers.validateWithParser(expression, ValueParser.expr).fold(
+          unexpectedState => JsError(unexpectedState.toString),
+          expr => JsSuccess(TextExpression(expr))
+        )
+      case otherwise => JsError(s"Expected String as JsValue for TextExpression, got: $otherwise")
+    }
+    OFormat[TextExpression](reads, writes)
+  }
 }
 

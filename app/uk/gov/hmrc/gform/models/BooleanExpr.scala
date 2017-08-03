@@ -22,20 +22,20 @@ import play.api.libs.json._
 import uk.gov.hmrc.gform.core.{ Invalid, Valid, ValidationResult }
 
 sealed trait BooleanExpr {
-  def validate(formTemplate: FormTemplate): ValidationResult = {
-    val fieldNamesIds: List[FieldId] = formTemplate.sections.flatMap(_.fields.map(_.id))
-
-    def checkFields(field1: Expr, field2: Expr): ValidationResult = {
-      val checkField1 = field1.validate(formTemplate)
-      val checkField2 = field2.validate(formTemplate)
-      Monoid[ValidationResult].combineAll(List(checkField1, checkField2))
-    }
-
-    this match {
-      case Equals(field1, field2) => checkFields(field1, field2)
-      case _ => Valid
-    }
-  }
+  //  def validate(formTemplate: FormTemplate): ValidationResult = {
+  //    val fieldNamesIds: List[FieldId] = formTemplate.sections.flatMap(_.fields.map(_.id))
+  //
+  //    def checkFields(field1: Expr, field2: Expr): ValidationResult = {
+  //      val checkField1 = field1.validate(formTemplate)
+  //      val checkField2 = field2.validate(formTemplate)
+  //      Monoid[ValidationResult].combineAll(List(checkField1, checkField2))
+  //    }
+  //
+  //    this match {
+  //      case Equals(field1, field2) => checkFields(field1, field2)
+  //      case _ => Valid
+  //    }
+  //  }
 }
 
 final case class Equals(left: Expr, right: Expr) extends BooleanExpr

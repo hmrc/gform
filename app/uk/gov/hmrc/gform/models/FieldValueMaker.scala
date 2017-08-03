@@ -41,6 +41,7 @@ class FieldValueMaker(json: JsValue) {
   lazy val choices: Option[List[String]] = (json \ "choices").asOpt[List[String]]
 
   lazy val fieldsJson: Option[List[JsValue]] = (json \ "fields").asOpt[List[JsValue]]
+  lazy val errorMessage: Option[String] = (json \ "errorMessage").asOpt[String]
 
   lazy val fields: Option[List[FieldValueMaker]] = fieldsJson.map(_.map(new FieldValueMaker(_)))
 
@@ -82,16 +83,17 @@ class FieldValueMaker(json: JsValue) {
     mandatory = mes.mandatory,
     editable = mes.editable,
     submissible = mes.submissible,
-    presentationHint = presHint
+    presentationHint = presHint,
+    errorMessage = errorMessage
   )
 
   private lazy val optMES: Opt[MES] = (submitMode, mandatory) match {
     //format: OFF
-    case (_, _) if isThisAnInfoField => MES(mandatory = true, editable = false, submissible = false).asRight
-    case (Some(IsStandard()) | None, Some(IsTrueish()) | None)  => MES(mandatory = true, editable = true, submissible = true).asRight
-    case (Some(IsReadOnly()),        Some(IsTrueish()) | None)  => MES(mandatory = true, editable = false, submissible = true).asRight
-    case (Some(IsInfo()),            Some(IsTrueish()) | None)  => MES(mandatory = true, editable = false, submissible = false).asRight
-    case (Some(IsStandard()) | None, Some(IsFalseish()))        => MES(mandatory = false, editable = true, submissible = true).asRight
+    case IsThisAnInfoField()                                    => MES(mandatory = true,  editable = false, submissible = false).asRight
+    case (Some(IsStandard()) | None, Some(IsTrueish()) | None)  => MES(mandatory = true,  editable = true,  submissible = true).asRight
+    case (Some(IsReadOnly()),        Some(IsTrueish()) | None)  => MES(mandatory = true,  editable = false, submissible = true).asRight
+    case (Some(IsInfo()),            Some(IsTrueish()) | None)  => MES(mandatory = true,  editable = false, submissible = false).asRight
+    case (Some(IsStandard()) | None, Some(IsFalseish()))        => MES(mandatory = false, editable = true,  submissible = true).asRight
     case (Some(IsInfo()),            Some(IsFalseish()))        => MES(mandatory = false, editable = false, submissible = false).asRight
     case otherwise                                              => InvalidState(s"Expected 'standard', 'readonly' or 'info' string or nothing for submitMode and expected 'true' or 'false' string or nothing for mandatory field value, got: $otherwise").asLeft
     //format: ON
@@ -137,8 +139,8 @@ class FieldValueMaker(json: JsValue) {
   private lazy val addressOpt: Opt[Address] = international match {
     //format: OFF
     case IsInternational(InternationalYes) => Address(international = true).asRight
-    case IsInternational(InternationalNo)  => Address(international = false).asRight
-    case invalidInternational       => InvalidState(
+    case IsInternational(InternationalNo) => Address(international = false).asRight
+    case invalidInternational => InvalidState(
       s"""|Unsupported type of value for address field
           |Id: $id
           |Total: $invalidInternational""".stripMargin).asLeft
@@ -150,7 +152,7 @@ class FieldValueMaker(json: JsValue) {
     lazy val dateConstraintOpt: Opt[DateConstraintType] =
       for {
         maybeFormatExpr <- optMaybeFormatExpr
-        optDateConstraintType = (maybeFormatExpr match {
+        optDateConstraintType = maybeFormatExpr match {
           case Some(DateFormat(e)) => e.asRight
           case None => AnyDate.asRight
           case Some(invalidFormat) =>
@@ -159,7 +161,7 @@ class FieldValueMaker(json: JsValue) {
                   |Id: $id
                   |Format: $invalidFormat""".stripMargin
             ).asLeft
-        })
+        }
         dateConstraintType <- optDateConstraintType
       } yield dateConstraintType
 
@@ -300,6 +302,7 @@ class FieldValueMaker(json: JsValue) {
         case Some(OrientationFormat("horizontal")) => Some(HorizontalOrientation)
         case Some(OrientationFormat("yesno")) => Some(YesNoOrientation)
         case Some(OrientationFormat("inline")) => Some(InlineOrientation)
+
         case _ => None
       }
     }
@@ -344,7 +347,10 @@ class FieldValueMaker(json: JsValue) {
     def unapply(multivalue: Option[String]): Option[Multivalue] = {
       multivalue match {
         case Some(IsFalseish()) | None => Some(MultivalueNo)
-        case Some(IsTrueish()) => Some(MultivalueYes)
+        case Some(IsTrueish()) => Some(
+
+          MultivalueYes
+        )
         case _ => None
       }
     }
@@ -367,7 +373,9 @@ class FieldValueMaker(json: JsValue) {
 
   // Should we instead do this with an case insensitive extractor
   object IsStandard {
-    def unapply(maybeStandard: String): Boolean = maybeStandard.toLowerCase == "standard"
+    def unapply(maybeStandard: String): Boolean =
+
+      maybeStandard.toLowerCase == "standard"
   }
   object IsReadOnly {
     def unapply(maybeStandard: String): Boolean = maybeStandard.toLowerCase == "readonly"
@@ -408,10 +416,13 @@ class FieldValueMaker(json: JsValue) {
     }
   }
 
-  private def isThisAnInfoField: Boolean = `type`.getOrElse(None).isInstanceOf[InfoRaw.type]
+  private final object IsThisAnInfoField {
+    def unapply(ignoredArgs: (Option[String], Option[String])) = `type`.getOrElse(None).isInstanceOf[InfoRaw.type]
+  }
 
   private def parse[T: Reads, R](path: String, validate: T => Opt[R]): Opt[Option[R]] = {
-    val optMaybeString: Opt[Option[T]] = toOpt((json \ path).validateOpt[T])
+    val optMaybeString: Opt[Option[T]] = toOpt((json \ path).
+      validateOpt[T])
     import cats.implicits._
     for {
       maybeString <- optMaybeString.right
@@ -419,3 +430,4 @@ class FieldValueMaker(json: JsValue) {
     } yield res
   }
 }
+

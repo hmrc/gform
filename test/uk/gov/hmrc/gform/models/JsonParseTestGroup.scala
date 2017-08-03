@@ -59,13 +59,14 @@ class JsonParseTestGroup extends Spec {
         List(
           FieldValue(
             FieldId("cid"),
-            Choice(Radio, NonEmptyList.of("A", "B"), Vertical, List(), None), "clabel", None, None, true, true, true
+            Choice(Radio, NonEmptyList.of("A", "B"), Vertical, List(), None), "clabel", None, None, true, true, true, None
           )
         ),
         Horizontal,
         Some(5), Some(1), Some("repeatLabel"), Some("repeatAddAnotherText")
       ),
       "glabel", None, None, true, true, true,
+      None,
       Some(List(CollapseGroupUnderLabel))
     ))
 
