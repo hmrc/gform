@@ -87,13 +87,13 @@ class FieldValueMaker(json: JsValue) {
 
   private lazy val optMES: Opt[MES] = (submitMode, mandatory) match {
     //format: OFF
-    case IsThisAnInfoField() => MES(mandatory = true, editable = false, submissible = false).asRight
-    case (Some(IsStandard()) | None, Some(IsTrueish()) | None) => MES(mandatory = true, editable = true, submissible = true).asRight
-    case (Some(IsReadOnly()), Some(IsTrueish()) | None) => MES(mandatory = true, editable = false, submissible = true).asRight
-    case (Some(IsInfo()), Some(IsTrueish()) | None) => MES(mandatory = true, editable = false, submissible = false).asRight
-    case (Some(IsStandard()) | None, Some(IsFalseish())) => MES(mandatory = false, editable = true, submissible = true).asRight
-    case (Some(IsInfo()), Some(IsFalseish())) => MES(mandatory = false, editable = false, submissible = false).asRight
-    case otherwise => InvalidState(s"Expected 'standard', 'readonly' or 'info' string or nothing for submitMode and expected 'true' or 'false' string or nothing for mandatory field value, got: $otherwise").asLeft
+    case IsThisAnInfoField()                                    => MES(mandatory = true,  editable = false, submissible = false).asRight
+    case (Some(IsStandard()) | None, Some(IsTrueish()) | None)  => MES(mandatory = true,  editable = true,  submissible = true).asRight
+    case (Some(IsReadOnly()),        Some(IsTrueish()) | None)  => MES(mandatory = true,  editable = false, submissible = true).asRight
+    case (Some(IsInfo()),            Some(IsTrueish()) | None)  => MES(mandatory = true,  editable = false, submissible = false).asRight
+    case (Some(IsStandard()) | None, Some(IsFalseish()))        => MES(mandatory = false, editable = true,  submissible = true).asRight
+    case (Some(IsInfo()),            Some(IsFalseish()))        => MES(mandatory = false, editable = false, submissible = false).asRight
+    case otherwise                                              => InvalidState(s"Expected 'standard', 'readonly' or 'info' string or nothing for submitMode and expected 'true' or 'false' string or nothing for mandatory field value, got: $otherwise").asLeft
     //format: ON
   }
 
@@ -114,15 +114,15 @@ class FieldValueMaker(json: JsValue) {
       maybeValueExpr <- optMaybeValueExpr
       optText = (maybeFormatExpr, maybeValueExpr, total) match {
         //format: OFF
-        case (Some(TextFormat(f)), Some(TextExpression(expr)), IsTotal(TotalYes)) => Text(f, expr, total = true).asRight
-        case (Some(TextFormat(f)), Some(TextExpression(expr)), IsTotal(TotalNo)) => Text(f, expr, total = false).asRight
-        case (Some(TextFormat(f)), None, IsTotal(TotalYes)) => Text(f, Constant(""), total = true).asRight
-        case (Some(TextFormat(f)), None, IsTotal(TotalNo)) => Text(f, Constant(""), total = false).asRight
-        case (None, Some(TextExpression(expr)), IsTotal(TotalYes)) => Text(AnyText, expr, total = true).asRight
-        case (None, Some(TextExpression(expr)), IsTotal(TotalNo)) => Text(AnyText, expr, total = false).asRight
-        case (None, None, IsTotal(TotalYes)) => Text(AnyText, Constant(""), total = true).asRight
-        case (None, None, IsTotal(TotalNo)) => Text(AnyText, Constant(""), total = false).asRight
-        case (Some(invalidFormat), Some(invalidValue), invalidTotal) => InvalidState(
+        case (Some(TextFormat(f)), Some(TextExpression(expr)), IsTotal(TotalYes))  => Text(f, expr, total = true).asRight
+        case (Some(TextFormat(f)), Some(TextExpression(expr)), IsTotal(TotalNo))   => Text(f, expr, total = false).asRight
+        case (Some(TextFormat(f)), None,                       IsTotal(TotalYes))  => Text(f, Constant(""), total = true).asRight
+        case (Some(TextFormat(f)), None,                       IsTotal(TotalNo))   => Text(f, Constant(""), total = false).asRight
+        case (None,                Some(TextExpression(expr)), IsTotal(TotalYes))  => Text(AnyText, expr, total = true).asRight
+        case (None,                Some(TextExpression(expr)), IsTotal(TotalNo))   => Text(AnyText, expr, total = false).asRight
+        case (None,                None,                       IsTotal(TotalYes))  => Text(AnyText, Constant(""), total = true).asRight
+        case (None,                None,                       IsTotal(TotalNo))   => Text(AnyText, Constant(""), total = false).asRight
+        case (Some(invalidFormat), Some(invalidValue),         invalidTotal)       => InvalidState(
           s"""|Unsupported type of format and value for text field
               |Id: $id
               |Format: $invalidFormat
@@ -150,7 +150,7 @@ class FieldValueMaker(json: JsValue) {
     lazy val dateConstraintOpt: Opt[DateConstraintType] =
       for {
         maybeFormatExpr <- optMaybeFormatExpr
-        optDateConstraintType = (maybeFormatExpr match {
+        optDateConstraintType = maybeFormatExpr match {
           case Some(DateFormat(e)) => e.asRight
           case None => AnyDate.asRight
           case Some(invalidFormat) =>
@@ -159,7 +159,7 @@ class FieldValueMaker(json: JsValue) {
                   |Id: $id
                   |Format: $invalidFormat""".stripMargin
             ).asLeft
-        })
+        }
         dateConstraintType <- optDateConstraintType
       } yield dateConstraintType
 
@@ -315,10 +315,7 @@ class FieldValueMaker(json: JsValue) {
     def unapply(orientation: Option[FormatExpr]): Option[GroupOrientation] = {
       orientation match {
         case Some(OrientationFormat("vertical")) | None => Some(VerticalGroupOrientation)
-        case Some(OrientationFormat("horizontal")) => Some(
-
-          HorizontalGroupOrientation
-        )
+        case Some(OrientationFormat("horizontal")) => Some(HorizontalGroupOrientation)
         case _ => None
       }
     }
@@ -333,9 +330,7 @@ class FieldValueMaker(json: JsValue) {
     def unapply(total: Option[String]): Option[Total] = {
       total match {
         case Some(IsFalseish()) | None => Some(TotalNo)
-        case Some(IsTrueish()) =>
-
-          Some(TotalYes)
+        case Some(IsTrueish()) => Some(TotalYes)
         case _ => None
       }
     }

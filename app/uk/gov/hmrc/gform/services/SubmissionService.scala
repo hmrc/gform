@@ -81,7 +81,7 @@ trait SubmissionService {
     val toSectionFormField: Section => Opt[SectionFormField] = section =>
       section.atomicFields(data).traverse(formFieldByFieldValue).map(ff => SectionFormField(section.shortName.getOrElse(section.title), ff))
 
-    val allSections = getAllSections(form, formTemplate)
+    val allSections = RepeatingComponentService.getAllSections(form, formTemplate)
     val sectionsToSubmit = allSections.filter(section => BooleanExpr.isTrue(section.includeIf.getOrElse(IncludeIf(IsTrue)).expr, data))
     sectionsToSubmit.traverse(toSectionFormField)
   }
@@ -157,65 +157,5 @@ trait SubmissionService {
       res               <- FileUploadService.submitEnvelope(submissionAndPdf, formTemplate.dmsSubmission)
     } yield res
     // format: ON
-  }
-
-  private def getAllSections(form: Form, formTemplate: FormTemplate): List[Section] = {
-    formTemplate.sections.flatMap { section =>
-      if (isRepeatingSection(section)) {
-        val data = form.formData.fields.map(field => field.id.value -> field.value).toMap
-        reconstructRepeatingSections(section, data)
-      } else {
-        List(section)
-      }
-    }
-  }
-
-  private def isRepeatingSection(section: Section) = section.repeatsMax.isDefined && section.fieldToTrack.isDefined
-
-  private def reconstructRepeatingSections(section: Section, data: Map[String, String]): List[Section] = {
-    def getFields(field: FieldValue): List[String] = field.`type` match {
-      case Group(fields, _, _, _, _, _) => fields.flatMap(getFields)
-      case _ => List(field.id.value)
-    }
-
-    val selector = section.fields.flatMap(getFields).head
-    val count = data.keys.count(field => field.endsWith(selector))
-    (1 to count).map { i =>
-      copySection(section, i, data)
-    }.toList
-  }
-
-  private def copySection(section: Section, index: Int, data: Map[String, String]) = {
-    def copyField(field: FieldValue): FieldValue = {
-      field.`type` match {
-        case grp @ Group(fields, _, _, _, _, _) => field.copy(
-          id = FieldId(s"${index}_${field.id.value}"),
-          `type` = grp.copy(fields = fields.map(copyField))
-        )
-        case _ => field.copy(
-          id = FieldId(s"${index}_${field.id.value}")
-        )
-      }
-    }
-
-    section.copy(
-      title = buildText(Some(section.title), index, section.fieldToTrack.get, data).getOrElse(""),
-      shortName = buildText(section.shortName, index, section.fieldToTrack.get, data),
-      fields = section.fields.map(copyField)
-    )
-  }
-
-  private def buildText(template: Option[String], index: Int, fieldToTrack: VariableInContext,
-    data: Map[String, String]): Option[String] = {
-
-    val fieldName = if (index == 1) fieldToTrack.field else s"${index - 1}_${fieldToTrack.field}"
-    val textToInsert = data.getOrElse(fieldName, "")
-
-    template match {
-      case Some(text) => Some(
-        text.replace("$t", textToInsert).replace("$n", index.toString)
-      )
-      case None => None
-    }
   }
 }
