@@ -41,6 +41,7 @@ class FieldValueMaker(json: JsValue) {
   lazy val choices: Option[List[String]] = (json \ "choices").asOpt[List[String]]
 
   lazy val fieldsJson: Option[List[JsValue]] = (json \ "fields").asOpt[List[JsValue]]
+  lazy val errorMessage: Option[String] = (json \ "errorMessage").asOpt[String]
 
   lazy val fields: Option[List[FieldValueMaker]] = fieldsJson.map(_.map(new FieldValueMaker(_)))
 
@@ -83,7 +84,7 @@ class FieldValueMaker(json: JsValue) {
     editable = mes.editable,
     submissible = mes.submissible,
     presentationHint = presHint,
-    errorMessage = None
+    errorMessage = errorMessage
   )
 
   private lazy val optMES: Opt[MES] = (submitMode, mandatory) match {
