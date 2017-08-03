@@ -1,6 +1,6 @@
 {
   "schemaId": "http://hmrc.gov.uk/jsonschema/gf-formtemplate#",
-  "formTypeId": "exprtest5",
+  "formTypeId": "exprtest4",
   "formName": "Insurance Premium Tax Return | Yswiriant Ffurflen Dreth Premiwm",
   "version": "0.3.0",
   "description": "Fill in your insurance premium tax return form online | Llenwch eich ffurflen dreth premiwm yswiriant ar-lein",
@@ -42,9 +42,42 @@
 
         },
         {
+          "type": "group",
+          "id": "gid2",
+          "label": "glabel2",
+          "presentationHint" : "collapseGroupUnderLabel,summariseGroupAsGrid",
+          "fields": [
+            {
+              "type": "text",
+              "id": "tid2",
+              "label": "tlabel2",
+              "mandatory": "false"
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "id": "gid3",
+          "label": "glabel3",
+          "presentationHint" : "collapseGroupUnderLabel",
+          "fields": [
+            {
+              "type": "choice",
+              "id": "cid",
+              "label": "clabel",
+              "multivalue":"yes",
+              "mandatory": "false",
+              "choices": [
+                "A",
+                "B"
+              ]
+            }
+          ]
+        },
+        {
           "id": "amountA",
           "label": "Amount A | Rhif A",
-          "mandatory": "true"
+          "mandatory": "false"
         }
       ]
     },

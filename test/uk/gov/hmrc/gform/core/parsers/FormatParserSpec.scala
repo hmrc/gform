@@ -42,9 +42,9 @@ class FormatParserSpec extends Spec {
     res.right.value should be(DateFormat(DateConstraints(List(DateConstraint(After, NextDate(5, 6), OffsetDate(-2))))))
   }
 
-  "after sampleField -2" should "be parsed successfully" ignore { //revisit when we implement the support of specifying form fields in date expressions
-    val res = FormatParser.validate("after sampleField -2")
-    res.right.value should be(DateFormat(DateConstraints(List(DateConstraint(After, AnyWord("sampleField"), OffsetDate(-2))))))
+  "after ${otherField}" should "be parsed successfully" in {
+    val res = FormatParser.validate("after ${otherField}")
+    res.right.value should be(DateFormat(DateConstraints(List(DateConstraint(After, FormDate("otherField"), OffsetDate(0))))))
   }
 
   "after previous-05-06 0" should "be parsed successfully" ignore { //ignored until handled in gform-frontend
@@ -59,7 +59,7 @@ class FormatParserSpec extends Spec {
       InvalidState(
         """Unable to parse expression before anyFieldId anotherWord 9.
           |Errors:
-          |before anyFieldId anotherWord 9:1: unexpected characters; expected '(19|20)\d\d' or 'today'
+          |before anyFieldId anotherWord 9:1: unexpected characters; expected '${' or '(19|20)\d\d' or 'today'
           |before anyFieldId anotherWord 9       ^""".stripMargin
       )
     )
