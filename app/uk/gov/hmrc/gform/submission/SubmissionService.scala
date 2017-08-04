@@ -73,7 +73,7 @@ class SubmissionService(
         envelopeId = envelopeId,
         _id = form._id,
         dmsMetaData = DmsMetaData(
-          formTypeId = form.formTemplateId
+          formTemplateId = form.formTemplateId
         )
       )
 

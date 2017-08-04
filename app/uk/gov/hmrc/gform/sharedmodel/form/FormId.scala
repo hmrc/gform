@@ -29,4 +29,6 @@ object FormId {
 
   implicit val format: OFormat[FormId] = ValueClassFormat.oformat("_id", FormId.apply, _.value)
 
+  val vformat: Format[FormId] = ValueClassFormat.vformat("_id", FormId.apply, x => JsString(x.value))
+
 }

@@ -30,7 +30,7 @@ class MetadataXmlSpec extends Spec {
   "metadata.xml" should "be generated" in {
 
     val dmsMetaData = DmsMetaData(
-      formTypeId = FormTemplateId("some-form-type-id")
+      formTemplateId = FormTemplateId("some-form-type-id")
     )
 
     val submission = Submission(
