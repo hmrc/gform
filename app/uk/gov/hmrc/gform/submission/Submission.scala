@@ -19,12 +19,12 @@ package uk.gov.hmrc.gform.submission
 import java.time.LocalDateTime
 
 import play.api.libs.functional.syntax._
-import play.api.libs.json.{Json, OFormat, OWrites, Reads, _}
+import play.api.libs.json.{ Json, OFormat, OWrites, Reads, _ }
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 
 case class DmsMetaData(
-                        formTemplateId: FormTemplateId
+  formTemplateId: FormTemplateId
 )
 
 object DmsMetaData {
@@ -43,19 +43,18 @@ object Submission {
 
   private val reads: Reads[Submission] = (
     (FormId.format: Reads[FormId]) and
-      (JsPath \ "submittedDate").read[LocalDateTime] and
-      SubmissionRef.oformat and
-      EnvelopeId.format and
-      DmsMetaData.format
-    )(Submission.apply _)
+    (JsPath \ "submittedDate").read[LocalDateTime] and
+    SubmissionRef.oformat and
+    EnvelopeId.format and
+    DmsMetaData.format
+  )(Submission.apply _)
 
   private val writes: OWrites[Submission] = OWrites[Submission](s =>
     FormId.format.writes(s._id) ++
       Json.obj("submittedDate" -> Writes.DefaultLocalDateTimeWrites.writes(s.submittedDate)) ++
       SubmissionRef.oformat.writes(s.submissionRef) ++
       EnvelopeId.format.writes(s.envelopeId) ++
-      DmsMetaData.format.writes(s.dmsMetaData)
-  )
+      DmsMetaData.format.writes(s.dmsMetaData))
 
   implicit val format: OFormat[Submission] = OFormat[Submission](reads, writes)
 
