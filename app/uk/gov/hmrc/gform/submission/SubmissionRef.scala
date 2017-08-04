@@ -18,6 +18,8 @@ package uk.gov.hmrc.gform.submission
 
 import cats.data.State
 import play.api.libs.json._
+import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
+import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.typeclasses.Rnd
 
 import scala.util.Random
@@ -28,13 +30,8 @@ case class SubmissionRef(value: String) extends AnyVal {
 
 object SubmissionRef {
 
-  val writes = Writes[SubmissionRef](id => JsString(id.value))
-  val reads = Reads[SubmissionRef] {
-    case JsString(value) => JsSuccess(SubmissionRef(value))
-    case otherwise => JsError(s"Invalid submissionRef, expected JsString, got: $otherwise")
-  }
-
-  implicit val format = Format[SubmissionRef](reads, writes)
+  val oformat: OFormat[SubmissionRef] = ValueClassFormat.oformat("submissionRef", SubmissionRef.apply, _.value)
+  val vformat: Format[SubmissionRef] = ValueClassFormat.vformat("submissionRef", SubmissionRef.apply, x => JsString(x.value))
 
   def random(implicit rnd: Rnd[Random]) = createSubmissionRef(rnd())
 

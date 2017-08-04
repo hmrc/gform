@@ -16,8 +16,11 @@
 
 package uk.gov.hmrc.gform.sharedmodel
 
+import java.time.LocalDateTime
+
 import uk.gov.hmrc.gform.sharedmodel.form._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyText, _ }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{AnyText, _}
+import uk.gov.hmrc.gform.submission.{DmsMetaData, Submission, SubmissionRef}
 
 import scala.collection.immutable.List
 
@@ -31,6 +34,7 @@ trait ExampleData
   with ExampleSection
   with ExampleForm
   with ExampleAuthConfig
+  with ExampleSubmission
 
 trait ExampleAuthConfig {
 
@@ -199,6 +203,27 @@ trait ExampleForm { dependsOn: ExampleFormField with ExampleFormTemplate =>
     formTemplateId,
     None,
     formData
+  )
+
+}
+
+
+trait ExampleSubmission { dependsOn: ExampleForm with ExampleFormTemplate =>
+
+  def submittedDate = LocalDateTime.parse("2007-12-03T10:15:30")
+
+  def submissionRef = SubmissionRef("DMS")
+
+  def dmsMetaData = DmsMetaData(
+    formTemplateId
+  )
+
+  def submission = Submission(
+    formId,
+    submittedDate,
+    submissionRef,
+    envelopeId,
+    dmsMetaData
   )
 
 }
