@@ -16,129 +16,21 @@
 
 package uk.gov.hmrc.gform.services
 
-import java.time.LocalDateTime
-
-import org.scalatest.time.{ Millis, Span }
-import play.api.libs.json.Json
 import uk.gov.hmrc.gform._
-import uk.gov.hmrc.gform.connectors.PDFGeneratorConnector
-import uk.gov.hmrc.gform.models._
-import uk.gov.hmrc.gform.typeclasses._
-import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpResponse }
+import uk.gov.hmrc.gform.sharedmodel._
+import uk.gov.hmrc.gform.sharedmodel.form._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyText, _ }
+import uk.gov.hmrc.gform.submission.{ SectionFormField, SubmissionServiceHelper }
+import uk.gov.hmrc.play.http.HeaderCarrier
 
 import scala.collection.immutable.List
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-import scala.util.Random
 
-class SubmissionServiceSpec extends Spec with TypeclassFixtures {
+class SubmissionServiceSpec extends Spec {
 
-  implicit lazy val hc = new HeaderCarrier()
+  //TODO: benefit from ExampleData
 
-  implicit override val patienceConfig = PatienceConfig(timeout = scaled(Span(15000, Millis)), interval = scaled(Span(300, Millis)))
+  "SubmissionServiceHelper.getSectionFormFields" should "find repeating group fields" in {
 
-  val form = Form(FormId("form-id"), FormData(UserId("TESTID"), FormTypeId("form-type-id"), Version("1.0.0"), "UTF-8", List(FormField(FieldId("firstName"), "Joe"), FormField(FieldId("lastName"), "Doe"))), EnvelopeId("123"))
-
-  val plainFormTemplate = FormTemplate(Some("schemaId"), FormTypeId("IPT100"), "Insurance Premium Tax Return", Version("version"), "description", "characterSet", DmsSubmission("nino", "BT-NRU-Environmental", "FinanceOpsCorpT"), AuthConfig(AuthModule("TEST"), None, RegimeId("TEST")), "submitSuccessUrl", "submitErrorUrl", List.empty[Section])
-
-  val yourDetailsSection = Section(
-    "Your details",
-    None, None, None, None, None, None,
-    List(
-      FieldValue(FieldId("firstName"), Text(AnyText, Constant(""), total = false), "Your first name", None, None, mandatory = true, editable = true, submissible = true, None),
-      FieldValue(FieldId("lastName"), Text(AnyText, Constant(""), total = false), "Your last name", None, None, mandatory = true, editable = true, submissible = true, None)
-    )
-  )
-
-  val formTemplateWithOneSection = plainFormTemplate.copy(sections = List(yourDetailsSection))
-
-  "SubmissionService submission" should "submit form" in {
-
-    val localDataTime = LocalDateTime.of(2017, 1, 31, 13, 53, 45)
-    implicit val now = Now(localDataTime)
-    implicit val rnd = Rnd(new Random(123))
-
-    val findOneCheck = mock[FindOneCheck]
-    val insertCheck = mock[InsertCheck]
-    val postCheck = mock[PostCheck]
-
-    implicit val findOneFormTemplate: FindOne[FormTemplate] = FindOneTC
-      .response(Some(formTemplateWithOneSection))
-      .callCheck(findOneCheck)
-      .noChecks
-
-    implicit val findOneForm: FindOne[Form] = FindOneTC
-      .response(Some(form))
-      .callCheck(findOneCheck)
-      .noChecks
-
-    implicit val insertSubmission: Insert[Submission] = InsertTC
-      .response(Right(Success))
-      .callCheck(insertCheck)
-      .withChecks {
-        case (selector, submission) =>
-
-          selector should be(Json.obj())
-
-          inside(submission) {
-            case Submission(localDataTime, submissionRef, formId, envelopeId, dmsMetaData) =>
-              localDataTime should be(localDataTime)
-              submissionRef.value should be("0OU-RDFS-NRN")
-              formId.value should be("form-id")
-              envelopeId.value should be("123")
-              dmsMetaData should be(DmsMetaData(FormTypeId("form-type-id")))
-          }
-      }
-
-    implicit val postUploadFile: Post[UploadFile, HttpResponse] = PostTC
-      .response(HttpResponse(responseStatus = 200))
-      .callCheck(postCheck)
-      .withChecks { uploadFile =>
-        inside(uploadFile) {
-          case UploadFile(envelopeId, fileId, fileName, contentType, body) =>
-            envelopeId.value should be("123")
-            fileId.value should (be("pdf") or be("xmlDocument"))
-            fileName should (be("0OU-RDFS-NRN-20170131-iform.pdf") or be("0OU-RDFS-NRN-20170131-metadata.xml"))
-            contentType should (be("application/pdf") or be("application/xml; charset=UTF-8"))
-        }
-      }
-
-    implicit val postRouteEnvelopeRequest: Post[RouteEnvelopeRequest, HttpResponse] = PostTC
-      .response(HttpResponse(responseStatus = 200))
-      .callCheck(postCheck)
-      .withChecks { routeEnvelopeRequest =>
-        inside(routeEnvelopeRequest) {
-          case RouteEnvelopeRequest(envelopeId, application, destination) =>
-            envelopeId.value should be("123")
-            application should be("dfs")
-            destination should be("DMS")
-        }
-      }
-
-    (findOneCheck.call _).expects().twice
-    (insertCheck.call _).expects().once
-    (postCheck.call _).expects().repeat(3)
-
-    val testSubmissionService = new SubmissionService {
-      override def htmlGenerator: HtmlGeneratorService = new HtmlGeneratorService {
-        override def generateDocumentHTML(sectionFormFields: List[SectionFormField], formName: String): String = {
-          "HELLO"
-        }
-      }
-      override def pdfGenerator: PDFGeneratorService = new PDFGeneratorService {
-        override def pdfConnector: PDFGeneratorConnector = ???
-
-        override def generatePDF(html: String)(implicit hc: HeaderCarrier): Future[Array[Byte]] = {
-          Future.successful("HELLO".getBytes)
-        }
-      }
-    }
-    lazy implicit val res = testSubmissionService.submission(FormId("form-id"))
-
-    futureResult(res.value).right.value should be("http://localhost:8898/file-transfer/envelopes/123")
-  }
-
-  "SubmissionService.getSectionFormFields" should "find repeating group fields" in {
     val formFields = Seq[FormField](
       FormField(FieldId("UNO"), "UNO"),
       FormField(FieldId("1_UNO"), "1_UNO"),
@@ -151,8 +43,9 @@ class SubmissionServiceSpec extends Spec with TypeclassFixtures {
       FormField(FieldId("3_DOS"), "3_DOS"),
       FormField(FieldId("4_DOS"), "4_DOS")
     )
-    val formData = FormData(UserId("TESTID"), FormTypeId("JustAFormTypeId"), Version("-11"), "UTF-16", formFields)
-    val form = Form(FormId("MIO"), formData, EnvelopeId(""))
+    val formData = FormData(formFields)
+
+    val form = Form(FormId("MIO"), EnvelopeId(""), UserId("TESTID"), FormTemplateId("JustAFormTypeId"), None, formData)
 
     val textFieldUno = FieldValue(
       id = FieldId("UNO"),
@@ -199,14 +92,11 @@ class SubmissionServiceSpec extends Spec with TypeclassFixtures {
     )
 
     val formTemplate = FormTemplate(
-      schemaId = Some("2.0"),
-      formTypeId = FormTypeId("JustAFormTypeId"),
+      _id = FormTemplateId("JustAFormTypeId"),
       formName = "formName",
-      version = Version("-11"),
       description = "formTemplateDescription",
-      characterSet = "UTF-16",
       dmsSubmission = DmsSubmission("customerId", "classificationType", "businessArea"),
-      AuthConfig(AuthModule("TEST"), None, RegimeId("TEST")),
+      AuthConfig(AuthConfigModule("TEST"), None, RegimeId("TEST")),
       submitSuccessUrl = "http://somwehere-nice.net",
       submitErrorUrl = "http://somwehere-nasty.net",
       sections = List(section)
@@ -236,9 +126,10 @@ class SubmissionServiceSpec extends Spec with TypeclassFixtures {
       )
     )
 
-    val res = SubmissionService.getSectionFormFields(form, formTemplate)
+    val res = SubmissionServiceHelper.getSectionFormFields(form, formTemplate)
 
     res.right.value should be(expectedResult)
   }
 
+  implicit lazy val hc = new HeaderCarrier()
 }

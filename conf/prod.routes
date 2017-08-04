@@ -1,5 +1,6 @@
 # Add all the application routes to the app.routes file
-->         /gform                    app.Routes
-->         /                          health.Routes
+->         /gform                app.Routes
 
-GET        /admin/metrics             com.kenshoo.play.metrics.MetricsController.metrics
+GET        /ping/ping            uk.gov.hmrc.play.health.AdminController.ping
+GET        /admin/details        uk.gov.hmrc.play.health.AdminController.details
+GET        /admin/metrics        com.kenshoo.play.metrics.MetricsController.metrics

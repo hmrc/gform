@@ -12,4 +12,3 @@
 # Add all the application routes to the prod.routes file
 ->         /                          prod.Routes
 
-GET       /test/:formId   uk.gov.hmrc.gform.controllers.FormController.get(formId: FormId)

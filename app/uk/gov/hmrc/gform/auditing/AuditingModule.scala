@@ -16,24 +16,48 @@
 
 package uk.gov.hmrc.gform.auditing
 
+import akka.stream.Materializer
+import play.api.{ Configuration, Environment }
+import play.api.inject.ApplicationLifecycle
+import play.api.libs.ws.WSRequest
+import play.api.libs.ws.ahc.AhcWSComponents
+import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.config.ConfigModule
+import uk.gov.hmrc.gform.playcomponents.PlayComponents
+import uk.gov.hmrc.gform.wshttp.WSHttp
+import uk.gov.hmrc.play.audit.filters.AuditFilter
 import uk.gov.hmrc.play.audit.http.HttpAuditing
 import uk.gov.hmrc.play.audit.http.config.{ AuditingConfig, LoadAuditingConfig }
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
+import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.play.http.hooks.HttpHook
 
-class AuditingModule(configModule: ConfigModule) { self =>
+class AuditingModule(configModule: ConfigModule, akkaModule: AkkaModule, playComponents: PlayComponents) { self =>
 
-  lazy val auditConnector: AuditConnector = new AuditConnector {
+  val auditConnector: AuditConnector = new AuditConnector {
+
     //WARN: LoadAuditingConfig uses play deprecations.
     //Thus you can not instantiate this class if play application is not running
     override def auditingConfig: AuditingConfig = LoadAuditingConfig(s"auditing")
+
+    //WARN! Since core libraries are using deprecated play.api.libs.ws.WS we need to provide our own non-deprecated and manually wired implementation here
+    override def buildRequest(url: String)(implicit hc: HeaderCarrier): WSRequest = {
+      playComponents.ahcWSComponents.wsApi.url(url).withHeaders(hc.headers: _*)
+    }
   }
 
-  lazy val httpAuditing: HttpAuditing = new HttpAuditing {
+  val httpAuditing: HttpAuditing = new HttpAuditing {
     override def auditConnector: AuditConnector = self.auditConnector
     override def appName: String = configModule.appConfig.appName
   }
 
-  lazy val httpAuditingHook: HttpHook = httpAuditing.AuditingHook
+  val httpAuditingHook: HttpHook = httpAuditing.AuditingHook
+
+  val microserviceAuditFilter = new AuditFilter {
+    override val appName: String = configModule.appConfig.appName
+    override def mat: Materializer = akkaModule.materializer
+    override val auditConnector: AuditConnector = self.auditConnector
+    override def controllerNeedsAuditing(controllerName: String): Boolean = configModule.controllerConfig.paramsForController(controllerName).needsAuditing
+  }
+
 }

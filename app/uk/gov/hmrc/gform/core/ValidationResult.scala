@@ -17,12 +17,13 @@
 package uk.gov.hmrc.gform.core
 
 import cats.Monoid
-import uk.gov.hmrc.gform.exceptions.InvalidState
+import uk.gov.hmrc.gform.exceptions.UnexpectedState
 
+//TODO: use either
 sealed trait ValidationResult {
   def toEither: Opt[Unit] = this match {
     case Valid => Right(())
-    case Invalid(reason) => Left(InvalidState(reason))
+    case Invalid(reason) => Left(UnexpectedState(reason))
   }
 }
 

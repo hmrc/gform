@@ -17,18 +17,19 @@
 package uk.gov.hmrc.gform.core
 
 import cats.data.NonEmptyList
-import cats.syntax.either._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.models._
+import uk.gov.hmrc.gform.formtemplate.{ FormTemplateSchema, FormTemplateValidator }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.sharedmodel.form._
 
 class TemplateValidatorSpec extends Spec {
+
   "Section.validate" should "validate unique FieldIds" in {
     val template =
       """{
-        |  "formTypeId": "IPT100",
+        |  "_id": "IPT100",
         |  "formName": "Insurance Premium Tax Return | Yswiriant Ffurflen Dreth Premiwm",
-        |  "version": "0.2.5",
         |  "description": "Fill in your insurance premium tax return form online | Llenwch eich ffurflen dreth premiwm yswiriant ar-lein",
         |  "characterSet": "UTF-8",
         |  "dmsSubmission": {
@@ -224,7 +225,7 @@ class TemplateValidatorSpec extends Spec {
 
     formTemplateJsResult match {
       case JsSuccess(formTempl, _) =>
-        val result = Section.validateUniqueFields(formTempl.sections).toEither
+        val result = FormTemplateValidator.validateUniqueFields(formTempl.sections).toEither
 
         result.left.value canEqual s"Some FieldIds are defined more than once: ${
           List(
@@ -235,134 +236,6 @@ class TemplateValidatorSpec extends Spec {
 
       case JsError(error) => s"Couldn't convert json to FormTemplate, $error"
     }
-  }
-
-  "TemplateValidator.conform" should "validate template against template schema" in {
-
-    val schema =
-      """|{
-         | "type": "object",
-         | "properties": {
-         |    "formTypeId": {
-         |      "type": "string"
-         |    },
-         |    "sections": {
-         |      "type": "array",
-         |      "items": {
-         |        "type": "object",
-         |        "properties": {
-         |          "title": {
-         |            "type": "string"
-         |          }
-         |        },
-         |        "required": [
-         |          "title"
-         |        ]
-         |      }
-         |    }
-         |  },
-         |  "required": [
-         |    "formTypeId"
-         |  ]
-         |}""".stripMargin
-
-    val template =
-      """|{
-         |  "formTypeId": "IPT100",
-         |  "sections": [
-         |    {
-         |      "title": "Your details | eich manylion"
-         |    }
-         |  ]
-         |}""".stripMargin
-
-    val res =
-      for {
-        schemaRes <- SchemaValidator.conform(Json.parse(schema).as[Schema])
-        tr <- schemaRes.conform(Json.parse(template)).toEither
-      } yield tr
-
-    res.right.value should be(())
-  }
-
-  it should "validate template with nested arrays against template schema" in {
-
-    val schema =
-      """|{
-         | "type": "object",
-         | "properties": {
-         |    "formTypeId": {
-         |      "type": "string"
-         |    },
-         |    "sections": {
-         |      "type": "array",
-         |      "items": {
-         |        "type": "object",
-         |        "properties": {
-         |          "title": {
-         |            "type": "string"
-         |          },
-         |          "fields": {
-         |            "type": "array",
-         |            "items": {
-         |              "type": "object",
-         |              "properties": {
-         |                "id": {
-         |                  "type": "string"
-         |                },
-         |                "label": {
-         |                  "type": "string"
-         |                },
-         |                "mandatory": {
-         |                  "type": "string"
-         |                },
-         |                "submitMode": {
-         |                  "type": "string"
-         |                }
-         |              },
-         |              "required": [
-         |                "id",
-         |                "label"
-         |              ]
-         |            }
-         |          }
-         |        },
-         |        "required": [
-         |          "title"
-         |        ]
-         |      }
-         |    }
-         |  },
-         |  "required": [
-         |    "formTypeId"
-         |  ]
-         |}""".stripMargin
-
-    val template =
-      """|{
-         |  "formTypeId": "IPT100",
-         |  "sections": [
-         |    {
-         |      "title": "Your details | eich manylion",
-         |      "fields": [
-         |        {
-         |          "id": "iptRegNum",
-         |          "label": "Insurance Premium Tax (IPT) registration number | Treth Premiwm Yswiriant (IPT) rhif cofrestru",
-         |          "submitMode": "standard",
-         |          "mandatory": "true"
-         |        }
-         |      ]
-         |    }
-         |  ]
-         |}""".stripMargin
-
-    val res =
-      for {
-        schemaRes <- SchemaValidator.conform(Json.parse(schema).as[Schema])
-        tr <- schemaRes.conform(Json.parse(template)).toEither
-      } yield tr
-
-    res.right.value should be(())
   }
 
   val businessDetailsSection = Section(
@@ -439,7 +312,7 @@ class TemplateValidatorSpec extends Spec {
       FormField(FieldId("businessAddress-country"), "country")
     )
     val sections = List(businessDetailsSection)
-    val res = TemplateValidator.getMatchingSection(formFields, sections)
+    val res = FormTemplateValidator.getMatchingSection(formFields, sections)
 
     res should be('right)
   }
@@ -452,7 +325,7 @@ class TemplateValidatorSpec extends Spec {
       FormField(FieldId("businessAddress-postcode"), "postcode")
     )
     val sections = List(businessDetailsSection)
-    val res = TemplateValidator.getMatchingSection(formFields, sections)
+    val res = FormTemplateValidator.getMatchingSection(formFields, sections)
 
     res should be('right)
   }
@@ -466,7 +339,7 @@ class TemplateValidatorSpec extends Spec {
       FormField(FieldId("businessAddress.postcode"), "postcode")
     )
     val sections = List(businessDetailsSection)
-    val res = TemplateValidator.getMatchingSection(formFields, sections)
+    val res = FormTemplateValidator.getMatchingSection(formFields, sections)
 
     res should be('left)
   }
@@ -482,7 +355,7 @@ class TemplateValidatorSpec extends Spec {
       FormField(FieldId("attacker.injected.field"), "); drop all tables;")
     )
     val sections = List(businessDetailsSection)
-    val res = TemplateValidator.getMatchingSection(formFields, sections)
+    val res = FormTemplateValidator.getMatchingSection(formFields, sections)
 
     res should be('left)
   }
@@ -496,7 +369,7 @@ class TemplateValidatorSpec extends Spec {
       FormField(FieldId("startDate-year"), "2000")
     )
     val sections = List(sectionWithDate)
-    val res = TemplateValidator.getMatchingSection(formFields, sections)
+    val res = FormTemplateValidator.getMatchingSection(formFields, sections)
 
     res should be('right)
   }
@@ -509,7 +382,7 @@ class TemplateValidatorSpec extends Spec {
       FormField(FieldId("startDate.year"), "2000")
     )
     val sections = List(sectionWithDate)
-    val res = TemplateValidator.getMatchingSection(formFields, sections)
+    val res = FormTemplateValidator.getMatchingSection(formFields, sections)
 
     res should be('left)
   }
@@ -524,7 +397,7 @@ class TemplateValidatorSpec extends Spec {
       FormField(FieldId("attacker.injected.field"), "); drop all tables;")
     )
     val sections = List(sectionWithDate)
-    val res = TemplateValidator.getMatchingSection(formFields, sections)
+    val res = FormTemplateValidator.getMatchingSection(formFields, sections)
 
     res should be('left)
   }
@@ -543,7 +416,7 @@ class TemplateValidatorSpec extends Spec {
     val formFields = List() // Nothing submitted
 
     val sections = List(section)
-    val res = TemplateValidator.getMatchingSection(formFields, sections)
+    val res = FormTemplateValidator.getMatchingSection(formFields, sections)
 
     res should be('right)
   }
@@ -562,7 +435,7 @@ class TemplateValidatorSpec extends Spec {
     val formFields = List() // Nothing submitted
 
     val sections = List(section)
-    val res = TemplateValidator.getMatchingSection(formFields, sections)
+    val res = FormTemplateValidator.getMatchingSection(formFields, sections)
 
     res should be('right)
   }
@@ -581,7 +454,7 @@ class TemplateValidatorSpec extends Spec {
     val formFields = List() // Nothing submitted
 
     val sections = List(section)
-    val res = TemplateValidator.getMatchingSection(formFields, sections)
+    val res = FormTemplateValidator.getMatchingSection(formFields, sections)
 
     res should be('left)
   }
@@ -593,7 +466,7 @@ class TemplateValidatorSpec extends Spec {
       FormField(FieldId("dutyType"), "0,1")
     )
     val sections = List(sectionWithCheckbox)
-    val res = TemplateValidator.getMatchingSection(formFields, sections)
+    val res = FormTemplateValidator.getMatchingSection(formFields, sections)
 
     res should be('right)
   }
@@ -605,7 +478,7 @@ class TemplateValidatorSpec extends Spec {
       FormField(FieldId("dutyType"), "0")
     )
     val sections = List(sectionWithRadio)
-    val res = TemplateValidator.getMatchingSection(formFields, sections)
+    val res = FormTemplateValidator.getMatchingSection(formFields, sections)
 
     res should be('right)
   }
@@ -617,8 +490,13 @@ class TemplateValidatorSpec extends Spec {
       FormField(FieldId("taxType"), "0")
     )
     val sections = List(sectionWithYesNo)
-    val res = TemplateValidator.getMatchingSection(formFields, sections)
+    val res = FormTemplateValidator.getMatchingSection(formFields, sections)
 
     res should be('right)
   }
+
+  private lazy val schema = FormTemplateSchema.schema
+  private lazy val jsonSchema = FormTemplateSchema.jsonSchema
+
 }
+

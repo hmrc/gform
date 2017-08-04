@@ -16,6 +16,14 @@
 
 package uk.gov.hmrc.gform.fileUpload
 
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
+import play.api.libs.json.Json
+import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
+import uk.gov.hmrc.gform.submission.SubmissionRef
+import uk.gov.hmrc.gform.typeclasses.Now
+
 case class Config(
   fileUploadBaseUrl: String,
   fileUploadFrontendBaseUrl: String,
@@ -27,13 +35,29 @@ case class Config(
 
 class SpoiltLocationHeader(val message: String) extends RuntimeException(message)
 
-case class EnvelopeId(value: String)
-case class FileId(value: String)
-
 //TODO move it into somewhere into common place. There is much more logic related to it in whole code
 case class ContentType(value: String)
 object ContentType {
   val `application/pdf` = ContentType("application/pdf")
+  val `application/xml; charset=UTF-8` = ContentType("application/xml; charset=UTF-8")
   val `image/jpeg` = ContentType("image/jpeg")
   val `text/plain` = ContentType("text/plain")
+}
+
+case class ReconciliationId(value: String) extends AnyVal {
+  override def toString = value
+}
+
+object ReconciliationId {
+
+  def create(submissionRef: SubmissionRef)(implicit now: Now[LocalDateTime]): ReconciliationId = {
+    val dateFormatter = now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
+    ReconciliationId(submissionRef + "-" + dateFormatter)
+  }
+}
+
+case class RouteEnvelopeRequest(envelopeId: EnvelopeId, application: String, destination: String)
+
+object RouteEnvelopeRequest {
+  implicit val format = Json.format[RouteEnvelopeRequest]
 }
