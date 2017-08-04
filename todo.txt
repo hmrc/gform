@@ -1,0 +1,78 @@
+* unclutter the code:
+    - no workflow
+        - chcek if it's possible to break the workflow (ie: edit form, submit, reedit form, submit again)
+    - DI using implicits
+        - it breaks encapsulation - every dependency must be provided on caller site (in controller) and additionally in all method signatures used (transitively) by caller
+        - these aren't type classes, but ordinary functions/values
+    - repackage and name according to meaning model beings:
+        - FormField/FieldValue/FormFieldId
+        - Section/SectionFormField
+    - no integration tests during build
+        - nothing guards functionality (except Kam's Acceptance Tests - but these are run after merge after release to QA)
+        - unit tests test components in isolation - but they don't assure that the code works according to business criteria
+    - are we reactive!?
+        - SubmissionService.scala:119 (we don't start future until previous one finishes)
+    - how the form-frontend is going to be integrated with other systems? (compare existing file-upload-frontend)
+    - do we need all these extractors for parsing json into domain case classes?
+    - ADT and pattern matching vs extractors - potential errors (goto FormService:53 and comment out any pattern matching using extractors - code compiles and errors will be found)
+    - SubmissionService.scala:42 - this does nothing
+    - def/val inside def/val inside def/val ...
+    - pattern matching inside pattern matching inside pattern matching ...
+    - auto generating ids (see in: Address.fields)
+    - getting list of ids by pattern matching every time it's eneded vs adding `def fields` into Component trait
+    - readability first: important things up, private down
+    - handling errors: err codes or everytime return technical details but on presenter side present only "internal sys error, id: UUID..." use uuid to find it in logs/audit...
+    - testing pdf rendering - maybe Bob Snapshot's technique?
+    - fieldValueSpec can be exhousted tested using ScalaCheck
+    - ComponentTypeRaw.componentMap - magic place where parsing begins
+    - common spec
+    - config https://github.com/pureconfig/pureconfig#example
+    - shared code between gform and gform-frontend (fieldId, FormTemplate ...) we could merge the codebases/have it as it is/extract 3rd repo and use lib for it/assure in tests that they are the same
+    - business logic from model components - see PageForRender which calls PrepopService.prepopData (ehhh... )
+    - no big-nested methods (if more than 5 lines -> unnest it as private)
+    - gform launcher (links to apps per environment)
+    - about
+    - /test-only/internal-state (db address, etc)
+    - naming according to meaning (SaveService.getFormById)
+    - if there is only one method call - let's use it as a private member of class and not dedicate for it object
+    - extract method/val instead of 100>line blocks
+    - how the releases are crated and what they mean (update version in sbt, make tag in github repo, what else?)
+    - minimize parameter size passed to functions: Page.renderPage takes 7
+    - mapping to play.result should happen in controller not in service/model/whatever
+    - `section: Section, formTemplate: FormTemplate` is mistake becausee formTemplate contains Section. Instead we should pass sectionid like Int which can be use to get proper section from template
+    - why fieldData is Map[FieldId, Seq[String]]
+    - formByIdPage and form() could be one function in gform-frontend
+    - saveAndExit returns weird host
+
+- beJsSuccess
+
+
+- auditing is not enabled `override val hooks: Seq[HttpHook] = Seq.empty[HttpHook]`
+- HttpReads doesn't compose. Always user have to call handleResponse by hand. There could be map function on it.
+- they are missing HttpReads[Unit]
+- FusConnectorSpec rewrite using table props
+- eagerly run checks: if time is flowing (or accidently someone put fronzen clock)
+
+
+FILEUPLOAD:
+make version case class
+why using FormData.characterSet and not hardoce it to UTF8?
+formTemplateId is the same as version+formType
+checkUpdateResult users recover => so the future always succeeds.Is it right approach?
+why def toResult = Ok(jsonResponse) , it should respond in BadRequest or something
+why mongo needs _id (the underscore part?)
+
+put in the package API case classes used to make request XXXRequest, XXXResponse,
+macro for Single field case classes and generating format
+fromFutureA, fromXXX => zamień na opject.asOptionT
+reads tuple macro: replace Reads[(FormTypeId, Version)] =
+                               ((__ \ "formTypeId").read[FormTypeId] and
+                                 (__ \ "version").read[Version]).apply((_, _))
+
+gform/form/:id returns FormData instead of Form
+
+
+
+big change todo:
+adminController:
+remove versions from templates

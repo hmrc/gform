@@ -8,7 +8,7 @@ class PingSpec extends support.ITSpec {
   "The application should start and be pingable" in {
 
     eventually {
-      wsclient.url(s"$baseUrl/ping/ping").get().futureValue.status shouldBe Status.OK
+      wsclient.GET(s"$baseUrl/ping/ping").futureValue.status shouldBe Status.OK
     }
   }
 

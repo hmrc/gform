@@ -24,14 +24,14 @@ import parseback._
 import parseback.compat.cats._
 import parseback.util.Catenable
 import uk.gov.hmrc.gform.core.Opt
-import uk.gov.hmrc.gform.exceptions.InvalidState
+import uk.gov.hmrc.gform.exceptions.UnexpectedState
 
 object BasicParsers {
 
   private def parse[A](parser: Parser[A]) = ReaderT[Opt, String, Catenable[A]] { expression =>
     parser(LineStream[Eval](expression)).value.leftMap { error =>
       val errors: String = error.map(_.render(expression)).mkString("\n")
-      InvalidState(
+      UnexpectedState(
         s"""|Unable to parse expression $expression.
             |Errors:
             |$errors""".stripMargin
@@ -42,7 +42,7 @@ object BasicParsers {
   private def reconstruct[A](cat: Catenable[A]) = ReaderT[Opt, String, A] { expression =>
     cat.uncons match {
       case Some((expr, _)) => Right(expr)
-      case None => Left(InvalidState(s"Unable to parse expression $expression"))
+      case None => Left(UnexpectedState(s"Unable to parse expression $expression"))
     }
   }
 

@@ -1,28 +1,22 @@
 # microservice specific routes
 
-POST       /retrieveForm/:rn            uk.gov.hmrc.gform.controllers.SaveAndRetrieveController.retrieveForm(rn : String)
-POST       /saveForm/:rn                uk.gov.hmrc.gform.controllers.SaveAndRetrieveController.saveForm(rn:String)
+POST          /new-form/:formTemplateId/:userId                    uk.gov.hmrc.gform.form.FormController.newForm(userId: UserId, formTemplateId: FormTemplateId)
 
-#TODO: This should be just /form/:formTypeId/:version. Refactor later
-POST       /new-form/:formTypeId/:userId           uk.gov.hmrc.gform.controllers.FormController.newForm(userId: UserId, formTypeId: FormTypeId)
+PUT           /forms/:formId                                       uk.gov.hmrc.gform.form.FormController.updateFormData(formId: FormId)
+GET           /forms/:formId                                       uk.gov.hmrc.gform.form.FormController.get(formId: FormId)
+GET          /forms/:formId/validate-section/:sectionNumber       uk.gov.hmrc.gform.form.FormController.validateSection(formId: FormId, sectionNumber: SectionNumber)
+POST          /forms/:formId/delete                                uk.gov.hmrc.gform.form.FormController.delete(formId: FormId)
 
-GET        /forms                                   uk.gov.hmrc.gform.controllers.FormController.all
-PUT        /forms/:formId                           uk.gov.hmrc.gform.controllers.FormController.update(formId: FormId, tolerant: Option[Boolean])
-GET        /forms/:formId                           uk.gov.hmrc.gform.controllers.FormController.get(formId: FormId)
-POST       /forms/submission/:formId                uk.gov.hmrc.gform.controllers.FormController.submission(formId: FormId)
-GET        /forms/:formTypeId/submission/:formId    uk.gov.hmrc.gform.controllers.FormController.submissionStatus(formTypeId: FormTypeId, formId: FormId)
-POST       /forms/:formId/delete                    uk.gov.hmrc.gform.controllers.FormController.delete(formId: FormId)
-PUT        /forms/:formId/keystore                  uk.gov.hmrc.gform.controllers.FormController.saveKeyStore(formId: FormId)
-GET        /forms/:formId/keystore                  uk.gov.hmrc.gform.controllers.FormController.getKeyStore(formId: FormId)
-GET        /formtemplates                       uk.gov.hmrc.gform.controllers.FormTemplates.all
-POST       /formtemplates                       uk.gov.hmrc.gform.controllers.FormTemplates.save
-GET        /formtemplates/:formTypeId/all           uk.gov.hmrc.gform.controllers.FormTemplates.allById(formTypeId: FormTypeId)
-GET        /formtemplates/:formTypeId           uk.gov.hmrc.gform.controllers.FormTemplates.get(formTypeId: FormTypeId)
-DELETE     /formtemplates/:formTypeId/:version  uk.gov.hmrc.gform.controllers.FormTemplates.delete(formTypeId: FormTypeId, version: Version)
+POST          /forms/:formId/submission                            uk.gov.hmrc.gform.submission.SubmissionController.submit(formId: FormId)
+GET           /forms/:formId/submission                            uk.gov.hmrc.gform.submission.SubmissionController.submissionStatus(formId: FormId)
 
-GET        /schemas                             uk.gov.hmrc.gform.controllers.Schemas.all
-POST       /schemas                             uk.gov.hmrc.gform.controllers.Schemas.save
+GET           /formtemplates                                       uk.gov.hmrc.gform.formtemplate.FormTemplatesController.all
+POST          /formtemplates                                       uk.gov.hmrc.gform.formtemplate.FormTemplatesController.upsert
+GET           /formtemplates/:formTemplateId                       uk.gov.hmrc.gform.formtemplate.FormTemplatesController.get(formTemplateId: FormTemplateId)
+GET           /formtemplates/:formTemplateId/raw                   uk.gov.hmrc.gform.formtemplate.FormTemplatesController.getRaw(formTemplateId: FormTemplateRawId)
+DELETE        /formtemplates/:formTemplateId                       uk.gov.hmrc.gform.formtemplate.FormTemplatesController.remove(formTemplateId: FormTemplateId)
 
-GET       /test-only/remove-templates         uk.gov.hmrc.gform.controllers.TestOnly.removeTemplates()
-GET       /test-only/build-info               uk.gov.hmrc.gform.controllers.TestOnly.buildInfo()
-GET       /test-only/config                   uk.gov.hmrc.gform.controllers.TestOnly.config()
+#TODO move it to testOnlyDoNotUseInAppConf.routes
+GET           /test-only/remove-templates                          uk.gov.hmrc.gform.testonly.TestOnlyController.removeTemplates()
+GET           /test-only/build-info                                uk.gov.hmrc.gform.testonly.TestOnlyController.buildInfo()
+GET           /test-only/config                                    uk.gov.hmrc.gform.testonly.TestOnlyController.config()
