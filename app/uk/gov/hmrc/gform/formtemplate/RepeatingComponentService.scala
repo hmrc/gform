@@ -90,13 +90,17 @@ object RepeatingComponentService {
   private def buildText(template: Option[String], index: Int, data: Map[String, String]): Option[String] = {
 
     def evaluateTextExpression(str: String) = {
-      if (str.startsWith("n_")) {
-        val fieldName = str.replaceFirst("""\$\{""", "")
-          .replaceFirst("n_", s"${index}_")
-          .replaceFirst("""\}""", "")
-        data.getOrElse(fieldName, "")
+      val field = str.replaceFirst("""\$\{""", "").replaceFirst("""\}""", "")
+      if (field.startsWith("n_")) {
+        if (index == 1) {
+          val fieldName = field.replaceFirst("n_", "")
+          data.getOrElse(fieldName, "")
+        } else {
+          val fieldName = field.replaceFirst("n_", s"${index - 1}_")
+          data.getOrElse(fieldName, "")
+        }
       } else {
-        data.getOrElse(str, "")
+        data.getOrElse(field, "")
       }
     }
 
@@ -107,11 +111,11 @@ object RepeatingComponentService {
         case _ => ""
       }
       val evaluatedText = evaluateTextExpression(expression)
-      Some(str.replace(expression, evaluatedText))
+      str.replace(expression, evaluatedText)
     }
 
     template match {
-      case Some(inputText) => getEvaluatedText(inputText)
+      case Some(inputText) => Some(getEvaluatedText(inputText).replace("$n", index.toString))
       case _ => None
     }
   }
