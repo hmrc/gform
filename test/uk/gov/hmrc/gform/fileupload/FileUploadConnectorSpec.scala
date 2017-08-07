@@ -15,7 +15,7 @@
  */
 
 package uk.gov.hmrc.gform
-package fileUpload
+package fileupload
 
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId

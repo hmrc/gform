@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.fileUpload
+package uk.gov.hmrc.gform.fileupload
 
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter

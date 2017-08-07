@@ -22,7 +22,7 @@ import play.api.mvc.{ Action, AnyContent }
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.core.FormValidator
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.fileUpload.FileUploadService
+import uk.gov.hmrc.gform.fileupload.FileUploadService
 import uk.gov.hmrc.gform.formtemplate.FormTemplateService
 import uk.gov.hmrc.gform.sharedmodel.UserId
 import uk.gov.hmrc.gform.sharedmodel.form.{ FormData, FormId, UserData }

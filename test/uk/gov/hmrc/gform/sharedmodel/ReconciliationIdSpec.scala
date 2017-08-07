@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.sharedmodel
 import java.time.LocalDateTime
 
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.fileUpload.ReconciliationId
+import uk.gov.hmrc.gform.fileupload.ReconciliationId
 import uk.gov.hmrc.gform.submission.SubmissionRef
 import uk.gov.hmrc.gform.typeclasses.Now
 

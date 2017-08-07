@@ -1,4 +1,4 @@
-package uk.gov.hmrc.gform.fileUpload
+package uk.gov.hmrc.gform.fileupload
 
 import play.api.libs.json.{JsObject, JsResult, JsSuccess, Json}
 import uk.gov.hmrc.gform.Spec

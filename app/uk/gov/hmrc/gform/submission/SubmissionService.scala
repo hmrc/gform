@@ -23,7 +23,7 @@ import cats.syntax.either._
 import cats.syntax.traverse._
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.fileUpload.FileUploadService
+import uk.gov.hmrc.gform.fileupload.FileUploadService
 import uk.gov.hmrc.gform.form.FormService
 import uk.gov.hmrc.gform.formtemplate.{ FormTemplateService, RepeatingComponentService, SectionHelper }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
