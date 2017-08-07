@@ -1,8 +1,6 @@
 package uk.gov.hmrc.gform
 
 import play.api.http.Status
-import play.api.libs.json.Json
-import uk.gov.hmrc.gform.sharedmodel.config.ExposedConfig
 
 
 class PingSpec extends support.ITSpec {
