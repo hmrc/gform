@@ -30,8 +30,10 @@ object ValueParser {
 
   def validate(expression: String): Opt[ValueExpr] = validateWithParser(expression, exprDeterminer)
 
+  /*
   def validateList(expressions: List[String]): Opt[List[ValueExpr]] =
     expressions.map(validate).sequence
+  */
 
   lazy val exprDeterminer: Parser[ValueExpr] = (
     dateExpression ^^ ((loc, expr) => DateExpression(expr))

@@ -52,7 +52,7 @@ object RepeatingComponentService {
     }
   }
 
-  private def isRepeatingSection(section: Section) = section.repeatsMax.isDefined && section.fieldToTrack.isDefined
+  private def isRepeatingSection(section: Section) = section.repeatsMax.isDefined && section.repeatsMin.isDefined
 
   private def reconstructRepeatingSections(section: Section, data: Map[String, String]): List[Section] = {
     def getFields(field: FieldValue): List[String] = field.`type` match {
@@ -81,23 +81,38 @@ object RepeatingComponentService {
     }
 
     section.copy(
-      title = buildText(Some(section.title), index, section.fieldToTrack.get, data).getOrElse(""),
-      shortName = buildText(section.shortName, index, section.fieldToTrack.get, data),
+      title = buildText(Some(section.title), index, data).getOrElse(""),
+      shortName = buildText(section.shortName, index, data),
       fields = section.fields.map(copyField)
     )
   }
 
-  private def buildText(template: Option[String], index: Int, fieldToTrack: VariableInContext,
-    data: Map[String, String]): Option[String] = {
+  private def buildText(template: Option[String], index: Int, data: Map[String, String]): Option[String] = {
 
-    val fieldName = if (index == 1) fieldToTrack.field else s"${index - 1}_${fieldToTrack.field}"
-    val textToInsert = data.getOrElse(fieldName, "")
+    def evaluateTextExpression(str: String) = {
+      if (str.startsWith("n_")) {
+        val fieldName = str.replaceFirst("""\$\{""", "")
+          .replaceFirst("n_", s"${index}_")
+          .replaceFirst("""\}""", "")
+        data.getOrElse(fieldName, "")
+      } else {
+        data.getOrElse(str, "")
+      }
+    }
+
+    def getEvaluatedText(str: String) = {
+      val pattern = """.*(\$\{.*\}).*""".r
+      val expression = str match {
+        case pattern(txtExpr) => txtExpr
+        case _ => ""
+      }
+      val evaluatedText = evaluateTextExpression(expression)
+      Some(str.replace(expression, evaluatedText))
+    }
 
     template match {
-      case Some(text) => Some(
-        text.replace("$t", textToInsert).replace("$n", index.toString)
-      )
-      case None => None
+      case Some(inputText) => getEvaluatedText(inputText)
+      case _ => None
     }
   }
 }
