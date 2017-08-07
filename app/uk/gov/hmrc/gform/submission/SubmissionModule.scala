@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.submission
 
-import uk.gov.hmrc.gform.fileUpload.FileUploadModule
+import uk.gov.hmrc.gform.fileupload.FileUploadModule
 import uk.gov.hmrc.gform.form.FormModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.mongo.MongoModule

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.fileUpload
+package uk.gov.hmrc.gform.fileupload
 
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.time.{ TimeModule, TimeProvider }

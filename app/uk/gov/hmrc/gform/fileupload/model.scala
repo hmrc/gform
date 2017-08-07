@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.fileUpload
+package uk.gov.hmrc.gform.fileupload
 
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-import play.api.libs.json.Json
-import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
+import play.api.libs.json._
+import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, Form, FormId }
 import uk.gov.hmrc.gform.submission.SubmissionRef
 import uk.gov.hmrc.gform.typeclasses.Now
 
@@ -59,5 +60,15 @@ object ReconciliationId {
 case class RouteEnvelopeRequest(envelopeId: EnvelopeId, application: String, destination: String)
 
 object RouteEnvelopeRequest {
-  implicit val format = Json.format[RouteEnvelopeRequest]
+
+  private val macrowrites = Json.writes[RouteEnvelopeRequest]
+
+  val owrites = OWrites[RouteEnvelopeRequest] { r =>
+    macrowrites.writes(r) ++
+      EnvelopeId.format.writes(r.envelopeId) //this will override envelopeId
+  }
+
+  val reads = Json.reads[RouteEnvelopeRequest]
+
+  implicit val format = OFormat(reads, owrites)
 }
