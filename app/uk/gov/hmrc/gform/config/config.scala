@@ -16,45 +16,12 @@
 
 package uk.gov.hmrc.gform.config
 
-import com.typesafe.config.{ ConfigFactory, Config => TypeSafeConfig }
-import net.ceedubs.ficus.Ficus._
-import play.api.Mode.Mode
-import play.api.{ ApplicationLoader, Configuration }
+import com.typesafe.config.{ Config => TypeSafeConfig }
 import pureconfig._
-import uk.gov.hmrc.gform.playcomponents.PlayComponents
-import uk.gov.hmrc.gform.{ ApplicationLoader, ApplicationModule }
-import uk.gov.hmrc.play.auth.controllers.AuthParamsControllerConfig
-import uk.gov.hmrc.play.config.{ ControllerConfig, ServicesConfig }
-
-class ConfigModule(playComponents: PlayComponents) {
-
-  val typesafeConfig: TypeSafeConfig = ConfigFactory.load()
-
-  val appConfig: AppConfig = AppConfig.loadOrThrow(typesafeConfig)
-
-  val playConfiguration: Configuration = playComponents.context.initialConfiguration
-
-  val serviceConfig: ServicesConfig = new ServicesConfig {
-    //watch out!
-    // ServicesConfig requires running play application so if we don't override these
-    // we will experience 'Caused by: java.lang.RuntimeException: There is no started application'
-    override protected def runModeConfiguration: Configuration = playConfiguration
-    override protected def mode: Mode = playComponents.context.environment.mode
-  }
-
-  val controllerConfig: ControllerConfig = new ControllerConfig {
-    lazy val controllerConfigs = typesafeConfig.as[TypeSafeConfig]("controllers")
-  }
-
-  val authParamsControllerConfig = new AuthParamsControllerConfig {
-    lazy val controllerConfigs = controllerConfig.controllerConfigs
-  }
-
-}
 
 case class AppConfig(
   appName: String,
-  formExpiryDays: Long,
+  formExpiryDays: Int,
   formMaxAttachmentSizeMB: Int,
   formMaxAttachments: Int
 )
