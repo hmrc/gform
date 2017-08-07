@@ -18,8 +18,10 @@ package uk.gov.hmrc.gform.core.parsers
 
 import parseback._
 import uk.gov.hmrc.gform.core.Opt
-import uk.gov.hmrc.gform.models._
+import uk.gov.hmrc.gform.sharedmodel._
 import BasicParsers._
+import uk.gov.hmrc.gform.formtemplate._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 object FormatParser {
 
@@ -71,10 +73,17 @@ object FormatParser {
   lazy val dateExpr: Parser[DateConstraintInfo] = (
     "today" ^^ { (loc, today) => Today }
     | concreteDate
-  //    | nextDate
-  //    | previousDate
-  //    | anyWordFormat ^^ { (loc, str) => AnyWord(str) }
+    //    | nextDate
+    //    | previousDate
+    //    | anyWordFormat ^^ { (loc, str) => AnyWord(str) }
+    | "${" ~ alphabeticOnly ~ "}" ^^ { (loc, _, field, _) => DateField(FieldId(field)) }
   )
+
+  lazy val contextField: Parser[String] = (
+    alphabeticOnly ^^ { (loc, fn) => fn }
+  )
+
+  lazy val alphabeticOnly: Parser[String] = """\w+""".r ^^ { (loc, str) => str }
 
   lazy val anyWordExpression: Parser[FormatExpr] = (
     anyWordFormat ^^ { (loc, anyWord) => OrientationFormat(anyWord) }

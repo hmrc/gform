@@ -6,6 +6,8 @@ import play.api.libs.ws.WSClient
 import play.api.{Application, Configuration, Environment}
 import play.core.DefaultWebCommands
 import uk.gov.hmrc.gform.ApplicationModule
+import uk.gov.hmrc.gform.wshttp.WSHttp
+import uk.gov.hmrc.play.http.HeaderCarrier
 
 /**
   * This spec provides running play application for every test.
@@ -14,7 +16,7 @@ trait ITSpec extends ITSpecBase with BaseOneServerPerTest with /*TODO MongoSpecS
 
   override def fakeApplication(): Application = application
 
-  lazy val wsclient: WSClient = applicationModule.wsClient
+  lazy val wsclient = new WSHttp
 
   private lazy val mongoDbName: String = "test-" + this.getClass.getSimpleName
   private lazy val env: Environment = Environment.simple()
@@ -34,4 +36,5 @@ trait ITSpec extends ITSpecBase with BaseOneServerPerTest with /*TODO MongoSpecS
   }
   private lazy val application = applicationModule.application
 
+  implicit lazy val hc = HeaderCarrier()
 }

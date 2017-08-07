@@ -17,13 +17,16 @@
 package uk.gov.hmrc.gform.fileUpload
 
 import uk.gov.hmrc.gform.config.ConfigModule
-import uk.gov.hmrc.gform.time.TimeModule
+import uk.gov.hmrc.gform.time.{ TimeModule, TimeProvider }
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 
 class FileUploadModule(configModule: ConfigModule, wSHttpModule: WSHttpModule, timeModule: TimeModule) {
 
-  lazy val fileUploadConnector: FileUploadConnector = new FileUploadConnector(config, wSHttpModule.auditableWSHttp, timeModule.localDateTime())
-  lazy val fileUploadFrontendConnector: FileUploadFrontendConnector = new FileUploadFrontendConnector(config, wSHttpModule.auditableWSHttp)
+  val fileUploadConnector: FileUploadConnector = new FileUploadConnector(config, wSHttpModule.auditableWSHttp, timeModule.timeProvider)
+
+  val fileUploadFrontendConnector: FileUploadFrontendConnector = new FileUploadFrontendConnector(config, wSHttpModule.auditableWSHttp)
+
+  val fileUploadService: FileUploadService = new FileUploadService(fileUploadConnector, fileUploadFrontendConnector, timeModule.timeProvider)
 
   private lazy val config: Config = Config(
     configModule.serviceConfig.baseUrl("file-upload"),

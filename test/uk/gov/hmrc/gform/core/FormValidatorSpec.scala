@@ -19,101 +19,12 @@ package uk.gov.hmrc.gform.core
 import cats.syntax.either._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.exceptions.InvalidState
-import uk.gov.hmrc.gform.models._
+import uk.gov.hmrc.gform.exceptions.UnexpectedState
+import uk.gov.hmrc.gform.sharedmodel._
+import uk.gov.hmrc.gform.sharedmodel.form.FormField
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyText, _ }
 
 class FormValidatorSpec extends Spec {
-
-  "TemplateValidator.conform" should "validate form against form schema" in {
-
-    val formSchema =
-      """|{
-         |  "$schema": "http://json-schema.org/draft-04/schema#",
-         |  "type": "object",
-         |  "properties": {
-         |    "formTypeId": {
-         |      "type": "string"
-         |    },
-         |    "version": {
-         |      "type": "string"
-         |    },
-         |    "characterSet": {
-         |      "type": "string"
-         |    },
-         |    "fields": {
-         |      "type": "array",
-         |      "items": {
-         |        "type": "object",
-         |        "properties": {
-         |          "id": {
-         |            "type": "string"
-         |          },
-         |          "value": {
-         |            "type": "string"
-         |          }
-         |        },
-         |        "required": [
-         |          "id",
-         |          "value"
-         |        ]
-         |      }
-         |    }
-         |  },
-         |  "required": [
-         |    "formTypeId",
-         |    "version",
-         |    "characterSet",
-         |    "fields"
-         |  ]
-         |}""".stripMargin
-
-    val formReq =
-      """|{
-         |  "formTypeId": "IPT100",
-         |  "version": "0.1.0",
-         |  "characterSet": "UTF-8",
-         |  "fields": [
-         |    {
-         |      "id": "iptRegNum",
-         |      "value": "12AB3456780"
-         |    }, {
-         |      "id": "firstName",
-         |      "value": "John"
-         |    }, {
-         |      "id": "lastName",
-         |      "value": "Doe"
-         |    }, {
-         |      "id": "telephoneNumber",
-         |      "value": "+44 (01273) 123456"
-         |    }, {
-         |      "id": "nameOfBusiness",
-         |      "value": "Acme Widgets Ltd."
-         |    }, {
-         |      "id": "accountingPeriodStartDate",
-         |      "value": "2015-08-01"
-         |    }, {
-         |      "id": "accountingPeriodEndDate",
-         |      "value": "2015-12-01"
-         |    }, {
-         |      "id": "standardRateIPTDueForThisPeriod",
-         |      "value": "1329345.49"
-         |    }, {
-         |      "id": "higherRateIPTDueForThisPeriod",
-         |      "value": "58373265.23"
-         |    }
-         |  ]
-         |}""".stripMargin
-
-    val schemaRes = SchemaValidator.conform(Json.parse(formSchema).as[Schema])
-
-    val finalRes =
-      for {
-        schema <- schemaRes
-        res <- schema.conform(Json.parse(formReq)).toEither
-      } yield res
-
-    finalRes.right.value should be(())
-  }
 
   def getMandatoryFieldValue(id: String) = FieldValue(
     id = FieldId(id),
@@ -259,7 +170,7 @@ class FormValidatorSpec extends Spec {
 
     val res = FormValidator.validate(formFields, section)
 
-    res.left.value should be(InvalidState("Field iptRegNum is not part of the template"))
+    res.left.value should be(UnexpectedState("Field iptRegNum is not part of the template"))
 
   }
 
@@ -273,7 +184,7 @@ class FormValidatorSpec extends Spec {
 
     val res = FormValidator.validate(formFields, section)
 
-    res.left.value should be(InvalidState("Required fields iptRegNum are missing in form submission."))
+    res.left.value should be(UnexpectedState("Required fields iptRegNum are missing in form submission."))
 
   }
 }

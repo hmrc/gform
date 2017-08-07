@@ -17,8 +17,9 @@
 package uk.gov.hmrc.gform.core.parsers
 
 import org.scalatest._
-import uk.gov.hmrc.gform.exceptions.InvalidState
-import uk.gov.hmrc.gform.models._
+import uk.gov.hmrc.gform.exceptions.UnexpectedState
+import uk.gov.hmrc.gform.sharedmodel._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues with OptionValues {
 
@@ -35,8 +36,8 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
     res should be('left)
 
     res.left.value match {
-      case InvalidState(msg) => msg.contains("expected '=' or '\\s+'") shouldBe true
-      case _ => fail("expected an InvalidState")
+      case UnexpectedState(msg) => msg.contains("expected '=' or '\\s+'") shouldBe true
+      case _ => fail("expected an UnexpectedState")
     }
   }
 
@@ -52,8 +53,8 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
     }
 
     res.left.value match {
-      case InvalidState(msg) => pointToFirstUnexpectedCharacter(msg)
-      case _ => fail("expected an InvalidState")
+      case UnexpectedState(msg) => pointToFirstUnexpectedCharacter(msg)
+      case _ => fail("expected an UnexpectedState")
     }
   }
 
@@ -63,7 +64,7 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
     res should be('left)
 
     res.left.value should be(
-      InvalidState(
+      UnexpectedState(
         """
 Unable to parse expression ${eeitt.businessUserx = XYZ}.
 Errors:

@@ -1,0 +1,42 @@
+{
+  "schemaId": "http://hmrc.gov.uk/jsonschema/gf-formtemplate#",
+  "formTypeId": "date",
+  "formName": "date dev test template",
+  "version": "0.3.0",
+  "description": "Fill in your insurance premium tax return form online | Llenwch eich ffurflen dreth premiwm yswiriant ar-lein",
+  "characterSet": "UTF-8",
+  "dmsSubmission": {
+    "customerId": "nino",
+    "classificationType": "BT-NRU-Environmental",
+    "businessArea": "FinanceOpsCorpT"
+  },
+  "authConfig":{
+    "authModule": "legacyEEITTAuth",
+    "regimeId": "GF"
+  },
+  "submitSuccessUrl": "http://www.google.co.uk",
+  "submitErrorUrl": "http://www.yahoo.co.uk",
+  "sections": [
+    {
+      "title": "Calculation 1/2 | eich calculationewq",
+      "shortName": "shortName",
+      "fields": [
+        {
+          "id": "date1",
+          "type": "date",
+          "label": "Enter a date in April 2017",
+          "helpText": "For example, 10 4 2017",
+          "mandatory": "false"
+        },
+        {
+          "id": "date2",
+          "type": "date",
+          "label": "Enter a date in April 2017",
+          "helpText": "For example, 10 4 2017",
+          "mandatory": "false",
+          "format": "after ${date1}"
+        }
+      ]
+    }
+  ]
+}

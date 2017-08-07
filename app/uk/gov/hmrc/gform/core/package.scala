@@ -22,26 +22,26 @@ import uk.gov.hmrc.gform.exceptions.UnexpectedState
 
 package object core {
 
-  type ServiceResponse[A] = EitherT[Future, UnexpectedState, A]
+  type FOpt[A] = EitherT[Future, UnexpectedState, A]
   type Opt[A] = Either[UnexpectedState, A]
 
-  def success[A](a: A): ServiceResponse[A] = {
+  def success[A](a: A): FOpt[A] = {
     EitherT[Future, UnexpectedState, A](Future.successful(Right(a)))
   }
 
-  def fromFutureOptA[A](fa: Future[Opt[A]]): ServiceResponse[A] = {
+  def fromFutureOptA[A](fa: Future[Opt[A]]): FOpt[A] = {
     EitherT[Future, UnexpectedState, A](fa)
   }
 
-  def fromFutureA[A](fa: Future[A])(implicit ec: ExecutionContext): ServiceResponse[A] = {
+  def fromFutureA[A](fa: Future[A])(implicit ec: ExecutionContext): FOpt[A] = {
     EitherT[Future, UnexpectedState, A](fa.map(Right(_)))
   }
 
-  def fromOptA[A](oa: Opt[A]): ServiceResponse[A] = {
+  def fromOptA[A](oa: Opt[A]): FOpt[A] = {
     EitherT[Future, UnexpectedState, A](Future.successful(oa))
   }
 
-  def fromFutureOptionA[A](fo: Future[Option[A]])(invalid: => UnexpectedState)(implicit ec: ExecutionContext): ServiceResponse[A] = {
+  def fromFutureOptionA[A](fo: Future[Option[A]])(invalid: => UnexpectedState)(implicit ec: ExecutionContext): FOpt[A] = {
     val futureA = fo.map {
       case Some(a) => Right(a)
       case None => Left(invalid)

@@ -16,21 +16,21 @@
 
 package uk.gov.hmrc.gform.fileUpload
 
-import java.time.LocalDateTime
-
 import akka.util.ByteString
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.wshttp.WSHttp
 import uk.gov.hmrc.play.http.HeaderCarrier
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
-class FileUploadFrontendConnector(config: Config, wSHttp: WSHttp)(implicit ec: ExecutionContext) {
+class FileUploadFrontendConnector(config: Config, wSHttp: WSHttp) {
 
-  def upload(envelopeId: EnvelopeId, fileId: FileId, body: ByteString, contentType: ContentType)(implicit hc: HeaderCarrier): Future[Unit] =
+  def upload(envelopeId: EnvelopeId, fileId: FileId, fileName: String, body: ByteString, contentType: ContentType)(implicit hc: HeaderCarrier): Future[Unit] =
     wSHttp
       .POSTFile(
         s"$baseUrl/file-upload/upload/envelopes/${envelopeId.value}/files/${fileId.value}",
-        fileId.value,
+        fileName,
         body,
         Seq("CSRF-token" -> "nocheck"),
         contentType.value
