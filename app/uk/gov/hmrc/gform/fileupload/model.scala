@@ -28,7 +28,7 @@ import uk.gov.hmrc.gform.typeclasses.Now
 case class Config(
   fileUploadBaseUrl: String,
   fileUploadFrontendBaseUrl: String,
-  expiryDays: Long,
+  expiryDays: Int,
   maxSize: String,
   maxSizePerItem: String,
   maxItems: Int

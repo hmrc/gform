@@ -1,6 +1,8 @@
 package uk.gov.hmrc.gform
 
 import play.api.http.Status
+import play.api.libs.json.Json
+import uk.gov.hmrc.gform.sharedmodel.config.ExposedConfig
 
 
 class PingSpec extends support.ITSpec {
@@ -11,6 +13,4 @@ class PingSpec extends support.ITSpec {
       wsclient.GET(s"$baseUrl/ping/ping").futureValue.status shouldBe Status.OK
     }
   }
-
-  private lazy val baseUrl = s"http://localhost:${port}"
 }
