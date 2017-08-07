@@ -16,25 +16,14 @@
 
 package uk.gov.hmrc.gform.config
 
-import com.typesafe.config.ConfigFactory
+import com.typesafe.config.{ConfigFactory, Config => TypeSafeConfig}
+import net.ceedubs.ficus.Ficus._
 import play.api.Configuration
 import play.api.Mode.Mode
 import uk.gov.hmrc.gform.playcomponents.PlayComponents
 import uk.gov.hmrc.gform.sharedmodel.config.ExposedConfig
 import uk.gov.hmrc.play.auth.controllers.AuthParamsControllerConfig
-import uk.gov.hmrc.play.config.{ ControllerConfig, ServicesConfig }
-import com.typesafe.config.{ ConfigFactory, Config => TypeSafeConfig }
-
-import com.typesafe.config.{ ConfigFactory, Config => TypeSafeConfig }
-import net.ceedubs.ficus.Ficus._
-import play.api.Mode.Mode
-import play.api.{ ApplicationLoader, Configuration }
-import pureconfig._
-import uk.gov.hmrc.gform.playcomponents.PlayComponents
-import uk.gov.hmrc.gform.sharedmodel.config.ExposedConfig
-import uk.gov.hmrc.gform.{ ApplicationLoader, ApplicationModule }
-import uk.gov.hmrc.play.auth.controllers.AuthParamsControllerConfig
-import uk.gov.hmrc.play.config.{ ControllerConfig, ServicesConfig }
+import uk.gov.hmrc.play.config.{ControllerConfig, ServicesConfig}
 
 class ConfigModule(playComponents: PlayComponents) {
 
