@@ -18,9 +18,10 @@ package uk.gov.hmrc.gform.sharedmodel
 
 import java.time.LocalDateTime
 
+import uk.gov.hmrc.gform.fileUpload.RouteEnvelopeRequest
 import uk.gov.hmrc.gform.sharedmodel.form._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyText, _ }
-import uk.gov.hmrc.gform.submission.{ DmsMetaData, Submission, SubmissionRef }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{AnyText, _}
+import uk.gov.hmrc.gform.submission.{DmsMetaData, Submission, SubmissionRef}
 
 import scala.collection.immutable.List
 
@@ -35,6 +36,7 @@ trait ExampleData
   with ExampleForm
   with ExampleAuthConfig
   with ExampleSubmission
+  with ExampleRouteEnvelopeRequest
 
 trait ExampleAuthConfig {
 
@@ -224,5 +226,13 @@ trait ExampleSubmission { dependsOn: ExampleForm with ExampleFormTemplate =>
     envelopeId,
     dmsMetaData
   )
+
+}
+
+trait ExampleRouteEnvelopeRequest { dependsOn: ExampleForm =>
+
+  def application: String = "GFORM"
+  def destination: String = "DMS"
+  def routeEnvelopeRequest = RouteEnvelopeRequest(envelopeId, application, destination)
 
 }
