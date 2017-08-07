@@ -44,11 +44,7 @@ class FormSpec extends Spec {
       )
     )
 
-    println(formJsObject.toString())
     formJsObject shouldBe expectedFormJsObject
-
     Form.format.reads(formJsObject) should be(JsSuccess(form))
-
-    println(expectedFormJsObject.toString())
   }
 }
