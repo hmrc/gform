@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel
 
 import java.time.LocalDateTime
 
-import uk.gov.hmrc.gform.fileUpload.RouteEnvelopeRequest
+import uk.gov.hmrc.gform.fileupload.RouteEnvelopeRequest
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{AnyText, _}
 import uk.gov.hmrc.gform.submission.{DmsMetaData, Submission, SubmissionRef}
