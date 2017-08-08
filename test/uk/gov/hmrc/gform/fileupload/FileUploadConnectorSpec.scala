@@ -67,7 +67,7 @@ class FileUploadConnectorSpec extends Spec {
     result.failed.futureValue.getMessage shouldBe "POST of 'http://fileupload.whatever/file-upload/envelopes' returned 400 (Bad Request). Response body 'null'"
   }
 
-  trait Fixture {
+  trait Fixture extends ExampleFileUploadData {
 
     val headers: Map[String, Seq[String]]
     val noHeaders = Map.empty[String, Seq[String]]
@@ -78,7 +78,6 @@ class FileUploadConnectorSpec extends Spec {
       responseHeaders = headers
     )
     lazy val wSHttp = new StubbedWSHttp(r)
-    lazy val config = Config("http://fileupload.whatever", "http://fileuploadfrontend.whatever", 30, "20MB", "5MB", 3)
 
     lazy val fileUploadConnector = new FileUploadConnector(config, wSHttp, FrozenTimeProvider.exampleInstance)
     implicit lazy val hc: HeaderCarrier = HeaderCarrier()

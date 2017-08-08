@@ -28,13 +28,14 @@ class FileUploadModule(configModule: ConfigModule, wSHttpModule: WSHttpModule, t
 
   val fileUploadService: FileUploadService = new FileUploadService(fileUploadConnector, fileUploadFrontendConnector, timeModule.timeProvider)
 
-  private lazy val config: Config = Config(
+  private lazy val config: FUConfig = FUConfig(
     configModule.serviceConfig.baseUrl("file-upload"),
     configModule.serviceConfig.baseUrl("file-upload-frontend"),
     ac.formExpiryDays,
     s"${ac.formMaxAttachments * ac.formMaxAttachmentSizeMB + 10}MB", //heuristic to compute max size
     s"${ac.formMaxAttachmentSizeMB}MB",
-    ac.formMaxAttachments
+    ac.formMaxAttachments,
+    configModule.appConfig.contentTypes
   )
 
   //TODO: provide separate one here

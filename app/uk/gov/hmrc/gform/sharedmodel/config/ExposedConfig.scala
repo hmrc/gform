@@ -23,7 +23,8 @@ import play.api.libs.json.{ Json, OFormat }
  */
 case class ExposedConfig(
   formMaxAttachmentSizeMB: Int,
-  formExpiryDays: Int
+  formExpiryDays: Int,
+  contentTypes: List[ContentType]
 )
 
 object ExposedConfig {
