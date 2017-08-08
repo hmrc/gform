@@ -55,7 +55,7 @@ object FormTemplateValidator {
   }
 
   def validateRepeatingSectionFields(sectionList: List[Section]): ValidationResult = {
-    sectionList.map { section =>
+    val results = sectionList.map { section =>
       (section.repeatsMax, section.repeatsMin) match {
         case (Some(repMax), Some(repMin)) if !repMax.equals(repMin) =>
           Invalid(s"The repeatsMax and repeatsMin fields must be the same in a repeating section: repeatsMax=[$repMax], repeatsMin=[$repMin]")
@@ -65,11 +65,8 @@ object FormTemplateValidator {
           Invalid(s"Both repeatsMax and repeatsMin fields must be provided in a repeating section: repeatsMax=[$repMax], repeatsMin=[$repMin]")
         case _ => Valid
       }
-    }.partition(_.isInstanceOf[Invalid]) match {
-      case (Nil, _) => Valid
-      case (invalidStates, _) =>
-        Invalid((for (Invalid(invalidState) <- invalidStates) yield invalidState).mkString(", "))
     }
+    Monoid[ValidationResult].combineAll(results)
   }
 
   private def getMandatoryAndOptionalFields(section: Section): (Set[FieldId], Set[FieldId]) = {

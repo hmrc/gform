@@ -40,8 +40,6 @@ class SubmissionSpec extends Spec {
 
     val expectedJson = Json.parse(expecteJsonString)
 
-    println(Submission.format.writes(submission))
-
     Submission.format.writes(submission) shouldBe expectedJson
 
     Submission.format.reads(expectedJson) shouldBe JsSuccess(submission)

@@ -44,7 +44,6 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
   it should "fail to parse anything but a constant on the right size" in {
     val res = BooleanExprParser.validate("${abc=form.amountA}")
 
-    println(res)
     res should be('left)
 
     def pointToFirstUnexpectedCharacter(parserMsg: String) = {

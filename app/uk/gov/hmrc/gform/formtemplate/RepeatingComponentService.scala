@@ -91,8 +91,8 @@ object RepeatingComponentService {
 
     def evaluateTextExpression(str: String) = {
       val field = str.replaceFirst("""\$\{""", "").replaceFirst("""\}""", "")
-      if (field.startsWith("n_")) {
-        if (index == 1) {
+      if (field.startsWith("n_")) { // "n_"  in the expression means nth instance a field in a repeating group
+        if (index == 1) { // the first element in a repeating group doesn't have an index
           val fieldName = field.replaceFirst("n_", "")
           data.getOrElse(fieldName, "")
         } else {
@@ -100,6 +100,8 @@ object RepeatingComponentService {
           data.getOrElse(fieldName, "")
         }
       } else {
+        // depending on the specified form validation we might have an empty string
+        // in which case it means deleting the expression from the final text
         data.getOrElse(field, "")
       }
     }

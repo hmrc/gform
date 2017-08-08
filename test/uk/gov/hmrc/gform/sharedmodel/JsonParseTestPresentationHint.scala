@@ -37,7 +37,6 @@ class JsonParseTestPresentationHint extends Spec {
 
     var jsr: JsResult[FieldValue] = null
     jsr = implicitly[Reads[FieldValue]].reads(Json.parse(jsonStr));
-    println(jsr)
   }
 
   "A component with a presentationHint that is not a String" should "fail to parse" in {
@@ -46,7 +45,6 @@ class JsonParseTestPresentationHint extends Spec {
       snippet <- List(""", "presentationHint" : 123 }""", """, "presentationHint" : {} }""")
     } {
       val jsResult = implicitly[Reads[FieldValue]].reads(Json.parse(startOfJson + snippet))
-      println(jsResult)
       jsResult should be(jsError)
     }
   }
@@ -61,7 +59,6 @@ class JsonParseTestPresentationHint extends Spec {
       )
     } {
       val jsResult = implicitly[Reads[FieldValue]].reads(Json.parse(startOfJson + snippet))
-      println(jsResult)
       jsResult should be(jsError)
     }
   }
@@ -74,7 +71,6 @@ class JsonParseTestPresentationHint extends Spec {
       )
     } {
       val jsResult = implicitly[Reads[FieldValue]].reads(Json.parse(startOfJson + snippet))
-      println(jsResult)
       jsResult shouldBe a[JsSuccess[_]]
       jsResult.map(_.presentationHint).get should equal(Some(List(CollapseGroupUnderLabel, SummariseGroupAsGrid)))
     }

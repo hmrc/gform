@@ -103,11 +103,10 @@ class JsonParseTestGroup extends Spec {
     """
 
     var jsr: JsResult[FieldValue] = null
-    jsr = implicitly[Reads[FieldValue]].reads(Json.parse(jsonStr)); println(jsr); jsr should be(jsError)
-    jsr = implicitly[Reads[FieldValue]].reads(Json.parse(jsonStr.replaceAll("6", """"A""""))); println(jsr); jsr should be(jsError)
-    jsr = implicitly[Reads[FieldValue]].reads(Json.parse(jsonStr.replaceAll("6", "-1"))); println(jsr); jsr should be(jsError)
-    jsr = implicitly[Reads[FieldValue]].reads(Json.parse(jsonStr.replaceAll("5", """"A""""))); println(jsr); jsr should be(jsError)
-
+    jsr = implicitly[Reads[FieldValue]].reads(Json.parse(jsonStr)); jsr should be(jsError)
+    jsr = implicitly[Reads[FieldValue]].reads(Json.parse(jsonStr.replaceAll("6", """"A""""))); jsr should be(jsError)
+    jsr = implicitly[Reads[FieldValue]].reads(Json.parse(jsonStr.replaceAll("6", "-1"))); jsr should be(jsError)
+    jsr = implicitly[Reads[FieldValue]].reads(Json.parse(jsonStr.replaceAll("5", """"A""""))); jsr should be(jsError)
   }
 
 }

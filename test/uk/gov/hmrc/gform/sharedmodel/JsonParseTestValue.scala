@@ -47,7 +47,6 @@ class JsonParseTestValue extends Spec {
       )
     } {
       val jsResult = implicitly[Reads[FieldValue]].reads(Json.parse(startOfJson + snippet))
-      println("for " + jsResult)
       jsResult should be(jsError)
     }
   }
@@ -63,7 +62,6 @@ class JsonParseTestValue extends Spec {
       )
     } {
       val jsResult = implicitly[Reads[FieldValue]].reads(Json.parse(startOfJson + snippet))
-      println(jsResult)
       jsResult should be(jsError)
     }
   }

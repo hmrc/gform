@@ -16,24 +16,14 @@
 
 package uk.gov.hmrc.gform.core.parsers
 
-import cats.instances.either._
-import cats.instances.list._
-import cats.syntax.traverse._
 import parseback._
 import uk.gov.hmrc.gform.core.Opt
-import uk.gov.hmrc.gform.sharedmodel._
-import BasicParsers._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ ChoiceExpression, DateExpression, TextExpression, ValueExpr }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.core.parsers.BasicParsers._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ ChoiceExpression, DateExpression, TextExpression, ValueExpr, _ }
 
 object ValueParser {
 
   def validate(expression: String): Opt[ValueExpr] = validateWithParser(expression, exprDeterminer)
-
-  /*
-  def validateList(expressions: List[String]): Opt[List[ValueExpr]] =
-    expressions.map(validate).sequence
-  */
 
   lazy val exprDeterminer: Parser[ValueExpr] = (
     dateExpression ^^ ((loc, expr) => DateExpression(expr))
