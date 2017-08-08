@@ -21,29 +21,22 @@ import java.time.format.DateTimeFormatter
 
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
+import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, Form, FormId }
 import uk.gov.hmrc.gform.submission.SubmissionRef
 import uk.gov.hmrc.gform.typeclasses.Now
 
-case class Config(
+case class FUConfig(
   fileUploadBaseUrl: String,
   fileUploadFrontendBaseUrl: String,
   expiryDays: Int,
   maxSize: String,
   maxSizePerItem: String,
-  maxItems: Int
+  maxItems: Int,
+  contentTypes: List[ContentType]
 )
 
 class SpoiltLocationHeader(val message: String) extends RuntimeException(message)
-
-//TODO move it into somewhere into common place. There is much more logic related to it in whole code
-case class ContentType(value: String)
-object ContentType {
-  val `application/pdf` = ContentType("application/pdf")
-  val `application/xml; charset=UTF-8` = ContentType("application/xml; charset=UTF-8")
-  val `image/jpeg` = ContentType("image/jpeg")
-  val `text/plain` = ContentType("text/plain")
-}
 
 case class ReconciliationId(value: String) extends AnyVal {
   override def toString = value

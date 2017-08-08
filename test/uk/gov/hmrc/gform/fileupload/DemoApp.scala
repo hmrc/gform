@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.fileupload
 import java.nio.file.{ Files, Paths }
 
 import akka.util.ByteString
+import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.FileId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.time.TimeProvider
@@ -31,13 +32,21 @@ import scala.concurrent.duration.Duration
 
 object DemoApp extends App {
 
-  val config = Config(
+  val config = FUConfig(
     fileUploadBaseUrl = "http://localhost:8898",
     fileUploadFrontendBaseUrl = "http://localhost:8899",
     expiryDays = 30,
     maxSize = "20MB",
     maxSizePerItem = "10MB",
-    maxItems = 3
+    maxItems = 3,
+    contentTypes = List(
+      ContentType.`application/pdf`,
+      ContentType.`application/xml; charset=UTF-8`,
+      ContentType.`image/jpeg`,
+      ContentType.`text/plain`,
+      ContentType.`application/vnd.ms-excel`,
+      ContentType.`application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`
+    )
   )
 
   val http = TestWSHttp

@@ -20,6 +20,7 @@ import java.time.format.DateTimeFormatter
 
 import akka.util.ByteString
 import uk.gov.hmrc.gform.fileupload.FileUploadService.FileIds._
+import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ DmsSubmission, FormTemplateId }
 import uk.gov.hmrc.gform.submission.{ SubmissionAndPdf, SubmissionRef }
@@ -64,7 +65,6 @@ class FileUploadService(fileUploadConnector: FileUploadConnector, fileUploadFron
       _ <- fileUploadConnector.routeEnvelope(RouteEnvelopeRequest(envelopeId, "dfs", "DMS"))
     } yield ()
   }
-
 }
 
 object FileUploadService {

@@ -14,27 +14,20 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.config
+package uk.gov.hmrc.gform.fileupload
 
-import com.typesafe.config.ConfigFactory
-import pureconfig.{ CamelCase, ConfigFieldMapping, ProductHint }
-import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 
-case class SampleConf(fooFoo: Int, bar: String)
+trait ExampleFileUploadData {
 
-class AppConfigSpec extends Spec {
-
-  behavior of "AppConfig"
-
-  it should "be loadable" in {
-
-    val appConfig = AppConfig.loadOrThrow(ConfigFactory.load())
-    appConfig.appName shouldBe "gform"
-    appConfig.formExpiryDays shouldBe 30
-    appConfig.formMaxAttachments shouldBe 10
-    appConfig.formMaxAttachmentSizeMB shouldBe 10
-    appConfig.contentTypes shouldBe List(
+  lazy val config = FUConfig(
+    fileUploadBaseUrl = "http://fileupload.whatever",
+    fileUploadFrontendBaseUrl = "http://fileuploadfrontend.whatever",
+    expiryDays = 30,
+    maxSize = "20MB",
+    maxSizePerItem = "5MB",
+    maxItems = 3,
+    contentTypes = List(
       ContentType.`application/pdf`,
       ContentType.`application/xml; charset=UTF-8`,
       ContentType.`image/jpeg`,
@@ -42,7 +35,6 @@ class AppConfigSpec extends Spec {
       ContentType.`application/vnd.ms-excel`,
       ContentType.`application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`
     )
-
-  }
+  )
 
 }
