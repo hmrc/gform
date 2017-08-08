@@ -21,7 +21,7 @@ import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.sharedmodel._
 import BasicParsers._
 import uk.gov.hmrc.gform.formtemplate._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Email, TelephoneNumber, _ }
 
 object FormatParser {
 
@@ -99,6 +99,11 @@ object FormatParser {
     | positiveWholeNumberFormat
     | moneyFormat
     | governmentIdFormat
+  )
+
+  lazy val contactFormat: Parser[TextFormat] = (
+    "telephoneNumber" ^^ { (loc, _) => TextFormat(TelephoneNumber) }
+    | "email" ^^ { (loc, _) => TextFormat(Email) }
   )
 
   lazy val numberFormat: Parser[TextFormat] = (
