@@ -6,6 +6,7 @@ import play.api.libs.ws.WSClient
 import play.api.{Application, Configuration, Environment}
 import play.core.DefaultWebCommands
 import uk.gov.hmrc.gform.ApplicationModule
+import uk.gov.hmrc.gform.gformbackend.GformConnector
 import uk.gov.hmrc.gform.wshttp.WSHttp
 import uk.gov.hmrc.play.http.HeaderCarrier
 
@@ -39,4 +40,6 @@ trait ITSpec extends ITSpecBase with BaseOneServerPerTest with /*TODO MongoSpecS
   implicit lazy val hc = HeaderCarrier()
 
   lazy val baseUrl = s"http://localhost:${port}"
+
+  lazy val gformConnector = new GformConnector(wsclient, s"$baseUrl/gform")
 }
