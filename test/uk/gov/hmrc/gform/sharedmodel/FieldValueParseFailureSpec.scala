@@ -37,7 +37,6 @@ class FieldValueParseFailureSpec extends Spec {
         """
     )
 
-    println(fieldValue)
     fieldValue should be(jsError)
   }
 
@@ -56,7 +55,6 @@ class FieldValueParseFailureSpec extends Spec {
         """
     )
 
-    println(fieldValue)
     fieldValue should be(jsError)
   }
 
@@ -75,7 +73,6 @@ class FieldValueParseFailureSpec extends Spec {
         """
     )
 
-    println(fieldValue)
     fieldValue should be(jsError)
   }
 
@@ -93,7 +90,6 @@ class FieldValueParseFailureSpec extends Spec {
          |}"""
     )
 
-    print(fieldValue)
     fieldValue should be(jsError)
   }
 
@@ -111,7 +107,6 @@ class FieldValueParseFailureSpec extends Spec {
          |}"""
     )
 
-    print(fieldValue)
     fieldValue should be(jsError)
   }
 
@@ -131,7 +126,6 @@ class FieldValueParseFailureSpec extends Spec {
          |}"""
     )
 
-    print(fieldValue)
     fieldValue should be(jsError)
   }
 
@@ -147,7 +141,6 @@ class FieldValueParseFailureSpec extends Spec {
       """
     )
 
-    print(fieldValue)
     fieldValue should be(jsError)
 
   }

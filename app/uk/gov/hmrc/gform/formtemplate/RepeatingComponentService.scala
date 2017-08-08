@@ -52,7 +52,7 @@ object RepeatingComponentService {
     }
   }
 
-  private def isRepeatingSection(section: Section) = section.repeatsMax.isDefined && section.fieldToTrack.isDefined
+  private def isRepeatingSection(section: Section) = section.repeatsMax.isDefined && section.repeatsMin.isDefined
 
   private def reconstructRepeatingSections(section: Section, data: Map[String, String]): List[Section] = {
     def getFields(field: FieldValue): List[String] = field.`type` match {
@@ -81,23 +81,44 @@ object RepeatingComponentService {
     }
 
     section.copy(
-      title = buildText(Some(section.title), index, section.fieldToTrack.get, data).getOrElse(""),
-      shortName = buildText(section.shortName, index, section.fieldToTrack.get, data),
+      title = buildText(Some(section.title), index, data).getOrElse(""),
+      shortName = buildText(section.shortName, index, data),
       fields = section.fields.map(copyField)
     )
   }
 
-  private def buildText(template: Option[String], index: Int, fieldToTrack: VariableInContext,
-    data: Map[String, String]): Option[String] = {
+  private def buildText(template: Option[String], index: Int, data: Map[String, String]): Option[String] = {
 
-    val fieldName = if (index == 1) fieldToTrack.field else s"${index - 1}_${fieldToTrack.field}"
-    val textToInsert = data.getOrElse(fieldName, "")
+    def evaluateTextExpression(str: String) = {
+      val field = str.replaceFirst("""\$\{""", "").replaceFirst("""\}""", "")
+      if (field.startsWith("n_")) { // "n_"  in the expression means nth instance a field in a repeating group
+        if (index == 1) { // the first element in a repeating group doesn't have an index
+          val fieldName = field.replaceFirst("n_", "")
+          data.getOrElse(fieldName, "")
+        } else {
+          val fieldName = field.replaceFirst("n_", s"${index - 1}_")
+          data.getOrElse(fieldName, "")
+        }
+      } else {
+        // depending on the specified form validation we might have an empty string
+        // in which case it means deleting the expression from the final text
+        data.getOrElse(field, "")
+      }
+    }
+
+    def getEvaluatedText(str: String) = {
+      val pattern = """.*(\$\{.*\}).*""".r
+      val expression = str match {
+        case pattern(txtExpr) => txtExpr
+        case _ => ""
+      }
+      val evaluatedText = evaluateTextExpression(expression)
+      str.replace(expression, evaluatedText)
+    }
 
     template match {
-      case Some(text) => Some(
-        text.replace("$t", textToInsert).replace("$n", index.toString)
-      )
-      case None => None
+      case Some(inputText) => Some(getEvaluatedText(inputText).replace("$n", index.toString))
+      case _ => None
     }
   }
 }

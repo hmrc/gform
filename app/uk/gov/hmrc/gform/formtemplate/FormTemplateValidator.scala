@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.formtemplate
 
 import cats.Monoid
+import play.api.libs.json.{ JsError, JsSuccess }
 import uk.gov.hmrc.gform.core.{ Invalid, Opt, Valid, ValidationResult }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel._
@@ -51,6 +52,21 @@ object FormTemplateValidator {
       case true => Valid
       case false => Invalid(s"Choice components doesn't have equal number of choices and help texts ${choiceFieldIdResult.keys.toList}")
     }
+  }
+
+  def validateRepeatingSectionFields(sectionList: List[Section]): ValidationResult = {
+    val results = sectionList.map { section =>
+      (section.repeatsMax, section.repeatsMin) match {
+        case (Some(repMax), Some(repMin)) if !repMax.equals(repMin) =>
+          Invalid(s"The repeatsMax and repeatsMin fields must be the same in a repeating section: repeatsMax=[$repMax], repeatsMin=[$repMin]")
+        case (Some(_), None) | (None, Some(_)) =>
+          val repMax = section.repeatsMax.getOrElse("")
+          val repMin = section.repeatsMin.getOrElse("")
+          Invalid(s"Both repeatsMax and repeatsMin fields must be provided in a repeating section: repeatsMax=[$repMax], repeatsMin=[$repMin]")
+        case _ => Valid
+      }
+    }
+    Monoid[ValidationResult].combineAll(results)
   }
 
   private def getMandatoryAndOptionalFields(section: Section): (Set[FieldId], Set[FieldId]) = {

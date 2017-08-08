@@ -34,7 +34,6 @@ class RouteEnvelopeRequestSpec extends Spec {
     )
 
     val writtenJsObject: JsObject = RouteEnvelopeRequest.format.writes(routeEnvelopeRequest)
-    println(Json.prettyPrint(writtenJsObject))
     jsObject shouldBe writtenJsObject
     RouteEnvelopeRequest.format.reads(jsObject) should be(JsSuccess(routeEnvelopeRequest))
   }
