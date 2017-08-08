@@ -98,6 +98,7 @@ object FormatParser {
     | positiveNumberFormat
     | positiveWholeNumberFormat
     | moneyFormat
+    | governmentIdFormat
   )
 
   lazy val numberFormat: Parser[TextFormat] = (
@@ -108,6 +109,11 @@ object FormatParser {
   lazy val positiveNumberFormat: Parser[TextFormat] = (
     "positiveNumber" ~ numberArgs ^^ { (loc, _, na) => TextFormat(PositiveNumber(maxWholeDigits = na._1, maxFractionalDigits = na._2, unit = na._3)) }
     | "positiveNumber" ^^ { (loc, _) => TextFormat(PositiveNumber()) }
+  )
+
+  lazy val governmentIdFormat: Parser[TextFormat] = (
+    "UTR" ^^ { (loc, _) => TextFormat(UTR) }
+    | "NINO" ^^ { (loc, _) => TextFormat(NINO) }
   )
 
   lazy val positiveWholeNumberFormat: Parser[TextFormat] = (
