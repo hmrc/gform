@@ -11,6 +11,4 @@ class PingSpec extends support.ITSpec {
       wsclient.GET(s"$baseUrl/ping/ping").futureValue.status shouldBe Status.OK
     }
   }
-
-  private lazy val baseUrl = s"http://localhost:${port}"
 }

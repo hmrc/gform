@@ -37,4 +37,6 @@ trait ITSpec extends ITSpecBase with BaseOneServerPerTest with /*TODO MongoSpecS
   private lazy val application = applicationModule.application
 
   implicit lazy val hc = HeaderCarrier()
+
+  lazy val baseUrl = s"http://localhost:${port}"
 }

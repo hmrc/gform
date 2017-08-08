@@ -72,6 +72,7 @@ class PlayComponentsModule(
     formModule.formController,
     submissionModule.submissionController,
     formTemplateModule.formTemplatesController,
+    configModule.configController,
     testOnlyModule.testOnlyController
   )
 

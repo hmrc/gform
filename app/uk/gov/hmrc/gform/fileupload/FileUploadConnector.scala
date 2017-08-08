@@ -54,7 +54,7 @@ class FileUploadConnector(config: Config, wSHttp: WSHttp, timeProvider: TimeProv
 
   private lazy val EnvelopeIdExtractor = "envelopes/([\\w\\d-]+)$".r.unanchored
   private val formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'")
-  private def envelopeExpiryDate = timeProvider.localDateTime().plusDays(config.expiryDays).format(formatter)
+  private def envelopeExpiryDate = timeProvider.localDateTime().plusDays(config.expiryDays.toLong).format(formatter)
 
   private def createEnvelopeIn(formTypeId: FormTemplateId) = Json.obj(
     "constraints" -> Json.obj(
