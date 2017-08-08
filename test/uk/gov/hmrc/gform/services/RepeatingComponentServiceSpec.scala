@@ -17,21 +17,21 @@
 package uk.gov.hmrc.gform.services
 
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.models._
+import uk.gov.hmrc.gform.formtemplate.RepeatingComponentService
+import uk.gov.hmrc.gform.sharedmodel.UserId
+import uk.gov.hmrc.gform.sharedmodel.form._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 import scala.collection.immutable.List
 
 class RepeatingComponentServiceSpec extends Spec {
 
   val basicFormTemplate = FormTemplate(
-    schemaId = None,
-    formTypeId = FormTypeId("JustAFormTypeId"),
+    _id = FormTemplateId("FRM001"),
     formName = "formName",
-    version = Version("-11"),
     description = "formTemplateDescription",
-    characterSet = "UTF-16",
     dmsSubmission = DmsSubmission("customerId", "classificationType", "businessArea"),
-    authConfig = AuthConfig(AuthModule("TEST"), None, RegimeId("TEST")),
+    authConfig = AuthConfig(AuthConfigModule("TEST"), None, RegimeId("TEST")),
     submitSuccessUrl = "http://somewhere-nice.net",
     submitErrorUrl = "http://somewhere-nasty.net",
     sections = Nil
@@ -40,17 +40,16 @@ class RepeatingComponentServiceSpec extends Spec {
   val testService = RepeatingComponentService
 
   val mFormData = FormData(
-    userId = UserId("userId"),
-    formTypeId = FormTypeId("formTypeId"),
-    version = Version("-11"),
-    characterSet = "EBCDIC",
     fields = Seq.empty
   )
 
   val form = Form(
     _id = FormId("forma"),
-    formData = mFormData,
-    envelopeId = EnvelopeId("envId")
+    envelopeId = EnvelopeId("envId"),
+    userId = UserId("user1"),
+    formTemplateId = FormTemplateId("FRM001"),
+    repeatingGroupStructure = None,
+    formData = mFormData
   )
 
   "getAllSections" should "return only sections in template when no repeating sections are defined" in {
@@ -93,7 +92,7 @@ class RepeatingComponentServiceSpec extends Spec {
       description = None,
       shortName = None,
       includeIf = None,
-      None, None, None,
+      None, None,
       fields = List(groupFieldValue)
     )
     val formTemplate = basicFormTemplate.copy(sections = List(section))
@@ -101,7 +100,7 @@ class RepeatingComponentServiceSpec extends Spec {
     testService.getAllSections(form, formTemplate) shouldBe List(section)
   }
 
-  it should "return no dynamically created sections when fieldToTrack in repeating group and no form data" in {
+  it should "return no dynamically created sections when field in repeatsMax expression in repeating group and no form data" in {
 
     val textFieldUno = FieldValue(
       id = FieldId("repeatingSectionDriver"),
@@ -143,7 +142,6 @@ class RepeatingComponentServiceSpec extends Spec {
       includeIf = None,
       repeatsMax = None,
       repeatsMin = None,
-      fieldToTrack = None,
       fields = List(groupFieldValue)
     )
 
@@ -164,9 +162,8 @@ class RepeatingComponentServiceSpec extends Spec {
       description = None,
       shortName = None,
       includeIf = None,
-      repeatsMax = Some(TextExpression(Constant("2"))),
-      repeatsMin = Some(TextExpression(Constant("1"))),
-      fieldToTrack = Some(VariableInContext("repeatingSectionDriver")),
+      repeatsMax = Some(TextExpression(FormCtx("repeatingSectionDriver"))),
+      repeatsMin = Some(TextExpression(FormCtx("repeatingSectionDriver"))),
       fields = List(textFieldDos)
     )
     val formTemplate = basicFormTemplate.copy(sections = List(section1, section2))
@@ -176,7 +173,7 @@ class RepeatingComponentServiceSpec extends Spec {
     testService.getAllSections(form, formTemplate) shouldBe expectedList
   }
 
-  it should "return dynamically created sections (title and shortName text built dynamically) when fieldToTrack in repeating group, and non-empty form data" in {
+  it should "return dynamically created sections (title and shortName text built dynamically) when field to track in repeating group, and non-empty form data" in {
 
     val textFieldUno = FieldValue(
       id = FieldId("repeatingSectionDriver"),
@@ -218,7 +215,6 @@ class RepeatingComponentServiceSpec extends Spec {
       includeIf = None,
       repeatsMax = None,
       repeatsMin = None,
-      fieldToTrack = None,
       fields = List(groupFieldValue)
     )
 
@@ -235,13 +231,12 @@ class RepeatingComponentServiceSpec extends Spec {
     )
 
     val section2 = Section(
-      title = "$t, $n",
+      title = "${n_repeatingSectionDriver}, $n",
       description = None,
-      shortName = Some("$n, $t"),
+      shortName = Some("$n, ${n_repeatingSectionDriver}"),
       includeIf = None,
-      repeatsMax = Some(TextExpression(Constant("2"))),
-      repeatsMin = Some(TextExpression(Constant("1"))),
-      fieldToTrack = Some(VariableInContext("repeatingSectionDriver")),
+      repeatsMax = Some(TextExpression(FormCtx("repeatingSectionDriver"))),
+      repeatsMin = Some(TextExpression(FormCtx("repeatingSectionDriver"))),
       fields = List(textFieldDos)
     )
     val formTemplate = basicFormTemplate.copy(sections = List(section1, section2))
@@ -264,7 +259,7 @@ class RepeatingComponentServiceSpec extends Spec {
     testService.getAllSections(newForm, formTemplate) shouldBe expectedList
   }
 
-  it should "return a dynamically created section when fieldToTrack in a NON-repeating group)" in {
+  it should "return a dynamically created section when field to track in a NON-repeating group" in {
 
     val textFieldUno = FieldValue(
       id = FieldId("repeatingSectionDriver"),
@@ -306,7 +301,6 @@ class RepeatingComponentServiceSpec extends Spec {
       includeIf = None,
       repeatsMax = None,
       repeatsMin = None,
-      fieldToTrack = None,
       fields = List(groupFieldValue)
     )
 
@@ -327,9 +321,8 @@ class RepeatingComponentServiceSpec extends Spec {
       description = None,
       shortName = Some("shortName $n"),
       includeIf = None,
-      repeatsMax = Some(TextExpression(Constant("2"))),
-      repeatsMin = Some(TextExpression(Constant("1"))),
-      fieldToTrack = Some(VariableInContext("repeatingSectionDriver")),
+      repeatsMax = Some(TextExpression(FormCtx("repeatingSectionDriver"))),
+      repeatsMin = Some(TextExpression(FormCtx("repeatingSectionDriver"))),
       fields = List(textFieldDos)
     )
     val formTemplate = basicFormTemplate.copy(sections = List(section1, section2))
@@ -339,13 +332,14 @@ class RepeatingComponentServiceSpec extends Spec {
     val expectedList = List(section1, sectionR)
 
     val newFormData = mFormData.copy(fields = Seq(
+      FormField(FieldId("repeatingSectionDriver"), "1"),
       FormField(FieldId("1_DOS"), "EEITT-866")
     ))
     val newForm = form.copy(formData = newFormData)
     testService.getAllSections(newForm, formTemplate) shouldBe expectedList
   }
 
-  it should "return dynamically created sections (title and shortName text built dynamically) when fieldToTrack in a NON-repeating group, with form data" in {
+  it should "return dynamically created sections (title and shortName text built dynamically) when field to track in a NON-repeating group, with form data" in {
 
     val textFieldUno = FieldValue(
       id = FieldId("repeatingSectionDriver"),
@@ -387,7 +381,6 @@ class RepeatingComponentServiceSpec extends Spec {
       includeIf = None,
       repeatsMax = None,
       repeatsMin = None,
-      fieldToTrack = None,
       fields = List(groupFieldValue)
     )
 
@@ -410,7 +403,6 @@ class RepeatingComponentServiceSpec extends Spec {
       includeIf = None,
       repeatsMax = Some(TextExpression(Constant("2"))),
       repeatsMin = Some(TextExpression(Constant("1"))),
-      fieldToTrack = Some(VariableInContext("repeatingSectionDriver")),
       fields = List(textFieldDos)
     )
     val formTemplate = basicFormTemplate.copy(sections = List(section1, section2))
@@ -423,7 +415,7 @@ class RepeatingComponentServiceSpec extends Spec {
 
     val newFormData = mFormData.copy(fields = Seq(
       FormField(FieldId("1_DOS"), "@#~"),
-      FormField(FieldId("2_DOS"), "--")
+      FormField(FieldId("2_DOS"), "!@£$%&*#")
     ))
     val newForm = form.copy(formData = newFormData)
     testService.getAllSections(newForm, formTemplate) shouldBe expectedList

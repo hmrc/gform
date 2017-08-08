@@ -87,7 +87,7 @@ class SubmissionServiceSpec extends Spec {
       description = None,
       shortName = None,
       includeIf = None,
-      None, None, None,
+      None, None,
       fields = List(groupFieldValue)
     )
 
