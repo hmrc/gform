@@ -107,6 +107,27 @@ trait ExampleFieldValue { dependecies: ExampleFieldId =>
     None,
     None
   )
+
+  def `group - type` = Group(
+    fields = List(`fieldValue - firstName`),
+    orientation = Horizontal,
+    repeatsMax = None,
+    repeatsMin = None,
+    repeatLabel = None,
+    repeatAddAnotherText = None
+  )
+
+  def `fieldValue - group` = FieldValue(
+    id = FieldId("GroupFieldValueId"),
+    `type` = `group - type`,
+    label = "group FieldValue label",
+    helpText = None,
+    shortName = None,
+    mandatory = true,
+    editable = false,
+    submissible = true,
+    errorMessage = None
+  )
 }
 
 trait ExampleSection { dependecies: ExampleFieldId with ExampleFieldValue =>
@@ -130,6 +151,18 @@ trait ExampleSection { dependecies: ExampleFieldId with ExampleFieldValue =>
       `fieldValue - iptRegNum`
     )
   )
+
+  def `repeating section` = Section(
+    "Repeating section",
+    None, None, None,
+    repeatsMax = Some(TextExpression(FormCtx(`fieldId - firstName`.value))),
+    repeatsMin = Some(TextExpression(FormCtx(`fieldId - firstName`.value))),
+    List(
+      `fieldValue - surname`
+    )
+  )
+
+  def `section - group` = `section - about you`.copy(fields = List(`fieldValue - group`))
 
   def allSections = List(
     `section - about you`,
