@@ -84,6 +84,8 @@ case object UkBankAccountNumber extends TextConstraint
 case object UkSortCode extends TextConstraint
 case object UTR extends TextConstraint
 case object NINO extends TextConstraint
+case object TelephoneNumber extends TextConstraint
+case object Email extends TextConstraint
 
 object TextConstraint {
   val defaultWholeDigits = 11
