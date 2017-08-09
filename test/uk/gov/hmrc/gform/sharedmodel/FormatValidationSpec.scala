@@ -27,10 +27,10 @@ class FormatValidationSpec extends Spec {
   it should "return Sterling" in createTest("sterling", Sterling)
   it should "return ukBankAccountNumber" in createTest("ukBankAccountNumber", UkBankAccountNumber)
   it should "return ukSortCode" in createTest("ukSortCode", UkSortCode)
+  it should "return telephoneNumber" in createTest("telephoneNumber", TelephoneNumber)
+  it should "return email" in createTest("email", Email)
   it should "return utr" in createTest("UTR", UTR)
   it should "return nino" in createTest("NINO", NINO)
-  "Text Constraint" should "return telephoneNumber" in createTest("telephoneNumber", TelephoneNumber)
-  "Text Constraint" should "return email" in createTest("email", Email)
 
   def createTest(format: String, constraint: TextConstraint) = {
       val json: JsValue = makeJson(format)
