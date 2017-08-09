@@ -47,12 +47,78 @@ class FormatValidationSpec extends Spec {
       ))
     }
 
+  "Text Constraint" should "return ukBankAccountNumber" in {
+    val json: JsValue = makeJson("ukBankAccountNumber")
+    reads.reads(json) shouldBe JsSuccess(FieldValue(
+      id = FieldId(id),
+      `type` = Text(UkBankAccountNumber, Constant(""),
+        false),
+      label = label,
+      helpText = None,
+      shortName = None,
+      mandatory = true,
+      editable = true,
+      submissible = true,
+      errorMessage = None,
+      presentationHint = None
+    ))
+  }
+
+  "Text Constraint" should "return ukSortCode" in {
+    val json: JsValue = makeJson("ukSortCode")
+    reads.reads(json) shouldBe JsSuccess(FieldValue(
+      id = FieldId(id),
+      `type` = Text(UkSortCode, Constant(""),
+        false),
+      label = label,
+      helpText = None,
+      shortName = None,
+      mandatory = true,
+      editable = true,
+      submissible = true,
+      errorMessage = None,
+      presentationHint = None
+    ))
+  }
+  "Text Constraint" should "return telephoneNumber" in {
+    val json: JsValue = makeJson("telephoneNumber")
+    reads.reads(json) shouldBe JsSuccess(FieldValue(
+      id = FieldId(id),
+      `type` = Text(TelephoneNumber, Constant(""),
+        false),
+      label = label,
+      helpText = None,
+      shortName = None,
+      mandatory = true,
+      editable = true,
+      submissible = true,
+      errorMessage = None,
+      presentationHint = None
+    ))
+  }
+  "Text Constraint" should "return email" in {
+    val json: JsValue = makeJson("email")
+    reads.reads(json) shouldBe JsSuccess(FieldValue(
+      id = FieldId(id),
+      `type` = Text(Email, Constant(""),
+        false),
+      label = label,
+      helpText = None,
+      shortName = None,
+      mandatory = true,
+      editable = true,
+      submissible = true,
+      errorMessage = None,
+      presentationHint = None
+    ))
+  }
+
   private def makeJson(format: String) = Json.parse(getJson(format))
 
   lazy val id = """alcIngDescription"""
   lazy val label = """Alcohol Ingredients"""
 
-  def getJson(format: String): String =
+  def getJson(format: String): String = {
     s"""{
          "id": "$id",
          "type": "text",
@@ -60,5 +126,6 @@ class FormatValidationSpec extends Spec {
          "label": "$label"
         }
       """
-  val reads: Reads[FieldValue] = implicitly[Reads[FieldValue]]
+  }
+
 }
