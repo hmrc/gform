@@ -98,6 +98,7 @@ object FormatParser {
     | positiveNumberFormat
     | positiveWholeNumberFormat
     | moneyFormat
+    | contactFormat
     | governmentIdFormat
   )
 
