@@ -21,7 +21,7 @@ import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.sharedmodel._
 import BasicParsers._
 import uk.gov.hmrc.gform.formtemplate._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Email, TelephoneNumber, _ }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 object FormatParser {
 
