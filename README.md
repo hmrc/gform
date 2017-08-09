@@ -15,7 +15,9 @@ Upload eeitt test data:
         
 Aside from a local service, the backend needs to be accessed through the frontend proxy, to try this locally:
 
-    curl http://localhost:9195/summary/test-only/proxy-to-gform/gform/schemas -H "Content-Type: application/json" -H "X-requested-with: foo" -d '@sample-data/schema.json'
+    curl -s http://localhost:9195/submissions/test-only/proxy-to-gform/gform/formtemplates -H "Content-Type: application/json" -H "X-requested-with: foo" -d '@sample-data/template-aaa999.json'
+    
+(Note that you will need to have configured your local gform-frontend for test only routes and CSRF bypass, as in for example app-config-dev
 
 ### License
 
