@@ -56,21 +56,21 @@ class FormatValidationSpec extends Spec {
   }
 
   def createTest(format: String, constraint: TextConstraint) = {
-      val json: JsValue = makeJson(format)
-      reads.reads(json) shouldBe JsSuccess(FieldValue(
-        id = FieldId(id),
-        `type` = Text(constraint, Constant(""),
-          false),
-        label = label,
-        helpText = None,
-        shortName = None,
-        mandatory = true,
-        editable = true,
-        submissible = true,
-        errorMessage = None,
-        presentationHint = None
-      ))
-    }
+    val json: JsValue = makeJson(format)
+    reads.reads(json) shouldBe JsSuccess(FieldValue(
+      id = FieldId(id),
+      `type` = Text(constraint, Constant(""),
+        false),
+      label = label,
+      helpText = None,
+      shortName = None,
+      mandatory = true,
+      editable = true,
+      submissible = true,
+      errorMessage = None,
+      presentationHint = None
+    ))
+  }
 
   private def makeJson(format: String) = Json.parse(getJson(format))
 
