@@ -102,6 +102,11 @@ object FormatParser {
     | governmentIdFormat
   )
 
+  lazy val basicFormat: Parser[TextFormat] = (
+    "shortText" ^^ {(loc, _) => TextFormat(ShortText)}
+    | "text" ^^ { (loc, _) => TextFormat(BasicText)}
+    | "text(" ~ positiveInteger ~ "," ~ positiveInteger ~ ")" ^^ { (loc, _, min, _, max, _) => TextFormat(TextWithRestrictions(min, max))}
+    )
   lazy val contactFormat: Parser[TextFormat] = (
     "telephoneNumber" ^^ { (loc, _) => TextFormat(TelephoneNumber) }
     | "email" ^^ { (loc, _) => TextFormat(Email) }
