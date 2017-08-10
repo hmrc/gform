@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel
 
 import play.api.libs.json._
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyText, FieldValue, Text }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyText, FieldValue, ShortText, Text }
 
 class JsonParseTestValue extends Spec {
 
@@ -76,7 +76,7 @@ class JsonParseTestValue extends Spec {
       val jsResult = implicitly[Reads[FieldValue]].reads(Json.parse(startOfJson + snippet))
       jsResult shouldBe a[JsSuccess[_]]
       jsResult.map(fv => fv.`type` match {
-        case Text(constraint, _, _) => constraint should equal(AnyText)
+        case Text(constraint, _, _) => constraint should equal(ShortText)
         case a @ _ => fail(s"expected a Text, got $a")
       })
     }

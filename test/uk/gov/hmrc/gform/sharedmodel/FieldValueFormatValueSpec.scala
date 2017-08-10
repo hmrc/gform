@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel
 
 import play.api.libs.json.{ Reads, _ }
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyText, _ }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ ShortText, _ }
 
 class FieldValueFormatValueSpec extends Spec {
 
@@ -31,7 +31,7 @@ class FieldValueFormatValueSpec extends Spec {
           }
       """
     )
-    fieldValue should beJsSuccess(FieldValue(FieldId("sum"), Text(AnyText, Add(FormCtx("amountA"), FormCtx("amountB")), false), "Label", None, None, true, true, true, None))
+    fieldValue should beJsSuccess(FieldValue(FieldId("sum"), Text(ShortText, Add(FormCtx("amountA"), FormCtx("amountB")), false), "Label", None, None, true, true, true, None))
 
   }
 
@@ -45,7 +45,7 @@ class FieldValueFormatValueSpec extends Spec {
           }
       """
     )
-    fieldValue should beJsSuccess(FieldValue(FieldId("constant"), Text(AnyText, Constant("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_ ,"), false), "Label", None, None, true, true, true, None))
+    fieldValue should beJsSuccess(FieldValue(FieldId("constant"), Text(ShortText, Constant("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_ ,"), false), "Label", None, None, true, true, true, None))
 
   }
 
