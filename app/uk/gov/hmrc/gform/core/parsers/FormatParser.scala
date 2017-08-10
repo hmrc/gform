@@ -100,6 +100,7 @@ object FormatParser {
     | moneyFormat
     | contactFormat
     | governmentIdFormat
+    | basicFormat
   )
 
   lazy val basicFormat: Parser[TextFormat] = (
