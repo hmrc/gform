@@ -121,10 +121,10 @@ class FieldValueMaker(json: JsValue) {
         case (Some(TextFormat(f)), Some(TextExpression(expr)), IsTotal(TotalNo))   => Text(f, expr, total = false).asRight
         case (Some(TextFormat(f)), None,                       IsTotal(TotalYes))  => Text(f, Constant(""), total = true).asRight
         case (Some(TextFormat(f)), None,                       IsTotal(TotalNo))   => Text(f, Constant(""), total = false).asRight
-        case (None,                Some(TextExpression(expr)), IsTotal(TotalYes))  => Text(AnyText, expr, total = true).asRight
-        case (None,                Some(TextExpression(expr)), IsTotal(TotalNo))   => Text(AnyText, expr, total = false).asRight
-        case (None,                None,                       IsTotal(TotalYes))  => Text(AnyText, Constant(""), total = true).asRight
-        case (None,                None,                       IsTotal(TotalNo))   => Text(AnyText, Constant(""), total = false).asRight
+        case (None,                Some(TextExpression(expr)), IsTotal(TotalYes))  => Text(ShortText, expr, total = true).asRight
+        case (None,                Some(TextExpression(expr)), IsTotal(TotalNo))   => Text(ShortText, expr, total = false).asRight
+        case (None,                None,                       IsTotal(TotalYes))  => Text(ShortText, Constant(""), total = true).asRight
+        case (None,                None,                       IsTotal(TotalNo))   => Text(ShortText, Constant(""), total = false).asRight
         case (Some(invalidFormat), Some(invalidValue),         invalidTotal)       => UnexpectedState(
           s"""|Unsupported type of format and value for text field
               |Id: $id
