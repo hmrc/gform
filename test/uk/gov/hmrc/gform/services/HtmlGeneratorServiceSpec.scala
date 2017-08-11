@@ -21,7 +21,7 @@ import uk.gov.hmrc.gform.Spec
 import org.jsoup.Jsoup
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.AnyText
 import uk.gov.hmrc.gform.pdfgenerator.HtmlGeneratorService
-import uk.gov.hmrc.gform.sharedmodel.form.FormField
+import uk.gov.hmrc.gform.sharedmodel.form.{ FormData, FormField }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.submission.SectionFormField
 
@@ -30,9 +30,10 @@ import scala.collection.immutable.List
 class HtmlGeneratorServiceSpec extends Spec {
 
   val testService = new HtmlGeneratorService {}
+  val formData = FormData(Seq.empty)
 
   "HtmlGeneratorService.generateDocumentHTML" should "return HTML containing the form title" in {
-    val html = testService.generateDocumentHTML(Nil, "FORM TITLE")
+    val html = testService.generateDocumentHTML(Nil, "FORM TITLE", formData)
     val doc = Jsoup.parse(html)
 
     doc.getElementsByTag("title").html.equalsIgnoreCase("FORM TITLE") shouldBe true
@@ -41,7 +42,7 @@ class HtmlGeneratorServiceSpec extends Spec {
 
   it should "return HTML containing section title" in {
     val formFields = List(SectionFormField("SECTION TITLE", Nil))
-    val html = testService.generateDocumentHTML(formFields, "FORM TITLE")
+    val html = testService.generateDocumentHTML(formFields, "FORM TITLE", formData)
     val doc = Jsoup.parse(html)
 
     doc.getElementsByTag("th").html.equalsIgnoreCase("SECTION TITLE") shouldBe true
@@ -67,7 +68,7 @@ class HtmlGeneratorServiceSpec extends Spec {
     )
 
     val formFields = List(SectionFormField("SECTION TITLE", List((formList, fieldValue))))
-    val html = testService.generateDocumentHTML(formFields, "FORM TITLE")
+    val html = testService.generateDocumentHTML(formFields, "FORM TITLE", formData)
     val doc = Jsoup.parse(html)
 
     doc.getElementsByTag("td").last.html.equalsIgnoreCase("01 January 1970") shouldBe true
@@ -97,7 +98,7 @@ class HtmlGeneratorServiceSpec extends Spec {
     )
 
     val formFields = List(SectionFormField("SECTION TITLE", List((formList, fieldValue))))
-    val html = testService.generateDocumentHTML(formFields, "FORM TITLE")
+    val html = testService.generateDocumentHTML(formFields, "FORM TITLE", formData)
     val doc = Jsoup.parse(html)
 
     doc.getElementsByTag("td").last.html.equalsIgnoreCase("A1<br>A2<br>A3<br>A4<br>PC<br>") shouldBe true
@@ -121,7 +122,7 @@ class HtmlGeneratorServiceSpec extends Spec {
     )
 
     val formFields = List(SectionFormField("SECTION TITLE", List((formList, fieldValue))))
-    val html = testService.generateDocumentHTML(formFields, "FORM TITLE")
+    val html = testService.generateDocumentHTML(formFields, "FORM TITLE", formData)
     val doc = Jsoup.parse(html)
 
     doc.getElementsByTag("td").last.html.equalsIgnoreCase("One<br>Three") shouldBe true
@@ -145,9 +146,36 @@ class HtmlGeneratorServiceSpec extends Spec {
     )
 
     val formFields = List(SectionFormField("SECTION TITLE", List((formList, fieldValue))))
-    val html = testService.generateDocumentHTML(formFields, "FORM TITLE")
+    val html = testService.generateDocumentHTML(formFields, "FORM TITLE", formData)
     val doc = Jsoup.parse(html)
 
     doc.getElementsByTag("td").last.html.equalsIgnoreCase("Hello") shouldBe true
+  }
+
+  it should "generate Declaration section if any of the fields are present" in {
+    val thisFormData = FormData(
+      fields = Seq(
+        FormField(FieldId("declaration-firstname"), "FIRSTNAME"),
+        FormField(FieldId("declaration-lastname"), "SURNAME"),
+        FormField(FieldId("declaration-status"), "CEO")
+      )
+    )
+    val html = testService.generateDocumentHTML(Nil, "FORM TITLE", thisFormData)
+    val doc = Jsoup.parse(html)
+
+    doc.getElementsContainingOwnText("Declaration").size() shouldBe 1
+    doc.getElementsContainingOwnText("FIRSTNAME").size() shouldBe 1
+    doc.getElementsContainingOwnText("SURNAME").size() shouldBe 1
+    doc.getElementsContainingOwnText("CEO").size() shouldBe 1
+  }
+
+  it should "NOT generate Declaration section if no declaration fields are present" in {
+    val html = testService.generateDocumentHTML(Nil, "FORM TITLE", formData)
+    val doc = Jsoup.parse(html)
+
+    doc.getElementsContainingOwnText("Declaration").size() shouldBe 0
+    doc.getElementsContainingOwnText("FIRSTNAME").size() shouldBe 0
+    doc.getElementsContainingOwnText("SURNAME").size() shouldBe 0
+    doc.getElementsContainingOwnText("CEO").size() shouldBe 0
   }
 }

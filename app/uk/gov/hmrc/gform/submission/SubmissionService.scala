@@ -52,10 +52,10 @@ class SubmissionService(
     formName: String
   )(implicit hc: HeaderCarrier): Future[SubmissionAndPdf] = {
 
-    val html = HtmlGeneratorService.generateDocumentHTML(sectionFormFields, formName)
+    val html = HtmlGeneratorService.generateDocumentHTML(sectionFormFields, formName, form.formData)
 
     pdfGeneratorService.generatePDF(html).map { pdf =>
-
+      
       /*
       val path = java.nio.file.Paths.get("confirmation.pdf")
       val out = java.nio.file.Files.newOutputStream(path)
