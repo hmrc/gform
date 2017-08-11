@@ -1,9 +1,7 @@
 {
-  "formTypeId": "GD95",
+  "_id": "GD95",
   "formName": "Gaming duty return",
-  "version": "0.1.0",
   "description": "Fill in your gaming duty return form online",
-  "characterSet": "UTF-8",
   "dmsSubmission": {
     "customerId": "nino",
     "classificationType": "BT-NRU-Environmental",

@@ -1,9 +1,7 @@
 {
-  "formTypeId": "LT100",
+  "_id": "LT100",
   "formName": "Landfill Tax return",
-  "version": "0.1.0",
   "description": "Fill in your landfill tax return form online",
-  "characterSet": "UTF-8",
   "dmsSubmission": {
     "customerId": "nino",
     "classificationType": "BT-NRU-Environmental",

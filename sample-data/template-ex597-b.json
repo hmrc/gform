@@ -1,9 +1,7 @@
 {
-  "formTypeId": "EX597",
+  "_id": "EX597",
   "formName": "Air Passenger Duty",
   "description": "",
-  "version": "1.0.0",
-  "characterSet": "UTF-8",
   "dmsSubmission": {
     "customerId": "nino",
     "classificationType": "BT-NRU-Environmental",

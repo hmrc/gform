@@ -1,9 +1,7 @@
 {
-  "formTypeId": "CHOICE",
+  "_id": "CHOICE",
   "formName": "Choice component",
-  "version": "1.0.0",
   "description": "Sample choice configuration",
-  "characterSet": "UTF-8",
   "dmsSubmission": {
     "customerId": "nino",
     "classificationType": "BT-NRU-Environmental",

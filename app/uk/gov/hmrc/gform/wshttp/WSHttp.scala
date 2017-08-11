@@ -16,15 +16,16 @@
 
 package uk.gov.hmrc.gform.wshttp
 
-import java.net.URL
+import java.nio.file.Path
 
+import akka.NotUsed
+import akka.stream.IOResult
+import akka.stream.scaladsl.FileIO
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
-import play.api.Play
 import play.api.http.HttpVerbs.{ POST => POST_VERB }
-import play.api.libs.ws.{ WS, WSAPI, WSRequest }
 import play.api.mvc.MultipartFormData.FilePart
-import uk.gov.hmrc.play.config.AppName
+import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.play.http.hooks.HttpHook
 import uk.gov.hmrc.play.http.ws.WSHttpResponse
 import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpReads }
@@ -41,7 +42,7 @@ class WSHttp(httpHooks: Seq[HttpHook] = Nil) extends uk.gov.hmrc.play.http.ws.WS
     fileName: String,
     body: ByteString,
     headers: Seq[(String, String)],
-    contentType: String
+    contentType: String //TODO: change type to ContentType
   )(implicit
     hc: HeaderCarrier,
     rds: HttpReads[O]): Future[O] = {

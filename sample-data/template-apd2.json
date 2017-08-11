@@ -1,9 +1,7 @@
 {
-  "formTypeId": "APD2",
+  "_id": "APD2",
   "formName": "Air passenger duty duty return",
-  "version": "0.1.0",
   "description": "Fill in your air passenger duty return form online",
-  "characterSet": "UTF-8",
   "dmsSubmission": {
     "customerId": "nino",
     "classificationType": "BT-NRU-Environmental",

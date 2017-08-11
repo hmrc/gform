@@ -1,9 +1,7 @@
 {
-  "formTypeId": "GROUP",
+  "_id": "GROUP",
   "formName": "Group Component Testing | Yswiriant Ffurflen Dreth Premiwm",
-  "version": "1.0.0",
   "description": "Group component with two fields | Llenwch eich ffurflen dreth premiwm yswiriant ar-lein",
-  "characterSet": "UTF-8",
   "dmsSubmission": {
     "customerId": "nino",
     "classificationType": "BT-NRU-Environmental",

@@ -1,9 +1,7 @@
 {
-  "formTypeId": "INFO",
+  "_id": "INFO",
   "formName": "GTest for info component",
-  "version": "1.0.0",
   "description": "Info component",
-  "characterSet": "UTF-8",
   "dmsSubmission": {
     "customerId": "nino",
     "classificationType": "BT-NRU-Environmental",

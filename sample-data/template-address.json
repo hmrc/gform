@@ -1,9 +1,7 @@
 {
-  "formTypeId": "ADDRESS",
+  "_id": "ADDRESS",
   "formName": "Adddres component",
-  "version": "1.0.0",
   "description": "Sample address configuration",
-  "characterSet": "UTF-8",
   "dmsSubmission": {
     "customerId": "nino",
     "classificationType": "BT-NRU-Environmental",

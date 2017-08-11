@@ -1,9 +1,7 @@
 {
-  "formTypeId": "IPT100",
+  "_id": "IPT100",
   "formName": "Insurance Premium Tax return",
-  "version": "0.1.0",
   "description": "Fill in your insurance premium tax return form online",
-  "characterSet": "UTF-8",
   "dmsSubmission": {
     "customerId": "nino",
     "classificationType": "BT-NRU-Environmental",
