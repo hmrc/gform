@@ -1,9 +1,7 @@
 {
-  "formTypeId": "BD600",
+  "_id": "BD600",
   "formName": "Promoter's monthly Lottery Duty return",
-  "version": "0.1.0",
   "description": "Fill in your promoter's monthly lottery duty return form online",
-  "characterSet": "UTF-8",
   "dmsSubmission": {
     "customerId": "nino",
     "classificationType": "BT-NRU-Environmental",

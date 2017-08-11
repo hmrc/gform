@@ -1,9 +1,7 @@
 {
-  "formTypeId": "CE930",
+  "_id": "CE930",
   "formName": "Gas for use as road fuel",
-  "version": "1.0.0",
   "description": "Fill in your gas for use as road fuel return form online",
-  "characterSet": "UTF-8",
   "dmsSubmission": {
     "customerId": "nino",
     "classificationType": "BT-NRU-Environmental",

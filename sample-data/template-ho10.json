@@ -1,9 +1,7 @@
 {
-  "formTypeId": "HO10",
+  "_id": "HO10",
   "formName": "Hydrocarbon oils",
   "description": "",
-  "version": "1.0.0",
-  "characterSet": "UTF-8",
   "dmsSubmission": {
     "customerId": "nino",
     "classificationType": "BT-NRU-Environmental",

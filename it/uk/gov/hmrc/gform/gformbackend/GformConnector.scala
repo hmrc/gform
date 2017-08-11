@@ -16,8 +16,10 @@
 
 package uk.gov.hmrc.gform.gformbackend
 
+import akka.util.ByteString
+import play.api.libs.json.JsValue
 import uk.gov.hmrc.gform.sharedmodel.UserId
-import uk.gov.hmrc.gform.sharedmodel.config.ExposedConfig
+import uk.gov.hmrc.gform.sharedmodel.config.{ContentType, ExposedConfig}
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{FormTemplate, FormTemplateId, SectionNumber}
 import uk.gov.hmrc.gform.wshttp.WSHttp
@@ -70,6 +72,11 @@ class GformConnector(ws: WSHttp, baseUrl: String) {
 
   /******formTemplate*******/
 
+  def upsertTemplate(template: JsValue)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] = {
+    ws.POST[JsValue, HttpResponse](s"$baseUrl/formtemplates", template, Seq("Content-Type" -> ContentType.`application/json`.value))
+      .map(_ => ())
+  }
+
   def getFormTemplate(formTemplateId: FormTemplateId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[FormTemplate] = {
     ws.GET[FormTemplate](s"$baseUrl/formtemplates/${formTemplateId.value}")
   }
@@ -79,6 +86,8 @@ class GformConnector(ws: WSHttp, baseUrl: String) {
     ws.GET[ExposedConfig](s"$baseUrl/exposed-config")
   }
 
+  import scala.io.Source
+  def fileToByteStr(filename : String) : ByteString = ByteString(Source.fromFile(filename).mkString)
   //TODO other formTemplate endpoints
   //TODO move this file to gform and make it's origin there
 }

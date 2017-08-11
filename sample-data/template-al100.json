@@ -1,9 +1,7 @@
 {
-  "formTypeId": "AL100",
+  "_id": "AL100",
   "formName": "Aggregates Levy return",
-  "version": "0.1.0",
   "description": "Fill in your aggregates levy return form online",
-  "characterSet": "UTF-8",
   "dmsSubmission": {
     "customerId": "nino",
     "classificationType": "BT-NRU-Environmental",

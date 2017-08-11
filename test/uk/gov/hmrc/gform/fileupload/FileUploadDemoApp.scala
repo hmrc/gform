@@ -33,7 +33,7 @@ import scala.concurrent.duration.Duration
 object FileUploadDemoApp extends App {
 
   val config = FUConfig(
-//    fileUploadBaseUrl = "http://localhost:8898",
+    //    fileUploadBaseUrl = "http://localhost:8898",
     fileUploadBaseUrl = "http://localhost:9195/submissions/test-only/proxy-to-file-upload",
     fileUploadFrontendBaseUrl = "http://localhost:8899",
     expiryDays = 30,

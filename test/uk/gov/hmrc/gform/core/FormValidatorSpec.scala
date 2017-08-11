@@ -54,7 +54,7 @@ class FormValidatorSpec extends Spec {
 
     val formReq =
       """|{
-         |  "formTypeId": "IPT100",
+         |  "formTemplateId": "IPT100",
          |  "version": "0.1.0",
          |  "characterSet": "UTF-8",
          |  "fields": [

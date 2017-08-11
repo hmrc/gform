@@ -1,10 +1,7 @@
 {
-  "schemaId": "http://hmrc.gov.uk/jsonschema/gf-formtemplate#",
-  "formTypeId": "exprtest",
+  "_id": "exprtest",
   "formName": "Insurance Premium Tax Return | Yswiriant Ffurflen Dreth Premiwm",
-  "version": "0.3.0",
   "description": "Fill in your insurance premium tax return form online | Llenwch eich ffurflen dreth premiwm yswiriant ar-lein",
-  "characterSet": "UTF-8",
   "dmsSubmission": {
     "customerId": "nino",
     "classificationType": "BT-NRU-Environmental",

@@ -1,9 +1,7 @@
 {
-  "formTypeId": "BD510",
+  "_id": "BD510",
   "formName": "Promoter's monthly Bingo Duty return",
-  "version": "0.1.0",
   "description": "Fill in your bingo duty return form online",
-  "characterSet": "UTF-8",
   "dmsSubmission": {
     "customerId": "nino",
     "classificationType": "BT-NRU-Environmental",

@@ -1,9 +1,7 @@
 {
-  "formTypeId": "GD94",
+  "_id": "GD94",
   "formName": "Gaming duty payment on account",
-  "version": "0.1.0",
   "description": "Fill in your gaming duty payment on account form online",
-  "characterSet": "UTF-8",
   "dmsSubmission": {
     "customerId": "nino",
     "classificationType": "BT-NRU-Environmental",
