@@ -30,10 +30,11 @@ import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 
-object DemoApp extends App {
+object FileUploadDemoApp extends App {
 
   val config = FUConfig(
-    fileUploadBaseUrl = "http://localhost:8898",
+//    fileUploadBaseUrl = "http://localhost:8898",
+    fileUploadBaseUrl = "http://localhost:9195/submissions/test-only/proxy-to-file-upload",
     fileUploadFrontendBaseUrl = "http://localhost:8899",
     expiryDays = 30,
     maxSize = "20MB",
@@ -63,12 +64,12 @@ object DemoApp extends App {
   val result = for {
   // format: OFF
     envelopeId <- fileUploadService.createEnvelope(FormTemplateId("testFormTypeId"))
-    _          <- fuf.upload(envelopeId, FileId("README.md"), "README.md", fileBody, ContentType.`text/plain`)
+//    _          <- fuf.upload(envelopeId, FileId("README.md"), "README.md", fileBody, ContentType.`text/plain`)
 
-    x = println(s"envelope created: $envelopeId")
-    _ = println(s"file uploaded: $envelopeId")
+    _ = println(s"envelope created: $envelopeId")
     // format: ON
   } yield ()
 
   Await.result(result, Duration.Inf)
+  http.stop()
 }
