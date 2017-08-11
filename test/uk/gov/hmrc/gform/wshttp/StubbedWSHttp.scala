@@ -45,4 +45,6 @@ object TestWSHttp extends WSHttp {
   private implicit lazy val s: ActorSystem = ActorSystem()
   private implicit lazy val mat: ActorMaterializer = ActorMaterializer()
   private lazy val ws = AhcWSClient()(mat)
+
+  def stop() = s.terminate()
 }
