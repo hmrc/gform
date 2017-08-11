@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.pdfgenerator
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import play.twirl.api.Html
-import uk.gov.hmrc.gform.sharedmodel.form.FormField
+import uk.gov.hmrc.gform.sharedmodel.form.{ FormData, FormField }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Address, Choice, Date, FieldValue }
 import uk.gov.hmrc.gform.submission.SectionFormField
 
@@ -28,15 +28,16 @@ import scala.collection.immutable.List
 object HtmlGeneratorService extends HtmlGeneratorService {}
 
 trait HtmlGeneratorService {
-  def generateDocumentHTML(sectionFormFields: List[SectionFormField], formName: String): String = {
-    val sectionsHtml = sectionFormFields.map(generateSectionHtml(_))
-    uk.gov.hmrc.gform.views.html.pdfGeneration.document(getEnglishText(formName), sectionsHtml).body
+
+  def generateDocumentHTML(sectionFormFields: List[SectionFormField], formName: String, formData: FormData): String = {
+    val sectionsHtml = sectionFormFields.map(generateSectionHtml)
+    val declarationHtml = generateDeclarationHTML(formData)
+    val html = sectionsHtml ++ declarationHtml
+    uk.gov.hmrc.gform.views.html.pdfGeneration.document(getEnglishText(formName), html).body
   }
 
   private def generateSectionHtml(section: SectionFormField): Html = {
-    val elementsHtml = section.fields.filter { case (_, fieldValue) => fieldValue.submissible }.map {
-      generateElementHtml(_)
-    }
+    val elementsHtml = section.fields.filter { case (_, fieldValue) => fieldValue.submissible }.map(generateElementHtml)
     uk.gov.hmrc.gform.views.html.pdfGeneration.section(getEnglishText(section.title), elementsHtml)
   }
 
@@ -80,5 +81,29 @@ trait HtmlGeneratorService {
 
   private def getEnglishText(pipeSeparatedTranslations: String) = {
     pipeSeparatedTranslations.split(raw"\|").head
+  }
+
+  private def generateDeclarationHTML(data: FormData): List[Html] = {
+    val fieldMap = data.fields.map(a => a.id.value -> Html(a.value)).toMap
+
+    val firstName = getHtmlForDeclarationField("First name", "declaration-firstname", fieldMap)
+    val lastName = getHtmlForDeclarationField("Last name", "declaration-lastname", fieldMap)
+    val statusName = getHtmlForDeclarationField("Status", "declaration-status", fieldMap)
+    val emailAddress = getHtmlForDeclarationField("Email address", "declaration-email2", fieldMap)
+
+    val allElements = List(firstName, lastName, statusName, emailAddress)
+    if (allElements.foldLeft("")(_ + _).isEmpty) {
+      List(Html(""))
+    } else {
+      List(uk.gov.hmrc.gform.views.html.pdfGeneration.section("Declaration", allElements))
+    }
+  }
+
+  private def getHtmlForDeclarationField(title: String, fieldName: String, formData: Map[String, Html]) = {
+    formData.get(fieldName) match {
+      case Some(value) =>
+        uk.gov.hmrc.gform.views.html.pdfGeneration.element(title, value)
+      case _ => Html("")
+    }
   }
 }
