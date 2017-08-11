@@ -124,8 +124,8 @@ object FormatParser {
   )
 
   lazy val governmentIdFormat: Parser[TextFormat] = (
-    "UTR" ^^ { (loc, _) => TextFormat(UTR) }
-    | "NINO" ^^ { (loc, _) => TextFormat(NINO) }
+    "utr" ^^ { (loc, _) => TextFormat(UTR) }
+    | "nino" ^^ { (loc, _) => TextFormat(NINO) }
   )
 
   lazy val positiveWholeNumberFormat: Parser[TextFormat] = (
