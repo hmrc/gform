@@ -29,9 +29,9 @@ class HelperSpec extends Spec {
       "constraints" -> Json.obj(
         "contentTypes" -> Json.arr(
           "application/pdf",
-          "application/xml; charset=UTF-8",
+          "application/xml",
           "image/jpeg",
-          "text/plain",
+          "text/xml",
           "application/vnd.ms-excel",
           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         ),

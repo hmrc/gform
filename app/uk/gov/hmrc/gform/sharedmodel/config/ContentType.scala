@@ -24,10 +24,10 @@ case class ContentType(value: String)
 object ContentType {
 
   val `application/pdf` = ContentType("application/pdf")
-  val `application/xml; charset=UTF-8` = ContentType("application/xml; charset=UTF-8")
+  val `application/xml` = ContentType("application/xml")
   val `application/json` = ContentType("application/json")
   val `image/jpeg` = ContentType("image/jpeg")
-  val `text/plain` = ContentType("text/plain")
+  val `text/xml` = ContentType("text/xml")
 
   /**
    * .xls files

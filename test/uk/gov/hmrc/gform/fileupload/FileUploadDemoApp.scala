@@ -42,9 +42,9 @@ object FileUploadDemoApp extends App {
     maxItems = 3,
     contentTypes = List(
       ContentType.`application/pdf`,
-      ContentType.`application/xml; charset=UTF-8`,
+      ContentType.`application/xml`,
       ContentType.`image/jpeg`,
-      ContentType.`text/plain`,
+      ContentType.`text/xml`,
       ContentType.`application/vnd.ms-excel`,
       ContentType.`application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`
     )

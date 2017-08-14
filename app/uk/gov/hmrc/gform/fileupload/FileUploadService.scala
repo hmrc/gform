@@ -56,7 +56,7 @@ class FileUploadService(fileUploadConnector: FileUploadConnector, fileUploadFron
       xml,
       s"$fileNamePrefix-metadata.xml",
       ByteString(metadataXml.getBytes),
-      ContentType.`application/xml; charset=UTF-8`
+      ContentType.`application/xml`
     )
 
     for {
