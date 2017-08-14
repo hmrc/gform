@@ -135,7 +135,7 @@ object FormatParser {
   lazy val moneyFormat: Parser[TextFormat] = (
     "sterling" ^^ { (loc, _) => TextFormat(Sterling) }
     | "ukBankAccountNumber" ^^ { (loc, _) => TextFormat(UkBankAccountNumber) }
-    | "ukSortCode" ^^ { (loc, _) => TextFormat(UkSortCode) }
+    | "ukSortCode" ^^ { (loc, _) => TextFormat(UkSortCodeFormat) }
   )
 
   lazy val numberArgs: Parser[(Int, Int, Option[String])] = (

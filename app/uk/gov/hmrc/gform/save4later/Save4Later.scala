@@ -35,10 +35,13 @@ class Save4Later(cache: ShortLivedCache, ex: ExecutionContext) {
     find(formId) map {
       //use the same API as using WSHTTP
       case None => throw new NotFoundException(s"Not found 'form' for the given id: '${formId.value}'")
-      case Some(form) => form
+      case Some(form) =>
+        Logger.debug(Json.prettyPrint(Json.toJson(form)) + "GETFORM")
+        form
     }
 
   def upsert(formId: FormId, form: Form)(implicit hc: HeaderCarrier): Future[Unit] = {
+    Logger.debug(Json.prettyPrint(Json.toJson(form)) + "PUTFORM")
     cache.cache[Form](formId.value, formCacheKey, form).map(_ => ())
   }
 
