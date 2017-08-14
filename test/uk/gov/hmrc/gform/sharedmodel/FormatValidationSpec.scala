@@ -26,7 +26,6 @@ class FormatValidationSpec extends Spec {
 
   it should "return Sterling" in createTest("sterling", Sterling)
   it should "return ukBankAccountNumber" in createTest("ukBankAccountNumber", UkBankAccountNumber)
-  it should "return UkSortCodeFormat" in createTest("ukSortCode", UkSortCode)
   it should "return telephoneNumber" in createTest("telephoneNumber", TelephoneNumber)
   it should "return email" in createTest("email", Email)
   it should "return utr" in createTest("utr", UTR)

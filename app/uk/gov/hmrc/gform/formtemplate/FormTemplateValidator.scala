@@ -127,6 +127,7 @@ object FormTemplateValidator {
   }
 
   def validate(componentType: ComponentType, formTemplate: FormTemplate): ValidationResult = componentType match {
+    case UkSortCode(expr) => validate(expr, formTemplate)
     case Text(_, expr, _) => validate(expr, formTemplate)
     case Date(_, _, _) => Valid
     case Address(_) => Valid

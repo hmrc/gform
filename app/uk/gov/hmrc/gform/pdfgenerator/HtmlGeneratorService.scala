@@ -20,7 +20,7 @@ import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import play.twirl.api.Html
 import uk.gov.hmrc.gform.sharedmodel.form.{ FormData, FormField }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Address, Choice, Date, FieldValue }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.submission.SectionFormField
 
 import scala.collection.immutable.List
@@ -45,6 +45,7 @@ trait HtmlGeneratorService {
     case (formFields, fieldValue) =>
       val (name, value) = fieldValue.`type` match {
         case choice @ Choice(_, _, _, _, _) => generateChoiceFieldHTML(choice, fieldValue, formFields.head)
+        case UkSortCode(_) => generateSortCodeFieldHTML(fieldValue, formFields)
         case Date(_, _, _) => generateDateFieldHTML(fieldValue, formFields)
         case Address(_) => generateAddressFieldHTML(fieldValue, formFields)
         case _ => (getEnglishText(fieldValue.shortName.getOrElse(fieldValue.label)), Html(getEnglishText(formFields.head.value)))
@@ -58,6 +59,13 @@ trait HtmlGeneratorService {
       case (option, index) => index.toString -> getEnglishText(option)
     }.toList.toMap
     val values = Html(selections.flatMap(selection => optionsAsMap.get(selection)).mkString("<BR>"))
+    (getEnglishText(fieldValue.shortName.getOrElse(fieldValue.label)), values)
+  }
+
+  private def generateSortCodeFieldHTML(fieldValue: FieldValue, formFields: List[FormField]) = {
+    val formField = formFields.filter(_.id.value.startsWith(fieldValue.id.value))
+    val sortCodeValue = s"""${formField.filter(_.id.value.endsWith("1")).head.value} - ${formField.filter(_.id.value.endsWith("2")).head.value} - ${formField.filter(_.id.value.endsWith("3")).head.value}"""
+    val values = Html(sortCodeValue)
     (getEnglishText(fieldValue.shortName.getOrElse(fieldValue.label)), values)
   }
 

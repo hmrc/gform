@@ -111,12 +111,14 @@ class FieldValueMaker(json: JsValue) {
     //TODO: What if there is None
   }
 
-  private lazy val textOpt: Opt[Text] = {
+  private lazy val textOpt: Opt[ComponentType] = {
     for {
       maybeFormatExpr <- optMaybeFormatExpr
       maybeValueExpr <- optMaybeValueExpr
       optText = (maybeFormatExpr, maybeValueExpr, total) match {
         //format: OFF
+        case (Some(TextFormat(UkSortCodeFormat)), Some(TextExpression(expr)), _) => UkSortCode(expr).asRight
+        case (Some(TextFormat(UkSortCodeFormat)), None, _) => UkSortCode(Constant("")).asRight
         case (Some(TextFormat(f)), Some(TextExpression(expr)), IsTotal(TotalYes))  => Text(f, expr, total = true).asRight
         case (Some(TextFormat(f)), Some(TextExpression(expr)), IsTotal(TotalNo))   => Text(f, expr, total = false).asRight
         case (Some(TextFormat(f)), None,                       IsTotal(TotalYes))  => Text(f, Constant(""), total = true).asRight
