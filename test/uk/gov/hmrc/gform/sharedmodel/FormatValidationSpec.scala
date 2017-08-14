@@ -53,6 +53,20 @@ class FormatValidationSpec extends Spec {
       presentationHint = None
     ))
   }
+  it should "return UkSortCode Component" in {
+    reads.reads(makeJson("ukSortCode")) shouldBe JsSuccess(FieldValue(
+      id = FieldId(id),
+      `type` = UkSortCode(Constant("")),
+      label = label,
+      helpText = None,
+      shortName = None,
+      mandatory = true,
+      editable = true,
+      submissible = true,
+      errorMessage = None,
+      presentationHint = None
+    ))
+  }
 
   def createTest(format: String, constraint: TextConstraint) = {
     val json: JsValue = makeJson(format)
