@@ -63,8 +63,7 @@ trait HtmlGeneratorService {
   }
 
   private def generateSortCodeFieldHTML(fieldValue: FieldValue, formFields: List[FormField]) = {
-    val formField = formFields.filter(_.id.value.startsWith(fieldValue.id.value))
-    val sortCodeValue = s"""${formField.filter(_.id.value.endsWith("1")).head.value} - ${formField.filter(_.id.value.endsWith("2")).head.value} - ${formField.filter(_.id.value.endsWith("3")).head.value}"""
+    val sortCodeValue = UkSortCode.fields(fieldValue.id).map(x => formFields.filter(_.id == x).head.value).mkString("-")
     val values = Html(sortCodeValue)
     (getEnglishText(fieldValue.shortName.getOrElse(fieldValue.label)), values)
   }
