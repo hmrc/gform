@@ -31,15 +31,27 @@ class FileUploadConnector(config: FUConfig, wSHttp: WSHttp, timeProvider: TimePr
   def createEnvelope(formTemplateId: FormTemplateId)(implicit hc: HeaderCarrier): Future[EnvelopeId] = {
     val requestBody = helper.createEnvelopeRequestBody(formTemplateId)
     wSHttp
-      .POST(s"$baseUrl/file-upload/envelopes", requestBody)
+      .POST(s"$baseUrl/file-upload/envelopes", requestBody, headers)
       .map(helper.extractEnvelopId)
   }
 
   def routeEnvelope(input: RouteEnvelopeRequest)(implicit hc: HeaderCarrier): Future[Unit] = {
     wSHttp
-      .POST[RouteEnvelopeRequest, HttpResponse](s"$baseUrl/file-routing/requests", input)
+      .POST[RouteEnvelopeRequest, HttpResponse](s"$baseUrl/file-routing/requests", input, headers)
       .map(_ => ())
   }
 
+  def getEnvelope(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): Future[Envelope] = {
+    wSHttp.GET[Envelope](s"$baseUrl/file-upload/envelopes/${envelopeId.value}")
+  }
+
   private lazy val baseUrl = config.fileUploadBaseUrl
+  private lazy val `Csrf-Token: nocheck` = "Csrf-Token" -> "nocheck"
+
+  /**
+   * TIP. The Crsf-Token is not needed on production. It's as well not intrusive.
+   * We're adding it here in order to be able to call FU service using GFORM test-only proxy endpoints.
+   */
+  private lazy val headers = Seq(`Csrf-Token: nocheck`)
+
 }

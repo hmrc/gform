@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.wshttp
 
-import akka.actor.ActorSystem
+import akka.actor.{ ActorSystem, Terminated }
 import akka.stream.ActorMaterializer
 import play.api.libs.json.Writes
 import play.api.libs.ws.WSRequest
@@ -46,5 +46,5 @@ object TestWSHttp extends WSHttp {
   private implicit lazy val mat: ActorMaterializer = ActorMaterializer()
   private lazy val ws = AhcWSClient()(mat)
 
-  def stop() = s.terminate()
+  def stop(): Future[Terminated] = s.terminate()
 }

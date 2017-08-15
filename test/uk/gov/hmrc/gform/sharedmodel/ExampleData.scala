@@ -264,7 +264,7 @@ trait ExampleSubmission { dependsOn: ExampleForm with ExampleFormTemplate =>
 
 trait ExampleRouteEnvelopeRequest { dependsOn: ExampleForm =>
 
-  def application: String = "GFORM"
+  def application: String = "dfs"
   def destination: String = "DMS"
   def routeEnvelopeRequest = RouteEnvelopeRequest(envelopeId, application, destination)
 
