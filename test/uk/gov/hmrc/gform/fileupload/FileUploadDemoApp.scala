@@ -34,7 +34,7 @@ object FileUploadDemoApp extends App {
 
   val config = FUConfig(
     //    fileUploadBaseUrl = "http://localhost:8898",
-    fileUploadBaseUrl = "http://localhost:9195/submissions/test-only/proxy-to-file-upload",
+    fileUploadBaseUrl = "http://localhost:9195/submissions/test-only/proxy-to-file-upload", //TIP run GFORM using `runInLocal.sh` script
     fileUploadFrontendBaseUrl = "http://localhost:8899",
     expiryDays = 30,
     maxSize = "20MB",
@@ -64,12 +64,15 @@ object FileUploadDemoApp extends App {
   val result = for {
   // format: OFF
     envelopeId <- fileUploadService.createEnvelope(FormTemplateId("testFormTypeId"))
-//    _          <- fuf.upload(envelopeId, FileId("README.md"), "README.md", fileBody, ContentType.`text/plain`)
-
-    _ = println(s"envelope created: $envelopeId")
+    _          <- fuf.upload(envelopeId, FileId("README.md"), "README.md", fileBody, ContentType.`text/xml`)
+    envelope   <- fu.getEnvelope(envelopeId)
+    _ = println(envelope)
     // format: ON
   } yield ()
 
   Await.result(result, Duration.Inf)
-  http.stop()
+  http.stop().onComplete(_ =>
+    //I don't know how to gracefully stop it
+    System.exit(0))
+
 }

@@ -29,7 +29,7 @@ class RouteEnvelopeRequestSpec extends Spec {
 
     val jsObject = Json.obj(
       "envelopeId" -> "b66c5979-e885-49cd-9281-c7f42ce6b307",
-      "application" -> "GFORM",
+      "application" -> "dfs",
       "destination" -> "DMS"
     )
 
