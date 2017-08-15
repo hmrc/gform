@@ -32,9 +32,8 @@ import scala.concurrent.duration.Duration
 
 object FileUploadDemoApp extends App {
 
-  val config = FUConfig(
-    //    fileUploadBaseUrl = "http://localhost:8898",
-    fileUploadBaseUrl = "http://localhost:9195/submissions/test-only/proxy-to-file-upload", //TIP run GFORM using `runInLocal.sh` script
+  val configLocal = FUConfig(
+    fileUploadBaseUrl = "http://localhost:8898",
     fileUploadFrontendBaseUrl = "http://localhost:8899",
     expiryDays = 30,
     maxSize = "20MB",
@@ -49,6 +48,18 @@ object FileUploadDemoApp extends App {
       ContentType.`application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`
     )
   )
+
+  val configLocalProxiedByGform = configLocal.copy(
+    //TIP run GFORM using `runInLocal.sh` script
+    fileUploadBaseUrl = "http://localhost:9195/submissions/test-only/proxy-to-file-upload"
+  )
+
+  val configDevProxiedByGform = configLocal.copy(
+    fileUploadBaseUrl = "https://www-dev.tax.service.gov.uk/submissions/test-only/proxy-to-file-upload",
+    fileUploadFrontendBaseUrl = "https://www-dev.tax.service.gov.uk"
+  )
+
+  val config = configLocal
 
   val http = TestWSHttp
 
