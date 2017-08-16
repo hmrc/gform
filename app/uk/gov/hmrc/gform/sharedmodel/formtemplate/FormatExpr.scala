@@ -90,7 +90,7 @@ case object NINO extends TextConstraint
 case object TelephoneNumber extends TextConstraint
 case object Email extends TextConstraint
 case object UkVrn extends TextConstraint
-case object UkCountryCode extends TextConstraint
+case object CountryCode extends TextConstraint
 case object NonUkCountryCode extends TextConstraint
 
 object TextConstraint {
