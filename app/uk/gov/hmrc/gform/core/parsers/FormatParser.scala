@@ -105,7 +105,7 @@ object FormatParser {
   )
 
   lazy val countryCodeFormat: Parser[TextFormat] = (
-    "ukCountryCode" ^^ { (loc, _) => TextFormat(UkCountryCode) }
+    "countryCode" ^^ { (loc, _) => TextFormat(CountryCode) }
     | "nonUkCountryCode" ^^ { (loc, _) => TextFormat(NonUkCountryCode) }
   )
 
