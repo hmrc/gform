@@ -101,6 +101,12 @@ object FormatParser {
     | contactFormat
     | governmentIdFormat
     | basicFormat
+    | countryCodeFormat
+  )
+
+  lazy val countryCodeFormat: Parser[TextFormat] = (
+    "ukCountryCode" ^^ { (loc, _) => TextFormat(UkCountryCode) }
+    | "nonUkCountryCode" ^^ { (loc, _) => TextFormat(NonUkCountryCode) }
   )
 
   lazy val basicFormat: Parser[TextFormat] = (

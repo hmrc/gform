@@ -34,6 +34,8 @@ class FormatValidationSpec extends Spec {
   it should "return TextWithRestrictions" in createTest("text(1, 1)", TextWithRestrictions(1, 1))
   it should "return ShortText" in createTest("shortText", ShortText)
   it should "return UkVrn" in createTest("ukVrn", UkVrn)
+  it should "return ukCountryCode" in createTest("ukCountryCode", UkCountryCode)
+  it should "return nonUkCountryCode" in createTest("nonUkCountryCode", NonUkCountryCode)
   it should "return ShortText when not provided" in {
     reads.reads(Json.parse(s"""{
          "id": "$id",
