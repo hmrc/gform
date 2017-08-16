@@ -6,6 +6,7 @@ PUT           /forms/:formId                                       uk.gov.hmrc.g
 GET           /forms/:formId                                       uk.gov.hmrc.gform.form.FormController.get(formId: FormId)
 GET          /forms/:formId/validate-section/:sectionNumber       uk.gov.hmrc.gform.form.FormController.validateSection(formId: FormId, sectionNumber: SectionNumber)
 POST          /forms/:formId/delete                                uk.gov.hmrc.gform.form.FormController.delete(formId: FormId)
+DELETE        /forms/:formId/deleteFile/:fileId                    uk.gov.hmrc.gform.form.FormController.deleteFile(formId: FormId, fileId: FileId)
 
 POST          /forms/:formId/submission                            uk.gov.hmrc.gform.submission.SubmissionController.submit(formId: FormId)
 GET           /forms/:formId/submission                            uk.gov.hmrc.gform.submission.SubmissionController.submissionStatus(formId: FormId)

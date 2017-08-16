@@ -25,7 +25,7 @@ import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.fileupload.FileUploadService
 import uk.gov.hmrc.gform.formtemplate.FormTemplateService
 import uk.gov.hmrc.gform.sharedmodel.UserId
-import uk.gov.hmrc.gform.sharedmodel.form.{ FormData, FormId, UserData }
+import uk.gov.hmrc.gform.sharedmodel.form.{ FileId, FormData, FormId, UserData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId, Section, SectionNumber }
 import uk.gov.hmrc.play.http.BadRequestException
 
@@ -97,6 +97,14 @@ class FormController(
 
   def delete(formId: FormId): Action[AnyContent] = Action.async { implicit request =>
     formService.delete(formId).asNoContent
+  }
+
+  def deleteFile(formId: FormId, fileId: FileId) = Action.async { implicit request =>
+    val result = for {
+      form <- formService.get(formId)
+      _ <- fileUploadService.deleteFile(form.envelopeId, fileId)
+    } yield ()
+    result.asNoContent
   }
 
   //TODO discuss with Daniel about naming, purpose of it and if we can make it part of a form
