@@ -86,6 +86,13 @@ class GformConnector(ws: WSHttp, baseUrl: String) {
     ws.GET[ExposedConfig](s"$baseUrl/exposed-config")
   }
 
+  /******file-upload*******/
+
+  def deleteFile(formId: FormId, fileId: FileId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] = {
+    ws.DELETE[HttpResponse](s"$baseUrl/forms/${formId.value}/deleteFile/${fileId.value}").map(_ => ())
+  }
+
+
   import scala.io.Source
   def fileToByteStr(filename : String) : ByteString = ByteString(Source.fromFile(filename).mkString)
   //TODO other formTemplate endpoints

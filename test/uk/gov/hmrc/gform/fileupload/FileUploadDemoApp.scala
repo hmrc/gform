@@ -77,7 +77,10 @@ object FileUploadDemoApp extends App {
     envelopeId <- fileUploadService.createEnvelope(FormTemplateId("testFormTypeId"))
     _          <- fuf.upload(envelopeId, FileId("README.md"), "README.md", fileBody, ContentType.`text/xml`)
     envelope   <- fu.getEnvelope(envelopeId)
+    _          <- fileUploadService.deleteFile(envelopeId, FileId("README.md"))
+    envelopeNoFile   <- fu.getEnvelope(envelopeId)
     _ = println(envelope)
+    _ = println(envelopeNoFile)
     // format: ON
   } yield ()
 

@@ -65,6 +65,10 @@ class FileUploadService(fileUploadConnector: FileUploadConnector, fileUploadFron
       _ <- fileUploadConnector.routeEnvelope(RouteEnvelopeRequest(envelopeId, "dfs", "DMS"))
     } yield ()
   }
+
+  def deleteFile(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier) = {
+    fileUploadConnector.deleteFile(envelopeId, fileId)
+  }
 }
 
 object FileUploadService {

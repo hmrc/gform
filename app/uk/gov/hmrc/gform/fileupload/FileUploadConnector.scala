@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.fileupload
 
-import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.gform.wshttp.WSHttp
@@ -44,6 +44,10 @@ class FileUploadConnector(config: FUConfig, wSHttp: WSHttp, timeProvider: TimePr
   def getEnvelope(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): Future[Envelope] = {
     wSHttp.GET[Envelope](s"$baseUrl/file-upload/envelopes/${envelopeId.value}")
   }
+
+  def deleteFile(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): Future[Unit] =
+    wSHttp.DELETE[HttpResponse](s"$baseUrl/file-upload/envelopes/${envelopeId.value}/files/${fileId.value}")
+      .map(_ => ())
 
   private lazy val baseUrl = config.fileUploadBaseUrl
   private lazy val `Csrf-Token: nocheck` = "Csrf-Token" -> "nocheck"
