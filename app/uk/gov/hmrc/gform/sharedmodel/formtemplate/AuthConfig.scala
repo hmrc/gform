@@ -22,12 +22,19 @@ import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
 case class AuthConfig(
   authModule: AuthConfigModule,
   predicates: Option[List[Predicate]],
-  regimeId: RegimeId
+  regimeId: RegimeId,
+  serviceId: Option[ServiceId]
 )
 
 object AuthConfig {
 
   implicit val format: OFormat[AuthConfig] = Json.format[AuthConfig]
+}
+
+case class ServiceId(value: String)
+
+object ServiceId {
+  implicit val format: OFormat[ServiceId] = ValueClassFormat.oformat("value", ServiceId.apply, _.value)
 }
 
 case class RegimeId(value: String) {
