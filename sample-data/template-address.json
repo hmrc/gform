@@ -24,5 +24,11 @@
         }
       ]
     }
+  ],
+  "acknowledgementSection": [
+    {
+      "title": "Some content",
+      "content": "this is content"
+    }
   ]
 }
