@@ -9,7 +9,7 @@
   },
   "authConfig":{
     "authModule": "legacyEEITTAuth",
-    "regimeId": "HO"
+    "regimeId": "GF"
   },
   "submitSuccessUrl": "http://www.google.co.uk",
   "submitErrorUrl": "http://www.yahoo.co.uk",
@@ -23,6 +23,12 @@
           "type": "text",
           "label": "Business name",
           "mandatory": "true"
+        },
+        {
+          "id": "telephone-number",
+          "type": "text",
+          "label": "Phone number",
+          "format": "telephoneNumber"
         },
         {
           "id": "business-address",
@@ -57,21 +63,59 @@
       "title": "Upload Hydrocarbon oil spreadsheet",
       "fields": [
         {
+          "type": "file",
+          "id": "spreadsheet",
+          "label": "choose your return document"
+        },
+        {
           "id": "upload-info",
           "type": "info",
           "infoText": "
-The document you upload must be:
-\n
-\n
-* less that 10 megabytes (10MB)\n
-* in PDF, JPEG or Excel format
-          "
+          The document you upload must be:
+          \n
+          \n
+          * less that 10 megabytes (10MB)\n
+          * in PDF, JPEG or Excel format
+          ",
+          "label": ""
         },
         {
           "id": "upload-contents-info",
           "type": "info",
           "infoText": "Content goes here...",
-          "infoTextLabel": "What the document must contain"
+          "infoTextLabel": "What the document must contain",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "title": "Enter the total amount of your claim",
+      "fields": [
+        {
+          "id": "total-claim",
+          "type": "text",
+          "label": "",
+          "mandatory": "true",
+          "format": "sterling"
+        }
+      ]
+    },
+    {
+      "title": "Contact person",
+      "description": "This is the person we will contact if we need to discuss your return.",
+      "fields": [
+        {
+          "id": "name",
+          "type": "text",
+          "label": "Full name",
+          "mandatory": "true"
+        },
+        {
+          "id": "email",
+          "type": "text",
+          "label": "Email address",
+          "mandatory": "true",
+          "format": "email"
         }
       ]
     }
