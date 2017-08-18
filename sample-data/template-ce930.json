@@ -19,36 +19,20 @@
       "shortName": "Your accounting period",
       "fields": [
         {
-          "id": "start-date",
+          "id": "tax-period-start",
           "type": "date",
           "label": "Start date",
+          "helpText": "Example 31 8 2017",
+          "errorMessage": "Please enter your time period start date",
           "mandatory": "true"
         },
         {
-          "id": "end-date",
+          "id": "tax-period-end",
           "type": "date",
           "label": "End date",
+          "helpText": "Example 31 10 2017",
+          "errorMessage": "Please enter your time period end date",
           "mandatory": "true"
-        }
-      ]
-    },
-    {
-      "title": "Enter your business details",
-      "shortName": "Your business details",
-      "description": "This is your registered business address.",
-      "fields": [
-        {
-          "id": "business-name",
-          "type": "text",
-          "label": "Business name",
-          "mandatory": "true"
-        },
-        {
-          "id": "business-address",
-          "label": "Business address",
-          "mandatory": "true",
-          "type": "address",
-          "international": "yes"
         }
       ]
     },
@@ -57,20 +41,39 @@
       "fields": [
         {
           "type": "choice",
-          "label": "Select nil return if you have no duty to pay this return period.",
-          "id": "nilReturn",
+          "label": "Do you have duty to pay in this return period",
+          "id": "duty-due",
+          "format": "yesno",
           "choices": [
-            "Submit a return with payment due",
-            "Submit a nil return"
+            "Yes",
+            "No - I want to submit a nil return"
           ]
         }
       ]
     },
     {
-      "includeIf": "${nilReturn=0}",
-      "title": "Enter duty detail",
-      "description": "Tell us about each site name or location and the duty due on gas sent out, set aside or used as road fuel.",
+      "includeIf": "${duty-due=0}",
+      "title": "Enter how much duty you owe",
       "fields": [
+        {
+          "type": "group",
+          "id": "fuel-type-591",
+          "label": "Select the gas you need to pay duty on from the list below",
+          "fields": [
+            { "type": "text", "id": "fuel-type-591-quantity", "label": "Quantity of gas in kilograms (kg) sent out, set aside or used as road fuel", "mandatory": "false" },
+            { "type": "text", "id": "fuel-type-591-amount", "label": "Amount of excise duty due", "mandatory": "false", "format": "sterling" }
+          ]
+        },
+        {
+          "type": "group",
+          "id": "fuel-type-592",
+          "label": "Select the gas you need to pay duty on from the list below",
+          "fields": [
+            { "type": "text", "id": "fuel-type-592-quantity", "label": "Quantity of gas in kilograms (kg) sent out, set aside or used as road fuel", "mandatory": "false" },
+            { "type": "text", "id": "fuel-type-592-amount", "label": "Amount of excise duty due", "mandatory": "false", "format": "sterling" },
+            { "type": "text", "id": "fuel-type-592-description", "label": "Description(optional)", "mandatory": "false", "format": "sterling" }
+          ]
+        }
       ]
     }
   ]
