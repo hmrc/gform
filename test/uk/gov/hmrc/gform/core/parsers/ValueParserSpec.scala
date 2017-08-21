@@ -185,7 +185,7 @@ class ValueParserSpec extends Spec {
     "Insurance Premium Tax Return",
     "description",
     DmsSubmission("nino", "BT-NRU-Environmental", "FinanceOpsCorpT"),
-    AuthConfig(AuthConfigModule("TEST"), None, RegimeId("TEST")),
+    AuthConfig(AuthConfigModule("TEST"), None, RegimeId("TEST"), None),
     "submitSuccessUrl",
     "submitErrorUrl",
     List.empty[Section],
