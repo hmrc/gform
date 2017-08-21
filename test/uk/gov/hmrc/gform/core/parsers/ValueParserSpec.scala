@@ -188,7 +188,8 @@ class ValueParserSpec extends Spec {
     AuthConfig(AuthConfigModule("TEST"), None, RegimeId("TEST"), None),
     "submitSuccessUrl",
     "submitErrorUrl",
-    List.empty[Section]
+    List.empty[Section],
+    List.empty[AckSection]
   )
 
   val yourDetailsSection = Section(

@@ -99,7 +99,8 @@ class SubmissionServiceSpec extends Spec {
       AuthConfig(AuthConfigModule("TEST"), None, RegimeId("TEST"), None),
       submitSuccessUrl = "http://somwehere-nice.net",
       submitErrorUrl = "http://somwehere-nasty.net",
-      sections = List(section)
+      sections = List(section),
+      List.empty[AckSection]
     )
 
     val expectedResult = List(

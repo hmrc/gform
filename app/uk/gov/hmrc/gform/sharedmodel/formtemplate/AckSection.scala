@@ -16,23 +16,10 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
-import play.api.libs.json._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate
+import play.api.libs.json.{ Json, OFormat }
 
-case class FormTemplate(
-  _id: FormTemplateId,
-  formName: String,
-  description: String,
-  dmsSubmission: DmsSubmission,
-  authConfig: formtemplate.AuthConfig,
-  submitSuccessUrl: String,
-  submitErrorUrl: String,
-  sections: List[Section],
-  acknowledgementSection: List[AckSection]
-)
+case class AckSection(title: String, content: String) //TODO does content support markdown
 
-object FormTemplate {
-
-  implicit val format: OFormat[FormTemplate] = Json.format[FormTemplate]
+object AckSection {
+  implicit val format: OFormat[AckSection] = Json.format[AckSection]
 }
-
