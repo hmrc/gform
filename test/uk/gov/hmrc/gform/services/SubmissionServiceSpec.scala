@@ -96,7 +96,7 @@ class SubmissionServiceSpec extends Spec {
       formName = "formName",
       description = "formTemplateDescription",
       dmsSubmission = DmsSubmission("customerId", "classificationType", "businessArea"),
-      AuthConfig(AuthConfigModule("TEST"), None, RegimeId("TEST")),
+      AuthConfig(AuthConfigModule("TEST"), None, RegimeId("TEST"), None),
       submitSuccessUrl = "http://somwehere-nice.net",
       submitErrorUrl = "http://somwehere-nasty.net",
       sections = List(section)
