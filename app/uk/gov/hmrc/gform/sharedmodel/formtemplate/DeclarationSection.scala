@@ -16,24 +16,17 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
-import play.api.libs.json._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate
+import play.api.libs.json.Json
 
-case class FormTemplate(
-  _id: FormTemplateId,
-  formName: String,
-  description: String,
-  dmsSubmission: DmsSubmission,
-  authConfig: formtemplate.AuthConfig,
-  submitSuccessUrl: String,
-  submitErrorUrl: String,
-  sections: List[Section],
-  acknowledgementSection: List[AckSection],
-  declarationSection: DeclarationSection
+import scala.collection.immutable.List
+
+case class DeclarationSection(
+  title: String,
+  description: Option[String],
+  shortName: Option[String],
+  fields: List[FieldValue]
 )
 
-object FormTemplate {
-
-  implicit val format: OFormat[FormTemplate] = Json.format[FormTemplate]
+object DeclarationSection {
+  implicit val format = Json.format[DeclarationSection]
 }
-
