@@ -37,7 +37,7 @@ object FormCategory {
         case JsString("hmrcReturnForm") => JsSuccess(HMRCReturnForm)
         case JsString("hmrcClaimForm") => JsSuccess(HMRCClaimForm)
         case JsString("default") => JsSuccess(Default)
-        case JsString(err) => JsError(s"only two valid categories, hmrcReturnForm or hmrcClaimForm $err is not valid")
+        case JsString(err) => JsError(s"only three valid categories, hmrcReturnForm, hmrcClaimForm or default $err is not valid")
         case _ => JsError("Failure")
       }
     }
