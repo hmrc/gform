@@ -184,6 +184,7 @@ class ValueParserSpec extends Spec {
     FormTemplateId("IPT100"),
     "Insurance Premium Tax Return",
     "description",
+    Some(Default),
     DmsSubmission("nino", "BT-NRU-Environmental", "FinanceOpsCorpT"),
     AuthConfig(AuthConfigModule("TEST"), None, RegimeId("TEST"), None),
     "submitSuccessUrl",
