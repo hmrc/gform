@@ -270,6 +270,7 @@ class FieldValueMaker(json: JsValue) {
     case (IsInfoType(LongInfo), Some(infText)) => InformationMessage(LongInfo, infText).asRight
     case (IsInfoType(ImportantInfo), Some(infText)) => InformationMessage(ImportantInfo, infText).asRight
     case (IsInfoType(BannerInfo), Some(infText)) => InformationMessage(BannerInfo, infText).asRight
+    case (IsInfoType(NoFormat), Some(infText)) => InformationMessage(NoFormat, infText).asRight
     case (infType, infText) => UnexpectedState(
       s"""
          | Invalid or missing arguments in 'info' field. The 'info' field should contain the infoType and
@@ -412,6 +413,7 @@ class FieldValueMaker(json: JsValue) {
           case "long" => Some(LongInfo)
           case "important" => Some(ImportantInfo)
           case "banner" => Some(BannerInfo)
+          case "noformat" => Some(NoFormat)
           case _ => None
         }
         case None => Some(StandardInfo)
