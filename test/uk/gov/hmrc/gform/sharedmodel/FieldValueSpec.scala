@@ -810,6 +810,33 @@ class FieldValueSpec extends Spec {
       )
     )
   }
+  it should "parse info field and correctly build a noformat type info field" in {
+    val fieldValue = toFieldValue(
+      """
+        |{
+        |  "type": "info",
+        |  "id": "fieldID",
+        |  "label": "Label -- info field",
+        |  "infoType" : "noformat",
+        |  "infoText": "This is a sample text for an info field"
+        |}
+      """.stripMargin
+    )
+
+    fieldValue should beJsSuccess(
+      FieldValue(
+        FieldId("fieldID"),
+        InformationMessage(NoFormat, "This is a sample text for an info field"),
+        "Label -- info field",
+        None,
+        None,
+        true,
+        false,
+        false,
+        None
+      )
+    )
+  }
 
   it should "fail to parse if info field is not one of a valid types" in {
     val fieldValue = toFieldValue(
