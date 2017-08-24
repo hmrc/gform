@@ -151,31 +151,4 @@ class HtmlGeneratorServiceSpec extends Spec {
 
     doc.getElementsByTag("td").last.html.equalsIgnoreCase("Hello") shouldBe true
   }
-
-  it should "generate Declaration section if any of the fields are present" in {
-    val thisFormData = FormData(
-      fields = Seq(
-        FormField(FieldId("declaration-firstname"), "FIRSTNAME"),
-        FormField(FieldId("declaration-lastname"), "SURNAME"),
-        FormField(FieldId("declaration-status"), "CEO")
-      )
-    )
-    val html = testService.generateDocumentHTML(Nil, "FORM TITLE", thisFormData)
-    val doc = Jsoup.parse(html)
-
-    doc.getElementsContainingOwnText("Declaration").size() shouldBe 1
-    doc.getElementsContainingOwnText("FIRSTNAME").size() shouldBe 1
-    doc.getElementsContainingOwnText("SURNAME").size() shouldBe 1
-    doc.getElementsContainingOwnText("CEO").size() shouldBe 1
-  }
-
-  it should "NOT generate Declaration section if no declaration fields are present" in {
-    val html = testService.generateDocumentHTML(Nil, "FORM TITLE", formData)
-    val doc = Jsoup.parse(html)
-
-    doc.getElementsContainingOwnText("Declaration").size() shouldBe 0
-    doc.getElementsContainingOwnText("FIRSTNAME").size() shouldBe 0
-    doc.getElementsContainingOwnText("SURNAME").size() shouldBe 0
-    doc.getElementsContainingOwnText("CEO").size() shouldBe 0
-  }
 }

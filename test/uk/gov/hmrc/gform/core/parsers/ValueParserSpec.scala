@@ -190,7 +190,8 @@ class ValueParserSpec extends Spec {
     "submitSuccessUrl",
     "submitErrorUrl",
     List.empty[Section],
-    List.empty[AckSection]
+    List.empty[AckSection],
+    declarationSection = DeclarationSection("Declaration", None, None, Nil)
   )
 
   val yourDetailsSection = Section(

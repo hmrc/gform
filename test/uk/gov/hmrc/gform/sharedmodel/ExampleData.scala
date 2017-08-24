@@ -192,7 +192,8 @@ trait ExampleFormTemplate { dependsOn: ExampleAuthConfig with ExampleSection wit
     submitSuccessUrl = submtSuccessUrl,
     submitErrorUrl = submitErrorUrl,
     sections = allSections,
-    List.empty[AckSection]
+    List.empty[AckSection],
+    declarationSection = DeclarationSection("Declaration", None, None, Nil)
   )
 }
 
