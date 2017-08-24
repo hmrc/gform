@@ -30,9 +30,7 @@ object HtmlGeneratorService extends HtmlGeneratorService {}
 trait HtmlGeneratorService {
 
   def generateDocumentHTML(sectionFormFields: List[SectionFormField], formName: String, formData: FormData): String = {
-    val sectionsHtml = sectionFormFields.map(generateSectionHtml)
-    val declarationHtml = generateDeclarationHTML(formData)
-    val html = sectionsHtml ++ declarationHtml
+    val html = sectionFormFields.map(generateSectionHtml)
     uk.gov.hmrc.gform.views.html.pdfGeneration.document(getEnglishText(formName), html).body
   }
 
@@ -88,29 +86,5 @@ trait HtmlGeneratorService {
 
   private def getEnglishText(pipeSeparatedTranslations: String) = {
     pipeSeparatedTranslations.split(raw"\|").head
-  }
-
-  private def generateDeclarationHTML(data: FormData): List[Html] = {
-    val fieldMap = data.fields.map(a => a.id.value -> Html(a.value)).toMap
-
-    val firstName = getHtmlForDeclarationField("First name", "declaration-firstname", fieldMap)
-    val lastName = getHtmlForDeclarationField("Last name", "declaration-lastname", fieldMap)
-    val statusName = getHtmlForDeclarationField("Status", "declaration-status", fieldMap)
-    val emailAddress = getHtmlForDeclarationField("Email address", "declaration-email2", fieldMap)
-
-    val allElements = List(firstName, lastName, statusName, emailAddress)
-    if (allElements.foldLeft("")(_ + _).isEmpty) {
-      List(Html(""))
-    } else {
-      List(uk.gov.hmrc.gform.views.html.pdfGeneration.section("Declaration", allElements))
-    }
-  }
-
-  private def getHtmlForDeclarationField(title: String, fieldName: String, formData: Map[String, Html]) = {
-    formData.get(fieldName) match {
-      case Some(value) =>
-        uk.gov.hmrc.gform.views.html.pdfGeneration.element(title, value)
-      case _ => Html("")
-    }
   }
 }
