@@ -95,6 +95,7 @@ class SubmissionServiceSpec extends Spec {
       _id = FormTemplateId("JustAFormTypeId"),
       formName = "formName",
       description = "formTemplateDescription",
+      formCategory = Some(Default),
       dmsSubmission = DmsSubmission("customerId", "classificationType", "businessArea"),
       AuthConfig(AuthConfigModule("TEST"), None, RegimeId("TEST"), None),
       submitSuccessUrl = "http://somwehere-nice.net",
