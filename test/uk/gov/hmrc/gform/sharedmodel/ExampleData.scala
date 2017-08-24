@@ -186,6 +186,7 @@ trait ExampleFormTemplate { dependsOn: ExampleAuthConfig with ExampleSection wit
     _id = formTemplateId,
     formName = formName,
     description = formDescription,
+    formCategory = Some(Default),
     dmsSubmission = dmsSubmission,
     authConfig = authConfig,
     submitSuccessUrl = submtSuccessUrl,
