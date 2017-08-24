@@ -22,6 +22,13 @@ import uk.gov.hmrc.gform.sharedmodel.form.FormField
 
 import scala.collection.immutable.List
 
+sealed trait BaseSection {
+  def title: String
+  def description: Option[String]
+  def shortName: Option[String]
+  def fields: List[FieldValue]
+}
+
 case class Section(
     title: String,
     description: Option[String],
@@ -30,7 +37,7 @@ case class Section(
     repeatsMax: Option[TextExpression],
     repeatsMin: Option[TextExpression],
     fields: List[FieldValue]
-) {
+) extends BaseSection {
   private def atomicFields(fieldValues: List[FieldValue], data: Map[FieldId, FormField]): List[FieldValue] = {
     fieldValues.flatMap { (fieldValue) =>
       fieldValue.`type` match {
@@ -91,68 +98,18 @@ case class Section(
 }
 
 object Section {
-
   implicit val format = Json.format[Section]
+}
 
-  /*
-  def validateUniqueFields(sectionsList: List[Section]): ValidationResult = {
-    val fieldIds: List[FieldId] = sectionsList.flatMap(_.fields.map(_.id))
-    val duplicates: List[FieldId] = fieldIds.groupBy(identity).collect { case (fId, List(_, _, _*)) => fId }.toList
+case class DeclarationSection(
+  title: String,
+  description: Option[String],
+  shortName: Option[String],
+  fields: List[FieldValue]
+) extends BaseSection
 
-    duplicates.isEmpty match {
-      case true => Valid
-      case false => Invalid(s"Some FieldIds are defined more than once: ${duplicates.map(_.value)}")
-    }
-  }
-
-  def validateChoiceHelpText(sectionsList: List[Section]): ValidationResult = {
-    val choiceFieldIdMap: Map[FieldId, Boolean] = sectionsList.flatMap(_.fields).map(fv => (fv.id, fv.`type`))
-      .collect {
-        case (fId, Choice(_, options, _, _, helpTextList @ Some(x :: xs))) =>
-          (fId, options.toList.size.equals(helpTextList.getOrElse(List.empty).size))
-      }
-      .toMap
-
-    val choiceFieldIdResult = choiceFieldIdMap.filter(value => value._2.equals(false))
-
-    choiceFieldIdResult.isEmpty match {
-      case true => Valid
-      case false => Invalid(s"Choice components doesn't have equal number of choices and help texts ${choiceFieldIdResult.keys.toList}")
-    }
-  }
-  */
-
-  /*
-   * The Following Function validates that FieldIds contained in format in Date FieldId,
-   * must exist and must correspond to Date Fields
-   */
-  /* def validateFieldIdInDate(sectionsList: List[Section]): ValidationResult = {
-    val fieldIdDateConstraints: Map[FieldId, List[String]] = sectionsList.flatMap(_.fields).map(fv => (fv.id, fv.`type`))
-      .collect { case (fId, Date(DateConstraints(constrList), _, _)) => (fId, constrList) }
-      .collect { case (fId, List(DateConstraint(_, words @ AnyWord(_), _))) => (fId, List(words.value)) }
-      .toMap
-
-    val fieldIdsList: List[String] = sectionsList.flatMap(_.fields).map(fv => (fv.id, fv.`type`))
-      .collect { case (fId, Date(_, _, _)) => fId.value }
-
-    // each FieldId in AnyWord should be contained in list of FieldIds
-    val fieldIdPairs: Map[FieldId, Boolean] = fieldIdDateConstraints.mapValues { words =>
-      val resultList = words.map { word =>
-        fieldIdsList.contains(word)
-      }
-
-      !resultList.contains(false)
-    }
-
-    val fieldIdResult = fieldIdPairs.filter(value => value._2.equals(false))
-
-    fieldIdResult.isEmpty match {
-      case true => Valid
-      case false => Invalid(s"Some FieldIds are defined in Dates and either they don't exist" +
-        s" or they don't belong to Date Field types ${fieldIdResult.keys.toList}")
-    }
-  }*/
-
+object DeclarationSection {
+  implicit val format = Json.format[DeclarationSection]
 }
 
 case class SectionFormField(
