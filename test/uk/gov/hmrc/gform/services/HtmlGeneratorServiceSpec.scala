@@ -131,7 +131,7 @@ class HtmlGeneratorServiceSpec extends Spec {
   it should "return HTML containing text field" in {
     val fieldValue = FieldValue(
       id = FieldId("id"),
-      `type` = Text(AnyText, Constant("CONSTANT"), total = false),
+      `type` = Text(AnyText, Constant("CONSTANT")),
       label = "label",
       shortName = None,
       helpText = None,

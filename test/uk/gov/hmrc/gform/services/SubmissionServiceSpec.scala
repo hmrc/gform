@@ -49,7 +49,7 @@ class SubmissionServiceSpec extends Spec {
 
     val textFieldUno = FieldValue(
       id = FieldId("UNO"),
-      `type` = Text(AnyText, Constant("UNO"), false),
+      `type` = Text(AnyText, Constant("UNO")),
       label = "Editable text label",
       helpText = None,
       shortName = None,
@@ -59,7 +59,7 @@ class SubmissionServiceSpec extends Spec {
       errorMessage = None
     )
 
-    val textFieldDos = textFieldUno.copy(id = FieldId("DOS"), `type` = Text(AnyText, Constant("DOS"), false))
+    val textFieldDos = textFieldUno.copy(id = FieldId("DOS"), `type` = Text(AnyText, Constant("DOS")))
 
     val group = Group(
       fields = List(textFieldUno, textFieldDos),
@@ -110,19 +110,19 @@ class SubmissionServiceSpec extends Spec {
         List(
           (
             List(FormField(FieldId("UNO"), "UNO")),
-            FieldValue(FieldId("UNO"), Text(AnyText, Constant("UNO"), false), "Editable text label", None, None, true, true, true, None)
+            FieldValue(FieldId("UNO"), Text(AnyText, Constant("UNO")), "Editable text label", None, None, true, true, true, None)
           ),
           (
             List(FormField(FieldId("DOS"), "DOS")),
-            FieldValue(FieldId("DOS"), Text(AnyText, Constant("DOS"), false), "Editable text label", None, None, true, true, true, None)
+            FieldValue(FieldId("DOS"), Text(AnyText, Constant("DOS")), "Editable text label", None, None, true, true, true, None)
           ),
           (
             List(FormField(FieldId("1_UNO"), "1_UNO")),
-            FieldValue(FieldId("1_UNO"), Text(AnyText, Constant("UNO"), false), "Editable text label", None, None, true, true, true, None)
+            FieldValue(FieldId("1_UNO"), Text(AnyText, Constant("UNO")), "Editable text label", None, None, true, true, true, None)
           ),
           (
             List(FormField(FieldId("1_DOS"), "1_DOS")),
-            FieldValue(FieldId("1_DOS"), Text(AnyText, Constant("DOS"), false), "Editable text label", None, None, true, true, true, None)
+            FieldValue(FieldId("1_DOS"), Text(AnyText, Constant("DOS")), "Editable text label", None, None, true, true, true, None)
           )
         )
       )

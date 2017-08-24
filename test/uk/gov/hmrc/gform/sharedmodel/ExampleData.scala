@@ -75,28 +75,28 @@ trait ExampleFieldValue { dependecies: ExampleFieldId =>
 
   def `fieldValue - firstName` = FieldValue(
     `fieldId - firstName`,
-    Text(AnyText, Constant("any text"), total = false), "First Name", None, None, mandatory = true, editable = true, submissible = true,
+    Text(AnyText, Constant("any text")), "First Name", None, None, mandatory = true, editable = true, submissible = true,
     None,
     None
   )
 
   def `fieldValue - surname` = FieldValue(
     `fieldId - surname`,
-    Text(AnyText, Constant("any text"), total = false), "Last Name", None, None, mandatory = true, editable = true, submissible = true,
+    Text(AnyText, Constant("any text")), "Last Name", None, None, mandatory = true, editable = true, submissible = true,
     None,
     None
   )
 
   def `fieldValue - iptRegNum` = FieldValue(
     `fieldId - iptRegNum`,
-    Text(AnyText, Constant("any text"), total = false), "Insurance Premium Tax (IPT) number", None, None, mandatory = true, editable = true, submissible = true,
+    Text(AnyText, Constant("any text")), "Insurance Premium Tax (IPT) number", None, None, mandatory = true, editable = true, submissible = true,
     None,
     None
   )
 
   def `fieldValue - businessName` = FieldValue(
     `fieldId - businessName`,
-    Text(AnyText, Constant("any text"), total = false), "Name of business", None, None, mandatory = true, editable = true, submissible = true,
+    Text(AnyText, Constant("any text")), "Name of business", None, None, mandatory = true, editable = true, submissible = true,
     None,
     None
   )
