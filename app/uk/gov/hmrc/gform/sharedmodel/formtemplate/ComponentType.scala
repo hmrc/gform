@@ -86,6 +86,7 @@ case object StandardInfo extends InfoType
 case object LongInfo extends InfoType
 case object ImportantInfo extends InfoType
 case object BannerInfo extends InfoType
+case object NoFormat extends InfoType
 object InfoType {
   implicit val format: OFormat[InfoType] = derived.oformat
 }
