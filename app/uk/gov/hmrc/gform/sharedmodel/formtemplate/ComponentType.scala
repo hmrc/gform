@@ -27,8 +27,7 @@ sealed trait ComponentType
 
 case class Text(
   constraint: TextConstraint,
-  value: Expr,
-  total: Boolean
+  value: Expr
 ) extends ComponentType
 
 case class UkSortCode(value: Expr) extends ComponentType

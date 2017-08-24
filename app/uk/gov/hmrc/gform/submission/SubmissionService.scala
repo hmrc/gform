@@ -115,7 +115,7 @@ object SubmissionServiceHelper {
           case Date(_, _, _) => Date.fields(fieldValue.id)
           case FileUpload() => List(fieldValue.id)
           case UkSortCode(_) => UkSortCode.fields(fieldValue.id)
-          case Text(_, _, _) | Choice(_, _, _, _, _) | Group(_, _, _, _, _, _) => List(fieldValue.id)
+          case Text(_, _) | Choice(_, _, _, _, _) | Group(_, _, _, _, _, _) => List(fieldValue.id)
           case InformationMessage(_, _) => List(fieldValue.id)
         }
 

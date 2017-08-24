@@ -16,30 +16,14 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
+import julienrf.json.derived
 import play.api.libs.json._
 
-trait FormCategory
-object HMRCReturnForm extends FormCategory
-object HMRCClaimForm extends FormCategory
-object Default extends FormCategory
+sealed trait FormCategory
+case object HMRCReturnForm extends FormCategory
+case object HMRCClaimForm extends FormCategory
+case object Default extends FormCategory
 
 object FormCategory {
-
-  implicit val format: Format[FormCategory] = new Format[FormCategory] {
-    override def writes(o: FormCategory): JsValue = o match {
-      case HMRCReturnForm => JsString("hmrcReturnForm")
-      case HMRCClaimForm => JsString("hmrcClaimForm")
-      case Default => JsString("default")
-    }
-
-    override def reads(json: JsValue): JsResult[FormCategory] = {
-      json match {
-        case JsString("hmrcReturnForm") => JsSuccess(HMRCReturnForm)
-        case JsString("hmrcClaimForm") => JsSuccess(HMRCClaimForm)
-        case JsString("default") => JsSuccess(Default)
-        case JsString(err) => JsError(s"only three valid categories, hmrcReturnForm, hmrcClaimForm or default $err is not valid")
-        case _ => JsError("Failure")
-      }
-    }
-  }
+  implicit val format: Format[FormCategory] = derived.oformat[FormCategory]
 }
