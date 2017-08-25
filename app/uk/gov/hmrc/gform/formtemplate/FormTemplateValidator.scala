@@ -75,8 +75,8 @@ object FormTemplateValidator {
         (field.`type`, field.mandatory) match {
           case (Address(_), _) => (mandatoryAcc ++ Address.mandatoryFields(field.id), optionalAcc ++ Address.optionalFields(field.id))
           case (Date(_, _, _), _) => (mandatoryAcc ++ Date.fields(field.id), optionalAcc)
-          case (Text(_, _, _), true) => (mandatoryAcc + field.id, optionalAcc)
-          case (Text(_, _, _), false) => (mandatoryAcc, optionalAcc + field.id)
+          case (Text(_, _), true) => (mandatoryAcc + field.id, optionalAcc)
+          case (Text(_, _), false) => (mandatoryAcc, optionalAcc + field.id)
           case (_, true) => (mandatoryAcc + field.id, optionalAcc)
           case (_, false) => (mandatoryAcc, optionalAcc + field.id)
         }
@@ -128,7 +128,7 @@ object FormTemplateValidator {
 
   def validate(componentType: ComponentType, formTemplate: FormTemplate): ValidationResult = componentType match {
     case UkSortCode(expr) => validate(expr, formTemplate)
-    case Text(_, expr, _) => validate(expr, formTemplate)
+    case Text(_, expr) => validate(expr, formTemplate)
     case Date(_, _, _) => Valid
     case Address(_) => Valid
     case Choice(_, _, _, _, _) => Valid

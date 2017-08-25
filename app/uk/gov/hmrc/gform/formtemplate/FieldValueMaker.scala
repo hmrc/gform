@@ -115,24 +115,35 @@ class FieldValueMaker(json: JsValue) {
     for {
       maybeFormatExpr <- optMaybeFormatExpr
       maybeValueExpr <- optMaybeValueExpr
-      optText = (maybeFormatExpr, maybeValueExpr, total) match {
-        //format: OFF
-        case (Some(TextFormat(UkSortCodeFormat)), Some(TextExpression(expr)), _) => UkSortCode(expr).asRight
-        case (Some(TextFormat(UkSortCodeFormat)), None, _) => UkSortCode(Constant("")).asRight
-        case (Some(TextFormat(f)), Some(TextExpression(expr)), IsTotal(TotalYes))  => Text(f, expr, total = true).asRight
-        case (Some(TextFormat(f)), Some(TextExpression(expr)), IsTotal(TotalNo))   => Text(f, expr, total = false).asRight
-        case (Some(TextFormat(f)), None,                       IsTotal(TotalYes))  => Text(f, Constant(""), total = true).asRight
-        case (Some(TextFormat(f)), None,                       IsTotal(TotalNo))   => Text(f, Constant(""), total = false).asRight
-        case (None,                Some(TextExpression(expr)), IsTotal(TotalYes))  => Text(ShortText, expr, total = true).asRight
-        case (None,                Some(TextExpression(expr)), IsTotal(TotalNo))   => Text(ShortText, expr, total = false).asRight
-        case (None,                None,                       IsTotal(TotalYes))  => Text(ShortText, Constant(""), total = true).asRight
-        case (None,                None,                       IsTotal(TotalNo))   => Text(ShortText, Constant(""), total = false).asRight
-        case (Some(invalidFormat), Some(invalidValue),         invalidTotal)       => UnexpectedState(
+      optText = (maybeFormatExpr, maybeValueExpr) match {
+        //format: ON
+        case (Some(TextFormat(UkSortCodeFormat)), Some(TextExpression(expr))) => UkSortCode(expr).asRight
+        case (Some(TextFormat(UkSortCodeFormat)), None) => UkSortCode(Constant("")).asRight
+        case (Some(TextFormat(f)), Some(TextExpression(expr))) => Text(f, expr).asRight
+        case (Some(TextFormat(f)), None) => Text(f, Constant("")).asRight
+        case (None, Some(TextExpression(expr))) => Text(ShortText, expr).asRight
+        case (None, None) => Text(ShortText, Constant("")).asRight
+        case (Some(invalidFormat), None) => UnexpectedState(
+          s"""|Unsupported type of format and value for text field
+              |Id: $id
+              |Format: $invalidFormat
+              |Value: must supply a value
+              |""".stripMargin
+        ).asLeft
+        case (None, Some(invalidValue)) => UnexpectedState(
+          s"""|Unsupported type of format and value for text field
+              |Id: $id
+              |Format: "must supply a value for format"
+              |Value: $invalidValue
+              |""".stripMargin
+        ).asLeft
+        case (Some(invalidFormat), Some(invalidValue)) => UnexpectedState(
           s"""|Unsupported type of format and value for text field
               |Id: $id
               |Format: $invalidFormat
               |Value: $invalidValue
-              |Total: $invalidTotal""".stripMargin).asLeft
+              |""".stripMargin
+        ).asLeft
         //format: ON
       }
       result <- optText
