@@ -126,7 +126,8 @@ class SubmissionServiceSpec extends Spec {
             FieldValue(FieldId("1_DOS"), Text(AnyText, Constant("DOS")), "Editable text label", None, None, true, true, true, None)
           )
         )
-      )
+      ),
+      SectionFormField("Declaration", List())
     )
 
     val res = SubmissionServiceHelper.getSectionFormFields(form, formTemplate)
