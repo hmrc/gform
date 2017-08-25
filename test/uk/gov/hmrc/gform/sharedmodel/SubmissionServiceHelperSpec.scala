@@ -37,7 +37,7 @@ class SubmissionServiceHelperSpec extends Spec {
   it should "not complain if formData is present for fields on included Sections" in new ExampleData {
     override val `section - about you` = super.`section - about you`.copy(includeIf = Some(IncludeIf(IsFalse)))
     val sections = SubmissionServiceHelper.getSectionFormFields(form, formTemplate).right.value
-    val expectedSize = formTemplate.sections.size - 1
+    val expectedSize = formTemplate.sections.size // this includes the declaration  section
     sections.size shouldBe expectedSize withClue "one section is excluded"
     sections.map(_.title) should not contain `fieldValue - firstName`.label
     sections.map(_.title) should not contain `fieldValue - surname`.label
@@ -47,7 +47,7 @@ class SubmissionServiceHelperSpec extends Spec {
   it should "return only the formData on included Sections" in new ExampleData {
     override val `section - about you` = super.`section - about you`.copy(includeIf = Some(IncludeIf(IsTrue)))
     val sectionFormFields1 = SubmissionServiceHelper.getSectionFormFields(form, formTemplate).right.get
-    sectionFormFields1.size shouldBe formTemplate.sections.size
+    sectionFormFields1.size shouldBe formTemplate.sections.size + 1 // This includes the declaration section
 
     sectionFormFields1.map(_.title) should contain allOf (
       `section - about you`.title,
