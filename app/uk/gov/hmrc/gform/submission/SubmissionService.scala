@@ -116,7 +116,7 @@ object SubmissionServiceHelper {
           case FileUpload() => List(fieldValue.id)
           case UkSortCode(_) => UkSortCode.fields(fieldValue.id)
           case Text(_, _) | Choice(_, _, _, _, _) | Group(_, _, _, _, _, _) => List(fieldValue.id)
-          case InformationMessage(_, _) => List(fieldValue.id)
+          case InformationMessage(_, _) => Nil
         }
 
       val formFieldAndFieldValues: Opt[List[FormField]] = {
@@ -137,11 +137,13 @@ object SubmissionServiceHelper {
       }
     }
 
-    val toSectionFormField: Section => Opt[SectionFormField] = section =>
+    val toSectionFormField: BaseSection => Opt[SectionFormField] = section =>
       SectionHelper.atomicFields(section, data).traverse(formFieldByFieldValue).map(ff => SectionFormField(section.shortName.getOrElse(section.title), ff))
 
     val allSections = RepeatingComponentService.getAllSections(form, formTemplate)
-    val sectionsToSubmit = allSections.filter(section => BooleanExpr.isTrue(section.includeIf.getOrElse(IncludeIf(IsTrue)).expr, data))
+    val sectionsToSubmit = allSections.filter(
+      section => BooleanExpr.isTrue(section.includeIf.getOrElse(IncludeIf(IsTrue)).expr, data)
+    ) :+ formTemplate.declarationSection
     sectionsToSubmit.traverse(toSectionFormField)
   }
 

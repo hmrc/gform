@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
-import play.api.libs.json.{ JsError, JsSuccess }
 import uk.gov.hmrc.gform.sharedmodel.form.FormField
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
@@ -24,7 +23,7 @@ import scala.collection.immutable.List
 
 object SectionHelper {
 
-  def atomicFields(section: Section, data: Map[FieldId, FormField]): List[FieldValue] = atomicFields(section.fields, data)
+  def atomicFields(section: BaseSection, data: Map[FieldId, FormField]): List[FieldValue] = atomicFields(section.fields, data)
 
   private def atomicFields(fieldValues: List[FieldValue], data: Map[FieldId, FormField]): List[FieldValue] = {
     fieldValues.flatMap { (fieldValue) =>
