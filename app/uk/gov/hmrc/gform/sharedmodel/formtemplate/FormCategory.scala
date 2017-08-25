@@ -18,10 +18,18 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import play.api.libs.json._
 
-trait FormCategory
-object HMRCReturnForm extends FormCategory
-object HMRCClaimForm extends FormCategory
-object Default extends FormCategory
+sealed trait FormCategory {
+  def getString: String
+}
+case object HMRCReturnForm extends FormCategory {
+  override def getString: String = "return"
+}
+case object HMRCClaimForm extends FormCategory {
+  override def getString: String = "claim"
+}
+case object Default extends FormCategory {
+  override def getString: String = "form"
+}
 
 object FormCategory {
 
