@@ -44,8 +44,7 @@ class FormatValidationSpec extends Spec {
         }
       """)) shouldBe JsSuccess(FieldValue(
       id = FieldId(id),
-      `type` = Text(ShortText, Constant(""),
-        false),
+      `type` = Text(ShortText, Constant("")),
       label = label,
       helpText = None,
       shortName = None,
@@ -75,8 +74,7 @@ class FormatValidationSpec extends Spec {
     val json: JsValue = makeJson(format)
     reads.reads(json) shouldBe JsSuccess(FieldValue(
       id = FieldId(id),
-      `type` = Text(constraint, Constant(""),
-        false),
+      `type` = Text(constraint, Constant("")),
       label = label,
       helpText = None,
       shortName = None,

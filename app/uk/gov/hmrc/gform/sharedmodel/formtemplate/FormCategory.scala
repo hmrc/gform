@@ -32,7 +32,6 @@ case object Default extends FormCategory {
 }
 
 object FormCategory {
-
   implicit val format: Format[FormCategory] = new Format[FormCategory] {
     override def writes(o: FormCategory): JsValue = o match {
       case HMRCReturnForm => JsString("hmrcReturnForm")

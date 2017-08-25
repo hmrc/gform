@@ -199,8 +199,8 @@ class ValueParserSpec extends Spec {
     None, None, None,
     None, None,
     List(
-      FieldValue(FieldId("firstName"), Text(AnyText, Constant(""), total = false), "Your first name", None, None, mandatory = false, editable = true, submissible = true, errorMessage = None),
-      FieldValue(FieldId("lastName"), Text(AnyText, Constant(""), total = false), "Your last name", None, None, mandatory = false, editable = true, submissible = true, errorMessage = None)
+      FieldValue(FieldId("firstName"), Text(AnyText, Constant("")), "Your first name", None, None, mandatory = false, editable = true, submissible = true, errorMessage = None),
+      FieldValue(FieldId("lastName"), Text(AnyText, Constant("")), "Your last name", None, None, mandatory = false, editable = true, submissible = true, errorMessage = None)
     )
   )
 
@@ -208,22 +208,22 @@ class ValueParserSpec extends Spec {
 
   "Expr.validate" should "return Valid if expression include fieldName id present in the form template" in {
 
-    val res = FormTemplateValidator.validate(List(Text(AnyText, FormCtx("firstName"), total = false)), formTemplateWithOneSection)
+    val res = FormTemplateValidator.validate(List(Text(AnyText, FormCtx("firstName"))), formTemplateWithOneSection)
     res should be(Valid)
   }
 
   it should "return Valid if expression Add fields present in the form template" in {
-    val res = FormTemplateValidator.validate(List(Text(AnyText, Add(FormCtx("firstName"), FormCtx("lastName")), total = false)), formTemplateWithOneSection)
+    val res = FormTemplateValidator.validate(List(Text(AnyText, Add(FormCtx("firstName"), FormCtx("lastName")))), formTemplateWithOneSection)
     res should be(Valid)
   }
 
   it should "return Valid if expression Multiply fields present in the form template" in {
-    val res = FormTemplateValidator.validate(List(Text(AnyText, Multiply(FormCtx("firstName"), FormCtx("lastName")), total = false)), formTemplateWithOneSection)
+    val res = FormTemplateValidator.validate(List(Text(AnyText, Multiply(FormCtx("firstName"), FormCtx("lastName")))), formTemplateWithOneSection)
     res should be(Valid)
   }
 
   it should "return Invalid if expression include fieldName id not present in the form template" in {
-    val res = FormTemplateValidator.validate(List(Text(AnyText, FormCtx("firstNameTypo"), total = false)), formTemplateWithOneSection)
+    val res = FormTemplateValidator.validate(List(Text(AnyText, FormCtx("firstNameTypo"))), formTemplateWithOneSection)
     res should be(Invalid("Form field 'firstNameTypo' is not defined in form template."))
   }
 }

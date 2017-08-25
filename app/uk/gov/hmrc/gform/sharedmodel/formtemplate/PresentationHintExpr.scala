@@ -21,7 +21,9 @@ import play.api.libs.json._
 
 sealed trait PresentationHint
 case object CollapseGroupUnderLabel extends PresentationHint
+case object InvisibleInSummary extends PresentationHint
 case object SummariseGroupAsGrid extends PresentationHint
+case object TotalValue extends PresentationHint
 
 object PresentationHint {
   implicit val format: OFormat[PresentationHint] = derived.oformat[PresentationHint]

@@ -56,10 +56,12 @@ class SubmissionService(
 
     pdfGeneratorService.generatePDF(html).map { pdf =>
 
+      /*
       val path = java.nio.file.Paths.get("confirmation.pdf")
       val out = java.nio.file.Files.newOutputStream(path)
       out.write(pdf)
       out.close()
+      */
 
       val pdfSummary = PdfSummary(
         numberOfPages = 1L,
@@ -113,8 +115,8 @@ object SubmissionServiceHelper {
           case Date(_, _, _) => Date.fields(fieldValue.id)
           case FileUpload() => List(fieldValue.id)
           case UkSortCode(_) => UkSortCode.fields(fieldValue.id)
-          case Text(_, _, _) | Choice(_, _, _, _, _) | Group(_, _, _, _, _, _) => List(fieldValue.id)
-          case InformationMessage(_, _) => Nil // No data associated to it
+          case Text(_, _) | Choice(_, _, _, _, _) | Group(_, _, _, _, _, _) => List(fieldValue.id)
+          case InformationMessage(_, _) => Nil
         }
 
       val formFieldAndFieldValues: Opt[List[FormField]] = {

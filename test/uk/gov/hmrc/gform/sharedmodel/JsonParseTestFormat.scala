@@ -75,7 +75,7 @@ class JsonParseTestFormat extends Spec {
       val jsResult = implicitly[Reads[FieldValue]].reads(Json.parse(startOfJson + snippet))
       jsResult shouldBe a[JsSuccess[_]]
       jsResult.map(fv => fv.`type` match {
-        case Text(constraint, _, _) => constraint should equal(Number(11, 2, None))
+        case Text(constraint, _) => constraint should equal(Number(11, 2, None))
         case a @ _ => fail(s"expected a Text, got $a")
       })
     }
