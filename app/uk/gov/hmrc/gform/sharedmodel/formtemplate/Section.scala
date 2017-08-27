@@ -112,6 +112,17 @@ object DeclarationSection {
   implicit val format = Json.format[DeclarationSection]
 }
 
+case class AcknowledgementSection(
+  title: String,
+  description: Option[String],
+  shortName: Option[String],
+  fields: List[FieldValue]
+) extends BaseSection
+
+object AcknowledgementSection {
+  implicit val format = Json.format[AcknowledgementSection]
+}
+
 case class SectionFormField(
   title: String,
   fields: List[(List[FormField], FieldValue)]
