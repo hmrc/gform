@@ -69,7 +69,7 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
   private val shortLivedCacheModule = new Save4LaterModule(configModule, wSHttpModule)
   private val pdfGeneratorModule = new PdfGeneratorModule(configModule, wSHttpModule)
 
-  private val formModule = new FormModule(mongoModule, shortLivedCacheModule, formTemplateModule, fileUploadModule)
+  private val formModule = new FormModule(mongoModule, shortLivedCacheModule, formTemplateModule, fileUploadModule, wSHttpModule, configModule)
   private val submissionModule = new SubmissionModule(mongoModule, pdfGeneratorModule, formModule, formTemplateModule, fileUploadModule, timeModule)
   private val testOnlyModule = new TestOnlyModule(mongoModule)
   private val graphiteModule = new GraphiteModule(self)

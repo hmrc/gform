@@ -16,26 +16,37 @@
 
 package uk.gov.hmrc.gform.form
 
+import sun.misc.ObjectInputFilter.Config
+import uk.gov.hmrc.gform.config.ConfigModule
+import uk.gov.hmrc.gform.des.DesConnector
 import uk.gov.hmrc.gform.fileupload.FileUploadModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.save4later.{ Save4Later, Save4LaterModule }
+import uk.gov.hmrc.gform.wshttp.{ WSHttp, WSHttpModule }
 
 class FormModule(
     mongoModule: MongoModule,
     shortLivedCacheModule: Save4LaterModule,
     formTemplateModule: FormTemplateModule,
-    fileUploadModule: FileUploadModule
+    fileUploadModule: FileUploadModule,
+    wSHttpModule: WSHttpModule,
+    configModule: ConfigModule
 ) {
 
   val save4later = new Save4Later(shortLivedCacheModule.shortLivedCache, scala.concurrent.ExecutionContext.Implicits.global)
 
   val formService = new FormService(save4later)
 
+  val environment: String = configModule.typesafeConfig.getString("microservice.services.etmp-hod.environment")
+  val auth: String = configModule.typesafeConfig.getString("microservice.services.etmp-hod.authorization-token")
+  val desConnector: DesConnector = new DesConnector(wSHttpModule.auditableWSHttp, configModule.serviceConfig.baseUrl("etmp-hod"), environment, auth)
+
   val formController: FormController = new FormController(
     formTemplateModule.formTemplateService,
     fileUploadModule.fileUploadService,
-    formService
+    formService,
+    desConnector
   )
 
 }
