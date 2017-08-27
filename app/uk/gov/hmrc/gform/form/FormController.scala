@@ -21,6 +21,7 @@ import play.api.libs.json.{ JsValue, Json }
 import play.api.mvc.{ Action, AnyContent }
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.core.FormValidator
+import uk.gov.hmrc.gform.des.DesConnector
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.fileupload.FileUploadService
 import uk.gov.hmrc.gform.formtemplate.FormTemplateService
@@ -36,7 +37,8 @@ import scala.util.Try
 class FormController(
     formTemplateService: FormTemplateService,
     fileUploadService: FileUploadService,
-    formService: FormService
+    formService: FormService,
+    desConnector: DesConnector
 ) extends BaseController {
 
   def newForm(userId: UserId, formTemplateId: FormTemplateId) = Action.async { implicit request =>
@@ -105,6 +107,10 @@ class FormController(
       _ <- fileUploadService.deleteFile(form.envelopeId, fileId)
     } yield ()
     result.asNoContent
+  }
+
+  def callDes(utr: String, postcode: String) = Action.async { implicit request =>
+    desConnector.lookup(utr, postcode).map(if (_) Ok("") else NotFound)
   }
 
   //TODO discuss with Daniel about naming, purpose of it and if we can make it part of a form

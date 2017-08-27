@@ -17,7 +17,6 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import play.api.libs.json._
-import uk.gov.hmrc.gform.core.{ Invalid, Valid, ValidationResult }
 import uk.gov.hmrc.gform.sharedmodel.form.FormField
 
 import scala.collection.immutable.List
@@ -36,6 +35,7 @@ case class Section(
     includeIf: Option[IncludeIf],
     repeatsMax: Option[TextExpression],
     repeatsMin: Option[TextExpression],
+    validators: Option[Validators],
     fields: List[FieldValue]
 ) extends BaseSection {
   private def atomicFields(fieldValues: List[FieldValue], data: Map[FieldId, FormField]): List[FieldValue] = {
@@ -127,3 +127,4 @@ case class SectionFormField(
   title: String,
   fields: List[(List[FormField], FieldValue)]
 )
+
