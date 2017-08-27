@@ -90,10 +90,14 @@ Unordered list\n
       ]
     }
   ],
-  "acknowledgementSection": [
-    {
-      "title": "Some content",
-      "content": "this is content"
-    }
-  ]
-}
+  "acknowledgementSection": {
+    "title": "Acknowledgment page",
+    "fields": [
+      {
+        "type": "info",
+        "id": "declarationTopInfo",
+        "label": "Acknowledgement copy",
+        "infoText": "thingy copy"
+      }
+    ]
+  }}

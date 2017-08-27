@@ -186,10 +186,14 @@
       "description": "When submitting a claim, you must include a worksheet/ spreadsheet to show how you have calculated your claim amount. A worksheet must also be provided for any over or under claims."
     }
   ],
-  "acknowledgementSection": [
-    {
-      "title": "Some content",
-      "content": "this is content"
-    }
-  ]
-}
+  "acknowledgementSection": {
+    "title": "Acknowledgment page",
+    "fields": [
+      {
+        "type": "info",
+        "id": "declarationTopInfo",
+        "label": "Acknowledgement copy",
+        "infoText": "thingy copy"
+      }
+    ]
+  }}
