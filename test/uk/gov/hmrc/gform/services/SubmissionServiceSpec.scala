@@ -101,7 +101,7 @@ class SubmissionServiceSpec extends Spec {
       submitSuccessUrl = "http://somwehere-nice.net",
       submitErrorUrl = "http://somwehere-nasty.net",
       sections = List(section),
-      List.empty[AckSection],
+      acknowledgementSection = AcknowledgementSection("", None, None, Nil),
       declarationSection = DeclarationSection("Declaration", None, None, Nil)
     )
 
