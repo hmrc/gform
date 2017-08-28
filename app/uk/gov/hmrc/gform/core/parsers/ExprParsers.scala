@@ -25,7 +25,7 @@ object ExprParsers {
 
   def validate(expression: String): Opt[FormCtx] = validateWithParser(expression, expr)
 
-  lazy val expr: Parser[FormCtx] = "${" ~ contextField ~ "}" ^^ { (loc, _, field, _) => field }
+  lazy val expr: Parser[FormCtx] = "$" ~ contextField ~ "" ^^ { (loc, _, field, _) => field }
 
   lazy val contextField: Parser[FormCtx] = alphabeticOnly ^^ { (loc, fn) => FormCtx(fn) }
 

@@ -141,7 +141,7 @@ trait ExampleSection { dependecies: ExampleFieldId with ExampleFieldValue =>
 
   def `section - about you` = Section(
     "About you",
-    None, None, None, None, None,
+    None, None, None, None, None, None,
     List(
       `fieldValue - firstName`,
       `fieldValue - surname`,
@@ -151,7 +151,7 @@ trait ExampleSection { dependecies: ExampleFieldId with ExampleFieldValue =>
 
   def `section - businessDetails` = Section(
     "Business details",
-    None, None, None, None, None,
+    None, None, None, None, None, None,
     List(
       `fieldValue - businessName`,
       `fieldValue - startDate`,
@@ -164,6 +164,7 @@ trait ExampleSection { dependecies: ExampleFieldId with ExampleFieldValue =>
     None, None, None,
     repeatsMax = Some(TextExpression(FormCtx(`fieldId - firstName`.value))),
     repeatsMin = Some(TextExpression(FormCtx(`fieldId - firstName`.value))),
+    None,
     List(
       `fieldValue - surname`
     )
