@@ -153,7 +153,9 @@ object FormTemplateValidator {
   }
 
   def validate(expr: Expr, formTemplate: FormTemplate): ValidationResult = {
-    val fieldNamesIds: List[FieldId] = formTemplate.sections.flatMap(_.fields.map(_.id))
+    val fieldNamesIds: List[FieldId] = formTemplate.sections.flatMap(_.fields.map(_.id)) ::: formTemplate.sections.flatMap(_.fields.map(_.`type`).collect {
+      case Group(fields, _, _, _, _, _) => fields.map(_.id)
+    }).flatten
 
     def checkFields(field1: Expr, field2: Expr): ValidationResult = {
       val checkField1 = validate(field1, formTemplate)
