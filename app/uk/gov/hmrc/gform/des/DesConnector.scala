@@ -45,7 +45,7 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, environment: String, authori
       address.postalCode.replace(" ", "").equalsIgnoreCase(postCode.replace(" ", ""))
     }
 
-    if(isStub) {
+    if (isStub) {
       Future.successful(true)
     } else {
       wSHttp.POST[JsValue, Address](s"$baseUrl/registration/organisation/utr/$utr", lookupJson)

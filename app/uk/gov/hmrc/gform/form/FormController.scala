@@ -27,7 +27,7 @@ import uk.gov.hmrc.gform.fileupload.FileUploadService
 import uk.gov.hmrc.gform.formtemplate.FormTemplateService
 import uk.gov.hmrc.gform.sharedmodel.UserId
 import uk.gov.hmrc.gform.sharedmodel.form.{ FileId, FormData, FormId, UserData }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId, Section, SectionNumber }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.play.http.BadRequestException
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -109,8 +109,9 @@ class FormController(
     result.asNoContent
   }
 
+  case class True()
   def callDes(utr: String, postcode: String) = Action.async { implicit request =>
-    desConnector.lookup(utr, postcode).map(if (_) Ok("") else NotFound)
+    desConnector.lookup(utr, postcode).map(if (_) NoContent else NotFound)
   }
 
   //TODO discuss with Daniel about naming, purpose of it and if we can make it part of a form

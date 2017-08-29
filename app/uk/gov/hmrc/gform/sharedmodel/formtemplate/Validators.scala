@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import cats.data.Validated
 import cats.data.Validated.{ Invalid, Valid }
 import play.api.libs.json._
+import play.api.libs.json.Reads._
 import uk.gov.hmrc.gform.core.parsers.ExprParsers
 import uk.gov.hmrc.play.http.HeaderCarrier
 import play.api.libs.functional.syntax._
@@ -36,29 +37,10 @@ case class Validators(validatorName: String, errorMessage: String, parameters: M
 
 object Validators {
 
-  lazy val writes = Json.writes[Validators]
-  lazy val readsValidator = Json.reads[Validators]
-  implicit val reads: Reads[FormCtx] = readsForMongoJson | readsForTemplateJson
-  private lazy val readsForMongoJson = Json.reads[FormCtx]
-
-  private lazy val readsForTemplateJson = Reads { json =>
-    exprParser(json)
-  }
-
   lazy implicit val format: OFormat[Validators] = OFormat(readsValidator, writes)
 
-  private def exprParser(json: JsValue): JsResult[FormCtx] = {
-    json match {
-      case JsString(exprAsStr) => parse(exprAsStr)
-      case otherwise => JsError(s"Invalid expression. Expected String, got $otherwise")
-    }
-  }
-
-  private def parse(exprAsStr: String): JsResult[FormCtx] =
-    ExprParsers.validate(exprAsStr) fold (
-      error => JsError(error.toString),
-      expr => JsSuccess(expr)
-    )
+  lazy val writes: OWrites[Validators] = Json.writes[Validators]
+  lazy val readsValidator: Reads[Validators] = Json.reads[Validators]
 }
 
 trait Validator[A] {

@@ -32,12 +32,12 @@ object IncludeIf {
 
   private lazy val readsForMongoJson = Json.reads[IncludeIf]
 
-  private lazy val readsForTemplateJson = Reads { json =>
+  private lazy val readsForTemplateJson: Reads[IncludeIf] = Reads { json =>
     val includeIfJsR: JsResult[IncludeIf] = booleanExprParser(json).map(be => IncludeIf(be))
     includeIfJsR
   }
 
-  private def booleanExprParser(json: JsValue) = {
+  private def booleanExprParser(json: JsValue): JsResult[BooleanExpr] = {
     json match {
       case JsString(exprAsStr) => parse(exprAsStr)
       case otherwise => JsError(s"Invalid expression. Expected String, got $otherwise")
