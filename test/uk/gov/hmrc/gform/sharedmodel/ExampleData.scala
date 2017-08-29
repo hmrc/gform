@@ -108,6 +108,13 @@ trait ExampleFieldValue { dependecies: ExampleFieldId =>
     None
   )
 
+
+  def `fieldValue - info` = FieldValue(
+    `fieldId - businessName`,
+    InformationMessage(NoFormat, "some text"),
+    "someLabel",
+    None, None, false, false, false, None)
+
   def `group - type` = Group(
     fields = List(`fieldValue - firstName`),
     orientation = Horizontal,
@@ -170,7 +177,7 @@ trait ExampleSection { dependecies: ExampleFieldId with ExampleFieldValue =>
   )
 }
 
-trait ExampleFormTemplate { dependsOn: ExampleAuthConfig with ExampleSection with ExampleFieldId =>
+trait ExampleFormTemplate { dependsOn: ExampleAuthConfig with ExampleSection with ExampleFieldId with ExampleFieldValue =>
 
   def formTemplateId = FormTemplateId("AAA999")
 
@@ -182,6 +189,9 @@ trait ExampleFormTemplate { dependsOn: ExampleAuthConfig with ExampleSection wit
 
   def submitErrorUrl = """http://imsorry.com"""
 
+  def acknowledgementSection =
+    AcknowledgementSection("Acknowledgement Page", Some("this page is to acknowledge submission"), Some("shortName for acknowledgement"), List(`fieldValue - info`))
+
   def formTemplate = FormTemplate(
     _id = formTemplateId,
     formName = formName,
@@ -192,7 +202,7 @@ trait ExampleFormTemplate { dependsOn: ExampleAuthConfig with ExampleSection wit
     submitSuccessUrl = submtSuccessUrl,
     submitErrorUrl = submitErrorUrl,
     sections = allSections,
-    acknowledgementSection = AcknowledgementSection("", None, None, Nil),
+    acknowledgementSection = acknowledgementSection,
     declarationSection = DeclarationSection("Declaration", None, None, Nil)
   )
 }
