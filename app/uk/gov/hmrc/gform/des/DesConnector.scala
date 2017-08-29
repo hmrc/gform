@@ -24,7 +24,7 @@ import uk.gov.hmrc.play.http.{ HeaderCarrier, NotFoundException }
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-class DesConnector(wSHttp: WSHttp, baseUrl: String, environment: String, authorizationToken: String) { //TODO make the connector easy to move from service to service
+class DesConnector(wSHttp: WSHttp, baseUrl: String, environment: String, authorizationToken: String, isStub: Boolean) { //TODO make the connector easy to move from service to service
 
   val lookupJson: JsValue =
     Json.parse("""{
@@ -45,11 +45,15 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, environment: String, authori
       address.postalCode.replace(" ", "").equalsIgnoreCase(postCode.replace(" ", ""))
     }
 
-    wSHttp.POST[JsValue, Address](s"$baseUrl/registration/organisation/utr/$utr", lookupJson)
-      .map(compare)
-      .recover {
-        case _: NotFoundException => false
-      }
+    if(isStub) {
+      Future.successful(true)
+    } else {
+      wSHttp.POST[JsValue, Address](s"$baseUrl/registration/organisation/utr/$utr", lookupJson)
+        .map(compare)
+        .recover {
+          case _: NotFoundException => false
+        }
+    }
   }
 
   def createHC =

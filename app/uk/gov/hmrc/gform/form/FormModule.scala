@@ -40,7 +40,8 @@ class FormModule(
 
   val environment: String = configModule.typesafeConfig.getString("microservice.services.etmp-hod.environment")
   val auth: String = configModule.typesafeConfig.getString("microservice.services.etmp-hod.authorization-token")
-  val desConnector: DesConnector = new DesConnector(wSHttpModule.auditableWSHttp, configModule.serviceConfig.baseUrl("etmp-hod"), environment, auth)
+  val isStub: Boolean = configModule.typesafeConfig.getBoolean("microservice.services.etmp-hod.stub")
+  val desConnector: DesConnector = new DesConnector(wSHttpModule.auditableWSHttp, configModule.serviceConfig.baseUrl("etmp-hod"), environment, auth, isStub)
 
   val formController: FormController = new FormController(
     formTemplateModule.formTemplateService,
