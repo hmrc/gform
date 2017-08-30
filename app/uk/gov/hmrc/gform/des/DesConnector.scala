@@ -24,7 +24,7 @@ import uk.gov.hmrc.play.http.{ HeaderCarrier, NotFoundException }
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-class DesConnector(wSHttp: WSHttp, baseUrl: String, environment: String, authorizationToken: String, isStub: Boolean) { //TODO make the connector easy to move from service to service
+class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: Config) { //TODO make the connector easy to move from service to service
 
   val lookupJson: JsValue =
     Json.parse("""{
@@ -33,30 +33,26 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, environment: String, authori
        "isAnAgent": false
       }""") //TODO add in actual regime we are looking for
 
-  case class Address(postalCode: String)
-
-  object Address {
-    implicit val format: OFormat[Address] = Json.format[Address]
-  }
-
   def lookup(utr: String, postCode: String)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Boolean] = {
 
-    def compare(address: Address) = {
-      address.postalCode.replace(" ", "").equalsIgnoreCase(postCode.replace(" ", ""))
+    def compare(address: AddressDes) = {
+      address.postalCode.replace(" ", "").equalsIgnoreCase(postCode.replace(" ", "")) || address.postalCode == "Valid"
     }
 
-    if (isStub) {
-      Future.successful(true)
-    } else {
-      wSHttp.POST[JsValue, Address](s"$baseUrl/registration/organisation/utr/$utr", lookupJson)
-        .map(compare)
-        .recover {
-          case _: NotFoundException => false
-        }
-    }
+    wSHttp.POST[JsValue, AddressDes](s"$baseUrl${desConfig.getString("base-path")}/registration/organisation/utr/$utr", lookupJson)
+      .map(compare)
+      .recover {
+        case _: NotFoundException => false
+      }
   }
 
   def createHC =
-    HeaderCarrier(extraHeaders = Seq("Environment" -> environment), authorization = Some(Authorization(authorizationToken)))
+    HeaderCarrier(extraHeaders = Seq("Environment" -> desConfig.getString("environment")), authorization = Some(Authorization(desConfig.getString("authorization-token"))))
 
+}
+
+case class AddressDes(postalCode: String)
+
+object AddressDes {
+  implicit val format: OFormat[AddressDes] = Json.format[AddressDes]
 }

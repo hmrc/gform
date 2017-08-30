@@ -38,6 +38,7 @@ import uk.gov.hmrc.gform.save4later.Save4LaterModule
 import uk.gov.hmrc.gform.submission.SubmissionModule
 import uk.gov.hmrc.gform.testonly.TestOnlyModule
 import uk.gov.hmrc.gform.time.TimeModule
+import uk.gov.hmrc.gform.validation.ValidationModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 
 class ApplicationLoader extends play.api.ApplicationLoader {
@@ -69,12 +70,13 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
   private val shortLivedCacheModule = new Save4LaterModule(configModule, wSHttpModule)
   private val pdfGeneratorModule = new PdfGeneratorModule(configModule, wSHttpModule)
 
-  private val formModule = new FormModule(mongoModule, shortLivedCacheModule, formTemplateModule, fileUploadModule, wSHttpModule, configModule)
+  private val formModule = new FormModule(mongoModule, shortLivedCacheModule, formTemplateModule, fileUploadModule)
+  private val validationModule = new ValidationModule(wSHttpModule, configModule)
   private val submissionModule = new SubmissionModule(mongoModule, pdfGeneratorModule, formModule, formTemplateModule, fileUploadModule, timeModule)
   private val testOnlyModule = new TestOnlyModule(mongoModule)
   private val graphiteModule = new GraphiteModule(self)
 
-  private val playComponentsModule = new PlayComponentsModule(playComponents, akkaModule, configModule, auditingModule, metricsModule, formModule, formTemplateModule, testOnlyModule, submissionModule)
+  private val playComponentsModule = new PlayComponentsModule(playComponents, akkaModule, configModule, auditingModule, metricsModule, formModule, formTemplateModule, testOnlyModule, submissionModule, validationModule)
 
   override lazy val httpErrorHandler: HttpErrorHandler = playComponentsModule.errorHandler
   override lazy val httpRequestHandler: HttpRequestHandler = playComponentsModule.httpRequestHandler

@@ -5,7 +5,7 @@ import java.nio.file.{Files, Paths}
 import collection.JavaConverters._
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.gform.gformbackend.GformConnector
-import uk.gov.hmrc.gform.wshttp.{TestWSHttp, WSHttp}
+import uk.gov.hmrc.gform.wshttp.{TestWSHttpIT, WSHttp}
 import uk.gov.hmrc.play.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -32,7 +32,7 @@ object TemplatesInSampleDataSpec {
 
 object UploadAllTemplates extends App {
 
-  val wsclient = TestWSHttp
+  val wsclient = TestWSHttpIT
   val baseUrl = """http://localhost:9196/gform"""
   val gformConnector = new GformConnector(wsclient, baseUrl)
   implicit val hc = HeaderCarrier()

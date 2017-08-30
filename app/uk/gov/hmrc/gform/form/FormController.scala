@@ -37,8 +37,7 @@ import scala.util.Try
 class FormController(
     formTemplateService: FormTemplateService,
     fileUploadService: FileUploadService,
-    formService: FormService,
-    desConnector: DesConnector
+    formService: FormService
 ) extends BaseController {
 
   def newForm(userId: UserId, formTemplateId: FormTemplateId) = Action.async { implicit request =>
@@ -107,11 +106,6 @@ class FormController(
       _ <- fileUploadService.deleteFile(form.envelopeId, fileId)
     } yield ()
     result.asNoContent
-  }
-
-  case class True()
-  def callDes(utr: String, postcode: String) = Action.async { implicit request =>
-    desConnector.lookup(utr, postcode).map(if (_) NoContent else NotFound)
   }
 
   //TODO discuss with Daniel about naming, purpose of it and if we can make it part of a form

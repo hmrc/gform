@@ -14,32 +14,23 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.form
+package uk.gov.hmrc.gform.validation
 
-import sun.misc.ObjectInputFilter.Config
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.des.DesConnector
 import uk.gov.hmrc.gform.fileupload.FileUploadModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.save4later.{ Save4Later, Save4LaterModule }
-import uk.gov.hmrc.gform.wshttp.{ WSHttp, WSHttpModule }
+import uk.gov.hmrc.gform.wshttp.WSHttpModule
 
-class FormModule(
-    mongoModule: MongoModule,
-    shortLivedCacheModule: Save4LaterModule,
-    formTemplateModule: FormTemplateModule,
-    fileUploadModule: FileUploadModule
+class ValidationModule(
+    wSHttpModule: WSHttpModule,
+    configModule: ConfigModule
 ) {
 
-  val save4later = new Save4Later(shortLivedCacheModule.shortLivedCache, scala.concurrent.ExecutionContext.Implicits.global)
+  private val desConfig = configModule.typesafeConfig.getConfig("microservice.services.etmp-hod")
+  private val desConnector: DesConnector = new DesConnector(wSHttpModule.auditableWSHttp, configModule.serviceConfig.baseUrl("etmp-hod"), desConfig)
 
-  val formService = new FormService(save4later)
-
-  val formController: FormController = new FormController(
-    formTemplateModule.formTemplateService,
-    fileUploadModule.fileUploadService,
-    formService
-  )
-
+  val validationController = new ValidationController(desConnector)
 }

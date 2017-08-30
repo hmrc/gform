@@ -12,7 +12,7 @@ import scala.concurrent.Future
 //See https://github.com/hmrc/http-verbs/issues/60
 //Don't use it on production ('ws.close()' logic is missing)
 //TODO: this is copy paste from 'test'. Maybe it's worth to extract common test configuration
-object TestWSHttp extends WSHttp {
+object TestWSHttpIT extends WSHttp {
   override def buildRequest[A](url: String)(implicit hc: HeaderCarrier): WSRequest = ws.url(url)
   private implicit lazy val s: ActorSystem = ActorSystem()
   private implicit lazy val mat: ActorMaterializer = ActorMaterializer()

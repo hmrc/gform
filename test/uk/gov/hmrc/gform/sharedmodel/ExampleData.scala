@@ -32,6 +32,7 @@ trait ExampleData
   with ExampleFieldId
   with ExampleFieldValue
   with ExampleFormField
+  with ExampleValidator
   with ExampleSection
   with ExampleForm
   with ExampleAuthConfig
@@ -137,11 +138,19 @@ trait ExampleFieldValue { dependecies: ExampleFieldId =>
   )
 }
 
-trait ExampleSection { dependecies: ExampleFieldId with ExampleFieldValue =>
+trait ExampleValidator {
+  def defaultValidator = hMRCUTRPostcodeCheckValidator
+  def hMRCUTRPostcodeCheckValidator = HMRCUTRPostcodeCheckValidator("The UTR could not be foundor the postcode did not match. | <Welsh...>", FormCtx("utrToCheck"), FormCtx("postcodeToCheck"))
+
+  //todo other example validators
+}
+
+trait ExampleSection { dependecies: ExampleFieldId with ExampleFieldValue with ExampleValidator =>
 
   def `section - about you` = Section(
     "About you",
-    None, None, None, None, None, None,
+    None, None, None, None, None,
+    Some(defaultValidator),
     List(
       `fieldValue - firstName`,
       `fieldValue - surname`,

@@ -18,12 +18,13 @@ GET           /formtemplates/:formTemplateId/raw                   uk.gov.hmrc.g
 DELETE        /formtemplates/:formTemplateId                       uk.gov.hmrc.gform.formtemplate.FormTemplatesController.remove(formTemplateId: FormTemplateId)
 
 GET           /exposed-config                                      uk.gov.hmrc.gform.config.ConfigController.exposedConfig()
+
+GET           /validate/des/:utr/:postCode                         uk.gov.hmrc.gform.validation.ValidationController.validateAddressAtDes(utr: String, postCode: String)
+POST          /test-only/registration/organisation/utr/:utr        uk.gov.hmrc.gform.validation.ValidationController.testValidatorStub(utr: String)
+
 #TODO move it to testOnlyDoNotUseInAppConf.routes
 GET           /test-only/remove-templates                          uk.gov.hmrc.gform.testonly.TestOnlyController.removeTemplates()
 GET           /test-only/build-info                                uk.gov.hmrc.gform.testonly.TestOnlyController.buildInfo()
 GET           /test-only/config                                    uk.gov.hmrc.gform.testonly.TestOnlyController.config()
 
 
-
-
-GET           /validate/des/:utr/:postCode                         uk.gov.hmrc.gform.form.FormController.callDes(utr: String, postCode: String)

@@ -30,7 +30,7 @@ import scala.collection.immutable.List
 class HtmlGeneratorServiceSpec extends Spec {
 
   val testService = new HtmlGeneratorService {}
-  val formData = FormData(Seq.empty)
+  override val formData = FormData(Seq.empty)
 
   "HtmlGeneratorService.generateDocumentHTML" should "return HTML containing the form title" in {
     val html = testService.generateDocumentHTML(Nil, "FORM TITLE", formData)
