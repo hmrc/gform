@@ -55,19 +55,19 @@ class ExprSpec extends Spec {
     res should beJsSuccess[Expr](constant)
   }
 
-  val form = FormCtx("form")
+  val formCtx = FormCtx("form")
   val formJson = Json.obj(
     "FormCtx" -> Json.obj("value" -> "form")
   )
 
   it should "write FormCtx to json" in {
-    val res: JsValue = implicitly[Writes[Expr]].writes(form)
+    val res: JsValue = implicitly[Writes[Expr]].writes(formCtx)
     res should be(formJson)
   }
 
   it should "read FormCtx from json" in {
     val res: JsResult[Expr] = implicitly[Reads[Expr]].reads(formJson)
-    res should beJsSuccess[Expr](form)
+    res should beJsSuccess[Expr](formCtx)
   }
 
 }

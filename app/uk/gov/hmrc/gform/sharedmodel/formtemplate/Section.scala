@@ -35,7 +35,7 @@ case class Section(
     includeIf: Option[IncludeIf],
     repeatsMax: Option[TextExpression],
     repeatsMin: Option[TextExpression],
-    validators: Option[Validators],
+    validators: Option[Validator],
     fields: List[FieldValue]
 ) extends BaseSection {
   private def atomicFields(fieldValues: List[FieldValue], data: Map[FieldId, FormField]): List[FieldValue] = {

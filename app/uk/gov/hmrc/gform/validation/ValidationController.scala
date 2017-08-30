@@ -1,0 +1,42 @@
+/*
+ * Copyright 2017 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package uk.gov.hmrc.gform.validation
+
+import play.api.Logger
+import play.api.libs.json.Json
+import play.api.mvc.Action
+import uk.gov.hmrc.gform.controllers.BaseController
+import uk.gov.hmrc.gform.des.{ AddressDes, DesConnector }
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+
+class ValidationController(desConnector: DesConnector) extends BaseController {
+
+  def validateAddressAtDes(utr: String, postcode: String) = Action.async { implicit request =>
+    desConnector.lookup(utr, postcode).map(if (_) NoContent else NotFound)
+  }
+
+  def testValidatorStub(utr: String) = Action.async { implicit request =>
+    Logger.debug(s"this it the UTR that is passed to the function ${utr}")
+    if (utr.startsWith("1")) {
+      Logger.debug("it hit here")
+      Future.successful(Ok(Json.toJson(AddressDes("Valid"))))
+    } else
+      Future.successful(Ok(Json.toJson(AddressDes("Fail"))))
+  }
+}

@@ -22,6 +22,7 @@ import org.scalatest.concurrent.{ Eventually, ScalaFutures }
 import org.scalatest.matchers.{ BeMatcher, MatchResult, Matcher }
 import org.scalatest.prop.PropertyChecks
 import play.api.libs.json._
+import uk.gov.hmrc.gform.sharedmodel.ExampleData
 
 import scala.concurrent.ExecutionContext
 
@@ -39,6 +40,7 @@ trait Spec
     with MockFactory
     with Inside
     with Eventually
+    with ExampleData
     with PropertyChecks {
 
   implicit lazy val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
