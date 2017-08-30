@@ -37,6 +37,7 @@ class ValidatorSpec extends Spec {
     validator shouldBe hMRCUTRPostcodeCheckValidator
     val x: JsValue = Validator.format.writes(validator)
     x shouldBe Json.obj(
+      "validatorName" -> "hmrcUTRPostcodeCheck",
       "errorMessage" -> "The UTR could not be foundor the postcode did not match. | <Welsh...>",
       "utr" -> Json.obj("value" -> hMRCUTRPostcodeCheckValidator.utr.value),
       "postcode" -> Json.obj("value" -> hMRCUTRPostcodeCheckValidator.postcode.value)
