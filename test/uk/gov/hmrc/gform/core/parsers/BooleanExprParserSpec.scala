@@ -30,6 +30,16 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
 
   }
 
+  "BooleanExprParser" should "parse or-expressions inside form context" in {
+    val res = BooleanExprParser.validate("${hasOrgsAddressChanged=1 | hasOrgsAddressChanged=0}")
+
+    res shouldBe Right(Or(
+      Equals(FormCtx("hasOrgsAddressChanged"), Constant("1")),
+      Equals(FormCtx("hasOrgsAddressChanged"), Constant("0"))
+    ))
+
+  }
+
   it should "fail to parse anything but an equals operator" in {
     val res = BooleanExprParser.validate("${abc>form.amountA}")
 
