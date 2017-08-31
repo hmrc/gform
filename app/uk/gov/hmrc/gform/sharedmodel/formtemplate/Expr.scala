@@ -25,6 +25,7 @@ import uk.gov.hmrc.gform.core.parsers.ExprParsers
 sealed trait Expr
 final case class Add(field1: Expr, field2: Expr) extends Expr
 final case class Multiply(field1: Expr, field2: Expr) extends Expr
+final case class Sum(field1: Expr) extends Expr
 final case class FormCtx(value: String) extends Expr
 
 object FormCtx {

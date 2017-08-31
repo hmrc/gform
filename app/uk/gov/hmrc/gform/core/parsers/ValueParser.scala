@@ -48,7 +48,7 @@ object ValueParser {
   lazy val lastDate: Parser[PreviousDateValue] = nextOrPrevious("last", PreviousDateValue.apply)
 
   lazy val expr: Parser[Expr] = (
-    "${" ~ contextField ~ "}" ^^ { (loc, _, field, _) => field }
+    "${" ~> contextField <~ "}"
     | "${" ~ contextField ~ operation ~ contextField ~ "}" ^^ { (loc, _, field1, op, field2, _) =>
       op match {
         case Addition => Add(field1, field2)
@@ -68,6 +68,7 @@ object ValueParser {
     | "form" ~ "." ~ alphabeticOnly ^^ { (loc, _, _, fieldName) => FormCtx(fieldName) }
     | "auth" ~ "." ~ authInfo ^^ { (loc, _, _, authInfo) => AuthCtx(authInfo) }
     | "const" ~ "." ~ anyConstant ^^ { (loc, _, _, str) => str }
+    | alphabeticOnly ~ ".sum" ^^ { (loc, value, _) => Sum(FormCtx(value)) }
     | alphabeticOnly ^^ { (loc, fn) => FormCtx(fn) }
   )
 
