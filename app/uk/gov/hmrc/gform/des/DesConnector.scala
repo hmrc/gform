@@ -17,15 +17,15 @@
 package uk.gov.hmrc.gform.des
 
 import com.typesafe.config.Config
-import play.api.libs.json.{JsValue, Json, OFormat}
+import play.api.libs.json.{ JsValue, Json, OFormat }
 import uk.gov.hmrc.gform.config.DesConnectorConfig
 import uk.gov.hmrc.gform.wshttp.WSHttp
 import uk.gov.hmrc.play.http.logging.Authorization
-import uk.gov.hmrc.play.http.{HeaderCarrier, NotFoundException}
+import uk.gov.hmrc.play.http.{ HeaderCarrier, NotFoundException }
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
-class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfig){
+class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfig) {
 
   val lookupJson: JsValue =
     Json.parse("""{

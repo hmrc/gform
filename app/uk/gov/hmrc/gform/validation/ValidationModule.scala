@@ -29,7 +29,7 @@ class ValidationModule(
     configModule: ConfigModule
 ) {
 
-  private val desConfig = configModule.typesafeConfig.getConfig("microservice.services.etmp-hod")
+  private val desConfig = configModule.desConfig
   private val desConnector: DesConnector = new DesConnector(wSHttpModule.auditableWSHttp, configModule.serviceConfig.baseUrl("etmp-hod"), desConfig)
 
   val validationController = new ValidationController(desConnector)
