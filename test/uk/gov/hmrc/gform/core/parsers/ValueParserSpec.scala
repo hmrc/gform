@@ -41,6 +41,12 @@ class ValueParserSpec extends Spec {
     val res = ValueParser.validate("${form.firstName}")
     res.right.value should be(TextExpression(FormCtx("firstName")))
   }
+  
+  it should "parse ${someId.sum}" in {
+    val res = ValueParser.validate("${age.sum}")
+
+    res.right.value should be(TextExpression(Sum(FormCtx("age"))))
+  }
 
   it should "parse ${eeitt.firstName + form.secondName}" in {
     val res = ValueParser.validate("${eeitt.businessUser + form.secondName}")
