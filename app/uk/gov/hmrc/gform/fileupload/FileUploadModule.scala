@@ -20,7 +20,7 @@ import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.time.{ TimeModule, TimeProvider }
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 
-class FileUploadModule(configModule: ConfigModule, val wSHttpModule: WSHttpModule, timeModule: TimeModule) {
+class FileUploadModule(configModule: ConfigModule, wSHttpModule: WSHttpModule, timeModule: TimeModule) {
 
   val fileUploadConnector: FileUploadConnector = new FileUploadConnector(config, wSHttpModule.auditableWSHttp, timeModule.timeProvider)
 

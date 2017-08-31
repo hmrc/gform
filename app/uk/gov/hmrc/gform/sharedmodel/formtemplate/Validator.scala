@@ -77,38 +77,3 @@ object HMRCUTRPostcodeCheckValidator {
   val reads = readCustom | (basic: Reads[HMRCUTRPostcodeCheckValidator])
   implicit val format: OFormat[HMRCUTRPostcodeCheckValidator] = OFormat(reads, writesCustom)
 }
-
-//case class Validators(validatorName: String, errorMessage: String, parameters: Map[String, FormCtx]) {
-//
-//  def getValidator = {
-//    validatorName match {
-//      case "hmrcUTRPostcodeCheck" => HMRCUTRPostcodeCheck(parameters("utr"), parameters("postCode"), errorMessage)
-//    }
-//  }
-//}
-//
-//object Validators {
-//
-//  lazy implicit val format: OFormat[Validators] = OFormat(readsValidator, writes)
-//
-//  lazy val writes: OWrites[Validators] = Json.writes[Validators]
-//  lazy val readsValidator: Reads[Validators] = Json.reads[Validators]
-//}
-
-//trait Validator[A] {
-//
-//  def validate(data: Map[FieldId, Seq[String]])(f: A => Future[Boolean])(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[Validated[Map[FieldId, Set[String]], Unit]]
-//}
-//
-//case class HMRCUTRPostcodeCheck(utr: FormCtx, postcode: FormCtx, errorMessage: String) extends Validator[(String, String)] {
-//
-//  val utrFieldId = FieldId(utr.value)
-//  val postcodeFieldId = FieldId(postcode.value)
-//
-//  override def validate(data: Map[FieldId, Seq[String]])(f: ((String, String)) => Future[Boolean])(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[Validated[Map[FieldId, Set[String]], Unit]] = {
-//    val dataGetter: FieldId => String = id => data.get(id).toList.flatten.headOption.getOrElse("")
-//    val utrString = dataGetter(utrFieldId)
-//    val postCodeString = dataGetter(postcodeFieldId)
-//    f(utrString -> postCodeString).map(if (_) Valid(()) else Invalid(Map(utrFieldId -> Set(errorMessage), postcodeFieldId -> Set(errorMessage))))
-//  }
-//}

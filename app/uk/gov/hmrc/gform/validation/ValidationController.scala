@@ -32,9 +32,7 @@ class ValidationController(desConnector: DesConnector) extends BaseController {
   }
 
   def testValidatorStub(utr: String) = Action.async { implicit request =>
-    Logger.debug(s"this it the UTR that is passed to the function ${utr}")
     if (utr.startsWith("1")) {
-      Logger.debug("it hit here")
       Future.successful(Ok(Json.toJson(AddressDes("Valid"))))
     } else
       Future.successful(Ok(Json.toJson(AddressDes("Fail"))))

@@ -17,14 +17,15 @@
 package uk.gov.hmrc.gform.des
 
 import com.typesafe.config.Config
-import play.api.libs.json.{ JsValue, Json, OFormat }
+import play.api.libs.json.{JsValue, Json, OFormat}
+import uk.gov.hmrc.gform.config.DesConnectorConfig
 import uk.gov.hmrc.gform.wshttp.WSHttp
 import uk.gov.hmrc.play.http.logging.Authorization
-import uk.gov.hmrc.play.http.{ HeaderCarrier, NotFoundException }
+import uk.gov.hmrc.play.http.{HeaderCarrier, NotFoundException}
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
-class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: Config) { //TODO make the connector easy to move from service to service
+class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfig){
 
   val lookupJson: JsValue =
     Json.parse("""{
@@ -39,15 +40,14 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: Config) { //TODO 
       address.postalCode.replace(" ", "").equalsIgnoreCase(postCode.replace(" ", "")) || address.postalCode == "Valid"
     }
 
-    wSHttp.POST[JsValue, AddressDes](s"$baseUrl${desConfig.getString("base-path")}/registration/organisation/utr/$utr", lookupJson)
+    implicit val hc = HeaderCarrier(extraHeaders = Seq("Environment" -> desConfig.environment), authorization = Some(Authorization(desConfig.authorizationToken)))
+
+    wSHttp.POST[JsValue, AddressDes](s"$baseUrl${desConfig.basePath}/registration/organisation/utr/$utr", lookupJson)
       .map(compare)
       .recover {
         case _: NotFoundException => false
       }
   }
-
-  def createHC =
-    HeaderCarrier(extraHeaders = Seq("Environment" -> desConfig.getString("environment")), authorization = Some(Authorization(desConfig.getString("authorization-token"))))
 
 }
 
