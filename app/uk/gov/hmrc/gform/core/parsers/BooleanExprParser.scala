@@ -45,7 +45,7 @@ object BooleanExprParser {
 
   lazy val comparisonOperation: Parser[Comparison] = "=" ^^ { (loc, _) => Equality }
 
-  lazy val booleanOperation: Parser[BooleanOperation] = "|" ^^ { (loc, _) => OrOperation }
+  lazy val booleanOperation: Parser[BooleanOperation] = "||" ^^ { (loc, _) => OrOperation }
 
   lazy val operation: Parser[Operation] = (
     "+" ^^ { (loc, _) => Addition }
