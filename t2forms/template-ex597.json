@@ -1,0 +1,1193 @@
+{
+  "_id": "EX597",
+  "formName": "Alcoholic Ingredients Relief",
+  "description": "",
+  "dmsSubmission": {
+    "customerId": "nino",
+    "classificationType": "BT-NRU-Environmental",
+    "businessArea": "FinanceOpsCorpT"
+  },
+  "authConfig":{
+    "authModule": "legacyEEITTAuth",
+    "regimeId": "GF"
+  },
+  "submitSuccessUrl": "http://www.google.co.uk",
+  "submitErrorUrl": "http://www.yahoo.co.uk",
+  "sections": [
+    {
+      "title": "Has your business address changed since your last claim?",
+      "fields": [
+        {
+          "id": "businessAddressChangedChoice",
+          "type": "choice",
+          "format": "yesno",
+          "label": "",
+          "errorMessage": "Select yes if your business address has changed since your last claim"
+        }
+      ]
+    },
+    {
+      "title": "Enter your new business address details",
+      "includeIf": "${businessAddressChangedChoice = 0}",
+      "fields": [
+        {
+          "id": "businessAddressChangedInfo",
+          "type": "info",
+          "label": "",
+          "infoText": "You will need to upload a document to verify your new address at the end of your claim"
+        },
+        {
+          "id": "businessAddressChanged",
+          "type": "address",
+          "label": "Address and phone number",
+          "international": "true"
+        },
+        {
+          "id": "phoneNumberChanged",
+          "type": "text",
+          "format": "telephoneNumber",
+          "label": "Phone number"
+        }
+      ]
+    },
+    {
+      "title": "Has the address where alcohol is used changed since your last claim?",
+      "fields": [
+        {
+          "id": "alcoholAdressChangedChoice",
+          "type": "choice",
+          "format": "yesno",
+          "label": "",
+          "errorMessage": "Select yes if the address where alcohol is used has changed since your last claim"
+        }
+      ]
+    },
+    {
+      "title": "Enter the new address where alcohol is used",
+      "includeIf": "${alcoholAdressChangedChoice = 0}",
+      "fields": [
+        {
+          "id": "alcoholAddressChanged",
+          "type": "address",
+          "label": "Address and phone number",
+          "international": "true"
+        },
+        {
+          "id": "alcoholNumberChanged",
+          "type": "text",
+          "format": "telephoneNumber",
+          "label": "Phone number"
+        }
+      ]
+    },
+    {
+      "title": "Enter your contact person's details",
+      "description" : "This is the person we will contact if we need to discuss your claim.",
+      "fields": [
+        {
+          "id": "contactFullName",
+          "type": "text",
+          "label": "Full name",
+          "errorMessage": "Enter your contact person's full name"
+        },
+        {
+          "id": "contactEmail",
+          "type": "text",
+          "label": "Email address",
+          "format": "email",
+          "mandatory": "false",
+          "errorMessage": "Enter your contact person's full name"
+        }
+      ]
+    },
+    {
+      "title": "Have the bank details for the business changed since your last claim?",
+      "fields": [
+        {
+          "id": "bankDetailsChanged",
+          "type": "choice",
+          "label": "",
+          "format": "yesno"
+        }
+      ]
+    },
+    {
+      "title": "Enter your new bank details",
+      "shortName": "Payment details",
+      "includeIf": "${bankDetailsChanged=0}",
+      "fields": [
+        {
+          "id": "bankDocVerifyInfo",
+          "type": "info",
+          "label": "",
+          "infoText": "You'll need to upload a document to verify your new bank details at the end of your claim"
+        },
+        {
+          "id": "bankDetailsGroup",
+          "type": "group",
+          "label": "Bank details",
+          "fields": [
+            {
+              "id": "bankName",
+              "type": "text",
+              "label": "Bank or building society name",
+              "errorMessage": "Please enter the organisation's bank or building society name"
+            },
+            {
+              "id": "bankAccountNumber",
+              "type": "text",
+              "format": "ukBankAccountNumber",
+              "label": "Account number",
+              "errorMessage": "Please enter the organisation's account number"
+            },
+            {
+              "id": "bankSortCode",
+              "type": "text",
+              "format": "ukSortCode",
+              "label": "Sort code",
+              "errorMessage": "Please enter the organisation's sort code"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Does your claim cover a production or manufacture period of three months?",
+      "fields": [
+        {
+          "id": "claimCovers3MonthsChoice",
+          "type": "choice",
+          "label": "",
+          "format": "horizontal",
+          "choices": [
+            "Yes",
+            "No"
+          ],
+          "optionHelpText": [
+            "Your claim must also be within three years of the end of the 3 month production period in which the alcohol was incorporated into an eligible article. \n\nRefer to Excise Notice 41, section 5.4",
+            ""
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Is your production or manufacture period less than three months because you have stopped trading?",
+      "includeIf": "${claimCovers3MonthsChoice = 1}",
+      "fields": [
+        {
+          "id": "stoppedTradingChoice",
+          "type": "choice",
+          "label": "",
+          "format": "horizontal",
+          "choices": [
+            "Yes",
+            "No"
+          ],
+          "optionHelpText": [
+            "",
+            "Claims must cover a 3 month period. If this is not the case, you can continue with this claim but we will contact you to discuss reasons before considering your claim.  \nRefer to [Excise Notice 41, section 5.4](https://www.gov.uk/government/publications/excise-notice-41-alcoholic-ingredients-relief/excise-notice-41-alcoholic-ingredients-relief#para54)"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Enter the start and end dates for this claim",
+      "shortName": "Your claim period",
+      "fields": [
+        {
+          "id": "claimStartDate",
+          "type": "date",
+          "label": "Start date",
+          "helpText": "Example: 30 09 2017",
+          "errorMessage": "Please enter a valid start date"
+        },
+        {
+          "id": "claimEndDate",
+          "type": "date",
+          "label": "End date",
+          "helpText": "Example: 31 12 2017",
+          "format": "after ${claimStartDate}",
+          "errorMessage": "Please enter a valid end date.  Note this must be after the start date."
+        }
+      ]
+    },
+    {
+      "title": "Tell us about the products made or prepared using the alcoholic ingredients you are claiming relief for",
+      "fields": [
+        {
+          "id": "enterOnScreenChoice",
+          "type": "choice",
+          "label": "",
+          "choices": [
+            "I will enter product details on screen",
+            "I will upload a file containing my product details"
+          ],
+          "optionHelpText": [
+            "",
+            "You can upload your product list at the end of this claim"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Enter details of the beverages and articles made or prepared using the alcoholic ingredients",
+      "description": "Enter the description and quantity of beverages and articles below.",
+      "includeIf": "${enterOnScreenChoice = 0}",
+      "fields": [
+        {
+          "id": "productGroup",
+          "type": "group",
+          "label": "",
+          "format": "horizontal",
+          "repeatsMax": 100,
+          "fields": [
+            {
+              "id": "productDescription",
+              "type": "text",
+              "label": "Product description",
+              "errorMessage": "Please enter a product description"
+            },
+            {
+              "id": "quantityInKg",
+              "type": "text",
+              "label": "Quantity in kg",
+              "format": "number(12,2,'kg')",
+              "errorMessage": "Please enter a quantity"
+            }
+          ]
+        },
+        {
+          "id": "alcoholQuantityTotal",
+          "type": "text",
+          "label": "Total",
+          "format": "number(12,2,'kg')"
+        }
+      ]
+    },
+    {
+      "title": "Tell us the amount of alcohol ingredients used and duty paid",
+      "description": "Select the alcoholic ingredients used in your product below.",
+      "fields": [
+        {
+          "id": "spiritsGroup",
+          "type": "group",
+          "label": "Spirit",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "id": "spiritsQuantity",
+              "type": "text",
+              "format": "number(11, 2, 'litres')",
+              "label": "Quantity in litres",
+              "mandatory": "false"
+
+            },
+            {
+              "id": "spiritsDutyDue",
+              "type": "text",
+              "format": "sterling",
+              "label": "Amount of duty due",
+              "mandatory": "false"
+            }
+          ]
+        },
+        {
+          "id": "beerGroup",
+          "type": "group",
+          "label": "Beer",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "id": "beerQuantity",
+              "type": "text",
+              "format": "number(11, 2, 'litres')",
+              "label": "Quantity in litres",
+              "mandatory": "false"
+            },
+            {
+              "id": "beerDutyDue",
+              "type": "text",
+              "format": "sterling",
+              "label": "Amount of duty due",
+              "mandatory": "false"
+            }
+          ]
+        },
+        {
+          "id": "wineGroup",
+          "type": "group",
+          "label": "Wine",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "id": "wineQuantity",
+              "type": "text",
+              "format": "number(11, 2, 'litres')",
+              "label": "Quantity in litres",
+              "mandatory": "false"
+            },
+            {
+              "id": "wineDutyDue",
+              "type": "text",
+              "format": "sterling",
+              "label": "Amount of duty due",
+              "mandatory": "false"
+            }
+          ]
+        },
+        {
+          "id": "ciderGroup",
+          "type": "group",
+          "label": "Cider",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "id": "ciderQuantity",
+              "type": "text",
+              "format": "number(11, 2, 'litres')",
+              "label": "Quantity in litres",
+              "mandatory": "false"
+            },
+            {
+              "id": "ciderDutyDue",
+              "type": "text",
+              "format": "sterling",
+              "label": "Amount of duty due",
+              "mandatory": "false"
+            }
+          ]
+        },
+        {
+          "id": "totalDutyPaid",
+          "type": "text",
+          "label": "Total amount of duty paid",
+          "format": "sterling",
+          "shortName": "Total amount of duty for this claim period"
+        }
+      ]
+    },
+    {
+      "title": "Do you have any underclaims or overclaims from previous periods to declare?",
+      "fields": [
+        {
+          "id": "overUnderClaimsYesNo",
+          "type": "choice",
+          "label": "",
+          "format": "yesno"
+        }
+      ]
+    },
+    {
+      "title": "Are they underclaims or overclaims?",
+      "includeIf": "${overUnderClaimsYesNo = 0}",
+      "fields": [
+        {
+          "id": "overUnderClaimsChoice",
+          "type": "choice",
+          "label": "",
+          "choices": [
+            "Under claim",
+            "Over claim",
+            "Both"
+          ]
+        }
+      ]
+    },
+    {
+      "includeIf": "${overUnderClaimsChoice=0}",
+      "title": "Enter the start and end dates for this underclaim",
+      "fields": [
+        {
+          "id": "underclaimStartDate",
+          "type": "date",
+          "label": "Start date",
+          "helpText": "Example: 30 09 2017",
+          "errorMessage": "Please enter a valid start date"
+        },
+        {
+          "id": "underclaimEndDate",
+          "type": "date",
+          "label": "End date",
+          "helpText": "Example: 31 12 2017",
+          "format": "after ${underclaimStartDate}",
+          "errorMessage": "Please enter a valid end date.  Note this must be after the start date."
+        }
+      ]
+    },
+    {
+      "includeIf": "${overUnderClaimsChoice=0}",
+      "title": "Enter the details for underclaims from a previous period",
+      "description": "Select the alcoholic ingredients used in your product below.",
+      "fields": [
+        {
+          "id": "spiritsGroupUnderClaim",
+          "type": "group",
+          "label": "Spirit",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "id": "spiritsDutyUnderClaimed",
+              "type": "text",
+              "format": "sterling",
+              "label": "Amount of duty underclaimed",
+              "mandatory": "false"
+            }
+          ]
+        },
+        {
+          "id": "beerGroupUnderClaim",
+          "type": "group",
+          "label": "Beer",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "id": "beerDutyUnderClaimed",
+              "type": "text",
+              "format": "sterling",
+              "label": "Amount of duty underclaimed",
+              "mandatory": "false"
+            }
+          ]
+        },
+        {
+          "id": "wineGroupUnderClaim",
+          "type": "group",
+          "label": "Wine/Made-wine including fortified wine",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "id": "wineDutyUnderClaimed",
+              "type": "text",
+              "format": "sterling",
+              "label": "Amount of duty underclaimed",
+              "mandatory": "false"
+            }
+          ]
+        },
+        {
+          "id": "ciderGroupUnderClaim",
+          "type": "group",
+          "label": "Cider and perry",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "id": "ciderDutyUnderClaimed",
+              "type": "text",
+              "format": "sterling",
+              "label": "Amount of duty underclaimed",
+              "mandatory": "false"
+            }
+          ]
+        },
+        {
+          "id": "totalDutyPaidUnderClaimed",
+          "type": "text",
+          "label": "Total amount of duty paid",
+          "format": "sterling",
+          "shortName": "Total amount of duty for this claim period"
+        }
+      ]
+    },
+    {
+      "includeIf": "${overUnderClaimsChoice=0}",
+      "title": "Upload supporting documents",
+      "description": "You'll need to provide some documentation with your claim",
+      "fields": [
+        {
+          "id": "supportingDocumentsInfo",
+          "type": "info",
+          "label": "",
+          "infoText": "The documents you upload must be:  \n\n* in PDF, JPEG or Excel format\n* less than 10 megabytes (10MB)\n* no more than 25MB in total\n\n If you don't provide all the documentation we need, this could delay your claim"
+        },
+        {
+          "id": "productListGroup",
+          "type": "group",
+          "label": "Product list for this claim",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "type": "file",
+              "id": "productListSpreadsheet",
+              "label": "",
+              "mandatory": "false"
+            },
+            {
+              "type": "info",
+              "id": "productListGuidance",
+              "label": "Document guidance",
+              "infoType": "long",
+              "infoText": "Content goes here"
+            }
+          ]
+        },
+        {
+          "id": "worksheetforClaimGroup",
+          "type": "group",
+          "label": "Worksheet to show how you calculated your claim",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "type": "file",
+              "id": "worksheetSpreadsheet",
+              "label": "",
+              "mandatory": "false"
+            },
+            {
+              "type": "info",
+              "id": "worksheetGuidance",
+              "label": "Document guidance",
+              "infoType": "long",
+              "infoText": "Content goes here"
+            }
+          ]
+        },
+        {
+          "id": "newBusinessGroup",
+          "type": "group",
+          "label": "Proof of new business address",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "type": "file",
+              "id": "newBusinessSpreadsheet",
+              "label": "",
+              "mandatory": "false"
+            },
+            {
+              "type": "info",
+              "id": "newBusinessGuidance",
+              "label": "Document guidance",
+              "infoType": "long",
+              "infoText": "Content goes here"
+            }
+          ]
+        },
+        {
+          "id": "newBankDetailsGroup",
+          "type": "group",
+          "label": "Proof of new bank details",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "type": "file",
+              "id": "newBankDetailsSpreadsheet",
+              "label": "",
+              "mandatory": "false"
+            },
+            {
+              "type": "info",
+              "id": "newBankDetailsGuidance",
+              "label": "Document guidance",
+              "infoType": "long",
+              "infoText": "Content goes here"
+            }
+          ]
+        },
+        {
+          "id": "calculationGroup",
+          "type": "group",
+          "label": "Worksheet to show how you calculated your underclaim or overclaim",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "type": "file",
+              "id": "calculationSpreadsheet",
+              "label": "",
+              "mandatory": "false"
+            },
+            {
+              "type": "info",
+              "id": "calculationGuidance",
+              "label": "Document guidance",
+              "infoType": "long",
+              "infoText": "Content goes here"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "includeIf": "${overUnderClaimsChoice=1}",
+      "title": "Enter the start and end dates for this overclaim",
+      "fields": [
+        {
+          "id": "overclaimStartDate",
+          "type": "date",
+          "label": "Start date",
+          "helpText": "Example: 30 09 2017",
+          "errorMessage": "Please enter a valid start date"
+        },
+        {
+          "id": "overclaimEndDate",
+          "type": "date",
+          "label": "End date",
+          "helpText": "Example: 31 12 2017",
+          "format": "after ${overclaimStartDate}",
+          "errorMessage": "Please enter a valid end date.  Note this must be after the start date."
+        }
+      ]
+    },
+    {
+      "includeIf": "${overUnderClaimsChoice=1}",
+      "title": "Enter the details for overclaims from a previous period",
+      "description": "Select the alcoholic ingredients used in your product below.",
+      "fields": [
+        {
+          "id": "spiritsGroupOverClaim",
+          "type": "group",
+          "label": "Spirit",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "id": "spiritsDutyOverClaimed",
+              "type": "text",
+              "format": "sterling",
+              "label": "Amount of duty overclaimed",
+              "mandatory": "false"
+            }
+          ]
+        },
+        {
+          "id": "beerGroupOverClaim",
+          "type": "group",
+          "label": "Beer",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "id": "beerDutyOverClaimed",
+              "type": "text",
+              "format": "sterling",
+              "label": "Amount of duty overclaimed",
+              "mandatory": "false"
+            }
+          ]
+        },
+        {
+          "id": "wineGroupOverClaim",
+          "type": "group",
+          "label": "Wine/Made-wine including fortified wine",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "id": "wineDutyOverClaimed",
+              "type": "text",
+              "format": "sterling",
+              "label": "Amount of duty overclaimed",
+              "mandatory": "false"
+            }
+          ]
+        },
+        {
+          "id": "ciderGroupOverClaim",
+          "type": "group",
+          "label": "Cider and perry",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "id": "ciderDutyOverClaimed",
+              "type": "text",
+              "format": "sterling",
+              "label": "Amount of duty overclaimed",
+              "mandatory": "false"
+            }
+          ]
+        },
+        {
+          "id": "totalDutyPaidOverClaimed",
+          "type": "text",
+          "label": "Total amount of duty paid",
+          "format": "sterling",
+          "shortName": "Total amount of duty for this claim period"
+        }
+      ]
+    },
+    {
+      "includeIf": "${overUnderClaimsChoice=1}",
+      "title": "Upload supporting documents",
+      "description": "You'll need to provide some documentation with your claim",
+      "fields": [
+        {
+          "id": "supportingDocumentsInfo1",
+          "type": "info",
+          "label": "",
+          "infoText": "The documents you upload must be:  \n\n* in PDF, JPEG or Excel format\n* less than 10 megabytes (10MB)\n* no more than 25MB in total\n\n If you don't provide all the documentation we need, this could delay your claim"
+        },
+        {
+          "id": "productListGroup1",
+          "type": "group",
+          "label": "Product list for this claim",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "type": "file",
+              "id": "productListSpreadsheet1",
+              "label": "",
+              "mandatory": "false"
+            },
+            {
+              "type": "info",
+              "id": "productListGuidance",
+              "label": "Document guidance",
+              "infoType": "long",
+              "infoText": "Content goes here"
+            }
+          ]
+        },
+        {
+          "id": "worksheetforClaimGroup1",
+          "type": "group",
+          "label": "Worksheet to show how you calculated your claim",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "type": "file",
+              "id": "worksheetSpreadsheet1",
+              "label": "",
+              "mandatory": "false"
+            },
+            {
+              "type": "info",
+              "id": "worksheetGuidance",
+              "label": "Document guidance",
+              "infoType": "long",
+              "infoText": "Content goes here"
+            }
+          ]
+        },
+        {
+          "id": "newBusinessGroup1",
+          "type": "group",
+          "label": "Proof of new business address",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "type": "file",
+              "id": "newBusinessSpreadsheet1",
+              "label": "",
+              "mandatory": "false"
+            },
+            {
+              "type": "info",
+              "id": "newBusinessGuidance",
+              "label": "Document guidance",
+              "infoType": "long",
+              "infoText": "Content goes here"
+            }
+          ]
+        },
+        {
+          "id": "newBankDetailsGroup1",
+          "type": "group",
+          "label": "Proof of new bank details",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "type": "file",
+              "id": "newBankDetailsSpreadsheet1",
+              "label": "",
+              "mandatory": "false"
+            },
+            {
+              "type": "info",
+              "id": "newBankDetailsGuidance",
+              "label": "Document guidance",
+              "infoType": "long",
+              "infoText": "Content goes here"
+            }
+          ]
+        },
+        {
+          "id": "calculationGroup1",
+          "type": "group",
+          "label": "Worksheet to show how you calculated your underclaim or overclaim",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "type": "file",
+              "id": "calculationSpreadsheet1",
+              "label": "",
+              "mandatory": "false"
+            },
+            {
+              "type": "info",
+              "id": "calculationGuidance",
+              "label": "Document guidance",
+              "infoType": "long",
+              "infoText": "Content goes here"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "includeIf": "${overUnderClaimsChoice=2}",
+      "title": "Enter the start and end dates for this underclaim",
+      "fields": [
+        {
+          "id": "underclaimStartDate1",
+          "type": "date",
+          "label": "Start date",
+          "helpText": "Example: 30 09 2017",
+          "errorMessage": "Please enter a valid start date"
+        },
+        {
+          "id": "underclaimEndDate1",
+          "type": "date",
+          "label": "End date",
+          "helpText": "Example: 31 12 2017",
+          "format": "after ${underclaimStartDate1}",
+          "errorMessage": "Please enter a valid end date.  Note this must be after the start date."
+        }
+      ]
+    },
+    {
+      "includeIf": "${overUnderClaimsChoice=2}",
+      "title": "Enter the details for underclaims from a previous period",
+      "description": "Select the alcoholic ingredients used in your product below.",
+      "fields": [
+        {
+          "id": "spiritsGroupUnderClaimBoth",
+          "type": "group",
+          "label": "Spirit",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "id": "spiritsDutyUnderClaimedBoth",
+              "type": "text",
+              "format": "sterling",
+              "label": "Amount of duty underclaimed",
+              "mandatory": "false"
+            }
+          ]
+        },
+        {
+          "id": "beerGroupUnderClaimBoth",
+          "type": "group",
+          "label": "Beer",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "id": "beerDutyUnderClaimedBoth",
+              "type": "text",
+              "format": "sterling",
+              "label": "Amount of duty underclaimed",
+              "mandatory": "false"
+            }
+          ]
+        },
+        {
+          "id": "wineGroupUnderClaimBoth",
+          "type": "group",
+          "label": "Wine/Made-wine including fortified wine",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "id": "wineDutyUnderClaimedBoth",
+              "type": "text",
+              "format": "sterling",
+              "label": "Amount of duty underclaimed",
+              "mandatory": "false"
+            }
+          ]
+        },
+        {
+          "id": "ciderGroupUnderClaimBoth",
+          "type": "group",
+          "label": "Cider and perry",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "id": "ciderDutyUnderClaimedBoth",
+              "type": "text",
+              "format": "sterling",
+              "label": "Amount of duty underclaimed",
+              "mandatory": "false"
+            }
+          ]
+        },
+        {
+          "id": "totalDutyPaidUnderClaimedBoth",
+          "type": "text",
+          "label": "Total amount of duty paid",
+          "format": "sterling",
+          "shortName": "Total amount of duty for this claim period"
+        }
+      ]
+    },
+    {
+      "includeIf": "${overUnderClaimsChoice=2}",
+      "title": "Enter the start and end dates for this overclaim",
+      "fields": [
+        {
+          "id": "overclaimStartDate1",
+          "type": "date",
+          "label": "Start date",
+          "helpText": "Example: 30 09 2017",
+          "errorMessage": "Please enter a valid start date"
+        },
+        {
+          "id": "overclaimEndDate1",
+          "type": "date",
+          "label": "End date",
+          "helpText": "Example: 31 12 2017",
+          "format": "after ${overclaimStartDate1}",
+          "errorMessage": "Please enter a valid end date.  Note this must be after the start date."
+        }
+      ]
+    },
+    {
+      "includeIf": "${overUnderClaimsChoice=2}",
+      "title": "Enter the details for overclaims from a previous period",
+      "description": "Select the alcoholic ingredients used in your product below.",
+      "fields": [
+        {
+          "id": "spiritsGroupOverClaimBoth",
+          "type": "group",
+          "label": "Spirit",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "id": "spiritsDutyOverClaimedBoth",
+              "type": "text",
+              "format": "sterling",
+              "label": "Amount of duty overclaimed",
+              "mandatory": "false"
+            }
+          ]
+        },
+        {
+          "id": "beerGroupOverClaimBoth",
+          "type": "group",
+          "label": "Beer",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "id": "beerDutyOverClaimedBoth",
+              "type": "text",
+              "format": "sterling",
+              "label": "Amount of duty overclaimed",
+              "mandatory": "false"
+            }
+          ]
+        },
+        {
+          "id": "wineGroupOverClaimBoth",
+          "type": "group",
+          "label": "Wine/Made-wine including fortified wine",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "id": "wineDutyOverClaimedBoth",
+              "type": "text",
+              "format": "sterling",
+              "label": "Amount of duty overclaimed",
+              "mandatory": "false"
+            }
+          ]
+        },
+        {
+          "id": "ciderGroupOverClaimBoth",
+          "type": "group",
+          "label": "Cider and perry",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "id": "ciderDutyOverClaimedBoth",
+              "type": "text",
+              "format": "sterling",
+              "label": "Amount of duty overclaimed",
+              "mandatory": "false"
+            }
+          ]
+        },
+        {
+          "id": "totalDutyPaidOverClaimedBoth",
+          "type": "text",
+          "label": "Total amount of duty paid",
+          "format": "sterling",
+          "shortName": "Total amount of duty for this claim period"
+        }
+      ]
+    },
+    {
+      "includeIf": "${overUnderClaimsChoice=2}",
+      "title": "Upload supporting documents",
+      "description": "You'll need to provide some documentation with your claim",
+      "fields": [
+        {
+          "id": "supportingDocumentsInfo2",
+          "type": "info",
+          "label": "",
+          "infoText": "The documents you upload must be:  \n\n* in PDF, JPEG or Excel format\n* less than 10 megabytes (10MB)\n* no more than 25MB in total\n\n If you don't provide all the documentation we need, this could delay your claim"
+        },
+        {
+          "id": "productListGroup2",
+          "type": "group",
+          "label": "Product list for this claim",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "type": "file",
+              "id": "productListSpreadsheet2",
+              "label": "",
+              "mandatory": "false"
+            },
+            {
+              "type": "info",
+              "id": "productListGuidance",
+              "label": "Document guidance",
+              "infoType": "long",
+              "infoText": "Content goes here"
+            }
+          ]
+        },
+        {
+          "id": "worksheetforClaimGroup2",
+          "type": "group",
+          "label": "Worksheet to show how you calculated your claim",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "type": "file",
+              "id": "worksheetSpreadsheet2",
+              "label": "",
+              "mandatory": "false"
+            },
+            {
+              "type": "info",
+              "id": "worksheetGuidance",
+              "label": "Document guidance",
+              "infoType": "long",
+              "infoText": "Content goes here"
+            }
+          ]
+        },
+        {
+          "id": "newBusinessGroup2",
+          "type": "group",
+          "label": "Proof of new business address",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "type": "file",
+              "id": "newBusinessSpreadsheet2",
+              "label": "",
+              "mandatory": "false"
+            },
+            {
+              "type": "info",
+              "id": "newBusinessGuidance",
+              "label": "Document guidance",
+              "infoType": "long",
+              "infoText": "Content goes here"
+            }
+          ]
+        },
+        {
+          "id": "newBankDetailsGroup2",
+          "type": "group",
+          "label": "Proof of new bank details",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "type": "file",
+              "id": "newBankDetailsSpreadsheet2",
+              "label": "",
+              "mandatory": "false"
+            },
+            {
+              "type": "info",
+              "id": "newBankDetailsGuidance",
+              "label": "Document guidance",
+              "infoType": "long",
+              "infoText": "Content goes here"
+            }
+          ]
+        },
+        {
+          "id": "calculationGroup2",
+          "type": "group",
+          "label": "Worksheet to show how you calculated your underclaim or overclaim",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "type": "file",
+              "id": "calculationSpreadsheet2",
+              "label": "",
+              "mandatory": "false"
+            },
+            {
+              "type": "info",
+              "id": "calculationGuidance",
+              "label": "Document guidance",
+              "infoType": "long",
+              "infoText": "Content goes here"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "acknowledgementSection": [
+    {
+      "title": "Some content",
+      "content": "this is content"
+    }
+  ],
+  "declarationSection": {
+  "shortName": "Declaration",
+  "title": "Declaration",
+  "fields": [
+    {
+      "type": "info",
+      "id": "declarationTopInfo",
+      "label": "Declaration copy",
+      "infoText": "Declaration copy"
+    },
+    {
+      "id": "declarationNameGroup",
+      "type": "group",
+      "label": "Provide details below of who is signing the declaration",
+      "fields": [
+        {
+          "id": "declaration-firstname",
+          "type": "text",
+          "label": "First name"
+        },
+        {
+          "id": "declaration-lastname",
+          "type": "text",
+          "label": "Last name"
+        },
+        {
+          "id": "declaration-status",
+          "type": "text",
+          "label": "Status",
+          "helpText": "For example: Director, Financial Controller, Secretary"
+        }
+      ]
+    },
+    {
+      "id": "declarationEmailGroup",
+      "type": "group",
+      "label": "To receive confirmation that your return has been submitted, enter an email address below",
+      "fields": [
+        {
+          "id": "declaration-email",
+          "type": "text",
+          "label": "Email address (Optional)",
+          "mandatory": "false",
+          "format": "email"
+        },
+        {
+          "id": "declaration-email-confirmation",
+          "type": "text",
+          "label": "Confirm email address (Optional)",
+          "mandatory": "false",
+          "format": "email"
+        }
+      ]
+    }
+  ]
+}
+}

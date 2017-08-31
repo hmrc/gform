@@ -1,0 +1,319 @@
+{
+  "_id": "HO930",
+  "formName": "Biofuels and other fuel substitutes",
+  "description": "",
+  "dmsSubmission": {
+    "customerId": "nino",
+    "classificationType": "BT-NRU-Environmental",
+    "businessArea": "FinanceOpsCorpT"
+  },
+  "authConfig":{
+    "authModule": "legacyEEITTAuth",
+    "regimeId": "GF"
+  },
+  "submitSuccessUrl": "http://www.google.co.uk",
+  "submitErrorUrl": "http://www.yahoo.co.uk",
+  "sections": [
+    {
+      "title": "Enter the start and end dates for this return",
+      "shortName": "Your claim period",
+      "fields": [
+        {
+          "id": "returnStartDate",
+          "type": "date",
+          "label": "Start date",
+          "helpText": "Example: 30 09 2017",
+          "errorMessage": "Please enter a valid start date"
+        },
+        {
+          "id": "returnEndDate",
+          "type": "date",
+          "label": "End date",
+          "helpText": "Example: 31 12 2017",
+          "format": "after ${returnStartDate}",
+          "errorMessage": "Please enter a valid end date.  Note this must be after the start date."
+        }
+      ]
+    },
+    {
+      "title": "Do you have duty to pay in this return period?",
+      "fields": [
+        {
+          "id": "dutyToPayChoice",
+          "type": "choice",
+          "label": "",
+          "choices": [
+            "Yes",
+            "No - I want to submit a nil return"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Enter how much duty you owe",
+      "shortName": "Duty details",
+      "description": "Select the biofuel, substitute or additive you need to pay duty on from the list below",
+      "includeIf": "${dutyToPayChoice=0}",
+      "fields": [
+        {
+          "id": "taxType33589Group",
+          "type": "group",
+          "label": "Tax type 33589 - Biodiesel",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "id": "taxType33589Quantity",
+              "type": "text",
+              "format": "number(11, 2, 'litres')",
+              "label": "Quantity in litres of biofuel, substitute or additive",
+              "mandatory": "false"
+            },
+            {
+              "id": "taxType33589DutyDue",
+              "type": "text",
+              "format": "sterling",
+              "label": "Amount of excise duty due",
+              "mandatory": "false"
+            }
+          ]
+        },
+        {
+          "id": "taxType33571Group",
+          "type": "group",
+          "label": "Tax type 33571 - Biodiesel for non road use",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "id": "taxType33571Quantity",
+              "type": "text",
+              "format": "number(11, 2, 'litres')",
+              "label": "Quantity in litres of biofuel, substitute or additive",
+              "mandatory": "false"
+            },
+            {
+              "id": "taxType33571DutyDue",
+              "type": "text",
+              "format": "sterling",
+              "label": "Amount of excise duty due",
+              "mandatory": "false"
+            }
+          ]
+        },
+        {
+          "id": "taxType33595Group",
+          "type": "group",
+          "label": "Tax type 33595 - Bioethanol",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "id": "taxType33595Quantity",
+              "type": "text",
+              "format": "number(11, 2, 'litres')",
+              "label": "Quantity in litres of biofuel, substitute or additive",
+              "mandatory": "false"
+            },
+            {
+              "id": "taxType33595DutyDue",
+              "type": "text",
+              "format": "sterling",
+              "label": "Amount of excise duty due",
+              "mandatory": "false"
+            }
+          ]
+        },
+        {
+          "id": "taxType33541Group",
+          "type": "group",
+          "label": "Tax type 33541 - Heavy oil (diesel engine)",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "id": "taxType33541Quantity",
+              "type": "text",
+              "format": "number(11, 2, 'litres')",
+              "label": "Quantity in litres of biofuel, substitute or additive",
+              "mandatory": "false"
+            },
+            {
+              "id": "taxType33541DutyDue",
+              "type": "text",
+              "format": "sterling",
+              "label": "Amount of excise duty due",
+              "mandatory": "false"
+            }
+          ]
+        },
+        {
+          "id": "taxType33522Group",
+          "type": "group",
+          "label": "Tax type 33522 - Unleaded petrol (petrol engine)",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "id": "taxType33522Quantity",
+              "type": "text",
+              "format": "number(11, 2, 'litres')",
+              "label": "Quantity in litres of biofuel, substitute or additive",
+              "mandatory": "false"
+            },
+            {
+              "id": "taxType33522DutyDue",
+              "type": "text",
+              "format": "sterling",
+              "label": "Amount of excise duty due",
+              "mandatory": "false"
+            }
+          ]
+        },
+        {
+          "id": "taxType33520Group",
+          "type": "group",
+          "label": "Tax type 33520 - Leaded petrol (petrol engine)",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "id": "taxType33520Quantity",
+              "type": "text",
+              "format": "number(11, 2, 'litres')",
+              "label": "Quantity in litres of biofuel, substitute or additive",
+              "mandatory": "false"
+            },
+            {
+              "id": "taxType33520DutyDue",
+              "type": "text",
+              "format": "sterling",
+              "label": "Amount of excise duty due",
+              "mandatory": "false"
+            }
+          ]
+        },
+        {
+          "id": "taxType33511Group",
+          "type": "group",
+          "label": "Tax type 33511 - Aviation spirit (aircraft piston engine)",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "id": "taxType33511Quantity",
+              "type": "text",
+              "format": "number(11, 2, 'litres')",
+              "label": "Quantity in litres of biofuel, substitute or additive",
+              "mandatory": "false"
+            },
+            {
+              "id": "taxType33511DutyDue",
+              "type": "text",
+              "format": "sterling",
+              "label": "Amount of excise duty due",
+              "mandatory": "false"
+            }
+          ]
+        },
+        {
+          "id": "taxType33Group",
+          "type": "group",
+          "label": "Tax type 33 - Other (DGFDF)",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "id": "taxType33Quantity",
+              "type": "text",
+              "format": "number(11, 2, 'litres')",
+              "label": "Quantity in litres of biofuel, substitute or additive",
+              "mandatory": "false"
+            },
+            {
+              "id": "taxType33DutyDue",
+              "type": "text",
+              "format": "sterling",
+              "label": "Amount of excise duty due",
+              "mandatory": "false"
+            },
+            {
+              "id": "taxType33Description",
+              "type": "text",
+              "multiline": "yes",
+              "label": "Description (optional)",
+              "mandatory": "false"
+            }
+          ]
+        },
+        {
+          "id": "totalDue",
+          "type": "text",
+          "format": "sterling",
+          "label": "Total payable - Awaiting Sprint 7 Development Work",
+          "mandatory": "false"
+        }
+      ]
+    }
+  ],
+  "acknowledgementSection": {
+   "shortName": "Acknowledgement Page",
+   "title": "Acknowledgement Page",
+   "fields": [
+     {
+       "type": "info",
+       "id": "ackpageInfo",
+       "label": "SomeContent",
+       "infoText": "SomeContent"
+     }
+   ]
+ },
+ "declarationSection": {
+ "shortName": "Declaration",
+ "title": "Declaration",
+ "fields": [
+   {
+     "type": "info",
+     "id": "declarationTopInfo",
+     "label": "Declaration copy",
+     "infoText": "Declaration copy"
+   },
+   {
+     "id": "declarationNameGroup",
+     "type": "group",
+     "label": "Provide details below of who is signing the declaration",
+     "fields": [
+       {
+         "id": "declaration-firstname",
+         "type": "text",
+         "label": "First name"
+       },
+       {
+         "id": "declaration-lastname",
+         "type": "text",
+         "label": "Last name"
+       },
+       {
+         "id": "declaration-status",
+         "type": "text",
+         "label": "Status",
+         "helpText": "For example: Director, Financial Controller, Secretary"
+       }
+     ]
+   },
+   {
+     "id": "declarationEmailGroup",
+     "type": "group",
+     "label": "To receive confirmation that your return has been submitted, enter an email address below",
+     "fields": [
+       {
+         "id": "declaration-email",
+         "type": "text",
+         "label": "Email address (Optional)",
+         "mandatory": "false",
+         "format": "email"
+       },
+       {
+         "id": "declaration-email-confirmation",
+         "type": "text",
+         "label": "Confirm email address (Optional)",
+         "mandatory": "false",
+         "format": "email"
+       }
+     ]
+   }
+ ]
+}
+}

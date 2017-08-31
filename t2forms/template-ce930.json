@@ -1,0 +1,173 @@
+{
+  "_id": "CE930",
+  "formName": "Gas for use as road fuel",
+  "description": "Fill in your gas for use as road fuel return form online",
+  "dmsSubmission": {
+    "customerId": "nino",
+    "classificationType": "BT-NRU-Environmental",
+    "businessArea": "FinanceOpsCorpT"
+  },
+  "authConfig":{
+    "authModule": "legacyEEITTAuth",
+    "regimeId": "GF"
+  },
+  "submitSuccessUrl": "http://www.google.co.uk",
+  "submitErrorUrl": "http://www.yahoo.co.uk",
+  "sections": [
+    {
+      "title": "Enter the start and end dates for this return",
+      "shortName": "Your accounting period",
+      "fields": [
+        {
+          "id": "tax-period-start",
+          "type": "date",
+          "label": "Start date",
+          "helpText": "Example: 31 8 2017",
+          "errorMessage": "Please enter your time period start date",
+          "mandatory": "true"
+        },
+        {
+          "id": "tax-period-end",
+          "type": "date",
+          "label": "End date",
+          "helpText": "Example: 31 10 2017",
+          "errorMessage": "Please enter your time period end date",
+          "mandatory": "true"
+        }
+      ]
+    },
+    {
+      "title": "Do you have duty to pay in this return period?",
+      "fields": [
+        {
+          "type": "choice",
+          "label": "",
+          "id": "dutydue",
+          "choices": [
+            "Yes",
+            "No - I want to submit a nil return"
+          ]
+        }
+      ]
+    },
+    {
+      "includeIf": "${dutydue=0}",
+      "title": "Enter how much duty you owe",
+      "description": "Select the gas you need to pay duty on from the list below",
+      "fields": [
+        {
+          "id": "fuelType591",
+          "type": "group",
+          "label": "Tax type 591 - natural gas",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "id": "taxType591Quantity",
+              "type": "text",
+              "format": "number(11, 2, 'kg')",
+              "label": "Quantity of gas in kilograms (kg) sent out, set aside or used as road fuel",
+              "mandatory": "false"
+            },
+            {
+              "id": "taxType591DutyDue",
+              "type": "text",
+              "format": "sterling",
+              "label": "Amount of excise duty due",
+              "mandatory": "false"
+            }
+          ]
+        },
+        {
+          "id": "fuelType592",
+          "type": "group",
+          "label": "Tax type 592 - other gas",
+          "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
+          "fields": [
+            {
+              "id": "taxType592Quantity",
+              "type": "text",
+              "format": "number(11, 2, 'kg')",
+              "label": "Quantity of gas in kilograms (kg) sent out, set aside or used as road fuel",
+              "mandatory": "false"
+            },
+            {
+              "id": "taxType592DutyDue",
+              "type": "text",
+              "format": "sterling",
+              "label": "Amount of excise duty due",
+              "mandatory": "false"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "acknowledgementSection": {
+   "shortName": "Acknowledgement Page",
+   "title": "Acknowledgement Page",
+   "fields": [
+     {
+       "type": "info",
+       "id": "ackpageInfo",
+       "label": "SomeContent",
+       "infoText": "SomeContent"
+     }
+   ]
+ },
+    "declarationSection": {
+    "shortName": "Declaration",
+    "title": "Declaration",
+    "fields": [
+      {
+        "type": "info",
+        "id": "declarationTopInfo",
+        "label": "Declaration copy",
+        "infoText": "Declaration copy"
+      },
+      {
+        "id": "declarationNameGroup",
+        "type": "group",
+        "label": "Provide details below of who is signing the declaration",
+        "fields": [
+          {
+            "id": "declaration-firstname",
+            "type": "text",
+            "label": "First name"
+          },
+          {
+            "id": "declaration-lastname",
+            "type": "text",
+            "label": "Last name"
+          },
+          {
+            "id": "declaration-status",
+            "type": "text",
+            "label": "Status",
+            "helpText": "For example: Director, Financial Controller, Secretary"
+          }
+        ]
+      },
+      {
+        "id": "declarationEmailGroup",
+        "type": "group",
+        "label": "To receive confirmation that your return has been submitted, enter an email address below",
+        "fields": [
+          {
+            "id": "declaration-email",
+            "type": "text",
+            "label": "Email address (Optional)",
+            "mandatory": "false",
+            "format": "email"
+          },
+          {
+            "id": "declaration-email-confirmation",
+            "type": "text",
+            "label": "Confirm email address (Optional)",
+            "mandatory": "false",
+            "format": "email"
+          }
+        ]
+      }
+    ]
+  }
+}
