@@ -24,14 +24,14 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues with OptionValues {
 
   "BooleanExprParser" should "parse or-expressions" in {
-    val res = BooleanExprParser.validate("${isPremisesSameAsBusinessAddress=0} | ${amountA=22}")
+    val res = BooleanExprParser.validate("${isPremisesSameAsBusinessAddress=0} || ${amountA=22}")
 
     res shouldBe Right(Or(Equals(FormCtx("isPremisesSameAsBusinessAddress"), Constant("0")), Equals(FormCtx("amountA"), Constant("22"))))
 
   }
 
   "BooleanExprParser" should "parse or-expressions inside form context" in {
-    val res = BooleanExprParser.validate("${hasOrgsAddressChanged=1 | hasOrgsAddressChanged=0}")
+    val res = BooleanExprParser.validate("${hasOrgsAddressChanged=1 || hasOrgsAddressChanged=0}")
 
     res shouldBe Right(Or(
       Equals(FormCtx("hasOrgsAddressChanged"), Constant("1")),
