@@ -33,6 +33,8 @@ class ConfigModule(playComponents: PlayComponents) {
 
   val exposedConfig: ExposedConfig = ExposedConfigHelper.exposedConfig(appConfig)
 
+  val desConfig: DesConnectorConfig = pureconfig.loadConfigOrThrow[DesConnectorConfig]("microservice.services.etmp-hod")
+
   val playConfiguration: Configuration = playComponents.context.initialConfiguration
 
   val serviceConfig: ServicesConfig = new ServicesConfig {
@@ -54,3 +56,5 @@ class ConfigModule(playComponents: PlayComponents) {
   val configController = new ConfigController(this)
 
 }
+
+case class DesConnectorConfig(basePath: String, authorizationToken: String, environment: String)
