@@ -48,13 +48,7 @@ object ValueParser {
   lazy val lastDate: Parser[PreviousDateValue] = nextOrPrevious("last", PreviousDateValue.apply)
 
   lazy val expr: Parser[Expr] = (
-    "${" ~> contextField <~ "}"
-    | "${" ~ contextField ~ operation ~ contextField ~ "}" ^^ { (loc, _, field1, op, field2, _) =>
-      op match {
-        case Addition => Add(field1, field2)
-        case Multiplication => Multiply(field1, field2)
-      }
-    }
+    parserExpression
     | anyConstant ^^ { (loc, const) => const }
   )
 
@@ -64,18 +58,29 @@ object ValueParser {
   )
 
   lazy val contextField: Parser[Expr] = (
-    "eeitt" ~ "." ~ eeitt ^^ { (loc, _, _, eeitt) => EeittCtx(eeitt) }
+    "${" ~> parserExpression <~ "}"
+    | "eeitt" ~ "." ~ eeitt ^^ { (loc, _, _, eeitt) => EeittCtx(eeitt) }
     | "form" ~ "." ~ alphabeticOnly ^^ { (loc, _, _, fieldName) => FormCtx(fieldName) }
     | "auth" ~ "." ~ authInfo ^^ { (loc, _, _, authInfo) => AuthCtx(authInfo) }
-    | "const" ~ "." ~ anyConstant ^^ { (loc, _, _, str) => str }
     | alphabeticOnly ~ ".sum" ^^ { (loc, value, _) => Sum(FormCtx(value)) }
+    | anyDigitConst ^^ { (loc, str) => str }
     | alphabeticOnly ^^ { (loc, fn) => FormCtx(fn) }
+  )
+
+  lazy val parserExpression: Parser[Expr] = (
+    parserExpression ~ "+" ~ parserExpression ^^ { (loc, expr1, _, expr2) => Add(expr1, expr2) }
+    | parserExpression ~ "*" ~ parserExpression ^^ { (loc, expr1, _, expr2) => Multiply(expr1, expr2) }
+    | contextField
   )
 
   lazy val alphabeticOnly: Parser[String] = """\w+""".r ^^ { (loc, str) => str }
 
   lazy val anyConstant: Parser[Constant] = (
-    """[ \w,]+""".r ^^ { (loc, str) => Constant(str) }
+    """'[ \w,]+'""".r ^^ { (loc, str) => Constant(str) }
+  )
+
+  lazy val anyDigitConst: Parser[Expr] = (
+    """[ \d,]+""".r ^^ { (loc, str) => Constant(str) }
   )
 
   lazy val eeitt: Parser[Eeitt] = (
