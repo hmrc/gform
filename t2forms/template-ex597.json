@@ -1128,12 +1128,18 @@
       ]
     }
   ],
-  "acknowledgementSection": [
-    {
-      "title": "Some content",
-      "content": "this is content"
-    }
-  ],
+  "acknowledgementSection": {
+    "shortName": "Acknowledgement Page",
+    "title": "Acknowledgement Page",
+    "fields": [
+      {
+        "type": "info",
+        "id": "ackpageInfo",
+        "label": "SomeContent",
+        "infoText": "SomeContent"
+      }
+    ]
+  },
   "declarationSection": {
   "shortName": "Declaration",
   "title": "Declaration",
