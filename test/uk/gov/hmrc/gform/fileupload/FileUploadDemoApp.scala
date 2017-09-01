@@ -23,7 +23,7 @@ import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.FileId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.time.TimeProvider
-import uk.gov.hmrc.gform.wshttp.TestWSHttp
+import uk.gov.hmrc.gform.wshttp.TestWSHttpIT
 import uk.gov.hmrc.play.http.HeaderCarrier
 
 import scala.concurrent.Await
@@ -61,7 +61,7 @@ object FileUploadDemoApp extends App {
 
   val config = configLocal
 
-  val http = TestWSHttp
+  val http = TestWSHttpIT
 
   val timeProvider = new TimeProvider {}
   val fu = new FileUploadConnector(config, http, timeProvider)
