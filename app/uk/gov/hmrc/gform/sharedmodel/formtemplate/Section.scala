@@ -23,7 +23,6 @@ import scala.collection.immutable.List
 
 sealed trait BaseSection {
   def title: String
-  def description: Option[String]
   def shortName: Option[String]
   def fields: List[FieldValue]
 }
@@ -121,6 +120,16 @@ case class AcknowledgementSection(
 
 object AcknowledgementSection {
   implicit val format = Json.format[AcknowledgementSection]
+}
+
+case class EnrolmentSection(
+  title: String,
+  shortName: Option[String],
+  fields: List[FieldValue]
+) extends BaseSection
+
+object EnrolmentSection {
+  implicit val format = Json.format[EnrolmentSection]
 }
 
 case class SectionFormField(
