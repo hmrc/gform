@@ -21,9 +21,9 @@ import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
 
 case class AuthConfig(
   authModule: AuthConfigModule,
-  predicates: Option[List[Predicate]],
   regimeId: RegimeId,
-  serviceId: Option[ServiceId]
+  serviceId: Option[ServiceId],
+  enrolmentSection: Option[EnrolmentSection]
 )
 
 object AuthConfig {
