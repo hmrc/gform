@@ -69,7 +69,7 @@ class ValueParserSpec extends Spec {
   }
 
   it should "parse constant" in {
-    val res = ValueParser.validate("constant")
+    val res = ValueParser.validate("'constant'")
     res.right.value should be(TextExpression(Constant("constant")))
   }
 
@@ -109,7 +109,7 @@ class ValueParserSpec extends Spec {
       UnexpectedState(
         """Unable to parse expression 201568-01-12.
           |Errors:
-          |201568-01-12:1: unexpected characters; expected '\s+' or ','
+          |201568-01-12:1: unexpected characters; expected '+' or '\s+' or '*' or ',' or '.sum'
           |201568-01-12      ^""".stripMargin
       )
     )
@@ -121,7 +121,7 @@ class ValueParserSpec extends Spec {
       UnexpectedState(
         """Unable to parse expression 65841-351.
           |Errors:
-          |65841-351:1: unexpected characters; expected '\s+' or ','
+          |65841-351:1: unexpected characters; expected '+' or '\s+' or '*' or ',' or '.sum'
           |65841-351     ^""".stripMargin
       )
     )
@@ -181,7 +181,7 @@ class ValueParserSpec extends Spec {
       UnexpectedState(
         """|Unable to parse expression ${name.
            |Errors:
-           |${name: unexpected end-of-file; expected '*' or '+' or '}'""".stripMargin
+           |${name: unexpected end-of-file; expected '}'""".stripMargin
       )
     )
   }

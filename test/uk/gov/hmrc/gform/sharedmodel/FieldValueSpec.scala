@@ -93,7 +93,7 @@ class FieldValueSpec extends Spec {
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(ShortText, Constant("'Ahah'")), "Registration number", None, None, mandatory = true, editable = true, submissible = true, errorMessage = None))
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(ShortText, Constant("Ahah")), "Registration number", None, None, mandatory = true, editable = true, submissible = true, errorMessage = None))
   }
 
   it should "parse 'text' type including value with total specified" in {
@@ -109,7 +109,7 @@ class FieldValueSpec extends Spec {
          |}"""
     )
 
-    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(ShortText, Constant("'Ahah'")), "Registration number", None, None, mandatory = true, editable = true, submissible = true, errorMessage = None))
+    fieldValue should beJsSuccess(FieldValue(FieldId("regNum"), Text(ShortText, Constant("Ahah")), "Registration number", None, None, mandatory = true, editable = true, submissible = true, errorMessage = None))
   }
 
   it should "parse as Text with 'mandatory' true as mandatory" in {
