@@ -48,8 +48,8 @@ object ValueParser {
   lazy val lastDate: Parser[PreviousDateValue] = nextOrPrevious("last", PreviousDateValue.apply)
 
   lazy val expr: Parser[Expr] = (
-    parserExpression
-    | anyConstant ^^ { (loc, const) => const }
+    "'" ~ anyConstant ~ "'" ^^ { (loc, _, str, _) => str }
+    | parserExpression
   )
 
   lazy val operation: Parser[Operation] = (
@@ -76,7 +76,7 @@ object ValueParser {
   lazy val alphabeticOnly: Parser[String] = """\w+""".r ^^ { (loc, str) => str }
 
   lazy val anyConstant: Parser[Constant] = (
-    """'[ \w,]+'""".r ^^ { (loc, str) => Constant(str) }
+    """[ \w,]+""".r ^^ { (loc, str) => Constant(str) }
   )
 
   lazy val anyDigitConst: Parser[Expr] = (

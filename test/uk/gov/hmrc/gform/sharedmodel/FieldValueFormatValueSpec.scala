@@ -41,7 +41,7 @@ class FieldValueFormatValueSpec extends Spec {
       """{
            "id": "constant",
            "label": "Label",
-           "value": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_ ,"
+           "value": "'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_ ,'"
           }
       """
     )
