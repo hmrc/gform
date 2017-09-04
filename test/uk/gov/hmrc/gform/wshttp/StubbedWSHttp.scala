@@ -40,7 +40,6 @@ class StubbedWSHttp(response: HttpResponse) extends WSHttp {
 //If you want to use WSHttp outside play app you must provide your WSClient. Otherwise it blows up.
 //See https://github.com/hmrc/http-verbs/issues/60
 //Don't use it on production ('ws.close()' logic is missing)
-/*
 object TestWSHttp extends WSHttp {
   override def buildRequest[A](url: String)(implicit hc: HeaderCarrier): WSRequest = ws.url(url)
   private implicit lazy val s: ActorSystem = ActorSystem()
@@ -48,4 +47,4 @@ object TestWSHttp extends WSHttp {
   private lazy val ws = AhcWSClient()(mat)
 
   def stop(): Future[Terminated] = s.terminate()
-}*/
+}
