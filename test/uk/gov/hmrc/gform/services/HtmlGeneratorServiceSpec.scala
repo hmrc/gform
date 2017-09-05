@@ -154,13 +154,11 @@ class HtmlGeneratorServiceSpec extends Spec with ExampleData {
   }
 
   it should "return HTML excluding stirling pound and commas for a numeric text field" in {
-    val fieldValue = `fieldValue - number`
-
     val formList = List(
-      FormField(`fieldId - number`, "£1,234")
+      `formField - number`
     )
 
-    val formFields = List(SectionFormField("SECTION TITLE", List((formList, fieldValue))))
+    val formFields = List(SectionFormField("SECTION TITLE", List((formList, `fieldValue - number`))))
     val html = testService.generateDocumentHTML(formFields, "FORM TITLE", formData)
     val doc = Jsoup.parse(html)
 
