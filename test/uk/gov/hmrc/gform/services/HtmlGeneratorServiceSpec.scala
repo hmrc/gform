@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.services
 import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.Spec
 import org.jsoup.Jsoup
+import uk.gov.hmrc.gform.sharedmodel.ExampleData
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.AnyText
 import uk.gov.hmrc.gform.pdfgenerator.HtmlGeneratorService
 import uk.gov.hmrc.gform.sharedmodel.form.{ FormData, FormField }
@@ -27,7 +28,7 @@ import uk.gov.hmrc.gform.submission.SectionFormField
 
 import scala.collection.immutable.List
 
-class HtmlGeneratorServiceSpec extends Spec {
+class HtmlGeneratorServiceSpec extends Spec with ExampleData {
 
   val testService = new HtmlGeneratorService {}
   override val formData = FormData(Seq.empty)
@@ -153,20 +154,10 @@ class HtmlGeneratorServiceSpec extends Spec {
   }
 
   it should "return HTML excluding stirling pound and commas for a numeric text field" in {
-    val fieldValue = FieldValue(
-      id = FieldId("id"),
-      `type` = Text(PositiveNumber(), Constant("CONSTANT")),
-      label = "label",
-      shortName = None,
-      helpText = None,
-      mandatory = true,
-      editable = true,
-      submissible = true,
-      errorMessage = None
-    )
+    val fieldValue = `fieldValue - number`
 
     val formList = List(
-      FormField(FieldId("id"), "£1,234")
+      FormField(`fieldId - number`, "£1,234")
     )
 
     val formFields = List(SectionFormField("SECTION TITLE", List((formList, fieldValue))))
@@ -175,5 +166,16 @@ class HtmlGeneratorServiceSpec extends Spec {
 
     doc.getElementsByTag("td").last.html.equalsIgnoreCase("1234") shouldBe true
   }
+
+  //  it should "return HTML excluding stirling pound and commas for a numeric text field" in {
+  //    val fieldValue = `fieldValue - number`
+  //    val formList = List(`formField - number`)
+  //
+  //    val formFields = List(SectionFormField("SECTION TITLE", List((formList, fieldValue))))
+  //    val html = testService.generateDocumentHTML(formFields, "FORM TITLE", formData)
+  //    val doc = Jsoup.parse(html)
+  //
+  //    doc.getElementsByTag("td").last.html.equalsIgnoreCase("1234") shouldBe true
+  //  }
 
 }

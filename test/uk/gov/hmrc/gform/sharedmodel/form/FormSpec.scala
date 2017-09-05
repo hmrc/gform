@@ -23,7 +23,7 @@ import uk.gov.hmrc.gform.sharedmodel.ExampleData
 class FormSpec extends Spec {
 
   "case class Form" should "be serialized into json" in new ExampleData {
-    override val formFields = super.formFields.take(2)
+    override val formFields = super.formFields.filter(f => Set("facePhoto", "startDate-year").contains(f.id.value))
 
     val formJsObject: JsObject = Form.format.writes(form)
 
