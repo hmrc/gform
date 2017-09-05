@@ -98,6 +98,8 @@ object TextConstraint {
   val defaultFactionalDigits = 2
 
   implicit val format: OFormat[TextConstraint] = derived.oformat[TextConstraint]
+
+  def filterNumberValue(s: String): String = s.filterNot(c => (c == '£' || c == ','))
 }
 
 object TextExpression {
