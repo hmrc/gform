@@ -265,12 +265,6 @@
  "title": "Declaration",
  "fields": [
    {
-     "type": "info",
-     "id": "declarationTopInfo",
-     "label": "Declaration copy",
-     "infoText": "Declaration copy"
-   },
-   {
      "id": "declarationNameGroup",
      "type": "group",
      "label": "Provide details below of who is signing the declaration",

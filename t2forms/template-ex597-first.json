@@ -544,10 +544,66 @@
       ]
     }
   ],
-  "acknowledgementSection": [
-    {
-      "title": "Some content",
-      "content": "this is content"
-    }
-  ]
+  "acknowledgementSection": {
+   "shortName": "Acknowledgement Page",
+   "title": "Acknowledgement Page",
+   "fields": [
+     {
+       "type": "info",
+       "id": "ackpageInfo",
+       "label": "SomeContent",
+       "infoText": "SomeContent"
+     }
+   ]
+ },
+    "declarationSection": {
+    "shortName": "Declaration",
+    "title": "Declaration",
+    "fields": [
+      {
+        "id": "declarationNameGroup",
+        "type": "group",
+        "label": "Provide details below of who is signing the declaration",
+        "fields": [
+          {
+            "id": "declaration-firstname",
+            "type": "text",
+            "label": "First name"
+          },
+          {
+            "id": "declaration-lastname",
+            "type": "text",
+            "label": "Last name"
+          },
+          {
+            "id": "declaration-status",
+            "type": "text",
+            "label": "Status",
+            "helpText": "For example: Director, Financial Controller, Secretary"
+          }
+        ]
+      },
+      {
+        "id": "declarationEmailGroup",
+        "type": "group",
+        "label": "To receive confirmation that your return has been submitted, enter an email address below",
+        "fields": [
+          {
+            "id": "declaration-email",
+            "type": "text",
+            "label": "Email address (Optional)",
+            "mandatory": "false",
+            "format": "email"
+          },
+          {
+            "id": "declaration-email-confirmation",
+            "type": "text",
+            "label": "Confirm email address (Optional)",
+            "mandatory": "false",
+            "format": "email"
+          }
+        ]
+      }
+    ]
+  }
 }
