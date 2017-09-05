@@ -1,0 +1,400 @@
+{
+  "_id": "VAT126",
+  "formName": "Claim for refund of VAT by certain bodies",
+  "description": "",
+  "dmsSubmission": {
+    "customerId": "nino",
+    "classificationType": "BT-NRU-Environmental",
+    "businessArea": "FinanceOpsCorpT"
+  },
+  "authConfig":{
+    "authModule": "legacyEEITTAuth",
+    "regimeId": "GF"
+  },
+  "submitSuccessUrl": "http://www.google.co.uk",
+  "submitErrorUrl": "http://www.yahoo.co.uk",
+  "sections": [
+    {
+      "title": "What type of organisation are you claiming for?",
+      "shortName": "Organisation type",
+      "fields": [
+        {
+          "id": "orgType",
+          "type": "choice",
+          "label": "",
+          "choices": [
+            "Local authority or similar body",
+            "Academy school or multi-academy trust (MAT)",
+            "Charity",
+            "Non-departmental body or similar bodies"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Confirm the name of your organisation",
+      "shortName": "Organisation name",
+      "fields": [
+        {
+          "id": "orgName",
+          "type": "text",
+          "label": "Organisation name",
+          "errorMessage": "Please enter your organisation name"
+        }
+      ]
+    },
+    {
+      "title": "Has your organisation's address changed since your last claim?",
+      "shortName": "Has the address changed?",
+      "fields": [
+        {
+          "id": "hasOrgsAddressChanged",
+          "type": "choice",
+          "format": "yesno",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "title": "Enter your organisation's new address details",
+      "shortName": "Organisation address",
+      "includeIf": "${hasOrgsAddressChanged=0}",
+      "fields": [
+        {
+          "id": "addressDocVerifyInfo",
+          "type": "info",
+          "label": "",
+          "infoText": "You'll need to upload a document to verify your new address. You can do this on the next page."
+        },
+        {
+          "id": "newOrgAddress",
+          "label": "",
+          "shortName": "Organisation's new address",
+          "type": "address"
+        }
+      ]
+    },
+    {
+      "title": "Upload a document to verify your organisation's new address",
+      "shortName": "New address verification",
+      "includeIf": "${hasOrgsAddressChanged=0}",
+      "fields": [
+        {
+          "id": "addressVerificationFile",
+          "type": "file",
+          "label": "",
+          "shortName": "Uploaded address verification file"
+        },
+        {
+          "id": "addressDocUploadInfo",
+          "type": "info",
+          "label": "",
+          "infoType": "standard",
+          "infoText": "The document you upload must be:\n\n* less than 5 megabytes (5MB)\n* in PDF or JPEG  format\n"
+        },
+        {
+          "id": "addressDocTypeInfo",
+          "type": "info",
+          "infoType": "long",
+          "label": "Documents you can use to verify a new address",
+          "infoText": "Content goes here"
+        }
+      ]
+    },
+    {
+      "title": "Have your organisation's bank details changed since your last claim?",
+      "shortName": "Have the bank details changed?",
+      "fields": [
+        {
+          "id": "hasBankAccountChanged",
+          "type": "choice",
+          "format": "yesno",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "title": "Enter your new bank details",
+      "shortName": "Payment details",
+      "includeIf": "${hasBankAccountChanged=0}",
+      "fields": [
+        {
+          "id": "bankDocVerifyInfo",
+          "type": "info",
+          "label": "",
+          "infoText": "You'll need to upload a document to verify your new bank details. You can do this on the next page."
+        },
+        {
+          "id": "bankDetailsGroup",
+          "type": "group",
+          "label": "Bank details",
+          "fields": [
+            {
+              "id": "bankName",
+              "type": "text",
+              "label": "Bank or building society name",
+              "errorMessage": "Please enter the organisation's bank or building society name"
+            },
+            {
+              "id": "bankAccountNumber",
+              "type": "text",
+              "format": "ukBankAccountNumber",
+              "label": "Account number",
+              "errorMessage": "Please enter the organisation's account number"
+            },
+            {
+              "id": "bankSortCode",
+              "type": "text",
+              "format": "ukSortCode",
+              "label": "Sort code",
+              "errorMessage": "Please enter the organisation's sort code"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Upload a document to verify your new bank details",
+      "shortName": "Bank account verification",
+      "includeIf": "${hasBankAccountChanged=0}",
+      "fields": [
+        {
+          "id": "bankAccountVerificationFile",
+          "type": "file",
+          "label": "",
+          "shortName": "Uploaded bank account verification file"
+        },
+        {
+          "id": "bankFileUploadInfo",
+          "type": "info",
+          "label": "",
+          "infoText": "The document you upload must be:\n\n* less than 5 megabytes (5MB)\n* in PDF or JPEG format\n"
+        },
+        {
+          "id": "bankFileTypeInfo",
+          "type": "info",
+          "label": "",
+          "infoType": "long",
+          "label": "Documents you can use to verify your new bank details",
+          "infoText": "Content goes here"
+        }
+      ]
+    },
+    {
+      "title": "Enter the start and end dates for this claim",
+      "shortName": "Your claim period",
+      "fields": [
+        {
+          "id": "claimStartDate",
+          "type": "date",
+          "label": "Start date",
+          "helpText": "Example: 30 09 2017",
+          "errorMessage": "Please enter a valid start date"
+        },
+        {
+          "id": "claimEndDate",
+          "type": "date",
+          "label": "End date",
+          "helpText": "Example: 31 12 2017",
+          "format": "after ${claimStartDate}",
+          "errorMessage": "Please enter a valid end date.  Note this must be after the start date."
+        }
+      ]
+    },
+    {
+      "title": "Submit your invoice details",
+      "shortName": "Invoice details",
+      "description": "You'll need to provide details of the invoices you're claiming a refund for.",
+      "fields": [
+        {
+          "id": "submitInvoiceChoiceInfo",
+          "type": "info",
+          "label": "",
+          "infoText": "If you have less than 20 invoices, then enter the details on-screen.\n\nYou can also upload an invoice schedule that lists all the invoices you're claiming for."
+        },
+        {
+          "id": "invoicesChoice",
+          "type": "choice",
+          "label": "",
+          "choices": [
+            "I will enter my invoice details on-screen",
+            "I will upload a file containing my invoice details"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Enter details for each invoice you are claiming for",
+      "includeIf": "${invoicesChoice=0}",
+      "fields": [
+        {
+          "id": "invoiceGroup",
+          "type": "group",
+          "label": "",
+          "repeatsMax": 20,
+          "repeatLabel": "Invoice $n",
+          "repeatAddAnotherText": "Add another invoice",
+          "fields": [
+            {
+              "id": "dateOfInvoice",
+              "type": "date",
+              "label": "Date of invoice",
+              "helpText": "Example: 30 09 2017"
+            },
+            {
+              "id": "suppliersVrn",
+              "type": "text",
+              "label": "Supplier's VAT Registration Number",
+              "errorMessage": "Please enter the supplier's VAT registration number.  Note this must be a valid VAT number."
+            },
+            {
+              "id": "descriptionOfGoodsOrServices",
+              "type": "text",
+              "label": "Brief description of goods or services supplied",
+              "errorMessage": "Please enter a description of supply"
+            },
+            {
+              "id": "whoIsInvoiceAddressedTo",
+              "type": "text",
+              "label": "Who this invoice was addressed to",
+              "errorMessage": "Please enter to whom it is addressed"
+            },
+            {
+              "id": "amountOfVatPaid",
+              "type": "text",
+              "label": "Amount of VAT paid",
+              "format": "sterling",
+              "errorMessage": "Please enter VAT paid"
+            }
+          ]
+        },
+        {
+          "id": "derivedAmountOfClaim",
+          "type": "text",
+          "label": "Total claim amount",
+          "format": "sterling"
+        }
+      ]
+    },
+    {
+      "title": "Upload an invoice schedule",
+      "shortName": "Invoice schedule",
+      "includeIf": "${invoicesChoice=1}",
+      "fields": [
+        {
+          "id": "invoiceScheduleFile",
+          "type": "file",
+          "label": "",
+          "shortName": "Uploaded schedule file"
+        },
+        {
+          "id": "invoiceUploadInfo",
+          "type": "info",
+          "label": "",
+          "infoText": "The document you upload must be:\n\n* less than 5 megabytes (5MB)\n* in PDF or JPEG format\n"
+        },
+        {
+          "id": "invoiceTypeInfo",
+          "type": "info",
+          "label": "",
+          "infoType": "long",
+          "label": "Documents you can use to verify your new bank details",
+          "infoText": "You must provide the following information for each invoice you are claiming for:\n\n* Date of invoice\n* Supplier's VAT Registration Number\n* Brief description of supply\n* To whom addressed\n* VAT paid\n"
+        }
+      ]
+    },
+    {
+      "title": "Enter the total amount of your claim",
+      "shortName": "Total claim amount",
+      "includeIf": "${invoicesChoice=1}",
+      "fields": [
+        {
+          "id": "amountOfClaim",
+          "type": "text",
+          "label": "",
+          "format": "sterling"
+        }
+      ]
+    },
+    {
+      "title": "Enter your contact person's details",
+      "shortName": "Contact person",
+      "description": "This is the person we contact if we need to discuss your return.",
+      "fields": [
+        {
+          "id": "fullName",
+          "type": "text",
+          "label": "Full name"
+        },
+        {
+          "id": "emailAddress",
+          "type": "text",
+          "label": "Email address",
+          "format": "email"
+        }
+      ]
+    }
+  ],
+  "acknowledgementSection": {
+   "shortName": "Acknowledgement Page",
+   "title": "Acknowledgement Page",
+   "fields": [
+     {
+       "type": "info",
+       "id": "ackpageInfo",
+       "label": "SomeContent",
+       "infoText": "SomeContent"
+     }
+   ]
+ },
+    "declarationSection": {
+    "shortName": "Declaration",
+    "title": "Declaration",
+    "fields": [
+      {
+        "id": "declarationNameGroup",
+        "type": "group",
+        "label": "Provide details below of who is signing the declaration",
+        "fields": [
+          {
+            "id": "declaration-firstname",
+            "type": "text",
+            "label": "First name"
+          },
+          {
+            "id": "declaration-lastname",
+            "type": "text",
+            "label": "Last name"
+          },
+          {
+            "id": "declaration-status",
+            "type": "text",
+            "label": "Status",
+            "helpText": "For example: Director, Financial Controller, Secretary"
+          }
+        ]
+      },
+      {
+        "id": "declarationEmailGroup",
+        "type": "group",
+        "label": "To receive confirmation that your return has been submitted, enter an email address below",
+        "fields": [
+          {
+            "id": "declaration-email",
+            "type": "text",
+            "label": "Email address (Optional)",
+            "mandatory": "false",
+            "format": "email"
+          },
+          {
+            "id": "declaration-email-confirmation",
+            "type": "text",
+            "label": "Confirm email address (Optional)",
+            "mandatory": "false",
+            "format": "email"
+          }
+        ]
+      }
+    ]
+  }
+}

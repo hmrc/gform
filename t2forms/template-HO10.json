@@ -1,0 +1,179 @@
+{
+  "_id": "HO10",
+  "formName": "Hydrocarbon oils",
+  "description": "",
+  "dmsSubmission": {
+    "customerId": "nino",
+    "classificationType": "BT-NRU-Environmental",
+    "businessArea": "FinanceOpsCorpT"
+  },
+  "authConfig":{
+    "authModule": "legacyEEITTAuth",
+    "regimeId": "GF"
+  },
+  "submitSuccessUrl": "http://www.google.co.uk",
+  "submitErrorUrl": "http://www.yahoo.co.uk",
+  "sections": [
+    {
+      "title": "Enter your business details",
+      "shortName": "Business details",
+      "fields": [
+        {
+          "id": "business-name",
+          "type": "text",
+          "label": "Business name",
+          "mandatory": "true"
+        },
+        {
+          "id": "telephone-number",
+          "type": "text",
+          "label": "Phone number",
+          "format": "telephoneNumber"
+        },
+        {
+          "id": "business-address",
+          "label": "Business address",
+          "mandatory": "true",
+          "type": "address",
+          "international": "yes"
+        }
+      ]
+    },
+    {
+      "title": "Enter the start and end dates for this return",
+      "shortName": "Start and end dates for this return",
+      "fields": [
+        {
+          "id": "start-date",
+          "type": "date",
+          "label": "Start date",
+          "mandatory": "true",
+          "helpText": "Example: 10 07 2017"
+        },
+        {
+          "id": "end-date",
+          "type": "date",
+          "label": "End date",
+          "mandatory": "true",
+          "helpText": "Example: 10 10 2017"
+        }
+      ]
+    },
+    {
+      "title": "Upload your return document",
+      "fields": [
+        {
+          "type": "file",
+          "id": "spreadsheet",
+          "label": ""
+        },
+        {
+          "id": "upload-info",
+          "type": "info",
+          "infoText": "The document you upload must be:\n\n* less that 5 megabytes (5MB)\n* in PDF or JPEG format",
+          "label": ""
+        },
+        {
+          "id": "upload-contents-info",
+          "type": "info",
+          "infoType": "long",
+          "infoText": "Content goes here...",
+          "label": "What the document must contain"
+        }
+      ]
+    },
+    {
+      "title": "Enter the total amount of your claim",
+      "fields": [
+        {
+          "id": "total-claim",
+          "type": "text",
+          "label": "",
+          "mandatory": "true",
+          "format": "sterling"
+        }
+      ]
+    },
+    {
+      "title": "Enter your contact person's details",
+      "description": "This is the person we will contact if we need to discuss your return.",
+      "fields": [
+        {
+          "id": "name",
+          "type": "text",
+          "label": "Full name",
+          "mandatory": "true"
+        },
+        {
+          "id": "email",
+          "type": "text",
+          "label": "Email address",
+          "mandatory": "true",
+          "format": "email"
+        }
+      ]
+    }
+  ],
+  "acknowledgementSection": {
+   "shortName": "Acknowledgement Page",
+   "title": "Acknowledgement Page",
+   "fields": [
+     {
+       "type": "info",
+       "id": "ackpageInfo",
+       "label": "SomeContent",
+       "infoText": "SomeContent"
+     }
+   ]
+ },
+    "declarationSection": {
+    "shortName": "Declaration",
+    "title": "Declaration",
+    "fields": [
+      {
+        "id": "declarationNameGroup",
+        "type": "group",
+        "label": "Provide details below of who is signing the declaration",
+        "fields": [
+          {
+            "id": "declaration-firstname",
+            "type": "text",
+            "label": "First name"
+          },
+          {
+            "id": "declaration-lastname",
+            "type": "text",
+            "label": "Last name"
+          },
+          {
+            "id": "declaration-status",
+            "type": "text",
+            "label": "Status",
+            "helpText": "For example: Director, Financial Controller, Secretary"
+          }
+        ]
+      },
+      {
+        "id": "declarationEmailGroup",
+        "type": "group",
+        "label": "To receive confirmation that your return has been submitted, enter an email address below",
+        "fields": [
+          {
+            "id": "declaration-email",
+            "type": "text",
+            "label": "Email address (Optional)",
+            "mandatory": "false",
+            "format": "email"
+          },
+          {
+            "id": "declaration-email-confirmation",
+            "type": "text",
+            "label": "Confirm email address (Optional)",
+            "mandatory": "false",
+            "format": "email"
+          }
+        ]
+      }
+    ]
+  }
+}
