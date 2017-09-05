@@ -556,7 +556,7 @@
      }
    ]
  },
-    "declarationSection": {
+  "declarationSection": {
     "shortName": "Declaration",
     "title": "Declaration",
     "fields": [
