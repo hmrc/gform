@@ -151,4 +151,29 @@ class HtmlGeneratorServiceSpec extends Spec {
 
     doc.getElementsByTag("td").last.html.equalsIgnoreCase("Hello") shouldBe true
   }
+
+  it should "return HTML excluding stirling pound and commas for a numeric text field" in {
+    val fieldValue = FieldValue(
+      id = FieldId("id"),
+      `type` = Text(PositiveNumber(), Constant("CONSTANT")),
+      label = "label",
+      shortName = None,
+      helpText = None,
+      mandatory = true,
+      editable = true,
+      submissible = true,
+      errorMessage = None
+    )
+
+    val formList = List(
+      FormField(FieldId("id"), "£1,234")
+    )
+
+    val formFields = List(SectionFormField("SECTION TITLE", List((formList, fieldValue))))
+    val html = testService.generateDocumentHTML(formFields, "FORM TITLE", formData)
+    val doc = Jsoup.parse(html)
+
+    doc.getElementsByTag("td").last.html.equalsIgnoreCase("1234") shouldBe true
+  }
+
 }
