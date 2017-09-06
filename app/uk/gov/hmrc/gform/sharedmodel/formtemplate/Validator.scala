@@ -42,7 +42,7 @@ case object Validator {
 
   val writes: OWrites[Validator] = OWrites {
     case v: HMRCUTRPostcodeCheckValidator => HMRCUTRPostcodeCheckValidator.format.writes(v)
-    case v: BankAccoutnModulusCheck       => BankAccoutnModulusCheck.format.writes(v)
+    case v: BankAccoutnModulusCheck => BankAccoutnModulusCheck.format.writes(v)
 
   }
 
@@ -74,7 +74,6 @@ object HMRCUTRPostcodeCheckValidator {
 }
 
 case class BankAccoutnModulusCheck(errorMessage: String, accountNumber: FormCtx, sortCode: FormCtx) extends Validator {
-
 
   val accountNumberId = accountNumber.toFieldId
   val sortCodeId = sortCode.toFieldId

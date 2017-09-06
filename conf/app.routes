@@ -22,7 +22,6 @@ GET           /exposed-config                                      uk.gov.hmrc.g
 GET           /validate/des/:utr/:postCode                         uk.gov.hmrc.gform.validation.ValidationController.validateAddressAtDes(utr: String, postCode: String)
 GET           /validate/bank/:accountNumber/:sortCode              uk.gov.hmrc.gform.validation.ValidationController.validateBank(accountNumber: String, sortCode: String)
 POST          /test-only/registration/organisation/utr/:utr        uk.gov.hmrc.gform.validation.ValidationController.testValidatorStub(utr: String)
-POST          /test-only/modcheck                                  uk.gov.hmrc.gform.validation.ValidationController.testValidatorStub()
 
 #TODO move it to testOnlyDoNotUseInAppConf.routes
 GET           /test-only/remove-templates                          uk.gov.hmrc.gform.testonly.TestOnlyController.removeTemplates()

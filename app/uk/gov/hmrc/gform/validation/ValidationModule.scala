@@ -16,12 +16,13 @@
 
 package uk.gov.hmrc.gform.validation
 
+import uk.gov.hmrc.gform.bank_account_reputation.BankAccountReputationConnector
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.des.DesConnector
 import uk.gov.hmrc.gform.fileupload.FileUploadModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.mongo.MongoModule
-import uk.gov.hmrc.gform.save4later.{ Save4Later, Save4LaterModule }
+import uk.gov.hmrc.gform.save4later.{Save4Later, Save4LaterModule}
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 
 class ValidationModule(
@@ -32,5 +33,7 @@ class ValidationModule(
   private val desConfig = configModule.desConfig
   private val desConnector: DesConnector = new DesConnector(wSHttpModule.auditableWSHttp, configModule.serviceConfig.baseUrl("etmp-hod"), desConfig)
 
-  val validationController = new ValidationController(desConnector)
+  private val  bankAccountReputationConnector = new BankAccountReputationConnector(wSHttpModule.auditableWSHttp, configModule.serviceConfig.baseUrl("bank-account-reputation "))
+
+  val validationController = new ValidationController(desConnector, bankAccountReputationConnector)
 }
