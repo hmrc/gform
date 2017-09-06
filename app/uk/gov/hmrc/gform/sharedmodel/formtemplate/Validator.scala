@@ -36,11 +36,13 @@ case object Validator {
   val reads: Reads[Validator] = Reads { json =>
     (json \ "validatorName").as[String] match {
       case "hmrcUTRPostcodeCheck" => json.validate[HMRCUTRPostcodeCheckValidator]
+      case "bankAccoutnModulusCheck" => json.validate[BankAccoutnModulusCheck]
     }
   }
 
   val writes: OWrites[Validator] = OWrites {
     case v: HMRCUTRPostcodeCheckValidator => HMRCUTRPostcodeCheckValidator.format.writes(v)
+    case v: BankAccoutnModulusCheck       => BankAccoutnModulusCheck.format.writes(v)
 
   }
 
@@ -69,4 +71,27 @@ object HMRCUTRPostcodeCheckValidator {
 
   val reads = readCustom | (basic: Reads[HMRCUTRPostcodeCheckValidator])
   implicit val format: OFormat[HMRCUTRPostcodeCheckValidator] = OFormat(reads, writesCustom)
+}
+
+case class BankAccoutnModulusCheck(errorMessage: String, accountNumber: FormCtx, sortCode: FormCtx) extends Validator {
+
+
+  val accountNumberId = accountNumber.toFieldId
+  val sortCodeId = sortCode.toFieldId
+}
+
+object BankAccoutnModulusCheck {
+  val basic: OFormat[BankAccoutnModulusCheck] = Json.format[BankAccoutnModulusCheck]
+  val writesCustom: OWrites[BankAccoutnModulusCheck] = OWrites { o =>
+    Json.obj("validatorName" -> "bankAccoutnModulusCheck") ++
+      basic.writes(o)
+  }
+
+  val writes: OWrites[BankAccoutnModulusCheck] = writesCustom
+  val readCustom: Reads[BankAccoutnModulusCheck] = ((JsPath \ "errorMessage").read[String] and
+    (JsPath \ "parameters" \\ "accountNumber").read[FormCtx] and
+    (JsPath \ "parameters" \\ "sortCode").read[FormCtx])(BankAccoutnModulusCheck.apply _)
+
+  val reads = readCustom | (basic: Reads[BankAccoutnModulusCheck])
+  implicit val format: OFormat[BankAccoutnModulusCheck] = OFormat(reads, writesCustom)
 }

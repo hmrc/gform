@@ -152,7 +152,7 @@ trait ExampleFieldValue { dependecies: ExampleFieldId =>
 trait ExampleValidator {
   def defaultValidator = hMRCUTRPostcodeCheckValidator
   def hMRCUTRPostcodeCheckValidator = HMRCUTRPostcodeCheckValidator("The UTR could not be foundor the postcode did not match. | <Welsh...>", FormCtx("utrToCheck"), FormCtx("postcodeToCheck"))
-
+  def bankAccoutnModulusCheckValidator = BankAccoutnModulusCheck("This is an error message for Bank", FormCtx("accountNumber"), FormCtx("sortCode"))
   //todo other example validators
 }
 

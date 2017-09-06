@@ -22,7 +22,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormCtx, HMRCUTRPostcodeChec
 
 class ValidatorSpec extends Spec {
 
-  "Validator" should "return HMRCVALIDATORBleh " in {
+  "Validator" should "return HMRCUTRPostcodeCheckValidator " in {
 
     val json: JsValue = Json.parse(s"""{
                               "validatorName": "hmrcUTRPostcodeCheck",
@@ -43,4 +43,29 @@ class ValidatorSpec extends Spec {
       "postcode" -> Json.obj("value" -> hMRCUTRPostcodeCheckValidator.postcode.value)
     )
   }
+
+
+  "Validator" should "return BankAccoutnModulusCheck " in {
+
+    val json: JsValue = Json.parse(s"""{
+                              "validatorName": "bankAccoutnModulusCheck",
+                              "errorMessage": "${bankAccoutnModulusCheckValidator.errorMessage}",
+                              "parameters": [
+                                  {"accountNumber": "${"$" + bankAccoutnModulusCheckValidator.accountNumber.value}"},
+                                  {"sortCode": "${"$" + bankAccoutnModulusCheckValidator.sortCode.value}"}
+                              ]
+                            }""")
+
+    val validator = json.as[Validator]
+    validator shouldBe bankAccoutnModulusCheckValidator
+    val x: JsValue = Validator.format.writes(validator)
+    x shouldBe Json.obj(
+      "validatorName" -> "bankAccoutnModulusCheck",
+      "errorMessage" -> "This is an error message for Bank",
+      "accountNumber" -> Json.obj("value" -> bankAccoutnModulusCheckValidator.accountNumber.value),
+      "sortCode" -> Json.obj("value" -> bankAccoutnModulusCheckValidator.sortCode.value)
+    )
+  }
+
+
 }

@@ -19,21 +19,32 @@ package uk.gov.hmrc.gform.validation
 import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc.Action
+import uk.gov.hmrc.gform.bank_account_reputation.{Account, BankAccountReputationConnector}
 import uk.gov.hmrc.gform.controllers.BaseController
-import uk.gov.hmrc.gform.des.{ AddressDes, DesConnector }
+import uk.gov.hmrc.gform.des.{AddressDes, DesConnector}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class ValidationController(desConnector: DesConnector) extends BaseController {
+class ValidationController(desConnector: DesConnector, bankAccountReputationConnector: BankAccountReputationConnector) extends BaseController {
 
   def validateAddressAtDes(utr: String, postcode: String) = Action.async { implicit request =>
     desConnector.lookup(utr, postcode).map(if (_) NoContent else NotFound)
   }
 
+  def validateBank(accountNumber: String, sortCode: String) = Action.async { implicit request =>
+    bankAccountReputationConnector.exists(accountNumber, sortCode).map(if (_) NoContent else NotFound)
+  }
+
   def testValidatorStub(utr: String) = Action.async { implicit request =>
     if (utr.startsWith("1")) {
       Future.successful(Ok(Json.toJson(AddressDes("Valid"))))
+    } else
+      Future.successful(Ok(Json.toJson(AddressDes("Fail"))))
+  }
+  def testValidatorStub() = Action.async(parse.json[Account]) { implicit request =>
+    if (request.body.accountNumber.startsWith("1")) {
+      Future.successful(Ok(Json.toJson(Response("Valid"))))
     } else
       Future.successful(Ok(Json.toJson(AddressDes("Fail"))))
   }
