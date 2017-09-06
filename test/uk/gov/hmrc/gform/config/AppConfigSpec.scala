@@ -32,15 +32,11 @@ class AppConfigSpec extends Spec {
     val appConfig = AppConfig.loadOrThrow(ConfigFactory.load())
     appConfig.appName shouldBe "gform"
     appConfig.formExpiryDays shouldBe 30
-    appConfig.formMaxAttachments shouldBe 10
-    appConfig.formMaxAttachmentSizeMB shouldBe 10
+    appConfig.formMaxAttachments shouldBe 8
+    appConfig.formMaxAttachmentSizeMB shouldBe 5
     appConfig.contentTypes shouldBe List(
       ContentType.`application/pdf`,
-      ContentType.`application/xml`,
-      ContentType.`image/jpeg`,
-      ContentType.`text/xml`,
-      ContentType.`application/vnd.ms-excel`,
-      ContentType.`application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`
+      ContentType.`image/jpeg`
     )
 
   }
