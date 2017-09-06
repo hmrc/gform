@@ -24,7 +24,7 @@ import uk.gov.hmrc.gform.core.parsers.{ FormatParser, PresentationHintParser, Va
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
-case class MES(mandatory: Boolean, editable: Boolean, submissible: Boolean)
+case class MES(mandatory: Boolean, editable: Boolean, submissible: Boolean, derived: Boolean)
 
 class FieldValueMaker(json: JsValue) {
 
@@ -84,18 +84,21 @@ class FieldValueMaker(json: JsValue) {
     mandatory = mes.mandatory,
     editable = mes.editable,
     submissible = mes.submissible,
+    derived = mes.derived,
     presentationHint = presHint,
     errorMessage = errorMessage
   )
 
   private lazy val optMES: Opt[MES] = (submitMode, mandatory) match {
     //format: OFF
-    case IsThisAnInfoField()                                    => MES(mandatory = true,  editable = false, submissible = false).asRight
-    case (Some(IsStandard()) | None, Some(IsTrueish()) | None)  => MES(mandatory = true,  editable = true,  submissible = true).asRight
-    case (Some(IsReadOnly()),        Some(IsTrueish()) | None)  => MES(mandatory = true,  editable = false, submissible = true).asRight
-    case (Some(IsInfo()),            Some(IsTrueish()) | None)  => MES(mandatory = true,  editable = false, submissible = false).asRight
-    case (Some(IsStandard()) | None, Some(IsFalseish()))        => MES(mandatory = false, editable = true,  submissible = true).asRight
-    case (Some(IsInfo()),            Some(IsFalseish()))        => MES(mandatory = false, editable = false, submissible = false).asRight
+    case IsThisAnInfoField()                                    => MES(mandatory = true,  editable = false, submissible = false, derived = false).asRight
+    case (Some(IsStandard()) | None, Some(IsTrueish()) | None)  => MES(mandatory = true,  editable = true,  submissible = true, derived = false).asRight
+    case (Some(IsReadOnly()),        Some(IsTrueish()) | None)  => MES(mandatory = true,  editable = false, submissible = true, derived = false).asRight
+    case (Some(IsInfo()),            Some(IsTrueish()) | None)  => MES(mandatory = true,  editable = false, submissible = false, derived = false).asRight
+    case (Some(IsStandard()) | None, Some(IsFalseish()))        => MES(mandatory = false, editable = true,  submissible = true, derived = false).asRight
+    case (Some(IsInfo()),            Some(IsFalseish()))        => MES(mandatory = false, editable = false, submissible = false, derived = false).asRight
+    case (Some(IsDerived()),         Some(IsTrueish()) | None)  => MES(mandatory = true, editable = false, submissible = false, derived = true).asRight
+    case (Some(IsDerived()),         Some(IsFalseish()))        => MES(mandatory = false, editable = false, submissible = false, derived = true).asRight
     case otherwise                                              => UnexpectedState(s"Expected 'standard', 'readonly' or 'info' string or nothing for submitMode and expected 'true' or 'false' string or nothing for mandatory field value, got: $otherwise").asLeft
     //format: ON
   }
@@ -397,6 +400,10 @@ class FieldValueMaker(json: JsValue) {
   }
   object IsInfo {
     def unapply(maybeStandard: String): Boolean = maybeStandard.toLowerCase == "info"
+  }
+
+  object IsDerived {
+    def unapply(maybeStandard: String): Boolean = maybeStandard.toLowerCase == "derived"
   }
 
   object IsTrueish {
