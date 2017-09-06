@@ -1,3 +1,19 @@
+/*
+ * Copyright 2017 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package uk.gov.hmrc.gform.bank_account_reputation
 
 import play.api.libs.json._
@@ -5,29 +21,29 @@ import uk.gov.hmrc.gform.config.DesConnectorConfig
 import uk.gov.hmrc.gform.wshttp.WSHttp
 import play.api.libs.functional.syntax._
 import uk.gov.hmrc.play.http.HeaderCarrier
-
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class BankAccountReputationConnector(wSHttp: WSHttp, baseUrl: String, basePath: String)  {
+class BankAccountReputationConnector(wSHttp: WSHttp, baseUrl: String) {
 
   def exists(accountNumber: String, sortCode: String)(implicit hc: HeaderCarrier): Future[Boolean] =
-    wSHttp.POST[Account, Response](s"$baseUrl$basePath/modcheck", Account(sortCode, accountNumber)).map(_.accountNumberWithSortCodeIsValid)
+    wSHttp.POST[Account, Response](s"$baseUrl/modcheck", Account(sortCode, accountNumber)).map(_.accountNumberWithSortCodeIsValid)
 
 }
 
 case class Account(
-                    sortCode: String,
-                    accountNumber: String
-                  )
+  sortCode: String,
+  accountNumber: String
+)
 
 object Account {
-  implicit val format = Json.format[Account]
+  implicit val format: OFormat[Account] = Json.format[Account]
 }
 
 case class Response(
-                     accountNumberWithSortCodeIsValid: Boolean,
-                     nonStandardAccountDetailsRequiredForBacs: String
-                   )
+  accountNumberWithSortCodeIsValid: Boolean,
+  nonStandardAccountDetailsRequiredForBacs: String
+)
 
 object Response {
   val reads = Reads[Response] { json =>
@@ -45,8 +61,8 @@ object Response {
 
   val basic: OFormat[Response] = Json.format[Response]
 
-  val readsAll = (basic : Reads[Response]) | reads
+  val readsAll = (basic: Reads[Response]) | reads
   val writes: OWrites[Response] = basic
 
-  implicit val format = OFormat(readsAll, writes)
+  implicit val format: OFormat[Response] = OFormat(readsAll, writes)
 }
