@@ -16,9 +16,6 @@
 
 package uk.gov.hmrc.gform.form
 
-import sun.misc.ObjectInputFilter.Config
-import uk.gov.hmrc.gform.config.ConfigModule
-import uk.gov.hmrc.gform.des.DesConnector
 import uk.gov.hmrc.gform.fileupload.FileUploadModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.mongo.MongoModule
