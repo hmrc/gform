@@ -19,16 +19,72 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
 
-case class AuthConfig(
+sealed trait AuthConfig {
+  def authModule: AuthConfigModule
+}
+
+case class EEITTAuthConfig(
   authModule: AuthConfigModule,
-  regimeId: RegimeId,
+  regimeId: RegimeId
+) extends AuthConfig
+
+object EEITTAuthConfig {
+  implicit val format = Json.format[EEITTAuthConfig]
+}
+
+case class HMRCAuthConfig(
+  authModule: AuthConfigModule,
+  regimeId: Option[RegimeId],
   serviceId: Option[ServiceId],
   enrolmentSection: Option[EnrolmentSection]
-)
+) extends AuthConfig
+
+object HMRCAuthConfig {
+
+  // format: OFF
+  implicit val format = {
+    val reads = Reads[HMRCAuthConfig] { json =>
+      for {
+        authModule       <- (json \ "authModule").validate[AuthConfigModule]
+        regimeId         <- (json \ "regimeId").validateOpt[RegimeId]
+        serviceId        <- (json \ "serviceId").validateOpt[ServiceId]
+        enrolmentSection <- (json \ "enrolmentSection").validateOpt[EnrolmentSection]
+        _                <- validateFields(regimeId, serviceId, enrolmentSection)
+      } yield HMRCAuthConfig(authModule, regimeId, serviceId, enrolmentSection)
+    }
+
+    val writes = Json.writes[HMRCAuthConfig]
+
+    OFormat(reads, writes)
+  }
+  // format: ON
+
+  private def validateFields(regimeId: Option[RegimeId], serviceId: Option[ServiceId], enrolmentSection: Option[EnrolmentSection]) = {
+    (serviceId, regimeId, enrolmentSection) match {
+      case (None, Some(_), Some(_)) | (None, None, Some(_)) | (None, Some(_), None) =>
+        JsError("serviceId is required when regimeId and/or enrolmentSection are provided")
+      case _ => JsSuccess("Success")
+    }
+  }
+}
 
 object AuthConfig {
+  implicit val format: OFormat[AuthConfig] = {
+    val reads = Reads[AuthConfig] { json =>
+      (json \ "authModule").as[AuthConfigModule] match {
+        case AuthConfigModule("hmrc") => HMRCAuthConfig.format.reads(json)
+        case AuthConfigModule("legacyEEITTAuth") => EEITTAuthConfig.format.reads(json)
+        case other => JsError("Unsupported authModule: " + other.value)
+      }
+    }
 
-  implicit val format: OFormat[AuthConfig] = Json.format[AuthConfig]
+    val writes = OWrites[AuthConfig] {
+      case conf: HMRCAuthConfig => HMRCAuthConfig.format.writes(conf)
+      case conf: EEITTAuthConfig => EEITTAuthConfig.format.writes(conf)
+    }
+
+    OFormat(reads, writes)
+  }
 }
 
 case class ServiceId(value: String)
@@ -51,19 +107,5 @@ case class AuthConfigModule(value: String) {
 }
 
 object AuthConfigModule {
-
-  val legacyEEITTAuth = "legacyEEITTAuth"
   implicit val format: Format[AuthConfigModule] = ValueClassFormat.oformat("authModule", AuthConfigModule.apply, _.value)
-}
-
-case class Predicate(enrolment: String, identifiers: List[KeyValue], delegatedAuthRule: String)
-
-object Predicate {
-  implicit val format: OFormat[Predicate] = Json.format[Predicate]
-}
-
-case class KeyValue(key: String, value: String)
-
-object KeyValue {
-  implicit val format: OFormat[KeyValue] = Json.format[KeyValue]
 }
