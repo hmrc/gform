@@ -47,7 +47,7 @@ trait ExampleAuthConfig {
 
   def regimeId = RegimeId("TestRegimeId")
 
-  def authConfig = AuthConfig(authConfigModule, regimeId, None, None)
+  def authConfig = HMRCAuthConfig(authConfigModule, Some(regimeId), None, None)
 }
 
 trait ExampleFieldId {
