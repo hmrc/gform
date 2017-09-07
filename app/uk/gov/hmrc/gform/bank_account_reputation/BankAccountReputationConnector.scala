@@ -26,8 +26,8 @@ import scala.concurrent.Future
 
 class BankAccountReputationConnector(wSHttp: WSHttp, baseUrl: String) {
 
-  def exists(accountNumber: String, sortCode: String)(implicit hc: HeaderCarrier): Future[Boolean] =
-    wSHttp.POST[Account, Response](s"$baseUrl/modcheck", Account(sortCode, accountNumber)).map(_.accountNumberWithSortCodeIsValid)
+  def exists(accountNumber: String, sortCode: String)(implicit hc: HeaderCarrier): Future[Response] =
+    wSHttp.POST[Account, Response](s"$baseUrl/modcheck", Account(sortCode, accountNumber))
 
 }
 
@@ -46,23 +46,23 @@ case class Response(
 )
 
 object Response {
-  val reads = Reads[Response] { json =>
+  private val reads = Reads[Response] { json =>
     (json \ "parameters" \ "nonStandardAccountDetailsRequiredForBacs").asOpt[String] match {
       case Some(str) => parse(json, str)
       case None => JsError("the response does not match desired parameters : accountNumberWithSortCodeIsValid, accountNumberWithSortCodeIsValid")
     }
   }
 
-  def parse(json: JsValue, str: String) =
+  private def parse(json: JsValue, str: String) =
     str match {
       case "no" | "yes" | "inapplicable" => JsSuccess(Response((json \ "accountNumberWithSortCodeIsValid").as[Boolean], str))
       case _ => JsError("Response did not match no, yes, inapplicable")
     }
 
-  val basic: OFormat[Response] = Json.format[Response]
+  private val basic: OFormat[Response] = Json.format[Response]
 
-  val readsAll = (basic: Reads[Response]) | reads
-  val writes: OWrites[Response] = basic
+  private val readsAll = (basic: Reads[Response]) | reads
+  private val writes: OWrites[Response] = basic
 
   implicit val format: OFormat[Response] = OFormat(readsAll, writes)
 }

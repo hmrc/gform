@@ -34,19 +34,11 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
        "isAnAgent": false
       }""") //TODO add in actual regime we are looking for
 
-  def lookup(utr: String, postCode: String)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Boolean] = {
-
-    def compare(address: AddressDes) = {
-      address.postalCode.replace(" ", "").equalsIgnoreCase(postCode.replace(" ", "")) || address.postalCode == "Valid"
-    }
+  def lookup(utr: String)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[AddressDes] = {
 
     implicit val hc = HeaderCarrier(extraHeaders = Seq("Environment" -> desConfig.environment), authorization = Some(Authorization(desConfig.authorizationToken)))
 
     wSHttp.POST[JsValue, AddressDes](s"$baseUrl${desConfig.basePath}/registration/organisation/utr/$utr", lookupJson)
-      .map(compare)
-      .recover {
-        case _: NotFoundException => false
-      }
   }
 
 }
