@@ -26,14 +26,14 @@ import uk.gov.hmrc.gform.des.{ AddressDes, DesConnector }
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class ValidationController(desConnector: DesConnector, bankAccountReputationConnector: BankAccountReputationConnector) extends BaseController {
+class ValidationController(validation: ValidationService) extends BaseController {
 
   def validateAddressAtDes(utr: String, postcode: String) = Action.async { implicit request =>
-    desConnector.lookup(utr, postcode).map(if (_) NoContent else NotFound)
+    validation.callDes(utr, postcode).map(if (_) NoContent else NotFound)
   }
 
   def validateBank(accountNumber: String, sortCode: String) = Action.async { implicit request =>
-    bankAccountReputationConnector.exists(accountNumber, sortCode).map(if (_) NoContent else NotFound)
+    validation.callBRS(accountNumber, sortCode).map(if (_) NoContent else NotFound)
   }
 
   def testValidatorStub(utr: String) = Action.async { implicit request =>
