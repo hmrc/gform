@@ -22,9 +22,7 @@ trait ITSpec extends ITSpecBase with BaseOneServerPerTest with /*TODO MongoSpecS
   private lazy val mongoDbName: String = "test-" + this.getClass.getSimpleName
   private lazy val env: Environment = Environment.simple()
   private lazy val configurationOverridings = Map(
-    "mongodb.uri" -> s"mongodb://localhost:27017/$mongoDbName",
-    "auditing.enabled" -> "false",
-    "feature.basicAuthEnabled" -> "true"
+    "mongodb.uri" -> s"mongodb://localhost:27017/$mongoDbName"
   )
   private lazy val context: Context = Context(
     environment = env,
