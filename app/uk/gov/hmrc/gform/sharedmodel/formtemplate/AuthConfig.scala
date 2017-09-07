@@ -23,6 +23,11 @@ sealed trait AuthConfig {
   def authModule: AuthConfigModule
 }
 
+trait AuthConfigWithEnrolment {
+  def serviceId: ServiceId
+  def enrolmentSection: EnrolmentSection
+}
+
 case class EEITTAuthConfig(
   authModule: AuthConfigModule,
   regimeId: RegimeId
@@ -32,57 +37,83 @@ object EEITTAuthConfig {
   implicit val format = Json.format[EEITTAuthConfig]
 }
 
-case class HMRCAuthConfig(
-  authModule: AuthConfigModule,
-  regimeId: Option[RegimeId],
-  serviceId: Option[ServiceId],
-  enrolmentSection: Option[EnrolmentSection]
+case class HMRCAuthConfigWithAuthModule(
+  authModule: AuthConfigModule
 ) extends AuthConfig
 
-object HMRCAuthConfig {
+object HMRCAuthConfigWithAuthModule {
+  implicit val format = Json.format[HMRCAuthConfigWithAuthModule]
+}
 
-  // format: OFF
-  implicit val format = {
-    val reads = Reads[HMRCAuthConfig] { json =>
+case class HMRCAuthConfigWithServiceId(
+  authModule: AuthConfigModule,
+  serviceId: ServiceId
+) extends AuthConfig
+
+object HMRCAuthConfigWithServiceId {
+  implicit val format = Json.format[HMRCAuthConfigWithServiceId]
+}
+
+case class HMRCAuthConfigWithRegimeId(
+  authModule: AuthConfigModule,
+  serviceId: ServiceId,
+  regimeId: RegimeId
+) extends AuthConfig
+object HMRCAuthConfigWithRegimeId {
+  implicit val format = Json.format[HMRCAuthConfigWithRegimeId]
+}
+
+case class HMRCAuthConfigWithEnrolment(
+  authModule: AuthConfigModule,
+  serviceId: ServiceId,
+  enrolmentSection: EnrolmentSection
+) extends AuthConfig with AuthConfigWithEnrolment
+object HMRCAuthConfigWithEnrolment {
+  implicit val format = Json.format[HMRCAuthConfigWithEnrolment]
+
+}
+
+case class HMRCAuthConfig(
+  authModule: AuthConfigModule,
+  serviceId: ServiceId,
+  regimeId: RegimeId,
+  enrolmentSection: EnrolmentSection
+) extends AuthConfig with AuthConfigWithEnrolment
+object HMRCAuthConfig {
+  implicit val format = Json.format[HMRCAuthConfig]
+
+}
+
+object AuthConfig {
+  implicit val format: OFormat[AuthConfig] = {
+    // format: OFF
+    val reads = Reads[AuthConfig] { json =>
       for {
         authModule       <- (json \ "authModule").validate[AuthConfigModule]
         regimeId         <- (json \ "regimeId").validateOpt[RegimeId]
         serviceId        <- (json \ "serviceId").validateOpt[ServiceId]
         enrolmentSection <- (json \ "enrolmentSection").validateOpt[EnrolmentSection]
-        _                <- validateFields(regimeId, serviceId, enrolmentSection)
-      } yield HMRCAuthConfig(authModule, regimeId, serviceId, enrolmentSection)
-    }
-
-    val writes = Json.writes[HMRCAuthConfig]
-
-    OFormat(reads, writes)
-  }
-  // format: ON
-
-  private def validateFields(regimeId: Option[RegimeId], serviceId: Option[ServiceId], enrolmentSection: Option[EnrolmentSection]) = {
-    (serviceId, regimeId, enrolmentSection) match {
-      case (None, Some(_), Some(_)) | (None, None, Some(_)) | (None, Some(_), None) =>
-        JsError("serviceId is required when regimeId and/or enrolmentSection are provided")
-      case _ => JsSuccess("Success")
-    }
-  }
-}
-
-object AuthConfig {
-  implicit val format: OFormat[AuthConfig] = {
-    val reads = Reads[AuthConfig] { json =>
-      (json \ "authModule").as[AuthConfigModule] match {
-        case AuthConfigModule("hmrc") => HMRCAuthConfig.format.reads(json)
-        case AuthConfigModule("legacyEEITTAuth") => EEITTAuthConfig.format.reads(json)
-        case other => JsError("Unsupported authModule: " + other.value)
-      }
+        result           <- (authModule, regimeId, serviceId, enrolmentSection) match {
+          case (AuthConfigModule("legacyEEITTAuth"), Some(_), None, None) => EEITTAuthConfig.format.reads(json)
+          case (AuthConfigModule("hmrc"), None,    None,    None)    => HMRCAuthConfigWithAuthModule.format.reads(json)
+          case (AuthConfigModule("hmrc"), None,    Some(_), None)    => HMRCAuthConfigWithServiceId.format.reads(json)
+          case (AuthConfigModule("hmrc"), Some(_), Some(_), None)    => HMRCAuthConfigWithRegimeId.format.reads(json)
+          case (AuthConfigModule("hmrc"), None,    Some(_), Some(_)) => HMRCAuthConfigWithEnrolment.format.reads(json)
+          case (AuthConfigModule("hmrc"), Some(_), Some(_), Some(_)) => HMRCAuthConfig.format.reads(json)
+          case _ => JsError("")
+        }
+      } yield result
     }
 
     val writes = OWrites[AuthConfig] {
-      case conf: HMRCAuthConfig => HMRCAuthConfig.format.writes(conf)
-      case conf: EEITTAuthConfig => EEITTAuthConfig.format.writes(conf)
+      case conf: EEITTAuthConfig              => EEITTAuthConfig.format.writes(conf)
+      case conf: HMRCAuthConfigWithAuthModule => HMRCAuthConfigWithAuthModule.format.writes(conf)
+      case conf: HMRCAuthConfigWithServiceId  => HMRCAuthConfigWithServiceId.format.writes(conf)
+      case conf: HMRCAuthConfigWithRegimeId   => HMRCAuthConfigWithRegimeId.format.writes(conf)
+      case conf: HMRCAuthConfigWithEnrolment  => HMRCAuthConfigWithEnrolment.format.writes(conf)
+      case conf: HMRCAuthConfig               => HMRCAuthConfig.format.writes(conf)
     }
-
+    // format: ON
     OFormat(reads, writes)
   }
 }
