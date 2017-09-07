@@ -36,7 +36,7 @@ case object Validator {
   val reads: Reads[Validator] = Reads { json =>
     (json \ "validatorName").as[String] match {
       case "hmrcUTRPostcodeCheck" => json.validate[HMRCUTRPostcodeCheckValidator]
-      case "bankAccoutnModulusCheck" => json.validate[BankAccoutnModulusCheck]
+      case "bankAccountModulusCheck" => json.validate[BankAccoutnModulusCheck]
     }
   }
 
@@ -82,7 +82,7 @@ case class BankAccoutnModulusCheck(errorMessage: String, accountNumber: FormCtx,
 object BankAccoutnModulusCheck {
   val basic: OFormat[BankAccoutnModulusCheck] = Json.format[BankAccoutnModulusCheck]
   val writesCustom: OWrites[BankAccoutnModulusCheck] = OWrites { o =>
-    Json.obj("validatorName" -> "bankAccoutnModulusCheck") ++
+    Json.obj("validatorName" -> "bankAccountModulusCheck") ++
       basic.writes(o)
   }
 

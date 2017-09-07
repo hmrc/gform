@@ -44,11 +44,10 @@ class ValidatorSpec extends Spec {
     )
   }
 
-
   "Validator" should "return BankAccoutnModulusCheck " in {
 
     val json: JsValue = Json.parse(s"""{
-                              "validatorName": "bankAccoutnModulusCheck",
+                              "validatorName": "bankAccountModulusCheck",
                               "errorMessage": "${bankAccoutnModulusCheckValidator.errorMessage}",
                               "parameters": [
                                   {"accountNumber": "${"$" + bankAccoutnModulusCheckValidator.accountNumber.value}"},
@@ -60,12 +59,11 @@ class ValidatorSpec extends Spec {
     validator shouldBe bankAccoutnModulusCheckValidator
     val x: JsValue = Validator.format.writes(validator)
     x shouldBe Json.obj(
-      "validatorName" -> "bankAccoutnModulusCheck",
+      "validatorName" -> "bankAccountModulusCheck",
       "errorMessage" -> "This is an error message for Bank",
       "accountNumber" -> Json.obj("value" -> bankAccoutnModulusCheckValidator.accountNumber.value),
       "sortCode" -> Json.obj("value" -> bankAccoutnModulusCheckValidator.sortCode.value)
     )
   }
-
 
 }
