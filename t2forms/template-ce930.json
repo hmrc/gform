@@ -15,24 +15,25 @@
   "submitErrorUrl": "http://www.yahoo.co.uk",
   "sections": [
     {
-      "title": "Enter the start and end dates for this return",
-      "shortName": "Your accounting period",
+      "title": "Enter your business details",
+      "shortName": "Your business details",
       "fields": [
         {
-          "id": "tax-period-start",
-          "type": "date",
-          "label": "Start date",
-          "helpText": "Example: 31 8 2017",
-          "errorMessage": "Please enter your time period start date",
-          "mandatory": "true"
+          "id": "businessName",
+          "type": "text",
+          "label": "Business name"
         },
         {
-          "id": "tax-period-end",
-          "type": "date",
-          "label": "End date",
-          "helpText": "Example: 31 10 2017",
-          "errorMessage": "Please enter your time period end date",
-          "mandatory": "true"
+          "id": "businessPhone",
+          "type": "text",
+          "format": "telephoneNumber",
+          "label": "Phone number"
+        },
+        {
+          "id": "businessAddress",
+          "type": "address",
+          "label": "Registered business address",
+          "international": "yes"
         }
       ]
     },
@@ -44,8 +45,8 @@
           "label": "",
           "id": "dutydue",
           "choices": [
-            "Yes",
-            "No - I want to submit a nil return"
+            "Yes, I have duty to declare",
+            "No, I want to submit a nil return"
           ]
         }
       ]
@@ -53,7 +54,7 @@
     {
       "includeIf": "${dutydue=0}",
       "title": "Enter how much duty you owe",
-      "description": "Select the gas you need to pay duty on from the list below",
+      "description": "Select the gas you need to pay duty on from the list below.",
       "fields": [
         {
           "id": "fuelType591",
@@ -98,69 +99,142 @@
               "mandatory": "false"
             }
           ]
+        },
+        {
+          "id": "taxCodeOtherGroup",
+          "type": "group",
+          "label": "Add other tax codes",
+          "helpText": "If the tax code you want to pay duty for does not appear in the list above, enter it below. \n\n
+
+[Check your tax code](https://www.gov.uk/government/publications/uk-trade-tariff-excise-duties-reliefs-drawbacks-and-allowances/uk-trade-tariff-excise-duties-reliefs-drawbacks-and-allowances)",
+          "repeatsMax": 20,
+          "repeatAddAnotherText": "Add other tax code",
+          "presentationHint": "summariseGroupAsGrid",
+          "fields": [
+            {
+              "id": "taxCodeOtherGroupCode",
+              "type": "text",
+              "label": "Tax code"
+            },
+            {
+              "id": "taxCodeOtherGroupQuantity",
+              "type": "text",
+              "label": "Quantity in kilograms",
+              "format": "number(12,2,'kg')"
+            },
+            {
+              "id": "taxCodeOtherGroupAmount",
+              "type": "text",
+              "label": "Amount",
+              "format": "sterling"
+            }
+          ]
+        },
+        {
+          "id": "totalDue",
+          "type": "text",
+          "format": "sterling",
+          "label": "Total payable",
+          "submitMode": "readonly",
+          "presentationHint": "totalValue",
+          "value": "${taxCodeOtherGroupAmount.sum + taxType592DutyDue + taxType591DutyDue}"
+        }
+      ]
+    },
+    {
+      "title": "Enter your contact person's details",
+      "shortName": "Contact person",
+      "description": "This is the person we will contact if we need to discuss your return.",
+      "fields": [
+        {
+          "id": "contactName",
+          "type": "text",
+          "label": "Full name"
+        },
+        {
+          "id": "contactEmailAddress",
+          "type": "text",
+          "label": "Email address",
+          "format": "email"
         }
       ]
     }
   ],
-  "acknowledgementSection": {
-   "shortName": "Acknowledgement Page",
-   "title": "Acknowledgement Page",
-   "fields": [
-     {
-       "type": "info",
-       "id": "ackpageInfo",
-       "label": "SomeContent",
-       "infoText": "SomeContent"
-     }
-   ]
- },
-    "declarationSection": {
-    "shortName": "Declaration",
-    "title": "Declaration",
+  "declarationSection": {
+    "shortName": "Sign and submit your return",
+    "title": "Sign and submit your return",
     "fields": [
       {
         "id": "declarationNameGroup",
         "type": "group",
-        "label": "Provide details below of who is signing the declaration",
+        "label": "Approver's details",
+        "helpText": "Tell us who is approving this return.",
         "fields": [
           {
-            "id": "declaration-firstname",
+            "id": "declarationFullName",
             "type": "text",
-            "label": "First name"
+            "label": "Full name"
           },
           {
-            "id": "declaration-lastname",
+            "id": "declarationJobTitle",
             "type": "text",
-            "label": "Last name"
-          },
-          {
-            "id": "declaration-status",
-            "type": "text",
-            "label": "Status",
-            "helpText": "For example: Director, Financial Controller, Secretary"
+            "label": "Job title",
+            "helpText": "Example: Finance Director"
           }
         ]
       },
       {
-        "id": "declarationEmailGroup",
+        "id": "declarationGroup",
         "type": "group",
-        "label": "To receive confirmation that your return has been submitted, enter an email address below",
+        "label": "Declaration",
         "fields": [
           {
-            "id": "declaration-email",
-            "type": "text",
-            "label": "Email address (Optional)",
-            "mandatory": "false",
-            "format": "email"
-          },
-          {
-            "id": "declaration-email-confirmation",
-            "type": "text",
-            "label": "Confirm email address (Optional)",
-            "mandatory": "false",
-            "format": "email"
+            "id": "declarationText",
+            "type": "info",
+            "label": "",
+            "infoType": "noformat",
+            "infoText": "By submitting the return, you confirm that the details provided are true and complete.  \n\n
+
+If any of these details change, you must tell us within 7 days."
           }
         ]
+      }
+    ]
+  },
+  "acknowledgementSection": {
+    "shortName": "Acknowledgement Page",
+    "title": "Acknowledgement Page",
+    "fields": [
+      {
+        "id": "ackPageInfoTop",
+        "type": "info",
+        "format": "noformat",
+        "label": "If you owe duty",
+        "infoText": "
+          ## If you owe duty
+          If you have a Direct Debit set up for this tax, you don't need to do anything. Your payment will be collected automatically.  \n\n
+          Otherwise, paying electronically is an easy and secure way to pay. Use the details below and make sure you include your registration number (XZGR 00000 123456) on any payment.  \n\n
+          Sort code: 08-32-00  \n
+          Account number: 12000903  \n
+          Account name: HMRC Miscellaneous
+        "
+      },
+      {
+        "id": "ackPageWarning",
+        "type": "info",
+        "format": "important",
+        "label": "",
+        "infoText": "Make sure you pay the duty owed or you may face a penalty."
+      },
+      {
+        "id": "ackPageInfoBottom",
+        "type": "info",
+        "format": "noformat",
+        "label": "If you need to contact us about your return",
+        "infoText": "
+          ## If you need to contact us about your return
+          Call [Content TBC] or email [TBC], quoting your registration number XZGR 00000 123456.
+        "
       }
     ]
   }

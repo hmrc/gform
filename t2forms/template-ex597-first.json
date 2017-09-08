@@ -15,17 +15,6 @@
   "submitErrorUrl": "http://www.yahoo.co.uk",
   "sections": [
     {
-      "title": "Before you start",
-      "fields": [
-        {
-          "id": "beforeYouStartInfo1",
-          "type": "info",
-          "label": "",
-          "infoText": "To use this service, make sure you have the following information:  \n* your Unique Taxpayer Reference (UTR) number\n* your business address details\n* start and end dates for your claim\n* details of final product made (including final product weight in kilograms)\n* address where alcohol is used and amount of excise duty paid <br><br>\n\nYou'll also need to upload copies of:  \n* the original invoices from suppliers showing evidence of duty payments\n* the proof that your product is eligible\n* recipes or production sheets that prove that the alcohol has been used in an eligible article\n* your worksheet showing how you arrived at your claim figure (see an example)"
-        }
-      ]
-    },
-    {
       "title": "Enter your Unique Taxpayer Reference (UTR) and registered postcode",
       "fields": [
         {
@@ -39,6 +28,7 @@
           "id": "registeredPostcode",
           "type": "text",
           "label": "Registered postcode",
+          "helpText": "If you do not have a UK postcode, leave this field blank",
           "errorMessage": "Please enter your registered postcode"
         },
         {
@@ -46,22 +36,8 @@
           "id": "utrLong",
           "label": "Where do I find my UTR?",
           "infoType": "long",
-          "infoText": "You can usually find your Company UTR in the header of letters from HM Revenue & Customs (HMRC), next to headings such as 'Tax Reference', 'UTR' or 'Official Use'. \n\nIt's a 10-digit number like this, 12345 67890.\n\nYou'll automatically be sent a UTR when you register for Self Assessment or set up a limited company.\n\nYou can also find your UTR in your HMRC online account.\n\nIf you can't find your UTR, call the Self Assessment helpline."
-        }
-      ]
-    },
-    {
-      "title": "Which of the following best describes your business activity?",
-      "fields": [
-        {
-          "id": "businessActivityChoice",
-          "type": "choice",
-          "label": "",
-          "choices": [
-            "I am the manufacturer of an eligible article",
-            "I have supplied duty paid alcohol used in the production of an eligible article"
-          ],
-          "errorMessage": "Please choose the option that best describes your business activity"
+          "infoText": "You can usually find your Company UTR in the header of letters from HM Revenue & Customs (HMRC), next to headings such as 'Tax Reference', 'UTR' or 'Official Use'. \n\nIt's a 10-digit number like this, 12345 67890.\n\nYou'll automatically be sent a UTR when you register for Self Assessment or set up a limited company.  \n\nYou can also find your UTR in your [HMRC online account](https://online.hmrc.gov.uk/).  \n\nIf you can't find your UTR, [call the Self Assessment
+  helpline](https://www.gov.uk/government/organisations/hm-revenue-customs/contact/self-assessment)."
         }
       ]
     },
@@ -74,16 +50,16 @@
           "label": "Business name"
         },
         {
-          "id": "businessAddress",
-          "type": "address",
-          "label": "Business address",
-          "international": "true"
-        },
-        {
-          "id": "phoneNum",
+          "id": "phoneNumber",
           "type": "text",
           "format": "telephoneNumber",
           "label": "Phone number"
+        },
+        {
+          "id": "businessAddress",
+          "type": "address",
+          "label": "Registered business address",
+          "international": "true"
         }
       ]
     },
@@ -119,7 +95,23 @@
       ]
     },
     {
+      "title": "Which of the following best describes your business activity?",
+      "fields": [
+        {
+          "id": "businessActivityChoice",
+          "type": "choice",
+          "label": "",
+          "choices": [
+            "I am the manufacturer of an eligible article",
+            "I have supplied duty paid alcohol used in the production of an eligible article"
+          ],
+          "errorMessage": "Please choose the option that best describes your business activity"
+        }
+      ]
+    },
+    {
       "title": "Enter your contact person's details",
+      "shortName": "Contact person",
       "description" : "This is the person we will contact if we need to discuss your claim.",
       "fields": [
         {
@@ -140,13 +132,8 @@
     {
       "title": "Enter bank details",
       "shortName": "Payment details",
+      "description": "This is the account we will make your payment to.",
       "fields": [
-        {
-          "id": "bankDocVerifyInfo",
-          "type": "info",
-          "label": "",
-          "infoText": "Enter the details of the bank or building society account we should make payment to."
-        },
         {
           "id": "bankDetailsGroup",
           "type": "group",
@@ -173,6 +160,20 @@
               "errorMessage": "Please enter the organisation's sort code"
             }
           ]
+        },
+        {
+          "id": "accountHoldersGroup",
+          "type": "group",
+          "label": "Account holders",
+          "repeatsMax": 20,
+          "repeatAddAnotherText": "Add another account holder",
+          "fields": [
+            {
+              "id": "accountHoldersGroupName",
+              "type": "text",
+              "label": "Account holder name"
+            }
+          ]
         }
       ]
     },
@@ -189,7 +190,7 @@
             "No"
           ],
           "optionHelpText": [
-            "Your claim must also be within three years of the end of the 3 month production period in which the alcohol was incorporated into an eligible article. \n\nFind out more about time limits for making a claim.",
+            "Your claim must also be within three years of the end of the 3 month production period in which the alcohol was incorporated into an eligible article. \n\nFind out more about time limits for [making a claim](https://www.gov.uk/government/publications/excise-notice-41-alcoholic-ingredients-relief/excise-notice-41-alcoholic-ingredients-relief#making-a-claim).",
             ""
           ]
 
@@ -211,7 +212,7 @@
           ],
           "optionHelpText": [
             "",
-            "Claims must cover a 3 month period. If this is not the case, you can continue with this claim but we will contact you to discuss reasons before considering your claim.  \nRefer to [Excise Notice 41, section 5.4](https://www.gov.uk/government/publications/excise-notice-41-alcoholic-ingredients-relief/excise-notice-41-alcoholic-ingredients-relief#para54)"
+            "Claims must cover a 3 month period. If this is not the case, you can continue with this claim but we will contact you to discuss reasons before considering your claim.  \n\nRefer to [Excise Notice 41, section 5.4](https://www.gov.uk/government/publications/excise-notice-41-alcoholic-ingredients-relief/excise-notice-41-alcoholic-ingredients-relief#para54)"
           ]
         }
       ]
@@ -241,6 +242,13 @@
       "title": "Tell us about the products made or prepared using the alcoholic ingredients you are claiming relief for",
       "fields": [
         {
+          "id": "enterOnScreenInfo",
+          "type": "info",
+          "label": "",
+          "infoType": "noformat",
+          "infoText": "You need to give details of the products you are claiming a refund for.  \n\nIf you have less than 20 products, enter the details on-screen.  \n\nYou can also upload a file that lists all the products you are claiming for."
+        },
+        {
           "id": "enterOnScreenChoice",
           "type": "choice",
           "label": "",
@@ -256,8 +264,8 @@
       ]
     },
     {
-      "title": "Enter details of the beverages and articles made or prepared using the alcoholic ingredients",
-      "description": "Enter the description and quantity of beverages and articles below.",
+      "title": "Enter details of the final product made using the alcoholic ingredients",
+      "description": "Enter the description of the final product made and it's weight in kilograms (kg).",
       "includeIf": "${enterOnScreenChoice = 0}",
       "fields": [
         {
@@ -286,18 +294,19 @@
           "id": "alcoholQuantityTotal",
           "type": "text",
           "label": "Total",
-          "format": "number(12,2,'kg')"
+          "format": "number(12,2,'kg')",
+          "value": "${quantityInKg.sum}"
         }
       ]
     },
     {
       "title": "Tell us the amount of alcohol ingredients used and duty paid",
-      "description": "Select the alcoholic ingredients used in your product below.",
+      "description": "Select the alcohol ingredients used in your product.",
       "fields": [
         {
           "id": "spiritsGroup",
           "type": "group",
-          "label": "Spirit",
+          "label": "Spirits",
           "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
           "fields": [
             {
@@ -341,7 +350,7 @@
         {
           "id": "wineGroup",
           "type": "group",
-          "label": "Wine",
+          "label": "Wine/Made-wine including fortified wine",
           "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
           "fields": [
             {
@@ -363,7 +372,7 @@
         {
           "id": "ciderGroup",
           "type": "group",
-          "label": "Cider",
+          "label": "Cider and perry",
           "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
           "fields": [
             {
@@ -387,19 +396,20 @@
           "type": "text",
           "label": "Total amount of duty paid",
           "format": "sterling",
-          "shortName": "Total amount of duty for this claim period"
+          "shortName": "Total amount of duty for this claim period",
+          "value": "${spiritsDutyDue + beerDutyDue + wineDutyDue + ciderDutyDue}"
         }
       ]
     },
     {
-      "title": "Upload supporting documents",
-      "description": "You'll need to provide some documentation with your claim",
+      "title": "Upload your supporting documents",
       "fields": [
         {
           "id": "supportingDocumentsInfo2",
           "type": "info",
+          "infoType": "noformat",
           "label": "",
-          "infoText": "The documents you upload must be:  \n\n* in PDF, JPEG or Excel format\n* less than 10 megabytes (10MB)\n* no more than 25MB in total\n\n If you don't provide all the documentation we need, this could delay your claim"
+          "infoText": "You need to provide some documentation with your claim.  \n\nThe documents you upload must be:  \n\n* in PDF, JPEG or Excel format  \n* no more that 5 Mebabytes (5MB) each  \n* no more than 25MB in total  \n\nIf you don't provide all the documentation we need, this could delay your claim."
         },
         {
           "id": "productListGroup",
@@ -544,65 +554,72 @@
       ]
     }
   ],
-  "acknowledgementSection": {
-   "shortName": "Acknowledgement Page",
-   "title": "Acknowledgement Page",
-   "fields": [
-     {
-       "type": "info",
-       "id": "ackpageInfo",
-       "label": "SomeContent",
-       "infoText": "SomeContent"
-     }
-   ]
- },
   "declarationSection": {
-    "shortName": "Declaration",
-    "title": "Declaration",
+    "shortName": "Sign and submit your return",
+    "title": "Sign and submit your return",
     "fields": [
       {
         "id": "declarationNameGroup",
         "type": "group",
-        "label": "Provide details below of who is signing the declaration",
+        "label": "Approver's details",
+        "helpText": "Tell us who is approving this return.",
         "fields": [
           {
-            "id": "declaration-firstname",
+            "id": "declarationFullName",
             "type": "text",
-            "label": "First name"
+            "label": "Full name"
           },
           {
-            "id": "declaration-lastname",
+            "id": "declarationJobTitle",
             "type": "text",
-            "label": "Last name"
-          },
-          {
-            "id": "declaration-status",
-            "type": "text",
-            "label": "Status",
-            "helpText": "For example: Director, Financial Controller, Secretary"
+            "label": "Job title",
+            "helpText": "Example: Finance Director"
           }
         ]
       },
       {
-        "id": "declarationEmailGroup",
+        "id": "declarationGroup",
         "type": "group",
-        "label": "To receive confirmation that your return has been submitted, enter an email address below",
+        "label": "Declaration",
         "fields": [
           {
-            "id": "declaration-email",
-            "type": "text",
-            "label": "Email address (Optional)",
-            "mandatory": "false",
-            "format": "email"
-          },
-          {
-            "id": "declaration-email-confirmation",
-            "type": "text",
-            "label": "Confirm email address (Optional)",
-            "mandatory": "false",
-            "format": "email"
+            "id": "declarationText",
+            "type": "info",
+            "label": "",
+            "infoType": "noformat",
+            "infoText": "By submitting this claim you are confirming that:  \n\n* the details you are providing are true and complete  \n* no other claim for Alcoholic Ingredients Relief has been or will be made relating to this duty"
           }
         ]
+      }
+    ]
+  },
+  "acknowledgementSection": {
+    "shortName": "Acknowledgement Page",
+    "title": "Acknowledgement Page",
+    "fields": [
+      {
+        "id": "ackPageInfoTop",
+        "type": "info",
+        "format": "noformat",
+        "label": "If you owe duty",
+        "infoText": "## If you owe duty
+If you have a Direct Debit set up for this tax, you don't need to do anything. Your payment will be collected automatically.  \n\nOtherwise, paying electronically is an easy and secure way to pay. Use the details below and make sure you include your registration number (XZGR 00000 123456) on any payment.  \n\nSort code: 08-32-00  \nAccount number: 12000903  \nAccount name: HMRC Miscellaneous"
+      },
+      {
+        "id": "ackPageWarning",
+        "type": "info",
+        "format": "important",
+        "label": "",
+        "infoText": "Make sure you pay the duty owed or you may face a penalty."
+      },
+      {
+        "id": "ackPageInfoBottom",
+        "type": "info",
+        "format": "noformat",
+        "label": "If you need to contact us about your claim",
+        "infoText": "## If you need to contact us about your claim
+Call [Content TBC] or email [TBC], quoting your registration number XZGR 00000 123456.
+        "
       }
     ]
   }

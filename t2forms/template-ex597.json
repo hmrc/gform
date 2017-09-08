@@ -27,19 +27,20 @@
       ]
     },
     {
-      "title": "Enter your new business address details",
+      "title": "Enter the new address and phone number for your organisation",
       "includeIf": "${businessAddressChangedChoice = 0}",
       "fields": [
         {
           "id": "businessAddressChangedInfo",
           "type": "info",
+          "infoType": "important",
           "label": "",
           "infoText": "You will need to upload a document to verify your new address at the end of your claim"
         },
         {
           "id": "businessAddressChanged",
           "type": "address",
-          "label": "Address and phone number",
+          "label": "Registered business address",
           "international": "true"
         },
         {
@@ -51,25 +52,25 @@
       ]
     },
     {
-      "title": "Has the address where alcohol is used changed since your last claim?",
+      "title": "Tell us where alcohol is used",
       "fields": [
         {
-          "id": "alcoholAdressChangedChoice",
+          "id": "alcoholAddressChangedChoice",
           "type": "choice",
           "format": "yesno",
-          "label": "",
+          "label": "Is the address where alcohol is used the same as the business address?",
           "errorMessage": "Select yes if the address where alcohol is used has changed since your last claim"
         }
       ]
     },
     {
       "title": "Enter the new address where alcohol is used",
-      "includeIf": "${alcoholAdressChangedChoice = 0}",
+      "includeIf": "${alcoholAddressChangedChoice = 1}",
       "fields": [
         {
           "id": "alcoholAddressChanged",
           "type": "address",
-          "label": "Address and phone number",
+          "label": "",
           "international": "true"
         },
         {
@@ -81,7 +82,23 @@
       ]
     },
     {
+      "title": "Which of the following best describes your business activity?",
+      "fields": [
+        {
+          "id": "businessActivityChoice",
+          "type": "choice",
+          "label": "",
+          "choices": [
+            "I am the manufacturer of an eligible article",
+            "I have supplied duty paid alcohol used in the production of an eligible article"
+          ],
+          "errorMessage": "Please choose the option that best describes your business activity"
+        }
+      ]
+    },
+    {
       "title": "Enter your contact person's details",
+      "shortName": "Contact person",
       "description" : "This is the person we will contact if we need to discuss your claim.",
       "fields": [
         {
@@ -96,7 +113,7 @@
           "label": "Email address",
           "format": "email",
           "mandatory": "false",
-          "errorMessage": "Enter your contact person's full name"
+          "errorMessage": "Enter your contact person's email address"
         }
       ]
     },
@@ -119,8 +136,9 @@
         {
           "id": "bankDocVerifyInfo",
           "type": "info",
+          "infoType": "important",
           "label": "",
-          "infoText": "You'll need to upload a document to verify your new bank details at the end of your claim"
+          "infoText": "You will need to upload a document to verify your new bank details at the end of your claim"
         },
         {
           "id": "bankDetailsGroup",
@@ -148,6 +166,20 @@
               "errorMessage": "Please enter the organisation's sort code"
             }
           ]
+        },
+        {
+          "id": "accountHoldersGroup",
+          "type": "group",
+          "label": "Account holders",
+          "repeatsMax": 20,
+          "repeatAddAnotherText": "Add another account holder",
+          "fields": [
+            {
+              "id": "accountHoldersGroupName",
+              "type": "text",
+              "label": ""
+            }
+          ]
         }
       ]
     },
@@ -164,7 +196,7 @@
             "No"
           ],
           "optionHelpText": [
-            "Your claim must also be within three years of the end of the 3 month production period in which the alcohol was incorporated into an eligible article. \n\nRefer to Excise Notice 41, section 5.4",
+            "Your claim must also be within three years of the end of the 3 month production period in which the alcohol was incorporated into an eligible article. \n\nFind out more about the time limits for [making a claim](https://www.gov.uk/government/publications/excise-notice-41-alcoholic-ingredients-relief/excise-notice-41-alcoholic-ingredients-relief#making-a-claim).",
             ""
           ]
         }
@@ -215,6 +247,13 @@
       "title": "Tell us about the products made or prepared using the alcoholic ingredients you are claiming relief for",
       "fields": [
         {
+          "id": "enterOnScreenInfo",
+          "label": "",
+          "type": "info",
+          "infoType": "noformat",
+          "infoText": "You need to give details of the products you are claiming a refund for.  \n\nIf you have less than 20 products, enter the details on-screen.  \n\nYou can also upload a file that lists all the products you are claiming for."
+        },
+        {
           "id": "enterOnScreenChoice",
           "type": "choice",
           "label": "",
@@ -230,8 +269,8 @@
       ]
     },
     {
-      "title": "Enter details of the beverages and articles made or prepared using the alcoholic ingredients",
-      "description": "Enter the description and quantity of beverages and articles below.",
+      "title": "Enter details of the final product made using the alcoholic ingredients",
+      "description": "Enter the description of the final product made and it's weight in kilograms (kg).",
       "includeIf": "${enterOnScreenChoice = 0}",
       "fields": [
         {
@@ -260,18 +299,19 @@
           "id": "alcoholQuantityTotal",
           "type": "text",
           "label": "Total",
-          "format": "number(12,2,'kg')"
+          "format": "number(12,2,'kg')",
+          "value": "${quantityInKg.sum}"
         }
       ]
     },
     {
       "title": "Tell us the amount of alcohol ingredients used and duty paid",
-      "description": "Select the alcoholic ingredients used in your product below.",
+      "description": "Select the alcohol ingredients used in your product.",
       "fields": [
         {
           "id": "spiritsGroup",
           "type": "group",
-          "label": "Spirit",
+          "label": "Spirits",
           "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
           "fields": [
             {
@@ -316,7 +356,7 @@
         {
           "id": "wineGroup",
           "type": "group",
-          "label": "Wine",
+          "label": "Wine/Made-wine including fortified wine",
           "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
           "fields": [
             {
@@ -338,7 +378,7 @@
         {
           "id": "ciderGroup",
           "type": "group",
-          "label": "Cider",
+          "label": "Cider and Perry",
           "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
           "fields": [
             {
@@ -362,7 +402,8 @@
           "type": "text",
           "label": "Total amount of duty paid",
           "format": "sterling",
-          "shortName": "Total amount of duty for this claim period"
+          "shortName": "Total amount of duty for this claim period",
+          "value": "${spiritsDutyDue + beerDutyDue + wineDutyDue + ciderDutyDue}"
         }
       ]
     },
@@ -1128,66 +1169,74 @@
       ]
     }
   ],
+  "declarationSection": {
+    "shortName": "Sign and submit your return",
+    "title": "Sign and submit your return",
+    "fields": [
+      {
+        "id": "declarationNameGroup",
+        "type": "group",
+        "label": "Approver's details",
+        "helpText": "Tell us who is approving this return.",
+        "fields": [
+          {
+            "id": "declarationFullName",
+            "type": "text",
+            "label": "Full name"
+          },
+          {
+            "id": "declarationJobTitle",
+            "type": "text",
+            "label": "Job title",
+            "helpText": "Example: Finance Director"
+          }
+        ]
+      },
+      {
+        "id": "declarationGroup",
+        "type": "group",
+        "label": "Declaration",
+        "fields": [
+          {
+            "id": "declarationText",
+            "type": "info",
+            "label": "",
+            "infoType": "noformat",
+            "infoText": "By submitting this claim you are confirming that:  \n\n* the details you are providing are true and complete  \n* no other claim for Alcoholic Ingredients Relief has been or will be made relating to this duty"
+          }
+        ]
+      }
+    ]
+  },
   "acknowledgementSection": {
     "shortName": "Acknowledgement Page",
     "title": "Acknowledgement Page",
     "fields": [
       {
+        "id": "ackPageInfoTop",
         "type": "info",
-        "id": "ackpageInfo",
-        "label": "SomeContent",
-        "infoText": "SomeContent"
+        "format": "noformat",
+        "label": "If you owe duty",
+        "infoText": "## If you owe duty
+If you have a Direct Debit set up for this tax, you don't need to do anything. Your payment will be collected automatically.  \n\nOtherwise, paying electronically is an easy and secure way to pay. Use the details below and make sure you include your registration number (XZGR 00000 123456) on any payment.  \n\nSort code: 08-32-00  \nAccount number: 12000903  \nAccount name: HMRC Miscellaneous"
+      },
+      {
+        "id": "ackPageWarning",
+        "type": "info",
+        "format": "important",
+        "label": "",
+        "infoText": "Make sure you pay the duty owed or you may face a penalty."
+      },
+      {
+        "id": "ackPageInfoBottom",
+        "type": "info",
+        "format": "noformat",
+        "label": "If you need to contact us about your claim",
+        "infoText": "
+          ## If you need to contact us about your claim
+Call [Content TBC] or email [TBC], quoting your registration number XZGR 00000 123456.
+        "
       }
     ]
-  },
-  "declarationSection": {
-  "shortName": "Declaration",
-  "title": "Declaration",
-  "fields": [
-    {
-      "id": "declarationNameGroup",
-      "type": "group",
-      "label": "Provide details below of who is signing the declaration",
-      "fields": [
-        {
-          "id": "declaration-firstname",
-          "type": "text",
-          "label": "First name"
-        },
-        {
-          "id": "declaration-lastname",
-          "type": "text",
-          "label": "Last name"
-        },
-        {
-          "id": "declaration-status",
-          "type": "text",
-          "label": "Status",
-          "helpText": "For example: Director, Financial Controller, Secretary"
-        }
-      ]
-    },
-    {
-      "id": "declarationEmailGroup",
-      "type": "group",
-      "label": "To receive confirmation that your return has been submitted, enter an email address below",
-      "fields": [
-        {
-          "id": "declaration-email",
-          "type": "text",
-          "label": "Email address (Optional)",
-          "mandatory": "false",
-          "format": "email"
-        },
-        {
-          "id": "declaration-email-confirmation",
-          "type": "text",
-          "label": "Confirm email address (Optional)",
-          "mandatory": "false",
-          "format": "email"
-        }
-      ]
-    }
-  ]
-}
+  }
 }
