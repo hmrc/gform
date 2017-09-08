@@ -59,6 +59,7 @@ class HtmlGeneratorServiceSpec extends Spec with ExampleData {
       mandatory = true,
       editable = true,
       submissible = true,
+      derived = false,
       errorMessage = None
     )
 
@@ -85,6 +86,7 @@ class HtmlGeneratorServiceSpec extends Spec with ExampleData {
       mandatory = true,
       editable = true,
       submissible = true,
+      derived = false,
       errorMessage = None
     )
 
@@ -115,6 +117,7 @@ class HtmlGeneratorServiceSpec extends Spec with ExampleData {
       mandatory = true,
       editable = true,
       submissible = true,
+      derived = false,
       errorMessage = None
     )
 
@@ -139,6 +142,7 @@ class HtmlGeneratorServiceSpec extends Spec with ExampleData {
       mandatory = true,
       editable = true,
       submissible = true,
+      derived = false,
       errorMessage = None
     )
 

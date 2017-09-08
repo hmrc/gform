@@ -51,6 +51,7 @@ class FormatValidationSpec extends Spec {
       mandatory = true,
       editable = true,
       submissible = true,
+      derived = false,
       errorMessage = None,
       presentationHint = None
     ))
@@ -65,6 +66,7 @@ class FormatValidationSpec extends Spec {
       mandatory = true,
       editable = true,
       submissible = true,
+      derived = false,
       errorMessage = None,
       presentationHint = None
     ))
@@ -81,6 +83,7 @@ class FormatValidationSpec extends Spec {
       mandatory = true,
       editable = true,
       submissible = true,
+      derived = false,
       errorMessage = None,
       presentationHint = None
     ))

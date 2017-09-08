@@ -35,6 +35,7 @@ class FormValidatorSpec extends Spec {
     editable = true,
     mandatory = true,
     submissible = true,
+    derived = false,
     errorMessage = None
   )
 
@@ -47,6 +48,7 @@ class FormValidatorSpec extends Spec {
     editable = true,
     mandatory = false,
     submissible = true,
+    derived = false,
     errorMessage = None
   )
 

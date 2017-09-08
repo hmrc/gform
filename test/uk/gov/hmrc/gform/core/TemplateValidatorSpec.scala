@@ -243,8 +243,8 @@ class TemplateValidatorSpec extends Spec {
     None, None, None,
     None, None, None,
     List(
-      FieldValue(FieldId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, mandatory = true, editable = true, submissible = true, errorMessage = None),
-      FieldValue(FieldId("businessAddress"), Address(international = false), "Business address", None, None, mandatory = true, editable = true, submissible = true, errorMessage = None)
+      FieldValue(FieldId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None),
+      FieldValue(FieldId("businessAddress"), Address(international = false), "Business address", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None)
     )
   )
 
@@ -253,8 +253,8 @@ class TemplateValidatorSpec extends Spec {
     None, None, None,
     None, None, None,
     List(
-      FieldValue(FieldId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, mandatory = true, editable = true, submissible = true, errorMessage = None),
-      FieldValue(FieldId("startDate"), Date(AnyDate, Offset(0), None), "Start date", None, None, mandatory = true, editable = true, submissible = true, errorMessage = None)
+      FieldValue(FieldId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None),
+      FieldValue(FieldId("startDate"), Date(AnyDate, Offset(0), None), "Start date", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None)
     )
   )
 
@@ -264,10 +264,10 @@ class TemplateValidatorSpec extends Spec {
     None, None, None,
     List(
       FieldValue(
-        FieldId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, mandatory = true, editable = true, submissible = true, errorMessage = None
+        FieldId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None
       ),
       FieldValue(
-        FieldId("dutyType"), Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None), "Select the tax type", None, None, mandatory = true, editable = true, submissible = true, errorMessage = None
+        FieldId("dutyType"), Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None), "Select the tax type", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None
       )
     )
   )
@@ -278,10 +278,10 @@ class TemplateValidatorSpec extends Spec {
     None, None, None,
     List(
       FieldValue(
-        FieldId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, mandatory = true, editable = true, submissible = true, errorMessage = None
+        FieldId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None
       ),
       FieldValue(
-        FieldId("dutyType"), Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None), "Select the tax type", None, None, mandatory = true, editable = true, submissible = true, errorMessage = None
+        FieldId("dutyType"), Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None), "Select the tax type", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None
       )
     )
   )
@@ -292,10 +292,10 @@ class TemplateValidatorSpec extends Spec {
     None, None, None,
     List(
       FieldValue(
-        FieldId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, mandatory = true, editable = true, submissible = true, errorMessage = None
+        FieldId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None
       ),
       FieldValue(
-        FieldId("taxType"), Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int], None), "Gas tax type?", None, None, mandatory = true, editable = true, submissible = true, errorMessage = None
+        FieldId("taxType"), Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int], None), "Gas tax type?", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None
       )
     )
   )
@@ -409,7 +409,7 @@ class TemplateValidatorSpec extends Spec {
       None, None, None,
       None, None, None,
       List(
-        FieldValue(FieldId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, mandatory = false, editable = true, submissible = true, errorMessage = None)
+        FieldValue(FieldId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, mandatory = false, editable = true, submissible = true, derived = false, errorMessage = None)
       )
     )
 
@@ -428,7 +428,7 @@ class TemplateValidatorSpec extends Spec {
       None, None, None,
       None, None, None,
       List(
-        FieldValue(FieldId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, mandatory = false, editable = true, submissible = true, errorMessage = None)
+        FieldValue(FieldId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, mandatory = false, editable = true, submissible = true, derived = false, errorMessage = None)
       )
     )
 
@@ -447,7 +447,7 @@ class TemplateValidatorSpec extends Spec {
       None, None, None,
       None, None, None,
       List(
-        FieldValue(FieldId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, mandatory = true, editable = true, submissible = true, errorMessage = None)
+        FieldValue(FieldId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None)
       )
     )
 
