@@ -73,42 +73,42 @@ trait ExampleFieldValue { dependecies: ExampleFieldId =>
 
   def `fieldValue - facePhoto` = FieldValue(
     `fieldId - facePhoto`,
-    FileUpload(), label = "Attach evidence of your smile", helpText = None, None, mandatory = true, editable = true, submissible = true,
+    FileUpload(), label = "Attach evidence of your smile", helpText = None, None, mandatory = true, editable = true, submissible = true, derived = false,
     None,
     None
   )
 
   def `fieldValue - firstName` = FieldValue(
     `fieldId - firstName`,
-    Text(AnyText, Constant("any text")), "First Name", None, None, mandatory = true, editable = true, submissible = true,
+    Text(AnyText, Constant("any text")), "First Name", None, None, mandatory = true, editable = true, submissible = true, derived = false,
     None,
     None
   )
 
   def `fieldValue - surname` = FieldValue(
     `fieldId - surname`,
-    Text(AnyText, Constant("any text")), "Last Name", None, None, mandatory = true, editable = true, submissible = true,
+    Text(AnyText, Constant("any text")), "Last Name", None, None, mandatory = true, editable = true, submissible = true, derived = false,
     None,
     None
   )
 
   def `fieldValue - iptRegNum` = FieldValue(
     `fieldId - iptRegNum`,
-    Text(AnyText, Constant("any text")), "Insurance Premium Tax (IPT) number", None, None, mandatory = true, editable = true, submissible = true,
+    Text(AnyText, Constant("any text")), "Insurance Premium Tax (IPT) number", None, None, mandatory = true, editable = true, submissible = true, derived = false,
     None,
     None
   )
 
   def `fieldValue - businessName` = FieldValue(
     `fieldId - businessName`,
-    Text(AnyText, Constant("any text")), "Name of business", None, None, mandatory = true, editable = true, submissible = true,
+    Text(AnyText, Constant("any text")), "Name of business", None, None, mandatory = true, editable = true, submissible = true, derived = false,
     None,
     None
   )
 
   def `fieldValue - startDate` = FieldValue(
     `fieldId - startDate`,
-    Date(AnyDate, Offset(0), None), "Your Start Date", None, None, true, true, true,
+    Date(AnyDate, Offset(0), None), "Your Start Date", None, None, true, true, true, derived = false,
     None,
     None
   )
@@ -117,7 +117,7 @@ trait ExampleFieldValue { dependecies: ExampleFieldId =>
     `fieldId - businessName`,
     InformationMessage(NoFormat, "some text"),
     "someLabel",
-    None, None, false, false, false, None
+    None, None, false, false, false, derived = false, None
   )
 
   def `group - type` = Group(
@@ -138,13 +138,14 @@ trait ExampleFieldValue { dependecies: ExampleFieldId =>
     mandatory = true,
     editable = false,
     submissible = true,
+    derived = false,
     errorMessage = None
   )
 
   def `fieldValue - number` = FieldValue(
     `fieldId - number`,
     Text(Number(), Constant("")),
-    "sample label", None, None, true, true, true, None
+    "sample label", None, None, true, true, true, derived = false, None
   )
 
 }

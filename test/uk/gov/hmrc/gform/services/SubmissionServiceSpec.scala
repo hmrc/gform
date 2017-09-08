@@ -56,6 +56,7 @@ class SubmissionServiceSpec extends Spec {
       mandatory = true,
       editable = true,
       submissible = true,
+      derived = false,
       errorMessage = None
     )
 
@@ -79,6 +80,7 @@ class SubmissionServiceSpec extends Spec {
       mandatory = true,
       editable = false,
       submissible = true,
+      derived = false,
       errorMessage = None
     )
 
@@ -112,19 +114,19 @@ class SubmissionServiceSpec extends Spec {
         List(
           (
             List(FormField(FieldId("UNO"), "UNO")),
-            FieldValue(FieldId("UNO"), Text(AnyText, Constant("UNO")), "Editable text label", None, None, true, true, true, None)
+            FieldValue(FieldId("UNO"), Text(AnyText, Constant("UNO")), "Editable text label", None, None, true, true, true, derived = false, None)
           ),
           (
             List(FormField(FieldId("DOS"), "DOS")),
-            FieldValue(FieldId("DOS"), Text(AnyText, Constant("DOS")), "Editable text label", None, None, true, true, true, None)
+            FieldValue(FieldId("DOS"), Text(AnyText, Constant("DOS")), "Editable text label", None, None, true, true, true, derived = false, None)
           ),
           (
             List(FormField(FieldId("1_UNO"), "1_UNO")),
-            FieldValue(FieldId("1_UNO"), Text(AnyText, Constant("UNO")), "Editable text label", None, None, true, true, true, None)
+            FieldValue(FieldId("1_UNO"), Text(AnyText, Constant("UNO")), "Editable text label", None, None, true, true, true, derived = false, None)
           ),
           (
             List(FormField(FieldId("1_DOS"), "1_DOS")),
-            FieldValue(FieldId("1_DOS"), Text(AnyText, Constant("DOS")), "Editable text label", None, None, true, true, true, None)
+            FieldValue(FieldId("1_DOS"), Text(AnyText, Constant("DOS")), "Editable text label", None, None, true, true, true, derived = false, None)
           )
         )
       ),
