@@ -63,6 +63,7 @@
         {
           "id": "addressDocVerifyInfo",
           "type": "info",
+          "infoType": "important",
           "label": "",
           "infoText": "You'll need to upload a document to verify your new address. You can do this on the next page."
         },
@@ -121,6 +122,7 @@
         {
           "id": "bankDocVerifyInfo",
           "type": "info",
+          "infoType": "important",
           "label": "",
           "infoText": "You'll need to upload a document to verify your new bank details. You can do this on the next page."
         },
@@ -204,13 +206,13 @@
     {
       "title": "Submit your invoice details",
       "shortName": "Invoice details",
-      "description": "You'll need to provide details of the invoices you're claiming a refund for.",
       "fields": [
         {
           "id": "submitInvoiceChoiceInfo",
           "type": "info",
+          "infoType": "noformat",
           "label": "",
-          "infoText": "If you have less than 20 invoices, then enter the details on-screen.\n\nYou can also upload an invoice schedule that lists all the invoices you're claiming for."
+          "infoText": "You'll need to provide details of the invoices you're claiming a refund for.  \n\nIf you have less than 20 invoices, then enter the details on-screen.\n\nYou can also upload an invoice schedule that lists all the invoices you're claiming for."
         },
         {
           "id": "invoicesChoice",
@@ -272,7 +274,8 @@
           "id": "derivedAmountOfClaim",
           "type": "text",
           "label": "Total claim amount",
-          "format": "sterling"
+          "format": "sterling",
+          "value": "${amountOfVatPaid.sum}"
         }
       ]
     },
@@ -335,65 +338,79 @@
       ]
     }
   ],
-  "acknowledgementSection": {
-   "shortName": "Acknowledgement Page",
-   "title": "Acknowledgement Page",
-   "fields": [
-     {
-       "type": "info",
-       "id": "ackpageInfo",
-       "label": "SomeContent",
-       "infoText": "SomeContent"
-     }
-   ]
- },
-    "declarationSection": {
-    "shortName": "Declaration",
-    "title": "Declaration",
+  "declarationSection": {
+    "shortName": "Sign and submit your return",
+    "title": "Sign and submit your return",
     "fields": [
       {
         "id": "declarationNameGroup",
         "type": "group",
-        "label": "Provide details below of who is signing the declaration",
+        "label": "Approver's details",
+        "helpText": "Tell us who is approving this return.",
         "fields": [
           {
-            "id": "declaration-firstname",
+            "id": "declarationFullName",
             "type": "text",
-            "label": "First name"
+            "label": "Full name"
           },
           {
-            "id": "declaration-lastname",
+            "id": "declarationJobTitle",
             "type": "text",
-            "label": "Last name"
-          },
-          {
-            "id": "declaration-status",
-            "type": "text",
-            "label": "Status",
-            "helpText": "For example: Director, Financial Controller, Secretary"
+            "label": "Job title",
+            "helpText": "Example: Finance Director"
           }
         ]
       },
       {
-        "id": "declarationEmailGroup",
+        "id": "declarationGroup",
         "type": "group",
-        "label": "To receive confirmation that your return has been submitted, enter an email address below",
+        "label": "Declaration",
         "fields": [
           {
-            "id": "declaration-email",
-            "type": "text",
-            "label": "Email address (Optional)",
-            "mandatory": "false",
-            "format": "email"
-          },
-          {
-            "id": "declaration-email-confirmation",
-            "type": "text",
-            "label": "Confirm email address (Optional)",
-            "mandatory": "false",
-            "format": "email"
+            "id": "declarationText",
+            "type": "info",
+            "label": "",
+            "infoType": "noformat",
+            "infoText": "By submitting this claim, you confirm that the details you are providing are true and complete."
           }
         ]
+      }
+    ]
+  },
+  "acknowledgementSection": {
+    "shortName": "Acknowledgement Page",
+    "title": "Acknowledgement Page",
+    "fields": [
+      {
+        "id": "ackPageInfoTop",
+        "type": "info",
+        "format": "noformat",
+        "label": "If you owe duty",
+        "infoText": "
+          ## If you owe duty
+          If you have a Direct Debit set up for this tax, you don't need to do anything. Your payment will be collected automatically.  \n\n
+          Otherwise, paying electronically is an easy and secure way to pay. Use the details below and make sure you include your registration number (XZGR 00000 123456) on any payment.  \n\n
+          Sort code: 08-32-00  \n
+          Account number: 12000903  \n
+          Account name: HMRC Miscellaneous
+        "
+      },
+      {
+        "id": "ackPageWarning",
+        "type": "info",
+        "format": "important",
+        "label": "",
+        "infoText": "Make sure you pay the duty owed or you may face a penalty."
+      },
+      {
+        "id": "ackPageInfoBottom",
+        "type": "info",
+        "format": "noformat",
+        "label": "If you need to contact us about your claim",
+        "infoText": "
+          ## If you need to contact us about your claim
+          Call [Content TBC] or email [TBC], quoting your registration number XZGR 00000 123456.
+        "
       }
     ]
   }
