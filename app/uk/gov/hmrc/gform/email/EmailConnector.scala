@@ -16,19 +16,15 @@
 
 package uk.gov.hmrc.gform.email
 
-import play.api.Logger
 import uk.gov.hmrc.gform.wshttp.WSHttp
 import uk.gov.hmrc.play.http._
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ ExecutionContext, Future }
 
-class EmailConnector(wsHttp: WSHttp, baseUrl: String, emailEnabled: Boolean) {
+class EmailConnector(wSHttp: WSHttp, baseUrl: String) {
 
-  def sendEmail(emailTemplate: EmailTemplate)(implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Unit = {
-    if (emailEnabled) {
-      wsHttp.POST[EmailTemplate, HttpResponse](baseUrl + "hmrc/email", emailTemplate)
-    } else {
-      Logger.info("Sending email disable in this environment")
-    }
+  def sendEmail(emailTemplate: EmailTemplate)(implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[Unit] = {
+    wSHttp.POST[EmailTemplate, HttpResponse](baseUrl + "hmrc/email", emailTemplate).map(_ => ())
   }
 }
+

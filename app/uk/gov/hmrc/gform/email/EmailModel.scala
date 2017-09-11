@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.email
 
 import java.util.Date
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{ Json, OFormat }
 
 case class EmailTemplate(
   to: Seq[String],
