@@ -97,6 +97,11 @@ class SubmissionService(
     } yield res
     // format: ON
   }
+
+  def submissionDetails(formId: FormId): Future[Submission] = {
+    submissionRepo.get(formId.value)
+  }
+
 }
 
 object SubmissionServiceHelper {
