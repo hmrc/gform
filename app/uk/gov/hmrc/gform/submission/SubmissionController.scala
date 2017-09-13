@@ -21,6 +21,7 @@ import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.sharedmodel._
 import cats.data._
 import cats.implicits._
+import play.api.Logger
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.play.http.NotImplementedException
 
@@ -31,6 +32,7 @@ class SubmissionController(
 ) extends BaseController {
 
   def submit(formId: FormId) = Action.async { implicit request =>
+    Logger.info(s"submit, formId: '${formId.value}, Headers: '${request.headers.remove("Authorization", "token")}'")
     //TODO check form status. If after submission don't call this function
     //TODO authentication
     //TODO authorisation
@@ -44,6 +46,7 @@ class SubmissionController(
   }
 
   def submissionStatus(formId: FormId) = Action.async { implicit request =>
+    Logger.info(s"checking submission status, formId: '${formId.value}, Headers: '${request.headers.remove("Authorization", "token")}'")
     //TODO check form status. If after submission don't call this function
     //TODO authentication
     //TODO authorisation
