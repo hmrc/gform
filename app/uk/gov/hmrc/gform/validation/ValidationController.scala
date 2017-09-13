@@ -29,10 +29,12 @@ import scala.concurrent.Future
 class ValidationController(validation: ValidationService) extends BaseController {
 
   def validateAddressAtDes(utr: String, postcode: String) = Action.async { implicit request =>
+    Logger.info(s"validate Address At Des, headers: '${request.headers.remove("Authorization", "token")}'")
     validation.callDes(utr, postcode).map(if (_) NoContent else NotFound)
   }
 
   def validateBank(accountNumber: String, sortCode: String) = Action.async { implicit request =>
+    Logger.info(s"validate bank, headers: '${request.headers.remove("Authorization", "token")}'")
     validation.callBRS(accountNumber, sortCode).map(if (_) NoContent else NotFound)
   }
 

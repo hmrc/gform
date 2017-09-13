@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.formtemplate
 
 import cats.implicits._
+import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc.Action
 import uk.gov.hmrc.gform.controllers.BaseController
@@ -34,7 +35,7 @@ class FormTemplatesController(
     //TODO authorisation (we don't want allow everyone to call this action
 
     val templateRaw = request.body
-
+    Logger.info(s"Upserting template: ${templateRaw._id.value}, Headers: '${request.headers.remove("Authorization", "token")}")
     val formTemplateOpt: Opt[FormTemplate] = Json.reads[FormTemplate].reads(templateRaw.value).fold(
       errors => UnexpectedState(errors.toString()).asLeft,
       valid => valid.asRight
@@ -54,18 +55,21 @@ class FormTemplatesController(
   }
 
   def get(id: FormTemplateId) = Action.async { implicit request =>
+    Logger.info(s"Get template, template id: '${id.value}', Headers: '${request.headers.remove("Authorization", "token")}")
     formTemplateService
       .get(id)
       .asOkJson
   }
 
   def getRaw(id: FormTemplateRawId) = Action.async { implicit request =>
+    Logger.info(s"Get raw template, template id: '${id.value}', Headers: '${request.headers.remove("Authorization", "token")}")
     formTemplateService
       .get(id)
       .asOkJson
   }
 
   def remove(formTemplateId: FormTemplateId) = Action.async { implicit request =>
+    Logger.info(s"Deleting template, template id: '${formTemplateId.value}', Headers: '${request.headers.remove("Authorization", "token")}")
     //TODO authorisation (we don't want allow everyone to call this action
 
     val result = for {
@@ -79,6 +83,7 @@ class FormTemplatesController(
   }
 
   def all() = Action.async { implicit request =>
+    Logger.info(s"Get all templates, Headers: '${request.headers.remove("Authorization", "token")}")
 
     formTemplateService
       .list()
