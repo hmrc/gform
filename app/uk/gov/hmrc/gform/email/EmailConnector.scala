@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.gform.email
 
+import play.api.Logger
+import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.wshttp.WSHttp
 import uk.gov.hmrc.play.http._
 
@@ -24,6 +26,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 class EmailConnector(wSHttp: WSHttp, baseUrl: String) {
 
   def sendEmail(emailTemplate: EmailTemplate)(implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[Unit] = {
+    Logger.info(s"send email, ${loggingHelpers.cleanHeaderCarrierHeader(headerCarrier)}")
     wSHttp.POST[EmailTemplate, HttpResponse](baseUrl + "hmrc/email", emailTemplate).map(_ => ())
   }
 }

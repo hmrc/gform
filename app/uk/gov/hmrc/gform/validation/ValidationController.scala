@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.validation
 import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc.Action
+import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.bank_account_reputation.{ Account, BankAccountReputationConnector, Response }
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.des.{ AddressDes, DesConnector }
@@ -29,17 +30,17 @@ import scala.concurrent.Future
 class ValidationController(validation: ValidationService) extends BaseController {
 
   def validateAddressAtDes(utr: String, postcode: String) = Action.async { implicit request =>
-    Logger.info(s"validate Address At Des, headers: '${request.headers.remove("Authorization", "token")}'")
+    Logger.info(s"validate Address At Des, ${loggingHelpers.cleanHeaders(request.headers)}")
     validation.callDes(utr, postcode).map(if (_) NoContent else NotFound)
   }
 
   def validateBank(accountNumber: String, sortCode: String) = Action.async { implicit request =>
-    Logger.info(s"validate bank, headers: '${request.headers.remove("Authorization", "token")}'")
+    Logger.info(s"validate bank, ${loggingHelpers.cleanHeaders(request.headers)}'")
     validation.callBRS(accountNumber, sortCode).map(if (_) NoContent else NotFound)
   }
 
   def testValidatorStub(utr: String) = Action.async { implicit request =>
-    Logger.info(s"testValidatorStub, headers: '${request.headers.remove("Authorization", "token")}'")
+    Logger.info(s"testValidatorStub, ${loggingHelpers.cleanHeaders(request.headers)}")
     if (utr.startsWith("1")) {
       Future.successful(Ok(Json.toJson(AddressDes("Valid"))))
     } else

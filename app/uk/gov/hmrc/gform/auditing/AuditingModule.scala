@@ -21,6 +21,7 @@ import play.api.{ Configuration, Environment }
 import play.api.inject.ApplicationLifecycle
 import play.api.libs.ws.WSRequest
 import play.api.libs.ws.ahc.AhcWSComponents
+import play.api.mvc.Headers
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.playcomponents.PlayComponents
@@ -60,4 +61,8 @@ class AuditingModule(configModule: ConfigModule, akkaModule: AkkaModule, playCom
     override def controllerNeedsAuditing(controllerName: String): Boolean = configModule.controllerConfig.paramsForController(controllerName).needsAuditing
   }
 
+}
+object loggingHelpers {
+  def cleanHeaders(headers: Headers) = s", headers: '${headers.remove("Authorization", "token")}'"
+  def cleanHeaderCarrierHeader(hc: HeaderCarrier): String = s"headers: ' ${hc.sessionId} ${hc.deviceID} ${hc.requestId} ${hc.requestChain}'"
 }

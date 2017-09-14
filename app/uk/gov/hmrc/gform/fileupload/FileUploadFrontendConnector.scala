@@ -17,6 +17,8 @@
 package uk.gov.hmrc.gform.fileupload
 
 import akka.util.ByteString
+import play.api.Logger
+import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.wshttp.WSHttp
@@ -27,7 +29,8 @@ import scala.concurrent.Future
 
 class FileUploadFrontendConnector(config: FUConfig, wSHttp: WSHttp) {
 
-  def upload(envelopeId: EnvelopeId, fileId: FileId, fileName: String, body: ByteString, contentType: ContentType)(implicit hc: HeaderCarrier): Future[Unit] =
+  def upload(envelopeId: EnvelopeId, fileId: FileId, fileName: String, body: ByteString, contentType: ContentType)(implicit hc: HeaderCarrier): Future[Unit] = {
+    Logger.info(s"upload, envelopeId: '${envelopeId.value}',  fileId: '${fileId.value}', fileName: '${fileName}', contentType: '${contentType.value}, ${loggingHelpers.cleanHeaderCarrierHeader(hc)}'")
     wSHttp
       .POSTFile(
         s"$baseUrl/file-upload/upload/envelopes/${envelopeId.value}/files/${fileId.value}",
@@ -37,7 +40,7 @@ class FileUploadFrontendConnector(config: FUConfig, wSHttp: WSHttp) {
         contentType.value
       )
       .map(_ => ())
-
+  }
   private lazy val baseUrl = config.fileUploadFrontendBaseUrl
 
 }
