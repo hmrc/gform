@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.bank_account_reputation
 
+import play.api.Logger
 import play.api.libs.json._
 import uk.gov.hmrc.gform.config.DesConnectorConfig
 import uk.gov.hmrc.gform.wshttp.WSHttp
@@ -26,9 +27,9 @@ import scala.concurrent.Future
 
 class BankAccountReputationConnector(wSHttp: WSHttp, baseUrl: String) {
 
-  def exists(accountNumber: String, sortCode: String)(implicit hc: HeaderCarrier): Future[Response] =
+  def exists(accountNumber: String, sortCode: String)(implicit hc: HeaderCarrier): Future[Response] = {
     wSHttp.POST[Account, Response](s"$baseUrl/modcheck", Account(sortCode, accountNumber))
-
+  }
 }
 
 case class Account(

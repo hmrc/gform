@@ -39,6 +39,7 @@ class ValidationController(validation: ValidationService) extends BaseController
   }
 
   def testValidatorStub(utr: String) = Action.async { implicit request =>
+    Logger.info(s"testValidatorStub, headers: '${request.headers.remove("Authorization", "token")}'")
     if (utr.startsWith("1")) {
       Future.successful(Ok(Json.toJson(AddressDes("Valid"))))
     } else
