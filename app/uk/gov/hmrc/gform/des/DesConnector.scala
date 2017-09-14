@@ -17,7 +17,9 @@
 package uk.gov.hmrc.gform.des
 
 import com.typesafe.config.Config
+import play.api.Logger
 import play.api.libs.json.{ JsValue, Json, OFormat }
+import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.config.DesConnectorConfig
 import uk.gov.hmrc.gform.wshttp.WSHttp
 import uk.gov.hmrc.play.http.logging.Authorization
@@ -35,9 +37,8 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
       }""") //TODO add in actual regime we are looking for
 
   def lookup(utr: String)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[AddressDes] = {
-
     implicit val hc = HeaderCarrier(extraHeaders = Seq("Environment" -> desConfig.environment), authorization = Some(Authorization(desConfig.authorizationToken)))
-
+    Logger.info(s"Des lookup, UTR: '${utr}', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
     wSHttp.POST[JsValue, AddressDes](s"$baseUrl${desConfig.basePath}/registration/organisation/utr/$utr", lookupJson)
   }
 

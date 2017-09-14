@@ -21,13 +21,16 @@ import play.api.libs.json._
 import uk.gov.hmrc.gform.config.DesConnectorConfig
 import uk.gov.hmrc.gform.wshttp.WSHttp
 import play.api.libs.functional.syntax._
+import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.play.http.HeaderCarrier
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class BankAccountReputationConnector(wSHttp: WSHttp, baseUrl: String) {
 
   def exists(accountNumber: String, sortCode: String)(implicit hc: HeaderCarrier): Future[Response] = {
+    Logger.info(s"Check if bank account exists, headers: '${loggingHelpers.cleanHeaderCarrierHeader(hc)}'")
     wSHttp.POST[Account, Response](s"$baseUrl/modcheck", Account(sortCode, accountNumber))
   }
 }

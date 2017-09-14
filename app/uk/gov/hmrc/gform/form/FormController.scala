@@ -29,6 +29,7 @@ import uk.gov.hmrc.gform.sharedmodel.UserId
 import uk.gov.hmrc.gform.sharedmodel.form.{ FileId, FormData, FormId, UserData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.play.http.BadRequestException
+import uk.gov.hmrc.gform.auditing._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -41,7 +42,7 @@ class FormController(
 ) extends BaseController {
 
   def newForm(userId: UserId, formTemplateId: FormTemplateId) = Action.async { implicit request =>
-    Logger.info(s"new form, userId: '${userId.value}', templateId: '${formTemplateId.value}' Headers: '${request.headers.remove("Authorization", "token")}'")
+    Logger.info(s"new form, userId: '${userId.value}', templateId: '${formTemplateId.value}', ${loggingHelpers.cleanHeaders(request.headers)}")
     //TODO authentication
     //TODO user should be obtained from secure action
     //TODO authorisation
@@ -60,7 +61,7 @@ class FormController(
   }
 
   def get(formId: FormId) = Action.async { implicit request =>
-    Logger.info(s"getting form, formId: '${formId.value}', Headers: '${request.headers.remove("Authorization", "token")}")
+    Logger.info(s"getting form, formId: '${formId.value}', ${loggingHelpers.cleanHeaders(request.headers)}")
 
     //TODO authentication
     //TODO authorisation
@@ -82,7 +83,7 @@ class FormController(
   }
 
   def validateSection(formId: FormId, sectionNumber: SectionNumber) = Action.async { implicit request =>
-    Logger.info(s"Validating sections: '${formId.value}', section number '${sectionNumber.value}', Headers: '${request.headers.remove("Authorization", "token")}")
+    Logger.info(s"Validating sections: '${formId.value}', section number '${sectionNumber.value}', ${loggingHelpers.cleanHeaders(request.headers)}")
     //TODO check form status. If after submission don't call this function
     //TODO authentication
     //TODO authorisation
@@ -101,12 +102,12 @@ class FormController(
   }
 
   def delete(formId: FormId): Action[AnyContent] = Action.async { implicit request =>
-    Logger.info(s"deleting form: '${formId.value}, Headers: '${request.headers.remove("Authorization", "token")}'")
+    Logger.info(s"deleting form: '${formId.value}, ${loggingHelpers.cleanHeaders(request.headers)}'")
     formService.delete(formId).asNoContent
   }
 
   def deleteFile(formId: FormId, fileId: FileId) = Action.async { implicit request =>
-    Logger.info(s"deleting file, formId: '${formId.value}', fileId: ${fileId.value}, Headers: '${request.headers.remove("Authorization", "token")} ")
+    Logger.info(s"deleting file, formId: '${formId.value}', fileId: ${fileId.value}, ${loggingHelpers.cleanHeaders(request.headers)} ")
     val result = for {
       form <- formService.get(formId)
       _ <- fileUploadService.deleteFile(form.envelopeId, fileId)

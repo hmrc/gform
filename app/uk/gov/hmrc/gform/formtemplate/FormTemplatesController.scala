@@ -20,6 +20,7 @@ import cats.implicits._
 import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc.Action
+import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
@@ -35,7 +36,7 @@ class FormTemplatesController(
     //TODO authorisation (we don't want allow everyone to call this action
 
     val templateRaw = request.body
-    Logger.info(s"Upserting template: ${templateRaw._id.value}, Headers: '${request.headers.remove("Authorization", "token")}")
+    Logger.info(s"Upserting template: ${templateRaw._id.value}, ${loggingHelpers.cleanHeaders(request.headers)}")
     val formTemplateOpt: Opt[FormTemplate] = Json.reads[FormTemplate].reads(templateRaw.value).fold(
       errors => UnexpectedState(errors.toString()).asLeft,
       valid => valid.asRight
@@ -55,21 +56,21 @@ class FormTemplatesController(
   }
 
   def get(id: FormTemplateId) = Action.async { implicit request =>
-    Logger.info(s"Get template, template id: '${id.value}', Headers: '${request.headers.remove("Authorization", "token")}")
+    Logger.info(s"Get template, template id: '${id.value}', ${loggingHelpers.cleanHeaders(request.headers)}")
     formTemplateService
       .get(id)
       .asOkJson
   }
 
   def getRaw(id: FormTemplateRawId) = Action.async { implicit request =>
-    Logger.info(s"Get raw template, template id: '${id.value}', Headers: '${request.headers.remove("Authorization", "token")}")
+    Logger.info(s"Get raw template, template id: '${id.value}', ${loggingHelpers.cleanHeaders(request.headers)}")
     formTemplateService
       .get(id)
       .asOkJson
   }
 
   def remove(formTemplateId: FormTemplateId) = Action.async { implicit request =>
-    Logger.info(s"Deleting template, template id: '${formTemplateId.value}', Headers: '${request.headers.remove("Authorization", "token")}")
+    Logger.info(s"Deleting template, template id: '${formTemplateId.value}', ${loggingHelpers.cleanHeaders(request.headers)}")
     //TODO authorisation (we don't want allow everyone to call this action
 
     val result = for {
@@ -83,7 +84,7 @@ class FormTemplatesController(
   }
 
   def all() = Action.async { implicit request =>
-    Logger.info(s"Get all templates, Headers: '${request.headers.remove("Authorization", "token")}")
+    Logger.info(s"Get all templates, ${loggingHelpers.cleanHeaders(request.headers)}")
 
     formTemplateService
       .list()
