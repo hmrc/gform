@@ -191,6 +191,7 @@ class ValueParserSpec extends Spec {
     "Insurance Premium Tax Return",
     "description",
     Some(Default),
+    None,
     DmsSubmission("nino", "BT-NRU-Environmental", "FinanceOpsCorpT"),
     HMRCAuthConfigWithRegimeId(AuthConfigModule("TEST"), ServiceId("TEST"), RegimeId("TEST")),
     "submitSuccessUrl",
