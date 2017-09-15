@@ -23,8 +23,7 @@ import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.bank_account_reputation.{ Account, BankAccountReputationConnector, Response }
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.des.{ AddressDes, DesConnector }
-
-import scala.concurrent.ExecutionContext.Implicits.global
+import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import scala.concurrent.Future
 
 class ValidationController(validation: ValidationService) extends BaseController {

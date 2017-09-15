@@ -23,7 +23,7 @@ import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormId }
 import uk.gov.hmrc.http.cache.client.{ CacheMap, ShortLivedCache }
 import uk.gov.hmrc.play.http.{ HeaderCarrier, NotFoundException }
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import scala.concurrent.{ ExecutionContext, Future }
 
 class Save4Later(cache: ShortLivedCache, ex: ExecutionContext) {
@@ -49,7 +49,7 @@ class Save4Later(cache: ShortLivedCache, ex: ExecutionContext) {
     cache.remove(formId.value).map(_ => ())
   }
 
-  def saveKeyStore(formId: FormId, data: Map[String, JsValue])(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Unit] = {
+  def saveKeyStore(formId: FormId, data: Map[String, JsValue])(implicit hc: HeaderCarrier): Future[Unit] = {
     cache.cache[Map[String, JsValue]](formId.value, "keystore", data).map(_ => ())
   }
 

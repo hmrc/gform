@@ -26,8 +26,8 @@ import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.gform.wshttp.TestWSHttp
 import uk.gov.hmrc.play.http.HeaderCarrier
 
+import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import scala.concurrent.Await
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 
 object FileUploadDemoApp extends App {
