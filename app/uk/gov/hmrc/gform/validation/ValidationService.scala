@@ -26,7 +26,7 @@ class ValidationService(desConnector: DesConnector, bankAccountReputationConnect
 
   def callDes(utr: String, postCode: String)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Boolean] = {
     def compare(address: AddressDes) = {
-      address.postalCode.replace(" ", "").equalsIgnoreCase(postCode.replace(" ", "")) || address.postalCode == "Valid"
+      address.postalCode.replace(" ", "").equalsIgnoreCase(postCode.replace(" ", ""))
     }
     desConnector.lookup(utr).map(compare)
       .recover {
