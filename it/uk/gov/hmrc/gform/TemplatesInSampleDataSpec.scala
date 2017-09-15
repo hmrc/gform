@@ -8,7 +8,7 @@ import uk.gov.hmrc.gform.gformbackend.GformConnector
 import uk.gov.hmrc.gform.wshttp.{TestWSHttpIT, WSHttp}
 import uk.gov.hmrc.play.http.HeaderCarrier
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import scala.util.{Failure, Success}
 
 class TemplatesInSampleDataSpec extends support.ITSpec {

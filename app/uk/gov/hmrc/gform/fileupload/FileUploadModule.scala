@@ -17,8 +17,9 @@
 package uk.gov.hmrc.gform.fileupload
 
 import uk.gov.hmrc.gform.config.ConfigModule
-import uk.gov.hmrc.gform.time.{ TimeModule, TimeProvider }
+import uk.gov.hmrc.gform.time.TimeModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
+import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
 
 class FileUploadModule(configModule: ConfigModule, wSHttpModule: WSHttpModule, timeModule: TimeModule) {
 
@@ -39,6 +40,6 @@ class FileUploadModule(configModule: ConfigModule, wSHttpModule: WSHttpModule, t
   )
 
   //TODO: provide separate one here
-  private lazy implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
+  private lazy implicit val ec = MdcLoggingExecutionContext
   private lazy val ac = configModule.appConfig
 }

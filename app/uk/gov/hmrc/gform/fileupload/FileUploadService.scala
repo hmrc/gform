@@ -26,9 +26,9 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ DmsSubmission, FormTemplateI
 import uk.gov.hmrc.gform.submission.{ SubmissionAndPdf, SubmissionRef }
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.play.http.HeaderCarrier
+import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
 import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class FileUploadService(fileUploadConnector: FileUploadConnector, fileUploadFrontendConnector: FileUploadFrontendConnector, timeModule: TimeProvider = new TimeProvider) {
 
