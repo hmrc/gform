@@ -22,13 +22,15 @@ import cats.data.EitherT
 import cats.implicits._
 import play.api.libs.json._
 import play.api.mvc.Result
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
+import uk.gov.hmrc.play.http.logging
+import uk.gov.hmrc.play.http.logging.{LoggingDetails, MdcLoggingExecutionContext}
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
 class BaseController extends uk.gov.hmrc.play.microservice.controller.BaseController {
 
-  implicit val ec = MdcLoggingExecutionContext
+  implicit def mdcExecutionContext(implicit loggingDetails: LoggingDetails): ExecutionContext = MdcLoggingExecutionContext.fromLoggingDetails
+
   object O {
     def asOkJson[T: Writes](t: T): Result = {
       Ok(Json.toJson(t))
