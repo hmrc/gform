@@ -111,10 +111,10 @@ object SubmissionServiceHelper {
     formTemplate: FormTemplate
   ): Opt[List[SectionFormField]] = {
 
-    val data: Map[FieldId, FormField] = form.formData.fields.map(field => field.id -> field).toMap
+    val data: Map[FormComponentId, FormField] = form.formData.fields.map(field => field.id -> field).toMap
 
-    val formFieldByFieldValue: FieldValue => Opt[(List[FormField], FieldValue)] = fieldValue => {
-      val fieldValueIds: List[FieldId] =
+    val formFieldByFieldValue: FormComponent => Opt[(List[FormField], FormComponent)] = fieldValue => {
+      val fieldValueIds: List[FormComponentId] =
         fieldValue.`type` match {
           case Address(_) => Address.fields(fieldValue.id)
           case Date(_, _, _) => Date.fields(fieldValue.id)

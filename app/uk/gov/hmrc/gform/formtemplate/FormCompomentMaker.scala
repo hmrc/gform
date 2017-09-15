@@ -26,9 +26,9 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 case class MES(mandatory: Boolean, editable: Boolean, submissible: Boolean, derived: Boolean)
 
-class FieldValueMaker(json: JsValue) {
+class FormCompomentMaker(json: JsValue) {
 
-  lazy val id: FieldId = (json \ "id").as[FieldId]
+  lazy val id: FormComponentId = (json \ "id").as[FormComponentId]
   lazy val `type`: Option[ComponentTypeRaw] = (json \ "type").asOpt[ComponentTypeRaw]
   lazy val label: String = (json \ "label").as[String]
 
@@ -44,7 +44,7 @@ class FieldValueMaker(json: JsValue) {
   lazy val fieldsJson: Option[List[JsValue]] = (json \ "fields").asOpt[List[JsValue]]
   lazy val errorMessage: Option[String] = (json \ "errorMessage").asOpt[String]
 
-  lazy val fields: Option[List[FieldValueMaker]] = fieldsJson.map(_.map(new FieldValueMaker(_)))
+  lazy val fields: Option[List[FormCompomentMaker]] = fieldsJson.map(_.map(new FormCompomentMaker(_)))
 
   lazy val mandatory: Option[String] = (json \ "mandatory").asOpt[String]
   lazy val multivalue: Option[String] = (json \ "multivalue").asOpt[String]
@@ -58,7 +58,7 @@ class FieldValueMaker(json: JsValue) {
   lazy val repeatLabel: Option[String] = (json \ "repeatLabel").asOpt[String]
   lazy val repeatAddAnotherText: Option[String] = (json \ "repeatAddAnotherText").asOpt[String]
 
-  def optFieldValue(): Opt[FieldValue] =
+  def optFieldValue(): Opt[FormComponent] =
     for {
       presHint <- optMaybePresentationHintExpr
       mes <- optMES
@@ -75,7 +75,7 @@ class FieldValueMaker(json: JsValue) {
     }
   }
 
-  private def mkFieldValue(presHint: Option[List[PresentationHint]], mes: MES, ct: ComponentType): FieldValue = FieldValue(
+  private def mkFieldValue(presHint: Option[List[PresentationHint]], mes: MES, ct: ComponentType): FormComponent = FormComponent(
     id = id,
     `type` = ct,
     label = label,
@@ -211,16 +211,16 @@ class FieldValueMaker(json: JsValue) {
 
   private lazy val noRawFields: Opt[Group] = UnexpectedState(s"""Require 'fields' element in Group""").asLeft
 
-  def groupOpt(fields: List[FieldValueMaker]): Opt[Group] = {
+  def groupOpt(fields: List[FormCompomentMaker]): Opt[Group] = {
 
     def orientation(format: Option[FormatExpr]) = format match {
       case IsGroupOrientation(VerticalGroupOrientation) | None => Vertical
       case IsGroupOrientation(HorizontalGroupOrientation) => Horizontal
     }
 
-    val fieldValueOpts: List[Opt[FieldValue]] = fields.map(_.optFieldValue())
+    val fieldValueOpts: List[Opt[FormComponent]] = fields.map(_.optFieldValue())
 
-    val fieldValuesOpt: Opt[List[FieldValue]] = {
+    val fieldValuesOpt: Opt[List[FormComponent]] = {
       import cats.implicits._
       fieldValueOpts.sequence
     }
@@ -234,7 +234,7 @@ class FieldValueMaker(json: JsValue) {
     } yield group
   }
 
-  private def validateRepeatsAndBuildGroup(repMax: Option[Int], repMin: Option[Int], fields: List[FieldValue], orientation: Orientation) = {
+  private def validateRepeatsAndBuildGroup(repMax: Option[Int], repMin: Option[Int], fields: List[FormComponent], orientation: Orientation) = {
     (repMax, repMin) match {
       case (Some(repMax), Some(repMin)) if repMax < repMin =>
         UnexpectedState(s"""repeatsMax should be higher than repeatsMin in Group field""").asLeft

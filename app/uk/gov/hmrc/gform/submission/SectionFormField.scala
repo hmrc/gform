@@ -17,11 +17,11 @@
 package uk.gov.hmrc.gform.submission
 
 import uk.gov.hmrc.gform.sharedmodel.form.FormField
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FieldValue
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormComponent
 
 import scala.collection.immutable.List
 
 case class SectionFormField(
   title: String,
-  fields: List[(List[FormField], FieldValue)]
+  fields: List[(List[FormField], FormComponent)]
 )

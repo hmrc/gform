@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel
 
 import play.api.libs.json._
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ CollapseGroupUnderLabel, FieldValue, PresentationHint, SummariseGroupAsGrid }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ CollapseGroupUnderLabel, FormComponent, PresentationHint, SummariseGroupAsGrid }
 
 class JsonParseTestPresentationHint extends Spec {
 
@@ -35,8 +35,8 @@ class JsonParseTestPresentationHint extends Spec {
       s"""${startOfJson}
          }"""
 
-    var jsr: JsResult[FieldValue] = null
-    jsr = implicitly[Reads[FieldValue]].reads(Json.parse(jsonStr));
+    var jsr: JsResult[FormComponent] = null
+    jsr = implicitly[Reads[FormComponent]].reads(Json.parse(jsonStr));
   }
 
   "A component with a presentationHint that is not a String" should "fail to parse" in {
@@ -44,7 +44,7 @@ class JsonParseTestPresentationHint extends Spec {
     for {
       snippet <- List(""", "presentationHint" : 123 }""", """, "presentationHint" : {} }""")
     } {
-      val jsResult = implicitly[Reads[FieldValue]].reads(Json.parse(startOfJson + snippet))
+      val jsResult = implicitly[Reads[FormComponent]].reads(Json.parse(startOfJson + snippet))
       jsResult should be(jsError)
     }
   }
@@ -58,7 +58,7 @@ class JsonParseTestPresentationHint extends Spec {
         """, "presentationHint" : "anyString" }"""
       )
     } {
-      val jsResult = implicitly[Reads[FieldValue]].reads(Json.parse(startOfJson + snippet))
+      val jsResult = implicitly[Reads[FormComponent]].reads(Json.parse(startOfJson + snippet))
       jsResult should be(jsError)
     }
   }
@@ -70,7 +70,7 @@ class JsonParseTestPresentationHint extends Spec {
         """, "presentationHint" : "collapseGroupUnderLabel,summariseGroupAsGrid" }"""
       )
     } {
-      val jsResult = implicitly[Reads[FieldValue]].reads(Json.parse(startOfJson + snippet))
+      val jsResult = implicitly[Reads[FormComponent]].reads(Json.parse(startOfJson + snippet))
       jsResult shouldBe a[JsSuccess[_]]
       jsResult.map(_.presentationHint).get should equal(Some(List(CollapseGroupUnderLabel, SummariseGroupAsGrid)))
     }

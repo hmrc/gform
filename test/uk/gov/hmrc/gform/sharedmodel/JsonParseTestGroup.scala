@@ -52,14 +52,14 @@ class JsonParseTestGroup extends Spec {
       }
     """
 
-    val jsResult = implicitly[Reads[FieldValue]].reads(Json.parse(jsonStr))
+    val jsResult = implicitly[Reads[FormComponent]].reads(Json.parse(jsonStr))
 
-    jsResult should beJsSuccess(FieldValue(
-      FieldId("gid"),
+    jsResult should beJsSuccess(FormComponent(
+      FormComponentId("gid"),
       Group(
         List(
-          FieldValue(
-            FieldId("cid"),
+          FormComponent(
+            FormComponentId("cid"),
             Choice(Radio, NonEmptyList.of("A", "B"), Vertical, List(), None), "clabel", None, None, true, true, true, derived = false, None
           )
         ),
@@ -102,11 +102,11 @@ class JsonParseTestGroup extends Spec {
       }
     """
 
-    var jsr: JsResult[FieldValue] = null
-    jsr = implicitly[Reads[FieldValue]].reads(Json.parse(jsonStr)); jsr should be(jsError)
-    jsr = implicitly[Reads[FieldValue]].reads(Json.parse(jsonStr.replaceAll("6", """"A""""))); jsr should be(jsError)
-    jsr = implicitly[Reads[FieldValue]].reads(Json.parse(jsonStr.replaceAll("6", "-1"))); jsr should be(jsError)
-    jsr = implicitly[Reads[FieldValue]].reads(Json.parse(jsonStr.replaceAll("5", """"A""""))); jsr should be(jsError)
+    var jsr: JsResult[FormComponent] = null
+    jsr = implicitly[Reads[FormComponent]].reads(Json.parse(jsonStr)); jsr should be(jsError)
+    jsr = implicitly[Reads[FormComponent]].reads(Json.parse(jsonStr.replaceAll("6", """"A""""))); jsr should be(jsError)
+    jsr = implicitly[Reads[FormComponent]].reads(Json.parse(jsonStr.replaceAll("6", "-1"))); jsr should be(jsError)
+    jsr = implicitly[Reads[FormComponent]].reads(Json.parse(jsonStr.replaceAll("5", """"A""""))); jsr should be(jsError)
   }
 
 }

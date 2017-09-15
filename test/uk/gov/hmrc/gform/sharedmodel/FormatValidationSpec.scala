@@ -42,8 +42,8 @@ class FormatValidationSpec extends Spec {
          "type": "text",
          "label": "$label"
         }
-      """)) shouldBe JsSuccess(FieldValue(
-      id = FieldId(id),
+      """)) shouldBe JsSuccess(FormComponent(
+      id = FormComponentId(id),
       `type` = Text(ShortText, Constant("")),
       label = label,
       helpText = None,
@@ -57,8 +57,8 @@ class FormatValidationSpec extends Spec {
     ))
   }
   it should "return UkSortCode Component" in {
-    reads.reads(makeJson("ukSortCode")) shouldBe JsSuccess(FieldValue(
-      id = FieldId(id),
+    reads.reads(makeJson("ukSortCode")) shouldBe JsSuccess(FormComponent(
+      id = FormComponentId(id),
       `type` = UkSortCode(Constant("")),
       label = label,
       helpText = None,
@@ -74,8 +74,8 @@ class FormatValidationSpec extends Spec {
 
   def createTest(format: String, constraint: TextConstraint) = {
     val json: JsValue = makeJson(format)
-    reads.reads(json) shouldBe JsSuccess(FieldValue(
-      id = FieldId(id),
+    reads.reads(json) shouldBe JsSuccess(FormComponent(
+      id = FormComponentId(id),
       `type` = Text(constraint, Constant("")),
       label = label,
       helpText = None,
@@ -102,5 +102,5 @@ class FormatValidationSpec extends Spec {
          "label": "$label"
         }
       """
-  val reads: Reads[FieldValue] = implicitly[Reads[FieldValue]]
+  val reads: Reads[FormComponent] = implicitly[Reads[FormComponent]]
 }

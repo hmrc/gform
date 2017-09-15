@@ -21,7 +21,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 object RepeatingComponentService {
 
-  def discardRepeatingFields(extraFieldsReceived: Set[FieldId], mandatoryFields: Set[FieldId], optionalFields: Set[FieldId]) = {
+  def discardRepeatingFields(extraFieldsReceived: Set[FormComponentId], mandatoryFields: Set[FormComponentId], optionalFields: Set[FormComponentId]) = {
     extraFieldsReceived.filterNot { extraFieldId =>
       (mandatoryFields ++ optionalFields).exists { fieldId =>
         val pattern = s"""^\\d+_${fieldId.value}""".r
@@ -30,11 +30,11 @@ object RepeatingComponentService {
     }
   }
 
-  def findTemplateFieldId(fieldMap: Map[FieldId, FieldValue], fieldId: FieldId) = {
+  def findTemplateFieldId(fieldMap: Map[FormComponentId, FormComponent], fieldId: FormComponentId) = {
     val repeatingGroupFieldId = """^\d+_(.+)""".r
 
     val templateFieldId = fieldId.value match {
-      case repeatingGroupFieldId(extractedFieldId) => FieldId(extractedFieldId)
+      case repeatingGroupFieldId(extractedFieldId) => FormComponentId(extractedFieldId)
       case _ => fieldId
     }
 
@@ -55,7 +55,7 @@ object RepeatingComponentService {
   private def isRepeatingSection(section: Section) = section.repeatsMax.isDefined && section.repeatsMin.isDefined
 
   private def reconstructRepeatingSections(section: Section, data: Map[String, String]): List[Section] = {
-    def getFields(field: FieldValue): List[String] = field.`type` match {
+    def getFields(field: FormComponent): List[String] = field.`type` match {
       case Group(fields, _, _, _, _, _) => fields.flatMap(getFields)
       case _ => List(field.id.value)
     }
@@ -68,14 +68,14 @@ object RepeatingComponentService {
   }
 
   private def copySection(section: Section, index: Int, data: Map[String, String]) = {
-    def copyField(field: FieldValue): FieldValue = {
+    def copyField(field: FormComponent): FormComponent = {
       field.`type` match {
         case grp @ Group(fields, _, _, _, _, _) => field.copy(
-          id = FieldId(s"${index}_${field.id.value}"),
+          id = FormComponentId(s"${index}_${field.id.value}"),
           `type` = grp.copy(fields = fields.map(copyField))
         )
         case _ => field.copy(
-          id = FieldId(s"${index}_${field.id.value}")
+          id = FormComponentId(s"${index}_${field.id.value}")
         )
       }
     }

@@ -19,16 +19,16 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
 
-case class FieldId(value: String) extends AnyVal {
+case class FormComponentId(value: String) extends AnyVal {
   override def toString = value
 
-  def withSuffix(suffix: String): FieldId = FieldId(value + "-" + suffix)
+  def withSuffix(suffix: String): FormComponentId = FormComponentId(value + "-" + suffix)
 }
 
-object FieldId {
+object FormComponentId {
 
-  implicit val vformat: Format[FieldId] = ValueClassFormat.vformat("id", FieldId.apply, x => JsString(x.value))
+  implicit val vformat: Format[FormComponentId] = ValueClassFormat.vformat("id", FormComponentId.apply, x => JsString(x.value))
 
-  val oformat: OFormat[FieldId] = ValueClassFormat.oformat("id", FieldId.apply, _.value)
+  val oformat: OFormat[FormComponentId] = ValueClassFormat.oformat("id", FormComponentId.apply, _.value)
 
 }

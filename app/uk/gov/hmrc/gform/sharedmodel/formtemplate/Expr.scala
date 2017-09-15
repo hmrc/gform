@@ -28,7 +28,7 @@ final case class Multiply(field1: Expr, field2: Expr) extends Expr
 final case class Sum(field1: Expr) extends Expr
 
 final case class FormCtx(value: String) extends Expr {
-  def toFieldId = FieldId(this.value)
+  def toFieldId = FormComponentId(this.value)
 }
 
 object FormCtx {

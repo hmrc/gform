@@ -18,9 +18,9 @@ package uk.gov.hmrc.gform.sharedmodel
 
 import play.api.libs.json.{ Reads, _ }
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FieldValue
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormComponent
 
-class FieldValueParseFailureSpec extends Spec {
+class FormComponentParseFailureSpec extends Spec {
 
   "FieldValue json object" should "not parse as Date if format is wrong" in {
     val fieldValue = toFieldValue(
@@ -145,10 +145,10 @@ class FieldValueParseFailureSpec extends Spec {
 
   }
 
-  private def toFieldValue(template: String): JsResult[FieldValue] = {
+  private def toFieldValue(template: String): JsResult[FormComponent] = {
 
     val templateAsJson = Json.parse(template.stripMargin)
 
-    implicitly[Reads[FieldValue]].reads(templateAsJson)
+    implicitly[Reads[FormComponent]].reads(templateAsJson)
   }
 }

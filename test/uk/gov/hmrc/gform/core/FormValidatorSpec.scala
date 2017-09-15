@@ -26,8 +26,8 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyText, _ }
 
 class FormValidatorSpec extends Spec {
 
-  def getMandatoryFieldValue(id: String) = FieldValue(
-    id = FieldId(id),
+  def getMandatoryFieldValue(id: String) = FormComponent(
+    id = FormComponentId(id),
     `type` = Text(AnyText, Constant("")),
     label = "",
     helpText = None,
@@ -39,8 +39,8 @@ class FormValidatorSpec extends Spec {
     errorMessage = None
   )
 
-  def getAddressFieldValue(id: String) = FieldValue(
-    id = FieldId(id),
+  def getAddressFieldValue(id: String) = FormComponent(
+    id = FormComponentId(id),
     `type` = Address(international = false),
     label = "",
     helpText = None,
@@ -95,15 +95,15 @@ class FormValidatorSpec extends Spec {
 
     res.right.value should be(
       List(
-        FormField(FieldId("iptRegNum"), "12AB3456780"),
-        FormField(FieldId("firstName"), "John"),
-        FormField(FieldId("lastName"), "Doe"),
-        FormField(FieldId("telephoneNumber"), "+44 (01273) 123456"),
-        FormField(FieldId("nameOfBusiness"), "Acme Widgets Ltd."),
-        FormField(FieldId("accountingPeriodStartDate"), "2015-08-01"),
-        FormField(FieldId("accountingPeriodEndDate"), "2015-12-01"),
-        FormField(FieldId("standardRateIPTDueForThisPeriod"), "1329345.49"),
-        FormField(FieldId("higherRateIPTDueForThisPeriod"), "58373265.23")
+        FormField(FormComponentId("iptRegNum"), "12AB3456780"),
+        FormField(FormComponentId("firstName"), "John"),
+        FormField(FormComponentId("lastName"), "Doe"),
+        FormField(FormComponentId("telephoneNumber"), "+44 (01273) 123456"),
+        FormField(FormComponentId("nameOfBusiness"), "Acme Widgets Ltd."),
+        FormField(FormComponentId("accountingPeriodStartDate"), "2015-08-01"),
+        FormField(FormComponentId("accountingPeriodEndDate"), "2015-12-01"),
+        FormField(FormComponentId("standardRateIPTDueForThisPeriod"), "1329345.49"),
+        FormField(FormComponentId("higherRateIPTDueForThisPeriod"), "58373265.23")
       )
     )
   }
@@ -112,11 +112,11 @@ class FormValidatorSpec extends Spec {
 
     val formFields =
       List(
-        FormField(FieldId("iptRegNum"), "12AB3456780"),
-        FormField(FieldId("firstName"), "John"),
-        FormField(FieldId("lastName"), "Doe"),
-        FormField(FieldId("telephoneNumber"), "+44 (01273) 123456"),
-        FormField(FieldId("nameOfBusiness"), "Acme Widgets Ltd.")
+        FormField(FormComponentId("iptRegNum"), "12AB3456780"),
+        FormField(FormComponentId("firstName"), "John"),
+        FormField(FormComponentId("lastName"), "Doe"),
+        FormField(FormComponentId("telephoneNumber"), "+44 (01273) 123456"),
+        FormField(FormComponentId("nameOfBusiness"), "Acme Widgets Ltd.")
       )
 
     val section = Section(
@@ -137,17 +137,17 @@ class FormValidatorSpec extends Spec {
 
     val formFields =
       List(
-        FormField(FieldId("iptRegNum"), "12AB3456780"),
-        FormField(FieldId("firstName"), "John"),
-        FormField(FieldId("lastName"), "Doe"),
-        FormField(FieldId("telephoneNumber"), "+44 (01273) 123456"),
-        FormField(FieldId("nameOfBusiness"), "Acme Widgets Ltd."),
-        FormField(FieldId("homeAddress-street1"), "1"),
-        FormField(FieldId("homeAddress-street2"), "2"),
-        FormField(FieldId("homeAddress-street3"), "3"),
-        FormField(FieldId("homeAddress-street4"), "4"),
-        FormField(FieldId("homeAddress-postcode"), "6"),
-        FormField(FieldId("homeAddress-country"), "7")
+        FormField(FormComponentId("iptRegNum"), "12AB3456780"),
+        FormField(FormComponentId("firstName"), "John"),
+        FormField(FormComponentId("lastName"), "Doe"),
+        FormField(FormComponentId("telephoneNumber"), "+44 (01273) 123456"),
+        FormField(FormComponentId("nameOfBusiness"), "Acme Widgets Ltd."),
+        FormField(FormComponentId("homeAddress-street1"), "1"),
+        FormField(FormComponentId("homeAddress-street2"), "2"),
+        FormField(FormComponentId("homeAddress-street3"), "3"),
+        FormField(FormComponentId("homeAddress-street4"), "4"),
+        FormField(FormComponentId("homeAddress-postcode"), "6"),
+        FormField(FormComponentId("homeAddress-country"), "7")
       )
 
     val section = Section("", None, None, None, None, None, None,
@@ -163,12 +163,12 @@ class FormValidatorSpec extends Spec {
 
     val formFields =
       List(
-        FormField(FieldId("iptRegNum"), "12AB3456780")
+        FormField(FormComponentId("iptRegNum"), "12AB3456780")
       )
 
     val section = Section("", None, None, None,
       None, None, None,
-      fields = List.empty[FieldValue])
+      fields = List.empty[FormComponent])
 
     val res = FormValidator.validate(formFields, section)
 

@@ -51,23 +51,23 @@ object FormValidator {
     val ffSet = formFields.filterNot(_.value.isEmpty()).map(_.id).toSet
 
     val (templateFieldsMap, requiredFields) =
-      SectionHelper.atomicFields(section, Map.empty).foldLeft((Map.empty[FieldId, FieldValue], Set.empty[FieldId])) {
+      SectionHelper.atomicFields(section, Map.empty).foldLeft((Map.empty[FormComponentId, FormComponent], Set.empty[FormComponentId])) {
         case ((acc, reqAcc), fieldValue) =>
 
           fieldValue.`type` match {
             case UkSortCode(_) =>
-              val res: Map[FieldId, FieldValue] = UkSortCode.fields(fieldValue.id).map(_ -> fieldValue).toMap
+              val res: Map[FormComponentId, FormComponent] = UkSortCode.fields(fieldValue.id).map(_ -> fieldValue).toMap
               val accRes = acc ++ res
 
               (accRes, reqAcc)
             case Address(_) =>
-              val res: Map[FieldId, FieldValue] = Address.fields(fieldValue.id).map(_ -> fieldValue).toMap
+              val res: Map[FormComponentId, FormComponent] = Address.fields(fieldValue.id).map(_ -> fieldValue).toMap
               val accRes = acc ++ res
 
               (accRes, reqAcc)
 
             case Date(_, _, _) =>
-              val res: Map[FieldId, FieldValue] = Date.fields(fieldValue.id).map(_ -> fieldValue).toMap
+              val res: Map[FormComponentId, FormComponent] = Date.fields(fieldValue.id).map(_ -> fieldValue).toMap
               val accRes = acc ++ res
 
               (accRes, reqAcc)
@@ -98,7 +98,7 @@ object FormValidator {
       Left(UnexpectedState(s"Required fields ${missingRequiredFields.mkString(",")} are missing in form submission."))
     }
 
-    val formFieldWithFieldValues: List[Opt[(FormField, FieldValue)]] =
+    val formFieldWithFieldValues: List[Opt[(FormField, FormComponent)]] =
       formFields.map { formField =>
         RepeatingComponentService.findTemplateFieldId(templateFieldsMap, formField.id) match {
           case Some(templateField) => Right((formField, templateField))
@@ -106,7 +106,7 @@ object FormValidator {
         }
       }
 
-    val formFieldWithFieldValuesU: Opt[List[(FormField, FieldValue)]] = formFieldWithFieldValues.sequenceU
+    val formFieldWithFieldValuesU: Opt[List[(FormField, FormComponent)]] = formFieldWithFieldValues.sequenceU
 
     // TODO - All necessary validation of form fields based on their format
 

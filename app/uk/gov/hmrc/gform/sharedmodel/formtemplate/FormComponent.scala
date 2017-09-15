@@ -18,10 +18,10 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
-import uk.gov.hmrc.gform.formtemplate.FieldValueMaker
+import uk.gov.hmrc.gform.formtemplate.FormCompomentMaker
 
-case class FieldValue(
-  id: FieldId,
+case class FormComponent(
+  id: FormComponentId,
   `type`: ComponentType,
   label: String,
   helpText: Option[String],
@@ -35,17 +35,17 @@ case class FieldValue(
 
 )
 
-object FieldValue {
+object FormComponent {
 
   //TODO: remove this logic from case class representing data
-  implicit val format: OFormat[FieldValue] = {
-    implicit val formatFieldValue = Json.format[FieldValue]
+  implicit val format: OFormat[FormComponent] = {
+    implicit val formatFieldValue = Json.format[FormComponent]
 
-    val toFieldValue: Reads[FieldValue] = Reads[FieldValue] { (json: JsValue) => new FieldValueMaker(json).optFieldValue() fold (us => JsError(us.toString), fv => JsSuccess(fv)) }
+    val toFieldValue: Reads[FormComponent] = Reads[FormComponent] { (json: JsValue) => new FormCompomentMaker(json).optFieldValue() fold (us => JsError(us.toString), fv => JsSuccess(fv)) }
 
-    val reads: Reads[FieldValue] = (formatFieldValue: Reads[FieldValue]) | toFieldValue
+    val reads: Reads[FormComponent] = (formatFieldValue: Reads[FormComponent]) | toFieldValue
 
-    OFormat[FieldValue](reads, formatFieldValue)
+    OFormat[FormComponent](reads, formatFieldValue)
   }
 }
 
