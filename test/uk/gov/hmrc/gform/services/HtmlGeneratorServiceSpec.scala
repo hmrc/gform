@@ -50,8 +50,8 @@ class HtmlGeneratorServiceSpec extends Spec with ExampleData {
   }
 
   it should "return HTML containing formatted date" in {
-    val fieldValue = FieldValue(
-      id = FieldId("id"),
+    val fieldValue = FormComponent(
+      id = FormComponentId("id"),
       `type` = Date(AnyDate, Offset(0), None),
       label = "label",
       shortName = None,
@@ -64,9 +64,9 @@ class HtmlGeneratorServiceSpec extends Spec with ExampleData {
     )
 
     val formList = List(
-      FormField(FieldId("id.day"), "01"),
-      FormField(FieldId("id.month"), "01"),
-      FormField(FieldId("id.year"), "1970")
+      FormField(FormComponentId("id.day"), "01"),
+      FormField(FormComponentId("id.month"), "01"),
+      FormField(FormComponentId("id.year"), "1970")
     )
 
     val formFields = List(SectionFormField("SECTION TITLE", List((formList, fieldValue))))
@@ -77,8 +77,8 @@ class HtmlGeneratorServiceSpec extends Spec with ExampleData {
   }
 
   it should "return HTML containing address" in {
-    val fieldValue = FieldValue(
-      id = FieldId("id"),
+    val fieldValue = FormComponent(
+      id = FormComponentId("id"),
       `type` = Address(false),
       label = "label",
       shortName = None,
@@ -91,13 +91,13 @@ class HtmlGeneratorServiceSpec extends Spec with ExampleData {
     )
 
     val formList = List(
-      FormField(FieldId("id-street1"), "A1"),
-      FormField(FieldId("id-street2"), "A2"),
-      FormField(FieldId("id-street3"), "A3"),
-      FormField(FieldId("id-street4"), "A4"),
-      FormField(FieldId("id-postcode"), "PC"),
-      FormField(FieldId("id-uk"), "true"),
-      FormField(FieldId("id-country"), "")
+      FormField(FormComponentId("id-street1"), "A1"),
+      FormField(FormComponentId("id-street2"), "A2"),
+      FormField(FormComponentId("id-street3"), "A3"),
+      FormField(FormComponentId("id-street4"), "A4"),
+      FormField(FormComponentId("id-postcode"), "PC"),
+      FormField(FormComponentId("id-uk"), "true"),
+      FormField(FormComponentId("id-country"), "")
     )
 
     val formFields = List(SectionFormField("SECTION TITLE", List((formList, fieldValue))))
@@ -108,8 +108,8 @@ class HtmlGeneratorServiceSpec extends Spec with ExampleData {
   }
 
   it should "return HTML containing choice selection" in {
-    val fieldValue = FieldValue(
-      id = FieldId("id"),
+    val fieldValue = FormComponent(
+      id = FormComponentId("id"),
       `type` = Choice(Checkbox, NonEmptyList.of("One", "Two", "Three"), Vertical, Nil, None),
       label = "label",
       shortName = None,
@@ -122,7 +122,7 @@ class HtmlGeneratorServiceSpec extends Spec with ExampleData {
     )
 
     val formList = List(
-      FormField(FieldId("id"), "0,2")
+      FormField(FormComponentId("id"), "0,2")
     )
 
     val formFields = List(SectionFormField("SECTION TITLE", List((formList, fieldValue))))
@@ -133,8 +133,8 @@ class HtmlGeneratorServiceSpec extends Spec with ExampleData {
   }
 
   it should "return HTML containing text field" in {
-    val fieldValue = FieldValue(
-      id = FieldId("id"),
+    val fieldValue = FormComponent(
+      id = FormComponentId("id"),
       `type` = Text(AnyText, Constant("CONSTANT")),
       label = "label",
       shortName = None,
@@ -147,7 +147,7 @@ class HtmlGeneratorServiceSpec extends Spec with ExampleData {
     )
 
     val formList = List(
-      FormField(FieldId("id"), "Hello")
+      FormField(FormComponentId("id"), "Hello")
     )
 
     val formFields = List(SectionFormField("SECTION TITLE", List((formList, fieldValue))))

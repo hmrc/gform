@@ -29,8 +29,8 @@ import scala.collection.immutable.List
 object FormTemplateValidator {
 
   def validateUniqueFields(sectionsList: List[Section]): ValidationResult = {
-    val fieldIds: List[FieldId] = sectionsList.flatMap(_.fields.map(_.id))
-    val duplicates: List[FieldId] = fieldIds.groupBy(identity).collect { case (fId, List(_, _, _*)) => fId }.toList
+    val fieldIds: List[FormComponentId] = sectionsList.flatMap(_.fields.map(_.id))
+    val duplicates: List[FormComponentId] = fieldIds.groupBy(identity).collect { case (fId, List(_, _, _*)) => fId }.toList
 
     duplicates.isEmpty match {
       case true => Valid
@@ -39,7 +39,7 @@ object FormTemplateValidator {
   }
 
   def validateChoiceHelpText(sectionsList: List[Section]): ValidationResult = {
-    val choiceFieldIdMap: Map[FieldId, Boolean] = sectionsList.flatMap(_.fields).map(fv => (fv.id, fv.`type`))
+    val choiceFieldIdMap: Map[FormComponentId, Boolean] = sectionsList.flatMap(_.fields).map(fv => (fv.id, fv.`type`))
       .collect {
         case (fId, Choice(_, options, _, _, helpTextList @ Some(x :: xs))) =>
           (fId, options.toList.size.equals(helpTextList.getOrElse(List.empty).size))
@@ -69,8 +69,8 @@ object FormTemplateValidator {
     Monoid[ValidationResult].combineAll(results)
   }
 
-  private def getMandatoryAndOptionalFields(section: Section): (Set[FieldId], Set[FieldId]) = {
-    SectionHelper.atomicFields(section, Map.empty).foldLeft((Set.empty[FieldId], Set.empty[FieldId])) {
+  private def getMandatoryAndOptionalFields(section: Section): (Set[FormComponentId], Set[FormComponentId]) = {
+    SectionHelper.atomicFields(section, Map.empty).foldLeft((Set.empty[FormComponentId], Set.empty[FormComponentId])) {
       case ((mandatoryAcc, optionalAcc), field) =>
         (field.`type`, field.mandatory) match {
           case (Address(_), _) => (mandatoryAcc ++ Address.mandatoryFields(field.id), optionalAcc ++ Address.optionalFields(field.id))
@@ -92,7 +92,7 @@ object FormTemplateValidator {
    * - presence of any other field than those from form template is resulting in failed location of a section
    */
   def getMatchingSection(formFields: Seq[FormField], sections: Seq[Section]): Opt[Section] = {
-    val formFieldIds: Set[FieldId] = formFields.map(_.id).toSet
+    val formFieldIds: Set[FormComponentId] = formFields.map(_.id).toSet
     val sectionOpt: Option[Section] = sections.find { section =>
 
       val (mandatorySectionIds, optionalSectionIds) = getMandatoryAndOptionalFields(section)
@@ -138,7 +138,7 @@ object FormTemplateValidator {
   }
 
   def validate(booleanExpr: BooleanExpr, formTemplate: FormTemplate): ValidationResult = {
-    val fieldNamesIds: List[FieldId] = formTemplate.sections.flatMap(_.fields.map(_.id))
+    val fieldNamesIds: List[FormComponentId] = formTemplate.sections.flatMap(_.fields.map(_.id))
 
     def checkFields(field1: Expr, field2: Expr): ValidationResult = {
       val checkField1 = validate(field1, formTemplate)
@@ -153,7 +153,7 @@ object FormTemplateValidator {
   }
 
   def validate(expr: Expr, formTemplate: FormTemplate): ValidationResult = {
-    val fieldNamesIds: List[FieldId] = formTemplate.sections.flatMap(_.fields.map(_.id)) ::: formTemplate.sections.flatMap(_.fields.map(_.`type`).collect {
+    val fieldNamesIds: List[FormComponentId] = formTemplate.sections.flatMap(_.fields.map(_.id)) ::: formTemplate.sections.flatMap(_.fields.map(_.`type`).collect {
       case Group(fields, _, _, _, _, _) => fields.map(_.id)
     }).flatten
 

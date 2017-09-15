@@ -23,11 +23,11 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 class BooleanExprSpec extends FlatSpec with Matchers with EitherValues {
 
   val data = Map(
-    FieldId("startDate.year") -> FormField(FieldId("startDate.year"), "2010"),
-    FieldId("startDate.day") -> FormField(FieldId("startDate.day"), "10"),
-    FieldId("startDate.month") -> FormField(FieldId("startDate.month"), "10"),
-    FieldId("firstName") -> FormField(FieldId("firstName"), "Pete"),
-    FieldId("nameOfBusiness") -> FormField(FieldId("nameOfBusiness"), "Business Name")
+    FormComponentId("startDate.year") -> FormField(FormComponentId("startDate.year"), "2010"),
+    FormComponentId("startDate.day") -> FormField(FormComponentId("startDate.day"), "10"),
+    FormComponentId("startDate.month") -> FormField(FormComponentId("startDate.month"), "10"),
+    FormComponentId("firstName") -> FormField(FormComponentId("firstName"), "Pete"),
+    FormComponentId("nameOfBusiness") -> FormField(FormComponentId("nameOfBusiness"), "Business Name")
   )
 
   "isTrue" should "evaluate correctly" in {

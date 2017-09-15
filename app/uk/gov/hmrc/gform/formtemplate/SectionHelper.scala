@@ -23,9 +23,9 @@ import scala.collection.immutable.List
 
 object SectionHelper {
 
-  def atomicFields(section: BaseSection, data: Map[FieldId, FormField]): List[FieldValue] = atomicFields(section.fields, data)
+  def atomicFields(section: BaseSection, data: Map[FormComponentId, FormField]): List[FormComponent] = atomicFields(section.fields, data)
 
-  private def atomicFields(fieldValues: List[FieldValue], data: Map[FieldId, FormField]): List[FieldValue] = {
+  private def atomicFields(fieldValues: List[FormComponent], data: Map[FormComponentId, FormField]): List[FormComponent] = {
     fieldValues.flatMap { (fieldValue) =>
       fieldValue.`type` match {
         case Group(gfvs, _, repMax, _, _, _) => atomicFields(fixLabels(gfvs), data) ++ findIdsInRepeatingGroup(gfvs, repMax, data)
@@ -34,7 +34,7 @@ object SectionHelper {
     }
   }
 
-  private def findIdsInRepeatingGroup(fields: List[FieldValue], repeatsMax: Option[Int], data: Map[FieldId, FormField]): List[FieldValue] = {
+  private def findIdsInRepeatingGroup(fields: List[FormComponent], repeatsMax: Option[Int], data: Map[FormComponentId, FormField]): List[FormComponent] = {
 
     val result = if (data.isEmpty) {
       Nil // no data, no way of knowing if we have repeating groups
@@ -45,14 +45,14 @@ object SectionHelper {
     atomicFields(result, data)
   }
 
-  private def extractRepeatingGroupFieldIds(fields: List[FieldValue], repeatsMax: Int, data: Map[FieldId, FormField]): List[FieldValue] = {
+  private def extractRepeatingGroupFieldIds(fields: List[FormComponent], repeatsMax: Int, data: Map[FormComponentId, FormField]): List[FormComponent] = {
     (1 until repeatsMax).map { i =>
       fields.flatMap { fieldInGroup =>
         data.keys.flatMap { key =>
           val fieldName = s"${i}_${fieldInGroup.id.value}"
           key.value.startsWith(fieldName) match {
             case true => List(fieldInGroup.copy(
-              id = FieldId(fieldName),
+              id = FormComponentId(fieldName),
               label = buildRepeatingText(Some(fieldInGroup.label), i + 1).getOrElse(""),
               shortName = buildRepeatingText(fieldInGroup.shortName, i + 1)
             ))
@@ -63,7 +63,7 @@ object SectionHelper {
     }.toList.flatten
   }
 
-  private def fixLabels(fieldValues: List[FieldValue]): List[FieldValue] = {
+  private def fixLabels(fieldValues: List[FormComponent]): List[FormComponent] = {
     fieldValues.map { field =>
       if (field.label.contains("$n") || (field.shortName.isDefined && field.shortName.get.contains("$n"))) {
         field.copy(

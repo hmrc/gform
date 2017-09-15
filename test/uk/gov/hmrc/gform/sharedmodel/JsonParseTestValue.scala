@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel
 
 import play.api.libs.json._
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyText, FieldValue, ShortText, Text }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyText, FormComponent, ShortText, Text }
 
 class JsonParseTestValue extends Spec {
 
@@ -35,7 +35,7 @@ class JsonParseTestValue extends Spec {
       s"""${startOfJson}
          }"""
 
-    implicitly[Reads[FieldValue]].reads(Json.parse(jsonStr)) shouldBe a[JsSuccess[_]]
+    implicitly[Reads[FormComponent]].reads(Json.parse(jsonStr)) shouldBe a[JsSuccess[_]]
   }
 
   "A component with a value that is not a String" should "fail to parse" in {
@@ -46,7 +46,7 @@ class JsonParseTestValue extends Spec {
         """, "value" : {} }"""
       )
     } {
-      val jsResult = implicitly[Reads[FieldValue]].reads(Json.parse(startOfJson + snippet))
+      val jsResult = implicitly[Reads[FormComponent]].reads(Json.parse(startOfJson + snippet))
       jsResult should be(jsError)
     }
   }
@@ -61,7 +61,7 @@ class JsonParseTestValue extends Spec {
         """, "value" : "201568-01-12" }"""
       )
     } {
-      val jsResult = implicitly[Reads[FieldValue]].reads(Json.parse(startOfJson + snippet))
+      val jsResult = implicitly[Reads[FormComponent]].reads(Json.parse(startOfJson + snippet))
       jsResult should be(jsError)
     }
   }
@@ -73,7 +73,7 @@ class JsonParseTestValue extends Spec {
         """, "value" : "anything" }"""
       )
     } {
-      val jsResult = implicitly[Reads[FieldValue]].reads(Json.parse(startOfJson + snippet))
+      val jsResult = implicitly[Reads[FormComponent]].reads(Json.parse(startOfJson + snippet))
       jsResult shouldBe a[JsSuccess[_]]
       jsResult.map(fv => fv.`type` match {
         case Text(constraint, _) => constraint should equal(ShortText)

@@ -59,7 +59,7 @@ case class ConcreteDate(year: Int, month: Int, day: Int) extends DateConstraintI
 case class NextDate(month: Int, day: Int) extends DateConstraintInfo
 case class PreviousDate(month: Int, day: Int) extends DateConstraintInfo
 case class AnyWord(value: String) extends DateConstraintInfo
-case class DateField(value: FieldId) extends DateConstraintInfo
+case class DateField(value: FormComponentId) extends DateConstraintInfo
 
 object DateConstraintInfo {
   implicit val format: OFormat[DateConstraintInfo] = derived.oformat[DateConstraintInfo]

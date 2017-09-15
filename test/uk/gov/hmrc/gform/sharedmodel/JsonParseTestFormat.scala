@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel
 
 import play.api.libs.json._
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FieldValue, Number, Text }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponent, Number, Text }
 
 class JsonParseTestFormat extends Spec {
 
@@ -35,7 +35,7 @@ class JsonParseTestFormat extends Spec {
       s"""${startOfJson}
          }"""
 
-    implicitly[Reads[FieldValue]].reads(Json.parse(jsonStr)) shouldBe a[JsSuccess[_]]
+    implicitly[Reads[FormComponent]].reads(Json.parse(jsonStr)) shouldBe a[JsSuccess[_]]
   }
 
   "A component with a format that is not a String" should "fail to parse" in {
@@ -46,7 +46,7 @@ class JsonParseTestFormat extends Spec {
         """, "format" : {} }"""
       )
     } {
-      val jsResult = implicitly[Reads[FieldValue]].reads(Json.parse(startOfJson + snippet))
+      val jsResult = implicitly[Reads[FormComponent]].reads(Json.parse(startOfJson + snippet))
 
       jsResult should be(jsError)
     }
@@ -60,7 +60,7 @@ class JsonParseTestFormat extends Spec {
         """, "format" : "before 201-04-02" }"""
       )
     } {
-      val jsResult = implicitly[Reads[FieldValue]].reads(Json.parse(startOfJson + snippet))
+      val jsResult = implicitly[Reads[FormComponent]].reads(Json.parse(startOfJson + snippet))
       jsResult should be(jsError)
     }
   }
@@ -72,7 +72,7 @@ class JsonParseTestFormat extends Spec {
         """, "format" : "number" }"""
       )
     } {
-      val jsResult = implicitly[Reads[FieldValue]].reads(Json.parse(startOfJson + snippet))
+      val jsResult = implicitly[Reads[FormComponent]].reads(Json.parse(startOfJson + snippet))
       jsResult shouldBe a[JsSuccess[_]]
       jsResult.map(fv => fv.`type` match {
         case Text(constraint, _) => constraint should equal(Number(11, 2, None))

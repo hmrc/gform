@@ -32,23 +32,23 @@ class SubmissionServiceSpec extends Spec {
   "SubmissionServiceHelper.getSectionFormFields" should "find repeating group fields" in {
 
     val formFields = Seq[FormField](
-      FormField(FieldId("UNO"), "UNO"),
-      FormField(FieldId("1_UNO"), "1_UNO"),
-      FormField(FieldId("2_UNO"), "2_UNO"),
-      FormField(FieldId("3_UNO"), "3_UNO"),
-      FormField(FieldId("4_UNO"), "4_UNO"),
-      FormField(FieldId("DOS"), "DOS"),
-      FormField(FieldId("1_DOS"), "1_DOS"),
-      FormField(FieldId("2_DOS"), "2_DOS"),
-      FormField(FieldId("3_DOS"), "3_DOS"),
-      FormField(FieldId("4_DOS"), "4_DOS")
+      FormField(FormComponentId("UNO"), "UNO"),
+      FormField(FormComponentId("1_UNO"), "1_UNO"),
+      FormField(FormComponentId("2_UNO"), "2_UNO"),
+      FormField(FormComponentId("3_UNO"), "3_UNO"),
+      FormField(FormComponentId("4_UNO"), "4_UNO"),
+      FormField(FormComponentId("DOS"), "DOS"),
+      FormField(FormComponentId("1_DOS"), "1_DOS"),
+      FormField(FormComponentId("2_DOS"), "2_DOS"),
+      FormField(FormComponentId("3_DOS"), "3_DOS"),
+      FormField(FormComponentId("4_DOS"), "4_DOS")
     )
     val formData = FormData(formFields)
 
     val form = Form(FormId("MIO"), EnvelopeId(""), UserId("TESTID"), FormTemplateId("JustAFormTypeId"), None, formData)
 
-    val textFieldUno = FieldValue(
-      id = FieldId("UNO"),
+    val textFieldUno = FormComponent(
+      id = FormComponentId("UNO"),
       `type` = Text(AnyText, Constant("UNO")),
       label = "Editable text label",
       helpText = None,
@@ -60,7 +60,7 @@ class SubmissionServiceSpec extends Spec {
       errorMessage = None
     )
 
-    val textFieldDos = textFieldUno.copy(id = FieldId("DOS"), `type` = Text(AnyText, Constant("DOS")))
+    val textFieldDos = textFieldUno.copy(id = FormComponentId("DOS"), `type` = Text(AnyText, Constant("DOS")))
 
     val group = Group(
       fields = List(textFieldUno, textFieldDos),
@@ -71,8 +71,8 @@ class SubmissionServiceSpec extends Spec {
       repeatAddAnotherText = Some("add group button label")
     )
 
-    val groupFieldValue = FieldValue(
-      id = FieldId("GroupFieldValueId"),
+    val groupFieldValue = FormComponent(
+      id = FormComponentId("GroupFieldValueId"),
       `type` = group,
       label = "group FieldValue label",
       helpText = None,
@@ -114,20 +114,20 @@ class SubmissionServiceSpec extends Spec {
         "Section title",
         List(
           (
-            List(FormField(FieldId("UNO"), "UNO")),
-            FieldValue(FieldId("UNO"), Text(AnyText, Constant("UNO")), "Editable text label", None, None, true, true, true, derived = false, None)
+            List(FormField(FormComponentId("UNO"), "UNO")),
+            FormComponent(FormComponentId("UNO"), Text(AnyText, Constant("UNO")), "Editable text label", None, None, true, true, true, derived = false, None)
           ),
           (
-            List(FormField(FieldId("DOS"), "DOS")),
-            FieldValue(FieldId("DOS"), Text(AnyText, Constant("DOS")), "Editable text label", None, None, true, true, true, derived = false, None)
+            List(FormField(FormComponentId("DOS"), "DOS")),
+            FormComponent(FormComponentId("DOS"), Text(AnyText, Constant("DOS")), "Editable text label", None, None, true, true, true, derived = false, None)
           ),
           (
-            List(FormField(FieldId("1_UNO"), "1_UNO")),
-            FieldValue(FieldId("1_UNO"), Text(AnyText, Constant("UNO")), "Editable text label", None, None, true, true, true, derived = false, None)
+            List(FormField(FormComponentId("1_UNO"), "1_UNO")),
+            FormComponent(FormComponentId("1_UNO"), Text(AnyText, Constant("UNO")), "Editable text label", None, None, true, true, true, derived = false, None)
           ),
           (
-            List(FormField(FieldId("1_DOS"), "1_DOS")),
-            FieldValue(FieldId("1_DOS"), Text(AnyText, Constant("DOS")), "Editable text label", None, None, true, true, true, derived = false, None)
+            List(FormField(FormComponentId("1_DOS"), "1_DOS")),
+            FormComponent(FormComponentId("1_DOS"), Text(AnyText, Constant("DOS")), "Editable text label", None, None, true, true, true, derived = false, None)
           )
         )
       ),

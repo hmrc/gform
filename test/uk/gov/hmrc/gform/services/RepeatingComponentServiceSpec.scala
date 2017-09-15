@@ -64,19 +64,19 @@ class RepeatingComponentServiceSpec extends Spec with ExampleData {
 
     val formTemplate = super.formTemplate.copy(sections = List(thisSection1, thisSection2))
 
-    val textFieldR = `fieldValue - surname`.copy(id = FieldId(s"1_${`fieldId - surname`.value}"))
+    val textFieldR = `fieldValue - surname`.copy(id = FormComponentId(s"1_${`fieldId - surname`.value}"))
     val sectionR = thisSection2.copy(fields = List(textFieldR), title = "ONE, 1", shortName = Some("1, ONE"))
 
-    val textFieldR2 = `fieldValue - surname`.copy(id = FieldId(s"2_${`fieldId - surname`.value}"))
+    val textFieldR2 = `fieldValue - surname`.copy(id = FormComponentId(s"2_${`fieldId - surname`.value}"))
     val sectionR2 = thisSection2.copy(fields = List(textFieldR2), title = "TWO, 2", shortName = Some("2, TWO"))
 
     val expectedList = List(thisSection1, sectionR, sectionR2)
 
     val newFormData = FormData(fields = Seq(
-      FormField(FieldId(fieldDriver), "ONE"),
-      FormField(FieldId(s"1_$fieldDriver"), "TWO"),
-      FormField(FieldId(s"1_$repeatingField"), "ONE"),
-      FormField(FieldId(s"2_$repeatingField"), "TWO")
+      FormField(FormComponentId(fieldDriver), "ONE"),
+      FormField(FormComponentId(s"1_$fieldDriver"), "TWO"),
+      FormField(FormComponentId(s"1_$repeatingField"), "ONE"),
+      FormField(FormComponentId(s"2_$repeatingField"), "TWO")
     ))
     val newForm = form.copy(formData = newFormData)
     testService.getAllSections(newForm, formTemplate) shouldBe expectedList
@@ -88,12 +88,12 @@ class RepeatingComponentServiceSpec extends Spec with ExampleData {
       shortName = Some("shortName $n")
     )
     val formTemplate = super.formTemplate.copy(sections = List(`section - group`, thisSection2))
-    val textFieldDosR = `fieldValue - surname`.copy(id = FieldId(s"1_${`fieldId - surname`.value}"))
+    val textFieldDosR = `fieldValue - surname`.copy(id = FormComponentId(s"1_${`fieldId - surname`.value}"))
     val sectionR = thisSection2.copy(fields = List(textFieldDosR), title = "Repeating section title 1", shortName = Some("shortName 1"))
     val expectedList = List(`section - group`, sectionR)
     val newFormData = FormData(fields = Seq(
-      FormField(FieldId(`fieldId - firstName`.value), "1"),
-      FormField(FieldId(s"1_${`fieldId - surname`.value}"), "EEITT-866")
+      FormField(FormComponentId(`fieldId - firstName`.value), "1"),
+      FormField(FormComponentId(s"1_${`fieldId - surname`.value}"), "EEITT-866")
     ))
     val newForm = form.copy(formData = newFormData)
     testService.getAllSections(newForm, formTemplate) shouldBe expectedList
@@ -105,15 +105,15 @@ class RepeatingComponentServiceSpec extends Spec with ExampleData {
       shortName = Some("shortName $n")
     )
     val formTemplate = super.formTemplate.copy(sections = List(`section - group`, thisSection2))
-    val textFieldDos1 = `fieldValue - surname`.copy(id = FieldId(s"1_${`fieldId - surname`.value}"))
-    val textFieldDos2 = `fieldValue - surname`.copy(id = FieldId(s"2_${`fieldId - surname`.value}"))
+    val textFieldDos1 = `fieldValue - surname`.copy(id = FormComponentId(s"1_${`fieldId - surname`.value}"))
+    val textFieldDos2 = `fieldValue - surname`.copy(id = FormComponentId(s"2_${`fieldId - surname`.value}"))
     val sectionR1 = thisSection2.copy(fields = List(textFieldDos1), title = "Repeating section title 1", shortName = Some("shortName 1"))
     val sectionR2 = thisSection2.copy(fields = List(textFieldDos2), title = "Repeating section title 2", shortName = Some("shortName 2"))
     val expectedList = List(`section - group`, sectionR1, sectionR2)
 
     val newFormData = FormData(fields = Seq(
-      FormField(FieldId(s"1_${`fieldId - surname`.value}"), "@#~"),
-      FormField(FieldId(s"2_${`fieldId - surname`.value}"), "!@£$%&*#")
+      FormField(FormComponentId(s"1_${`fieldId - surname`.value}"), "@#~"),
+      FormField(FormComponentId(s"2_${`fieldId - surname`.value}"), "!@£$%&*#")
     ))
     val newForm = form.copy(formData = newFormData)
     testService.getAllSections(newForm, formTemplate) shouldBe expectedList

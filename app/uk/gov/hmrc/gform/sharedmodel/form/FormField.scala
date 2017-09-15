@@ -18,14 +18,14 @@ package uk.gov.hmrc.gform.sharedmodel.form
 
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FieldId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormComponentId
 
-case class FormField(id: FieldId, value: String)
+case class FormField(id: FormComponentId, value: String)
 
 object FormField {
 
   implicit val reads: Reads[FormField] = (
-    (FieldId.oformat: Reads[FieldId]) and
+    (FormComponentId.oformat: Reads[FormComponentId]) and
     (JsPath \ "value").read[String]
   )(FormField.apply _)
 

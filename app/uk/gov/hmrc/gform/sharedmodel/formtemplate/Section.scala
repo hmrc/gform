@@ -24,7 +24,7 @@ import scala.collection.immutable.List
 sealed trait BaseSection {
   def title: String
   def shortName: Option[String]
-  def fields: List[FieldValue]
+  def fields: List[FormComponent]
 }
 
 case class Section(
@@ -35,9 +35,9 @@ case class Section(
     repeatsMax: Option[TextExpression],
     repeatsMin: Option[TextExpression],
     validators: Option[Validator],
-    fields: List[FieldValue]
+    fields: List[FormComponent]
 ) extends BaseSection {
-  private def atomicFields(fieldValues: List[FieldValue], data: Map[FieldId, FormField]): List[FieldValue] = {
+  private def atomicFields(fieldValues: List[FormComponent], data: Map[FormComponentId, FormField]): List[FormComponent] = {
     fieldValues.flatMap { (fieldValue) =>
       fieldValue.`type` match {
         case Group(gfvs, _, repMax, _, _, _) => atomicFields(fixLabels(gfvs), data) ++ findIdsInRepeatingGroup(gfvs, repMax, data)
@@ -46,9 +46,9 @@ case class Section(
     }
   }
 
-  def atomicFields(data: Map[FieldId, FormField]): List[FieldValue] = atomicFields(fields, data)
+  def atomicFields(data: Map[FormComponentId, FormField]): List[FormComponent] = atomicFields(fields, data)
 
-  private def findIdsInRepeatingGroup(fields: List[FieldValue], repeatsMax: Option[Int], data: Map[FieldId, FormField]): List[FieldValue] = {
+  private def findIdsInRepeatingGroup(fields: List[FormComponent], repeatsMax: Option[Int], data: Map[FormComponentId, FormField]): List[FormComponent] = {
 
     val result = if (data.isEmpty) {
       Nil // no data, no way of knowing if we have repeating groups
@@ -59,14 +59,14 @@ case class Section(
     atomicFields(result, data)
   }
 
-  private def extractRepeatingGroupFieldIds(fields: List[FieldValue], repeatsMax: Int, data: Map[FieldId, FormField]): List[FieldValue] = {
+  private def extractRepeatingGroupFieldIds(fields: List[FormComponent], repeatsMax: Int, data: Map[FormComponentId, FormField]): List[FormComponent] = {
     (1 until repeatsMax).map { i =>
       fields.flatMap { fieldInGroup =>
         data.keys.flatMap { key =>
           val fieldName = s"${i}_${fieldInGroup.id.value}"
           key.value.startsWith(fieldName) match {
             case true => List(fieldInGroup.copy(
-              id = FieldId(fieldName),
+              id = FormComponentId(fieldName),
               label = buildRepeatingText(Some(fieldInGroup.label), i + 1).getOrElse(""),
               shortName = buildRepeatingText(fieldInGroup.shortName, i + 1)
             ))
@@ -77,7 +77,7 @@ case class Section(
     }.toList.flatten
   }
 
-  private def fixLabels(fieldValues: List[FieldValue]): List[FieldValue] = {
+  private def fixLabels(fieldValues: List[FormComponent]): List[FormComponent] = {
     fieldValues.map { field =>
       if (field.label.contains("$n") || (field.shortName.isDefined && field.shortName.get.contains("$n"))) {
         field.copy(
@@ -104,7 +104,7 @@ case class DeclarationSection(
   title: String,
   description: Option[String],
   shortName: Option[String],
-  fields: List[FieldValue]
+  fields: List[FormComponent]
 ) extends BaseSection
 
 object DeclarationSection {
@@ -115,7 +115,7 @@ case class AcknowledgementSection(
   title: String,
   description: Option[String],
   shortName: Option[String],
-  fields: List[FieldValue]
+  fields: List[FormComponent]
 ) extends BaseSection
 
 object AcknowledgementSection {
@@ -125,7 +125,7 @@ object AcknowledgementSection {
 case class EnrolmentSection(
   title: String,
   shortName: Option[String],
-  fields: List[FieldValue]
+  fields: List[FormComponent]
 ) extends BaseSection
 
 object EnrolmentSection {
@@ -134,6 +134,6 @@ object EnrolmentSection {
 
 case class SectionFormField(
   title: String,
-  fields: List[(List[FormField], FieldValue)]
+  fields: List[(List[FormField], FormComponent)]
 )
 

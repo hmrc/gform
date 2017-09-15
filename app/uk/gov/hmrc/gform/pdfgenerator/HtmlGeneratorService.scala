@@ -39,7 +39,7 @@ trait HtmlGeneratorService {
     uk.gov.hmrc.gform.views.html.pdfGeneration.section(getEnglishText(section.title), elementsHtml)
   }
 
-  private def generateElementHtml(arg: (List[FormField], FieldValue)) = arg match {
+  private def generateElementHtml(arg: (List[FormField], FormComponent)) = arg match {
     case (formFields, fieldValue) =>
       val (name, value) = fieldValue.`type` match {
         case choice @ Choice(_, _, _, _, _) => generateChoiceFieldHTML(choice, fieldValue, formFields.head)
@@ -52,7 +52,7 @@ trait HtmlGeneratorService {
       uk.gov.hmrc.gform.views.html.pdfGeneration.element(name, value)
   }
 
-  private def generateTextFieldHTML(textElement: Text, fieldValue: FieldValue, formFieldValue: String) = {
+  private def generateTextFieldHTML(textElement: Text, fieldValue: FormComponent, formFieldValue: String) = {
     val name = getEnglishText(fieldValue.shortName.getOrElse(fieldValue.label))
     val value = textElement.constraint match {
       case Number(_, _, _) |
@@ -62,7 +62,7 @@ trait HtmlGeneratorService {
     (name, Html(value))
   }
 
-  private def generateChoiceFieldHTML(choiceElement: Choice, fieldValue: FieldValue, formField: FormField) = {
+  private def generateChoiceFieldHTML(choiceElement: Choice, fieldValue: FormComponent, formField: FormField) = {
     val selections = formField.value.split(",").toList
     val optionsAsMap = choiceElement.options.zipWithIndex.map {
       case (option, index) => index.toString -> getEnglishText(option)
@@ -71,13 +71,13 @@ trait HtmlGeneratorService {
     (getEnglishText(fieldValue.shortName.getOrElse(fieldValue.label)), values)
   }
 
-  private def generateSortCodeFieldHTML(fieldValue: FieldValue, formFields: List[FormField]) = {
+  private def generateSortCodeFieldHTML(fieldValue: FormComponent, formFields: List[FormField]) = {
     val sortCodeValue = UkSortCode.fields(fieldValue.id).map(x => formFields.filter(_.id == x).head.value).mkString("-")
     val values = Html(sortCodeValue)
     (getEnglishText(fieldValue.shortName.getOrElse(fieldValue.label)), values)
   }
 
-  private def generateDateFieldHTML(fieldValue: FieldValue, formFields: List[FormField]) = {
+  private def generateDateFieldHTML(fieldValue: FormComponent, formFields: List[FormField]) = {
     val day = formFields.filter(_.id.value.endsWith("day")).head.value
     val month = formFields.filter(_.id.value.endsWith("month")).head.value
     val year = formFields.filter(_.id.value.endsWith("year")).head.value
@@ -87,7 +87,7 @@ trait HtmlGeneratorService {
     (getEnglishText(fieldValue.shortName.getOrElse(fieldValue.label)), Html(formatter.print(date)))
   }
 
-  private def generateAddressFieldHTML(fieldValue: FieldValue, formFields: List[FormField]) = {
+  private def generateAddressFieldHTML(fieldValue: FormComponent, formFields: List[FormField]) = {
     val value = Address.fields(fieldValue.id).filterNot(_.value.endsWith("uk")).map { addressFieldId =>
       formFields.filter(_.id.equals(addressFieldId)).head.value
     }.mkString("<BR>")

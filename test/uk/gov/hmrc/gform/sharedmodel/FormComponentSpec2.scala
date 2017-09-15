@@ -21,7 +21,7 @@ import play.api.libs.json.{ Reads, _ }
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
-class FieldValueSpec2 extends Spec {
+class FormComponentSpec2 extends Spec {
 
   "FieldValue json object" should "parse 'choice' type as Radio with Vertical orientation if 'multivalue=no & format=vertical' is provided" in {
     val fieldValue = toFieldValue(
@@ -41,8 +41,8 @@ class FieldValueSpec2 extends Spec {
     )
 
     fieldValue should beJsSuccess(
-      FieldValue(
-        FieldId("dutyType"),
+      FormComponent(
+        FormComponentId("dutyType"),
         Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None),
         "Select the tax type",
         None,
@@ -57,10 +57,10 @@ class FieldValueSpec2 extends Spec {
     )
   }
 
-  private def toFieldValue(template: String): JsResult[FieldValue] = {
+  private def toFieldValue(template: String): JsResult[FormComponent] = {
 
     val templateAsJson = Json.parse(template.stripMargin)
 
-    implicitly[Reads[FieldValue]].reads(templateAsJson)
+    implicitly[Reads[FormComponent]].reads(templateAsJson)
   }
 }

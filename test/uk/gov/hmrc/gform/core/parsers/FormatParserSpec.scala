@@ -46,7 +46,7 @@ class FormatParserSpec extends Spec {
 
   "after ${otherField}" should "be parsed successfully" in {
     val res = FormatParser.validate("after ${otherField}")
-    res.right.value should be(DateFormat(DateConstraints(List(DateConstraint(After, DateField(FieldId("otherField")), OffsetDate(0))))))
+    res.right.value should be(DateFormat(DateConstraints(List(DateConstraint(After, DateField(FormComponentId("otherField")), OffsetDate(0))))))
   }
 
   "after previous-05-06 0" should "be parsed successfully" ignore { //ignored until handled in gform-frontend
