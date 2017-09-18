@@ -41,7 +41,8 @@ class FormSpec extends Spec {
           "id" -> "startDate-year",
           "value" -> "2008"
         )
-      )
+      ),
+      "InProgress" -> Json.obj()
     )
 
     formJsObject shouldBe expectedFormJsObject
