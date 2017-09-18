@@ -21,7 +21,7 @@ import java.time.LocalDateTime
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.fileupload.{ MetadataXml, ReconciliationId }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ DmsSubmission, FormTemplateId }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.submission._
 
 import scala.xml.Elem
@@ -30,7 +30,8 @@ class MetadataXmlSpec extends Spec {
   "metadata.xml" should "be generated" in {
 
     val dmsMetaData = DmsMetaData(
-      formTemplateId = FormTemplateId("some-form-type-id")
+      formTemplateId = FormTemplateId("some-form-type-id"),
+      "TESTID"
     )
 
     val submission = Submission(
@@ -52,7 +53,7 @@ class MetadataXmlSpec extends Spec {
     )
 
     val dmsSubmission = DmsSubmission(
-      customerId = "some-customer-id",
+      customerId = TextExpression(AuthCtx(PayeNino)),
       classificationType = "some-classification-type",
       businessArea = "some-business-area"
     )
@@ -116,21 +117,21 @@ class MetadataXmlSpec extends Spec {
               <attribute_name>customer_id</attribute_name>
               <attribute_type>string</attribute_type>
               <attribute_values>
-                <attribute_value>some-customer-id</attribute_value>
+                <attribute_value>TESTID</attribute_value>
               </attribute_values>
             </attribute>
             <attribute>
               <attribute_name>submission_mark</attribute_name>
               <attribute_type>string</attribute_type>
               <attribute_values>
-                <attribute_value></attribute_value>
+                <attribute_value>AUDIT_SERVICE</attribute_value>
               </attribute_values>
             </attribute>
             <attribute>
               <attribute_name>cas_key</attribute_name>
               <attribute_type>string</attribute_type>
               <attribute_values>
-                <attribute_value></attribute_value>
+                <attribute_value>AUDIT_SERVICE</attribute_value>
               </attribute_values>
             </attribute>
             <attribute>

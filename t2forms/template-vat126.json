@@ -3,7 +3,7 @@
   "formName": "Claim for refund of VAT by certain bodies",
   "description": "",
   "dmsSubmission": {
-    "customerId": "nino",
+    "customerId": "${auth.payenino}",
     "classificationType": "BT-NRU-Environmental",
     "businessArea": "FinanceOpsCorpT"
   },

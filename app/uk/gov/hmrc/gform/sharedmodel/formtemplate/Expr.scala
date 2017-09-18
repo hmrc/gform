@@ -50,7 +50,7 @@ object FormCtx {
   }
 
   private def parse(exprAsStr: String): JsResult[FormCtx] =
-    ExprParsers.validate(exprAsStr) fold (
+    ExprParsers.validateFormCtx(exprAsStr) fold (
       error => JsError(error.toString),
       expr => JsSuccess(expr)
     )

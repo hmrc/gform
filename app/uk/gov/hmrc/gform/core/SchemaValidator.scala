@@ -105,7 +105,7 @@ object SchemaValidator {
           case nonString => Left(UnexpectedState("Required must be array with string"))
         }.toList
         res.sequenceU
-      case otherwise => Left(UnexpectedState("No 'required' fieldName of type array found in json"))
+      case otherwise => Left(UnexpectedState(s"No 'required' fieldName of type array found in json. Found: $otherwise"))
     }
 
     for {

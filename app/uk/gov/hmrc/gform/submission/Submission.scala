@@ -24,7 +24,8 @@ import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 
 case class DmsMetaData(
-  formTemplateId: FormTemplateId
+  formTemplateId: FormTemplateId,
+  customerId: String
 )
 
 object DmsMetaData {

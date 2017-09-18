@@ -3,7 +3,7 @@
   "formName": "Air Passenger Duty",
   "description": "",
   "dmsSubmission": {
-    "customerId": "nino",
+    "customerId": "${auth.payenino}",
     "classificationType": "BT-NRU-Environmental",
     "businessArea": "FinanceOpsCorpT"
   },

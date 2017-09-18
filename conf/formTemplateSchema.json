@@ -21,7 +21,9 @@
       "type": "object",
       "properties": {
         "customerId": {
-          "type": "string"
+          "type": "object",
+          "properties": {},
+          "required": []
         },
         "classificationType": {
           "type": "string"

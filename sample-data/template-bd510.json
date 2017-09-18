@@ -3,7 +3,7 @@
   "formName": "Promoter's monthly Bingo Duty return",
   "description": "Fill in your bingo duty return form online",
   "dmsSubmission": {
-    "customerId": "nino",
+    "customerId": "${auth.payenino}",
     "classificationType": "BT-NRU-Environmental",
     "businessArea": "FinanceOpsCorpT"
   },

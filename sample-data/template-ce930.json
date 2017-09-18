@@ -3,7 +3,7 @@
   "formName": "Gas for use as road fuel",
   "description": "Fill in your gas for use as road fuel return form online",
   "dmsSubmission": {
-    "customerId": "nino",
+    "customerId": "${auth.payenino}",
     "classificationType": "BT-NRU-Environmental",
     "businessArea": "FinanceOpsCorpT"
   },

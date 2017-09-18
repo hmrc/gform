@@ -3,7 +3,7 @@
   "formName": "Air passenger duty duty return",
   "description": "Fill in your air passenger duty return form online",
   "dmsSubmission": {
-    "customerId": "nino",
+    "customerId": "${auth.payenino}",
     "classificationType": "BT-NRU-Environmental",
     "businessArea": "FinanceOpsCorpT"
   },

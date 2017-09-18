@@ -3,7 +3,7 @@
   "formName": "Alcoholic Ingredients Relief",
   "description": "",
   "dmsSubmission": {
-    "customerId": "nino",
+    "customerId": "${auth.payenino}",
     "classificationType": "BT-NRU-Environmental",
     "businessArea": "FinanceOpsCorpT"
   },
