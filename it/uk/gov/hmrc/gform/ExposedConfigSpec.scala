@@ -1,8 +1,7 @@
 package uk.gov.hmrc.gform
 
 import uk.gov.hmrc.gform.sharedmodel.config.{ContentType, ExposedConfig}
-
-import scala.concurrent.ExecutionContext.Implicits.global
+import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
 
 class ExposedConfigSpec extends support.ITSpec {

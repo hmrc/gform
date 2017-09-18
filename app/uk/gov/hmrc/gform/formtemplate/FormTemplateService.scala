@@ -20,24 +20,24 @@ import cats.implicits._
 import play.api.libs.json.Json
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ ExecutionContext, Future }
 
 class FormTemplateService(
     formTemplateRepo: FormTemplateRepo,
     formTemplateRawRepo: FormTemplateRawRepo
 ) {
 
-  def save(formTemplateRaw: FormTemplateRaw): FOpt[Unit] = formTemplateRawRepo.upsert(formTemplateRaw)
+  def save(formTemplateRaw: FormTemplateRaw)(implicit ec: ExecutionContext): FOpt[Unit] = formTemplateRawRepo.upsert(formTemplateRaw)
 
-  def get(id: FormTemplateId): Future[FormTemplate] = formTemplateRepo.get(id.value)
+  def get(id: FormTemplateId)(implicit ec: ExecutionContext): Future[FormTemplate] = formTemplateRepo.get(id.value)
 
-  def get(id: FormTemplateRawId): Future[FormTemplateRaw] = formTemplateRawRepo.get(id.value)
+  def get(id: FormTemplateRawId)(implicit ec: ExecutionContext): Future[FormTemplateRaw] = formTemplateRawRepo.get(id.value)
 
-  def delete(formTemplateId: FormTemplateId): FOpt[Unit] = formTemplateRepo.delete(formTemplateId.value)
+  def delete(formTemplateId: FormTemplateId)(implicit ec: ExecutionContext): FOpt[Unit] = formTemplateRepo.delete(formTemplateId.value)
 
-  def list(): Future[List[FormTemplate]] = {
+  def list()(implicit ec: ExecutionContext): Future[List[FormTemplate]] = {
     //TODO make it stream
     //TODO constraint it so it will result in no more than N records
     //TODO provide querying functionality
@@ -46,7 +46,7 @@ class FormTemplateService(
 
   def verifyAndSave(
     formTemplate: FormTemplate
-  ): FOpt[Unit] = {
+  )(implicit ec: ExecutionContext): FOpt[Unit] = {
 
     val sectionsList = formTemplate.sections
 
