@@ -30,10 +30,10 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.pdfgenerator.{ HtmlGeneratorService, PdfGeneratorService }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, Form, FormField, FormId }
 import uk.gov.hmrc.gform.time.TimeProvider
+import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpResponse }
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ ExecutionContext, Future }
 
 class SubmissionService(
     pdfGeneratorService: PdfGeneratorService,
@@ -98,7 +98,7 @@ class SubmissionService(
     // format: ON
   }
 
-  def submissionDetails(formId: FormId): Future[Submission] = {
+  def submissionDetails(formId: FormId)(implicit ec: ExecutionContext): Future[Submission] = {
     submissionRepo.get(formId.value)
   }
 

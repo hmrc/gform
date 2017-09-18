@@ -23,8 +23,6 @@ import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
 
-import scala.concurrent.ExecutionContext.Implicits.global
-
 class SubmissionController(
     submissionService: SubmissionService
 ) extends BaseController {

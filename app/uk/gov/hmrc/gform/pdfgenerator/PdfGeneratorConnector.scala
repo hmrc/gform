@@ -21,8 +21,7 @@ import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.play.http.ws._
-
-import scala.concurrent.ExecutionContext.Implicits.global
+import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import scala.concurrent.Future
 
 class PdfGeneratorConnector(servicesConfig: ServicesConfig, wSHttp: WSHttp) {

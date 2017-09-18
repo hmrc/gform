@@ -26,15 +26,12 @@ import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId, FormTemplateRaw, FormTemplateRawId }
 
-import scala.concurrent.ExecutionContext.Implicits.global
-
 class FormTemplatesController(
     formTemplateService: FormTemplateService
 ) extends BaseController {
 
-  def upsert() = Action.async(parse.json[FormTemplateRaw]) { request =>
+  def upsert() = Action.async(parse.json[FormTemplateRaw]) { implicit request =>
     //TODO authorisation (we don't want allow everyone to call this action
-
     val templateRaw = request.body
     Logger.info(s"Upserting template: ${templateRaw._id.value}, ${loggingHelpers.cleanHeaders(request.headers)}")
     val formTemplateOpt: Opt[FormTemplate] = Json.reads[FormTemplate].reads(templateRaw.value).fold(

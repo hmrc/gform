@@ -22,17 +22,15 @@ import play.api.mvc._
 import reactivemongo.api.DB
 import reactivemongo.json.collection.JSONCollection
 import uk.gov.hmrc.BuildInfo
+import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.play.http.NotFoundException
 
 class TestOnlyController(
     mongo: () => DB
-) {
+) extends BaseController {
 
   lazy val formTemplates = mongo().collection[JSONCollection]("formTemplate")
-
-  def removeTemplates() = Action.async { r =>
-    import scala.concurrent.ExecutionContext.Implicits.global
-
+  def removeTemplates() = Action.async { implicit request =>
     println("purging mongo database ....")
     formTemplates.drop().map(_ => Results.Ok("Mongo purged")).recover {
 
