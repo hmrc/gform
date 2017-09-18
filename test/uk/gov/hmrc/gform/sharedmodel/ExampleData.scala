@@ -275,7 +275,8 @@ trait ExampleForm { dependsOn: ExampleFormField with ExampleFormTemplate =>
     userId,
     formTemplateId,
     None,
-    formData
+    formData,
+    InProgress
   )
 
 }

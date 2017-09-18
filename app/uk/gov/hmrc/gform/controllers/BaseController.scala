@@ -23,9 +23,9 @@ import cats.implicits._
 import play.api.libs.json._
 import play.api.mvc.Result
 import uk.gov.hmrc.play.http.logging
-import uk.gov.hmrc.play.http.logging.{LoggingDetails, MdcLoggingExecutionContext}
+import uk.gov.hmrc.play.http.logging.{ LoggingDetails, MdcLoggingExecutionContext }
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 class BaseController extends uk.gov.hmrc.play.microservice.controller.BaseController {
 

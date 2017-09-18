@@ -17,7 +17,6 @@
 package uk.gov.hmrc.gform.form
 
 import play.api.libs.json.JsValue
-import uk.gov.hmrc.gform.core.{ fromFutureOptA, fromFutureOptionA }
 import uk.gov.hmrc.gform.save4later.Save4Later
 import uk.gov.hmrc.gform.sharedmodel.UserId
 import uk.gov.hmrc.gform.sharedmodel.form._
@@ -39,7 +38,7 @@ class FormService(save4Later: Save4Later) {
 
   def insertEmpty(userId: UserId, formTemplateId: FormTemplateId, envelopeId: EnvelopeId, formId: FormId)(implicit hc: HeaderCarrier): Future[Unit] = {
     val emptyFormData = FormData(fields = Nil)
-    val form = Form(formId, envelopeId, userId, formTemplateId, None, emptyFormData)
+    val form = Form(formId, envelopeId, userId, formTemplateId, None, emptyFormData, InProgress)
     save4Later.upsert(formId, form)
   }
 
@@ -47,8 +46,11 @@ class FormService(save4Later: Save4Later) {
     for {
       form <- save4Later.get(formId)
       newForm = form
-        .copy(formData = userData.formData)
-        .copy(repeatingGroupStructure = userData.repeatingGroupStructure)
+        .copy(
+          formData = userData.formData,
+          repeatingGroupStructure = userData.repeatingGroupStructure,
+          status = userData.formStatus
+        )
       _ <- save4Later.upsert(formId, newForm)
     } yield ()
   }

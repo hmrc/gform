@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.sharedmodel.form
 
+import julienrf.json.derived
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.UserId
@@ -27,7 +28,8 @@ case class Form(
   userId: UserId,
   formTemplateId: FormTemplateId,
   repeatingGroupStructure: Option[RepeatingGroupStructure],
-  formData: FormData
+  formData: FormData,
+  status: FormStatus
 )
 
 object Form {
@@ -38,7 +40,8 @@ object Form {
     UserId.oformat and
     FormTemplateId.vformat and
     RepeatingGroupStructure.optionFormat and
-    FormData.format
+    FormData.format and
+    FormStatus.format
   )(Form.apply _)
 
   private val writes: OWrites[Form] = OWrites[Form](form =>
@@ -47,8 +50,19 @@ object Form {
       UserId.oformat.writes(form.userId) ++
       FormTemplateId.oformat.writes(form.formTemplateId) ++
       RepeatingGroupStructure.optionFormat.writes(form.repeatingGroupStructure) ++
-      FormData.format.writes(form.formData))
+      FormData.format.writes(form.formData) ++
+      FormStatus.format.writes(form.status))
 
   implicit val format: OFormat[Form] = OFormat[Form](reads, writes)
 
+}
+
+sealed trait FormStatus
+case object InProgress extends FormStatus
+case object Validated extends FormStatus
+case object Signed extends FormStatus
+case object Submitted extends FormStatus
+
+object FormStatus {
+  implicit val format: OFormat[FormStatus] = derived.oformat
 }
