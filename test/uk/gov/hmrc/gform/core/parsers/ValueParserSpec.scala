@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.core.parsers
 
+import play.api.libs.json.Json
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
@@ -192,7 +193,7 @@ class ValueParserSpec extends Spec {
     "description",
     Some(Default),
     None,
-    DmsSubmission("nino", "BT-NRU-Environmental", "FinanceOpsCorpT"),
+    DmsSubmission(TextExpression(AuthCtx(PayeNino)), "BT-NRU-Environmental", "FinanceOpsCorpT"),
     HMRCAuthConfigWithRegimeId(AuthConfigModule("TEST"), ServiceId("TEST"), RegimeId("TEST")),
     "submitSuccessUrl",
     "submitErrorUrl",
@@ -216,6 +217,7 @@ class ValueParserSpec extends Spec {
   "Expr.validate" should "return Valid if expression include fieldName id present in the form template" in {
 
     val res = FormTemplateValidator.validate(List(Text(AnyText, FormCtx("firstName"))), formTemplateWithOneSection)
+    println(Json.prettyPrint(Json.toJson(plainFormTemplate)))
     res should be(Valid)
   }
 

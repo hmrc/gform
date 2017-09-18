@@ -37,9 +37,9 @@ object MetadataXml {
       createAttribute("form_id", dmsMetaData.formTemplateId.value),
       createAttribute("number_pages", pdfSummary.numberOfPages),
       createAttribute("source", "dfs"),
-      createAttribute("customer_id", dmsSubmission.customerId),
-      createAttribute("submission_mark", ""), // We are not using CAS
-      createAttribute("cas_key", ""), // We are not using CAS
+      createAttribute("customer_id", sap.submission.dmsMetaData.customerId),
+      createAttribute("submission_mark", "AUDIT_SERVICE"), // We are not using CAS
+      createAttribute("cas_key", "AUDIT_SERVICE"), // We are not using CAS
       createAttribute("classification_type", dmsSubmission.classificationType),
       createAttribute("business_area", dmsSubmission.businessArea),
       createAttribute("attachment_count", 0)

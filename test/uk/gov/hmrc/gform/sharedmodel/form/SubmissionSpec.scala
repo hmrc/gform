@@ -34,7 +34,8 @@ class SubmissionSpec extends Spec {
         "submittedDate": "2007-12-03T10:15:30",
         "submissionRef": "DMS",
         "envelopeId": "b66c5979-e885-49cd-9281-c7f42ce6b307",
-        "formTemplateId": "AAA999"
+        "formTemplateId": "AAA999",
+        "customerId": "TESTNINO"
       }
       """.stripMargin
 

@@ -31,7 +31,7 @@ object FormTemplateSchema {
   }
 
   val jsonSchema: JsonSchema = SchemaValidator.conform(schema).fold(
-    _ => throw new UnsupportedOperationException("Looks like we have corrupted schema file: formTemplateSchema.json"),
+    x => throw new UnsupportedOperationException(s"Looks like we have corrupted schema file: formTemplateSchema.json: ${x}"),
     identity
   )
 

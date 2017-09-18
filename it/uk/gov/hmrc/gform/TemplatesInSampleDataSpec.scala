@@ -16,6 +16,7 @@ class TemplatesInSampleDataSpec extends support.ITSpec {
    "Test that templates in sample data can be uploaded" in eventually {
      TemplatesInSampleDataSpec.templates foreach { templateFile =>
         val template: JsValue = Json.parse(Files.newInputStream(templateFile))
+       println(template)
         gformConnector.upsertTemplate(template).futureValue shouldBe (()) withClue templateFile.toString
       }
     }

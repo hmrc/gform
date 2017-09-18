@@ -49,7 +49,8 @@ class SubmissionService(
     envelopeId: EnvelopeId,
     form: Form,
     sectionFormFields: List[SectionFormField],
-    formName: String
+    formName: String,
+    customerId: String
   )(implicit hc: HeaderCarrier): Future[SubmissionAndPdf] = {
 
     val html = HtmlGeneratorService.generateDocumentHTML(sectionFormFields, formName, form.formData)
@@ -73,7 +74,8 @@ class SubmissionService(
         envelopeId = envelopeId,
         _id = form._id,
         dmsMetaData = DmsMetaData(
-          formTemplateId = form.formTemplateId
+          formTemplateId = form.formTemplateId,
+          customerId //TODO need more secure and safe way of doing this. perhaps moving auth to backend and just pulling value out there.
         )
       )
 
@@ -84,14 +86,14 @@ class SubmissionService(
     }
   }
 
-  def submission(formId: FormId)(implicit hc: HeaderCarrier): FOpt[Unit] = {
+  def submission(formId: FormId, customerId: String)(implicit hc: HeaderCarrier): FOpt[Unit] = {
 
     // format: OFF
     for {
       form              <- fromFutureA        (formService.get(formId))
       formTemplate      <- fromFutureA        (formTemplateService.get(form.formTemplateId))
       sectionFormFields <- fromOptA           (SubmissionServiceHelper.getSectionFormFields(form, formTemplate))
-      submissionAndPdf  <- fromFutureA        (getSubmissionAndPdf(form.envelopeId, form, sectionFormFields, formTemplate.formName))
+      submissionAndPdf  <- fromFutureA        (getSubmissionAndPdf(form.envelopeId, form, sectionFormFields, formTemplate.formName, customerId))
       _                 <-                     submissionRepo.upsert(submissionAndPdf.submission)
       res               <- fromFutureA        (fileUploadService.submitEnvelope(submissionAndPdf, formTemplate.dmsSubmission))
     } yield res

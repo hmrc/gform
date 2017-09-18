@@ -3,7 +3,7 @@
   "formName": "Gaming duty return",
   "description": "Fill in your gaming duty return form online",
   "dmsSubmission": {
-    "customerId": "nino",
+    "customerId": "${auth.payenino}",
     "classificationType": "BT-NRU-Environmental",
     "businessArea": "FinanceOpsCorpT"
   },

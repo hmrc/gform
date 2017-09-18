@@ -100,7 +100,7 @@ class SubmissionServiceSpec extends Spec {
       description = "formTemplateDescription",
       formCategory = Some(Default),
       submissionReference = None,
-      dmsSubmission = DmsSubmission("customerId", "classificationType", "businessArea"),
+      dmsSubmission = DmsSubmission(TextExpression(AuthCtx(PayeNino)), "classificationType", "businessArea"),
       HMRCAuthConfigWithRegimeId(AuthConfigModule("TEST"), ServiceId("TEST"), RegimeId("TEST")),
       submitSuccessUrl = "http://somwehere-nice.net",
       submitErrorUrl = "http://somwehere-nasty.net",

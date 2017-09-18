@@ -3,7 +3,7 @@
   "formName": "Biofuels and other fuel substitutes",
   "description": "Fill in your biofuels and other fuel substitutes return form online",
   "dmsSubmission": {
-    "customerId": "nino",
+    "customerId": "${auth.payenino}",
     "classificationType": "BT-NRU-Environmental",
     "businessArea": "FinanceOpsCorpT"
   },
@@ -74,6 +74,62 @@
       ]
     }
   ],
+  "declarationSection": {
+    "shortName": "Declaration",
+    "title": "Declaration",
+    "fields": [
+      {
+        "type": "info",
+        "id": "declarationTopInfo",
+        "label": "Declaration copy",
+        "infoText": "Declaration copy"
+      },
+      {
+        "id": "declarationNameGroup",
+        "type": "group",
+        "label": "Provide details below of who is signing the declaration",
+        "fields": [
+          {
+            "id": "declaration-firstname",
+            "type": "text",
+            "label": "First name"
+          },
+          {
+            "id": "declaration-lastname",
+            "type": "text",
+            "label": "Last name"
+          },
+          {
+            "id": "declaration-status",
+            "type": "text",
+            "label": "Status",
+            "helpText": "For example: Director, Financial Controller, Secretary"
+          }
+        ]
+      },
+      {
+        "id": "declarationEmailGroup",
+        "type": "group",
+        "label": "To receive confirmation that your return has been submitted, enter an email address below",
+        "fields": [
+          {
+            "id": "declaration-email",
+            "type": "text",
+            "label": "Email address (Optional)",
+            "mandatory": "false",
+            "format": "email"
+          },
+          {
+            "id": "declaration-email-confirmation",
+            "type": "text",
+            "label": "Confirm email address (Optional)",
+            "mandatory": "false",
+            "format": "email"
+          }
+        ]
+      }
+    ]
+  },
   "acknowledgementSection": {
     "title": "Acknowledgment page",
     "fields": [

@@ -3,7 +3,7 @@
   "formName": "Promoter's monthly Lottery Duty return",
   "description": "Fill in your promoter's monthly lottery duty return form online",
   "dmsSubmission": {
-    "customerId": "nino",
+    "customerId": "${auth.payenino}",
     "classificationType": "BT-NRU-Environmental",
     "businessArea": "FinanceOpsCorpT"
   },

@@ -3,7 +3,7 @@
   "formName": "Aggregates Levy return",
   "description": "Fill in your aggregates levy return form online",
   "dmsSubmission": {
-    "customerId": "nino",
+    "customerId": "${auth.payenino}",
     "classificationType": "BT-NRU-Environmental",
     "businessArea": "FinanceOpsCorpT"
   },

@@ -35,7 +35,7 @@ class SubmissionController(
     //TODO validate all sections before submission (whole form)
     //TODO change status of form to 'submitted'
 
-    submissionService.submission(formId).fold(
+    submissionService.submission(formId, request.headers.get("customerId").getOrElse("")).fold(
       _.asBadRequest,
       _ => NoContent
     )

@@ -43,7 +43,7 @@ trait ExampleAuthConfig {
 
   def authConfigModule = AuthConfigModule("TESTAuthConfigModule")
 
-  def dmsSubmission = DmsSubmission("nino", "BT-NRU-Environmental", "FinanceOpsCorpT")
+  def dmsSubmission = DmsSubmission(TextExpression(AuthCtx(PayeNino)), "BT-NRU-Environmental", "FinanceOpsCorpT")
 
   def serviceId = ServiceId("TestServiceId")
 
@@ -287,7 +287,8 @@ trait ExampleSubmission { dependsOn: ExampleForm with ExampleFormTemplate =>
   def submissionRef = SubmissionRef("DMS")
 
   def dmsMetaData = DmsMetaData(
-    formTemplateId
+    formTemplateId,
+    "TESTNINO"
   )
 
   def submission = Submission(

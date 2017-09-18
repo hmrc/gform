@@ -3,7 +3,7 @@
   "formName": "Gaming duty payment on account",
   "description": "Fill in your gaming duty payment on account form online",
   "dmsSubmission": {
-    "customerId": "nino",
+    "customerId": "${auth.payenino}",
     "classificationType": "BT-NRU-Environmental",
     "businessArea": "FinanceOpsCorpT"
   },

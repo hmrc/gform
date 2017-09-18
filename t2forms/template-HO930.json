@@ -3,7 +3,7 @@
   "formName": "Biofuels and other fuel substitutes",
   "description": "",
   "dmsSubmission": {
-    "customerId": "nino",
+    "customerId": "${auth.payenino}",
     "classificationType": "BT-NRU-Environmental",
     "businessArea": "FinanceOpsCorpT"
   },

@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import play.api.libs.json.Json
 
 case class DmsSubmission(
-  customerId: String,
+  customerId: TextExpression,
   classificationType: String,
   businessArea: String
 )
