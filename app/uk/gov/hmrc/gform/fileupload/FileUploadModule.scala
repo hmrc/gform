@@ -33,7 +33,7 @@ class FileUploadModule(configModule: ConfigModule, wSHttpModule: WSHttpModule, t
     configModule.serviceConfig.baseUrl("file-upload"),
     configModule.serviceConfig.baseUrl("file-upload-frontend"),
     ac.formExpiryDays,
-    s"${ac.formMaxAttachments * ac.formMaxAttachmentSizeMB + 10}MB", //heuristic to compute max size
+    s"${ac.formMaxAttachments * ac.formMaxAttachmentSizeMB + 1}MB", //heuristic to compute max size
     s"${ac.formMaxAttachmentSizeMB}MB",
     ac.formMaxAttachments,
     configModule.appConfig.contentTypes
