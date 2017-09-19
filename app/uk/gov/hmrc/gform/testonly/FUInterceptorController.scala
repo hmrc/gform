@@ -61,6 +61,10 @@ class FUInterceptorController(
     Ok(Json.toJson(predefinedResponses))
   }
 
+  def getPredefinedResponses = Action { implicit r =>
+    Ok(Json.toJson(predefinedResponses))
+  }
+
   private var predefinedResponses = Map[String, JsValue]()
 
   private def shouldIntercept(envelope: String): Boolean = predefinedResponses.get(envelope).isDefined

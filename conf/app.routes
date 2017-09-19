@@ -35,6 +35,7 @@ PUT           /test-only/file-upload-interceptor/intercept/*path   uk.gov.hmrc.g
 DELETE        /test-only/file-upload-interceptor/intercept/*path   uk.gov.hmrc.gform.testonly.FUInterceptorController.intercept(path: String)
 
 POST          /test-only/file-upload-interceptor/set-response/*path      uk.gov.hmrc.gform.testonly.FUInterceptorController.setPredefinedResponse(path: String)
+GET           /test-only/file-upload-interceptor/get-responses      uk.gov.hmrc.gform.testonly.FUInterceptorController.getPredefinedResponses()
 
 
 
