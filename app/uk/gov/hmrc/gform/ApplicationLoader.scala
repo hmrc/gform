@@ -73,7 +73,7 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
   private val formModule = new FormModule(mongoModule, shortLivedCacheModule, formTemplateModule, fileUploadModule)
   private val validationModule = new ValidationModule(wSHttpModule, configModule)
   private val submissionModule = new SubmissionModule(mongoModule, pdfGeneratorModule, formModule, formTemplateModule, fileUploadModule, timeModule)
-  private val testOnlyModule = new TestOnlyModule(mongoModule)
+  private val testOnlyModule = new TestOnlyModule(mongoModule, wSHttpModule, configModule, playComponents)
   private val graphiteModule = new GraphiteModule(self)
 
   private val playComponentsModule = new PlayComponentsModule(playComponents, akkaModule, configModule, auditingModule, metricsModule, formModule, formTemplateModule, testOnlyModule, submissionModule, validationModule)

@@ -30,8 +30,8 @@ class FileUploadModule(configModule: ConfigModule, wSHttpModule: WSHttpModule, t
   val fileUploadService: FileUploadService = new FileUploadService(fileUploadConnector, fileUploadFrontendConnector, timeModule.timeProvider)
 
   private lazy val config: FUConfig = FUConfig(
-    configModule.serviceConfig.baseUrl("file-upload"),
-    configModule.serviceConfig.baseUrl("file-upload-frontend"),
+    fileUploadBaseUrl,
+    fileUploadFrontendBaseUrl,
     ac.formExpiryDays,
     s"${ac.formMaxAttachments * ac.formMaxAttachmentSizeMB}MB", //heuristic to compute max size
     s"${ac.formMaxAttachmentSizeMB}MB",
@@ -42,4 +42,12 @@ class FileUploadModule(configModule: ConfigModule, wSHttpModule: WSHttpModule, t
   //TODO: provide separate one here
   private lazy implicit val ec = MdcLoggingExecutionContext
   private lazy val ac = configModule.appConfig
+
+  private lazy val fileUploadBaseUrl = {
+    val baseUrl = configModule.serviceConfig.baseUrl("file-upload")
+    val pathPrefix = configModule.serviceConfig.getConfString("file-upload.path-prefix", "")
+    baseUrl + pathPrefix
+  }
+
+  private lazy val fileUploadFrontendBaseUrl = configModule.serviceConfig.baseUrl("file-upload-frontend")
 }
