@@ -28,4 +28,15 @@ GET           /test-only/remove-templates                          uk.gov.hmrc.g
 GET           /test-only/build-info                                uk.gov.hmrc.gform.testonly.TestOnlyController.buildInfo()
 GET           /test-only/config                                    uk.gov.hmrc.gform.testonly.TestOnlyController.config()
 
+#File upload interceptor
+GET           /test-only/file-upload-interceptor/intercept/*path   uk.gov.hmrc.gform.testonly.FUInterceptorController.intercept(path: String)
+POST          /test-only/file-upload-interceptor/intercept/*path   uk.gov.hmrc.gform.testonly.FUInterceptorController.intercept(path: String)
+PUT           /test-only/file-upload-interceptor/intercept/*path   uk.gov.hmrc.gform.testonly.FUInterceptorController.intercept(path: String)
+DELETE        /test-only/file-upload-interceptor/intercept/*path   uk.gov.hmrc.gform.testonly.FUInterceptorController.intercept(path: String)
+
+POST          /test-only/file-upload-interceptor/set-response/*path      uk.gov.hmrc.gform.testonly.FUInterceptorController.setPredefinedResponse(path: String)
+
+
+
+
 

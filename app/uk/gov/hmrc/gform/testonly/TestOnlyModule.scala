@@ -16,9 +16,14 @@
 
 package uk.gov.hmrc.gform.testonly
 
+import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.mongo.MongoModule
+import uk.gov.hmrc.gform.playcomponents.PlayComponents
+import uk.gov.hmrc.gform.wshttp.WSHttpModule
 
-class TestOnlyModule(mongoModule: MongoModule) {
+class TestOnlyModule(mongoModule: MongoModule, wSHttpModule: WSHttpModule, configModule: ConfigModule, playComponents: PlayComponents) {
 
   val testOnlyController: TestOnlyController = new TestOnlyController(mongoModule.mongo)
+  val proxyActions = new Proxy(playComponents.ahcWSComponents.wsClient)
+  val fUInterceptor: FUInterceptorController = new FUInterceptorController(wSHttpModule.auditableWSHttp, configModule.serviceConfig, proxyActions)
 }

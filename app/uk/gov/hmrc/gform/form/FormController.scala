@@ -17,20 +17,18 @@
 package uk.gov.hmrc.gform.form
 
 import play.api.Logger
-import play.api.libs.json.{ JsValue, Json }
+import play.api.libs.json.JsValue
 import play.api.mvc.{ Action, AnyContent }
+import uk.gov.hmrc.gform.auditing._
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.core.FormValidator
-import uk.gov.hmrc.gform.des.DesConnector
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.fileupload.FileUploadService
 import uk.gov.hmrc.gform.formtemplate.FormTemplateService
 import uk.gov.hmrc.gform.sharedmodel.UserId
-import uk.gov.hmrc.gform.sharedmodel.form.{ FileId, FormData, FormId, UserData }
+import uk.gov.hmrc.gform.sharedmodel.form.{ FileId, FormId, UserData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.play.http.BadRequestException
-import uk.gov.hmrc.gform.auditing._
-import uk.gov.hmrc.play.http.logging.LoggingDetails
 
 import scala.concurrent.Future
 import scala.util.Try
@@ -42,7 +40,6 @@ class FormController(
 ) extends BaseController {
 
   def newForm(userId: UserId, formTemplateId: FormTemplateId) = Action.async { implicit request =>
-    implicitly[LoggingDetails]
     Logger.info(s"new form, userId: '${userId.value}', templateId: '${formTemplateId.value}', ${loggingHelpers.cleanHeaders(request.headers)}")
     //TODO authentication
     //TODO user should be obtained from secure action

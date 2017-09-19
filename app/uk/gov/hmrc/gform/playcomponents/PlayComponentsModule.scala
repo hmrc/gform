@@ -17,10 +17,8 @@
 package uk.gov.hmrc.gform.playcomponents
 
 import akka.stream.Materializer
-import com.kenshoo.play.metrics.{ MetricsController, MetricsFilter, MetricsFilterImpl, MetricsImpl }
 import play.api.mvc.EssentialFilter
 import play.api.routing.Router
-import uk.gov.hmrc.gform.ApplicationModule
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.auditing.AuditingModule
 import uk.gov.hmrc.gform.config.ConfigModule
@@ -30,13 +28,10 @@ import uk.gov.hmrc.gform.metrics.MetricsModule
 import uk.gov.hmrc.gform.submission.SubmissionModule
 import uk.gov.hmrc.gform.testonly.TestOnlyModule
 import uk.gov.hmrc.gform.validation.ValidationModule
-import uk.gov.hmrc.gform.wshttp.WSHttpModule
-import uk.gov.hmrc.play.audit.filters.AuditFilter
-import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.auth.controllers.AuthParamsControllerConfig
 import uk.gov.hmrc.play.auth.microservice.connectors.AuthConnector
 import uk.gov.hmrc.play.auth.microservice.filters.AuthorisationFilter
-import uk.gov.hmrc.play.filters.{ NoCacheFilter, RecoveryFilter }
+import uk.gov.hmrc.play.filters.NoCacheFilter
 import uk.gov.hmrc.play.health.AdminController
 import uk.gov.hmrc.play.http.logging.filters.LoggingFilter
 
@@ -76,7 +71,8 @@ class PlayComponentsModule(
     formTemplateModule.formTemplatesController,
     configModule.configController,
     validationModule.validationController,
-    testOnlyModule.testOnlyController
+    testOnlyModule.testOnlyController,
+    testOnlyModule.fUInterceptor
   )
 
   val adminController = new AdminController(configModule.playConfiguration)
