@@ -31,7 +31,7 @@ class Helper(config: FUConfig, timeProvider: TimeProvider) {
     "constraints" -> Json.obj(
       "contentTypes" -> contentTypesJson,
       "maxItems" -> config.maxItems,
-      "masSize" -> config.maxSize,
+      "maxSize" -> config.maxSize,
       "maxSizePerItem" -> config.maxSizePerItem
     ),
     "callbackUrl" -> "someCallback",
