@@ -36,7 +36,7 @@ class HelperSpec extends Spec {
           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         ),
         "maxItems" -> 3,
-        "masSize" -> "20MB",
+        "maxSize" -> "20MB",
         "maxSizePerItem" -> "5MB"
       ),
       "callbackUrl" -> "someCallback",
