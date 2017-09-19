@@ -40,7 +40,15 @@ case class Account(
 )
 
 object Account {
-  implicit val format: OFormat[Account] = Json.format[Account]
+  val basic: OFormat[Account] = Json.format[Account]
+
+  val writes: OWrites[Account] = OWrites[Account] { o =>
+    Json.obj("account" -> s"""{sortCode: ${o.sortCode}, accountNumber: ${o.accountNumber}}""")
+  }
+
+  val reads: Reads[Account] = basic
+
+  implicit val format: OFormat[Account] = OFormat[Account](reads, writes)
 }
 
 case class Response(
