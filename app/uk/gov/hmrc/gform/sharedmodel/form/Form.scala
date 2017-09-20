@@ -59,6 +59,7 @@ object Form {
 
 sealed trait FormStatus
 case object InProgress extends FormStatus
+case object Summary extends FormStatus
 case object Validated extends FormStatus
 case object Signed extends FormStatus
 case object Submitted extends FormStatus
