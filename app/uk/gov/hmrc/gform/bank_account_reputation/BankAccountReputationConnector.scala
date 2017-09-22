@@ -43,7 +43,7 @@ object Account {
   val basic: OFormat[Account] = Json.format[Account]
 
   val writes: OWrites[Account] = OWrites[Account] { o =>
-    Json.obj("account" -> s"""{sortCode: ${o.sortCode}, accountNumber: ${o.accountNumber}}""")
+    Json.obj("account" -> Json.obj("sortCode" ->  s"${o.sortCode}", "accountNumber" ->  s"${o.accountNumber}"))
   }
 
   val reads: Reads[Account] = basic
