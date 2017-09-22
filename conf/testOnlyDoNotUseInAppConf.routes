@@ -10,5 +10,19 @@
 # Failing to follow this rule may result in test routes deployed in production.
 
 # Add all the application routes to the prod.routes file
-->         /                          prod.Routes
+->            /                                                                  prod.Routes
+
+#TODO move it to testOnlyDoNotUseInAppConf.routes
+GET           /gform/test-only/remove-templates                                  uk.gov.hmrc.gform.testonly.TestOnlyController.removeTemplates()
+GET           /gform/test-only/build-info                                        uk.gov.hmrc.gform.testonly.TestOnlyController.buildInfo()
+GET           /gform/test-only/config                                            uk.gov.hmrc.gform.testonly.TestOnlyController.config()
+
+#File upload interceptor
+GET           /gform/test-only/file-upload-interceptor/intercept/*path           uk.gov.hmrc.gform.testonly.FUInterceptorController.intercept(path: String)
+POST          /gform/test-only/file-upload-interceptor/intercept/*path           uk.gov.hmrc.gform.testonly.FUInterceptorController.intercept(path: String)
+PUT           /gform/test-only/file-upload-interceptor/intercept/*path           uk.gov.hmrc.gform.testonly.FUInterceptorController.intercept(path: String)
+DELETE        /gform/test-only/file-upload-interceptor/intercept/*path           uk.gov.hmrc.gform.testonly.FUInterceptorController.intercept(path: String)
+
+POST          /gform/test-only/file-upload-interceptor/set-response/*path        uk.gov.hmrc.gform.testonly.FUInterceptorController.setPredefinedResponse(path: String)
+GET           /gform/test-only/file-upload-interceptor/get-responses             uk.gov.hmrc.gform.testonly.FUInterceptorController.getPredefinedResponses()
 

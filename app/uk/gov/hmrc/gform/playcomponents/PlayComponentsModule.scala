@@ -17,8 +17,10 @@
 package uk.gov.hmrc.gform.playcomponents
 
 import akka.stream.Materializer
+import play.api.Logger
 import play.api.mvc.EssentialFilter
 import play.api.routing.Router
+import testOnlyDoNotUseInAppConf.Routes
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.auditing.AuditingModule
 import uk.gov.hmrc.gform.config.ConfigModule
@@ -64,25 +66,46 @@ class PlayComponentsModule(
     override def controllerNeedsAuth(controllerName: String): Boolean = configModule.controllerConfig.paramsForController(controllerName).needsAuth
   }
 
-  lazy val appRoutes = new app.Routes(
+  lazy val appRoutes: app.Routes = new app.Routes(
     errorHandler,
     formModule.formController,
     submissionModule.submissionController,
     formTemplateModule.formTemplatesController,
     configModule.configController,
-    validationModule.validationController,
-    testOnlyModule.testOnlyController,
-    testOnlyModule.fUInterceptor
+    validationModule.validationController
   )
 
   val adminController = new AdminController(configModule.playConfiguration)
 
-  def router: Router = new prod.Routes(
+  lazy val prodRoutes: prod.Routes = new prod.Routes(
     errorHandler,
     appRoutes,
     adminController,
     metricsModule.metricsController
   )
+
+  lazy val testOnlyDoNotUseInAppConfRoutes: testOnlyDoNotUseInAppConf.Routes = new testOnlyDoNotUseInAppConf.Routes(
+    errorHandler,
+    prodRoutes,
+    testOnlyModule.testOnlyController,
+    testOnlyModule.fUInterceptor
+  )
+
+  def router: Router = {
+    val applicationRouterKey = "application.router"
+    val applicationRouterProp = System.getProperty(applicationRouterKey)
+    if (applicationRouterProp == null) {
+      Logger.info("Using router with prod.routes")
+      prodRoutes
+    }
+    if (applicationRouterProp == "testOnlyDoNotUseInAppConf.Routes") {
+      Logger.info("Using router with testOnlyDoNotUseInAppConf.routes")
+      testOnlyDoNotUseInAppConfRoutes
+    } else {
+      Logger.error(s"The option $applicationRouterKey has unsupported value: $applicationRouterProp. We support only 'testOnlyDoNotUseInAppConf.Routes'. Using 'prodRoutes'.")
+      prodRoutes
+    }
+  }
 
   lazy val errorHandler = new ErrorHandler(
     playComponents.context.environment,

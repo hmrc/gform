@@ -41,12 +41,10 @@ class TestOnlyController(
   }
 
   def buildInfo() = Action { r =>
-
     Results.Ok(
       Json.toJson(BuildInfo.toMap.mapValues(_.toString))
     )
 
-    throw new NotFoundException("hahaha")
   }
 
   def config() = Action { r =>
