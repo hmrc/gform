@@ -26,7 +26,8 @@ import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.play.http.NotFoundException
 
 class TestOnlyController(
-    mongo: () => DB
+    mongo: () => DB,
+    enrolmentConnector: EnrolmentConnector
 ) extends BaseController {
 
   lazy val formTemplates = mongo().collection[JSONCollection]("formTemplate")
@@ -53,6 +54,9 @@ class TestOnlyController(
     )
     Results.Ok(result)
   }
+
+  def deEnrolUser(userId: String, registrationNumber: String) =
+    enrolmentConnector.deEnrol(userId, registrationNumber)
 
 }
 

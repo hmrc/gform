@@ -23,7 +23,8 @@ import uk.gov.hmrc.gform.wshttp.WSHttpModule
 
 class TestOnlyModule(mongoModule: MongoModule, wSHttpModule: WSHttpModule, configModule: ConfigModule, playComponents: PlayComponents) {
 
-  val testOnlyController: TestOnlyController = new TestOnlyController(mongoModule.mongo)
+  val enrolmentConnector = new EnrolmentConnector(wSHttpModule.auditableWSHttp, "http://enrolment-store-proxy.protected.mdtp:80/enrolment-store-proxy")
+  val testOnlyController: TestOnlyController = new TestOnlyController(mongoModule.mongo, enrolmentConnector)
   val proxyActions = new Proxy(playComponents.ahcWSComponents.wsClient)
   val fUInterceptor: FUInterceptorController = new FUInterceptorController(wSHttpModule.auditableWSHttp, configModule.serviceConfig, proxyActions)
 }
