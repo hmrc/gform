@@ -21,18 +21,12 @@ import java.util.Date
 import play.api.libs.json.{ Json, OFormat }
 
 case class EmailTemplate(
-  to: Seq[String],
-  emailParams: EmailContent, //content that goes in the email to be put into template
+  to: Seq[String], //content that goes in the email to be put into template
   private val templateId: String = "eeitt_submission_confirmation", //the template ID that the content will be put into
   private val force: Boolean = false
 )
 
 object EmailTemplate {
   implicit val format: OFormat[EmailTemplate] = Json.format[EmailTemplate]
-}
-
-case class EmailContent(submissionDate: Date, refNumber: String, contactInfo: String, telephoneNumber: String) //must be option as the service json schema requires empty {} for email content
-object EmailContent {
-  implicit val format: OFormat[EmailContent] = Json.format[EmailContent]
 }
 
