@@ -22,6 +22,7 @@ import cats.instances.list._
 import cats.syntax.either._
 import cats.syntax.traverse._
 import uk.gov.hmrc.gform.core._
+import uk.gov.hmrc.gform.email.EmailModule
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.fileupload.FileUploadService
 import uk.gov.hmrc.gform.form.FormService
@@ -41,7 +42,8 @@ class SubmissionService(
     formTemplateService: FormTemplateService,
     fileUploadService: FileUploadService,
     submissionRepo: SubmissionRepo,
-    timeProvider: TimeProvider
+    timeProvider: TimeProvider,
+    email: EmailModule
 
 ) {
 
@@ -97,6 +99,8 @@ class SubmissionService(
       _                 <-                     submissionRepo.upsert(submissionAndPdf.submission)
       _                 <- fromFutureA        (formService.updateUserData(form._id, UserData(form.formData, form.repeatingGroupStructure, Submitted)))
       res               <- fromFutureA        (fileUploadService.submitEnvelope(submissionAndPdf, formTemplate.dmsSubmission))
+      emailAddress      =                    (email.emailLogic.getEmailAddress(form))
+      _                 =                     email.emailLogic.sendEmail(emailAddress)
     } yield res
     // format: ON
   }
