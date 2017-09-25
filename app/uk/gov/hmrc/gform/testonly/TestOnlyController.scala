@@ -55,8 +55,8 @@ class TestOnlyController(
     Results.Ok(result)
   }
 
-  def deEnrolUser(userId: String, registrationNumber: String) =
-    enrolmentConnector.deEnrol(userId, registrationNumber)
-
+  def deEnrolUser(userId: String, registrationNumber: String) = Action.async { implicit request =>
+    enrolmentConnector.deEnrol(userId, registrationNumber).map(x => Ok(x.body))
+  }
 }
 
