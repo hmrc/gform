@@ -93,7 +93,7 @@ class PlayComponentsModule(
 
   def router: Router = {
     val applicationRouterKey = "application.router"
-    val applicationRouterProp = System.getProperty(applicationRouterKey)
+    val applicationRouterProp = configModule.typesafeConfig.getString(applicationRouterKey)
     if (applicationRouterProp == null) {
       Logger.info("Using router with prod.routes")
       prodRoutes
