@@ -26,6 +26,7 @@ import play.api.routing.Router
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.auditing.AuditingModule
 import uk.gov.hmrc.gform.config.ConfigModule
+import uk.gov.hmrc.gform.email.EmailModule
 import uk.gov.hmrc.gform.fileupload.FileUploadModule
 import uk.gov.hmrc.gform.form.FormModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
@@ -62,7 +63,7 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
   private val configModule = new ConfigModule(playComponents)
   private val auditingModule = new AuditingModule(configModule, akkaModule, playComponents)
   private val wSHttpModule = new WSHttpModule(auditingModule, configModule, playComponents)
-
+  private val emailModule = new EmailModule(configModule, wSHttpModule)
   private val timeModule = new TimeModule
   private val fileUploadModule = new FileUploadModule(configModule, wSHttpModule, timeModule)
   private val mongoModule = new MongoModule(playComponents)
@@ -72,7 +73,7 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
 
   private val formModule = new FormModule(mongoModule, shortLivedCacheModule, formTemplateModule, fileUploadModule)
   private val validationModule = new ValidationModule(wSHttpModule, configModule)
-  private val submissionModule = new SubmissionModule(mongoModule, pdfGeneratorModule, formModule, formTemplateModule, fileUploadModule, timeModule)
+  private val submissionModule = new SubmissionModule(mongoModule, pdfGeneratorModule, formModule, formTemplateModule, fileUploadModule, timeModule, emailModule)
   private val testOnlyModule = new TestOnlyModule(mongoModule, wSHttpModule, configModule, playComponents)
   private val graphiteModule = new GraphiteModule(self)
 

@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.submission
 
+import uk.gov.hmrc.gform.email.EmailModule
 import uk.gov.hmrc.gform.fileupload.FileUploadModule
 import uk.gov.hmrc.gform.form.FormModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
@@ -29,7 +30,8 @@ class SubmissionModule(
     formModule: FormModule,
     formTemplateModule: FormTemplateModule,
     fileUploadModule: FileUploadModule,
-    timeModule: TimeModule
+    timeModule: TimeModule,
+    emailModule: EmailModule
 ) {
 
   //TODO: this should be replaced with save4later for submissions
@@ -42,7 +44,9 @@ class SubmissionModule(
     formTemplateModule.formTemplateService,
     fileUploadModule.fileUploadService,
     submissionRepo,
-    timeModule.timeProvider
+    timeModule.timeProvider,
+    emailModule
+
   )
 
   val submissionController = new SubmissionController(submissionService)
