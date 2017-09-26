@@ -16,14 +16,14 @@
 
 package uk.gov.hmrc.gform.testonly
 
-import com.typesafe.config.{ConfigFactory, ConfigRenderOptions}
-import play.api.libs.json.{JsValue, Json}
+import com.typesafe.config.{ ConfigFactory, ConfigRenderOptions }
+import play.api.libs.json.{ JsValue, Json }
 import play.api.mvc._
 import reactivemongo.api.DB
 import reactivemongo.json.collection.JSONCollection
 import uk.gov.hmrc.BuildInfo
 import uk.gov.hmrc.gform.controllers.BaseController
-import uk.gov.hmrc.play.http.{HttpResponse, NotFoundException}
+import uk.gov.hmrc.play.http.{ HttpResponse, NotFoundException }
 
 class TestOnlyController(
     mongo: () => DB,
@@ -56,7 +56,7 @@ class TestOnlyController(
   }
 
   def upload(country: String) = Action.async { implicit request =>
-    enrolmentConnector.upload(country).map(Ok(_))
+    enrolmentConnector.upload(country).map(_ => NoContent)
   }
 
   def deEnrolUser(userId: String, registrationNumber: String) = Action.async { implicit request =>
@@ -64,9 +64,8 @@ class TestOnlyController(
   }
 
   def delete(country: String) = Action.async { implicit request =>
-    enrolmentConnector.removeUnallocated(country).map(Ok(_))
+    enrolmentConnector.removeUnallocated(country).map(_ => NoContent)
   }
-
 
 }
 
