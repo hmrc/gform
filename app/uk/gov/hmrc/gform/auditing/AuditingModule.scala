@@ -63,6 +63,6 @@ class AuditingModule(configModule: ConfigModule, akkaModule: AkkaModule, playCom
 
 }
 object loggingHelpers {
-  def cleanHeaders(headers: Headers) = s", headers: '${headers.remove("Authorization", "token")}'"
+  def cleanHeaders(headers: Headers) = s", headers: '${headers.remove("Authorization", "token", "customerId")}'"
   def cleanHeaderCarrierHeader(hc: HeaderCarrier): String = s"headers: ' ${hc.sessionId} ${hc.deviceID} ${hc.requestId} ${hc.requestChain}'"
 }
