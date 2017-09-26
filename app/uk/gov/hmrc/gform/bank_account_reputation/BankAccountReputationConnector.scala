@@ -32,7 +32,7 @@ class BankAccountReputationConnector(wSHttp: WSHttp, baseUrl: String) {
     Logger.info(s"Check if bank account exists, headers: '${loggingHelpers.cleanHeaderCarrierHeader(hc)}'")
     wSHttp.POST[Account, Response](s"$baseUrl/modcheck", Account(sortCode, accountNumber))
   }
-}git stat
+}
 
 case class Account(
   sortCode: String,
