@@ -32,7 +32,7 @@ class BankAccountReputationConnector(wSHttp: WSHttp, baseUrl: String) {
     Logger.info(s"Check if bank account exists, headers: '${loggingHelpers.cleanHeaderCarrierHeader(hc)}'")
     wSHttp.POST[Account, Response](s"$baseUrl/modcheck", Account(sortCode, accountNumber))
   }
-}
+}git stat
 
 case class Account(
   sortCode: String,
@@ -43,7 +43,7 @@ object Account {
   val basic: OFormat[Account] = Json.format[Account]
 
   val writes: OWrites[Account] = OWrites[Account] { o =>
-    Json.obj("account" -> Json.obj("sortCode" -> s"${o.sortCode}", "accountNumber" -> s"${o.accountNumber}"))
+    Json.obj("account" -> Json.obj("sortCode" -> s"${o.sortCode.replaceAll("-", "")}", "accountNumber" -> s"${o.accountNumber}"))
   }
 
   val reads: Reads[Account] = basic
