@@ -48,10 +48,18 @@ class FormService(save4Later: Save4Later) {
         .copy(
           formData = userData.formData,
           repeatingGroupStructure = userData.repeatingGroupStructure,
-          status = userData.formStatus
+          status = newStatus(form, userData.formStatus)
         )
       _ <- save4Later.upsert(formId, newForm)
     } yield ()
+  }
+
+  private def newStatus(form: Form, status: FormStatus) = form.status match {
+    case InProgress => status
+    case Summary    => if(status != InProgress) status else form.status
+    case Validated  => if(status != Summary && status != InProgress) status else form.status
+    case Signed     => if(status == Submitted) status else form.status
+    case Submitted => form.status
   }
 
   def saveKeyStore(formId: FormId, data: Map[String, JsValue])(implicit hc: HeaderCarrier): Future[Unit] = save4Later.saveKeyStore(formId, data)
