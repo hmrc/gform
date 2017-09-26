@@ -71,8 +71,7 @@ class PlayComponentsModule(
     formModule.formController,
     submissionModule.submissionController,
     formTemplateModule.formTemplatesController,
-    configModule.configController,
-    validationModule.validationController
+    configModule.configController
   )
 
   val adminController = new AdminController(configModule.playConfiguration)
@@ -88,7 +87,8 @@ class PlayComponentsModule(
     errorHandler,
     prodRoutes,
     testOnlyModule.testOnlyController,
-    testOnlyModule.fUInterceptor
+    testOnlyModule.fUInterceptor,
+    validationModule.validationController
   )
 
   def router: Router = {
