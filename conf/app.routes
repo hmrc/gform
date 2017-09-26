@@ -18,8 +18,3 @@ GET           /formtemplates/:formTemplateId/raw                   uk.gov.hmrc.g
 DELETE        /formtemplates/:formTemplateId                       uk.gov.hmrc.gform.formtemplate.FormTemplatesController.remove(formTemplateId: FormTemplateId)
 
 GET           /exposed-config                                      uk.gov.hmrc.gform.config.ConfigController.exposedConfig()
-
-GET           /validate/des/:utr/:postCode                         uk.gov.hmrc.gform.validation.ValidationController.validateAddressAtDes(utr: String, postCode: String)
-GET           /validate/bank/:accountNumber/:sortCode              uk.gov.hmrc.gform.validation.ValidationController.validateBank(accountNumber: String, sortCode: String)
-POST          /test-only/registration/organisation/utr/:utr        uk.gov.hmrc.gform.validation.ValidationController.testValidatorStub(utr: String)
-
