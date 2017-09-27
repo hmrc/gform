@@ -1,10 +1,15 @@
 
 # gform
 
-
 [ ![Download](https://api.bintray.com/packages/hmrc/releases/gform/images/download.svg) ](https://bintray.com/hmrc/releases/gform/_latestVersion)
 
-### Uploading sample data
+Gform is a system for offering more straightforward tax forms online using based on a template of the form in json.
+ 
+This gform backend persists form templates in a mongo database.  It also persists incomplete form submissions in save4later.
+   
+When forms are submitted, they the submissio data is written into a PDF file and sent to DMS voia GIS using fileupload.
+ 
+## Uploading sample data
 
 Upload a form template:
 
