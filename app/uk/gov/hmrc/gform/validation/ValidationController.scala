@@ -20,20 +20,22 @@ import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc.Action
 import uk.gov.hmrc.gform.auditing.loggingHelpers
-import uk.gov.hmrc.gform.bank_account_reputation.{ Account, BankAccountReputationConnector, Response }
+import uk.gov.hmrc.gform.bank_account_reputation.{BankAccountReputationConnector, Response}
 import uk.gov.hmrc.gform.controllers.BaseController
-import uk.gov.hmrc.gform.des.{ AddressDes, DesConnector }
+import uk.gov.hmrc.gform.des.{AddressDes, DesConnector}
+import uk.gov.hmrc.gform.sharedmodel.{Account, ValAddress}
+
 import scala.concurrent.Future
 
 class ValidationController(validation: ValidationService) extends BaseController {
 
-  def validateAddressAtDes(utr: String, postcode: String) = Action.async { implicit request =>
+  def validateAddressAtDes() = Action.async(parse.json[ValAddress]) { implicit request =>
     Logger.info(s"validate Address At Des, ${loggingHelpers.cleanHeaders(request.headers)}")
-    validation.callDes(utr, postcode).map(if (_) NoContent else NotFound)
+    validation.callDes(request.body).map(if (_) NoContent else NotFound)
   }
 
-  def validateBank(accountNumber: String, sortCode: String) = Action.async { implicit request =>
+  def validateBank() = Action.async(parse.json[Account]) { implicit request =>
     Logger.info(s"validate bank, ${loggingHelpers.cleanHeaders(request.headers)}'")
-    validation.callBRS(accountNumber, sortCode).map(if (_) NoContent else NotFound)
+    validation.callBRS(request.body).map(if (_) NoContent else NotFound)
   }
 }

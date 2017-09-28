@@ -17,24 +17,25 @@
 package uk.gov.hmrc.gform.validation
 
 import uk.gov.hmrc.gform.bank_account_reputation.BankAccountReputationConnector
-import uk.gov.hmrc.gform.des.{ AddressDes, DesConnector }
-import uk.gov.hmrc.play.http.{ HeaderCarrier, NotFoundException }
+import uk.gov.hmrc.gform.des.{AddressDes, DesConnector}
+import uk.gov.hmrc.gform.sharedmodel.{Account, ValAddress}
+import uk.gov.hmrc.play.http.{HeaderCarrier, NotFoundException}
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
 class ValidationService(desConnector: DesConnector, bankAccountReputationConnector: BankAccountReputationConnector) {
 
-  def callDes(utr: String, postCode: String)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Boolean] = {
+  def callDes(valAddress: ValAddress)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Boolean] = {
     def compare(address: AddressDes) = {
-      address.postalCode.replace(" ", "").equalsIgnoreCase(postCode.replace(" ", ""))
+      address.postalCode.replace(" ", "").equalsIgnoreCase(valAddress.postCode.replace(" ", ""))
     }
-    desConnector.lookup(utr).map(compare)
+    desConnector.lookup(valAddress.utr).map(compare)
       .recover {
         case _: NotFoundException => false
       }
   }
 
-  def callBRS(accountNumber: String, sortCode: String)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Boolean] =
-    bankAccountReputationConnector.exists(accountNumber, sortCode).map(_.accountNumberWithSortCodeIsValid)
+  def callBRS(account: Account)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Boolean] =
+    bankAccountReputationConnector.exists(account).map(_.accountNumberWithSortCodeIsValid)
 
 }

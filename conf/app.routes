@@ -19,6 +19,6 @@ DELETE        /formtemplates/:formTemplateId                       uk.gov.hmrc.g
 
 GET           /exposed-config                                      uk.gov.hmrc.gform.config.ConfigController.exposedConfig()
 
-GET           /validate/des/:utr/:postCode                         uk.gov.hmrc.gform.validation.ValidationController.validateAddressAtDes(utr: String, postCode: String)
-GET           /validate/bank/:accountNumber/:sortCode              uk.gov.hmrc.gform.validation.ValidationController.validateBank(accountNumber: String, sortCode: String)
+GET           /validate/des                                        uk.gov.hmrc.gform.validation.ValidationController.validateAddressAtDes(utr: String, postCode: String)
+GET           /validate/bank                                       uk.gov.hmrc.gform.validation.ValidationController.validateBank(accountNumber: String, sortCode: String)
 
