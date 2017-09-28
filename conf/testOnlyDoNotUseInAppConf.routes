@@ -15,6 +15,7 @@
 DELETE        /gform/test-only/de-enrol/userId/:userId/country/:country         uk.gov.hmrc.gform.testonly.TestOnlyController.deEnrolUser(userId: String, country: String)
 GET           /gform/test-only/upload/country/:country                          uk.gov.hmrc.gform.testonly.TestOnlyController.upload(country: String)
 DELETE        /gform/test-only/delete/country/:country                          uk.gov.hmrc.gform.testonly.TestOnlyController.delete(country: String)
+POST          /test-only/registration/organisation/utr/:utr                       uk.gov.hmrc.gform.testonly.TestOnlyController.testValidatorStub(utr: String)
 
 
 #TODO move it to testOnlyDoNotUseInAppConf.routes
@@ -32,8 +33,4 @@ DELETE        /gform/test-only/file-upload-interceptor/intercept/*path          
 POST          /gform/test-only/file-upload-interceptor/set-response/*path        uk.gov.hmrc.gform.testonly.FUInterceptorController.setPredefinedResponse(path: String)
 GET           /gform/test-only/file-upload-interceptor/get-responses             uk.gov.hmrc.gform.testonly.FUInterceptorController.getPredefinedResponses()
 
-#TEST ENDPOINTS
-GET           /validate/des/:utr/:postCode                         uk.gov.hmrc.gform.validation.ValidationController.validateAddressAtDes(utr: String, postCode: String)
-GET           /validate/bank/:accountNumber/:sortCode              uk.gov.hmrc.gform.validation.ValidationController.validateBank(accountNumber: String, sortCode: String)
-POST          /test-only/registration/organisation/utr/:utr        uk.gov.hmrc.gform.validation.ValidationController.testValidatorStub(utr: String)
 

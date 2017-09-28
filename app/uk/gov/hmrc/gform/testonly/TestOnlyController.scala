@@ -73,7 +73,6 @@ class TestOnlyController(
     enrolmentConnector.removeUnallocated(country).map(_ => NoContent)
   }
 
-
   def testValidatorStub(utr: String) = Action.async { implicit request =>
     Logger.info(s"testValidatorStub, ${loggingHelpers.cleanHeaders(request.headers)}")
     if (utr.startsWith("1")) {
