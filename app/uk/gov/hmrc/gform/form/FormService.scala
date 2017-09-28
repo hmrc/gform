@@ -56,9 +56,9 @@ class FormService(save4Later: Save4Later) {
 
   private def newStatus(form: Form, status: FormStatus) = form.status match {
     case InProgress => status
-    case Summary    => if(status != InProgress) status else form.status
-    case Validated  => if(status != Summary && status != InProgress) status else form.status
-    case Signed     => if(status == Submitted) status else form.status
+    case Summary => if (status != InProgress) status else form.status
+    case Validated => if (status != Summary && status != InProgress) status else form.status
+    case Signed => if (status == Submitted) status else form.status
     case Submitted => form.status
   }
 
