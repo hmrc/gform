@@ -16,14 +16,20 @@
 
 package uk.gov.hmrc.gform.testonly
 
-import com.typesafe.config.{ ConfigFactory, ConfigRenderOptions }
-import play.api.libs.json.{ JsValue, Json }
+import com.typesafe.config.{ConfigFactory, ConfigRenderOptions}
+import play.api.Logger
+import play.api.libs.json.{JsValue, Json}
 import play.api.mvc._
 import reactivemongo.api.DB
 import reactivemongo.json.collection.JSONCollection
 import uk.gov.hmrc.BuildInfo
+import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.play.http.{ HttpResponse, NotFoundException }
+import uk.gov.hmrc.gform.des.AddressDes
+import uk.gov.hmrc.play.http.NotFoundException
+
+import scala.concurrent.Future
 
 class TestOnlyController(
     mongo: () => DB,
@@ -65,6 +71,15 @@ class TestOnlyController(
 
   def delete(country: String) = Action.async { implicit request =>
     enrolmentConnector.removeUnallocated(country).map(_ => NoContent)
+  }
+
+
+  def testValidatorStub(utr: String) = Action.async { implicit request =>
+    Logger.info(s"testValidatorStub, ${loggingHelpers.cleanHeaders(request.headers)}")
+    if (utr.startsWith("1")) {
+      Future.successful(Ok(Json.toJson(AddressDes("BN12 4XL"))))
+    } else
+      Future.successful(Ok(Json.toJson(AddressDes("ANYTHING"))))
   }
 
 }

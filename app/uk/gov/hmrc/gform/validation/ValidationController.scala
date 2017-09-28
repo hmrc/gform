@@ -36,12 +36,4 @@ class ValidationController(validation: ValidationService) extends BaseController
     Logger.info(s"validate bank, ${loggingHelpers.cleanHeaders(request.headers)}'")
     validation.callBRS(accountNumber, sortCode).map(if (_) NoContent else NotFound)
   }
-
-  def testValidatorStub(utr: String) = Action.async { implicit request =>
-    Logger.info(s"testValidatorStub, ${loggingHelpers.cleanHeaders(request.headers)}")
-    if (utr.startsWith("1")) {
-      Future.successful(Ok(Json.toJson(AddressDes("BN12 4XL"))))
-    } else
-      Future.successful(Ok(Json.toJson(AddressDes("ANYTHING"))))
-  }
 }
