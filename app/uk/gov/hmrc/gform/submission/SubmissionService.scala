@@ -31,6 +31,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.pdfgenerator.{ HtmlGeneratorService, PdfGeneratorService }
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.time.TimeProvider
+import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpResponse }
 
@@ -100,7 +101,7 @@ class SubmissionService(
       _                 <- fromFutureA        (formService.updateUserData(form._id, UserData(form.formData, form.repeatingGroupStructure, Submitted)))
       res               <- fromFutureA        (fileUploadService.submitEnvelope(submissionAndPdf, formTemplate.dmsSubmission))
       emailAddress      =                    (email.emailLogic.getEmailAddress(form))
-      _                 =                     email.emailLogic.sendEmail(emailAddress)
+      _                 =                     email.emailLogic.sendEmail(emailAddress)(hc, fromLoggingDetails)
     } yield res
     // format: ON
   }
