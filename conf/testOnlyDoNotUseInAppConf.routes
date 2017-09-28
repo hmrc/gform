@@ -21,6 +21,7 @@ DELETE        /gform/test-only/delete/country/:country                          
 GET           /gform/test-only/remove-templates                                  uk.gov.hmrc.gform.testonly.TestOnlyController.removeTemplates()
 GET           /gform/test-only/build-info                                        uk.gov.hmrc.gform.testonly.TestOnlyController.buildInfo()
 GET           /gform/test-only/config                                            uk.gov.hmrc.gform.testonly.TestOnlyController.config()
+POST          /test-only/registration/organisation/utr/:utr                      uk.gov.hmrc.gform.validation.TestOnlyController.testValidatorStub(utr: String)
 
 #File upload interceptor
 GET           /gform/test-only/file-upload-interceptor/intercept/*path           uk.gov.hmrc.gform.testonly.FUInterceptorController.intercept(path: String)
