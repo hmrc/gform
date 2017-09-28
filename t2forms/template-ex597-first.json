@@ -36,8 +36,7 @@
           "id": "utrLong",
           "label": "Where do I find my UTR?",
           "infoType": "long",
-          "infoText": "You can usually find your Company UTR in the header of letters from HM Revenue & Customs (HMRC), next to headings such as 'Tax Reference', 'UTR' or 'Official Use'. \n\nIt's a 10-digit number like this, 12345 67890.\n\nYou'll automatically be sent a UTR when you register for Self Assessment or set up a limited company.  \n\nYou can also find your UTR in your [HMRC online account](https://online.hmrc.gov.uk/).  \n\nIf you can't find your UTR, [call the Self Assessment
-  helpline](https://www.gov.uk/government/organisations/hm-revenue-customs/contact/self-assessment)."
+          "infoText": "You can usually find your Company UTR in the header of letters from HM Revenue & Customs (HMRC), next to headings such as 'Tax Reference', 'UTR' or 'Official Use'. \n\nIt's a 10-digit number like this, 12345 67890.\n\nYou'll automatically be sent a UTR when you register for Self Assessment or set up a limited company.  \n\nYou can also find your UTR in your [HMRC online account](https://online.hmrc.gov.uk/).  \n\nIf you can't find your UTR, [call the Self Assessment\nhelpline](https://www.gov.uk/government/organisations/hm-revenue-customs/contact/self-assessment)."
         }
       ]
     },
@@ -602,8 +601,7 @@
         "type": "info",
         "format": "noformat",
         "label": "If you owe duty",
-        "infoText": "## If you owe duty
-If you have a Direct Debit set up for this tax, you don't need to do anything. Your payment will be collected automatically.  \n\nOtherwise, paying electronically is an easy and secure way to pay. Use the details below and make sure you include your registration number (XZGR 00000 123456) on any payment.  \n\nSort code: 08-32-00  \nAccount number: 12000903  \nAccount name: HMRC Miscellaneous"
+        "infoText": "## If you owe duty\nIf you have a Direct Debit set up for this tax, you don't need to do anything. Your payment will be collected automatically.  \n\nOtherwise, paying electronically is an easy and secure way to pay. Use the details below and make sure you include your registration number (XZGR 00000 123456) on any payment.  \n\nSort code: 08-32-00  \nAccount number: 12000903  \nAccount name: HMRC Miscellaneous"
       },
       {
         "id": "ackPageWarning",
@@ -617,9 +615,7 @@ If you have a Direct Debit set up for this tax, you don't need to do anything. Y
         "type": "info",
         "format": "noformat",
         "label": "If you need to contact us about your claim",
-        "infoText": "## If you need to contact us about your claim
-Call [Content TBC] or email [TBC], quoting your registration number XZGR 00000 123456.
-        "
+        "infoText": "## If you need to contact us about your claim\nCall [Content TBC] or email [TBC], quoting your registration number XZGR 00000 123456."
       }
     ]
   }

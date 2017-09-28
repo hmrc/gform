@@ -104,9 +104,7 @@
           "id": "taxCodeOtherGroup",
           "type": "group",
           "label": "Add other tax codes",
-          "helpText": "If the tax code you want to pay duty for does not appear in the list above, enter it below. \n\n
-
-[Check your tax code](https://www.gov.uk/government/publications/uk-trade-tariff-excise-duties-reliefs-drawbacks-and-allowances/uk-trade-tariff-excise-duties-reliefs-drawbacks-and-allowances)",
+          "helpText": "If the tax code you want to pay duty for does not appear in the list above, enter it below. \n\n[Check your tax code](https://www.gov.uk/government/publications/uk-trade-tariff-excise-duties-reliefs-drawbacks-and-allowances/uk-trade-tariff-excise-duties-reliefs-drawbacks-and-allowances)",
           "repeatsMax": 20,
           "repeatAddAnotherText": "Add other tax code",
           "presentationHint": "summariseGroupAsGrid",
@@ -193,9 +191,7 @@
             "type": "info",
             "label": "",
             "infoType": "noformat",
-            "infoText": "By submitting the return, you confirm that the details provided are true and complete.  \n\n
-
-If any of these details change, you must tell us within 7 days."
+            "infoText": "By submitting the return, you confirm that the details provided are true and complete.  \n\nIf any of these details change, you must tell us within 7 days."
           }
         ]
       }
@@ -210,14 +206,7 @@ If any of these details change, you must tell us within 7 days."
         "type": "info",
         "format": "noformat",
         "label": "If you owe duty",
-        "infoText": "
-          ## If you owe duty
-          If you have a Direct Debit set up for this tax, you don't need to do anything. Your payment will be collected automatically.  \n\n
-          Otherwise, paying electronically is an easy and secure way to pay. Use the details below and make sure you include your registration number (XZGR 00000 123456) on any payment.  \n\n
-          Sort code: 08-32-00  \n
-          Account number: 12000903  \n
-          Account name: HMRC Miscellaneous
-        "
+        "infoText": "## If you owe duty\nIf you have a Direct Debit set up for this tax, you don't need to do anything. Your payment will be collected automatically.  \n\nOtherwise, paying electronically is an easy and secure way to pay. Use the details below and make sure you include your registration number (XZGR 00000 123456) on any payment.  \n\nSort code: 08-32-00  \nAccount number: 12000903  \nAccount name: HMRC Miscellaneous"
       },
       {
         "id": "ackPageWarning",
@@ -231,10 +220,7 @@ If any of these details change, you must tell us within 7 days."
         "type": "info",
         "format": "noformat",
         "label": "If you need to contact us about your return",
-        "infoText": "
-          ## If you need to contact us about your return
-          Call [Content TBC] or email [TBC], quoting your registration number XZGR 00000 123456.
-        "
+        "infoText": "## If you need to contact us about your return \nCall [Content TBC] or email [TBC], quoting your registration number XZGR 00000 123456."
       }
     ]
   }
