@@ -20,10 +20,10 @@ import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc.Action
 import uk.gov.hmrc.gform.auditing.loggingHelpers
-import uk.gov.hmrc.gform.bank_account_reputation.{BankAccountReputationConnector, Response}
+import uk.gov.hmrc.gform.bank_account_reputation.{ BankAccountReputationConnector, Response }
 import uk.gov.hmrc.gform.controllers.BaseController
-import uk.gov.hmrc.gform.des.{AddressDes, DesConnector}
-import uk.gov.hmrc.gform.sharedmodel.{Account, ValAddress}
+import uk.gov.hmrc.gform.des.{ AddressDes, DesConnector }
+import uk.gov.hmrc.gform.sharedmodel.{ Account, ValAddress }
 
 import scala.concurrent.Future
 
