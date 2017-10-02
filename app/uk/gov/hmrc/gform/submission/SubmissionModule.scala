@@ -22,6 +22,7 @@ import uk.gov.hmrc.gform.form.FormModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.pdfgenerator.{ PdfGeneratorModule, PdfGeneratorService }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.Email
 import uk.gov.hmrc.gform.time.TimeModule
 
 class SubmissionModule(
@@ -45,7 +46,7 @@ class SubmissionModule(
     fileUploadModule.fileUploadService,
     submissionRepo,
     timeModule.timeProvider,
-    emailModule
+    emailModule.emailLogic
 
   )
 

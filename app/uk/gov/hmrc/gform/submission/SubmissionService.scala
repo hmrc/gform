@@ -22,7 +22,7 @@ import cats.instances.list._
 import cats.syntax.either._
 import cats.syntax.traverse._
 import uk.gov.hmrc.gform.core._
-import uk.gov.hmrc.gform.email.EmailModule
+import uk.gov.hmrc.gform.email.EmailService
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.fileupload.FileUploadService
 import uk.gov.hmrc.gform.form.FormService
@@ -30,6 +30,7 @@ import uk.gov.hmrc.gform.formtemplate.{ FormTemplateService, RepeatingComponentS
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.pdfgenerator.{ HtmlGeneratorService, PdfGeneratorService }
 import uk.gov.hmrc.gform.sharedmodel.form._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
@@ -44,7 +45,7 @@ class SubmissionService(
     fileUploadService: FileUploadService,
     submissionRepo: SubmissionRepo,
     timeProvider: TimeProvider,
-    email: EmailModule
+    email: EmailService
 
 ) {
 
@@ -100,8 +101,8 @@ class SubmissionService(
       _                 <-                     submissionRepo.upsert(submissionAndPdf.submission)
       _                 <- fromFutureA        (formService.updateUserData(form._id, UserData(form.formData, form.repeatingGroupStructure, Submitted)))
       res               <- fromFutureA        (fileUploadService.submitEnvelope(submissionAndPdf, formTemplate.dmsSubmission))
-      emailAddress      =                    (email.emailLogic.getEmailAddress(form))
-      _                 =                     email.emailLogic.sendEmail(emailAddress)(hc, fromLoggingDetails)
+      emailAddress      =                    (email.getEmailAddress(form))
+      _                 =                     email.sendEmail(emailAddress)(hc, fromLoggingDetails)
     } yield res
     // format: ON
   }
