@@ -83,7 +83,7 @@
       ]
     },
     {
-      "title": "Enter the total amount of your claim",
+      "title": "Enter the total amount of your return",
       "fields": [
         {
           "id": "total-claim",
