@@ -9,6 +9,20 @@ This gform backend persists form templates in a mongo database.  It also persist
    
 When forms are submitted, they the submissio data is written into a PDF file and sent to DMS voia GIS using fileupload.
  
+ ### Running Gform Locally with Service Manager
+ 
+ When running locally: 
+  
+     sm --start GFORM_DEP -f
+     
+ runs all dependent services of gform. 
+ 
+ when using gform: 
+     
+     sm --start GFORM_ALL -f
+     
+ run dependencies and gform.
+ 
 ## Uploading sample data
 
 Upload a form template:
