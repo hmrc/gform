@@ -15,8 +15,6 @@
 DELETE        /gform/test-only/de-enrol/userId/:userId/country/:country         uk.gov.hmrc.gform.testonly.TestOnlyController.deEnrolUser(userId: String, country: String)
 GET           /gform/test-only/upload/country/:country                          uk.gov.hmrc.gform.testonly.TestOnlyController.upload(country: String)
 DELETE        /gform/test-only/delete/country/:country                          uk.gov.hmrc.gform.testonly.TestOnlyController.delete(country: String)
-POST          /test-only/registration/organisation/utr/:utr                       uk.gov.hmrc.gform.testonly.TestOnlyController.testValidatorStub(utr: String)
-
 
 #TODO move it to testOnlyDoNotUseInAppConf.routes
 GET           /gform/test-only/remove-templates                                  uk.gov.hmrc.gform.testonly.TestOnlyController.removeTemplates()
