@@ -171,6 +171,7 @@
           "id": "accountHoldersGroup",
           "type": "group",
           "label": "Account holders",
+          "format": "horizontal",
           "repeatsMax": 20,
           "repeatAddAnotherText": "Add another account holder",
           "fields": [
