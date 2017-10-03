@@ -384,23 +384,23 @@
       {
         "id": "ackPageInfoTop",
         "type": "info",
-        "format": "noformat",
+        "infoType": "noformat",
         "label": "If you owe duty",
-        "infoText": "## If you owe duty \nIf you have a Direct Debit set up for this tax, you don't need to do anything. Your payment will be collected automatically.  \n\nOtherwise, paying electronically is an easy and secure way to pay. Use the details below and make sure you include your registration number (XZGR 00000 123456) on any payment.  \n\nSort code: 08-32-00  \nAccount number: 12000903  \nAccount name: HMRC Miscellaneous"
+        "infoText": "## If you owe duty  \n\nf you have a Direct Debit set up for this tax, you don't need to do anything. Your payment will be collected automatically.  \n\nOtherwise, paying electronically is an easy and secure way to pay. Use the details below and make sure you include your registration number (XZGR 00000 123456) on any payment.  \n\nSort code: 08-32-00  \nAccount number: 12000903  \nAccount name: HMRC Miscellaneous"
       },
       {
         "id": "ackPageWarning",
         "type": "info",
-        "format": "important",
+        "infoType": "important",
         "label": "",
         "infoText": "Make sure you pay the duty owed or you may face a penalty."
       },
       {
         "id": "ackPageInfoBottom",
         "type": "info",
-        "format": "noformat",
+        "infoType": "noformat",
         "label": "If you need to contact us about your claim",
-        "infoText": "## If you need to contact us about your claim \nCall [Content TBC] or email [TBC], quoting your registration number XZGR 00000 123456."
+        "infoText": "## If you need to contact us about your claim  \n\nCall [Content TBC] or email [TBC], quoting your registration number XZGR 00000 123456."
       }
     ]
   }
