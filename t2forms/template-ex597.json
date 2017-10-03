@@ -299,6 +299,8 @@
           "id": "alcoholQuantityTotal",
           "type": "text",
           "label": "Total",
+          "submitMode": "readonly",
+          "presentationHint": "totalValue",
           "format": "number(12,2,'kg')",
           "value": "${quantityInKg.sum}"
         }
@@ -402,6 +404,8 @@
           "type": "text",
           "label": "Total amount of duty paid",
           "format": "sterling",
+          "submitMode": "readonly",
+          "presentationHint": "totalValue",
           "shortName": "Total amount of duty for this claim period",
           "value": "${spiritsDutyDue + beerDutyDue + wineDutyDue + ciderDutyDue}"
         }
@@ -525,7 +529,10 @@
           "type": "text",
           "label": "Total amount of duty paid",
           "format": "sterling",
-          "shortName": "Total amount of duty for this claim period"
+          "submitMode": "readonly",
+          "presentationHint": "totalValue",
+          "shortName": "Total amount of duty for this claim period",
+          "value": "${spiritsDutyUnderClaimed + beerDutyUnderClaimed + wineDutyUnderClaimed + ciderDutyUnderClaimed}"
         }
       ]
     },
@@ -738,7 +745,10 @@
           "type": "text",
           "label": "Total amount of duty paid",
           "format": "sterling",
-          "shortName": "Total amount of duty for this claim period"
+          "shortName": "Total amount of duty for this claim period",
+          "presentationHint": "totalValue",
+          "submitMode": "readonly",
+          "value": "${spiritsDutyOverClaimed + beerDutyOverClaimed + wineDutyOverClaimed + ciderDutyOverClaimed}"
         }
       ]
     },
@@ -951,7 +961,10 @@
           "type": "text",
           "label": "Total amount of duty paid",
           "format": "sterling",
-          "shortName": "Total amount of duty for this claim period"
+          "presentationHint": "totalValue",
+          "shortName": "Total amount of duty for this claim period",
+          "submitMode": "readonly",
+          "value": "${spiritsDutyUnderClaimedBoth + beerDutyUnderClaimedBoth + wineDutyUnderClaimedBoth + ciderDutyUnderClaimedBoth}"
         }
       ]
     },
@@ -1046,7 +1059,10 @@
           "type": "text",
           "label": "Total amount of duty paid",
           "format": "sterling",
-          "shortName": "Total amount of duty for this claim period"
+          "submitMode": "readonly",
+          "shortName": "Total amount of duty for this claim period",
+          "presentationHint": "totalValue",
+          "value": "${spiritsDutyOverClaimedBoth + beerDutyOverClaimedBoth + wineDutyOverClaimedBoth + ciderDutyOverClaimedBoth}"
         }
       ]
     },

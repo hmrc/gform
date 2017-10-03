@@ -275,7 +275,9 @@
           "type": "text",
           "label": "Total claim amount",
           "format": "sterling",
-          "value": "${amountOfVatPaid.sum}"
+          "value": "${amountOfVatPaid.sum}",
+          "submitMode": "readonly",
+          "presentationHint": "totalValue"
         }
       ]
     },
