@@ -16,16 +16,16 @@
 
 package uk.gov.hmrc.gform.testonly
 
-import com.typesafe.config.{ ConfigFactory, ConfigRenderOptions }
+import com.typesafe.config.{ConfigFactory, ConfigRenderOptions}
 import play.api.Logger
-import play.api.libs.json.{ JsValue, Json }
+import play.api.libs.json._
 import play.api.mvc._
 import reactivemongo.api.DB
 import reactivemongo.json.collection.JSONCollection
 import uk.gov.hmrc.BuildInfo
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
-import uk.gov.hmrc.play.http.{ HttpResponse, NotFoundException }
+import uk.gov.hmrc.play.http.{HttpResponse, NotFoundException}
 import uk.gov.hmrc.gform.des.AddressDes
 import uk.gov.hmrc.play.http.NotFoundException
 
@@ -54,6 +54,15 @@ class TestOnlyController(
 
   }
 
+  case class User(id: String, postCode: String, countryCode: String)
+
+  object User {
+    val reads: Reads[User] = Json.format[User]
+    val write: OWrites[User] = OWrites[User] { o => getJson(o)}
+
+    implicit val format = OFormat[User](reads, write)
+  }
+
   def config() = Action { r =>
     val result: JsValue = Json.parse(
       ConfigFactory.load().root().render(ConfigRenderOptions.concise())
@@ -61,16 +70,27 @@ class TestOnlyController(
     Results.Ok(result)
   }
 
-  def upload(country: String) = Action.async { implicit request =>
-    enrolmentConnector.upload(country).map(_ => NoContent)
+  def getJson(user: User): JsObject = {
+    if (user.postCode.nonEmpty) {
+        Json.obj("verifiers" -> Json.arr(Json.obj("key" -> "NonUkCountryCode", "value" -> user.countryCode), Json.obj("key" -> "BusinessPostcode", "value" -> user.postCode)))//{"verifiers" : [{"key" : "NonUkCountryCode","value" : "GB"},{"key" : "BusinessPostcode","value" : "E499OL"}]}
+    } else {
+        Json.obj("verifiers" -> Json.arr(Json.obj("key" -> "NonUkCountryCode", "value" -> user.countryCode)))
+    }
   }
 
-  def deEnrolUser(userId: String, registrationNumber: String) = Action.async { implicit request =>
-    enrolmentConnector.deEnrol(userId, registrationNumber).map(x => Ok(x.body))
+  def upload = Action.async(parse.json[User]) { implicit request =>
+    val user: User = request.body
+    enrolmentConnector.upload(user.id, Json.toJson(user)).map(_ => NoContent)
   }
 
-  def delete(country: String) = Action.async { implicit request =>
-    enrolmentConnector.removeUnallocated(country).map(_ => NoContent)
+  def deEnrolUser(userId: String) = Action.async(parse.json[User]) { implicit request =>
+    val user = request.body
+    enrolmentConnector.deEnrol(userId, user.id).map(x => Ok(x.body))
+  }
+
+  def delete = Action.async(parse.json[User]) { implicit request =>
+    val user = request.body
+    enrolmentConnector.removeUnallocated(user.id).map(_ => NoContent)
   }
 
   def testValidatorStub(utr: String) = Action.async { implicit request =>

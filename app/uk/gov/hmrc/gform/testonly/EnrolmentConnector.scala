@@ -24,33 +24,16 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 class EnrolmentConnector(wSHttp: WSHttp, baseUrl: String) {
 
-  def upload(country: String)(implicit hc: HeaderCarrier, executionContext: ExecutionContext) = {
-    val ref = getRef(country)
-    wSHttp.PUT[JsValue, HttpResponse](s"$ES6url/HMRC-OBTDS-ORG~EtmpRegistrationNumber~$ref", getJson(country))
+  def upload(id: String, body: JsValue)(implicit hc: HeaderCarrier, executionContext: ExecutionContext) = {
+    wSHttp.PUT[JsValue, HttpResponse](s"$ES6url/HMRC-OBTDS-ORG~EtmpRegistrationNumber~$id", body)
   }
 
-  def deEnrol(userId: String, country: String)(implicit hc: HeaderCarrier) = {
-    val ref = getRef(country)
-    wSHttp.DELETE(s"$baseUrl/enrolment-store/users/$userId/enrolments/HMRC-OBTDS-ORG~EtmpRegistrationNumber~$ref")
+  def deEnrol(userId: String, id: String)(implicit hc: HeaderCarrier) = {
+    wSHttp.DELETE(s"$baseUrl/enrolment-store/users/$userId/enrolments/HMRC-OBTDS-ORG~EtmpRegistrationNumber~$id")
   }
 
-  def removeUnallocated(country: String)(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[Unit] = {
-    val ref = getRef(country)
-    wSHttp.DELETE[HttpResponse](s"$ES6url/HMRC-OBTDS-ORG~EtmpRegistrationNumber~").map(_ => ())
-  }
-
-  private def getRef(country: String) = if (country == "uk") "WLAS50703269741" else "WLAS50703269741"
-
-  private def getJson(isUk: String): JsValue = {
-    if (isUk == "uk") {
-      Json.parse(
-        s"""{"verifiers" : [{"key" : "NonUkCountryCode","value" : "GB"},{"key" : "BusinessPostcode","value" : "E499OL"}]}"""
-      )
-    } else {
-      Json.parse(
-        s"""{"verifiers" : [{"key" : "NonUkCountryCode","value" : "BV"}]}"""
-      )
-    }
+  def removeUnallocated(id: String)(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[Unit] = {
+    wSHttp.DELETE[HttpResponse](s"$ES6url/HMRC-OBTDS-ORG~EtmpRegistrationNumber~$id").map(_ => ())
   }
 
   private val ES6url = "http://enrolment-store-proxy.protected.mdtp:80/enrolment-store-proxy/enrolment-store/enrolments"
