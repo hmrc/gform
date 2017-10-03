@@ -12,9 +12,9 @@
 # Add all the application routes to the prod.routes file
 ->            /                                                                  prod.Routes
 #NewAuthConnector
-POST        /gform/test-only/de-enrol/userId/:userId                             uk.gov.hmrc.gform.testonly.TestOnlyController.deEnrolUser(userId: String, country: String)
-POST        /gform/test-only/upload                                              uk.gov.hmrc.gform.testonly.TestOnlyController.upload(country: String)
-POST        /gform/test-only/delete                                              uk.gov.hmrc.gform.testonly.TestOnlyController.delete(country: String)
+POST        /gform/test-only/de-enrol/userId/:userId                             uk.gov.hmrc.gform.testonly.TestOnlyController.deEnrolUser(userId: String)
+POST        /gform/test-only/upload                                              uk.gov.hmrc.gform.testonly.TestOnlyController.upload()
+POST        /gform/test-only/delete                                              uk.gov.hmrc.gform.testonly.TestOnlyController.delete()
 
 #TODO move it to testOnlyDoNotUseInAppConf.routes
 GET           /gform/test-only/remove-templates                                  uk.gov.hmrc.gform.testonly.TestOnlyController.removeTemplates()
