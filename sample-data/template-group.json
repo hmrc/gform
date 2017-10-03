@@ -54,6 +54,7 @@
           "type": "group",
           "id": "repeatingGroup",
           "label": "Repeating group label",
+          "format": "horizontal",
           "repeatsMax": 5,
           "repeatAddAnotherText": "Add another one please",
           "fields": [
@@ -133,4 +134,5 @@
         "infoText": "thingy copy"
       }
     ]
-  }}
+  }
+}
