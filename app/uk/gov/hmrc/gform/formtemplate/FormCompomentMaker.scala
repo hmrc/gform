@@ -238,8 +238,8 @@ class FormCompomentMaker(json: JsValue) {
     (repMax, repMin) match {
       case (Some(repMax), Some(repMin)) if repMax < repMin =>
         UnexpectedState(s"""repeatsMax should be higher than repeatsMin in Group field""").asLeft
-      case (Some(repMax), Some(repMin)) if repMin < 1 =>
-        UnexpectedState(s"""repeatsMin in Group field cannot be less than 1""").asLeft
+      case (Some(repMax), Some(repMin)) if repMin < 0 =>
+        UnexpectedState(s"""repeatsMin in Group field cannot be a negative number""").asLeft
       case _ =>
         Group(fields, orientation, repMax, repMin, repeatLabel, repeatAddAnotherText).asRight
     }
