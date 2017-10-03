@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.testonly
 
-import com.typesafe.config.{ConfigFactory, ConfigRenderOptions}
+import com.typesafe.config.{ ConfigFactory, ConfigRenderOptions }
 import play.api.Logger
 import play.api.libs.json._
 import play.api.mvc._
@@ -25,7 +25,7 @@ import reactivemongo.json.collection.JSONCollection
 import uk.gov.hmrc.BuildInfo
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
-import uk.gov.hmrc.play.http.{HttpResponse, NotFoundException}
+import uk.gov.hmrc.play.http.{ HttpResponse, NotFoundException }
 import uk.gov.hmrc.gform.des.AddressDes
 import uk.gov.hmrc.play.http.NotFoundException
 
@@ -58,7 +58,7 @@ class TestOnlyController(
 
   object User {
     val reads: Reads[User] = Json.format[User]
-    val write: OWrites[User] = OWrites[User] { o => getJson(o)}
+    val write: OWrites[User] = OWrites[User] { o => getJson(o) }
 
     implicit val format = OFormat[User](reads, write)
   }
@@ -72,9 +72,9 @@ class TestOnlyController(
 
   def getJson(user: User): JsObject = {
     if (user.postCode.nonEmpty) {
-        Json.obj("verifiers" -> Json.arr(Json.obj("key" -> "NonUkCountryCode", "value" -> user.countryCode), Json.obj("key" -> "BusinessPostcode", "value" -> user.postCode)))//{"verifiers" : [{"key" : "NonUkCountryCode","value" : "GB"},{"key" : "BusinessPostcode","value" : "E499OL"}]}
+      Json.obj("verifiers" -> Json.arr(Json.obj("key" -> "NonUkCountryCode", "value" -> user.countryCode), Json.obj("key" -> "BusinessPostcode", "value" -> user.postCode))) //{"verifiers" : [{"key" : "NonUkCountryCode","value" : "GB"},{"key" : "BusinessPostcode","value" : "E499OL"}]}
     } else {
-        Json.obj("verifiers" -> Json.arr(Json.obj("key" -> "NonUkCountryCode", "value" -> user.countryCode)))
+      Json.obj("verifiers" -> Json.arr(Json.obj("key" -> "NonUkCountryCode", "value" -> user.countryCode)))
     }
   }
 
