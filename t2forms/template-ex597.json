@@ -280,6 +280,7 @@
           "type": "group",
           "label": "",
           "format": "horizontal",
+          "presentationHint": "summariseGroupAsGrid",
           "repeatsMax": 100,
           "fields": [
             {
