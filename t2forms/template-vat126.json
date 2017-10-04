@@ -1,5 +1,6 @@
 {
   "_id": "VAT126",
+  "formCategory": "hmrcClaimForm",
   "formName": "Claim for refund of VAT by certain bodies",
   "description": "",
   "dmsSubmission": {
@@ -65,7 +66,7 @@
           "type": "info",
           "infoType": "important",
           "label": "",
-          "infoText": "You'll need to upload a document to verify your new address. You can do this on the next page."
+          "infoText": "You need to upload a bank statement to verify your details"
         },
         {
           "id": "newOrgAddress",
@@ -91,7 +92,7 @@
           "type": "info",
           "label": "",
           "infoType": "standard",
-          "infoText": "The document you upload must be:\n\n* less than 5 megabytes (5MB)\n* in PDF or JPEG  format\n"
+          "infoText": "Your bank statement must be:\n\n* less than 5 megabytes (5MB)\n* in PDF or JPEG  format\n"
         },
         {
           "id": "addressDocTypeInfo",
@@ -124,7 +125,7 @@
           "type": "info",
           "infoType": "important",
           "label": "",
-          "infoText": "You'll need to upload a document to verify your new bank details. You can do this on the next page."
+          "infoText": "You need to upload a bank statement to verify your details"
         },
         {
           "id": "bankDetailsGroup",
@@ -170,15 +171,7 @@
           "id": "bankFileUploadInfo",
           "type": "info",
           "label": "",
-          "infoText": "The document you upload must be:\n\n* less than 5 megabytes (5MB)\n* in PDF or JPEG format\n"
-        },
-        {
-          "id": "bankFileTypeInfo",
-          "type": "info",
-          "label": "",
-          "infoType": "long",
-          "label": "Documents you can use to verify your new bank details",
-          "infoText": "Content goes here"
+          "infoText": "Your bank statement upload must be:\n\n* less than 5 megabytes (5MB)\n* in PDF or JPEG format\n"
         }
       ]
     },
@@ -402,7 +395,7 @@
         "type": "info",
         "infoType": "noformat",
         "label": "If you need to contact us about your claim",
-        "infoText": "## If you need to contact us about your claim  \n\nCall [Content TBC] or email [TBC], quoting your registration number XZGR 00000 123456."
+        "infoText": "## If you need to contact us about your claim  \n\nCall 03000 558554 quoting your registration number XZGR 00000 123456."
       }
     ]
   }

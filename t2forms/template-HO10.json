@@ -1,5 +1,6 @@
 {
   "_id": "HO10",
+  "formCategory": "hmrcReturnForm",
   "formName": "Hydrocarbon oils",
   "description": "",
   "dmsSubmission": {
@@ -176,7 +177,7 @@
         "type": "info",
         "infoType": "noformat",
         "label": "If you need to contact us about your return",
-        "infoText": "## If you need to contact us about your return  \n\nCall [Content TBC] or email [TBC], quoting your registration number XZGR 00000 123456."
+        "infoText": "## If you need to contact us about your return  \n\nCall 03000 558554 quoting your registration number XZGR 00000 123456."
       }
     ]
   }

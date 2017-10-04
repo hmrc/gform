@@ -1,5 +1,6 @@
 {
   "_id": "EX597-first",
+  "formCategory": "hmrcClaimForm",
   "formName": "Alcoholic Ingredients Relief",
   "description": "",
   "dmsSubmission": {
@@ -352,7 +353,7 @@
         {
           "id": "wineGroup",
           "type": "group",
-          "label": "Wine/Made-wine including fortified wine",
+          "label": "Wine or Made-wine including fortified wine",
           "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
           "fields": [
             {
@@ -620,7 +621,7 @@
         "type": "info",
         "infoType": "noformat",
         "label": "If you need to contact us about your claim",
-        "infoText": "## If you need to contact us about your claim  \n\nCall [Content TBC] or email [TBC], quoting your registration number XZGR 00000 123456."
+        "infoText": "## If you need to contact us about your claim  \n\nCall 03000 558554 quoting your registration number XZGR 00000 123456."
       }
     ]
   }
