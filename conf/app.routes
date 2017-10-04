@@ -22,3 +22,9 @@ GET           /exposed-config                                      uk.gov.hmrc.g
 POST           /validate/des                                        uk.gov.hmrc.gform.validation.ValidationController.validateAddressAtDes()
 POST           /validate/bank                                       uk.gov.hmrc.gform.validation.ValidationController.validateBank()
 
+
+#WHITE LIST END POINT
+POST           /white-list/users                                    uk.gov.hmrc.gform.auth.AuthController.check()
+GET            /white-list/users/all                                uk.gov.hmrc.gform.auth.AuthController.all()
+POST           /white-list/users/insert                             uk.gov.hmrc.gform.auth.AuthController.insert()
+POST           /white-list/users/delete                             uk.gov.hmrc.gform.auth.AuthController.delete()
