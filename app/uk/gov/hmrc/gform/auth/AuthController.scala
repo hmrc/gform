@@ -16,13 +16,14 @@
 
 package uk.gov.hmrc.gform.auth
 
+import cats.implicits._
 import play.api.libs.json.Json
 import play.api.mvc.Action
 import uk.gov.hmrc.gform.controllers.BaseController
 
 class AuthController(
-                    authService: AuthService
-                    ) extends BaseController {
+    authService: AuthService
+) extends BaseController {
 
   def check = Action.async(parse.json[String]) { implicit request =>
     authService.whiteListed(request.body).map {
@@ -40,7 +41,7 @@ class AuthController(
   }
 
   def delete = Action.async(parse.json[String]) { implicit request =>
-    val result =  for {
+    val result = for {
       x <- authService.delete(request.body)
     } yield x
 

@@ -25,6 +25,7 @@ import play.api.mvc.EssentialFilter
 import play.api.routing.Router
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.auditing.AuditingModule
+import uk.gov.hmrc.gform.auth.AuthModule
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.email.EmailModule
 import uk.gov.hmrc.gform.fileupload.FileUploadModule
@@ -75,9 +76,12 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
   private val validationModule = new ValidationModule(wSHttpModule, configModule)
   private val submissionModule = new SubmissionModule(mongoModule, pdfGeneratorModule, formModule, formTemplateModule, fileUploadModule, timeModule, emailModule)
   private val testOnlyModule = new TestOnlyModule(mongoModule, wSHttpModule, configModule, playComponents)
+  /* TODO REMOVE WHEN WE DONT HAVE WHITELISTING */
+  private val authModule = new AuthModule(mongoModule)
+  /* TODO REMOVE WHEN WE DONT HAVE WHITELISTING ^^^^^^^^ */
   private val graphiteModule = new GraphiteModule(self)
 
-  private val playComponentsModule = new PlayComponentsModule(playComponents, akkaModule, configModule, auditingModule, metricsModule, formModule, formTemplateModule, testOnlyModule, submissionModule, validationModule)
+  private val playComponentsModule = new PlayComponentsModule(playComponents, akkaModule, configModule, auditingModule, metricsModule, formModule, formTemplateModule, testOnlyModule, submissionModule, validationModule, authModule)
 
   override lazy val httpErrorHandler: HttpErrorHandler = playComponentsModule.errorHandler
   override lazy val httpRequestHandler: HttpRequestHandler = playComponentsModule.httpRequestHandler

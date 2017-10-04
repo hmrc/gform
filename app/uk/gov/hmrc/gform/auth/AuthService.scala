@@ -21,18 +21,18 @@ import play.api.libs.json.{ JsString, Json }
 import reactivemongo.api.commands.WriteResult
 import uk.gov.hmrc.gform.core.FOpt
 
-import scala.concurrent.Future
+import scala.concurrent.{ ExecutionContext, Future }
 
 class AuthService(
     authRepository: AuthRepository
 ) {
 
-  def whiteListed(email: String): Future[Option[WhiteListedUser]] = authRepository.find(email)
+  def whiteListed(email: String)(implicit ex: ExecutionContext): Future[Option[WhiteListedUser]] = authRepository.find(email)
 
-  def insert(email: String): Future[WriteResult] = authRepository.insert(WhiteListedUser(_id = email))
+  def insert(email: String)(implicit ex: ExecutionContext): Future[WriteResult] = authRepository.insert(WhiteListedUser(_id = email))
 
-  def delete(email: String): FOpt[Unit] = authRepository.delete(email)
+  def delete(email: String)(implicit ex: ExecutionContext): FOpt[Unit] = authRepository.delete(email)
 
-  def all(): Future[List[WhiteListedUser]] = authRepository.search(Json.obj())
+  def all()(implicit ex: ExecutionContext): Future[List[WhiteListedUser]] = authRepository.search(Json.obj())
 
 }
