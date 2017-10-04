@@ -23,6 +23,7 @@ import play.api.routing.Router
 import testOnlyDoNotUseInAppConf.Routes
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.auditing.AuditingModule
+import uk.gov.hmrc.gform.auth.AuthModule
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.form.FormModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
@@ -47,7 +48,8 @@ class PlayComponentsModule(
     formTemplateModule: FormTemplateModule,
     testOnlyModule: TestOnlyModule,
     submissionModule: SubmissionModule,
-    validationModule: ValidationModule
+    validationModule: ValidationModule,
+    authModule: AuthModule
 ) {
 
   lazy val loggingFilter = new LoggingFilter {
@@ -72,7 +74,8 @@ class PlayComponentsModule(
     submissionModule.submissionController,
     formTemplateModule.formTemplatesController,
     configModule.configController,
-    validationModule.validationController
+    validationModule.validationController,
+    authModule.authController
   )
 
   val adminController = new AdminController(configModule.playConfiguration)

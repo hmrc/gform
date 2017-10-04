@@ -21,5 +21,7 @@ import uk.gov.hmrc.gform.mongo.MongoModule
 
 class AuthModule(mongoModule: MongoModule) {
 
-  val authRepository = new AuthRepository(mongoModule.mongo)
+  private val authRepository = new AuthRepository(mongoModule.mongo)
+  private val authService = new AuthService(authRepository)
+  val authController = new AuthController(authService)
 }
