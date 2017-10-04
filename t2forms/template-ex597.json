@@ -1,5 +1,6 @@
 {
   "_id": "EX597",
+  "formCategory": "hmrcClaimForm",
   "formName": "Alcoholic Ingredients Relief",
   "description": "",
   "dmsSubmission": {
@@ -35,7 +36,7 @@
           "type": "info",
           "infoType": "important",
           "label": "",
-          "infoText": "You will need to upload a document to verify your new address at the end of your claim"
+          "infoText": "You will need to upload a bank statement to verify your details"
         },
         {
           "id": "businessAddressChanged",
@@ -138,7 +139,7 @@
           "type": "info",
           "infoType": "important",
           "label": "",
-          "infoText": "You will need to upload a document to verify your new bank details at the end of your claim"
+          "infoText": "You will need to upload a bank statement to verify your details"
         },
         {
           "id": "bankDetailsGroup",
@@ -359,7 +360,7 @@
         {
           "id": "wineGroup",
           "type": "group",
-          "label": "Wine/Made-wine including fortified wine",
+          "label": "Wine or Made-wine including fortified wine",
           "presentationHint": "summariseGroupAsGrid, collapseGroupUnderLabel",
           "fields": [
             {
@@ -1248,7 +1249,7 @@
         "type": "info",
         "infoType": "noformat",
         "label": "If you need to contact us about your claim",
-        "infoText": "## If you need to contact us about your claim  \n\nCall [Content TBC] or email [TBC], quoting your registration number XZGR 00000 123456."
+        "infoText": "## If you need to contact us about your claim  \n\nCall 03000 558554 quoting your registration number XZGR 00000 123456."
       }
     ]
   }

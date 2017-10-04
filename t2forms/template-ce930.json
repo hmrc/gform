@@ -1,5 +1,6 @@
 {
   "_id": "CE930",
+  "formCategory": "hmrcReturnForm",
   "formName": "Gas for use as road fuel",
   "description": "Fill in your gas for use as road fuel return form online",
   "dmsSubmission": {
@@ -104,7 +105,7 @@
           "id": "taxCodeOtherGroup",
           "type": "group",
           "label": "Add other tax codes",
-          "helpText": "If the tax code you want to pay duty for does not appear in the list above, enter it below. \n\n[Check your tax code](https://www.gov.uk/government/publications/uk-trade-tariff-excise-duties-reliefs-drawbacks-and-allowances/uk-trade-tariff-excise-duties-reliefs-drawbacks-and-allowances)",
+          "helpText": "If the tax code you want to pay duty for does not appear in the list above, enter it below. \n\n[Look up tax codes](https://www.gov.uk/government/publications/uk-trade-tariff-excise-duties-reliefs-drawbacks-and-allowances/uk-trade-tariff-excise-duties-reliefs-drawbacks-and-allowances)",
           "repeatsMax": 20,
           "repeatAddAnotherText": "Add other tax code",
           "presentationHint": "summariseGroupAsGrid",
@@ -220,7 +221,7 @@
         "type": "info",
         "infoType": "noformat",
         "label": "If you need to contact us about your return",
-        "infoText": "## If you need to contact us about your return \n\nCall [Content TBC] or email [TBC], quoting your registration number XZGR 00000 123456."
+        "infoText": "## If you need to contact us about your return \n\nCall 03000 558554 quoting your registration number XZGR 00000 123456."
       }
     ]
   }
