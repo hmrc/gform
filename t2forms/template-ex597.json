@@ -179,7 +179,7 @@
             {
               "id": "accountHoldersGroupName",
               "type": "text",
-              "label": ""
+              "label": "Account holder name $n"
             }
           ]
         }
