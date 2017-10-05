@@ -31,5 +31,5 @@ class EmailService(emailConnector: EmailConnector) {
     optemailAddress.fold(().pure[Future])(email => emailConnector.sendEmail(new EmailTemplate(Seq(email))))
   }
   def getEmailAddress(form: Form): Option[String] =
-    form.formData.fields.map(x => x.id.value -> x.value).toMap.get("declaration-email")
+    form.formData.fields.map(x => x.id.value -> x.value).toMap.get("email")
 }
