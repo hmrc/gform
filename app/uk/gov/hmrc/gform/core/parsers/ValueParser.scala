@@ -70,6 +70,7 @@ object ValueParser {
   lazy val parserExpression: Parser[Expr] = (
     parserExpression ~ "+" ~ parserExpression ^^ { (loc, expr1, _, expr2) => Add(expr1, expr2) }
     | parserExpression ~ "*" ~ parserExpression ^^ { (loc, expr1, _, expr2) => Multiply(expr1, expr2) }
+    | parserExpression ~ " -" ~ parserExpression ^^ { (loc, expr1, _, expr2) => Subtraction(expr1, expr2) }   //TODO add subtraction implementation in the frontend.
     | contextField
   )
 
