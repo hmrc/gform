@@ -70,7 +70,7 @@ class JsonParseTestValue extends Spec {
 
     for {
       snippet <- List(
-        """, "value" : "anything" }"""
+        """, "value" : "'anything'" }"""
       )
     } {
       val jsResult = implicitly[Reads[FormComponent]].reads(Json.parse(startOfJson + snippet))

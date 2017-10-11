@@ -23,6 +23,8 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ ChoiceExpression, DateExpres
 
 object ValueParser {
 
+  case class IsSubtraction(value: Boolean)
+  val isSubtraction = pureconfig.loadConfigOrThrow[IsSubtraction]("feature.subtraction").value
   def validate(expression: String): Opt[ValueExpr] = validateWithParser(expression, exprDeterminer)
 
   lazy val exprDeterminer: Parser[ValueExpr] = (
@@ -49,7 +51,7 @@ object ValueParser {
 
   lazy val expr: Parser[Expr] = (
     "'" ~ anyConstant ~ "'" ^^ { (loc, _, str, _) => str }
-    | parserExpression
+    | "${" ~> parserExpression <~ "}"
   )
 
   lazy val operation: Parser[Operation] = (
@@ -58,8 +60,7 @@ object ValueParser {
   )
 
   lazy val contextField: Parser[Expr] = (
-    "${" ~> parserExpression <~ "}"
-    | "eeitt" ~ "." ~ eeitt ^^ { (loc, _, _, eeitt) => EeittCtx(eeitt) }
+    "eeitt" ~ "." ~ eeitt ^^ { (loc, _, _, eeitt) => EeittCtx(eeitt) }
     | "form" ~ "." ~ alphabeticOnly ^^ { (loc, _, _, fieldName) => FormCtx(fieldName) }
     | "auth" ~ "." ~ authInfo ^^ { (loc, _, _, authInfo) => AuthCtx(authInfo) }
     | alphabeticOnly ~ ".sum" ^^ { (loc, value, _) => Sum(FormCtx(value)) }
@@ -70,9 +71,16 @@ object ValueParser {
   lazy val parserExpression: Parser[Expr] = (
     parserExpression ~ "+" ~ parserExpression ^^ { (loc, expr1, _, expr2) => Add(expr1, expr2) }
     | parserExpression ~ "*" ~ parserExpression ^^ { (loc, expr1, _, expr2) => Multiply(expr1, expr2) }
-    | parserExpression ~ " -" ~ parserExpression ^^ { (loc, expr1, _, expr2) => Subtraction(expr1, expr2) }   //TODO add subtraction implementation in the frontend.
-    | contextField
+    | subtractionFeatureSwitch
   )
+
+  lazy val subtractionFeatureSwitch: Parser[Expr] =
+    if (isSubtraction) {
+      (parserExpression ~ "-" ~ parserExpression ^^ { (loc, expr1, _, expr2) => Subtraction(expr1, expr2) } //TODO add subtraction implementation in the frontend.
+        | contextField)
+    } else {
+      contextField
+    }
 
   lazy val alphabeticOnly: Parser[String] = """\w+""".r ^^ { (loc, str) => str }
 
