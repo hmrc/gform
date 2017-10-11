@@ -33,6 +33,21 @@ class ValueParserSpec extends Spec {
     res.right.value should be(TextExpression(FormCtx("firstName")))
   }
 
+  it should "parse ${age - 1}" in {
+    val res = ValueParser.validate("${age - 1}")
+    res.right.value should be(TextExpression(Subtraction(FormCtx("age"), Constant("1"))))
+  }
+
+  it should "parse ${age -1}" in {
+    val res = ValueParser.validate("${age -1}")
+    res.right.value should be(TextExpression(Subtraction(FormCtx("age"), Constant("1"))))
+  }
+
+  it should "parse ${age-1}" in {
+    val res = ValueParser.validate("${age-1}")
+    res.right.value should be(TextExpression(Subtraction(FormCtx("age"), Constant("1"))))
+  }
+
   it should "parse ${eeitt.firstName}" in {
     val res = ValueParser.validate("${eeitt.businessUser}")
     res.right.value should be(TextExpression(EeittCtx(BusinessUser)))
@@ -110,7 +125,7 @@ class ValueParserSpec extends Spec {
       UnexpectedState(
         """Unable to parse expression 201568-01-12.
           |Errors:
-          |201568-01-12:1: unexpected characters; expected '+' or '\s+' or '*' or ',' or '.sum'
+          |201568-01-12:1: unexpected characters; expected '\s+' or ','
           |201568-01-12      ^""".stripMargin
       )
     )
@@ -122,7 +137,7 @@ class ValueParserSpec extends Spec {
       UnexpectedState(
         """Unable to parse expression 65841-351.
           |Errors:
-          |65841-351:1: unexpected characters; expected '+' or '\s+' or '*' or ',' or '.sum'
+          |65841-351:1: unexpected characters; expected '\s+' or ','
           |65841-351     ^""".stripMargin
       )
     )
