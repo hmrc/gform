@@ -13,9 +13,9 @@ object MicroServiceBuild extends Build with MicroService {
 
   val parsebackVersion = "0.3"
   val microserviceBootstrapVersion = "5.16.0"
-  val domainVersion = "4.1.0"
-  val hmrcTestVersion = "2.3.0"
-  val httpCachingClientVersion = "6.1.0"
+  val domainVersion = "5.0.0"
+  val hmrcTestVersion = "3.0.0"
+  val httpCachingClientVersion = "6.3.0"
   val playConfigVersion = "4.3.0"
   val playAuthorisationVersion = "4.3.0"
   val playHealthVersion = "2.1.0"
@@ -24,7 +24,7 @@ object MicroServiceBuild extends Build with MicroService {
   val playJsonLoggerVersion = "3.1.0"
 
   val catsVersion = "0.9.0"
-  val playAuditing = "2.1.0"
+  val playAuditing = "2.10.0"
   val pdfboxVersion = "2.0.7"
   val spdfVersion = "1.4.0"
   val shapelessVersion = "2.3.2"
@@ -34,7 +34,7 @@ object MicroServiceBuild extends Build with MicroService {
   val compile = Seq(
     ws,
     "uk.gov.hmrc" %% "play-reactivemongo" % playReactivemongoVersion,
-    "com.github.pureconfig" %% "pureconfig" % "0.7.2",
+    "com.github.pureconfig" %% "pureconfig" % "0.8.0",
     "uk.gov.hmrc" %% "http-caching-client" % httpCachingClientVersion,
     "uk.gov.hmrc" %% "microservice-bootstrap" % microserviceBootstrapVersion,
     "uk.gov.hmrc" %% "play-authorisation" % playAuthorisationVersion,
