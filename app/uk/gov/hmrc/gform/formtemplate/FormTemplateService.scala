@@ -48,16 +48,17 @@ class FormTemplateService(
     formTemplate: FormTemplate
   )(implicit ec: ExecutionContext): FOpt[Unit] = {
 
-    val sectionsList = formTemplate.sections
+    val sections = formTemplate.sections
 
-    val exprs = sectionsList.flatMap(_.fields.map(_.`type`))
+    val exprs: List[ComponentType] = sections.flatMap(_.fields.map(_.`type`))
 
     // format: OFF
     for {
       _          <- fromOptA(FormTemplateSchema.jsonSchema.conform(formTemplate).toEither)
-      _          <- fromOptA(FormTemplateValidator.validateRepeatingSectionFields(sectionsList).toEither)
-      _          <- fromOptA(FormTemplateValidator.validateChoiceHelpText(sectionsList).toEither)
-      _          <- fromOptA(FormTemplateValidator.validateUniqueFields(sectionsList).toEither)
+      _          <- fromOptA(FormTemplateValidator.validateRepeatingSectionFields(sections).toEither)
+      _          <- fromOptA(FormTemplateValidator.validateChoiceHelpText(sections).toEither)
+      _          <- fromOptA(FormTemplateValidator.validateUniqueFields(sections).toEither)
+      _          <- fromOptA(FormTemplateValidator.validateForwardReference(sections).toEither)
       _          <- fromOptA(FormTemplateValidator.validate(exprs, formTemplate).toEither)
       res        <- formTemplateRepo.upsert(formTemplate)
     } yield res
