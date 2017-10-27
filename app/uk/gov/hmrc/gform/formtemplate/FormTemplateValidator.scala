@@ -16,12 +16,15 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
+import java.io.Serializable
+
 import cats.Monoid
+import cats.implicits._
 import play.api.libs.json.{ JsError, JsSuccess }
 import uk.gov.hmrc.gform.core.{ Invalid, Opt, Valid, ValidationResult }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FileUploadRaw, _ }
 import uk.gov.hmrc.gform.sharedmodel.form.FormField
 
 import scala.collection.immutable.List
@@ -127,39 +130,55 @@ object FormTemplateValidator {
   }
 
   def validate(componentType: ComponentType, formTemplate: FormTemplate): ValidationResult = componentType match {
-    case UkSortCode(expr) => validate(expr, formTemplate)
-    case Text(_, expr) => validate(expr, formTemplate)
+    case UkSortCode(expr) => validate(expr, formTemplate.sections)
+    case Text(_, expr) => validate(expr, formTemplate.sections)
     case Date(_, _, _) => Valid
     case Address(_) => Valid
     case Choice(_, _, _, _, _) => Valid
     case Group(fvs, _, _, _, _, _) => FormTemplateValidator.validate(fvs.map(_.`type`), formTemplate)
-    case FileUpload() => Valid
+    case FileUpload() => validateFileUploadAmount(formTemplate.sections)
     case InformationMessage(_, _) => Valid
   }
 
-  def validate(booleanExpr: BooleanExpr, formTemplate: FormTemplate): ValidationResult = {
-    val fieldNamesIds: List[FormComponentId] = formTemplate.sections.flatMap(_.fields.map(_.id))
+  def validateForwardReference(sections: List[Section]) = {
+    val fieldNamesIds: Map[FormComponentId, Int] = sections
+      .zipWithIndex
+      .flatMap {
+        case (element, idx) => element.fields.map(_.id -> idx)
+      }.toMap
 
-    def checkFields(field1: Expr, field2: Expr): ValidationResult = {
-      val checkField1 = validate(field1, formTemplate)
-      val checkField2 = validate(field2, formTemplate)
-      Monoid[ValidationResult].combineAll(List(checkField1, checkField2))
+    def boolean(includeIf: BooleanExpr, idx: Int): List[ValidationResult] = includeIf match {
+      case Equals(left, right) =>
+        (evalExpr(left) ::: evalExpr(right))
+          .map(id => fieldNamesIds
+            .get(id)
+            .map(idIdx => isValid(idIdx < idx, "Forward referencing is not permitted."))
+            .getOrElse(Invalid(s"id named in include if expression does not exist in form ${id.value}")))
+      case Or(left, right) => boolean(left, idx) ::: boolean(right, idx)
+      case And(left, right) => boolean(left, idx) ::: boolean(right, idx)
+      case _ => List(Valid)
     }
 
-    booleanExpr match {
-      case Equals(field1, field2) => checkFields(field1, field2)
-      case _ => Valid
-    }
+    Monoid[ValidationResult].combineAll(sections
+      .zipWithIndex
+      .map(section => section._1.includeIf -> section._2)
+      .collect {
+        case (Some(element), idx) => element.expr -> idx
+      }
+      .flatMap(elements => boolean(elements._1, elements._2)))
   }
 
-  def validate(expr: Expr, formTemplate: FormTemplate): ValidationResult = {
-    val fieldNamesIds: List[FormComponentId] = formTemplate.sections.flatMap(_.fields.map(_.id)) ::: formTemplate.sections.flatMap(_.fields.map(_.`type`).collect {
-      case Group(fields, _, _, _, _, _) => fields.map(_.id)
-    }).flatten
+  def validate(expr: Expr, sections: List[Section]): ValidationResult = {
+    val fieldNamesIds: List[FormComponentId] = sections
+      .flatMap(_.fields.map(_.id)) ::: sections
+      .flatMap(_.fields.map(_.`type`)
+        .collect {
+          case Group(fields, _, _, _, _, _) => fields.map(_.id)
+        }).flatten
 
     def checkFields(field1: Expr, field2: Expr): ValidationResult = {
-      val checkField1 = validate(field1, formTemplate)
-      val checkField2 = validate(field2, formTemplate)
+      val checkField1 = validate(field1, sections)
+      val checkField2 = validate(field2, sections)
       Monoid[ValidationResult].combineAll(List(checkField1, checkField2))
     }
 
@@ -167,7 +186,7 @@ object FormTemplateValidator {
       case Add(field1, field2) => checkFields(field1, field2)
       case Subtraction(field1, field2) => checkFields(field1, field2)
       case Multiply(field1, field2) => checkFields(field1, field2)
-      case Sum(value) => validate(value, formTemplate)
+      case Sum(value) => validate(value, sections)
       case FormCtx(value) =>
         if (fieldNamesIds.map(_.value).contains(value))
           Valid
@@ -179,4 +198,35 @@ object FormTemplateValidator {
     }
   }
 
+  private def evalExpr(expr: Expr): List[FormComponentId] = expr match {
+    case Add(left, right) => evalExpr(left) ::: evalExpr(right)
+    case Subtraction(left, right) => evalExpr(left) ::: evalExpr(right)
+    case Multiply(left, right) => evalExpr(left) ::: evalExpr(right) //TODO find a way to stop code repeating.
+    case Sum(field1) => evalExpr(field1)
+    case id: FormCtx => List(id.toFieldId)
+    case _ => Nil
+  }
+
+  private def validateFileUploadAmount(sections: List[Section]): ValidationResult = {
+    def countFileUpload(formComponent: FormComponent): List[FileUpload] = formComponent.`type` match {
+      case x: FileUpload => List(x)
+      case g @ Group(_, _, max, _, _, _) =>
+        g
+          .fields
+          .flatMap(countFileUpload)
+          .flatMap(List.fill(max.getOrElse(1))(_))
+      case _ => Nil
+    }
+
+    val is = sections
+      .flatMap(section => section.fields.flatMap(countFileUpload))
+      .size <= 6 //this is set to 6 as we append to files to the envelope aswell.
+
+    isValid(is, "Form template contains too many file upload components max is 6")
+  }
+
+  private def isValid(is: Boolean, errorMessage: String) = {
+    if (is) Valid
+    else Invalid(errorMessage)
+  }
 }
