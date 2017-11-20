@@ -33,8 +33,6 @@ trait ExampleFileUploadData {
       ContentType.`image/jpeg`,
       ContentType.`text/xml`,
       ContentType.`application/vnd.ms-excel`,
-      ContentType.`application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`
-    )
-  )
+      ContentType.`application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`))
 
 }

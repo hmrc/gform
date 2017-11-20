@@ -34,8 +34,7 @@ class FormComponentParseFailureSpec extends Spec {
           "format": "after 2016-09-05 -d",
           "value": "2010-10-10"
         }
-        """
-    )
+        """)
 
     fieldValue should be(jsError)
   }
@@ -52,8 +51,7 @@ class FormComponentParseFailureSpec extends Spec {
           "format": "after 2016-09-05 -2",
           "value": "ldfls-10-10"
         }
-        """
-    )
+        """)
 
     fieldValue should be(jsError)
   }
@@ -70,8 +68,7 @@ class FormComponentParseFailureSpec extends Spec {
           "format": "after 2016-09-05 -d",
           "value": "ldfls-10-10"
         }
-        """
-    )
+        """)
 
     fieldValue should be(jsError)
   }
@@ -87,8 +84,7 @@ class FormComponentParseFailureSpec extends Spec {
          |    "Other gas"
          |  ],
          |  "format":"wrong-format"
-         |}"""
-    )
+         |}""")
 
     fieldValue should be(jsError)
   }
@@ -104,8 +100,7 @@ class FormComponentParseFailureSpec extends Spec {
          |    "Other gas"
          |  ],
          |  "value":"wrong-value"
-         |}"""
-    )
+         |}""")
 
     fieldValue should be(jsError)
   }
@@ -123,8 +118,7 @@ class FormComponentParseFailureSpec extends Spec {
          |  "value":"wrong-value",
          |  "format":"wrong-format"
          |
-         |}"""
-    )
+         |}""")
 
     fieldValue should be(jsError)
   }
@@ -138,8 +132,7 @@ class FormComponentParseFailureSpec extends Spec {
            ,
            "format": "positiveNumber(3,4,'u'"
           }
-      """
-    )
+      """)
 
     fieldValue should be(jsError)
 

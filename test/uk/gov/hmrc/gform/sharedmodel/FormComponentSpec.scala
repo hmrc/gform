@@ -30,8 +30,7 @@ class FormComponentSpec extends Spec {
          |  "label": "Registration number",
          |  "readonly": "true",
          |  "mandatory": "true"
-         |}"""
-    )
+         |}""")
 
     fieldValue should beJsSuccess(FormComponent(FormComponentId("regNum"), Text(ShortText, Constant("")), "Registration number", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None))
   }
@@ -44,8 +43,7 @@ class FormComponentSpec extends Spec {
          |  "label": "Registration number",
          |  "readonly": "true",
          |  "mandatory": "true"
-         |}"""
-    )
+         |}""")
 
     fieldValue should beJsSuccess(FormComponent(FormComponentId("regNum"), Text(ShortText, Constant("")), "Registration number", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None))
   }
@@ -59,8 +57,7 @@ class FormComponentSpec extends Spec {
          |  "readonly": "true",
          |  "mandatory": "true",
          |  "total": "false"
-         |}"""
-    )
+         |}""")
 
     fieldValue should beJsSuccess(FormComponent(FormComponentId("regNum"), Text(ShortText, Constant("")), "Registration number", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None))
   }
@@ -74,8 +71,7 @@ class FormComponentSpec extends Spec {
          |  "readonly": "true",
          |  "mandatory": "true",
          |  "total": "true"
-         |}"""
-    )
+         |}""")
 
     fieldValue should beJsSuccess(FormComponent(FormComponentId("regNum"), Text(ShortText, Constant("")), "Registration number", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None))
   }
@@ -90,8 +86,7 @@ class FormComponentSpec extends Spec {
          |  "mandatory": "true",
          |  "value": "'Ahah'",
          |  "total": "false"
-         |}"""
-    )
+         |}""")
 
     fieldValue should beJsSuccess(FormComponent(FormComponentId("regNum"), Text(ShortText, Constant("Ahah")), "Registration number", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None))
   }
@@ -106,8 +101,7 @@ class FormComponentSpec extends Spec {
          |  "mandatory": "true",
          |  "value": "'Ahah'",
          |  "total": "true"
-         |}"""
-    )
+         |}""")
 
     fieldValue should beJsSuccess(FormComponent(FormComponentId("regNum"), Text(ShortText, Constant("Ahah")), "Registration number", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None))
   }
@@ -118,8 +112,7 @@ class FormComponentSpec extends Spec {
          |  "id": "regNum",
          |  "label": "Registration number",
          |  "mandatory": "true"
-         |}"""
-    )
+         |}""")
 
     fieldValue should beJsSuccess(FormComponent(FormComponentId("regNum"), Text(ShortText, Constant("")), "Registration number", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None))
   }
@@ -130,8 +123,7 @@ class FormComponentSpec extends Spec {
          |  "id": "regNum",
          |  "label": "Registration number",
          |  "mandatory": "false"
-         |}"""
-    )
+         |}""")
 
     fieldValue should beJsSuccess(FormComponent(FormComponentId("regNum"), Text(ShortText, Constant("")), "Registration number", None, None, mandatory = false, editable = true, submissible = true, derived = false, errorMessage = None))
   }
@@ -141,8 +133,7 @@ class FormComponentSpec extends Spec {
       """|{
          |  "id": "regNum",
          |  "label": "Registration number"
-         |}"""
-    )
+         |}""")
 
     fieldValue should beJsSuccess(FormComponent(FormComponentId("regNum"), Text(ShortText, Constant("")), "Registration number", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None))
   }
@@ -152,8 +143,7 @@ class FormComponentSpec extends Spec {
       """|{
          |  "id": "regNum",
          |  "label": "Registration number"
-         |}"""
-    )
+         |}""")
 
     fieldValue should beJsSuccess(FormComponent(FormComponentId("regNum"), Text(ShortText, Constant("")), "Registration number", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None))
   }
@@ -164,8 +154,7 @@ class FormComponentSpec extends Spec {
          |  "id": "regNum",
          |  "label": "Registration number",
          |  "submitMode": "standard"
-         |}"""
-    )
+         |}""")
 
     fieldValue should beJsSuccess(FormComponent(FormComponentId("regNum"), Text(ShortText, Constant("")), "Registration number", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None))
   }
@@ -176,8 +165,7 @@ class FormComponentSpec extends Spec {
          |  "id": "regNum",
          |  "label": "Registration number",
          |  "submitMode": "readonly"
-         |}"""
-    )
+         |}""")
 
     fieldValue should beJsSuccess(FormComponent(FormComponentId("regNum"), Text(ShortText, Constant("")), "Registration number", None, None, mandatory = true, editable = false, submissible = true, derived = false, errorMessage = None))
   }
@@ -188,8 +176,7 @@ class FormComponentSpec extends Spec {
          |  "id": "regNum",
          |  "label": "Registration number",
          |  "submitMode": "info"
-         |}"""
-    )
+         |}""")
 
     fieldValue should beJsSuccess(FormComponent(FormComponentId("regNum"), Text(ShortText, Constant("")), "Registration number", None, None, mandatory = true, editable = false, submissible = false, derived = false, errorMessage = None))
   }
@@ -201,8 +188,7 @@ class FormComponentSpec extends Spec {
          |  "label": "Registration number",
          |  "mandatory": "false",
          |  "submitMode": "info"
-         |}"""
-    )
+         |}""")
 
     fieldValue should beJsSuccess(FormComponent(FormComponentId("regNum"), Text(ShortText, Constant("")), "Registration number", None, None, mandatory = false, editable = false, submissible = false, derived = false, errorMessage = None))
   }
@@ -213,8 +199,7 @@ class FormComponentSpec extends Spec {
          |  "type": "address",
          |  "id": "homeAddress",
          |  "label": "Home"
-         |}"""
-    )
+         |}""")
 
     fieldValue should beJsSuccess(FormComponent(FormComponentId("homeAddress"), Address(international = false), "Home", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None))
   }
@@ -226,8 +211,7 @@ class FormComponentSpec extends Spec {
          |  "id": "homeAddress",
          |  "label": "Home",
          |  "international" : "Yes"
-         |}"""
-    )
+         |}""")
 
     fieldValue should beJsSuccess(FormComponent(FormComponentId("homeAddress"), Address(international = true), "Home", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None))
   }
@@ -239,8 +223,7 @@ class FormComponentSpec extends Spec {
          |  "id": "homeAddress",
          |  "label": "Home",
          |  "international" : "No"
-         |}"""
-    )
+         |}""")
 
     fieldValue should beJsSuccess(FormComponent(FormComponentId("homeAddress"), Address(international = false), "Home", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None))
   }
@@ -255,8 +238,7 @@ class FormComponentSpec extends Spec {
          |    "Natural gas",
          |    "Other gas"
          |  ]
-         |}"""
-    )
+         |}""")
 
     fieldValue should beJsSuccess(
       FormComponent(
@@ -269,9 +251,7 @@ class FormComponentSpec extends Spec {
         editable = true,
         submissible = true,
         derived = false,
-        None
-      )
-    )
+        None))
   }
 
   it should "parse 'choice' type as Radio with Vertical orientation if 'multivalue=no' is provided" in {
@@ -285,8 +265,7 @@ class FormComponentSpec extends Spec {
          |    "Other gas"
          |  ],
          |  "multivalue":"no"
-         |}"""
-    )
+         |}""")
 
     fieldValue should beJsSuccess(
       FormComponent(
@@ -299,9 +278,7 @@ class FormComponentSpec extends Spec {
         editable = true,
         submissible = true,
         derived = false,
-        None
-      )
-    )
+        None))
   }
 
   it should "parse 'choice' type as Radio with Vertical orientation if 'multivalue=no & format=vertical' is provided" in {
@@ -316,8 +293,7 @@ class FormComponentSpec extends Spec {
          |  ],
          |  "multivalue":"no",
          |  "format":"vertical"
-         |}"""
-    )
+         |}""")
 
     fieldValue should beJsSuccess(
       FormComponent(
@@ -330,9 +306,7 @@ class FormComponentSpec extends Spec {
         editable = true,
         submissible = true,
         derived = false,
-        None
-      )
-    )
+        None))
   }
 
   it should "parse 'choice' type as Radio with Horizontal orientation if 'multivalue=no & format=horizontal' is provided" in {
@@ -347,8 +321,7 @@ class FormComponentSpec extends Spec {
          |  ],
          |  "multivalue":"no",
          |  "format":"horizontal"
-         |}"""
-    )
+         |}""")
 
     fieldValue should beJsSuccess(
       FormComponent(
@@ -361,9 +334,7 @@ class FormComponentSpec extends Spec {
         editable = true,
         submissible = true,
         derived = false,
-        None
-      )
-    )
+        None))
   }
 
   it should "parse 'choice' type as Checkbox with Vertical orientation if 'multivalue=yes' is provided" in {
@@ -377,8 +348,7 @@ class FormComponentSpec extends Spec {
          |    "Other gas"
          |  ],
          |  "multivalue":"yes"
-         |}"""
-    )
+         |}""")
 
     fieldValue should beJsSuccess(
       FormComponent(
@@ -391,9 +361,7 @@ class FormComponentSpec extends Spec {
         editable = true,
         submissible = true,
         derived = false,
-        None
-      )
-    )
+        None))
   }
 
   it should "parse 'choice' type as Checkbox with Vertical orientation if 'multivalue=yes & format=vertical' is provided" in {
@@ -408,8 +376,7 @@ class FormComponentSpec extends Spec {
          |  ],
          |  "multivalue":"yes",
          |  "format":"vertical"
-         |}"""
-    )
+         |}""")
 
     fieldValue should beJsSuccess(
       FormComponent(
@@ -422,9 +389,7 @@ class FormComponentSpec extends Spec {
         editable = true,
         submissible = true,
         derived = false,
-        None
-      )
-    )
+        None))
   }
 
   it should "parse 'choice' type as Checkbox with Horizontal orientation if 'multivalue=yes & format=horizontal' is provided" in {
@@ -439,8 +404,7 @@ class FormComponentSpec extends Spec {
          |  ],
          |  "multivalue":"yes",
          |  "format":"horizontal"
-         |}"""
-    )
+         |}""")
 
     fieldValue should beJsSuccess(
       FormComponent(
@@ -453,9 +417,7 @@ class FormComponentSpec extends Spec {
         editable = true,
         submissible = true,
         derived = false,
-        None
-      )
-    )
+        None))
   }
 
   it should "parse 'choice' type as YesNo if 'format=yesno' is provided" in {
@@ -465,8 +427,7 @@ class FormComponentSpec extends Spec {
          |  "id":"taxType",
          |  "label":"Gas tax type?",
          |  "format":"yesno"
-         |}"""
-    )
+         |}""")
 
     fieldValue should beJsSuccess(
       FormComponent(
@@ -479,9 +440,7 @@ class FormComponentSpec extends Spec {
         editable = true,
         submissible = true,
         derived = false,
-        None
-      )
-    )
+        None))
   }
 
   it should "parse 'choice' type as YesNo if 'format=yesno' and 'value=1' are provided" in {
@@ -492,8 +451,7 @@ class FormComponentSpec extends Spec {
          |  "label":"Gas tax type?",
          |  "format":"yesno",
          |  "value": "1"
-         |}"""
-    )
+         |}""")
 
     fieldValue should beJsSuccess(
       FormComponent(
@@ -506,9 +464,7 @@ class FormComponentSpec extends Spec {
         editable = true,
         submissible = true,
         derived = false,
-        None
-      )
-    )
+        None))
   }
 
   it should "parse 'choice' type as YesNo if 'format=yesno & multivalue=no' is provided" in {
@@ -519,8 +475,7 @@ class FormComponentSpec extends Spec {
          |  "label":"Gas tax type?",
          |  "format":"yesno",
          |  "multivalue":"no"
-         |}"""
-    )
+         |}""")
 
     fieldValue should beJsSuccess(
       FormComponent(
@@ -533,9 +488,7 @@ class FormComponentSpec extends Spec {
         editable = true,
         submissible = true,
         derived = false,
-        None
-      )
-    )
+        None))
   }
 
   it should "parse 'choice' type as YesNo ignoring 'choices' if they are provided" in {
@@ -549,8 +502,7 @@ class FormComponentSpec extends Spec {
          |    "Natural gas",
          |    "Other gas"
          |  ]
-         |}"""
-    )
+         |}""")
 
     fieldValue should beJsSuccess(FormComponent(FormComponentId("taxType"), Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int], None), "Gas tax type?", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None))
   }
@@ -563,8 +515,7 @@ class FormComponentSpec extends Spec {
          |  "label":"Gas tax type?",
          |  "format":"yesno",
          |  "multivalue":"yes"
-         |}"""
-    )
+         |}""")
 
     fieldValue should beJsSuccess(FormComponent(FormComponentId("taxType"), Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int], None), "Gas tax type?", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None))
   }
@@ -577,8 +528,7 @@ class FormComponentSpec extends Spec {
            "label": "Original invoice from the supplier",
            "format": "inline",
            "choices": ["Yes","No"]
-         }"""
-    )
+         }""")
 
     fieldValue should beJsSuccess(FormComponent(FormComponentId("haveIncludedInvoice"), Choice(Inline, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int], None), "Original invoice from the supplier", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None))
   }
@@ -592,8 +542,7 @@ class FormComponentSpec extends Spec {
            "format": "inline",
            "choices": ["Yes","No", "Not sure"],
            "value": "1"
-         }"""
-    )
+         }""")
 
     fieldValue should beJsSuccess(FormComponent(FormComponentId("haveIncludedInvoice"), Choice(Inline, NonEmptyList.of("Yes", "No", "Not sure"), Horizontal, List(1), None), "Original invoice from the supplier", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None))
   }
@@ -606,8 +555,7 @@ class FormComponentSpec extends Spec {
            "label": "Original invoice from the supplier",
            "format": "inline",
            "choices": []
-         }"""
-    )
+         }""")
 
     fieldValue should be(jsError)
   }
@@ -618,8 +566,7 @@ class FormComponentSpec extends Spec {
          |  "type": "choice",
          |  "id":"dutyType",
          |  "label":"Select the tax type"
-         |}"""
-    )
+         |}""")
 
     fieldValue should be(jsError)
   }
@@ -635,8 +582,7 @@ class FormComponentSpec extends Spec {
          |    "Other gas"
          |  ],
          |  "multivalue":"wrong-value"
-         |}"""
-    )
+         |}""")
 
     fieldValue should be(jsError)
   }
@@ -652,8 +598,7 @@ class FormComponentSpec extends Spec {
          |    "Other gas"
          |  ],
          |  "format":"wrong-value"
-         |}"""
-    )
+         |}""")
 
     fieldValue should be(jsError)
   }
@@ -664,8 +609,7 @@ class FormComponentSpec extends Spec {
            "type": "file",
            "id":"attachment1",
            "label": "Attach evidence of your income"
-         }"""
-    )
+         }""")
 
     fieldValue should beJsSuccess(
       FormComponent(
@@ -678,9 +622,7 @@ class FormComponentSpec extends Spec {
         editable = true,
         submissible = true,
         derived = false,
-        None
-      )
-    )
+        None))
   }
 
   it should "parse info field and select Standard type if infoType not provided" in {
@@ -692,8 +634,7 @@ class FormComponentSpec extends Spec {
         |  "label": "Label -- standard info field",
         |  "infoText": "This is a sample text for a standard info field"
         |}
-      """.stripMargin
-    )
+      """.stripMargin)
 
     fieldValue should beJsSuccess(
       FormComponent(
@@ -706,9 +647,7 @@ class FormComponentSpec extends Spec {
         false,
         false,
         derived = false,
-        None
-      )
-    )
+        None))
   }
 
   it should "parse info field and correctly build a standard type info field" in {
@@ -721,8 +660,7 @@ class FormComponentSpec extends Spec {
         |  "infoType" : "standard",
         |  "infoText": "This is a sample text for a standard info field"
         |}
-      """.stripMargin
-    )
+      """.stripMargin)
 
     fieldValue should beJsSuccess(
       FormComponent(
@@ -735,9 +673,7 @@ class FormComponentSpec extends Spec {
         false,
         false,
         derived = false,
-        None
-      )
-    )
+        None))
   }
 
   it should "parse info field and correctly build a long type info field" in {
@@ -750,8 +686,7 @@ class FormComponentSpec extends Spec {
         |  "infoType" : "long",
         |  "infoText": "This is a sample text for an info field"
         |}
-      """.stripMargin
-    )
+      """.stripMargin)
 
     fieldValue should beJsSuccess(
       FormComponent(
@@ -764,9 +699,7 @@ class FormComponentSpec extends Spec {
         false,
         false,
         derived = false,
-        None
-      )
-    )
+        None))
   }
 
   it should "parse info field and correctly build an important type info field" in {
@@ -779,8 +712,7 @@ class FormComponentSpec extends Spec {
         |  "infoType" : "important",
         |  "infoText": "This is a sample text for an info field"
         |}
-      """.stripMargin
-    )
+      """.stripMargin)
 
     fieldValue should beJsSuccess(
       FormComponent(
@@ -793,9 +725,7 @@ class FormComponentSpec extends Spec {
         false,
         false,
         derived = false,
-        None
-      )
-    )
+        None))
   }
 
   it should "parse info field and correctly build a banner type info field" in {
@@ -808,8 +738,7 @@ class FormComponentSpec extends Spec {
         |  "infoType" : "banner",
         |  "infoText": "This is a sample text for an info field"
         |}
-      """.stripMargin
-    )
+      """.stripMargin)
 
     fieldValue should beJsSuccess(
       FormComponent(
@@ -822,9 +751,7 @@ class FormComponentSpec extends Spec {
         false,
         false,
         derived = false,
-        None
-      )
-    )
+        None))
   }
   it should "parse info field and correctly build a noformat type info field" in {
     val fieldValue = toFieldValue(
@@ -836,8 +763,7 @@ class FormComponentSpec extends Spec {
         |  "infoType" : "noformat",
         |  "infoText": "This is a sample text for an info field"
         |}
-      """.stripMargin
-    )
+      """.stripMargin)
 
     fieldValue should beJsSuccess(
       FormComponent(
@@ -850,9 +776,7 @@ class FormComponentSpec extends Spec {
         false,
         false,
         derived = false,
-        None
-      )
-    )
+        None))
   }
 
   it should "fail to parse if info field is not one of a valid types" in {
@@ -865,8 +789,7 @@ class FormComponentSpec extends Spec {
         |  "infoType" : "beg_your_pardon?",
         |  "infoText": "This is a sample text for an info field"
         |}
-      """.stripMargin
-    )
+      """.stripMargin)
 
     fieldValue should be(jsError)
   }
@@ -880,8 +803,7 @@ class FormComponentSpec extends Spec {
         |  "label": "Label -- info field",
         |  "infoType" : "beg_your_pardon?"
         |}
-      """.stripMargin
-    )
+      """.stripMargin)
 
     fieldValue should be(jsError)
   }
@@ -896,8 +818,7 @@ class FormComponentSpec extends Spec {
          |  "shortName" : "$shortName",
          |  "readonly": "true",
          |  "mandatory": "true"
-         |}""".stripMargin
-    )
+         |}""".stripMargin)
 
     fieldValue should beJsSuccess(FormComponent(FormComponentId("regNum"), Text(ShortText, Constant("")), "Registration number", None, Some(shortName), mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None))
   }
@@ -910,8 +831,7 @@ class FormComponentSpec extends Spec {
          |  "id": "homeAddress",
          |  "label": "Home",
          |  "shortName" : "$shortName"
-         |}"""
-    )
+         |}""")
 
     fieldValue should beJsSuccess(FormComponent(FormComponentId("homeAddress"), Address(international = false), "Home", None, Some(shortName), mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None))
   }
@@ -927,8 +847,7 @@ class FormComponentSpec extends Spec {
            "format": "inline",
            "choices": ["Yes","No", "Not sure"],
            "value": "1"
-         }"""
-    )
+         }""")
 
     fieldValue should beJsSuccess(FormComponent(FormComponentId("haveIncludedInvoice"), Choice(Inline, NonEmptyList.of("Yes", "No", "Not sure"), Horizontal, List(1), None), "Original invoice from the supplier", None, Some(shortName), mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None))
   }
@@ -945,8 +864,7 @@ class FormComponentSpec extends Spec {
           "format": "after 2017-04-02 -2,before 2017-05-02 -1",
           "value": "2017-04-10"
         }
-        """
-    )
+        """)
 
     fieldValue shouldBe an[JsSuccess[FormComponent]]
   }
@@ -963,8 +881,7 @@ class FormComponentSpec extends Spec {
           "format": "after 2017-03-31,before 2017-05-01",
           "value": "2017-04-10"
         }
-        """
-    )
+        """)
 
     fieldValue shouldBe an[JsSuccess[FormComponent]]
   }
@@ -980,8 +897,7 @@ class FormComponentSpec extends Spec {
           "mandatory": "true",
           "format": "after today -1,before today +7"
         }
-        """
-    )
+        """)
 
     fieldValue shouldBe an[JsSuccess[FormComponent]]
   }

@@ -27,8 +27,7 @@ class BooleanExprSpec extends FlatSpec with Matchers with EitherValues {
     FormComponentId("startDate.day") -> FormField(FormComponentId("startDate.day"), "10"),
     FormComponentId("startDate.month") -> FormField(FormComponentId("startDate.month"), "10"),
     FormComponentId("firstName") -> FormField(FormComponentId("firstName"), "Pete"),
-    FormComponentId("nameOfBusiness") -> FormField(FormComponentId("nameOfBusiness"), "Business Name")
-  )
+    FormComponentId("nameOfBusiness") -> FormField(FormComponentId("nameOfBusiness"), "Business Name"))
 
   "isTrue" should "evaluate correctly" in {
 

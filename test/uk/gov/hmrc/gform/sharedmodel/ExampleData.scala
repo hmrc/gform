@@ -75,50 +75,43 @@ trait ExampleFieldValue { dependecies: ExampleFieldId =>
     `fieldId - facePhoto`,
     FileUpload(), label = "Attach evidence of your smile", helpText = None, None, mandatory = true, editable = true, submissible = true, derived = false,
     None,
-    None
-  )
+    None)
 
   def `fieldValue - firstName` = FormComponent(
     `fieldId - firstName`,
     Text(AnyText, Constant("any text")), "First Name", None, None, mandatory = true, editable = true, submissible = true, derived = false,
     None,
-    None
-  )
+    None)
 
   def `fieldValue - surname` = FormComponent(
     `fieldId - surname`,
     Text(AnyText, Constant("any text")), "Last Name", None, None, mandatory = true, editable = true, submissible = true, derived = false,
     None,
-    None
-  )
+    None)
 
   def `fieldValue - iptRegNum` = FormComponent(
     `fieldId - iptRegNum`,
     Text(AnyText, Constant("any text")), "Insurance Premium Tax (IPT) number", None, None, mandatory = true, editable = true, submissible = true, derived = false,
     None,
-    None
-  )
+    None)
 
   def `fieldValue - businessName` = FormComponent(
     `fieldId - businessName`,
     Text(AnyText, Constant("any text")), "Name of business", None, None, mandatory = true, editable = true, submissible = true, derived = false,
     None,
-    None
-  )
+    None)
 
   def `fieldValue - startDate` = FormComponent(
     `fieldId - startDate`,
     Date(AnyDate, Offset(0), None), "Your Start Date", None, None, true, true, true, derived = false,
     None,
-    None
-  )
+    None)
 
   def `fieldValue - info` = FormComponent(
     `fieldId - businessName`,
     InformationMessage(NoFormat, "some text"),
     "someLabel",
-    None, None, false, false, false, derived = false, None
-  )
+    None, None, false, false, false, derived = false, None)
 
   def `group - type` = Group(
     fields = List(`fieldValue - firstName`),
@@ -126,8 +119,7 @@ trait ExampleFieldValue { dependecies: ExampleFieldId =>
     repeatsMax = None,
     repeatsMin = None,
     repeatLabel = None,
-    repeatAddAnotherText = None
-  )
+    repeatAddAnotherText = None)
 
   def `fieldValue - group` = FormComponent(
     id = FormComponentId("GroupFieldValueId"),
@@ -139,14 +131,12 @@ trait ExampleFieldValue { dependecies: ExampleFieldId =>
     editable = false,
     submissible = true,
     derived = false,
-    errorMessage = None
-  )
+    errorMessage = None)
 
   def `fieldValue - number` = FormComponent(
     `fieldId - number`,
     Text(Number(), Constant("")),
-    "sample label", None, None, true, true, true, derived = false, None
-  )
+    "sample label", None, None, true, true, true, derived = false, None)
 
 }
 
@@ -166,9 +156,7 @@ trait ExampleSection { dependecies: ExampleFieldId with ExampleFieldValue with E
     List(
       `fieldValue - firstName`,
       `fieldValue - surname`,
-      `fieldValue - facePhoto`
-    )
-  )
+      `fieldValue - facePhoto`))
 
   def `section - businessDetails` = Section(
     "Business details",
@@ -176,9 +164,7 @@ trait ExampleSection { dependecies: ExampleFieldId with ExampleFieldValue with E
     List(
       `fieldValue - businessName`,
       `fieldValue - startDate`,
-      `fieldValue - iptRegNum`
-    )
-  )
+      `fieldValue - iptRegNum`))
 
   def `repeating section` = Section(
     "Repeating section",
@@ -187,16 +173,13 @@ trait ExampleSection { dependecies: ExampleFieldId with ExampleFieldValue with E
     repeatsMin = Some(TextExpression(FormCtx(`fieldId - firstName`.value))),
     None,
     List(
-      `fieldValue - surname`
-    )
-  )
+      `fieldValue - surname`))
 
   def `section - group` = `section - about you`.copy(fields = List(`fieldValue - group`))
 
   def allSections = List(
     `section - about you`,
-    `section - businessDetails`
-  )
+    `section - businessDetails`)
 }
 
 trait ExampleFormTemplate { dependsOn: ExampleAuthConfig with ExampleSection with ExampleFieldId with ExampleFieldValue =>
@@ -226,8 +209,7 @@ trait ExampleFormTemplate { dependsOn: ExampleAuthConfig with ExampleSection wit
     submitErrorUrl = submitErrorUrl,
     sections = allSections,
     acknowledgementSection = acknowledgementSection,
-    declarationSection = DeclarationSection("Declaration", None, None, Nil)
-  )
+    declarationSection = DeclarationSection("Declaration", None, None, Nil))
 }
 
 trait ExampleFormField { dependsOn: ExampleFormTemplate with ExampleFieldId =>
@@ -251,8 +233,7 @@ trait ExampleFormField { dependsOn: ExampleFormTemplate with ExampleFieldId =>
     `fieldId - startDate-month` -> `formField - startDateMonth`,
     `fieldId - startDate-day` -> `formField - startDateDay`,
     `fieldId - businessName` -> `formField - businessName`,
-    `fieldId - number` -> `formField - number`
-  )
+    `fieldId - number` -> `formField - number`)
 }
 
 trait ExampleForm { dependsOn: ExampleFormField with ExampleFormTemplate =>
@@ -276,8 +257,7 @@ trait ExampleForm { dependsOn: ExampleFormField with ExampleFormTemplate =>
     formTemplateId,
     None,
     formData,
-    InProgress
-  )
+    InProgress)
 
 }
 
@@ -289,16 +269,14 @@ trait ExampleSubmission { dependsOn: ExampleForm with ExampleFormTemplate =>
 
   def dmsMetaData = DmsMetaData(
     formTemplateId,
-    "TESTNINO"
-  )
+    "TESTNINO")
 
   def submission = Submission(
     formId,
     submittedDate,
     submissionRef,
     envelopeId,
-    dmsMetaData
-  )
+    dmsMetaData)
 
 }
 

@@ -114,9 +114,7 @@ class ValueParserSpec extends Spec {
         """Unable to parse expression 2015-1-12.
           |Errors:
           |2015-1-12:1: unexpected characters; expected '0[1-9]|1[012]' or '\s+'
-          |2015-1-12     ^""".stripMargin
-      )
-    )
+          |2015-1-12     ^""".stripMargin))
   }
 
   it should "throw exception on year digits" in {
@@ -126,9 +124,7 @@ class ValueParserSpec extends Spec {
         """Unable to parse expression 201568-01-12.
           |Errors:
           |201568-01-12:1: unexpected characters; expected '\s+' or ','
-          |201568-01-12      ^""".stripMargin
-      )
-    )
+          |201568-01-12      ^""".stripMargin))
   }
 
   it should "throw exception on Date format" in {
@@ -138,9 +134,7 @@ class ValueParserSpec extends Spec {
         """Unable to parse expression 65841-351.
           |Errors:
           |65841-351:1: unexpected characters; expected '\s+' or ','
-          |65841-351     ^""".stripMargin
-      )
-    )
+          |65841-351     ^""".stripMargin))
   }
 
   it should "parse next Date setting next year" in {
@@ -148,9 +142,7 @@ class ValueParserSpec extends Spec {
 
     res.right.value should be(
       DateExpression(
-        NextDateValue(1, 15)
-      )
-    )
+        NextDateValue(1, 15)))
   }
 
   it should "parse next Date setting current year" in {
@@ -158,9 +150,7 @@ class ValueParserSpec extends Spec {
 
     res.right.value should be(
       DateExpression(
-        NextDateValue(4, 15)
-      )
-    )
+        NextDateValue(4, 15)))
   }
 
   it should "parse last Date setting current year" in {
@@ -168,9 +158,7 @@ class ValueParserSpec extends Spec {
 
     res.right.value should be(
       DateExpression(
-        PreviousDateValue(1, 15)
-      )
-    )
+        PreviousDateValue(1, 15)))
   }
 
   it should "parse last Date setting previous year" in {
@@ -178,17 +166,14 @@ class ValueParserSpec extends Spec {
 
     res.right.value should be(
       DateExpression(
-        PreviousDateValue(4, 15)
-      )
-    )
+        PreviousDateValue(4, 15)))
   }
 
   it should "parse Date setting current Date" in {
     val res = ValueParser.validate("today")
 
     res.right.value should be(
-      DateExpression(TodayDateValue)
-    )
+      DateExpression(TodayDateValue))
   }
 
   it should "fail parse unclosed parenthesis" in {
@@ -197,9 +182,7 @@ class ValueParserSpec extends Spec {
       UnexpectedState(
         """|Unable to parse expression ${name.
            |Errors:
-           |${name: unexpected end-of-file; expected '}'""".stripMargin
-      )
-    )
+           |${name: unexpected end-of-file; expected '}'""".stripMargin))
   }
 
   val plainFormTemplate = FormTemplate(
@@ -214,8 +197,7 @@ class ValueParserSpec extends Spec {
     "submitErrorUrl",
     List.empty[Section],
     acknowledgementSection = AcknowledgementSection("", None, None, Nil),
-    declarationSection = DeclarationSection("Declaration", None, None, Nil)
-  )
+    declarationSection = DeclarationSection("Declaration", None, None, Nil))
 
   val yourDetailsSection = Section(
     "Your details",
@@ -223,9 +205,7 @@ class ValueParserSpec extends Spec {
     None, None, None,
     List(
       FormComponent(FormComponentId("firstName"), Text(AnyText, Constant("")), "Your first name", None, None, mandatory = false, editable = true, submissible = true, derived = false, errorMessage = None),
-      FormComponent(FormComponentId("lastName"), Text(AnyText, Constant("")), "Your last name", None, None, mandatory = false, editable = true, submissible = true, derived = false, errorMessage = None)
-    )
-  )
+      FormComponent(FormComponentId("lastName"), Text(AnyText, Constant("")), "Your last name", None, None, mandatory = false, editable = true, submissible = true, derived = false, errorMessage = None)))
 
   val formTemplateWithOneSection = plainFormTemplate.copy(sections = List(yourDetailsSection))
 

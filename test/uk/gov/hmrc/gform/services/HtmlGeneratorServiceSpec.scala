@@ -60,14 +60,12 @@ class HtmlGeneratorServiceSpec extends Spec with ExampleData {
       editable = true,
       submissible = true,
       derived = false,
-      errorMessage = None
-    )
+      errorMessage = None)
 
     val formList = List(
       FormField(FormComponentId("id.day"), "01"),
       FormField(FormComponentId("id.month"), "01"),
-      FormField(FormComponentId("id.year"), "1970")
-    )
+      FormField(FormComponentId("id.year"), "1970"))
 
     val formFields = List(SectionFormField("SECTION TITLE", List((formList, fieldValue))))
     val html = testService.generateDocumentHTML(formFields, "FORM TITLE", formData)
@@ -87,8 +85,7 @@ class HtmlGeneratorServiceSpec extends Spec with ExampleData {
       editable = true,
       submissible = true,
       derived = false,
-      errorMessage = None
-    )
+      errorMessage = None)
 
     val formList = List(
       FormField(FormComponentId("id-street1"), "A1"),
@@ -97,8 +94,7 @@ class HtmlGeneratorServiceSpec extends Spec with ExampleData {
       FormField(FormComponentId("id-street4"), "A4"),
       FormField(FormComponentId("id-postcode"), "PC"),
       FormField(FormComponentId("id-uk"), "true"),
-      FormField(FormComponentId("id-country"), "")
-    )
+      FormField(FormComponentId("id-country"), ""))
 
     val formFields = List(SectionFormField("SECTION TITLE", List((formList, fieldValue))))
     val html = testService.generateDocumentHTML(formFields, "FORM TITLE", formData)
@@ -118,12 +114,10 @@ class HtmlGeneratorServiceSpec extends Spec with ExampleData {
       editable = true,
       submissible = true,
       derived = false,
-      errorMessage = None
-    )
+      errorMessage = None)
 
     val formList = List(
-      FormField(FormComponentId("id"), "0,2")
-    )
+      FormField(FormComponentId("id"), "0,2"))
 
     val formFields = List(SectionFormField("SECTION TITLE", List((formList, fieldValue))))
     val html = testService.generateDocumentHTML(formFields, "FORM TITLE", formData)
@@ -143,12 +137,10 @@ class HtmlGeneratorServiceSpec extends Spec with ExampleData {
       editable = true,
       submissible = true,
       derived = false,
-      errorMessage = None
-    )
+      errorMessage = None)
 
     val formList = List(
-      FormField(FormComponentId("id"), "Hello")
-    )
+      FormField(FormComponentId("id"), "Hello"))
 
     val formFields = List(SectionFormField("SECTION TITLE", List((formList, fieldValue))))
     val html = testService.generateDocumentHTML(formFields, "FORM TITLE", formData)
@@ -159,8 +151,7 @@ class HtmlGeneratorServiceSpec extends Spec with ExampleData {
 
   it should "return HTML excluding stirling pound and commas for a numeric text field" in {
     val formList = List(
-      `formField - number`
-    )
+      `formField - number`)
 
     val formFields = List(SectionFormField("SECTION TITLE", List((formList, `fieldValue - number`))))
     val html = testService.generateDocumentHTML(formFields, "FORM TITLE", formData)

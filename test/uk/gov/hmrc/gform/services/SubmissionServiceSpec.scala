@@ -41,8 +41,7 @@ class SubmissionServiceSpec extends Spec {
       FormField(FormComponentId("1_DOS"), "1_DOS"),
       FormField(FormComponentId("2_DOS"), "2_DOS"),
       FormField(FormComponentId("3_DOS"), "3_DOS"),
-      FormField(FormComponentId("4_DOS"), "4_DOS")
-    )
+      FormField(FormComponentId("4_DOS"), "4_DOS"))
     val formData = FormData(formFields)
 
     val form = Form(FormId("MIO"), EnvelopeId(""), UserId("TESTID"), FormTemplateId("JustAFormTypeId"), None, formData, InProgress)
@@ -57,8 +56,7 @@ class SubmissionServiceSpec extends Spec {
       editable = true,
       submissible = true,
       derived = false,
-      errorMessage = None
-    )
+      errorMessage = None)
 
     val textFieldDos = textFieldUno.copy(id = FormComponentId("DOS"), `type` = Text(AnyText, Constant("DOS")))
 
@@ -68,8 +66,7 @@ class SubmissionServiceSpec extends Spec {
       repeatsMax = Some(2),
       repeatsMin = Some(1),
       repeatLabel = Some("repeat label"),
-      repeatAddAnotherText = Some("add group button label")
-    )
+      repeatAddAnotherText = Some("add group button label"))
 
     val groupFieldValue = FormComponent(
       id = FormComponentId("GroupFieldValueId"),
@@ -81,8 +78,7 @@ class SubmissionServiceSpec extends Spec {
       editable = false,
       submissible = true,
       derived = false,
-      errorMessage = None
-    )
+      errorMessage = None)
 
     val section = Section(
       title = "Section title",
@@ -91,8 +87,7 @@ class SubmissionServiceSpec extends Spec {
       includeIf = None,
       None, None,
       None,
-      fields = List(groupFieldValue)
-    )
+      fields = List(groupFieldValue))
 
     val formTemplate = FormTemplate(
       _id = FormTemplateId("JustAFormTypeId"),
@@ -106,8 +101,7 @@ class SubmissionServiceSpec extends Spec {
       submitErrorUrl = "http://somwehere-nasty.net",
       sections = List(section),
       acknowledgementSection = AcknowledgementSection("", None, None, Nil),
-      declarationSection = DeclarationSection("Declaration", None, None, Nil)
-    )
+      declarationSection = DeclarationSection("Declaration", None, None, Nil))
 
     val expectedResult = List(
       SectionFormField(
@@ -115,24 +109,17 @@ class SubmissionServiceSpec extends Spec {
         List(
           (
             List(FormField(FormComponentId("UNO"), "UNO")),
-            FormComponent(FormComponentId("UNO"), Text(AnyText, Constant("UNO")), "Editable text label", None, None, true, true, true, derived = false, None)
-          ),
+            FormComponent(FormComponentId("UNO"), Text(AnyText, Constant("UNO")), "Editable text label", None, None, true, true, true, derived = false, None)),
           (
             List(FormField(FormComponentId("DOS"), "DOS")),
-            FormComponent(FormComponentId("DOS"), Text(AnyText, Constant("DOS")), "Editable text label", None, None, true, true, true, derived = false, None)
-          ),
+            FormComponent(FormComponentId("DOS"), Text(AnyText, Constant("DOS")), "Editable text label", None, None, true, true, true, derived = false, None)),
           (
             List(FormField(FormComponentId("1_UNO"), "1_UNO")),
-            FormComponent(FormComponentId("1_UNO"), Text(AnyText, Constant("UNO")), "Editable text label", None, None, true, true, true, derived = false, None)
-          ),
+            FormComponent(FormComponentId("1_UNO"), Text(AnyText, Constant("UNO")), "Editable text label", None, None, true, true, true, derived = false, None)),
           (
             List(FormField(FormComponentId("1_DOS"), "1_DOS")),
-            FormComponent(FormComponentId("1_DOS"), Text(AnyText, Constant("DOS")), "Editable text label", None, None, true, true, true, derived = false, None)
-          )
-        )
-      ),
-      SectionFormField("Declaration", List())
-    )
+            FormComponent(FormComponentId("1_DOS"), Text(AnyText, Constant("DOS")), "Editable text label", None, None, true, true, true, derived = false, None)))),
+      SectionFormField("Declaration", List()))
 
     val res = SubmissionServiceHelper.getSectionFormFields(form, formTemplate)
 

@@ -19,8 +19,7 @@ package uk.gov.hmrc.gform.time
 import java.time.LocalDateTime
 
 class FrozenTimeProvider(
-  override val localDateTime: LocalDateTime = LocalDateTime.of(2017, 1, 12, 5, 45)
-) extends TimeProvider
+  override val localDateTime: LocalDateTime = LocalDateTime.of(2017, 1, 12, 5, 45)) extends TimeProvider
 
 object FrozenTimeProvider {
 

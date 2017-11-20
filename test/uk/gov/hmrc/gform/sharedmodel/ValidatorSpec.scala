@@ -40,8 +40,7 @@ class ValidatorSpec extends Spec {
       "validatorName" -> "hmrcUTRPostcodeCheck",
       "errorMessage" -> "The UTR could not be foundor the postcode did not match. | <Welsh...>",
       "utr" -> Json.obj("value" -> hMRCUTRPostcodeCheckValidator.utr.value),
-      "postcode" -> Json.obj("value" -> hMRCUTRPostcodeCheckValidator.postcode.value)
-    )
+      "postcode" -> Json.obj("value" -> hMRCUTRPostcodeCheckValidator.postcode.value))
   }
 
   "Validator" should "return BankAccoutnModulusCheck " in {
@@ -62,8 +61,7 @@ class ValidatorSpec extends Spec {
       "validatorName" -> "bankAccountModulusCheck",
       "errorMessage" -> "This is an error message for Bank",
       "accountNumber" -> Json.obj("value" -> bankAccoutnModulusCheckValidator.accountNumber.value),
-      "sortCode" -> Json.obj("value" -> bankAccoutnModulusCheckValidator.sortCode.value)
-    )
+      "sortCode" -> Json.obj("value" -> bankAccoutnModulusCheckValidator.sortCode.value))
   }
 
 }

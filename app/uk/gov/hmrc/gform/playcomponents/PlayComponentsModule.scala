@@ -31,11 +31,17 @@ import uk.gov.hmrc.gform.metrics.MetricsModule
 import uk.gov.hmrc.gform.submission.SubmissionModule
 import uk.gov.hmrc.gform.testonly.TestOnlyModule
 import uk.gov.hmrc.gform.validation.ValidationModule
+import uk.gov.hmrc.gform.wshttp.WSHttp
 import uk.gov.hmrc.play.auth.controllers.AuthParamsControllerConfig
 import uk.gov.hmrc.play.auth.microservice.connectors.AuthConnector
 import uk.gov.hmrc.play.auth.microservice.filters.AuthorisationFilter
+import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.health.AdminController
-import uk.gov.hmrc.play.microservice.filters.{LoggingFilter, NoCacheFilter}
+import uk.gov.hmrc.play.microservice.filters.{ LoggingFilter, NoCacheFilter }
+
+object MicroserviceAuthConnector extends AuthConnector with ServicesConfig with WSHttp {
+  override val authBaseUrl: String = baseUrl("auth")
+}
 
 class PlayComponentsModule(
   playComponents: PlayComponents,
@@ -55,14 +61,10 @@ class PlayComponentsModule(
     override def controllerNeedsLogging(controllerName: String): Boolean = configModule.controllerConfig.paramsForController(controllerName).needsLogging
   }
 
-  lazy val microserviceAuthConnector = new AuthConnector {
-    override def authBaseUrl: String = configModule.serviceConfig.baseUrl("auth")
-  }
-
   lazy val authFilter = new AuthorisationFilter {
     override def mat: Materializer = akkaModule.materializer
     override lazy val authParamsConfig: AuthParamsControllerConfig = configModule.authParamsControllerConfig
-    override lazy val authConnector: AuthConnector = microserviceAuthConnector
+    override lazy val authConnector: AuthConnector = MicroserviceAuthConnector
     override def controllerNeedsAuth(controllerName: String): Boolean = configModule.controllerConfig.paramsForController(controllerName).needsAuth
   }
 

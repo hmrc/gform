@@ -45,19 +45,15 @@ object FileUploadDemoApp extends App {
       ContentType.`image/jpeg`,
       ContentType.`text/xml`,
       ContentType.`application/vnd.ms-excel`,
-      ContentType.`application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`
-    )
-  )
+      ContentType.`application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`))
 
   val configLocalProxiedByGform = configLocal.copy(
     //TIP run GFORM using `runInLocal.sh` script
-    fileUploadBaseUrl = "http://localhost:9195/submissions/test-only/proxy-to-file-upload"
-  )
+    fileUploadBaseUrl = "http://localhost:9195/submissions/test-only/proxy-to-file-upload")
 
   val configDevProxiedByGform = configLocal.copy(
     fileUploadBaseUrl = "https://www-dev.tax.service.gov.uk/submissions/test-only/proxy-to-file-upload",
-    fileUploadFrontendBaseUrl = "https://www-dev.tax.service.gov.uk"
-  )
+    fileUploadFrontendBaseUrl = "https://www-dev.tax.service.gov.uk")
 
   val config = configLocal
 

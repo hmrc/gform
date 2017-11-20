@@ -230,8 +230,7 @@ class TemplateValidatorSpec extends Spec {
         result.left.value canEqual s"Some FieldIds are defined more than once: ${
           List(
             FormComponentId("isPremisesAddressBusinessAddress2"),
-            FormComponentId("dutyType")
-          )
+            FormComponentId("dutyType"))
         }"
 
       case JsError(error) => s"Couldn't convert json to FormTemplate, $error"
@@ -244,9 +243,7 @@ class TemplateValidatorSpec extends Spec {
     None, None, None,
     List(
       FormComponent(FormComponentId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None),
-      FormComponent(FormComponentId("businessAddress"), Address(international = false), "Business address", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None)
-    )
-  )
+      FormComponent(FormComponentId("businessAddress"), Address(international = false), "Business address", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None)))
 
   val sectionWithDate = Section(
     "Business details",
@@ -254,9 +251,7 @@ class TemplateValidatorSpec extends Spec {
     None, None, None,
     List(
       FormComponent(FormComponentId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None),
-      FormComponent(FormComponentId("startDate"), Date(AnyDate, Offset(0), None), "Start date", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None)
-    )
-  )
+      FormComponent(FormComponentId("startDate"), Date(AnyDate, Offset(0), None), "Start date", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None)))
 
   val sectionWithCheckbox = Section(
     "Business details",
@@ -264,13 +259,9 @@ class TemplateValidatorSpec extends Spec {
     None, None, None,
     List(
       FormComponent(
-        FormComponentId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None
-      ),
+        FormComponentId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None),
       FormComponent(
-        FormComponentId("dutyType"), Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None), "Select the tax type", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None
-      )
-    )
-  )
+        FormComponentId("dutyType"), Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None), "Select the tax type", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None)))
 
   val sectionWithRadio = Section(
     "Business details",
@@ -278,13 +269,9 @@ class TemplateValidatorSpec extends Spec {
     None, None, None,
     List(
       FormComponent(
-        FormComponentId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None
-      ),
+        FormComponentId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None),
       FormComponent(
-        FormComponentId("dutyType"), Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None), "Select the tax type", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None
-      )
-    )
-  )
+        FormComponentId("dutyType"), Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None), "Select the tax type", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None)))
 
   val sectionWithYesNo = Section(
     "Business details",
@@ -292,13 +279,9 @@ class TemplateValidatorSpec extends Spec {
     None, None, None,
     List(
       FormComponent(
-        FormComponentId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None
-      ),
+        FormComponentId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None),
       FormComponent(
-        FormComponentId("taxType"), Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int], None), "Gas tax type?", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None
-      )
-    )
-  )
+        FormComponentId("taxType"), Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int], None), "Gas tax type?", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None)))
 
   "TemplateValidator.getMatchingSection" should "find matching section containing address component" in {
 
@@ -309,8 +292,7 @@ class TemplateValidatorSpec extends Spec {
       FormField(FormComponentId("businessAddress-street3"), "street3"),
       FormField(FormComponentId("businessAddress-street4"), "street4"),
       FormField(FormComponentId("businessAddress-postcode"), "postcode"),
-      FormField(FormComponentId("businessAddress-country"), "country")
-    )
+      FormField(FormComponentId("businessAddress-country"), "country"))
     val sections = List(businessDetailsSection)
     val res = FormTemplateValidator.getMatchingSection(formFields, sections)
 
@@ -322,8 +304,7 @@ class TemplateValidatorSpec extends Spec {
     val formFields = List(
       FormField(FormComponentId("nameOfBusiness"), "Apple inc."),
       FormField(FormComponentId("businessAddress-street1"), "street1"),
-      FormField(FormComponentId("businessAddress-postcode"), "postcode")
-    )
+      FormField(FormComponentId("businessAddress-postcode"), "postcode"))
     val sections = List(businessDetailsSection)
     val res = FormTemplateValidator.getMatchingSection(formFields, sections)
 
@@ -336,8 +317,7 @@ class TemplateValidatorSpec extends Spec {
       FormField(FormComponentId("nameOfBusiness"), "Apple inc."),
       FormField(FormComponentId("businessAddress.town"), "town"),
       FormField(FormComponentId("businessAddress.county"), "county"),
-      FormField(FormComponentId("businessAddress.postcode"), "postcode")
-    )
+      FormField(FormComponentId("businessAddress.postcode"), "postcode"))
     val sections = List(businessDetailsSection)
     val res = FormTemplateValidator.getMatchingSection(formFields, sections)
 
@@ -352,8 +332,7 @@ class TemplateValidatorSpec extends Spec {
       FormField(FormComponentId("businessAddress.town"), "town"),
       FormField(FormComponentId("businessAddress.county"), "county"),
       FormField(FormComponentId("businessAddress.postcode"), "postcode"),
-      FormField(FormComponentId("attacker.injected.field"), "); drop all tables;")
-    )
+      FormField(FormComponentId("attacker.injected.field"), "); drop all tables;"))
     val sections = List(businessDetailsSection)
     val res = FormTemplateValidator.getMatchingSection(formFields, sections)
 
@@ -366,8 +345,7 @@ class TemplateValidatorSpec extends Spec {
       FormField(FormComponentId("nameOfBusiness"), "Apple inc."),
       FormField(FormComponentId("startDate-day"), "1"),
       FormField(FormComponentId("startDate-month"), "12"),
-      FormField(FormComponentId("startDate-year"), "2000")
-    )
+      FormField(FormComponentId("startDate-year"), "2000"))
     val sections = List(sectionWithDate)
     val res = FormTemplateValidator.getMatchingSection(formFields, sections)
 
@@ -379,8 +357,7 @@ class TemplateValidatorSpec extends Spec {
     val formFields = List(
       FormField(FormComponentId("nameOfBusiness"), "Apple inc."),
       FormField(FormComponentId("startDate.month"), "12"),
-      FormField(FormComponentId("startDate.year"), "2000")
-    )
+      FormField(FormComponentId("startDate.year"), "2000"))
     val sections = List(sectionWithDate)
     val res = FormTemplateValidator.getMatchingSection(formFields, sections)
 
@@ -394,8 +371,7 @@ class TemplateValidatorSpec extends Spec {
       FormField(FormComponentId("startDate.day"), "1"),
       FormField(FormComponentId("startDate.month"), "12"),
       FormField(FormComponentId("startDate.year"), "2000"),
-      FormField(FormComponentId("attacker.injected.field"), "); drop all tables;")
-    )
+      FormField(FormComponentId("attacker.injected.field"), "); drop all tables;"))
     val sections = List(sectionWithDate)
     val res = FormTemplateValidator.getMatchingSection(formFields, sections)
 
@@ -409,9 +385,7 @@ class TemplateValidatorSpec extends Spec {
       None, None, None,
       None, None, None,
       List(
-        FormComponent(FormComponentId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, mandatory = false, editable = true, submissible = true, derived = false, errorMessage = None)
-      )
-    )
+        FormComponent(FormComponentId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, mandatory = false, editable = true, submissible = true, derived = false, errorMessage = None)))
 
     val formFields = List() // Nothing submitted
 
@@ -428,9 +402,7 @@ class TemplateValidatorSpec extends Spec {
       None, None, None,
       None, None, None,
       List(
-        FormComponent(FormComponentId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, mandatory = false, editable = true, submissible = true, derived = false, errorMessage = None)
-      )
-    )
+        FormComponent(FormComponentId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, mandatory = false, editable = true, submissible = true, derived = false, errorMessage = None)))
 
     val formFields = List() // Nothing submitted
 
@@ -447,9 +419,7 @@ class TemplateValidatorSpec extends Spec {
       None, None, None,
       None, None, None,
       List(
-        FormComponent(FormComponentId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None)
-      )
-    )
+        FormComponent(FormComponentId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None)))
 
     val formFields = List() // Nothing submitted
 
@@ -463,8 +433,7 @@ class TemplateValidatorSpec extends Spec {
 
     val formFields = List(
       FormField(FormComponentId("nameOfBusiness"), "Apple inc."),
-      FormField(FormComponentId("dutyType"), "0,1")
-    )
+      FormField(FormComponentId("dutyType"), "0,1"))
     val sections = List(sectionWithCheckbox)
     val res = FormTemplateValidator.getMatchingSection(formFields, sections)
 
@@ -475,8 +444,7 @@ class TemplateValidatorSpec extends Spec {
 
     val formFields = List(
       FormField(FormComponentId("nameOfBusiness"), "Apple inc."),
-      FormField(FormComponentId("dutyType"), "0")
-    )
+      FormField(FormComponentId("dutyType"), "0"))
     val sections = List(sectionWithRadio)
     val res = FormTemplateValidator.getMatchingSection(formFields, sections)
 
@@ -487,8 +455,7 @@ class TemplateValidatorSpec extends Spec {
 
     val formFields = List(
       FormField(FormComponentId("nameOfBusiness"), "Apple inc."),
-      FormField(FormComponentId("taxType"), "0")
-    )
+      FormField(FormComponentId("taxType"), "0"))
     val sections = List(sectionWithYesNo)
     val res = FormTemplateValidator.getMatchingSection(formFields, sections)
 

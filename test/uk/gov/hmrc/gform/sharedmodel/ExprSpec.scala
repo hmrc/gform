@@ -26,9 +26,7 @@ class ExprSpec extends Spec {
   val addJson = Json.obj(
     "Add" -> Json.obj(
       "field1" -> Json.obj("FormCtx" -> Json.obj("value" -> "fieldA")),
-      "field2" -> Json.obj("FormCtx" -> Json.obj("value" -> "fieldB"))
-    )
-  )
+      "field2" -> Json.obj("FormCtx" -> Json.obj("value" -> "fieldB"))))
 
   "Expr" should "write Add case class to json" in {
     val res: JsValue = implicitly[Writes[Expr]].writes(add)
@@ -42,8 +40,7 @@ class ExprSpec extends Spec {
 
   val constant = Constant("constant")
   val constantJson = Json.obj(
-    "Constant" -> Json.obj("value" -> "constant")
-  )
+    "Constant" -> Json.obj("value" -> "constant"))
 
   it should "write Constant to json" in {
     val res: JsValue = implicitly[Writes[Expr]].writes(constant)
@@ -57,8 +54,7 @@ class ExprSpec extends Spec {
 
   val formCtx = FormCtx("form")
   val formJson = Json.obj(
-    "FormCtx" -> Json.obj("value" -> "form")
-  )
+    "FormCtx" -> Json.obj("value" -> "form"))
 
   it should "write FormCtx to json" in {
     val res: JsValue = implicitly[Writes[Expr]].writes(formCtx)
