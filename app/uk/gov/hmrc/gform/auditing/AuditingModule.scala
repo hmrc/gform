@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.auditing
 
 import akka.stream.Materializer
-import play.api.{ Configuration, Environment }
+import play.api.{Configuration, Environment}
 import play.api.inject.ApplicationLifecycle
 import play.api.libs.ws.WSRequest
 import play.api.libs.ws.ahc.AhcWSComponents
@@ -32,6 +32,7 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.hooks.HttpHook
 import uk.gov.hmrc.play.microservice.config.LoadAuditingConfig
+import uk.gov.hmrc.play.microservice.filters.AuditFilter
 
 class AuditingModule(configModule: ConfigModule, akkaModule: AkkaModule, playComponents: PlayComponents) { self =>
 

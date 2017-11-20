@@ -34,8 +34,8 @@ import uk.gov.hmrc.gform.validation.ValidationModule
 import uk.gov.hmrc.play.auth.controllers.AuthParamsControllerConfig
 import uk.gov.hmrc.play.auth.microservice.connectors.AuthConnector
 import uk.gov.hmrc.play.auth.microservice.filters.AuthorisationFilter
-import uk.gov.hmrc.play.filters.NoCacheFilter
 import uk.gov.hmrc.play.health.AdminController
+import uk.gov.hmrc.play.microservice.filters.{LoggingFilter, NoCacheFilter}
 
 class PlayComponentsModule(
   playComponents: PlayComponents,

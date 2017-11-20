@@ -28,7 +28,7 @@ class EnrolmentConnector(wSHttp: WSHttp, baseUrl: String) {
     wSHttp.PUT[JsValue, HttpResponse](s"$ES6url/HMRC-OBTDS-ORG~EtmpRegistrationNumber~$id", body)
   }
 
-  def deEnrol(userId: String, id: String)(implicit hc: HeaderCarrier) = {
+  def deEnrol(userId: String, id: String)(implicit hc: HeaderCarrier, executionContext: ExecutionContext) = {
     wSHttp.DELETE(s"$baseUrl/enrolment-store/users/$userId/enrolments/HMRC-OBTDS-ORG~EtmpRegistrationNumber~$id")
   }
 
