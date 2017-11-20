@@ -53,7 +53,7 @@ class Save4Later(cache: ShortLivedCache, ex: ExecutionContext) {
     cache.cache[Map[String, JsValue]](formId.value, "keystore", data).map(_ => ())
   }
 
-  def getKeyStore(formId: FormId)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Option[Map[String, JsValue]]] =
+  def getKeyStore(formId: FormId)(implicit hc: HeaderCarrier): Future[Option[Map[String, JsValue]]] =
     cache.fetchAndGetEntry[Map[String, JsValue]](formId.value, "keystore")
 
   private lazy val formCacheKey = "form"

@@ -24,16 +24,17 @@ import play.api.libs.functional.syntax._
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.sharedmodel.Account
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import uk.gov.hmrc.http.HeaderCarrier
 
 class BankAccountReputationConnector(wSHttp: WSHttp, baseUrl: String) {
 
-  def exists(account: Account)(implicit hc: HeaderCarrier): Future[Response] = {
+  def exists(account: Account)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Response] = {
     Logger.info(s"Check if bank account exists, headers: '${loggingHelpers.cleanHeaderCarrierHeader(hc)}'")
     wSHttp.POST[Account, Response](s"$baseUrl/modcheck", account)
   }
 }
+
 case class Response(
   accountNumberWithSortCodeIsValid: Boolean,
   nonStandardAccountDetailsRequiredForBacs: String)
