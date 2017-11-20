@@ -40,8 +40,7 @@ class OffsetSpec extends Spec {
     val result = convertToInt(floatNum.toString)
 
     result should be(
-      JsError(s"Couldn't parse Integer from offset, $floatNum")
-    )
+      JsError(s"Couldn't parse Integer from offset, $floatNum"))
   }
 
   "offset as double" should "throw exception" in {
@@ -49,8 +48,7 @@ class OffsetSpec extends Spec {
     val result = convertToInt(doubleNum.toString)
 
     result should be(
-      JsError(s"Couldn't parse Integer from offset, $doubleNum")
-    )
+      JsError(s"Couldn't parse Integer from offset, $doubleNum"))
   }
 
 }

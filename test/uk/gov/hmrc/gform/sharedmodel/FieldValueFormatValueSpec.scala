@@ -29,8 +29,7 @@ class FieldValueFormatValueSpec extends Spec {
            "label": "Label",
            "value": "${amountA + amountB}"
           }
-      """
-    )
+      """)
     fieldValue should beJsSuccess(FormComponent(FormComponentId("sum"), Text(ShortText, Add(FormCtx("amountA"), FormCtx("amountB"))), "Label", None, None, true, true, true, derived = false, None))
 
   }
@@ -43,8 +42,7 @@ class FieldValueFormatValueSpec extends Spec {
            "label": "Label",
            "value": "'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_ ,'"
           }
-      """
-    )
+      """)
     fieldValue should beJsSuccess(FormComponent(FormComponentId("constant"), Text(ShortText, Constant("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_ ,")), "Label", None, None, true, true, true, derived = false, None))
 
   }

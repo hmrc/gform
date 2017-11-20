@@ -36,8 +36,7 @@ class AppConfigSpec extends Spec {
     appConfig.formMaxAttachmentSizeMB shouldBe 5
     appConfig.contentTypes shouldBe List(
       ContentType.`application/pdf`,
-      ContentType.`image/jpeg`
-    )
+      ContentType.`image/jpeg`)
 
   }
 

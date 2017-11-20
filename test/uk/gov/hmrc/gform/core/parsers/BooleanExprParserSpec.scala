@@ -35,8 +35,7 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
 
     res shouldBe Right(Or(
       Equals(FormCtx("hasOrgsAddressChanged"), Constant("1")),
-      Equals(FormCtx("hasOrgsAddressChanged"), Constant("0"))
-    ))
+      Equals(FormCtx("hasOrgsAddressChanged"), Constant("0"))))
 
   }
 
@@ -79,9 +78,7 @@ Unable to parse expression ${eeitt.businessUserx = XYZ}.
 Errors:
 ${eeitt.businessUserx = XYZ}:1: unexpected characters; expected '=' or '\s+'
 ${eeitt.businessUserx = XYZ}                    ^
-    """.trim
-      )
-    )
+    """.trim))
   }
 
   it should "parse ${isPremisesSameAsBusinessAddress=0_0}" in {

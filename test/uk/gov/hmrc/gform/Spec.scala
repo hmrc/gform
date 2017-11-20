@@ -27,21 +27,21 @@ import uk.gov.hmrc.gform.sharedmodel.ExampleData
 import scala.concurrent.ExecutionContext
 
 trait Spec
-    extends FlatSpecLike
-    with Matchers
-    with DiagrammedAssertions
-    with TryValues
-    with EitherValues
-    with OptionValues
-    with AppendedClues
-    with ScalaFutures
-    with StreamlinedXml
-    with JsResultMatcher
-    with MockFactory
-    with Inside
-    with Eventually
-    with ExampleData
-    with PropertyChecks {
+  extends FlatSpecLike
+  with Matchers
+  with DiagrammedAssertions
+  with TryValues
+  with EitherValues
+  with OptionValues
+  with AppendedClues
+  with ScalaFutures
+  with StreamlinedXml
+  with JsResultMatcher
+  with MockFactory
+  with Inside
+  with Eventually
+  with ExampleData
+  with PropertyChecks {
 
   implicit lazy val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 }
@@ -57,8 +57,7 @@ trait JsResultMatcher { self: Spec =>
       MatchResult(
         jsResult.fold(_ => false, _ == element),
         s"'$jsResult' did not contain an element matching '$element'.",
-        s"'$jsResult' contained an element matching '$element', but should not have."
-      )
+        s"'$jsResult' contained an element matching '$element', but should not have.")
     }
   }
 
@@ -66,7 +65,6 @@ trait JsResultMatcher { self: Spec =>
     def apply(jsResult: JsResult[E]): MatchResult = MatchResult(
       jsResult.isError,
       s"'$jsResult' was not an JsError, but should have been.",
-      s"'$jsResult' was an JsError, but should *NOT* have been."
-    )
+      s"'$jsResult' was an JsError, but should *NOT* have been.")
   }
 }

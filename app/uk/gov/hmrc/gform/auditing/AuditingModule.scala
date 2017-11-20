@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.auditing
 
 import akka.stream.Materializer
-import play.api.{Configuration, Environment}
+import play.api.{ Configuration, Environment }
 import play.api.inject.ApplicationLifecycle
 import play.api.libs.ws.WSRequest
 import play.api.libs.ws.ahc.AhcWSComponents
@@ -42,10 +42,10 @@ class AuditingModule(configModule: ConfigModule, akkaModule: AkkaModule, playCom
     //Thus you can not instantiate this class if play application is not running
     override def auditingConfig: AuditingConfig = LoadAuditingConfig(s"auditing")
 
-    //WARN! Since core libraries are using deprecated play.api.libs.ws.WS we need to provide our own non-deprecated and manually wired implementation here
-    override def buildRequest(url: String)(implicit hc: HeaderCarrier): WSRequest = {
-      playComponents.ahcWSComponents.wsApi.url(url).withHeaders(hc.headers: _*)
-    }
+    //    //WARN! Since core libraries are using deprecated play.api.libs.ws.WS we need to provide our own non-deprecated and manually wired implementation here
+    //    override def buildRequest(url: String)(implicit hc: HeaderCarrier): WSRequest = {
+    //      playComponents.ahcWSComponents.wsApi.url(url).withHeaders(hc.headers: _*)
+    //    }
   }
 
   val httpAuditing: HttpAuditing = new HttpAuditing {

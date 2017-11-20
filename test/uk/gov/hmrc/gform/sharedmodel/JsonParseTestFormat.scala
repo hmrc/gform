@@ -43,8 +43,7 @@ class JsonParseTestFormat extends Spec {
     for {
       snippet <- List(
         """, "format" : 123 }""",
-        """, "format" : {} }"""
-      )
+        """, "format" : {} }""")
     } {
       val jsResult = implicitly[Reads[FormComponent]].reads(Json.parse(startOfJson + snippet))
 
@@ -57,8 +56,7 @@ class JsonParseTestFormat extends Spec {
     for {
       snippet <- List(
         """, "format" : "befor 2017-04-02,after 2017-02-01" }""",
-        """, "format" : "before 201-04-02" }"""
-      )
+        """, "format" : "before 201-04-02" }""")
     } {
       val jsResult = implicitly[Reads[FormComponent]].reads(Json.parse(startOfJson + snippet))
       jsResult should be(jsError)
@@ -69,8 +67,7 @@ class JsonParseTestFormat extends Spec {
 
     for {
       snippet <- List(
-        """, "format" : "number" }"""
-      )
+        """, "format" : "number" }""")
     } {
       val jsResult = implicitly[Reads[FormComponent]].reads(Json.parse(startOfJson + snippet))
       jsResult shouldBe a[JsSuccess[_]]

@@ -35,15 +35,11 @@ class FormSpec extends Spec {
       "fields" -> Json.arr(
         Json.obj(
           "id" -> "facePhoto",
-          "value" -> "face-photo.jpg"
-        ),
+          "value" -> "face-photo.jpg"),
         Json.obj(
           "id" -> "startDate-year",
-          "value" -> "2008"
-        )
-      ),
-      "InProgress" -> Json.obj()
-    )
+          "value" -> "2008")),
+      "InProgress" -> Json.obj())
 
     formJsObject shouldBe expectedFormJsObject
     Form.format.reads(formJsObject) should be(JsSuccess(form))

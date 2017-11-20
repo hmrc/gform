@@ -51,7 +51,6 @@ class SubmissionServiceHelperSpec extends Spec {
 
     sectionFormFields1.map(_.title) should contain allOf (
       `section - about you`.title,
-      `section - businessDetails`.title
-    )
+      `section - businessDetails`.title)
   }
 }

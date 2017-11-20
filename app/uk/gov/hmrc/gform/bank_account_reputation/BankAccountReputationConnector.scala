@@ -24,7 +24,7 @@ import play.api.libs.functional.syntax._
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.sharedmodel.Account
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.http.HeaderCarrier
 
 class BankAccountReputationConnector(wSHttp: WSHttp, baseUrl: String) {

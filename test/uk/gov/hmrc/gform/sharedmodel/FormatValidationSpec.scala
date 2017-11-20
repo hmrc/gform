@@ -53,8 +53,7 @@ class FormatValidationSpec extends Spec {
       submissible = true,
       derived = false,
       errorMessage = None,
-      presentationHint = None
-    ))
+      presentationHint = None))
   }
   it should "return UkSortCode Component" in {
     reads.reads(makeJson("ukSortCode")) shouldBe JsSuccess(FormComponent(
@@ -68,8 +67,7 @@ class FormatValidationSpec extends Spec {
       submissible = true,
       derived = false,
       errorMessage = None,
-      presentationHint = None
-    ))
+      presentationHint = None))
   }
 
   def createTest(format: String, constraint: TextConstraint) = {
@@ -85,8 +83,7 @@ class FormatValidationSpec extends Spec {
       submissible = true,
       derived = false,
       errorMessage = None,
-      presentationHint = None
-    ))
+      presentationHint = None))
   }
 
   private def makeJson(format: String) = Json.parse(getJson(format))

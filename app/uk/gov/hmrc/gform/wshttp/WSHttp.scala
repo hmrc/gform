@@ -24,17 +24,33 @@ import akka.stream.scaladsl.FileIO
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import play.api.http.HttpVerbs.{ POST => POST_VERB }
+import play.api.libs.json.{ Json, Writes }
 import play.api.mvc.MultipartFormData.FilePart
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
-import uk.gov.hmrc.play.http.ws.WSHttpResponse
+import uk.gov.hmrc.gform.wshttp.MicroserviceAuthConnector.baseUrl
+import uk.gov.hmrc.gform.wshttp.WSHttp.buildRequest
+import uk.gov.hmrc.play.http.ws._
 
 import scala.concurrent.Future
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpReads }
-import uk.gov.hmrc.http.hooks.HttpHook
+import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.hooks.{ HttpHook, HttpHooks }
+import uk.gov.hmrc.play.audit.http.HttpAuditing
+import uk.gov.hmrc.play.audit.http.config.AuditingConfig
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
+import uk.gov.hmrc.play.auth.microservice.connectors.AuthConnector
+import uk.gov.hmrc.play.config.{ AppName, ServicesConfig }
+import uk.gov.hmrc.play.microservice.config.LoadAuditingConfig
 
-class WSHttp(httpHooks: Seq[HttpHook] = Nil) extends uk.gov.hmrc.play.http.ws.WSHttp {
+object MicroserviceAuditConnector extends AuditConnector {
+  lazy val auditingConfig: AuditingConfig = LoadAuditingConfig(s"auditing")
+}
 
-  override val hooks: Seq[HttpHook] = httpHooks
+trait Hooks extends HttpHooks with HttpAuditing {
+  override val hooks = Seq(AuditingHook)
+  override lazy val auditConnector: AuditConnector = MicroserviceAuditConnector
+}
+
+trait WSHttp extends HttpGet with WSGet with HttpPut with WSPut with HttpPost with WSPost with HttpDelete with WSDelete with Hooks with AppName {
 
   //TODO: body should be type of Stream not ByteString (do we want to blow up if few people will submit forms at the same time?)
   def POSTFile[O](
@@ -45,15 +61,52 @@ class WSHttp(httpHooks: Seq[HttpHook] = Nil) extends uk.gov.hmrc.play.http.ws.WS
     contentType: String //TODO: change type to ContentType
   )(implicit
     hc: HeaderCarrier,
-    rds: HttpReads[O]): Future[O] = {
+    rds: HttpReads[O]): Future[HttpResponse] = {
 
-    val source = Source(FilePart(fileName, fileName, Some(contentType), Source.single(body)) :: Nil)
-    withTracing(POST_VERB, url) {
-      import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
-      val httpResponse = buildRequest(url).withHeaders(headers: _*).post(source).map(new WSHttpResponse(_))
-      executeHooks(url, POST_VERB, Option(s"""{"info":"multipart upload of $fileName"}"""), httpResponse)
-      mapErrors(POST_VERB, url, httpResponse).map(rds.read(POST_VERB, url, _))
-    }
+    val source: Source[FilePart[Source[ByteString, NotUsed]], NotUsed] = Source(FilePart(fileName, fileName, Some(contentType), Source.single(body)) :: Nil)
+    //    withTracing(POST_VERB, url) {
+    //      import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
+    //      val httpResponse = buildRequest(url).withHeaders(headers: _*).post(source).map(new WSHttpResponse(_))
+    //      executeHooks(url, POST_VERB, Option(s"""{"info":"multipart upload of $fileName"}"""), httpResponse)
+    //      mapErrors(POST_VERB, url, httpResponse).map(rds.read(POST_VERB, url, _))
+    //    }
+    import play.api.libs.concurrent.Execution.Implicits.defaultContext
+
+    buildRequest(url).withHeaders(headers: _*).post(source).map(new WSHttpResponse(_))
   }
 
 }
+
+object WSHttp extends WSHttp
+
+object MicroserviceAuthConnector extends AuthConnector with ServicesConfig with WSHttp {
+  override val authBaseUrl: String = baseUrl("auth")
+}
+
+//class WSHttp(httpHooks: Seq[HttpHook] = Nil) extends uk.gov.hmrc.play.http.ws.WSHttp {
+//
+//  override val hooks: Seq[HttpHook] = httpHooks
+//
+//  //TODO: body should be type of Stream not ByteString (do we want to blow up if few people will submit forms at the same time?)
+//  def POSTFile[O](
+//    url: String,
+//    fileName: String,
+//    body: ByteString,
+//    headers: Seq[(String, String)],
+//    contentType: String //TODO: change type to ContentType
+//  )(implicit
+//    hc: HeaderCarrier,
+//    rds: HttpReads[O]): Future[HttpResponse] = {
+//
+//    val source: Source[FilePart[Source[ByteString, NotUsed]], NotUsed] = Source(FilePart(fileName, fileName, Some(contentType), Source.single(body)) :: Nil)
+////    withTracing(POST_VERB, url) {
+////      import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
+////      val httpResponse = buildRequest(url).withHeaders(headers: _*).post(source).map(new WSHttpResponse(_))
+////      executeHooks(url, POST_VERB, Option(s"""{"info":"multipart upload of $fileName"}"""), httpResponse)
+////      mapErrors(POST_VERB, url, httpResponse).map(rds.read(POST_VERB, url, _))
+////    }
+//    import play.api.libs.concurrent.Execution.Implicits.defaultContext
+//
+//    buildRequest(url).withHeaders(headers: _*).post(source).map(new WSHttpResponse(_))
+//  }
+//}

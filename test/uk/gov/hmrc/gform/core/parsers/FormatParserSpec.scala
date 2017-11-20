@@ -62,9 +62,7 @@ class FormatParserSpec extends Spec {
         """Unable to parse expression before anyFieldId anotherWord 9.
           |Errors:
           |before anyFieldId anotherWord 9:1: unexpected characters; expected '${' or '(19|20)\d\d' or 'today'
-          |before anyFieldId anotherWord 9       ^""".stripMargin
-      )
-    )
+          |before anyFieldId anotherWord 9       ^""".stripMargin))
   }
 
   "after 2016-6-9 9" should "throw exception" in {
@@ -75,9 +73,7 @@ class FormatParserSpec extends Spec {
         """|Unable to parse expression after 2016-6-9 9.
            |Errors:
            |after 2016-6-9 9:1: unexpected characters; expected '0[1-9]|1[012]' or '\s+'
-           |after 2016-6-9 9           ^""".stripMargin
-      )
-    )
+           |after 2016-6-9 9           ^""".stripMargin))
   }
 
   "before today -2" should "be parsed successfully" in {
@@ -96,10 +92,7 @@ class FormatParserSpec extends Spec {
       DateFormat(
         DateConstraints(List(
           DateConstraint(Before, ConcreteDate(2017, 4, 2), OffsetDate(-2)),
-          DateConstraint(After, ConcreteDate(2015, 2, 1), OffsetDate(42))
-        ))
-      )
-    )
+          DateConstraint(After, ConcreteDate(2015, 2, 1), OffsetDate(42))))))
   }
 
   "expressions without offset" should "be parsed successfully" in {
@@ -108,10 +101,7 @@ class FormatParserSpec extends Spec {
       DateFormat(
         DateConstraints(List(
           DateConstraint(Before, ConcreteDate(2017, 4, 2), OffsetDate(0)),
-          DateConstraint(After, ConcreteDate(2017, 2, 1), OffsetDate(0))
-        ))
-      )
-    )
+          DateConstraint(After, ConcreteDate(2017, 2, 1), OffsetDate(0))))))
   }
 
   "number" should "be parsed successfully" in {

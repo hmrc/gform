@@ -40,7 +40,7 @@ trait MicroService {
         "uk.gov.hmrc.gform.sharedmodel.formtemplate._"
       ),
       scalacOptions ++= Seq(
-        "-Xfatal-warnings",
+//        "-Xfatal-warnings",
         "-Xlint:-missing-interpolator,_",
         "-Yno-adapted-args",
         "-Ywarn-numeric-widen",

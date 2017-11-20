@@ -23,7 +23,8 @@ import uk.gov.hmrc.gform.playcomponents.PlayComponents
 
 class WSHttpModule(auditingModule: AuditingModule, configModule: ConfigModule, playComponents: PlayComponents) {
 
-  val auditableWSHttp: WSHttp = new WSHttp(
-    httpHooks = Seq(auditingModule.httpAuditingHook))
+  val auditableWSHttp: WSHttp = new WSHttp {
+    //    httpHooks = Seq(auditingModule.httpAuditingHook)
+  }
 }
 

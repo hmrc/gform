@@ -55,8 +55,7 @@ class JsonParseTestPresentationHint extends Spec {
       snippet <- List(
         """, "presentationHint" : "collapseGroupUnder" }""",
         """, "presentationHint" : "summarizeGroupAsGrid" }""",
-        """, "presentationHint" : "anyString" }"""
-      )
+        """, "presentationHint" : "anyString" }""")
     } {
       val jsResult = implicitly[Reads[FormComponent]].reads(Json.parse(startOfJson + snippet))
       jsResult should be(jsError)
@@ -67,8 +66,7 @@ class JsonParseTestPresentationHint extends Spec {
 
     for {
       snippet <- List(
-        """, "presentationHint" : "collapseGroupUnderLabel,summariseGroupAsGrid" }"""
-      )
+        """, "presentationHint" : "collapseGroupUnderLabel,summariseGroupAsGrid" }""")
     } {
       val jsResult = implicitly[Reads[FormComponent]].reads(Json.parse(startOfJson + snippet))
       jsResult shouldBe a[JsSuccess[_]]

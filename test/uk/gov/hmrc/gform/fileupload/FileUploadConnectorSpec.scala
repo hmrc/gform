@@ -75,8 +75,7 @@ class FileUploadConnectorSpec extends Spec {
 
     lazy val r = HttpResponse(
       responseStatus = status,
-      responseHeaders = headers
-    )
+      responseHeaders = headers)
     lazy val wSHttp = new StubbedWSHttp(r)
 
     lazy val fileUploadConnector = new FileUploadConnector(config, wSHttp, FrozenTimeProvider.exampleInstance)

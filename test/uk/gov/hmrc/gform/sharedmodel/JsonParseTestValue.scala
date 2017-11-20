@@ -43,8 +43,7 @@ class JsonParseTestValue extends Spec {
     for {
       snippet <- List(
         """, "value" : 123 }""",
-        """, "value" : {} }"""
-      )
+        """, "value" : {} }""")
     } {
       val jsResult = implicitly[Reads[FormComponent]].reads(Json.parse(startOfJson + snippet))
       jsResult should be(jsError)
@@ -58,8 +57,7 @@ class JsonParseTestValue extends Spec {
         """, "value" : "65841-351" }""",
         """, "value" : "${name" }""",
         """, "value" : "2015-1-12" }""",
-        """, "value" : "201568-01-12" }"""
-      )
+        """, "value" : "201568-01-12" }""")
     } {
       val jsResult = implicitly[Reads[FormComponent]].reads(Json.parse(startOfJson + snippet))
       jsResult should be(jsError)
@@ -70,8 +68,7 @@ class JsonParseTestValue extends Spec {
 
     for {
       snippet <- List(
-        """, "value" : "'anything'" }"""
-      )
+        """, "value" : "'anything'" }""")
     } {
       val jsResult = implicitly[Reads[FormComponent]].reads(Json.parse(startOfJson + snippet))
       jsResult shouldBe a[JsSuccess[_]]

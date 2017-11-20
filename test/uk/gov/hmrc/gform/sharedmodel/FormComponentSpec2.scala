@@ -37,8 +37,7 @@ class FormComponentSpec2 extends Spec {
          |  "format":"vertical",
          |  "presentationHint" : "collapseGroupUnderLabel"
          |
-         |}"""
-    )
+         |}""")
 
     fieldValue should beJsSuccess(
       FormComponent(
@@ -52,9 +51,7 @@ class FormComponentSpec2 extends Spec {
         submissible = true,
         derived = false,
         None,
-        Some(List(CollapseGroupUnderLabel))
-      )
-    )
+        Some(List(CollapseGroupUnderLabel))))
   }
 
   private def toFieldValue(template: String): JsResult[FormComponent] = {

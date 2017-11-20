@@ -31,32 +31,27 @@ class MetadataXmlSpec extends Spec {
 
     val dmsMetaData = DmsMetaData(
       formTemplateId = FormTemplateId("some-form-type-id"),
-      "TESTID"
-    )
+      "TESTID")
 
     val submission = Submission(
       submittedDate = LocalDateTime.of(2012, 12, 3, 12, 45),
       submissionRef = SubmissionRef("some-submission-ref"),
       _id = FormId("some-form-type-id"),
       envelopeId = EnvelopeId("some-envelope-id"),
-      dmsMetaData = dmsMetaData
-    )
+      dmsMetaData = dmsMetaData)
 
     val pdfSummary = PdfSummary(
       numberOfPages = 10L,
-      pdfContent = Array.empty[Byte]
-    )
+      pdfContent = Array.empty[Byte])
 
     val submissionAndPdf = SubmissionAndPdf(
       submission = submission,
-      pdfSummary = pdfSummary
-    )
+      pdfSummary = pdfSummary)
 
     val dmsSubmission = DmsSubmission(
       customerId = TextExpression(AuthCtx(PayeNino)),
       classificationType = "some-classification-type",
-      businessArea = "some-business-area"
-    )
+      businessArea = "some-business-area")
 
     val expected =
       <documents xmlns="http://govtalk.gov.uk/hmrc/gis/content/1">
