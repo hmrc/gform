@@ -36,21 +36,19 @@ import uk.gov.hmrc.play.auth.microservice.connectors.AuthConnector
 import uk.gov.hmrc.play.auth.microservice.filters.AuthorisationFilter
 import uk.gov.hmrc.play.filters.NoCacheFilter
 import uk.gov.hmrc.play.health.AdminController
-import uk.gov.hmrc.play.http.logging.filters.LoggingFilter
 
 class PlayComponentsModule(
-    playComponents: PlayComponents,
-    akkaModule: AkkaModule,
-    configModule: ConfigModule,
-    auditingModule: AuditingModule,
-    metricsModule: MetricsModule,
-    formModule: FormModule,
-    formTemplateModule: FormTemplateModule,
-    testOnlyModule: TestOnlyModule,
-    submissionModule: SubmissionModule,
-    validationModule: ValidationModule,
-    authModule: AuthModule
-) {
+  playComponents: PlayComponents,
+  akkaModule: AkkaModule,
+  configModule: ConfigModule,
+  auditingModule: AuditingModule,
+  metricsModule: MetricsModule,
+  formModule: FormModule,
+  formTemplateModule: FormTemplateModule,
+  testOnlyModule: TestOnlyModule,
+  submissionModule: SubmissionModule,
+  validationModule: ValidationModule,
+  authModule: AuthModule) {
 
   lazy val loggingFilter = new LoggingFilter {
     override def mat: Materializer = akkaModule.materializer
@@ -75,8 +73,7 @@ class PlayComponentsModule(
     formTemplateModule.formTemplatesController,
     configModule.configController,
     validationModule.validationController,
-    authModule.authController
-  )
+    authModule.authController)
 
   val adminController = new AdminController(configModule.playConfiguration)
 
@@ -84,15 +81,13 @@ class PlayComponentsModule(
     errorHandler,
     appRoutes,
     adminController,
-    metricsModule.metricsController
-  )
+    metricsModule.metricsController)
 
   lazy val testOnlyDoNotUseInAppConfRoutes: testOnlyDoNotUseInAppConf.Routes = new testOnlyDoNotUseInAppConf.Routes(
     errorHandler,
     prodRoutes,
     testOnlyModule.testOnlyController,
-    testOnlyModule.fUInterceptor
-  )
+    testOnlyModule.fUInterceptor)
 
   def router: Router = {
     val applicationRouterKey = "application.router"
@@ -113,22 +108,19 @@ class PlayComponentsModule(
   lazy val errorHandler = new ErrorHandler(
     playComponents.context.environment,
     playComponents.context.initialConfiguration,
-    playComponents.context.sourceMapper
-  )
+    playComponents.context.sourceMapper)
 
   lazy val httpFilters: Seq[EssentialFilter] = Seq(
     metricsModule.metricsFilter,
     auditingModule.microserviceAuditFilter,
     loggingFilter,
     //    authFilter, it thorws exception instead of working ...
-    NoCacheFilter
-  )
+    NoCacheFilter)
 
   lazy val httpRequestHandler = new CustomHttpRequestHandler(
     router,
     errorHandler,
     playComponents.builtInComponents.httpConfiguration,
-    httpFilters
-  )
+    httpFilters)
 
 }

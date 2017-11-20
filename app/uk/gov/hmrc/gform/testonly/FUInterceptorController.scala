@@ -28,10 +28,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class FUInterceptorController(
-    wSHttp: WSHttp,
-    serviceConfig: ServicesConfig,
-    proxy: Proxy
-) extends BaseController { self =>
+  wSHttp: WSHttp,
+  serviceConfig: ServicesConfig,
+  proxy: Proxy) extends BaseController { self =>
 
   def intercept(pathParam: String) = Action.async(parse.tolerantText) { (r: Request[String]) =>
     val path = s"/$pathParam"
@@ -42,8 +41,7 @@ class FUInterceptorController(
         baseUrl = originalFileUploadBaseUrl,
         path = path,
         inboundRequest = r,
-        bodyTransformer = makeAllFilesScanned(_)
-      )
+        bodyTransformer = makeAllFilesScanned(_))
       response
     }
   }

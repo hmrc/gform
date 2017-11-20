@@ -20,8 +20,7 @@ import play.api.libs.json.{ Json, OFormat, OWrites, Reads }
 
 case class Account(
   sortCode: String,
-  accountNumber: String
-)
+  accountNumber: String)
 
 object Account {
   val basic: OFormat[Account] = Json.format[Account]

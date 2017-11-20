@@ -26,14 +26,13 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.Email
 import uk.gov.hmrc.gform.time.TimeModule
 
 class SubmissionModule(
-    mongoModule: MongoModule,
-    pdfGeneratorModule: PdfGeneratorModule,
-    formModule: FormModule,
-    formTemplateModule: FormTemplateModule,
-    fileUploadModule: FileUploadModule,
-    timeModule: TimeModule,
-    emailModule: EmailModule
-) {
+  mongoModule: MongoModule,
+  pdfGeneratorModule: PdfGeneratorModule,
+  formModule: FormModule,
+  formTemplateModule: FormTemplateModule,
+  fileUploadModule: FileUploadModule,
+  timeModule: TimeModule,
+  emailModule: EmailModule) {
 
   //TODO: this should be replaced with save4later for submissions
 
@@ -46,9 +45,7 @@ class SubmissionModule(
     fileUploadModule.fileUploadService,
     submissionRepo,
     timeModule.timeProvider,
-    emailModule.emailLogic
-
-  )
+    emailModule.emailLogic)
 
   val submissionController = new SubmissionController(submissionService)
 }

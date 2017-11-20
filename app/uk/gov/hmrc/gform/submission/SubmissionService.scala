@@ -34,28 +34,25 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
-import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpResponse }
 
 import scala.concurrent.{ ExecutionContext, Future }
+import uk.gov.hmrc.http.HeaderCarrier
 
 class SubmissionService(
-    pdfGeneratorService: PdfGeneratorService,
-    formService: FormService,
-    formTemplateService: FormTemplateService,
-    fileUploadService: FileUploadService,
-    submissionRepo: SubmissionRepo,
-    timeProvider: TimeProvider,
-    email: EmailService
-
-) {
+  pdfGeneratorService: PdfGeneratorService,
+  formService: FormService,
+  formTemplateService: FormTemplateService,
+  fileUploadService: FileUploadService,
+  submissionRepo: SubmissionRepo,
+  timeProvider: TimeProvider,
+  email: EmailService) {
 
   def getSubmissionAndPdf(
     envelopeId: EnvelopeId,
     form: Form,
     sectionFormFields: List[SectionFormField],
     formName: String,
-    customerId: String
-  )(implicit hc: HeaderCarrier): Future[SubmissionAndPdf] = {
+    customerId: String)(implicit hc: HeaderCarrier): Future[SubmissionAndPdf] = {
 
     val html = HtmlGeneratorService.generateDocumentHTML(sectionFormFields, formName, form.formData)
 
@@ -70,8 +67,7 @@ class SubmissionService(
 
       val pdfSummary = PdfSummary(
         numberOfPages = 1L,
-        pdfContent = pdf
-      )
+        pdfContent = pdf)
       val submission = Submission(
         submittedDate = timeProvider.localDateTime(),
         submissionRef = SubmissionRef.random,
@@ -80,13 +76,11 @@ class SubmissionService(
         dmsMetaData = DmsMetaData(
           formTemplateId = form.formTemplateId,
           customerId //TODO need more secure and safe way of doing this. perhaps moving auth to backend and just pulling value out there.
-        )
-      )
+        ))
 
       SubmissionAndPdf(
         submission = submission,
-        pdfSummary = pdfSummary
-      )
+        pdfSummary = pdfSummary)
     }
   }
 
@@ -117,8 +111,7 @@ object SubmissionServiceHelper {
 
   def getSectionFormFields(
     form: Form,
-    formTemplate: FormTemplate
-  ): Opt[List[SectionFormField]] = {
+    formTemplate: FormTemplate): Opt[List[SectionFormField]] = {
 
     val data: Map[FormComponentId, FormField] = form.formData.fields.map(field => field.id -> field).toMap
 
@@ -156,8 +149,7 @@ object SubmissionServiceHelper {
 
     val allSections = RepeatingComponentService.getAllSections(form, formTemplate)
     val sectionsToSubmit = allSections.filter(
-      section => BooleanExpr.isTrue(section.includeIf.getOrElse(IncludeIf(IsTrue)).expr, data)
-    ) :+ formTemplate.declarationSection
+      section => BooleanExpr.isTrue(section.includeIf.getOrElse(IncludeIf(IsTrue)).expr, data)) :+ formTemplate.declarationSection
     sectionsToSubmit.traverse(toSectionFormField)
   }
 

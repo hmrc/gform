@@ -42,8 +42,7 @@ object MetadataXml {
       createAttribute("cas_key", "AUDIT_SERVICE"), // We are not using CAS
       createAttribute("classification_type", dmsSubmission.classificationType),
       createAttribute("business_area", dmsSubmission.businessArea),
-      createAttribute("attachment_count", 0)
-    )
+      createAttribute("attachment_count", 0))
     <metadata></metadata>.copy(child = attributes)
   }
 
@@ -68,8 +67,7 @@ object MetadataXml {
   def getXml(submissionRef: SubmissionRef, reconciliationId: ReconciliationId, sap: SubmissionAndPdf, dmsSubmission: DmsSubmission): Elem = {
     val body = List(
       createHeader(submissionRef, reconciliationId),
-      createMetadata(sap, dmsSubmission)
-    )
+      createMetadata(sap, dmsSubmission))
 
     createDocument(body)
   }

@@ -23,7 +23,7 @@ import play.api.libs.json.{ JsObject, Json }
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.time.TimeProvider
-import uk.gov.hmrc.play.http.HttpResponse
+import uk.gov.hmrc.http.HttpResponse
 
 class Helper(config: FUConfig, timeProvider: TimeProvider) {
 
@@ -32,15 +32,12 @@ class Helper(config: FUConfig, timeProvider: TimeProvider) {
       "contentTypes" -> contentTypesJson,
       "maxItems" -> config.maxItems,
       "maxSize" -> config.maxSize,
-      "maxSizePerItem" -> config.maxSizePerItem
-    ),
+      "maxSizePerItem" -> config.maxSizePerItem),
     "callbackUrl" -> "someCallback",
     "expiryDate" -> s"$envelopeExpiryDate",
     "metadata" -> Json.obj(
       "application" -> "gform",
-      "formTemplateId" -> s"${formTemplateId.value}"
-    )
-  )
+      "formTemplateId" -> s"${formTemplateId.value}"))
 
   /**
    * There must be Location header. If not this is exceptional situation!

@@ -24,8 +24,7 @@ import uk.gov.hmrc.gform.core.FOpt
 import scala.concurrent.{ ExecutionContext, Future }
 
 class AuthService(
-    authRepository: AuthRepository
-) {
+  authRepository: AuthRepository) {
 
   def whiteListed(email: String)(implicit ex: ExecutionContext): Future[Option[WhiteListedUser]] = authRepository.find(email)
 

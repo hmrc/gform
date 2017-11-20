@@ -26,11 +26,11 @@ import akka.util.ByteString
 import play.api.http.HttpVerbs.{ POST => POST_VERB }
 import play.api.mvc.MultipartFormData.FilePart
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
-import uk.gov.hmrc.play.http.hooks.HttpHook
 import uk.gov.hmrc.play.http.ws.WSHttpResponse
-import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpReads }
 
 import scala.concurrent.Future
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpReads }
+import uk.gov.hmrc.http.hooks.HttpHook
 
 class WSHttp(httpHooks: Seq[HttpHook] = Nil) extends uk.gov.hmrc.play.http.ws.WSHttp {
 

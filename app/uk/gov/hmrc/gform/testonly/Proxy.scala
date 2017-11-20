@@ -41,8 +41,7 @@ class Proxy(wsClient: WSClient) {
       val contentType = headersMap.get(contentTypeHeaderKey).map(_.mkString(", "))
       Result(
         ResponseHeader(streamedResponse.headers.status, streamedResponse.headers.headers.mapValues(_.head).filter(filterOutContentHeaders)),
-        Streamed(streamedResponse.body, contentLength, contentType)
-      )
+        Streamed(streamedResponse.body, contentLength, contentType))
     }
   }
 
@@ -50,8 +49,7 @@ class Proxy(wsClient: WSClient) {
     baseUrl: String,
     path: String,
     inboundRequest: Request[A],
-    bodyTransformer: String => String = identity
-  ): Future[Result] = {
+    bodyTransformer: String => String = identity): Future[Result] = {
 
     val outboundRequest = wsClient.url(s"$baseUrl$path")
       .withFollowRedirects(false)
@@ -66,8 +64,7 @@ class Proxy(wsClient: WSClient) {
       val transformedBody: ByteString = ByteString(bodyTransformer(response.body))
       Result(
         ResponseHeader(response.status, response.allHeaders.mapValues(_.head)),
-        Strict(transformedBody, None)
-      )
+        Strict(transformedBody, None))
     }
   }
 
@@ -83,8 +80,7 @@ class Proxy(wsClient: WSClient) {
       .withMethod(inboundRequest.method)
       .withHeaders(processHeaders(inboundRequest.headers, extraHeaders = Nil): _*)
       .withQueryString(inboundRequest.queryString.mapValues(_.head).toSeq: _*)
-      .withBody(StreamedBody(inboundRequest.body))
-  )
+      .withBody(StreamedBody(inboundRequest.body)))
 
   private def processHeaders(inboundHeaders: Headers, extraHeaders: Seq[(String, String)]): Seq[(String, String)] = {
     inboundHeaders.toSimpleMap.filter(headerKeyValue => !headerKeyValue._1.equals("Host")).toSeq ++ extraHeaders

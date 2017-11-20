@@ -26,12 +26,12 @@ import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.playcomponents.PlayComponents
 import uk.gov.hmrc.gform.wshttp.WSHttp
-import uk.gov.hmrc.play.audit.filters.AuditFilter
 import uk.gov.hmrc.play.audit.http.HttpAuditing
-import uk.gov.hmrc.play.audit.http.config.{ AuditingConfig, LoadAuditingConfig }
+import uk.gov.hmrc.play.audit.http.config.AuditingConfig
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.play.http.HeaderCarrier
-import uk.gov.hmrc.play.http.hooks.HttpHook
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.hooks.HttpHook
+import uk.gov.hmrc.play.microservice.config.LoadAuditingConfig
 
 class AuditingModule(configModule: ConfigModule, akkaModule: AkkaModule, playComponents: PlayComponents) { self =>
 

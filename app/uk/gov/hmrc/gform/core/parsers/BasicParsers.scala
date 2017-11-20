@@ -34,8 +34,7 @@ object BasicParsers {
       UnexpectedState(
         s"""|Unable to parse expression $expression.
             |Errors:
-            |$errors""".stripMargin
-      )
+            |$errors""".stripMargin)
     }
   }
 
@@ -54,17 +53,14 @@ object BasicParsers {
   implicit val W = Whitespace(() | """\s+""".r)
 
   def nextOrPrevious[A](string: String, fn: (Int, Int) => A): Parser[A] = (
-    string ~ monthDay ^^ { (loc, _, month, day) => fn(month, day) }
-  )
+    string ~ monthDay ^^ { (loc, _, month, day) => fn(month, day) })
 
   lazy val monthDay: Parser[(Int, Int)] = (
-    delimiter ~ monthParser ~ delimiter ~ dayParser ^^ { (loc, _, month, _, day) => (month, day) }
-  )
+    delimiter ~ monthParser ~ delimiter ~ dayParser ^^ { (loc, _, month, _, day) => (month, day) })
 
   lazy val positiveIntegers: Parser[List[Int]] = (
     positiveInteger ~ "," ~ positiveIntegers ^^ ((loc, x, _, xs) => x :: xs)
-    | positiveInteger ^^ ((loc, x) => List(x))
-  )
+    | positiveInteger ^^ ((loc, x) => List(x)))
 
   val anyWordFormat = """\w+""".r
   val delimiter = "[- /.]".r
@@ -80,6 +76,5 @@ object BasicParsers {
   lazy val anyInteger: Parser[Int] = intParser("""(\+|-)?\d+""")
 
   private def intParser(str: String): Parser[Int] = (
-    str.r ^^ { (loc, number) => number.toInt }
-  )
+    str.r ^^ { (loc, number) => number.toInt })
 }

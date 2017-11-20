@@ -22,10 +22,10 @@ import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.wshttp.WSHttp
-import uk.gov.hmrc.play.http.HeaderCarrier
 
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import scala.concurrent.Future
+import uk.gov.hmrc.http.HeaderCarrier
 
 class FileUploadFrontendConnector(config: FUConfig, wSHttp: WSHttp) {
 
@@ -37,8 +37,7 @@ class FileUploadFrontendConnector(config: FUConfig, wSHttp: WSHttp) {
         fileName,
         body,
         Seq("CSRF-token" -> "nocheck"),
-        contentType.value
-      )
+        contentType.value)
       .map(_ => ())
   }
   private lazy val baseUrl = config.fileUploadFrontendBaseUrl

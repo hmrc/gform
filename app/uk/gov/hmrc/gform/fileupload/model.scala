@@ -32,8 +32,7 @@ case class FUConfig(
   maxSize: String,
   maxSizePerItem: String,
   maxItems: Int,
-  contentTypes: List[ContentType]
-)
+  contentTypes: List[ContentType])
 
 class SpoiltLocationHeader(val message: String) extends RuntimeException(message)
 
@@ -66,8 +65,7 @@ object RouteEnvelopeRequest {
 }
 
 case class Envelope(
-  files: List[File]
-)
+  files: List[File])
 
 object Envelope {
   implicit val reads: Reads[Envelope] = envelopeRawReads.map(er => Envelope(er.files.getOrElse(Nil)))
@@ -78,8 +76,7 @@ case class EnvelopeRaw(files: Option[List[File]])
 case class File(
   fileId: FileId,
   status: Status,
-  fileName: String
-)
+  fileName: String)
 
 object File {
 

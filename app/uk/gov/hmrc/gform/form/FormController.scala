@@ -28,16 +28,15 @@ import uk.gov.hmrc.gform.formtemplate.FormTemplateService
 import uk.gov.hmrc.gform.sharedmodel.UserId
 import uk.gov.hmrc.gform.sharedmodel.form.{ FileId, FormId, UserData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.play.http.BadRequestException
 
 import scala.concurrent.Future
 import scala.util.Try
+import uk.gov.hmrc.http.BadRequestException
 
 class FormController(
-    formTemplateService: FormTemplateService,
-    fileUploadService: FileUploadService,
-    formService: FormService
-) extends BaseController {
+  formTemplateService: FormTemplateService,
+  fileUploadService: FileUploadService,
+  formService: FormService) extends BaseController {
 
   def newForm(userId: UserId, formTemplateId: FormTemplateId) = Action.async { implicit request =>
     Logger.info(s"new form, userId: '${userId.value}', templateId: '${formTemplateId.value}', ${loggingHelpers.cleanHeaders(request.headers)}")
@@ -95,8 +94,7 @@ class FormController(
 
     result.map(_.fold(
       e => e.error,
-      _ => "No errors"
-    )).asOkJson
+      _ => "No errors")).asOkJson
   }
 
   def delete(formId: FormId): Action[AnyContent] = Action.async { implicit request =>

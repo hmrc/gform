@@ -21,8 +21,7 @@ import play.api.libs.json.Json
 case class DmsSubmission(
   customerId: TextExpression,
   classificationType: String,
-  businessArea: String
-)
+  businessArea: String)
 
 object DmsSubmission {
   implicit val format = Json.format[DmsSubmission]

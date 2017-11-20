@@ -23,7 +23,6 @@ object ExposedConfigHelper {
   def exposedConfig(appConfig: AppConfig) = ExposedConfig(
     appConfig.formMaxAttachmentSizeMB,
     appConfig.formExpiryDays,
-    appConfig.contentTypes
-  )
+    appConfig.contentTypes)
 
 }

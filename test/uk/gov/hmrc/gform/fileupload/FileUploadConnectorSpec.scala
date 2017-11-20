@@ -21,7 +21,7 @@ import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.time.FrozenTimeProvider
 import uk.gov.hmrc.gform.wshttp.StubbedWSHttp
-import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpResponse }
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
 class FileUploadConnectorSpec extends Spec {
 
@@ -55,7 +55,7 @@ class FileUploadConnectorSpec extends Spec {
     val headers = noHeaders
     val status = 500
     val result = fileUploadConnector.createEnvelope(formTypeId)
-    result.failed.futureValue shouldBe an[uk.gov.hmrc.play.http.Upstream5xxResponse]
+    result.failed.futureValue shouldBe an[_root_.uk.gov.hmrc.http.Upstream5xxResponse]
     result.failed.futureValue.getMessage shouldBe "POST of 'http://fileupload.whatever/file-upload/envelopes' returned 500. Response body: 'null'"
   }
 
@@ -63,7 +63,7 @@ class FileUploadConnectorSpec extends Spec {
     val headers = noHeaders
     val status = 400
     val result = fileUploadConnector.createEnvelope(formTypeId)
-    result.failed.futureValue shouldBe an[uk.gov.hmrc.play.http.BadRequestException]
+    result.failed.futureValue shouldBe an[_root_.uk.gov.hmrc.http.BadRequestException]
     result.failed.futureValue.getMessage shouldBe "POST of 'http://fileupload.whatever/file-upload/envelopes' returned 400 (Bad Request). Response body 'null'"
   }
 

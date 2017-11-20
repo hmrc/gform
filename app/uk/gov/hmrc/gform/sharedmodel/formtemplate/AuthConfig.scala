@@ -30,16 +30,14 @@ trait AuthConfigWithEnrolment {
 
 case class EEITTAuthConfig(
   authModule: AuthConfigModule,
-  regimeId: RegimeId
-) extends AuthConfig
+  regimeId: RegimeId) extends AuthConfig
 
 object EEITTAuthConfig {
   implicit val format = Json.format[EEITTAuthConfig]
 }
 
 case class HMRCAuthConfigWithAuthModule(
-  authModule: AuthConfigModule
-) extends AuthConfig
+  authModule: AuthConfigModule) extends AuthConfig
 
 object HMRCAuthConfigWithAuthModule {
   implicit val format = Json.format[HMRCAuthConfigWithAuthModule]
@@ -47,8 +45,7 @@ object HMRCAuthConfigWithAuthModule {
 
 case class HMRCAuthConfigWithServiceId(
   authModule: AuthConfigModule,
-  serviceId: ServiceId
-) extends AuthConfig
+  serviceId: ServiceId) extends AuthConfig
 
 object HMRCAuthConfigWithServiceId {
   implicit val format = Json.format[HMRCAuthConfigWithServiceId]
@@ -57,8 +54,7 @@ object HMRCAuthConfigWithServiceId {
 case class HMRCAuthConfigWithRegimeId(
   authModule: AuthConfigModule,
   serviceId: ServiceId,
-  regimeId: RegimeId
-) extends AuthConfig
+  regimeId: RegimeId) extends AuthConfig
 object HMRCAuthConfigWithRegimeId {
   implicit val format = Json.format[HMRCAuthConfigWithRegimeId]
 }
@@ -66,8 +62,7 @@ object HMRCAuthConfigWithRegimeId {
 case class HMRCAuthConfigWithEnrolment(
   authModule: AuthConfigModule,
   serviceId: ServiceId,
-  enrolmentSection: EnrolmentSection
-) extends AuthConfig with AuthConfigWithEnrolment
+  enrolmentSection: EnrolmentSection) extends AuthConfig with AuthConfigWithEnrolment
 object HMRCAuthConfigWithEnrolment {
   implicit val format = Json.format[HMRCAuthConfigWithEnrolment]
 
@@ -77,8 +72,7 @@ case class HMRCAuthConfig(
   authModule: AuthConfigModule,
   serviceId: ServiceId,
   regimeId: RegimeId,
-  enrolmentSection: EnrolmentSection
-) extends AuthConfig with AuthConfigWithEnrolment
+  enrolmentSection: EnrolmentSection) extends AuthConfig with AuthConfigWithEnrolment
 object HMRCAuthConfig {
   implicit val format = Json.format[HMRCAuthConfig]
 

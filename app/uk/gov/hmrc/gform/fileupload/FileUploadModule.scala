@@ -36,8 +36,7 @@ class FileUploadModule(configModule: ConfigModule, wSHttpModule: WSHttpModule, t
     s"${ac.formMaxAttachments * ac.formMaxAttachmentSizeMB}MB", //heuristic to compute max size
     s"${ac.formMaxAttachmentSizeMB}MB",
     ac.formMaxAttachments,
-    configModule.appConfig.contentTypes
-  )
+    configModule.appConfig.contentTypes)
 
   //TODO: provide separate one here
   private lazy implicit val ec = MdcLoggingExecutionContext

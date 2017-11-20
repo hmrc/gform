@@ -72,19 +72,16 @@ object RepeatingComponentService {
       field.`type` match {
         case grp @ Group(fields, _, _, _, _, _) => field.copy(
           id = FormComponentId(s"${index}_${field.id.value}"),
-          `type` = grp.copy(fields = fields.map(copyField))
-        )
+          `type` = grp.copy(fields = fields.map(copyField)))
         case _ => field.copy(
-          id = FormComponentId(s"${index}_${field.id.value}")
-        )
+          id = FormComponentId(s"${index}_${field.id.value}"))
       }
     }
 
     section.copy(
       title = buildText(Some(section.title), index, data).getOrElse(""),
       shortName = buildText(section.shortName, index, data),
-      fields = section.fields.map(copyField)
-    )
+      fields = section.fields.map(copyField))
   }
 
   private def buildText(template: Option[String], index: Int, data: Map[String, String]): Option[String] = {

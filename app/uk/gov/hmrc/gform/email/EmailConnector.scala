@@ -22,6 +22,7 @@ import uk.gov.hmrc.gform.wshttp.WSHttp
 import uk.gov.hmrc.play.http._
 
 import scala.concurrent.{ ExecutionContext, Future }
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
 class EmailConnector(wSHttp: WSHttp, baseUrl: String) {
 

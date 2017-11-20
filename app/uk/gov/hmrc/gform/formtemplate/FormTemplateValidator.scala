@@ -105,8 +105,7 @@ object FormTemplateValidator {
       val optionalFieldsFromSubmission = RepeatingComponentService.discardRepeatingFields(
         formFieldIds diff mandatorySectionIds,
         mandatorySectionIds,
-        optionalSectionIds
-      )
+        optionalSectionIds)
 
       val fieldWhichAreNotFromFormTemplate = optionalFieldsFromSubmission diff optionalSectionIds
 

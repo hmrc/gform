@@ -29,8 +29,7 @@ case class Form(
   formTemplateId: FormTemplateId,
   repeatingGroupStructure: Option[RepeatingGroupStructure],
   formData: FormData,
-  status: FormStatus
-)
+  status: FormStatus)
 
 object Form {
 
@@ -41,8 +40,7 @@ object Form {
     FormTemplateId.vformat and
     RepeatingGroupStructure.optionFormat and
     FormData.format and
-    FormStatus.format
-  )(Form.apply _)
+    FormStatus.format)(Form.apply _)
 
   private val writes: OWrites[Form] = OWrites[Form](form =>
     FormId.format.writes(form._id) ++

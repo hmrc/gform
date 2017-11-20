@@ -26,9 +26,8 @@ import uk.gov.hmrc.gform.save4later.{ Save4Later, Save4LaterModule }
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 
 class ValidationModule(
-    wSHttpModule: WSHttpModule,
-    configModule: ConfigModule
-) {
+  wSHttpModule: WSHttpModule,
+  configModule: ConfigModule) {
 
   private val desConfig = configModule.desConfig
   private val desConnector: DesConnector = new DesConnector(wSHttpModule.auditableWSHttp, configModule.serviceConfig.baseUrl("etmp-hod"), desConfig)

@@ -35,8 +35,7 @@ object ExprParsers {
 
   lazy val exprFormCtx: Parser[Expr] = (
     "'" ~ anyConstant ~ "'" ^^ { (loc, _, str, _) => str }
-    | parserExpression
-  )
+    | parserExpression)
 
   lazy val contextFieldExpr: Parser[Expr] = (
     "${" ~> parserExpression <~ "}"
@@ -45,32 +44,26 @@ object ExprParsers {
     | "auth" ~ "." ~ authInfo ^^ { (loc, _, _, authInfo) => AuthCtx(authInfo) }
     | alphabeticOnly ~ ".sum" ^^ { (loc, value, _) => Sum(FormCtx(value)) }
     | anyDigitConst ^^ { (loc, str) => str }
-    | alphabeticOnly ^^ { (loc, fn) => FormCtx(fn) }
-  )
+    | alphabeticOnly ^^ { (loc, fn) => FormCtx(fn) })
 
   lazy val parserExpression: Parser[Expr] = (
     parserExpression ~ "+" ~ parserExpression ^^ { (loc, expr1, _, expr2) => Add(expr1, expr2) }
     | parserExpression ~ "*" ~ parserExpression ^^ { (loc, expr1, _, expr2) => Multiply(expr1, expr2) }
-    | contextField
-  )
+    | contextField)
 
   lazy val anyDigitConst: Parser[Expr] = (
-    """[ \d,]+""".r ^^ { (loc, str) => Constant(str) }
-  )
+    """[ \d,]+""".r ^^ { (loc, str) => Constant(str) })
 
   lazy val anyConstant: Parser[Constant] = (
-    """[ \w,]+""".r ^^ { (loc, str) => Constant(str) }
-  )
+    """[ \w,]+""".r ^^ { (loc, str) => Constant(str) })
 
   lazy val eeitt: Parser[Eeitt] = (
     "businessUser" ^^ { (loc, _) => BusinessUser }
-    | "agent" ^^ { (loc, _) => Agent }
-  )
+    | "agent" ^^ { (loc, _) => Agent })
 
   lazy val authInfo: Parser[AuthInfo] = (
     "gg" ^^ { (_, _) => GG }
     | "payenino" ^^ { (_, _) => PayeNino }
     | "sautr" ^^ { (_, _) => SaUtr }
-    | "ctutr" ^^ { (_, _) => CtUtr }
-  )
+    | "ctutr" ^^ { (_, _) => CtUtr })
 }

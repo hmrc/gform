@@ -25,10 +25,10 @@ import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ DmsSubmission, FormTemplateId }
 import uk.gov.hmrc.gform.submission.{ SubmissionAndPdf, SubmissionRef }
 import uk.gov.hmrc.gform.time.TimeProvider
-import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
 import scala.concurrent.Future
+import uk.gov.hmrc.http.HeaderCarrier
 
 class FileUploadService(fileUploadConnector: FileUploadConnector, fileUploadFrontendConnector: FileUploadFrontendConnector, timeModule: TimeProvider = new TimeProvider) {
 
@@ -48,16 +48,14 @@ class FileUploadService(fileUploadConnector: FileUploadConnector, fileUploadFron
       pdf,
       s"$fileNamePrefix-form.pdf",
       ByteString(submissionAndPdf.pdfSummary.pdfContent),
-      ContentType.`application/pdf`
-    )
+      ContentType.`application/pdf`)
 
     val uploadXmlF: Future[Unit] = fileUploadFrontendConnector.upload(
       envelopeId,
       xml,
       s"$fileNamePrefix-metadata.xml",
       ByteString(metadataXml.getBytes),
-      ContentType.`application/xml`
-    )
+      ContentType.`application/xml`)
 
     for {
       _ <- uploadPfdF

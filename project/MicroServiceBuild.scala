@@ -16,14 +16,9 @@ object MicroServiceBuild extends Build with MicroService {
     ws,
     "uk.gov.hmrc" %% "play-reactivemongo" % "5.2.0",
     "com.github.pureconfig" %% "pureconfig" % "0.8.0",
-    "uk.gov.hmrc" %% "http-caching-client" % "6.3.0",
-    "uk.gov.hmrc" %% "microservice-bootstrap" % "5.16.0",
-    "uk.gov.hmrc" %% "play-authorisation" % "4.3.0",
-    "uk.gov.hmrc" %% "play-health" % "2.1.0",
+    "uk.gov.hmrc" %% "http-caching-client" % "7.0.0",
+    "uk.gov.hmrc" %% "microservice-bootstrap" % "6.13.0",
     "uk.gov.hmrc" %% "play-url-binders" % "2.1.0",
-    "uk.gov.hmrc" %% "play-config" % "4.3.0",
-    "uk.gov.hmrc" %% "play-auditing" % "2.10.0",
-    "uk.gov.hmrc" %% "logback-json-logger" % "3.1.0",
     "uk.gov.hmrc" %% "domain" % "5.0.0",
     "com.codecommit" %% "parseback-core" % parsebackVersion,
     "com.codecommit" %% "parseback-cats" % parsebackVersion,
@@ -44,7 +39,7 @@ object MicroServiceBuild extends Build with MicroService {
     "com.typesafe.play" %% "play-test" % PlayVersion.current % scope,
     "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % scope,
     "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.1" % scope,
-    "uk.gov.hmrc" %% "reactivemongo-test" % "2.0.0" % scope,
+    "uk.gov.hmrc" %% "reactivemongo-test" % "3.0.0" % scope,
     "org.jsoup" % "jsoup" % "1.10.3" % scope
   )
 
