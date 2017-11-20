@@ -21,9 +21,9 @@ import akka.stream.ActorMaterializer
 import play.api.libs.json.Writes
 import play.api.libs.ws.WSRequest
 import play.api.libs.ws.ahc.AhcWSClient
-import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpResponse }
 
 import scala.concurrent.Future
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
 /**
  * Stubbed WSHttp which responses always with the same HttpResponse. Use it for test purposes

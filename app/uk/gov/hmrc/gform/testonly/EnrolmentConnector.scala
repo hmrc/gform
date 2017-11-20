@@ -18,9 +18,9 @@ package uk.gov.hmrc.gform.testonly
 
 import play.api.libs.json.{ JsValue, Json }
 import uk.gov.hmrc.gform.wshttp.WSHttp
-import uk.gov.hmrc.play.http.{ HeaderCarrier, HttpResponse }
 
 import scala.concurrent.{ ExecutionContext, Future }
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
 class EnrolmentConnector(wSHttp: WSHttp, baseUrl: String) {
 

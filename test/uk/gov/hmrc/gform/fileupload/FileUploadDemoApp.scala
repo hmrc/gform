@@ -24,11 +24,11 @@ import uk.gov.hmrc.gform.sharedmodel.form.FileId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.gform.wshttp.TestWSHttp
-import uk.gov.hmrc.play.http.HeaderCarrier
 
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
+import uk.gov.hmrc.http.HeaderCarrier
 
 object FileUploadDemoApp extends App {
 

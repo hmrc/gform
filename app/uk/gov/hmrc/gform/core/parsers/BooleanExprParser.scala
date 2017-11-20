@@ -33,8 +33,7 @@ object BooleanExprParser {
     "${" ~> basicExpressionParser <~ "}"
     | "${" ~ basicExpressionParser ~ booleanOperation ~ basicExpressionParser ~ "}" ^^ { { (loc, _, expr1, op, expr2, _) => Or(expr1, expr2) } }
     | "True" ^^ { (loc, value) => IsTrue }
-    | booleanExpr ~ booleanOperation ~ booleanExpr ^^ { { (loc, expr1, op, expr2) => Or(expr1, expr2) } }
-  )
+    | booleanExpr ~ booleanOperation ~ booleanExpr ^^ { { (loc, expr1, op, expr2) => Or(expr1, expr2) } })
 
   lazy val basicExpressionParser: Parser[BooleanExpr] =
     contextField ~ comparisonOperation ~ anyConstant ^^ {
@@ -49,6 +48,5 @@ object BooleanExprParser {
 
   lazy val operation: Parser[Operation] = (
     "+" ^^ { (loc, _) => Addition }
-    | "*" ^^ { (loc, _) => Multiplication }
-  )
+    | "*" ^^ { (loc, _) => Multiplication })
 }

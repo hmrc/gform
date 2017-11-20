@@ -19,9 +19,9 @@ package uk.gov.hmrc.gform.validation
 import uk.gov.hmrc.gform.bank_account_reputation.BankAccountReputationConnector
 import uk.gov.hmrc.gform.des.{ AddressDes, DesConnector }
 import uk.gov.hmrc.gform.sharedmodel.{ Account, ValAddress }
-import uk.gov.hmrc.play.http.{ HeaderCarrier, NotFoundException }
 
 import scala.concurrent.{ ExecutionContext, Future }
+import uk.gov.hmrc.http.{ HeaderCarrier, NotFoundException }
 
 class ValidationService(desConnector: DesConnector, bankAccountReputationConnector: BankAccountReputationConnector) {
 

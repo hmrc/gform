@@ -28,15 +28,14 @@ sealed trait BaseSection {
 }
 
 case class Section(
-    title: String,
-    description: Option[String],
-    shortName: Option[String],
-    includeIf: Option[IncludeIf],
-    repeatsMax: Option[TextExpression],
-    repeatsMin: Option[TextExpression],
-    validators: Option[Validator],
-    fields: List[FormComponent]
-) extends BaseSection {
+  title: String,
+  description: Option[String],
+  shortName: Option[String],
+  includeIf: Option[IncludeIf],
+  repeatsMax: Option[TextExpression],
+  repeatsMin: Option[TextExpression],
+  validators: Option[Validator],
+  fields: List[FormComponent]) extends BaseSection {
   private def atomicFields(fieldValues: List[FormComponent], data: Map[FormComponentId, FormField]): List[FormComponent] = {
     fieldValues.flatMap { (fieldValue) =>
       fieldValue.`type` match {
@@ -68,8 +67,7 @@ case class Section(
             case true => List(fieldInGroup.copy(
               id = FormComponentId(fieldName),
               label = buildRepeatingText(Some(fieldInGroup.label), i + 1).getOrElse(""),
-              shortName = buildRepeatingText(fieldInGroup.shortName, i + 1)
-            ))
+              shortName = buildRepeatingText(fieldInGroup.shortName, i + 1)))
             case false => Nil
           }
         }.toSet
@@ -82,8 +80,7 @@ case class Section(
       if (field.label.contains("$n") || (field.shortName.isDefined && field.shortName.get.contains("$n"))) {
         field.copy(
           label = buildRepeatingText(Some(field.label), 1).get,
-          shortName = buildRepeatingText(field.shortName, 1)
-        )
+          shortName = buildRepeatingText(field.shortName, 1))
       } else {
         field
       }
@@ -104,8 +101,7 @@ case class DeclarationSection(
   title: String,
   description: Option[String],
   shortName: Option[String],
-  fields: List[FormComponent]
-) extends BaseSection
+  fields: List[FormComponent]) extends BaseSection
 
 object DeclarationSection {
   implicit val format = Json.format[DeclarationSection]
@@ -115,8 +111,7 @@ case class AcknowledgementSection(
   title: String,
   description: Option[String],
   shortName: Option[String],
-  fields: List[FormComponent]
-) extends BaseSection
+  fields: List[FormComponent]) extends BaseSection
 
 object AcknowledgementSection {
   implicit val format = Json.format[AcknowledgementSection]
@@ -125,8 +120,7 @@ object AcknowledgementSection {
 case class EnrolmentSection(
   title: String,
   shortName: Option[String],
-  fields: List[FormComponent]
-) extends BaseSection
+  fields: List[FormComponent]) extends BaseSection
 
 object EnrolmentSection {
   implicit val format = Json.format[EnrolmentSection]
@@ -134,6 +128,5 @@ object EnrolmentSection {
 
 case class SectionFormField(
   title: String,
-  fields: List[(List[FormField], FormComponent)]
-)
+  fields: List[(List[FormField], FormComponent)])
 

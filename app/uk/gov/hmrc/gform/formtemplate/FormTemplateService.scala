@@ -25,9 +25,8 @@ import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
 import scala.concurrent.{ ExecutionContext, Future }
 
 class FormTemplateService(
-    formTemplateRepo: FormTemplateRepo,
-    formTemplateRawRepo: FormTemplateRawRepo
-) {
+  formTemplateRepo: FormTemplateRepo,
+  formTemplateRawRepo: FormTemplateRawRepo) {
 
   def save(formTemplateRaw: FormTemplateRaw)(implicit ec: ExecutionContext): FOpt[Unit] = formTemplateRawRepo.upsert(formTemplateRaw)
 
@@ -45,8 +44,7 @@ class FormTemplateService(
   }
 
   def verifyAndSave(
-    formTemplate: FormTemplate
-  )(implicit ec: ExecutionContext): FOpt[Unit] = {
+    formTemplate: FormTemplate)(implicit ec: ExecutionContext): FOpt[Unit] = {
 
     val sections = formTemplate.sections
 

@@ -30,8 +30,7 @@ object ValueClassFormat {
         }
         case other => JsError(s"Invalid json, not found '$fieldName'")
       },
-      OWrites[A](a => Json.obj(fieldName -> write(a)))
-    )
+      OWrites[A](a => Json.obj(fieldName -> write(a))))
   }
 
   def vformat[A](fieldName: String, read: String => A, write: A => JsValue): Format[A] = {
@@ -44,8 +43,7 @@ object ValueClassFormat {
         }
         case other => JsError(s"Invalid json, not found '$fieldName'")
       },
-      Writes[A](a => write(a))
-    )
+      Writes[A](a => write(a)))
   }
 
 }

@@ -45,8 +45,7 @@ object ComponentTypeRaw {
       "choice" -> ChoiceRaw,
       "group" -> GroupRaw,
       "file" -> FileUploadRaw,
-      "info" -> InfoRaw
-    )
+      "info" -> InfoRaw)
 
   implicit val format: OFormat[ComponentTypeRaw] = {
 

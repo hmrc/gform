@@ -25,8 +25,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 
 case class DmsMetaData(
   formTemplateId: FormTemplateId,
-  customerId: String
-)
+  customerId: String)
 
 object DmsMetaData {
   implicit val format = Json.format[DmsMetaData]
@@ -37,8 +36,7 @@ case class Submission(
   submittedDate: LocalDateTime,
   submissionRef: SubmissionRef,
   envelopeId: EnvelopeId,
-  dmsMetaData: DmsMetaData
-)
+  dmsMetaData: DmsMetaData)
 
 object Submission {
 
@@ -47,8 +45,7 @@ object Submission {
     (JsPath \ "submittedDate").read[LocalDateTime] and
     SubmissionRef.oformat and
     EnvelopeId.format and
-    DmsMetaData.format
-  )(Submission.apply _)
+    DmsMetaData.format)(Submission.apply _)
 
   private val writes: OWrites[Submission] = OWrites[Submission](s =>
     FormId.format.writes(s._id) ++
@@ -64,10 +61,8 @@ object Submission {
 case class PdfSummary(
   numberOfPages: Long,
   //TODO get rid of byte array and operate on streams or something similar
-  pdfContent: Array[Byte]
-)
+  pdfContent: Array[Byte])
 
 case class SubmissionAndPdf(
   submission: Submission,
-  pdfSummary: PdfSummary
-)
+  pdfSummary: PdfSummary)

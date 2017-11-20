@@ -23,8 +23,7 @@ import play.api.libs.json.{ Json, OFormat }
 case class EmailTemplate(
   to: Seq[String], //content that goes in the email to be put into template
   private val templateId: String = "eeitt_submission_confirmation", //the template ID that the content will be put into
-  private val force: Boolean = false
-)
+  private val force: Boolean = false)
 
 object EmailTemplate {
   implicit val format: OFormat[EmailTemplate] = Json.format[EmailTemplate]

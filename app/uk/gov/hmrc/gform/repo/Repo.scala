@@ -29,7 +29,7 @@ import uk.gov.hmrc.mongo.ReactiveRepository
 import scala.concurrent.{ ExecutionContext, Future }
 
 class Repo[T: OWrites: Manifest](name: String, mongo: () => DefaultDB, idLens: T => String)(implicit formatT: Format[T])
-    extends ReactiveRepository[T, BSONObjectID](name, mongo, formatT) {
+  extends ReactiveRepository[T, BSONObjectID](name, mongo, formatT) {
   underlying =>
 
   def find(id: String)(implicit ec: ExecutionContext): Future[Option[T]] = underlying

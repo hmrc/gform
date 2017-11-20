@@ -21,9 +21,9 @@ import uk.gov.hmrc.gform.sharedmodel._
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyText, _ }
 import uk.gov.hmrc.gform.submission.{ SectionFormField, SubmissionServiceHelper }
-import uk.gov.hmrc.play.http.HeaderCarrier
 
 import scala.collection.immutable.List
+import uk.gov.hmrc.http.HeaderCarrier
 
 class SubmissionServiceSpec extends Spec {
 

@@ -54,8 +54,7 @@ object SectionHelper {
             case true => List(fieldInGroup.copy(
               id = FormComponentId(fieldName),
               label = buildRepeatingText(Some(fieldInGroup.label), i + 1).getOrElse(""),
-              shortName = buildRepeatingText(fieldInGroup.shortName, i + 1)
-            ))
+              shortName = buildRepeatingText(fieldInGroup.shortName, i + 1)))
             case false => Nil
           }
         }.toSet
@@ -68,8 +67,7 @@ object SectionHelper {
       if (field.label.contains("$n") || (field.shortName.isDefined && field.shortName.get.contains("$n"))) {
         field.copy(
           label = buildRepeatingText(Some(field.label), 1).get,
-          shortName = buildRepeatingText(field.shortName, 1)
-        )
+          shortName = buildRepeatingText(field.shortName, 1))
       } else {
         field
       }

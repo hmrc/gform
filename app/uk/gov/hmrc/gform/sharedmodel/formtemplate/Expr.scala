@@ -53,8 +53,7 @@ object FormCtx {
   private def parse(exprAsStr: String): JsResult[FormCtx] =
     ExprParsers.validateFormCtx(exprAsStr) fold (
       error => JsError(error.toString),
-      expr => JsSuccess(expr)
-    )
+      expr => JsSuccess(expr))
 
   implicit val format: OFormat[FormCtx] = OFormat(reads, writesFormCtx)
 }

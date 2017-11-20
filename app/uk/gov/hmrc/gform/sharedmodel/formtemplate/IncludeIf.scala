@@ -47,6 +47,5 @@ object IncludeIf {
   private def parse(exprAsStr: String): JsResult[BooleanExpr] =
     BooleanExprParser.validate(exprAsStr) fold (
       error => JsError(error.toString),
-      expr => JsSuccess(expr)
-    )
+      expr => JsSuccess(expr))
 }

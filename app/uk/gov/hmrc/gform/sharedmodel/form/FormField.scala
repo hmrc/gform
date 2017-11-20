@@ -26,8 +26,7 @@ object FormField {
 
   implicit val reads: Reads[FormField] = (
     (FormComponentId.oformat: Reads[FormComponentId]) and
-    (JsPath \ "value").read[String]
-  )(FormField.apply _)
+    (JsPath \ "value").read[String])(FormField.apply _)
 
   implicit val writes = OWrites[FormField] { formField =>
 

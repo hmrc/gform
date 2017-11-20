@@ -112,8 +112,7 @@ object TextExpression {
       case JsString(expression) =>
         BasicParsers.validateWithParser(expression, ValueParser.expr).fold(
           unexpectedState => JsError(unexpectedState.toString),
-          expr => JsSuccess(TextExpression(expr))
-        )
+          expr => JsSuccess(TextExpression(expr)))
       case otherwise => JsError(s"Expected String as JsValue for TextExpression, got: $otherwise")
     }
     OFormat[TextExpression](reads, writes)

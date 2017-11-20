@@ -21,5 +21,4 @@ import akka.stream.Materializer
 
 class AkkaModule(
   val materializer: Materializer,
-  val actorSystem: ActorSystem
-)
+  val actorSystem: ActorSystem)

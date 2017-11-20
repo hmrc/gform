@@ -21,13 +21,12 @@ import pureconfig._
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 
 case class AppConfig(
-    appName: String,
-    formExpiryDays: Int,
-    formMaxAttachmentSizeMB: Int,
-    formMaxAttachments: Int,
-    /*we can't override list in app-config-base:*/
-    contentTypesSeparatedByPipe: String
-) {
+  appName: String,
+  formExpiryDays: Int,
+  formMaxAttachmentSizeMB: Int,
+  formMaxAttachments: Int,
+  /*we can't override list in app-config-base:*/
+  contentTypesSeparatedByPipe: String) {
 
   def contentTypes: List[ContentType] = contentTypesSeparatedByPipe.split('|').toList.map(ContentType.apply)
 }

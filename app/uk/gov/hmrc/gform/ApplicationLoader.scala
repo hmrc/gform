@@ -53,7 +53,7 @@ class ApplicationLoader extends play.api.ApplicationLoader {
 }
 
 class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(context)
-    with I18nComponents { self =>
+  with I18nComponents { self =>
 
   Logger.info(s"Starting microservice GFORM}")
 

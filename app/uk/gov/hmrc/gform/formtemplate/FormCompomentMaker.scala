@@ -86,8 +86,7 @@ class FormCompomentMaker(json: JsValue) {
     submissible = mes.submissible,
     derived = mes.derived,
     presentationHint = presHint,
-    errorMessage = errorMessage
-  )
+    errorMessage = errorMessage)
 
   private lazy val optMES: Opt[MES] = (submitMode, mandatory) match {
     //format: OFF
@@ -131,22 +130,19 @@ class FormCompomentMaker(json: JsValue) {
               |Id: $id
               |Format: $invalidFormat
               |Value: must supply a value
-              |""".stripMargin
-        ).asLeft
+              |""".stripMargin).asLeft
         case (None, Some(invalidValue)) => UnexpectedState(
           s"""|Unsupported type of format and value for text field
               |Id: $id
               |Format: "must supply a value for format"
               |Value: $invalidValue
-              |""".stripMargin
-        ).asLeft
+              |""".stripMargin).asLeft
         case (Some(invalidFormat), Some(invalidValue)) => UnexpectedState(
           s"""|Unsupported type of format and value for text field
               |Id: $id
               |Format: $invalidFormat
               |Value: $invalidValue
-              |""".stripMargin
-        ).asLeft
+              |""".stripMargin).asLeft
         //format: ON
       }
       result <- optText
@@ -176,8 +172,7 @@ class FormCompomentMaker(json: JsValue) {
             UnexpectedState(
               s"""|Unsupported type of format for date field
                   |Id: $id
-                  |Format: $invalidFormat""".stripMargin
-            ).asLeft
+                  |Format: $invalidFormat""".stripMargin).asLeft
         }
         dateConstraintType <- optDateConstraintType
       } yield dateConstraintType
@@ -192,8 +187,7 @@ class FormCompomentMaker(json: JsValue) {
           case Some(invalidValue) => UnexpectedState(
             s"""|Unsupported type of value for date field
                 |Id: $id
-                |Value: $invalidValue""".stripMargin
-          ).asLeft
+                |Value: $invalidValue""".stripMargin).asLeft
         }
         maybeDateValue <- optMaybeDateValue
       } yield maybeDateValue
@@ -292,8 +286,7 @@ class FormCompomentMaker(json: JsValue) {
          | infoText is the text to display.
          | InfoType: $infType
          | InfoText: $infText
-       """.stripMargin
-    ).asLeft
+       """.stripMargin).asLeft
   }
 
   private final object Selections {
@@ -367,8 +360,7 @@ class FormCompomentMaker(json: JsValue) {
         case Some(IsFalseish()) | None => Some(MultivalueNo)
         case Some(IsTrueish()) => Some(
 
-          MultivalueYes
-        )
+          MultivalueYes)
         case _ => None
       }
     }

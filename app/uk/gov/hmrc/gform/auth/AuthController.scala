@@ -22,8 +22,7 @@ import play.api.mvc.Action
 import uk.gov.hmrc.gform.controllers.BaseController
 
 class AuthController(
-    authService: AuthService
-) extends BaseController {
+  authService: AuthService) extends BaseController {
 
   def check = Action.async(parse.json[String]) { implicit request =>
     authService.whiteListed(request.body).map {
@@ -47,7 +46,6 @@ class AuthController(
 
     result.fold(
       errors => errors.asBadRequest,
-      good => NoContent
-    )
+      good => NoContent)
   }
 }

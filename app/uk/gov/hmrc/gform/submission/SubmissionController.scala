@@ -24,8 +24,7 @@ import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
 
 class SubmissionController(
-    submissionService: SubmissionService
-) extends BaseController {
+  submissionService: SubmissionService) extends BaseController {
 
   def submit(formId: FormId) = Action.async { implicit request =>
     Logger.info(s"submit, formId: '${formId.value}, ${loggingHelpers.cleanHeaders(request.headers)}")
@@ -37,8 +36,7 @@ class SubmissionController(
 
     submissionService.submission(formId, request.headers.get("customerId").getOrElse("")).fold(
       _.asBadRequest,
-      _ => NoContent
-    )
+      _ => NoContent)
   }
 
   def submissionStatus(formId: FormId) = Action.async { implicit request =>

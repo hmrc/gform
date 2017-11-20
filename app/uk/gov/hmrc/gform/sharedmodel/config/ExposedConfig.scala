@@ -24,8 +24,7 @@ import play.api.libs.json.{ Json, OFormat }
 case class ExposedConfig(
   formMaxAttachmentSizeMB: Int,
   formExpiryDays: Int,
-  contentTypes: List[ContentType]
-)
+  contentTypes: List[ContentType])
 
 object ExposedConfig {
   implicit val format: OFormat[ExposedConfig] = Json.format[ExposedConfig]

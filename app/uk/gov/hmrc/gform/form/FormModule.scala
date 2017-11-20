@@ -23,11 +23,10 @@ import uk.gov.hmrc.gform.save4later.{ Save4Later, Save4LaterModule }
 import uk.gov.hmrc.gform.wshttp.{ WSHttp, WSHttpModule }
 
 class FormModule(
-    mongoModule: MongoModule,
-    shortLivedCacheModule: Save4LaterModule,
-    formTemplateModule: FormTemplateModule,
-    fileUploadModule: FileUploadModule
-) {
+  mongoModule: MongoModule,
+  shortLivedCacheModule: Save4LaterModule,
+  formTemplateModule: FormTemplateModule,
+  fileUploadModule: FileUploadModule) {
 
   val save4later = new Save4Later(shortLivedCacheModule.shortLivedCache, scala.concurrent.ExecutionContext.Implicits.global)
 
@@ -36,7 +35,6 @@ class FormModule(
   val formController: FormController = new FormController(
     formTemplateModule.formTemplateService,
     fileUploadModule.fileUploadService,
-    formService
-  )
+    formService)
 
 }

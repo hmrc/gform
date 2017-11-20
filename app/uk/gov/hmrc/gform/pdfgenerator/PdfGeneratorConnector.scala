@@ -19,10 +19,10 @@ package uk.gov.hmrc.gform.connectors
 import play.api.Logger
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.play.config.ServicesConfig
-import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.play.http.ws._
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import scala.concurrent.Future
+import uk.gov.hmrc.http.HeaderCarrier
 
 class PdfGeneratorConnector(servicesConfig: ServicesConfig, wSHttp: WSHttp) {
 

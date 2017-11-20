@@ -21,9 +21,9 @@ import uk.gov.hmrc.gform.save4later.Save4Later
 import uk.gov.hmrc.gform.sharedmodel.UserId
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
-import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import scala.concurrent.Future
+import uk.gov.hmrc.http.HeaderCarrier
 
 class FormService(save4Later: Save4Later) {
 
@@ -48,8 +48,7 @@ class FormService(save4Later: Save4Later) {
         .copy(
           formData = userData.formData,
           repeatingGroupStructure = userData.repeatingGroupStructure,
-          status = newStatus(form, userData.formStatus)
-        )
+          status = newStatus(form, userData.formStatus))
       _ <- save4Later.upsert(formId, newForm)
     } yield ()
   }

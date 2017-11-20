@@ -31,8 +31,7 @@ case class FormTemplate(
   submitErrorUrl: String,
   sections: List[Section],
   acknowledgementSection: AcknowledgementSection,
-  declarationSection: DeclarationSection
-)
+  declarationSection: DeclarationSection)
 
 object FormTemplate {
 

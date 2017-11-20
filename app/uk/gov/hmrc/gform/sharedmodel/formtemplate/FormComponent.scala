@@ -31,9 +31,7 @@ case class FormComponent(
   submissible: Boolean,
   derived: Boolean,
   errorMessage: Option[String],
-  presentationHint: Option[List[PresentationHint]] = Option.empty[List[PresentationHint]]
-
-)
+  presentationHint: Option[List[PresentationHint]] = Option.empty[List[PresentationHint]])
 
 object FormComponent {
 

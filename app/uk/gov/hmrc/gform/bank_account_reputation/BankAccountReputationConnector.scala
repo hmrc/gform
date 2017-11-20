@@ -23,9 +23,9 @@ import uk.gov.hmrc.gform.wshttp.WSHttp
 import play.api.libs.functional.syntax._
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.sharedmodel.Account
-import uk.gov.hmrc.play.http.HeaderCarrier
 
 import scala.concurrent.Future
+import uk.gov.hmrc.http.HeaderCarrier
 
 class BankAccountReputationConnector(wSHttp: WSHttp, baseUrl: String) {
 
@@ -36,8 +36,7 @@ class BankAccountReputationConnector(wSHttp: WSHttp, baseUrl: String) {
 }
 case class Response(
   accountNumberWithSortCodeIsValid: Boolean,
-  nonStandardAccountDetailsRequiredForBacs: String
-)
+  nonStandardAccountDetailsRequiredForBacs: String)
 
 object Response {
   private val reads = Reads[Response] { json =>

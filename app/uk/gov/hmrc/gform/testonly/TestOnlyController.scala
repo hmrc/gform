@@ -25,16 +25,13 @@ import reactivemongo.json.collection.JSONCollection
 import uk.gov.hmrc.BuildInfo
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
-import uk.gov.hmrc.play.http.{ HttpResponse, NotFoundException }
 import uk.gov.hmrc.gform.des.AddressDes
-import uk.gov.hmrc.play.http.NotFoundException
 
 import scala.concurrent.Future
 
 class TestOnlyController(
-    mongo: () => DB,
-    enrolmentConnector: EnrolmentConnector
-) extends BaseController {
+  mongo: () => DB,
+  enrolmentConnector: EnrolmentConnector) extends BaseController {
 
   lazy val formTemplates = mongo().collection[JSONCollection]("formTemplate")
   def removeTemplates() = Action.async { implicit request =>
@@ -49,8 +46,7 @@ class TestOnlyController(
 
   def buildInfo() = Action { r =>
     Results.Ok(
-      Json.toJson(BuildInfo.toMap.mapValues(_.toString))
-    )
+      Json.toJson(BuildInfo.toMap.mapValues(_.toString)))
 
   }
 
@@ -65,8 +61,7 @@ class TestOnlyController(
 
   def config() = Action { r =>
     val result: JsValue = Json.parse(
-      ConfigFactory.load().root().render(ConfigRenderOptions.concise())
-    )
+      ConfigFactory.load().root().render(ConfigRenderOptions.concise()))
     Results.Ok(result)
   }
 

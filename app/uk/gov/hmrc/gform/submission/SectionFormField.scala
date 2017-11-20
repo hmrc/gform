@@ -23,5 +23,4 @@ import scala.collection.immutable.List
 
 case class SectionFormField(
   title: String,
-  fields: List[(List[FormField], FormComponent)]
-)
+  fields: List[(List[FormField], FormComponent)])
