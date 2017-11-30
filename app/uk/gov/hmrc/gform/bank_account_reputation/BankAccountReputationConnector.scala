@@ -18,14 +18,13 @@ package uk.gov.hmrc.gform.bank_account_reputation
 
 import play.api.Logger
 import play.api.libs.json._
-import uk.gov.hmrc.gform.config.DesConnectorConfig
 import uk.gov.hmrc.gform.wshttp.WSHttp
 import play.api.libs.functional.syntax._
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.sharedmodel.Account
+import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ ExecutionContext, Future }
-import uk.gov.hmrc.http.HeaderCarrier
 
 class BankAccountReputationConnector(wSHttp: WSHttp, baseUrl: String) {
 

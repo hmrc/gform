@@ -22,11 +22,10 @@ import cats.data.EitherT
 import cats.implicits._
 import play.api.libs.json._
 import play.api.mvc.Result
-import uk.gov.hmrc.play.http.logging
+import uk.gov.hmrc.http.logging.LoggingDetails
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
 
 import scala.concurrent.{ ExecutionContext, Future }
-import uk.gov.hmrc.http.logging.LoggingDetails
 
 class BaseController extends uk.gov.hmrc.play.microservice.controller.BaseController {
 
