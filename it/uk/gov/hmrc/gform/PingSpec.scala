@@ -1,7 +1,7 @@
 package uk.gov.hmrc.gform
 
 import play.api.http.Status
-
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class PingSpec extends support.ITSpec {
 

@@ -6,7 +6,7 @@ import collection.JavaConverters._
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.gform.gformbackend.GformConnector
 import uk.gov.hmrc.gform.wshttp.{TestWSHttpIT, WSHttp}
-import uk.gov.hmrc.play.http.HeaderCarrier
+import uk.gov.hmrc.http.HeaderCarrier
 
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import scala.util.{Failure, Success}
