@@ -4,7 +4,7 @@ import akka.actor.{ActorSystem, Terminated}
 import akka.stream.ActorMaterializer
 import play.api.libs.ws.WSRequest
 import play.api.libs.ws.ahc.AhcWSClient
-import uk.gov.hmrc.play.http.HeaderCarrier
+import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.Future
 

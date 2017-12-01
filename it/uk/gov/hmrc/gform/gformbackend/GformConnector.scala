@@ -24,7 +24,7 @@ import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{FormTemplate, FormTemplateId, SectionNumber}
 import uk.gov.hmrc.gform.wshttp.WSHttp
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
-import uk.gov.hmrc.play.http.{HeaderCarrier, HttpResponse, NotFoundException}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, NotFoundException}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -37,10 +37,10 @@ class GformConnector(ws: WSHttp, baseUrl: String) {
   /******form*******/
 
   //TODO: remove userId since this information will be passed using HeaderCarrier
-  def newForm(formTemplateId: FormTemplateId, userId: UserId)(implicit hc: HeaderCarrier): Future[FormId] =
+  def newForm(formTemplateId: FormTemplateId, userId: UserId)(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[FormId] =
   ws.POSTEmpty[FormId](s"$baseUrl/new-form/${formTemplateId.value}/${userId.value}")
 
-  def getForm(formId: FormId)(implicit hc: HeaderCarrier): Future[Form] =
+  def getForm(formId: FormId)(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[Form] =
     ws.GET[Form](s"$baseUrl/forms/${formId.value}")
 
   def maybeForm(formId: FormId)(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[Option[Form]] =
@@ -53,7 +53,7 @@ class GformConnector(ws: WSHttp, baseUrl: String) {
   }
 
   //TODO: now returns string, but it should return list of validations
-  def validateSection(formId: FormId, sectionNumber: SectionNumber)(implicit hc: HeaderCarrier): Future[String] = {
+  def validateSection(formId: FormId, sectionNumber: SectionNumber)(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[String] = {
     ws.GET[String](s"$baseUrl/forms/${formId.value}/validate-section/${sectionNumber.value}")
   }
 
@@ -62,11 +62,11 @@ class GformConnector(ws: WSHttp, baseUrl: String) {
 
   /******submission*******/
 
-  def submitForm(formId: FormId)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+  def submitForm(formId: FormId)(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[HttpResponse] = {
     ws.POSTEmpty[HttpResponse](s"$baseUrl/forms/${formId.value}/submission")
   }
 
-  def submissionStatus(formId: FormId)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+  def submissionStatus(formId: FormId)(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[HttpResponse] = {
     ws.GET[HttpResponse](s"$baseUrl/forms/${formId.value}/submission")
   }
 
@@ -82,7 +82,7 @@ class GformConnector(ws: WSHttp, baseUrl: String) {
   }
 
   /******exposed-config*******/
-  def getExposedConfig(implicit hc: HeaderCarrier): Future[ExposedConfig] = {
+  def getExposedConfig(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[ExposedConfig] = {
     ws.GET[ExposedConfig](s"$baseUrl/exposed-config")
   }
 
