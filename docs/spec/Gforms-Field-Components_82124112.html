@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>EEITT : Gforms Field Components</title>
+        <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+
+    <body class="theme-default aui-theme-default">
+        <div id="page">
+            <div id="main" class="aui-page-panel">
+                <div id="main-header">
+                    <div id="breadcrumb-section">
+                        <ol id="breadcrumbs">
+                            <li class="first">
+                                <span><a href="index.html">EEITT</a></span>
+                            </li>
+                                                    <li>
+                                <span><a href="05.-Gforms-Specification_79296245.html">05. Gforms Specification</a></span>
+                            </li>
+                                                </ol>
+                    </div>
+                    <h1 id="title-heading" class="pagetitle">
+                                                <span id="title-text">
+                            EEITT : Gforms Field Components
+                        </span>
+                    </h1>
+                </div>
+
+                <div id="content" class="view">
+                    <div class="page-metadata">
+                        
+        
+    
+        
+    
+        
+        
+            Created by <span class='author'> Nathan Dolan</span>, last modified on Nov 22, 2017
+                        </div>
+                    <div id="main-content" class="wiki-content group">
+                    <p>This is the specification for all field components.  Examples of UI rendering are included, but for a UI-centric view please see the <a href="https://docs.google.com/a/hmrc.gov.uk/spreadsheets/d/19BDvB4z22VB_ugIGlQ3LPnGJmzVqxW3vIiHzcXus61c/edit?usp=sharing" class="external-link" rel="nofollow">gforms UX catalog</a>.</p><p> </p><div class="table-wrap"><table class="relative-table wrapped confluenceTable" style="width: 100.0%;"><colgroup><col style="width: 9.76948%;"/><col style="width: 5.65313%;"/><col style="width: 17.0692%;"/><col style="width: 23.4907%;"/><col style="width: 19.3194%;"/><col style="width: 24.6981%;"/></colgroup><tbody><tr><th class="confluenceTh">Type ID (type=)</th><th colspan="1" class="confluenceTh">Friendly Name</th><th class="confluenceTh">Description</th><th colspan="1" class="confluenceTh"><p>Component-specific configuration options</p><p>(O)ptional / (M)andatory</p></th><th class="confluenceTh">Definition examples</th><th class="confluenceTh"><p>Looks like <em><strong>(may not reflect current design)</strong></em></p></th></tr><tr><th class="confluenceTh"><strong>text</strong></th><td colspan="1" class="confluenceTd">Text box</td><td class="confluenceTd"><p>A text field.</p><p>The required format of the text field can be defined using format=&quot;formatName&quot; to validate what is permitted to be entered in the text box. Refer to the <a href="Gforms-Text-Component-Formats_82128359.html">text format reference</a> for information about the types of format rendering and validation available. If the formatting rules are violated the UI should show the message given in <em>errorMessage </em>if provided, else it should revert to the default for the format used.</p><p>The text box can be pre-populated with a value using value=&quot;xxx&quot;. Expressions can be used here to set the value dynamically based on the user session context.</p><p>The text box can accept multi-line input via use of the multiline config option.</p></td><td colspan="1" class="confluenceTd"><p>(O) <em>value</em></p><p>(O) <em>format </em>(a <a href="Gforms-Text-Component-Formats_82128359.html">valid text format type</a>)</p><p>(O)<em> round</em> (up | down | ceiling | floor | halfUp | halfDown | halfEven* | unnecessary) - <em>for fields with calculated values, see <a href="https://docs.oracle.com/javase/7/docs/api/java/math/RoundingMode.html" class="external-link" rel="nofollow">this table</a> for rounding mode descriptions and examples. Note the default precision for calculations is 34 decimal digits. The precision of the value to be set can be defined using format=number(i,n) (see <a href="Gforms-Text-Component-Formats_82128359.html">Text Formats</a>).</em></p><p><span style="color: rgb(153,153,153);">(O) <em>multiline</em> (yes|no*)</span></p><p> </p><p><em>Note: for all boolean values, use 'yes' and 'no' rather than 'true' and 'false', or accept both variants. True/false is not intuitive for some non-technical users.</em></p></td><td class="confluenceTd"><div class="content-wrapper"><p>Standard text box with no helpText:</p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: js; gutter: false; theme: Confluence" data-theme="Confluence">&quot;type&quot;: &quot;text&quot;
+&quot;id&quot;: &quot;nameOfPremises&quot;
+&quot;label&quot;: &quot;Name of premises&quot;</pre>
+</div></div><p><span>Text box with format=&quot;sterling&quot; and helpText set:</span></p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: js; gutter: false; theme: Confluence" data-theme="Confluence">&quot;type&quot;: &quot;text&quot;
+&quot;id&quot;: &quot;standardRateDue&quot;
+&quot;label&quot;: &quot;Standard rate IPT due for this 
+period&quot;
+&quot;format&quot;: &quot;sterling&quot;
+&quot;helpText&quot;: &quot;You should deduct any standard 
+credits that are due to you&quot;</pre>
+</div></div><p>A text box whose value is set to a value from the user context and made read-only. Some help text is given to explain:</p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: js; gutter: false; theme: Confluence" data-theme="Confluence">&quot;type&quot;: &quot;text&quot;
+&quot;id&quot;: &quot;firstName&quot;
+&quot;label&quot;: &quot;First Name&quot;
+&quot;value&quot;: &quot;user.firstName&quot;
+&quot;helpText&quot;: &quot;Note this will be set to the name
+ of your logged-in user&quot;
+&quot;submitMode&quot;: &quot;readonly&quot;</pre>
+</div></div><p><span style="color: rgb(153,153,153);">A text box allowing multiple lines limited to 1000 characters:</span></p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: js; gutter: false; theme: Confluence" data-theme="Confluence">&quot;type&quot;: &quot;text&quot;
+&quot;id&quot;: &quot;explanation&quot;
+&quot;label&quot;: &quot;Explanation&quot; 
+&quot;helpText&quot;: &quot;Please provide a written
+explanation of how your goods are
+imported (max 1000 characters)&quot;
+&quot;multiline&quot;: &quot;yes&quot; 
+&quot;format&quot;: &quot;text(0,1000)&quot;
+</pre>
+</div></div></div></td><td class="confluenceTd"><p>Standard text box with no helpText:</p><div class="content-wrapper"><p><span class="confluence-embedded-file-wrapper confluence-embedded-manual-size"><img class="confluence-embedded-image" width="400" src="attachments/82124112/82131872.png" data-image-src="attachments/82124112/82131872.png" data-unresolved-comment-count="0" data-linked-resource-id="82131872" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="image2017-3-9 10:36:1.png" data-base-url="https://confluence.tools.tax.service.gov.uk" data-linked-resource-content-type="image/png" data-linked-resource-container-id="82124112" data-linked-resource-container-version="164"></span></p><p>Text box with format=&quot;sterling&quot; and helpText set:</p><p><span class="confluence-embedded-file-wrapper confluence-embedded-manual-size"><img class="confluence-embedded-image" width="400" src="attachments/82124112/82132171.png" data-image-src="attachments/82124112/82132171.png" data-unresolved-comment-count="0" data-linked-resource-id="82132171" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="image2017-3-9 12:1:0.png" data-base-url="https://confluence.tools.tax.service.gov.uk" data-linked-resource-content-type="image/png" data-linked-resource-container-id="82124112" data-linked-resource-container-version="164"></span></p><p> </p><p> </p></div></td></tr><tr><th class="confluenceTh"><div class="content-wrapper"><span class="confluence-anchor-link" id="GformsFieldComponents-choice"></span><p><strong>choice</strong></p></div></th><td colspan="1" class="confluenceTd">Choice selection</td><td class="confluenceTd"><p>Presents a number of choices that the user must select from.</p><p>The choices can be rendered by UIs in different ways depending on the options set.</p><p>Choice components can also be used when there is only one choice, for example where a declaration needs to be checked.</p></td><td colspan="1" class="confluenceTd"><p>(O) <em>value</em> - an integer, or if <em>multivalue </em>is set, then a list of integers</p><p>(O) <em>choices</em> (list) - mandatory unless <em>format</em>=yesno</p><p>(O) <em>format </em>(vertical* | horizontal | yesno | inline)</p><p>(O) <em>multivalue </em>(yes|no*) - if yes then allows user to select multiple options. Note this also allows the user to specify zero values, but only if <em>mandatory</em>=no.</p><p>(O) <em>optionHelpText (list) - </em>Provides help text specific to each option. If provided, the length of the <em>optionHelpText</em> list must match the length of the <em>choices</em> list. Use an empty string for those options that do not have help text.</p></td><td class="confluenceTd"><div class="content-wrapper"><p><span><span>Choice with format=&quot;vertical&quot; (default):</span></span></p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: js; gutter: false; theme: Confluence" data-theme="Confluence">&quot;type&quot;: &quot;choice&quot;
+&quot;id&quot;: &quot;dutyType&quot;
+&quot;label&quot;: &quot;Select the tax type for the duty
+you need to pay from the below&quot;
+&quot;choices&quot;: [&quot;Tax type 591 - Natural gas&quot;,
+  &quot;Tax type 591 - Other gas&quot;]
+</pre>
+</div></div><p><span>Choice with </span><span>format=&quot;yesno&quot;:</span></p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: js; gutter: false; theme: Confluence" data-theme="Confluence">&quot;type&quot;: &quot;choice&quot;
+&quot;id&quot;: &quot;isPremisesAddressBusinessAddress&quot;
+&quot;label&quot;: &quot;Is the address of the premises
+the same as your business address?&quot;
+&quot;format&quot;: &quot;yesno&quot;</pre>
+</div></div><span>Choice with </span><span>format=&quot;inline&quot;:</span><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: js; gutter: false; theme: Confluence" data-theme="Confluence">&quot;type&quot;: &quot;choice&quot;
+&quot;id&quot;: &quot;haveIncludedInvoice&quot;
+&quot;label&quot;: &quot;Original invoice from the supplier&quot;
+&quot;format&quot;: &quot;inline&quot;
+&quot;choices&quot;: [&quot;yes&quot;,&quot;no&quot;]</pre>
+</div></div><p>Choice with optionHelpText set:</p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: js; gutter: false; theme: Confluence" data-theme="Confluence">&quot;type&quot;: &quot;choice&quot;
+&quot;id&quot;: &quot;claimPeriod&quot;
+&quot;label&quot;: &quot;Select your claim period.&quot;
+&quot;choices&quot;: [&quot;Claim covers a period of three 
+months&quot;, &quot;Claim covers a period of less 
+than three months&quot;]
+&quot;optionHelpText&quot;: [&quot;Your claim must be 
+submitted within 3 years of the end of the 
+3 month claim period. \n\nIf your claim is 
+outside of the stated timeframe then you 
+can still submit your return but it is 
+likely that you will be subject to 
+additional offline checks.&quot;, &quot;&quot;]
+ </pre>
+</div></div><p><span>Horizontal list of options with Welsh translation and the second option pre-selected (but not read-only so the user is free to change the selection). Note for pre-selection, </span><em>value</em><span> is set to the 0-based index of the selected option:</span></p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: js; gutter: false; theme: Confluence" data-theme="Confluence">&quot;type&quot;:&quot;choice&quot;
+&quot;id&quot;:&quot;paymentTime&quot;
+&quot;label&quot;:&quot;When would you like to pay?&quot;
+&quot;choices&quot;:[&quot;Pay Now | Talwch nawr&quot;, &quot;Pay
+ater | Talu Yn ddiweddarach&quot;, &quot;Don&#39;t
+pay | Peidiwch â thalu&quot;]
+&quot;value&quot;:&quot;1&quot;
+&quot;format&quot;:&quot;horizontal&quot;</pre>
+</div></div><p>Declaration box. Multivalue with 1 choice allows user to select and unselect. No value means it defaults to no choice selected. Mandatory=yes means if the user does not select a choice they will get a validation error.</p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: js; gutter: false; theme: Confluence" data-theme="Confluence">&quot;type&quot;:&quot;choice&quot;,
+&quot;id&quot;:&quot;declaration&quot;,
+&quot;label&quot;:&quot;&quot;,
+&quot;choices&quot;:[&quot;I confirm that I have
+ read and understood the 
+declaration&quot;],
+&quot;multivalue&quot;:&quot;yes&quot;,
+&quot;mandatory&quot;:&quot;yes&quot;,
+&quot;errorMessage&quot;:&quot;You must confirm that
+ you have read and understand the
+ declaration&quot;</pre>
+</div></div></div></td><td class="confluenceTd"><div class="content-wrapper"><p>Choice with format=&quot;vertical&quot; (default):</p><p><span class="confluence-embedded-file-wrapper confluence-embedded-manual-size"><img class="confluence-embedded-image" width="400" src="attachments/82124112/82131964.png" data-image-src="attachments/82124112/82131964.png" data-unresolved-comment-count="0" data-linked-resource-id="82131964" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="image2017-3-9 11:6:34.png" data-base-url="https://confluence.tools.tax.service.gov.uk" data-linked-resource-content-type="image/png" data-linked-resource-container-id="82124112" data-linked-resource-container-version="164"></span></p><p><span><br/></span></p><p><span>Choice with </span>format=&quot;yesno&quot;:</p><span class="confluence-embedded-file-wrapper confluence-embedded-manual-size"><img class="confluence-embedded-image" width="400" src="attachments/82124112/82131959.png" data-image-src="attachments/82124112/82131959.png" data-unresolved-comment-count="0" data-linked-resource-id="82131959" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="image2017-3-9 11:4:54.png" data-base-url="https://confluence.tools.tax.service.gov.uk" data-linked-resource-content-type="image/png" data-linked-resource-container-id="82124112" data-linked-resource-container-version="164"></span><p>Choice with format=&quot;inline&quot;</p><p><span class="confluence-embedded-file-wrapper confluence-embedded-manual-size"><img class="confluence-embedded-image" width="400" src="attachments/82124112/83483757.png" data-image-src="attachments/82124112/83483757.png" data-unresolved-comment-count="0" data-linked-resource-id="83483757" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="image2017-4-12 14:47:9.png" data-base-url="https://confluence.tools.tax.service.gov.uk" data-linked-resource-content-type="image/png" data-linked-resource-container-id="82124112" data-linked-resource-container-version="164"></span></p><p> </p><p>Choice with optionHelpText set:</p><p><span class="confluence-embedded-file-wrapper confluence-embedded-manual-size"><img class="confluence-embedded-image" height="250" src="attachments/82124112/83483725.png" data-image-src="attachments/82124112/83483725.png" data-unresolved-comment-count="0" data-linked-resource-id="83483725" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="image2017-4-12 14:33:55.png" data-base-url="https://confluence.tools.tax.service.gov.uk" data-linked-resource-content-type="image/png" data-linked-resource-container-id="82124112" data-linked-resource-container-version="164"></span></p><p> </p><p>Declaration box:</p><p><span class="confluence-embedded-file-wrapper confluence-embedded-manual-size"><img class="confluence-embedded-image" width="400" src="attachments/82124112/87144209.png" data-image-src="attachments/82124112/87144209.png" data-unresolved-comment-count="0" data-linked-resource-id="87144209" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="image2017-7-5 16:2:36.png" data-base-url="https://confluence.tools.tax.service.gov.uk" data-linked-resource-content-type="image/png" data-linked-resource-container-id="82124112" data-linked-resource-container-version="164"></span></p></div></td></tr><tr><th class="confluenceTh"><strong>date</strong></th><td colspan="1" class="confluenceTd">Date picker</td><td class="confluenceTd">Allows the user to enter a valid date.</td><td colspan="1" class="confluenceTd"><p>(O) <em>value</em> - one of:</p><ul><li><em>A full W3 date</em> (YYYY-MM-DD)</li><li><em>today</em></li><li><em>next-MM-DD</em> - sets value to the next occurrence of the given month and day-of-month - MM-DD must be a valid month and date.</li><li><em>last-MM-DD</em> - sets value to the previous (or today's) occurrence of the given month and day-of-month<span> - MM-DD must be a valid month and date.</span></li><li><span>an expression pointing to another date value</span></li></ul><p>(O) <em>offset</em> (<em>+|-n[d|m|y]</em>) - number of days, months or years to add to the given value. E.g. +1d for tomorrow, -1d for yesterday, +3m for the same date in 3 months time.</p><p>(O) <em>format - </em>specify valid dates as per below; may be a comma separated list of formats:</p><ul><li><em>anyDate* </em>(default)</li><li><em>after | before | precisely &lt;space&gt;</em><br/><em>today | YYYY-MM-DD | next-MM-DD | previous-MM-DD | YYYY<em>-MM-firstDay | YYYY<em><em>-MM-lastDay | </em></em></em>$otherFieldId</em><br/><em>&lt;space&gt;</em><br/><em>+|-n[d|m|y]</em><em><br/></em><br/><em>Note: &quot;YYYY&quot;, &quot;MM&quot; and &quot;DD&quot; match any year, month or date; alternatively any of these can be replaced by an actual year, month or date in order to provide a mask e.g. YYYY-04-DD for any day in April.</em><br/><em><br/></em><em>Note: &quot;DD&quot; in a date format can also be replaced with &quot;lastDay&quot; to match the last day in the given month&amp;year.</em></li></ul><p> </p></td><td class="confluenceTd"><div class="content-wrapper"><p>A date picker with helpText and the date pre-selected (use <a class="external-link" href="https://www.w3.org/TR/1998/NOTE-datetime-19980827" rel="nofollow">a W3 date</a>):</p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: js; gutter: false; theme: Confluence" data-theme="Confluence">&quot;type&quot;: &quot;date&quot;
+&quot;id&quot;: &quot;accPeriodStartDate&quot;
+&quot;label&quot;: &quot;Accounting period start date&quot;
+&quot;helpText&quot;: &quot;For example, 31 3 1980&quot;
+&quot;value&quot;: &quot;2015-12-10&quot;</pre>
+</div></div><p>A date picker defaulted to the start of the next tax year:</p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: js; gutter: false; theme: Confluence" data-theme="Confluence">&quot;type&quot;:&quot;date&quot;
+&quot;id&quot;: &quot;startAccPeriod&quot;
+&quot;label&quot;: &quot;Start of Accounting Period&quot;
+&quot;value&quot;: &quot;next-04-06&quot; 
+</pre>
+</div></div><div class="content-wrapper"><span><br/></span></div><div class="content-wrapper"><span>A date picker defaulted to</span> yesterday that prevents entering any date before yesterday:</div><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: js; gutter: false; theme: Confluence" data-theme="Confluence">&quot;type&quot;:&quot;date&quot;
+&quot;id&quot;: &quot;paymentDate&quot;
+&quot;label&quot;: &quot;When would you like to pay
+your tax?&quot; 
+&quot;value&quot;: &quot;today&quot;
+&quot;offset&quot;: &quot;-1d&quot;
+&quot;format&quot;: &quot;after today -1d, before today +1y&quot;</pre>
+</div></div></div></td><td class="confluenceTd"><div class="content-wrapper"><p><span>A date picker with helpText and the date pre-selected (use </span><a class="external-link" href="https://www.w3.org/TR/1998/NOTE-datetime-19980827" rel="nofollow">a W3 date</a><span>):</span></p><p><span class="confluence-embedded-file-wrapper"><img class="confluence-embedded-image" src="attachments/82124112/82131971.png" data-image-src="attachments/82124112/82131971.png" data-unresolved-comment-count="0" data-linked-resource-id="82131971" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="image2017-3-9 11:10:21.png" data-base-url="https://confluence.tools.tax.service.gov.uk" data-linked-resource-content-type="image/png" data-linked-resource-container-id="82124112" data-linked-resource-container-version="164"></span></p><p> </p></div></td></tr><tr><th class="confluenceTh"><strong>address</strong></th><td colspan="1" class="confluenceTd">Address entry</td><td class="confluenceTd"><p>Allows the user to enter an address, which is captured as a fixed set of input fields (see <em>value</em>).</p></td><td colspan="1" class="confluenceTd"><p>(O) <em>value</em> - JSON object containing values for the following keys:</p><ul><li><em>(M) line1</em></li><li><em>(O) <em>line2</em></em></li><li><em>(O</em><em>) <em>line3</em></em></li><li><em>(O) <em>line4</em></em></li><li><em>(M*) postcode</em></li><li><em>(O*) country</em><em><br/></em>(<em>*) note if international is yes then postcode must not be provided and country must be provided</em></li></ul><p>(O) <em>postcodeLookup</em> (yes*|no) - if yes then the UI should offer to lookup the address from a postcode and address name/number provided by the user. Cannot be yes if <em>international</em> is yes.</p><p>(O) <em>promptCopyFrom</em> - if provided, (value is the ID of another address field in the form), then user should asked if they would like to use the address they've given in the given address field.</p><p>(O)<em> <span>promptCopyFromText - </span></em><span>provide</span><span> with </span><span><em>promptCopyFrom </em>to specify the text to display to the user when offering the option to copy an address from another address field.</span></p><p><span>(O) <em>international </em>(yes|no*) - if yes then <em>country</em> is required and postcode is not permitted. If no then country is not permitted and <em>postcode</em> is required. <span>Cannot be yes if <em>postcodeLookup</em> is yes.</span></span></p></td><td class="confluenceTd"><div class="content-wrapper"><p><span>Address component with postcodeLookup=&quot;no&quot;:</span></p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: js; gutter: false; theme: Confluence" data-theme="Confluence">&quot;type&quot;:&quot;address&quot;
+&quot;id&quot;:&quot;homeAddress&quot;
+&quot;label&quot;:&quot;Home Address&quot; 
+&quot;postcodeLookup&quot;:&quot;no&quot;
+</pre>
+</div></div><p><span>Address component </span><span>with postcodeLookup=&quot;yes&quot;:</span></p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: js; gutter: false; theme: Confluence" data-theme="Confluence">&quot;type:&quot;address&quot;
+&quot;id&quot;:&quot;homeAddress&quot;
+&quot;label&quot;:&quot;Home Address&quot; 
+&quot;postcodeLookup&quot;:&quot;yes&quot;
+</pre>
+</div></div><p>Capture an address that is defaulted to the value of a previously entered address field:</p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: js; gutter: false; theme: Confluence" data-theme="Confluence">&quot;type&quot;:&quot;address&quot;
+&quot;id&quot;:&quot;businessAddress&quot;
+&quot;label&quot;:&quot;Business Address&quot;
+&quot;value&quot;:&quot;form.homeAddress&quot;</pre>
+</div></div><div class="content-wrapper"><span>Capture an address that is defaulted to a fixed value:</span></div><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: js; gutter: false; theme: Confluence" data-theme="Confluence">&quot;type&quot;:&quot;address&quot;
+&quot;id&quot;:&quot;businessAddress&quot;
+&quot;label&quot;:&quot;Business Address&quot;
+&quot;value&quot;: {
+  &quot;line1&quot;: &quot;100 Parliament St&quot;,
+  &quot;line2&quot;: &quot;Westminster&quot;,
+  &quot;line3&quot;: &quot;London&quot;,
+  &quot;postcode&quot;: &quot;SW1A 2NH&quot;
+}</pre>
+</div></div></div></td><td class="confluenceTd"><div class="content-wrapper"><p>Address component with postcodeLookup=&quot;no&quot;:</p><p><span class="confluence-embedded-file-wrapper"><img class="confluence-embedded-image" src="attachments/82124112/85401805.png" data-image-src="attachments/82124112/85401805.png" data-unresolved-comment-count="0" data-linked-resource-id="85401805" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="image2017-5-12 15:53:37.png" data-base-url="https://confluence.tools.tax.service.gov.uk" data-linked-resource-content-type="image/png" data-linked-resource-container-id="82124112" data-linked-resource-container-version="164"></span></p><p>Address component <span>with postcodeLookup=&quot;yes&quot;</span></p><p><em>1) Prompt for postcode and give option to enter manually:</em></p><p><span><span class="confluence-embedded-file-wrapper confluence-embedded-manual-size"><img class="confluence-embedded-image" width="400" src="attachments/82124112/82132015.png" data-image-src="attachments/82124112/82132015.png" data-unresolved-comment-count="0" data-linked-resource-id="82132015" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="image2017-3-9 11:21:22.png" data-base-url="https://confluence.tools.tax.service.gov.uk" data-linked-resource-content-type="image/png" data-linked-resource-container-id="82124112" data-linked-resource-container-version="164"></span></span></p><p><em>2) User clicks Find UK address and can then select address:</em></p><p><span class="confluence-embedded-file-wrapper confluence-embedded-manual-size"><img class="confluence-embedded-image" width="400" src="attachments/82124112/82132012.png" data-image-src="attachments/82124112/82132012.png" data-unresolved-comment-count="0" data-linked-resource-id="82132012" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="image2017-3-9 11:20:52.png" data-base-url="https://confluence.tools.tax.service.gov.uk" data-linked-resource-content-type="image/png" data-linked-resource-container-id="82124112" data-linked-resource-container-version="164"></span></p><p><em>3) Show other fields pre-populated. Allow user to edit.</em></p><p><em><br/></em></p></div></td></tr><tr><th colspan="1" class="confluenceTh">info</th><td colspan="1" class="confluenceTd">Information message</td><td colspan="1" class="confluenceTd">Provides information to be shown to the user.</td><td colspan="1" class="confluenceTd"><p>(O) <em>label</em> - if provided specifies a title for the information.</p><p>(M) <em>infoText - </em>the information message to show. Use <a href="https://en.wikipedia.org/wiki/Markdown" class="external-link" rel="nofollow">markdown</a> syntax for text formatting.</p><p>(O) <em>infoType -</em> the type of the information - one of:</p><ul><li><strong>standard</strong> <em>(*default) - indicating info to be presented in the standard info style.</em></li><li><strong><span style="color: rgb(34,34,34);">noformat</span></strong> - <em>indicating info to be presented as standard page text with no special style.</em></li><li><strong>long</strong> - <em>UIs may consider showing this separate to the main form in some way, e.g. collapsing this text beneath the label or showing in pop-up.</em></li><li><strong>important </strong>-<strong> </strong><em>indicating info to be presented as a special info style that draws greater attention to the message.</em></li><li><strong>banner </strong>-<strong> </strong><em>indicating very important info to be presented in a banner.</em></li></ul></td><td colspan="1" class="confluenceTd"><div class="content-wrapper"><p>Basic information component with no header label:</p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: js; gutter: false; theme: Confluence" data-theme="Confluence">&quot;type&quot;: &quot;info&quot;,
+&quot;id&quot;: &quot;creatingGroupsGGInfo&quot;,
+&quot;infoText&quot;: &quot;If you are creating a group 
+registration you will need to create a new 
+Government Gateway account for the group. You 
+should not use an existing Government Gateway 
+account for a group registration..&quot;</pre>
+</div></div><p> </p><p><span>Information component with a header label and infoType=long set:</span></p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: js; gutter: false; theme: Confluence" data-theme="Confluence">&quot;type&quot;: &quot;info&quot;,
+&quot;id&quot;: &quot;whatIsAGroupInfo&quot;,
+&quot;label&quot;: &quot;What is a group?&quot;,
+&quot;infoType&quot;:&quot; long&quot;,
+&quot;infoText&quot;: &quot;A group must have two or more 
+limited companies within it. All companies 
+must be established or have a fixed 
+establishment in the UK. The group members 
+included in the AWRS application must be, or 
+intend to be, alcohol wholesalers. The group 
+must have a group representative that will 
+act on behalf of the group when dealing with 
+AWRS and a controlling body in common with 
+all the group members.&quot;</pre>
+</div></div></div></td><td colspan="1" class="confluenceTd"><div class="content-wrapper"><p><span>Standard information component with no header label:</span></p><p><span class="confluence-embedded-file-wrapper confluence-embedded-manual-size"><img class="confluence-embedded-image" width="400" src="attachments/82124112/83460372.png" data-image-src="attachments/82124112/83460372.png" data-unresolved-comment-count="0" data-linked-resource-id="83460372" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="image2017-3-23 14:38:3.png" data-base-url="https://confluence.tools.tax.service.gov.uk" data-linked-resource-content-type="image/png" data-linked-resource-container-id="82124112" data-linked-resource-container-version="164"></span></p><p><span>Information component with a header label and infoType=long set:</span></p><p><em>Collapsed:</em></p><p><span class="confluence-embedded-file-wrapper confluence-embedded-manual-size"><img class="confluence-embedded-image" width="400" src="attachments/82124112/83460393.png" data-image-src="attachments/82124112/83460393.png" data-unresolved-comment-count="0" data-linked-resource-id="83460393" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="image2017-3-23 14:44:10.png" data-base-url="https://confluence.tools.tax.service.gov.uk" data-linked-resource-content-type="image/png" data-linked-resource-container-id="82124112" data-linked-resource-container-version="164"></span></p><p><em>Expanded:</em></p><p><span class="confluence-embedded-file-wrapper confluence-embedded-manual-size"><img class="confluence-embedded-image" width="400" src="attachments/82124112/83460397.png" data-image-src="attachments/82124112/83460397.png" data-unresolved-comment-count="0" data-linked-resource-id="83460397" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="image2017-3-23 14:44:40.png" data-base-url="https://confluence.tools.tax.service.gov.uk" data-linked-resource-content-type="image/png" data-linked-resource-container-id="82124112" data-linked-resource-container-version="164"></span></p><p>inforType=important:</p><p><span class="confluence-embedded-file-wrapper confluence-embedded-manual-size"><img class="confluence-embedded-image" width="400" src="attachments/82124112/85401792.png" data-image-src="attachments/82124112/85401792.png" data-unresolved-comment-count="0" data-linked-resource-id="85401792" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="image2017-5-12 15:49:41.png" data-base-url="https://confluence.tools.tax.service.gov.uk" data-linked-resource-content-type="image/png" data-linked-resource-container-id="82124112" data-linked-resource-container-version="164"></span></p><p>infoType=banner:</p><p><span class="confluence-embedded-file-wrapper confluence-embedded-manual-size"><img class="confluence-embedded-image" width="400" src="attachments/82124112/85401791.png" data-image-src="attachments/82124112/85401791.png" data-unresolved-comment-count="0" data-linked-resource-id="85401791" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="image2017-5-12 15:48:7.png" data-base-url="https://confluence.tools.tax.service.gov.uk" data-linked-resource-content-type="image/png" data-linked-resource-container-id="82124112" data-linked-resource-container-version="164"></span></p><p> </p></div></td></tr><tr><th colspan="1" class="confluenceTh"><strong>group</strong></th><td colspan="1" class="confluenceTd">Field group</td><td colspan="1" class="confluenceTd"><p>Groups together an enclosed set of fields, optionally with a label and help text.</p><p>Group components can be configured to capture repeating groups of field data. (<em>Note whole sections can also be configured to repeat in a similar way.)</em></p></td><td colspan="1" class="confluenceTd"><p>(M) <em>fields </em>(array of field objects) - a list of the fields to be grouped under the given <em>id</em> and <em>label</em>.</p><p>(O) <em>format </em>(horizontal|vertical*) - specifies for a UI whether to display the fields in the group horizontally or vertically. <em>Note - this setting will be moved to presentationHint in a future release.</em></p><p>(O) <em>repeatsMax </em>(integer) - optionally, the maximum number of repeating groups permitted on the form. Indicates that this group is a <strong>repeating group</strong>. Can be set to an expression. Note that $n_ will implicitly be prefixed to the ID of every field in the repeating group.</p><p>(O) <em>repeatsMin</em> (integer) - if <em>repeatsMax </em>is set, <em>repeatsMin</em> can optionally also be set to specify the minimum number of repeats of the group required. Defaults to 1. Can be set using an expression. <span>Cannot be set unless repeatsMax is also set. </span>Note: setting this to 0 makes the repeating group optional. Setting this to the same value as <em>repeatsMax</em> requires the user to complete a fixed number of repeats.</p><p>(O) <em>repeatLabel - </em>if <em>repeatsMax</em> is set, the group's <em>label </em>is used as header text for the repeating group and <em>repeatLabel</em> is used as the header text for each repeating group. Use $n to represent the <em>0-based-index</em> of each repetition. For example <em>repeatLabel=&quot;Previous address $n&quot;</em> would be rendered as &quot;<em>Previous address</em><em> 1</em>&quot; for the first repetition, &quot;<em>Previous address</em> 2&quot; for the second, and so on.</p><p>(O) <em>repeatAddAnotherText - </em>if <em>repeatsMax </em>is specified then this can be used to specify the text shown to the user when they are given the option to add another repetition of the group.</p><p> </p></td><td colspan="1" class="confluenceTd"><div class="content-wrapper"><p>Grouping together 2 fields for the purpose of adding a heading:</p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: js; gutter: false; theme: Confluence" data-theme="Confluence">&quot;type&quot;: &quot;group&quot;,
+&quot;id&quot;: &quot;accountingPeriodsGroup&quot;,
+&quot;label&quot;: &quot;Accounting Periods for this return&quot;,
+&quot;fields&quot;: [
+  {
+    &quot;id&quot;: &quot;accountingPeriodStartDate&quot;,
+    &quot;type&quot;: &quot;date&quot;,
+    &quot;label&quot;: 
+      &quot;Accounting period start date&quot;
+  },
+  {
+    &quot;id&quot;: &quot;accountingPeriodEndDate&quot;,
+    &quot;type&quot;: &quot;date&quot;,
+    &quot;label&quot;: 
+      &quot;Accounting period end date&quot;
+  }
+]</pre>
+</div></div><p>Grouping together 2 fields for the purpose of capturing a repeating group of field values. Note the use of $n in the repeatLabel to include the iteration number in the label.</p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: js; gutter: false; theme: Confluence" data-theme="Confluence">&quot;type&quot;: &quot;group&quot;,
+&quot;id&quot;: &quot;previousAddresses&quot;,
+&quot;label&quot;: &quot;Previous addresses&quot;
+&quot;helpText&quot;: &quot;Please add all your
+previous addresses covering the last 5
+years.  Up to 20 addresses are
+allowed&quot;,
+&quot;repeatsMax&quot;: 20,
+&quot;repeatLabel&quot;: &quot;Previous address $n&quot;,
+&quot;repeatAddAnotherText&quot;: 
+       &quot;Add another previous address&quot;,
+&quot;fields&quot;: [
+  {
+    &quot;id&quot;: &quot;previousAddress&quot;,
+    &quot;type&quot;: &quot;address&quot;,
+    &quot;label&quot;: &quot;Address&quot;
+  },
+  {
+    &quot;id&quot;: &quot;durationAtAddress&quot;,
+    &quot;type&quot;: &quot;text&quot;,
+	&quot;format&quot;: &quot;durationMonths&quot;,
+    &quot;label&quot;: &quot;Duration at this address&quot;
+  }
+]</pre>
+</div></div><p> </p><div class="content-wrapper"><span>Repeating group of two fields arranged horizontally:</span></div><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: js; gutter: false; theme: Confluence" data-theme="Confluence">&quot;type&quot;: &quot;group&quot;,
+&quot;id&quot;: &quot;alcIngredientsAndQuantities&quot;,
+&quot;label&quot;: &quot;Alcoholic ingredients and quantity&quot;,
+&quot;repeatsMax&quot;: &quot;100&quot;,
+&quot;format&quot;: &quot;horizontal&quot;,
+&quot;fields&quot;: [
+  {
+    &quot;id&quot;: &quot;alcIngDescription&quot;,
+    &quot;type&quot;: &quot;text&quot;,
+    &quot;label&quot;: &quot;Description&quot;
+  },
+  {
+    &quot;id&quot;: &quot;alcIngQuantityKg&quot;,
+    &quot;type&quot;: &quot;text&quot;,
+	&quot;format&quot;: &quot;number(10,2,&#39;kg&#39;)&quot;,
+    &quot;label&quot;: &quot;Quantity in kg&quot;
+  }
+]</pre>
+</div></div></div></td><td colspan="1" class="confluenceTd"><div class="content-wrapper"><p><span style="color: rgb(0,0,0);"><span>Grouping together 2 fields for the purpose of adding a heading (group <em>label</em>):</span><br/></span></p><p><span class="confluence-embedded-file-wrapper confluence-embedded-manual-size"><img class="confluence-embedded-image" height="250" src="attachments/82124112/82137529.png" data-image-src="attachments/82124112/82137529.png" data-unresolved-comment-count="0" data-linked-resource-id="82137529" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="image2017-3-14 15:50:10.png" data-base-url="https://confluence.tools.tax.service.gov.uk" data-linked-resource-content-type="image/png" data-linked-resource-container-id="82124112" data-linked-resource-container-version="164"></span></p><p><span style="color: rgb(255,0,0);"><span style="color: rgb(0,0,0);">Grouping together 2 fields for the purpose of capturing a repeating group of field values (address and duration at address):</span></span></p><p><span style="color: rgb(255,0,0);"><span style="color: rgb(0,0,0);"><span style="color: rgb(255,0,0);">&lt;insert here&gt;</span></span><br/></span></p><p><span style="color: rgb(255,0,0);"><span style="color: rgb(0,0,0);">In the example above if 2 previous addresses were given in the form, the form JSON might contain:</span><br/></span></p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: js; gutter: false; theme: Confluence" data-theme="Confluence">&quot;fields&quot;: [
+    {
+      &quot;id&quot;: &quot;1_previousAddress&quot;,
+      &quot;value&quot;: {
+        &quot;line1&quot;:&quot;HMRC Offices, M Spur&quot;,
+        &quot;line2&quot;:&quot;South Block&quot;,
+        &quot;line3&quot;:&quot;Barrington Road&quot;,
+        &quot;line4&quot;:&quot;Worthing&quot;,
+        &quot;postcode&quot;:&quot;BN12 4XH&quot;
+      }
+    }, {
+      &quot;id&quot;: &quot;1_durationAtAddress&quot;,
+      &quot;value&quot;: &quot;18&quot;
+    }, {
+      &quot;id&quot;: &quot;2_previousAddress&quot;,
+      &quot;value&quot;: {
+        &quot;line1&quot;:&quot;100 Parliament St&quot;,
+        &quot;line2&quot;:&quot;Westminster&quot;,
+        &quot;line3&quot;:&quot;London&quot;,
+        &quot;postcode&quot;:&quot;SW1A 2BQ&quot;
+      }
+    }, {
+      &quot;id&quot;: &quot;2_durationAtAddress&quot;,
+      &quot;value&quot;: &quot;54&quot;
+    }
+]</pre>
+</div></div><p> </p><p>Repeating group of two fields arranged horizontally:</p><p><span class="confluence-embedded-file-wrapper confluence-embedded-manual-size"><img class="confluence-embedded-image" width="400" src="attachments/82124112/83483744.png" data-image-src="attachments/82124112/83483744.png" data-unresolved-comment-count="0" data-linked-resource-id="83483744" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="image2017-4-12 14:42:12.png" data-base-url="https://confluence.tools.tax.service.gov.uk" data-linked-resource-content-type="image/png" data-linked-resource-container-id="82124112" data-linked-resource-container-version="164"></span></p></div></td></tr><tr><th colspan="1" class="confluenceTh"><p>file</p></th><td colspan="1" class="confluenceTd"><p>File upload</p></td><td colspan="1" class="confluenceTd"><p>Allows user to upload a file for use as an attachment to the submission.</p><p><span>The file component is designed to be grouped with other components and as such has no label or helpText.</span></p><p>The upload mechanism and how the file is packaged with the submission is determined by the <em><a href="https://confluence.tools.tax.service.gov.uk/display/AF/05.+Gforms+Specification#id-05.GformsSpecification-FormDestinationConfiguration" rel="nofollow">destinations</a> </em>defined in the form template. There must be at least one <em>destination </em>configures that supports file uploads (e.g. <em>hmrcDMS</em>).</p><p> </p></td><td colspan="1" class="confluenceTd"><p>(O) <em>value</em><strong> </strong>- the value of a file component is a JSON object containing:</p><ul><li><em>fileId</em> - the identifier for the file returned by the file store (e.g. the fileId returned by FUaaS)</li><li><em>filename</em> - the filename of the uploaded file</li><li><em>sha256hash</em> - the SHA-256 hash of the contents of the uploaded file (note this is required for non-repudiation)</li></ul><p><span style="color: rgb(153,153,153);">(O) <em>metadata - </em>a JSON object containing the metadata to send alongside the uploaded file. <a href="Gforms-Expressions_83460621.html"><span style="color: rgb(153,153,153);">Expressions</span></a> can be used within the metadata. Its content, and whether it is required, depends on the destination:</span></p><ul><li><span style="color: rgb(153,153,153);">For hmrcDMS, this is a &quot;metadata&quot; object as defined in the <a href="https://confluence.tools.tax.service.gov.uk/display/FUAAS/FileUpload+API+%3A+Put+File+Metadata" rel="nofollow"><span style="color: rgb(153,153,153);">FUaaS Put File Metadata API spec</span></a>.</span></li></ul><p><span style="color: rgb(153,153,153);">(O) <em>allowContentTypes - </em>an array of HTTP content type name strings. If provided, the uploaded file must have a content type that matches one of the types given in this array.</span></p><p><span style="color: rgb(153,153,153);">(O) <em>maxSizeKb - </em>if provided, the uploaded file must be less than the size given here (in Kb). If not provided, this reverts to the default limit imposed by the configured <a href="https://confluence.tools.tax.service.gov.uk/display/AF/05.+Gforms+Specification#id-05.GformsSpecification-FormDestinationConfiguration" rel="nofollow"><span style="color: rgb(153,153,153);">destination</span></a>(s).</span></p><p> </p></td><td colspan="1" class="confluenceTd"><div class="content-wrapper"><p>Standard example:</p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: js; gutter: false; theme: Confluence" data-theme="Confluence">&quot;type&quot;: &quot;file&quot;,
+&quot;id&quot;: &quot;reportFile&quot;,
+&quot;allowContentTypes&quot;: [&quot;image/png&quot;,
+ &quot;application/pdf&quot;],
+&quot;metadata&quot;: {
+  &quot;origin&quot;: {
+    &quot;utr&quot;: &quot;$utr&quot;,
+    &quot;ggId&quot;: &quot;$user.Id&quot;, 
+    &quot;submitterEmail&quot;: &quot;$emailAddr&quot; 
+  },
+  &quot;sender&quot;: {
+    &quot;service&quot;: &quot;EAOT&quot;
+  }
+}</pre>
+</div></div></div></td><td colspan="1" class="confluenceTd"><div class="content-wrapper"><p>Prior to upload, the file component just shows a Browse button:</p><p><span class="confluence-embedded-file-wrapper"><img class="confluence-embedded-image" src="attachments/82124112/85421642.png" data-image-src="attachments/82124112/85421642.png" data-unresolved-comment-count="0" data-linked-resource-id="85421642" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="image2017-6-2 12:47:50.png" data-base-url="https://confluence.tools.tax.service.gov.uk" data-linked-resource-content-type="image/png" data-linked-resource-container-id="82124112" data-linked-resource-container-version="164"></span></p><p>Once the user has clicked Browse and selected a file, the Browse button is replaced with the filename and a button/link to remove.</p></div></td></tr></tbody></table></div><p> </p><h2 id="GformsFieldComponents-ComponentConfigurationOptionsforAllComponentTypes">Component Configuration Options for All Component Types</h2><p>These component configuration options can be used in <strong>every</strong> component definition.  Some are mandatory.</p><div class="table-wrap"><table class="relative-table wrapped confluenceTable" style="width: 100.0%;"><colgroup><col style="width: 8.33714%;"/><col style="width: 31.407%;"/><col style="width: 5.93878%;"/><col style="width: 11.5921%;"/><col style="width: 18.8442%;"/><col style="width: 23.698%;"/></colgroup><tbody><tr><th class="confluenceTh">Name</th><th class="confluenceTh">Description</th><th colspan="1" class="confluenceTh">Optionality</th><th colspan="1" class="confluenceTh">Conditions</th><th colspan="1" class="confluenceTh">Default if omitted</th><th class="confluenceTh">Example</th></tr><tr><th colspan="1" class="confluenceTh"><em>id</em></th><td colspan="1" class="confluenceTd"><p>The internal ID for the field (no spaces).</p><p>If no ID is given, the ID will be set to a random UUID and it will therefore not be possible to refer to this field from others via expressions.</p></td><td colspan="1" class="confluenceTd"><p>Mandatory</p></td><td colspan="1" class="confluenceTd">-</td><td colspan="1" class="confluenceTd">-</td><td colspan="1" class="confluenceTd"><pre>&quot;firstName&quot;</pre></td></tr><tr><th class="confluenceTh"><em>label</em></th><td class="confluenceTd"><p>The label to display for the field. Can include Welsh version.</p><p>Expressions enclosed as ${expression} can be used within the label. See <em>value</em> description for details on expressions.</p></td><td colspan="1" class="confluenceTd"><p>Optional</p></td><td colspan="1" class="confluenceTd"><p> </p></td><td colspan="1" class="confluenceTd">-</td><td class="confluenceTd"><pre>&quot;First Name | Enw cyntaf&quot;</pre><pre>&quot;Inventory Details for warehouse </pre><pre>${warehouseName} | Manylion rhestr ar </pre><pre>gyfer warws ${warehouseName}&quot;</pre></td></tr><tr><th class="confluenceTh"><em>type</em></th><td class="confluenceTd">The component type of the field (see above).</td><td colspan="1" class="confluenceTd">Optional</td><td colspan="1" class="confluenceTd">-</td><td colspan="1" class="confluenceTd">text</td><td class="confluenceTd"><pre>&quot;text&quot;</pre></td></tr><tr><th colspan="1" class="confluenceTh"><em>shortName</em></th><td colspan="1" class="confluenceTd">Optionally, a short name to use for this field. Typically used when summarising back what data has been entered by the user, when <em>labels</em> provided are instructional in nature and therefore unsuitable for playback. Where this is not set, a UI should fallback to using the <em>label</em>.</td><td colspan="1" class="confluenceTd">Optional</td><td colspan="1" class="confluenceTd">-</td><td colspan="1" class="confluenceTd">-</td><td colspan="1" class="confluenceTd"><pre>&quot;label&quot;:&quot;Please enter your first name&quot;</pre><pre>&quot;shortName&quot;:&quot;First Name&quot;</pre></td></tr><tr><th class="confluenceTh"><em>value</em></th><td class="confluenceTd"><p>The value with which to pre-populate the field. Maybe a single value or a list of values depending on the component type. The value may be an expression. Expressions consist of basic operators on form field IDs.</p><p>Additionally <em>user.XXX </em>can be used where the user object is populated with field values from the user (e.g. <em>their GG ID</em>). <span>See </span><a href="Gforms-Expressions_83460621.html">Gforms Expressions</a><span> for details.</span></p><p> </p></td><td colspan="1" class="confluenceTd">Optional</td><td colspan="1" class="confluenceTd">-</td><td colspan="1" class="confluenceTd"><span>-</span></td><td class="confluenceTd"><pre>&quot;100&quot;</pre><p>See <a href="Gforms-Expressions_83460621.html">Gforms Expressions</a> for examples of how to use expressions to reference other field values.</p></td></tr><tr><th colspan="1" class="confluenceTh"><em>assertValue</em></th><td colspan="1" class="confluenceTd">The value that the user must set this field to, which can be an expression as per <em>value </em>above. Often used when requiring the user to confirm something like an email address.</td><td colspan="1" class="confluenceTd"><span>Optional</span></td><td colspan="1" class="confluenceTd">-</td><td colspan="1" class="confluenceTd">-</td><td colspan="1" class="confluenceTd"><div class="content-wrapper"><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">&quot;id&quot;: &quot;emailConfirmation&quot;,
+&quot;type: &quot;text&quot;,
+&quot;format&quot;: &quot;email&quot;,
+&quot;assertValue&quot;: &quot;${email}&quot;</pre>
+</div></div><p> </p><pre> </pre></div></td></tr><tr><th class="confluenceTh"><em>submitMode</em></th><td class="confluenceTd"><p>Controls whether the value of this field is submitted with forms of this type and if so whether it can be altered from a value set by <em>value. </em>Also controls whether the field is shown in the form or just the summary. Valid options are:</p><ul><li><strong>standard</strong> – the field <em>is editable </em>by the user and is <em>included in </em>the form data when the form is submitted</li><li><strong>readonly </strong>– the field is <em>not editable</em> by the user but is still <em>included </em>in the form data when the form is submitted. <em>Value </em>must be set.</li><li><strong>infoonly </strong>– the field is <em>not editable</em> by the user and is <em>not included </em>in the form data when the form is submitted. <em>Value </em><span>must be set.</span></li><li><strong>notsubmitted </strong>– the field <em>is editable</em> by the user but is <em>not included</em> in the form data when the form is submitted.</li><li><strong>derived - </strong>this field is <em>not editable</em> by the user but <em>is included</em> in the form data when the form is submitted, and <em>should only be shown to the user in the final summary view</em>. <em>Value </em>must be set.<span><br/></span></li><li><strong>summaryinfoonly - </strong>this field is <em>not editable</em> by the user, is<em> not included</em> in the form data when the form is submitted, and <em>should only be shown to the user in the final summary view</em>. <em>Value </em>must be set.</li></ul></td><td colspan="1" class="confluenceTd">Optional</td><td colspan="1" class="confluenceTd">-</td><td colspan="1" class="confluenceTd">standard</td><td class="confluenceTd"><pre>&quot;infoonly&quot;</pre></td></tr><tr><th colspan="1" class="confluenceTh"><em>mandatory</em></th><td colspan="1" class="confluenceTd">Set to &quot;yes&quot; to if a value must be entered in field, or &quot;no&quot; if the field is optional.</td><td colspan="1" class="confluenceTd">Optional</td><td colspan="1" class="confluenceTd">-</td><td colspan="1" class="confluenceTd">true</td><td colspan="1" class="confluenceTd"><pre>&quot;false&quot;</pre></td></tr><tr><th colspan="1" class="confluenceTh"><em>helpText</em></th><td colspan="1" class="confluenceTd">The help text to display with the field. Can include Welsh version. <span>Use </span><a href="https://en.wikipedia.org/wiki/Markdown" class="external-link" rel="nofollow">markdown</a><span> </span><span>syntax for text formatting.</span></td><td colspan="1" class="confluenceTd">Optional</td><td colspan="1" class="confluenceTd">Not valid for file component.</td><td colspan="1" class="confluenceTd">-</td><td colspan="1" class="confluenceTd"><pre>&quot;Enter the alcoholic strength of</pre><pre>the beverage as ABV&quot;</pre></td></tr><tr><th colspan="1" class="confluenceTh"><em>helpTextLabel</em></th><td colspan="1" class="confluenceTd">If help text is provided, optionally a label can also be provided. A UI would then show the label above the help text and potentially make the help text itself collapsible.</td><td colspan="1" class="confluenceTd"><p>Optional</p></td><td colspan="1" class="confluenceTd"><span>Only valid if <em>helpText</em> is given.</span></td><td colspan="1" class="confluenceTd">-</td><td colspan="1" class="confluenceTd"><pre>&quot;What is a group?&quot;</pre></td></tr><tr><th colspan="1" class="confluenceTh"><em>errorMessage</em></th><td colspan="1" class="confluenceTd">The help text to display if there is an error with values entered into this field. <span>Can include Welsh version. </span><span>Use </span><a href="https://en.wikipedia.org/wiki/Markdown" class="external-link" rel="nofollow">markdown</a><span> </span><span>syntax for text formatting.</span></td><td colspan="1" class="confluenceTd">Optional</td><td colspan="1" class="confluenceTd">-</td><td colspan="1" class="confluenceTd"><span>Set to the default error message for the UX component and (if specifed) format option provided.</span></td><td colspan="1" class="confluenceTd"><pre>&quot;Please enter an amount up to 10000</pre><pre>litres</pre><pre>with no decimal places&quot;</pre></td></tr><tr><th colspan="1" class="confluenceTh"><em>presentationHint</em></th><td colspan="1" class="confluenceTd"><p>Optionally used to help UIs present this field in a special way. The following values are supported by the UI engine:</p><ul><li><strong>totalValue</strong> - indicates that the UI should render this field as a total numeric or monetary value.</li><li><strong>invisibleInSummary </strong>- indicates that the UI should not show this field in the summary.</li><li><strong>summariseGroupAsGrid - </strong>only for use with groups, this indicates to the UI that the fields in this group should be shown, in the summary view, horizontally with the group's <em>label</em> or <em>shortName</em> shown in the first column. and the values of each field in the group shown in subsequent columns. If <em>shortName </em>is set to &quot;&quot; (empty), then a label will not be shown and the value of the fields will start from the first column.</li><li><strong>collapseGroupUnderLabel - </strong>only for use with groups, this indicates to the UI that the fields in this group should be collapsed under the label. When the label is clicked the group contents will be shown; when it is clicked again the group contents will be hidden.<strong><br/></strong></li></ul><p>Several values can be specified by separating with a comma.</p></td><td colspan="1" class="confluenceTd">Optional</td><td colspan="1" class="confluenceTd"><em>summariseGroupAsGrid</em> and <em>collapseGroupUnderLabel </em>can only be used with group components.</td><td colspan="1" class="confluenceTd">-</td><td colspan="1" class="confluenceTd"><div class="content-wrapper"><pre>&quot;summariseGroupAsGrid, </pre><pre>collapsesUnderLabel&quot;</pre><p>See <a href="https://confluence.tools.tax.service.gov.uk/display/AF/07.+Gforms+UI+Engine">07. Gforms UI Engine</a> for examples</p></div></td></tr><tr><th colspan="1" class="confluenceTh"><span style="color: rgb(153,153,153);"><em>sensitive</em></span></th><td colspan="1" class="confluenceTd"><p><span style="color: rgb(153,153,153);">Use to mark a field as sensitive. Data in <em>sensitive</em> fields should not be persisted other than as required to implement the submission journey. This data will therefore not be available for later retrieval or analysis:</span></p><ul><li><span style="color: rgb(153,153,153);"><em>sensitive</em> fields cannot be used in a <em>value </em>expression that references any form instance other than itself.</span></li><li><span style="color: rgb(153,153,153);">Data in <em>sensitive</em> fields will not be sent to Google Analytics.<br/></span></li><li><span style="color: rgb(153,153,153);">Data in <em>sensitive </em>fields will not be logged.</span></li></ul><p><span style="color: rgb(153,153,153);">Most fields default to not sensitive (see right). The form author must ensure that <strong>any data that identifies an individual</strong>, such as name, address or identifiers like VAT reg number, or <strong>any card information</strong>, <strong>is</strong><strong> marked sensitive</strong>.</span></p></td><td colspan="1" class="confluenceTd"><span style="color: rgb(153,153,153);">Optional</span></td><td colspan="1" class="confluenceTd"><span style="color: rgb(153,153,153);">Ignored for components that do not accept data i.e. <em>info</em> and <em>group</em>.</span></td><td colspan="1" class="confluenceTd"><p><span style="color: rgb(153,153,153);"><strong>Text</strong> fields: default is <strong>false,</strong> except where:</span></p><ul><li><span style="color: rgb(153,153,153);">format=ukBankAccountNumber</span></li><li><span style="color: rgb(153,153,153);">format=ukSortCode</span></li><li><span style="color: rgb(153,153,153);">format=utr</span></li><li><span style="color: rgb(153,153,153);">format=ukVrn</span></li><li><span style="color: rgb(153,153,153);">format=nino<br/></span></li><li><span style="color: rgb(153,153,153);">format=telephoneNumber</span></li><li><span style="color: rgb(153,153,153);">format=email</span></li></ul><p><span style="color: rgb(153,153,153);"><strong>Address </strong>fields: default is <strong>true</strong></span></p><p><span style="color: rgb(153,153,153);"><strong>Choice </strong>fields: default is <strong>false</strong></span></p><p><span style="color: rgb(153,153,153);"><strong>Info/group </strong>fields: default is <strong>false </strong>(n/a)</span></p><p><span style="color: rgb(153,153,153);"><strong>Date </strong>fields: default is <strong>false</strong></span></p><p><span style="color: rgb(153,153,153);"><strong>File </strong>fields: default is <strong>false</strong></span></p></td><td colspan="1" class="confluenceTd"><pre><span style="color: rgb(153,153,153);">&quot;true&quot;</span></pre></td></tr><tr><th colspan="1" class="confluenceTh"><span style="color: rgb(0,0,0);"><em>validIf</em></span></th><td colspan="1" class="confluenceTd"><p><span style="color: rgb(0,0,0);">Used to add validation to this field over and above any automatic validation (e.g. address fields have fixed maximum lengths,) and any validation imposed by component-specific options, notably <em>format. </em></span></p><p><span style="color: rgb(0,0,0);">If set this can be any <a href="Gforms-Expressions_83460621.html"><span style="color: rgb(0,0,0);">boolean expression</span></a>, that is any expression that evaluates to true or false. If the expression evaluates to anything else, false is assumed. Often, an expression that checks the value of this same field is used, but validIf expressions can also check the value of any other field, and the boolean and conditional operators can be used to check multiple fields.</span></p></td><td colspan="1" class="confluenceTd"><span style="color: rgb(0,0,0);">Optional</span></td><td colspan="1" class="confluenceTd"><span style="color: rgb(0,0,0);">-</span></td><td colspan="1" class="confluenceTd"><span style="color: rgb(0,0,0);">true</span></td><td colspan="1" class="confluenceTd"><p><span style="color: rgb(0,0,0);">In this example <em>declaration</em> is an optional, multivalue choice component with only 1 possible choice (i.e. a single checkbox that can be ticked or unticked). This is common where the user must tick a box to agree, or untick to disagree.</span></p><pre><span style="color: rgb(0,0,0);">&quot;validIf&quot;: &quot;$declaration == 1&quot;</span></pre><p><span style="color: rgb(0,0,0);">This would check that the &quot;declaration&quot; field, is set to value 1, i.e. it is ticked. One might then include <em>errorMessage=&quot;You must acknowledge the declaration to proceed&quot;.</em></span></p></td></tr><tr><th colspan="1" class="confluenceTh"><span style="color: rgb(153,153,153);"><em>includeIf</em></span></th><td colspan="1" class="confluenceTd"><p><span style="color: rgb(153,153,153);">If this option is provided then this field should only be included on a form if the given expression evaluates to true. See also the includeIf option for whole sections.</span></p><p><span style="color: rgb(153,153,153);">For API consumers, if this evaluates to false and yet a value for the field is given, the form should fail validation.</span></p><p><span style="color: rgb(153,153,153);">For UI consumers, if this evaluates to false the field should not be presented to the user.</span></p><p><span style="color: rgb(153,153,153);">This must be a predicate i.e. provide an expression that evaluates to true or false. If it does not evaluate to either true or false, the expression is invalid and the default (true) should be assumed.</span></p></td><td colspan="1" class="confluenceTd"><span style="color: rgb(153,153,153);">Optional</span></td><td colspan="1" class="confluenceTd"><span style="color: rgb(153,153,153);">-</span></td><td colspan="1" class="confluenceTd"><p><span style="color: rgb(153,153,153);">true</span></p><p><span style="color: rgb(153,153,153);"><em>(i.e. the field is always included in a form of this type)</em></span></p></td><td colspan="1" class="confluenceTd"><pre><span style="color: rgb(153,153,153);">&quot;${user.affinityGroup == 'AGENT'}&quot;</span></pre><pre><span style="color: rgb(153,153,153);">&quot;${isOrgOver1000EmployeesChoice == 'yes'}&quot;</span></pre><pre><span style="color: rgb(153,153,153);">&quot;${reclaimValue &gt; 1000000}&quot;</span></pre></td></tr></tbody></table></div><p> </p><p> </p><div><span style="white-space: pre-wrap;"><br/></span></div>
+                    </div>
+
+                                        <div class="pageSection group">
+                        <div class="pageSectionHeader">
+                            <h2 id="attachments" class="pageSectionTitle">Attachments:</h2>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/82131872.png">image2017-3-9 10:36:1.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/82131959.png">image2017-3-9 11:4:54.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/82131964.png">image2017-3-9 11:6:34.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/82131971.png">image2017-3-9 11:10:21.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/82131984.png">image2017-3-9 11:13:47.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/82131990.png">image2017-3-9 11:14:51.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/82131997.png">image2017-3-9 11:16:51.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/82132012.png">image2017-3-9 11:20:52.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/82132015.png">image2017-3-9 11:21:22.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/82132035.png">image2017-3-9 11:28:59.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/82132171.png">image2017-3-9 12:1:0.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/82135019.png">image2017-3-13 12:4:42.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/82135027.png">image2017-3-13 12:6:0.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/82137529.png">image2017-3-14 15:50:10.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/83460372.png">image2017-3-23 14:38:3.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/83460388.png">image2017-3-23 14:42:49.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/83460393.png">image2017-3-23 14:44:10.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/83460397.png">image2017-3-23 14:44:40.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/83477621.png">image2017-4-6 13:54:44.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/83477639.png">image2017-4-6 14:2:59.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/83477642.png">image2017-4-6 14:3:33.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/83483719.png">image2017-4-12 14:32:13.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/83483724.png">image2017-4-12 14:33:50.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/83483725.png">image2017-4-12 14:33:55.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/83483744.png">image2017-4-12 14:42:12.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/83483757.png">image2017-4-12 14:47:9.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/85401791.png">image2017-5-12 15:48:7.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/85401792.png">image2017-5-12 15:49:41.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/85401800.png">image2017-5-12 15:52:18.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/85401805.png">image2017-5-12 15:53:37.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/85402816.png">image2017-5-15 13:3:25.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/85402824.png">image2017-5-15 13:6:45.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/85402825.png">image2017-5-15 13:7:11.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/85421642.png">image2017-6-2 12:47:50.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/86742895.png">image2017-6-13 10:44:59.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/86743098.png">image2017-6-13 11:47:14.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/86745244.png">image2017-6-14 16:1:55.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/86745248.png">image2017-6-14 16:2:34.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/86745255.png">image2017-6-14 16:6:44.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/82124112/87144209.png">image2017-7-5 16:2:36.png</a> (image/png)
+                                <br/>
+                                                    </div>
+                    </div>
+                    
+                                                        <div class="pageSection group">
+                        <div class="pageSectionHeader">
+                            <h2 id="comments" class="pageSectionTitle">Comments:</h2>
+                        </div>
+
+                        <table border="0" width="100%">
+                                                        <tr>
+                                <td >
+                                    <a name="comment-90306896"></a>
+                                    <font class="smallfont"><p>For the sensitive configuration option, I think the the text format options telephoneNumber and email ought to default to true too.</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/contenttypes/comment_16.png" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by dave.english at Sep 07, 2017 09:59
+                                    </div>
+                                </td>
+                            </tr>
+                                                        <tr>
+                                <td  style="border-top: 1px dashed #666666">
+                                    <a name="comment-90307220"></a>
+                                    <font class="smallfont"><p>Agreed, have updated</p></font>
+                                    <div align="left" class="smallfont" style="color: #666666; width: 98%; margin-bottom: 10px;">
+                                        <img src="images/icons/contenttypes/comment_16.png" height="16" width="16" border="0" align="absmiddle"/>
+                                        Posted by nathan.dolan at Sep 07, 2017 12:49
+                                    </div>
+                                </td>
+                            </tr>
+                                                    </table>
+                    </div>
+                                      
+                </div>             </div> 
+            <div id="footer" role="contentinfo">
+                <section class="footer-body">
+                    <p>Document generated by Confluence on Dec 04, 2017 20:57</p>
+                    <div id="footer-logo"><a href="http://www.atlassian.com/">Atlassian</a></div>
+                </section>
+            </div>
+        </div>     </body>
+</html>
