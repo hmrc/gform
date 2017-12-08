@@ -68,7 +68,7 @@ object ValueParser {
 
   lazy val subtractionFeatureSwitch: Parser[Expr] =
     if (isSubtraction) {
-      (parserExpression ~ "-" ~ parserExpression ^^ { (loc, expr1, _, expr2) => Subtraction(expr1, expr2) } //TODO add subtraction implementation in the frontend.
+      (parserExpression ~ "-" ~ parserExpression ^^ { (loc, expr1, _, expr2) => Subtraction(expr1, expr2) }
         | contextField)
     } else {
       contextField
@@ -80,7 +80,7 @@ object ValueParser {
     """[ \w,]+""".r ^^ { (loc, str) => Constant(str) })
 
   lazy val anyDigitConst: Parser[Expr] = (
-    """[ \d,]+""".r ^^ { (loc, str) => Constant(str) })
+    """ *\d[ \d,]*""".r ^^ { (loc, str) => Constant(str) })
 
   lazy val eeitt: Parser[Eeitt] = (
     "businessUser" ^^ { (loc, _) => BusinessUser }
