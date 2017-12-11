@@ -19,6 +19,106 @@
       "shortName": "shortName",
       "fields": [
         {
+          "type": "file",
+          "id": "facePhoto",
+          "label": "Please upload your face photo"
+        },
+        {
+          "type":"choice",
+          "id":"declaration",
+          "label":"",
+          "choices":["I confirm that I have read and understood the declaration"],
+          "multivalue":"yes",
+          "mandatory":"yes",
+          "errorMessage":"You must confirm that you have read and understand the declaration"
+        },
+        {
+          "type": "group",
+          "id": "alcIngredientsAndQuantities",
+          "label": "Alcoholic ingredients and quantity",
+          "format": "horizontal",
+          "repeatsMax": 5,
+          "repeatsMin": 2,
+          "repeatLabel": "Repeat label",
+          "repeatAddAnotherText": "repeatAddAnotherText",
+          "fields": [
+            {
+              "id": "alcIngDescription",
+              "type": "text",
+              "label": "Description"
+            },
+            {
+              "id": "alcIngQuantityKg",
+              "type": "text",
+              "format": "number",
+              "label": "Quantity in kg"
+            }
+          ]
+        },
+        {
+          "type": "choice",
+          "id": "dutyType",
+          "label": "Select the tax type for the duty you need to pay from the below",
+          "choices": [
+            "Tax type 590 - Natural gas",
+            "Tax type 591 - Other gas"
+          ],
+          "optionHelpText": ["Natural gas", "other gas"],
+          "value": "1"
+        },
+        {
+          "type": "choice",
+          "id": "dutyTypes",
+          "label": "Select the tax type for the duty you need to pay from the below",
+          "choices": [
+            "Tax type 595 - Natural gas",
+            "Tax type 596 - Other gas",
+            "Tax type 597 - Super gas",
+            "Tax type 598 - Empty gas"
+          ],
+          "multivalue": "yes",
+          "mandatory": "true",
+          "value": "1,2,3"
+        },
+        {
+          "type": "choice",
+          "id": "testChoice",
+          "label": "Test mandatory=false and nothind selected",
+          "choices": [
+            "295 - Natural gas",
+            "296 - SuperOther gas",
+            "297 - SuperBNatural gas",
+            "298 - Full throttle gas"
+          ],
+          "multivalue": "yes",
+          "mandatory": "true",
+          "value": "0,1,2"
+        },
+        {
+          "type": "choice",
+          "id": "isPremisesAddressBusinessAddress",
+          "label": "Is the address of the premises the same as your business address? (Select No will skip section \"Calculation 2/2\")",
+          "format": "yesno",
+          "value": "0"
+        },
+        {
+          "type": "choice",
+          "id": "isPremisesAddressBusinessAddress2",
+          "label": "Is the address of the premises the same as your business address again?",
+          "format" : "inline",
+          "choices": ["Yup", "No, it isn't"],
+          "value": "1"
+        },
+        {
+          "id": "aprilDate",
+          "type": "date",
+          "label": "Enter a date in April 2017",
+          "helpText": "For example, 10 4 2017",
+          "mandatory": "true",
+          "format": "after 2017-03-31,before 2017-05-01",
+          "value": "2017-04-10"
+        },
+        {
           "id": "amountA",
           "label": "Amount A | Rhif A",
           "mandatory": "true"
@@ -27,24 +127,102 @@
     },
     {
       "title": "Calculation 2/2 | eich calculationewq",
+      "includeIf": "${isPremisesAddressBusinessAddress=0}",
       "fields": [
         {
           "id": "amountB",
           "label": "Amount B | Rhif B",
           "mandatory": "true"
+        },
+        {
+          "id": "sum",
+          "label": "Sum | Eich sumolaf",
+          "mandatory": "true",
+          "total": "true",
+          "value": "${amountA + amountB}"
         }
       ]
     },
     {
-      "title": "Calculation 3/2 | eich calculationewq",
+      "title": "Your details | eich manylion",
       "fields": [
         {
-          "id": "product",
-          "label": "Product",
+          "id": "firstName",
+          "label": "Your first name | Eich enw cyntaf",
+          "mandatory": "true",
+          "type": "text"
+        },
+
+        {
+          "id": "lastName",
+          "label": "Your last name | Eich enw olaf",
+          "mandatory": "true",
+          "type": "text"
+        },
+        {
+          "id": "internationalAddress",
+          "label": "Your International Address | Eich enw cyntaf",
+          "mandatory": "true",
+          "type": "address",
+          "international": "yes"
+        },
+        {
+          "id": "homeAddress",
+          "label": "Your Address | Eich enw cyntaf",
+          "mandatory": "true",
+          "type": "address"
+        },
+        {
+          "id": "accPeriodStartDate",
+          "type": "date",
+          "label": "Accounting period start date",
+          "helpText": "For example, 31 3 1980",
+          "format":"after 2016-09-05 -1",
+          "offset":"5",
           "mandatory": "false",
-          "format": "sterling",
-          "total": "true",
-          "value": "${amountA * amountB}"
+          "value": "next-01-15"
+        }
+      ]
+    },
+    {
+      "title": "Business details | manylion Busnes",
+      "fields": [
+        {
+          "id": "nameOfBusiness",
+          "label": "Name of business | Enw'r busnes",
+          "mandatory": "true"
+        },
+        {
+          "id": "myRef",
+          "label": "My personal reference",
+          "mandatory": "false",
+          "submitMode": "info"
+        },
+        {
+          "id": "accountingPeriodStartDate",
+          "label": "Accounting period start date | Dyddiad dechrau'r cyfnod cyfrifeg",
+          "mandatory": "true"
+        },
+        {
+          "id": "accountingPeriodEndDate",
+          "label": "Accounting period end date | Dyddiad diwedd cyfnod Cyfrifeg",
+          "mandatory": "false"
+        }
+      ]
+    },
+    {
+      "title": "Rate for the period of the Insurance Premium Tax | Gyfradd ar gyfer y cyfnod y Dreth Premiwm Yswiriant",
+      "fields": [
+        {
+          "id": "standardRateIPTDueForThisPeriod",
+          "label": "Standard rate IPT due for this period | Cyfradd safonol IPT sy'n ddyledus am y cyfnod hwn",
+          "helpText": "You should deduct any standard credits which are due to you | Dylech ddidynnu unrhyw gredydau safonol sydd yn ddyledus i chi",
+          "mandatory": "true"
+        },
+        {
+          "id": "higherRateIPTDueForThisPeriod",
+          "label": "Higher rate IPT due for this period | Cyfradd uwch IPT sy'n ddyledus am y cyfnod hwn",
+          "mandatory": "true"
         }
       ]
     }
