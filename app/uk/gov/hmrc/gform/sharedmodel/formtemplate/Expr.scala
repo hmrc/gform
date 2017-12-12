@@ -19,7 +19,6 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import julienrf.json.derived
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
-
 import uk.gov.hmrc.gform.core.parsers.ExprParsers
 
 sealed trait Expr
@@ -60,6 +59,7 @@ object FormCtx {
 
 final case class AuthCtx(value: AuthInfo) extends Expr
 final case class EeittCtx(value: Eeitt) extends Expr
+final case class UserCtx(value: UserField) extends Expr
 final case class Constant(value: String) extends Expr
 
 object Expr {
@@ -77,6 +77,13 @@ final case object UserId extends Eeitt
 
 object Eeitt {
   implicit val format: OFormat[Eeitt] = derived.oformat
+}
+
+sealed trait UserField
+final case object AffinityGroup extends UserField
+
+object UserField {
+  implicit val format: OFormat[UserField] = derived.oformat
 }
 
 sealed trait AuthInfo

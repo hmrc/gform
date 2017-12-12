@@ -193,6 +193,7 @@ object FormTemplateValidator {
           Invalid(s"Form field '$value' is not defined in form template.")
       case AuthCtx(value) => Valid
       case EeittCtx(value) => Valid
+      case UserCtx(value) => Valid
       case Constant(_) => Valid
     }
   }
