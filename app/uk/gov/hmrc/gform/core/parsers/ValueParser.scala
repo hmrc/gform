@@ -84,7 +84,8 @@ object ValueParser {
 
   lazy val eeitt: Parser[Eeitt] = (
     "businessUser" ^^ { (loc, _) => BusinessUser }
-    | "agent" ^^ { (loc, _) => Agent })
+    | "agent" ^^ { (loc, _) => Agent }
+    | "userId" ^^ { (loc, _) => UserId })
 
   lazy val authInfo: Parser[AuthInfo] = (
     "gg" ^^ { (_, _) => GG }
