@@ -44,7 +44,7 @@ object BooleanExprParser {
     | "''" ^^ { (loc, str) => Constant("") }
     | anyConstant)
 
-  lazy val stringConstant: Parser[Constant] = """[ \w,]""".r ^^ { (loc, str) => Constant(str) }
+  lazy val stringConstant: Parser[Constant] = """[ \w,]+""".r ^^ { (loc, str) => Constant(str) }
 
   lazy val anyConstant: Parser[Constant] = """[ \w,]+""".r ^^ { (loc, str) => Constant(str.trim) }
 

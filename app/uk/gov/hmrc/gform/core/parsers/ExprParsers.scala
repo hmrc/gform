@@ -40,6 +40,7 @@ object ExprParsers {
   lazy val contextFieldExpr: Parser[Expr] = (
     "${" ~> parserExpression <~ "}"
     | "eeitt" ~ "." ~ eeitt ^^ { (loc, _, _, eeitt) => EeittCtx(eeitt) }
+    | "user" ~ "." ~ userField ^^ { (loc, _, _, userField) => UserCtx(userField) }
     | "form" ~ "." ~ alphabeticOnly ^^ { (loc, _, _, fieldName) => FormCtx(fieldName) }
     | "auth" ~ "." ~ authInfo ^^ { (loc, _, _, authInfo) => AuthCtx(authInfo) }
     | alphabeticOnly ~ ".sum" ^^ { (loc, value, _) => Sum(FormCtx(value)) }
@@ -61,6 +62,9 @@ object ExprParsers {
     "businessUser" ^^ { (loc, _) => BusinessUser }
     | "agent" ^^ { (loc, _) => Agent }
     | "userId" ^^ { (loc, _) => UserId })
+
+  lazy val userField: Parser[UserField] =
+    "affinityGroup" ^^ { (loc, _) => AffinityGroup }
 
   lazy val authInfo: Parser[AuthInfo] = (
     "gg" ^^ { (_, _) => GG }
