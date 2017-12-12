@@ -21,7 +21,6 @@ import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate._
-import uk.gov.hmrc.gform.sharedmodel.{ ExampleData, _ }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 class ValueParserSpec extends Spec {
@@ -48,9 +47,19 @@ class ValueParserSpec extends Spec {
     res.right.value should be(TextExpression(Subtraction(FormCtx("age"), Constant("1"))))
   }
 
-  it should "parse ${eeitt.firstName}" in {
+  it should "parse ${eeitt.businessUser}" in {
     val res = ValueParser.validate("${eeitt.businessUser}")
     res.right.value should be(TextExpression(EeittCtx(BusinessUser)))
+  }
+
+  it should "parse ${eeitt.agent}" in {
+    val res = ValueParser.validate("${eeitt.agent}")
+    res.right.value should be(TextExpression(EeittCtx(Agent)))
+  }
+
+  it should "parse ${eeitt.userId}" in {
+    val res = ValueParser.validate("${eeitt.userId}")
+    res.right.value should be(TextExpression(EeittCtx(UserId)))
   }
 
   it should "parse ${form.firstName}" in {
