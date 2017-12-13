@@ -53,7 +53,7 @@ object ExprParsers {
     | contextField)
 
   lazy val anyDigitConst: Parser[Expr] = (
-    """[ \d,]+""".r ^^ { (loc, str) => Constant(str) })
+    """ *[\d.][ \d.,]*""".r ^^ { (loc, str) => Constant(str) })
 
   lazy val anyConstant: Parser[Constant] = (
     """[ \w,]+""".r ^^ { (loc, str) => Constant(str) })

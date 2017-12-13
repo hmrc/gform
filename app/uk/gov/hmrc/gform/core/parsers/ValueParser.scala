@@ -81,7 +81,7 @@ object ValueParser {
     """[ \w,]+""".r ^^ { (loc, str) => Constant(str) })
 
   lazy val anyDigitConst: Parser[Expr] = (
-    """ *\d[ \d,]*""".r ^^ { (loc, str) => Constant(str) })
+    """ *[\d.][ \d.,]*""".r ^^ { (loc, str) => Constant(str) })
 
   lazy val eeitt: Parser[Eeitt] = (
     "businessUser" ^^ { (loc, _) => BusinessUser }
