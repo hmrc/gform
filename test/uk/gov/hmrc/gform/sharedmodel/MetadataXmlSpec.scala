@@ -49,6 +49,7 @@ class MetadataXmlSpec extends Spec {
       pdfSummary = pdfSummary)
 
     val dmsSubmission = DmsSubmission(
+      dmsFormId = "some-id",
       customerId = TextExpression(AuthCtx(PayeNino)),
       classificationType = "some-classification-type",
       businessArea = "some-business-area")
@@ -91,7 +92,7 @@ class MetadataXmlSpec extends Spec {
               <attribute_name>form_id</attribute_name>
               <attribute_type>string</attribute_type>
               <attribute_values>
-                <attribute_value>some-form-type-id</attribute_value>
+                <attribute_value>some-id</attribute_value>
               </attribute_values>
             </attribute>
             <attribute>
