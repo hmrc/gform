@@ -24,7 +24,7 @@ import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.submission._
 
-import scala.xml.Elem
+import scala.xml.{ Node, Utility }
 
 class MetadataXmlSpec extends Spec {
   "metadata.xml" should "be generated" in {
@@ -147,7 +147,7 @@ class MetadataXmlSpec extends Spec {
               <attribute_name>attachment_count</attribute_name>
               <attribute_type>int</attribute_type>
               <attribute_values>
-                <attribute_value>1</attribute_value>
+                <attribute_value>0</attribute_value>
               </attribute_values>
             </attribute>
           </metadata>
@@ -156,7 +156,7 @@ class MetadataXmlSpec extends Spec {
 
     val metadataXml = MetadataXml.getXml(SubmissionRef("some-submission-ref"), ReconciliationId("some-recocilliatin-id"), submissionAndPdf, dmsSubmission)
 
-    metadataXml should equal(expected)(after being streamlined[Elem])
+    metadataXml should equal(Utility.trim(expected))(after being streamlined[Node])
 
   }
 }
