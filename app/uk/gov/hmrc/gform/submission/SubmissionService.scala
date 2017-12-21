@@ -66,7 +66,7 @@ class SubmissionService(
       */
 
       val pdfSummary = PdfSummary(
-        numberOfPages = 1L,
+        numberOfPages = 1L, //TODO GFC-84 need to determine the number of pages in a PDF, for DMS metadata
         pdfContent = pdf)
       val submission = Submission(
         submittedDate = timeProvider.localDateTime(),
