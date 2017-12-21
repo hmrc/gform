@@ -20,7 +20,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.DmsSubmission
 import uk.gov.hmrc.gform.submission.{ SubmissionAndPdf, SubmissionRef }
 import uk.gov.hmrc.gform.typeclasses.Attribute
 
-import scala.xml.{ Elem, Node, Utility }
+import scala.xml.{ Elem, Utility }
 
 object MetadataXml {
 
@@ -64,13 +64,15 @@ object MetadataXml {
     </documents>
   }
 
-  def getXml(submissionRef: SubmissionRef, reconciliationId: ReconciliationId, sap: SubmissionAndPdf, dmsSubmission: DmsSubmission): Node = {
+  def getXml(submissionRef: SubmissionRef, reconciliationId: ReconciliationId, sap: SubmissionAndPdf, dmsSubmission: DmsSubmission): Elem = {
     val body = List(
       createHeader(submissionRef, reconciliationId),
       createMetadata(sap, dmsSubmission))
 
-    Utility.trim(createDocument(body))
+    trim(createDocument(body))
   }
+
+  private def trim(e: Elem): Elem = Utility.trim(e).asInstanceOf[Elem]
 
   private def createAttribute[T: Attribute](name: String, value: T): Elem =
     createAttribute(name, List(value))
