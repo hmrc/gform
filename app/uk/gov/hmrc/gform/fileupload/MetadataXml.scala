@@ -42,7 +42,7 @@ object MetadataXml {
       createAttribute("cas_key", "AUDIT_SERVICE"), // We are not using CAS
       createAttribute("classification_type", dmsSubmission.classificationType),
       createAttribute("business_area", dmsSubmission.businessArea),
-      createAttribute("attachment_count", 0))
+      createAttribute("attachment_count", 1)) // TODO GFC-84 populate attachment count for DMS submission metedata
     <metadata></metadata>.copy(child = attributes)
   }
 

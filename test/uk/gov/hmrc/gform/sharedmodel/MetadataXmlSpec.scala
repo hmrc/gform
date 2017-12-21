@@ -147,7 +147,7 @@ class MetadataXmlSpec extends Spec {
               <attribute_name>attachment_count</attribute_name>
               <attribute_type>int</attribute_type>
               <attribute_values>
-                <attribute_value>0</attribute_value>
+                <attribute_value>1</attribute_value>
               </attribute_values>
             </attribute>
           </metadata>
