@@ -20,7 +20,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.DmsSubmission
 import uk.gov.hmrc.gform.submission.{ SubmissionAndPdf, SubmissionRef }
 import uk.gov.hmrc.gform.typeclasses.Attribute
 
-import scala.xml.Elem
+import scala.xml.{ Elem, Node, Utility }
 
 object MetadataXml {
 
@@ -42,7 +42,7 @@ object MetadataXml {
       createAttribute("cas_key", "AUDIT_SERVICE"), // We are not using CAS
       createAttribute("classification_type", dmsSubmission.classificationType),
       createAttribute("business_area", dmsSubmission.businessArea),
-      createAttribute("attachment_count", 1)) // TODO GFC-84 populate attachment count for DMS submission metedata
+      createAttribute("attachment_count", 0)) // TODO GFC-84 populate attachment count for DMS submission metedata
     <metadata></metadata>.copy(child = attributes)
   }
 
@@ -64,12 +64,12 @@ object MetadataXml {
     </documents>
   }
 
-  def getXml(submissionRef: SubmissionRef, reconciliationId: ReconciliationId, sap: SubmissionAndPdf, dmsSubmission: DmsSubmission): Elem = {
+  def getXml(submissionRef: SubmissionRef, reconciliationId: ReconciliationId, sap: SubmissionAndPdf, dmsSubmission: DmsSubmission): Node = {
     val body = List(
       createHeader(submissionRef, reconciliationId),
       createMetadata(sap, dmsSubmission))
 
-    createDocument(body)
+    Utility.trim(createDocument(body))
   }
 
   private def createAttribute[T: Attribute](name: String, value: T): Elem =

@@ -46,7 +46,7 @@ class FileUploadService(fileUploadConnector: FileUploadConnector, fileUploadFron
     val uploadPfdF: Future[Unit] = fileUploadFrontendConnector.upload(
       envelopeId,
       pdf,
-      s"$fileNamePrefix-form.pdf",
+      s"$fileNamePrefix-iform.pdf",
       ByteString(submissionAndPdf.pdfSummary.pdfContent),
       ContentType.`application/pdf`)
 
