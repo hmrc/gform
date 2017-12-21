@@ -34,7 +34,7 @@ object MetadataXml {
       createAttribute("hmrc_time_of_receipt", submission.submittedDate),
       createAttribute("time_xml_created", submission.submittedDate),
       createAttribute("submission_reference", submission.submissionRef.value),
-      createAttribute("form_id", dmsMetaData.formTemplateId.value),
+      createAttribute("form_id", dmsSubmission.dmsFormId),
       createAttribute("number_pages", pdfSummary.numberOfPages),
       createAttribute("source", "dfs"),
       createAttribute("customer_id", sap.submission.dmsMetaData.customerId),
