@@ -24,7 +24,7 @@ import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.submission._
 
-import scala.xml.{ Node, Utility }
+import scala.xml.{ Elem, Utility }
 
 class MetadataXmlSpec extends Spec {
   "metadata.xml" should "be generated" in {
@@ -156,7 +156,7 @@ class MetadataXmlSpec extends Spec {
 
     val metadataXml = MetadataXml.getXml(SubmissionRef("some-submission-ref"), ReconciliationId("some-recocilliatin-id"), submissionAndPdf, dmsSubmission)
 
-    metadataXml should equal(Utility.trim(expected))(after being streamlined[Node])
+    metadataXml should equal(Utility.trim(expected).asInstanceOf[Elem])(after being streamlined[Elem])
 
   }
 }
