@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 HM Revenue & Customs
+ * Copyright 2018 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,26 +19,26 @@ package uk.gov.hmrc.gform.gformbackend
 import akka.util.ByteString
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.gform.sharedmodel.UserId
-import uk.gov.hmrc.gform.sharedmodel.config.{ContentType, ExposedConfig}
+import uk.gov.hmrc.gform.sharedmodel.config.{ ContentType, ExposedConfig }
 import uk.gov.hmrc.gform.sharedmodel.form._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{FormTemplate, FormTemplateId, SectionNumber}
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId, SectionNumber }
 import uk.gov.hmrc.gform.wshttp.WSHttp
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, NotFoundException}
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse, NotFoundException }
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 /**
-  * This connector originates in GFORM project.
-  * Edit it there first and propagate it from there.
-  */
+ * This connector originates in GFORM project.
+ * Edit it there first and propagate it from there.
+ */
 class GformConnector(ws: WSHttp, baseUrl: String) {
 
-  /******form*******/
+/******form*******/
 
   //TODO: remove userId since this information will be passed using HeaderCarrier
   def newForm(formTemplateId: FormTemplateId, userId: UserId)(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[FormId] =
-  ws.POSTEmpty[FormId](s"$baseUrl/new-form/${formTemplateId.value}/${userId.value}")
+    ws.POSTEmpty[FormId](s"$baseUrl/new-form/${formTemplateId.value}/${userId.value}")
 
   def getForm(formId: FormId)(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[Form] =
     ws.GET[Form](s"$baseUrl/forms/${formId.value}")
@@ -60,7 +60,7 @@ class GformConnector(ws: WSHttp, baseUrl: String) {
   def deleteForm(formId: FormId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
     ws.POSTEmpty[HttpResponse](baseUrl + s"/forms/${formId.value}/delete").map(_ => ())
 
-  /******submission*******/
+/******submission*******/
 
   def submitForm(formId: FormId)(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[HttpResponse] = {
     ws.POSTEmpty[HttpResponse](s"$baseUrl/forms/${formId.value}/submission")
@@ -70,7 +70,7 @@ class GformConnector(ws: WSHttp, baseUrl: String) {
     ws.GET[HttpResponse](s"$baseUrl/forms/${formId.value}/submission")
   }
 
-  /******formTemplate*******/
+/******formTemplate*******/
 
   def upsertTemplate(template: JsValue)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] = {
     ws.POST[JsValue, HttpResponse](s"$baseUrl/formtemplates", template, Seq("Content-Type" -> ContentType.`application/json`.value))
@@ -81,20 +81,19 @@ class GformConnector(ws: WSHttp, baseUrl: String) {
     ws.GET[FormTemplate](s"$baseUrl/formtemplates/${formTemplateId.value}")
   }
 
-  /******exposed-config*******/
+/******exposed-config*******/
   def getExposedConfig(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[ExposedConfig] = {
     ws.GET[ExposedConfig](s"$baseUrl/exposed-config")
   }
 
-  /******file-upload*******/
+/******file-upload*******/
 
   def deleteFile(formId: FormId, fileId: FileId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] = {
     ws.DELETE[HttpResponse](s"$baseUrl/forms/${formId.value}/deleteFile/${fileId.value}").map(_ => ())
   }
 
-
   import scala.io.Source
-  def fileToByteStr(filename : String) : ByteString = ByteString(Source.fromFile(filename).mkString)
+  def fileToByteStr(filename: String): ByteString = ByteString(Source.fromFile(filename).mkString)
   //TODO other formTemplate endpoints
   //TODO move this file to gform and make it's origin there
 }
