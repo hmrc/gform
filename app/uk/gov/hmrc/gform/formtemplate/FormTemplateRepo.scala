@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 HM Revenue & Customs
+ * Copyright 2018 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,4 +21,3 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateRa
 import uk.gov.hmrc.gform.repo.Repo
 
 class FormTemplateRepo(mongo: () => DefaultDB) extends Repo[FormTemplate]("formTemplate", mongo, _._id.value)
-
