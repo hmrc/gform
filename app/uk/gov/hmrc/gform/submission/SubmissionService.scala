@@ -148,8 +148,10 @@ object SubmissionServiceHelper {
       SectionHelper.atomicFields(section, data).traverse(formFieldByFieldValue).map(ff => SectionFormField(section.shortName.getOrElse(section.title), ff))
 
     val allSections = RepeatingComponentService.getAllSections(form, formTemplate)
-    val sectionsToSubmit = allSections.filter(
-      section => BooleanExpr.isTrue(section.includeIf.getOrElse(IncludeIf(IsTrue)).expr, data)) :+ formTemplate.declarationSection
+    // TODO This is a workaround for GD94 so that all sections will be in the submission, because retrievals are not available for evaluation in the backend
+    //    val sectionsToSubmit = allSections.filter(
+    //      section => BooleanExpr.isTrue(section.includeIf.getOrElse(IncludeIf(IsTrue)).expr, data)) :+ formTemplate.declarationSection
+    val sectionsToSubmit = allSections :+ formTemplate.declarationSection
     sectionsToSubmit.traverse(toSectionFormField)
   }
 
