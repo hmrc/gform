@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 HM Revenue & Customs
+ * Copyright 2018 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,4 +25,3 @@ object EnvelopeId {
   implicit val format: OFormat[EnvelopeId] = ValueClassFormat.oformat("envelopeId", EnvelopeId.apply, _.value)
   val vformat: Format[EnvelopeId] = ValueClassFormat.vformat("envelopeId", EnvelopeId.apply, x => JsString(x.value))
 }
-

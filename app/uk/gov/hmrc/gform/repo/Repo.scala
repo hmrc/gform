@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 HM Revenue & Customs
+ * Copyright 2018 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,4 +66,3 @@ class Repo[T: OWrites: Manifest](name: String, mongo: () => DefaultDB, idLens: T
     def asEither: Either[UnexpectedState, Unit] = if (w.ok) ().asRight else UnexpectedState(w.message).asLeft
   }
 }
-
