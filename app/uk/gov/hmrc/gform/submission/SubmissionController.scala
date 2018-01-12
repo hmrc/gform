@@ -23,6 +23,8 @@ import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
 
+import scala.concurrent.Future
+
 class SubmissionController(
   submissionService: SubmissionService) extends BaseController {
 
@@ -37,6 +39,17 @@ class SubmissionController(
     submissionService.submission(formId, request.headers.get("customerId").getOrElse("")).fold(
       _.asBadRequest,
       _ => NoContent)
+  }
+
+  def submitWithPdf(formId: FormId) = Action.async { implicit request =>
+    Logger.info(s"submit, formId: '${formId.value}, ${loggingHelpers.cleanHeaders(request.headers)}")
+    request.body.asJson match {
+      case Some(jsValue) =>
+      submissionService.submissionWithPdf(formId, request.headers.get ("customerId").getOrElse (""), jsValue.toString ).fold (
+      _.asBadRequest,
+      _ => NoContent)
+     case None =>  Future.successful(BadRequest)
+    }
   }
 
   def submissionStatus(formId: FormId) = Action.async { implicit request =>

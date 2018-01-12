@@ -4,11 +4,12 @@ POST          /new-form/:formTemplateId/:userId                    uk.gov.hmrc.g
 
 PUT           /forms/:formId                                       uk.gov.hmrc.gform.form.FormController.updateFormData(formId: FormId)
 GET           /forms/:formId                                       uk.gov.hmrc.gform.form.FormController.get(formId: FormId)
-GET          /forms/:formId/validate-section/:sectionNumber       uk.gov.hmrc.gform.form.FormController.validateSection(formId: FormId, sectionNumber: SectionNumber)
+GET          /forms/:formId/validate-section/:sectionNumber        uk.gov.hmrc.gform.form.FormController.validateSection(formId: FormId, sectionNumber: SectionNumber)
 POST          /forms/:formId/delete                                uk.gov.hmrc.gform.form.FormController.delete(formId: FormId)
 DELETE        /forms/:formId/deleteFile/:fileId                    uk.gov.hmrc.gform.form.FormController.deleteFile(formId: FormId, fileId: FileId)
 
 POST          /forms/:formId/submission                            uk.gov.hmrc.gform.submission.SubmissionController.submit(formId: FormId)
+POST          /forms/:formId/submission-pdf                        uk.gov.hmrc.gform.submission.SubmissionController.submitWithPdf(formId: FormId)
 GET           /forms/:formId/submission                            uk.gov.hmrc.gform.submission.SubmissionController.submissionStatus(formId: FormId)
 
 GET           /formtemplates                                       uk.gov.hmrc.gform.formtemplate.FormTemplatesController.all

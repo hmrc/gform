@@ -84,6 +84,40 @@ class SubmissionService(
     }
   }
 
+  def getSubmissionAndPdfWithPdf(
+    envelopeId: EnvelopeId,
+    form: Form,
+    pdf: String,
+    customerId: String)(implicit hc: HeaderCarrier): Future[SubmissionAndPdf] = {
+
+    pdfGeneratorService.generatePDF(pdf).map { pdf =>
+
+      /*
+      val path = java.nio.file.Paths.get("confirmation.pdf")
+      val out = java.nio.file.Files.newOutputStream(path)
+      out.write(pdf)
+      out.close()
+      */
+
+      val pdfSummary = PdfSummary(
+        numberOfPages = 1L, //TODO GFC-84 need to determine the number of pages in a PDF, for DMS metadata
+        pdfContent = pdf)
+      val submission = Submission(
+        submittedDate = timeProvider.localDateTime(),
+        submissionRef = SubmissionRef.random,
+        envelopeId = envelopeId,
+        _id = form._id,
+        dmsMetaData = DmsMetaData(
+          formTemplateId = form.formTemplateId,
+          customerId //TODO need more secure and safe way of doing this. perhaps moving auth to backend and just pulling value out there.
+        ))
+
+      SubmissionAndPdf(
+        submission = submission,
+        pdfSummary = pdfSummary)
+    }
+  }
+
   def submission(formId: FormId, customerId: String)(implicit hc: HeaderCarrier): FOpt[Unit] = {
 
     // format: OFF
@@ -95,7 +129,22 @@ class SubmissionService(
       _                 <-                     submissionRepo.upsert(submissionAndPdf.submission)
       _                 <- fromFutureA        (formService.updateUserData(form._id, UserData(form.formData, form.repeatingGroupStructure, Submitted)))
       res               <- fromFutureA        (fileUploadService.submitEnvelope(submissionAndPdf, formTemplate.dmsSubmission))
-      emailAddress      =                    (email.getEmailAddress(form))
+      emailAddress      =                      email.getEmailAddress(form)
+      _                 =                     email.sendEmail(emailAddress)(hc, fromLoggingDetails)
+    } yield res
+    // format: ON
+  }
+  def submissionWithPdf(formId: FormId, customerId: String, pdf: String)(implicit hc: HeaderCarrier): FOpt[Unit] = {
+
+    // format: OFF
+    for {
+      form              <- fromFutureA        (formService.get(formId))
+      formTemplate      <- fromFutureA        (formTemplateService.get(form.formTemplateId))
+      submissionAndPdf  <- fromFutureA        (getSubmissionAndPdfWithPdf(form.envelopeId, form,pdf ,customerId))
+      _                 <-                     submissionRepo.upsert(submissionAndPdf.submission)
+      _                 <- fromFutureA        (formService.updateUserData(form._id, UserData(form.formData, form.repeatingGroupStructure, Submitted)))
+      res               <- fromFutureA        (fileUploadService.submitEnvelope(submissionAndPdf, formTemplate.dmsSubmission))
+      emailAddress      =                      email.getEmailAddress(form)
       _                 =                     email.sendEmail(emailAddress)(hc, fromLoggingDetails)
     } yield res
     // format: ON
