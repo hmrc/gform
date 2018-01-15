@@ -43,12 +43,12 @@ class SubmissionController(
 
   def submitWithPdf(formId: FormId) = Action.async { implicit request =>
     Logger.info(s"submit, formId: '${formId.value}, ${loggingHelpers.cleanHeaders(request.headers)}")
-    request.body.asJson match {
-      case Some(jsValue) =>
-      submissionService.submissionWithPdf(formId, request.headers.get ("customerId").getOrElse (""), jsValue.toString ).fold (
-      _.asBadRequest,
-      _ => NoContent)
-     case None =>  Future.successful(BadRequest)
+    request.body.asText match {
+      case Some(html) =>
+        submissionService.submissionWithPdf(formId, request.headers.get("customerId").getOrElse(""), html).fold(
+          _.asBadRequest,
+          _ => NoContent)
+      case None => Future.successful(BadRequest)
     }
   }
 

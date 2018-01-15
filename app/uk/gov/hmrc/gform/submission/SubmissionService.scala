@@ -64,7 +64,7 @@ class SubmissionService(
       out.write(pdf)
       out.close()
       */
-
+      //todo install 3rd part part
       val pdfSummary = PdfSummary(
         numberOfPages = 1L, //TODO GFC-84 need to determine the number of pages in a PDF, for DMS metadata
         pdfContent = pdf)
@@ -83,7 +83,7 @@ class SubmissionService(
         pdfSummary = pdfSummary)
     }
   }
-
+  //todo refactor the two methods into one
   def getSubmissionAndPdfWithPdf(
     envelopeId: EnvelopeId,
     form: Form,
