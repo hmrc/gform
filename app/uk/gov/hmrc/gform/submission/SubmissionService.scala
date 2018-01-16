@@ -32,9 +32,7 @@ import uk.gov.hmrc.gform.pdfgenerator.{ HtmlGeneratorService, PdfGeneratorServic
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.time.TimeProvider
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
-import org.apache.pdfbox
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.http.HeaderCarrier
 import org.apache.pdfbox.pdmodel.PDDocument
