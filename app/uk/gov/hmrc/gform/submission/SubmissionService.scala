@@ -38,6 +38,8 @@ import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.http.HeaderCarrier
 
+import scala.annotation.tailrec
+
 class SubmissionService(
   pdfGeneratorService: PdfGeneratorService,
   formService: FormService,
@@ -47,14 +49,26 @@ class SubmissionService(
   timeProvider: TimeProvider,
   email: EmailService) {
 
+  private def getNoOfAttachments(form: Form, formTemplate: FormTemplate): Int = {
+    val attachmentsIds: List[String] = formTemplate.sections.flatMap(_.fields.filter(f => f.`type` == FileUpload())).map(_.id.value)
+
+    @tailrec
+    def countNoOfAttachments(attachmentsIds: List[String], formFields: Seq[String], noOfAttachments: Int): Int = attachmentsIds match {
+      case Nil => noOfAttachments
+      case x :: tail => countNoOfAttachments(tail, formFields, if (formFields.contains(x)) noOfAttachments + 1 else noOfAttachments)
+    }
+
+    countNoOfAttachments(attachmentsIds, form.formData.fields.filterNot(_.value == "Upload document").map(_.id.value), 0)
+  }
+
   def getSubmissionAndPdf(
     envelopeId: EnvelopeId,
     form: Form,
     sectionFormFields: List[SectionFormField],
-    formName: String,
+    formTemplate: FormTemplate,
     customerId: String)(implicit hc: HeaderCarrier): Future[SubmissionAndPdf] = {
 
-    val html = HtmlGeneratorService.generateDocumentHTML(sectionFormFields, formName, form.formData)
+    val html = HtmlGeneratorService.generateDocumentHTML(sectionFormFields, formTemplate.formName, form.formData)
 
     pdfGeneratorService.generatePDF(html).map { pdf =>
 
@@ -73,6 +87,7 @@ class SubmissionService(
         submissionRef = SubmissionRef.random,
         envelopeId = envelopeId,
         _id = form._id,
+        noOfAttachments = getNoOfAttachments(form, formTemplate),
         dmsMetaData = DmsMetaData(
           formTemplateId = form.formTemplateId,
           customerId //TODO need more secure and safe way of doing this. perhaps moving auth to backend and just pulling value out there.
@@ -88,7 +103,8 @@ class SubmissionService(
     envelopeId: EnvelopeId,
     form: Form,
     pdf: String,
-    customerId: String)(implicit hc: HeaderCarrier): Future[SubmissionAndPdf] = {
+    customerId: String,
+    formTemplate: FormTemplate)(implicit hc: HeaderCarrier): Future[SubmissionAndPdf] = {
 
     pdfGeneratorService.generatePDF(pdf).map { pdf =>
 
@@ -107,6 +123,7 @@ class SubmissionService(
         submissionRef = SubmissionRef.random,
         envelopeId = envelopeId,
         _id = form._id,
+        noOfAttachments = getNoOfAttachments(form, formTemplate),
         dmsMetaData = DmsMetaData(
           formTemplateId = form.formTemplateId,
           customerId //TODO need more secure and safe way of doing this. perhaps moving auth to backend and just pulling value out there.
@@ -125,7 +142,7 @@ class SubmissionService(
       form              <- fromFutureA        (formService.get(formId))
       formTemplate      <- fromFutureA        (formTemplateService.get(form.formTemplateId))
       sectionFormFields <- fromOptA           (SubmissionServiceHelper.getSectionFormFields(form, formTemplate))
-      submissionAndPdf  <- fromFutureA        (getSubmissionAndPdf(form.envelopeId, form, sectionFormFields, formTemplate.formName, customerId))
+      submissionAndPdf  <- fromFutureA        (getSubmissionAndPdf(form.envelopeId, form, sectionFormFields,formTemplate , customerId))
       _                 <-                     submissionRepo.upsert(submissionAndPdf.submission)
       _                 <- fromFutureA        (formService.updateUserData(form._id, UserData(form.formData, form.repeatingGroupStructure, Submitted)))
       res               <- fromFutureA        (fileUploadService.submitEnvelope(submissionAndPdf, formTemplate.dmsSubmission))
@@ -140,7 +157,7 @@ class SubmissionService(
     for {
       form              <- fromFutureA        (formService.get(formId))
       formTemplate      <- fromFutureA        (formTemplateService.get(form.formTemplateId))
-      submissionAndPdf  <- fromFutureA        (getSubmissionAndPdfWithPdf(form.envelopeId, form,pdf ,customerId))
+      submissionAndPdf  <- fromFutureA        (getSubmissionAndPdfWithPdf(form.envelopeId, form,pdf ,customerId, formTemplate))
       _                 <-                     submissionRepo.upsert(submissionAndPdf.submission)
       _                 <- fromFutureA        (formService.updateUserData(form._id, UserData(form.formData, form.repeatingGroupStructure, Submitted)))
       res               <- fromFutureA        (fileUploadService.submitEnvelope(submissionAndPdf, formTemplate.dmsSubmission))
