@@ -276,6 +276,7 @@ trait ExampleSubmission { dependsOn: ExampleForm with ExampleFormTemplate =>
     submittedDate,
     submissionRef,
     envelopeId,
+    0,
     dmsMetaData)
 
 }

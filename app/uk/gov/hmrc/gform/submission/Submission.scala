@@ -36,6 +36,7 @@ case class Submission(
   submittedDate: LocalDateTime,
   submissionRef: SubmissionRef,
   envelopeId: EnvelopeId,
+  noOfAttachments: Int = 0,
   dmsMetaData: DmsMetaData)
 
 object Submission {
@@ -45,6 +46,7 @@ object Submission {
     (JsPath \ "submittedDate").read[LocalDateTime] and
     SubmissionRef.oformat and
     EnvelopeId.format and
+    (JsPath \ "attachment_count").read[Int] and
     DmsMetaData.format)(Submission.apply _)
 
   private val writes: OWrites[Submission] = OWrites[Submission](s =>
@@ -52,6 +54,7 @@ object Submission {
       Json.obj("submittedDate" -> Writes.DefaultLocalDateTimeWrites.writes(s.submittedDate)) ++
       SubmissionRef.oformat.writes(s.submissionRef) ++
       EnvelopeId.format.writes(s.envelopeId) ++
+      Json.obj("attachment_count" -> Writes.IntWrites.writes(s.noOfAttachments)) ++
       DmsMetaData.format.writes(s.dmsMetaData))
 
   implicit val format: OFormat[Submission] = OFormat[Submission](reads, writes)
