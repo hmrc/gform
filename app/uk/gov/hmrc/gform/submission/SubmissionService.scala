@@ -34,10 +34,10 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
-
+import org.apache.pdfbox
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.http.HeaderCarrier
-
+import org.apache.pdfbox.pdmodel.PDDocument
 class SubmissionService(
   pdfGeneratorService: PdfGeneratorService,
   formService: FormService,
@@ -63,7 +63,6 @@ class SubmissionService(
     val html = HtmlGeneratorService.generateDocumentHTML(sectionFormFields, formTemplate.formName, form.formData)
 
     pdfGeneratorService.generatePDF(html).map { pdf =>
-
       /*
       val path = java.nio.file.Paths.get("confirmation.pdf")
       val out = java.nio.file.Files.newOutputStream(path)
@@ -72,7 +71,7 @@ class SubmissionService(
       */
       //todo install 3rd part part
       val pdfSummary = PdfSummary(
-        numberOfPages = 1L, //TODO GFC-84 need to determine the number of pages in a PDF, for DMS metadata
+        numberOfPages = PDDocument.load(pdf).getNumberOfPages,
         pdfContent = pdf)
       val submission = Submission(
         submittedDate = timeProvider.localDateTime(),
@@ -108,7 +107,7 @@ class SubmissionService(
       */
 
       val pdfSummary = PdfSummary(
-        numberOfPages = 1L, //TODO GFC-84 need to determine the number of pages in a PDF, for DMS metadata
+        numberOfPages = PDDocument.load(pdf).getNumberOfPages,
         pdfContent = pdf)
       val submission = Submission(
         submittedDate = timeProvider.localDateTime(),
