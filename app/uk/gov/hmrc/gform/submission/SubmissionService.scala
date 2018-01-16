@@ -38,8 +38,6 @@ import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.annotation.tailrec
-
 class SubmissionService(
   pdfGeneratorService: PdfGeneratorService,
   formService: FormService,
@@ -51,14 +49,8 @@ class SubmissionService(
 
   private def getNoOfAttachments(form: Form, formTemplate: FormTemplate): Int = {
     val attachmentsIds: List[String] = formTemplate.sections.flatMap(_.fields.filter(f => f.`type` == FileUpload())).map(_.id.value)
-
-    @tailrec
-    def countNoOfAttachments(attachmentsIds: List[String], formFields: Seq[String], noOfAttachments: Int): Int = attachmentsIds match {
-      case Nil => noOfAttachments
-      case x :: tail => countNoOfAttachments(tail, formFields, if (formFields.contains(x)) noOfAttachments + 1 else noOfAttachments)
-    }
-
-    countNoOfAttachments(attachmentsIds, form.formData.fields.filterNot(_.value == "Upload document").map(_.id.value), 0)
+    val formIds: Seq[String] = form.formData.fields.filterNot(_.value == "Upload document").map(_.id.value)
+    attachmentsIds.count(ai => formIds.contains(ai))
   }
 
   def getSubmissionAndPdf(
