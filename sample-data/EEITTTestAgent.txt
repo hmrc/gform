@@ -1,0 +1,1 @@
+002|KARN0000000|ARN|Agent Reference Number(ARN)|7|Company|Agent1||||BN12 4XL|GB|XMAP00000100051|ZAPD|Air Passenger Duty (APD)|7|Limited Company|Organisation2||||BN12 4XL|GB
