@@ -5,7 +5,8 @@
   "dmsSubmission": {
     "customerId": "${auth.payenino}",
     "classificationType": "BT-NRU-Environmental",
-    "businessArea": "FinanceOpsCorpT"
+    "businessArea": "FinanceOpsCorpT",
+    "dmsFormId" : "ADDRESS"
   },
   "authConfig":{
     "authModule": "legacyEEITTAuth",
