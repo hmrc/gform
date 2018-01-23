@@ -51,6 +51,7 @@ class SubmissionServiceSpec extends Spec {
       label = "Editable text label",
       helpText = None,
       shortName = None,
+      validIf = None,
       mandatory = true,
       editable = true,
       submissible = true,
@@ -73,6 +74,7 @@ class SubmissionServiceSpec extends Spec {
       label = "group FieldValue label",
       helpText = None,
       shortName = None,
+      validIf = None,
       mandatory = true,
       editable = false,
       submissible = true,
@@ -108,16 +110,16 @@ class SubmissionServiceSpec extends Spec {
         List(
           (
             List(FormField(FormComponentId("UNO"), "UNO")),
-            FormComponent(FormComponentId("UNO"), Text(AnyText, Constant("UNO")), "Editable text label", None, None, true, true, true, derived = false, None)),
+            FormComponent(FormComponentId("UNO"), Text(AnyText, Constant("UNO")), "Editable text label", None, None, None, true, true, true, derived = false, None)),
           (
             List(FormField(FormComponentId("DOS"), "DOS")),
-            FormComponent(FormComponentId("DOS"), Text(AnyText, Constant("DOS")), "Editable text label", None, None, true, true, true, derived = false, None)),
+            FormComponent(FormComponentId("DOS"), Text(AnyText, Constant("DOS")), "Editable text label", None, None, None, true, true, true, derived = false, None)),
           (
             List(FormField(FormComponentId("1_UNO"), "1_UNO")),
-            FormComponent(FormComponentId("1_UNO"), Text(AnyText, Constant("UNO")), "Editable text label", None, None, true, true, true, derived = false, None)),
+            FormComponent(FormComponentId("1_UNO"), Text(AnyText, Constant("UNO")), "Editable text label", None, None, None, true, true, true, derived = false, None)),
           (
             List(FormField(FormComponentId("1_DOS"), "1_DOS")),
-            FormComponent(FormComponentId("1_DOS"), Text(AnyText, Constant("DOS")), "Editable text label", None, None, true, true, true, derived = false, None)))),
+            FormComponent(FormComponentId("1_DOS"), Text(AnyText, Constant("DOS")), "Editable text label", None, None, None, true, true, true, derived = false, None)))),
       SectionFormField("Declaration", List()))
 
     val res = SubmissionServiceHelper.getSectionFormFields(form, formTemplate)

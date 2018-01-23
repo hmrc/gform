@@ -213,8 +213,8 @@ class ValueParserSpec extends Spec {
     None, None, None,
     None, None, None,
     List(
-      FormComponent(FormComponentId("firstName"), Text(AnyText, Constant("")), "Your first name", None, None, mandatory = false, editable = true, submissible = true, derived = false, errorMessage = None),
-      FormComponent(FormComponentId("lastName"), Text(AnyText, Constant("")), "Your last name", None, None, mandatory = false, editable = true, submissible = true, derived = false, errorMessage = None)))
+      FormComponent(FormComponentId("firstName"), Text(AnyText, Constant("")), "Your first name", None, None, validIf = None, mandatory = false, editable = true, submissible = true, derived = false, errorMessage = None),
+      FormComponent(FormComponentId("lastName"), Text(AnyText, Constant("")), "Your last name", None, None, validIf = None, mandatory = false, editable = true, submissible = true, derived = false, errorMessage = None)))
 
   val formTemplateWithOneSection = plainFormTemplate.copy(sections = List(yourDetailsSection))
 
