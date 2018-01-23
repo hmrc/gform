@@ -242,16 +242,16 @@ class TemplateValidatorSpec extends Spec {
     None, None, None,
     None, None, None,
     List(
-      FormComponent(FormComponentId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None),
-      FormComponent(FormComponentId("businessAddress"), Address(international = false), "Business address", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None)))
+      FormComponent(FormComponentId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, validIf = None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None),
+      FormComponent(FormComponentId("businessAddress"), Address(international = false), "Business address", None, None, validIf = None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None)))
 
   val sectionWithDate = Section(
     "Business details",
     None, None, None,
     None, None, None,
     List(
-      FormComponent(FormComponentId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None),
-      FormComponent(FormComponentId("startDate"), Date(AnyDate, Offset(0), None), "Start date", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None)))
+      FormComponent(FormComponentId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, validIf = None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None),
+      FormComponent(FormComponentId("startDate"), Date(AnyDate, Offset(0), None), "Start date", None, None, validIf = None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None)))
 
   val sectionWithCheckbox = Section(
     "Business details",
@@ -259,9 +259,9 @@ class TemplateValidatorSpec extends Spec {
     None, None, None,
     List(
       FormComponent(
-        FormComponentId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None),
+        FormComponentId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, validIf = None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None),
       FormComponent(
-        FormComponentId("dutyType"), Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None), "Select the tax type", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None)))
+        FormComponentId("dutyType"), Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None), "Select the tax type", None, None, validIf = None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None)))
 
   val sectionWithRadio = Section(
     "Business details",
@@ -269,9 +269,9 @@ class TemplateValidatorSpec extends Spec {
     None, None, None,
     List(
       FormComponent(
-        FormComponentId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None),
+        FormComponentId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, validIf = None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None),
       FormComponent(
-        FormComponentId("dutyType"), Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None), "Select the tax type", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None)))
+        FormComponentId("dutyType"), Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None), "Select the tax type", None, None, validIf = None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None)))
 
   val sectionWithYesNo = Section(
     "Business details",
@@ -279,9 +279,9 @@ class TemplateValidatorSpec extends Spec {
     None, None, None,
     List(
       FormComponent(
-        FormComponentId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None),
+        FormComponentId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, validIf = None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None),
       FormComponent(
-        FormComponentId("taxType"), Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int], None), "Gas tax type?", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None)))
+        FormComponentId("taxType"), Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int], None), "Gas tax type?", None, None, validIf = None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None)))
 
   "TemplateValidator.getMatchingSection" should "find matching section containing address component" in {
 
@@ -385,7 +385,7 @@ class TemplateValidatorSpec extends Spec {
       None, None, None,
       None, None, None,
       List(
-        FormComponent(FormComponentId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, mandatory = false, editable = true, submissible = true, derived = false, errorMessage = None)))
+        FormComponent(FormComponentId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, validIf = None, mandatory = false, editable = true, submissible = true, derived = false, errorMessage = None)))
 
     val formFields = List() // Nothing submitted
 
@@ -402,7 +402,7 @@ class TemplateValidatorSpec extends Spec {
       None, None, None,
       None, None, None,
       List(
-        FormComponent(FormComponentId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, mandatory = false, editable = true, submissible = true, derived = false, errorMessage = None)))
+        FormComponent(FormComponentId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, validIf = None, mandatory = false, editable = true, submissible = true, derived = false, errorMessage = None)))
 
     val formFields = List() // Nothing submitted
 
@@ -419,9 +419,9 @@ class TemplateValidatorSpec extends Spec {
       None, None, None,
       None, None, None,
       List(
-        FormComponent(FormComponentId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None)))
+        FormComponent(FormComponentId("nameOfBusiness"), Text(AnyText, Constant("")), "Name of business", None, None, validIf = None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None)))
 
-    val formFields = List() // Nothing submitted
+    val formFields = List() // Nothing submittedForm
 
     val sections = List(section)
     val res = FormTemplateValidator.getMatchingSection(formFields, sections)

@@ -45,7 +45,7 @@ class FormCompomentMaker(json: JsValue) {
   lazy val errorMessage: Option[String] = (json \ "errorMessage").asOpt[String]
 
   lazy val fields: Option[List[FormCompomentMaker]] = fieldsJson.map(_.map(new FormCompomentMaker(_)))
-
+  lazy val validIf: Option[ValidIf] = (json \ "validIf").asOpt[ValidIf]
   lazy val mandatory: Option[String] = (json \ "mandatory").asOpt[String]
   lazy val multivalue: Option[String] = (json \ "multivalue").asOpt[String]
   lazy val total: Option[String] = (json \ "total").asOpt[String]
@@ -81,6 +81,7 @@ class FormCompomentMaker(json: JsValue) {
     label = label,
     helpText = helpText,
     shortName = shortName,
+    validIf = validIf,
     mandatory = mes.mandatory,
     editable = mes.editable,
     submissible = mes.submissible,
@@ -230,9 +231,9 @@ class FormCompomentMaker(json: JsValue) {
 
   private def validateRepeatsAndBuildGroup(repMax: Option[Int], repMin: Option[Int], fields: List[FormComponent], orientation: Orientation) = {
     (repMax, repMin) match {
-      case (Some(repMax), Some(repMin)) if repMax < repMin =>
+      case (Some(repMaxV), Some(repMinV)) if repMaxV < repMinV =>
         UnexpectedState(s"""repeatsMax should be higher than repeatsMin in Group field""").asLeft
-      case (Some(repMax), Some(repMin)) if repMin < 0 =>
+      case (Some(repMaxV), Some(repMinV)) if repMinV < 0 =>
         UnexpectedState(s"""repeatsMin in Group field cannot be a negative number""").asLeft
       case _ =>
         Group(fields, orientation, repMax, repMin, repeatLabel, repeatAddAnotherText).asRight

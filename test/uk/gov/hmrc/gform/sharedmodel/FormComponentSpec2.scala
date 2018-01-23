@@ -46,6 +46,7 @@ class FormComponentSpec2 extends Spec {
         "Select the tax type",
         None,
         None,
+        validIf = None,
         mandatory = true,
         editable = true,
         submissible = true,

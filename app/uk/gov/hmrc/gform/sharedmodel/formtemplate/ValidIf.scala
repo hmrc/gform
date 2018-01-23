@@ -20,20 +20,18 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.booleanParser.booleanExprParser
 
-case class IncludeIf(expr: BooleanExpr)
+case class ValidIf(expr: BooleanExpr)
+object ValidIf {
+  implicit val writes = Json.writes[ValidIf]
 
-object IncludeIf {
-
-  implicit val writes = Json.writes[IncludeIf]
-
-  implicit val reads: Reads[IncludeIf] = readsForTemplateJson | readsForMongoJson
+  implicit val reads: Reads[ValidIf] = readsForTemplateJson | readsForMongoJson
 
   //TODO: move that logic out ot the data
 
-  private lazy val readsForMongoJson = Json.reads[IncludeIf]
+  private lazy val readsForMongoJson = Json.reads[ValidIf]
 
-  private lazy val readsForTemplateJson: Reads[IncludeIf] = Reads { json =>
-    val includeIfJsR: JsResult[IncludeIf] = booleanExprParser(json).map(be => IncludeIf(be))
+  private lazy val readsForTemplateJson: Reads[ValidIf] = Reads { json =>
+    val includeIfJsR: JsResult[ValidIf] = booleanExprParser(json).map(be => ValidIf(be))
     includeIfJsR
   }
 }

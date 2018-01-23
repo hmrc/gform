@@ -5,7 +5,8 @@
   "dmsSubmission": {
     "customerId": "${auth.payenino}",
     "classificationType": "BT-NRU-Environmental",
-    "businessArea": "FinanceOpsCorpT"
+    "businessArea": "FinanceOpsCorpT",
+    "dmsFormId" : "exprtest"
   },
   "authConfig":{
     "authModule": "legacyEEITTAuth",
@@ -24,7 +25,6 @@
           "label": "Enter a date in April 2017",
           "helpText": "For example, 10 4 2017",
           "mandatory": "true",
-          "format": "after 2017-03-31,before 2017-05-01",
           "value": "2017-04-10"
         },
         {
@@ -33,7 +33,6 @@
           "label": "Enter a date in the future",
           "helpText": "For example, 10 4 2017",
           "mandatory": "true",
-          "format": "after today",
           "value": "2017-04-10"
         },
         {
@@ -42,12 +41,12 @@
           "label": "Enter a date after this year",
           "helpText": "For example, 10 4 2018",
           "mandatory": "true",
-          "format": "after yesterday",
           "value": "2017-04-10"
         },
         {
           "id": "amountA",
           "label": "Amount A | Rhif A",
+          "validIf": "${amountA=15}",
           "format": "positiveNumber(3,4)",
           "mandatory": "true"
         }
@@ -81,5 +80,60 @@
         "label": "Acknowledgement copy",
         "infoText": "thingy copy"
       }
+    ]
+  },
+  "declarationSection": {
+    "shortName": "Declaration",
+    "title": "Declaration",
+    "fields": [
+      {
+        "type": "info",
+        "id": "declarationTopInfo",
+        "label": "Declaration copy",
+        "infoText": "Declaration copy"
+      },
+      {
+        "id": "declarationNameGroup",
+        "type": "group",
+        "label": "Provide details below of who is signing the declaration",
+        "fields": [
+          {
+            "id": "declaration-firstname",
+            "type": "text",
+            "label": "First name"
+          },
+          {
+            "id": "declaration-lastname",
+            "type": "text",
+            "label": "Last name"
+          },
+          {
+            "id": "declaration-status",
+            "type": "text",
+            "label": "Status",
+            "helpText":"For example: Director, Financial Controller, Secretary"
+          }
+        ]
+      },
+      {
+        "id": "declarationEmailGroup",
+        "type": "group",
+        "label": "To receive confirmation that your return has been submitted, enter an email address below",
+        "fields": [
+          {
+            "id": "declaration-email",
+            "type": "text",
+            "label": "Email address (Optional)",
+            "mandatory": "false"
+          },
+          {
+            "id": "declaration-email-confirmation",
+            "type": "text",
+            "label": "Confirm email address (Optional)",
+            "mandatory": "false"
+          }
+        ]
+      }
+
     ]
   }}

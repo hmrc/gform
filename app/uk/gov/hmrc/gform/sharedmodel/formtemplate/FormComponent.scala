@@ -26,6 +26,7 @@ case class FormComponent(
   label: String,
   helpText: Option[String],
   shortName: Option[String],
+  validIf: Option[ValidIf],
   mandatory: Boolean,
   editable: Boolean,
   submissible: Boolean,
