@@ -92,6 +92,7 @@ class SubmissionServiceSpec extends Spec {
       _id = FormTemplateId("JustAFormTypeId"),
       formName = "formName",
       description = "formTemplateDescription",
+      None,
       formCategory = Some(Default),
       submissionReference = None,
       dmsSubmission = DmsSubmission("DMS-ID-XX", TextExpression(AuthCtx(PayeNino)), "classificationType", "businessArea"),

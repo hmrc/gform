@@ -23,6 +23,7 @@ case class FormTemplate(
   _id: FormTemplateId,
   formName: String,
   description: String,
+  developmentPhase: Option[String] = None,
   formCategory: Option[FormCategory],
   submissionReference: Option[TextExpression],
   dmsSubmission: DmsSubmission,
