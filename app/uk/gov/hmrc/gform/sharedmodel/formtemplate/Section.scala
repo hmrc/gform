@@ -30,6 +30,7 @@ sealed trait BaseSection {
 case class Section(
   title: String,
   description: Option[String],
+  progressIndicator: Option[String] = None,
   shortName: Option[String],
   includeIf: Option[IncludeIf],
   repeatsMax: Option[TextExpression],
