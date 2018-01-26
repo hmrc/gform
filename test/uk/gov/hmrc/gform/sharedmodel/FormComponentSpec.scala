@@ -192,6 +192,16 @@ class FormComponentSpec extends Spec {
 
     fieldValue should beJsSuccess(FormComponent(FormComponentId("regNum"), Text(ShortText, Constant("")), "Registration number", None, None, None, mandatory = false, editable = false, submissible = false, derived = false, errorMessage = None))
   }
+  it should "parse as Text with 'submitMode' notsubmitted  non-submissible and editable" in {
+    val fieldValue = toFieldValue(
+      """|{
+         |  "id": "regNum",
+         |  "label": "Registration number",
+         |  "submitMode": "notsubmitted"
+         |}""")
+
+    fieldValue should beJsSuccess(FormComponent(FormComponentId("regNum"), Text(ShortText, Constant("")), "Registration number", None, None, None, mandatory = false, editable = true, submissible = false, derived = false, errorMessage = None))
+  }
 
   it should "parse as Address with 'international' false  when not specified" in {
     val fieldValue = toFieldValue(
