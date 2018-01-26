@@ -101,7 +101,7 @@ class FormCompomentMaker(json: JsValue) {
     case (Some(IsDerived()),         Some(IsFalseish()))              => MES(mandatory = false, editable = false, submissible = false, derived = true).asRight
     case (Some(IsNonSubmissible()),  Some(IsFalseish()) | None)       => MES(mandatory = false, editable = true, submissible = false, derived = false).asRight
     case (Some(IsNonSubmissible()),  Some(IsTrueish())  | None)       => MES(mandatory = true, editable = true, submissible = false, derived = false).asRight
-    case otherwise                                                    => UnexpectedState(s"Expected 'standard', 'readonly' or 'info' string or nothing for submitMode and expected 'true' or 'false' string or nothing for mandatory field value, got: $otherwise").asLeft
+    case otherwise                                                    => UnexpectedState(s"Expected 'standard', 'readonly', 'notsubmitted' or 'info' string or nothing for submitMode and expected 'true' or 'false' string or nothing for mandatory field value, got: $otherwise").asLeft
     //format: ON
   }
 
