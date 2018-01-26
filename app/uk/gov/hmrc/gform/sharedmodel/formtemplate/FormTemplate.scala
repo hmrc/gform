@@ -23,7 +23,7 @@ case class FormTemplate(
   _id: FormTemplateId,
   formName: String,
   description: String,
-  developmentPhase: DevelopmentPhase = ResearchBanner,
+  developmentPhase: Option[DevelopmentPhase] = Some(ResearchBanner),
   formCategory: Option[FormCategory],
   submissionReference: Option[TextExpression],
   dmsSubmission: DmsSubmission,

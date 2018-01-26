@@ -198,7 +198,7 @@ class ValueParserSpec extends Spec {
     FormTemplateId("IPT100"),
     "Insurance Premium Tax Return",
     "description",
-    ResearchBanner,
+    Some(ResearchBanner),
     Some(Default),
     None,
     DmsSubmission("DMS-ID-XX", TextExpression(AuthCtx(PayeNino)), "BT-NRU-Environmental", "FinanceOpsCorpT"),
