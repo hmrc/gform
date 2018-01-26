@@ -31,6 +31,7 @@ case class FormComponent(
   editable: Boolean,
   submissible: Boolean,
   derived: Boolean,
+  onlyShowOnSummary: Boolean = false,
   errorMessage: Option[String],
   presentationHint: Option[List[PresentationHint]] = Option.empty[List[PresentationHint]])
 

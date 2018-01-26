@@ -24,7 +24,7 @@ import uk.gov.hmrc.gform.core.parsers.{ FormatParser, PresentationHintParser, Va
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
-case class MES(mandatory: Boolean, editable: Boolean, submissible: Boolean, derived: Boolean)
+case class MES(mandatory: Boolean, editable: Boolean, submissible: Boolean, derived: Boolean, onlyShowOnSummary: Boolean = false)
 
 class FormCompomentMaker(json: JsValue) {
 
@@ -86,6 +86,7 @@ class FormCompomentMaker(json: JsValue) {
     editable = mes.editable,
     submissible = mes.submissible,
     derived = mes.derived,
+    onlyShowOnSummary = mes.onlyShowOnSummary,
     presentationHint = presHint,
     errorMessage = errorMessage)
 
@@ -99,7 +100,9 @@ class FormCompomentMaker(json: JsValue) {
     case (Some(IsInfo()),            Some(IsFalseish()))        => MES(mandatory = false, editable = false, submissible = false, derived = false).asRight
     case (Some(IsDerived()),         Some(IsTrueish()) | None)  => MES(mandatory = true, editable = false, submissible = false, derived = true).asRight
     case (Some(IsDerived()),         Some(IsFalseish()))        => MES(mandatory = false, editable = false, submissible = false, derived = true).asRight
-    case otherwise                                              => UnexpectedState(s"Expected 'standard', 'readonly' or 'info' string or nothing for submitMode and expected 'true' or 'false' string or nothing for mandatory field value, got: $otherwise").asLeft
+    case (Some(IsSummaryInfoOnly()), Some(IsTrueish()) | Some(IsFalseish()) | None) =>
+      MES(mandatory = true, editable = false, submissible = false, derived = false, onlyShowOnSummary = true).asRight
+    case otherwise                                              => UnexpectedState(s"Expected 'standard', summaryinfoonly,'readonly' or 'info' string or nothing for submitMode and expected 'true' or 'false' string or nothing for mandatory field value, got: $otherwise").asLeft
     //format: ON
   }
 
@@ -397,6 +400,10 @@ class FormCompomentMaker(json: JsValue) {
 
   object IsDerived {
     def unapply(maybeStandard: String): Boolean = maybeStandard.toLowerCase == "derived"
+  }
+
+  object IsSummaryInfoOnly {
+    def unapply(maybeStandard: String): Boolean = maybeStandard.toLowerCase == "summaryinfoonly"
   }
 
   object IsTrueish {
