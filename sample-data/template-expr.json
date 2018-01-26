@@ -47,6 +47,7 @@
         {
           "id": "amountA",
           "label": "Amount A | Rhif A",
+          "validIf": "${amountA=15}",
           "format": "positiveNumber(3,4)",
           "mandatory": "true"
         }
