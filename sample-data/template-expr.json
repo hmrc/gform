@@ -2,6 +2,7 @@
   "_id": "exprtest",
   "formName": "Insurance Premium Tax Return | Yswiriant Ffurflen Dreth Premiwm",
   "description": "Fill in your insurance premium tax return form online | Llenwch eich ffurflen dreth premiwm yswiriant ar-lein",
+  "developmentPhase" : "beta",
   "dmsSubmission": {
     "customerId": "${auth.payenino}",
     "classificationType": "BT-NRU-Environmental",
@@ -136,4 +137,5 @@
       }
 
     ]
-  }}
+  }
+}
