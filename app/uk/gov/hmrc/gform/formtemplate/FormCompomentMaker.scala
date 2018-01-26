@@ -91,15 +91,17 @@ class FormCompomentMaker(json: JsValue) {
 
   private lazy val optMES: Opt[MES] = (submitMode, mandatory) match {
     //format: OFF
-    case IsThisAnInfoField()                                    => MES(mandatory = true,  editable = false, submissible = false, derived = false).asRight
-    case (Some(IsStandard()) | None, Some(IsTrueish()) | None)  => MES(mandatory = true,  editable = true,  submissible = true, derived = false).asRight
-    case (Some(IsReadOnly()),        Some(IsTrueish()) | None)  => MES(mandatory = true,  editable = false, submissible = true, derived = false).asRight
-    case (Some(IsInfo()),            Some(IsTrueish()) | None)  => MES(mandatory = true,  editable = false, submissible = false, derived = false).asRight
-    case (Some(IsStandard()) | None, Some(IsFalseish()))        => MES(mandatory = false, editable = true,  submissible = true, derived = false).asRight
-    case (Some(IsInfo()),            Some(IsFalseish()))        => MES(mandatory = false, editable = false, submissible = false, derived = false).asRight
-    case (Some(IsDerived()),         Some(IsTrueish()) | None)  => MES(mandatory = true, editable = false, submissible = false, derived = true).asRight
-    case (Some(IsDerived()),         Some(IsFalseish()))        => MES(mandatory = false, editable = false, submissible = false, derived = true).asRight
-    case otherwise                                              => UnexpectedState(s"Expected 'standard', 'readonly' or 'info' string or nothing for submitMode and expected 'true' or 'false' string or nothing for mandatory field value, got: $otherwise").asLeft
+    case IsThisAnInfoField()                                          => MES(mandatory = true,  editable = false, submissible = false, derived = false).asRight
+    case (Some(IsStandard()) | None, Some(IsTrueish()) | None)        => MES(mandatory = true,  editable = true,  submissible = true, derived = false).asRight
+    case (Some(IsReadOnly()),        Some(IsTrueish()) | None)        => MES(mandatory = true,  editable = false, submissible = true, derived = false).asRight
+    case (Some(IsInfo()),            Some(IsTrueish()) | None)        => MES(mandatory = true,  editable = false, submissible = false, derived = false).asRight
+    case (Some(IsStandard()) | None, Some(IsFalseish()))              => MES(mandatory = false, editable = true,  submissible = true, derived = false).asRight
+    case (Some(IsInfo()),            Some(IsFalseish()))              => MES(mandatory = false, editable = false, submissible = false, derived = false).asRight
+    case (Some(IsDerived()),         Some(IsTrueish()) | None)        => MES(mandatory = true, editable = false, submissible = false, derived = true).asRight
+    case (Some(IsDerived()),         Some(IsFalseish()))              => MES(mandatory = false, editable = false, submissible = false, derived = true).asRight
+    case (Some(IsNonSubmissible()),  Some(IsFalseish()) | None)       => MES(mandatory = false, editable = true, submissible = false, derived = false).asRight
+    case (Some(IsNonSubmissible()),  Some(IsTrueish())  | None)       => MES(mandatory = true, editable = true, submissible = false, derived = false).asRight
+    case otherwise                                                    => UnexpectedState(s"Expected 'standard', 'readonly' or 'info' string or nothing for submitMode and expected 'true' or 'false' string or nothing for mandatory field value, got: $otherwise").asLeft
     //format: ON
   }
 
@@ -397,6 +399,10 @@ class FormCompomentMaker(json: JsValue) {
 
   object IsDerived {
     def unapply(maybeStandard: String): Boolean = maybeStandard.toLowerCase == "derived"
+  }
+
+  object IsNonSubmissible {
+    def unapply(maybeStandard: String): Boolean = maybeStandard.toLowerCase == "notsubmitted"
   }
 
   object IsTrueish {

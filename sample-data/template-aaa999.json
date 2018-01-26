@@ -205,7 +205,8 @@
         {
           "id": "accountingPeriodStartDate",
           "label": "Accounting period start date | Dyddiad dechrau'r cyfnod cyfrifeg",
-          "mandatory": "true"
+          "mandatory": "true",
+          "submitMode": "notsubmitted"
         },
         {
           "id": "accountingPeriodEndDate",
