@@ -85,9 +85,11 @@ class SubmissionServiceSpec extends Spec {
     val section = Section(
       title = "Section title",
       description = None,
+      progressIndicator = None,
       shortName = None,
       includeIf = None,
-      None, None,
+      None,
+      None,
       None,
       fields = List(groupFieldValue))
 

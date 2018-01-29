@@ -239,6 +239,7 @@ class TemplateValidatorSpec extends Spec {
 
   val businessDetailsSection = Section(
     "Business details",
+    None,
     None, None, None,
     None, None, None,
     List(
@@ -247,6 +248,7 @@ class TemplateValidatorSpec extends Spec {
 
   val sectionWithDate = Section(
     "Business details",
+    None,
     None, None, None,
     None, None, None,
     List(
@@ -255,6 +257,7 @@ class TemplateValidatorSpec extends Spec {
 
   val sectionWithCheckbox = Section(
     "Business details",
+    None,
     None, None, None,
     None, None, None,
     List(
@@ -265,6 +268,7 @@ class TemplateValidatorSpec extends Spec {
 
   val sectionWithRadio = Section(
     "Business details",
+    None,
     None, None, None,
     None, None, None,
     List(
@@ -275,6 +279,7 @@ class TemplateValidatorSpec extends Spec {
 
   val sectionWithYesNo = Section(
     "Business details",
+    None,
     None, None, None,
     None, None, None,
     List(
@@ -382,6 +387,7 @@ class TemplateValidatorSpec extends Spec {
 
     val section = Section(
       "Business details",
+      None,
       None, None, None,
       None, None, None,
       List(
@@ -399,6 +405,7 @@ class TemplateValidatorSpec extends Spec {
 
     val section = Section(
       "Business details",
+      None,
       None, None, None,
       None, None, None,
       List(
@@ -416,6 +423,7 @@ class TemplateValidatorSpec extends Spec {
 
     val section = Section(
       "Business details",
+      None,
       None, None, None,
       None, None, None,
       List(
