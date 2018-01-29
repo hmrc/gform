@@ -203,6 +203,17 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(FormComponent(FormComponentId("regNum"), Text(ShortText, Constant("")), "Registration number", None, None, None, mandatory = false, editable = true, submissible = false, derived = false, errorMessage = None))
   }
 
+  it should "parse as Text with 'summaryinfoonly' info as mandatory, non-editable and submissible" in {
+    val fieldValue = toFieldValue(
+      """|{
+         |  "id": "regNum",
+         |  "label": "Registration number",
+         |  "submitMode": "summaryinfoonly"
+         |}""")
+
+    fieldValue should beJsSuccess(FormComponent(FormComponentId("regNum"), Text(ShortText, Constant("")), "Registration number", None, None, None, mandatory = true, editable = false, submissible = false, derived = false, onlyShowOnSummary = true, errorMessage = None))
+  }
+
   it should "parse as Address with 'international' false  when not specified" in {
     val fieldValue = toFieldValue(
       """|{
@@ -262,6 +273,7 @@ class FormComponentSpec extends Spec {
         editable = true,
         submissible = true,
         derived = false,
+        onlyShowOnSummary = false,
         None))
   }
 
@@ -290,6 +302,7 @@ class FormComponentSpec extends Spec {
         editable = true,
         submissible = true,
         derived = false,
+        onlyShowOnSummary = false,
         None))
   }
 
@@ -319,6 +332,7 @@ class FormComponentSpec extends Spec {
         editable = true,
         submissible = true,
         derived = false,
+        onlyShowOnSummary = false,
         None))
   }
 
@@ -348,6 +362,7 @@ class FormComponentSpec extends Spec {
         editable = true,
         submissible = true,
         derived = false,
+        onlyShowOnSummary = false,
         None))
   }
 
@@ -376,6 +391,7 @@ class FormComponentSpec extends Spec {
         editable = true,
         submissible = true,
         derived = false,
+        onlyShowOnSummary = false,
         None))
   }
 
@@ -405,6 +421,7 @@ class FormComponentSpec extends Spec {
         editable = true,
         submissible = true,
         derived = false,
+        onlyShowOnSummary = false,
         None))
   }
 
@@ -434,6 +451,7 @@ class FormComponentSpec extends Spec {
         editable = true,
         submissible = true,
         derived = false,
+        onlyShowOnSummary = false,
         None))
   }
 
@@ -458,6 +476,7 @@ class FormComponentSpec extends Spec {
         editable = true,
         submissible = true,
         derived = false,
+        onlyShowOnSummary = false,
         None))
   }
 
@@ -483,6 +502,7 @@ class FormComponentSpec extends Spec {
         editable = true,
         submissible = true,
         derived = false,
+        onlyShowOnSummary = false,
         None))
   }
 
@@ -508,6 +528,7 @@ class FormComponentSpec extends Spec {
         editable = true,
         submissible = true,
         derived = false,
+        onlyShowOnSummary = false,
         None))
   }
 
@@ -643,6 +664,7 @@ class FormComponentSpec extends Spec {
         editable = true,
         submissible = true,
         derived = false,
+        onlyShowOnSummary = false,
         None))
   }
 
@@ -669,6 +691,7 @@ class FormComponentSpec extends Spec {
         false,
         false,
         derived = false,
+        onlyShowOnSummary = false,
         None))
   }
 
@@ -696,6 +719,7 @@ class FormComponentSpec extends Spec {
         false,
         false,
         derived = false,
+        onlyShowOnSummary = false,
         None))
   }
 
@@ -724,6 +748,7 @@ class FormComponentSpec extends Spec {
         false,
         false,
         derived = false,
+        onlyShowOnSummary = false,
         None))
   }
 
@@ -751,6 +776,7 @@ class FormComponentSpec extends Spec {
         false,
         false,
         derived = false,
+        onlyShowOnSummary = false,
         None))
   }
 
@@ -778,6 +804,7 @@ class FormComponentSpec extends Spec {
         false,
         false,
         derived = false,
+        onlyShowOnSummary = false,
         None))
   }
 
@@ -805,6 +832,7 @@ class FormComponentSpec extends Spec {
         false,
         false,
         derived = false,
+        onlyShowOnSummary = false,
         None))
   }
   it should "parse info field and correctly build a noformat type info field" in {
@@ -831,6 +859,7 @@ class FormComponentSpec extends Spec {
         false,
         false,
         derived = false,
+        onlyShowOnSummary = false,
         None))
   }
 

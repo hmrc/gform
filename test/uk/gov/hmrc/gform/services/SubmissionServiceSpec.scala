@@ -79,6 +79,7 @@ class SubmissionServiceSpec extends Spec {
       editable = false,
       submissible = true,
       derived = false,
+      onlyShowOnSummary = false,
       errorMessage = None)
 
     val section = Section(
@@ -113,16 +114,16 @@ class SubmissionServiceSpec extends Spec {
         List(
           (
             List(FormField(FormComponentId("UNO"), "UNO")),
-            FormComponent(FormComponentId("UNO"), Text(AnyText, Constant("UNO")), "Editable text label", None, None, None, true, true, true, derived = false, None)),
+            FormComponent(FormComponentId("UNO"), Text(AnyText, Constant("UNO")), "Editable text label", None, None, None, true, true, true, derived = false, onlyShowOnSummary = false, None)),
           (
             List(FormField(FormComponentId("DOS"), "DOS")),
-            FormComponent(FormComponentId("DOS"), Text(AnyText, Constant("DOS")), "Editable text label", None, None, None, true, true, true, derived = false, None)),
+            FormComponent(FormComponentId("DOS"), Text(AnyText, Constant("DOS")), "Editable text label", None, None, None, true, true, true, derived = false, onlyShowOnSummary = false, None)),
           (
             List(FormField(FormComponentId("1_UNO"), "1_UNO")),
-            FormComponent(FormComponentId("1_UNO"), Text(AnyText, Constant("UNO")), "Editable text label", None, None, None, true, true, true, derived = false, None)),
+            FormComponent(FormComponentId("1_UNO"), Text(AnyText, Constant("UNO")), "Editable text label", None, None, None, true, true, true, derived = false, onlyShowOnSummary = false, None)),
           (
             List(FormField(FormComponentId("1_DOS"), "1_DOS")),
-            FormComponent(FormComponentId("1_DOS"), Text(AnyText, Constant("DOS")), "Editable text label", None, None, None, true, true, true, derived = false, None)))),
+            FormComponent(FormComponentId("1_DOS"), Text(AnyText, Constant("DOS")), "Editable text label", None, None, None, true, true, true, derived = false, onlyShowOnSummary = false, None)))),
       SectionFormField("Declaration", List()))
 
     val res = SubmissionServiceHelper.getSectionFormFields(form, formTemplate)
