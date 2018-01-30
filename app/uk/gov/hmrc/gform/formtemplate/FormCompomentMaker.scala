@@ -231,14 +231,15 @@ class FormCompomentMaker(json: JsValue) {
     } yield group
   }
 
-  private def validateRepeatsAndBuildGroup(repMax: Option[Int], repMin: Option[Int], fields: List[FormComponent], orientation: Orientation) = {
+  private def validateRepeatsAndBuildGroup(repMax: Option[Int], repMin: Option[Int], fields: List[FormComponent], orientation: Orientation): Either[UnexpectedState, Group] = {
     (repMax, repMin) match {
       case (Some(repMaxV), Some(repMinV)) if repMaxV < repMinV =>
         UnexpectedState(s"""repeatsMax should be higher than repeatsMin in Group field""").asLeft
       case (Some(repMaxV), Some(repMinV)) if repMinV < 0 =>
         UnexpectedState(s"""repeatsMin in Group field cannot be a negative number""").asLeft
-      case _ =>
-        Group(fields, orientation, repMax, repMin, repeatLabel, repeatAddAnotherText).asRight
+      case (_, repeatsMin) =>
+        val fieldsMandatory = if (repeatsMin.getOrElse(None) == 0) fields.map(field => field.copy(mandatory = false)) else fields
+        Group(fieldsMandatory, orientation, repMax, repMin, repeatLabel, repeatAddAnotherText).asRight
     }
   }
 

@@ -1,12 +1,12 @@
 {
-  "_id": "GROUP",
+  "_id": "group",
   "formName": "Group Component Testing | Yswiriant Ffurflen Dreth Premiwm",
   "description": "Group component with two fields | Llenwch eich ffurflen dreth premiwm yswiriant ar-lein",
   "dmsSubmission": {
     "customerId": "${auth.payenino}",
     "classificationType": "BT-NRU-Environmental",
     "businessArea": "FinanceOpsCorpT",
-    "dmsFormId" : "GROUP"
+    "dmsFormId" : "group"
   },
   "authConfig":{
     "authModule": "legacyEEITTAuth",
@@ -41,6 +41,7 @@
             {
               "id": "basicGroupTextH1",
               "type": "text",
+              "mandatory":"no",
               "label": "basic group field label"
             },
             {
@@ -57,6 +58,7 @@
           "label": "Repeating group label",
           "format": "horizontal",
           "repeatsMax": 5,
+          "repeatsMin": 0,
           "repeatAddAnotherText": "Add another one please",
           "fields": [
             {
