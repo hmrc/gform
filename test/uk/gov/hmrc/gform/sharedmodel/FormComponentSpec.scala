@@ -203,17 +203,58 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(FormComponent(FormComponentId("regNum"), Text(ShortText, Constant("")), "Registration number", None, None, None, mandatory = false, editable = true, submissible = false, derived = false, errorMessage = None))
   }
 
-  it should "parse as Text with 'summaryinfoonly' info as mandatory, non-editable and submissible" in {
+  it should "parse as Date with 'summaryinfoonly' info as mandatory, non-editable and submissible" in {
     val fieldValue = toFieldValue(
       """|{
-         |  "id": "regNum",
-         |  "label": "Registration number",
+         | "id": "aprilDate",
+         | "type": "date",
+         | "label": "Enter a date in April 2017",
+         |  "helpText": "For example, 10 4 2017",
+         |  "mandatory": "true",
+         |  "format": "after 2017-03-31,before 2017-05-01",
+         |  "value": "2017-04-10",
          |  "submitMode": "summaryinfoonly"
          |}""")
 
-    fieldValue should beJsSuccess(FormComponent(FormComponentId("regNum"), Text(ShortText, Constant("")), "Registration number", None, None, None, mandatory = true, editable = false, submissible = false, derived = false, onlyShowOnSummary = true, errorMessage = None))
+    fieldValue should beJsSuccess(FormComponent(
+      FormComponentId("aprilDate"),
+      Date(DateConstraints(List(
+        DateConstraint(After, ConcreteDate(2017, 3, 31), OffsetDate(0)),
+        DateConstraint(Before, ConcreteDate(2017, 5, 1), OffsetDate(0)))), Offset(0), Some(ExactDateValue(2017, 4, 10))),
+      "Enter a date in April 2017", Some("For example, 10 4 2017"), None, None,
+      mandatory = true, editable = false, submissible = false, derived = false, onlyShowOnSummary = true, errorMessage = None))
   }
 
+  it should "throw an error with 'summaryinfoonly' with no value" in {
+    val fieldValue = toFieldValue(
+      """|{
+         | "id": "aprilDate",
+         | "type": "date",
+         | "label": "Enter a date in April 2017",
+         |  "helpText": "For example, 10 4 2017",
+         |  "mandatory": "true",
+         |  "format": "after 2017-03-31,before 2017-05-01",
+         |  "submitMode": "summaryinfoonly"
+         |}""")
+
+    fieldValue shouldBe jsError
+  }
+
+  it should "throw an error with 'summaryinfoonly' with an invalid value" in {
+    val fieldValue = toFieldValue(
+      """|{
+           | "id": "aprilDate",
+           | "type": "date",
+           | "label": "Enter a date in April 2017",
+           |  "helpText": "For example, 10 4 2017",
+           |  "mandatory": "true",
+           |  "format": "after 2017-03-31,before 2017-05-01",
+           |  "value": "I am a invalid value LalaLa",
+           |  "submitMode": "summaryinfoonly"
+           |}""")
+
+    fieldValue shouldBe jsError
+  }
   it should "parse as Address with 'international' false  when not specified" in {
     val fieldValue = toFieldValue(
       """|{

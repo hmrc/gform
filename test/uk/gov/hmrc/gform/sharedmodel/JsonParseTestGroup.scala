@@ -108,10 +108,10 @@ class JsonParseTestGroup extends Spec {
           FormComponent(
             FormComponentId("cid"),
             Choice(Radio, NonEmptyList.of("A", "B"), Vertical, List(), None), "clabel", None, None, None,
-            mandatory = false, true, true, derived = false, None)),
+            mandatory = false, true, true, derived = false, false, None)),
         Horizontal,
         Some(5), Some(0), Some("repeatLabel"), Some("repeatAddAnotherText")),
-      "glabel", None, None, None, true, true, true, derived = false,
+      "glabel", None, None, None, true, true, true, derived = false, false,
       None,
       Some(List(CollapseGroupUnderLabel))))
   }
