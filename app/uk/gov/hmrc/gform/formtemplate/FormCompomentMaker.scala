@@ -92,16 +92,16 @@ class FormCompomentMaker(json: JsValue) {
 
   private lazy val optMES: Opt[MES] = (submitMode, mandatory, optMaybeValueExpr) match {
     //format: OFF
-    case IsThisAnInfoField()                                            => MES(mandatory = true,  editable = false, submissible = false, derived = false).asRight
-    case (Some(IsStandard()) | None, Some(IsTrueish()) | None, _)        => MES(mandatory = true,  editable = true,  submissible = true, derived = false).asRight
-    case (Some(IsReadOnly()),        Some(IsTrueish()) | None, _)       => MES(mandatory = true,  editable = false, submissible = true, derived = false).asRight
-    case (Some(IsInfo()),            Some(IsTrueish()) | None, _)       => MES(mandatory = true,  editable = false, submissible = false, derived = false).asRight
-    case (Some(IsStandard()) | None, Some(IsFalseish()), _)              => MES(mandatory = false, editable = true,  submissible = true, derived = false).asRight
-    case (Some(IsInfo()),            Some(IsFalseish()), _)              => MES(mandatory = false, editable = false, submissible = false, derived = false).asRight
-    case (Some(IsDerived()),         Some(IsTrueish()) | None, _)        => MES(mandatory = true, editable = false, submissible = false, derived = true).asRight
-    case (Some(IsDerived()),         Some(IsFalseish()), _)              => MES(mandatory = false, editable = false, submissible = false, derived = true).asRight
-    case (Some(IsNonSubmissible()),  Some(IsFalseish()) | None, _)       => MES(mandatory = false, editable = true, submissible = false, derived = false).asRight
-    case (Some(IsNonSubmissible()),  Some(IsTrueish())  | None, _)       => MES(mandatory = true, editable = true, submissible = false, derived = false).asRight
+    case IsThisAnInfoField()                                                   => MES(mandatory = true,  editable = false, submissible = false, derived = false).asRight
+    case (Some(IsStandard()) | None, Some(IsTrueish()) | None, _)              => MES(mandatory = true,  editable = true,  submissible = true, derived = false).asRight
+    case (Some(IsReadOnly()),        Some(IsTrueish()) | None, _)              => MES(mandatory = true,  editable = false, submissible = true, derived = false).asRight
+    case (Some(IsInfo()),            Some(IsTrueish()) | None, _)              => MES(mandatory = true,  editable = false, submissible = false, derived = false).asRight
+    case (Some(IsStandard()) | None, Some(IsFalseish()), _)                    => MES(mandatory = false, editable = true,  submissible = true, derived = false).asRight
+    case (Some(IsInfo()),            Some(IsFalseish()), _)                    => MES(mandatory = false, editable = false, submissible = false, derived = false).asRight
+    case (Some(IsDerived()),         Some(IsTrueish()) | None, Right(Some(_)))        => MES(mandatory = true, editable = false, submissible = true, derived = true).asRight
+    case (Some(IsDerived()),         Some(IsFalseish()), Right(Some(_)))              => MES(mandatory = false, editable = false, submissible = true, derived = true).asRight
+    case (Some(IsNonSubmissible()),  Some(IsFalseish()) | None, _)             => MES(mandatory = false, editable = true, submissible = false, derived = false).asRight
+    case (Some(IsNonSubmissible()),  Some(IsTrueish())  | None, _)             => MES(mandatory = true, editable = true, submissible = false, derived = false).asRight
     case (Some(IsSummaryInfoOnly()), Some(IsTrueish()) | Some(IsFalseish()) | None, Right(Some(_))) =>
       MES(mandatory = true, editable = false, submissible = false, derived = false, onlyShowOnSummary = true).asRight
     case otherwise                                              => UnexpectedState(s"Expected 'standard', summaryinfoonly,'notsubmitted' ,readonly' or 'info' string or nothing for submitMode and expected 'true' or 'false' string or nothing for mandatory field value, got: $otherwise").asLeft
