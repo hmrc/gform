@@ -180,6 +180,58 @@ class FormComponentSpec extends Spec {
 
     fieldValue should beJsSuccess(FormComponent(FormComponentId("regNum"), Text(ShortText, Constant("")), "Registration number", None, None, None, mandatory = true, editable = false, submissible = false, derived = false, errorMessage = None))
   }
+  it should "parse as Text with 'submitMode' derived as non-editable and submissible" in {
+    val fieldValue = toFieldValue(
+      """|{
+         |  "type": "choice",
+         |  "id":"taxType",
+         |  "label":"Gas tax type?",
+         |  "format":"yesno",
+         |  "value": "1",
+         |  "submitMode": "derived"
+         |}""")
+
+    fieldValue should beJsSuccess(
+      FormComponent(
+        FormComponentId("taxType"),
+        Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List(1), None),
+        "Gas tax type?",
+        None,
+        None,
+        None,
+        mandatory = true,
+        editable = false,
+        submissible = true,
+        derived = true,
+        onlyShowOnSummary = false,
+        None))
+  }
+  it should "throw an error with 'submitMode' derived where there is no Value" in {
+    val fieldValue = toFieldValue(
+      """|{
+         |  "type": "choice",
+         |  "id":"taxType",
+         |  "label":"Gas tax type?",
+         |  "format":"yesno",
+         |  "submitMode": "derived"
+         |}""")
+
+    fieldValue shouldBe jsError
+  }
+
+  it should "throw an error with 'submitMode' derived where there the Value is not Value" in {
+    val fieldValue = toFieldValue(
+      """|{
+         |  "type": "choice",
+         |  "id":"taxType",
+         |  "label":"Gas tax type?",
+         |  "format":"yesno",
+         |  "submitMode": "derived",
+         |  "value": "I am an Invalid value"
+         |}""")
+
+    fieldValue shouldBe jsError
+  }
 
   it should "parse as Text with 'mandatory' false and 'submitMode' info as non-mandatory, non-editable and non-submissible" in {
     val fieldValue = toFieldValue(
