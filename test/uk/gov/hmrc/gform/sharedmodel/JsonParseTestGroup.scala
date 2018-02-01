@@ -70,6 +70,52 @@ class JsonParseTestGroup extends Spec {
 
   }
 
+  "A raw group with repeats set to 0" should "parse the FormComponent with mandatory set to false" in {
+
+    val jsonStr =
+      """
+      {
+        "type": "group",
+        "id": "gid",
+        "label": "glabel",
+        "format" : "horizontal",
+        "repeatsMin":0,
+        "repeatsMax":5,
+        "repeatLabel":"repeatLabel",
+        "repeatAddAnotherText":"repeatAddAnotherText",
+        "fields": [
+          {
+            "type": "choice",
+            "id": "cid",
+            "label": "clabel",
+            "choices": [
+              "A",
+              "B"
+            ]
+          }
+        ],
+        "presentationHint" : "collapseGroupUnderLabel"
+
+      }
+    """
+
+    val jsResult = implicitly[Reads[FormComponent]].reads(Json.parse(jsonStr))
+
+    jsResult should beJsSuccess(FormComponent(
+      FormComponentId("gid"),
+      Group(
+        List(
+          FormComponent(
+            FormComponentId("cid"),
+            Choice(Radio, NonEmptyList.of("A", "B"), Vertical, List(), None), "clabel", None, None, None,
+            mandatory = false, true, true, derived = false, None)),
+        Horizontal,
+        Some(5), Some(0), Some("repeatLabel"), Some("repeatAddAnotherText")),
+      "glabel", None, None, None, true, true, true, derived = false,
+      None,
+      Some(List(CollapseGroupUnderLabel))))
+  }
+
   "A raw group" should "fail to parse if repeatsMin/Max has errors" in {
 
     val jsonStr =
