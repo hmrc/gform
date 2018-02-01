@@ -74,36 +74,42 @@ trait ExampleFieldValue { dependecies: ExampleFieldId =>
   def `fieldValue - facePhoto` = FormComponent(
     `fieldId - facePhoto`,
     FileUpload(), label = "Attach evidence of your smile", helpText = None, None, validIf = None, mandatory = true, editable = true, submissible = true, derived = false,
+    onlyShowOnSummary = false,
     None,
     None)
 
   def `fieldValue - firstName` = FormComponent(
     `fieldId - firstName`,
     Text(AnyText, Constant("any text")), "First Name", None, None, validIf = None, mandatory = true, editable = true, submissible = true, derived = false,
+    onlyShowOnSummary = false,
     None,
     None)
 
   def `fieldValue - surname` = FormComponent(
     `fieldId - surname`,
     Text(AnyText, Constant("any text")), "Last Name", None, None, validIf = None, mandatory = true, editable = true, submissible = true, derived = false,
+    onlyShowOnSummary = false,
     None,
     None)
 
   def `fieldValue - iptRegNum` = FormComponent(
     `fieldId - iptRegNum`,
     Text(AnyText, Constant("any text")), "Insurance Premium Tax (IPT) number", None, None, validIf = None, mandatory = true, editable = true, submissible = true, derived = false,
+    onlyShowOnSummary = false,
     None,
     None)
 
   def `fieldValue - businessName` = FormComponent(
     `fieldId - businessName`,
     Text(AnyText, Constant("any text")), "Name of business", None, None, validIf = None, mandatory = true, editable = true, submissible = true, derived = false,
+    onlyShowOnSummary = false,
     None,
     None)
 
   def `fieldValue - startDate` = FormComponent(
     `fieldId - startDate`,
     Date(AnyDate, Offset(0), None), "Your Start Date", None, None, validIf = None, true, true, true, derived = false,
+    onlyShowOnSummary = false,
     None,
     None)
 
@@ -111,7 +117,8 @@ trait ExampleFieldValue { dependecies: ExampleFieldId =>
     `fieldId - businessName`,
     InformationMessage(NoFormat, "some text"),
     "someLabel",
-    None, None, validIf = None, false, false, false, derived = false, None)
+    None, None, validIf = None, false, false, false, derived = false,
+    onlyShowOnSummary = false, None)
 
   def `group - type` = Group(
     fields = List(`fieldValue - firstName`),
@@ -137,7 +144,7 @@ trait ExampleFieldValue { dependecies: ExampleFieldId =>
   def `fieldValue - number` = FormComponent(
     `fieldId - number`,
     Text(Number(), Constant("")),
-    "sample label", None, None, validIf = None, true, true, true, derived = false, None)
+    "sample label", None, None, validIf = None, true, true, true, derived = false, onlyShowOnSummary = false, None)
 
 }
 

@@ -51,6 +51,7 @@ class FormComponentSpec2 extends Spec {
         editable = true,
         submissible = true,
         derived = false,
+        onlyShowOnSummary = false,
         None,
         Some(List(CollapseGroupUnderLabel))))
   }
