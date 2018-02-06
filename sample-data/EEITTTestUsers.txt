@@ -6,3 +6,5 @@
 001|XALF00000100000|ZLFT|Landfill Tax Registration Number|1|Sole Proprietor||Mr|Name13|Name23||RO
 001|XDLD00000100000|ZLD|Lottery Duty (LD)|1|Sole Proprietor||Mr|Name12|Name22||RO
 001|XTGD00000100000|ZGDT|Gaming duty|7|Limited Company|Organisation1||||BN12 4XL|GB
+001|XABF00000100000|ZBFP|Biofuels|7|Limited Company|Organisation1||||BN12 4XL|GB
+001|XFGR00000100000|ZGRF|Gas as Road Fuel|7|Limited Company|Organisation1||||BN12 4XL|GB
