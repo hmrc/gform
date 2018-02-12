@@ -307,6 +307,28 @@ class FormComponentSpec extends Spec {
 
     fieldValue shouldBe jsError
   }
+
+  it should "throw an error with type set to an invalid Value" in {
+
+    assertThrows[Exception] {
+      toFieldValue(
+        """|{
+           |  "type": "I am a invalid Value",
+           |  "id": "homeAddress",
+           |  "label": "Home"
+           |}""")
+    }
+  }
+
+  it should "Default to text if no type is set" in {
+    val fieldValue = toFieldValue(
+      """|{
+         |  "id": "homeAddress",
+         |  "label": "Home"
+         |}""")
+
+    fieldValue should beJsSuccess(FormComponent(FormComponentId("homeAddress"), Text(ShortText, Constant("")), "Home", None, None, None, mandatory = true, editable = true, submissible = true, derived = false, errorMessage = None))
+  }
   it should "parse as Address with 'international' false  when not specified" in {
     val fieldValue = toFieldValue(
       """|{

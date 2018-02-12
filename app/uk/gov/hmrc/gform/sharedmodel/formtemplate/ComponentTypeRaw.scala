@@ -45,7 +45,8 @@ object ComponentTypeRaw {
       "choice" -> ChoiceRaw,
       "group" -> GroupRaw,
       "file" -> FileUploadRaw,
-      "info" -> InfoRaw)
+      "info" -> InfoRaw,
+      "" -> TextRaw)
 
   implicit val format: OFormat[ComponentTypeRaw] = {
 
@@ -57,7 +58,7 @@ object ComponentTypeRaw {
 
         componentMap.get(compTypeAsString) match {
           case Some(componentType) => JsSuccess(componentType)
-          case None => JsError(s"Expected one of the following types: ${componentMap.values}, you entered: $compTypeAsString")
+          case None => throw new Exception(JsError(s"Expected one of the following types: ${componentMap.values}, you entered: $compTypeAsString").toString)
         }
 
       case otherwise => JsError(s"Expected String as JsValue, got: $otherwise")
