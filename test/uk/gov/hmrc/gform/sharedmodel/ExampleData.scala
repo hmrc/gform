@@ -198,6 +198,8 @@ trait ExampleFormTemplate { dependsOn: ExampleAuthConfig with ExampleSection wit
 
   def formDescription = "Fill in your insurance premium tax return form online | Llenwch eich ffurflen dreth premiwm yswiriant ar-lein"
 
+  def emailTemplateId = "test-email-template-id"
+
   def submtSuccessUrl = """http://success.com"""
 
   def submitErrorUrl = """http://imsorry.com"""
@@ -213,6 +215,7 @@ trait ExampleFormTemplate { dependsOn: ExampleAuthConfig with ExampleSection wit
     submissionReference = None,
     dmsSubmission = dmsSubmission,
     authConfig = authConfig,
+    emailTemplateId = emailTemplateId,
     submitSuccessUrl = submtSuccessUrl,
     submitErrorUrl = submitErrorUrl,
     sections = allSections,

@@ -28,6 +28,7 @@ case class FormTemplate(
   submissionReference: Option[TextExpression],
   dmsSubmission: DmsSubmission,
   authConfig: formtemplate.AuthConfig,
+  emailTemplateId: String,
   submitSuccessUrl: String,
   submitErrorUrl: String,
   sections: List[Section],
