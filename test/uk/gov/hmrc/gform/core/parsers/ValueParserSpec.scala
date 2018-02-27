@@ -203,6 +203,7 @@ class ValueParserSpec extends Spec {
     None,
     DmsSubmission("DMS-ID-XX", TextExpression(AuthCtx(PayeNino)), "BT-NRU-Environmental", "FinanceOpsCorpT"),
     HMRCAuthConfigWithRegimeId(AuthConfigModule("TEST"), ServiceId("TEST"), RegimeId("TEST")),
+    "test-email-template-id",
     "submitSuccessUrl",
     "submitErrorUrl",
     List.empty[Section],

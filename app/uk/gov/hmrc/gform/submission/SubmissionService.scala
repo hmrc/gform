@@ -136,10 +136,11 @@ class SubmissionService(
       _                 <- fromFutureA        (formService.updateUserData(form._id, UserData(form.formData, form.repeatingGroupStructure, Submitted)))
       res               <- fromFutureA        (fileUploadService.submitEnvelope(submissionAndPdf, formTemplate.dmsSubmission))
       emailAddress      =                      email.getEmailAddress(form)
-      _                 =                     email.sendEmail(emailAddress)(hc, fromLoggingDetails)
+      _                 =                      email.sendEmail(emailAddress, formTemplate.emailTemplateId)(hc, fromLoggingDetails)
     } yield res
     // format: ON
   }
+
   def submissionWithPdf(formId: FormId, customerId: String, pdf: String)(implicit hc: HeaderCarrier): FOpt[Unit] = {
 
     // format: OFF
@@ -151,7 +152,7 @@ class SubmissionService(
       _                 <- fromFutureA        (formService.updateUserData(form._id, UserData(form.formData, form.repeatingGroupStructure, Submitted)))
       res               <- fromFutureA        (fileUploadService.submitEnvelope(submissionAndPdf, formTemplate.dmsSubmission))
       emailAddress      =                      email.getEmailAddress(form)
-      _                 =                     email.sendEmail(emailAddress)(hc, fromLoggingDetails)
+      _                 =                     email.sendEmail(emailAddress, formTemplate.emailTemplateId)(hc, fromLoggingDetails)
     } yield res
     // format: ON
   }
