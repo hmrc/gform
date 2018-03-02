@@ -26,7 +26,7 @@ object MetadataXml {
 
   val xmlDec = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>"""
 
-  private def createMetadata(sap: SubmissionAndPdf, dmsSubmission: DmsSubmission): Elem = {
+  private def createMetadata(sap: SubmissionAndPdf, dmsSubmission: DmsSubmission, numberOfAttachments: Int): Elem = {
     val submission = sap.submission
     val dmsMetaData = submission.dmsMetaData
     val pdfSummary = sap.pdfSummary
@@ -42,7 +42,7 @@ object MetadataXml {
       createAttribute("cas_key", "AUDIT_SERVICE"), // We are not using CAS
       createAttribute("classification_type", dmsSubmission.classificationType),
       createAttribute("business_area", dmsSubmission.businessArea),
-      createAttribute("attachment_count", 0)) // TODO GFC-84 populate attachment count for DMS submission metedata
+      createAttribute("attachment_count", numberOfAttachments))
     <metadata></metadata>.copy(child = attributes)
   }
 
@@ -64,10 +64,15 @@ object MetadataXml {
     </documents>
   }
 
-  def getXml(submissionRef: SubmissionRef, reconciliationId: ReconciliationId, sap: SubmissionAndPdf, dmsSubmission: DmsSubmission): Elem = {
+  def getXml(
+    submissionRef: SubmissionRef,
+    reconciliationId: ReconciliationId,
+    sap: SubmissionAndPdf,
+    dmsSubmission: DmsSubmission,
+    numberOfAttachments: Int): Elem = {
     val body = List(
       createHeader(submissionRef, reconciliationId),
-      createMetadata(sap, dmsSubmission))
+      createMetadata(sap, dmsSubmission, numberOfAttachments))
 
     trim(createDocument(body))
   }
