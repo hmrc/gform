@@ -125,43 +125,20 @@ class SubmissionService(
     }
   }
 
-  private def numberOfFiles(sectionFormFields: List[SectionFormField]): Int = {
-
-    def fileUploadNonEmpty(fieldComponent: (List[FormField], FormComponent)): Boolean = {
-      fieldComponent._2.`type` match {
-        case FileUpload() => {
-          fieldComponent._1 match {
-            case x :: xs => !x.value.isEmpty
-
-            case _ => false
-          }
-        }
-        case _ => false
-      }
-    }
-
-    val fields: List[(List[FormField], FormComponent)] = for {
-      sectionFormField <- sectionFormFields
-      field <- sectionFormField.fields
-    } yield field
-
-    fields.filter(fileUploadNonEmpty(_)).size
-  }
-
   def submission(formId: FormId, customerId: String)(implicit hc: HeaderCarrier): FOpt[Unit] = {
 
     // format: OFF
     for {
-      form              <- fromFutureA        (formService.get(formId))
-      formTemplate      <- fromFutureA        (formTemplateService.get(form.formTemplateId))
-      sectionFormFields <- fromOptA           (SubmissionServiceHelper.getSectionFormFields(form, formTemplate))
-      submissionAndPdf  <- fromFutureA        (getSubmissionAndPdf(form.envelopeId, form, sectionFormFields,formTemplate , customerId))
-      _                 <-                     submissionRepo.upsert(submissionAndPdf.submission)
-      _                 <- fromFutureA        (formService.updateUserData(form._id, UserData(form.formData, form.repeatingGroupStructure, Submitted)))
-      numberOfAttachments =                     numberOfFiles(sectionFormFields)
-      res               <- fromFutureA        (fileUploadService.submitEnvelope(submissionAndPdf, formTemplate.dmsSubmission, numberOfAttachments))
-      emailAddress      =                      email.getEmailAddress(form)
-      _                 =                      email.sendEmail(emailAddress, formTemplate.emailTemplateId)(hc, fromLoggingDetails)
+      form                <- fromFutureA        (formService.get(formId))
+      formTemplate        <- fromFutureA        (formTemplateService.get(form.formTemplateId))
+      sectionFormFields   <- fromOptA           (SubmissionServiceHelper.getSectionFormFields(form, formTemplate))
+      submissionAndPdf    <- fromFutureA        (getSubmissionAndPdf(form.envelopeId, form, sectionFormFields,formTemplate , customerId))
+      _                   <-                    submissionRepo.upsert(submissionAndPdf.submission)
+      _                   <- fromFutureA        (formService.updateUserData(form._id, UserData(form.formData, form.repeatingGroupStructure, Submitted)))
+      numberOfAttachments =                     sectionFormFields.map(_.numberOfFiles).sum
+      res                 <- fromFutureA        (fileUploadService.submitEnvelope(submissionAndPdf, formTemplate.dmsSubmission, numberOfAttachments))
+      emailAddress        =                     email.getEmailAddress(form)
+      _                   =                     email.sendEmail(emailAddress, formTemplate.emailTemplateId)(hc, fromLoggingDetails)
     } yield res
     // format: ON
   }
@@ -170,16 +147,16 @@ class SubmissionService(
 
     // format: OFF
     for {
-      form              <- fromFutureA        (formService.get(formId))
-      formTemplate      <- fromFutureA        (formTemplateService.get(form.formTemplateId))
-      submissionAndPdf  <- fromFutureA        (getSubmissionAndPdfWithPdf(form.envelopeId, form,pdf ,customerId, formTemplate))
-      _                 <-                     submissionRepo.upsert(submissionAndPdf.submission)
-      _                 <- fromFutureA        (formService.updateUserData(form._id, UserData(form.formData, form.repeatingGroupStructure, Submitted)))
+      form                <- fromFutureA        (formService.get(formId))
+      formTemplate        <- fromFutureA        (formTemplateService.get(form.formTemplateId))
+      submissionAndPdf    <- fromFutureA        (getSubmissionAndPdfWithPdf(form.envelopeId, form,pdf ,customerId, formTemplate))
+      _                   <-                    submissionRepo.upsert(submissionAndPdf.submission)
+      _                   <- fromFutureA        (formService.updateUserData(form._id, UserData(form.formData, form.repeatingGroupStructure, Submitted)))
       sectionFormFields   <- fromOptA           (SubmissionServiceHelper.getSectionFormFields(form, formTemplate))
-      numberOfAttachments =                     numberOfFiles(sectionFormFields)
-      res               <- fromFutureA        (fileUploadService.submitEnvelope(submissionAndPdf, formTemplate.dmsSubmission, numberOfAttachments))
-      emailAddress      =                      email.getEmailAddress(form)
-      _                 =                     email.sendEmail(emailAddress, formTemplate.emailTemplateId)(hc, fromLoggingDetails)
+      numberOfAttachments =                     sectionFormFields.map(_.numberOfFiles).sum
+      res                 <- fromFutureA        (fileUploadService.submitEnvelope(submissionAndPdf, formTemplate.dmsSubmission, numberOfAttachments))
+      emailAddress        =                     email.getEmailAddress(form)
+      _                   =                     email.sendEmail(emailAddress, formTemplate.emailTemplateId)(hc, fromLoggingDetails)
     } yield res
     // format: ON
   }
