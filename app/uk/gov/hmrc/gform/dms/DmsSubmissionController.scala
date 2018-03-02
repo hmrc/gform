@@ -53,7 +53,7 @@ class DmsSubmissionController(
         submission = Submission(FormId(metadata.dmsFormId), LocalDateTime.now(clock), submissionRef, envId, 0, dmsMetadata)
         submissionAndPdf = SubmissionAndPdf(submission, pdfSummary)
         dmsSubmission = DmsSubmission(metadata.dmsFormId, TextExpression(Constant(metadata.customerId)), metadata.classificationType, metadata.businessArea)
-        _ <- fileUpload.submitEnvelope(submissionAndPdf, dmsSubmission)
+        _ <- fileUpload.submitEnvelope(submissionAndPdf, dmsSubmission, 0)
       } yield {
         NoContent
       }

@@ -30,7 +30,6 @@ class SectionFormFieldSpec extends Spec with ExampleData {
   val emptyFileField: (List[FormField], FormComponent) = (List(), `fieldValue - facePhoto`)
   val textField: (List[FormField], FormComponent) = (List(`formField - surname`), `fieldValue - surname`)
 
-
   "numberOfFiles" should "return zero when only text present" in new ExampleData {
 
     val s = SectionFormField("", List(textField))

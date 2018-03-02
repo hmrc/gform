@@ -17,12 +17,13 @@
 package uk.gov.hmrc.gform.submission
 
 import uk.gov.hmrc.gform.sharedmodel.form.FormField
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{FileUpload, FormComponent}
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FileUpload, FormComponent }
 
 import scala.collection.immutable.List
 
-case class SectionFormField(title: String,
-                            fields: List[(List[FormField], FormComponent)]) {
+case class SectionFormField(
+  title: String,
+  fields: List[(List[FormField], FormComponent)]) {
 
   def numberOfFiles(): Int = fields.filter(_ match {
     case (FormField(_, "") :: xs, _) => false

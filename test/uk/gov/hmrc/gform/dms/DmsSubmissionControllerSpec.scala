@@ -50,8 +50,8 @@ class DmsSubmissionControllerSpec extends Spec {
       .expects(*)
       .returning(stubPdfDocument)
 
-    (mockFileUpload.submitEnvelope(_: SubmissionAndPdf, _: DmsSubmission)(_: HeaderCarrier))
-      .expects(*, *, *)
+    (mockFileUpload.submitEnvelope(_: SubmissionAndPdf, _: DmsSubmission, _: Int)(_: HeaderCarrier))
+      .expects(*, *, *, *)
       .returning(Future.successful(()))
 
     val res = testController.submitToDms()(validRequest)
@@ -76,8 +76,8 @@ class DmsSubmissionControllerSpec extends Spec {
       .expects(*)
       .returning(stubPdfDocument)
 
-    (mockFileUpload.submitEnvelope(_: SubmissionAndPdf, _: DmsSubmission)(_: HeaderCarrier))
-      .expects(*, *, *)
+    (mockFileUpload.submitEnvelope(_: SubmissionAndPdf, _: DmsSubmission, _: Int)(_: HeaderCarrier))
+      .expects(*, *, *, *)
       .returning(Future.successful(()))
 
     val res = testController.submitToDms()(FakeRequest().withBody[JsValue](Json.toJson(submissionWithHtml)))
@@ -115,8 +115,8 @@ class DmsSubmissionControllerSpec extends Spec {
 
     (stubPdfDocument.getNumberOfPages _).when().returning(numberOfPages)
 
-    (mockFileUpload.submitEnvelope(_: SubmissionAndPdf, _: DmsSubmission)(_: HeaderCarrier))
-      .expects(expectedSubmissionAndPdf, expectedDmsSubmission, *)
+    (mockFileUpload.submitEnvelope(_: SubmissionAndPdf, _: DmsSubmission, _: Int)(_: HeaderCarrier))
+      .expects(expectedSubmissionAndPdf, expectedDmsSubmission, *, *)
       .returning(Future.successful(()))
 
     val res = testController.submitToDms()(validRequest)
