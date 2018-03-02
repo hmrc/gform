@@ -148,14 +148,14 @@ class MetadataXmlSpec extends Spec {
               <attribute_name>attachment_count</attribute_name>
               <attribute_type>int</attribute_type>
               <attribute_values>
-                <attribute_value>0</attribute_value>
+                <attribute_value>2</attribute_value>
               </attribute_values>
             </attribute>
           </metadata>
         </document>
       </documents>
 
-    val metadataXml = MetadataXml.getXml(SubmissionRef("some-submission-ref"), ReconciliationId("some-recocilliatin-id"), submissionAndPdf, dmsSubmission)
+    val metadataXml = MetadataXml.getXml(SubmissionRef("some-submission-ref"), ReconciliationId("some-recocilliatin-id"), submissionAndPdf, dmsSubmission, 2)
 
     metadataXml should equal(Utility.trim(expected).asInstanceOf[Elem])(after being streamlined[Elem])
 
