@@ -29,3 +29,5 @@ POST           /white-list/users                                    uk.gov.hmrc.
 GET            /white-list/users/all                                uk.gov.hmrc.gform.auth.AuthController.all()
 POST           /white-list/users/insert                             uk.gov.hmrc.gform.auth.AuthController.insert()
 POST           /white-list/users/delete                             uk.gov.hmrc.gform.auth.AuthController.delete()
+
+POST           /dms/submit                                          uk.gov.hmrc.gform.dms.DmsSubmissionController.submitToDms()
