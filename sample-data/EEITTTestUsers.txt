@@ -8,3 +8,4 @@
 001|XTGD00000100000|ZGDT|Gaming duty|7|Limited Company|Organisation1||||BN12 4XL|GB
 001|XABF00000100000|ZBFP|Biofuels|7|Limited Company|Organisation1||||BN12 4XL|GB
 001|XFGR00000100000|ZGRF|Gas as Road Fuel|7|Limited Company|Organisation1||||BN12 4XL|GB
+001|XXXX00000100000|XXXX||||||||BN12 4XL|GB

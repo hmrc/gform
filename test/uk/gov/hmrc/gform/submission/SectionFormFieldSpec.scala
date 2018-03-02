@@ -30,6 +30,28 @@ class SectionFormFieldSpec extends Spec with ExampleData {
   val emptyFileField: (List[FormField], FormComponent) = (List(), `fieldValue - facePhoto`)
   val textField: (List[FormField], FormComponent) = (List(`formField - surname`), `fieldValue - surname`)
 
+
+  "numberOfFiles" should "return zero when only text present" in new ExampleData {
+
+    val s = SectionFormField("", List(textField))
+    s.numberOfFiles() shouldBe 0
+
+  }
+
+  "numberOfFiles" should "return zero when only empty file present" in new ExampleData {
+
+    val s = SectionFormField("", List(emptyFileField))
+    s.numberOfFiles() shouldBe 0
+
+  }
+
+  "numberOfFiles" should "return zero when no filename file present" in new ExampleData {
+
+    val s = SectionFormField("", List(noFileField))
+    s.numberOfFiles() shouldBe 0
+
+  }
+
   "numberOfFiles" should "return zero when no file present" in new ExampleData {
 
     val s = SectionFormField("", List(noFileField, emptyFileField, textField))

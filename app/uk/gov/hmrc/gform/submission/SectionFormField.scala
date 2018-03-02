@@ -17,26 +17,17 @@
 package uk.gov.hmrc.gform.submission
 
 import uk.gov.hmrc.gform.sharedmodel.form.FormField
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FileUpload, FormComponent }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{FileUpload, FormComponent}
 
 import scala.collection.immutable.List
 
-case class SectionFormField(
-  title: String,
-  fields: List[(List[FormField], FormComponent)]) {
+case class SectionFormField(title: String,
+                            fields: List[(List[FormField], FormComponent)]) {
 
-  private def fileUploadNonEmpty(fieldComponent: (List[FormField], FormComponent)): Boolean = {
-    fieldComponent._2.`type` match {
-      case FileUpload() => {
-        fieldComponent._1 match {
-          case x :: xs => !x.value.isEmpty
-          case _ => false
-        }
-      }
-      case _ => false
-    }
-  }
-
-  def numberOfFiles(): Int = fields.filter(fileUploadNonEmpty(_)).size
+  def numberOfFiles(): Int = fields.filter(_ match {
+    case (FormField(_, "") :: xs, _) => false
+    case (x :: xs, FormComponent(_, FileUpload(), _, _, _, _, _, _, _, _, _, _, _)) => true
+    case _ => false
+  }).size
 
 }
