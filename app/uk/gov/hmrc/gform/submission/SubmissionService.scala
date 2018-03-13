@@ -24,11 +24,11 @@ import cats.syntax.traverse._
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.email.EmailService
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.fileupload.FileUploadService
+import uk.gov.hmrc.gform.fileupload.{ FileUploadService, MetadataXml }
 import uk.gov.hmrc.gform.form.FormService
 import uk.gov.hmrc.gform.formtemplate.{ FormTemplateService, RepeatingComponentService, SectionHelper }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.gform.pdfgenerator.{ HtmlGeneratorService, PdfGeneratorService }
+import uk.gov.hmrc.gform.pdfgenerator.{ HtmlGeneratorService, PdfGeneratorService, XmlGeneratorService }
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.time.TimeProvider
@@ -83,15 +83,25 @@ class SubmissionService(
           customerId //TODO need more secure and safe way of doing this. perhaps moving auth to backend and just pulling value out there.
         ))
 
+      val xmlSummary = formTemplate.dmsSubmission.dataXml match {
+        case Some(true) => {
+          Some(XmlGeneratorService.xmlDec + "\n" + XmlGeneratorService.getXml(sectionFormFields))
+        }
+        case _ => None
+
+      }
+
       SubmissionAndPdf(
         submission = submission,
-        pdfSummary = pdfSummary)
+        pdfSummary = pdfSummary,
+        xmlSummary = xmlSummary)
     }
   }
   //todo refactor the two methods into one
   def getSubmissionAndPdfWithPdf(
     envelopeId: EnvelopeId,
     form: Form,
+    sectionFormFields: List[SectionFormField],
     pdf: String,
     customerId: String,
     formTemplate: FormTemplate)(implicit hc: HeaderCarrier): Future[SubmissionAndPdf] = {
@@ -119,9 +129,18 @@ class SubmissionService(
           customerId //TODO need more secure and safe way of doing this. perhaps moving auth to backend and just pulling value out there.
         ))
 
+      val xmlSummary = formTemplate.dmsSubmission.dataXml match {
+        case Some(true) => {
+          Some(XmlGeneratorService.xmlDec + "\n" + XmlGeneratorService.getXml(sectionFormFields))
+        }
+        case _ => None
+
+      }
+
       SubmissionAndPdf(
         submission = submission,
-        pdfSummary = pdfSummary)
+        pdfSummary = pdfSummary,
+        xmlSummary)
     }
   }
 
@@ -149,7 +168,8 @@ class SubmissionService(
     for {
       form                <- fromFutureA        (formService.get(formId))
       formTemplate        <- fromFutureA        (formTemplateService.get(form.formTemplateId))
-      submissionAndPdf    <- fromFutureA        (getSubmissionAndPdfWithPdf(form.envelopeId, form,pdf ,customerId, formTemplate))
+      sectionFormFields   <- fromOptA           (SubmissionServiceHelper.getSectionFormFields(form, formTemplate))
+      submissionAndPdf    <- fromFutureA        (getSubmissionAndPdfWithPdf(form.envelopeId, form, sectionFormFields, pdf ,customerId, formTemplate))
       _                   <-                    submissionRepo.upsert(submissionAndPdf.submission)
       _                   <- fromFutureA        (formService.updateUserData(form._id, UserData(form.formData, form.repeatingGroupStructure, Submitted)))
       sectionFormFields   <- fromOptA           (SubmissionServiceHelper.getSectionFormFields(form, formTemplate))

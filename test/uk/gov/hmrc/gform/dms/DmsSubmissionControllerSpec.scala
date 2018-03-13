@@ -93,13 +93,15 @@ class DmsSubmissionControllerSpec extends Spec {
     val dmsMetadata = DmsMetaData(FormTemplateId(validSubmission.metadata.dmsFormId), validSubmission.metadata.customerId)
     val expectedSubmissionAndPdf = SubmissionAndPdf(
       Submission(FormId(validSubmission.metadata.dmsFormId), fixedTime, submissionRef, expectedEnvId, 0, dmsMetadata),
-      PdfSummary(numberOfPages, pdfContent))
+      PdfSummary(numberOfPages, pdfContent),
+      None)
 
     val expectedDmsSubmission = DmsSubmission(
       validSubmission.metadata.dmsFormId,
       TextExpression(Constant(validSubmission.metadata.customerId)),
       validSubmission.metadata.classificationType,
-      validSubmission.metadata.businessArea)
+      validSubmission.metadata.businessArea,
+      None)
 
     (mockFileUpload.createEnvelope(_: FormTemplateId)(_: HeaderCarrier))
       .expects(*, *)

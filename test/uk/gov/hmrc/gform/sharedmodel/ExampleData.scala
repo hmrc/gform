@@ -43,7 +43,7 @@ trait ExampleAuthConfig {
 
   def authConfigModule = AuthConfigModule("TESTAuthConfigModule")
 
-  def dmsSubmission = DmsSubmission("DMS-ID-XX", TextExpression(AuthCtx(PayeNino)), "BT-NRU-Environmental", "FinanceOpsCorpT")
+  def dmsSubmission = DmsSubmission("DMS-ID-XX", TextExpression(AuthCtx(PayeNino)), "BT-NRU-Environmental", "FinanceOpsCorpT", None)
 
   def serviceId = ServiceId("TestServiceId")
 

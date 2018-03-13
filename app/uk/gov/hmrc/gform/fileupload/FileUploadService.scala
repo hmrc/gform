@@ -57,9 +57,23 @@ class FileUploadService(fileUploadConnector: FileUploadConnector, fileUploadFron
       ByteString(metadataXml.getBytes),
       ContentType.`application/xml`)
 
+    val uploadAnyDataXmlF: Future[Unit] = submissionAndPdf.xmlSummary match {
+      case Some(elem) =>
+        fileUploadFrontendConnector
+          .upload(
+            envelopeId,
+            xml,
+            s"$fileNamePrefix-data.xml",
+            ByteString(elem.getBytes),
+            ContentType.`application/xml`)
+      case _ =>
+        Future.successful(())
+    }
+
     for {
       _ <- uploadPfdF
       _ <- uploadXmlF
+      _ <- uploadAnyDataXmlF
       _ <- fileUploadConnector.routeEnvelope(RouteEnvelopeRequest(envelopeId, "dfs", "DMS"))
     } yield ()
   }
