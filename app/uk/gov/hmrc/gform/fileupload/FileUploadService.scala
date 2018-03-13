@@ -62,7 +62,7 @@ class FileUploadService(fileUploadConnector: FileUploadConnector, fileUploadFron
         fileUploadFrontendConnector
           .upload(
             envelopeId,
-            xml,
+            data,
             s"$fileNamePrefix-data.xml",
             ByteString(elem.getBytes),
             ContentType.`application/xml`)
@@ -89,5 +89,6 @@ object FileUploadService {
   object FileIds {
     val pdf = FileId("pdf")
     val xml = FileId("xmlDocument")
+    val data = FileId("xmlSubmission")
   }
 }
