@@ -68,4 +68,5 @@ case class PdfSummary(
 
 case class SubmissionAndPdf(
   submission: Submission,
-  pdfSummary: PdfSummary)
+  pdfSummary: PdfSummary,
+  xmlSummary: Option[String])

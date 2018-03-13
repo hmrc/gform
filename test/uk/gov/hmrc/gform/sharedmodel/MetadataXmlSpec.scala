@@ -46,13 +46,15 @@ class MetadataXmlSpec extends Spec {
 
     val submissionAndPdf = SubmissionAndPdf(
       submission = submission,
-      pdfSummary = pdfSummary)
+      pdfSummary = pdfSummary,
+      None)
 
     val dmsSubmission = DmsSubmission(
       dmsFormId = "some-id",
       customerId = TextExpression(AuthCtx(PayeNino)),
       classificationType = "some-classification-type",
-      businessArea = "some-business-area")
+      businessArea = "some-business-area",
+      None)
 
     val expected =
       <documents xmlns="http://govtalk.gov.uk/hmrc/gis/content/1">

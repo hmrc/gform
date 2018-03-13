@@ -51,8 +51,8 @@ class DmsSubmissionController(
         submissionRef = SubmissionRef.random
         dmsMetadata = DmsMetaData(formTemplateId, metadata.customerId)
         submission = Submission(FormId(metadata.dmsFormId), LocalDateTime.now(clock), submissionRef, envId, 0, dmsMetadata)
-        submissionAndPdf = SubmissionAndPdf(submission, pdfSummary)
-        dmsSubmission = DmsSubmission(metadata.dmsFormId, TextExpression(Constant(metadata.customerId)), metadata.classificationType, metadata.businessArea)
+        submissionAndPdf = SubmissionAndPdf(submission, pdfSummary, None)
+        dmsSubmission = DmsSubmission(metadata.dmsFormId, TextExpression(Constant(metadata.customerId)), metadata.classificationType, metadata.businessArea, None)
         _ <- fileUpload.submitEnvelope(submissionAndPdf, dmsSubmission, 0)
       } yield {
         NoContent
