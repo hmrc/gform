@@ -20,11 +20,11 @@ import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.fileupload.ReconciliationId
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.gform.submission.{SectionFormField, SubmissionRef, SubmissionServiceHelper}
+import uk.gov.hmrc.gform.submission.{ SectionFormField, SubmissionRef, SubmissionServiceHelper }
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.collection.immutable.List
-import scala.xml.{Elem, Utility}
+import scala.xml.{ Elem, Utility }
 
 class XmlGeneratorServiceSpec extends Spec {
 
@@ -71,22 +71,22 @@ class XmlGeneratorServiceSpec extends Spec {
         <document>
           <submission>
             <attribute>
-              <attribute_name>UNO</attribute_name> <attribute_type>string</attribute_type> <attribute_values>
-              <attribute_value>UNO</attribute_value>
-            </attribute_values>
-            </attribute> <attribute>
-            <attribute_name>DOS</attribute_name> <attribute_type>string</attribute_type> <attribute_values>
-              <attribute_value>DOS</attribute_value>
-            </attribute_values>
-          </attribute> <attribute>
-            <attribute_name>1_DOS</attribute_name> <attribute_type>string</attribute_type> <attribute_values>
-              <attribute_value>1_DOS</attribute_value>
-            </attribute_values>
-          </attribute> <attribute>
-            <attribute_name>TRES</attribute_name> <attribute_type>string</attribute_type> <attribute_values>
-              <attribute_value>TRES</attribute_value>
-            </attribute_values>
-          </attribute>
+              <attribute_name>UNO</attribute_name><attribute_type>string</attribute_type><attribute_values>
+                                                                                           <attribute_value>UNO</attribute_value>
+                                                                                         </attribute_values>
+            </attribute><attribute>
+                          <attribute_name>DOS</attribute_name><attribute_type>string</attribute_type><attribute_values>
+                                                                                                       <attribute_value>DOS</attribute_value>
+                                                                                                     </attribute_values>
+                        </attribute><attribute>
+                                      <attribute_name>1_DOS</attribute_name><attribute_type>string</attribute_type><attribute_values>
+                                                                                                                     <attribute_value>1_DOS</attribute_value>
+                                                                                                                   </attribute_values>
+                                    </attribute><attribute>
+                                                  <attribute_name>TRES</attribute_name><attribute_type>string</attribute_type><attribute_values>
+                                                                                                                                <attribute_value>TRES</attribute_value>
+                                                                                                                              </attribute_values>
+                                                </attribute>
           </submission>
         </document>
       </documents>
