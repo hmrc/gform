@@ -85,7 +85,7 @@ class SubmissionService(
 
       val xmlSummary = formTemplate.dmsSubmission.dataXml match {
         case Some(true) => {
-          Some(XmlGeneratorService.xmlDec + "\n" + XmlGeneratorService.getXml(sectionFormFields))
+          Some(XmlGeneratorService.xmlDec + "\n" + XmlGeneratorService.getXml(sectionFormFields, submission.submissionRef))
         }
         case _ => None
 
@@ -131,7 +131,7 @@ class SubmissionService(
 
       val xmlSummary = formTemplate.dmsSubmission.dataXml match {
         case Some(true) => {
-          Some(XmlGeneratorService.xmlDec + "\n" + XmlGeneratorService.getXml(sectionFormFields))
+          Some(XmlGeneratorService.xmlDec + "\n" + XmlGeneratorService.getXml(sectionFormFields, submission.submissionRef))
         }
         case _ => None
 

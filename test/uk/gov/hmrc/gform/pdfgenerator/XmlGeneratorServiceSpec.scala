@@ -69,29 +69,47 @@ class XmlGeneratorServiceSpec extends Spec {
     val expected =
       <documents>
         <document>
+          <header>
+            <title>CFJ-7CEH-P7R</title>
+            <source>gform</source>
+            <target>DMS</target>
+          </header>
           <submission>
             <attribute>
-              <attribute_name>UNO</attribute_name><attribute_type>string</attribute_type><attribute_values>
-                                                                                           <attribute_value>UNO</attribute_value>
-                                                                                         </attribute_values>
-            </attribute><attribute>
-                          <attribute_name>DOS</attribute_name><attribute_type>string</attribute_type><attribute_values>
-                                                                                                       <attribute_value>DOS</attribute_value>
-                                                                                                     </attribute_values>
-                        </attribute><attribute>
-                                      <attribute_name>1_DOS</attribute_name><attribute_type>string</attribute_type><attribute_values>
-                                                                                                                     <attribute_value>1_DOS</attribute_value>
-                                                                                                                   </attribute_values>
-                                    </attribute><attribute>
-                                                  <attribute_name>TRES</attribute_name><attribute_type>string</attribute_type><attribute_values>
-                                                                                                                                <attribute_value>TRES</attribute_value>
-                                                                                                                              </attribute_values>
-                                                </attribute>
+              <attribute_name>UNO</attribute_name>
+              <attribute_type>string</attribute_type>
+              <attribute_values>
+                <attribute_value>UNO</attribute_value>
+              </attribute_values>
+            </attribute>
+            <attribute>
+              <attribute_name>DOS</attribute_name>
+              <attribute_type>string</attribute_type>
+              <attribute_values>
+                <attribute_value>DOS</attribute_value>
+              </attribute_values>
+            </attribute>
+            <attribute>
+              <attribute_name>1_DOS</attribute_name>
+              <attribute_type>string</attribute_type>
+              <attribute_values>
+                <attribute_value>1_DOS</attribute_value>
+              </attribute_values>
+            </attribute>
+            <attribute>
+              <attribute_name>TRES</attribute_name>
+              <attribute_type>string</attribute_type>
+              <attribute_values>
+                <attribute_value>TRES</attribute_value>
+              </attribute_values>
+            </attribute>
           </submission>
         </document>
       </documents>
 
-    val dataXml = XmlGeneratorService.getXml(sectionFormFields)
+    val submissionRef = SubmissionRef("CFJ-7CEH-P7R")
+
+    val dataXml = XmlGeneratorService.getXml(sectionFormFields, submissionRef)
 
     dataXml should equal(Utility.trim(expected).asInstanceOf[Elem])(after being streamlined[Elem])
   }
