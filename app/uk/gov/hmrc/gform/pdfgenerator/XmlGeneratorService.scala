@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.pdfgenerator
 
 import uk.gov.hmrc.gform.sharedmodel.form.{ FormData, FormField }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.gform.submission.SectionFormField
+import uk.gov.hmrc.gform.submission.{ SectionFormField, SubmissionRef }
 import uk.gov.hmrc.gform.typeclasses.Attribute
 
 import scala.collection.immutable.List
@@ -53,6 +53,15 @@ trait XmlGeneratorService {
     <submission></submission>.copy(child = attributes)
   }
 
+  private def createHeader(submissionRef: SubmissionRef): Elem = {
+    <header>
+      <title>{ submissionRef.value }</title>
+      <source>gform</source>
+      <target>DMS</target>
+    </header>
+  }
+
+  // TODO header etc.
   private def createDocument(elems: List[Elem]): Elem = {
     <documents>
       { <document></document>.copy(child = elems) }
@@ -61,8 +70,8 @@ trait XmlGeneratorService {
 
   private def trim(e: Elem): Elem = Utility.trim(e).asInstanceOf[Elem]
 
-  def getXml(sectionFormFields: List[SectionFormField]): Elem = {
-    val body = List(createSubmissionData(sectionFormFields))
+  def getXml(sectionFormFields: List[SectionFormField], submissionRef: SubmissionRef): Elem = {
+    val body = List(createHeader(submissionRef), createSubmissionData(sectionFormFields))
 
     trim(createDocument(body))
   }
