@@ -23,7 +23,7 @@ case class DmsSubmission(
   customerId: TextExpression,
   classificationType: String,
   businessArea: String,
-  dataXml: Option[Boolean])
+  dataXml: Option[Boolean] = None)
 
 object DmsSubmission {
   implicit val format = Json.format[DmsSubmission]

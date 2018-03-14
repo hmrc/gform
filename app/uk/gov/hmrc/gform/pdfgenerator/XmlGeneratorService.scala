@@ -16,13 +16,13 @@
 
 package uk.gov.hmrc.gform.pdfgenerator
 
-import uk.gov.hmrc.gform.sharedmodel.form.{ FormData, FormField }
+import uk.gov.hmrc.gform.sharedmodel.form.{FormData, FormField}
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.submission.SectionFormField
 import uk.gov.hmrc.gform.typeclasses.Attribute
 
 import scala.collection.immutable.List
-import scala.xml.{ Elem, Utility }
+import scala.xml.{Elem, Utility}
 
 object XmlGeneratorService extends XmlGeneratorService
 
@@ -52,9 +52,10 @@ trait XmlGeneratorService {
     val attributes = sectionFormFields.flatMap(section => createSectionData(section))
     <submission></submission>.copy(child = attributes)
   }
+
   private def createDocument(elems: List[Elem]): Elem = {
     <documents>
-      { <document></document>.copy(child = elems) }
+      {<document></document>.copy(child = elems)}
     </documents>
   }
 
