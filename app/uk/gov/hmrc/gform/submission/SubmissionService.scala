@@ -47,8 +47,9 @@ class SubmissionService(
   email: EmailService) {
 
   private def getNoOfAttachments(form: Form, formTemplate: FormTemplate): Int = {
+    // TODO two functions are calculating the same thing in different ways! c.f. FileUploadService.SectionFormField.getNumberOfFiles
     val attachmentsIds: List[String] = formTemplate.sections.flatMap(_.fields.filter(f => f.`type` == FileUpload())).map(_.id.value)
-    val formIds: Seq[String] = form.formData.fields.filterNot(_.value == "Upload document").map(_.id.value)
+    val formIds: Seq[String] = form.formData.fields.filterNot(_.value == FileUploadField.noFileUpload).map(_.id.value)
     attachmentsIds.count(ai => formIds.contains(ai))
   }
 
