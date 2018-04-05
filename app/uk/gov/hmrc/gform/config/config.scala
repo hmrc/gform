@@ -25,6 +25,7 @@ case class AppConfig(
   formExpiryDays: Int,
   formMaxAttachmentSizeMB: Int,
   formMaxAttachments: Int,
+  formMaxAttachmentTotalSizeMB: Int,
   /*we can't override list in app-config-base:*/
   contentTypesSeparatedByPipe: String) {
 
@@ -40,6 +41,7 @@ object AppConfig {
     appConfig.formExpiryDays.verifyThat(_ > 0, s"'formExpiryDays' must be positive, was ${appConfig.formExpiryDays}")
     appConfig.formMaxAttachments.verifyThat(_ > 0, s"'formMaxAttachments' must be positive, was ${appConfig.formMaxAttachments}")
     appConfig.formMaxAttachmentSizeMB.verifyThat(_ > 0, s"'formMaxAttachmentSizeMB' must be positive, was ${appConfig.formMaxAttachmentSizeMB}")
+    appConfig.formMaxAttachmentTotalSizeMB.verifyThat(_ > 0, s"'formMaxAttachmentTotalSizeMB' must be positive, was ${appConfig.formMaxAttachmentSizeMB}")
     appConfig.contentTypes.length.verifyThat(_ > 0, s"'contentTypesSeparatedByPipe' is not set")
 
     appConfig

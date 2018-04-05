@@ -33,10 +33,23 @@ class AppConfigSpec extends Spec {
     appConfig.appName shouldBe "gform"
     appConfig.formExpiryDays shouldBe 30
     appConfig.formMaxAttachments shouldBe 5
-    appConfig.formMaxAttachmentSizeMB shouldBe 5
+    appConfig.formMaxAttachmentSizeMB shouldBe 10
+    appConfig.formMaxAttachmentTotalSizeMB shouldBe 24
     appConfig.contentTypes shouldBe List(
       ContentType.`application/pdf`,
-      ContentType.`image/jpeg`)
+      ContentType.`image/jpeg`,
+      ContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
+      ContentType(".xlsx"),
+      ContentType("application/vnd.oasis.opendocument.spreadsheet"),
+      ContentType(".ods"),
+      ContentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
+      ContentType(".docx"),
+      ContentType("application/vnd.oasis.opendocument.text"),
+      ContentType(".odt"),
+      ContentType("application/vnd.openxmlformats-officedocument.presentationml.presentation"),
+      ContentType(".pptx"),
+      ContentType("application/vnd.oasis.opendocument.presentation"),
+      ContentType(".odp"))
 
   }
 
