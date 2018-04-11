@@ -37,6 +37,8 @@ import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.http.HeaderCarrier
 import org.apache.pdfbox.pdmodel.PDDocument
+
+import scala.util.{ Failure, Success }
 class SubmissionService(
   pdfGeneratorService: PdfGeneratorService,
   formService: FormService,
@@ -145,11 +147,16 @@ class SubmissionService(
     }
   }
 
+  def getSignedForm(formId: FormId)(implicit hc: HeaderCarrier) = formService.get(formId).flatMap {
+    case f @ Form(_, _, _, _, _, _, Signed) => Future.successful(f)
+    case _ => Future.failed(new Exception(s"Form $FormId status is not signed"))
+  }
+
   def submission(formId: FormId, customerId: String)(implicit hc: HeaderCarrier): FOpt[Unit] = {
 
     // format: OFF
     for {
-      form                <- fromFutureA        (formService.get(formId))
+      form                <- fromFutureA        (getSignedForm(formId))
       formTemplate        <- fromFutureA        (formTemplateService.get(form.formTemplateId))
       sectionFormFields   <- fromOptA           (SubmissionServiceHelper.getSectionFormFields(form, formTemplate))
       submissionAndPdf    <- fromFutureA        (getSubmissionAndPdf(form.envelopeId, form, sectionFormFields,formTemplate , customerId))
@@ -167,6 +174,7 @@ class SubmissionService(
 
     // format: OFF
     for {
+//      form                <- fromFutureA        (getSignedForm(formId))
       form                <- fromFutureA        (formService.get(formId))
       formTemplate        <- fromFutureA        (formTemplateService.get(form.formTemplateId))
       sectionFormFields   <- fromOptA           (SubmissionServiceHelper.getSectionFormFields(form, formTemplate))
