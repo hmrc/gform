@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.fileupload
 import java.time.format.DateTimeFormatter
 
 import akka.util.ByteString
+import play.api.Logger
 import uk.gov.hmrc.gform.fileupload.FileUploadService.FileIds._
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
@@ -32,12 +33,17 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 class FileUploadService(fileUploadConnector: FileUploadConnector, fileUploadFrontendConnector: FileUploadFrontendConnector, timeModule: TimeProvider = new TimeProvider) {
 
-  def createEnvelope(formTypeId: FormTemplateId)(implicit hc: HeaderCarrier): Future[EnvelopeId] = fileUploadConnector.createEnvelope(formTypeId)
+  def createEnvelope(formTypeId: FormTemplateId)(implicit hc: HeaderCarrier): Future[EnvelopeId] = {
+    val f = fileUploadConnector.createEnvelope(formTypeId)
+    f map { id => Logger.debug(s"env-id creation: ${id}") }
+    f
+  }
 
   def submitEnvelope(submissionAndPdf: SubmissionAndPdf, dmsSubmission: DmsSubmission, numberOfAttachments: Int)(implicit hc: HeaderCarrier): Future[Unit] = {
 
     val submissionRef: SubmissionRef = submissionAndPdf.submission.submissionRef
     val envelopeId: EnvelopeId = submissionAndPdf.submission.envelopeId
+    Logger.debug(s"env-id submit: ${envelopeId}")
     val date = timeModule.localDateTime().format(DateTimeFormatter.ofPattern("YYYYMMdd"))
     val fileNamePrefix = s"$submissionRef-$date"
     val reconciliationId = ReconciliationId.create(submissionRef)

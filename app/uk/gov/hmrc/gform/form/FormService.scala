@@ -53,16 +53,22 @@ class FormService(save4Later: Save4Later) {
     } yield ()
   }
 
-  private def newStatus(form: Form, status: FormStatus) = form.status match {
-    case InProgress => status
-    case Summary => if (status != InProgress) status else form.status
-    case Validated => if (status != Summary && status != InProgress) status else form.status
-    case Signed => if (status == Submitted) status else form.status
-    case Submitted => form.status
+  private def newStatus(form: Form, status: FormStatus) = {
+    LifeCycleStatus.newStatus(form, status)
   }
 
   def saveKeyStore(formId: FormId, data: Map[String, JsValue])(implicit hc: HeaderCarrier): Future[Unit] = save4Later.saveKeyStore(formId, data)
 
   def getKeyStore(formId: FormId)(implicit hc: HeaderCarrier): Future[Option[Map[String, JsValue]]] = save4Later.getKeyStore(formId)
-
 }
+
+object LifeCycleStatus {
+  def newStatus(form: Form, status: FormStatus): FormStatus = form.status match {
+    case InProgress => status
+    case Summary => if (status != InProgress) status else form.status
+    case Validated => if (status == InProgress) Summary else if (status == Summary || status == Signed) status else form.status
+    case Signed => if (status == Submitted) status else form.status
+    case Submitted => form.status
+  }
+}
+
