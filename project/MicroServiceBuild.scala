@@ -39,7 +39,7 @@ object MicroServiceBuild extends Build with MicroService {
     "com.typesafe.play" %% "play-test" % PlayVersion.current % scope,
     "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % scope,
     "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.1" % scope,
-    "uk.gov.hmrc" %% "reactivemongo-test" % "3.0.0" % scope,
+    "uk.gov.hmrc" %% "reactivemongo-test" % "2.0.0" % scope,
     "org.jsoup" % "jsoup" % "1.10.3" % scope
   )
 
