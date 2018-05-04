@@ -27,31 +27,29 @@ import uk.gov.hmrc.play.config.ServicesConfig
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class FUInterceptorController(
-  wSHttp: WSHttp,
-  serviceConfig: ServicesConfig,
-  proxy: Proxy) extends BaseController { self =>
+class FUInterceptorController(wSHttp: WSHttp, serviceConfig: ServicesConfig, proxy: Proxy) extends BaseController {
+  self =>
 
   def intercept(pathParam: String) = Action.async(parse.tolerantText) { (r: Request[String]) =>
     val path = s"/$pathParam"
     if (shouldIntercept(path)) respondWithPredefinedResponse(path)
     else {
 
-      val response = proxy[String](
-        baseUrl = originalFileUploadBaseUrl,
-        path = path,
-        inboundRequest = r,
-        bodyTransformer = makeAllFilesScanned(_))
+      val response =
+        proxy[String](
+          baseUrl = originalFileUploadBaseUrl,
+          path = path,
+          inboundRequest = r,
+          bodyTransformer = makeAllFilesScanned(_))
       response
     }
   }
 
-  private def makeAllFilesScanned(body: String): String = {
+  private def makeAllFilesScanned(body: String): String =
     //by default we replace all quarantined statueses to be cleaned
     //this is because on local machines we must rely on obsolete fileupload run in Service Manager
     //yep, this is not the state of the art ...
     body.replaceAllLiterally("QUARANTINED", "CLEANED")
-  }
 
   def setPredefinedResponse(pathParam: String) = Action(parse.json[JsValue]) { implicit r =>
     val path = s"/$pathParam"

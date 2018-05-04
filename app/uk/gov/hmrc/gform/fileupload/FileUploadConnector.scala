@@ -31,7 +31,8 @@ class FileUploadConnector(config: FUConfig, wSHttp: WSHttp, timeProvider: TimePr
   val helper = new Helper(config, timeProvider)
 
   def createEnvelope(formTemplateId: FormTemplateId)(implicit hc: HeaderCarrier): Future[EnvelopeId] = {
-    Logger.info(s"creating envelope, formTemplateId: '${formTemplateId.value}', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
+    Logger.info(
+      s"creating envelope, formTemplateId: '${formTemplateId.value}', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
     val requestBody = helper.createEnvelopeRequestBody(formTemplateId)
     wSHttp
       .POST(s"$baseUrl/file-upload/envelopes", requestBody, headers)
@@ -51,17 +52,19 @@ class FileUploadConnector(config: FUConfig, wSHttp: WSHttp, timeProvider: TimePr
   }
 
   def deleteFile(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): Future[Unit] = {
-    Logger.info(s"delete file, envelopeId: ' ${envelopeId.value}', fileId: '${fileId.value}', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
-    wSHttp.DELETE[HttpResponse](s"$baseUrl/file-upload/envelopes/${envelopeId.value}/files/${fileId.value}")
+    Logger.info(s"delete file, envelopeId: ' ${envelopeId.value}', fileId: '${fileId.value}', ${loggingHelpers
+      .cleanHeaderCarrierHeader(hc)}")
+    wSHttp
+      .DELETE[HttpResponse](s"$baseUrl/file-upload/envelopes/${envelopeId.value}/files/${fileId.value}")
       .map(_ => ())
   }
   private lazy val baseUrl = config.fileUploadBaseUrl
   private lazy val `Csrf-Token: nocheck` = "Csrf-Token" -> "nocheck"
 
   /**
-   * TIP. The Crsf-Token is not needed on production. It's as well not intrusive.
-   * We're adding it here in order to be able to call FU service using GFORM test-only proxy endpoints.
-   */
+    * TIP. The Crsf-Token is not needed on production. It's as well not intrusive.
+    * We're adding it here in order to be able to call FU service using GFORM test-only proxy endpoints.
+    */
   private lazy val headers = Seq(`Csrf-Token: nocheck`)
 
 }

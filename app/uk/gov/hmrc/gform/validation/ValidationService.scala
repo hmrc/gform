@@ -26,10 +26,11 @@ import uk.gov.hmrc.http.{ HeaderCarrier, NotFoundException }
 class ValidationService(desConnector: DesConnector, bankAccountReputationConnector: BankAccountReputationConnector) {
 
   def callDes(valAddress: ValAddress)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Boolean] = {
-    def compare(address: AddressDes) = {
+    def compare(address: AddressDes) =
       address.postalCode.replace(" ", "").equalsIgnoreCase(valAddress.postCode.replace(" ", ""))
-    }
-    desConnector.lookup(valAddress.utr).map(compare)
+    desConnector
+      .lookup(valAddress.utr)
+      .map(compare)
       .recover {
         case _: NotFoundException => false
       }

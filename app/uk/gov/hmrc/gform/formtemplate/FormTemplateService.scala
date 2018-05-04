@@ -24,27 +24,26 @@ import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-class FormTemplateService(
-  formTemplateRepo: FormTemplateRepo,
-  formTemplateRawRepo: FormTemplateRawRepo) {
+class FormTemplateService(formTemplateRepo: FormTemplateRepo, formTemplateRawRepo: FormTemplateRawRepo) {
 
-  def save(formTemplateRaw: FormTemplateRaw)(implicit ec: ExecutionContext): FOpt[Unit] = formTemplateRawRepo.upsert(formTemplateRaw)
+  def save(formTemplateRaw: FormTemplateRaw)(implicit ec: ExecutionContext): FOpt[Unit] =
+    formTemplateRawRepo.upsert(formTemplateRaw)
 
   def get(id: FormTemplateId)(implicit ec: ExecutionContext): Future[FormTemplate] = formTemplateRepo.get(id.value)
 
-  def get(id: FormTemplateRawId)(implicit ec: ExecutionContext): Future[FormTemplateRaw] = formTemplateRawRepo.get(id.value)
+  def get(id: FormTemplateRawId)(implicit ec: ExecutionContext): Future[FormTemplateRaw] =
+    formTemplateRawRepo.get(id.value)
 
-  def delete(formTemplateId: FormTemplateId)(implicit ec: ExecutionContext): FOpt[Unit] = formTemplateRepo.delete(formTemplateId.value)
+  def delete(formTemplateId: FormTemplateId)(implicit ec: ExecutionContext): FOpt[Unit] =
+    formTemplateRepo.delete(formTemplateId.value)
 
-  def list()(implicit ec: ExecutionContext): Future[List[FormTemplate]] = {
+  def list()(implicit ec: ExecutionContext): Future[List[FormTemplate]] =
     //TODO make it stream
     //TODO constraint it so it will result in no more than N records
     //TODO provide querying functionality
     formTemplateRepo.search(Json.obj())
-  }
 
-  def verifyAndSave(
-    formTemplate: FormTemplate)(implicit ec: ExecutionContext): FOpt[Unit] = {
+  def verifyAndSave(formTemplate: FormTemplate)(implicit ec: ExecutionContext): FOpt[Unit] = {
 
     val sections = formTemplate.sections
 

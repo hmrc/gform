@@ -24,13 +24,11 @@ case class FormField(id: FormComponentId, value: String)
 
 object FormField {
 
-  implicit val reads: Reads[FormField] = (
-    (FormComponentId.oformat: Reads[FormComponentId]) and
+  implicit val reads: Reads[FormField] = ((FormComponentId.oformat: Reads[FormComponentId]) and
     (JsPath \ "value").read[String])(FormField.apply _)
 
   implicit val writes = OWrites[FormField] { formField =>
-
-    Json.obj("id" -> formField.id) ++
+    Json.obj("id"      -> formField.id) ++
       Json.obj("value" -> formField.value)
   }
 

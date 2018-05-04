@@ -45,13 +45,11 @@ class Save4Later(cache: ShortLivedCache, ex: ExecutionContext) {
     cache.cache[Form](formId.value, formCacheKey, form).map(_ => ())
   }
 
-  def delete(formId: FormId)(implicit hc: HeaderCarrier): Future[Unit] = {
+  def delete(formId: FormId)(implicit hc: HeaderCarrier): Future[Unit] =
     cache.remove(formId.value).map(_ => ())
-  }
 
-  def saveKeyStore(formId: FormId, data: Map[String, JsValue])(implicit hc: HeaderCarrier): Future[Unit] = {
+  def saveKeyStore(formId: FormId, data: Map[String, JsValue])(implicit hc: HeaderCarrier): Future[Unit] =
     cache.cache[Map[String, JsValue]](formId.value, "keystore", data).map(_ => ())
-  }
 
   def getKeyStore(formId: FormId)(implicit hc: HeaderCarrier): Future[Option[Map[String, JsValue]]] =
     cache.fetchAndGetEntry[Map[String, JsValue]](formId.value, "keystore")

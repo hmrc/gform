@@ -30,7 +30,8 @@ class SubmissionServiceHelperSpec extends Spec {
 
   it should "return a Left if formData is missing" in new ExampleData {
     override lazy val formData = super.formData.copy(formFields.init)
-    val sectionFormFieldsOpt: Opt[List[SectionFormField]] = SubmissionServiceHelper.getSectionFormFields(form, formTemplate)
+    val sectionFormFieldsOpt: Opt[List[SectionFormField]] =
+      SubmissionServiceHelper.getSectionFormFields(form, formTemplate)
     sectionFormFieldsOpt.left.value shouldBe UnexpectedState("No formField for field.id: startDate found")
   }
 
@@ -49,8 +50,7 @@ class SubmissionServiceHelperSpec extends Spec {
     val sectionFormFields1 = SubmissionServiceHelper.getSectionFormFields(form, formTemplate).right.get
     sectionFormFields1.size shouldBe formTemplate.sections.size + 1 // This includes the declaration section
 
-    sectionFormFields1.map(_.title) should contain allOf (
-      `section - about you`.title,
-      `section - businessDetails`.title)
+    sectionFormFields1.map(_.title) should contain allOf (`section - about you`.title,
+    `section - businessDetails`.title)
   }
 }

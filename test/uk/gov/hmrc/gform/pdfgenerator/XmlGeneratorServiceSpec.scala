@@ -42,7 +42,8 @@ class XmlGeneratorServiceSpec extends Spec {
       FormField(FormComponentId("1_DOS"), "1_DOS"),
       FormField(FormComponentId("2_DOS"), "2_DOS"),
       FormField(FormComponentId("3_DOS"), "3_DOS"),
-      FormField(FormComponentId("4_DOS"), "4_DOS"))
+      FormField(FormComponentId("4_DOS"), "4_DOS")
+    )
     val formData = FormData(formFields)
 
     val sectionFormFields = List(
@@ -51,20 +52,91 @@ class XmlGeneratorServiceSpec extends Spec {
         List(
           (
             List(FormField(FormComponentId("UNO"), "UNO")),
-            FormComponent(FormComponentId("UNO"), Text(AnyText, Constant("")), "Submissible text label", None, None, None, true, true, submissible = true, derived = false, onlyShowOnSummary = false, None)),
+            FormComponent(
+              FormComponentId("UNO"),
+              Text(AnyText, Constant("")),
+              "Submissible text label",
+              None,
+              None,
+              None,
+              true,
+              true,
+              submissible = true,
+              derived = false,
+              onlyShowOnSummary = false,
+              None
+            )),
           (
             List(FormField(FormComponentId("DOS"), "DOS")),
-            FormComponent(FormComponentId("DOS"), Text(AnyText, Constant("")), "Submissible text label", None, None, None, true, true, submissible = true, derived = false, onlyShowOnSummary = false, None)),
+            FormComponent(
+              FormComponentId("DOS"),
+              Text(AnyText, Constant("")),
+              "Submissible text label",
+              None,
+              None,
+              None,
+              true,
+              true,
+              submissible = true,
+              derived = false,
+              onlyShowOnSummary = false,
+              None
+            )),
           (
             List(FormField(FormComponentId("1_UNO"), "1_UNO")),
-            FormComponent(FormComponentId("1_UNO"), Text(AnyText, Constant("")), "Non-submissible text label", None, None, None, true, true, submissible = false, derived = false, onlyShowOnSummary = false, None)),
+            FormComponent(
+              FormComponentId("1_UNO"),
+              Text(AnyText, Constant("")),
+              "Non-submissible text label",
+              None,
+              None,
+              None,
+              true,
+              true,
+              submissible = false,
+              derived = false,
+              onlyShowOnSummary = false,
+              None
+            )),
           (
             List(FormField(FormComponentId("1_DOS"), "1_DOS")),
-            FormComponent(FormComponentId("1_DOS"), Text(AnyText, Constant("")), "Submissible text label", None, None, None, true, true, submissible = true, derived = false, onlyShowOnSummary = false, None)))),
-      SectionFormField("Declaration", List(
-        (
-          List(FormField(FormComponentId("TRES"), "TRES")),
-          FormComponent(FormComponentId("TRES"), Text(AnyText, Constant("TRES")), "Submissible text label", None, None, None, true, true, submissible = true, derived = false, onlyShowOnSummary = false, None)))))
+            FormComponent(
+              FormComponentId("1_DOS"),
+              Text(AnyText, Constant("")),
+              "Submissible text label",
+              None,
+              None,
+              None,
+              true,
+              true,
+              submissible = true,
+              derived = false,
+              onlyShowOnSummary = false,
+              None
+            ))
+        )
+      ),
+      SectionFormField(
+        "Declaration",
+        List(
+          (
+            List(FormField(FormComponentId("TRES"), "TRES")),
+            FormComponent(
+              FormComponentId("TRES"),
+              Text(AnyText, Constant("TRES")),
+              "Submissible text label",
+              None,
+              None,
+              None,
+              true,
+              true,
+              submissible = true,
+              derived = false,
+              onlyShowOnSummary = false,
+              None
+            )))
+      )
+    )
 
     val expected =
       <documents>

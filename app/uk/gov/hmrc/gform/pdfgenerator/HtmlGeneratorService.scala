@@ -43,11 +43,11 @@ trait HtmlGeneratorService {
     case (formFields, fieldValue) =>
       val (name, value) = fieldValue.`type` match {
         case choice @ Choice(_, _, _, _, _) => generateChoiceFieldHTML(choice, fieldValue, formFields.head)
-        case UkSortCode(_) => generateSortCodeFieldHTML(fieldValue, formFields)
-        case Date(_, _, _) => generateDateFieldHTML(fieldValue, formFields)
-        case Address(_) => generateAddressFieldHTML(fieldValue, formFields)
-        case text @ Text(_, _) => generateTextFieldHTML(text, fieldValue, formFields.head.value)
-        case _ => (getEnglishText(fieldValue.shortName.getOrElse(fieldValue.label)), Html(formFields.head.value))
+        case UkSortCode(_)                  => generateSortCodeFieldHTML(fieldValue, formFields)
+        case Date(_, _, _)                  => generateDateFieldHTML(fieldValue, formFields)
+        case Address(_)                     => generateAddressFieldHTML(fieldValue, formFields)
+        case text @ Text(_, _)              => generateTextFieldHTML(text, fieldValue, formFields.head.value)
+        case _                              => (getEnglishText(fieldValue.shortName.getOrElse(fieldValue.label)), Html(formFields.head.value))
       }
       uk.gov.hmrc.gform.views.html.pdfGeneration.element(name, value)
   }
@@ -55,18 +55,20 @@ trait HtmlGeneratorService {
   private def generateTextFieldHTML(textElement: Text, fieldValue: FormComponent, formFieldValue: String) = {
     val name = getEnglishText(fieldValue.shortName.getOrElse(fieldValue.label))
     val value = textElement.constraint match {
-      case Number(_, _, _) |
-        PositiveNumber(_, _, _) => TextConstraint.filterNumberValue(formFieldValue)
-      case _ => formFieldValue
+      case Number(_, _, _) | PositiveNumber(_, _, _) => TextConstraint.filterNumberValue(formFieldValue)
+      case _                                         => formFieldValue
     }
     (name, Html(value))
   }
 
   private def generateChoiceFieldHTML(choiceElement: Choice, fieldValue: FormComponent, formField: FormField) = {
     val selections = formField.value.split(",").toList
-    val optionsAsMap = choiceElement.options.zipWithIndex.map {
-      case (option, index) => index.toString -> getEnglishText(option)
-    }.toList.toMap
+    val optionsAsMap = choiceElement.options.zipWithIndex
+      .map {
+        case (option, index) => index.toString -> getEnglishText(option)
+      }
+      .toList
+      .toMap
     val values = Html(selections.flatMap(selection => optionsAsMap.get(selection)).mkString("<BR>"))
     (getEnglishText(fieldValue.shortName.getOrElse(fieldValue.label)), values)
   }
@@ -82,20 +84,23 @@ trait HtmlGeneratorService {
     val month = formFields.filter(_.id.value.endsWith("month")).head.value
     val year = formFields.filter(_.id.value.endsWith("year")).head.value
 
-    val date = DateTime.parse(s"${year}-${month}-${day}")
+    val date = DateTime.parse(s"$year-$month-$day")
     val formatter = DateTimeFormat.forPattern("dd MMMM yyyy")
     (getEnglishText(fieldValue.shortName.getOrElse(fieldValue.label)), Html(formatter.print(date)))
   }
 
   private def generateAddressFieldHTML(fieldValue: FormComponent, formFields: List[FormField]) = {
-    val value = Address.fields(fieldValue.id).filterNot(_.value.endsWith("uk")).map { addressFieldId =>
-      formFields.filter(_.id.equals(addressFieldId)).head.value
-    }.mkString("<BR>")
+    val value = Address
+      .fields(fieldValue.id)
+      .filterNot(_.value.endsWith("uk"))
+      .map { addressFieldId =>
+        formFields.filter(_.id.equals(addressFieldId)).head.value
+      }
+      .mkString("<BR>")
 
     (getEnglishText(fieldValue.shortName.getOrElse(fieldValue.label)), Html(value))
   }
 
-  private def getEnglishText(pipeSeparatedTranslations: String) = {
+  private def getEnglishText(pipeSeparatedTranslations: String) =
     pipeSeparatedTranslations.split(raw"\|").head
-  }
 }

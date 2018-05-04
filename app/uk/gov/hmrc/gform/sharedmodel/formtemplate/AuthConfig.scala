@@ -28,33 +28,26 @@ trait AuthConfigWithEnrolment {
   def enrolmentSection: EnrolmentSection
 }
 
-case class EEITTAuthConfig(
-  authModule: AuthConfigModule,
-  regimeId: RegimeId) extends AuthConfig
+case class EEITTAuthConfig(authModule: AuthConfigModule, regimeId: RegimeId) extends AuthConfig
 
 object EEITTAuthConfig {
   implicit val format = Json.format[EEITTAuthConfig]
 }
 
-case class HMRCAuthConfigWithAuthModule(
-  authModule: AuthConfigModule) extends AuthConfig
+case class HMRCAuthConfigWithAuthModule(authModule: AuthConfigModule) extends AuthConfig
 
 object HMRCAuthConfigWithAuthModule {
   implicit val format = Json.format[HMRCAuthConfigWithAuthModule]
 }
 
-case class HMRCAuthConfigWithServiceId(
-  authModule: AuthConfigModule,
-  serviceId: ServiceId) extends AuthConfig
+case class HMRCAuthConfigWithServiceId(authModule: AuthConfigModule, serviceId: ServiceId) extends AuthConfig
 
 object HMRCAuthConfigWithServiceId {
   implicit val format = Json.format[HMRCAuthConfigWithServiceId]
 }
 
-case class HMRCAuthConfigWithRegimeId(
-  authModule: AuthConfigModule,
-  serviceId: ServiceId,
-  regimeId: RegimeId) extends AuthConfig
+case class HMRCAuthConfigWithRegimeId(authModule: AuthConfigModule, serviceId: ServiceId, regimeId: RegimeId)
+    extends AuthConfig
 object HMRCAuthConfigWithRegimeId {
   implicit val format = Json.format[HMRCAuthConfigWithRegimeId]
 }
@@ -62,7 +55,8 @@ object HMRCAuthConfigWithRegimeId {
 case class HMRCAuthConfigWithEnrolment(
   authModule: AuthConfigModule,
   serviceId: ServiceId,
-  enrolmentSection: EnrolmentSection) extends AuthConfig with AuthConfigWithEnrolment
+  enrolmentSection: EnrolmentSection)
+    extends AuthConfig with AuthConfigWithEnrolment
 object HMRCAuthConfigWithEnrolment {
   implicit val format = Json.format[HMRCAuthConfigWithEnrolment]
 
@@ -72,7 +66,8 @@ case class HMRCAuthConfig(
   authModule: AuthConfigModule,
   serviceId: ServiceId,
   regimeId: RegimeId,
-  enrolmentSection: EnrolmentSection) extends AuthConfig with AuthConfigWithEnrolment
+  enrolmentSection: EnrolmentSection)
+    extends AuthConfig with AuthConfigWithEnrolment
 object HMRCAuthConfig {
   implicit val format = Json.format[HMRCAuthConfig]
 
@@ -132,5 +127,6 @@ case class AuthConfigModule(value: String) {
 }
 
 object AuthConfigModule {
-  implicit val format: Format[AuthConfigModule] = ValueClassFormat.oformat("authModule", AuthConfigModule.apply, _.value)
+  implicit val format: Format[AuthConfigModule] =
+    ValueClassFormat.oformat("authModule", AuthConfigModule.apply, _.value)
 }

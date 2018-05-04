@@ -64,8 +64,7 @@ object RouteEnvelopeRequest {
   implicit val format = OFormat(reads, owrites)
 }
 
-case class Envelope(
-  files: List[File])
+case class Envelope(files: List[File])
 
 object Envelope {
   implicit val reads: Reads[Envelope] = envelopeRawReads.map(er => Envelope(er.files.getOrElse(Nil)))
@@ -73,10 +72,7 @@ object Envelope {
 }
 
 case class EnvelopeRaw(files: Option[List[File]])
-case class File(
-  fileId: FileId,
-  status: Status,
-  fileName: String)
+case class File(fileId: FileId, status: Status, fileName: String)
 
 object File {
 

@@ -23,9 +23,7 @@ import play.api.libs.json.{ Json, OFormat, OWrites, Reads, _ }
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 
-case class DmsMetaData(
-  formTemplateId: FormTemplateId,
-  customerId: String)
+case class DmsMetaData(formTemplateId: FormTemplateId, customerId: String)
 
 object DmsMetaData {
   implicit val format = Json.format[DmsMetaData]
@@ -41,21 +39,21 @@ case class Submission(
 
 object Submission {
 
-  private val reads: Reads[Submission] = (
-    (FormId.format: Reads[FormId]) and
+  private val reads: Reads[Submission] = ((FormId.format: Reads[FormId]) and
     (JsPath \ "submittedDate").read[LocalDateTime] and
     SubmissionRef.oformat and
     EnvelopeId.format and
     (JsPath \ "attachment_count").read[Int] and
     DmsMetaData.format)(Submission.apply _)
 
-  private val writes: OWrites[Submission] = OWrites[Submission](s =>
-    FormId.format.writes(s._id) ++
-      Json.obj("submittedDate" -> Writes.DefaultLocalDateTimeWrites.writes(s.submittedDate)) ++
-      SubmissionRef.oformat.writes(s.submissionRef) ++
-      EnvelopeId.format.writes(s.envelopeId) ++
-      Json.obj("attachment_count" -> Writes.IntWrites.writes(s.noOfAttachments)) ++
-      DmsMetaData.format.writes(s.dmsMetaData))
+  private val writes: OWrites[Submission] = OWrites[Submission](
+    s =>
+      FormId.format.writes(s._id) ++
+        Json.obj("submittedDate" -> Writes.DefaultLocalDateTimeWrites.writes(s.submittedDate)) ++
+        SubmissionRef.oformat.writes(s.submissionRef) ++
+        EnvelopeId.format.writes(s.envelopeId) ++
+        Json.obj("attachment_count" -> Writes.IntWrites.writes(s.noOfAttachments)) ++
+        DmsMetaData.format.writes(s.dmsMetaData))
 
   implicit val format: OFormat[Submission] = OFormat[Submission](reads, writes)
 
@@ -66,7 +64,4 @@ case class PdfSummary(
   //TODO get rid of byte array and operate on streams or something similar
   pdfContent: Array[Byte])
 
-case class SubmissionAndPdf(
-  submission: Submission,
-  pdfSummary: PdfSummary,
-  xmlSummary: Option[String] = None)
+case class SubmissionAndPdf(submission: Submission, pdfSummary: PdfSummary, xmlSummary: Option[String] = None)

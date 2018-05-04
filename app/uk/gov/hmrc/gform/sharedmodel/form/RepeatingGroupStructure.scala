@@ -28,19 +28,17 @@ object RepeatingGroupStructure {
   implicit val format: OFormat[RepeatingGroupStructure] = Json.format[RepeatingGroupStructure]
 
   implicit val optionFormat: OFormat[Option[RepeatingGroupStructure]] = new OFormat[Option[RepeatingGroupStructure]] {
-    override def writes(o: Option[RepeatingGroupStructure]): JsObject = {
+    override def writes(o: Option[RepeatingGroupStructure]): JsObject =
       o match {
         case Some(x) => Json.obj("structure" -> Json.toJson(x.structure))
-        case None => Json.obj()
+        case None    => Json.obj()
       }
-    }
 
-    override def reads(json: JsValue) = {
+    override def reads(json: JsValue) =
       json.\("structure").asOpt[Map[String, JsValue]] match {
         case Some(x) => JsSuccess(Some(RepeatingGroupStructure(x)))
-        case None => JsSuccess(None)
+        case None    => JsSuccess(None)
       }
-    }
   }
 
   optionFormat.writes(Some(RepeatingGroupStructure(Map.empty[String, JsValue])))

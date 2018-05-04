@@ -28,36 +28,43 @@ import uk.gov.hmrc.gform.formtemplate.FormTemplateSchema
 sealed trait JsonSchema {
 
   def conform[A](json: A)(implicit wrt: Writes[A]): ValidationResult = {
-    def loop(schema: JsonSchema, json: JsValue): ValidationResult = {
+    def loop(schema: JsonSchema, json: JsValue): ValidationResult =
       schema match {
         case SObject(properties, required) =>
           val validationResults: Seq[ValidationResult] = properties.map {
-            case Item(fieldName, SString) => (json \ fieldName) match {
-              case JsDefined(JsString(_)) => Valid
-              case JsUndefined() if (!required.contains(fieldName)) => Valid
-              case otherwise => Invalid(s"FieldName '$fieldName' is missing or not a string, got: " + Json.prettyPrint(json))
-            }
-            case Item(fieldName, SBoolean) => (json \ fieldName) match {
-              case JsDefined(JsBoolean(_)) => Valid
-              case otherwise => Invalid(s"FieldName '$fieldName' is missing or not a boolean, got: " + Json.prettyPrint(json))
-            }
-            case Item(fieldName, so @ SObject(_, _)) => (json \ fieldName) match {
-              case JsDefined(jo @ JsObject(contents)) => loop(so, jo)
-              case otherwise => Invalid(s"FieldName '$fieldName' is missing or not an object, got: " + Json.prettyPrint(json))
-            }
-            case Item(fieldName, SArray(so)) => (json \ fieldName) match {
-              case JsDefined(JsArray(objs)) =>
-                val res = objs.map(obj => loop(so, obj)).toList
-                Monoid[ValidationResult].combineAll(res)
-              case otherwise => Invalid(s"FieldName '$fieldName' is missing or not an array, got: " + Json.prettyPrint(json))
-            }
+            case Item(fieldName, SString) =>
+              (json \ fieldName) match {
+                case JsDefined(JsString(_))                           => Valid
+                case JsUndefined() if (!required.contains(fieldName)) => Valid
+                case otherwise =>
+                  Invalid(s"FieldName '$fieldName' is missing or not a string, got: " + Json.prettyPrint(json))
+              }
+            case Item(fieldName, SBoolean) =>
+              (json \ fieldName) match {
+                case JsDefined(JsBoolean(_)) => Valid
+                case otherwise =>
+                  Invalid(s"FieldName '$fieldName' is missing or not a boolean, got: " + Json.prettyPrint(json))
+              }
+            case Item(fieldName, so @ SObject(_, _)) =>
+              (json \ fieldName) match {
+                case JsDefined(jo @ JsObject(contents)) => loop(so, jo)
+                case otherwise =>
+                  Invalid(s"FieldName '$fieldName' is missing or not an object, got: " + Json.prettyPrint(json))
+              }
+            case Item(fieldName, SArray(so)) =>
+              (json \ fieldName) match {
+                case JsDefined(JsArray(objs)) =>
+                  val res = objs.map(obj => loop(so, obj)).toList
+                  Monoid[ValidationResult].combineAll(res)
+                case otherwise =>
+                  Invalid(s"FieldName '$fieldName' is missing or not an array, got: " + Json.prettyPrint(json))
+              }
           }
           Monoid[ValidationResult].combineAll(validationResults)
-        case SString => Invalid("No SString support on top level")
-        case SBoolean => Invalid("No SString support on top level")
+        case SString       => Invalid("No SString support on top level")
+        case SBoolean      => Invalid("No SString support on top level")
         case SArray(items) => Invalid("No SArray support on top level")
       }
-    }
     loop(this, wrt.writes(json))
   }
 }
@@ -70,25 +77,24 @@ case class Item(name: String, tpe: JsonSchema)
 
 object SchemaValidator {
 
-  def conform(schemaRep: FormTemplateSchema): Opt[JsonSchema] = {
+  def conform(schemaRep: FormTemplateSchema): Opt[JsonSchema] =
     //TODO verify if it works as is should work.
     //TODO maybe there exist ready to use solutions for json schema validation. Do research and use them instead of buggy this one
     loop(schemaRep.value)
-  }
 
-  private def loop(json: JsValue): Opt[JsonSchema] = {
+  private def loop(json: JsValue): Opt[JsonSchema] =
     (json \ "type") match {
-      case JsDefined(JsString(tpe)) => tpe match {
-        case "object" => readObject(json)
-        case "string" => Right(SString)
-        case "boolean" => Right(SBoolean)
-        case "array" => readArray(json)
-        case otherwise => Left(UnexpectedState(s"Unsupported value for 'type' fieldName: '$otherwise'"))
-      }
+      case JsDefined(JsString(tpe)) =>
+        tpe match {
+          case "object"  => readObject(json)
+          case "string"  => Right(SString)
+          case "boolean" => Right(SBoolean)
+          case "array"   => readArray(json)
+          case otherwise => Left(UnexpectedState(s"Unsupported value for 'type' fieldName: '$otherwise'"))
+        }
       case JsDefined(_) => Left(UnexpectedState(s"Expected 'type' to be one of 4 strings in json"))
-      case otherwise => Left(UnexpectedState("No 'type' fieldName found in json"))
+      case otherwise    => Left(UnexpectedState("No 'type' fieldName found in json"))
     }
-  }
 
   private def readObject(json: JsValue): Opt[SObject] = {
     val properties = (json \ "properties") match {
@@ -102,7 +108,7 @@ object SchemaValidator {
       case JsDefined(JsArray(required)) =>
         val res: List[Opt[String]] = required.map {
           case JsString(requiredFieldName) => Right(requiredFieldName)
-          case nonString => Left(UnexpectedState("Required must be array with string"))
+          case nonString                   => Left(UnexpectedState("Required must be array with string"))
         }.toList
         res.sequenceU
       case otherwise => Left(UnexpectedState(s"No 'required' fieldName of type array found in json. Found: $otherwise"))
@@ -114,10 +120,9 @@ object SchemaValidator {
     } yield SObject(p, r)
   }
 
-  private def readArray(json: JsValue): Opt[JsonSchema] = {
+  private def readArray(json: JsValue): Opt[JsonSchema] =
     (json \ "items") match {
       case JsDefined(items @ JsObject(_)) => readObject(items).map(SArray(_))
-      case otherwise => Left(UnexpectedState("No 'items' fieldName of type object found in json"))
+      case otherwise                      => Left(UnexpectedState("No 'items' fieldName of type object found in json"))
     }
-  }
 }

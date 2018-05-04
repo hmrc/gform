@@ -29,31 +29,29 @@ import uk.gov.hmrc.mongo.ReactiveRepository
 import scala.concurrent.{ ExecutionContext, Future }
 
 class Repo[T: OWrites: Manifest](name: String, mongo: () => DefaultDB, idLens: T => String)(implicit formatT: Format[T])
-  extends ReactiveRepository[T, BSONObjectID](name, mongo, formatT) {
+    extends ReactiveRepository[T, BSONObjectID](name, mongo, formatT) {
   underlying =>
 
-  def find(id: String)(implicit ec: ExecutionContext): Future[Option[T]] = underlying
-    .collection
-    .find(idSelector(id), npProjection)
-    .one[T]
+  def find(id: String)(implicit ec: ExecutionContext): Future[Option[T]] =
+    underlying.collection
+      .find(idSelector(id), npProjection)
+      .one[T]
 
-  def get(id: String)(implicit ec: ExecutionContext): Future[T] = find(id).map(_.getOrElse(throw new NoSuchElementException(s"$name for given id: '$id' not found")))
+  def get(id: String)(implicit ec: ExecutionContext): Future[T] =
+    find(id).map(_.getOrElse(throw new NoSuchElementException(s"$name for given id: '$id' not found")))
 
-  def search(selector: JsObject)(implicit ec: ExecutionContext): Future[List[T]] = {
+  def search(selector: JsObject)(implicit ec: ExecutionContext): Future[List[T]] =
     //TODO: don't abuse it to much. If querying for a large underlyingReactiveRepository.collection.consider returning stream instead of packing everything into the list
     underlying.collection.find(selector = selector, npProjection).cursor[T]().collect[List]()
-  }
 
   def upsert(t: T)(implicit ec: ExecutionContext): FOpt[Unit] = EitherT {
-    underlying
-      .collection
+    underlying.collection
       .update(idSelector(t), update = t, writeConcern = WriteConcern.Default, upsert = true, multi = false)
       .map(_.asEither)
   }
 
   def delete(id: String)(implicit ec: ExecutionContext): FOpt[Unit] = EitherT {
-    underlying
-      .collection
+    underlying.collection
       .remove(idSelector(id))
       .map(_.asEither)
   }

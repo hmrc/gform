@@ -50,7 +50,9 @@ trait Hooks extends HttpHooks with HttpAuditing {
   override lazy val auditConnector: AuditConnector = MicroserviceAuditConnector
 }
 
-trait WSHttp extends HttpGet with WSGet with HttpPut with WSPut with HttpPost with WSPost with HttpDelete with WSDelete with Hooks with AppName {
+trait WSHttp
+    extends HttpGet with WSGet with HttpPut with WSPut with HttpPost with WSPost with HttpDelete with WSDelete
+    with Hooks with AppName {
 
   //TODO: body should be type of Stream not ByteString (do we want to blow up if few people will submit forms at the same time?)
   def POSTFile[O](
@@ -59,11 +61,13 @@ trait WSHttp extends HttpGet with WSGet with HttpPut with WSPut with HttpPost wi
     body: ByteString,
     headers: Seq[(String, String)],
     contentType: String //TODO: change type to ContentType
-  )(implicit
+  )(
+    implicit
     hc: HeaderCarrier,
     rds: HttpReads[O]): Future[HttpResponse] = {
 
-    val source: Source[FilePart[Source[ByteString, NotUsed]], NotUsed] = Source(FilePart(fileName, fileName, Some(contentType), Source.single(body)) :: Nil)
+    val source: Source[FilePart[Source[ByteString, NotUsed]], NotUsed] = Source(
+      FilePart(fileName, fileName, Some(contentType), Source.single(body)) :: Nil)
     //    withTracing(POST_VERB, url) {
     //      import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
     //      val httpResponse = buildRequest(url).withHeaders(headers: _*).post(source).map(new WSHttpResponse(_))

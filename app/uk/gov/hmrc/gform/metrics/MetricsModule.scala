@@ -24,9 +24,7 @@ import uk.gov.hmrc.gform.playcomponents.PlayComponents
 class MetricsModule(playComponents: PlayComponents, akkaModule: AkkaModule) {
 
   // Don't use uk.gov.hmrc.play.graphite.GraphiteMetricsImpl as it won't allow hot reload due to overridden onStop() method
-  val metrics = new MetricsImpl(
-    playComponents.context.lifecycle,
-    playComponents.context.initialConfiguration)
+  val metrics = new MetricsImpl(playComponents.context.lifecycle, playComponents.context.initialConfiguration)
 
   val metricsFilter: MetricsFilter = new MetricsFilterImpl(metrics)(akkaModule.materializer)
 

@@ -45,7 +45,8 @@ class SubmissionModule(
     fileUploadModule.fileUploadService,
     submissionRepo,
     timeModule.timeProvider,
-    emailModule.emailLogic)
+    emailModule.emailLogic
+  )
 
   val submissionController = new SubmissionController(submissionService)
 }

@@ -22,7 +22,7 @@ import uk.gov.hmrc.gform.exceptions.UnexpectedState
 //TODO: use either
 sealed trait ValidationResult {
   def toEither: Opt[Unit] = this match {
-    case Valid => Right(())
+    case Valid           => Right(())
     case Invalid(reason) => Left(UnexpectedState(reason))
   }
 }
@@ -35,7 +35,7 @@ object ValidationResult {
   implicit val validationResultMonoid = new Monoid[ValidationResult] {
     def empty: ValidationResult = Valid
     def combine(x: ValidationResult, y: ValidationResult): ValidationResult = (x, y) match {
-      case (Valid, Valid) => Valid
+      case (Valid, Valid)      => Valid
       case (i @ Invalid(_), _) => i
       case (_, i @ Invalid(_)) => i
     }

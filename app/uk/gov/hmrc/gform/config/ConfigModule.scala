@@ -35,7 +35,8 @@ class ConfigModule(playComponents: PlayComponents) {
 
   val desConfig: DesConnectorConfig = pureconfig.loadConfigOrThrow[DesConnectorConfig]("microservice.services.etmp-hod")
 
-  val emailConfig: EmailConnectorConfig = pureconfig.loadConfigOrThrow[EmailConnectorConfig]("microservice.services.email")
+  val emailConfig: EmailConnectorConfig =
+    pureconfig.loadConfigOrThrow[EmailConnectorConfig]("microservice.services.email")
 
   val playConfiguration: Configuration = playComponents.context.initialConfiguration
 

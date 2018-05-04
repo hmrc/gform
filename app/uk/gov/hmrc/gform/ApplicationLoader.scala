@@ -53,8 +53,7 @@ class ApplicationLoader extends play.api.ApplicationLoader {
   }
 }
 
-class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(context)
-  with I18nComponents { self =>
+class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(context) with I18nComponents { self =>
 
   Logger.info(s"Starting microservice GFORM}")
 
@@ -75,7 +74,15 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
 
   private val formModule = new FormModule(mongoModule, shortLivedCacheModule, formTemplateModule, fileUploadModule)
   private val validationModule = new ValidationModule(wSHttpModule, configModule)
-  private val submissionModule = new SubmissionModule(mongoModule, pdfGeneratorModule, formModule, formTemplateModule, fileUploadModule, timeModule, emailModule)
+  private val submissionModule =
+    new SubmissionModule(
+      mongoModule,
+      pdfGeneratorModule,
+      formModule,
+      formTemplateModule,
+      fileUploadModule,
+      timeModule,
+      emailModule)
   private val dmsModule = new DmsModule(fileUploadModule, pdfGeneratorModule)
   private val testOnlyModule = new TestOnlyModule(mongoModule, wSHttpModule, configModule, playComponents)
   /* TODO REMOVE WHEN WE DONT HAVE WHITELISTING */
@@ -83,7 +90,20 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
   /* TODO REMOVE WHEN WE DONT HAVE WHITELISTING ^^^^^^^^ */
   private val graphiteModule = new GraphiteModule(self)
 
-  private val playComponentsModule = new PlayComponentsModule(playComponents, akkaModule, configModule, auditingModule, metricsModule, formModule, formTemplateModule, testOnlyModule, submissionModule, validationModule, authModule, dmsModule)
+  private val playComponentsModule = new PlayComponentsModule(
+    playComponents,
+    akkaModule,
+    configModule,
+    auditingModule,
+    metricsModule,
+    formModule,
+    formTemplateModule,
+    testOnlyModule,
+    submissionModule,
+    validationModule,
+    authModule,
+    dmsModule
+  )
 
   override lazy val httpErrorHandler: HttpErrorHandler = playComponentsModule.errorHandler
   override lazy val httpRequestHandler: HttpRequestHandler = playComponentsModule.httpRequestHandler
@@ -92,9 +112,18 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
   override def router: Router = playComponentsModule.router
 
   lazy val customInjector: Injector = new SimpleInjector(injector) + playComponents.ahcWSComponents.wsApi
-  override lazy val application = new DefaultApplication(environment, applicationLifecycle, customInjector, configuration, httpRequestHandler, httpErrorHandler, actorSystem, materializer)
+  override lazy val application = new DefaultApplication(
+    environment,
+    applicationLifecycle,
+    customInjector,
+    configuration,
+    httpRequestHandler,
+    httpErrorHandler,
+    actorSystem,
+    materializer)
 
-  Logger.info(s"Microservice GFORM started in mode ${environment.mode} at port ${application.configuration.getString("http.port")}")
+  Logger.info(
+    s"Microservice GFORM started in mode ${environment.mode} at port ${application.configuration.getString("http.port")}")
 }
 
 object ApplicationModuleHelper {

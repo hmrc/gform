@@ -43,28 +43,24 @@ sealed trait Attribute[T] {
 
 object Attribute {
   implicit object string extends Attribute[String] {
-    def attribute(a: String, c: List[String]): Elem = {
+    def attribute(a: String, c: List[String]): Elem =
       createAttribute(a, "string", c)
-    }
   }
 
   implicit object int extends Attribute[Int] {
-    def attribute(a: String, c: List[Int]): Elem = {
+    def attribute(a: String, c: List[Int]): Elem =
       createAttribute(a, "int", c.map(_.toString))
-    }
   }
 
   implicit object long extends Attribute[Long] {
-    def attribute(a: String, c: List[Long]): Elem = {
+    def attribute(a: String, c: List[Long]): Elem =
       createAttribute(a, "integer", c.map(_.toString))
-    }
   }
 
   implicit object localDateTime extends Attribute[LocalDateTime] {
     val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
 
-    def attribute(a: String, c: List[LocalDateTime]): Elem = {
+    def attribute(a: String, c: List[LocalDateTime]): Elem =
       createAttribute(a, "time", c.map(date => date.format(formatter)))
-    }
   }
 }

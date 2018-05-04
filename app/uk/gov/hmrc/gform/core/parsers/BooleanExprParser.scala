@@ -26,33 +26,55 @@ object BooleanExprParser {
 
   def validate(expression: String): Opt[BooleanExpr] = validateWithParser(expression, exprDeterminer)
 
-  lazy val exprDeterminer: Parser[BooleanExpr] = booleanExpr ^^ ((loc, expr) => expr)
+  lazy val exprDeterminer: Parser[BooleanExpr] = booleanExpr ^^ { (loc, expr) =>
+    expr
+  }
 
-  lazy val booleanExpr: Parser[BooleanExpr] = (
-    "${" ~> basicExpressionParser <~ "}"
-    | "${" ~ basicExpressionParser ~ booleanOperation ~ basicExpressionParser ~ "}" ^^ { { (loc, _, expr1, op, expr2, _) => Or(expr1, expr2) } }
-    | "True" ^^ { (loc, value) => IsTrue }
-    | booleanExpr ~ booleanOperation ~ booleanExpr ^^ { { (loc, expr1, op, expr2) => Or(expr1, expr2) } })
+  lazy val booleanExpr: Parser[BooleanExpr] = ("${" ~> basicExpressionParser <~ "}"
+    | "${" ~ basicExpressionParser ~ booleanOperation ~ basicExpressionParser ~ "}" ^^ {
+      (loc, _, expr1, op, expr2, _) =>
+        Or(expr1, expr2)
+    }
+    | "True" ^^ { (loc, value) =>
+      IsTrue
+    }
+    | booleanExpr ~ booleanOperation ~ booleanExpr ^^ { (loc, expr1, op, expr2) =>
+      Or(expr1, expr2)
+    })
 
   lazy val basicExpressionParser: Parser[BooleanExpr] =
-    contextField ~ comparisonOperation ~ constant ^^ {
-      { (loc, expr1, op, expr2) => Equals(expr1, expr2) }
+    contextField ~ comparisonOperation ~ constant ^^ { (loc, expr1, op, expr2) =>
+      Equals(expr1, expr2)
     }
 
-  lazy val constant = (
-    "'" ~ stringConstant ~ "'" ^^ { (loc, _, str, _) => str }
-    | "''" ^^ { (loc, str) => Constant("") }
+  lazy val constant = ("'" ~ stringConstant ~ "'" ^^ { (loc, _, str, _) =>
+    str
+  }
+    | "''" ^^ { (loc, str) =>
+      Constant("")
+    }
     | anyConstant)
 
-  lazy val stringConstant: Parser[Constant] = """[ \w,]+""".r ^^ { (loc, str) => Constant(str) }
+  lazy val stringConstant: Parser[Constant] = """[ \w,]+""".r ^^ { (loc, str) =>
+    Constant(str)
+  }
 
-  lazy val anyConstant: Parser[Constant] = """[ \w,]+""".r ^^ { (loc, str) => Constant(str.trim) }
+  lazy val anyConstant: Parser[Constant] = """[ \w,]+""".r ^^ { (loc, str) =>
+    Constant(str.trim)
+  }
 
-  lazy val comparisonOperation: Parser[Comparison] = "=" ^^ { (loc, _) => Equality }
+  lazy val comparisonOperation: Parser[Comparison] = "=" ^^ { (loc, _) =>
+    Equality
+  }
 
-  lazy val booleanOperation: Parser[BooleanOperation] = "||" ^^ { (loc, _) => OrOperation }
+  lazy val booleanOperation: Parser[BooleanOperation] = "||" ^^ { (loc, _) =>
+    OrOperation
+  }
 
-  lazy val operation: Parser[Operation] = (
-    "+" ^^ { (loc, _) => Addition }
-    | "*" ^^ { (loc, _) => Multiplication })
+  lazy val operation: Parser[Operation] = ("+" ^^ { (loc, _) =>
+    Addition
+  }
+    | "*" ^^ { (loc, _) =>
+      Multiplication
+    })
 }

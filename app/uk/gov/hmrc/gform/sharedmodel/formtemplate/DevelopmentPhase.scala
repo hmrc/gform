@@ -36,21 +36,21 @@ case object LiveBanner extends DevelopmentPhase {
 object DevelopmentPhase {
   implicit val format: Format[DevelopmentPhase] = new Format[DevelopmentPhase] {
     override def writes(o: DevelopmentPhase): JsValue = o match {
-      case AlphaBanner => JsString(AlphaBanner.banner)
-      case BetaBanner => JsString(BetaBanner.banner)
+      case AlphaBanner    => JsString(AlphaBanner.banner)
+      case BetaBanner     => JsString(BetaBanner.banner)
       case ResearchBanner => JsString(ResearchBanner.banner)
-      case LiveBanner => JsString(LiveBanner.banner)
+      case LiveBanner     => JsString(LiveBanner.banner)
     }
 
-    override def reads(json: JsValue): JsResult[DevelopmentPhase] = {
+    override def reads(json: JsValue): JsResult[DevelopmentPhase] =
       json match {
-        case JsString("alpha") => JsSuccess(AlphaBanner)
-        case JsString("beta") => JsSuccess(BetaBanner)
+        case JsString("alpha")    => JsSuccess(AlphaBanner)
+        case JsString("beta")     => JsSuccess(BetaBanner)
         case JsString("research") => JsSuccess(ResearchBanner)
-        case JsString("live") => JsSuccess(LiveBanner)
-        case JsString(err) => JsError(s"only folr valid DevelopmentPhase, alpha, beta, research or live.$err is not allowed")
+        case JsString("live")     => JsSuccess(LiveBanner)
+        case JsString(err) =>
+          JsError(s"only folr valid DevelopmentPhase, alpha, beta, research or live.$err is not allowed")
         case _ => JsError("Failure")
       }
-    }
   }
 }

@@ -23,7 +23,8 @@ import uk.gov.hmrc.gform.time.FrozenTimeProvider
 
 class HelperSpec extends Spec {
 
-  "helper.createEnvelopeRequestBody" should "be compatible with fileuplod expectations" in new ExampleData with ExampleFileUploadData {
+  "helper.createEnvelopeRequestBody" should "be compatible with fileuplod expectations" in new ExampleData
+  with ExampleFileUploadData {
     val helper = new Helper(config, FrozenTimeProvider.exampleInstance)
     helper.createEnvelopeRequestBody(formTemplateId) shouldBe Json.obj(
       "constraints" -> Json.obj(
@@ -33,15 +34,16 @@ class HelperSpec extends Spec {
           "image/jpeg",
           "text/xml",
           "application/vnd.ms-excel",
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
-        "maxItems" -> 3,
-        "maxSize" -> "20MB",
-        "maxSizePerItem" -> "5MB"),
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        ),
+        "maxItems"       -> 3,
+        "maxSize"        -> "20MB",
+        "maxSizePerItem" -> "5MB"
+      ),
       "callbackUrl" -> "someCallback",
-      "expiryDate" -> "2017-02-11T05:45:00Z",
-      "metadata" -> Json.obj(
-        "application" -> "gform",
-        "formTemplateId" -> "AAA999"))
+      "expiryDate"  -> "2017-02-11T05:45:00Z",
+      "metadata"    -> Json.obj("application" -> "gform", "formTemplateId" -> "AAA999")
+    )
   }
 
 }

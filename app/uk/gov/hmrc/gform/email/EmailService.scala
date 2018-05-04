@@ -26,8 +26,10 @@ import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.http.HeaderCarrier
 
 class EmailService(emailConnector: EmailConnector) {
-  def sendEmail(optemailAddress: Option[String], templateId: String)(implicit hc: HeaderCarrier, mdc: ExecutionContext): Future[Unit] = {
-    Logger.info(s" Sending email, template: ${templateId}, headers: '${loggingHelpers.cleanHeaderCarrierHeader(hc)}'")
+  def sendEmail(optemailAddress: Option[String], templateId: String)(
+    implicit hc: HeaderCarrier,
+    mdc: ExecutionContext): Future[Unit] = {
+    Logger.info(s" Sending email, template: $templateId, headers: '${loggingHelpers.cleanHeaderCarrierHeader(hc)}'")
     optemailAddress.fold(().pure[Future])(email => emailConnector.sendEmail(new EmailTemplate(Seq(email), templateId)))
   }
   def getEmailAddress(form: Form): Option[String] =

@@ -32,7 +32,7 @@ class JsonParseTestFormat extends Spec {
   "A component without format" should "parse successfully" in {
 
     val jsonStr =
-      s"""${startOfJson}
+      s"""$startOfJson
          }"""
 
     implicitly[Reads[FormComponent]].reads(Json.parse(jsonStr)) shouldBe a[JsSuccess[_]]
@@ -41,9 +41,7 @@ class JsonParseTestFormat extends Spec {
   "A component with a format that is not a String" should "fail to parse" in {
 
     for {
-      snippet <- List(
-        """, "format" : 123 }""",
-        """, "format" : {} }""")
+      snippet <- List(""", "format" : 123 }""", """, "format" : {} }""")
     } {
       val jsResult = implicitly[Reads[FormComponent]].reads(Json.parse(startOfJson + snippet))
 
@@ -54,9 +52,7 @@ class JsonParseTestFormat extends Spec {
   "A component with a format that is not a valid string value" should "fail to parse" in {
 
     for {
-      snippet <- List(
-        """, "format" : "befor 2017-04-02,after 2017-02-01" }""",
-        """, "format" : "before 201-04-02" }""")
+      snippet <- List(""", "format" : "befor 2017-04-02,after 2017-02-01" }""", """, "format" : "before 201-04-02" }""")
     } {
       val jsResult = implicitly[Reads[FormComponent]].reads(Json.parse(startOfJson + snippet))
       jsResult should be(jsError)
@@ -66,14 +62,14 @@ class JsonParseTestFormat extends Spec {
   "A component with a valid format" should "parse correctly" in {
 
     for {
-      snippet <- List(
-        """, "format" : "number" }""")
+      snippet <- List(""", "format" : "number" }""")
     } {
       val jsResult = implicitly[Reads[FormComponent]].reads(Json.parse(startOfJson + snippet))
       jsResult shouldBe a[JsSuccess[_]]
-      jsResult.map(fv => fv.`type` match {
-        case Text(constraint, _) => constraint should equal(Number(11, 2, None))
-        case a @ _ => fail(s"expected a Text, got $a")
+      jsResult.map(fv =>
+        fv.`type` match {
+          case Text(constraint, _) => constraint should equal(Number(11, 2, None))
+          case a @ _               => fail(s"expected a Text, got $a")
       })
     }
   }

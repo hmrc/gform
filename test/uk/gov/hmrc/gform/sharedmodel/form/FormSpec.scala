@@ -28,18 +28,16 @@ class FormSpec extends Spec {
     val formJsObject: JsObject = Form.format.writes(form)
 
     val expectedFormJsObject = Json.obj(
-      "_id" -> "James007-AAA999",
-      "envelopeId" -> "b66c5979-e885-49cd-9281-c7f42ce6b307",
-      "userId" -> "James007",
+      "_id"            -> "James007-AAA999",
+      "envelopeId"     -> "b66c5979-e885-49cd-9281-c7f42ce6b307",
+      "userId"         -> "James007",
       "formTemplateId" -> "AAA999",
-      "fields" -> Json.arr(
-        Json.obj(
-          "id" -> "facePhoto",
-          "value" -> "face-photo.jpg"),
-        Json.obj(
-          "id" -> "startDate-year",
-          "value" -> "2008")),
-      "InProgress" -> Json.obj())
+      "fields" -> Json
+        .arr(
+          Json.obj("id" -> "facePhoto", "value"      -> "face-photo.jpg"),
+          Json.obj("id" -> "startDate-year", "value" -> "2008")),
+      "InProgress" -> Json.obj()
+    )
 
     formJsObject shouldBe expectedFormJsObject
     Form.format.reads(formJsObject) should be(JsSuccess(form))

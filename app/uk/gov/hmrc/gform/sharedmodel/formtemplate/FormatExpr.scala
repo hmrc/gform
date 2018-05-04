@@ -75,9 +75,17 @@ sealed trait TextConstraint
 
 final case object AnyText extends TextConstraint
 
-final case class Number(maxWholeDigits: Int = TextConstraint.defaultWholeDigits, maxFractionalDigits: Int = TextConstraint.defaultFactionalDigits, unit: Option[String] = None) extends TextConstraint
+final case class Number(
+  maxWholeDigits: Int = TextConstraint.defaultWholeDigits,
+  maxFractionalDigits: Int = TextConstraint.defaultFactionalDigits,
+  unit: Option[String] = None)
+    extends TextConstraint
 
-final case class PositiveNumber(maxWholeDigits: Int = TextConstraint.defaultWholeDigits, maxFractionalDigits: Int = TextConstraint.defaultFactionalDigits, unit: Option[String] = None) extends TextConstraint
+final case class PositiveNumber(
+  maxWholeDigits: Int = TextConstraint.defaultWholeDigits,
+  maxFractionalDigits: Int = TextConstraint.defaultFactionalDigits,
+  unit: Option[String] = None)
+    extends TextConstraint
 
 case object BasicText extends TextConstraint
 case object ShortText extends TextConstraint
@@ -110,9 +118,9 @@ object TextExpression {
     val stdReads = Json.reads[TextExpression]
     val reads: Reads[TextExpression] = stdReads orElse Reads {
       case JsString(expression) =>
-        BasicParsers.validateWithParser(expression, ValueParser.expr).fold(
-          unexpectedState => JsError(unexpectedState.toString),
-          expr => JsSuccess(TextExpression(expr)))
+        BasicParsers
+          .validateWithParser(expression, ValueParser.expr)
+          .fold(unexpectedState => JsError(unexpectedState.toString), expr => JsSuccess(TextExpression(expr)))
       case otherwise => JsError(s"Expected String as JsValue for TextExpression, got: $otherwise")
     }
     OFormat[TextExpression](reads, writes)

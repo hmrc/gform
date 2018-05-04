@@ -4,6 +4,7 @@ import sbt.Keys._
 import sbt.Tests.{Group, SubProcess}
 import sbt._
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
+import com.lucidchart.sbt.scalafmt.ScalafmtCorePlugin.autoImport._
 
 
 trait MicroService {
@@ -30,7 +31,8 @@ trait MicroService {
     .settings(publishingSettings: _*)
     .settings(defaultSettings(): _*)
     .settings(
-      scalaVersion in ThisBuild := "2.11.8",
+      scalafmtOnCompile := true,
+      scalaVersion := "2.11.12",
       libraryDependencies ++= appDependencies,
       evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
       routesImport ++= Seq(
@@ -54,6 +56,7 @@ trait MicroService {
     .configs(IntegrationTest)
     .settings(inConfig(IntegrationTest)(Defaults.itSettings): _*)
     .settings(
+
       Keys.fork in IntegrationTest := false,
       unmanagedSourceDirectories in IntegrationTest := Seq((baseDirectory in IntegrationTest).value / "it"),
       addTestReportOption(IntegrationTest, "int-test-reports"),

@@ -47,7 +47,8 @@ class MongoModule(playComponents: PlayComponents) {
     override def stop(): Future[_] = ???
   }
 
-  val reactiveMongoComponent: ReactiveMongoComponentImpl = new ReactiveMongoComponentImpl(configInApp, playComponents.context.lifecycle)
+  val reactiveMongoComponent: ReactiveMongoComponentImpl =
+    new ReactiveMongoComponentImpl(configInApp, playComponents.context.lifecycle)
   val mongo: () => DefaultDB = reactiveMongoComponent.mongoConnector.db
 
 }

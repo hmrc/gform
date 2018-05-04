@@ -23,10 +23,12 @@ case class FormTemplateId(value: String)
 
 object FormTemplateId {
 
-  implicit val mongoVformat: Format[FormTemplateId] = ValueClassFormat.vformat("_id", FormTemplateId.apply, x => JsString(x.value))
+  implicit val mongoVformat: Format[FormTemplateId] =
+    ValueClassFormat.vformat("_id", FormTemplateId.apply, x => JsString(x.value))
   val mongoOformat: OFormat[FormTemplateId] = ValueClassFormat.oformat("_id", FormTemplateId.apply, _.value)
 
-  val vformat: Format[FormTemplateId] = ValueClassFormat.vformat("formTemplateId", FormTemplateId.apply, x => JsString(x.value))
+  val vformat: Format[FormTemplateId] =
+    ValueClassFormat.vformat("formTemplateId", FormTemplateId.apply, x => JsString(x.value))
   val oformat: OFormat[FormTemplateId] = ValueClassFormat.oformat("formTemplateId", FormTemplateId.apply, _.value)
 
 }

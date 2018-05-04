@@ -28,11 +28,12 @@ object Offset {
   implicit val offsetHelper: OFormat[Offset] = {
     val offsetExpr: OFormat[Offset] = Json.format[Offset]
 
-    val convertToInt = (str: String) => if (str.matches(signedIntRegex)) JsSuccess(Offset(str.toInt)) else JsError(s"Couldn't parse Integer from offset, $str")
+    val convertToInt = (str: String) =>
+      if (str.matches(signedIntRegex)) JsSuccess(Offset(str.toInt))
+      else JsError(s"Couldn't parse Integer from offset, $str")
 
     val reads: Reads[Offset] = (offsetExpr: Reads[Offset]) | Reads {
       case JsString(offsetAsStr) =>
-
         convertToInt(offsetAsStr)
 
       case otherwise => JsError(s"Invalid format expression. Expected String, got $otherwise")

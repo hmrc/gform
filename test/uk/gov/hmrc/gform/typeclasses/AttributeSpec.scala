@@ -65,7 +65,8 @@ class AttributeSpec extends Spec {
 
   it should "return xml with 'time' type for LocalDateTime type" in {
 
-    val xml = implicitly[Attribute[LocalDateTime]].attribute("some-name", List(LocalDateTime.of(2012, 12, 3, 12, 34, 56)))
+    val xml =
+      implicitly[Attribute[LocalDateTime]].attribute("some-name", List(LocalDateTime.of(2012, 12, 3, 12, 34, 56)))
 
     val expected = <attribute>
                      <attribute_name>some-name</attribute_name>

@@ -41,7 +41,9 @@ object FormComponent {
   implicit val format: OFormat[FormComponent] = {
     implicit val formatFieldValue = Json.format[FormComponent]
 
-    val toFieldValue: Reads[FormComponent] = Reads[FormComponent] { (json: JsValue) => new FormCompomentMaker(json).optFieldValue() fold (us => JsError(us.toString), fv => JsSuccess(fv)) }
+    val toFieldValue: Reads[FormComponent] = Reads[FormComponent] { (json: JsValue) =>
+      new FormCompomentMaker(json).optFieldValue() fold (us => JsError(us.toString), fv => JsSuccess(fv))
+    }
 
     val reads: Reads[FormComponent] = (formatFieldValue: Reads[FormComponent]) | toFieldValue
 

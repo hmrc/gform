@@ -32,7 +32,7 @@ class JsonParseTestPresentationHint extends Spec {
   "A component without presentationHint" should "parse successfully" in {
 
     val jsonStr =
-      s"""${startOfJson}
+      s"""$startOfJson
          }"""
 
     var jsr: JsResult[FormComponent] = null
@@ -53,9 +53,9 @@ class JsonParseTestPresentationHint extends Spec {
 
     for {
       snippet <- List(
-        """, "presentationHint" : "collapseGroupUnder" }""",
-        """, "presentationHint" : "summarizeGroupAsGrid" }""",
-        """, "presentationHint" : "anyString" }""")
+                  """, "presentationHint" : "collapseGroupUnder" }""",
+                  """, "presentationHint" : "summarizeGroupAsGrid" }""",
+                  """, "presentationHint" : "anyString" }""")
     } {
       val jsResult = implicitly[Reads[FormComponent]].reads(Json.parse(startOfJson + snippet))
       jsResult should be(jsError)
@@ -65,8 +65,7 @@ class JsonParseTestPresentationHint extends Spec {
   "A component with a valid presentationHint" should "parse correctly" in {
 
     for {
-      snippet <- List(
-        """, "presentationHint" : "collapseGroupUnderLabel,summariseGroupAsGrid" }""")
+      snippet <- List(""", "presentationHint" : "collapseGroupUnderLabel,summariseGroupAsGrid" }""")
     } {
       val jsResult = implicitly[Reads[FormComponent]].reads(Json.parse(startOfJson + snippet))
       jsResult shouldBe a[JsSuccess[_]]

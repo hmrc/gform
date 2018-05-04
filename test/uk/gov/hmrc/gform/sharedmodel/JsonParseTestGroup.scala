@@ -54,19 +54,42 @@ class JsonParseTestGroup extends Spec {
 
     val jsResult = implicitly[Reads[FormComponent]].reads(Json.parse(jsonStr))
 
-    jsResult should beJsSuccess(FormComponent(
-      FormComponentId("gid"),
-      Group(
-        List(
-          FormComponent(
+    jsResult should beJsSuccess(
+      FormComponent(
+        FormComponentId("gid"),
+        Group(
+          List(FormComponent(
             FormComponentId("cid"),
-            Choice(Radio, NonEmptyList.of("A", "B"), Vertical, List(), None), "clabel", None, None, None,
-            true, true, true, derived = false, onlyShowOnSummary = false, None)),
-        Horizontal,
-        Some(5), Some(1), Some("repeatLabel"), Some("repeatAddAnotherText")),
-      "glabel", None, None, None, true, true, true, derived = false, onlyShowOnSummary = false,
-      None,
-      Some(List(CollapseGroupUnderLabel))))
+            Choice(Radio, NonEmptyList.of("A", "B"), Vertical, List(), None),
+            "clabel",
+            None,
+            None,
+            None,
+            true,
+            true,
+            true,
+            derived = false,
+            onlyShowOnSummary = false,
+            None
+          )),
+          Horizontal,
+          Some(5),
+          Some(1),
+          Some("repeatLabel"),
+          Some("repeatAddAnotherText")
+        ),
+        "glabel",
+        None,
+        None,
+        None,
+        true,
+        true,
+        true,
+        derived = false,
+        onlyShowOnSummary = false,
+        None,
+        Some(List(CollapseGroupUnderLabel))
+      ))
 
   }
 
@@ -101,19 +124,42 @@ class JsonParseTestGroup extends Spec {
 
     val jsResult = implicitly[Reads[FormComponent]].reads(Json.parse(jsonStr))
 
-    jsResult should beJsSuccess(FormComponent(
-      FormComponentId("gid"),
-      Group(
-        List(
-          FormComponent(
+    jsResult should beJsSuccess(
+      FormComponent(
+        FormComponentId("gid"),
+        Group(
+          List(FormComponent(
             FormComponentId("cid"),
-            Choice(Radio, NonEmptyList.of("A", "B"), Vertical, List(), None), "clabel", None, None, None,
-            mandatory = false, true, true, derived = false, false, None)),
-        Horizontal,
-        Some(5), Some(0), Some("repeatLabel"), Some("repeatAddAnotherText")),
-      "glabel", None, None, None, true, true, true, derived = false, false,
-      None,
-      Some(List(CollapseGroupUnderLabel))))
+            Choice(Radio, NonEmptyList.of("A", "B"), Vertical, List(), None),
+            "clabel",
+            None,
+            None,
+            None,
+            mandatory = false,
+            true,
+            true,
+            derived = false,
+            false,
+            None
+          )),
+          Horizontal,
+          Some(5),
+          Some(0),
+          Some("repeatLabel"),
+          Some("repeatAddAnotherText")
+        ),
+        "glabel",
+        None,
+        None,
+        None,
+        true,
+        true,
+        true,
+        derived = false,
+        false,
+        None,
+        Some(List(CollapseGroupUnderLabel))
+      ))
   }
 
   "A raw group" should "fail to parse if repeatsMin/Max has errors" in {

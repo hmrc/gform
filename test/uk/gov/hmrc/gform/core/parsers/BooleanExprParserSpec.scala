@@ -26,16 +26,18 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
   "BooleanExprParser" should "parse or-expressions" in {
     val res = BooleanExprParser.validate("${isPremisesSameAsBusinessAddress=0} || ${amountA=22}")
 
-    res shouldBe Right(Or(Equals(FormCtx("isPremisesSameAsBusinessAddress"), Constant("0")), Equals(FormCtx("amountA"), Constant("22"))))
+    res shouldBe Right(
+      Or(Equals(FormCtx("isPremisesSameAsBusinessAddress"), Constant("0")), Equals(FormCtx("amountA"), Constant("22"))))
 
   }
 
   "BooleanExprParser" should "parse or-expressions inside form context" in {
     val res = BooleanExprParser.validate("${hasOrgsAddressChanged=1 || hasOrgsAddressChanged=0}")
 
-    res shouldBe Right(Or(
-      Equals(FormCtx("hasOrgsAddressChanged"), Constant("1")),
-      Equals(FormCtx("hasOrgsAddressChanged"), Constant("0"))))
+    res shouldBe Right(
+      Or(
+        Equals(FormCtx("hasOrgsAddressChanged"), Constant("1")),
+        Equals(FormCtx("hasOrgsAddressChanged"), Constant("0"))))
 
   }
 
@@ -46,7 +48,7 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
 
     res.left.value match {
       case UnexpectedState(msg) => msg.contains("expected '=' or '\\s+'") shouldBe true
-      case _ => fail("expected an UnexpectedState")
+      case _                    => fail("expected an UnexpectedState")
     }
   }
 
@@ -62,7 +64,7 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
 
     res.left.value match {
       case UnexpectedState(msg) => pointToFirstUnexpectedCharacter(msg)
-      case _ => fail("expected an UnexpectedState")
+      case _                    => fail("expected an UnexpectedState")
     }
   }
 
@@ -72,8 +74,7 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
     res should be('left)
 
     res.left.value should be(
-      UnexpectedState(
-        """
+      UnexpectedState("""
 Unable to parse expression ${eeitt.businessUserx = XYZ}.
 Errors:
 ${eeitt.businessUserx = XYZ}:1: unexpected characters; expected '=' or '\s+'
@@ -82,7 +83,8 @@ ${eeitt.businessUserx = XYZ}                    ^
   }
 
   it should "parse ${isPremisesSameAsBusinessAddress=0_0}" in {
-    BooleanExprParser.validate("${isPremisesSameAsBusinessAddress=0_0}") shouldBe Right(Equals(FormCtx("isPremisesSameAsBusinessAddress"), Constant("0_0")))
+    BooleanExprParser.validate("${isPremisesSameAsBusinessAddress=0_0}") shouldBe Right(
+      Equals(FormCtx("isPremisesSameAsBusinessAddress"), Constant("0_0")))
   }
 
   it should "parse True" in {

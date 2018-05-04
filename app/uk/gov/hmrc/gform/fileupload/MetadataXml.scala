@@ -42,11 +42,12 @@ object MetadataXml {
       createAttribute("cas_key", "AUDIT_SERVICE"), // We are not using CAS
       createAttribute("classification_type", dmsSubmission.classificationType),
       createAttribute("business_area", dmsSubmission.businessArea),
-      createAttribute("attachment_count", numberOfAttachments))
+      createAttribute("attachment_count", numberOfAttachments)
+    )
     <metadata></metadata>.copy(child = attributes)
   }
 
-  private def createHeader(submissionRef: SubmissionRef, reconciliationId: ReconciliationId): Elem = {
+  private def createHeader(submissionRef: SubmissionRef, reconciliationId: ReconciliationId): Elem =
     <header>
       <title>{ submissionRef.value }</title>
       <format>pdf</format>
@@ -56,13 +57,11 @@ object MetadataXml {
       <target>DMS</target>
       <reconciliation_id>{ reconciliationId.value }</reconciliation_id>
     </header>
-  }
 
-  private def createDocument(elems: List[Elem]): Elem = {
+  private def createDocument(elems: List[Elem]): Elem =
     <documents xmlns="http://govtalk.gov.uk/hmrc/gis/content/1">
       { <document></document>.copy(child = elems) }
     </documents>
-  }
 
   def getXml(
     submissionRef: SubmissionRef,
@@ -70,9 +69,8 @@ object MetadataXml {
     sap: SubmissionAndPdf,
     dmsSubmission: DmsSubmission,
     numberOfAttachments: Int): Elem = {
-    val body = List(
-      createHeader(submissionRef, reconciliationId),
-      createMetadata(sap, dmsSubmission, numberOfAttachments))
+    val body =
+      List(createHeader(submissionRef, reconciliationId), createMetadata(sap, dmsSubmission, numberOfAttachments))
 
     trim(createDocument(body))
   }
@@ -82,7 +80,6 @@ object MetadataXml {
   private def createAttribute[T: Attribute](name: String, value: T): Elem =
     createAttribute(name, List(value))
 
-  private def createAttribute[T: Attribute](name: String, values: List[T]): Elem = {
+  private def createAttribute[T: Attribute](name: String, values: List[T]): Elem =
     implicitly[Attribute[T]].attribute(name, values)
-  }
 }

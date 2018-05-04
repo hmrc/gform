@@ -37,8 +37,10 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
       }""") //TODO add in actual regime we are looking for
 
   def lookup(utr: String)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[AddressDes] = {
-    implicit val hc = HeaderCarrier(extraHeaders = Seq("Environment" -> desConfig.environment), authorization = Some(Authorization(desConfig.authorizationToken)))
-    Logger.info(s"Des lookup, UTR: '${utr}', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
+    implicit val hc = HeaderCarrier(
+      extraHeaders = Seq("Environment" -> desConfig.environment),
+      authorization = Some(Authorization(desConfig.authorizationToken)))
+    Logger.info(s"Des lookup, UTR: '$utr', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
     wSHttp.POST[JsValue, AddressDes](s"$baseUrl${desConfig.basePath}/registration/organisation/utr/$utr", lookupJson)
   }
 

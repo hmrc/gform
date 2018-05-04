@@ -31,23 +31,30 @@ import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import scala.concurrent.Future
 import uk.gov.hmrc.http.HeaderCarrier
 
-class FileUploadService(fileUploadConnector: FileUploadConnector, fileUploadFrontendConnector: FileUploadFrontendConnector, timeModule: TimeProvider = new TimeProvider) {
+class FileUploadService(
+  fileUploadConnector: FileUploadConnector,
+  fileUploadFrontendConnector: FileUploadFrontendConnector,
+  timeModule: TimeProvider = new TimeProvider) {
 
   def createEnvelope(formTypeId: FormTemplateId)(implicit hc: HeaderCarrier): Future[EnvelopeId] = {
     val f = fileUploadConnector.createEnvelope(formTypeId)
-    f map { id => Logger.debug(s"env-id creation: ${id}") }
+    f map { id =>
+      Logger.debug(s"env-id creation: $id")
+    }
     f
   }
 
-  def submitEnvelope(submissionAndPdf: SubmissionAndPdf, dmsSubmission: DmsSubmission, numberOfAttachments: Int)(implicit hc: HeaderCarrier): Future[Unit] = {
+  def submitEnvelope(submissionAndPdf: SubmissionAndPdf, dmsSubmission: DmsSubmission, numberOfAttachments: Int)(
+    implicit hc: HeaderCarrier): Future[Unit] = {
 
     val submissionRef: SubmissionRef = submissionAndPdf.submission.submissionRef
     val envelopeId: EnvelopeId = submissionAndPdf.submission.envelopeId
-    Logger.debug(s"env-id submit: ${envelopeId}")
+    Logger.debug(s"env-id submit: $envelopeId")
     val date = timeModule.localDateTime().format(DateTimeFormatter.ofPattern("YYYYMMdd"))
     val fileNamePrefix = s"$submissionRef-$date"
     val reconciliationId = ReconciliationId.create(submissionRef)
-    val metadataXml = MetadataXml.xmlDec + "\n" + MetadataXml.getXml(submissionRef, reconciliationId, submissionAndPdf, dmsSubmission, numberOfAttachments)
+    val metadataXml = MetadataXml.xmlDec + "\n" + MetadataXml
+      .getXml(submissionRef, reconciliationId, submissionAndPdf, dmsSubmission, numberOfAttachments)
 
     val uploadPfdF: Future[Unit] = fileUploadFrontendConnector.upload(
       envelopeId,
@@ -56,12 +63,13 @@ class FileUploadService(fileUploadConnector: FileUploadConnector, fileUploadFron
       ByteString(submissionAndPdf.pdfSummary.pdfContent),
       ContentType.`application/pdf`)
 
-    val uploadXmlF: Future[Unit] = fileUploadFrontendConnector.upload(
-      envelopeId,
-      xml,
-      s"$fileNamePrefix-metadata.xml",
-      ByteString(metadataXml.getBytes),
-      ContentType.`application/xml`)
+    val uploadXmlF: Future[Unit] = fileUploadFrontendConnector
+      .upload(
+        envelopeId,
+        xml,
+        s"$fileNamePrefix-metadata.xml",
+        ByteString(metadataXml.getBytes),
+        ContentType.`application/xml`)
 
     val uploadAnyDataXmlF: Future[Unit] = submissionAndPdf.xmlSummary match {
       case Some(elem) =>
@@ -84,9 +92,8 @@ class FileUploadService(fileUploadConnector: FileUploadConnector, fileUploadFron
     } yield ()
   }
 
-  def deleteFile(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier) = {
+  def deleteFile(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier) =
     fileUploadConnector.deleteFile(envelopeId, fileId)
-  }
 }
 
 object FileUploadService {

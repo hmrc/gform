@@ -24,9 +24,10 @@ object SectionNumber {
   implicit val format: Format[SectionNumber] = Format[SectionNumber](
     Reads[SectionNumber] {
       case JsNumber(n: BigDecimal) => JsSuccess(SectionNumber(n.toInt))
-      case unknown => JsError(s"JsNumber value expected, got: $unknown")
+      case unknown                 => JsError(s"JsNumber value expected, got: $unknown")
     },
-    Writes[SectionNumber](a => JsNumber(a.value)))
+    Writes[SectionNumber](a => JsNumber(a.value))
+  )
 
   val firstSection = SectionNumber(0)
 }

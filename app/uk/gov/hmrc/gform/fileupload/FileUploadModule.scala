@@ -23,11 +23,14 @@ import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
 
 class FileUploadModule(configModule: ConfigModule, wSHttpModule: WSHttpModule, timeModule: TimeModule) {
 
-  val fileUploadConnector: FileUploadConnector = new FileUploadConnector(config, wSHttpModule.auditableWSHttp, timeModule.timeProvider)
+  val fileUploadConnector: FileUploadConnector =
+    new FileUploadConnector(config, wSHttpModule.auditableWSHttp, timeModule.timeProvider)
 
-  val fileUploadFrontendConnector: FileUploadFrontendConnector = new FileUploadFrontendConnector(config, wSHttpModule.auditableWSHttp)
+  val fileUploadFrontendConnector: FileUploadFrontendConnector =
+    new FileUploadFrontendConnector(config, wSHttpModule.auditableWSHttp)
 
-  val fileUploadService: FileUploadService = new FileUploadService(fileUploadConnector, fileUploadFrontendConnector, timeModule.timeProvider)
+  val fileUploadService: FileUploadService =
+    new FileUploadService(fileUploadConnector, fileUploadFrontendConnector, timeModule.timeProvider)
 
   private lazy val config: FUConfig = FUConfig(
     fileUploadBaseUrl,
@@ -36,7 +39,8 @@ class FileUploadModule(configModule: ConfigModule, wSHttpModule: WSHttpModule, t
     s"${ac.formMaxAttachmentTotalSizeMB}MB", //heuristic to compute max size
     s"${ac.formMaxAttachmentSizeMB}MB",
     ac.formMaxAttachments,
-    configModule.appConfig.contentTypes)
+    configModule.appConfig.contentTypes
+  )
 
   //TODO: provide separate one here
   private lazy implicit val ec = MdcLoggingExecutionContext

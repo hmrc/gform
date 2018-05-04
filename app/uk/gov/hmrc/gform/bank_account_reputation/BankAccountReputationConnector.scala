@@ -34,21 +34,22 @@ class BankAccountReputationConnector(wSHttp: WSHttp, baseUrl: String) {
   }
 }
 
-case class Response(
-  accountNumberWithSortCodeIsValid: Boolean,
-  nonStandardAccountDetailsRequiredForBacs: String)
+case class Response(accountNumberWithSortCodeIsValid: Boolean, nonStandardAccountDetailsRequiredForBacs: String)
 
 object Response {
   private val reads = Reads[Response] { json =>
     (json \ "parameters" \ "nonStandardAccountDetailsRequiredForBacs").asOpt[String] match {
       case Some(str) => parse(json, str)
-      case None => JsError("the response does not match desired parameters : accountNumberWithSortCodeIsValid, accountNumberWithSortCodeIsValid")
+      case None =>
+        JsError(
+          "the response does not match desired parameters : accountNumberWithSortCodeIsValid, accountNumberWithSortCodeIsValid")
     }
   }
 
   private def parse(json: JsValue, str: String) =
     str match {
-      case "no" | "yes" | "inapplicable" => JsSuccess(Response((json \ "accountNumberWithSortCodeIsValid").as[Boolean], str))
+      case "no" | "yes" | "inapplicable" =>
+        JsSuccess(Response((json \ "accountNumberWithSortCodeIsValid").as[Boolean], str))
       case _ => JsError("Response did not match no, yes, inapplicable")
     }
 

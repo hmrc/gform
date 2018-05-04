@@ -50,11 +50,15 @@ class AuditingModule(configModule: ConfigModule, akkaModule: AkkaModule, playCom
     override val appName: String = configModule.appConfig.appName
     override def mat: Materializer = akkaModule.materializer
     override val auditConnector: AuditConnector = self.auditConnector
-    override def controllerNeedsAuditing(controllerName: String): Boolean = configModule.controllerConfig.paramsForController(controllerName).needsAuditing
+    override def controllerNeedsAuditing(controllerName: String): Boolean =
+      configModule.controllerConfig.paramsForController(controllerName).needsAuditing
   }
 
 }
 object loggingHelpers {
-  def cleanHeaders(headers: Headers) = s"headers: '${headers.remove("Authorization", "token", "customerId").toSimpleMap.toString()}'"
-  def cleanHeaderCarrierHeader(hc: HeaderCarrier): String = s"headers, sessionId: '${hc.sessionId.getOrElse("")}, deviceId: '${hc.deviceID.getOrElse("")}' requestId: '${hc.requestId.getOrElse("")}', request chain: '${hc.requestChain.value}'"
+  def cleanHeaders(headers: Headers) =
+    s"headers: '${headers.remove("Authorization", "token", "customerId").toSimpleMap.toString()}'"
+  def cleanHeaderCarrierHeader(hc: HeaderCarrier): String =
+    s"headers, sessionId: '${hc.sessionId.getOrElse("")}, deviceId: '${hc.deviceID.getOrElse("")}' requestId: '${hc.requestId
+      .getOrElse("")}', request chain: '${hc.requestChain.value}'"
 }
