@@ -32,11 +32,13 @@ object BooleanExpr {
 
   def isTrue(expr: BooleanExpr, data: Map[FormComponentId, FormField]): Boolean =
     expr match {
-      case Equals(FormCtx(fieldId), Constant(value)) if data.get(FormComponentId(fieldId)).toList.map(_.value).contains(value) => true
-      case Or(expr1, expr2) => isTrue(expr1, data) | isTrue(expr2, data)
+      case Equals(FormCtx(fieldId), Constant(value))
+          if data.get(FormComponentId(fieldId)).toList.map(_.value).contains(value) =>
+        true
+      case Or(expr1, expr2)  => isTrue(expr1, data) | isTrue(expr2, data)
       case And(expr1, expr2) => isTrue(expr1, data) & isTrue(expr2, data)
-      case IsTrue => true
-      case _ => false
+      case IsTrue            => true
+      case _                 => false
     }
 }
 

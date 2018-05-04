@@ -27,21 +27,20 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 class FormService(save4Later: Save4Later) {
 
-  def get(formId: FormId)(implicit hc: HeaderCarrier): Future[Form] = {
+  def get(formId: FormId)(implicit hc: HeaderCarrier): Future[Form] =
     save4Later.get(formId)
-  }
 
-  def delete(formId: FormId)(implicit hc: HeaderCarrier): Future[Unit] = {
+  def delete(formId: FormId)(implicit hc: HeaderCarrier): Future[Unit] =
     save4Later.delete(formId)
-  }
 
-  def insertEmpty(userId: UserId, formTemplateId: FormTemplateId, envelopeId: EnvelopeId, formId: FormId)(implicit hc: HeaderCarrier): Future[Unit] = {
+  def insertEmpty(userId: UserId, formTemplateId: FormTemplateId, envelopeId: EnvelopeId, formId: FormId)(
+    implicit hc: HeaderCarrier): Future[Unit] = {
     val emptyFormData = FormData(fields = Nil)
     val form = Form(formId, envelopeId, userId, formTemplateId, None, emptyFormData, InProgress)
     save4Later.upsert(formId, form)
   }
 
-  def updateUserData(formId: FormId, userData: UserData)(implicit hc: HeaderCarrier): Future[Unit] = {
+  def updateUserData(formId: FormId, userData: UserData)(implicit hc: HeaderCarrier): Future[Unit] =
     for {
       form <- save4Later.get(formId)
       newForm = form
@@ -51,24 +50,24 @@ class FormService(save4Later: Save4Later) {
           status = newStatus(form, userData.formStatus))
       _ <- save4Later.upsert(formId, newForm)
     } yield ()
-  }
 
-  private def newStatus(form: Form, status: FormStatus) = {
+  private def newStatus(form: Form, status: FormStatus) =
     LifeCycleStatus.newStatus(form, status)
-  }
 
-  def saveKeyStore(formId: FormId, data: Map[String, JsValue])(implicit hc: HeaderCarrier): Future[Unit] = save4Later.saveKeyStore(formId, data)
+  def saveKeyStore(formId: FormId, data: Map[String, JsValue])(implicit hc: HeaderCarrier): Future[Unit] =
+    save4Later.saveKeyStore(formId, data)
 
-  def getKeyStore(formId: FormId)(implicit hc: HeaderCarrier): Future[Option[Map[String, JsValue]]] = save4Later.getKeyStore(formId)
+  def getKeyStore(formId: FormId)(implicit hc: HeaderCarrier): Future[Option[Map[String, JsValue]]] =
+    save4Later.getKeyStore(formId)
 }
 
 object LifeCycleStatus {
   def newStatus(form: Form, status: FormStatus): FormStatus = form.status match {
     case InProgress => status
-    case Summary => if (status != InProgress) status else form.status
-    case Validated => if (status == InProgress) Summary else if (status == Summary || status == Signed) status else form.status
-    case Signed => if (status == Submitted) status else form.status
+    case Summary    => if (status != InProgress) status else form.status
+    case Validated =>
+      if (status == InProgress) Summary else if (status == Summary || status == Signed) status else form.status
+    case Signed    => if (status == Submitted) status else form.status
     case Submitted => form.status
   }
 }
-

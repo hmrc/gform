@@ -19,6 +19,4 @@ package uk.gov.hmrc.gform.akka
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 
-class AkkaModule(
-  val materializer: Materializer,
-  val actorSystem: ActorSystem)
+class AkkaModule(val materializer: Materializer, val actorSystem: ActorSystem)

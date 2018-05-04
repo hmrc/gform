@@ -25,9 +25,7 @@ import scala.collection.immutable._
 
 sealed trait ComponentType
 
-case class Text(
-  constraint: TextConstraint,
-  value: Expr) extends ComponentType
+case class Text(constraint: TextConstraint, value: Expr) extends ComponentType
 
 case class UkSortCode(value: Expr) extends ComponentType
 
@@ -35,10 +33,7 @@ object UkSortCode {
   val fields = (id: FormComponentId) => List("1", "2", "3").map(id.withSuffix)
 }
 
-case class Date(
-  constraintType: DateConstraintType,
-  offset: Offset,
-  value: Option[DateValue]) extends ComponentType
+case class Date(constraintType: DateConstraintType, offset: Offset, value: Option[DateValue]) extends ComponentType
 
 case object Date {
   val fields = (id: FormComponentId) => List("day", "month", "year").map(id.withSuffix)
@@ -48,7 +43,8 @@ case class Address(international: Boolean) extends ComponentType
 
 case object Address {
   val mandatoryFields = (id: FormComponentId) => List("street1").map(id.withSuffix)
-  val optionalFields = (id: FormComponentId) => List("street2", "street3", "street4", "uk", "postcode", "country").map(id.withSuffix)
+  val optionalFields = (id: FormComponentId) =>
+    List("street2", "street3", "street4", "uk", "postcode", "country").map(id.withSuffix)
   val fields = (id: FormComponentId) => mandatoryFields(id) ++ optionalFields(id)
 }
 
@@ -57,7 +53,8 @@ case class Choice(
   options: NonEmptyList[String],
   orientation: Orientation,
   selections: List[Int],
-  optionHelpText: Option[List[String]]) extends ComponentType
+  optionHelpText: Option[List[String]])
+    extends ComponentType
 
 sealed trait ChoiceType
 final case object Radio extends ChoiceType
@@ -93,7 +90,8 @@ case class Group(
   repeatsMax: Option[Int] = None,
   repeatsMin: Option[Int] = None,
   repeatLabel: Option[String] = None,
-  repeatAddAnotherText: Option[String] = None) extends ComponentType
+  repeatAddAnotherText: Option[String] = None)
+    extends ComponentType
 
 case class InformationMessage(infoType: InfoType, infoText: String) extends ComponentType
 
@@ -103,7 +101,7 @@ object ComponentType {
 
   implicit def readsNonEmptyList[T: Reads] = Reads[NonEmptyList[T]] { json =>
     Json.fromJson[List[T]](json).flatMap {
-      case Nil => JsError(ValidationError(s"Required at least one element. Got: $json"))
+      case Nil     => JsError(ValidationError(s"Required at least one element. Got: $json"))
       case x :: xs => JsSuccess(NonEmptyList(x, xs))
     }
   }

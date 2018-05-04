@@ -21,13 +21,12 @@ import play.api.libs.json.Json
 import play.api.mvc.Action
 import uk.gov.hmrc.gform.controllers.BaseController
 
-class AuthController(
-  authService: AuthService) extends BaseController {
+class AuthController(authService: AuthService) extends BaseController {
 
   def check = Action.async(parse.json[String]) { implicit request =>
     authService.whiteListed(request.body).map {
       case Some(x) => Ok(Json.toJson(x.index))
-      case None => NotFound
+      case None    => NotFound
     }
   }
 
@@ -44,8 +43,6 @@ class AuthController(
       x <- authService.delete(request.body)
     } yield x
 
-    result.fold(
-      errors => errors.asBadRequest,
-      good => NoContent)
+    result.fold(errors => errors.asBadRequest, good => NoContent)
   }
 }

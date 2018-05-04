@@ -22,12 +22,13 @@ import uk.gov.hmrc.gform.core.FOpt
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-class AuthService(
-  authRepository: AuthRepository) {
+class AuthService(authRepository: AuthRepository) {
 
-  def whiteListed(email: String)(implicit ex: ExecutionContext): Future[Option[WhiteListedUser]] = authRepository.find(email)
+  def whiteListed(email: String)(implicit ex: ExecutionContext): Future[Option[WhiteListedUser]] =
+    authRepository.find(email)
 
-  def insert(email: String)(implicit ex: ExecutionContext): Future[WriteResult] = authRepository.insert(WhiteListedUser(_id = email))
+  def insert(email: String)(implicit ex: ExecutionContext): Future[WriteResult] =
+    authRepository.insert(WhiteListedUser(_id = email))
 
   def delete(email: String)(implicit ex: ExecutionContext): FOpt[Unit] = authRepository.delete(email)
 

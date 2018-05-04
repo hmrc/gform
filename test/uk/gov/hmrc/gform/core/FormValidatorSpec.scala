@@ -26,31 +26,35 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyText, _ }
 
 class FormValidatorSpec extends Spec {
 
-  def getMandatoryFieldValue(id: String) = FormComponent(
-    id = FormComponentId(id),
-    `type` = Text(AnyText, Constant("")),
-    label = "",
-    helpText = None,
-    None,
-    validIf = None,
-    editable = true,
-    mandatory = true,
-    submissible = true,
-    derived = false,
-    errorMessage = None)
+  def getMandatoryFieldValue(id: String) =
+    FormComponent(
+      id = FormComponentId(id),
+      `type` = Text(AnyText, Constant("")),
+      label = "",
+      helpText = None,
+      None,
+      validIf = None,
+      editable = true,
+      mandatory = true,
+      submissible = true,
+      derived = false,
+      errorMessage = None
+    )
 
-  def getAddressFieldValue(id: String) = FormComponent(
-    id = FormComponentId(id),
-    `type` = Address(international = false),
-    label = "",
-    helpText = None,
-    None,
-    validIf = None,
-    editable = true,
-    mandatory = false,
-    submissible = true,
-    derived = false,
-    errorMessage = None)
+  def getAddressFieldValue(id: String) =
+    FormComponent(
+      id = FormComponentId(id),
+      `type` = Address(international = false),
+      label = "",
+      helpText = None,
+      None,
+      validIf = None,
+      editable = true,
+      mandatory = false,
+      submissible = true,
+      derived = false,
+      errorMessage = None
+    )
 
   "FormValidator.conform" should "parse all fields from form to list of FormField objects" in {
 
@@ -103,7 +107,8 @@ class FormValidatorSpec extends Spec {
         FormField(FormComponentId("accountingPeriodStartDate"), "2015-08-01"),
         FormField(FormComponentId("accountingPeriodEndDate"), "2015-12-01"),
         FormField(FormComponentId("standardRateIPTDueForThisPeriod"), "1329345.49"),
-        FormField(FormComponentId("higherRateIPTDueForThisPeriod"), "58373265.23")))
+        FormField(FormComponentId("higherRateIPTDueForThisPeriod"), "58373265.23")
+      ))
   }
 
   "Validation of form fields" should "succeed" in {
@@ -114,15 +119,21 @@ class FormValidatorSpec extends Spec {
         FormField(FormComponentId("firstName"), "John"),
         FormField(FormComponentId("lastName"), "Doe"),
         FormField(FormComponentId("telephoneNumber"), "+44 (01273) 123456"),
-        FormField(FormComponentId("nameOfBusiness"), "Acme Widgets Ltd."))
+        FormField(FormComponentId("nameOfBusiness"), "Acme Widgets Ltd.")
+      )
 
     val section = Section(
       title = "",
       description = None,
       None,
-      shortName = None, None,
-      None, None, None,
-      fields = List("iptRegNum", "firstName", "lastName", "telephoneNumber", "nameOfBusiness").map(getMandatoryFieldValue))
+      shortName = None,
+      None,
+      None,
+      None,
+      None,
+      fields =
+        List("iptRegNum", "firstName", "lastName", "telephoneNumber", "nameOfBusiness").map(getMandatoryFieldValue)
+    )
 
     val res = FormValidator.validate(formFields, section)
 
@@ -144,10 +155,25 @@ class FormValidatorSpec extends Spec {
         FormField(FormComponentId("homeAddress-street3"), "3"),
         FormField(FormComponentId("homeAddress-street4"), "4"),
         FormField(FormComponentId("homeAddress-postcode"), "6"),
-        FormField(FormComponentId("homeAddress-country"), "7"))
+        FormField(FormComponentId("homeAddress-country"), "7")
+      )
 
-    val section = Section("", None, None, None, None, None, None, None,
-      fields = getAddressFieldValue("homeAddress") :: List("iptRegNum", "firstName", "lastName", "telephoneNumber", "nameOfBusiness").map(getMandatoryFieldValue))
+    val section = Section(
+      "",
+      None,
+      None,
+      None,
+      None,
+      None,
+      None,
+      None,
+      fields = getAddressFieldValue("homeAddress") :: List(
+        "iptRegNum",
+        "firstName",
+        "lastName",
+        "telephoneNumber",
+        "nameOfBusiness").map(getMandatoryFieldValue)
+    )
 
     val res = FormValidator.validate(formFields, section)
 
@@ -158,13 +184,9 @@ class FormValidatorSpec extends Spec {
   it should "fail if form contains field not defined in template fields" in {
 
     val formFields =
-      List(
-        FormField(FormComponentId("iptRegNum"), "12AB3456780"))
+      List(FormField(FormComponentId("iptRegNum"), "12AB3456780"))
 
-    val section = Section("", None, None, None,
-      None,
-      None, None, None,
-      fields = List.empty[FormComponent])
+    val section = Section("", None, None, None, None, None, None, None, fields = List.empty[FormComponent])
 
     val res = FormValidator.validate(formFields, section)
 
@@ -176,10 +198,8 @@ class FormValidatorSpec extends Spec {
 
     val formFields = List.empty[FormField]
 
-    val section = Section("", None, None, None,
-      None,
-      None, None, None,
-      fields = List("iptRegNum").map(getMandatoryFieldValue))
+    val section =
+      Section("", None, None, None, None, None, None, None, fields = List("iptRegNum").map(getMandatoryFieldValue))
 
     val res = FormValidator.validate(formFields, section)
 

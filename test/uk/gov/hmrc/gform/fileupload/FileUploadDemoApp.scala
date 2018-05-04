@@ -45,7 +45,9 @@ object FileUploadDemoApp extends App {
       ContentType.`image/jpeg`,
       ContentType.`text/xml`,
       ContentType.`application/vnd.ms-excel`,
-      ContentType.`application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`))
+      ContentType.`application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`
+    )
+  )
 
   val configLocalProxiedByGform = configLocal.copy(
     //TIP run GFORM using `runInLocal.sh` script
@@ -53,7 +55,8 @@ object FileUploadDemoApp extends App {
 
   val configDevProxiedByGform = configLocal.copy(
     fileUploadBaseUrl = "https://www-dev.tax.service.gov.uk/submissions/test-only/proxy-to-file-upload",
-    fileUploadFrontendBaseUrl = "https://www-dev.tax.service.gov.uk")
+    fileUploadFrontendBaseUrl = "https://www-dev.tax.service.gov.uk"
+  )
 
   val config = configLocal
 
@@ -69,7 +72,7 @@ object FileUploadDemoApp extends App {
   implicit val hc = HeaderCarrier()
 
   val result = for {
-  // format: OFF
+    // format: OFF
     envelopeId <- fileUploadService.createEnvelope(FormTemplateId("testFormTypeId"))
     _          <- fuf.upload(envelopeId, FileId("README.md"), "README.md", fileBody, ContentType.`text/xml`)
     envelope   <- fu.getEnvelope(envelopeId)
@@ -81,8 +84,11 @@ object FileUploadDemoApp extends App {
   } yield ()
 
   Await.result(result, Duration.Inf)
-  http.stop().onComplete(_ =>
-    //I don't know how to gracefully stop it
-    System.exit(0))
+  http
+    .stop()
+    .onComplete(
+      _ =>
+        //I don't know how to gracefully stop it
+        System.exit(0))
 
 }

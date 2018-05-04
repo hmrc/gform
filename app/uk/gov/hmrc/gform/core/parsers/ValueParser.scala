@@ -27,73 +27,115 @@ object ValueParser {
   val isSubtraction = pureconfig.loadConfigOrThrow[IsSubtraction]("feature.subtraction").value
   def validate(expression: String): Opt[ValueExpr] = validateWithParser(expression, exprDeterminer)
 
-  lazy val exprDeterminer: Parser[ValueExpr] = (
-    dateExpression ^^ ((loc, expr) => DateExpression(expr))
+  lazy val exprDeterminer: Parser[ValueExpr] = (dateExpression ^^ ((loc, expr) => DateExpression(expr))
     | positiveIntegers ^^ ((loc, selections) => ChoiceExpression(selections))
     | expr ^^ ((loc, expr) => TextExpression(expr)))
 
-  lazy val dateExpression: Parser[DateValue] = (
-    (nextDate | lastDate | exactDate | today) ^^ { (loc, dateExpr) => dateExpr })
+  lazy val dateExpression: Parser[DateValue] = ((nextDate | lastDate | exactDate | today) ^^ { (loc, dateExpr) =>
+    dateExpr
+  })
 
-  lazy val today: Parser[TodayDateValue.type] = (
-    "today" ^^ { (loc, today) => TodayDateValue })
+  lazy val today: Parser[TodayDateValue.type] = ("today" ^^ { (loc, today) =>
+    TodayDateValue
+  })
 
-  lazy val exactDate: Parser[ExactDateValue] = (
-    yearParser ~ monthDay ^^ { (loc, year, month, day) => ExactDateValue(year, month, day) })
+  lazy val exactDate: Parser[ExactDateValue] = (yearParser ~ monthDay ^^ { (loc, year, month, day) =>
+    ExactDateValue(year, month, day)
+  })
 
   lazy val nextDate: Parser[NextDateValue] = nextOrPrevious("next", NextDateValue.apply)
 
   lazy val lastDate: Parser[PreviousDateValue] = nextOrPrevious("last", PreviousDateValue.apply)
 
-  lazy val expr: Parser[Expr] = (
-    "'" ~ anyConstant ~ "'" ^^ { (loc, _, str, _) => str }
+  lazy val expr: Parser[Expr] = ("'" ~ anyConstant ~ "'" ^^ { (loc, _, str, _) =>
+    str
+  }
     | "${" ~> parserExpression <~ "}")
 
-  lazy val operation: Parser[Operation] = (
-    "+" ^^ { (loc, _) => Addition }
-    | "*" ^^ { (loc, _) => Multiplication })
+  lazy val operation: Parser[Operation] = ("+" ^^ { (loc, _) =>
+    Addition
+  }
+    | "*" ^^ { (loc, _) =>
+      Multiplication
+    })
 
-  lazy val contextField: Parser[Expr] = (
-    "eeitt" ~ "." ~ eeitt ^^ { (loc, _, _, eeitt) => EeittCtx(eeitt) }
-    | "user" ~ "." ~ userField ^^ { (loc, _, _, userField) => UserCtx(userField) }
-    | "form" ~ "." ~ alphabeticOnly ^^ { (loc, _, _, fieldName) => FormCtx(fieldName) }
-    | "auth" ~ "." ~ authInfo ^^ { (loc, _, _, authInfo) => AuthCtx(authInfo) }
-    | alphabeticOnly ~ ".sum" ^^ { (loc, value, _) => Sum(FormCtx(value)) }
-    | anyDigitConst ^^ { (loc, str) => str }
-    | alphabeticOnly ^^ { (loc, fn) => FormCtx(fn) })
+  lazy val contextField: Parser[Expr] = ("eeitt" ~ "." ~ eeitt ^^ { (loc, _, _, eeitt) =>
+    EeittCtx(eeitt)
+  }
+    | "user" ~ "." ~ userField ^^ { (loc, _, _, userField) =>
+      UserCtx(userField)
+    }
+    | "form" ~ "." ~ alphabeticOnly ^^ { (loc, _, _, fieldName) =>
+      FormCtx(fieldName)
+    }
+    | "auth" ~ "." ~ authInfo ^^ { (loc, _, _, authInfo) =>
+      AuthCtx(authInfo)
+    }
+    | alphabeticOnly ~ ".sum" ^^ { (loc, value, _) =>
+      Sum(FormCtx(value))
+    }
+    | anyDigitConst ^^ { (loc, str) =>
+      str
+    }
+    | alphabeticOnly ^^ { (loc, fn) =>
+      FormCtx(fn)
+    })
 
-  lazy val parserExpression: Parser[Expr] = (
-    parserExpression ~ "+" ~ parserExpression ^^ { (loc, expr1, _, expr2) => Add(expr1, expr2) }
-    | parserExpression ~ "*" ~ parserExpression ^^ { (loc, expr1, _, expr2) => Multiply(expr1, expr2) }
+  lazy val parserExpression: Parser[Expr] = (parserExpression ~ "+" ~ parserExpression ^^ { (loc, expr1, _, expr2) =>
+    Add(expr1, expr2)
+  }
+    | parserExpression ~ "*" ~ parserExpression ^^ { (loc, expr1, _, expr2) =>
+      Multiply(expr1, expr2)
+    }
     | subtractionFeatureSwitch)
 
   lazy val subtractionFeatureSwitch: Parser[Expr] =
     if (isSubtraction) {
-      (parserExpression ~ "-" ~ parserExpression ^^ { (loc, expr1, _, expr2) => Subtraction(expr1, expr2) }
+      (parserExpression ~ "-" ~ parserExpression ^^ { (loc, expr1, _, expr2) =>
+        Subtraction(expr1, expr2)
+      }
         | contextField)
     } else {
       contextField
     }
 
-  lazy val alphabeticOnly: Parser[String] = """\w+""".r ^^ { (loc, str) => str }
+  lazy val alphabeticOnly: Parser[String] = """\w+""".r ^^ { (loc, str) =>
+    str
+  }
 
-  lazy val anyConstant: Parser[Constant] = (
-    """[ \w,]+""".r ^^ { (loc, str) => Constant(str) })
+  lazy val anyConstant: Parser[Constant] = ("""[ \w,]+""".r ^^ { (loc, str) =>
+    Constant(str)
+  })
 
-  lazy val anyDigitConst: Parser[Expr] = (
-    """ *[\d.][ \d.,]*""".r ^^ { (loc, str) => Constant(str) })
+  lazy val anyDigitConst: Parser[Expr] = (""" *[\d.][ \d.,]*""".r ^^ { (loc, str) =>
+    Constant(str)
+  })
 
-  lazy val eeitt: Parser[Eeitt] = (
-    "businessUser" ^^ { (loc, _) => BusinessUser }
-    | "agent" ^^ { (loc, _) => Agent }
-    | "userId" ^^ { (loc, _) => UserId })
+  lazy val eeitt: Parser[Eeitt] = ("businessUser" ^^ { (loc, _) =>
+    BusinessUser
+  }
+    | "agent" ^^ { (loc, _) =>
+      Agent
+    }
+    | "userId" ^^ { (loc, _) =>
+      UserId
+    })
 
   lazy val userField: Parser[UserField] =
-    "affinityGroup" ^^ { (loc, _) => AffinityGroup }
+    "affinityGroup" ^^ { (loc, _) =>
+      AffinityGroup
+    }
 
-  lazy val authInfo: Parser[AuthInfo] = (
-    "gg" ^^ { (_, _) => GG }
-    | "payenino" ^^ { (_, _) => PayeNino }
-    | "sautr" ^^ { (_, _) => SaUtr }
-    | "ctutr" ^^ { (_, _) => CtUtr })
+  lazy val authInfo: Parser[AuthInfo] = ("gg" ^^ { (_, _) =>
+    GG
+  }
+    | "payenino" ^^ { (_, _) =>
+      PayeNino
+    }
+    | "sautr" ^^ { (_, _) =>
+      SaUtr
+    }
+    | "ctutr" ^^ { (_, _) =>
+      CtUtr
+    })
 }

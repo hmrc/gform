@@ -31,7 +31,8 @@ case class SubmissionRef(value: String) extends AnyVal {
 object SubmissionRef {
 
   val oformat: OFormat[SubmissionRef] = ValueClassFormat.oformat("submissionRef", SubmissionRef.apply, _.value)
-  val vformat: Format[SubmissionRef] = ValueClassFormat.vformat("submissionRef", SubmissionRef.apply, x => JsString(x.value))
+  val vformat: Format[SubmissionRef] =
+    ValueClassFormat.vformat("submissionRef", SubmissionRef.apply, x => JsString(x.value))
 
   def random(implicit rnd: Rnd[Random]) = createSubmissionRef(rnd())
 

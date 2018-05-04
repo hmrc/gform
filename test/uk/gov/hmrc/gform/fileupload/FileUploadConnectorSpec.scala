@@ -30,7 +30,8 @@ class FileUploadConnectorSpec extends Spec {
   it should "work" in new Fixture {
     val headers = Map("Location" -> Seq("localhost:8898/file-upload/envelopes/753bb314-bb61-430f-b812-427ab4cf6da3"))
     val status = 200
-    fileUploadConnector.createEnvelope(formTypeId).futureValue shouldBe EnvelopeId("753bb314-bb61-430f-b812-427ab4cf6da3")
+    fileUploadConnector.createEnvelope(formTypeId).futureValue shouldBe EnvelopeId(
+      "753bb314-bb61-430f-b812-427ab4cf6da3")
   }
 
   behavior of "FUService.createEnvelope - exceptional situations"
@@ -73,9 +74,7 @@ class FileUploadConnectorSpec extends Spec {
     val noHeaders = Map.empty[String, Seq[String]]
     val status: Int
 
-    lazy val r = HttpResponse(
-      responseStatus = status,
-      responseHeaders = headers)
+    lazy val r = HttpResponse(responseStatus = status, responseHeaders = headers)
     lazy val wSHttp = new StubbedWSHttp(r)
 
     lazy val fileUploadConnector = new FileUploadConnector(config, wSHttp, FrozenTimeProvider.exampleInstance)

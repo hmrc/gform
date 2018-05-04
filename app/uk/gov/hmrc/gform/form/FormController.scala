@@ -36,10 +36,12 @@ import uk.gov.hmrc.http.BadRequestException
 class FormController(
   formTemplateService: FormTemplateService,
   fileUploadService: FileUploadService,
-  formService: FormService) extends BaseController {
+  formService: FormService)
+    extends BaseController {
 
   def newForm(userId: UserId, formTemplateId: FormTemplateId) = Action.async { implicit request =>
-    Logger.info(s"new form, userId: '${userId.value}', templateId: '${formTemplateId.value}', ${loggingHelpers.cleanHeaders(request.headers)}")
+    Logger.info(s"new form, userId: '${userId.value}', templateId: '${formTemplateId.value}', ${loggingHelpers
+      .cleanHeaders(request.headers)}")
     //TODO authentication
     //TODO user should be obtained from secure action
     //TODO authorisation
@@ -50,7 +52,7 @@ class FormController(
     val formId = FormId(userId, formTemplateId)
     val formIdF: Future[FormId] = for {
       envelopeId <- envelopeIdF
-      _ <- formService.insertEmpty(userId, formTemplateId, envelopeId, formId)
+      _          <- formService.insertEmpty(userId, formTemplateId, envelopeId, formId)
 
     } yield formId
 
@@ -80,21 +82,20 @@ class FormController(
   }
 
   def validateSection(formId: FormId, sectionNumber: SectionNumber) = Action.async { implicit request =>
-    Logger.info(s"Validating sections: '${formId.value}', section number '${sectionNumber.value}', ${loggingHelpers.cleanHeaders(request.headers)}")
+    Logger.info(s"Validating sections: '${formId.value}', section number '${sectionNumber.value}', ${loggingHelpers
+      .cleanHeaders(request.headers)}")
     //TODO check form status. If after submission don't call this function
     //TODO authentication
     //TODO authorisation
     //TODO wrap result into ValidationResult case class containign status of validation and list of errors
 
     val result: Future[Either[UnexpectedState, Unit]] = for {
-      form <- formService.get(formId)
+      form         <- formService.get(formId)
       formTemplate <- formTemplateService.get(form.formTemplateId)
       section = getSection(formTemplate, sectionNumber)
     } yield FormValidator.validate(form.formData.fields.toList, section)
 
-    result.map(_.fold(
-      e => e.error,
-      _ => "No errors")).asOkJson
+    result.map(_.fold(e => e.error, _ => "No errors")).asOkJson
   }
 
   def delete(formId: FormId): Action[AnyContent] = Action.async { implicit request =>
@@ -103,10 +104,11 @@ class FormController(
   }
 
   def deleteFile(formId: FormId, fileId: FileId) = Action.async { implicit request =>
-    Logger.info(s"deleting file, formId: '${formId.value}', fileId: ${fileId.value}, ${loggingHelpers.cleanHeaders(request.headers)} ")
+    Logger.info(
+      s"deleting file, formId: '${formId.value}', fileId: ${fileId.value}, ${loggingHelpers.cleanHeaders(request.headers)} ")
     val result = for {
       form <- formService.get(formId)
-      _ <- fileUploadService.deleteFile(form.envelopeId, fileId)
+      _    <- fileUploadService.deleteFile(form.envelopeId, fileId)
     } yield ()
     result.asNoContent
   }
@@ -123,7 +125,9 @@ class FormController(
     formService.getKeyStore(formId).asOkJson
   }
 
-  private def getSection(formTemplate: FormTemplate, sectionNumber: SectionNumber): Section = {
-    Try(formTemplate.sections(sectionNumber.value)).getOrElse(throw new BadRequestException(s"Wrong sectionNumber: $sectionNumber. There are ${formTemplate.sections.length} sections."))
-  }
+  private def getSection(formTemplate: FormTemplate, sectionNumber: SectionNumber): Section =
+    Try(formTemplate.sections(sectionNumber.value))
+      .getOrElse(
+        throw new BadRequestException(
+          s"Wrong sectionNumber: $sectionNumber. There are ${formTemplate.sections.length} sections."))
 }

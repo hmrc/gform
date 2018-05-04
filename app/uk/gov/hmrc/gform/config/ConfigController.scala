@@ -23,7 +23,6 @@ import uk.gov.hmrc.gform.controllers.BaseController
 class ConfigController(configModule: ConfigModule) extends BaseController {
 
   def exposedConfig() = Action { r =>
-
     val json = Json.toJson(configModule.exposedConfig)
     Ok(json)
   }

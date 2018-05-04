@@ -20,30 +20,32 @@ import play.api.libs.json._
 
 object ValueClassFormat {
 
-  def oformat[A](fieldName: String, read: String => A, write: A => String): OFormat[A] = {
+  def oformat[A](fieldName: String, read: String => A, write: A => String): OFormat[A] =
     OFormat[A](
       Reads[A] {
         case JsString(str) => JsSuccess(read(str))
-        case JsObject(x) => x.get(fieldName) match {
-          case Some(JsString(str)) => JsSuccess(read(str))
-          case _ => JsError(s"Expected $fieldName field")
-        }
+        case JsObject(x) =>
+          x.get(fieldName) match {
+            case Some(JsString(str)) => JsSuccess(read(str))
+            case _                   => JsError(s"Expected $fieldName field")
+          }
         case other => JsError(s"Invalid json, not found '$fieldName'")
       },
-      OWrites[A](a => Json.obj(fieldName -> write(a))))
-  }
+      OWrites[A](a => Json.obj(fieldName -> write(a)))
+    )
 
-  def vformat[A](fieldName: String, read: String => A, write: A => JsValue): Format[A] = {
+  def vformat[A](fieldName: String, read: String => A, write: A => JsValue): Format[A] =
     Format[A](
       Reads[A] {
         case JsString(str) => JsSuccess(read(str))
-        case JsObject(x) => x.get(fieldName) match {
-          case Some(JsString(str)) => JsSuccess(read(str))
-          case _ => JsError(s"Expected $fieldName field")
-        }
+        case JsObject(x) =>
+          x.get(fieldName) match {
+            case Some(JsString(str)) => JsSuccess(read(str))
+            case _                   => JsError(s"Expected $fieldName field")
+          }
         case other => JsError(s"Invalid json, not found '$fieldName'")
       },
-      Writes[A](a => write(a)))
-  }
+      Writes[A](a => write(a))
+    )
 
 }

@@ -27,10 +27,8 @@ class RouteEnvelopeRequestSpec extends Spec {
 
   it should "render json" in new ExampleData {
 
-    val jsObject = Json.obj(
-      "envelopeId" -> "b66c5979-e885-49cd-9281-c7f42ce6b307",
-      "application" -> "dfs",
-      "destination" -> "DMS")
+    val jsObject =
+      Json.obj("envelopeId" -> "b66c5979-e885-49cd-9281-c7f42ce6b307", "application" -> "dfs", "destination" -> "DMS")
 
     val writtenJsObject: JsObject = RouteEnvelopeRequest.format.writes(routeEnvelopeRequest)
     jsObject shouldBe writtenJsObject

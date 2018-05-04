@@ -42,17 +42,15 @@ object FormCtx {
     exprParser(json)
   }
 
-  private def exprParser(json: JsValue): JsResult[FormCtx] = {
+  private def exprParser(json: JsValue): JsResult[FormCtx] =
     json match {
       case JsString(exprAsStr) => parse(exprAsStr)
-      case otherwise => JsError(s"Invalid expression. Expected String, got $otherwise")
+      case otherwise           => JsError(s"Invalid expression. Expected String, got $otherwise")
     }
-  }
 
   private def parse(exprAsStr: String): JsResult[FormCtx] =
-    ExprParsers.validateFormCtx(exprAsStr) fold (
-      error => JsError(error.toString),
-      expr => JsSuccess(expr))
+    ExprParsers.validateFormCtx(exprAsStr) fold (error => JsError(error.toString),
+    expr => JsSuccess(expr))
 
   implicit val format: OFormat[FormCtx] = OFormat(reads, writesFormCtx)
 }

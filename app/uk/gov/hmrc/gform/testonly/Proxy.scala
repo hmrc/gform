@@ -28,22 +28,27 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class Proxy(wsClient: WSClient) {
+
   /**
-   * This creates action which proxies incoming request to remote service.
-   */
-  def apply(remoteServiceBaseUrl: String)(path: String): Action[Source[ByteString, _]] = Action.async(streamedBodyParser) { (inboundRequest: Request[Source[ByteString, _]]) =>
-    for {
-      outboundRequest <- proxyRequest(s"$remoteServiceBaseUrl/$path", inboundRequest)
-      streamedResponse <- outboundRequest.stream
-    } yield {
-      val headersMap = streamedResponse.headers.headers
-      val contentLength = headersMap.get(contentLengthHeaderKey).flatMap(_.headOption.map(_.toLong))
-      val contentType = headersMap.get(contentTypeHeaderKey).map(_.mkString(", "))
-      Result(
-        ResponseHeader(streamedResponse.headers.status, streamedResponse.headers.headers.mapValues(_.head).filter(filterOutContentHeaders)),
-        Streamed(streamedResponse.body, contentLength, contentType))
+    * This creates action which proxies incoming request to remote service.
+    */
+  def apply(remoteServiceBaseUrl: String)(path: String): Action[Source[ByteString, _]] =
+    Action.async(streamedBodyParser) { (inboundRequest: Request[Source[ByteString, _]]) =>
+      for {
+        outboundRequest  <- proxyRequest(s"$remoteServiceBaseUrl/$path", inboundRequest)
+        streamedResponse <- outboundRequest.stream
+      } yield {
+        val headersMap = streamedResponse.headers.headers
+        val contentLength = headersMap.get(contentLengthHeaderKey).flatMap(_.headOption.map(_.toLong))
+        val contentType = headersMap.get(contentTypeHeaderKey).map(_.mkString(", "))
+        Result(
+          ResponseHeader(
+            streamedResponse.headers.status,
+            streamedResponse.headers.headers.mapValues(_.head).filter(filterOutContentHeaders)),
+          Streamed(streamedResponse.body, contentLength, contentType)
+        )
+      }
     }
-  }
 
   def apply[A: Writeable](
     baseUrl: String,
@@ -51,7 +56,8 @@ class Proxy(wsClient: WSClient) {
     inboundRequest: Request[A],
     bodyTransformer: String => String = identity): Future[Result] = {
 
-    val outboundRequest = wsClient.url(s"$baseUrl$path")
+    val outboundRequest = wsClient
+      .url(s"$baseUrl$path")
       .withFollowRedirects(false)
       .withMethod(inboundRequest.method)
       .withHeaders(processHeaders(inboundRequest.headers, extraHeaders = Nil): _*)
@@ -62,9 +68,7 @@ class Proxy(wsClient: WSClient) {
 
     response.map { response =>
       val transformedBody: ByteString = ByteString(bodyTransformer(response.body))
-      Result(
-        ResponseHeader(response.status, response.allHeaders.mapValues(_.head)),
-        Strict(transformedBody, None))
+      Result(ResponseHeader(response.status, response.allHeaders.mapValues(_.head)), Strict(transformedBody, None))
     }
   }
 
@@ -74,18 +78,21 @@ class Proxy(wsClient: WSClient) {
     case (key, _) => !key.equalsIgnoreCase(contentTypeHeaderKey) && !key.equalsIgnoreCase(contentLengthHeaderKey)
   }
 
-  private def proxyRequest(path: String, inboundRequest: Request[Source[ByteString, _]]): Future[WSRequest] = Future(
-    wsClient.url(s"$path")
-      .withFollowRedirects(false)
-      .withMethod(inboundRequest.method)
-      .withHeaders(processHeaders(inboundRequest.headers, extraHeaders = Nil): _*)
-      .withQueryString(inboundRequest.queryString.mapValues(_.head).toSeq: _*)
-      .withBody(StreamedBody(inboundRequest.body)))
+  private def proxyRequest(path: String, inboundRequest: Request[Source[ByteString, _]]): Future[WSRequest] =
+    Future(
+      wsClient
+        .url(s"$path")
+        .withFollowRedirects(false)
+        .withMethod(inboundRequest.method)
+        .withHeaders(processHeaders(inboundRequest.headers, extraHeaders = Nil): _*)
+        .withQueryString(inboundRequest.queryString.mapValues(_.head).toSeq: _*)
+        .withBody(StreamedBody(inboundRequest.body)))
 
-  private def processHeaders(inboundHeaders: Headers, extraHeaders: Seq[(String, String)]): Seq[(String, String)] = {
+  private def processHeaders(inboundHeaders: Headers, extraHeaders: Seq[(String, String)]): Seq[(String, String)] =
     inboundHeaders.toSimpleMap.filter(headerKeyValue => !headerKeyValue._1.equals("Host")).toSeq ++ extraHeaders
-  }
 
-  private def streamedBodyParser: BodyParser[Source[ByteString, _]] = BodyParser { _ => Accumulator.source[ByteString].map(Right.apply) }
+  private def streamedBodyParser: BodyParser[Source[ByteString, _]] = BodyParser { _ =>
+    Accumulator.source[ByteString].map(Right.apply)
+  }
 
 }

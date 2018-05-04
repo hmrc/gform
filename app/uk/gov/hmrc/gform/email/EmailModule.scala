@@ -21,9 +21,7 @@ import javax.inject.Inject
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 
-class EmailModule @Inject() (
-  configModule: ConfigModule,
-  wSHttpModule: WSHttpModule) {
+class EmailModule @Inject()(configModule: ConfigModule, wSHttpModule: WSHttpModule) {
   val emailConnector = new EmailConnector(wSHttpModule.auditableWSHttp, configModule.serviceConfig.baseUrl("email"))
   val emailLogic = new EmailService(emailConnector)
 

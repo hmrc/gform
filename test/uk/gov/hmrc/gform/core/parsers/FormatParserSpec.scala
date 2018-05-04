@@ -36,7 +36,8 @@ class FormatParserSpec extends Spec {
 
   "after 2017-04-02 -2" should "be parsed successfully" in {
     val res = FormatParser.validate("after 2017-04-02 -2")
-    res.right.value should be(DateFormat(DateConstraints(List(DateConstraint(After, ConcreteDate(2017, 4, 2), OffsetDate(-2))))))
+    res.right.value should be(
+      DateFormat(DateConstraints(List(DateConstraint(After, ConcreteDate(2017, 4, 2), OffsetDate(-2))))))
   }
 
   "after next-05-06 -2" should "be parsed successfully" ignore { //ignored until handled in gform-frontend
@@ -46,12 +47,14 @@ class FormatParserSpec extends Spec {
 
   "after ${otherField}" should "be parsed successfully" in {
     val res = FormatParser.validate("after ${otherField}")
-    res.right.value should be(DateFormat(DateConstraints(List(DateConstraint(After, DateField(FormComponentId("otherField")), OffsetDate(0))))))
+    res.right.value should be(
+      DateFormat(DateConstraints(List(DateConstraint(After, DateField(FormComponentId("otherField")), OffsetDate(0))))))
   }
 
   "after previous-05-06 0" should "be parsed successfully" ignore { //ignored until handled in gform-frontend
     val res = FormatParser.validate("after previous-05-06 0")
-    res.right.value should be(DateFormat(DateConstraints(List(DateConstraint(After, PreviousDate(5, 6), OffsetDate(0))))))
+    res.right.value should be(
+      DateFormat(DateConstraints(List(DateConstraint(After, PreviousDate(5, 6), OffsetDate(0))))))
   }
 
   "before anyFieldId anotherWord 9" should "throw exception" in {
@@ -69,11 +72,10 @@ class FormatParserSpec extends Spec {
     val res = FormatParser.validate("after 2016-6-9 9")
 
     res.left.value should be(
-      UnexpectedState(
-        """|Unable to parse expression after 2016-6-9 9.
-           |Errors:
-           |after 2016-6-9 9:1: unexpected characters; expected '0[1-9]|1[012]' or '\s+'
-           |after 2016-6-9 9           ^""".stripMargin))
+      UnexpectedState("""|Unable to parse expression after 2016-6-9 9.
+                         |Errors:
+                         |after 2016-6-9 9:1: unexpected characters; expected '0[1-9]|1[012]' or '\s+'
+                         |after 2016-6-9 9           ^""".stripMargin))
   }
 
   "before today -2" should "be parsed successfully" in {
@@ -83,7 +85,8 @@ class FormatParserSpec extends Spec {
 
   "before 2017-04-02 -2" should "be parsed successfully" in {
     val res = FormatParser.validate("before 2017-04-02 -2")
-    res.right.value should be(DateFormat(DateConstraints(List(DateConstraint(Before, ConcreteDate(2017, 4, 2), OffsetDate(-2))))))
+    res.right.value should be(
+      DateFormat(DateConstraints(List(DateConstraint(Before, ConcreteDate(2017, 4, 2), OffsetDate(-2))))))
   }
 
   "before and after" should "be parsed successfully" in {

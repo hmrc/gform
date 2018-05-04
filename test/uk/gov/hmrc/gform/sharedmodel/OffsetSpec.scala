@@ -23,7 +23,9 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.Offset
 class OffsetSpec extends Spec {
 
   val signedIntRegex = """(\+|-)?\d+"""
-  val convertToInt = (str: String) => if (str.matches(signedIntRegex)) JsSuccess(Offset(str.toInt)) else JsError(s"Couldn't parse Integer from offset, $str")
+  val convertToInt = (str: String) =>
+    if (str.matches(signedIntRegex)) JsSuccess(Offset(str.toInt))
+    else JsError(s"Couldn't parse Integer from offset, $str")
 
   "offset as negative integer" should "be parsed successfully" in {
     val result = convertToInt("-5")
@@ -39,16 +41,14 @@ class OffsetSpec extends Spec {
     val floatNum: Float = 56f
     val result = convertToInt(floatNum.toString)
 
-    result should be(
-      JsError(s"Couldn't parse Integer from offset, $floatNum"))
+    result should be(JsError(s"Couldn't parse Integer from offset, $floatNum"))
   }
 
   "offset as double" should "throw exception" in {
     val doubleNum: Double = 122.56
     val result = convertToInt(doubleNum.toString)
 
-    result should be(
-      JsError(s"Couldn't parse Integer from offset, $doubleNum"))
+    result should be(JsError(s"Couldn't parse Integer from offset, $doubleNum"))
   }
 
 }

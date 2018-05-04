@@ -33,40 +33,35 @@ trait XmlGeneratorService {
   private def createAttribute[T: Attribute](name: String, value: T): Elem =
     createAttribute(name, List(value))
 
-  private def createAttribute[T: Attribute](name: String, values: List[T]): Elem = {
+  private def createAttribute[T: Attribute](name: String, values: List[T]): Elem =
     implicitly[Attribute[T]].attribute(name, values)
-  }
 
-  private def createFieldData(formFields: List[FormField], formComponent: FormComponent): List[Elem] = {
+  private def createFieldData(formFields: List[FormField], formComponent: FormComponent): List[Elem] =
     if (formComponent.submissible)
       formFields.map(formField => createAttribute(formField.id.toString, formField.value))
     else
       List()
-  }
 
-  private def createSectionData(section: SectionFormField): List[Elem] = {
+  private def createSectionData(section: SectionFormField): List[Elem] =
     section.fields.flatMap(field => createFieldData(field._1, field._2))
-  }
 
   private def createSubmissionData(sectionFormFields: List[SectionFormField]): Elem = {
     val attributes = sectionFormFields.flatMap(section => createSectionData(section))
     <submission></submission>.copy(child = attributes)
   }
 
-  private def createHeader(submissionRef: SubmissionRef): Elem = {
+  private def createHeader(submissionRef: SubmissionRef): Elem =
     <header>
       <title>{ submissionRef.value }</title>
       <source>gform</source>
       <target>DMS</target>
     </header>
-  }
 
   // TODO header etc.
-  private def createDocument(elems: List[Elem]): Elem = {
+  private def createDocument(elems: List[Elem]): Elem =
     <documents>
       { <document></document>.copy(child = elems) }
     </documents>
-  }
 
   private def trim(e: Elem): Elem = Utility.trim(e).asInstanceOf[Elem]
 

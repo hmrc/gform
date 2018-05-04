@@ -22,9 +22,7 @@ import play.api.libs.ws.ahc.AhcWSComponents
 import play.api._
 import play.api.routing.Router
 
-class PlayComponents(
-  val context: ApplicationLoader.Context,
-  val builtInComponents: BuiltInComponents) {
+class PlayComponents(val context: ApplicationLoader.Context, val builtInComponents: BuiltInComponents) {
 
   val ahcWSComponents: AhcWSComponents = new AhcWSComponents {
     override def environment: Environment = context.environment

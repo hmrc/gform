@@ -28,13 +28,24 @@ object PresentationHintParser {
 
   def validate(expression: String): Opt[List[PresentationHint]] = validateWithParser(expression, presentationHints)
 
-  lazy val presentationHints: Parser[List[PresentationHint]] = (
-    presentationHint ~ "," ~ presentationHints ^^ { (loc, presHint, _, presHints) => presHint :: presHints }
-    | presentationHint ^^ { (loc, presHint) => List(presHint) })
+  lazy val presentationHints: Parser[List[PresentationHint]] = (presentationHint ~ "," ~ presentationHints ^^ {
+    (loc, presHint, _, presHints) =>
+      presHint :: presHints
+  }
+    | presentationHint ^^ { (loc, presHint) =>
+      List(presHint)
+    })
 
-  lazy val presentationHint: Parser[PresentationHint] = (
-    "collapseGroupUnderLabel" ^^ { (loc, unparsed) => CollapseGroupUnderLabel }
-    | "summariseGroupAsGrid" ^^ { (loc, unparsed) => SummariseGroupAsGrid }
-    | "invisibleInSummary" ^^ { (loc, unparsed) => InvisibleInSummary }
-    | "totalValue" ^^ { (loc, unparsed) => TotalValue })
+  lazy val presentationHint: Parser[PresentationHint] = ("collapseGroupUnderLabel" ^^ { (loc, unparsed) =>
+    CollapseGroupUnderLabel
+  }
+    | "summariseGroupAsGrid" ^^ { (loc, unparsed) =>
+      SummariseGroupAsGrid
+    }
+    | "invisibleInSummary" ^^ { (loc, unparsed) =>
+      InvisibleInSummary
+    }
+    | "totalValue" ^^ { (loc, unparsed) =>
+      TotalValue
+    })
 }

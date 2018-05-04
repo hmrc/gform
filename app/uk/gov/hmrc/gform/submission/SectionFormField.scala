@@ -25,16 +25,20 @@ object FileUploadField {
   val noFileUpload = "Upload document"
 }
 
-case class SectionFormField(
-  title: String,
-  fields: List[(List[FormField], FormComponent)]) {
+case class SectionFormField(title: String, fields: List[(List[FormField], FormComponent)]) {
 
   // TODO two functions are calculating the same thing in different ways! c.f. SubmissionService.getNoOfAttachments
-  def numberOfFiles(): Int = fields.filter(_ match {
-    case (FormField(_, "") :: xs, _) => false
-    case (FormField(_, FileUploadField.noFileUpload) :: xs, FormComponent(_, FileUpload(), _, _, _, _, _, _, _, _, _, _, _)) => false
-    case (x :: xs, FormComponent(_, FileUpload(), _, _, _, _, _, _, _, _, _, _, _)) => true
-    case _ => false
-  }).size
+  def numberOfFiles(): Int =
+    fields
+      .filter(_ match {
+        case (FormField(_, "") :: xs, _) => false
+        case (
+            FormField(_, FileUploadField.noFileUpload) :: xs,
+            FormComponent(_, FileUpload(), _, _, _, _, _, _, _, _, _, _, _)) =>
+          false
+        case (x :: xs, FormComponent(_, FileUpload(), _, _, _, _, _, _, _, _, _, _, _)) => true
+        case _                                                                          => false
+      })
+      .size
 
 }

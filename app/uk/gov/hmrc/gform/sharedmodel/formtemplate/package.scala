@@ -21,15 +21,13 @@ import uk.gov.hmrc.gform.core.parsers.BooleanExprParser
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.BooleanExpr
 
 package object booleanParser {
-  def booleanExprParser(json: JsValue): JsResult[BooleanExpr] = {
+  def booleanExprParser(json: JsValue): JsResult[BooleanExpr] =
     json match {
       case JsString(exprAsStr) => parse(exprAsStr)
-      case otherwise => JsError(s"Invalid expression. Expected String, got $otherwise")
+      case otherwise           => JsError(s"Invalid expression. Expected String, got $otherwise")
     }
-  }
 
   def parse(exprAsStr: String): JsResult[BooleanExpr] =
-    BooleanExprParser.validate(exprAsStr) fold (
-      error => JsError(error.toString),
-      expr => JsSuccess(expr))
+    BooleanExprParser.validate(exprAsStr) fold (error => JsError(error.toString),
+    expr => JsSuccess(expr))
 }

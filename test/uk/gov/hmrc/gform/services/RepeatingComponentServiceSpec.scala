@@ -44,11 +44,12 @@ class RepeatingComponentServiceSpec extends Spec with ExampleData {
   }
 
   it should "return dynamically created sections (title and shortName text built dynamically) when field to track in repeating group, and non-empty form data" in {
-    val thisGroup = `group - type`.copy(
-      repeatsMax = Some(4),
-      repeatsMin = Some(1),
-      repeatLabel = Some("RepGrpLabel"),
-      repeatAddAnotherText = Some("AddButtonLabel"))
+    val thisGroup = `group - type`
+      .copy(
+        repeatsMax = Some(4),
+        repeatsMin = Some(1),
+        repeatLabel = Some("RepGrpLabel"),
+        repeatAddAnotherText = Some("AddButtonLabel"))
 
     val thisGroupFieldValue = `fieldValue - group`.copy(`type` = thisGroup)
 
@@ -56,9 +57,9 @@ class RepeatingComponentServiceSpec extends Spec with ExampleData {
 
     val fieldDriver = `fieldId - firstName`.value
     val repeatingField = `fieldId - surname`.value
-    val thisSection2 = `repeating section`.copy(
-      title = """${n_""" + fieldDriver + """}, $n""",
-      shortName = Some("""$n, ${n_""" + fieldDriver + """}"""))
+    val thisSection2 =
+      `repeating section`
+        .copy(title = """${n_""" + fieldDriver + """}, $n""", shortName = Some("""$n, ${n_""" + fieldDriver + """}"""))
 
     val formTemplate = super.formTemplate.copy(sections = List(thisSection1, thisSection2))
 
@@ -70,44 +71,47 @@ class RepeatingComponentServiceSpec extends Spec with ExampleData {
 
     val expectedList = List(thisSection1, sectionR, sectionR2)
 
-    val newFormData = FormData(fields = Seq(
-      FormField(FormComponentId(fieldDriver), "ONE"),
-      FormField(FormComponentId(s"1_$fieldDriver"), "TWO"),
-      FormField(FormComponentId(s"1_$repeatingField"), "ONE"),
-      FormField(FormComponentId(s"2_$repeatingField"), "TWO")))
+    val newFormData = FormData(
+      fields = Seq(
+        FormField(FormComponentId(fieldDriver), "ONE"),
+        FormField(FormComponentId(s"1_$fieldDriver"), "TWO"),
+        FormField(FormComponentId(s"1_$repeatingField"), "ONE"),
+        FormField(FormComponentId(s"2_$repeatingField"), "TWO")
+      ))
     val newForm = form.copy(formData = newFormData)
     testService.getAllSections(newForm, formTemplate) shouldBe expectedList
   }
 
   it should "return a dynamically created section when field to track in a NON-repeating group" in {
-    val thisSection2 = `repeating section`.copy(
-      title = "Repeating section title $n",
-      shortName = Some("shortName $n"))
+    val thisSection2 = `repeating section`.copy(title = "Repeating section title $n", shortName = Some("shortName $n"))
     val formTemplate = super.formTemplate.copy(sections = List(`section - group`, thisSection2))
     val textFieldDosR = `fieldValue - surname`.copy(id = FormComponentId(s"1_${`fieldId - surname`.value}"))
-    val sectionR = thisSection2.copy(fields = List(textFieldDosR), title = "Repeating section title 1", shortName = Some("shortName 1"))
+    val sectionR = thisSection2
+      .copy(fields = List(textFieldDosR), title = "Repeating section title 1", shortName = Some("shortName 1"))
     val expectedList = List(`section - group`, sectionR)
-    val newFormData = FormData(fields = Seq(
-      FormField(FormComponentId(`fieldId - firstName`.value), "1"),
-      FormField(FormComponentId(s"1_${`fieldId - surname`.value}"), "EEITT-866")))
+    val newFormData = FormData(
+      fields = Seq(
+        FormField(FormComponentId(`fieldId - firstName`.value), "1"),
+        FormField(FormComponentId(s"1_${`fieldId - surname`.value}"), "EEITT-866")))
     val newForm = form.copy(formData = newFormData)
     testService.getAllSections(newForm, formTemplate) shouldBe expectedList
   }
 
   it should "return dynamically created sections (title and shortName text built dynamically) when field to track in a NON-repeating group, with form data" in {
-    val thisSection2 = `repeating section`.copy(
-      title = "Repeating section title $n",
-      shortName = Some("shortName $n"))
+    val thisSection2 = `repeating section`.copy(title = "Repeating section title $n", shortName = Some("shortName $n"))
     val formTemplate = super.formTemplate.copy(sections = List(`section - group`, thisSection2))
     val textFieldDos1 = `fieldValue - surname`.copy(id = FormComponentId(s"1_${`fieldId - surname`.value}"))
     val textFieldDos2 = `fieldValue - surname`.copy(id = FormComponentId(s"2_${`fieldId - surname`.value}"))
-    val sectionR1 = thisSection2.copy(fields = List(textFieldDos1), title = "Repeating section title 1", shortName = Some("shortName 1"))
-    val sectionR2 = thisSection2.copy(fields = List(textFieldDos2), title = "Repeating section title 2", shortName = Some("shortName 2"))
+    val sectionR1 = thisSection2
+      .copy(fields = List(textFieldDos1), title = "Repeating section title 1", shortName = Some("shortName 1"))
+    val sectionR2 = thisSection2
+      .copy(fields = List(textFieldDos2), title = "Repeating section title 2", shortName = Some("shortName 2"))
     val expectedList = List(`section - group`, sectionR1, sectionR2)
 
-    val newFormData = FormData(fields = Seq(
-      FormField(FormComponentId(s"1_${`fieldId - surname`.value}"), "@#~"),
-      FormField(FormComponentId(s"2_${`fieldId - surname`.value}"), "!@£$%&*#")))
+    val newFormData = FormData(
+      fields = Seq(
+        FormField(FormComponentId(s"1_${`fieldId - surname`.value}"), "@#~"),
+        FormField(FormComponentId(s"2_${`fieldId - surname`.value}"), "!@£$%&*#")))
     val newForm = form.copy(formData = newFormData)
     testService.getAllSections(newForm, formTemplate) shouldBe expectedList
   }

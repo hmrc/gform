@@ -32,7 +32,7 @@ class JsonParseTestValue extends Spec {
   "A component without value" should "parse successfully" in {
 
     val jsonStr =
-      s"""${startOfJson}
+      s"""$startOfJson
          }"""
 
     implicitly[Reads[FormComponent]].reads(Json.parse(jsonStr)) shouldBe a[JsSuccess[_]]
@@ -41,9 +41,7 @@ class JsonParseTestValue extends Spec {
   "A component with a value that is not a String" should "fail to parse" in {
 
     for {
-      snippet <- List(
-        """, "value" : 123 }""",
-        """, "value" : {} }""")
+      snippet <- List(""", "value" : 123 }""", """, "value" : {} }""")
     } {
       val jsResult = implicitly[Reads[FormComponent]].reads(Json.parse(startOfJson + snippet))
       jsResult should be(jsError)
@@ -54,10 +52,10 @@ class JsonParseTestValue extends Spec {
 
     for {
       snippet <- List(
-        """, "value" : "65841-351" }""",
-        """, "value" : "${name" }""",
-        """, "value" : "2015-1-12" }""",
-        """, "value" : "201568-01-12" }""")
+                  """, "value" : "65841-351" }""",
+                  """, "value" : "${name" }""",
+                  """, "value" : "2015-1-12" }""",
+                  """, "value" : "201568-01-12" }""")
     } {
       val jsResult = implicitly[Reads[FormComponent]].reads(Json.parse(startOfJson + snippet))
       jsResult should be(jsError)
@@ -67,14 +65,14 @@ class JsonParseTestValue extends Spec {
   "A component with a valid value" should "parse correctly" in {
 
     for {
-      snippet <- List(
-        """, "value" : "'anything'" }""")
+      snippet <- List(""", "value" : "'anything'" }""")
     } {
       val jsResult = implicitly[Reads[FormComponent]].reads(Json.parse(startOfJson + snippet))
       jsResult shouldBe a[JsSuccess[_]]
-      jsResult.map(fv => fv.`type` match {
-        case Text(constraint, _) => constraint should equal(ShortText)
-        case a @ _ => fail(s"expected a Text, got $a")
+      jsResult.map(fv =>
+        fv.`type` match {
+          case Text(constraint, _) => constraint should equal(ShortText)
+          case a @ _               => fail(s"expected a Text, got $a")
       })
     }
   }

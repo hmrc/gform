@@ -24,14 +24,17 @@ case class FormTemplateSchema(value: JsObject)
 object FormTemplateSchema {
 
   val schema: FormTemplateSchema = {
-    val json: JsObject = Json.parse(
-      getClass.getResourceAsStream("/formTemplateSchema.json")).as[JsObject]
+    val json: JsObject = Json.parse(getClass.getResourceAsStream("/formTemplateSchema.json")).as[JsObject]
     FormTemplateSchema(json)
   }
 
-  val jsonSchema: JsonSchema = SchemaValidator.conform(schema).fold(
-    x => throw new UnsupportedOperationException(s"Looks like we have corrupted schema file: formTemplateSchema.json: ${x}"),
-    identity)
+  val jsonSchema: JsonSchema = SchemaValidator
+    .conform(schema)
+    .fold(
+      x =>
+        throw new UnsupportedOperationException(
+          s"Looks like we have corrupted schema file: formTemplateSchema.json: $x"),
+      identity)
 
   implicit val format: OFormat[FormTemplateSchema] = Json.format[FormTemplateSchema]
 }

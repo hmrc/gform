@@ -21,27 +21,29 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 object RepeatingComponentService {
 
-  def discardRepeatingFields(extraFieldsReceived: Set[FormComponentId], mandatoryFields: Set[FormComponentId], optionalFields: Set[FormComponentId]) = {
+  def discardRepeatingFields(
+    extraFieldsReceived: Set[FormComponentId],
+    mandatoryFields: Set[FormComponentId],
+    optionalFields: Set[FormComponentId]) =
     extraFieldsReceived.filterNot { extraFieldId =>
       (mandatoryFields ++ optionalFields).exists { fieldId =>
         val pattern = s"""^\\d+_${fieldId.value}""".r
         pattern.findFirstIn(extraFieldId.value).isDefined
       }
     }
-  }
 
   def findTemplateFieldId(fieldMap: Map[FormComponentId, FormComponent], fieldId: FormComponentId) = {
     val repeatingGroupFieldId = """^\d+_(.+)""".r
 
     val templateFieldId = fieldId.value match {
       case repeatingGroupFieldId(extractedFieldId) => FormComponentId(extractedFieldId)
-      case _ => fieldId
+      case _                                       => fieldId
     }
 
     fieldMap.get(templateFieldId)
   }
 
-  def getAllSections(form: Form, formTemplate: FormTemplate): List[Section] = {
+  def getAllSections(form: Form, formTemplate: FormTemplate): List[Section] =
     formTemplate.sections.flatMap { section =>
       if (isRepeatingSection(section)) {
         val data = form.formData.fields.map(field => field.id.value -> field.value).toMap
@@ -50,14 +52,13 @@ object RepeatingComponentService {
         List(section)
       }
     }
-  }
 
   private def isRepeatingSection(section: Section) = section.repeatsMax.isDefined && section.repeatsMin.isDefined
 
   private def reconstructRepeatingSections(section: Section, data: Map[String, String]): List[Section] = {
     def getFields(field: FormComponent): List[String] = field.`type` match {
       case Group(fields, _, _, _, _, _) => fields.flatMap(getFields)
-      case _ => List(field.id.value)
+      case _                            => List(field.id.value)
     }
 
     val selector = section.fields.flatMap(getFields).head
@@ -68,15 +69,14 @@ object RepeatingComponentService {
   }
 
   private def copySection(section: Section, index: Int, data: Map[String, String]) = {
-    def copyField(field: FormComponent): FormComponent = {
+    def copyField(field: FormComponent): FormComponent =
       field.`type` match {
-        case grp @ Group(fields, _, _, _, _, _) => field.copy(
-          id = FormComponentId(s"${index}_${field.id.value}"),
-          `type` = grp.copy(fields = fields.map(copyField)))
-        case _ => field.copy(
-          id = FormComponentId(s"${index}_${field.id.value}"))
+        case grp @ Group(fields, _, _, _, _, _) =>
+          field.copy(
+            id = FormComponentId(s"${index}_${field.id.value}"),
+            `type` = grp.copy(fields = fields.map(copyField)))
+        case _ => field.copy(id = FormComponentId(s"${index}_${field.id.value}"))
       }
-    }
 
     section.copy(
       title = buildText(Some(section.title), index, data).getOrElse(""),
@@ -107,7 +107,7 @@ object RepeatingComponentService {
       val pattern = """.*(\$\{.*\}).*""".r
       val expression = str match {
         case pattern(txtExpr) => txtExpr
-        case _ => ""
+        case _                => ""
       }
       val evaluatedText = evaluateTextExpression(expression)
       str.replace(expression, evaluatedText)
@@ -115,7 +115,7 @@ object RepeatingComponentService {
 
     template match {
       case Some(inputText) => Some(getEvaluatedText(inputText).replace("$n", index.toString))
-      case _ => None
+      case _               => None
     }
   }
 }

@@ -42,51 +42,57 @@ class FormatValidationSpec extends Spec {
          "type": "text",
          "label": "$label"
         }
-      """)) shouldBe JsSuccess(FormComponent(
-      id = FormComponentId(id),
-      `type` = Text(ShortText, Constant("")),
-      label = label,
-      helpText = None,
-      shortName = None,
-      validIf = None,
-      mandatory = true,
-      editable = true,
-      submissible = true,
-      derived = false,
-      errorMessage = None,
-      presentationHint = None))
+      """)) shouldBe JsSuccess(
+      FormComponent(
+        id = FormComponentId(id),
+        `type` = Text(ShortText, Constant("")),
+        label = label,
+        helpText = None,
+        shortName = None,
+        validIf = None,
+        mandatory = true,
+        editable = true,
+        submissible = true,
+        derived = false,
+        errorMessage = None,
+        presentationHint = None
+      ))
   }
   it should "return UkSortCode Component" in {
-    reads.reads(makeJson("ukSortCode")) shouldBe JsSuccess(FormComponent(
-      id = FormComponentId(id),
-      `type` = UkSortCode(Constant("")),
-      label = label,
-      helpText = None,
-      shortName = None,
-      validIf = None,
-      mandatory = true,
-      editable = true,
-      submissible = true,
-      derived = false,
-      errorMessage = None,
-      presentationHint = None))
+    reads.reads(makeJson("ukSortCode")) shouldBe JsSuccess(
+      FormComponent(
+        id = FormComponentId(id),
+        `type` = UkSortCode(Constant("")),
+        label = label,
+        helpText = None,
+        shortName = None,
+        validIf = None,
+        mandatory = true,
+        editable = true,
+        submissible = true,
+        derived = false,
+        errorMessage = None,
+        presentationHint = None
+      ))
   }
 
   def createTest(format: String, constraint: TextConstraint) = {
     val json: JsValue = makeJson(format)
-    reads.reads(json) shouldBe JsSuccess(FormComponent(
-      id = FormComponentId(id),
-      `type` = Text(constraint, Constant("")),
-      label = label,
-      helpText = None,
-      shortName = None,
-      validIf = None,
-      mandatory = true,
-      editable = true,
-      submissible = true,
-      derived = false,
-      errorMessage = None,
-      presentationHint = None))
+    reads.reads(json) shouldBe JsSuccess(
+      FormComponent(
+        id = FormComponentId(id),
+        `type` = Text(constraint, Constant("")),
+        label = label,
+        helpText = None,
+        shortName = None,
+        validIf = None,
+        mandatory = true,
+        editable = true,
+        submissible = true,
+        derived = false,
+        errorMessage = None,
+        presentationHint = None
+      ))
   }
 
   private def makeJson(format: String) = Json.parse(getJson(format))

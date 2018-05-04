@@ -23,27 +23,53 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ ShortText, _ }
 class FieldValueFormatValueSpec extends Spec {
 
   "FieldValue json object" should "parse a sum expression" in {
-    val fieldValue = toFieldValue(
-      """{
+    val fieldValue = toFieldValue("""{
            "id": "sum",
            "label": "Label",
            "value": "${amountA + amountB}"
           }
       """)
-    fieldValue should beJsSuccess(FormComponent(FormComponentId("sum"), Text(ShortText, Add(FormCtx("amountA"), FormCtx("amountB"))), "Label", None, None, None, true, true, true, derived = false, onlyShowOnSummary = false, None))
+    fieldValue should beJsSuccess(
+      FormComponent(
+        FormComponentId("sum"),
+        Text(ShortText, Add(FormCtx("amountA"), FormCtx("amountB"))),
+        "Label",
+        None,
+        None,
+        None,
+        true,
+        true,
+        true,
+        derived = false,
+        onlyShowOnSummary = false,
+        None
+      ))
 
   }
 
   // I expect that this charcetr set should be wider, https://confluence.tools.tax.service.gov.uk/display/AF/Field+Expressions
   it should "parse all these characters into a Constant" in {
-    val fieldValue = toFieldValue(
-      """{
+    val fieldValue = toFieldValue("""{
            "id": "constant",
            "label": "Label",
            "value": "'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_ ,'"
           }
       """)
-    fieldValue should beJsSuccess(FormComponent(FormComponentId("constant"), Text(ShortText, Constant("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_ ,")), "Label", None, None, None, true, true, true, derived = false, onlyShowOnSummary = false, None))
+    fieldValue should beJsSuccess(
+      FormComponent(
+        FormComponentId("constant"),
+        Text(ShortText, Constant("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_ ,")),
+        "Label",
+        None,
+        None,
+        None,
+        true,
+        true,
+        true,
+        derived = false,
+        onlyShowOnSummary = false,
+        None
+      ))
 
   }
 

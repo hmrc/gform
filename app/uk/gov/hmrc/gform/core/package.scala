@@ -25,26 +25,23 @@ package object core {
   type FOpt[A] = EitherT[Future, UnexpectedState, A]
   type Opt[A] = Either[UnexpectedState, A]
 
-  def success[A](a: A): FOpt[A] = {
+  def success[A](a: A): FOpt[A] =
     EitherT[Future, UnexpectedState, A](Future.successful(Right(a)))
-  }
 
-  def fromFutureOptA[A](fa: Future[Opt[A]]): FOpt[A] = {
+  def fromFutureOptA[A](fa: Future[Opt[A]]): FOpt[A] =
     EitherT[Future, UnexpectedState, A](fa)
-  }
 
-  def fromFutureA[A](fa: Future[A])(implicit ec: ExecutionContext): FOpt[A] = {
+  def fromFutureA[A](fa: Future[A])(implicit ec: ExecutionContext): FOpt[A] =
     EitherT[Future, UnexpectedState, A](fa.map(Right(_)))
-  }
 
-  def fromOptA[A](oa: Opt[A]): FOpt[A] = {
+  def fromOptA[A](oa: Opt[A]): FOpt[A] =
     EitherT[Future, UnexpectedState, A](Future.successful(oa))
-  }
 
-  def fromFutureOptionA[A](fo: Future[Option[A]])(invalid: => UnexpectedState)(implicit ec: ExecutionContext): FOpt[A] = {
+  def fromFutureOptionA[A](fo: Future[Option[A]])(invalid: => UnexpectedState)(
+    implicit ec: ExecutionContext): FOpt[A] = {
     val futureA = fo.map {
       case Some(a) => Right(a)
-      case None => Left(invalid)
+      case None    => Left(invalid)
     }
     EitherT[Future, UnexpectedState, A](futureA)
   }

@@ -60,14 +60,16 @@ class PlayComponentsModule(
 
   lazy val loggingFilter = new LoggingFilter {
     override def mat: Materializer = akkaModule.materializer
-    override def controllerNeedsLogging(controllerName: String): Boolean = configModule.controllerConfig.paramsForController(controllerName).needsLogging
+    override def controllerNeedsLogging(controllerName: String): Boolean =
+      configModule.controllerConfig.paramsForController(controllerName).needsLogging
   }
 
   lazy val authFilter = new AuthorisationFilter {
     override def mat: Materializer = akkaModule.materializer
     override lazy val authParamsConfig: AuthParamsControllerConfig = configModule.authParamsControllerConfig
     override lazy val authConnector: AuthConnector = MicroserviceAuthConnector
-    override def controllerNeedsAuth(controllerName: String): Boolean = configModule.controllerConfig.paramsForController(controllerName).needsAuth
+    override def controllerNeedsAuth(controllerName: String): Boolean =
+      configModule.controllerConfig.paramsForController(controllerName).needsAuth
   }
 
   lazy val appRoutes: app.Routes = new app.Routes(
@@ -78,21 +80,20 @@ class PlayComponentsModule(
     configModule.configController,
     validationModule.validationController,
     authModule.authController,
-    dmsModule.dmsSubmissionController)
+    dmsModule.dmsSubmissionController
+  )
 
   val adminController = new AdminController(configModule.playConfiguration)
 
-  lazy val prodRoutes: prod.Routes = new prod.Routes(
-    errorHandler,
-    appRoutes,
-    adminController,
-    metricsModule.metricsController)
+  lazy val prodRoutes: prod.Routes =
+    new prod.Routes(errorHandler, appRoutes, adminController, metricsModule.metricsController)
 
-  lazy val testOnlyDoNotUseInAppConfRoutes: testOnlyDoNotUseInAppConf.Routes = new testOnlyDoNotUseInAppConf.Routes(
-    errorHandler,
-    prodRoutes,
-    testOnlyModule.testOnlyController,
-    testOnlyModule.fUInterceptor)
+  lazy val testOnlyDoNotUseInAppConfRoutes: testOnlyDoNotUseInAppConf.Routes =
+    new testOnlyDoNotUseInAppConf.Routes(
+      errorHandler,
+      prodRoutes,
+      testOnlyModule.testOnlyController,
+      testOnlyModule.fUInterceptor)
 
   def router: Router = {
     val applicationRouterKey = "application.router"
@@ -105,27 +106,27 @@ class PlayComponentsModule(
       Logger.info("Using router with testOnlyDoNotUseInAppConf.routes")
       testOnlyDoNotUseInAppConfRoutes
     } else {
-      Logger.error(s"The option $applicationRouterKey has unsupported value: $applicationRouterProp. We support only 'testOnlyDoNotUseInAppConf.Routes'. Using 'prodRoutes'.")
+      Logger.error(
+        s"The option $applicationRouterKey has unsupported value: $applicationRouterProp. We support only 'testOnlyDoNotUseInAppConf.Routes'. Using 'prodRoutes'.")
       prodRoutes
     }
   }
 
-  lazy val errorHandler = new ErrorHandler(
-    playComponents.context.environment,
-    playComponents.context.initialConfiguration,
-    playComponents.context.sourceMapper)
+  lazy val errorHandler =
+    new ErrorHandler(
+      playComponents.context.environment,
+      playComponents.context.initialConfiguration,
+      playComponents.context.sourceMapper)
 
   lazy val httpFilters: Seq[EssentialFilter] = Seq(
     metricsModule.metricsFilter,
     auditingModule.microserviceAuditFilter,
     loggingFilter,
     //    authFilter, it thorws exception instead of working ...
-    NoCacheFilter)
+    NoCacheFilter
+  )
 
-  lazy val httpRequestHandler = new CustomHttpRequestHandler(
-    router,
-    errorHandler,
-    playComponents.builtInComponents.httpConfiguration,
-    httpFilters)
+  lazy val httpRequestHandler =
+    new CustomHttpRequestHandler(router, errorHandler, playComponents.builtInComponents.httpConfiguration, httpFilters)
 
 }

@@ -28,13 +28,12 @@ class FormModule(
   formTemplateModule: FormTemplateModule,
   fileUploadModule: FileUploadModule) {
 
-  val save4later = new Save4Later(shortLivedCacheModule.shortLivedCache, scala.concurrent.ExecutionContext.Implicits.global)
+  val save4later =
+    new Save4Later(shortLivedCacheModule.shortLivedCache, scala.concurrent.ExecutionContext.Implicits.global)
 
   val formService = new FormService(save4later)
 
-  val formController: FormController = new FormController(
-    formTemplateModule.formTemplateService,
-    fileUploadModule.fileUploadService,
-    formService)
+  val formController: FormController =
+    new FormController(formTemplateModule.formTemplateService, fileUploadModule.fileUploadService, formService)
 
 }

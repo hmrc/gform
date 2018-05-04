@@ -25,8 +25,7 @@ import uk.gov.hmrc.gform.sharedmodel.form.FormId
 
 import scala.concurrent.Future
 
-class SubmissionController(
-  submissionService: SubmissionService) extends BaseController {
+class SubmissionController(submissionService: SubmissionService) extends BaseController {
 
   def submit(formId: FormId) = Action.async { implicit request =>
     Logger.info(s"submit, formId: '${formId.value}, ${loggingHelpers.cleanHeaders(request.headers)}")
@@ -36,24 +35,25 @@ class SubmissionController(
     //TODO validate all sections before submission (whole form)
     //TODO change status of form to 'submitted'
 
-    submissionService.submission(formId, request.headers.get("customerId").getOrElse("")).fold(
-      _.asBadRequest,
-      _ => NoContent)
+    submissionService
+      .submission(formId, request.headers.get("customerId").getOrElse(""))
+      .fold(_.asBadRequest, _ => NoContent)
   }
 
   def submitWithPdf(formId: FormId) = Action.async { implicit request =>
     Logger.info(s"submit, formId: '${formId.value}, ${loggingHelpers.cleanHeaders(request.headers)}")
     request.body.asText match {
       case Some(html) =>
-        submissionService.submissionWithPdf(formId, request.headers.get("customerId").getOrElse(""), html).fold(
-          _.asBadRequest,
-          _ => NoContent)
+        submissionService
+          .submissionWithPdf(formId, request.headers.get("customerId").getOrElse(""), html)
+          .fold(_.asBadRequest, _ => NoContent)
       case None => Future.successful(BadRequest)
     }
   }
 
   def submissionStatus(formId: FormId) = Action.async { implicit request =>
-    Logger.info(s"checking submission status, formId: '${formId.value}, ${loggingHelpers.cleanHeaders(request.headers)}")
+    Logger.info(
+      s"checking submission status, formId: '${formId.value}, ${loggingHelpers.cleanHeaders(request.headers)}")
     //TODO authentication
     //TODO authorisation
 

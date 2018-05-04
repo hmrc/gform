@@ -34,7 +34,8 @@ import scala.util.Random
 class DmsSubmissionController(
   fileUpload: FileUploadService,
   pdfGenerator: PdfGeneratorService,
-  documentLoader: Array[Byte] => PDDocument)(implicit clock: Clock, rnd: Rnd[Random]) extends BaseController {
+  documentLoader: Array[Byte] => PDDocument)(implicit clock: Clock, rnd: Rnd[Random])
+    extends BaseController {
 
   def submitToDms = Action.async(parse.json) { implicit request =>
     withJsonBody[DmsHtmlSubmission] { dmsHtmlSubmission =>
@@ -44,16 +45,26 @@ class DmsSubmissionController(
 
       for {
         envId <- fileUpload.createEnvelope(formTemplateId)
-        pdf <- pdfGenerator.generatePDF(decodedHtml)
+        pdf   <- pdfGenerator.generatePDF(decodedHtml)
         pdfDoc = documentLoader(pdf)
         pdfSummary = PdfSummary(pdfDoc.getNumberOfPages, pdf)
         _ = pdfDoc.close()
         submissionRef = SubmissionRef.random
         dmsMetadata = DmsMetaData(formTemplateId, metadata.customerId)
-        submission = Submission(FormId(metadata.dmsFormId), LocalDateTime.now(clock), submissionRef, envId, 0, dmsMetadata)
+        submission = Submission(
+          FormId(metadata.dmsFormId),
+          LocalDateTime.now(clock),
+          submissionRef,
+          envId,
+          0,
+          dmsMetadata)
         // TODO controller should allow data XML submission
         submissionAndPdf = SubmissionAndPdf(submission, pdfSummary)
-        dmsSubmission = DmsSubmission(metadata.dmsFormId, TextExpression(Constant(metadata.customerId)), metadata.classificationType, metadata.businessArea)
+        dmsSubmission = DmsSubmission(
+          metadata.dmsFormId,
+          TextExpression(Constant(metadata.customerId)),
+          metadata.classificationType,
+          metadata.businessArea)
         _ <- fileUpload.submitEnvelope(submissionAndPdf, dmsSubmission, 0)
       } yield {
         NoContent

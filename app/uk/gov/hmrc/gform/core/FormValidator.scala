@@ -38,9 +38,9 @@ object FormValidator {
 
     res match {
       case JsSuccess(success, _) => Right(success)
-      case JsError(error) => Left(UnexpectedState(s"""|Error when reading 'FormField' class:
-                                                   |Error: $error
-                                                   |Input json: """.stripMargin + Json.prettyPrint(json)))
+      case JsError(error)        => Left(UnexpectedState(s"""|Error when reading 'FormField' class:
+                                                      |Error: $error
+                                                      |Input json: """.stripMargin + Json.prettyPrint(json)))
     }
   }
 
@@ -51,45 +51,48 @@ object FormValidator {
     val ffSet = formFields.filterNot(_.value.isEmpty()).map(_.id).toSet
 
     val (templateFieldsMap, requiredFields) =
-      SectionHelper.atomicFields(section, Map.empty).foldLeft((Map.empty[FormComponentId, FormComponent], Set.empty[FormComponentId])) {
-        case ((acc, reqAcc), fieldValue) =>
+      SectionHelper
+        .atomicFields(section, Map.empty)
+        .foldLeft((Map.empty[FormComponentId, FormComponent], Set.empty[FormComponentId])) {
+          case ((acc, reqAcc), fieldValue) =>
+            fieldValue.`type` match {
+              case UkSortCode(_) =>
+                val res: Map[FormComponentId, FormComponent] =
+                  UkSortCode.fields(fieldValue.id).map(_ -> fieldValue).toMap
+                val accRes = acc ++ res
 
-          fieldValue.`type` match {
-            case UkSortCode(_) =>
-              val res: Map[FormComponentId, FormComponent] = UkSortCode.fields(fieldValue.id).map(_ -> fieldValue).toMap
-              val accRes = acc ++ res
+                (accRes, reqAcc)
+              case Address(_) =>
+                val res: Map[FormComponentId, FormComponent] = Address.fields(fieldValue.id).map(_ -> fieldValue).toMap
+                val accRes = acc ++ res
 
-              (accRes, reqAcc)
-            case Address(_) =>
-              val res: Map[FormComponentId, FormComponent] = Address.fields(fieldValue.id).map(_ -> fieldValue).toMap
-              val accRes = acc ++ res
+                (accRes, reqAcc)
 
-              (accRes, reqAcc)
+              case Date(_, _, _) =>
+                val res: Map[FormComponentId, FormComponent] = Date.fields(fieldValue.id).map(_ -> fieldValue).toMap
+                val accRes = acc ++ res
 
-            case Date(_, _, _) =>
-              val res: Map[FormComponentId, FormComponent] = Date.fields(fieldValue.id).map(_ -> fieldValue).toMap
-              val accRes = acc ++ res
+                (accRes, reqAcc)
 
-              (accRes, reqAcc)
+              // TODO - added Group just to compile; remove if possible
+              case Text(_, _) | Choice(_, _, _, _, _) | Group(_, _, _, _, _, _) | FileUpload() =>
+                val id = fieldValue.id
+                val accRes = acc + (id -> fieldValue)
 
-            case Text(_, _) | Choice(_, _, _, _, _) | Group(_, _, _, _, _, _) | FileUpload() => // TODO - added Group just to compile; remove if possible
-              val id = fieldValue.id
-              val accRes = acc + (id -> fieldValue)
+                val reqAccRes =
+                  fieldValue.mandatory match {
+                    case true  => reqAcc + id
+                    case false => reqAcc
+                  }
+                (accRes, reqAccRes)
 
-              val reqAccRes =
-                fieldValue.mandatory match {
-                  case true => reqAcc + id
-                  case false => reqAcc
-                }
-              (accRes, reqAccRes)
+              case InformationMessage(_, _) =>
+                val id = fieldValue.id
+                val accRes = acc + (id -> fieldValue)
 
-            case InformationMessage(_, _) =>
-              val id = fieldValue.id
-              val accRes = acc + (id -> fieldValue)
-
-              (accRes, reqAcc)
-          }
-      }
+                (accRes, reqAcc)
+            }
+        }
 
     val missingRequiredFields = (requiredFields diff ffSet)
     val requirementCheck: Opt[Unit] = if (missingRequiredFields.isEmpty) {
@@ -102,7 +105,7 @@ object FormValidator {
       formFields.map { formField =>
         RepeatingComponentService.findTemplateFieldId(templateFieldsMap, formField.id) match {
           case Some(templateField) => Right((formField, templateField))
-          case None => Left(UnexpectedState(s"Field ${formField.id} is not part of the template"))
+          case None                => Left(UnexpectedState(s"Field ${formField.id} is not part of the template"))
         }
       }
 

@@ -19,12 +19,9 @@ package uk.gov.hmrc.gform.sharedmodel.config
 import play.api.libs.json.{ Json, OFormat }
 
 /**
- * Put here every config which should be exposed to the world
- */
-case class ExposedConfig(
-  formMaxAttachmentSizeMB: Int,
-  formExpiryDays: Int,
-  contentTypes: List[ContentType])
+  * Put here every config which should be exposed to the world
+  */
+case class ExposedConfig(formMaxAttachmentSizeMB: Int, formExpiryDays: Int, contentTypes: List[ContentType])
 
 object ExposedConfig {
   implicit val format: OFormat[ExposedConfig] = Json.format[ExposedConfig]

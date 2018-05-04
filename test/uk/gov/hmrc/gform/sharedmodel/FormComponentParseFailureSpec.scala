@@ -23,8 +23,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormComponent
 class FormComponentParseFailureSpec extends Spec {
 
   "FieldValue json object" should "not parse as Date if format is wrong" in {
-    val fieldValue = toFieldValue(
-      s"""
+    val fieldValue = toFieldValue(s"""
         {
           "id": "startDate",
           "type": "date",
@@ -40,8 +39,7 @@ class FormComponentParseFailureSpec extends Spec {
   }
 
   it should "not parse as Date if value is wrong" in {
-    val fieldValue = toFieldValue(
-      s"""
+    val fieldValue = toFieldValue(s"""
         {
           "id": "startDate",
           "type": "date",
@@ -57,8 +55,7 @@ class FormComponentParseFailureSpec extends Spec {
   }
 
   it should "not parse as Date if format and value is wrong" in {
-    val fieldValue = toFieldValue(
-      s"""
+    val fieldValue = toFieldValue(s"""
         {
           "id": "startDate",
           "type": "date",
@@ -74,8 +71,7 @@ class FormComponentParseFailureSpec extends Spec {
   }
 
   it should "fail to parse 'choice' type if 'format' is not 'vertical' or 'horizontal' or 'yesno'" in {
-    val fieldValue = toFieldValue(
-      """|{
+    val fieldValue = toFieldValue("""|{
          |  "type": "choice",
          |  "id":"dutyType",
          |  "label":"Select the tax type",
@@ -90,8 +86,7 @@ class FormComponentParseFailureSpec extends Spec {
   }
 
   it should "fail to parse 'choice' type if 'value' is wrong" in {
-    val fieldValue = toFieldValue(
-      """|{
+    val fieldValue = toFieldValue("""|{
          |  "type": "choice",
          |  "id":"dutyType",
          |  "label":"Select the tax type",
@@ -106,8 +101,7 @@ class FormComponentParseFailureSpec extends Spec {
   }
 
   it should "fail to parse 'choice' type if 'value' and 'format' is wrong" in {
-    val fieldValue = toFieldValue(
-      """|{
+    val fieldValue = toFieldValue("""|{
          |  "type": "choice",
          |  "id":"dutyType",
          |  "label":"Select the tax type",
@@ -124,8 +118,7 @@ class FormComponentParseFailureSpec extends Spec {
   }
 
   it should "fail to parse a text" in {
-    val fieldValue = toFieldValue(
-      """{
+    val fieldValue = toFieldValue("""{
            "id": "sum",
            "label": "Label",
            "value": "${a - b}"

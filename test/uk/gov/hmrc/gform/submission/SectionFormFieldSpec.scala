@@ -26,7 +26,8 @@ import scala.collection.immutable.List
 class SectionFormFieldSpec extends Spec with ExampleData {
 
   val fileField: (List[FormField], FormComponent) = (List(`formField - facePhoto`), `fieldValue - facePhoto`)
-  val noFileField: (List[FormField], FormComponent) = (List(FormField(FormComponentId("1"), "")), `fieldValue - facePhoto`)
+  val noFileField: (List[FormField], FormComponent) =
+    (List(FormField(FormComponentId("1"), "")), `fieldValue - facePhoto`)
   val emptyFileField: (List[FormField], FormComponent) = (List(), `fieldValue - facePhoto`)
   val textField: (List[FormField], FormComponent) = (List(`formField - surname`), `fieldValue - surname`)
 

@@ -24,8 +24,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 class FormComponentSpec2 extends Spec {
 
   "FieldValue json object" should "parse 'choice' type as Radio with Vertical orientation if 'multivalue=no & format=vertical' is provided" in {
-    val fieldValue = toFieldValue(
-      """|{
+    val fieldValue = toFieldValue("""|{
          |  "type": "choice",
          |  "id":"dutyType",
          |  "label":"Select the tax type",
@@ -53,7 +52,8 @@ class FormComponentSpec2 extends Spec {
         derived = false,
         onlyShowOnSummary = false,
         None,
-        Some(List(CollapseGroupUnderLabel))))
+        Some(List(CollapseGroupUnderLabel))
+      ))
   }
 
   private def toFieldValue(template: String): JsResult[FormComponent] = {

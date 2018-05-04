@@ -34,14 +34,14 @@ case object Validator {
 
   val reads: Reads[Validator] = Reads { json =>
     (json \ "validatorName").as[String] match {
-      case "hmrcUTRPostcodeCheck" => json.validate[HMRCUTRPostcodeCheckValidator]
+      case "hmrcUTRPostcodeCheck"    => json.validate[HMRCUTRPostcodeCheckValidator]
       case "bankAccountModulusCheck" => json.validate[BankAccoutnModulusCheck]
     }
   }
 
   val writes: OWrites[Validator] = OWrites {
     case v: HMRCUTRPostcodeCheckValidator => HMRCUTRPostcodeCheckValidator.format.writes(v)
-    case v: BankAccoutnModulusCheck => BankAccoutnModulusCheck.format.writes(v)
+    case v: BankAccoutnModulusCheck       => BankAccoutnModulusCheck.format.writes(v)
 
   }
 

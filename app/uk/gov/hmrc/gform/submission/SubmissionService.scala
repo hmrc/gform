@@ -50,7 +50,8 @@ class SubmissionService(
 
   private def getNoOfAttachments(form: Form, formTemplate: FormTemplate): Int = {
     // TODO two functions are calculating the same thing in different ways! c.f. FileUploadService.SectionFormField.getNumberOfFiles
-    val attachmentsIds: List[String] = formTemplate.sections.flatMap(_.fields.filter(f => f.`type` == FileUpload())).map(_.id.value)
+    val attachmentsIds: List[String] =
+      formTemplate.sections.flatMap(_.fields.filter(f => f.`type` == FileUpload())).map(_.id.value)
     val formIds: Seq[String] = form.formData.fields.filterNot(_.value == FileUploadField.noFileUpload).map(_.id.value)
     attachmentsIds.count(ai => formIds.contains(ai))
   }
@@ -70,11 +71,9 @@ class SubmissionService(
       val out = java.nio.file.Files.newOutputStream(path)
       out.write(pdf)
       out.close()
-      */
+       */
       //todo install 3rd part part
-      val pdfSummary = PdfSummary(
-        numberOfPages = PDDocument.load(pdf).getNumberOfPages,
-        pdfContent = pdf)
+      val pdfSummary = PdfSummary(numberOfPages = PDDocument.load(pdf).getNumberOfPages, pdfContent = pdf)
       val submission = Submission(
         submittedDate = timeProvider.localDateTime(),
         submissionRef = SubmissionRef.random,
@@ -84,20 +83,19 @@ class SubmissionService(
         dmsMetaData = DmsMetaData(
           formTemplateId = form.formTemplateId,
           customerId //TODO need more secure and safe way of doing this. perhaps moving auth to backend and just pulling value out there.
-        ))
+        )
+      )
 
       val xmlSummary = formTemplate.dmsSubmission.dataXml match {
         case Some(true) => {
-          Some(XmlGeneratorService.xmlDec + "\n" + XmlGeneratorService.getXml(sectionFormFields, submission.submissionRef))
+          Some(
+            XmlGeneratorService.xmlDec + "\n" + XmlGeneratorService.getXml(sectionFormFields, submission.submissionRef))
         }
         case _ => None
 
       }
 
-      SubmissionAndPdf(
-        submission = submission,
-        pdfSummary = pdfSummary,
-        xmlSummary = xmlSummary)
+      SubmissionAndPdf(submission = submission, pdfSummary = pdfSummary, xmlSummary = xmlSummary)
     }
   }
   //todo refactor the two methods into one
@@ -107,20 +105,16 @@ class SubmissionService(
     sectionFormFields: List[SectionFormField],
     pdf: String,
     customerId: String,
-    formTemplate: FormTemplate)(implicit hc: HeaderCarrier): Future[SubmissionAndPdf] = {
-
+    formTemplate: FormTemplate)(implicit hc: HeaderCarrier): Future[SubmissionAndPdf] =
     pdfGeneratorService.generatePDF(pdf).map { pdf =>
-
       /*
       val path = java.nio.file.Paths.get("confirmation.pdf")
       val out = java.nio.file.Files.newOutputStream(path)
       out.write(pdf)
       out.close()
-      */
+       */
 
-      val pdfSummary = PdfSummary(
-        numberOfPages = PDDocument.load(pdf).getNumberOfPages,
-        pdfContent = pdf)
+      val pdfSummary = PdfSummary(numberOfPages = PDDocument.load(pdf).getNumberOfPages, pdfContent = pdf)
       val submission = Submission(
         submittedDate = timeProvider.localDateTime(),
         submissionRef = SubmissionRef.random,
@@ -130,30 +124,27 @@ class SubmissionService(
         dmsMetaData = DmsMetaData(
           formTemplateId = form.formTemplateId,
           customerId //TODO need more secure and safe way of doing this. perhaps moving auth to backend and just pulling value out there.
-        ))
+        )
+      )
 
       val xmlSummary = formTemplate.dmsSubmission.dataXml match {
         case Some(true) => {
-          Some(XmlGeneratorService.xmlDec + "\n" + XmlGeneratorService.getXml(sectionFormFields, submission.submissionRef))
+          Some(
+            XmlGeneratorService.xmlDec + "\n" + XmlGeneratorService.getXml(sectionFormFields, submission.submissionRef))
         }
         case _ => None
 
       }
 
-      SubmissionAndPdf(
-        submission = submission,
-        pdfSummary = pdfSummary,
-        xmlSummary)
+      SubmissionAndPdf(submission = submission, pdfSummary = pdfSummary, xmlSummary)
     }
-  }
 
   def getSignedForm(formId: FormId)(implicit hc: HeaderCarrier) = formService.get(formId).flatMap {
     case f @ Form(_, _, _, _, _, _, Signed) => Future.successful(f)
-    case _ => Future.failed(new Exception(s"Form $FormId status is not signed"))
+    case _                                  => Future.failed(new Exception(s"Form $FormId status is not signed"))
   }
 
-  def submission(formId: FormId, customerId: String)(implicit hc: HeaderCarrier): FOpt[Unit] = {
-
+  def submission(formId: FormId, customerId: String)(implicit hc: HeaderCarrier): FOpt[Unit] =
     // format: OFF
     for {
       form                <- fromFutureA        (getSignedForm(formId))
@@ -168,10 +159,8 @@ class SubmissionService(
       _                   =                     email.sendEmail(emailAddress, formTemplate.emailTemplateId)(hc, fromLoggingDetails)
     } yield res
     // format: ON
-  }
 
-  def submissionWithPdf(formId: FormId, customerId: String, pdf: String)(implicit hc: HeaderCarrier): FOpt[Unit] = {
-
+  def submissionWithPdf(formId: FormId, customerId: String, pdf: String)(implicit hc: HeaderCarrier): FOpt[Unit] =
     // format: OFF
     for {
 //      form                <- fromFutureA        (getSignedForm(formId))
@@ -188,53 +177,55 @@ class SubmissionService(
       _                   =                     email.sendEmail(emailAddress, formTemplate.emailTemplateId)(hc, fromLoggingDetails)
     } yield res
     // format: ON
-  }
 
-  def submissionDetails(formId: FormId)(implicit ec: ExecutionContext): Future[Submission] = {
+  def submissionDetails(formId: FormId)(implicit ec: ExecutionContext): Future[Submission] =
     submissionRepo.get(formId.value)
-  }
 
 }
 
 object SubmissionServiceHelper {
 
-  def getSectionFormFields(
-    form: Form,
-    formTemplate: FormTemplate): Opt[List[SectionFormField]] = {
+  def getSectionFormFields(form: Form, formTemplate: FormTemplate): Opt[List[SectionFormField]] = {
 
     val data: Map[FormComponentId, FormField] = form.formData.fields.map(field => field.id -> field).toMap
 
     val formFieldByFieldValue: FormComponent => Opt[(List[FormField], FormComponent)] = fieldValue => {
       val fieldValueIds: List[FormComponentId] =
         fieldValue.`type` match {
-          case Address(_) => Address.fields(fieldValue.id)
-          case Date(_, _, _) => Date.fields(fieldValue.id)
-          case FileUpload() => List(fieldValue.id)
-          case UkSortCode(_) => UkSortCode.fields(fieldValue.id)
+          case Address(_)                                                   => Address.fields(fieldValue.id)
+          case Date(_, _, _)                                                => Date.fields(fieldValue.id)
+          case FileUpload()                                                 => List(fieldValue.id)
+          case UkSortCode(_)                                                => UkSortCode.fields(fieldValue.id)
           case Text(_, _) | Choice(_, _, _, _, _) | Group(_, _, _, _, _, _) => List(fieldValue.id)
-          case InformationMessage(_, _) => Nil
+          case InformationMessage(_, _)                                     => Nil
         }
 
       val formFieldAndFieldValues: Opt[List[FormField]] = {
-        fieldValueIds.map { fieldValueId =>
-          data.get(fieldValueId) match {
-            case Some(formField) => Right(formField)
-            case None => Left(UnexpectedState(s"No formField for field.id: ${fieldValue.id} found"))
+        fieldValueIds
+          .map { fieldValueId =>
+            data.get(fieldValueId) match {
+              case Some(formField) => Right(formField)
+              case None            => Left(UnexpectedState(s"No formField for field.id: ${fieldValue.id} found"))
+            }
           }
-        }.partition(_.isLeft) match {
+          .partition(_.isLeft) match {
           case (Nil, list) => Right(for (Right(formField) <- list) yield formField)
-          case (invalidStates, _) => Left(UnexpectedState((for (Left(invalidState) <- invalidStates) yield invalidState.error).mkString(", ")))
+          case (invalidStates, _) =>
+            Left(UnexpectedState((for (Left(invalidState) <- invalidStates) yield invalidState.error).mkString(", ")))
         }
       }
 
       formFieldAndFieldValues match {
-        case Right(list) => Right((list, fieldValue))
+        case Right(list)        => Right((list, fieldValue))
         case Left(invalidState) => Left(invalidState)
       }
     }
 
     val toSectionFormField: BaseSection => Opt[SectionFormField] = section =>
-      SectionHelper.atomicFields(section, data).traverse(formFieldByFieldValue).map(ff => SectionFormField(section.shortName.getOrElse(section.title), ff))
+      SectionHelper
+        .atomicFields(section, data)
+        .traverse(formFieldByFieldValue)
+        .map(ff => SectionFormField(section.shortName.getOrElse(section.title), ff))
 
     val allSections = RepeatingComponentService.getAllSections(form, formTemplate)
     // TODO This is a workaround for GD94 so that all sections will be in the submission, because retrievals are not available for evaluation in the backend

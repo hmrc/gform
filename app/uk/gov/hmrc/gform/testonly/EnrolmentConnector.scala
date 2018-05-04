@@ -24,17 +24,14 @@ import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
 class EnrolmentConnector(wSHttp: WSHttp, baseUrl: String) {
 
-  def upload(id: String, body: JsValue)(implicit hc: HeaderCarrier, executionContext: ExecutionContext) = {
+  def upload(id: String, body: JsValue)(implicit hc: HeaderCarrier, executionContext: ExecutionContext) =
     wSHttp.PUT[JsValue, HttpResponse](s"$ES6url/HMRC-OBTDS-ORG~EtmpRegistrationNumber~$id", body)
-  }
 
-  def deEnrol(userId: String, id: String)(implicit hc: HeaderCarrier, executionContext: ExecutionContext) = {
+  def deEnrol(userId: String, id: String)(implicit hc: HeaderCarrier, executionContext: ExecutionContext) =
     wSHttp.DELETE(s"$baseUrl/enrolment-store/users/$userId/enrolments/HMRC-OBTDS-ORG~EtmpRegistrationNumber~$id")
-  }
 
-  def removeUnallocated(id: String)(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[Unit] = {
+  def removeUnallocated(id: String)(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[Unit] =
     wSHttp.DELETE[HttpResponse](s"$ES6url/HMRC-OBTDS-ORG~EtmpRegistrationNumber~$id").map(_ => ())
-  }
 
   private val ES6url = "http://enrolment-store-proxy.protected.mdtp:80/enrolment-store-proxy/enrolment-store/enrolments"
 

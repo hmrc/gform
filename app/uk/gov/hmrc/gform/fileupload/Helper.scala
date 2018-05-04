@@ -27,25 +27,25 @@ import uk.gov.hmrc.http.HttpResponse
 
 class Helper(config: FUConfig, timeProvider: TimeProvider) {
 
-  def createEnvelopeRequestBody(formTemplateId: FormTemplateId): JsObject = Json.obj(
-    "constraints" -> Json.obj(
-      "contentTypes" -> contentTypesJson,
-      "maxItems" -> config.maxItems,
-      "maxSize" -> config.maxSize,
-      "maxSizePerItem" -> config.maxSizePerItem),
-    "callbackUrl" -> "someCallback",
-    "expiryDate" -> s"$envelopeExpiryDate",
-    "metadata" -> Json.obj(
-      "application" -> "gform",
-      "formTemplateId" -> s"${formTemplateId.value}"))
+  def createEnvelopeRequestBody(formTemplateId: FormTemplateId): JsObject =
+    Json.obj(
+      "constraints" -> Json.obj(
+        "contentTypes"   -> contentTypesJson,
+        "maxItems"       -> config.maxItems,
+        "maxSize"        -> config.maxSize,
+        "maxSizePerItem" -> config.maxSizePerItem),
+      "callbackUrl" -> "someCallback",
+      "expiryDate"  -> s"$envelopeExpiryDate",
+      "metadata"    -> Json.obj("application" -> "gform", "formTemplateId" -> s"${formTemplateId.value}")
+    )
 
   /**
-   * There must be Location header. If not this is exceptional situation!
-   */
+    * There must be Location header. If not this is exceptional situation!
+    */
   def extractEnvelopId(resp: HttpResponse): EnvelopeId = resp.header(LOCATION) match {
     case Some(EnvelopeIdExtractor(envelopeId)) => EnvelopeId(envelopeId)
-    case Some(location) => throw new SpoiltLocationHeader(location)
-    case _ => throw new SpoiltLocationHeader(s"Header $LOCATION not found")
+    case Some(location)                        => throw new SpoiltLocationHeader(location)
+    case _                                     => throw new SpoiltLocationHeader(s"Header $LOCATION not found")
   }
 
   private lazy val EnvelopeIdExtractor = "envelopes/([\\w\\d-]+)$".r.unanchored

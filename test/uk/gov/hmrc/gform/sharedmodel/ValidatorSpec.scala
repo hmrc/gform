@@ -38,9 +38,10 @@ class ValidatorSpec extends Spec {
     val x: JsValue = Validator.format.writes(validator)
     x shouldBe Json.obj(
       "validatorName" -> "hmrcUTRPostcodeCheck",
-      "errorMessage" -> "The UTR could not be foundor the postcode did not match. | <Welsh...>",
-      "utr" -> Json.obj("value" -> hMRCUTRPostcodeCheckValidator.utr.value),
-      "postcode" -> Json.obj("value" -> hMRCUTRPostcodeCheckValidator.postcode.value))
+      "errorMessage"  -> "The UTR could not be foundor the postcode did not match. | <Welsh...>",
+      "utr"           -> Json.obj("value" -> hMRCUTRPostcodeCheckValidator.utr.value),
+      "postcode"      -> Json.obj("value" -> hMRCUTRPostcodeCheckValidator.postcode.value)
+    )
   }
 
   "Validator" should "return BankAccoutnModulusCheck " in {
@@ -59,9 +60,10 @@ class ValidatorSpec extends Spec {
     val x: JsValue = Validator.format.writes(validator)
     x shouldBe Json.obj(
       "validatorName" -> "bankAccountModulusCheck",
-      "errorMessage" -> "This is an error message for Bank",
+      "errorMessage"  -> "This is an error message for Bank",
       "accountNumber" -> Json.obj("value" -> bankAccoutnModulusCheckValidator.accountNumber.value),
-      "sortCode" -> Json.obj("value" -> bankAccoutnModulusCheckValidator.sortCode.value))
+      "sortCode"      -> Json.obj("value" -> bankAccoutnModulusCheckValidator.sortCode.value)
+    )
   }
 
 }

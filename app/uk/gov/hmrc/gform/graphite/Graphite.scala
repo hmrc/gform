@@ -20,5 +20,6 @@ import play.api.{ Application, Configuration }
 import uk.gov.hmrc.play.graphite.GraphiteConfig
 
 class Graphite(configuration: Configuration) extends GraphiteConfig {
-  override def microserviceMetricsConfig(implicit app: Application): Option[Configuration] = configuration.getConfig(s"microservice.metrics")
+  override def microserviceMetricsConfig(implicit app: Application): Option[Configuration] =
+    configuration.getConfig(s"microservice.metrics")
 }

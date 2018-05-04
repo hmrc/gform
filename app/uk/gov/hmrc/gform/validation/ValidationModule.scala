@@ -25,14 +25,16 @@ import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.save4later.{ Save4Later, Save4LaterModule }
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 
-class ValidationModule(
-  wSHttpModule: WSHttpModule,
-  configModule: ConfigModule) {
+class ValidationModule(wSHttpModule: WSHttpModule, configModule: ConfigModule) {
 
   private val desConfig = configModule.desConfig
-  private val desConnector: DesConnector = new DesConnector(wSHttpModule.auditableWSHttp, configModule.serviceConfig.baseUrl("etmp-hod"), desConfig)
+  private val desConnector: DesConnector =
+    new DesConnector(wSHttpModule.auditableWSHttp, configModule.serviceConfig.baseUrl("etmp-hod"), desConfig)
 
-  private val bankAccountReputationConnector = new BankAccountReputationConnector(wSHttpModule.auditableWSHttp, configModule.serviceConfig.baseUrl("bank-account-reputation"))
+  private val bankAccountReputationConnector =
+    new BankAccountReputationConnector(
+      wSHttpModule.auditableWSHttp,
+      configModule.serviceConfig.baseUrl("bank-account-reputation"))
 
   private val validationService = new ValidationService(desConnector, bankAccountReputationConnector)
   val validationController = new ValidationController(validationService)

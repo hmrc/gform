@@ -27,7 +27,8 @@ case class FormComponentId(value: String) extends AnyVal {
 
 object FormComponentId {
 
-  implicit val vformat: Format[FormComponentId] = ValueClassFormat.vformat("id", FormComponentId.apply, x => JsString(x.value))
+  implicit val vformat: Format[FormComponentId] =
+    ValueClassFormat.vformat("id", FormComponentId.apply, x => JsString(x.value))
 
   val oformat: OFormat[FormComponentId] = ValueClassFormat.oformat("id", FormComponentId.apply, _.value)
 

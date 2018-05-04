@@ -38,11 +38,13 @@ import scala.util.Random
 class DmsSubmissionControllerSpec extends Spec {
 
   "The DmsSubmissionController" should "create a file upload envelope" in {
-    (mockFileUpload.createEnvelope(_: FormTemplateId)(_: HeaderCarrier))
+    (mockFileUpload
+      .createEnvelope(_: FormTemplateId)(_: HeaderCarrier))
       .expects(FormTemplateId(validSubmission.metadata.dmsFormId), *)
       .returning(Future.successful(EnvelopeId("some-envelope-id")))
 
-    (mockPdfGenerator.generatePDF(_: String)(_: HeaderCarrier))
+    (mockPdfGenerator
+      .generatePDF(_: String)(_: HeaderCarrier))
       .expects(*, *)
       .returning(Future.successful(Array.emptyByteArray))
 
@@ -50,7 +52,8 @@ class DmsSubmissionControllerSpec extends Spec {
       .expects(*)
       .returning(stubPdfDocument)
 
-    (mockFileUpload.submitEnvelope(_: SubmissionAndPdf, _: DmsSubmission, _: Int)(_: HeaderCarrier))
+    (mockFileUpload
+      .submitEnvelope(_: SubmissionAndPdf, _: DmsSubmission, _: Int)(_: HeaderCarrier))
       .expects(*, *, *, *)
       .returning(Future.successful(()))
 
@@ -64,11 +67,13 @@ class DmsSubmissionControllerSpec extends Spec {
     val submissionWithHtml = validSubmission.copy(html = encodedHtml)
     val pdfBytes = "this is totally a pdf".getBytes
 
-    (mockFileUpload.createEnvelope(_: FormTemplateId)(_: HeaderCarrier))
+    (mockFileUpload
+      .createEnvelope(_: FormTemplateId)(_: HeaderCarrier))
       .expects(*, *)
       .returning(Future.successful(EnvelopeId("some-envelope-id")))
 
-    (mockPdfGenerator.generatePDF(_: String)(_: HeaderCarrier))
+    (mockPdfGenerator
+      .generatePDF(_: String)(_: HeaderCarrier))
       .expects(html, *)
       .returning(Future.successful(pdfBytes))
 
@@ -76,7 +81,8 @@ class DmsSubmissionControllerSpec extends Spec {
       .expects(*)
       .returning(stubPdfDocument)
 
-    (mockFileUpload.submitEnvelope(_: SubmissionAndPdf, _: DmsSubmission, _: Int)(_: HeaderCarrier))
+    (mockFileUpload
+      .submitEnvelope(_: SubmissionAndPdf, _: DmsSubmission, _: Int)(_: HeaderCarrier))
       .expects(*, *, *, *)
       .returning(Future.successful(()))
 
@@ -90,7 +96,8 @@ class DmsSubmissionControllerSpec extends Spec {
     val numberOfPages = 1
     val pdfContent = "totally a pdf".getBytes
     val expectedEnvId = EnvelopeId(UUID.randomUUID().toString)
-    val dmsMetadata = DmsMetaData(FormTemplateId(validSubmission.metadata.dmsFormId), validSubmission.metadata.customerId)
+    val dmsMetadata =
+      DmsMetaData(FormTemplateId(validSubmission.metadata.dmsFormId), validSubmission.metadata.customerId)
     val expectedSubmissionAndPdf = SubmissionAndPdf(
       Submission(FormId(validSubmission.metadata.dmsFormId), fixedTime, submissionRef, expectedEnvId, 0, dmsMetadata),
       PdfSummary(numberOfPages, pdfContent))
@@ -99,13 +106,16 @@ class DmsSubmissionControllerSpec extends Spec {
       validSubmission.metadata.dmsFormId,
       TextExpression(Constant(validSubmission.metadata.customerId)),
       validSubmission.metadata.classificationType,
-      validSubmission.metadata.businessArea)
+      validSubmission.metadata.businessArea
+    )
 
-    (mockFileUpload.createEnvelope(_: FormTemplateId)(_: HeaderCarrier))
+    (mockFileUpload
+      .createEnvelope(_: FormTemplateId)(_: HeaderCarrier))
       .expects(*, *)
       .returning(Future.successful(expectedEnvId))
 
-    (mockPdfGenerator.generatePDF(_: String)(_: HeaderCarrier))
+    (mockPdfGenerator
+      .generatePDF(_: String)(_: HeaderCarrier))
       .expects(*, *)
       .returning(Future.successful(pdfContent))
 
@@ -115,7 +125,8 @@ class DmsSubmissionControllerSpec extends Spec {
 
     (stubPdfDocument.getNumberOfPages _).when().returning(numberOfPages)
 
-    (mockFileUpload.submitEnvelope(_: SubmissionAndPdf, _: DmsSubmission, _: Int)(_: HeaderCarrier))
+    (mockFileUpload
+      .submitEnvelope(_: SubmissionAndPdf, _: DmsSubmission, _: Int)(_: HeaderCarrier))
       .expects(expectedSubmissionAndPdf, expectedDmsSubmission, *, *)
       .returning(Future.successful(()))
 
@@ -145,8 +156,7 @@ class DmsSubmissionControllerSpec extends Spec {
     override def apply() = notVeryRandom
   }
 
-  lazy val testController = new DmsSubmissionController(
-    mockFileUpload,
-    mockPdfGenerator,
-    mockDocumentLoader)(Clock.fixed(fixedTime.toInstant(ZoneOffset.UTC), ZoneId.systemDefault), fixedRnd)
+  lazy val testController = new DmsSubmissionController(mockFileUpload, mockPdfGenerator, mockDocumentLoader)(
+    Clock.fixed(fixedTime.toInstant(ZoneOffset.UTC), ZoneId.systemDefault),
+    fixedRnd)
 }

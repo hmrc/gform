@@ -27,9 +27,9 @@ class Save4LaterModule(configModule: ConfigModule, wSHttpModule: WSHttpModule) {
     override lazy val http: WSHttp = wSHttpModule.auditableWSHttp
     override lazy val defaultSource: String = configModule.appConfig.appName
     override lazy val baseUri: String = configModule.serviceConfig.baseUrl("save4later")
-    override lazy val domain: String = configModule.serviceConfig.getConfString(
-      "save4later.domain",
-      throw new Exception(s"Could not find config 'save4later.domain'"))
+    override lazy val domain: String =
+      configModule.serviceConfig
+        .getConfString("save4later.domain", throw new Exception(s"Could not find config 'save4later.domain'"))
   }
 
   val shortLivedCache: ShortLivedCache = new ShortLivedCache {

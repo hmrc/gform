@@ -109,8 +109,8 @@ class ValueParserSpec extends Spec {
   }
 
   /**
-   * Date cases
-   */
+    * Date cases
+    */
   it should "parse Date" in {
     val res = ValueParser.validate("2015-01-15")
     res.right.value should be(DateExpression(ExactDateValue(2015, 1, 15)))
@@ -118,80 +118,63 @@ class ValueParserSpec extends Spec {
 
   it should "throw exception on 1 digit month " in {
     val res = ValueParser.validate("2015-1-12")
-    res.left.value should be(
-      UnexpectedState(
-        """Unable to parse expression 2015-1-12.
-          |Errors:
-          |2015-1-12:1: unexpected characters; expected '0[1-9]|1[012]' or '\s+'
-          |2015-1-12     ^""".stripMargin))
+    res.left.value should be(UnexpectedState("""Unable to parse expression 2015-1-12.
+                                               |Errors:
+                                               |2015-1-12:1: unexpected characters; expected '0[1-9]|1[012]' or '\s+'
+                                               |2015-1-12     ^""".stripMargin))
   }
 
   it should "throw exception on year digits" in {
     val res = ValueParser.validate("201568-01-12")
-    res.left.value should be(
-      UnexpectedState(
-        """Unable to parse expression 201568-01-12.
-          |Errors:
-          |201568-01-12:1: unexpected characters; expected '\s+' or ','
-          |201568-01-12      ^""".stripMargin))
+    res.left.value should be(UnexpectedState("""Unable to parse expression 201568-01-12.
+                                               |Errors:
+                                               |201568-01-12:1: unexpected characters; expected '\s+' or ','
+                                               |201568-01-12      ^""".stripMargin))
   }
 
   it should "throw exception on Date format" in {
     val res = ValueParser.validate("65841-351")
-    res.left.value should be(
-      UnexpectedState(
-        """Unable to parse expression 65841-351.
-          |Errors:
-          |65841-351:1: unexpected characters; expected '\s+' or ','
-          |65841-351     ^""".stripMargin))
+    res.left.value should be(UnexpectedState("""Unable to parse expression 65841-351.
+                                               |Errors:
+                                               |65841-351:1: unexpected characters; expected '\s+' or ','
+                                               |65841-351     ^""".stripMargin))
   }
 
   it should "parse next Date setting next year" in {
     val res = ValueParser.validate("next-01-15")
 
-    res.right.value should be(
-      DateExpression(
-        NextDateValue(1, 15)))
+    res.right.value should be(DateExpression(NextDateValue(1, 15)))
   }
 
   it should "parse next Date setting current year" in {
     val res = ValueParser.validate("next-04-15")
 
-    res.right.value should be(
-      DateExpression(
-        NextDateValue(4, 15)))
+    res.right.value should be(DateExpression(NextDateValue(4, 15)))
   }
 
   it should "parse last Date setting current year" in {
     val res = ValueParser.validate("last-01-15")
 
-    res.right.value should be(
-      DateExpression(
-        PreviousDateValue(1, 15)))
+    res.right.value should be(DateExpression(PreviousDateValue(1, 15)))
   }
 
   it should "parse last Date setting previous year" in {
     val res = ValueParser.validate("last-04-15")
 
-    res.right.value should be(
-      DateExpression(
-        PreviousDateValue(4, 15)))
+    res.right.value should be(DateExpression(PreviousDateValue(4, 15)))
   }
 
   it should "parse Date setting current Date" in {
     val res = ValueParser.validate("today")
 
-    res.right.value should be(
-      DateExpression(TodayDateValue))
+    res.right.value should be(DateExpression(TodayDateValue))
   }
 
   it should "fail parse unclosed parenthesis" in {
     val res = ValueParser.validate("${name")
-    res.left.value should be(
-      UnexpectedState(
-        """|Unable to parse expression ${name.
-           |Errors:
-           |${name: unexpected end-of-file; expected '}'""".stripMargin))
+    res.left.value should be(UnexpectedState("""|Unable to parse expression ${name.
+                                                |Errors:
+                                                |${name: unexpected end-of-file; expected '}'""".stripMargin))
   }
 
   val plainFormTemplate = FormTemplate(
@@ -208,7 +191,8 @@ class ValueParserSpec extends Spec {
     "submitErrorUrl",
     List.empty[Section],
     acknowledgementSection = AcknowledgementSection("", None, None, Nil),
-    declarationSection = DeclarationSection("Declaration", None, None, Nil))
+    declarationSection = DeclarationSection("Declaration", None, None, Nil)
+  )
 
   val yourDetailsSection = Section(
     "Your details",
@@ -220,8 +204,34 @@ class ValueParserSpec extends Spec {
     None,
     None,
     List(
-      FormComponent(FormComponentId("firstName"), Text(AnyText, Constant("")), "Your first name", None, None, validIf = None, mandatory = false, editable = true, submissible = true, derived = false, errorMessage = None),
-      FormComponent(FormComponentId("lastName"), Text(AnyText, Constant("")), "Your last name", None, None, validIf = None, mandatory = false, editable = true, submissible = true, derived = false, errorMessage = None)))
+      FormComponent(
+        FormComponentId("firstName"),
+        Text(AnyText, Constant("")),
+        "Your first name",
+        None,
+        None,
+        validIf = None,
+        mandatory = false,
+        editable = true,
+        submissible = true,
+        derived = false,
+        errorMessage = None
+      ),
+      FormComponent(
+        FormComponentId("lastName"),
+        Text(AnyText, Constant("")),
+        "Your last name",
+        None,
+        None,
+        validIf = None,
+        mandatory = false,
+        editable = true,
+        submissible = true,
+        derived = false,
+        errorMessage = None
+      )
+    )
+  )
 
   val formTemplateWithOneSection = plainFormTemplate.copy(sections = List(yourDetailsSection))
 
@@ -233,12 +243,16 @@ class ValueParserSpec extends Spec {
   }
 
   it should "return Valid if expression Add fields present in the form template" in {
-    val res = FormTemplateValidator.validate(List(Text(AnyText, Add(FormCtx("firstName"), FormCtx("lastName")))), formTemplateWithOneSection)
+    val res =
+      FormTemplateValidator
+        .validate(List(Text(AnyText, Add(FormCtx("firstName"), FormCtx("lastName")))), formTemplateWithOneSection)
     res should be(Valid)
   }
 
   it should "return Valid if expression Multiply fields present in the form template" in {
-    val res = FormTemplateValidator.validate(List(Text(AnyText, Multiply(FormCtx("firstName"), FormCtx("lastName")))), formTemplateWithOneSection)
+    val res =
+      FormTemplateValidator
+        .validate(List(Text(AnyText, Multiply(FormCtx("firstName"), FormCtx("lastName")))), formTemplateWithOneSection)
     res should be(Valid)
   }
 

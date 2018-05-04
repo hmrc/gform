@@ -21,4 +21,4 @@ When changing, in first place please change classes in GFORM project, and then p
 Put in this package common case classes which are shared among other projects.
 Than copy this package to other projects.
 
-*/
+ */

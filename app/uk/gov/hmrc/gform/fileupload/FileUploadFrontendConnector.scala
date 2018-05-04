@@ -29,8 +29,11 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 class FileUploadFrontendConnector(config: FUConfig, wSHttp: WSHttp) {
 
-  def upload(envelopeId: EnvelopeId, fileId: FileId, fileName: String, body: ByteString, contentType: ContentType)(implicit hc: HeaderCarrier): Future[Unit] = {
-    Logger.info(s"upload, envelopeId: '${envelopeId.value}',  fileId: '${fileId.value}', fileName: '${fileName}', contentType: '${contentType.value}, ${loggingHelpers.cleanHeaderCarrierHeader(hc)}'")
+  def upload(envelopeId: EnvelopeId, fileId: FileId, fileName: String, body: ByteString, contentType: ContentType)(
+    implicit hc: HeaderCarrier): Future[Unit] = {
+    Logger.info(
+      s"upload, envelopeId: '${envelopeId.value}',  fileId: '${fileId.value}', fileName: '$fileName', contentType: '${contentType.value}, ${loggingHelpers
+        .cleanHeaderCarrierHeader(hc)}'")
     wSHttp
       .POSTFile(
         s"$baseUrl/file-upload/upload/envelopes/${envelopeId.value}/files/${fileId.value}",

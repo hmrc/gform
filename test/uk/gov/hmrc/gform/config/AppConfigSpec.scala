@@ -49,7 +49,8 @@ class AppConfigSpec extends Spec {
       ContentType("application/vnd.openxmlformats-officedocument.presentationml.presentation"),
       ContentType(".pptx"),
       ContentType("application/vnd.oasis.opendocument.presentation"),
-      ContentType(".odp"))
+      ContentType(".odp")
+    )
 
   }
 

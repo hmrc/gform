@@ -29,9 +29,7 @@ import uk.gov.hmrc.gform.des.AddressDes
 
 import scala.concurrent.Future
 
-class TestOnlyController(
-  mongo: () => DB,
-  enrolmentConnector: EnrolmentConnector) extends BaseController {
+class TestOnlyController(mongo: () => DB, enrolmentConnector: EnrolmentConnector) extends BaseController {
 
   lazy val formTemplates = mongo().collection[JSONCollection]("formTemplate")
   def removeTemplates() = Action.async { implicit request =>
@@ -45,8 +43,7 @@ class TestOnlyController(
   }
 
   def buildInfo() = Action { r =>
-    Results.Ok(
-      Json.toJson(BuildInfo.toMap.mapValues(_.toString)))
+    Results.Ok(Json.toJson(BuildInfo.toMap.mapValues(_.toString)))
 
   }
 
@@ -54,24 +51,27 @@ class TestOnlyController(
 
   object User {
     val reads: Reads[User] = Json.format[User]
-    val write: OWrites[User] = OWrites[User] { o => getJson(o) }
+    val write: OWrites[User] = OWrites[User] { o =>
+      getJson(o)
+    }
 
     implicit val format = OFormat[User](reads, write)
   }
 
   def config() = Action { r =>
-    val result: JsValue = Json.parse(
-      ConfigFactory.load().root().render(ConfigRenderOptions.concise()))
+    val result: JsValue = Json.parse(ConfigFactory.load().root().render(ConfigRenderOptions.concise()))
     Results.Ok(result)
   }
 
-  def getJson(user: User): JsObject = {
+  def getJson(user: User): JsObject =
     if (user.postCode.nonEmpty) {
-      Json.obj("verifiers" -> Json.arr(Json.obj("key" -> "NonUkCountryCode", "value" -> user.countryCode), Json.obj("key" -> "BusinessPostcode", "value" -> user.postCode))) //{"verifiers" : [{"key" : "NonUkCountryCode","value" : "GB"},{"key" : "BusinessPostcode","value" : "E499OL"}]}
+      Json.obj(
+        "verifiers" -> Json.arr(
+          Json.obj("key" -> "NonUkCountryCode", "value" -> user.countryCode),
+          Json.obj("key" -> "BusinessPostcode", "value" -> user.postCode))) //{"verifiers" : [{"key" : "NonUkCountryCode","value" : "GB"},{"key" : "BusinessPostcode","value" : "E499OL"}]}
     } else {
       Json.obj("verifiers" -> Json.arr(Json.obj("key" -> "NonUkCountryCode", "value" -> user.countryCode)))
     }
-  }
 
   def upload = Action.async(parse.json[User]) { implicit request =>
     val user: User = request.body

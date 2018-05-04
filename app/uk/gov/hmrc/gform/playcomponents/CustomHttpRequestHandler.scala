@@ -24,10 +24,10 @@ class CustomHttpRequestHandler(
   router: Router,
   httpErrorHandler: HttpErrorHandler,
   httpConfiguration: HttpConfiguration,
-  httpFilters: Seq[EssentialFilter]) extends DefaultHttpRequestHandler(router, httpErrorHandler, httpConfiguration, httpFilters: _*) {
-  override def routeRequest(request: RequestHeader): Option[Handler] = {
+  httpFilters: Seq[EssentialFilter])
+    extends DefaultHttpRequestHandler(router, httpErrorHandler, httpConfiguration, httpFilters: _*) {
+  override def routeRequest(request: RequestHeader): Option[Handler] =
     router.handlerFor(request).orElse {
       Some(request.path).filter(_.endsWith("/")).flatMap(p => router.handlerFor(request.copy(path = p.dropRight(1))))
     }
-  }
 }

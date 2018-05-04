@@ -31,9 +31,9 @@ class FormServiceSpec extends PlaySpec {
     FormData(Seq(FormField(FormComponentId("a"), "1"))),
     InProgress)
 
-  val testFormSummary:Form = testFormInProgress.copy(status = Summary)
-  val testFormValidated:Form = testFormInProgress.copy(status = Validated)
-  val testFormSigned:Form = testFormInProgress.copy(status = Signed)
+  val testFormSummary: Form = testFormInProgress.copy(status = Summary)
+  val testFormValidated: Form = testFormInProgress.copy(status = Validated)
+  val testFormSigned: Form = testFormInProgress.copy(status = Signed)
 
   "The form status " must {
 

@@ -29,24 +29,19 @@ import scala.xml.{ Elem, Utility }
 class MetadataXmlSpec extends Spec {
   "metadata.xml" should "be generated" in {
 
-    val dmsMetaData = DmsMetaData(
-      formTemplateId = FormTemplateId("some-form-type-id"),
-      "TESTID")
+    val dmsMetaData = DmsMetaData(formTemplateId = FormTemplateId("some-form-type-id"), "TESTID")
 
     val submission = Submission(
       submittedDate = LocalDateTime.of(2012, 12, 3, 12, 45),
       submissionRef = SubmissionRef("some-submission-ref"),
       _id = FormId("some-form-type-id"),
       envelopeId = EnvelopeId("some-envelope-id"),
-      dmsMetaData = dmsMetaData)
+      dmsMetaData = dmsMetaData
+    )
 
-    val pdfSummary = PdfSummary(
-      numberOfPages = 10L,
-      pdfContent = Array.empty[Byte])
+    val pdfSummary = PdfSummary(numberOfPages = 10L, pdfContent = Array.empty[Byte])
 
-    val submissionAndPdf = SubmissionAndPdf(
-      submission = submission,
-      pdfSummary = pdfSummary)
+    val submissionAndPdf = SubmissionAndPdf(submission = submission, pdfSummary = pdfSummary)
 
     val dmsSubmission = DmsSubmission(
       dmsFormId = "some-id",
@@ -155,7 +150,13 @@ class MetadataXmlSpec extends Spec {
         </document>
       </documents>
 
-    val metadataXml = MetadataXml.getXml(SubmissionRef("some-submission-ref"), ReconciliationId("some-recocilliatin-id"), submissionAndPdf, dmsSubmission, 2)
+    val metadataXml = MetadataXml
+      .getXml(
+        SubmissionRef("some-submission-ref"),
+        ReconciliationId("some-recocilliatin-id"),
+        submissionAndPdf,
+        dmsSubmission,
+        2)
 
     metadataXml should equal(Utility.trim(expected).asInstanceOf[Elem])(after being streamlined[Elem])
 

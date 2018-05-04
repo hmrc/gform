@@ -29,12 +29,12 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 class BaseController extends uk.gov.hmrc.play.microservice.controller.BaseController {
 
-  implicit def mdcExecutionContext(implicit loggingDetails: LoggingDetails): ExecutionContext = MdcLoggingExecutionContext.fromLoggingDetails
+  implicit def mdcExecutionContext(implicit loggingDetails: LoggingDetails): ExecutionContext =
+    MdcLoggingExecutionContext.fromLoggingDetails
 
   object O {
-    def asOkJson[T: Writes](t: T): Result = {
+    def asOkJson[T: Writes](t: T): Result =
       Ok(Json.toJson(t))
-    }
   }
 
   implicit class FutureOps[T: Writes](f: Future[T]) {
@@ -47,8 +47,8 @@ class BaseController extends uk.gov.hmrc.play.microservice.controller.BaseContro
 
   type LeftResult[T] = EitherT[Future, Result, T]
 
-  def asRes[T](fa: Future[T])(implicit ec: ExecutionContext): LeftResult[T] = EitherT[Future, Result, T](
-    fa.map(_.asRight))
+  def asRes[T](fa: Future[T])(implicit ec: ExecutionContext): LeftResult[T] =
+    EitherT[Future, Result, T](fa.map(_.asRight))
 
   def asRes[E, T](fa: Future[Either[E, T]])(toLeftResult: E => Result)(implicit ec: ExecutionContext): LeftResult[T] =
     EitherT[Future, E, T](fa).leftMap(toLeftResult)
@@ -57,7 +57,10 @@ class BaseController extends uk.gov.hmrc.play.microservice.controller.BaseContro
 
 }
 
-case class ErrResponse(error: String, details: Option[JsValue] = None, occurrenceId: String = UUID.randomUUID().toString)
+case class ErrResponse(
+  error: String,
+  details: Option[JsValue] = None,
+  occurrenceId: String = UUID.randomUUID().toString)
 
 object ErrResponse {
   implicit val format: OFormat[ErrResponse] = Json.format[ErrResponse]

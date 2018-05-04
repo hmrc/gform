@@ -22,9 +22,10 @@ case class FormTemplateRaw(value: JsObject) {
   def _id: FormTemplateRawId = {
 
     val id = (value \ "_id").toOption match {
-      case None => throw new NoSuchElementException("There is element at '_id' path")
+      case None               => throw new NoSuchElementException("There is element at '_id' path")
       case Some(JsString(id)) => id
-      case Some(other) => throw new NoSuchElementException(s"Element at '_id' path is not a string and it contained '${other}'")
+      case Some(other) =>
+        throw new NoSuchElementException(s"Element at '_id' path is not a string and it contained '$other'")
     }
 
     FormTemplateRawId(id)
@@ -37,7 +38,7 @@ object FormTemplateRaw {
 
   val reads: Reads[FormTemplateRaw] = Reads[FormTemplateRaw] {
     case value: JsObject => JsSuccess(FormTemplateRaw(value))
-    case other => JsError(s"Expected json object but got $other")
+    case other           => JsError(s"Expected json object but got $other")
   }
 
   implicit val format: OFormat[FormTemplateRaw] = OFormat[FormTemplateRaw](reads, writes)

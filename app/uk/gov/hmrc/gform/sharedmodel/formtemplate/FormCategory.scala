@@ -35,18 +35,18 @@ object FormCategory {
   implicit val format: Format[FormCategory] = new Format[FormCategory] {
     override def writes(o: FormCategory): JsValue = o match {
       case HMRCReturnForm => JsString("hmrcReturnForm")
-      case HMRCClaimForm => JsString("hmrcClaimForm")
-      case Default => JsString("default")
+      case HMRCClaimForm  => JsString("hmrcClaimForm")
+      case Default        => JsString("default")
     }
 
-    override def reads(json: JsValue): JsResult[FormCategory] = {
+    override def reads(json: JsValue): JsResult[FormCategory] =
       json match {
         case JsString("hmrcReturnForm") => JsSuccess(HMRCReturnForm)
-        case JsString("hmrcClaimForm") => JsSuccess(HMRCClaimForm)
-        case JsString("default") => JsSuccess(Default)
-        case JsString(err) => JsError(s"only three valid categories, hmrcReturnForm, hmrcClaimForm or default $err is not valid")
+        case JsString("hmrcClaimForm")  => JsSuccess(HMRCClaimForm)
+        case JsString("default")        => JsSuccess(Default)
+        case JsString(err) =>
+          JsError(s"only three valid categories, hmrcReturnForm, hmrcClaimForm or default $err is not valid")
         case _ => JsError("Failure")
       }
-    }
   }
 }

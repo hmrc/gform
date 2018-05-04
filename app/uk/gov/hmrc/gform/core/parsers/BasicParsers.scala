@@ -31,35 +31,39 @@ object BasicParsers {
   private def parse[A](parser: Parser[A]) = ReaderT[Opt, String, Catenable[A]] { expression =>
     parser(LineStream[Eval](expression)).value.leftMap { error =>
       val errors: String = error.map(_.render(expression)).mkString("\n")
-      UnexpectedState(
-        s"""|Unable to parse expression $expression.
-            |Errors:
-            |$errors""".stripMargin)
+      UnexpectedState(s"""|Unable to parse expression $expression.
+                          |Errors:
+                          |$errors""".stripMargin)
     }
   }
 
   private def reconstruct[A](cat: Catenable[A]) = ReaderT[Opt, String, A] { expression =>
     cat.uncons match {
       case Some((expr, _)) => Right(expr)
-      case None => Left(UnexpectedState(s"Unable to parse expression $expression"))
+      case None            => Left(UnexpectedState(s"Unable to parse expression $expression"))
     }
   }
 
-  def validateWithParser[A](expression: String, parser: Parser[A]): Opt[A] = (for {
-    catenable <- parse(parser)
-    expr <- reconstruct(catenable)
-  } yield expr).run(expression)
+  def validateWithParser[A](expression: String, parser: Parser[A]): Opt[A] =
+    (for {
+      catenable <- parse(parser)
+      expr      <- reconstruct(catenable)
+    } yield expr).run(expression)
 
   implicit val W = Whitespace(() | """\s+""".r)
 
-  def nextOrPrevious[A](string: String, fn: (Int, Int) => A): Parser[A] = (
-    string ~ monthDay ^^ { (loc, _, month, day) => fn(month, day) })
+  def nextOrPrevious[A](string: String, fn: (Int, Int) => A): Parser[A] =
+    (string ~ monthDay ^^ { (loc, _, month, day) =>
+      fn(month, day)
+    })
 
-  lazy val monthDay: Parser[(Int, Int)] = (
-    delimiter ~ monthParser ~ delimiter ~ dayParser ^^ { (loc, _, month, _, day) => (month, day) })
+  lazy val monthDay: Parser[(Int, Int)] = (delimiter ~ monthParser ~ delimiter ~ dayParser ^^ {
+    (loc, _, month, _, day) =>
+      (month, day)
+  })
 
-  lazy val positiveIntegers: Parser[List[Int]] = (
-    positiveInteger ~ "," ~ positiveIntegers ^^ ((loc, x, _, xs) => x :: xs)
+  lazy val positiveIntegers
+    : Parser[List[Int]] = (positiveInteger ~ "," ~ positiveIntegers ^^ ((loc, x, _, xs) => x :: xs)
     | positiveInteger ^^ ((loc, x) => List(x)))
 
   val anyWordFormat = """\w+""".r
@@ -75,6 +79,8 @@ object BasicParsers {
 
   lazy val anyInteger: Parser[Int] = intParser("""(\+|-)?\d+""")
 
-  private def intParser(str: String): Parser[Int] = (
-    str.r ^^ { (loc, number) => number.toInt })
+  private def intParser(str: String): Parser[Int] =
+    (str.r ^^ { (loc, number) =>
+      number.toInt
+    })
 }

@@ -26,13 +26,18 @@ import scala.concurrent.Future
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
 /**
- * Stubbed WSHttp which responses always with the same HttpResponse. Use it for test purposes
- */
+  * Stubbed WSHttp which responses always with the same HttpResponse. Use it for test purposes
+  */
 class StubbedWSHttp(response: HttpResponse) extends WSHttp {
   override def doGet(url: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = Future.successful(response)
-  override def doPost[A](url: String, body: A, headers: Seq[(String, String)])(implicit rds: Writes[A], hc: HeaderCarrier) = Future.successful(response)
-  override def doFormPost(url: String, body: Map[String, Seq[String]])(implicit hc: HeaderCarrier) = Future.successful(response)
-  override def doPostString(url: String, body: String, headers: Seq[(String, String)])(implicit hc: HeaderCarrier) = Future.successful(response)
+  override def doPost[A](url: String, body: A, headers: Seq[(String, String)])(
+    implicit rds: Writes[A],
+    hc: HeaderCarrier) =
+    Future.successful(response)
+  override def doFormPost(url: String, body: Map[String, Seq[String]])(implicit hc: HeaderCarrier) =
+    Future.successful(response)
+  override def doPostString(url: String, body: String, headers: Seq[(String, String)])(implicit hc: HeaderCarrier) =
+    Future.successful(response)
   override def doEmptyPost[A](url: String)(implicit hc: HeaderCarrier) = Future.successful(response)
   //TODO: PUT, PATCH, DELETE
 }

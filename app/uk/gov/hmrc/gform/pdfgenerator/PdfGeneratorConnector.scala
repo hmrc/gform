@@ -27,7 +27,8 @@ import uk.gov.hmrc.http.HeaderCarrier
 class PdfGeneratorConnector(servicesConfig: ServicesConfig, wSHttp: WSHttp) {
 
   //TODO: use stream
-  def generatePDF(payload: Map[String, Seq[String]], headers: Seq[(String, String)])(implicit hc: HeaderCarrier): Future[Array[Byte]] = {
+  def generatePDF(payload: Map[String, Seq[String]], headers: Seq[(String, String)])(
+    implicit hc: HeaderCarrier): Future[Array[Byte]] = {
     Logger.info(s"generate pdf, ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
     wSHttp.buildRequest(s"$baseURL/pdf-generator-service/generate").withHeaders(headers: _*).post(payload).map {
       _.bodyAsBytes.toArray

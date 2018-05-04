@@ -39,23 +39,27 @@ object AppConfig {
     val appConfig = loadConfigOrThrow[AppConfig](config)
 
     appConfig.formExpiryDays.verifyThat(_ > 0, s"'formExpiryDays' must be positive, was ${appConfig.formExpiryDays}")
-    appConfig.formMaxAttachments.verifyThat(_ > 0, s"'formMaxAttachments' must be positive, was ${appConfig.formMaxAttachments}")
-    appConfig.formMaxAttachmentSizeMB.verifyThat(_ > 0, s"'formMaxAttachmentSizeMB' must be positive, was ${appConfig.formMaxAttachmentSizeMB}")
-    appConfig.formMaxAttachmentTotalSizeMB.verifyThat(_ > 0, s"'formMaxAttachmentTotalSizeMB' must be positive, was ${appConfig.formMaxAttachmentSizeMB}")
+    appConfig.formMaxAttachments
+      .verifyThat(_ > 0, s"'formMaxAttachments' must be positive, was ${appConfig.formMaxAttachments}")
+    appConfig.formMaxAttachmentSizeMB
+      .verifyThat(_ > 0, s"'formMaxAttachmentSizeMB' must be positive, was ${appConfig.formMaxAttachmentSizeMB}")
+    appConfig.formMaxAttachmentTotalSizeMB
+      .verifyThat(_ > 0, s"'formMaxAttachmentTotalSizeMB' must be positive, was ${appConfig.formMaxAttachmentSizeMB}")
     appConfig.contentTypes.length.verifyThat(_ > 0, s"'contentTypesSeparatedByPipe' is not set")
 
     appConfig
   }
 
   private implicit class VerifyThat[T](t: T) {
-    def verifyThat(assertion: T => Boolean, message: String = "") = if (!assertion(t)) throw new AppConfigException(message)
+    def verifyThat(assertion: T => Boolean, message: String = "") =
+      if (!assertion(t)) throw new AppConfigException(message)
   }
 
   class AppConfigException(message: String) extends IllegalArgumentException(message)
 
   /**
-   * This is copy/paste from file-upload project. This is how they validate config. We will do the same:
-   */
+    * This is copy/paste from file-upload project. This is how they validate config. We will do the same:
+    */
   private def isAValidSize(size: String): Boolean = {
 
     val sizeRegex = "([1-9][0-9]{0,3})([KB,MB]{2})".r
@@ -67,7 +71,7 @@ object AppConfig {
           unit match {
             case "KB" => true
             case "MB" => true
-            case _ => false
+            case _    => false
           }
         case _ => false
       }
