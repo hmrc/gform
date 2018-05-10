@@ -53,6 +53,7 @@ class FormCompomentMaker(json: JsValue) {
   lazy val fields: Option[List[FormCompomentMaker]] = fieldsJson.map(_.map(new FormCompomentMaker(_)))
   lazy val validIf: Option[ValidIf] = (json \ "validIf").asOpt[ValidIf]
   lazy val mandatory: Option[String] = (json \ "mandatory").asOpt[String]
+  lazy val multiline: Option[String] = (json \ "multiline").asOpt[String]
   lazy val multivalue: Option[String] = (json \ "multivalue").asOpt[String]
   lazy val total: Option[String] = (json \ "total").asOpt[String]
   lazy val international: Option[String] = (json \ "international").asOpt[String]
@@ -102,32 +103,23 @@ class FormCompomentMaker(json: JsValue) {
     )
 
   private lazy val optMES: Opt[MES] = (submitMode, mandatory, optMaybeValueExpr) match {
-    //format: OFF
-    case IsThisAnInfoField() => MES(mandatory = true, editable = false, submissible = false, derived = false).asRight
-    case (Some(IsStandard()) | None, Some(IsTrueish()) | None, _) =>
-      MES(mandatory = true, editable = true, submissible = true, derived = false).asRight
-    case (Some(IsReadOnly()), Some(IsTrueish()) | None, _) =>
-      MES(mandatory = true, editable = false, submissible = true, derived = false).asRight
-    case (Some(IsInfo()), Some(IsTrueish()) | None, _) =>
-      MES(mandatory = true, editable = false, submissible = false, derived = false).asRight
-    case (Some(IsStandard()) | None, Some(IsFalseish()), _) =>
-      MES(mandatory = false, editable = true, submissible = true, derived = false).asRight
-    case (Some(IsInfo()), Some(IsFalseish()), _) =>
-      MES(mandatory = false, editable = false, submissible = false, derived = false).asRight
-    case (Some(IsDerived()), Some(IsTrueish()) | None, Right(Some(_))) =>
-      MES(mandatory = true, editable = false, submissible = true, derived = true).asRight
-    case (Some(IsDerived()), Some(IsFalseish()), Right(Some(_))) =>
-      MES(mandatory = false, editable = false, submissible = true, derived = true).asRight
-    case (Some(IsNonSubmissible()), Some(IsFalseish()) | None, _) =>
-      MES(mandatory = false, editable = true, submissible = false, derived = false).asRight
-    case (Some(IsNonSubmissible()), Some(IsTrueish()) | None, _) =>
-      MES(mandatory = true, editable = true, submissible = false, derived = false).asRight
-    case (Some(IsSummaryInfoOnly()), Some(IsTrueish()) | Some(IsFalseish()) | None, Right(Some(_))) =>
-      MES(mandatory = true, editable = false, submissible = false, derived = false, onlyShowOnSummary = true).asRight
+    // format: off
+    case IsThisAnInfoField()                                                     => MES(mandatory = true,  editable = false, submissible = false, derived = false).asRight
+    case (Some(IsStandard()) | None, Some(IsTrueish())  | None,  _)              => MES(mandatory = true,  editable = true,  submissible = true,  derived = false).asRight
+    case (Some(IsReadOnly()),        Some(IsTrueish())  | None,  _)              => MES(mandatory = true,  editable = false, submissible = true,  derived = false).asRight
+    case (Some(IsInfo()),            Some(IsTrueish())  | None,  _)              => MES(mandatory = true,  editable = false, submissible = false, derived = false).asRight
+    case (Some(IsStandard()) | None, Some(IsFalseish()),         _)              => MES(mandatory = false, editable = true,  submissible = true,  derived = false).asRight
+    case (Some(IsInfo()),            Some(IsFalseish()),         _)              => MES(mandatory = false, editable = false, submissible = false, derived = false).asRight
+    case (Some(IsDerived()),         Some(IsTrueish())  | None,  Right(Some(_))) => MES(mandatory = true,  editable = false, submissible = true,  derived = true).asRight
+    case (Some(IsDerived()),         Some(IsFalseish()),         Right(Some(_))) => MES(mandatory = false, editable = false, submissible = true,  derived = true).asRight
+    case (Some(IsNonSubmissible()),  Some(IsFalseish()) | None,  _)              => MES(mandatory = false, editable = true,  submissible = false, derived = false).asRight
+    case (Some(IsNonSubmissible()),  Some(IsTrueish())  | None,  _)              => MES(mandatory = true,  editable = true,  submissible = false, derived = false).asRight
+    case (Some(IsSummaryInfoOnly()), Some(IsTrueish())  | Some(IsFalseish()) | None, Right(Some(_))) =>
+                                                                                    MES(mandatory = true,  editable = false, submissible = false, derived = false, onlyShowOnSummary = true).asRight
     case otherwise =>
       UnexpectedState(
-        s"Expected 'standard', summaryinfoonly,'notsubmitted' ,readonly' or 'info' string or nothing for submitMode and expected 'true' or 'false' string or nothing for mandatory field value, got: $otherwise").asLeft
-    //format: ON
+        s"Expected 'standard', summaryinfoonly,'notsubmitted', readonly' or 'info' string or nothing for submitMode and expected 'true' or 'false' string or nothing for mandatory field value, got: $otherwise").asLeft
+    // format: on
   }
 
   private lazy val componentTypeOpt: Opt[ComponentType] = `type` match {
@@ -145,44 +137,48 @@ class FormCompomentMaker(json: JsValue) {
     for {
       maybeFormatExpr <- optMaybeFormatExpr
       maybeValueExpr  <- optMaybeValueExpr
-      optText = (maybeFormatExpr, maybeValueExpr) match {
-        //format: ON
-        case (Some(TextFormat(UkSortCodeFormat)), Some(TextExpression(expr))) => UkSortCode(expr).asRight
-        case (Some(TextFormat(UkSortCodeFormat)), None)                       => UkSortCode(Constant("")).asRight
-        case (Some(TextFormat(f)), Some(TextExpression(expr)))                => Text(f, expr).asRight
-        case (Some(TextFormat(f)), None)                                      => Text(f, Constant("")).asRight
-        case (None, Some(TextExpression(expr)))                               => Text(ShortText, expr).asRight
-        case (None, None)                                                     => Text(ShortText, Constant("")).asRight
-        case (Some(invalidFormat), None)                                      => UnexpectedState(s"""|Unsupported type of format and value for text field
-                                                                |Id: $id
-                                                                |Format: $invalidFormat
-                                                                |Value: must supply a value
-                                                                |""".stripMargin).asLeft
-        case (None, Some(invalidValue))                                       => UnexpectedState(s"""|Unsupported type of format and value for text field
-                                                               |Id: $id
-                                                               |Format: "must supply a value for format"
-                                                               |Value: $invalidValue
-                                                               |""".stripMargin).asLeft
-        case (Some(invalidFormat), Some(invalidValue)) =>
+      result <- (maybeFormatExpr, maybeValueExpr, multiline) match {
+                 // format: off
+        case (Some(TextFormat(UkSortCodeFormat)), HasTextExpression(expr), IsNotMultiline()) => UkSortCode(expr).asRight
+        case (Some(TextFormat(f)),                HasTextExpression(expr), IsNotMultiline()) => Text(f, expr).asRight
+        case (None,                               HasTextExpression(expr), IsNotMultiline()) => Text(ShortText, expr).asRight
+        case (None,                               None,                    IsMultiline()   ) => TextArea.asRight
+        case (maybeInvalidFormat,                 maybeInvalidValue,       IsMultiline()   ) =>
+          UnexpectedState(s"""|Unsupported type of format or value for multiline text field
+                  |Id: $id
+                  |Format: $maybeInvalidFormat
+                  |Value: $maybeInvalidValue
+                  |""".stripMargin).asLeft
+        case (Some(invalidFormat),                None,                    IsNotMultiline()) =>
           UnexpectedState(s"""|Unsupported type of format and value for text field
-                              |Id: $id
-                              |Format: $invalidFormat
-                              |Value: $invalidValue
-                              |""".stripMargin).asLeft
-        //format: ON
+                  |Id: $id
+                  |Format: $invalidFormat
+                  |Value: must supply a value
+                  |""".stripMargin).asLeft
+        case (None,                               Some(invalidValue),      IsNotMultiline()) =>
+          UnexpectedState(s"""|Unsupported type of format and value for text field
+                  |Id: $id
+                  |Format: "must supply a value for format"
+                  |Value: $invalidValue
+                  |""".stripMargin).asLeft
+        case (Some(invalidFormat),                Some(invalidValue),      IsNotMultiline()) =>
+          UnexpectedState(s"""|Unsupported type of format and value for text field
+                  |Id: $id
+                  |Format: $invalidFormat
+                  |Value: $invalidValue
+                  |""".stripMargin).asLeft
       }
-      result <- optText
+      // format: on
     } yield result
   }
 
   private lazy val addressOpt: Opt[Address] = international match {
-    //format: OFF
     case IsInternational(InternationalYes) => Address(international = true).asRight
     case IsInternational(InternationalNo)  => Address(international = false).asRight
-    case invalidInternational              => UnexpectedState(s"""|Unsupported type of value for address field
-                                                     |Id: $id
-                                                     |Total: $invalidInternational""".stripMargin).asLeft
-    //format: ON
+    case invalidInternational =>
+      UnexpectedState(s"""|Unsupported type of value for address field
+                          |Id: $id
+                          |Total: $invalidInternational""".stripMargin).asLeft
   }
 
   private lazy val dateOpt: Opt[Date] = {
@@ -208,9 +204,10 @@ class FormCompomentMaker(json: JsValue) {
         optMaybeDateValue = maybeValueExpr match {
           case Some(DateExpression(dateExpr)) => dateExpr.some.asRight
           case None                           => none.asRight
-          case Some(invalidValue)             => UnexpectedState(s"""|Unsupported type of value for date field
-                                                         |Id: $id
-                                                         |Value: $invalidValue""".stripMargin).asLeft
+          case Some(invalidValue) =>
+            UnexpectedState(s"""|Unsupported type of value for date field
+                                |Id: $id
+                                |Value: $invalidValue""".stripMargin).asLeft
         }
         maybeDateValue <- optMaybeDateValue
       } yield maybeDateValue
@@ -272,40 +269,15 @@ class FormCompomentMaker(json: JsValue) {
       maybeFormatExpr <- optMaybeFormatExpr
       maybeValueExpr  <- optMaybeValueExpr
       oChoice: Opt[Choice] = (maybeFormatExpr, choices, multivalue, maybeValueExpr, optionHelpText) match {
-        case (
-            IsOrientation(VerticalOrientation),
-            Some(x :: xs),
-            IsMultivalue(MultivalueYes),
-            Selections(selections),
-            oHelpText) =>
-          Choice(Checkbox, NonEmptyList(x, xs), Vertical, selections, oHelpText).asRight
-        case (
-            IsOrientation(VerticalOrientation),
-            Some(x :: xs),
-            IsMultivalue(MultivalueNo),
-            Selections(selections),
-            oHelpText) =>
-          Choice(Radio, NonEmptyList(x, xs), Vertical, selections, oHelpText).asRight
-        case (
-            IsOrientation(HorizontalOrientation),
-            Some(x :: xs),
-            IsMultivalue(MultivalueYes),
-            Selections(selections),
-            oHelpText) =>
-          Choice(Checkbox, NonEmptyList(x, xs), Horizontal, selections, oHelpText).asRight
-        case (
-            IsOrientation(HorizontalOrientation),
-            Some(x :: xs),
-            IsMultivalue(MultivalueNo),
-            Selections(selections),
-            oHelpText) =>
-          Choice(Radio, NonEmptyList(x, xs), Horizontal, selections, oHelpText).asRight
-        case (IsOrientation(YesNoOrientation), None, IsMultivalue(MultivalueNo), Selections(selections), oHelpText) =>
-          Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, selections, oHelpText).asRight
-        case (IsOrientation(YesNoOrientation), _, _, Selections(selections), oHelpText) =>
-          Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, selections, oHelpText).asRight
-        case (IsOrientation(InlineOrientation), Some(x :: xs), None, Selections(selections), oHelpText) =>
-          Choice(Inline, NonEmptyList(x, xs), Horizontal, selections, oHelpText).asRight
+        // format: off
+        case (IsOrientation(VerticalOrientation),   Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections), oHelpText) => Choice(Checkbox, NonEmptyList(x, xs),          Vertical,   selections, oHelpText).asRight
+        case (IsOrientation(VerticalOrientation),   Some(x :: xs), IsMultivalue(MultivalueNo),  Selections(selections), oHelpText) => Choice(Radio,    NonEmptyList(x, xs),          Vertical,   selections, oHelpText).asRight
+        case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections), oHelpText) => Choice(Checkbox, NonEmptyList(x, xs),          Horizontal, selections, oHelpText).asRight
+        case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueNo),  Selections(selections), oHelpText) => Choice(Radio,    NonEmptyList(x, xs),          Horizontal, selections, oHelpText).asRight
+        case (IsOrientation(YesNoOrientation),      None,          IsMultivalue(MultivalueNo),  Selections(selections), oHelpText) => Choice(YesNo,    NonEmptyList.of("Yes", "No"), Horizontal, selections, oHelpText).asRight
+        case (IsOrientation(YesNoOrientation),      _,             _,                           Selections(selections), oHelpText) => Choice(YesNo,    NonEmptyList.of("Yes", "No"), Horizontal, selections, oHelpText).asRight
+        case (IsOrientation(InlineOrientation),     Some(x :: xs), None,                        Selections(selections), oHelpText) => Choice(Inline,   NonEmptyList(x, xs),          Horizontal, selections, oHelpText).asRight
+        // format: on
         case (invalidFormat, invalidChoices, invalidMultivalue, invalidValue, invalidHelpText) =>
           UnexpectedState(s"""|Unsupported combination of 'format, choices, multivalue and value':
                               |Format     : $invalidFormat
@@ -406,6 +378,27 @@ class FormCompomentMaker(json: JsValue) {
       }
   }
 
+  private final object HasTextExpression {
+    def unapply(valueExp: Option[ValueExpr]): Option[Expr] =
+      valueExp match {
+        case Some(TextExpression(expr)) => Some(expr)
+        case None                       => Some(Constant(""))
+        case _                          => None
+      }
+  }
+
+  private final object IsMultiline {
+    def unapply(multiline: Option[String]): Boolean =
+      multiline match {
+        case Some(IsTrueish()) => true
+        case _                 => false
+      }
+  }
+
+  private final object IsNotMultiline {
+    def unapply(multiline: Option[String]): Boolean = !IsMultiline.unapply(multiline)
+  }
+
   private sealed trait International
 
   private final case object InternationalYes extends International
@@ -476,7 +469,8 @@ class FormCompomentMaker(json: JsValue) {
   }
 
   private final object IsThisAnInfoField {
-    def unapply(ignoredArgs: (Option[String], Option[String], _)) = `type`.getOrElse(None).isInstanceOf[InfoRaw.type]
+    def unapply(ignoredArgs: (Option[String], Option[String], Opt[Option[ValueExpr]])): Boolean =
+      `type`.contains(InfoRaw)
   }
 
   private def parse[T: Reads, R](path: String, validate: T => Opt[R]): Opt[Option[R]] = {
