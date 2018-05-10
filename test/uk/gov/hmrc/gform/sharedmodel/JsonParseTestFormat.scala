@@ -16,9 +16,12 @@
 
 package uk.gov.hmrc.gform.sharedmodel
 
+import play.api.data.validation.ValidationError
 import play.api.libs.json._
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponent, Number, Text }
+import uk.gov.hmrc.gform.exceptions.UnexpectedState
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Constant, FormComponent, Number, ShortText, Text, TextArea }
+import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 
 class JsonParseTestFormat extends Spec {
 
@@ -74,4 +77,54 @@ class JsonParseTestFormat extends Spec {
     }
   }
 
+  "A component with a valid multiline" should "parse correctly" in {
+
+    val multilineCombinations = Table(
+      // format: off
+      ("multiline", "expected"),
+      ("yes",  TextArea),
+      ("Yes",  TextArea),
+      ("true", TextArea),
+      ("True", TextArea),
+      ("no",   Text(ShortText, Constant(""))),
+      ("typo", Text(ShortText, Constant(""))),
+      ("",     Text(ShortText, Constant("")))
+      // format: on
+    )
+
+    forAll(multilineCombinations) { (multiline, expected) ⇒
+      val jsResult =
+        implicitly[Reads[FormComponent]].reads(Json.parse(startOfJson + s""", "multiline" : "$multiline" }"""))
+
+      jsResult shouldBe a[JsSuccess[_]]
+      jsResult.map(fv => fv.`type` shouldBe expected)
+
+    }
+  }
+
+  it should "fail if 'value' or 'format' field is present" in {
+
+    val multilineCombinations = Table(
+      // format: off
+      ("fieldName", "fieldValue"),
+      ("value",     "${eeitt.businessUser}"),
+      ("format",    "number")
+      // format: on
+    )
+
+    forAll(multilineCombinations) { (field, value) =>
+      val jsResult = implicitly[Reads[FormComponent]]
+        .reads(Json.parse(startOfJson + s""", "multiline" : "yes", "$field": "$value" }"""))
+
+      inside(jsResult) {
+        case JsError(errorsAll) =>
+          val errors: Seq[String] = errorsAll.flatMap(_._2).collect {
+            case e if e.message.contains("Unsupported type of format or value for multiline text field") =>
+              e.message
+          }
+
+          errors.size shouldBe 1
+      }
+    }
+  }
 }
