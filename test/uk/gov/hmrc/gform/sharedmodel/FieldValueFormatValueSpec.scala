@@ -47,7 +47,7 @@ class FieldValueFormatValueSpec extends Spec {
 
   }
 
-  // I expect that this charcetr set should be wider, https://confluence.tools.tax.service.gov.uk/display/AF/Field+Expressions
+  // I expect that this character set should be wider, see "Gform Expressions" in Confluence
   it should "parse all these characters into a Constant" in {
     val fieldValue = toFieldValue("""{
            "id": "constant",
