@@ -24,57 +24,74 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 object BooleanExprParser {
 
-  def validate(expression: String): Opt[BooleanExpr] = validateWithParser(expression, exprDeterminer)
+  // Operator precedence, increasing
+  //
+  // ||
+  // &&
+  // !
+  // < <= = != >= >
+  // ?
 
-  lazy val exprDeterminer: Parser[BooleanExpr] = booleanExpr ^^ { (loc, expr) =>
-    expr
+  private lazy val p0w: Parser[BooleanExpr] = ("true" ^^ { (loc, value) =>
+    IsTrue
   }
-
-  lazy val booleanExpr: Parser[BooleanExpr] = ("${" ~> basicExpressionParser <~ "}"
-    | "${" ~ basicExpressionParser ~ booleanOperation ~ basicExpressionParser ~ "}" ^^ {
-      (loc, _, expr1, op, expr2, _) =>
-        Or(expr1, expr2)
-    }
-    | "True" ^^ { (loc, value) =>
+    | "yes" ^^ { (loc, value) =>
       IsTrue
     }
-    | booleanExpr ~ booleanOperation ~ booleanExpr ^^ { (loc, expr1, op, expr2) =>
-      Or(expr1, expr2)
-    })
+    | "false" ^^ { (loc, value) =>
+      IsFalse
+    }
+    | "no" ^^ { (loc, value) =>
+      IsFalse
+    }
+    | "(" ~> booleanExpr <~ ")")
 
-  lazy val basicExpressionParser: Parser[BooleanExpr] =
-    contextField ~ comparisonOperation ~ constant ^^ { (loc, expr1, op, expr2) =>
+  private lazy val p0: Parser[BooleanExpr] = ("""\s+""".r ~> p0w <~ """\s+""".r
+    | """\s+""".r ~> p0w
+    | p0w ~ """\s+""".r ^^ { (loc, e, _) =>
+      e
+    }
+    | p0w)
+
+  private lazy val p1: Parser[BooleanExpr] = (exprFormCtx ~ "<" ~ exprFormCtx ^^ { (loc, expr1, op, expr2) =>
+    LessThan(expr1, expr2)
+  }
+    | exprFormCtx ~ "<=" ~ exprFormCtx ^^ { (loc, expr1, op, expr2) =>
+      LessThanOrEquals(expr1, expr2)
+    }
+    | exprFormCtx ~ "=" ~ exprFormCtx ^^ { (loc, expr1, op, expr2) =>
       Equals(expr1, expr2)
     }
-
-  lazy val constant = ("'" ~ stringConstant ~ "'" ^^ { (loc, _, str, _) =>
-    str
-  }
-    | "''" ^^ { (loc, str) =>
-      Constant("")
+    | exprFormCtx ~ "!=" ~ exprFormCtx ^^ { (loc, expr1, op, expr2) =>
+      NotEquals(expr1, expr2)
     }
-    | anyConstant)
+    | exprFormCtx ~ ">=" ~ exprFormCtx ^^ { (loc, expr1, op, expr2) =>
+      GreaterThanOrEquals(expr1, expr2)
+    }
+    | exprFormCtx ~ ">" ~ exprFormCtx ^^ { (loc, expr1, op, expr2) =>
+      GreaterThan(expr1, expr2)
+    }
+    | p0)
 
-  lazy val stringConstant: Parser[Constant] = """[ \w,]+""".r ^^ { (loc, str) =>
-    Constant(str)
+  private lazy val p2: Parser[BooleanExpr] = ("!" ~ p1 ^^ { (loc, _, e) =>
+    Not(e)
+  }
+    | p1)
+
+  private lazy val p3: Parser[BooleanExpr] = (p2 ~ "&&" ~ p2 ^^ { (loc, expr1, op, expr2) =>
+    And(expr1, expr2)
+  }
+    | p2)
+
+  lazy val p4: Parser[BooleanExpr] = (p3 ~ "||" ~ p3 ^^ { (loc, expr1, op, expr2) =>
+    Or(expr1, expr2)
+  }
+    | p3)
+
+  lazy val booleanExpr: Parser[BooleanExpr] = "${" ~ p4 ~ "}" ^^ { (loc, _, e, _) =>
+    e
   }
 
-  lazy val anyConstant: Parser[Constant] = """[ \w,]+""".r ^^ { (loc, str) =>
-    Constant(str.trim)
-  }
-
-  lazy val comparisonOperation: Parser[Comparison] = "=" ^^ { (loc, _) =>
-    Equality
-  }
-
-  lazy val booleanOperation: Parser[BooleanOperation] = "||" ^^ { (loc, _) =>
-    OrOperation
-  }
-
-  lazy val operation: Parser[Operation] = ("+" ^^ { (loc, _) =>
-    Addition
-  }
-    | "*" ^^ { (loc, _) =>
-      Multiplication
-    })
+  def validate(expression: String): Opt[BooleanExpr] =
+    validateWithParser(expression, booleanExpr)
 }
