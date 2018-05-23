@@ -1125,7 +1125,7 @@ class FormComponentSpec extends Spec {
                                     |  "type": "info",
                                     |  "id": "standardInfoFieldID",
                                     |  "label": "Label -- standard info field",
-                                    |  "validIf" : "${info=Hello}",
+                                    |  "validIf" : "${info='Hello'}",
                                     |  "infoType" : "standard",
                                     |  "infoText": "This is a sample text for a standard info field"
                                     |}

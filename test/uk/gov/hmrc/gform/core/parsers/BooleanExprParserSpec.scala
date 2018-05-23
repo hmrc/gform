@@ -23,8 +23,57 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues with OptionValues {
 
+  "BooleanExprParser" should "parse equality" in {
+    val res = BooleanExprParser.validate("${isPremisesSameAsBusinessAddress=0}")
+
+    res shouldBe Right(Equals(FormCtx("isPremisesSameAsBusinessAddress"), Constant("0")))
+
+  }
+
+  "BooleanExprParser" should "parse inequality" in {
+    val res = BooleanExprParser.validate("${isPremisesSameAsBusinessAddress!=0}")
+
+    res shouldBe Right(NotEquals(FormCtx("isPremisesSameAsBusinessAddress"), Constant("0")))
+
+  }
+
+  "BooleanExprParser" should "parse greater than" in {
+    val res = BooleanExprParser.validate("${isPremisesSameAsBusinessAddress>0}")
+
+    res shouldBe Right(GreaterThan(FormCtx("isPremisesSameAsBusinessAddress"), Constant("0")))
+
+  }
+
+  "BooleanExprParser" should "parse greater than or equal" in {
+    val res = BooleanExprParser.validate("${isPremisesSameAsBusinessAddress>=0}")
+
+    res shouldBe Right(GreaterThanOrEquals(FormCtx("isPremisesSameAsBusinessAddress"), Constant("0")))
+
+  }
+
+  "BooleanExprParser" should "parse less than" in {
+    val res = BooleanExprParser.validate("${isPremisesSameAsBusinessAddress<0}")
+
+    res shouldBe Right(LessThan(FormCtx("isPremisesSameAsBusinessAddress"), Constant("0")))
+
+  }
+
+  "BooleanExprParser" should "parse less than or equal" in {
+    val res = BooleanExprParser.validate("${isPremisesSameAsBusinessAddress<=0}")
+
+    res shouldBe Right(LessThanOrEquals(FormCtx("isPremisesSameAsBusinessAddress"), Constant("0")))
+
+  }
+
+  "BooleanExprParser" should "parse logical negation expressions" in {
+    val res = BooleanExprParser.validate("${!isPremisesSameAsBusinessAddress=0}")
+
+    res shouldBe Right(Not(Equals(FormCtx("isPremisesSameAsBusinessAddress"), Constant("0"))))
+
+  }
+
   "BooleanExprParser" should "parse or-expressions" in {
-    val res = BooleanExprParser.validate("${isPremisesSameAsBusinessAddress=0} || ${amountA=22}")
+    val res = BooleanExprParser.validate("${isPremisesSameAsBusinessAddress=0||amountA=22}")
 
     res shouldBe Right(
       Or(Equals(FormCtx("isPremisesSameAsBusinessAddress"), Constant("0")), Equals(FormCtx("amountA"), Constant("22"))))
@@ -32,7 +81,7 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
   }
 
   "BooleanExprParser" should "parse or-expressions inside form context" in {
-    val res = BooleanExprParser.validate("${hasOrgsAddressChanged=1 || hasOrgsAddressChanged=0}")
+    val res = BooleanExprParser.validate("${hasOrgsAddressChanged=1||hasOrgsAddressChanged=0}")
 
     res shouldBe Right(
       Or(
@@ -41,53 +90,35 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
 
   }
 
+  def spacesBeforeCaret(message: String): Int =
+    ("[ ]+(?=\\^)".r.unanchored.findAllIn(message).toList.last).size
+
   it should "fail to parse anything but an equals operator" in {
-    val res = BooleanExprParser.validate("${abc>form.amountA}")
+    val res = BooleanExprParser.validate("${abc|=form.amountA}")
 
     res should be('left)
 
     res.left.value match {
-      case UnexpectedState(msg) => msg.contains("expected '=' or '\\s+'") shouldBe true
-      case _                    => fail("expected an UnexpectedState")
+      case UnexpectedState(msg) => spacesBeforeCaret(msg) shouldBe "${abc".size
+      case _                    => fail("${expected an UnexpectedState}")
     }
+
   }
 
-  it should "fail to parse anything but a constant on the right size" in {
-    val res = BooleanExprParser.validate("${abc=form.amountA}")
+  it should "fail to parse eeitt.businessUserx = XYZ}" in {
+    val res = BooleanExprParser.validate("${eeitt.businessUserx=XYZ}")
 
     res should be('left)
-
-    def pointToFirstUnexpectedCharacter(parserMsg: String) = {
-      val spacesBeforeCaret = "[ ]+(?=\\^)".r.unanchored.findAllIn(parserMsg).toList.last
-      spacesBeforeCaret.size shouldBe ("${abc=form".size)
-    }
 
     res.left.value match {
-      case UnexpectedState(msg) => pointToFirstUnexpectedCharacter(msg)
-      case _                    => fail("expected an UnexpectedState")
+      case UnexpectedState(msg) =>
+        spacesBeforeCaret(msg) shouldBe "${eeitt.businessUser".size
+      case _ => fail("expected an UnexpectedState")
     }
+
   }
 
-  it should "parse ${form.isPremisesSameAsBusinessAddress=amountA}" in {
-    val res = BooleanExprParser.validate("${eeitt.businessUserx = XYZ}")
-
-    res should be('left)
-
-    res.left.value should be(
-      UnexpectedState("""
-Unable to parse expression ${eeitt.businessUserx = XYZ}.
-Errors:
-${eeitt.businessUserx = XYZ}:1: unexpected characters; expected '=' or '\s+'
-${eeitt.businessUserx = XYZ}                    ^
-    """.trim))
-  }
-
-  it should "parse ${isPremisesSameAsBusinessAddress=0_0}" in {
-    BooleanExprParser.validate("${isPremisesSameAsBusinessAddress=0_0}") shouldBe Right(
-      Equals(FormCtx("isPremisesSameAsBusinessAddress"), Constant("0_0")))
-  }
-
-  it should "parse True" in {
-    BooleanExprParser.validate("True") shouldBe Right(IsTrue)
+  it should "parse true" in {
+    BooleanExprParser.validate("${true}") shouldBe Right(IsTrue)
   }
 }

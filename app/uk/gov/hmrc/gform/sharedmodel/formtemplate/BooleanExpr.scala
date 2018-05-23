@@ -22,6 +22,12 @@ import uk.gov.hmrc.gform.sharedmodel.form.FormField
 sealed trait BooleanExpr
 
 final case class Equals(left: Expr, right: Expr) extends BooleanExpr
+final case class NotEquals(left: Expr, right: Expr) extends BooleanExpr
+final case class GreaterThan(left: Expr, right: Expr) extends BooleanExpr
+final case class GreaterThanOrEquals(left: Expr, right: Expr) extends BooleanExpr
+final case class LessThan(left: Expr, right: Expr) extends BooleanExpr
+final case class LessThanOrEquals(left: Expr, right: Expr) extends BooleanExpr
+final case class Not(e: BooleanExpr) extends BooleanExpr
 final case class Or(left: BooleanExpr, right: BooleanExpr) extends BooleanExpr
 final case class And(left: BooleanExpr, right: BooleanExpr) extends BooleanExpr
 final case object IsTrue extends BooleanExpr
@@ -33,7 +39,11 @@ object BooleanExpr {
   def isTrue(expr: BooleanExpr, data: Map[FormComponentId, FormField]): Boolean =
     expr match {
       case Equals(FormCtx(fieldId), Constant(value))
-          if data.get(FormComponentId(fieldId)).toList.map(_.value).contains(value) =>
+          if data
+            .get(FormComponentId(fieldId))
+            .toList
+            .map(_.value)
+            .contains(value) =>
         true
       case Or(expr1, expr2)  => isTrue(expr1, data) | isTrue(expr2, data)
       case And(expr1, expr2) => isTrue(expr1, data) & isTrue(expr2, data)
