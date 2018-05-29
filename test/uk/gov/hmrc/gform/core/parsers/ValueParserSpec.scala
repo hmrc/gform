@@ -143,6 +143,12 @@ class ValueParserSpec extends Spec {
     res.right.value should be(TextExpression(Multiply(FormCtx("firstName"), AuthCtx(SaUtr))))
   }
 
+  it should "parse ${a - b  * c}" in {
+    val res = ValueParser.validate("${firstName - secondName * thirdname}")
+    res.right.value should be(
+      TextExpression(Subtraction(FormCtx("firstName"), Multiply(FormCtx("secondName"), FormCtx("thirdname")))))
+  }
+
   it should "parse string constant" in {
     val res = ValueParser.validate("'constant'")
     res.right.value should be(TextExpression(Constant("constant")))
