@@ -32,9 +32,49 @@ class ValueParserSpec extends Spec {
     res.right.value should be(TextExpression(Constant("1")))
   }
 
+  "ValueParser" should "parse integer with decimal point" in {
+    val res = ValueParser.validate("${1.}")
+    res.right.value should be(TextExpression(Constant("1.")))
+  }
+
   "ValueParser" should "parse multi digit integer" in {
     val res = ValueParser.validate("${12}")
     res.right.value should be(TextExpression(Constant("12")))
+  }
+
+  "ValueParser" should "parse double digit integer" in {
+    val res = ValueParser.validate("${1234}")
+    res.right.value should be(TextExpression(Constant("1234")))
+  }
+
+  "ValueParser" should "parse multi digit integer with thousand separators" in {
+    val res = ValueParser.validate("${1,234}")
+    res.right.value should be(TextExpression(Constant("1,234")))
+  }
+
+  "ValueParser" should "parse double digit decimal fraction" in {
+    val res = ValueParser.validate("${.12}")
+    res.right.value should be(TextExpression(Constant(".12")))
+  }
+
+  "ValueParser" should "parse multi digit decimal fraction" in {
+    val res = ValueParser.validate("${.123}")
+    res.right.value should be(TextExpression(Constant(".123")))
+  }
+
+  "ValueParser" should "parse number plus decimal fraction" in {
+    val res = ValueParser.validate("${1,234.1}")
+    res.right.value should be(TextExpression(Constant("1,234.1")))
+  }
+
+  "ValueParser" should "parse number plus double digit decimal fraction" in {
+    val res = ValueParser.validate("${1,234.12}")
+    res.right.value should be(TextExpression(Constant("1,234.12")))
+  }
+
+  "ValueParser" should "parse number plus multi digit decimal fraction" in {
+    val res = ValueParser.validate("${1,234.123}")
+    res.right.value should be(TextExpression(Constant("1,234.123")))
   }
 
   "ValueParser" should "parse ${firstName}" in {
