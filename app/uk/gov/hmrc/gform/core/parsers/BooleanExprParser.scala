@@ -32,26 +32,13 @@ object BooleanExprParser {
   // < <= = != >= >
   // ?
 
-  private lazy val p0w: Parser[BooleanExpr] = ("true" ^^ { (loc, value) =>
+  private lazy val p0: Parser[BooleanExpr] = ("true" ^^ { (loc, value) =>
     IsTrue
   }
-    | "yes" ^^ { (loc, value) =>
-      IsTrue
-    }
-    | "false" ^^ { (loc, value) =>
-      IsFalse
-    }
-    | "no" ^^ { (loc, value) =>
-      IsFalse
-    }
+    | "yes" ^^^ IsTrue
+    | "false" ^^^ IsFalse
+    | "no" ^^^ IsFalse
     | "(" ~> booleanExpr <~ ")")
-
-  private lazy val p0: Parser[BooleanExpr] = ("""\s+""".r ~> p0w <~ """\s+""".r
-    | """\s+""".r ~> p0w
-    | p0w ~ """\s+""".r ^^ { (loc, e, _) =>
-      e
-    }
-    | p0w)
 
   private lazy val p1: Parser[BooleanExpr] = (exprFormCtx ~ "<" ~ exprFormCtx ^^ { (loc, expr1, op, expr2) =>
     LessThan(expr1, expr2)

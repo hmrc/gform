@@ -27,6 +27,16 @@ class ValueParserSpec extends Spec {
 
   //TODO: use ExampleData
 
+  "ValueParser" should "parse integer" in {
+    val res = ValueParser.validate("${1}")
+    res.right.value should be(TextExpression(Constant("1")))
+  }
+
+  "ValueParser" should "parse multi digit integer" in {
+    val res = ValueParser.validate("${12}")
+    res.right.value should be(TextExpression(Constant("12")))
+  }
+
   "ValueParser" should "parse ${firstName}" in {
     val res = ValueParser.validate("${firstName}")
     res.right.value should be(TextExpression(FormCtx("firstName")))
@@ -93,9 +103,14 @@ class ValueParserSpec extends Spec {
     res.right.value should be(TextExpression(Multiply(FormCtx("firstName"), AuthCtx(SaUtr))))
   }
 
-  it should "parse constant" in {
+  it should "parse string constant" in {
     val res = ValueParser.validate("'constant'")
     res.right.value should be(TextExpression(Constant("constant")))
+  }
+
+  it should "parse string constant including space" in {
+    val res = ValueParser.validate("'const ant'")
+    res.right.value should be(TextExpression(Constant("const ant")))
   }
 
   it should "parse number as a choice selections" in {

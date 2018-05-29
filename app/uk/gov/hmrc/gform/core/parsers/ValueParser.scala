@@ -23,6 +23,8 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ ChoiceExpression, DateExpres
 
 object ValueParser {
 
+  implicit val W = Whitespace(() | """\s+""".r)
+
   case class IsSubtraction(value: Boolean)
   val isSubtraction =
     pureconfig.loadConfigOrThrow[IsSubtraction]("feature.subtraction").value
@@ -33,17 +35,14 @@ object ValueParser {
     | positiveIntegers ^^ ((loc, selections) => ChoiceExpression(selections))
     | expr ^^ ((loc, expr) => TextExpression(expr)))
 
-  lazy val dateExpression: Parser[DateValue] = ((nextDate | lastDate | exactDate | today) ^^ { (loc, dateExpr) =>
+  lazy val dateExpression: Parser[DateValue] = (nextDate | lastDate | exactDate | today) ^^ { (loc, dateExpr) =>
     dateExpr
-  })
+  }
 
-  lazy val today: Parser[TodayDateValue.type] = ("today" ^^ { (loc, today) =>
-    TodayDateValue
-  })
+  lazy val today: Parser[TodayDateValue.type] = "today" ^^ { (loc, today) => TodayDateValue }
 
-  lazy val exactDate: Parser[ExactDateValue] = (yearParser ~ monthDay ^^ { (loc, year, month, day) =>
-    ExactDateValue(year, month, day)
-  })
+  lazy val exactDate: Parser[ExactDateValue] = yearParser ~ monthDay ^^ { (loc, year, month, day) =>
+    ExactDateValue(year, month, day) }
 
   lazy val nextDate: Parser[NextDateValue] =
     nextOrPrevious("next", NextDateValue.apply)
@@ -51,17 +50,10 @@ object ValueParser {
   lazy val lastDate: Parser[PreviousDateValue] =
     nextOrPrevious("last", PreviousDateValue.apply)
 
-  private lazy val exprFormCtxLessWhitespace: Parser[Expr] = ("'" ~ anyConstant ~ "'" ^^ { (loc, _, str, _) =>
+  lazy val exprFormCtx: Parser[Expr] = ("'" ~ anyConstant ~ "'" ^^ { (loc, _, str, _) =>
     str
   }
     | parserExpression)
-
-  lazy val exprFormCtx: Parser[Expr] = ("""\s+""".r ~> exprFormCtxLessWhitespace <~ """\s+""".r
-    | """\s+""".r ~> exprFormCtxLessWhitespace
-    | exprFormCtxLessWhitespace ~ """\s+""".r ^^ { (loc, e, _) =>
-      e
-    }
-    | exprFormCtxLessWhitespace)
 
   lazy val expr: Parser[Expr] = ("'" ~ anyConstant ~ "'" ^^ { (loc, _, str, _) =>
     str
@@ -125,16 +117,7 @@ object ValueParser {
 
   lazy val anyDigitConst: Parser[Expr] = ("""\d""".r ^^ { (loc, str) =>
     Constant(str)
-  }
-    | """\d[ \d,]*[\d]""".r ^^ { (loc, str) =>
-      Constant(str)
-    }
-    | """\.[ \d]*\d""".r ^^ { (loc, str) =>
-      Constant(str)
-    }
-    | """\d[ \d,]*\.([ \d]*\d)?""".r ^^ { (loc, str) =>
-      Constant(str)
-    })
+  })
 
   lazy val eeitt: Parser[Eeitt] = ("businessUser" ^^ { (loc, _) =>
     BusinessUser
