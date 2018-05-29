@@ -95,9 +95,6 @@ object ValueParser {
   lazy val parserExpression: Parser[Expr] = (parserExpression ~ "+" ~ parserExpression ^^ { (loc, expr1, _, expr2) =>
     Add(expr1, expr2)
   }
-    | parserExpression ~ "*" ~ parserExpression ^^ { (loc, expr1, _, expr2) =>
-      Multiply(expr1, expr2)
-    }
     | subtractionFeatureSwitch)
 
   lazy val subtractionFeatureSwitch: Parser[Expr] =
@@ -105,10 +102,15 @@ object ValueParser {
       (parserExpression ~ "-" ~ parserExpression ^^ { (loc, expr1, _, expr2) =>
         Subtraction(expr1, expr2)
       }
-        | contextField)
+        | product)
     } else {
-      contextField
+      product
     }
+
+  lazy val product: Parser[Expr] = (product ~ "*" ~ product ^^ { (loc, expr1, _, expr2) =>
+    Multiply(expr1, expr2)
+  }
+    | contextField)
 
   lazy val alphabeticOnly: Parser[String] = """[a-zA-Z][a-zA-Z0-9]+""".r ^^ { (loc, str) =>
     str

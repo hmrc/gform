@@ -84,7 +84,9 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
     val res = BooleanExprParser.validate("${user.affinityGroup = 'organisation' || user.affinityGroup = 'individual'}")
 
     res shouldBe Right(
-      Or(Equals(UserCtx(AffinityGroup), Constant("organisation")), Equals(UserCtx(AffinityGroup), Constant("individual"))))
+      Or(
+        Equals(UserCtx(AffinityGroup), Constant("organisation")),
+        Equals(UserCtx(AffinityGroup), Constant("individual"))))
 
   }
 
