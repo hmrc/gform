@@ -80,6 +80,14 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
 
   }
 
+  "BooleanExprParser" should "parse or-expressions including spaces and string constants" in {
+    val res = BooleanExprParser.validate("${user.affinityGroup = 'organisation' || user.affinityGroup = 'individual'}")
+
+    res shouldBe Right(
+      Or(Equals(UserCtx(AffinityGroup), Constant("organisation")), Equals(UserCtx(AffinityGroup), Constant("individual"))))
+
+  }
+
   "BooleanExprParser" should "parse or-expressions inside form context" in {
     val res = BooleanExprParser.validate("${hasOrgsAddressChanged=1||hasOrgsAddressChanged=0}")
 

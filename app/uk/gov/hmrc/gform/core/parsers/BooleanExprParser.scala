@@ -32,6 +32,8 @@ object BooleanExprParser {
   // < <= = != >= >
   // ?
 
+  implicit val W = Whitespace(() | """\s+""".r)
+
   private lazy val p0: Parser[BooleanExpr] = ("true" ^^ { (loc, value) =>
     IsTrue
   }
