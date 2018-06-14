@@ -1,6 +1,7 @@
 # microservice specific routes
 
-POST          /new-form/:formTemplateId/:userId                    uk.gov.hmrc.gform.form.FormController.newForm(userId: UserId, formTemplateId: FormTemplateId)
+POST          /new-form/:formTemplateId/:userId                    uk.gov.hmrc.gform.form.FormController.newForm(userId: UserId, formTemplateId: FormTemplateId, accessCode: Option[AccessCode] = None)
+POST          /new-form/:formTemplateId/:userId/:accessCode        uk.gov.hmrc.gform.form.FormController.newForm(userId: UserId, formTemplateId: FormTemplateId, accessCode: Option[AccessCode])
 
 PUT           /forms/:formId                                       uk.gov.hmrc.gform.form.FormController.updateFormData(formId: FormId)
 GET           /forms/:formId                                       uk.gov.hmrc.gform.form.FormController.get(formId: FormId)

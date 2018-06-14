@@ -25,7 +25,7 @@ import uk.gov.hmrc.gform.core.FormValidator
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.fileupload.FileUploadService
 import uk.gov.hmrc.gform.formtemplate.FormTemplateService
-import uk.gov.hmrc.gform.sharedmodel.UserId
+import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, UserId }
 import uk.gov.hmrc.gform.sharedmodel.form.{ FileId, FormId, UserData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
@@ -39,17 +39,21 @@ class FormController(
   formService: FormService)
     extends BaseController {
 
-  def newForm(userId: UserId, formTemplateId: FormTemplateId) = Action.async { implicit request =>
-    Logger.info(s"new form, userId: '${userId.value}', templateId: '${formTemplateId.value}', ${loggingHelpers
-      .cleanHeaders(request.headers)}")
+  def newForm(
+    userId: UserId,
+    formTemplateId: FormTemplateId,
+    accessCode: Option[AccessCode]
+  ) = Action.async { implicit request =>
+    Logger.info(s"new form, userId: '${userId.value}', templateId: '${formTemplateId.value}', accessCode: '${accessCode
+      .map(_.value)}', ${loggingHelpers.cleanHeaders(request.headers)}")
     //TODO authentication
     //TODO user should be obtained from secure action
     //TODO authorisation
     //TODO Prevent creating new form when there exist one. Ask user to explicitly delete it
     //TODO: remove userId from argument list (it should be available after authenticating)
 
+    val formId = FormId(userId, formTemplateId, accessCode)
     val envelopeIdF = fileUploadService.createEnvelope(formTemplateId)
-    val formId = FormId(userId, formTemplateId)
     val formIdF: Future[FormId] = for {
       envelopeId <- envelopeIdF
       _          <- formService.insertEmpty(userId, formTemplateId, envelopeId, formId)

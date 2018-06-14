@@ -32,6 +32,7 @@ object ValueClassBinder {
   implicit val formIdBinder: PathBindable[FormId] = valueClassBinder(_.value)
   implicit val userIdBinder: PathBindable[UserId] = valueClassBinder(_.value)
   implicit val fileIdBinder: PathBindable[FileId] = valueClassBinder(_.value)
+  implicit val accessCodeBinder: PathBindable[Option[AccessCode]] = mValueClassBinder(_.value)
 
   implicit val sectionNumberBinder: PathBindable[SectionNumber] = new PathBindable[SectionNumber] {
     override def bind(key: String, value: String): Either[String, SectionNumber] =
@@ -53,6 +54,25 @@ object ValueClassBinder {
 
       override def unbind(key: String, a: A): String =
         stringBinder.unbind(key, fromAtoString(a))
+    }
+  }
+
+  def mValueClassBinder[A: Reads](fromAtoString: A => String)(implicit stringBinder: PathBindable[String]) = {
+
+    def parseString(str: String) =
+      if (str.isEmpty) Right(None)
+      else
+        JsString(str).validate[A] match {
+          case JsSuccess(a, _) => Right(Some(a))
+          case JsError(error)  => Left(s"No valid value in path: $str. Error: $error")
+        }
+
+    new PathBindable[Option[A]] {
+      override def bind(key: String, value: String): Either[String, Option[A]] =
+        stringBinder.bind(key, value).right.flatMap(parseString)
+
+      override def unbind(key: String, ma: Option[A]): String =
+        ma.fold("")(a => stringBinder.unbind(key, fromAtoString(a)))
     }
   }
 }
