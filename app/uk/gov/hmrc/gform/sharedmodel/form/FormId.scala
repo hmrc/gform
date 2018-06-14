@@ -17,15 +17,17 @@
 package uk.gov.hmrc.gform.sharedmodel.form
 
 import play.api.libs.json._
-import uk.gov.hmrc.gform.sharedmodel.{ UserId, ValueClassFormat }
+import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, UserId, ValueClassFormat }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 
 case class FormId(value: String)
 
 object FormId {
 
-  def apply(userId: UserId, formTemplateId: FormTemplateId): FormId =
-    new FormId(s"""${userId.value}-${formTemplateId.value}""")
+  def apply(userId: UserId, formTemplateId: FormTemplateId, accessCode: Option[AccessCode]): FormId = {
+    val ac = accessCode.map("-" + _.value).getOrElse("")
+    new FormId(s"${userId.value}-${formTemplateId.value}$ac")
+  }
 
   implicit val format: OFormat[FormId] = ValueClassFormat.oformat("_id", FormId.apply, _.value)
 

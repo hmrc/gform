@@ -48,4 +48,13 @@ object ValueClassFormat {
       Writes[A](a => write(a))
     )
 
+  def simpleFormat[A: Format](fromStringToA: String => A)(fromAToString: A => String) =
+    Format[A](
+      Reads[A] {
+        case JsString(str) => JsSuccess(fromStringToA(str))
+        case unknown       => JsError(s"JsString value expected, got: $unknown")
+      },
+      Writes[A](a => JsString(fromAToString(a)))
+    )
+
 }
