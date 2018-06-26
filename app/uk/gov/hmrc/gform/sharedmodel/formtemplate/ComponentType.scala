@@ -27,7 +27,7 @@ sealed trait ComponentType
 
 case class Text(constraint: TextConstraint, value: Expr) extends ComponentType
 
-case object TextArea extends ComponentType
+case class TextArea(constraint: TextConstraint, value: Expr) extends ComponentType
 
 case class UkSortCode(value: Expr) extends ComponentType
 

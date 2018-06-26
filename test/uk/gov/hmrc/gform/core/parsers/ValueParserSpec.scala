@@ -299,7 +299,6 @@ class ValueParserSpec extends Spec {
   "Expr.validate" should "return Valid if expression include fieldName id present in the form template" in {
 
     val res = FormTemplateValidator.validate(List(Text(AnyText, FormCtx("firstName"))), formTemplateWithOneSection)
-    println(Json.prettyPrint(Json.toJson(plainFormTemplate)))
     res should be(Valid)
   }
 

@@ -17,7 +17,11 @@
 package uk.gov.hmrc.gform.formtemplate
 
 import cats.data.NonEmptyList
-import cats.syntax.all._
+import cats.instances.either._
+import cats.instances.list._
+import cats.syntax.either._
+import cats.syntax.option._
+import cats.syntax.traverse._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.{ FormatParser, PresentationHintParser, ValueParser }
@@ -142,7 +146,8 @@ class FormCompomentMaker(json: JsValue) {
         case (Some(TextFormat(UkSortCodeFormat)), HasTextExpression(expr), IsNotMultiline()) => UkSortCode(expr).asRight
         case (Some(TextFormat(f)),                HasTextExpression(expr), IsNotMultiline()) => Text(f, expr).asRight
         case (None,                               HasTextExpression(expr), IsNotMultiline()) => Text(ShortText, expr).asRight
-        case (None,                               None,                    IsMultiline()   ) => TextArea.asRight
+        case (Some(TextFormat(f)),                HasTextExpression(expr), IsMultiline()   ) => TextArea(f, expr).asRight
+        case (None,                               HasTextExpression(expr), IsMultiline()   ) => TextArea(BasicText, expr).asRight
         case (maybeInvalidFormat,                 maybeInvalidValue,       IsMultiline()   ) =>
           UnexpectedState(s"""|Unsupported type of format or value for multiline text field
                   |Id: $id
@@ -232,12 +237,7 @@ class FormCompomentMaker(json: JsValue) {
       case IsGroupOrientation(HorizontalGroupOrientation)      => Horizontal
     }
 
-    val fieldValueOpts: List[Opt[FormComponent]] = fields.map(_.optFieldValue())
-
-    val fieldValuesOpt: Opt[List[FormComponent]] = {
-      import cats.implicits._
-      fieldValueOpts.sequence
-    }
+    val fieldValuesOpt: Opt[List[FormComponent]] = fields.traverse(_.optFieldValue())
 
     for {
       fieldValues <- fieldValuesOpt.right

@@ -20,7 +20,7 @@ import play.api.data.validation.ValidationError
 import play.api.libs.json._
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Constant, FormComponent, Number, ShortText, Text, TextArea }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ BasicText, Constant, FormComponent, Number, ShortText, Text, TextArea }
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 
 class JsonParseTestFormat extends Spec {
@@ -82,10 +82,10 @@ class JsonParseTestFormat extends Spec {
     val multilineCombinations = Table(
       // format: off
       ("multiline", "expected"),
-      ("yes",  TextArea),
-      ("Yes",  TextArea),
-      ("true", TextArea),
-      ("True", TextArea),
+      ("yes",  TextArea(BasicText, Constant(""))),
+      ("Yes",  TextArea(BasicText, Constant(""))),
+      ("true", TextArea(BasicText, Constant(""))),
+      ("True", TextArea(BasicText, Constant(""))),
       ("no",   Text(ShortText, Constant(""))),
       ("typo", Text(ShortText, Constant(""))),
       ("",     Text(ShortText, Constant("")))
@@ -99,32 +99,6 @@ class JsonParseTestFormat extends Spec {
       jsResult shouldBe a[JsSuccess[_]]
       jsResult.map(fv => fv.`type` shouldBe expected)
 
-    }
-  }
-
-  it should "fail if 'value' or 'format' field is present" in {
-
-    val multilineCombinations = Table(
-      // format: off
-      ("fieldName", "fieldValue"),
-      ("value",     "${eeitt.businessUser}"),
-      ("format",    "number")
-      // format: on
-    )
-
-    forAll(multilineCombinations) { (field, value) =>
-      val jsResult = implicitly[Reads[FormComponent]]
-        .reads(Json.parse(startOfJson + s""", "multiline" : "yes", "$field": "$value" }"""))
-
-      inside(jsResult) {
-        case JsError(errorsAll) =>
-          val errors: Seq[String] = errorsAll.flatMap(_._2).collect {
-            case e if e.message.contains("Unsupported type of format or value for multiline text field") =>
-              e.message
-          }
-
-          errors.size shouldBe 1
-      }
     }
   }
 }

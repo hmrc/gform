@@ -133,10 +133,18 @@ object FormTemplateValidator {
     Monoid[ValidationResult].combineAll(results)
   }
 
+  private object HasExpr {
+    def unapply(ct: ComponentType): Option[Expr] =
+      ct match {
+        case UkSortCode(expr)  => Some(expr)
+        case Text(_, expr)     => Some(expr)
+        case TextArea(_, expr) => Some(expr)
+        case _                 => None
+      }
+  }
+
   def validate(componentType: ComponentType, formTemplate: FormTemplate): ValidationResult = componentType match {
-    case UkSortCode(expr)          => validate(expr, formTemplate.sections)
-    case Text(_, expr)             => validate(expr, formTemplate.sections)
-    case TextArea                  => Valid
+    case HasExpr(expr)             => validate(expr, formTemplate.sections)
     case Date(_, _, _)             => Valid
     case Address(_)                => Valid
     case Choice(_, _, _, _, _)     => Valid
