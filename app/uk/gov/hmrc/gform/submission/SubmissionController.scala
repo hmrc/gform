@@ -18,10 +18,12 @@ package uk.gov.hmrc.gform.submission
 
 import cats.implicits._
 import play.api.Logger
-import play.api.mvc.Action
+import play.api.mvc.{ Action, AnyContent, Request }
+import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
+import uk.gov.hmrc.gform.sharedmodel.AffinityGroupUtil._
 
 import scala.concurrent.Future
 
@@ -36,7 +38,10 @@ class SubmissionController(submissionService: SubmissionService) extends BaseCon
     //TODO change status of form to 'submitted'
 
     submissionService
-      .submission(formId, request.headers.get("customerId").getOrElse(""))
+      .submission(
+        formId,
+        getFromHeaders("customerId", request, _.getOrElse("")),
+        getFromHeaders("affinityGroup", request, toAffinityGroupO))
       .fold(_.asBadRequest, _ => NoContent)
   }
 
@@ -45,7 +50,11 @@ class SubmissionController(submissionService: SubmissionService) extends BaseCon
     request.body.asText match {
       case Some(html) =>
         submissionService
-          .submissionWithPdf(formId, request.headers.get("customerId").getOrElse(""), html)
+          .submissionWithPdf(
+            formId,
+            getFromHeaders("customerId", request, _.getOrElse("")),
+            getFromHeaders("affinityGroup", request, toAffinityGroupO),
+            html)
           .fold(_.asBadRequest, _ => NoContent)
       case None => Future.successful(BadRequest)
     }
@@ -59,5 +68,8 @@ class SubmissionController(submissionService: SubmissionService) extends BaseCon
 
     submissionService.submissionDetails(formId).asOkJson
   }
+
+  private def getFromHeaders[A](header: String, request: Request[AnyContent], f: Option[String] => A): A =
+    f(request.headers.get(header))
 
 }

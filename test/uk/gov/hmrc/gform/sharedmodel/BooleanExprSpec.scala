@@ -23,32 +23,38 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 class BooleanExprSpec extends FlatSpec with Matchers with EitherValues {
 
   val data = Map(
-    FormComponentId("startDate.year")  -> FormField(FormComponentId("startDate.year"), "2010"),
-    FormComponentId("startDate.day")   -> FormField(FormComponentId("startDate.day"), "10"),
-    FormComponentId("startDate.month") -> FormField(FormComponentId("startDate.month"), "10"),
-    FormComponentId("firstName")       -> FormField(FormComponentId("firstName"), "Pete"),
-    FormComponentId("nameOfBusiness")  -> FormField(FormComponentId("nameOfBusiness"), "Business Name")
-  )
+    FormComponentId("startDate.year")  -> "2010",
+    FormComponentId("startDate.day")   -> "10",
+    FormComponentId("startDate.month") -> "10",
+    FormComponentId("firstName")       -> "Pete",
+    FormComponentId("nameOfBusiness")  -> "Business Name"
+  ).mapValues(_ :: Nil)
 
   "isTrue" should "evaluate correctly" in {
 
-    BooleanExpr.isTrue(Equals(FormCtx("firstName"), Constant("Pete")), data) shouldBe true
-    BooleanExpr.isTrue(Equals(FormCtx("startDate.year"), Constant("2010")), data) shouldBe true
+    BooleanExpr.isTrue(Equals(FormCtx("firstName"), Constant("Pete")), data, None).beResult shouldBe true
+    BooleanExpr.isTrue(Equals(FormCtx("startDate.year"), Constant("2010")), data, None).beResult shouldBe true
     BooleanExpr
       .isTrue(
         And(Equals(FormCtx("startDate.year"), Constant("2010")), Equals(FormCtx("firstName"), Constant("Pete"))),
-        data) shouldBe true
-    BooleanExpr.isTrue(Equals(FormCtx("firstName"), Constant("*Not*Pete")), data) shouldBe false
+        data,
+        None)
+      .beResult shouldBe true
+    BooleanExpr.isTrue(Equals(FormCtx("firstName"), Constant("*Not*Pete")), data, None).beResult shouldBe false
     BooleanExpr
       .isTrue(
         And(Equals(FormCtx("startDate.year"), Constant("2010")), Equals(FormCtx("firstName"), Constant("*Not*Pete"))),
-        data) shouldBe false
+        data,
+        None)
+      .beResult shouldBe false
     BooleanExpr
       .isTrue(
         Or(Equals(FormCtx("startDate.year"), Constant("2010")), Equals(FormCtx("firstName"), Constant("*Not*Pete"))),
-        data) shouldBe true
-    BooleanExpr.isTrue(IsTrue, Map()) shouldBe true
-    BooleanExpr.isTrue(IsFalse, Map()) shouldBe false
+        data,
+        None)
+      .beResult shouldBe true
+    BooleanExpr.isTrue(IsTrue, Map(), None).beResult shouldBe true
+    BooleanExpr.isTrue(IsFalse, Map(), None).beResult shouldBe false
 
   }
 

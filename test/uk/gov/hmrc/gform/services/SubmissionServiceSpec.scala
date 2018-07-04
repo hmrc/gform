@@ -191,7 +191,7 @@ class SubmissionServiceSpec extends Spec {
       SectionFormField("Declaration", List())
     )
 
-    val res = SubmissionServiceHelper.getSectionFormFields(form, formTemplate)
+    val res = SubmissionServiceHelper.getSectionFormFields(form, formTemplate, None)
 
     res.right.value should be(expectedResult)
   }
