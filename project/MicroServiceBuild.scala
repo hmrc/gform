@@ -28,7 +28,8 @@ object MicroServiceBuild extends Build with MicroService {
     "io.github.cloudify" %% "spdf" % "1.4.0",
     "com.chuusai" %% "shapeless" % "2.3.2",
     "com.github.pureconfig" %% "pureconfig" % "0.7.2",
-    "com.github.mpilquist" %% "simulacrum" % "0.11.0"
+    "com.github.mpilquist" %% "simulacrum" % "0.11.0",
+    "uk.gov.hmrc" %% "auth-client" % "2.3.0" // we need AffinityGroup type to stay in sync with frontend
   )
 
 

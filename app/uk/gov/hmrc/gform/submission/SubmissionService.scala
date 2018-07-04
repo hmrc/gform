@@ -27,12 +27,13 @@ import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.fileupload.{ FileUploadService, MetadataXml }
 import uk.gov.hmrc.gform.form.FormService
 import uk.gov.hmrc.gform.formtemplate.{ FormTemplateService, RepeatingComponentService, SectionHelper }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.gform.pdfgenerator.{ HtmlGeneratorService, PdfGeneratorService, XmlGeneratorService }
+import uk.gov.hmrc.gform.sharedmodel.Visibility
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.pdfgenerator.{ HtmlGeneratorService, PdfGeneratorService, XmlGeneratorService }
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
+import uk.gov.hmrc.auth.core.AffinityGroup
 
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.http.HeaderCarrier
@@ -144,13 +145,14 @@ class SubmissionService(
     case _                                  => Future.failed(new Exception(s"Form $FormId status is not signed"))
   }
 
-  def submission(formId: FormId, customerId: String)(implicit hc: HeaderCarrier): FOpt[Unit] =
+  def submission(formId: FormId, customerId: String, affinityGroup: Option[AffinityGroup])(
+    implicit hc: HeaderCarrier): FOpt[Unit] =
     // format: OFF
     for {
       form                <- fromFutureA        (getSignedForm(formId))
       formTemplate        <- fromFutureA        (formTemplateService.get(form.formTemplateId))
-      sectionFormFields   <- fromOptA           (SubmissionServiceHelper.getSectionFormFields(form, formTemplate))
-      submissionAndPdf    <- fromFutureA        (getSubmissionAndPdf(form.envelopeId, form, sectionFormFields,formTemplate , customerId))
+      sectionFormFields   <- fromOptA           (SubmissionServiceHelper.getSectionFormFields(form, formTemplate, affinityGroup))
+      submissionAndPdf    <- fromFutureA        (getSubmissionAndPdf(form.envelopeId, form, sectionFormFields, formTemplate, customerId))
       _                   <-                    submissionRepo.upsert(submissionAndPdf.submission)
       _                   <- fromFutureA        (formService.updateUserData(form._id, UserData(form.formData, form.repeatingGroupStructure, Submitted)))
       numberOfAttachments =                     sectionFormFields.map(_.numberOfFiles).sum
@@ -160,17 +162,18 @@ class SubmissionService(
     } yield res
     // format: ON
 
-  def submissionWithPdf(formId: FormId, customerId: String, pdf: String)(implicit hc: HeaderCarrier): FOpt[Unit] =
+  def submissionWithPdf(formId: FormId, customerId: String, affinityGroup: Option[AffinityGroup], pdf: String)(
+    implicit hc: HeaderCarrier): FOpt[Unit] =
     // format: OFF
     for {
 //      form                <- fromFutureA        (getSignedForm(formId))
       form                <- fromFutureA        (formService.get(formId))
       formTemplate        <- fromFutureA        (formTemplateService.get(form.formTemplateId))
-      sectionFormFields   <- fromOptA           (SubmissionServiceHelper.getSectionFormFields(form, formTemplate))
+      sectionFormFields   <- fromOptA           (SubmissionServiceHelper.getSectionFormFields(form, formTemplate, affinityGroup))
       submissionAndPdf    <- fromFutureA        (getSubmissionAndPdfWithPdf(form.envelopeId, form, sectionFormFields, pdf ,customerId, formTemplate))
       _                   <-                    submissionRepo.upsert(submissionAndPdf.submission)
       _                   <- fromFutureA        (formService.updateUserData(form._id, UserData(form.formData, form.repeatingGroupStructure, Submitted)))
-      sectionFormFields   <- fromOptA           (SubmissionServiceHelper.getSectionFormFields(form, formTemplate))
+      sectionFormFields   <- fromOptA           (SubmissionServiceHelper.getSectionFormFields(form, formTemplate, affinityGroup))
       numberOfAttachments =                     sectionFormFields.map(_.numberOfFiles).sum
       res                 <- fromFutureA        (fileUploadService.submitEnvelope(submissionAndPdf, formTemplate.dmsSubmission, numberOfAttachments))
       emailAddress        =                     email.getEmailAddress(form)
@@ -185,7 +188,10 @@ class SubmissionService(
 
 object SubmissionServiceHelper {
 
-  def getSectionFormFields(form: Form, formTemplate: FormTemplate): Opt[List[SectionFormField]] = {
+  def getSectionFormFields(
+    form: Form,
+    formTemplate: FormTemplate,
+    affinityGroup: Option[AffinityGroup]): Opt[List[SectionFormField]] = {
 
     val data: Map[FormComponentId, FormField] = form.formData.fields.map(field => field.id -> field).toMap
 
@@ -228,10 +234,11 @@ object SubmissionServiceHelper {
         .map(ff => SectionFormField(section.shortName.getOrElse(section.title), ff))
 
     val allSections = RepeatingComponentService.getAllSections(form, formTemplate)
-    // TODO This is a workaround for GD94 so that all sections will be in the submission, because retrievals are not available for evaluation in the backend
-    //    val sectionsToSubmit = allSections.filter(
-    //      section => BooleanExpr.isTrue(section.includeIf.getOrElse(IncludeIf(IsTrue)).expr, data)) :+ formTemplate.declarationSection
-    val sectionsToSubmit = allSections :+ formTemplate.declarationSection
+
+    val visibility = Visibility(allSections, data.mapValues(_.value :: Nil), affinityGroup)
+    val filteredSection = allSections.filter(visibility.isVisible)
+
+    val sectionsToSubmit = filteredSection :+ formTemplate.declarationSection
     sectionsToSubmit.traverse(toSectionFormField)
   }
 
