@@ -301,7 +301,7 @@ class FormCompomentMaker(json: JsValue) {
     case (IsInfoType(NoFormat), Some(infText))      => InformationMessage(NoFormat, infText).asRight
     case (infType, infText)                         => UnexpectedState(s"""
                                                   | Invalid or missing arguments in 'info' field. The 'info' field should contain the infoType and
-                                                  | infoText arguments. infoType is one of: standard, long, important or banner.
+                                                  | infoText arguments. infoType is one of: standard, long, important, banner or noformat.
                                                   | infoText is the text to display.
                                                   | InfoType: $infType
                                                   | InfoText: $infText
