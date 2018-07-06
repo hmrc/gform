@@ -99,18 +99,18 @@ object SchemaValidator {
   private def readObject(json: JsValue): Opt[SObject] = {
     val properties = (json \ "properties") match {
       case JsDefined(JsObject(properties)) =>
-        val res = properties.map { case (property, value) => loop(value).map(x => Item(property, x)) }.toList
-        res.sequenceU
+        properties.toList.traverse[Opt, Item] {
+          case (property, value) => loop(value).map(x => Item(property, x))
+        }
       case otherwise => Left(UnexpectedState("No 'properties' fieldName of type object found in json"))
     }
 
     val required = (json \ "required") match {
       case JsDefined(JsArray(required)) =>
-        val res: List[Opt[String]] = required.map {
+        required.toList.traverse[Opt, String] {
           case JsString(requiredFieldName) => Right(requiredFieldName)
           case nonString                   => Left(UnexpectedState("Required must be array with string"))
-        }.toList
-        res.sequenceU
+        }
       case otherwise => Left(UnexpectedState(s"No 'required' fieldName of type array found in json. Found: $otherwise"))
     }
 
