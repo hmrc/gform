@@ -478,7 +478,8 @@ class FormCompomentMaker(json: JsValue) {
     import cats.implicits._
     for {
       maybeString <- optMaybeString.right
-      res         <- maybeString.map(validate).sequenceU
+      res         <- maybeString.traverse[Opt, R](validate).right
+
     } yield res
   }
 }

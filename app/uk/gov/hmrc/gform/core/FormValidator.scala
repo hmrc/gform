@@ -23,7 +23,6 @@ import cats.syntax.traverse._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate.{ RepeatingComponentService, SectionHelper }
-import uk.gov.hmrc.gform.sharedmodel._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.form.FormField
 
@@ -101,21 +100,18 @@ object FormValidator {
       Left(UnexpectedState(s"Required fields ${missingRequiredFields.mkString(",")} are missing in form submission."))
     }
 
-    val formFieldWithFieldValues: List[Opt[(FormField, FormComponent)]] =
-      formFields.map { formField =>
+    val formFieldWithFieldValues: Opt[List[(FormField, FormComponent)]] =
+      formFields.traverse[Opt, (FormField, FormComponent)](formField =>
         RepeatingComponentService.findTemplateFieldId(templateFieldsMap, formField.id) match {
           case Some(templateField) => Right((formField, templateField))
           case None                => Left(UnexpectedState(s"Field ${formField.id} is not part of the template"))
-        }
-      }
-
-    val formFieldWithFieldValuesU: Opt[List[(FormField, FormComponent)]] = formFieldWithFieldValues.sequenceU
+      })
 
     // TODO - All necessary validation of form fields based on their format
 
     for {
       _ <- requirementCheck
-      _ <- formFieldWithFieldValuesU
+      _ <- formFieldWithFieldValues
     } yield ()
   }
 }
