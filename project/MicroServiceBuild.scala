@@ -16,10 +16,10 @@ object MicroServiceBuild extends Build with MicroService {
     ws,
     "uk.gov.hmrc" %% "play-reactivemongo" % "5.2.0",
     "com.github.pureconfig" %% "pureconfig" % "0.8.0",
-    "uk.gov.hmrc" %% "http-caching-client" % "7.0.0",
-    "uk.gov.hmrc" %% "microservice-bootstrap" % "6.13.0",
+    "uk.gov.hmrc" %% "http-caching-client" % "7.1.0",
+    "uk.gov.hmrc" %% "microservice-bootstrap" % "6.18.0",
     "uk.gov.hmrc" %% "play-url-binders" % "2.1.0",
-    "uk.gov.hmrc" %% "domain" % "5.0.0",
+    "uk.gov.hmrc" %% "domain" % "5.1.0",
     "com.codecommit" %% "parseback-core" % parsebackVersion,
     "com.codecommit" %% "parseback-cats" % parsebackVersion,
     "org.julienrf" %% "play-json-derived-codecs" % "3.3",
@@ -29,7 +29,7 @@ object MicroServiceBuild extends Build with MicroService {
     "com.chuusai" %% "shapeless" % "2.3.2",
     "com.github.pureconfig" %% "pureconfig" % "0.7.2",
     "com.github.mpilquist" %% "simulacrum" % "0.11.0",
-    "uk.gov.hmrc" %% "auth-client" % "2.3.0" // we need AffinityGroup type to stay in sync with frontend
+    "uk.gov.hmrc" %% "auth-client" % "2.6.0" // we need AffinityGroup type to stay in sync with frontend
   )
 
 
