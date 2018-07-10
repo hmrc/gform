@@ -96,19 +96,19 @@ class PlayComponentsModule(
       testOnlyModule.fUInterceptor)
 
   def router: Router = {
-    val applicationRouterKey = "application.router"
-    val applicationRouterProp = configModule.typesafeConfig.getString(applicationRouterKey)
-    if (applicationRouterProp == null) {
-      Logger.info("Using router with prod.routes")
-      prodRoutes
-    }
-    if (applicationRouterProp == "testOnlyDoNotUseInAppConf.Routes") {
-      Logger.info("Using router with testOnlyDoNotUseInAppConf.routes")
-      testOnlyDoNotUseInAppConfRoutes
-    } else {
-      Logger.error(
-        s"The option $applicationRouterKey has unsupported value: $applicationRouterProp. We support only 'testOnlyDoNotUseInAppConf.Routes'. Using 'prodRoutes'.")
-      prodRoutes
+    val key = "application.router"
+    val property = configModule.typesafeConfig.getString(key)
+    property match {
+      case null =>
+        Logger.info("Using router with prod.Routes")
+        prodRoutes
+      case "testOnlyDoNotUseInAppConf.Routes" =>
+        Logger.info(s"Using router with $property")
+        testOnlyDoNotUseInAppConfRoutes
+      case _ =>
+        Logger.error(
+          s"The option $key has unsupported value: $property. We support only testOnlyDoNotUseInAppConf.Routes . Using prod.Routes .")
+        prodRoutes
     }
   }
 
