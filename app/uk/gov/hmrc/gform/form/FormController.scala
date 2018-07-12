@@ -17,8 +17,9 @@
 package uk.gov.hmrc.gform.form
 
 import play.api.Logger
+import play.api.http.HttpEntity
 import play.api.libs.json.JsValue
-import play.api.mvc.{ Action, AnyContent }
+import play.api.mvc.{ Action, AnyContent, ResponseHeader, Result }
 import uk.gov.hmrc.gform.auditing._
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.core.FormValidator
@@ -31,7 +32,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 import scala.concurrent.Future
 import scala.util.Try
-import uk.gov.hmrc.http.BadRequestException
+import uk.gov.hmrc.http.{ BadRequestException, NotFoundException }
 
 class FormController(
   formTemplateService: FormTemplateService,
@@ -72,6 +73,11 @@ class FormController(
     formService
       .get(formId)
       .asOkJson
+      .recover {
+        case e: NotFoundException => {
+          Result(header = ResponseHeader(NOT_FOUND), body = HttpEntity.NoEntity)
+        }
+      }
   }
 
   def updateFormData(formId: FormId) = Action.async(parse.json[UserData]) { implicit request =>
