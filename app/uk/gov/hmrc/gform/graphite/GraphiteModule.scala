@@ -23,7 +23,7 @@ class GraphiteModule(applicationModule: ApplicationModule) {
 
   val graphite = new Graphite(applicationModule.configuration).onStart(configurationApp)
 
-  // To avoid circular dependency when creating ReactiveMongoComponentImpl and Graphite we will provide them this artificial
+  // To avoid circular dependency when creating Graphite we will provide them this artificial
   // application. It is ok to do so since both of them are using mainly provided configuration.
   private lazy val configurationApp = new Application() {
     def actorSystem = applicationModule.actorSystem
