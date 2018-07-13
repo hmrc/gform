@@ -14,7 +14,7 @@ object MicroServiceBuild extends Build with MicroService {
   val parsebackVersion = "0.3"
   val compile = Seq(
     ws,
-    "uk.gov.hmrc" %% "play-reactivemongo" % "5.2.0",
+    "uk.gov.hmrc" %% "play-reactivemongo" % "6.2.0",
     "com.github.pureconfig" %% "pureconfig" % "0.9.1",
     "uk.gov.hmrc" %% "http-caching-client" % "7.1.0",
     "uk.gov.hmrc" %% "microservice-bootstrap" % "6.18.0",
@@ -40,7 +40,7 @@ object MicroServiceBuild extends Build with MicroService {
     "com.typesafe.play" %% "play-test" % PlayVersion.current % scope,
     "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % scope,
     "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.1" % scope,
-    "uk.gov.hmrc" %% "reactivemongo-test" % "2.0.0" % scope,
+    "uk.gov.hmrc" %% "reactivemongo-test" % "3.1.0" % scope,
     "org.jsoup" % "jsoup" % "1.11.3" % scope
   )
 
