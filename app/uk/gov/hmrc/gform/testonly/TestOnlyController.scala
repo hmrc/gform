@@ -21,7 +21,7 @@ import play.api.Logger
 import play.api.libs.json._
 import play.api.mvc._
 import reactivemongo.api.DB
-import reactivemongo.json.collection.JSONCollection
+import reactivemongo.play.json.collection.JSONCollection
 import uk.gov.hmrc.BuildInfo
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
@@ -34,7 +34,7 @@ class TestOnlyController(mongo: () => DB, enrolmentConnector: EnrolmentConnector
   lazy val formTemplates = mongo().collection[JSONCollection]("formTemplate")
   def removeTemplates() = Action.async { implicit request =>
     println("purging mongo database ....")
-    formTemplates.drop().map(_ => Results.Ok("Mongo purged")).recover {
+    formTemplates.drop(failIfNotFound = false).map(_ => Results.Ok("Mongo purged")).recover {
 
       case e =>
         e.printStackTrace()

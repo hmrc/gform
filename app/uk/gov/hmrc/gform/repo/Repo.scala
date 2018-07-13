@@ -20,8 +20,9 @@ import cats.data.EitherT
 import cats.implicits._
 import play.api.libs.json._
 import reactivemongo.api.DefaultDB
-import reactivemongo.api.commands.{ WriteConcern, WriteResult }
+import reactivemongo.api.commands.{ UpdateWriteResult, WriteConcern }
 import reactivemongo.bson.BSONObjectID
+import reactivemongo.play.json.ImplicitBSONHandlers._
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.mongo.ReactiveRepository
@@ -47,20 +48,24 @@ class Repo[T: OWrites: Manifest](name: String, mongo: () => DefaultDB, idLens: T
   def upsert(t: T)(implicit ec: ExecutionContext): FOpt[Unit] = EitherT {
     underlying.collection
       .update(idSelector(t), update = t, writeConcern = WriteConcern.Default, upsert = true, multi = false)
-      .map(_.asEither)
+      .asEither
   }
 
   def delete(id: String)(implicit ec: ExecutionContext): FOpt[Unit] = EitherT {
-    underlying.collection
-      .remove(idSelector(id))
-      .map(_.asEither)
+    underlying.collection.remove(idSelector(id)).asEither
   }
 
   private def idSelector(id: String)(implicit ec: ExecutionContext): JsObject = Json.obj("_id" -> id)
   private def idSelector(t: T)(implicit ec: ExecutionContext): JsObject = idSelector(idLens(t))
   private lazy val npProjection = Json.obj()
 
-  implicit class WriteResultOps(w: WriteResult) {
-    def asEither: Either[UnexpectedState, Unit] = if (w.ok) ().asRight else UnexpectedState(w.message).asLeft
+  implicit class FutureWriteResultOps[T](t: Future[T])(implicit ec: ExecutionContext) {
+    def asEither: Future[Either[UnexpectedState, Unit]] =
+      t.map {
+        case _ => ().asRight
+      } recover {
+        case lastError =>
+          UnexpectedState(lastError.getMessage).asLeft
+      }
   }
 }
