@@ -41,7 +41,7 @@ class Repo[T: OWrites: Manifest](name: String, mongo: () => DefaultDB, idLens: T
   def get(id: String)(implicit ec: ExecutionContext): Future[T] =
     find(id).map(_.getOrElse(throw new NoSuchElementException(s"$name for given id: '$id' not found")))
 
-  private def asEither[T](t: Future[T])(implicit ec: ExecutionContext): Future[Either[UnexpectedState, Unit]] =
+  private def either[T](t: Future[T])(implicit ec: ExecutionContext): Future[Either[UnexpectedState, Unit]] =
     t.map {
       case _ => ().asRight
     } recover {
@@ -54,13 +54,13 @@ class Repo[T: OWrites: Manifest](name: String, mongo: () => DefaultDB, idLens: T
     underlying.collection.find(selector = selector, npProjection).cursor[T]().collect[List]()
 
   def upsert(t: T)(implicit ec: ExecutionContext): FOpt[Unit] = EitherT {
-    asEither(
+    either(
       underlying.collection
         .update(idSelector(t), update = t, writeConcern = WriteConcern.Default, upsert = true, multi = false))
   }
 
   def delete(id: String)(implicit ec: ExecutionContext): FOpt[Unit] = EitherT {
-    asEither(underlying.collection.remove(idSelector(id)))
+    either(underlying.collection.remove(idSelector(id)))
   }
 
   private def idSelector(id: String)(implicit ec: ExecutionContext): JsObject = Json.obj("_id" -> id)
