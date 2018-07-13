@@ -20,7 +20,7 @@ import cats.data.EitherT
 import cats.implicits._
 import play.api.libs.json._
 import reactivemongo.api.DefaultDB
-import reactivemongo.api.commands.WriteConcern
+import reactivemongo.api.commands.{ UpdateWriteResult, WriteConcern }
 import reactivemongo.bson.BSONObjectID
 import reactivemongo.play.json.ImplicitBSONHandlers._
 import uk.gov.hmrc.gform.core.FOpt
@@ -41,30 +41,31 @@ class Repo[T: OWrites: Manifest](name: String, mongo: () => DefaultDB, idLens: T
   def get(id: String)(implicit ec: ExecutionContext): Future[T] =
     find(id).map(_.getOrElse(throw new NoSuchElementException(s"$name for given id: '$id' not found")))
 
-  private def either[T](t: Future[T])(implicit ec: ExecutionContext): Future[Either[UnexpectedState, Unit]] =
-    t.map {
-      case _ => ().asRight
-    } recover {
-      case lastError =>
-        UnexpectedState(lastError.getMessage).asLeft
-    }
-
   def search(selector: JsObject)(implicit ec: ExecutionContext): Future[List[T]] =
     //TODO: don't abuse it to much. If querying for a large underlyingReactiveRepository.collection.consider returning stream instead of packing everything into the list
     underlying.collection.find(selector = selector, npProjection).cursor[T]().collect[List]()
 
   def upsert(t: T)(implicit ec: ExecutionContext): FOpt[Unit] = EitherT {
-    either(
-      underlying.collection
-        .update(idSelector(t), update = t, writeConcern = WriteConcern.Default, upsert = true, multi = false))
+    underlying.collection
+      .update(idSelector(t), update = t, writeConcern = WriteConcern.Default, upsert = true, multi = false)
+      .asEither
   }
 
   def delete(id: String)(implicit ec: ExecutionContext): FOpt[Unit] = EitherT {
-    either(underlying.collection.remove(idSelector(id)))
+    underlying.collection.remove(idSelector(id)).asEither
   }
 
   private def idSelector(id: String)(implicit ec: ExecutionContext): JsObject = Json.obj("_id" -> id)
   private def idSelector(t: T)(implicit ec: ExecutionContext): JsObject = idSelector(idLens(t))
   private lazy val npProjection = Json.obj()
 
+  implicit class FutureWriteResultOps[T](t: Future[T])(implicit ec: ExecutionContext) {
+    def asEither: Future[Either[UnexpectedState, Unit]] =
+      t.map {
+        case _ => ().asRight
+      } recover {
+        case lastError =>
+          UnexpectedState(lastError.getMessage).asLeft
+      }
+  }
 }
