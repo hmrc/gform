@@ -132,7 +132,8 @@ class FormValidatorSpec extends Spec {
       None,
       None,
       fields =
-        List("iptRegNum", "firstName", "lastName", "telephoneNumber", "nameOfBusiness").map(getMandatoryFieldValue)
+        List("iptRegNum", "firstName", "lastName", "telephoneNumber", "nameOfBusiness").map(getMandatoryFieldValue),
+      None
     )
 
     val res = FormValidator.validate(formFields, section)
@@ -172,7 +173,8 @@ class FormValidatorSpec extends Spec {
         "firstName",
         "lastName",
         "telephoneNumber",
-        "nameOfBusiness").map(getMandatoryFieldValue)
+        "nameOfBusiness").map(getMandatoryFieldValue),
+      None
     )
 
     val res = FormValidator.validate(formFields, section)
@@ -186,7 +188,7 @@ class FormValidatorSpec extends Spec {
     val formFields =
       List(FormField(FormComponentId("iptRegNum"), "12AB3456780"))
 
-    val section = Section("", None, None, None, None, None, None, None, fields = List.empty[FormComponent])
+    val section = Section("", None, None, None, None, None, None, None, fields = List.empty[FormComponent], None)
 
     val res = FormValidator.validate(formFields, section)
 
@@ -199,7 +201,17 @@ class FormValidatorSpec extends Spec {
     val formFields = List.empty[FormField]
 
     val section =
-      Section("", None, None, None, None, None, None, None, fields = List("iptRegNum").map(getMandatoryFieldValue))
+      Section(
+        "",
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        fields = List("iptRegNum").map(getMandatoryFieldValue),
+        None)
 
     val res = FormValidator.validate(formFields, section)
 

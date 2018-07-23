@@ -247,7 +247,8 @@ trait ExampleSection { dependecies: ExampleFieldId with ExampleFieldValue with E
       None,
       None,
       Some(defaultValidator),
-      List(`fieldValue - firstName`, `fieldValue - surname`, `fieldValue - facePhoto`))
+      List(`fieldValue - firstName`, `fieldValue - surname`, `fieldValue - facePhoto`),
+      None)
 
   def `section - businessDetails` =
     Section(
@@ -259,7 +260,8 @@ trait ExampleSection { dependecies: ExampleFieldId with ExampleFieldValue with E
       None,
       None,
       None,
-      List(`fieldValue - businessName`, `fieldValue - startDate`, `fieldValue - iptRegNum`))
+      List(`fieldValue - businessName`, `fieldValue - startDate`, `fieldValue - iptRegNum`),
+      None)
 
   def `repeating section` =
     Section(
@@ -271,7 +273,8 @@ trait ExampleSection { dependecies: ExampleFieldId with ExampleFieldValue with E
       repeatsMax = Some(TextExpression(FormCtx(`fieldId - firstName`.value))),
       repeatsMin = Some(TextExpression(FormCtx(`fieldId - firstName`.value))),
       None,
-      List(`fieldValue - surname`)
+      List(`fieldValue - surname`),
+      None
     )
 
   def `section - group` = `section - about you`.copy(fields = List(`fieldValue - group`))

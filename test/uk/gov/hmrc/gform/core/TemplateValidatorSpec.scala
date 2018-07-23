@@ -269,7 +269,8 @@ class TemplateValidatorSpec extends Spec {
         derived = false,
         errorMessage = None
       )
-    )
+    ),
+    None
   )
 
   val sectionWithDate = Section(
@@ -308,7 +309,8 @@ class TemplateValidatorSpec extends Spec {
         derived = false,
         errorMessage = None
       )
-    )
+    ),
+    None
   )
 
   val sectionWithCheckbox = Section(
@@ -347,7 +349,8 @@ class TemplateValidatorSpec extends Spec {
         derived = false,
         errorMessage = None
       )
-    )
+    ),
+    None
   )
 
   val sectionWithRadio = Section(
@@ -386,7 +389,8 @@ class TemplateValidatorSpec extends Spec {
         derived = false,
         errorMessage = None
       )
-    )
+    ),
+    None
   )
 
   val sectionWithYesNo = Section(
@@ -425,7 +429,8 @@ class TemplateValidatorSpec extends Spec {
         derived = false,
         errorMessage = None
       )
-    )
+    ),
+    None
   )
 
   "TemplateValidator.getMatchingSection" should "find matching section containing address component" in {
@@ -554,7 +559,8 @@ class TemplateValidatorSpec extends Spec {
           submissible = true,
           derived = false,
           errorMessage = None
-        ))
+        )),
+      None
     )
 
     val formFields = List() // Nothing submitted
@@ -589,7 +595,8 @@ class TemplateValidatorSpec extends Spec {
           submissible = true,
           derived = false,
           errorMessage = None
-        ))
+        )),
+      None
     )
 
     val formFields = List() // Nothing submitted
@@ -624,7 +631,8 @@ class TemplateValidatorSpec extends Spec {
           submissible = true,
           derived = false,
           errorMessage = None
-        ))
+        )),
+      None
     )
 
     val formFields = List() // Nothing submittedForm

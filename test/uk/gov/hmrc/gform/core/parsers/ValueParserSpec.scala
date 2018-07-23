@@ -291,7 +291,8 @@ class ValueParserSpec extends Spec {
         derived = false,
         errorMessage = None
       )
-    )
+    ),
+    None
   )
 
   val formTemplateWithOneSection = plainFormTemplate.copy(sections = List(yourDetailsSection))

@@ -102,7 +102,8 @@ class SubmissionServiceSpec extends Spec {
       None,
       None,
       None,
-      fields = List(groupFieldValue))
+      fields = List(groupFieldValue),
+      None)
 
     val formTemplate = FormTemplate(
       _id = FormTemplateId("JustAFormTypeId"),
