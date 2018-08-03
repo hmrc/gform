@@ -20,7 +20,7 @@ import play.api.data.validation.ValidationError
 import play.api.libs.json._
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ BasicText, Constant, FormComponent, Number, ShortText, Text, TextArea }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ BasicText, FormComponent, Number, ShortText, Text, TextArea, Value }
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 
 class JsonParseTestFormat extends Spec {
@@ -82,13 +82,13 @@ class JsonParseTestFormat extends Spec {
     val multilineCombinations = Table(
       // format: off
       ("multiline", "expected"),
-      ("yes",  TextArea(BasicText, Constant(""))),
-      ("Yes",  TextArea(BasicText, Constant(""))),
-      ("true", TextArea(BasicText, Constant(""))),
-      ("True", TextArea(BasicText, Constant(""))),
-      ("no",   Text(ShortText, Constant(""))),
-      ("typo", Text(ShortText, Constant(""))),
-      ("",     Text(ShortText, Constant("")))
+      ("yes",  TextArea(BasicText, Value)),
+      ("Yes",  TextArea(BasicText, Value)),
+      ("true", TextArea(BasicText, Value)),
+      ("True", TextArea(BasicText, Value)),
+      ("no",   Text(ShortText, Value)),
+      ("typo", Text(ShortText, Value)),
+      ("",     Text(ShortText, Value))
       // format: on
     )
 

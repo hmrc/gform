@@ -212,6 +212,7 @@ object FormTemplateValidator {
       case EeittCtx(value) => Valid
       case UserCtx(value)  => Valid
       case Constant(_)     => Valid
+      case Value           => Valid
     }
   }
 
