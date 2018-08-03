@@ -45,7 +45,7 @@ class FormatValidationSpec extends Spec {
       """)) shouldBe JsSuccess(
       FormComponent(
         id = FormComponentId(id),
-        `type` = Text(ShortText, Constant("")),
+        `type` = Text(ShortText, Value),
         label = label,
         helpText = None,
         shortName = None,
@@ -62,7 +62,7 @@ class FormatValidationSpec extends Spec {
     reads.reads(makeJson("ukSortCode")) shouldBe JsSuccess(
       FormComponent(
         id = FormComponentId(id),
-        `type` = UkSortCode(Constant("")),
+        `type` = UkSortCode(Value),
         label = label,
         helpText = None,
         shortName = None,
@@ -81,7 +81,7 @@ class FormatValidationSpec extends Spec {
     reads.reads(json) shouldBe JsSuccess(
       FormComponent(
         id = FormComponentId(id),
-        `type` = Text(constraint, Constant("")),
+        `type` = Text(constraint, Value),
         label = label,
         helpText = None,
         shortName = None,

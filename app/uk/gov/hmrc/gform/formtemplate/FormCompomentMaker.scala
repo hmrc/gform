@@ -382,7 +382,7 @@ class FormCompomentMaker(json: JsValue) {
     def unapply(valueExp: Option[ValueExpr]): Option[Expr] =
       valueExp match {
         case Some(TextExpression(expr)) => Some(expr)
-        case None                       => Some(Constant(""))
+        case None                       => Some(Value)
         case _                          => None
       }
   }
