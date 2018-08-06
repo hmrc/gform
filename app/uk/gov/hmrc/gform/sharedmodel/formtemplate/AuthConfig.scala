@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
-import julienrf.json.derived
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
 
@@ -33,6 +32,10 @@ trait AuthConfigWithEnrolment {
 case class EEITTAuthConfig(authModule: AuthConfigModule, regimeId: RegimeId) extends AuthConfig
 
 object EEITTAuthConfig {
+
+  val nonAgentIdName = "registrationNumber"
+  val agentIdName = "arn"
+
   implicit val format = Json.format[EEITTAuthConfig]
 }
 
@@ -43,46 +46,50 @@ object HMRCAuthConfigWithAuthModule {
 }
 
 case class HMRCAuthConfigWithServiceId(authModule: AuthConfigModule, agentAccess: Option[AgentAccess], serviceId: ServiceId)
-    extends AuthConfig
+  extends AuthConfig
 
 object HMRCAuthConfigWithServiceId {
   implicit val format = Json.format[HMRCAuthConfigWithServiceId]
 }
 
 case class HMRCAuthConfigWithRegimeId(
-  authModule: AuthConfigModule,
-  agentAccess: Option[AgentAccess],
-  serviceId: ServiceId,
-  regimeId: RegimeId)
-    extends AuthConfig
+                                       authModule: AuthConfigModule,
+                                       agentAccess: Option[AgentAccess],
+                                       serviceId: ServiceId,
+                                       regimeId: RegimeId)
+  extends AuthConfig
 object HMRCAuthConfigWithRegimeId {
   implicit val format = Json.format[HMRCAuthConfigWithRegimeId]
 }
 
 case class HMRCAuthConfigWithEnrolment(
-  authModule: AuthConfigModule,
-  agentAccess: Option[AgentAccess],
-  serviceId: ServiceId,
-  enrolmentSection: EnrolmentSection)
-    extends AuthConfig with AuthConfigWithEnrolment
+                                        authModule: AuthConfigModule,
+                                        agentAccess: Option[AgentAccess],
+                                        serviceId: ServiceId,
+                                        enrolmentSection: EnrolmentSection)
+  extends AuthConfig with AuthConfigWithEnrolment
 object HMRCAuthConfigWithEnrolment {
   implicit val format = Json.format[HMRCAuthConfigWithEnrolment]
 
 }
 
 case class HMRCAuthConfig(
-  authModule: AuthConfigModule,
-  agentAccess: Option[AgentAccess],
-  serviceId: ServiceId,
-  regimeId: RegimeId,
-  enrolmentSection: EnrolmentSection)
-    extends AuthConfig with AuthConfigWithEnrolment
+                           authModule: AuthConfigModule,
+                           agentAccess: Option[AgentAccess],
+                           serviceId: ServiceId,
+                           regimeId: RegimeId,
+                           enrolmentSection: EnrolmentSection)
+  extends AuthConfig with AuthConfigWithEnrolment
 object HMRCAuthConfig {
   implicit val format = Json.format[HMRCAuthConfig]
 
 }
 
 object AuthConfig {
+
+  lazy val eeittAuth = "legacyEEITTAuth"
+  lazy val hmrcAuth = "hmrc"
+
   implicit val format: OFormat[AuthConfig] = {
     // format: OFF
     val reads = Reads[AuthConfig] { json =>
@@ -90,26 +97,16 @@ object AuthConfig {
         authModule <- (json \ "authModule").validate[AuthConfigModule]
         regimeId <- (json \ "regimeId").validateOpt[RegimeId]
         serviceId <- (json \ "serviceId").validateOpt[ServiceId]
-        agentAccess <- {
-          val z = (json \ "agentAccess").validateOpt[AgentAccess]
-          val zz = z
-          zz
-        }
+        agentAccess <- (json \ "agentAccess").validateOpt[AgentAccess]
         enrolmentSection <- (json \ "enrolmentSection").validateOpt[EnrolmentSection]
-        result           <- {
-          val x = 0
-          val xx = x
-          val y = (authModule, agentAccess, regimeId, serviceId, enrolmentSection) match {
-            case (AuthConfigModule("legacyEEITTAuth"), None, Some(_), None, None) => EEITTAuthConfig.format.reads(json)
-            case (AuthConfigModule("hmrc"), _, None, None, None) => HMRCAuthConfigWithAuthModule.format.reads(json)
-            case (AuthConfigModule("hmrc"), _, None, Some(_), None) => HMRCAuthConfigWithServiceId.format.reads(json)
-            case (AuthConfigModule("hmrc"), _, Some(_), Some(_), None) => HMRCAuthConfigWithRegimeId.format.reads(json)
-            case (AuthConfigModule("hmrc"), _, None, Some(_), Some(_)) => HMRCAuthConfigWithEnrolment.format.reads(json)
-            case (AuthConfigModule("hmrc"), _, Some(_), Some(_), Some(_)) => HMRCAuthConfig.format.reads(json)
-            case _ => JsError("")
-          }
-          val yy = y
-          yy
+        result <- (authModule, agentAccess, regimeId, serviceId, enrolmentSection) match {
+          case (AuthConfigModule("legacyEEITTAuth"), None, Some(_), None, None) => EEITTAuthConfig.format.reads(json)
+          case (AuthConfigModule(eeittAuth), _, None, None, None) => HMRCAuthConfigWithAuthModule.format.reads(json)
+          case (AuthConfigModule(hmrcAuth), _, None, Some(_), None) => HMRCAuthConfigWithServiceId.format.reads(json)
+          case (AuthConfigModule(hmrcAuth), _, Some(_), Some(_), None) => HMRCAuthConfigWithRegimeId.format.reads(json)
+          case (AuthConfigModule(hmrcAuth), _, None, Some(_), Some(_)) => HMRCAuthConfigWithEnrolment.format.reads(json)
+          case (AuthConfigModule(hmrcAuth), _, Some(_), Some(_), Some(_)) => HMRCAuthConfig.format.reads(json)
+          case _ => JsError("")
         }
       } yield result
     }
@@ -147,7 +144,7 @@ case object RequireMTDAgentEnrolment extends AgentAccess
 case object DenyAnyAgentAffinityUser extends AgentAccess
 case object AllowAnyAgentAffinityUser extends AgentAccess
 object AgentAccess {
-//  implicit val format: Format[AgentAccess] = derived.oformat[AgentAccess]
+  //  implicit val format: Format[AgentAccess] = derived.oformat[AgentAccess]
   implicit val format: Format[AgentAccess] = new Format[AgentAccess] {
     override def writes(o: AgentAccess): JsValue = o match {
       case RequireMTDAgentEnrolment  => JsString("requireMTDAgentEnrolment")
