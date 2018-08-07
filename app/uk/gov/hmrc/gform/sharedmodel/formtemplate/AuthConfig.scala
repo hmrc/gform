@@ -100,8 +100,8 @@ object AuthConfig {
         agentAccess <- (json \ "agentAccess").validateOpt[AgentAccess]
         enrolmentSection <- (json \ "enrolmentSection").validateOpt[EnrolmentSection]
         result <- (authModule, agentAccess, regimeId, serviceId, enrolmentSection) match {
-          case (AuthConfigModule("legacyEEITTAuth"), None, Some(_), None, None) => EEITTAuthConfig.format.reads(json)
-          case (AuthConfigModule(eeittAuth), _, None, None, None) => HMRCAuthConfigWithAuthModule.format.reads(json)
+          case (AuthConfigModule(eeittAuth), None, Some(_), None, None) => EEITTAuthConfig.format.reads(json)
+          case (AuthConfigModule(hmrcAuth), _, None, None, None) => HMRCAuthConfigWithAuthModule.format.reads(json)
           case (AuthConfigModule(hmrcAuth), _, None, Some(_), None) => HMRCAuthConfigWithServiceId.format.reads(json)
           case (AuthConfigModule(hmrcAuth), _, Some(_), Some(_), None) => HMRCAuthConfigWithRegimeId.format.reads(json)
           case (AuthConfigModule(hmrcAuth), _, None, Some(_), Some(_)) => HMRCAuthConfigWithEnrolment.format.reads(json)
