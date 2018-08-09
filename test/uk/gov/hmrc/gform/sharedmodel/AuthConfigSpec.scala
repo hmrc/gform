@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.sharedmodel
 
-import play.api.libs.json.{Reads, _}
+import play.api.libs.json.{ Reads, _ }
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
@@ -24,9 +24,9 @@ class AuthConfigSpec extends Spec {
 
   it should "parse legacy EEITT auth" in {
     val authConfigValue = toAuthConfig(s"""|{
-                                           |  "authModule": "legacyEEITTAuth",
-                                           |  "regimeId": "IP"
-                                           |}""")
+     |  "authModule": "legacyEEITTAuth",
+     |  "regimeId": "IP"
+     |}""")
     authConfigValue shouldBe JsSuccess(
       EEITTAuthConfig(AuthConfigModule("legacyEEITTAuth"), RegimeId("IP"))
     )
@@ -34,8 +34,8 @@ class AuthConfigSpec extends Spec {
 
   it should "parse simplest HMRC auth" in {
     val authConfigValue = toAuthConfig(s"""|{
-                                           |  "authModule": "hmrc"
-                                           |}""")
+     |  "authModule": "hmrc"
+     |}""")
     authConfigValue shouldBe JsSuccess(
       HMRCAuthConfigWithAuthModule(AuthConfigModule("hmrc"), None)
     )
@@ -43,9 +43,9 @@ class AuthConfigSpec extends Spec {
 
   it should "parse HMRC auth with agentAccess" in {
     val authConfigValue = toAuthConfig(s"""|{
-                                           |  "authModule": "hmrc",
-                                           |  "agentAccess": "allowAnyAgentAffinityUser"
-                                           |}""")
+     |  "authModule": "hmrc",
+     |  "agentAccess": "allowAnyAgentAffinityUser"
+     |}""")
     authConfigValue shouldBe JsSuccess(
       HMRCAuthConfigWithAuthModule(AuthConfigModule("hmrc"), Some(AllowAnyAgentAffinityUser))
     )
@@ -53,10 +53,10 @@ class AuthConfigSpec extends Spec {
 
   it should "parse HMRC auth with serviceId" in {
     val authConfigValue = toAuthConfig(s"""|{
-                                           |  "authModule": "hmrc",
-                                           |  "agentAccess": "allowAnyAgentAffinityUser",
-                                           |  "serviceId": "Z"
-                                           |}""")
+     |  "authModule": "hmrc",
+     |  "agentAccess": "allowAnyAgentAffinityUser",
+     |  "serviceId": "Z"
+     |}""")
     authConfigValue shouldBe JsSuccess(
       HMRCAuthConfigWithServiceId(AuthConfigModule("hmrc"), Some(AllowAnyAgentAffinityUser), ServiceId("Z"))
     )
@@ -64,11 +64,11 @@ class AuthConfigSpec extends Spec {
 
   it should "parse HMRC auth with regimeId" in {
     val authConfigValue = toAuthConfig(s"""|{
-                                           |  "authModule": "hmrc",
-                                           |  "agentAccess": "allowAnyAgentAffinityUser",
-                                           |  "serviceId": "Z",
-                                           |  "regimeId": "IP"
-                                           |}""")
+     |  "authModule": "hmrc",
+     |  "agentAccess": "allowAnyAgentAffinityUser",
+     |  "serviceId": "Z",
+     |  "regimeId": "IP"
+     |}""")
     authConfigValue shouldBe JsSuccess(
       HMRCAuthConfigWithRegimeId(
         AuthConfigModule("hmrc"),
@@ -80,11 +80,11 @@ class AuthConfigSpec extends Spec {
 
   it should "parse HMRC auth with enrolmentSection" in {
     val authConfigValue = toAuthConfig(s"""|{
-                                           |  "authModule": "hmrc",
-                                           |  "agentAccess": "allowAnyAgentAffinityUser",
-                                           |  "serviceId": "Z",
-                                           |  "enrolmentSection": {"title": "t", "fields":[]}
-                                           |}""")
+     |  "authModule": "hmrc",
+     |  "agentAccess": "allowAnyAgentAffinityUser",
+     |  "serviceId": "Z",
+     |  "enrolmentSection": {"title": "t", "fields":[]}
+     |}""")
     authConfigValue shouldBe JsSuccess(
       formtemplate.HMRCAuthConfigWithEnrolment(
         AuthConfigModule("hmrc"),
@@ -96,12 +96,12 @@ class AuthConfigSpec extends Spec {
 
   it should "parse HMRC auth with everything" in {
     val authConfigValue = toAuthConfig(s"""|{
-                                           |  "authModule": "hmrc",
-                                           |  "agentAccess": "allowAnyAgentAffinityUser",
-                                           |  "serviceId": "Z",
-                                           |  "regimeId": "IP",
-                                           |  "enrolmentSection": {"title": "t", "fields":[]}
-                                           |}""")
+     |  "authModule": "hmrc",
+     |  "agentAccess": "allowAnyAgentAffinityUser",
+     |  "serviceId": "Z",
+     |  "regimeId": "IP",
+     |  "enrolmentSection": {"title": "t", "fields":[]}
+     |}""")
     authConfigValue shouldBe JsSuccess(
       formtemplate.HMRCAuthConfig(
         AuthConfigModule("hmrc"),

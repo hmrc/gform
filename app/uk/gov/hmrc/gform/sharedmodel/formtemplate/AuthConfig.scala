@@ -23,6 +23,10 @@ sealed trait AuthConfig {
   def authModule: AuthConfigModule
 }
 
+trait AuthConfigWithAgentAccess {
+  def agentAccess: Option[AgentAccess]
+}
+
 trait AuthConfigWithEnrolment {
   def serviceId: ServiceId
   def agentAccess: Option[AgentAccess]
@@ -39,47 +43,51 @@ object EEITTAuthConfig {
   implicit val format = Json.format[EEITTAuthConfig]
 }
 
-case class HMRCAuthConfigWithAuthModule(authModule: AuthConfigModule, agentAccess: Option[AgentAccess]) extends AuthConfig
+case class HMRCAuthConfigWithAuthModule(authModule: AuthConfigModule, agentAccess: Option[AgentAccess])
+    extends AuthConfig with AuthConfigWithAgentAccess
 
 object HMRCAuthConfigWithAuthModule {
   implicit val format = Json.format[HMRCAuthConfigWithAuthModule]
 }
 
-case class HMRCAuthConfigWithServiceId(authModule: AuthConfigModule, agentAccess: Option[AgentAccess], serviceId: ServiceId)
-  extends AuthConfig
+case class HMRCAuthConfigWithServiceId(
+  authModule: AuthConfigModule,
+  agentAccess: Option[AgentAccess],
+  serviceId: ServiceId)
+    extends AuthConfig with AuthConfigWithAgentAccess
 
 object HMRCAuthConfigWithServiceId {
   implicit val format = Json.format[HMRCAuthConfigWithServiceId]
 }
 
 case class HMRCAuthConfigWithRegimeId(
-                                       authModule: AuthConfigModule,
-                                       agentAccess: Option[AgentAccess],
-                                       serviceId: ServiceId,
-                                       regimeId: RegimeId)
-  extends AuthConfig
+  authModule: AuthConfigModule,
+  agentAccess: Option[AgentAccess],
+  serviceId: ServiceId,
+  regimeId: RegimeId)
+    extends AuthConfig with AuthConfigWithAgentAccess
 object HMRCAuthConfigWithRegimeId {
   implicit val format = Json.format[HMRCAuthConfigWithRegimeId]
 }
 
 case class HMRCAuthConfigWithEnrolment(
-                                        authModule: AuthConfigModule,
-                                        agentAccess: Option[AgentAccess],
-                                        serviceId: ServiceId,
-                                        enrolmentSection: EnrolmentSection)
-  extends AuthConfig with AuthConfigWithEnrolment
+  authModule: AuthConfigModule,
+  agentAccess: Option[AgentAccess],
+  serviceId: ServiceId,
+  enrolmentSection: EnrolmentSection)
+    extends AuthConfig with AuthConfigWithAgentAccess with AuthConfigWithEnrolment
 object HMRCAuthConfigWithEnrolment {
   implicit val format = Json.format[HMRCAuthConfigWithEnrolment]
 
 }
 
 case class HMRCAuthConfig(
-                           authModule: AuthConfigModule,
-                           agentAccess: Option[AgentAccess],
-                           serviceId: ServiceId,
-                           regimeId: RegimeId,
-                           enrolmentSection: EnrolmentSection)
-  extends AuthConfig with AuthConfigWithEnrolment
+  authModule: AuthConfigModule,
+  agentAccess: Option[AgentAccess],
+  serviceId: ServiceId,
+  regimeId: RegimeId,
+  enrolmentSection: EnrolmentSection)
+    extends AuthConfig with AuthConfigWithAgentAccess with AuthConfigWithEnrolment
 object HMRCAuthConfig {
   implicit val format = Json.format[HMRCAuthConfig]
 
@@ -154,12 +162,13 @@ object AgentAccess {
 
     override def reads(json: JsValue): JsResult[AgentAccess] =
       json match {
-        case JsString("")  => JsSuccess(RequireMTDAgentEnrolment)
+        case JsString("")                          => JsSuccess(RequireMTDAgentEnrolment)
         case JsString("requireMTDAgentEnrolment")  => JsSuccess(RequireMTDAgentEnrolment)
         case JsString("denyAnyAgentAffinityUser")  => JsSuccess(DenyAnyAgentAffinityUser)
         case JsString("allowAnyAgentAffinityUser") => JsSuccess(AllowAnyAgentAffinityUser)
         case JsString(err) =>
-          JsError(s"only three valid agentAccess', requireMTDAgentEnrolment, denyAnyAgentAffinityUser or allowAnyAgentAffinityUser. $err is not valid")
+          JsError(
+            s"only three valid agentAccess', requireMTDAgentEnrolment, denyAnyAgentAffinityUser or allowAnyAgentAffinityUser. $err is not valid")
         case _ => JsError("Failure")
       }
   }
