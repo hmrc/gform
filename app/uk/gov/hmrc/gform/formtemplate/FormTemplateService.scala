@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.formtemplate
 import cats.implicits._
 import play.api.libs.json.Json
 import uk.gov.hmrc.gform.core._
+import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
 
@@ -57,6 +58,7 @@ class FormTemplateService(formTemplateRepo: FormTemplateRepo, formTemplateRawRep
       _          <- fromOptA(FormTemplateValidator.validateUniqueFields(sections).toEither)
       _          <- fromOptA(FormTemplateValidator.validateForwardReference(sections).toEither)
       _          <- fromOptA(FormTemplateValidator.validate(exprs, formTemplate).toEither)
+      _          <- fromOptA(FormTemplateValidator.validateDependencyGraph(formTemplate).toEither)
       res        <- formTemplateRepo.upsert(formTemplate)
     } yield res
     // format: ON

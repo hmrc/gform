@@ -267,7 +267,7 @@ class ValueParserSpec extends Spec {
     List(
       FormComponent(
         FormComponentId("firstName"),
-        Text(AnyText, Constant("")),
+        Text(AnyText, Value),
         "Your first name",
         None,
         None,
@@ -280,7 +280,7 @@ class ValueParserSpec extends Spec {
       ),
       FormComponent(
         FormComponentId("lastName"),
-        Text(AnyText, Constant("")),
+        Text(AnyText, Value),
         "Your last name",
         None,
         None,
@@ -321,4 +321,5 @@ class ValueParserSpec extends Spec {
     val res = FormTemplateValidator.validate(List(Text(AnyText, FormCtx("firstNameTypo"))), formTemplateWithOneSection)
     res should be(Invalid("Form field 'firstNameTypo' is not defined in form template."))
   }
+
 }

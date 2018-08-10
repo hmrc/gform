@@ -233,204 +233,38 @@ class TemplateValidatorSpec extends Spec {
     }
   }
 
-  val businessDetailsSection = Section(
+  val businessDetailsSection = mkSection(
     "Business details",
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    List(
-      FormComponent(
-        FormComponentId("nameOfBusiness"),
-        Text(AnyText, Constant("")),
-        "Name of business",
-        None,
-        None,
-        validIf = None,
-        mandatory = true,
-        editable = true,
-        submissible = true,
-        derived = false,
-        errorMessage = None
-      ),
-      FormComponent(
-        FormComponentId("businessAddress"),
-        Address(international = false),
-        "Business address",
-        None,
-        None,
-        validIf = None,
-        mandatory = true,
-        editable = true,
-        submissible = true,
-        derived = false,
-        errorMessage = None
-      )
-    ),
-    None
+    mkFormComponent("nameOfBusiness", Value) ::
+      mkFormComponent("businessAddress", Address(international = false)) :: Nil
   )
 
-  val sectionWithDate = Section(
+  val sectionWithDate = mkSection(
     "Business details",
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    List(
-      FormComponent(
-        FormComponentId("nameOfBusiness"),
-        Text(AnyText, Constant("")),
-        "Name of business",
-        None,
-        None,
-        validIf = None,
-        mandatory = true,
-        editable = true,
-        submissible = true,
-        derived = false,
-        errorMessage = None
-      ),
-      FormComponent(
-        FormComponentId("startDate"),
-        Date(AnyDate, Offset(0), None),
-        "Start date",
-        None,
-        None,
-        validIf = None,
-        mandatory = true,
-        editable = true,
-        submissible = true,
-        derived = false,
-        errorMessage = None
-      )
-    ),
-    None
+    mkFormComponent("nameOfBusiness", Value) ::
+      mkFormComponent("startDate", Date(AnyDate, Offset(0), None)) :: Nil
   )
 
-  val sectionWithCheckbox = Section(
+  val sectionWithCheckbox = mkSection(
     "Business details",
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    List(
-      FormComponent(
-        FormComponentId("nameOfBusiness"),
-        Text(AnyText, Constant("")),
-        "Name of business",
-        None,
-        None,
-        validIf = None,
-        mandatory = true,
-        editable = true,
-        submissible = true,
-        derived = false,
-        errorMessage = None
-      ),
-      FormComponent(
-        FormComponentId("dutyType"),
-        Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None),
-        "Select the tax type",
-        None,
-        None,
-        validIf = None,
-        mandatory = true,
-        editable = true,
-        submissible = true,
-        derived = false,
-        errorMessage = None
-      )
-    ),
-    None
+    mkFormComponent("nameOfBusiness", Value) ::
+      mkFormComponent(
+      "dutyType",
+      Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None)) :: Nil
   )
 
-  val sectionWithRadio = Section(
+  val sectionWithRadio = mkSection(
     "Business details",
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    List(
-      FormComponent(
-        FormComponentId("nameOfBusiness"),
-        Text(AnyText, Constant("")),
-        "Name of business",
-        None,
-        None,
-        validIf = None,
-        mandatory = true,
-        editable = true,
-        submissible = true,
-        derived = false,
-        errorMessage = None
-      ),
-      FormComponent(
-        FormComponentId("dutyType"),
-        Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None),
-        "Select the tax type",
-        None,
-        None,
-        validIf = None,
-        mandatory = true,
-        editable = true,
-        submissible = true,
-        derived = false,
-        errorMessage = None
-      )
-    ),
-    None
+    mkFormComponent("nameOfBusiness", Value) ::
+      mkFormComponent(
+      "dutyType",
+      Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None)) :: Nil
   )
 
-  val sectionWithYesNo = Section(
+  val sectionWithYesNo = mkSection(
     "Business details",
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    List(
-      FormComponent(
-        FormComponentId("nameOfBusiness"),
-        Text(AnyText, Constant("")),
-        "Name of business",
-        None,
-        None,
-        validIf = None,
-        mandatory = true,
-        editable = true,
-        submissible = true,
-        derived = false,
-        errorMessage = None
-      ),
-      FormComponent(
-        FormComponentId("taxType"),
-        Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int], None),
-        "Gas tax type?",
-        None,
-        None,
-        validIf = None,
-        mandatory = true,
-        editable = true,
-        submissible = true,
-        derived = false,
-        errorMessage = None
-      )
-    ),
-    None
+    mkFormComponent("nameOfBusiness", Value) ::
+      mkFormComponent("taxType", Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int], None)) :: Nil
   )
 
   "TemplateValidator.getMatchingSection" should "find matching section containing address component" in {
@@ -537,66 +371,9 @@ class TemplateValidatorSpec extends Spec {
 
   it should "succeed to find matching section containing only text field which is not mandatory" in {
 
-    val section = Section(
+    val section = mkSection(
       "Business details",
-      None,
-      None,
-      None,
-      None,
-      None,
-      None,
-      None,
-      List(
-        FormComponent(
-          FormComponentId("nameOfBusiness"),
-          Text(AnyText, Constant("")),
-          "Name of business",
-          None,
-          None,
-          validIf = None,
-          mandatory = false,
-          editable = true,
-          submissible = true,
-          derived = false,
-          errorMessage = None
-        )),
-      None
-    )
-
-    val formFields = List() // Nothing submitted
-
-    val sections = List(section)
-    val res = FormTemplateValidator.getMatchingSection(formFields, sections)
-
-    res should be('right)
-  }
-
-  it should "succeed to find matching section containing only text field which is not mandatory 2" in {
-
-    val section = Section(
-      "Business details",
-      None,
-      None,
-      None,
-      None,
-      None,
-      None,
-      None,
-      List(
-        FormComponent(
-          FormComponentId("nameOfBusiness"),
-          Text(AnyText, Constant("")),
-          "Name of business",
-          None,
-          None,
-          validIf = None,
-          mandatory = false,
-          editable = true,
-          submissible = true,
-          derived = false,
-          errorMessage = None
-        )),
-      None
+      mkFormComponent("nameOfBusiness", Value).isNotMandatory :: Nil
     )
 
     val formFields = List() // Nothing submitted
@@ -609,30 +386,9 @@ class TemplateValidatorSpec extends Spec {
 
   it should "fail to find matching section containing only text field which is mandatory" in {
 
-    val section = Section(
+    val section = mkSection(
       "Business details",
-      None,
-      None,
-      None,
-      None,
-      None,
-      None,
-      None,
-      List(
-        FormComponent(
-          FormComponentId("nameOfBusiness"),
-          Text(AnyText, Constant("")),
-          "Name of business",
-          None,
-          None,
-          validIf = None,
-          mandatory = true,
-          editable = true,
-          submissible = true,
-          derived = false,
-          errorMessage = None
-        )),
-      None
+      mkFormComponent("nameOfBusiness", Value).isMandatory :: Nil
     )
 
     val formFields = List() // Nothing submittedForm
@@ -673,7 +429,73 @@ class TemplateValidatorSpec extends Spec {
     res should be('right)
   }
 
+  "TemplateValidator.validateDependencyGraph" should "detect cycle in graph" in {
+    val sections =
+      mkSection("page 1", mkFormComponent("a", FormCtx("b")) :: mkFormComponent("b", FormCtx("a")) :: Nil) :: Nil
+
+    val formTemplateWithOneSection = formTemplate.copy(sections = sections)
+
+    val res = FormTemplateValidator.validateDependencyGraph(formTemplateWithOneSection)
+    res should be(Invalid("Graph contains cycle Some(Cycle(a, a~>b, b, b~>a, a))"))
+
+  }
+
   private lazy val schema = FormTemplateSchema.schema
   private lazy val jsonSchema = FormTemplateSchema.jsonSchema
+
+  private def mkSection(name: String, formComponents: List[FormComponent]) =
+    Section(
+      name,
+      None,
+      None,
+      None,
+      None,
+      None,
+      None,
+      None,
+      formComponents,
+      None
+    )
+
+  private def mkFormComponent(name: String, expr: Expr) =
+    FormComponent(
+      FormComponentId(name),
+      Text(AnyText, expr),
+      name,
+      None,
+      None,
+      None,
+      true,
+      false,
+      true,
+      false,
+      false,
+      None,
+      None
+    )
+
+  private def mkFormComponent(name: String, ct: ComponentType) =
+    FormComponent(
+      FormComponentId(name),
+      ct,
+      name,
+      None,
+      None,
+      None,
+      true,
+      false,
+      true,
+      false,
+      false,
+      None,
+      None
+    )
+
+  implicit class FormComponentOps(fc: FormComponent) {
+    def isEditable: FormComponent = fc.copy(editable = true)
+    def isNonEditable: FormComponent = fc.copy(editable = false)
+    def isMandatory: FormComponent = fc.copy(mandatory = true)
+    def isNotMandatory: FormComponent = fc.copy(mandatory = false)
+  }
 
 }

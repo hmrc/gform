@@ -21,12 +21,16 @@ import java.io.Serializable
 import cats.Monoid
 import cats.implicits._
 import play.api.libs.json.{ JsError, JsSuccess }
+import scalax.collection.Graph
+import scalax.collection.GraphPredef._, scalax.collection.GraphEdge._
 import uk.gov.hmrc.gform.core.{ Invalid, Opt, Valid, ValidationResult }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FileUploadRaw, _ }
 import uk.gov.hmrc.gform.sharedmodel.form.FormField
+import uk.gov.hmrc.gform.sharedmodel.graph.DependencyGraph._
 
+import Function.const
 import scala.collection.immutable.List
 
 object FormTemplateValidator {
@@ -128,19 +132,14 @@ object FormTemplateValidator {
     }
   }
 
+  def validateDependencyGraph(formTemplate: FormTemplate): ValidationResult = {
+    val graph: Graph[FormComponentId, DiEdge] = toGraph(formTemplate)
+    constructDepencyGraph(graph).bimap(const(Invalid(s"Graph contains cycle ${graph.findCycle}")), const(Valid)).merge
+  }
+
   def validate(exprs: List[ComponentType], formTemplate: FormTemplate): ValidationResult = {
     val results = exprs.map(validate(_, formTemplate))
     Monoid[ValidationResult].combineAll(results)
-  }
-
-  private object HasExpr {
-    def unapply(ct: ComponentType): Option[Expr] =
-      ct match {
-        case UkSortCode(expr)  => Some(expr)
-        case Text(_, expr)     => Some(expr)
-        case TextArea(_, expr) => Some(expr)
-        case _                 => None
-      }
   }
 
   def validate(componentType: ComponentType, formTemplate: FormTemplate): ValidationResult = componentType match {
@@ -148,7 +147,7 @@ object FormTemplateValidator {
     case Date(_, _, _)             => Valid
     case Address(_)                => Valid
     case Choice(_, _, _, _, _)     => Valid
-    case Group(fvs, _, _, _, _, _) => FormTemplateValidator.validate(fvs.map(_.`type`), formTemplate)
+    case Group(fvs, _, _, _, _, _) => validate(fvs.map(_.`type`), formTemplate)
     case FileUpload()              => validateFileUploadAmount(formTemplate.sections)
     case InformationMessage(_, _)  => Valid
   }

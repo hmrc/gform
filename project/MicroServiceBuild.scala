@@ -28,7 +28,8 @@ object MicroServiceBuild extends Build with MicroService {
     "io.github.cloudify" %% "spdf" % "1.4.0",
     "com.chuusai" %% "shapeless" % "2.3.3",
     "com.github.mpilquist" %% "simulacrum" % "0.12.0",
-    "uk.gov.hmrc" %% "auth-client" % "2.6.0" // we need AffinityGroup type to stay in sync with frontend
+    "uk.gov.hmrc" %% "auth-client" % "2.6.0", // we need AffinityGroup type to stay in sync with frontend
+    "org.scala-graph" %% "graph-core" % "1.12.5"
   )
 
 
