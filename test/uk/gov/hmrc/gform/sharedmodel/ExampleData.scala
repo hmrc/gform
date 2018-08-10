@@ -209,7 +209,7 @@ trait ExampleFieldValue { dependecies: ExampleFieldId =>
   def `fieldValue - number` =
     FormComponent(
       `fieldId - number`,
-      Text(Number(), Constant("")),
+      Text(Number(), Value),
       "sample label",
       None,
       None,
