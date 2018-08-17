@@ -30,8 +30,16 @@ class PdfGeneratorConnector(servicesConfig: ServicesConfig, wSHttp: WSHttp) {
   def generatePDF(payload: Map[String, Seq[String]], headers: Seq[(String, String)])(
     implicit hc: HeaderCarrier): Future[Array[Byte]] = {
     Logger.info(s"generate pdf, ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
-    wSHttp.buildRequest(s"$baseURL/pdf-generator-service/generate").withHeaders(headers: _*).post(payload).map {
-      _.bodyAsBytes.toArray
+    val url = s"$baseURL/pdf-generator-service/generate"
+    wSHttp.buildRequest(url).withHeaders(headers: _*).post(payload).flatMap { response =>
+      {
+        val status = response.status
+        if (status <= 200 && status < 300) {
+          Future.successful(response.bodyAsBytes.toArray)
+        } else {
+          Future.failed(new Exception(s"POST to $url failed with status $status. Response body: '${response.body}'"))
+        }
+      }
     }
   }
 
