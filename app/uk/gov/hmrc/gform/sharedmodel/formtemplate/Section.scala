@@ -27,6 +27,10 @@ sealed trait BaseSection {
   def fields: List[FormComponent]
 }
 
+case class ExpandedSection(expandedFCs: List[ExpandedFormComponent]) extends AnyVal {
+  def toExpandedFormTemplate: ExpandedFormTemplate = ExpandedFormTemplate(this :: Nil)
+}
+
 case class Section(
   title: String,
   description: Option[String],
@@ -39,6 +43,9 @@ case class Section(
   fields: List[FormComponent],
   continueLabel: Option[String])
     extends BaseSection {
+
+  val expandSection: ExpandedSection = ExpandedSection(fields.map(_.expandFormComponent)) // TODO expand sections
+
   private def atomicFields(
     fieldValues: List[FormComponent],
     data: Map[FormComponentId, FormField]): List[FormComponent] =

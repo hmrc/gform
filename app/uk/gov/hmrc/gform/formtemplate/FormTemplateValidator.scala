@@ -143,13 +143,14 @@ object FormTemplateValidator {
   }
 
   def validate(componentType: ComponentType, formTemplate: FormTemplate): ValidationResult = componentType match {
-    case HasExpr(expr)             => validate(expr, formTemplate.sections)
-    case Date(_, _, _)             => Valid
-    case Address(_)                => Valid
-    case Choice(_, _, _, _, _)     => Valid
-    case Group(fvs, _, _, _, _, _) => validate(fvs.map(_.`type`), formTemplate)
-    case FileUpload()              => validateFileUploadAmount(formTemplate.sections)
-    case InformationMessage(_, _)  => Valid
+    case HasExpr(SingleExpr(expr))     => validate(expr, formTemplate.sections)
+    case HasExpr(MultipleExpr(fields)) => Valid
+    case Date(_, _, _)                 => Valid
+    case Address(_)                    => Valid
+    case Choice(_, _, _, _, _)         => Valid
+    case Group(fvs, _, _, _, _, _)     => validate(fvs.map(_.`type`), formTemplate)
+    case FileUpload()                  => validateFileUploadAmount(formTemplate.sections)
+    case InformationMessage(_, _)      => Valid
   }
 
   def validateForwardReference(sections: List[Section]) = {
