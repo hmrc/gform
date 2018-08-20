@@ -19,6 +19,11 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate
 
+case class ExpandedFormTemplate(expandedSection: List[ExpandedSection]) {
+  val allFCs: List[FormComponent] = expandedSection.flatMap(_.expandedFCs.flatMap(_.expandedFC))
+  val allFcIds: List[FormComponentId] = allFCs.map(_.id)
+}
+
 case class FormTemplate(
   _id: FormTemplateId,
   formName: String,
@@ -33,7 +38,10 @@ case class FormTemplate(
   submitErrorUrl: String,
   sections: List[Section],
   acknowledgementSection: AcknowledgementSection,
-  declarationSection: DeclarationSection)
+  declarationSection: DeclarationSection
+) {
+  val expandFormTemplate: ExpandedFormTemplate = ExpandedFormTemplate(sections.map(_.expandSection))
+}
 
 object FormTemplate {
 
