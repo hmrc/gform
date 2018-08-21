@@ -158,7 +158,7 @@ class SubmissionService(
       numberOfAttachments =                     sectionFormFields.map(_.numberOfFiles).sum
       res                 <- fromFutureA        (fileUploadService.submitEnvelope(submissionAndPdf, formTemplate.dmsSubmission, numberOfAttachments))
       emailAddress        =                     email.getEmailAddress(form)
-      _                   =                     email.sendEmail(emailAddress, formTemplate.emailTemplateId)(hc, fromLoggingDetails)
+      _                   <- fromFutureA        (email.sendEmail(emailAddress, formTemplate.emailTemplateId)(hc, fromLoggingDetails))
     } yield res
     // format: ON
 
@@ -177,7 +177,7 @@ class SubmissionService(
       numberOfAttachments =                     sectionFormFields.map(_.numberOfFiles).sum
       res                 <- fromFutureA        (fileUploadService.submitEnvelope(submissionAndPdf, formTemplate.dmsSubmission, numberOfAttachments))
       emailAddress        =                     email.getEmailAddress(form)
-      _                   =                     email.sendEmail(emailAddress, formTemplate.emailTemplateId)(hc, fromLoggingDetails)
+      _                   <- fromFutureA        (email.sendEmail(emailAddress, formTemplate.emailTemplateId)(hc, fromLoggingDetails))
     } yield res
     // format: ON
 
