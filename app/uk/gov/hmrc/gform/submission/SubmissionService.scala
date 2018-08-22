@@ -115,7 +115,9 @@ class SubmissionService(
       out.close()
        */
 
-      val pdfSummary = PdfSummary(numberOfPages = PDDocument.load(pdf).getNumberOfPages, pdfContent = pdf)
+      val pDDocument: PDDocument = PDDocument.load(pdf)
+      val pdfSummary = PdfSummary(numberOfPages = pDDocument.getNumberOfPages, pdfContent = pdf)
+      pDDocument.close()
       val submission = Submission(
         submittedDate = timeProvider.localDateTime(),
         submissionRef = SubmissionRef.random,
