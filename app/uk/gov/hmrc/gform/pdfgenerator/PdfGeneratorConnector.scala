@@ -34,7 +34,7 @@ class PdfGeneratorConnector(servicesConfig: ServicesConfig, wSHttp: WSHttp) {
     wSHttp.buildRequest(url).withHeaders(headers: _*).post(payload).flatMap { response =>
       {
         val status = response.status
-        if (status <= 200 && status < 300) {
+        if (status >= 200 && status < 300) {
           Future.successful(response.bodyAsBytes.toArray)
         } else {
           Future.failed(new Exception(s"POST to $url failed with status $status. Response body: '${response.body}'"))
