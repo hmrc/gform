@@ -42,7 +42,7 @@ trait ExampleAuthConfig {
 
   def regimeId = RegimeId("TestRegimeId")
 
-  def authConfig = HMRCAuthConfigWithRegimeId(authConfigModule, serviceId, regimeId)
+  def authConfig = HMRCAuthConfigWithRegimeId(authConfigModule, Some(RequireMTDAgentEnrolment), serviceId, regimeId)
 }
 
 trait ExampleFieldId {
