@@ -108,12 +108,12 @@ object AuthConfig {
         agentAccess <- (json \ "agentAccess").validateOpt[AgentAccess]
         enrolmentSection <- (json \ "enrolmentSection").validateOpt[EnrolmentSection]
         result <- (authModule, agentAccess, regimeId, serviceId, enrolmentSection) match {
-          case (AuthConfigModule(eeittAuth), None, Some(_), None, None) => EEITTAuthConfig.format.reads(json)
-          case (AuthConfigModule(hmrcAuth), _, None, None, None) => HMRCAuthConfigWithAuthModule.format.reads(json)
-          case (AuthConfigModule(hmrcAuth), _, None, Some(_), None) => HMRCAuthConfigWithServiceId.format.reads(json)
-          case (AuthConfigModule(hmrcAuth), _, Some(_), Some(_), None) => HMRCAuthConfigWithRegimeId.format.reads(json)
-          case (AuthConfigModule(hmrcAuth), _, None, Some(_), Some(_)) => HMRCAuthConfigWithEnrolment.format.reads(json)
-          case (AuthConfigModule(hmrcAuth), _, Some(_), Some(_), Some(_)) => HMRCAuthConfig.format.reads(json)
+          case (AuthConfigModule(`eeittAuth`), None, Some(_), None, None) => EEITTAuthConfig.format.reads(json)
+          case (AuthConfigModule(`hmrcAuth`), _, None, None, None) => HMRCAuthConfigWithAuthModule.format.reads(json)
+          case (AuthConfigModule(`hmrcAuth`), _, None, Some(_), None) => HMRCAuthConfigWithServiceId.format.reads(json)
+          case (AuthConfigModule(`hmrcAuth`), _, Some(_), Some(_), None) => HMRCAuthConfigWithRegimeId.format.reads(json)
+          case (AuthConfigModule(`hmrcAuth`), _, None, Some(_), Some(_)) => HMRCAuthConfigWithEnrolment.format.reads(json)
+          case (AuthConfigModule(`hmrcAuth`), _, Some(_), Some(_), Some(_)) => HMRCAuthConfig.format.reads(json)
           case _ => JsError("")
         }
       } yield result
@@ -152,7 +152,6 @@ case object RequireMTDAgentEnrolment extends AgentAccess
 case object DenyAnyAgentAffinityUser extends AgentAccess
 case object AllowAnyAgentAffinityUser extends AgentAccess
 object AgentAccess {
-  //  implicit val format: Format[AgentAccess] = derived.oformat[AgentAccess]
   implicit val format: Format[AgentAccess] = new Format[AgentAccess] {
     override def writes(o: AgentAccess): JsValue = o match {
       case RequireMTDAgentEnrolment  => JsString("requireMTDAgentEnrolment")
