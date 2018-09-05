@@ -80,6 +80,87 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
 
   }
 
+  "BooleanExprParser" should "parse successive or-expressions" in {
+    val res = BooleanExprParser.validate("${isPremisesSameAsBusinessAddress=0||amountA=22||amountB=33}")
+
+    res shouldBe Right(
+      Or(
+        Or(
+          Equals(FormCtx("isPremisesSameAsBusinessAddress"), Constant("0")),
+          Equals(FormCtx("amountA"), Constant("22"))),
+        Equals(FormCtx("amountB"), Constant("33"))
+      )
+    )
+
+  }
+
+  "BooleanExprParser" should "parse and-expressions" in {
+    val res = BooleanExprParser.validate("${isPremisesSameAsBusinessAddress=0&&amountA=22}")
+
+    res shouldBe Right(
+      And(
+        Equals(FormCtx("isPremisesSameAsBusinessAddress"), Constant("0")),
+        Equals(FormCtx("amountA"), Constant("22"))))
+
+  }
+
+  "BooleanExprParser" should "parse successive and-expressions" in {
+    val res = BooleanExprParser.validate("${isPremisesSameAsBusinessAddress=0&&amountA=22&&amountB=33}")
+
+    res shouldBe Right(
+      And(
+        And(
+          Equals(FormCtx("isPremisesSameAsBusinessAddress"), Constant("0")),
+          Equals(FormCtx("amountA"), Constant("22"))),
+        Equals(FormCtx("amountB"), Constant("33"))
+      )
+    )
+
+  }
+
+  "BooleanExprParser" should "parse and-with-or-expressions using implicit priority" in {
+    val res = BooleanExprParser.validate("${isPremisesSameAsBusinessAddress=0&&amountA=22||amountB=33}")
+
+    res shouldBe Right(
+      Or(
+        And(
+          Equals(FormCtx("isPremisesSameAsBusinessAddress"), Constant("0")),
+          Equals(FormCtx("amountA"), Constant("22"))),
+        Equals(FormCtx("amountB"), Constant("33"))
+      )
+    )
+
+  }
+
+  "BooleanExprParser" should "parse and-with-or-expressions using implicit priority and opposite order" in {
+    val res = BooleanExprParser.validate("${isPremisesSameAsBusinessAddress=0||amountA=22&&amountB=33}")
+
+    res shouldBe Right(
+      Or(
+        Equals(FormCtx("isPremisesSameAsBusinessAddress"), Constant("0")),
+        And(
+          Equals(FormCtx("amountA"), Constant("22")),
+          Equals(FormCtx("amountB"), Constant("33"))
+        )
+      )
+    )
+
+  }
+
+  "BooleanExprParser" should "parse and-with-or-expressions using explicit priority using brackets" in {
+    val res = BooleanExprParser.validate("${(isPremisesSameAsBusinessAddress=0||amountA=22)&&amountB=33}")
+
+    res shouldBe Right(
+      And(
+        Or(
+          Equals(FormCtx("isPremisesSameAsBusinessAddress"), Constant("0")),
+          Equals(FormCtx("amountA"), Constant("22"))),
+        Equals(FormCtx("amountB"), Constant("33"))
+      )
+    )
+
+  }
+
   "BooleanExprParser" should "parse or-expressions including spaces and string constants" in {
     val res = BooleanExprParser.validate("${user.affinityGroup = 'organisation' || user.affinityGroup = 'individual'}")
 
