@@ -40,7 +40,7 @@ object BooleanExprParser {
     | "yes" ^^^ IsTrue
     | "false" ^^^ IsFalse
     | "no" ^^^ IsFalse
-    | "(" ~> booleanExpr <~ ")")
+    | "(" ~> p4 <~ ")")
 
   private lazy val p1: Parser[BooleanExpr] = (exprFormCtx ~ "<" ~ exprFormCtx ^^ { (loc, expr1, op, expr2) =>
     LessThan(expr1, expr2)
@@ -67,12 +67,12 @@ object BooleanExprParser {
   }
     | p1)
 
-  private lazy val p3: Parser[BooleanExpr] = (p2 ~ "&&" ~ p2 ^^ { (loc, expr1, op, expr2) =>
+  private lazy val p3: Parser[BooleanExpr] = (p3 ~ "&&" ~ p2 ^^ { (loc, expr1, op, expr2) =>
     And(expr1, expr2)
   }
     | p2)
 
-  lazy val p4: Parser[BooleanExpr] = (p3 ~ "||" ~ p3 ^^ { (loc, expr1, op, expr2) =>
+  lazy val p4: Parser[BooleanExpr] = (p4 ~ "||" ~ p3 ^^ { (loc, expr1, op, expr2) =>
     Or(expr1, expr2)
   }
     | p3)
