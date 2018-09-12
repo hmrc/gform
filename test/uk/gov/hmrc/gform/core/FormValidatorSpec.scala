@@ -16,11 +16,9 @@
 
 package uk.gov.hmrc.gform.core
 
-import cats.syntax.either._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel._
 import uk.gov.hmrc.gform.sharedmodel.form.FormField
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyText, _ }
 
@@ -29,7 +27,7 @@ class FormValidatorSpec extends Spec {
   def getMandatoryFieldValue(id: String) =
     FormComponent(
       id = FormComponentId(id),
-      `type` = Text(AnyText, Value),
+      `type` = Text(AnyText, Value, DisplayWidthAttribute.L),
       label = "",
       helpText = None,
       None,

@@ -21,25 +21,23 @@ import cats.instances.future._
 import cats.instances.list._
 import cats.syntax.either._
 import cats.syntax.traverse._
+import org.apache.pdfbox.pdmodel.PDDocument
+import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.email.EmailService
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.fileupload.{ FileUploadService, MetadataXml }
+import uk.gov.hmrc.gform.fileupload.FileUploadService
 import uk.gov.hmrc.gform.form.FormService
 import uk.gov.hmrc.gform.formtemplate.{ FormTemplateService, RepeatingComponentService, SectionHelper }
+import uk.gov.hmrc.gform.pdfgenerator.{ HtmlGeneratorService, PdfGeneratorService, XmlGeneratorService }
 import uk.gov.hmrc.gform.sharedmodel.Visibility
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.gform.pdfgenerator.{ HtmlGeneratorService, PdfGeneratorService, XmlGeneratorService }
 import uk.gov.hmrc.gform.time.TimeProvider
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
-import uk.gov.hmrc.auth.core.AffinityGroup
 
 import scala.concurrent.{ ExecutionContext, Future }
-import uk.gov.hmrc.http.HeaderCarrier
-import org.apache.pdfbox.pdmodel.PDDocument
-
-import scala.util.{ Failure, Success }
 class SubmissionService(
   pdfGeneratorService: PdfGeneratorService,
   formService: FormService,
@@ -200,12 +198,12 @@ object SubmissionServiceHelper {
     val formFieldByFieldValue: FormComponent => Opt[(List[FormField], FormComponent)] = fieldValue => {
       val fieldValueIds: List[FormComponentId] =
         fieldValue.`type` match {
-          case Address(_)                                                                    => Address.fields(fieldValue.id)
-          case Date(_, _, _)                                                                 => Date.fields(fieldValue.id)
-          case FileUpload()                                                                  => List(fieldValue.id)
-          case UkSortCode(_)                                                                 => UkSortCode.fields(fieldValue.id)
-          case Text(_, _) | TextArea(_, _) | Choice(_, _, _, _, _) | Group(_, _, _, _, _, _) => List(fieldValue.id)
-          case InformationMessage(_, _)                                                      => Nil
+          case Address(_)                                                                       => Address.fields(fieldValue.id)
+          case Date(_, _, _)                                                                    => Date.fields(fieldValue.id)
+          case FileUpload()                                                                     => List(fieldValue.id)
+          case UkSortCode(_)                                                                    => UkSortCode.fields(fieldValue.id)
+          case Text(_, _, _) | TextArea(_, _) | Choice(_, _, _, _, _) | Group(_, _, _, _, _, _) => List(fieldValue.id)
+          case InformationMessage(_, _)                                                         => Nil
         }
 
       val formFieldAndFieldValues: Opt[List[FormField]] = {

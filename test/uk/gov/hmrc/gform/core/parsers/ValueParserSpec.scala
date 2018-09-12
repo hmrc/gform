@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.gform.core.parsers
 
-import play.api.libs.json.Json
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
@@ -271,7 +270,7 @@ class ValueParserSpec extends Spec {
     List(
       FormComponent(
         FormComponentId("firstName"),
-        Text(AnyText, Value),
+        Text(AnyText, Value, DisplayWidthAttribute.L),
         "Your first name",
         None,
         None,
@@ -284,7 +283,7 @@ class ValueParserSpec extends Spec {
       ),
       FormComponent(
         FormComponentId("lastName"),
-        Text(AnyText, Value),
+        Text(AnyText, Value, DisplayWidthAttribute.L),
         "Your last name",
         None,
         None,
@@ -303,26 +302,32 @@ class ValueParserSpec extends Spec {
 
   "Expr.validate" should "return Valid if expression include fieldName id present in the form template" in {
 
-    val res = FormTemplateValidator.validate(List(Text(AnyText, FormCtx("firstName"))), formTemplateWithOneSection)
+    val res = FormTemplateValidator
+      .validate(List(Text(AnyText, FormCtx("firstName"), DisplayWidthAttribute.L)), formTemplateWithOneSection)
     res should be(Valid)
   }
 
   it should "return Valid if expression Add fields present in the form template" in {
     val res =
       FormTemplateValidator
-        .validate(List(Text(AnyText, Add(FormCtx("firstName"), FormCtx("lastName")))), formTemplateWithOneSection)
+        .validate(
+          List(Text(AnyText, Add(FormCtx("firstName"), FormCtx("lastName")), DisplayWidthAttribute.L)),
+          formTemplateWithOneSection)
     res should be(Valid)
   }
 
   it should "return Valid if expression Multiply fields present in the form template" in {
     val res =
       FormTemplateValidator
-        .validate(List(Text(AnyText, Multiply(FormCtx("firstName"), FormCtx("lastName")))), formTemplateWithOneSection)
+        .validate(
+          List(Text(AnyText, Multiply(FormCtx("firstName"), FormCtx("lastName")), DisplayWidthAttribute.L)),
+          formTemplateWithOneSection)
     res should be(Valid)
   }
 
   it should "return Invalid if expression include fieldName id not present in the form template" in {
-    val res = FormTemplateValidator.validate(List(Text(AnyText, FormCtx("firstNameTypo"))), formTemplateWithOneSection)
+    val res = FormTemplateValidator
+      .validate(List(Text(AnyText, FormCtx("firstNameTypo"), DisplayWidthAttribute.L)), formTemplateWithOneSection)
     res should be(Invalid("Form field 'firstNameTypo' is not defined in form template."))
   }
 

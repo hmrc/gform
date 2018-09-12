@@ -135,7 +135,7 @@ class HtmlGeneratorServiceSpec extends Spec with ExampleData {
   it should "return HTML containing text field" in {
     val fieldValue = FormComponent(
       id = FormComponentId("id"),
-      `type` = Text(AnyText, Constant("CONSTANT")),
+      `type` = Text(AnyText, Constant("CONSTANT"), DisplayWidthAttribute.L),
       label = "label",
       shortName = None,
       helpText = None,
