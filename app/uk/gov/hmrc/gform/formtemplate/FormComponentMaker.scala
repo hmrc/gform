@@ -26,6 +26,7 @@ import play.api.libs.json._
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.{ FormatParser, PresentationHintParser, ValueParser }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidthAttribute.DisplayWidthAttribute
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 case class MES(
@@ -58,6 +59,7 @@ class FormCompomentMaker(json: JsValue) {
   lazy val validIf: Option[ValidIf] = (json \ "validIf").asOpt[ValidIf]
   lazy val mandatory: Option[String] = (json \ "mandatory").asOpt[String]
   lazy val multiline: Option[String] = (json \ "multiline").asOpt[String]
+  lazy val displayWidth: Option[String] = (json \ "displayWidth").asOpt[String]
   lazy val multivalue: Option[String] = (json \ "multivalue").asOpt[String]
   lazy val total: Option[String] = (json \ "total").asOpt[String]
   lazy val international: Option[String] = (json \ "international").asOpt[String]
@@ -141,32 +143,32 @@ class FormCompomentMaker(json: JsValue) {
     for {
       maybeFormatExpr <- optMaybeFormatExpr
       maybeValueExpr  <- optMaybeValueExpr
-      result <- (maybeFormatExpr, maybeValueExpr, multiline) match {
+      result <- (maybeFormatExpr, maybeValueExpr, multiline, displayWidth) match {
                  // format: off
-        case (Some(TextFormat(UkSortCodeFormat)), HasTextExpression(expr), IsNotMultiline()) => UkSortCode(expr).asRight
-        case (Some(TextFormat(f)),                HasTextExpression(expr), IsNotMultiline()) => Text(f, expr).asRight
-        case (None,                               HasTextExpression(expr), IsNotMultiline()) => Text(ShortText, expr).asRight
-        case (Some(TextFormat(f)),                HasTextExpression(expr), IsMultiline()   ) => TextArea(f, expr).asRight
-        case (None,                               HasTextExpression(expr), IsMultiline()   ) => TextArea(BasicText, expr).asRight
-        case (maybeInvalidFormat,                 maybeInvalidValue,       IsMultiline()   ) =>
+        case (Some(TextFormat(UkSortCodeFormat)), HasTextExpression(expr), IsNotMultiline(), _)                            => UkSortCode(expr).asRight
+        case (Some(TextFormat(f)),                HasTextExpression(expr), IsNotMultiline(), HasDisplayWidthAttribute(dw)) => Text(f, expr, dw).asRight
+        case (None,                               HasTextExpression(expr), IsNotMultiline(), HasDisplayWidthAttribute(dw)) => Text(ShortText, expr, dw).asRight
+        case (Some(TextFormat(f)),                HasTextExpression(expr), IsMultiline()   , _)                            => TextArea(f, expr).asRight
+        case (None,                               HasTextExpression(expr), IsMultiline()   , _)                            => TextArea(BasicText, expr).asRight
+        case (maybeInvalidFormat,                 maybeInvalidValue,       IsMultiline()   , _) =>
           UnexpectedState(s"""|Unsupported type of format or value for multiline text field
                   |Id: $id
                   |Format: $maybeInvalidFormat
                   |Value: $maybeInvalidValue
                   |""".stripMargin).asLeft
-        case (Some(invalidFormat),                None,                    IsNotMultiline()) =>
+        case (Some(invalidFormat),                None,                    IsNotMultiline(), _) =>
           UnexpectedState(s"""|Unsupported type of format and value for text field
                   |Id: $id
                   |Format: $invalidFormat
                   |Value: must supply a value
                   |""".stripMargin).asLeft
-        case (None,                               Some(invalidValue),      IsNotMultiline()) =>
+        case (None,                               Some(invalidValue),      IsNotMultiline(), _) =>
           UnexpectedState(s"""|Unsupported type of format and value for text field
                   |Id: $id
                   |Format: "must supply a value for format"
                   |Value: $invalidValue
                   |""".stripMargin).asLeft
-        case (Some(invalidFormat),                Some(invalidValue),      IsNotMultiline()) =>
+        case (Some(invalidFormat),                Some(invalidValue),      IsNotMultiline(), _) =>
           UnexpectedState(s"""|Unsupported type of format and value for text field
                   |Id: $id
                   |Format: $invalidFormat
@@ -175,6 +177,19 @@ class FormCompomentMaker(json: JsValue) {
       }
       // format: on
     } yield result
+  }
+
+  private final object HasDisplayWidthAttribute {
+    def unapply(displayWidthAttribute: Option[String]): Option[DisplayWidthAttribute] =
+      displayWidthAttribute match {
+        case Some("xs")  => Some(DisplayWidthAttribute.XS)
+        case Some("s")   => Some(DisplayWidthAttribute.S)
+        case Some("m")   => Some(DisplayWidthAttribute.M)
+        case Some("l")   => Some(DisplayWidthAttribute.L)
+        case Some("xl")  => Some(DisplayWidthAttribute.XL)
+        case Some("xxl") => Some(DisplayWidthAttribute.XXL)
+        case _           => Some(DisplayWidthAttribute.L) // default to this if omitted
+      }
   }
 
   private lazy val addressOpt: Opt[Address] = international match {

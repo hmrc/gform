@@ -17,10 +17,9 @@
 package uk.gov.hmrc.gform.pdfgenerator
 
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.fileupload.ReconciliationId
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.gform.submission.{ SectionFormField, SubmissionRef, SubmissionServiceHelper }
+import uk.gov.hmrc.gform.submission.{ SectionFormField, SubmissionRef }
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.collection.immutable.List
@@ -54,7 +53,7 @@ class XmlGeneratorServiceSpec extends Spec {
             List(FormField(FormComponentId("UNO"), "UNO")),
             FormComponent(
               FormComponentId("UNO"),
-              Text(AnyText, Value),
+              Text(AnyText, Value, DisplayWidthAttribute.XS),
               "Submissible text label",
               None,
               None,
@@ -70,7 +69,7 @@ class XmlGeneratorServiceSpec extends Spec {
             List(FormField(FormComponentId("DOS"), "DOS")),
             FormComponent(
               FormComponentId("DOS"),
-              Text(AnyText, Value),
+              Text(AnyText, Value, DisplayWidthAttribute.XS),
               "Submissible text label",
               None,
               None,
@@ -86,7 +85,7 @@ class XmlGeneratorServiceSpec extends Spec {
             List(FormField(FormComponentId("1_UNO"), "1_UNO")),
             FormComponent(
               FormComponentId("1_UNO"),
-              Text(AnyText, Value),
+              Text(AnyText, Value, DisplayWidthAttribute.XS),
               "Non-submissible text label",
               None,
               None,
@@ -102,7 +101,7 @@ class XmlGeneratorServiceSpec extends Spec {
             List(FormField(FormComponentId("1_DOS"), "1_DOS")),
             FormComponent(
               FormComponentId("1_DOS"),
-              Text(AnyText, Value),
+              Text(AnyText, Value, DisplayWidthAttribute.XS),
               "Submissible text label",
               None,
               None,
@@ -123,7 +122,7 @@ class XmlGeneratorServiceSpec extends Spec {
             List(FormField(FormComponentId("TRES"), "TRES")),
             FormComponent(
               FormComponentId("TRES"),
-              Text(AnyText, Constant("TRES")),
+              Text(AnyText, Constant("TRES"), DisplayWidthAttribute.L),
               "Submissible text label",
               None,
               None,

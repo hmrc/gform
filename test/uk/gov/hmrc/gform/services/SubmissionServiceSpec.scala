@@ -55,7 +55,7 @@ class SubmissionServiceSpec extends Spec {
 
     val textFieldUno = FormComponent(
       id = FormComponentId("UNO"),
-      `type` = Text(AnyText, Constant("UNO")),
+      `type` = Text(AnyText, Constant("UNO"), DisplayWidthAttribute.L),
       label = "Editable text label",
       helpText = None,
       shortName = None,
@@ -67,7 +67,8 @@ class SubmissionServiceSpec extends Spec {
       errorMessage = None
     )
 
-    val textFieldDos = textFieldUno.copy(id = FormComponentId("DOS"), `type` = Text(AnyText, Constant("DOS")))
+    val textFieldDos =
+      textFieldUno.copy(id = FormComponentId("DOS"), `type` = Text(AnyText, Constant("DOS"), DisplayWidthAttribute.L))
 
     val group = Group(
       fields = List(textFieldUno, textFieldDos),
@@ -135,7 +136,7 @@ class SubmissionServiceSpec extends Spec {
             List(FormField(FormComponentId("UNO"), "UNO")),
             FormComponent(
               FormComponentId("UNO"),
-              Text(AnyText, Constant("UNO")),
+              Text(AnyText, Constant("UNO"), DisplayWidthAttribute.L),
               "Editable text label",
               None,
               None,
@@ -145,12 +146,13 @@ class SubmissionServiceSpec extends Spec {
               true,
               derived = false,
               onlyShowOnSummary = false,
-              None)),
+              None
+            )),
           (
             List(FormField(FormComponentId("DOS"), "DOS")),
             FormComponent(
               FormComponentId("DOS"),
-              Text(AnyText, Constant("DOS")),
+              Text(AnyText, Constant("DOS"), DisplayWidthAttribute.L),
               "Editable text label",
               None,
               None,
@@ -160,12 +162,13 @@ class SubmissionServiceSpec extends Spec {
               true,
               derived = false,
               onlyShowOnSummary = false,
-              None)),
+              None
+            )),
           (
             List(FormField(FormComponentId("1_UNO"), "1_UNO")),
             FormComponent(
               FormComponentId("1_UNO"),
-              Text(AnyText, Constant("UNO")),
+              Text(AnyText, Constant("UNO"), DisplayWidthAttribute.L),
               "Editable text label",
               None,
               None,
@@ -175,12 +178,13 @@ class SubmissionServiceSpec extends Spec {
               true,
               derived = false,
               onlyShowOnSummary = false,
-              None)),
+              None
+            )),
           (
             List(FormField(FormComponentId("1_DOS"), "1_DOS")),
             FormComponent(
               FormComponentId("1_DOS"),
-              Text(AnyText, Constant("DOS")),
+              Text(AnyText, Constant("DOS"), DisplayWidthAttribute.L),
               "Editable text label",
               None,
               None,
@@ -190,7 +194,8 @@ class SubmissionServiceSpec extends Spec {
               true,
               derived = false,
               onlyShowOnSummary = false,
-              None))
+              None
+            ))
         )
       ),
       SectionFormField("Declaration", List())

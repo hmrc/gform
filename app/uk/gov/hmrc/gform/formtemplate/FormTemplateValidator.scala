@@ -16,21 +16,17 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
-import java.io.Serializable
-
 import cats.Monoid
 import cats.implicits._
-import play.api.libs.json.{ JsError, JsSuccess }
 import scalax.collection.Graph
-import scalax.collection.GraphPredef._, scalax.collection.GraphEdge._
+import scalax.collection.GraphEdge._
 import uk.gov.hmrc.gform.core.{ Invalid, Opt, Valid, ValidationResult }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FileUploadRaw, _ }
 import uk.gov.hmrc.gform.sharedmodel.form.FormField
+import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.graph.DependencyGraph._
 
-import Function.const
+import scala.Function.const
 import scala.collection.immutable.List
 
 object FormTemplateValidator {
@@ -89,11 +85,11 @@ object FormTemplateValidator {
         (field.`type`, field.mandatory) match {
           case (Address(_), _) =>
             (mandatoryAcc ++ Address.mandatoryFields(field.id), optionalAcc ++ Address.optionalFields(field.id))
-          case (Date(_, _, _), _)  => (mandatoryAcc ++ Date.fields(field.id), optionalAcc)
-          case (Text(_, _), true)  => (mandatoryAcc + field.id, optionalAcc)
-          case (Text(_, _), false) => (mandatoryAcc, optionalAcc + field.id)
-          case (_, true)           => (mandatoryAcc + field.id, optionalAcc)
-          case (_, false)          => (mandatoryAcc, optionalAcc + field.id)
+          case (Date(_, _, _), _)     => (mandatoryAcc ++ Date.fields(field.id), optionalAcc)
+          case (Text(_, _, _), true)  => (mandatoryAcc + field.id, optionalAcc)
+          case (Text(_, _, _), false) => (mandatoryAcc, optionalAcc + field.id)
+          case (_, true)              => (mandatoryAcc + field.id, optionalAcc)
+          case (_, false)             => (mandatoryAcc, optionalAcc + field.id)
         }
     }
 

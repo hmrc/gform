@@ -34,7 +34,7 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("regNum"),
-        Text(ShortText, Value),
+        Text(ShortText, Value, DisplayWidthAttribute.L),
         "Registration number",
         None,
         None,
@@ -59,7 +59,7 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("regNum"),
-        Text(ShortText, Value),
+        Text(ShortText, Value, DisplayWidthAttribute.L),
         "Registration number",
         None,
         None,
@@ -85,7 +85,7 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("regNum"),
-        Text(ShortText, Value),
+        Text(ShortText, Value, DisplayWidthAttribute.L),
         "Registration number",
         None,
         None,
@@ -111,7 +111,7 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("regNum"),
-        Text(ShortText, Value),
+        Text(ShortText, Value, DisplayWidthAttribute.L),
         "Registration number",
         None,
         None,
@@ -138,7 +138,7 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("regNum"),
-        Text(ShortText, Constant("Ahah")),
+        Text(ShortText, Constant("Ahah"), DisplayWidthAttribute.L),
         "Registration number",
         None,
         None,
@@ -165,7 +165,7 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("regNum"),
-        Text(ShortText, Constant("Ahah")),
+        Text(ShortText, Constant("Ahah"), DisplayWidthAttribute.L),
         "Registration number",
         None,
         None,
@@ -188,7 +188,7 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("regNum"),
-        Text(ShortText, Value),
+        Text(ShortText, Value, DisplayWidthAttribute.L),
         "Registration number",
         None,
         None,
@@ -211,7 +211,7 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("regNum"),
-        Text(ShortText, Value),
+        Text(ShortText, Value, DisplayWidthAttribute.L),
         "Registration number",
         None,
         None,
@@ -233,7 +233,7 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("regNum"),
-        Text(ShortText, Value),
+        Text(ShortText, Value, DisplayWidthAttribute.L),
         "Registration number",
         None,
         None,
@@ -255,7 +255,7 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("regNum"),
-        Text(ShortText, Value),
+        Text(ShortText, Value, DisplayWidthAttribute.L),
         "Registration number",
         None,
         None,
@@ -278,7 +278,7 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("regNum"),
-        Text(ShortText, Value),
+        Text(ShortText, Value, DisplayWidthAttribute.L),
         "Registration number",
         None,
         None,
@@ -301,7 +301,7 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("regNum"),
-        Text(ShortText, Value),
+        Text(ShortText, Value, DisplayWidthAttribute.L),
         "Registration number",
         None,
         None,
@@ -324,7 +324,7 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("regNum"),
-        Text(ShortText, Value),
+        Text(ShortText, Value, DisplayWidthAttribute.L),
         "Registration number",
         None,
         None,
@@ -398,7 +398,7 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("regNum"),
-        Text(ShortText, Value),
+        Text(ShortText, Value, DisplayWidthAttribute.L),
         "Registration number",
         None,
         None,
@@ -420,7 +420,7 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("regNum"),
-        Text(ShortText, Value),
+        Text(ShortText, Value, DisplayWidthAttribute.L),
         "Registration number",
         None,
         None,
@@ -518,7 +518,7 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("homeAddress"),
-        Text(ShortText, Value),
+        Text(ShortText, Value, DisplayWidthAttribute.L),
         "Home",
         None,
         None,
@@ -1300,7 +1300,7 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("regNum"),
-        Text(ShortText, Value),
+        Text(ShortText, Value, DisplayWidthAttribute.L),
         "Registration number",
         None,
         Some(shortName),

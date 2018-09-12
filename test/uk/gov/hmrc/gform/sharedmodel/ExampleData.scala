@@ -84,7 +84,7 @@ trait ExampleFieldValue { dependecies: ExampleFieldId =>
   def `fieldValue - firstName` =
     FormComponent(
       `fieldId - firstName`,
-      Text(AnyText, Constant("any text")),
+      Text(AnyText, Constant("any text"), DisplayWidthAttribute.L),
       "First Name",
       None,
       None,
@@ -101,7 +101,7 @@ trait ExampleFieldValue { dependecies: ExampleFieldId =>
   def `fieldValue - surname` =
     FormComponent(
       `fieldId - surname`,
-      Text(AnyText, Constant("any text")),
+      Text(AnyText, Constant("any text"), DisplayWidthAttribute.L),
       "Last Name",
       None,
       None,
@@ -118,7 +118,7 @@ trait ExampleFieldValue { dependecies: ExampleFieldId =>
   def `fieldValue - iptRegNum` =
     FormComponent(
       `fieldId - iptRegNum`,
-      Text(AnyText, Constant("any text")),
+      Text(AnyText, Constant("any text"), DisplayWidthAttribute.L),
       "Insurance Premium Tax (IPT) number",
       None,
       None,
@@ -135,7 +135,7 @@ trait ExampleFieldValue { dependecies: ExampleFieldId =>
   def `fieldValue - businessName` =
     FormComponent(
       `fieldId - businessName`,
-      Text(AnyText, Constant("any text")),
+      Text(AnyText, Constant("any text"), DisplayWidthAttribute.L),
       "Name of business",
       None,
       None,
@@ -209,7 +209,7 @@ trait ExampleFieldValue { dependecies: ExampleFieldId =>
   def `fieldValue - number` =
     FormComponent(
       `fieldId - number`,
-      Text(Number(), Value),
+      Text(Number(), Value, DisplayWidthAttribute.L),
       "sample label",
       None,
       None,
@@ -219,7 +219,8 @@ trait ExampleFieldValue { dependecies: ExampleFieldId =>
       true,
       derived = false,
       onlyShowOnSummary = false,
-      None)
+      None
+    )
 
 }
 

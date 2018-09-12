@@ -16,12 +16,9 @@
 
 package uk.gov.hmrc.gform.sharedmodel
 
-import play.api.data.validation.ValidationError
 import play.api.libs.json._
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ BasicText, FormComponent, Number, ShortText, Text, TextArea, Value }
-import org.scalatest.prop.TableDrivenPropertyChecks.forAll
+import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 class JsonParseTestFormat extends Spec {
 
@@ -71,8 +68,8 @@ class JsonParseTestFormat extends Spec {
       jsResult shouldBe a[JsSuccess[_]]
       jsResult.map(fv =>
         fv.`type` match {
-          case Text(constraint, _) => constraint should equal(Number(11, 2, None))
-          case a @ _               => fail(s"expected a Text, got $a")
+          case Text(constraint, _, DisplayWidthAttribute.L) => constraint should equal(Number(11, 2, None))
+          case a @ _                                        => fail(s"expected a Text, got $a")
       })
     }
   }
@@ -86,9 +83,9 @@ class JsonParseTestFormat extends Spec {
       ("Yes",  TextArea(BasicText, Value)),
       ("true", TextArea(BasicText, Value)),
       ("True", TextArea(BasicText, Value)),
-      ("no",   Text(ShortText, Value)),
-      ("typo", Text(ShortText, Value)),
-      ("",     Text(ShortText, Value))
+      ("no",   Text(ShortText, Value, DisplayWidthAttribute.L)),
+      ("typo", Text(ShortText, Value, DisplayWidthAttribute.L)),
+      ("",     Text(ShortText, Value, DisplayWidthAttribute.L))
       // format: on
     )
 
@@ -101,4 +98,28 @@ class JsonParseTestFormat extends Spec {
 
     }
   }
+
+  "A component with a valid display width" should "parse correctly" in {
+
+    val displayWidthOptions = Table(
+      // format: off
+      ("displayWidth", "expected"),
+      (DisplayWidthAttribute.XS.toString.toLowerCase,  Text(ShortText, Value, DisplayWidthAttribute.XS)),
+      (DisplayWidthAttribute.S.toString.toLowerCase,   Text(ShortText, Value, DisplayWidthAttribute.S)),
+      (DisplayWidthAttribute.M.toString.toLowerCase,   Text(ShortText, Value, DisplayWidthAttribute.M)),
+      (DisplayWidthAttribute.L.toString.toLowerCase,   Text(ShortText, Value, DisplayWidthAttribute.L)),
+      (DisplayWidthAttribute.XL.toString.toLowerCase,  Text(ShortText, Value, DisplayWidthAttribute.XL)),
+      (DisplayWidthAttribute.XXL.toString.toLowerCase, Text(ShortText, Value, DisplayWidthAttribute.XXL))
+      // format: on
+    )
+
+    forAll(displayWidthOptions) { (displayWidth, expected) =>
+      val jsResult: JsResult[FormComponent] =
+        implicitly[Reads[FormComponent]].reads(Json.parse(startOfJson + s""", "displayWidth" : "$displayWidth" }"""))
+      jsResult shouldBe a[JsSuccess[_]]
+      jsResult.map(fv => fv.`type` shouldBe expected)
+    }
+
+  }
+
 }

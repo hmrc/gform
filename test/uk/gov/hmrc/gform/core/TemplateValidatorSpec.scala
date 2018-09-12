@@ -460,7 +460,7 @@ class TemplateValidatorSpec extends Spec {
   private def mkFormComponent(name: String, expr: Expr) =
     FormComponent(
       FormComponentId(name),
-      Text(AnyText, expr),
+      Text(AnyText, expr, DisplayWidthAttribute.L),
       name,
       None,
       None,
