@@ -270,7 +270,7 @@ class ValueParserSpec extends Spec {
     List(
       FormComponent(
         FormComponentId("firstName"),
-        Text(AnyText, Value, DisplayWidthAttribute.L),
+        Text(AnyText, Value),
         "Your first name",
         None,
         None,
@@ -283,7 +283,7 @@ class ValueParserSpec extends Spec {
       ),
       FormComponent(
         FormComponentId("lastName"),
-        Text(AnyText, Value, DisplayWidthAttribute.L),
+        Text(AnyText, Value),
         "Your last name",
         None,
         None,
@@ -303,31 +303,27 @@ class ValueParserSpec extends Spec {
   "Expr.validate" should "return Valid if expression include fieldName id present in the form template" in {
 
     val res = FormTemplateValidator
-      .validate(List(Text(AnyText, FormCtx("firstName"), DisplayWidthAttribute.L)), formTemplateWithOneSection)
+      .validate(List(Text(AnyText, FormCtx("firstName"))), formTemplateWithOneSection)
     res should be(Valid)
   }
 
   it should "return Valid if expression Add fields present in the form template" in {
     val res =
       FormTemplateValidator
-        .validate(
-          List(Text(AnyText, Add(FormCtx("firstName"), FormCtx("lastName")), DisplayWidthAttribute.L)),
-          formTemplateWithOneSection)
+        .validate(List(Text(AnyText, Add(FormCtx("firstName"), FormCtx("lastName")))), formTemplateWithOneSection)
     res should be(Valid)
   }
 
   it should "return Valid if expression Multiply fields present in the form template" in {
     val res =
       FormTemplateValidator
-        .validate(
-          List(Text(AnyText, Multiply(FormCtx("firstName"), FormCtx("lastName")), DisplayWidthAttribute.L)),
-          formTemplateWithOneSection)
+        .validate(List(Text(AnyText, Multiply(FormCtx("firstName"), FormCtx("lastName")))), formTemplateWithOneSection)
     res should be(Valid)
   }
 
   it should "return Invalid if expression include fieldName id not present in the form template" in {
     val res = FormTemplateValidator
-      .validate(List(Text(AnyText, FormCtx("firstNameTypo"), DisplayWidthAttribute.L)), formTemplateWithOneSection)
+      .validate(List(Text(AnyText, FormCtx("firstNameTypo"))), formTemplateWithOneSection)
     res should be(Invalid("Form field 'firstNameTypo' is not defined in form template."))
   }
 

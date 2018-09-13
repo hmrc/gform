@@ -26,7 +26,7 @@ object HasExpr {
   def unapply(ct: ComponentType): Option[ExprCardinality] =
     ct match {
       case Text(_, expr, _)             => Some(SingleExpr(expr))
-      case TextArea(_, expr)            => Some(SingleExpr(expr))
+      case TextArea(_, expr, _)         => Some(SingleExpr(expr))
       case UkSortCode(expr)             => Some(SingleExpr(expr))
       case Group(fields, _, _, _, _, _) => Some(MultipleExpr(fields))
       case _                            => None

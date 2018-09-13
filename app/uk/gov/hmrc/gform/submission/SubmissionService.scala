@@ -198,12 +198,13 @@ object SubmissionServiceHelper {
     val formFieldByFieldValue: FormComponent => Opt[(List[FormField], FormComponent)] = fieldValue => {
       val fieldValueIds: List[FormComponentId] =
         fieldValue.`type` match {
-          case Address(_)                                                                       => Address.fields(fieldValue.id)
-          case Date(_, _, _)                                                                    => Date.fields(fieldValue.id)
-          case FileUpload()                                                                     => List(fieldValue.id)
-          case UkSortCode(_)                                                                    => UkSortCode.fields(fieldValue.id)
-          case Text(_, _, _) | TextArea(_, _) | Choice(_, _, _, _, _) | Group(_, _, _, _, _, _) => List(fieldValue.id)
-          case InformationMessage(_, _)                                                         => Nil
+          case Address(_)    => Address.fields(fieldValue.id)
+          case Date(_, _, _) => Date.fields(fieldValue.id)
+          case FileUpload()  => List(fieldValue.id)
+          case UkSortCode(_) => UkSortCode.fields(fieldValue.id)
+          case Text(_, _, _) | TextArea(_, _, _) | Choice(_, _, _, _, _) | Group(_, _, _, _, _, _) =>
+            List(fieldValue.id)
+          case InformationMessage(_, _) => Nil
         }
 
       val formFieldAndFieldValues: Opt[List[FormField]] = {
