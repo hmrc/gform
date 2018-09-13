@@ -26,7 +26,7 @@ import play.api.libs.json._
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.{ FormatParser, PresentationHintParser, ValueParser }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidthAttribute.DisplayWidthAttribute
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidth.DisplayWidth
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 case class MES(
@@ -139,6 +139,9 @@ class FormCompomentMaker(json: JsValue) {
     //TODO: What if there is None
   }
 
+  //Logic: if there is a dw in the json then this will be extracted and passed into the txt object
+  //        if there is dq in the json and it is invalid then this will be extracted but INVALID will be passed and this should result in an error
+  //       if there is no dw supplied, this will result in a None returned in the JSON extraction and None via the HasDisplayWidth in which case the default should be utilised
   private lazy val textOpt: Opt[ComponentType] = {
     for {
       maybeFormatExpr <- optMaybeFormatExpr
@@ -146,10 +149,17 @@ class FormCompomentMaker(json: JsValue) {
       result <- (maybeFormatExpr, maybeValueExpr, multiline, displayWidth) match {
                  // format: off
         case (Some(TextFormat(UkSortCodeFormat)), HasTextExpression(expr), IsNotMultiline(), _)                            => UkSortCode(expr).asRight
-        case (Some(TextFormat(f)),                HasTextExpression(expr), IsNotMultiline(), HasDisplayWidthAttribute(dw)) => Text(f, expr, dw).asRight
-        case (None,                               HasTextExpression(expr), IsNotMultiline(), HasDisplayWidthAttribute(dw)) => Text(ShortText, expr, dw).asRight
-        case (Some(TextFormat(f)),                HasTextExpression(expr), IsMultiline()   , _)                            => TextArea(f, expr).asRight
-        case (None,                               HasTextExpression(expr), IsMultiline()   , _)                            => TextArea(BasicText, expr).asRight
+        case (_, _, _, HasDisplayWidth(dw)) if (dw.toString == "INVALID")                                         => UnexpectedState("Unsupported type of display width").asLeft
+
+        case (Some(TextFormat(f)),                HasTextExpression(expr), IsNotMultiline(), None)                         => Text(f, expr).asRight
+        case (None,                               HasTextExpression(expr), IsNotMultiline(), None)                         => Text(ShortText, expr).asRight
+        case (Some(TextFormat(f)),                HasTextExpression(expr), IsNotMultiline(), HasDisplayWidth(dw)) => Text(f, expr, dw).asRight
+        case (None,                               HasTextExpression(expr), IsNotMultiline(), HasDisplayWidth(dw)) => Text(ShortText, expr, dw).asRight
+
+        case (Some(TextFormat(f)),                HasTextExpression(expr), IsMultiline()   , None)                         => TextArea(f, expr).asRight
+        case (None,                               HasTextExpression(expr), IsMultiline()   , None)                         => TextArea(BasicText, expr).asRight
+        case (Some(TextFormat(f)),                HasTextExpression(expr), IsMultiline()   , HasDisplayWidth(dw)) => TextArea(f, expr,dw).asRight
+        case (None,                               HasTextExpression(expr), IsMultiline()   , HasDisplayWidth(dw)) => TextArea(BasicText, expr,dw).asRight
         case (maybeInvalidFormat,                 maybeInvalidValue,       IsMultiline()   , _) =>
           UnexpectedState(s"""|Unsupported type of format or value for multiline text field
                   |Id: $id
@@ -179,16 +189,17 @@ class FormCompomentMaker(json: JsValue) {
     } yield result
   }
 
-  private final object HasDisplayWidthAttribute {
-    def unapply(displayWidthAttribute: Option[String]): Option[DisplayWidthAttribute] =
-      displayWidthAttribute match {
-        case Some("xs")  => Some(DisplayWidthAttribute.XS)
-        case Some("s")   => Some(DisplayWidthAttribute.S)
-        case Some("m")   => Some(DisplayWidthAttribute.M)
-        case Some("l")   => Some(DisplayWidthAttribute.L)
-        case Some("xl")  => Some(DisplayWidthAttribute.XL)
-        case Some("xxl") => Some(DisplayWidthAttribute.XXL)
-        case _           => Some(DisplayWidthAttribute.L) // default to this if omitted
+  private final object HasDisplayWidth {
+    def unapply(displayWidth: Option[String]): Option[DisplayWidth] =
+      displayWidth match {
+        case Some("xs")  => Some(DisplayWidth.XS)
+        case Some("s")   => Some(DisplayWidth.S)
+        case Some("m")   => Some(DisplayWidth.M)
+        case Some("l")   => Some(DisplayWidth.L)
+        case Some("xl")  => Some(DisplayWidth.XL)
+        case Some("xxl") => Some(DisplayWidth.XXL)
+        case None        => None
+        case _           => Some(DisplayWidth.INVALID)
       }
   }
 

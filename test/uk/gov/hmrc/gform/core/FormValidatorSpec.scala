@@ -27,7 +27,7 @@ class FormValidatorSpec extends Spec {
   def getMandatoryFieldValue(id: String) =
     FormComponent(
       id = FormComponentId(id),
-      `type` = Text(AnyText, Value, DisplayWidthAttribute.L),
+      `type` = Text(AnyText, Value),
       label = "",
       helpText = None,
       None,

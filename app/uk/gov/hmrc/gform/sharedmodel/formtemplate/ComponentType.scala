@@ -20,15 +20,17 @@ import cats.data.NonEmptyList
 import julienrf.json.derived
 import play.api.data.validation.ValidationError
 import play.api.libs.json._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidthAttribute.DisplayWidthAttribute
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidth.DisplayWidth
 
 import scala.collection.immutable._
 
 sealed trait ComponentType
 
-case class Text(constraint: TextConstraint, value: Expr, displayWidth: DisplayWidthAttribute) extends ComponentType
+case class Text(constraint: TextConstraint, value: Expr, displayWidth: DisplayWidth = DisplayWidth.L)
+    extends ComponentType
 
-case class TextArea(constraint: TextConstraint, value: Expr) extends ComponentType
+case class TextArea(constraint: TextConstraint, value: Expr, displayWidthAttribute: DisplayWidth = DisplayWidth.XL)
+    extends ComponentType
 
 case class UkSortCode(value: Expr) extends ComponentType
 
@@ -51,11 +53,11 @@ case object Address {
   val fields = (id: FormComponentId) => mandatoryFields(id) ++ optionalFields(id)
 }
 
-object DisplayWidthAttribute extends Enumeration {
-  type DisplayWidthAttribute = Value
-  val XS, S, M, L, XL, XXL = Value
+object DisplayWidth extends Enumeration {
+  type DisplayWidth = Value
+  val XS, S, M, L, XL, XXL, INVALID = Value
 
-  implicit val displayWidthAttributeReads = Reads.enumNameReads(DisplayWidthAttribute)
+  implicit val displayWidthAttributeReads = Reads.enumNameReads(DisplayWidth)
   implicit val displayWidthAttributeWrites = Writes.enumNameWrites
 }
 
