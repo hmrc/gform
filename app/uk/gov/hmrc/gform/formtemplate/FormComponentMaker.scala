@@ -148,16 +148,14 @@ class FormCompomentMaker(json: JsValue) {
       maybeValueExpr  <- optMaybeValueExpr
       result <- (maybeFormatExpr, maybeValueExpr, multiline, displayWidth) match {
                  // format: off
-        case (Some(TextFormat(UkSortCodeFormat)), HasTextExpression(expr), IsNotMultiline(), _)                            => UkSortCode(expr).asRight
-        case (_, _, _, HasDisplayWidth(dw)) if (dw.toString == "INVALID")                                         => UnexpectedState("Unsupported type of display width").asLeft
-
-        case (Some(TextFormat(f)),                HasTextExpression(expr), IsNotMultiline(), None)                         => Text(f, expr).asRight
-        case (None,                               HasTextExpression(expr), IsNotMultiline(), None)                         => Text(ShortText, expr).asRight
-        case (Some(TextFormat(f)),                HasTextExpression(expr), IsNotMultiline(), HasDisplayWidth(dw)) => Text(f, expr, dw).asRight
-        case (None,                               HasTextExpression(expr), IsNotMultiline(), HasDisplayWidth(dw)) => Text(ShortText, expr, dw).asRight
-
-        case (Some(TextFormat(f)),                HasTextExpression(expr), IsMultiline()   , None)                         => TextArea(f, expr).asRight
-        case (None,                               HasTextExpression(expr), IsMultiline()   , None)                         => TextArea(BasicText, expr).asRight
+        case (Some(TextFormat(UkSortCodeFormat)), HasTextExpression(expr), IsNotMultiline(), _)                             => UkSortCode(expr).asRight
+        case (_, _, _, HasDisplayWidth(dw)) if (dw.toString == "INVALID")                                                   => UnexpectedState("Unsupported type of display width").asLeft
+        case (Some(TextFormat(f)),                HasTextExpression(expr), IsNotMultiline(), None)                          => Text(f, expr).asRight
+        case (None,                               HasTextExpression(expr), IsNotMultiline(), None)                          => Text(ShortText, expr).asRight
+        case (Some(TextFormat(f)),                HasTextExpression(expr), IsNotMultiline(), HasDisplayWidth(dw))           => Text(f, expr, dw).asRight
+        case (None,                               HasTextExpression(expr), IsNotMultiline(), HasDisplayWidth(dw))           => Text(ShortText, expr, dw).asRight
+        case (Some(TextFormat(f)),                HasTextExpression(expr), IsMultiline()   , None)                          => TextArea(f, expr).asRight
+        case (None,                               HasTextExpression(expr), IsMultiline()   , None)                          => TextArea(BasicText, expr).asRight
         case (Some(TextFormat(f)),                HasTextExpression(expr), IsMultiline()   , HasDisplayWidth(dw)) => TextArea(f, expr,dw).asRight
         case (None,                               HasTextExpression(expr), IsMultiline()   , HasDisplayWidth(dw)) => TextArea(BasicText, expr,dw).asRight
         case (maybeInvalidFormat,                 maybeInvalidValue,       IsMultiline()   , _) =>
