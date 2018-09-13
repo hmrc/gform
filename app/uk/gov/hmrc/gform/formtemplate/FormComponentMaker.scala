@@ -139,9 +139,6 @@ class FormCompomentMaker(json: JsValue) {
     //TODO: What if there is None
   }
 
-  //Logic: if there is a dw in the json then this will be extracted and passed into the txt object
-  //        if there is dq in the json and it is invalid then this will be extracted but INVALID will be passed and this should result in an error
-  //       if there is no dw supplied, this will result in a None returned in the JSON extraction and None via the HasDisplayWidth in which case the default should be utilised
   private lazy val textOpt: Opt[ComponentType] = {
     for {
       maybeFormatExpr <- optMaybeFormatExpr
