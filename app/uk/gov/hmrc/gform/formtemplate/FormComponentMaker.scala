@@ -146,7 +146,6 @@ class FormCompomentMaker(json: JsValue) {
       result <- (maybeFormatExpr, maybeValueExpr, multiline, displayWidth) match {
                  // format: off
         case (Some(TextFormat(UkSortCodeFormat)), HasTextExpression(expr), IsNotMultiline(), _)                             => UkSortCode(expr).asRight
-        case (_, _, _, HasDisplayWidth(dw)) if (dw.toString == DisplayWidth.INVALID.toString)                               => UnexpectedState("Unsupported type of display width").asLeft
         case (Some(TextFormat(f)),                HasTextExpression(expr), IsNotMultiline(), None)                          => Text(f, expr).asRight
         case (None,                               HasTextExpression(expr), IsNotMultiline(), None)                          => Text(ShortText, expr).asRight
         case (Some(TextFormat(f)),                HasTextExpression(expr), IsNotMultiline(), HasDisplayWidth(dw))           => Text(f, expr, dw).asRight
@@ -193,8 +192,7 @@ class FormCompomentMaker(json: JsValue) {
         case Some("l")   => Some(DisplayWidth.L)
         case Some("xl")  => Some(DisplayWidth.XL)
         case Some("xxl") => Some(DisplayWidth.XXL)
-        case None        => None
-        case _           => Some(DisplayWidth.INVALID)
+        case _           => Some(DisplayWidth.DEFAULT)
       }
   }
 
