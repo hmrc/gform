@@ -68,8 +68,8 @@ class JsonParseTestFormat extends Spec {
       jsResult shouldBe a[JsSuccess[_]]
       jsResult.map(fv =>
         fv.`type` match {
-          case Text(constraint, _, DisplayWidth.L) => constraint should equal(Number(11, 2, None))
-          case a @ _                               => fail(s"expected a Text, got $a")
+          case Text(constraint, _, DisplayWidth.DEFAULT) => constraint should equal(Number(11, 2, None))
+          case a @ _                                     => fail(s"expected a Text, got $a")
       })
     }
   }
@@ -83,9 +83,9 @@ class JsonParseTestFormat extends Spec {
       ("Yes",  TextArea(BasicText, Value)),
       ("true", TextArea(BasicText, Value)),
       ("True", TextArea(BasicText, Value)),
-      ("no",   Text(ShortText, Value, DisplayWidth.L)),
-      ("typo", Text(ShortText, Value, DisplayWidth.L)),
-      ("",     Text(ShortText, Value, DisplayWidth.L))
+      ("no",   Text(ShortText, Value, DisplayWidth.DEFAULT)),
+      ("typo", Text(ShortText, Value, DisplayWidth.DEFAULT)),
+      ("",     Text(ShortText, Value, DisplayWidth.DEFAULT))
       // format: on
     )
 
@@ -152,18 +152,21 @@ class JsonParseTestFormat extends Spec {
       snippet <- List(""", "displayWidth" : "INVALID DISPLAY WIDTH"}""")
     } {
       val jsResult = implicitly[Reads[FormComponent]].reads(Json.parse(startOfJson + snippet))
-      jsResult should be(jsError)
-    }
-  }
-
-  "A text area component with an invalid display width format" should "fail to parse" in {
-
-    for {
-      snippet <- List(""", "displayWidth" : "INVALID DISPLAY WIDTH"}""")
-    } {
-      val jsResult =
-        implicitly[Reads[FormComponent]].reads(Json.parse(startOfJson + s""", "multiline" : "true" """ + snippet))
-      jsResult should be(jsError)
+      jsResult should beJsSuccess(
+        FormComponent(
+          FormComponentId("gid"),
+          Text(ShortText, Value, DisplayWidth.DEFAULT),
+          "glabel",
+          None,
+          None,
+          None,
+          true,
+          true,
+          true,
+          false,
+          false,
+          None,
+          None))
     }
   }
 
