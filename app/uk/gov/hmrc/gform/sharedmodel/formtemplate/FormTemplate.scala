@@ -30,6 +30,7 @@ case class FormTemplate(
   description: String,
   developmentPhase: Option[DevelopmentPhase] = Some(ResearchBanner),
   formCategory: Option[FormCategory],
+  draftRetrievalMethod: Option[DraftRetrievalMethod] = Some(OnePerUser),
   submissionReference: Option[TextExpression],
   dmsSubmission: DmsSubmission,
   authConfig: formtemplate.AuthConfig,
