@@ -38,7 +38,7 @@ object DraftRetrievalMethod {
           JsSuccess(FormAccessCodeForAgents)
         case JsString(err) =>
           JsError(s"only two values are allowed for draftRetrievalMethod: either onePerUser, or formAccessCodeForAgents; $err is not valid")
-        case _ => JsError("Failure")
+        case _ => JsError("Failure, a string value is required for a draftRetrievalMethod")
       }
   }
 }
