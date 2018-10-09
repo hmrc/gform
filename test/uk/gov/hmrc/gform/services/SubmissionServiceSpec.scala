@@ -112,6 +112,7 @@ class SubmissionServiceSpec extends Spec {
       description = "formTemplateDescription",
       developmentPhase = Some(ResearchBanner),
       formCategory = Some(Default),
+      draftRetrievalMethod = None,
       submissionReference = None,
       draftRetrievalMethod = None,
       dmsSubmission =
