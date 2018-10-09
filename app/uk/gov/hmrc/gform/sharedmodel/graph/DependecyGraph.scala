@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.sharedmodel.graph
 
-import cats.implicits._
+import cats.syntax.either._
 import scalax.collection.Graph
 import scalax.collection.GraphPredef._, scalax.collection.GraphEdge._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
@@ -44,7 +44,7 @@ object DependencyGraph {
     def eval(expr: Expr): List[FormComponentId] =
       expr match {
         case fc @ FormCtx(_)             => fc.toFieldId :: Nil
-        case Sum(FormCtx(fc))            => allFcIds.filter(_.value.endsWith(fc.value))
+        case Sum(FormCtx(fc))            => allFcIds.filter(_.value.endsWith(fc))
         case Add(field1, field2)         => eval(field1) ++ eval(field2)
         case Subtraction(field1, field2) => eval(field1) ++ eval(field2)
         case Multiply(field1, field2)    => eval(field1) ++ eval(field2)

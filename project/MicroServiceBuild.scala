@@ -23,7 +23,7 @@ object MicroServiceBuild extends Build with MicroService {
     "com.codecommit" %% "parseback-core" % parsebackVersion,
     "com.codecommit" %% "parseback-cats" % parsebackVersion,
     "org.julienrf" %% "play-json-derived-codecs" % "3.3",
-    "org.typelevel" %% "cats-core" % "1.1.0",
+    "org.typelevel" %% "cats-core" % "1.4.0",
     "org.apache.pdfbox" % "pdfbox" % "2.0.11",
     "io.github.cloudify" %% "spdf" % "1.4.0",
     "com.chuusai" %% "shapeless" % "2.3.3",

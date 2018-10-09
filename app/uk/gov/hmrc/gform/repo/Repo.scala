@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.repo
 
 import cats.data.EitherT
-import cats.implicits._
+import cats.syntax.either._
 import play.api.libs.json._
 import reactivemongo.api.DefaultDB
 import reactivemongo.api.commands.{ UpdateWriteResult, WriteConcern }
@@ -59,7 +59,7 @@ class Repo[T: OWrites: Manifest](name: String, mongo: () => DefaultDB, idLens: T
   private def idSelector(t: T)(implicit ec: ExecutionContext): JsObject = idSelector(idLens(t))
   private lazy val npProjection = Json.obj()
 
-  implicit class FutureWriteResultOps[T](t: Future[T])(implicit ec: ExecutionContext) {
+  implicit class FutureWriteResultOps[R](t: Future[R])(implicit ec: ExecutionContext) {
     def asEither: Future[Either[UnexpectedState, Unit]] =
       t.map {
         case _ => ().asRight
