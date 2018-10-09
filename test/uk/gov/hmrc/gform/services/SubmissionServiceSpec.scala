@@ -112,6 +112,7 @@ class SubmissionServiceSpec extends Spec {
       description = "formTemplateDescription",
       Some(ResearchBanner),
       formCategory = Some(Default),
+      draftRetrievalMethod = None,
       submissionReference = None,
       dmsSubmission =
         DmsSubmission("DMS-ID-XX", TextExpression(AuthCtx(PayeNino)), "classificationType", "businessArea"),
