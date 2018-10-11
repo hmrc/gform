@@ -114,7 +114,6 @@ class SubmissionServiceSpec extends Spec {
       formCategory = Some(Default),
       draftRetrievalMethod = None,
       submissionReference = None,
-      draftRetrievalMethod = None,
       dmsSubmission =
         DmsSubmission("DMS-ID-XX", TextExpression(AuthCtx(PayeNino)), "classificationType", "businessArea"),
       authConfig = HMRCAuthConfigWithRegimeId(
