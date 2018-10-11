@@ -110,17 +110,18 @@ class SubmissionServiceSpec extends Spec {
       _id = FormTemplateId("JustAFormTypeId"),
       formName = "formName",
       description = "formTemplateDescription",
-      Some(ResearchBanner),
+      developmentPhase = Some(ResearchBanner),
       formCategory = Some(Default),
       submissionReference = None,
+      draftRetrievalMethod = None,
       dmsSubmission =
         DmsSubmission("DMS-ID-XX", TextExpression(AuthCtx(PayeNino)), "classificationType", "businessArea"),
-      HMRCAuthConfigWithRegimeId(
+      authConfig = HMRCAuthConfigWithRegimeId(
         AuthConfigModule("TEST"),
         Some(RequireMTDAgentEnrolment),
         ServiceId("TEST"),
         RegimeId("TEST")),
-      "test-email-template-id",
+      emailTemplateId = "test-email-template-id",
       submitSuccessUrl = "http://somwehere-nice.net",
       submitErrorUrl = "http://somwehere-nasty.net",
       sections = List(section),

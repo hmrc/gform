@@ -244,6 +244,7 @@ class ValueParserSpec extends Spec {
     Some(ResearchBanner),
     Some(Default),
     None,
+    None,
     DmsSubmission("DMS-ID-XX", TextExpression(AuthCtx(PayeNino)), "BT-NRU-Environmental", "FinanceOpsCorpT"),
     HMRCAuthConfigWithRegimeId(
       AuthConfigModule("TEST"),
