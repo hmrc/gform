@@ -82,6 +82,8 @@ object ValueParser {
     | "auth" ~ "." ~ authInfo ^^ { (loc, _, _, authInfo) =>
       AuthCtx(authInfo)
     }
+    | emptyOnly
+
     | alphabeticOnly ~ ".sum" ^^ { (loc, value, _) =>
       Sum(FormCtx(value))
     }
@@ -114,6 +116,9 @@ object ValueParser {
 
   lazy val alphabeticOnly: Parser[String] = """[a-zA-Z][a-zA-Z0-9]+""".r ^^ { (loc, str) =>
     str
+  }
+  lazy val emptyOnly: Parser[Expr] = "''".r ^^ { (loc, value) =>
+    Constant("")
   }
 
   lazy val anyConstant: Parser[Constant] = ("""[ \w,]+""".r ^^ { (loc, str) =>
