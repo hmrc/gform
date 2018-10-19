@@ -68,7 +68,6 @@ object ExprParsers {
     | anyDigitConst ^^ { (loc, str) =>
       str
     }
-    | quotedConstant
     | alphabeticOnly ^^ { (loc, fn) =>
       FormCtx(fn)
     })
