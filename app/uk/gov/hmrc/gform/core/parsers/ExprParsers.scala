@@ -36,12 +36,17 @@ object ExprParsers {
   lazy val alphabeticOnly: Parser[String] = """\w+""".r ^^ { (loc, str) =>
     str
   }
+  lazy val quotedConstant: Parser[Expr] = ("'" ~ anyConstant ~ "'" ^^ { (loc, _, str, _) =>
+    str
+  }
+    |
+      "''".r ^^ { (loc, value) =>
+        Constant("")
+      })
 
   def validateExpr(expression: String): Opt[Expr] = validateWithParser(expression, exprFormCtx)
 
-  lazy val exprFormCtx: Parser[Expr] = ("'" ~ anyConstant ~ "'" ^^ { (loc, _, str, _) =>
-    str
-  }
+  lazy val exprFormCtx: Parser[Expr] = (quotedConstant
     | parserExpression)
 
   lazy val contextFieldExpr: Parser[Expr] = ("${" ~> parserExpression <~ "}"

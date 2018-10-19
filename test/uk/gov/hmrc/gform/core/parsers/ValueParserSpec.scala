@@ -30,7 +30,6 @@ class ValueParserSpec extends Spec {
     val res = ValueParser.validate("${1}")
     res.right.value should be(TextExpression(Constant("1")))
   }
-
   "ValueParser" should "parse integer with decimal point" in {
     val res = ValueParser.validate("${1.}")
     res.right.value should be(TextExpression(Constant("1.")))
@@ -40,7 +39,10 @@ class ValueParserSpec extends Spec {
     val res = ValueParser.validate("${12}")
     res.right.value should be(TextExpression(Constant("12")))
   }
-
+  "ValueParser" should "parse an empty string" in {
+    val res = ValueParser.validate("${''}")
+    res.right.value should be(TextExpression(Constant("")))
+  }
   "ValueParser" should "parse double digit integer" in {
     val res = ValueParser.validate("${1234}")
     res.right.value should be(TextExpression(Constant("1234")))
@@ -326,6 +328,11 @@ class ValueParserSpec extends Spec {
     val res = FormTemplateValidator
       .validate(List(Text(AnyText, FormCtx("firstNameTypo"))), formTemplateWithOneSection)
     res should be(Invalid("Form field 'firstNameTypo' is not defined in form template."))
+  }
+  it should "return invalid and not be parsed as empty string" in {
+    val res = FormTemplateValidator
+      .validate(List(Text(AnyText, FormCtx("'' * ''"))), formTemplateWithOneSection)
+    res should be(Invalid("Form field ''' * ''' is not defined in form template."))
   }
 
 }

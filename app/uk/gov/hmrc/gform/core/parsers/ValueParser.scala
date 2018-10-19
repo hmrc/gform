@@ -53,14 +53,10 @@ object ValueParser {
   lazy val lastDate: Parser[PreviousDateValue] =
     nextOrPrevious("last", PreviousDateValue.apply)
 
-  lazy val exprFormCtx: Parser[Expr] = ("'" ~ anyConstant ~ "'" ^^ { (loc, _, str, _) =>
-    str
-  }
+  lazy val exprFormCtx: Parser[Expr] = (quotedConstant
     | parserExpression)
 
-  lazy val expr: Parser[Expr] = ("'" ~ anyConstant ~ "'" ^^ { (loc, _, str, _) =>
-    str
-  }
+  lazy val expr: Parser[Expr] = (quotedConstant
     | "${" ~> parserExpression <~ "}")
 
   lazy val operation: Parser[Operation] = ("+" ^^ { (loc, _) =>
@@ -82,6 +78,8 @@ object ValueParser {
     | "auth" ~ "." ~ authInfo ^^ { (loc, _, _, authInfo) =>
       AuthCtx(authInfo)
     }
+    | quotedConstant
+
     | alphabeticOnly ~ ".sum" ^^ { (loc, value, _) =>
       Sum(FormCtx(value))
     }
@@ -115,6 +113,13 @@ object ValueParser {
   lazy val alphabeticOnly: Parser[String] = """[a-zA-Z][a-zA-Z0-9]+""".r ^^ { (loc, str) =>
     str
   }
+  lazy val quotedConstant: Parser[Expr] = ("'" ~ anyConstant ~ "'" ^^ { (loc, _, str, _) =>
+    str
+  }
+    |
+      "''".r ^^ { (loc, value) =>
+        Constant("")
+      })
 
   lazy val anyConstant: Parser[Constant] = ("""[ \w,]+""".r ^^ { (loc, str) =>
     Constant(str)
