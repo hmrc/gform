@@ -329,5 +329,10 @@ class ValueParserSpec extends Spec {
       .validate(List(Text(AnyText, FormCtx("firstNameTypo"))), formTemplateWithOneSection)
     res should be(Invalid("Form field 'firstNameTypo' is not defined in form template."))
   }
+  it should "return invalid and not be parsed as empty string" in {
+    val res = FormTemplateValidator
+      .validate(List(Text(AnyText, FormCtx("'' * ''"))), formTemplateWithOneSection)
+    res should be(Invalid("Form field ''' * ''' is not defined in form template."))
+  }
 
 }
