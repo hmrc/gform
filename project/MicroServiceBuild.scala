@@ -15,19 +15,19 @@ object MicroServiceBuild extends Build with MicroService {
   val compile = Seq(
     ws,
     "uk.gov.hmrc" %% "play-reactivemongo" % "6.2.0",
-    "com.github.pureconfig" %% "pureconfig" % "0.9.1",
+    "com.github.pureconfig" %% "pureconfig" % "0.9.2",
     "uk.gov.hmrc" %% "http-caching-client" % "7.1.0",
-    "uk.gov.hmrc" %% "microservice-bootstrap" % "8.4.0",
+    "uk.gov.hmrc" %% "microservice-bootstrap" % "8.5.0",
     "uk.gov.hmrc" %% "domain" % "5.2.0",
     "com.codecommit" %% "parseback-core" % parsebackVersion,
     "com.codecommit" %% "parseback-cats" % parsebackVersion,
     "org.julienrf" %% "play-json-derived-codecs" % "3.3",
     "org.typelevel" %% "cats-core" % "1.4.0",
-    "org.apache.pdfbox" % "pdfbox" % "2.0.11",
+    "org.apache.pdfbox" % "pdfbox" % "2.0.12",
     "io.github.cloudify" %% "spdf" % "1.4.0",
     "com.chuusai" %% "shapeless" % "2.3.3",
-    "com.github.mpilquist" %% "simulacrum" % "0.12.0",
-    "uk.gov.hmrc" %% "auth-client" % "2.6.0", // we need AffinityGroup type to stay in sync with frontend
+    "com.github.mpilquist" %% "simulacrum" % "0.13.0",
+    "uk.gov.hmrc" %% "auth-client" % "2.16.0-play-25", // we need AffinityGroup type to stay in sync with frontend
     "org.scala-graph" %% "graph-core" % "1.12.5"
   )
 
