@@ -65,9 +65,10 @@ trait MicroService {
       addTestReportOption(IntegrationTest, "int-test-reports"),
       testGrouping in IntegrationTest := oneForkedJvmPerTest2((definedTests in IntegrationTest).value),
       parallelExecution in IntegrationTest := false)
-      .settings(resolvers ++= Seq(
-        Resolver.jcenterRepo
-      ))
+    .settings(resolvers ++= Seq(
+      Resolver.jcenterRepo,
+      "bintray-djspiewak-maven" at "https://dl.bintray.com/djspiewak/maven"
+    ))
 }
 
 private object TestPhases {

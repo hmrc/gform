@@ -4,8 +4,6 @@ resolvers += "HMRC Releases" at "https://dl.bintray.com/hmrc/releases"
 
 resolvers += "Typesafe Releases" at "http://repo.typesafe.com/typesafe/releases/"
 
-resolvers += "Bintray djspiewak" at "https://dl.bintray.com/djspiewak/maven"
-
 addSbtPlugin("uk.gov.hmrc" % "sbt-auto-build" % "1.13.0")
 
 addSbtPlugin("uk.gov.hmrc" % "sbt-git-versioning" % "1.15.0")
