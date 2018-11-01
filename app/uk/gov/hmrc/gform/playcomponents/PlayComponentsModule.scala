@@ -93,7 +93,8 @@ class PlayComponentsModule(
       errorHandler,
       prodRoutes,
       testOnlyModule.testOnlyController,
-      testOnlyModule.fUInterceptor)
+      testOnlyModule.fUInterceptor,
+      testOnlyModule.pdfGeneratorStub)
 
   lazy val router: Router = {
     val key = "application.router"

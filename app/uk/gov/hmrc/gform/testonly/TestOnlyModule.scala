@@ -35,5 +35,5 @@ class TestOnlyModule(
   val proxyActions = new Proxy(playComponents.ahcWSComponents.wsClient)
   val fUInterceptor: FUInterceptorController =
     new FUInterceptorController(wSHttpModule.auditableWSHttp, configModule.serviceConfig, proxyActions)
-  val pdfGeneratorStub  = new PdfGeneratorStubController
+  val pdfGeneratorStub = new PdfGeneratorStubController
 }

@@ -30,4 +30,4 @@ DELETE        /gform/test-only/file-upload-interceptor/intercept/*path          
 POST          /gform/test-only/file-upload-interceptor/set-response/*path        uk.gov.hmrc.gform.testonly.FUInterceptorController.setPredefinedResponse(path: String)
 GET           /gform/test-only/file-upload-interceptor/get-responses             uk.gov.hmrc.gform.testonly.FUInterceptorController.getPredefinedResponses()
 
-GET           /gform/test-only/pdf-generator-service/generate                    uk.gov.hmrc.gform.testonly.PdfGenerateStubController.generate
+POST          /gform/test-only/pdf-generator-service/generate                    uk.gov.hmrc.gform.testonly.PdfGeneratorStubController.generate()
