@@ -16,7 +16,6 @@ POST        /gform/test-only/de-enrol/userId/:userId                            
 POST        /gform/test-only/upload                                              uk.gov.hmrc.gform.testonly.TestOnlyController.upload()
 POST        /gform/test-only/delete                                              uk.gov.hmrc.gform.testonly.TestOnlyController.delete()
 
-#TODO move it to testOnlyDoNotUseInAppConf.routes
 GET           /gform/test-only/remove-templates                                  uk.gov.hmrc.gform.testonly.TestOnlyController.removeTemplates()
 GET           /gform/test-only/build-info                                        uk.gov.hmrc.gform.testonly.TestOnlyController.buildInfo()
 GET           /gform/test-only/config                                            uk.gov.hmrc.gform.testonly.TestOnlyController.config()
@@ -31,4 +30,4 @@ DELETE        /gform/test-only/file-upload-interceptor/intercept/*path          
 POST          /gform/test-only/file-upload-interceptor/set-response/*path        uk.gov.hmrc.gform.testonly.FUInterceptorController.setPredefinedResponse(path: String)
 GET           /gform/test-only/file-upload-interceptor/get-responses             uk.gov.hmrc.gform.testonly.FUInterceptorController.getPredefinedResponses()
 
-
+GET           /gform/test-only/pdf-generator-service/generate                    uk.gov.hmrc.gform.testonly.PdfGenerateStubController.generate
