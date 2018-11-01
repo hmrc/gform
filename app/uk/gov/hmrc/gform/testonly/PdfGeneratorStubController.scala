@@ -16,12 +16,22 @@
 
 package uk.gov.hmrc.gform.testonly
 
+import java.io.ByteArrayOutputStream
+
 import play.api.mvc.Action
 import uk.gov.hmrc.gform.controllers.BaseController
+import org.apache.pdfbox.pdmodel.{ PDDocument, PDPage }
 
 class PdfGeneratorStubController extends BaseController {
 
-  def generate = Action {
-    Ok
+  def generate() = Action {
+    val document = new PDDocument()
+    val blankPage = new PDPage()
+    document.addPage(blankPage)
+    val stream = new ByteArrayOutputStream()
+    document.save(stream)
+    document.close
+
+    Ok(stream.toByteArray).as("application/pdf")
   }
 }

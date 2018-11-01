@@ -43,5 +43,6 @@ class PdfGeneratorConnector(servicesConfig: ServicesConfig, wSHttp: WSHttp) {
     }
   }
 
-  lazy val baseURL = servicesConfig.baseUrl("pdf-generator")
+  private val serviceName = "pdf-generator"
+  lazy val baseURL = servicesConfig.baseUrl(serviceName) + servicesConfig.getConfString(s"$serviceName.base-path", "")
 }
