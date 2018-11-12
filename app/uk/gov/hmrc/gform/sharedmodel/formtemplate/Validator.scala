@@ -20,7 +20,6 @@ import cats.data.Validated
 import cats.data.Validated.{ Invalid, Valid }
 import play.api.libs.json._
 import play.api.libs.json.Reads._
-import uk.gov.hmrc.gform.core.parsers.ExprParsers
 import play.api.libs.functional.syntax._
 import play.api.libs.functional.syntax._
 

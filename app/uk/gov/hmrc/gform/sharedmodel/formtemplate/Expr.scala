@@ -80,6 +80,16 @@ object Eeitt {
 
 sealed trait UserField
 final case object AffinityGroup extends UserField
+final case class Enrolment(serviceName: ServiceName, identifierName: IdentifierName) extends UserField
+
+final case class ServiceName(value: String) extends AnyVal
+object ServiceName {
+  implicit val format: OFormat[ServiceName] = derived.oformat
+}
+final case class IdentifierName(value: String) extends AnyVal
+object IdentifierName {
+  implicit val format: OFormat[IdentifierName] = derived.oformat
+}
 
 object UserField {
   implicit val format: OFormat[UserField] = derived.oformat

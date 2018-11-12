@@ -118,6 +118,12 @@ class ValueParserSpec extends Spec {
     res.right.value should be(TextExpression(FormCtx("firstName")))
   }
 
+  it should "parse ${user.enrolments.HMRC-AS-AGENT.AgentReferenceNumber}" in {
+    val res = ValueParser.validate("${user.enrolments.HMRC-AS-AGENT.AgentReferenceNumber}")
+    res.right.value should be(
+      TextExpression(UserCtx(Enrolment(ServiceName("HMRC-AS-AGENT"), IdentifierName("AgentReferenceNumber")))))
+  }
+
   it should "parse ${someId.sum}" in {
     val res = ValueParser.validate("${age.sum}")
 
