@@ -155,9 +155,24 @@ object ValueParser {
     })
 
   lazy val userField: Parser[UserField] =
-    "affinityGroup" ^^ { (loc, _) =>
+    ("affinityGroup" ^^ { (loc, _) =>
       AffinityGroup
     }
+      | "enrolments" ~ "." ~ enrolment ^^ { (_, _, _, en) =>
+        en
+      })
+
+  lazy val enrolment: Parser[Enrolment] = serviceName ~ "." ~ identifierName ^^ { (_, sn, _, in) =>
+    Enrolment(sn, in)
+  }
+
+  lazy val serviceName: Parser[ServiceName] = """[^.]+""".r ^^ { (loc, str) =>
+    ServiceName(str)
+  }
+
+  lazy val identifierName: Parser[IdentifierName] = """[^.}]+""".r ^^ { (loc, str) =>
+    IdentifierName(str)
+  }
 
   lazy val authInfo: Parser[AuthInfo] = ("gg" ^^ { (_, _) =>
     GG

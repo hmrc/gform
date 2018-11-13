@@ -30,55 +30,55 @@ class ValueParserSpec extends Spec {
     val res = ValueParser.validate("${1}")
     res.right.value should be(TextExpression(Constant("1")))
   }
-  "ValueParser" should "parse integer with decimal point" in {
+  it should "parse integer with decimal point" in {
     val res = ValueParser.validate("${1.}")
     res.right.value should be(TextExpression(Constant("1.")))
   }
 
-  "ValueParser" should "parse multi digit integer" in {
+  it should "parse multi digit integer" in {
     val res = ValueParser.validate("${12}")
     res.right.value should be(TextExpression(Constant("12")))
   }
-  "ValueParser" should "parse an empty string" in {
+  it should "parse an empty string" in {
     val res = ValueParser.validate("${''}")
     res.right.value should be(TextExpression(Constant("")))
   }
-  "ValueParser" should "parse double digit integer" in {
+  it should "parse double digit integer" in {
     val res = ValueParser.validate("${1234}")
     res.right.value should be(TextExpression(Constant("1234")))
   }
 
-  "ValueParser" should "parse multi digit integer with thousand separators" in {
+  it should "parse multi digit integer with thousand separators" in {
     val res = ValueParser.validate("${1,234}")
     res.right.value should be(TextExpression(Constant("1,234")))
   }
 
-  "ValueParser" should "parse double digit decimal fraction" in {
+  it should "parse double digit decimal fraction" in {
     val res = ValueParser.validate("${.12}")
     res.right.value should be(TextExpression(Constant(".12")))
   }
 
-  "ValueParser" should "parse multi digit decimal fraction" in {
+  it should "parse multi digit decimal fraction" in {
     val res = ValueParser.validate("${.123}")
     res.right.value should be(TextExpression(Constant(".123")))
   }
 
-  "ValueParser" should "parse number plus decimal fraction" in {
+  it should "parse number plus decimal fraction" in {
     val res = ValueParser.validate("${1,234.1}")
     res.right.value should be(TextExpression(Constant("1,234.1")))
   }
 
-  "ValueParser" should "parse number plus double digit decimal fraction" in {
+  it should "parse number plus double digit decimal fraction" in {
     val res = ValueParser.validate("${1,234.12}")
     res.right.value should be(TextExpression(Constant("1,234.12")))
   }
 
-  "ValueParser" should "parse number plus multi digit decimal fraction" in {
+  it should "parse number plus multi digit decimal fraction" in {
     val res = ValueParser.validate("${1,234.123}")
     res.right.value should be(TextExpression(Constant("1,234.123")))
   }
 
-  "ValueParser" should "parse ${firstName}" in {
+  it should "parse ${firstName}" in {
     val res = ValueParser.validate("${firstName}")
     res.right.value should be(TextExpression(FormCtx("firstName")))
   }
@@ -116,6 +116,39 @@ class ValueParserSpec extends Spec {
   it should "parse ${form.firstName}" in {
     val res = ValueParser.validate("${form.firstName}")
     res.right.value should be(TextExpression(FormCtx("firstName")))
+  }
+
+  it should "parse ${user.enrolments.<identifierName>.<referenceName>}" in {
+
+    val validIdentifiersCombinations = Table(
+      // format: off
+      ("serviceName", "identifierName"),
+      ("HMRC-AS-AGENT", "AgentReferenceNumber"),
+      ("HMRC AS-AGENT", "Agent Reference Number"),
+      ("test-{{}}}}", ")(*&^%$#@@@)")
+      // format: on
+    )
+
+    val invalidIdentifiersCombinations = Table(
+      // format: off
+      ("serviceName", "identifierName"),
+      ("HMRC.AA.AGENT", "AgentReferenceNumber"),  // serviceName    cannot include `.`
+      ("HMRC-AS-AGENT", "Agent.ReferenceNumber"), // identifierName cannot include `.`
+      ("HMRC-AS-AGENT", "Agent}ReferenceNumber")  // identifierName cannot include `}`
+      // format: on
+    )
+
+    forAll(validIdentifiersCombinations) { (serviceName, identifierName) ⇒
+      val res = ValueParser.validate(s"$${user.enrolments.$serviceName.$identifierName}")
+      res.right.value should be(
+        TextExpression(UserCtx(Enrolment(ServiceName(serviceName), IdentifierName(identifierName)))))
+    }
+
+    forAll(invalidIdentifiersCombinations) { (serviceName, identifierName) ⇒
+      val res = ValueParser.validate("${user.enrolments." + serviceName + "." + identifierName + "}")
+      res.left.value.error should include(
+        s"Unable to parse expression $${user.enrolments.$serviceName.$identifierName}")
+    }
   }
 
   it should "parse ${someId.sum}" in {
