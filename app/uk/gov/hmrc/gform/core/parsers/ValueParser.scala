@@ -166,11 +166,11 @@ object ValueParser {
     Enrolment(sn, in)
   }
 
-  lazy val serviceName: Parser[ServiceName] = """[A-Z-]+""".r ^^ { (loc, str) =>
+  lazy val serviceName: Parser[ServiceName] = """[^.]+""".r ^^ { (loc, str) =>
     ServiceName(str)
   }
 
-  lazy val identifierName: Parser[IdentifierName] = """[a-zA-Z]+""".r ^^ { (loc, str) =>
+  lazy val identifierName: Parser[IdentifierName] = """[^.}]+""".r ^^ { (loc, str) =>
     IdentifierName(str)
   }
 
