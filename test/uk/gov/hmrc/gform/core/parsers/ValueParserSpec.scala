@@ -281,11 +281,9 @@ class ValueParserSpec extends Spec {
     None,
     None,
     DmsSubmission("DMS-ID-XX", TextExpression(AuthCtx(PayeNino)), "BT-NRU-Environmental", "FinanceOpsCorpT"),
-    HMRCAuthConfigWithRegimeId(
-      AuthConfigModule("TEST"),
-      Some(RequireMTDAgentEnrolment),
-      ServiceId("TEST"),
-      RegimeId("TEST")),
+    HmrcAgentWithEnrolmentModule(
+      RequireMTDAgentEnrolment,
+      EnrolmentAuth(ServiceId("TEST"), DoCheck(Always, RejectAccess, RegimeIdCheck(RegimeId("TEST"))))),
     "test-email-template-id",
     "submitSuccessUrl",
     "submitErrorUrl",
