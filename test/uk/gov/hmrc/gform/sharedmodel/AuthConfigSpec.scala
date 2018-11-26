@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.sharedmodel
 
-import play.api.libs.json.{ Reads, _ }
+import play.api.libs.json._
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
@@ -28,7 +28,7 @@ class AuthConfigSpec extends Spec {
      |  "regimeId": "IP"
      |}""")
     authConfigValue shouldBe JsSuccess(
-      EEITTAuthConfig(AuthConfigModule("legacyEEITTAuth"), RegimeId("IP"))
+      EeittModule(RegimeId("IP"))
     )
   }
 
@@ -36,9 +36,7 @@ class AuthConfigSpec extends Spec {
     val authConfigValue = toAuthConfig(s"""|{
      |  "authModule": "hmrc"
      |}""")
-    authConfigValue shouldBe JsSuccess(
-      HMRCAuthConfigWithAuthModule(AuthConfigModule("hmrc"), None)
-    )
+    authConfigValue shouldBe JsSuccess(HmrcSimpleModule)
   }
 
   it should "parse HMRC auth with agentAccess" in {
@@ -47,7 +45,7 @@ class AuthConfigSpec extends Spec {
      |  "agentAccess": "allowAnyAgentAffinityUser"
      |}""")
     authConfigValue shouldBe JsSuccess(
-      HMRCAuthConfigWithAuthModule(AuthConfigModule("hmrc"), Some(AllowAnyAgentAffinityUser))
+      HmrcAgentModule(AllowAnyAgentAffinityUser)
     )
   }
 
@@ -55,10 +53,13 @@ class AuthConfigSpec extends Spec {
     val authConfigValue = toAuthConfig(s"""|{
      |  "authModule": "hmrc",
      |  "agentAccess": "allowAnyAgentAffinityUser",
+     |  "enrolmentCheck": "always",
      |  "serviceId": "Z"
      |}""")
     authConfigValue shouldBe JsSuccess(
-      HMRCAuthConfigWithServiceId(AuthConfigModule("hmrc"), Some(AllowAnyAgentAffinityUser), ServiceId("Z"))
+      HmrcAgentWithEnrolmentModule(
+        AllowAnyAgentAffinityUser,
+        EnrolmentAuth(ServiceId("Z"), DoCheck(Always, RejectAccess, NoCheck)))
     )
   }
 
@@ -66,15 +67,14 @@ class AuthConfigSpec extends Spec {
     val authConfigValue = toAuthConfig(s"""|{
      |  "authModule": "hmrc",
      |  "agentAccess": "allowAnyAgentAffinityUser",
+     |  "enrolmentCheck": "always",
      |  "serviceId": "Z",
      |  "regimeId": "IP"
      |}""")
     authConfigValue shouldBe JsSuccess(
-      HMRCAuthConfigWithRegimeId(
-        AuthConfigModule("hmrc"),
-        Some(AllowAnyAgentAffinityUser),
-        ServiceId("Z"),
-        RegimeId("IP"))
+      HmrcAgentWithEnrolmentModule(
+        AllowAnyAgentAffinityUser,
+        EnrolmentAuth(ServiceId("Z"), DoCheck(Always, RejectAccess, RegimeIdCheck(RegimeId("IP")))))
     )
   }
 
@@ -82,15 +82,14 @@ class AuthConfigSpec extends Spec {
     val authConfigValue = toAuthConfig(s"""|{
      |  "authModule": "hmrc",
      |  "agentAccess": "allowAnyAgentAffinityUser",
+     |  "enrolmentCheck": "always",
      |  "serviceId": "Z",
      |  "enrolmentSection": {"title": "t", "fields":[]}
      |}""")
     authConfigValue shouldBe JsSuccess(
-      formtemplate.HMRCAuthConfigWithEnrolment(
-        AuthConfigModule("hmrc"),
-        Some(AllowAnyAgentAffinityUser),
-        ServiceId("Z"),
-        formtemplate.EnrolmentSection("t", None, List()))
+      HmrcAgentWithEnrolmentModule(
+        AllowAnyAgentAffinityUser,
+        EnrolmentAuth(ServiceId("Z"), DoCheck(Always, RequireEnrolment(EnrolmentSection("t", None, List())), NoCheck)))
     )
   }
 
@@ -99,16 +98,17 @@ class AuthConfigSpec extends Spec {
      |  "authModule": "hmrc",
      |  "agentAccess": "allowAnyAgentAffinityUser",
      |  "serviceId": "Z",
+     |  "enrolmentCheck": "always",
      |  "regimeId": "IP",
      |  "enrolmentSection": {"title": "t", "fields":[]}
      |}""")
     authConfigValue shouldBe JsSuccess(
-      formtemplate.HMRCAuthConfig(
-        AuthConfigModule("hmrc"),
-        Some(AllowAnyAgentAffinityUser),
-        ServiceId("Z"),
-        RegimeId("IP"),
-        formtemplate.EnrolmentSection("t", None, List()))
+      HmrcAgentWithEnrolmentModule(
+        AllowAnyAgentAffinityUser,
+        EnrolmentAuth(
+          ServiceId("Z"),
+          DoCheck(Always, RequireEnrolment(EnrolmentSection("t", None, List())), RegimeIdCheck(RegimeId("IP"))))
+      )
     )
   }
 

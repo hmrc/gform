@@ -33,8 +33,6 @@ trait ExampleData
 
 trait ExampleAuthConfig {
 
-  def authConfigModule = AuthConfigModule("TESTAuthConfigModule")
-
   def dmsSubmission =
     DmsSubmission("DMS-ID-XX", TextExpression(AuthCtx(PayeNino)), "BT-NRU-Environmental", "FinanceOpsCorpT")
 
@@ -42,7 +40,7 @@ trait ExampleAuthConfig {
 
   def regimeId = RegimeId("TestRegimeId")
 
-  def authConfig = HMRCAuthConfigWithRegimeId(authConfigModule, Some(RequireMTDAgentEnrolment), serviceId, regimeId)
+  def authConfig = EeittModule(regimeId)
 }
 
 trait ExampleFieldId {

@@ -116,11 +116,9 @@ class SubmissionServiceSpec extends Spec {
       submissionReference = None,
       dmsSubmission =
         DmsSubmission("DMS-ID-XX", TextExpression(AuthCtx(PayeNino)), "classificationType", "businessArea"),
-      authConfig = HMRCAuthConfigWithRegimeId(
-        AuthConfigModule("TEST"),
-        Some(RequireMTDAgentEnrolment),
-        ServiceId("TEST"),
-        RegimeId("TEST")),
+      authConfig = HmrcAgentWithEnrolmentModule(
+        RequireMTDAgentEnrolment,
+        EnrolmentAuth(ServiceId("TEST"), DoCheck(Always, RejectAccess, RegimeIdCheck(RegimeId("TEST"))))),
       emailTemplateId = "test-email-template-id",
       submitSuccessUrl = "http://somwehere-nice.net",
       submitErrorUrl = "http://somwehere-nasty.net",
