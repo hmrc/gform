@@ -145,7 +145,7 @@ object FormTemplateValidator {
     case Address(_)                    => Valid
     case Choice(_, _, _, _, _)         => Valid
     case Group(fvs, _, _, _, _, _)     => validate(fvs.map(_.`type`), formTemplate)
-    case FileUpload()                  => validateFileUploadAmount(formTemplate.sections)
+    case FileUpload()                  => Valid
     case InformationMessage(_, _)      => Valid
   }
 
@@ -219,23 +219,6 @@ object FormTemplateValidator {
     case Sum(field1)              => evalExpr(field1)
     case id: FormCtx              => List(id.toFieldId)
     case _                        => Nil
-  }
-
-  private def validateFileUploadAmount(sections: List[Section]): ValidationResult = {
-    def countFileUpload(formComponent: FormComponent): List[FileUpload] = formComponent.`type` match {
-      case x: FileUpload => List(x)
-      case g @ Group(_, _, max, _, _, _) =>
-        g.fields
-          .flatMap(countFileUpload)
-          .flatMap(List.fill(max.getOrElse(1))(_))
-      case _ => Nil
-    }
-
-    val is = sections
-      .flatMap(section => section.fields.flatMap(countFileUpload))
-      .size <= 6 //this is set to 6 as we append to files to the envelope aswell.
-
-    isValid(is, "Form template contains too many file upload components max is 6")
   }
 
   private def isValid(is: Boolean, errorMessage: String) =
