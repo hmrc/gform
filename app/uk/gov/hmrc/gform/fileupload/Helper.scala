@@ -34,9 +34,8 @@ class Helper(config: FUConfig, timeProvider: TimeProvider) {
         "maxItems"       -> config.maxItems,
         "maxSize"        -> config.maxSize,
         "maxSizePerItem" -> config.maxSizePerItem),
-      "callbackUrl" -> "someCallback",
-      "expiryDate"  -> s"$envelopeExpiryDate",
-      "metadata"    -> Json.obj("application" -> "gform", "formTemplateId" -> s"${formTemplateId.value}")
+      "expiryDate" -> s"$envelopeExpiryDate",
+      "metadata"   -> Json.obj("application" -> "gform", "formTemplateId" -> s"${formTemplateId.value}")
     )
 
   /**
