@@ -53,10 +53,11 @@ class Helper(config: FUConfig, timeProvider: TimeProvider) {
   private lazy val EnvelopeIdExtractor = "envelopes/([\\w\\d-]+)$".r.unanchored
   private def envelopeExpiryDate = {
     val time: LocalDateTime = timeProvider.localDateTime()
-    Logger.info(s"Envelope expiry current time ${time.format(formatter)}")
-    val timePlus: LocalDateTime = time.plusDays(config.expiryDays.toLong)
+    val expiryDays = config.expiryDays.toLong
+    val timePlus: LocalDateTime = time.plusDays(expiryDays)
     val exp = timePlus.format(formatter)
-    Logger.info(s"Envelope expiry expiry calculated time ${exp.format(formatter)}")
+    Logger.info(s"Envelope expiry current time ${time
+      .format(formatter)} expiry days $expiryDays and calculated expiry time ${exp.format(formatter)}")
     Logger.info("Setting fixed envelope expiry time as an emergency fix 2018-12-30T10:25:38Z")
     "2018-12-30T10:25:38Z" // TODO This is an emergency fix, only
   }
