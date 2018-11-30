@@ -41,7 +41,7 @@ class HelperSpec extends Spec {
         "maxSizePerItem" -> "5MB"
       ),
       "callbackUrl" -> "someCallback",
-      "expiryDate"  -> "2018-12-30T10:25:38Z", // TODO emergency fix
+      "expiryDate"  -> "2017-02-11T05:45:00Z",
       "metadata"    -> Json.obj("application" -> "gform", "formTemplateId" -> "AAA999")
     )
   }
