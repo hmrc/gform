@@ -34,7 +34,7 @@ class AppConfigSpec extends Spec {
     appConfig.formExpiryDays shouldBe 30
     appConfig.formMaxAttachments shouldBe 15
     appConfig.formMaxAttachmentSizeMB shouldBe 10
-    appConfig.formMaxAttachmentTotalSizeMB shouldBe 26
+    appConfig.formMaxAttachmentTotalSizeMB shouldBe 25
     appConfig.contentTypes shouldBe List(
       ContentType.`application/pdf`,
       ContentType.`image/jpeg`,
