@@ -16,10 +16,8 @@
 
 package uk.gov.hmrc.gform.fileupload
 
-import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-import play.Logger
 import play.api.http.HeaderNames.LOCATION
 import play.api.libs.json.{ JsObject, Json }
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
@@ -51,16 +49,7 @@ class Helper(config: FUConfig, timeProvider: TimeProvider) {
   }
 
   private lazy val EnvelopeIdExtractor = "envelopes/([\\w\\d-]+)$".r.unanchored
-  private def envelopeExpiryDate = {
-    val time: LocalDateTime = timeProvider.localDateTime()
-    val expiryDays = config.expiryDays.toLong
-    val timePlus: LocalDateTime = time.plusDays(expiryDays)
-    val exp = timePlus.format(formatter)
-    Logger.info(s"Envelope expiry current time ${time
-      .format(formatter)} expiry days $expiryDays and calculated expiry time ${exp.format(formatter)}")
-    Logger.info("Setting fixed envelope expiry time as an emergency fix 2018-12-30T10:25:38Z")
-    "2018-12-30T10:25:38Z" // TODO This is an emergency fix, only
-  }
-  private val formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'")
+  private def envelopeExpiryDate = timeProvider.localDateTime().plusDays(config.expiryDays.toLong).format(formatter)
+  private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
   private lazy val contentTypesJson = Json.toJson(config.contentTypes)
 }
