@@ -55,7 +55,7 @@ class Helper(config: FUConfig, timeProvider: TimeProvider) {
     val time: LocalDateTime = timeProvider.localDateTime()
     Logger.info(s"Envelope expiry current time ${time.format(formatter)}")
     val timePlus: LocalDateTime = time.plusDays(config.expiryDays.toLong)
-    val exp = time.format(formatter)
+    val exp = timePlus.format(formatter)
     Logger.info(s"Envelope expiry expiry calculated time ${exp.format(formatter)}")
     Logger.info("Setting fixed envelope expiry time as an emergency fix 2018-12-30T10:25:38Z")
     "2018-12-30T10:25:38Z" // TODO This is an emergency fix, only
