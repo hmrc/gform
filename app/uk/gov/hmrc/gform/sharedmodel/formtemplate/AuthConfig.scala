@@ -23,6 +23,7 @@ import uk.gov.hmrc.auth.core.{ AffinityGroup => CoreAffinityGroup }
 import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
 
 object EEITTAuthConfig {
+  val eeittAuth = "legacyEEITTAuth"
   val nonAgentIdName = "registrationNumber"
   val agentIdName = "arn"
 }
@@ -136,24 +137,21 @@ object AuthConfig {
     serviceId: ServiceId,
     maybeRegimeId: Option[RegimeId],
     maybeEnrolmentCheck: Option[EnrolmentCheckVerb],
-    maybeEnrolmentSection: Option[EnrolmentSection]): Either[String, EnrolmentAuth] =
+    maybeEnrolmentSection: Option[EnrolmentSection]): EnrolmentAuth =
     (maybeEnrolmentCheck, maybeEnrolmentSection) match {
-      case (Some(NeverVerb), _) => Right(EnrolmentAuth(serviceId, Never))
       case (Some(AlwaysVerb), Some(enrolmentSection)) =>
-        Right(
-          EnrolmentAuth(
-            serviceId,
-            DoCheck(Always, RequireEnrolment(enrolmentSection), toEnrolmentPostCheck(maybeRegimeId))))
+        EnrolmentAuth(
+          serviceId,
+          DoCheck(Always, RequireEnrolment(enrolmentSection), toEnrolmentPostCheck(maybeRegimeId)))
       case (Some(ForNonAgentsVerb), Some(enrolmentSection)) =>
-        Right(
-          EnrolmentAuth(
-            serviceId,
-            DoCheck(ForNonAgents, RequireEnrolment(enrolmentSection), toEnrolmentPostCheck(maybeRegimeId))))
+        EnrolmentAuth(
+          serviceId,
+          DoCheck(ForNonAgents, RequireEnrolment(enrolmentSection), toEnrolmentPostCheck(maybeRegimeId)))
       case (Some(AlwaysVerb), None) =>
-        Right(EnrolmentAuth(serviceId, DoCheck(Always, RejectAccess, toEnrolmentPostCheck(maybeRegimeId))))
+        EnrolmentAuth(serviceId, DoCheck(Always, RejectAccess, toEnrolmentPostCheck(maybeRegimeId)))
       case (Some(ForNonAgentsVerb), None) =>
-        Right(EnrolmentAuth(serviceId, DoCheck(ForNonAgents, RejectAccess, toEnrolmentPostCheck(maybeRegimeId))))
-      case (None, _) => Left("enrolmentCheck not provided. Expected one of 'never', 'always' or 'forNonAgents'")
+        EnrolmentAuth(serviceId, DoCheck(ForNonAgents, RejectAccess, toEnrolmentPostCheck(maybeRegimeId)))
+      case (Some(NeverVerb) | None, _) => EnrolmentAuth(serviceId, Never)
     }
 
   implicit val format: OFormat[AuthConfig] = {
@@ -178,13 +176,13 @@ object AuthConfig {
                              maybeAgentAccess.fold(JsSuccess(HmrcSimpleModule: AuthConfig))(agentAccess =>
                                JsSuccess(HmrcAgentModule(agentAccess)))
                            case Some(serviceId) =>
-                             toEnrolmentAuth(serviceId, maybeRegimeId, maybeEnrolmentCheck, maybeEnrolmentSection) match {
-                               case Left(error) => JsError(error)
-                               case Right(enrolmentAuth) =>
-                                 JsSuccess(
-                                   maybeAgentAccess.fold(HmrcEnrolmentModule(enrolmentAuth): AuthConfig)(
-                                     HmrcAgentWithEnrolmentModule(_, enrolmentAuth)))
-                             }
+                             val enrolmentAuth =
+                               toEnrolmentAuth(serviceId, maybeRegimeId, maybeEnrolmentCheck, maybeEnrolmentSection)
+
+                             JsSuccess(
+                               maybeAgentAccess.fold(HmrcEnrolmentModule(enrolmentAuth): AuthConfig)(
+                                 HmrcAgentWithEnrolmentModule(_, enrolmentAuth)))
+
                          }
                      }
       } yield authConfig
