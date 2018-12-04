@@ -59,6 +59,7 @@ class FormTemplateService(formTemplateRepo: FormTemplateRepo, formTemplateRawRep
       _          <- fromOptA(FormTemplateValidator.validateForwardReference(sections).toEither)
       _          <- fromOptA(FormTemplateValidator.validate(exprs, formTemplate).toEither)
       _          <- fromOptA(FormTemplateValidator.validateDependencyGraph(formTemplate).toEither)
+      _          <- fromOptA(FormTemplateValidator.validateRegimeId(formTemplate).toEither)
       res        <- formTemplateRepo.upsert(formTemplate)
     } yield res
     // format: ON

@@ -128,6 +128,19 @@ object FormTemplateValidator {
     }
   }
 
+  def validateRegimeId(formTemplate: FormTemplate): ValidationResult = {
+    def regimeIdCheck(regimeId: RegimeId): ValidationResult =
+      if (regimeId.value.size >= 2 && regimeId.value.size <= 8)
+        Valid
+      else Invalid("Regime id must be between 2 and 8 characters long")
+    formTemplate.authConfig match {
+      case HmrcEnrolmentModule(EnrolmentAuth(_, DoCheck(_, _, RegimeIdCheck(regimeId)))) => regimeIdCheck(regimeId)
+      case HmrcAgentWithEnrolmentModule(_, EnrolmentAuth(_, DoCheck(_, _, RegimeIdCheck(regimeId)))) =>
+        regimeIdCheck(regimeId)
+      case _ => Valid
+    }
+  }
+
   def validateDependencyGraph(formTemplate: FormTemplate): ValidationResult = {
     val graph: Graph[FormComponentId, DiEdge] = toGraph(formTemplate)
     constructDepencyGraph(graph).bimap(const(Invalid(s"Graph contains cycle ${graph.findCycle}")), const(Valid)).merge
