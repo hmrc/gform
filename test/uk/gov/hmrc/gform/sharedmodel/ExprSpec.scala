@@ -22,8 +22,8 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Add, Constant, Expr, FormCtx
 
 class ExprSpec extends Spec {
 
-  val add = Add(FormCtx("fieldA"), FormCtx("fieldB"))
-  val addJson = Json.obj(
+  private val add = Add(FormCtx("fieldA"), FormCtx("fieldB"))
+  private val addJson = Json.obj(
     "Add" -> Json.obj(
       "field1" -> Json.obj("FormCtx" -> Json.obj("value" -> "fieldA")),
       "field2" -> Json.obj("FormCtx" -> Json.obj("value" -> "fieldB"))))
@@ -38,8 +38,8 @@ class ExprSpec extends Spec {
     res should beJsSuccess[Expr](add)
   }
 
-  val constant = Constant("constant")
-  val constantJson = Json.obj("Constant" -> Json.obj("value" -> "constant"))
+  private val constant = Constant("constant")
+  private val constantJson = Json.obj("Constant" -> Json.obj("value" -> "constant"))
 
   it should "write Constant to json" in {
     val res: JsValue = implicitly[Writes[Expr]].writes(constant)
@@ -51,8 +51,8 @@ class ExprSpec extends Spec {
     res should beJsSuccess[Expr](constant)
   }
 
-  val formCtx = FormCtx("form")
-  val formJson = Json.obj("FormCtx" -> Json.obj("value" -> "form"))
+  private val formCtx = FormCtx("form")
+  private val formJson = Json.obj("FormCtx" -> Json.obj("value" -> "form"))
 
   it should "write FormCtx to json" in {
     val res: JsValue = implicitly[Writes[Expr]].writes(formCtx)
@@ -64,4 +64,28 @@ class ExprSpec extends Spec {
     res should beJsSuccess[Expr](formCtx)
   }
 
+  "FormCtx.simpleDollarWrites" should "write JSON in the correct format" in {
+    forAll { s: String =>
+      val res: JsValue = FormCtx.simpleDollarWrites.writes(FormCtx(s))
+      res should be(JsString(s"$${$s}"))
+    }
+  }
+
+  "FormCtx.simpleDollarReads" should "read JSON in the correct format" in {
+    forAll { s: String =>
+      whenever(!s.isEmpty) {
+        val res = FormCtx.simpleDollarReads.reads(JsString(s"$${$s}"))
+        res should be(JsSuccess(FormCtx(s)))
+      }
+    }
+  }
+
+  it should "fail on JsStrings with the wrong format" in {
+    forAll { s: String =>
+      whenever(!s.matches("\\$\\{.+\\}")) {
+        val res = FormCtx.simpleDollarReads.reads(JsString(s))
+        res should be(FormCtx.invalidExpression(JsString(s)))
+      }
+    }
+  }
 }
