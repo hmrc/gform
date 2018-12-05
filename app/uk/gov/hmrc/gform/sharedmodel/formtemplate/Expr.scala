@@ -32,30 +32,13 @@ final case class FormCtx(value: String) extends Expr {
 }
 
 object FormCtx {
-  val simpleDollarWrites: Writes[FormCtx] = new Writes[FormCtx] {
-    override def writes(o: FormCtx): JsValue = JsString(s"$${${o.value}}")
-  }
-
-  def invalidExpression(v: JsValue): JsError =
-    JsError(s"Invalid expression. Expected String of the form $${fieldName}, got $v")
-
-  val simpleDollarReads: Reads[FormCtx] = new Reads[FormCtx] {
-    override def reads(json: JsValue): JsResult[FormCtx] = json match {
-      case JsString(value) =>
-        if (value.startsWith("${") && value.endsWith("}") && value.length > 3)
-          JsSuccess(FormCtx(value.substring(2, value.length - 1)))
-        else invalidExpression(json)
-      case otherwise =>
-        invalidExpression(otherwise)
-    }
-  }
 
   private lazy val writesFormCtx = Json.writes[FormCtx]
   private lazy val reads: Reads[FormCtx] = readsForTemplateJson | readsForMongoJson
 
   private lazy val readsForMongoJson: Reads[FormCtx] = Json.reads[FormCtx]
 
-  private lazy val readsForTemplateJson: Reads[FormCtx] = Reads { json =>
+  lazy val readsForTemplateJson: Reads[FormCtx] = Reads { json =>
     exprParser(json)
   }
 

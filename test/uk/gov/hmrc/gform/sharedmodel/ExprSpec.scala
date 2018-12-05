@@ -63,29 +63,4 @@ class ExprSpec extends Spec {
     val res: JsResult[Expr] = implicitly[Reads[Expr]].reads(formJson)
     res should beJsSuccess[Expr](formCtx)
   }
-
-  "FormCtx.simpleDollarWrites" should "write JSON in the correct format" in {
-    forAll { s: String =>
-      val res: JsValue = FormCtx.simpleDollarWrites.writes(FormCtx(s))
-      res should be(JsString(s"$${$s}"))
-    }
-  }
-
-  "FormCtx.simpleDollarReads" should "read JSON in the correct format" in {
-    forAll { s: String =>
-      whenever(!s.isEmpty) {
-        val res = FormCtx.simpleDollarReads.reads(JsString(s"$${$s}"))
-        res should be(JsSuccess(FormCtx(s)))
-      }
-    }
-  }
-
-  it should "fail on JsStrings with the wrong format" in {
-    forAll { s: String =>
-      whenever(!s.matches("\\$\\{.+\\}")) {
-        val res = FormCtx.simpleDollarReads.reads(JsString(s))
-        res should be(FormCtx.invalidExpression(JsString(s)))
-      }
-    }
-  }
 }
