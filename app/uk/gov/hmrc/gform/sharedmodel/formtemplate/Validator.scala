@@ -80,5 +80,5 @@ object BankAccoutnModulusCheck {
       (JsPath \ "parameters" \ "sortCode").read(FormCtx.readsForTemplateJson))(BankAccoutnModulusCheck.apply _)
   private val reads = readsCustom | (basic: Reads[BankAccoutnModulusCheck])
 
-  implicit val format: OFormat[BankAccoutnModulusCheck] = OFormat(reads, writesCustom)
+  implicit val format: OFormat[BankAccoutnModulusCheck] = OFormat(reads, writes)
 }
