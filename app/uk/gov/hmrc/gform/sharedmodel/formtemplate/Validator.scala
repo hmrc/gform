@@ -45,27 +45,21 @@ case object Validator {
 case class HMRCUTRPostcodeCheckValidator(errorMessage: String, utr: FormCtx, postcode: FormCtx) extends Validator
 
 object HMRCUTRPostcodeCheckValidator {
-  private val basic: OFormat[HMRCUTRPostcodeCheckValidator] = derived.oformat
-
   private val readCustom: Reads[HMRCUTRPostcodeCheckValidator] =
     ((JsPath \ "errorMessage").read[String] and
       (JsPath \ "parameters" \ "utr").read(FormCtx.readsForTemplateJson) and
       (JsPath \ "parameters" \ "postcode").read(FormCtx.readsForTemplateJson))(HMRCUTRPostcodeCheckValidator.apply _)
-  private val reads = (basic: Reads[HMRCUTRPostcodeCheckValidator]) | readCustom
 
-  implicit val format: OFormat[HMRCUTRPostcodeCheckValidator] = OFormat(reads, basic)
+  implicit val format: OFormat[HMRCUTRPostcodeCheckValidator] = OFormatWithTemplateReadFallback(readCustom)
 }
 
 case class BankAccoutnModulusCheck(errorMessage: String, accountNumber: FormCtx, sortCode: FormCtx) extends Validator
 
 object BankAccoutnModulusCheck {
-  private val basic: OFormat[BankAccoutnModulusCheck] = derived.oformat
-
-  private val readsCustom: Reads[BankAccoutnModulusCheck] =
+  private val readCustom: Reads[BankAccoutnModulusCheck] =
     ((JsPath \ "errorMessage").read[String] and
       (JsPath \ "parameters" \ "accountNumber").read(FormCtx.readsForTemplateJson) and
       (JsPath \ "parameters" \ "sortCode").read(FormCtx.readsForTemplateJson))(BankAccoutnModulusCheck.apply _)
-  private val reads = (basic: Reads[BankAccoutnModulusCheck]) | readsCustom
 
-  implicit val format: OFormat[BankAccoutnModulusCheck] = OFormat(reads, basic)
+  implicit val format: OFormat[BankAccoutnModulusCheck] = OFormatWithTemplateReadFallback(readCustom)
 }
