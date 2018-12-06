@@ -22,56 +22,38 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormCtx, Validator }
 
 class ValidatorSpec extends Spec {
 
-  "HMRCUTRPostcodeCheckValidator" should "serialise to JSON correctly" in {
-    val x: JsValue = Validator.format.writes(hMRCUTRPostcodeCheckValidator)
-    x shouldBe Json.obj(
-      "validatorName" -> "hmrcUTRPostcodeCheck",
-      "errorMessage"  -> "The UTR could not be foundor the postcode did not match. | <Welsh...>",
-      "utr"           -> Json.obj("value" -> hMRCUTRPostcodeCheckValidator.utr.value),
-      "postcode"      -> Json.obj("value" -> hMRCUTRPostcodeCheckValidator.postcode.value)
-    )
-  }
-
-  it should "parse Write JSON correctly" in {
+  "HMRCUTRPostcodeCheckValidator" should "Write and Read default JSON correctly" in {
     verifyRoundTrip(hMRCUTRPostcodeCheckValidator)
   }
 
   it should "parse custom JSON correctly" in {
-    Json.obj(
-      "validatorName" -> "hmrcUTRPostcodeCheck",
-      "errorMessage"  -> "The UTR could not be foundor the postcode did not match. | <Welsh...>",
-      "parameters" -> Json.obj(
-        "utr"      -> customFormCtxJson(hMRCUTRPostcodeCheckValidator.utr),
-        "postcode" -> customFormCtxJson(hMRCUTRPostcodeCheckValidator.postcode)
+    Json
+      .obj(
+        "validatorName" -> "hmrcUTRPostcodeCheck",
+        "errorMessage"  -> hMRCUTRPostcodeCheckValidator.errorMessage,
+        "parameters" -> Json.obj(
+          "utr"      -> customFormCtxJson(hMRCUTRPostcodeCheckValidator.utr),
+          "postcode" -> customFormCtxJson(hMRCUTRPostcodeCheckValidator.postcode)
+        )
       )
-    )
-    verifyRoundTrip(hMRCUTRPostcodeCheckValidator)
+      .as[Validator] shouldBe hMRCUTRPostcodeCheckValidator
   }
 
-  "BankAccoutnModulusValidator" should "serialise to JSON correctly" in {
-    val x: JsValue = Validator.format.writes(bankAccoutnModulusCheckValidator)
-    x shouldBe Json.obj(
-      "validatorName" -> "bankAccountModulusCheck",
-      "errorMessage"  -> "This is an error message for Bank",
-      "accountNumber" -> Json.obj("value" -> bankAccoutnModulusCheckValidator.accountNumber.value),
-      "sortCode"      -> Json.obj("value" -> bankAccoutnModulusCheckValidator.sortCode.value)
-    )
-  }
-
-  it should "parse Write JSON correctly" in {
+  "BankAccoutnModulusValidator" should "Write and Read default JSON correctly" in {
     verifyRoundTrip(bankAccoutnModulusCheckValidator)
   }
 
   it should "parse custom JSON correctly" in {
-    Json.obj(
-      "validatorName" -> "hmrcUTRPostcodeCheck",
-      "errorMessage"  -> "The UTR could not be foundor the postcode did not match. | <Welsh...>",
-      "parameters" -> Json.obj(
-        "accountNumber" -> customFormCtxJson(bankAccoutnModulusCheckValidator.accountNumber),
-        "sortCode"      -> customFormCtxJson(bankAccoutnModulusCheckValidator.sortCode)
+    Json
+      .obj(
+        "validatorName" -> "bankAccountModulusCheck",
+        "errorMessage"  -> bankAccoutnModulusCheckValidator.errorMessage,
+        "parameters" -> Json.obj(
+          "accountNumber" -> customFormCtxJson(bankAccoutnModulusCheckValidator.accountNumber),
+          "sortCode"      -> customFormCtxJson(bankAccoutnModulusCheckValidator.sortCode)
+        )
       )
-    )
-    verifyRoundTrip(hMRCUTRPostcodeCheckValidator)
+      .as[Validator] shouldBe bankAccoutnModulusCheckValidator
   }
 
   private def verifyRoundTrip[T <: Validator: OFormat](t: T) = {
