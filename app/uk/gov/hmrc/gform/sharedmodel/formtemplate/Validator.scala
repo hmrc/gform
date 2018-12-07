@@ -16,70 +16,43 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
-import cats.data.Validated
-import cats.data.Validated.{ Invalid, Valid }
 import play.api.libs.json._
 import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
-import play.api.libs.functional.syntax._
-
-import scala.concurrent.{ ExecutionContext, Future }
 
 sealed trait Validator {
   def errorMessage: String
 }
 
 case object Validator {
-
-  val reads: Reads[Validator] = Reads { json =>
+  private val templateReads: Reads[Validator] = Reads { json =>
     (json \ "validatorName").as[String] match {
       case "hmrcUTRPostcodeCheck"    => json.validate[HMRCUTRPostcodeCheckValidator]
       case "bankAccountModulusCheck" => json.validate[BankAccoutnModulusCheck]
+      case unsupported               => JsError("Unsupported '" + unsupported + "' kind of validator.")
     }
   }
-
-  val writes: OWrites[Validator] = OWrites {
-    case v: HMRCUTRPostcodeCheckValidator => HMRCUTRPostcodeCheckValidator.format.writes(v)
-    case v: BankAccoutnModulusCheck       => BankAccoutnModulusCheck.format.writes(v)
-
-  }
-
-  implicit val format = OFormat(reads, writes)
-
+  implicit val format: OFormat[Validator] = OFormatWithTemplateReadFallback(templateReads)
 }
 
 case class HMRCUTRPostcodeCheckValidator(errorMessage: String, utr: FormCtx, postcode: FormCtx) extends Validator
 
 object HMRCUTRPostcodeCheckValidator {
-  private val basic: OFormat[HMRCUTRPostcodeCheckValidator] = Json.format[HMRCUTRPostcodeCheckValidator]
-  private val writesCustom: OWrites[HMRCUTRPostcodeCheckValidator] = OWrites { o =>
-    Json.obj("validatorName" -> "hmrcUTRPostcodeCheck") ++
-      basic.writes(o)
-  }
+  private val readCustom: Reads[HMRCUTRPostcodeCheckValidator] =
+    ((JsPath \ "errorMessage").read[String] and
+      (JsPath \ "parameters" \ "utr").read(FormCtx.readsForTemplateJson) and
+      (JsPath \ "parameters" \ "postcode").read(FormCtx.readsForTemplateJson))(HMRCUTRPostcodeCheckValidator.apply _)
 
-  private val writes: OWrites[HMRCUTRPostcodeCheckValidator] = writesCustom
-  private val readCustom: Reads[HMRCUTRPostcodeCheckValidator] = ((JsPath \ "errorMessage").read[String] and
-    (JsPath \ "parameters" \\ "utr").read[FormCtx] and
-    (JsPath \ "parameters" \\ "postcode").read[FormCtx])(HMRCUTRPostcodeCheckValidator.apply _)
-
-  private val reads = readCustom | (basic: Reads[HMRCUTRPostcodeCheckValidator])
-  implicit val format: OFormat[HMRCUTRPostcodeCheckValidator] = OFormat(reads, writesCustom)
+  implicit val format: OFormat[HMRCUTRPostcodeCheckValidator] = OFormatWithTemplateReadFallback(readCustom)
 }
 
 case class BankAccoutnModulusCheck(errorMessage: String, accountNumber: FormCtx, sortCode: FormCtx) extends Validator
 
 object BankAccoutnModulusCheck {
-  private val basic: OFormat[BankAccoutnModulusCheck] = Json.format[BankAccoutnModulusCheck]
-  private val writesCustom: OWrites[BankAccoutnModulusCheck] = OWrites { o =>
-    Json.obj("validatorName" -> "bankAccountModulusCheck") ++
-      basic.writes(o)
-  }
+  private val readCustom: Reads[BankAccoutnModulusCheck] =
+    ((JsPath \ "errorMessage").read[String] and
+      (JsPath \ "parameters" \ "accountNumber").read(FormCtx.readsForTemplateJson) and
+      (JsPath \ "parameters" \ "sortCode").read(FormCtx.readsForTemplateJson))(BankAccoutnModulusCheck.apply _)
 
-  private val writes: OWrites[BankAccoutnModulusCheck] = writesCustom
-  private val readCustom: Reads[BankAccoutnModulusCheck] = ((JsPath \ "errorMessage").read[String] and
-    (JsPath \ "parameters" \\ "accountNumber").read[FormCtx] and
-    (JsPath \ "parameters" \\ "sortCode").read[FormCtx])(BankAccoutnModulusCheck.apply _)
-
-  private val reads = readCustom | (basic: Reads[BankAccoutnModulusCheck])
-  implicit val format: OFormat[BankAccoutnModulusCheck] = OFormat(reads, writesCustom)
+  implicit val format: OFormat[BankAccoutnModulusCheck] = OFormatWithTemplateReadFallback(readCustom)
 }

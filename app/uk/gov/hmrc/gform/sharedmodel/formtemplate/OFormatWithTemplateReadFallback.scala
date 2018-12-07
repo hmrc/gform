@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.core.parsers
+package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
-import parseback._
-import uk.gov.hmrc.gform.core.Opt
-import uk.gov.hmrc.gform.core.parsers.BasicParsers.validateWithParser
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormCtx
+import julienrf.json.derived
+import julienrf.json.derived.{ DerivedOWrites, DerivedReads }
+import play.api.libs.functional.syntax._
+import play.api.libs.json.{ OFormat, Reads }
 
-object ExprParsers {
-
-  def validateFormCtx(expression: String): Opt[FormCtx] = validateWithParser(expression, expr)
-
-  lazy val expr: Parser[FormCtx] = "${" ~ """\w+""".r ~ "}" ^^ { (loc, _, field, _) =>
-    FormCtx(field)
+object OFormatWithTemplateReadFallback {
+  def apply[A: DerivedReads: DerivedOWrites](templateReads: Reads[A]): OFormat[A] = {
+    val basic: OFormat[A] = derived.oformat
+    val reads = (basic: Reads[A]) | templateReads
+    OFormat(reads, basic)
   }
 }

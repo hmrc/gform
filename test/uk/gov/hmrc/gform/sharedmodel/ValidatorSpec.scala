@@ -16,54 +16,51 @@
 
 package uk.gov.hmrc.gform.sharedmodel
 
-import play.api.libs.json.{ JsSuccess, JsValue, Json }
+import play.api.libs.json.{ JsString, JsValue, Json, OFormat }
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormCtx, HMRCUTRPostcodeCheckValidator, Validator }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormCtx, Validator }
 
 class ValidatorSpec extends Spec {
 
-  "Validator" should "return HMRCUTRPostcodeCheckValidator " in {
-
-    val json: JsValue = Json.parse(s"""{
-                              "validatorName": "hmrcUTRPostcodeCheck",
-                              "errorMessage": "${hMRCUTRPostcodeCheckValidator.errorMessage}",
-                              "parameters": [
-                                  {"utr": "${"$" + hMRCUTRPostcodeCheckValidator.utr.value}"},
-                                  {"postcode": "${"$" + hMRCUTRPostcodeCheckValidator.postcode.value}"}
-                              ]
-                            }""")
-
-    val validator = json.as[Validator]
-    validator shouldBe hMRCUTRPostcodeCheckValidator
-    val x: JsValue = Validator.format.writes(validator)
-    x shouldBe Json.obj(
-      "validatorName" -> "hmrcUTRPostcodeCheck",
-      "errorMessage"  -> "The UTR could not be foundor the postcode did not match. | <Welsh...>",
-      "utr"           -> Json.obj("value" -> hMRCUTRPostcodeCheckValidator.utr.value),
-      "postcode"      -> Json.obj("value" -> hMRCUTRPostcodeCheckValidator.postcode.value)
-    )
+  "HMRCUTRPostcodeCheckValidator" should "Write and Read default JSON correctly" in {
+    verifyRoundTrip(hMRCUTRPostcodeCheckValidator)
   }
 
-  "Validator" should "return BankAccoutnModulusCheck " in {
-
-    val json: JsValue = Json.parse(s"""{
-                              "validatorName": "bankAccountModulusCheck",
-                              "errorMessage": "${bankAccoutnModulusCheckValidator.errorMessage}",
-                              "parameters": [
-                                  {"accountNumber": "${"$" + bankAccoutnModulusCheckValidator.accountNumber.value}"},
-                                  {"sortCode": "${"$" + bankAccoutnModulusCheckValidator.sortCode.value}"}
-                              ]
-                            }""")
-
-    val validator = json.as[Validator]
-    validator shouldBe bankAccoutnModulusCheckValidator
-    val x: JsValue = Validator.format.writes(validator)
-    x shouldBe Json.obj(
-      "validatorName" -> "bankAccountModulusCheck",
-      "errorMessage"  -> "This is an error message for Bank",
-      "accountNumber" -> Json.obj("value" -> bankAccoutnModulusCheckValidator.accountNumber.value),
-      "sortCode"      -> Json.obj("value" -> bankAccoutnModulusCheckValidator.sortCode.value)
-    )
+  it should "parse custom JSON correctly" in {
+    Json
+      .obj(
+        "validatorName" -> "hmrcUTRPostcodeCheck",
+        "errorMessage"  -> hMRCUTRPostcodeCheckValidator.errorMessage,
+        "parameters" -> Json.obj(
+          "utr"      -> customFormCtxJson(hMRCUTRPostcodeCheckValidator.utr),
+          "postcode" -> customFormCtxJson(hMRCUTRPostcodeCheckValidator.postcode)
+        )
+      )
+      .as[Validator] shouldBe hMRCUTRPostcodeCheckValidator
   }
 
+  "BankAccoutnModulusValidator" should "Write and Read default JSON correctly" in {
+    verifyRoundTrip(bankAccoutnModulusCheckValidator)
+  }
+
+  it should "parse custom JSON correctly" in {
+    Json
+      .obj(
+        "validatorName" -> "bankAccountModulusCheck",
+        "errorMessage"  -> bankAccoutnModulusCheckValidator.errorMessage,
+        "parameters" -> Json.obj(
+          "accountNumber" -> customFormCtxJson(bankAccoutnModulusCheckValidator.accountNumber),
+          "sortCode"      -> customFormCtxJson(bankAccoutnModulusCheckValidator.sortCode)
+        )
+      )
+      .as[Validator] shouldBe bankAccoutnModulusCheckValidator
+  }
+
+  private def verifyRoundTrip[T <: Validator: OFormat](t: T) = {
+    val json: JsValue = Json.parse(Validator.format.writes(t).toString)
+    val validator = json.as[Validator]
+    validator shouldBe t
+  }
+
+  private def customFormCtxJson(fc: FormCtx): JsString = JsString(s"""$${${fc.value}}""")
 }

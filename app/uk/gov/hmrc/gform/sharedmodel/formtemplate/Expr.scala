@@ -32,27 +32,13 @@ final case class FormCtx(value: String) extends Expr {
 }
 
 object FormCtx {
-
-  lazy val writesFormCtx = Json.writes[FormCtx]
-  lazy val reads: Reads[FormCtx] = readsForTemplateJson | readsForMongoJson
-
-  private lazy val readsForMongoJson: Reads[FormCtx] = Json.reads[FormCtx]
-
-  private lazy val readsForTemplateJson: Reads[FormCtx] = Reads { json =>
-    exprParser(json)
+  lazy val readsForTemplateJson: Reads[FormCtx] = Reads {
+    case JsString(exprAsStr) =>
+      ExprParsers.validateFormCtx(exprAsStr).fold(error => JsError(error.toString), JsSuccess(_))
+    case otherwise => JsError(s"Invalid expression. Expected String, got $otherwise")
   }
 
-  private def exprParser(json: JsValue): JsResult[FormCtx] =
-    json match {
-      case JsString(exprAsStr) => parse(exprAsStr)
-      case otherwise           => JsError(s"Invalid expression. Expected String, got $otherwise")
-    }
-
-  private def parse(exprAsStr: String): JsResult[FormCtx] =
-    ExprParsers.validateFormCtx(exprAsStr) fold (error => JsError(error.toString),
-    expr => JsSuccess(expr))
-
-  implicit val format: OFormat[FormCtx] = OFormat(reads, writesFormCtx)
+  implicit val format: OFormat[FormCtx] = OFormatWithTemplateReadFallback(readsForTemplateJson)
 }
 
 final case class AuthCtx(value: AuthInfo) extends Expr
