@@ -18,7 +18,6 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import julienrf.json.derived
 import play.api.libs.json._
-import play.api.libs.functional.syntax._
 import uk.gov.hmrc.gform.core.parsers.ExprParsers
 
 sealed trait Expr
