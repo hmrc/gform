@@ -272,7 +272,7 @@ class ValueParserSpec extends Spec {
                                                 |${name: unexpected end-of-file; expected '}'""".stripMargin))
   }
 
-  val plainFormTemplate = FormTemplate(
+  val plainFormTemplate = FormTemplate.withDeprecatedDmsSubmission(
     FormTemplateId("IPT100"),
     "Insurance Premium Tax Return",
     "description",

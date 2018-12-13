@@ -38,6 +38,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
 import scala.concurrent.{ ExecutionContext, Future }
+
 class SubmissionService(
   pdfGeneratorService: PdfGeneratorService,
   formService: FormService,
@@ -47,6 +48,24 @@ class SubmissionService(
   timeProvider: TimeProvider,
   email: EmailService) {
 
+  def submissionWithoutPdf(formId: FormId, customerId: String, affinityGroup: Option[AffinityGroup])(
+    implicit hc: HeaderCarrier): FOpt[Unit] =
+    // format: OFF
+    for {
+      form                <- fromFutureA        (getSignedForm(formId))
+      res                 <-                    submission(form, customerId, affinityGroup, getSubmissionAndPdf(form.envelopeId, form, _, _, customerId))
+    } yield res
+  // format: ON
+
+  def submissionWithPdf(formId: FormId, customerId: String, affinityGroup: Option[AffinityGroup], pdf: String)(
+    implicit hc: HeaderCarrier): FOpt[Unit] =
+    // format: OFF
+    for {
+      form                <- fromFutureA        (formService.get(formId))
+      res                 <-                    submission(form, customerId, affinityGroup, getSubmissionAndPdfWithPdf(form.envelopeId, form, _, _, customerId, pdf))
+    } yield res
+  // format: ON
+
   private def getNoOfAttachments(form: Form, formTemplate: FormTemplate): Int = {
     // TODO two functions are calculating the same thing in different ways! c.f. FileUploadService.SectionFormField.getNumberOfFiles
     val attachmentsIds: List[String] =
@@ -55,135 +74,101 @@ class SubmissionService(
     attachmentsIds.count(ai => formIds.contains(ai))
   }
 
-  def getSubmissionAndPdf(
+  //todo install 3rd part part
+  private def getSubmissionAndPdf(
     envelopeId: EnvelopeId,
     form: Form,
     sectionFormFields: List[SectionFormField],
     formTemplate: FormTemplate,
-    customerId: String)(implicit hc: HeaderCarrier): Future[SubmissionAndPdf] = {
+    customerId: String)(implicit hc: HeaderCarrier): Future[SubmissionAndPdf] =
+    getSubmissionAndPdfWithPdf(
+      envelopeId,
+      form,
+      sectionFormFields,
+      formTemplate,
+      customerId,
+      HtmlGeneratorService.generateDocumentHTML(sectionFormFields, formTemplate.formName, form.formData)
+    )
 
-    val html = HtmlGeneratorService.generateDocumentHTML(sectionFormFields, formTemplate.formName, form.formData)
-
-    pdfGeneratorService.generatePDF(html).map { pdf =>
-      /*
-      val path = java.nio.file.Paths.get("confirmation.pdf")
-      val out = java.nio.file.Files.newOutputStream(path)
-      out.write(pdf)
-      out.close()
-       */
-      //todo install 3rd part part
-      val pdfSummary = PdfSummary(numberOfPages = PDDocument.load(pdf).getNumberOfPages, pdfContent = pdf)
-      val submission = Submission(
-        submittedDate = timeProvider.localDateTime(),
-        submissionRef = SubmissionRef.random,
-        envelopeId = envelopeId,
-        _id = form._id,
-        noOfAttachments = getNoOfAttachments(form, formTemplate),
-        dmsMetaData = DmsMetaData(
-          formTemplateId = form.formTemplateId,
-          customerId //TODO need more secure and safe way of doing this. perhaps moving auth to backend and just pulling value out there.
-        )
-      )
-
-      val xmlSummary = formTemplate.dmsSubmission.dataXml match {
-        case Some(true) => {
-          Some(
-            XmlGeneratorService.xmlDec + "\n" + XmlGeneratorService.getXml(sectionFormFields, submission.submissionRef))
-        }
-        case _ => None
-
-      }
-
-      SubmissionAndPdf(submission = submission, pdfSummary = pdfSummary, xmlSummary = xmlSummary)
-    }
-  }
   //todo refactor the two methods into one
-  def getSubmissionAndPdfWithPdf(
+  private def getSubmissionAndPdfWithPdf(
     envelopeId: EnvelopeId,
     form: Form,
     sectionFormFields: List[SectionFormField],
-    pdf: String,
+    formTemplate: FormTemplate,
     customerId: String,
-    formTemplate: FormTemplate)(implicit hc: HeaderCarrier): Future[SubmissionAndPdf] =
-    pdfGeneratorService.generatePDF(pdf).map { pdf =>
-      /*
-      val path = java.nio.file.Paths.get("confirmation.pdf")
-      val out = java.nio.file.Files.newOutputStream(path)
-      out.write(pdf)
-      out.close()
-       */
+    pdfHtml: String)(implicit hc: HeaderCarrier): Future[SubmissionAndPdf] =
+    pdfGeneratorService.generatePDF(pdfHtml).map { pdf =>
+      val pdfSummary = createPdfSummary(pdf)
+      val submission = createSubmission(envelopeId, form, customerId, formTemplate)
+      val xmlSummary = createXmlSummary(sectionFormFields, formTemplate, submission)
 
-      val pDDocument: PDDocument = PDDocument.load(pdf)
-      val pdfSummary = PdfSummary(numberOfPages = pDDocument.getNumberOfPages, pdfContent = pdf)
-      pDDocument.close()
-      val submission = Submission(
-        submittedDate = timeProvider.localDateTime(),
-        submissionRef = SubmissionRef.random,
-        envelopeId = envelopeId,
-        _id = form._id,
-        noOfAttachments = getNoOfAttachments(form, formTemplate),
-        dmsMetaData = DmsMetaData(
-          formTemplateId = form.formTemplateId,
-          customerId //TODO need more secure and safe way of doing this. perhaps moving auth to backend and just pulling value out there.
-        )
-      )
-
-      val xmlSummary = formTemplate.dmsSubmission.dataXml match {
-        case Some(true) => {
-          Some(
-            XmlGeneratorService.xmlDec + "\n" + XmlGeneratorService.getXml(sectionFormFields, submission.submissionRef))
-        }
-        case _ => None
-
-      }
-
-      SubmissionAndPdf(submission = submission, pdfSummary = pdfSummary, xmlSummary)
+      SubmissionAndPdf(submission = submission, pdfSummary = pdfSummary, xmlSummary = xmlSummary)
     }
 
-  def getSignedForm(formId: FormId)(implicit hc: HeaderCarrier) = formService.get(formId).flatMap {
+  private def createPdfSummary(pdf: Array[Byte]) = {
+    val pDDocument: PDDocument = PDDocument.load(pdf)
+    try {
+      PdfSummary(numberOfPages = pDDocument.getNumberOfPages.toLong, pdfContent = pdf)
+    } finally {
+      pDDocument.close()
+    }
+  }
+
+  private def createSubmission(envelopeId: EnvelopeId, form: Form, customerId: String, formTemplate: FormTemplate) =
+    Submission(
+      submittedDate = timeProvider.localDateTime(),
+      submissionRef = SubmissionRef.random,
+      envelopeId = envelopeId,
+      _id = form._id,
+      noOfAttachments = getNoOfAttachments(form, formTemplate),
+      dmsMetaData = DmsMetaData(
+        formTemplateId = form.formTemplateId,
+        customerId //TODO need more secure and safe way of doing this. perhaps moving auth to backend and just pulling value out there.
+      )
+    )
+
+  private def createXmlSummary(
+    sectionFormFields: List[SectionFormField],
+    formTemplate: FormTemplate,
+    submission: Submission) = {
+    val xmlSummary = formTemplate.dmsSubmission.dataXml match {
+      case Some(true) =>
+        Some(
+          XmlGeneratorService.xmlDec + "\n" + XmlGeneratorService.getXml(sectionFormFields, submission.submissionRef))
+      case _ => None
+
+    }
+    xmlSummary
+  }
+
+  private def getSignedForm(formId: FormId)(implicit hc: HeaderCarrier) = formService.get(formId).flatMap {
     case f @ Form(_, _, _, _, _, _, Signed) => Future.successful(f)
     case _                                  => Future.failed(new Exception(s"Form $FormId status is not signed"))
   }
 
-  def submission(formId: FormId, customerId: String, affinityGroup: Option[AffinityGroup])(
+  private def submission(
+    form: Form,
+    customerId: String,
+    affinityGroup: Option[AffinityGroup],
+    pdfAccessor: (List[SectionFormField], FormTemplate) => Future[SubmissionAndPdf])(
     implicit hc: HeaderCarrier): FOpt[Unit] =
     // format: OFF
     for {
-      form                <- fromFutureA        (getSignedForm(formId))
-      formTemplate        <- fromFutureA        (formTemplateService.get(form.formTemplateId))
-      sectionFormFields   <- fromOptA           (SubmissionServiceHelper.getSectionFormFields(form, formTemplate, affinityGroup))
-      submissionAndPdf    <- fromFutureA        (getSubmissionAndPdf(form.envelopeId, form, sectionFormFields, formTemplate, customerId))
-      _                   <-                    submissionRepo.upsert(submissionAndPdf.submission)
-      _                   <- fromFutureA        (formService.updateUserData(form._id, UserData(form.formData, form.repeatingGroupStructure, Submitted)))
-      numberOfAttachments =                     sectionFormFields.map(_.numberOfFiles).sum
-      res                 <- fromFutureA        (fileUploadService.submitEnvelope(submissionAndPdf, formTemplate.dmsSubmission, numberOfAttachments))
-      emailAddress        =                     email.getEmailAddress(form)
-      _                   <- fromFutureA        (email.sendEmail(emailAddress, formTemplate.emailTemplateId)(hc, fromLoggingDetails))
+      formTemplate        <- fromFutureA          (formTemplateService.get(form.formTemplateId))
+      sectionFormFields   <- fromOptA             (SubmissionServiceHelper.getSectionFormFields(form, formTemplate, affinityGroup))
+      submissionAndPdf    <- fromFutureA          (pdfAccessor(sectionFormFields, formTemplate))
+      _                   <-                      submissionRepo.upsert(submissionAndPdf.submission)
+      _                   <- fromFutureA          (formService.updateUserData(form._id, UserData(form.formData, form.repeatingGroupStructure, Submitted)))
+      numberOfAttachments =                       sectionFormFields.map(_.numberOfFiles).sum
+      res                 <- fromFutureA          (fileUploadService.submitEnvelope(submissionAndPdf, formTemplate.dmsSubmission, numberOfAttachments))
+      emailAddress        =                       email.getEmailAddress(form)
+      _                   <-                      fromFutureA(email.sendEmail(emailAddress, formTemplate.emailTemplateId)(hc, fromLoggingDetails))
     } yield res
-    // format: ON
-
-  def submissionWithPdf(formId: FormId, customerId: String, affinityGroup: Option[AffinityGroup], pdf: String)(
-    implicit hc: HeaderCarrier): FOpt[Unit] =
-    // format: OFF
-    for {
-//      form                <- fromFutureA        (getSignedForm(formId))
-      form                <- fromFutureA        (formService.get(formId))
-      formTemplate        <- fromFutureA        (formTemplateService.get(form.formTemplateId))
-      sectionFormFields   <- fromOptA           (SubmissionServiceHelper.getSectionFormFields(form, formTemplate, affinityGroup))
-      submissionAndPdf    <- fromFutureA        (getSubmissionAndPdfWithPdf(form.envelopeId, form, sectionFormFields, pdf ,customerId, formTemplate))
-      _                   <-                    submissionRepo.upsert(submissionAndPdf.submission)
-      _                   <- fromFutureA        (formService.updateUserData(form._id, UserData(form.formData, form.repeatingGroupStructure, Submitted)))
-      sectionFormFields   <- fromOptA           (SubmissionServiceHelper.getSectionFormFields(form, formTemplate, affinityGroup))
-      numberOfAttachments =                     sectionFormFields.map(_.numberOfFiles).sum
-      res                 <- fromFutureA        (fileUploadService.submitEnvelope(submissionAndPdf, formTemplate.dmsSubmission, numberOfAttachments))
-      emailAddress        =                     email.getEmailAddress(form)
-      _                   <- fromFutureA        (email.sendEmail(emailAddress, formTemplate.emailTemplateId)(hc, fromLoggingDetails))
-    } yield res
-    // format: ON
+  // format: ON
 
   def submissionDetails(formId: FormId)(implicit ec: ExecutionContext): Future[Submission] =
     submissionRepo.get(formId.value)
-
 }
 
 object SubmissionServiceHelper {

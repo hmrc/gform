@@ -37,12 +37,6 @@ package object core {
   def fromOptA[A](oa: Opt[A]): FOpt[A] =
     EitherT[Future, UnexpectedState, A](Future.successful(oa))
 
-  def fromFutureOptionA[A](fo: Future[Option[A]])(invalid: => UnexpectedState)(
-    implicit ec: ExecutionContext): FOpt[A] = {
-    val futureA = fo.map {
-      case Some(a) => Right(a)
-      case None    => Left(invalid)
-    }
-    EitherT[Future, UnexpectedState, A](futureA)
-  }
+  def fromFutureOptionA[A](fo: Future[Option[A]])(invalid: => UnexpectedState)(implicit ec: ExecutionContext): FOpt[A] =
+    EitherT[Future, UnexpectedState, A](fo.map(_.toRight(invalid)))
 }

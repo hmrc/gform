@@ -38,7 +38,7 @@ class SubmissionController(submissionService: SubmissionService) extends BaseCon
     //TODO change status of form to 'submitted'
 
     submissionService
-      .submission(
+      .submissionWithoutPdf(
         formId,
         getFromHeaders("customerId", request, _.getOrElse("")),
         getFromHeaders("affinityGroup", request, toAffinityGroupO))

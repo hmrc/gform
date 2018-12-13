@@ -305,7 +305,7 @@ trait ExampleFormTemplate {
       List(`fieldValue - info`))
 
   def formTemplate =
-    FormTemplate(
+    FormTemplate.withDeprecatedDmsSubmission(
       _id = formTemplateId,
       formName = formName,
       description = formDescription,

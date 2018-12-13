@@ -19,7 +19,6 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import julienrf.json.derived
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
-import uk.gov.hmrc.auth.core.{ AffinityGroup => CoreAffinityGroup }
 import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
 
 object EEITTAuthConfig {
@@ -72,27 +71,20 @@ sealed trait EnrolmentCheckVerb extends Product with Serializable
 case object NeverVerb extends EnrolmentCheckVerb
 case object AlwaysVerb extends EnrolmentCheckVerb
 case object ForNonAgentsVerb extends EnrolmentCheckVerb
+
 object EnrolmentCheckVerb {
 
   private val never = "never"
   private val always = "always"
   private val forNonAgents = "forNonAgents"
 
-  implicit val format: Format[EnrolmentCheckVerb] = new Format[EnrolmentCheckVerb] {
-    override def writes(o: EnrolmentCheckVerb): JsValue = o match {
-      case NeverVerb        => JsString(never)
-      case AlwaysVerb       => JsString(always)
-      case ForNonAgentsVerb => JsString(forNonAgents)
-    }
+  implicit val format: Format[EnrolmentCheckVerb] =
+    ADTFormat.formatEnumeration(never -> NeverVerb, always -> AlwaysVerb, forNonAgents -> ForNonAgentsVerb)
 
-    override def reads(json: JsValue): JsResult[EnrolmentCheckVerb] =
-      json match {
-        case JsString(`never`)        => JsSuccess(NeverVerb)
-        case JsString(`always`)       => JsSuccess(AlwaysVerb)
-        case JsString(`forNonAgents`) => JsSuccess(ForNonAgentsVerb)
-        case invalid =>
-          JsError(s"enrolmentCheck is invalid. Expected one of: $always, $never or $forNonAgents, but got $invalid.")
-      }
+  def asString(verb: EnrolmentCheckVerb): String = verb match {
+    case NeverVerb        => never
+    case AlwaysVerb       => always
+    case ForNonAgentsVerb => forNonAgents
   }
 }
 
@@ -105,19 +97,14 @@ object AuthModule {
   private val hmrc = "hmrc"
   private val legacyEEITTAuth = "legacyEEITTAuth"
 
-  implicit val format: Format[AuthModule] = new Format[AuthModule] {
-    override def writes(o: AuthModule): JsValue = o match {
-      case Hmrc        => JsString(hmrc)
-      case EeittLegacy => JsString(legacyEEITTAuth)
-    }
+  implicit val format: Format[AuthModule] = ADTFormat.formatEnumeration(
+    hmrc            -> Hmrc,
+    legacyEEITTAuth -> EeittLegacy
+  )
 
-    override def reads(json: JsValue): JsResult[AuthModule] =
-      json match {
-        case JsString(`hmrc`)            => JsSuccess(Hmrc)
-        case JsString(`legacyEEITTAuth`) => JsSuccess(EeittLegacy)
-        case invalid =>
-          JsError(s"authModule is invalid. Expected one of: $hmrc or $legacyEEITTAuth, but got $invalid.")
-      }
+  def asString(o: AuthModule): String = o match {
+    case Hmrc        => hmrc
+    case EeittLegacy => legacyEEITTAuth
   }
 }
 
@@ -202,6 +189,8 @@ object AuthConfig {
 
     OFormat(reads | rawTemplateReads, writes)
   }
+
+  val missingRegimeIdForLegacyEEITTAuth: String = "Missing regimeId (regimeId is mandatory for legacyEEITTAuth)"
 }
 
 case class ServiceId(value: String) extends AnyVal
@@ -218,24 +207,19 @@ sealed trait AgentAccess
 case object RequireMTDAgentEnrolment extends AgentAccess
 case object DenyAnyAgentAffinityUser extends AgentAccess
 case object AllowAnyAgentAffinityUser extends AgentAccess
-object AgentAccess {
-  implicit val format: Format[AgentAccess] = new Format[AgentAccess] {
-    override def writes(o: AgentAccess): JsValue = o match {
-      case RequireMTDAgentEnrolment  => JsString("requireMTDAgentEnrolment")
-      case DenyAnyAgentAffinityUser  => JsString("denyAnyAgentAffinityUser")
-      case AllowAnyAgentAffinityUser => JsString("allowAnyAgentAffinityUser")
-    }
 
-    override def reads(json: JsValue): JsResult[AgentAccess] =
-      json match {
-        case JsString("")                          => JsSuccess(RequireMTDAgentEnrolment)
-        case JsString("requireMTDAgentEnrolment")  => JsSuccess(RequireMTDAgentEnrolment)
-        case JsString("denyAnyAgentAffinityUser")  => JsSuccess(DenyAnyAgentAffinityUser)
-        case JsString("allowAnyAgentAffinityUser") => JsSuccess(AllowAnyAgentAffinityUser)
-        case JsString(err) =>
-          JsError(
-            s"only three valid agentAccess', requireMTDAgentEnrolment, denyAnyAgentAffinityUser or allowAnyAgentAffinityUser. $err is not valid")
-        case _ => JsError("Failure")
-      }
+object AgentAccess {
+  val requireMTDAgentEnrolment = "requireMTDAgentEnrolment"
+  val denyAnyAgentAffinityUser = "denyAnyAgentAffinityUser"
+  val allowAnyAgentAffinityUser = "allowAnyAgentAffinityUser"
+
+  implicit val format: Format[AgentAccess] = ADTFormat.formatEnumerationWithDefault(
+    RequireMTDAgentEnrolment,
+    Seq(RequireMTDAgentEnrolment, DenyAnyAgentAffinityUser, AllowAnyAgentAffinityUser).map(t => (asString(t) -> t)): _*)
+
+  def asString(access: AgentAccess): String = access match {
+    case RequireMTDAgentEnrolment  => requireMTDAgentEnrolment
+    case DenyAnyAgentAffinityUser  => denyAnyAgentAffinityUser
+    case AllowAnyAgentAffinityUser => allowAnyAgentAffinityUser
   }
 }

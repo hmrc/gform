@@ -14,14 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel
+package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import cats.data.NonEmptyList
-import play.api.libs.json._
+import play.api.libs.json.{ JsResult, JsSuccess, Json, Reads }
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.AuthConfigGen
 
 class AuthConfigSpec extends Spec {
+  "Default Read and Write" should "round trip derived JSON" in {
+    forAll(AuthConfigGen.authConfigGen) { c =>
+      verifyRoundTrip(c)
+    }
+  }
 
   it should "parse legacy EEITT auth" in {
     val authConfigValue = toAuthConfig(s"""|{
@@ -81,22 +86,22 @@ class AuthConfigSpec extends Spec {
 
   it should "parse HMRC auth with enrolmentSection" in {
     val authConfigValue = toAuthConfig("""|{
-     |  "authModule": "hmrc",
-     |  "agentAccess": "allowAnyAgentAffinityUser",
-     |  "enrolmentCheck": "always",
-     |  "serviceId": "Z",
-     |  "enrolmentSection": {
-     |     "title": "t",
-     |     "fields":[],
-     |     "identifiers": [
-     |        {
-     |          "key": "EtmpRegistrationNumber",
-     |          "value": "${eeittReferenceNumber}"
-     |        }
-     |     ],
-     |     "verifiers": []
-     |   }
-     |}""")
+                                          |  "authModule": "hmrc",
+                                          |  "agentAccess": "allowAnyAgentAffinityUser",
+                                          |  "enrolmentCheck": "always",
+                                          |  "serviceId": "Z",
+                                          |  "enrolmentSection": {
+                                          |     "title": "t",
+                                          |     "fields":[],
+                                          |     "identifiers": [
+                                          |        {
+                                          |          "key": "EtmpRegistrationNumber",
+                                          |          "value": "${eeittReferenceNumber}"
+                                          |        }
+                                          |     ],
+                                          |     "verifiers": []
+                                          |   }
+                                          |}""")
     authConfigValue shouldBe JsSuccess(
       HmrcAgentWithEnrolmentModule(
         AllowAnyAgentAffinityUser,
@@ -120,23 +125,23 @@ class AuthConfigSpec extends Spec {
 
   it should "parse HMRC auth with everything" in {
     val authConfigValue = toAuthConfig("""|{
-     |  "authModule": "hmrc",
-     |  "agentAccess": "allowAnyAgentAffinityUser",
-     |  "serviceId": "Z",
-     |  "enrolmentCheck": "always",
-     |  "regimeId": "IP",
-     |  "enrolmentSection": {
-     |     "title": "t",
-     |     "fields":[],
-     |     "identifiers": [
-     |        {
-     |          "key": "EtmpRegistrationNumber",
-     |          "value": "${eeittReferenceNumber}"
-     |        }
-     |     ],
-     |     "verifiers": []
-     |   }
-     |}""")
+                                          |  "authModule": "hmrc",
+                                          |  "agentAccess": "allowAnyAgentAffinityUser",
+                                          |  "serviceId": "Z",
+                                          |  "enrolmentCheck": "always",
+                                          |  "regimeId": "IP",
+                                          |  "enrolmentSection": {
+                                          |     "title": "t",
+                                          |     "fields":[],
+                                          |     "identifiers": [
+                                          |        {
+                                          |          "key": "EtmpRegistrationNumber",
+                                          |          "value": "${eeittReferenceNumber}"
+                                          |        }
+                                          |     ],
+                                          |     "verifiers": []
+                                          |   }
+                                          |}""")
     authConfigValue shouldBe JsSuccess(
       HmrcAgentWithEnrolmentModule(
         AllowAnyAgentAffinityUser,

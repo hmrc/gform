@@ -17,10 +17,12 @@
 package uk.gov.hmrc.gform.formtemplate
 
 import cats.Monoid
+import cats.data.NonEmptyList
 import cats.implicits._
 import scalax.collection.Graph
 import scalax.collection.GraphEdge._
 import uk.gov.hmrc.gform.core.{ Invalid, Opt, Valid, ValidationResult }
+import uk.gov.hmrc.gform.core.ValidationResult.{ BooleanToValidationResultSyntax, validationResultMonoid }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.form.FormField
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
@@ -31,15 +33,31 @@ import scala.collection.immutable.List
 
 object FormTemplateValidator {
 
-  def validateUniqueFields(sectionsList: List[Section]): ValidationResult = {
-    val fieldIds: List[FormComponentId] = sectionsList.flatMap(_.fields.map(_.id))
-    val duplicates: List[FormComponentId] =
-      fieldIds.groupBy(identity).collect { case (fId, List(_, _, _*)) => fId }.toList
+  def someFieldsAreDefinedMoreThanOnce(duplicates: Set[FormComponentId]) =
+    s"Some FieldIds are defined more than once: ${duplicates.toList.sortBy(_.value).map(_.value)}"
 
-    duplicates.isEmpty match {
-      case true  => Valid
-      case false => Invalid(s"Some FieldIds are defined more than once: ${duplicates.map(_.value)}")
-    }
+  def validateUniqueFields(sectionsList: List[Section]): ValidationResult = {
+    val fieldIds = sectionsList.flatMap(_.fields.map(_.id))
+    val duplicates = fieldIds.groupBy(identity).collect { case (fId, List(_, _, _*)) => fId }.toSet
+    duplicates.isEmpty.validationResult(someFieldsAreDefinedMoreThanOnce(duplicates))
+  }
+
+  def someDestinationIdsAreUsedMoreThanOnce(duplicates: Set[DestinationId]) =
+    s"Some DestinationIds are defined more than once: ${duplicates.toList.sortBy(_.id).map(_.value)}"
+
+  def validateUniqueDestinationIds(destinations: NonEmptyList[Destination]): ValidationResult = {
+    val destinationIds = destinations.map(_.id)
+    val duplicates = destinationIds.toList.groupBy(identity).collect { case (dId, List(_, _, _*)) => dId }.toSet
+    duplicates.isEmpty.validationResult(someDestinationIdsAreUsedMoreThanOnce(duplicates))
+  }
+
+  def onlyZeroOrOneHmrcDmsDestinationAllowed(ids: Set[DestinationId]) =
+    s"There can be only zero or one hmrcDms destination: ${ids.toList.sortBy(_.id).map(_.value)}"
+
+  def validateZeroOrOneHmrcDmsDestination(destinations: NonEmptyList[Destination]): ValidationResult = {
+    val hmrcDmsDestinations = destinations.collect { case d: Destination.HmrcDms => d }
+    (hmrcDmsDestinations.size <= 1)
+      .validationResult(onlyZeroOrOneHmrcDmsDestinationAllowed(hmrcDmsDestinations.map(_.id).toSet))
   }
 
   def validateChoiceHelpText(sectionsList: List[Section]): ValidationResult = {
@@ -54,12 +72,8 @@ object FormTemplateValidator {
 
     val choiceFieldIdResult = choiceFieldIdMap.filter(value => value._2.equals(false))
 
-    choiceFieldIdResult.isEmpty match {
-      case true => Valid
-      case false =>
-        Invalid(
-          s"Choice components doesn't have equal number of choices and help texts ${choiceFieldIdResult.keys.toList}")
-    }
+    choiceFieldIdResult.isEmpty.validationResult(
+      s"Choice components doesn't have equal number of choices and help texts ${choiceFieldIdResult.keys.toList}")
   }
 
   def validateRepeatingSectionFields(sectionList: List[Section]): ValidationResult = {
@@ -135,10 +149,9 @@ object FormTemplateValidator {
         val ctxs = enrolmentSection.identifiers.map(_.value.value).toList.toSet ++ enrolmentSection.verifiers
           .map(_.value.value)
           .toSet
-        if (ctxs.subsetOf(fcIds))
-          Valid
-        else
-          Invalid(
+        ctxs
+          .subsetOf(fcIds)
+          .validationResult(
             s"Following identifiers and/or verifiers don't have corresponding field entry: " + ctxs
               .diff(fcIds)
               .mkString(", "))
@@ -147,9 +160,9 @@ object FormTemplateValidator {
 
   def validateRegimeId(formTemplate: FormTemplate): ValidationResult = {
     def regimeIdCheck(regimeId: RegimeId): ValidationResult =
-      if (regimeId.value.size >= 2 && regimeId.value.size <= 8)
-        Valid
-      else Invalid("Regime id must be between 2 and 8 characters long")
+      (regimeId.value.length >= 2 && regimeId.value.length <= 8)
+        .validationResult("Regime id must be between 2 and 8 characters long")
+
     formTemplate.authConfig match {
       case HmrcEnrolmentModule(EnrolmentAuth(_, DoCheck(_, _, RegimeIdCheck(regimeId)))) => regimeIdCheck(regimeId)
       case HmrcAgentWithEnrolmentModule(_, EnrolmentAuth(_, DoCheck(_, _, RegimeIdCheck(regimeId)))) =>
@@ -179,7 +192,7 @@ object FormTemplateValidator {
     case InformationMessage(_, _)      => Valid
   }
 
-  def validateForwardReference(sections: List[Section]) = {
+  def validateForwardReference(sections: List[Section]): ValidationResult = {
     val fieldNamesIds: Map[FormComponentId, Int] = sections.zipWithIndex.flatMap {
       case (element, idx) => element.fields.map(_.id -> idx)
     }.toMap
@@ -191,7 +204,7 @@ object FormTemplateValidator {
             id =>
               fieldNamesIds
                 .get(id)
-                .map(idIdx => isValid(idIdx < idx, "Forward referencing is not permitted."))
+                .map(idIdx => (idIdx < idx).validationResult("Forward referencing is not permitted."))
                 .getOrElse(Invalid(s"id named in include if expression does not exist in form ${id.value}")))
       case Or(left, right)  => boolean(left, idx) ::: boolean(right, idx)
       case And(left, right) => boolean(left, idx) ::: boolean(right, idx)
@@ -230,15 +243,15 @@ object FormTemplateValidator {
       case Multiply(field1, field2)    => checkFields(field1, field2)
       case Sum(value)                  => validate(value, sections)
       case FormCtx(value) =>
-        if (fieldNamesIds.map(_.value).contains(value))
-          Valid
-        else
-          Invalid(s"Form field '$value' is not defined in form template.")
-      case AuthCtx(value)  => Valid
-      case EeittCtx(value) => Valid
-      case UserCtx(value)  => Valid
-      case Constant(_)     => Valid
-      case Value           => Valid
+        fieldNamesIds
+          .map(_.value)
+          .contains(value)
+          .validationResult(s"Form field '$value' is not defined in form template.")
+      case AuthCtx(_)  => Valid
+      case EeittCtx(_) => Valid
+      case UserCtx(_)  => Valid
+      case Constant(_) => Valid
+      case Value       => Valid
     }
   }
 
@@ -250,8 +263,4 @@ object FormTemplateValidator {
     case id: FormCtx              => List(id.toFieldId)
     case _                        => Nil
   }
-
-  private def isValid(is: Boolean, errorMessage: String) =
-    if (is) Valid
-    else Invalid(errorMessage)
 }

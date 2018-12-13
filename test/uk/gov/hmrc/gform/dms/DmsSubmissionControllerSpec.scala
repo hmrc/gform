@@ -100,7 +100,8 @@ class DmsSubmissionControllerSpec extends Spec {
       DmsMetaData(FormTemplateId(validSubmission.metadata.dmsFormId), validSubmission.metadata.customerId)
     val expectedSubmissionAndPdf = SubmissionAndPdf(
       Submission(FormId(validSubmission.metadata.dmsFormId), fixedTime, submissionRef, expectedEnvId, 0, dmsMetadata),
-      PdfSummary(numberOfPages, pdfContent))
+      PdfSummary(numberOfPages.longValue, pdfContent)
+    )
 
     val expectedDmsSubmission = DmsSubmission(
       validSubmission.metadata.dmsFormId,

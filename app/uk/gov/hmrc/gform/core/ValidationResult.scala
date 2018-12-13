@@ -40,4 +40,8 @@ object ValidationResult {
       case (_, i @ Invalid(_)) => i
     }
   }
+
+  implicit class BooleanToValidationResultSyntax(b: Boolean) {
+    def validationResult(invalidReason: => String): ValidationResult = if (b) Valid else Invalid(invalidReason)
+  }
 }

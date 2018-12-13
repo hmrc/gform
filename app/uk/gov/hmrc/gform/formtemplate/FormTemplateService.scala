@@ -56,6 +56,8 @@ class FormTemplateService(formTemplateRepo: FormTemplateRepo, formTemplateRawRep
       _          <- fromOptA(FormTemplateValidator.validateRepeatingSectionFields(sections).toEither)
       _          <- fromOptA(FormTemplateValidator.validateChoiceHelpText(sections).toEither)
       _          <- fromOptA(FormTemplateValidator.validateUniqueFields(sections).toEither)
+      _          <- fromOptA(FormTemplateValidator.validateUniqueDestinationIds(formTemplate.destinations).toEither)
+      _          <- fromOptA(FormTemplateValidator.validateZeroOrOneHmrcDmsDestination(formTemplate.destinations).toEither)
       _          <- fromOptA(FormTemplateValidator.validateForwardReference(sections).toEither)
       _          <- fromOptA(FormTemplateValidator.validate(exprs, formTemplate).toEither)
       _          <- fromOptA(FormTemplateValidator.validateDependencyGraph(formTemplate).toEither)

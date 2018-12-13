@@ -16,236 +16,106 @@
 
 package uk.gov.hmrc.gform.core
 
-import cats.data.NonEmptyList
-import play.api.libs.json._
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.formtemplate.{ FormTemplateSchema, FormTemplateValidator }
+import uk.gov.hmrc.gform.formtemplate.FormTemplateValidator
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.gform.sharedmodel.form._
+import cats.data.NonEmptyList
+import uk.gov.hmrc.gform.sharedmodel.form.FormField
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.DestinationGen
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.FormComponentGen._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.PrimitiveGen._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.SectionGen._
 
 class TemplateValidatorSpec extends Spec {
+  private def setAllFieldIds(sections: NonEmptyList[Section], id: FormComponentId): NonEmptyList[Section] =
+    sections.map(s => s.copy(fields = s.fields.map(_.copy(id = id))))
 
   "Section.validate" should "validate unique FieldIds" in {
-    val template =
-      """{
-        |  "_id": "IPT100",
-        |  "formName": "Insurance Premium Tax Return | Yswiriant Ffurflen Dreth Premiwm",
-        |  "description": "Fill in your insurance premium tax return form online | Llenwch eich ffurflen dreth premiwm yswiriant ar-lein",
-        |  "characterSet": "UTF-8",
-        |  "dmsSubmission": {
-        |    "customerId": "nino",
-        |    "classificationType": "BT-NRU-Environmental",
-        |    "businessArea": "FinanceOpsCorpT"
-        |  },
-        |  "submitSuccessUrl": "http://www.google.co.uk",
-        |  "submitErrorUrl": "http://www.yahoo.co.uk",
-        |  "sections": [
-        |    {
-        |      "title": "Calculation 1/2 | eich calculationewq",
-        |      "fields": [
-        |        {
-        |          "type": "choice",
-        |          "id": "dutyType",
-        |          "label": "Select the tax type for the duty you need to pay from the below",
-        |          "choices": [
-        |            "Tax type 590 - Natural gas",
-        |            "Tax type 591 - Other gas"
-        |          ],
-        |          "value": "1"
-        |        },
-        |        {
-        |          "type": "choice",
-        |          "id": "dutyType",
-        |          "label": "Select the tax type for the duty you need to pay from the below",
-        |          "choices": [
-        |            "Tax type 590 - Natural gas",
-        |            "Tax type 591 - Other gas"
-        |          ],
-        |          "value": "1"
-        |        },
-        |        {
-        |          "type": "choice",
-        |          "id": "dutyTypes",
-        |          "label": "Select the tax type for the duty you need to pay from the below",
-        |          "choices": [
-        |            "Tax type 595 - Natural gas",
-        |            "Tax type 596 - Other gas",
-        |            "Tax type 597 - Super gas",
-        |            "Tax type 598 - Empty gas"
-        |          ],
-        |          "multivalue": "yes",
-        |          "mandatory": "true",
-        |          "value": "1,2,3"
-        |        },
-        |        {
-        |          "type": "choice",
-        |          "id": "testChoice",
-        |          "label": "Test mandatory=false and nothind selected",
-        |          "choices": [
-        |            "295 - Natural gas",
-        |            "296 - SuperOther gas",
-        |            "297 - SuperBNatural gas",
-        |            "298 - Full throttle gas"
-        |          ],
-        |          "multivalue": "yes",
-        |          "mandatory": "true",
-        |          "value": "0,1,2"
-        |        },
-        |        {
-        |          "type": "choice",
-        |          "id": "isPremisesAddressBusinessAddress",
-        |          "label": "Is the address of the premises the same as your business address?",
-        |          "format": "yesno",
-        |          "value": "0"
-        |        },
-        |        {
-        |          "type": "choice",
-        |          "id": "isPremisesAddressBusinessAddress2",
-        |          "label": "Is the address of the premises the same as your business address again?",
-        |          "format": "yesno",
-        |          "value": "1"
-        |        },
-        |        {
-        |          "type": "choice",
-        |          "id": "isPremisesAddressBusinessAddress2",
-        |          "label": "Is the address of the premises the same as your business address again?",
-        |          "format": "yesno",
-        |          "value": "1"
-        |        },
-        |        {
-        |          "id": "amountA",
-        |          "label": "Amount A | Rhif A",
-        |          "format": "positiveNumber",
-        |          "mandatory": "true"
-        |        }
-        |      ]
-        |    },
-        |    {
-        |      "title": "Calculation 2/2 | eich calculationewq",
-        |      "fields": [
-        |        {
-        |          "id": "amountB",
-        |          "label": "Amount B | Rhif B",
-        |          "format": "number",
-        |          "mandatory": "true"
-        |        },
-        |        {
-        |          "id": "sum",
-        |          "label": "Sum | Eich sumolaf",
-        |          "mandatory": "true",
-        |          "value": "${amountA + amountB}"
-        |        }
-        |      ]
-        |    },
-        |    {
-        |      "title": "Your details | eich manylion",
-        |      "fields": [
-        |        {
-        |          "id": "firstName",
-        |          "label": "Your first name | Eich enw cyntaf",
-        |          "mandatory": "true",
-        |          "type": "text"
-        |        },
-        |        {
-        |          "id": "iptRegNum",
-        |          "label": "Insurance Premium Tax (IPT) registration number | Treth Premiwm Yswiriant (IPT) rhif cofrestru",
-        |          "readonly": "true",
-        |          "mandatory": "true",
-        |          "type": "text"
-        |        },
-        |        {
-        |          "id": "lastName",
-        |          "label": "Your last name | Eich enw olaf",
-        |          "mandatory": "true",
-        |          "type": "text"
-        |        },
-        |        {
-        |          "id": "address",
-        |          "label": "Your Address | Eich enw cyntaf",
-        |          "mandatory": "true",
-        |          "type": "address"
-        |        },
-        |        {
-        |          "id": "accPeriodStartDate",
-        |          "type": "date",
-        |          "label": "Accounting period start date",
-        |          "helpText": "For example, 31 3 1980",
-        |          "format":"after 2016-09-05 -1",
-        |          "offset":"5",
-        |          "mandatory": "false",
-        |          "value": "next-01-15"
-        |        }
-        |      ]
-        |    },
-        |    {
-        |      "title": "Business details | manylion Busnes",
-        |      "fields": [
-        |        {
-        |          "id": "nameOfBusiness",
-        |          "label": "Name of business | Enw'r busnes",
-        |          "mandatory": "true"
-        |        },
-        |        {
-        |          "id": "accountingPeriodStartDate",
-        |          "label": "Accounting period start date | Dyddiad dechrau'r cyfnod cyfrifeg",
-        |          "type": "date",
-        |          "mandatory": "true"
-        |        },
-        |        {
-        |          "id": "accountingPeriodEndDate",
-        |          "label": "Accounting period end date | Dyddiad diwedd cyfnod Cyfrifeg",
-        |          "type": "date",
-        |          "mandatory": "false"
-        |        }
-        |      ]
-        |    },
-        |    {
-        |      "title": "Rate for the period of the Insurance Premium Tax | Gyfradd ar gyfer y cyfnod y Dreth Premiwm Yswiriant",
-        |      "fields": [
-        |        {
-        |          "id": "standardRateIPTDueForThisPeriod",
-        |          "label": "Standard rate IPT due for this period | Cyfradd safonol IPT sy'n ddyledus am y cyfnod hwn",
-        |          "helpText": "You should deduct any standard credits which are due to you | Dylech ddidynnu unrhyw gredydau safonol sydd yn ddyledus i chi",
-        |          "format": "positiveNumber(8,2)",
-        |          "mandatory": "true"
-        |        },
-        |        {
-        |          "id": "higherRateIPTDueForThisPeriod",
-        |          "label": "Higher rate IPT due for this period | Cyfradd uwch IPT sy'n ddyledus am y cyfnod hwn",
-        |          "mandatory": "true"
-        |        }
-        |      ]
-        |    }
-        |  ]
-        |}
-        |""".stripMargin
+    forAll(
+      oneOrMoreGen(sectionGen),
+      oneOrMoreGen(sectionGen),
+      formComponentIdGen,
+      oneOrMoreGen(sectionGen),
+      oneOrMoreGen(sectionGen),
+      formComponentIdGen
+    ) { (s11, s12, id1, s21, s22, id2) =>
+      val ds1 = setAllFieldIds(s11 ::: s12, id1)
+      val ds2 = setAllFieldIds(s21 ::: s22, id2)
 
-    val formTemplateJsValue = Json.parse(template)
-    val formTemplateJsResult = formTemplateJsValue.validate[FormTemplate]
+      val allSections = ds1 ::: ds2
 
-    formTemplateJsResult match {
-      case JsSuccess(formTempl, _) =>
-        val result = FormTemplateValidator.validateUniqueFields(formTempl.sections).toEither
-
-        result.left.value canEqual s"Some FieldIds are defined more than once: ${List(FormComponentId("isPremisesAddressBusinessAddress2"), FormComponentId("dutyType"))}"
-
-      case JsError(error) => s"Couldn't convert json to FormTemplate, $error"
+      val result = FormTemplateValidator.validateUniqueFields(allSections.toList)
+      result should be(Invalid(FormTemplateValidator.someFieldsAreDefinedMoreThanOnce(Set(id1, id2))))
     }
   }
 
-  val businessDetailsSection = mkSection(
+  "validateUniqueDestinationIds" should "return an error when there are duplicate ids" in {
+    import DestinationGen._
+    forAll(destinationIdGen, destinationIdGen) { (id1, id2) =>
+      forAll(
+        oneOrMoreGen(destinationWithFixedIdGen(id1)),
+        oneOrMoreGen(destinationWithFixedIdGen(id1)),
+        oneOrMoreGen(destinationWithFixedIdGen(id2)),
+        oneOrMoreGen(destinationWithFixedIdGen(id2)),
+        destinationGen.filter(d => d.id != id1 && d.id != id2)
+      ) { (d1WithId1, d2WithId1, d1WithId2, d2WithId2, uniqueD) =>
+        val destinations = uniqueD :: d1WithId1 ::: d2WithId1 ::: d1WithId2 ::: d2WithId2
+
+        FormTemplateValidator.validateUniqueDestinationIds(destinations) should be(
+          Invalid(FormTemplateValidator.someDestinationIdsAreUsedMoreThanOnce(Set(id1, id2))))
+      }
+    }
+  }
+
+  it should "not return an error when there are no duplicate ids" in {
+    import DestinationGen._
+    forAll(destinationGen, destinationGen) { (d1, d2) =>
+      whenever(d1 != d2) {
+        FormTemplateValidator.validateUniqueDestinationIds(NonEmptyList.of(d1, d2)) should be(Valid)
+      }
+    }
+  }
+
+  "validateZeroOrOneHmrcDmsDestination" should "return an error when there is more than one HmrcDms Destination" in {
+    import DestinationGen._
+    forAll(hmrcDmsGen, hmrcDmsGen) { (d1, d2) =>
+      val destinations = NonEmptyList.of(d1, d2)
+
+      FormTemplateValidator.validateZeroOrOneHmrcDmsDestination(destinations) should be(
+        Invalid(FormTemplateValidator.onlyZeroOrOneHmrcDmsDestinationAllowed(Set(d1.id, d2.id))))
+    }
+  }
+
+  it should "not return an error when there is only one HmrcDms Destination" in {
+    import DestinationGen._
+    forAll(hmrcDmsGen) { d1 =>
+      val destinations = NonEmptyList.of(d1)
+      FormTemplateValidator.validateZeroOrOneHmrcDmsDestination(destinations) should be(Valid)
+    }
+  }
+
+  it should "not return an error when there are no duplicate ids" in {
+    import DestinationGen._
+    forAll(destinationGen, destinationGen) { (d1, d2) =>
+      whenever(d1 != d2) {
+        FormTemplateValidator.validateUniqueDestinationIds(NonEmptyList.of(d1, d2)) should be(Valid)
+      }
+    }
+  }
+
+  private val businessDetailsSection = mkSection(
     "Business details",
     mkFormComponent("nameOfBusiness", Value) ::
       mkFormComponent("businessAddress", Address(international = false)) :: Nil
   )
 
-  val sectionWithDate = mkSection(
+  private val sectionWithDate = mkSection(
     "Business details",
     mkFormComponent("nameOfBusiness", Value) ::
       mkFormComponent("startDate", Date(AnyDate, Offset(0), None)) :: Nil
   )
 
-  val sectionWithCheckbox = mkSection(
+  private val sectionWithCheckbox = mkSection(
     "Business details",
     mkFormComponent("nameOfBusiness", Value) ::
       mkFormComponent(
@@ -253,7 +123,7 @@ class TemplateValidatorSpec extends Spec {
       Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None)) :: Nil
   )
 
-  val sectionWithRadio = mkSection(
+  private val sectionWithRadio = mkSection(
     "Business details",
     mkFormComponent("nameOfBusiness", Value) ::
       mkFormComponent(
@@ -261,7 +131,7 @@ class TemplateValidatorSpec extends Spec {
       Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None)) :: Nil
   )
 
-  val sectionWithYesNo = mkSection(
+  private val sectionWithYesNo = mkSection(
     "Business details",
     mkFormComponent("nameOfBusiness", Value) ::
       mkFormComponent("taxType", Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int], None)) :: Nil
@@ -440,9 +310,6 @@ class TemplateValidatorSpec extends Spec {
 
   }
 
-  private lazy val schema = FormTemplateSchema.schema
-  private lazy val jsonSchema = FormTemplateSchema.jsonSchema
-
   private def mkSection(name: String, formComponents: List[FormComponent]) =
     Section(
       name,
@@ -497,5 +364,4 @@ class TemplateValidatorSpec extends Spec {
     def isMandatory: FormComponent = fc.copy(mandatory = true)
     def isNotMandatory: FormComponent = fc.copy(mandatory = false)
   }
-
 }
