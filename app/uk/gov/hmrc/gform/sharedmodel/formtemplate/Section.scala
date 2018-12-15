@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
+import cats.data.NonEmptyList
+import julienrf.json.derived
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.form.FormField
 
@@ -123,8 +125,8 @@ case class DeclarationSection(
   title: String,
   description: Option[String],
   shortName: Option[String],
-  fields: List[FormComponent])
-    extends BaseSection
+  fields: List[FormComponent]
+) extends BaseSection
 
 object DeclarationSection {
   implicit val format = Json.format[DeclarationSection]
@@ -134,17 +136,34 @@ case class AcknowledgementSection(
   title: String,
   description: Option[String],
   shortName: Option[String],
-  fields: List[FormComponent])
-    extends BaseSection
+  fields: List[FormComponent]
+) extends BaseSection
 
 object AcknowledgementSection {
   implicit val format = Json.format[AcknowledgementSection]
 }
 
-case class EnrolmentSection(title: String, shortName: Option[String], fields: List[FormComponent]) extends BaseSection
+case class EnrolmentSection(
+  title: String,
+  shortName: Option[String],
+  fields: List[FormComponent],
+  identifiers: NonEmptyList[IdentifierRecipe],
+  verifiers: List[VerifierRecipe]
+) extends BaseSection
 
 object EnrolmentSection {
+  import JsonUtils._
   implicit val format = Json.format[EnrolmentSection]
 }
 
 case class SectionFormField(title: String, fields: List[(List[FormField], FormComponent)])
+
+case class IdentifierRecipe(key: String, value: FormCtx)
+object IdentifierRecipe {
+  implicit val format: OFormat[IdentifierRecipe] = Json.format[IdentifierRecipe]
+}
+
+case class VerifierRecipe(key: String, value: FormCtx)
+object VerifierRecipe {
+  implicit val format: OFormat[VerifierRecipe] = Json.format[VerifierRecipe]
+}

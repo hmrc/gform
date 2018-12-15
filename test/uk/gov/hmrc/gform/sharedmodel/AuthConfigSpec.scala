@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.sharedmodel
 
+import cats.data.NonEmptyList
 import play.api.libs.json._
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
@@ -79,35 +80,80 @@ class AuthConfigSpec extends Spec {
   }
 
   it should "parse HMRC auth with enrolmentSection" in {
-    val authConfigValue = toAuthConfig(s"""|{
+    val authConfigValue = toAuthConfig("""|{
      |  "authModule": "hmrc",
      |  "agentAccess": "allowAnyAgentAffinityUser",
      |  "enrolmentCheck": "always",
      |  "serviceId": "Z",
-     |  "enrolmentSection": {"title": "t", "fields":[]}
-     |}""")
-    authConfigValue shouldBe JsSuccess(
-      HmrcAgentWithEnrolmentModule(
-        AllowAnyAgentAffinityUser,
-        EnrolmentAuth(ServiceId("Z"), DoCheck(Always, RequireEnrolment(EnrolmentSection("t", None, List())), NoCheck)))
-    )
-  }
-
-  it should "parse HMRC auth with everything" in {
-    val authConfigValue = toAuthConfig(s"""|{
-     |  "authModule": "hmrc",
-     |  "agentAccess": "allowAnyAgentAffinityUser",
-     |  "serviceId": "Z",
-     |  "enrolmentCheck": "always",
-     |  "regimeId": "IP",
-     |  "enrolmentSection": {"title": "t", "fields":[]}
+     |  "enrolmentSection": {
+     |     "title": "t",
+     |     "fields":[],
+     |     "identifiers": [
+     |        {
+     |          "key": "EtmpRegistrationNumber",
+     |          "value": "${eeittReferenceNumber}"
+     |        }
+     |     ],
+     |     "verifiers": []
+     |   }
      |}""")
     authConfigValue shouldBe JsSuccess(
       HmrcAgentWithEnrolmentModule(
         AllowAnyAgentAffinityUser,
         EnrolmentAuth(
           ServiceId("Z"),
-          DoCheck(Always, RequireEnrolment(EnrolmentSection("t", None, List())), RegimeIdCheck(RegimeId("IP"))))
+          DoCheck(
+            Always,
+            RequireEnrolment(
+              EnrolmentSection(
+                "t",
+                None,
+                List.empty,
+                NonEmptyList.of(IdentifierRecipe("EtmpRegistrationNumber", FormCtx("eeittReferenceNumber"))),
+                List.empty)),
+            NoCheck
+          )
+        )
+      )
+    )
+  }
+
+  it should "parse HMRC auth with everything" in {
+    val authConfigValue = toAuthConfig("""|{
+     |  "authModule": "hmrc",
+     |  "agentAccess": "allowAnyAgentAffinityUser",
+     |  "serviceId": "Z",
+     |  "enrolmentCheck": "always",
+     |  "regimeId": "IP",
+     |  "enrolmentSection": {
+     |     "title": "t",
+     |     "fields":[],
+     |     "identifiers": [
+     |        {
+     |          "key": "EtmpRegistrationNumber",
+     |          "value": "${eeittReferenceNumber}"
+     |        }
+     |     ],
+     |     "verifiers": []
+     |   }
+     |}""")
+    authConfigValue shouldBe JsSuccess(
+      HmrcAgentWithEnrolmentModule(
+        AllowAnyAgentAffinityUser,
+        EnrolmentAuth(
+          ServiceId("Z"),
+          DoCheck(
+            Always,
+            RequireEnrolment(
+              EnrolmentSection(
+                "t",
+                None,
+                List.empty,
+                NonEmptyList.of(IdentifierRecipe("EtmpRegistrationNumber", FormCtx("eeittReferenceNumber"))),
+                List.empty)),
+            RegimeIdCheck(RegimeId("IP"))
+          )
+        )
       )
     )
   }
