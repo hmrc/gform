@@ -128,6 +128,23 @@ object FormTemplateValidator {
     }
   }
 
+  def validateEnrolmentSection(formTemplate: FormTemplate): ValidationResult =
+    formTemplate.authConfig match {
+      case HasEnrolmentSection(_, enrolmentSection) =>
+        val fcIds = enrolmentSection.fields.map(_.id).map(_.value).toSet
+        val ctxs = enrolmentSection.identifiers.map(_.value.value).toList.toSet ++ enrolmentSection.verifiers
+          .map(_.value.value)
+          .toSet
+        if (ctxs.subsetOf(fcIds))
+          Valid
+        else
+          Invalid(
+            s"Following identifiers and/or verifiers don't have corresponding field entry: " + ctxs
+              .diff(fcIds)
+              .mkString(", "))
+      case _ => Valid
+    }
+
   def validateRegimeId(formTemplate: FormTemplate): ValidationResult = {
     def regimeIdCheck(regimeId: RegimeId): ValidationResult =
       if (regimeId.value.size >= 2 && regimeId.value.size <= 8)
