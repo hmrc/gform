@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel.formtemplate
+package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
 
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.DestinationGen
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ TextExpression, verifyRead }
 
 class DestinationSpec extends Spec {
   "Destination" should "round trip derived JSON" in {

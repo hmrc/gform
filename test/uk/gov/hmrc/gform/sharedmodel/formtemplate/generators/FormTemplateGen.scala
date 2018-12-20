@@ -36,7 +36,7 @@ object FormTemplateGen {
       category               <- Gen.option(formCategoryGen)
       draftRetrievalMethod   <- Gen.option(draftRetrievalMethodGen)
       submissionReference    <- Gen.option(FormatExprGen.textExpressionGen)
-      destinations           <- PrimitiveGen.oneOrMoreGen(DestinationGen.destinationGen)
+      destinations           <- DestinationsGen.destinationsGen
       authConfig             <- AuthConfigGen.authConfigGen
       emailTemplateId        <- emailTemplateIdGen
       submitSuccessUrl       <- PrimitiveGen.urlGen

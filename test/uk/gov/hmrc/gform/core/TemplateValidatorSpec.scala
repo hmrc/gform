@@ -21,6 +21,7 @@ import uk.gov.hmrc.gform.formtemplate.FormTemplateValidator
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.sharedmodel.form.FormField
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.DestinationGen
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.FormComponentGen._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.PrimitiveGen._
@@ -59,7 +60,7 @@ class TemplateValidatorSpec extends Spec {
         oneOrMoreGen(destinationWithFixedIdGen(id2)),
         destinationGen.filter(d => d.id != id1 && d.id != id2)
       ) { (d1WithId1, d2WithId1, d1WithId2, d2WithId2, uniqueD) =>
-        val destinations = uniqueD :: d1WithId1 ::: d2WithId1 ::: d1WithId2 ::: d2WithId2
+        val destinations = Destinations.DestinationList(uniqueD :: d1WithId1 ::: d2WithId1 ::: d1WithId2 ::: d2WithId2)
 
         FormTemplateValidator.validateUniqueDestinationIds(destinations) should be(
           Invalid(FormTemplateValidator.someDestinationIdsAreUsedMoreThanOnce(Set(id1, id2))))
@@ -71,7 +72,8 @@ class TemplateValidatorSpec extends Spec {
     import DestinationGen._
     forAll(destinationGen, destinationGen) { (d1, d2) =>
       whenever(d1 != d2) {
-        FormTemplateValidator.validateUniqueDestinationIds(NonEmptyList.of(d1, d2)) should be(Valid)
+        FormTemplateValidator.validateUniqueDestinationIds(Destinations.DestinationList(NonEmptyList.of(d1, d2))) should be(
+          Valid)
       }
     }
   }
@@ -79,7 +81,7 @@ class TemplateValidatorSpec extends Spec {
   "validateZeroOrOneHmrcDmsDestination" should "return an error when there is more than one HmrcDms Destination" in {
     import DestinationGen._
     forAll(hmrcDmsGen, hmrcDmsGen) { (d1, d2) =>
-      val destinations = NonEmptyList.of(d1, d2)
+      val destinations = Destinations.DestinationList(NonEmptyList.of(d1, d2))
 
       FormTemplateValidator.validateZeroOrOneHmrcDmsDestination(destinations) should be(
         Invalid(FormTemplateValidator.onlyZeroOrOneHmrcDmsDestinationAllowed(Set(d1.id, d2.id))))
@@ -89,7 +91,7 @@ class TemplateValidatorSpec extends Spec {
   it should "not return an error when there is only one HmrcDms Destination" in {
     import DestinationGen._
     forAll(hmrcDmsGen) { d1 =>
-      val destinations = NonEmptyList.of(d1)
+      val destinations = Destinations.DestinationList(NonEmptyList.of(d1))
       FormTemplateValidator.validateZeroOrOneHmrcDmsDestination(destinations) should be(Valid)
     }
   }
@@ -98,7 +100,8 @@ class TemplateValidatorSpec extends Spec {
     import DestinationGen._
     forAll(destinationGen, destinationGen) { (d1, d2) =>
       whenever(d1 != d2) {
-        FormTemplateValidator.validateUniqueDestinationIds(NonEmptyList.of(d1, d2)) should be(Valid)
+        FormTemplateValidator.validateUniqueDestinationIds(Destinations.DestinationList(NonEmptyList.of(d1, d2))) should be(
+          Valid)
       }
     }
   }

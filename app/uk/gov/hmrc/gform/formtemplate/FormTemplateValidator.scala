@@ -26,6 +26,7 @@ import uk.gov.hmrc.gform.core.ValidationResult.{ BooleanToValidationResultSyntax
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.form.FormField
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, Destinations }
 import uk.gov.hmrc.gform.sharedmodel.graph.DependencyGraph._
 
 import scala.Function.const
@@ -45,19 +46,25 @@ object FormTemplateValidator {
   def someDestinationIdsAreUsedMoreThanOnce(duplicates: Set[DestinationId]) =
     s"Some DestinationIds are defined more than once: ${duplicates.toList.sortBy(_.id).map(_.value)}"
 
-  def validateUniqueDestinationIds(destinations: NonEmptyList[Destination]): ValidationResult = {
-    val destinationIds = destinations.map(_.id)
-    val duplicates = destinationIds.toList.groupBy(identity).collect { case (dId, List(_, _, _*)) => dId }.toSet
-    duplicates.isEmpty.validationResult(someDestinationIdsAreUsedMoreThanOnce(duplicates))
+  def validateUniqueDestinationIds(destinations: Destinations): ValidationResult = destinations match {
+    case _: Destinations.DmsSubmission => Valid
+
+    case destinationList: Destinations.DestinationList =>
+      val destinationIds = destinationList.destinations.map(_.id)
+      val duplicates = destinationIds.toList.groupBy(identity).collect { case (dId, List(_, _, _*)) => dId }.toSet
+      duplicates.isEmpty.validationResult(someDestinationIdsAreUsedMoreThanOnce(duplicates))
   }
 
   def onlyZeroOrOneHmrcDmsDestinationAllowed(ids: Set[DestinationId]) =
     s"There can be only zero or one hmrcDms destination: ${ids.toList.sortBy(_.id).map(_.value)}"
 
-  def validateZeroOrOneHmrcDmsDestination(destinations: NonEmptyList[Destination]): ValidationResult = {
-    val hmrcDmsDestinations = destinations.collect { case d: Destination.HmrcDms => d }
-    (hmrcDmsDestinations.size <= 1)
-      .validationResult(onlyZeroOrOneHmrcDmsDestinationAllowed(hmrcDmsDestinations.map(_.id).toSet))
+  def validateZeroOrOneHmrcDmsDestination(destinations: Destinations): ValidationResult = destinations match {
+    case _: Destinations.DmsSubmission => Valid
+
+    case destinationList: Destinations.DestinationList =>
+      val hmrcDmsDestinations = destinationList.destinations.collect { case d: Destination.HmrcDms => d }
+      (hmrcDmsDestinations.size <= 1)
+        .validationResult(onlyZeroOrOneHmrcDmsDestinationAllowed(hmrcDmsDestinations.map(_.id).toSet))
   }
 
   def validateChoiceHelpText(sectionsList: List[Section]): ValidationResult = {

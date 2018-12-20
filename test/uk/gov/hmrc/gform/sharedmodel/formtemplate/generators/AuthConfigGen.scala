@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
-object AuthConfigGen {
+trait AuthConfigGen {
   def regimeIdGen: Gen[RegimeId] = PrimitiveGen.nonEmptyAlphaNumStrGen.map(RegimeId(_))
 
   def serviceIdGen: Gen[ServiceId] = PrimitiveGen.nonEmptyAlphaNumStrGen.map(ServiceId(_))
@@ -59,7 +59,7 @@ object AuthConfigGen {
   def agentAccessGen: Gen[AgentAccess] =
     Gen.oneOf(RequireMTDAgentEnrolment, DenyAnyAgentAffinityUser, AllowAnyAgentAffinityUser)
 
-  def hmrcAgentModuleGen: Gen[HmrcAgentModule] = agentAccessGen.map(HmrcAgentModule(_))
+  def hmrcAgentModuleGen: Gen[HmrcAgentModule] = agentAccessGen.map(HmrcAgentModule)
 
   def hmrcAgentWithEnrolmentModuleGen: Gen[HmrcAgentWithEnrolmentModule] =
     for {
@@ -75,3 +75,5 @@ object AuthConfigGen {
       hmrcAgentModuleGen,
       hmrcAgentWithEnrolmentModuleGen)
 }
+
+object AuthConfigGen extends AuthConfigGen

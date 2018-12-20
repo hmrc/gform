@@ -16,11 +16,11 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
-import cats.data.NonEmptyList
 import play.api.libs.json.{ JsError, JsSuccess }
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.Destination.HmrcDms
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, FormTemplateGen }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, DestinationsGen, FormTemplateGen }
 
 class FormTemplateSpec extends Spec {
   "FormTemplate" should "round trip derived JSON" in {
@@ -30,20 +30,17 @@ class FormTemplateSpec extends Spec {
   }
 
   it should "read JSON with a dmsSubmission field instead of a destinations field" in {
-    forAll(FormTemplateGen.formTemplateGen, DestinationGen.hmrcDmsGen) { (template, legacyDmsSubmission) =>
-      val dmsSubmission = legacyDmsSubmissionFromDestination(legacyDmsSubmission)
-
-      val dmsJson = DmsSubmission.format.writes(dmsSubmission)
+    forAll(FormTemplateGen.formTemplateGen, DestinationsGen.deprecatedDmsSubmissionGen) { (template, dmsSubmission) =>
+      val dmsJson = Destinations.dmsSubmissionFormat.writes(dmsSubmission)
       val templateJson = FormTemplate.format.writes(template) - "destinations" + ("dmsSubmission" -> dmsJson)
 
       FormTemplate.format.reads(templateJson) match {
         case JsSuccess(value, _) =>
-          value.dmsSubmission should be(dmsSubmission)
           value.destinations match {
-            case NonEmptyList(legacy: HmrcDms, Nil) =>
-              legacyDmsSubmissionFromDestination(legacy) should be(dmsSubmission)
-            case other => fail(s"Got unexpected destinations: $other")
+            case legacy: Destinations.DmsSubmission => legacy should be(dmsSubmission)
+            case other                              => fail(s"Got unexpected destinations: $other")
           }
+          value.dmsSubmission should be(dmsSubmission)
         case JsError(errors) => fail(errors.toString)
       }
     }
@@ -61,10 +58,11 @@ class FormTemplateSpec extends Spec {
   }
 
   it should "reject JSON with both dmsSubmission and destinations fields" in {
-    forAll(FormTemplateGen.formTemplateGen, DestinationGen.hmrcDmsGen) { (template, hmrcDms) =>
-      val dmsSubmission = legacyDmsSubmissionFromDestination(hmrcDms)
-
-      val dmsJson = DmsSubmission.format.writes(dmsSubmission)
+    forAll(
+      FormTemplateGen.formTemplateGen,
+      DestinationsGen.destinationListGen,
+      DestinationsGen.deprecatedDmsSubmissionGen) { (template, destinations, dmsSubmission) =>
+      val dmsJson = Destinations.dmsSubmissionFormat.writes(dmsSubmission)
       val templateJson = FormTemplate.format.writes(template) + ("dmsSubmission" -> dmsJson)
 
       FormTemplate.format.reads(templateJson) match {
@@ -77,7 +75,7 @@ class FormTemplateSpec extends Spec {
   it should "reject JSON with multiple HmrcDms destinations" in {
     forAll(FormTemplateGen.formTemplateGen, DestinationGen.hmrcDmsGen, DestinationGen.hmrcDmsGen) {
       (template, hmrcDms1, hmrcDms2) =>
-        val dmsJson = DmsSubmission.format.writes(dmsSubmission)
+        val dmsJson = Destinations.dmsSubmissionFormat.writes(dmsSubmission)
         val templateJson = FormTemplate.format.writes(template) + ("dmsSubmission" -> dmsJson)
 
         FormTemplate.format.reads(templateJson) match {
@@ -87,9 +85,9 @@ class FormTemplateSpec extends Spec {
     }
   }
 
-  private def legacyDmsSubmissionFromDestination(destination: Destination): DmsSubmission =
-    destination match {
-      case ds: Destination.HmrcDms =>
+  private def legacyDmsSubmissionFromDestinations(destinations: Destinations): DmsSubmission =
+    destinations match {
+      case ds: Destinations.DmsSubmission =>
         DmsSubmission(ds.dmsFormId, ds.customerId, ds.classificationType, ds.businessArea, ds.dataXml)
       case f => fail(s"Unexpected destination: $f")
     }

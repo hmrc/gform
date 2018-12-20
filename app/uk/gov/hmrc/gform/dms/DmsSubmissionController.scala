@@ -26,6 +26,7 @@ import uk.gov.hmrc.gform.fileupload.FileUploadService
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorService
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
 import uk.gov.hmrc.gform.submission._
 import uk.gov.hmrc.gform.typeclasses.Rnd
 
@@ -47,7 +48,7 @@ class DmsSubmissionController(
         envId <- fileUpload.createEnvelope(formTemplateId)
         pdf   <- pdfGenerator.generatePDF(decodedHtml)
         pdfDoc = documentLoader(pdf)
-        pdfSummary = PdfSummary(pdfDoc.getNumberOfPages, pdf)
+        pdfSummary = PdfSummary(pdfDoc.getNumberOfPages.toLong, pdf)
         _ = pdfDoc.close()
         submissionRef = SubmissionRef.random
         dmsMetadata = DmsMetaData(formTemplateId, metadata.customerId)

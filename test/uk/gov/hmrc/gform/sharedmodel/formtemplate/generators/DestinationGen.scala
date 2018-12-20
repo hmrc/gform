@@ -16,21 +16,29 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 import org.scalacheck.Gen
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Destination, DestinationId }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.TextExpression
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId }
 
-object DestinationGen {
+trait DestinationGen {
   def destinationIdGen: Gen[DestinationId] = PrimitiveGen.nonEmptyAlphaNumStrGen.map(DestinationId(_))
+
+  def dmsFormIdGen: Gen[String] = PrimitiveGen.nonEmptyAlphaNumStrGen
+  def classificationTypeGen: Gen[String] = PrimitiveGen.nonEmptyAlphaNumStrGen
+  def customerIdGen: Gen[TextExpression] = FormatExprGen.textExpressionGen
+  def businessAreaGen: Gen[String] = PrimitiveGen.nonEmptyAlphaNumStrGen
 
   def hmrcDmsGen: Gen[Destination.HmrcDms] =
     for {
       id                 <- destinationIdGen
-      dmsFormId          <- PrimitiveGen.nonEmptyAlphaNumStrGen
-      customerId         <- FormatExprGen.textExpressionGen
-      classificationType <- PrimitiveGen.nonEmptyAlphaNumStrGen
-      businessArea       <- PrimitiveGen.nonEmptyAlphaNumStrGen
+      dmsFormId          <- dmsFormIdGen
+      customerId         <- customerIdGen
+      classificationType <- classificationTypeGen
+      businessArea       <- businessAreaGen
     } yield Destination.HmrcDms(id, dmsFormId, customerId, classificationType, businessArea)
 
   def destinationGen: Gen[Destination] = hmrcDmsGen
 
   def destinationWithFixedIdGen(id: DestinationId): Gen[Destination] = hmrcDmsGen.map(_.copy(id = id))
 }
+
+object DestinationGen extends DestinationGen

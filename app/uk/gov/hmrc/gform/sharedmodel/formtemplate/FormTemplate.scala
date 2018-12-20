@@ -16,14 +16,12 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
-import java.util.UUID
-
 import cats.data.NonEmptyList
 import julienrf.json.derived
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.Destination.HmrcDms
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, Destinations }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
 
 case class ExpandedFormTemplate(expandedSection: List[ExpandedSection]) {
   val allFCs: List[FormComponent] = expandedSection.flatMap(_.expandedFCs.flatMap(_.expandedFC))
@@ -38,7 +36,7 @@ case class FormTemplate(
   formCategory: Option[FormCategory],
   draftRetrievalMethod: Option[DraftRetrievalMethod],
   submissionReference: Option[TextExpression],
-  destinations: NonEmptyList[Destination],
+  destinations: Destinations,
   authConfig: formtemplate.AuthConfig,
   emailTemplateId: String,
   submitSuccessUrl: String,
@@ -50,9 +48,16 @@ case class FormTemplate(
 ) {
   val expandFormTemplate: ExpandedFormTemplate = ExpandedFormTemplate(sections.map(_.expandSection))
 
-  def dmsSubmission: DmsSubmission = {
-    val s = destinations.head.asInstanceOf[HmrcDms]
-    DmsSubmission(s.dmsFormId, s.customerId, s.classificationType, s.businessArea, s.dataXml)
+  @deprecated(message = "This is replaced by the new destinations field.", since = "20181219")
+  def dmsSubmission: DmsSubmission = destinations match {
+    case dms: Destinations.DmsSubmission => dms
+    case Destinations.DestinationList(NonEmptyList(hmrcDms: Destination.HmrcDms, Nil)) =>
+      import hmrcDms._
+      DmsSubmission(
+        dmsFormId = dmsFormId,
+        customerId = customerId,
+        classificationType = classificationType,
+        businessArea = businessArea)
   }
 }
 
@@ -83,15 +88,7 @@ object FormTemplate {
         formCategory,
         draftRetrievalMethod: Option[DraftRetrievalMethod],
         submissionReference: Option[TextExpression],
-        destinations = NonEmptyList.of(
-          Destination.HmrcDms(
-            id = DestinationId(UUID.randomUUID.toString),
-            dmsSubmission.dmsFormId,
-            dmsSubmission.customerId,
-            dmsSubmission.classificationType,
-            dmsSubmission.businessArea,
-            dmsSubmission.dataXml
-          )),
+        destinations = dmsSubmission,
         authConfig: formtemplate.AuthConfig,
         emailTemplateId: String,
         submitSuccessUrl: String,

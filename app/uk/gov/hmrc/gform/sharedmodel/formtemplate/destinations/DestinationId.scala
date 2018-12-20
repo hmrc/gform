@@ -14,42 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel.formtemplate
+package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
 
-import julienrf.json.derived
-import play.api.libs.json._
 import play.api.libs.json.Reads._
+import play.api.libs.json._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 case class DestinationId(id: String) extends AnyVal
 
 object DestinationId {
   implicit val format: Format[DestinationId] = JsonUtils.valueClassFormat[DestinationId, String](DestinationId(_), _.id)
-}
-
-sealed trait Destination extends Product with Serializable {
-  def id: DestinationId
-}
-
-object Destination {
-  case class HmrcDms(
-    id: DestinationId,
-    dmsFormId: String,
-    customerId: TextExpression,
-    classificationType: String,
-    businessArea: String,
-    dataXml: Option[Boolean] = None)
-      extends Destination
-
-  val typeDiscriminatorFieldName: String = "type"
-  val hmrcDms: String = "hmrcDms"
-
-  implicit val format: OFormat[Destination] = {
-    implicit val d: OFormat[Destination] = derived.oformat
-
-    OFormatWithTemplateReadFallback(
-      ADTFormat.adtRead[Destination](
-        typeDiscriminatorFieldName,
-        hmrcDms -> derived.reads[HmrcDms]
-      ))
-  }
 }

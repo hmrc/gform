@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.services
 import uk.gov.hmrc.gform._
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
 import uk.gov.hmrc.gform.submission.{ SectionFormField, SubmissionServiceHelper }
 
 import scala.collection.immutable.List
