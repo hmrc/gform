@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
-object PresentationHintGen {
+trait PresentationHintGen {
   def presentationHintGen: Gen[PresentationHint] = Gen.oneOf(
     CollapseGroupUnderLabel,
     InvisibleInSummary,
@@ -26,3 +26,5 @@ object PresentationHintGen {
     TotalValue
   )
 }
+
+object PresentationHintGen extends PresentationHintGen

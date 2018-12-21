@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
-object ExprGen {
+trait ExprGen {
   def authInfoGen: Gen[AuthInfo] = Gen.oneOf(GG, PayeNino, SaUtr, CtUtr)
 
   def eeittGen: Gen[Eeitt] = Gen.oneOf(BusinessUser, Agent, UserId)
@@ -76,3 +76,5 @@ object ExprGen {
     if (maxDepth <= 1) nonRecursiveExprGen
     else Gen.oneOf(nonRecursiveExprGen, recursiveExprGen(maxDepth))
 }
+
+object ExprGen extends ExprGen

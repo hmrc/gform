@@ -18,6 +18,8 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.ValidIf
 
-object ValidIfGen {
+trait ValidIfGen {
   def validIfGen: Gen[ValidIf] = BooleanExprGen.booleanExprGen().map(ValidIf(_))
 }
+
+object ValidIfGen extends ValidIfGen

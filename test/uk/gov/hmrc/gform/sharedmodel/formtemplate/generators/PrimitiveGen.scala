@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 import cats.data.NonEmptyList
 import org.scalacheck.Gen
 
-object PrimitiveGen {
+trait PrimitiveGen {
   def nonEmptyAlphaNumStrGen: Gen[String] = Gen.alphaNumStr.filter(_.nonEmpty)
   def booleanGen: Gen[Boolean] = Gen.oneOf(false, true)
 
@@ -47,3 +47,5 @@ object PrimitiveGen {
     } yield NonEmptyList.of(t1, t2)
   )
 }
+
+object PrimitiveGen extends PrimitiveGen

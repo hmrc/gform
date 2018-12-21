@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
-object BooleanExprGen {
+trait BooleanExprGen {
   private def binaryExprRelationGen[T <: BooleanExpr](maxDepth: Int, f: (Expr, Expr) => T): Gen[T] =
     for {
       left  <- ExprGen.exprGen(maxDepth - 1)
@@ -64,3 +64,5 @@ object BooleanExprGen {
     if (maxDepth <= 1) nonRecursiveBooleanExprGen
     else Gen.oneOf(nonRecursiveBooleanExprGen, recursiveBooleanExprGen(maxDepth))
 }
+
+object BooleanExprGen extends BooleanExprGen

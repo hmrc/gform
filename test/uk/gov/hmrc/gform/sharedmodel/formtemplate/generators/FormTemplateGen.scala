@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
-object FormTemplateGen {
+trait FormTemplateGen {
   def formTemplateIdGen: Gen[FormTemplateId] = PrimitiveGen.nonEmptyAlphaNumStrGen.map(FormTemplateId(_))
   def formNameGen: Gen[String] = PrimitiveGen.nonEmptyAlphaNumStrGen
   def formTemplateDescriptionGen: Gen[String] = Gen.alphaNumStr
@@ -65,3 +65,5 @@ object FormTemplateGen {
         gFC579Ready
       )
 }
+
+object FormTemplateGen extends FormTemplateGen

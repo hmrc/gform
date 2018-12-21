@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
-object DateValueGen {
+trait DateValueGen {
   def exactDateValueGen: Gen[ExactDateValue] =
     for {
       year  <- Gen.posNum[Int]
@@ -45,3 +45,5 @@ object DateValueGen {
     previousDateValueGen
   )
 }
+
+object DateValueGen extends DateValueGen

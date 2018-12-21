@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
-object FormComponentGen {
+trait FormComponentGen {
   def formComponentIdGen: Gen[FormComponentId] = PrimitiveGen.nonEmptyAlphaNumStrGen.map(FormComponentId(_))
   def labelGen: Gen[String] = PrimitiveGen.nonEmptyAlphaNumStrGen
   def helpTextGen: Gen[String] = PrimitiveGen.nonEmptyAlphaNumStrGen
@@ -56,3 +56,5 @@ object FormComponentGen {
         errorMessage,
         presentationHint)
 }
+
+object FormComponentGen extends FormComponentGen

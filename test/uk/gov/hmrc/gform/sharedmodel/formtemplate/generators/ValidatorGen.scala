@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ BankAccoutnModulusCheck, HMRCUTRPostcodeCheckValidator, Validator }
 
-object ValidatorGen {
+trait ValidatorGen {
   def hMRCUTRPostcodeCheckValidatorGen: Gen[HMRCUTRPostcodeCheckValidator] =
     for {
       errorMessage <- Gen.alphaNumStr
@@ -35,3 +35,5 @@ object ValidatorGen {
 
   def validatorGen: Gen[Validator] = Gen.oneOf(hMRCUTRPostcodeCheckValidatorGen, bankAccountModulusCheckGen)
 }
+
+object ValidatorGen extends ValidatorGen

@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
-object SectionGen {
+trait SectionGen {
   def verifierRecipeGen: Gen[VerifierRecipe] =
     for {
       key     <- PrimitiveGen.nonEmptyAlphaNumStrGen
@@ -81,3 +81,5 @@ object SectionGen {
         fields.toList,
         continueLabel)
 }
+
+object SectionGen extends SectionGen

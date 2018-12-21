@@ -18,6 +18,8 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.IncludeIf
 
-object IncludeIfGen {
+trait IncludeIfGen {
   def includeIfGen: Gen[IncludeIf] = BooleanExprGen.booleanExprGen().map(IncludeIf(_))
 }
+
+object IncludeIfGen extends IncludeIfGen

@@ -18,6 +18,8 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.Offset
 
-object OffsetGen {
+trait OffsetGen {
   def offsetGen: Gen[Offset] = Gen.posNum[Int].map(Offset(_))
 }
+
+object OffsetGen extends OffsetGen

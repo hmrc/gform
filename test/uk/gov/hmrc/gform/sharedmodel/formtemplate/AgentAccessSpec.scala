@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ AuthConfigGen, PrimitiveGen }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.AuthConfigGen
 
 class AgentAccessSpec extends Spec {
   "Default read and write" should "round trip derived JSON" in {

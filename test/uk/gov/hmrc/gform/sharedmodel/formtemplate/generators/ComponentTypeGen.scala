@@ -20,7 +20,7 @@ import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidth.DisplayWidth
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
-object ComponentTypeGen {
+trait ComponentTypeGen {
   def displayWidthGen: Gen[DisplayWidth] = Gen.oneOf(DisplayWidth.values.toSeq)
 
   def textGen: Gen[Text] =
@@ -105,3 +105,5 @@ object ComponentTypeGen {
         fileUploadGen,
         groupGen(maxDepth))
 }
+
+object ComponentTypeGen extends ComponentTypeGen

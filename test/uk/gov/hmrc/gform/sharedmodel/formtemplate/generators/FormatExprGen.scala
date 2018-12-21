@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ After, AnyDate, AnyText, AnyWord, BasicText, Before, BeforeOrAfter, ConcreteDate, CountryCode, DateConstraint, DateConstraintInfo, DateConstraintType, DateConstraints, DateField, Email, NINO, NextDate, NonUkCountryCode, Number, OffsetDate, PositiveNumber, PreviousDate, ShortText, Sterling, TelephoneNumber, TextConstraint, TextExpression, TextWithRestrictions, Today, UTR, UkBankAccountNumber, UkSortCodeFormat, UkVrn }
 
-object FormatExprGen {
+trait FormatExprGen {
   def numberGen: Gen[Number] =
     for {
       maxWholeDigits      <- Gen.posNum[Int]
@@ -108,3 +108,5 @@ object FormatExprGen {
     Gen.listOfN(2, dateConstraintGen).map(DateConstraints)
   )
 }
+
+object FormatExprGen extends FormatExprGen
