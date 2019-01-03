@@ -50,22 +50,18 @@ class FormTemplateService(formTemplateRepo: FormTemplateRepo, formTemplateRawRep
 
     val exprs: List[ComponentType] = sections.flatMap(_.fields.map(_.`type`))
 
-    // format: OFF
     for {
-      _          <- fromOptA(FormTemplateSchema.jsonSchema.conform(formTemplate).toEither)
-      _          <- fromOptA(FormTemplateValidator.validateRepeatingSectionFields(sections).toEither)
-      _          <- fromOptA(FormTemplateValidator.validateChoiceHelpText(sections).toEither)
-      _          <- fromOptA(FormTemplateValidator.validateUniqueFields(sections).toEither)
-      _          <- fromOptA(FormTemplateValidator.validateUniqueDestinationIds(formTemplate.destinations).toEither)
-      _          <- fromOptA(FormTemplateValidator.validateZeroOrOneHmrcDmsDestination(formTemplate.destinations).toEither)
-      _          <- fromOptA(FormTemplateValidator.validateForwardReference(sections).toEither)
-      _          <- fromOptA(FormTemplateValidator.validate(exprs, formTemplate).toEither)
-      _          <- fromOptA(FormTemplateValidator.validateDependencyGraph(formTemplate).toEither)
-      _          <- fromOptA(FormTemplateValidator.validateEnrolmentSection(formTemplate).toEither)
-      _          <- fromOptA(FormTemplateValidator.validateRegimeId(formTemplate).toEither)
-      res        <- formTemplateRepo.upsert(formTemplate)
+      _   <- fromOptA(FormTemplateValidator.validateRepeatingSectionFields(sections).toEither)
+      _   <- fromOptA(FormTemplateValidator.validateChoiceHelpText(sections).toEither)
+      _   <- fromOptA(FormTemplateValidator.validateUniqueFields(sections).toEither)
+      _   <- fromOptA(FormTemplateValidator.validateUniqueDestinationIds(formTemplate.destinations).toEither)
+      _   <- fromOptA(FormTemplateValidator.validateZeroOrOneHmrcDmsDestination(formTemplate.destinations).toEither)
+      _   <- fromOptA(FormTemplateValidator.validateForwardReference(sections).toEither)
+      _   <- fromOptA(FormTemplateValidator.validate(exprs, formTemplate).toEither)
+      _   <- fromOptA(FormTemplateValidator.validateDependencyGraph(formTemplate).toEither)
+      _   <- fromOptA(FormTemplateValidator.validateEnrolmentSection(formTemplate).toEither)
+      _   <- fromOptA(FormTemplateValidator.validateRegimeId(formTemplate).toEither)
+      res <- formTemplateRepo.upsert(formTemplate)
     } yield res
-    // format: ON
   }
-
 }
