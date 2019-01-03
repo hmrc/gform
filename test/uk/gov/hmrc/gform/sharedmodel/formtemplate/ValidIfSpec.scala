@@ -22,7 +22,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.ValidIfGen
 class ValidIfSpec extends Spec {
   "ValidIf" should "round trip derived JSON" in {
     forAll(ValidIfGen.validIfGen) { obj =>
-      ValidIf.reads.reads(ValidIf.writes.writes(obj)) should beJsSuccess(obj)
+      ValidIf.format.reads(ValidIf.format.writes(obj)) should beJsSuccess(obj)
     }
   }
 }

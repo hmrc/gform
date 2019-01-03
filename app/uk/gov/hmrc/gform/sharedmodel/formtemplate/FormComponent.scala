@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
-import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.formtemplate.FormCompomentMaker
 import uk.gov.hmrc.gform.sharedmodel.LabelHelper
@@ -65,16 +64,8 @@ case class FormComponent(
 
 object FormComponent {
 
-  //TODO: remove this logic from case class representing data
-  implicit val format: OFormat[FormComponent] = {
-    implicit val formatFieldValue = Json.format[FormComponent]
+  private val templateReads: Reads[FormComponent] = Reads(
+    json => new FormCompomentMaker(json).optFieldValue() fold (us => JsError(us.toString), fv => JsSuccess(fv)))
 
-    val toFieldValue: Reads[FormComponent] = Reads[FormComponent] { (json: JsValue) =>
-      new FormCompomentMaker(json).optFieldValue() fold (us => JsError(us.toString), fv => JsSuccess(fv))
-    }
-
-    val reads: Reads[FormComponent] = (formatFieldValue: Reads[FormComponent]) | toFieldValue
-
-    OFormat[FormComponent](reads, formatFieldValue)
-  }
+  implicit val format: OFormat[FormComponent] = OFormatWithTemplateReadFallback(templateReads)
 }

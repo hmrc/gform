@@ -17,24 +17,21 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import play.api.libs.json._
+import uk.gov.hmrc.gform.sharedmodel.booleanParser.booleanExprParser
 
-final case class Offset(value: Int) extends AnyVal
+sealed trait ContinueIf
+case object Continue extends ContinueIf
+case object Stop extends ContinueIf
+case class Conditional(expr: BooleanExpr) extends ContinueIf
 
-object Offset {
+object ContinueIf {
 
-  val signedIntRegex = """(\+|-)?\d+"""
-
-  private val convertToInt = (str: String) =>
-    if (str.matches(signedIntRegex)) JsSuccess(Offset(str.toInt))
-    else JsError(s"Couldn't parse Integer from offset, $str")
-
-  private val templateReads: Reads[Offset] = Reads {
-    case JsString(offsetAsStr) =>
-      convertToInt(offsetAsStr)
-
-    case otherwise => JsError(s"Invalid format expression. Expected String, got $otherwise")
+  private val templateReads: Reads[ContinueIf] = Reads {
+    case JsString("true")  => JsSuccess(Continue)
+    case JsString("false") => JsSuccess(Stop)
+    case json              => booleanExprParser(json).map(Conditional.apply)
   }
 
-  implicit val format: OFormat[Offset] = OFormatWithTemplateReadFallback(templateReads)
+  implicit val format: OFormat[ContinueIf] = OFormatWithTemplateReadFallback(templateReads)
 
 }

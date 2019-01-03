@@ -43,8 +43,9 @@ case class Section(
   repeatsMin: Option[TextExpression],
   validators: Option[Validator],
   fields: List[FormComponent],
-  continueLabel: Option[String])
-    extends BaseSection {
+  continueLabel: Option[String],
+  continueIf: Option[ContinueIf]
+) extends BaseSection {
 
   val expandSection: ExpandedSection = ExpandedSection(fields.map(_.expandFormComponent)) // TODO expand sections
 

@@ -22,7 +22,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.OffsetGen
 class OffsetSpec extends Spec {
   "Offset" should "round trip derived JSON" in {
     forAll(OffsetGen.offsetGen) { obj =>
-      Offset.offsetHelper.reads(Offset.offsetHelper.writes(obj)) should beJsSuccess(obj)
+      Offset.format.reads(Offset.format.writes(obj)) should beJsSuccess(obj)
     }
   }
 }

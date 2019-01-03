@@ -105,6 +105,7 @@ class SubmissionServiceSpec extends Spec {
       None,
       None,
       fields = List(groupFieldValue),
+      None,
       None)
 
     val formTemplate = FormTemplate.withDeprecatedDmsSubmission(
