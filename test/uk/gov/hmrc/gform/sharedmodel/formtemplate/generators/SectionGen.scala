@@ -68,6 +68,7 @@ trait SectionGen {
       validators        <- Gen.option(ValidatorGen.validatorGen)
       fields            <- PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen())
       continueLabel     <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
+      continueIf        <- Gen.option(ContinueIfGen.continueIfGen)
     } yield
       Section(
         title,
@@ -79,7 +80,8 @@ trait SectionGen {
         repeatMin,
         validators,
         fields.toList,
-        continueLabel)
+        continueLabel,
+        continueIf)
 }
 
 object SectionGen extends SectionGen

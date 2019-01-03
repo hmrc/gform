@@ -22,7 +22,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.IncludeIfGen
 class IncludeIfSpec extends Spec {
   "IncludeIf" should "round trip derived JSON" in {
     forAll(IncludeIfGen.includeIfGen) { obj =>
-      IncludeIf.reads.reads(IncludeIf.writes.writes(obj)) should beJsSuccess(obj)
+      IncludeIf.format.reads(IncludeIf.format.writes(obj)) should beJsSuccess(obj)
     }
   }
 }

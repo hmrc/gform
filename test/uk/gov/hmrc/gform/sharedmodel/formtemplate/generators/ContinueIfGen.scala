@@ -14,17 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel.formtemplate
+package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 
-import play.api.libs.json._
-import uk.gov.hmrc.gform.sharedmodel.booleanParser.booleanExprParser
+import org.scalacheck.Gen
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Conditional, Continue, ContinueIf, Stop }
 
-case class IncludeIf(expr: BooleanExpr)
-
-object IncludeIf {
-
-  private val templateReads: Reads[IncludeIf] = Reads(json => booleanExprParser(json).map(IncludeIf.apply))
-
-  implicit val format: OFormat[IncludeIf] = OFormatWithTemplateReadFallback(templateReads)
-
+trait ContinueIfGen {
+  def continueIfGen: Gen[ContinueIf] =
+    Gen.oneOf(Gen.const(Continue), Gen.const(Stop), BooleanExprGen.booleanExprGen().map(Conditional.apply))
 }
+
+object ContinueIfGen extends ContinueIfGen

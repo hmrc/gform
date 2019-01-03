@@ -331,6 +331,7 @@ class ValueParserSpec extends Spec {
         errorMessage = None
       )
     ),
+    None,
     None
   )
 

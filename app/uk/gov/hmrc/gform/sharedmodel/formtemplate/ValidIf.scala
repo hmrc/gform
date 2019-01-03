@@ -16,22 +16,14 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
-import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.booleanParser.booleanExprParser
 
 case class ValidIf(expr: BooleanExpr)
 object ValidIf {
-  implicit val writes = Json.writes[ValidIf]
 
-  implicit val reads: Reads[ValidIf] = readsForTemplateJson | readsForMongoJson
+  private val templateReads: Reads[ValidIf] = Reads(json => booleanExprParser(json).map(ValidIf.apply))
 
-  //TODO: move that logic out ot the data
+  implicit val format: OFormat[ValidIf] = OFormatWithTemplateReadFallback(templateReads)
 
-  private lazy val readsForMongoJson = Json.reads[ValidIf]
-
-  private lazy val readsForTemplateJson: Reads[ValidIf] = Reads { json =>
-    val includeIfJsR: JsResult[ValidIf] = booleanExprParser(json).map(be => ValidIf(be))
-    includeIfJsR
-  }
 }
