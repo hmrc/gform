@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.formtemplate
 
 import cats.implicits._
 import play.api.Logger
-import play.api.libs.json.Json
+import play.api.libs.json.{ Json, Reads }
 import play.api.mvc.Action
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
@@ -34,8 +34,7 @@ class FormTemplatesController(formTemplateService: FormTemplateService) extends 
     val templateRaw = request.body
     Logger.info(s"Upserting template: ${templateRaw._id.value}, ${loggingHelpers.cleanHeaders(request.headers)}")
     val formTemplateOpt: Opt[FormTemplate] =
-      Json
-        .reads[FormTemplate]
+      implicitly[Reads[FormTemplate]]
         .reads(templateRaw.value)
         .fold(errors => UnexpectedState(errors.toString()).asLeft, valid => valid.asRight)
 

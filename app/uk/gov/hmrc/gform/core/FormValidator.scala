@@ -28,10 +28,7 @@ import uk.gov.hmrc.gform.sharedmodel.form.FormField
 
 //TODO move to form package
 object FormValidator {
-  def conform(json: JsValue /* , schema: JsonSchema */ ): Opt[List[FormField]] = {
-    /* for {
-     *   res <- TemplateValidator.conform(schema, json).toEither
-     * } yield res */
+  def conform(json: JsValue): Opt[List[FormField]] = {
 
     val res = (json \ "fields").validate[List[FormField]]
 
