@@ -79,6 +79,8 @@ object ChoiceType {
   implicit val format: OFormat[ChoiceType] = derived.oformat
 }
 
+case class HmrcTaxPeriod(idType: String, idNumber: String, regimeType: String) extends ComponentType
+
 sealed trait Orientation
 case object Vertical extends Orientation
 case object Horizontal extends Orientation
