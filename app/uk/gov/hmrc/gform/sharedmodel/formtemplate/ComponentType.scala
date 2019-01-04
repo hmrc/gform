@@ -20,6 +20,7 @@ import cats.data.NonEmptyList
 import julienrf.json.derived
 import play.api.data.validation.ValidationError
 import play.api.libs.json._
+import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidth.DisplayWidth
 
 import scala.collection.immutable._
@@ -77,6 +78,26 @@ final case object Inline extends ChoiceType
 
 object ChoiceType {
   implicit val format: OFormat[ChoiceType] = derived.oformat
+}
+
+case class IdType(value: String)
+case class IdNumber(value: String)
+case class RegimeType(value: String)
+
+object IdType {
+  implicit val format: OFormat[IdType] = ValueClassFormat.oformat("idType", IdType.apply, _.value)
+}
+object IdNumber {
+  implicit val format: OFormat[IdNumber] = ValueClassFormat.oformat("idNumber", IdNumber.apply, _.value)
+}
+object RegimeType {
+  implicit val format: OFormat[RegimeType] = ValueClassFormat.oformat("regimeType", RegimeType.apply, _.value)
+}
+
+case class HmrcTaxPeriod(idType: IdType, idNumber: IdNumber, regimeType: RegimeType) extends ComponentType
+
+object HmrcTaxPeriod {
+  implicit val format: OFormat[HmrcTaxPeriod] = derived.oformat
 }
 
 sealed trait Orientation
