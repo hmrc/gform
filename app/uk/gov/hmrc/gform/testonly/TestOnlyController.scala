@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.testonly
 
 import java.text.SimpleDateFormat
-import com.typesafe.config.{ ConfigFactory, ConfigRenderOptions }
+import com.typesafe.config.{ConfigFactory, ConfigRenderOptions}
 import play.api.Logger
 import play.api.libs.json._
 import play.api.mvc._
@@ -109,7 +109,7 @@ class TestOnlyController(mongo: () => DB, enrolmentConnector: EnrolmentConnector
               new Identification("ITSA", "PB910220A", "nino"),
               List(
                 new ObligationDetail("O", "2019-05-23", "2019-10-12", "2019-04-11", "2019-11-21", "#002"),
-                new ObligationDetail("O", "2019-06-24", "2019-09-24", "2019-03-24", "2019-07-01", "#001")
+                new ObligationDetail("O", "2019-06-24", s"2019-09-24", "2019-03-24", "2019-07-01", "#001")
               )
             )))
           )))
