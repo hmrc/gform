@@ -30,3 +30,5 @@ POST          /gform/test-only/file-upload-interceptor/set-response/*path       
 GET           /gform/test-only/file-upload-interceptor/get-responses             uk.gov.hmrc.gform.testonly.FUInterceptorController.getPredefinedResponses()
 
 POST          /gform/test-only/pdf-generator-service/generate                    uk.gov.hmrc.gform.testonly.PdfGeneratorStubController.generate()
+
+GET           /gform/test-only/enterprise/obligation-data/:idType/:idNumber/:regimeType      uk.gov.hmrc.gform.testonly.TestOnlyController.testGetTaxPeriods(idType: String, idNumber: String, regimeType: String)
