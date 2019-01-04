@@ -80,9 +80,9 @@ object ChoiceType {
   implicit val format: OFormat[ChoiceType] = derived.oformat
 }
 
-case class IdType(value: String) extends AnyVal
-case class IdNumber(value: String) extends AnyVal
-case class RegimeType(value: String) extends AnyVal
+case class IdType(value: String)
+case class IdNumber(value: String)
+case class RegimeType(value: String)
 
 object IdType {
   implicit val format: OFormat[IdType] = ValueClassFormat.oformat("idType", IdType.apply, _.value)
