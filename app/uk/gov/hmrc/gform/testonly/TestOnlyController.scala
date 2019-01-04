@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.testonly
 
+import java.text.SimpleDateFormat
 import com.typesafe.config.{ ConfigFactory, ConfigRenderOptions }
 import play.api.libs.json._
 import play.api.mvc._
@@ -23,6 +24,9 @@ import reactivemongo.api.DB
 import reactivemongo.play.json.collection.JSONCollection
 import uk.gov.hmrc.BuildInfo
 import uk.gov.hmrc.gform.controllers.BaseController
+import uk.gov.hmrc.gform.des._
+import uk.gov.hmrc.gform.sharedmodel.{ TaxPeriod, TaxPeriods }
+import scala.concurrent.Future
 
 class TestOnlyController(mongo: () => DB, enrolmentConnector: EnrolmentConnector) extends BaseController {
 
@@ -83,4 +87,32 @@ class TestOnlyController(mongo: () => DB, enrolmentConnector: EnrolmentConnector
     enrolmentConnector.removeUnallocated(user.id).map(_ => NoContent)
   }
 
+  def testValidatorStub(utr: String) = Action.async { implicit request =>
+    Logger.info(s"testValidatorStub, ${loggingHelpers.cleanHeaders(request.headers)}")
+    if (utr.startsWith("1")) {
+      Future.successful(Ok(Json.toJson(AddressDes("BN12 4XL"))))
+    } else
+      Future.successful(Ok(Json.toJson(AddressDes("ANYTHING"))))
+  }
+
+  val stringToDate = new SimpleDateFormat("yyyy-MM-dd")
+
+  def testGetTaxPeriods(idType: String, idNumber: String, regimeType: String) = Action.async { implicit request =>
+    Logger.info(s"testGetTaxStub, ${loggingHelpers.cleanHeaders(request.headers)}")
+    if (idType == "nino")
+      Future.successful(
+        Ok(
+          Json.toJson(
+            new Obligation(List(new TaxPeriodDes(
+              new Identification("ITSA", "PB910220A", "nino"),
+              List(
+                new ObligationDetail("O", "2019-05-23", "2019-10-12", "2019-04-11", "2019-11-21", "#002"),
+                new ObligationDetail("O", "2019-06-24", s"2019-09-24", "2019-03-24", "2019-07-01", "#001")
+              )
+            )))
+          )))
+    else {
+      Future.successful(BadRequest("idType wasn't nino"))
+    }
+  }
 }

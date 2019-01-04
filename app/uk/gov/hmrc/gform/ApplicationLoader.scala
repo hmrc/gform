@@ -44,6 +44,7 @@ import uk.gov.hmrc.gform.testonly.TestOnlyModule
 import uk.gov.hmrc.gform.time.TimeModule
 import uk.gov.hmrc.gform.validation.ValidationModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
+import uk.gov.hmrc.gform.obligation.ObligationModule
 
 class ApplicationLoader extends play.api.ApplicationLoader {
   def load(context: Context): Application = {
@@ -90,6 +91,7 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
       emailModule,
       handlebarsModule)
   private val dmsModule = new DmsModule(fileUploadModule, pdfGeneratorModule)
+  private val obligationModule = new ObligationModule(wSHttpModule, configModule)
   private val testOnlyModule = new TestOnlyModule(mongoModule, wSHttpModule, configModule, playComponents)
   /* TODO REMOVE WHEN WE DONT HAVE WHITELISTING */
   private val authModule = new AuthModule(mongoModule)
@@ -108,7 +110,8 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
     submissionModule,
     validationModule,
     authModule,
-    dmsModule
+    dmsModule,
+    obligationModule
   )
 
   override lazy val httpErrorHandler: HttpErrorHandler = playComponentsModule.errorHandler

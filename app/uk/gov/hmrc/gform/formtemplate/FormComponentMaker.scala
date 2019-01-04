@@ -54,6 +54,10 @@ class FormComponentMaker(json: JsValue) {
   lazy val submitMode: Option[String] = (json \ "submitMode").asOpt[String]
   lazy val choices: Option[List[String]] = (json \ "choices").asOpt[List[String]]
 
+  lazy val idType: Option[String] = (json \ "idType").asOpt[String]
+  lazy val idNumber: Option[String] = (json \ "idNumber").asOpt[String]
+  lazy val regimeType: Option[String] = (json \ "regimeType").asOpt[String]
+
   lazy val fieldsJson: Option[List[JsValue]] = (json \ "fields").asOpt[List[JsValue]]
   lazy val errorMessage: Option[String] = (json \ "errorMessage").asOpt[String]
 
@@ -132,13 +136,14 @@ class FormComponentMaker(json: JsValue) {
   }
 
   private lazy val componentTypeOpt: Opt[ComponentType] = `type` match {
-    case Some(TextRaw) | None => textOpt
-    case Some(DateRaw)        => dateOpt
-    case Some(AddressRaw)     => addressOpt
-    case Some(GroupRaw)       => groupOpt
-    case Some(ChoiceRaw)      => choiceOpt
-    case Some(FileUploadRaw)  => fileUploadOpt
-    case Some(InfoRaw)        => infoOpt
+    case Some(TextRaw) | None   => textOpt
+    case Some(DateRaw)          => dateOpt
+    case Some(AddressRaw)       => addressOpt
+    case Some(GroupRaw)         => groupOpt
+    case Some(ChoiceRaw)        => choiceOpt
+    case Some(FileUploadRaw)    => fileUploadOpt
+    case Some(InfoRaw)          => infoOpt
+    case Some(HmrcTaxPeriodRaw) => hmrcTaxPeriodOpt
     //TODO: What if there is None
   }
 
@@ -313,6 +318,13 @@ class FormComponentMaker(json: JsValue) {
       }
       result <- oChoice.right
     } yield result
+  }
+
+  private lazy val hmrcTaxPeriodOpt: Opt[HmrcTaxPeriod] = {
+    val oHmrcTaxPeriod: Opt[HmrcTaxPeriod] = (idType, idNumber, regimeType) match {
+      case (Some(a), Some(b), Some(c)) => HmrcTaxPeriod(IdType(a), IdNumber(b), RegimeType(c)).asRight
+    }
+    oHmrcTaxPeriod
   }
 
   private lazy val fileUploadOpt: Opt[FileUpload] = FileUpload().asRight
