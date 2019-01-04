@@ -164,8 +164,6 @@ object FormatParser {
     }
   }
 
-
-
   lazy val positiveWholeNumberFormat: Parser[TextFormat] = "positiveWholeNumber" ^^ { (loc, _) =>
     TextFormat(PositiveNumber(maxFractionalDigits = 0))
   }
