@@ -29,7 +29,7 @@ class ValidationService(desConnector: DesConnector, bankAccountReputationConnect
     def compare(address: AddressDes) =
       address.postalCode.replace(" ", "").equalsIgnoreCase(valAddress.postCode.replace(" ", ""))
     desConnector
-      .lookup(valAddress.utr)
+      .lookupAddress(valAddress.utr)
       .map(compare)
       .recover {
         case _: NotFoundException => false
