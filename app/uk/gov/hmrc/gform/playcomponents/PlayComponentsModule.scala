@@ -29,6 +29,7 @@ import uk.gov.hmrc.gform.dms.DmsModule
 import uk.gov.hmrc.gform.form.FormModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.metrics.MetricsModule
+import uk.gov.hmrc.gform.obligation.ObligationModule
 import uk.gov.hmrc.gform.submission.SubmissionModule
 import uk.gov.hmrc.gform.testonly.TestOnlyModule
 import uk.gov.hmrc.gform.validation.ValidationModule
@@ -56,7 +57,8 @@ class PlayComponentsModule(
   submissionModule: SubmissionModule,
   validationModule: ValidationModule,
   authModule: AuthModule,
-  dmsModule: DmsModule) {
+  dmsModule: DmsModule,
+  obligationModule: ObligationModule) {
 
   lazy val loggingFilter = new LoggingFilter {
     override def mat: Materializer = akkaModule.materializer
@@ -80,7 +82,8 @@ class PlayComponentsModule(
     configModule.configController,
     validationModule.validationController,
     authModule.authController,
-    dmsModule.dmsSubmissionController
+    dmsModule.dmsSubmissionController,
+    obligationModule.obligationController
   )
 
   val adminController = new AdminController(configModule.playConfiguration)
