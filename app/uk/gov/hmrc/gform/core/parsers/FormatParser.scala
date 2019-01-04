@@ -159,8 +159,12 @@ object FormatParser {
       TextFormat(NINO)
     } | "ukVrn" ^^ { (loc, _) =>
       TextFormat(UkVrn)
+    } | "companyRegistrationNumber" ^^ { (loc, _) =>
+      TextFormat(CompanyRegistrationNumber)
     }
   }
+
+
 
   lazy val positiveWholeNumberFormat: Parser[TextFormat] = "positiveWholeNumber" ^^ { (loc, _) =>
     TextFormat(PositiveNumber(maxFractionalDigits = 0))

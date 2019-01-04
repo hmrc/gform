@@ -75,6 +75,7 @@ class FormatValidationSpec extends Spec {
         presentationHint = None
       ))
   }
+  it should "return CompanyRegistrationNumber" in createTest("companyRegistrationNumber", CompanyRegistrationNumber)
 
   def createTest(format: String, constraint: TextConstraint) = {
     val json: JsValue = makeJson(format)
