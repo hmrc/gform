@@ -36,7 +36,7 @@ case class MES(
   derived: Boolean,
   onlyShowOnSummary: Boolean = false)
 
-class FormCompomentMaker(json: JsValue) {
+class FormComponentMaker(json: JsValue) {
 
   lazy val id: FormComponentId = (json \ "id").as[FormComponentId]
   lazy val `type`: Option[ComponentTypeRaw] = (json \ "type").asOpt[ComponentTypeRaw]
@@ -55,7 +55,7 @@ class FormCompomentMaker(json: JsValue) {
   lazy val fieldsJson: Option[List[JsValue]] = (json \ "fields").asOpt[List[JsValue]]
   lazy val errorMessage: Option[String] = (json \ "errorMessage").asOpt[String]
 
-  lazy val fields: Option[List[FormCompomentMaker]] = fieldsJson.map(_.map(new FormCompomentMaker(_)))
+  lazy val fields: Option[List[FormComponentMaker]] = fieldsJson.map(_.map(new FormComponentMaker(_)))
   lazy val validIf: Option[ValidIf] = (json \ "validIf").asOpt[ValidIf]
   lazy val mandatory: Option[String] = (json \ "mandatory").asOpt[String]
   lazy val multiline: Option[String] = (json \ "multiline").asOpt[String]
@@ -249,7 +249,7 @@ class FormCompomentMaker(json: JsValue) {
 
   private lazy val noRawFields: Opt[Group] = UnexpectedState(s"""Require 'fields' element in Group""").asLeft
 
-  def groupOpt(fields: List[FormCompomentMaker]): Opt[Group] = {
+  def groupOpt(fields: List[FormComponentMaker]): Opt[Group] = {
 
     def orientation(format: Option[FormatExpr]) = format match {
       case IsGroupOrientation(VerticalGroupOrientation) | None => Vertical
