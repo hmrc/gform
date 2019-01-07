@@ -32,3 +32,5 @@ POST           /white-list/users/insert                             uk.gov.hmrc.
 POST           /white-list/users/delete                             uk.gov.hmrc.gform.auth.AuthController.delete()
 
 POST           /dms/submit                                          uk.gov.hmrc.gform.dms.DmsSubmissionController.submitToDms()
+
+GET            /obligation/tax-period/:idType/:idNumber/:regimeType     uk.gov.hmrc.gform.obligation.ObligationController.getTaxPeriods(idType, idNumber, regimeType)

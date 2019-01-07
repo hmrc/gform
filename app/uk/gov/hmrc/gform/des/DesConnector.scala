@@ -36,12 +36,24 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
        "isAnAgent": false
       }""") //TODO add in actual regime we are looking for
 
-  def lookup(utr: String)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[AddressDes] = {
+  def lookupAddress(utr: String)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[AddressDes] = {
     implicit val hc = HeaderCarrier(
       extraHeaders = Seq("Environment" -> desConfig.environment),
       authorization = Some(Authorization(desConfig.authorizationToken)))
     Logger.info(s"Des lookup, UTR: '$utr', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
     wSHttp.POST[JsValue, AddressDes](s"$baseUrl${desConfig.basePath}/registration/organisation/utr/$utr", lookupJson)
+  }
+
+  def lookupTaxPeriod(idType: String, idNumber: String, regimeType: String)(
+    implicit hc: HeaderCarrier,
+    ex: ExecutionContext): Future[TaxPeriodDes] = {
+    implicit val hc = HeaderCarrier(
+      extraHeaders = Seq("Environment" -> desConfig.environment),
+      authorization = Some(Authorization(desConfig.authorizationToken)))
+    Logger.info(
+      s"Des lookup, Tax Periods: '$idType, $idNumber, $regimeType', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
+    wSHttp.GET[TaxPeriodDes](
+      s"$baseUrl${desConfig.basePath}/enterprise/obligation-data/$idType/$idNumber/$regimeType?status=O")
   }
 
 }
@@ -50,4 +62,28 @@ case class AddressDes(postalCode: String)
 
 object AddressDes {
   implicit val format: OFormat[AddressDes] = Json.format[AddressDes]
+}
+
+case class Identification(incomeSourceType: String, referenceNumber: String, referenceType: String)
+
+case class ObligationDetail(
+  status: String,
+  inboundCorrespondenceFromDate: String,
+  inboundCorrespondenceToDate: String,
+  inboundCorrespondenceDateReceived: String,
+  inboundCorrespondenceDueDate: String,
+  periodKey: String)
+
+case class TaxPeriodDes(identification: Identification, obligationDetails: List[ObligationDetail])
+
+object Identification {
+  implicit val format: OFormat[Identification] = Json.format[Identification]
+}
+
+object ObligationDetail {
+  implicit val format: OFormat[ObligationDetail] = Json.format[ObligationDetail]
+}
+
+object TaxPeriodDes {
+  implicit val format: OFormat[TaxPeriodDes] = Json.format[TaxPeriodDes]
 }
