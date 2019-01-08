@@ -159,6 +159,8 @@ object FormatParser {
       TextFormat(NINO)
     } | "ukVrn" ^^ { (loc, _) =>
       TextFormat(UkVrn)
+    } | "companyRegistrationNumber" ^^ { (loc, _) =>
+      TextFormat(CompanyRegistrationNumber)
     }
   }
 
