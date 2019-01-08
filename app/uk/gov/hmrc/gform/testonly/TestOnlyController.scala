@@ -97,7 +97,7 @@ class TestOnlyController(mongo: () => DB, enrolmentConnector: EnrolmentConnector
       Future.successful(Ok(Json.toJson(AddressDes("ANYTHING"))))
   }
 
-  def testGetTax(idType: String, idNumber: String, regimeType: String) = Action.async { implicit request =>
+  def testGetTaxPeriods(idType: String, idNumber: String, regimeType: String) = Action.async { implicit request =>
     Logger.info(s"testGetTaxStub, ${loggingHelpers.cleanHeaders(request.headers)}")
     if (idType == "nino") {
       Future.successful(
