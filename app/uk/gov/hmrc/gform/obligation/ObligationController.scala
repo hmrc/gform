@@ -28,16 +28,15 @@ import play.api.libs.json.{ JsValue, Json, OFormat }
 
 class ObligationController(obligation: ObligationService) extends BaseController {
 
-  def getTaxPeriods(idType: String, idNumber: String, regimeType: String) = Action.async(parse.json[HmrcTaxPeriod]) {
-    implicit request =>
-      Logger.info(s"Get Tax Periods from DES, ${loggingHelpers.cleanHeaders(request.headers)}")
-      obligation
-        .callDES(request.body)
-        .map(
-          i =>
-            Ok(
-              Json.obj("obligations" -> new TaxPeriods(i.obligationDetails.map(
-                j => new TaxPeriod(j.inboundCorrespondenceFromDate, j.inboundCorrespondenceToDate, j.periodKey)
-              )))))
+  def getTaxPeriods(idType: String, idNumber: String, regimeType: String) = Action.async { implicit request =>
+    Logger.info(s"Get Tax Periods from DES, ${loggingHelpers.cleanHeaders(request.headers)}")
+    obligation
+      .callDES(idType, idNumber, regimeType)
+      .map(
+        i =>
+          Ok(
+            Json.obj("obligations" -> new TaxPeriods(i.obligationDetails.map(
+              j => new TaxPeriod(j.inboundCorrespondenceFromDate, j.inboundCorrespondenceToDate, j.periodKey)
+            )))))
   }
 }

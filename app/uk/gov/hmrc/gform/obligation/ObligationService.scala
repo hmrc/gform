@@ -24,7 +24,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.HmrcTaxPeriod
 import scala.concurrent.ExecutionContext
 class ObligationService(desConnector: DesConnector) {
 
-  def callDES(hmrcTaxPeriod: HmrcTaxPeriod)(implicit hc: HeaderCarrier, ex: ExecutionContext) =
-    desConnector.lookupTaxPeriod(hmrcTaxPeriod.idType, hmrcTaxPeriod.idNumber, hmrcTaxPeriod.regimeType)
+  def callDES(idType: String, idNumber: String, regimeType: String)(implicit hc: HeaderCarrier, ex: ExecutionContext) =
+    desConnector.lookupTaxPeriod(idType, idNumber, regimeType)
 
 }
