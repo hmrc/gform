@@ -298,8 +298,6 @@ trait ExampleFormTemplate {
 
   def emailTemplateId = "test-email-template-id"
 
-  def emailParameters = List("firstName", "landfill_tax_reference")
-
   def submtSuccessUrl = """http://success.com"""
 
   def submitErrorUrl = """http://imsorry.com"""
@@ -321,7 +319,6 @@ trait ExampleFormTemplate {
       dmsSubmission = dmsSubmission,
       authConfig = authConfig,
       emailTemplateId = emailTemplateId,
-      emailParameters = emailParameters,
       submitSuccessUrl = submtSuccessUrl,
       submitErrorUrl = submitErrorUrl,
       sections = allSections,
