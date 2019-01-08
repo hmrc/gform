@@ -32,4 +32,4 @@ GET           /gform/test-only/file-upload-interceptor/get-responses            
 
 POST          /gform/test-only/pdf-generator-service/generate                    uk.gov.hmrc.gform.testonly.PdfGeneratorStubController.generate()
 
-GET           /gform/test-only/obligation/tax-period/:idType/:idNumber/:regimeType      uk.gov.hmrc.gform.testonly.TestOnlyController.testGetTax(idType: String, idNumber: String, regimeType: String)
+GET           /gform/test-only/obligation/tax-period/:idType/:idNumber/:regimeType      uk.gov.hmrc.gform.testonly.TestOnlyController.testGetTaxPeriods(idType: String, idNumber: String, regimeType: String)
