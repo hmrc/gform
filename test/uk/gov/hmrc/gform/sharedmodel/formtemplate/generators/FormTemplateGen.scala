@@ -26,6 +26,7 @@ trait FormTemplateGen {
   def formCategoryGen: Gen[FormCategory] = Gen.oneOf(HMRCReturnForm, HMRCClaimForm, Default)
   def draftRetrievalMethodGen: Gen[DraftRetrievalMethod] = Gen.oneOf(OnePerUser, FormAccessCodeForAgents)
   def emailTemplateIdGen: Gen[String] = PrimitiveGen.nonEmptyAlphaNumStrGen
+  def emailParametersGen: Gen[List[String]] = PrimitiveGen.zeroOrMoreGen(PrimitiveGen.nonEmptyAlphaNumStrGen)
 
   def formTemplateGen: Gen[FormTemplate] =
     for {
@@ -39,6 +40,7 @@ trait FormTemplateGen {
       destinations           <- DestinationsGen.destinationsGen
       authConfig             <- AuthConfigGen.authConfigGen
       emailTemplateId        <- emailTemplateIdGen
+      emailParameters        <- emailParametersGen
       submitSuccessUrl       <- PrimitiveGen.urlGen
       submitErrorUrl         <- PrimitiveGen.urlGen
       sections               <- PrimitiveGen.zeroOrMoreGen(SectionGen.sectionGen)
@@ -57,6 +59,7 @@ trait FormTemplateGen {
         destinations,
         authConfig,
         emailTemplateId,
+        emailParameters,
         submitSuccessUrl,
         submitErrorUrl,
         sections,

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.email
 
-import uk.gov.hmrc.gform.sharedmodel.form.Form
+import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormField }
 import cats.implicits._
 import play.api.Logger
 import uk.gov.hmrc.gform.auditing.loggingHelpers

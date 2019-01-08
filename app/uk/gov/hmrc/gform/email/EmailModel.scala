@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.email
 import java.util.Date
 
 import play.api.libs.json.{ Json, OFormat }
+import uk.gov.hmrc.gform.sharedmodel.form.FormField
 
 case class EmailTemplate(
   to: Seq[String], //content that goes in the email to be put into template
