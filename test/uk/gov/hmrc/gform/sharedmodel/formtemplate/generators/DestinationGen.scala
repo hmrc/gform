@@ -36,7 +36,16 @@ trait DestinationGen {
       businessArea       <- businessAreaGen
     } yield Destination.HmrcDms(id, dmsFormId, customerId, classificationType, businessArea)
 
-  def destinationGen: Gen[Destination] = hmrcDmsGen
+  def handlebarsHttpApiGen: Gen[Destination.HandlebarsHttpApi] =
+    for {
+      id      <- destinationIdGen
+      profile <- ProfileGen.profileGen
+      uri     <- PrimitiveGen.urlContextPathGen
+      method  <- HttpMethodGen.httpMethodGen
+      payload <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
+    } yield Destination.HandlebarsHttpApi(id, profile, uri, method, payload)
+
+  def destinationGen: Gen[Destination] = Gen.oneOf(hmrcDmsGen, handlebarsHttpApiGen)
 
   def destinationWithFixedIdGen(id: DestinationId): Gen[Destination] = hmrcDmsGen.map(_.copy(id = id))
 }

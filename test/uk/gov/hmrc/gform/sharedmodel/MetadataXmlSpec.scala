@@ -42,8 +42,6 @@ class MetadataXmlSpec extends Spec {
 
     val pdfSummary = PdfSummary(numberOfPages = 10L, pdfContent = Array.empty[Byte])
 
-    val submissionAndPdf = SubmissionAndPdf(submission = submission, pdfSummary = pdfSummary)
-
     val dmsSubmission = DmsSubmission(
       dmsFormId = "some-id",
       customerId = TextExpression(AuthCtx(PayeNino)),
@@ -152,12 +150,7 @@ class MetadataXmlSpec extends Spec {
       </documents>
 
     val metadataXml = MetadataXml
-      .getXml(
-        SubmissionRef("some-submission-ref"),
-        ReconciliationId("some-recocilliatin-id"),
-        submissionAndPdf,
-        dmsSubmission,
-        2)
+      .getXml(submission, ReconciliationId("some-recocilliatin-id"), pdfSummary, dmsSubmission, 2)
 
     metadataXml should equal(Utility.trim(expected).asInstanceOf[Elem])(after being streamlined[Elem])
 

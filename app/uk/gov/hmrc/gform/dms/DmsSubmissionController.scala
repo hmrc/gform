@@ -20,6 +20,7 @@ import java.time.{ Clock, LocalDateTime }
 import java.util.Base64
 
 import org.apache.pdfbox.pdmodel.PDDocument
+import play.api.libs.json.JsValue
 import play.api.mvc.Action
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.fileupload.FileUploadService
@@ -38,7 +39,7 @@ class DmsSubmissionController(
   documentLoader: Array[Byte] => PDDocument)(implicit clock: Clock, rnd: Rnd[Random])
     extends BaseController {
 
-  def submitToDms = Action.async(parse.json) { implicit request =>
+  def submitToDms: Action[JsValue] = Action.async(parse.json) { implicit request =>
     withJsonBody[DmsHtmlSubmission] { dmsHtmlSubmission =>
       val decodedHtml = decode(dmsHtmlSubmission.html)
       val metadata = dmsHtmlSubmission.metadata
@@ -60,13 +61,13 @@ class DmsSubmissionController(
           0,
           dmsMetadata)
         // TODO controller should allow data XML submission
-        submissionAndPdf = SubmissionAndPdf(submission, pdfSummary)
+        summaries = PdfAndXmlSummaries(pdfSummary)
         dmsSubmission = DmsSubmission(
           metadata.dmsFormId,
           TextExpression(Constant(metadata.customerId)),
           metadata.classificationType,
           metadata.businessArea)
-        _ <- fileUpload.submitEnvelope(submissionAndPdf, dmsSubmission, 0)
+        _ <- fileUpload.submitEnvelope(submission, summaries, dmsSubmission, 0)
       } yield {
         NoContent
       }

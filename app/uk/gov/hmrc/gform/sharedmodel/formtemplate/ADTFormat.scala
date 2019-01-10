@@ -72,15 +72,15 @@ object ADTFormat {
     s"""Missing type discriminator field "$typeFieldName" in ${typeName[T]}. Allowed values are ${prettifyList(valid)}."""
 
   def invalidTypeValueType[T: TypeTag](typeFieldName: String, tpe: JsValue, valid: Set[String]): String =
-    s"""Invalid value for type discriminator field "$typeFieldName" of $tpe in ${typeName[T]}. Allowed values are ${prettifyList(
+    s"""Invalid value ($tpe) for type discriminator field "$typeFieldName" of $tpe in ${typeName[T]}. Allowed values are ${prettifyList(
       valid)}."""
 
   def invalidTypeValue[T: TypeTag](typeFieldName: String, tpe: String, valid: Set[String]): String =
-    s"""Invalid value for type discriminator field "$typeFieldName" value of "$tpe" in ${typeName[T]}. Allowed values are ${prettifyList(
+    s"""Invalid value ($tpe) for type discriminator field "$typeFieldName" value of "$tpe" in ${typeName[T]}. Allowed values are ${prettifyList(
       valid)}."""
 
   def invalidReadValue[T: TypeTag](s: String, translations: (String, T)*): String =
-    s"Invalid JSON value for custom read of ${typeName[T]}. allowed values are ${prettifyList(translations.map(_._1))}."
+    s"Invalid JSON value ($s) for custom read of ${typeName[T]}. allowed values are ${prettifyList(translations.map(_._1))}."
 
   private def prettifyList(ss: Iterable[String]): String = ss.toList.sorted.map(s => s""""$s"""").mkString(", ")
 

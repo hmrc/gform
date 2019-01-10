@@ -29,7 +29,7 @@ trait DestinationsGen {
     } yield Destinations.DmsSubmission(dmsFormId, customerId, classificationType, businessArea)
 
   def destinationListGen: Gen[Destinations.DestinationList] =
-    PrimitiveGen.oneOrMoreGen(DestinationGen.hmrcDmsGen).map(Destinations.DestinationList(_))
+    PrimitiveGen.oneOrMoreGen(DestinationGen.destinationGen).map(Destinations.DestinationList(_))
 
   def destinationsGen: Gen[Destinations] = Gen.oneOf(deprecatedDmsSubmissionGen, destinationListGen)
 }

@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
 
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.DestinationGen
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ TextExpression, verifyRead }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.verifyRead
 
 class DestinationSpec extends Spec {
   "Destination" should "round trip derived JSON" in {
@@ -29,17 +29,29 @@ class DestinationSpec extends Spec {
 
   it should "read custom JSON for HmrcDms" in {
     forAll(DestinationGen.hmrcDmsGen) { hmrcDms =>
-      import hmrcDms._
       verifyRead[Destination](
         hmrcDms,
+        createUploadableJson(hmrcDms)
+      )
+    }
+  }
+
+  it should "read custom JSON for HandlebarsHttpApi" in {
+    forAll(DestinationGen.handlebarsHttpApiGen) { handlebarsHttpApi =>
+      val h = handlebarsHttpApi.copy(payload = Some("""{"abc": "def"}"""))
+      import h._
+
+      verifyRead[Destination](
+        h,
         s"""|{
-            |  "id": "${id.id}",
-            |  "${Destination.typeDiscriminatorFieldName}": "${Destination.hmrcDms}",
-            |  "dmsFormId": "$dmsFormId",
-            |  "customerId": ${TextExpression.format.writes(customerId)},
-            |  "classificationType": "$classificationType",
-            |  "businessArea": "$businessArea"
-            |}""".stripMargin
+         |  "id": "${id.id}",
+         |  ${optionalField("payload", Some("""{'abc': 'def'}"""))}
+         |  ${optionalField("convertSingleQuotes", Option(true))}
+         |  "${Destination.typeDiscriminatorFieldName}": "${Destination.handlebarsHttpApi}",
+         |  "profile": ${write(profile)},
+         |  "uri": "$uri",
+         |  "method": ${write(method)}
+         |}"""
       )
     }
   }
