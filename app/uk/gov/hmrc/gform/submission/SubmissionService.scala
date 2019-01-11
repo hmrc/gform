@@ -163,12 +163,31 @@ class SubmissionService(
       numberOfAttachments =                       sectionFormFields.map(_.numberOfFiles).sum
       res                 <- fromFutureA          (fileUploadService.submitEnvelope(submissionAndPdf, formTemplate.dmsSubmission, numberOfAttachments))
       emailAddress        =                       email.getEmailAddress(form)
-      _                   <-                      fromFutureA(email.sendEmail(emailAddress, formTemplate.emailTemplateId)(hc, fromLoggingDetails))
+      _                   <-                      fromFutureA(email.sendEmail(emailAddress, formTemplate.emailTemplateId, getEmailParameterValues(formTemplate, form))(hc, fromLoggingDetails))
     } yield res
   // format: ON
 
   def submissionDetails(formId: FormId)(implicit ec: ExecutionContext): Future[Submission] =
     submissionRepo.get(formId.value)
+
+  def getEmailParameterValues(formTemplate: FormTemplate, form: Form): Map[String, String] =
+//    formTemplate.emailParameters
+//      .map { parameter =>
+//        form.formData.fields
+//          .groupBy(_.value)
+//          .find(field => field._2.head.id.toString == parameter)
+//          .map(found => found._2.head.value)
+//          .getOrElse("")
+//
+//      }
+    formTemplate.emailParameters
+      .flatMap(
+        parameter =>
+          form.formData.fields
+            .find(field => field.id.value == parameter)
+            .map(f => (f.id.value, f.value)))
+      .toMap
+
 }
 
 object SubmissionServiceHelper {
