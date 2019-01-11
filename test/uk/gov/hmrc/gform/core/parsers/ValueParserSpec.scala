@@ -287,7 +287,7 @@ class ValueParserSpec extends Spec {
       RequireMTDAgentEnrolment,
       EnrolmentAuth(ServiceId("TEST"), DoCheck(Always, RejectAccess, RegimeIdCheck(RegimeId("TEST"))))),
     "test-email-template-id",
-    List("firstName", "landfill_tax_reference"),
+    List("fullName", "landfill_tax_reference"),
     "submitSuccessUrl",
     "submitErrorUrl",
     List.empty[Section],
