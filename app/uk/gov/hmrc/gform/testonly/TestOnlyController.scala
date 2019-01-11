@@ -101,8 +101,8 @@ class TestOnlyController(mongo: () => DB, enrolmentConnector: EnrolmentConnector
     Logger.info(s"testGetTaxStub, ${loggingHelpers.cleanHeaders(request.headers)}")
     if (idType == "nino") {
       Future.successful(
-        (Ok(Json.obj("obligations" -> new TaxPeriods(
-          List(new TaxPeriod("2019-05-23", "b", "c"), new TaxPeriod("2019-06-24", "2019-09-24", "#001")))))))
+        Ok(Json.obj("taxPeriods" ->
+          List(new TaxPeriod("2019-05-23", "b", "c"), new TaxPeriod("2019-06-24", "2019-09-24", "#001")))))
     } else {
       Future.successful(BadRequest("idType wasn't nino"))
     }
