@@ -27,6 +27,15 @@ trait FormTemplateGen {
   def draftRetrievalMethodGen: Gen[DraftRetrievalMethod] = Gen.oneOf(OnePerUser, FormAccessCodeForAgents)
   def emailTemplateIdGen: Gen[String] = PrimitiveGen.nonEmptyAlphaNumStrGen
 
+  def emailParameterGen: Gen[EmailParameter] =
+    for {
+      emailTemplateVariable <- Gen.alphaNumStr
+      value                 <- Gen.alphaNumStr
+
+    } yield EmailParameter(emailTemplateVariable, value)
+
+  def emailParameterListGen: Gen[List[EmailParameter]] = PrimitiveGen.zeroOrMoreGen(emailParameterGen)
+
   def formTemplateGen: Gen[FormTemplate] =
     for {
       id                     <- formTemplateIdGen
@@ -39,6 +48,7 @@ trait FormTemplateGen {
       destinations           <- DestinationsGen.destinationsGen
       authConfig             <- AuthConfigGen.authConfigGen
       emailTemplateId        <- emailTemplateIdGen
+      emailParameters        <- emailParameterListGen
       submitSuccessUrl       <- PrimitiveGen.urlGen
       submitErrorUrl         <- PrimitiveGen.urlGen
       sections               <- PrimitiveGen.zeroOrMoreGen(SectionGen.sectionGen)
@@ -57,6 +67,7 @@ trait FormTemplateGen {
         destinations,
         authConfig,
         emailTemplateId,
+        emailParameters,
         submitSuccessUrl,
         submitErrorUrl,
         sections,
