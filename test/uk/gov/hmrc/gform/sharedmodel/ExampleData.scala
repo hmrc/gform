@@ -321,7 +321,6 @@ trait ExampleFormTemplate {
       dmsSubmission = dmsSubmission,
       authConfig = authConfig,
       emailTemplateId = emailTemplateId,
-      emailParameters = emailParameters,
       submitSuccessUrl = submtSuccessUrl,
       submitErrorUrl = submitErrorUrl,
       sections = allSections,

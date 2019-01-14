@@ -67,7 +67,6 @@ trait FormTemplateGen {
         destinations,
         authConfig,
         emailTemplateId,
-        emailParameters,
         submitSuccessUrl,
         submitErrorUrl,
         sections,

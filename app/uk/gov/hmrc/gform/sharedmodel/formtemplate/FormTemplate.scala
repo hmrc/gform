@@ -153,7 +153,6 @@ object FormTemplate {
       dmsSubmission,
       authConfig,
       emailTemplateId,
-      emailParameters,
       submitSuccessUrl,
       submitErrorUrl,
       sections,
