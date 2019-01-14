@@ -20,6 +20,7 @@ import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormData, FormField }
 import cats.implicits._
 import play.api.Logger
 import uk.gov.hmrc.gform.auditing.loggingHelpers
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.EmailParameter
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -33,6 +34,7 @@ class EmailService(emailConnector: EmailConnector) {
     optemailAddress.fold(().pure[Future])(email =>
       emailConnector.sendEmail(new EmailTemplate(Seq(email), templateId, parameters)))
   }
+
   def getEmailAddress(form: Form): Option[String] =
     form.formData.fields.find(_.id.value == "email").map(_.value).filterNot(_.isEmpty)
 }

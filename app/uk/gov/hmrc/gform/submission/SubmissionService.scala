@@ -24,7 +24,7 @@ import cats.syntax.traverse._
 import org.apache.pdfbox.pdmodel.PDDocument
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.gform.core._
-import uk.gov.hmrc.gform.email.EmailService
+import uk.gov.hmrc.gform.email.{ EmailService }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.fileupload.FileUploadService
 import uk.gov.hmrc.gform.form.FormService
@@ -33,6 +33,7 @@ import uk.gov.hmrc.gform.pdfgenerator.{ HtmlGeneratorService, PdfGeneratorServic
 import uk.gov.hmrc.gform.sharedmodel.Visibility
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
@@ -171,22 +172,11 @@ class SubmissionService(
     submissionRepo.get(formId.value)
 
   def getEmailParameterValues(formTemplate: FormTemplate, form: Form): Map[String, String] =
-//    formTemplate.emailParameters
-//      .map { parameter =>
-//        form.formData.fields
-//          .groupBy(_.value)
-//          .find(field => field._2.head.id.toString == parameter)
-//          .map(found => found._2.head.value)
-//          .getOrElse("")
-//
-//      }
-    formTemplate.emailParameters
-      .flatMap(
-        parameter =>
-          form.formData.fields
-            .find(field => field.id.value == parameter)
-            .map(f => (f.id.value, f.value)))
-      .toMap
+    formTemplate.emailParameters.flatMap { parameter =>
+      form.formData.fields
+        .find(field => field.id.value == parameter.emailTemplateVariable)
+        .map(f => (f.id.value, f.value))
+    }.toMap
 
 }
 

@@ -14,20 +14,11 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.email
-
-import java.util.Date
+package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import play.api.libs.json.{ Json, OFormat }
-import uk.gov.hmrc.gform.sharedmodel.form.{ FormData, FormField }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.EmailParameter
+case class EmailParameter(emailTemplateVariable: String, value: String)
 
-case class EmailTemplate(
-  to: Seq[String], //content that goes in the email to be put into template
-  templateId: String, //the template ID that the content will be put into
-  emailParameters: Map[String, String], //the field values that will be passed into the email
-  private val force: Boolean = false)
-
-object EmailTemplate {
-  implicit val format: OFormat[EmailTemplate] = Json.format[EmailTemplate]
+object EmailParameter {
+  implicit val format: OFormat[EmailParameter] = Json.format[EmailParameter]
 }

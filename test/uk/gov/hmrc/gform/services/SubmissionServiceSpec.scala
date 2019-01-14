@@ -122,7 +122,7 @@ class SubmissionServiceSpec extends Spec {
         RequireMTDAgentEnrolment,
         EnrolmentAuth(ServiceId("TEST"), DoCheck(Always, RejectAccess, RegimeIdCheck(RegimeId("TEST"))))),
       emailTemplateId = "test-email-template-id",
-      emailParameters = List("fullName", "landfill_tax_reference"),
+      emailParameters = List(EmailParameter("fullName", "john smith"), EmailParameter("email", "test@test.com")),
       submitSuccessUrl = "http://somwehere-nice.net",
       submitErrorUrl = "http://somwehere-nasty.net",
       sections = List(section),

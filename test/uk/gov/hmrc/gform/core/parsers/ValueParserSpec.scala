@@ -23,6 +23,8 @@ import uk.gov.hmrc.gform.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
 
+import scala.collection.immutable.List
+
 class ValueParserSpec extends Spec {
 
   //TODO: use ExampleData
@@ -287,7 +289,7 @@ class ValueParserSpec extends Spec {
       RequireMTDAgentEnrolment,
       EnrolmentAuth(ServiceId("TEST"), DoCheck(Always, RejectAccess, RegimeIdCheck(RegimeId("TEST"))))),
     "test-email-template-id",
-    List("fullName", "landfill_tax_reference"),
+    List(EmailParameter("fullName", "john smith"), EmailParameter("email", "test@test.com")),
     "submitSuccessUrl",
     "submitErrorUrl",
     List.empty[Section],
