@@ -164,19 +164,12 @@ class SubmissionService(
       numberOfAttachments =                       sectionFormFields.map(_.numberOfFiles).sum
       res                 <- fromFutureA          (fileUploadService.submitEnvelope(submissionAndPdf, formTemplate.dmsSubmission, numberOfAttachments))
       emailAddress        =                       email.getEmailAddress(form)
-      _                   <-                      fromFutureA(email.sendEmail(emailAddress, formTemplate.emailTemplateId, getEmailParameterValues(formTemplate, form))(hc, fromLoggingDetails))
+      _                   <-                      fromFutureA(email.sendEmail(emailAddress, formTemplate.emailTemplateId, SubmissionServiceHelper.getEmailParameterValues(formTemplate, form))(hc, fromLoggingDetails))
     } yield res
   // format: ON
 
   def submissionDetails(formId: FormId)(implicit ec: ExecutionContext): Future[Submission] =
     submissionRepo.get(formId.value)
-
-  def getEmailParameterValues(formTemplate: FormTemplate, form: Form): Map[String, String] =
-    formTemplate.emailParameters.flatMap { parameter =>
-      form.formData.fields
-        .find(field => field.id.value == parameter.emailTemplateVariable)
-        .map(f => (f.id.value, f.value))
-    }.toMap
 
 }
 
@@ -236,5 +229,14 @@ object SubmissionServiceHelper {
     val sectionsToSubmit = filteredSection :+ formTemplate.declarationSection
     sectionsToSubmit.traverse(toSectionFormField)
   }
+
+  def getEmailParameterValues(formTemplate: FormTemplate, form: Form): Map[String, String] =
+    formTemplate.emailParameters
+      .flatMap(
+        parameter =>
+          form.formData.fields
+            .find(field => field.id.value == parameter.emailTemplateVariable)
+            .map(f => (f.id.value, f.value)))
+      .toMap
 
 }

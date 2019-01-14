@@ -28,7 +28,7 @@ class EmailConnector(wSHttp: WSHttp, baseUrl: String) {
 
   def sendEmail(
     emailTemplate: EmailTemplate)(implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[Unit] = {
-    println(emailTemplate)
+    println(emailTemplate.toString)
     println("find me")
     Logger.info(s"send email, ${loggingHelpers.cleanHeaderCarrierHeader(headerCarrier)}")
     wSHttp

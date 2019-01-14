@@ -206,7 +206,9 @@ class SubmissionServiceSpec extends Spec {
     val res = SubmissionServiceHelper.getSectionFormFields(form, formTemplate, None)
 
     res.right.value should be(expectedResult)
+
   }
 
   implicit lazy val hc = new HeaderCarrier()
+
 }
