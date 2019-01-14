@@ -21,7 +21,7 @@ import play.api.libs.json.{ Json, OFormat }
 case class EmailTemplate(
   to: Seq[String], //content that goes in the email to be put into template
   templateId: String, //the template ID that the content will be put into
-  emailParameters: Map[String, String], //the field values that will be passed into the email
+  parameters: Map[String, String], //the fieldId and values that will be passed into the email
   private val force: Boolean = false)
 
 object EmailTemplate {
