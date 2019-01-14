@@ -16,12 +16,10 @@
 
 package uk.gov.hmrc.gform.email
 
-import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormData, FormField }
+import uk.gov.hmrc.gform.sharedmodel.form.Form
 import cats.implicits._
 import play.api.Logger
 import uk.gov.hmrc.gform.auditing.loggingHelpers
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.EmailParameter
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
 
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.http.HeaderCarrier

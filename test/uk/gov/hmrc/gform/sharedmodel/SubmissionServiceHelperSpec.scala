@@ -57,9 +57,8 @@ class SubmissionServiceHelperSpec extends Spec {
 
   it should "return only values for the fields in emailParameters" in new ExampleData {
 
-    val newFields = Seq(
-      FormField(FormComponentId("fullName"), "john smith"),
-      FormField(FormComponentId("email"), "test@test.com"))
+    val newFields =
+      Seq(FormField(FormComponentId("fullName"), "john smith"), FormField(FormComponentId("email"), "test@test.com"))
 
     val newForm = form.copy(formData = FormData(newFields))
 
