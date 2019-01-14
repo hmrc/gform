@@ -47,9 +47,15 @@ trait HtmlGeneratorService {
         case Date(_, _, _)                  => generateDateFieldHTML(fieldValue, formFields)
         case Address(_)                     => generateAddressFieldHTML(fieldValue, formFields)
         case text @ Text(_, _, _)           => generateTextFieldHTML(text, fieldValue, formFields.head.value)
+        case HmrcTaxPeriod(_, _, _)         => generateHmrcTaxPeriodFieldHTML(fieldValue, formFields.head)
         case _                              => (getEnglishText(fieldValue.shortName.getOrElse(fieldValue.label)), Html(formFields.head.value))
       }
       uk.gov.hmrc.gform.views.html.pdfGeneration.element(name, value)
+  }
+
+  private def generateHmrcTaxPeriodFieldHTML(fieldValue: FormComponent, formField: FormField) = {
+    val values = Html(formField.value)
+    (getEnglishText(fieldValue.shortName.getOrElse(fieldValue.label)), values)
   }
 
   private def generateTextFieldHTML(textElement: Text, fieldValue: FormComponent, formFieldValue: String) = {
