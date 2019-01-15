@@ -102,7 +102,7 @@ class TestOnlyController(mongo: () => DB, enrolmentConnector: EnrolmentConnector
     if (idType == "nino") {
       Future.successful(
         Ok(Json.obj("taxPeriods" ->
-          List(new TaxPeriod("2019-05-23", "b", "c"), new TaxPeriod("2019-06-24", "2019-09-24", "#001")))))
+          List(new TaxPeriod("2019-05-23", "2019-10-12", "c"), new TaxPeriod("2019-06-24", "2019-09-24", "#001")))))
     } else {
       Future.successful(BadRequest("idType wasn't nino"))
     }
