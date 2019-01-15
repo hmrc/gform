@@ -313,6 +313,42 @@ class TemplateValidatorSpec extends Spec {
 
   }
 
+  "TemplateValidator.validateEmailParameters" should "return Valid" in {
+
+    val formComponents = List(mkFormComponent("${directorFullName}", Value), mkFormComponent("${directorEmail}", Value))
+    val newSection = mkSection("example", formComponents)
+    val newFormTemplate = formTemplate.copy(sections = List(newSection))
+
+    val res = FormTemplateValidator.validateEmailParameter(newFormTemplate)
+    res should be(Valid)
+
+  }
+
+  "TemplateValidator.validateEmailParameters" should "return Invalid" in {
+
+    val formComponents = List(mkFormComponent("${fieldNotContainedInFormTemplate}", Value))
+    val newSection = mkSection("example", formComponents)
+    val newFormTemplate = formTemplate.copy(sections = List(newSection))
+
+    val res = FormTemplateValidator.validateEmailParameter(newFormTemplate)
+    res should be(
+      Invalid(
+        "The following email parameters are not fields in the form template: List(${fieldNotContainedInFormTemplate})"))
+
+  }
+
+  "TemplateValidator.validateEmailParameters with new params" should "return Valid" in {
+
+    val formComponents = List(mkFormComponent("${fieldContainedInFormTemplate}", Value))
+    val newSection = mkSection("example", formComponents)
+    val newEmailParameters = List(EmailParameter("templateIdVariable", "${fieldContainedInFormTemplate}"))
+    val newFormTemplate = formTemplate.copy(sections = List(newSection), emailParameters = newEmailParameters)
+
+    val res = FormTemplateValidator.validateEmailParameter(newFormTemplate)
+    res should be(Valid)
+
+  }
+
   private def mkSection(name: String, formComponents: List[FormComponent]) =
     Section(
       name,

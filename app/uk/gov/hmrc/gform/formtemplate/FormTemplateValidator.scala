@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.formtemplate
 import cats.Monoid
 import cats.data.NonEmptyList
 import cats.implicits._
+import javax.xml.bind.util.ValidationEventCollector
 import scalax.collection.Graph
 import scalax.collection.GraphEdge._
 import uk.gov.hmrc.gform.core.{ Invalid, Opt, Valid, ValidationResult }
@@ -261,6 +262,35 @@ object FormTemplateValidator {
       case Value       => Valid
     }
   }
+
+//  def validateEmailParameter(formTemplate: FormTemplate): ValidationResult =
+//    formTemplate.emailParameters
+//      .map(_.value)
+//      .filterNot(
+//        parameter =>
+//          formTemplate.sections
+//            .flatMap(_.fields.map(_.id.value))
+//            .contains(parameter)) match {
+//
+//      case invalidFields if invalidFields.isEmpty => Valid
+//      case invalidFields =>
+//        Invalid(s"The following email parameters are not fields in the form template: $invalidFields")
+//
+//    }
+
+  def validateEmailParameter(formTemplate: FormTemplate): ValidationResult =
+    formTemplate.sections
+      .flatMap(_.fields.map(_.id.value))
+      .filterNot(
+        parameter =>
+          formTemplate.emailParameters
+            .map(_.value)
+            .contains(parameter)) match {
+
+      case invalidFields if invalidFields.isEmpty => Valid
+      case invalidFields =>
+        Invalid(s"The following email parameters are not fields in the form template: $invalidFields")
+    }
 
   private def evalExpr(expr: Expr): List[FormComponentId] = expr match {
     case Add(left, right)         => evalExpr(left) ::: evalExpr(right)

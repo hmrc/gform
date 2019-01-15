@@ -122,7 +122,8 @@ class SubmissionServiceSpec extends Spec {
         RequireMTDAgentEnrolment,
         EnrolmentAuth(ServiceId("TEST"), DoCheck(Always, RejectAccess, RegimeIdCheck(RegimeId("TEST"))))),
       emailTemplateId = "test-email-template-id",
-      emailParameters = List(EmailParameter("fullName", "john smith"), EmailParameter("email", "test@test.com")),
+      emailParameters =
+        List(EmailParameter("fullName", "${directorFullName}"), EmailParameter("email", "${directorEmail}")),
       submitSuccessUrl = "http://somwehere-nice.net",
       submitErrorUrl = "http://somwehere-nasty.net",
       sections = List(section),
