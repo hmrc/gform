@@ -263,21 +263,6 @@ object FormTemplateValidator {
     }
   }
 
-//  def validateEmailParameter(formTemplate: FormTemplate): ValidationResult =
-//    formTemplate.emailParameters
-//      .map(_.value)
-//      .filterNot(
-//        parameter =>
-//          formTemplate.sections
-//            .flatMap(_.fields.map(_.id.value))
-//            .contains(parameter)) match {
-//
-//      case invalidFields if invalidFields.isEmpty => Valid
-//      case invalidFields =>
-//        Invalid(s"The following email parameters are not fields in the form template: $invalidFields")
-//
-//    }
-
   def validateEmailParameter(formTemplate: FormTemplate): ValidationResult =
     formTemplate.sections
       .flatMap(_.fields.map(_.id.value))
@@ -290,6 +275,20 @@ object FormTemplateValidator {
       case invalidFields if invalidFields.isEmpty => Valid
       case invalidFields =>
         Invalid(s"The following email parameters are not fields in the form template: $invalidFields")
+    }
+
+  def validateEmailParameterValueFormat(emailParameters: List[EmailParameter]): ValidationResult =
+    emailParameters.map(_.value).filterNot { parameter =>
+      parameter.head == '$' &&
+      parameter.charAt(1) == '{' &&
+      parameter.last == '}'
+    } match {
+
+      case invalidValues if invalidValues.isEmpty => Valid
+
+      case invalidValues =>
+        Invalid(s"The following email parameters values are not in the correct format: $invalidValues")
+
     }
 
   private def evalExpr(expr: Expr): List[FormComponentId] = expr match {

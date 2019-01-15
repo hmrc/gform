@@ -349,6 +349,53 @@ class TemplateValidatorSpec extends Spec {
 
   }
 
+  "TemplateValidator.validateEmailParameters with multiple sections" should "return Valid" in {
+
+    val formComponents = List(mkFormComponent("${fieldContainedInFormTemplate}", Value))
+    val newSection = mkSection("example", formComponents)
+    val newEmailParameters = List(EmailParameter("templateIdVariable", "${fieldContainedInFormTemplate}"))
+    val newFormTemplate =
+      formTemplate.copy(sections = List(newSection, newSection), emailParameters = newEmailParameters)
+
+    val res = FormTemplateValidator.validateEmailParameter(newFormTemplate)
+    res should be(Valid)
+
+  }
+  "TemplateValidator.validateEmailParametersValueFormat" should "return Valid" in {
+
+    val newEmailParameters = List(EmailParameter("templateIdVariable", "${validValue}"))
+    val newFormTemplate = formTemplate.copy(emailParameters = newEmailParameters)
+
+    val res = FormTemplateValidator.validateEmailParameterValueFormat(newFormTemplate.emailParameters)
+    res should be(Valid)
+
+  }
+
+  "TemplateValidator.validateEmailParametersValueFormat" should "return Invalid" in {
+
+    val newEmailParameters = List(EmailParameter("templateIdVariable", "${invalidValue"))
+    val newFormTemplate = formTemplate.copy(emailParameters = newEmailParameters)
+
+    val res = FormTemplateValidator.validateEmailParameterValueFormat(newFormTemplate.emailParameters)
+    res should be(Invalid("The following email parameters values are not in the correct format: List(${invalidValue)"))
+
+  }
+
+  "TemplateValidator.validateEmailParametersValueFormat with multiple invalid" should "return Invalid" in {
+
+    val newEmailParameters = List(
+      EmailParameter("templateIdVariable", "${invalidValue"),
+      EmailParameter("templateIdVariable", "{invalidValue2}"))
+
+    val newFormTemplate = formTemplate.copy(emailParameters = newEmailParameters)
+
+    val res = FormTemplateValidator.validateEmailParameterValueFormat(newFormTemplate.emailParameters)
+    res should be(
+      Invalid(
+        "The following email parameters values are not in the correct format: List(${invalidValue, {invalidValue2})"))
+
+  }
+
   private def mkSection(name: String, formComponents: List[FormComponent]) =
     Section(
       name,
