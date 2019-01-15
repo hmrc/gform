@@ -322,7 +322,6 @@ class FormCompomentMaker(json: JsValue) {
     oHmrcTaxPeriod
   }
 
-  //private lazy val hmrcTaxPeriodOpt: Opt[HmrcTaxPeriod] = HmrcTaxPeriod("aa", "aa", "aa").asRight
 
   private lazy val fileUploadOpt: Opt[FileUpload] = FileUpload().asRight
 
