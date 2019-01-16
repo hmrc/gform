@@ -236,7 +236,7 @@ object SubmissionServiceHelper {
         parameter =>
           form.formData.fields
             .find(field => field.id.value == parameter.value)
-            .map(f => (f.id.value, f.value)))
+            .map(f => (parameter.emailTemplateVariable, f.value)))
       .toMap
 
 }

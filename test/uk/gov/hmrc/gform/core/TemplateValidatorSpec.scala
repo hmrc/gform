@@ -315,7 +315,7 @@ class TemplateValidatorSpec extends Spec {
 
   "TemplateValidator.validateEmailParameters" should "return Valid" in {
 
-    val formComponents = List(mkFormComponent("${directorFullName}", Value), mkFormComponent("${directorEmail}", Value))
+    val formComponents = List(mkFormComponent("directorFullName", Value), mkFormComponent("directorEmail", Value))
     val newSection = mkSection("example", formComponents)
     val newFormTemplate = formTemplate.copy(sections = List(newSection))
 
@@ -324,24 +324,46 @@ class TemplateValidatorSpec extends Spec {
 
   }
 
+  "TemplateValidator.validateEmailParameters using fields contained in declaration section" should "return Valid" in {
+
+    val formComponents = List(
+      mkFormComponent("fieldContainedInFormTemplate", Value)
+    )
+
+    val newSection = mkSection("example", formComponents)
+    val newEmailParameters = List(
+      EmailParameter("templateIdVariable", "fieldContainedInFormTemplate"),
+      EmailParameter("declarationFullNameVariable", "declarationFullName"))
+    val newDeclarationSection =
+      DeclarationSection("Declaration", None, None, List(mkFormComponent("declarationFullName", Value)))
+    val newFormTemplate = formTemplate.copy(
+      sections = List(newSection),
+      emailParameters = newEmailParameters,
+      declarationSection = newDeclarationSection)
+
+    val res = FormTemplateValidator.validateEmailParameter(newFormTemplate)
+    res should be(Valid)
+
+  }
+
   "TemplateValidator.validateEmailParameters" should "return Invalid" in {
 
-    val formComponents = List(mkFormComponent("${fieldNotContainedInFormTemplate}", Value))
+    val formComponents = List(mkFormComponent("fieldNotContainedInFormTemplate", Value))
     val newSection = mkSection("example", formComponents)
     val newFormTemplate = formTemplate.copy(sections = List(newSection))
 
     val res = FormTemplateValidator.validateEmailParameter(newFormTemplate)
     res should be(
       Invalid(
-        "The following email parameters are not fields in the form template: List(${fieldNotContainedInFormTemplate})"))
+        "The following email parameters are not fields in the form template: List(directorFullName, directorEmail)"))
 
   }
 
   "TemplateValidator.validateEmailParameters with new params" should "return Valid" in {
 
-    val formComponents = List(mkFormComponent("${fieldContainedInFormTemplate}", Value))
+    val formComponents = List(mkFormComponent("fieldContainedInFormTemplate", Value))
     val newSection = mkSection("example", formComponents)
-    val newEmailParameters = List(EmailParameter("templateIdVariable", "${fieldContainedInFormTemplate}"))
+    val newEmailParameters = List(EmailParameter("templateIdVariable", "fieldContainedInFormTemplate"))
     val newFormTemplate = formTemplate.copy(sections = List(newSection), emailParameters = newEmailParameters)
 
     val res = FormTemplateValidator.validateEmailParameter(newFormTemplate)
@@ -351,9 +373,9 @@ class TemplateValidatorSpec extends Spec {
 
   "TemplateValidator.validateEmailParameters with multiple sections" should "return Valid" in {
 
-    val formComponents = List(mkFormComponent("${fieldContainedInFormTemplate}", Value))
+    val formComponents = List(mkFormComponent("fieldContainedInFormTemplate", Value))
     val newSection = mkSection("example", formComponents)
-    val newEmailParameters = List(EmailParameter("templateIdVariable", "${fieldContainedInFormTemplate}"))
+    val newEmailParameters = List(EmailParameter("templateIdVariable", "fieldContainedInFormTemplate"))
     val newFormTemplate =
       formTemplate.copy(sections = List(newSection, newSection), emailParameters = newEmailParameters)
 

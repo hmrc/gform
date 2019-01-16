@@ -16,22 +16,13 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
-import play.api.libs.functional.syntax._
-import play.api.libs.json._
-case class EmailParameter(emailTemplateVariable: String, value: String)
+import uk.gov.hmrc.gform.Spec
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.FormTemplateGen
 
-object EmailParameter {
-  implicit val format: OFormat[EmailParameter] = {
-    val mongoFormat = Json.format[EmailParameter]
-
-    val uploadTemplateReads: Reads[EmailParameter] =
-      for {
-        emailTemplateVariable <- (JsPath \ "emailTemplateVariable").read[String]
-        value                 <- (JsPath \ "value").read[FormCtx].map(_.value)
-      } yield EmailParameter(emailTemplateVariable, value)
-
-    val reads: Reads[EmailParameter] = uploadTemplateReads | mongoFormat
-
-    OFormat(reads, mongoFormat)
+class EmailParameterSpec extends Spec {
+  "EmailParameter" should "round trip derived JSON" in {
+    forAll(FormTemplateGen.emailParameterGen) { obj =>
+      EmailParameter.format.reads(EmailParameter.format.writes(obj)) should beJsSuccess(obj)
+    }
   }
 }

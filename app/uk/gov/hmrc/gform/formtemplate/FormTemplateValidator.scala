@@ -263,29 +263,36 @@ object FormTemplateValidator {
     }
   }
 
+  def getAllFieldIdsFromFormTemplate(formTemplate: FormTemplate): List[String] = {
+    val sectionsFields = formTemplate.sections.flatMap(_.fields.map(_.id.value))
+    val acknowledgementSectionFields = formTemplate.acknowledgementSection.fields.map(_.id.value)
+    val declarationSectionFields = formTemplate.declarationSection.fields.map(_.id.value)
+
+    sectionsFields ::: acknowledgementSectionFields ::: declarationSectionFields
+
+  }
+
   def validateEmailParameter(formTemplate: FormTemplate): ValidationResult =
-    formTemplate.sections
-      .flatMap(_.fields.map(_.id.value))
-      .filterNot(
-        parameter =>
-          formTemplate.emailParameters
-            .map(_.value)
-            .contains(parameter)) match {
+    formTemplate.emailParameters
+      .map(_.value)
+      .filterNot(parameter =>
+        getAllFieldIdsFromFormTemplate(formTemplate)
+          .contains(parameter)) match {
 
       case invalidFields if invalidFields.isEmpty => Valid
       case invalidFields =>
         Invalid(s"The following email parameters are not fields in the form template: $invalidFields")
+
     }
 
   def validateEmailParameterValueFormat(emailParameters: List[EmailParameter]): ValidationResult =
     emailParameters.map(_.value).filterNot { parameter =>
-      parameter.head == '$' &&
-      parameter.charAt(1) == '{' &&
-      parameter.last == '}'
+      "[$][{][a-zA-Z0-9]*[}]".r
+        .findAllIn(parameter)
+        .hasNext
     } match {
 
       case invalidValues if invalidValues.isEmpty => Valid
-
       case invalidValues =>
         Invalid(s"The following email parameters values are not in the correct format: $invalidValues")
 

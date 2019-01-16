@@ -55,28 +55,30 @@ class SubmissionServiceHelperSpec extends Spec {
     `section - businessDetails`.title)
   }
 
-//  it should "return only values for the fields in emailParameters" in new ExampleData {
-//
-//    val newFields =
-//      Seq(FormField(FormComponentId("fullName"), "john smith"), FormField(FormComponentId("email"), "test@test.com"))
-//
-//    val newForm = form.copy(formData = FormData(newFields))
-//
-//    SubmissionServiceHelper.getEmailParameterValues(formTemplate, newForm) shouldBe Map(
-//      "fullName" -> "john smith",
-//      "email"    -> "test@test.com")
-//
-//  }
-//
-//  it should "return an empty map because it matches no fields" in new ExampleData {
-//
-//    val newFields = Seq(
-//      FormField(FormComponentId("nino"), "example nino"),
-//      FormField(FormComponentId("landfill-reference-number"), "10"))
-//
-//    val newForm = form.copy(formData = FormData(newFields))
-//
-//    SubmissionServiceHelper.getEmailParameterValues(formTemplate, newForm) shouldBe Map()
-//
-//  }
+  it should "return only values for the fields in emailParameters" in new ExampleData {
+
+    val newFields =
+      Seq(
+        FormField(FormComponentId("directorFullName"), "john smith"),
+        FormField(FormComponentId("directorEmail"), "test@test.com"))
+
+    val newForm = form.copy(formData = FormData(newFields))
+
+    SubmissionServiceHelper.getEmailParameterValues(formTemplate, newForm) shouldBe Map(
+      "fullName" -> "john smith",
+      "email"    -> "test@test.com")
+
+  }
+
+  it should "return an empty map because it matches no fields" in new ExampleData {
+
+    val newFields = Seq(
+      FormField(FormComponentId("nino"), "example nino"),
+      FormField(FormComponentId("landfill-reference-number"), "10"))
+
+    val newForm = form.copy(formData = FormData(newFields))
+
+    SubmissionServiceHelper.getEmailParameterValues(formTemplate, newForm) shouldBe Map()
+
+  }
 }
