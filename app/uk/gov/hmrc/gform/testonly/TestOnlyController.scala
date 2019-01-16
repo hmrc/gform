@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.gform.testonly
 
+import java.text.SimpleDateFormat
+
 import com.typesafe.config.{ ConfigFactory, ConfigRenderOptions }
 import play.api.Logger
 import play.api.libs.json._
@@ -97,12 +99,18 @@ class TestOnlyController(mongo: () => DB, enrolmentConnector: EnrolmentConnector
       Future.successful(Ok(Json.toJson(AddressDes("ANYTHING"))))
   }
 
+  val stringToDate = new SimpleDateFormat("yyyy-MM-dd")
+
   def testGetTaxPeriods(idType: String, idNumber: String, regimeType: String) = Action.async { implicit request =>
     Logger.info(s"testGetTaxStub, ${loggingHelpers.cleanHeaders(request.headers)}")
     if (idType == "nino") {
       Future.successful(
-        Ok(Json.obj("taxPeriods" ->
-          List(new TaxPeriod("2019-05-23", "2019-10-12", "c"), new TaxPeriod("2019-06-24", "2019-09-24", "#001")))))
+        Ok(
+          Json.obj("taxPeriods" ->
+            List(
+              new TaxPeriod(stringToDate.parse("2019-05-23"), stringToDate.parse("2019-10-12"), "c"),
+              new TaxPeriod(stringToDate.parse("2019-06-24"), stringToDate.parse("2019-09-24"), "#001")
+            ))))
     } else {
       Future.successful(BadRequest("idType wasn't nino"))
     }

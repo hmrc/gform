@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.gform.obligation
 
+import java.text.SimpleDateFormat
+
 import play.api.Logger
 import play.api.mvc.Action
 import uk.gov.hmrc.gform.auditing.loggingHelpers
@@ -23,10 +25,13 @@ import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.des.TaxPeriodDes
 import uk.gov.hmrc.gform.sharedmodel.{ TaxPeriod, TaxPeriods }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.HmrcTaxPeriod
+
 import scala.concurrent.duration._
 import play.api.libs.json.{ JsValue, Json, OFormat }
 
 class ObligationController(obligation: ObligationService) extends BaseController {
+
+  val stringToDate = new SimpleDateFormat("yyyy-MM-dd")
 
   def getTaxPeriods(idType: String, idNumber: String, regimeType: String) = Action.async { implicit request =>
     Logger.info(s"Get Tax Periods from DES, ${loggingHelpers.cleanHeaders(request.headers)}")
@@ -35,8 +40,14 @@ class ObligationController(obligation: ObligationService) extends BaseController
       .map(
         i =>
           Ok(
-            Json.obj("obligations" -> new TaxPeriods(i.obligationDetails.map(
-              j => new TaxPeriod(j.inboundCorrespondenceFromDate, j.inboundCorrespondenceToDate, j.periodKey)
-            )))))
+            Json.obj(
+              "obligations" -> new TaxPeriods(
+                i.obligationDetails.map(
+                  j =>
+                    new TaxPeriod(
+                      stringToDate.parse(j.inboundCorrespondenceFromDate),
+                      stringToDate.parse(j.inboundCorrespondenceToDate),
+                      j.periodKey)
+                )))))
   }
 }
