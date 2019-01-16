@@ -322,7 +322,6 @@ class FormCompomentMaker(json: JsValue) {
     oHmrcTaxPeriod
   }
 
-
   private lazy val fileUploadOpt: Opt[FileUpload] = FileUpload().asRight
 
   private lazy val infoOpt: Opt[InformationMessage] = (infoType, infoText) match {
