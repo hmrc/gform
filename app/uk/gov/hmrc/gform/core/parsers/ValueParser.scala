@@ -35,8 +35,9 @@ object ValueParser {
     | positiveIntegers ^^ ((loc, selections) => ChoiceExpression(selections))
     | expr ^^ ((loc, expr) => TextExpression(expr)))
 
-  lazy val dateExpression: Parser[DateValue] = (nextDate | lastDate | exactDate | today) ^^ { (loc, dateExpr) =>
-    dateExpr
+  lazy val dateExpression: Parser[DateValue] = (nextDate | lastDate | exactDate | today | firstDay | lastDay) ^^ {
+    (loc, dateExpr) =>
+      dateExpr
   }
 
   lazy val today: Parser[TodayDateValue.type] = "today" ^^ { (loc, today) =>
@@ -52,6 +53,10 @@ object ValueParser {
 
   lazy val lastDate: Parser[PreviousDateValue] =
     nextOrPrevious("last", PreviousDateValue.apply)
+
+  lazy val firstDay: Parser[FirstDayValue] = firstOrLastDay("firstDay", FirstDayValue.apply)
+
+  lazy val lastDay: Parser[LastDayValue] = firstOrLastDay("lastDay", LastDayValue.apply)
 
   lazy val exprFormCtx: Parser[Expr] = (quotedConstant
     | parserExpression)

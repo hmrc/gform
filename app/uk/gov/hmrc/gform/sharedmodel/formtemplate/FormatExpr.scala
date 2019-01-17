@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import julienrf.json.derived
+import org.joda.time.DateTime
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.parsers.{ BasicParsers, ValueParser }
 
@@ -35,22 +36,41 @@ sealed trait DateConstraintType
 final case object AnyDate extends DateConstraintType
 final case class DateConstraints(constraints: List[DateConstraint]) extends DateConstraintType
 
+//sealed trait FirstOrLastDay extends DateConstraintType
+//
+//case class FirstDay(year: Int, month: Int) extends FirstOrLastDay {
+//  val firstDay: Int = 1
+//}
+//case class LastDay(year: Int, month: Int) extends FirstOrLastDay {
+//  val lastDay: Int = DateTime.parse(s"$year-$month-1").dayOfMonth.withMaximumValue.getDayOfMonth
+//
+//}
+//
+//object FirstOrLastDay {
+//  implicit val format: OFormat[FirstOrLastDay] = derived.oformat[FirstOrLastDay]
+//}
+
 object DateConstraintType {
   implicit val format: OFormat[DateConstraintType] = derived.oformat[DateConstraintType]
 }
 
-final case class DateConstraint(beforeOrAfter: BeforeOrAfter, dateFormat: DateConstraintInfo, offset: OffsetDate)
+final case class DateConstraint(
+  beforeOrAfter: BeforeAfterPrecisely,
+  dateFormat: DateConstraintInfo,
+  offset: OffsetDate
+)
 
 object DateConstraint {
   implicit val format: OFormat[DateConstraint] = derived.oformat[DateConstraint]
 }
 
-sealed trait BeforeOrAfter
-case object After extends BeforeOrAfter
-case object Before extends BeforeOrAfter
+sealed trait BeforeAfterPrecisely
+case object After extends BeforeAfterPrecisely
+case object Before extends BeforeAfterPrecisely
+case object Precisely extends BeforeAfterPrecisely
 
-object BeforeOrAfter {
-  implicit val format: OFormat[BeforeOrAfter] = derived.oformat[BeforeOrAfter]
+object BeforeAfterPrecisely {
+  implicit val format: OFormat[BeforeAfterPrecisely] = derived.oformat[BeforeAfterPrecisely]
 }
 
 sealed trait DateConstraintInfo
@@ -58,6 +78,8 @@ case object Today extends DateConstraintInfo
 case class ConcreteDate(year: Int, month: Int, day: Int) extends DateConstraintInfo
 case class NextDate(month: Int, day: Int) extends DateConstraintInfo
 case class PreviousDate(month: Int, day: Int) extends DateConstraintInfo
+case class FirstDay(year: Int, month: Int) extends DateConstraintInfo
+case class LastDay(year: Int, month: Int) extends DateConstraintInfo
 case class AnyWord(value: String) extends DateConstraintInfo
 case class DateField(value: FormComponentId) extends DateConstraintInfo
 

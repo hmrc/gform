@@ -50,11 +50,12 @@ object FormatParser {
   }
 
   lazy val dateConstraint: Parser[DateConstraint] = {
-    beforeOrAfter ~ dateExpr ~ offsetExpression ^^ { (loc, beforeOrAfter, dateExpr, offset) =>
+    beforeOrAfterOrPrecisely ~ dateExpr ~ offsetExpression ^^ { (loc, beforeOrAfter, dateExpr, offset) =>
       DateConstraint(beforeOrAfter, dateExpr, offset)
-    } | beforeOrAfter ~ dateExpr ^^ { (loc, beforeOrAfter, dateExpr) =>
+    } | beforeOrAfterOrPrecisely ~ dateExpr ^^ { (loc, beforeOrAfter, dateExpr) =>
       DateConstraint(beforeOrAfter, dateExpr, OffsetDate(0))
     }
+
   }
 
   lazy val anyDateConstraint: Parser[DateConstraintType] = "anyDate" ^^ { (loc, _) =>
@@ -65,22 +66,30 @@ object FormatParser {
 
   lazy val previousDate: Parser[PreviousDate] = nextOrPrevious("previous", PreviousDate.apply)
 
-  lazy val beforeOrAfter: Parser[BeforeOrAfter] = {
+  lazy val firstDay: Parser[FirstDay] = firstOrLastDay("firstDay", FirstDay.apply)
+
+  lazy val lastDay: Parser[LastDay] = firstOrLastDay("lastDay", LastDay.apply)
+
+  lazy val beforeOrAfterOrPrecisely: Parser[BeforeAfterPrecisely] = {
     "after" ^^ { (loc, after) =>
       After
     } | "before" ^^ { (loc, before) =>
       Before
+    } | "precisely" ^^ { (loc, precisely) =>
+      Precisely
     }
+
   }
 
   lazy val dateExpr: Parser[DateConstraintInfo] = {
+    println("findme444")
     "today" ^^ { (loc, today) =>
       Today
     } | yearParser ~ monthDay ^^ { (loc, year, month, day) =>
       ConcreteDate(year, month, day)
     } | "${" ~ alphabeticOnly ~ "}" ^^ { (loc, _, field, _) =>
       DateField(FormComponentId(field))
-    }
+    } | firstDay | lastDay
   }
 
   lazy val contextField: Parser[String] = alphabeticOnly ^^ { (loc, fn) =>

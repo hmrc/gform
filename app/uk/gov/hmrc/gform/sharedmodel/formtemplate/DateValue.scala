@@ -24,6 +24,8 @@ final case object TodayDateValue extends DateValue
 final case class ExactDateValue(year: Int, month: Int, day: Int) extends DateValue
 final case class NextDateValue(month: Int, day: Int) extends DateValue
 final case class PreviousDateValue(month: Int, day: Int) extends DateValue
+final case class FirstDayValue(year: Int, month: Int) extends DateValue
+final case class LastDayValue(year: Int, month: Int) extends DateValue
 
 object DateValue {
   implicit val format: OFormat[DateValue] = derived.oformat

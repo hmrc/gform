@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 import org.scalacheck.Gen
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ After, AnyDate, AnyText, AnyWord, BasicText, Before, BeforeOrAfter, CompanyRegistrationNumber, ConcreteDate, CountryCode, DateConstraint, DateConstraintInfo, DateConstraintType, DateConstraints, DateField, Email, NINO, NextDate, NonUkCountryCode, Number, OffsetDate, PositiveNumber, PreviousDate, ShortText, Sterling, TelephoneNumber, TextConstraint, TextExpression, TextWithRestrictions, Today, UTR, UkBankAccountNumber, UkSortCodeFormat, UkVrn }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ After, AnyDate, AnyText, AnyWord, BasicText, Before, BeforeAfterPrecisely, CompanyRegistrationNumber, ConcreteDate, CountryCode, DateConstraint, DateConstraintInfo, DateConstraintType, DateConstraints, DateField, Email, FirstDay, FirstOrLastDay, LastDay, NINO, NextDate, NonUkCountryCode, Number, OffsetDate, PositiveNumber, PreviousDate, ShortText, Sterling, TelephoneNumber, TextConstraint, TextExpression, TextWithRestrictions, Today, UTR, UkBankAccountNumber, UkSortCodeFormat, UkVrn }
 
 trait FormatExprGen {
   def numberGen: Gen[Number] =
@@ -61,7 +61,9 @@ trait FormatExprGen {
 
   def textExpressionGen: Gen[TextExpression] = ExprGen.exprGen().map(TextExpression(_))
 
-  def beforeOrAfterGen: Gen[BeforeOrAfter] = Gen.oneOf(Before, After)
+  def beforeOrAfterGen: Gen[BeforeAfterPrecisely] = Gen.oneOf(Before, After)
+
+  def firstOrLastDayGen: Gen[FirstOrLastDay] = Gen.oneOf(FirstDay, LastDay)
 
   def concreteDateGen: Gen[ConcreteDate] =
     for {
@@ -99,10 +101,11 @@ trait FormatExprGen {
 
   def dateConstraintGen: Gen[DateConstraint] =
     for {
-      beforeOrAfter <- beforeOrAfterGen
-      format        <- dateConstraintInfoGen
-      offset        <- offsetDateGen
-    } yield DateConstraint(beforeOrAfter, format, offset)
+      beforeOrAfter  <- beforeOrAfterGen
+      format         <- dateConstraintInfoGen
+      offset         <- offsetDateGen
+      firstOrLastDay <- firstOrLastDayGen
+    } yield DateConstraint(beforeOrAfter, format, offset, firstOrLastDay)
 
   def dateConstraintTypeGen: Gen[DateConstraintType] = Gen.oneOf(
     Gen.const(AnyDate),
