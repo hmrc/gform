@@ -24,7 +24,7 @@ class FormatValidationSpec extends Spec {
 
   behavior of "Text Constraint"
 
-  it should "return Sterling" in createTest("sterling", Sterling)
+  it should "return Sterling" in createTest("sterling", Sterling(RoundingMode.defaultRoundingMode))
   it should "return ukBankAccountNumber" in createTest("ukBankAccountNumber", UkBankAccountNumber)
   it should "return telephoneNumber" in createTest("telephoneNumber", TelephoneNumber)
   it should "return email" in createTest("email", Email)
