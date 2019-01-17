@@ -82,7 +82,7 @@ object RoundingMode {
   case object HalfUp extends RoundingMode
   case object HalfDown extends RoundingMode
 
-  val defaultRoundingMode: RoundingMode = HalfEven
+  val defaultRoundingMode: RoundingMode = Down
 
   implicit val format: Format[RoundingMode] = ADTFormat.formatEnumeration(
     "Up"       -> Up,

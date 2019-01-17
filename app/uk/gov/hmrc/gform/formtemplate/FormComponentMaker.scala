@@ -210,7 +210,7 @@ class FormComponentMaker(json: JsValue) {
         case Some("HalfUp")   => Some(HalfUp)
         case Some("HalfDown") => Some(HalfDown)
         case Some("HalfEven") => Some(HalfEven)
-        case _                => Some(HalfEven)
+        case _                => Some(RoundingMode.defaultRoundingMode)
 
       }
   }
