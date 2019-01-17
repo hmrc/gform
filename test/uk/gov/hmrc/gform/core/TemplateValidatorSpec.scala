@@ -346,7 +346,7 @@ class TemplateValidatorSpec extends Spec {
 
   }
 
-  "TemplateValidator.validateEmailParameters" should "return Invalid" in {
+  "TemplateValidator.validateEmailParameters with non-existent fields" should "return Invalid" in {
 
     val formComponents = List(mkFormComponent("fieldNotContainedInFormTemplate", Value))
     val newSection = mkSection("example", formComponents)
@@ -381,40 +381,6 @@ class TemplateValidatorSpec extends Spec {
 
     val res = FormTemplateValidator.validateEmailParameter(newFormTemplate)
     res should be(Valid)
-
-  }
-  "TemplateValidator.validateEmailParametersValueFormat" should "return Valid" in {
-
-    val newEmailParameters = List(EmailParameter("templateIdVariable", "${validValue}"))
-    val newFormTemplate = formTemplate.copy(emailParameters = newEmailParameters)
-
-    val res = FormTemplateValidator.validateEmailParameterValueFormat(newFormTemplate.emailParameters)
-    res should be(Valid)
-
-  }
-
-  "TemplateValidator.validateEmailParametersValueFormat" should "return Invalid" in {
-
-    val newEmailParameters = List(EmailParameter("templateIdVariable", "${invalidValue"))
-    val newFormTemplate = formTemplate.copy(emailParameters = newEmailParameters)
-
-    val res = FormTemplateValidator.validateEmailParameterValueFormat(newFormTemplate.emailParameters)
-    res should be(Invalid("The following email parameters values are not in the correct format: List(${invalidValue)"))
-
-  }
-
-  "TemplateValidator.validateEmailParametersValueFormat with multiple invalid" should "return Invalid" in {
-
-    val newEmailParameters = List(
-      EmailParameter("templateIdVariable", "${invalidValue"),
-      EmailParameter("templateIdVariable", "{invalidValue2}"))
-
-    val newFormTemplate = formTemplate.copy(emailParameters = newEmailParameters)
-
-    val res = FormTemplateValidator.validateEmailParameterValueFormat(newFormTemplate.emailParameters)
-    res should be(
-      Invalid(
-        "The following email parameters values are not in the correct format: List(${invalidValue, {invalidValue2})"))
 
   }
 

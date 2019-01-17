@@ -62,7 +62,6 @@ class FormTemplateService(formTemplateRepo: FormTemplateRepo, formTemplateRawRep
       _   <- fromOptA(FormTemplateValidator.validateEnrolmentSection(formTemplate).toEither)
       _   <- fromOptA(FormTemplateValidator.validateRegimeId(formTemplate).toEither)
       _   <- fromOptA(FormTemplateValidator.validateEmailParameter(formTemplate).toEither)
-      _   <- fromOptA(FormTemplateValidator.validateEmailParameterValueFormat(formTemplate.emailParameters).toEither)
       res <- formTemplateRepo.upsert(formTemplate)
     } yield res
   }

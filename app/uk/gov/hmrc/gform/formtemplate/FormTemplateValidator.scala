@@ -285,19 +285,6 @@ object FormTemplateValidator {
 
     }
 
-  def validateEmailParameterValueFormat(emailParameters: List[EmailParameter]): ValidationResult =
-    emailParameters.map(_.value).filterNot { parameter =>
-      "[$][{][a-zA-Z0-9]*[}]".r
-        .findAllIn(parameter)
-        .hasNext
-    } match {
-
-      case invalidValues if invalidValues.isEmpty => Valid
-      case invalidValues =>
-        Invalid(s"The following email parameters values are not in the correct format: $invalidValues")
-
-    }
-
   private def evalExpr(expr: Expr): List[FormComponentId] = expr match {
     case Add(left, right)         => evalExpr(left) ::: evalExpr(right)
     case Subtraction(left, right) => evalExpr(left) ::: evalExpr(right)
