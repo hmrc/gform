@@ -36,7 +36,9 @@ class ObligationController(obligation: ObligationService) extends BaseController
   def getTaxPeriods(idType: String, idNumber: String, regimeType: String) = Action.async { implicit request =>
     Logger.info(s"Get Tax Periods from DES, ${loggingHelpers.cleanHeaders(request.headers)}")
     obligation
-      .callDES(idType, idNumber, regimeType)
+      .callDES(idType, idNumber, regimeType) //returns an Obligation
+      .map(i => i.obligations)
+      .map(j => j.head)
       .map(
         i =>
           Ok(
@@ -50,4 +52,22 @@ class ObligationController(obligation: ObligationService) extends BaseController
                       j.periodKey)
                 )))))
   }
+
+//  def getTaxPeriods(idType: String, idNumber: String, regimeType: String) = Action.async { implicit request =>
+//    Logger.info(s"Get Tax Periods from DES, ${loggingHelpers.cleanHeaders(request.headers)}")
+//    obligation
+//      .callDES(idType, idNumber, regimeType)  //returns an Obligation
+//      .map(
+//      i =>
+//        Ok(
+//          Json.obj(
+//            "obligations" -> new TaxPeriods(
+//              i.obligationDetails.map(
+//                j =>
+//                  new TaxPeriod(
+//                    stringToDate.parse(j.inboundCorrespondenceFromDate),
+//                    stringToDate.parse(j.inboundCorrespondenceToDate),
+//                    j.periodKey)
+//              )))))
+//  }
 }

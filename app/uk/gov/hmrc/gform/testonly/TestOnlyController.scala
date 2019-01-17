@@ -27,7 +27,7 @@ import reactivemongo.play.json.collection.JSONCollection
 import uk.gov.hmrc.BuildInfo
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
-import uk.gov.hmrc.gform.des.AddressDes
+import uk.gov.hmrc.gform.des._
 import uk.gov.hmrc.gform.sharedmodel.{ TaxPeriod, TaxPeriods }
 
 import scala.concurrent.Future
@@ -103,15 +103,24 @@ class TestOnlyController(mongo: () => DB, enrolmentConnector: EnrolmentConnector
 
   def testGetTaxPeriods(idType: String, idNumber: String, regimeType: String) = Action.async { implicit request =>
     Logger.info(s"testGetTaxStub, ${loggingHelpers.cleanHeaders(request.headers)}")
-    if (idType == "nino") {
+    if (idType == "nino")
       Future.successful(
         Ok(
-          Json.obj("taxPeriods" ->
-            List(
-              new TaxPeriod(stringToDate.parse("2019-05-23"), stringToDate.parse("2019-10-12"), "c"),
-              new TaxPeriod(stringToDate.parse("2019-06-24"), stringToDate.parse("2019-09-24"), "#001")
-            ))))
-    } else {
+          Json.toJson(
+            new Obligation(List(new TaxPeriodDes(
+              new Identification("ITSA", "PB910220A", "nino"),
+              List(
+                new ObligationDetail("O", "2019-05-23", "2019-10-12", "2019-04-11", "2019-11-21", "#002"),
+                new ObligationDetail("O", "2019-06-24", s"2019-09-24", "2019-03-24", "2019-07-01", "#001")
+              )
+            )))
+//        new Identification("ITSA", "PB910220A", "nino")
+//        List(
+//          new ObligationDetail("O", "2019-05-23", "2019-10-12", "2019-04-11", "2019-11-21", "#002"),
+//          new ObligationDetail("O", "2019-06-24", s"2019-09-24", "2019-03-24", "2019-07-01", "#001")
+//        )
+          )))
+    else {
       Future.successful(BadRequest("idType wasn't nino"))
     }
   }

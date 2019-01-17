@@ -46,13 +46,13 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
 
   def lookupTaxPeriod(idType: String, idNumber: String, regimeType: String)(
     implicit hc: HeaderCarrier,
-    ex: ExecutionContext): Future[TaxPeriodDes] = {
+    ex: ExecutionContext): Future[Obligation] = {
     implicit val hc = HeaderCarrier(
       extraHeaders = Seq("Environment" -> desConfig.environment),
       authorization = Some(Authorization(desConfig.authorizationToken)))
     Logger.info(
       s"Des lookup, Tax Periods: '$idType, $idNumber, $regimeType', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
-    wSHttp.GET[TaxPeriodDes](
+    wSHttp.GET[Obligation](
       s"$baseUrl${desConfig.basePath}/enterprise/obligation-data/$idType/$idNumber/$regimeType?status=O")
   }
 
@@ -63,6 +63,8 @@ case class AddressDes(postalCode: String)
 object AddressDes {
   implicit val format: OFormat[AddressDes] = Json.format[AddressDes]
 }
+
+case class Obligation(obligations: List[TaxPeriodDes])
 
 case class Identification(incomeSourceType: String, referenceNumber: String, referenceType: String)
 
@@ -86,4 +88,8 @@ object ObligationDetail {
 
 object TaxPeriodDes {
   implicit val format: OFormat[TaxPeriodDes] = Json.format[TaxPeriodDes]
+}
+
+object Obligation {
+  implicit val format: OFormat[Obligation] = Json.format[Obligation]
 }
