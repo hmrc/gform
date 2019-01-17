@@ -71,6 +71,30 @@ object OffsetDate {
   implicit val formatExpr: OFormat[OffsetDate] = Json.format[OffsetDate]
 }
 
+sealed trait RoundingMode
+
+object RoundingMode {
+  case object Up extends RoundingMode
+  case object Down extends RoundingMode
+  case object Ceiling extends RoundingMode
+  case object Floor extends RoundingMode
+  case object HalfEven extends RoundingMode
+  case object HalfUp extends RoundingMode
+  case object HalfDown extends RoundingMode
+
+  val defaultRoundingMode: RoundingMode = HalfEven
+
+  implicit val format: Format[RoundingMode] = ADTFormat.formatEnumeration(
+    "Up"       -> Up,
+    "Down"     -> Down,
+    "Ceiling"  -> Ceiling,
+    "Floor"    -> Floor,
+    "HalfEven" -> HalfEven,
+    "HalfUp"   -> HalfUp,
+    "HalfDown" -> HalfDown
+  )
+}
+
 sealed trait TextConstraint
 
 final case object AnyText extends TextConstraint
@@ -78,12 +102,14 @@ final case object AnyText extends TextConstraint
 final case class Number(
   maxWholeDigits: Int = TextConstraint.defaultWholeDigits,
   maxFractionalDigits: Int = TextConstraint.defaultFactionalDigits,
+  roundingMode: RoundingMode = RoundingMode.defaultRoundingMode,
   unit: Option[String] = None)
     extends TextConstraint
 
 final case class PositiveNumber(
   maxWholeDigits: Int = TextConstraint.defaultWholeDigits,
   maxFractionalDigits: Int = TextConstraint.defaultFactionalDigits,
+  roundingMode: RoundingMode = RoundingMode.defaultRoundingMode,
   unit: Option[String] = None)
     extends TextConstraint
 
