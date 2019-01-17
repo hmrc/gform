@@ -26,7 +26,11 @@ import scala.collection.immutable._
 
 sealed trait ComponentType
 
-case class Text(constraint: TextConstraint, value: Expr, displayWidth: DisplayWidth = DisplayWidth.DEFAULT)
+case class Text(
+  constraint: TextConstraint,
+  value: Expr,
+  displayWidth: DisplayWidth = DisplayWidth.DEFAULT,
+  roundingMode: RoundingMode = RoundingMode.defaultRoundingMode)
     extends ComponentType
 
 case class TextArea(constraint: TextConstraint, value: Expr, displayWidth: DisplayWidth = DisplayWidth.DEFAULT)

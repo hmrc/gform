@@ -17,13 +17,14 @@
 package uk.gov.hmrc.gform.submission
 
 import cats.instances.future._
+import org.apache.pdfbox.pdmodel.PDDocument
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.email.EmailService
 import uk.gov.hmrc.gform.fileupload.FileUploadService
 import uk.gov.hmrc.gform.form.FormService
 import uk.gov.hmrc.gform.formtemplate.FormTemplateService
-import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorService
+import uk.gov.hmrc.gform.pdfgenerator.{ HtmlGeneratorService, PdfGeneratorService, XmlGeneratorService }
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsHttpApiSubmitter

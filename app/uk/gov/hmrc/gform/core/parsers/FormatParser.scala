@@ -138,17 +138,26 @@ object FormatParser {
 
   lazy val numberFormat: Parser[TextFormat] = {
     "number" ~ numberArgs ^^ { (loc, _, na) =>
-      TextFormat(Number(maxWholeDigits = na._1, maxFractionalDigits = na._2, unit = na._3))
+      TextFormat(Number(maxWholeDigits = na._1, maxFractionalDigits = na._2, roundingMode = na._3, unit = na._4))
     } | "number" ^^ { (loc, _) =>
-      TextFormat(Number())
+      TextFormat(
+        Number(
+          TextConstraint.defaultWholeDigits,
+          TextConstraint.defaultFactionalDigits,
+          RoundingMode.defaultRoundingMode))
     }
   }
 
   lazy val positiveNumberFormat: Parser[TextFormat] = {
     "positiveNumber" ~ numberArgs ^^ { (loc, _, na) =>
-      TextFormat(PositiveNumber(maxWholeDigits = na._1, maxFractionalDigits = na._2, unit = na._3))
+      TextFormat(
+        PositiveNumber(maxWholeDigits = na._1, maxFractionalDigits = na._2, roundingMode = na._3, unit = na._4))
     } | "positiveNumber" ^^ { (loc, _) =>
-      TextFormat(PositiveNumber())
+      TextFormat(
+        PositiveNumber(
+          TextConstraint.defaultWholeDigits,
+          TextConstraint.defaultFactionalDigits,
+          RoundingMode.defaultRoundingMode))
     }
   }
 
@@ -167,7 +176,7 @@ object FormatParser {
   }
 
   lazy val positiveWholeNumberFormat: Parser[TextFormat] = "positiveWholeNumber" ^^ { (loc, _) =>
-    TextFormat(PositiveNumber(maxFractionalDigits = 0))
+    TextFormat(PositiveNumber(maxFractionalDigits = 0, roundingMode = RoundingMode.defaultRoundingMode))
   }
 
   lazy val moneyFormat: Parser[TextFormat] = {
@@ -180,12 +189,44 @@ object FormatParser {
     }
   }
 
-  lazy val numberArgs: Parser[(Int, Int, Option[String])] = {
-    wholeFractional ~ "," ~ quotedString ~ ")" ^^ { (loc, wf, _, q, _) =>
-      (wf.w, wf.f, Some(q))
-    } | wholeFractional ~ ")" ^^ { (loc, wf, _) =>
-      (wf.w, wf.f, None)
+  lazy val numberArgs: Parser[(Int, Int, RoundingMode, Option[String])] = {
+    wholeFractional ~ commaPrefixedOptionalRoundingMode ~ "," ~ quotedString ~ ")" ^^ { (loc, wf, rm, _, q, _) =>
+      (wf.w, wf.f, rm, Option(q))
+    } | wholeFractional ~ commaPrefixedOptionalRoundingMode ~ ")" ^^ { (loc, wf, rm, _) =>
+      (wf.w, wf.f, rm, None)
     }
+  }
+
+  lazy val commaPrefixedOptionalRoundingMode: Parser[RoundingMode] = {
+    "," ~ roundingMode ^^ { (_, _, rm) =>
+      rm
+    } | unit(()) ^^ { (_, _) =>
+      RoundingMode.defaultRoundingMode
+    }
+  }
+
+  lazy val roundingMode: Parser[RoundingMode] = {
+    "Up" ^^ { (_, _) =>
+      RoundingMode.Up
+    } |
+      "Down" ^^ { (_, _) =>
+        RoundingMode.Down
+      } |
+      "Ceiling" ^^ { (_, _) =>
+        RoundingMode.Ceiling
+      } |
+      "Floor" ^^ { (_, _) =>
+        RoundingMode.Floor
+      } |
+      "HalfUp" ^^ { (_, _) =>
+        RoundingMode.HalfUp
+      } |
+      "HalfDown" ^^ { (_, _) =>
+        RoundingMode.HalfDown
+      } |
+      "HalfEven" ^^ { (_, _) =>
+        RoundingMode.HalfEven
+      }
   }
 
   lazy val wholeFractional: Parser[WholeFractional] = "(" ~ positiveInteger ~ "," ~ positiveInteger ^^ {
