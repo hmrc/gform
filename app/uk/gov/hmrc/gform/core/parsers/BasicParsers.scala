@@ -57,15 +57,20 @@ object BasicParsers {
       fn(month, day)
     })
 
-  def firstOrLastDay[A](string: String, fn: (Int, Int) => A): Parser[A] = yearParser ~ monthParser ~ string ^^ {
-    (loc, year, month, _) =>
+  def firstOrLastDay[A](string: String, fn: (Int, Int) => A): Parser[A] =
+    yearMonth ~ string ^^ { (loc, year, month, _) =>
       fn(year, month)
-  }
+    }
 
   lazy val monthDay: Parser[(Int, Int)] = (delimiter ~ monthParser ~ delimiter ~ dayParser ^^ {
     (loc, _, month, _, day) =>
       (month, day)
   })
+
+  lazy val yearMonth: Parser[(Int, Int)] = yearParser ~ delimiter ~ monthParser ~ delimiter ^^ {
+    (loc, year, _, month, _) =>
+      (year, month)
+  }
 
   lazy val positiveIntegers
     : Parser[List[Int]] = (positiveInteger ~ "," ~ positiveIntegers ^^ ((loc, x, _, xs) => x :: xs)

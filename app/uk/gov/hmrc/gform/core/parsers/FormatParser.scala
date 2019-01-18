@@ -50,10 +50,10 @@ object FormatParser {
   }
 
   lazy val dateConstraint: Parser[DateConstraint] = {
-    beforeOrAfterOrPrecisely ~ dateExpr ~ offsetExpression ^^ { (loc, beforeOrAfter, dateExpr, offset) =>
-      DateConstraint(beforeOrAfter, dateExpr, offset)
-    } | beforeOrAfterOrPrecisely ~ dateExpr ^^ { (loc, beforeOrAfter, dateExpr) =>
-      DateConstraint(beforeOrAfter, dateExpr, OffsetDate(0))
+    beforeOrAfterOrPrecisely ~ dateExpr ~ offsetExpression ^^ { (loc, beforeOrAfterOrPrecisely, dateExpr, offset) =>
+      DateConstraint(beforeOrAfterOrPrecisely, dateExpr, offset)
+    } | beforeOrAfterOrPrecisely ~ dateExpr ^^ { (loc, beforeOrAfterOrPrecisely, dateExpr) =>
+      DateConstraint(beforeOrAfterOrPrecisely, dateExpr, OffsetDate(0))
     }
 
   }
@@ -82,14 +82,14 @@ object FormatParser {
   }
 
   lazy val dateExpr: Parser[DateConstraintInfo] = {
-    println("findme444")
-    "today" ^^ { (loc, today) =>
-      Today
-    } | yearParser ~ monthDay ^^ { (loc, year, month, day) =>
+    firstDay | lastDay |
+      "today" ^^ { (loc, today) =>
+        Today
+      } | yearParser ~ monthDay ^^ { (loc, year, month, day) =>
       ConcreteDate(year, month, day)
     } | "${" ~ alphabeticOnly ~ "}" ^^ { (loc, _, field, _) =>
       DateField(FormComponentId(field))
-    } | firstDay | lastDay
+    }
   }
 
   lazy val contextField: Parser[String] = alphabeticOnly ^^ { (loc, fn) =>

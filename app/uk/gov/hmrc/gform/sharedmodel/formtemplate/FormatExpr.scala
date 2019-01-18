@@ -36,20 +36,6 @@ sealed trait DateConstraintType
 final case object AnyDate extends DateConstraintType
 final case class DateConstraints(constraints: List[DateConstraint]) extends DateConstraintType
 
-//sealed trait FirstOrLastDay extends DateConstraintType
-//
-//case class FirstDay(year: Int, month: Int) extends FirstOrLastDay {
-//  val firstDay: Int = 1
-//}
-//case class LastDay(year: Int, month: Int) extends FirstOrLastDay {
-//  val lastDay: Int = DateTime.parse(s"$year-$month-1").dayOfMonth.withMaximumValue.getDayOfMonth
-//
-//}
-//
-//object FirstOrLastDay {
-//  implicit val format: OFormat[FirstOrLastDay] = derived.oformat[FirstOrLastDay]
-//}
-
 object DateConstraintType {
   implicit val format: OFormat[DateConstraintType] = derived.oformat[DateConstraintType]
 }

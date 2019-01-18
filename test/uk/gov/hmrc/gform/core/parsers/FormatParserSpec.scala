@@ -98,6 +98,36 @@ class FormatParserSpec extends Spec {
           DateConstraint(After, ConcreteDate(2015, 2, 1), OffsetDate(42))))))
   }
 
+  "precisely 2018-04-firstDay" should "be parsed successfully" in {
+    val res = FormatParser.validate("precisely 2018-04-firstDay")
+    res.right.value should be(
+      DateFormat(DateConstraints(List(DateConstraint(Precisely, FirstDay(2018, 4), OffsetDate(0))))))
+  }
+
+  "precisely 2019-08-lastDay" should "be parsed successfully" in {
+    val res = FormatParser.validate("precisely 2019-08-lastDay")
+    res.right.value should be(
+      DateFormat(DateConstraints(List(DateConstraint(Precisely, LastDay(2019, 8), OffsetDate(0))))))
+  }
+
+  "before 2019-08-lastDay" should "be parsed successfully" in {
+    val res = FormatParser.validate("before 2019-08-lastDay")
+    res.right.value should be(
+      DateFormat(DateConstraints(List(DateConstraint(Before, LastDay(2019, 8), OffsetDate(0))))))
+  }
+
+  "before 2019-08-lastDay -2" should "be parsed successfully" in {
+    val res = FormatParser.validate("before 2019-08-lastDay -2")
+    res.right.value should be(
+      DateFormat(DateConstraints(List(DateConstraint(Before, LastDay(2019, 8), OffsetDate(-2))))))
+  }
+
+  "precisely 2019-08-03" should "be parsed successfully" in {
+    val res = FormatParser.validate("precisely 2019-08-03")
+    res.right.value should be(
+      DateFormat(DateConstraints(List(DateConstraint(Precisely, ConcreteDate(2019, 8, 3), OffsetDate(0))))))
+  }
+
   "expressions without offset" should "be parsed successfully" in {
     val res = FormatParser.validate("before 2017-04-02,after 2017-02-01")
     res.right.value should be(
