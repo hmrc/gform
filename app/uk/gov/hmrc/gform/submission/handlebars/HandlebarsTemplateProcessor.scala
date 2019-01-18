@@ -17,11 +17,10 @@
 package uk.gov.hmrc.gform.submission.handlebars
 
 import com.github.jknack.handlebars.{ Context, Handlebars, JsonNodeValueResolver }
-import com.fasterxml.jackson.databind.{ JsonNode, ObjectMapper }
 
 class HandlebarsTemplateProcessor {
   private val handlebars = new Handlebars
-  handlebars.registerHelpers(HandlebarsTemplateProcessorHelpers)
+  handlebars.registerHelpers(new HandlebarsTemplateProcessorHelpers())
 
   def apply(template: String, model: HandlebarsTemplateProcessorModel): String = {
     val compiledTemplate = handlebars.compileInline(template)
