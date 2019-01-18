@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.fileupload
 
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
-import uk.gov.hmrc.gform.submission.{ SubmissionAndPdf, SubmissionRef }
+import uk.gov.hmrc.gform.submission.{ PdfSummary, Submission, SubmissionRef }
 import uk.gov.hmrc.gform.typeclasses.Attribute
 
 import scala.xml.{ Elem, Utility }
@@ -26,10 +26,11 @@ object MetadataXml {
 
   val xmlDec = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>"""
 
-  private def createMetadata(sap: SubmissionAndPdf, dmsSubmission: DmsSubmission, numberOfAttachments: Int): Elem = {
-    val submission = sap.submission
-    val dmsMetaData = submission.dmsMetaData
-    val pdfSummary = sap.pdfSummary
+  private def createMetadata(
+    submission: Submission,
+    pdfSummary: PdfSummary,
+    dmsSubmission: DmsSubmission,
+    numberOfAttachments: Int): Elem = {
     val attributes = List(
       createAttribute("hmrc_time_of_receipt", submission.submittedDate),
       createAttribute("time_xml_created", submission.submittedDate),
@@ -37,7 +38,7 @@ object MetadataXml {
       createAttribute("form_id", dmsSubmission.dmsFormId),
       createAttribute("number_pages", pdfSummary.numberOfPages),
       createAttribute("source", "dfs"),
-      createAttribute("customer_id", sap.submission.dmsMetaData.customerId),
+      createAttribute("customer_id", submission.dmsMetaData.customerId),
       createAttribute("submission_mark", "AUDIT_SERVICE"), // We are not using CAS
       createAttribute("cas_key", "AUDIT_SERVICE"), // We are not using CAS
       createAttribute("classification_type", dmsSubmission.classificationType),
@@ -64,13 +65,15 @@ object MetadataXml {
     </documents>
 
   def getXml(
-    submissionRef: SubmissionRef,
+    submission: Submission,
     reconciliationId: ReconciliationId,
-    sap: SubmissionAndPdf,
+    pdfSummary: PdfSummary,
     dmsSubmission: DmsSubmission,
     numberOfAttachments: Int): Elem = {
     val body =
-      List(createHeader(submissionRef, reconciliationId), createMetadata(sap, dmsSubmission, numberOfAttachments))
+      List(
+        createHeader(submission.submissionRef, reconciliationId),
+        createMetadata(submission, pdfSummary, dmsSubmission, numberOfAttachments))
 
     trim(createDocument(body))
   }

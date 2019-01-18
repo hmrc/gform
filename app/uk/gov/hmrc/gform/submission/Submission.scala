@@ -26,7 +26,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 case class DmsMetaData(formTemplateId: FormTemplateId, customerId: String)
 
 object DmsMetaData {
-  implicit val format = Json.format[DmsMetaData]
+  implicit val format: OFormat[DmsMetaData] = Json.format[DmsMetaData]
 }
 
 case class Submission(
@@ -64,4 +64,4 @@ case class PdfSummary(
   //TODO get rid of byte array and operate on streams or something similar
   pdfContent: Array[Byte])
 
-case class SubmissionAndPdf(submission: Submission, pdfSummary: PdfSummary, xmlSummary: Option[String] = None)
+case class PdfAndXmlSummaries(pdfSummary: PdfSummary, xmlSummary: Option[String] = None)

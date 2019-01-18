@@ -54,8 +54,8 @@ class DmsSubmissionControllerSpec extends Spec {
       .returning(stubPdfDocument)
 
     (mockFileUpload
-      .submitEnvelope(_: SubmissionAndPdf, _: DmsSubmission, _: Int)(_: HeaderCarrier))
-      .expects(*, *, *, *)
+      .submitEnvelope(_: Submission, _: PdfAndXmlSummaries, _: DmsSubmission, _: Int)(_: HeaderCarrier))
+      .expects(*, *, *, *, *)
       .returning(Future.successful(()))
 
     val res = testController.submitToDms()(validRequest)
@@ -83,8 +83,8 @@ class DmsSubmissionControllerSpec extends Spec {
       .returning(stubPdfDocument)
 
     (mockFileUpload
-      .submitEnvelope(_: SubmissionAndPdf, _: DmsSubmission, _: Int)(_: HeaderCarrier))
-      .expects(*, *, *, *)
+      .submitEnvelope(_: Submission, _: PdfAndXmlSummaries, _: DmsSubmission, _: Int)(_: HeaderCarrier))
+      .expects(*, *, *, *, *)
       .returning(Future.successful(()))
 
     val res = testController.submitToDms()(FakeRequest().withBody[JsValue](Json.toJson(submissionWithHtml)))
@@ -97,12 +97,7 @@ class DmsSubmissionControllerSpec extends Spec {
     val numberOfPages = 1
     val pdfContent = "totally a pdf".getBytes
     val expectedEnvId = EnvelopeId(UUID.randomUUID().toString)
-    val dmsMetadata =
-      DmsMetaData(FormTemplateId(validSubmission.metadata.dmsFormId), validSubmission.metadata.customerId)
-    val expectedSubmissionAndPdf = SubmissionAndPdf(
-      Submission(FormId(validSubmission.metadata.dmsFormId), fixedTime, submissionRef, expectedEnvId, 0, dmsMetadata),
-      PdfSummary(numberOfPages.longValue, pdfContent)
-    )
+    val expectedPdfAndXmlSummaries = PdfAndXmlSummaries(PdfSummary(numberOfPages.longValue, pdfContent))
 
     val expectedDmsSubmission = DmsSubmission(
       validSubmission.metadata.dmsFormId,
@@ -128,8 +123,8 @@ class DmsSubmissionControllerSpec extends Spec {
     (stubPdfDocument.getNumberOfPages _).when().returning(numberOfPages)
 
     (mockFileUpload
-      .submitEnvelope(_: SubmissionAndPdf, _: DmsSubmission, _: Int)(_: HeaderCarrier))
-      .expects(expectedSubmissionAndPdf, expectedDmsSubmission, *, *)
+      .submitEnvelope(_: Submission, _: PdfAndXmlSummaries, _: DmsSubmission, _: Int)(_: HeaderCarrier))
+      .expects(*, expectedPdfAndXmlSummaries, expectedDmsSubmission, *, *)
       .returning(Future.successful(()))
 
     val res = testController.submitToDms()(validRequest)

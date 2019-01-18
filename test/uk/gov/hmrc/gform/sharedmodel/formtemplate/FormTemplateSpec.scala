@@ -84,11 +84,4 @@ class FormTemplateSpec extends Spec {
         }
     }
   }
-
-  private def legacyDmsSubmissionFromDestinations(destinations: Destinations): DmsSubmission =
-    destinations match {
-      case ds: Destinations.DmsSubmission =>
-        DmsSubmission(ds.dmsFormId, ds.customerId, ds.classificationType, ds.businessArea, ds.dataXml)
-      case f => fail(s"Unexpected destination: $f")
-    }
 }

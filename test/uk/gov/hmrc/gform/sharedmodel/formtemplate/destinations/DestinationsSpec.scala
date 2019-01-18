@@ -17,8 +17,8 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
 
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, DestinationsGen }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ TextExpression, verifyRead }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.DestinationsGen
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.verifyRead
 
 class DestinationsSpec extends Spec {
   "Destinations" should "round trip derived JSON" in {
@@ -36,18 +36,7 @@ class DestinationsSpec extends Spec {
 
   private def createJson(destinations: Destinations.DestinationList): String = {
     val listBody = destinations.destinations
-      .map {
-        case hmrcDms: Destination.HmrcDms =>
-          import hmrcDms._
-          s"""|{
-              |  "id": "${id.id}",
-              |  "${Destination.typeDiscriminatorFieldName}": "${Destination.hmrcDms}",
-              |  "dmsFormId": "$dmsFormId",
-              |  "customerId": ${TextExpression.format.writes(customerId)},
-              |  "classificationType": "$classificationType",
-              |  "businessArea": "$businessArea"
-              |}""".stripMargin
-      }
+      .map { createUploadableJson }
       .toList
       .mkString(", ")
 
