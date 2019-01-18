@@ -19,7 +19,18 @@ import cats.data.NonEmptyList
 import org.scalacheck.Gen
 
 trait PrimitiveGen {
-  def nonEmptyAlphaNumStrGen: Gen[String] = Gen.alphaNumStr.filter(_.nonEmpty)
+  def nonEmptyAsciiPrintableString: Gen[String] =
+    for {
+      f <- Gen.asciiPrintableChar
+      r <- Gen.asciiPrintableStr
+    } yield f.toString + r
+
+  def nonEmptyAlphaNumStrGen: Gen[String] =
+    for {
+      f <- Gen.alphaNumChar
+      r <- Gen.alphaNumStr
+    } yield f.toString + r
+
   def booleanGen: Gen[Boolean] = Gen.oneOf(false, true)
 
   def urlGen: Gen[String] =

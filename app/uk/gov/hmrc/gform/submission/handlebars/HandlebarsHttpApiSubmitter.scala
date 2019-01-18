@@ -36,13 +36,14 @@ class RealHandlebarsHttpApiSubmitter[F[_]](
     val httpClient = RealHandlebarsHttpApiSubmitter
       .selectHttpClient(destination.profile, desHttpClient, mdgIntegrationFrameworkHttpClient)
 
+    val uri = handlebarsTemplateProcessor(destination.uri, model)
     destination.method match {
-      case HttpMethod.GET => httpClient.get(destination.uri)
+      case HttpMethod.GET => httpClient.get(uri)
       case HttpMethod.POST =>
         val body = destination.payload.fold("") {
           handlebarsTemplateProcessor(_, model)
         }
-        httpClient.postJson(destination.uri, body)
+        httpClient.postJson(uri, body)
     }
   }
 }
