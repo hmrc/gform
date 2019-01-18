@@ -17,12 +17,16 @@
 package uk.gov.hmrc.gform.submission.handlebars
 
 import java.text.DecimalFormat
+import java.time.LocalDateTime
 
 import uk.gov.hmrc.gform.Spec
-import HandlebarsTemplateProcessorHelpers._
 import org.scalacheck.Gen
+import uk.gov.hmrc.gform.time.TimeProvider
 
 class HandlebarsTemplateProcessorHelpersSpec extends Spec {
+  val helper = new HandlebarsTemplateProcessorHelpers
+  import helper._
+
   "yesNoToEtmpChoice" must "return 1 when 0 is passed in" in {
     yesNoToEtmpChoice("0") shouldBe "1"
   }
@@ -39,7 +43,7 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     forAll(Gen.chooseNum[Long](1900, 2100), Gen.chooseNum[Long](1, 12), Gen.chooseNum[Long](1, 31)) { (y, m, d) =>
       val yearFormat = new DecimalFormat("0000")
       val monthAndDayFormat = new DecimalFormat("00")
-      val inputDate = s"${yearFormat.format(y)}/${monthAndDayFormat.format(m)}/${monthAndDayFormat.format(d)}"
+      val inputDate = s"${yearFormat.format(y)}-${monthAndDayFormat.format(m)}-${monthAndDayFormat.format(d)}"
       val outputDate = s"${yearFormat.format(y)}${monthAndDayFormat.format(m)}${monthAndDayFormat.format(d)}"
 
       dateToEtmpDate(inputDate) shouldBe outputDate
@@ -62,4 +66,63 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   it must "return null if both arguments are null" in {
     either(null, null) shouldBe null
   }
+
+  "getPeriodKey" must "return the 0th element of the pipe separated parameter" in {
+    forAll(periodGen) {
+      case (key, _, _, period) =>
+        getPeriodKey(period) shouldBe key
+    }
+  }
+
+  it must "return null if the period is null" in {
+    getPeriodKey(null) shouldBe null
+  }
+
+  "getPeriodFrom" must "return the 0th element of the pipe separated parameter" in {
+    forAll(periodGen) {
+      case (_, from, _, period) =>
+        getPeriodFrom(period) shouldBe from
+    }
+  }
+
+  it must "return null if the period is null" in {
+    getPeriodFrom(null) shouldBe null
+  }
+
+  "getPeriodTo" must "return the 0th element of the pipe separated parameter" in {
+    forAll(periodGen) {
+      case (_, _, to, period) =>
+        getPeriodTo(period) shouldBe to
+    }
+  }
+
+  "getCurrentDate" must "return the current date formatted in yyyymmdd format" in {
+    val padLeft = new DecimalFormat("00")
+
+    forAll(Gen.chooseNum(1900, 2100), Gen.chooseNum(1, 12), Gen.chooseNum(1, 28)) { (year, month, day) =>
+      whenever(year >= 1900 && year <= 2100 && month >= 1 && month <= 12 && day >= 1 && day <= 28) {
+        val timeProvider = mock[TimeProvider]
+        val helpers = new HandlebarsTemplateProcessorHelpers(timeProvider)
+
+        (timeProvider.localDateTime _)
+          .expects()
+          .returning(LocalDateTime.of(year, month, day, 0, 0))
+
+        val expected = s"$year${padLeft.format(month)}${padLeft.format(day)}"
+
+        helpers.getCurrentDate shouldBe expected
+      }
+    }
+  }
+
+  it must "return null if the period is null" in {
+    getPeriodTo(null) shouldBe null
+  }
+
+  private def periodGen: Gen[(String, String, String, String)] =
+    for {
+      key  <- Gen.posNum[Int].map(_.toString)
+      from <- Gen.posNum[Int].map(_.toString)
+      to   <- Gen.posNum[Int].map(_.toString)
+    } yield (key, from, to, s"$key|$from|$to")
 }

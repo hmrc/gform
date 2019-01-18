@@ -16,7 +16,10 @@
 
 package uk.gov.hmrc.gform.submission.handlebars
 
-object HandlebarsTemplateProcessorHelpers {
+import uk.gov.hmrc.gform.time.TimeProvider
+import java.time.format.DateTimeFormatter
+
+class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimeProvider) {
   def yesNoToEtmpChoice(yesNoChoice: String): CharSequence = ifNotNull(yesNoChoice) {
     case "1" => "0"
     case "0" => "1"
@@ -32,6 +35,13 @@ object HandlebarsTemplateProcessorHelpers {
   // either2, either3, either4, etc.
   def either(argument1: String, argument2: String): CharSequence =
     List(argument1, argument2).find(_ != null).orNull
+
+  def getCurrentDate(): CharSequence = DateTimeFormatter.BASIC_ISO_DATE.format(timeProvider.localDateTime)
+
+  def getPeriodKey(period: String): CharSequence = getPeriodValue(period, 0)
+  def getPeriodFrom(period: String): CharSequence = getPeriodValue(period, 1)
+  def getPeriodTo(period: String): CharSequence = getPeriodValue(period, 2)
+  private def getPeriodValue(period: String, index: Int): CharSequence = ifNotNull(period) { _.split('|')(index) }
 
   private def ifNotNull[T, R](t: T)(f: T => R)(implicit ev: Null <:< R): R = Option(t).map(f).orNull
 }

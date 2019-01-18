@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.submission
 
 import cats.data.NonEmptyList
-import cats.{ Applicative, FlatMap }
+import cats.Monad
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, Destinations }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, DestinationsGen }
@@ -87,7 +87,7 @@ class DestinationsSubmitterSpec extends Spec {
     dmsSubmitter: DmsSubmitter[F],
     handlebarsSubmitter: HandlebarsHttpApiSubmitter[F])
 
-  private def createSubmitter[F[_]: FlatMap: Applicative](): SubmitterParts[F] = {
+  private def createSubmitter[F[_]: Monad](): SubmitterParts[F] = {
     val dmsSubmitter = mock[DmsSubmitter[F]]
     val handlebarsSubmitter = mock[HandlebarsHttpApiSubmitter[F]]
     val submitter = new DestinationsSubmitter[F](dmsSubmitter, handlebarsSubmitter)
