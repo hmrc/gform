@@ -17,11 +17,9 @@
 package uk.gov.hmrc.gform.submission.handlebars
 
 import java.text.DecimalFormat
-import java.time.LocalDateTime
 
 import uk.gov.hmrc.gform.Spec
 import org.scalacheck.Gen
-import uk.gov.hmrc.gform.time.TimeProvider
 
 class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   val helper = new HandlebarsTemplateProcessorHelpers
@@ -93,25 +91,6 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     forAll(periodGen) {
       case (_, _, to, period) =>
         getPeriodTo(period) shouldBe to
-    }
-  }
-
-  "getCurrentDate" must "return the current date formatted in yyyymmdd format" in {
-    val padLeft = new DecimalFormat("00")
-
-    forAll(Gen.chooseNum(1900, 2100), Gen.chooseNum(1, 12), Gen.chooseNum(1, 28)) { (year, month, day) =>
-      whenever(year >= 1900 && year <= 2100 && month >= 1 && month <= 12 && day >= 1 && day <= 28) {
-        val timeProvider = mock[TimeProvider]
-        val helpers = new HandlebarsTemplateProcessorHelpers(timeProvider)
-
-        (timeProvider.localDateTime _)
-          .expects()
-          .returning(LocalDateTime.of(year, month, day, 0, 0))
-
-        val expected = s"$year${padLeft.format(month)}${padLeft.format(day)}"
-
-        helpers.getCurrentDate shouldBe expected
-      }
     }
   }
 
