@@ -161,6 +161,8 @@ object FormatParser {
       TextFormat(UkVrn)
     } | "companyRegistrationNumber" ^^ { (loc, _) =>
       TextFormat(CompanyRegistrationNumber)
+    } | "EORI" ^^ { (loc, _) =>
+      TextFormat(EORI)
     }
   }
 
