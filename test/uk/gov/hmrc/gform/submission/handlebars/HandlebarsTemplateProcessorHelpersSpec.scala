@@ -98,6 +98,48 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     getPeriodTo(null) shouldBe null
   }
 
+  "isSuccessCode" must "return true for all codes that begin with '2'" in {
+    forAll(Gen.numChar, Gen.numChar) { (d2, d3) =>
+      whenever(isNumChar(d2) && isNumChar(d3)) {
+        isSuccessCode(s"2$d2$d3") shouldBe "true"
+      }
+    }
+  }
+
+  it must "return false for all codes that do not begin with '2'" in {
+    forAll(Gen.numChar.filterNot(_ == '2'), Gen.numChar, Gen.numChar) { (d1, d2, d3) =>
+      whenever(isNumChar(d1) && isNumChar(d2) && isNumChar(d3)) {
+        isSuccessCode(s"$d1$d2$d3") shouldBe "false"
+      }
+    }
+  }
+
+  it must "return null for a null code" in {
+    isSuccessCode(null) shouldBe null
+  }
+
+  "isNotSuccessCode" must "return false for all codes that begin with '2'" in {
+    forAll(Gen.numChar.filterNot(_ == '2'), Gen.numChar, Gen.numChar) { (d1, d2, d3) =>
+      whenever(isNumChar(d1) && isNumChar(d2) && isNumChar(d3)) {
+        isSuccessCode(s"$d1$d2$d3") shouldBe "false"
+      }
+    }
+  }
+
+  it must "return false for all codes that do not begin with '2'" in {
+    forAll(Gen.numChar, Gen.numChar) { (d2, d3) =>
+      whenever(isNumChar(d2) && isNumChar(d3)) {
+        isNotSuccessCode(s"2$d2$d3") shouldBe "false"
+      }
+    }
+  }
+
+  it must "return null for a null code" in {
+    isNotSuccessCode(null) shouldBe null
+  }
+
+  private def isNumChar(c: Char) = c >= '0' && c <= '9'
+
   private def periodGen: Gen[(String, String, String, String)] =
     for {
       key  <- Gen.posNum[Int].map(_.toString)
