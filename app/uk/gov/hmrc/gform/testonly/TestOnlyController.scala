@@ -17,17 +17,12 @@
 package uk.gov.hmrc.gform.testonly
 
 import com.typesafe.config.{ ConfigFactory, ConfigRenderOptions }
-import play.api.Logger
 import play.api.libs.json._
 import play.api.mvc._
 import reactivemongo.api.DB
 import reactivemongo.play.json.collection.JSONCollection
 import uk.gov.hmrc.BuildInfo
-import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
-import uk.gov.hmrc.gform.des.AddressDes
-
-import scala.concurrent.Future
 
 class TestOnlyController(mongo: () => DB, enrolmentConnector: EnrolmentConnector) extends BaseController {
 
@@ -86,14 +81,6 @@ class TestOnlyController(mongo: () => DB, enrolmentConnector: EnrolmentConnector
   def delete = Action.async(parse.json[User]) { implicit request =>
     val user = request.body
     enrolmentConnector.removeUnallocated(user.id).map(_ => NoContent)
-  }
-
-  def testValidatorStub(utr: String) = Action.async { implicit request =>
-    Logger.info(s"testValidatorStub, ${loggingHelpers.cleanHeaders(request.headers)}")
-    if (utr.startsWith("1")) {
-      Future.successful(Ok(Json.toJson(AddressDes("BN12 4XL"))))
-    } else
-      Future.successful(Ok(Json.toJson(AddressDes("ANYTHING"))))
   }
 
 }
