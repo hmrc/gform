@@ -64,9 +64,11 @@ object AddressDes {
   implicit val format: OFormat[AddressDes] = Json.format[AddressDes]
 }
 
-case class Obligation(obligations: List[TaxPeriodDes])
-
 case class Identification(incomeSourceType: String, referenceNumber: String, referenceType: String)
+
+object Identification {
+  implicit val format: OFormat[Identification] = Json.format[Identification]
+}
 
 case class ObligationDetail(
   status: String,
@@ -76,19 +78,17 @@ case class ObligationDetail(
   inboundCorrespondenceDueDate: String,
   periodKey: String)
 
-case class TaxPeriodDes(identification: Identification, obligationDetails: List[ObligationDetail])
-
-object Identification {
-  implicit val format: OFormat[Identification] = Json.format[Identification]
-}
-
 object ObligationDetail {
   implicit val format: OFormat[ObligationDetail] = Json.format[ObligationDetail]
 }
 
+case class TaxPeriodDes(identification: Identification, obligationDetails: List[ObligationDetail])
+
 object TaxPeriodDes {
   implicit val format: OFormat[TaxPeriodDes] = Json.format[TaxPeriodDes]
 }
+
+case class Obligation(obligations: List[TaxPeriodDes])
 
 object Obligation {
   implicit val format: OFormat[Obligation] = Json.format[Obligation]

@@ -22,12 +22,12 @@ import play.api.Logger
 import play.api.mvc.Action
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
-import uk.gov.hmrc.gform.des.TaxPeriodDes
-import uk.gov.hmrc.gform.sharedmodel.{ TaxPeriod, TaxPeriods }
+import uk.gov.hmrc.gform.des.{Obligation, TaxPeriodDes}
+import uk.gov.hmrc.gform.sharedmodel.{TaxPeriod, TaxPeriods}
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.HmrcTaxPeriod
+import play.api.libs.json.{JsValue, Json, OFormat}
 
-import scala.concurrent.duration._
-import play.api.libs.json.{ JsValue, Json, OFormat }
+import scala.concurrent.Future
 
 class ObligationController(obligation: ObligationService) extends BaseController {
 
@@ -53,21 +53,8 @@ class ObligationController(obligation: ObligationService) extends BaseController
                 )))))
   }
 
-//  def getTaxPeriods(idType: String, idNumber: String, regimeType: String) = Action.async { implicit request =>
-//    Logger.info(s"Get Tax Periods from DES, ${loggingHelpers.cleanHeaders(request.headers)}")
-//    obligation
-//      .callDES(idType, idNumber, regimeType)  //returns an Obligation
-//      .map(
-//      i =>
-//        Ok(
-//          Json.obj(
-//            "obligations" -> new TaxPeriods(
-//              i.obligationDetails.map(
-//                j =>
-//                  new TaxPeriod(
-//                    stringToDate.parse(j.inboundCorrespondenceFromDate),
-//                    stringToDate.parse(j.inboundCorrespondenceToDate),
-//                    j.periodKey)
-//              )))))
-//  }
+  def getAllTaxPeriods() = Action.async(parse.json[List[HmrcTaxPeriod]]) { implicit request =>
+    Logger.info(s"Get All Tax Periods from DES, ${loggingHelpers.cleanHeaders(request.headers)}")
+    Future.sequence(request.body.map(i => obligation.callDES(i.idType, i.idNumber, i.regimeType))).asOkJson
+  }
 }
