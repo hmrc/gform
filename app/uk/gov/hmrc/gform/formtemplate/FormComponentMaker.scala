@@ -317,7 +317,7 @@ class FormCompomentMaker(json: JsValue) {
 
   private lazy val hmrcTaxPeriodOpt: Opt[HmrcTaxPeriod] = {
     val oHmrcTaxPeriod: Opt[HmrcTaxPeriod] = (idType, idNumber, regimeType) match {
-      case (Some(a), Some(b), Some(c)) => HmrcTaxPeriod(a, b, c).asRight
+      case (Some(a), Some(b), Some(c)) => HmrcTaxPeriod(IdType(a), IdNumber(b), RegimeType(c)).asRight
     }
     oHmrcTaxPeriod
   }
