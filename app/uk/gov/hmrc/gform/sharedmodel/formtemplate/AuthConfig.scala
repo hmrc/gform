@@ -91,24 +91,29 @@ object EnrolmentCheckVerb {
 sealed trait AuthModule extends Product with Serializable
 case object Hmrc extends AuthModule
 case object EeittLegacy extends AuthModule
+case object AnonymousAccess extends AuthModule
 
 object AuthModule {
 
   private val hmrc = "hmrc"
   private val legacyEEITTAuth = "legacyEEITTAuth"
+  private val anonymous = "anonymous"
 
   implicit val format: Format[AuthModule] = ADTFormat.formatEnumeration(
     hmrc            -> Hmrc,
-    legacyEEITTAuth -> EeittLegacy
+    legacyEEITTAuth -> EeittLegacy,
+    anonymous       -> AnonymousAccess
   )
 
   def asString(o: AuthModule): String = o match {
-    case Hmrc        => hmrc
-    case EeittLegacy => legacyEEITTAuth
+    case Hmrc            => hmrc
+    case EeittLegacy     => legacyEEITTAuth
+    case AnonymousAccess => anonymous
   }
 }
 
 sealed trait AuthConfig extends Product with Serializable
+case object Anonymous extends AuthConfig
 case class EeittModule(regimeId: RegimeId) extends AuthConfig
 case object HmrcSimpleModule extends AuthConfig
 case class HmrcEnrolmentModule(enrolmentAuth: EnrolmentAuth) extends AuthConfig
@@ -160,6 +165,7 @@ object AuthConfig {
         maybeEnrolmentSection <- (json \ "enrolmentSection").validateOpt[EnrolmentSection]
         maybeEnrolmentCheck   <- (json \ "enrolmentCheck").validateOpt[EnrolmentCheckVerb]
         authConfig <- authModule match {
+                       case AnonymousAccess => JsSuccess(Anonymous)
                        case EeittLegacy =>
                          maybeRegimeId match {
                            case None =>
