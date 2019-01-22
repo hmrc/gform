@@ -19,6 +19,7 @@ import java.time._
 
 class TimeProvider {
   def localDateTime(): LocalDateTime = LocalDateTime.now()
+  def instant(): Instant = Instant.now
 }
 
 class TimeModule {

@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.submission.handlebars
 
+import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.wshttp._
@@ -30,6 +31,7 @@ class HandlebarsHttpApiModule(wSHttpModule: WSHttpModule, configModule: ConfigMo
 
   private val desConfig = configModule.desConfig
 
+  import cats.instances.future._
   private val desHttpClient =
     new UriBuildingHttpClient(
       uri => s"${configModule.serviceConfig.baseUrl("etmp-hod")}${desConfig.basePath}/$uri",
@@ -39,7 +41,7 @@ class HandlebarsHttpApiModule(wSHttpModule: WSHttpModule, configModule: ConfigMo
             extraHeaders = Seq("Environment" -> desConfig.environment),
             authorization = Some(Authorization(desConfig.authorizationToken)))
         },
-        rootHttpClient
+        new LoggingHttpClient(LoggerFactory.getLogger("connector"), rootHttpClient)
       )
     )
 

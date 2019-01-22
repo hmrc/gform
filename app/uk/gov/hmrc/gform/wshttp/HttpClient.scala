@@ -16,7 +16,10 @@
 
 package uk.gov.hmrc.gform.wshttp
 
-import cats.Endo
+import cats.{ Endo, Monad }
+import cats.syntax.applicative._
+import cats.syntax.flatMap._
+import org.slf4j.Logger
 import uk.gov.hmrc.gform.core.{ FOpt, _ }
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
@@ -41,6 +44,16 @@ class HeaderCarrierBuildingHttpClient[F[_]](headerCarrierBuilder: Endo[HeaderCar
 
   override def postJson(uri: String, json: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
     underlying.postJson(uri, json)(headerCarrierBuilder(hc))
+}
+
+class LoggingHttpClient[F[_]: Monad](logger: Logger, underlying: HttpClient[F]) extends HttpClient[F] {
+  private def log(s: String, f: => F[HttpResponse]): F[HttpResponse] = {
+    logger.info(s)
+  }.pure[F].flatMap(_ => f)
+
+  override def get(uri: String)(implicit hc: HeaderCarrier): F[HttpResponse] = log(s"GET: $uri", underlying.get(uri))
+  override def postJson(uri: String, json: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
+    log(s"POST: $uri, $json", underlying.postJson(uri, json))
 }
 
 class WSHttpHttpClient(wsHttp: WSHttp)(implicit ec: ExecutionContext) extends HttpClient[FOpt] {

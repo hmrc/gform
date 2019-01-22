@@ -323,7 +323,7 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
   }
 
   def getCurrentDate(): CharSequence = DateTimeFormatter.BASIC_ISO_DATE.format(timeProvider.localDateTime)
-  def getCurrentTimestamp(): CharSequence = DateTimeFormatter.ISO_INSTANT.format(timeProvider.localDateTime)
+  def getCurrentTimestamp(): CharSequence = DateTimeFormatter.ISO_INSTANT.format(timeProvider.instant)
 
   def getPeriodKey(period: String): CharSequence = getPeriodValue(period, 0)
   def getPeriodFrom(period: String): CharSequence = getPeriodValue(period, 1)
