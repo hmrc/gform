@@ -44,4 +44,9 @@ class HandlebarsTemplateProcessorModelSpec extends Spec {
         .setAll(expectedFieldsMap)
     }
   }
+
+  "+" must "shallow merge the two models" in {
+    HandlebarsTemplateProcessorModel("""{ "a": 1 }""") + HandlebarsTemplateProcessorModel("""{ "b": 2 }""") shouldBe
+      HandlebarsTemplateProcessorModel("""{ "a": 1, "b": 2 }""")
+  }
 }

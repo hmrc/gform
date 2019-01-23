@@ -27,7 +27,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 class HandlebarsHttpApiModule(wSHttpModule: WSHttpModule, configModule: ConfigModule) {
 
-  private val rootHttpClient: HttpClient[FOpt] = new WSHttpHttpClient(wSHttpModule.auditableWSHttp)
+  private val rootHttpClient: HttpClient[FOpt] =
+    new AuditingHttpClient(wSHttpModule.auditableWSHttp)
 
   private val desConfig = configModule.desConfig
 

@@ -21,7 +21,7 @@ import cats.syntax.applicative._
 import cats.syntax.flatMap._
 import org.slf4j.Logger
 import uk.gov.hmrc.gform.core.{ FOpt, _ }
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpReads, HttpResponse }
 
 import scala.concurrent.ExecutionContext
 
@@ -54,6 +54,17 @@ class LoggingHttpClient[F[_]: Monad](logger: Logger, underlying: HttpClient[F]) 
   override def get(uri: String)(implicit hc: HeaderCarrier): F[HttpResponse] = log(s"GET: $uri", underlying.get(uri))
   override def postJson(uri: String, json: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
     log(s"POST: $uri, $json", underlying.postJson(uri, json))
+}
+
+class AuditingHttpClient[F[_]](wsHttp: WSHttp)(implicit ec: ExecutionContext) extends HttpClient[FOpt] {
+  private implicit val httpReads: HttpReads[HttpResponse] = new HttpReads[HttpResponse] {
+    override def read(method: String, url: String, response: HttpResponse): HttpResponse = response
+  }
+
+  override def get(uri: String)(implicit hc: HeaderCarrier): FOpt[HttpResponse] = fromFutureA(wsHttp.GET(uri))
+
+  override def postJson(uri: String, json: String)(implicit hc: HeaderCarrier): FOpt[HttpResponse] =
+    fromFutureA(wsHttp.POSTString[HttpResponse](uri, json))
 }
 
 class WSHttpHttpClient(wsHttp: WSHttp)(implicit ec: ExecutionContext) extends HttpClient[FOpt] {

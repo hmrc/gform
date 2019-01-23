@@ -15,6 +15,7 @@
  */
 
 package uk.gov.hmrc.gform.submission.handlebars
+
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.JsonNodeFactory.{ instance => jsonNodeFactory }
@@ -22,7 +23,11 @@ import uk.gov.hmrc.gform.sharedmodel.form.Form
 
 import scala.collection.JavaConversions._
 
-case class HandlebarsTemplateProcessorModel(model: JsonNode) extends AnyVal
+case class HandlebarsTemplateProcessorModel(model: JsonNode) extends AnyVal {
+  def +(that: HandlebarsTemplateProcessorModel): HandlebarsTemplateProcessorModel =
+    HandlebarsTemplateProcessorModel(fieldMap ++ that.fieldMap)
+  private def fieldMap: Map[String, JsonNode] = model.fields.toList.map(e => e.getKey -> e.getValue).toMap
+}
 
 object HandlebarsTemplateProcessorModel {
   def apply(jsonDocument: String): HandlebarsTemplateProcessorModel =
@@ -35,6 +40,9 @@ object HandlebarsTemplateProcessorModel {
       }
       .toMap[String, JsonNode]
 
-    apply(jsonNodeFactory.objectNode().setAll(scalaFields))
+    apply(scalaFields)
   }
+
+  def apply(fields: Map[String, JsonNode]): HandlebarsTemplateProcessorModel =
+    HandlebarsTemplateProcessorModel(jsonNodeFactory.objectNode().setAll(fields))
 }

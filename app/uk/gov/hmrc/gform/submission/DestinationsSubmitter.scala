@@ -17,15 +17,17 @@
 package uk.gov.hmrc.gform.submission
 
 import cats.Monad
+import cats.syntax.either._
+import cats.syntax.flatMap._
+import cats.syntax.functor._
+import cats.syntax.applicative._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, Destinations }
 import uk.gov.hmrc.gform.submission.handlebars.{ HandlebarsHttpApiSubmitter, HandlebarsTemplateProcessorModel }
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
 class DestinationsSubmitter[M[_]: Monad](
   dmsSubmitter: DmsSubmitter[M],
   handlebarsSubmitter: HandlebarsHttpApiSubmitter[M]) {
-
-  private val monad: Monad[M] = implicitly[Monad[M]]
 
   def send(submissionInfo: DestinationSubmissionInfo)(implicit hc: HeaderCarrier): M[Unit] =
     submissionInfo.formTemplate.destinations match {
@@ -37,20 +39,41 @@ class DestinationsSubmitter[M[_]: Monad](
     dmsSubmitter(submissionInfo, dms)
 
   private def submitToList(destinations: Destinations.DestinationList, submissionInfo: DestinationSubmissionInfo)(
-    implicit hc: HeaderCarrier): M[Unit] =
-    monad.tailRecM[List[Destination], Unit](destinations.destinations.toList) {
-      case Nil          => monad.pure(Right(()))
-      case head :: rest => monad.map(submitToDestination(head, submissionInfo))(_ => Left(rest))
-    }
+    implicit hc: HeaderCarrier): M[Unit] = {
 
-  private def submitToDestination(destination: Destination, submissionInfo: DestinationSubmissionInfo)(
-    implicit hc: HeaderCarrier): M[Unit] =
+    case class TailRecParameter(
+      remainingDestinations: List[Destination],
+      accumulatedModel: HandlebarsTemplateProcessorModel)
+
+    TailRecParameter(destinations.destinations.toList, createModel(submissionInfo)).tailRecM {
+      case TailRecParameter(Nil, _) => ().asRight[TailRecParameter].pure[M]
+      case TailRecParameter(head :: rest, model) =>
+        submitToDestination(head, submissionInfo, model).map(responseModel =>
+          TailRecParameter(rest, responseModel.fold(model) { _ + model }).asLeft)
+    }
+  }
+
+  private def submitToDestination(
+    destination: Destination,
+    submissionInfo: DestinationSubmissionInfo,
+    model: HandlebarsTemplateProcessorModel)(implicit hc: HeaderCarrier): M[Option[HandlebarsTemplateProcessorModel]] =
     destination match {
-      case d: Destination.HmrcDms => submitToDms(submissionInfo, d.toDeprecatedDmsSubmission)
+      case d: Destination.HmrcDms => submitToDms(submissionInfo, d.toDeprecatedDmsSubmission).map(_ => None)
       case d: Destination.HandlebarsHttpApi =>
-        monad.map(handlebarsSubmitter(d, createModel(submissionInfo)))(_ => ())
+        handlebarsSubmitter(d, model).map(DestinationsSubmitter.createResponseModel(d, _)).map(Option(_))
     }
 
   private def createModel(submissionInfo: DestinationSubmissionInfo): HandlebarsTemplateProcessorModel =
     HandlebarsTemplateProcessorModel(submissionInfo.form)
+}
+
+object DestinationsSubmitter {
+  def createResponseModel(
+    destination: Destination.HandlebarsHttpApi,
+    response: HttpResponse): HandlebarsTemplateProcessorModel =
+    HandlebarsTemplateProcessorModel(s"""|"${destination.id.id}" : {
+                                         |  "status" : ${response.status},
+                                         |  "json" : ${response.json}
+                                         |}""".stripMargin)
+
 }
