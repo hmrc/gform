@@ -46,7 +46,7 @@ trait HtmlGeneratorService {
         case UkSortCode(_)                  => generateSortCodeFieldHTML(fieldValue, formFields)
         case Date(_, _, _)                  => generateDateFieldHTML(fieldValue, formFields)
         case Address(_)                     => generateAddressFieldHTML(fieldValue, formFields)
-        case text @ Text(_, _, _, _)        => generateTextFieldHTML(text, fieldValue, formFields.head.value)
+        case text @ Text(_, _, _)           => generateTextFieldHTML(text, fieldValue, formFields.head.value)
         case _                              => (getEnglishText(fieldValue.shortName.getOrElse(fieldValue.label)), Html(formFields.head.value))
       }
       uk.gov.hmrc.gform.views.html.pdfGeneration.element(name, value)
