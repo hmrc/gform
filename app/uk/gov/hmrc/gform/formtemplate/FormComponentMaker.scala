@@ -61,7 +61,6 @@ class FormComponentMaker(json: JsValue) {
   lazy val mandatory: Option[String] = (json \ "mandatory").asOpt[String]
   lazy val multiline: Option[String] = (json \ "multiline").asOpt[String]
   lazy val displayWidth: Option[String] = (json \ "displayWidth").asOpt[String]
-  lazy val roundingMode: Option[String] = (json \ "roundingMode").asOpt[String]
   lazy val multivalue: Option[String] = (json \ "multivalue").asOpt[String]
   lazy val total: Option[String] = (json \ "total").asOpt[String]
   lazy val international: Option[String] = (json \ "international").asOpt[String]
@@ -145,38 +144,36 @@ class FormComponentMaker(json: JsValue) {
     for {
       maybeFormatExpr <- optMaybeFormatExpr
       maybeValueExpr  <- optMaybeValueExpr
-      result <- (maybeFormatExpr, maybeValueExpr, multiline, displayWidth, roundingMode) match {
+      result <- (maybeFormatExpr, maybeValueExpr, multiline, displayWidth) match {
                  // format: off
-        case (Some(TextFormat(UkSortCodeFormat)), HasTextExpression(expr), IsNotMultiline(), _,                   None)                          => UkSortCode(expr).asRight
-        case (Some(TextFormat(f)),                HasTextExpression(expr), IsNotMultiline(), None,                None)                          => Text(f, expr).asRight
-        case (None,                               HasTextExpression(expr), IsNotMultiline(), None,                None)                          => Text(ShortText, expr).asRight
-        case (Some(TextFormat(f)),                HasTextExpression(expr), IsNotMultiline(), HasDisplayWidth(dw), None)                          => Text(f, expr, dw).asRight
-        case (None,                               HasTextExpression(expr), IsNotMultiline(), HasDisplayWidth(dw), None)                          => Text(ShortText, expr, dw).asRight
-        case (Some(TextFormat(f)),                HasTextExpression(expr), IsNotMultiline(), HasDisplayWidth(dw), HasRoundingMode(rm))           => Text(f, expr, dw, rm).asRight
-        case (None,                               HasTextExpression(expr), IsNotMultiline(), HasDisplayWidth(dw), HasRoundingMode(rm))           => Text(ShortText, expr, dw,rm).asRight
-        case (Some(TextFormat(f)),                HasTextExpression(expr), IsMultiline()   , None,                None)                          => TextArea(f, expr).asRight
-        case (None,                               HasTextExpression(expr), IsMultiline()   , None,                None)                          => TextArea(BasicText, expr).asRight
-        case (Some(TextFormat(f)),                HasTextExpression(expr), IsMultiline()   , HasDisplayWidth(dw), None)                          => TextArea(f, expr,dw).asRight
-        case (None,                               HasTextExpression(expr), IsMultiline()   , HasDisplayWidth(dw), None)                          => TextArea(BasicText, expr,dw).asRight
-        case (maybeInvalidFormat,                 maybeInvalidValue,       IsMultiline()   , _,                   None) =>
+        case (Some(TextFormat(UkSortCodeFormat)), HasTextExpression(expr), IsNotMultiline(), _)                          => UkSortCode(expr).asRight
+        case (Some(TextFormat(f)),                HasTextExpression(expr), IsNotMultiline(), None)                       => Text(f, expr).asRight
+        case (None,                               HasTextExpression(expr), IsNotMultiline(), None)                       => Text(ShortText, expr).asRight
+        case (Some(TextFormat(f)),                HasTextExpression(expr), IsNotMultiline(), HasDisplayWidth(dw))        => Text(f, expr, dw).asRight
+        case (None,                               HasTextExpression(expr), IsNotMultiline(), HasDisplayWidth(dw))        => Text(ShortText, expr, dw).asRight
+        case (Some(TextFormat(f)),                HasTextExpression(expr), IsMultiline()   , None)                       => TextArea(f, expr).asRight
+        case (None,                               HasTextExpression(expr), IsMultiline()   , None)                       => TextArea(BasicText, expr).asRight
+        case (Some(TextFormat(f)),                HasTextExpression(expr), IsMultiline()   , HasDisplayWidth(dw))        => TextArea(f, expr,dw).asRight
+        case (None,                               HasTextExpression(expr), IsMultiline()   , HasDisplayWidth(dw))        => TextArea(BasicText, expr,dw).asRight
+        case (maybeInvalidFormat,                 maybeInvalidValue,       IsMultiline()   , _) =>
           UnexpectedState(s"""|Unsupported type of format or value for multiline text field
                   |Id: $id
                   |Format: $maybeInvalidFormat
                   |Value: $maybeInvalidValue
                   |""".stripMargin).asLeft
-        case (Some(invalidFormat),                None,                    IsNotMultiline(), _,                   None) =>
+        case (Some(invalidFormat),                None,                    IsNotMultiline(), _) =>
           UnexpectedState(s"""|Unsupported type of format and value for text field
                   |Id: $id
                   |Format: $invalidFormat
                   |Value: must supply a value
                   |""".stripMargin).asLeft
-        case (None,                               Some(invalidValue),      IsNotMultiline(), _,                   None) =>
+        case (None,                               Some(invalidValue),      IsNotMultiline(), _) =>
           UnexpectedState(s"""|Unsupported type of format and value for text field
                   |Id: $id
                   |Format: "must supply a value for format"
                   |Value: $invalidValue
                   |""".stripMargin).asLeft
-        case (Some(invalidFormat),                Some(invalidValue),      IsNotMultiline(), _,                   None) =>
+        case (Some(invalidFormat),                Some(invalidValue),      IsNotMultiline(), _) =>
           UnexpectedState(s"""|Unsupported type of format and value for text field
                   |Id: $id
                   |Format: $invalidFormat
