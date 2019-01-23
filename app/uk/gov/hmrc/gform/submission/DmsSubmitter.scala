@@ -25,14 +25,14 @@ import uk.gov.hmrc.http.HeaderCarrier
 import scala.concurrent.ExecutionContext
 
 trait DmsSubmitter[F[_]] {
-  def apply(submissionInfo: DestinationSubmissionInfo, dmsSubmission: DmsSubmission): F[Unit]
+  def apply(submissionInfo: DestinationSubmissionInfo, dmsSubmission: DmsSubmission)(
+    implicit hc: HeaderCarrier): F[Unit]
 }
 
-class FileUploadServiceDmsSubmitter(fileUploadService: FileUploadService)(
-  implicit hc: HeaderCarrier,
-  ec: ExecutionContext)
+class FileUploadServiceDmsSubmitter(fileUploadService: FileUploadService)(implicit ec: ExecutionContext)
     extends DmsSubmitter[FOpt] {
-  def apply(submissionInfo: DestinationSubmissionInfo, dmsSubmission: DmsSubmission): FOpt[Unit] = {
+  def apply(submissionInfo: DestinationSubmissionInfo, dmsSubmission: DmsSubmission)(
+    implicit hc: HeaderCarrier): FOpt[Unit] = {
     import submissionInfo._
     for {
       sectionFormFields <- fromOptA(SubmissionServiceHelper.getSectionFormFields(form, formTemplate, affinityGroup))

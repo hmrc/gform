@@ -20,7 +20,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HttpMethod
 
 trait HttpMethodGen {
   def httpMethodGen: Gen[HttpMethod] =
-    Gen.oneOf(HttpMethod.GET, HttpMethod.POST, HttpMethod.PUT, HttpMethod.DELETE, HttpMethod.PATCH, HttpMethod.HEAD)
+    Gen.oneOf(HttpMethod.GET, HttpMethod.POST)
 }
 
 object HttpMethodGen extends HttpMethodGen

@@ -98,7 +98,7 @@ class SubmissionService(
       formTemplate          <- fromFutureA          (formTemplateService.get(form.formTemplateId))
       submission            =                       createSubmission(form, customerId, formTemplate)
       _                     <-                      submissionRepo.upsert(submission)
-      destinationsSubmitter =                       new DestinationsSubmitter(new FileUploadServiceDmsSubmitter(fileUploadService), handlebarsApiHttpSubmitter)
+      destinationsSubmitter =                       new DestinationsSubmitter(new RealDestinationSubmitter(new FileUploadServiceDmsSubmitter(fileUploadService), handlebarsApiHttpSubmitter))
       res                   <-                      destinationsSubmitter.send(DestinationSubmissionInfo(submission, form, formTemplate, customerId, affinityGroup, pdfAndXmlSummaryFactory))
       emailAddress          =                       email.getEmailAddress(form)
       _                     <-                      fromFutureA(email.sendEmail(emailAddress, formTemplate.emailTemplateId)(hc, fromLoggingDetails))

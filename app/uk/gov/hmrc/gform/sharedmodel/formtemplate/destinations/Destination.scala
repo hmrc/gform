@@ -25,6 +25,7 @@ import scala.util.parsing.combinator.RegexParsers
 
 sealed trait Destination extends Product with Serializable {
   def id: DestinationId
+  def includeIf: Option[String]
 }
 
 object Destination {
@@ -33,7 +34,8 @@ object Destination {
     dmsFormId: String,
     customerId: TextExpression,
     classificationType: String,
-    businessArea: String)
+    businessArea: String,
+    includeIf: Option[String] = None)
       extends Destination {
     def toDeprecatedDmsSubmission: Destinations.DmsSubmission = Destinations.DmsSubmission(
       dmsFormId,
@@ -48,7 +50,8 @@ object Destination {
     profile: Profile,
     uri: String,
     method: HttpMethod,
-    payload: Option[String])
+    payload: Option[String],
+    includeIf: Option[String] = None)
       extends Destination
 
   val typeDiscriminatorFieldName: String = "type"
@@ -73,10 +76,11 @@ case class UploadableHandlebarsHttpApiDestination(
   uri: String,
   method: HttpMethod,
   payload: Option[String],
-  convertSingleQuotes: Option[Boolean]) {
+  convertSingleQuotes: Option[Boolean],
+  includeIf: Option[String]) {
 
   def toHandlebarsHttpApiDestination: Either[String, Destination.HandlebarsHttpApi] =
-    conditionedPayload.map(Destination.HandlebarsHttpApi(id, profile, uri, method, _))
+    conditionedPayload.map(Destination.HandlebarsHttpApi(id, profile, uri, method, _, includeIf))
 
   private def conditionedPayload: Either[String, Option[String]] = payload match {
     case None => Right(None)
