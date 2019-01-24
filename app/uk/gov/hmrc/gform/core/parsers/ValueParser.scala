@@ -72,6 +72,9 @@ object ValueParser {
     | "user" ~ "." ~ userField ^^ { (loc, _, _, userField) =>
       UserCtx(userField)
     }
+    | "form" ~ "." ~ "submissionReference" ^^ { (loc, _, _, fieldName) =>
+      SubmissionReference
+    }
     | "form" ~ "." ~ alphabeticOnly ^^ { (loc, _, _, fieldName) =>
       FormCtx(fieldName)
     }

@@ -45,6 +45,7 @@ final case class EeittCtx(value: Eeitt) extends Expr
 final case class UserCtx(value: UserField) extends Expr
 final case class Constant(value: String) extends Expr
 final case object Value extends Expr
+final case object SubmissionReference extends Expr
 
 object Expr {
   implicit val format: OFormat[Expr] = derived.oformat
