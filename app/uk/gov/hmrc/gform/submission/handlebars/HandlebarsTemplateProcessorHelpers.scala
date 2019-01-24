@@ -316,11 +316,12 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
 
   private[handlebars] def either(args: String*): CharSequence = args.find(_ != null).orNull
 
-  def isSuccessCode(code: String): CharSequence = isSuccCode(code, "true", "false")
-  def isNotSuccessCode(code: String): CharSequence = isSuccCode(code, "false", "true")
-  private def isSuccCode(code: String, t: String, f: String): String = ifNotNull(code) { c =>
-    if (c.matches("2\\d\\d")) t else f
-  }
+  def isSuccessCode(code: Integer): CharSequence = isSuccCode(code, "true", "false")
+  def isNotSuccessCode(code: Integer): CharSequence = isSuccCode(code, "false", "true")
+  private def isSuccCode(code: Integer, t: String, f: String): String =
+    if (code == null) "undefined"
+    else if (code >= 200 && code <= 299) t
+    else f
 
   def getCurrentDate(): CharSequence = DateTimeFormatter.BASIC_ISO_DATE.format(timeProvider.localDateTime)
   def getCurrentTimestamp(): CharSequence = DateTimeFormatter.ISO_INSTANT.format(timeProvider.instant)
