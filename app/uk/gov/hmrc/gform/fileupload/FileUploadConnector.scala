@@ -16,27 +16,33 @@
 
 package uk.gov.hmrc.gform.fileupload
 
+import java.time.LocalDateTime
+
+import com.fasterxml.jackson.annotation.JsonValue
 import play.api.Logger
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.gform.wshttp.WSHttp
-
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
+
 import scala.concurrent.Future
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
 class FileUploadConnector(config: FUConfig, wSHttp: WSHttp, timeProvider: TimeProvider) {
-  val helper = new Helper(config, timeProvider)
-
-  def createEnvelope(formTemplateId: FormTemplateId)(implicit hc: HeaderCarrier): Future[EnvelopeId] = {
+  val helper = new Helper(config)
+  def createEnvelope(formTemplateId: FormTemplateId)(
+    implicit hc: HeaderCarrier): (Future[EnvelopeId], LocalDateTime) = {
+    val expiryDate = timeProvider.localDateTime().plusDays(config.expiryDays.toLong)
     Logger.info(
       s"creating envelope, formTemplateId: '${formTemplateId.value}', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
-    val requestBody = helper.createEnvelopeRequestBody(formTemplateId)
-    wSHttp
-      .POST(s"$baseUrl/file-upload/envelopes", requestBody, headers)
-      .map(helper.extractEnvelopId)
+    val requestBody = helper.createEnvelopeRequestBody(formTemplateId, expiryDate)
+    (
+      wSHttp
+        .POST(s"$baseUrl/file-upload/envelopes", requestBody, headers)
+        .map(helper.extractEnvelopId),
+      expiryDate)
   }
 
   def routeEnvelope(input: RouteEnvelopeRequest)(implicit hc: HeaderCarrier): Future[Unit] = {
