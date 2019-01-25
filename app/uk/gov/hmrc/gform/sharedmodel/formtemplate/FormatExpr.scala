@@ -89,9 +89,9 @@ object RoundingMode {
     "Down"     -> Down,
     "Ceiling"  -> Ceiling,
     "Floor"    -> Floor,
+    "HalfDown" -> HalfDown,
     "HalfEven" -> HalfEven,
-    "HalfUp"   -> HalfUp,
-    "HalfDown" -> HalfDown
+    "HalfUp"   -> HalfUp
   )
 }
 

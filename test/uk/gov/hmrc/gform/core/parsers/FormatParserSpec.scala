@@ -132,6 +132,31 @@ class FormatParserSpec extends Spec {
     res.right.value should be(TextFormat(Number(3, 4, RoundingMode.Floor, Some("u"))))
   }
 
+  "number(n,m,'HalfUp')" should "be parsed successfully" in {
+    val res = FormatParser.validate("number(3,4,HalfUp)")
+    res.right.value should be(TextFormat(Number(3, 4, RoundingMode.HalfUp)))
+  }
+
+  "number(n,m,'HalfEven')" should "be parsed successfully" in {
+    val res = FormatParser.validate("number(3,4,HalfEven)")
+    res.right.value should be(TextFormat(Number(3, 4, RoundingMode.HalfEven)))
+  }
+
+  "number(n,m,'HalfDown')" should "be parsed successfully" in {
+    val res = FormatParser.validate("number(3,2,HalfDown)")
+    res.right.value should be(TextFormat(Number(3, 2, RoundingMode.HalfDown)))
+  }
+
+  "number(n,m,'Down')" should "be parsed successfully" in {
+    val res = FormatParser.validate("number(3,4,Down)")
+    res.right.value should be(TextFormat(Number(3, 4, RoundingMode.Down)))
+  }
+
+  "number(n,m,'Up')" should "be parsed successfully" in {
+    val res = FormatParser.validate("number(3,4,Up)")
+    res.right.value should be(TextFormat(Number(3, 4, RoundingMode.Up)))
+  }
+
   "positiveNumber" should "be parsed successfully" in {
     val res = FormatParser.validate("positiveNumber")
     res.right.value should be(TextFormat(PositiveNumber(11, 2, RoundingMode.defaultRoundingMode, None)))
