@@ -84,8 +84,8 @@ class SubmissionService(
     )
 
   private def getSignedForm(formId: FormId)(implicit hc: HeaderCarrier) = formService.get(formId).flatMap {
-    case f @ Form(_, _, _, _, _, _, Signed) => Future.successful(f)
-    case _                                  => Future.failed(new Exception(s"Form $FormId status is not signed"))
+    case f @ Form(_, _, _, _, _, _, Signed, _) => Future.successful(f)
+    case _                                     => Future.failed(new Exception(s"Form $FormId status is not signed"))
   }
 
   private def submission(

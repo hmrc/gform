@@ -27,7 +27,7 @@ import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.fileupload.FileUploadService
 import uk.gov.hmrc.gform.formtemplate.FormTemplateService
 import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, UserId }
-import uk.gov.hmrc.gform.sharedmodel.form.{ FileId, FormId, UserData }
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeExpiryDate, FileId, FormId, UserData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 import scala.concurrent.Future
@@ -55,9 +55,10 @@ class FormController(
 
     val formId = FormId(userId, formTemplateId, accessCode)
     val envelopeIdF = fileUploadService.createEnvelope(formTemplateId)
+    val expiryDate = EnvelopeExpiryDate(envelopeIdF._2)
     val formIdF: Future[FormId] = for {
-      envelopeId <- envelopeIdF
-      _          <- formService.insertEmpty(userId, formTemplateId, envelopeId, formId)
+      envelopeId <- envelopeIdF._1
+      _          <- formService.insertEmpty(userId, formTemplateId, envelopeId, formId, expiryDate)
 
     } yield formId
 

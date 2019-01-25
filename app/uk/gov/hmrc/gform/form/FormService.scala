@@ -33,10 +33,15 @@ class FormService(save4Later: Save4Later) {
   def delete(formId: FormId)(implicit hc: HeaderCarrier): Future[Unit] =
     save4Later.delete(formId)
 
-  def insertEmpty(userId: UserId, formTemplateId: FormTemplateId, envelopeId: EnvelopeId, formId: FormId)(
-    implicit hc: HeaderCarrier): Future[Unit] = {
+  def insertEmpty(
+    userId: UserId,
+    formTemplateId: FormTemplateId,
+    envelopeId: EnvelopeId,
+    formId: FormId,
+    envelopeExpiryDate: EnvelopeExpiryDate)(implicit hc: HeaderCarrier): Future[Unit] = {
     val emptyFormData = FormData(fields = Nil)
-    val form = Form(formId, envelopeId, userId, formTemplateId, None, emptyFormData, InProgress)
+    val form =
+      Form(formId, envelopeId, userId, formTemplateId, None, emptyFormData, InProgress, Some(envelopeExpiryDate))
     save4Later.upsert(formId, form)
   }
 

@@ -16,10 +16,12 @@
 
 package uk.gov.hmrc.gform.fileupload
 
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 import akka.util.ByteString
 import play.api.Logger
+import play.api.libs.json.JsValue
 import uk.gov.hmrc.gform.fileupload.FileUploadService.FileIds._
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
@@ -36,10 +38,9 @@ class FileUploadService(
   fileUploadConnector: FileUploadConnector,
   fileUploadFrontendConnector: FileUploadFrontendConnector,
   timeModule: TimeProvider = new TimeProvider) {
-
-  def createEnvelope(formTypeId: FormTemplateId)(implicit hc: HeaderCarrier): Future[EnvelopeId] = {
+  def createEnvelope(formTypeId: FormTemplateId)(implicit hc: HeaderCarrier): (Future[EnvelopeId], LocalDateTime) = {
     val f = fileUploadConnector.createEnvelope(formTypeId)
-    f map { id =>
+    f._1 map { id =>
       Logger.debug(s"env-id creation: $id")
     }
     f

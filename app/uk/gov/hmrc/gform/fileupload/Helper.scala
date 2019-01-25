@@ -16,25 +16,25 @@
 
 package uk.gov.hmrc.gform.fileupload
 
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 import play.api.http.HeaderNames.LOCATION
 import play.api.libs.json.{ JsObject, Json }
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
-import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.HttpResponse
 
-class Helper(config: FUConfig, timeProvider: TimeProvider) {
+class Helper(config: FUConfig) {
 
-  def createEnvelopeRequestBody(formTemplateId: FormTemplateId): JsObject =
+  def createEnvelopeRequestBody(formTemplateId: FormTemplateId, expiryDate: LocalDateTime): JsObject =
     Json.obj(
       "constraints" -> Json.obj(
         "contentTypes"   -> contentTypesJson,
         "maxItems"       -> config.maxItems,
         "maxSize"        -> config.maxSize,
         "maxSizePerItem" -> config.maxSizePerItem),
-      "expiryDate" -> s"$envelopeExpiryDate",
+      "expiryDate" -> s"${expiryDate.format(formatter)}",
       "metadata"   -> Json.obj("application" -> "gform", "formTemplateId" -> s"${formTemplateId.value}")
     )
 
@@ -48,7 +48,6 @@ class Helper(config: FUConfig, timeProvider: TimeProvider) {
   }
 
   private lazy val EnvelopeIdExtractor = "envelopes/([\\w\\d-]+)$".r.unanchored
-  private def envelopeExpiryDate = timeProvider.localDateTime().plusDays(config.expiryDays.toLong).format(formatter)
   private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
   private lazy val contentTypesJson = Json.toJson(config.contentTypes)
 }
