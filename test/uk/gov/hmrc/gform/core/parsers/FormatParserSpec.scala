@@ -64,7 +64,7 @@ class FormatParserSpec extends Spec {
       UnexpectedState(
         """Unable to parse expression before anyFieldId anotherWord 9.
           |Errors:
-          |before anyFieldId anotherWord 9:1: unexpected characters; expected '${' or '(19|20)\d\d' or 'today'
+          |before anyFieldId anotherWord 9:1: unexpected characters; expected '${' or '(19|20)\d\d' or 'today' or 'YYYY'
           |before anyFieldId anotherWord 9       ^""".stripMargin))
   }
 
@@ -101,25 +101,25 @@ class FormatParserSpec extends Spec {
   "precisely 2018-04-firstDay" should "be parsed successfully" in {
     val res = FormatParser.validate("precisely 2018-04-firstDay")
     res.right.value should be(
-      DateFormat(DateConstraints(List(DateConstraint(Precisely, FirstDay(2018, 4), OffsetDate(0))))))
+      DateFormat(DateConstraints(List(DateConstraint(Precisely, FirstDay("2018", "4"), OffsetDate(0))))))
   }
 
   "precisely 2019-08-lastDay" should "be parsed successfully" in {
     val res = FormatParser.validate("precisely 2019-08-lastDay")
     res.right.value should be(
-      DateFormat(DateConstraints(List(DateConstraint(Precisely, LastDay(2019, 8), OffsetDate(0))))))
+      DateFormat(DateConstraints(List(DateConstraint(Precisely, LastDay("2019", "8"), OffsetDate(0))))))
   }
 
   "before 2019-08-lastDay" should "be parsed successfully" in {
     val res = FormatParser.validate("before 2019-08-lastDay")
     res.right.value should be(
-      DateFormat(DateConstraints(List(DateConstraint(Before, LastDay(2019, 8), OffsetDate(0))))))
+      DateFormat(DateConstraints(List(DateConstraint(Before, LastDay("2019", "8"), OffsetDate(0))))))
   }
 
   "before 2019-08-lastDay -2" should "be parsed successfully" in {
     val res = FormatParser.validate("before 2019-08-lastDay -2")
     res.right.value should be(
-      DateFormat(DateConstraints(List(DateConstraint(Before, LastDay(2019, 8), OffsetDate(-2))))))
+      DateFormat(DateConstraints(List(DateConstraint(Before, LastDay("2019", "8"), OffsetDate(-2))))))
   }
 
   "precisely 2019-08-03" should "be parsed successfully" in {

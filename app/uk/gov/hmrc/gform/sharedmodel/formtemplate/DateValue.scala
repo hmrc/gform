@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
+import java.time.LocalDate
+
 import julienrf.json.derived
 import play.api.libs.json._
 
@@ -24,8 +26,24 @@ final case object TodayDateValue extends DateValue
 final case class ExactDateValue(year: Int, month: Int, day: Int) extends DateValue
 final case class NextDateValue(month: Int, day: Int) extends DateValue
 final case class PreviousDateValue(month: Int, day: Int) extends DateValue
-final case class FirstDayValue(year: Int, month: Int) extends DateValue
-final case class LastDayValue(year: Int, month: Int) extends DateValue
+
+final case class FirstDayValue(year: String, month: String) extends DateValue {
+  val day = 1
+
+}
+final case class LastDayValue(year: String, month: String) extends DateValue {
+
+  private val isLeapYear = (year: Int) =>
+    ((year % 4) == 0) && !(((year % 100) == 0) &&
+      !((year % 400) == 0))
+
+  val day: Option[Int] = try {
+    Some(LocalDate.of(year.toInt, month.toInt, 1).getMonth.length(isLeapYear(year.toInt)))
+  } catch {
+    case _: NumberFormatException => None
+  }
+
+}
 
 object DateValue {
   implicit val format: OFormat[DateValue] = derived.oformat

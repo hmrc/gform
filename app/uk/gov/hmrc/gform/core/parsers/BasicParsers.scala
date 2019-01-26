@@ -57,9 +57,11 @@ object BasicParsers {
       fn(month, day)
     })
 
-  def firstOrLastDay[A](string: String, fn: (Int, Int) => A): Parser[A] =
+  def firstOrLastDay[A](string: String, fn: (String, String) => A): Parser[A] =
     yearMonth ~ string ^^ { (loc, year, month, _) =>
-      fn(year, month)
+      fn(year.toString, month.toString)
+    } | "YYYY" ~ delimiter ~ "MM" ~ delimiter ~ string ^^ { (loc, _, _, _, _, _) =>
+      fn("YYYY", "MM")
     }
 
   lazy val monthDay: Parser[(Int, Int)] = (delimiter ~ monthParser ~ delimiter ~ dayParser ^^ {
