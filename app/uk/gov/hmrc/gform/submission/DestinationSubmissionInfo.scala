@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.time
-import java.time._
+package uk.gov.hmrc.gform.submission
+import uk.gov.hmrc.auth.core.AffinityGroup
+import uk.gov.hmrc.gform.sharedmodel.form.Form
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 
-class TimeProvider {
-  def localDateTime(): LocalDateTime = LocalDateTime.now()
-  def instant(): Instant = Instant.now
-}
-
-class TimeModule {
-
-  val timeProvider = new TimeProvider()
-}
+case class DestinationSubmissionInfo(
+  submission: Submission,
+  form: Form,
+  formTemplate: FormTemplate,
+  customerId: String,
+  affinityGroup: Option[AffinityGroup],
+  pdfAndXmlSummaryFactory: PdfAndXmlSummariesFactory)

@@ -12,6 +12,8 @@ object MicroServiceBuild extends Build with MicroService {
   override lazy val appDependencies: Seq[ModuleID] = compile ++ test()
 
   val parsebackVersion = "0.3"
+  val handlebarsVersion = "4.1.2"
+  
   val compile = Seq(
     ws,
     "uk.gov.hmrc" %% "play-reactivemongo" % "6.2.0",
@@ -27,7 +29,9 @@ object MicroServiceBuild extends Build with MicroService {
     "com.chuusai" %% "shapeless" % "2.3.3",
     "com.github.mpilquist" %% "simulacrum" % "0.13.0",
     "uk.gov.hmrc" %% "auth-client" % "2.16.0-play-25", // we need AffinityGroup type to stay in sync with frontend
-    "org.scala-graph" %% "graph-core" % "1.12.5"
+    "org.scala-graph" %% "graph-core" % "1.12.5",
+    "com.github.jknack" % "handlebars" % handlebarsVersion,
+    "com.github.jknack" % "handlebars-jackson2" % handlebarsVersion
   )
 
 

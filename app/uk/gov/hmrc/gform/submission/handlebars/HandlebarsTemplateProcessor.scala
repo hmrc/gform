@@ -14,15 +14,22 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.time
-import java.time._
+package uk.gov.hmrc.gform.submission.handlebars
 
-class TimeProvider {
-  def localDateTime(): LocalDateTime = LocalDateTime.now()
-  def instant(): Instant = Instant.now
-}
+import com.github.jknack.handlebars.{ Context, Handlebars, JsonNodeValueResolver }
 
-class TimeModule {
+class HandlebarsTemplateProcessor {
+  private val handlebars = new Handlebars
+  handlebars.registerHelpers(new HandlebarsTemplateProcessorHelpers())
 
-  val timeProvider = new TimeProvider()
+  def apply(template: String, model: HandlebarsTemplateProcessorModel): String = {
+    val compiledTemplate = handlebars.compileInline(template)
+
+    val context = Context
+      .newBuilder(model.model)
+      .resolver(JsonNodeValueResolver.INSTANCE)
+      .build
+
+    compiledTemplate.apply(context)
+  }
 }

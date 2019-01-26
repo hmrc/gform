@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.time
-import java.time._
+package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
+import org.scalacheck.Gen
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HttpMethod
 
-class TimeProvider {
-  def localDateTime(): LocalDateTime = LocalDateTime.now()
-  def instant(): Instant = Instant.now
+trait HttpMethodGen {
+  def httpMethodGen: Gen[HttpMethod] =
+    Gen.oneOf(HttpMethod.GET, HttpMethod.POST, HttpMethod.PUT, HttpMethod.DELETE, HttpMethod.PATCH, HttpMethod.HEAD)
 }
 
-class TimeModule {
-
-  val timeProvider = new TimeProvider()
-}
+object HttpMethodGen extends HttpMethodGen

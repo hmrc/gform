@@ -39,13 +39,14 @@ import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorModule
 import uk.gov.hmrc.gform.playcomponents.{ PlayComponents, PlayComponentsModule }
 import uk.gov.hmrc.gform.save4later.Save4LaterModule
 import uk.gov.hmrc.gform.submission.SubmissionModule
+import uk.gov.hmrc.gform.submission.handlebars.HandlebarsHttpApiModule
 import uk.gov.hmrc.gform.testonly.TestOnlyModule
 import uk.gov.hmrc.gform.time.TimeModule
 import uk.gov.hmrc.gform.validation.ValidationModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 
 class ApplicationLoader extends play.api.ApplicationLoader {
-  def load(context: Context) = {
+  def load(context: Context): Application = {
     LoggerConfigurator(context.environment.classLoader).foreach {
       _.configure(context.environment)
     }
@@ -74,15 +75,20 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
 
   private val formModule = new FormModule(mongoModule, shortLivedCacheModule, formTemplateModule, fileUploadModule)
   private val validationModule = new ValidationModule(wSHttpModule, configModule)
+
+  private val handlebarsModule = new HandlebarsHttpApiModule(wSHttpModule, configModule)
   private val submissionModule =
     new SubmissionModule(
+      configModule,
       mongoModule,
       pdfGeneratorModule,
       formModule,
       formTemplateModule,
       fileUploadModule,
+      wSHttpModule,
       timeModule,
-      emailModule)
+      emailModule,
+      handlebarsModule)
   private val dmsModule = new DmsModule(fileUploadModule, pdfGeneratorModule)
   private val testOnlyModule = new TestOnlyModule(mongoModule, wSHttpModule, configModule, playComponents)
   /* TODO REMOVE WHEN WE DONT HAVE WHITELISTING */

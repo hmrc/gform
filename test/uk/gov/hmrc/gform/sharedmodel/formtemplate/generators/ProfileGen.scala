@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.time
-import java.time._
+package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
+import org.scalacheck.Gen
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Profile
 
-class TimeProvider {
-  def localDateTime(): LocalDateTime = LocalDateTime.now()
-  def instant(): Instant = Instant.now
+trait ProfileGen {
+  def profileGen: Gen[Profile] = Gen.oneOf(Profile.DES, Profile.MdgIntegrationFramework)
 }
 
-class TimeModule {
-
-  val timeProvider = new TimeProvider()
-}
+object ProfileGen extends ProfileGen

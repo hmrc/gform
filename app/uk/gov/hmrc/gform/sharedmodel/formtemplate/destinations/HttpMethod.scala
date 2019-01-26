@@ -14,15 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.time
-import java.time._
+package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.ADTFormat
 
-class TimeProvider {
-  def localDateTime(): LocalDateTime = LocalDateTime.now()
-  def instant(): Instant = Instant.now
-}
+sealed trait HttpMethod extends Product with Serializable
 
-class TimeModule {
+object HttpMethod {
+  case object GET extends HttpMethod
+  case object POST extends HttpMethod
+  case object PUT extends HttpMethod
+  case object HEAD extends HttpMethod
+  case object DELETE extends HttpMethod
+  case object PATCH extends HttpMethod
 
-  val timeProvider = new TimeProvider()
+  implicit val format = ADTFormat
+    .formatEnumeration("GET" -> GET, "POST" -> POST, "PUT" -> PUT, "HEAD" -> HEAD, "DELETE" -> DELETE, "PATCH" -> PATCH)
 }

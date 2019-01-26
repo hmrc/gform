@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.time
-import java.time._
+package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
 
-class TimeProvider {
-  def localDateTime(): LocalDateTime = LocalDateTime.now()
-  def instant(): Instant = Instant.now
-}
+import uk.gov.hmrc.gform.Spec
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.ProfileGen
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.verifyRoundTrip
 
-class TimeModule {
-
-  val timeProvider = new TimeProvider()
+class ProfileSpec extends Spec {
+  "Default read and write" should "round trip derived JSON" in {
+    forAll(ProfileGen.profileGen) { value =>
+      verifyRoundTrip(value)
+    }
+  }
 }

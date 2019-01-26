@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.time
-import java.time._
+package uk.gov.hmrc.gform.submission
+import org.scalacheck.Gen
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ FormGen, FormTemplateGen, PrimitiveGen }
 
-class TimeProvider {
-  def localDateTime(): LocalDateTime = LocalDateTime.now()
-  def instant(): Instant = Instant.now
+trait DestinationSubmissionInfoGen {
+  def destinationSubmissionInfoGen: Gen[DestinationSubmissionInfo] =
+    for {
+      formTemplate <- FormTemplateGen.formTemplateGen
+      form         <- FormGen.formGen
+      customerId   <- PrimitiveGen.nonEmptyAlphaNumStrGen
+    } yield DestinationSubmissionInfo(null, form, formTemplate, customerId, None, null)
 }
 
-class TimeModule {
-
-  val timeProvider = new TimeProvider()
-}
+object DestinationSubmissionInfoGen extends DestinationSubmissionInfoGen

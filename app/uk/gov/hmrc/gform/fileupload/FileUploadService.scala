@@ -25,7 +25,7 @@ import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
-import uk.gov.hmrc.gform.submission.{ SubmissionAndPdf, SubmissionRef }
+import uk.gov.hmrc.gform.submission.{ PdfAndXmlSummaries, Submission, SubmissionRef }
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
@@ -45,23 +45,26 @@ class FileUploadService(
     f
   }
 
-  def submitEnvelope(submissionAndPdf: SubmissionAndPdf, dmsSubmission: DmsSubmission, numberOfAttachments: Int)(
-    implicit hc: HeaderCarrier): Future[Unit] = {
+  def submitEnvelope(
+    submission: Submission,
+    summaries: PdfAndXmlSummaries,
+    dmsSubmission: DmsSubmission,
+    numberOfAttachments: Int)(implicit hc: HeaderCarrier): Future[Unit] = {
 
-    val submissionRef: SubmissionRef = submissionAndPdf.submission.submissionRef
-    val envelopeId: EnvelopeId = submissionAndPdf.submission.envelopeId
+    val submissionRef: SubmissionRef = submission.submissionRef
+    val envelopeId: EnvelopeId = submission.envelopeId
     Logger.debug(s"env-id submit: $envelopeId")
     val date = timeModule.localDateTime().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
     val fileNamePrefix = s"$submissionRef-$date"
     val reconciliationId = ReconciliationId.create(submissionRef)
     val metadataXml = MetadataXml.xmlDec + "\n" + MetadataXml
-      .getXml(submissionRef, reconciliationId, submissionAndPdf, dmsSubmission, numberOfAttachments)
+      .getXml(submission, reconciliationId, summaries.pdfSummary, dmsSubmission, numberOfAttachments)
 
     val uploadPfdF: Future[Unit] = fileUploadFrontendConnector.upload(
       envelopeId,
       pdf,
       s"$fileNamePrefix-iform.pdf",
-      ByteString(submissionAndPdf.pdfSummary.pdfContent),
+      ByteString(summaries.pdfSummary.pdfContent),
       ContentType.`application/pdf`)
 
     val uploadXmlF: Future[Unit] = fileUploadFrontendConnector
@@ -72,7 +75,7 @@ class FileUploadService(
         ByteString(metadataXml.getBytes),
         ContentType.`application/xml`)
 
-    val uploadAnyDataXmlF: Future[Unit] = submissionAndPdf.xmlSummary match {
+    val uploadAnyDataXmlF: Future[Unit] = summaries.xmlSummary match {
       case Some(elem) =>
         fileUploadFrontendConnector
           .upload(
@@ -93,7 +96,7 @@ class FileUploadService(
     } yield ()
   }
 
-  def deleteFile(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier) =
+  def deleteFile(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): Future[Unit] =
     fileUploadConnector.deleteFile(envelopeId, fileId)
 }
 

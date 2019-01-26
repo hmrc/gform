@@ -19,16 +19,34 @@ import cats.data.NonEmptyList
 import org.scalacheck.Gen
 
 trait PrimitiveGen {
-  def nonEmptyAlphaNumStrGen: Gen[String] = Gen.alphaNumStr.filter(_.nonEmpty)
+  def nonEmptyAsciiPrintableString: Gen[String] =
+    for {
+      f <- Gen.asciiPrintableChar
+      r <- Gen.asciiPrintableStr
+    } yield f.toString + r
+
+  def nonEmptyAlphaNumStrGen: Gen[String] =
+    for {
+      f <- Gen.alphaNumChar
+      r <- Gen.alphaNumStr
+    } yield f.toString + r
+
   def booleanGen: Gen[Boolean] = Gen.oneOf(false, true)
 
   def urlGen: Gen[String] =
     for {
-      d1          <- nonEmptyAlphaNumStrGen
-      d2          <- nonEmptyAlphaNumStrGen
-      d3          <- Gen.oneOf(".co.uk", "com")
-      contextPath <- nonEmptyAlphaNumStrGen
-    } yield s"https://$d1.$d2.$d3/$contextPath"
+      urlBase     <- urlBaseGen
+      contextPath <- urlContextPathGen
+    } yield s"$urlBase$contextPath"
+
+  def urlBaseGen: Gen[String] =
+    for {
+      d1 <- nonEmptyAlphaNumStrGen
+      d2 <- nonEmptyAlphaNumStrGen
+      d3 <- Gen.oneOf(".co.uk", "com")
+    } yield s"https://$d1.$d2.$d3"
+
+  def urlContextPathGen: Gen[String] = nonEmptyAlphaNumStrGen.map(s => s"/$s")
 
   def zeroOrMoreGen[T](gen: Gen[T]): Gen[List[T]] = Gen.oneOf(
     Gen.const(Nil),

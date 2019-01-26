@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.time
-import java.time._
+package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.ADTFormat
 
-class TimeProvider {
-  def localDateTime(): LocalDateTime = LocalDateTime.now()
-  def instant(): Instant = Instant.now
-}
+sealed trait Profile extends Product with Serializable
 
-class TimeModule {
+object Profile {
+  case object DES extends Profile
+  case object MdgIntegrationFramework extends Profile
 
-  val timeProvider = new TimeProvider()
+  implicit val format = ADTFormat.formatEnumeration("des" -> DES, "mdgIntegrationFramework" -> MdgIntegrationFramework)
 }

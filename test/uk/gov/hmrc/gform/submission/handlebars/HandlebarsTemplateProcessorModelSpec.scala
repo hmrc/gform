@@ -1,0 +1,52 @@
+/*
+ * Copyright 2019 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package uk.gov.hmrc.gform.submission.handlebars
+
+import java.util
+
+import com.fasterxml.jackson.databind.JsonNode
+import uk.gov.hmrc.gform.Spec
+import uk.gov.hmrc.gform.sharedmodel.form.FormData
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.FormGen
+import com.fasterxml.jackson.databind.node.JsonNodeFactory.{ instance => jsonNodeFactory }
+
+class HandlebarsTemplateProcessorModelSpec extends Spec {
+  "apply(Form)" must "create the correct JSON when there are not form fields" in {
+    forAll(FormGen.formGen.map(_.copy(formData = FormData(Seq.empty)))) { form =>
+      HandlebarsTemplateProcessorModel(form).model shouldBe jsonNodeFactory.objectNode()
+    }
+  }
+
+  it must "create the correct JSON with multiple form fields" in {
+    forAll(FormGen.formGen, FormGen.formFieldGen, FormGen.formFieldGen) { (form, f1, f2) =>
+      val formWithFields = form.copy(formData = FormData(Seq(f1, f2)))
+
+      val expectedFieldsMap = new util.HashMap[String, JsonNode]()
+      expectedFieldsMap.put(f1.id.value, jsonNodeFactory.textNode(f1.value))
+      expectedFieldsMap.put(f2.id.value, jsonNodeFactory.textNode(f2.value))
+
+      HandlebarsTemplateProcessorModel(formWithFields).model shouldBe jsonNodeFactory
+        .objectNode()
+        .setAll(expectedFieldsMap)
+    }
+  }
+
+  "+" must "shallow merge the two models" in {
+    HandlebarsTemplateProcessorModel("""{ "a": 1 }""") + HandlebarsTemplateProcessorModel("""{ "b": 2 }""") shouldBe
+      HandlebarsTemplateProcessorModel("""{ "a": 1, "b": 2 }""")
+  }
+}

@@ -35,6 +35,9 @@ class ConfigModule(playComponents: PlayComponents) {
 
   val desConfig: DesConnectorConfig = pureconfig.loadConfigOrThrow[DesConnectorConfig]("microservice.services.etmp-hod")
 
+//  val mdgIntegrationFrameworkConfig: MdgIntegrationFrameworkConfig =
+//    pureconfig.loadConfigOrThrow[MdgIntegrationFrameworkConfig]("microservice.services.mdg-integration-framework")
+
   val emailConfig: EmailConnectorConfig =
     pureconfig.loadConfigOrThrow[EmailConnectorConfig]("microservice.services.email")
 
@@ -61,5 +64,7 @@ class ConfigModule(playComponents: PlayComponents) {
 }
 
 case class DesConnectorConfig(basePath: String, authorizationToken: String, environment: String)
+
+case class MdgIntegrationFrameworkConfig(basePath: String, authorizationToken: String)
 
 case class EmailConnectorConfig(host: String, port: String)

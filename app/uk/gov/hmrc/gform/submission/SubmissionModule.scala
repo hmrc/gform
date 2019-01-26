@@ -16,23 +16,28 @@
 
 package uk.gov.hmrc.gform.submission
 
+import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.email.EmailModule
 import uk.gov.hmrc.gform.fileupload.FileUploadModule
 import uk.gov.hmrc.gform.form.FormModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.mongo.MongoModule
-import uk.gov.hmrc.gform.pdfgenerator.{ PdfGeneratorModule, PdfGeneratorService }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.Email
+import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorModule
+import uk.gov.hmrc.gform.submission.handlebars.HandlebarsHttpApiModule
 import uk.gov.hmrc.gform.time.TimeModule
+import uk.gov.hmrc.gform.wshttp.WSHttpModule
 
 class SubmissionModule(
+  configModule: ConfigModule,
   mongoModule: MongoModule,
   pdfGeneratorModule: PdfGeneratorModule,
   formModule: FormModule,
   formTemplateModule: FormTemplateModule,
   fileUploadModule: FileUploadModule,
+  wsHttpModule: WSHttpModule,
   timeModule: TimeModule,
-  emailModule: EmailModule) {
+  emailModule: EmailModule,
+  handlebarsHttpApiModule: HandlebarsHttpApiModule) {
 
   //TODO: this should be replaced with save4later for submissions
 
@@ -43,6 +48,7 @@ class SubmissionModule(
     formModule.formService,
     formTemplateModule.formTemplateService,
     fileUploadModule.fileUploadService,
+    handlebarsHttpApiModule.handlebarsHttpSubmitter,
     submissionRepo,
     timeModule.timeProvider,
     emailModule.emailLogic

@@ -71,7 +71,7 @@ class TemplateValidatorSpec extends Spec {
   it should "not return an error when there are no duplicate ids" in {
     import DestinationGen._
     forAll(destinationGen, destinationGen) { (d1, d2) =>
-      whenever(d1 != d2) {
+      whenever(d1.id != d2.id) {
         FormTemplateValidator.validateUniqueDestinationIds(Destinations.DestinationList(NonEmptyList.of(d1, d2))) should be(
           Valid)
       }
@@ -99,7 +99,7 @@ class TemplateValidatorSpec extends Spec {
   it should "not return an error when there are no duplicate ids" in {
     import DestinationGen._
     forAll(destinationGen, destinationGen) { (d1, d2) =>
-      whenever(d1 != d2) {
+      whenever(d1.id != d2.id) {
         FormTemplateValidator.validateUniqueDestinationIds(Destinations.DestinationList(NonEmptyList.of(d1, d2))) should be(
           Valid)
       }

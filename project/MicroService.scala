@@ -53,7 +53,8 @@ trait MicroService {
         "-Ywarn-dead-code",
         "-deprecation",
         "-feature",
-        "-unchecked"
+        "-unchecked",
+        "-language:higherKinds"
       )
     )
     .configs(IntegrationTest)

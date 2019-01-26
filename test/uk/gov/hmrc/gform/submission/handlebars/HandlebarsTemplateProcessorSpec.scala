@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.time
-import java.time._
+package uk.gov.hmrc.gform.submission.handlebars
 
-class TimeProvider {
-  def localDateTime(): LocalDateTime = LocalDateTime.now()
-  def instant(): Instant = Instant.now
-}
+import uk.gov.hmrc.gform.Spec
 
-class TimeModule {
-
-  val timeProvider = new TimeProvider()
+class HandlebarsTemplateProcessorSpec extends Spec {
+  "apply" must "work" in {
+    val processor = new HandlebarsTemplateProcessor
+    processor("I am a {{name}} template", HandlebarsTemplateProcessorModel("""{"name" : "handlebars"}""")) shouldBe "I am a handlebars template"
+  }
 }
