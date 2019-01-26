@@ -23,8 +23,6 @@ import uk.gov.hmrc.gform.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
 
-import scala.collection.immutable.List
-
 class ValueParserSpec extends Spec {
 
   //TODO: use ExampleData
