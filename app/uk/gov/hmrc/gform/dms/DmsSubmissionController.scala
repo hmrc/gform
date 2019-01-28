@@ -46,7 +46,7 @@ class DmsSubmissionController(
       val formTemplateId = FormTemplateId(metadata.dmsFormId)
 
       for {
-        envId <- fileUpload.createEnvelope(formTemplateId)._1
+        envId <- fileUpload.createEnvelope(formTemplateId, LocalDateTime.now.plusDays(1))
         pdf   <- pdfGenerator.generatePDF(decodedHtml)
         pdfDoc = documentLoader(pdf)
         pdfSummary = PdfSummary(pdfDoc.getNumberOfPages.toLong, pdf)

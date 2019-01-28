@@ -32,17 +32,14 @@ import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
 class FileUploadConnector(config: FUConfig, wSHttp: WSHttp, timeProvider: TimeProvider) {
   val helper = new Helper(config)
-  def createEnvelope(formTemplateId: FormTemplateId)(
-    implicit hc: HeaderCarrier): (Future[EnvelopeId], LocalDateTime) = {
-    val expiryDate = timeProvider.localDateTime().plusDays(config.expiryDays.toLong)
+  def createEnvelope(formTemplateId: FormTemplateId, expiryDate: LocalDateTime)(
+    implicit hc: HeaderCarrier): Future[EnvelopeId] = {
     Logger.info(
       s"creating envelope, formTemplateId: '${formTemplateId.value}', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
     val requestBody = helper.createEnvelopeRequestBody(formTemplateId, expiryDate)
-    (
-      wSHttp
-        .POST(s"$baseUrl/file-upload/envelopes", requestBody, headers)
-        .map(helper.extractEnvelopId),
-      expiryDate)
+    wSHttp
+      .POST(s"$baseUrl/file-upload/envelopes", requestBody, headers)
+      .map(helper.extractEnvelopId)
   }
 
   def routeEnvelope(input: RouteEnvelopeRequest)(implicit hc: HeaderCarrier): Future[Unit] = {
