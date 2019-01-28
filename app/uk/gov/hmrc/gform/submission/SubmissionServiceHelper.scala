@@ -86,12 +86,18 @@ object SubmissionServiceHelper {
   }
 
   def getEmailParameterValues(formTemplate: FormTemplate, form: Form): Map[String, String] =
-    formTemplate.emailParameters
-      .getOrElse(List())
-      .flatMap(
-        parameter =>
-          form.formData.fields
-            .find(field => field.id.value == parameter.value)
-            .map(f => (parameter.emailTemplateVariable, f.value)))
-      .toMap
+    formTemplate.emailParameters match {
+
+      case Some(emailParameters) =>
+        emailParameters.toList
+          .flatMap(
+            parameter =>
+              form.formData.fields
+                .find(field => field.id.value == parameter.value)
+                .map(f => (parameter.emailTemplateVariable, f.value)))
+          .toMap
+
+      case None => Map.empty
+    }
+
 }

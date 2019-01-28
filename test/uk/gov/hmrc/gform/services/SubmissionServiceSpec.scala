@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.services
 
+import cats.data.NonEmptyList
 import uk.gov.hmrc.gform._
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
@@ -123,7 +124,7 @@ class SubmissionServiceSpec extends Spec {
         EnrolmentAuth(ServiceId("TEST"), DoCheck(Always, RejectAccess, RegimeIdCheck(RegimeId("TEST"))))),
       emailTemplateId = "test-email-template-id",
       emailParameters = Some(
-        List(
+        NonEmptyList.of(
           EmailParameter("fullName", "directorFullName"),
           EmailParameter("email", "directorEmail")
         )),

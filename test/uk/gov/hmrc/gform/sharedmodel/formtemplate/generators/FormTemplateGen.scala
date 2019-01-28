@@ -15,6 +15,7 @@
  */
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
+import cats.data.NonEmptyList
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
@@ -34,8 +35,8 @@ trait FormTemplateGen {
 
     } yield EmailParameter(emailTemplateVariable, value)
 
-  def emailParameterListGen: Gen[Option[List[EmailParameter]]] =
-    Gen.option(PrimitiveGen.zeroOrMoreGen(emailParameterGen))
+  def emailParameterListGen: Gen[Option[NonEmptyList[EmailParameter]]] =
+    Gen.option(PrimitiveGen.oneOrMoreGen(emailParameterGen))
 
   def formTemplateGen: Gen[FormTemplate] =
     for {
