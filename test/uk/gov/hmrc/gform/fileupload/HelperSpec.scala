@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.gform.fileupload
 
+import java.time.LocalDateTime
+
 import play.api.libs.json.Json
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.ExampleData
@@ -25,8 +27,8 @@ class HelperSpec extends Spec {
 
   "helper.createEnvelopeRequestBody" should "be compatible with fileuplod expectations" in new ExampleData
   with ExampleFileUploadData {
-    val helper = new Helper(config, FrozenTimeProvider.exampleInstance)
-    helper.createEnvelopeRequestBody(formTemplateId) shouldBe Json.obj(
+    val helper = new Helper(config)
+    helper.createEnvelopeRequestBody(formTemplateId, new LocalDateTime) shouldBe Json.obj(
       "constraints" -> Json.obj(
         "contentTypes" -> Json.arr(
           "application/pdf",

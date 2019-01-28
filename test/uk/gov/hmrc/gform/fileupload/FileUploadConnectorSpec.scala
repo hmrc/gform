@@ -17,11 +17,13 @@
 package uk.gov.hmrc.gform
 package fileupload
 
+import java.time.LocalDateTime
+
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.time.FrozenTimeProvider
 import uk.gov.hmrc.gform.wshttp.StubbedWSHttp
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
 class FileUploadConnectorSpec extends Spec {
 
@@ -30,7 +32,7 @@ class FileUploadConnectorSpec extends Spec {
   it should "work" in new Fixture {
     val headers = Map("Location" -> Seq("localhost:8898/file-upload/envelopes/753bb314-bb61-430f-b812-427ab4cf6da3"))
     val status = 200
-    fileUploadConnector.createEnvelope(formTypeId).futureValue shouldBe EnvelopeId(
+    fileUploadConnector.createEnvelope(formTypeId,LocalDateTime.now.plusDays(1)).futureValue shouldBe EnvelopeId(
       "753bb314-bb61-430f-b812-427ab4cf6da3")
   }
 
@@ -39,7 +41,7 @@ class FileUploadConnectorSpec extends Spec {
   it should "fail when no 'Location' header" in new Fixture {
     val headers = noHeaders
     val status = 200
-    val result = fileUploadConnector.createEnvelope(formTypeId).failed.futureValue
+    val result = fileUploadConnector.createEnvelope(formTypeId, LocalDateTime.now.plusDays(1)).failed.futureValue
     result shouldBe an[SpoiltLocationHeader]
     result.getMessage shouldBe "Header Location not found"
   }
@@ -47,7 +49,7 @@ class FileUploadConnectorSpec extends Spec {
   it should "fail when spoilt 'Location' header" in new Fixture {
     val headers = Map("Location" -> Seq("spoiltValueHere"))
     val status = 200
-    val result = fileUploadConnector.createEnvelope(formTypeId).failed.futureValue
+    val result = fileUploadConnector.createEnvelope(formTypeId, LocalDateTime.now.plusDays(1)).failed.futureValue
     result shouldBe an[SpoiltLocationHeader]
     result.getMessage shouldBe "spoiltValueHere"
   }
@@ -55,7 +57,7 @@ class FileUploadConnectorSpec extends Spec {
   it should "fail when 5xx" in new Fixture {
     val headers = noHeaders
     val status = 500
-    val result = fileUploadConnector.createEnvelope(formTypeId)
+    val result = fileUploadConnector.createEnvelope(formTypeId, LocalDateTime.now.plusDays(1))
     result.failed.futureValue shouldBe an[_root_.uk.gov.hmrc.http.Upstream5xxResponse]
     result.failed.futureValue.getMessage shouldBe "POST of 'http://fileupload.whatever/file-upload/envelopes' returned 500. Response body: 'null'"
   }
@@ -63,7 +65,7 @@ class FileUploadConnectorSpec extends Spec {
   it should "fail when 4xx" in new Fixture {
     val headers = noHeaders
     val status = 400
-    val result = fileUploadConnector.createEnvelope(formTypeId)
+    val result = fileUploadConnector.createEnvelope(formTypeId, LocalDateTime.now.plusDays(1))
     result.failed.futureValue shouldBe an[_root_.uk.gov.hmrc.http.BadRequestException]
     result.failed.futureValue.getMessage shouldBe "POST of 'http://fileupload.whatever/file-upload/envelopes' returned 400 (Bad Request). Response body 'null'"
   }
@@ -80,6 +82,6 @@ class FileUploadConnectorSpec extends Spec {
     lazy val fileUploadConnector = new FileUploadConnector(config, wSHttp, FrozenTimeProvider.exampleInstance)
     implicit lazy val hc: HeaderCarrier = HeaderCarrier()
     lazy val formTypeId = FormTemplateId("FormId-13-2-3-1233-3")
+    lazy val envelopeExpiryDate = new LocalDateTime
   }
-
 }

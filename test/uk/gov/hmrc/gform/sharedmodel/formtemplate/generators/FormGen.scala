@@ -39,6 +39,7 @@ trait FormGen {
       formTemplateId <- FormTemplateGen.formTemplateIdGen
       formData       <- formDataGen
       status         <- formStatusGen
+
     } yield Form(formId, envelopeId, userId, formTemplateId, None, formData, status)
 }
 
