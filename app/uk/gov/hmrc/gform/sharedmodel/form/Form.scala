@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.gform.sharedmodel.form
 
-import java.time.LocalDateTime
-
 import julienrf.json.derived
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
@@ -43,7 +41,7 @@ object Form {
     RepeatingGroupStructure.optionFormat and
     FormData.format and
     FormStatus.format and
-    EnvelopeExpiryDate.format)(Form.apply _)
+    EnvelopeExpiryDate.optionFormat)(Form.apply _)
 
   private val writes: OWrites[Form] = OWrites[Form](
     form =>
@@ -54,7 +52,7 @@ object Form {
         RepeatingGroupStructure.optionFormat.writes(form.repeatingGroupStructure) ++
         FormData.format.writes(form.formData) ++
         FormStatus.format.writes(form.status) ++
-        EnvelopeExpiryDate.format.writes(form.envelopeExpiryDate))
+        EnvelopeExpiryDate.optionFormat.writes(form.envelopeExpiryDate))
 
   implicit val format: OFormat[Form] = OFormat[Form](reads, writes)
 
