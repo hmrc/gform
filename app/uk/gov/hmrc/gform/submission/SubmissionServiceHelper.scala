@@ -87,6 +87,7 @@ object SubmissionServiceHelper {
 
   def getEmailParameterValues(formTemplate: FormTemplate, form: Form): Map[String, String] =
     formTemplate.emailParameters
+      .getOrElse(List())
       .flatMap(
         parameter =>
           form.formData.fields

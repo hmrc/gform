@@ -287,10 +287,11 @@ class ValueParserSpec extends Spec {
       RequireMTDAgentEnrolment,
       EnrolmentAuth(ServiceId("TEST"), DoCheck(Always, RejectAccess, RegimeIdCheck(RegimeId("TEST"))))),
     "test-email-template-id",
-    List(
-      EmailParameter("fullName", "${directorFullName}"),
-      EmailParameter("email", "${directorEmail}")
-    ),
+    Some(
+      List(
+        EmailParameter("fullName", "${directorFullName}"),
+        EmailParameter("email", "${directorEmail}")
+      )),
     "submitSuccessUrl",
     "submitErrorUrl",
     List.empty[Section],

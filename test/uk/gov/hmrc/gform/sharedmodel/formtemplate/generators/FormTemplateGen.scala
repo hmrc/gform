@@ -34,7 +34,8 @@ trait FormTemplateGen {
 
     } yield EmailParameter(emailTemplateVariable, value)
 
-  def emailParameterListGen: Gen[List[EmailParameter]] = PrimitiveGen.zeroOrMoreGen(emailParameterGen)
+  def emailParameterListGen: Gen[Option[List[EmailParameter]]] =
+    Gen.option(PrimitiveGen.zeroOrMoreGen(emailParameterGen))
 
   def formTemplateGen: Gen[FormTemplate] =
     for {
