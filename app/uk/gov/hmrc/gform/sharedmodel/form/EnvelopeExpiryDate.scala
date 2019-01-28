@@ -25,5 +25,29 @@ case class EnvelopeExpiryDate(ldt: LocalDateTime)
 
 object EnvelopeExpiryDate {
 
-  implicit val format: OFormat[Option[EnvelopeExpiryDate]] = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
+  private val dateTimeFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
+  implicit val localDateTimeFormat = new Format[LocalDateTime] {
+    override def reads(json: JsValue): JsResult[LocalDateTime] = json match {
+      case JsString(s) => JsSuccess(LocalDateTime.from(dateTimeFormat.parse(s)))
+      case v           => JsError(s"Expected a date time of the form yyyy-MM-dd'T'HH:mm:ss'Z'. Got $v")
+    }
+
+    override def writes(o: LocalDateTime): JsValue = JsString(dateTimeFormat.format(o))
+  }
+
+  implicit val format: OFormat[EnvelopeExpiryDate] = Json.format[EnvelopeExpiryDate]
+
+  implicit val optionFormat: OFormat[Option[EnvelopeExpiryDate]] = new OFormat[Option[EnvelopeExpiryDate]] {
+    override def writes(o: Option[EnvelopeExpiryDate]): JsObject =
+      o match {
+        case Some(x) => Json.obj("ldt" -> Json.toJson(x.ldt))
+        case None    => Json.obj()
+      }
+
+    override def reads(json: JsValue) =
+      json.\("ldt").asOpt[LocalDateTime] match {
+        case Some(x) => JsSuccess(Some(EnvelopeExpiryDate(x)))
+        case None    => JsSuccess(None)
+      }
+  }
 }
