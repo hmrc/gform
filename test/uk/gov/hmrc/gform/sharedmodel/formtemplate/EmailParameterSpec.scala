@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.email
+package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
-import play.api.libs.json.{ Json, OFormat }
+import uk.gov.hmrc.gform.Spec
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.FormTemplateGen
 
-case class EmailTemplate(
-  to: Seq[String], //content that goes in the email to be put into template
-  templateId: String, //the template ID that the content will be put into
-  parameters: Map[String, String], //the fieldId and values that will be passed into the email
-  private val force: Boolean = false)
-
-object EmailTemplate {
-  implicit val format: OFormat[EmailTemplate] = Json.format[EmailTemplate]
+class EmailParameterSpec extends Spec {
+  "EmailParameter" should "round trip derived JSON" in {
+    forAll(FormTemplateGen.emailParameterGen) { obj =>
+      EmailParameter.format.reads(EmailParameter.format.writes(obj)) should beJsSuccess(obj)
+    }
+  }
 }

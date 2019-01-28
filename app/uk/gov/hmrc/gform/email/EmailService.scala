@@ -20,18 +20,19 @@ import uk.gov.hmrc.gform.sharedmodel.form.Form
 import cats.implicits._
 import play.api.Logger
 import uk.gov.hmrc.gform.auditing.loggingHelpers
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
 
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.http.HeaderCarrier
 
 class EmailService(emailConnector: EmailConnector) {
-  def sendEmail(optemailAddress: Option[String], templateId: String)(
+  def sendEmail(optemailAddress: Option[String], templateId: String, parameters: Map[String, String])(
     implicit hc: HeaderCarrier,
     mdc: ExecutionContext): Future[Unit] = {
     Logger.info(s" Sending email, template: $templateId, headers: '${loggingHelpers.cleanHeaderCarrierHeader(hc)}'")
-    optemailAddress.fold(().pure[Future])(email => emailConnector.sendEmail(new EmailTemplate(Seq(email), templateId)))
+    optemailAddress.fold(().pure[Future])(email =>
+      emailConnector.sendEmail(new EmailTemplate(Seq(email), templateId, parameters)))
   }
+
   def getEmailAddress(form: Form): Option[String] =
     form.formData.fields.find(_.id.value == "email").map(_.value).filterNot(_.isEmpty)
 }

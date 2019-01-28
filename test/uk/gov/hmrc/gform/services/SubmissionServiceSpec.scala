@@ -122,6 +122,10 @@ class SubmissionServiceSpec extends Spec {
         RequireMTDAgentEnrolment,
         EnrolmentAuth(ServiceId("TEST"), DoCheck(Always, RejectAccess, RegimeIdCheck(RegimeId("TEST"))))),
       emailTemplateId = "test-email-template-id",
+      emailParameters = List(
+        EmailParameter("fullName", "${directorFullName}"),
+        EmailParameter("email", "${directorEmail}")
+      ),
       submitSuccessUrl = "http://somwehere-nice.net",
       submitErrorUrl = "http://somwehere-nasty.net",
       sections = List(section),
@@ -205,7 +209,9 @@ class SubmissionServiceSpec extends Spec {
     val res = SubmissionServiceHelper.getSectionFormFields(form, formTemplate, None)
 
     res.right.value should be(expectedResult)
+
   }
 
   implicit lazy val hc = new HeaderCarrier()
+
 }

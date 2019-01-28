@@ -19,7 +19,8 @@ package uk.gov.hmrc.gform.sharedmodel
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ IncludeIf, IsFalse, IsTrue }
+import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormData, FormField }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, IncludeIf, IsFalse, IsTrue }
 import uk.gov.hmrc.gform.submission.{ SectionFormField, SubmissionServiceHelper }
 
 class SubmissionServiceHelperSpec extends Spec {
@@ -52,5 +53,32 @@ class SubmissionServiceHelperSpec extends Spec {
 
     sectionFormFields1.map(_.title) should contain allOf (`section - about you`.title,
     `section - businessDetails`.title)
+  }
+
+  it should "return only values for the fields in emailParameters" in new ExampleData {
+
+    val newFields =
+      Seq(
+        FormField(FormComponentId("directorFullName"), "john smith"),
+        FormField(FormComponentId("directorEmail"), "test@test.com"))
+
+    val newForm = form.copy(formData = FormData(newFields))
+
+    SubmissionServiceHelper.getEmailParameterValues(formTemplate, newForm) shouldBe Map(
+      "fullName" -> "john smith",
+      "email"    -> "test@test.com")
+
+  }
+
+  it should "return an empty map because it matches no fields" in new ExampleData {
+
+    val newFields = Seq(
+      FormField(FormComponentId("nino"), "example nino"),
+      FormField(FormComponentId("landfill-reference-number"), "10"))
+
+    val newForm = form.copy(formData = FormData(newFields))
+
+    SubmissionServiceHelper.getEmailParameterValues(formTemplate, newForm) shouldBe Map()
+
   }
 }
