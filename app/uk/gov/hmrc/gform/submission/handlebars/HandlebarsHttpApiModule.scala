@@ -38,8 +38,9 @@ class HandlebarsHttpApiModule(wSHttpModule: WSHttpModule, configModule: ConfigMo
       uri => s"${configModule.serviceConfig.baseUrl("etmp-hod")}${desConfig.basePath}/$uri",
       new HeaderCarrierBuildingHttpClient(
         _ => {
-          HeaderCarrier(extraHeaders = Seq("Environment" -> desConfig.environment),
-            authorization = Some(Authorization(desConfig.authorizationToken)))
+          HeaderCarrier(
+            extraHeaders = Seq("Environment" -> desConfig.environment),
+            authorization = Some(Authorization(s"Bearer ${desConfig.authorizationToken}")))
         },
         new LoggingHttpClient(LoggerFactory.getLogger("connector"), rootHttpClient)
       )
