@@ -331,9 +331,10 @@ class TemplateValidatorSpec extends Spec {
     )
 
     val newSection = mkSection("example", formComponents)
-    val newEmailParameters = List(
-      EmailParameter("templateIdVariable", "fieldContainedInFormTemplate"),
-      EmailParameter("declarationFullNameVariable", "declarationFullName"))
+    val newEmailParameters = Some(
+      List(
+        EmailParameter("templateIdVariable", "fieldContainedInFormTemplate"),
+        EmailParameter("declarationFullNameVariable", "declarationFullName")))
     val newDeclarationSection =
       DeclarationSection("Declaration", None, None, List(mkFormComponent("declarationFullName", Value)))
     val newFormTemplate = formTemplate.copy(
@@ -363,7 +364,7 @@ class TemplateValidatorSpec extends Spec {
 
     val formComponents = List(mkFormComponent("fieldContainedInFormTemplate", Value))
     val newSection = mkSection("example", formComponents)
-    val newEmailParameters = List(EmailParameter("templateIdVariable", "fieldContainedInFormTemplate"))
+    val newEmailParameters = Some(List(EmailParameter("templateIdVariable", "fieldContainedInFormTemplate")))
     val newFormTemplate = formTemplate.copy(sections = List(newSection), emailParameters = newEmailParameters)
 
     val res = FormTemplateValidator.validateEmailParameter(newFormTemplate)
@@ -375,7 +376,7 @@ class TemplateValidatorSpec extends Spec {
 
     val formComponents = List(mkFormComponent("fieldContainedInFormTemplate", Value))
     val newSection = mkSection("example", formComponents)
-    val newEmailParameters = List(EmailParameter("templateIdVariable", "fieldContainedInFormTemplate"))
+    val newEmailParameters = Some(List(EmailParameter("templateIdVariable", "fieldContainedInFormTemplate")))
     val newFormTemplate =
       formTemplate.copy(sections = List(newSection, newSection), emailParameters = newEmailParameters)
 

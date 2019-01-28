@@ -274,6 +274,7 @@ object FormTemplateValidator {
 
   def validateEmailParameter(formTemplate: FormTemplate): ValidationResult =
     formTemplate.emailParameters
+      .getOrElse(List())
       .map(_.value)
       .filterNot(parameter =>
         getAllFieldIdsFromFormTemplate(formTemplate)
