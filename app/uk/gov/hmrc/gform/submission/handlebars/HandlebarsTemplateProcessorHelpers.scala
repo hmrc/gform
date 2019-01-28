@@ -331,15 +331,26 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
   private def getPeriodValue(period: String, index: Int): CharSequence = ifNotNull(period) { _.split('|')(index) }
 
   def toEtmpLegalStatus(frontEndValue: String): CharSequence = ifNotNull(frontEndValue) {
-    case "Sole trader"                   => "1"
-    case "Sole proprietor"               => "1"
-    case "Limited Liability Partnership" => "2"
-    case "Partnership"                   => "3"
-    case "Unincorporated body"           => "5"
-    case "Local authority"               => "5"
-    case "Trust"                         => "6"
-    case "Public corporation"            => "7"
-    case "Limited company"               => "7"
+    _.toLowerCase match {
+      case "sole trader" | "sole proprietor"         => "1"
+      case "limited liability partnership"           => "2"
+      case "partnership"                             => "3"
+      case "unincorporated body" | "local authority" => "5"
+      case "trust"                                   => "6"
+      case "public corporation" | "limited company"  => "7"
+    }
+  }
+
+  def toEtmpDeclarationStatus(frontEndValue: String): CharSequence = ifNotNull(frontEndValue) {
+    _.toLowerCase match {
+      case "authorised official"             => "1"
+      case "company secretary"               => "2"
+      case "director"                        => "3"
+      case "partner"                         => "4"
+      case "sole proprietor" | "sole trader" => "5"
+      case "trustee"                         => "6"
+      case "others"                          => "7"
+    }
   }
 
   private def ifNotNull[T, R](t: T)(f: T => R)(implicit ev: Null <:< R): R = Option(t).map(f).orNull
