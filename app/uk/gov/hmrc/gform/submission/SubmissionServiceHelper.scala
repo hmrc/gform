@@ -84,4 +84,13 @@ object SubmissionServiceHelper {
     val sectionsToSubmit = filteredSection :+ formTemplate.declarationSection
     sectionsToSubmit.traverse(toSectionFormField)
   }
+
+  def getEmailParameterValues(formTemplate: FormTemplate, form: Form): Map[String, String] =
+    formTemplate.emailParameters
+      .flatMap(
+        parameter =>
+          form.formData.fields
+            .find(field => field.id.value == parameter.value)
+            .map(f => (parameter.emailTemplateVariable, f.value)))
+      .toMap
 }
