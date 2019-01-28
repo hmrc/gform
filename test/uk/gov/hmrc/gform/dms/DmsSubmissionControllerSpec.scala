@@ -42,7 +42,7 @@ class DmsSubmissionControllerSpec extends Spec {
     (mockFileUpload
       .createEnvelope(_: FormTemplateId)(_: HeaderCarrier))
       .expects(FormTemplateId(validSubmission.metadata.dmsFormId), *)
-      .returning(Future.successful(EnvelopeId("some-envelope-id")))
+      .returning((Future.successful(EnvelopeId("some-envelope-id"))),new LocalDateTime)
 
     (mockPdfGenerator
       .generatePDF(_: String)(_: HeaderCarrier))
@@ -71,7 +71,7 @@ class DmsSubmissionControllerSpec extends Spec {
     (mockFileUpload
       .createEnvelope(_: FormTemplateId)(_: HeaderCarrier))
       .expects(*, *)
-      .returning(Future.successful(EnvelopeId("some-envelope-id")))
+      .returning((Future.successful(EnvelopeId("some-envelope-id"))), new LocalDateTime)
 
     (mockPdfGenerator
       .generatePDF(_: String)(_: HeaderCarrier))
@@ -109,7 +109,7 @@ class DmsSubmissionControllerSpec extends Spec {
     (mockFileUpload
       .createEnvelope(_: FormTemplateId)(_: HeaderCarrier))
       .expects(*, *)
-      .returning(Future.successful(expectedEnvId))
+      .returning((Future.successful(expectedEnvId)),new LocalDateTime)
 
     (mockPdfGenerator
       .generatePDF(_: String)(_: HeaderCarrier))

@@ -367,7 +367,9 @@ trait ExampleForm { dependsOn: ExampleFormField with ExampleFormTemplate =>
 
   def envelopeId = EnvelopeId("b66c5979-e885-49cd-9281-c7f42ce6b307")
 
-  def form = Form(formId, envelopeId, userId, formTemplateId, None, formData, InProgress)
+  def envelopeExpiryDate = EnvelopeExpiryDate(new LocalDateTime)
+
+  def form = Form(formId, envelopeId, userId, formTemplateId, None, formData, InProgress, envelopeExpiryDate )
 
 }
 
