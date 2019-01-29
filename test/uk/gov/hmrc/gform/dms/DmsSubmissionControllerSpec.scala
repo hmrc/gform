@@ -32,6 +32,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Constant, FormTemplateId, Te
 import uk.gov.hmrc.gform.submission._
 import uk.gov.hmrc.gform.typeclasses.Rnd
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.gform.config.AppConfig
 
 import scala.concurrent.Future
 import scala.util.Random
@@ -40,9 +41,9 @@ class DmsSubmissionControllerSpec extends Spec {
 
   "The DmsSubmissionController" should "create a file upload envelope" in {
     (mockFileUpload
-      .createEnvelope(_: FormTemplateId)(_: HeaderCarrier))
-      .expects(FormTemplateId(validSubmission.metadata.dmsFormId), *)
-      .returning((Future.successful(EnvelopeId("some-envelope-id"))),new LocalDateTime)
+      .createEnvelope(_: FormTemplateId, _: LocalDateTime)(_: HeaderCarrier))
+      .expects(FormTemplateId(validSubmission.metadata.dmsFormId), fixedTime, *)
+      .returning(Future.successful(EnvelopeId("some-envelope-id")))
 
     (mockPdfGenerator
       .generatePDF(_: String)(_: HeaderCarrier))
@@ -69,9 +70,9 @@ class DmsSubmissionControllerSpec extends Spec {
     val pdfBytes = "this is totally a pdf".getBytes
 
     (mockFileUpload
-      .createEnvelope(_: FormTemplateId)(_: HeaderCarrier))
-      .expects(*, *)
-      .returning((Future.successful(EnvelopeId("some-envelope-id"))), new LocalDateTime)
+      .createEnvelope(_: FormTemplateId, _: LocalDateTime)(_: HeaderCarrier))
+      .expects(*, LocalDateTime.now(clock).plusDays(mockConfig.formExpiryDays), *)
+      .returning(Future.successful(EnvelopeId("some-envelope-id")))
 
     (mockPdfGenerator
       .generatePDF(_: String)(_: HeaderCarrier))
@@ -107,9 +108,9 @@ class DmsSubmissionControllerSpec extends Spec {
     )
 
     (mockFileUpload
-      .createEnvelope(_: FormTemplateId)(_: HeaderCarrier))
-      .expects(*, *)
-      .returning((Future.successful(expectedEnvId)),new LocalDateTime)
+      .createEnvelope(_: FormTemplateId, _: LocalDateTime)(_: HeaderCarrier))
+      .expects(*, LocalDateTime.now(clock).plusDays(mockConfig.formExpiryDays), *)
+      .returning(Future.successful(expectedEnvId))
 
     (mockPdfGenerator
       .generatePDF(_: String)(_: HeaderCarrier))
@@ -144,6 +145,9 @@ class DmsSubmissionControllerSpec extends Spec {
   lazy val mockFileUpload = mock[FileUploadService]
   lazy val mockPdfGenerator = mock[PdfGeneratorService]
   lazy val mockDocumentLoader = mockFunction[Array[Byte], PDDocument]
+
+  lazy val mockConfig = mock[AppConfig]
+
   lazy val stubPdfDocument = stub[PDDocument]
   lazy val fixedTime = LocalDateTime.of(2018, 3, 2, 0, 0)
   lazy val fixedRnd = new Rnd[Random] {
@@ -153,7 +157,8 @@ class DmsSubmissionControllerSpec extends Spec {
     override def apply() = notVeryRandom
   }
 
-  lazy val testController = new DmsSubmissionController(mockFileUpload, mockPdfGenerator, mockDocumentLoader)(
-    Clock.fixed(fixedTime.toInstant(ZoneOffset.UTC), ZoneId.systemDefault),
-    fixedRnd)
+  lazy val clock = Clock.fixed(fixedTime.toInstant(ZoneOffset.UTC), ZoneId.systemDefault)
+
+  lazy val testController =
+    new DmsSubmissionController(mockFileUpload, mockPdfGenerator, mockDocumentLoader, mockConfig)(clock, fixedRnd)
 }

@@ -19,7 +19,7 @@ import java.time.LocalDateTime
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.gform.sharedmodel.UserId
 import uk.gov.hmrc.gform.sharedmodel.form._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{FormComponentId, FormTemplateId}
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplateId }
 import uk.gov.hmrc.gform.form.LifeCycleStatus
 
 class FormServiceSpec extends PlaySpec {
@@ -32,7 +32,8 @@ class FormServiceSpec extends PlaySpec {
     None,
     FormData(Seq(FormField(FormComponentId("a"), "1"))),
     InProgress,
-    Some(EnvelopeExpiryDate(new LocalDateTime)))
+    Some(EnvelopeExpiryDate(LocalDateTime.now.plusDays(1)))
+  )
 
   val testFormSummary: Form = testFormInProgress.copy(status = Summary)
   val testFormValidated: Form = testFormInProgress.copy(status = Validated)
