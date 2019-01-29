@@ -25,6 +25,7 @@ import parseback.compat.cats._
 import parseback.util.Catenable
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
+import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 object BasicParsers {
 
@@ -52,24 +53,24 @@ object BasicParsers {
 
   implicit val W = Whitespace(() | """\s+""".r)
 
-  def nextOrPrevious[A](string: String, fn: (Int, Int) => A): Parser[A] =
+  def nextOrPrevious[A](string: String, fn: (Month, Day) => A): Parser[A] =
     (string ~ monthDay ^^ { (loc, _, month, day) =>
       fn(month, day)
     })
 
-  def firstOrLastDay[A](string: String, fn: (String, String) => A): Parser[A] =
-    yearMonth ~ string ^^ { (loc, year, month, _) =>
-      fn(year.toString, month.toString)
-    } | "YYYY" ~ delimiter ~ "MM" ~ delimiter ~ string ^^ { (loc, _, _, _, _, _) =>
-      fn("YYYY", "MM")
-    }
+//  def firstOrLastDay[A](string: String, fn: (String, String) => A): Parser[A] =
+//    yearMonth ~ string ^^ { (loc, year, month, _) =>
+//      fn(year.toString, month.toString)
+//    } | "YYYY" ~ delimiter ~ "MM" ~ delimiter ~ string ^^ { (loc, _, _, _, _, _) =>
+//      fn("YYYY", "MM")
+//    }
 
-  lazy val monthDay: Parser[(Int, Int)] = (delimiter ~ monthParser ~ delimiter ~ dayParser ^^ {
+  lazy val monthDay: Parser[(Month, Day)] = (delimiter ~ monthParser ~ delimiter ~ dayParser ^^ {
     (loc, _, month, _, day) =>
       (month, day)
   })
 
-  lazy val yearMonth: Parser[(Int, Int)] = yearParser ~ delimiter ~ monthParser ~ delimiter ^^ {
+  lazy val yearMonth: Parser[(Year, Month)] = yearParser ~ delimiter ~ monthParser ~ delimiter ^^ {
     (loc, year, _, month, _) =>
       (year, month)
   }
@@ -81,11 +82,22 @@ object BasicParsers {
   val anyWordFormat = """\w+""".r
   val delimiter = "[- /.]".r
 
-  lazy val yearParser: Parser[Int] = intParser("""(19|20)\d\d""")
+  lazy val yearParser
+    : Parser[Year] = "YYYY" ^^ ((loc, _) => AnyYear: Year) | exactYearParser ^^ ((loc, year) => ExactYear(year))
 
-  lazy val monthParser: Parser[Int] = intParser("""0[1-9]|1[012]""")
+  lazy val monthParser
+    : Parser[Month] = "MM" ^^ ((loc, _) => AnyMonth: Month) | exactMonthParser ^^ ((loc, month) => ExactMonth(month))
 
-  lazy val dayParser: Parser[Int] = intParser("""0[1-9]|[12][0-9]|3[01]""")
+  lazy val dayParser
+    : Parser[Day] = "MM" ^^ ((loc, _) => AnyDay: Day) | exactDayParser ^^ ((loc, day) => ExactDay(day)) |
+    "firstDay" ^^ ((loc, _) => FirstDay) |
+    "lastDay" ^^ ((loc, _) => LastDay)
+
+  lazy val exactYearParser: Parser[Int] = intParser("""(19|20)\d\d""")
+
+  lazy val exactMonthParser: Parser[Int] = intParser("""0[1-9]|1[012]""")
+
+  lazy val exactDayParser: Parser[Int] = intParser("""0[1-9]|[12][0-9]|3[01]""")
 
   lazy val positiveInteger: Parser[Int] = intParser("""\d+""")
 

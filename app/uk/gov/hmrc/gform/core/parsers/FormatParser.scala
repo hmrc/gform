@@ -62,13 +62,13 @@ object FormatParser {
     AnyDate
   }
 
-  lazy val nextDate: Parser[NextDate] = nextOrPrevious("next", NextDate.apply)
+//  lazy val nextDate: Parser[NextDate] = nextOrPrevious("next", NextDate.apply)
+//
+//  lazy val previousDate: Parser[PreviousDate] = nextOrPrevious("previous", PreviousDate.apply)
 
-  lazy val previousDate: Parser[PreviousDate] = nextOrPrevious("previous", PreviousDate.apply)
-
-  lazy val firstDay: Parser[FirstDay] = firstOrLastDay("firstDay", FirstDay.apply)
-
-  lazy val lastDay: Parser[LastDay] = firstOrLastDay("lastDay", LastDay.apply)
+//  lazy val firstDay: Parser[FirstDay] = firstOrLastDay("firstDay", FirstDay)
+//
+//  lazy val lastDay: Parser[LastDay] = firstOrLastDay("lastDay", LastDay)
 
   lazy val beforeOrAfterOrPrecisely: Parser[BeforeAfterPrecisely] = {
     "after" ^^ { (loc, after) =>
@@ -82,10 +82,9 @@ object FormatParser {
   }
 
   lazy val dateExpr: Parser[DateConstraintInfo] = {
-    firstDay | lastDay |
-      "today" ^^ { (loc, today) =>
-        Today
-      } | yearParser ~ monthDay ^^ { (loc, year, month, day) =>
+    "today" ^^ { (loc, today) =>
+      Today
+    } | yearParser ~ monthDay ^^ { (loc, year, month, day) =>
       ConcreteDate(year, month, day)
     } | "${" ~ alphabeticOnly ~ "}" ^^ { (loc, _, field, _) =>
       DateField(FormComponentId(field))
