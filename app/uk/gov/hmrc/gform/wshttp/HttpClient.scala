@@ -64,7 +64,7 @@ class AuditingHttpClient[F[_]](wsHttp: WSHttp)(implicit ec: ExecutionContext) ex
   override def get(uri: String)(implicit hc: HeaderCarrier): FOpt[HttpResponse] = fromFutureA(wsHttp.GET(uri))
 
   override def postJson(uri: String, json: String)(implicit hc: HeaderCarrier): FOpt[HttpResponse] =
-    fromFutureA(wsHttp.POSTString[HttpResponse](uri, json))
+    fromFutureA(wsHttp.POSTString[HttpResponse](uri, json, List(("Content-Type", "application/json"))))
 }
 
 class WSHttpHttpClient(wsHttp: WSHttp)(implicit ec: ExecutionContext) extends HttpClient[FOpt] {
