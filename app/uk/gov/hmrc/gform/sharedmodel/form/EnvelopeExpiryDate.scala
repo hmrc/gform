@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.sharedmodel.form
 
-import java.time.LocalDateTime
+import java.time.{ DateTimeException, LocalDateTime }
 import java.time.format.DateTimeFormatter
 
 import play.api.libs.json._
@@ -25,11 +25,16 @@ case class EnvelopeExpiryDate(ldt: LocalDateTime)
 
 object EnvelopeExpiryDate {
 
-  private val dateTimeFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
+  val dateTimeFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
   implicit val localDateTimeFormat = new Format[LocalDateTime] {
     override def reads(json: JsValue): JsResult[LocalDateTime] = json match {
-      case JsString(s) => JsSuccess(LocalDateTime.from(dateTimeFormat.parse(s)))
-      case v           => JsError(s"Expected a date time of the form yyyy-MM-dd'T'HH:mm:ss'Z'. Got $v")
+      case JsString(s) =>
+        try {
+          JsSuccess(LocalDateTime.from(dateTimeFormat.parse(s)))
+        } catch {
+          case dte: Exception => JsError(s"Failed to parse 's' as a LocalDateTime: ${dte.getMessage}")
+        }
+      case v => JsError(s"Expected a date time of the form yyyy-MM-dd'T'HH:mm:ss'Z'. Got $v")
     }
 
     override def writes(o: LocalDateTime): JsValue = JsString(dateTimeFormat.format(o))

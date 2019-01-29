@@ -19,15 +19,17 @@ package uk.gov.hmrc.gform.dms
 import java.time.Clock
 
 import org.apache.pdfbox.pdmodel.PDDocument
+import uk.gov.hmrc.gform.config.{ AppConfig, ConfigModule }
 import uk.gov.hmrc.gform.fileupload.FileUploadModule
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorModule
 import uk.gov.hmrc.gform.typeclasses.Rnd.RandomRnd
 
-class DmsModule(fileUploadModule: FileUploadModule, pdfGeneratorModule: PdfGeneratorModule) {
+class DmsModule(fileUploadModule: FileUploadModule, pdfGeneratorModule: PdfGeneratorModule, config: AppConfig) {
   lazy val dmsSubmissionController = {
     new DmsSubmissionController(
       fileUploadModule.fileUploadService,
       pdfGeneratorModule.pdfGeneratorService,
-      PDDocument.load)(Clock.systemDefaultZone, RandomRnd)
+      PDDocument.load,
+      config)(Clock.systemDefaultZone, RandomRnd)
   }
 }

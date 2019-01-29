@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.gform.sharedmodel.form
 
+import java.time.LocalDateTime
+
 import play.api.libs.json._
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.ExampleData
@@ -26,7 +28,6 @@ class FormSpec extends Spec {
     override val formFields = super.formFields.filter(f => Set("facePhoto", "startDate-year").contains(f.id.value))
 
     val formJsObject: JsObject = Form.format.writes(form)
-
     val expectedFormJsObject = Json.obj(
       "_id"            -> "James007-AAA999",
       "envelopeId"     -> "b66c5979-e885-49cd-9281-c7f42ce6b307",
@@ -36,7 +37,8 @@ class FormSpec extends Spec {
         .arr(
           Json.obj("id" -> "facePhoto", "value"      -> "face-photo.jpg"),
           Json.obj("id" -> "startDate-year", "value" -> "2008")),
-      "InProgress" -> Json.obj()
+      "InProgress" -> Json.obj(),
+      "ldt"        -> form.envelopeExpiryDate.map(_.ldt).map(EnvelopeExpiryDate.dateTimeFormat.format).get
     )
 
     formJsObject shouldBe expectedFormJsObject
