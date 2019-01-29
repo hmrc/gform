@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel
 
 import java.time.LocalDateTime
 
+import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.fileupload.RouteEnvelopeRequest
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
@@ -298,10 +299,12 @@ trait ExampleFormTemplate {
 
   def emailTemplateId = "test-email-template-id"
 
-  def emailParameters = List(
-    EmailParameter("fullName", "directorFullName"),
-    EmailParameter("email", "directorEmail")
-  )
+  def emailParameters =
+    Some(
+      NonEmptyList.of(
+        EmailParameter("fullName", FormCtx("directorFullName")),
+        EmailParameter("email", FormCtx("directorEmail"))
+      ))
 
   def submtSuccessUrl = """http://success.com"""
 

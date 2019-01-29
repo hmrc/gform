@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.submission
 import cats.instances.either._
 import cats.instances.list._
 import cats.syntax.either._
+import cats.syntax.eq._
 import cats.syntax.traverse._
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.gform.core.Opt
@@ -85,12 +86,14 @@ object SubmissionServiceHelper {
     sectionsToSubmit.traverse(toSectionFormField)
   }
 
-  def getEmailParameterValues(formTemplate: FormTemplate, form: Form): Map[String, String] =
-    formTemplate.emailParameters
-      .flatMap(
-        parameter =>
-          form.formData.fields
-            .find(field => field.id.value == parameter.value)
-            .map(f => (parameter.emailTemplateVariable, f.value)))
-      .toMap
+  def getEmailParameterValues(formTemplate: FormTemplate, form: Form): Map[EmailParameter, FormField] =
+    formTemplate.emailParameters.fold(Map.empty[EmailParameter, FormField])(
+      _.toList
+        .flatMap(
+          parameter =>
+            form.formData.fields
+              .find(field => field.id === parameter.value.toFieldId)
+              .map(f => (parameter, f)))
+        .toMap)
+
 }

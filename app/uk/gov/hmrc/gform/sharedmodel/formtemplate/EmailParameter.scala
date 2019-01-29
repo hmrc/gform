@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
-case class EmailParameter(emailTemplateVariable: String, value: String)
+case class EmailParameter(emailTemplateVariable: String, value: FormCtx)
 
 object EmailParameter {
   implicit val format: OFormat[EmailParameter] = {
@@ -27,7 +27,7 @@ object EmailParameter {
     val uploadTemplateReads: Reads[EmailParameter] =
       for {
         emailTemplateVariable <- (JsPath \ "emailTemplateVariable").read[String]
-        value                 <- (JsPath \ "value").read[FormCtx].map(_.value)
+        value                 <- (JsPath \ "value").read[FormCtx]
       } yield EmailParameter(emailTemplateVariable, value)
 
     val reads: Reads[EmailParameter] = uploadTemplateReads | mongoFormat

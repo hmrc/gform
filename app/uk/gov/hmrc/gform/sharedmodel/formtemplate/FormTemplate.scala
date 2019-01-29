@@ -39,7 +39,7 @@ case class FormTemplate(
   destinations: Destinations,
   authConfig: formtemplate.AuthConfig,
   emailTemplateId: String,
-  emailParameters: List[EmailParameter],
+  emailParameters: Option[NonEmptyList[EmailParameter]],
   submitSuccessUrl: String,
   submitErrorUrl: String,
   sections: List[Section],
@@ -64,6 +64,9 @@ case class FormTemplate(
 }
 
 object FormTemplate {
+
+  import JsonUtils._
+
   private case class DeprecatedFormTemplateWithDmsSubmission(
     _id: FormTemplateId,
     formName: String,
@@ -75,7 +78,7 @@ object FormTemplate {
     dmsSubmission: DmsSubmission,
     authConfig: formtemplate.AuthConfig,
     emailTemplateId: String,
-    emailParameters: List[EmailParameter],
+    emailParameters: Option[NonEmptyList[EmailParameter]],
     submitSuccessUrl: String,
     submitErrorUrl: String,
     sections: List[Section],
@@ -94,7 +97,7 @@ object FormTemplate {
         destinations = dmsSubmission,
         authConfig: formtemplate.AuthConfig,
         emailTemplateId: String,
-        emailParameters: List[EmailParameter],
+        emailParameters: Option[NonEmptyList[EmailParameter]],
         submitSuccessUrl: String,
         submitErrorUrl: String,
         sections: List[Section],
@@ -136,7 +139,7 @@ object FormTemplate {
     dmsSubmission: DmsSubmission,
     authConfig: formtemplate.AuthConfig,
     emailTemplateId: String,
-    emailParameters: List[EmailParameter],
+    emailParameters: Option[NonEmptyList[EmailParameter]],
     submitSuccessUrl: String,
     submitErrorUrl: String,
     sections: List[Section],

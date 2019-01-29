@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.core.parsers
 
+import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
@@ -287,10 +288,11 @@ class ValueParserSpec extends Spec {
       RequireMTDAgentEnrolment,
       EnrolmentAuth(ServiceId("TEST"), DoCheck(Always, RejectAccess, RegimeIdCheck(RegimeId("TEST"))))),
     "test-email-template-id",
-    List(
-      EmailParameter("fullName", "${directorFullName}"),
-      EmailParameter("email", "${directorEmail}")
-    ),
+    Some(
+      NonEmptyList.of(
+        EmailParameter("fullName", FormCtx("directorFullName")),
+        EmailParameter("email", FormCtx("directorEmail"))
+      )),
     "submitSuccessUrl",
     "submitErrorUrl",
     List.empty[Section],

@@ -263,26 +263,25 @@ object FormTemplateValidator {
     }
   }
 
-  def getAllFieldIdsFromFormTemplate(formTemplate: FormTemplate): List[String] = {
-    val sectionsFields = formTemplate.sections.flatMap(_.fields.map(_.id.value))
-    val acknowledgementSectionFields = formTemplate.acknowledgementSection.fields.map(_.id.value)
-    val declarationSectionFields = formTemplate.declarationSection.fields.map(_.id.value)
+  def getAllFieldIdsFromFormTemplate(formTemplate: FormTemplate): List[FormComponentId] = {
+    val sectionsFields = formTemplate.sections.flatMap(_.fields.map(_.id))
+    val acknowledgementSectionFields = formTemplate.acknowledgementSection.fields.map(_.id)
+    val declarationSectionFields = formTemplate.declarationSection.fields.map(_.id)
 
     sectionsFields ::: acknowledgementSectionFields ::: declarationSectionFields
 
   }
 
   def validateEmailParameter(formTemplate: FormTemplate): ValidationResult =
-    formTemplate.emailParameters
-      .map(_.value)
-      .filterNot(parameter =>
-        getAllFieldIdsFromFormTemplate(formTemplate)
-          .contains(parameter)) match {
-
-      case invalidFields if invalidFields.isEmpty => Valid
-      case invalidFields =>
-        Invalid(s"The following email parameters are not fields in the form template: $invalidFields")
-
+    formTemplate.emailParameters.fold[ValidationResult](Valid) { emailParams =>
+      val ids = getAllFieldIdsFromFormTemplate(formTemplate)
+      emailParams
+        .filterNot(parameter => ids.contains(parameter.value.toFieldId)) match {
+        case Nil => Valid
+        case invalidFields =>
+          Invalid(
+            s"The following email parameters are not fields in the form template: ${invalidFields.map(_.value.toFieldId)}")
+      }
     }
 
   private def evalExpr(expr: Expr): List[FormComponentId] = expr match {
