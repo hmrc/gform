@@ -125,8 +125,8 @@ class SubmissionServiceSpec extends Spec {
       emailTemplateId = "test-email-template-id",
       emailParameters = Some(
         NonEmptyList.of(
-          EmailParameter("fullName", "directorFullName"),
-          EmailParameter("email", "directorEmail")
+          EmailParameter("fullName", FormCtx("directorFullName")),
+          EmailParameter("email", FormCtx("directorEmail"))
         )),
       submitSuccessUrl = "http://somwehere-nice.net",
       submitErrorUrl = "http://somwehere-nasty.net",

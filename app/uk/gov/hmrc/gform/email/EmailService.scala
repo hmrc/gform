@@ -16,21 +16,24 @@
 
 package uk.gov.hmrc.gform.email
 
-import uk.gov.hmrc.gform.sharedmodel.form.Form
+import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormField }
 import cats.implicits._
 import play.api.Logger
 import uk.gov.hmrc.gform.auditing.loggingHelpers
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.EmailParameter
 
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.http.HeaderCarrier
 
 class EmailService(emailConnector: EmailConnector) {
-  def sendEmail(optemailAddress: Option[String], templateId: String, parameters: Map[String, String])(
+  def sendEmail(optemailAddress: Option[String], templateId: String, parameters: Map[EmailParameter, FormField])(
     implicit hc: HeaderCarrier,
     mdc: ExecutionContext): Future[Unit] = {
     Logger.info(s" Sending email, template: $templateId, headers: '${loggingHelpers.cleanHeaderCarrierHeader(hc)}'")
     optemailAddress.fold(().pure[Future])(email =>
-      emailConnector.sendEmail(new EmailTemplate(Seq(email), templateId, parameters)))
+      emailConnector.sendEmail(new EmailTemplate(Seq(email), templateId, parameters.map {
+        case (key, value) => (key.emailTemplateVariable, value.value)
+      })))
   }
 
   def getEmailAddress(form: Form): Option[String] =

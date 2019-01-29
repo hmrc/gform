@@ -33,7 +33,7 @@ trait FormTemplateGen {
       emailTemplateVariable <- Gen.alphaNumStr
       value                 <- Gen.alphaNumStr
 
-    } yield EmailParameter(emailTemplateVariable, value)
+    } yield EmailParameter(emailTemplateVariable, FormCtx(value))
 
   def emailParameterListGen: Gen[Option[NonEmptyList[EmailParameter]]] =
     Gen.option(PrimitiveGen.oneOrMoreGen(emailParameterGen))

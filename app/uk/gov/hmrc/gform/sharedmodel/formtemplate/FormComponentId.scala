@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
+import cats.Eq
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
 
@@ -26,6 +27,8 @@ case class FormComponentId(value: String) extends AnyVal {
 }
 
 object FormComponentId {
+
+  implicit val catsEq: Eq[FormComponentId] = Eq.fromUniversalEquals
 
   implicit val vformat: Format[FormComponentId] =
     ValueClassFormat.vformat("id", FormComponentId.apply, x => JsString(x.value))
