@@ -22,6 +22,7 @@ import java.util.Base64
 import org.apache.pdfbox.pdmodel.PDDocument
 import play.api.libs.json.JsValue
 import play.api.mvc.Action
+import uk.gov.hmrc.gform.config.AppConfig
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.fileupload.FileUploadService
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorService
@@ -36,7 +37,8 @@ import scala.util.Random
 class DmsSubmissionController(
   fileUpload: FileUploadService,
   pdfGenerator: PdfGeneratorService,
-  documentLoader: Array[Byte] => PDDocument)(implicit clock: Clock, rnd: Rnd[Random])
+  documentLoader: Array[Byte] => PDDocument,
+  config: AppConfig)(implicit clock: Clock, rnd: Rnd[Random])
     extends BaseController {
 
   def submitToDms: Action[JsValue] = Action.async(parse.json) { implicit request =>
@@ -46,7 +48,7 @@ class DmsSubmissionController(
       val formTemplateId = FormTemplateId(metadata.dmsFormId)
 
       for {
-        envId <- fileUpload.createEnvelope(formTemplateId, LocalDateTime.now.plusDays(1))
+        envId <- fileUpload.createEnvelope(formTemplateId, LocalDateTime.now(clock).plusDays(config.formExpiryDays))
         pdf   <- pdfGenerator.generatePDF(decodedHtml)
         pdfDoc = documentLoader(pdf)
         pdfSummary = PdfSummary(pdfDoc.getNumberOfPages.toLong, pdf)
@@ -55,7 +57,7 @@ class DmsSubmissionController(
         dmsMetadata = DmsMetaData(formTemplateId, metadata.customerId)
         submission = Submission(
           FormId(metadata.dmsFormId),
-          LocalDateTime.now(clock),
+          LocalDateTime.now(clock).plusDays(config.formExpiryDays),
           submissionRef,
           envId,
           0,

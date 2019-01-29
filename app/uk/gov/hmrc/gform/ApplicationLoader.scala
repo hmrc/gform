@@ -90,7 +90,7 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
       timeModule,
       emailModule,
       handlebarsModule)
-  private val dmsModule = new DmsModule(fileUploadModule, pdfGeneratorModule)
+  private val dmsModule = new DmsModule(fileUploadModule, pdfGeneratorModule, configModule.appConfig)
   private val testOnlyModule = new TestOnlyModule(mongoModule, wSHttpModule, configModule, playComponents)
   /* TODO REMOVE WHEN WE DONT HAVE WHITELISTING */
   private val authModule = new AuthModule(mongoModule)

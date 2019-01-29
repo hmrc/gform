@@ -23,7 +23,7 @@ import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.time.FrozenTimeProvider
 import uk.gov.hmrc.gform.wshttp.StubbedWSHttp
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
 class FileUploadConnectorSpec extends Spec {
 
@@ -32,7 +32,7 @@ class FileUploadConnectorSpec extends Spec {
   it should "work" in new Fixture {
     val headers = Map("Location" -> Seq("localhost:8898/file-upload/envelopes/753bb314-bb61-430f-b812-427ab4cf6da3"))
     val status = 200
-    fileUploadConnector.createEnvelope(formTypeId,LocalDateTime.now.plusDays(1)).futureValue shouldBe EnvelopeId(
+    fileUploadConnector.createEnvelope(formTypeId, LocalDateTime.now.plusDays(1)).futureValue shouldBe EnvelopeId(
       "753bb314-bb61-430f-b812-427ab4cf6da3")
   }
 
@@ -82,6 +82,6 @@ class FileUploadConnectorSpec extends Spec {
     lazy val fileUploadConnector = new FileUploadConnector(config, wSHttp, FrozenTimeProvider.exampleInstance)
     implicit lazy val hc: HeaderCarrier = HeaderCarrier()
     lazy val formTypeId = FormTemplateId("FormId-13-2-3-1233-3")
-    lazy val envelopeExpiryDate = new LocalDateTime
+    lazy val envelopeExpiryDate = LocalDateTime.now.plusDays(1)
   }
 }

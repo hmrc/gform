@@ -21,7 +21,7 @@ import java.time.format.DateTimeFormatter
 
 import play.api.http.HeaderNames.LOCATION
 import play.api.libs.json.{ JsObject, Json }
-import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeExpiryDate, EnvelopeId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.http.HttpResponse
 
@@ -34,7 +34,7 @@ class Helper(config: FUConfig) {
         "maxItems"       -> config.maxItems,
         "maxSize"        -> config.maxSize,
         "maxSizePerItem" -> config.maxSizePerItem),
-      "expiryDate" -> s"${expiryDate.format(formatter)}",
+      "expiryDate" -> s"${expiryDate.format(EnvelopeExpiryDate.dateTimeFormat)}",
       "metadata"   -> Json.obj("application" -> "gform", "formTemplateId" -> s"${formTemplateId.value}")
     )
 
@@ -48,6 +48,5 @@ class Helper(config: FUConfig) {
   }
 
   private lazy val EnvelopeIdExtractor = "envelopes/([\\w\\d-]+)$".r.unanchored
-  private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
   private lazy val contentTypesJson = Json.toJson(config.contentTypes)
 }
