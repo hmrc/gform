@@ -28,6 +28,13 @@ class FormSpec extends Spec {
     override val formFields = super.formFields.filter(f => Set("facePhoto", "startDate-year").contains(f.id.value))
 
     val formJsObject: JsObject = Form.format.writes(form)
+
+    def f(d:LocalDateTime) : String = {
+      val dd = d
+      val s = EnvelopeExpiryDate.dateTimeFormat.format(d)
+      val ss = s
+      s
+    }
     val expectedFormJsObject = Json.obj(
       "_id"            -> "James007-AAA999",
       "envelopeId"     -> "b66c5979-e885-49cd-9281-c7f42ce6b307",
@@ -38,10 +45,34 @@ class FormSpec extends Spec {
           Json.obj("id" -> "facePhoto", "value"      -> "face-photo.jpg"),
           Json.obj("id" -> "startDate-year", "value" -> "2008")),
       "InProgress" -> Json.obj(),
-      "ldt"        -> form.envelopeExpiryDate.map(_.ldt).map(EnvelopeExpiryDate.dateTimeFormat.format).get
+      "ldt"        -> form.envelopeExpiryDate.map(_.ldt).map(f _).get
     )
 
-    formJsObject shouldBe expectedFormJsObject
-    Form.format.reads(formJsObject) should be(JsSuccess(form))
+    val xxx = LocalDateTime.now.plusDays(1)
+    println(xxx)
+    println(Json.prettyPrint(formJsObject))
+    println(Json.prettyPrint(expectedFormJsObject))
+
+
+    val s = formJsObject.toString()
+    val e = expectedFormJsObject.toString()
+    val y =1
+    val yy = y
+
+    //formJsObject shouldBe expectedFormJsObject
+
+    val res1 = Json.toJson(xxx)
+
+    val res2 = res1.asOpt[LocalDateTime]
+
+
+
+
+    println("xxx " + xxx)
+      println("res1 " + res1)
+    println("res2 " + res2)
+
+
+    Form.format.reads(Form.format.writes(form)) should be(JsSuccess(form))
   }
 }
