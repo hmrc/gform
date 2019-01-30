@@ -30,6 +30,6 @@ class HandlebarsTemplateProcessor {
       .resolver(JsonNodeValueResolver.INSTANCE)
       .build
 
-    compiledTemplate.apply(context)
+    MagicCommasParser(compiledTemplate.apply(context))
   }
 }
