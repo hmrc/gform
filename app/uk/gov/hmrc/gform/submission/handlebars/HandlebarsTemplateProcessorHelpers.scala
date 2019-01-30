@@ -19,200 +19,202 @@ package uk.gov.hmrc.gform.submission.handlebars
 import uk.gov.hmrc.gform.time.TimeProvider
 import java.time.format.DateTimeFormatter
 
+import com.github.jknack.handlebars.{ Handlebars, Options }
+
 class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimeProvider) {
   def yesNoToEtmpChoice(yesNoChoice: String): CharSequence = ifNotNull(yesNoChoice) {
-    case "1" => "0"
-    case "0" => "1"
+    case "1" => quote("0")
+    case "0" => quote("1")
   }
 
   def dateToEtmpDate(date: String): CharSequence =
     ifNotNull(date) { d =>
-      d.substring(0, 4) + d.substring(5, 7) + d.substring(8, 10)
+      quote(d.substring(0, 4) + d.substring(5, 7) + d.substring(8, 10))
     }
+
+  // Due to the way Handlebars works, when this helper is used, an
+  // initial dummy parameter must be passed before the list of values
+  // to select from. Anything will do. I suggest 'null' or 'this'.
+  def either(o: Options): CharSequence = eitherN(o.params.toSeq: _*)
 
   // Handlebars.java can't deal with a varargs argument in a helper.
   // Neither can it deal with overloading, so we'd need to do something like
   // either2, either3, either4, etc.
-  def either2(arg1: String, arg2: String): CharSequence = either(arg1, arg2)
-  def either3(arg1: String, arg2: String, arg3: String): CharSequence = either(arg1, arg2, arg3)
-  def either4(arg1: String, arg2: String, arg3: String, arg4: String): CharSequence = either(arg1, arg2, arg3, arg4)
-  def either5(arg1: String, arg2: String, arg3: String, arg4: String, arg5: String): CharSequence =
-    either(arg1, arg2, arg3, arg4, arg5)
-  def either6(arg1: String, arg2: String, arg3: String, arg4: String, arg5: String, arg6: String): CharSequence =
-    either(arg1, arg2, arg3, arg4, arg5, arg6)
-  def either7(
-    arg1: String,
-    arg2: String,
-    arg3: String,
-    arg4: String,
-    arg5: String,
-    arg6: String,
-    arg7: String): CharSequence = either(arg1, arg2, arg3, arg4, arg5, arg6, arg7)
-  def either8(
-    arg1: String,
-    arg2: String,
-    arg3: String,
-    arg4: String,
-    arg5: String,
-    arg6: String,
-    arg7: String,
-    arg8: String): CharSequence =
-    either(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
-  def either9(
-    arg1: String,
-    arg2: String,
-    arg3: String,
-    arg4: String,
-    arg5: String,
-    arg6: String,
-    arg7: String,
-    arg8: String,
-    arg9: String): CharSequence =
-    either(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
+  def either2(arg1: Any, arg2: Any): CharSequence = eitherN(arg1, arg2)
+  def either3(arg1: Any, arg2: Any, arg3: Any): CharSequence = eitherN(arg1, arg2, arg3)
+  def either4(arg1: Any, arg2: Any, arg3: Any, arg4: Any): CharSequence = eitherN(arg1, arg2, arg3, arg4)
+  def either5(arg1: Any, arg2: Any, arg3: Any, arg4: Any, arg5: Any): CharSequence =
+    eitherN(arg1, arg2, arg3, arg4, arg5)
+  def either6(arg1: Any, arg2: Any, arg3: Any, arg4: Any, arg5: Any, arg6: Any): CharSequence =
+    eitherN(arg1, arg2, arg3, arg4, arg5, arg6)
+  def either7(arg1: Any, arg2: Any, arg3: Any, arg4: Any, arg5: Any, arg6: Any, arg7: Any): CharSequence =
+    eitherN(arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+  def either8(arg1: Any, arg2: Any, arg3: Any, arg4: Any, arg5: Any, arg6: Any, arg7: Any, arg8: Any): CharSequence =
+    eitherN(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
+  def either9(arg1: Any, arg2: Any, arg3: Any, arg4: Any, arg5: Any, arg6: Any, arg7: Any, arg8: Any, arg9: Any)
+    : CharSequence =
+    eitherN(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
   def either10(
-    arg1: String,
-    arg2: String,
-    arg3: String,
-    arg4: String,
-    arg5: String,
-    arg6: String,
-    arg7: String,
-    arg8: String,
-    arg9: String,
-    arg10: String): CharSequence =
-    either(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
+    arg1: Any,
+    arg2: Any,
+    arg3: Any,
+    arg4: Any,
+    arg5: Any,
+    arg6: Any,
+    arg7: Any,
+    arg8: Any,
+    arg9: Any,
+    arg10: Any): CharSequence =
+    eitherN(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
   def either11(
-    arg1: String,
-    arg2: String,
-    arg3: String,
-    arg4: String,
-    arg5: String,
-    arg6: String,
-    arg7: String,
-    arg8: String,
-    arg9: String,
-    arg10: String,
-    arg11: String): CharSequence =
-    either(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11)
+    arg1: Any,
+    arg2: Any,
+    arg3: Any,
+    arg4: Any,
+    arg5: Any,
+    arg6: Any,
+    arg7: Any,
+    arg8: Any,
+    arg9: Any,
+    arg10: Any,
+    arg11: Any): CharSequence =
+    eitherN(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11)
   def either12(
-    arg1: String,
-    arg2: String,
-    arg3: String,
-    arg4: String,
-    arg5: String,
-    arg6: String,
-    arg7: String,
-    arg8: String,
-    arg9: String,
-    arg10: String,
-    arg11: String,
-    arg12: String): CharSequence =
-    either(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12)
+    arg1: Any,
+    arg2: Any,
+    arg3: Any,
+    arg4: Any,
+    arg5: Any,
+    arg6: Any,
+    arg7: Any,
+    arg8: Any,
+    arg9: Any,
+    arg10: Any,
+    arg11: Any,
+    arg12: Any): CharSequence =
+    eitherN(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12)
   def either13(
-    arg1: String,
-    arg2: String,
-    arg3: String,
-    arg4: String,
-    arg5: String,
-    arg6: String,
-    arg7: String,
-    arg8: String,
-    arg9: String,
-    arg10: String,
-    arg11: String,
-    arg12: String,
-    arg13: String): CharSequence =
-    either(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13)
+    arg1: Any,
+    arg2: Any,
+    arg3: Any,
+    arg4: Any,
+    arg5: Any,
+    arg6: Any,
+    arg7: Any,
+    arg8: Any,
+    arg9: Any,
+    arg10: Any,
+    arg11: Any,
+    arg12: Any,
+    arg13: Any): CharSequence =
+    eitherN(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13)
   def either14(
-    arg1: String,
-    arg2: String,
-    arg3: String,
-    arg4: String,
-    arg5: String,
-    arg6: String,
-    arg7: String,
-    arg8: String,
-    arg9: String,
-    arg10: String,
-    arg11: String,
-    arg12: String,
-    arg13: String,
-    arg14: String): CharSequence =
-    either(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14)
+    arg1: Any,
+    arg2: Any,
+    arg3: Any,
+    arg4: Any,
+    arg5: Any,
+    arg6: Any,
+    arg7: Any,
+    arg8: Any,
+    arg9: Any,
+    arg10: Any,
+    arg11: Any,
+    arg12: Any,
+    arg13: Any,
+    arg14: Any): CharSequence =
+    eitherN(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14)
   def either15(
-    arg1: String,
-    arg2: String,
-    arg3: String,
-    arg4: String,
-    arg5: String,
-    arg6: String,
-    arg7: String,
-    arg8: String,
-    arg9: String,
-    arg10: String,
-    arg11: String,
-    arg12: String,
-    arg13: String,
-    arg14: String,
-    arg15: String): CharSequence =
-    either(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15)
+    arg1: Any,
+    arg2: Any,
+    arg3: Any,
+    arg4: Any,
+    arg5: Any,
+    arg6: Any,
+    arg7: Any,
+    arg8: Any,
+    arg9: Any,
+    arg10: Any,
+    arg11: Any,
+    arg12: Any,
+    arg13: Any,
+    arg14: Any,
+    arg15: Any): CharSequence =
+    eitherN(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15)
   def either16(
-    arg1: String,
-    arg2: String,
-    arg3: String,
-    arg4: String,
-    arg5: String,
-    arg6: String,
-    arg7: String,
-    arg8: String,
-    arg9: String,
-    arg10: String,
-    arg11: String,
-    arg12: String,
-    arg13: String,
-    arg14: String,
-    arg15: String,
-    arg16: String): CharSequence =
-    either(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16)
+    arg1: Any,
+    arg2: Any,
+    arg3: Any,
+    arg4: Any,
+    arg5: Any,
+    arg6: Any,
+    arg7: Any,
+    arg8: Any,
+    arg9: Any,
+    arg10: Any,
+    arg11: Any,
+    arg12: Any,
+    arg13: Any,
+    arg14: Any,
+    arg15: Any,
+    arg16: Any): CharSequence =
+    eitherN(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16)
   def either17(
-    arg1: String,
-    arg2: String,
-    arg3: String,
-    arg4: String,
-    arg5: String,
-    arg6: String,
-    arg7: String,
-    arg8: String,
-    arg9: String,
-    arg10: String,
-    arg11: String,
-    arg12: String,
-    arg13: String,
-    arg14: String,
-    arg15: String,
-    arg16: String,
-    arg17: String): CharSequence =
-    either(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17)
+    arg1: Any,
+    arg2: Any,
+    arg3: Any,
+    arg4: Any,
+    arg5: Any,
+    arg6: Any,
+    arg7: Any,
+    arg8: Any,
+    arg9: Any,
+    arg10: Any,
+    arg11: Any,
+    arg12: Any,
+    arg13: Any,
+    arg14: Any,
+    arg15: Any,
+    arg16: Any,
+    arg17: Any): CharSequence =
+    eitherN(
+      arg1,
+      arg2,
+      arg3,
+      arg4,
+      arg5,
+      arg6,
+      arg7,
+      arg8,
+      arg9,
+      arg10,
+      arg11,
+      arg12,
+      arg13,
+      arg14,
+      arg15,
+      arg16,
+      arg17)
   def either18(
-    arg1: String,
-    arg2: String,
-    arg3: String,
-    arg4: String,
-    arg5: String,
-    arg6: String,
-    arg7: String,
-    arg8: String,
-    arg9: String,
-    arg10: String,
-    arg11: String,
-    arg12: String,
-    arg13: String,
-    arg14: String,
-    arg15: String,
-    arg16: String,
-    arg17: String,
-    arg18: String): CharSequence =
-    either(
+    arg1: Any,
+    arg2: Any,
+    arg3: Any,
+    arg4: Any,
+    arg5: Any,
+    arg6: Any,
+    arg7: Any,
+    arg8: Any,
+    arg9: Any,
+    arg10: Any,
+    arg11: Any,
+    arg12: Any,
+    arg13: Any,
+    arg14: Any,
+    arg15: Any,
+    arg16: Any,
+    arg17: Any,
+    arg18: Any): CharSequence =
+    eitherN(
       arg1,
       arg2,
       arg3,
@@ -232,26 +234,26 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
       arg17,
       arg18)
   def either19(
-    arg1: String,
-    arg2: String,
-    arg3: String,
-    arg4: String,
-    arg5: String,
-    arg6: String,
-    arg7: String,
-    arg8: String,
-    arg9: String,
-    arg10: String,
-    arg11: String,
-    arg12: String,
-    arg13: String,
-    arg14: String,
-    arg15: String,
-    arg16: String,
-    arg17: String,
-    arg18: String,
-    arg19: String): CharSequence =
-    either(
+    arg1: Any,
+    arg2: Any,
+    arg3: Any,
+    arg4: Any,
+    arg5: Any,
+    arg6: Any,
+    arg7: Any,
+    arg8: Any,
+    arg9: Any,
+    arg10: Any,
+    arg11: Any,
+    arg12: Any,
+    arg13: Any,
+    arg14: Any,
+    arg15: Any,
+    arg16: Any,
+    arg17: Any,
+    arg18: Any,
+    arg19: Any): CharSequence =
+    eitherN(
       arg1,
       arg2,
       arg3,
@@ -272,27 +274,27 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
       arg18,
       arg19)
   def either20(
-    arg1: String,
-    arg2: String,
-    arg3: String,
-    arg4: String,
-    arg5: String,
-    arg6: String,
-    arg7: String,
-    arg8: String,
-    arg9: String,
-    arg10: String,
-    arg11: String,
-    arg12: String,
-    arg13: String,
-    arg14: String,
-    arg15: String,
-    arg16: String,
-    arg17: String,
-    arg18: String,
-    arg19: String,
-    arg20: String): CharSequence =
-    either(
+    arg1: Any,
+    arg2: Any,
+    arg3: Any,
+    arg4: Any,
+    arg5: Any,
+    arg6: Any,
+    arg7: Any,
+    arg8: Any,
+    arg9: Any,
+    arg10: Any,
+    arg11: Any,
+    arg12: Any,
+    arg13: Any,
+    arg14: Any,
+    arg15: Any,
+    arg16: Any,
+    arg17: Any,
+    arg18: Any,
+    arg19: Any,
+    arg20: Any): CharSequence =
+    eitherN(
       arg1,
       arg2,
       arg3,
@@ -314,36 +316,39 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
       arg19,
       arg20)
 
-  private[handlebars] def either(args: String*): CharSequence = args.find(_ != null).orNull
+  private[handlebars] def eitherN(args: Any*): CharSequence = condition(args.find(_ != null).orNull)
 
   def isSuccessCode(code: Integer): CharSequence = isSuccCode(code, "true", "false")
   def isNotSuccessCode(code: Integer): CharSequence = isSuccCode(code, "false", "true")
-  private def isSuccCode(code: Integer, t: String, f: String): String =
-    if (code == null) "undefined"
+  private def isSuccCode(code: Integer, t: String, f: String): CharSequence =
+    if (code == null) "false"
     else if (code >= 200 && code <= 299) t
     else f
 
-  def getCurrentDate(): CharSequence = DateTimeFormatter.BASIC_ISO_DATE.format(timeProvider.localDateTime)
-  def getCurrentTimestamp(): CharSequence = DateTimeFormatter.ISO_INSTANT.format(timeProvider.instant)
+  def getCurrentDate: CharSequence = quote(DateTimeFormatter.BASIC_ISO_DATE.format(timeProvider.localDateTime))
+  def getCurrentTimestamp: CharSequence = quote(DateTimeFormatter.ISO_INSTANT.format(timeProvider.instant))
 
   def getPeriodKey(period: String): CharSequence = getPeriodValue(period, 0)
   def getPeriodFrom(period: String): CharSequence = getPeriodValue(period, 1)
   def getPeriodTo(period: String): CharSequence = getPeriodValue(period, 2)
-  private def getPeriodValue(period: String, index: Int): CharSequence = ifNotNull(period) { _.split('|')(index) }
+  private def getPeriodValue(period: String, index: Int): CharSequence =
+    ifNotNull(period) { s =>
+      quote(s.split('|')(index))
+    }
 
-  def toEtmpLegalStatus(frontEndValue: String): CharSequence = ifNotNull(frontEndValue) {
-    _.toLowerCase match {
+  def toEtmpLegalStatus(frontEndValue: String): CharSequence = ifNotNull(frontEndValue) { s =>
+    quote(s.toLowerCase match {
       case "sole trader" | "sole proprietor"         => "1"
       case "limited liability partnership"           => "2"
       case "partnership"                             => "3"
       case "unincorporated body" | "local authority" => "5"
       case "trust"                                   => "6"
       case "public corporation" | "limited company"  => "7"
-    }
+    })
   }
 
-  def toEtmpDeclarationStatus(frontEndValue: String): CharSequence = ifNotNull(frontEndValue) {
-    _.toLowerCase match {
+  def toEtmpDeclarationStatus(frontEndValue: String): CharSequence = ifNotNull(frontEndValue) { s =>
+    quote(s.toLowerCase match {
       case "authorised official"             => "1"
       case "company secretary"               => "2"
       case "director"                        => "3"
@@ -351,8 +356,18 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
       case "sole proprietor" | "sole trader" => "5"
       case "trustee"                         => "6"
       case "others"                          => "7"
-    }
+    })
   }
 
-  private def ifNotNull[T, R](t: T)(f: T => R)(implicit ev: Null <:< R): R = Option(t).map(f).orNull
+  private def ifNotNull[T](t: T)(f: T => Handlebars.SafeString): Handlebars.SafeString =
+    Option(t).map(f).getOrElse(new Handlebars.SafeString("null"))
+
+  private def quote(s: String) = new Handlebars.SafeString(s""""$s"""")
+
+  private def condition(v: Any) =
+    Option(v) match {
+      case None            => "null"
+      case Some(s: String) => quote(s)
+      case Some(u)         => new Handlebars.SafeString(u.toString)
+    }
 }

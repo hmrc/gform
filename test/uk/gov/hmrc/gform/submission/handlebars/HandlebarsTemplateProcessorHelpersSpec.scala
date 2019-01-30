@@ -22,19 +22,21 @@ import uk.gov.hmrc.gform.Spec
 import org.scalacheck.Gen
 
 class HandlebarsTemplateProcessorHelpersSpec extends Spec {
-  val helper = new HandlebarsTemplateProcessorHelpers
-  import helper._
-
   "yesNoToEtmpChoice" must "return 1 when 0 is passed in" in {
-    yesNoToEtmpChoice("0") shouldBe "1"
+    val table = Table(("value", "expected"), ("0", "1"), ("1", "0"))
+
+    forAll(table) {
+      case (v, expected) =>
+        process(s"{{yesNoToEtmpChoice ${quote(v)}}}") shouldBe quote(expected)
+    }
   }
 
-  it must "return 0 when 1 is passed in" in {
-    yesNoToEtmpChoice("1") shouldBe "0"
+  "yesNoToEtmpChoice" must "return null when null" in {
+    process("{{yesNoToEtmpChoice null}}") shouldBe "null"
   }
 
   "dateToEtmpDate" must "return null when null is passed in" in {
-    dateToEtmpDate(null) shouldBe null
+    process("{{dateToEtmpDate null}}") shouldBe "null"
   }
 
   it must "convert a date of the form yyyy-mm-dd into yyyymmdd" in {
@@ -44,64 +46,81 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
       val inputDate = s"${yearFormat.format(y)}-${monthAndDayFormat.format(m)}-${monthAndDayFormat.format(d)}"
       val outputDate = s"${yearFormat.format(y)}${monthAndDayFormat.format(m)}${monthAndDayFormat.format(d)}"
 
-      dateToEtmpDate(inputDate) shouldBe outputDate
+      process(s"{{dateToEtmpDate ${quote(inputDate)}}}") shouldBe quote(outputDate)
     }
   }
 
   "either" must "select the first argument if it is non-null" in {
     forAll(Gen.alphaNumStr, Gen.alphaNumStr) { (v1, v2) =>
-      either(v1, v2) shouldBe v1
-      either(v1, null) shouldBe v1
+      process(s"{{either null ${quote(v1)} ${quote(v2)}}}") shouldBe quote(v1)
+      process(s"{{either null ${quote(v1)} null}}") shouldBe quote(v1)
     }
   }
 
   it must "select the second argument if the first is null" in {
     forAll(Gen.alphaNumStr) { v2 =>
-      either(null, v2) shouldBe v2
+      process(s"{{either null null ${quote(v2)}}}") shouldBe quote(v2)
     }
   }
 
-  it must "return null if both arguments are null" in {
-    either(null, null) shouldBe null
+  it must "return null if all arguments are null" in {
+    process("{{either null null null}}") shouldBe "null"
+  }
+
+  "either2" must "select the first argument if it is non-null" in {
+    forAll(Gen.alphaNumStr, Gen.alphaNumStr) { (v1, v2) =>
+      process(s"{{either2 ${quote(v1)} ${quote(v2)}}}") shouldBe quote(v1)
+      process(s"{{either2 ${quote(v1)} null}}") shouldBe quote(v1)
+    }
+  }
+
+  it must "select the second argument if the first is null" in {
+    forAll(Gen.alphaNumStr) { v2 =>
+      process(s"{{either2 null ${quote(v2)}}}") shouldBe quote(v2)
+    }
+  }
+
+  it must "return null if all arguments are null" in {
+    process("{{either2 null null}}") shouldBe "null"
   }
 
   "getPeriodKey" must "return the 0th element of the pipe separated parameter" in {
     forAll(periodGen) {
       case (key, _, _, period) =>
-        getPeriodKey(period) shouldBe key
+        process(s"{{getPeriodKey ${quote(period)}}}") shouldBe quote(key)
     }
   }
 
   it must "return null if the period is null" in {
-    getPeriodKey(null) shouldBe null
+    process("{{getPeriodKey null}}") shouldBe "null"
   }
 
-  "getPeriodFrom" must "return the 0th element of the pipe separated parameter" in {
+  "getPeriodFrom" must "return the 1st element of the pipe separated parameter" in {
     forAll(periodGen) {
       case (_, from, _, period) =>
-        getPeriodFrom(period) shouldBe from
+        process(s"{{getPeriodFrom ${quote(period)}}}") shouldBe quote(from)
     }
   }
 
   it must "return null if the period is null" in {
-    getPeriodFrom(null) shouldBe null
+    process(s"{{getPeriodFrom null}}") shouldBe "null"
   }
 
-  "getPeriodTo" must "return the 0th element of the pipe separated parameter" in {
+  "getPeriodTo" must "return the 2nd element of the pipe separated parameter" in {
     forAll(periodGen) {
       case (_, _, to, period) =>
-        getPeriodTo(period) shouldBe to
+        process(s"{{getPeriodTo ${quote(period)}}}") shouldBe quote(to)
     }
   }
 
   it must "return null if the period is null" in {
-    getPeriodTo(null) shouldBe null
+    process(s"{{getPeriodTo null}}") shouldBe "null"
   }
 
   "isSuccessCode" must "return true for all codes that begin with '2'" in {
     forAll(Gen.chooseNum(200, 299)) { code =>
       whenever(code >= 200 && code <= 299) {
-        isSuccessCode(code) shouldBe "true"
+        process(s"{{isSuccessCode $code}}") shouldBe "true"
       }
     }
   }
@@ -109,33 +128,33 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   it must "return false for all codes that do not begin with '2'" in {
     forAll(Gen.chooseNum(100, 599)) { code =>
       whenever(code < 200 || code >= 300) {
-        isSuccessCode(code) shouldBe "false"
+        process(s"{{isSuccessCode $code}}") shouldBe "false"
       }
     }
   }
 
-  it must "return undefined for a null code" in {
-    isSuccessCode(null) shouldBe "undefined"
+  it must "return false for a null code" in {
+    process(s"{{isSuccessCode null}}") shouldBe "false"
   }
 
   "isNotSuccessCode" must "return false for all codes that begin with '2'" in {
-    forAll(Gen.chooseNum(100, 599)) { code =>
-      whenever(code < 200 || code >= 300) {
-        isNotSuccessCode(code) shouldBe "true"
-      }
-    }
-  }
-
-  it must "return false for all codes that do not begin with '2'" in {
     forAll(Gen.chooseNum(200, 299)) { code =>
       whenever(code >= 200 && code <= 299) {
-        isNotSuccessCode(code) shouldBe "false"
+        process(s"{{isNotSuccessCode $code}}") shouldBe "false"
       }
     }
   }
 
-  it must "return undefined for a null code" in {
-    isNotSuccessCode(null) shouldBe "undefined"
+  it must "return true for all codes that do not begin with '2'" in {
+    forAll(Gen.chooseNum(100, 599)) { code =>
+      whenever(code < 200 || code >= 300) {
+        process(s"{{isNotSuccessCode $code}}") shouldBe "true"
+      }
+    }
+  }
+
+  it must "return false for a null code" in {
+    process(s"{{isNotSuccessCode null}}") shouldBe "false"
   }
 
   private def periodGen: Gen[(String, String, String, String)] =
@@ -144,4 +163,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
       from <- Gen.posNum[Int].map(_.toString)
       to   <- Gen.posNum[Int].map(_.toString)
     } yield (key, from, to, s"$key|$from|$to")
+
+  private def quote(s: String): String = s""""$s""""
+
+  private def process(s: String) = new HandlebarsTemplateProcessor()(s, HandlebarsTemplateProcessorModel(""))
 }
