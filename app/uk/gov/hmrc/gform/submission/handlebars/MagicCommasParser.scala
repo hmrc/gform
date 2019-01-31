@@ -21,26 +21,26 @@ import scala.util.parsing.combinator.RegexParsers
 object MagicCommasParser extends RegexParsers {
   override def skipWhitespace: Boolean = false
 
-  private def anyCharacter: Parser[String] =
+  private val anyCharacter: Parser[String] =
     """(?s).""".r ^^ { _.toString }
 
-  def literalString: Parser[String] =
+  private val literalString: Parser[String] =
     """"((\\["\\])|([^"]))*"""".r ^^ { s =>
       s.toString
     }
 
-  private def commaWithBracket: Parser[String] =
+  private val commaWithBracket: Parser[String] =
     "," ~ "(?s)\\s*".r ~ "]" ^^ {
       case _ ~ ws ~ _ =>
         s"$ws]"
     }
 
-  private def tokenParser: Parser[String] =
+  private val tokenParser: Parser[String] =
     literalString |
       commaWithBracket |
       anyCharacter
 
-  private def tokensParser: Parser[String] =
+  private val tokensParser: Parser[String] =
     phrase(rep(tokenParser)).map(_.mkString(""))
 
   def apply(input: String): String =
