@@ -150,6 +150,18 @@ object FormTemplateValidator {
     }
   }
 
+  def validateEnrolmentIdentifier(formTemplate: FormTemplate): ValidationResult = {
+    val userContextComponentType = formTemplate.expandFormTemplate.allFCs.collect {
+      case expr @ HasExpr(SingleExpr(UserCtx(EnrolledIdentifier))) => expr
+    }
+
+    formTemplate.authConfig match {
+      case HmrcSimpleModule | HmrcAgentModule(_) if !userContextComponentType.isEmpty =>
+        Invalid("Invalid auth type for component type.")
+      case _ => Valid
+    }
+  }
+
   def validateEnrolmentSection(formTemplate: FormTemplate): ValidationResult =
     formTemplate.authConfig match {
       case HasEnrolmentSection(_, enrolmentSection) =>

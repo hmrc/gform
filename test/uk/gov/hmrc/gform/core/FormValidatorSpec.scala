@@ -54,61 +54,6 @@ class FormValidatorSpec extends Spec {
       errorMessage = None
     )
 
-  "FormValidator.conform" should "parse all fields from form to list of FormField objects" in {
-
-    val formReq =
-      """|{
-         |  "formTemplateId": "IPT100",
-         |  "version": "0.1.0",
-         |  "characterSet": "UTF-8",
-         |  "fields": [
-         |    {
-         |      "id": "iptRegNum",
-         |      "value": "12AB3456780"
-         |    }, {
-         |      "id": "firstName",
-         |      "value": "John"
-         |    }, {
-         |      "id": "lastName",
-         |      "value": "Doe"
-         |    }, {
-         |      "id": "telephoneNumber",
-         |      "value": "+44 (01273) 123456"
-         |    }, {
-         |      "id": "nameOfBusiness",
-         |      "value": "Acme Widgets Ltd."
-         |    }, {
-         |      "id": "accountingPeriodStartDate",
-         |      "value": "2015-08-01"
-         |    }, {
-         |      "id": "accountingPeriodEndDate",
-         |      "value": "2015-12-01"
-         |    }, {
-         |      "id": "standardRateIPTDueForThisPeriod",
-         |      "value": "1329345.49"
-         |    }, {
-         |      "id": "higherRateIPTDueForThisPeriod",
-         |      "value": "58373265.23"
-         |    }
-         |  ]
-         |}""".stripMargin
-
-    val res = FormValidator.conform(Json.parse(formReq))
-
-    res.right.value should be(
-      List(
-        FormField(FormComponentId("iptRegNum"), "12AB3456780"),
-        FormField(FormComponentId("firstName"), "John"),
-        FormField(FormComponentId("lastName"), "Doe"),
-        FormField(FormComponentId("telephoneNumber"), "+44 (01273) 123456"),
-        FormField(FormComponentId("nameOfBusiness"), "Acme Widgets Ltd."),
-        FormField(FormComponentId("accountingPeriodStartDate"), "2015-08-01"),
-        FormField(FormComponentId("accountingPeriodEndDate"), "2015-12-01"),
-        FormField(FormComponentId("standardRateIPTDueForThisPeriod"), "1329345.49"),
-        FormField(FormComponentId("higherRateIPTDueForThisPeriod"), "58373265.23")
-      ))
-  }
-
   "Validation of form fields" should "succeed" in {
 
     val formFields =

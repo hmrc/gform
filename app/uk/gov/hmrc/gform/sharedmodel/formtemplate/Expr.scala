@@ -66,6 +66,7 @@ object Eeitt {
 sealed trait UserField
 final case object AffinityGroup extends UserField
 final case class Enrolment(serviceName: ServiceName, identifierName: IdentifierName) extends UserField
+final case object EnrolledIdentifier extends UserField
 
 final case class ServiceName(value: String) extends AnyVal
 object ServiceName {

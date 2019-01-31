@@ -28,18 +28,6 @@ import uk.gov.hmrc.gform.sharedmodel.form.FormField
 
 //TODO move to form package
 object FormValidator {
-  def conform(json: JsValue): Opt[List[FormField]] = {
-
-    val res = (json \ "fields").validate[List[FormField]]
-
-    res match {
-      case JsSuccess(success, _) => Right(success)
-      case JsError(error)        => Left(UnexpectedState(s"""|Error when reading 'FormField' class:
-                                                      |Error: $error
-                                                      |Input json: """.stripMargin + Json.prettyPrint(json)))
-    }
-  }
-
   //TODO: aggregate for error messages, something which can
   //say which field, section etc was wrong. No UnexpectedState!
   def validate(formFields: List[FormField], section: Section): Either[UnexpectedState, Unit] = {

@@ -120,6 +120,29 @@ class ValueParserSpec extends Spec {
     res.right.value should be(TextExpression(FormCtx("firstName")))
   }
 
+  it should "parse ${user.enrolledIdentifier}" in {
+    val res = ValueParser.validate("${user.enrolledIdentifier}")
+    res.right.value should be(TextExpression(UserCtx(EnrolledIdentifier)))
+  }
+
+  it should "fail to parse ${user.enrolledIdentifier" in {
+
+    val res = ValueParser.validate("${user.enrolledIdentifier")
+    res.left.value should be(UnexpectedState("""Unable to parse expression ${user.enrolledIdentifier.
+                                               |Errors:
+                                               |${user.enrolledIdentifier: unexpected end-of-file; expected '}'""".stripMargin))
+  }
+
+  it should "fail to parse ${user.enrolledIdentifiers}" in {
+
+    val res = ValueParser.validate("${user.enrolledIdentifiers}")
+    res.left.value should be(
+      UnexpectedState("""Unable to parse expression ${user.enrolledIdentifiers}.
+                        |Errors:
+                        |${user.enrolledIdentifiers}:1: unexpected characters; expected '+' or '}' or '\s+' or '*' or '-'
+                        |${user.enrolledIdentifiers}                         ^""".stripMargin))
+  }
+
   it should "parse ${user.enrolments.<identifierName>.<referenceName>}" in {
 
     val validIdentifiersCombinations = Table(

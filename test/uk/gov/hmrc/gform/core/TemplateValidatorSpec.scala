@@ -22,7 +22,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.sharedmodel.form.FormField
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.DestinationGen
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, FormTemplateGen }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.FormComponentGen._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.PrimitiveGen._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.SectionGen._
@@ -64,6 +64,32 @@ class TemplateValidatorSpec extends Spec {
 
         FormTemplateValidator.validateUniqueDestinationIds(destinations) should be(
           Invalid(FormTemplateValidator.someDestinationIdsAreUsedMoreThanOnce(Set(id1, id2))))
+      }
+    }
+  }
+
+  "validateEnrolmentIdentifier" should "return an error when ${user.enrolledIdentifier} && authConf is HmrcSimpleModule or HmrcAgentModule" in {
+    import FormTemplateValidator._
+
+    forAll(FormTemplateGen.formTemplateGen) { template =>
+      //TODO This require some refactoring to the generator and maybe made simpler.
+      if (template.expandFormTemplate.allFCs.nonEmpty) {
+        val formComponents: List[FormComponent] = template.expandFormTemplate.allFCs
+        val componentType = Text(EORI, UserCtx(EnrolledIdentifier))
+        val newFormComponents: List[FormComponent] = formComponents.map(_.copy(`type` = componentType))
+        val newSections = template.sections.map(_.copy(fields = newFormComponents))
+        val newTemplate = template.copy(sections = newSections)
+
+        val isAUserCtx = newTemplate.expandFormTemplate.allFCs.collect {
+          case expr @ HasExpr(SingleExpr(UserCtx(EnrolledIdentifier))) => expr
+        }.isEmpty
+
+        whenever(
+          newTemplate.authConfig == HmrcSimpleModule || newTemplate.authConfig
+            .isInstanceOf[HmrcAgentModule] && isAUserCtx) {
+          validateEnrolmentIdentifier(newTemplate) should be(Invalid("Invalid auth type for component type."))
+          validateEnrolmentIdentifier(newTemplate.copy(authConfig = EeittModule(RegimeId("")))) should be(Valid)
+        }
       }
     }
   }

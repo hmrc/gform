@@ -18,33 +18,20 @@ package uk.gov.hmrc.gform.formtemplate
 
 import cats.implicits._
 import play.api.Logger
-import play.api.libs.json.{ Json, Reads }
 import play.api.mvc.Action
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
-import uk.gov.hmrc.gform.core._
-import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId, FormTemplateRaw, FormTemplateRawId }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, FormTemplateRaw, FormTemplateRawId }
 
 class FormTemplatesController(formTemplateService: FormTemplateService) extends BaseController {
 
   def upsert() = Action.async(parse.json[FormTemplateRaw]) { implicit request =>
     //TODO authorisation (we don't want allow everyone to call this action
-    val templateRaw = request.body
+    val templateRaw: FormTemplateRaw = request.body
     Logger.info(s"Upserting template: ${templateRaw._id.value}, ${loggingHelpers.cleanHeaders(request.headers)}")
-    val formTemplateOpt: Opt[FormTemplate] =
-      implicitly[Reads[FormTemplate]]
-        .reads(templateRaw.value)
-        .fold(errors => UnexpectedState(errors.toString()).asLeft, valid => valid.asRight)
 
-    val result = for {
-      ft <- fromOptA(formTemplateOpt)
-      _  <- formTemplateService.verifyAndSave(ft)
-      _  <- formTemplateService.save(templateRaw)
-    } yield ()
-
-    result.fold(us => us.asBadRequest, _ => NoContent)
+    new FormTemplatesControllerRequestHandler(formTemplateService.verifyAndSave, formTemplateService.save).futureInterpreter
+      .handleRequest(templateRaw)
   }
 
   def get(id: FormTemplateId) = Action.async { implicit request =>
