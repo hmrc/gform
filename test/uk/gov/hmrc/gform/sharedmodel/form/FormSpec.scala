@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.sharedmodel.form
 import java.time.LocalDateTime
 
 import play.api.libs.json._
+import play.api.libs.json.Writes.DefaultLocalDateTimeWrites
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.ExampleData
 
@@ -29,12 +30,8 @@ class FormSpec extends Spec {
 
     val formJsObject: JsObject = Form.format.writes(form)
 
-    def f(d:LocalDateTime) : String = {
-      val dd = d
-      val s = EnvelopeExpiryDate.dateTimeFormat.format(d)
-      val ss = s
-      s
-    }
+    def f(d: LocalDateTime): JsValue = DefaultLocalDateTimeWrites.writes(d)
+
     val expectedFormJsObject = Json.obj(
       "_id"            -> "James007-AAA999",
       "envelopeId"     -> "b66c5979-e885-49cd-9281-c7f42ce6b307",
@@ -53,25 +50,20 @@ class FormSpec extends Spec {
     println(Json.prettyPrint(formJsObject))
     println(Json.prettyPrint(expectedFormJsObject))
 
-
-    val s = formJsObject.toString()
-    val e = expectedFormJsObject.toString()
-    val y =1
+    val s = formJsObject
+    val e = expectedFormJsObject
+    val y = 1
     val yy = y
 
-    //formJsObject shouldBe expectedFormJsObject
+    formJsObject shouldBe expectedFormJsObject
 
     val res1 = Json.toJson(xxx)
 
     val res2 = res1.asOpt[LocalDateTime]
 
-
-
-
     println("xxx " + xxx)
-      println("res1 " + res1)
+    println("res1 " + res1)
     println("res2 " + res2)
-
 
     Form.format.reads(Form.format.writes(form)) should be(JsSuccess(form))
   }

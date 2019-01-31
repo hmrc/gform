@@ -16,9 +16,8 @@
 
 package uk.gov.hmrc.gform.fileupload
 
-import java.time.LocalDateTime
-
 import play.api.libs.json.Json
+import play.api.libs.json.Writes.DefaultLocalDateTimeWrites
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.ExampleData
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeExpiryDate
@@ -43,7 +42,7 @@ class HelperSpec extends Spec {
         "maxSize"        -> "20MB",
         "maxSizePerItem" -> "5MB"
       ),
-      "expiryDate" -> EnvelopeExpiryDate.dateTimeFormat.format(date),
+      "expiryDate" -> s"${helper.envelopeExpiryDate(date)}",
       "metadata"   -> Json.obj("application" -> "gform", "formTemplateId" -> "AAA999")
     )
   }
