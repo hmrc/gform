@@ -264,12 +264,20 @@ object FormTemplateValidator {
   }
 
   def getAllFieldIdsFromFormTemplate(formTemplate: FormTemplate): List[FormComponentId] = {
-    val sectionsFields = formTemplate.sections.flatMap(_.fields.map(_.id))
-    val acknowledgementSectionFields = formTemplate.acknowledgementSection.fields.map(_.id)
-    val declarationSectionFields = formTemplate.declarationSection.fields.map(_.id)
+
+    val sectionsFields = extractFieldIds(formTemplate.sections.flatMap(_.fields))
+    val acknowledgementSectionFields = extractFieldIds(formTemplate.acknowledgementSection.fields)
+    val declarationSectionFields = extractFieldIds(formTemplate.declarationSection.fields)
 
     sectionsFields ::: acknowledgementSectionFields ::: declarationSectionFields
 
+  }
+
+  private def extractFieldIds(fields: List[FormComponent]): List[FormComponentId] = fields.flatMap(extractFieldIds)
+
+  private def extractFieldIds(field: FormComponent): List[FormComponentId] = field.`type` match {
+    case group: Group => group.fields.map(_.id)
+    case _            => List(field.id)
   }
 
   def validateEmailParameter(formTemplate: FormTemplate): ValidationResult =
