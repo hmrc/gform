@@ -16,16 +16,13 @@
 
 package uk.gov.hmrc.gform.sharedmodel.form
 
-import java.time.{ DateTimeException, LocalDateTime }
-import java.time.format.DateTimeFormatter
+import java.time.LocalDateTime
 
 import play.api.libs.json._
 
 case class EnvelopeExpiryDate(ldt: LocalDateTime)
 
 object EnvelopeExpiryDate {
-
-  val dateTimeFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
 
   implicit val format: OFormat[EnvelopeExpiryDate] = Json.format[EnvelopeExpiryDate]
 
@@ -36,12 +33,10 @@ object EnvelopeExpiryDate {
         case None    => Json.obj()
       }
 
-    override def reads(json: JsValue) = {
-
+    override def reads(json: JsValue) =
       json.\("ldt").asOpt[LocalDateTime] match {
         case Some(x) => JsSuccess(Some(EnvelopeExpiryDate(x)))
-        case None => JsSuccess(None)
+        case None    => JsSuccess(None)
       }
-    }
   }
 }
