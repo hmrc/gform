@@ -25,7 +25,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.PrimitiveGen
 class MagicCommasParserSpec extends Spec {
   private def stringWithNoSpecialCharsGen: Gen[String] =
     Gen.asciiPrintableStr.map(
-      _.replace(",,", "")
+      _.replace(",", "")
         .replace("\"", "")
         .replace("[", "")
         .replace("]", ""))
@@ -38,21 +38,13 @@ class MagicCommasParserSpec extends Spec {
     }
   }
 
-  it should "replace double commas with single commas" in {
-    forAll(stringWithNoSpecialCharsGen, stringWithNoSpecialCharsGen) { (beforeCommas, afterCommas) =>
-      whenever(isUn(beforeCommas, afterCommas)) {
-        verifySuccess(s"$beforeCommas,,$afterCommas", s"$beforeCommas,$afterCommas")
-      }
-    }
-  }
-
-  it should "replace double commas - those followed by a bracket - with just the bracket" in {
+  it should "replace commas followed by a bracket with just the bracket" in {
     forAll(
       stringWithNoSpecialCharsGen,
       PrimitiveGen.zeroOrMoreGen(Gen.oneOf(" ", "\n", "\r", "\t")).map(_.mkString("")),
       stringWithNoSpecialCharsGen) { (beforeCommas, spaces, afterCommas) =>
       whenever(isUn(beforeCommas, afterCommas)) {
-        verifySuccess(s"$beforeCommas,,$spaces]$afterCommas", s"$beforeCommas$spaces]$afterCommas")
+        verifySuccess(s"$beforeCommas,$spaces]$afterCommas", s"$beforeCommas$spaces]$afterCommas")
       }
     }
   }
@@ -79,9 +71,9 @@ class MagicCommasParserSpec extends Spec {
         |  "field2" : [
         |  ],
         |  "field3" : [
-        |     1,,
-        |     2,,
-        |     3,,
+        |     1,
+        |     2,
+        |     3,
         |  ],
         |  "field4" : [
         |     1,
@@ -89,13 +81,13 @@ class MagicCommasParserSpec extends Spec {
         |     3
         |  ],
         |   "field5" : [
-        |     { "field6" : "abc"},,
-        |     { "field7" : "def"},,
+        |     { "field6" : "abc"},
+        |     { "field7" : "def"},
         |  ],
         |   "field5" : [
         |     { "field8" : [
-        |       1,,
-        |       2,,
+        |       1,
+        |       2,
         |     ]
         |    }
         |  ]

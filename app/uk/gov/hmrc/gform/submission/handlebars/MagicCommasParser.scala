@@ -24,26 +24,20 @@ object MagicCommasParser extends RegexParsers {
   private def anyCharacter: Parser[String] =
     """(?s).""".r ^^ { _.toString }
 
-  private def doubleComma: Parser[String] =
-    ",," ^^ { _ =>
-      ","
-    }
-
   def literalString: Parser[String] =
     """"((\\["\\])|([^"]))*"""".r ^^ { s =>
       s.toString
     }
 
-  private def doubleCommaWithBracket: Parser[String] =
-    ",," ~ "(?s)\\s*".r ~ "]" ^^ {
+  private def commaWithBracket: Parser[String] =
+    "," ~ "(?s)\\s*".r ~ "]" ^^ {
       case _ ~ ws ~ _ =>
         s"$ws]"
     }
 
   private def tokenParser: Parser[String] =
     literalString |
-      doubleCommaWithBracket |
-      doubleComma |
+      commaWithBracket |
       anyCharacter
 
   private def tokensParser: Parser[String] =
