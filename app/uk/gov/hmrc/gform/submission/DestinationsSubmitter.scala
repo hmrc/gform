@@ -67,9 +67,11 @@ object DestinationsSubmitter {
   def createResponseModel(
     destination: Destination.HandlebarsHttpApi,
     response: HttpResponse): HandlebarsTemplateProcessorModel =
-    HandlebarsTemplateProcessorModel(s"""|"${destination.id.id}" : {
-                                         |  "status" : ${response.status},
-                                         |  "json" : ${response.json}
+    HandlebarsTemplateProcessorModel(s"""|{
+                                         |  "${destination.id.id}" : {
+                                         |    "status" : ${response.status},
+                                         |    "json" : ${response.json}
+                                         |  }
                                          |}""".stripMargin)
 
   def createHandlebarsTemplateProcessorModel(

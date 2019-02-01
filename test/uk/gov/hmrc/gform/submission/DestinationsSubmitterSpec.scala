@@ -124,6 +124,29 @@ class DestinationsSubmitterSpec extends Spec {
     }
   }
 
+  "createResponseModel" should "build the appropriate JSON" in {
+    forAll(DestinationGen.handlebarsHttpApiGen, Gen.chooseNum(100, 599)) { (destination, responseCode) =>
+      val responseBody = JsObject(
+        Seq(
+          "intField"    -> JsNumber(2),
+          "stringField" -> JsString("stringNodeValue")
+        ))
+
+      val responseModel =
+        DestinationsSubmitter.createResponseModel(destination, HttpResponse(responseCode, Option(responseBody)))
+
+      responseModel.model.toString shouldBe
+        JsObject(
+          Seq(
+            s"${destination.id.id}" -> JsObject(
+              Seq(
+                "status" -> JsNumber(responseCode),
+                "json"   -> responseBody
+              ))
+          )).toString
+    }
+  }
+
   private def setIncludeIf(destination: Destination, includeIf: String): Destination =
     destination match {
       case d: Destination.HmrcDms           => d.copy(includeIf = Option(includeIf))
