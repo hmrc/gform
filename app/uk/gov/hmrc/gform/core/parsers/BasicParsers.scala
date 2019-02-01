@@ -25,7 +25,6 @@ import parseback.compat.cats._
 import parseback.util.Catenable
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.RoundingMode
 
 object BasicParsers {
 
