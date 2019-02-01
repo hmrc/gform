@@ -387,6 +387,22 @@ class TemplateValidatorSpec extends Spec {
 
   }
 
+  "TemplateValidator.getAllFieldIdsFromFormTemplate with groups in section" should "return Valid" in {
+
+    val groupFields = List(mkFormComponent("fieldContainedInGroup", Value))
+    val formComponents = List(mkFormComponent("fieldContainedInFormTemplate", Group(groupFields, Vertical)))
+
+    val newSection = mkSection("example", formComponents)
+
+    val newFormTemplate = formTemplate.copy(sections = List(newSection))
+
+    println(newFormTemplate)
+
+    val res = FormTemplateValidator.getAllFieldIdsFromFormTemplate(newFormTemplate)
+    res should be(List(FormComponentId("fieldContainedInGroup"), FormComponentId("nameOfBusiness")))
+
+  }
+
   private def mkSection(name: String, formComponents: List[FormComponent]) =
     Section(
       name,
