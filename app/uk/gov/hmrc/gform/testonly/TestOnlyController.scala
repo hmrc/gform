@@ -106,13 +106,13 @@ class TestOnlyController(mongo: () => DB, enrolmentConnector: EnrolmentConnector
       Future.successful(
         Ok(
           Json.toJson(
-            new Obligation(List(new TaxPeriodDes(
-              new Identification("ITSA", "PB910220A", "nino"),
+            new Obligation(
               List(
-                new ObligationDetail("O", "2019-05-23", "2019-10-12", "2019-04-11", "2019-11-21", "#002"),
-                new ObligationDetail("O", "2019-06-24", "2019-09-24", "2019-03-24", "2019-07-01", "#001")
-              )
-            )))
+                new ObligationDetails(
+                  List(
+                    new ObligationDetail("O", "2017-06-01", "2017-08-31", "2017-09-30", "17B2"),
+                    new ObligationDetail("O", "2016-08-01", "2016-08-31", "2016-09-30", "16AH"))
+                )))
           )))
     else {
       Future.successful(BadRequest("idType wasn't nino"))
