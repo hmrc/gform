@@ -24,41 +24,43 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 class FormatParserSpec extends Spec {
 
+  val validate = FormatParser.validate(RoundingMode.defaultRoundingMode) _
+
   "YYY-MM-DD" should "be passed as it is" in {
-    val res = FormatParser.validate("anyDate")
+    val res = validate("anyDate")
     res.right.value should be(DateFormat(AnyDate))
   }
 
   "after today -2" should "be parsed successfully" in {
-    val res = FormatParser.validate("after today -2")
+    val res = validate("after today -2")
     res.right.value should be(DateFormat(DateConstraints(List(DateConstraint(After, Today, OffsetDate(-2))))))
   }
 
   "after 2017-04-02 -2" should "be parsed successfully" in {
-    val res = FormatParser.validate("after 2017-04-02 -2")
+    val res = validate("after 2017-04-02 -2")
     res.right.value should be(
       DateFormat(DateConstraints(List(DateConstraint(After, ConcreteDate(2017, 4, 2), OffsetDate(-2))))))
   }
 
   "after next-05-06 -2" should "be parsed successfully" ignore { //ignored until handled in gform-frontend
-    val res = FormatParser.validate("after next-05-06 -2")
+    val res = validate("after next-05-06 -2")
     res.right.value should be(DateFormat(DateConstraints(List(DateConstraint(After, NextDate(5, 6), OffsetDate(-2))))))
   }
 
   "after ${otherField}" should "be parsed successfully" in {
-    val res = FormatParser.validate("after ${otherField}")
+    val res = validate("after ${otherField}")
     res.right.value should be(
       DateFormat(DateConstraints(List(DateConstraint(After, DateField(FormComponentId("otherField")), OffsetDate(0))))))
   }
 
   "after previous-05-06 0" should "be parsed successfully" ignore { //ignored until handled in gform-frontend
-    val res = FormatParser.validate("after previous-05-06 0")
+    val res = validate("after previous-05-06 0")
     res.right.value should be(
       DateFormat(DateConstraints(List(DateConstraint(After, PreviousDate(5, 6), OffsetDate(0))))))
   }
 
   "before anyFieldId anotherWord 9" should "throw exception" in {
-    val res = FormatParser.validate("before anyFieldId anotherWord 9")
+    val res = validate("before anyFieldId anotherWord 9")
 
     res.left.value should be(
       UnexpectedState(
@@ -69,7 +71,7 @@ class FormatParserSpec extends Spec {
   }
 
   "after 2016-6-9 9" should "throw exception" in {
-    val res = FormatParser.validate("after 2016-6-9 9")
+    val res = validate("after 2016-6-9 9")
 
     res.left.value should be(
       UnexpectedState("""|Unable to parse expression after 2016-6-9 9.
@@ -79,18 +81,18 @@ class FormatParserSpec extends Spec {
   }
 
   "before today -2" should "be parsed successfully" in {
-    val res = FormatParser.validate("before today -2")
+    val res = validate("before today -2")
     res.right.value should be(DateFormat(DateConstraints(List(DateConstraint(Before, Today, OffsetDate(-2))))))
   }
 
   "before 2017-04-02 -2" should "be parsed successfully" in {
-    val res = FormatParser.validate("before 2017-04-02 -2")
+    val res = validate("before 2017-04-02 -2")
     res.right.value should be(
       DateFormat(DateConstraints(List(DateConstraint(Before, ConcreteDate(2017, 4, 2), OffsetDate(-2))))))
   }
 
   "before and after" should "be parsed successfully" in {
-    val res = FormatParser.validate("before 2017-04-02 -2,after 2015-02-01 +42")
+    val res = validate("before 2017-04-02 -2,after 2015-02-01 +42")
     res.right.value should be(
       DateFormat(
         DateConstraints(List(
@@ -99,7 +101,7 @@ class FormatParserSpec extends Spec {
   }
 
   "expressions without offset" should "be parsed successfully" in {
-    val res = FormatParser.validate("before 2017-04-02,after 2017-02-01")
+    val res = validate("before 2017-04-02,after 2017-02-01")
     res.right.value should be(
       DateFormat(
         DateConstraints(List(
@@ -108,37 +110,37 @@ class FormatParserSpec extends Spec {
   }
 
   "number" should "be parsed successfully" in {
-    val res = FormatParser.validate("number")
-    res.right.value should be(TextFormat(Number(11, 2, None)))
+    val res = validate("number")
+    res.right.value should be(TextFormat(Number(11, 2, RoundingMode.defaultRoundingMode, None)))
   }
 
   "number(n,m)" should "be parsed successfully" in {
-    val res = FormatParser.validate("number(3,4)")
-    res.right.value should be(TextFormat(Number(3, 4, None)))
+    val res = validate("number(3,4)")
+    res.right.value should be(TextFormat(Number(3, 4, RoundingMode.defaultRoundingMode, None)))
   }
 
   "number(n,m,'u')" should "be parsed successfully" in {
-    val res = FormatParser.validate("number(3,4,'u')")
-    res.right.value should be(TextFormat(Number(3, 4, Some("u"))))
+    val res = validate("number(3,4,'u')")
+    res.right.value should be(TextFormat(Number(3, 4, RoundingMode.defaultRoundingMode, Some("u"))))
   }
 
   "positiveNumber" should "be parsed successfully" in {
-    val res = FormatParser.validate("positiveNumber")
-    res.right.value should be(TextFormat(PositiveNumber(11, 2, None)))
+    val res = validate("positiveNumber")
+    res.right.value should be(TextFormat(PositiveNumber(11, 2, RoundingMode.defaultRoundingMode, None)))
   }
 
   "positiveNumber(n,m)" should "be parsed successfully" in {
-    val res = FormatParser.validate("positiveNumber(3,4)")
-    res.right.value should be(TextFormat(PositiveNumber(3, 4, None)))
+    val res = validate("positiveNumber(3,4)")
+    res.right.value should be(TextFormat(PositiveNumber(3, 4, RoundingMode.defaultRoundingMode, None)))
   }
 
   "positiveNumber(n,m,'u')" should "be parsed successfully" in {
-    val res = FormatParser.validate("positiveNumber(3,4,'u')")
-    res.right.value should be(TextFormat(PositiveNumber(3, 4, Some("u"))))
+    val res = validate("positiveNumber(3,4,'u')")
+    res.right.value should be(TextFormat(PositiveNumber(3, 4, RoundingMode.defaultRoundingMode, Some("u"))))
   }
 
   "positiveWholeNumber" should "be parsed successfully" in {
-    val res = FormatParser.validate("positiveWholeNumber")
-    res.right.value should be(TextFormat(PositiveNumber(11, 0, None)))
+    val res = validate("positiveWholeNumber")
+    res.right.value should be(TextFormat(PositiveNumber(11, 0, RoundingMode.defaultRoundingMode, None)))
   }
 }

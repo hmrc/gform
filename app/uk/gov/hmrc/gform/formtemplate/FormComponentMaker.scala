@@ -27,6 +27,7 @@ import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.{ FormatParser, PresentationHintParser, ValueParser }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidth.DisplayWidth
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.RoundingMode._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 case class MES(
@@ -43,7 +44,8 @@ class FormComponentMaker(json: JsValue) {
   lazy val label: String = (json \ "label").as[String]
 
   lazy val optMaybeValueExpr: Opt[Option[ValueExpr]] = parse("value", ValueParser.validate)
-  lazy val optMaybeFormatExpr: Opt[Option[FormatExpr]] = parse("format", FormatParser.validate)
+  lazy val optMaybeFormatExpr: RoundingMode => Opt[Option[FormatExpr]] = rm =>
+    parse("format", FormatParser.validate(rm))
   lazy val optMaybePresentationHintExpr: Opt[Option[List[PresentationHint]]] =
     parse("presentationHint", PresentationHintParser.validate)
 
@@ -60,6 +62,7 @@ class FormComponentMaker(json: JsValue) {
   lazy val mandatory: Option[String] = (json \ "mandatory").asOpt[String]
   lazy val multiline: Option[String] = (json \ "multiline").asOpt[String]
   lazy val displayWidth: Option[String] = (json \ "displayWidth").asOpt[String]
+  lazy val roundingMode: RoundingMode = (json \ "round").asOpt[RoundingMode].getOrElse(RoundingMode.defaultRoundingMode)
   lazy val multivalue: Option[String] = (json \ "multivalue").asOpt[String]
   lazy val total: Option[String] = (json \ "total").asOpt[String]
   lazy val international: Option[String] = (json \ "international").asOpt[String]
@@ -141,19 +144,21 @@ class FormComponentMaker(json: JsValue) {
 
   private lazy val textOpt: Opt[ComponentType] = {
     for {
-      maybeFormatExpr <- optMaybeFormatExpr
+      maybeFormatExpr <- optMaybeFormatExpr(roundingMode)
       maybeValueExpr  <- optMaybeValueExpr
       result <- (maybeFormatExpr, maybeValueExpr, multiline, displayWidth) match {
                  // format: off
-        case (Some(TextFormat(UkSortCodeFormat)), HasTextExpression(expr), IsNotMultiline(), _)                             => UkSortCode(expr).asRight
-        case (Some(TextFormat(f)),                HasTextExpression(expr), IsNotMultiline(), None)                          => Text(f, expr).asRight
-        case (None,                               HasTextExpression(expr), IsNotMultiline(), None)                          => Text(ShortText, expr).asRight
-        case (Some(TextFormat(f)),                HasTextExpression(expr), IsNotMultiline(), HasDisplayWidth(dw))           => Text(f, expr, dw).asRight
-        case (None,                               HasTextExpression(expr), IsNotMultiline(), HasDisplayWidth(dw))           => Text(ShortText, expr, dw).asRight
-        case (Some(TextFormat(f)),                HasTextExpression(expr), IsMultiline()   , None)                          => TextArea(f, expr).asRight
-        case (None,                               HasTextExpression(expr), IsMultiline()   , None)                          => TextArea(BasicText, expr).asRight
-        case (Some(TextFormat(f)),                HasTextExpression(expr), IsMultiline()   , HasDisplayWidth(dw)) => TextArea(f, expr,dw).asRight
-        case (None,                               HasTextExpression(expr), IsMultiline()   , HasDisplayWidth(dw)) => TextArea(BasicText, expr,dw).asRight
+        case (Some(TextFormat(UkSortCodeFormat)), HasTextExpression(expr), IsNotMultiline(), _)                       => UkSortCode(expr).asRight
+        case (Some(TextFormat(f)),                HasTextExpression(expr), IsNotMultiline(), None)                    => Text(f, expr).asRight
+        case (None,                               HasTextExpression(expr), IsNotMultiline(), None)                    => Text(ShortText, expr).asRight
+        case (Some(TextFormat(f)),                HasTextExpression(expr), IsNotMultiline(), HasDisplayWidth(dw))     => Text(f, expr, dw).asRight
+        case (None,                               HasTextExpression(expr), IsNotMultiline(), HasDisplayWidth(dw))     => Text(ShortText, expr, dw).asRight
+        case (Some(TextFormat(f)),                HasTextExpression(expr), IsNotMultiline(), HasDisplayWidth(dw))     => Text(f, expr, dw).asRight
+        case (None,                               HasTextExpression(expr), IsNotMultiline(), HasDisplayWidth(dw))     => Text(ShortText, expr, dw).asRight
+        case (Some(TextFormat(f)),                HasTextExpression(expr), IsMultiline()   , None)                    => TextArea(f, expr).asRight
+        case (None,                               HasTextExpression(expr), IsMultiline()   , None)                    => TextArea(BasicText, expr).asRight
+        case (Some(TextFormat(f)),                HasTextExpression(expr), IsMultiline()   , HasDisplayWidth(dw))     => TextArea(f, expr,dw).asRight
+        case (None,                               HasTextExpression(expr), IsMultiline()   , HasDisplayWidth(dw))     => TextArea(BasicText, expr,dw).asRight
         case (maybeInvalidFormat,                 maybeInvalidValue,       IsMultiline()   , _) =>
           UnexpectedState(s"""|Unsupported type of format or value for multiline text field
                   |Id: $id
@@ -209,7 +214,7 @@ class FormComponentMaker(json: JsValue) {
 
     lazy val dateConstraintOpt: Opt[DateConstraintType] =
       for {
-        maybeFormatExpr <- optMaybeFormatExpr
+        maybeFormatExpr <- optMaybeFormatExpr(roundingMode)
         optDateConstraintType = maybeFormatExpr match {
           case Some(DateFormat(e)) => e.asRight
           case None                => AnyDate.asRight
@@ -260,7 +265,7 @@ class FormComponentMaker(json: JsValue) {
 
     for {
       fieldValues <- fieldValuesOpt.right
-      format      <- optMaybeFormatExpr.right
+      format      <- optMaybeFormatExpr(roundingMode).right
       repMax      <- optMaybeRepeatsMax
       repMin      <- optMaybeRepeatsMin
       group       <- validateRepeatsAndBuildGroup(repMax, repMin, fieldValues, orientation(format))
@@ -285,7 +290,7 @@ class FormComponentMaker(json: JsValue) {
 
   private lazy val choiceOpt: Opt[Choice] = {
     for {
-      maybeFormatExpr <- optMaybeFormatExpr
+      maybeFormatExpr <- optMaybeFormatExpr(roundingMode)
       maybeValueExpr  <- optMaybeValueExpr
       oChoice: Opt[Choice] = (maybeFormatExpr, choices, multivalue, maybeValueExpr, optionHelpText) match {
         // format: off

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 import org.scalacheck.Gen
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ After, AnyDate, AnyText, AnyWord, BasicText, Before, BeforeOrAfter, CompanyRegistrationNumber, ConcreteDate, CountryCode, DateConstraint, DateConstraintInfo, DateConstraintType, DateConstraints, DateField, EORI, Email, NINO, NextDate, NonUkCountryCode, Number, OffsetDate, PositiveNumber, PreviousDate, ShortText, Sterling, TelephoneNumber, TextConstraint, TextExpression, TextWithRestrictions, Today, UTR, UkBankAccountNumber, UkSortCodeFormat, UkVrn }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ After, AnyDate, AnyText, AnyWord, BasicText, Before, BeforeOrAfter, CompanyRegistrationNumber, ConcreteDate, CountryCode, DateConstraint, DateConstraintInfo, DateConstraintType, DateConstraints, DateField, EORI, Email, NINO, NextDate, NonUkCountryCode, Number, OffsetDate, PositiveNumber, PreviousDate, RoundingMode, ShortText, Sterling, TelephoneNumber, TextConstraint, TextExpression, TextWithRestrictions, Today, UTR, UkBankAccountNumber, UkSortCodeFormat, UkVrn }
 
 trait FormatExprGen {
   def numberGen: Gen[Number] =
@@ -24,14 +24,29 @@ trait FormatExprGen {
       maxWholeDigits      <- Gen.posNum[Int]
       maxFractionalDigits <- Gen.posNum[Int]
       units               <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
-    } yield Number(maxWholeDigits, maxFractionalDigits, units)
+      roundingMode        <- roundingModeGen
+    } yield Number(maxWholeDigits, maxFractionalDigits, roundingMode, units)
 
   def positiveNumberGen: Gen[PositiveNumber] =
     for {
       maxWholeDigits      <- Gen.posNum[Int]
       maxFractionalDigits <- Gen.posNum[Int]
       units               <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
-    } yield PositiveNumber(maxWholeDigits, maxFractionalDigits, units)
+      roundingMode        <- roundingModeGen
+    } yield PositiveNumber(maxWholeDigits, maxFractionalDigits, roundingMode, units)
+
+  def roundingModeGen: Gen[RoundingMode] =
+    for {
+      roundingMode <- Gen.oneOf(
+                       RoundingMode.Up,
+                       RoundingMode.Down,
+                       RoundingMode.Floor,
+                       RoundingMode.Ceiling,
+                       RoundingMode.HalfEven,
+                       RoundingMode.HalfDown,
+                       RoundingMode.HalfUp
+                     )
+    } yield roundingMode
 
   def textWithRestrictions: Gen[TextWithRestrictions] =
     for {
@@ -46,7 +61,7 @@ trait FormatExprGen {
     Gen.const(BasicText),
     Gen.const(ShortText),
     textWithRestrictions,
-    Gen.const(Sterling),
+    Gen.const(Sterling(RoundingMode.defaultRoundingMode)),
     Gen.const(UkBankAccountNumber),
     Gen.const(UkSortCodeFormat),
     Gen.const(UTR),

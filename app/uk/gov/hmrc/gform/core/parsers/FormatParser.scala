@@ -18,18 +18,16 @@ package uk.gov.hmrc.gform.core.parsers
 
 import parseback._
 import uk.gov.hmrc.gform.core.Opt
-import uk.gov.hmrc.gform.sharedmodel._
 import BasicParsers._
-import uk.gov.hmrc.gform.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 object FormatParser {
 
-  def validate(expression: String): Opt[FormatExpr] = validateWithParser(expression, expr)
+  def validate(rm: RoundingMode)(expression: String): Opt[FormatExpr] = validateWithParser(expression, expr(rm))
 
-  lazy val expr: Parser[FormatExpr] = {
+  lazy val expr: RoundingMode => Parser[FormatExpr] = rm => {
     dateFormat |
-      textFormat |
+      textFormat(rm) |
       anyWordExpression
   }
 
@@ -99,11 +97,11 @@ object FormatParser {
     OffsetDate(offset)
   }
 
-  lazy val textFormat: Parser[FormatExpr] = {
-    numberFormat |
-      positiveNumberFormat |
-      positiveWholeNumberFormat |
-      moneyFormat |
+  lazy val textFormat: RoundingMode => Parser[FormatExpr] = rm => {
+    numberFormat(rm) |
+      positiveNumberFormat(rm) |
+      positiveWholeNumberFormat(rm) |
+      moneyFormat(rm) |
       contactFormat |
       governmentIdFormat |
       basicFormat |
@@ -136,19 +134,27 @@ object FormatParser {
     }
   }
 
-  lazy val numberFormat: Parser[TextFormat] = {
+  lazy val numberFormat: RoundingMode => Parser[TextFormat] = rm => {
     "number" ~ numberArgs ^^ { (loc, _, na) =>
-      TextFormat(Number(maxWholeDigits = na._1, maxFractionalDigits = na._2, unit = na._3))
+      TextFormat(Number(maxWholeDigits = na._1, maxFractionalDigits = na._2, rm, unit = na._3))
     } | "number" ^^ { (loc, _) =>
-      TextFormat(Number())
+      TextFormat(
+        Number(
+          TextConstraint.defaultWholeDigits,
+          TextConstraint.defaultFactionalDigits,
+          RoundingMode.defaultRoundingMode))
     }
   }
 
-  lazy val positiveNumberFormat: Parser[TextFormat] = {
+  lazy val positiveNumberFormat: RoundingMode => Parser[TextFormat] = rm => {
     "positiveNumber" ~ numberArgs ^^ { (loc, _, na) =>
-      TextFormat(PositiveNumber(maxWholeDigits = na._1, maxFractionalDigits = na._2, unit = na._3))
+      TextFormat(PositiveNumber(maxWholeDigits = na._1, maxFractionalDigits = na._2, rm, unit = na._3))
     } | "positiveNumber" ^^ { (loc, _) =>
-      TextFormat(PositiveNumber())
+      TextFormat(
+        PositiveNumber(
+          TextConstraint.defaultWholeDigits,
+          TextConstraint.defaultFactionalDigits,
+          RoundingMode.defaultRoundingMode))
     }
   }
 
@@ -166,13 +172,14 @@ object FormatParser {
     }
   }
 
-  lazy val positiveWholeNumberFormat: Parser[TextFormat] = "positiveWholeNumber" ^^ { (loc, _) =>
-    TextFormat(PositiveNumber(maxFractionalDigits = 0))
+  lazy val positiveWholeNumberFormat: RoundingMode => Parser[TextFormat] = rm =>
+    "positiveWholeNumber" ^^ { (loc, _) =>
+      TextFormat(PositiveNumber(maxFractionalDigits = 0, roundingMode = rm))
   }
 
-  lazy val moneyFormat: Parser[TextFormat] = {
+  lazy val moneyFormat: RoundingMode => Parser[TextFormat] = rm => {
     "sterling" ^^ { (loc, _) =>
-      TextFormat(Sterling)
+      TextFormat(Sterling(rm))
     } | "ukBankAccountNumber" ^^ { (loc, _) =>
       TextFormat(UkBankAccountNumber)
     } | "ukSortCode" ^^ { (loc, _) =>
@@ -182,7 +189,7 @@ object FormatParser {
 
   lazy val numberArgs: Parser[(Int, Int, Option[String])] = {
     wholeFractional ~ "," ~ quotedString ~ ")" ^^ { (loc, wf, _, q, _) =>
-      (wf.w, wf.f, Some(q))
+      (wf.w, wf.f, Option(q))
     } | wholeFractional ~ ")" ^^ { (loc, wf, _) =>
       (wf.w, wf.f, None)
     }

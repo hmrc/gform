@@ -55,8 +55,8 @@ trait HtmlGeneratorService {
   private def generateTextFieldHTML(textElement: Text, fieldValue: FormComponent, formFieldValue: String) = {
     val name = getEnglishText(fieldValue.shortName.getOrElse(fieldValue.label))
     val value = textElement.constraint match {
-      case Number(_, _, _) | PositiveNumber(_, _, _) => TextConstraint.filterNumberValue(formFieldValue)
-      case _                                         => formFieldValue
+      case Number(_, _, _, _) | PositiveNumber(_, _, _, _) => TextConstraint.filterNumberValue(formFieldValue)
+      case _                                               => formFieldValue
     }
     (name, Html(value))
   }
