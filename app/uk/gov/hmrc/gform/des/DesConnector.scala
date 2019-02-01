@@ -21,6 +21,7 @@ import play.api.Logger
 import play.api.libs.json.{ JsValue, Json, OFormat }
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.config.DesConnectorConfig
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.HmrcTaxPeriod
 import uk.gov.hmrc.gform.wshttp.WSHttp
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -97,4 +98,10 @@ case class Obligation(obligations: List[ObligationDetails])
 
 object Obligation {
   implicit val format: OFormat[Obligation] = Json.format[Obligation]
+}
+
+case class TaxResponse(id: HmrcTaxPeriod, obligation: Obligation)
+
+object TaxResponse {
+  implicit val format: OFormat[TaxResponse] = Json.format[TaxResponse]
 }
