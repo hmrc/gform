@@ -74,7 +74,6 @@ case class ObligationDetail(
   status: String,
   inboundCorrespondenceFromDate: String,
   inboundCorrespondenceToDate: String,
-  inboundCorrespondenceDateReceived: String,
   inboundCorrespondenceDueDate: String,
   periodKey: String)
 
@@ -88,7 +87,13 @@ object TaxPeriodDes {
   implicit val format: OFormat[TaxPeriodDes] = Json.format[TaxPeriodDes]
 }
 
-case class Obligation(obligations: List[TaxPeriodDes])
+case class ObligationDetails(obligationDetails: List[ObligationDetail])
+
+object ObligationDetails {
+  implicit val format: OFormat[ObligationDetails] = Json.format[ObligationDetails]
+}
+
+case class Obligation(obligations: List[ObligationDetails])
 
 object Obligation {
   implicit val format: OFormat[Obligation] = Json.format[Obligation]

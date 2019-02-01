@@ -56,6 +56,7 @@ class ObligationController(obligation: ObligationService) extends BaseController
   def getAllTaxPeriods() = Action.async(parse.json[List[HmrcTaxPeriod]]) { implicit request =>
     Logger.info(s"Get All Tax Periods from DES, ${loggingHelpers.cleanHeaders(request.headers)}")
     val body: List[HmrcTaxPeriod] = request.body
-    Future.sequence(body.map(i => obligation.callDES(i.idType.value, i.idNumber.value, i.regimeType.value))).asOkJson
+    val a = body.map(i => (i, obligation.callDES(i.idType.value, i.idNumber.value, i.regimeType.value)))
+    Future.sequence(a).asOkJson
   }
 }
