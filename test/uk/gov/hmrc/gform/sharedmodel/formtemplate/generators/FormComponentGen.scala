@@ -19,7 +19,13 @@ import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 trait FormComponentGen {
-  def formComponentIdGen: Gen[FormComponentId] = PrimitiveGen.nonEmptyAlphaNumStrGen.map(FormComponentId(_))
+  def formComponentIdGen: Gen[FormComponentId] =
+    for {
+      first                <- Gen.oneOf(Gen.const("_"), Gen.alphaChar.map(_.toString))
+      restBeforeUnderscore <- PrimitiveGen.nonEmptyAlphaNumStrGen
+      restAfterUnderscore  <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen).map(_.map("_" + _).getOrElse(""))
+    } yield FormComponentId(first + restBeforeUnderscore + restAfterUnderscore)
+
   def labelGen: Gen[String] = PrimitiveGen.nonEmptyAlphaNumStrGen
   def helpTextGen: Gen[String] = PrimitiveGen.nonEmptyAlphaNumStrGen
   def shortNameGen: Gen[String] = PrimitiveGen.nonEmptyAlphaNumStrGen
