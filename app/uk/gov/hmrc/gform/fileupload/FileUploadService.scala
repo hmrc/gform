@@ -21,7 +21,6 @@ import java.time.format.DateTimeFormatter
 
 import akka.util.ByteString
 import play.api.Logger
-import play.api.libs.json.JsValue
 import uk.gov.hmrc.gform.fileupload.FileUploadService.FileIds._
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
