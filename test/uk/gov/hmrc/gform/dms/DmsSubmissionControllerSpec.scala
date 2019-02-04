@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.dms
 import java.time._
 import java.util.{ Base64, UUID }
 
+import uk.gov.hmrc.gform.core.{ success, unexpectedState }
 import org.apache.pdfbox.pdmodel.PDDocument
 import play.api.libs.json.{ JsValue, Json }
 import play.api.test.FakeRequest
@@ -26,7 +27,7 @@ import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.fileupload.FileUploadService
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorService
 import play.api.test.Helpers._
-import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId }
+import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Constant, FormTemplateId, TextExpression }
 import uk.gov.hmrc.gform.submission._
@@ -47,7 +48,7 @@ class DmsSubmissionControllerSpec extends Spec {
     (mockPdfGenerator
       .generatePDF(_: String)(_: HeaderCarrier))
       .expects(*, *)
-      .returning(Future.successful(Array.emptyByteArray))
+      .returning(success(Array.emptyByteArray))
 
     mockDocumentLoader
       .expects(*)
@@ -60,6 +61,21 @@ class DmsSubmissionControllerSpec extends Spec {
 
     val res = testController.submitToDms()(validRequest)
     status(res) shouldBe NO_CONTENT
+  }
+
+  it should "return an InternalServerError if PDF upload failed" in {
+    (mockFileUpload
+      .createEnvelope(_: FormTemplateId)(_: HeaderCarrier))
+      .expects(FormTemplateId(validSubmission.metadata.dmsFormId), *)
+      .returning(Future.successful(EnvelopeId("some-envelope-id")))
+
+    (mockPdfGenerator
+      .generatePDF(_: String)(_: HeaderCarrier))
+      .expects(*, *)
+      .returning(unexpectedState("Foo"))
+
+    val res = testController.submitToDms()(validRequest)
+    status(res) shouldBe INTERNAL_SERVER_ERROR
   }
 
   it should "generate a PDF using the decoded HTML" in {
@@ -76,7 +92,7 @@ class DmsSubmissionControllerSpec extends Spec {
     (mockPdfGenerator
       .generatePDF(_: String)(_: HeaderCarrier))
       .expects(html, *)
-      .returning(Future.successful(pdfBytes))
+      .returning(success(pdfBytes))
 
     mockDocumentLoader
       .expects(*)
@@ -114,7 +130,7 @@ class DmsSubmissionControllerSpec extends Spec {
     (mockPdfGenerator
       .generatePDF(_: String)(_: HeaderCarrier))
       .expects(*, *)
-      .returning(Future.successful(pdfContent))
+      .returning(success(pdfContent))
 
     mockDocumentLoader
       .expects(*)

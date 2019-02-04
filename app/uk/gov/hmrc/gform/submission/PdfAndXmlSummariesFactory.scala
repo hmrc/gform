@@ -16,7 +16,9 @@
 
 package uk.gov.hmrc.gform.submission
 
+import cats.instances.future._
 import org.apache.pdfbox.pdmodel.PDDocument
+import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.pdfgenerator.{ HtmlGeneratorService, PdfGeneratorService, XmlGeneratorService }
 import uk.gov.hmrc.gform.sharedmodel.form.Form
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
@@ -24,7 +26,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
 import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.ExecutionContext
 
 trait PdfAndXmlSummariesFactory {
   def apply(
@@ -33,7 +35,7 @@ trait PdfAndXmlSummariesFactory {
     sectionFormFields: List[SectionFormField],
     customerId: String,
     submissionRef: SubmissionRef,
-    dmsSubmission: DmsSubmission): Future[PdfAndXmlSummaries]
+    dmsSubmission: DmsSubmission): FOpt[PdfAndXmlSummaries]
 }
 
 object PdfAndXmlSummariesFactory {
@@ -46,7 +48,7 @@ object PdfAndXmlSummariesFactory {
       sectionFormFields: List[SectionFormField],
       customerId: String,
       submissionRef: SubmissionRef,
-      dmsSubmission: DmsSubmission): Future[PdfAndXmlSummaries] = {
+      dmsSubmission: DmsSubmission): FOpt[PdfAndXmlSummaries] = {
       val pdf = HtmlGeneratorService.generateDocumentHTML(sectionFormFields, formTemplate.formName, form.formData)
       val wpdf: PdfAndXmlSummariesFactory = withPdf(pdfGeneratorService, pdf)
       wpdf(form, formTemplate, sectionFormFields, customerId, submissionRef, dmsSubmission)
@@ -62,14 +64,14 @@ object PdfAndXmlSummariesFactory {
       sectionFormFields: List[SectionFormField],
       customerId: String,
       submissionRef: SubmissionRef,
-      dmsSubmission: DmsSubmission): Future[PdfAndXmlSummaries] =
+      dmsSubmission: DmsSubmission): FOpt[PdfAndXmlSummaries] =
       pdfGeneratorService.generatePDF(pdfHtml).map { pdf =>
         PdfAndXmlSummaries(
           pdfSummary = createPdfSummary(pdf),
           xmlSummary = createXmlSummary(sectionFormFields, formTemplate, submissionRef, dmsSubmission))
       }
 
-    private def createPdfSummary(pdf: Array[Byte]) = {
+    private def createPdfSummary(pdf: Array[Byte]): PdfSummary = {
       val pDDocument: PDDocument = PDDocument.load(pdf)
       try {
         PdfSummary(numberOfPages = pDDocument.getNumberOfPages.toLong, pdfContent = pdf)

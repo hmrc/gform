@@ -36,14 +36,13 @@ class FileUploadServiceDmsSubmitter(fileUploadService: FileUploadService)(implic
     import submissionInfo._
     for {
       sectionFormFields <- fromOptA(SubmissionServiceHelper.getSectionFormFields(form, formTemplate, affinityGroup))
-      summaries <- fromFutureA(
-                    pdfAndXmlSummaryFactory(
-                      form,
-                      formTemplate,
-                      sectionFormFields,
-                      customerId,
-                      submission.submissionRef,
-                      dmsSubmission))
+      summaries <- pdfAndXmlSummaryFactory(
+                    form,
+                    formTemplate,
+                    sectionFormFields,
+                    customerId,
+                    submission.submissionRef,
+                    dmsSubmission)
       numberOfAttachments = sectionFormFields.map(_.numberOfFiles()).sum
       res <- fromFutureA(fileUploadService.submitEnvelope(submission, summaries, dmsSubmission, numberOfAttachments))
     } yield res

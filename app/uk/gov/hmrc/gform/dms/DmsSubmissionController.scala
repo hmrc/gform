@@ -19,10 +19,15 @@ package uk.gov.hmrc.gform.dms
 import java.time.{ Clock, LocalDateTime }
 import java.util.Base64
 
+import cats.data.EitherT
+import cats.instances.future._
 import org.apache.pdfbox.pdmodel.PDDocument
 import play.api.libs.json.JsValue
-import play.api.mvc.Action
+import play.api.Logger
+import play.api.mvc.{ Action, Result }
 import uk.gov.hmrc.gform.controllers.BaseController
+import uk.gov.hmrc.gform.core.fromFutureA
+import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.fileupload.FileUploadService
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorService
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
@@ -31,6 +36,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsS
 import uk.gov.hmrc.gform.submission._
 import uk.gov.hmrc.gform.typeclasses.Rnd
 
+import scala.concurrent.Future
 import scala.util.Random
 
 class DmsSubmissionController(
@@ -45,8 +51,8 @@ class DmsSubmissionController(
       val metadata = dmsHtmlSubmission.metadata
       val formTemplateId = FormTemplateId(metadata.dmsFormId)
 
-      for {
-        envId <- fileUpload.createEnvelope(formTemplateId)
+      val result: EitherT[Future, UnexpectedState, Result] = for {
+        envId <- fromFutureA(fileUpload.createEnvelope(formTemplateId))
         pdf   <- pdfGenerator.generatePDF(decodedHtml)
         pdfDoc = documentLoader(pdf)
         pdfSummary = PdfSummary(pdfDoc.getNumberOfPages.toLong, pdf)
@@ -67,10 +73,15 @@ class DmsSubmissionController(
           TextExpression(Constant(metadata.customerId)),
           metadata.classificationType,
           metadata.businessArea)
-        _ <- fileUpload.submitEnvelope(submission, summaries, dmsSubmission, 0)
+        _ <- fromFutureA(fileUpload.submitEnvelope(submission, summaries, dmsSubmission, 0))
       } yield {
         NoContent
       }
+
+      result.leftMap { l =>
+        Logger.info(s"Problem submitting to DMS: ${l.error}")
+        InternalServerError
+      }.merge
     }
   }
 

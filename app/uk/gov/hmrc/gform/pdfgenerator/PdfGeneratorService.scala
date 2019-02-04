@@ -18,13 +18,12 @@ package uk.gov.hmrc.gform.pdfgenerator
 
 import play.mvc.Http.{ HeaderNames, MimeTypes }
 import uk.gov.hmrc.gform.connectors.PdfGeneratorConnector
-
-import scala.concurrent.Future
+import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.http.HeaderCarrier
 
 class PdfGeneratorService(pdfGeneratorConnector: PdfGeneratorConnector) {
 
-  def generatePDF(html: String)(implicit hc: HeaderCarrier): Future[Array[Byte]] = {
+  def generatePDF(html: String)(implicit hc: HeaderCarrier): FOpt[Array[Byte]] = {
     val headers = Seq((HeaderNames.CONTENT_TYPE, MimeTypes.FORM))
     val body = Map("html" -> Seq(html))
     pdfGeneratorConnector.generatePDF(body, headers)
