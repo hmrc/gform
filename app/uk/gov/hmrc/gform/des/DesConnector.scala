@@ -25,7 +25,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.HmrcTaxPeriod
 import uk.gov.hmrc.gform.wshttp.WSHttp
 
 import scala.concurrent.{ ExecutionContext, Future }
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{ HeaderCarrier, JsValidationException }
 import uk.gov.hmrc.http.logging.Authorization
 
 class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfig) {
@@ -54,7 +54,9 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
     Logger.info(
       s"Des lookup, Tax Periods: '$idType, $idNumber, $regimeType', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
     wSHttp.GET[Obligation](
-      s"$baseUrl${desConfig.basePath}/enterprise/obligation-data/$idType/$idNumber/$regimeType?status=O")
+      s"$baseUrl${desConfig.basePath}/enterprise/obligation-data/$idType/$idNumber/$regimeType?status=O") recoverWith {
+      case e: JsValidationException => Future(Obligation(List()))
+    }
   }
 
 }
