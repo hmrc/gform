@@ -21,12 +21,15 @@ import play.api.libs.json._
 object ValueClassFormat {
 
   def oformat[A](fieldName: String, read: String => A, write: A => String): OFormat[A] =
+    validatedoformat(fieldName, s => JsSuccess(read(s)), write)
+
+  def validatedoformat[A](fieldName: String, read: String => JsResult[A], write: A => String): OFormat[A] =
     OFormat[A](
       Reads[A] {
-        case JsString(str) => JsSuccess(read(str))
+        case JsString(str) => read(str)
         case JsObject(x) =>
           x.get(fieldName) match {
-            case Some(JsString(str)) => JsSuccess(read(str))
+            case Some(JsString(str)) => read(str)
             case _                   => JsError(s"Expected $fieldName field")
           }
         case other => JsError(s"Invalid json, not found '$fieldName'")
@@ -35,12 +38,15 @@ object ValueClassFormat {
     )
 
   def vformat[A](fieldName: String, read: String => A, write: A => JsValue): Format[A] =
+    validatedvformat(fieldName, s => JsSuccess(read(s)), write)
+
+  def validatedvformat[A](fieldName: String, read: String => JsResult[A], write: A => JsValue): Format[A] =
     Format[A](
       Reads[A] {
-        case JsString(str) => JsSuccess(read(str))
+        case JsString(str) => read(str)
         case JsObject(x) =>
           x.get(fieldName) match {
-            case Some(JsString(str)) => JsSuccess(read(str))
+            case Some(JsString(str)) => read(str)
             case _                   => JsError(s"Expected $fieldName field")
           }
         case other => JsError(s"Invalid json, not found '$fieldName'")
