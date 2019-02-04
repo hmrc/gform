@@ -67,7 +67,14 @@ trait ExprGen {
   def constantGen: Gen[Constant] = Gen.alphaNumStr.map(Constant)
 
   def nonRecursiveExprGen: Gen[Expr] =
-    Gen.oneOf(formCtxGen, authCtxGen, eeittCtxGen, userCtxGen, constantGen, Gen.const(Value))
+    Gen.oneOf(
+      formCtxGen,
+      authCtxGen,
+      eeittCtxGen,
+      userCtxGen,
+      constantGen,
+      Gen.const(Value),
+      Gen.const(SubmissionReference))
 
   def recursiveExprGen(maxDepth: Int = 3): Gen[Expr] =
     Gen.oneOf(addGen(maxDepth), multiplyGen(maxDepth), subtractionGen(maxDepth), sumGen(maxDepth))

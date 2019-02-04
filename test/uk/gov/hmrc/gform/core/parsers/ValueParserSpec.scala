@@ -290,6 +290,12 @@ class ValueParserSpec extends Spec {
     res.right.value should be(DateExpression(TodayDateValue))
   }
 
+  it should "parse submissionReference" in {
+    val res = ValueParser.validate("${form.submissionReference}")
+
+    res.right.value should be(TextExpression(SubmissionReference))
+  }
+
   it should "fail parse unclosed parenthesis" in {
     val res = ValueParser.validate("${name")
     res.left.value should be(UnexpectedState("""|Unable to parse expression ${name.
