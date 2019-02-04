@@ -43,8 +43,7 @@ object FormComponentId {
     if (validationRegex.findFirstIn(s).isDefined) JsSuccess(FormComponentId(s))
     else
       JsError(
-        "Form Component Ids must start with an underscore or an alphabetic character. " + "After the first letter, " +
-          "Form Component Ids can contain any alpha-numeric character including underscore, but must exclude " +
-          "the rest of the special characters")
+        "Form Component Ids cannot contain any special characters other than an underscore. They also must not start " +
+          "with a number.")
 
 }
