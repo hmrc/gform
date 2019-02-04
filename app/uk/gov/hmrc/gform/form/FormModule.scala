@@ -21,7 +21,6 @@ import uk.gov.hmrc.gform.fileupload.FileUploadModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.save4later.{ Save4Later, Save4LaterModule }
-import uk.gov.hmrc.gform.wshttp.{ WSHttp, WSHttpModule }
 
 class FormModule(
   configModule: ConfigModule,

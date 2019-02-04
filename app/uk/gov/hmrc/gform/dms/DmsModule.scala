@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.dms
 import java.time.Clock
 
 import org.apache.pdfbox.pdmodel.PDDocument
-import uk.gov.hmrc.gform.config.{ AppConfig, ConfigModule }
+import uk.gov.hmrc.gform.config.AppConfig
 import uk.gov.hmrc.gform.fileupload.FileUploadModule
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorModule
 import uk.gov.hmrc.gform.typeclasses.Rnd.RandomRnd

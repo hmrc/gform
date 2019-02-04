@@ -18,7 +18,6 @@ package uk.gov.hmrc.gform.fileupload
 
 import java.time.LocalDateTime
 
-import com.fasterxml.jackson.annotation.JsonValue
 import play.api.Logger
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
