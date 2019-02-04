@@ -44,27 +44,7 @@ class FormSpec extends Spec {
       "InProgress" -> Json.obj(),
       "ldt"        -> form.envelopeExpiryDate.map(_.ldt).map(f _).get
     )
-
-    val xxx = LocalDateTime.now.plusDays(1)
-    println(xxx)
-    println(Json.prettyPrint(formJsObject))
-    println(Json.prettyPrint(expectedFormJsObject))
-
-    val s = formJsObject
-    val e = expectedFormJsObject
-    val y = 1
-    val yy = y
-
     formJsObject shouldBe expectedFormJsObject
-
-    val res1 = Json.toJson(xxx)
-
-    val res2 = res1.asOpt[LocalDateTime]
-
-    println("xxx " + xxx)
-    println("res1 " + res1)
-    println("res2 " + res2)
-
     Form.format.reads(Form.format.writes(form)) should be(JsSuccess(form))
   }
 }
