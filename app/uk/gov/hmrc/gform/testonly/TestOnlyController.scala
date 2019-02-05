@@ -90,32 +90,4 @@ class TestOnlyController(mongo: () => DB, enrolmentConnector: EnrolmentConnector
     enrolmentConnector.removeUnallocated(user.id).map(_ => NoContent)
   }
 
-  def testValidatorStub(utr: String) = Action.async { implicit request =>
-    Logger.info(s"testValidatorStub, ${loggingHelpers.cleanHeaders(request.headers)}")
-    if (utr.startsWith("1")) {
-      Future.successful(Ok(Json.toJson(AddressDes("BN12 4XL"))))
-    } else
-      Future.successful(Ok(Json.toJson(AddressDes("ANYTHING"))))
-  }
-
-  val stringToDate = new SimpleDateFormat("yyyy-MM-dd")
-
-  def testGetTaxPeriods(idType: String, idNumber: String, regimeType: String) = Action.async { implicit request =>
-    Logger.info(s"testGetTaxStub, ${loggingHelpers.cleanHeaders(request.headers)}")
-    if (idType == "nino")
-      Future.successful(
-        Ok(
-          Json.toJson(
-            new Obligation(
-              List(
-                new ObligationDetails(
-                  List(
-                    new ObligationDetail("O", "2017-06-01", "2017-08-31", "2017-09-30", "17B2"),
-                    new ObligationDetail("O", "2016-08-01", "2016-08-31", "2016-09-30", "16AH"))
-                )))
-          )))
-    else {
-      Future.successful(BadRequest("idType wasn't nino"))
-    }
-  }
 }
