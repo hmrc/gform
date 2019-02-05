@@ -60,22 +60,24 @@ class FileUploadService(
     val metadataXml = MetadataXml.xmlDec + "\n" + MetadataXml
       .getXml(submission, reconciliationId, summaries.pdfSummary, dmsSubmission, numberOfAttachments)
 
-    val uploadPfdF: Future[Unit] = fileUploadFrontendConnector.upload(
-      envelopeId,
-      pdf,
-      s"$fileNamePrefix-iform.pdf",
-      ByteString(summaries.pdfSummary.pdfContent),
-      ContentType.`application/pdf`)
-
-    val uploadXmlF: Future[Unit] = fileUploadFrontendConnector
-      .upload(
+    def uploadPfdF: Future[Unit] =
+      fileUploadFrontendConnector.upload(
         envelopeId,
-        xml,
-        s"$fileNamePrefix-metadata.xml",
-        ByteString(metadataXml.getBytes),
-        ContentType.`application/xml`)
+        pdf,
+        s"$fileNamePrefix-iform.pdf",
+        ByteString(summaries.pdfSummary.pdfContent),
+        ContentType.`application/pdf`)
 
-    val uploadAnyDataXmlF: Future[Unit] = summaries.xmlSummary match {
+    def uploadXmlF: Future[Unit] =
+      fileUploadFrontendConnector
+        .upload(
+          envelopeId,
+          xml,
+          s"$fileNamePrefix-metadata.xml",
+          ByteString(metadataXml.getBytes),
+          ContentType.`application/xml`)
+
+    def uploadAnyDataXmlF: Future[Unit] = summaries.xmlSummary match {
       case Some(elem) =>
         fileUploadFrontendConnector
           .upload(
