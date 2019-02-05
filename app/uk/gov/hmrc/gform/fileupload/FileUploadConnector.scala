@@ -17,15 +17,15 @@
 package uk.gov.hmrc.gform.fileupload
 
 import play.api.Logger
+import scala.concurrent.Future
 import uk.gov.hmrc.gform.auditing.loggingHelpers
+import uk.gov.hmrc.gform.core.FutureSyntax
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.time.TimeProvider
-import uk.gov.hmrc.gform.wshttp.WSHttp
-
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
-import scala.concurrent.Future
+import uk.gov.hmrc.gform.wshttp.{ FutureHttpResponseSyntax, WSHttp }
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
+import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
 class FileUploadConnector(config: FUConfig, wSHttp: WSHttp, timeProvider: TimeProvider) {
   val helper = new Helper(config, timeProvider)
@@ -41,9 +41,11 @@ class FileUploadConnector(config: FUConfig, wSHttp: WSHttp, timeProvider: TimePr
 
   def routeEnvelope(input: RouteEnvelopeRequest)(implicit hc: HeaderCarrier): Future[Unit] = {
     Logger.info(s"route envelope, input: '${input.envelopeId.value}, ${loggingHelpers.cleanHeaderCarrierHeader(hc)} ")
+    val url = s"$baseUrl/file-routing/requests"
     wSHttp
-      .POST[RouteEnvelopeRequest, HttpResponse](s"$baseUrl/file-routing/requests", input, headers)
-      .map(_ => ())
+      .POST[RouteEnvelopeRequest, HttpResponse](url, input, headers)
+      .failWithNonSuccessStatusCodes(url)
+      .void
   }
 
   def getEnvelope(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): Future[Envelope] = {
@@ -54,9 +56,11 @@ class FileUploadConnector(config: FUConfig, wSHttp: WSHttp, timeProvider: TimePr
   def deleteFile(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): Future[Unit] = {
     Logger.info(s"delete file, envelopeId: ' ${envelopeId.value}', fileId: '${fileId.value}', ${loggingHelpers
       .cleanHeaderCarrierHeader(hc)}")
+    val url = s"$baseUrl/file-upload/envelopes/${envelopeId.value}/files/${fileId.value}"
     wSHttp
-      .DELETE[HttpResponse](s"$baseUrl/file-upload/envelopes/${envelopeId.value}/files/${fileId.value}")
-      .map(_ => ())
+      .DELETE[HttpResponse](url)
+      .failWithNonSuccessStatusCodes(url)
+      .void
   }
   private lazy val baseUrl = config.fileUploadBaseUrl
   private lazy val `Csrf-Token: nocheck` = "Csrf-Token" -> "nocheck"
@@ -66,5 +70,4 @@ class FileUploadConnector(config: FUConfig, wSHttp: WSHttp, timeProvider: TimePr
     * We're adding it here in order to be able to call FU service using GFORM test-only proxy endpoints.
     */
   private lazy val headers = Seq(`Csrf-Token: nocheck`)
-
 }

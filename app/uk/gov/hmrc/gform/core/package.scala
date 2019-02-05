@@ -39,4 +39,8 @@ package object core {
 
   def fromFutureOptionA[A](fo: Future[Option[A]])(invalid: => UnexpectedState)(implicit ec: ExecutionContext): FOpt[A] =
     EitherT[Future, UnexpectedState, A](fo.map(_.toRight(invalid)))
+
+  implicit class FutureSyntax[T](f: Future[T]) {
+    def void(implicit ec: ExecutionContext): Future[Unit] = f.map(_ => ())
+  }
 }

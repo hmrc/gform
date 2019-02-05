@@ -19,9 +19,10 @@ package uk.gov.hmrc.gform.fileupload
 import akka.util.ByteString
 import play.api.Logger
 import uk.gov.hmrc.gform.auditing.loggingHelpers
+import uk.gov.hmrc.gform.core.FutureSyntax
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
-import uk.gov.hmrc.gform.wshttp.WSHttp
+import uk.gov.hmrc.gform.wshttp.{ FutureHttpResponseSyntax, WSHttp }
 
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import scala.concurrent.Future
@@ -34,15 +35,13 @@ class FileUploadFrontendConnector(config: FUConfig, wSHttp: WSHttp) {
     Logger.info(
       s"upload, envelopeId: '${envelopeId.value}',  fileId: '${fileId.value}', fileName: '$fileName', contentType: '${contentType.value}, ${loggingHelpers
         .cleanHeaderCarrierHeader(hc)}'")
-    wSHttp
-      .POSTFile(
-        s"$baseUrl/file-upload/upload/envelopes/${envelopeId.value}/files/${fileId.value}",
-        fileName,
-        body,
-        Seq("CSRF-token" -> "nocheck"),
-        contentType.value)
-      .map(_ => ())
-  }
-  private lazy val baseUrl = config.fileUploadFrontendBaseUrl
 
+    val url = s"$baseUrl/file-upload/upload/envelopes/${envelopeId.value}/no/files/${fileId.value}"
+    wSHttp
+      .POSTFile(url, fileName, body, Seq("CSRF-token" -> "nocheck"), contentType.value)
+      .failWithNonSuccessStatusCodes(url)
+      .void
+  }
+
+  private lazy val baseUrl = config.fileUploadFrontendBaseUrl
 }
