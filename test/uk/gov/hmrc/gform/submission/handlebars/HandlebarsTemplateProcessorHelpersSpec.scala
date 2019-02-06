@@ -52,14 +52,14 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
 
   "either" must "select the first argument if it is non-null" in {
     forAll(Gen.alphaNumStr, Gen.alphaNumStr) { (v1, v2) =>
-      process(s"{{either null ${quote(v1)} ${quote(v2)}}}") shouldBe quote(v1)
-      process(s"{{either null ${quote(v1)} null}}") shouldBe quote(v1)
+      process(s"{{either null ${quote(v1)} ${quote(v2)}}}") shouldBe v1
+      process(s"{{either null ${quote(v1)} null}}") shouldBe v1
     }
   }
 
   it must "select the second argument if the first is null" in {
     forAll(Gen.alphaNumStr) { v2 =>
-      process(s"{{either null null ${quote(v2)}}}") shouldBe quote(v2)
+      process(s"{{either null null ${quote(v2)}}}") shouldBe v2
     }
   }
 
@@ -69,14 +69,14 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
 
   "either2" must "select the first argument if it is non-null" in {
     forAll(Gen.alphaNumStr, Gen.alphaNumStr) { (v1, v2) =>
-      process(s"{{either2 ${quote(v1)} ${quote(v2)}}}") shouldBe quote(v1)
-      process(s"{{either2 ${quote(v1)} null}}") shouldBe quote(v1)
+      process(s"{{either2 ${quote(v1)} ${quote(v2)}}}") shouldBe v1
+      process(s"{{either2 ${quote(v1)} null}}") shouldBe v1
     }
   }
 
   it must "select the second argument if the first is null" in {
     forAll(Gen.alphaNumStr) { v2 =>
-      process(s"{{either2 null ${quote(v2)}}}") shouldBe quote(v2)
+      process(s"{{either2 null ${quote(v2)}}}") shouldBe v2
     }
   }
 

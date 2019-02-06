@@ -367,7 +367,7 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
   private def condition(v: Any) =
     Option(v) match {
       case None            => "null"
-      case Some(s: String) => quote(s)
+      case Some(s: String) => s
       case Some(u)         => new Handlebars.SafeString(u.toString)
     }
 }
