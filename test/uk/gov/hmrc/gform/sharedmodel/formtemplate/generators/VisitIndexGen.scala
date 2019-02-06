@@ -14,18 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel.form
+package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 
-import play.api.libs.json.{ Json, OFormat }
+import org.scalacheck.Gen
+import uk.gov.hmrc.gform.sharedmodel.form.VisitIndex
 
-case class UserData(
-  formData: FormData,
-  formStatus: FormStatus,
-  visitsIndex: VisitIndex
-)
-
-object UserData {
-
-  implicit val format: OFormat[UserData] = Json.format[UserData]
-
+trait VisitIndexGen {
+  def visitIndexGen = Gen.containerOf[Set, Int](Gen.posNum[Int]).map(VisitIndex(_))
 }
+
+object VisitIndexGen extends VisitIndexGen
