@@ -19,13 +19,12 @@ package uk.gov.hmrc.gform.formtemplate
 import cats.implicits._
 import play.api.libs.json.Json
 import uk.gov.hmrc.gform.core._
-import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-class FormTemplateService(formTemplateRepo: FormTemplateRepo, formTemplateRawRepo: FormTemplateRawRepo) {
+class FormTemplateService(formTemplateRepo: FormTemplateRepo, formTemplateRawRepo: FormTemplateRawRepo)
+    extends Verifier {
 
   def save(formTemplateRaw: FormTemplateRaw)(implicit ec: ExecutionContext): FOpt[Unit] =
     formTemplateRawRepo.upsert(formTemplateRaw)
@@ -44,25 +43,9 @@ class FormTemplateService(formTemplateRepo: FormTemplateRepo, formTemplateRawRep
     //TODO provide querying functionality
     formTemplateRepo.search(Json.obj())
 
-  def verifyAndSave(formTemplate: FormTemplate)(implicit ec: ExecutionContext): FOpt[Unit] = {
-
-    val sections = formTemplate.sections
-
-    val exprs: List[ComponentType] = sections.flatMap(_.fields.map(_.`type`))
-
+  def verifyAndSave(formTemplate: FormTemplate)(implicit ec: ExecutionContext): FOpt[Unit] =
     for {
-      _   <- fromOptA(FormTemplateValidator.validateRepeatingSectionFields(sections).toEither)
-      _   <- fromOptA(FormTemplateValidator.validateChoiceHelpText(sections).toEither)
-      _   <- fromOptA(FormTemplateValidator.validateUniqueFields(sections).toEither)
-      _   <- fromOptA(FormTemplateValidator.validateUniqueDestinationIds(formTemplate.destinations).toEither)
-      _   <- fromOptA(FormTemplateValidator.validateZeroOrOneHmrcDmsDestination(formTemplate.destinations).toEither)
-      _   <- fromOptA(FormTemplateValidator.validateForwardReference(sections).toEither)
-      _   <- fromOptA(FormTemplateValidator.validate(exprs, formTemplate).toEither)
-      _   <- fromOptA(FormTemplateValidator.validateDependencyGraph(formTemplate).toEither)
-      _   <- fromOptA(FormTemplateValidator.validateEnrolmentSection(formTemplate).toEither)
-      _   <- fromOptA(FormTemplateValidator.validateRegimeId(formTemplate).toEither)
-      _   <- fromOptA(FormTemplateValidator.validateEmailParameter(formTemplate).toEither)
+      _   <- verify(formTemplate)
       res <- formTemplateRepo.upsert(formTemplate)
     } yield res
-  }
 }
