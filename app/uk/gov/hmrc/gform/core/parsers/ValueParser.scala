@@ -110,7 +110,7 @@ object ValueParser {
   }
     | contextField)
 
-  lazy val alphabeticOnly: Parser[String] = """[a-zA-Z][a-zA-Z0-9]+""".r ^^ { (loc, str) =>
+  lazy val alphabeticOnly: Parser[String] = """^[a-zA-Z][\w]*""".r ^^ { (loc, str) =>
     str
   }
   lazy val quotedConstant: Parser[Expr] = ("'" ~ anyConstant ~ "'" ^^ { (loc, _, str, _) =>
