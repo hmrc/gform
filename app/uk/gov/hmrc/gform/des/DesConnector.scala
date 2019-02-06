@@ -16,9 +16,10 @@
 
 package uk.gov.hmrc.gform.des
 
-import com.typesafe.config.Config
+import java.util.Date
+
 import play.api.Logger
-import play.api.libs.json.{ JsValue, Json, OFormat }
+import play.api.libs.json._
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.config.DesConnectorConfig
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.HmrcTaxPeriod
@@ -53,12 +54,18 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
       authorization = Some(Authorization(desConfig.authorizationToken)))
     Logger.info(
       s"Des lookup, Tax Periods: '$idType, $idNumber, $regimeType', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
-    wSHttp.GET[Obligation](
-      s"$baseUrl${desConfig.basePath}/enterprise/obligation-data/$idType/$idNumber/$regimeType?status=O") recoverWith {
-      case e: JsValidationException => Future(Obligation(List()))
+    val value = s"$baseUrl${desConfig.basePath}/enterprise/obligation-data/$idType/$idNumber/$regimeType?status=O"
+    val response = wSHttp.GET[JsValue](value)
+    val checkObligation = response.map(i => i.validate[Obligation])
+    val checkNoPeriods = response.map(i => i.validate[NoPeriods])
+    if (checkObligation.isInstanceOf[Future[JsSuccess[Obligation]]]) {
+      checkObligation.map(i => i.get)
+    } else if (checkNoPeriods.isInstanceOf[Future[JsSuccess[NoPeriods]]]) {
+      Future(Obligation(List()))
+    } else {
+      throw new JsValidationException("GET", value, Obligation.getClass, "Incorrect response from api")
     }
   }
-
 }
 
 case class AddressDes(postalCode: String)
@@ -75,9 +82,9 @@ object Identification {
 
 case class ObligationDetail(
   status: String,
-  inboundCorrespondenceFromDate: String,
-  inboundCorrespondenceToDate: String,
-  inboundCorrespondenceDueDate: String,
+  inboundCorrespondenceFromDate: Date,
+  inboundCorrespondenceToDate: Date,
+  inboundCorrespondenceDueDate: Date,
   periodKey: String)
 
 object ObligationDetail {
@@ -106,4 +113,10 @@ case class TaxResponse(id: HmrcTaxPeriod, obligation: Obligation)
 
 object TaxResponse {
   implicit val format: OFormat[TaxResponse] = Json.format[TaxResponse]
+}
+
+case class NoPeriods(code: String, reason: String)
+
+object NoPeriods {
+  implicit val format: OFormat[NoPeriods] = Json.format[NoPeriods]
 }

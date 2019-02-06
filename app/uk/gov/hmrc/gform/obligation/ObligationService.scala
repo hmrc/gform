@@ -18,7 +18,6 @@ package uk.gov.hmrc.gform.obligation
 
 import uk.gov.hmrc.gform.des.DesConnector
 import uk.gov.hmrc.http.HeaderCarrier
-
 import scala.concurrent.ExecutionContext
 class ObligationService(desConnector: DesConnector) {
 
