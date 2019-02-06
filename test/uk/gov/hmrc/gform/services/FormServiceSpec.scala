@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import java.time.LocalDateTime
+
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.gform.sharedmodel.UserId
 import uk.gov.hmrc.gform.sharedmodel.form._
@@ -29,7 +31,9 @@ class FormServiceSpec extends PlaySpec {
     FormTemplateId("temp-id"),
     None,
     FormData(Seq(FormField(FormComponentId("a"), "1"))),
-    InProgress)
+    InProgress,
+    Some(EnvelopeExpiryDate(LocalDateTime.now.plusDays(1)))
+  )
 
   val testFormSummary: Form = testFormInProgress.copy(status = Summary)
   val testFormValidated: Form = testFormInProgress.copy(status = Validated)

@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.gform.fileupload
 
+import java.time.LocalDateTime
+
 import play.api.Logger
 import scala.concurrent.Future
 import uk.gov.hmrc.gform.auditing.loggingHelpers
@@ -28,12 +30,12 @@ import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
 class FileUploadConnector(config: FUConfig, wSHttp: WSHttp, timeProvider: TimeProvider) {
-  val helper = new Helper(config, timeProvider)
-
-  def createEnvelope(formTemplateId: FormTemplateId)(implicit hc: HeaderCarrier): Future[EnvelopeId] = {
+  val helper = new Helper(config)
+  def createEnvelope(formTemplateId: FormTemplateId, expiryDate: LocalDateTime)(
+    implicit hc: HeaderCarrier): Future[EnvelopeId] = {
     Logger.info(
       s"creating envelope, formTemplateId: '${formTemplateId.value}', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
-    val requestBody = helper.createEnvelopeRequestBody(formTemplateId)
+    val requestBody = helper.createEnvelopeRequestBody(formTemplateId, expiryDate)
     wSHttp
       .POST(s"$baseUrl/file-upload/envelopes", requestBody, headers)
       .map(helper.extractEnvelopId)

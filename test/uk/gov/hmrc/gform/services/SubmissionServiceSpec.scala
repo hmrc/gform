@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.gform.services
 
+import java.time.{ Clock, LocalDateTime, ZoneId, ZoneOffset }
+
 import cats.data.NonEmptyList
 import uk.gov.hmrc.gform._
 import uk.gov.hmrc.gform.sharedmodel.form._
@@ -46,6 +48,9 @@ class SubmissionServiceSpec extends Spec {
     )
     val formData = FormData(formFields)
 
+    val fixedTime = LocalDateTime.of(2018, 3, 2, 0, 0)
+    val clock = Clock.fixed(fixedTime.toInstant(ZoneOffset.UTC), ZoneId.systemDefault)
+
     val form = Form(
       FormId("MIO"),
       EnvelopeId(""),
@@ -53,7 +58,9 @@ class SubmissionServiceSpec extends Spec {
       FormTemplateId("JustAFormTypeId"),
       None,
       formData,
-      InProgress)
+      InProgress,
+      Some(EnvelopeExpiryDate(LocalDateTime.now(clock) plusDays (30)))
+    )
 
     val textFieldUno = FormComponent(
       id = FormComponentId("UNO"),

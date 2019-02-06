@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.fileupload
 
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 import akka.util.ByteString
@@ -36,9 +37,9 @@ class FileUploadService(
   fileUploadConnector: FileUploadConnector,
   fileUploadFrontendConnector: FileUploadFrontendConnector,
   timeModule: TimeProvider = new TimeProvider) {
-
-  def createEnvelope(formTypeId: FormTemplateId)(implicit hc: HeaderCarrier): Future[EnvelopeId] = {
-    val f = fileUploadConnector.createEnvelope(formTypeId)
+  def createEnvelope(formTypeId: FormTemplateId, expiryDate: LocalDateTime)(
+    implicit hc: HeaderCarrier): Future[EnvelopeId] = {
+    val f = fileUploadConnector.createEnvelope(formTypeId, expiryDate)
     f map { id =>
       Logger.debug(s"env-id creation: $id")
     }

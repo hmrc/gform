@@ -19,14 +19,14 @@ package uk.gov.hmrc.gform.fileupload
 import play.api.libs.json.Json
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.ExampleData
-import uk.gov.hmrc.gform.time.FrozenTimeProvider
 
 class HelperSpec extends Spec {
 
   "helper.createEnvelopeRequestBody" should "be compatible with fileuplod expectations" in new ExampleData
   with ExampleFileUploadData {
-    val helper = new Helper(config, FrozenTimeProvider.exampleInstance)
-    helper.createEnvelopeRequestBody(formTemplateId) shouldBe Json.obj(
+    val date = form.envelopeExpiryDate.map(_.ldt).get
+    val helper = new Helper(config)
+    helper.createEnvelopeRequestBody(formTemplateId, date) shouldBe Json.obj(
       "constraints" -> Json.obj(
         "contentTypes" -> Json.arr(
           "application/pdf",
@@ -40,9 +40,8 @@ class HelperSpec extends Spec {
         "maxSize"        -> "20MB",
         "maxSizePerItem" -> "5MB"
       ),
-      "expiryDate" -> "2017-02-11T05:45:00Z",
+      "expiryDate" -> helper.envelopeExpiryDate(date),
       "metadata"   -> Json.obj("application" -> "gform", "formTemplateId" -> "AAA999")
     )
   }
-
 }

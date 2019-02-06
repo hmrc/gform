@@ -21,20 +21,23 @@ import play.api.http.HttpEntity
 import play.api.libs.json.JsValue
 import play.api.mvc.{ Action, AnyContent, ResponseHeader, Result }
 import uk.gov.hmrc.gform.auditing._
+import uk.gov.hmrc.gform.config.AppConfig
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.core.FormValidator
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.fileupload.FileUploadService
 import uk.gov.hmrc.gform.formtemplate.FormTemplateService
 import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, UserId }
-import uk.gov.hmrc.gform.sharedmodel.form.{ FileId, FormId, UserData }
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeExpiryDate, FileId, FormId, UserData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.time.TimeProvider
 
 import scala.concurrent.Future
 import scala.util.Try
 import uk.gov.hmrc.http.{ BadRequestException, NotFoundException }
 
 class FormController(
+  config: AppConfig,
   formTemplateService: FormTemplateService,
   fileUploadService: FileUploadService,
   formService: FormService)
@@ -52,12 +55,13 @@ class FormController(
     //TODO authorisation
     //TODO Prevent creating new form when there exist one. Ask user to explicitly delete it
     //TODO: remove userId from argument list (it should be available after authenticating)
-
+    val timeProvider = new TimeProvider
     val formId = FormId(userId, formTemplateId, accessCode)
-    val envelopeIdF = fileUploadService.createEnvelope(formTemplateId)
+    val expiryDate = timeProvider.localDateTime().plusDays(config.formExpiryDays.toLong)
+    val envelopeIdF = fileUploadService.createEnvelope(formTemplateId, expiryDate)
     val formIdF: Future[FormId] = for {
       envelopeId <- envelopeIdF
-      _          <- formService.insertEmpty(userId, formTemplateId, envelopeId, formId)
+      _          <- formService.insertEmpty(userId, formTemplateId, envelopeId, formId, EnvelopeExpiryDate(expiryDate))
 
     } yield formId
 

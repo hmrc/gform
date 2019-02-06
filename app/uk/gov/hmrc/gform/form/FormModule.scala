@@ -16,13 +16,14 @@
 
 package uk.gov.hmrc.gform.form
 
+import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.fileupload.FileUploadModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.save4later.{ Save4Later, Save4LaterModule }
-import uk.gov.hmrc.gform.wshttp.{ WSHttp, WSHttpModule }
 
 class FormModule(
+  configModule: ConfigModule,
   mongoModule: MongoModule,
   shortLivedCacheModule: Save4LaterModule,
   formTemplateModule: FormTemplateModule,
@@ -34,6 +35,10 @@ class FormModule(
   val formService = new FormService(save4later)
 
   val formController: FormController =
-    new FormController(formTemplateModule.formTemplateService, fileUploadModule.fileUploadService, formService)
+    new FormController(
+      configModule.appConfig,
+      formTemplateModule.formTemplateService,
+      fileUploadModule.fileUploadService,
+      formService)
 
 }
