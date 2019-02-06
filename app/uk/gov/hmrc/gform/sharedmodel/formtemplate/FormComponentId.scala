@@ -20,8 +20,6 @@ import cats.Eq
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
 
-import scala.util.matching.Regex
-
 case class FormComponentId(value: String) extends AnyVal {
   override def toString = value
 
@@ -33,18 +31,8 @@ object FormComponentId {
   implicit val catsEq: Eq[FormComponentId] = Eq.fromUniversalEquals
 
   implicit val vformat: Format[FormComponentId] =
-    ValueClassFormat.validatedvformat("id", validate, x => JsString(x.value))
+    ValueClassFormat.vformat("id", FormComponentId.apply, x => JsString(x.value))
 
   val oformat: OFormat[FormComponentId] = ValueClassFormat.oformat("id", FormComponentId.apply, _.value)
-
-  private val validationRegex: Regex = "^[_a-zA-Z][_a-zA-Z0-9]*$".r
-
-  private def validate(s: String): JsResult[FormComponentId] =
-    if (validationRegex.findFirstIn(s).isDefined) JsSuccess(FormComponentId(s))
-    else
-      JsError(
-        "Form Component Ids must start with an underscore or an alphabetic character. " + "After the first letter, " +
-          "Form Component Ids can contain any alpha-numeric character including underscore, but must exclude " +
-          "the rest of the special characters")
 
 }
