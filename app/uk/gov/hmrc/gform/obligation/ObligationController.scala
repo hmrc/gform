@@ -29,8 +29,6 @@ import scala.concurrent.Future
 
 class ObligationController(obligation: ObligationService) extends BaseController {
 
-  val stringToDate = new SimpleDateFormat("yyyy-MM-dd")
-
   def getAllTaxPeriods() = Action.async(parse.json[List[HmrcTaxPeriod]]) { implicit request =>
     Logger.info(s"Get All Tax Periods from DES, ${loggingHelpers.cleanHeaders(request.headers)}")
     val body: List[HmrcTaxPeriod] = request.body
