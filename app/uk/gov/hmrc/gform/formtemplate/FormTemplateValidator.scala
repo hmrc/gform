@@ -56,16 +56,15 @@ object FormTemplateValidator {
       duplicates.isEmpty.validationResult(someDestinationIdsAreUsedMoreThanOnce(duplicates))
   }
 
-  def onlyZeroOrOneHmrcDmsDestinationAllowed(ids: Set[DestinationId]) =
-    s"There can be only zero or one hmrcDms destination: ${ids.toList.sortBy(_.id).map(_.value)}"
+  val oneOrMoreHmrcDestinationsRequired: String = "There must be at least one hmrcDms destination"
 
-  def validateZeroOrOneHmrcDmsDestination(destinations: Destinations): ValidationResult = destinations match {
+  def validateOneOrMoreHmrcDmsDestination(destinations: Destinations): ValidationResult = destinations match {
     case _: Destinations.DmsSubmission => Valid
 
     case destinationList: Destinations.DestinationList =>
       val hmrcDmsDestinations = destinationList.destinations.collect { case d: Destination.HmrcDms => d }
-      (hmrcDmsDestinations.size <= 1)
-        .validationResult(onlyZeroOrOneHmrcDmsDestinationAllowed(hmrcDmsDestinations.map(_.id).toSet))
+      (!hmrcDmsDestinations.isEmpty)
+        .validationResult(oneOrMoreHmrcDestinationsRequired)
   }
 
   def validateChoiceHelpText(sectionsList: List[Section]): ValidationResult = {
