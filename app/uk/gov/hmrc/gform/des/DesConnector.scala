@@ -56,14 +56,14 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
       s"Des lookup, Tax Periods: '$idType, $idNumber, $regimeType', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
     val value = s"$baseUrl${desConfig.basePath}/enterprise/obligation-data/$idType/$idNumber/$regimeType?status=O"
     val response = wSHttp.GET[JsValue](value)
-    val checkObligation = response.map(i => i.validate[Obligation])
-    val checkNoPeriods = response.map(i => i.validate[NoPeriods])
-    if (checkObligation.isInstanceOf[Future[JsSuccess[Obligation]]]) {
-      checkObligation.map(i => i.get)
-    } else if (checkNoPeriods.isInstanceOf[Future[JsSuccess[NoPeriods]]]) {
-      Future(Obligation(List()))
-    } else {
-      throw new JsValidationException("GET", value, Obligation.getClass, "Incorrect response from api")
+    response.map { i =>
+      val checkObligation = i.validate[Obligation]
+      val checkNoPeriods = i.validate[NoPeriods]
+      (checkObligation, checkNoPeriods) match {
+        case (JsSuccess(o, _), _) => o
+        case (_, JsSuccess(_, _)) => Obligation(List())
+        case _                    => throw new JsValidationException("GET", value, Obligation.getClass, "Incorrect response from api")
+      }
     }
   }
 }
