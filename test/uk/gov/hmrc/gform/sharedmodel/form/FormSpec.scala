@@ -16,17 +16,33 @@
 
 package uk.gov.hmrc.gform.sharedmodel.form
 
+import org.scalatest.{ FlatSpec, Matchers }
 import java.time.LocalDateTime
-
 import play.api.libs.json._
 import play.api.libs.json.Writes.DefaultLocalDateTimeWrites
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.ExampleData
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplateId }
 
-class FormSpec extends Spec {
+class FormSpec extends FlatSpec with Matchers {
 
-  "case class Form" should "be serialized into json" in new ExampleData {
-    override val formFields = super.formFields.filter(f => Set("facePhoto", "startDate-year").contains(f.id.value))
+  val form = Form(
+    FormId("James007-AAA999"),
+    EnvelopeId("b66c5979-e885-49cd-9281-c7f42ce6b307"),
+    uk.gov.hmrc.gform.sharedmodel.UserId("James007"),
+    FormTemplateId("AAA999"),
+    FormData(
+      List(
+        FormField(FormComponentId("facePhoto"), "face-photo.jpg"),
+        FormField(FormComponentId("startDate-year"), "2008")
+      )
+    ),
+    InProgress,
+    VisitIndex(Set(1, 2, 3)),
+    Some(EnvelopeExpiryDate(LocalDateTime.now.plusDays(1)))
+  )
+
+  "case class Form" should "be serialized into json" in {
 
     val formJsObject: JsObject = Form.format.writes(form)
 
@@ -41,10 +57,29 @@ class FormSpec extends Spec {
         .arr(
           Json.obj("id" -> "facePhoto", "value"      -> "face-photo.jpg"),
           Json.obj("id" -> "startDate-year", "value" -> "2008")),
-      "InProgress" -> Json.obj(),
-      "ldt"        -> form.envelopeExpiryDate.map(_.ldt).map(f _).get
+      "InProgress"  -> Json.obj(),
+      "visitsIndex" -> Json.arr(1, 2, 3),
+      "ldt"         -> form.envelopeExpiryDate.map(_.ldt).map(f _).get
     )
     formJsObject shouldBe expectedFormJsObject
     Form.format.reads(Form.format.writes(form)) should be(JsSuccess(form))
   }
+
+  it should "handle inflight forms not having visitsIndex" in {
+    val inflight = Json.obj(
+      "_id"            -> "James007-AAA999",
+      "envelopeId"     -> "b66c5979-e885-49cd-9281-c7f42ce6b307",
+      "userId"         -> "James007",
+      "formTemplateId" -> "AAA999",
+      "fields" -> Json
+        .arr(
+          Json.obj("id" -> "facePhoto", "value"      -> "face-photo.jpg"),
+          Json.obj("id" -> "startDate-year", "value" -> "2008")),
+      "InProgress" -> Json.obj()
+    )
+
+    val expectedForm = form.copy(visitsIndex = VisitIndex.empty, envelopeExpiryDate = None)
+    Form.format.reads(inflight) should be(JsSuccess(expectedForm))
+  }
+
 }

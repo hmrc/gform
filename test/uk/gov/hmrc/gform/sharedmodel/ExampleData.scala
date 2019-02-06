@@ -378,7 +378,8 @@ trait ExampleForm { dependsOn: ExampleFormField with ExampleFormTemplate =>
 
   val envelopeExpiryDate = Some(EnvelopeExpiryDate(LocalDateTime.now.plusDays(1)))
 
-  def form = Form(formId, envelopeId, userId, formTemplateId, None, formData, InProgress, envelopeExpiryDate)
+  def form =
+    Form(formId, envelopeId, userId, formTemplateId, formData, InProgress, VisitIndex.empty, envelopeExpiryDate)
 
 }
 

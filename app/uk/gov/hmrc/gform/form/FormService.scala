@@ -40,8 +40,15 @@ class FormService(save4Later: Save4Later) {
     formId: FormId,
     envelopeExpiryDate: EnvelopeExpiryDate)(implicit hc: HeaderCarrier): Future[Unit] = {
     val emptyFormData = FormData(fields = Nil)
-    val form =
-      Form(formId, envelopeId, userId, formTemplateId, None, emptyFormData, InProgress, Some(envelopeExpiryDate))
+    val form = Form(
+      formId,
+      envelopeId,
+      userId,
+      formTemplateId,
+      emptyFormData,
+      InProgress,
+      VisitIndex.empty,
+      Some(envelopeExpiryDate))
     save4Later.upsert(formId, form)
   }
 
@@ -51,8 +58,8 @@ class FormService(save4Later: Save4Later) {
       newForm = form
         .copy(
           formData = userData.formData,
-          repeatingGroupStructure = userData.repeatingGroupStructure,
-          status = newStatus(form, userData.formStatus))
+          status = newStatus(form, userData.formStatus),
+          visitsIndex = userData.visitsIndex)
       _ <- save4Later.upsert(formId, newForm)
     } yield ()
 

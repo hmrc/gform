@@ -17,30 +17,45 @@
 package uk.gov.hmrc.gform.sharedmodel.form
 
 import julienrf.json.derived
+import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.UserId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, SectionNumber }
+
+case class VisitIndex(visitsIndex: Set[Int]) extends AnyVal
+
+object VisitIndex {
+
+  val empty = VisitIndex(Set.empty)
+
+  implicit val format: OFormat[VisitIndex] = Json.format
+
+}
 
 case class Form(
   _id: FormId,
   envelopeId: EnvelopeId,
   userId: UserId,
   formTemplateId: FormTemplateId,
-  repeatingGroupStructure: Option[RepeatingGroupStructure],
   formData: FormData,
   status: FormStatus,
-  envelopeExpiryDate: Option[EnvelopeExpiryDate])
+  visitsIndex: VisitIndex,
+  envelopeExpiryDate: Option[EnvelopeExpiryDate]
+)
 
 object Form {
+
+  val readVisitIndex: Reads[VisitIndex] =
+    (__ \ "visitsIndex").readNullable[List[Int]].map(a => VisitIndex(a.fold(Set.empty[Int])(_.toSet)))
 
   private val reads: Reads[Form] = ((FormId.format: Reads[FormId]) and
     EnvelopeId.format and
     UserId.oformat and
     FormTemplateId.vformat and
-    RepeatingGroupStructure.optionFormat and
     FormData.format and
     FormStatus.format and
+    readVisitIndex and
     EnvelopeExpiryDate.optionFormat)(Form.apply _)
 
   private val writes: OWrites[Form] = OWrites[Form](
@@ -49,10 +64,11 @@ object Form {
         EnvelopeId.format.writes(form.envelopeId) ++
         UserId.oformat.writes(form.userId) ++
         FormTemplateId.oformat.writes(form.formTemplateId) ++
-        RepeatingGroupStructure.optionFormat.writes(form.repeatingGroupStructure) ++
         FormData.format.writes(form.formData) ++
         FormStatus.format.writes(form.status) ++
-        EnvelopeExpiryDate.optionFormat.writes(form.envelopeExpiryDate))
+        VisitIndex.format.writes(form.visitsIndex) ++
+        EnvelopeExpiryDate.optionFormat.writes(form.envelopeExpiryDate)
+  )
 
   implicit val format: OFormat[Form] = OFormat[Form](reads, writes)
 

@@ -56,9 +56,9 @@ class SubmissionServiceSpec extends Spec {
       EnvelopeId(""),
       uk.gov.hmrc.gform.sharedmodel.UserId("TESTID"),
       FormTemplateId("JustAFormTypeId"),
-      None,
       formData,
       InProgress,
+      VisitIndex.empty,
       Some(EnvelopeExpiryDate(LocalDateTime.now(clock) plusDays (30)))
     )
 
