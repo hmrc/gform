@@ -31,7 +31,7 @@ class AppConfigSpec extends Spec {
 
     val appConfig = AppConfig.loadOrThrow(ConfigFactory.load())
     appConfig.appName shouldBe "gform"
-    appConfig.formExpiryDays shouldBe 30
+    appConfig.formExpiryDays shouldBe 28
     appConfig.formMaxAttachments shouldBe 15
     appConfig.formMaxAttachmentSizeMB shouldBe 10
     appConfig.formMaxAttachmentTotalSizeMB shouldBe 25
