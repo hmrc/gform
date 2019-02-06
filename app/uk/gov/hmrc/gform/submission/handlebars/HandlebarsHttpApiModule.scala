@@ -16,12 +16,12 @@
 
 package uk.gov.hmrc.gform.submission.handlebars
 
-import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.wshttp._
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 import uk.gov.hmrc.http.logging.Authorization
+import uk.gov.hmrc.gform.wshttp.HttpClient.HttpClientBuildingSyntax
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -32,19 +32,14 @@ class HandlebarsHttpApiModule(wSHttpModule: WSHttpModule, configModule: ConfigMo
 
   private val desConfig = configModule.desConfig
 
-  import cats.instances.future._
   private val desHttpClient =
-    new UriBuildingHttpClient(
-      uri => s"${configModule.serviceConfig.baseUrl("etmp-hod")}${desConfig.basePath}/$uri",
-      new HeaderCarrierBuildingHttpClient(
-        _ => {
-          HeaderCarrier(
-            extraHeaders = Seq("Environment" -> desConfig.environment),
-            authorization = Some(Authorization(s"Bearer ${desConfig.authorizationToken}")))
-        },
-        new LoggingHttpClient(LoggerFactory.getLogger("connector"), rootHttpClient)
-      )
-    )
+    rootHttpClient
+      .buildUri(uri => s"${configModule.serviceConfig.baseUrl("etmp-hod")}${desConfig.basePath}/$uri")
+      .buildHeaderCarrier(_ => {
+        HeaderCarrier(
+          extraHeaders = Seq("Environment" -> desConfig.environment),
+          authorization = Some(Authorization(s"Bearer ${desConfig.authorizationToken}")))
+      })
 
 //  private val mdgConfig = configModule.mdgIntegrationFrameworkConfig
 

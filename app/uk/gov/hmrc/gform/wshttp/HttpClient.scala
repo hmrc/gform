@@ -16,10 +16,9 @@
 
 package uk.gov.hmrc.gform.wshttp
 
-import cats.{ Endo, Monad }
+import cats.{ Endo, MonadError }
 import cats.syntax.applicative._
 import cats.syntax.flatMap._
-import org.slf4j.Logger
 import uk.gov.hmrc.gform.core.{ FOpt, _ }
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpReads, HttpResponse }
 
@@ -28,6 +27,20 @@ import scala.concurrent.ExecutionContext
 trait HttpClient[F[_]] {
   def get(uri: String)(implicit hc: HeaderCarrier): F[HttpResponse]
   def postJson(uri: String, json: String)(implicit hc: HeaderCarrier): F[HttpResponse]
+}
+
+object HttpClient {
+  def wsHttpClient(wsHttp: WSHttp)(implicit ec: ExecutionContext): HttpClient[FOpt] =
+    new WSHttpHttpClient(wsHttp: WSHttp)
+  def auditingwsHttpClient[F[_]](wsHttp: WSHttp)(implicit ec: ExecutionContext): HttpClient[FOpt] =
+    new AuditingHttpClient(wsHttp: WSHttp)
+
+  implicit class HttpClientBuildingSyntax[F[_]](underlying: HttpClient[F]) {
+    def buildUri(uriBuilder: Endo[String]) = new UriBuildingHttpClient(uriBuilder, underlying)
+    def buildHeaderCarrier(headerCarrierBuilder: Endo[HeaderCarrier]) =
+      new HeaderCarrierBuildingHttpClient(headerCarrierBuilder, underlying)
+    def successResponsesOnly(implicit monadError: MonadError[F, String]) = new SuccessfulResponseHttpClient(underlying)
+  }
 }
 
 class UriBuildingHttpClient[F[_]](uriBuilder: Endo[String], underlying: HttpClient[F]) extends HttpClient[F] {
@@ -46,14 +59,19 @@ class HeaderCarrierBuildingHttpClient[F[_]](headerCarrierBuilder: Endo[HeaderCar
     underlying.postJson(uri, json)(headerCarrierBuilder(hc))
 }
 
-class LoggingHttpClient[F[_]: Monad](logger: Logger, underlying: HttpClient[F]) extends HttpClient[F] {
-  private def log(s: String, f: => F[HttpResponse]): F[HttpResponse] = {
-    logger.info(s)
-  }.pure[F].flatMap(_ => f)
+class SuccessfulResponseHttpClient[F[_]](underlying: HttpClient[F])(implicit monadError: MonadError[F, String])
+    extends HttpClient[F] {
+  override def get(uri: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
+    handleStatus(underlying.get(uri), "GET", uri)
 
-  override def get(uri: String)(implicit hc: HeaderCarrier): F[HttpResponse] = log(s"GET: $uri", underlying.get(uri))
   override def postJson(uri: String, json: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
-    log(s"POST: $uri, $json", underlying.postJson(uri, json))
+    handleStatus(underlying.get(uri), "POST", uri)
+
+  private def handleStatus(response: F[HttpResponse], method: String, uri: String): F[HttpResponse] =
+    response.flatMap { r =>
+      if (r.status >= 200 && r.status < 300) r.pure[F]
+      else monadError.raiseError(s"Couldn't $method $uri")
+    }
 }
 
 class AuditingHttpClient[F[_]](wsHttp: WSHttp)(implicit ec: ExecutionContext) extends HttpClient[FOpt] {
