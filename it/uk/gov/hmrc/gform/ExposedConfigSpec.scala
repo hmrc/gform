@@ -25,7 +25,7 @@ class ExposedConfigSpec extends support.ITSpec {
 
     gformConnector.getExposedConfig.futureValue shouldBe ExposedConfig(
       formMaxAttachmentSizeMB = 10,
-      formExpiryDays = 30,
+      formExpiryDays = 28,
       List(
           ContentType.`application/pdf`,
           ContentType.`image/jpeg`,
