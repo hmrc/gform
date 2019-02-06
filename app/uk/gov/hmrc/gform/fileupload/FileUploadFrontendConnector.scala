@@ -36,7 +36,7 @@ class FileUploadFrontendConnector(config: FUConfig, wSHttp: WSHttp) {
       s"upload, envelopeId: '${envelopeId.value}',  fileId: '${fileId.value}', fileName: '$fileName', contentType: '${contentType.value}, ${loggingHelpers
         .cleanHeaderCarrierHeader(hc)}'")
 
-    val url = s"$baseUrl/file-upload/upload/envelopes/${envelopeId.value}/no/files/${fileId.value}"
+    val url = s"$baseUrl/file-upload/upload/envelopes/${envelopeId.value}/files/${fileId.value}"
     wSHttp
       .POSTFile(url, fileName, body, Seq("CSRF-token" -> "nocheck"), contentType.value)
       .failWithNonSuccessStatusCodes(url)
