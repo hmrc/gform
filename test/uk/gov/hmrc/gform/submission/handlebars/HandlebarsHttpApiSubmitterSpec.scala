@@ -21,7 +21,7 @@ import org.scalacheck.Gen
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ HttpMethod, Profile }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, PrimitiveGen }
-import uk.gov.hmrc.gform.wshttp.HttpClient
+import uk.gov.hmrc.gform.wshttp.JsonHttpClient
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
 class HandlebarsHttpApiSubmitterSpec extends Spec {
@@ -66,7 +66,7 @@ class HandlebarsHttpApiSubmitterSpec extends Spec {
 
       sp.expectTemplateProcessorApplication(destination.uri, processorModel, expectedUri)
         .expectTemplateProcessorApplication(payload, processorModel, expectedBody)
-        .expectHttpPost(destination.profile, expectedBody, expectedUri, expectedResponse)
+        .expectHttpPostJson(destination.profile, expectedBody, expectedUri, expectedResponse)
 
       sp.submitter.apply(destination, processorModel) shouldBe expectedResponse
     }
@@ -82,7 +82,7 @@ class HandlebarsHttpApiSubmitterSpec extends Spec {
       val expectedResponse = mock[HttpResponse]
 
       sp.expectTemplateProcessorApplication(destination.uri, processorModel, expectedUri)
-        .expectHttpPost(destination.profile, "", expectedUri, expectedResponse)
+        .expectHttpPostJson(destination.profile, "", expectedUri, expectedResponse)
 
       sp.submitter.apply(destination, processorModel) shouldBe expectedResponse
     }
@@ -90,8 +90,8 @@ class HandlebarsHttpApiSubmitterSpec extends Spec {
 
   case class SubmitterParts[F[_]](
     submitter: HandlebarsHttpApiSubmitter[F],
-    des: HttpClient[F],
-    mdg: HttpClient[F],
+    des: JsonHttpClient[F],
+    mdg: JsonHttpClient[F],
     templateProcessor: HandlebarsTemplateProcessor) {
 
     def expectTemplateProcessorApplication(
@@ -116,14 +116,14 @@ class HandlebarsHttpApiSubmitterSpec extends Spec {
       this
     }
 
-    def expectHttpPost(
+    def expectHttpPostJson(
       profile: Profile,
       expectedBody: String,
       expectedUri: String,
       expectedResponse: F[HttpResponse]): SubmitterParts[F] = {
       (RealHandlebarsHttpApiSubmitter
         .selectHttpClient(profile, des, mdg)
-        .postJson(_: String, _: String)(_: HeaderCarrier))
+        .postJsonString(_: String, _: String)(_: HeaderCarrier))
         .expects(expectedUri, expectedBody, hc)
         .returning(expectedResponse)
 
@@ -132,8 +132,8 @@ class HandlebarsHttpApiSubmitterSpec extends Spec {
   }
 
   private def submitterPartsGen[F[_]]: Gen[SubmitterParts[F]] = {
-    val desHttpClient = mock[HttpClient[F]]
-    val mdgIntegrationFrameworkHttpClient = mock[HttpClient[F]]
+    val desHttpClient = mock[JsonHttpClient[F]]
+    val mdgIntegrationFrameworkHttpClient = mock[JsonHttpClient[F]]
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
 
     val submitter =

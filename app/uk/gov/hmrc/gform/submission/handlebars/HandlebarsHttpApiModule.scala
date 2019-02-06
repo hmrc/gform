@@ -19,7 +19,6 @@ package uk.gov.hmrc.gform.submission.handlebars
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.wshttp._
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 import uk.gov.hmrc.http.logging.Authorization
 import uk.gov.hmrc.gform.wshttp.HttpClient.HttpClientBuildingSyntax
 
@@ -32,22 +31,22 @@ class HandlebarsHttpApiModule(wSHttpModule: WSHttpModule, configModule: ConfigMo
 
   private val desConfig = configModule.desConfig
 
-  private val desHttpClient =
+  private val desHttpClient: JsonHttpClient[FOpt] =
     rootHttpClient
       .buildUri(uri => s"${configModule.serviceConfig.baseUrl("etmp-hod")}${desConfig.basePath}/$uri")
-      .buildHeaderCarrier(_ => {
-        HeaderCarrier(
-          extraHeaders = Seq("Environment" -> desConfig.environment),
-          authorization = Some(Authorization(s"Bearer ${desConfig.authorizationToken}")))
+      .buildHeaderCarrier(hc => {
+        hc.copy(
+          extraHeaders = ("Environment" -> desConfig.environment) :: hc.extraHeaders.toList,
+          authorization = Some(Authorization(s"Bearer ${desConfig.authorizationToken}"))
+        )
       })
+      .json
 
 //  private val mdgConfig = configModule.mdgIntegrationFrameworkConfig
 
   // ToDo - Lance - Don't know what the properties are yet. Build as for the desHttpClient.
-  private val mdgHttpClient: HttpClient[FOpt] = new HttpClient[FOpt] {
-    override def get(uri: String)(implicit hc: HeaderCarrier): FOpt[HttpResponse] = ???
-    override def postJson(uri: String, json: String)(implicit hc: HeaderCarrier): FOpt[HttpResponse] = ???
-  }
+  private val mdgHttpClient: JsonHttpClient[FOpt] =
+    HttpClient.unimplementedHttpClient[FOpt].json
 
   val handlebarsHttpSubmitter: HandlebarsHttpApiSubmitter[FOpt] =
     new RealHandlebarsHttpApiSubmitter(desHttpClient, mdgHttpClient)

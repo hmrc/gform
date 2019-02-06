@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.submission.handlebars
 
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, HttpMethod, Profile }
-import uk.gov.hmrc.gform.wshttp.HttpClient
+import uk.gov.hmrc.gform.wshttp.JsonHttpClient
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
 trait HandlebarsHttpApiSubmitter[F[_]] {
@@ -26,15 +26,15 @@ trait HandlebarsHttpApiSubmitter[F[_]] {
 }
 
 class RealHandlebarsHttpApiSubmitter[F[_]](
-  desHttpClient: HttpClient[F],
-  mdgIntegrationFrameworkHttpClient: HttpClient[F],
+  des: JsonHttpClient[F],
+  mdg: JsonHttpClient[F],
   handlebarsTemplateProcessor: HandlebarsTemplateProcessor = new HandlebarsTemplateProcessor)
     extends HandlebarsHttpApiSubmitter[F] {
 
   def apply(destination: Destination.HandlebarsHttpApi, model: HandlebarsTemplateProcessorModel)(
     implicit hc: HeaderCarrier): F[HttpResponse] = {
     val httpClient = RealHandlebarsHttpApiSubmitter
-      .selectHttpClient(destination.profile, desHttpClient, mdgIntegrationFrameworkHttpClient)
+      .selectHttpClient(destination.profile, des, mdg)
 
     val uri = handlebarsTemplateProcessor(destination.uri, model)
     destination.method match {
@@ -43,14 +43,15 @@ class RealHandlebarsHttpApiSubmitter[F[_]](
         val body = destination.payload.fold("") {
           handlebarsTemplateProcessor(_, model)
         }
-        httpClient.postJson(uri, body)
+        httpClient.postJsonString(uri, body)
     }
   }
 }
 
 object RealHandlebarsHttpApiSubmitter {
-  def selectHttpClient[F[_]](profile: Profile, des: HttpClient[F], mdg: HttpClient[F]): HttpClient[F] = profile match {
-    case Profile.DES                     => des
-    case Profile.MdgIntegrationFramework => mdg
-  }
+  def selectHttpClient[F[_]](profile: Profile, des: JsonHttpClient[F], mdg: JsonHttpClient[F]): JsonHttpClient[F] =
+    profile match {
+      case Profile.DES                     => des
+      case Profile.MdgIntegrationFramework => mdg
+    }
 }

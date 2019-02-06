@@ -26,28 +26,49 @@ import scala.concurrent.ExecutionContext
 
 trait HttpClient[F[_]] {
   def get(uri: String)(implicit hc: HeaderCarrier): F[HttpResponse]
-  def postJson(uri: String, json: String)(implicit hc: HeaderCarrier): F[HttpResponse]
+
+  def post(uri: String, body: String)(implicit hc: HeaderCarrier): F[HttpResponse]
 }
 
 object HttpClient {
   def wsHttpClient(wsHttp: WSHttp)(implicit ec: ExecutionContext): HttpClient[FOpt] =
     new WSHttpHttpClient(wsHttp: WSHttp)
+
   def auditingwsHttpClient[F[_]](wsHttp: WSHttp)(implicit ec: ExecutionContext): HttpClient[FOpt] =
     new AuditingHttpClient(wsHttp: WSHttp)
 
+  def unimplementedHttpClient[F[_]]: HttpClient[F] = new HttpClient[F] {
+    override def get(uri: String)(implicit hc: HeaderCarrier): F[HttpResponse] = ???
+    override def post(uri: String, body: String)(implicit hc: HeaderCarrier): F[HttpResponse] = ???
+  }
+
   implicit class HttpClientBuildingSyntax[F[_]](underlying: HttpClient[F]) {
-    def buildUri(uriBuilder: Endo[String]) = new UriBuildingHttpClient(uriBuilder, underlying)
-    def buildHeaderCarrier(headerCarrierBuilder: Endo[HeaderCarrier]) =
+    def buildUri(uriBuilder: Endo[String]): UriBuildingHttpClient[F] = new UriBuildingHttpClient(uriBuilder, underlying)
+
+    def buildHeaderCarrier(headerCarrierBuilder: Endo[HeaderCarrier]): HeaderCarrierBuildingHttpClient[F] =
       new HeaderCarrierBuildingHttpClient(headerCarrierBuilder, underlying)
-    def successResponsesOnly(implicit monadError: MonadError[F, String]) = new SuccessfulResponseHttpClient(underlying)
+
+    def successResponsesOnly(implicit monadError: MonadError[F, String]): SuccessfulResponseHttpClient[F] =
+      new SuccessfulResponseHttpClient(underlying)
+
+    def json: JsonHttpClient[F] = new JsonHttpClient[F] {
+      override def get(uri: String)(implicit hc: HeaderCarrier): F[HttpResponse] = underlying.get(uri)
+      override def post(uri: String, body: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
+        underlying.post(uri, body)
+
+      def postJsonString(uri: String, json: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
+        post(uri, json)(addJsonContentTypeHeader(hc))
+
+      private def addJsonContentTypeHeader(hc: HeaderCarrier): HeaderCarrier =
+        hc.copy(extraHeaders = ("Content-Type" -> "application/json") :: hc.extraHeaders.toList)
+    }
   }
 }
 
 class UriBuildingHttpClient[F[_]](uriBuilder: Endo[String], underlying: HttpClient[F]) extends HttpClient[F] {
   override def get(uri: String)(implicit hc: HeaderCarrier): F[HttpResponse] = underlying.get(uriBuilder(uri))
-
-  override def postJson(uri: String, json: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
-    underlying.postJson(uriBuilder(uri), json)
+  override def post(uri: String, body: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
+    underlying.post(uriBuilder(uri), body)
 }
 
 class HeaderCarrierBuildingHttpClient[F[_]](headerCarrierBuilder: Endo[HeaderCarrier], underlying: HttpClient[F])
@@ -55,8 +76,8 @@ class HeaderCarrierBuildingHttpClient[F[_]](headerCarrierBuilder: Endo[HeaderCar
   override def get(uri: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
     underlying.get(uri)(headerCarrierBuilder(hc))
 
-  override def postJson(uri: String, json: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
-    underlying.postJson(uri, json)(headerCarrierBuilder(hc))
+  override def post(uri: String, body: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
+    underlying.post(uri, body)(headerCarrierBuilder(hc))
 }
 
 class SuccessfulResponseHttpClient[F[_]](underlying: HttpClient[F])(implicit monadError: MonadError[F, String])
@@ -64,14 +85,18 @@ class SuccessfulResponseHttpClient[F[_]](underlying: HttpClient[F])(implicit mon
   override def get(uri: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
     handleStatus(underlying.get(uri), "GET", uri)
 
-  override def postJson(uri: String, json: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
-    handleStatus(underlying.get(uri), "POST", uri)
+  override def post(uri: String, body: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
+    handleStatus(underlying.post(uri, body), "POST", uri)
 
   private def handleStatus(response: F[HttpResponse], method: String, uri: String): F[HttpResponse] =
     response.flatMap { r =>
       if (r.status >= 200 && r.status < 300) r.pure[F]
       else monadError.raiseError(s"Couldn't $method $uri")
     }
+}
+
+trait JsonHttpClient[F[_]] extends HttpClient[F] {
+  def postJsonString(uri: String, json: String)(implicit hc: HeaderCarrier): F[HttpResponse]
 }
 
 class AuditingHttpClient[F[_]](wsHttp: WSHttp)(implicit ec: ExecutionContext) extends HttpClient[FOpt] {
@@ -81,13 +106,13 @@ class AuditingHttpClient[F[_]](wsHttp: WSHttp)(implicit ec: ExecutionContext) ex
 
   override def get(uri: String)(implicit hc: HeaderCarrier): FOpt[HttpResponse] = fromFutureA(wsHttp.GET(uri))
 
-  override def postJson(uri: String, json: String)(implicit hc: HeaderCarrier): FOpt[HttpResponse] =
-    fromFutureA(wsHttp.POSTString[HttpResponse](uri, json, List(("Content-Type", "application/json"))))
+  override def post(uri: String, body: String)(implicit hc: HeaderCarrier): FOpt[HttpResponse] =
+    fromFutureA(wsHttp.POSTString[HttpResponse](uri, body))
 }
 
 class WSHttpHttpClient(wsHttp: WSHttp)(implicit ec: ExecutionContext) extends HttpClient[FOpt] {
-  def get(uri: String)(implicit hc: HeaderCarrier): FOpt[HttpResponse] = fromFutureA(wsHttp.doGet(uri))
+  override def get(uri: String)(implicit hc: HeaderCarrier): FOpt[HttpResponse] = fromFutureA(wsHttp.doGet(uri))
 
-  def postJson(uri: String, json: String)(implicit hc: HeaderCarrier): FOpt[HttpResponse] =
-    fromFutureA(wsHttp.doPostString(uri, json, List(("Content-Type", "application/json"))))
+  override def post(uri: String, body: String)(implicit hc: HeaderCarrier): FOpt[HttpResponse] =
+    fromFutureA(wsHttp.doPostString(uri, body, Seq.empty))
 }
