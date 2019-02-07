@@ -23,13 +23,13 @@ import com.github.jknack.handlebars.{ Handlebars, Options }
 
 class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimeProvider) {
   def yesNoToEtmpChoice(yesNoChoice: String): CharSequence = ifNotNull(yesNoChoice) {
-    case "1" => quote("0")
-    case "0" => quote("1")
+    case "1" => condition("0")
+    case "0" => condition("1")
   }
 
   def dateToEtmpDate(date: String): CharSequence =
     ifNotNull(date) { d =>
-      quote(d.substring(0, 4) + d.substring(5, 7) + d.substring(8, 10))
+      condition(d.substring(0, 4) + d.substring(5, 7) + d.substring(8, 10))
     }
 
   // Due to the way Handlebars works, when this helper is used, an
@@ -325,19 +325,19 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
     else if (code >= 200 && code <= 299) t
     else f
 
-  def getCurrentDate: CharSequence = quote(DateTimeFormatter.BASIC_ISO_DATE.format(timeProvider.localDateTime))
-  def getCurrentTimestamp: CharSequence = quote(DateTimeFormatter.ISO_INSTANT.format(timeProvider.instant))
+  def getCurrentDate: CharSequence = condition(DateTimeFormatter.BASIC_ISO_DATE.format(timeProvider.localDateTime))
+  def getCurrentTimestamp: CharSequence = condition(DateTimeFormatter.ISO_INSTANT.format(timeProvider.instant))
 
   def getPeriodKey(period: String): CharSequence = getPeriodValue(period, 0)
   def getPeriodFrom(period: String): CharSequence = getPeriodValue(period, 1)
   def getPeriodTo(period: String): CharSequence = getPeriodValue(period, 2)
   private def getPeriodValue(period: String, index: Int): CharSequence =
     ifNotNull(period) { s =>
-      quote(s.split('|')(index))
+      condition(s.split('|')(index))
     }
 
   def toEtmpLegalStatus(frontEndValue: String): CharSequence = ifNotNull(frontEndValue) { s =>
-    quote(s.toLowerCase match {
+    condition(s.toLowerCase match {
       case "sole trader" | "sole proprietor"         => "1"
       case "limited liability partnership"           => "2"
       case "partnership"                             => "3"
@@ -348,7 +348,7 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
   }
 
   def toEtmpDeclarationStatus(frontEndValue: String): CharSequence = ifNotNull(frontEndValue) { s =>
-    quote(s.toLowerCase match {
+    condition(s.toLowerCase match {
       case "authorised official"             => "1"
       case "company secretary"               => "2"
       case "director"                        => "3"
@@ -359,15 +359,13 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
     })
   }
 
-  private def ifNotNull[T](t: T)(f: T => Handlebars.SafeString): Handlebars.SafeString =
-    Option(t).map(f).getOrElse(new Handlebars.SafeString("null"))
+  private def ifNotNull[T](t: T)(f: T => CharSequence): CharSequence =
+    Option(t).map(f).getOrElse("null")
 
-  private def quote(s: String) = new Handlebars.SafeString(s""""$s"""")
-
-  private def condition(v: Any) =
-    Option(v) match {
+  private def condition(v: Any): CharSequence =
+    new Handlebars.SafeString(Option(v) match {
       case None            => "null"
-      case Some(s: String) => s
-      case Some(u)         => new Handlebars.SafeString(u.toString)
-    }
+      case Some(s: String) => s.replaceAll("""\\""", """\\\\""").replaceAll("""'""", """\\'""")
+      case Some(u)         => u.toString
+    })
 }

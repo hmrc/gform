@@ -27,7 +27,7 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
 
     forAll(table) {
       case (v, expected) =>
-        process(s"{{yesNoToEtmpChoice ${quote(v)}}}") shouldBe quote(expected)
+        process(s"{{yesNoToEtmpChoice ${quote(v)}}}") shouldBe expected
     }
   }
 
@@ -46,7 +46,7 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
       val inputDate = s"${yearFormat.format(y)}-${monthAndDayFormat.format(m)}-${monthAndDayFormat.format(d)}"
       val outputDate = s"${yearFormat.format(y)}${monthAndDayFormat.format(m)}${monthAndDayFormat.format(d)}"
 
-      process(s"{{dateToEtmpDate ${quote(inputDate)}}}") shouldBe quote(outputDate)
+      process(s"{{dateToEtmpDate ${quote(inputDate)}}}") shouldBe outputDate
     }
   }
 
@@ -84,10 +84,18 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     process("{{either2 null null}}") shouldBe "null"
   }
 
+  it must "escape backslashes in the output" in {
+    process(s"{{either2 ${quote("""hello \ world""")} null}}") shouldBe """hello \\ world"""
+  }
+
+  it must "escape single quotes in the output" in {
+    process(s"{{either2 ${quote("""hello ' world""")} null}}") shouldBe """hello \' world"""
+  }
+
   "getPeriodKey" must "return the 0th element of the pipe separated parameter" in {
     forAll(periodGen) {
       case (key, _, _, period) =>
-        process(s"{{getPeriodKey ${quote(period)}}}") shouldBe quote(key)
+        process(s"{{getPeriodKey ${quote(period)}}}") shouldBe key
     }
   }
 
@@ -98,7 +106,7 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   "getPeriodFrom" must "return the 1st element of the pipe separated parameter" in {
     forAll(periodGen) {
       case (_, from, _, period) =>
-        process(s"{{getPeriodFrom ${quote(period)}}}") shouldBe quote(from)
+        process(s"{{getPeriodFrom ${quote(period)}}}") shouldBe from
     }
   }
 
@@ -109,7 +117,7 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   "getPeriodTo" must "return the 2nd element of the pipe separated parameter" in {
     forAll(periodGen) {
       case (_, _, to, period) =>
-        process(s"{{getPeriodTo ${quote(period)}}}") shouldBe quote(to)
+        process(s"{{getPeriodTo ${quote(period)}}}") shouldBe to
     }
   }
 
@@ -164,7 +172,11 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
       to   <- Gen.posNum[Int].map(_.toString)
     } yield (key, from, to, s"$key|$from|$to")
 
-  private def quote(s: String): String = s""""$s""""
+  private def quote(s: String): String = {
+    val result = raw""""$s""""
+    println(result)
+    result
+  }
 
   private def process(s: String) = new HandlebarsTemplateProcessor()(s, HandlebarsTemplateProcessorModel(""))
 }
