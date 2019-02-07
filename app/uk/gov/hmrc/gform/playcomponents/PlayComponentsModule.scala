@@ -23,7 +23,6 @@ import play.api.routing.Router
 import testOnlyDoNotUseInAppConf.Routes
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.auditing.AuditingModule
-import uk.gov.hmrc.gform.auth.AuthModule
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.dms.DmsModule
 import uk.gov.hmrc.gform.form.FormModule
@@ -56,7 +55,6 @@ class PlayComponentsModule(
   testOnlyModule: TestOnlyModule,
   submissionModule: SubmissionModule,
   validationModule: ValidationModule,
-  authModule: AuthModule,
   dmsModule: DmsModule,
   obligationModule: ObligationModule) {
 
@@ -81,7 +79,6 @@ class PlayComponentsModule(
     formTemplateModule.formTemplatesController,
     configModule.configController,
     validationModule.validationController,
-    authModule.authController,
     dmsModule.dmsSubmissionController,
     obligationModule.obligationController
   )

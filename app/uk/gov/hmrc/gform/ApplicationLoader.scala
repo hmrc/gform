@@ -25,7 +25,6 @@ import play.api.mvc.EssentialFilter
 import play.api.routing.Router
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.auditing.AuditingModule
-import uk.gov.hmrc.gform.auth.AuthModule
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.dms.DmsModule
 import uk.gov.hmrc.gform.email.EmailModule
@@ -94,9 +93,6 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
   private val dmsModule = new DmsModule(fileUploadModule, pdfGeneratorModule, configModule.appConfig)
   private val obligationModule = new ObligationModule(wSHttpModule, configModule)
   private val testOnlyModule = new TestOnlyModule(mongoModule, wSHttpModule, configModule, playComponents)
-  /* TODO REMOVE WHEN WE DONT HAVE WHITELISTING */
-  private val authModule = new AuthModule(mongoModule)
-  /* TODO REMOVE WHEN WE DONT HAVE WHITELISTING ^^^^^^^^ */
   private val graphiteModule = new GraphiteModule(self)
 
   private val playComponentsModule = new PlayComponentsModule(
@@ -110,7 +106,6 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
     testOnlyModule,
     submissionModule,
     validationModule,
-    authModule,
     dmsModule,
     obligationModule
   )
