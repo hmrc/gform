@@ -172,11 +172,7 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
       to   <- Gen.posNum[Int].map(_.toString)
     } yield (key, from, to, s"$key|$from|$to")
 
-  private def quote(s: String): String = {
-    val result = raw""""$s""""
-    println(result)
-    result
-  }
+  private def quote(s: String): String = raw""""$s""""
 
   private def process(s: String) = new HandlebarsTemplateProcessor()(s, HandlebarsTemplateProcessorModel(""))
 }
