@@ -92,37 +92,37 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     process(s"{{either2 ${quote("""hello ' world""")} null}}") shouldBe """hello \' world"""
   }
 
-  "getPeriodKey" must "return the 0th element of the pipe separated parameter" in {
+  "getHmrcTaxPeriodKey" must "return the 0th element of the pipe separated parameter" in {
     forAll(periodGen) {
       case (key, _, _, period) =>
-        process(s"{{getPeriodKey ${quote(period)}}}") shouldBe key
+        process(s"{{getHmrcTaxPeriodKey ${quote(period)}}}") shouldBe key
     }
   }
 
   it must "return null if the period is null" in {
-    process("{{getPeriodKey null}}") shouldBe "null"
+    process("{{getHmrcTaxPeriodKey null}}") shouldBe "null"
   }
 
-  "getPeriodFrom" must "return the 1st element of the pipe separated parameter" in {
+  "getHmrcTaxPeriodFrom" must "return the 1st element of the pipe separated parameter" in {
     forAll(periodGen) {
       case (_, from, _, period) =>
-        process(s"{{getPeriodFrom ${quote(period)}}}") shouldBe from
+        process(s"{{getHmrcTaxPeriodFrom ${quote(period)}}}") shouldBe from
     }
   }
 
   it must "return null if the period is null" in {
-    process(s"{{getPeriodFrom null}}") shouldBe "null"
+    process(s"{{getHmrcTaxPeriodFrom null}}") shouldBe "null"
   }
 
-  "getPeriodTo" must "return the 2nd element of the pipe separated parameter" in {
+  "getHmrcTaxPeriodTo" must "return the 2nd element of the pipe separated parameter" in {
     forAll(periodGen) {
       case (_, _, to, period) =>
-        process(s"{{getPeriodTo ${quote(period)}}}") shouldBe to
+        process(s"{{getHmrcTaxPeriodTo ${quote(period)}}}") shouldBe to
     }
   }
 
   it must "return null if the period is null" in {
-    process(s"{{getPeriodTo null}}") shouldBe "null"
+    process(s"{{getHmrcTaxPeriodTo null}}") shouldBe "null"
   }
 
   "isSuccessCode" must "return true for all codes that begin with '2'" in {
