@@ -278,10 +278,9 @@ object FormTemplateValidator {
   def getAllFieldIdsFromFormTemplate(formTemplate: FormTemplate): List[FormComponentId] = {
 
     val sectionsFields = extractFieldIds(formTemplate.sections.flatMap(_.fields))
-    val acknowledgementSectionFields = extractFieldIds(formTemplate.acknowledgementSection.fields)
     val declarationSectionFields = extractFieldIds(formTemplate.declarationSection.fields)
 
-    sectionsFields ::: acknowledgementSectionFields ::: declarationSectionFields
+    sectionsFields ::: declarationSectionFields
 
   }
 
@@ -300,7 +299,8 @@ object FormTemplateValidator {
         case Nil => Valid
         case invalidFields =>
           Invalid(
-            s"The following email parameters are not fields in the form template: ${invalidFields.map(_.value.toFieldId)}")
+            s"The following email parameters are not fields in the form template's sections or the declaration section: ${invalidFields
+              .map(_.value.toFieldId)}")
       }
     }
 

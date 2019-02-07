@@ -369,9 +369,26 @@ class TemplateValidatorSpec extends Spec {
     val newFormTemplate = formTemplate.copy(sections = List(newSection))
 
     val res = FormTemplateValidator.validateEmailParameter(newFormTemplate)
-    res should be(
-      Invalid(
-        "The following email parameters are not fields in the form template: List(directorFullName, directorEmail)"))
+    res should be(Invalid(
+      "The following email parameters are not fields in the form template's sections or the declaration section: List(directorFullName, directorEmail)"))
+
+  }
+
+  "TemplateValidator.validateEmailParameters with field in acknowledgement section" should "return Invalid" in {
+
+    val formComponent = List(mkFormComponent("fieldInAcknowledgementSection", Value))
+    val newAcknowledgementSection =
+      AcknowledgementSection("ack section with email param field", None, None, formComponent)
+    val newEmailParameters = Some(
+      NonEmptyList.of(
+        EmailParameter("fieldEmailTemplateId", FormCtx("fieldInAcknowledgementSection"))
+      ))
+    val newFormTemplate =
+      formTemplate.copy(acknowledgementSection = newAcknowledgementSection, emailParameters = newEmailParameters)
+
+    val res = FormTemplateValidator.validateEmailParameter(newFormTemplate)
+    res should be(Invalid(
+      "The following email parameters are not fields in the form template's sections or the declaration section: List(fieldInAcknowledgementSection)"))
 
   }
 
@@ -414,7 +431,7 @@ class TemplateValidatorSpec extends Spec {
     println(newFormTemplate)
 
     val res = FormTemplateValidator.getAllFieldIdsFromFormTemplate(newFormTemplate)
-    res should be(List(FormComponentId("fieldContainedInGroup"), FormComponentId("nameOfBusiness")))
+    res should be(List(FormComponentId("fieldContainedInGroup")))
 
   }
 
