@@ -25,7 +25,7 @@ object ExprParsers {
 
   def validateFormCtx(expression: String): Opt[FormCtx] = validateWithParser(expression, expr)
 
-  lazy val expr: Parser[FormCtx] = "${" ~ FormComponentId.idValidationRegex ~ "}" ^^ { (loc, _, field, _) =>
+  lazy val expr: Parser[FormCtx] = "${" ~ FormComponentId.idValidation ~ "}" ^^ { (loc, _, field, _) =>
     FormCtx(field)
   }
 }
