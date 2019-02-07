@@ -17,11 +17,12 @@
 package uk.gov.hmrc.gform.wshttp
 
 import HttpClient.HttpClientBuildingSyntax
+import cats.Id
 import org.scalacheck.Gen
 import uk.gov.hmrc.http.HeaderCarrier
 
 class HeaderCarrierBuildingHttpClientSpec extends HttpClientSpec {
-  "get" should "delegate to underlying.get with the modified HeaderCarrier" in httpClient { underlying =>
+  "get" should "delegate to underlying.get with the modified HeaderCarrier" in httpClient[Id] { underlying =>
     forAll(Gen.alphaNumStr, headerCarrierGen, headerCarrierGen, httpResponseGen) { (url, hc, hc2, response) =>
       underlying.expectGet(url, hc2, response)
 
@@ -30,7 +31,7 @@ class HeaderCarrierBuildingHttpClientSpec extends HttpClientSpec {
     }
   }
 
-  "post" should "delegate to underlying.post with the extended URL" in httpClient { underlying =>
+  "post" should "delegate to underlying.post with the extended URL" in httpClient[Id] { underlying =>
     forAll(Gen.alphaNumStr, Gen.alphaNumStr, headerCarrierGen, headerCarrierGen, httpResponseGen) {
       (url, postBody, hc, hc2, response) =>
         underlying.expectPost(url, postBody, hc2, response)

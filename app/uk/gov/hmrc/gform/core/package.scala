@@ -16,7 +16,9 @@
 
 package uk.gov.hmrc.gform
 
+import cats.{ Monad, MonadError }
 import cats.data.EitherT
+import cats.implicits.catsStdInstancesForFuture
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 
@@ -42,5 +44,13 @@ package object core {
 
   implicit class FutureSyntax[T](f: Future[T]) {
     def void(implicit ec: ExecutionContext): Future[Unit] = f.map(_ => ())
+  }
+
+  implicit def fOptMonadError(implicit ec: ExecutionContext): MonadError[FOpt, String] = new MonadError[FOpt, String] {
+    override def flatMap[A, B](fa: FOpt[A])(f: A => FOpt[B]): FOpt[B] = fa.flatMap(f)
+    override def tailRecM[A, B](a: A)(f: A => FOpt[Either[A, B]]): FOpt[B] = implicitly[Monad[FOpt]].tailRecM(a)(f)
+    override def pure[A](x: A): FOpt[A] = success(x)
+    override def raiseError[A](e: String): FOpt[A] = fromFutureA(Future.failed(new Exception(e)))
+    override def handleErrorWith[A](fa: FOpt[A])(f: String => FOpt[A]): FOpt[A] = raiseError("Can't handle error")
   }
 }
