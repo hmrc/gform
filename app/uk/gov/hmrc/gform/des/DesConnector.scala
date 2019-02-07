@@ -16,15 +16,17 @@
 
 package uk.gov.hmrc.gform.des
 
-import com.typesafe.config.Config
+import java.util.Date
+
 import play.api.Logger
-import play.api.libs.json.{ JsValue, Json, OFormat }
+import play.api.libs.json._
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.config.DesConnectorConfig
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.HmrcTaxPeriod
 import uk.gov.hmrc.gform.wshttp.WSHttp
 
 import scala.concurrent.{ ExecutionContext, Future }
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{ HeaderCarrier, JsValidationException }
 import uk.gov.hmrc.http.logging.Authorization
 
 class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfig) {
@@ -36,7 +38,7 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
        "isAnAgent": false
       }""") //TODO add in actual regime we are looking for
 
-  def lookup(utr: String)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[AddressDes] = {
+  def lookupAddress(utr: String)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[AddressDes] = {
     implicit val hc = HeaderCarrier(
       extraHeaders = Seq("Environment" -> desConfig.environment),
       authorization = Some(Authorization(s"Bearer ${desConfig.authorizationToken}")))
@@ -44,10 +46,77 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
     wSHttp.POST[JsValue, AddressDes](s"$baseUrl${desConfig.basePath}/registration/organisation/utr/$utr", lookupJson)
   }
 
+  def lookupTaxPeriod(idType: String, idNumber: String, regimeType: String)(
+    implicit hc: HeaderCarrier,
+    ex: ExecutionContext): Future[Obligation] = {
+    implicit val hc = HeaderCarrier(
+      extraHeaders = Seq("Environment" -> desConfig.environment),
+      authorization = Some(Authorization(desConfig.authorizationToken)))
+    Logger.info(
+      s"Des lookup, Tax Periods: '$idType, $idNumber, $regimeType', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
+    val value = s"$baseUrl${desConfig.basePath}/enterprise/obligation-data/$idType/$idNumber/$regimeType?status=O"
+    val response = wSHttp.GET[JsValue](value)
+    response.map { i =>
+      val checkObligation = i.validate[Obligation]
+      val checkNoPeriods = i.validate[NoPeriods]
+      (checkObligation, checkNoPeriods) match {
+        case (JsSuccess(o, _), _) => o
+        case (_, JsSuccess(_, _)) => Obligation(List())
+        case _                    => throw new JsValidationException("GET", value, Obligation.getClass, "Incorrect response from api")
+      }
+    }
+  }
 }
 
 case class AddressDes(postalCode: String)
 
 object AddressDes {
   implicit val format: OFormat[AddressDes] = Json.format[AddressDes]
+}
+
+case class Identification(incomeSourceType: String, referenceNumber: String, referenceType: String)
+
+object Identification {
+  implicit val format: OFormat[Identification] = Json.format[Identification]
+}
+
+case class ObligationDetail(
+  status: String,
+  inboundCorrespondenceFromDate: Date,
+  inboundCorrespondenceToDate: Date,
+  inboundCorrespondenceDueDate: Date,
+  periodKey: String)
+
+object ObligationDetail {
+  implicit val format: OFormat[ObligationDetail] = Json.format[ObligationDetail]
+}
+
+case class TaxPeriodDes(identification: Identification, obligationDetails: List[ObligationDetail])
+
+object TaxPeriodDes {
+  implicit val format: OFormat[TaxPeriodDes] = Json.format[TaxPeriodDes]
+}
+
+case class ObligationDetails(obligationDetails: List[ObligationDetail])
+
+object ObligationDetails {
+  implicit val format: OFormat[ObligationDetails] = Json.format[ObligationDetails]
+}
+
+case class Obligation(obligations: List[ObligationDetails])
+
+object Obligation {
+  implicit val format: OFormat[Obligation] = Json.format[Obligation]
+}
+
+case class TaxResponse(id: HmrcTaxPeriod, obligation: Obligation)
+
+object TaxResponse {
+  implicit val format: OFormat[TaxResponse] = Json.format[TaxResponse]
+}
+
+case class NoPeriods(code: String, reason: String)
+
+object NoPeriods {
+  implicit val format: OFormat[NoPeriods] = Json.format[NoPeriods]
 }

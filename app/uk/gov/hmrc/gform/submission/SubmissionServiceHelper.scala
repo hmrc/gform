@@ -48,6 +48,8 @@ object SubmissionServiceHelper {
           case Text(_, _, _) | TextArea(_, _, _) | Choice(_, _, _, _, _) | Group(_, _, _, _, _, _) =>
             List(fieldValue.id)
           case InformationMessage(_, _) => Nil
+          case HmrcTaxPeriod(_, _, _)   => List(fieldValue.id)
+          case _                        => Nil
         }
 
       val formFieldAndFieldValues: Opt[List[FormField]] = {
