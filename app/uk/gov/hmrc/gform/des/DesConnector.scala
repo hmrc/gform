@@ -20,14 +20,16 @@ import java.util.Date
 
 import play.api.Logger
 import play.api.libs.json._
+import play.api.libs.openid.Errors.BAD_RESPONSE
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.config.DesConnectorConfig
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.HmrcTaxPeriod
 import uk.gov.hmrc.gform.wshttp.WSHttp
 
 import scala.concurrent.{ ExecutionContext, Future }
-import uk.gov.hmrc.http.{ HeaderCarrier, JsValidationException }
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse, JsValidationException, Upstream5xxResponse }
 import uk.gov.hmrc.http.logging.Authorization
+import play.api.http.Status
 
 class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfig) {
 
@@ -55,14 +57,12 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
     Logger.info(
       s"Des lookup, Tax Periods: '$idType, $idNumber, $regimeType', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
     val value = s"$baseUrl${desConfig.basePath}/enterprise/obligation-data/$idType/$idNumber/$regimeType?status=O"
-    val response = wSHttp.GET[JsValue](value)
+    val response = wSHttp.GET[HttpResponse](value)
     response.map { i =>
-      val checkObligation = i.validate[Obligation]
-      val checkNoPeriods = i.validate[NoPeriods]
-      (checkObligation, checkNoPeriods) match {
-        case (JsSuccess(o, _), _) => o
-        case (_, JsSuccess(_, _)) => Obligation(List())
-        case _                    => throw new JsValidationException("GET", value, Obligation.getClass, "Incorrect response from api")
+      i.status match {
+        case Status.OK        => i.json.validate[Obligation].get
+        case Status.NOT_FOUND => Obligation(List())
+        case _                => throw new Upstream5xxResponse("Misc Failure", 500, 500)
       }
     }
   }
