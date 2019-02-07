@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.wshttp
 import cats.{ Endo, MonadError }
 import cats.syntax.applicative._
 import cats.syntax.flatMap._
+import play.api.libs.json.Json
 import uk.gov.hmrc.gform.core.{ FOpt, _ }
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpReads, HttpResponse }
 
@@ -51,13 +52,19 @@ object HttpClient {
     def successResponsesOnly(implicit monadError: MonadError[F, String]): SuccessfulResponseHttpClient[F] =
       new SuccessfulResponseHttpClient(underlying)
 
-    def json: JsonHttpClient[F] = new JsonHttpClient[F] {
+    def json(implicit monadError: MonadError[F, String]): JsonHttpClient[F] = new JsonHttpClient[F] {
       override def get(uri: String)(implicit hc: HeaderCarrier): F[HttpResponse] = underlying.get(uri)
       override def post(uri: String, body: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
         underlying.post(uri, body)
 
-      def postJsonString(uri: String, json: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
-        post(uri, json)(addJsonContentTypeHeader(hc))
+      def postJsonString(uri: String, jsonString: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
+        try {
+          post(uri, Json.parse(jsonString).toString)(addJsonContentTypeHeader(hc))
+        } catch {
+          case ex: Exception =>
+            monadError.raiseError(
+              s"Attempt to POST JSON failed because the given String is not valid JSON: ${ex.getMessage}. The String is: $jsonString")
+        }
 
       private def addJsonContentTypeHeader(hc: HeaderCarrier): HeaderCarrier =
         hc.copy(extraHeaders = ("Content-Type" -> "application/json") :: hc.extraHeaders.toList)

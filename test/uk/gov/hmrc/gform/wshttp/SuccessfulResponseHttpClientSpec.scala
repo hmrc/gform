@@ -32,7 +32,7 @@ class SuccessfulResponseHttpClientSpec extends HttpClientSpec {
     override def ap[A, B](ff: Id[A => B])(fa: Id[A]): Id[B] = ???
   }
 
-  "get" should "delegate to underlying.get with the extended URL and return any response with 200 <= status <= 299" in httpClient {
+  "get" should "delegate to underlying.get and return any response with 200 <= status <= 299" in httpClient[Id] {
     underlying =>
       forAll(Gen.alphaNumStr, headerCarrierGen, successfulHttpResponseGen) { (uri, hc, response) =>
         whenever(successful(response)) {
@@ -44,16 +44,17 @@ class SuccessfulResponseHttpClientSpec extends HttpClientSpec {
       }
   }
 
-  "post" should "delegate to underlying.post with the extended URL" in httpClient { underlying =>
-    forAll(Gen.alphaNumStr, Gen.alphaNumStr, headerCarrierGen, successfulHttpResponseGen) {
-      (uri, postBody, hc, response) =>
-        whenever(successful(response)) {
-          underlying.expectPost(uri, postBody, hc, response)
+  "post" should "delegate to underlying.post and return any response with 200 <= status <= 299" in httpClient[Id] {
+    underlying =>
+      forAll(Gen.alphaNumStr, Gen.alphaNumStr, headerCarrierGen, successfulHttpResponseGen) {
+        (uri, postBody, hc, response) =>
+          whenever(successful(response)) {
+            underlying.expectPost(uri, postBody, hc, response)
 
-          buildClient(underlying.httpClient)
-            .post(uri, postBody)(hc) shouldBe response
-        }
-    }
+            buildClient(underlying.httpClient)
+              .post(uri, postBody)(hc) shouldBe response
+          }
+      }
   }
 
   private def successful(response: HttpResponse) = response.status >= 200 && response.status < 300

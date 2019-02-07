@@ -15,7 +15,7 @@
  */
 
 package uk.gov.hmrc.gform.wshttp
-import cats.Id
+import cats.Applicative
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.PrimitiveGen
@@ -23,20 +23,20 @@ import uk.gov.hmrc.http.logging._
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse, Token, UserId }
 
 trait HttpClientSpec extends Spec {
-  case class Underlying(httpClient: HttpClient[Id]) {
-    def expectGet(uri: String, hc: HeaderCarrier, response: HttpResponse): Underlying = {
+  case class Underlying[F[_]](httpClient: HttpClient[F])(implicit A: Applicative[F]) {
+    def expectGet(uri: String, hc: HeaderCarrier, response: HttpResponse): Underlying[F] = {
       (httpClient
         .get(_: String)(_: HeaderCarrier))
         .expects(uri, hc)
-        .returning(response)
+        .returning(A.pure(response))
       this
     }
 
-    def expectPost(uri: String, body: String, hc: HeaderCarrier, response: HttpResponse): Underlying = {
+    def expectPost(uri: String, body: String, hc: HeaderCarrier, response: HttpResponse): Underlying[F] = {
       (httpClient
         .post(_: String, _: String)(_: HeaderCarrier))
         .expects(uri, body, hc)
-        .returning(response)
+        .returning(A.pure(response))
       this
     }
   }
@@ -106,8 +106,8 @@ trait HttpClientSpec extends Spec {
         otherHeaders = otherHeaders
       )
 
-  def httpClient[T](f: Underlying => T): T = {
-    val httpClient = mock[HttpClient[Id]]
+  def httpClient[F[_]: Applicative](f: Underlying[F] => Any): Any = {
+    val httpClient = mock[HttpClient[F]]
     val underlying = Underlying(httpClient)
     f(underlying)
   }
