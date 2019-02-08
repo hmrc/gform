@@ -16,12 +16,7 @@
 
 package uk.gov.hmrc.gform.core
 
-import java.util.concurrent.TimeUnit
-
 import uk.gov.hmrc.gform.Spec
-
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
 
 class FOptMonadErrorSpec extends Spec {
   "raiseError" should "work as expected" in {
@@ -30,22 +25,11 @@ class FOptMonadErrorSpec extends Spec {
     }
   }
 
-  private def expectFutureFailure[T](expectedMessage: String)(fopt: FOpt[T]) = {
-    var result: Either[String, Unit] = Left("Future not completed yet")
-
-    fopt.value.onSuccess {
-      case v => result = Left(s"Expected a Future failure with message '$expectedMessage'. Got success with $v")
+  private def expectFutureFailure[T](expectedMessage: String)(fopt: FOpt[T]) =
+    try {
+      fopt.value.futureValue
+      fail("Expected Future to be a failure")
+    } catch {
+      case e: Exception => e.getCause.getMessage shouldBe expectedMessage
     }
-    fopt.value.onFailure {
-      case t =>
-        result =
-          if (t.getMessage == expectedMessage) Right(())
-          else
-            Left(
-              s"Expected a Future failure with message '$expectedMessage'. Got a Future failure with message '${t.getMessage}'")
-    }
-
-    Await.ready(fopt.value, Duration(2L, TimeUnit.SECONDS))
-    result shouldBe Right(())
-  }
 }
