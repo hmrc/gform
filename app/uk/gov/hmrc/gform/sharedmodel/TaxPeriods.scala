@@ -19,15 +19,33 @@ package uk.gov.hmrc.gform.sharedmodel
 import java.util.Date
 
 import play.api.libs.json.{ Json, OFormat }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.HmrcTaxPeriod
 
-case class TaxPeriods(taxPeriods: List[TaxPeriod])
+case class ObligationDetail(
+  status: String,
+  inboundCorrespondenceFromDate: Date,
+  inboundCorrespondenceToDate: Date,
+  inboundCorrespondenceDueDate: Date,
+  periodKey: String)
 
-object TaxPeriods {
-  implicit val format: OFormat[TaxPeriods] = Json.format[TaxPeriods]
+object ObligationDetail {
+  implicit val format: OFormat[ObligationDetail] = Json.format[ObligationDetail]
 }
 
-case class TaxPeriod(inboundCorrespondenceFromDate: Date, inboundCorrespondenceToDate: Date, periodKey: String)
+case class ObligationDetails(obligationDetails: List[ObligationDetail])
 
-object TaxPeriod {
-  implicit val format: OFormat[TaxPeriod] = Json.format[TaxPeriod]
+object ObligationDetails {
+  implicit val format: OFormat[ObligationDetails] = Json.format[ObligationDetails]
+}
+
+case class Obligation(obligations: List[ObligationDetails])
+
+object Obligation {
+  implicit val format: OFormat[Obligation] = Json.format[Obligation]
+}
+
+case class TaxResponse(id: HmrcTaxPeriod, obligation: Obligation)
+
+object TaxResponse {
+  implicit val format: OFormat[TaxResponse] = Json.format[TaxResponse]
 }

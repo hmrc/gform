@@ -30,6 +30,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.http.logging.Authorization
 import play.api.http.Status
+import uk.gov.hmrc.gform.sharedmodel.Obligation
 
 class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfig) {
 
@@ -65,51 +66,4 @@ case class AddressDes(postalCode: String)
 
 object AddressDes {
   implicit val format: OFormat[AddressDes] = Json.format[AddressDes]
-}
-
-case class Identification(incomeSourceType: String, referenceNumber: String, referenceType: String)
-
-object Identification {
-  implicit val format: OFormat[Identification] = Json.format[Identification]
-}
-
-case class ObligationDetail(
-  status: String,
-  inboundCorrespondenceFromDate: Date,
-  inboundCorrespondenceToDate: Date,
-  inboundCorrespondenceDueDate: Date,
-  periodKey: String)
-
-object ObligationDetail {
-  implicit val format: OFormat[ObligationDetail] = Json.format[ObligationDetail]
-}
-
-case class TaxPeriodDes(identification: Identification, obligationDetails: List[ObligationDetail])
-
-object TaxPeriodDes {
-  implicit val format: OFormat[TaxPeriodDes] = Json.format[TaxPeriodDes]
-}
-
-case class ObligationDetails(obligationDetails: List[ObligationDetail])
-
-object ObligationDetails {
-  implicit val format: OFormat[ObligationDetails] = Json.format[ObligationDetails]
-}
-
-case class Obligation(obligations: List[ObligationDetails])
-
-object Obligation {
-  implicit val format: OFormat[Obligation] = Json.format[Obligation]
-}
-
-case class TaxResponse(id: HmrcTaxPeriod, obligation: Obligation)
-
-object TaxResponse {
-  implicit val format: OFormat[TaxResponse] = Json.format[TaxResponse]
-}
-
-case class NoPeriods(code: String, reason: String)
-
-object NoPeriods {
-  implicit val format: OFormat[NoPeriods] = Json.format[NoPeriods]
 }
