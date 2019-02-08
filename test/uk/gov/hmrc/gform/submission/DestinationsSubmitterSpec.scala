@@ -25,7 +25,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, D
 import uk.gov.hmrc.gform.submission.handlebars.{ HandlebarsTemplateProcessor, HandlebarsTemplateProcessorModel }
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 import org.scalacheck.Gen
-import play.api.libs.json.{ JsNumber, JsObject, JsString }
+import play.api.libs.json.{ JsNull, JsNumber, JsObject, JsString }
 
 class DestinationsSubmitterSpec extends Spec {
   private implicit val hc: HeaderCarrier = HeaderCarrier()
@@ -142,6 +142,23 @@ class DestinationsSubmitterSpec extends Spec {
               Seq(
                 "status" -> JsNumber(responseCode),
                 "json"   -> responseBody
+              ))
+          )).toString
+    }
+  }
+
+  it should "contain a JsNull when the response body is empty or cannot be parsed" in {
+    forAll(DestinationGen.handlebarsHttpApiGen, Gen.chooseNum(100, 599)) { (destination, responseCode) =>
+      val responseModel =
+        DestinationsSubmitter.createResponseModel(destination, HttpResponse(responseCode, responseString = Option("")))
+
+      responseModel.model.toString shouldBe
+        JsObject(
+          Seq(
+            s"${destination.id.id}" -> JsObject(
+              Seq(
+                "status" -> JsNumber(responseCode),
+                "json"   -> JsNull
               ))
           )).toString
     }

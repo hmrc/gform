@@ -23,6 +23,7 @@ import cats.syntax.eq._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.applicative._
+import play.api.libs.json.{ JsNull, JsValue }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, Destinations }
 import uk.gov.hmrc.gform.submission.handlebars.{ HandlebarsTemplateProcessor, HandlebarsTemplateProcessorModel }
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
@@ -70,9 +71,16 @@ object DestinationsSubmitter {
     HandlebarsTemplateProcessorModel(s"""|{
                                          |  "${destination.id.id}" : {
                                          |    "status" : ${response.status},
-                                         |    "json" : ${response.json}
+                                         |    "json" : ${parseResponseJson(response)}
                                          |  }
                                          |}""".stripMargin)
+
+  private def parseResponseJson(response: HttpResponse): JsValue =
+    try {
+      response.json
+    } catch {
+      case _: Exception => JsNull
+    }
 
   def createHandlebarsTemplateProcessorModel(
     submissionInfo: DestinationSubmissionInfo): HandlebarsTemplateProcessorModel =
