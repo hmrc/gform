@@ -27,7 +27,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.HmrcTaxPeriod
 import uk.gov.hmrc.gform.wshttp.WSHttp
 
 import scala.concurrent.{ ExecutionContext, Future }
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse, JsValidationException, Upstream5xxResponse }
+import uk.gov.hmrc.http._
 import uk.gov.hmrc.http.logging.Authorization
 import play.api.http.Status
 
@@ -57,14 +57,7 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
     Logger.info(
       s"Des lookup, Tax Periods: '$idType, $idNumber, $regimeType', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
     val value = s"$baseUrl${desConfig.basePath}/enterprise/obligation-data/$idType/$idNumber/$regimeType?status=O"
-    val response = wSHttp.GET[HttpResponse](value)
-    response.map { i =>
-      i.status match {
-        case Status.OK        => i.json.validate[Obligation].get
-        case Status.NOT_FOUND => Obligation(List())
-        case _                => throw new Upstream5xxResponse("Misc Failure", 500, 500)
-      }
-    }
+    wSHttp.GET[Obligation](value).recover { case _: NotFoundException => Obligation(List()) }
   }
 }
 
