@@ -95,6 +95,7 @@ object SubmissionServiceHelper {
           parameter =>
             form.formData.fields
               .find(field => field.id === parameter.value.toFieldId)
+              .orElse(Some(FormField(FormComponentId(parameter.value.value), "")))
               .map(f => (parameter, f)))
         .toMap)
 
