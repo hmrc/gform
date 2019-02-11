@@ -39,12 +39,14 @@ class FormatParserSpec extends Spec {
   "after 2017-04-02 -2" should "be parsed successfully" in {
     val res = validate("after 2017-04-02 -2")
     res.right.value should be(
-      DateFormat(DateConstraints(List(DateConstraint(After, ConcreteDate(2017, 4, 2), OffsetDate(-2))))))
+      DateFormat(DateConstraints(
+        List(DateConstraint(After, ConcreteDate(ExactYear(2017), ExactMonth(4), ExactDay(2)), OffsetDate(-2))))))
   }
 
   "after next-05-06 -2" should "be parsed successfully" ignore { //ignored until handled in gform-frontend
     val res = validate("after next-05-06 -2")
-    res.right.value should be(DateFormat(DateConstraints(List(DateConstraint(After, NextDate(5, 6), OffsetDate(-2))))))
+    res.right.value should be(
+      DateFormat(DateConstraints(List(DateConstraint(After, NextDate(ExactMonth(5), ExactDay(6)), OffsetDate(-2))))))
   }
 
   "after ${otherField}" should "be parsed successfully" in {
@@ -56,7 +58,7 @@ class FormatParserSpec extends Spec {
   "after previous-05-06 0" should "be parsed successfully" ignore { //ignored until handled in gform-frontend
     val res = validate("after previous-05-06 0")
     res.right.value should be(
-      DateFormat(DateConstraints(List(DateConstraint(After, PreviousDate(5, 6), OffsetDate(0))))))
+      DateFormat(DateConstraints(List(DateConstraint(After, PreviousDate(ExactMonth(5), ExactDay(6)), OffsetDate(0))))))
   }
 
   "before anyFieldId anotherWord 9" should "throw exception" in {
@@ -66,7 +68,7 @@ class FormatParserSpec extends Spec {
       UnexpectedState(
         """Unable to parse expression before anyFieldId anotherWord 9.
           |Errors:
-          |before anyFieldId anotherWord 9:1: unexpected characters; expected '${' or '(19|20)\d\d' or 'today'
+          |before anyFieldId anotherWord 9:1: unexpected characters; expected '${' or 'YYYY' or '(19|20)\d\d' or 'today'
           |before anyFieldId anotherWord 9       ^""".stripMargin))
   }
 
@@ -76,7 +78,7 @@ class FormatParserSpec extends Spec {
     res.left.value should be(
       UnexpectedState("""|Unable to parse expression after 2016-6-9 9.
                          |Errors:
-                         |after 2016-6-9 9:1: unexpected characters; expected '0[1-9]|1[012]' or '\s+'
+                         |after 2016-6-9 9:1: unexpected characters; expected 'MM' or '0[1-9]|1[012]' or '\s+'
                          |after 2016-6-9 9           ^""".stripMargin))
   }
 
@@ -88,25 +90,61 @@ class FormatParserSpec extends Spec {
   "before 2017-04-02 -2" should "be parsed successfully" in {
     val res = validate("before 2017-04-02 -2")
     res.right.value should be(
-      DateFormat(DateConstraints(List(DateConstraint(Before, ConcreteDate(2017, 4, 2), OffsetDate(-2))))))
+      DateFormat(DateConstraints(
+        List(DateConstraint(Before, ConcreteDate(ExactYear(2017), ExactMonth(4), ExactDay(2)), OffsetDate(-2))))))
   }
 
   "before and after" should "be parsed successfully" in {
     val res = validate("before 2017-04-02 -2,after 2015-02-01 +42")
     res.right.value should be(
-      DateFormat(
-        DateConstraints(List(
-          DateConstraint(Before, ConcreteDate(2017, 4, 2), OffsetDate(-2)),
-          DateConstraint(After, ConcreteDate(2015, 2, 1), OffsetDate(42))))))
+      DateFormat(DateConstraints(List(
+        DateConstraint(Before, ConcreteDate(ExactYear(2017), ExactMonth(4), ExactDay(2)), OffsetDate(-2)),
+        DateConstraint(After, ConcreteDate(ExactYear(2015), ExactMonth(2), ExactDay(1)), OffsetDate(42))
+      ))))
+  }
+
+  "precisely 2018-04-firstDay" should "be parsed successfully" in {
+    val res = validate("precisely 2018-04-firstDay")
+    res.right.value should be(
+      DateFormat(DateConstraints(
+        List(DateConstraint(Precisely, ConcreteDate(ExactYear(2018), ExactMonth(4), FirstDay), OffsetDate(0))))))
+  }
+
+  "precisely 2019-08-lastDay" should "be parsed successfully" in {
+    val res = validate("precisely 2019-08-lastDay")
+    res.right.value should be(
+      DateFormat(DateConstraints(
+        List(DateConstraint(Precisely, ConcreteDate(ExactYear(2019), ExactMonth(8), LastDay), OffsetDate(0))))))
+  }
+
+  "before 2019-08-lastDay" should "be parsed successfully" in {
+    val res = validate("before 2019-08-lastDay")
+    res.right.value should be(
+      DateFormat(DateConstraints(
+        List(DateConstraint(Before, ConcreteDate(ExactYear(2019), ExactMonth(8), LastDay), OffsetDate(0))))))
+  }
+
+  "before 2019-08-lastDay -2" should "be parsed successfully" in {
+    val res = validate("before 2019-08-lastDay -2")
+    res.right.value should be(
+      DateFormat(DateConstraints(
+        List(DateConstraint(Before, ConcreteDate(ExactYear(2019), ExactMonth(8), LastDay), OffsetDate(-2))))))
+  }
+
+  "precisely 2019-08-03" should "be parsed successfully" in {
+    val res = validate("precisely 2019-08-03")
+    res.right.value should be(
+      DateFormat(DateConstraints(
+        List(DateConstraint(Precisely, ConcreteDate(ExactYear(2019), ExactMonth(8), ExactDay(3)), OffsetDate(0))))))
   }
 
   "expressions without offset" should "be parsed successfully" in {
     val res = validate("before 2017-04-02,after 2017-02-01")
     res.right.value should be(
-      DateFormat(
-        DateConstraints(List(
-          DateConstraint(Before, ConcreteDate(2017, 4, 2), OffsetDate(0)),
-          DateConstraint(After, ConcreteDate(2017, 2, 1), OffsetDate(0))))))
+      DateFormat(DateConstraints(List(
+        DateConstraint(Before, ConcreteDate(ExactYear(2017), ExactMonth(4), ExactDay(2)), OffsetDate(0)),
+        DateConstraint(After, ConcreteDate(ExactYear(2017), ExactMonth(2), ExactDay(1)), OffsetDate(0))
+      ))))
   }
 
   "number" should "be parsed successfully" in {
