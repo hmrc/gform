@@ -328,9 +328,13 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
   def getCurrentDate: CharSequence = condition(DateTimeFormatter.BASIC_ISO_DATE.format(timeProvider.localDateTime))
   def getCurrentTimestamp: CharSequence = condition(DateTimeFormatter.ISO_INSTANT.format(timeProvider.instant))
 
-  def getHmrcTaxPeriodKey(period: String): CharSequence = getHmrcTaxPeriodValue(period, 0)
-  def getHmrcTaxPeriodFrom(period: String): CharSequence = getHmrcTaxPeriodValue(period, 1)
-  def getHmrcTaxPeriodTo(period: String): CharSequence = getHmrcTaxPeriodValue(period, 2)
+  def getHmrcTaxPeriodKey(o: Options): CharSequence = getHmrcTaxPeriodValue(o, 0)
+  def getHmrcTaxPeriodFrom(o: Options): CharSequence = getHmrcTaxPeriodValue(o, 1)
+  def getHmrcTaxPeriodTo(o: Options): CharSequence = getHmrcTaxPeriodValue(o, 2)
+
+  private def getHmrcTaxPeriodValue(o: Options, index: Int): CharSequence =
+    getHmrcTaxPeriodValue(o.params.find(_ != null).map(_.toString).orNull, index)
+
   private def getHmrcTaxPeriodValue(period: String, index: Int): CharSequence =
     ifNotNull(period) { s =>
       condition(s.split('|')(index))
