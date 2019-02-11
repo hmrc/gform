@@ -93,37 +93,37 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     process(s"{{either2 ${quote("""hello ' world""")} null}}") shouldBe """hello \' world"""
   }
 
-  "getHmrcTaxPeriodKey" must "return the 0th element of the first non-null, pipe separated parameter" in {
+  "hmrcTaxPeriodKey" must "return the 0th element of the first non-null, pipe separated parameter" in {
     forAll(listOfNullsAndNonNullsGen(periodGen)(_._4)) {
       case ((key, _, _, _), periods) =>
-        process(s"{{getHmrcTaxPeriodKey null $periods}}") shouldBe key
+        process(s"{{hmrcTaxPeriodKey null $periods}}") shouldBe key
     }
   }
 
   it must "return null if the period is null" in {
-    process("{{getHmrcTaxPeriodKey null null}}") shouldBe "null"
+    process("{{hmrcTaxPeriodKey null null}}") shouldBe "null"
   }
 
-  "getHmrcTaxPeriodFrom" must "return the 1st element of the first non-null, pipe separated parameter" in {
+  "hmrcTaxPeriodFrom" must "return the 1st element of the first non-null, pipe separated parameter" in {
     forAll(listOfNullsAndNonNullsGen(periodGen)(_._4)) {
       case ((_, from, _, _), periods) =>
-        process(s"{{getHmrcTaxPeriodFrom null $periods}}") shouldBe from
+        process(s"{{hmrcTaxPeriodFrom null $periods}}") shouldBe from
     }
   }
 
   it must "return null if the period is null" in {
-    process(s"{{getHmrcTaxPeriodFrom null null}}") shouldBe "null"
+    process(s"{{hmrcTaxPeriodFrom null null}}") shouldBe "null"
   }
 
-  "getHmrcTaxPeriodTo" must "return the 2nd element of the first non-null, pipe separated parameter" in {
+  "hmrcTaxPeriodTo" must "return the 2nd element of the first non-null, pipe separated parameter" in {
     forAll(listOfNullsAndNonNullsGen(periodGen)(_._4)) {
       case ((_, _, to, _), periods) =>
-        process(s"{{getHmrcTaxPeriodTo null $periods}}") shouldBe to
+        process(s"{{hmrcTaxPeriodTo null $periods}}") shouldBe to
     }
   }
 
   it must "return null if the period is null" in {
-    process(s"{{getHmrcTaxPeriodTo null null}}") shouldBe "null"
+    process(s"{{hmrcTaxPeriodTo null null}}") shouldBe "null"
   }
 
   "isSuccessCode" must "return true for all codes that begin with '2'" in {

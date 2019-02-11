@@ -328,14 +328,14 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
   def getCurrentDate: CharSequence = condition(DateTimeFormatter.BASIC_ISO_DATE.format(timeProvider.localDateTime))
   def getCurrentTimestamp: CharSequence = condition(DateTimeFormatter.ISO_INSTANT.format(timeProvider.instant))
 
-  def getHmrcTaxPeriodKey(o: Options): CharSequence = getHmrcTaxPeriodValue(o, 0)
-  def getHmrcTaxPeriodFrom(o: Options): CharSequence = getHmrcTaxPeriodValue(o, 1)
-  def getHmrcTaxPeriodTo(o: Options): CharSequence = getHmrcTaxPeriodValue(o, 2)
+  def hmrcTaxPeriodKey(o: Options): CharSequence = hmrcTaxPeriodValue(o, 0)
+  def hmrcTaxPeriodFrom(o: Options): CharSequence = hmrcTaxPeriodValue(o, 1)
+  def hmrcTaxPeriodTo(o: Options): CharSequence = hmrcTaxPeriodValue(o, 2)
 
-  private def getHmrcTaxPeriodValue(o: Options, index: Int): CharSequence =
-    getHmrcTaxPeriodValue(o.params.find(_ != null).map(_.toString).orNull, index)
+  private def hmrcTaxPeriodValue(o: Options, index: Int): CharSequence =
+    hmrcTaxPeriodValue(o.params.find(_ != null).map(_.toString).orNull, index)
 
-  private def getHmrcTaxPeriodValue(period: String, index: Int): CharSequence =
+  private def hmrcTaxPeriodValue(period: String, index: Int): CharSequence =
     ifNotNull(period) { s =>
       condition(s.split('|')(index))
     }
