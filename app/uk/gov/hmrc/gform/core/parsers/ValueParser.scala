@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.gform.core.parsers
 
+import java.time.LocalDate
+
 import parseback._
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.BasicParsers._
@@ -43,15 +45,19 @@ object ValueParser {
     TodayDateValue
   }
 
-  lazy val exactDate: Parser[ExactDateValue] = yearParser ~ monthDay ^^ { (loc, year, month, day) =>
+  lazy val exactDate: Parser[ExactDateValue] = exactYearParser ~ exactMonthDay ^^ { (loc, year, month, day) =>
     ExactDateValue(year, month, day)
+  } | exactYearMonth ~ "firstDay" ^^ { (loc, year, month, _) =>
+    ExactDateValue(year, month, 1)
+  } | exactYearMonth ~ "lastDay" ^^ { (loc, year, month, _) =>
+    ExactDateValue(year, month, LocalDate.of(year, month, 1).lengthOfMonth)
   }
 
   lazy val nextDate: Parser[NextDateValue] =
-    nextOrPrevious("next", NextDateValue.apply)
+    nextOrPreviousValue("next", NextDateValue.apply)
 
   lazy val lastDate: Parser[PreviousDateValue] =
-    nextOrPrevious("last", PreviousDateValue.apply)
+    nextOrPreviousValue("last", PreviousDateValue.apply)
 
   lazy val exprFormCtx: Parser[Expr] = (quotedConstant
     | parserExpression)

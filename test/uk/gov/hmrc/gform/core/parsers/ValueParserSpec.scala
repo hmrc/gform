@@ -236,6 +236,16 @@ class ValueParserSpec extends Spec {
     res.right.value should be(DateExpression(ExactDateValue(2015, 1, 15)))
   }
 
+  it should "parse lastDay" in {
+    val res = ValueParser.validate("2015-01-lastDay")
+    res.right.value should be(DateExpression(ExactDateValue(2015, 1, 31)))
+  }
+
+  it should "parse firstDay" in {
+    val res = ValueParser.validate("2015-01-firstDay")
+    res.right.value should be(DateExpression(ExactDateValue(2015, 1, 1)))
+  }
+
   it should "throw exception on 1 digit month " in {
     val res = ValueParser.validate("2015-1-12")
     res.left.value should be(UnexpectedState("""Unable to parse expression 2015-1-12.

@@ -48,9 +48,9 @@ object FormatParser {
   }
 
   lazy val dateConstraint: Parser[DateConstraint] = {
-    beforeOrAfter ~ dateExpr ~ offsetExpression ^^ { (loc, beforeOrAfter, dateExpr, offset) =>
+    beforeOrAfterOrPrecisely ~ dateExpr ~ offsetExpression ^^ { (loc, beforeOrAfter, dateExpr, offset) =>
       DateConstraint(beforeOrAfter, dateExpr, offset)
-    } | beforeOrAfter ~ dateExpr ^^ { (loc, beforeOrAfter, dateExpr) =>
+    } | beforeOrAfterOrPrecisely ~ dateExpr ^^ { (loc, beforeOrAfter, dateExpr) =>
       DateConstraint(beforeOrAfter, dateExpr, OffsetDate(0))
     }
   }
@@ -63,12 +63,15 @@ object FormatParser {
 
   lazy val previousDate: Parser[PreviousDate] = nextOrPrevious("previous", PreviousDate.apply)
 
-  lazy val beforeOrAfter: Parser[BeforeOrAfter] = {
+  lazy val beforeOrAfterOrPrecisely: Parser[BeforeAfterPrecisely] = {
     "after" ^^ { (loc, after) =>
       After
     } | "before" ^^ { (loc, before) =>
       Before
+    } | "precisely" ^^ { (loc, precisely) =>
+      Precisely
     }
+
   }
 
   lazy val dateExpr: Parser[DateConstraintInfo] = {
