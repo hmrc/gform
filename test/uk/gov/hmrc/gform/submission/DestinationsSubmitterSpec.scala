@@ -44,7 +44,8 @@ class DestinationsSubmitterSpec extends Spec {
 
   "Every Destination" should "be sent to the DestinationSubmitter when there is no includeIf" in {
     forAll(DestinationSubmissionInfoGen.destinationSubmissionInfoGen, DestinationGen.destinationGen) {
-      (submissionInfo, destination) =>
+      (submissionInfo, generatedDestination) =>
+        val destination = setIncludeIf(generatedDestination, None)
         val si = setSubmissionInfoDestinations(submissionInfo, destination)
 
         createSubmitter()
@@ -63,7 +64,7 @@ class DestinationsSubmitterSpec extends Spec {
       DestinationSubmissionInfoGen.destinationSubmissionInfoGen,
       DestinationGen.destinationGen,
       PrimitiveGen.nonEmptyAlphaNumStrGen) { (submissionInfo, destinationWithoutIncludeIf, includeIf) =>
-      val destination = setIncludeIf(destinationWithoutIncludeIf, includeIf)
+      val destination = setIncludeIf(destinationWithoutIncludeIf, Option(includeIf))
       val si = setSubmissionInfoDestinations(submissionInfo, destination)
       val initialModel = HandlebarsTemplateProcessorModel(si.form)
 
@@ -84,7 +85,7 @@ class DestinationsSubmitterSpec extends Spec {
       DestinationSubmissionInfoGen.destinationSubmissionInfoGen,
       DestinationGen.destinationGen,
       PrimitiveGen.nonEmptyAlphaNumStrGen) { (submissionInfo, destinationWithoutIncludeIf, includeIf) =>
-      val destination = setIncludeIf(destinationWithoutIncludeIf, includeIf)
+      val destination = setIncludeIf(destinationWithoutIncludeIf, Option(includeIf))
       val si = setSubmissionInfoDestinations(submissionInfo, destination)
       val initialModel = HandlebarsTemplateProcessorModel(si.form)
 
@@ -95,13 +96,15 @@ class DestinationsSubmitterSpec extends Spec {
     }
   }
 
-  "Subsequent Destination.HandlebarsHttpApi destinations should be able to use the response codes and bodies from previous Destination.HandlebarsHttpApi destinations" should "be sent to the HandlebarsHttpApiSubmitter" in {
+  "Subsequent Destination.HandlebarsHttpApi destinations" should "able to use the response codes and bodies from previous Destination.HandlebarsHttpApi destinations" in {
     forAll(
       DestinationSubmissionInfoGen.destinationSubmissionInfoGen,
       DestinationGen.handlebarsHttpApiGen,
       DestinationGen.handlebarsHttpApiGen,
       Gen.chooseNum(100, 599)
-    ) { (submissionInfo, handlebarsHttpApi1, handlebarsHttpApi2, responseCode1) =>
+    ) { (submissionInfo, generatedHandlebarsHttpApi1, generatedHandlebarsHttpApi2, responseCode1) =>
+      val handlebarsHttpApi1 = setIncludeIf(generatedHandlebarsHttpApi1, None)
+      val handlebarsHttpApi2 = setIncludeIf(generatedHandlebarsHttpApi2, None)
       val si = setSubmissionInfoDestinations(submissionInfo, handlebarsHttpApi1, handlebarsHttpApi2)
 
       val responseJson1 = JsObject(
@@ -164,10 +167,10 @@ class DestinationsSubmitterSpec extends Spec {
     }
   }
 
-  private def setIncludeIf(destination: Destination, includeIf: String): Destination =
+  private def setIncludeIf[T <: Destination](destination: T, includeIf: Option[String]): T =
     destination match {
-      case d: Destination.HmrcDms           => d.copy(includeIf = Option(includeIf))
-      case d: Destination.HandlebarsHttpApi => d.copy(includeIf = Option(includeIf))
+      case d: Destination.HmrcDms           => d.copy(includeIf = includeIf).asInstanceOf[T]
+      case d: Destination.HandlebarsHttpApi => d.copy(includeIf = includeIf).asInstanceOf[T]
     }
 
   private def setSubmissionInfoDestinations(

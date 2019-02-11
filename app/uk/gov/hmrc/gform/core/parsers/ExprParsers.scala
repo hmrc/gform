@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.core.parsers
 import parseback._
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.BasicParsers.validateWithParser
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{FormComponentId, FormCtx}
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormCtx }
 
 object ExprParsers {
 

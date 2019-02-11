@@ -16,8 +16,9 @@
 
 package uk.gov.hmrc.gform.submission
 
-import cats.{ Applicative, Monad }
-import uk.gov.hmrc.gform.Spec
+import cats.{ Applicative, MonadError }
+import org.scalacheck.Gen
+import uk.gov.hmrc.gform.{ Possible, Spec, possibleMonadError }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, Destinations }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.DestinationGen
 import uk.gov.hmrc.gform.submission.handlebars.{ HandlebarsHttpApiSubmitter, HandlebarsTemplateProcessor, HandlebarsTemplateProcessorModel }
@@ -29,22 +30,79 @@ class DestinationSubmitterSpec extends Spec {
   "A Destination.HandlebarsHttpApi" should "be sent to the HandlebarsHttpApiSubmitter" in {
     forAll(DestinationSubmissionInfoGen.destinationSubmissionInfoGen, DestinationGen.handlebarsHttpApiGen) {
       (si, handlebarsHttpApi) =>
+        val httpResponse = HttpResponse(200)
         val model = HandlebarsTemplateProcessorModel(si.form)
-        createSubmitter()
-          .expectHandlebarsSubmission(handlebarsHttpApi, model, HttpResponse(200))
+        createSubmitter
+          .expectHandlebarsSubmission(handlebarsHttpApi, model, httpResponse)
           .sut
-          .apply(handlebarsHttpApi, si, model)
+          .apply(handlebarsHttpApi, si, model) shouldBe Right(
+          Option(DestinationsSubmitter.createResponseModel(handlebarsHttpApi, httpResponse)))
+    }
+  }
+
+  it should "return without raising an error if the endpoint returns an error but failOnError is Some(false)" in {
+    forAll(DestinationSubmissionInfoGen.destinationSubmissionInfoGen, DestinationGen.handlebarsHttpApiGen) {
+      (si, generatedHandlebarsHttpApi) =>
+        val httpResponse = HttpResponse(300)
+        val handlebarsHttpApi = generatedHandlebarsHttpApi.copy(failOnError = Option(false))
+        val model = HandlebarsTemplateProcessorModel(si.form)
+        createSubmitter
+          .expectHandlebarsSubmission(handlebarsHttpApi, model, httpResponse)
+          .sut
+          .apply(handlebarsHttpApi, si, model) shouldBe Right(
+          Option(DestinationsSubmitter.createResponseModel(handlebarsHttpApi, httpResponse)))
+    }
+  }
+
+  it should "raise an error if the endpoint returns an error and failOnError is Some(true) or None" in {
+    forAll(
+      DestinationSubmissionInfoGen.destinationSubmissionInfoGen,
+      DestinationGen.handlebarsHttpApiGen,
+      Gen.option(Gen.const(true))) { (si, generatedHandlebarsHttpApi, failOnError) =>
+      val httpResponse = HttpResponse(300)
+      val handlebarsHttpApi = generatedHandlebarsHttpApi.copy(failOnError = failOnError)
+      val model = HandlebarsTemplateProcessorModel(si.form)
+
+      createSubmitter
+        .expectHandlebarsSubmission(handlebarsHttpApi, model, httpResponse)
+        .sut
+        .apply(handlebarsHttpApi, si, model) shouldBe Left(
+        DestinationSubmitter.handlebarsHttpApiFailOnErrorMessage(handlebarsHttpApi, httpResponse))
     }
   }
 
   "A Destination.DmsSubmission" should "be sent to the DmsSubmitter" in {
+    forAll(DestinationSubmissionInfoGen.destinationSubmissionInfoGen, DestinationGen.hmrcDmsGen) { (si, hmrcDms) =>
+      val model = HandlebarsTemplateProcessorModel(si.form)
+      createSubmitter
+        .expectDmsSubmission(si, hmrcDms.toDeprecatedDmsSubmission)
+        .sut
+        .apply(hmrcDms, si, model) shouldBe Right(None)
+    }
+  }
+
+  it should "return without raising an error if the endpoint returns an error but failOnError is Some(false)" in {
     forAll(DestinationSubmissionInfoGen.destinationSubmissionInfoGen, DestinationGen.hmrcDmsGen) {
-      (si, hmrcDms: Destination.HmrcDms) =>
-        val model = HandlebarsTemplateProcessorModel(si.form)
-        createSubmitter()
-          .expectDmsSubmission(si, hmrcDms.toDeprecatedDmsSubmission)
+      (si, generatedHmrcDms) =>
+        val hmrcDms = generatedHmrcDms.copy(failOnError = Option(false))
+        createSubmitter
+          .expectDmsSubmissionFailure(si, hmrcDms.toDeprecatedDmsSubmission, "an error")
           .sut
-          .apply(hmrcDms, si, model)
+          .apply(hmrcDms, si, HandlebarsTemplateProcessorModel(si.form)) shouldBe Right(None)
+    }
+  }
+
+  it should "raise a failure if the endpoint returns an error and failOnError is Some(true) or None" in {
+    forAll(
+      DestinationSubmissionInfoGen.destinationSubmissionInfoGen,
+      DestinationGen.hmrcDmsGen,
+      Gen.option(Gen.const(true))) { (si, generatedHmrcDms, failOnError) =>
+      val hmrcDms = generatedHmrcDms.copy(failOnError = failOnError)
+
+      createSubmitter
+        .expectDmsSubmissionFailure(si, hmrcDms.toDeprecatedDmsSubmission, "an error")
+        .sut
+        .apply(hmrcDms, si, HandlebarsTemplateProcessorModel(si.form)) shouldBe Left("an error")
     }
   }
 
@@ -53,6 +111,7 @@ class DestinationSubmitterSpec extends Spec {
     dmsSubmitter: DmsSubmitter[F],
     handlebarsSubmitter: HandlebarsHttpApiSubmitter[F],
     handlebarsTemplateProcessor: HandlebarsTemplateProcessor) {
+
     def expectDmsSubmission(si: DestinationSubmissionInfo, dms: Destinations.DmsSubmission)(
       implicit F: Applicative[F]): SubmitterParts[F] = {
       (dmsSubmitter
@@ -62,23 +121,32 @@ class DestinationSubmitterSpec extends Spec {
       this
     }
 
+    def expectDmsSubmissionFailure(si: DestinationSubmissionInfo, dms: Destinations.DmsSubmission, error: String)(
+      implicit F: MonadError[F, String]): SubmitterParts[F] = {
+      (dmsSubmitter
+        .apply(_: DestinationSubmissionInfo, _: Destinations.DmsSubmission)(_: HeaderCarrier))
+        .expects(si, dms, hc)
+        .returning(F.raiseError(error))
+      this
+    }
+
     def expectHandlebarsSubmission(
       handlebarsHttpApi: Destination.HandlebarsHttpApi,
       model: HandlebarsTemplateProcessorModel,
-      response: F[HttpResponse]): SubmitterParts[F] = {
+      response: HttpResponse)(implicit F: Applicative[F]): SubmitterParts[F] = {
       (handlebarsSubmitter
         .apply(_: Destination.HandlebarsHttpApi, _: HandlebarsTemplateProcessorModel)(_: HeaderCarrier))
         .expects(handlebarsHttpApi, model, hc)
-        .returning(response)
+        .returning(F.pure(response))
       this
     }
   }
 
-  private def createSubmitter[F[_]: Monad](): SubmitterParts[F] = {
-    val dmsSubmitter = mock[DmsSubmitter[F]]
-    val handlebarsSubmitter = mock[HandlebarsHttpApiSubmitter[F]]
+  private def createSubmitter: SubmitterParts[Possible] = {
+    val dmsSubmitter = mock[DmsSubmitter[Possible]]
+    val handlebarsSubmitter = mock[HandlebarsHttpApiSubmitter[Possible]]
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
-    val submitter = new RealDestinationSubmitter[F](dmsSubmitter, handlebarsSubmitter)
+    val submitter = new RealDestinationSubmitter[Possible](dmsSubmitter, handlebarsSubmitter)
 
     SubmitterParts(submitter, dmsSubmitter, handlebarsSubmitter, handlebarsTemplateProcessor)
   }

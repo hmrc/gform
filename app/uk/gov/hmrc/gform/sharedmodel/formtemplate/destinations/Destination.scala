@@ -26,6 +26,9 @@ import scala.util.parsing.combinator.RegexParsers
 sealed trait Destination extends Product with Serializable {
   def id: DestinationId
   def includeIf: Option[String]
+  def failOnError: Option[Boolean]
+
+  def failOnErrorDefaulted: Boolean = failOnError.getOrElse(true)
 }
 
 object Destination {
@@ -35,7 +38,8 @@ object Destination {
     customerId: TextExpression,
     classificationType: String,
     businessArea: String,
-    includeIf: Option[String] = None)
+    includeIf: Option[String] = None,
+    failOnError: Option[Boolean] = None)
       extends Destination {
     def toDeprecatedDmsSubmission: Destinations.DmsSubmission = Destinations.DmsSubmission(
       dmsFormId,
@@ -51,7 +55,8 @@ object Destination {
     uri: String,
     method: HttpMethod,
     payload: Option[String],
-    includeIf: Option[String] = None)
+    includeIf: Option[String] = None,
+    failOnError: Option[Boolean] = None)
       extends Destination
 
   val typeDiscriminatorFieldName: String = "type"
@@ -77,10 +82,11 @@ case class UploadableHandlebarsHttpApiDestination(
   method: HttpMethod,
   payload: Option[String],
   convertSingleQuotes: Option[Boolean],
-  includeIf: Option[String]) {
+  includeIf: Option[String],
+  failOnError: Option[Boolean]) {
 
   def toHandlebarsHttpApiDestination: Either[String, Destination.HandlebarsHttpApi] =
-    conditionedPayload.map(Destination.HandlebarsHttpApi(id, profile, uri, method, _, includeIf))
+    conditionedPayload.map(Destination.HandlebarsHttpApi(id, profile, uri, method, _, includeIf, failOnError))
 
   private def conditionedPayload: Either[String, Option[String]] = payload match {
     case None => Right(None)

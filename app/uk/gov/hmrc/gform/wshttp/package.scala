@@ -33,4 +33,8 @@ package object wshttp {
         }
       }
   }
+
+  implicit class HttpResponseSyntax(response: HttpResponse) {
+    def isSuccess: Boolean = response.status >= 200 && response.status < 300
+  }
 }
