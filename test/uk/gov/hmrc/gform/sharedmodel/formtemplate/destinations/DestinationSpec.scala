@@ -27,31 +27,11 @@ class DestinationSpec extends Spec {
     }
   }
 
-  it should "read custom JSON for HmrcDms" in {
-    forAll(DestinationGen.hmrcDmsGen) { hmrcDms =>
+  it should "read custom JSON for all destinations" in {
+    forAll(DestinationGen.destinationGen) { destination =>
       verifyRead[Destination](
-        hmrcDms,
-        createUploadableJson(hmrcDms)
-      )
-    }
-  }
-
-  it should "read custom JSON for HandlebarsHttpApi" in {
-    forAll(DestinationGen.handlebarsHttpApiGen) { handlebarsHttpApi =>
-      val h = handlebarsHttpApi.copy(payload = Some("""{"abc": "def"}"""))
-      import h._
-
-      verifyRead[Destination](
-        h,
-        s"""|{
-         |  "id": "${id.id}",
-         |  ${optionalField("payload", Some("""{'abc': 'def'}"""))}
-         |  ${optionalField("convertSingleQuotes", Option(true))}
-         |  "${Destination.typeDiscriminatorFieldName}": "${Destination.handlebarsHttpApi}",
-         |  "profile": ${write(profile)},
-         |  "uri": "$uri",
-         |  "method": ${write(method)}
-         |}"""
+        destination,
+        createUploadableJson(destination)
       )
     }
   }

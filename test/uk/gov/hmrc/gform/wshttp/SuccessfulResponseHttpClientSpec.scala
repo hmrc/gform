@@ -16,22 +16,13 @@
 
 package uk.gov.hmrc.gform.wshttp
 
+import uk.gov.hmrc.gform.idMonadError
 import HttpClient.HttpClientBuildingSyntax
 import cats.{ Id, MonadError }
 import org.scalacheck.Gen
 import uk.gov.hmrc.http.HttpResponse
 
 class SuccessfulResponseHttpClientSpec extends HttpClientSpec {
-  implicit val monadError: MonadError[Id, String] = new MonadError[Id, String] {
-    override def raiseError[A](e: String): Id[A] = throw new Exception(e)
-    override def flatMap[A, B](fa: Id[A])(f: A => Id[B]): Id[B] = f(fa)
-    override def pure[A](x: A): Id[A] = x
-
-    override def tailRecM[A, B](a: A)(f: A => Id[Either[A, B]]): Id[B] = ???
-    override def handleErrorWith[A](fa: Id[A])(f: String => Id[A]): Id[A] = ???
-    override def ap[A, B](ff: Id[A => B])(fa: Id[A]): Id[B] = ???
-  }
-
   "get" should "delegate to underlying.get and return any response with 200 <= status <= 299" in httpClient[Id] {
     underlying =>
       forAll(Gen.alphaNumStr, headerCarrierGen, successfulHttpResponseGen) { (uri, hc, response) =>

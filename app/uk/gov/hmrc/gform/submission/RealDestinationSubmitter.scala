@@ -16,11 +16,14 @@
 
 package uk.gov.hmrc.gform.submission
 
-import cats.Monad
+import cats.MonadError
 import cats.syntax.functor._
+import cats.syntax.flatMap._
+import play.api.Logger
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, Destinations }
 import uk.gov.hmrc.gform.submission.handlebars.{ HandlebarsHttpApiSubmitter, HandlebarsTemplateProcessorModel }
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
+import uk.gov.hmrc.gform.wshttp.HttpResponseSyntax
 
 trait DestinationSubmitter[M[_]] {
   def apply(
@@ -32,18 +35,60 @@ trait DestinationSubmitter[M[_]] {
     implicit hc: HeaderCarrier): M[Unit]
 }
 
-class RealDestinationSubmitter[M[_]: Monad](dms: DmsSubmitter[M], handlebars: HandlebarsHttpApiSubmitter[M])
+class RealDestinationSubmitter[M[_]](dms: DmsSubmitter[M], handlebars: HandlebarsHttpApiSubmitter[M])(
+  implicit monadError: MonadError[M, String])
     extends DestinationSubmitter[M] {
   def apply(
     destination: Destination,
     submissionInfo: DestinationSubmissionInfo,
     model: HandlebarsTemplateProcessorModel)(implicit hc: HeaderCarrier): M[Option[HandlebarsTemplateProcessorModel]] =
     destination match {
-      case d: Destination.HmrcDms => submitToDms(submissionInfo, d.toDeprecatedDmsSubmission).map(_ => None)
-      case d: Destination.HandlebarsHttpApi =>
-        handlebars(d, model).map(DestinationsSubmitter.createResponseModel(d, _)).map(Option(_))
+      case d: Destination.HmrcDms           => submitToDms(submissionInfo, d).map(_ => None)
+      case d: Destination.HandlebarsHttpApi => submitToHandlebars(d, model)
     }
 
   def submitToDms(submissionInfo: DestinationSubmissionInfo, submission: Destinations.DmsSubmission)(
     implicit hc: HeaderCarrier): M[Unit] = dms(submissionInfo, submission)
+
+  private def submitToDms(submissionInfo: DestinationSubmissionInfo, d: Destination.HmrcDms)(
+    implicit hc: HeaderCarrier): M[Unit] =
+    monadError.handleErrorWith(submitToDms(submissionInfo, d.toDeprecatedDmsSubmission)) { msg =>
+      if (d.failOnErrorDefaulted)
+        monadError.raiseError(msg)
+      else {
+        Logger.info(s"Destination ${d.id} failed but has 'failOnError' set to false. Ignoring.")
+        monadError.pure(())
+      }
+    }
+
+  private def submitToHandlebars(d: Destination.HandlebarsHttpApi, model: HandlebarsTemplateProcessorModel)(
+    implicit hc: HeaderCarrier): M[Option[HandlebarsTemplateProcessorModel]] =
+    handlebars(d, model)
+      .flatMap[HandlebarsTemplateProcessorModel] { response =>
+        if (response.isSuccess)
+          createSuccessResponse(d, response)
+        else if (d.failOnErrorDefaulted)
+          createFailureResponse(d, response)
+        else {
+          Logger.info(
+            s"Destination ${d.id} returned status code ${response.status} but has 'failOnError' set to false. Ignoring.")
+          createSuccessResponse(d, response)
+        }
+      }
+      .map(Option(_))
+
+  private def createFailureResponse(
+    d: Destination.HandlebarsHttpApi,
+    response: HttpResponse): M[HandlebarsTemplateProcessorModel] =
+    monadError.raiseError(DestinationSubmitter.handlebarsHttpApiFailOnErrorMessage(d, response))
+
+  private def createSuccessResponse(
+    d: Destination.HandlebarsHttpApi,
+    response: HttpResponse): M[HandlebarsTemplateProcessorModel] =
+    monadError.pure(DestinationsSubmitter.createResponseModel(d, response))
+}
+
+object DestinationSubmitter {
+  def handlebarsHttpApiFailOnErrorMessage(d: Destination.HandlebarsHttpApi, response: HttpResponse): String =
+    s"Destination ${d.id} returned status code ${response.status} and has 'failOnError' set to true. Failing."
 }

@@ -23,6 +23,8 @@ package object destinations {
       import hmrcDms._
       s"""|{
           |  "id": "${id.id}",
+          |  ${optionalField("includeIf", destination.includeIf)}
+          |  ${optionalField("failOnError", destination.failOnError)}
           |  "${Destination.typeDiscriminatorFieldName}": "${Destination.hmrcDms}",
           |  "dmsFormId": "$dmsFormId",
           |  "customerId": ${TextExpression.format.writes(customerId)},
@@ -36,6 +38,8 @@ package object destinations {
           |  "id": "${id.id}",
           |  ${optionalField("payload", payload)}
           |  ${optionalField("convertSingleQuotes", Option(false))}
+          |  ${optionalField("includeIf", destination.includeIf)}
+          |  ${optionalField("failOnError", destination.failOnError)}
           |  "${Destination.typeDiscriminatorFieldName}": "${Destination.handlebarsHttpApi}",
           |  "profile": ${write(profile)},
           |  "uri": "$uri",

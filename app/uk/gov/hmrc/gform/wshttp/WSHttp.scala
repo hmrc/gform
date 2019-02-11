@@ -16,24 +16,15 @@
 
 package uk.gov.hmrc.gform.wshttp
 
-import java.nio.file.Path
-
 import akka.NotUsed
-import akka.stream.IOResult
-import akka.stream.scaladsl.FileIO
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
-import play.api.http.HttpVerbs.{ POST => POST_VERB }
-import play.api.libs.json.{ Json, Writes }
 import play.api.mvc.MultipartFormData.FilePart
-import uk.gov.hmrc.gform.sharedmodel.config.ContentType
-import uk.gov.hmrc.gform.wshttp.MicroserviceAuthConnector.baseUrl
-import uk.gov.hmrc.gform.wshttp.WSHttp.buildRequest
 import uk.gov.hmrc.play.http.ws._
 
 import scala.concurrent.Future
 import uk.gov.hmrc.http._
-import uk.gov.hmrc.http.hooks.{ HttpHook, HttpHooks }
+import uk.gov.hmrc.http.hooks.HttpHooks
 import uk.gov.hmrc.play.audit.http.HttpAuditing
 import uk.gov.hmrc.play.audit.http.config.AuditingConfig
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
