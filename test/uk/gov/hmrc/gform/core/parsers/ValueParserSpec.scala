@@ -283,13 +283,13 @@ class ValueParserSpec extends Spec {
   }
 
   it should "parse last Date setting current year" in {
-    val res = ValueParser.validate("last-01-15")
+    val res = ValueParser.validate("previous-01-15")
 
     res.right.value should be(DateExpression(PreviousDateValue(1, 15)))
   }
 
   it should "parse last Date setting previous year" in {
-    val res = ValueParser.validate("last-04-15")
+    val res = ValueParser.validate("previous-04-15")
 
     res.right.value should be(DateExpression(PreviousDateValue(4, 15)))
   }

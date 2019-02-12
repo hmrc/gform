@@ -57,7 +57,7 @@ object ValueParser {
     nextOrPreviousValue("next", NextDateValue.apply)
 
   lazy val lastDate: Parser[PreviousDateValue] =
-    nextOrPreviousValue("last", PreviousDateValue.apply)
+    nextOrPreviousValue("previous", PreviousDateValue.apply)
 
   lazy val exprFormCtx: Parser[Expr] = (quotedConstant
     | parserExpression)

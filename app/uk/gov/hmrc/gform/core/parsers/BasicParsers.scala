@@ -90,8 +90,10 @@ object BasicParsers {
   val anyWordFormat = """\w+""".r
   val delimiter = "[- /.]".r
 
-  lazy val yearParser
-    : Parser[Year] = exactYearParser ^^ ((loc, year) => ExactYear(year)) | "YYYY" ^^ ((loc, _) => AnyYear: Year)
+  lazy val yearParser: Parser[Year] = exactYearParser ^^ ((loc, year) => ExactYear(year)) | "YYYY" ^^ (
+    (
+      loc,
+      _) => AnyYear: Year) | "next" ^^ ((loc, _) => Next: Year) | "previous" ^^ ((loc, _) => Previous: Year)
 
   lazy val monthParser
     : Parser[Month] = exactMonthParser ^^ ((loc, month) => ExactMonth(month)) | "MM" ^^ ((loc, _) => AnyMonth: Month)

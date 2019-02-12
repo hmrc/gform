@@ -68,7 +68,7 @@ class FormatParserSpec extends Spec {
       UnexpectedState(
         """Unable to parse expression before anyFieldId anotherWord 9.
           |Errors:
-          |before anyFieldId anotherWord 9:1: unexpected characters; expected '${' or 'YYYY' or '(19|20)\d\d' or 'today'
+          |before anyFieldId anotherWord 9:1: unexpected characters; expected '${' or 'previous' or 'next' or '(19|20)\d\d' or 'today' or 'YYYY'
           |before anyFieldId anotherWord 9       ^""".stripMargin))
   }
 

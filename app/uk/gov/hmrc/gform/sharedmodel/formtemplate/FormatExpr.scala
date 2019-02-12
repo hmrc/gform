@@ -61,6 +61,8 @@ object BeforeAfterPrecisely {
 sealed trait Year
 case object AnyYear extends Year
 case class ExactYear(year: Int) extends Year
+case object Next extends Year
+case object Previous extends Year
 
 object Year {
   implicit val format: OFormat[Year] = derived.oformat[Year]
