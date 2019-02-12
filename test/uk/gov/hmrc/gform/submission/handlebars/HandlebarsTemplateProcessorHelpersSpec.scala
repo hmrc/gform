@@ -163,7 +163,31 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   }
 
   it must "return false for a null code" in {
-    process(s"{{isNotSuccessCode null}}") shouldBe "false"
+    process("{{isNotSuccessCode null}}") shouldBe "false"
+  }
+
+  "removeNullsAndGet" must "return the default value if there are no options" in {
+    process("""{{removeNullsAndGet null "hello" 0}}""") shouldBe "hello"
+  }
+
+  it must "return the appropriate value given the index and position of nulls" in {
+    val t = Table(
+      ("default", "index", "params", "expected"),
+      (""""a"""", 0, "", "a"),
+      (""""a"""", 0, """"p0" "p1"""", "p0"),
+      (""""a"""", 1, """"p0" "p1"""", "p1"),
+      (""""b"""", 2, """"p0" "p1"""", "b"),
+      (""""b"""", 0, """null "p1"""", "p1"),
+      (""""c"""", 1, """null "p1"""", "c"),
+      (""""c"""", 0, """null "p1" null "p3"""", "p1"),
+      (""""c"""", 1, """null "p1" null "p3"""", "p3"),
+      (""""d"""", 2, """null "p1" null "p3"""", "d")
+    )
+
+    forAll(t) {
+      case (dflt, index, params, expected) =>
+        process(s"{{removeNullsAndGet null $dflt $index $params}}") shouldBe expected
+    }
   }
 
   private def periodGen: Gen[(String, String, String, String)] =

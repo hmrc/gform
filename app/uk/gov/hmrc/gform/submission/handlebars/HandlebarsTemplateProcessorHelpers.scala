@@ -363,6 +363,15 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
     })
   }
 
+  def removeNullsAndGet(options: Options): CharSequence = condition {
+    val dflt = options.params(0).asInstanceOf[String]
+    val index = options.params(1).asInstanceOf[Int]
+    val params = options.params.drop(2).filterNot(_ == null)
+
+    if (index < params.size) params(index)
+    else dflt
+  }
+
   private def ifNotNull[T](t: T)(f: T => CharSequence): CharSequence =
     Option(t).map(f).getOrElse("null")
 
