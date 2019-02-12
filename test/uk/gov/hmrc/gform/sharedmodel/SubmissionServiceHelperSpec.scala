@@ -73,15 +73,4 @@ class SubmissionServiceHelperSpec extends Spec {
 
   }
 
-  it should "return an empty map because it matches no fields" in new ExampleData {
-
-    val newFields = Seq(
-      FormField(FormComponentId("nino"), "example nino"),
-      FormField(FormComponentId("landfill-reference-number"), "10"))
-
-    val newForm = form.copy(formData = FormData(newFields))
-
-    SubmissionServiceHelper.getEmailParameterValues(formTemplate, newForm) shouldBe Map()
-
-  }
 }
