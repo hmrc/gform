@@ -61,10 +61,6 @@ object FormatParser {
     AnyDate
   }
 
-  lazy val nextDate: Parser[NextDate] = nextOrPrevious("next", NextDate.apply)
-
-  lazy val previousDate: Parser[PreviousDate] = nextOrPrevious("previous", PreviousDate.apply)
-
   lazy val beforeOrAfter: Parser[BeforeAfterPrecisely] = {
     "after" ^^ { (loc, after) =>
       After

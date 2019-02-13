@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 import org.scalacheck.Gen
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ After, AnyDate, AnyDay, AnyMonth, AnyText, AnyWord, AnyYear, BasicText, Before, BeforeAfterPrecisely, CompanyRegistrationNumber, ConcreteDate, CountryCode, DateConstraint, DateConstraintInfo, DateConstraintType, DateConstraints, DateField, EORI, Email, ExactDay, ExactMonth, ExactYear, FirstDay, LastDay, NINO, NextDate, NonUkCountryCode, Number, OffsetDate, PositiveNumber, Precisely, PreviousDate, RoundingMode, ShortText, Sterling, TelephoneNumber, TextConstraint, TextExpression, TextWithRestrictions, Today, UTR, UkBankAccountNumber, UkSortCodeFormat, UkVrn }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ After, AnyDate, AnyDay, AnyMonth, AnyText, AnyWord, AnyYear, BasicText, Before, BeforeAfterPrecisely, CompanyRegistrationNumber, ConcreteDate, CountryCode, DateConstraint, DateConstraintInfo, DateConstraintType, DateConstraints, DateField, EORI, Email, ExactDay, ExactMonth, ExactYear, FirstDay, LastDay, NINO, Next, NonUkCountryCode, Number, OffsetDate, PositiveNumber, Precisely, Previous, RoundingMode, ShortText, Sterling, TelephoneNumber, TextConstraint, TextExpression, TextWithRestrictions, Today, UTR, UkBankAccountNumber, UkSortCodeFormat, UkVrn }
 
 trait FormatExprGen {
   def numberGen: Gen[Number] =
@@ -87,22 +87,10 @@ trait FormatExprGen {
 
   def concreteDateGen: Gen[ConcreteDate] =
     for {
-      year  <- Gen.oneOf(exactYearGen, Gen.const(AnyYear))
+      year  <- Gen.oneOf(exactYearGen, Gen.const(AnyYear), Gen.const(Next), Gen.const(Previous))
       month <- Gen.oneOf(exactMonthGen, Gen.const(AnyMonth))
       day   <- Gen.oneOf(exactDayGen, Gen.const(AnyDay), Gen.const(FirstDay), Gen.const(LastDay))
     } yield ConcreteDate(year, month, day)
-
-  def nextDateGen: Gen[NextDate] =
-    for {
-      month <- Gen.oneOf(exactMonthGen, Gen.const(AnyMonth))
-      day   <- Gen.oneOf(exactDayGen, Gen.const(AnyDay), Gen.const(FirstDay), Gen.const(LastDay))
-    } yield NextDate(month, day)
-
-  def previousDateGen: Gen[PreviousDate] =
-    for {
-      month <- Gen.oneOf(exactMonthGen, Gen.const(AnyMonth))
-      day   <- Gen.oneOf(exactDayGen, Gen.const(AnyDay), Gen.const(FirstDay), Gen.const(LastDay))
-    } yield PreviousDate(month, day)
 
   def anyWordGen: Gen[AnyWord] = Gen.alphaNumStr.map(AnyWord)
 
@@ -113,8 +101,6 @@ trait FormatExprGen {
   def dateConstraintInfoGen: Gen[DateConstraintInfo] = Gen.oneOf(
     Gen.const(Today),
     concreteDateGen,
-    nextDateGen,
-    previousDateGen,
     anyWordGen,
     dateFieldGen
   )

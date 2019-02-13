@@ -46,7 +46,8 @@ class FormatParserSpec extends Spec {
   "after next-05-06 -2" should "be parsed successfully" ignore { //ignored until handled in gform-frontend
     val res = validate("after next-05-06 -2")
     res.right.value should be(
-      DateFormat(DateConstraints(List(DateConstraint(After, NextDate(ExactMonth(5), ExactDay(6)), OffsetDate(-2))))))
+      DateFormat(
+        DateConstraints(List(DateConstraint(After, ConcreteDate(Next, ExactMonth(5), ExactDay(6)), OffsetDate(-2))))))
   }
 
   "after ${otherField}" should "be parsed successfully" in {
@@ -57,8 +58,8 @@ class FormatParserSpec extends Spec {
 
   "after previous-05-06 0" should "be parsed successfully" ignore { //ignored until handled in gform-frontend
     val res = validate("after previous-05-06 0")
-    res.right.value should be(
-      DateFormat(DateConstraints(List(DateConstraint(After, PreviousDate(ExactMonth(5), ExactDay(6)), OffsetDate(0))))))
+    res.right.value should be(DateFormat(
+      DateConstraints(List(DateConstraint(After, ConcreteDate(Previous, ExactMonth(5), ExactDay(6)), OffsetDate(0))))))
   }
 
   "before anyFieldId anotherWord 9" should "throw exception" in {
