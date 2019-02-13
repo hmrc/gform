@@ -29,22 +29,6 @@ import scala.concurrent.Future
 
 class SubmissionController(submissionService: SubmissionService) extends BaseController {
 
-  def submit(formId: FormId) = Action.async { implicit request =>
-    Logger.info(s"submit, formId: '${formId.value}, ${loggingHelpers.cleanHeaders(request.headers)}")
-    //TODO check form status. If after submission don't call this function
-    //TODO authentication
-    //TODO authorisation
-    //TODO validate all sections before submission (whole form)
-    //TODO change status of form to 'submitted'
-
-    submissionService
-      .submissionWithoutPdf(
-        formId,
-        getFromHeaders("customerId", request, _.getOrElse("")),
-        getFromHeaders("affinityGroup", request, toAffinityGroupO))
-      .fold(_.asBadRequest, _ => NoContent)
-  }
-
   def submitWithPdf(formId: FormId) = Action.async { implicit request =>
     Logger.info(s"submit, formId: '${formId.value}, ${loggingHelpers.cleanHeaders(request.headers)}")
     request.body.asText match {

@@ -44,15 +44,6 @@ class SubmissionService(
   timeProvider: TimeProvider,
   email: EmailService) {
 
-  def submissionWithoutPdf(formId: FormId, customerId: String, affinityGroup: Option[AffinityGroup])(
-    implicit hc: HeaderCarrier): FOpt[Unit] =
-    // format: OFF
-    for {
-      form                <- fromFutureA        (getSignedForm(formId))
-      res                 <-                    submission(form, customerId, affinityGroup, PdfAndXmlSummariesFactory.withoutPdf(pdfGeneratorService))
-    } yield res
-  // format: ON
-
   def submissionWithPdf(formId: FormId, customerId: String, affinityGroup: Option[AffinityGroup], pdf: String)(
     implicit hc: HeaderCarrier): FOpt[Unit] =
     // format: OFF
