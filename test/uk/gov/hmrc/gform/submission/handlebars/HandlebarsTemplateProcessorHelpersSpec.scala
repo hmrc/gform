@@ -166,8 +166,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     process("{{isNotSuccessCode null}}") shouldBe "false"
   }
 
-  "removeNullsAndGet" must "return the default value if there are no options" in {
-    process("""{{removeNullsAndGet null "hello" 0}}""") shouldBe "hello"
+  "removeEmptyAndGet" must "return the default value if there are no options" in {
+    process("""{{removeEmptyAndGet null "hello" 0}}""") shouldBe "hello"
   }
 
   it must "return the appropriate value given the index and position of nulls" in {
@@ -177,16 +177,16 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
       (""""a"""", 0, """"p0" "p1"""", "p0"),
       (""""a"""", 1, """"p0" "p1"""", "p1"),
       (""""b"""", 2, """"p0" "p1"""", "b"),
-      (""""b"""", 0, """null "p1"""", "p1"),
-      (""""c"""", 1, """null "p1"""", "c"),
-      (""""c"""", 0, """null "p1" null "p3"""", "p1"),
-      (""""c"""", 1, """null "p1" null "p3"""", "p3"),
-      (""""d"""", 2, """null "p1" null "p3"""", "d")
+      (""""b"""", 0, """"" "p1"""", "p1"),
+      (""""c"""", 1, """"" "p1"""", "c"),
+      (""""c"""", 0, """"" "p1" "" "p3"""", "p1"),
+      (""""c"""", 1, """"" "p1" "" "p3"""", "p3"),
+      (""""d"""", 2, """"" "p1" "" "p3"""", "d")
     )
 
     forAll(t) {
       case (dflt, index, params, expected) =>
-        process(s"{{removeNullsAndGet null $dflt $index $params}}") shouldBe expected
+        process(s"{{removeEmptyAndGet null $dflt $index $params}}") shouldBe expected
     }
   }
 
