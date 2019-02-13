@@ -16,9 +16,15 @@
 
 package uk.gov.hmrc.gform.sharedmodel
 
+import play.api.libs.json
 import play.api.libs.json._
 import uk.gov.hmrc.gform._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Add, Constant, Expr, FormCtx }
+import uk.gov.hmrc.gform.core.parsers.ExprParsers
+import uk.gov.hmrc.gform.exceptions.UnexpectedState
+import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+
+import scala.tools.cmd.Opt
+import scala.util.Right
 
 class ExprSpec extends Spec {
 
@@ -62,5 +68,14 @@ class ExprSpec extends Spec {
   it should "read FormCtx from json" in {
     val res: JsResult[Expr] = implicitly[Reads[Expr]].reads(formJson)
     res should beJsSuccess[Expr](formCtx)
+  }
+
+  it should "successfully parse a string with a string encapsulated by a '${' and a '}'  " in {
+    val input = "${textBox}"
+    val expected = "textBox"
+
+    val res = ExprParsers.validateFormCtx(input)
+    println(res)
+    res shouldBe Right(FormCtx(expected))
   }
 }
