@@ -18,8 +18,10 @@ package uk.gov.hmrc.gform.submission.handlebars
 
 import java.text.DecimalFormat
 
+import com.fasterxml.jackson.databind.JsonNode
 import uk.gov.hmrc.gform.Spec
 import org.scalacheck.Gen
+import play.api.libs.json.JsString
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.PrimitiveGen
 
 class HandlebarsTemplateProcessorHelpersSpec extends Spec {
@@ -190,6 +192,56 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     }
   }
 
+  implicit def stringToJacksonTextNode(s: String): JsonNode = {
+    import com.fasterxml.jackson.databind.node.JsonNodeFactory.{ instance => jsonNodeFactory }
+    jsonNodeFactory.textNode(s)
+  }
+
+  "toEtmpAddress" must "copy full addresses" in {
+    process(
+      """{{toEtmpAddress "addr" "etmpAddr"}}""",
+      Map[String, JsonNode](
+        "addr-street1"  -> "1",
+        "addr-street2"  -> "The Street",
+        "addr-street3"  -> "The Town",
+        "addr-country"  -> "The Country",
+        "addr-postcode" -> "The Postcode"
+      )
+    ) shouldBe
+      """|"etmpAddr-line1": "1",
+         |"etmpAddr-line2": "The Street",
+         |"etmpAddr-line3": "The Town",
+         |"etmpAddr-line4": "The Country",
+         |"etmpAddr-line5": "The Postcode"""".stripMargin
+  }
+
+  "it" must "compact empty lines" in {
+    process(
+      """{{toEtmpAddress "addr" "etmpAddr"}}""",
+      Map[String, JsonNode](
+        "addr-street1"  -> "1",
+        "addr-street3"  -> "The Town",
+        "addr-country"  -> "The Country",
+        "addr-postcode" -> "The Postcode"
+      )
+    ) shouldBe
+      """|"etmpAddr-line1": "1",
+         |"etmpAddr-line2": "The Town",
+         |"etmpAddr-line3": "The Country",
+         |"etmpAddr-line4": "The Postcode"""".stripMargin
+  }
+
+  "it" must "emit at least two lines" in {
+    process(
+      """{{toEtmpAddress "addr" "etmpAddr"}}""",
+      Map[String, JsonNode](
+        "addr-postcode" -> "The Postcode"
+      )
+    ) shouldBe
+      """|"etmpAddr-line1": "The Postcode",
+         |"etmpAddr-line2": """"".stripMargin
+  }
+
   private def periodGen: Gen[(String, String, String, String)] =
     for {
       key  <- Gen.posNum[Int].map(_.toString)
@@ -212,5 +264,6 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
 
   private def quote(s: String): String = raw""""$s""""
 
-  private def process(s: String) = new HandlebarsTemplateProcessor()(s, HandlebarsTemplateProcessorModel(""))
+  private def process(s: String, formFields: Map[String, JsonNode] = Map.empty) =
+    new HandlebarsTemplateProcessor()(s, HandlebarsTemplateProcessorModel(formFields))
 }
