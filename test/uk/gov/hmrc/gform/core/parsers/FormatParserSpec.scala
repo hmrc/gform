@@ -68,7 +68,7 @@ class FormatParserSpec extends Spec {
       UnexpectedState(
         """Unable to parse expression before anyFieldId anotherWord 9.
           |Errors:
-          |before anyFieldId anotherWord 9:1: unexpected characters; expected '${' or 'previous' or 'next' or '(19|20)\d\d' or 'today' or 'YYYY'
+          |before anyFieldId anotherWord 9:1: unexpected characters; expected '${' or 'previous' or 'next' or '(19|20)\d\d' or 'today'
           |before anyFieldId anotherWord 9       ^""".stripMargin))
   }
 
@@ -78,9 +78,20 @@ class FormatParserSpec extends Spec {
     res.left.value should be(
       UnexpectedState("""|Unable to parse expression after 2016-6-9 9.
                          |Errors:
-                         |after 2016-6-9 9:1: unexpected characters; expected 'MM' or '0[1-9]|1[012]' or '\s+'
+                         |after 2016-6-9 9:1: unexpected characters; expected '0[1-9]|1[012]' or '\s+'
                          |after 2016-6-9 9           ^""".stripMargin))
   }
+
+  "after YYYY-04-DD" should "throw exception" in {
+    val res = validate("after YYYY-04-DD")
+
+    res.left.value should be(
+      UnexpectedState("""|Unable to parse expression after YYYY-04-DD.
+                         |Errors:
+                         |after YYYY-04-DD:1: unexpected characters; expected '${' or 'previous' or 'next' or '(19|20)\d\d' or 'today'
+                         |after YYYY-04-DD      ^""".stripMargin))
+  }
+
 
   "before today -2" should "be parsed successfully" in {
     val res = validate("before today -2")
@@ -119,6 +130,7 @@ class FormatParserSpec extends Spec {
 
   "before 2019-08-lastDay" should "be parsed successfully" in {
     val res = validate("before 2019-08-lastDay")
+    println(res)
     res.right.value should be(
       DateFormat(DateConstraints(
         List(DateConstraint(Before, ConcreteDate(ExactYear(2019), ExactMonth(8), LastDay), OffsetDate(0))))))

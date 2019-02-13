@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.gform.core.parsers
 
+import java.time.LocalDate
+
 import cats.Eval
 import cats.data.ReaderT
 import cats.instances.either._
@@ -101,6 +103,16 @@ object BasicParsers {
   lazy val dayParser: Parser[Day] = exactDayParser ^^ ((loc, day) => ExactDay(day)) |
     "firstDay" ^^ ((loc, _) => FirstDay) |
     "lastDay" ^^ ((loc, _) => LastDay) | "DD" ^^ ((loc, _) => AnyDay)
+
+  lazy val exactYearParserWithNextAndPrevious
+    : Parser[Year] = """(19|20)\d\d""".r ^^ ((loc, year) => ExactYear(year.toInt)) | "next" ^^ ((loc, _) => Next) |
+    "previous" ^^ ((loc, _) => Previous)
+
+  lazy val exactYearParserWithFirstAndLastDay: Parser[Day] = """0[1-9]|[12][0-9]|3[01]""".r ^^ (
+    (
+      loc,
+      day) => ExactDay(day.toInt)) | "firstDay" ^^ ((loc, _) => FirstDay) |
+    "lastDay" ^^ ((loc, _) => LastDay)
 
   lazy val exactYearParser: Parser[Int] = intParser("""(19|20)\d\d""")
 
