@@ -162,8 +162,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     }
   }
 
-  it must "return false for a null code" in {
-    process("{{isNotSuccessCode null}}") shouldBe "false"
+  it must "return true for a null code" in {
+    process("{{isNotSuccessCode null}}") shouldBe "true"
   }
 
   "removeEmptyAndGet" must "return the default value if there are no options" in {
