@@ -25,6 +25,24 @@ class FOptMonadErrorSpec extends Spec {
     }
   }
 
+  "flatMap" should "flatMap" in {
+    fOptMonadError
+      .flatMap(success(1)) { x =>
+        success(x * 2)
+      }
+      .value
+      .futureValue shouldBe Right(2)
+  }
+
+  "handleErrorWith" should "handle the error" in {
+    expectFutureFailure("Hello, world") {
+      fOptMonadError
+        .handleErrorWith(fOptMonadError.raiseError[Unit]("Hello")) { x =>
+          fOptMonadError.raiseError(x + ", world")
+        }
+    }
+  }
+
   private def expectFutureFailure[T](expectedMessage: String)(fopt: FOpt[T]) =
     try {
       fopt.value.futureValue

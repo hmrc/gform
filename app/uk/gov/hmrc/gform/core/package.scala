@@ -52,6 +52,7 @@ package object core {
       override def flatMap[A, B](fa: FOpt[A])(f: A => FOpt[B]): FOpt[B] = fa.flatMap(f)
       override def pure[A](x: A): FOpt[A] = success(x)
       override def raiseError[A](e: String): FOpt[A] = fromFutureA(Future.failed(new Exception(e)))
-      override def handleErrorWith[A](fa: FOpt[A])(f: String => FOpt[A]): FOpt[A] = raiseError("Can't handle error")
+      override def handleErrorWith[A](fa: FOpt[A])(f: String => FOpt[A]): FOpt[A] =
+        EitherT(fa.value.recoverWith { case t => f(t.getMessage).value })
     }
 }
