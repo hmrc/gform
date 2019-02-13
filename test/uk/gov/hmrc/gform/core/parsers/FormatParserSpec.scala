@@ -86,12 +86,12 @@ class FormatParserSpec extends Spec {
     val res = validate("after YYYY-04-DD")
 
     res.left.value should be(
-      UnexpectedState("""|Unable to parse expression after YYYY-04-DD.
-                         |Errors:
-                         |after YYYY-04-DD:1: unexpected characters; expected '${' or 'previous' or 'next' or '(19|20)\d\d' or 'today'
-                         |after YYYY-04-DD      ^""".stripMargin))
+      UnexpectedState(
+        """|Unable to parse expression after YYYY-04-DD.
+           |Errors:
+           |after YYYY-04-DD:1: unexpected characters; expected '${' or 'previous' or 'next' or '(19|20)\d\d' or 'today'
+           |after YYYY-04-DD      ^""".stripMargin))
   }
-
 
   "before today -2" should "be parsed successfully" in {
     val res = validate("before today -2")
