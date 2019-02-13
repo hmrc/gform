@@ -364,12 +364,24 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
     })
   }
 
+  def toEtmpAddress(fromFieldBase: String, toFieldBase: String, options: Options): CharSequence = {
+    def get(line: String) = Option(options.context.get(s"$fromFieldBase-$line")).getOrElse("").toString
+
+    new Handlebars.SafeString(
+      Seq(get("street1"), get("street2"), get("street3"), get("country"), get("postcode"))
+        .filterNot(_.isEmpty)
+        .padTo(2, "")
+        .zipWithIndex
+        .map { case (l, i) => s""""$toFieldBase-line${i + 1}": "${condition(l)}"""" }
+        .mkString(s",${util.Properties.lineSeparator}"))
+  }
+
   def removeEmptyAndGet(options: Options): CharSequence = condition {
     (for {
       dflt  <- options.params(0).cast[String]
       index <- options.params(1).cast[Int]
     } yield {
-      val params = options.params.drop(2).collect { case (x: String) if !x.isEmpty => x }
+      val params = options.params.drop(2).collect { case x: String if !x.isEmpty => x }
 
       if (index < params.size) params(index)
       else dflt
