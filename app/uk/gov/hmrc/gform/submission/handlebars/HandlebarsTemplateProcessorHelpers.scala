@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.submission.handlebars
 
+import shapeless.syntax.typeable._
 import uk.gov.hmrc.gform.time.TimeProvider
 import java.time.format.DateTimeFormatter
 
@@ -364,12 +365,15 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
   }
 
   def removeEmptyAndGet(options: Options): CharSequence = condition {
-    val dflt = options.params(0).asInstanceOf[String]
-    val index = options.params(1).asInstanceOf[Int]
-    val params = options.params.drop(2).collect { case (x: String) if !x.isEmpty => x }
+    (for {
+      dflt  <- options.params(0).cast[String]
+      index <- options.params(1).cast[Int]
+    } yield {
+      val params = options.params.drop(2).collect { case (x: String) if !x.isEmpty => x }
 
-    if (index < params.size) params(index)
-    else dflt
+      if (index < params.size) params(index)
+      else dflt
+    }).getOrElse(throw new IllegalArgumentException("removeEmptyAndGet: dflt: String index: Int [element: String ...]"))
   }
 
   private def ifNotNull[T](t: T)(f: T => CharSequence): CharSequence =
