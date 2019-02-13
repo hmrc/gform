@@ -20,9 +20,10 @@ import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.formtemplate.FormTemplateValidator
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import cats.data.NonEmptyList
+import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.form.FormField
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, FormTemplateGen, PrimitiveGen }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{AuthConfigGen, DestinationGen, FormTemplateGen, PrimitiveGen}
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.FormComponentGen._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.PrimitiveGen._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.SectionGen._
@@ -72,21 +73,20 @@ class TemplateValidatorSpec extends Spec {
     "return an error when ${user.enrolledIdentifier} && authConf is HmrcSimpleModule or HmrcAgentModule or Anonymous" in {
     import FormTemplateValidator._
 
-    forAll(FormTemplateGen.formTemplateGen) { template =>
+    forAll(FormTemplateGen.formTemplateGen, Gen.oneOf(AuthConfigGen.hmrcAgentModuleGen, Gen.const(HmrcSimpleModule))) { (template, authConfig) =>
       //TODO This require some refactoring to the generator and maybe made simpler.
       if (template.expandFormTemplate.allFCs.nonEmpty) {
         val formComponents: List[FormComponent] = template.expandFormTemplate.allFCs
         val componentType = Text(EORI, UserCtx(EnrolledIdentifier))
         val newFormComponents: List[FormComponent] = formComponents.map(_.copy(`type` = componentType))
         val newSections = template.sections.map(_.copy(fields = newFormComponents))
-        val newTemplate = template.copy(sections = newSections)
+        val newTemplate = template.copy(sections = newSections).copy(authConfig = authConfig)
 
         val isAUserCtx = newTemplate.expandFormTemplate.allFCs.collect {
           case expr @ HasExpr(SingleExpr(UserCtx(EnrolledIdentifier))) => expr
         }.isEmpty
 
-        whenever(newTemplate.authConfig == HmrcSimpleModule
-          || newTemplate.authConfig.isInstanceOf[HmrcAgentModule] || newTemplate.authConfig == Anonymous && isAUserCtx) {
+        whenever(authConfig == HmrcSimpleModule || authConfig == HmrcAgentModule || authConfig == Anonymous && isAUserCtx) {
           validateEnrolmentIdentifier(newTemplate) should be(Invalid(s"You used ${newTemplate.authConfig} but you didn't provide 'serviceId'."))
           validateEnrolmentIdentifier(newTemplate.copy(authConfig = EeittModule(RegimeId("")))) should be(Valid)
           validateEnrolmentIdentifier(newTemplate.copy(authConfig = Anonymous)) should be(Invalid(s"You used Anonymous but you didn't provide 'serviceId'."))
