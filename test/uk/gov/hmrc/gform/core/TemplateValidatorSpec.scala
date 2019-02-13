@@ -68,7 +68,8 @@ class TemplateValidatorSpec extends Spec {
     }
   }
 
-  "validateEnrolmentIdentifier" should "return an error when ${user.enrolledIdentifier} && authConf is HmrcSimpleModule or HmrcAgentModule" in {
+  "validateEnrolmentIdentifier" should
+    "return an error when ${user.enrolledIdentifier} && authConf is HmrcSimpleModule or HmrcAgentModule or Anonymous" in {
     import FormTemplateValidator._
 
     forAll(FormTemplateGen.formTemplateGen) { template =>
@@ -84,11 +85,11 @@ class TemplateValidatorSpec extends Spec {
           case expr @ HasExpr(SingleExpr(UserCtx(EnrolledIdentifier))) => expr
         }.isEmpty
 
-        whenever(
-          newTemplate.authConfig == HmrcSimpleModule || newTemplate.authConfig
-            .isInstanceOf[HmrcAgentModule] && isAUserCtx) {
-          validateEnrolmentIdentifier(newTemplate) should be(Invalid("Invalid auth type for component type."))
+        whenever(newTemplate.authConfig == HmrcSimpleModule
+          || newTemplate.authConfig.isInstanceOf[HmrcAgentModule] || newTemplate.authConfig == Anonymous && isAUserCtx) {
+          validateEnrolmentIdentifier(newTemplate) should be(Invalid(s"You used ${newTemplate.authConfig} but you didn't provide 'serviceId'."))
           validateEnrolmentIdentifier(newTemplate.copy(authConfig = EeittModule(RegimeId("")))) should be(Valid)
+          validateEnrolmentIdentifier(newTemplate.copy(authConfig = Anonymous)) should be(Invalid(s"You used Anonymous but you didn't provide 'serviceId'."))
         }
       }
     }
@@ -98,8 +99,7 @@ class TemplateValidatorSpec extends Spec {
     import DestinationGen._
     forAll(destinationGen, destinationGen) { (d1, d2) =>
       whenever(d1.id != d2.id) {
-        FormTemplateValidator.validateUniqueDestinationIds(Destinations.DestinationList(NonEmptyList.of(d1, d2))) should be(
-          Valid)
+        FormTemplateValidator.validateUniqueDestinationIds(Destinations.DestinationList(NonEmptyList.of(d1, d2))) should be(Valid)
       }
     }
   }
