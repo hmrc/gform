@@ -16,14 +16,11 @@
 
 package uk.gov.hmrc.gform.sharedmodel
 
-import play.api.libs.json
 import play.api.libs.json._
 import uk.gov.hmrc.gform._
 import uk.gov.hmrc.gform.core.parsers.ExprParsers
-import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
-import scala.tools.cmd.Opt
 import scala.util.Right
 
 class ExprSpec extends Spec {
