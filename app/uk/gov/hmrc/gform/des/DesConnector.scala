@@ -16,20 +16,14 @@
 
 package uk.gov.hmrc.gform.des
 
-import java.util.Date
-
 import play.api.Logger
 import play.api.libs.json._
-import play.api.libs.openid.Errors.BAD_RESPONSE
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.config.DesConnectorConfig
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.HmrcTaxPeriod
 import uk.gov.hmrc.gform.wshttp.WSHttp
-
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.http.logging.Authorization
-import play.api.http.Status
 import uk.gov.hmrc.gform.sharedmodel.Obligation
 
 class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfig) {
