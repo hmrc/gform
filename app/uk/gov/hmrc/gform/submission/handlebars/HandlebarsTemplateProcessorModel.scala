@@ -47,7 +47,7 @@ object HandlebarsTemplateProcessorModel {
 
     val repeatableFieldIds: Set[FormComponentId] = RepeatingComponentService.extractRepeatableFieldIds(template)
 
-    apply {
+    val formFields =
       groupedFields
         .map {
           case (id, values) =>
@@ -55,7 +55,11 @@ object HandlebarsTemplateProcessorModel {
               (id.value, new ArrayNode(jsonNodeFactory, values.toList.map(jsonNodeFactory.textNode)))
             else (id.value, jsonNodeFactory.textNode(values.head))
         }
-    }
+
+    val extendedFields = formFields +
+      ("formId" -> jsonNodeFactory.textNode(form._id.value))
+
+    apply(extendedFields)
   }
 
   def apply(fields: Map[String, JsonNode]): HandlebarsTemplateProcessorModel =
