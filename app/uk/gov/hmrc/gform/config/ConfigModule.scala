@@ -22,9 +22,9 @@ import play.api.Configuration
 import play.api.Mode.Mode
 import uk.gov.hmrc.gform.playcomponents.PlayComponents
 import uk.gov.hmrc.gform.sharedmodel.config.ExposedConfig
+import uk.gov.hmrc.gform.submission.handlebars.{ MdtpServiceConfiguration, MdtpServiceName }
 import uk.gov.hmrc.play.auth.controllers.AuthParamsControllerConfig
 import uk.gov.hmrc.play.config.{ ControllerConfig, ServicesConfig }
-import com.typesafe.config.ConfigFactory
 import pureconfig.generic.auto._ // It is now necessary to import `pureconfig.generic.auto._` everywhere a config is loaded or written, even though IntelliJ sees this as unused, its still required
 
 class ConfigModule(playComponents: PlayComponents) {
@@ -36,8 +36,23 @@ class ConfigModule(playComponents: PlayComponents) {
   val exposedConfig: ExposedConfig = ExposedConfigHelper.exposedConfig(appConfig)
 
   val desConfig: DesConnectorConfig = pureconfig.loadConfigOrThrow[DesConnectorConfig]("microservice.services.etmp-hod")
-//  val mdgIntegrationFrameworkConfig: MdgIntegrationFrameworkConfig =
-//    pureconfig.loadConfigOrThrow[MdgIntegrationFrameworkConfig]("microservice.services.mdg-integration-framework")
+
+  val mdtpServiceConfigs: Map[MdtpServiceName, MdtpServiceConfiguration] = {
+    val protocol = pureconfig.loadConfigOrThrow[String]("microservice.destination-services.protocol")
+
+    Seq("tax-enrolments")
+      .map(name =>
+        (name, pureconfig.loadConfigOrThrow[DestinationServiceConfig](s"microservice.destination-services.$name")))
+      .map {
+        case (n, dsc) =>
+          val name = MdtpServiceName(n)
+          (name, MdtpServiceConfiguration(name, s"$protocol://${dsc.host}:${dsc.port}"))
+      }
+      .toMap
+  }
+
+  //  val mdgIntegrationFrameworkConfig: MdgIntegrationFrameworkConfig =
+  //    pureconfig.loadConfigOrThrow[MdgIntegrationFrameworkConfig]("microservice.services.mdg-integration-framework")
 
   val emailConfig: EmailConnectorConfig =
     pureconfig.loadConfigOrThrow[EmailConnectorConfig]("microservice.services.email")
@@ -69,3 +84,5 @@ case class DesConnectorConfig(basePath: String, authorizationToken: String, envi
 case class MdgIntegrationFrameworkConfig(basePath: String, authorizationToken: String)
 
 case class EmailConnectorConfig(host: String, port: String)
+
+case class DestinationServiceConfig(host: String, port: String)

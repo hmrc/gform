@@ -40,6 +40,7 @@ class HandlebarsTemplateProcessorModelSpec extends Spec {
       )
 
     val form = createForm(
+      "theFormId",
       "nonRepeatingSection1Field"  -> "nonRepeatingSection1FieldValue",
       "groupField1"                -> "groupField1Value1",
       "1_groupField1"              -> "groupField1Value2",
@@ -53,6 +54,7 @@ class HandlebarsTemplateProcessorModelSpec extends Spec {
     HandlebarsTemplateProcessorModel(form, formTemplate) shouldBe
       HandlebarsTemplateProcessorModel(
         """|{
+           |  "formId" : "theFormId",
            |  "nonRepeatingSection1Field" : "nonRepeatingSection1FieldValue",
            |  "groupField1" : [
            |    "groupField1Value1",
@@ -78,17 +80,10 @@ class HandlebarsTemplateProcessorModelSpec extends Spec {
       HandlebarsTemplateProcessorModel("""{ "a": 1, "b": 2 }""")
   }
 
-  def createForm(fields: (String, String)*): Form =
-    Form(
-      null,
-      null,
-      null,
-      FormTemplateId(""),
-      FormData(fields.map { case (k, v) => FormField(FormComponentId(k), v) }),
-      null,
-      VisitIndex(Set(1)),
-      None,
-      NotChecked)
+  def createForm(id: String, fields: (String, String)*): Form =
+    Form(FormId(id), null, null, FormTemplateId(""), FormData(fields.map {
+      case (k, v) => FormField(FormComponentId(k), v)
+    }), null, VisitIndex(Set(1)), None, NotChecked)
 
   def createFormTemplate(sections: Section*): FormTemplate =
     FormTemplate(

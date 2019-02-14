@@ -39,6 +39,14 @@ trait HttpClientSpec extends Spec {
         .returning(A.pure(response))
       this
     }
+
+    def expectPut(uri: String, body: String, hc: HeaderCarrier, response: HttpResponse): Underlying[F] = {
+      (httpClient
+        .put(_: String, _: String)(_: HeaderCarrier))
+        .expects(uri, body, hc)
+        .returning(A.pure(response))
+      this
+    }
   }
 
   def unsuccessfulHttpResponseGen: Gen[HttpResponse] =

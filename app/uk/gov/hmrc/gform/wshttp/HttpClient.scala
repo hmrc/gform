@@ -29,6 +29,8 @@ trait HttpClient[F[_]] {
   def get(uri: String)(implicit hc: HeaderCarrier): F[HttpResponse]
 
   def post(uri: String, body: String)(implicit hc: HeaderCarrier): F[HttpResponse]
+
+  def put(uri: String, body: String)(implicit hc: HeaderCarrier): F[HttpResponse]
 }
 
 object HttpClient {
@@ -41,6 +43,7 @@ object HttpClient {
   def unimplementedHttpClient[F[_]]: HttpClient[F] = new HttpClient[F] {
     override def get(uri: String)(implicit hc: HeaderCarrier): F[HttpResponse] = ???
     override def post(uri: String, body: String)(implicit hc: HeaderCarrier): F[HttpResponse] = ???
+    override def put(uri: String, body: String)(implicit hc: HeaderCarrier): F[HttpResponse] = ???
   }
 
   implicit class HttpClientBuildingSyntax[F[_]](underlying: HttpClient[F]) {
@@ -56,6 +59,8 @@ object HttpClient {
       override def get(uri: String)(implicit hc: HeaderCarrier): F[HttpResponse] = underlying.get(uri)
       override def post(uri: String, body: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
         underlying.post(uri, body)
+      override def put(uri: String, body: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
+        underlying.put(uri, body)
 
       def postJsonString(uri: String, jsonString: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
         try {
@@ -64,6 +69,15 @@ object HttpClient {
           case ex: Exception =>
             monadError.raiseError(
               s"Attempt to POST JSON failed because the given String is not valid JSON: ${ex.getMessage}. The String is: $jsonString")
+        }
+
+      def putJsonString(uri: String, jsonString: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
+        try {
+          put(uri, Json.parse(jsonString).toString)(addJsonContentTypeHeader(hc))
+        } catch {
+          case ex: Exception =>
+            monadError.raiseError(
+              s"Attempt to PUT JSON failed because the given String is not valid JSON: ${ex.getMessage}. The String is: $jsonString")
         }
 
       private def addJsonContentTypeHeader(hc: HeaderCarrier): HeaderCarrier =
@@ -76,6 +90,8 @@ class UriBuildingHttpClient[F[_]](uriBuilder: Endo[String], underlying: HttpClie
   override def get(uri: String)(implicit hc: HeaderCarrier): F[HttpResponse] = underlying.get(uriBuilder(uri))
   override def post(uri: String, body: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
     underlying.post(uriBuilder(uri), body)
+  override def put(uri: String, body: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
+    underlying.put(uriBuilder(uri), body)
 }
 
 class HeaderCarrierBuildingHttpClient[F[_]](headerCarrierBuilder: Endo[HeaderCarrier], underlying: HttpClient[F])
@@ -85,6 +101,9 @@ class HeaderCarrierBuildingHttpClient[F[_]](headerCarrierBuilder: Endo[HeaderCar
 
   override def post(uri: String, body: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
     underlying.post(uri, body)(headerCarrierBuilder(hc))
+
+  override def put(uri: String, body: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
+    underlying.put(uri, body)(headerCarrierBuilder(hc))
 }
 
 class SuccessfulResponseHttpClient[F[_]](underlying: HttpClient[F])(implicit monadError: MonadError[F, String])
@@ -94,6 +113,9 @@ class SuccessfulResponseHttpClient[F[_]](underlying: HttpClient[F])(implicit mon
 
   override def post(uri: String, body: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
     handleStatus(underlying.post(uri, body), "POST", uri)
+
+  override def put(uri: String, body: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
+    handleStatus(underlying.put(uri, body), "PUT", uri)
 
   private def handleStatus(response: F[HttpResponse], method: String, uri: String): F[HttpResponse] =
     response.flatMap { r =>
@@ -109,9 +131,10 @@ object SuccessfulResponseHttpClient {
 
 trait JsonHttpClient[F[_]] extends HttpClient[F] {
   def postJsonString(uri: String, json: String)(implicit hc: HeaderCarrier): F[HttpResponse]
+  def putJsonString(uri: String, json: String)(implicit hc: HeaderCarrier): F[HttpResponse]
 }
 
-class AuditingHttpClient[F[_]](wsHttp: WSHttp)(implicit ec: ExecutionContext) extends HttpClient[FOpt] {
+class AuditingHttpClient(wsHttp: WSHttp)(implicit ec: ExecutionContext) extends HttpClient[FOpt] {
   private implicit val httpReads: HttpReads[HttpResponse] = new HttpReads[HttpResponse] {
     override def read(method: String, url: String, response: HttpResponse): HttpResponse = response
   }
@@ -120,6 +143,10 @@ class AuditingHttpClient[F[_]](wsHttp: WSHttp)(implicit ec: ExecutionContext) ex
 
   override def post(uri: String, body: String)(implicit hc: HeaderCarrier): FOpt[HttpResponse] =
     fromFutureA(wsHttp.POSTString[HttpResponse](uri, body))
+
+  // TODO: Lance - when my pull request is merged, change this to use PUTString
+  override def put(uri: String, body: String)(implicit hc: HeaderCarrier): FOpt[HttpResponse] =
+    fromFutureA(wsHttp.PUT(uri, Json.parse(body)))
 }
 
 class WSHttpHttpClient(wsHttp: WSHttp)(implicit ec: ExecutionContext) extends HttpClient[FOpt] {
@@ -127,4 +154,8 @@ class WSHttpHttpClient(wsHttp: WSHttp)(implicit ec: ExecutionContext) extends Ht
 
   override def post(uri: String, body: String)(implicit hc: HeaderCarrier): FOpt[HttpResponse] =
     fromFutureA(wsHttp.doPostString(uri, body, Seq.empty))
+
+  // TODO: Lance - when my pull request is merged, change this to use doPutString
+  override def put(uri: String, body: String)(implicit hc: HeaderCarrier): FOpt[HttpResponse] =
+    fromFutureA(wsHttp.doPut(uri, Json.parse(body)))
 }

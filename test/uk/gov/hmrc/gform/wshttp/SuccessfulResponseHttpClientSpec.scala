@@ -74,6 +74,34 @@ class SuccessfulResponseHttpClientSpec extends HttpClientSpec {
     }
   }
 
+  "put" should "delegate to underlying.put and return any response with a successful status" in httpClient[Possible] {
+    underlying =>
+      forAll(Gen.alphaNumStr, Gen.alphaNumStr, headerCarrierGen, successfulHttpResponseGen) {
+        (uri, putBody, hc, response) =>
+          whenever(response.isSuccess) {
+            underlying.expectPut(uri, putBody, hc, response)
+
+            buildClient(underlying.httpClient)
+              .put(uri, putBody)(hc) shouldBe response.asRight
+          }
+      }
+  }
+
+  it should "delegate to underlying.put and then fail when the response with an successful status" in httpClient[
+    Possible] { underlying =>
+    forAll(Gen.alphaNumStr, Gen.alphaNumStr, headerCarrierGen, unsuccessfulHttpResponseGen) {
+      (uri, putBody, hc, response) =>
+        whenever(!response.isSuccess) {
+          underlying.expectPut(uri, putBody, hc, response)
+
+          buildClient(underlying.httpClient)
+            .put(uri, putBody)(hc) shouldBe SuccessfulResponseHttpClient
+            .unsuccessfulMessage("PUT", uri, response.status)
+            .asLeft
+        }
+    }
+  }
+
   private def buildClient[F[_]](underlying: HttpClient[F])(implicit me: MonadError[F, String]): HttpClient[F] =
     underlying.successResponsesOnly
 }

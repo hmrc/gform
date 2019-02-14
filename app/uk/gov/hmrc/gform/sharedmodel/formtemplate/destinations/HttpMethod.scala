@@ -15,6 +15,7 @@
  */
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
+import play.api.libs.json.Format
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.ADTFormat
 
 sealed trait HttpMethod extends Product with Serializable
@@ -22,7 +23,8 @@ sealed trait HttpMethod extends Product with Serializable
 object HttpMethod {
   case object GET extends HttpMethod
   case object POST extends HttpMethod
+  case object PUT extends HttpMethod
 
-  implicit val format = ADTFormat
-    .formatEnumeration("GET" -> GET, "POST" -> POST)
+  implicit val format: Format[HttpMethod] = ADTFormat
+    .formatEnumeration("GET" -> GET, "POST" -> POST, "PUT" -> PUT)
 }

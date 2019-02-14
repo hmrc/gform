@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.submission.handlebars
 import cats.Id
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ HttpMethod, Profile }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, HttpMethod, Profile }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, PrimitiveGen }
 import uk.gov.hmrc.gform.wshttp.JsonHttpClient
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
@@ -31,14 +31,16 @@ class HandlebarsHttpApiSubmitterSpec extends Spec {
     forAll(submitterPartsGen[Id]) { sp =>
       import sp._
 
-      RealHandlebarsHttpApiSubmitter.selectHttpClient[Id](Profile.DES, des, mdg) shouldBe des
-      RealHandlebarsHttpApiSubmitter.selectHttpClient[Id](Profile.MdgIntegrationFramework, des, mdg) shouldBe mdg
+      RealHandlebarsHttpApiSubmitter.selectHttpClient[Id](Profile.DES, des, mdg, mdtp) shouldBe des
+      RealHandlebarsHttpApiSubmitter.selectHttpClient[Id](Profile.MdgIntegrationFramework, des, mdg, mdtp) shouldBe mdg
+      RealHandlebarsHttpApiSubmitter.selectHttpClient[Id](Profile.MDTP("anMdtpService"), des, mdg, mdtp) shouldBe mdtp
+        .select(MdtpServiceName("anMdtpService"))
     }
   }
 
   "A GET destination" should "make a GET request, applying the template to the URI" in {
     forAll(
-      DestinationGen.handlebarsHttpApiGen.map(_.copy(method = HttpMethod.GET)),
+      destinationGen(HttpMethod.GET),
       submitterPartsGen[Id],
       PrimitiveGen.urlContextPathGen
     ) { (destination, sp, expectedUri) =>
@@ -54,7 +56,7 @@ class HandlebarsHttpApiSubmitterSpec extends Spec {
 
   "A POST destination" should "make a POST request when there is a payload" in {
     forAll(
-      DestinationGen.handlebarsHttpApiGen.map(_.copy(method = HttpMethod.POST)),
+      destinationGen(HttpMethod.POST),
       Gen.alphaNumStr,
       submitterPartsGen[Id],
       PrimitiveGen.urlContextPathGen,
@@ -73,18 +75,50 @@ class HandlebarsHttpApiSubmitterSpec extends Spec {
   }
 
   it should "make a POST request when there is no payload" in {
+    forAll(destinationGen(HttpMethod.POST), submitterPartsGen[Id], PrimitiveGen.urlContextPathGen) {
+      (d, sp, expectedUri) =>
+        val destination = d.copy(payload = None)
+        val processorModel = HandlebarsTemplateProcessorModel("")
+        val expectedResponse = mock[HttpResponse]
+
+        sp.expectTemplateProcessorApplication(destination.uri, processorModel, expectedUri)
+          .expectHttpPostJson(destination.profile, "", expectedUri, expectedResponse)
+
+        sp.submitter.apply(destination, processorModel) shouldBe expectedResponse
+    }
+  }
+
+  "A PUT destination" should "make a PUT request when there is a payload" in {
     forAll(
-      DestinationGen.handlebarsHttpApiGen.map(_.copy(method = HttpMethod.POST)),
+      destinationGen(HttpMethod.PUT),
+      Gen.alphaNumStr,
       submitterPartsGen[Id],
-      PrimitiveGen.urlContextPathGen) { (d, sp, expectedUri) =>
-      val destination = d.copy(payload = None)
+      PrimitiveGen.urlContextPathGen,
+      Gen.alphaNumStr
+    ) { (d, payload, sp, expectedUri, expectedBody) =>
+      val destination = d.copy(payload = Option(payload))
       val processorModel = HandlebarsTemplateProcessorModel("")
       val expectedResponse = mock[HttpResponse]
 
       sp.expectTemplateProcessorApplication(destination.uri, processorModel, expectedUri)
-        .expectHttpPostJson(destination.profile, "", expectedUri, expectedResponse)
+        .expectTemplateProcessorApplication(payload, processorModel, expectedBody)
+        .expectHttpPutJson(destination.profile, expectedBody, expectedUri, expectedResponse)
 
       sp.submitter.apply(destination, processorModel) shouldBe expectedResponse
+    }
+  }
+
+  it should "make a PUT request when there is no payload" in {
+    forAll(destinationGen(HttpMethod.PUT), submitterPartsGen[Id], PrimitiveGen.urlContextPathGen) {
+      (d, sp, expectedUri) =>
+        val destination = d.copy(payload = None)
+        val processorModel = HandlebarsTemplateProcessorModel("")
+        val expectedResponse = mock[HttpResponse]
+
+        sp.expectTemplateProcessorApplication(destination.uri, processorModel, expectedUri)
+          .expectHttpPutJson(destination.profile, "", expectedUri, expectedResponse)
+
+        sp.submitter.apply(destination, processorModel) shouldBe expectedResponse
     }
   }
 
@@ -92,6 +126,7 @@ class HandlebarsHttpApiSubmitterSpec extends Spec {
     submitter: HandlebarsHttpApiSubmitter[F],
     des: JsonHttpClient[F],
     mdg: JsonHttpClient[F],
+    mdtp: MdtpHttpClient[F],
     templateProcessor: HandlebarsTemplateProcessor) {
 
     def expectTemplateProcessorApplication(
@@ -108,7 +143,7 @@ class HandlebarsHttpApiSubmitterSpec extends Spec {
 
     def expectHttpGet(profile: Profile, expectedUri: String, expectedResponse: F[HttpResponse]): SubmitterParts[F] = {
       (RealHandlebarsHttpApiSubmitter
-        .selectHttpClient(profile, des, mdg)
+        .selectHttpClient(profile, des, mdg, mdtp)
         .get(_: String)(_: HeaderCarrier))
         .expects(expectedUri, hc)
         .returning(expectedResponse)
@@ -122,8 +157,22 @@ class HandlebarsHttpApiSubmitterSpec extends Spec {
       expectedUri: String,
       expectedResponse: F[HttpResponse]): SubmitterParts[F] = {
       (RealHandlebarsHttpApiSubmitter
-        .selectHttpClient(profile, des, mdg)
+        .selectHttpClient(profile, des, mdg, mdtp)
         .postJsonString(_: String, _: String)(_: HeaderCarrier))
+        .expects(expectedUri, expectedBody, hc)
+        .returning(expectedResponse)
+
+      this
+    }
+
+    def expectHttpPutJson(
+      profile: Profile,
+      expectedBody: String,
+      expectedUri: String,
+      expectedResponse: F[HttpResponse]): SubmitterParts[F] = {
+      (RealHandlebarsHttpApiSubmitter
+        .selectHttpClient(profile, des, mdg, mdtp)
+        .putJsonString(_: String, _: String)(_: HeaderCarrier))
         .expects(expectedUri, expectedBody, hc)
         .returning(expectedResponse)
 
@@ -134,11 +183,33 @@ class HandlebarsHttpApiSubmitterSpec extends Spec {
   private def submitterPartsGen[F[_]]: Gen[SubmitterParts[F]] = {
     val desHttpClient = mock[JsonHttpClient[F]]
     val mdgIntegrationFrameworkHttpClient = mock[JsonHttpClient[F]]
+    val mdtpHttpClient = MdtpHttpClient(Map(MdtpServiceName("anMdtpService") -> mock[JsonHttpClient[F]]))
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
 
     val submitter =
-      new RealHandlebarsHttpApiSubmitter(desHttpClient, mdgIntegrationFrameworkHttpClient, handlebarsTemplateProcessor)
+      new RealHandlebarsHttpApiSubmitter(
+        desHttpClient,
+        mdgIntegrationFrameworkHttpClient,
+        mdtpHttpClient,
+        handlebarsTemplateProcessor)
 
-    SubmitterParts(submitter, desHttpClient, mdgIntegrationFrameworkHttpClient, handlebarsTemplateProcessor)
+    SubmitterParts(
+      submitter,
+      desHttpClient,
+      mdgIntegrationFrameworkHttpClient,
+      mdtpHttpClient,
+      handlebarsTemplateProcessor)
   }
+
+  private def destinationGen(method: HttpMethod): Gen[Destination.HandlebarsHttpApi] =
+    DestinationGen.handlebarsHttpApiGen
+      .map(
+        d =>
+          d.copy(
+            method = method,
+            profile = d.profile match {
+              case Profile.MDTP(_) => Profile.MDTP("anMdtpService")
+              case other           => other
+            }
+        ))
 }
