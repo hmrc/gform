@@ -70,9 +70,7 @@ class ExprSpec extends Spec {
   it should "successfully parse a string with a string encapsulated by a '${' and a '}'  " in {
     val input = "${textBox}"
     val expected = "textBox"
-
     val res = ExprParsers.validateFormCtx(input)
-    println(res)
     res shouldBe Right(FormCtx(expected))
   }
 }
