@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import cats.data.NonEmptyList
 import julienrf.json.derived
-import play.api.data.validation.ValidationError
+import play.api.libs.json.JsonValidationError
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidth.DisplayWidth
@@ -135,7 +135,7 @@ object ComponentType {
 
   implicit def readsNonEmptyList[T: Reads] = Reads[NonEmptyList[T]] { json =>
     Json.fromJson[List[T]](json).flatMap {
-      case Nil     => JsError(ValidationError(s"Required at least one element. Got: $json"))
+      case Nil     => JsError(JsonValidationError(s"Required at least one element. Got: $json"))
       case x :: xs => JsSuccess(NonEmptyList(x, xs))
     }
   }
