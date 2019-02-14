@@ -37,7 +37,7 @@ import uk.gov.hmrc.play.auth.controllers.AuthParamsControllerConfig
 import uk.gov.hmrc.play.auth.microservice.connectors.AuthConnector
 import uk.gov.hmrc.play.auth.microservice.filters.AuthorisationFilter
 import uk.gov.hmrc.play.config.ServicesConfig
-import uk.gov.hmrc.play.health.AdminController
+import uk.gov.hmrc.play.health.HealthController
 import uk.gov.hmrc.play.microservice.filters.{ LoggingFilter, NoCacheFilter }
 
 object MicroserviceAuthConnector extends AuthConnector with ServicesConfig with WSHttp {
@@ -83,7 +83,7 @@ class PlayComponentsModule(
     obligationModule.obligationController
   )
 
-  val adminController = new AdminController(configModule.playConfiguration)
+  val adminController = new HealthController(configModule.playConfiguration, playComponents.context.environment)
 
   lazy val prodRoutes: prod.Routes =
     new prod.Routes(errorHandler, appRoutes, adminController, metricsModule.metricsController)
