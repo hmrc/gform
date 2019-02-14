@@ -61,7 +61,7 @@ class SuccessfulResponseHttpClientSpec extends HttpClientSpec {
 
   it should "delegate to underlying.post and then fail when the response with an successful status" in httpClient[
     Possible] { underlying =>
-    forAll(Gen.alphaNumStr, Gen.alphaNumStr, headerCarrierGen, successfulHttpResponseGen) {
+    forAll(Gen.alphaNumStr, Gen.alphaNumStr, headerCarrierGen, unsuccessfulHttpResponseGen) {
       (uri, postBody, hc, response) =>
         whenever(!response.isSuccess) {
           underlying.expectPost(uri, postBody, hc, response)
