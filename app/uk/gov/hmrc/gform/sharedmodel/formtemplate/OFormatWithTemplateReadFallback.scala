@@ -23,7 +23,7 @@ import play.api.libs.json.{ OFormat, Reads }
 
 object OFormatWithTemplateReadFallback {
   def apply[A: DerivedReads: DerivedOWrites](templateReads: Reads[A]): OFormat[A] = {
-    val basic: OFormat[A] = derived.oformat
+    val basic: OFormat[A] = derived.oformat()
     val reads = (basic: Reads[A]) | templateReads
     OFormat(reads, basic)
   }

@@ -77,7 +77,7 @@ final case object YesNo extends ChoiceType
 final case object Inline extends ChoiceType
 
 object ChoiceType {
-  implicit val format: OFormat[ChoiceType] = derived.oformat
+  implicit val format: OFormat[ChoiceType] = derived.oformat()
 }
 
 case class IdType(value: String) extends AnyVal
@@ -97,7 +97,7 @@ object RegimeType {
 case class HmrcTaxPeriod(idType: IdType, idNumber: IdNumber, regimeType: RegimeType) extends ComponentType
 
 object HmrcTaxPeriod {
-  implicit val format: OFormat[HmrcTaxPeriod] = derived.oformat
+  implicit val format: OFormat[HmrcTaxPeriod] = derived.oformat()
 }
 
 sealed trait Orientation
@@ -105,7 +105,7 @@ case object Vertical extends Orientation
 case object Horizontal extends Orientation
 object Orientation {
 
-  implicit val format: OFormat[Orientation] = derived.oformat
+  implicit val format: OFormat[Orientation] = derived.oformat()
 }
 
 sealed trait InfoType
@@ -115,7 +115,7 @@ case object ImportantInfo extends InfoType
 case object BannerInfo extends InfoType
 case object NoFormat extends InfoType
 object InfoType {
-  implicit val format: OFormat[InfoType] = derived.oformat
+  implicit val format: OFormat[InfoType] = derived.oformat()
 }
 
 case class Group(
@@ -144,6 +144,6 @@ object ComponentType {
     JsArray((v.head :: v.tail).map(Json.toJson(_)).toList)
   }
 
-  implicit val format: OFormat[ComponentType] = derived.oformat
+  implicit val format: OFormat[ComponentType] = derived.oformat()
 
 }

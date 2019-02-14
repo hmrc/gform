@@ -33,8 +33,8 @@ class Save4LaterModule(configModule: ConfigModule, wSHttpModule: WSHttpModule) {
   }
 
   val shortLivedCache: ShortLivedCache = new ShortLivedCache {
-    override implicit lazy val crypto: CryptoWithKeysFromConfig = ApplicationCrypto.JsonCrypto
+    val applicationCrypto = new ApplicationCrypto(configModule.typesafeConfig)
+    override implicit lazy val crypto: CryptoWithKeysFromConfig = applicationCrypto.JsonCrypto
     override lazy val shortLiveCache = shortLivedHttpCaching
   }
-
 }

@@ -40,12 +40,12 @@ object Destinations {
 
   case class DestinationList(destinations: NonEmptyList[Destination]) extends Destinations
 
-  implicit val destinationListReads: OFormat[DestinationList] = derived.oformat[DestinationList]
+  implicit val destinationListReads: OFormat[DestinationList] = derived.oformat()
 
   implicit val format: OFormat[Destinations] = {
     implicit val destinationsFormat: OFormat[Destinations] = {
-      implicit val _ = derived.reads[DmsSubmission]
-      derived.oformat
+      implicit val _ = derived.reads[DmsSubmission]()
+      derived.oformat()
     }
 
     OFormatWithTemplateReadFallback(
