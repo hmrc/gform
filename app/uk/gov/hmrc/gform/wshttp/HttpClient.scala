@@ -97,9 +97,14 @@ class SuccessfulResponseHttpClient[F[_]](underlying: HttpClient[F])(implicit mon
 
   private def handleStatus(response: F[HttpResponse], method: String, uri: String): F[HttpResponse] =
     response.flatMap { r =>
-      if (r.status >= 200 && r.status < 300) r.pure[F]
-      else monadError.raiseError(s"Couldn't $method $uri")
+      if (r.isSuccess) r.pure[F]
+      else monadError.raiseError(SuccessfulResponseHttpClient.unsuccessfulMessage(method, uri, r.status))
     }
+}
+
+object SuccessfulResponseHttpClient {
+  def unsuccessfulMessage(method: String, uri: String, statusCode: Int): String =
+    s"Couldn't $method from URI '$uri'. Got response status code $statusCode"
 }
 
 trait JsonHttpClient[F[_]] extends HttpClient[F] {

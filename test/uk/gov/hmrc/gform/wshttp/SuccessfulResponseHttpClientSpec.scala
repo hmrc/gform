@@ -16,39 +16,63 @@
 
 package uk.gov.hmrc.gform.wshttp
 
-import uk.gov.hmrc.gform.idMonadError
-import HttpClient.HttpClientBuildingSyntax
-import cats.{ Id, MonadError }
+import cats.MonadError
+import cats.syntax.either._
 import org.scalacheck.Gen
-import uk.gov.hmrc.http.HttpResponse
+import uk.gov.hmrc.gform.{ Possible, possibleMonadError }
 
 class SuccessfulResponseHttpClientSpec extends HttpClientSpec {
-  "get" should "delegate to underlying.get and return any response with 200 <= status <= 299" in httpClient[Id] {
+  "get" should "delegate to underlying.get and return any response with a successful status" in httpClient[Possible] {
     underlying =>
       forAll(Gen.alphaNumStr, headerCarrierGen, successfulHttpResponseGen) { (uri, hc, response) =>
-        whenever(successful(response)) {
+        whenever(response.isSuccess) {
           underlying.expectGet(uri, hc, response)
 
           buildClient(underlying.httpClient)
-            .get(uri)(hc) shouldBe response
+            .get(uri)(hc) shouldBe response.asRight
         }
       }
   }
 
-  "post" should "delegate to underlying.post and return any response with 200 <= status <= 299" in httpClient[Id] {
+  it should "delegate to underlying.get and then fail when the response with an successful status" in httpClient[
+    Possible] { underlying =>
+    forAll(Gen.alphaNumStr, headerCarrierGen, unsuccessfulHttpResponseGen) { (uri, hc, response) =>
+      whenever(!response.isSuccess) {
+        underlying.expectGet(uri, hc, response)
+
+        buildClient(underlying.httpClient)
+          .get(uri)(hc) shouldBe SuccessfulResponseHttpClient.unsuccessfulMessage("GET", uri, response.status).asLeft
+      }
+    }
+  }
+
+  "post" should "delegate to underlying.post and return any response with a successful status" in httpClient[Possible] {
     underlying =>
       forAll(Gen.alphaNumStr, Gen.alphaNumStr, headerCarrierGen, successfulHttpResponseGen) {
         (uri, postBody, hc, response) =>
-          whenever(successful(response)) {
+          whenever(response.isSuccess) {
             underlying.expectPost(uri, postBody, hc, response)
 
             buildClient(underlying.httpClient)
-              .post(uri, postBody)(hc) shouldBe response
+              .post(uri, postBody)(hc) shouldBe response.asRight
           }
       }
   }
 
-  private def successful(response: HttpResponse) = response.status >= 200 && response.status < 300
+  it should "delegate to underlying.post and then fail when the response with an successful status" in httpClient[
+    Possible] { underlying =>
+    forAll(Gen.alphaNumStr, Gen.alphaNumStr, headerCarrierGen, successfulHttpResponseGen) {
+      (uri, postBody, hc, response) =>
+        whenever(!response.isSuccess) {
+          underlying.expectPost(uri, postBody, hc, response)
+
+          buildClient(underlying.httpClient)
+            .post(uri, postBody)(hc) shouldBe SuccessfulResponseHttpClient
+            .unsuccessfulMessage("POST", uri, response.status)
+            .asLeft
+        }
+    }
+  }
 
   private def buildClient[F[_]](underlying: HttpClient[F])(implicit me: MonadError[F, String]): HttpClient[F] =
     underlying.successResponsesOnly

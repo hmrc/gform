@@ -20,20 +20,6 @@ import cats.{ Id, MonadError }
 import scala.annotation.tailrec
 
 package object gform {
-  implicit val idMonadError: MonadError[Id, String] = new MonadError[Id, String] {
-    override def raiseError[A](e: String): Id[A] = throw new Exception(e)
-    override def flatMap[A, B](fa: Id[A])(f: A => Id[B]): Id[B] = f(fa)
-    override def pure[A](x: A): Id[A] = x
-
-    @tailrec
-    override def tailRecM[A, B](a: A)(f: A => Id[Either[A, B]]): Id[B] = f(a) match {
-      case Left(a)  => tailRecM(a)(f)
-      case Right(b) => b
-    }
-    override def handleErrorWith[A](fa: Id[A])(f: String => Id[A]): Id[A] = ???
-    override def ap[A, B](ff: Id[A => B])(fa: Id[A]): Id[B] = ???
-  }
-
   type Possible[T] = Either[String, T]
   implicit def possibleMonadError[T]: MonadError[Possible, String] = new MonadError[Possible, String] {
     import cats.syntax.either._

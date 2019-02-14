@@ -41,6 +41,12 @@ trait HttpClientSpec extends Spec {
     }
   }
 
+  def unsuccessfulHttpResponseGen: Gen[HttpResponse] =
+    for {
+      status         <- Gen.oneOf(Gen.chooseNum(100, 199), Gen.chooseNum(300, 599))
+      responseString <- Gen.option(Gen.alphaNumStr)
+    } yield HttpResponse(status, responseString = responseString)
+
   def successfulHttpResponseGen: Gen[HttpResponse] =
     for {
       status         <- Gen.chooseNum(200, 299)
