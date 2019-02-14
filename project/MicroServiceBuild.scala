@@ -32,13 +32,45 @@ object MicroServiceBuild extends Build with MicroService {
   )
 
   def test(scope: String = "test,it") = Seq(
-    "uk.gov.hmrc" %% "hmrctest" % "3.4.0-play-25" % scope,
+    "uk.gov.hmrc" %% "hmrctest" % "3.2.0" % scope,
     "org.scalatest" %% "scalatest" % "3.0.5" % scope,
     "org.scalacheck" %% "scalacheck" % "1.14.0" % scope,
     "org.pegdown" % "pegdown" % "1.6.0" % scope,
     "com.typesafe.play" %% "play-test" % PlayVersion.current % scope,
     "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % scope,
     "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.1" % scope,
+<<<<<<< HEAD
     "org.jsoup" % "jsoup" % "1.11.3" % scope
   )
+=======
+    "uk.gov.hmrc" %% "reactivemongo-test" % "3.1.0" % scope,
+    "org.jsoup" % "jsoup" % "1.11.3" % scope
+  )
+
+//  def test(scope: String = "test,it") = Seq(
+//    "uk.gov.hmrc" %% "hmrctest" % "3.4.0-play-25" % scope,
+//    "org.scalatest" %% "scalatest" % "3.0.5" % scope,
+//    "org.scalacheck" %% "scalacheck" % "1.14.0" % scope,
+//    "org.pegdown" % "pegdown" % "1.6.0" % scope,
+//    "com.typesafe.play" %% "play-test" % PlayVersion.current % scope,
+//    "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % scope,
+//    "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.1" % scope,
+//    "uk.gov.hmrc" %% "reactivemongo-test" % "4.7.0-play-25" % scope,
+//    "org.jsoup" % "jsoup" % "1.11.3" % scope
+//  )
+
+
+//  def test(scope: String = "test,it") = Seq(
+//    "uk.gov.hmrc" %% "hmrctest" % "3.4.0-play-25" % scope,
+//    "org.scalatest" %% "scalatest" % "3.0.5" % scope,
+//    "org.scalacheck" %% "scalacheck" % "1.14.0" % scope,
+//    "org.pegdown" % "pegdown" % "1.6.0" % scope,
+//    "com.typesafe.play" %% "play-test" % PlayVersion.current % scope,
+//    "org.scalamock" %% "scalamock-scalatest-support" % "4.1.0" % scope,
+//    "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.1" % scope,
+//    "uk.gov.hmrc" %% "reactivemongo-test" % "4.7.0-play-25" % scope,
+//    "org.jsoup" % "jsoup" % "1.11.3" % scope
+//  )
+
+>>>>>>> everything compiles, current test failure regarding Whttp class
 }
