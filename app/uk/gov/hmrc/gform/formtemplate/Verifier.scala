@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.formtemplate
 import uk.gov.hmrc.gform.core.{ FOpt, fromOptA }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ ComponentType, FormTemplate }
 import cats.implicits._
+import FormTemplateValidator._
 
 import scala.concurrent.ExecutionContext
 
@@ -41,7 +42,7 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validateEnrolmentSection(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateRegimeId(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateEmailParameter(formTemplate).toEither)
-      _ <- fromOptA(FormTemplateValidator.validateEnrolmentIdentifier(formTemplate).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateEnrolmentIdentifier(formTemplate, userContextComponentType).toEither)
     } yield ()
   }
 }

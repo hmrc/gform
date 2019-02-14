@@ -67,6 +67,8 @@ trait AuthConfigGen {
       enrolmentAuth <- enrolmentAuthGen
     } yield HmrcAgentWithEnrolmentModule(agentAccess, enrolmentAuth)
 
+  def anonymousGen = Gen.const(Anonymous)
+
   def authConfigGen: Gen[AuthConfig] =
     Gen.oneOf(
       eeittModuleGen,

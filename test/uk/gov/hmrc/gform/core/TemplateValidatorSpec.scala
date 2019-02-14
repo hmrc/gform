@@ -24,9 +24,13 @@ import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.form.FormField
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.FormComponentGen._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.PrimitiveGen._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.SectionGen._
+import FormTemplateValidator._
+import AuthConfigGen._
+import FormComponentGen._
+
+import scala.collection.immutable.List
 
 class TemplateValidatorSpec extends Spec {
   private def setAllFieldIds(sections: NonEmptyList[Section], id: FormComponentId): NonEmptyList[Section] =
@@ -69,31 +73,29 @@ class TemplateValidatorSpec extends Spec {
     }
   }
 
-  "validateEnrolmentIdentifier" should
-    "validates ${user.enrolledIdentifier} with HmrcSimpleModule and HmrcAgentModule but invalid with Anonymous" in {
-    import FormTemplateValidator._
-    import AuthConfigGen._
-    import FormComponentGen._
+  it should "validates ${user.enrolledIdentifier} with HmrcSimpleModule and HmrcAgentModule" in {
+    forAll(FormTemplateGen.formTemplateGen, Gen.oneOf(hmrcEnrolmentModuleGen, hmrcAgentWithEnrolmentModuleGen)) {
+      (template, authConfig) =>
+        val newTemplate = template.copy(authConfig = authConfig)
+        val isAUserCtx = userContextComponentType(formTemplate.expandFormTemplate.allFCs)
 
-    forAll(
-      FormTemplateGen.formTemplateGen,
-      Gen.oneOf(hmrcEnrolmentModuleGen, hmrcAgentWithEnrolmentModuleGen),
-      formComponentGen()) { (template, authConfig, fc) =>
-      val componentType = Text(EORI, UserCtx(EnrolledIdentifier))
-      val newFormComponents: List[FormComponent] = fc.copy(`type` = componentType) :: Nil
-      val newSections = template.sections.map(_.copy(fields = newFormComponents))
-      val newTemplate = template.copy(sections = newSections).copy(authConfig = authConfig)
+        whenever(authConfig.isInstanceOf[HmrcEnrolmentModule] || authConfig.isInstanceOf[HmrcAgentWithEnrolmentModule]) {
+          validateEnrolmentIdentifier(newTemplate, _ => true) should be(Valid)
+        }
 
-      val isAUserCtx = userContextComponentType(formTemplate.expandFormTemplate.allFCs)
+        whenever(!isAUserCtx) {
+          validateEnrolmentIdentifier(newTemplate, userContextComponentType) should be(Valid)
+        }
+    }
+  }
 
-      whenever(
-        authConfig.isInstanceOf[HmrcEnrolmentModule] || authConfig
-          .isInstanceOf[HmrcAgentWithEnrolmentModule] && isAUserCtx.nonEmpty) {
-        validateEnrolmentIdentifier(newTemplate) should be(Valid)
-      }
+  it should "invalid with Anonymous" in {
+    forAll(FormTemplateGen.formTemplateGen, anonymousGen) { (template, authConfig) =>
+      val ano = template.copy(authConfig = authConfig)
 
-      whenever(isAUserCtx.isEmpty) {
-        validateEnrolmentIdentifier(newTemplate) should be(Valid)
+      whenever(authConfig == Anonymous) {
+        val result = validateEnrolmentIdentifier(ano, _ => true)
+        result should be(Invalid("You used '${user.enrolledIdentifier}' but you didn't provide 'serviceId'."))
       }
     }
   }
@@ -432,11 +434,8 @@ class TemplateValidatorSpec extends Spec {
 
     val newFormTemplate = formTemplate.copy(sections = List(newSection))
 
-    println(newFormTemplate)
-
     val res = FormTemplateValidator.getAllFieldIdsFromFormTemplate(newFormTemplate)
     res should be(List(FormComponentId("fieldContainedInGroup")))
-
   }
 
   private def mkSection(name: String, formComponents: List[FormComponent]) =

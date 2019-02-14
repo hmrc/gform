@@ -149,14 +149,14 @@ object FormTemplateValidator {
     }
   }
 
-  val userContextComponentType: List[FormComponent] => List[FormComponent] =
+  val userContextComponentType: List[FormComponent] => Boolean =
     enrolledIdentifierComponents =>
       enrolledIdentifierComponents.collect {
         case expr @ HasExpr(SingleExpr(UserCtx(EnrolledIdentifier))) => expr
-    }
+      }.nonEmpty
 
-  def validateEnrolmentIdentifier(formTemplate: FormTemplate): ValidationResult =
-    if (userContextComponentType(formTemplate.expandFormTemplate.allFCs).nonEmpty) {
+  def validateEnrolmentIdentifier(formTemplate: FormTemplate, f: List[FormComponent] => Boolean): ValidationResult =
+    if (f(formTemplate.expandFormTemplate.allFCs)) {
       formTemplate.authConfig match {
         case HmrcEnrolmentModule(_) | HmrcAgentWithEnrolmentModule(_, _) => Valid
         case _                                                           => Invalid("You used '${user.enrolledIdentifier}' but you didn't provide 'serviceId'.")
