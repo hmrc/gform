@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.playcomponents
 
 import akka.stream.Materializer
-import play.api.Logger
+import play.api.{ Logger, Play }
 import play.api.mvc.EssentialFilter
 import play.api.routing.Router
 import testOnlyDoNotUseInAppConf.Routes
@@ -42,6 +42,8 @@ import uk.gov.hmrc.play.microservice.filters.{ LoggingFilter, NoCacheFilter }
 
 object MicroserviceAuthConnector extends AuthConnector with ServicesConfig with WSHttp {
   override val authBaseUrl: String = baseUrl("auth")
+  override protected def mode = Play.current.mode
+  override protected val runModeConfiguration = Play.current.configuration
 }
 
 class PlayComponentsModule(

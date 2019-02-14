@@ -90,7 +90,7 @@ class ADTFormatSpec extends Spec {
   case class AdtBaz(name: String, age: Int) extends AdtFoo
 
   implicit val adtFooRead: Reads[AdtFoo] =
-    ADTFormat.adtRead("type", "bar" -> derived.reads[AdtBar], "baz" -> derived.reads[AdtBaz])
+    ADTFormat.adtRead("type", "bar" -> derived.reads[AdtBar](), "baz" -> derived.reads[AdtBaz]())
 
   "adtRead" should "correctly read an ADT with a type discriminator" in {
 
