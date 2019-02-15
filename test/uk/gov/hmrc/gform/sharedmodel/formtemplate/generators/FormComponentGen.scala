@@ -26,6 +26,12 @@ trait FormComponentGen {
       restAfterUnderscore  <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen).map(_.map("_" + _).getOrElse(""))
     } yield FormComponentId(first + restBeforeUnderscore + restAfterUnderscore)
 
+  def idBeginningWithNumberGen: Gen[FormComponentId] =
+    for {
+      precedingNumber     <- Gen.numChar.map(_.toString)
+      followingCharacters <- Gen.alphaChar.map(_.toString)
+    } yield FormComponentId(precedingNumber + followingCharacters)
+
   def labelGen: Gen[String] = PrimitiveGen.nonEmptyAlphaNumStrGen
   def helpTextGen: Gen[String] = PrimitiveGen.nonEmptyAlphaNumStrGen
   def shortNameGen: Gen[String] = PrimitiveGen.nonEmptyAlphaNumStrGen
