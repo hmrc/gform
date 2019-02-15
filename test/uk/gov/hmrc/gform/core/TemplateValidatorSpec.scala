@@ -437,6 +437,61 @@ class TemplateValidatorSpec extends Spec {
 
   }
 
+  "TemplateValidator.validateDates with dates yyyy-02-31 and yyyy-04-31" should "return Invalid" in {
+
+    val groupFields = List(mkFormComponent("date", Value))
+
+    val formComponents = List(
+      mkFormComponent("fieldContainedInFormTemplate", mkDate(AnyYear, ExactMonth(2), ExactDay(31))),
+      mkFormComponent("fieldContainedInFormTemplate", mkDate(AnyYear, ExactMonth(4), ExactDay(31)))
+    )
+
+    val newSection = mkSection("example", formComponents)
+
+    val newFormTemplate = formTemplate.copy(sections = List(newSection))
+
+    val res = FormTemplateValidator.validateDates(newFormTemplate)
+    res should be(Invalid(
+      "java.time.DateTimeException: Invalid date 'FEBRUARY 31'. java.time.DateTimeException: Invalid date 'APRIL 31'"))
+
+  }
+
+  "TemplateValidator.validateDates with date 2018-02-31" should "return Invalid" in {
+
+    val groupFields = List(mkFormComponent("date", Value))
+    val formComponents =
+      List(mkFormComponent("fieldContainedInFormTemplate", mkDate(ExactYear(2018), ExactMonth(2), ExactDay(31))))
+
+    val newSection = mkSection("example", formComponents)
+
+    val newFormTemplate = formTemplate.copy(sections = List(newSection))
+
+    val res = FormTemplateValidator.validateDates(newFormTemplate)
+    res should be(Invalid("java.time.DateTimeException: Invalid date 'FEBRUARY 31'"))
+
+  }
+
+  "TemplateValidator.validateDates with date 2018-02-02" should "return Valid" in {
+
+    val groupFields = List(mkFormComponent("date", Value))
+    val formComponents =
+      List(mkFormComponent("fieldContainedInFormTemplate", mkDate(ExactYear(2018), ExactMonth(2), ExactDay(2))))
+
+    val newSection = mkSection("example", formComponents)
+
+    val newFormTemplate = formTemplate.copy(sections = List(newSection))
+
+    val res = FormTemplateValidator.validateDates(newFormTemplate)
+    res should be(Valid)
+
+  }
+
+  private def mkDate(year: Year, month: Month, day: Day) =
+    Date(
+      DateConstraints(List(DateConstraint(Precisely, ConcreteDate(year, month, day), OffsetDate(0)))),
+      Offset(0),
+      None)
+
   private def mkSection(name: String, formComponents: List[FormComponent]) =
     Section(
       name,

@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
+import java.time.LocalDate
+
 import cats.Monoid
 import cats.data.NonEmptyList
 import cats.implicits._
@@ -32,6 +34,7 @@ import uk.gov.hmrc.gform.sharedmodel.graph.DependencyGraph._
 
 import scala.Function.const
 import scala.collection.immutable.List
+import scala.util.{ Failure, Success, Try }
 
 object FormTemplateValidator {
 
@@ -280,7 +283,6 @@ object FormTemplateValidator {
   }
 
   def getAllFieldIdsFromFormTemplate(formTemplate: FormTemplate): List[FormComponentId] = {
-
     val sectionsFields = extractFieldIds(formTemplate.sections.flatMap(_.fields))
     val declarationSectionFields = extractFieldIds(formTemplate.declarationSection.fields)
 
@@ -306,6 +308,35 @@ object FormTemplateValidator {
             s"The following email parameters are not fields in the form template's sections or the declaration section: ${invalidFields
               .map(_.value.toFieldId)}")
       }
+    }
+
+  def validateDates(formTemplate: FormTemplate): ValidationResult =
+    getAllDates(formTemplate)
+      .map {
+        case ConcreteDate(ExactYear(year), ExactMonth(month), ExactDay(day)) =>
+          validateYearMonthAndDay(year, month, day)
+        case ConcreteDate(AnyYear, ExactMonth(month), ExactDay(day)) =>
+          val leapYear = 2020 //makes 29th of feb valid when we dont know the year
+          validateYearMonthAndDay(leapYear, month, day)
+        case _ => ""
+      }
+      .filterNot(_ == "") match {
+      case messages if messages.isEmpty  => Valid
+      case messages if messages.nonEmpty => Invalid(messages.mkString(". "))
+    }
+
+  private def getAllDates(formTemplate: FormTemplate): List[ConcreteDate] =
+    formTemplate.sections
+      .flatMap(section => section.fields.map(_.`type`).collect { case date: Date => date.constraintType })
+      .collect { case dateConstraints: DateConstraints => dateConstraints }
+      .flatMap(_.constraints)
+      .map(_.dateFormat)
+      .collect { case concreteDate: ConcreteDate => concreteDate }
+
+  private def validateYearMonthAndDay(year: Int, month: Int, day: Int): String =
+    Try(LocalDate.of(year, month, day)) match {
+      case Failure(message) => message.toString
+      case Success(_)       => ""
     }
 
   private def evalExpr(expr: Expr): List[FormComponentId] = expr match {
