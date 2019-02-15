@@ -36,7 +36,7 @@ object SubmissionRef {
     ValueClassFormat.vformat("submissionRef", SubmissionRef.apply, x => JsString(x.value))
 
   def createSubmissionRef(envelopeId: EnvelopeId): SubmissionRef =
-    SubmissionRef(getSubmissionReference(envelopeId))
+    SubmissionRef(getSubmissionReference(envelopeId).replace("-", ""))
 
   private def alphanumeric(rnd: Random): Stream[Char] = {
     val chars = ('A' to 'Z') ++ ('0' to '9').toList

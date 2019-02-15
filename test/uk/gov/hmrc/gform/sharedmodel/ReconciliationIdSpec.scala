@@ -35,7 +35,7 @@ class ReconciliationIdSpec extends Spec {
 
     val res = ReconciliationId.create(submissionRef)
 
-    res.value should be("6FJX-HVQL-U4FD-20170131135345")
+    res.value should be("6FJXHVQLU4FD-20170131135345")
 
   }
 }
