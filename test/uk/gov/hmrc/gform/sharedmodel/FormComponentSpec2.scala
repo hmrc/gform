@@ -20,6 +20,7 @@ import cats.data.NonEmptyList
 import play.api.libs.json.{ Reads, _ }
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.FormComponentGen
 
 class FormComponentSpec2 extends Spec {
 
