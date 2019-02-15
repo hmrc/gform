@@ -131,7 +131,6 @@ class FormatParserSpec extends Spec {
 
   "before 2019-08-lastDay" should "be parsed successfully" in {
     val res = validate("before 2019-08-lastDay")
-    println(res)
     res.right.value should be(
       DateFormat(DateConstraints(
         List(DateConstraint(Before, ConcreteDate(ExactYear(2019), ExactMonth(8), LastDay), OffsetDate(0))))))
