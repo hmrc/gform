@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.form
 import play.api.Logger
 import play.api.http.HttpEntity
 import play.api.libs.json.JsValue
-import play.api.mvc.{ Action, AnyContent, ResponseHeader, Result }
+import play.api.mvc._
 import uk.gov.hmrc.gform.auditing._
 import uk.gov.hmrc.gform.config.AppConfig
 import uk.gov.hmrc.gform.controllers.BaseController
@@ -137,6 +137,10 @@ class FormController(
   //TODO discuss with Daniel about naming, purpose of it and if we can make it part of a form
   def getKeyStore(formId: FormId) = Action.async { implicit request =>
     formService.getKeyStore(formId).asOkJson
+  }
+
+  def enrolmentCallBack(formId: FormId) = Action.async { implicit request =>
+    Future(Results.NoContent)
   }
 
   private def getSection(formTemplate: FormTemplate, sectionNumber: SectionNumber): Section =
