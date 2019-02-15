@@ -56,6 +56,10 @@ class FormComponentSpec2 extends Spec {
       ))
   }
 
+  "formComponentId" should "return an error" in {
+
+  }
+
   private def toFieldValue(template: String): JsResult[FormComponent] = {
 
     val templateAsJson = Json.parse(template.stripMargin)
