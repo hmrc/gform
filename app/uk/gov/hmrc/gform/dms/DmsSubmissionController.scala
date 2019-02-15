@@ -53,7 +53,7 @@ class DmsSubmissionController(
         pdfDoc = documentLoader(pdf)
         pdfSummary = PdfSummary(pdfDoc.getNumberOfPages.toLong, pdf)
         _ = pdfDoc.close()
-        submissionRef = SubmissionRef.random
+        submissionRef = SubmissionRef.createSubmissionRef(envId)
         dmsMetadata = DmsMetaData(formTemplateId, metadata.customerId)
         submission = Submission(
           FormId(metadata.dmsFormId),
