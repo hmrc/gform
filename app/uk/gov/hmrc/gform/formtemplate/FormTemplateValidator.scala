@@ -31,6 +31,7 @@ import uk.gov.hmrc.gform.sharedmodel.form.FormField
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, Destinations }
 import uk.gov.hmrc.gform.sharedmodel.graph.DependencyGraph._
+import uk.gov.hmrc.gform.formtemplate.FormTemplateValidatorHelper._
 
 import scala.Function.const
 import scala.collection.immutable.List
@@ -321,14 +322,6 @@ object FormTemplateValidator {
       case messages if messages.isEmpty  => Valid
       case messages if messages.nonEmpty => Invalid(messages.mkString(". "))
     }
-
-  private def getAllDates(formTemplate: FormTemplate): List[ConcreteDate] =
-    formTemplate.sections
-      .flatMap(section => section.fields.map(_.`type`).collect { case date: Date => date.constraintType })
-      .collect { case dateConstraints: DateConstraints => dateConstraints }
-      .flatMap(_.constraints)
-      .map(_.dateFormat)
-      .collect { case concreteDate: ConcreteDate => concreteDate }
 
   private def validateYearMonthAndDay(year: Int, month: Int, day: Int): String =
     Try(LocalDate.of(year, month, day)) match {

@@ -435,11 +435,9 @@ class TemplateValidatorSpec extends Spec {
 
   "TemplateValidator.validateDates with dates yyyy-02-31 and yyyy-04-31" should "return Invalid" in {
 
-    val groupFields = List(mkFormComponent("date", Value))
-
     val formComponents = List(
-      mkFormComponent("fieldContainedInFormTemplate", mkDate(AnyYear, ExactMonth(2), ExactDay(31))),
-      mkFormComponent("fieldContainedInFormTemplate", mkDate(AnyYear, ExactMonth(4), ExactDay(31)))
+      mkFormComponent("fieldContainedInFormTemplate", mkDate(AnyYear, ExactMonth(2), ExactDay(31), None)),
+      mkFormComponent("fieldContainedInFormTemplate", mkDate(AnyYear, ExactMonth(4), ExactDay(31), None))
     )
 
     val newSection = mkSection("example", formComponents)
@@ -454,9 +452,8 @@ class TemplateValidatorSpec extends Spec {
 
   "TemplateValidator.validateDates with date 2018-02-31" should "return Invalid" in {
 
-    val groupFields = List(mkFormComponent("date", Value))
     val formComponents =
-      List(mkFormComponent("fieldContainedInFormTemplate", mkDate(ExactYear(2018), ExactMonth(2), ExactDay(31))))
+      List(mkFormComponent("fieldContainedInFormTemplate", mkDate(ExactYear(2018), ExactMonth(2), ExactDay(31), None)))
 
     val newSection = mkSection("example", formComponents)
 
@@ -469,9 +466,8 @@ class TemplateValidatorSpec extends Spec {
 
   "TemplateValidator.validateDates with date 2018-02-02" should "return Valid" in {
 
-    val groupFields = List(mkFormComponent("date", Value))
     val formComponents =
-      List(mkFormComponent("fieldContainedInFormTemplate", mkDate(ExactYear(2018), ExactMonth(2), ExactDay(2))))
+      List(mkFormComponent("fieldContainedInFormTemplate", mkDate(ExactYear(2018), ExactMonth(2), ExactDay(2), None)))
 
     val newSection = mkSection("example", formComponents)
 
@@ -482,11 +478,114 @@ class TemplateValidatorSpec extends Spec {
 
   }
 
-  private def mkDate(year: Year, month: Month, day: Day) =
+  "TemplateValidator.validateDates with date value 2018-02-14" should "return Valid" in {
+
+    val formComponents =
+      List(mkFormComponent("fieldContainedInFormTemplate", mkDate(Some(ExactDateValue(2018, 2, 14)))))
+
+    val newSection = mkSection("example", formComponents)
+
+    val newFormTemplate = formTemplate.copy(sections = List(newSection))
+
+    val res = FormTemplateValidator.validateDates(newFormTemplate)
+    res should be(Valid)
+
+  }
+
+  "TemplateValidator.validateDates with date value 2018-02-31" should "return Invalid" in {
+
+    val formComponents =
+      List(mkFormComponent("fieldContainedInFormTemplate", mkDate(Some(ExactDateValue(2018, 2, 31)))))
+
+    val newSection = mkSection("example", formComponents)
+
+    val newFormTemplate = formTemplate.copy(sections = List(newSection))
+
+    val res = FormTemplateValidator.validateDates(newFormTemplate)
+    res should be(Invalid("java.time.DateTimeException: Invalid date 'FEBRUARY 31'"))
+
+  }
+
+  "TemplateValidator.validateDates with date value 2018-02-31 and date format 2018-02-14" should "return Invalid" in {
+
+    val formComponents =
+      List(
+        mkFormComponent(
+          "fieldContainedInFormTemplate",
+          mkDate(ExactYear(2018), ExactMonth(2), ExactDay(14), Some(ExactDateValue(2018, 2, 31)))))
+
+    val newSection = mkSection("example", formComponents)
+
+    val newFormTemplate = formTemplate.copy(sections = List(newSection))
+
+    val res = FormTemplateValidator.validateDates(newFormTemplate)
+    res should be(Invalid("java.time.DateTimeException: Invalid date 'FEBRUARY 31'"))
+
+  }
+
+  "TemplateValidator.validateDates with date value 2018-02-31 and date format 2018-04-31" should "return Invalid" in {
+
+    val formComponents =
+      List(
+        mkFormComponent(
+          "fieldContainedInFormTemplate",
+          mkDate(ExactYear(2018), ExactMonth(4), ExactDay(31), Some(ExactDateValue(2018, 2, 31)))))
+
+    val newSection = mkSection("example", formComponents)
+
+    val newFormTemplate = formTemplate.copy(sections = List(newSection))
+
+    val res = FormTemplateValidator.validateDates(newFormTemplate)
+    res should be(Invalid(
+      "java.time.DateTimeException: Invalid date 'APRIL 31'. java.time.DateTimeException: Invalid date 'FEBRUARY 31'"))
+
+  }
+
+  "TemplateValidator.validateDates with date value 2018-02-31 in a group" should "return Invalid" in {
+
+    val groupFields = List(mkFormComponent("fieldContainedInGroup", Value))
+
+    val dateFormComponent = mkFormComponent("fieldContainedInFormTemplate", mkDate(Some(ExactDateValue(2018, 2, 31))))
+
+    val formComponents = List(mkFormComponent("group", Group(List(dateFormComponent), Vertical)))
+
+    val newSection = mkSection("example", formComponents)
+
+    val newFormTemplate = formTemplate.copy(sections = List(newSection))
+
+    val res = FormTemplateValidator.validateDates(newFormTemplate)
+    res should be(Invalid("java.time.DateTimeException: Invalid date 'FEBRUARY 31'"))
+
+  }
+
+  "TemplateValidator.validateDates with date value 2018-02-25 in a group" should "Valid" in {
+
+    val groupFields = List(mkFormComponent("fieldContainedInGroup", Value))
+
+    val dateFormComponent = mkFormComponent("fieldContainedInFormTemplate", mkDate(Some(ExactDateValue(2018, 2, 25))))
+
+    val formComponents = List(mkFormComponent("group", Group(List(dateFormComponent), Vertical)))
+
+    val newSection = mkSection("example", formComponents)
+
+    val newFormTemplate = formTemplate.copy(sections = List(newSection))
+
+    val res = FormTemplateValidator.validateDates(newFormTemplate)
+    res should be(Valid)
+
+  }
+
+  private def mkDate(year: Year, month: Month, day: Day, value: Option[DateValue]) =
     Date(
       DateConstraints(List(DateConstraint(Precisely, ConcreteDate(year, month, day), OffsetDate(0)))),
       Offset(0),
-      None)
+      value)
+
+  private def mkDate(value: Option[DateValue]) =
+    Date(
+      DateConstraints(List(DateConstraint(Precisely, ConcreteDate(AnyYear, AnyMonth, AnyDay), OffsetDate(0)))),
+      Offset(0),
+      value)
 
   private def mkSection(name: String, formComponents: List[FormComponent]) =
     Section(
