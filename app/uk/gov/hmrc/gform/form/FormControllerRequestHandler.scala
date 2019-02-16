@@ -16,13 +16,12 @@
 
 package uk.gov.hmrc.gform.form
 
-import uk.gov.hmrc.gform.auditing.AuditingService
+import cats.Monad
 import uk.gov.hmrc.play.audit.http.connector.AuditResult
 import uk.gov.hmrc.play.audit.model.DataEvent
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
+class FormControllerRequestHandler[F[_]: Monad](auditing: DataEvent => F[AuditResult]) {
 
-class FormControllerRequestHandler(auditingService: AuditingService) {
-  def program(event: DataEvent): AuditResult = Await.result(auditingService.audit(event), 5.seconds)
+  def handleRequest(event: DataEvent): F[AuditResult] =
+    auditing(event)
 }

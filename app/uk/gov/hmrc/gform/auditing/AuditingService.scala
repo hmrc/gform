@@ -16,18 +16,24 @@
 
 package uk.gov.hmrc.gform.auditing
 
+import cats.Monad
 import uk.gov.hmrc.gform.wshttp.MicroserviceAuditConnector
 import uk.gov.hmrc.play.audit.http.connector.AuditResult
 import uk.gov.hmrc.play.audit.model.DataEvent
 
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 sealed trait Connector {
   val connector: DataEvent => Future[AuditResult] = MicroserviceAuditConnector.sendEvent
 }
 
-trait AuditingService extends Connector {
+import io.monadless.stdlib.MonadlessFuture._
 
-  def audit(event: DataEvent): Future[AuditResult] = connector(event)
+class EventAudit[F[_]: Monad] extends Connector {
+  def runProgram(event: DataEvent): F[AuditResult] =
+    implicitly[Monad[F]].pure(program(event))
+
+  def program(event: DataEvent): AuditResult =
+    unlift(connector(event))
 }

@@ -16,24 +16,32 @@
 
 package uk.gov.hmrc.gform.form
 
+import cats.Id
 import org.scalatest.{ MustMatchers, WordSpec }
-import uk.gov.hmrc.gform.auditing.AuditingService
+import uk.gov.hmrc.gform.auditing.EventAudit
 import uk.gov.hmrc.play.audit.http.connector.AuditResult
 import uk.gov.hmrc.play.audit.http.connector.AuditResult.Success
 import uk.gov.hmrc.play.audit.model.DataEvent
 
-import scala.concurrent.Future
-
 class FormControllerRequestHandlerSpec extends WordSpec with MustMatchers {
 
   "Handle a request" in {
-    val event = DataEvent("src", "type")
-
-    val stubService = new AuditingService {
-      override def audit(event: DataEvent): Future[AuditResult] = Future.successful(Success)
+    val eventAudit = new EventAudit[Id] {
+      override def program(event: DataEvent) = Success
     }
 
-    val handler = new FormControllerRequestHandler(stubService)
-    handler.program(event) mustBe AuditResult.Success
+    val auditing: DataEvent => Id[AuditResult] = eventAudit.runProgram
+    val handler = new FormControllerRequestHandler[Id](auditing)
+    val event = DataEvent("src", "type")
+
+    handler.handleRequest(event) mustBe AuditResult.Success
+  }
+
+  "Handle a request 2" in new EventAudit[Id] {
+    override def program(event: DataEvent) = Success
+
+    val event = DataEvent("src", "type")
+
+    runProgram(event) mustBe Success
   }
 }
