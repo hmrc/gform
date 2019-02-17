@@ -36,12 +36,4 @@ class FormControllerRequestHandlerSpec extends WordSpec with MustMatchers {
 
     handler.handleRequest(event) mustBe AuditResult.Success
   }
-
-  "Handle a request 2" in new EventAudit[Id] {
-    override def program(event: DataEvent) = Success
-
-    val event = DataEvent("src", "type")
-
-    runProgram(event) mustBe Success
-  }
 }
