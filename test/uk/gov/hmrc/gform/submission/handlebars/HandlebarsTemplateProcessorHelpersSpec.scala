@@ -239,7 +239,7 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
       )
     ) shouldBe
       """|"etmpAddr-line1": "The Postcode",
-         |"etmpAddr-line2": """"".stripMargin
+         |"etmpAddr-line2": " """".stripMargin
   }
 
   private def periodGen: Gen[(String, String, String, String)] =

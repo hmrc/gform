@@ -367,7 +367,7 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
     new Handlebars.SafeString(
       Seq(get("street1"), get("street2"), get("street3"), get("country"), get("postcode"))
         .filterNot(_.isEmpty)
-        .padTo(2, "")
+        .padTo(2, " ")
         .zipWithIndex
         .map { case (l, i) => s""""$toFieldBase-line${i + 1}": "${condition(l)}"""" }
         .mkString(s",${util.Properties.lineSeparator}"))
