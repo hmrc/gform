@@ -16,23 +16,28 @@
 
 package uk.gov.hmrc.gform.support
 
-import org.scalatestplus.play.{ BaseOneServerPerTest, FakeApplicationFactory }
+import akka.actor.{ActorSystem, Terminated}
+import akka.stream.ActorMaterializer
+import org.scalatestplus.play.{BaseOneServerPerSuite, FakeApplicationFactory}
 import play.api.ApplicationLoader.Context
-import play.api.libs.ws.WSClient
-import play.api.{ Application, Configuration, Environment }
+import play.api.libs.json.Writes
+import play.api.libs.ws.WSRequest
+import play.api.libs.ws.ahc.AhcWSClient
+import play.api.{Application, Configuration, Environment}
 import play.core.DefaultWebCommands
 import uk.gov.hmrc.gform.ApplicationModule
 import uk.gov.hmrc.gform.gformbackend.GformConnector
 import uk.gov.hmrc.gform.wshttp.WSHttp
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+
+import scala.concurrent.Future
 
 /**
  * This spec provides running play application for every test.
  */
-trait ITSpec extends ITSpecBase with BaseOneServerPerTest with /*TODO MongoSpecSupport with */ FakeApplicationFactory {
+trait ITSpec extends ITSpecBase with BaseOneServerPerSuite with /*TODO MongoSpecSupport with */ FakeApplicationFactory {
 
   override def fakeApplication(): Application = application
-
   lazy val wsclient = WSHttp
 
   private lazy val mongoDbName: String = "test-" + this.getClass.getSimpleName
@@ -54,4 +59,33 @@ trait ITSpec extends ITSpecBase with BaseOneServerPerTest with /*TODO MongoSpecS
   lazy val baseUrl = s"http://localhost:${port}"
 
   lazy val gformConnector = new GformConnector(wsclient, s"$baseUrl/gform")
+
+  /**
+    * Stubbed WSHttp which responses always with the same HttpResponse. Use it for test purposes
+    */
+  class StubbedWSHttp(response: HttpResponse) extends WSHttp {
+    override def doGet(url: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = Future.successful(response)
+    override def doPost[A](url: String, body: A, headers: Seq[(String, String)])(
+      implicit rds: Writes[A],
+      hc: HeaderCarrier) =
+      Future.successful(response)
+    override def doFormPost(url: String, body: Map[String, Seq[String]])(implicit hc: HeaderCarrier) =
+      Future.successful(response)
+    override def doPostString(url: String, body: String, headers: Seq[(String, String)])(implicit hc: HeaderCarrier) =
+      Future.successful(response)
+    override def doEmptyPost[A](url: String)(implicit hc: HeaderCarrier) = Future.successful(response)
+    //TODO: PUT, PATCH, DELETE
+  }
+
+  //If you want to use WSHttp outside play app you must provide your WSClient. Otherwise it blows up.
+  //See https://github.com/hmrc/http-verbs/issues/60
+  //Don't use it on production ('ws.close()' logic is missing)
+  object TestWSHttp extends WSHttp {
+    override def buildRequest[A](url: String)(implicit hc: HeaderCarrier): WSRequest = ws.url(url)
+    private implicit lazy val s: ActorSystem = ActorSystem()
+    private implicit lazy val mat: ActorMaterializer = ActorMaterializer()
+    private lazy val ws = AhcWSClient()(mat)
+
+    def stop(): Future[Terminated] = s.terminate()
+  }
 }
