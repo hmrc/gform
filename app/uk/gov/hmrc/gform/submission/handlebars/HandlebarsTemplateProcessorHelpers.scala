@@ -361,6 +361,22 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
     })
   }
 
+  def lookup(options: String, value: String): CharSequence = ifNotNull(value) { v =>
+    def trimAll(ss: Array[String]): Array[String] = ss.map(_.trim)
+
+    def parseCases(cases: String): Array[String] = trimAll(cases.split('|'))
+
+    def parseBranch(c: String): Map[String, String] = trimAll(c.split("=>")) match {
+      case Array(cases, result) => parseCases(cases).map(c => (c, result)).toMap
+    }
+
+    condition(
+      trimAll(options.split(','))
+        .map(parseBranch)
+        .foldLeft(Map.empty[String, String]) { _ ++ _ }
+        .getOrElse(value, null))
+  }
+
   def toEtmpAddress(fromFieldBase: String, toFieldBase: String, options: Options): CharSequence = {
     def get(line: String) = Option(options.context.get(s"$fromFieldBase-$line")).getOrElse("").toString
 
@@ -380,7 +396,7 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
     } yield {
       val params = options.params.drop(2).collect { case x: String if !x.isEmpty => x }
 
-      if (index < params.size) params(index)
+      if (index < params.length) params(index)
       else dflt
     }).getOrElse(throw new IllegalArgumentException("removeEmptyAndGet: dflt: String index: Int [element: String ...]"))
   }

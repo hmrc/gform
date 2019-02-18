@@ -242,6 +242,12 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
          |"etmpAddr-line2": " """".stripMargin
   }
 
+  "lookup" must "find the appropriate value" in {
+    process(
+      """{{lookup "0 => A, 1|2 => B, 3 => C" "2"}}"""
+    ) shouldBe "B"
+  }
+
   private def periodGen: Gen[(String, String, String, String)] =
     for {
       key  <- Gen.posNum[Int].map(_.toString)
