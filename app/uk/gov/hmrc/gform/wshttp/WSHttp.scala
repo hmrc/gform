@@ -48,10 +48,8 @@ trait WSHttp
     extends HttpGet with WSGet with HttpPut with WSPut with HttpPost with WSPost with HttpDelete with WSDelete
     with Hooks with AppName {
 
-
-
-  override protected val actorSystem: ActorSystem = Play.current.actorSystem
-  override protected val configuration: Option[Config] = Option(Play.current.configuration.underlying)
+  override protected def actorSystem: ActorSystem = Play.current.actorSystem
+  override protected def configuration: Option[Config] = Option(Play.current.configuration.underlying)
   override protected def appNameConfiguration: Configuration = Play.current.configuration
 
   //TODO: body should be type of Stream not ByteString (do we want to blow up if few people will submit forms at the same time?)
