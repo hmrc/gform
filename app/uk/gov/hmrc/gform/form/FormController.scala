@@ -27,14 +27,14 @@ import uk.gov.hmrc.gform.core.FormValidator
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.fileupload.FileUploadService
 import uk.gov.hmrc.gform.formtemplate.FormTemplateService
-import uk.gov.hmrc.gform.sharedmodel.{AccessCode, UserId}
-import uk.gov.hmrc.gform.sharedmodel.form.{EnvelopeExpiryDate, FileId, FormId, UserData}
+import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, UserId }
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeExpiryDate, FileId, FormId, UserData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.time.TimeProvider
 
 import scala.concurrent.Future
 import scala.util.Try
-import uk.gov.hmrc.http.{BadRequestException, NotFoundException}
+import uk.gov.hmrc.http.{ BadRequestException, NotFoundException }
 import uk.gov.hmrc.play.audit.model.DataEvent
 
 class FormController(

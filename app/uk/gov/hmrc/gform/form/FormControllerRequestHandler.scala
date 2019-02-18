@@ -22,7 +22,7 @@ import uk.gov.hmrc.play.audit.model.DataEvent
 
 class FormControllerRequestHandler[F[_]: Monad](auditing: DataEvent => F[AuditResult]) {
 
-  def handleRequest(event: DataEvent): F[AuditResult] = {
+  def handleRequest(event: DataEvent): F[AuditResult] =
     auditing(event)
-  }
+
 }
