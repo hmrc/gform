@@ -69,14 +69,12 @@ trait WSHttp
     //      executeHooks(url, POST_VERB, Option(s"""{"info":"multipart upload of $fileName"}"""), httpResponse)
     //      mapErrors(POST_VERB, url, httpResponse).map(rds.read(POST_VERB, url, _))
     //    }
-//    import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
     buildRequest(url).withHeaders(headers: _*).post(source).map(new WSHttpResponse(_))
   }
 
 }
 
-//object WSHttp extends WSHttp {
 object WSHttp extends WSHttp
 
 object MicroserviceAuthConnector extends AuthConnector with ServicesConfig with WSHttp {
