@@ -32,7 +32,7 @@ object MicroServiceBuild extends Build with MicroService {
   )
 
   def test(scope: String = "test,it") = Seq(
-    "uk.gov.hmrc" %% "hmrctest" % "3.2.0" % scope,
+    "uk.gov.hmrc" %% "hmrctest" % "3.4.0-play-25" % scope,
     "org.scalatest" %% "scalatest" % "3.0.5" % scope,
     "org.scalacheck" %% "scalacheck" % "1.14.0" % scope,
     "org.pegdown" % "pegdown" % "1.6.0" % scope,
