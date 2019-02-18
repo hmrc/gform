@@ -74,7 +74,6 @@ trait WSHttp
 
 }
 
-//object WSHttp extends WSHttp {
 object WSHttp extends WSHttp
 
 object MicroserviceAuthConnector extends AuthConnector with ServicesConfig with WSHttp {
