@@ -14,8 +14,6 @@ addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.5.19")
 
 addSbtPlugin("com.lucidchart" % "sbt-scalafmt" % "1.16")
 
-addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.9.2")
-
 addSbtPlugin("com.timushev.sbt" % "sbt-updates" % "0.3.4") //sbt dependencyUpdates
 
 addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full)
