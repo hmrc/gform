@@ -28,9 +28,10 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, De
 import uk.gov.hmrc.gform.submission.handlebars.{ HandlebarsTemplateProcessor, HandlebarsTemplateProcessorModel }
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
-class DestinationsSubmitter[M[_]: Monad](
+class DestinationsSubmitter[M[_]](
   destinationSubmitter: DestinationSubmitter[M],
-  handlebarsTemplateProcessor: HandlebarsTemplateProcessor = new HandlebarsTemplateProcessor) {
+  handlebarsTemplateProcessor: HandlebarsTemplateProcessor = new HandlebarsTemplateProcessor)(
+  implicit monad: Monad[M]) {
 
   def send(submissionInfo: DestinationSubmissionInfo)(implicit hc: HeaderCarrier): M[Unit] =
     submissionInfo.formTemplate.destinations match {
@@ -59,9 +60,12 @@ class DestinationsSubmitter[M[_]: Monad](
     destination: Destination,
     submissionInfo: DestinationSubmissionInfo,
     model: HandlebarsTemplateProcessorModel)(implicit hc: HeaderCarrier): M[Option[HandlebarsTemplateProcessorModel]] =
-    if (destination.includeIf.forall(handlebarsTemplateProcessor(_, model) === true.toString))
-      destinationSubmitter(destination, submissionInfo, model)
-    else Option.empty[HandlebarsTemplateProcessorModel].pure
+    monad.pure(destination.includeIf.forall(handlebarsTemplateProcessor(_, model) === true.toString)) flatMap {
+      include =>
+        if (include)
+          destinationSubmitter(destination, submissionInfo, model)
+        else Option.empty[HandlebarsTemplateProcessorModel].pure
+    }
 }
 
 object DestinationsSubmitter {
