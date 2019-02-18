@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.fileupload
 
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 
-trait ExampleFileUploadData {
+trait ExampleItFileUploadData {
 
   lazy val config = FUConfig(
     fileUploadBaseUrl = "http://fileupload.whatever",
