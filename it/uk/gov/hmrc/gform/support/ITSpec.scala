@@ -23,8 +23,7 @@ import play.api.ApplicationLoader.Context
 import play.api.libs.json.Writes
 import play.api.libs.ws.WSRequest
 import play.api.libs.ws.ahc.AhcWSClient
-import play.api.{Application, Configuration, Environment}
-import play.core.DefaultWebCommands
+import play.api._
 import uk.gov.hmrc.gform.ApplicationModule
 import uk.gov.hmrc.gform.gformbackend.GformConnector
 import uk.gov.hmrc.gform.wshttp.WSHttp
@@ -41,14 +40,12 @@ trait ITSpec extends ITSpecBase with BaseOneServerPerSuite with /*TODO MongoSpec
   lazy val wsclient = WSHttp
 
   private lazy val mongoDbName: String = "test-" + this.getClass.getSimpleName
-  private lazy val env: Environment = Environment.simple()
+  private lazy val env: Environment = Environment.simple(mode = Mode.Test)
   private lazy val configurationOverridings = Map(
     "mongodb.uri" -> s"mongodb://localhost:27017/$mongoDbName")
-  private lazy val context: Context = Context(
-    environment = env,
-    sourceMapper = None,
-    webCommands = new DefaultWebCommands(),
-    initialConfiguration = Configuration.load(env))
+
+  private lazy val context: Context = ApplicationLoader.createContext(env)
+
   private lazy val applicationModule = new ApplicationModule(context) {
     override lazy val httpFilters = Nil
   }

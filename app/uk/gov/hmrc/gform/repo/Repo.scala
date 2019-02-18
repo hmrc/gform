@@ -20,7 +20,7 @@ import cats.data.EitherT
 import cats.syntax.either._
 import play.api.libs.json._
 import reactivemongo.api.DefaultDB
-import reactivemongo.api.commands.{ UpdateWriteResult, WriteConcern }
+import reactivemongo.api.commands.WriteConcern
 import reactivemongo.bson.BSONObjectID
 import reactivemongo.play.json.ImplicitBSONHandlers._
 import uk.gov.hmrc.gform.core.FOpt
@@ -62,10 +62,9 @@ class Repo[T: OWrites: Manifest](name: String, mongo: () => DefaultDB, idLens: T
   implicit class FutureWriteResultOps[R](t: Future[R])(implicit ec: ExecutionContext) {
     def asEither: Future[Either[UnexpectedState, Unit]] =
       t.map {
-        case _ => ().asRight
+        case _ => ().asRight[UnexpectedState]
       } recover {
-        case lastError =>
-          UnexpectedState(lastError.getMessage).asLeft
+        case lastError => UnexpectedState(lastError.getMessage).asLeft[Unit]
       }
   }
 }
