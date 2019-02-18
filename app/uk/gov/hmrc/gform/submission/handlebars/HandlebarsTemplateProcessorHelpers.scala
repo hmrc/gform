@@ -323,8 +323,8 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
   def isNotSuccessCode(code: Integer): CharSequence = condition(!isSuccCode(code))
   private def isSuccCode(code: Integer): Boolean = code != null && code >= 200 && code <= 299
 
-  def getCurrentDate: CharSequence = condition(DateTimeFormatter.BASIC_ISO_DATE.format(timeProvider.localDateTime))
-  def getCurrentTimestamp: CharSequence = condition(DateTimeFormatter.ISO_INSTANT.format(timeProvider.instant))
+  def currentDate: CharSequence = condition(DateTimeFormatter.BASIC_ISO_DATE.format(timeProvider.localDateTime))
+  def currentTimestamp: CharSequence = condition(DateTimeFormatter.ISO_INSTANT.format(timeProvider.instant))
 
   def hmrcTaxPeriodKey(o: Options): CharSequence = hmrcTaxPeriodValue(o, 0)
   def hmrcTaxPeriodFrom(o: Options): CharSequence = hmrcTaxPeriodValue(o, 1)
