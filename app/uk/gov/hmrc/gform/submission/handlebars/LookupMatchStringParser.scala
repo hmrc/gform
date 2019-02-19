@@ -20,6 +20,7 @@ import scala.util.parsing.combinator.RegexParsers
 import cats.syntax.eq._
 import cats.instances.int._
 import cats.instances.string._
+import cats.syntax.option._
 
 sealed trait KeyComponent extends Product with Serializable
 case class LiteralString(s: String) extends KeyComponent
@@ -55,7 +56,7 @@ object LookupMatchStringParser extends RegexParsers {
 
     def caseParser: Parser[Option[String]] = compositeKeyParser ~ "=>" ~ quotedStringParser ~ ";?".r ^^ {
       case caseKey ~ _ ~ resultValue ~ _ =>
-        if (isMatchingCase(caseKey)) Option(resultValue)
+        if (isMatchingCase(caseKey)) resultValue.some
         else None
     }
 
