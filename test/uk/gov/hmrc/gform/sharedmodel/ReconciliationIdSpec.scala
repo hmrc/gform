@@ -31,11 +31,11 @@ class ReconciliationIdSpec extends Spec {
 
     implicit val now = Now(LocalDateTime.of(2017, 1, 31, 13, 53, 45))
 
-    val submissionRef = SubmissionRef.createSubmissionRef(rnd)
+    val submissionRef = SubmissionRef.createSubmissionRef(envelopeId)
 
     val res = ReconciliationId.create(submissionRef)
 
-    res.value should be("0OU-RDFS-NRN-20170131135345")
+    res.value should be("6FJXHVQLU4FD-20170131135345")
 
   }
 }

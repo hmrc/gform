@@ -23,9 +23,9 @@ class SubmissionRefSpec extends Spec {
 
   "SubmissionRef.createSubmissionRef" should "generate submissionRef" in {
     val rnd = new scala.util.Random(12)
-    val submissionRef = SubmissionRef.createSubmissionRef(rnd)
+    val submissionRef = SubmissionRef.createSubmissionRef(envelopeId)
 
-    submissionRef.value should be("46Q-Z2HW-XIB")
+    submissionRef.value should be("6FJXHVQLU4FD")
 
   }
 }

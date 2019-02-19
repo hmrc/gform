@@ -20,7 +20,7 @@ import cats.data.State
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
-import uk.gov.hmrc.gform.typeclasses.Rnd
+import uk.gov.hmrc.gform.sharedmodel.SubmissionReferenceUtil.getSubmissionReference
 
 import scala.util.Random
 
@@ -34,20 +34,8 @@ object SubmissionRef {
   val vformat: Format[SubmissionRef] =
     ValueClassFormat.vformat("submissionRef", SubmissionRef.apply, x => JsString(x.value))
 
-  def random(implicit rnd: Rnd[Random]) = createSubmissionRef(rnd())
-
-  def createSubmissionRef(r: Random): SubmissionRef = {
-
-    def getChars(i: Int) = State[Random, String](r => (r, alphanumeric(r).take(i).toList.mkString))
-
-    val refGen = for {
-      a <- getChars(3)
-      b <- getChars(4)
-      c <- getChars(3)
-    } yield SubmissionRef(a + "-" + b + "-" + c)
-
-    refGen.runA(r).value
-  }
+  def createSubmissionRef(envelopeId: EnvelopeId): SubmissionRef =
+    SubmissionRef(getSubmissionReference(envelopeId).replace("-", ""))
 
   private def alphanumeric(rnd: Random): Stream[Char] = {
     val chars = ('A' to 'Z') ++ ('0' to '9').toList
