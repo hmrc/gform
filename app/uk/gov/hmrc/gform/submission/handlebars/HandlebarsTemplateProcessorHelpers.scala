@@ -361,20 +361,11 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
     })
   }
 
-  def lookup(options: String, value: String): CharSequence = ifNotNull(value) { v =>
-    def trimAll(ss: Array[String]): Array[String] = ss.map(_.trim)
-
-    def parseCases(cases: String): Array[String] = trimAll(cases.split('|'))
-
-    def parseBranch(c: String): Map[String, String] = trimAll(c.split("=>")) match {
-      case Array(cases, result) => parseCases(cases).map(c => (c, result)).toMap
-    }
-
-    condition(
-      trimAll(options.split(','))
-        .map(parseBranch)
-        .foldLeft(Map.empty[String, String]) { _ ++ _ }
-        .getOrElse(value, null))
+  def lookup(o: Options): CharSequence = {
+    val matchString = o.params(0).toString
+    val key: List[String] = o.params.drop(1).toList.collect { case s: String => s }
+    LookupMatchStringParser(matchString, key).getOrElse(
+      throw new Exception(s"Attempt to lookup $key failed in $matchString"))
   }
 
   def toEtmpAddress(fromFieldBase: String, toFieldBase: String, options: Options): CharSequence = {
