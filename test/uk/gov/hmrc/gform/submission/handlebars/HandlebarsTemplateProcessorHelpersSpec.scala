@@ -242,10 +242,24 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
          |"etmpAddr-line2": " """".stripMargin
   }
 
-  "lookup" must "find the appropriate value" in {
+  "lookup" must "find the appropriate value for a single key value" in {
     process(
-      """{{lookup "0 => A, 1|2 => B, 3 => C" "2"}}"""
+      """{{lookup null "('0') => 'A'; ('1') => 'B'; ('3') => 'C'" "1"}}"""
     ) shouldBe "B"
+  }
+
+  it must "find the appropriate value for a composite key" in {
+    process(
+      """{{lookup null "('0' '0') => 'A'; ('1' '0') => 'B'; ('1' '1') => 'C'; ('1' '2') => 'D'" "1" "2"}}"""
+    ) shouldBe "D"
+  }
+
+  it must "find the appropriate value for a composite with a wildcard" in {
+    forAll(Gen.alphaNumStr) { v =>
+      process(
+        s"""{{lookup null "('0' *) => 'A'; ('1' '0') => 'B'; ('1' '1') => 'C'; ('1' '2') => 'D'" "0" "$v"}}"""
+      ) shouldBe "A"
+    }
   }
 
   private def periodGen: Gen[(String, String, String, String)] =
