@@ -23,3 +23,6 @@ addSbtPlugin("com.timushev.sbt" % "sbt-updates" % "0.3.4") //sbt dependencyUpdat
 addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
 
 addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.5.1")
+
+
+

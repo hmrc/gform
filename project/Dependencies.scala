@@ -1,15 +1,11 @@
-import sbt._
-import play.sbt.PlayImport._
 import play.core.PlayVersion
-import uk.gov.hmrc.SbtAutoBuildPlugin
-import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
-import uk.gov.hmrc.versioning.SbtGitVersioning
-
-object MicroServiceBuild extends Build with MicroService {
+import play.sbt.PlayImport.ws
+import sbt._
+object Dependencies {
 
   val appName = "gform"
 
-  override lazy val appDependencies: Seq[ModuleID] = compile ++ test()
+  lazy val appDependencies: Seq[ModuleID] = compile ++ test()
 
   val parsebackVersion = "0.3"
   val handlebarsVersion = "4.1.2"
@@ -46,5 +42,6 @@ object MicroServiceBuild extends Build with MicroService {
     "uk.gov.hmrc" %% "reactivemongo-test" % "3.1.0" % scope,
     "org.jsoup" % "jsoup" % "1.11.3" % scope
   )
+
 
 }
