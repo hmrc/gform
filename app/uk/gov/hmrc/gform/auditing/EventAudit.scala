@@ -23,12 +23,12 @@ import uk.gov.hmrc.play.audit.model.DataEvent
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import io.monadless.stdlib.MonadlessFuture._
 
 sealed trait Connector {
   val connector: DataEvent => Future[AuditResult] = MicroserviceAuditConnector.sendEvent
 }
 
-import io.monadless.stdlib.MonadlessFuture._
 
 class EventAudit[F[_]: Monad] extends Connector {
   def runProgram(event: DataEvent): F[AuditResult] =
