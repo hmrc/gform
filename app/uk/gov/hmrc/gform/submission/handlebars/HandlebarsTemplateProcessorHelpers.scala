@@ -368,15 +368,15 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
       throw new Exception(s"Attempt to lookup $key failed in $matchString"))
   }
 
-  def toEtmpAddress(fromFieldBase: String, toFieldBase: String, options: Options): CharSequence = {
+  def toDesAddressWithoutPostcode(fromFieldBase: String, options: Options): CharSequence = {
     def get(line: String) = Option(options.context.get(s"$fromFieldBase-$line")).getOrElse("").toString
 
     new Handlebars.SafeString(
-      Seq(get("street1"), get("street2"), get("street3"), get("country"), get("postcode"))
+      Seq(get("street1"), get("street2"), get("street3"), get("country"))
         .filterNot(_.isEmpty)
         .padTo(2, " ")
         .zipWithIndex
-        .map { case (l, i) => s""""$toFieldBase-line${i + 1}": "${condition(l)}"""" }
+        .map { case (l, i) => s""""addressLine${i + 1}": "${condition(l)}"""" }
         .mkString(s",${util.Properties.lineSeparator}"))
   }
 
