@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.playcomponents
 
 import akka.stream.Materializer
-import play.api.Logger
+import play.api.{ Logger, Play }
 import play.api.mvc.EssentialFilter
 import play.api.routing.Router
 import testOnlyDoNotUseInAppConf.Routes
@@ -37,11 +37,13 @@ import uk.gov.hmrc.play.auth.controllers.AuthParamsControllerConfig
 import uk.gov.hmrc.play.auth.microservice.connectors.AuthConnector
 import uk.gov.hmrc.play.auth.microservice.filters.AuthorisationFilter
 import uk.gov.hmrc.play.config.ServicesConfig
-import uk.gov.hmrc.play.health.AdminController
+import uk.gov.hmrc.play.health.HealthController
 import uk.gov.hmrc.play.microservice.filters.{ LoggingFilter, NoCacheFilter }
 
 object MicroserviceAuthConnector extends AuthConnector with ServicesConfig with WSHttp {
   override val authBaseUrl: String = baseUrl("auth")
+  override protected def mode = Play.current.mode
+  override protected val runModeConfiguration = Play.current.configuration
 }
 
 class PlayComponentsModule(
@@ -83,10 +85,10 @@ class PlayComponentsModule(
     obligationModule.obligationController
   )
 
-  val adminController = new AdminController(configModule.playConfiguration)
+  val healthController = new HealthController(configModule.playConfiguration, playComponents.context.environment)
 
   lazy val prodRoutes: prod.Routes =
-    new prod.Routes(errorHandler, appRoutes, adminController, metricsModule.metricsController)
+    new prod.Routes(errorHandler, appRoutes, healthController, metricsModule.metricsController)
 
   lazy val testOnlyDoNotUseInAppConfRoutes: testOnlyDoNotUseInAppConf.Routes =
     new testOnlyDoNotUseInAppConf.Routes(

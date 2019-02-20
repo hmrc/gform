@@ -24,6 +24,8 @@ import uk.gov.hmrc.gform.playcomponents.PlayComponents
 import uk.gov.hmrc.gform.sharedmodel.config.ExposedConfig
 import uk.gov.hmrc.play.auth.controllers.AuthParamsControllerConfig
 import uk.gov.hmrc.play.config.{ ControllerConfig, ServicesConfig }
+import com.typesafe.config.ConfigFactory
+import pureconfig.generic.auto._ // It is now necessary to import `pureconfig.generic.auto._` everywhere a config is loaded or written, even though IntelliJ sees this as unused, its still required
 
 class ConfigModule(playComponents: PlayComponents) {
 
@@ -34,7 +36,6 @@ class ConfigModule(playComponents: PlayComponents) {
   val exposedConfig: ExposedConfig = ExposedConfigHelper.exposedConfig(appConfig)
 
   val desConfig: DesConnectorConfig = pureconfig.loadConfigOrThrow[DesConnectorConfig]("microservice.services.etmp-hod")
-
 //  val mdgIntegrationFrameworkConfig: MdgIntegrationFrameworkConfig =
 //    pureconfig.loadConfigOrThrow[MdgIntegrationFrameworkConfig]("microservice.services.mdg-integration-framework")
 

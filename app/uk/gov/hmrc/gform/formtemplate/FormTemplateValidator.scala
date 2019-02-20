@@ -45,7 +45,7 @@ object FormTemplateValidator {
   }
 
   def someDestinationIdsAreUsedMoreThanOnce(duplicates: Set[DestinationId]) =
-    s"Some DestinationIds are defined more than once: ${duplicates.toList.sortBy(_.id).map(_.value)}"
+    s"Some DestinationIds are defined more than once: ${duplicates.toList.sortBy(_.id).map(_.id)}"
 
   def validateUniqueDestinationIds(destinations: Destinations): ValidationResult = destinations match {
     case _: Destinations.DmsSubmission => Valid
