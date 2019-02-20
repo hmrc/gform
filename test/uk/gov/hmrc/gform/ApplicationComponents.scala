@@ -24,7 +24,7 @@ import play.api.test.Helpers._
 trait ApplicationComponents extends GuiceOneAppPerTest with BeforeAndAfterAll {
   this: TestSuite =>
 
-  override val fakeApplication = new ApplicationLoader().load(context)
+  override def fakeApplication = new ApplicationLoader().load(context)
 
   def context: ApplicationLoader.Context = {
     val classLoader = ApplicationLoader.getClass.getClassLoader

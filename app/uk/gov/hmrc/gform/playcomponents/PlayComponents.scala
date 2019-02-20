@@ -20,7 +20,6 @@ import akka.stream.Materializer
 import play.api.inject.ApplicationLifecycle
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api._
-import play.api.routing.Router
 
 class PlayComponents(val context: ApplicationLoader.Context, val builtInComponents: BuiltInComponents) {
 

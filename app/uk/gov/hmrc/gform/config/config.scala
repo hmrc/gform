@@ -18,7 +18,9 @@ package uk.gov.hmrc.gform.config
 
 import com.typesafe.config.{ Config => TypeSafeConfig }
 import pureconfig._
+import pureconfig.generic.ProductHint
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
+import pureconfig.generic.auto._ // It is now necessary to import `pureconfig.generic.auto._` everywhere a config is loaded or written, even though IntelliJ sees this as unused, its still required
 
 case class AppConfig(
   appName: String,

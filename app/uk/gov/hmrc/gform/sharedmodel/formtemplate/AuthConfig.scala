@@ -190,8 +190,8 @@ object AuthConfig {
       } yield authConfig
     }
 
-    val writes: OWrites[AuthConfig] = derived.owrites
-    val reads: Reads[AuthConfig] = derived.reads
+    val writes: OWrites[AuthConfig] = derived.oformat
+    val reads: Reads[AuthConfig] = derived.oformat
 
     OFormat(reads | rawTemplateReads, writes)
   }

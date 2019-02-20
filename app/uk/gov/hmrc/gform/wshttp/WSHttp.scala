@@ -17,12 +17,14 @@
 package uk.gov.hmrc.gform.wshttp
 
 import akka.NotUsed
+import akka.actor.ActorSystem
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
+import play.api.{ Configuration, Play }
 import play.api.mvc.MultipartFormData.FilePart
 import uk.gov.hmrc.play.http.ws._
 
-import scala.concurrent.Future
+import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.http.hooks.HttpHooks
 import uk.gov.hmrc.play.audit.http.HttpAuditing
@@ -31,6 +33,7 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.auth.microservice.connectors.AuthConnector
 import uk.gov.hmrc.play.config.{ AppName, ServicesConfig }
 import uk.gov.hmrc.play.microservice.config.LoadAuditingConfig
+import com.typesafe.config.Config
 
 object MicroserviceAuditConnector extends AuditConnector {
   lazy val auditingConfig: AuditingConfig = LoadAuditingConfig(s"auditing")
@@ -44,6 +47,9 @@ trait Hooks extends HttpHooks with HttpAuditing {
 trait WSHttp
     extends HttpGet with WSGet with HttpPut with WSPut with HttpPost with WSPost with HttpDelete with WSDelete
     with Hooks with AppName {
+  override protected def actorSystem: ActorSystem = Play.current.actorSystem
+  override protected def configuration: Option[Config] = Option(Play.current.configuration.underlying)
+  override protected def appNameConfiguration: Configuration = Play.current.configuration
 
   //TODO: body should be type of Stream not ByteString (do we want to blow up if few people will submit forms at the same time?)
   def POSTFile[O](
@@ -52,10 +58,7 @@ trait WSHttp
     body: ByteString,
     headers: Seq[(String, String)],
     contentType: String //TODO: change type to ContentType
-  )(
-    implicit
-    hc: HeaderCarrier,
-    rds: HttpReads[O]): Future[HttpResponse] = {
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext, rds: HttpReads[O]): Future[HttpResponse] = {
 
     val source: Source[FilePart[Source[ByteString, NotUsed]], NotUsed] = Source(
       FilePart(fileName, fileName, Some(contentType), Source.single(body)) :: Nil)
@@ -65,7 +68,6 @@ trait WSHttp
     //      executeHooks(url, POST_VERB, Option(s"""{"info":"multipart upload of $fileName"}"""), httpResponse)
     //      mapErrors(POST_VERB, url, httpResponse).map(rds.read(POST_VERB, url, _))
     //    }
-    import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
     buildRequest(url).withHeaders(headers: _*).post(source).map(new WSHttpResponse(_))
   }
@@ -76,6 +78,8 @@ object WSHttp extends WSHttp
 
 object MicroserviceAuthConnector extends AuthConnector with ServicesConfig with WSHttp {
   override val authBaseUrl: String = baseUrl("auth")
+  override protected def mode = Play.current.mode
+  override protected val runModeConfiguration = Play.current.configuration
 }
 
 //class WSHttp(httpHooks: Seq[HttpHook] = Nil) extends uk.gov.hmrc.play.http.ws.WSHttp {

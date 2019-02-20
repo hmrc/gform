@@ -17,7 +17,6 @@
 package uk.gov.hmrc.gform.config
 
 import com.typesafe.config.ConfigFactory
-import pureconfig.{ CamelCase, ConfigFieldMapping, ProductHint }
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 
