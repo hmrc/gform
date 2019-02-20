@@ -21,12 +21,11 @@ import java.text.DecimalFormat
 import com.fasterxml.jackson.databind.JsonNode
 import uk.gov.hmrc.gform.Spec
 import org.scalacheck.Gen
-import play.api.libs.json.JsString
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.PrimitiveGen
 
 class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   "yesNoToEtmpChoice" must "return 1 when 0 is passed in" in {
-    val table = Table(("value", "expected"), ("0", "1"), ("1", "0"))
+    val table = Table(("value", "expected"), ("0", "1"), ("1", "0"), ("0,", "1"), ("1,", "0"))
 
     forAll(table) {
       case (v, expected) =>
