@@ -26,5 +26,5 @@ final case class NextDateValue(month: Int, day: Int) extends DateValue
 final case class PreviousDateValue(month: Int, day: Int) extends DateValue
 
 object DateValue {
-  implicit val format: OFormat[DateValue] = derived.oformat()
+  implicit val format: OFormat[DateValue] = derived.oformat
 }

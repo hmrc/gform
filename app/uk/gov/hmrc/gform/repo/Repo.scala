@@ -18,9 +18,22 @@ package uk.gov.hmrc.gform.repo
 
 import cats.data.EitherT
 import cats.syntax.either._
+import play.api.libs.json.{ Format, JsObject, Json, _ }
+import reactivemongo.api.commands.WriteConcern
+import reactivemongo.api.{ Cursor, DefaultDB }
+import reactivemongo.bson.BSONObjectID
+import uk.gov.hmrc.gform.core.FOpt
+import uk.gov.hmrc.gform.exceptions.UnexpectedState
+import uk.gov.hmrc.mongo.ReactiveRepository
+
+import reactivemongo.play.json._
+
+import cats.data.EitherT
+import cats.syntax.either._
 import play.api.libs.json._
 import reactivemongo.api.DefaultDB
-import reactivemongo.api.commands.WriteConcern
+import reactivemongo.api.collections._
+import reactivemongo.api.commands.{ UpdateWriteResult, WriteConcern }
 import reactivemongo.bson.BSONObjectID
 import reactivemongo.play.json.ImplicitBSONHandlers._
 import uk.gov.hmrc.gform.core.FOpt
@@ -29,9 +42,13 @@ import uk.gov.hmrc.mongo.ReactiveRepository
 
 import scala.concurrent.{ ExecutionContext, Future }
 
+import scala.concurrent.{ ExecutionContext, Future }
+
 class Repo[T: OWrites: Manifest](name: String, mongo: () => DefaultDB, idLens: T => String)(implicit formatT: Format[T])
     extends ReactiveRepository[T, BSONObjectID](name, mongo, formatT) {
   underlying =>
+
+  import reactivemongo.play.json.ImplicitBSONHandlers._
 
   def find(id: String)(implicit ec: ExecutionContext): Future[Option[T]] =
     underlying.collection

@@ -85,10 +85,10 @@ class PlayComponentsModule(
     obligationModule.obligationController
   )
 
-  val adminController = new HealthController(configModule.playConfiguration, playComponents.context.environment)
+  val healthController = new HealthController(configModule.playConfiguration, playComponents.context.environment)
 
   lazy val prodRoutes: prod.Routes =
-    new prod.Routes(errorHandler, appRoutes, adminController, metricsModule.metricsController)
+    new prod.Routes(errorHandler, appRoutes, healthController, metricsModule.metricsController)
 
   lazy val testOnlyDoNotUseInAppConfRoutes: testOnlyDoNotUseInAppConf.Routes =
     new testOnlyDoNotUseInAppConf.Routes(

@@ -26,5 +26,5 @@ case object SummariseGroupAsGrid extends PresentationHint
 case object TotalValue extends PresentationHint
 
 object PresentationHint {
-  implicit val format: OFormat[PresentationHint] = derived.oformat()
+  implicit val format: OFormat[PresentationHint] = derived.oformat
 }

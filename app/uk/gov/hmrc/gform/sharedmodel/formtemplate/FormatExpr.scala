@@ -36,13 +36,13 @@ final case object AnyDate extends DateConstraintType
 final case class DateConstraints(constraints: List[DateConstraint]) extends DateConstraintType
 
 object DateConstraintType {
-  implicit val format: OFormat[DateConstraintType] = derived.oformat()
+  implicit val format: OFormat[DateConstraintType] = derived.oformat
 }
 
 final case class DateConstraint(beforeOrAfter: BeforeOrAfter, dateFormat: DateConstraintInfo, offset: OffsetDate)
 
 object DateConstraint {
-  implicit val format: OFormat[DateConstraint] = derived.oformat()
+  implicit val format: OFormat[DateConstraint] = derived.oformat
 }
 
 sealed trait BeforeOrAfter
@@ -50,7 +50,7 @@ case object After extends BeforeOrAfter
 case object Before extends BeforeOrAfter
 
 object BeforeOrAfter {
-  implicit val format: OFormat[BeforeOrAfter] = derived.oformat()
+  implicit val format: OFormat[BeforeOrAfter] = derived.oformat
 }
 
 sealed trait DateConstraintInfo
@@ -62,7 +62,7 @@ case class AnyWord(value: String) extends DateConstraintInfo
 case class DateField(value: FormComponentId) extends DateConstraintInfo
 
 object DateConstraintInfo {
-  implicit val format: OFormat[DateConstraintInfo] = derived.oformat()
+  implicit val format: OFormat[DateConstraintInfo] = derived.oformat
 }
 
 case class OffsetDate(value: Int) extends AnyVal
@@ -133,7 +133,7 @@ object TextConstraint {
   val defaultWholeDigits = 11
   val defaultFactionalDigits = 2
 
-  implicit val format: OFormat[TextConstraint] = derived.oformat()
+  implicit val format: OFormat[TextConstraint] = derived.oformat
 
   def filterNumberValue(s: String): String = s.filterNot(c => (c == '£' || c == ','))
 }
@@ -142,7 +142,7 @@ object TextExpression {
 
   //TODO: remove this logic from case class representing data.
   implicit val format: OFormat[TextExpression] = {
-    val writes: OWrites[TextExpression] = derived.owrites()
+    val writes: OWrites[TextExpression] = derived.owrites
     val stdReads = Json.reads[TextExpression]
     val reads: Reads[TextExpression] = stdReads orElse Reads {
       case JsString(expression) =>

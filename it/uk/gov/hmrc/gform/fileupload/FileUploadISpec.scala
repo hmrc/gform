@@ -5,9 +5,7 @@ import uk.gov.hmrc.gform.support.ITSpec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import java.time.LocalDateTime
-
 import uk.gov.hmrc.gform.time.TimeProvider
-import uk.gov.hmrc.gform.wshttp.WSHttp
 
 class FileUploadISpec extends ITSpec {
 

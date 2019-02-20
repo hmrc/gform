@@ -13,14 +13,14 @@ object MicroServiceBuild extends Build with MicroService {
   
   val compile = Seq(
     ws,
-    "uk.gov.hmrc" %% "play-reactivemongo" % "6.4.0",
+    "uk.gov.hmrc" %% "play-reactivemongo" % "6.4.0" excludeAll(ExclusionRule("com.typesafe.play", "play-iteratees_2.11")),
     "com.github.pureconfig" %% "pureconfig" % "0.10.2",
     "uk.gov.hmrc" %% "http-caching-client" % "8.0.0",
     "uk.gov.hmrc" %% "microservice-bootstrap" % "10.3.0",
     "uk.gov.hmrc" %% "domain" % "5.3.0",
     "com.codecommit" %% "parseback-core" % parsebackVersion,
     "com.codecommit" %% "parseback-cats" % parsebackVersion,
-    "org.julienrf" %% "play-json-derived-codecs" % "5.0.0",
+    "org.julienrf" %% "play-json-derived-codecs" % "3.3", //upgrading this has caused play-json comparability issue
     "org.typelevel" %% "cats-core" % "1.6.0",
     "org.apache.pdfbox" % "pdfbox" % "2.0.13",
     "com.chuusai" %% "shapeless" % "2.3.3",

@@ -48,7 +48,7 @@ final case object Value extends Expr
 final case object SubmissionReference extends Expr
 
 object Expr {
-  implicit val format: OFormat[Expr] = derived.oformat()
+  implicit val format: OFormat[Expr] = derived.oformat
 }
 
 sealed trait Operation
@@ -61,7 +61,7 @@ final case object Agent extends Eeitt
 final case object UserId extends Eeitt
 
 object Eeitt {
-  implicit val format: OFormat[Eeitt] = derived.oformat()
+  implicit val format: OFormat[Eeitt] = derived.oformat
 }
 
 sealed trait UserField
@@ -71,15 +71,15 @@ final case object EnrolledIdentifier extends UserField
 
 final case class ServiceName(value: String) extends AnyVal
 object ServiceName {
-  implicit val format: OFormat[ServiceName] = derived.oformat()
+  implicit val format: OFormat[ServiceName] = derived.oformat
 }
 final case class IdentifierName(value: String) extends AnyVal
 object IdentifierName {
-  implicit val format: OFormat[IdentifierName] = derived.oformat()
+  implicit val format: OFormat[IdentifierName] = derived.oformat
 }
 
 object UserField {
-  implicit val format: OFormat[UserField] = derived.oformat()
+  implicit val format: OFormat[UserField] = derived.oformat
 }
 
 sealed trait AuthInfo
@@ -89,5 +89,5 @@ final case object SaUtr extends AuthInfo
 final case object CtUtr extends AuthInfo
 
 object AuthInfo {
-  implicit val format: OFormat[AuthInfo] = derived.oformat()
+  implicit val format: OFormat[AuthInfo] = derived.oformat
 }
