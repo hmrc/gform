@@ -24,8 +24,10 @@ import com.github.jknack.handlebars.{ Handlebars, Options }
 
 class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimeProvider) {
   def yesNoToEtmpChoice(yesNoChoice: String): CharSequence = ifNotNull(yesNoChoice) {
-    case "1" => condition("0")
-    case "0" => condition("1")
+    case "1"  => condition("0")
+    case "0"  => condition("1")
+    case "1," => condition("0")
+    case "0," => condition("1")
   }
 
   def dateToEtmpDate(date: String): CharSequence =
