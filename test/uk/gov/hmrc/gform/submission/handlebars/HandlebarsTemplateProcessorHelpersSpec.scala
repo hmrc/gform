@@ -197,9 +197,9 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     jsonNodeFactory.textNode(s)
   }
 
-  "toEtmpAddress" must "copy full addresses" in {
+  "toDesAddressWithoutPostcode" must "copy the first 4 lines of full address" in {
     process(
-      """{{toEtmpAddress "addr" "etmpAddr"}}""",
+      """{{toDesAddressWithoutPostcode "addr"}}""",
       Map[String, JsonNode](
         "addr-street1"  -> "1",
         "addr-street2"  -> "The Street",
@@ -208,16 +208,15 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
         "addr-postcode" -> "The Postcode"
       )
     ) shouldBe
-      """|"etmpAddr-line1": "1",
-         |"etmpAddr-line2": "The Street",
-         |"etmpAddr-line3": "The Town",
-         |"etmpAddr-line4": "The Country",
-         |"etmpAddr-line5": "The Postcode"""".stripMargin
+      """|"addressLine1": "1",
+         |"addressLine2": "The Street",
+         |"addressLine3": "The Town",
+         |"addressLine4": "The Country"""".stripMargin
   }
 
   "it" must "compact empty lines" in {
     process(
-      """{{toEtmpAddress "addr" "etmpAddr"}}""",
+      """{{toDesAddressWithoutPostcode "addr"}}""",
       Map[String, JsonNode](
         "addr-street1"  -> "1",
         "addr-street3"  -> "The Town",
@@ -225,21 +224,21 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
         "addr-postcode" -> "The Postcode"
       )
     ) shouldBe
-      """|"etmpAddr-line1": "1",
-         |"etmpAddr-line2": "The Town",
-         |"etmpAddr-line3": "The Country",
-         |"etmpAddr-line4": "The Postcode"""".stripMargin
+      """|"addressLine1": "1",
+         |"addressLine2": "The Town",
+         |"addressLine3": "The Country"""".stripMargin
   }
 
   "it" must "emit at least two lines" in {
     process(
-      """{{toEtmpAddress "addr" "etmpAddr"}}""",
+      """{{toDesAddressWithoutPostcode "addr"}}""",
       Map[String, JsonNode](
+        "addr-country"  -> "The Country",
         "addr-postcode" -> "The Postcode"
       )
     ) shouldBe
-      """|"etmpAddr-line1": "The Postcode",
-         |"etmpAddr-line2": " """".stripMargin
+      """|"addressLine1": "The Country",
+         |"addressLine2": " """".stripMargin
   }
 
   "lookup" must "find the appropriate value for a single key value" in {
