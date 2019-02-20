@@ -88,5 +88,5 @@ object DestinationsSubmitter {
 
   def createHandlebarsTemplateProcessorModel(
     submissionInfo: DestinationSubmissionInfo): HandlebarsTemplateProcessorModel =
-    HandlebarsTemplateProcessorModel(submissionInfo.form)
+    HandlebarsTemplateProcessorModel(submissionInfo.form, submissionInfo.formTemplate)
 }

@@ -21,6 +21,7 @@ import java.text.DecimalFormat
 import com.fasterxml.jackson.databind.JsonNode
 import uk.gov.hmrc.gform.Spec
 import org.scalacheck.Gen
+import scala.language.implicitConversions
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.PrimitiveGen
 
 class HandlebarsTemplateProcessorHelpersSpec extends Spec {

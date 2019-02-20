@@ -16,10 +16,14 @@
 
 package uk.gov.hmrc.gform.submission.handlebars
 
+import cats.data.NonEmptyList
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.{ ArrayNode, BaseJsonNode }
 import com.fasterxml.jackson.databind.node.JsonNodeFactory.{ instance => jsonNodeFactory }
+import uk.gov.hmrc.gform.formtemplate.RepeatingComponentService
 import uk.gov.hmrc.gform.sharedmodel.form.Form
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplate }
 
 import scala.collection.JavaConversions._
 
@@ -30,17 +34,28 @@ case class HandlebarsTemplateProcessorModel(model: JsonNode) extends AnyVal {
 }
 
 object HandlebarsTemplateProcessorModel {
+  val empty: HandlebarsTemplateProcessorModel = HandlebarsTemplateProcessorModel(jsonNodeFactory.objectNode())
+
   def apply(jsonDocument: String): HandlebarsTemplateProcessorModel =
     HandlebarsTemplateProcessorModel(new ObjectMapper().readTree(jsonDocument))
 
-  def apply(form: Form): HandlebarsTemplateProcessorModel = {
-    val scalaFields = form.formData.fields
-      .map { f =>
-        (f.id.value, jsonNodeFactory.textNode(f.value))
-      }
-      .toMap[String, JsonNode]
+  def apply(form: Form, template: FormTemplate): HandlebarsTemplateProcessorModel = {
+    val groupedFields: Map[FormComponentId, NonEmptyList[String]] =
+      form.formData.fields
+        .groupBy(f => RepeatingComponentService.reduceToTemplateFieldId(f.id))
+        .mapValues(values => NonEmptyList.fromListUnsafe(values.map(_.value).toList))
 
-    apply(scalaFields)
+    val repeatableFieldIds: Set[FormComponentId] = RepeatingComponentService.extractRepeatableFieldIds(template)
+
+    apply {
+      groupedFields
+        .map {
+          case (id, values) =>
+            if (repeatableFieldIds(id))
+              (id.value, new ArrayNode(jsonNodeFactory, values.toList.map(jsonNodeFactory.textNode)))
+            else (id.value, jsonNodeFactory.textNode(values.head))
+        }
+    }
   }
 
   def apply(fields: Map[String, JsonNode]): HandlebarsTemplateProcessorModel =

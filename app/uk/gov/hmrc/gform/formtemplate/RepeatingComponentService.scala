@@ -24,7 +24,7 @@ object RepeatingComponentService {
   def discardRepeatingFields(
     extraFieldsReceived: Set[FormComponentId],
     mandatoryFields: Set[FormComponentId],
-    optionalFields: Set[FormComponentId]) =
+    optionalFields: Set[FormComponentId]): Set[FormComponentId] =
     extraFieldsReceived.filterNot { extraFieldId =>
       (mandatoryFields ++ optionalFields).exists { fieldId =>
         val pattern = s"""^\\d+_${fieldId.value}""".r
@@ -32,16 +32,19 @@ object RepeatingComponentService {
       }
     }
 
-  def findTemplateFieldId(fieldMap: Map[FormComponentId, FormComponent], fieldId: FormComponentId) = {
+  def reduceToTemplateFieldId(fieldId: FormComponentId): FormComponentId = {
     val repeatingGroupFieldId = """^\d+_(.+)""".r
 
-    val templateFieldId = fieldId.value match {
+    fieldId.value match {
       case repeatingGroupFieldId(extractedFieldId) => FormComponentId(extractedFieldId)
       case _                                       => fieldId
     }
-
-    fieldMap.get(templateFieldId)
   }
+
+  def findTemplateFieldId(
+    fieldMap: Map[FormComponentId, FormComponent],
+    fieldId: FormComponentId): Option[FormComponent] =
+    fieldMap.get(reduceToTemplateFieldId(fieldId))
 
   def getAllSections(form: Form, formTemplate: FormTemplate): List[Section] =
     formTemplate.sections.flatMap { section =>
@@ -117,5 +120,30 @@ object RepeatingComponentService {
       case Some(inputText) => Some(getEvaluatedText(inputText).replace("$n", index.toString))
       case _               => None
     }
+  }
+
+  def extractRepeatableFieldIds(template: FormTemplate): Set[FormComponentId] = {
+    def extractAllFieldIds(g: Group) = g.fields.map(_.id)
+
+    def extractAllFieldsIdsFromRepeatingSection(section: Section) =
+      section.fields.flatMap { f =>
+        f.`type` match {
+          case g: Group => extractAllFieldIds(g)
+          case _        => Set(f.id)
+        }
+      }
+
+    def extractRepeatableFieldIdsFromNonRepeatingSection(section: Section) =
+      section.fields.flatMap { f =>
+        f.`type` match {
+          case g: Group => extractAllFieldIds(g)
+          case _        => Set.empty[FormComponentId]
+        }
+      }
+
+    template.sections.flatMap { section =>
+      if (isRepeatingSection(section)) extractAllFieldsIdsFromRepeatingSection(section)
+      else extractRepeatableFieldIdsFromNonRepeatingSection(section)
+    }.toSet
   }
 }
