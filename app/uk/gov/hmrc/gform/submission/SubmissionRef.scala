@@ -41,9 +41,7 @@ object SubmissionRef {
     ValueClassFormat.vformat("submissionRef", SubmissionRef.apply, x => JsString(x.value))
 
   def apply(value: EnvelopeId): SubmissionRef = SubmissionRef(getSubmissionReference(value))
-
-  def createSubmissionRef(envelopeId: EnvelopeId): SubmissionRef =
-    SubmissionRef(getSubmissionReference(envelopeId).replace("-", ""))
+//.replace("-", "")
 
   def getSubmissionReference(envelopeId: EnvelopeId): String =
     if (!envelopeId.value.isEmpty) {
