@@ -51,7 +51,7 @@ object SubmissionRef {
       unformattedString.grouped(4).mkString("-").toUpperCase
     } else { "" }
 
-  private def calculate(value: BigInteger, radix: Int, digits: Int, comb: Stream[Int]): String = {
+  def calculate(value: BigInteger, radix: Int, digits: Int, comb: Stream[Int]): String = {
     val modulus: BigInteger = BigInteger.valueOf(pow(radix, digits).toLong)
     val derivedDigits = (value.mod(modulus) add modulus).toString(radix).takeRight(digits)
     val checkCharacter = BigInteger.valueOf(calculateCheckCharacter(derivedDigits, radix, comb)).toString(radix)
@@ -69,7 +69,7 @@ object SubmissionRef {
     Stream continually nextAlphaNum
   }
 
-  private def verifyCheckChar(reference: String): Boolean =
+  def verifyCheckChar(reference: String): Boolean =
     "^([A-Z0-9]{4})-([A-Z0-9]{4})-([A-Z0-9]{4})$".r.findFirstMatchIn(reference) match {
       case Some(a) => verify(s"${a.group(1)}${a.group(2)}${a.group(3)}", radix, comb)
       case _       => false
