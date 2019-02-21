@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.gform.submission.handlebars
 
-import cats.instances.int._
-import cats.syntax.eq._
 import shapeless.syntax.typeable._
 import uk.gov.hmrc.gform.time.TimeProvider
 import java.time.format.DateTimeFormatter
@@ -38,10 +36,7 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
       condition(d.substring(0, 4) + d.substring(5, 7) + d.substring(8, 10))
     }
 
-  // Due to the way Handlebars works, when this helper is used, an
-  // initial dummy parameter must be passed before the list of values
-  // to select from. Anything will do. I suggest 'null' or 'this'.
-  def either(o: Options): CharSequence = eitherN(o.params.toSeq: _*)
+  def either(first: String, o: Options): CharSequence = eitherN((first :: o.params.toList): _*)
 
   // Handlebars.java can't deal with a varargs argument in a helper.
   // Neither can it deal with overloading, so we'd need to do something like
@@ -332,16 +327,13 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
   def currentDate: CharSequence = condition(DateTimeFormatter.BASIC_ISO_DATE.format(timeProvider.localDateTime))
   def currentTimestamp: CharSequence = condition(DateTimeFormatter.ISO_INSTANT.format(timeProvider.instant))
 
-  def hmrcTaxPeriodKey(o: Options): CharSequence = hmrcTaxPeriodValue(o, 0)
-  def hmrcTaxPeriodFrom(o: Options): CharSequence = hmrcTaxPeriodValue(o, 1)
-  def hmrcTaxPeriodTo(o: Options): CharSequence = hmrcTaxPeriodValue(o, 2)
+  def hmrcTaxPeriodKey(s: CharSequence): CharSequence = hmrcTaxPeriodValue(s, 0)
+  def hmrcTaxPeriodFrom(s: CharSequence): CharSequence = hmrcTaxPeriodValue(s, 1)
+  def hmrcTaxPeriodTo(s: CharSequence): CharSequence = hmrcTaxPeriodValue(s, 2)
 
-  private def hmrcTaxPeriodValue(o: Options, index: Int): CharSequence =
-    hmrcTaxPeriodValue(o.params.find(_ != null).map(_.toString).orNull, index)
-
-  private def hmrcTaxPeriodValue(period: String, index: Int): CharSequence =
+  private def hmrcTaxPeriodValue(period: CharSequence, index: Int): CharSequence =
     ifNotNull(period) { s =>
-      condition(s.split('|')(index))
+      condition(s.toString.split('|')(index))
     }
 
   def toEtmpLegalStatus(frontEndValue: String): CharSequence = ifNotNull(frontEndValue) { s =>
@@ -367,28 +359,14 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
     })
   }
 
-  def lookup(o: Options): CharSequence = {
-    val matchString = o.params(0).toString
-    val groupSizes = o.params.drop(1).collect { case i: Integer => i }.toList
-    val args = o.params.drop(groupSizes.size + 1).toList.collect {
-      case s: String      => s
-      case v if v == null => null
-    }
-    if (args.size =!= groupSizes.foldLeft(0)(_ + _))
-      throw new Exception(
-        s"lookup: group sizes must add up to the number of args. Group sizes: ${groupSizes.map(_.toString).mkString(", ")}. Number of args: ${args.size}")
+  def lookup(matchString: CharSequence, o: Options): CharSequence = {
+    val key = o.params.collect {
+      case v if isNull(v)  => null
+      case s: CharSequence => s.toString
+    }.toList
 
-    def createKey(remainingArgs: List[String], remainingGroupSizes: List[Integer], key: List[String]): List[String] =
-      remainingGroupSizes match {
-        case Nil => key.reverse
-        case head :: tail =>
-          createKey(remainingArgs.drop(head), tail, remainingArgs.take(head).find(!isNull(_)).orNull :: key)
-      }
-
-    val key = createKey(args, groupSizes, Nil)
-
-    LookupMatchStringParser(matchString, key).getOrElse(
-      throw new Exception(s"Attempt to lookup $key failed in $matchString"))
+    LookupMatchStringParser(matchString.toString, key)
+      .getOrElse(throw new Exception(s"Attempt to lookup $key failed in $matchString"))
   }
 
   def toDesAddressWithoutPostcodeFromArray(fromFieldBase: String, index: Int, options: Options): CharSequence = {
@@ -431,16 +409,12 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
         .map { case (l, i) => s""""addressLine${i + 1}": "${condition(l)}"""" }
         .mkString(s",${util.Properties.lineSeparator}"))
 
-  def removeEmptyAndGet(options: Options): CharSequence = condition {
-    (for {
-      dflt  <- options.params(0).cast[String]
-      index <- options.params(1).cast[Int]
-    } yield {
-      val params = options.params.drop(2).collect { case x: String if !x.isEmpty => x }
+  def removeEmptyAndGet(dflt: String, index: Int, options: Options): CharSequence = condition {
+    println(options.params.toList)
+    val params = options.params.drop(1).filterNot(isNull).collect { case x: CharSequence if !x.toString.isEmpty => x }
 
-      if (index < params.length) params(index)
-      else dflt
-    }).getOrElse(throw new IllegalArgumentException("removeEmptyAndGet: dflt: String index: Int [element: String ...]"))
+    if (index < params.length) params(index)
+    else dflt
   }
 
   def elementAt(array: ArrayNode, index: Int, options: Options): CharSequence = condition {

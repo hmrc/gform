@@ -23,7 +23,6 @@ import uk.gov.hmrc.gform.Spec
 import org.scalacheck.Gen
 
 import scala.language.implicitConversions
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.PrimitiveGen
 
 class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   "yesNoToEtmpChoice" must "return 1 when 0 is passed in" in {
@@ -56,19 +55,19 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
 
   "either" must "select the first argument if it is non-null" in {
     forAll(Gen.alphaNumStr, Gen.alphaNumStr) { (v1, v2) =>
-      process(s"{{either null ${quote(v1)} ${quote(v2)}}}") shouldBe v1
-      process(s"{{either null ${quote(v1)} null}}") shouldBe v1
+      process(s"{{either ${quote(v1)} ${quote(v2)}}}") shouldBe v1
+      process(s"{{either ${quote(v1)} null}}") shouldBe v1
     }
   }
 
   it must "select the second argument if the first is null" in {
     forAll(Gen.alphaNumStr) { v2 =>
-      process(s"{{either null null ${quote(v2)}}}") shouldBe v2
+      process(s"{{either null ${quote(v2)}}}") shouldBe v2
     }
   }
 
   it must "return null if all arguments are null" in {
-    process("{{either null null null}}") shouldBe "null"
+    process("{{either null null}}") shouldBe "null"
   }
 
   "either2" must "select the first argument if it is non-null" in {
@@ -96,37 +95,37 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     process(s"{{either2 ${quote("""hello ' world""")} null}}") shouldBe """hello \' world"""
   }
 
-  "hmrcTaxPeriodKey" must "return the 0th element of the first non-null, pipe separated parameter" in {
-    forAll(listOfNullsAndNonNullsGen(periodGen)(_._4)) {
-      case ((key, _, _, _), periods) =>
-        process(s"{{hmrcTaxPeriodKey null $periods}}") shouldBe key
+  "hmrcTaxPeriodKey" must "return the 0th element of the pipe separated parameter" in {
+    forAll(periodGen) {
+      case (key, _, _, period) =>
+        process(s"{{hmrcTaxPeriodKey '$period'}}") shouldBe key
     }
   }
 
   it must "return null if the period is null" in {
-    process("{{hmrcTaxPeriodKey null null}}") shouldBe "null"
+    process("{{hmrcTaxPeriodKey null}}") shouldBe "null"
   }
 
-  "hmrcTaxPeriodFrom" must "return the 1st element of the first non-null, pipe separated parameter" in {
-    forAll(listOfNullsAndNonNullsGen(periodGen)(_._4)) {
-      case ((_, from, _, _), periods) =>
-        process(s"{{hmrcTaxPeriodFrom null $periods}}") shouldBe from
+  "hmrcTaxPeriodFrom" must "return the 1st element of the pipe separated parameter" in {
+    forAll(periodGen) {
+      case (_, from, _, period) =>
+        process(s"{{hmrcTaxPeriodFrom '$period'}}") shouldBe from
     }
   }
 
   it must "return null if the period is null" in {
-    process(s"{{hmrcTaxPeriodFrom null null}}") shouldBe "null"
+    process(s"{{hmrcTaxPeriodFrom null}}") shouldBe "null"
   }
 
-  "hmrcTaxPeriodTo" must "return the 2nd element of the first non-null, pipe separated parameter" in {
-    forAll(listOfNullsAndNonNullsGen(periodGen)(_._4)) {
-      case ((_, _, to, _), periods) =>
-        process(s"{{hmrcTaxPeriodTo null $periods}}") shouldBe to
+  "hmrcTaxPeriodTo" must "return the 2nd element of the pipe separated parameter" in {
+    forAll(periodGen) {
+      case (_, _, to, period) =>
+        process(s"{{hmrcTaxPeriodTo '$period'}}") shouldBe to
     }
   }
 
   it must "return null if the period is null" in {
-    process(s"{{hmrcTaxPeriodTo null null}}") shouldBe "null"
+    process(s"{{hmrcTaxPeriodTo null}}") shouldBe "null"
   }
 
   "isSuccessCode" must "return true for all codes that begin with '2'" in {
@@ -170,7 +169,7 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   }
 
   "removeEmptyAndGet" must "return the default value if there are no options" in {
-    process("""{{removeEmptyAndGet null "hello" 0}}""") shouldBe "hello"
+    process("""{{removeEmptyAndGet "hello" 0}}""") shouldBe "hello"
   }
 
   it must "return the appropriate value given the index and position of nulls" in {
@@ -189,7 +188,7 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
 
     forAll(t) {
       case (dflt, index, params, expected) =>
-        process(s"{{removeEmptyAndGet null $dflt $index $params}}") shouldBe expected
+        process(s"{{removeEmptyAndGet $dflt $index $params}}") shouldBe expected
     }
   }
 
@@ -271,27 +270,27 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
 
   "lookup" must "find the appropriate value for a single key value" in {
     process(
-      """{{lookup null "('0') => 'A'; ('1') => 'B'; ('3') => 'C'" 1 "1"}}"""
+      """{{lookup "('0') => 'A'; ('1') => 'B'; ('3') => 'C'" "1"}}"""
     ) shouldBe "B"
   }
 
   it must "find the appropriate value for a composite key" in {
     process(
-      """{{lookup null "('0' '0') => 'A'; ('1' '0') => 'B'; ('1' '1') => 'C'; ('1' '2') => 'D'" 1 1 "1" "2"}}"""
+      """{{lookup "('0' '0') => 'A'; ('1' '0') => 'B'; ('1' '1') => 'C'; ('1' '2') => 'D'" "1" "2"}}"""
     ) shouldBe "D"
   }
 
   it must "find the appropriate value for a composite with a wildcard" in {
     forAll(Gen.alphaNumStr) { v =>
       process(
-        s"""{{lookup null "('0' *) => 'A'; ('1' '0') => 'B'; ('1' '1') => 'C'; ('1' '2') => 'D'" 1 1 "0" "$v"}}"""
+        s"""{{lookup "('0' *) => 'A'; ('1' '0') => 'B'; ('1' '1') => 'C'; ('1' '2') => 'D'" "0" "$v"}}"""
       ) shouldBe "A"
     }
   }
 
   it must "find first non-null values in groups" in {
     process(
-      """{{lookup null "('0' '0') => 'A'; ('1' '0') => 'B'; ('1' '1') => 'C'; ('1' '2') => 'D'" 2 3 null "1" null "2" "1"}}"""
+      """{{lookup "('0' '0') => 'A'; ('1' '0') => 'B'; ('1' '1') => 'C'; ('1' '2') => 'D'" "1" "2"}}"""
     ) shouldBe "D"
   }
 
@@ -310,19 +309,6 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
       to   <- Gen.posNum[Int].map(_.toString)
     } yield (key, from, to, s"$key|$from|$to")
 
-  private def listOfNullsAndNonNullsGen[G](g: Gen[G])(f: G => String): Gen[(G, String)] = {
-    def insertNulls(gs: List[String], acc: List[String]): String =
-      if (Math.random < 0.5 && acc.length + gs.length < 10)
-        insertNulls(gs, "null" :: acc)
-      else
-        gs match {
-          case Nil    => acc.reverse.mkString(" ")
-          case h :: t => insertNulls(t, quote(h) :: acc)
-        }
-
-    PrimitiveGen.oneOrMoreGen(g).map(gs => (gs.head, insertNulls(gs.toList.map(f), Nil)))
-  }
-
   private def quote(s: String): String = raw""""$s""""
 
   private def process(functionCall: String, model: String): String =
@@ -331,6 +317,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   private def process(functionCall: String, formFields: Map[String, JsonNode] = Map.empty): String =
     process(functionCall, HandlebarsTemplateProcessorModel(formFields))
 
-  private def process(functionCall: String, model: HandlebarsTemplateProcessorModel): String =
+  private def process(functionCall: String, model: HandlebarsTemplateProcessorModel): String = {
+    println(functionCall)
     new HandlebarsTemplateProcessor()(functionCall, model)
+  }
 }
