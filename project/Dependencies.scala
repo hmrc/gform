@@ -1,16 +1,15 @@
-import sbt._
-import play.sbt.PlayImport._
 import play.core.PlayVersion
-
-object MicroServiceBuild extends Build with MicroService {
+import play.sbt.PlayImport.ws
+import sbt._
+object Dependencies {
 
   val appName = "gform"
 
-  override lazy val appDependencies: Seq[ModuleID] = compile ++ test()
+  lazy val appDependencies: Seq[ModuleID] = compile ++ test()
 
   val parsebackVersion = "0.3"
   val handlebarsVersion = "4.1.2"
-  
+
   val compile = Seq(
     ws,
     "uk.gov.hmrc" %% "play-reactivemongo" % "6.4.0" excludeAll(ExclusionRule("com.typesafe.play", "play-iteratees_2.11")),
@@ -31,6 +30,7 @@ object MicroServiceBuild extends Build with MicroService {
     "com.github.jknack" % "handlebars-jackson2" % handlebarsVersion
   )
 
+
   def test(scope: String = "test,it") = Seq(
     "uk.gov.hmrc" %% "hmrctest" % "3.4.0-play-25" % scope,
     "org.scalatest" %% "scalatest" % "3.0.5" % scope,
@@ -41,4 +41,6 @@ object MicroServiceBuild extends Build with MicroService {
     "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.1" % scope,
     "org.jsoup" % "jsoup" % "1.11.3" % scope
   )
+
+
 }
