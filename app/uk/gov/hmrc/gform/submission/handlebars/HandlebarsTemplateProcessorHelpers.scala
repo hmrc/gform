@@ -446,6 +446,8 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
     if (index < array.size) array.get(index).textValue else ""
   }
 
+  def stripCommas(s: String): CharSequence = ifNotNull(s) { _.replaceAll(",", "") }
+
   private def ifNotNull[T](t: T)(f: T => CharSequence): CharSequence =
     Option(t).map(f).getOrElse("null")
 

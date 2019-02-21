@@ -295,6 +295,14 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     ) shouldBe "D"
   }
 
+  "stripCommas" must "return null if the argument is null" in {
+    process("{{stripCommas null}}") shouldBe "null"
+  }
+
+  it must "remove all commas from strings" in {
+    process("{{stripCommas 'abc,def,ghi'}}") shouldBe "abcdefghi"
+  }
+
   private def periodGen: Gen[(String, String, String, String)] =
     for {
       key  <- Gen.posNum[Int].map(_.toString)
