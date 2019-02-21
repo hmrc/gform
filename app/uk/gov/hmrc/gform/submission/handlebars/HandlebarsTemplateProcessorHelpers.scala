@@ -322,7 +322,8 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
       arg19,
       arg20)
 
-  private[handlebars] def eitherN(args: Any*): CharSequence = condition(args.find(_ != null).orNull)
+  private[handlebars] def eitherN(args: Any*): CharSequence =
+    condition(args.find(!isNull(_)).orNull)
 
   def isSuccessCode(code: Integer): CharSequence = condition(isSuccCode(code))
   def isNotSuccessCode(code: Integer): CharSequence = condition(!isSuccCode(code))
@@ -381,7 +382,7 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
       remainingGroupSizes match {
         case Nil => key.reverse
         case head :: tail =>
-          createKey(remainingArgs.drop(head), tail, remainingArgs.take(head).find(_ != null).orNull :: key)
+          createKey(remainingArgs.drop(head), tail, remainingArgs.take(head).find(!isNull(_)).orNull :: key)
       }
 
     val key = createKey(args, groupSizes, Nil)
@@ -393,7 +394,7 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
   def toDesAddressWithoutPostcodeFromArray(fromFieldBase: String, index: Int, options: Options): CharSequence = {
     def get(line: String) = {
       val value = options.context.get(s"$fromFieldBase-$line")
-      if (value == null) ""
+      if (isNull(value)) ""
       else
         value
           .cast[ArrayNode]
@@ -410,7 +411,7 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
   def toDesAddressWithoutPostcode(fromFieldBase: String, options: Options): CharSequence = {
     def get(line: String) = {
       val value = options.context.get(s"$fromFieldBase-$line")
-      if (value == null) ""
+      if (isNull(value)) ""
       else
         value
           .cast[String]
@@ -448,13 +449,28 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
 
   def stripCommas(s: String): CharSequence = ifNotNull(s) { _.replaceAll(",", "") }
 
-  private def ifNotNull[T](t: T)(f: T => CharSequence): CharSequence =
-    Option(t).map(f).getOrElse("null")
+  private def ifNotNull[T](t: T)(f: T => CharSequence): CharSequence = NullString.ifNotNull(t)(f)
 
   private def condition(v: Any): CharSequence =
-    new Handlebars.SafeString(Option(v) match {
-      case None            => "null"
-      case Some(s: String) => s.replaceAll("""\\""", """\\\\""").replaceAll("""'""", """\\'""")
-      case Some(u)         => u.toString
-    })
+    ifNotNull(v) { _ =>
+      new Handlebars.SafeString(v match {
+        case s: String => s.replaceAll("""\\""", """\\\\""").replaceAll("""'""", """\\'""")
+        case u         => u.toString
+      })
+    }
+
+  private def isNull(v: Any) = NullString.isNull(v)
+}
+
+object NullString extends CharSequence {
+  def isNull(t: Any): Boolean = t == null || t == NullString
+
+  def ifNotNull[T](t: T)(f: T => CharSequence) =
+    if (isNull(t)) NullString else f(t)
+
+  override def length(): Int = 4
+  override def charAt(index: Int): Char = "null".charAt(index)
+  override def subSequence(start: Int, end: Int): CharSequence = "null".subSequence(start, end)
+
+  override def toString(): String = "null"
 }
