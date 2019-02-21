@@ -41,9 +41,8 @@ object SubmissionRef {
     ValueClassFormat.vformat("submissionRef", SubmissionRef.apply, x => JsString(x.value))
 
   def apply(value: EnvelopeId): SubmissionRef = SubmissionRef(getSubmissionReference(value))
-//.replace("-", "")
 
-  def getSubmissionReference(envelopeId: EnvelopeId): String =
+  private def getSubmissionReference(envelopeId: EnvelopeId): String =
     if (!envelopeId.value.isEmpty) {
       // As 36^11 (number of combinations of 11 base 36 digits) < 2^63 (number of combinations of 63 base 2 digits) we can get full significance from this digest.
       val digest = MessageDigest.getInstance("SHA-256").digest(envelopeId.value.getBytes()).take(8)
@@ -52,14 +51,14 @@ object SubmissionRef {
       unformattedString.grouped(4).mkString("-").toUpperCase
     } else { "" }
 
-  def calculate(value: BigInteger, radix: Int, digits: Int, comb: Stream[Int]): String = {
+  private def calculate(value: BigInteger, radix: Int, digits: Int, comb: Stream[Int]): String = {
     val modulus: BigInteger = BigInteger.valueOf(pow(radix, digits).toLong)
     val derivedDigits = (value.mod(modulus) add modulus).toString(radix).takeRight(digits)
     val checkCharacter = BigInteger.valueOf(calculateCheckCharacter(derivedDigits, radix, comb)).toString(radix)
     checkCharacter + derivedDigits
   }
 
-  def calculateCheckCharacter(digits: String, radix: Int, comb: Stream[Int]): Int = {
+  private def calculateCheckCharacter(digits: String, radix: Int, comb: Stream[Int]): Int = {
     val stringToInts = digits.toCharArray.map(i => Integer.parseInt(i.toString, radix))
     stringToInts.zip(comb).map(i => i._1 * i._2).sum % radix
   }
@@ -70,12 +69,12 @@ object SubmissionRef {
     Stream continually nextAlphaNum
   }
 
-  def verifyCheckChar(reference: String): Boolean =
+  private def verifyCheckChar(reference: String): Boolean =
     "^([A-Z0-9]{4})-([A-Z0-9]{4})-([A-Z0-9]{4})$".r.findFirstMatchIn(reference) match {
       case Some(a) => verify(s"${a.group(1)}${a.group(2)}${a.group(3)}", radix, comb)
       case _       => false
     }
 
-  def verify(reference: String, radix: Int, comb: Stream[Int]): Boolean =
+  private def verify(reference: String, radix: Int, comb: Stream[Int]): Boolean =
     calculateCheckCharacter(reference.tail, radix, comb) == Integer.parseInt(reference.head.toString, radix)
 }
