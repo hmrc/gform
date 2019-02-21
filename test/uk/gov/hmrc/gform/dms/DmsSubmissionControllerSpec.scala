@@ -150,15 +150,9 @@ class DmsSubmissionControllerSpec extends Spec {
 
   lazy val stubPdfDocument = stub[PDDocument]
   lazy val fixedTime = LocalDateTime.of(2018, 3, 2, 0, 0)
-  lazy val fixedRnd = new Rnd[Random] {
-    val notVeryRandom = stub[Random]
-    (notVeryRandom.nextInt(_: Int)).when(*).returning(4)
-
-    override def apply() = notVeryRandom
-  }
 
   lazy val clock = Clock.fixed(fixedTime.toInstant(ZoneOffset.UTC), ZoneId.systemDefault)
 
   lazy val testController =
-    new DmsSubmissionController(mockFileUpload, mockPdfGenerator, mockDocumentLoader, mockConfig)(clock, fixedRnd)
+    new DmsSubmissionController(mockFileUpload, mockPdfGenerator, mockDocumentLoader, mockConfig)(clock)
 }

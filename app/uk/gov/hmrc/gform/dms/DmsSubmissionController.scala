@@ -30,15 +30,12 @@ import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
 import uk.gov.hmrc.gform.submission._
-import uk.gov.hmrc.gform.typeclasses.Rnd
-
-import scala.util.Random
 
 class DmsSubmissionController(
   fileUpload: FileUploadService,
   pdfGenerator: PdfGeneratorService,
   documentLoader: Array[Byte] => PDDocument,
-  config: AppConfig)(implicit clock: Clock, rnd: Rnd[Random])
+  config: AppConfig)(implicit clock: Clock)
     extends BaseController {
 
   def submitToDms: Action[JsValue] = Action.async(parse.json) { implicit request =>
@@ -53,7 +50,7 @@ class DmsSubmissionController(
         pdfDoc = documentLoader(pdf)
         pdfSummary = PdfSummary(pdfDoc.getNumberOfPages.toLong, pdf)
         _ = pdfDoc.close()
-        submissionRef = SubmissionRef.createSubmissionRef(envId)
+        submissionRef = SubmissionRef(envId)
         dmsMetadata = DmsMetaData(formTemplateId, metadata.customerId)
         submission = Submission(
           FormId(metadata.dmsFormId),

@@ -22,7 +22,6 @@ import org.apache.pdfbox.pdmodel.PDDocument
 import uk.gov.hmrc.gform.config.AppConfig
 import uk.gov.hmrc.gform.fileupload.FileUploadModule
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorModule
-import uk.gov.hmrc.gform.typeclasses.Rnd.RandomRnd
 
 class DmsModule(fileUploadModule: FileUploadModule, pdfGeneratorModule: PdfGeneratorModule, config: AppConfig) {
   lazy val dmsSubmissionController = {
@@ -30,6 +29,6 @@ class DmsModule(fileUploadModule: FileUploadModule, pdfGeneratorModule: PdfGener
       fileUploadModule.fileUploadService,
       pdfGeneratorModule.pdfGeneratorService,
       PDDocument.load,
-      config)(Clock.systemDefaultZone, RandomRnd)
+      config)(Clock.systemDefaultZone)
   }
 }
