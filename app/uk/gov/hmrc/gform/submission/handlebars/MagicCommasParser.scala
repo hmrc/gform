@@ -30,9 +30,9 @@ object MagicCommasParser extends RegexParsers {
     }
 
   private val commaWithBracket: Parser[String] =
-    "," ~ "(?s)\\s*".r ~ "]" ^^ {
-      case _ ~ ws ~ _ =>
-        s"$ws]"
+    "," ~ "(?s)\\s*".r ~ "]|}".r ^^ {
+      case _ ~ ws ~ bracket =>
+        s"$ws$bracket"
     }
 
   private val tokenParser: Parser[String] =

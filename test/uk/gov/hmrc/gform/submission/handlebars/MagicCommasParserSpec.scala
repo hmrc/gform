@@ -38,13 +38,24 @@ class MagicCommasParserSpec extends Spec {
     }
   }
 
-  it should "replace commas followed by a bracket with just the bracket" in {
+  it should "replace commas followed by a square bracket with just the bracket" in {
     forAll(
       stringWithNoSpecialCharsGen,
       PrimitiveGen.zeroOrMoreGen(Gen.oneOf(" ", "\n", "\r", "\t")).map(_.mkString("")),
       stringWithNoSpecialCharsGen) { (beforeCommas, spaces, afterCommas) =>
       whenever(isUn(beforeCommas, afterCommas)) {
         verifySuccess(s"$beforeCommas,$spaces]$afterCommas", s"$beforeCommas$spaces]$afterCommas")
+      }
+    }
+  }
+
+  it should "replace commas followed by a curly bracket with just the curly bracket" in {
+    forAll(
+      stringWithNoSpecialCharsGen,
+      PrimitiveGen.zeroOrMoreGen(Gen.oneOf(" ", "\n", "\r", "\t")).map(_.mkString("")),
+      stringWithNoSpecialCharsGen) { (beforeCommas, spaces, afterCommas) =>
+      whenever(isUn(beforeCommas, afterCommas)) {
+        verifySuccess(s"$beforeCommas,$spaces}$afterCommas", s"$beforeCommas$spaces}$afterCommas")
       }
     }
   }
