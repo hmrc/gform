@@ -408,7 +408,6 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
   }
 
   def toDesAddressWithoutPostcode(fromFieldBase: String, options: Options): CharSequence = {
-    println(options.context)
     def get(line: String) = {
       val value = options.context.get(s"$fromFieldBase-$line")
       if (value == null) ""
@@ -441,6 +440,10 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
       if (index < params.length) params(index)
       else dflt
     }).getOrElse(throw new IllegalArgumentException("removeEmptyAndGet: dflt: String index: Int [element: String ...]"))
+  }
+
+  def elementAt(array: ArrayNode, index: Int, options: Options): CharSequence = condition {
+    if (index < array.size) array.get(index).textValue else ""
   }
 
   private def ifNotNull[T](t: T)(f: T => CharSequence): CharSequence =

@@ -193,6 +193,16 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     }
   }
 
+  "elementAt" must "extract the element at a given index from an array" in {
+    process(
+      """{{elementAt myArray 1}}""",
+      """|{
+         |  "myArray" : ["A", "B", "C"]
+         |}
+      """.stripMargin
+    ) shouldBe "B"
+  }
+
   implicit def stringToJacksonTextNode(s: String): JsonNode = {
     import com.fasterxml.jackson.databind.node.JsonNodeFactory.{ instance => jsonNodeFactory }
     jsonNodeFactory.textNode(s)
