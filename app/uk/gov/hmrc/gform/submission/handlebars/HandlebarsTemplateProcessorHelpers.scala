@@ -22,6 +22,7 @@ import shapeless.syntax.typeable._
 import uk.gov.hmrc.gform.time.TimeProvider
 import java.time.format.DateTimeFormatter
 
+import com.fasterxml.jackson.databind.node.ArrayNode
 import com.github.jknack.handlebars.{ Handlebars, Options }
 
 class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimeProvider) {
@@ -389,17 +390,46 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
       throw new Exception(s"Attempt to lookup $key failed in $matchString"))
   }
 
-  def toDesAddressWithoutPostcode(fromFieldBase: String, options: Options): CharSequence = {
-    def get(line: String) = Option(options.context.get(s"$fromFieldBase-$line")).getOrElse("").toString
+  def toDesAddressWithoutPostcodeFromArray(fromFieldBase: String, index: Int, options: Options): CharSequence = {
+    def get(line: String) = {
+      val value = options.context.get(s"$fromFieldBase-$line")
+      if (value == null) ""
+      else
+        value
+          .cast[ArrayNode]
+          .map { a =>
+            if (index < a.size) a.get(index).asText else ""
+          }
+          .getOrElse(throw new Exception(
+            s"Expected $fromFieldBase.$line to be null, or an array, but it was $value of type ${value.getClass}."))
+    }
 
+    toCompactedDesAddress(get("street1"), get("street2"), get("street3"), get("country"))
+  }
+
+  def toDesAddressWithoutPostcode(fromFieldBase: String, options: Options): CharSequence = {
+    println(options.context)
+    def get(line: String) = {
+      val value = options.context.get(s"$fromFieldBase-$line")
+      if (value == null) ""
+      else
+        value
+          .cast[String]
+          .getOrElse(throw new Exception(
+            s"Expected $fromFieldBase.$line to be null, a string or not present, but it was $value of type ${value.getClass}."))
+    }
+
+    toCompactedDesAddress(get("street1"), get("street2"), get("street3"), get("country"))
+  }
+
+  private def toCompactedDesAddress(lines: String*): Handlebars.SafeString =
     new Handlebars.SafeString(
-      Seq(get("street1"), get("street2"), get("street3"), get("country"))
+      lines
         .filterNot(_.isEmpty)
         .padTo(2, " ")
         .zipWithIndex
         .map { case (l, i) => s""""addressLine${i + 1}": "${condition(l)}"""" }
         .mkString(s",${util.Properties.lineSeparator}"))
-  }
 
   def removeEmptyAndGet(options: Options): CharSequence = condition {
     (for {

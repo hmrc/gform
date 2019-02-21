@@ -21,6 +21,7 @@ import java.text.DecimalFormat
 import com.fasterxml.jackson.databind.JsonNode
 import uk.gov.hmrc.gform.Spec
 import org.scalacheck.Gen
+
 import scala.language.implicitConversions
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.PrimitiveGen
 
@@ -197,16 +198,33 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     jsonNodeFactory.textNode(s)
   }
 
+  "toDesAddressWithoutPostcodeFromArray" must "copy the first 4 lines of full address" in {
+    process(
+      """{{toDesAddressWithoutPostcodeFromArray "addr" 1}}""",
+      """|{
+         |  "addr-street1": ["0", "1", "2"],
+         |  "addr-street2": ["The Street", "The Road", "The Avenue"],
+         |  "addr-street3": ["The Town", "The Village", "The City"],
+         |  "addr-country": ["UK", "USA", "France"],
+         |  "addr-postcode": ["PC0", "PC1", "PC2"]
+         |}"""
+    ) shouldBe
+      """|"addressLine1": "1",
+         |"addressLine2": "The Road",
+         |"addressLine3": "The Village",
+         |"addressLine4": "USA"""".stripMargin
+  }
+
   "toDesAddressWithoutPostcode" must "copy the first 4 lines of full address" in {
     process(
       """{{toDesAddressWithoutPostcode "addr"}}""",
-      Map[String, JsonNode](
-        "addr-street1"  -> "1",
-        "addr-street2"  -> "The Street",
-        "addr-street3"  -> "The Town",
-        "addr-country"  -> "The Country",
-        "addr-postcode" -> "The Postcode"
-      )
+      """|{
+         |  "addr-street1": "1",
+         |  "addr-street2": "The Street",
+         |  "addr-street3": "The Town",
+         |  "addr-country": "The Country",
+         |  "addr-postcode": "The Postcode"
+         |}"""
     ) shouldBe
       """|"addressLine1": "1",
          |"addressLine2": "The Street",
@@ -289,6 +307,12 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
 
   private def quote(s: String): String = raw""""$s""""
 
-  private def process(s: String, formFields: Map[String, JsonNode] = Map.empty) =
-    new HandlebarsTemplateProcessor()(s, HandlebarsTemplateProcessorModel(formFields))
+  private def process(functionCall: String, model: String): String =
+    process(functionCall, HandlebarsTemplateProcessorModel(model.stripMargin))
+
+  private def process(functionCall: String, formFields: Map[String, JsonNode] = Map.empty): String =
+    process(functionCall, HandlebarsTemplateProcessorModel(formFields))
+
+  private def process(functionCall: String, model: HandlebarsTemplateProcessorModel): String =
+    new HandlebarsTemplateProcessor()(functionCall, model)
 }
