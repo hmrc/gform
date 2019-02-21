@@ -73,7 +73,7 @@ class SubmissionService(
   private def createSubmission(form: Form, customerId: String, formTemplate: FormTemplate) =
     Submission(
       submittedDate = timeProvider.localDateTime(),
-      submissionRef = SubmissionRef.createSubmissionRef(form.envelopeId),
+      submissionRef = SubmissionRef(form.envelopeId),
       envelopeId = form.envelopeId,
       _id = form._id,
       noOfAttachments = getNoOfAttachments(form, formTemplate),
