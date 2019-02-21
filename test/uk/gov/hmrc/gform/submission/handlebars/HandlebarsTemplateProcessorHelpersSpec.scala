@@ -242,22 +242,28 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
 
   "lookup" must "find the appropriate value for a single key value" in {
     process(
-      """{{lookup null "('0') => 'A'; ('1') => 'B'; ('3') => 'C'" "1"}}"""
+      """{{lookup null "('0') => 'A'; ('1') => 'B'; ('3') => 'C'" 1 "1"}}"""
     ) shouldBe "B"
   }
 
   it must "find the appropriate value for a composite key" in {
     process(
-      """{{lookup null "('0' '0') => 'A'; ('1' '0') => 'B'; ('1' '1') => 'C'; ('1' '2') => 'D'" "1" "2"}}"""
+      """{{lookup null "('0' '0') => 'A'; ('1' '0') => 'B'; ('1' '1') => 'C'; ('1' '2') => 'D'" 1 1 "1" "2"}}"""
     ) shouldBe "D"
   }
 
   it must "find the appropriate value for a composite with a wildcard" in {
     forAll(Gen.alphaNumStr) { v =>
       process(
-        s"""{{lookup null "('0' *) => 'A'; ('1' '0') => 'B'; ('1' '1') => 'C'; ('1' '2') => 'D'" "0" "$v"}}"""
+        s"""{{lookup null "('0' *) => 'A'; ('1' '0') => 'B'; ('1' '1') => 'C'; ('1' '2') => 'D'" 1 1 "0" "$v"}}"""
       ) shouldBe "A"
     }
+  }
+
+  it must "find first non-null values in groups" in {
+    process(
+      """{{lookup null "('0' '0') => 'A'; ('1' '0') => 'B'; ('1' '1') => 'C'; ('1' '2') => 'D'" 2 3 null "1" null "2" "1"}}"""
+    ) shouldBe "D"
   }
 
   private def periodGen: Gen[(String, String, String, String)] =

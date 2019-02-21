@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.gform.submission.handlebars
 
+import cats.instances.int._
+import cats.syntax.eq._
 import shapeless.syntax.typeable._
 import uk.gov.hmrc.gform.time.TimeProvider
 import java.time.format.DateTimeFormatter
@@ -365,7 +367,24 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
 
   def lookup(o: Options): CharSequence = {
     val matchString = o.params(0).toString
-    val key: List[String] = o.params.drop(1).toList.collect { case s: String => s }
+    val groupSizes = o.params.drop(1).collect { case i: Integer => i }.toList
+    val args = o.params.drop(groupSizes.size + 1).toList.collect {
+      case s: String      => s
+      case v if v == null => null
+    }
+    if (args.size =!= groupSizes.foldLeft(0)(_ + _))
+      throw new Exception(
+        s"lookup: group sizes must add up to the number of args. Group sizes: ${groupSizes.map(_.toString).mkString(", ")}. Number of args: ${args.size}")
+
+    def createKey(remainingArgs: List[String], remainingGroupSizes: List[Integer], key: List[String]): List[String] =
+      remainingGroupSizes match {
+        case Nil => key.reverse
+        case head :: tail =>
+          createKey(remainingArgs.drop(head), tail, remainingArgs.take(head).find(_ != null).orNull :: key)
+      }
+
+    val key = createKey(args, groupSizes, Nil)
+
     LookupMatchStringParser(matchString, key).getOrElse(
       throw new Exception(s"Attempt to lookup $key failed in $matchString"))
   }
