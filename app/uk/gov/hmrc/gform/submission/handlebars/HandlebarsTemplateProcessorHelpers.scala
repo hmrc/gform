@@ -426,11 +426,11 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
   private def ifNotNull[T](t: T)(f: T => CharSequence): CharSequence = NullString.ifNotNull(t)(f)
 
   private def condition(v: Any): CharSequence =
-    ifNotNull(v) { _ =>
-      new Handlebars.SafeString(v match {
-        case s: String => s.replaceAll("""\\""", """\\\\""").replaceAll("""'""", """\\'""")
-        case u         => u.toString
-      })
+    ifNotNull(v) {
+      case s: Handlebars.SafeString => s
+      case s: CharSequence =>
+        new Handlebars.SafeString(s.toString.replaceAll("""\\""", """\\\\""").replaceAll("""'""", """\\'"""))
+      case u => u.toString
     }
 
   private def isNull(v: Any) = NullString.isNull(v)

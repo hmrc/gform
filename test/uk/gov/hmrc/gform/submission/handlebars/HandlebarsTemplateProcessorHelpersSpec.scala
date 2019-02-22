@@ -288,12 +288,6 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     }
   }
 
-  it must "find first non-null values in groups" in {
-    process(
-      """{{lookup "('0' '0') => 'A'; ('1' '0') => 'B'; ('1' '1') => 'C'; ('1' '2') => 'D'" "1" "2"}}"""
-    ) shouldBe "D"
-  }
-
   "stripCommas" must "return null if the argument is null" in {
     process("{{stripCommas null}}") shouldBe "null"
   }
@@ -317,8 +311,6 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   private def process(functionCall: String, formFields: Map[String, JsonNode] = Map.empty): String =
     process(functionCall, HandlebarsTemplateProcessorModel(formFields))
 
-  private def process(functionCall: String, model: HandlebarsTemplateProcessorModel): String = {
-    println(functionCall)
+  private def process(functionCall: String, model: HandlebarsTemplateProcessorModel): String =
     new HandlebarsTemplateProcessor()(functionCall, model)
-  }
 }
