@@ -24,16 +24,26 @@ import uk.gov.hmrc.play.audit.model.DataEvent
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import io.monadless.stdlib.MonadlessFuture._
+import play.api.Logger
 
 sealed trait Connector {
   val connector: DataEvent => Future[AuditResult] = MicroserviceAuditConnector.sendEvent
 }
 
-
 class EventAudit[F[_]: Monad] extends Connector {
   def runProgram(event: DataEvent): F[AuditResult] =
     implicitly[Monad[F]].pure(program(event))
 
-  def program(event: DataEvent): AuditResult =
-    unlift(connector(event))
+  def program(event: DataEvent): AuditResult = {
+    val result = unlift(connector(event))
+    sideEffect(result)
+    result
+  }
+
+  def sideEffect(auditResult: AuditResult): Unit = auditResult match {
+    case AuditResult.Failure(msg, _) => logger(msg)
+    case otherResult                 => logger(s"AuditResult: $otherResult")
+  }
+
+  def logger(msg: String): Unit = Logger.warn(msg)
 }

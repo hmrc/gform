@@ -31,11 +31,12 @@ import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, UserId }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeExpiryDate, FileId, FormId, UserData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.time.TimeProvider
+import uk.gov.hmrc.play.audit.http.connector._
 
 import scala.concurrent.Future
-import scala.util.Try
+import scala.util.{ Failure, Success, Try }
 import uk.gov.hmrc.http.{ BadRequestException, NotFoundException }
-import uk.gov.hmrc.play.audit.model.DataEvent
+import uk.gov.hmrc.play.audit.http.connector.AuditResult
 
 class FormController(
   config: AppConfig,
@@ -140,16 +141,22 @@ class FormController(
     formService.getKeyStore(formId).asOkJson
   }
 
-  def enrolmentCallBack(formId: FormId) = Action.async { implicit request =>
-    //TODO hard coded event
-    val event = DataEvent("src", "type")
+  def enrolmentCallBack(formId: FormId): Action[AnyContent] = Action.async { implicit request =>
     import cats.implicits._
     import scala.concurrent.ExecutionContext.Implicits.global
 
     val audit = new EventAudit[Future]
-    new FormControllerRequestHandler[Future](audit.runProgram).handleRequest(event)
+    val requestHandler = new FormControllerRequestHandler[Future](audit)
+    val event = requestHandler.requestToDataEvent(formId, request)
 
-    Future(Results.NoContent)
+    Logger.info(request.body.toString)
+
+    println("body" + request.body.toString)
+
+    new FormControllerRequestHandler[Future](audit).handleRequest(event)
+
+    Future(Results.Ok)
+
   }
 
   private def getSection(formTemplate: FormTemplate, sectionNumber: SectionNumber): Section =
