@@ -24,7 +24,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode
 import com.github.jknack.handlebars.{ Handlebars, Options }
 
 class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimeProvider) {
-  def yesNoToEtmpChoice(yesNoChoice: String): CharSequence = ifNotNull(yesNoChoice) {
+  def yesNoToEtmpChoice(yesNoChoice: String): CharSequence = ifNotNullAsString(yesNoChoice) {
     case "1"  => condition("0")
     case "0"  => condition("1")
     case "1," => condition("0")
@@ -32,7 +32,7 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
   }
 
   def dateToEtmpDate(date: String): CharSequence =
-    ifNotNull(date) { d =>
+    ifNotNullAsString(date) { d =>
       condition(d.substring(0, 4) + d.substring(5, 7) + d.substring(8, 10))
     }
 
@@ -327,16 +327,16 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
   def currentDate: CharSequence = condition(DateTimeFormatter.BASIC_ISO_DATE.format(timeProvider.localDateTime))
   def currentTimestamp: CharSequence = condition(DateTimeFormatter.ISO_INSTANT.format(timeProvider.instant))
 
-  def hmrcTaxPeriodKey(s: CharSequence): CharSequence = hmrcTaxPeriodValue(s, 0)
-  def hmrcTaxPeriodFrom(s: CharSequence): CharSequence = hmrcTaxPeriodValue(s, 1)
-  def hmrcTaxPeriodTo(s: CharSequence): CharSequence = hmrcTaxPeriodValue(s, 2)
+  def hmrcTaxPeriodKey(s: Any): CharSequence = hmrcTaxPeriodValue(s, 0)
+  def hmrcTaxPeriodFrom(s: Any): CharSequence = hmrcTaxPeriodValue(s, 1)
+  def hmrcTaxPeriodTo(s: Any): CharSequence = hmrcTaxPeriodValue(s, 2)
 
-  private def hmrcTaxPeriodValue(period: CharSequence, index: Int): CharSequence =
-    ifNotNull(period) { s =>
+  private def hmrcTaxPeriodValue(period: Any, index: Int): CharSequence =
+    ifNotNullAsString(period) { s =>
       condition(s.toString.split('|')(index))
     }
 
-  def toEtmpLegalStatus(frontEndValue: String): CharSequence = ifNotNull(frontEndValue) { s =>
+  def toEtmpLegalStatus(frontEndValue: Any): CharSequence = ifNotNullAsString(frontEndValue) { s =>
     condition(s.toLowerCase match {
       case "sole trader" | "sole proprietor"         => "1"
       case "limited liability partnership"           => "2"
@@ -347,7 +347,7 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
     })
   }
 
-  def toEtmpDeclarationStatus(frontEndValue: String): CharSequence = ifNotNull(frontEndValue) { s =>
+  def toEtmpDeclarationStatus(frontEndValue: Any): CharSequence = ifNotNullAsString(frontEndValue) { s =>
     condition(s.toLowerCase match {
       case "authorised official"             => "1"
       case "company secretary"               => "2"
@@ -361,8 +361,8 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
 
   def lookup(matchString: CharSequence, o: Options): CharSequence = {
     val key = o.params.collect {
-      case v if isNull(v)  => null
-      case s: CharSequence => s.toString
+      case v if isNull(v) => null
+      case s              => s.toString
     }.toList
 
     LookupMatchStringParser(matchString.toString, key)
@@ -410,7 +410,6 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
         .mkString(s",${util.Properties.lineSeparator}"))
 
   def removeEmptyAndGet(dflt: String, index: Int, options: Options): CharSequence = condition {
-    println(options.params.toList)
     val params = options.params.drop(1).filterNot(isNull).collect { case x: CharSequence if !x.toString.isEmpty => x }
 
     if (index < params.length) params(index)
@@ -421,12 +420,13 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
     if (index < array.size) array.get(index).textValue else ""
   }
 
-  def stripCommas(s: String): CharSequence = ifNotNull(s) { _.replaceAll(",", "") }
+  def stripCommas(s: Any): CharSequence = ifNotNullAsString(s) { _.replaceAll(",", "") }
 
-  private def ifNotNull[T](t: T)(f: T => CharSequence): CharSequence = NullString.ifNotNull(t)(f)
+  private def ifNotNullAsString(t: Any)(f: String => CharSequence): CharSequence = NullString.ifNotNull(t)(f)
 
   private def condition(v: Any): CharSequence =
-    ifNotNull(v) {
+    v match {
+      case null                     => NullString
       case s: Handlebars.SafeString => s
       case s: CharSequence =>
         new Handlebars.SafeString(s.toString.replaceAll("""\\""", """\\\\""").replaceAll("""'""", """\\'"""))
@@ -439,8 +439,8 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
 object NullString extends CharSequence {
   def isNull(t: Any): Boolean = t == null || t == NullString
 
-  def ifNotNull[T](t: T)(f: T => CharSequence) =
-    if (isNull(t)) NullString else f(t)
+  def ifNotNull(t: Any)(f: String => CharSequence): CharSequence =
+    if (isNull(t)) NullString else f(t.toString)
 
   override def length(): Int = 4
   override def charAt(index: Int): Char = "null".charAt(index)

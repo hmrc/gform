@@ -296,6 +296,10 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     process("{{stripCommas 'abc,def,ghi'}}") shouldBe "abcdefghi"
   }
 
+  it must "compose" in {
+    process("{{stripCommas (either null \"12,345\")}}") shouldBe "12345"
+  }
+
   private def periodGen: Gen[(String, String, String, String)] =
     for {
       key  <- Gen.posNum[Int].map(_.toString)
