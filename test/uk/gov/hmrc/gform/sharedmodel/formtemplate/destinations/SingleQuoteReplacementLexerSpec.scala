@@ -47,7 +47,11 @@ class SingleQuoteReplacementLexerSpec extends Spec {
     SingleQuoteReplacementLexer("""'abc' 123 'def' 456""") shouldBe Right(""""abc" 123 "def" 456""")
   }
 
-  "Power quotes" should "be replaced with quotes and the content should be copied verbatim" in {
+  "Power quotes" should "be replaced with double quotes and the content should be copied verbatim when the power quotes are outside a single quoted string literal" in {
     SingleQuoteReplacementLexer("abc ^def 'aa'^ ^0^") shouldBe Right("""abc "def 'aa'" "0"""")
+  }
+
+  it should "be replaced with double quotes and the content should be copied verbatim when the power quotes are inside a single quoted string literal" in {
+    SingleQuoteReplacementLexer("abc 'a ^bcd 'ab'^ xyz' blah") shouldBe Right("""abc "a "bcd 'ab'" xyz" blah""")
   }
 }
