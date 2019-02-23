@@ -366,7 +366,8 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
     }.toList
 
     LookupMatchStringParser(matchString.toString, key)
-      .getOrElse(throw new Exception(s"Attempt to lookup $key failed in $matchString"))
+      .getOrElse(
+        throw new Exception(s"""Attempt to lookup (${key.map(v => s"'$v'").mkString(" ")}) failed in "$matchString""""))
   }
 
   def toDesAddressWithoutPostcodeFromArray(fromFieldBase: String, index: Int, options: Options): CharSequence = {

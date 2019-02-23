@@ -288,6 +288,17 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     }
   }
 
+  it must "throw an exception with a good message if the lookup fails" in {
+    def rootCause(t: Throwable): Throwable =
+      if (t.getCause == null) t
+      else rootCause(t.getCause)
+
+    val cases = "('0' '1') => 'A'"
+    rootCause(the[Exception] thrownBy {
+      process(s"""{{lookup "$cases" "1" "2"}}""")
+    }) should have message (s"""Attempt to lookup ('1' '2') failed in "$cases"""")
+  }
+
   "stripCommas" must "return null if the argument is null" in {
     process("{{stripCommas null}}") shouldBe "null"
   }
