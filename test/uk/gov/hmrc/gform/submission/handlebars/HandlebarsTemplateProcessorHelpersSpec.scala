@@ -214,14 +214,14 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
          |  "addr-street1": ["0", "1", "2"],
          |  "addr-street2": ["The Street", "The Road", "The Avenue"],
          |  "addr-street3": ["The Town", "The Village", "The City"],
-         |  "addr-country": ["UK", "USA", "France"],
+         |  "addr-street4": ["Sussex", "Surrey", "Dorset"],
          |  "addr-postcode": ["PC0", "PC1", "PC2"]
          |}"""
     ) shouldBe
       """|"addressLine1": "1",
          |"addressLine2": "The Road",
          |"addressLine3": "The Village",
-         |"addressLine4": "USA"""".stripMargin
+         |"addressLine4": "Surrey"""".stripMargin
   }
 
   "toDesAddressWithoutPostcode" must "copy the first 4 lines of full address" in {
@@ -231,14 +231,14 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
          |  "addr-street1": "1",
          |  "addr-street2": "The Street",
          |  "addr-street3": "The Town",
-         |  "addr-country": "The Country",
+         |  "addr-street4": "The County",
          |  "addr-postcode": "The Postcode"
          |}"""
     ) shouldBe
       """|"addressLine1": "1",
          |"addressLine2": "The Street",
          |"addressLine3": "The Town",
-         |"addressLine4": "The Country"""".stripMargin
+         |"addressLine4": "The County"""".stripMargin
   }
 
   "it" must "compact empty lines" in {
@@ -247,24 +247,24 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
       Map[String, JsonNode](
         "addr-street1"  -> "1",
         "addr-street3"  -> "The Town",
-        "addr-country"  -> "The Country",
+        "addr-street4"  -> "The County",
         "addr-postcode" -> "The Postcode"
       )
     ) shouldBe
       """|"addressLine1": "1",
          |"addressLine2": "The Town",
-         |"addressLine3": "The Country"""".stripMargin
+         |"addressLine3": "The County"""".stripMargin
   }
 
   "it" must "emit at least two lines" in {
     process(
       """{{toDesAddressWithoutPostcode "addr"}}""",
       Map[String, JsonNode](
-        "addr-country"  -> "The Country",
+        "addr-street1"  -> "1",
         "addr-postcode" -> "The Postcode"
       )
     ) shouldBe
-      """|"addressLine1": "The Country",
+      """|"addressLine1": "1",
          |"addressLine2": " """".stripMargin
   }
 

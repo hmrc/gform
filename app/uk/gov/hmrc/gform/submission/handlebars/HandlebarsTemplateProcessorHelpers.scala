@@ -384,7 +384,7 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
             s"Expected $fromFieldBase.$line to be null, or an array, but it was $value of type ${value.getClass}."))
     }
 
-    toCompactedDesAddress(get("street1"), get("street2"), get("street3"), get("country"))
+    toCompactedDesAddress(get("uk"), get("street1"), get("street2"), get("street3"), get("street4"))
   }
 
   def toDesAddressWithoutPostcode(fromFieldBase: String, options: Options): CharSequence = {
@@ -398,7 +398,7 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
             s"Expected $fromFieldBase.$line to be null, a string or not present, but it was $value of type ${value.getClass}."))
     }
 
-    toCompactedDesAddress(get("street1"), get("street2"), get("street3"), get("country"))
+    toCompactedDesAddress(get("uk"), get("street1"), get("street2"), get("street3"), get("street4"))
   }
 
   private def toCompactedDesAddress(lines: String*): Handlebars.SafeString =
