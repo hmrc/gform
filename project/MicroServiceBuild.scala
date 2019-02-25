@@ -32,8 +32,7 @@ object MicroServiceBuild extends Build with MicroService {
     "org.scala-graph" %% "graph-core" % "1.12.5",
     "com.github.jknack" % "handlebars" % handlebarsVersion,
     "com.github.jknack" % "handlebars-jackson2" % handlebarsVersion,
-    "io.monix" %% "monix" % "3.0.0-8084549",
-    "io.monadless" %% "monadless-stdlib" % "0.0.13"
+    "io.monix" %% "monix" % "3.0.0-8084549"
   )
 
 
