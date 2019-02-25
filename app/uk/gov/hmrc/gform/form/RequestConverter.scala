@@ -16,17 +16,11 @@
 
 package uk.gov.hmrc.gform.form
 
-import cats.Monad
 import play.api.mvc.{ AnyContent, Request }
-import uk.gov.hmrc.gform.auditing.EventAudit
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
-import uk.gov.hmrc.play.audit.http.connector.AuditResult
 import uk.gov.hmrc.play.audit.model.DataEvent
 
-class FormControllerRequestHandler[F[_]: Monad](auditing: EventAudit[F]) {
-
-  def handleRequest(event: DataEvent): F[AuditResult] =
-    auditing.runProgram(event)
+class RequestConverter {
 
   def requestToDataEvent(formId: FormId, request: String): DataEvent =
     DataEvent("Gform", "enrolmentCallback", detail = Map(formId.value -> request))
