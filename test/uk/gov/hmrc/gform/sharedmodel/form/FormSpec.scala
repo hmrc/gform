@@ -39,7 +39,8 @@ class FormSpec extends FlatSpec with Matchers {
     ),
     InProgress,
     VisitIndex(Set(1, 2, 3)),
-    Some(EnvelopeExpiryDate(LocalDateTime.now.plusDays(1)))
+    Some(EnvelopeExpiryDate(LocalDateTime.now.plusDays(1))),
+    None
   )
 
   "case class Form" should "be serialized into json" in {

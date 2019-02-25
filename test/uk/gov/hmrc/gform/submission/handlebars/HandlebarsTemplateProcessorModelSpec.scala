@@ -86,6 +86,7 @@ class HandlebarsTemplateProcessorModelSpec extends Spec {
       FormData(fields.map { case (k, v) => FormField(FormComponentId(k), v) }),
       null,
       VisitIndex(Set(1)),
+      None,
       None)
 
   def createFormTemplate(sections: Section*): FormTemplate =

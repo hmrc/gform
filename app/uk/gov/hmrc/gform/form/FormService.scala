@@ -16,12 +16,14 @@
 
 package uk.gov.hmrc.gform.form
 
-import play.api.libs.json.JsValue
+import play.api.Logger
+import play.api.libs.json.{ JsValue, Json }
 import uk.gov.hmrc.gform.save4later.Save4Later
 import uk.gov.hmrc.gform.sharedmodel.UserId
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
+
 import scala.concurrent.Future
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -48,7 +50,8 @@ class FormService(save4Later: Save4Later) {
       emptyFormData,
       InProgress,
       VisitIndex.empty,
-      Some(envelopeExpiryDate))
+      Some(envelopeExpiryDate),
+      None)
     save4Later.upsert(formId, form)
   }
 
@@ -59,8 +62,12 @@ class FormService(save4Later: Save4Later) {
         .copy(
           formData = userData.formData,
           status = newStatus(form, userData.formStatus),
-          visitsIndex = userData.visitsIndex)
-      _ <- save4Later.upsert(formId, newForm)
+          visitsIndex = userData.visitsIndex,
+          obligations = userData.obligations)
+      _ <- {
+        Logger.debug(Json.prettyPrint(Json.toJson(newForm)) + "UpdateUserData")
+        save4Later.upsert(formId, newForm)
+      }
     } yield ()
 
   private def newStatus(form: Form, status: FormStatus) =
