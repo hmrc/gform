@@ -23,19 +23,23 @@ import java.time.format.DateTimeFormatter
 
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.github.jknack.handlebars.{ Handlebars, Options }
+import play.api.Logger
 
 class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimeProvider) {
-  def yesNoToEtmpChoice(yesNoChoice: Any): CharSequence = ifNotNullAsString(yesNoChoice) {
-    case "1"  => condition("0")
-    case "0"  => condition("1")
-    case "1," => condition("0")
-    case "0," => condition("1")
+  def yesNoToEtmpChoice(yesNoChoice: Any): CharSequence = log("yesNoChoice", yesNoChoice) {
+    ifNotNullAsString(yesNoChoice) {
+      case "1"  => condition("0")
+      case "0"  => condition("1")
+      case "1," => condition("0")
+      case "0," => condition("1")
+    }
   }
 
-  def dateToEtmpDate(date: Any): CharSequence =
+  def dateToEtmpDate(date: Any): CharSequence = log("dateToEtmpDate", date) {
     ifNotNullAsString(date) { d =>
       condition(d.substring(0, 4) + d.substring(5, 7) + d.substring(8, 10))
     }
+  }
 
   def either(first: Any, o: Options): CharSequence = eitherN((first :: o.params.toList): _*)
 
@@ -318,89 +322,98 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
       arg19,
       arg20)
 
-  private[handlebars] def eitherN(args: Any*): CharSequence =
+  private[handlebars] def eitherN(args: Any*): CharSequence = log("eitherN", args: _*) {
     condition(args.flatMap(asNotNullString).headOption.orNull)
+  }
 
-  def isSuccessCode(code: Integer): CharSequence = condition(isSuccCode(code))
-  def isNotSuccessCode(code: Integer): CharSequence = condition(!isSuccCode(code))
+  def isSuccessCode(code: Integer): CharSequence = log("isSuccessCode", code) { condition(isSuccCode(code)) }
+  def isNotSuccessCode(code: Integer): CharSequence = log("isNotSuccessCode", code) { condition(!isSuccCode(code)) }
   private def isSuccCode(code: Integer): Boolean = code != null && code >= 200 && code <= 299
 
   def currentDate: CharSequence = condition(DateTimeFormatter.BASIC_ISO_DATE.format(timeProvider.localDateTime))
   def currentTimestamp: CharSequence = condition(DateTimeFormatter.ISO_INSTANT.format(timeProvider.instant))
 
-  def hmrcTaxPeriodKey(s: Any): CharSequence = hmrcTaxPeriodValue(s, 0)
-  def hmrcTaxPeriodFrom(s: Any): CharSequence = hmrcTaxPeriodValue(s, 1)
-  def hmrcTaxPeriodTo(s: Any): CharSequence = hmrcTaxPeriodValue(s, 2)
+  def hmrcTaxPeriodKey(s: Any): CharSequence = log("hmrcTaxPeriodKey", s) { hmrcTaxPeriodValue(s, 0) }
+  def hmrcTaxPeriodFrom(s: Any): CharSequence = log("hmrcTaxPeriodFrom", s) { hmrcTaxPeriodValue(s, 1) }
+  def hmrcTaxPeriodTo(s: Any): CharSequence = log("hmrcTaxPeriodTo", s) { hmrcTaxPeriodValue(s, 2) }
 
   private def hmrcTaxPeriodValue(period: Any, index: Int): CharSequence =
     ifNotNullAsString(period) { s =>
       condition(s.toString.split('|')(index))
     }
 
-  def toEtmpLegalStatus(frontEndValue: Any): CharSequence = ifNotNullAsString(frontEndValue) { s =>
-    condition(s.toLowerCase match {
-      case "sole trader" | "sole proprietor"         => "1"
-      case "limited liability partnership"           => "2"
-      case "partnership"                             => "3"
-      case "unincorporated body" | "local authority" => "5"
-      case "trust"                                   => "6"
-      case "public corporation" | "limited company"  => "7"
-    })
+  def toEtmpLegalStatus(frontEndValue: Any): CharSequence = log("toEtmpLegalStatus", frontEndValue) {
+    ifNotNullAsString(frontEndValue) { s =>
+      condition(s.toLowerCase match {
+        case "sole trader" | "sole proprietor"         => "1"
+        case "limited liability partnership"           => "2"
+        case "partnership"                             => "3"
+        case "unincorporated body" | "local authority" => "5"
+        case "trust"                                   => "6"
+        case "public corporation" | "limited company"  => "7"
+      })
+    }
   }
 
-  def toEtmpDeclarationStatus(frontEndValue: Any): CharSequence = ifNotNullAsString(frontEndValue) { s =>
-    condition(s.toLowerCase match {
-      case "authorised official"             => "1"
-      case "company secretary"               => "2"
-      case "director"                        => "3"
-      case "partner"                         => "4"
-      case "sole proprietor" | "sole trader" => "5"
-      case "trustee"                         => "6"
-      case "others"                          => "7"
-    })
+  def toEtmpDeclarationStatus(frontEndValue: Any): CharSequence = log("toEtmpDeclarationStatus", frontEndValue) {
+    ifNotNullAsString(frontEndValue) { s =>
+      condition(s.toLowerCase match {
+        case "authorised official"             => "1"
+        case "company secretary"               => "2"
+        case "director"                        => "3"
+        case "partner"                         => "4"
+        case "sole proprietor" | "sole trader" => "5"
+        case "trustee"                         => "6"
+        case "others"                          => "7"
+      })
+    }
   }
 
-  def lookup(matchString: CharSequence, o: Options): CharSequence = {
-    val key = o.params.collect {
-      case v if isNull(v) => null
-      case s              => s.toString
-    }.toList
+  def lookup(matchString: CharSequence, o: Options): CharSequence =
+    log("lookup", (matchString :: o.params.toList): _*) {
+      val key = o.params.collect {
+        case v if isNull(v) => null
+        case s              => s.toString
+      }.toList
 
-    LookupMatchStringParser(matchString.toString, key)
-      .getOrElse(
-        throw new Exception(s"""Attempt to lookup (${key.map(v => s"'$v'").mkString(" ")}) failed in "$matchString""""))
-  }
-
-  def toDesAddressWithoutPostcodeFromArray(fromFieldBase: String, index: Int, options: Options): CharSequence = {
-    def get(line: String) = {
-      val value = options.context.get(s"$fromFieldBase-$line")
-      if (isNull(value)) ""
-      else
-        value
-          .cast[ArrayNode]
-          .map { a =>
-            if (index < a.size) a.get(index).asText else ""
-          }
-          .getOrElse(throw new Exception(
-            s"Expected $fromFieldBase.$line to be null, or an array, but it was $value of type ${value.getClass}."))
+      LookupMatchStringParser(matchString.toString, key)
+        .getOrElse(throw new Exception(s"""Attempt to lookup (${key
+          .map(v => s"'$v'")
+          .mkString(" ")}) failed in "$matchString""""))
     }
 
-    toCompactedDesAddress(get("street1"), get("street2"), get("street3"), get("street4"))
-  }
+  def toDesAddressWithoutPostcodeFromArray(fromFieldBase: String, index: Int, options: Options): CharSequence =
+    log("toDesAddressWithoutPostcodeFromArray", (fromFieldBase :: index :: options.params.toList): _*) {
+      def get(line: String) = {
+        val value = options.context.get(s"$fromFieldBase-$line")
+        if (isNull(value)) ""
+        else
+          value
+            .cast[ArrayNode]
+            .map { a =>
+              if (index < a.size) a.get(index).asText else ""
+            }
+            .getOrElse(throw new Exception(
+              s"Expected $fromFieldBase.$line to be null, or an array, but it was $value of type ${value.getClass}."))
+      }
 
-  def toDesAddressWithoutPostcode(fromFieldBase: String, options: Options): CharSequence = {
-    def get(line: String) = {
-      val value = options.context.get(s"$fromFieldBase-$line")
-      if (isNull(value)) ""
-      else
-        value
-          .cast[String]
-          .getOrElse(throw new Exception(
-            s"Expected $fromFieldBase.$line to be null, a string or not present, but it was $value of type ${value.getClass}."))
+      toCompactedDesAddress(get("street1"), get("street2"), get("street3"), get("street4"))
     }
 
-    toCompactedDesAddress(get("street1"), get("street2"), get("street3"), get("street4"))
-  }
+  def toDesAddressWithoutPostcode(fromFieldBase: String, options: Options): CharSequence =
+    log("toDesAddressWithoutPostcode", (fromFieldBase :: options.params.toList): _*) {
+      def get(line: String) = {
+        val value = options.context.get(s"$fromFieldBase-$line")
+        if (isNull(value)) ""
+        else
+          value
+            .cast[String]
+            .getOrElse(throw new Exception(
+              s"Expected $fromFieldBase.$line to be null, a string or not present, but it was $value of type ${value.getClass}."))
+      }
+
+      toCompactedDesAddress(get("street1"), get("street2"), get("street3"), get("street4"))
+    }
 
   private def toCompactedDesAddress(lines: String*): Handlebars.SafeString =
     new Handlebars.SafeString(
@@ -411,18 +424,24 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
         .map { case (l, i) => s""""addressLine${i + 1}": "${condition(l)}"""" }
         .mkString(s",${util.Properties.lineSeparator}"))
 
-  def removeEmptyAndGet(dfltAny: Any, index: Int, options: Options): CharSequence = ifNotNullAsString(dfltAny) { dflt =>
-    val params = options.params.drop(1).flatMap(asNotNullString).filterNot(_.isEmpty)
+  def removeEmptyAndGet(dfltAny: Any, index: Int, options: Options): CharSequence =
+    log("removeEmptyAndGet", (dfltAny :: index :: options.params.toList): _*) {
+      ifNotNullAsString(dfltAny) { dflt =>
+        val params = options.params.drop(1).flatMap(asNotNullString).filterNot(_.isEmpty)
 
-    if (index < params.length) params(index)
-    else dflt
-  }
+        if (index < params.length) params(index)
+        else dflt
+      }
+    }
 
-  def elementAt(array: ArrayNode, index: Int, options: Options): CharSequence = condition {
-    if (index < array.size) array.get(index).textValue else ""
-  }
+  def elementAt(array: ArrayNode, index: Int, options: Options): CharSequence =
+    log("elementAt", (array :: index :: options.params.toList): _*) {
+      condition {
+        if (index < array.size) array.get(index).textValue else ""
+      }
+    }
 
-  def stripCommas(s: Any): CharSequence = ifNotNullAsString(s) { _.replaceAll(",", "") }
+  def stripCommas(s: Any): CharSequence = log("stripCommas", s) { ifNotNullAsString(s) { _.replaceAll(",", "") } }
 
   private def ifNotNullAsString(t: Any)(f: String => CharSequence): CharSequence = NullString.ifNotNull(t)(f)
 
@@ -440,6 +459,21 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
   private def asNotNullString(a: Any): Option[String] =
     if (isNull(a)) None
     else a.toString.some
+
+  private def log(functionName: String, params: Any*)(f: => CharSequence): CharSequence = {
+    Logger.debug(s"$functionName(${logArgs(params: _*)}) called")
+    val result = f
+    Logger.debug(s"$functionName(${logArgs(params: _*)}) result is: ${show(result)}")
+    result
+  }
+
+  private def show(v: Any): String = v match {
+    case null             => "null"
+    case cs: CharSequence => s""""$cs": ${cs.getClass.getSimpleName}"""
+    case other            => s"$other: ${other.getClass.getSimpleName}"
+  }
+
+  private def logArgs(args: Any*): String = args.map(show).mkString(", ")
 }
 
 object NullString extends CharSequence {
