@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.submission.handlebars
 
+import cats.syntax.option._
 import shapeless.syntax.typeable._
 import uk.gov.hmrc.gform.time.TimeProvider
 import java.time.format.DateTimeFormatter
@@ -24,19 +25,19 @@ import com.fasterxml.jackson.databind.node.ArrayNode
 import com.github.jknack.handlebars.{ Handlebars, Options }
 
 class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimeProvider) {
-  def yesNoToEtmpChoice(yesNoChoice: String): CharSequence = ifNotNullAsString(yesNoChoice) {
+  def yesNoToEtmpChoice(yesNoChoice: Any): CharSequence = ifNotNullAsString(yesNoChoice) {
     case "1"  => condition("0")
     case "0"  => condition("1")
     case "1," => condition("0")
     case "0," => condition("1")
   }
 
-  def dateToEtmpDate(date: String): CharSequence =
+  def dateToEtmpDate(date: Any): CharSequence =
     ifNotNullAsString(date) { d =>
       condition(d.substring(0, 4) + d.substring(5, 7) + d.substring(8, 10))
     }
 
-  def either(first: String, o: Options): CharSequence = eitherN((first :: o.params.toList): _*)
+  def either(first: Any, o: Options): CharSequence = eitherN((first :: o.params.toList): _*)
 
   // Handlebars.java can't deal with a varargs argument in a helper.
   // Neither can it deal with overloading, so we'd need to do something like
@@ -318,7 +319,7 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
       arg20)
 
   private[handlebars] def eitherN(args: Any*): CharSequence =
-    condition(args.find(!isNull(_)).orNull)
+    condition(args.flatMap(asNotNullString).headOption.orNull)
 
   def isSuccessCode(code: Integer): CharSequence = condition(isSuccCode(code))
   def isNotSuccessCode(code: Integer): CharSequence = condition(!isSuccCode(code))
@@ -410,8 +411,8 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
         .map { case (l, i) => s""""addressLine${i + 1}": "${condition(l)}"""" }
         .mkString(s",${util.Properties.lineSeparator}"))
 
-  def removeEmptyAndGet(dflt: String, index: Int, options: Options): CharSequence = condition {
-    val params = options.params.drop(1).filterNot(isNull).collect { case x: CharSequence if !x.toString.isEmpty => x }
+  def removeEmptyAndGet(dfltAny: Any, index: Int, options: Options): CharSequence = ifNotNullAsString(dfltAny) { dflt =>
+    val params = options.params.drop(1).flatMap(asNotNullString).filterNot(_.isEmpty)
 
     if (index < params.length) params(index)
     else dflt
@@ -435,6 +436,10 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
     }
 
   private def isNull(v: Any) = NullString.isNull(v)
+
+  private def asNotNullString(a: Any): Option[String] =
+    if (isNull(a)) None
+    else a.toString.some
 }
 
 object NullString extends CharSequence {
