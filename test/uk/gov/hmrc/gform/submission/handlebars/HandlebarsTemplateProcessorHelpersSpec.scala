@@ -243,7 +243,7 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
          |"addressLine4": "The County"""".stripMargin
   }
 
-  "it" must "compact empty lines" in {
+  "it" must "compact missing lines" in {
     process(
       """{{toDesAddressWithoutPostcode "addr"}}""",
       Map[String, JsonNode](
@@ -257,6 +257,22 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
       """|"addressLine1": "1",
          |"addressLine2": "The Town",
          |"addressLine3": "The County"""".stripMargin
+  }
+
+  "it" must "compact blank (after trimming) lines" in {
+    process(
+      """{{toDesAddressWithoutPostcode "addr"}}""",
+      Map[String, JsonNode](
+        "addr-street1"  -> "1",
+        "addr-street2"  -> "",
+        "addr-street3"  -> " ",
+        "addr-street4"  -> "The County",
+        "addr-postcode" -> "The Postcode",
+        "addr-uk"       -> "true"
+      )
+    ) shouldBe
+      """|"addressLine1": "1",
+         |"addressLine2": "The County"""".stripMargin
   }
 
   "it" must "emit at least two lines" in {

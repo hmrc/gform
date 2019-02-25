@@ -405,7 +405,7 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
   private def toCompactedDesAddress(lines: String*): Handlebars.SafeString =
     new Handlebars.SafeString(
       lines
-        .filterNot(_.isEmpty)
+        .filterNot(_.trim.isEmpty)
         .padTo(2, " ")
         .zipWithIndex
         .map { case (l, i) => s""""addressLine${i + 1}": "${condition(l)}"""" }
