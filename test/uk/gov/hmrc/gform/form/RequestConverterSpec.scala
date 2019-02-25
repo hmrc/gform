@@ -21,20 +21,6 @@ import uk.gov.hmrc.gform.sharedmodel.form.FormId
 
 class RequestConverterSpec extends WordSpec with MustMatchers {
 
-//
-//  "Logs an AuditResult failure" in {
-//    val failureMsg = "something wrong"
-//    val stubbedConn = new Connector {
-//      override val connector: DataEvent => Future[AuditResult] = _ => Future.successful(AuditResult.Success)
-//    }
-//
-//    val eventAudit: EventAudit[Id] = new EventAudit[Id](stubbedConn) {
-//      override def logger(msg: String) =
-//        msg must be(failureMsg)
-//    }
-//    eventAudit.sideEffect(Failure(failureMsg)) must be(())
-//  }
-
   "Converts body and form id to DataEvent" in {
     val body = """|{
                       "test1": "test1",
