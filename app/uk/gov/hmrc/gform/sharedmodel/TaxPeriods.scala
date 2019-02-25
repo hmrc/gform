@@ -77,7 +77,7 @@ object ListAllInfo {
   implicit val optionFormat: OFormat[Option[ListAllInfo]] = new OFormat[Option[ListAllInfo]] {
     override def writes(o: Option[ListAllInfo]): JsObject =
       o match {
-        case Some(x) => Json.obj("TaxPeriodInfo" -> Json.toJson(x))
+        case Some(x) => Json.obj("TaxPeriodInfo" -> Json.toJson(x.listAllInfo))
         case None    => Json.obj()
       }
 
