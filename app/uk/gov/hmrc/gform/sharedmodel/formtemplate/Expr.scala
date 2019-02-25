@@ -44,11 +44,22 @@ final case class AuthCtx(value: AuthInfo) extends Expr
 final case class EeittCtx(value: Eeitt) extends Expr
 final case class UserCtx(value: UserField) extends Expr
 final case class Constant(value: String) extends Expr
+final case class HmrcRosmRegistrationCheck(value: RosmProp) extends Expr
 final case object Value extends Expr
 final case object SubmissionReference extends Expr
 
 object Expr {
   implicit val format: OFormat[Expr] = derived.oformat
+}
+
+sealed trait RosmProp extends Product with Serializable
+case object RosmSafeId extends RosmProp
+case object RosmOrganisationName extends RosmProp
+case object RosmOrganisationType extends RosmProp
+case object RosmIsAGroup extends RosmProp
+
+object RosmProp {
+  implicit val format: OFormat[RosmProp] = derived.oformat
 }
 
 sealed trait Operation

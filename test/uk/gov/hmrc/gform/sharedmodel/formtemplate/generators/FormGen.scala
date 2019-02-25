@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.{ NotChecked, UserId }
 import uk.gov.hmrc.gform.sharedmodel.form._
-import uk.gov.hmrc.gform.sharedmodel.form.generators.EnvelopeExpiryDateGen
+import uk.gov.hmrc.gform.sharedmodel.form.generators.{ EnvelopeExpiryDateGen, ThirdPartyDataGen }
 
 trait FormGen {
   def formIdGen: Gen[FormId] = PrimitiveGen.nonEmptyAlphaNumStrGen.map(FormId(_))
@@ -41,9 +41,21 @@ trait FormGen {
       formData       <- formDataGen
       status         <- formStatusGen
       visitIndex     <- VisitIndexGen.visitIndexGen
+      thirdPartyData <- ThirdPartyDataGen.thirdPartyDataGen
       expiryDate     <- Gen.option(EnvelopeExpiryDateGen.envelopeExpiryDateGen)
 
-    } yield Form(formId, envelopeId, userId, formTemplateId, formData, status, visitIndex, expiryDate, NotChecked)
+    } yield
+      Form(
+        formId,
+        envelopeId,
+        userId,
+        formTemplateId,
+        formData,
+        status,
+        visitIndex,
+        thirdPartyData,
+        expiryDate,
+        NotChecked)
 }
 
 object FormGen extends FormGen

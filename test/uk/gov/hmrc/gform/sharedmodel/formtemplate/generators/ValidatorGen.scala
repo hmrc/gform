@@ -22,9 +22,10 @@ trait ValidatorGen {
   def hMRCUTRPostcodeCheckValidatorGen: Gen[HMRCUTRPostcodeCheckValidator] =
     for {
       errorMessage <- Gen.alphaNumStr
+      regime       <- Gen.alphaNumStr
       utr          <- ExprGen.formCtxGen
       postcode     <- ExprGen.formCtxGen
-    } yield HMRCUTRPostcodeCheckValidator(errorMessage, utr, postcode)
+    } yield HMRCUTRPostcodeCheckValidator(errorMessage, regime, utr, postcode)
 
   def bankAccountModulusCheckGen: Gen[BankAccoutnModulusCheck] =
     for {

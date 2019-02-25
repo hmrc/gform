@@ -60,6 +60,7 @@ class SubmissionServiceSpec extends Spec {
       formData,
       InProgress,
       VisitIndex.empty,
+      ThirdPartyData.empty,
       Some(EnvelopeExpiryDate(LocalDateTime.now(clock) plusDays (30))),
       NotChecked
     )

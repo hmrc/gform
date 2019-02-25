@@ -32,6 +32,7 @@ class ValidatorSpec extends Spec {
         "validatorName" -> "hmrcUTRPostcodeCheck",
         "errorMessage"  -> hMRCUTRPostcodeCheckValidator.errorMessage,
         "parameters" -> Json.obj(
+          "regime"   -> "ITSA",
           "utr"      -> customFormCtxJson(hMRCUTRPostcodeCheckValidator.utr),
           "postcode" -> customFormCtxJson(hMRCUTRPostcodeCheckValidator.postcode)
         )

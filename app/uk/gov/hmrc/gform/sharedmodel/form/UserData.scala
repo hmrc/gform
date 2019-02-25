@@ -24,6 +24,7 @@ case class UserData(
   formData: FormData,
   formStatus: FormStatus,
   visitsIndex: VisitIndex,
+  thirdPartyData: ThirdPartyData,
   obligations: Obligations
 )
 
@@ -33,6 +34,7 @@ object UserData {
     (FormData.format: Reads[FormData]) and
       FormStatus.format and
       VisitIndex.format and
+      ThirdPartyData.format and
       Obligations.format
   )(UserData.apply _)
 
@@ -41,6 +43,7 @@ object UserData {
       FormData.format.writes(userData.formData) ++
         FormStatus.format.writes(userData.formStatus) ++
         VisitIndex.format.writes(userData.visitsIndex) ++
+        ThirdPartyData.format.writes(userData.thirdPartyData) ++
         Obligations.format.writes(userData.obligations))
 
   implicit val format: OFormat[UserData] = OFormat[UserData](reads, writes)
