@@ -57,7 +57,7 @@ object TaxPeriodIdentifier {
   implicit val format: OFormat[TaxPeriodIdentifier] = Json.format[TaxPeriodIdentifier]
 }
 
-case class AllInfo(
+case class TaxPeriodInformation(
   idType: IdType,
   idNumber: TextExpression,
   regimeType: RegimeType,
@@ -65,26 +65,27 @@ case class AllInfo(
   inboundCorrespondenceToDate: Date,
   periodKey: String)
 
-object AllInfo {
-  implicit val format: OFormat[AllInfo] = derived.oformat
+object TaxPeriodInformation {
+  implicit val format: OFormat[TaxPeriodInformation] = derived.oformat
 }
 
-case class ListAllInfo(listAllInfo: List[AllInfo])
+case class ListOfTaxPeriodInformation(listAllInfo: List[TaxPeriodInformation])
 
-object ListAllInfo {
-  implicit val format: OFormat[ListAllInfo] = Json.format[ListAllInfo]
+object ListOfTaxPeriodInformation {
+  implicit val format: OFormat[ListOfTaxPeriodInformation] = Json.format[ListOfTaxPeriodInformation]
 
-  implicit val optionFormat: OFormat[Option[ListAllInfo]] = new OFormat[Option[ListAllInfo]] {
-    override def writes(o: Option[ListAllInfo]): JsObject =
-      o match {
-        case Some(x) => Json.obj("TaxPeriodInfo" -> Json.toJson(x.listAllInfo))
-        case None    => Json.obj()
-      }
+  implicit val optionFormat: OFormat[Option[ListOfTaxPeriodInformation]] =
+    new OFormat[Option[ListOfTaxPeriodInformation]] {
+      override def writes(o: Option[ListOfTaxPeriodInformation]): JsObject =
+        o match {
+          case Some(x) => Json.obj("TaxPeriodInfo" -> Json.toJson(x.listAllInfo))
+          case None    => Json.obj()
+        }
 
-    override def reads(json: JsValue) =
-      json.\("TaxPeriodInfo").asOpt[List[AllInfo]] match {
-        case Some(x) => JsSuccess(Some(ListAllInfo(x)))
-        case None    => JsSuccess(None)
-      }
-  }
+      override def reads(json: JsValue) =
+        json.\("TaxPeriodInfo").asOpt[List[TaxPeriodInformation]] match {
+          case Some(x) => JsSuccess(Some(ListOfTaxPeriodInformation(x)))
+          case None    => JsSuccess(None)
+        }
+    }
 }

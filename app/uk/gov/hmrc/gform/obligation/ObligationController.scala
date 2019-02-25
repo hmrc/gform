@@ -35,8 +35,11 @@ class ObligationController(obligation: ObligationService) extends BaseController
     val body: List[HmrcTaxPeriod] = request.body
     val b = body.map(i => {
       obligation
-        .callDES(i.idType.value, i.idNumber.expr match { case a: Constant => a.value }, i.regimeType.value)
-        .map(x => TaxResponse(HmrcTaxPeriod(i.idType, i.idNumber, i.regimeType), x))
+        .callDES(i.idType.value, i.idNumber.expr match {
+          case a: Constant => a.value
+          case _           => ""
+        }, i.regimeType.value)
+        .map(x => TaxResponse(i, x))
     })
     Future.sequence(b).asOkJson
   }

@@ -17,14 +17,14 @@
 package uk.gov.hmrc.gform.sharedmodel.form
 
 import play.api.libs.json.{ Json, OFormat, OWrites, Reads }
-import uk.gov.hmrc.gform.sharedmodel.ListAllInfo
+import uk.gov.hmrc.gform.sharedmodel.ListOfTaxPeriodInformation
 import play.api.libs.functional.syntax._
 
 case class UserData(
   formData: FormData,
   formStatus: FormStatus,
   visitsIndex: VisitIndex,
-  obligations: Option[ListAllInfo]
+  obligations: Option[ListOfTaxPeriodInformation]
 )
 
 object UserData {
@@ -33,7 +33,7 @@ object UserData {
     (FormData.format: Reads[FormData]) and
       FormStatus.format and
       VisitIndex.format and
-      ListAllInfo.optionFormat
+      ListOfTaxPeriodInformation.optionFormat
   )(UserData.apply _)
 
   private val writes: OWrites[UserData] = OWrites[UserData](
@@ -41,7 +41,7 @@ object UserData {
       FormData.format.writes(userData.formData) ++
         FormStatus.format.writes(userData.formStatus) ++
         VisitIndex.format.writes(userData.visitsIndex) ++
-        ListAllInfo.optionFormat.writes(userData.obligations))
+        ListOfTaxPeriodInformation.optionFormat.writes(userData.obligations))
 
   implicit val format: OFormat[UserData] = OFormat[UserData](reads, writes)
 
