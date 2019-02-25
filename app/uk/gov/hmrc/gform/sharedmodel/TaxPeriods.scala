@@ -58,9 +58,7 @@ object TaxPeriodIdentifier {
 }
 
 case class TaxPeriodInformation(
-  idType: IdType,
-  idNumber: TextExpression,
-  regimeType: RegimeType,
+  hmrcTaxPeriod: HmrcTaxPeriod,
   inboundCorrespondenceFromDate: Date,
   inboundCorrespondenceToDate: Date,
   periodKey: String)
