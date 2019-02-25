@@ -27,9 +27,10 @@ import scala.concurrent.Future
 trait AuditConnector {
   val connector: DataEvent => Future[AuditResult] = MicroserviceAuditConnector.sendEvent
 
-  def sendRequest(event: DataEvent): Future[Unit] =
-    connector(event).map(_ => logger(event.detail.values.mkString))
+  def sendRequest(event: DataEvent): Future[AuditResult] = {
+    logger(event.detail.values.mkString)
+    connector(event)
+  }
 
   def logger(msg: String): Unit = Logger.info(msg)
 }
-

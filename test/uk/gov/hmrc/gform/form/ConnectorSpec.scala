@@ -20,22 +20,19 @@ import uk.gov.hmrc.gform.auditing.AuditConnector
 import uk.gov.hmrc.play.audit.http.connector.AuditResult
 import uk.gov.hmrc.play.audit.model.DataEvent
 
+import scala.concurrent
 import scala.concurrent.Future
 
 class ConnectorSpec extends WordSpec with MustMatchers {
 
-
   "Handle a request" in {
+
+    val body = """"test1": "test1""""
 
     val stubbedConn = new AuditConnector {
       override val connector: DataEvent => Future[AuditResult] = _ => Future.successful(AuditResult.Success)
-      override def logger(msg: String): Unit = {
-        println("msg: "+msg)
-        1 mustBe 2
-
-      }
+      override def logger(msg: String): Unit = msg mustBe body
     }
-    val body = """"test1": "test1""""
     val event = DataEvent("src", "type", detail = Map("formId" -> body))
 
     stubbedConn.sendRequest(event)
