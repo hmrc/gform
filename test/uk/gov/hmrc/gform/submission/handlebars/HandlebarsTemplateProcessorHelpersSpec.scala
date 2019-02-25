@@ -215,7 +215,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
          |  "addr-street2": ["The Street", "The Road", "The Avenue"],
          |  "addr-street3": ["The Town", "The Village", "The City"],
          |  "addr-street4": ["Sussex", "Surrey", "Dorset"],
-         |  "addr-postcode": ["PC0", "PC1", "PC2"]
+         |  "addr-postcode": ["PC0", "PC1", "PC2"],
+         |  "addr-uk": "true"
          |}"""
     ) shouldBe
       """|"addressLine1": "1",
@@ -232,7 +233,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
          |  "addr-street2": "The Street",
          |  "addr-street3": "The Town",
          |  "addr-street4": "The County",
-         |  "addr-postcode": "The Postcode"
+         |  "addr-postcode": "The Postcode",
+         |  "addr-uk": "true"
          |}"""
     ) shouldBe
       """|"addressLine1": "1",
@@ -248,7 +250,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
         "addr-street1"  -> "1",
         "addr-street3"  -> "The Town",
         "addr-street4"  -> "The County",
-        "addr-postcode" -> "The Postcode"
+        "addr-postcode" -> "The Postcode",
+        "addr-uk"       -> "true"
       )
     ) shouldBe
       """|"addressLine1": "1",
@@ -261,7 +264,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
       """{{toDesAddressWithoutPostcode "addr"}}""",
       Map[String, JsonNode](
         "addr-street1"  -> "1",
-        "addr-postcode" -> "The Postcode"
+        "addr-postcode" -> "The Postcode",
+        "addr-uk"       -> "true"
       )
     ) shouldBe
       """|"addressLine1": "1",
