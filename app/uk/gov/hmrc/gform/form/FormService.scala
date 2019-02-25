@@ -50,6 +50,7 @@ class FormService(save4Later: Save4Later) {
       emptyFormData,
       InProgress,
       VisitIndex.empty,
+      ThirdPartyData.empty,
       Some(envelopeExpiryDate),
       NotChecked)
     save4Later.upsert(formId, form)
@@ -63,11 +64,10 @@ class FormService(save4Later: Save4Later) {
           formData = userData.formData,
           status = newStatus(form, userData.formStatus),
           visitsIndex = userData.visitsIndex,
-          obligations = userData.obligations)
-      _ <- {
-        Logger.debug(Json.prettyPrint(Json.toJson(newForm)) + "UpdateUserData")
-        save4Later.upsert(formId, newForm)
-      }
+          thirdPartyData = userData.thirdPartyData,
+          obligations = userData.obligations
+        )
+      _ <- save4Later.upsert(formId, newForm)
     } yield ()
 
   private def newStatus(form: Form, status: FormStatus) =
