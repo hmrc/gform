@@ -67,23 +67,11 @@ object TaxPeriodInformation {
   implicit val format: OFormat[TaxPeriodInformation] = derived.oformat
 }
 
-case class ListOfTaxPeriodInformation(listAllInfo: List[TaxPeriodInformation])
+sealed trait Obligations
+final case object NotChecked extends Obligations
+final case object NoObligations extends Obligations
+final case class RetrievedObligations(listOfObligations: List[TaxPeriodInformation]) extends Obligations
 
-object ListOfTaxPeriodInformation {
-  implicit val format: OFormat[ListOfTaxPeriodInformation] = Json.format[ListOfTaxPeriodInformation]
-
-  implicit val optionFormat: OFormat[Option[ListOfTaxPeriodInformation]] =
-    new OFormat[Option[ListOfTaxPeriodInformation]] {
-      override def writes(o: Option[ListOfTaxPeriodInformation]): JsObject =
-        o match {
-          case Some(x) => Json.obj("TaxPeriodInfo" -> Json.toJson(x.listAllInfo))
-          case None    => Json.obj()
-        }
-
-      override def reads(json: JsValue) =
-        json.\("TaxPeriodInfo").asOpt[List[TaxPeriodInformation]] match {
-          case Some(x) => JsSuccess(Some(ListOfTaxPeriodInformation(x)))
-          case None    => JsSuccess(None)
-        }
-    }
+object Obligations {
+  implicit val format: OFormat[Obligations] = derived.oformat
 }

@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.form
 import play.api.Logger
 import play.api.libs.json.{ JsValue, Json }
 import uk.gov.hmrc.gform.save4later.Save4Later
-import uk.gov.hmrc.gform.sharedmodel.UserId
+import uk.gov.hmrc.gform.sharedmodel.{ NotChecked, UserId }
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
@@ -51,7 +51,7 @@ class FormService(save4Later: Save4Later) {
       InProgress,
       VisitIndex.empty,
       Some(envelopeExpiryDate),
-      None)
+      NotChecked)
     save4Later.upsert(formId, form)
   }
 
