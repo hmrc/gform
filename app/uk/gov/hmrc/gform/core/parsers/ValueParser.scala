@@ -40,9 +40,7 @@ object ValueParser {
     dateExpr
   }
 
-  lazy val today: Parser[TodayDateValue.type] = "today" ^^ { (loc, today) =>
-    TodayDateValue
-  }
+  lazy val today: Parser[TodayDateValue.type] = "today" ^^ const(TodayDateValue)
 
   lazy val exactDate: Parser[ExactDateValue] = yearParser ~ monthDay ^^ { (loc, year, month, day) =>
     ExactDateValue(year, month, day)
@@ -60,12 +58,10 @@ object ValueParser {
   lazy val expr: Parser[Expr] = (quotedConstant
     | "${" ~> parserExpression <~ "}")
 
-  lazy val operation: Parser[Operation] = ("+" ^^ { (loc, _) =>
-    Addition
-  }
-    | "*" ^^ { (loc, _) =>
-      Multiplication
-    })
+  lazy val operation: Parser[Operation] = (
+    "+" ^^ const(Addition)
+      | "*" ^^ const(Multiplication)
+  )
 
   lazy val contextField: Parser[Expr] = ("eeitt" ~ "." ~ eeitt ^^ { (loc, _, _, eeitt) =>
     EeittCtx(eeitt)
@@ -81,6 +77,9 @@ object ValueParser {
     }
     | "auth" ~ "." ~ authInfo ^^ { (loc, _, _, authInfo) =>
       AuthCtx(authInfo)
+    }
+    | "hmrcRosmRegistrationCheck" ~ "." ~ rosmProp ^^ { (loc, _, _, rosmProp) =>
+      HmrcRosmRegistrationCheck(rosmProp)
     }
     | quotedConstant
 
@@ -148,26 +147,17 @@ object ValueParser {
       }
   )
 
-  lazy val eeitt: Parser[Eeitt] = ("businessUser" ^^ { (loc, _) =>
-    BusinessUser
-  }
-    | "agent" ^^ { (loc, _) =>
-      Agent
-    }
-    | "userId" ^^ { (loc, _) =>
-      UserId
-    })
+  lazy val eeitt: Parser[Eeitt] = (
+    "businessUser" ^^ const(BusinessUser)
+      | "agent" ^^ const(Agent)
+      | "userId" ^^ const(UserId)
+  )
 
-  lazy val userField: Parser[UserField] =
-    "affinityGroup" ^^ { (loc, _) =>
-      AffinityGroup
-    } |
-      "enrolments" ~ "." ~ enrolment ^^ { (_, _, _, en) =>
-        en
-      } |
-      "enrolledIdentifier" ^^ { (loc, _) =>
-        EnrolledIdentifier
-      }
+  lazy val userField: Parser[UserField] = (
+    "affinityGroup" ^^ const(AffinityGroup)
+      | "enrolments" ~ "." ~ enrolment ^^ ((_, _, _, en) => en)
+      | "enrolledIdentifier" ^^ const(EnrolledIdentifier)
+  )
 
   lazy val enrolment: Parser[Enrolment] = serviceName ~ "." ~ identifierName ^^ { (_, sn, _, in) =>
     Enrolment(sn, in)
@@ -181,16 +171,18 @@ object ValueParser {
     IdentifierName(str)
   }
 
-  lazy val authInfo: Parser[AuthInfo] = ("gg" ^^ { (_, _) =>
-    GG
-  }
-    | "payenino" ^^ { (_, _) =>
-      PayeNino
-    }
-    | "sautr" ^^ { (_, _) =>
-      SaUtr
-    }
-    | "ctutr" ^^ { (_, _) =>
-      CtUtr
-    })
+  lazy val authInfo: Parser[AuthInfo] = (
+    "gg" ^^ const(GG)
+      | "payenino" ^^ const(PayeNino)
+      | "sautr" ^^ const(SaUtr)
+      | "ctutr" ^^ const(CtUtr)
+  )
+  lazy val rosmProp: Parser[RosmProp] = (
+    "safeId" ^^ const(RosmSafeId)
+      | "organisationName" ^^ const(RosmOrganisationName)
+      | "organisationType" ^^ const(RosmOrganisationType)
+      | "isAGroup" ^^ const(RosmIsAGroup)
+  )
+
+  private def const[A](a: A)(loc: List[Line], matched: String): A = a
 }

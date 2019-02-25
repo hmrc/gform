@@ -17,30 +17,29 @@
 package uk.gov.hmrc.gform.des
 
 import play.api.Logger
+import play.api.http.Status
 import play.api.libs.json._
+import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.config.DesConnectorConfig
+import uk.gov.hmrc.gform.sharedmodel.des.{ DesRegistrationRequest, DesRegistrationResponse }
 import uk.gov.hmrc.gform.wshttp.WSHttp
-import scala.concurrent.{ ExecutionContext, Future }
+import uk.gov.hmrc.gform.sharedmodel.Obligation
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.http.logging.Authorization
-import uk.gov.hmrc.gform.sharedmodel.Obligation
 
 class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfig) {
 
-  val lookupJson: JsValue =
-    Json.parse("""{
-       "regime": "REGIMETOGOHERE",
-       "requiresNameMatch": false,
-       "isAnAgent": false
-      }""") //TODO add in actual regime we are looking for
-
-  def lookupAddress(utr: String)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[AddressDes] = {
+  def lookupRegistration(utr: String, desRegistrationRequest: DesRegistrationRequest)(
+    implicit ex: ExecutionContext): Future[DesRegistrationResponse] = {
     implicit val hc = HeaderCarrier(
       extraHeaders = Seq("Environment" -> desConfig.environment),
       authorization = Some(Authorization(s"Bearer ${desConfig.authorizationToken}")))
-    Logger.info(s"Des lookup, UTR: '$utr', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
-    wSHttp.POST[JsValue, AddressDes](s"$baseUrl${desConfig.basePath}/registration/organisation/utr/$utr", lookupJson)
+    Logger.info(s"Des registration, UTR: '$utr', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
+    wSHttp.POST[DesRegistrationRequest, DesRegistrationResponse](
+      s"$baseUrl${desConfig.basePath}/registration/organisation/utr/$utr",
+      desRegistrationRequest)
+
   }
 
   def lookupTaxPeriod(idType: String, idNumber: String, regimeType: String)(

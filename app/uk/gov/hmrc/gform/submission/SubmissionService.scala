@@ -48,7 +48,7 @@ class SubmissionService(
     // format: OFF
     for {
       form                    <- fromFutureA          (formService.get(formId))
-      _                       <- fromFutureA          (formService.updateUserData(form._id, UserData(form.formData, Submitted, form.visitsIndex, form.obligations)))
+      _                       <- fromFutureA          (formService.updateUserData(form._id, UserData(form.formData, Submitted, form.visitsIndex, form.thirdPartyData, form.obligations)))
       formTemplate            <- fromFutureA          (formTemplateService.get(form.formTemplateId))
       submission              =                       createSubmission(form, customerId, formTemplate)
       _                       <-                      submissionRepo.upsert(submission)

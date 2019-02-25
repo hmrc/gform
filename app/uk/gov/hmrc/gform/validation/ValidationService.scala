@@ -16,25 +16,18 @@
 
 package uk.gov.hmrc.gform.validation
 
+import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.gform.bank_account_reputation.BankAccountReputationConnector
 import uk.gov.hmrc.gform.des.{ AddressDes, DesConnector }
-import uk.gov.hmrc.gform.sharedmodel.{ Account, ValAddress }
-
-import scala.concurrent.{ ExecutionContext, Future }
-import uk.gov.hmrc.http.{ HeaderCarrier, NotFoundException }
+import uk.gov.hmrc.gform.sharedmodel.des.{ DesRegistrationRequest, DesRegistrationResponse }
+import uk.gov.hmrc.gform.sharedmodel.Account
+import uk.gov.hmrc.http.HeaderCarrier
 
 class ValidationService(desConnector: DesConnector, bankAccountReputationConnector: BankAccountReputationConnector) {
 
-  def callDes(valAddress: ValAddress)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Boolean] = {
-    def compare(address: AddressDes) =
-      address.postalCode.replace(" ", "").equalsIgnoreCase(valAddress.postCode.replace(" ", ""))
-    desConnector
-      .lookupAddress(valAddress.utr)
-      .map(compare)
-      .recover {
-        case _: NotFoundException => false
-      }
-  }
+  def desRegistration(utr: String, desRegistrationRequest: DesRegistrationRequest)(
+    implicit ex: ExecutionContext): Future[DesRegistrationResponse] =
+    desConnector.lookupRegistration(utr, desRegistrationRequest)
 
   def callBRS(account: Account)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Boolean] =
     bankAccountReputationConnector.exists(account).map(_.accountNumberWithSortCodeIsValid)

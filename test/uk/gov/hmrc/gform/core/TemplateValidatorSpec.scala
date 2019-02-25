@@ -432,8 +432,6 @@ class TemplateValidatorSpec extends Spec {
 
     val newFormTemplate = formTemplate.copy(sections = List(newSection))
 
-    println(newFormTemplate)
-
     val res = FormTemplateValidator.getAllFieldIdsFromFormTemplate(newFormTemplate)
     res should be(List(FormComponentId("fieldContainedInGroup")))
 

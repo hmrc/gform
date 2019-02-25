@@ -32,6 +32,7 @@ class FormServiceSpec extends PlaySpec {
     FormData(Seq(FormField(FormComponentId("a"), "1"))),
     InProgress,
     VisitIndex.empty,
+    ThirdPartyData.empty,
     Some(EnvelopeExpiryDate(LocalDateTime.now.plusDays(1))),
     NotChecked
   )

@@ -40,6 +40,7 @@ class FormSpec extends FlatSpec with Matchers {
     ),
     InProgress,
     VisitIndex(Set(1, 2, 3)),
+    ThirdPartyData.empty,
     Some(EnvelopeExpiryDate(LocalDateTime.now.plusDays(1))),
     NotChecked
   )

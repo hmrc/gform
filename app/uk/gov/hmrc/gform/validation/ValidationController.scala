@@ -23,15 +23,16 @@ import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.bank_account_reputation.{ BankAccountReputationConnector, Response }
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.des.{ AddressDes, DesConnector }
-import uk.gov.hmrc.gform.sharedmodel.{ Account, ValAddress }
+import uk.gov.hmrc.gform.sharedmodel.des.DesRegistrationRequest
+import uk.gov.hmrc.gform.sharedmodel.Account
 
 import scala.concurrent.Future
 
 class ValidationController(validation: ValidationService) extends BaseController {
 
-  def validateAddressAtDes() = Action.async(parse.json[ValAddress]) { implicit request =>
+  def desRegistration(utr: String) = Action.async(parse.json[DesRegistrationRequest]) { implicit request =>
     Logger.info(s"validate Address At Des, ${loggingHelpers.cleanHeaders(request.headers)}")
-    validation.callDes(request.body).map(if (_) NoContent else NotFound)
+    validation.desRegistration(utr, request.body).map(a => Ok(Json.toJson(a)))
   }
 
   def validateBank() = Action.async(parse.json[Account]) { implicit request =>

@@ -14,12 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel
+package uk.gov.hmrc.gform.sharedmodel.form.generators
 
-import play.api.libs.json.Json
+import org.scalacheck.Gen
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.des.DesRegistrationResponseGen
+import uk.gov.hmrc.gform.sharedmodel.form.ThirdPartyData
 
-case class ValAddress(utr: String, postCode: String)
-
-object ValAddress {
-  implicit val format = Json.format[ValAddress]
+trait ThirdPartyDataGen {
+  def thirdPartyDataGen =
+    for {
+      desRegistrationResponse <- Gen.option(DesRegistrationResponseGen.desRegistrationResponseGen)
+    } yield ThirdPartyData(desRegistrationResponse)
 }
+
+object ThirdPartyDataGen extends ThirdPartyDataGen

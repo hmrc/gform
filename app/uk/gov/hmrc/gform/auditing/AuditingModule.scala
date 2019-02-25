@@ -59,6 +59,6 @@ object loggingHelpers {
   def cleanHeaders(headers: Headers) =
     s"headers: '${headers.remove("Authorization", "token", "customerId").toSimpleMap.toString()}'"
   def cleanHeaderCarrierHeader(hc: HeaderCarrier): String =
-    s"headers, sessionId: '${hc.sessionId.getOrElse("")}, deviceId: '${hc.deviceID.getOrElse("")}' requestId: '${hc.requestId
+    s"headers, sessionId: '${hc.sessionId.getOrElse("")}', deviceId: '${hc.deviceID.getOrElse("")}' requestId: '${hc.requestId
       .getOrElse("")}', request chain: '${hc.requestChain.value}'"
 }

@@ -260,10 +260,11 @@ object FormTemplateValidator {
     }
 
     expr match {
-      case Add(field1, field2)         => checkFields(field1, field2)
-      case Subtraction(field1, field2) => checkFields(field1, field2)
-      case Multiply(field1, field2)    => checkFields(field1, field2)
-      case Sum(value)                  => validate(value, sections)
+      case Add(field1, field2)          => checkFields(field1, field2)
+      case Subtraction(field1, field2)  => checkFields(field1, field2)
+      case Multiply(field1, field2)     => checkFields(field1, field2)
+      case Sum(value)                   => validate(value, sections)
+      case HmrcRosmRegistrationCheck(_) => Valid
       case FormCtx(value) =>
         fieldNamesIds
           .map(_.value)
