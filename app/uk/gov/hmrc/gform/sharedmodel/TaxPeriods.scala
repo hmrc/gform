@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel
 
 import java.util.Date
 
+import cats.data.NonEmptyList
 import julienrf.json.derived
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
@@ -70,8 +71,9 @@ object TaxPeriodInformation {
 sealed trait Obligations
 final case object NotChecked extends Obligations
 final case object NoObligations extends Obligations
-final case class RetrievedObligations(listOfObligations: List[TaxPeriodInformation]) extends Obligations
+final case class RetrievedObligations(listOfObligations: NonEmptyList[TaxPeriodInformation]) extends Obligations
 
 object Obligations {
+  import JsonUtils._
   implicit val format: OFormat[Obligations] = derived.oformat
 }
