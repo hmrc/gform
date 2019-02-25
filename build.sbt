@@ -1,10 +1,21 @@
 import Dependencies.appDependencies
-import Resolver._
-import sbt.Tests.{Group, SubProcess}
-import uk.gov.hmrc.DefaultBuildSettings.{addTestReportOption, defaultSettings, scalaSettings}
+import sbt.Tests.{ Group, SubProcess }
+import uk.gov.hmrc.DefaultBuildSettings.{ addTestReportOption, defaultSettings, scalaSettings }
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
 
 lazy val playSettings: Seq[Setting[_]] = Seq.empty
+
+lazy val scoverageSettings = {
+  import scoverage.ScoverageKeys
+  Seq(
+    // Semicolon-separated list of regexs matching classes to exclude
+    ScoverageKeys.coverageExcludedPackages := """uk.gov.hmrc.BuildInfo;._.Routes;._.RoutesPrefix;._Filters?;MicroserviceAuditConnector;Module;GraphiteStartUp;._.Reverse[^.]*""",
+    ScoverageKeys.coverageMinimum := 80.00,
+    ScoverageKeys.coverageFailOnMinimum := false,
+    ScoverageKeys.coverageHighlighting := true,
+    parallelExecution in Test := false
+  )
+}
 
 name := "gform"
 organization := "uk.gov.hmrc"
@@ -50,13 +61,12 @@ parallelExecution in IntegrationTest := false
 configs(IntegrationTest)
 inConfig(IntegrationTest)(Defaults.itSettings)
 
-
 def oneForkedJvmPerTest(tests: Seq[TestDefinition]): Seq[Group] =
-  tests map {
-    test => new Group(test.name, Seq(test), SubProcess(ForkOptions(runJVMOptions = Seq("-Dtest.name=" + test.name))))
+  tests map { test =>
+    Group(test.name, Seq(test), SubProcess(ForkOptions(runJVMOptions = Seq("-Dtest.name=" + test.name))))
   }
 
 resolvers ++= Seq(
-  Resolver.jCentreRepo,
-  Resolver.binTray
+  Resolver.jcenterRepo,
+  "bintray-djspiewak-maven" at "https://dl.bintray.com/djspiewak/maven"
 )
