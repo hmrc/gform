@@ -61,7 +61,8 @@ class FormSpec extends FlatSpec with Matchers {
           Json.obj("id" -> "startDate-year", "value" -> "2008")),
       "InProgress"  -> Json.obj(),
       "visitsIndex" -> Json.arr(1, 2, 3),
-      "ldt"         -> form.envelopeExpiryDate.map(_.ldt).map(f _).get
+      "ldt"         -> form.envelopeExpiryDate.map(_.ldt).map(f _).get,
+      "NotChecked"  -> Json.obj()
     )
     formJsObject shouldBe expectedFormJsObject
     Form.format.reads(Form.format.writes(form)) should be(JsSuccess(form))
@@ -77,7 +78,8 @@ class FormSpec extends FlatSpec with Matchers {
         .arr(
           Json.obj("id" -> "facePhoto", "value"      -> "face-photo.jpg"),
           Json.obj("id" -> "startDate-year", "value" -> "2008")),
-      "InProgress" -> Json.obj()
+      "InProgress" -> Json.obj(),
+      "NotChecked"  -> Json.obj()
     )
 
     val expectedForm = form.copy(visitsIndex = VisitIndex.empty, envelopeExpiryDate = None)
