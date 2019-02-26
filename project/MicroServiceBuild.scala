@@ -13,7 +13,7 @@ object MicroServiceBuild extends Build with MicroService {
   
   val compile = Seq(
     ws,
-    "uk.gov.hmrc" %% "play-reactivemongo" % "6.4.0" excludeAll(ExclusionRule("com.typesafe.play", "play-iteratees_2.11")),
+    "uk.gov.hmrc" %% "play-reactivemongo" % "6.4.0",
     "com.github.pureconfig" %% "pureconfig" % "0.10.2",
     "uk.gov.hmrc" %% "http-caching-client" % "8.0.0",
     "uk.gov.hmrc" %% "microservice-bootstrap" % "10.3.0",
