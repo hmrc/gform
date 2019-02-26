@@ -140,7 +140,7 @@ class FormController(
   }
 
   def enrolmentCallBack(formId: FormId): Action[AnyContent] = Action.async { implicit request =>
-    val audit = new AuditConnector {}
+    val audit = new Connector {}
     val requestHandler = new RequestConverter
     val event = requestHandler.requestToDataEvent(formId, request)
 
