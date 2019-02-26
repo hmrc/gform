@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.form
 import org.scalatest.{ MustMatchers, WordSpec }
-import uk.gov.hmrc.gform.auditing.AuditConnector
+import uk.gov.hmrc.gform.auditing.Connector
 import uk.gov.hmrc.play.audit.http.connector.AuditResult
 import uk.gov.hmrc.play.audit.model.DataEvent
 
@@ -29,7 +29,7 @@ class ConnectorSpec extends WordSpec with MustMatchers {
 
     val body = """"test1": "test1""""
 
-    val stubbedConn = new AuditConnector {
+    val stubbedConn = new Connector {
       override val connector: DataEvent => Future[AuditResult] = _ => Future.successful(AuditResult.Success)
       override def logger(msg: String): Unit = msg mustBe body
     }
