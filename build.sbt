@@ -24,8 +24,6 @@ lazy val scoverageSettings = {
   )
 }
 
-lazy val plugins: Seq[Plugins] = Seq.empty
-
 lazy val microservice = (project in file("."))
   .enablePlugins(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin, SbtArtifactory)
   .settings(
