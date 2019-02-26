@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.core.parsers
 
 import parseback._
 import uk.gov.hmrc.gform.core.Opt
-import BasicParsers._
+import uk.gov.hmrc.gform.core.parsers.BasicParsers._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 object FormatParser {
@@ -74,9 +74,9 @@ object FormatParser {
     "today" ^^ { (loc, today) =>
       Today
     } | exactYearParserWithNextAndPrevious ~ delimiter ~ exactMonthParser ~ delimiter ~ exactYearParserWithFirstAndLastDay ^^ {
-      (loc, year, _, month, _, day) =>
+      (_, year, _, month, _, day) =>
         ConcreteDate(year, ExactMonth(month), day)
-    } | "${" ~ alphabeticOnly ~ "}" ^^ { (loc, _, field, _) =>
+    } | "${" ~ alphabeticOnly ~ "}" ^^ { (_, _, field, _) =>
       DateField(FormComponentId(field))
     }
   }

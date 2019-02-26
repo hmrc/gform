@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.gform.core.parsers
 
-import java.time.LocalDate
-
 import cats.Eval
 import cats.data.ReaderT
 import cats.instances.either._
@@ -92,27 +90,27 @@ object BasicParsers {
   val anyWordFormat = """\w+""".r
   val delimiter = "[- /.]".r
 
-  lazy val yearParser: Parser[Year] = exactYearParser ^^ ((loc, year) => ExactYear(year)) | "YYYY" ^^ (
+  lazy val yearParser: Parser[Year] = exactYearParser ^^ ((_, year) => ExactYear(year)) | "YYYY" ^^ (
     (
-      loc,
-      _) => AnyYear: Year) | "next" ^^ ((loc, _) => Next: Year) | "previous" ^^ ((loc, _) => Previous: Year)
+      _,
+      _) => AnyYear: Year) | "next" ^^ ((_, _) => Next: Year) | "previous" ^^ ((_, _) => Previous: Year)
 
   lazy val monthParser
-    : Parser[Month] = exactMonthParser ^^ ((loc, month) => ExactMonth(month)) | "MM" ^^ ((loc, _) => AnyMonth: Month)
+    : Parser[Month] = exactMonthParser ^^ ((_, month) => ExactMonth(month)) | "MM" ^^ ((_, _) => AnyMonth: Month)
 
-  lazy val dayParser: Parser[Day] = exactDayParser ^^ ((loc, day) => ExactDay(day)) |
-    "firstDay" ^^ ((loc, _) => FirstDay) |
-    "lastDay" ^^ ((loc, _) => LastDay) | "DD" ^^ ((loc, _) => AnyDay)
+  lazy val dayParser: Parser[Day] = exactDayParser ^^ ((_, day) => ExactDay(day)) |
+    "firstDay" ^^ ((_, _) => FirstDay) |
+    "lastDay" ^^ ((_, _) => LastDay) | "DD" ^^ ((_, _) => AnyDay)
 
   lazy val exactYearParserWithNextAndPrevious
-    : Parser[Year] = """(19|20)\d\d""".r ^^ ((loc, year) => ExactYear(year.toInt)) | "next" ^^ ((loc, _) => Next) |
-    "previous" ^^ ((loc, _) => Previous)
+    : Parser[Year] = """(19|20)\d\d""".r ^^ ((_, year) => ExactYear(year.toInt)) | "next" ^^ ((_, _) => Next) |
+    "previous" ^^ ((_, _) => Previous)
 
   lazy val exactYearParserWithFirstAndLastDay: Parser[Day] = """0[1-9]|[12][0-9]|3[01]""".r ^^ (
     (
-      loc,
-      day) => ExactDay(day.toInt)) | "firstDay" ^^ ((loc, _) => FirstDay) |
-    "lastDay" ^^ ((loc, _) => LastDay)
+      _,
+      day) => ExactDay(day.toInt)) | "firstDay" ^^ ((_, _) => FirstDay) |
+    "lastDay" ^^ ((_, _) => LastDay)
 
   lazy val exactYearParser: Parser[Int] = intParser("""(19|20)\d\d""")
 

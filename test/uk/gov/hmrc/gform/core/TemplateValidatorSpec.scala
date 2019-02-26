@@ -450,17 +450,17 @@ class TemplateValidatorSpec extends Spec {
 
   }
 
-  "TemplateValidator.validateDates with date 2018-02-31" should "return Invalid" in {
+  "TemplateValidator.validateDates with date 2018-02-29" should "return Invalid" in {
 
     val formComponents =
-      List(mkFormComponent("fieldContainedInFormTemplate", mkDate(ExactYear(2018), ExactMonth(2), ExactDay(31), None)))
+      List(mkFormComponent("fieldContainedInFormTemplate", mkDate(ExactYear(2018), ExactMonth(2), ExactDay(29), None)))
 
     val newSection = mkSection("example", formComponents)
 
     val newFormTemplate = formTemplate.copy(sections = List(newSection))
 
     val res = FormTemplateValidator.validateDates(newFormTemplate)
-    res should be(Invalid("java.time.DateTimeException: Invalid date 'FEBRUARY 31'"))
+    res should be(Invalid("java.time.DateTimeException: Invalid date 'FEBRUARY 29'"))
 
   }
 
