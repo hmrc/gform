@@ -443,7 +443,29 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
 
   def stripCommas(s: Any): CharSequence = log("stripCommas", s) { ifNotNullAsString(s) { _.replaceAll(",", "") } }
 
+  def not(s: Any): CharSequence = log("not", s) {
+    ifNotNullAsString(s) { v =>
+      (!asBoolean(v)).toString
+    }
+  }
+
+  def or(first: Any, options: Options): CharSequence = condition {
+    (first :: options.params.toList).filterNot(isNull).map(asBoolean).exists(identity)
+  }
+
+  def and(first: Any, options: Options): CharSequence = condition {
+    (first :: options.params.toList).filterNot(isNull).map(asBoolean).forall(identity)
+  }
+
   private def ifNotNullAsString(t: Any)(f: String => CharSequence): CharSequence = NullString.ifNotNull(t)(f)
+
+  private def asBoolean(t: Any): Boolean = t match {
+    case "true"  => true
+    case "false" => false
+    case _ =>
+      throw new Exception(
+        s"Expected 'true' or 'false'. Got $t of type ${if (t != null) t.getClass.getName else "null"}")
+  }
 
   private def condition(v: Any): CharSequence =
     v match {
