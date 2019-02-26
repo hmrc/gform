@@ -97,8 +97,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
 
   "hmrcTaxPeriodKey" must "return the 0th element of the pipe separated parameter" in {
     forAll(periodGen) {
-      case (key, _, _, period) =>
-        process(s"{{hmrcTaxPeriodKey '$period'}}") shouldBe key
+      case (aKey, _, _, period) =>
+        process(s"{{hmrcTaxPeriodKey '$period'}}") shouldBe aKey
     }
   }
 
@@ -334,7 +334,7 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     val cases = "('0' '1') => 'A'"
     rootCause(the[Exception] thrownBy {
       process(s"""{{lookup "$cases" "1" "2"}}""")
-    }) should have message (s"""Attempt to lookup ('1' '2') failed in "$cases"""")
+    }) should have message s"""Attempt to lookup ('1' '2') failed in "$cases""""
   }
 
   "stripCommas" must "return null if the argument is null" in {
@@ -347,6 +347,67 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
 
   it must "compose" in {
     process("{{stripCommas (either null \"12,345\")}}") shouldBe "12345"
+  }
+
+  "not" must "return null if the argument is null" in {
+    process("{{not null}}") shouldBe "null"
+  }
+
+  it must "invert boolean values" in {
+    val table = Table(("value", "expected"), ("false", "true"), ("true", "false"))
+
+    forAll(table) {
+      case (v, expected) =>
+        process(s"{{not ${quote(v)}}}") shouldBe expected
+    }
+  }
+
+  "or" must "return false if all arguments are null" in {
+    process("{{or null null}}") shouldBe "false"
+  }
+
+  it must "or boolean values, ignoring nulls" in {
+    val table = Table(
+      ("one", "two", "expected"),
+      ("false", "false", "false"),
+      ("false", "true", "true"),
+      ("true", "true", "true"),
+      ("true", "false", "true")
+    )
+
+    forAll(table) {
+      case (v1, v2, expected) =>
+        process(s"{{or ${quote(v1)} ${quote(v2)} null}}") shouldBe expected
+        process(s"{{or ${quote(v1)} null ${quote(v2)}}}") shouldBe expected
+        process(s"{{or null ${quote(v1)} ${quote(v2)}}}") shouldBe expected
+    }
+  }
+
+  "and" must "return true if all arguments are null" in {
+    process("{{and null null}}") shouldBe "true"
+  }
+
+  it must "and boolean values, ignoring nulls" in {
+    val table = Table(
+      ("one", "two", "expected"),
+      ("false", "false", "false"),
+      ("false", "true", "false"),
+      ("true", "true", "true"),
+      ("true", "false", "false")
+    )
+
+    forAll(table) {
+      case (v1, v2, expected) =>
+        process(s"{{and ${quote(v1)} ${quote(v2)} null}}") shouldBe expected
+        process(s"{{and ${quote(v1)} null ${quote(v2)}}}") shouldBe expected
+        process(s"{{and null ${quote(v1)} ${quote(v2)}}}") shouldBe expected
+    }
+  }
+
+  "boolean functions" must "compose" in {
+    process("{{not (and 'true' (or 'false' 'false' 'true'))}}") shouldBe "false"
+    process("{{not (and (or 'false' 'false') 'true' (or 'false' 'true'))}}") shouldBe "true"
+    process("{{not (and (not (or 'false' 'false')) 'true' (or 'false' 'true'))}}") shouldBe "false"
   }
 
   "isNull" must "return 'true' when the argument is null" in {
