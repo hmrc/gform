@@ -1,17 +1,16 @@
 import Dependencies.appDependencies
-import sbt.Keys.resolvers
-import uk.gov.hmrc.DefaultBuildSettings.{ addTestReportOption, defaultSettings, scalaSettings }
-import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
 import com.lucidchart.sbt.scalafmt.ScalafmtCorePlugin.autoImport._
 import play.sbt.PlayImport.PlayKeys
 import play.sbt.routes.RoutesKeys.routesImport
-import sbt.Keys._
-import sbt.Tests.{ Group, SubProcess }
+import sbt.Keys.{resolvers, _}
+import sbt.Tests.{Group, SubProcess}
 import sbt._
-import uk.gov.hmrc.{ SbtArtifactory, SbtAutoBuildPlugin }
+import uk.gov.hmrc.DefaultBuildSettings.{addTestReportOption, defaultSettings, scalaSettings}
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
+import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
 import uk.gov.hmrc.versioning.SbtGitVersioning
 import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
+import uk.gov.hmrc.{SbtArtifactory, SbtAutoBuildPlugin}
 
 lazy val scoverageSettings = {
   import scoverage.ScoverageKeys
