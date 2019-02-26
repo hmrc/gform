@@ -24,7 +24,7 @@ import uk.gov.hmrc.play.audit.model.DataEvent
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-trait AuditConnector {
+trait Connector {
   val connector: DataEvent => Future[AuditResult] = MicroserviceAuditConnector.sendEvent
 
   def sendRequest(event: DataEvent): Future[AuditResult] = {
