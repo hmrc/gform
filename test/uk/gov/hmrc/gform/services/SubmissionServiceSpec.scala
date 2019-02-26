@@ -16,14 +16,15 @@
 
 package uk.gov.hmrc.gform.services
 
-import java.time.{ Clock, LocalDateTime, ZoneId, ZoneOffset }
+import java.time.{Clock, LocalDateTime, ZoneId, ZoneOffset}
 
 import cats.data.NonEmptyList
 import uk.gov.hmrc.gform._
+import uk.gov.hmrc.gform.sharedmodel.NotChecked
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
-import uk.gov.hmrc.gform.submission.{ SectionFormField, SubmissionServiceHelper }
+import uk.gov.hmrc.gform.submission.{SectionFormField, SubmissionServiceHelper}
 
 import scala.collection.immutable.List
 import uk.gov.hmrc.http.HeaderCarrier
@@ -59,7 +60,8 @@ class SubmissionServiceSpec extends Spec {
       formData,
       InProgress,
       VisitIndex.empty,
-      Some(EnvelopeExpiryDate(LocalDateTime.now(clock) plusDays (30)))
+      Some(EnvelopeExpiryDate(LocalDateTime.now(clock) plusDays (30))),
+      NotChecked
     )
 
     val textFieldUno = FormComponent(

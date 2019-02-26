@@ -84,8 +84,8 @@ class SubmissionService(
     )
 
   private def getSignedForm(formId: FormId)(implicit hc: HeaderCarrier) = formService.get(formId).flatMap {
-    case f @ Form(_, _, _, _, _, Signed, _, _) => Future.successful(f)
-    case _                                     => Future.failed(new Exception(s"Form $FormId status is not signed"))
+    case f @ Form(_, _, _, _, _, Signed, _, _, _) => Future.successful(f)
+    case _                                        => Future.failed(new Exception(s"Form $FormId status is not signed"))
   }
 
   private def submission(
@@ -95,7 +95,7 @@ class SubmissionService(
     pdfAndXmlSummaryFactory: PdfAndXmlSummariesFactory)(implicit hc: HeaderCarrier): FOpt[Unit] =
     // format: OFF
     for {
-      _                     <- fromFutureA          (formService.updateUserData(form._id, UserData(form.formData, Submitted, form.visitsIndex)))
+      _                     <- fromFutureA          (formService.updateUserData(form._id, UserData(form.formData, Submitted, form.visitsIndex, form.obligations)))
       formTemplate          <- fromFutureA          (formTemplateService.get(form.formTemplateId))
       submission            =                       createSubmission(form, customerId, formTemplate)
       _                     <-                      submissionRepo.upsert(submission)
