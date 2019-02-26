@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.submission.handlebars
 
 import uk.gov.hmrc.gform.Spec
+import uk.gov.hmrc.gform.sharedmodel.NotChecked
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
@@ -87,7 +88,7 @@ class HandlebarsTemplateProcessorModelSpec extends Spec {
       null,
       VisitIndex(Set(1)),
       None,
-      None)
+      NotChecked)
 
   def createFormTemplate(sections: Section*): FormTemplate =
     FormTemplate(

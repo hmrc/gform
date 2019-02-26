@@ -16,13 +16,14 @@
 
 package uk.gov.hmrc.gform.sharedmodel.form
 
-import org.scalatest.{ FlatSpec, Matchers }
+import org.scalatest.{FlatSpec, Matchers}
 import java.time.LocalDateTime
+
 import play.api.libs.json._
 import play.api.libs.json.Writes.DefaultLocalDateTimeWrites
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.ExampleData
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplateId }
+import uk.gov.hmrc.gform.sharedmodel.{ExampleData, NotChecked}
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{FormComponentId, FormTemplateId}
 
 class FormSpec extends FlatSpec with Matchers {
 
@@ -40,7 +41,7 @@ class FormSpec extends FlatSpec with Matchers {
     InProgress,
     VisitIndex(Set(1, 2, 3)),
     Some(EnvelopeExpiryDate(LocalDateTime.now.plusDays(1))),
-    None
+    NotChecked
   )
 
   "case class Form" should "be serialized into json" in {
