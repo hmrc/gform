@@ -58,7 +58,12 @@ object BeforeAfterPrecisely {
   implicit val format: OFormat[BeforeAfterPrecisely] = derived.oformat
 }
 
-sealed trait Year
+sealed trait ExactParameter
+sealed trait DateParameter
+
+sealed trait Year extends DateParameter
+case object Next extends Year with ExactParameter
+case object Previous extends Year with ExactParameter
 case object AnyYear extends Year
 case class ExactYear(year: Int) extends Year
 
@@ -66,19 +71,19 @@ object Year {
   implicit val format: OFormat[Year] = derived.oformat[Year]
 }
 
-sealed trait Month
+sealed trait Month extends DateParameter
 case object AnyMonth extends Month
-case class ExactMonth(month: Int) extends Month
+case class ExactMonth(month: Int) extends Month with ExactParameter
 
 object Month {
   implicit val format: OFormat[Month] = derived.oformat[Month]
 }
 
-sealed trait Day
+sealed trait Day extends DateParameter
 case object AnyDay extends Day
-case class ExactDay(day: Int) extends Day
-case object FirstDay extends Day
-case object LastDay extends Day
+case class ExactDay(day: Int) extends Day with ExactParameter
+case object FirstDay extends Day with ExactParameter
+case object LastDay extends Day with ExactParameter
 
 object Day {
   implicit val format: OFormat[Day] = derived.oformat[Day]
@@ -86,9 +91,8 @@ object Day {
 
 sealed trait DateConstraintInfo
 case object Today extends DateConstraintInfo
+
 case class ConcreteDate(year: Year, month: Month, day: Day) extends DateConstraintInfo
-case class NextDate(month: Month, day: Day) extends DateConstraintInfo
-case class PreviousDate(month: Month, day: Day) extends DateConstraintInfo
 
 case class AnyWord(value: String) extends DateConstraintInfo
 case class DateField(value: FormComponentId) extends DateConstraintInfo

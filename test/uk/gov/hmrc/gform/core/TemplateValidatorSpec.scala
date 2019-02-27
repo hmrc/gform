@@ -332,7 +332,6 @@ class TemplateValidatorSpec extends Spec {
 
   }
 
-
   "TemplateValidator.validateEmailParameters" should "return Valid" in {
 
     val formComponents = List(mkFormComponent("directorFullName", Value), mkFormComponent("directorEmail", Value))
@@ -378,13 +377,15 @@ class TemplateValidatorSpec extends Spec {
   "TemplateValidator.validateEmailParameters with field in acknowledgement section" should "return Invalid" in {
 
     val formComponent = List(mkFormComponent("fieldInAcknowledgementSections", Value))
-    val newAcknowledgementSection = AcknowledgementSection("ack section with email param field", None, None, formComponent)
+    val newAcknowledgementSection =
+      AcknowledgementSection("ack section with email param field", None, None, formComponent)
 
     val newEmailParameters = Some(
       NonEmptyList.of(
         EmailParameter("fieldEmailTemplateId", FormCtx("fieldInAcknowledgementSection"))
       ))
-    val newFormTemplate = mkFormTemplate(formComponent, newEmailParameters, acknowledgementSection = newAcknowledgementSection)
+    val newFormTemplate =
+      mkFormTemplate(formComponent, newEmailParameters, acknowledgementSection = newAcknowledgementSection)
 
     val res = FormTemplateValidator.validateEmailParameter(newFormTemplate)
     res should be(Invalid(
@@ -444,6 +445,45 @@ class TemplateValidatorSpec extends Spec {
     val res = FormTemplateValidator.validateDates(newFormTemplate)
     res should be(Invalid(
       "java.time.DateTimeException: Invalid date 'FEBRUARY 31'. java.time.DateTimeException: Invalid date 'APRIL 31'"))
+
+  }
+
+  "TemplateValidator.validateDates with multiple abstract and exact valid dates" should "all return Valid" in {
+    val table =
+      Table(
+        ("actual", "expected"),
+        (dateValidation(ExactYear(2003), AnyMonth, ExactDay(4)), Valid),
+        (dateValidation(AnyYear, AnyMonth, ExactDay(15)), Valid),
+        (dateValidation(AnyYear, ExactMonth(11), AnyDay), Valid),
+        (dateValidation(ExactYear(2015), ExactMonth(1), AnyDay), Valid),
+        (dateValidation(ExactYear(2015), ExactMonth(1), ExactDay(14)), Valid),
+        (dateValidation(AnyYear, AnyMonth, AnyDay), Valid),
+        (dateValidation(ExactYear(2001), ExactMonth(12), ExactDay(4)), Valid),
+        (dateValidation(ExactYear(1996), ExactMonth(11), ExactDay(2)), Valid),
+        (dateValidation(ExactYear(2018), ExactMonth(12), ExactDay(31)), Valid),
+        (dateValidation(ExactYear(2030), ExactMonth(4), ExactDay(3)), Valid)
+      )
+
+    table.forEvery { case (actual, expected) => actual shouldBe expected }
+
+  }
+
+  "TemplateValidator.validateDates with multiple invalid dates" should "all return Invalid" in {
+
+    val monthOutOfRangeFailure: Int => Invalid = month => Invalid(s"java.time.DateTimeException: Invalid value for MonthOfYear (valid values 1 - 12): $month")
+    val dayOutOfRangeFailure: Int => Invalid = day => Invalid(s"java.time.DateTimeException: Invalid value for DayOfMonth (valid values 1 - 28/31): $day")
+    val invalidDateFailure: (String, Int) => Invalid = (month, day) => Invalid(s"java.time.DateTimeException: Invalid date '$month $day'")
+
+    val table = Table(
+      ("actual", "expected"),
+      (dateValidation(ExactYear(2001), ExactMonth(4), ExactDay(31)), invalidDateFailure("APRIL", 31)),
+      (dateValidation(ExactYear(2001), ExactMonth(4), ExactDay(33)), dayOutOfRangeFailure(33)),
+      (dateValidation(ExactYear(2001), ExactMonth(13), ExactDay(14)), monthOutOfRangeFailure(13)),
+      (dateValidation(AnyYear, ExactMonth(6), ExactDay(31)), invalidDateFailure("JUNE", 31)),
+      (dateValidation(AnyYear, ExactMonth(11), ExactDay(33)), dayOutOfRangeFailure(33))
+    )
+
+    table.forEvery { case (actual, expected) => actual shouldBe expected }
 
   }
 
@@ -621,8 +661,16 @@ class TemplateValidatorSpec extends Spec {
     acknowledgementSection: AcknowledgementSection = formTemplate.acknowledgementSection): FormTemplate = {
     val section = mkSection("example", formComponents)
 
-    formTemplate.copy(sections = List(section), emailParameters = emailParameters, declarationSection = declarationSection, acknowledgementSection = acknowledgementSection)
+    formTemplate.copy(
+      sections = List(section),
+      emailParameters = emailParameters,
+      declarationSection = declarationSection,
+      acknowledgementSection = acknowledgementSection)
   }
+
+  private def dateValidation(year: Year, month: Month, day: Day): ValidationResult =
+    FormTemplateValidator.validateDates(
+      mkFormTemplate(List(mkFormComponent("fieldContainedInFormTemplate", mkDate(year, month, day, None)))))
 
   implicit class FormComponentOps(fc: FormComponent) {
     def isEditable: FormComponent = fc.copy(editable = true)
