@@ -372,8 +372,8 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
   def lookup(matchString: CharSequence, o: Options): CharSequence =
     log("lookup", (matchString :: o.params.toList): _*) {
       val key = o.params.collect {
-        case v if isNull(v) => null
-        case s              => s.toString
+        case v if isNullAsBoolean(v) => null
+        case s                       => s.toString
       }.toList
 
       LookupMatchStringParser(matchString.toString, key)
@@ -386,7 +386,7 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
     log("toDesAddressWithoutPostcodeFromArray", (fromFieldBase :: index :: options.params.toList): _*) {
       def get(line: String) = {
         val value = options.context.get(s"$fromFieldBase-$line")
-        if (isNull(value)) ""
+        if (isNullAsBoolean(value)) ""
         else
           value
             .cast[ArrayNode]
@@ -404,7 +404,7 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
     log("toDesAddressWithoutPostcode", (fromFieldBase :: options.params.toList): _*) {
       def get(line: String) = {
         val value = options.context.get(s"$fromFieldBase-$line")
-        if (isNull(value)) ""
+        if (isNullAsBoolean(value)) ""
         else
           value
             .cast[String]
@@ -443,6 +443,9 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
 
   def stripCommas(s: Any): CharSequence = log("stripCommas", s) { ifNotNullAsString(s) { _.replaceAll(",", "") } }
 
+  def isNull(s: Any): CharSequence = log("isNull", s) { condition(isNullAsBoolean(s)) }
+  def isNotNull(s: Any): CharSequence = log("isNotNull", s) { condition(!isNullAsBoolean(s)) }
+
   private def ifNotNullAsString(t: Any)(f: String => CharSequence): CharSequence = NullString.ifNotNull(t)(f)
 
   private def condition(v: Any): CharSequence =
@@ -454,10 +457,10 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
       case u => u.toString
     }
 
-  private def isNull(v: Any) = NullString.isNull(v)
+  private def isNullAsBoolean(v: Any) = NullString.isNull(v)
 
   private def asNotNullString(a: Any): Option[String] =
-    if (isNull(a)) None
+    if (isNullAsBoolean(a)) None
     else a.toString.some
 
   private def log(functionName: String, params: Any*)(f: => CharSequence): CharSequence = {
