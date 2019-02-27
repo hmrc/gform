@@ -64,7 +64,7 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
   private val metricsModule = new MetricsModule(playComponents, akkaModule)
   private val configModule = new ConfigModule(playComponents)
   private val auditingModule = new AuditingModule(configModule, akkaModule, playComponents)
-  private val wSHttpModule = new WSHttpModule(auditingModule, configModule, playComponents)
+  private val wSHttpModule = new WSHttpModule(auditingModule, configModule, playComponents, actorSystem)
   private val emailModule = new EmailModule(configModule, wSHttpModule)
   private val timeModule = new TimeModule
   private val fileUploadModule = new FileUploadModule(configModule, wSHttpModule, timeModule)

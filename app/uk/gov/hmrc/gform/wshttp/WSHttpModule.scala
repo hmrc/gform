@@ -16,14 +16,23 @@
 
 package uk.gov.hmrc.gform.wshttp
 
+import akka.actor.ActorSystem
+import com.typesafe.config.Config
+import play.api.{ Configuration, Play }
 import play.api.http.HttpVerbs.{ POST => POST_VERB }
 import uk.gov.hmrc.gform.auditing.AuditingModule
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.playcomponents.PlayComponents
 
-class WSHttpModule(auditingModule: AuditingModule, configModule: ConfigModule, playComponents: PlayComponents) {
+class WSHttpModule(
+  auditingModule: AuditingModule,
+  configModule: ConfigModule,
+  playComponents: PlayComponents,
+  theActorSystem: ActorSystem) {
 
   val auditableWSHttp: WSHttp = new WSHttp {
+    override protected def actorSystem: ActorSystem = theActorSystem
+
     //    httpHooks = Seq(auditingModule.httpAuditingHook)
   }
 }

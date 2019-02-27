@@ -17,14 +17,13 @@
 package uk.gov.hmrc.gform.submission
 
 import cats.instances.future._
-import org.apache.pdfbox.pdmodel.PDDocument
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.email.EmailService
 import uk.gov.hmrc.gform.fileupload.FileUploadService
 import uk.gov.hmrc.gform.form.FormService
 import uk.gov.hmrc.gform.formtemplate.FormTemplateService
-import uk.gov.hmrc.gform.pdfgenerator.{ HtmlGeneratorService, PdfGeneratorService, XmlGeneratorService }
+import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorService
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsHttpApiSubmitter
@@ -43,15 +42,6 @@ class SubmissionService(
   submissionRepo: SubmissionRepo,
   timeProvider: TimeProvider,
   email: EmailService) {
-
-  def submissionWithoutPdf(formId: FormId, customerId: String, affinityGroup: Option[AffinityGroup])(
-    implicit hc: HeaderCarrier): FOpt[Unit] =
-    // format: OFF
-    for {
-      form                <- fromFutureA        (getSignedForm(formId))
-      res                 <-                    submission(form, customerId, affinityGroup, PdfAndXmlSummariesFactory.withoutPdf(pdfGeneratorService))
-    } yield res
-  // format: ON
 
   def submissionWithPdf(formId: FormId, customerId: String, affinityGroup: Option[AffinityGroup], pdf: String)(
     implicit hc: HeaderCarrier): FOpt[Unit] =
@@ -82,11 +72,6 @@ class SubmissionService(
         customerId //TODO need more secure and safe way of doing this. perhaps moving auth to backend and just pulling value out there.
       )
     )
-
-  private def getSignedForm(formId: FormId)(implicit hc: HeaderCarrier) = formService.get(formId).flatMap {
-    case f @ Form(_, _, _, _, _, Signed, _, _, _) => Future.successful(f)
-    case _                                        => Future.failed(new Exception(s"Form $FormId status is not signed"))
-  }
 
   private def submission(
     form: Form,
