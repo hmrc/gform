@@ -21,5 +21,3 @@ import uk.gov.hmrc.gform.wshttp.JsonHttpClient
 case class MdtpHttpClient[F[_]](clients: Map[MdtpServiceName, JsonHttpClient[F]]) {
   def select(serviceName: MdtpServiceName): JsonHttpClient[F] = clients(serviceName)
 }
-
-object MdtpHttpClient
