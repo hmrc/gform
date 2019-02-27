@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.submission
 
 import org.apache.pdfbox.pdmodel.PDDocument
-import uk.gov.hmrc.gform.pdfgenerator.{ HtmlGeneratorService, PdfGeneratorService, XmlGeneratorService }
+import uk.gov.hmrc.gform.pdfgenerator.{ PdfGeneratorService, XmlGeneratorService }
 import uk.gov.hmrc.gform.sharedmodel.form.Form
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
@@ -37,21 +37,6 @@ trait PdfAndXmlSummariesFactory {
 }
 
 object PdfAndXmlSummariesFactory {
-  def withoutPdf(pdfGeneratorService: PdfGeneratorService)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): PdfAndXmlSummariesFactory = new PdfAndXmlSummariesFactory {
-    override def apply(
-      form: Form,
-      formTemplate: FormTemplate,
-      sectionFormFields: List[SectionFormField],
-      customerId: String,
-      submissionRef: SubmissionRef,
-      dmsSubmission: DmsSubmission): Future[PdfAndXmlSummaries] = {
-      val pdf = HtmlGeneratorService.generateDocumentHTML(sectionFormFields, formTemplate.formName, form.formData)
-      val wpdf: PdfAndXmlSummariesFactory = withPdf(pdfGeneratorService, pdf)
-      wpdf(form, formTemplate, sectionFormFields, customerId, submissionRef, dmsSubmission)
-    }
-  }
 
   def withPdf(pdfGeneratorService: PdfGeneratorService, pdfHtml: String)(
     implicit hc: HeaderCarrier,
