@@ -24,34 +24,14 @@ class UploadableDestinationSpec extends Spec {
   "toHandlebarsHttpApiDestination" should "not condition the uri, payload and includeIf if convertSingleQuotes is None" in {
     forAll(DestinationGen.handlebarsHttpApiGen) { destination =>
       val withQuotes = addQuotes(destination)
-      import withQuotes._
-      UploadableHandlebarsHttpApiDestination(
-        id,
-        profile,
-        uri,
-        method,
-        payload,
-        None,
-        includeIf,
-        failOnError
-      ).toHandlebarsHttpApiDestination shouldBe Right(withQuotes)
+      createUploadable(withQuotes, None).toHandlebarsHttpApiDestination shouldBe Right(withQuotes)
     }
   }
 
   it should "not condition the uri, payload and includeIf if convertSingleQuotes is Some(false)" in {
     forAll(DestinationGen.handlebarsHttpApiGen) { destination =>
       val withQuotes = addQuotes(destination)
-      import withQuotes._
-      UploadableHandlebarsHttpApiDestination(
-        id,
-        profile,
-        uri,
-        method,
-        payload,
-        Some(false),
-        includeIf,
-        failOnError
-      ).toHandlebarsHttpApiDestination shouldBe Right(withQuotes)
+      createUploadable(withQuotes, Some(false)).toHandlebarsHttpApiDestination shouldBe Right(withQuotes)
     }
   }
 
@@ -64,18 +44,24 @@ class UploadableDestinationSpec extends Spec {
         includeIf = withQuotes.includeIf.map(v => replaceQuotes(v))
       )
 
-      import withQuotes._
-      UploadableHandlebarsHttpApiDestination(
-        id,
-        profile,
-        uri,
-        method,
-        payload,
-        Some(true),
-        includeIf,
-        failOnError
-      ).toHandlebarsHttpApiDestination shouldBe Right(expected)
+      createUploadable(withQuotes, Some(true)).toHandlebarsHttpApiDestination shouldBe Right(expected)
     }
+  }
+
+  private def createUploadable(
+    destination: Destination.HandlebarsHttpApi,
+    convertSingleQuotes: Option[Boolean]): UploadableHandlebarsHttpApiDestination = {
+    import destination._
+    UploadableHandlebarsHttpApiDestination(
+      id,
+      profile,
+      uri,
+      method,
+      payload,
+      convertSingleQuotes,
+      includeIf,
+      failOnError
+    )
   }
 
   private def replaceQuotes(s: String): String = SingleQuoteReplacementLexer(s).merge
