@@ -48,7 +48,16 @@ class SubmissionService(
     // format: OFF
     for {
       form                <- fromFutureA        (formService.get(formId))
-      res                 <-                    submission(form, customerId, affinityGroup, PdfAndXmlSummariesFactory.withPdf(pdfGeneratorService, pdf))
+      res                 <-                    for {
+        _                     <- fromFutureA          (formService.updateUserData(form._id, UserData(form.formData, Submitted, form.visitsIndex, form.obligations)))
+        formTemplate          <- fromFutureA          (formTemplateService.get(form.formTemplateId))
+        submission            =                       createSubmission(form, customerId, formTemplate)
+        _                     <-                      submissionRepo.upsert(submission)
+        destinationsSubmitter =                       new DestinationsSubmitter(new RealDestinationSubmitter(new FileUploadServiceDmsSubmitter(fileUploadService), handlebarsApiHttpSubmitter))
+        res                   <-                      destinationsSubmitter.send(DestinationSubmissionInfo(submission, form, formTemplate, customerId, affinityGroup, PdfAndXmlSummariesFactory.withPdf(pdfGeneratorService, pdf)))
+        emailAddress          =                       email.getEmailAddress(form)
+        _                     <-                      fromFutureA(email.sendEmail(emailAddress, formTemplate.emailTemplateId, SubmissionServiceHelper.getEmailParameterValues(formTemplate, form))(hc, fromLoggingDetails))
+      } yield res
     } yield res
   // format: ON
 
@@ -72,24 +81,6 @@ class SubmissionService(
         customerId //TODO need more secure and safe way of doing this. perhaps moving auth to backend and just pulling value out there.
       )
     )
-
-  private def submission(
-    form: Form,
-    customerId: String,
-    affinityGroup: Option[AffinityGroup],
-    pdfAndXmlSummaryFactory: PdfAndXmlSummariesFactory)(implicit hc: HeaderCarrier): FOpt[Unit] =
-    // format: OFF
-    for {
-      _                     <- fromFutureA          (formService.updateUserData(form._id, UserData(form.formData, Submitted, form.visitsIndex, form.obligations)))
-      formTemplate          <- fromFutureA          (formTemplateService.get(form.formTemplateId))
-      submission            =                       createSubmission(form, customerId, formTemplate)
-      _                     <-                      submissionRepo.upsert(submission)
-      destinationsSubmitter =                       new DestinationsSubmitter(new RealDestinationSubmitter(new FileUploadServiceDmsSubmitter(fileUploadService), handlebarsApiHttpSubmitter))
-      res                   <-                      destinationsSubmitter.send(DestinationSubmissionInfo(submission, form, formTemplate, customerId, affinityGroup, pdfAndXmlSummaryFactory))
-      emailAddress          =                       email.getEmailAddress(form)
-      _                     <-                      fromFutureA(email.sendEmail(emailAddress, formTemplate.emailTemplateId, SubmissionServiceHelper.getEmailParameterValues(formTemplate, form))(hc, fromLoggingDetails))
-    } yield res
-  // format: ON
 
   def submissionDetails(formId: FormId)(implicit ec: ExecutionContext): Future[Submission] =
     submissionRepo.get(formId.value)
