@@ -21,26 +21,22 @@ import play.api.Logger
 import play.api.mvc.{ Action, AnyContent, Request }
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
-import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.gform.sharedmodel.AffinityGroupUtil._
-
-import scala.concurrent.Future
+import uk.gov.hmrc.gform.sharedmodel.form.{ FormId, SubmissionData }
 
 class SubmissionController(submissionService: SubmissionService) extends BaseController {
 
-  def submitWithPdf(formId: FormId) = Action.async { implicit request =>
+  def submitWithPdf(formId: FormId) = Action.async(parse.json[SubmissionData]) { implicit request =>
     Logger.info(s"submit, formId: '${formId.value}, ${loggingHelpers.cleanHeaders(request.headers)}")
-    request.body.asText match {
-      case Some(html) =>
-        submissionService
-          .submissionWithPdf(
-            formId,
-            getFromHeaders("customerId", request, _.getOrElse("")),
-            getFromHeaders("affinityGroup", request, toAffinityGroupO),
-            html)
-          .fold(_.asBadRequest, _ => NoContent)
-      case None => Future.successful(BadRequest)
-    }
+
+    submissionService
+      .submissionWithPdf(
+        formId,
+        request.headers.get("customerId").getOrElse(""),
+        toAffinityGroupO(request.headers.get("affinityGroup")),
+        request.body
+      )
+      .fold(_.asBadRequest, _ => NoContent)
   }
 
   def submissionStatus(formId: FormId) = Action.async { implicit request =>
@@ -54,5 +50,4 @@ class SubmissionController(submissionService: SubmissionService) extends BaseCon
 
   private def getFromHeaders[A](header: String, request: Request[AnyContent], f: Option[String] => A): A =
     f(request.headers.get(header))
-
 }

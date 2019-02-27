@@ -14,16 +14,18 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.submission
-import uk.gov.hmrc.auth.core.AffinityGroup
-import uk.gov.hmrc.gform.sharedmodel.form.{ Form, Variables }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
+package uk.gov.hmrc.gform.sharedmodel.form
 
-case class DestinationSubmissionInfo(
-  submission: Submission,
-  form: Form,
-  formTemplate: FormTemplate,
-  customerId: String,
-  affinityGroup: Option[AffinityGroup],
-  variables: Variables,
-  pdfAndXmlSummaryFactory: PdfAndXmlSummariesFactory)
+import play.api.libs.json._
+
+case class SubmissionData(pdfData: String, variables: Variables)
+
+object SubmissionData {
+  implicit val format: OFormat[SubmissionData] = Json.format[SubmissionData]
+}
+
+case class Variables(value: JsValue)
+
+object Variables {
+  implicit val format: Format[Variables] = Json.format[Variables]
+}

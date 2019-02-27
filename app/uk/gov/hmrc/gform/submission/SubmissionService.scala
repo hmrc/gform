@@ -43,8 +43,11 @@ class SubmissionService(
   timeProvider: TimeProvider,
   email: EmailService) {
 
-  def submissionWithPdf(formId: FormId, customerId: String, affinityGroup: Option[AffinityGroup], pdf: String)(
-    implicit hc: HeaderCarrier): FOpt[Unit] =
+  def submissionWithPdf(
+    formId: FormId,
+    customerId: String,
+    affinityGroup: Option[AffinityGroup],
+    submissionData: SubmissionData)(implicit hc: HeaderCarrier): FOpt[Unit] =
     // format: OFF
     for {
       form                    <- fromFutureA          (formService.get(formId))
@@ -53,7 +56,7 @@ class SubmissionService(
       submission              =                       createSubmission(form, customerId, formTemplate)
       _                       <-                      submissionRepo.upsert(submission)
       destinationsSubmitter   =                       new DestinationsSubmitter(new RealDestinationSubmitter(new FileUploadServiceDmsSubmitter(fileUploadService), handlebarsApiHttpSubmitter))
-      res                     <-                      destinationsSubmitter.send(DestinationSubmissionInfo(submission, form, formTemplate, customerId, affinityGroup, PdfAndXmlSummariesFactory.withPdf(pdfGeneratorService, pdf)))
+      res                     <-                      destinationsSubmitter.send(DestinationSubmissionInfo(submission, form, formTemplate, customerId, affinityGroup, submissionData.variables, PdfAndXmlSummariesFactory.withPdf(pdfGeneratorService, submissionData.pdfData)))
       emailAddress            =                       email.getEmailAddress(form)
       _                       <-                      fromFutureA(email.sendEmail(emailAddress, formTemplate.emailTemplateId, SubmissionServiceHelper.getEmailParameterValues(formTemplate, form))(hc, fromLoggingDetails))
       } yield res

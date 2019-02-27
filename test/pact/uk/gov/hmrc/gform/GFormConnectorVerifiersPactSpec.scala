@@ -14,16 +14,20 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.submission
-import uk.gov.hmrc.auth.core.AffinityGroup
-import uk.gov.hmrc.gform.sharedmodel.form.{ Form, Variables }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
+package pact.uk.gov.hmrc.gform
 
-case class DestinationSubmissionInfo(
-  submission: Submission,
-  form: Form,
-  formTemplate: FormTemplate,
-  customerId: String,
-  affinityGroup: Option[AffinityGroup],
-  variables: Variables,
-  pdfAndXmlSummaryFactory: PdfAndXmlSummariesFactory)
+import com.itv.scalapact.ScalaPactVerify.{ loadFromLocal, verifyPact }
+import uk.gov.hmrc.gform.Spec
+
+class GFormConnectorVerifiersPactSpec extends Spec {
+
+  ignore should "verify contract" in {
+
+    //TODO remove hard cpded path
+    //TODO add provider state
+    verifyPact
+      .withPactSource(loadFromLocal("/gform-frontend_gform.json"))
+      .noSetupRequired
+      .runVerificationAgainst("localhost", 9196)
+  }
+}
