@@ -27,7 +27,9 @@ object Dependencies {
     "uk.gov.hmrc" %% "auth-client" % "2.19.0-play-25", // we need AffinityGroup type to stay in sync with frontend
     "org.scala-graph" %% "graph-core" % "1.12.5",
     "com.github.jknack" % "handlebars" % handlebarsVersion,
-    "com.github.jknack" % "handlebars-jackson2" % handlebarsVersion
+    "com.github.jknack" % "handlebars-jackson2" % handlebarsVersion,
+    "com.itv" %% "scalapact-argonaut-6-2"  % "2.2.5",
+    "com.itv" %% "scalapact-http4s-0-16-2" % "2.2.5"
   )
 
 
@@ -39,7 +41,10 @@ object Dependencies {
     "com.typesafe.play" %% "play-test" % PlayVersion.current % scope,
     "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % scope,
     "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.1" % scope,
-    "org.jsoup" % "jsoup" % "1.11.3" % scope
+    "org.jsoup" % "jsoup" % "1.11.3" % scope,
+    "com.itv" %% "scalapact-circe-0-9"     % "2.2.5" % scope,
+    "com.itv" %% "scalapact-http4s-0-18-0" % "2.2.5" % scope,
+    "com.itv" %% "scalapact-scalatest"     % "2.2.5" % scope
   )
 
 
