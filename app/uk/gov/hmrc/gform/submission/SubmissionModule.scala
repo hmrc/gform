@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.submission
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.email.EmailModule
 import uk.gov.hmrc.gform.fileupload.FileUploadModule
-import uk.gov.hmrc.gform.form.FormModule
+import uk.gov.hmrc.gform.form.{ FormModule, FormService }
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorModule
@@ -33,7 +33,7 @@ class SubmissionModule(
   configModule: ConfigModule,
   mongoModule: MongoModule,
   pdfGeneratorModule: PdfGeneratorModule,
-  formModule: FormModule,
+  formService: FormService,
   formTemplateModule: FormTemplateModule,
   fileUploadModule: FileUploadModule,
   wsHttpModule: WSHttpModule,
@@ -47,7 +47,7 @@ class SubmissionModule(
 
   val submissionService = new SubmissionService(
     pdfGeneratorModule.pdfGeneratorService,
-    formModule.formService,
+    formService,
     formTemplateModule.formTemplateService,
     fileUploadModule.fileUploadService,
     handlebarsHttpApiModule.handlebarsHttpSubmitter,

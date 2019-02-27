@@ -18,16 +18,51 @@ package pact.uk.gov.hmrc.gform
 
 import com.itv.scalapact.ScalaPactVerify.{ loadFromLocal, verifyPact }
 import uk.gov.hmrc.gform.Spec
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AcknowledgementSection, Constant, DeclarationSection, FormTemplate, FormTemplateId, HmrcSimpleModule, TextExpression }
 
-class GFormConnectorVerifiersPactSpec extends Spec {
+import scala.concurrent.ExecutionContext.Implicits.global
+
+class GFormConnectorVerifiersPactSpec extends Spec with StubServer {
 
   ignore should "verify contract" in {
-
-    //TODO remove hard cpded path
-    //TODO add provider state
     verifyPact
-      .withPactSource(loadFromLocal("/gform-frontend_gform.json"))
-      .noSetupRequired
-      .runVerificationAgainst("localhost", 9196)
+      .withPactSource(loadFromLocal("delivered_pacts/gform-frontend_gform.json"))
+      .setupProviderState("given") {
+        case "Form 123 exists" =>
+          persistAFormTemplate(FormTemplateId("222"))
+          true
+        case "Form 333 exists" =>
+          persistAFormTemplate(FormTemplateId("333"))
+          true
+        case _ => false
+      }
+      .runVerificationAgainst("localhost", 9197)
+  }
+
+  def persistAFormTemplate(formTemplateId: FormTemplateId) = {
+    val akn = AcknowledgementSection("Mr", None, None, Nil)
+    val declaration = DeclarationSection("Mr", None, None, Nil)
+    val submission = DmsSubmission("id", TextExpression(Constant("costant")), "classification", "BA")
+    val raw = FormTemplate(
+      formTemplateId,
+      "name",
+      "description",
+      None,
+      None,
+      None,
+      None,
+      submission,
+      HmrcSimpleModule,
+      "classification",
+      None,
+      "",
+      "business",
+      Nil,
+      akn,
+      declaration,
+      None)
+
+    stubbedModule.module.formTemplateModule.formTemplateService.verifyAndSave(raw)
   }
 }
