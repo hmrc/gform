@@ -433,7 +433,7 @@ class TemplateValidatorSpec extends Spec {
 
   }
 
-  "TemplateValidator.validateDates with dates yyyy-02-31 and yyyy-04-31" should "return Invalid" in {
+  "TemplateValidator.validateDates" should "be invalid with dates yyyy-02-31 and yyyy-04-31" in {
 
     val formComponents = List(
       mkFormComponent("fieldContainedInFormTemplate", mkDate(AnyYear, ExactMonth(2), ExactDay(31), None)),
@@ -470,9 +470,12 @@ class TemplateValidatorSpec extends Spec {
 
   "TemplateValidator.validateDates with multiple invalid dates" should "all return Invalid" in {
 
-    val monthOutOfRangeFailure: Int => Invalid = month => Invalid(s"java.time.DateTimeException: Invalid value for MonthOfYear (valid values 1 - 12): $month")
-    val dayOutOfRangeFailure: Int => Invalid = day => Invalid(s"java.time.DateTimeException: Invalid value for DayOfMonth (valid values 1 - 28/31): $day")
-    val invalidDateFailure: (String, Int) => Invalid = (month, day) => Invalid(s"java.time.DateTimeException: Invalid date '$month $day'")
+    val monthOutOfRangeFailure: Int => Invalid =
+      month => Invalid(s"java.time.DateTimeException: Invalid value for MonthOfYear (valid values 1 - 12): $month")
+    val dayOutOfRangeFailure: Int => Invalid =
+      day => Invalid(s"java.time.DateTimeException: Invalid value for DayOfMonth (valid values 1 - 28/31): $day")
+    val invalidDateFailure: (String, Int) => Invalid =
+      (month, day) => Invalid(s"java.time.DateTimeException: Invalid date '$month $day'")
 
     val table = Table(
       ("actual", "expected"),
