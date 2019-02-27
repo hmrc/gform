@@ -20,6 +20,7 @@ import cats.syntax.either._
 import julienrf.json.derived
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import UploadableConditioning._
 
 sealed trait Destination extends Product with Serializable {
   def id: DestinationId
@@ -67,9 +68,33 @@ object Destination {
     OFormatWithTemplateReadFallback(
       ADTFormat.adtRead[Destination](
         typeDiscriminatorFieldName,
-        hmrcDms           -> derived.reads[HmrcDms],
+        hmrcDms           -> UploadableHmrcDmsDestination.reads,
         handlebarsHttpApi -> UploadableHandlebarsHttpApiDestination.reads
       ))
+  }
+}
+
+case class UploadableHmrcDmsDestination(
+  id: DestinationId,
+  dmsFormId: String,
+  customerId: TextExpression,
+  classificationType: String,
+  businessArea: String,
+  convertSingleQuotes: Option[Boolean],
+  includeIf: Option[String] = None,
+  failOnError: Option[Boolean] = None) {
+
+  def toHmrcDmsDestination: Either[String, Destination.HmrcDms] =
+    for {
+      cii <- conditioned(convertSingleQuotes, includeIf)
+    } yield Destination.HmrcDms(id, dmsFormId, customerId, classificationType, businessArea, cii, failOnError)
+}
+
+object UploadableHmrcDmsDestination {
+  implicit val reads: Reads[Destination.HmrcDms] = new Reads[Destination.HmrcDms] {
+    private val d: Reads[UploadableHmrcDmsDestination] = derived.reads[UploadableHmrcDmsDestination]
+    override def reads(json: JsValue): JsResult[Destination.HmrcDms] =
+      d.reads(json).flatMap(_.toHmrcDmsDestination.fold(JsError(_), JsSuccess(_)))
   }
 }
 
@@ -85,27 +110,31 @@ case class UploadableHandlebarsHttpApiDestination(
 
   def toHandlebarsHttpApiDestination: Either[String, Destination.HandlebarsHttpApi] =
     for {
-      cp   <- conditioned(payload)
-      cii  <- conditioned(includeIf)
-      curi <- conditioned(uri)
+      cp   <- conditioned(convertSingleQuotes, payload)
+      cii  <- conditioned(convertSingleQuotes, includeIf)
+      curi <- conditioned(convertSingleQuotes, uri)
     } yield Destination.HandlebarsHttpApi(id, profile, curi, method, cp, cii, failOnError)
 
-  private def conditioned(s: String): Either[String, String] =
+}
+
+object UploadableHandlebarsHttpApiDestination {
+  implicit val reads: Reads[Destination.HandlebarsHttpApi] = new Reads[Destination.HandlebarsHttpApi] {
+    private val d = derived.reads[UploadableHandlebarsHttpApiDestination]
+    override def reads(json: JsValue): JsResult[Destination.HandlebarsHttpApi] =
+      d.reads(json).flatMap(_.toHandlebarsHttpApiDestination.fold(JsError(_), JsSuccess(_)))
+  }
+}
+
+object UploadableConditioning {
+  def conditioned(convertSingleQuotes: Option[Boolean], s: String): Either[String, String] =
     if (convertSingleQuotes.getOrElse(false)) SingleQuoteReplacementLexer(s)
     else Right(s)
 
-  private def conditioned(os: Option[String]): Either[String, Option[String]] = os match {
+  def conditioned(convertSingleQuotes: Option[Boolean], os: Option[String]): Either[String, Option[String]] = os match {
     case None => Right(None)
     case Some(p) =>
       if (convertSingleQuotes.getOrElse(false)) SingleQuoteReplacementLexer(p).map(Option(_))
       else Right(Option(p))
   }
-}
 
-object UploadableHandlebarsHttpApiDestination {
-  implicit val reads = new Reads[Destination.HandlebarsHttpApi] {
-    val d = derived.reads[UploadableHandlebarsHttpApiDestination]
-    override def reads(json: JsValue): JsResult[Destination.HandlebarsHttpApi] =
-      d.reads(json).flatMap(_.toHandlebarsHttpApiDestination.fold(JsError(_), JsSuccess(_)))
-  }
 }

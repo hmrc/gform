@@ -18,10 +18,9 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
 
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.DestinationGen
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.verifyRead
 
 class UploadableDestinationSpec extends Spec {
-  "toHandlebarsHttpApiDestination" should "not condition the uri, payload and includeIf if convertSingleQuotes is None" in {
+  "UploadableHandlebarsHttpApiDestination.toHandlebarsHttpApiDestination" should "not condition the uri, payload and includeIf if convertSingleQuotes is None" in {
     forAll(DestinationGen.handlebarsHttpApiGen) { destination =>
       val withQuotes = addQuotes(destination)
       createUploadable(withQuotes, None).toHandlebarsHttpApiDestination shouldBe Right(withQuotes)
@@ -48,6 +47,31 @@ class UploadableDestinationSpec extends Spec {
     }
   }
 
+  "UploadableHmrcDmsDestination.toHmrcDmsDestination" should "not condition the includeIf if convertSingleQuotes is None" in {
+    forAll(DestinationGen.hmrcDmsGen) { destination =>
+      val withQuotes = addQuotes(destination)
+      createUploadable(withQuotes, None).toHmrcDmsDestination shouldBe Right(withQuotes)
+    }
+  }
+
+  it should "not condition the includeIf if convertSingleQuotes is Some(false)" in {
+    forAll(DestinationGen.hmrcDmsGen) { destination =>
+      val withQuotes = addQuotes(destination)
+      createUploadable(withQuotes, Some(false)).toHmrcDmsDestination shouldBe Right(withQuotes)
+    }
+  }
+
+  it should "condition the includeIf if convertSingleQuotes is Some(true)" in {
+    forAll(DestinationGen.hmrcDmsGen) { destination =>
+      val withQuotes = addQuotes(destination)
+      val expected = withQuotes.copy(
+        includeIf = withQuotes.includeIf.map(v => replaceQuotes(v))
+      )
+
+      createUploadable(withQuotes, Some(true)).toHmrcDmsDestination shouldBe Right(expected)
+    }
+  }
+
   private def createUploadable(
     destination: Destination.HandlebarsHttpApi,
     convertSingleQuotes: Option[Boolean]): UploadableHandlebarsHttpApiDestination = {
@@ -64,12 +88,33 @@ class UploadableDestinationSpec extends Spec {
     )
   }
 
+  private def createUploadable(
+    destination: Destination.HmrcDms,
+    convertSingleQuotes: Option[Boolean]): UploadableHmrcDmsDestination = {
+    import destination._
+    UploadableHmrcDmsDestination(
+      id,
+      dmsFormId,
+      customerId,
+      classificationType,
+      businessArea,
+      convertSingleQuotes,
+      includeIf,
+      failOnError
+    )
+  }
+
   private def replaceQuotes(s: String): String = SingleQuoteReplacementLexer(s).merge
 
   private def addQuotes(destination: Destination.HandlebarsHttpApi) =
     destination.copy(
       uri = destination.uri + quotes,
       payload = destination.payload.map(_ + quotes),
+      includeIf = destination.includeIf.map(_ + quotes)
+    )
+
+  private def addQuotes(destination: Destination.HmrcDms) =
+    destination.copy(
       includeIf = destination.includeIf.map(_ + quotes)
     )
 
