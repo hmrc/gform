@@ -33,8 +33,8 @@ class HandlebarsHttpApiSubmitterSpec extends Spec {
 
       RealHandlebarsHttpApiSubmitter.selectHttpClient[Id](Profile.DES, des, mdg, mdtp) shouldBe des
       RealHandlebarsHttpApiSubmitter.selectHttpClient[Id](Profile.MdgIntegrationFramework, des, mdg, mdtp) shouldBe mdg
-      RealHandlebarsHttpApiSubmitter.selectHttpClient[Id](Profile.MDTP("anMdtpService"), des, mdg, mdtp) shouldBe mdtp(
-        MdtpServiceName("anMdtpService"))
+      RealHandlebarsHttpApiSubmitter.selectHttpClient[Id](Profile.MDTP("anMdtpService"), des, mdg, mdtp) shouldBe mdtp
+        .select(MdtpServiceName("anMdtpService"))
     }
   }
 
@@ -126,7 +126,7 @@ class HandlebarsHttpApiSubmitterSpec extends Spec {
     submitter: HandlebarsHttpApiSubmitter[F],
     des: JsonHttpClient[F],
     mdg: JsonHttpClient[F],
-    mdtp: Map[MdtpServiceName, JsonHttpClient[F]],
+    mdtp: MdtpHttpClient[F],
     templateProcessor: HandlebarsTemplateProcessor) {
 
     def expectTemplateProcessorApplication(
@@ -183,7 +183,7 @@ class HandlebarsHttpApiSubmitterSpec extends Spec {
   private def submitterPartsGen[F[_]]: Gen[SubmitterParts[F]] = {
     val desHttpClient = mock[JsonHttpClient[F]]
     val mdgIntegrationFrameworkHttpClient = mock[JsonHttpClient[F]]
-    val mdtpHttpClient = Map(MdtpServiceName("anMdtpService") -> mock[JsonHttpClient[F]])
+    val mdtpHttpClient = MdtpHttpClient(Map(MdtpServiceName("anMdtpService") -> mock[JsonHttpClient[F]]))
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
 
     val submitter =

@@ -42,12 +42,13 @@ class HandlebarsHttpApiModule(wSHttpModule: WSHttpModule, configModule: ConfigMo
       })
       .json
 
-  private val mdtpHttpClientMap: Map[MdtpServiceName, JsonHttpClient[FOpt]] =
+  private val mdtpHttpClientMap: MdtpHttpClient[FOpt] = MdtpHttpClient(
     configModule.mdtpServiceConfigs.mapValues { configuration =>
       rootHttpClient
         .buildUri(uri => s"${configuration.baseUrl}/$uri")
         .json
     }
+  )
 
 //  private val mdgConfig = configModule.mdgIntegrationFrameworkConfig
 
