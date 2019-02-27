@@ -38,18 +38,17 @@ class ConfigModule(playComponents: PlayComponents) {
   val desConfig: DesConnectorConfig = pureconfig.loadConfigOrThrow[DesConnectorConfig]("microservice.services.etmp-hod")
 
   val mdtpServiceConfigs: Map[MdtpServiceName, MdtpServiceConfiguration] = {
-    Map.empty
-//    val protocol = pureconfig.loadConfigOrThrow[String]("microservice.destination-services.protocol")
-//
-//    Seq("tax-enrolments")
-//      .map(name =>
-//        (name, pureconfig.loadConfigOrThrow[DestinationServiceConfig](s"microservice.destination-services.$name")))
-//      .map {
-//        case (n, dsc) =>
-//          val name = MdtpServiceName(n)
-//          (name, MdtpServiceConfiguration(name, s"$protocol://${dsc.host}:${dsc.port}"))
-//      }
-//      .toMap
+    val protocol = pureconfig.loadConfigOrThrow[String]("microservice.destination-services.protocol")
+
+    Seq("tax-enrolments")
+      .map(name =>
+        (name, pureconfig.loadConfigOrThrow[DestinationServiceConfig](s"microservice.destination-services.$name")))
+      .map {
+        case (n, dsc) =>
+          val name = MdtpServiceName(n)
+          (name, MdtpServiceConfiguration(name, s"$protocol://${dsc.host}:${dsc.port}"))
+      }
+      .toMap
   }
 
   //  val mdgIntegrationFrameworkConfig: MdgIntegrationFrameworkConfig =
