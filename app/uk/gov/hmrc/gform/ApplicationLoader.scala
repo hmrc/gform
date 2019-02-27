@@ -29,14 +29,14 @@ import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.dms.DmsModule
 import uk.gov.hmrc.gform.email.EmailModule
 import uk.gov.hmrc.gform.fileupload.FileUploadModule
-import uk.gov.hmrc.gform.form.FormModule
+import uk.gov.hmrc.gform.form.{ FormModule, FormService }
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.graphite.GraphiteModule
 import uk.gov.hmrc.gform.metrics.MetricsModule
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorModule
 import uk.gov.hmrc.gform.playcomponents.{ PlayComponents, PlayComponentsModule }
-import uk.gov.hmrc.gform.save4later.Save4LaterModule
+import uk.gov.hmrc.gform.save4later.{ Save4Later, Save4LaterModule }
 import uk.gov.hmrc.gform.submission.SubmissionModule
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsHttpApiModule
 import uk.gov.hmrc.gform.testonly.TestOnlyModule
@@ -61,23 +61,29 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
   implicit val ec = play.api.libs.concurrent.Execution.defaultContext
 
   private val akkaModule = new AkkaModule(materializer, actorSystem)
-  private val playComponents = new PlayComponents(context, self)
+  protected val playComponents = new PlayComponents(context, self)
 
   private val metricsModule = new MetricsModule(playComponents, akkaModule)
-  private val configModule = new ConfigModule(playComponents)
-  private val auditingModule = new AuditingModule(configModule, akkaModule, playComponents)
-  private val wSHttpModule = new WSHttpModule(auditingModule, configModule, playComponents)
+  protected val configModule = new ConfigModule(playComponents)
+  protected val auditingModule = new AuditingModule(configModule, akkaModule, playComponents)
+  protected lazy val wSHttpModule = new WSHttpModule(auditingModule, configModule, playComponents)
   private val emailModule = new EmailModule(configModule, wSHttpModule)
   private val timeModule = new TimeModule
-  private val fileUploadModule = new FileUploadModule(configModule, wSHttpModule, timeModule)
+  val fileUploadModule = new FileUploadModule(configModule, wSHttpModule, timeModule)
   private val mongoModule = new MongoModule(playComponents)
-  private val formTemplateModule = new FormTemplateModule(mongoModule)
-  private val shortLivedCacheModule = new Save4LaterModule(configModule, wSHttpModule)
-  private val pdfGeneratorModule = new PdfGeneratorModule(configModule, wSHttpModule)
+  val formTemplateModule = new FormTemplateModule(mongoModule)
+  protected lazy val shortLivedCacheModule = new Save4LaterModule(configModule, wSHttpModule)
+  lazy val pdfGeneratorModule = new PdfGeneratorModule(configModule, wSHttpModule)
 
-  private val formModule =
-    new FormModule(configModule, mongoModule, shortLivedCacheModule, formTemplateModule, fileUploadModule)
-  private val validationModule = new ValidationModule(wSHttpModule, configModule)
+  lazy val save4later =
+    new Save4Later(shortLivedCacheModule.shortLivedCache)
+
+  lazy val formService = new FormService(save4later)
+
+  lazy val formModule =
+    new FormModule(configModule, formTemplateModule, fileUploadModule, formService)
+
+  val validationModule = new ValidationModule(wSHttpModule, configModule)
 
   private val handlebarsModule = new HandlebarsHttpApiModule(wSHttpModule, configModule)
   private val submissionModule =
@@ -85,7 +91,7 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
       configModule,
       mongoModule,
       pdfGeneratorModule,
-      formModule,
+      formService,
       formTemplateModule,
       fileUploadModule,
       wSHttpModule,
@@ -97,7 +103,7 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
   private val testOnlyModule = new TestOnlyModule(mongoModule, wSHttpModule, configModule, playComponents)
   private val graphiteModule = new GraphiteModule(self)
 
-  private val playComponentsModule = new PlayComponentsModule(
+  val playComponentsModule = new PlayComponentsModule(
     playComponents,
     akkaModule,
     configModule,

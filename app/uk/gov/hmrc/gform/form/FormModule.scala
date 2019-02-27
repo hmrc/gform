@@ -18,22 +18,13 @@ package uk.gov.hmrc.gform.form
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.fileupload.FileUploadModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
-import uk.gov.hmrc.gform.mongo.MongoModule
-import uk.gov.hmrc.gform.save4later.{ Save4Later, Save4LaterModule }
-
-import scala.concurrent.ExecutionContext
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
 class FormModule(
   configModule: ConfigModule,
-  mongoModule: MongoModule,
-  shortLivedCacheModule: Save4LaterModule,
   formTemplateModule: FormTemplateModule,
-  fileUploadModule: FileUploadModule)(implicit ex: ExecutionContext) {
-
-  val save4later =
-    new Save4Later(shortLivedCacheModule.shortLivedCache)
-
-  val formService = new FormService(save4later)
+  fileUploadModule: FileUploadModule,
+  formService: FormService) {
 
   val formController: FormController =
     new FormController(
@@ -42,5 +33,4 @@ class FormModule(
       fileUploadModule.fileUploadService,
       formService
     )
-
 }

@@ -1,0 +1,62 @@
+version: '3'
+
+services:
+  mongo:
+    container_name: mongodb
+    image: mongo:3.2.19
+    volumes:
+    - ~/data:/data
+    ports:
+    - 27017:27017
+
+  save4Later:
+    container_name: save4Later
+    image: openjdk:8
+    depends_on:
+      - mongo
+    volumes:
+      - .:/usr/save4Later
+    working_dir: /
+    ports:
+      - "9272:9272"
+    network_mode: "host"
+    command: bash -c "java -jar /usr/save4Later/jars/pactstubber.jar --port 9272 --source /usr/save4Later/pacts/myPact.json"
+
+  pdfGenerator:
+    container_name: pdfGenerator
+    image: openjdk:8
+    depends_on:
+      - mongo
+    volumes:
+      - .:/usr/pdfGenerator
+    working_dir: /
+    ports:
+      - "9852:9852"
+    network_mode: "host"
+    command: bash -c "java -jar /usr/pdfGenerator/jars/pactstubber.jar --port 9852 --source /usr/pdfGenerator/pacts/myPact.json"
+
+  file_upload:
+    container_name: file_upload
+    image: openjdk:8
+    depends_on:
+      - mongo
+    volumes:
+      - .:/usr/file_upload
+    working_dir: /
+    ports:
+      - "8899:8899"
+    network_mode: "host"
+    command: bash -c "java -jar /usr/file_upload/jars/pactstubber.jar --port 8899 --source /usr/file_upload/pacts/myPact.json"
+
+  file_upload_interceptor:
+    container_name: file_upload_interceptor
+    image: openjdk:8
+    depends_on:
+      - mongo
+    volumes:
+      - .:/usr/file_upload_interceptor
+    working_dir: /
+    ports:
+      - "9196:9196"
+    network_mode: "host"
+    command: bash -c "java -jar /usr/file_upload_interceptor/jars/pactstubber.jar --port 9196 --source /usr/file_upload_interceptor/pacts/myPact.json"

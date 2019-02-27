@@ -1,0 +1,82 @@
+{
+  "provider" : {
+    "name" : "gform"
+  },
+  "consumer" : {
+    "name" : "gform-frontend"
+  },
+  "interactions" : [
+    {
+      "request" : {
+        "method" : "POST",
+        "body" : {
+          "pdfData" : "<hmtl>something</html>",
+          "variables" : {
+            "value" : {
+              "user" : {
+                "enrolledIdentifier" : "ITC"
+              }
+            }
+          }
+        },
+        "path" : "/gform/forms/123/submission-pdf",
+        "headers" : {
+          "customerId" : "cid",
+          "Content-Type" : "application/json"
+        }
+      },
+      "description" : "Submitting SubmissionData",
+      "response" : {
+        "status" : 204
+      },
+      "providerState" : "Form 123 exists"
+    },
+    {
+      "request" : {
+        "method" : "GET",
+        "path" : "/gform/formtemplates/333"
+      },
+      "description" : "Retrieve form template by id",
+      "response" : {
+        "status" : 200,
+        "body" : {
+          "formName" : "name",
+          "sections" : [],
+          "description" : "description",
+          "_id" : "333",
+          "submitSuccessUrl" : "",
+          "authConfig" : {
+            "HmrcSimpleModule" : {
+              
+            }
+          },
+          "declarationSection" : {
+            "title" : "Mr",
+            "fields" : []
+          },
+          "submitErrorUrl" : "business",
+          "acknowledgementSection" : {
+            "title" : "Mr",
+            "fields" : []
+          },
+          "destinations" : {
+            "DmsSubmission" : {
+              "dmsFormId" : "id",
+              "customerId" : {
+                "expr" : {
+                  "Constant" : {
+                    "value" : "costant"
+                  }
+                }
+              },
+              "classificationType" : "classification",
+              "businessArea" : "BA"
+            }
+          },
+          "emailTemplateId" : "classification"
+        }
+      },
+      "providerState" : "Form 333 exists"
+    }
+  ]
+}
