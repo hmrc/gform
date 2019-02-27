@@ -47,18 +47,16 @@ class SubmissionService(
     implicit hc: HeaderCarrier): FOpt[Unit] =
     // format: OFF
     for {
-      form                <- fromFutureA        (formService.get(formId))
-      res                 <-                    for {
-        _                     <- fromFutureA          (formService.updateUserData(form._id, UserData(form.formData, Submitted, form.visitsIndex, form.obligations)))
-        formTemplate          <- fromFutureA          (formTemplateService.get(form.formTemplateId))
-        submission            =                       createSubmission(form, customerId, formTemplate)
-        _                     <-                      submissionRepo.upsert(submission)
-        destinationsSubmitter =                       new DestinationsSubmitter(new RealDestinationSubmitter(new FileUploadServiceDmsSubmitter(fileUploadService), handlebarsApiHttpSubmitter))
-        res                   <-                      destinationsSubmitter.send(DestinationSubmissionInfo(submission, form, formTemplate, customerId, affinityGroup, PdfAndXmlSummariesFactory.withPdf(pdfGeneratorService, pdf)))
-        emailAddress          =                       email.getEmailAddress(form)
-        _                     <-                      fromFutureA(email.sendEmail(emailAddress, formTemplate.emailTemplateId, SubmissionServiceHelper.getEmailParameterValues(formTemplate, form))(hc, fromLoggingDetails))
+      form                    <- fromFutureA          (formService.get(formId))
+      _                       <- fromFutureA          (formService.updateUserData(form._id, UserData(form.formData, Submitted, form.visitsIndex, form.obligations)))
+      formTemplate            <- fromFutureA          (formTemplateService.get(form.formTemplateId))
+      submission              =                       createSubmission(form, customerId, formTemplate)
+      _                       <-                      submissionRepo.upsert(submission)
+      destinationsSubmitter   =                       new DestinationsSubmitter(new RealDestinationSubmitter(new FileUploadServiceDmsSubmitter(fileUploadService), handlebarsApiHttpSubmitter))
+      res                     <-                      destinationsSubmitter.send(DestinationSubmissionInfo(submission, form, formTemplate, customerId, affinityGroup, PdfAndXmlSummariesFactory.withPdf(pdfGeneratorService, pdf)))
+      emailAddress            =                       email.getEmailAddress(form)
+      _                       <-                      fromFutureA(email.sendEmail(emailAddress, formTemplate.emailTemplateId, SubmissionServiceHelper.getEmailParameterValues(formTemplate, form))(hc, fromLoggingDetails))
       } yield res
-    } yield res
   // format: ON
 
   private def getNoOfAttachments(form: Form, formTemplate: FormTemplate): Int = {
