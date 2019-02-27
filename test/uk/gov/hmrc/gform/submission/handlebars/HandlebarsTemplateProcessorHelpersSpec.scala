@@ -331,6 +331,32 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     process("{{stripCommas (either null \"12,345\")}}") shouldBe "12345"
   }
 
+  "isNull" must "return 'true' when the argument is null" in {
+    process("{{isNull null}}") shouldBe "true"
+  }
+
+  it must "return 'false' otherwise" in {
+    process("{{isNull \"foo\"}}") shouldBe "false"
+  }
+
+  it must "compose" in {
+    process("{{isNull (either null null)}}") shouldBe "true"
+    process("{{isNull (either null \"123\")}}") shouldBe "false"
+  }
+
+  "isNotNull" must "return 'false' when the argument is null" in {
+    process("{{isNotNull null}}") shouldBe "false"
+  }
+
+  it must "return 'true' otherwise" in {
+    process("{{isNotNull \"123\"}}") shouldBe "true"
+  }
+
+  it must "compose" in {
+    process("{{isNotNull (either null null)}}") shouldBe "false"
+    process("{{isNotNull (either null \"123\")}}") shouldBe "true"
+  }
+
   private def periodGen: Gen[(String, String, String, String)] =
     for {
       key  <- Gen.posNum[Int].map(_.toString)
