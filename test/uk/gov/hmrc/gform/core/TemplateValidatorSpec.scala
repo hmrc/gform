@@ -328,11 +328,11 @@ class TemplateValidatorSpec extends Spec {
 
   }
 
+
   "TemplateValidator.validateEmailParameters" should "return Valid" in {
 
     val formComponents = List(mkFormComponent("directorFullName", Value), mkFormComponent("directorEmail", Value))
-    val newSection = mkSection("example", formComponents)
-    val newFormTemplate = formTemplate.copy(sections = List(newSection))
+    val newFormTemplate = mkFormTemplate(formComponents)
 
     val res = FormTemplateValidator.validateEmailParameter(newFormTemplate)
     res should be(Valid)
@@ -345,17 +345,15 @@ class TemplateValidatorSpec extends Spec {
       mkFormComponent("fieldContainedInFormTemplate", Value)
     )
 
-    val newSection = mkSection("example", formComponents)
     val newEmailParameters = Some(
       NonEmptyList.of(
         EmailParameter("fullName", FormCtx("declarationFullName"))
       ))
+
     val newDeclarationSection =
       DeclarationSection("Declaration", None, None, List(mkFormComponent("declarationFullName", Value)))
-    val newFormTemplate = formTemplate.copy(
-      sections = List(newSection),
-      emailParameters = newEmailParameters,
-      declarationSection = newDeclarationSection)
+
+    val newFormTemplate = mkFormTemplate(formComponents, newEmailParameters, declarationSection = newDeclarationSection)
 
     val res = FormTemplateValidator.validateEmailParameter(newFormTemplate)
     res should be(Valid)
@@ -365,8 +363,7 @@ class TemplateValidatorSpec extends Spec {
   "TemplateValidator.validateEmailParameters with non-existent fields" should "return Invalid" in {
 
     val formComponents = List(mkFormComponent("fieldNotContainedInFormTemplate", Value))
-    val newSection = mkSection("example", formComponents)
-    val newFormTemplate = formTemplate.copy(sections = List(newSection))
+    val newFormTemplate = mkFormTemplate(formComponents)
 
     val res = FormTemplateValidator.validateEmailParameter(newFormTemplate)
     res should be(Invalid(
@@ -376,15 +373,14 @@ class TemplateValidatorSpec extends Spec {
 
   "TemplateValidator.validateEmailParameters with field in acknowledgement section" should "return Invalid" in {
 
-    val formComponent = List(mkFormComponent("fieldInAcknowledgementSection", Value))
-    val newAcknowledgementSection =
-      AcknowledgementSection("ack section with email param field", None, None, formComponent)
+    val formComponent = List(mkFormComponent("fieldInAcknowledgementSections", Value))
+    val newAcknowledgementSection = AcknowledgementSection("ack section with email param field", None, None, formComponent)
+
     val newEmailParameters = Some(
       NonEmptyList.of(
         EmailParameter("fieldEmailTemplateId", FormCtx("fieldInAcknowledgementSection"))
       ))
-    val newFormTemplate =
-      formTemplate.copy(acknowledgementSection = newAcknowledgementSection, emailParameters = newEmailParameters)
+    val newFormTemplate = mkFormTemplate(formComponent, newEmailParameters, acknowledgementSection = newAcknowledgementSection)
 
     val res = FormTemplateValidator.validateEmailParameter(newFormTemplate)
     res should be(Invalid(
@@ -395,10 +391,10 @@ class TemplateValidatorSpec extends Spec {
   "TemplateValidator.validateEmailParameters with new params" should "return Valid" in {
 
     val formComponents = List(mkFormComponent("fieldContainedInFormTemplate", Value))
-    val newSection = mkSection("example", formComponents)
     val newEmailParameters =
       Some(NonEmptyList.of(EmailParameter("templateIdVariable", FormCtx("fieldContainedInFormTemplate"))))
-    val newFormTemplate = formTemplate.copy(sections = List(newSection), emailParameters = newEmailParameters)
+
+    val newFormTemplate = mkFormTemplate(formComponents, newEmailParameters)
 
     val res = FormTemplateValidator.validateEmailParameter(newFormTemplate)
     res should be(Valid)
@@ -411,6 +407,7 @@ class TemplateValidatorSpec extends Spec {
     val newSection = mkSection("example", formComponents)
     val newEmailParameters =
       Some(NonEmptyList.of(EmailParameter("templateIdVariable", FormCtx("fieldContainedInFormTemplate"))))
+
     val newFormTemplate =
       formTemplate.copy(sections = List(newSection, newSection), emailParameters = newEmailParameters)
 
@@ -424,9 +421,7 @@ class TemplateValidatorSpec extends Spec {
     val groupFields = List(mkFormComponent("fieldContainedInGroup", Value))
     val formComponents = List(mkFormComponent("fieldContainedInFormTemplate", Group(groupFields, Vertical)))
 
-    val newSection = mkSection("example", formComponents)
-
-    val newFormTemplate = formTemplate.copy(sections = List(newSection))
+    val newFormTemplate = mkFormTemplate(formComponents)
 
     val res = FormTemplateValidator.getAllFieldIdsFromFormTemplate(newFormTemplate)
     res should be(List(FormComponentId("fieldContainedInGroup")))
@@ -440,9 +435,7 @@ class TemplateValidatorSpec extends Spec {
       mkFormComponent("fieldContainedInFormTemplate", mkDate(AnyYear, ExactMonth(4), ExactDay(31), None))
     )
 
-    val newSection = mkSection("example", formComponents)
-
-    val newFormTemplate = formTemplate.copy(sections = List(newSection))
+    val newFormTemplate = mkFormTemplate(formComponents)
 
     val res = FormTemplateValidator.validateDates(newFormTemplate)
     res should be(Invalid(
@@ -455,12 +448,11 @@ class TemplateValidatorSpec extends Spec {
     val formComponents =
       List(mkFormComponent("fieldContainedInFormTemplate", mkDate(ExactYear(2018), ExactMonth(2), ExactDay(29), None)))
 
-    val newSection = mkSection("example", formComponents)
-
-    val newFormTemplate = formTemplate.copy(sections = List(newSection))
+    val newFormTemplate = mkFormTemplate(formComponents)
 
     val res = FormTemplateValidator.validateDates(newFormTemplate)
-    res should be(Invalid("java.time.DateTimeException: Invalid date 'FEBRUARY 29'"))
+
+    res should be(Invalid("java.time.DateTimeException: Invalid date 'February 29' as '2018' is not a leap year"))
 
   }
 
@@ -469,9 +461,7 @@ class TemplateValidatorSpec extends Spec {
     val formComponents =
       List(mkFormComponent("fieldContainedInFormTemplate", mkDate(ExactYear(2018), ExactMonth(2), ExactDay(2), None)))
 
-    val newSection = mkSection("example", formComponents)
-
-    val newFormTemplate = formTemplate.copy(sections = List(newSection))
+    val newFormTemplate = mkFormTemplate(formComponents)
 
     val res = FormTemplateValidator.validateDates(newFormTemplate)
     res should be(Valid)
@@ -483,9 +473,7 @@ class TemplateValidatorSpec extends Spec {
     val formComponents =
       List(mkFormComponent("fieldContainedInFormTemplate", mkDate(Some(ExactDateValue(2018, 2, 14)))))
 
-    val newSection = mkSection("example", formComponents)
-
-    val newFormTemplate = formTemplate.copy(sections = List(newSection))
+    val newFormTemplate = mkFormTemplate(formComponents)
 
     val res = FormTemplateValidator.validateDates(newFormTemplate)
     res should be(Valid)
@@ -497,9 +485,7 @@ class TemplateValidatorSpec extends Spec {
     val formComponents =
       List(mkFormComponent("fieldContainedInFormTemplate", mkDate(Some(ExactDateValue(2018, 2, 31)))))
 
-    val newSection = mkSection("example", formComponents)
-
-    val newFormTemplate = formTemplate.copy(sections = List(newSection))
+    val newFormTemplate = mkFormTemplate(formComponents)
 
     val res = FormTemplateValidator.validateDates(newFormTemplate)
     res should be(Invalid("java.time.DateTimeException: Invalid date 'FEBRUARY 31'"))
@@ -514,9 +500,7 @@ class TemplateValidatorSpec extends Spec {
           "fieldContainedInFormTemplate",
           mkDate(ExactYear(2018), ExactMonth(2), ExactDay(14), Some(ExactDateValue(2018, 2, 31)))))
 
-    val newSection = mkSection("example", formComponents)
-
-    val newFormTemplate = formTemplate.copy(sections = List(newSection))
+    val newFormTemplate = mkFormTemplate(formComponents)
 
     val res = FormTemplateValidator.validateDates(newFormTemplate)
     res should be(Invalid("java.time.DateTimeException: Invalid date 'FEBRUARY 31'"))
@@ -531,9 +515,7 @@ class TemplateValidatorSpec extends Spec {
           "fieldContainedInFormTemplate",
           mkDate(ExactYear(2018), ExactMonth(4), ExactDay(31), Some(ExactDateValue(2018, 2, 31)))))
 
-    val newSection = mkSection("example", formComponents)
-
-    val newFormTemplate = formTemplate.copy(sections = List(newSection))
+    val newFormTemplate = mkFormTemplate(formComponents)
 
     val res = FormTemplateValidator.validateDates(newFormTemplate)
     res should be(Invalid(
@@ -543,15 +525,11 @@ class TemplateValidatorSpec extends Spec {
 
   "TemplateValidator.validateDates with date value 2018-02-31 in a group" should "return Invalid" in {
 
-    val groupFields = List(mkFormComponent("fieldContainedInGroup", Value))
-
     val dateFormComponent = mkFormComponent("fieldContainedInFormTemplate", mkDate(Some(ExactDateValue(2018, 2, 31))))
 
     val formComponents = List(mkFormComponent("group", Group(List(dateFormComponent), Vertical)))
 
-    val newSection = mkSection("example", formComponents)
-
-    val newFormTemplate = formTemplate.copy(sections = List(newSection))
+    val newFormTemplate = mkFormTemplate(formComponents)
 
     val res = FormTemplateValidator.validateDates(newFormTemplate)
     res should be(Invalid("java.time.DateTimeException: Invalid date 'FEBRUARY 31'"))
@@ -560,15 +538,11 @@ class TemplateValidatorSpec extends Spec {
 
   "TemplateValidator.validateDates with date value 2018-02-25 in a group" should "Valid" in {
 
-    val groupFields = List(mkFormComponent("fieldContainedInGroup", Value))
-
     val dateFormComponent = mkFormComponent("fieldContainedInFormTemplate", mkDate(Some(ExactDateValue(2018, 2, 25))))
 
     val formComponents = List(mkFormComponent("group", Group(List(dateFormComponent), Vertical)))
 
-    val newSection = mkSection("example", formComponents)
-
-    val newFormTemplate = formTemplate.copy(sections = List(newSection))
+    val newFormTemplate = mkFormTemplate(formComponents)
 
     val res = FormTemplateValidator.validateDates(newFormTemplate)
     res should be(Valid)
@@ -635,6 +609,16 @@ class TemplateValidatorSpec extends Spec {
       None,
       None
     )
+
+  private def mkFormTemplate(
+    formComponents: List[FormComponent],
+    emailParameters: Option[NonEmptyList[EmailParameter]] = emailParameters,
+    declarationSection: DeclarationSection = formTemplate.declarationSection,
+    acknowledgementSection: AcknowledgementSection = formTemplate.acknowledgementSection): FormTemplate = {
+    val section = mkSection("example", formComponents)
+
+    formTemplate.copy(sections = List(section), emailParameters = emailParameters, declarationSection = declarationSection, acknowledgementSection = acknowledgementSection)
+  }
 
   implicit class FormComponentOps(fc: FormComponent) {
     def isEditable: FormComponent = fc.copy(editable = true)
