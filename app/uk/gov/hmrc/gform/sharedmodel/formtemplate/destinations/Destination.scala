@@ -84,9 +84,17 @@ case class UploadableHandlebarsHttpApiDestination(
   failOnError: Option[Boolean]) {
 
   def toHandlebarsHttpApiDestination: Either[String, Destination.HandlebarsHttpApi] =
-    conditionedPayload.map(Destination.HandlebarsHttpApi(id, profile, uri, method, _, includeIf, failOnError))
+    for {
+      cp   <- conditioned(payload)
+      cii  <- conditioned(includeIf)
+      curi <- conditioned(uri)
+    } yield Destination.HandlebarsHttpApi(id, profile, curi, method, cp, cii, failOnError)
 
-  private def conditionedPayload: Either[String, Option[String]] = payload match {
+  private def conditioned(s: String): Either[String, String] =
+    if (convertSingleQuotes.getOrElse(false)) SingleQuoteReplacementLexer(s)
+    else Right(s)
+
+  private def conditioned(os: Option[String]): Either[String, Option[String]] = os match {
     case None => Right(None)
     case Some(p) =>
       if (convertSingleQuotes.getOrElse(false)) SingleQuoteReplacementLexer(p).map(Option(_))
