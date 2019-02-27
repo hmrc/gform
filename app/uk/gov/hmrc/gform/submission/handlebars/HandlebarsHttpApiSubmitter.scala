@@ -28,7 +28,7 @@ trait HandlebarsHttpApiSubmitter[F[_]] {
 class RealHandlebarsHttpApiSubmitter[F[_]](
   des: JsonHttpClient[F],
   mdg: JsonHttpClient[F],
-  mdtp: MdtpHttpClient[F],
+  mdtp: Map[MdtpServiceName, JsonHttpClient[F]],
   handlebarsTemplateProcessor: HandlebarsTemplateProcessor = new HandlebarsTemplateProcessor)
     extends HandlebarsHttpApiSubmitter[F] {
 
@@ -59,10 +59,16 @@ object RealHandlebarsHttpApiSubmitter {
     profile: Profile,
     des: JsonHttpClient[F],
     mdg: JsonHttpClient[F],
-    mdtp: MdtpHttpClient[F]): JsonHttpClient[F] =
+    mdtp: Map[MdtpServiceName, JsonHttpClient[F]]): JsonHttpClient[F] =
     profile match {
       case Profile.DES                     => des
       case Profile.MdgIntegrationFramework => mdg
-      case m: Profile.MDTP                 => mdtp.select(MdtpServiceName(m.serviceName))
+      case m: Profile.MDTP =>
+        mdtp.get(MdtpServiceName(m.serviceName)).getOrElse {
+          throw new Exception(
+            s"Attempt to get MDTP client named '${m.serviceName}' failed. Available MDTP clients are: ${mdtp.keySet
+              .map(n => s"'${n.name}'")
+              .mkString(", ")}")
+        }
     }
 }
