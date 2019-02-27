@@ -294,6 +294,12 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     ) shouldBe "B"
   }
 
+  it must "be able to handle null lookup values" in {
+    process(
+      """{{lookup "('0') => 'A'; (null) => 'B'; ('3') => 'C'" null}}"""
+    ) shouldBe "B"
+  }
+
   it must "find the appropriate value for a composite key" in {
     process(
       """{{lookup "('0' '0') => 'A'; ('1' '0') => 'B'; ('1' '1') => 'C'; ('1' '2') => 'D'" "1" "2"}}"""
@@ -306,6 +312,18 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
         s"""{{lookup "('0' *) => 'A'; ('1' '0') => 'B'; ('1' '1') => 'C'; ('1' '2') => 'D'" "0" "$v"}}"""
       ) shouldBe "A"
     }
+  }
+
+  it must "find the appropriate value for a composite with a null" in {
+    process(
+      """{{lookup "('0' '0') => 'A'; ('1' '0') => 'B'; ('1' '1') => 'C'; ('1' null) => 'D'" "1" null}}"""
+    ) shouldBe "D"
+  }
+
+  it must "compose" in {
+    process(
+      """{{lookup "('0' '0') => 'A'; ('1' null) => 'B'; ('1' '1') => 'C'; ('1' '2') => 'D'" (either null "1") (either null null)}}"""
+    ) shouldBe "B"
   }
 
   it must "throw an exception with a good message if the lookup fails" in {

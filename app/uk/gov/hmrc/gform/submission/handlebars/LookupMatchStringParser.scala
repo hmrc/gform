@@ -23,8 +23,11 @@ import cats.instances.string._
 import cats.syntax.option._
 
 sealed trait KeyComponent extends Product with Serializable
-case class LiteralString(s: String) extends KeyComponent
-case object Wildcard extends KeyComponent
+object KeyComponent {
+  case class LiteralString(s: String) extends KeyComponent
+  case object Wildcard extends KeyComponent
+  case object Null extends KeyComponent
+}
 
 object LookupMatchStringParser extends RegexParsers {
   override def skipWhitespace: Boolean = true
@@ -34,17 +37,21 @@ object LookupMatchStringParser extends RegexParsers {
       if (caseKey.size =!= key.size) false
       else
         caseKey.zip(key).forall {
-          case (LiteralString(s), k) => s === k
-          case (Wildcard, _)         => true
+          case (KeyComponent.LiteralString(s), k) => s === k
+          case (KeyComponent.Null, k)             => k == null
+          case (KeyComponent.Wildcard, _)         => true
         }
 
     def charSequenceParser: Parser[String] = "[^']*".r
 
-    def wildcardParser: Parser[KeyComponent] = "*" ^^ { case _                                 => Wildcard }
-    def literalStringKeyComponentParser: Parser[KeyComponent] = quotedStringParser ^^ { case s => LiteralString(s) }
+    def nullParser: Parser[KeyComponent] = "null" ^^ { case _  => KeyComponent.Null }
+    def wildcardParser: Parser[KeyComponent] = "*" ^^ { case _ => KeyComponent.Wildcard }
+    def literalStringKeyComponentParser: Parser[KeyComponent] = quotedStringParser ^^ {
+      case s => KeyComponent.LiteralString(s)
+    }
 
     def compositeKeyComponentParser: LookupMatchStringParser.Parser[KeyComponent] =
-      literalStringKeyComponentParser | wildcardParser
+      literalStringKeyComponentParser | wildcardParser | nullParser
 
     def compositeKeyParser: Parser[List[KeyComponent]] = "(" ~ rep(compositeKeyComponentParser) ~ ")" ^^ {
       case _ ~ keyValues ~ _ => keyValues
