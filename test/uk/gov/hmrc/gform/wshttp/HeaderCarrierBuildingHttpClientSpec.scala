@@ -41,6 +41,16 @@ class HeaderCarrierBuildingHttpClientSpec extends HttpClientSpec {
     }
   }
 
+  "put" should "delegate to underlying.put with the extended URL" in httpClient[Id] { underlying =>
+    forAll(Gen.alphaNumStr, Gen.alphaNumStr, headerCarrierGen, headerCarrierGen, httpResponseGen) {
+      (url, putBody, hc, hc2, response) =>
+        underlying.expectPut(url, putBody, hc2, response)
+
+        buildClient(underlying.httpClient, hc, hc2)
+          .put(url, putBody)(hc) shouldBe response
+    }
+  }
+
   private def buildClient[F[_]](
     underlying: HttpClient[F],
     expected: HeaderCarrier,

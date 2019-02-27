@@ -40,6 +40,16 @@ class UriBuildingHttpClientSpec extends HttpClientSpec {
     }
   }
 
+  "put" should "delegate to underlying.put with the extended URL" in httpClient[Id] { underlying =>
+    forAll(Gen.alphaNumStr, Gen.alphaNumStr, Gen.alphaNumStr, headerCarrierGen, httpResponseGen) {
+      (uri, uri2, putBody, hc, response) =>
+        underlying.expectPut(uri2, putBody, hc, response)
+
+        buildClient(underlying.httpClient, uri, uri2)
+          .put(uri, putBody)(hc) shouldBe response
+    }
+  }
+
   private def buildClient[F[_]](underlying: HttpClient[F], expected: String, replacement: String): HttpClient[F] =
     underlying.buildUri(verifyAndSwap(_, expected, replacement))
 

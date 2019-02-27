@@ -18,20 +18,10 @@ package uk.gov.hmrc.gform.wshttp
 
 import HttpClient.HttpClientBuildingSyntax
 import cats.MonadError
-import cats.syntax.either._
 import org.scalacheck.Gen
+import uk.gov.hmrc.gform.{ Possible, possibleMonadError }
 
 class JsonHttpClientSpec extends HttpClientSpec {
-  type Possible[T] = Either[String, T]
-
-  implicit val monadError: MonadError[Possible, String] = new MonadError[Possible, String] {
-    override def raiseError[A](e: String): Possible[A] = Left(e)
-    override def flatMap[A, B](fa: Possible[A])(f: A => Possible[B]): Possible[B] = fa.flatMap(f)
-    override def pure[A](x: A): Possible[A] = Right(x)
-    override def tailRecM[A, B](a: A)(f: A => Possible[Either[A, B]]): Possible[B] = ???
-    override def handleErrorWith[A](fa: Possible[A])(f: String => Possible[A]): Possible[A] = ???
-  }
-
   "get" should "delegate to underlying.get with no changes" in httpClient[Possible] { underlying =>
     forAll(Gen.alphaNumStr, headerCarrierGen, successfulHttpResponseGen) { (uri, hc, response) =>
       underlying.expectGet(uri, hc, response)
@@ -48,6 +38,16 @@ class JsonHttpClientSpec extends HttpClientSpec {
 
         buildClient(underlying.httpClient)
           .post(uri, postBody)(hc) shouldBe Right(response)
+    }
+  }
+
+  "put" should "delegate to underlying.put with no changes" in httpClient[Possible] { underlying =>
+    forAll(Gen.alphaNumStr, Gen.alphaNumStr, headerCarrierGen, successfulHttpResponseGen) {
+      (uri, putBody, hc, response) =>
+        underlying.expectPut(uri, putBody, hc, response)
+
+        buildClient(underlying.httpClient)
+          .put(uri, putBody)(hc) shouldBe Right(response)
     }
   }
 
@@ -69,8 +69,8 @@ class JsonHttpClientSpec extends HttpClientSpec {
   it should "not delegate to underlying.post and fail when the JSON string is not valid" in httpClient[Possible] {
     underlying =>
       forAll(Gen.alphaNumStr, headerCarrierGen, successfulHttpResponseGen) { (uri, hc, response) =>
-        (buildClient(underlying.httpClient)
-          .postJsonString(uri, "fail")(hc)) match {
+        buildClient(underlying.httpClient)
+          .postJsonString(uri, "fail")(hc) match {
           case Left(_)  => succeed
           case Right(_) => fail("Unexpected response")
         }

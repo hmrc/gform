@@ -28,13 +28,14 @@ trait HandlebarsHttpApiSubmitter[F[_]] {
 class RealHandlebarsHttpApiSubmitter[F[_]](
   des: JsonHttpClient[F],
   mdg: JsonHttpClient[F],
+  mdtp: MdtpHttpClient[F],
   handlebarsTemplateProcessor: HandlebarsTemplateProcessor = new HandlebarsTemplateProcessor)
     extends HandlebarsHttpApiSubmitter[F] {
 
   def apply(destination: Destination.HandlebarsHttpApi, model: HandlebarsTemplateProcessorModel)(
     implicit hc: HeaderCarrier): F[HttpResponse] = {
     val httpClient = RealHandlebarsHttpApiSubmitter
-      .selectHttpClient(destination.profile, des, mdg)
+      .selectHttpClient(destination.profile, des, mdg, mdtp)
 
     val uri = handlebarsTemplateProcessor(destination.uri, model)
     destination.method match {
@@ -44,14 +45,24 @@ class RealHandlebarsHttpApiSubmitter[F[_]](
           handlebarsTemplateProcessor(_, model)
         }
         httpClient.postJsonString(uri, body)
+      case HttpMethod.PUT =>
+        val body = destination.payload.fold("") {
+          handlebarsTemplateProcessor(_, model)
+        }
+        httpClient.putJsonString(uri, body)
     }
   }
 }
 
 object RealHandlebarsHttpApiSubmitter {
-  def selectHttpClient[F[_]](profile: Profile, des: JsonHttpClient[F], mdg: JsonHttpClient[F]): JsonHttpClient[F] =
+  def selectHttpClient[F[_]](
+    profile: Profile,
+    des: JsonHttpClient[F],
+    mdg: JsonHttpClient[F],
+    mdtp: MdtpHttpClient[F]): JsonHttpClient[F] =
     profile match {
       case Profile.DES                     => des
       case Profile.MdgIntegrationFramework => mdg
+      case m: Profile.MDTP                 => mdtp.select(MdtpServiceName(m.serviceName))
     }
 }

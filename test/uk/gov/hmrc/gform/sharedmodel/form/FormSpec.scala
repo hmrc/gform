@@ -16,14 +16,14 @@
 
 package uk.gov.hmrc.gform.sharedmodel.form
 
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{ FlatSpec, Matchers }
 import java.time.LocalDateTime
 
 import play.api.libs.json._
 import play.api.libs.json.Writes.DefaultLocalDateTimeWrites
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.{ExampleData, NotChecked}
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{FormComponentId, FormTemplateId}
+import uk.gov.hmrc.gform.sharedmodel.{ ExampleData, NotChecked }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplateId }
 
 class FormSpec extends FlatSpec with Matchers {
 
@@ -79,7 +79,7 @@ class FormSpec extends FlatSpec with Matchers {
           Json.obj("id" -> "facePhoto", "value"      -> "face-photo.jpg"),
           Json.obj("id" -> "startDate-year", "value" -> "2008")),
       "InProgress" -> Json.obj(),
-      "NotChecked"  -> Json.obj()
+      "NotChecked" -> Json.obj()
     )
 
     val expectedForm = form.copy(visitsIndex = VisitIndex.empty, envelopeExpiryDate = None)

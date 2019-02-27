@@ -14,14 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
-import org.scalacheck.Gen
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Profile
+package uk.gov.hmrc.gform.submission.handlebars
 
-trait ProfileGen {
-  def mdtpGen: Gen[Profile.MDTP] = PrimitiveGen.nonEmptyAlphaNumStrGen.map(Profile.MDTP)
-
-  def profileGen: Gen[Profile] = Gen.oneOf(Gen.const(Profile.DES), Gen.const(Profile.MdgIntegrationFramework), mdtpGen)
-}
-
-object ProfileGen extends ProfileGen
+case class MdtpServiceName(name: String)
+case class MdtpServiceConfiguration(serviceName: MdtpServiceName, baseUrl: String)

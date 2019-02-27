@@ -42,6 +42,14 @@ class HandlebarsHttpApiModule(wSHttpModule: WSHttpModule, configModule: ConfigMo
       })
       .json
 
+  private val mdtpHttpClientMap: MdtpHttpClient[FOpt] = MdtpHttpClient(
+    configModule.mdtpServiceConfigs.mapValues { configuration =>
+      rootHttpClient
+        .buildUri(uri => s"${configuration.baseUrl}/$uri")
+        .json
+    }
+  )
+
 //  private val mdgConfig = configModule.mdgIntegrationFrameworkConfig
 
   // ToDo - Lance - Don't know what the properties are yet. Build as for the desHttpClient.
@@ -49,5 +57,5 @@ class HandlebarsHttpApiModule(wSHttpModule: WSHttpModule, configModule: ConfigMo
     HttpClient.unimplementedHttpClient[FOpt].json
 
   val handlebarsHttpSubmitter: HandlebarsHttpApiSubmitter[FOpt] =
-    new RealHandlebarsHttpApiSubmitter(desHttpClient, mdgHttpClient)
+    new RealHandlebarsHttpApiSubmitter(desHttpClient, mdgHttpClient, mdtpHttpClientMap)
 }
