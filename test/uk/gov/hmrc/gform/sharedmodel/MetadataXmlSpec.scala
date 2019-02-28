@@ -52,7 +52,7 @@ class MetadataXmlSpec extends Spec {
       <documents xmlns="http://govtalk.gov.uk/hmrc/gis/content/1">
         <document>
           <header>
-            <title>some-submission-ref</title>
+            <title>somesubmissionref</title>
             <format>pdf</format>
             <mime_type>application/pdf</mime_type>
             <store>true</store>

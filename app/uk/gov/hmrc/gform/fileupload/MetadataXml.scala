@@ -50,7 +50,7 @@ object MetadataXml {
 
   private def createHeader(submissionRef: SubmissionRef, reconciliationId: ReconciliationId): Elem =
     <header>
-      <title>{ submissionRef.value }</title>
+      <title>{ submissionRef.value.replace("-", "") }</title>
       <format>pdf</format>
       <mime_type>application/pdf</mime_type>
       <store>true</store>

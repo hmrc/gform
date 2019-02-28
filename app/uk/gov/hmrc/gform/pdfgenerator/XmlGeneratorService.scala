@@ -52,7 +52,7 @@ trait XmlGeneratorService {
 
   private def createHeader(submissionRef: SubmissionRef): Elem =
     <header>
-      <title>{ submissionRef.value }</title>
+      <title>{ submissionRef.value.replace("-", "") }</title>
       <source>gform</source>
       <target>DMS</target>
     </header>
