@@ -16,8 +16,7 @@
 
 package uk.gov.hmrc.gform.form
 
-import play.api.Logger
-import play.api.libs.json.{ JsValue, Json }
+import play.api.libs.json.JsValue
 import uk.gov.hmrc.gform.save4later.Save4Later
 import uk.gov.hmrc.gform.sharedmodel.{ NotChecked, UserId }
 import uk.gov.hmrc.gform.sharedmodel.form._
@@ -64,10 +63,7 @@ class FormService(save4Later: Save4Later) {
           status = newStatus(form, userData.formStatus),
           visitsIndex = userData.visitsIndex,
           obligations = userData.obligations)
-      _ <- {
-        Logger.debug(Json.prettyPrint(Json.toJson(newForm)) + "UpdateUserData")
-        save4Later.upsert(formId, newForm)
-      }
+      _ <- save4Later.upsert(formId, newForm)
     } yield ()
 
   private def newStatus(form: Form, status: FormStatus) =
