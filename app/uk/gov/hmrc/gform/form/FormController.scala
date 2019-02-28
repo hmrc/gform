@@ -32,6 +32,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, UserId }
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.{ BadRequestException, NotFoundException }
+import uk.gov.hmrc.play.audit.http.connector.AuditResult
 
 import scala.concurrent.Future
 import scala.util.Try
@@ -141,16 +142,18 @@ class FormController(
   }
 
   def enrolmentCallBack(formId: FormId): Action[AnyContent] = Action.async { implicit request =>
-    val audit = new Connector {}
     val requestHandler = RequestConverter
     val event = requestHandler.requestToDataEvent(formId, request)
 
-    audit
+    auditConnector
       .sendRequest(event)
       .recover {
-        case _: Exception => Results.NotFound
+        case _: Exception => AuditResult.Failure
       }
-      .map(_ => Results.Ok)
+      .map {
+        case AuditResult.Failure => Results.NotFound
+        case _                   => Results.Ok
+      }
   }
 
   private def getSection(formTemplate: FormTemplate, sectionNumber: SectionNumber): Section =
