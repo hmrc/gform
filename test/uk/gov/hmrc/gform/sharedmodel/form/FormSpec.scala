@@ -16,14 +16,14 @@
 
 package uk.gov.hmrc.gform.sharedmodel.form
 
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{ FlatSpec, Matchers }
 import java.time.LocalDateTime
 
 import play.api.libs.json._
 import play.api.libs.json.Writes.DefaultLocalDateTimeWrites
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.{ExampleData, NotChecked}
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{FormComponentId, FormTemplateId}
+import uk.gov.hmrc.gform.sharedmodel.{ ExampleData, NotChecked }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplateId }
 
 class FormSpec extends FlatSpec with Matchers {
 
@@ -68,7 +68,7 @@ class FormSpec extends FlatSpec with Matchers {
     Form.format.reads(Form.format.writes(form)) should be(JsSuccess(form))
   }
 
-  it should "handle inflight forms not having visitsIndex" in {
+  it should "handle inflight forms not having visitsIndex or obligations" in {
     val inflight = Json.obj(
       "_id"            -> "James007-AAA999",
       "envelopeId"     -> "b66c5979-e885-49cd-9281-c7f42ce6b307",
@@ -78,8 +78,7 @@ class FormSpec extends FlatSpec with Matchers {
         .arr(
           Json.obj("id" -> "facePhoto", "value"      -> "face-photo.jpg"),
           Json.obj("id" -> "startDate-year", "value" -> "2008")),
-      "InProgress" -> Json.obj(),
-      "NotChecked"  -> Json.obj()
+      "InProgress" -> Json.obj()
     )
 
     val expectedForm = form.copy(visitsIndex = VisitIndex.empty, envelopeExpiryDate = None)
