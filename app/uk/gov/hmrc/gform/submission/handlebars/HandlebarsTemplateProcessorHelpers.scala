@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.gform.submission.handlebars
 
+import java.text.DecimalFormat
+
 import cats.syntax.option._
 import shapeless.syntax.typeable._
 import uk.gov.hmrc.gform.time.TimeProvider
@@ -459,6 +461,9 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
 
   def isNull(s: Any): CharSequence = log("isNull", s) { condition(isNullAsBoolean(s)) }
   def isNotNull(s: Any): CharSequence = log("isNotNull", s) { condition(!isNullAsBoolean(s)) }
+
+  private val etmpSequenceNumberFormat = new DecimalFormat("00")
+  def toEtmpSequenceNumber(index: Int): CharSequence = etmpSequenceNumberFormat.format(index + 1)
 
   private def ifNotNullAsString(t: Any)(f: String => CharSequence): CharSequence = NullString.ifNotNull(t)(f)
 

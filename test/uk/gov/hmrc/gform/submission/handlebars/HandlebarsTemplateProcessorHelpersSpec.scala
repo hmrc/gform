@@ -436,6 +436,23 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     process("{{isNotNull (either null \"123\")}}") shouldBe "true"
   }
 
+  "toEtmpSequenceNumber" must "add one to the given index and pad-left with 0 if it is less than or equal to 9" in {
+    val table = Table(
+      ("in", "out"),
+      (0, "01"),
+      (1, "02"),
+      (8, "09"),
+      (9, "10"),
+      (10, "11"),
+      (98, "99")
+    )
+
+    forAll(table) {
+      case (in, out) =>
+        process(s"{{toEtmpSequenceNumber $in}}") shouldBe out
+    }
+  }
+
   private def periodGen: Gen[(String, String, String, String)] =
     for {
       key  <- Gen.posNum[Int].map(_.toString)
