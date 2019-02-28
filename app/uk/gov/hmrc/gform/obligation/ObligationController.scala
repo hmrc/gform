@@ -16,15 +16,11 @@
 
 package uk.gov.hmrc.gform.obligation
 
-import java.text.SimpleDateFormat
-
-import cats.data.NonEmptyList
 import play.api.Logger
 import play.api.mvc.Action
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
-import uk.gov.hmrc.gform.des._
-import uk.gov.hmrc.gform.sharedmodel.{ HmrcTaxPeriodWithEvaluatedId, TaxPeriodIdentifier, TaxResponse }
+import uk.gov.hmrc.gform.sharedmodel.{ HmrcTaxPeriodWithEvaluatedId, TaxResponse }
 
 import scala.concurrent.Future
 
