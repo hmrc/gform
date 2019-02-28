@@ -583,6 +583,20 @@ class TemplateValidatorSpec extends Spec {
 
   }
 
+  "TemplateValidator.validateDates with dates 2018-02-15 and 2019-03-14 in a group" should "return Valid" in {
+
+    val dateFormComponent1 = mkFormComponent("fieldInGroup1", mkDate(Some(ExactDateValue(2018, 2, 15))))
+    val dateFormComponent2 = mkFormComponent("fieldInGroup2", mkDate(Some(ExactDateValue(2019, 3, 14))))
+
+    val formComponents = List(mkFormComponent("group", Group(List(dateFormComponent1, dateFormComponent2), Vertical)))
+
+    val newFormTemplate = mkFormTemplate(formComponents)
+
+    val res = FormTemplateValidator.validateDates(newFormTemplate)
+    res should be(Valid)
+
+  }
+
   "TemplateValidator.validateDates with date value 2018-02-25 in a group" should "Valid" in {
 
     val dateFormComponent = mkFormComponent("fieldContainedInFormTemplate", mkDate(Some(ExactDateValue(2018, 2, 25))))
