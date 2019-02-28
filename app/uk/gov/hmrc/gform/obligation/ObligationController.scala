@@ -21,20 +21,21 @@ import play.api.Logger
 import play.api.mvc.Action
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
-import uk.gov.hmrc.gform.sharedmodel.{ HmrcTaxPeriodWithEvaluatedId, TaxResponse }
+import uk.gov.hmrc.gform.des._
+import uk.gov.hmrc.gform.sharedmodel.{ HmrcTaxPeriodWithEvaluatedId, TaxPeriodIdentifier, TaxResponse }
 
 import scala.concurrent.{ ExecutionContext, Future }
 
 class ObligationController(obligation: ObligationService)(implicit ex: ExecutionContext) extends BaseController {
 
-  def getAllTaxPeriods() = Action.async(parse.json[NonEmptyList[HmrcTaxPeriodWithEvaluatedId]]) { implicit request =>
+  def getAllTaxPeriods() = Action.async(parse.json[List[HmrcTaxPeriodWithEvaluatedId]]) { implicit request =>
     Logger.info(s"Get All Tax Periods from DES, ${loggingHelpers.cleanHeaders(request.headers)}")
-    val body: NonEmptyList[HmrcTaxPeriodWithEvaluatedId] = request.body
+    val body: List[HmrcTaxPeriodWithEvaluatedId] = request.body
     val b = body.map(i => {
       obligation
         .callDES(i.hmrcTaxPeriod.idType.value, i.idNumberValue.value, i.hmrcTaxPeriod.regimeType.value)
         .map(x => TaxResponse(i.hmrcTaxPeriod, x))
     })
-    Future.sequence(b.toList).asOkJson
+    Future.sequence(b).asOkJson
   }
 }

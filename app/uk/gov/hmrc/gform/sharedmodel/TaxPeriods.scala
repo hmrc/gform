@@ -23,6 +23,7 @@ import julienrf.json.derived
 import play.api.data.validation.ValidationError
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import play.api.libs.functional.syntax._
 
 import scala.collection.immutable.{ ::, List, Nil }
 
@@ -77,19 +78,20 @@ final case object NotChecked extends Obligations
 final case class RetrievedObligations(listOfObligations: List[TaxPeriodInformation]) extends Obligations
 
 object Obligations {
+  import JsonUtils._
   implicit val format: OFormat[Obligations] = derived.oformat
 }
 
 case class IdNumberValue(value: String) extends AnyVal
 
 object IdNumberValue {
+//  import JsonUtils._
   implicit val format: OFormat[IdNumberValue] = derived.oformat
 }
 
 case class HmrcTaxPeriodWithEvaluatedId(hmrcTaxPeriod: HmrcTaxPeriod, idNumberValue: IdNumberValue)
 
 object HmrcTaxPeriodWithEvaluatedId {
-
   implicit def readsNonEmptyList[T: Reads] = Reads[NonEmptyList[T]] { json =>
     Json.fromJson[List[T]](json).flatMap {
       case Nil     => JsError(ValidationError(s"Required at least one element. Got: $json"))
