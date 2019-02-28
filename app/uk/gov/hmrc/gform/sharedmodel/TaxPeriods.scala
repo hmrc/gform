@@ -20,8 +20,12 @@ import java.util.Date
 
 import cats.data.NonEmptyList
 import julienrf.json.derived
+import play.api.data.validation.ValidationError
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import play.api.libs.functional.syntax._
+
+import scala.collection.immutable.{ ::, List, Nil }
 
 case class ObligationDetail(
   status: String,
@@ -60,6 +64,7 @@ object TaxPeriodIdentifier {
 
 case class TaxPeriodInformation(
   hmrcTaxPeriod: HmrcTaxPeriod,
+  idNumberValue: IdNumberValue,
   inboundCorrespondenceFromDate: Date,
   inboundCorrespondenceToDate: Date,
   periodKey: String)
@@ -70,9 +75,33 @@ object TaxPeriodInformation {
 
 sealed trait Obligations
 final case object NotChecked extends Obligations
-final case class RetrievedObligations(listOfObligations: NonEmptyList[TaxPeriodInformation]) extends Obligations
+final case class RetrievedObligations(listOfObligations: List[TaxPeriodInformation]) extends Obligations
 
 object Obligations {
   import JsonUtils._
   implicit val format: OFormat[Obligations] = derived.oformat
+}
+
+case class IdNumberValue(value: String) extends AnyVal
+
+object IdNumberValue {
+//  import JsonUtils._
+  implicit val format: OFormat[IdNumberValue] = derived.oformat
+}
+
+case class HmrcTaxPeriodWithEvaluatedId(hmrcTaxPeriod: HmrcTaxPeriod, idNumberValue: IdNumberValue)
+
+object HmrcTaxPeriodWithEvaluatedId {
+  implicit def readsNonEmptyList[T: Reads] = Reads[NonEmptyList[T]] { json =>
+    Json.fromJson[List[T]](json).flatMap {
+      case Nil     => JsError(ValidationError(s"Required at least one element. Got: $json"))
+      case x :: xs => JsSuccess(NonEmptyList(x, xs))
+    }
+  }
+
+  implicit def writesNonEmptyList[T: Writes] = Writes[NonEmptyList[T]] { v =>
+    JsArray((v.head :: v.tail).map(Json.toJson(_)).toList)
+  }
+
+  implicit val format: OFormat[HmrcTaxPeriodWithEvaluatedId] = derived.oformat
 }
