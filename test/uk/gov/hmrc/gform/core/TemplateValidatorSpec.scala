@@ -597,18 +597,20 @@ class TemplateValidatorSpec extends Spec {
 
   }
 
-
   "TemplateValidator.validateDates with dates 2018-02-29 and 2019-11-31 in a group" should "return Invalid" in {
 
-    val dateFormComponent1 = mkFormComponent("fieldInGroup1", mkDate(Some(ExactDateValue(2018, 2, 29))))
-    val dateFormComponent2 = mkFormComponent("fieldInGroup2", mkDate(Some(ExactDateValue(2019, 11, 31))))
+    val dateFormComponent1 =
+      mkFormComponent("fieldInGroup1", mkDate(ExactYear(2018), ExactMonth(2), ExactDay(29), None))
+    val dateFormComponent2 =
+      mkFormComponent("fieldInGroup2", mkDate(ExactYear(2019), ExactMonth(11), ExactDay(31), None))
 
     val formComponents = List(mkFormComponent("group", Group(List(dateFormComponent1, dateFormComponent2), Vertical)))
 
     val newFormTemplate = mkFormTemplate(formComponents)
 
     val res = FormTemplateValidator.validateDates(newFormTemplate)
-    res should be(Invalid("java.time.DateTimeException: Invalid date 'February 29' as '2018' is not a leap year. java.time.DateTimeException: Invalid date 'NOVEMBER 31'"))
+    res should be(Invalid(
+      "java.time.DateTimeException: Invalid date 'February 29' as '2018' is not a leap year. java.time.DateTimeException: Invalid date 'NOVEMBER 31'"))
 
   }
 
@@ -625,9 +627,43 @@ class TemplateValidatorSpec extends Spec {
 
   }
 
-  private def mkDate(year: Year, month: Month, day: Day, value: Option[DateValue]) =
+  "TemplateValidator.validateDates with date 2018-02-25 in a group" should "Valid" in {
+
+    val dateFormComponent = mkFormComponent("fieldContainedInFormTemplate", mkDate(Some(ExactDateValue(2018, 2, 25))))
+
+    val formComponents = List(mkFormComponent("group", Group(List(dateFormComponent), Vertical)))
+
+    val newFormTemplate = mkFormTemplate(formComponents)
+
+    val res = FormTemplateValidator.validateDates(newFormTemplate)
+    res should be(Valid)
+
+  }
+
+  "TemplateValidator.validateDates with date 2018-02-30 -1" should "return Invalid" in {
+
+    val formComponents =
+      List(
+        mkFormComponent(
+          "fieldContainedInFormTemplate",
+          mkDate(ExactYear(2018), ExactMonth(2), ExactDay(30), None, offsetDate = OffsetDate(-1))))
+
+    val newFormTemplate = mkFormTemplate(formComponents)
+
+    val res = FormTemplateValidator.validateDates(newFormTemplate)
+    res should be(Invalid("java.time.DateTimeException: Invalid date 'FEBRUARY 30'"))
+
+  }
+
+  private def mkDate(
+    year: Year,
+    month: Month,
+    day: Day,
+    value: Option[DateValue],
+    beforeAfterPrecisely: BeforeAfterPrecisely = Precisely,
+    offsetDate: OffsetDate = OffsetDate(0)) =
     Date(
-      DateConstraints(List(DateConstraint(Precisely, ConcreteDate(year, month, day), OffsetDate(0)))),
+      DateConstraints(List(DateConstraint(beforeAfterPrecisely, ConcreteDate(year, month, day), offsetDate))),
       Offset(0),
       value)
 
