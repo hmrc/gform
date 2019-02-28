@@ -28,7 +28,7 @@ class RequestConverterSpec extends WordSpec with MustMatchers {
                       "test3": "test3"
                     }"""
 
-    val handler = new RequestConverter
+    val handler = RequestConverter
 
     val result = handler.requestToDataEvent(FormId("formId"), body)
 

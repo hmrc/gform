@@ -20,7 +20,7 @@ import play.api.mvc.{ AnyContent, Request }
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.play.audit.model.DataEvent
 
-class RequestConverter {
+object RequestConverter {
 
   def requestToDataEvent(formId: FormId, request: String): DataEvent =
     DataEvent("Gform", "enrolmentCallback", detail = Map(formId.value -> request))
