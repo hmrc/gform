@@ -25,6 +25,9 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidth.DisplayWidth
 
 import scala.collection.immutable._
 
+sealed trait MultiField {
+  def fields(formComponentId: FormComponentId): List[FormComponentId]
+}
 sealed trait ComponentType
 
 case class Text(constraint: TextConstraint, value: Expr, displayWidth: DisplayWidth = DisplayWidth.DEFAULT)
@@ -33,19 +36,26 @@ case class Text(constraint: TextConstraint, value: Expr, displayWidth: DisplayWi
 case class TextArea(constraint: TextConstraint, value: Expr, displayWidth: DisplayWidth = DisplayWidth.DEFAULT)
     extends ComponentType
 
-case class UkSortCode(value: Expr) extends ComponentType
+case class UkSortCode(value: Expr) extends ComponentType with MultiField {
+  override def fields(id: FormComponentId): List[FormComponentId] = UkSortCode.fields(id)
+}
 
 object UkSortCode {
   val fields = (id: FormComponentId) => List("1", "2", "3").map(id.withSuffix)
 }
 
-case class Date(constraintType: DateConstraintType, offset: Offset, value: Option[DateValue]) extends ComponentType
+case class Date(constraintType: DateConstraintType, offset: Offset, value: Option[DateValue])
+    extends ComponentType with MultiField {
+  override def fields(id: FormComponentId): List[FormComponentId] = Date.fields(id)
+}
 
 case object Date {
   val fields = (id: FormComponentId) => List("day", "month", "year").map(id.withSuffix)
 }
 
-case class Address(international: Boolean) extends ComponentType
+case class Address(international: Boolean) extends ComponentType with MultiField {
+  override def fields(id: FormComponentId): List[FormComponentId] = Address.fields(id)
+}
 
 case object Address {
   val mandatoryFields = (id: FormComponentId) => List("street1").map(id.withSuffix)

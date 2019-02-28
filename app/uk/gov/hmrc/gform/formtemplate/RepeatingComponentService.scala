@@ -126,17 +126,17 @@ object RepeatingComponentService {
     def extractAllFieldIds(g: Group): Seq[FormComponentId] =
       g.fields.flatMap { f =>
         f.`type` match {
-          case _: Address => Address.fields(f.id)
-          case _          => Set(f.id)
+          case m: MultiField => m.fields(f.id)
+          case _             => Set(f.id)
         }
       }
 
     def extractAllFieldsIdsFromRepeatingSection(section: Section): Seq[FormComponentId] =
       section.fields.flatMap { f =>
         f.`type` match {
-          case g: Group   => extractAllFieldIds(g)
-          case _: Address => Address.fields(f.id)
-          case _          => Set(f.id)
+          case g: Group      => extractAllFieldIds(g)
+          case m: MultiField => m.fields(f.id)
+          case _             => Set(f.id)
         }
       }
 
