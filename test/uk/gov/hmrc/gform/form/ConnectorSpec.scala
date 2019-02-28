@@ -20,7 +20,6 @@ import uk.gov.hmrc.gform.auditing.Connector
 import uk.gov.hmrc.play.audit.http.connector.AuditResult
 import uk.gov.hmrc.play.audit.model.DataEvent
 
-import scala.concurrent
 import scala.concurrent.Future
 
 class ConnectorSpec extends WordSpec with MustMatchers {

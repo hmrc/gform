@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.form
 import play.api.Logger
 import play.api.http.HttpEntity
 import play.api.libs.json.JsValue
-import play.api.mvc.{ Action, AnyContent, ResponseHeader, Result }
+import play.api.mvc._
 import uk.gov.hmrc.gform.auditing._
 import uk.gov.hmrc.gform.config.AppConfig
 import uk.gov.hmrc.gform.controllers.BaseController
@@ -27,20 +27,21 @@ import uk.gov.hmrc.gform.core.FormValidator
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.fileupload.FileUploadService
 import uk.gov.hmrc.gform.formtemplate.FormTemplateService
-import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, UserId }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeExpiryDate, FileId, FormId, UserData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, UserId }
 import uk.gov.hmrc.gform.time.TimeProvider
+import uk.gov.hmrc.http.{ BadRequestException, NotFoundException }
 
 import scala.concurrent.Future
 import scala.util.Try
-import uk.gov.hmrc.http.{ BadRequestException, NotFoundException }
 
 class FormController(
   config: AppConfig,
   formTemplateService: FormTemplateService,
   fileUploadService: FileUploadService,
-  formService: FormService)
+  formService: FormService,
+  auditConnector: Connector)
     extends BaseController {
 
   def newForm(
@@ -137,6 +138,19 @@ class FormController(
   //TODO discuss with Daniel about naming, purpose of it and if we can make it part of a form
   def getKeyStore(formId: FormId) = Action.async { implicit request =>
     formService.getKeyStore(formId).asOkJson
+  }
+
+  def enrolmentCallBack(formId: FormId): Action[AnyContent] = Action.async { implicit request =>
+    val audit = new Connector {}
+    val requestHandler = RequestConverter
+    val event = requestHandler.requestToDataEvent(formId, request)
+
+    audit
+      .sendRequest(event)
+      .recover {
+        case _: Exception => Results.NotFound
+      }
+      .map(_ => Results.Ok)
   }
 
   private def getSection(formTemplate: FormTemplate, sectionNumber: SectionNumber): Section =
