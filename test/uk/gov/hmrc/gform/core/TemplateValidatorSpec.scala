@@ -597,6 +597,21 @@ class TemplateValidatorSpec extends Spec {
 
   }
 
+
+  "TemplateValidator.validateDates with dates 2018-02-29 and 2019-11-31 in a group" should "return Invalid" in {
+
+    val dateFormComponent1 = mkFormComponent("fieldInGroup1", mkDate(Some(ExactDateValue(2018, 2, 29))))
+    val dateFormComponent2 = mkFormComponent("fieldInGroup2", mkDate(Some(ExactDateValue(2019, 11, 31))))
+
+    val formComponents = List(mkFormComponent("group", Group(List(dateFormComponent1, dateFormComponent2), Vertical)))
+
+    val newFormTemplate = mkFormTemplate(formComponents)
+
+    val res = FormTemplateValidator.validateDates(newFormTemplate)
+    res should be(Invalid("java.time.DateTimeException: Invalid date 'February 29' as '2018' is not a leap year. java.time.DateTimeException: Invalid date 'NOVEMBER 31'"))
+
+  }
+
   "TemplateValidator.validateDates with date value 2018-02-25 in a group" should "Valid" in {
 
     val dateFormComponent = mkFormComponent("fieldContainedInFormTemplate", mkDate(Some(ExactDateValue(2018, 2, 25))))
