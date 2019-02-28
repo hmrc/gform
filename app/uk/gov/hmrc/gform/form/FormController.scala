@@ -142,17 +142,13 @@ class FormController(
   }
 
   def enrolmentCallBack(formId: FormId): Action[AnyContent] = Action.async { implicit request =>
-    val requestHandler = RequestConverter
-    val event = requestHandler.requestToDataEvent(formId, request)
+    val event = RequestConverter.requestToDataEvent(formId, request)
 
     auditConnector
       .sendRequest(event)
+      .map(_ => Results.Ok)
       .recover {
-        case _: Exception => AuditResult.Failure
-      }
-      .map {
-        case AuditResult.Failure => Results.NotFound
-        case _                   => Results.Ok
+        case _: Exception => Results.NotFound
       }
   }
 
