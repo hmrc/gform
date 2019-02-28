@@ -123,17 +123,24 @@ object RepeatingComponentService {
   }
 
   def extractRepeatableFieldIds(template: FormTemplate): Set[FormComponentId] = {
-    def extractAllFieldIds(g: Group) = g.fields.map(_.id)
-
-    def extractAllFieldsIdsFromRepeatingSection(section: Section) =
-      section.fields.flatMap { f =>
+    def extractAllFieldIds(g: Group): Seq[FormComponentId] =
+      g.fields.flatMap { f =>
         f.`type` match {
-          case g: Group => extractAllFieldIds(g)
-          case _        => Set(f.id)
+          case _: Address => Address.fields(f.id)
+          case _          => Set(f.id)
         }
       }
 
-    def extractRepeatableFieldIdsFromNonRepeatingSection(section: Section) =
+    def extractAllFieldsIdsFromRepeatingSection(section: Section): Seq[FormComponentId] =
+      section.fields.flatMap { f =>
+        f.`type` match {
+          case g: Group   => extractAllFieldIds(g)
+          case _: Address => Address.fields(f.id)
+          case _          => Set(f.id)
+        }
+      }
+
+    def extractRepeatableFieldIdsFromNonRepeatingSection(section: Section): Seq[FormComponentId] =
       section.fields.flatMap { f =>
         f.`type` match {
           case g: Group => extractAllFieldIds(g)
