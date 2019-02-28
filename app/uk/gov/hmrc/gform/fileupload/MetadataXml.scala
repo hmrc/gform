@@ -34,7 +34,7 @@ object MetadataXml {
     val attributes = List(
       createAttribute("hmrc_time_of_receipt", submission.submittedDate),
       createAttribute("time_xml_created", submission.submittedDate),
-      createAttribute("submission_reference", submission.submissionRef.value),
+      createAttribute("submission_reference", submission.submissionRef.value.replace("-", "")),
       createAttribute("form_id", dmsSubmission.dmsFormId),
       createAttribute("number_pages", pdfSummary.numberOfPages),
       createAttribute("source", "dfs"),

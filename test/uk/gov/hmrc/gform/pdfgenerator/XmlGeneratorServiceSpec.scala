@@ -141,7 +141,7 @@ class XmlGeneratorServiceSpec extends Spec {
       <documents>
         <document>
           <header>
-            <title>CFJ7CEHP7R</title>
+            <title>CFJ-7CEH-P7R</title>
             <source>gform</source>
             <target>DMS</target>
           </header>

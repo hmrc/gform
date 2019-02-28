@@ -79,7 +79,7 @@ class MetadataXmlSpec extends Spec {
               <attribute_name>submission_reference</attribute_name>
               <attribute_type>string</attribute_type>
               <attribute_values>
-                <attribute_value>some-submission-ref</attribute_value>
+                <attribute_value>somesubmissionref</attribute_value>
               </attribute_values>
             </attribute>
             <attribute>
