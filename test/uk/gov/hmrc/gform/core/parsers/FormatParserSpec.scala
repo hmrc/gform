@@ -115,6 +115,16 @@ class FormatParserSpec extends Spec {
       ))))
   }
 
+
+  "before and after with first and last day" should "be parsed successfully" in {
+    val res = validate("before 2017-04-firstDay -2, after 2015-02-lastDay +42")
+    res.right.value should be(
+      DateFormat(DateConstraints(List(
+        DateConstraint(Before, ConcreteDate(ExactYear(2017), ExactMonth(4), FirstDay), OffsetDate(-2)),
+        DateConstraint(After, ConcreteDate(ExactYear(2015), ExactMonth(2), LastDay), OffsetDate(42))
+      ))))
+  }
+
   "precisely 2018-04-firstDay" should "be parsed successfully" in {
     val res = validate("precisely 2018-04-firstDay")
     res.right.value should be(
