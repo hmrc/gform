@@ -463,8 +463,8 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
   def isNull(s: Any): CharSequence = log("isNull", s) { condition(isNullAsBoolean(s)) }
   def isNotNull(s: Any): CharSequence = log("isNotNull", s) { condition(!isNullAsBoolean(s)) }
 
-  private val etmpSequenceNumberFormat = new DecimalFormat("00")
-  def toEtmpSequenceNumber(index: Int): CharSequence = etmpSequenceNumberFormat.format(index + 1)
+  private val etmpParamSequenceFormat = new DecimalFormat("00")
+  def toEtmpParamSequence(index: Int): CharSequence = etmpParamSequenceFormat.format(index + 1)
 
   private def ifNotNullAsString(t: Any)(f: String => CharSequence): CharSequence = NullString.ifNotNull(t)(f)
 

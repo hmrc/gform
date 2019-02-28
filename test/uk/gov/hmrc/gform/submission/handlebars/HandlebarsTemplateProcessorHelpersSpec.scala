@@ -436,7 +436,7 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     process("{{isNotNull (either null \"123\")}}") shouldBe "true"
   }
 
-  "toEtmpSequenceNumber" must "add one to the given index and pad-left with 0 if it is less than or equal to 9" in {
+  "toEtmpParamSequence" must "add one to the given index and pad-left with 0 if it is less than or equal to 9" in {
     val table = Table(
       ("in", "out"),
       (0, "01"),
@@ -449,7 +449,7 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
 
     forAll(table) {
       case (in, out) =>
-        process(s"{{toEtmpSequenceNumber $in}}") shouldBe out
+        process(s"{{toEtmpParamSequence $in}}") shouldBe out
     }
   }
 
