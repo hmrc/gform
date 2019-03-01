@@ -34,7 +34,7 @@ object MetadataXml {
     val attributes = List(
       createAttribute("hmrc_time_of_receipt", submission.submittedDate),
       createAttribute("time_xml_created", submission.submittedDate),
-      createAttribute("submission_reference", submission.submissionRef.value.replace("-", "")),
+      createAttribute("submission_reference", submission.submissionRef.withoutHyphens),
       createAttribute("form_id", dmsSubmission.dmsFormId),
       createAttribute("number_pages", pdfSummary.numberOfPages),
       createAttribute("source", "dfs"),
@@ -50,7 +50,7 @@ object MetadataXml {
 
   private def createHeader(submissionRef: SubmissionRef, reconciliationId: ReconciliationId): Elem =
     <header>
-      <title>{ submissionRef.value.replace("-", "") }</title>
+      <title>{ submissionRef.withoutHyphens }</title>
       <format>pdf</format>
       <mime_type>application/pdf</mime_type>
       <store>true</store>

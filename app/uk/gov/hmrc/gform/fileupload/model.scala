@@ -44,7 +44,7 @@ object ReconciliationId {
 
   def create(submissionRef: SubmissionRef)(implicit now: Now[LocalDateTime]): ReconciliationId = {
     val dateFormatter = now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
-    ReconciliationId(submissionRef.value.replace("-", "") + "-" + dateFormatter)
+    ReconciliationId(submissionRef.withoutHyphens + "-" + dateFormatter)
   }
 }
 
