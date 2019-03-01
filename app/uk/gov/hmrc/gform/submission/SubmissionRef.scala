@@ -29,6 +29,7 @@ import scala.util.Random
 
 case class SubmissionRef(value: String) extends AnyVal {
   override def toString = value
+  def withoutHyphens = value.replace("-", "")
 }
 
 object SubmissionRef {
