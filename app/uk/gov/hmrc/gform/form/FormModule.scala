@@ -15,8 +15,6 @@
  */
 
 package uk.gov.hmrc.gform.form
-
-import uk.gov.hmrc.gform.auditing.Connector
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.fileupload.FileUploadModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
@@ -35,14 +33,12 @@ class FormModule(
 
   val formService = new FormService(save4later)
 
-  val auditConnector: Connector = new Connector {}
-
   val formController: FormController =
     new FormController(
       configModule.appConfig,
       formTemplateModule.formTemplateService,
       fileUploadModule.fileUploadService,
-      formService,
-      auditConnector)
+      formService
+    )
 
 }

@@ -41,8 +41,7 @@ class FormController(
   config: AppConfig,
   formTemplateService: FormTemplateService,
   fileUploadService: FileUploadService,
-  formService: FormService,
-  auditConnector: Connector)
+  formService: FormService)
     extends BaseController {
 
   def newForm(
@@ -141,15 +140,10 @@ class FormController(
     formService.getKeyStore(formId).asOkJson
   }
 
-  def enrolmentCallBack(formId: FormId): Action[AnyContent] = Action.async { implicit request =>
-    val event = RequestConverter.requestToDataEvent(formId, request)
+  def enrolmentCallBack(formId: FormId): Action[AnyContent] = Action { implicit request =>
+    Logger.info(s"Form ID: $formId. Payload: ${request.body.toString}")
 
-    auditConnector
-      .sendRequest(event)
-      .map(_ => Results.Ok)
-      .recover {
-        case _: Exception => Results.NotFound
-      }
+    Results.Ok
   }
 
   private def getSection(formTemplate: FormTemplate, sectionNumber: SectionNumber): Section =
