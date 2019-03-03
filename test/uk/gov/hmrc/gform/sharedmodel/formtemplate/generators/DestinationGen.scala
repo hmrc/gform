@@ -44,7 +44,7 @@ trait DestinationGen {
       profile     <- ProfileGen.profileGen
       uri         <- PrimitiveGen.urlContextPathGen
       method      <- HttpMethodGen.httpMethodGen
-      payload     <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
+      payload     <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen).map(_.map(s => s""""$s""""))
       includeIf   <- Gen.option(Gen.alphaNumStr)
       failOnError <- Gen.option(PrimitiveGen.booleanGen)
     } yield Destination.HandlebarsHttpApi(id, profile, uri, method, payload, includeIf, failOnError)
