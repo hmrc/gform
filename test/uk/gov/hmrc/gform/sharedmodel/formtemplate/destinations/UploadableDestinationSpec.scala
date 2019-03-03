@@ -22,21 +22,21 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.DestinationGen
 class UploadableDestinationSpec extends Spec {
   "UploadableHandlebarsHttpApiDestination.toHandlebarsHttpApiDestination" should "not condition the uri, payload and includeIf if convertSingleQuotes is None" in {
     forAll(DestinationGen.handlebarsHttpApiGen) { destination =>
-      val withQuotes = addQuotes(destination)
+      val withQuotes = addQuotes(destination, """"'abc'"""")
       createUploadable(withQuotes, None).toHandlebarsHttpApiDestination shouldBe Right(withQuotes)
     }
   }
 
   it should "not condition the uri, payload and includeIf if convertSingleQuotes is Some(false)" in {
     forAll(DestinationGen.handlebarsHttpApiGen) { destination =>
-      val withQuotes = addQuotes(destination)
+      val withQuotes = addQuotes(destination, """"'abc'"""")
       createUploadable(withQuotes, Some(false)).toHandlebarsHttpApiDestination shouldBe Right(withQuotes)
     }
   }
 
   it should "condition the uri, payload and includeIf if convertSingleQuotes is Some(true)" in {
     forAll(DestinationGen.handlebarsHttpApiGen) { destination =>
-      val withQuotes = addQuotes(destination)
+      val withQuotes = addQuotes(destination, """'abc'""")
       val expected = withQuotes.copy(
         uri = replaceQuotes(withQuotes.uri),
         payload = withQuotes.payload.map(v => replaceQuotes(v)),
@@ -49,21 +49,21 @@ class UploadableDestinationSpec extends Spec {
 
   "UploadableHmrcDmsDestination.toHmrcDmsDestination" should "not condition the includeIf if convertSingleQuotes is None" in {
     forAll(DestinationGen.hmrcDmsGen) { destination =>
-      val withQuotes = addQuotes(destination)
+      val withQuotes = addQuotes(destination, """"'abc'"""")
       createUploadable(withQuotes, None).toHmrcDmsDestination shouldBe Right(withQuotes)
     }
   }
 
   it should "not condition the includeIf if convertSingleQuotes is Some(false)" in {
     forAll(DestinationGen.hmrcDmsGen) { destination =>
-      val withQuotes = addQuotes(destination)
+      val withQuotes = addQuotes(destination, """"'abc'"""")
       createUploadable(withQuotes, Some(false)).toHmrcDmsDestination shouldBe Right(withQuotes)
     }
   }
 
   it should "condition the includeIf if convertSingleQuotes is Some(true)" in {
     forAll(DestinationGen.hmrcDmsGen) { destination =>
-      val withQuotes = addQuotes(destination)
+      val withQuotes = addQuotes(destination, """"'abc'"""")
       val expected = withQuotes.copy(
         includeIf = withQuotes.includeIf.map(v => replaceQuotes(v))
       )
@@ -106,17 +106,15 @@ class UploadableDestinationSpec extends Spec {
 
   private def replaceQuotes(s: String): String = SingleQuoteReplacementLexer(s).merge
 
-  private def addQuotes(destination: Destination.HandlebarsHttpApi) =
+  private def addQuotes(destination: Destination.HandlebarsHttpApi, q: String) =
     destination.copy(
-      uri = destination.uri + quotes,
-      payload = destination.payload.map(_ + quotes),
-      includeIf = destination.includeIf.map(_ + quotes)
+      uri = q,
+      payload = destination.payload.map(_ => q),
+      includeIf = destination.includeIf.map(_ => q)
     )
 
-  private def addQuotes(destination: Destination.HmrcDms) =
+  private def addQuotes(destination: Destination.HmrcDms, q: String) =
     destination.copy(
-      includeIf = destination.includeIf.map(_ + quotes)
+      includeIf = destination.includeIf.map(_ => q)
     )
-
-  val quotes = """'abc'^def 'ghi' jkl^\"' '\""""
 }
