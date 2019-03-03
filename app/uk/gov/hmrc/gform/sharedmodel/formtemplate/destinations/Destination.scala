@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
 
 import cats.syntax.either._
+import cats.syntax.option._
 import julienrf.json.derived
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
@@ -110,11 +111,13 @@ case class UploadableHandlebarsHttpApiDestination(
 
   def toHandlebarsHttpApiDestination: Either[String, Destination.HandlebarsHttpApi] =
     for {
-      cp   <- conditioned(convertSingleQuotes, payload)
-      cii  <- conditioned(convertSingleQuotes, includeIf)
-      curi <- conditioned(convertSingleQuotes, uri)
-    } yield Destination.HandlebarsHttpApi(id, profile, curi, method, cp, cii, failOnError)
-
+      conditionedPayload   <- conditioned(convertSingleQuotes, payload)
+      validatedPayload     <- validateStructure(conditionedPayload)
+      conditionedIncludeIf <- conditioned(convertSingleQuotes, includeIf)
+      conditionedUri       <- conditioned(convertSingleQuotes, uri)
+    } yield
+      Destination
+        .HandlebarsHttpApi(id, profile, conditionedUri, method, validatedPayload, conditionedIncludeIf, failOnError)
 }
 
 object UploadableHandlebarsHttpApiDestination {
@@ -137,4 +140,8 @@ object UploadableConditioning {
       else Right(Option(p))
   }
 
+  def validateStructure(os: Option[String]): Either[String, Option[String]] = os match {
+    case None    => Right(None)
+    case Some(s) => HandlebarsJsonValidator(s).map(_.some)
+  }
 }
