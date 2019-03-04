@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.submission.handlebars
 
+import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.NotChecked
 import uk.gov.hmrc.gform.sharedmodel.form._
@@ -27,6 +28,8 @@ class HandlebarsTemplateProcessorModelSpec extends Spec {
       createFormTemplate(
         createNonRepeatingSection(
           createNonGroupField("nonRepeatingSection1Field"),
+          createMultiChoice("nonRepeatingSectionMultiChoiceField"),
+          createRadio("nonRepeatingSectionRadioField"),
           createGroupField(
             "group",
             createNonGroupField("groupField1"),
@@ -35,20 +38,28 @@ class HandlebarsTemplateProcessorModelSpec extends Spec {
         ),
         createRepeatingSection(
           createNonGroupField("field1InRepeatingSection"),
-          createNonGroupField("field2InRepeatingSection")
+          createNonGroupField("field2InRepeatingSection"),
+          createMultiChoice("repeatingSectionMultiChoiceField"),
+          createRadio("repeatingSectionRadioField")
         )
       )
 
     val form = createForm(
       "theFormId",
-      "nonRepeatingSection1Field"  -> "nonRepeatingSection1FieldValue",
-      "groupField1"                -> "groupField1Value1",
-      "1_groupField1"              -> "groupField1Value2",
-      "groupField2"                -> "groupField2Value1",
-      "1_field1InRepeatingSection" -> "field1InRepeatingSectionValue1",
-      "2_field1InRepeatingSection" -> "field1InRepeatingSectionValue2",
-      "1_field2InRepeatingSection" -> "field2InRepeatingSectionValue1",
-      "2_field2InRepeatingSection" -> "field2InRepeatingSectionValue2"
+      "nonRepeatingSection1Field"           -> "nonRepeatingSection1FieldValue",
+      "groupField1"                         -> "groupField1Value1",
+      "1_groupField1"                       -> "groupField1Value2",
+      "groupField2"                         -> "groupField2Value1",
+      "1_field1InRepeatingSection"          -> "field1InRepeatingSectionValue1",
+      "2_field1InRepeatingSection"          -> "field1InRepeatingSectionValue2",
+      "1_field2InRepeatingSection"          -> "field2InRepeatingSectionValue1",
+      "2_field2InRepeatingSection"          -> "field2InRepeatingSectionValue2",
+      "nonRepeatingSectionMultiChoiceField" -> "One,Two,",
+      "nonRepeatingSectionRadioField"       -> "One,",
+      "1_repeatingSectionMultiChoiceField"  -> "Three,Four,",
+      "2_repeatingSectionMultiChoiceField"  -> "Five,Six,",
+      "1_repeatingSectionRadioField"        -> "Seven,",
+      "2_repeatingSectionRadioField"        -> "Eight,"
     )
 
     HandlebarsTemplateProcessorModel(form, formTemplate) shouldBe
@@ -76,7 +87,15 @@ class HandlebarsTemplateProcessorModelSpec extends Spec {
            |  "field2InRepeatingSection" : [
            |    "field2InRepeatingSectionValue1",
            |    "field2InRepeatingSectionValue2"
-           |  ]
+           |  ],
+           |  "nonRepeatingSectionMultiChoiceField": [
+           |    "One", "Two"
+           |  ],
+           |  "nonRepeatingSectionRadioField": "One,",
+           |  "repeatingSectionMultiChoiceField": [
+           |    ["Three", "Four"], ["Five", "Six"]
+           |  ],
+           |  "repeatingSectionRadioField" : [ "Seven,", "Eight," ]
            |}""".stripMargin
       )
   }
@@ -172,4 +191,10 @@ class HandlebarsTemplateProcessorModelSpec extends Spec {
       true,
       null
     )
+
+  def createMultiChoice(id: String): FormComponent =
+    createFormComponent(id, Choice(Checkbox, NonEmptyList.of("One", "Two", "Three"), Vertical, Nil, None))
+
+  def createRadio(id: String): FormComponent =
+    createFormComponent(id, Choice(Radio, NonEmptyList.of("One", "Two", "Three"), Vertical, Nil, None))
 }
