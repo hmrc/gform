@@ -17,9 +17,14 @@
 package uk.gov.hmrc.gform.sharedmodel
 
 import java.util.Date
+
+import cats.data.NonEmptyList
 import julienrf.json.derived
+import play.api.data.validation.ValidationError
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+
+import scala.collection.immutable.{ ::, List, Nil }
 
 case class ObligationDetail(
   status: String,
@@ -84,5 +89,17 @@ object IdNumberValue {
 case class HmrcTaxPeriodWithEvaluatedId(hmrcTaxPeriod: HmrcTaxPeriod, idNumberValue: IdNumberValue)
 
 object HmrcTaxPeriodWithEvaluatedId {
+
+  implicit def readsNonEmptyList[T: Reads] = Reads[NonEmptyList[T]] { json =>
+    Json.fromJson[List[T]](json).flatMap {
+      case Nil     => JsError(ValidationError(s"Required at least one element. Got: $json"))
+      case x :: xs => JsSuccess(NonEmptyList(x, xs))
+    }
+  }
+
+  implicit def writesNonEmptyList[T: Writes] = Writes[NonEmptyList[T]] { v =>
+    JsArray((v.head :: v.tail).map(Json.toJson(_)).toList)
+  }
+
   implicit val format: OFormat[HmrcTaxPeriodWithEvaluatedId] = derived.oformat
 }
