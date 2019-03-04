@@ -37,22 +37,13 @@ class ConfigModule(playComponents: PlayComponents) {
 
   val desConfig: DesConnectorConfig = pureconfig.loadConfigOrThrow[DesConnectorConfig]("microservice.services.etmp-hod")
 
-  val mdtpServiceConfigs: Map[MdtpServiceName, MdtpServiceConfiguration] = {
-    val protocol = pureconfig.loadConfigOrThrow[String]("microservice.destination-services.protocol")
-
+  val mdtpServiceConfigs: Map[MdtpServiceName, MdtpServiceConfiguration] =
     Seq("tax-enrolments")
-      .map(name =>
-        (name, pureconfig.loadConfigOrThrow[DestinationServiceConfig](s"microservice.destination-services.$name")))
-      .map {
-        case (n, dsc) =>
-          val name = MdtpServiceName(n)
-          (name, MdtpServiceConfiguration(name, s"$protocol://${dsc.host}:${dsc.port}"))
+      .map(MdtpServiceName)
+      .map { name =>
+        (name, MdtpServicesConfig.mdtpServiceConfiguration(name))
       }
       .toMap
-  }
-
-  //  val mdgIntegrationFrameworkConfig: MdgIntegrationFrameworkConfig =
-  //    pureconfig.loadConfigOrThrow[MdgIntegrationFrameworkConfig]("microservice.services.mdg-integration-framework")
 
   val emailConfig: EmailConnectorConfig =
     pureconfig.loadConfigOrThrow[EmailConnectorConfig]("microservice.services.email")
@@ -77,6 +68,20 @@ class ConfigModule(playComponents: PlayComponents) {
 
   val configController = new ConfigController(this)
 
+  object MdtpServicesConfig extends ServicesConfig {
+    override protected def runModeConfiguration: Configuration = playConfiguration
+    override protected def mode: Mode = playComponents.context.environment.mode
+
+    override protected lazy val rootServices = "microservice.destination-services"
+    override protected lazy val services = s"$env.microservice.destination-services"
+
+    private def authorizationToken(serviceName: String): Option[String] =
+      config(serviceName).getString("authorizationToken")
+    private def environment(serviceName: String): Option[String] = config(serviceName).getString("environment")
+
+    def mdtpServiceConfiguration(name: MdtpServiceName): MdtpServiceConfiguration =
+      MdtpServiceConfiguration(name, baseUrl(name.name), authorizationToken(name.name), environment(name.name))
+  }
 }
 
 case class DesConnectorConfig(basePath: String, authorizationToken: String, environment: String)
@@ -84,5 +89,3 @@ case class DesConnectorConfig(basePath: String, authorizationToken: String, envi
 case class MdgIntegrationFrameworkConfig(basePath: String, authorizationToken: String)
 
 case class EmailConnectorConfig(host: String, port: String)
-
-case class DestinationServiceConfig(host: String, port: String)

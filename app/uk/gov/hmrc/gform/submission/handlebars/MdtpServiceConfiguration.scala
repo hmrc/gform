@@ -16,5 +16,9 @@
 
 package uk.gov.hmrc.gform.submission.handlebars
 
-case class MdtpServiceName(name: String)
-case class MdtpServiceConfiguration(serviceName: MdtpServiceName, baseUrl: String)
+case class MdtpServiceName(name: String) extends AnyVal
+case class MdtpServiceConfiguration(
+  serviceName: MdtpServiceName,
+  baseUrl: String,
+  authorizationToken: Option[String],
+  environment: Option[String])
