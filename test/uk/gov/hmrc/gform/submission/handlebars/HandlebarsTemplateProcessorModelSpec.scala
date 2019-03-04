@@ -60,6 +60,12 @@ class HandlebarsTemplateProcessorModelSpec extends Spec {
            |    "groupField1Value1",
            |    "groupField1Value2"
            |  ],
+           |  "hmrcRosmRegistrationCheck": {
+           |    "safeId": "",
+           |    "organisationName": "",
+           |    "organisationType": "",
+           |    "isAGroup": ""
+           |  },
            |  "groupField2" : [
            |    "groupField2Value1"
            |  ],
