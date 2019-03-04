@@ -33,7 +33,7 @@ class HandlebarsHttpApiModule(wSHttpModule: WSHttpModule, configModule: ConfigMo
 
   private val desHttpClient: JsonHttpClient[FOpt] =
     rootHttpClient
-      .buildUri(uri => s"${configModule.serviceConfig.baseUrl("etmp-hod")}${desConfig.basePath}/$uri")
+      .buildUri(uri => appendUriSegment(configModule.serviceConfig.baseUrl("etmp-hod"), uri))
       .buildHeaderCarrier(hc => {
         hc.copy(
           extraHeaders = ("Environment" -> desConfig.environment) :: hc.extraHeaders.toList,
@@ -45,10 +45,21 @@ class HandlebarsHttpApiModule(wSHttpModule: WSHttpModule, configModule: ConfigMo
   private val mdtpHttpClientMap: MdtpHttpClient[FOpt] = MdtpHttpClient(
     configModule.mdtpServiceConfigs.mapValues { configuration =>
       rootHttpClient
-        .buildUri(uri => s"${configuration.baseUrl}/$uri")
+        .buildUri(uri => appendUriSegment(configuration.baseUrl, uri))
+        .buildHeaderCarrier(hc => {
+          val hc1 =
+            configuration.authorizationToken.fold(hc)(at => hc.copy(authorization = Some(Authorization(s"Bearer $at"))))
+          val hc2 = configuration.environment.fold(hc1)(e =>
+            hc.copy(extraHeaders = ("Environment" -> e) :: hc1.extraHeaders.toList))
+          hc2
+        })
         .json
     }
   )
+
+  private def appendUriSegment(base: String, toAppend: String) =
+    if (base.endsWith("/") || toAppend.startsWith("/")) s"$base$toAppend"
+    else s"$base/$toAppend"
 
 //  private val mdgConfig = configModule.mdgIntegrationFrameworkConfig
 
