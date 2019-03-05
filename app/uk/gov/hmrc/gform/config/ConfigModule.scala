@@ -37,7 +37,7 @@ class ConfigModule(playComponents: PlayComponents) {
 
   val desConfig: DesConnectorConfig = pureconfig.loadConfigOrThrow[DesConnectorConfig]("microservice.services.etmp-hod")
 
-  val mdtpServiceConfigs: Map[MdtpServiceName, MdtpServiceConfiguration] =
+  lazy val mdtpServiceConfigs: Map[MdtpServiceName, MdtpServiceConfiguration] =
     Seq("tax-enrolments")
       .map(MdtpServiceName)
       .map { name =>
