@@ -53,7 +53,7 @@ object HandlebarsJsonValidator extends RegexParsers {
 
   private def handlebarsIdentifier: Parser[Unit] =
     "[.]" ^^ void |
-      "@?[a-zA-Z0-9_][a-zA-Z0-9_-]*".r ^^ void
+      "@?[a-zA-Z0-9_][.a-zA-Z0-9_-]*".r ^^ void
 
   private def handlebarsExpression: Parser[Unit] =
     handlebarsIdentifier ~ handlebarsParameterList ^^ void
@@ -63,28 +63,31 @@ object HandlebarsJsonValidator extends RegexParsers {
 
   private def handlebarsBlockStart: Parser[String] = "{{#" ~> identifier <~ handlebarsParameterList <~ "}}"
   private def handlebarsBlockEnd: Parser[String] = "{{/" ~> identifier <~ "}}"
+  private def handlebarsBlockContentElement: Parser[Unit] =
+    jsonField |
+      handlebarsJson
 
   private def handlebarsBlock: Parser[Unit] =
-    handlebarsBlockStart ~ rep(handlebarsJson ~ opt(",")) ~ handlebarsBlockEnd flatMap {
+    handlebarsBlockStart ~ rep(handlebarsBlockContentElement ~ opt(",")) ~ handlebarsBlockEnd flatMap {
       case startId ~ _ ~ endId =>
         if (startId === endId) success(()) else err(s"Expected {{/$startId}}. Got {{/$endId}}.")
     }
 
-  private def jsonField: Parser[Unit] = doubleQuotedStringLiteral ~ ":" ~ handlebarsJson ^^ void
+  private def jsonField: Parser[Unit] =
+    doubleQuotedStringLiteral ~ ":" ~ handlebarsJson ^^ void |
+      handlebarsBlock |
+      handlebarsTopLevelExpression
+
   private def jsonFieldList: Parser[Unit] =
-    jsonField ~ "," ~ jsonFieldList ^^ void |
+    jsonField ~ opt(",") ~ jsonFieldList ^^ void |
       jsonField ^^ void |
       success(())
 
   private def jsonObject: Parser[Unit] = "{" ~ jsonFieldList ~ "}" ^^ void
 
-  private def jsonArrayElementList: Parser[Unit] =
-    "," ~ handlebarsJson ~ jsonArrayElementList ^^ void |
-      success(())
-
   private def jsonArray: Parser[Unit] =
     "[" ~ "]" ^^ void |
-      "[" ~ handlebarsJson ~ jsonArrayElementList ~ "]" ^^ void
+      "[" ~ rep(handlebarsJson ~ opt(",")) ~ "]" ^^ void
 
   private def numericLiteral: Parser[Unit] = """((-)?(\d)|([1-9]\d*))(\.\d+)?([Ee][+-]?\d+)?""".r ^^ void
   private def booleanLiteral: Parser[Unit] = "(true)|(false)".r ^^ void
