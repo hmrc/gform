@@ -21,12 +21,12 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.{ ArrayNode, BaseJsonNode, ObjectNode }
 import com.fasterxml.jackson.databind.node.JsonNodeFactory.{ instance => jsonNodeFactory }
-import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
+import com.fasterxml.jackson.databind.{ JsonNode, ObjectMapper }
 import com.fasterxml.jackson.databind.node.ArrayNode
-import com.fasterxml.jackson.databind.node.JsonNodeFactory.{instance => jsonNodeFactory}
+import com.fasterxml.jackson.databind.node.JsonNodeFactory.{ instance => jsonNodeFactory }
 import uk.gov.hmrc.gform.formtemplate.RepeatingComponentService
-import uk.gov.hmrc.gform.sharedmodel.form.{Form, Variables}
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{FormComponentId, FormTemplate}
+import uk.gov.hmrc.gform.sharedmodel.form.{ Form, Variables }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplate }
 
 import scala.collection.JavaConversions._
 
