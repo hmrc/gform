@@ -39,25 +39,61 @@ object DateConstraintType {
   implicit val format: OFormat[DateConstraintType] = derived.oformat
 }
 
-final case class DateConstraint(beforeOrAfter: BeforeOrAfter, dateFormat: DateConstraintInfo, offset: OffsetDate)
+final case class DateConstraint(
+  beforeAfterPrecisely: BeforeAfterPrecisely,
+  dateFormat: DateConstraintInfo,
+  offset: OffsetDate
+)
 
 object DateConstraint {
   implicit val format: OFormat[DateConstraint] = derived.oformat
 }
 
-sealed trait BeforeOrAfter
-case object After extends BeforeOrAfter
-case object Before extends BeforeOrAfter
+sealed trait BeforeAfterPrecisely
+case object After extends BeforeAfterPrecisely
+case object Before extends BeforeAfterPrecisely
+case object Precisely extends BeforeAfterPrecisely
 
-object BeforeOrAfter {
-  implicit val format: OFormat[BeforeOrAfter] = derived.oformat
+object BeforeAfterPrecisely {
+  implicit val format: OFormat[BeforeAfterPrecisely] = derived.oformat
+}
+
+sealed trait ExactParameter
+sealed trait DateParameter
+
+sealed trait Year extends DateParameter
+case object Next extends Year with ExactParameter
+case object Previous extends Year with ExactParameter
+case object AnyYear extends Year
+case class ExactYear(year: Int) extends Year
+
+object Year {
+  implicit val format: OFormat[Year] = derived.oformat[Year]
+}
+
+sealed trait Month extends DateParameter
+case object AnyMonth extends Month
+case class ExactMonth(month: Int) extends Month with ExactParameter
+
+object Month {
+  implicit val format: OFormat[Month] = derived.oformat[Month]
+}
+
+sealed trait Day extends DateParameter
+case object AnyDay extends Day
+case class ExactDay(day: Int) extends Day with ExactParameter
+case object FirstDay extends Day with ExactParameter
+case object LastDay extends Day with ExactParameter
+
+object Day {
+  implicit val format: OFormat[Day] = derived.oformat[Day]
 }
 
 sealed trait DateConstraintInfo
 case object Today extends DateConstraintInfo
-case class ConcreteDate(year: Int, month: Int, day: Int) extends DateConstraintInfo
-case class NextDate(month: Int, day: Int) extends DateConstraintInfo
-case class PreviousDate(month: Int, day: Int) extends DateConstraintInfo
+
+case class ConcreteDate(year: Year, month: Month, day: Day) extends DateConstraintInfo
+
 case class AnyWord(value: String) extends DateConstraintInfo
 case class DateField(value: FormComponentId) extends DateConstraintInfo
 

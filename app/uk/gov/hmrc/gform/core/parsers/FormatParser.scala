@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.core.parsers
 
 import parseback._
 import uk.gov.hmrc.gform.core.Opt
-import BasicParsers._
+import uk.gov.hmrc.gform.core.parsers.BasicParsers._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 object FormatParser {
@@ -48,10 +48,12 @@ object FormatParser {
   }
 
   lazy val dateConstraint: Parser[DateConstraint] = {
-    beforeOrAfter ~ dateExpr ~ offsetExpression ^^ { (loc, beforeOrAfter, dateExpr, offset) =>
+    beforeOrAfter ~ exactDateExpr ~ offsetExpression ^^ { (loc, beforeOrAfter, dateExpr, offset) =>
       DateConstraint(beforeOrAfter, dateExpr, offset)
-    } | beforeOrAfter ~ dateExpr ^^ { (loc, beforeOrAfter, dateExpr) =>
+    } | beforeOrAfter ~ exactDateExpr ^^ { (loc, beforeOrAfter, dateExpr) =>
       DateConstraint(beforeOrAfter, dateExpr, OffsetDate(0))
+    } | "precisely" ~ abstractDateExpr ^^ { (loc, _, dateExpr) =>
+      DateConstraint(Precisely, dateExpr, OffsetDate(0))
     }
   }
 
@@ -59,25 +61,29 @@ object FormatParser {
     AnyDate
   }
 
-  lazy val nextDate: Parser[NextDate] = nextOrPrevious("next", NextDate.apply)
-
-  lazy val previousDate: Parser[PreviousDate] = nextOrPrevious("previous", PreviousDate.apply)
-
-  lazy val beforeOrAfter: Parser[BeforeOrAfter] = {
+  lazy val beforeOrAfter: Parser[BeforeAfterPrecisely] = {
     "after" ^^ { (loc, after) =>
       After
     } | "before" ^^ { (loc, before) =>
       Before
     }
+
   }
 
-  lazy val dateExpr: Parser[DateConstraintInfo] = {
+  lazy val exactDateExpr: Parser[DateConstraintInfo] = {
     "today" ^^ { (loc, today) =>
       Today
-    } | yearParser ~ monthDay ^^ { (loc, year, month, day) =>
-      ConcreteDate(year, month, day)
-    } | "${" ~ alphabeticOnly ~ "}" ^^ { (loc, _, field, _) =>
+    } | exactYearParserWithNextAndPrevious ~ delimiter ~ exactMonthParser ~ delimiter ~ exactYearParserWithFirstAndLastDay ^^ {
+      (_, year, _, month, _, day) =>
+        ConcreteDate(year, ExactMonth(month), day)
+    } | "${" ~ alphabeticOnly ~ "}" ^^ { (_, _, field, _) =>
       DateField(FormComponentId(field))
+    }
+  }
+
+  lazy val abstractDateExpr: Parser[DateConstraintInfo] = {
+    yearParser ~ monthDay ^^ { (loc, year, month, day) =>
+      ConcreteDate(year, month, day)
     }
   }
 

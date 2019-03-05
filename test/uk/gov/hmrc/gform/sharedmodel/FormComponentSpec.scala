@@ -449,10 +449,10 @@ class FormComponentSpec extends Spec {
       FormComponent(
         FormComponentId("aprilDate"),
         Date(
-          DateConstraints(
-            List(
-              DateConstraint(After, ConcreteDate(2017, 3, 31), OffsetDate(0)),
-              DateConstraint(Before, ConcreteDate(2017, 5, 1), OffsetDate(0)))),
+          DateConstraints(List(
+            DateConstraint(After, ConcreteDate(ExactYear(2017), ExactMonth(3), ExactDay(31)), OffsetDate(0)),
+            DateConstraint(Before, ConcreteDate(ExactYear(2017), ExactMonth(5), ExactDay(1)), OffsetDate(0))
+          )),
           Offset(0),
           Some(ExactDateValue(2017, 4, 10))
         ),
