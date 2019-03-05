@@ -50,7 +50,7 @@ class HandlebarsHttpApiModule(wSHttpModule: WSHttpModule, configModule: ConfigMo
           val hc1 =
             configuration.authorizationToken.fold(hc)(at => hc.copy(authorization = Some(Authorization(s"Bearer $at"))))
           val hc2 = configuration.environment.fold(hc1)(e =>
-            hc.copy(extraHeaders = ("Environment" -> e) :: hc1.extraHeaders.toList))
+            hc1.copy(extraHeaders = ("Environment" -> e) :: hc1.extraHeaders.toList))
           hc2
         })
         .json
