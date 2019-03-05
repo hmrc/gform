@@ -87,7 +87,7 @@ case class UploadableHmrcDmsDestination(
 
   def toHmrcDmsDestination: Either[String, Destination.HmrcDms] =
     for {
-      cii <- conditioned(convertSingleQuotes, includeIf)
+      cii <- addErrorInfo(id, "includeIf")(condition(convertSingleQuotes, includeIf))
     } yield Destination.HmrcDms(id, dmsFormId, customerId, classificationType, businessArea, cii, failOnError)
 }
 
@@ -111,13 +111,12 @@ case class UploadableHandlebarsHttpApiDestination(
 
   def toHandlebarsHttpApiDestination: Either[String, Destination.HandlebarsHttpApi] =
     for {
-      conditionedPayload   <- conditioned(convertSingleQuotes, payload)
-      validatedPayload     <- validateStructure(conditionedPayload)
-      conditionedIncludeIf <- conditioned(convertSingleQuotes, includeIf)
-      conditionedUri       <- conditioned(convertSingleQuotes, uri)
+      cvp   <- addErrorInfo(id, "payload")(conditionAndValidate(convertSingleQuotes, payload))
+      cvii  <- addErrorInfo(id, "includeIf")(condition(convertSingleQuotes, includeIf))
+      cvuri <- addErrorInfo(id, "uri")(condition(convertSingleQuotes, uri))
     } yield
       Destination
-        .HandlebarsHttpApi(id, profile, conditionedUri, method, validatedPayload, conditionedIncludeIf, failOnError)
+        .HandlebarsHttpApi(id, profile, cvuri, method, cvp, cvii, failOnError)
 }
 
 object UploadableHandlebarsHttpApiDestination {
@@ -129,19 +128,23 @@ object UploadableHandlebarsHttpApiDestination {
 }
 
 object UploadableConditioning {
-  def conditioned(convertSingleQuotes: Option[Boolean], s: String): Either[String, String] =
+  def addErrorInfo[T](destinationId: DestinationId, field: String)(result: Either[String, T]) =
+    result.leftMap(e => s"${destinationId.id}/$field $e")
+
+  def condition(convertSingleQuotes: Option[Boolean], os: Option[String]): Either[String, Option[String]] = os match {
+    case None    => Right(os)
+    case Some(s) => condition(convertSingleQuotes, s).map(_.some)
+  }
+
+  def condition(convertSingleQuotes: Option[Boolean], s: String): Either[String, String] =
     if (convertSingleQuotes.getOrElse(false)) SingleQuoteReplacementLexer(s)
     else Right(s)
 
-  def conditioned(convertSingleQuotes: Option[Boolean], os: Option[String]): Either[String, Option[String]] = os match {
-    case None => Right(None)
-    case Some(p) =>
-      if (convertSingleQuotes.getOrElse(false)) SingleQuoteReplacementLexer(p).map(Option(_))
-      else Right(Option(p))
-  }
+  private def validate(s: String): Either[String, String] = HandlebarsJsonValidator(s)
 
-  def validateStructure(os: Option[String]): Either[String, Option[String]] = os match {
-    case None    => Right(None)
-    case Some(s) => HandlebarsJsonValidator(s).map(_.some)
-  }
+  def conditionAndValidate(convertSingleQuotes: Option[Boolean], s: String): Either[String, String] =
+    condition(convertSingleQuotes, s).flatMap(validate)
+
+  def conditionAndValidate(convertSingleQuotes: Option[Boolean], os: Option[String]): Either[String, Option[String]] =
+    os map (conditionAndValidate(convertSingleQuotes, _) map (_.some)) getOrElse Right(None)
 }

@@ -82,6 +82,10 @@ class HandlebarsJsonValidatorSpec extends Spec {
     ok("""{{foo (bar baz) woo (widget)}}""")
   }
 
+  it should "be accepted as fields in objects" in {
+    ok("""{ {{foo}} }""")
+  }
+
   "handlebars blocks" should "be accepted with no arguments" in {
     ok("""|{{#foo}}
           |"xyz"
@@ -94,6 +98,10 @@ class HandlebarsJsonValidatorSpec extends Spec {
           |"xyz",
           |{{/foo}}
        """.stripMargin)
+  }
+
+  it should "be accepted as fields in objects" in {
+    ok("""{ {{#foo}}"abc":"def"{{/foo}} "abc": "def" }""")
   }
 
   "complicated cases" should "be accepted" in {
