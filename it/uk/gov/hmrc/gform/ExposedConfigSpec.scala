@@ -27,19 +27,21 @@ class ExposedConfigSpec extends support.ITSpec {
       formMaxAttachmentSizeMB = 10,
       formExpiryDays = 28,
       List(
-          ContentType.`application/pdf`,
-          ContentType.`image/jpeg`,
-          ContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
-          ContentType(".xlsx"),
-          ContentType("application/vnd.oasis.opendocument.spreadsheet"),
-          ContentType(".ods"),
-          ContentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
-          ContentType(".docx"),
-          ContentType("application/vnd.oasis.opendocument.text"),
-          ContentType(".odt"),
-          ContentType("application/vnd.openxmlformats-officedocument.presentationml.presentation"),
-          ContentType(".pptx"),
-          ContentType("application/vnd.oasis.opendocument.presentation"),
-          ContentType(".odp")))
+        ContentType.`application/pdf`,
+        ContentType.`image/jpeg`,
+        ContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
+        ContentType(".xlsx"),
+        ContentType("application/vnd.oasis.opendocument.spreadsheet"),
+        ContentType(".ods"),
+        ContentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
+        ContentType(".docx"),
+        ContentType("application/vnd.oasis.opendocument.text"),
+        ContentType(".odt"),
+        ContentType("application/vnd.openxmlformats-officedocument.presentationml.presentation"),
+        ContentType(".pptx"),
+        ContentType("application/vnd.oasis.opendocument.presentation"),
+        ContentType(".odp")
+      )
+    )
   }
 }

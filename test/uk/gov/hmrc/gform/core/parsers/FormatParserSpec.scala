@@ -115,7 +115,6 @@ class FormatParserSpec extends Spec {
       ))))
   }
 
-
   "before and after with first and last day" should "be parsed successfully" in {
     val res = validate("before 2017-04-firstDay -2, after 2015-02-lastDay +42")
     res.right.value should be(

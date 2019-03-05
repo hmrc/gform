@@ -16,25 +16,25 @@
 
 package uk.gov.hmrc.gform.support
 
-import akka.actor.{ActorSystem, Terminated}
+import akka.actor.{ ActorSystem, Terminated }
 import akka.stream.ActorMaterializer
-import org.scalatestplus.play.{BaseOneServerPerSuite, FakeApplicationFactory}
+import org.scalatestplus.play.{ BaseOneServerPerSuite, FakeApplicationFactory }
 import play.api.ApplicationLoader.Context
 import play.api.libs.json.Writes
 import play.api.libs.ws.WSRequest
 import play.api.libs.ws.ahc.AhcWSClient
 import play.api._
-import play.api.{Application, Environment}
+import play.api.{ Application, Environment }
 import uk.gov.hmrc.gform.ApplicationModule
 import uk.gov.hmrc.gform.gformbackend.GformConnector
 import uk.gov.hmrc.gform.wshttp.WSHttp
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
 import scala.concurrent.Future
 
 /**
- * This spec provides running play application for every test.
- */
+  * This spec provides running play application for every test.
+  */
 trait ITSpec extends ITSpecBase with BaseOneServerPerSuite with /*TODO MongoSpecSupport with */ FakeApplicationFactory {
 
   override def fakeApplication(): Application = application
@@ -42,8 +42,7 @@ trait ITSpec extends ITSpecBase with BaseOneServerPerSuite with /*TODO MongoSpec
 
   private lazy val mongoDbName: String = "test-" + this.getClass.getSimpleName
   private lazy val env: Environment = Environment.simple(mode = Mode.Test)
-  private lazy val configurationOverridings = Map(
-    "mongodb.uri" -> s"mongodb://localhost:27017/$mongoDbName")
+  private lazy val configurationOverridings = Map("mongodb.uri" -> s"mongodb://localhost:27017/$mongoDbName")
 
   private lazy val context: Context = ApplicationLoader.createContext(env)
 
@@ -54,7 +53,7 @@ trait ITSpec extends ITSpecBase with BaseOneServerPerSuite with /*TODO MongoSpec
 
   implicit lazy val hc = HeaderCarrier()
 
-  lazy val baseUrl = s"http://localhost:${port}"
+  lazy val baseUrl = s"http://localhost:$port"
 
   lazy val gformConnector = new GformConnector(wsclient, s"$baseUrl/gform")
 

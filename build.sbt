@@ -63,6 +63,7 @@ lazy val microservice = (project in file("."))
   .configs(IntegrationTest)
   .settings(
     inConfig(IntegrationTest)(Defaults.itSettings),
+    inConfig(IntegrationTest)(scalafmtCoreSettings),
     Keys.fork in IntegrationTest := false,
     unmanagedSourceDirectories in IntegrationTest := { (baseDirectory in IntegrationTest)(base => Seq(base / "it")) }.value,
     addTestReportOption(IntegrationTest, "int-test-reports"),

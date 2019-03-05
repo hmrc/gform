@@ -29,15 +29,16 @@ import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse, NotFoundException }
 import scala.concurrent.{ ExecutionContext, Future }
 
 /**
- * This connector originates in GFORM project.
- * Edit it there first and propagate it from there.
- */
+  * This connector originates in GFORM project.
+  * Edit it there first and propagate it from there.
+  */
 class GformConnector(ws: WSHttp, baseUrl: String) {
 
-/******form*******/
-
+  /******form*******/
   //TODO: remove userId since this information will be passed using HeaderCarrier
-  def newForm(formTemplateId: FormTemplateId, userId: UserId)(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[FormId] =
+  def newForm(formTemplateId: FormTemplateId, userId: UserId)(
+    implicit hc: HeaderCarrier,
+    executionContext: ExecutionContext): Future[FormId] =
     ws.POSTEmpty[FormId](s"$baseUrl/new-form/${formTemplateId.value}/${userId.value}")
 
   def getForm(formId: FormId)(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[Form] =
@@ -48,49 +49,47 @@ class GformConnector(ws: WSHttp, baseUrl: String) {
       case e: NotFoundException => None
     }
 
-  def updateUserData(formId: FormId, userData: UserData)(implicit hc: HeaderCarrier, mdc: MdcLoggingExecutionContext): Future[Unit] = {
+  def updateUserData(formId: FormId, userData: UserData)(
+    implicit hc: HeaderCarrier,
+    mdc: MdcLoggingExecutionContext): Future[Unit] =
     ws.PUT[UserData, HttpResponse](s"$baseUrl/forms/${formId.value}", userData).map(_ => ())
-  }
 
   //TODO: now returns string, but it should return list of validations
-  def validateSection(formId: FormId, sectionNumber: SectionNumber)(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[String] = {
+  def validateSection(formId: FormId, sectionNumber: SectionNumber)(
+    implicit hc: HeaderCarrier,
+    executionContext: ExecutionContext): Future[String] =
     ws.GET[String](s"$baseUrl/forms/${formId.value}/validate-section/${sectionNumber.value}")
-  }
 
   def deleteForm(formId: FormId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
     ws.POSTEmpty[HttpResponse](baseUrl + s"/forms/${formId.value}/delete").map(_ => ())
 
-/******submission*******/
-
-  def submitForm(formId: FormId)(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[HttpResponse] = {
+  /******submission*******/
+  def submitForm(formId: FormId)(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[HttpResponse] =
     ws.POSTEmpty[HttpResponse](s"$baseUrl/forms/${formId.value}/submission")
-  }
 
-  def submissionStatus(formId: FormId)(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[HttpResponse] = {
+  def submissionStatus(
+    formId: FormId)(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[HttpResponse] =
     ws.GET[HttpResponse](s"$baseUrl/forms/${formId.value}/submission")
-  }
 
-/******formTemplate*******/
-
-  def upsertTemplate(template: JsValue)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] = {
-    ws.POST[JsValue, HttpResponse](s"$baseUrl/formtemplates", template, Seq("Content-Type" -> ContentType.`application/json`.value))
+  /******formTemplate*******/
+  def upsertTemplate(template: JsValue)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
+    ws.POST[JsValue, HttpResponse](
+        s"$baseUrl/formtemplates",
+        template,
+        Seq("Content-Type" -> ContentType.`application/json`.value))
       .map(_ => ())
-  }
 
-  def getFormTemplate(formTemplateId: FormTemplateId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[FormTemplate] = {
+  def getFormTemplate(
+    formTemplateId: FormTemplateId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[FormTemplate] =
     ws.GET[FormTemplate](s"$baseUrl/formtemplates/${formTemplateId.value}")
-  }
 
-/******exposed-config*******/
-  def getExposedConfig(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[ExposedConfig] = {
+  /******exposed-config*******/
+  def getExposedConfig(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[ExposedConfig] =
     ws.GET[ExposedConfig](s"$baseUrl/exposed-config")
-  }
 
-/******file-upload*******/
-
-  def deleteFile(formId: FormId, fileId: FileId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] = {
+  /******file-upload*******/
+  def deleteFile(formId: FormId, fileId: FileId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
     ws.DELETE[HttpResponse](s"$baseUrl/forms/${formId.value}/deleteFile/${fileId.value}").map(_ => ())
-  }
 
   import scala.io.Source
   def fileToByteStr(filename: String): ByteString = ByteString(Source.fromFile(filename).mkString)
