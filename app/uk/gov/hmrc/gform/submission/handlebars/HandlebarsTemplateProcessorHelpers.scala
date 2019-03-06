@@ -44,12 +44,23 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
   }
 
   def toEtmpDate(dateFieldId: String, o: Options): CharSequence = log("toEtmpDate", dateFieldId) {
-    (for {
+    extractDateFields(dateFieldId, o) { (day, month, year) =>
+      s"$year${padLeft(month, 2, '0')}${padLeft(day, 2, '0')}"
+    }.map(condition) getOrElse NullString
+  }
+
+  def toDesDate(dateFieldId: String, o: Options): CharSequence = log("toDesDate", dateFieldId) {
+    extractDateFields(dateFieldId, o) { (day, month, year) =>
+      s"$year-${padLeft(month, 2, '0')}-${padLeft(day, 2, '0')}"
+    }.map(condition) getOrElse NullString
+  }
+
+  private def extractDateFields[T](dateFieldId: String, o: Options)(f: (String, String, String) => T): Option[T] =
+    for {
       day   <- getNonEmpty(o, s"$dateFieldId-day")
       month <- getNonEmpty(o, s"$dateFieldId-month")
       year  <- getNonEmpty(o, s"$dateFieldId-year")
-    } yield condition(year + padLeft(month, 2, '0') + padLeft(day, 2, '0'))) getOrElse NullString
-  }
+    } yield f(day, month, year)
 
   def either(first: Any, o: Options): CharSequence = eitherN((first :: o.params.toList): _*)
 
