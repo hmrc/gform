@@ -17,8 +17,9 @@
 package uk.gov.hmrc.gform.sharedmodel.form
 
 import play.api.libs.json.{ Json, OFormat, OWrites, Reads }
-import uk.gov.hmrc.gform.sharedmodel.{ Obligations }
+import uk.gov.hmrc.gform.sharedmodel.Obligations
 import play.api.libs.functional.syntax._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.EmailParametersRecalculated
 
 case class UserData(
   formData: FormData,
@@ -44,7 +45,8 @@ object UserData {
         FormStatus.format.writes(userData.formStatus) ++
         VisitIndex.format.writes(userData.visitsIndex) ++
         ThirdPartyData.format.writes(userData.thirdPartyData) ++
-        Obligations.format.writes(userData.obligations))
+        Obligations.format.writes(userData.obligations)
+  )
 
   implicit val format: OFormat[UserData] = OFormat[UserData](reads, writes)
 

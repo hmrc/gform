@@ -20,21 +20,35 @@ import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormField }
 import cats.implicits._
 import play.api.Logger
 import uk.gov.hmrc.gform.auditing.loggingHelpers
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.EmailParameter
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ EmailParameter, EmailParametersRecalculated }
 
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.http.HeaderCarrier
 
 class EmailService(emailConnector: EmailConnector) {
-  def sendEmail(optemailAddress: Option[String], templateId: String, parameters: Map[EmailParameter, FormField])(
+
+  def sendEmail(optemailAddress: Option[String], templateId: String, emailParameters: EmailParametersRecalculated)(
     implicit hc: HeaderCarrier,
     mdc: ExecutionContext): Future[Unit] = {
     Logger.info(s" Sending email, template: $templateId, headers: '${loggingHelpers.cleanHeaderCarrierHeader(hc)}'")
-    optemailAddress.fold(().pure[Future])(email =>
-      emailConnector.sendEmail(new EmailTemplate(Seq(email), templateId, parameters.map {
-        case (key, value) => (key.emailTemplateVariable, value.value)
-      })))
+    optemailAddress.fold(().pure[Future])(email => sendEmailTemplate(email, templateId, emailParameters))
   }
+
+  private def sendEmailTemplate(email: String, templateId: String, emailParameters: EmailParametersRecalculated)(
+    implicit hc: HeaderCarrier,
+    mdc: ExecutionContext) =
+    emailConnector.sendEmail(
+      new EmailTemplate(
+        Seq(email),
+        templateId,
+        emailParametersRecalculatedToMap(emailParameters)
+      ))
+
+  private def emailParametersRecalculatedToMap(emailParameters: EmailParametersRecalculated): Map[String, String] =
+    emailParameters.emailParametersMap.map {
+      case (emailTemplateVariable, emailParameterValue) =>
+        (emailTemplateVariable.emailTemplateVariableId, emailParameterValue.value)
+    }
 
   def getEmailAddress(form: Form): Option[String] =
     form.formData.fields.find(_.id.value == "email").map(_.value).filterNot(_.isEmpty)
