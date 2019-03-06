@@ -91,12 +91,16 @@ object SubmissionServiceHelper {
   def getEmailParameterValues(formTemplate: FormTemplate, form: Form): Map[EmailParameter, FormField] =
     formTemplate.emailParameters.fold(Map.empty[EmailParameter, FormField])(
       _.toList
+        .collect {
+          case parameter @ EmailParameter(_, TextExpression(value: FormCtx)) =>
+            (parameter.emailTemplateVariable, value.toFieldId)
+        }
         .flatMap(
           parameter =>
             form.formData.fields
-              .find(field => field.id === parameter.value.toFieldId)
-              .orElse(Some(FormField(FormComponentId(parameter.value.value), "")))
-              .map(f => (parameter, f)))
+              .find(field => field.id === parameter._2)
+              .orElse(Some(FormField(FormComponentId(parameter._1), "")))
+              .map(f => (EmailParameter(parameter._1, TextExpression(FormCtx(parameter._2.value))), f)))
         .toMap)
 
 }

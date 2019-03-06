@@ -302,12 +302,16 @@ object FormTemplateValidator {
     formTemplate.emailParameters.fold[ValidationResult](Valid) { emailParams =>
       val ids = getAllFieldIdsFromFormTemplate(formTemplate)
       emailParams
-        .filterNot(parameter => ids.contains(parameter.value.toFieldId)) match {
+        .collect {
+          case parameter @ EmailParameter(_, TextExpression(value: FormCtx)) =>
+            (parameter.emailTemplateVariable, value.toFieldId)
+        }
+        .filterNot(parameter => ids.contains(parameter._2)) match {
         case Nil => Valid
         case invalidFields =>
           Invalid(
             s"The following email parameters are not fields in the form template's sections or the declaration section: ${invalidFields
-              .map(_.value.toFieldId)}")
+              .map(_._2)}")
       }
     }
 
