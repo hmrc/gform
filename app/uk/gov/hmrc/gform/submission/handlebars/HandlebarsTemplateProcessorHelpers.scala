@@ -43,6 +43,14 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
     }
   }
 
+  def toEtmpDate(dateFieldId: String, o: Options): CharSequence = log("toEtmpDate", dateFieldId) {
+    (for {
+      day   <- getNonEmpty(o, s"$dateFieldId-day")
+      month <- getNonEmpty(o, s"$dateFieldId-month")
+      year  <- getNonEmpty(o, s"$dateFieldId-year")
+    } yield condition(year + padLeft(month, 2, '0') + padLeft(day, 2, '0'))) getOrElse NullString
+  }
+
   def either(first: Any, o: Options): CharSequence = eitherN((first :: o.params.toList): _*)
 
   // Handlebars.java can't deal with a varargs argument in a helper.
@@ -505,6 +513,15 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
   }
 
   private def logArgs(args: Any*): String = args.map(show).mkString(", ")
+
+  private def getNonEmpty(o: Options, fieldName: String) = {
+    val value = o.get[String](fieldName, "")
+    if (value.isEmpty) None else value.some
+  }
+
+  private def padLeft(s: String, min: Int, c: Char) =
+    if (s.length >= min) s
+    else c.toString * (min - s.length) + s
 }
 
 object NullString extends CharSequence {
