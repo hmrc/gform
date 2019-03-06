@@ -29,7 +29,7 @@ class ValidatorSpec extends Spec {
   it should "parse custom JSON correctly" in {
     Json
       .obj(
-        "validatorName" -> "hmrcUTRPostcodeCheck",
+        "validatorName" -> "hmrcRosmRegistrationCheck",
         "errorMessage"  -> hMRCUTRPostcodeCheckValidator.errorMessage,
         "parameters" -> Json.obj(
           "regime"   -> "ITSA",

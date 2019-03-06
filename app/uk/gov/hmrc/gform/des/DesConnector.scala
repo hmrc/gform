@@ -16,13 +16,19 @@
 
 package uk.gov.hmrc.gform.des
 
+import cats.syntax.eq._
+import cats.instances.string._
+import cats.instances.int._
 import play.api.Logger
 import play.api.http.Status
 import play.api.libs.json._
 import scala.concurrent.{ ExecutionContext, Future }
+import scala.reflect.runtime.universe.TypeTag
+import scala.util.{ Failure, Success, Try }
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.config.DesConnectorConfig
-import uk.gov.hmrc.gform.sharedmodel.des.{ DesRegistrationRequest, DesRegistrationResponse }
+import uk.gov.hmrc.gform.sharedmodel.{ NotFound, ServiceCallResponse, ServiceNotAvailable, ServiceResponse }
+import uk.gov.hmrc.gform.sharedmodel.des.{ DesRegistrationRequest, DesRegistrationResponse, DesRegistrationResponseError }
 import uk.gov.hmrc.gform.wshttp.WSHttp
 import uk.gov.hmrc.gform.sharedmodel.Obligation
 import uk.gov.hmrc.http._
@@ -31,16 +37,55 @@ import uk.gov.hmrc.http.logging.Authorization
 class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfig) {
 
   def lookupRegistration(utr: String, desRegistrationRequest: DesRegistrationRequest)(
-    implicit ex: ExecutionContext): Future[DesRegistrationResponse] = {
+    implicit ex: ExecutionContext): Future[ServiceCallResponse[DesRegistrationResponse]] = {
+
     implicit val hc = HeaderCarrier(
       extraHeaders = Seq("Environment" -> desConfig.environment),
       authorization = Some(Authorization(s"Bearer ${desConfig.authorizationToken}")))
     Logger.info(s"Des registration, UTR: '$utr', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
-    wSHttp.POST[DesRegistrationRequest, DesRegistrationResponse](
-      s"$baseUrl${desConfig.basePath}/registration/organisation/utr/$utr",
-      desRegistrationRequest)
 
+    wSHttp
+      .doPost[DesRegistrationRequest](
+        s"$baseUrl${desConfig.basePath}/registration/organisation/utr/$utr",
+        desRegistrationRequest,
+        List.empty[(String, String)]
+      )
+      .map { httpResponse =>
+        if (httpResponse.status === 400) {
+          processResponse[DesRegistrationResponseError, Nothing](httpResponse) { desError =>
+            if (desError.code === "INVALID_UTR") NotFound
+            else {
+              Logger.error("Problem when calling des registration: " + Json.prettyPrint(Json.toJson(desError)))
+              ServiceNotAvailable
+            }
+          }
+        } else processResponse[DesRegistrationResponse, DesRegistrationResponse](httpResponse)(ServiceResponse.apply)
+      }
+      .recover {
+        case ex =>
+          Logger.error("Unknown problem when calling des registration", ex)
+          ServiceNotAvailable
+      }
   }
+
+  private def processResponse[A: Format: TypeTag, B](httpResponse: HttpResponse)(
+    f: A => ServiceCallResponse[B]
+  ): ServiceCallResponse[B] =
+    Try(httpResponse.json) match {
+      case Success(jsValue) =>
+        jsValue.validate[A].map(f).recoverTotal { jsError =>
+          val tpe = implicitly[TypeTag[A]].tpe
+          Logger.error(s"Unknown problem when calling des registration. Expected json for $tpe, but got: $jsError")
+          ServiceNotAvailable
+        }
+      case Failure(failure) =>
+        val tpe = implicitly[TypeTag[A]].tpe
+        val status = httpResponse.status
+        Logger.error(
+          s"Unknown problem when calling des registration. Response status was: $status. Expected json for $tpe, but got :",
+          failure)
+        ServiceNotAvailable
+    }
 
   def lookupTaxPeriod(idType: String, idNumber: String, regimeType: String)(
     implicit hc: HeaderCarrier,

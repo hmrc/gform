@@ -27,9 +27,9 @@ sealed trait Validator {
 case object Validator {
   private val templateReads: Reads[Validator] = Reads { json =>
     (json \ "validatorName").as[String] match {
-      case "hmrcUTRPostcodeCheck"    => json.validate[HMRCUTRPostcodeCheckValidator]
-      case "bankAccountModulusCheck" => json.validate[BankAccoutnModulusCheck]
-      case unsupported               => JsError("Unsupported '" + unsupported + "' kind of validator.")
+      case "hmrcRosmRegistrationCheck" => json.validate[HMRCUTRPostcodeCheckValidator]
+      case "bankAccountModulusCheck"   => json.validate[BankAccoutnModulusCheck]
+      case unsupported                 => JsError("Unsupported '" + unsupported + "' kind of validator.")
     }
   }
   implicit val format: OFormat[Validator] = OFormatWithTemplateReadFallback(templateReads)
