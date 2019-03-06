@@ -79,8 +79,14 @@ class ConfigModule(playComponents: PlayComponents) {
       config(serviceName).getString("authorizationToken")
     private def environment(serviceName: String): Option[String] = config(serviceName).getString("environment")
 
+    private def basePath(serviceName: String): String = config(serviceName).getString("basePath").getOrElse("")
+
     def mdtpServiceConfiguration(name: MdtpServiceName): MdtpServiceConfiguration =
-      MdtpServiceConfiguration(name, baseUrl(name.name), authorizationToken(name.name), environment(name.name))
+      MdtpServiceConfiguration(
+        name,
+        baseUrl(name.name) + basePath(name.name),
+        authorizationToken(name.name),
+        environment(name.name))
   }
 }
 
