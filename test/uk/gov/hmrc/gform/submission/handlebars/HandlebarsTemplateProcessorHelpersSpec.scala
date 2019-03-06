@@ -53,7 +53,7 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     }
   }
 
-  "toEtmpDate" must "the date in the given date field as an ETMP formatted date" in {
+  "toEtmpDate" must "return the date in the given date field as an ETMP formatted date" in {
     val t = Table(
       ("day", "month", "year", "expected"),
       ("", "12", "2019", "null"),
@@ -68,6 +68,26 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
       case (d, m, y, expected) =>
         process(
           s"{{toEtmpDate ${quote("myDate")}}}",
+          s"""{ "myDate-day": "$d", "myDate-month": "$m", "myDate-year": "$y"}"""
+        ) shouldBe expected
+    }
+  }
+
+  "toDesDate" must "return the date in the given date field as an DES formatted date" in {
+    val t = Table(
+      ("day", "month", "year", "expected"),
+      ("", "12", "2019", "null"),
+      ("1", "", "2019", "null"),
+      ("1", "12", "", "null"),
+      ("1", "12", "2019", "2019-12-01"),
+      ("20", "05", "2018", "2018-05-20"),
+      ("2", "8", "2019", "2019-08-02"),
+      ("10", "11", "2020", "2020-11-10")
+    )
+    forAll(t) {
+      case (d, m, y, expected) =>
+        process(
+          s"{{toDesDate ${quote("myDate")}}}",
           s"""{ "myDate-day": "$d", "myDate-month": "$m", "myDate-year": "$y"}"""
         ) shouldBe expected
     }
