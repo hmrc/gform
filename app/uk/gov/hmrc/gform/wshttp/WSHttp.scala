@@ -34,6 +34,7 @@ import uk.gov.hmrc.play.auth.microservice.connectors.AuthConnector
 import uk.gov.hmrc.play.config.{ AppName, ServicesConfig }
 import uk.gov.hmrc.play.microservice.config.LoadAuditingConfig
 import com.typesafe.config.Config
+import uk.gov.hmrc.gform.InjectionDodge
 
 object MicroserviceAuditConnector extends AuditConnector {
   lazy val auditingConfig: AuditingConfig = LoadAuditingConfig(s"auditing")
@@ -47,9 +48,9 @@ trait Hooks extends HttpHooks with HttpAuditing {
 trait WSHttp
     extends HttpGet with WSGet with HttpPut with WSPut with HttpPost with WSPost with HttpDelete with WSDelete
     with Hooks with AppName {
-  override protected def actorSystem: ActorSystem = Play.current.actorSystem
-  override protected def configuration: Option[Config] = Option(Play.current.configuration.underlying)
-  override protected def appNameConfiguration: Configuration = Play.current.configuration
+  override protected def actorSystem: ActorSystem = InjectionDodge.actorSystem
+  override protected def configuration: Option[Config] = Option(InjectionDodge.configuration.underlying)
+  override protected def appNameConfiguration: Configuration = InjectionDodge.configuration
 
   //TODO: body should be type of Stream not ByteString (do we want to blow up if few people will submit forms at the same time?)
   def POSTFile[O](
@@ -78,8 +79,8 @@ object WSHttp extends WSHttp
 
 object MicroserviceAuthConnector extends AuthConnector with ServicesConfig with WSHttp {
   override val authBaseUrl: String = baseUrl("auth")
-  override protected def mode = Play.current.mode
-  override protected val runModeConfiguration = Play.current.configuration
+  override protected def mode = InjectionDodge.mode
+  override protected val runModeConfiguration = InjectionDodge.configuration
 }
 
 //class WSHttp(httpHooks: Seq[HttpHook] = Nil) extends uk.gov.hmrc.play.http.ws.WSHttp {

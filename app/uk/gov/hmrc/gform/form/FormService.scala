@@ -16,18 +16,18 @@
 
 package uk.gov.hmrc.gform.form
 
-import play.api.Logger
-import play.api.libs.json.{ JsValue, Json }
+import play.api.libs.json.JsValue
 import uk.gov.hmrc.gform.save4later.Save4Later
 import uk.gov.hmrc.gform.sharedmodel.{ NotChecked, UserId }
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
 import scala.concurrent.Future
 import uk.gov.hmrc.http.HeaderCarrier
 
 class FormService(save4Later: Save4Later) {
+
+  implicit val ec = play.api.libs.concurrent.Execution.defaultContext
 
   def get(formId: FormId)(implicit hc: HeaderCarrier): Future[Form] =
     save4Later.get(formId)

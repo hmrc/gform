@@ -20,7 +20,6 @@ import play.api.Logger
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.gform.wshttp.WSHttp
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import scala.concurrent.Future
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -31,6 +30,8 @@ class PdfGeneratorConnector(servicesConfig: ServicesConfig, wSHttp: WSHttp) {
     implicit hc: HeaderCarrier): Future[Array[Byte]] = {
     Logger.info(s"generate pdf, ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
     val url = s"$baseURL/pdf-generator-service/generate"
+    implicit val ec = play.api.libs.concurrent.Execution.defaultContext
+
     wSHttp.buildRequest(url).withHeaders(headers: _*).post(payload).flatMap { response =>
       {
         val status = response.status
