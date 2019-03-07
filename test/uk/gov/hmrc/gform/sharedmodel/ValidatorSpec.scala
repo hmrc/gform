@@ -22,7 +22,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormCtx, Validator }
 
 class ValidatorSpec extends Spec {
 
-  "HMRCUTRPostcodeCheckValidator" should "Write and Read default JSON correctly" in {
+  "HmrcRosmRegistrationCheckValidator" should "Write and Read default JSON correctly" in {
     verifyRoundTrip(hMRCUTRPostcodeCheckValidator)
   }
 
