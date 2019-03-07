@@ -20,7 +20,7 @@ import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormData, FormField }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ EmailParameter, FormComponentId, FormCtx, IncludeIf, IsFalse, IsTrue }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ EmailParameter, FormComponentId, FormCtx, IncludeIf, IsFalse, IsTrue, TextExpression }
 import uk.gov.hmrc.gform.submission.{ SectionFormField, SubmissionServiceHelper }
 
 class SubmissionServiceHelperSpec extends Spec {
@@ -65,10 +65,12 @@ class SubmissionServiceHelperSpec extends Spec {
     val newForm = form.copy(formData = FormData(newFields))
 
     SubmissionServiceHelper.getEmailParameterValues(formTemplate, newForm) shouldBe Map(
-      EmailParameter("fullName", FormCtx("directorFullName")) -> FormField(
+      EmailParameter("fullName", TextExpression(FormCtx("directorFullName"))) -> FormField(
         FormComponentId("directorFullName"),
         "john smith"),
-      EmailParameter("email", FormCtx("directorEmail")) -> FormField(FormComponentId("directorEmail"), "test@test.com")
+      EmailParameter("email", TextExpression(FormCtx("directorEmail"))) -> FormField(
+        FormComponentId("directorEmail"),
+        "test@test.com")
     )
 
   }

@@ -35,3 +35,11 @@ object EmailParameter {
     OFormat(reads, mongoFormat)
   }
 }
+
+case class EmailParameters(parameters: Map[String, String])
+
+object EmailParameters {
+
+  implicit val format: OFormat[EmailParameters] = Json.format
+
+}

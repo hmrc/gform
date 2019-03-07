@@ -303,8 +303,8 @@ trait ExampleFormTemplate {
   def emailParameters =
     Some(
       NonEmptyList.of(
-        EmailParameter("fullName", FormCtx("directorFullName")),
-        EmailParameter("email", FormCtx("directorEmail"))
+        EmailParameter("fullName", TextExpression(FormCtx("directorFullName"))),
+        EmailParameter("email", TextExpression(FormCtx("directorEmail")))
       ))
 
   def submtSuccessUrl = """http://success.com"""
