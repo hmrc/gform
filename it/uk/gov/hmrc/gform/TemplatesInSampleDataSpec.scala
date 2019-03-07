@@ -21,10 +21,9 @@ import java.nio.file.{ Files, Paths }
 import collection.JavaConverters._
 import play.api.libs.json.{ JsValue, Json }
 import uk.gov.hmrc.gform.gformbackend.GformConnector
-import uk.gov.hmrc.gform.wshttp.{ TestWSHttpIT, WSHttp }
+import uk.gov.hmrc.gform.wshttp.TestWSHttpIT
 import uk.gov.hmrc.http.HeaderCarrier
 
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import scala.util.{ Failure, Success }
 
 class TemplatesInSampleDataSpec extends support.ITSpec {
@@ -56,6 +55,7 @@ object UploadAllTemplates extends App {
 
   TemplatesInSampleDataSpec.templates foreach { templateFile =>
     println(s"uploading $templateFile")
+    implicit val ec = play.api.libs.concurrent.Execution.defaultContext
     val template: JsValue = Json.parse(Files.newInputStream(templateFile))
     gformConnector.upsertTemplate(template).onComplete {
       case Failure(f) => println(f)

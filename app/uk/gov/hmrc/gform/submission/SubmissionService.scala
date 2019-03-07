@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.submission
 
 import cats.instances.future._
+import play.api.libs.concurrent.Execution.defaultContext
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.email.EmailService
@@ -29,7 +30,8 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsHttpApiSubmitter
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
+import uk.gov.hmrc.http.logging.LoggingDetails
+import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -42,6 +44,8 @@ class SubmissionService(
   submissionRepo: SubmissionRepo,
   timeProvider: TimeProvider,
   email: EmailService) {
+
+  implicit val ec = play.api.libs.concurrent.Execution.defaultContext
 
   def submissionWithPdf(
     formId: FormId,
@@ -58,7 +62,7 @@ class SubmissionService(
       destinationsSubmitter   =                       new DestinationsSubmitter(new RealDestinationSubmitter(new FileUploadServiceDmsSubmitter(fileUploadService), handlebarsApiHttpSubmitter))
       res                     <-                      destinationsSubmitter.send(DestinationSubmissionInfo(submission, form, formTemplate, customerId, affinityGroup, submissionData.variables, PdfAndXmlSummariesFactory.withPdf(pdfGeneratorService, submissionData.pdfData)))
       emailAddress            =                       email.getEmailAddress(form)
-      _                       <-                      fromFutureA(email.sendEmail(emailAddress, formTemplate.emailTemplateId, SubmissionServiceHelper.getEmailParameterValues(formTemplate, form))(hc, fromLoggingDetails))
+      _                       <-                      fromFutureA(email.sendEmail(emailAddress, formTemplate.emailTemplateId, SubmissionServiceHelper.getEmailParameterValues(formTemplate, form))(hc, ec))
       } yield res
   // format: ON
 

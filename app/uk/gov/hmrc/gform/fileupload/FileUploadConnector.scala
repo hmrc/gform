@@ -27,9 +27,10 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.gform.wshttp.{ FutureHttpResponseSyntax, WSHttp }
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
 class FileUploadConnector(config: FUConfig, wSHttp: WSHttp, timeProvider: TimeProvider) {
+  implicit val ec = play.api.libs.concurrent.Execution.defaultContext
+
   val helper = new Helper(config)
   def createEnvelope(formTemplateId: FormTemplateId, expiryDate: LocalDateTime)(
     implicit hc: HeaderCarrier): Future[EnvelopeId] = {

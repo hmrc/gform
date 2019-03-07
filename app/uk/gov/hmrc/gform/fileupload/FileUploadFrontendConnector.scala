@@ -24,11 +24,12 @@ import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.wshttp.{ FutureHttpResponseSyntax, WSHttp }
 
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import scala.concurrent.Future
 import uk.gov.hmrc.http.HeaderCarrier
 
 class FileUploadFrontendConnector(config: FUConfig, wSHttp: WSHttp) {
+
+  implicit val ec = play.api.libs.concurrent.Execution.defaultContext
 
   def upload(envelopeId: EnvelopeId, fileId: FileId, fileName: String, body: ByteString, contentType: ContentType)(
     implicit hc: HeaderCarrier): Future[Unit] = {

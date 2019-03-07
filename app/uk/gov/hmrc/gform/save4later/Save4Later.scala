@@ -22,11 +22,12 @@ import uk.gov.hmrc.gform.core.{ FOpt, Opt }
 import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormId }
 import uk.gov.hmrc.http.cache.client.{ CacheMap, ShortLivedCache }
 
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.http.{ HeaderCarrier, NotFoundException }
 
 class Save4Later(cache: ShortLivedCache, ex: ExecutionContext) {
+
+  implicit val ec = play.api.libs.concurrent.Execution.defaultContext
 
   def find(formId: FormId)(implicit hc: HeaderCarrier): Future[Option[Form]] =
     cache.fetchAndGetEntry[Form](formId.value, formCacheKey)
