@@ -77,7 +77,7 @@ class FormSpec extends FlatSpec with Matchers {
       "userId"         -> "James007",
       "formTemplateId" -> "AAA999",
       "fields" -> Json
-        .arr(s
+        .arr(
           Json.obj("id" -> "facePhoto", "value"      -> "face-photo.jpg"),
           Json.obj("id" -> "startDate-year", "value" -> "2008")),
       "InProgress"      -> Json.obj(),
