@@ -16,14 +16,13 @@
 
 package uk.gov.hmrc.gform.sharedmodel.form
 
-import org.scalatest.{ FlatSpec, Matchers }
 import java.time.LocalDateTime
 
-import play.api.libs.json._
+import org.scalatest.{ FlatSpec, Matchers }
 import play.api.libs.json.Writes.DefaultLocalDateTimeWrites
-import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.{ ExampleData, NotChecked }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplateId }
+import play.api.libs.json._
+import uk.gov.hmrc.gform.sharedmodel.NotChecked
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ EmailParameters, FormComponentId, FormTemplateId }
 
 class FormSpec extends FlatSpec with Matchers {
 
@@ -42,7 +41,8 @@ class FormSpec extends FlatSpec with Matchers {
     VisitIndex(Set(1, 2, 3)),
     ThirdPartyData.empty,
     Some(EnvelopeExpiryDate(LocalDateTime.now.plusDays(1))),
-    NotChecked
+    NotChecked,
+    EmailParameters(Map("test" -> "test"))
   )
 
   "case class Form" should "be serialized into json" in {
@@ -60,10 +60,11 @@ class FormSpec extends FlatSpec with Matchers {
         .arr(
           Json.obj("id" -> "facePhoto", "value"      -> "face-photo.jpg"),
           Json.obj("id" -> "startDate-year", "value" -> "2008")),
-      "InProgress"  -> Json.obj(),
-      "visitsIndex" -> Json.arr(1, 2, 3),
-      "ldt"         -> form.envelopeExpiryDate.map(_.ldt).map(f _).get,
-      "NotChecked"  -> Json.obj()
+      "InProgress"      -> Json.obj(),
+      "visitsIndex"     -> Json.arr(1, 2, 3),
+      "ldt"             -> form.envelopeExpiryDate.map(_.ldt).map(f _).get,
+      "NotChecked"      -> Json.obj(),
+      "emailParameters" -> Json.obj("test" -> "test")
     )
     formJsObject shouldBe expectedFormJsObject
     Form.format.reads(Form.format.writes(form)) should be(JsSuccess(form))
@@ -76,10 +77,11 @@ class FormSpec extends FlatSpec with Matchers {
       "userId"         -> "James007",
       "formTemplateId" -> "AAA999",
       "fields" -> Json
-        .arr(
+        .arr(s
           Json.obj("id" -> "facePhoto", "value"      -> "face-photo.jpg"),
           Json.obj("id" -> "startDate-year", "value" -> "2008")),
-      "InProgress" -> Json.obj()
+      "InProgress"      -> Json.obj(),
+      "emailParameters" -> Json.obj("test" -> "test")
     )
 
     val expectedForm = form.copy(visitsIndex = VisitIndex.empty, envelopeExpiryDate = None)

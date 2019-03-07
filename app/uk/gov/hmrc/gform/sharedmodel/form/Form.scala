@@ -17,11 +17,11 @@
 package uk.gov.hmrc.gform.sharedmodel.form
 
 import julienrf.json.derived
-import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
+import play.api.libs.json.Reads._
 import play.api.libs.json._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ EmailParameters, FormTemplateId }
 import uk.gov.hmrc.gform.sharedmodel.{ NotChecked, Obligations, UserId }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ EmailParameters, FormTemplateId, SectionNumber }
 
 case class VisitIndex(visitsIndex: Set[Int]) extends AnyVal
 

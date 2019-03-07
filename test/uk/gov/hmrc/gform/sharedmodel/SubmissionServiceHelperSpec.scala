@@ -55,24 +55,4 @@ class SubmissionServiceHelperSpec extends Spec {
     `section - businessDetails`.title)
   }
 
-  it should "return only values for the fields in emailParameters" in new ExampleData {
-
-    val newFields =
-      Seq(
-        FormField(FormComponentId("directorFullName"), "john smith"),
-        FormField(FormComponentId("directorEmail"), "test@test.com"))
-
-    val newForm = form.copy(formData = FormData(newFields))
-
-    SubmissionServiceHelper.getEmailParameterValues(formTemplate, newForm) shouldBe Map(
-      EmailParameter("fullName", TextExpression(FormCtx("directorFullName"))) -> FormField(
-        FormComponentId("directorFullName"),
-        "john smith"),
-      EmailParameter("email", TextExpression(FormCtx("directorEmail"))) -> FormField(
-        FormComponentId("directorEmail"),
-        "test@test.com")
-    )
-
-  }
-
 }

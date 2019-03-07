@@ -379,6 +379,8 @@ trait ExampleForm { dependsOn: ExampleFormField with ExampleFormTemplate =>
 
   def obligations = None
 
+  def formEmailParameters = EmailParameters(Map.empty[String, String])
+
   val envelopeExpiryDate = Some(EnvelopeExpiryDate(LocalDateTime.now.plusDays(1)))
 
   def form =
@@ -392,7 +394,9 @@ trait ExampleForm { dependsOn: ExampleFormField with ExampleFormTemplate =>
       VisitIndex.empty,
       ThirdPartyData.empty,
       envelopeExpiryDate,
-      NotChecked)
+      NotChecked,
+      formEmailParameters
+    )
 
 }
 

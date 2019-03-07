@@ -116,7 +116,8 @@ class HandlebarsTemplateProcessorModelSpec extends Spec {
       VisitIndex(Set(1)),
       ThirdPartyData.empty,
       None,
-      NotChecked
+      NotChecked,
+      EmailParameters(Map.empty[String, String])
     )
 
   def createFormTemplate(sections: Section*): FormTemplate =
