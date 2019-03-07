@@ -27,7 +27,7 @@ import scala.reflect.runtime.universe.TypeTag
 import scala.util.{ Failure, Success, Try }
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.config.DesConnectorConfig
-import uk.gov.hmrc.gform.sharedmodel.{ NotFound, ServiceCallResponse, ServiceNotAvailable, ServiceResponse }
+import uk.gov.hmrc.gform.sharedmodel.{ CannotRetrieveResponse, NotFound, ServiceCallResponse, ServiceResponse }
 import uk.gov.hmrc.gform.sharedmodel.des.{ DesRegistrationRequest, DesRegistrationResponse, DesRegistrationResponseError }
 import uk.gov.hmrc.gform.wshttp.WSHttp
 import uk.gov.hmrc.gform.sharedmodel.Obligation
@@ -56,7 +56,7 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
             if (desError.code === "INVALID_UTR") NotFound
             else {
               Logger.error("Problem when calling des registration: " + Json.prettyPrint(Json.toJson(desError)))
-              ServiceNotAvailable
+              CannotRetrieveResponse
             }
           }
         } else processResponse[DesRegistrationResponse, DesRegistrationResponse](httpResponse)(ServiceResponse.apply)
@@ -64,7 +64,7 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
       .recover {
         case ex =>
           Logger.error("Unknown problem when calling des registration", ex)
-          ServiceNotAvailable
+          CannotRetrieveResponse
       }
   }
 
@@ -76,7 +76,7 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
         jsValue.validate[A].map(f).recoverTotal { jsError =>
           val tpe = implicitly[TypeTag[A]].tpe
           Logger.error(s"Unknown problem when calling des registration. Expected json for $tpe, but got: $jsError")
-          ServiceNotAvailable
+          CannotRetrieveResponse
         }
       case Failure(failure) =>
         val tpe = implicitly[TypeTag[A]].tpe
@@ -84,7 +84,7 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
         Logger.error(
           s"Unknown problem when calling des registration. Response status was: $status. Expected json for $tpe, but got :",
           failure)
-        ServiceNotAvailable
+        CannotRetrieveResponse
     }
 
   def lookupTaxPeriod(idType: String, idNumber: String, regimeType: String)(

@@ -21,26 +21,26 @@ import play.api.libs.json._
 sealed trait ServiceCallResponse[+A] extends Product with Serializable
 
 case object NotFound extends ServiceCallResponse[Nothing]
-case object ServiceNotAvailable extends ServiceCallResponse[Nothing]
+case object CannotRetrieveResponse extends ServiceCallResponse[Nothing]
 case class ServiceResponse[A](value: A) extends ServiceCallResponse[A]
 
 object ServiceCallResponse {
   implicit def format[A: OWrites: Reads]: OFormat[ServiceCallResponse[A]] = new OFormat[ServiceCallResponse[A]] {
     override def writes(o: ServiceCallResponse[A]): JsObject =
       o match {
-        case NotFound            => Json.obj("det" -> "NotFound")
-        case ServiceNotAvailable => Json.obj("det" -> "ServiceNotAvailable")
-        case ServiceResponse(a)  => Json.obj("det" -> implicitly[OWrites[A]].writes(a))
+        case NotFound               => Json.obj("det" -> "NotFound")
+        case CannotRetrieveResponse => Json.obj("det" -> "CannotRetrieveResponse")
+        case ServiceResponse(a)     => Json.obj("det" -> implicitly[OWrites[A]].writes(a))
       }
 
     override def reads(json: JsValue): JsResult[ServiceCallResponse[A]] =
       json \ "det" match {
         case JsDefined(js) =>
           js match {
-            case JsString("NotFound")            => JsSuccess(NotFound: ServiceCallResponse[A])
-            case JsString("ServiceNotAvailable") => JsSuccess(ServiceNotAvailable: ServiceCallResponse[A])
-            case jsObject: JsObject              => implicitly[Reads[A]].reads(jsObject).map(ServiceResponse.apply)
-            case _                               => JsError("Not Supported json: " + Json.prettyPrint(json))
+            case JsString("NotFound")               => JsSuccess(NotFound: ServiceCallResponse[A])
+            case JsString("CannotRetrieveResponse") => JsSuccess(CannotRetrieveResponse: ServiceCallResponse[A])
+            case jsObject: JsObject                 => implicitly[Reads[A]].reads(jsObject).map(ServiceResponse.apply)
+            case _                                  => JsError("Not Supported json: " + Json.prettyPrint(json))
           }
 
         case JsUndefined() => JsError("Not Supported json: " + Json.prettyPrint(json))
