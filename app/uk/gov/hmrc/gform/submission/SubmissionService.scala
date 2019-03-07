@@ -57,7 +57,7 @@ class SubmissionService(
       destinationsSubmitter   =                       new DestinationsSubmitter(new RealDestinationSubmitter(new FileUploadServiceDmsSubmitter(fileUploadService), handlebarsApiHttpSubmitter))
       res                     <-                      destinationsSubmitter.send(DestinationSubmissionInfo(submission, form, formTemplate, customerId, affinityGroup, submissionData.variables, PdfAndXmlSummariesFactory.withPdf(pdfGeneratorService, submissionData.pdfData)))
       emailAddress            =                       email.getEmailAddress(form)
-      _                       <-                      fromFutureA(email.sendEmail(emailAddress, formTemplate.emailTemplateId, SubmissionServiceHelper.getEmailParameterValues(formTemplate, form))(hc, ex))
+      _                       <-                      fromFutureA(email.sendEmail(emailAddress, formTemplate.emailTemplateId, form.emailParameters)(hc, ex))
       } yield res
   // format: ON
 

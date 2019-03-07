@@ -19,7 +19,7 @@ import java.time.LocalDateTime
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.gform.sharedmodel.{ NotChecked, UserId }
 import uk.gov.hmrc.gform.sharedmodel.form._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplateId }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ EmailParameters, FormComponentId, FormTemplateId }
 import uk.gov.hmrc.gform.form.LifeCycleStatus
 
 class FormServiceSpec extends PlaySpec {
@@ -34,7 +34,8 @@ class FormServiceSpec extends PlaySpec {
     VisitIndex.empty,
     ThirdPartyData.empty,
     Some(EnvelopeExpiryDate(LocalDateTime.now.plusDays(1))),
-    NotChecked
+    NotChecked,
+    EmailParameters(Map("test" -> "test"))
   )
 
   val testFormSummary: Form = testFormInProgress.copy(status = Summary)

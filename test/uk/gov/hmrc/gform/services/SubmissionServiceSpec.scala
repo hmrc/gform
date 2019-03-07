@@ -62,7 +62,8 @@ class SubmissionServiceSpec extends Spec {
       VisitIndex.empty,
       ThirdPartyData.empty,
       Some(EnvelopeExpiryDate(LocalDateTime.now(clock) plusDays (30))),
-      NotChecked
+      NotChecked,
+      formEmailParameters
     )
 
     val textFieldUno = FormComponent(

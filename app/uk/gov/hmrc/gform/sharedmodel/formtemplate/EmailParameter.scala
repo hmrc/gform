@@ -36,7 +36,7 @@ object EmailParameter {
   }
 }
 
-case class EmailParameters(parameters: Map[String, String])
+case class EmailParameters(emailParameters: Map[String, String])
 
 object EmailParameters {
 
