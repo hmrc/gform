@@ -21,7 +21,7 @@ import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.{ NotChecked, Obligations, UserId }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, SectionNumber }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ EmailParameters, FormTemplateId, SectionNumber }
 
 case class VisitIndex(visitsIndex: Set[Int]) extends AnyVal
 
@@ -43,7 +43,8 @@ case class Form(
   visitsIndex: VisitIndex,
   thirdPartyData: ThirdPartyData,
   envelopeExpiryDate: Option[EnvelopeExpiryDate],
-  obligations: Obligations
+  obligations: Obligations,
+  emailParameters: EmailParameters
 )
 
 object Form {
@@ -63,7 +64,8 @@ object Form {
     readVisitIndex and
     ThirdPartyData.format and
     EnvelopeExpiryDate.optionFormat and
-    readObligations)(Form.apply _)
+    readObligations and
+    EmailParameters.format)(Form.apply _)
 
   private val writes: OWrites[Form] = OWrites[Form](
     form =>
@@ -76,7 +78,8 @@ object Form {
         VisitIndex.format.writes(form.visitsIndex) ++
         ThirdPartyData.format.writes(form.thirdPartyData) ++
         EnvelopeExpiryDate.optionFormat.writes(form.envelopeExpiryDate) ++
-        Obligations.format.writes(form.obligations)
+        Obligations.format.writes(form.obligations) ++
+        EmailParameters.format.writes(form.emailParameters)
   )
 
   implicit val format: OFormat[Form] = OFormat[Form](reads, writes)
