@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.validation
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.gform.bank_account_reputation.BankAccountReputationConnector
 import uk.gov.hmrc.gform.des.{ AddressDes, DesConnector }
+import uk.gov.hmrc.gform.sharedmodel.ServiceCallResponse
 import uk.gov.hmrc.gform.sharedmodel.des.{ DesRegistrationRequest, DesRegistrationResponse }
 import uk.gov.hmrc.gform.sharedmodel.Account
 import uk.gov.hmrc.http.HeaderCarrier
@@ -26,7 +27,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 class ValidationService(desConnector: DesConnector, bankAccountReputationConnector: BankAccountReputationConnector) {
 
   def desRegistration(utr: String, desRegistrationRequest: DesRegistrationRequest)(
-    implicit ex: ExecutionContext): Future[DesRegistrationResponse] =
+    implicit ex: ExecutionContext): Future[ServiceCallResponse[DesRegistrationResponse]] =
     desConnector.lookupRegistration(utr, desRegistrationRequest)
 
   def callBRS(account: Account)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Boolean] =

@@ -27,25 +27,26 @@ sealed trait Validator {
 case object Validator {
   private val templateReads: Reads[Validator] = Reads { json =>
     (json \ "validatorName").as[String] match {
-      case "hmrcUTRPostcodeCheck"    => json.validate[HMRCUTRPostcodeCheckValidator]
-      case "bankAccountModulusCheck" => json.validate[BankAccoutnModulusCheck]
-      case unsupported               => JsError("Unsupported '" + unsupported + "' kind of validator.")
+      case "hmrcRosmRegistrationCheck" => json.validate[HmrcRosmRegistrationCheckValidator]
+      case "bankAccountModulusCheck"   => json.validate[BankAccoutnModulusCheck]
+      case unsupported                 => JsError("Unsupported '" + unsupported + "' kind of validator.")
     }
   }
   implicit val format: OFormat[Validator] = OFormatWithTemplateReadFallback(templateReads)
 }
 
-case class HMRCUTRPostcodeCheckValidator(errorMessage: String, regime: String, utr: FormCtx, postcode: FormCtx)
+case class HmrcRosmRegistrationCheckValidator(errorMessage: String, regime: String, utr: FormCtx, postcode: FormCtx)
     extends Validator
 
-object HMRCUTRPostcodeCheckValidator {
-  private val readCustom: Reads[HMRCUTRPostcodeCheckValidator] =
+object HmrcRosmRegistrationCheckValidator {
+  private val readCustom: Reads[HmrcRosmRegistrationCheckValidator] =
     ((JsPath \ "errorMessage").read[String] and
       (JsPath \ "parameters" \ "regime").read[String] and
       (JsPath \ "parameters" \ "utr").read(FormCtx.readsForTemplateJson) and
-      (JsPath \ "parameters" \ "postcode").read(FormCtx.readsForTemplateJson))(HMRCUTRPostcodeCheckValidator.apply _)
+      (JsPath \ "parameters" \ "postcode")
+        .read(FormCtx.readsForTemplateJson))(HmrcRosmRegistrationCheckValidator.apply _)
 
-  implicit val format: OFormat[HMRCUTRPostcodeCheckValidator] = OFormatWithTemplateReadFallback(readCustom)
+  implicit val format: OFormat[HmrcRosmRegistrationCheckValidator] = OFormatWithTemplateReadFallback(readCustom)
 }
 
 case class BankAccoutnModulusCheck(errorMessage: String, accountNumber: FormCtx, sortCode: FormCtx) extends Validator

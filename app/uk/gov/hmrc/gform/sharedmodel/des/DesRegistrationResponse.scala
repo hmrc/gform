@@ -110,6 +110,12 @@ object Individual {
   implicit val format: OFormat[Individual] = Json.format[Individual]
 }
 
+case class DesRegistrationResponseError(code: String, reason: String)
+
+object DesRegistrationResponseError {
+  implicit val format: OFormat[DesRegistrationResponseError] = Json.format[DesRegistrationResponseError]
+}
+
 case class DesRegistrationResponse(
   safeId: String,
   agentReferenceNumber: Option[String],

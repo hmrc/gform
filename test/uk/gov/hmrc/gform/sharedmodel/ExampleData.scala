@@ -227,7 +227,7 @@ trait ExampleFieldValue { dependecies: ExampleFieldId =>
 trait ExampleValidator {
   def defaultValidator = hMRCUTRPostcodeCheckValidator
   def hMRCUTRPostcodeCheckValidator =
-    HMRCUTRPostcodeCheckValidator(
+    HmrcRosmRegistrationCheckValidator(
       "The UTR could not be foundor the postcode did not match. | <Welsh...>",
       "ITSA",
       FormCtx("utrToCheck"),
