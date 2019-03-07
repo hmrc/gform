@@ -43,24 +43,36 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
     }
   }
 
-  def toEtmpDate(dateFieldId: String, o: Options): CharSequence = log("toEtmpDate", dateFieldId) {
-    extractDateFields(dateFieldId, o) { (day, month, year) =>
-      s"$year${padLeft(month, 2, '0')}${padLeft(day, 2, '0')}"
-    }.map(condition) getOrElse NullString
-  }
+  def toEtmpDate(date: java.util.Map[String, String]): CharSequence =
+    log("toEtmpDate", date) {
+      ifNotNull(date) { df =>
+        extractDateFields(df) { (day, month, year) =>
+          condition(s"$year${padLeft(month, 2, '0')}${padLeft(day, 2, '0')}")
+        }.getOrElse(NullString)
+      }
+    }
 
-  def toDesDate(dateFieldId: String, o: Options): CharSequence = log("toDesDate", dateFieldId) {
-    extractDateFields(dateFieldId, o) { (day, month, year) =>
-      s"$year-${padLeft(month, 2, '0')}-${padLeft(day, 2, '0')}"
-    }.map(condition) getOrElse NullString
-  }
+  def toDesDate(date: java.util.Map[String, String]): CharSequence =
+    log("toDesDate", date) {
+      ifNotNull(date) { df =>
+        extractDateFields(df) { (day, month, year) =>
+          condition(s"$year-${padLeft(month, 2, '0')}-${padLeft(day, 2, '0')}")
+        }.getOrElse(NullString)
+      }
+    }
 
-  private def extractDateFields[T](dateFieldId: String, o: Options)(f: (String, String, String) => T): Option[T] =
+  private def extractDateFields[T](date: java.util.Map[String, String])(f: (String, String, String) => T): Option[T] =
     for {
-      day   <- getNonEmpty(o, s"$dateFieldId-day")
-      month <- getNonEmpty(o, s"$dateFieldId-month")
-      year  <- getNonEmpty(o, s"$dateFieldId-year")
+      day   <- extractNonEmptyStringFieldValue(date, "day")
+      month <- extractNonEmptyStringFieldValue(date, "month")
+      year  <- extractNonEmptyStringFieldValue(date, "year")
     } yield f(day, month, year)
+
+  private def extractNonEmptyStringFieldValue(date: java.util.Map[String, String], field: String): Option[String] =
+    for {
+      value <- Option(date.get(field))
+      if !value.isEmpty
+    } yield value
 
   def either(first: Any, o: Options): CharSequence = eitherN((first :: o.params.toList): _*)
 
@@ -404,43 +416,17 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
           .mkString(" ")}) failed in "$matchString""""))
     }
 
-  def toDesAddressWithoutPostcodeFromArray(fromFieldBase: String, index: Int, options: Options): CharSequence =
-    log("toDesAddressWithoutPostcodeFromArray", (fromFieldBase :: index :: options.params.toList): _*) {
-      def get(line: String) = {
-        val value = options.context.get(s"$fromFieldBase-$line")
-        if (isNullAsBoolean(value)) ""
-        else
-          value
-            .cast[ArrayNode]
-            .map { a =>
-              if (index < a.size) a.get(index).asText else ""
-            }
-            .getOrElse(throw new Exception(
-              s"Expected $fromFieldBase.$line to be null, or an array, but it was $value of type ${value.getClass}."))
-      }
+  def toDesAddressWithoutPostcode(address: java.util.Map[String, String]): CharSequence =
+    log("toDesAddressWithoutPostcode", address) {
+      def get(line: String) = Option(address.get(line)).map(_.trim).filterNot(_.isEmpty)
 
       toCompactedDesAddress(get("street1"), get("street2"), get("street3"), get("street4"))
     }
 
-  def toDesAddressWithoutPostcode(fromFieldBase: String, options: Options): CharSequence =
-    log("toDesAddressWithoutPostcode", (fromFieldBase :: options.params.toList): _*) {
-      def get(line: String) = {
-        val value = options.context.get(s"$fromFieldBase-$line")
-        if (isNullAsBoolean(value)) ""
-        else
-          value
-            .cast[String]
-            .getOrElse(throw new Exception(
-              s"Expected $fromFieldBase.$line to be null, a string or not present, but it was $value of type ${value.getClass}."))
-      }
-
-      toCompactedDesAddress(get("street1"), get("street2"), get("street3"), get("street4"))
-    }
-
-  private def toCompactedDesAddress(lines: String*): Handlebars.SafeString =
+  private def toCompactedDesAddress(lines: Option[String]*): Handlebars.SafeString =
     new Handlebars.SafeString(
       lines
-        .filterNot(_.trim.isEmpty)
+        .collect { case Some(s) => s }
         .padTo(2, " ")
         .zipWithIndex
         .map { case (l, i) => s""""addressLine${i + 1}": "${condition(l)}"""" }
@@ -483,9 +469,12 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
   def isNotNull(s: Any): CharSequence = log("isNotNull", s) { condition(!isNullAsBoolean(s)) }
 
   private val etmpParamSequenceFormat = new DecimalFormat("00")
-  def toEtmpParamSequence(index: Int): CharSequence = etmpParamSequenceFormat.format(index + 1)
+  def toEtmpParamSequence(index: Int): CharSequence = etmpParamSequenceFormat.format(index.toLong + 1)
 
   private def ifNotNullAsString(t: Any)(f: String => CharSequence): CharSequence = NullString.ifNotNull(t)(f)
+
+  private def ifNotNull[T](t: T)(f: T => CharSequence): CharSequence =
+    if (t == null) NullString else f(t)
 
   private def asBoolean(t: Any): Boolean = t match {
     case "true"  => true

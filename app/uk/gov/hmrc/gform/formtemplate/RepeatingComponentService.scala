@@ -56,7 +56,7 @@ object RepeatingComponentService {
       }
     }
 
-  private def isRepeatingSection(section: Section) = section.repeatsMax.isDefined && section.repeatsMin.isDefined
+  def isRepeatingSection(section: Section): Boolean = section.repeatsMax.isDefined && section.repeatsMin.isDefined
 
   private def reconstructRepeatingSections(section: Section, data: Map[String, String]): List[Section] = {
     def getFields(field: FormComponent): List[String] = field.`type` match {
@@ -120,37 +120,5 @@ object RepeatingComponentService {
       case Some(inputText) => Some(getEvaluatedText(inputText).replace("$n", index.toString))
       case _               => None
     }
-  }
-
-  def extractRepeatableFieldIds(template: FormTemplate): Set[FormComponentId] = {
-    def extractAllFieldIds(g: Group): Seq[FormComponentId] =
-      g.fields.flatMap { f =>
-        f.`type` match {
-          case m: MultiField => m.fields(f.id)
-          case _             => Set(f.id)
-        }
-      }
-
-    def extractAllFieldsIdsFromRepeatingSection(section: Section): Seq[FormComponentId] =
-      section.fields.flatMap { f =>
-        f.`type` match {
-          case g: Group      => extractAllFieldIds(g)
-          case m: MultiField => m.fields(f.id)
-          case _             => Set(f.id)
-        }
-      }
-
-    def extractRepeatableFieldIdsFromNonRepeatingSection(section: Section): Seq[FormComponentId] =
-      section.fields.flatMap { f =>
-        f.`type` match {
-          case g: Group => extractAllFieldIds(g)
-          case _        => Set.empty[FormComponentId]
-        }
-      }
-
-    template.sections.flatMap { section =>
-      if (isRepeatingSection(section)) extractAllFieldsIdsFromRepeatingSection(section)
-      else extractRepeatableFieldIdsFromNonRepeatingSection(section)
-    }.toSet
   }
 }

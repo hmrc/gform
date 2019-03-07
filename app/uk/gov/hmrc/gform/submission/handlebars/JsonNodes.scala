@@ -16,11 +16,14 @@
 
 package uk.gov.hmrc.gform.submission.handlebars
 
-import uk.gov.hmrc.gform.Spec
+import com.fasterxml.jackson.databind.node.{ ArrayNode, ObjectNode }
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.JsonNodeFactory.{ instance => jnf }
 
-class HandlebarsTemplateProcessorModelSpec extends Spec {
-  "+" must "shallow merge the two models" in {
-    HandlebarsTemplateProcessorModel("""{ "a": 1 }""") + HandlebarsTemplateProcessorModel("""{ "b": 2 }""") shouldBe
-      HandlebarsTemplateProcessorModel("""{ "a": 1, "b": 2 }""")
-  }
+import scala.collection.JavaConversions._
+
+object JsonNodes {
+  def textNode(s: String) = jnf.textNode(s)
+  def objectNode(fields: Map[String, JsonNode]) = new ObjectNode(jnf, fields)
+  def arrayNode(elements: List[JsonNode]) = new ArrayNode(jnf, elements)
 }

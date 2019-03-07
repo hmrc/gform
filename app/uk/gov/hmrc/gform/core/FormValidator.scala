@@ -42,18 +42,20 @@ object FormValidator {
             fieldValue.`type` match {
               case UkSortCode(_) =>
                 val res: Map[FormComponentId, FormComponent] =
-                  UkSortCode.fields(fieldValue.id).map(_ -> fieldValue).toMap
+                  UkSortCode.fields(fieldValue.id).map(_ -> fieldValue).toList.toMap
                 val accRes = acc ++ res
 
                 (accRes, reqAcc)
               case Address(_) =>
-                val res: Map[FormComponentId, FormComponent] = Address.fields(fieldValue.id).map(_ -> fieldValue).toMap
+                val res: Map[FormComponentId, FormComponent] =
+                  Address.fields(fieldValue.id).map(_ -> fieldValue).toList.toMap
                 val accRes = acc ++ res
 
                 (accRes, reqAcc)
 
               case Date(_, _, _) =>
-                val res: Map[FormComponentId, FormComponent] = Date.fields(fieldValue.id).map(_ -> fieldValue).toMap
+                val res: Map[FormComponentId, FormComponent] =
+                  Date.fields(fieldValue.id).map(_ -> fieldValue).toList.toMap
                 val accRes = acc ++ res
 
                 (accRes, reqAcc)

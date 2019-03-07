@@ -67,8 +67,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     forAll(t) {
       case (d, m, y, expected) =>
         process(
-          s"{{toEtmpDate ${quote("myDate")}}}",
-          s"""{ "myDate-day": "$d", "myDate-month": "$m", "myDate-year": "$y"}"""
+          "{{toEtmpDate myDate}}",
+          s"""{ "myDate": { "day": "$d", "month": "$m", "year": "$y" } }"""
         ) shouldBe expected
     }
   }
@@ -87,8 +87,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     forAll(t) {
       case (d, m, y, expected) =>
         process(
-          s"{{toDesDate ${quote("myDate")}}}",
-          s"""{ "myDate-day": "$d", "myDate-month": "$m", "myDate-year": "$y"}"""
+          "{{toDesDate myDate}}",
+          s"""{ "myDate": { "day": "$d", "month": "$m", "year": "$y" } }"""
         ) shouldBe expected
     }
   }
@@ -247,34 +247,18 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     jsonNodeFactory.textNode(s)
   }
 
-  "toDesAddressWithoutPostcodeFromArray" must "copy the first 4 lines of full address" in {
-    process(
-      """{{toDesAddressWithoutPostcodeFromArray "addr" 1}}""",
-      """|{
-         |  "addr-street1": ["0", "1", "2"],
-         |  "addr-street2": ["The Street", "The Road", "The Avenue"],
-         |  "addr-street3": ["The Town", "The Village", "The City"],
-         |  "addr-street4": ["Sussex", "Surrey", "Dorset"],
-         |  "addr-postcode": ["PC0", "PC1", "PC2"],
-         |  "addr-uk": "true"
-         |}"""
-    ) shouldBe
-      """|"addressLine1": "1",
-         |"addressLine2": "The Road",
-         |"addressLine3": "The Village",
-         |"addressLine4": "Surrey"""".stripMargin
-  }
-
   "toDesAddressWithoutPostcode" must "copy the first 4 lines of full address" in {
     process(
-      """{{toDesAddressWithoutPostcode "addr"}}""",
+      """{{toDesAddressWithoutPostcode addr}}""",
       """|{
-         |  "addr-street1": "1",
-         |  "addr-street2": "The Street",
-         |  "addr-street3": "The Town",
-         |  "addr-street4": "The County",
-         |  "addr-postcode": "The Postcode",
-         |  "addr-uk": "true"
+         |  "addr" : {
+         |    "street1": "1",
+         |    "street2": "The Street",
+         |    "street3": "The Town",
+         |    "street4": "The County",
+         |    "postcode": "The Postcode",
+         |    "uk": "true"
+         |  }
          |}"""
     ) shouldBe
       """|"addressLine1": "1",
@@ -285,14 +269,17 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
 
   "it" must "compact missing lines" in {
     process(
-      """{{toDesAddressWithoutPostcode "addr"}}""",
-      Map[String, JsonNode](
-        "addr-street1"  -> "1",
-        "addr-street3"  -> "The Town",
-        "addr-street4"  -> "The County",
-        "addr-postcode" -> "The Postcode",
-        "addr-uk"       -> "true"
-      )
+      """{{toDesAddressWithoutPostcode addr}}""",
+      """|{
+         |  "addr" : {
+         |    "street1": "1",
+         |    "street2": "",
+         |    "street3": "The Town",
+         |    "street4": "The County",
+         |    "postcode": "The Postcode",
+         |    "uk": "true"
+         |  }
+         |}"""
     ) shouldBe
       """|"addressLine1": "1",
          |"addressLine2": "The Town",
@@ -301,15 +288,17 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
 
   "it" must "compact blank (after trimming) lines" in {
     process(
-      """{{toDesAddressWithoutPostcode "addr"}}""",
-      Map[String, JsonNode](
-        "addr-street1"  -> "1",
-        "addr-street2"  -> "",
-        "addr-street3"  -> " ",
-        "addr-street4"  -> "The County",
-        "addr-postcode" -> "The Postcode",
-        "addr-uk"       -> "true"
-      )
+      """{{toDesAddressWithoutPostcode addr}}""",
+      """|{
+         |  "addr" : {
+         |    "street1": "1",
+         |    "street2": "",
+         |    "street3": " ",
+         |    "street4": "The County",
+         |    "postcode": "The Postcode",
+         |    "uk": "true"
+         |  }
+         |}"""
     ) shouldBe
       """|"addressLine1": "1",
          |"addressLine2": "The County"""".stripMargin
@@ -317,12 +306,17 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
 
   "it" must "emit at least two lines" in {
     process(
-      """{{toDesAddressWithoutPostcode "addr"}}""",
-      Map[String, JsonNode](
-        "addr-street1"  -> "1",
-        "addr-postcode" -> "The Postcode",
-        "addr-uk"       -> "true"
-      )
+      """{{toDesAddressWithoutPostcode addr}}""",
+      """|{
+         |  "addr" : {
+         |    "street1": "1",
+         |    "street2": "",
+         |    "street3": " ",
+         |    "street4": "",
+         |    "postcode": "The Postcode",
+         |    "uk": "true"
+         |  }
+         |}"""
     ) shouldBe
       """|"addressLine1": "1",
          |"addressLine2": " """".stripMargin
