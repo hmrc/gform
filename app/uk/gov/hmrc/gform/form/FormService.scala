@@ -67,7 +67,8 @@ class FormService(save4Later: Save4Later) {
           status = newStatus(form, userData.formStatus),
           visitsIndex = userData.visitsIndex,
           thirdPartyData = userData.thirdPartyData,
-          obligations = userData.obligations
+          obligations = userData.obligations,
+          emailParameters = userData.emailParameters
         )
       _ <- save4Later.upsert(formId, newForm)
     } yield ()
