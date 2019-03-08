@@ -17,7 +17,6 @@
 package uk.gov.hmrc.gform.submission
 
 import cats.instances.future._
-import play.api.libs.concurrent.Execution.defaultContext
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.email.EmailService
@@ -30,8 +29,6 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsHttpApiSubmitter
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.logging.LoggingDetails
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
 
 import scala.concurrent.{ ExecutionContext, Future }
 

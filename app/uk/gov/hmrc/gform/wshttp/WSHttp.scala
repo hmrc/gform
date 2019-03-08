@@ -20,7 +20,7 @@ import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
-import play.api.{ Configuration, Play }
+import play.api.Configuration
 import play.api.mvc.MultipartFormData.FilePart
 import uk.gov.hmrc.play.http.ws._
 

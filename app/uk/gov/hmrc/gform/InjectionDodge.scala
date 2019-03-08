@@ -18,9 +18,10 @@ package uk.gov.hmrc.gform
 import play.api.{ Configuration, Play }
 
 object InjectionDodge {
-  def actorSystem = Play.current.actorSystem
-  def configuration: Configuration = Play.current.configuration
-  def appNameConfiguration: Configuration = Play.current.configuration
-  def mode = Play.current.mode
-  val runModeConfiguration = Play.current.configuration
+  def current = Play.current
+  def actorSystem = current.actorSystem
+  def configuration: Configuration = current.configuration
+  def appNameConfiguration: Configuration = current.configuration
+  def mode = current.mode
+  val runModeConfiguration = current.configuration
 }
