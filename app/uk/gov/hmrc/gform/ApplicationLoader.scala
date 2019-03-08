@@ -58,6 +58,8 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
 
   Logger.info(s"Starting microservice GFORM}")
 
+  implicit val ec = play.api.libs.concurrent.Execution.defaultContext
+
   private val akkaModule = new AkkaModule(materializer, actorSystem)
   private val playComponents = new PlayComponents(context, self)
 

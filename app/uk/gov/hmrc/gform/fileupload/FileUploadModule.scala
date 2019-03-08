@@ -20,7 +20,10 @@ import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.time.TimeModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 
-class FileUploadModule(configModule: ConfigModule, wSHttpModule: WSHttpModule, timeModule: TimeModule) {
+import scala.concurrent.ExecutionContext
+
+class FileUploadModule(configModule: ConfigModule, wSHttpModule: WSHttpModule, timeModule: TimeModule)(
+  implicit ex: ExecutionContext) {
 
   val fileUploadConnector: FileUploadConnector =
     new FileUploadConnector(config, wSHttpModule.auditableWSHttp, timeModule.timeProvider)
@@ -42,7 +45,6 @@ class FileUploadModule(configModule: ConfigModule, wSHttpModule: WSHttpModule, t
   )
 
   //TODO: provide separate one here
-  private lazy implicit val ec = play.api.libs.concurrent.Execution.defaultContext
   private lazy val ac = configModule.appConfig
 
   private lazy val fileUploadBaseUrl = {

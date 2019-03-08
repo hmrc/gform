@@ -34,14 +34,14 @@ import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.{ BadRequestException, NotFoundException }
 import uk.gov.hmrc.play.audit.http.connector.AuditResult
 
-import scala.concurrent.Future
+import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.Try
 
 class FormController(
   config: AppConfig,
   formTemplateService: FormTemplateService,
   fileUploadService: FileUploadService,
-  formService: FormService)
+  formService: FormService)(implicit ex: ExecutionContext)
     extends BaseController {
 
   def newForm(

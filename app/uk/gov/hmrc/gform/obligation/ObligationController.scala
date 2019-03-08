@@ -27,9 +27,9 @@ import uk.gov.hmrc.gform.des._
 import uk.gov.hmrc.gform.sharedmodel.{ TaxPeriodIdentifier, TaxResponse }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Constant, HmrcTaxPeriod, TextExpression }
 
-import scala.concurrent.Future
+import scala.concurrent.{ ExecutionContext, Future }
 
-class ObligationController(obligation: ObligationService) extends BaseController {
+class ObligationController(obligation: ObligationService)(implicit ex: ExecutionContext) extends BaseController {
 
   def getAllTaxPeriods() = Action.async(parse.json[NonEmptyList[HmrcTaxPeriod]]) { implicit request =>
     Logger.info(s"Get All Tax Periods from DES, ${loggingHelpers.cleanHeaders(request.headers)}")

@@ -20,7 +20,9 @@ import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.des.DesConnector
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 
-class ObligationModule(wSHttpModule: WSHttpModule, configModule: ConfigModule) {
+import scala.concurrent.ExecutionContext
+
+class ObligationModule(wSHttpModule: WSHttpModule, configModule: ConfigModule)(implicit ex: ExecutionContext) {
 
   private val desConfig = configModule.desConfig
   private val desConnector: DesConnector =

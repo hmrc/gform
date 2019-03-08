@@ -27,11 +27,6 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 class BaseController extends uk.gov.hmrc.play.microservice.controller.BaseController {
 
-  implicit val ec = play.api.libs.concurrent.Execution.defaultContext
-  val action = Action.async { implicit request =>
-    Future { Ok }
-  }
-
   object O {
     def asOkJson[T: Writes](t: T): Result =
       Ok(Json.toJson(t))

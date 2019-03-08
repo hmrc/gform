@@ -23,12 +23,15 @@ import uk.gov.hmrc.gform.config.AppConfig
 import uk.gov.hmrc.gform.fileupload.FileUploadModule
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorModule
 
-class DmsModule(fileUploadModule: FileUploadModule, pdfGeneratorModule: PdfGeneratorModule, config: AppConfig) {
+import scala.concurrent.ExecutionContext
+
+class DmsModule(fileUploadModule: FileUploadModule, pdfGeneratorModule: PdfGeneratorModule, config: AppConfig)(
+  implicit ex: ExecutionContext) {
   lazy val dmsSubmissionController = {
     new DmsSubmissionController(
       fileUploadModule.fileUploadService,
       pdfGeneratorModule.pdfGeneratorService,
       PDDocument.load,
-      config)(Clock.systemDefaultZone)
+      config)(Clock.systemDefaultZone, ex: ExecutionContext)
   }
 }

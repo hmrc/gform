@@ -23,7 +23,10 @@ import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, FormTemplateRaw, FormTemplateRawId }
 
-class FormTemplatesController(formTemplateService: FormTemplateService) extends BaseController {
+import scala.concurrent.ExecutionContext
+
+class FormTemplatesController(formTemplateService: FormTemplateService)(implicit ex: ExecutionContext)
+    extends BaseController {
 
   def upsert() = Action.async(parse.json[FormTemplateRaw]) { implicit request =>
     //TODO authorisation (we don't want allow everyone to call this action

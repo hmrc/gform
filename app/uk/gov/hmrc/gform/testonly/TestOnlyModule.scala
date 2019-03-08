@@ -21,11 +21,13 @@ import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.playcomponents.PlayComponents
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 
+import scala.concurrent.ExecutionContext
+
 class TestOnlyModule(
   mongoModule: MongoModule,
   wSHttpModule: WSHttpModule,
   configModule: ConfigModule,
-  playComponents: PlayComponents) {
+  playComponents: PlayComponents)(implicit ex: ExecutionContext) {
 
   val enrolmentConnector =
     new EnrolmentConnector(

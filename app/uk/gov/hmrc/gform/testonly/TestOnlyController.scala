@@ -29,9 +29,11 @@ import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.des._
 import uk.gov.hmrc.gform.sharedmodel._
-import scala.concurrent.Future
 
-class TestOnlyController(mongo: () => DB, enrolmentConnector: EnrolmentConnector) extends BaseController {
+import scala.concurrent.{ ExecutionContext, Future }
+
+class TestOnlyController(mongo: () => DB, enrolmentConnector: EnrolmentConnector)(implicit ex: ExecutionContext)
+    extends BaseController {
 
   lazy val formTemplates = mongo().collection[JSONCollection]("formTemplate")
   def removeTemplates() = Action.async { implicit request =>

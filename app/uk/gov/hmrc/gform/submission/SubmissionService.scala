@@ -40,9 +40,7 @@ class SubmissionService(
   handlebarsApiHttpSubmitter: HandlebarsHttpApiSubmitter[FOpt],
   submissionRepo: SubmissionRepo,
   timeProvider: TimeProvider,
-  email: EmailService) {
-
-  implicit val ec = play.api.libs.concurrent.Execution.defaultContext
+  email: EmailService)(implicit ex: ExecutionContext) {
 
   def submissionWithPdf(
     formId: FormId,
@@ -59,7 +57,7 @@ class SubmissionService(
       destinationsSubmitter   =                       new DestinationsSubmitter(new RealDestinationSubmitter(new FileUploadServiceDmsSubmitter(fileUploadService), handlebarsApiHttpSubmitter))
       res                     <-                      destinationsSubmitter.send(DestinationSubmissionInfo(submission, form, formTemplate, customerId, affinityGroup, submissionData.variables, PdfAndXmlSummariesFactory.withPdf(pdfGeneratorService, submissionData.pdfData)))
       emailAddress            =                       email.getEmailAddress(form)
-      _                       <-                      fromFutureA(email.sendEmail(emailAddress, formTemplate.emailTemplateId, SubmissionServiceHelper.getEmailParameterValues(formTemplate, form))(hc, ec))
+      _                       <-                      fromFutureA(email.sendEmail(emailAddress, formTemplate.emailTemplateId, SubmissionServiceHelper.getEmailParameterValues(formTemplate, form))(hc, ex))
       } yield res
   // format: ON
 
@@ -84,6 +82,6 @@ class SubmissionService(
       )
     )
 
-  def submissionDetails(formId: FormId)(implicit ec: ExecutionContext): Future[Submission] =
+  def submissionDetails(formId: FormId)(implicit ex: ExecutionContext): Future[Submission] =
     submissionRepo.get(formId.value)
 }

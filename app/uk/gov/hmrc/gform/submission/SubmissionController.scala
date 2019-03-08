@@ -24,7 +24,9 @@ import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.sharedmodel.AffinityGroupUtil._
 import uk.gov.hmrc.gform.sharedmodel.form.{ FormId, SubmissionData }
 
-class SubmissionController(submissionService: SubmissionService) extends BaseController {
+import scala.concurrent.ExecutionContext
+
+class SubmissionController(submissionService: SubmissionService)(implicit ex: ExecutionContext) extends BaseController {
 
   def submitWithPdf(formId: FormId) = Action.async(parse.json[SubmissionData]) { implicit request =>
     Logger.info(s"submit, formId: '${formId.value}, ${loggingHelpers.cleanHeaders(request.headers)}")

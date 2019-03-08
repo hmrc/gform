@@ -21,15 +21,17 @@ import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.save4later.{ Save4Later, Save4LaterModule }
 
+import scala.concurrent.ExecutionContext
+
 class FormModule(
   configModule: ConfigModule,
   mongoModule: MongoModule,
   shortLivedCacheModule: Save4LaterModule,
   formTemplateModule: FormTemplateModule,
-  fileUploadModule: FileUploadModule) {
+  fileUploadModule: FileUploadModule)(implicit ex: ExecutionContext) {
 
   val save4later =
-    new Save4Later(shortLivedCacheModule.shortLivedCache, scala.concurrent.ExecutionContext.Implicits.global)
+    new Save4Later(shortLivedCacheModule.shortLivedCache)
 
   val formService = new FormService(save4later)
 

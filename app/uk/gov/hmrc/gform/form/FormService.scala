@@ -22,12 +22,10 @@ import uk.gov.hmrc.gform.sharedmodel.{ NotChecked, UserId }
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 
-import scala.concurrent.Future
+import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.http.HeaderCarrier
 
-class FormService(save4Later: Save4Later) {
-
-  implicit val ec = play.api.libs.concurrent.Execution.defaultContext
+class FormService(save4Later: Save4Later)(implicit ex: ExecutionContext) {
 
   def get(formId: FormId)(implicit hc: HeaderCarrier): Future[Form] =
     save4Later.get(formId)
