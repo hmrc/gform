@@ -52,7 +52,7 @@ object HandlebarsJsonValidator extends RegexParsers {
       success(())
 
   private def handlebarsIdentifier: Parser[Unit] =
-    "[.]" ^^ void |
+    "." ^^ void |
       "@?[a-zA-Z0-9_][.a-zA-Z0-9_-]*".r ^^ void
 
   private def handlebarsExpression: Parser[Unit] =

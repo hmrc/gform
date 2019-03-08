@@ -86,6 +86,10 @@ class HandlebarsJsonValidatorSpec extends Spec {
     ok("""{ {{foo}} }""")
   }
 
+  "dot" should "be accepted in any identifier position" in {
+    ok("""{{foo .}}""")
+  }
+
   "handlebars blocks" should "be accepted with no arguments" in {
     ok("""|{{#foo}}
           |"xyz"
