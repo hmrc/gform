@@ -31,11 +31,13 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
 import uk.gov.hmrc.gform.submission._
 
+import scala.concurrent.ExecutionContext
+
 class DmsSubmissionController(
   fileUpload: FileUploadService,
   pdfGenerator: PdfGeneratorService,
   documentLoader: Array[Byte] => PDDocument,
-  config: AppConfig)(implicit clock: Clock)
+  config: AppConfig)(implicit clock: Clock, implicit val ex: ExecutionContext)
     extends BaseController {
 
   def submitToDms: Action[JsValue] = Action.async(parse.json) { implicit request =>

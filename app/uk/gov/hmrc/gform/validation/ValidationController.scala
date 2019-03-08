@@ -26,9 +26,9 @@ import uk.gov.hmrc.gform.des.{ AddressDes, DesConnector }
 import uk.gov.hmrc.gform.sharedmodel.des.DesRegistrationRequest
 import uk.gov.hmrc.gform.sharedmodel.Account
 
-import scala.concurrent.Future
+import scala.concurrent.{ ExecutionContext, Future }
 
-class ValidationController(validation: ValidationService) extends BaseController {
+class ValidationController(validation: ValidationService)(implicit ex: ExecutionContext) extends BaseController {
 
   def desRegistration(utr: String) = Action.async(parse.json[DesRegistrationRequest]) { implicit request =>
     Logger.info(s"validate Address At Des, ${loggingHelpers.cleanHeaders(request.headers)}")

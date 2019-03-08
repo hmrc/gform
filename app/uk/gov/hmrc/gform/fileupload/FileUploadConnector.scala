@@ -19,7 +19,8 @@ package uk.gov.hmrc.gform.fileupload
 import java.time.LocalDateTime
 
 import play.api.Logger
-import scala.concurrent.Future
+
+import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.core.FutureSyntax
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
@@ -28,8 +29,7 @@ import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.gform.wshttp.{ FutureHttpResponseSyntax, WSHttp }
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
-class FileUploadConnector(config: FUConfig, wSHttp: WSHttp, timeProvider: TimeProvider) {
-  implicit val ec = play.api.libs.concurrent.Execution.defaultContext
+class FileUploadConnector(config: FUConfig, wSHttp: WSHttp, timeProvider: TimeProvider)(implicit ex: ExecutionContext) {
 
   val helper = new Helper(config)
   def createEnvelope(formTemplateId: FormTemplateId, expiryDate: LocalDateTime)(

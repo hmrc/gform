@@ -18,7 +18,9 @@ package uk.gov.hmrc.gform.formtemplate
 
 import uk.gov.hmrc.gform.mongo.MongoModule
 
-class FormTemplateModule(mongoModule: MongoModule) {
+import scala.concurrent.ExecutionContext
+
+class FormTemplateModule(mongoModule: MongoModule)(implicit ex: ExecutionContext) {
 
   val formTemplateRepo: FormTemplateRepo = new FormTemplateRepo(mongoModule.mongo)
   val formTemplateRawRepo: FormTemplateRawRepo = new FormTemplateRawRepo(mongoModule.mongo)

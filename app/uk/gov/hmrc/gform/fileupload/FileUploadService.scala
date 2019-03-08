@@ -29,14 +29,13 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsS
 import uk.gov.hmrc.gform.submission.{ PdfAndXmlSummaries, Submission, SubmissionRef }
 import uk.gov.hmrc.gform.time.TimeProvider
 
-import scala.concurrent.Future
+import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.http.HeaderCarrier
 
 class FileUploadService(
   fileUploadConnector: FileUploadConnector,
   fileUploadFrontendConnector: FileUploadFrontendConnector,
-  timeModule: TimeProvider = new TimeProvider) {
-  implicit val ec = play.api.libs.concurrent.Execution.defaultContext
+  timeModule: TimeProvider = new TimeProvider)(implicit ex: ExecutionContext) {
 
   def createEnvelope(formTypeId: FormTemplateId, expiryDate: LocalDateTime)(
     implicit hc: HeaderCarrier): Future[EnvelopeId] = {

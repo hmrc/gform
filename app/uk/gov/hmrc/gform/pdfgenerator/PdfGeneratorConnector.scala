@@ -20,17 +20,17 @@ import play.api.Logger
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.gform.wshttp.WSHttp
-import scala.concurrent.Future
+
+import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.http.HeaderCarrier
 
-class PdfGeneratorConnector(servicesConfig: ServicesConfig, wSHttp: WSHttp) {
+class PdfGeneratorConnector(servicesConfig: ServicesConfig, wSHttp: WSHttp)(implicit ex: ExecutionContext) {
 
   //TODO: use stream
   def generatePDF(payload: Map[String, Seq[String]], headers: Seq[(String, String)])(
     implicit hc: HeaderCarrier): Future[Array[Byte]] = {
     Logger.info(s"generate pdf, ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
     val url = s"$baseURL/pdf-generator-service/generate"
-    implicit val ec = play.api.libs.concurrent.Execution.defaultContext
 
     wSHttp.buildRequest(url).withHeaders(headers: _*).post(payload).flatMap { response =>
       {

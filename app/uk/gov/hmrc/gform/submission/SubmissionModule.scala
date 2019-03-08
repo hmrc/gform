@@ -27,6 +27,8 @@ import uk.gov.hmrc.gform.submission.handlebars.HandlebarsHttpApiModule
 import uk.gov.hmrc.gform.time.TimeModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 
+import scala.concurrent.ExecutionContext
+
 class SubmissionModule(
   configModule: ConfigModule,
   mongoModule: MongoModule,
@@ -37,7 +39,7 @@ class SubmissionModule(
   wsHttpModule: WSHttpModule,
   timeModule: TimeModule,
   emailModule: EmailModule,
-  handlebarsHttpApiModule: HandlebarsHttpApiModule) {
+  handlebarsHttpApiModule: HandlebarsHttpApiModule)(implicit ex: ExecutionContext) {
 
   //TODO: this should be replaced with save4later for submissions
 
