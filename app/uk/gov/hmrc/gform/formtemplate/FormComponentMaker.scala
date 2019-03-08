@@ -320,12 +320,14 @@ class FormComponentMaker(json: JsValue) {
     } yield result
   }
 
-  private lazy val hmrcTaxPeriodOpt: Opt[HmrcTaxPeriod] = {
-    val oHmrcTaxPeriod: Opt[HmrcTaxPeriod] = (idType, idNumber, regimeType) match {
-      case (Some(a), Right(Some(b: TextExpression)), Some(c)) => HmrcTaxPeriod(IdType(a), b, RegimeType(c)).asRight
-      case _                                                  => HmrcTaxPeriod(IdType("NONE"), TextExpression(Constant("NONE")), RegimeType("NONE")).asRight
-    }
-    oHmrcTaxPeriod
+  private lazy val hmrcTaxPeriodOpt: Opt[HmrcTaxPeriod] = (idType, idNumber, regimeType) match {
+    case (Some(a), Right(Some(b: TextExpression)), Some(c)) => HmrcTaxPeriod(IdType(a), b, RegimeType(c)).asRight
+    case _                                                  => UnexpectedState(s"""
+                                 |Wrong HmrcTaxPeriod definition:
+                                 |IdType     : $idType
+                                 |IdNumber   : $idNumber
+                                 |RegimeType : $regimeType
+                                 |""".stripMargin).asLeft
   }
 
   private lazy val fileUploadOpt: Opt[FileUpload] = FileUpload().asRight
