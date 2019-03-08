@@ -77,7 +77,7 @@ final case object NotChecked extends Obligations
 final case class RetrievedObligations(listOfObligations: List[TaxPeriodInformation]) extends Obligations
 
 object Obligations {
-  implicit val format: OFormat[Obligations] = derived.oformat
+  implicit val format: OFormat[Obligations] = derived.oformat[Obligations]
 }
 
 case class IdNumberValue(value: String) extends AnyVal
