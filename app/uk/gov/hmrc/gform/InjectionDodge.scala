@@ -21,7 +21,5 @@ object InjectionDodge {
   def current = Play.current
   def actorSystem = current.actorSystem
   def configuration: Configuration = current.configuration
-  def appNameConfiguration: Configuration = current.configuration
   def mode = current.mode
-  val runModeConfiguration = current.configuration
 }
