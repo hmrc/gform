@@ -20,8 +20,8 @@ import julienrf.json.derived
 import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
-import uk.gov.hmrc.gform.sharedmodel._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, SectionNumber }
+import uk.gov.hmrc.gform.sharedmodel.{Obligations, RetrievedObligations, TaxPeriodInformation, UserId, NotChecked}
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 
 import scala.collection.immutable.List
 
@@ -60,7 +60,6 @@ object Form {
     (__ \ "obligations").readNullable[List[TaxPeriodInformation]].map(_.map(RetrievedObligations))
   val readObligations: Reads[Obligations] =
     readerRetreived.orElse(readerStandard).map { a =>
-      println("AAAA" + a)
       a.getOrElse(NotChecked)
     }
 
