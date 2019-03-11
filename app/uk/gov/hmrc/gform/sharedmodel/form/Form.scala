@@ -20,10 +20,8 @@ import julienrf.json.derived
 import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
-import uk.gov.hmrc.gform.sharedmodel.{Obligations, RetrievedObligations, TaxPeriodInformation, UserId, NotChecked}
+import uk.gov.hmrc.gform.sharedmodel.{ NotChecked, Obligations, RetrievedObligations, TaxPeriodInformation, UserId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
-
-import scala.collection.immutable.List
 
 case class VisitIndex(visitsIndex: Set[Int]) extends AnyVal
 

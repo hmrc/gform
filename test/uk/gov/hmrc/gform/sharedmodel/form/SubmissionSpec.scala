@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel.form
 
 import play.api.libs.json._
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.{ExampleData, RetrievedObligations, TaxPeriodInformation}
+import uk.gov.hmrc.gform.sharedmodel.ExampleData
 import uk.gov.hmrc.gform.submission.Submission
 
 class SubmissionSpec extends Spec {
