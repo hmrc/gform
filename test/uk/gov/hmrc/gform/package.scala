@@ -15,13 +15,13 @@
  */
 
 package uk.gov.hmrc
-import cats.{ Id, MonadError }
+import cats.MonadError
 
 import scala.annotation.tailrec
 
 package object gform {
   type Possible[T] = Either[String, T]
-  implicit def possibleMonadError[T]: MonadError[Possible, String] = new MonadError[Possible, String] {
+  implicit val possibleMonadError: MonadError[Possible, String] = new MonadError[Possible, String] {
     import cats.syntax.either._
     override def flatMap[A, B](fa: Possible[A])(f: A => Possible[B]): Possible[B] = fa.flatMap(f)
 

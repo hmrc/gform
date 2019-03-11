@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 
-import cats.data.NonEmptyList
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
 
@@ -32,12 +31,7 @@ trait DestinationsGen {
   def destinationListGen: Gen[Destinations.DestinationList] =
     PrimitiveGen.oneOrMoreGen(DestinationGen.destinationGen).map(Destinations.DestinationList(_))
 
-  def singletonDestinationListGen: Gen[Destinations.DestinationList] =
-    DestinationGen.destinationGen.map(d => Destinations.DestinationList(NonEmptyList.of(d)))
-
   def destinationsGen: Gen[Destinations] = Gen.oneOf(deprecatedDmsSubmissionGen, destinationListGen)
-
-  def singleDestinationGen: Gen[Destinations] = Gen.oneOf(deprecatedDmsSubmissionGen, singletonDestinationListGen)
 }
 
 object DestinationsGen extends DestinationsGen

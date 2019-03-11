@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.gform.submission.handlebars
 
-import com.fasterxml.jackson.databind.{ JsonNode, ObjectMapper }
+import com.fasterxml.jackson.databind.JsonNode
+import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.form.{ Form, Variables }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import JsonNodes._
@@ -30,10 +31,21 @@ case class HandlebarsTemplateProcessorModel(model: JsonNode) extends AnyVal {
 }
 
 object HandlebarsTemplateProcessorModel {
+  implicit val format: Format[HandlebarsTemplateProcessorModel] = new Format[HandlebarsTemplateProcessorModel] {
+    override def writes(o: HandlebarsTemplateProcessorModel): JsValue = Json.parse(o.model.toString)
+    override def reads(json: JsValue): JsResult[HandlebarsTemplateProcessorModel] = JsSuccess(apply(json.toString))
+  }
+
   val empty: HandlebarsTemplateProcessorModel = HandlebarsTemplateProcessorModel(objectNode(Map.empty))
 
+  def apply(result: HandlebarsDestinationResponse): HandlebarsTemplateProcessorModel =
+    apply(
+      Map(
+        result.id.id -> objectNode(
+          Map("status" -> numberNode(result.status), "json" -> parseJson(result.json.toString)))))
+
   def apply(jsonDocument: String): HandlebarsTemplateProcessorModel =
-    HandlebarsTemplateProcessorModel(new ObjectMapper().readTree(jsonDocument))
+    HandlebarsTemplateProcessorModel(parseJson(jsonDocument))
 
   def apply(form: Form, template: FormTemplate): HandlebarsTemplateProcessorModel =
     HandlebarsTemplateProcessorModel(StructuredFormDataBuilder(form, template)) +

@@ -55,10 +55,10 @@ class SubmissionService(
       submission              =                       createSubmission(form, customerId, formTemplate)
       _                       <-                      submissionRepo.upsert(submission)
       destinationsSubmitter   =                       new DestinationsSubmitter(new RealDestinationSubmitter(new FileUploadServiceDmsSubmitter(fileUploadService), handlebarsApiHttpSubmitter))
-      res                     <-                      destinationsSubmitter.send(DestinationSubmissionInfo(submission, form, formTemplate, customerId, affinityGroup, submissionData.variables, PdfAndXmlSummariesFactory.withPdf(pdfGeneratorService, submissionData.pdfData)))
+      _                       <-                      destinationsSubmitter.send(DestinationSubmissionInfo(submission, form, formTemplate, customerId, affinityGroup, submissionData.variables, PdfAndXmlSummariesFactory.withPdf(pdfGeneratorService, submissionData.pdfData)))
       emailAddress            =                       email.getEmailAddress(form)
       _                       <-                      fromFutureA(email.sendEmail(emailAddress, formTemplate.emailTemplateId, submissionData.emailParameters))
-      } yield res
+      } yield ()
     // format: ON
 
   private def getNoOfAttachments(form: Form, formTemplate: FormTemplate): Int = {

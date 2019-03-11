@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
 
+import cats.Eq
 import play.api.libs.json.Reads._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
@@ -24,4 +25,6 @@ case class DestinationId(id: String) extends AnyVal
 
 object DestinationId {
   implicit val format: Format[DestinationId] = JsonUtils.valueClassFormat[DestinationId, String](DestinationId(_), _.id)
+
+  implicit val equal: Eq[DestinationId] = Eq.fromUniversalEquals
 }

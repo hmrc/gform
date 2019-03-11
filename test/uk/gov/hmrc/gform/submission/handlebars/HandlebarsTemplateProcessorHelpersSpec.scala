@@ -497,6 +497,19 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     process("{{toEtmpTelephoneNumber null}}") shouldBe "null"
   }
 
+  "foo" must "bar" in {
+    println(
+      process(
+        "{{#each dateOfInvoice}}{'paramSequence':'{{toEtmpParamSequence @index}}', 'paramName':'A_VTR_INV_DATE_TBL', 'paramValue':'{{toEtmpDate .}}'},{{/each}}",
+        """|{
+           |  "dateOfInvoice" : [
+           |    { "day": "1", "month": "2", "year": "2019" },
+           |    { "day": "3", "month": "4", "year": "2020" }
+           |  ]
+           |}"""
+      ))
+  }
+
   private def periodGen: Gen[(String, String, String, String)] =
     for {
       key  <- Gen.posNum[Int].map(_.toString)

@@ -19,9 +19,7 @@ package uk.gov.hmrc.gform.formtemplate
 import java.time.LocalDate
 
 import cats.Monoid
-import cats.data.NonEmptyList
 import cats.implicits._
-import javax.xml.bind.util.ValidationEventCollector
 import scalax.collection.Graph
 import scalax.collection.GraphEdge._
 import uk.gov.hmrc.gform.core.{ Invalid, Opt, Valid, ValidationResult }
@@ -29,7 +27,6 @@ import uk.gov.hmrc.gform.core.ValidationResult.{ BooleanToValidationResultSyntax
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.form.FormField
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, Destinations }
 import uk.gov.hmrc.gform.sharedmodel.graph.DependencyGraph._
 import uk.gov.hmrc.gform.formtemplate.FormTemplateValidatorHelper._
 
@@ -50,29 +47,6 @@ object FormTemplateValidator {
     }))
     val duplicates = fieldIds.groupBy(identity).collect { case (fId, List(_, _, _*)) => fId }.toSet
     duplicates.isEmpty.validationResult(someFieldsAreDefinedMoreThanOnce(duplicates))
-  }
-
-  def someDestinationIdsAreUsedMoreThanOnce(duplicates: Set[DestinationId]) =
-    s"Some DestinationIds are defined more than once: ${duplicates.toList.sortBy(_.id).map(_.id)}"
-
-  def validateUniqueDestinationIds(destinations: Destinations): ValidationResult = destinations match {
-    case _: Destinations.DmsSubmission => Valid
-
-    case destinationList: Destinations.DestinationList =>
-      val destinationIds = destinationList.destinations.map(_.id)
-      val duplicates = destinationIds.toList.groupBy(identity).collect { case (dId, List(_, _, _*)) => dId }.toSet
-      duplicates.isEmpty.validationResult(someDestinationIdsAreUsedMoreThanOnce(duplicates))
-  }
-
-  val oneOrMoreHmrcDestinationsRequired: String = "There must be at least one hmrcDms destination"
-
-  def validateOneOrMoreHmrcDmsDestination(destinations: Destinations): ValidationResult = destinations match {
-    case _: Destinations.DmsSubmission => Valid
-
-    case destinationList: Destinations.DestinationList =>
-      val hmrcDmsDestinations = destinationList.destinations.collect { case d: Destination.HmrcDms => d }
-      (!hmrcDmsDestinations.isEmpty)
-        .validationResult(oneOrMoreHmrcDestinationsRequired)
   }
 
   def validateChoiceHelpText(sectionsList: List[Section]): ValidationResult = {
