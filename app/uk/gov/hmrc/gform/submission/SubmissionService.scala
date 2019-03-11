@@ -46,19 +46,21 @@ class SubmissionService(
     formId: FormId,
     customerId: String,
     affinityGroup: Option[AffinityGroup],
-    submissionData: SubmissionData)(implicit hc: HeaderCarrier): FOpt[Unit] =
+    submissionData: SubmissionData)(implicit hc: HeaderCarrier): FOpt[Unit] ={
+    println("find me " + submissionData)
     // format: OFF
     for {
       form                    <- fromFutureA          (formService.get(formId))
-      _                       <- fromFutureA          (formService.updateUserData(form._id, UserData(form.formData, Submitted, form.visitsIndex, form.thirdPartyData, form.obligations, form.emailParameters)))
+      _                       <- fromFutureA          (formService.updateUserData(form._id, UserData(form.formData, Submitted, form.visitsIndex, form.thirdPartyData, form.obligations)))
       formTemplate            <- fromFutureA          (formTemplateService.get(form.formTemplateId))
       submission              =                       createSubmission(form, customerId, formTemplate)
       _                       <-                      submissionRepo.upsert(submission)
       destinationsSubmitter   =                       new DestinationsSubmitter(new RealDestinationSubmitter(new FileUploadServiceDmsSubmitter(fileUploadService), handlebarsApiHttpSubmitter))
       res                     <-                      destinationsSubmitter.send(DestinationSubmissionInfo(submission, form, formTemplate, customerId, affinityGroup, submissionData.variables, PdfAndXmlSummariesFactory.withPdf(pdfGeneratorService, submissionData.pdfData)))
       emailAddress            =                       email.getEmailAddress(form)
-      _                       <-                      fromFutureA(email.sendEmail(emailAddress, formTemplate.emailTemplateId, form.emailParameters)(hc, ex))
+      _                       <-                      fromFutureA(email.sendEmail(emailAddress, formTemplate.emailTemplateId, EmailParameters(Map("" -> "")))(hc, ex))
       } yield res
+  }
   // format: ON
 
   private def getNoOfAttachments(form: Form, formTemplate: FormTemplate): Int = {

@@ -41,8 +41,7 @@ class FormSpec extends FlatSpec with Matchers {
     VisitIndex(Set(1, 2, 3)),
     ThirdPartyData.empty,
     Some(EnvelopeExpiryDate(LocalDateTime.now.plusDays(1))),
-    NotChecked,
-    EmailParameters(Map("test" -> "test"))
+    NotChecked
   )
 
   "case class Form" should "be serialized into json" in {

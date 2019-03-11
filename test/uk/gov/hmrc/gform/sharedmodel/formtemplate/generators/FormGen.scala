@@ -65,8 +65,8 @@ trait FormGen {
         visitIndex,
         thirdPartyData,
         expiryDate,
-        NotChecked,
-        emailParameters)
+        NotChecked
+      )
 }
 
 object FormGen extends FormGen

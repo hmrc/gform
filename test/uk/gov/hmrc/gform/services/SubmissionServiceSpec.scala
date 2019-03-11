@@ -62,8 +62,7 @@ class SubmissionServiceSpec extends Spec {
       VisitIndex.empty,
       ThirdPartyData.empty,
       Some(EnvelopeExpiryDate(LocalDateTime.now(clock) plusDays (30))),
-      NotChecked,
-      formEmailParameters
+      NotChecked
     )
 
     val textFieldUno = FormComponent(
@@ -136,8 +135,8 @@ class SubmissionServiceSpec extends Spec {
       emailTemplateId = "test-email-template-id",
       emailParameters = Some(
         NonEmptyList.of(
-          EmailParameter("fullName", TextExpression(FormCtx("directorFullName"))),
-          EmailParameter("email", TextExpression(FormCtx("directorEmail")))
+          EmailParameter("fullName", FormCtx("directorFullName")),
+          EmailParameter("email", FormCtx("directorEmail"))
         )),
       submitSuccessUrl = "http://somwehere-nice.net",
       submitErrorUrl = "http://somwehere-nasty.net",

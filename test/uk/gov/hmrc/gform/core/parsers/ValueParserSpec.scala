@@ -329,8 +329,8 @@ class ValueParserSpec extends Spec {
     "test-email-template-id",
     Some(
       NonEmptyList.of(
-        EmailParameter("fullName", TextExpression(FormCtx("directorFullName"))),
-        EmailParameter("email", TextExpression(FormCtx("directorEmail")))
+        EmailParameter("fullName", FormCtx("directorFullName")),
+        EmailParameter("email", FormCtx("directorEmail"))
       )),
     "submitSuccessUrl",
     "submitErrorUrl",

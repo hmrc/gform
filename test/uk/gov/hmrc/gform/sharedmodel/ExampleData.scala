@@ -303,8 +303,8 @@ trait ExampleFormTemplate {
   def emailParameters =
     Some(
       NonEmptyList.of(
-        EmailParameter("fullName", TextExpression(FormCtx("directorFullName"))),
-        EmailParameter("email", TextExpression(FormCtx("directorEmail")))
+        EmailParameter("fullName", FormCtx("directorFullName")),
+        EmailParameter("email", FormCtx("directorEmail"))
       ))
 
   def submtSuccessUrl = """http://success.com"""
@@ -394,8 +394,7 @@ trait ExampleForm { dependsOn: ExampleFormField with ExampleFormTemplate =>
       VisitIndex.empty,
       ThirdPartyData.empty,
       envelopeExpiryDate,
-      NotChecked,
-      formEmailParameters
+      NotChecked
     )
 
 }

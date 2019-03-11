@@ -303,7 +303,7 @@ object FormTemplateValidator {
       val ids = getAllFieldIdsFromFormTemplate(formTemplate)
       emailParams
         .collect {
-          case parameter @ EmailParameter(_, TextExpression(value: FormCtx)) =>
+          case parameter @ EmailParameter(_, value: FormCtx) =>
             (parameter.emailTemplateVariable, value.toFieldId)
         }
         .filterNot(parameter => ids.contains(parameter._2)) match {
