@@ -311,7 +311,8 @@ object FormTemplateValidator {
         case invalidFields =>
           Invalid(
             s"The following email parameters are not fields in the form template's sections or the declaration section: ${invalidFields
-              .map(_._2)}")
+              .map(_._2)
+              .mkString(", ")}")
       }
     }
 
