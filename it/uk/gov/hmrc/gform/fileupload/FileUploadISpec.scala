@@ -51,6 +51,8 @@ class FileUploadISpec extends ITSpec {
   }
 
   trait Fixture extends ExampleItFileUploadData {
+    implicit val ec = play.api.libs.concurrent.Execution.defaultContext
+
     val headers: Map[String, Seq[String]]
     val noHeaders = Map.empty[String, Seq[String]]
     val status: Int
