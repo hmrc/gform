@@ -154,5 +154,5 @@ class DmsSubmissionControllerSpec extends Spec {
   lazy val clock = Clock.fixed(fixedTime.toInstant(ZoneOffset.UTC), ZoneId.systemDefault)
 
   lazy val testController =
-    new DmsSubmissionController(mockFileUpload, mockPdfGenerator, mockDocumentLoader, mockConfig)(clock)
+    new DmsSubmissionController(mockFileUpload, mockPdfGenerator, mockDocumentLoader, mockConfig)(clock, ec)
 }
