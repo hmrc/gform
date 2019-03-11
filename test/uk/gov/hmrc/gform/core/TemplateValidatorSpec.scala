@@ -22,7 +22,6 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import cats.data.NonEmptyList
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.form.FormField
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.FormComponentGen._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.PrimitiveGen._
@@ -48,24 +47,6 @@ class TemplateValidatorSpec extends Spec {
 
       val result = FormTemplateValidator.validateUniqueFields(allSections.toList)
       result should be(Invalid(FormTemplateValidator.someFieldsAreDefinedMoreThanOnce(Set(id1, id2))))
-    }
-  }
-
-  "validateUniqueDestinationIds" should "return an error when there are duplicate ids" in {
-    import DestinationGen._
-    forAll(destinationIdGen, destinationIdGen) { (id1, id2) =>
-      forAll(
-        oneOrMoreGen(destinationWithFixedIdGen(id1)),
-        oneOrMoreGen(destinationWithFixedIdGen(id1)),
-        oneOrMoreGen(destinationWithFixedIdGen(id2)),
-        oneOrMoreGen(destinationWithFixedIdGen(id2)),
-        destinationGen.filter(d => d.id != id1 && d.id != id2)
-      ) { (d1WithId1, d2WithId1, d1WithId2, d2WithId2, uniqueD) =>
-        val destinations = Destinations.DestinationList(uniqueD :: d1WithId1 ::: d2WithId1 ::: d1WithId2 ::: d2WithId2)
-
-        FormTemplateValidator.validateUniqueDestinationIds(destinations) should be(
-          Invalid(FormTemplateValidator.someDestinationIdsAreUsedMoreThanOnce(Set(id1, id2))))
-      }
     }
   }
 
@@ -95,33 +76,6 @@ class TemplateValidatorSpec extends Spec {
       whenever(isAUserCtx.isEmpty) {
         validateEnrolmentIdentifier(newTemplate) should be(Valid)
       }
-    }
-  }
-
-  it should "not return an error when there are no duplicate ids" in {
-    import DestinationGen._
-    forAll(destinationGen, destinationGen) { (d1, d2) =>
-      whenever(d1.id != d2.id) {
-        FormTemplateValidator.validateUniqueDestinationIds(Destinations.DestinationList(NonEmptyList.of(d1, d2))) should be(
-          Valid)
-      }
-    }
-  }
-
-  "validateOneOrMoreHmrcDmsDestination" should "not return an error when there is one or more hmrcDms destinations" in {
-    import DestinationGen._
-    forAll(PrimitiveGen.oneOrMoreGen(hmrcDmsGen)) { hmrcDmss =>
-      val destinations = Destinations.DestinationList(hmrcDmss)
-      FormTemplateValidator.validateOneOrMoreHmrcDmsDestination(destinations) should be(Valid)
-    }
-  }
-
-  it should "return an error when there are no HmrcDms Destinations" in {
-    import DestinationGen._
-    forAll(handlebarsHttpApiGen) { d1 =>
-      val destinations = Destinations.DestinationList(NonEmptyList.of(d1))
-      FormTemplateValidator.validateOneOrMoreHmrcDmsDestination(destinations) should be(
-        Invalid(FormTemplateValidator.oneOrMoreHmrcDestinationsRequired))
     }
   }
 

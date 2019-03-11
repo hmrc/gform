@@ -21,8 +21,8 @@ import cats.{ Applicative, Monad }
 import cats.syntax.applicative._
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, Destinations }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, DestinationsGen, PrimitiveGen }
-import uk.gov.hmrc.gform.submission.handlebars.{ HandlebarsTemplateProcessor, HandlebarsTemplateProcessorModel }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, DestinationsGen }
+import uk.gov.hmrc.gform.submission.handlebars.{ HandlebarsDestinationResponse, HandlebarsTemplateProcessorModel }
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 import org.scalacheck.Gen
 import play.api.libs.json.{ JsNull, JsNumber, JsObject, JsString }
@@ -53,46 +53,13 @@ class DestinationsSubmitterSpec extends Spec with ExampleData {
       val si = setSubmissionInfoDestinations(submissionInfo, destination)
 
       createSubmitter()
-        .expectDestinationSubmitterApply(
+        .expectDestinationSubmitterSubmitIfIncludeIf(
           destination,
           si,
           DestinationsSubmitter.createHandlebarsTemplateProcessorModel(si),
           None)
         .submitter
         .send(si)
-    }
-  }
-
-  it should "be sent to the DestinationSubmitter when there is an includeIf that evaluates to true" in {
-    forAll(submissionInfoGen, DestinationGen.destinationGen, PrimitiveGen.nonEmptyAlphaNumStrGen) {
-      (submissionInfo, destinationWithoutIncludeIf, includeIf) =>
-        val destination = setIncludeIf(destinationWithoutIncludeIf, Option(includeIf))
-        val si = setSubmissionInfoDestinations(submissionInfo, destination)
-        val initialModel = HandlebarsTemplateProcessorModel(si.form, si.formTemplate)
-
-        createSubmitter()
-          .expectIncludeIfTemplateSubstitution(includeIf, initialModel, "true")
-          .expectDestinationSubmitterApply(
-            destination,
-            si,
-            DestinationsSubmitter.createHandlebarsTemplateProcessorModel(si),
-            None)
-          .submitter
-          .send(si)
-    }
-  }
-
-  it should "NOT be sent to the DestinationSubmitter when there is an includeIf that does not evaluate to true" in {
-    forAll(submissionInfoGen, DestinationGen.destinationGen, PrimitiveGen.nonEmptyAlphaNumStrGen) {
-      (submissionInfo, destinationWithoutIncludeIf, includeIf) =>
-        val destination = setIncludeIf(destinationWithoutIncludeIf, Option(includeIf))
-        val si = setSubmissionInfoDestinations(submissionInfo, destination)
-        val initialModel = HandlebarsTemplateProcessorModel(si.form, si.formTemplate)
-
-        createSubmitter()
-          .expectIncludeIfTemplateSubstitution(includeIf, initialModel, "false")
-          .submitter
-          .send(si)
     }
   }
 
@@ -116,12 +83,12 @@ class DestinationsSubmitterSpec extends Spec with ExampleData {
       val response1 = HttpResponse(responseCode1, Option(responseJson1))
 
       val initialModel = HandlebarsTemplateProcessorModel(si.form, si.formTemplate)
-      val response1Model = DestinationsSubmitter.createResponseModel(handlebarsHttpApi1, response1)
-      val expectedModel2 = initialModel + response1Model
+      val response1Model = HandlebarsDestinationResponse(handlebarsHttpApi1, response1)
+      val expectedModel2 = initialModel + HandlebarsTemplateProcessorModel(response1Model)
 
       createSubmitter()
-        .expectDestinationSubmitterApply(handlebarsHttpApi1, si, initialModel, Option(response1Model))
-        .expectDestinationSubmitterApply(handlebarsHttpApi2, si, expectedModel2, None)
+        .expectDestinationSubmitterSubmitIfIncludeIf(handlebarsHttpApi1, si, initialModel, Option(response1Model))
+        .expectDestinationSubmitterSubmitIfIncludeIf(handlebarsHttpApi2, si, expectedModel2, None)
         .submitter
         .send(si)
     }
@@ -136,7 +103,8 @@ class DestinationsSubmitterSpec extends Spec with ExampleData {
         ))
 
       val responseModel =
-        DestinationsSubmitter.createResponseModel(destination, HttpResponse(responseCode, Option(responseBody)))
+        HandlebarsTemplateProcessorModel(
+          HandlebarsDestinationResponse(destination, HttpResponse(responseCode, Option(responseBody))))
 
       responseModel.model.toString shouldBe
         JsObject(
@@ -152,8 +120,9 @@ class DestinationsSubmitterSpec extends Spec with ExampleData {
 
   it should "contain a JsNull when the response body is empty or cannot be parsed" in {
     forAll(DestinationGen.handlebarsHttpApiGen, Gen.chooseNum(100, 599)) { (destination, responseCode) =>
-      val responseModel =
-        DestinationsSubmitter.createResponseModel(destination, HttpResponse(responseCode, responseString = Option("")))
+      val result = HandlebarsDestinationResponse(destination, HttpResponse(responseCode, responseString = Option("")))
+
+      val responseModel = HandlebarsTemplateProcessorModel(result)
 
       responseModel.model.toString shouldBe
         JsObject(
@@ -177,7 +146,9 @@ class DestinationsSubmitterSpec extends Spec with ExampleData {
     si: DestinationSubmissionInfo,
     destination1: Destination,
     moreDestinations: Destination*): DestinationSubmissionInfo =
-    setSubmissionInfoDestinations(si, Destinations.DestinationList(NonEmptyList.of(destination1, moreDestinations: _*)))
+    setSubmissionInfoDestinations(
+      si,
+      Destinations.DestinationList(NonEmptyList.of(destination1, moreDestinations: _*), Nil))
 
   private def setSubmissionInfoDestinations(
     si: DestinationSubmissionInfo,
@@ -186,16 +157,16 @@ class DestinationsSubmitterSpec extends Spec with ExampleData {
 
   case class SubmitterParts[F[_]: Applicative](
     submitter: DestinationsSubmitter[F],
-    destinationSubmitter: DestinationSubmitter[F],
-    handlebarsTemplateProcessor: HandlebarsTemplateProcessor) {
+    destinationSubmitter: DestinationSubmitter[F]) {
 
-    def expectDestinationSubmitterApply(
+    def expectDestinationSubmitterSubmitIfIncludeIf(
       destination: Destination,
       submissionInfo: DestinationSubmissionInfo,
       model: HandlebarsTemplateProcessorModel,
-      response: Option[HandlebarsTemplateProcessorModel]): SubmitterParts[F] = {
+      response: Option[HandlebarsDestinationResponse]): SubmitterParts[F] = {
       (destinationSubmitter
-        .apply(_: Destination, _: DestinationSubmissionInfo, _: HandlebarsTemplateProcessorModel)(_: HeaderCarrier))
+        .submitIfIncludeIf(_: Destination, _: DestinationSubmissionInfo, _: HandlebarsTemplateProcessorModel)(
+          _: HeaderCarrier))
         .expects(destination, submissionInfo, model, hc)
         .returning(response.pure)
       this
@@ -210,25 +181,12 @@ class DestinationsSubmitterSpec extends Spec with ExampleData {
         .returning(().pure)
       this
     }
-
-    def expectIncludeIfTemplateSubstitution(
-      template: String,
-      model: HandlebarsTemplateProcessorModel,
-      result: String): SubmitterParts[F] = {
-      (handlebarsTemplateProcessor
-        .apply(_: String, _: HandlebarsTemplateProcessorModel))
-        .expects(template, model)
-        .returning(result)
-
-      this
-    }
   }
 
   private def createSubmitter[M[_]: Monad](): SubmitterParts[M] = {
     val destinationSubmitter: DestinationSubmitter[M] = mock[DestinationSubmitter[M]]
-    val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
-    val submitter = new DestinationsSubmitter[M](destinationSubmitter, handlebarsTemplateProcessor)
+    val submitter = new DestinationsSubmitter[M](destinationSubmitter)
 
-    SubmitterParts(submitter, destinationSubmitter, handlebarsTemplateProcessor)
+    SubmitterParts(submitter, destinationSubmitter)
   }
 }

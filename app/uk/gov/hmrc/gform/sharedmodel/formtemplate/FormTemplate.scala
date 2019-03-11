@@ -52,7 +52,7 @@ case class FormTemplate(
   @deprecated(message = "This is replaced by the new destinations field.", since = "20181219")
   def dmsSubmission: DmsSubmission = destinations match {
     case dms: Destinations.DmsSubmission => dms
-    case Destinations.DestinationList(l) =>
+    case Destinations.DestinationList(l, _) =>
       val hmrcDms = l.collect { case d: Destination.HmrcDms => d }.head
       import hmrcDms._
       DmsSubmission(

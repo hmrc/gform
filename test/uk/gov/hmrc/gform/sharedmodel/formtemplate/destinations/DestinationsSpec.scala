@@ -40,6 +40,6 @@ class DestinationsSpec extends Spec {
       .toList
       .mkString(", ")
 
-    s"[$listBody]"
+    s"""{ "destinations" : [$listBody], "tests": [] }"""
   }
 }

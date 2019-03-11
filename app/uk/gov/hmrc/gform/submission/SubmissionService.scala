@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.submission
 
+import cats.instances.unit._
 import cats.instances.future._
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.gform.core._

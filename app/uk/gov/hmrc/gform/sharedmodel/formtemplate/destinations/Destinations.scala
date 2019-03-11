@@ -38,7 +38,7 @@ object Destinations {
 
   implicit val dmsSubmissionFormat: OFormat[DmsSubmission] = Json.format
 
-  case class DestinationList(destinations: NonEmptyList[Destination]) extends Destinations
+  case class DestinationList(destinations: NonEmptyList[Destination], tests: List[DestinationTest]) extends Destinations
 
   implicit val destinationListReads: OFormat[DestinationList] = derived.oformat
 
@@ -51,6 +51,6 @@ object Destinations {
     OFormatWithTemplateReadFallback(
       // When uploading the template and loading a Destinations, we can only read the DestinationList branch.
       // See the comment above DmsSubmission.
-      JsonUtils.valueClassReads[Destinations, NonEmptyList[Destination]](DestinationList))
+      (destinationListReads: Reads[DestinationList]).map((x: Destinations) => x))
   }
 }
