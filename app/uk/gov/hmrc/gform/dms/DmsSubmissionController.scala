@@ -37,7 +37,7 @@ class DmsSubmissionController(
   fileUpload: FileUploadService,
   pdfGenerator: PdfGeneratorService,
   documentLoader: Array[Byte] => PDDocument,
-  config: AppConfig)(implicit clock: Clock, implicit val ex: ExecutionContext)
+  config: AppConfig)(implicit clock: Clock, ex: ExecutionContext)
     extends BaseController {
 
   def submitToDms: Action[JsValue] = Action.async(parse.json) { implicit request =>
