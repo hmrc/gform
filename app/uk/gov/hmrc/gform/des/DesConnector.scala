@@ -53,7 +53,7 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
       .map { httpResponse =>
         if (httpResponse.status === 400) {
           processResponse[DesRegistrationResponseError, Nothing](httpResponse) { desError =>
-            if (desError.code === "INVALID_UTR") NotFound
+            if (desError.code === "NOT_FOUND" || desError.code === "INVALID_UTR") NotFound
             else {
               Logger.error("Problem when calling des registration: " + Json.prettyPrint(Json.toJson(desError)))
               CannotRetrieveResponse
