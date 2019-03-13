@@ -131,8 +131,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     process(s"{{either2 ${quote("""hello \ world""")} null}}") shouldBe """hello \\ world"""
   }
 
-  it must "escape single quotes in the output" in {
-    process(s"{{either2 ${quote("""hello ' world""")} null}}") shouldBe """hello \' world"""
+  it must "escape double quotes in the output" in {
+    process(s"{{either2 ${quote("""hello " world""")} null}}") shouldBe """hello \" world"""
   }
 
   "hmrcTaxPeriodKey" must "return the 0th element of the pipe separated parameter" in {
@@ -500,7 +500,7 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
       to   <- Gen.posNum[Int].map(_.toString)
     } yield (key, from, to, s"$key|$from|$to")
 
-  private def quote(s: String): String = raw""""$s""""
+  private def quote(s: String): String = raw"""'$s'"""
 
   private def process(functionCall: String, model: String): String =
     process(functionCall, HandlebarsTemplateProcessorModel(model.stripMargin))

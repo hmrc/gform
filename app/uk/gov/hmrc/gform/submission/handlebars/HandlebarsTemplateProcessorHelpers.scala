@@ -500,7 +500,7 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
       case null                     => NullString
       case s: Handlebars.SafeString => s
       case s: CharSequence =>
-        new Handlebars.SafeString(s.toString.replaceAll("""\\""", """\\\\""").replaceAll("""'""", """\\'"""))
+        new Handlebars.SafeString(s.toString.replaceAll("""\\""", """\\\\""").replaceAll(""""""", """\\""""))
       case u => u.toString
     }
 
