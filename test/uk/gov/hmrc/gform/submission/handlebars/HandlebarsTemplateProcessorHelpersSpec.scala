@@ -487,6 +487,18 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     }
   }
 
+  "toEtmpTelephoneNumber" must "return the value untouched if it doesn't start with a '+'" in {
+    process("{{toEtmpTelephoneNumber '12345'}}") shouldBe "12345"
+  }
+
+  it must "replace initial '+'s with '00'" in {
+    process("{{toEtmpTelephoneNumber '+12345'}}") shouldBe "0012345"
+  }
+
+  it must "return null if the given inout is null" in {
+    process("{{toEtmpTelephoneNumber null}}") shouldBe "null"
+  }
+
   private def periodGen: Gen[(String, String, String, String)] =
     for {
       key  <- Gen.posNum[Int].map(_.toString)
