@@ -108,7 +108,7 @@ object HandlebarsTemplateProcessorModel {
   }
 
   private def choicesToArray(commaSeparatedString: String) =
-    arrayNode(commaSeparatedString.split(',').map(_.trim).map(textNode).toList)
+    arrayNode(commaSeparatedString.split(',').map(_.trim).filterNot(_.isEmpty).map(textNode).toList)
 
   private def textNode(s: String) = jsonNodeFactory.textNode(s)
   private def objectNode(fields: Map[String, JsonNode]) = new ObjectNode(jsonNodeFactory, fields)
