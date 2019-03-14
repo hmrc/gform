@@ -16,30 +16,23 @@
 
 package uk.gov.hmrc.gform.obligation
 
-import java.text.SimpleDateFormat
-
 import cats.data.NonEmptyList
 import play.api.Logger
 import play.api.mvc.Action
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
-import uk.gov.hmrc.gform.des._
-import uk.gov.hmrc.gform.sharedmodel.{ TaxPeriodIdentifier, TaxResponse }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Constant, HmrcTaxPeriod, TextExpression }
+import uk.gov.hmrc.gform.sharedmodel.{ HmrcTaxPeriodWithEvaluatedId, TaxResponse }
 
 import scala.concurrent.{ ExecutionContext, Future }
 
 class ObligationController(obligation: ObligationService)(implicit ex: ExecutionContext) extends BaseController {
 
-  def getAllTaxPeriods() = Action.async(parse.json[NonEmptyList[HmrcTaxPeriod]]) { implicit request =>
+  def getAllTaxPeriods() = Action.async(parse.json[NonEmptyList[HmrcTaxPeriodWithEvaluatedId]]) { implicit request =>
     Logger.info(s"Get All Tax Periods from DES, ${loggingHelpers.cleanHeaders(request.headers)}")
-    val body: NonEmptyList[HmrcTaxPeriod] = request.body
+    val body: NonEmptyList[HmrcTaxPeriodWithEvaluatedId] = request.body
     val b = body.map(i => {
       obligation
-        .callDES(i.idType.value, i.idNumber.expr match {
-          case a: Constant => a.value
-          case _           => ""
-        }, i.regimeType.value)
+        .callDES(i.hmrcTaxPeriod.idType.value, i.idNumberValue.value, i.hmrcTaxPeriod.regimeType.value)
         .map(x => TaxResponse(i, x))
     })
     Future.sequence(b.toList).asOkJson

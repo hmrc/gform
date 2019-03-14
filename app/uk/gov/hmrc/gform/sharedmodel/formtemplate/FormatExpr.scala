@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
+import cats.Eq
 import julienrf.json.derived
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.parsers.{ BasicParsers, ValueParser }
@@ -189,4 +190,6 @@ object TextExpression {
     }
     OFormat[TextExpression](reads, writes)
   }
+
+  implicit val equal: Eq[TextExpression] = Eq.fromUniversalEquals
 }
