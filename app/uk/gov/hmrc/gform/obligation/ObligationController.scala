@@ -33,7 +33,7 @@ class ObligationController(obligation: ObligationService)(implicit ex: Execution
     val b = body.map(i => {
       obligation
         .callDES(i.hmrcTaxPeriod.idType.value, i.idNumberValue.value, i.hmrcTaxPeriod.regimeType.value)
-        .map(x => TaxResponse(i.hmrcTaxPeriod, x))
+        .map(x => TaxResponse(i, x))
     })
     Future.sequence(b.toList).asOkJson
   }

@@ -46,7 +46,7 @@ object Obligation {
   implicit val format: OFormat[Obligation] = Json.format[Obligation]
 }
 
-case class TaxResponse(id: HmrcTaxPeriod, obligation: Obligation)
+case class TaxResponse(id: HmrcTaxPeriodWithEvaluatedId, obligation: Obligation)
 
 object TaxResponse {
   implicit val format: OFormat[TaxResponse] = Json.format[TaxResponse]
