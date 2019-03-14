@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.sharedmodel.form
 
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{ FlatSpec, Matchers }
 import java.time.LocalDateTime
 
 import play.api.libs.json._
@@ -98,22 +98,31 @@ class FormSpec extends FlatSpec with Matchers {
         .arr(
           Json.obj("id" -> "facePhoto", "value"      -> "face-photo.jpg"),
           Json.obj("id" -> "startDate-year", "value" -> "2008")),
-      "InProgress" -> Json.obj(),
+      "InProgress"  -> Json.obj(),
       "visitsIndex" -> Json.arr(1, 2, 3),
       "ldt"         -> form.envelopeExpiryDate.map(_.ldt).map(f _).get,
       "obligations" -> Json.arr(
-          Json.obj("idNumberValue" -> Json.obj("value" -> "gfdsa"),
-            "periodKey" -> "17B2",
-            "hmrcTaxPeriod" -> Json.obj("idType" -> Json.obj("idType" -> "nino"),
-                "idNumber" -> Json.obj("expr" -> Json.obj("FormCtx"-> Json.obj("value" -> "ho930Reg"))),
-                "regimeType" -> "ITSA"),
-            "inboundCorrespondenceFromDate" -> 1496271600000l,
-            "inboundCorrespondenceToDate" -> 1504134000000l
-            )
+        Json.obj(
+          "idNumberValue" -> Json.obj("value" -> "gfdsa"),
+          "periodKey"     -> "17B2",
+          "hmrcTaxPeriod" -> Json.obj(
+            "idType"     -> Json.obj("idType" -> "nino"),
+            "idNumber"   -> Json.obj("expr" -> Json.obj("FormCtx" -> Json.obj("value" -> "ho930Reg"))),
+            "regimeType" -> "ITSA"),
+          "inboundCorrespondenceFromDate" -> 1496271600000l,
+          "inboundCorrespondenceToDate"   -> 1504134000000l
+        )
       )
     )
 
-    val expectedForm = form.copy(obligations =   RetrievedObligations(List(TaxPeriodInformation(HmrcTaxPeriod(IdType("nino"),TextExpression(FormCtx("ho930Reg")),RegimeType("ITSA")),IdNumberValue("gfdsa"),new java.util.Date(1496271600000l),new java.util.Date(1504134000000l), "17B2"))))
+    val expectedForm = form.copy(
+      obligations = RetrievedObligations(List(TaxPeriodInformation(
+        HmrcTaxPeriod(IdType("nino"), TextExpression(FormCtx("ho930Reg")), RegimeType("ITSA")),
+        IdNumberValue("gfdsa"),
+        new java.util.Date(1496271600000l),
+        new java.util.Date(1504134000000l),
+        "17B2"
+      ))))
     Form.format.reads(inflight) should be(JsSuccess(expectedForm))
   }
 
@@ -129,23 +138,32 @@ class FormSpec extends FlatSpec with Matchers {
         .arr(
           Json.obj("id" -> "facePhoto", "value"      -> "face-photo.jpg"),
           Json.obj("id" -> "startDate-year", "value" -> "2008")),
-      "InProgress" -> Json.obj(),
+      "InProgress"  -> Json.obj(),
       "visitsIndex" -> Json.arr(1, 2, 3),
       "ldt"         -> form.envelopeExpiryDate.map(_.ldt).map(f _).get,
-      "RetrievedObligations" -> Json.obj("listOfObligations" -> Json.arr(
-        Json.obj("idNumberValue" -> Json.obj("value" -> "gfdsa"),
-          "periodKey" -> "17B2",
-          "hmrcTaxPeriod" -> Json.obj("idType" -> Json.obj("idType" -> "nino"),
-            "idNumber" -> Json.obj("expr" -> Json.obj("FormCtx"-> Json.obj("value" -> "ho930Reg"))),
-            "regimeType" -> "ITSA"),
-          "inboundCorrespondenceFromDate" -> 1496271600000l,
-          "inboundCorrespondenceToDate" -> 1504134000000l
-        )
-      ))
+      "RetrievedObligations" -> Json.obj(
+        "listOfObligations" -> Json.arr(
+          Json.obj(
+            "idNumberValue" -> Json.obj("value" -> "gfdsa"),
+            "periodKey"     -> "17B2",
+            "hmrcTaxPeriod" -> Json.obj(
+              "idType"     -> Json.obj("idType" -> "nino"),
+              "idNumber"   -> Json.obj("expr" -> Json.obj("FormCtx" -> Json.obj("value" -> "ho930Reg"))),
+              "regimeType" -> "ITSA"),
+            "inboundCorrespondenceFromDate" -> 1496271600000l,
+            "inboundCorrespondenceToDate"   -> 1504134000000l
+          )
+        ))
     )
 
-    val expectedForm = form.copy(obligations =   RetrievedObligations(List(TaxPeriodInformation(HmrcTaxPeriod(IdType("nino"),TextExpression(FormCtx("ho930Reg")),RegimeType("ITSA")),IdNumberValue("gfdsa"),new java.util.Date(1496271600000l),new java.util.Date(1504134000000l), "17B2"))))
+    val expectedForm = form.copy(
+      obligations = RetrievedObligations(List(TaxPeriodInformation(
+        HmrcTaxPeriod(IdType("nino"), TextExpression(FormCtx("ho930Reg")), RegimeType("ITSA")),
+        IdNumberValue("gfdsa"),
+        new java.util.Date(1496271600000l),
+        new java.util.Date(1504134000000l),
+        "17B2"
+      ))))
     Form.format.reads(inflight) should be(JsSuccess(expectedForm))
   }
 }
-
