@@ -18,13 +18,14 @@ package uk.gov.hmrc.gform.form
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.fileupload.FileUploadModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
+
+import scala.concurrent.ExecutionContext
 
 class FormModule(
   configModule: ConfigModule,
   formTemplateModule: FormTemplateModule,
   fileUploadModule: FileUploadModule,
-  formService: FormService) {
+  formService: FormService)(implicit ex: ExecutionContext) {
 
   val formController: FormController =
     new FormController(
