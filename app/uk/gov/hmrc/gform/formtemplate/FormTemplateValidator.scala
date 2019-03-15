@@ -43,7 +43,11 @@ object FormTemplateValidator {
     s"Some FieldIds are defined more than once: ${duplicates.toList.sortBy(_.value).map(_.value)}"
 
   def validateUniqueFields(sectionsList: List[Section]): ValidationResult = {
-    val fieldIds = sectionsList.flatMap(_.fields.map(_.id))
+    val fieldIds = sectionsList.flatMap(_.fields.flatMap(field =>
+      field.`type` match {
+        case group: Group => group.fields.map(_.id) ::: List(field.id)
+        case _            => List(field.id)
+    }))
     val duplicates = fieldIds.groupBy(identity).collect { case (fId, List(_, _, _*)) => fId }.toSet
     duplicates.isEmpty.validationResult(someFieldsAreDefinedMoreThanOnce(duplicates))
   }
