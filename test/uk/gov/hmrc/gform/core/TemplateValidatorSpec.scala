@@ -51,6 +51,45 @@ class TemplateValidatorSpec extends Spec {
     }
   }
 
+  "validateUniqueFields" should "all return valid in table" in {
+    import TemplateValidatorSpec._
+
+    val groupOfGroups = List(mkGroupFormComponent("field1"), mkGroupFormComponent("field2"))
+
+    val table =
+      Table(
+        ("actual", "expected"),
+        (validateFieldIds(List(mkGroupFormComponent(formComponent("field1"), formComponent("field2")))), Valid),
+        (validateMultipleGroupIds(groupOfGroups), Valid),
+        (validateFieldIds(List(mkGroupFormComponent(formComponent("a"), formComponent("b")))), Valid),
+        (validateFieldIds(List(mkGroupFormComponent(formComponent("")))), Valid),
+        (validateFieldIds(List(formComponent("field1"), formComponent("field2"))), Valid)
+      )
+    table.forEvery { case (expected, result) => expected shouldBe result }
+  }
+
+  it should "all return invalid in table" in {
+    import TemplateValidatorSpec._
+
+    val validateFieldsErrorMsg: String => Invalid =
+      culpritName => Invalid(s"Some FieldIds are defined more than once: List($culpritName)")
+    val fieldId = formComponent("fieldId")
+    val groupOfGroupsDuplicateIds =
+      List(mkGroupFormComponent("group1", fieldId, fieldId), mkGroupFormComponent("group2", fieldId, fieldId))
+    val groupOfGroups = List(mkGroupFormComponent("fieldId"), mkGroupFormComponent("fieldId"))
+
+    val table =
+      Table(
+        ("actual", "expected"),
+        (validateFieldIds(List(mkGroupFormComponent(fieldId, fieldId))), validateFieldsErrorMsg(("fieldId"))),
+        (validateMultipleGroupIds(groupOfGroups), validateFieldsErrorMsg(("fieldId"))),
+        (validateFieldIds(List(fieldId, fieldId)), validateFieldsErrorMsg(("fieldId"))),
+        (validateFieldIds(List(mkGroupFormComponent("fieldId", fieldId))), validateFieldsErrorMsg(("fieldId"))),
+        (validateMultipleGroupIds(groupOfGroupsDuplicateIds), validateFieldsErrorMsg(("fieldId")))
+      )
+    table.forEvery { case (expected, result) => expected shouldBe result }
+  }
+
   "validateUniqueDestinationIds" should "return an error when there are duplicate ids" in {
     import DestinationGen._
     forAll(destinationIdGen, destinationIdGen) { (id1, id2) =>
@@ -736,9 +775,35 @@ class TemplateValidatorSpec extends Spec {
       acknowledgementSection = acknowledgementSection)
   }
 
+  private def mkGroupFormComponent(formComponents: FormComponent*): FormComponent =
+    mkFormComponent("group", Group(formComponents.toList, Vertical))
+
+  private def mkGroupFormComponent(groupName: String, formComponents: FormComponent*): FormComponent =
+    mkFormComponent(groupName, Group(formComponents.toList, Vertical))
+
   private def dateValidation(year: Year, month: Month, day: Day): ValidationResult =
     FormTemplateValidator.validateDates(
       mkFormTemplate(List(mkFormComponent("fieldContainedInFormTemplate", mkDate(year, month, day, None)))))
+
+  private object TemplateValidatorSpec {
+    val formComponent: String => FormComponent = formId => mkFormComponent(formId, Value)
+
+    val validateSections: List[Section] => ValidationResult = sections =>
+      FormTemplateValidator.validateUniqueFields(sections)
+
+    val validateFieldIds: List[FormComponent] => ValidationResult = { formComponents =>
+      val sections = List(mkSection("section", formComponents))
+      validateSections(sections)
+    }
+
+    val group: String => FormComponent = formComponentId =>
+      mkGroupFormComponent("group", formComponent(formComponentId))
+
+    def validateMultipleGroupIds(formComponents: List[FormComponent]): ValidationResult = {
+      val sections = List(mkSection("section", formComponents))
+      validateSections(sections)
+    }
+  }
 
   implicit class FormComponentOps(fc: FormComponent) {
     def isEditable: FormComponent = fc.copy(editable = true)
