@@ -140,7 +140,7 @@ object UploadableConditioning {
     if (convertSingleQuotes.getOrElse(false)) SingleQuoteReplacementLexer(s)
     else Right(s)
 
-  private def validate(s: String): Either[String, String] = HandlebarsJsonValidator(s)
+  private def validate(s: String): Either[String, String] = Right(s)
 
   def conditionAndValidate(convertSingleQuotes: Option[Boolean], s: String): Either[String, String] =
     condition(convertSingleQuotes, s).flatMap(validate)
