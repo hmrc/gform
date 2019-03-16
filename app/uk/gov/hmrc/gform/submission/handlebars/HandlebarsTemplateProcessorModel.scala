@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.gform.submission.handlebars
 
-import com.fasterxml.jackson.databind.node.BaseJsonNode
 import com.fasterxml.jackson.databind.{ JsonNode, ObjectMapper }
 import uk.gov.hmrc.gform.sharedmodel.form.{ Form, Variables }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate

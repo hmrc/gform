@@ -224,6 +224,28 @@ class StructuredFormDataBuilderSpec extends Spec {
     )
   }
 
+  it must "include the acknowledgment and declaration sections" in {
+    validate(
+      createFormTemplate(
+        createNonRepeatingSection(
+          createNonGroupField("field")
+        ),
+        Some(AcknowledgementSection(null, None, None, List(createNonGroupField("ackField")))),
+        Some(DeclarationSection(null, None, None, List(createNonGroupField("decField"))))
+      ),
+      createForm(
+        "field"    -> "fieldValue",
+        "ackField" -> "ackFieldValue",
+        "decField" -> "decFieldValue"
+      ),
+      s"""{
+      |  "field" : "fieldValue",
+      |  "ackField" : "ackFieldValue",
+      |  "decField" : "decFieldValue"
+      |}"""
+    )
+  }
+
   private def validate(formTemplate: FormTemplate, formData: Form, expectedHandlebarsModelJson: String): Assertion =
     StructuredFormDataBuilder(formData, formTemplate) shouldBe
       new ObjectMapper().readTree(expectedHandlebarsModelJson.stripMargin)
@@ -242,7 +264,10 @@ class StructuredFormDataBuilderSpec extends Spec {
       NotChecked
     )
 
-  def createFormTemplate(sections: Section*): FormTemplate =
+  def createFormTemplate(
+    section: Section,
+    acknowledgementSection: Option[AcknowledgementSection] = None,
+    declarationSection: Option[DeclarationSection] = None): FormTemplate =
     FormTemplate(
       FormTemplateId(""),
       null,
@@ -257,9 +282,9 @@ class StructuredFormDataBuilderSpec extends Spec {
       null,
       null,
       null,
-      sections.toList,
-      null,
-      null,
+      List(section),
+      acknowledgementSection.getOrElse(AcknowledgementSection("Ack", None, None, Nil)),
+      declarationSection.getOrElse(DeclarationSection("Decl", None, None, Nil)),
       null
     )
 

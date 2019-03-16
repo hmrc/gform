@@ -40,10 +40,19 @@ class StructuredFormDataBuilder(form: Form, template: FormTemplate) {
   private val multiChoiceFieldIds: Set[FormComponentId] = extractMultiChoiceFieldIds(template)
 
   def build(): Map[String, JsonNode] =
+    buildSections ++ buildBaseSection(template.acknowledgementSection) ++ buildBaseSection(template.declarationSection)
+
+  private def buildSections(): Map[String, JsonNode] =
     (for {
       section     <- template.sections
       field       <- section.fields
       fieldAsJson <- buildField(field, RepeatingComponentService.isRepeatingSection(section))
+    } yield fieldAsJson).map { case (k, v) => (k.id.value, v) }.toMap
+
+  def buildBaseSection(section: BaseSection): Map[String, JsonNode] =
+    (for {
+      field       <- section.fields
+      fieldAsJson <- buildField(field, false)
     } yield fieldAsJson).map { case (k, v) => (k.id.value, v) }.toMap
 
   private def buildField(field: FormComponent, repeatable: Boolean): Seq[(FormComponent, JsonNode)] =
