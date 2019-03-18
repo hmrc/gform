@@ -334,6 +334,7 @@ class ValueParserSpec extends Spec {
       )),
     "submitSuccessUrl",
     "submitErrorUrl",
+    None,
     List.empty[Section],
     acknowledgementSection = AcknowledgementSection("", None, None, Nil),
     declarationSection = DeclarationSection("Declaration", None, None, Nil)

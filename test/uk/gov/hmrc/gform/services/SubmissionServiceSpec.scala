@@ -140,6 +140,7 @@ class SubmissionServiceSpec extends Spec {
         )),
       submitSuccessUrl = "http://somwehere-nice.net",
       submitErrorUrl = "http://somwehere-nasty.net",
+      webChat = None,
       sections = List(section),
       acknowledgementSection = AcknowledgementSection("", None, None, Nil),
       declarationSection = DeclarationSection("Declaration", None, None, Nil)
