@@ -403,15 +403,15 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
     }
   }
 
-  def lookup(matchString: CharSequence, o: Options): CharSequence =
-    log("lookup", (matchString :: o.params.toList): _*) {
+  def `match`(matchString: CharSequence, o: Options): CharSequence =
+    log("match", (matchString :: o.params.toList): _*) {
       val key = o.params.collect {
         case v if isNullAsBoolean(v) => null
         case s                       => s.toString
       }.toList
 
       LookupMatchStringParser(matchString.toString, key)
-        .getOrElse(throw new Exception(s"""Attempt to lookup (${key
+        .getOrElse(throw new Exception(s"""Attempt to match (${key
           .map(v => s"'$v'")
           .mkString(" ")}) failed in "$matchString""""))
     }
