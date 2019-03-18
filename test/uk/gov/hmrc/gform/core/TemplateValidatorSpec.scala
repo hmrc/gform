@@ -71,8 +71,6 @@ class TemplateValidatorSpec extends Spec {
   it should "all return invalid in table" in {
     import TemplateValidatorSpec._
 
-    val validateFieldsErrorMsg: String => Invalid =
-      culpritName => Invalid(s"Some FieldIds are defined more than once: List($culpritName)")
     val fieldId = formComponent("fieldId")
     val groupOfGroupsDuplicateIds =
       List(mkGroupFormComponent("group1", fieldId, fieldId), mkGroupFormComponent("group2", fieldId, fieldId))
@@ -785,6 +783,9 @@ class TemplateValidatorSpec extends Spec {
     FormTemplateValidator.validateDates(
       mkFormTemplate(List(mkFormComponent("fieldContainedInFormTemplate", mkDate(year, month, day, None)))))
 
+  val validateFieldsErrorMsg: String => Invalid =
+    culpritName => Invalid(s"Some FieldIds are defined more than once: List($culpritName)")
+
   private object TemplateValidatorSpec {
     val formComponent: String => FormComponent = formId => mkFormComponent(formId, Value)
 
@@ -795,9 +796,6 @@ class TemplateValidatorSpec extends Spec {
       val sections = List(mkSection("section", formComponents))
       validateSections(sections)
     }
-
-    val group: String => FormComponent = formComponentId =>
-      mkGroupFormComponent("group", formComponent(formComponentId))
 
     def validateMultipleGroupIds(formComponents: List[FormComponent]): ValidationResult = {
       val sections = List(mkSection("section", formComponents))
