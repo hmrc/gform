@@ -21,8 +21,7 @@ import cats.syntax.either._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.applicative._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, Destinations }
-import uk.gov.hmrc.gform.submission.handlebars.{ HandlebarsDestinationResponse, HandlebarsTemplateProcessorModel }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, Destinations, HandlebarsDestinationResponse, HandlebarsTemplateProcessorModel }
 import uk.gov.hmrc.http.HeaderCarrier
 
 class DestinationsSubmitter[M[_]](destinationSubmitter: DestinationSubmitter[M])(implicit monad: Monad[M]) {

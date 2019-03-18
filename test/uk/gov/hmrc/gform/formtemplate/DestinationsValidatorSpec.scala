@@ -20,13 +20,11 @@ import cats.syntax.eq._
 import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.core.{ Invalid, Valid }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationTest, DestinationTestResult, Destinations }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationTest, DestinationTestResult, Destinations, HandlebarsTemplateProcessorModel }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.PrimitiveGen._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators._
 import DestinationGen._
 import DestinationsGen._
-import uk.gov.hmrc.gform.submission.handlebars.HandlebarsTemplateProcessorModel
-
 class DestinationsValidatorSpec extends Spec {
   "validateUniqueDestinationIds" should "return an error when there are duplicate ids" in {
     forAll(destinationIdGen, destinationIdGen) { (id1, id2) =>

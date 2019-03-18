@@ -20,9 +20,8 @@ import cats.data.NonEmptyList
 import cats.{ Applicative, Monad }
 import cats.syntax.applicative._
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, Destinations }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, Destinations, HandlebarsDestinationResponse, HandlebarsTemplateProcessorModel }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, DestinationsGen }
-import uk.gov.hmrc.gform.submission.handlebars.{ HandlebarsDestinationResponse, HandlebarsTemplateProcessorModel }
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 import org.scalacheck.Gen
 import play.api.libs.json.{ JsNull, JsNumber, JsObject, JsString }

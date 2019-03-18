@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.submission.handlebars
+package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
 
 import cats.data.NonEmptyList
 import com.fasterxml.jackson.databind.ObjectMapper

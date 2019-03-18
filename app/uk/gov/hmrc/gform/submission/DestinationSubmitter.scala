@@ -27,7 +27,7 @@ import cats.syntax.option._
 import play.api.Logger
 import play.api.libs.json.{ JsNull, JsValue, Json }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationTestResult, _ }
-import uk.gov.hmrc.gform.submission.handlebars.{ HandlebarsDestinationResponse, HandlebarsHttpApiSubmitter, HandlebarsTemplateProcessor, HandlebarsTemplateProcessorModel }
+import uk.gov.hmrc.gform.submission.handlebars.{ HandlebarsHttpApiSubmitter, HandlebarsTemplateProcessor }
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 import uk.gov.hmrc.gform.wshttp.HttpResponseSyntax
 

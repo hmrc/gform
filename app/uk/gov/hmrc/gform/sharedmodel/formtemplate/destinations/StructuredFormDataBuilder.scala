@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.submission.handlebars
+package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
 
 import cats.data.NonEmptyList
 import cats.instances.option._
 import cats.syntax.option._
 import com.fasterxml.jackson.databind.JsonNode
-import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.gform.sharedmodel.form.Form
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplate }
 import uk.gov.hmrc.gform.formtemplate.RepeatingComponentService
-import JsonNodes._
+import uk.gov.hmrc.gform.sharedmodel.form.Form
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.JsonNodes._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 object StructuredFormDataBuilder {
   def apply(form: Form, template: FormTemplate): JsonNode =

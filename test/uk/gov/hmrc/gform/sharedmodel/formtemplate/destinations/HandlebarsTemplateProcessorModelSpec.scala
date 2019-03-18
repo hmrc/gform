@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.submission.handlebars
+package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
 
 import uk.gov.hmrc.gform.Spec
 

@@ -17,7 +17,6 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
 import julienrf.json.derived
 import play.api.libs.json._
-import uk.gov.hmrc.gform.submission.handlebars.HandlebarsTemplateProcessorModel
 
 case class DestinationTestResponse(code: Int, json: Option[JsValue])
 

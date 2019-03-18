@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.submission.handlebars
 
 import uk.gov.hmrc.gform.Spec
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HandlebarsTemplateProcessorModel
 
 class HandlebarsTemplateProcessorSpec extends Spec {
   "apply" must "work" in {

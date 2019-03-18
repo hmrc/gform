@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.submission.handlebars
+package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
 
 import com.fasterxml.jackson.databind.JsonNode
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.form.{ Form, Variables }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
-import JsonNodes._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.JsonNodes._
 
 import scala.collection.JavaConversions._
 

@@ -21,9 +21,9 @@ import cats.syntax.option._
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.ExampleData
 import uk.gov.hmrc.gform.{ Possible, Spec, possibleMonadError }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, Destinations }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, Destinations, HandlebarsDestinationResponse, HandlebarsTemplateProcessorModel }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, PrimitiveGen }
-import uk.gov.hmrc.gform.submission.handlebars.{ HandlebarsDestinationResponse, HandlebarsHttpApiSubmitter, HandlebarsTemplateProcessor, HandlebarsTemplateProcessorModel }
+import uk.gov.hmrc.gform.submission.handlebars.{ HandlebarsHttpApiSubmitter, HandlebarsTemplateProcessor }
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
 class RealDestinationSubmitterSpec extends Spec with ExampleData {

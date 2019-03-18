@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.submission.handlebars
+package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
 
 import play.api.libs.json.{ JsNull, JsValue }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId }
 import uk.gov.hmrc.http.HttpResponse
 
 case class HandlebarsDestinationResponse(id: DestinationId, status: Int, json: JsValue)

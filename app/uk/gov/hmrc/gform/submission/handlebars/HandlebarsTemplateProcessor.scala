@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.submission.handlebars
 
 import com.github.jknack.handlebars.{ Context, Handlebars, JsonNodeValueResolver }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HandlebarsTemplateProcessorModel
 
 class HandlebarsTemplateProcessor {
   private val handlebars = new Handlebars

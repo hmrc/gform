@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.submission.handlebars
 import cats.Id
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, HttpMethod, Profile }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, HandlebarsTemplateProcessorModel, HttpMethod, Profile }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, PrimitiveGen }
 import uk.gov.hmrc.gform.wshttp.JsonHttpClient
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.submission.handlebars
+package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
 
 import com.fasterxml.jackson.databind.node.{ ArrayNode, ObjectNode }
 import com.fasterxml.jackson.databind.{ JsonNode, ObjectMapper }
