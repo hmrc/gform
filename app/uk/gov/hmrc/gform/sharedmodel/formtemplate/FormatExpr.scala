@@ -95,7 +95,6 @@ case object Today extends DateConstraintInfo
 
 case class ConcreteDate(year: Year, month: Month, day: Day) extends DateConstraintInfo
 
-case class AnyWord(value: String) extends DateConstraintInfo
 case class DateField(value: FormComponentId) extends DateConstraintInfo
 
 object DateConstraintInfo {
