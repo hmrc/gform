@@ -76,14 +76,16 @@ class TemplateValidatorSpec extends Spec {
       List(mkGroupFormComponent("group1", fieldId, fieldId), mkGroupFormComponent("group2", fieldId, fieldId))
     val groupOfGroups = List(mkGroupFormComponent("fieldId"), mkGroupFormComponent("fieldId"))
 
+    val invalid = validateFieldsErrorMsg(("fieldId"))
+
     val table =
       Table(
         ("actual", "expected"),
-        (validateFieldIds(List(mkGroupFormComponent(fieldId, fieldId))), validateFieldsErrorMsg(("fieldId"))),
-        (validateMultipleGroupIds(groupOfGroups), validateFieldsErrorMsg(("fieldId"))),
-        (validateFieldIds(List(fieldId, fieldId)), validateFieldsErrorMsg(("fieldId"))),
-        (validateFieldIds(List(mkGroupFormComponent("fieldId", fieldId))), validateFieldsErrorMsg(("fieldId"))),
-        (validateMultipleGroupIds(groupOfGroupsDuplicateIds), validateFieldsErrorMsg(("fieldId")))
+        (validateFieldIds(List(mkGroupFormComponent(fieldId, fieldId))), invalid),
+        (validateMultipleGroupIds(groupOfGroups), invalid),
+        (validateFieldIds(List(fieldId, fieldId)), invalid),
+        (validateFieldIds(List(mkGroupFormComponent("fieldId", fieldId))), invalid),
+        (validateMultipleGroupIds(groupOfGroupsDuplicateIds), invalid)
       )
     table.forEvery { case (expected, result) => expected shouldBe result }
   }
