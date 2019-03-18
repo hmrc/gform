@@ -81,7 +81,7 @@ object DestinationsValidator {
   private def validateTests(template: FormTemplate, dl: Destinations.DestinationList): ValidationResult = {
     type Possible[T] = Either[String, T]
 
-    val errors = template.destinationTests
+    val errors = template.destinationTests.toList.flatten
       .map { t =>
         new DestinationsSubmitter(new SelfTestingDestinationSubmitter[Possible](test = t))
           .submitToList(dl, DestinationSubmissionInfo(null, null, template, null, None, null, null), t.formData)(
@@ -96,7 +96,7 @@ object DestinationsValidator {
     for {
       _ <- validateUniqueDestinationIds(template.destinations).toEither
       _ <- validateOneOrMoreHmrcDmsDestination(template.destinations).toEither
-      _ <- validateTestDestinationIdsExist(template.destinations, template.destinationTests).toEither
+      _ <- validateTestDestinationIdsExist(template.destinations, template.destinationTests.toList.flatten).toEither
       _ <- validateTests(template).toEither
     } yield ()
 }

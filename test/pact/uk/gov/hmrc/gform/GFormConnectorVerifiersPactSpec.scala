@@ -53,7 +53,7 @@ class GFormConnectorVerifiersPactSpec extends Spec with StubServer {
       None,
       None,
       submission,
-      Nil,
+      None,
       HmrcSimpleModule,
       "classification",
       None,

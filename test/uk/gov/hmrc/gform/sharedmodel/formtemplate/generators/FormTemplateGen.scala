@@ -67,7 +67,7 @@ trait FormTemplateGen {
         draftRetrievalMethod,
         submissionReference,
         destinations,
-        Nil,
+        None,
         authConfig,
         emailTemplateId,
         emailParameters,
