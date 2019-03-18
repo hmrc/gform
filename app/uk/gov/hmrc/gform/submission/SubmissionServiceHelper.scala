@@ -21,12 +21,13 @@ import cats.instances.list._
 import cats.syntax.either._
 import cats.syntax.eq._
 import cats.syntax.traverse._
+import play.api.libs.json.Json
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate.{ RepeatingComponentService, SectionHelper }
 import uk.gov.hmrc.gform.sharedmodel.Visibility
-import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormField }
+import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormField, SubmissionData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 object SubmissionServiceHelper {
@@ -87,16 +88,5 @@ object SubmissionServiceHelper {
     val sectionsToSubmit = filteredSection :+ formTemplate.declarationSection
     sectionsToSubmit.traverse(toSectionFormField)
   }
-
-  def getEmailParameterValues(formTemplate: FormTemplate, form: Form): Map[EmailParameter, FormField] =
-    formTemplate.emailParameters.fold(Map.empty[EmailParameter, FormField])(
-      _.toList
-        .flatMap(
-          parameter =>
-            form.formData.fields
-              .find(field => field.id === parameter.value.toFieldId)
-              .orElse(Some(FormField(FormComponentId(parameter.value.value), "")))
-              .map(f => (parameter, f)))
-        .toMap)
 
 }

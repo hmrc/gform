@@ -370,7 +370,7 @@ class TemplateValidatorSpec extends Spec {
 
     val res = FormTemplateValidator.validateEmailParameter(newFormTemplate)
     res should be(Invalid(
-      "The following email parameters are not fields in the form template's sections or the declaration section: List(directorFullName, directorEmail)"))
+      "The following email parameters are not fields in the form template's sections or the declaration section: directorFullName, directorEmail"))
 
   }
 
@@ -389,7 +389,7 @@ class TemplateValidatorSpec extends Spec {
 
     val res = FormTemplateValidator.validateEmailParameter(newFormTemplate)
     res should be(Invalid(
-      "The following email parameters are not fields in the form template's sections or the declaration section: List(fieldInAcknowledgementSection)"))
+      "The following email parameters are not fields in the form template's sections or the declaration section: fieldInAcknowledgementSection"))
 
   }
 

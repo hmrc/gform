@@ -51,6 +51,13 @@ trait JsonUtils {
 
   def valueClassFormat[C, V: Format](construct: V => C, extract: C => V): Format[C] =
     Format(valueClassReads(construct), valueClassWrites(extract))
+
+  def formatMap[A, B: Format](stringToA: String => A, aToString: A => String): Format[Map[A, B]] =
+    implicitly[Format[Map[String, B]]].inmap(_.map {
+      case (k, v) => stringToA(k) -> v
+    }, _.map {
+      case (k, v) => aToString(k) -> v
+    })
 }
 
 object JsonUtils extends JsonUtils
