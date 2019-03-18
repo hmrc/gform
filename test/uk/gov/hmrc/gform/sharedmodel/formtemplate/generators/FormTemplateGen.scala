@@ -47,8 +47,8 @@ trait FormTemplateGen {
   def webChatGen: Gen[WebChat] =
     for {
       roomId       <- PrimitiveGen.nonEmptyAlphaNumStrGen
-      templateName <- templateNameGen
-    } yield WebChat(ChatRoomId(roomId), Some(templateName))
+      templateName <- Gen.option(templateNameGen)
+    } yield WebChat(ChatRoomId(roomId), templateName)
 
   def formTemplateGen: Gen[FormTemplate] =
     for {
