@@ -23,7 +23,7 @@ import shapeless.syntax.typeable._
 import uk.gov.hmrc.gform.time.TimeProvider
 import java.time.format.DateTimeFormatter
 
-import com.fasterxml.jackson.databind.node.ArrayNode
+import com.fasterxml.jackson.databind.node.{ ArrayNode, ObjectNode, TextNode }
 import com.github.jknack.handlebars.{ Handlebars, Options }
 import play.api.Logger
 
@@ -414,6 +414,14 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
         .getOrElse(throw new Exception(s"""Attempt to match (${key
           .map(v => s"'$v'")
           .mkString(" ")}) failed in "$matchString""""))
+    }
+
+  def toDesAddressWithoutPostcodeFromArray(fromField: ArrayNode, index: Int, options: Options): CharSequence =
+    log("toDesAddressWithoutPostcodeFromArray", (fromField :: index :: options.params.toList): _*) {
+      def get(line: String) =
+        fromField.get(index).cast[ObjectNode].flatMap(_.get(line).cast[TextNode]).map(_.asText()).filterNot(_.isEmpty)
+
+      toCompactedDesAddress(get("street1"), get("street2"), get("street3"), get("street4"))
     }
 
   def toDesAddressWithoutPostcode(address: java.util.Map[String, String]): CharSequence =

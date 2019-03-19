@@ -268,7 +268,7 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
          |"addressLine4": "The County"""".stripMargin
   }
 
-  "it" must "compact missing lines" in {
+  it must "compact missing lines" in {
     process(
       """{{toDesAddressWithoutPostcode addr}}""",
       """|{
@@ -287,7 +287,7 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
          |"addressLine3": "The County"""".stripMargin
   }
 
-  "it" must "compact blank (after trimming) lines" in {
+  it must "compact blank (after trimming) lines" in {
     process(
       """{{toDesAddressWithoutPostcode addr}}""",
       """|{
@@ -305,7 +305,7 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
          |"addressLine2": "The County"""".stripMargin
   }
 
-  "it" must "emit at least two lines" in {
+  it must "emit at least two lines" in {
     process(
       """{{toDesAddressWithoutPostcode addr}}""",
       """|{
@@ -321,6 +321,23 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     ) shouldBe
       """|"addressLine1": "1",
          |"addressLine2": " """".stripMargin
+  }
+
+  "toDesAddressWithoutPostcodeFromArray" must "copy the first 4 lines of full address" in {
+    process(
+      """{{toDesAddressWithoutPostcodeFromArray addr 1}}""",
+      """|{
+         |  "addr": [
+         |    {"street1": "0", "street2": "The Street", "street3": "The Town", "street4": "Sussex", "postcode": "PC0"},
+         |    {"street1": "1", "street2": "The Road", "street3": "The Village", "street4": "Surrey", "postcode": "PC1"},
+         |    {"street1": "2", "street2": "The Avenue", "street3": "The City", "street4": "Dorset", "postcode": "PC2"}
+         |  ]
+         |}"""
+    ) shouldBe
+      """|"addressLine1": "1",
+         |"addressLine2": "The Road",
+         |"addressLine3": "The Village",
+         |"addressLine4": "Surrey"""".stripMargin
   }
 
   "match" must "find the appropriate value for a single key value" in {
