@@ -29,7 +29,9 @@ object Dependencies {
     "com.github.jknack" % "handlebars" % handlebarsVersion,
     "com.github.jknack" % "handlebars-jackson2" % handlebarsVersion,
     "com.itv" %% "scalapact-argonaut-6-2"  % "2.2.5",
-    "com.itv" %% "scalapact-http4s-0-16-2" % "2.2.5"
+    "com.itv" %% "scalapact-http4s-0-16-2" % "2.2.5",
+    "uk.gov.hmrc" %% "csp-client" % "2.2.0"
+
   )
 
 
