@@ -63,7 +63,8 @@ class GFormConnectorVerifiersPactSpec extends Spec with StubServer {
       Nil,
       akn,
       declaration,
-      None)
+      None
+    )
 
     stubbedModule.module.formTemplateModule.formTemplateService.verifyAndSave(raw)
   }
