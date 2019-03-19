@@ -16,13 +16,63 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
+import play.api.libs.json.Json
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.FormTemplateGen
 
 class WebChatSpec extends Spec {
+
   "WebChat" should "round trip derived json" in {
     forAll(FormTemplateGen.webChatGen) { obj =>
       WebChat.format.reads(WebChat.format.writes(obj)) should beJsSuccess(obj)
     }
   }
+
+  "WebChat" should "read the following json correctly" in {
+
+    WebChat.format
+      .reads(
+        Json.parse(
+          s"""|{
+              |  "chatRoomId": "1001",
+              |  "templateName": "hmrc6"
+              |}""".stripMargin
+        ))
+      .get shouldBe WebChat(ChatRoomId("1001"), Some(TemplateName("hmrc6")))
+  }
+
+  "WebChat" should "write the following json correctly" in {
+
+    WebChat.format.writes(WebChat(ChatRoomId("1001"), Some(TemplateName("hmrc6")))) shouldBe
+      Json.parse(
+        s"""|{
+            |  "chatRoomId": "1001",
+            |  "templateName": "hmrc6"
+            |}""".stripMargin
+      )
+  }
+
+  "WebChat" should "write the following json with the default templateName" in {
+
+    WebChat.format.writes(WebChat(ChatRoomId("1001"), None)) shouldBe
+      Json.parse(
+        s"""|{
+            |  "chatRoomId": "1001",
+            |  "templateName": "hmrc7"
+            |}""".stripMargin
+      )
+  }
+
+  "WebChat" should "read the following json with no templateName and get the default" in {
+
+    WebChat.format
+      .reads(
+        Json.parse(
+          s"""|{
+              |  "chatRoomId": "1001"
+              |}""".stripMargin
+        ))
+      .get shouldBe WebChat(ChatRoomId("1001"), Some(TemplateName("hmrc7")))
+  }
+
 }
