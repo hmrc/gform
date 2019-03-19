@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
 import julienrf.json.derived
 import play.api.libs.json._
 
-case class DestinationTestResponse(code: Int, json: Option[JsValue])
+case class DestinationTestResponse(status: Int, json: Option[JsValue])
 
 object DestinationTestResponse {
   implicit val destinationTestResponseFormat: OFormat[DestinationTestResponse] = derived.oformat

@@ -255,7 +255,7 @@ class SelfTestingDestinationSubmitter[M[_]](
     result: DestinationTestResult): M[Option[HandlebarsDestinationResponse]] =
     result.response match {
       case None    => fail(destinationId, "No response specified. At least the response.code is needed.")
-      case Some(r) => succeed(HandlebarsDestinationResponse(destinationId, r.code, r.json.getOrElse(JsNull)).some)
+      case Some(r) => succeed(HandlebarsDestinationResponse(destinationId, r.status, r.json.getOrElse(JsNull)).some)
     }
 
   private def succeed(response: Option[HandlebarsDestinationResponse]): M[Option[HandlebarsDestinationResponse]] =
