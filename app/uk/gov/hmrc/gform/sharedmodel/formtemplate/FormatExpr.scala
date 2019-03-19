@@ -158,7 +158,10 @@ case object UkBankAccountNumber extends TextConstraint
 case object UkSortCodeFormat extends TextConstraint
 case object UTR extends TextConstraint
 case object NINO extends TextConstraint
-case object TelephoneNumber extends TextConstraint
+case object TelephoneNumber extends TextConstraint{
+  val minimumLength = 4
+  val maximumLength = 25
+}
 case object Email extends TextConstraint
 case object UkVrn extends TextConstraint
 case object CountryCode extends TextConstraint
