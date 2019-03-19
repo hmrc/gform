@@ -28,7 +28,7 @@ case object TemplateName {
   implicit val format: OFormat[TemplateName] = Json.format[TemplateName]
 }
 
-case class WebChat(chatRoomId: ChatRoomId, templateName: Option[TemplateName] = None)
+case class WebChat(chatRoomId: ChatRoomId, templateName: Option[TemplateName] = Some(TemplateName("hmrc7")))
 
 case object WebChat {
   implicit val format: OFormat[WebChat] = Json.format[WebChat]
