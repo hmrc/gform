@@ -15,22 +15,31 @@
  */
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
-import play.api.libs.json.{ Json, OFormat }
+import play.api.libs.json._
 
 case class ChatRoomId(value: String) extends AnyVal
 
-case object ChatRoomId {
-  implicit val format: OFormat[ChatRoomId] = Json.format[ChatRoomId]
-}
 case class TemplateName(value: String) extends AnyVal
-
-case object TemplateName {
-  implicit val format: OFormat[TemplateName] = Json.format[TemplateName]
-}
 
 case class WebChat(chatRoomId: ChatRoomId, templateName: Option[TemplateName] = Some(TemplateName("hmrc7")))
 
 case object WebChat {
-  implicit val format: OFormat[WebChat] = Json.format[WebChat]
+
+  implicit val format: OFormat[WebChat] = {
+
+    val reads: Reads[WebChat] = for {
+      chatRoomId   <- (JsPath \ "chatRoomId").read[String]
+      templateName <- (JsPath \ "templateName").read[String]
+
+    } yield WebChat(ChatRoomId(chatRoomId), Some(TemplateName(templateName)))
+
+    val writes: OWrites[WebChat] = OWrites {
+      case WebChat(ChatRoomId(chatRoomId), Some(TemplateName(templateName))) =>
+        JsObject(Seq(("chatRoomId", JsString(chatRoomId)), ("templateName", JsString(templateName))))
+      case WebChat(ChatRoomId(chatRoomId), None) => JsObject(Seq(("chatRoomId", JsString(chatRoomId))))
+    }
+
+    OFormat(reads, writes)
+  }
 
 }
