@@ -37,11 +37,8 @@ class FormTemplateService(formTemplateRepo: FormTemplateRepo, formTemplateRawRep
   def delete(formTemplateId: FormTemplateId)(implicit ec: ExecutionContext): FOpt[Unit] =
     formTemplateRepo.delete(formTemplateId.value)
 
-  def list()(implicit ec: ExecutionContext): Future[List[FormTemplate]] =
-    //TODO make it stream
-    //TODO constraint it so it will result in no more than N records
-    //TODO provide querying functionality
-    formTemplateRepo.search(Json.obj())
+  def list()(implicit ec: ExecutionContext): Future[List[FormTemplateId]] =
+    formTemplateRepo.projection[FormTemplateId](Json.obj("_id" -> "true"))
 
   def verifyAndSave(formTemplate: FormTemplate)(implicit ec: ExecutionContext): FOpt[Unit] =
     for {

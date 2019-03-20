@@ -66,9 +66,6 @@ class FormTemplatesController(formTemplateService: FormTemplateService)(implicit
   def all() = Action.async { implicit request =>
     Logger.info(s"Get all templates, ${loggingHelpers.cleanHeaders(request.headers)}")
 
-    formTemplateService
-      .list()
-      .map(_.map(_._id))
-      .asOkJson
+    formTemplateService.list().asOkJson
   }
 }

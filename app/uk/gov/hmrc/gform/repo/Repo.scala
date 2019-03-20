@@ -18,31 +18,14 @@ package uk.gov.hmrc.gform.repo
 
 import cats.data.EitherT
 import cats.syntax.either._
-import play.api.libs.json.{ Format, JsObject, Json, _ }
-import reactivemongo.api.commands.WriteConcern
-import reactivemongo.api.{ Cursor, DefaultDB }
-import reactivemongo.bson.BSONObjectID
-import uk.gov.hmrc.gform.core.FOpt
-import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.mongo.ReactiveRepository
-
-import reactivemongo.play.json._
-
-import cats.data.EitherT
-import cats.syntax.either._
 import play.api.libs.json._
+import reactivemongo.api.commands.WriteConcern
 import reactivemongo.api.DefaultDB
-import reactivemongo.api.collections._
-import reactivemongo.api.commands.{ UpdateWriteResult, WriteConcern }
 import reactivemongo.bson.BSONObjectID
-import reactivemongo.play.json.ImplicitBSONHandlers._
+import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.mongo.ReactiveRepository
-
-import scala.concurrent.{ ExecutionContext, Future }
-
-import scala.concurrent.{ ExecutionContext, Future }
 
 class Repo[T: OWrites: Manifest](name: String, mongo: () => DefaultDB, idLens: T => String)(implicit formatT: Format[T])
     extends ReactiveRepository[T, BSONObjectID](name, mongo, formatT) {
@@ -61,6 +44,9 @@ class Repo[T: OWrites: Manifest](name: String, mongo: () => DefaultDB, idLens: T
   def search(selector: JsObject)(implicit ec: ExecutionContext): Future[List[T]] =
     //TODO: don't abuse it to much. If querying for a large underlyingReactiveRepository.collection.consider returning stream instead of packing everything into the list
     underlying.collection.find(selector = selector, npProjection).cursor[T]().collect[List]()
+
+  def projection[P: Format](projection: JsObject)(implicit ec: ExecutionContext): Future[List[P]] =
+    underlying.collection.find(selector = Json.obj(), projection).cursor[P]().collect[List]()
 
   def upsert(t: T)(implicit ec: ExecutionContext): FOpt[Unit] = EitherT {
     underlying.collection
