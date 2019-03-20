@@ -334,7 +334,7 @@ class TemplateValidatorSpec extends Spec {
 
   }
 
-  "TemplateValidator.validateEmailParameters using fields contained in declaration section" should "return Valid" in {
+  "TemplateValidator.validateEmailParameters using fields contained in declaration section" should "return Invalid" in {
 
     val formComponents = List(
       mkFormComponent("fieldContainedInFormTemplate", Value)
@@ -351,7 +351,7 @@ class TemplateValidatorSpec extends Spec {
     val newFormTemplate = mkFormTemplate(formComponents, newEmailParameters, declarationSection = newDeclarationSection)
 
     val res = FormTemplateValidator.validateEmailParameter(newFormTemplate)
-    res should be(Valid)
+    res should be(Invalid("The following email parameters are not fields in the form template's sections: declarationFullName"))
 
   }
 
@@ -362,7 +362,7 @@ class TemplateValidatorSpec extends Spec {
 
     val res = FormTemplateValidator.validateEmailParameter(newFormTemplate)
     res should be(Invalid(
-      "The following email parameters are not fields in the form template's sections or the declaration section: directorFullName, directorEmail"))
+      "The following email parameters are not fields in the form template's sections: directorFullName, directorEmail"))
 
   }
 
@@ -381,7 +381,7 @@ class TemplateValidatorSpec extends Spec {
 
     val res = FormTemplateValidator.validateEmailParameter(newFormTemplate)
     res should be(Invalid(
-      "The following email parameters are not fields in the form template's sections or the declaration section: fieldInAcknowledgementSection"))
+      "The following email parameters are not fields in the form template's sections: fieldInAcknowledgementSection"))
 
   }
 
@@ -410,18 +410,6 @@ class TemplateValidatorSpec extends Spec {
 
     val res = FormTemplateValidator.validateEmailParameter(newFormTemplate)
     res should be(Valid)
-
-  }
-
-  "TemplateValidator.getAllFieldIdsFromFormTemplate with groups in section" should "return Valid" in {
-
-    val groupFields = List(mkFormComponent("fieldContainedInGroup", Value))
-    val formComponents = List(mkFormComponent("fieldContainedInFormTemplate", Group(groupFields, Vertical)))
-
-    val newFormTemplate = mkFormTemplate(formComponents)
-
-    val res = FormTemplateValidator.getAllFieldIdsFromFormTemplate(newFormTemplate)
-    res should be(List(FormComponentId("fieldContainedInGroup")))
 
   }
 

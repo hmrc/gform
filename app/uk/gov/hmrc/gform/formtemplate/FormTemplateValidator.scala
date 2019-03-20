@@ -261,14 +261,6 @@ object FormTemplateValidator {
     }
   }
 
-  def getAllFieldIdsFromFormTemplate(formTemplate: FormTemplate): List[FormComponentId] = {
-    val sectionsFields = extractFieldIds(formTemplate.sections.flatMap(_.fields))
-    val declarationSectionFields = extractFieldIds(formTemplate.declarationSection.fields)
-
-    sectionsFields ::: declarationSectionFields
-
-  }
-
   private def extractFieldIds(fields: List[FormComponent]): List[FormComponentId] = fields.flatMap(extractFieldIds)
 
   private def extractFieldIds(field: FormComponent): List[FormComponentId] = field.`type` match {
@@ -278,7 +270,7 @@ object FormTemplateValidator {
 
   def validateEmailParameter(formTemplate: FormTemplate): ValidationResult =
     formTemplate.emailParameters.fold[ValidationResult](Valid) { emailParams =>
-      val ids = getAllFieldIdsFromFormTemplate(formTemplate)
+      val ids = extractFieldIds(formTemplate.sections.flatMap(_.fields))
       emailParams
         .collect {
           case parameter @ EmailParameter(_, value: FormCtx) if !ids.contains(value.toFieldId) =>
@@ -286,10 +278,9 @@ object FormTemplateValidator {
         } match {
         case Nil => Valid
         case invalidFields =>
-          Invalid(
-            s"The following email parameters are not fields in the form template's sections or the declaration section: ${invalidFields
-              .map(_._2)
-              .mkString(", ")}")
+          Invalid(s"The following email parameters are not fields in the form template's sections: ${invalidFields
+            .map { case (_, formComponentId) => formComponentId }
+            .mkString(", ")}")
       }
     }
 
