@@ -479,7 +479,7 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
   private val etmpParamSequenceFormat = new DecimalFormat("00")
   def toEtmpParamSequence(index: Int): CharSequence = etmpParamSequenceFormat.format(index.toLong + 1)
 
-  def toEtmpTelephoneNumber(tn: String): CharSequence =
+  def toEtmpTelephoneNumber(tn: CharSequence): CharSequence =
     log("toEtmpTelephoneNumber", tn) {
       ifNotNullAsString(tn) { v =>
         val tv = v.trim
