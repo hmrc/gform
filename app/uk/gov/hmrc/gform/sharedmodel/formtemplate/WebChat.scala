@@ -19,30 +19,28 @@ import play.api.libs.json._
 
 case class ChatRoomId(value: String) extends AnyVal
 
-case class TemplateName(value: String) extends AnyVal
+case object ChatRoomId {
+  implicit val format: OFormat[ChatRoomId] = Json.format[ChatRoomId]
+}
 
-case class WebChat(chatRoomId: ChatRoomId, templateName: Option[TemplateName])
+case class TemplateName(value: String) extends AnyVal
+case object TemplateName {
+  implicit val format: OFormat[TemplateName] = Json.format[TemplateName]
+
+}
+
+case class WebChat(chatRoomId: ChatRoomId, templateName: TemplateName)
 
 case object WebChat {
 
-  implicit val format: OFormat[WebChat] = {
+  val reads: Reads[WebChat] = for {
+    chatRoomId <- (JsPath \ "chatRoomId").read[String]
+    templateName <- (JsPath \ "templateName")
+                     .readNullable[String]
+                     .map(_.fold(TemplateName("hmrc7"))(value => TemplateName(value)))
 
-    val reads: Reads[WebChat] = for {
-      chatRoomId <- (JsPath \ "chatRoomId").read[String]
-      templateName <- (JsPath \ "templateName")
-                       .readNullable[String]
-                       .map(_.fold(Some(TemplateName("hmrc7")))(value => Some(TemplateName(value))))
+  } yield WebChat(ChatRoomId(chatRoomId), templateName)
 
-    } yield WebChat(ChatRoomId(chatRoomId), templateName)
-
-    val writes: OWrites[WebChat] = OWrites {
-      case WebChat(ChatRoomId(chatRoomId), Some(TemplateName(templateName))) =>
-        JsObject(Seq(("chatRoomId", JsString(chatRoomId)), ("templateName", JsString(templateName))))
-      case WebChat(ChatRoomId(chatRoomId), None) =>
-        JsObject(Seq(("chatRoomId", JsString(chatRoomId)), ("templateName", JsString("hmrc7"))))
-    }
-
-    OFormat(reads, writes)
-  }
+  implicit val format: OFormat[WebChat] = OFormatWithTemplateReadFallback(reads)
 
 }
