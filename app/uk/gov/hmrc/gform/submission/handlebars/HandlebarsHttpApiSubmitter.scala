@@ -29,7 +29,7 @@ class RealHandlebarsHttpApiSubmitter[F[_]](
   des: JsonHttpClient[F],
   mdg: JsonHttpClient[F],
   mdtp: MdtpHttpClient[F],
-  handlebarsTemplateProcessor: HandlebarsTemplateProcessor = new HandlebarsTemplateProcessor)
+  handlebarsTemplateProcessor: HandlebarsTemplateProcessor = new RealHandlebarsTemplateProcessor)
     extends HandlebarsHttpApiSubmitter[F] {
 
   def apply(destination: Destination.HandlebarsHttpApi, model: HandlebarsTemplateProcessorModel)(

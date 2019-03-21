@@ -27,7 +27,7 @@ import cats.syntax.option._
 import play.api.Logger
 import play.api.libs.json.{ JsNull, JsValue, Json }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationTestResult, _ }
-import uk.gov.hmrc.gform.submission.handlebars.{ HandlebarsHttpApiSubmitter, HandlebarsTemplateProcessor }
+import uk.gov.hmrc.gform.submission.handlebars.{ HandlebarsHttpApiSubmitter, HandlebarsTemplateProcessor, RealHandlebarsTemplateProcessor }
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 import uk.gov.hmrc.gform.wshttp.HttpResponseSyntax
 
@@ -46,7 +46,7 @@ trait DestinationSubmitter[M[_]] {
 class RealDestinationSubmitter[M[_], R](
   dms: DmsSubmitter[M],
   handlebars: HandlebarsHttpApiSubmitter[M],
-  handlebarsTemplateProcessor: HandlebarsTemplateProcessor = new HandlebarsTemplateProcessor)(
+  handlebarsTemplateProcessor: HandlebarsTemplateProcessor = new RealHandlebarsTemplateProcessor)(
   implicit monadError: MonadError[M, String])
     extends DestinationSubmitter[M] {
 
@@ -141,7 +141,7 @@ object SelfTestingDestinationSubmitter {
 }
 
 class SelfTestingDestinationSubmitter[M[_]](
-  handlebarsTemplateProcessor: HandlebarsTemplateProcessor = new HandlebarsTemplateProcessor,
+  handlebarsTemplateProcessor: HandlebarsTemplateProcessor = new RealHandlebarsTemplateProcessor,
   test: DestinationTest)(implicit monadError: MonadError[M, String])
     extends DestinationSubmitter[M] {
 

@@ -21,7 +21,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HandlebarsTemplat
 
 class HandlebarsTemplateProcessorSpec extends Spec {
   "apply" must "work" in {
-    val processor = new HandlebarsTemplateProcessor
+    val processor = new RealHandlebarsTemplateProcessor
     processor("I am a {{name}} template", HandlebarsTemplateProcessorModel("""{"name" : "handlebars"}""")) shouldBe "I am a handlebars template"
   }
 }

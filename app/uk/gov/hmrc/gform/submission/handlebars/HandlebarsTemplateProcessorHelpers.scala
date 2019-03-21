@@ -366,10 +366,35 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
   def desCurrentDate: CharSequence = condition(DateTimeFormatter.ISO_LOCAL_DATE.format(timeProvider.localDateTime))
   def currentDate: CharSequence = condition(DateTimeFormatter.BASIC_ISO_DATE.format(timeProvider.localDateTime))
   def currentTimestamp: CharSequence = condition(DateTimeFormatter.ISO_INSTANT.format(timeProvider.instant))
+  def currentMonth(): CharSequence = condition(timeProvider.localDateTime.getMonthValue)
 
   def hmrcTaxPeriodKey(s: Any): CharSequence = log("hmrcTaxPeriodKey", s) { hmrcTaxPeriodValue(s, 0) }
   def hmrcTaxPeriodFrom(s: Any): CharSequence = log("hmrcTaxPeriodFrom", s) { hmrcTaxPeriodValue(s, 1) }
   def hmrcTaxPeriodTo(s: Any): CharSequence = log("hmrcTaxPeriodTo", s) { hmrcTaxPeriodValue(s, 2) }
+
+  def greaterThan(first: Any, second: Any): CharSequence = log("greaterThan", first, second) {
+    ifNotNullAsNumber(first) { f =>
+      ifNotNullAsNumber(second) { s =>
+        condition(f > s)
+      }
+    }
+  }
+
+  def lessThan(first: Any, second: Any): CharSequence = log("lessThan", first, second) {
+    ifNotNullAsNumber(first) { f =>
+      ifNotNullAsNumber(second) { s =>
+        condition(f < s)
+      }
+    }
+  }
+
+  def equal(first: Any, second: Any): CharSequence = log("equal", first, second) {
+    ifNotNullAsNumber(first) { f =>
+      ifNotNullAsNumber(second) { s =>
+        condition(f == s)
+      }
+    }
+  }
 
   private def hmrcTaxPeriodValue(period: Any, index: Int): CharSequence =
     ifNotNullAsString(period) { s =>
@@ -479,7 +504,7 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
   private val etmpParamSequenceFormat = new DecimalFormat("00")
   def toEtmpParamSequence(index: Int): CharSequence = etmpParamSequenceFormat.format(index.toLong + 1)
 
-  def toEtmpTelephoneNumber(tn: CharSequence): CharSequence =
+  def toEtmpTelephoneNumber(tn: Any): CharSequence =
     log("toEtmpTelephoneNumber", tn) {
       ifNotNullAsString(tn) { v =>
         val tv = v.trim
@@ -489,6 +514,9 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
     }
 
   private def ifNotNullAsString(t: Any)(f: String => CharSequence): CharSequence = NullString.ifNotNull(t)(f)
+
+  private def ifNotNullAsNumber(t: Any)(f: Double => CharSequence): CharSequence =
+    NullString.ifNotNull(t)(v => f(v.toDouble))
 
   private def ifNotNull[T](t: T)(f: T => CharSequence): CharSequence =
     if (t == null) NullString else f(t)

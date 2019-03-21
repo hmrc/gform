@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import uk.gov.hmrc.gform.Spec
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HandlebarsTemplateProcessorModel
+import uk.gov.hmrc.gform.time.FrozenTimeProvider
 
 import scala.language.implicitConversions
 
@@ -515,17 +516,49 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     process("{{toEtmpTelephoneNumber null}}") shouldBe "null"
   }
 
-  "foo" must "bar" in {
-    println(
-      process(
-        "{{#each dateOfInvoice}}{'paramSequence':'{{toEtmpParamSequence @index}}', 'paramName':'A_VTR_INV_DATE_TBL', 'paramValue':'{{toEtmpDate .}}'},{{/each}}",
-        """|{
-           |  "dateOfInvoice" : [
-           |    { "day": "1", "month": "2", "year": "2019" },
-           |    { "day": "3", "month": "4", "year": "2020" }
-           |  ]
-           |}"""
-      ))
+  "currentMonth" must "return the current month" in {
+    new RealHandlebarsTemplateProcessor(new HandlebarsTemplateProcessorHelpers(FrozenTimeProvider.exampleInstance))(
+      "{{currentMonth}}",
+      HandlebarsTemplateProcessorModel.empty) shouldBe "1"
+  }
+
+  "greaterThan" must "return true if the first parameter is greater than the second, false otherwise" in {
+    val table = Table(
+      ("first", "second", "result"),
+      ("1", "0", "true"),
+      ("1", "1", "false"),
+      ("1", "2", "false")
+    )
+    forAll(table) {
+      case (first, second, result) =>
+        process(s"""{{greaterThan "$first" "$second"}}""") shouldBe result
+    }
+  }
+
+  "lessThan" must "return true if the first parameter is less than the second, false otherwise" in {
+    val table = Table(
+      ("first", "second", "result"),
+      ("1", "0", "false"),
+      ("1", "1", "false"),
+      ("1", "2", "true")
+    )
+    forAll(table) {
+      case (first, second, result) =>
+        process(s"""{{lessThan "$first" "$second"}}""") shouldBe result
+    }
+  }
+
+  "equal" must "return true if the first parameter is equal to the second, false otherwise" in {
+    val table = Table(
+      ("first", "second", "result"),
+      ("1", "0", "false"),
+      ("1", "1", "true"),
+      ("1", "2", "false")
+    )
+    forAll(table) {
+      case (first, second, result) =>
+        process(s"""{{equal "$first" "$second"}}""") shouldBe result
+    }
   }
 
   private def periodGen: Gen[(String, String, String, String)] =
@@ -544,5 +577,5 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     process(functionCall, HandlebarsTemplateProcessorModel(formFields))
 
   private def process(functionCall: String, model: HandlebarsTemplateProcessorModel): String =
-    new HandlebarsTemplateProcessor()(functionCall, model)
+    new RealHandlebarsTemplateProcessor()(functionCall, model)
 }
