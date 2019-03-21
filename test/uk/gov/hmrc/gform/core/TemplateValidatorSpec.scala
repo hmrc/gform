@@ -351,7 +351,8 @@ class TemplateValidatorSpec extends Spec {
     val newFormTemplate = mkFormTemplate(formComponents, newEmailParameters, declarationSection = newDeclarationSection)
 
     val res = FormTemplateValidator.validateEmailParameter(newFormTemplate)
-    res should be(Invalid("The following email parameters are not fields in the form template's sections: declarationFullName"))
+    res should be(
+      Invalid("The following email parameters are not fields in the form template's sections: declarationFullName"))
 
   }
 
@@ -380,8 +381,9 @@ class TemplateValidatorSpec extends Spec {
       mkFormTemplate(formComponent, newEmailParameters, acknowledgementSection = newAcknowledgementSection)
 
     val res = FormTemplateValidator.validateEmailParameter(newFormTemplate)
-    res should be(Invalid(
-      "The following email parameters are not fields in the form template's sections: fieldInAcknowledgementSection"))
+    res should be(
+      Invalid(
+        "The following email parameters are not fields in the form template's sections: fieldInAcknowledgementSection"))
 
   }
 
