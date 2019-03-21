@@ -516,7 +516,7 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
   private def ifNotNullAsString(t: Any)(f: String => CharSequence): CharSequence = NullString.ifNotNull(t)(f)
 
   private def ifNotNullAsNumber(t: Any)(f: Double => CharSequence): CharSequence =
-    NullString.ifNotNull(t)(v => f(v.toDouble))
+    NullString.ifNotNull(t)(v => f(v.replaceAll(",", "").toDouble))
 
   private def ifNotNull[T](t: T)(f: T => CharSequence): CharSequence =
     if (t == null) NullString else f(t)

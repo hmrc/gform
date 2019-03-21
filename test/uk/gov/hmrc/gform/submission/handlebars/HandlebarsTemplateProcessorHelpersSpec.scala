@@ -525,7 +525,7 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   "greaterThan" must "return true if the first parameter is greater than the second, false otherwise" in {
     val table = Table(
       ("first", "second", "result"),
-      ("1", "0", "true"),
+      ("1,000", "0", "true"),
       ("1", "1", "false"),
       ("1", "2", "false")
     )
@@ -540,7 +540,7 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
       ("first", "second", "result"),
       ("1", "0", "false"),
       ("1", "1", "false"),
-      ("1", "2", "true")
+      ("1", "2,000", "true")
     )
     forAll(table) {
       case (first, second, result) =>
@@ -551,7 +551,7 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   "equal" must "return true if the first parameter is equal to the second, false otherwise" in {
     val table = Table(
       ("first", "second", "result"),
-      ("1", "0", "false"),
+      ("1,000", "0", "false"),
       ("1", "1", "true"),
       ("1", "2", "false")
     )
