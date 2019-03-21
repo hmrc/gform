@@ -17,9 +17,10 @@
 package uk.gov.hmrc.gform.formtemplate
 
 import cats.implicits._
-import play.api.libs.json.Json
+import play.api.libs.json.{ JsValue, Json }
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import play.api.Logger
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -37,8 +38,17 @@ class FormTemplateService(formTemplateRepo: FormTemplateRepo, formTemplateRawRep
   def delete(formTemplateId: FormTemplateId)(implicit ec: ExecutionContext): FOpt[Unit] =
     formTemplateRepo.delete(formTemplateId.value)
 
-  def list()(implicit ec: ExecutionContext): Future[List[FormTemplateId]] =
-    formTemplateRepo.projection[FormTemplateId](Json.obj("_id" -> "true"))
+  def list()(implicit ec: ExecutionContext): Future[List[String]] =
+    formTemplateRepo
+      .projection[JsValue](Json.obj("_id" -> "true"))
+      .map(_.flatMap { jsValue =>
+        (jsValue \ "_id").asOpt[String] match {
+          case None =>
+            Logger.error("Failed to extract _id as a String from json: " + jsValue)
+            None
+          case some => some
+        }
+      })
 
   def verifyAndSave(formTemplate: FormTemplate)(implicit ec: ExecutionContext): FOpt[Unit] =
     for {
