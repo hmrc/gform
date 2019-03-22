@@ -561,6 +561,14 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     }
   }
 
+  "exists" must "return false if there are no matches" in {
+    process("""{{exists foo "1"}}""", """{ "foo": ["2", "3", "4"] }""") shouldBe "false"
+  }
+
+  it must "return true if there are matches" in {
+    process("""{{exists foo "3"}}""", """{ "foo": ["2", "3", "4"] }""") shouldBe "true"
+  }
+
   private def periodGen: Gen[(String, String, String, String)] =
     for {
       key  <- Gen.posNum[Int].map(_.toString)

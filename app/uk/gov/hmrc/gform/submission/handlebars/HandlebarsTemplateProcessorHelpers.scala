@@ -18,7 +18,9 @@ package uk.gov.hmrc.gform.submission.handlebars
 
 import java.text.DecimalFormat
 
+import cats.instances.string._
 import cats.syntax.option._
+import cats.syntax.eq._
 import shapeless.syntax.typeable._
 import uk.gov.hmrc.gform.time.TimeProvider
 import java.time.format.DateTimeFormatter
@@ -512,6 +514,19 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
         else tv
       }
     }
+
+  def exists(array: ArrayNode, testValue: Any): CharSequence = log("exists", array, testValue) {
+    ifNotNullAsString(testValue) { v =>
+      (0 until array.size)
+        .map(array.get)
+        .map(
+          _.cast[TextNode]
+            .map(_.asText)
+            .getOrElse(throw new Exception(s"exists($array, 'v'): expected elements in the array to be Strings.")))
+        .exists(_ === v)
+        .toString
+    }
+  }
 
   private def ifNotNullAsString(t: Any)(f: String => CharSequence): CharSequence = NullString.ifNotNull(t)(f)
 
