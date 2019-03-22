@@ -18,7 +18,6 @@ package uk.gov.hmrc.gform.submission
 
 import cats.MonadError
 import cats.instances.string._
-import cats.syntax.EitherOps
 import cats.syntax.eq._
 import cats.syntax.functor._
 import cats.syntax.flatMap._
@@ -30,8 +29,6 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationTest
 import uk.gov.hmrc.gform.submission.handlebars.{ HandlebarsHttpApiSubmitter, HandlebarsTemplateProcessor, RealHandlebarsTemplateProcessor }
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 import uk.gov.hmrc.gform.wshttp.HttpResponseSyntax
-
-import scala.annotation.tailrec
 
 trait DestinationSubmitter[M[_]] {
   def submitIfIncludeIf(
