@@ -307,6 +307,8 @@ trait ExampleFormTemplate {
         EmailParameter("email", FormCtx("directorEmail"))
       ))
 
+  def webChat = Some(WebChat(ChatRoomId("test"), TemplateName("hmrc7")))
+
   def submtSuccessUrl = """http://success.com"""
 
   def submitErrorUrl = """http://imsorry.com"""
@@ -331,6 +333,7 @@ trait ExampleFormTemplate {
       emailParameters = emailParameters,
       submitSuccessUrl = submtSuccessUrl,
       submitErrorUrl = submitErrorUrl,
+      webChat = webChat,
       sections = allSections,
       acknowledgementSection = acknowledgementSection,
       declarationSection = DeclarationSection("Declaration", None, None, Nil)
