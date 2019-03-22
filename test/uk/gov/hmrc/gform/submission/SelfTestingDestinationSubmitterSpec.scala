@@ -21,7 +21,7 @@ import org.scalacheck.Gen
 import play.api.libs.json.JsString
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{DestinationGen, DestinationsGen}
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, DestinationsGen }
 import uk.gov.hmrc.http.HeaderCarrier
 
 class SelfTestingDestinationSubmitterSpec extends Spec {
@@ -37,9 +37,9 @@ class SelfTestingDestinationSubmitterSpec extends Spec {
   }
 
   "submitToDMS" should "always succeed" in {
-    forAll(DestinationsGen.deprecatedDmsSubmissionGen){ destination =>
+    forAll(DestinationsGen.deprecatedDmsSubmissionGen) { destination =>
       val submitter = new SelfTestingDestinationSubmitter[Possible](test = DestinationTest("", emptyModel, Nil))
-      submitter.submitToDms(null,destination) should be (Right(()))
+      submitter.submitToDms(null, destination) should be(Right(()))
     }
   }
 

@@ -117,27 +117,6 @@ object RealDestinationSubmitter {
 
 object SelfTestingDestinationSubmitter {
   type TestResult[A] = Either[String, A]
-
-  implicit val testResultMonadError: MonadError[TestResult, String] = new MonadError[TestResult, String] {
-    import cats.syntax.either._
-    override def flatMap[A, B](fa: TestResult[A])(f: A => TestResult[B]): TestResult[B] = new EitherOps(fa).flatMap(f)
-
-    @tailrec
-    override def tailRecM[A, B](a: A)(f: A => TestResult[Either[A, B]]): TestResult[B] = f(a) match {
-      case Left(s)         => s.asLeft
-      case Right(Left(a2)) => tailRecM(a2)(f)
-      case Right(Right(b)) => b.asRight
-    }
-
-    override def raiseError[A](e: String): TestResult[A] = e.asLeft
-
-    override def handleErrorWith[A](fa: TestResult[A])(f: String => TestResult[A]): TestResult[A] = fa match {
-      case Left(s)  => f(s)
-      case Right(a) => a.asRight
-    }
-
-    override def pure[A](a: A): TestResult[A] = a.asRight
-  }
 }
 
 class SelfTestingDestinationSubmitter[M[_]](
