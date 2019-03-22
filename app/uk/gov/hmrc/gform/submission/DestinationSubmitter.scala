@@ -144,6 +144,7 @@ class SelfTestingDestinationSubmitter[M[_]](
   handlebarsTemplateProcessor: HandlebarsTemplateProcessor = new RealHandlebarsTemplateProcessor,
   test: DestinationTest)(implicit monadError: MonadError[M, String])
     extends DestinationSubmitter[M] {
+  type ReturnType = M[Option[HandlebarsDestinationResponse]]
 
   override def submitToDms(submissionInfo: DestinationSubmissionInfo, submission: Destinations.DmsSubmission)(
     implicit hc: HeaderCarrier): M[Unit] = ().pure
@@ -159,23 +160,32 @@ class SelfTestingDestinationSubmitter[M[_]](
 
   private def verifyUnspecifiedDestination(
     destination: Destination,
-    model: HandlebarsTemplateProcessorModel): M[Option[HandlebarsDestinationResponse]] =
+    model: HandlebarsTemplateProcessorModel): ReturnType =
     if (isIncludeIf(destination, model))
-      fail(destination.id, "includeIf evaluated to true but no test destination information was provided.")
+      includeIEvaluatedToTrueButNoTestDestinationInformationWasProvided(destination)
     else succeed(None)
+
+  private[submission] def includeIEvaluatedToTrueButNoTestDestinationInformationWasProvided(
+    destination: Destination): ReturnType =
+    fail(destination.id, "includeIf evaluated to true but no test destination information was provided.")
 
   private def verifySpecifiedDestination(
     destination: Destination,
     model: HandlebarsTemplateProcessorModel,
-    expected: DestinationTestResult): M[Option[HandlebarsDestinationResponse]] =
+    expected: DestinationTestResult): ReturnType =
     (isIncludeIf(destination, model), expected.includeIf) match {
-      case (false, false) => succeed(None)
-      case (false, true) =>
-        fail(destination.id, "includeIf specified in test was true, but the destination's includeIf evaluated to false")
-      case (true, false) =>
-        fail(destination.id, "includeIf specified in test was false, but the destination's includeIf evaluated to true")
-      case (true, true) => verifyIncludedDestination(destination, model, expected)
+      case (false, false)     => succeed(None)
+      case (true, true)       => verifyIncludedDestination(destination, model, expected)
+      case (actual, expected) => inconsistentIncludeIfs(destination, actual, expected)
     }
+
+  private[submission] def inconsistentIncludeIfs(
+    destination: Destination,
+    actual: Boolean,
+    expected: Boolean): ReturnType =
+    fail(
+      destination.id,
+      s"includeIf specified in test was $expected, but the destination's includeIf evaluated to $actual")
 
   private def verifyIncludedDestination(
     destination: Destination,
@@ -189,38 +199,50 @@ class SelfTestingDestinationSubmitter[M[_]](
   private def verifyHandlebarsDestination(
     destination: Destination.HandlebarsHttpApi,
     model: HandlebarsTemplateProcessorModel,
-    expected: DestinationTestResult): M[Option[HandlebarsDestinationResponse]] = {
-    val actualUri = handlebarsTemplateProcessor(destination.uri, model)
-    if (actualUri =!= destination.uri)
+    expected: DestinationTestResult): M[Option[HandlebarsDestinationResponse]] =
+    if (isTemplated(destination.uri))
       expected.uri match {
-        case None =>
-          fail(
-            destination.id,
-            s"No expected URI was specified for a templated destination URI. The template is '${destination.uri}'. After handlebars processing it was '$actualUri'"
-          )
+        case None => noExpectedUriSpecified(destination)
         case Some(expectedUri) =>
-          if (handlebarsTemplateProcessor(destination.uri, model) =!= expectedUri)
-            fail(
-              destination.id,
-              s"Expected URI '$expectedUri'. Got '${handlebarsTemplateProcessor(destination.uri, model)}'")
+          val actualUri = handlebarsTemplateProcessor(destination.uri, model)
+          if (actualUri =!= expectedUri) mismatchedUri(destination, expectedUri, actualUri)
           else verifyHandlebarsDestinationPayload(destination, model, expected)
       } else verifyHandlebarsDestinationPayload(destination, model, expected)
-  }
+
+  private def isTemplated(s: String) = s.contains("{{")
+
+  private[submission] def noExpectedUriSpecified(destination: Destination.HandlebarsHttpApi) =
+    fail[Option[HandlebarsDestinationResponse]](
+      destination.id,
+      s"No expected URI was specified for a templated destination URI. The template is '${destination.uri}'."
+    )
+
+  private[submission] def mismatchedUri(
+    destination: Destination.HandlebarsHttpApi,
+    expectedUri: String,
+    actualUri: String) =
+    fail[Option[HandlebarsDestinationResponse]](destination.id, s"Expected URI '$expectedUri'. Got '$actualUri'")
 
   private def verifyHandlebarsDestinationPayload(
     destination: Destination.HandlebarsHttpApi,
     model: HandlebarsTemplateProcessorModel,
     result: DestinationTestResult): M[Option[HandlebarsDestinationResponse]] =
     (destination.payload, result.payload) match {
-      case (None, None) => succeed(destination.id, result)
-      case (None, Some(_)) =>
-        fail(
-          destination.id,
-          "Destination has no payload specified but the expectation in the test does specify a payload")
-      case (Some(_), None) =>
-        fail(destination.id, "Destination has a payload specified but the expectation in the test does not")
+      case (None, None)         => succeed(destination.id, result)
+      case (None, Some(_))      => destinationHasNoPayloadButTestDoes(destination)
+      case (Some(_), None)      => testHasNoPayloadButDestinationDoes(destination)
       case (Some(dp), Some(rp)) => verifyHandlebarsDestinationPayload(destination, model, result, dp, rp)
     }
+
+  private[submission] def destinationHasNoPayloadButTestDoes(destination: Destination) =
+    fail[Option[HandlebarsDestinationResponse]](
+      destination.id,
+      "Destination has no payload specified but the expectation in the test does specify a payload")
+
+  private[submission] def testHasNoPayloadButDestinationDoes(destination: Destination) =
+    fail[Option[HandlebarsDestinationResponse]](
+      destination.id,
+      "Destination has a payload specified but the expectation in the test does not")
 
   private def verifyHandlebarsDestinationPayload(
     destination: Destination.HandlebarsHttpApi,
@@ -231,18 +253,24 @@ class SelfTestingDestinationSubmitter[M[_]](
     val processedDestinationPayload = handlebarsTemplateProcessor(destinationPayloadTemplate, model)
     parseTransformedPayload(destination.id, processedDestinationPayload).flatMap { json =>
       if (json != requiredPayload)
-        fail(destination.id, "The generated payload does not match the expected payload.")
+        generatedPayloadDoesNotMatchExpected(destination)
       else succeed(destination.id, result)
     }
   }
 
-  private def parseTransformedPayload(id: DestinationId, s: String): M[JsValue] =
-    try {
-      monadError.pure(Json.parse(s))
-    } catch {
+  private[submission] def generatedPayloadDoesNotMatchExpected(destination: Destination) =
+    fail[Option[HandlebarsDestinationResponse]](
+      destination.id,
+      "The generated payload does not match the expected payload.")
+
+  private[submission] def parseTransformedPayload(id: DestinationId, s: String): M[JsValue] =
+    try { monadError.pure(Json.parse(s)) } catch {
       case ex: Exception =>
-        fail(id, s"The generated payload is not valid JSON: ${ex.getMessage}")
+        theGeneratedPayloadIsNotValidJson(id, ex.getMessage)
     }
+
+  private[submission] def theGeneratedPayloadIsNotValidJson(id: DestinationId, message: String) =
+    fail[JsValue](id, s"The generated payload is not valid JSON: $message")
 
   private def isIncludeIf(destination: Destination, model: HandlebarsTemplateProcessorModel) =
     destination.includeIf.forall(handlebarsTemplateProcessor(_, model) === true.toString)
@@ -254,9 +282,14 @@ class SelfTestingDestinationSubmitter[M[_]](
     destinationId: DestinationId,
     result: DestinationTestResult): M[Option[HandlebarsDestinationResponse]] =
     result.response match {
-      case None    => fail(destinationId, "No response specified. At least the response.code is needed.")
+      case None    => noResponseSpecified(destinationId)
       case Some(r) => succeed(HandlebarsDestinationResponse(destinationId, r.status, r.json.getOrElse(JsNull)).some)
     }
+
+  private[submission] def noResponseSpecified(destinationId: DestinationId) =
+    fail[Option[HandlebarsDestinationResponse]](
+      destinationId,
+      "No response specified. At least the response.code is needed.")
 
   private def succeed(response: Option[HandlebarsDestinationResponse]): M[Option[HandlebarsDestinationResponse]] =
     response.pure
