@@ -265,7 +265,7 @@ class SelfTestingDestinationSubmitter[M[_]](
   private[submission] def noResponseSpecified(destinationId: DestinationId) =
     fail[Option[HandlebarsDestinationResponse]](
       destinationId,
-      "No response specified. At least the response.code is needed.")
+      "No response specified. At least the response.status is needed.")
 
   private def succeed(response: Option[HandlebarsDestinationResponse]): M[Option[HandlebarsDestinationResponse]] =
     response.pure
