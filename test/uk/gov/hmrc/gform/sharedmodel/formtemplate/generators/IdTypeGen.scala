@@ -14,18 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel.form
+package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
+import org.scalacheck.Gen
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.IdType
 
-import julienrf.json.derived
-import play.api.libs.json.OFormat
-
-case class UserData(
-  formData: FormData,
-  formStatus: FormStatus,
-  visitsIndex: VisitIndex,
-  thirdPartyData: ThirdPartyData
-)
-
-object UserData {
-  implicit val format: OFormat[UserData] = derived.oformat
+trait IdTypeGen {
+  def idTypeGen: Gen[IdType] = PrimitiveGen.nonEmptyAlphaNumStrGen.map(IdType(_))
 }
+
+object IdTypeGen extends IdTypeGen

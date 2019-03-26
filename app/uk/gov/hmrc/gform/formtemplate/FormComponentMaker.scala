@@ -321,7 +321,7 @@ class FormComponentMaker(json: JsValue) {
   }
 
   private lazy val hmrcTaxPeriodOpt: Opt[HmrcTaxPeriod] = (idType, idNumber, regimeType) match {
-    case (Some(a), Right(Some(b: TextExpression)), Some(c)) => HmrcTaxPeriod(IdType(a), b, RegimeType(c)).asRight
+    case (Some(a), Right(Some(b: TextExpression)), Some(c)) => HmrcTaxPeriod(IdType(a), b.expr, RegimeType(c)).asRight
     case _                                                  => UnexpectedState(s"""
                                  |Wrong HmrcTaxPeriod definition:
                                  |IdType     : $idType

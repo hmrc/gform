@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.gform.sharedmodel
 
-import java.util.Date
+import cats.data.NonEmptyList
+import java.time.LocalDate
 
 import julienrf.json.derived
 import play.api.data.validation.ValidationError
@@ -25,9 +26,9 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 case class ObligationDetail(
   status: String,
-  inboundCorrespondenceFromDate: Date,
-  inboundCorrespondenceToDate: Date,
-  inboundCorrespondenceDueDate: Date,
+  inboundCorrespondenceFromDate: LocalDate,
+  inboundCorrespondenceToDate: LocalDate,
+  inboundCorrespondenceDueDate: LocalDate,
   periodKey: String)
 
 object ObligationDetail {
@@ -52,28 +53,12 @@ object TaxResponse {
   implicit val format: OFormat[TaxResponse] = Json.format[TaxResponse]
 }
 
-case class TaxPeriodIdentifier(idType: IdType, idNumber: IdNumber, regimeType: RegimeType)
-
-object TaxPeriodIdentifier {
-  implicit val format: OFormat[TaxPeriodIdentifier] = Json.format[TaxPeriodIdentifier]
-}
-
-case class TaxPeriodInformation(
-  hmrcTaxPeriod: HmrcTaxPeriod,
-  idNumberValue: IdNumberValue,
-  inboundCorrespondenceFromDate: Date,
-  inboundCorrespondenceToDate: Date,
-  periodKey: String)
-
-object TaxPeriodInformation {
-  implicit val format: OFormat[TaxPeriodInformation] = derived.oformat
-}
-
 sealed trait Obligations
 final case object NotChecked extends Obligations
-final case class RetrievedObligations(listOfObligations: List[TaxPeriodInformation]) extends Obligations
+final case class RetrievedObligations(obligation: NonEmptyList[TaxResponse]) extends Obligations
 
 object Obligations {
+  import JsonUtils._
   implicit val format: OFormat[Obligations] = derived.oformat[Obligations]
 }
 
@@ -83,7 +68,13 @@ object IdNumberValue {
   implicit val format: OFormat[IdNumberValue] = derived.oformat
 }
 
-case class HmrcTaxPeriodWithEvaluatedId(hmrcTaxPeriod: HmrcTaxPeriod, idNumberValue: IdNumberValue)
+case class RecalculatedTaxPeriodKey(fcId: FormComponentId, hmrcTaxPeriod: HmrcTaxPeriod)
+object RecalculatedTaxPeriodKey {
+  implicit val format: OFormat[RecalculatedTaxPeriodKey] = derived.oformat
+}
+case class HmrcTaxPeriodWithEvaluatedId(
+  recalculatedTaxPeriodKey: RecalculatedTaxPeriodKey,
+  idNumberValue: IdNumberValue)
 
 object HmrcTaxPeriodWithEvaluatedId extends JsonUtils {
   implicit val format: OFormat[HmrcTaxPeriodWithEvaluatedId] = derived.oformat

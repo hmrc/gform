@@ -53,8 +53,7 @@ trait FormGen {
         status,
         visitIndex,
         thirdPartyData,
-        expiryDate,
-        NotChecked
+        expiryDate
       )
 }
 

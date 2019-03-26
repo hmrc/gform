@@ -49,8 +49,7 @@ class FormService(save4Later: Save4Later)(implicit ex: ExecutionContext) {
       InProgress,
       VisitIndex.empty,
       ThirdPartyData.empty,
-      Some(envelopeExpiryDate),
-      NotChecked
+      Some(envelopeExpiryDate)
     )
     save4Later.upsert(formId, form)
   }
@@ -63,8 +62,7 @@ class FormService(save4Later: Save4Later)(implicit ex: ExecutionContext) {
           formData = userData.formData,
           status = newStatus(form, userData.formStatus),
           visitsIndex = userData.visitsIndex,
-          thirdPartyData = userData.thirdPartyData,
-          obligations = userData.obligations
+          thirdPartyData = userData.thirdPartyData
         )
       _ <- save4Later.upsert(formId, newForm)
     } yield ()

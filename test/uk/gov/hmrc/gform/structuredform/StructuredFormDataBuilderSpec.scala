@@ -231,8 +231,7 @@ class StructuredFormDataBuilderSpec extends Spec {
       null,
       VisitIndex(Set(1)),
       ThirdPartyData.empty,
-      None,
-      NotChecked
+      None
     )
 
   def createFormTemplate(

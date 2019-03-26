@@ -30,11 +30,12 @@ class ObligationController(obligation: ObligationService)(implicit ex: Execution
   def getAllTaxPeriods() = Action.async(parse.json[NonEmptyList[HmrcTaxPeriodWithEvaluatedId]]) { implicit request =>
     Logger.info(s"Get All Tax Periods from DES, ${loggingHelpers.cleanHeaders(request.headers)}")
     val body: NonEmptyList[HmrcTaxPeriodWithEvaluatedId] = request.body
-    val b = body.map(i => {
+    val b = body.map { i =>
+      val hmrcTaxPeriod = i.recalculatedTaxPeriodKey.hmrcTaxPeriod
       obligation
-        .callDES(i.hmrcTaxPeriod.idType.value, i.idNumberValue.value, i.hmrcTaxPeriod.regimeType.value)
+        .callDES(hmrcTaxPeriod.idType.value, i.idNumberValue.value, hmrcTaxPeriod.regimeType.value)
         .map(x => TaxResponse(i, x))
-    })
+    }
     Future.sequence(b.toList).asOkJson
   }
 }

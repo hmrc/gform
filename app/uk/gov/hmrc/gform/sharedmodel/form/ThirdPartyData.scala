@@ -17,13 +17,15 @@
 package uk.gov.hmrc.gform.sharedmodel.form
 
 import play.api.libs.json.{ Json, OFormat }
+import uk.gov.hmrc.gform.sharedmodel.{ NotChecked, Obligations }
 import uk.gov.hmrc.gform.sharedmodel.des.DesRegistrationResponse
 
 case class ThirdPartyData(
-  desRegistrationResponse: Option[DesRegistrationResponse]
+  desRegistrationResponse: Option[DesRegistrationResponse],
+  obligations: Obligations
 )
 
 object ThirdPartyData {
-  val empty = ThirdPartyData(None)
+  val empty = ThirdPartyData(None, NotChecked)
   implicit val format: OFormat[ThirdPartyData] = Json.format
 }

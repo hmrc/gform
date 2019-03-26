@@ -14,18 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel.form
+package uk.gov.hmrc.gform.sharedmodel
 
-import julienrf.json.derived
-import play.api.libs.json.OFormat
+import org.scalacheck.Gen
 
-case class UserData(
-  formData: FormData,
-  formStatus: FormStatus,
-  visitsIndex: VisitIndex,
-  thirdPartyData: ThirdPartyData
-)
-
-object UserData {
-  implicit val format: OFormat[UserData] = derived.oformat
+trait ObligationsGen {
+  def obligationsGen: Gen[Obligations] =
+    Gen.oneOf(Gen.const(NotChecked), RetrievedObligationsGen.retrievedObligationsGen)
 }
+
+object ObligationsGen extends ObligationsGen

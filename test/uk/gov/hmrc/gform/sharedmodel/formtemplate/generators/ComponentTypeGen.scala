@@ -61,6 +61,13 @@ trait ComponentTypeGen {
       helpText    <- Gen.option(PrimitiveGen.zeroOrMoreGen(PrimitiveGen.nonEmptyAlphaNumStrGen))
     } yield Choice(tpe, options, orientation, selections, helpText)
 
+  def hmrcTaxPeriodGen: Gen[HmrcTaxPeriod] =
+    for {
+      idType     <- IdTypeGen.idTypeGen
+      expr       <- ExprGen.exprGen()
+      regimeType <- RegimeTypeGen.regimeTypeGen
+    } yield HmrcTaxPeriod(idType, expr, regimeType)
+
   def groupGen(maxDepth: Int): Gen[Group] =
     for {
       fields               <- PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen(maxDepth - 1))
