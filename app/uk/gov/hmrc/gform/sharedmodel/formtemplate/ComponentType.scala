@@ -104,7 +104,7 @@ object RegimeType {
   implicit val format: OFormat[RegimeType] = ValueClassFormat.oformat("regimeType", RegimeType.apply, _.value)
 }
 
-case class HmrcTaxPeriod(idType: IdType, idNumber: TextExpression, regimeType: RegimeType) extends ComponentType
+case class HmrcTaxPeriod(idType: IdType, idNumber: Expr, regimeType: RegimeType) extends ComponentType
 
 object HmrcTaxPeriod {
   implicit val format: OFormat[HmrcTaxPeriod] = derived.oformat

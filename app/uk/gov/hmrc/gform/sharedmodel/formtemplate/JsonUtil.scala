@@ -58,6 +58,10 @@ trait JsonUtils {
     }, _.map {
       case (k, v) => aToString(k) -> v
     })
+
+  def constReads[A](a: A): Reads[A] = new Reads[A] {
+    def reads(json: JsValue): JsResult[A] = JsSuccess(a)
+  }
 }
 
 object JsonUtils extends JsonUtils

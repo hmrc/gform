@@ -19,12 +19,14 @@ package uk.gov.hmrc.gform.sharedmodel.form.generators
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.des.DesRegistrationResponseGen
 import uk.gov.hmrc.gform.sharedmodel.form.ThirdPartyData
+import uk.gov.hmrc.gform.sharedmodel.ObligationsGen
 
 trait ThirdPartyDataGen {
   def thirdPartyDataGen =
     for {
       desRegistrationResponse <- Gen.option(DesRegistrationResponseGen.desRegistrationResponseGen)
-    } yield ThirdPartyData(desRegistrationResponse)
+      obligations             <- ObligationsGen.obligationsGen
+    } yield ThirdPartyData(desRegistrationResponse, obligations)
 }
 
 object ThirdPartyDataGen extends ThirdPartyDataGen

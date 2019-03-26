@@ -96,7 +96,7 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
     Logger.info(
       s"Des lookup, Tax Periods: '$idType, $idNumber, $regimeType', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
     val value = s"$baseUrl${desConfig.basePath}/enterprise/obligation-data/$idType/$idNumber/$regimeType?status=O"
-    wSHttp.GET[Obligation](value).recover { case _: NotFoundException => Obligation(List()) }
+    wSHttp.GET[Obligation](value).recover { case _ => Obligation(List()) }
   }
 }
 

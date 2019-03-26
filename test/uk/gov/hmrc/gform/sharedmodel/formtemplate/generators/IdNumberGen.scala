@@ -14,18 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel.form
+package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 
-import julienrf.json.derived
-import play.api.libs.json.OFormat
+import org.scalacheck.Gen
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.RegimeType
 
-case class UserData(
-  formData: FormData,
-  formStatus: FormStatus,
-  visitsIndex: VisitIndex,
-  thirdPartyData: ThirdPartyData
-)
-
-object UserData {
-  implicit val format: OFormat[UserData] = derived.oformat
+trait RegimeTypeGen {
+  def regimeTypeGen: Gen[RegimeType] = PrimitiveGen.nonEmptyAlphaNumStrGen.map(RegimeType(_))
 }
+
+object RegimeTypeGen extends RegimeTypeGen

@@ -33,8 +33,7 @@ class FormServiceSpec extends PlaySpec {
     InProgress,
     VisitIndex.empty,
     ThirdPartyData.empty,
-    Some(EnvelopeExpiryDate(LocalDateTime.now.plusDays(1))),
-    NotChecked
+    Some(EnvelopeExpiryDate(LocalDateTime.now.plusDays(1)))
   )
 
   val testFormSummary: Form = testFormInProgress.copy(status = Summary)

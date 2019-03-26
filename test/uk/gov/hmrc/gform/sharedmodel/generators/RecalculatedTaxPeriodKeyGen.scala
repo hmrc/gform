@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel.form
+package uk.gov.hmrc.gform.sharedmodel.generators
 
-import julienrf.json.derived
-import play.api.libs.json.OFormat
+import org.scalacheck.Gen
+import uk.gov.hmrc.gform.sharedmodel.RecalculatedTaxPeriodKey
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.ComponentTypeGen._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.FormComponentGen._
 
-case class UserData(
-  formData: FormData,
-  formStatus: FormStatus,
-  visitsIndex: VisitIndex,
-  thirdPartyData: ThirdPartyData
-)
-
-object UserData {
-  implicit val format: OFormat[UserData] = derived.oformat
+trait RecalculatedTaxPeriodKeyGen {
+  def recalculatedTaxPeriodKeyGen: Gen[RecalculatedTaxPeriodKey] =
+    for {
+      id     <- formComponentIdGen
+      period <- hmrcTaxPeriodGen
+    } yield RecalculatedTaxPeriodKey(id, period)
 }
+
+object RecalculatedTaxPeriodKeyGen extends RecalculatedTaxPeriodKeyGen

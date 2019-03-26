@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.gform.sharedmodel.form
 
+import cats.data.NonEmptyList
+import java.time.LocalDate
 import org.scalatest.{ FlatSpec, Matchers }
 import java.time.LocalDateTime
 
@@ -24,8 +26,123 @@ import play.api.libs.json.Writes.DefaultLocalDateTimeWrites
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.FormGen
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.des.DesRegistrationResponseGen
 
 class FormSpec extends FlatSpec with Matchers {
+
+  val inputJson =
+    """|{
+       |  "_id" : "tax",
+       |  "envelopeId" : "envelopeId",
+       |  "userId" : "userId",
+       |  "formTemplateId" : "formTemplateId",
+       |  "fields" : [ {
+       |    "id" : "abc",
+       |    "value" : "abc"
+       |  } ],
+       |  "Submitted" : { },
+       |  "visitsIndex" : [ 1, 2, 3 ],
+       |  "thirdPartyData" : {
+       |    "obligations" : {
+       |      "RetrievedObligations" : {
+       |        "obligation" : [ {
+       |          "id" : {
+       |            "recalculatedTaxPeriodKey" : {
+       |              "fcId" : "compId",
+       |              "hmrcTaxPeriod" : {
+       |                "idType" : {
+       |                  "idType" : "eeits"
+       |                },
+       |                "idNumber" : {
+       |                  "Value" : { }
+       |                },
+       |                "regimeType" : {
+       |                  "regimeType" : "ITSA"
+       |                }
+       |              }
+       |            },
+       |            "idNumberValue" : {
+       |              "value" : "123"
+       |            }
+       |          },
+       |          "obligation" : {
+       |            "obligations" : [ {
+       |              "obligationDetails" : [ {
+       |                "status" : "O",
+       |                "inboundCorrespondenceFromDate" : "2100-01-15",
+       |                "inboundCorrespondenceToDate" : "1900-10-28",
+       |                "inboundCorrespondenceDueDate" : "2061-01-25",
+       |                "periodKey" : "fxzaz"
+       |              } ]
+       |            } ]
+       |          }
+       |        } ]
+       |      }
+       |    }
+       |  },
+       |  "ldt" : "2064-12-01T00:00:40"
+       |}""".stripMargin
+
+  val exampleForm = Form(
+    FormId("tax"),
+    EnvelopeId("envelopeId"),
+    uk.gov.hmrc.gform.sharedmodel.UserId("userId"),
+    FormTemplateId("formTemplateId"),
+    FormData(
+      List(
+        FormField(
+          FormComponentId("abc"),
+          "abc"
+        )
+      )
+    ),
+    Submitted,
+    VisitIndex(Set(1, 2, 3)),
+    ThirdPartyData(
+      None,
+      RetrievedObligations(
+        NonEmptyList.one(
+          TaxResponse(
+            HmrcTaxPeriodWithEvaluatedId(
+              RecalculatedTaxPeriodKey(
+                FormComponentId("compId"),
+                HmrcTaxPeriod(IdType("eeits"), Value, RegimeType("ITSA"))),
+              IdNumberValue("123")),
+            Obligation(
+              List(
+                ObligationDetails(
+                  List(
+                    ObligationDetail(
+                      "O",
+                      LocalDate.of(2100, 1, 15),
+                      LocalDate.of(1900, 10, 28),
+                      LocalDate.of(2061, 1, 25),
+                      "fxzaz")
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    ),
+    Some(EnvelopeExpiryDate(LocalDateTime.of(2064, 12, 1, 0, 0, 40)))
+  )
+
+  "Format for Form" should "read json" in {
+    verifyRead(exampleForm, inputJson)
+  }
+
+  it should "fallback to empty ThirdPartyData if structure of ThirdPartyData is changed" in {
+
+    val formWithEmptyThirdParty = exampleForm.copy(thirdPartyData = ThirdPartyData.empty)
+
+    val incompatibleJson = inputJson.replace("hmrcTaxPeriod", "wrongName") // This simulates change in ADT which will not be backwards compatible
+
+    verifyRead(formWithEmptyThirdParty, incompatibleJson)
+
+  }
 
   val form = Form(
     FormId("James007-AAA999"),
@@ -41,8 +158,7 @@ class FormSpec extends FlatSpec with Matchers {
     InProgress,
     VisitIndex(Set(1, 2, 3)),
     ThirdPartyData.empty,
-    Some(EnvelopeExpiryDate(LocalDateTime.now.plusDays(1))),
-    NotChecked
+    Some(EnvelopeExpiryDate(LocalDateTime.now.plusDays(1)))
   )
 
   "case class Form" should "be serialized into json" in {
@@ -63,13 +179,16 @@ class FormSpec extends FlatSpec with Matchers {
       "InProgress"  -> Json.obj(),
       "visitsIndex" -> Json.arr(1, 2, 3),
       "ldt"         -> form.envelopeExpiryDate.map(_.ldt).map(f _).get,
-      "NotChecked"  -> Json.obj()
+      "thirdPartyData" -> Json.obj(
+        "obligations" -> Json.obj("NotChecked" -> Json.obj())
+      )
     )
     formJsObject shouldBe expectedFormJsObject
+
     Form.format.reads(Form.format.writes(form)) should be(JsSuccess(form))
   }
 
-  it should "handle inflight forms not having visitsIndex or obligations" in {
+  it should "handle inflight forms not having visitsIndex or thirdPartyData" in {
     val inflight = Json.obj(
       "_id"            -> "James007-AAA999",
       "envelopeId"     -> "b66c5979-e885-49cd-9281-c7f42ce6b307",
@@ -83,87 +202,6 @@ class FormSpec extends FlatSpec with Matchers {
     )
 
     val expectedForm = form.copy(visitsIndex = VisitIndex.empty, envelopeExpiryDate = None)
-    Form.format.reads(inflight) should be(JsSuccess(expectedForm))
-  }
-
-  "Json with an 'obligations' key" should "correctly be formatted to a form case class" in {
-    def f(d: LocalDateTime): JsValue = DefaultLocalDateTimeWrites.writes(d)
-
-    val inflight = Json.obj(
-      "_id"            -> "James007-AAA999",
-      "envelopeId"     -> "b66c5979-e885-49cd-9281-c7f42ce6b307",
-      "userId"         -> "James007",
-      "formTemplateId" -> "AAA999",
-      "fields" -> Json
-        .arr(
-          Json.obj("id" -> "facePhoto", "value"      -> "face-photo.jpg"),
-          Json.obj("id" -> "startDate-year", "value" -> "2008")),
-      "InProgress"  -> Json.obj(),
-      "visitsIndex" -> Json.arr(1, 2, 3),
-      "ldt"         -> form.envelopeExpiryDate.map(_.ldt).map(f _).get,
-      "obligations" -> Json.arr(
-        Json.obj(
-          "idNumberValue" -> Json.obj("value" -> "gfdsa"),
-          "periodKey"     -> "17B2",
-          "hmrcTaxPeriod" -> Json.obj(
-            "idType"     -> Json.obj("idType" -> "nino"),
-            "idNumber"   -> Json.obj("expr" -> Json.obj("FormCtx" -> Json.obj("value" -> "ho930Reg"))),
-            "regimeType" -> "ITSA"),
-          "inboundCorrespondenceFromDate" -> 1496271600000l,
-          "inboundCorrespondenceToDate"   -> 1504134000000l
-        )
-      )
-    )
-
-    val expectedForm = form.copy(
-      obligations = RetrievedObligations(List(TaxPeriodInformation(
-        HmrcTaxPeriod(IdType("nino"), TextExpression(FormCtx("ho930Reg")), RegimeType("ITSA")),
-        IdNumberValue("gfdsa"),
-        new java.util.Date(1496271600000l),
-        new java.util.Date(1504134000000l),
-        "17B2"
-      ))))
-    Form.format.reads(inflight) should be(JsSuccess(expectedForm))
-  }
-
-  "Json with a 'RetrievedObligations / listOfObligations' key" should "correctly be formatted to a form case class" in {
-    def f(d: LocalDateTime): JsValue = DefaultLocalDateTimeWrites.writes(d)
-
-    val inflight = Json.obj(
-      "_id"            -> "James007-AAA999",
-      "envelopeId"     -> "b66c5979-e885-49cd-9281-c7f42ce6b307",
-      "userId"         -> "James007",
-      "formTemplateId" -> "AAA999",
-      "fields" -> Json
-        .arr(
-          Json.obj("id" -> "facePhoto", "value"      -> "face-photo.jpg"),
-          Json.obj("id" -> "startDate-year", "value" -> "2008")),
-      "InProgress"  -> Json.obj(),
-      "visitsIndex" -> Json.arr(1, 2, 3),
-      "ldt"         -> form.envelopeExpiryDate.map(_.ldt).map(f _).get,
-      "RetrievedObligations" -> Json.obj(
-        "listOfObligations" -> Json.arr(
-          Json.obj(
-            "idNumberValue" -> Json.obj("value" -> "gfdsa"),
-            "periodKey"     -> "17B2",
-            "hmrcTaxPeriod" -> Json.obj(
-              "idType"     -> Json.obj("idType" -> "nino"),
-              "idNumber"   -> Json.obj("expr" -> Json.obj("FormCtx" -> Json.obj("value" -> "ho930Reg"))),
-              "regimeType" -> "ITSA"),
-            "inboundCorrespondenceFromDate" -> 1496271600000l,
-            "inboundCorrespondenceToDate"   -> 1504134000000l
-          )
-        ))
-    )
-
-    val expectedForm = form.copy(
-      obligations = RetrievedObligations(List(TaxPeriodInformation(
-        HmrcTaxPeriod(IdType("nino"), TextExpression(FormCtx("ho930Reg")), RegimeType("ITSA")),
-        IdNumberValue("gfdsa"),
-        new java.util.Date(1496271600000l),
-        new java.util.Date(1504134000000l),
-        "17B2"
-      ))))
     Form.format.reads(inflight) should be(JsSuccess(expectedForm))
   }
 }
