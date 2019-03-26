@@ -38,20 +38,6 @@ trait DestinationSubmitter[M[_]] {
 
   def submitToDms(submissionInfo: DestinationSubmissionInfo, submission: Destinations.DmsSubmission)(
     implicit hc: HeaderCarrier): M[Unit]
-
-  protected def evaluateIncludeIf(
-    destination: Destination,
-    model: HandlebarsTemplateProcessorModel,
-    handlebarsTemplateProcessor: HandlebarsTemplateProcessor)(implicit me: MonadError[M, String]): M[Boolean] =
-    destination.includeIf
-      .map {
-        handlebarsTemplateProcessor(_, model) match {
-          case "true"  => true.pure
-          case "false" => false.pure
-          case other   => me.raiseError[Boolean](s"includeIf evaluated to '$other'. Expected 'true' or 'false'")
-        }
-      }
-      .getOrElse(true.pure)
 }
 
 class RealDestinationSubmitter[M[_], R](
@@ -150,16 +136,10 @@ class SelfTestingDestinationSubmitter[M[_]](
 
   private def verifyUnspecifiedDestination(
     destination: Destination,
-    model: HandlebarsTemplateProcessorModel): ReturnType = {
-    val result: M[Option[HandlebarsDestinationResponse]] =
-      evaluateIncludeIf(destination, model, handlebarsTemplateProcessor)
-        .flatMap { ii =>
-          if (ii) includeIEvaluatedToTrueButNoTestDestinationInformationWasProvided(destination)
-          else succeed(None)
-        }
-
-    monadError.recoverWith(result) { case s => fail(destination.id, s) }
-  }
+    model: HandlebarsTemplateProcessorModel): ReturnType =
+    if (isIncludeIf(destination, model))
+      includeIEvaluatedToTrueButNoTestDestinationInformationWasProvided(destination)
+    else succeed(None)
 
   private[submission] def includeIEvaluatedToTrueButNoTestDestinationInformationWasProvided(
     destination: Destination): ReturnType =
@@ -169,18 +149,11 @@ class SelfTestingDestinationSubmitter[M[_]](
     destination: Destination,
     model: HandlebarsTemplateProcessorModel,
     expected: DestinationTestResult): ReturnType =
-    evaluateIncludeIf(destination, model, handlebarsTemplateProcessor).flatMap { ii =>
-      val result: M[Option[HandlebarsDestinationResponse]] =
-        (ii, expected.includeIf) match {
-          case (false, false)     => succeed(None)
-          case (true, true)       => verifyIncludedDestination(destination, model, expected)
-          case (actual, expected) => inconsistentIncludeIfs(destination, actual, expected)
-        }
-      monadError.recoverWith(result) { case s => fail(destination.id, s) }
+    (isIncludeIf(destination, model), expected.includeIf) match {
+      case (false, false)     => succeed(None)
+      case (true, true)       => verifyIncludedDestination(destination, model, expected)
+      case (actual, expected) => inconsistentIncludeIfs(destination, actual, expected)
     }
-
-  private def includeIfEvaluatedToNonBoolean(destination: Destination, evaluatedIncludeIf: String): M[Boolean] =
-    fail(destination.id, s"includeIf must evaluate to 'true' or 'false'. Got '$evaluatedIncludeIf'")
 
   private[submission] def inconsistentIncludeIfs(
     destination: Destination,
@@ -274,6 +247,9 @@ class SelfTestingDestinationSubmitter[M[_]](
 
   private[submission] def theGeneratedPayloadIsNotValidJson(id: DestinationId, message: String) =
     fail[JsValue](id, s"The generated payload is not valid JSON: $message")
+
+  private def isIncludeIf(destination: Destination, model: HandlebarsTemplateProcessorModel) =
+    destination.includeIf.forall(handlebarsTemplateProcessor(_, model) === true.toString)
 
   private def fail[T](id: DestinationId, message: String): M[T] =
     monadError.raiseError(s"Test: ${test.name}, Destination: ${id.id}: $message")

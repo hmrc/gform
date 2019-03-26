@@ -83,18 +83,6 @@ class SelfTestingDestinationSubmitterSpec extends Spec {
     }
   }
 
-  it should "fail if the destination includeIf evaluates to something other than 'true' or 'false'" in {
-    val submitter =
-      new SelfTestingDestinationSubmitter[Possible](test = DestinationTest("MyTest", emptyModel, Nil))
-    forAll(DestinationGen.destinationGen.map(setIncludeIf(_, Some("bad")))) { destination =>
-      verifyError(
-        submitter.submitIfIncludeIf(destination, null, emptyModel),
-        Left(
-          s"Test: MyTest, Destination: ${destination.id.id}: includeIf evaluated to 'bad'. Expected 'true' or 'false'")
-      )
-    }
-  }
-
   it should "pass if both destination includeIf and test includeIf are false" in {
     verifyWhenIncludeIfsAreTheSame(false)
   }
