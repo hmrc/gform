@@ -158,7 +158,7 @@ class RealDestinationSubmitterSpec extends Spec with ExampleData {
           .expectDmsSubmissionFailure(si, hmrcDms.toDeprecatedDmsSubmission, "an error")
           .sut
           .submitIfIncludeIf(hmrcDms, si, HandlebarsTemplateProcessorModel(si.form, si.formTemplate)) shouldBe Left(
-          "an error")
+          s"Destination ${hmrcDms.id.id} : an error")
     }
   }
 

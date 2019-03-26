@@ -53,8 +53,22 @@ class RealDestinationSubmitter[M[_], R](
     model: HandlebarsTemplateProcessorModel)(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
     monadError.pure(destination.includeIf.forall(handlebarsTemplateProcessor(_, model) === true.toString)) flatMap {
       include =>
-        if (include) submit(destination, submissionInfo, model)
-        else Option.empty[HandlebarsDestinationResponse].pure
+        if (include)
+          for {
+            _      <- logInfoInMonad(s"Destination ${destination.id.id} is included")
+            result <- submit(destination, submissionInfo, model)
+          } yield result
+        else
+          for {
+            _      <- logInfoInMonad(s"Destination ${destination.id.id} is not included")
+            result <- Option.empty[HandlebarsDestinationResponse].pure
+          } yield result
+
+    }
+
+  private def logInfoInMonad(msg: String): M[Unit] =
+    monadError.pure {
+      Logger.info(msg)
     }
 
   private def submit(
@@ -73,7 +87,7 @@ class RealDestinationSubmitter[M[_], R](
     implicit hc: HeaderCarrier): M[Unit] =
     monadError.handleErrorWith(submitToDms(submissionInfo, d.toDeprecatedDmsSubmission)) { msg =>
       if (d.failOnErrorDefaulted)
-        monadError.raiseError(msg)
+        monadError.raiseError(s"Destination ${d.id.id} : $msg")
       else {
         Logger.info(s"Destination ${d.id} failed but has 'failOnError' set to false. Ignoring.")
         monadError.pure(())
@@ -105,6 +119,9 @@ class RealDestinationSubmitter[M[_], R](
     d: Destination.HandlebarsHttpApi,
     response: HttpResponse): M[HandlebarsDestinationResponse] =
     monadError.pure(HandlebarsDestinationResponse(d, response))
+
+  protected def raiseError(destinationId: DestinationId, msg: String) =
+    monadError.raiseError(s"Destination ${destinationId.id} : $msg")
 }
 
 object RealDestinationSubmitter {
