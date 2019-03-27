@@ -52,7 +52,7 @@ class RoboticsXMLGeneratorSpec extends Spec {
 
     verifyXml(
       objectStructure(arrayField("arrayField", TextNode("value1"), TextNode("value2"))),
-      <arrayFields><arrayField>value1</arrayField><arrayField>value2</arrayField></arrayFields>
+      <arrayFields><arrayField seqNum ="0">value1</arrayField><arrayField seqNum ="1">value2</arrayField></arrayFields>
     )
 
   }
@@ -71,20 +71,20 @@ class RoboticsXMLGeneratorSpec extends Spec {
           TextNode("value2")
         )),
       <arrayFields>
-        <arrayField>
+        <arrayField seqNum ="0">
           <objectStructureField>
           <txtfield1>txtval1</txtfield1>
           <txtfield2>txtval2</txtfield2>
           </objectStructureField>
         </arrayField>
-      <arrayField>value2</arrayField>
+      <arrayField seqNum ="1">value2</arrayField>
       </arrayFields>
     )
 
   }
 
 }
-case object RoboticsXMLGeneratorSpec extends Spec{
+case object RoboticsXMLGeneratorSpec extends Spec {
 
   private def verifyXml(objectStructure: ObjectStructure, expectedFields: NodeSeq) = {
 
