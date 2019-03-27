@@ -19,7 +19,7 @@ import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.gform.structuredform.StructuredFormValue.{ ArrayNode, ObjectStructure, TextNode }
 import uk.gov.hmrc.gform.submission.SubmissionRef
 
-import scala.xml.{ NodeSeq, Text }
+import scala.xml.{ Elem, NodeSeq, Text }
 
 object RoboticsXMLGenerator {
 
@@ -31,28 +31,25 @@ object RoboticsXMLGenerator {
     <gform id = {formId.value} dms-id = {dmsId} submission-reference = {submissionReference.value}>{buildObjectStructureXml(structuredForm)}</gform>
 
   private def buildObjectStructureXml(value: ObjectStructure): NodeSeq =
-    value.fields.flatMap(field => buildStructuredValueXml(field.name,field.value))
+    value.fields.flatMap(field => buildStructuredValueXml(field.name, field.value))
 
   def buildStructuredValueXml(fieldName: FieldName, value: StructuredFormValue): NodeSeq = value match {
-    case TextNode(v)                      => <new>{v}</new>.copy(label = fieldName.name)
-    case objectStructure: ObjectStructure => <new>{buildObjectStructureXml(objectStructure)}</new>.copy(label = fieldName.name)
-    case arrayNode: ArrayNode             => <new>{buildArrayNodeXml(fieldName, arrayNode)}</new>.copy(label = fieldName.name + "s")
-
+    case TextNode(content)                => textNodeTag(content, fieldName)
+    case objectStructure: ObjectStructure => objectStructureTag(objectStructure, fieldName)
+    case arrayNode: ArrayNode             => arrayNodeTag(arrayNode, fieldName)
   }
 
-  def buildArrayNodeXml(fieldName: FieldName, arrayNode: ArrayNode): NodeSeq = arrayNode.elements.flatMap {
-    case TextNode(value)                  => <new>{value}</new>.copy(label = fieldName.name)
-    case objectStructure: ObjectStructure => <new>{buildObjectStructureXml(objectStructure)}</new>.copy(label = fieldName.name)
-    case array: ArrayNode                 => <new>{buildArrayNodeXml(fieldName, array)}</new>.copy(label = fieldName.name + "s")
+  def buildArrayNodeXml(name: FieldName, arrayNode: ArrayNode): NodeSeq = arrayNode.elements.flatMap {
+    buildStructuredValueXml(name, _)
   }
 
-  def generateLabel(field: Field): FieldName = {
-    val fieldName = field.name.name
+  private def textNodeTag(content: String, fieldName: FieldName): Elem =
+    <new>{content}</new>.copy(label = fieldName.name)
 
-    field.value match {
-      case _: ArrayNode => FieldName(fieldName + "s")
-      case _            => FieldName(fieldName)
-    }
-  }
+  private def objectStructureTag(objectStructure: ObjectStructure, fieldName: FieldName): Elem =
+    <new>{buildObjectStructureXml(objectStructure)}</new>.copy(label = fieldName.name)
+
+  private def arrayNodeTag(arrayNode: ArrayNode, fieldName: FieldName): Elem =
+    <new>{buildArrayNodeXml(fieldName, arrayNode)}</new>.copy(label = fieldName.name + "s")
 
 }
