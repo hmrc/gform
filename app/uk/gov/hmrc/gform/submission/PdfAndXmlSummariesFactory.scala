@@ -22,9 +22,11 @@ import uk.gov.hmrc.gform.sharedmodel.form.Form
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
+import uk.gov.hmrc.gform.structuredform.{ RoboticsXMLGenerator, StructuredFormDataBuilder }
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ ExecutionContext, Future }
+import scala.xml.NodeSeq
 
 trait PdfAndXmlSummariesFactory {
   def apply(
@@ -41,6 +43,7 @@ object PdfAndXmlSummariesFactory {
   def withPdf(pdfGeneratorService: PdfGeneratorService, pdfHtml: String)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): PdfAndXmlSummariesFactory = new PdfAndXmlSummariesFactory {
+
     override def apply(
       form: Form,
       formTemplate: FormTemplate,
@@ -51,7 +54,9 @@ object PdfAndXmlSummariesFactory {
       pdfGeneratorService.generatePDF(pdfHtml).map { pdf =>
         PdfAndXmlSummaries(
           pdfSummary = createPdfSummary(pdf),
-          xmlSummary = createXmlSummary(sectionFormFields, formTemplate, submissionRef, dmsSubmission))
+          xmlSummary = createXmlSummary(sectionFormFields, formTemplate, submissionRef, dmsSubmission),
+          roboticsXml = createRoboticsXml(formTemplate, form, dmsSubmission, submissionRef)
+        )
       }
 
     private def createPdfSummary(pdf: Array[Byte]) = {
@@ -68,13 +73,31 @@ object PdfAndXmlSummariesFactory {
       formTemplate: FormTemplate,
       submissionRef: SubmissionRef,
       dmsSubmission: Destinations.DmsSubmission) = {
-      val xmlSummary = dmsSubmission.dataXml match {
-        case Some(true) =>
-          Some(XmlGeneratorService.xmlDec + "\n" + XmlGeneratorService.getXml(sectionFormFields, submissionRef))
-        case _ => None
-
-      }
+      val xmlSummary = dmsSubmission.dataXml
+        .filter(identity)
+        .map(_ => XmlGeneratorService.getXml(sectionFormFields, submissionRef))
+        .map(addXmlDeclaration)
       xmlSummary
     }
+
+    private def createRoboticsXml(
+      formTemplate: FormTemplate,
+      form: Form,
+      dmsSubmission: DmsSubmission,
+      submissionRef: SubmissionRef): Option[String] =
+      dmsSubmission.includeRoboticsXml
+        .filter(identity)
+        .map(
+          _ =>
+            RoboticsXMLGenerator(
+              formTemplate._id,
+              dmsSubmission.dmsFormId,
+              submissionRef,
+              StructuredFormDataBuilder(form, formTemplate)))
+        .map(addXmlDeclaration)
+
   }
+
+  private def addXmlDeclaration(xml: NodeSeq) =
+    XmlGeneratorService.xmlDec + "\n" + xml
 }
