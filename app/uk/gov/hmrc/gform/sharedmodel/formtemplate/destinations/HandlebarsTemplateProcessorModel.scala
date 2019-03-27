@@ -48,7 +48,7 @@ object HandlebarsTemplateProcessorModel {
     HandlebarsTemplateProcessorModel(parseJson(jsonDocument))
 
   def apply(form: Form, template: FormTemplate): HandlebarsTemplateProcessorModel =
-    HandlebarsTemplateProcessorModel(StructuredFormDataBuilder(form, template)) +
+    HandlebarsTemplateProcessorModel(JsonStructuredFormDataBuilder(form, template)) +
       HandlebarsTemplateProcessorModel(Map("formId" -> textNode(form._id.value))) +
       rosmRegistration(form)
 

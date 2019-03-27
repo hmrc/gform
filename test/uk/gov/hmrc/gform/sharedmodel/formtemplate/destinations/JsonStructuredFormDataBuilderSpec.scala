@@ -24,7 +24,7 @@ import uk.gov.hmrc.gform.sharedmodel.NotChecked
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
-class StructuredFormDataBuilderSpec extends Spec {
+class JsonStructuredFormDataBuilderSpec extends Spec {
   "apply(Form, FormTemplate)" must "create the correct JSON for simple fields in non-repeating sections/groups" in {
     validate(
       createFormTemplate(
@@ -247,7 +247,7 @@ class StructuredFormDataBuilderSpec extends Spec {
   }
 
   private def validate(formTemplate: FormTemplate, formData: Form, expectedHandlebarsModelJson: String): Assertion =
-    StructuredFormDataBuilder(formData, formTemplate) shouldBe
+    JsonStructuredFormDataBuilder(formData, formTemplate) shouldBe
       new ObjectMapper().readTree(expectedHandlebarsModelJson.stripMargin)
 
   def createForm(fields: (String, String)*): Form =

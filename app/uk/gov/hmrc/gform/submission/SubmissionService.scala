@@ -26,6 +26,7 @@ import uk.gov.hmrc.gform.formtemplate.FormTemplateService
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorService
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.structuredform.{ RoboticsXMLGenerator, StructuredFormDataBuilder }
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsHttpApiSubmitter
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.HeaderCarrier

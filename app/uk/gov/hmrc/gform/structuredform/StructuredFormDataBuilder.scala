@@ -14,20 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
+package uk.gov.hmrc.gform.structuredform
 
 import cats.data.NonEmptyList
 import cats.instances.option._
 import cats.syntax.option._
-import com.fasterxml.jackson.databind.JsonNode
 import uk.gov.hmrc.gform.formtemplate.RepeatingComponentService
 import uk.gov.hmrc.gform.sharedmodel.form.Form
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.JsonNodes._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.structuredform.StructuredFormValue.{ ArrayNode, ObjectStructure, TextNode }
 
 object StructuredFormDataBuilder {
-  def apply(form: Form, template: FormTemplate): JsonNode =
-    objectNode(new StructuredFormDataBuilder(form, template).build())
+  def apply(form: Form, template: FormTemplate): ObjectStructure =
+    StructuredFormValue.ObjectStructure(new StructuredFormDataBuilder(form, template).build())
 }
 
 class StructuredFormDataBuilder(form: Form, template: FormTemplate) {
@@ -38,32 +37,32 @@ class StructuredFormDataBuilder(form: Form, template: FormTemplate) {
 
   private val multiChoiceFieldIds: Set[FormComponentId] = extractMultiChoiceFieldIds(template)
 
-  def build(): Map[String, JsonNode] =
+  def build(): List[Field] =
     buildSections ++ buildBaseSection(template.acknowledgementSection) ++ buildBaseSection(template.declarationSection)
 
-  private def buildSections(): Map[String, JsonNode] =
-    (for {
+  private def buildSections(): List[Field] =
+    for {
       section     <- template.sections
       field       <- section.fields
       fieldAsJson <- buildField(field, RepeatingComponentService.isRepeatingSection(section))
-    } yield fieldAsJson).map { case (k, v) => (k.id.value, v) }.toMap
+    } yield fieldAsJson
 
-  def buildBaseSection(section: BaseSection): Map[String, JsonNode] =
-    (for {
-      field       <- section.fields
-      fieldAsJson <- buildField(field, false)
-    } yield fieldAsJson).map { case (k, v) => (k.id.value, v) }.toMap
+  def buildBaseSection(section: BaseSection): List[Field] =
+    for {
+      unstructuredField <- section.fields
+      structuredField   <- buildField(unstructuredField, false)
+    } yield structuredField
 
-  private def buildField(field: FormComponent, repeatable: Boolean): Seq[(FormComponent, JsonNode)] =
+  private def buildField(field: FormComponent, repeatable: Boolean): Seq[Field] =
     field.`type` match {
       case g: Group => buildGroupFields(g)
       case _        => buildNonGroupField(field, repeatable).toSeq
     }
 
-  private def buildGroupFields(group: Group): Seq[(FormComponent, JsonNode)] =
+  private def buildGroupFields(group: Group): Seq[Field] =
     group.fields.flatMap { buildNonGroupField(_, repeatable = true) }
 
-  private def buildNonGroupField(nonGroupField: FormComponent, repeatable: Boolean): Option[(FormComponent, JsonNode)] =
+  private def buildNonGroupField(nonGroupField: FormComponent, repeatable: Boolean): Option[Field] =
     nonGroupField.`type` match {
       case mf: MultiField => buildComposite(nonGroupField, mf, repeatable)
       case _ =>
@@ -72,55 +71,53 @@ class StructuredFormDataBuilder(form: Form, template: FormTemplate) {
         }
     }
 
-  private def buildComposite(
-    baseField: FormComponent,
-    mf: MultiField,
-    repeatable: Boolean): Option[(FormComponent, JsonNode)] =
+  private def buildComposite(baseField: FormComponent, mf: MultiField, repeatable: Boolean): Option[Field] =
     mf.fields(baseField.id)
       .traverse { f =>
         formValuesByUnindexedId.get(f).map(v => (f, v))
       }
       .map(sequence(_))
       .map { v =>
-        (
-          baseField,
-          if (repeatable) buildRepeatableComposite(baseField.id, v)
-          else buildNonRepeatableComposite(baseField.id, v.head))
+        if (repeatable) buildRepeatableComposite(baseField.id, v)
+        else buildNonRepeatableComposite(baseField.id, v.head)
       }
 
   private def buildRepeatableComposite(
     baseFieldId: FormComponentId,
-    values: NonEmptyList[NonEmptyList[(FormComponentId, String)]]): JsonNode =
-    arrayNode(values.toList.map { buildNonRepeatableComposite(baseFieldId, _) })
+    values: NonEmptyList[NonEmptyList[(FormComponentId, String)]]): Field =
+    Field(
+      FieldName(baseFieldId.value),
+      ArrayNode(values.toList.map { buildObjectStructureForComposite(baseFieldId, _) }))
 
   private def buildNonRepeatableComposite(
     baseFieldId: FormComponentId,
-    fields: NonEmptyList[(FormComponentId, String)]): JsonNode =
-    objectNode(fields.map { case (k, v) => (k.stripBase(baseFieldId).value, textNode(v)) }.toList.toMap)
+    fields: NonEmptyList[(FormComponentId, String)]): Field =
+    Field(FieldName(baseFieldId.value), buildObjectStructureForComposite(baseFieldId, fields))
+
+  private def buildObjectStructureForComposite(
+    baseFieldId: FormComponentId,
+    fields: NonEmptyList[(FormComponentId, String)]) =
+    ObjectStructure(fields.map {
+      case (k, v) => Field(FieldName(k.stripBase(baseFieldId).value), TextNode(v))
+    }.toList)
 
   private def buildSimpleField(
     field: FormComponent,
     values: NonEmptyList[String],
     repeatable: Boolean,
-    multiValue: Boolean): (FormComponent, JsonNode) =
+    multiValue: Boolean): Field =
     if (repeatable) buildRepeatingSimpleField(field, values, multiValue)
     else buildNonRepeatingSimpleField(field, values.head, multiValue)
 
-  private def buildNonRepeatingSimpleField(
-    field: FormComponent,
-    value: String,
-    multiValue: Boolean): (FormComponent, JsonNode) =
-    (field, buildNode(value, multiValue))
+  private def buildNonRepeatingSimpleField(field: FormComponent, value: String, multiValue: Boolean): Field =
+    Field(FieldName(field.id.value), buildNode(value, multiValue))
 
-  private def buildRepeatingSimpleField(
-    field: FormComponent,
-    value: NonEmptyList[String],
-    multiValue: Boolean): (FormComponent, JsonNode) =
-    (field, arrayNode(value.toList.map(buildNode(_, multiValue))))
+  private def buildRepeatingSimpleField(field: FormComponent, value: NonEmptyList[String], multiValue: Boolean): Field =
+    Field(FieldName(field.id.value), ArrayNode(value.toList.map(buildNode(_, multiValue))))
 
-  private def buildNode(value: String, multiValue: Boolean): JsonNode =
+  private def buildNode(value: String, multiValue: Boolean): StructuredFormValue =
     if (multiValue) choicesToArray(value)
-    else textNode(value)
+    else TextNode(value)
 
   private def extractMultiChoiceFieldIds(template: FormTemplate): Set[FormComponentId] = {
     def groupOrNot(field: FormComponent): List[FormComponent] = field.`type` match {
@@ -141,8 +138,8 @@ class StructuredFormDataBuilder(form: Form, template: FormTemplate) {
     } yield id).toSet
   }
 
-  private def choicesToArray(commaSeparatedString: String) =
-    arrayNode(commaSeparatedString.split(',').map(_.trim).filterNot(_.isEmpty).map(textNode).toList)
+  private def choicesToArray(commaSeparatedString: String): ArrayNode =
+    ArrayNode(commaSeparatedString.split(',').map(_.trim).filterNot(_.isEmpty).map(TextNode).toList)
 
   def sequence(
     map: NonEmptyList[(FormComponentId, NonEmptyList[String])]): NonEmptyList[NonEmptyList[(FormComponentId, String)]] =
