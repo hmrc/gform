@@ -83,6 +83,32 @@ class RoboticsXMLGeneratorSpec extends Spec {
 
   }
 
+  it should "generate the correct XML for an object structure that occurs when there are MultiField fields in repeating sections" in {
+
+    verifyXml(
+      objectStructure(
+        arrayField(
+          "field",
+          objectStructure(textField("day", "1"), textField("month", "2"), textField("year", "3")),
+          objectStructure(textField("day", "4"), textField("month", "5"), textField("year", "6"))
+        )
+      ),
+      <fields>
+        <field seqNum ="0">
+          <day>1</day>
+          <month>2</month>
+          <year>3</year>
+        </field>
+        <field seqNum ="1">
+          <day>4</day>
+          <month>5</month>
+          <year>6</year>
+        </field>
+      </fields>
+    )
+
+  }
+
 }
 case object RoboticsXMLGeneratorSpec extends Spec {
 
