@@ -31,20 +31,19 @@ object RoboticsXMLGenerator {
     <gform id = {formId.value} dms-id = {dmsId} submission-reference = {submissionReference.value}>{buildObjectStructureXml(structuredForm)}</gform>
 
   private def buildObjectStructureXml(value: ObjectStructure): NodeSeq =
-    value.fields.map(field =>
-      <new>{buildStructuredValueXml(field.name,field.value)}</new>.copy(label = generateLabel(field).name))
+    value.fields.flatMap(field => buildStructuredValueXml(field.name,field.value))
 
   def buildStructuredValueXml(fieldName: FieldName, value: StructuredFormValue): NodeSeq = value match {
-    case TextNode(v)                      => Text(v)
-    case objectStructure: ObjectStructure => buildObjectStructureXml(objectStructure)
-    case arrayNode: ArrayNode             => buildArrayNodeXml(fieldName, arrayNode)
+    case TextNode(v)                      => <new>{v}</new>.copy(label = fieldName.name)
+    case objectStructure: ObjectStructure => <new>{buildObjectStructureXml(objectStructure)}</new>.copy(label = fieldName.name)
+    case arrayNode: ArrayNode             => <new>{buildArrayNodeXml(fieldName, arrayNode)}</new>.copy(label = fieldName.name + "s")
 
   }
 
   def buildArrayNodeXml(fieldName: FieldName, arrayNode: ArrayNode): NodeSeq = arrayNode.elements.flatMap {
     case TextNode(value)                  => <new>{value}</new>.copy(label = fieldName.name)
-    case objectStructure: ObjectStructure => buildObjectStructureXml(objectStructure)
-    case array: ArrayNode                 => buildArrayNodeXml(fieldName, array)
+    case objectStructure: ObjectStructure => <new>{buildObjectStructureXml(objectStructure)}</new>.copy(label = fieldName.name)
+    case array: ArrayNode                 => <new>{buildArrayNodeXml(fieldName, array)}</new>.copy(label = fieldName.name + "s")
   }
 
   def generateLabel(field: Field): FieldName = {

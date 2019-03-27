@@ -23,6 +23,8 @@ import uk.gov.hmrc.gform.submission.SubmissionRef
 import scala.xml.{ Elem, NodeSeq, Text }
 
 class RoboticsXMLGeneratorSpec extends Spec {
+  import RoboticsXMLGeneratorSpec._
+
   implicit class FieldNameSyntax(fieldName: String) {
     def ~(value: String) = Field(FieldName(fieldName), TextNode(value))
     def ~(fields: Field*) = Field(FieldName(fieldName), objectStructure(fields: _*))
@@ -55,6 +57,35 @@ class RoboticsXMLGeneratorSpec extends Spec {
 
   }
 
+  it should "generate the correct XML for an object structure with a field that is an array that contains objects" in {
+
+    verifyXml(
+      objectStructure(
+        arrayField(
+          "arrayField",
+          objectStructure(
+            objectStructureField(
+              "objectStructureField",
+              textField("txtfield1", "txtval1"),
+              textField("txtfield2", "txtval2"))),
+          TextNode("value2")
+        )),
+      <arrayFields>
+        <arrayField>
+          <objectStructureField>
+          <txtfield1>txtval1</txtfield1>
+          <txtfield2>txtval2</txtfield2>
+          </objectStructureField>
+        </arrayField>
+      <arrayField>value2</arrayField>
+      </arrayFields>
+    )
+
+  }
+
+}
+case object RoboticsXMLGeneratorSpec extends Spec{
+
   private def verifyXml(objectStructure: ObjectStructure, expectedFields: NodeSeq) = {
 
     val formId = FormId("formId")
@@ -67,18 +98,19 @@ class RoboticsXMLGeneratorSpec extends Spec {
     RoboticsXMLGenerator.apply(formId, dmsId, submissionRef, objectStructure) shouldBe expected
   }
 
-  private def removeWhitespace(ns: NodeSeq): NodeSeq = ns.map {
+  def removeWhitespace(ns: NodeSeq): NodeSeq = ns.map {
     case txt: Text => txt
     case node      => scala.xml.Utility.trim(node)
   }
 
-  private def textField(fieldName: String, value: String): Field = Field(FieldName(fieldName), TextNode(value))
+  def textField(fieldName: String, value: String): Field = Field(FieldName(fieldName), TextNode(value))
 
-  private def objectStructureField(fieldName: String, fields: Field*): Field =
+  def objectStructureField(fieldName: String, fields: Field*): Field =
     Field(FieldName(fieldName), ObjectStructure(fields.toList))
 
-  private def objectStructure(fields: Field*): StructuredFormValue.ObjectStructure = ObjectStructure(fields.toList)
+  def objectStructure(fields: Field*): StructuredFormValue.ObjectStructure = ObjectStructure(fields.toList)
 
-  private def arrayField(fieldName: String, fields: StructuredFormValue*) =
+  def arrayField(fieldName: String, fields: StructuredFormValue*) =
     Field(FieldName(fieldName), ArrayNode(fields.toList))
+
 }
