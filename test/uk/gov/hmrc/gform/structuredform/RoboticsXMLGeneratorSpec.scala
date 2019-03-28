@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.structuredform
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.structuredform.StructuredFormValue.{ ArrayNode, ObjectStructure, TextNode }
 import uk.gov.hmrc.gform.submission.SubmissionRef
 
@@ -114,7 +115,7 @@ case object RoboticsXMLGeneratorSpec extends Spec {
 
   private def verifyXml(objectStructure: ObjectStructure, expectedFields: NodeSeq) = {
 
-    val formId = FormId("formId")
+    val formId = FormTemplateId("formId")
     val dmsId = "dmsId"
     val submissionRef = SubmissionRef("submissionRef")
 

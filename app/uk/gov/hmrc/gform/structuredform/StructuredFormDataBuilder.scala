@@ -21,7 +21,6 @@ import cats.instances.option._
 import cats.syntax.option._
 import uk.gov.hmrc.gform.formtemplate.RepeatingComponentService
 import uk.gov.hmrc.gform.sharedmodel.form.Form
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.JsonNodes._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.structuredform.StructuredFormValue.{ ArrayNode, ObjectStructure, TextNode }
 

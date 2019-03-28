@@ -32,6 +32,8 @@ import uk.gov.hmrc.gform.time.TimeProvider
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.http.HeaderCarrier
 
+import scala.xml.NodeSeq
+
 class FileUploadService(
   fileUploadConnector: FileUploadConnector,
   fileUploadFrontendConnector: FileUploadFrontendConnector,
@@ -69,32 +71,27 @@ class FileUploadService(
         ByteString(summaries.pdfSummary.pdfContent),
         ContentType.`application/pdf`)
 
-    def uploadXmlF: Future[Unit] =
-      fileUploadFrontendConnector
-        .upload(
-          envelopeId,
-          xml,
-          s"$fileNamePrefix-metadata.xml",
-          ByteString(metadataXml.getBytes),
-          ContentType.`application/xml`)
+    def uploadXmlF: Future[Unit] = uploadXml(xml, s"$fileNamePrefix-metadata.xml", metadataXml)
 
     def uploadAnyDataXmlF: Future[Unit] = summaries.xmlSummary match {
-      case Some(elem) =>
-        fileUploadFrontendConnector
-          .upload(
-            envelopeId,
-            data,
-            s"$fileNamePrefix-data.xml",
-            ByteString(elem.getBytes),
-            ContentType.`application/xml`)
-      case _ =>
-        Future.successful(())
+      case Some(elem) => uploadXml(data, s"$fileNamePrefix-data.xml", elem)
+      case _ => Future.successful(())
     }
+
+    def uploadRoboticsXmlF: Future[Unit] = summaries.roboticsXml match {
+      case Some(elem) => uploadXml(roboticsXml, s"${submissionRef.value}-$date-robotic.xml", elem)
+      case _ => Future.successful(())
+    }
+
+    def uploadXml(fileId: FileId, fileName: String, xml: String): Future[Unit] =
+      fileUploadFrontendConnector
+        .upload(envelopeId, fileId, fileName, ByteString(xml.getBytes), ContentType.`application/xml`)
 
     for {
       _ <- uploadPfdF
       _ <- uploadXmlF
       _ <- uploadAnyDataXmlF
+      _ <- uploadRoboticsXmlF
       _ <- fileUploadConnector.routeEnvelope(RouteEnvelopeRequest(envelopeId, "dfs", "DMS"))
     } yield ()
   }
@@ -110,5 +107,6 @@ object FileUploadService {
     val pdf = FileId("pdf")
     val xml = FileId("xmlDocument")
     val data = FileId("xmlSubmission")
+    val roboticsXml = FileId("roboticsXml")
   }
 }

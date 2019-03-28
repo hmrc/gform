@@ -39,13 +39,15 @@ object Destination {
     classificationType: String,
     businessArea: String,
     includeIf: Option[String] = None,
-    failOnError: Option[Boolean] = None)
+    failOnError: Option[Boolean] = None,
+    roboticsXml: Option[Boolean] = None)
       extends Destination {
     def toDeprecatedDmsSubmission: Destinations.DmsSubmission = Destinations.DmsSubmission(
       dmsFormId,
       customerId,
       classificationType,
-      businessArea
+      businessArea,
+      roboticsXml = roboticsXml
     )
   }
 

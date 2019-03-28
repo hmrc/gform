@@ -23,7 +23,7 @@ import uk.gov.hmrc.gform.sharedmodel.NotChecked
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.structuredform.RoboticsXMLGeneratorSpec._
-import uk.gov.hmrc.gform.structuredform.StructuredFormValue.{ArrayNode, TextNode}
+import uk.gov.hmrc.gform.structuredform.StructuredFormValue.{ ArrayNode, TextNode }
 
 class StructuredFormDataBuilderSpec extends Spec {
   "apply(Form, FormTemplate)" must "create the correct JSON for simple fields in non-repeating sections/groups" in {
