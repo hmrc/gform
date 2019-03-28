@@ -32,8 +32,6 @@ import uk.gov.hmrc.gform.time.TimeProvider
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.xml.NodeSeq
-
 class FileUploadService(
   fileUploadConnector: FileUploadConnector,
   fileUploadFrontendConnector: FileUploadFrontendConnector,
@@ -75,12 +73,12 @@ class FileUploadService(
 
     def uploadAnyDataXmlF: Future[Unit] = summaries.xmlSummary match {
       case Some(elem) => uploadXml(data, s"$fileNamePrefix-data.xml", elem)
-      case _ => Future.successful(())
+      case _          => Future.successful(())
     }
 
     def uploadRoboticsXmlF: Future[Unit] = summaries.roboticsXml match {
       case Some(elem) => uploadXml(roboticsXml, s"${submissionRef.value}-$date-robotic.xml", elem)
-      case _ => Future.successful(())
+      case _          => Future.successful(())
     }
 
     def uploadXml(fileId: FileId, fileName: String, xml: String): Future[Unit] =

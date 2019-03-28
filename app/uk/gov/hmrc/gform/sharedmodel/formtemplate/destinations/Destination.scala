@@ -47,7 +47,7 @@ object Destination {
       customerId,
       classificationType,
       businessArea,
-      roboticsXml = roboticsXml
+      includeRoboticsXml = roboticsXml
     )
   }
 

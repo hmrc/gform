@@ -34,7 +34,7 @@ object Destinations {
     classificationType: String,
     businessArea: String,
     dataXml: Option[Boolean] = None,
-    roboticsXml: Option[Boolean] = None)
+    includeRoboticsXml: Option[Boolean] = None)
       extends Destinations
 
   implicit val dmsSubmissionFormat: OFormat[DmsSubmission] = Json.format
