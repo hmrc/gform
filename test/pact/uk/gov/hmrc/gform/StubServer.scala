@@ -46,7 +46,7 @@ trait StubServer {
   lazy val env: Environment = Environment.simple(mode = play.api.Mode.Test)
   val ctx = ApplicationLoader.createContext(env)
   val stubbedModule = new StubApplicationModule(ctx)
-  lazy val port = 9197
+  lazy val port = 9199
   lazy val baseUrl = s"http://localhost:$port"
 
   Server.forRouter(stubbedModule.router.asJava, Mode.TEST, port)

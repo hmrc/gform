@@ -37,7 +37,7 @@ class GFormConnectorVerifiersPactSpec extends Spec with StubServer {
           true
         case _ => false
       }
-      .runVerificationAgainst("localhost", 9197)
+      .runVerificationAgainst("localhost", 9199)
   }
 
   def persistAFormTemplate(formTemplateId: FormTemplateId) = {
