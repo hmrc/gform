@@ -569,6 +569,10 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     process("""{{exists foo "3"}}""", """{ "foo": ["2", "3", "4"] }""") shouldBe "true"
   }
 
+  "plus" must "add a var-args of numbers together" in {
+    process("""{{plus 1 2 3}}""") shouldBe "6"
+  }
+
   private def periodGen: Gen[(String, String, String, String)] =
     for {
       key  <- Gen.posNum[Int].map(_.toString)
