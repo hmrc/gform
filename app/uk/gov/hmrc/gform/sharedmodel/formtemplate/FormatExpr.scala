@@ -160,6 +160,7 @@ case object NINO extends TextConstraint
 case object TelephoneNumber extends TextConstraint {
   val minimumLength = 4
   val maximumLength = 25
+  val phoneNumberValidation = """^[\+A-Z0-9 )/(*#-]+$""".r
 }
 case object Email extends TextConstraint
 case object UkVrn extends TextConstraint
