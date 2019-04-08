@@ -21,7 +21,7 @@ import java.time.format.DateTimeFormatter
 
 object TaxPeriodHelper {
 
-  private val dtfUser = DateTimeFormatter.ofPattern("dd MMMM yyyy")
+  private val dtfUser = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
   def formatDate(date: LocalDate) = dtfUser.format(date)
 
