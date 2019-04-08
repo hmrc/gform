@@ -370,10 +370,6 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
   def currentTimestamp: CharSequence = condition(DateTimeFormatter.ISO_INSTANT.format(timeProvider.instant))
   def currentMonth(): CharSequence = condition(timeProvider.localDateTime.getMonthValue)
 
-  def hmrcTaxPeriodKey(s: Any): CharSequence = log("hmrcTaxPeriodKey", s) { hmrcTaxPeriodValue(s, 0) }
-  def hmrcTaxPeriodFrom(s: Any): CharSequence = log("hmrcTaxPeriodFrom", s) { hmrcTaxPeriodValue(s, 1) }
-  def hmrcTaxPeriodTo(s: Any): CharSequence = log("hmrcTaxPeriodTo", s) { hmrcTaxPeriodValue(s, 2) }
-
   def greaterThan(first: Any, second: Any): CharSequence = log("greaterThan", first, second) {
     ifNotNullAsNumber(first) { f =>
       ifNotNullAsNumber(second) { s =>
@@ -397,11 +393,6 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
       }
     }
   }
-
-  private def hmrcTaxPeriodValue(period: Any, index: Int): CharSequence =
-    ifNotNullAsString(period) { s =>
-      condition(s.toString.split('|')(index))
-    }
 
   def toEtmpLegalStatus(frontEndValue: Any): CharSequence = log("toEtmpLegalStatus", frontEndValue) {
     ifNotNullAsString(frontEndValue) { s =>

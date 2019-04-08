@@ -137,39 +137,6 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     process(s"{{either2 ${quote("""hello " world""")} null}}") shouldBe """hello \" world"""
   }
 
-  "hmrcTaxPeriodKey" must "return the 0th element of the pipe separated parameter" in {
-    forAll(periodGen) {
-      case (aKey, _, _, period) =>
-        process(s"{{hmrcTaxPeriodKey '$period'}}") shouldBe aKey
-    }
-  }
-
-  it must "return null if the period is null" in {
-    process("{{hmrcTaxPeriodKey null}}") shouldBe "null"
-  }
-
-  "hmrcTaxPeriodFrom" must "return the 1st element of the pipe separated parameter" in {
-    forAll(periodGen) {
-      case (_, from, _, period) =>
-        process(s"{{hmrcTaxPeriodFrom '$period'}}") shouldBe from
-    }
-  }
-
-  it must "return null if the period is null" in {
-    process(s"{{hmrcTaxPeriodFrom null}}") shouldBe "null"
-  }
-
-  "hmrcTaxPeriodTo" must "return the 2nd element of the pipe separated parameter" in {
-    forAll(periodGen) {
-      case (_, _, to, period) =>
-        process(s"{{hmrcTaxPeriodTo '$period'}}") shouldBe to
-    }
-  }
-
-  it must "return null if the period is null" in {
-    process(s"{{hmrcTaxPeriodTo null}}") shouldBe "null"
-  }
-
   "isSuccessCode" must "return true for all codes that begin with '2'" in {
     forAll(Gen.chooseNum(200, 299)) { code =>
       whenever(code >= 200 && code <= 299) {
