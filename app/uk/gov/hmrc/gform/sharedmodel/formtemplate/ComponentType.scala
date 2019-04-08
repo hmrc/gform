@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
+import cats.Eq
 import cats.data.NonEmptyList
 import julienrf.json.derived
 import play.api.data.validation.ValidationError
@@ -107,6 +108,7 @@ object RegimeType {
 case class HmrcTaxPeriod(idType: IdType, idNumber: Expr, regimeType: RegimeType) extends ComponentType
 
 object HmrcTaxPeriod {
+  implicit val catsEq: Eq[HmrcTaxPeriod] = Eq.fromUniversalEquals
   implicit val format: OFormat[HmrcTaxPeriod] = derived.oformat
 }
 

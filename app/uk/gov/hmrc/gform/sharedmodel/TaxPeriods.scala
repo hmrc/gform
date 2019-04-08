@@ -17,6 +17,8 @@
 package uk.gov.hmrc.gform.sharedmodel
 
 import cats.data.NonEmptyList
+import cats.instances.string._
+import cats.syntax.eq._
 import java.time.LocalDate
 
 import julienrf.json.derived
@@ -53,7 +55,19 @@ object TaxResponse {
   implicit val format: OFormat[TaxResponse] = Json.format[TaxResponse]
 }
 
-sealed trait Obligations
+sealed trait Obligations {
+
+  def findByPeriodKey(hmrcTaxPeriod: HmrcTaxPeriod, periodKey: String): Option[ObligationDetail] = this match {
+    case NotChecked => None
+    case RetrievedObligations(taxResponses) =>
+      taxResponses
+        .filter(_.id.recalculatedTaxPeriodKey.hmrcTaxPeriod === hmrcTaxPeriod)
+        .map(_.obligation)
+        .flatMap(_.obligations)
+        .flatMap(_.obligationDetails)
+        .find(_.periodKey === periodKey)
+  }
+}
 final case object NotChecked extends Obligations
 final case class RetrievedObligations(obligation: NonEmptyList[TaxResponse]) extends Obligations
 

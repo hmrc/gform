@@ -98,7 +98,8 @@ trait ComponentTypeGen {
         ukSortCodeGen,
         addressGen,
         informationMessageGen,
-        fileUploadGen
+        fileUploadGen,
+        hmrcTaxPeriodGen
       )
     else
       Gen.oneOf(
@@ -110,6 +111,7 @@ trait ComponentTypeGen {
         choiceGen,
         informationMessageGen,
         fileUploadGen,
+        hmrcTaxPeriodGen,
         groupGen(maxDepth))
 }
 
