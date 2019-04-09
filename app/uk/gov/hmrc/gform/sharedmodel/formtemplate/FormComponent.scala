@@ -20,7 +20,7 @@ import play.api.libs.json._
 import uk.gov.hmrc.gform.formtemplate.FormComponentMaker
 import uk.gov.hmrc.gform.sharedmodel.LabelHelper
 
-case class ExpandedFormComponent(expandedFC: List[FormComponent]) extends AnyVal
+case class ExpandedFormComponent(expandedFormComponent: List[FormComponent]) extends AnyVal
 
 case class FormComponent(
   id: FormComponentId,
@@ -49,12 +49,11 @@ case class FormComponent(
         val expandedFields =
           for {
             field <- fields
-            res <- updateField(1, field) :: (1 until (max.getOrElse(1)))
+            res <- updateField(1, field) :: (1 until max.getOrElse(1))
                     .map(i => updateField(i + 1, field.copy(id = FormComponentId(i + "_" + field.id.value))))
                     .toList
           } yield res
         expandedFields.flatMap(loop) // for case when there is group inside group (Note: it does not work, we would need to handle prefix)
-
       case _ => fc :: Nil
     }
 

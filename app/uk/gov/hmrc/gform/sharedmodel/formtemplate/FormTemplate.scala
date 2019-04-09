@@ -25,8 +25,9 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationTest
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
 
 case class ExpandedFormTemplate(expandedSection: List[ExpandedSection]) {
-  val allFCs: List[FormComponent] = expandedSection.flatMap(_.expandedFCs.flatMap(_.expandedFC))
-  val allFcIds: List[FormComponentId] = allFCs.map(_.id)
+  val allFormComponents: List[FormComponent] =
+    expandedSection.flatMap(_.expandedFormComponents.flatMap(_.expandedFormComponent))
+  val allFormComponentIds: List[FormComponentId] = allFormComponents.map(_.id)
 }
 
 case class FormTemplate(

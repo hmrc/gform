@@ -119,15 +119,17 @@ object ChoiceType {
   implicit val format: OFormat[ChoiceType] = derived.oformat
 }
 
+case class RevealingChoice(options: List[String], selections: List[Int], hiddenField: List[List[FormComponent]])
+    extends ComponentType
+object RevealingChoice {
+  implicit val format: OFormat[RevealingChoice] = derived.oformat
+}
+
 case class IdType(value: String) extends AnyVal
-case class IdNumber(value: String) extends AnyVal
 case class RegimeType(value: String) extends AnyVal
 
 object IdType {
   implicit val format: OFormat[IdType] = ValueClassFormat.oformat("idType", IdType.apply, _.value)
-}
-object IdNumber {
-  implicit val format: OFormat[IdNumber] = ValueClassFormat.oformat("idNumber", IdNumber.apply, _.value)
 }
 object RegimeType {
   implicit val format: OFormat[RegimeType] = ValueClassFormat.oformat("regimeType", RegimeType.apply, _.value)
