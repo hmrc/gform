@@ -29,7 +29,7 @@ sealed trait BaseSection {
   def fields: List[FormComponent]
 }
 
-case class ExpandedSection(expandedFCs: List[ExpandedFormComponent]) extends AnyVal {
+case class ExpandedSection(expandedFormComponents: List[ExpandedFormComponent]) extends AnyVal {
   def toExpandedFormTemplate: ExpandedFormTemplate = ExpandedFormTemplate(this :: Nil)
 }
 

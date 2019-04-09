@@ -138,7 +138,7 @@ object FormTemplateValidator {
     }
 
   def validateEnrolmentIdentifier(formTemplate: FormTemplate): ValidationResult =
-    if (userContextComponentType(formTemplate.expandFormTemplate.allFCs).nonEmpty) {
+    if (userContextComponentType(formTemplate.expandFormTemplate.allFormComponents).nonEmpty) {
       formTemplate.authConfig match {
         case HmrcEnrolmentModule(_) | HmrcAgentWithEnrolmentModule(_, _) => Valid
         case _                                                           => Invalid("You used '${user.enrolledIdentifier}' but you didn't provide 'serviceId'.")
@@ -185,15 +185,16 @@ object FormTemplateValidator {
   }
 
   def validate(componentType: ComponentType, formTemplate: FormTemplate): ValidationResult = componentType match {
-    case HasExpr(SingleExpr(expr))     => validate(expr, formTemplate.sections)
-    case HasExpr(MultipleExpr(fields)) => Valid
-    case Date(_, _, _)                 => Valid
-    case Address(_)                    => Valid
-    case Choice(_, _, _, _, _)         => Valid
-    case HmrcTaxPeriod(_, _, _)        => Valid
-    case Group(fvs, _, _, _, _, _)     => validate(fvs.map(_.`type`), formTemplate)
-    case FileUpload()                  => Valid
-    case InformationMessage(_, _)      => Valid
+    case HasExpr(SingleExpr(expr))          => validate(expr, formTemplate.sections)
+    case HasExpr(MultipleExpr(fields))      => Valid
+    case Date(_, _, _)                      => Valid
+    case Address(_)                         => Valid
+    case Choice(_, _, _, _, _)              => Valid
+    case RevealingChoice(_, _, hiddenField) => validate(hiddenField.flatMap(_.map(_.`type`)), formTemplate)
+    case HmrcTaxPeriod(_, _, _)             => Valid
+    case Group(fvs, _, _, _, _, _)          => validate(fvs.map(_.`type`), formTemplate)
+    case FileUpload()                       => Valid
+    case InformationMessage(_, _)           => Valid
   }
 
   def validateForwardReference(sections: List[Section]): ValidationResult = {

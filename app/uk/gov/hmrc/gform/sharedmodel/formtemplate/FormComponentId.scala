@@ -37,6 +37,8 @@ case class FormComponentId(value: String) extends AnyVal {
       case _                                       => this
     }
   }
+
+  implicit def equal: Eq[FormComponentId] = Eq.fromUniversalEquals[FormComponentId]
 }
 
 object FormComponentId {

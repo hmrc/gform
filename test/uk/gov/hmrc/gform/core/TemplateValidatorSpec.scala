@@ -75,7 +75,7 @@ class TemplateValidatorSpec extends Spec {
       List(mkGroupFormComponent("group1", fieldId, fieldId), mkGroupFormComponent("group2", fieldId, fieldId))
     val groupOfGroups = List(mkGroupFormComponent("fieldId"), mkGroupFormComponent("fieldId"))
 
-    val invalid = validateFieldsErrorMsg(("fieldId"))
+    val invalid = validateFieldsErrorMsg("fieldId")
 
     val table =
       Table(
@@ -103,7 +103,7 @@ class TemplateValidatorSpec extends Spec {
       val newSections = template.sections.map(_.copy(fields = newFormComponents))
       val newTemplate = template.copy(sections = newSections).copy(authConfig = authConfig)
 
-      val isAUserCtx = userContextComponentType(formTemplate.expandFormTemplate.allFCs)
+      val isAUserCtx = userContextComponentType(formTemplate.expandFormTemplate.allFormComponents)
 
       whenever(
         authConfig.isInstanceOf[HmrcEnrolmentModule] || authConfig

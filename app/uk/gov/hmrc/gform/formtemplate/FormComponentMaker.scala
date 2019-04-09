@@ -26,10 +26,11 @@ import play.api.libs.json._
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.{ FormatParser, PresentationHintParser, ValueParser }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidth.DisplayWidth
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.RoundingMode._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService._
+
+import scala.collection.immutable.List
 case class MES(
   mandatory: Boolean,
   editable: Boolean,
@@ -53,6 +54,11 @@ class FormComponentMaker(json: JsValue) {
   lazy val optionHelpText: Option[List[String]] = (json \ "optionHelpText").asOpt[List[String]]
   lazy val submitMode: Option[String] = (json \ "submitMode").asOpt[String]
   lazy val choices: Option[List[String]] = (json \ "choices").asOpt[List[String]]
+
+  lazy val revealingChoiceJson: Option[List[List[JsValue]]] =
+    (json \ "revealingFields").asOpt[List[List[JsValue]]]
+  lazy val revealingChoice: Option[List[List[FormComponentMaker]]] =
+    revealingChoiceJson.map(_.map(_.map(new FormComponentMaker(_))))
 
   lazy val idType: Option[String] = (json \ "idType").asOpt[String]
   lazy val idNumber: Opt[Option[ValueExpr]] = parse("idNumber", ValueParser.validate)
@@ -137,14 +143,15 @@ class FormComponentMaker(json: JsValue) {
   }
 
   private lazy val componentTypeOpt: Opt[ComponentType] = `type` match {
-    case Some(TextRaw) | None   => textOpt
-    case Some(DateRaw)          => dateOpt
-    case Some(AddressRaw)       => addressOpt
-    case Some(GroupRaw)         => groupOpt
-    case Some(ChoiceRaw)        => choiceOpt
-    case Some(FileUploadRaw)    => fileUploadOpt
-    case Some(InfoRaw)          => infoOpt
-    case Some(HmrcTaxPeriodRaw) => hmrcTaxPeriodOpt
+    case Some(TextRaw) | None     => textOpt
+    case Some(DateRaw)            => dateOpt
+    case Some(AddressRaw)         => addressOpt
+    case Some(GroupRaw)           => groupOpt
+    case Some(ChoiceRaw)          => choiceOpt
+    case Some(RevealingChoiceRaw) => revealingChoiceOpt
+    case Some(FileUploadRaw)      => fileUploadOpt
+    case Some(InfoRaw)            => infoOpt
+    case Some(HmrcTaxPeriodRaw)   => hmrcTaxPeriodOpt
     //TODO: What if there is None
   }
 
@@ -269,6 +276,21 @@ class FormComponentMaker(json: JsValue) {
       result <- oChoice.right
     } yield result
   }
+
+  private lazy val revealingChoiceOpt: Opt[RevealingChoice] = for {
+    maybeValueExpr <- optMaybeValueExpr
+    result         <- createRevealingChoice(maybeValueExpr)
+  } yield result
+
+  private def createRevealingChoice(maybeValueExpr: Option[ValueExpr]): Opt[RevealingChoice] =
+    (choices, maybeValueExpr, revealingChoice.map(_.traverse(_.traverse(_.optFieldValue())))) match {
+      case (Some(options), Selections(selections), Some(Right(hiddenFields))) =>
+        RevealingChoice(options, selections, hiddenFields).asRight
+      case _ => UnexpectedState(s"""|Wrong revealing choice definition
+                                    |choices : ${choices.getOrElse("")}
+                                    |selections: ${maybeValueExpr.getOrElse("")}
+                                    |hidden field ${revealingChoice.getOrElse("")}""".stripMargin).asLeft
+    }
 
   private lazy val hmrcTaxPeriodOpt: Opt[HmrcTaxPeriod] = (idType, idNumber, regimeType) match {
     case (Some(a), Right(Some(b: TextExpression)), Some(c)) => HmrcTaxPeriod(IdType(a), b.expr, RegimeType(c)).asRight

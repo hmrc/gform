@@ -61,6 +61,14 @@ trait ComponentTypeGen {
       helpText    <- Gen.option(PrimitiveGen.zeroOrMoreGen(PrimitiveGen.nonEmptyAlphaNumStrGen))
     } yield Choice(tpe, options, orientation, selections, helpText)
 
+  def revealingChoiceGen: Gen[RevealingChoice] =
+    for {
+      options     <- PrimitiveGen.nonEmptyAlphaNumStrGen.map(List(_))
+      selections  <- PrimitiveGen.zeroOrMoreGen(Gen.posNum[Int])
+      hiddenField <- PrimitiveGen.zeroOrMoreGen(FormComponentGen.formComponentGen(1)).map(List(_))
+
+    } yield RevealingChoice(options, selections, hiddenField)
+
   def hmrcTaxPeriodGen: Gen[HmrcTaxPeriod] =
     for {
       idType     <- IdTypeGen.idTypeGen
@@ -99,7 +107,8 @@ trait ComponentTypeGen {
         addressGen,
         informationMessageGen,
         fileUploadGen,
-        hmrcTaxPeriodGen
+        hmrcTaxPeriodGen,
+        revealingChoiceGen
       )
     else
       Gen.oneOf(
@@ -112,7 +121,9 @@ trait ComponentTypeGen {
         informationMessageGen,
         fileUploadGen,
         hmrcTaxPeriodGen,
-        groupGen(maxDepth))
+        revealingChoiceGen,
+        groupGen(maxDepth)
+      )
 }
 
 object ComponentTypeGen extends ComponentTypeGen

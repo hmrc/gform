@@ -29,9 +29,9 @@ object DependencyGraph {
   def toGraph(section: Section): Graph[FormComponentId, DiEdge] =
     graphFrom(section.expandSection.toExpandedFormTemplate)
 
-  private def graphFrom(expandedFT: ExpandedFormTemplate): Graph[FormComponentId, DiEdge] = {
+  private def graphFrom(expandedFormTemplate: ExpandedFormTemplate): Graph[FormComponentId, DiEdge] = {
 
-    val allFcIds = expandedFT.allFcIds
+    val allFcIds = expandedFormTemplate.allFormComponentIds
 
     def fromFormComponent(fc: FormComponent): Graph[FormComponentId, DiEdge] = {
       def fcIds(fc: FormComponent): List[FormComponentId] = fc match {
@@ -51,7 +51,7 @@ object DependencyGraph {
         case otherwise                   => List.empty
       }
 
-    expandedFT.allFCs.foldLeft(emptyGraph)(_ ++ fromFormComponent(_))
+    expandedFormTemplate.allFormComponents.foldLeft(emptyGraph)(_ ++ fromFormComponent(_))
 
   }
 
