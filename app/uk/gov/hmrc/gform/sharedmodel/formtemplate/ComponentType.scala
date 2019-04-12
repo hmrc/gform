@@ -31,8 +31,21 @@ sealed trait MultiField {
 }
 sealed trait ComponentType
 
-case class Text(constraint: TextConstraint, value: Expr, displayWidth: DisplayWidth = DisplayWidth.DEFAULT)
+case class Text(
+  constraint: TextConstraint,
+  value: Expr,
+  displayWidth: DisplayWidth = DisplayWidth.DEFAULT,
+  toUpperCase: UpperCaseBoolean = IsNotUpperCase)
     extends ComponentType
+
+sealed trait UpperCaseBoolean
+
+case object IsUpperCase extends UpperCaseBoolean
+case object IsNotUpperCase extends UpperCaseBoolean
+
+object UpperCaseBoolean {
+  implicit val format: OFormat[UpperCaseBoolean] = derived.oformat
+}
 
 case class TextArea(constraint: TextConstraint, value: Expr, displayWidth: DisplayWidth = DisplayWidth.DEFAULT)
     extends ComponentType
@@ -155,7 +168,6 @@ object ComponentType {
   implicit def writesNonEmptyList[T: Writes] = Writes[NonEmptyList[T]] { v =>
     JsArray((v.head :: v.tail).map(Json.toJson(_)).toList)
   }
-
   implicit val format: OFormat[ComponentType] = derived.oformat
 
 }
