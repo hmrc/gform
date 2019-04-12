@@ -56,7 +56,7 @@ class FileUploadService(
     val envelopeId: EnvelopeId = submission.envelopeId
     Logger.debug(s"env-id submit: $envelopeId")
     val date = timeModule.localDateTime().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
-    val fileNamePrefix = s"$submissionRef-$date"
+    val fileNamePrefix = s"${submissionRef.toString.replaceAll("-", "")}-$date"
     val reconciliationId = ReconciliationId.create(submissionRef)
     val metadataXml = MetadataXml.xmlDec + "\n" + MetadataXml
       .getXml(submission, reconciliationId, summaries.pdfSummary, dmsSubmission, numberOfAttachments)
@@ -77,7 +77,7 @@ class FileUploadService(
     }
 
     def uploadRoboticsXmlF: Future[Unit] = summaries.roboticsXml match {
-      case Some(elem) => uploadXml(roboticsXml, s"${submissionRef.value}-$date-robotic.xml", elem)
+      case Some(elem) => uploadXml(roboticsXml, s"$fileNamePrefix-robotic.xml", elem)
       case _          => Future.successful(())
     }
 
