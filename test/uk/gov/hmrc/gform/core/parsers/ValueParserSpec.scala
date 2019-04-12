@@ -325,7 +325,7 @@ class ValueParserSpec extends Spec {
       .DmsSubmission("DMS-ID-XX", TextExpression(AuthCtx(PayeNino)), "BT-NRU-Environmental", "FinanceOpsCorpT"),
     HmrcAgentWithEnrolmentModule(
       RequireMTDAgentEnrolment,
-      EnrolmentAuth(ServiceId("TEST"), DoCheck(Always, RejectAccess, RegimeIdCheck(RegimeId("TEST"))), None)),
+      EnrolmentAuth(ServiceId("TEST"), DoCheck(Always, RejectAccess, RegimeIdCheck(RegimeId("TEST"))))),
     "test-email-template-id",
     Some(
       NonEmptyList.of(

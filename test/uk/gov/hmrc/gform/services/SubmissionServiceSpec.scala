@@ -130,7 +130,7 @@ class SubmissionServiceSpec extends Spec {
         DmsSubmission("DMS-ID-XX", TextExpression(AuthCtx(PayeNino)), "classificationType", "businessArea"),
       authConfig = HmrcAgentWithEnrolmentModule(
         RequireMTDAgentEnrolment,
-        EnrolmentAuth(ServiceId("TEST"), DoCheck(Always, RejectAccess, RegimeIdCheck(RegimeId("TEST"))), None)),
+        EnrolmentAuth(ServiceId("TEST"), DoCheck(Always, RejectAccess, RegimeIdCheck(RegimeId("TEST"))))),
       emailTemplateId = "test-email-template-id",
       emailParameters = Some(
         NonEmptyList.of(

@@ -26,9 +26,16 @@ trait AuthConfigGen {
   def legacyFcEnrolmentVerifierGen: Gen[LegacyFcEnrolmentVerifier] =
     PrimitiveGen.nonEmptyAlphaNumStrGen.map(LegacyFcEnrolmentVerifier(_))
 
+  def enrolmentActionGen: Gen[EnrolmentAction] = Gen.oneOf(legacyFcEnrolmentVerifierGen, Gen.const(NoAction))
+
   def enrolmentCheckPredicateGen: Gen[EnrolmentCheckPredicate] = Gen.oneOf(Always, ForNonAgents)
 
-  def requireEnrolmentGen: Gen[RequireEnrolment] = SectionGen.enrolmentSectionGen.map(RequireEnrolment)
+  def requireEnrolmentGen: Gen[RequireEnrolment] =
+    for {
+      enrolmentSection <- SectionGen.enrolmentSectionGen
+      enrolmentAction  <- enrolmentActionGen
+    } yield RequireEnrolment(enrolmentSection, enrolmentAction)
+
   def needEnrolmentGen: Gen[NeedEnrolment] = Gen.oneOf(requireEnrolmentGen, Gen.const(RejectAccess))
 
   def regimeIdCheckGen: Gen[RegimeIdCheck] = regimeIdGen.map(RegimeIdCheck)
@@ -51,10 +58,9 @@ trait AuthConfigGen {
   )
   def enrolmentAuthGen: Gen[EnrolmentAuth] =
     for {
-      serviceId                 <- serviceIdGen
-      enrolmentCheck            <- enrolmentCheckGen
-      legacyFcEnrolmentVerifier <- Gen.option(legacyFcEnrolmentVerifierGen)
-    } yield EnrolmentAuth(serviceId, enrolmentCheck, legacyFcEnrolmentVerifier)
+      serviceId      <- serviceIdGen
+      enrolmentCheck <- enrolmentCheckGen
+    } yield EnrolmentAuth(serviceId, enrolmentCheck)
 
   def eeittModuleGen: Gen[EeittModule] = regimeIdGen.map(EeittModule)
 
