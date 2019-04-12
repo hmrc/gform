@@ -65,7 +65,7 @@ class AuthConfigSpec extends Spec {
     authConfigValue shouldBe JsSuccess(
       HmrcAgentWithEnrolmentModule(
         AllowAnyAgentAffinityUser,
-        EnrolmentAuth(ServiceId("Z"), DoCheck(Always, RejectAccess, NoCheck)))
+        EnrolmentAuth(ServiceId("Z"), DoCheck(Always, RejectAccess, NoCheck), None))
     )
   }
 
@@ -80,7 +80,7 @@ class AuthConfigSpec extends Spec {
     authConfigValue shouldBe JsSuccess(
       HmrcAgentWithEnrolmentModule(
         AllowAnyAgentAffinityUser,
-        EnrolmentAuth(ServiceId("Z"), DoCheck(Always, RejectAccess, RegimeIdCheck(RegimeId("IP")))))
+        EnrolmentAuth(ServiceId("Z"), DoCheck(Always, RejectAccess, RegimeIdCheck(RegimeId("IP"))), None))
     )
   }
 
@@ -117,7 +117,8 @@ class AuthConfigSpec extends Spec {
                 NonEmptyList.of(IdentifierRecipe("EtmpRegistrationNumber", FormCtx("eeittReferenceNumber"))),
                 List.empty)),
             NoCheck
-          )
+          ),
+          None
         )
       )
     )
@@ -157,7 +158,8 @@ class AuthConfigSpec extends Spec {
                 NonEmptyList.of(IdentifierRecipe("EtmpRegistrationNumber", FormCtx("eeittReferenceNumber"))),
                 List.empty)),
             RegimeIdCheck(RegimeId("IP"))
-          )
+          ),
+          None
         )
       )
     )

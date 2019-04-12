@@ -23,6 +23,9 @@ trait AuthConfigGen {
 
   def serviceIdGen: Gen[ServiceId] = PrimitiveGen.nonEmptyAlphaNumStrGen.map(ServiceId(_))
 
+  def legacyFcEnrolmentVerifierGen: Gen[LegacyFcEnrolmentVerifier] =
+    PrimitiveGen.nonEmptyAlphaNumStrGen.map(LegacyFcEnrolmentVerifier(_))
+
   def enrolmentCheckPredicateGen: Gen[EnrolmentCheckPredicate] = Gen.oneOf(Always, ForNonAgents)
 
   def requireEnrolmentGen: Gen[RequireEnrolment] = SectionGen.enrolmentSectionGen.map(RequireEnrolment)
@@ -48,9 +51,10 @@ trait AuthConfigGen {
   )
   def enrolmentAuthGen: Gen[EnrolmentAuth] =
     for {
-      serviceId      <- serviceIdGen
-      enrolmentCheck <- enrolmentCheckGen
-    } yield EnrolmentAuth(serviceId, enrolmentCheck)
+      serviceId                 <- serviceIdGen
+      enrolmentCheck            <- enrolmentCheckGen
+      legacyFcEnrolmentVerifier <- Gen.option(legacyFcEnrolmentVerifierGen)
+    } yield EnrolmentAuth(serviceId, enrolmentCheck, legacyFcEnrolmentVerifier)
 
   def eeittModuleGen: Gen[EeittModule] = regimeIdGen.map(EeittModule)
 

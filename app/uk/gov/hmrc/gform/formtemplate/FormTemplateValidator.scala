@@ -147,7 +147,7 @@ object FormTemplateValidator {
 
   def validateEnrolmentSection(formTemplate: FormTemplate): ValidationResult =
     formTemplate.authConfig match {
-      case HasEnrolmentSection(_, enrolmentSection) =>
+      case HasEnrolmentSection(_, enrolmentSection, _) =>
         val fcIds = enrolmentSection.fields.map(_.id).map(_.value).toSet
         val ctxs = enrolmentSection.identifiers.map(_.value.value).toList.toSet ++ enrolmentSection.verifiers
           .map(_.value.value)
@@ -167,8 +167,8 @@ object FormTemplateValidator {
         .validationResult("Regime id must be between 2 and 8 characters long")
 
     formTemplate.authConfig match {
-      case HmrcEnrolmentModule(EnrolmentAuth(_, DoCheck(_, _, RegimeIdCheck(regimeId)))) => regimeIdCheck(regimeId)
-      case HmrcAgentWithEnrolmentModule(_, EnrolmentAuth(_, DoCheck(_, _, RegimeIdCheck(regimeId)))) =>
+      case HmrcEnrolmentModule(EnrolmentAuth(_, DoCheck(_, _, RegimeIdCheck(regimeId)), _)) => regimeIdCheck(regimeId)
+      case HmrcAgentWithEnrolmentModule(_, EnrolmentAuth(_, DoCheck(_, _, RegimeIdCheck(regimeId)), _)) =>
         regimeIdCheck(regimeId)
       case _ => Valid
     }
