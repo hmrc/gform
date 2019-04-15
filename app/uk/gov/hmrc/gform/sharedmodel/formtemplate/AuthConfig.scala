@@ -208,10 +208,8 @@ object AuthConfig {
 
                          }
                      }
-      } yield {
-        println("eeeeee " + maybeLegacyFcEnrolmentVerifier)
-        authConfig
-      }
+      } yield authConfig
+
     }
 
     val writes: OWrites[AuthConfig] = derived.oformat
@@ -239,6 +237,7 @@ object EnrolmentAction {
 object LegacyFcEnrolmentVerifier {
   implicit val format: Format[LegacyFcEnrolmentVerifier] =
     ValueClassFormat.oformat("legacyFcEnrolmentVerifier", LegacyFcEnrolmentVerifier.apply, _.value)
+
 }
 case class RegimeId(value: String) extends AnyVal
 object RegimeId {
