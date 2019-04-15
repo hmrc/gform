@@ -56,7 +56,7 @@ class FileUploadService(
     val envelopeId: EnvelopeId = submission.envelopeId
     Logger.debug(s"env-id submit: $envelopeId")
     val date = timeModule.localDateTime().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
-    val fileNamePrefix = s"${submissionRef.toString.replaceAll("-", "")}-$date"
+    val fileNamePrefix = s"${submissionRef.withoutHyphens}-$date"
     val reconciliationId = ReconciliationId.create(submissionRef)
     val metadataXml = MetadataXml.xmlDec + "\n" + MetadataXml
       .getXml(submission, reconciliationId, summaries.pdfSummary, dmsSubmission, numberOfAttachments)
