@@ -1,3 +1,19 @@
+/*
+ * Copyright 2019 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package uk.gov.hmrc.gform.formtemplate
 
 import play.api.libs.json.JsValue
@@ -16,28 +32,17 @@ object FormComponentMakerService {
     toUpperCase: Option[String],
     json: Option[JsValue]): Either[UnexpectedState, ComponentType] =
     (maybeFormatExpr, maybeValueExpr, multiLine, displayWidth, json) match {
-      case (Some(TextFormat(UkSortCodeFormat)), HasTextExpression(expr), IsNotMultiline(), _, None) =>
+      case (Some(TextFormat(UkSortCodeFormat)), HasTextExpression(expr), IsNotMultiline(), _, _) =>
         UkSortCode(expr).asRight
-      case (_, _, IsNotMultiline(), _, None) =>
+      case (_, _, IsNotMultiline(), _, _) =>
         createTextObject(maybeFormatExpr, maybeValueExpr, displayWidth, toUpperCase)
-      case (_, _, IsMultiline(), _, None) => createTextAreaObject(maybeFormatExpr, maybeValueExpr, displayWidth)
-      case (_, _, _, _, Some(json))       => Left(createError(maybeFormatExpr, maybeValueExpr, multiLine, json))
+      case (_, _, IsMultiline(), _, _) => createTextAreaObject(maybeFormatExpr, maybeValueExpr, displayWidth)
+      case (_, _, _, _, Some(json))    => Left(createError(maybeFormatExpr, maybeValueExpr, multiLine, json))
       case (_, _, _, _, _) =>
         UnexpectedState(s"""|Unsupported type of format and value for text field
                             | id
                             |""".stripMargin).asLeft
     }
-
-  type Parameter = (Option[FormatExpr], Option[ValueExpr], Option[String], Option[String], Option[String]) // was advised that partial functions were a way to break up the code.
-  type Result = Either[UnexpectedState, ComponentType]
-  type PF = PartialFunction[Parameter, Result]
-
-  private val foo: PF = {
-    case (maybeFormatExpr, maybeValueExpr, IsNotMultiline(), displayWidth, toUpperCase) =>
-      createTextObject(maybeFormatExpr, maybeValueExpr, displayWidth, toUpperCase)
-    case (maybeFormatExpr, maybeValueExpr, IsMultiline(), displayWidth, _) =>
-      createTextAreaObject(maybeFormatExpr, maybeValueExpr, displayWidth)
-  }
 
   def createTextObject(
     maybeFormatExpr: Option[FormatExpr],

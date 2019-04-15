@@ -37,7 +37,7 @@ case class MES(
   derived: Boolean,
   onlyShowOnSummary: Boolean = false)
 
-class FormComponentMaker(json: JsValue) { //variablesBuilder
+class FormComponentMaker(json: JsValue) {
 
   lazy val id: FormComponentId = (json \ "id").as[FormComponentId]
   lazy val `type`: Option[ComponentTypeRaw] = (json \ "type").asOpt[ComponentTypeRaw]
@@ -148,68 +148,7 @@ class FormComponentMaker(json: JsValue) { //variablesBuilder
     //TODO: What if there is None
   }
 
-  private lazy val textOpt: Opt[ComponentType] = {   // this is the abhorrent beast that I was trying to split up.
-    for {
-      maybeFormatExpr <- optMaybeFormatExpr(roundingMode)
-      maybeValueExpr  <- optMaybeValueExpr
-      result <- (maybeFormatExpr, maybeValueExpr, multiline, displayWidth, toUpperCase) match {
-                 // format: off
-
-        case (Some(TextFormat(UkSortCodeFormat)), HasTextExpression(expr), IsNotMultiline(), _,_)                       => UkSortCode(expr).asRight
-        case (Some(TextFormat(f)), HasTextExpression(expr),IsNotMultiline(), None, ToUpperCase(uc)) =>
-          Text(f, expr, DisplayWidth.DEFAULT, uc).asRight
-        case (None, HasTextExpression(expr), IsNotMultiline(), None, ToUpperCase(uc)) =>
-          Text(ShortText, expr, DisplayWidth.DEFAULT, uc).asRight
-        case (Some(TextFormat(f)), HasTextExpression(expr),IsNotMultiline(), HasDisplayWidth(dw), ToUpperCase(uc)) =>
-          Text(f, expr, dw, uc).asRight
-        case (None, HasTextExpression(expr),IsNotMultiline(), HasDisplayWidth(dw), ToUpperCase(uc)) =>
-          Text(ShortText, expr, dw, uc).asRight
-        case (Some(TextFormat(f)),                HasTextExpression(expr), IsMultiline()   , None,_)                    => TextArea(f, expr).asRight
-        case (None,                               HasTextExpression(expr), IsMultiline()   , None,_)                    => TextArea(BasicText, expr).asRight
-        case (Some(TextFormat(f)),                HasTextExpression(expr), IsMultiline()   , HasDisplayWidth(dw),_)     => TextArea(f, expr,dw).asRight
-        case (None,                               HasTextExpression(expr), IsMultiline()   , HasDisplayWidth(dw),_)     => TextArea(BasicText, expr,dw).asRight
-        case (None,                               HasTextExpression(expr), IsMultiline()   , HasDisplayWidth(dw),_)     => TextArea(BasicText, expr,dw).asRight
-
-        case (_,                 _,       IsMultiline() , _,None) =>
-          UnexpectedState(s"""|toUpperCase is not supported for multiline text field
-                  |Id: $id
-                  |""".stripMargin).asLeft
-        case (maybeInvalidFormat,                 maybeInvalidValue,       IsMultiline()   , _,_) =>
-          UnexpectedState(s"""|Unsupported type of format or value for multiline text field
-                  |Id: $id
-                  |Format: $maybeInvalidFormat
-                  |Value: $maybeInvalidValue
-                  |""".stripMargin).asLeft
-          UnexpectedState(s"""|Unsupported type of format or value for multiline text field
-                  |Id: $id
-                  |Format: $maybeInvalidFormat
-                  |Value: $maybeInvalidValue
-                  |""".stripMargin).asLeft
-        case (Some(invalidFormat),                None,                    IsNotMultiline(), _,_) =>
-          UnexpectedState(s"""|Unsupported type of format and value for text field
-                  |Id: $id
-                  |Format: $invalidFormat
-                  |Value: must supply a value
-                  |""".stripMargin).asLeft
-        case (None,                               Some(invalidValue),      IsNotMultiline(), _,_) =>
-          UnexpectedState(s"""|Unsupported type of format and value for text field
-                  |Id: $id
-                  |Format: "must supply a value for format"
-                  |Value: $invalidValue
-                  |""".stripMargin).asLeft
-        case (Some(invalidFormat),                Some(invalidValue),      IsNotMultiline(), _,_) =>
-          UnexpectedState(s"""|Unsupported type of format and value for text field
-                  |Id: $id
-                  |Format: $invalidFormat
-                  |Value: $invalidValue
-                  |""".stripMargin).asLeft
-      }
-
-      // format: on
-    } yield result
-  }
-
-  private lazy val textOpt2: Opt[ComponentType] = { // this is my valiant attempt at breaking it down
+  private lazy val textOpt: Opt[ComponentType] = {
     for {
       maybeFormatExpr <- optMaybeFormatExpr(roundingMode)
       maybeValueExpr  <- optMaybeValueExpr
@@ -225,7 +164,6 @@ class FormComponentMaker(json: JsValue) { //variablesBuilder
                           |Id: $id
                           |Total: $invalidInternational""".stripMargin).asLeft
   }
-
 
   private lazy val dateOpt: Opt[Date] = {
 
@@ -443,7 +381,6 @@ class FormComponentMaker(json: JsValue) { //variablesBuilder
       }
   }
 
-  // Should we instead do this with an case insensitive extractor
   object IsStandard {
     def unapply(maybeStandard: String): Boolean =
       maybeStandard.toLowerCase == "standard"
