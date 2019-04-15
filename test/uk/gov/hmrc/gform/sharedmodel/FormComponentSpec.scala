@@ -1419,4 +1419,5 @@ class FormComponentSpec extends Spec {
 
     implicitly[Reads[FormComponent]].reads(templateAsJson)
   }
+
 }

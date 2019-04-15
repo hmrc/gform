@@ -68,7 +68,7 @@ class JsonParseTestFormat extends Spec {
       jsResult shouldBe a[JsSuccess[_]]
       jsResult.map(fv =>
         fv.`type` match {
-          case Text(constraint, _, DisplayWidth.DEFAULT) =>
+          case Text(constraint, _, DisplayWidth.DEFAULT, _) =>
             constraint should equal(Number(11, 2, RoundingMode.defaultRoundingMode, None))
           case a @ _ => fail(s"expected a Text, got $a")
       })
