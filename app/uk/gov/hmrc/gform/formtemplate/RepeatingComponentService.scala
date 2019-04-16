@@ -32,31 +32,20 @@ object RepeatingComponentService {
       }
     }
 
-  def reduceToTemplateFieldId(fieldId: FormComponentId): FormComponentId = {
-    val repeatingGroupFieldId = """^\d+_(.+)""".r
-
-    fieldId.value match {
-      case repeatingGroupFieldId(extractedFieldId) => FormComponentId(extractedFieldId)
-      case _                                       => fieldId
-    }
-  }
-
   def findTemplateFieldId(
     fieldMap: Map[FormComponentId, FormComponent],
     fieldId: FormComponentId): Option[FormComponent] =
-    fieldMap.get(reduceToTemplateFieldId(fieldId))
+    fieldMap.get(fieldId.reduceToTemplateFieldId)
 
   def getAllSections(form: Form, formTemplate: FormTemplate): List[Section] =
     formTemplate.sections.flatMap { section =>
-      if (isRepeatingSection(section)) {
+      if (section.isRepeating) {
         val data = form.formData.fields.map(field => field.id.value -> field.value).toMap
         reconstructRepeatingSections(section, data)
       } else {
         List(section)
       }
     }
-
-  def isRepeatingSection(section: Section): Boolean = section.repeatsMax.isDefined && section.repeatsMin.isDefined
 
   private def reconstructRepeatingSections(section: Section, data: Map[String, String]): List[Section] = {
     def getFields(field: FormComponent): List[String] = field.`type` match {

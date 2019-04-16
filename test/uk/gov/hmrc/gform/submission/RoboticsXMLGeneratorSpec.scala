@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.structuredform
+package uk.gov.hmrc.gform.submission
+
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
-import uk.gov.hmrc.gform.structuredform.StructuredFormValue.{ ArrayNode, ObjectStructure, TextNode }
-import uk.gov.hmrc.gform.submission.SubmissionRef
+import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue._
+import uk.gov.hmrc.gform.sharedmodel.structuredform.{ Field, FieldName, StructuredFormValue }
 
 import scala.xml.{ Elem, NodeSeq, Text }
 
@@ -120,7 +120,7 @@ case object RoboticsXMLGeneratorSpec extends Spec {
     val submissionRef = SubmissionRef("submissionRef")
 
     val expected: Elem =
-      <gform id = {formId.value} dms-id = {dmsId} submission-reference = {submissionRef.value}>{removeWhitespace(expectedFields)}</gform>
+      <gform id={formId.value} dms-id={dmsId} submission-reference={submissionRef.value}>{removeWhitespace(expectedFields)}</gform>
 
     RoboticsXMLGenerator.apply(formId, dmsId, submissionRef, objectStructure) shouldBe expected
   }

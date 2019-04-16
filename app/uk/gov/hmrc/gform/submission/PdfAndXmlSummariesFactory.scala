@@ -22,7 +22,7 @@ import uk.gov.hmrc.gform.sharedmodel.form.Form
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
-import uk.gov.hmrc.gform.structuredform.{ RoboticsXMLGenerator, StructuredFormDataBuilder }
+import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -32,6 +32,7 @@ trait PdfAndXmlSummariesFactory {
   def apply(
     form: Form,
     formTemplate: FormTemplate,
+    structuredFormData: StructuredFormValue.ObjectStructure,
     sectionFormFields: List[SectionFormField],
     customerId: String,
     submissionRef: SubmissionRef,
@@ -47,6 +48,7 @@ object PdfAndXmlSummariesFactory {
     override def apply(
       form: Form,
       formTemplate: FormTemplate,
+      structuredFormData: StructuredFormValue.ObjectStructure,
       sectionFormFields: List[SectionFormField],
       customerId: String,
       submissionRef: SubmissionRef,
@@ -55,7 +57,7 @@ object PdfAndXmlSummariesFactory {
         PdfAndXmlSummaries(
           pdfSummary = createPdfSummary(pdf),
           xmlSummary = createXmlSummary(sectionFormFields, formTemplate, submissionRef, dmsSubmission),
-          roboticsXml = createRoboticsXml(formTemplate, form, dmsSubmission, submissionRef)
+          roboticsXml = createRoboticsXml(formTemplate, form, structuredFormData, dmsSubmission, submissionRef)
         )
       }
 
@@ -83,17 +85,12 @@ object PdfAndXmlSummariesFactory {
     private def createRoboticsXml(
       formTemplate: FormTemplate,
       form: Form,
+      structuredFormData: StructuredFormValue.ObjectStructure,
       dmsSubmission: DmsSubmission,
       submissionRef: SubmissionRef): Option[String] =
       dmsSubmission.includeRoboticsXml
         .filter(identity)
-        .map(
-          _ =>
-            RoboticsXMLGenerator(
-              formTemplate._id,
-              dmsSubmission.dmsFormId,
-              submissionRef,
-              StructuredFormDataBuilder(form, formTemplate)))
+        .map(_ => RoboticsXMLGenerator(formTemplate._id, dmsSubmission.dmsFormId, submissionRef, structuredFormData))
         .map(addXmlDeclaration)
 
   }

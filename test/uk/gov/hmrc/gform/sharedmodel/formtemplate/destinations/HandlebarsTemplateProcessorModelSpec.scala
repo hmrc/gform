@@ -25,7 +25,7 @@ import uk.gov.hmrc.gform.sharedmodel.{ ObligationDetail, RecalculatedTaxPeriodKe
 import uk.gov.hmrc.gform.sharedmodel.form.{ FormData, FormField }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormComponentId
 import uk.gov.hmrc.gform.sharedmodel.{ ObligationDetailGen, ObligationDetails, RetrievedObligations, TaxResponseGen }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ ComponentTypeGen, FormGen, FormTemplateGen }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ ComponentTypeGen, FormGen }
 
 class HandlebarsTemplateProcessorModelSpec extends Spec {
   "+" must "shallow merge the two models" in {
@@ -38,11 +38,10 @@ class HandlebarsTemplateProcessorModelSpec extends Spec {
     forAll(
       FormGen.formGen,
       TaxResponseGen.taxResponseGen,
-      FormTemplateGen.formTemplateGen,
       ComponentTypeGen.hmrcTaxPeriodGen,
       ObligationDetailGen.obligationDetailGen,
       ObligationDetailGen.obligationDetailGen
-    ) { (form, taxResponse, formTemplate, hmrcTaxPeriod, obligationDetail1, obligationDetail2) =>
+    ) { (form, taxResponse, hmrcTaxPeriod, obligationDetail1, obligationDetail2) =>
       val formComponentId1 = FormComponentId("fcId_1")
       val formComponentId2 = FormComponentId("fcId_2")
       val periodKey1 = "ABC"
@@ -69,7 +68,7 @@ class HandlebarsTemplateProcessorModelSpec extends Spec {
           .modify(_.formData)
           .setTo(FormData(List(FormField(formComponentId1, periodKey1), FormField(formComponentId2, periodKey2))))
 
-      val model = HandlebarsTemplateProcessorModel(updForm, formTemplate)
+      val model = HandlebarsTemplateProcessorModel.hmrcTaxPeriods(updForm)
 
       val expectedJson: String => ObligationDetail => String =
         pk => od => s"""|{

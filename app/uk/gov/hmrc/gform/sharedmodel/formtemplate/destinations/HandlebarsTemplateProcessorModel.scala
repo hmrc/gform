@@ -19,10 +19,11 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
 import com.fasterxml.jackson.databind.JsonNode
 import play.api.libs.json._
 import uk.gov.hmrc.gform.models.helpers.TaxPeriodHelper.formatDate
-import uk.gov.hmrc.gform.sharedmodel.{ NotChecked, ObligationDetail, RetrievedObligations, TaxResponse }
-import uk.gov.hmrc.gform.sharedmodel.form.{ Form, Variables }
+import uk.gov.hmrc.gform.sharedmodel._
+import uk.gov.hmrc.gform.sharedmodel.form.Form
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplate }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.JsonNodes._
+import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 
 import scala.collection.JavaConversions._
 
@@ -49,11 +50,11 @@ object HandlebarsTemplateProcessorModel {
   def apply(jsonDocument: String): HandlebarsTemplateProcessorModel =
     HandlebarsTemplateProcessorModel(parseJson(jsonDocument))
 
-  def apply(form: Form, template: FormTemplate): HandlebarsTemplateProcessorModel =
-    HandlebarsTemplateProcessorModel(JsonStructuredFormDataBuilder(form, template)) +
-      HandlebarsTemplateProcessorModel(Map("formId" -> textNode(form._id.value))) +
-      hmrcTaxPeriods(form) +
-      rosmRegistration(form)
+  def apply(structuredData: StructuredFormValue.ObjectStructure): HandlebarsTemplateProcessorModel =
+    HandlebarsTemplateProcessorModel(JsonStructuredFormDataBuilder(structuredData))
+
+  def formId(form: Form): HandlebarsTemplateProcessorModel =
+    HandlebarsTemplateProcessorModel(Map("formId" -> textNode(form._id.value)))
 
   def apply(fields: Map[String, JsonNode]): HandlebarsTemplateProcessorModel =
     HandlebarsTemplateProcessorModel(objectNode(fields))
@@ -64,7 +65,7 @@ object HandlebarsTemplateProcessorModel {
   def apply(variables: Variables): HandlebarsTemplateProcessorModel =
     apply(variables.value.toString)
 
-  private def hmrcTaxPeriods(form: Form): HandlebarsTemplateProcessorModel = {
+  def hmrcTaxPeriods(form: Form): HandlebarsTemplateProcessorModel = {
 
     val lookup: Map[FormComponentId, String] = form.formData.fields.map(fd => fd.id -> fd.value).toMap
 
@@ -94,7 +95,7 @@ object HandlebarsTemplateProcessorModel {
 
   }
 
-  private def rosmRegistration(form: Form): HandlebarsTemplateProcessorModel = {
+  def rosmRegistration(form: Form): HandlebarsTemplateProcessorModel = {
     val f = form.thirdPartyData.desRegistrationResponse.fold("") _
 
     HandlebarsTemplateProcessorModel(

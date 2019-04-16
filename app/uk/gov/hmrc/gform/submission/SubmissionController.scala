@@ -22,26 +22,28 @@ import play.api.mvc.{ Action, AnyContent, Request }
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.sharedmodel.AffinityGroupUtil._
-import uk.gov.hmrc.gform.sharedmodel.form.{ FormId, SubmissionData }
+import uk.gov.hmrc.gform.sharedmodel.SubmissionData
+import uk.gov.hmrc.gform.sharedmodel.form.FormId
 
 import scala.concurrent.ExecutionContext
 
 class SubmissionController(submissionService: SubmissionService)(implicit ex: ExecutionContext) extends BaseController {
 
-  def submitWithPdf(formId: FormId) = Action.async(parse.json[SubmissionData]) { implicit request =>
-    Logger.info(s"submit, formId: '${formId.value}, ${loggingHelpers.cleanHeaders(request.headers)}")
+  def submitWithPdf(formId: FormId): Action[SubmissionData] = Action.async(parse.json[SubmissionData]) {
+    implicit request =>
+      Logger.info(s"submit, formId: '${formId.value}, ${loggingHelpers.cleanHeaders(request.headers)}")
 
-    submissionService
-      .submissionWithPdf(
-        formId,
-        request.headers.get("customerId").getOrElse(""),
-        toAffinityGroupO(request.headers.get("affinityGroup")),
-        request.body
-      )
-      .fold(_.asBadRequest, _ => NoContent)
+      submissionService
+        .submissionWithPdf(
+          formId,
+          request.headers.get("customerId").getOrElse(""),
+          toAffinityGroupO(request.headers.get("affinityGroup")),
+          request.body
+        )
+        .fold(_.asBadRequest, _ => NoContent)
   }
 
-  def submissionStatus(formId: FormId) = Action.async { implicit request =>
+  def submissionStatus(formId: FormId): Action[AnyContent] = Action.async { implicit request =>
     Logger.info(
       s"checking submission status, formId: '${formId.value}, ${loggingHelpers.cleanHeaders(request.headers)}")
     //TODO authentication

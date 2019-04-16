@@ -64,6 +64,9 @@ class DestinationsSubmitter[M[_]](destinationSubmitter: DestinationSubmitter[M])
 object DestinationsSubmitter {
   def createHandlebarsTemplateProcessorModel(
     submissionInfo: DestinationSubmissionInfo): HandlebarsTemplateProcessorModel =
-    HandlebarsTemplateProcessorModel(submissionInfo.form, submissionInfo.formTemplate)
-      .+(HandlebarsTemplateProcessorModel(submissionInfo.variables))
+    HandlebarsTemplateProcessorModel.formId(submissionInfo.form) +
+      HandlebarsTemplateProcessorModel(submissionInfo.structuredFormData) +
+      HandlebarsTemplateProcessorModel.hmrcTaxPeriods(submissionInfo.form) +
+      HandlebarsTemplateProcessorModel.rosmRegistration(submissionInfo.form) +
+      HandlebarsTemplateProcessorModel(submissionInfo.variables)
 }

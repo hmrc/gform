@@ -17,15 +17,13 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
 
 import com.fasterxml.jackson.databind.JsonNode
-import uk.gov.hmrc.gform.sharedmodel.form.Form
-import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.JsonNodes._
-import uk.gov.hmrc.gform.structuredform.StructuredFormValue.{ ArrayNode, ObjectStructure, TextNode }
-import uk.gov.hmrc.gform.structuredform.{ Field, StructuredFormDataBuilder, StructuredFormValue }
+import uk.gov.hmrc.gform.sharedmodel.structuredform.{ Field, StructuredFormValue }
+import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue.{ ArrayNode, ObjectStructure, TextNode }
 
 object JsonStructuredFormDataBuilder {
-  def apply(form: Form, template: FormTemplate): JsonNode =
-    objectNode(objectStructureToFieldList(StructuredFormDataBuilder(form, template)))
+  def apply(structuredFormData: StructuredFormValue.ObjectStructure): JsonNode =
+    objectNode(objectStructureToFieldList(structuredFormData))
 
   private def arrayElementsToJsonNodeList(elements: List[StructuredFormValue]): List[JsonNode] =
     elements.map(structuredFormValueToJsonNode)

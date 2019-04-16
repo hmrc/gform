@@ -17,8 +17,9 @@
 package uk.gov.hmrc.gform.submission
 import org.scalacheck.Gen
 import play.api.libs.json.JsObject
-import uk.gov.hmrc.gform.sharedmodel.form.Variables
+import uk.gov.hmrc.gform.sharedmodel.Variables
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ FormGen, FormTemplateGen, PrimitiveGen }
+import uk.gov.hmrc.gform.sharedmodel.structuredform.{ Field, FieldName, StructuredFormValue }
 
 trait DestinationSubmissionInfoGen {
   def destinationSubmissionInfoGen: Gen[DestinationSubmissionInfo] =
@@ -26,7 +27,17 @@ trait DestinationSubmissionInfoGen {
       formTemplate <- FormTemplateGen.formTemplateGen
       form         <- FormGen.formGen
       customerId   <- PrimitiveGen.nonEmptyAlphaNumStrGen
-    } yield DestinationSubmissionInfo(null, form, formTemplate, customerId, None, Variables(JsObject(Seq())), null)
+    } yield
+      DestinationSubmissionInfo(
+        null,
+        form,
+        formTemplate,
+        customerId,
+        None,
+        Variables(JsObject(Seq())),
+        StructuredFormValue.ObjectStructure(List(Field(FieldName("foo"), StructuredFormValue.TextNode("fooValue")))),
+        null
+      )
 }
 
 object DestinationSubmissionInfoGen extends DestinationSubmissionInfoGen

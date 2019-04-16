@@ -48,7 +48,7 @@ object DestinationsValidator {
 
     case destinationList: Destinations.DestinationList =>
       val hmrcDmsDestinations = destinationList.destinations.collect { case d: Destination.HmrcDms => d }
-      (hmrcDmsDestinations.nonEmpty)
+      hmrcDmsDestinations.nonEmpty
         .validationResult(oneOrMoreHmrcDestinationsRequired)
   }
 
@@ -84,7 +84,7 @@ object DestinationsValidator {
     val errors = template.destinationTests.toList.flatten
       .map { t =>
         new DestinationsSubmitter(new SelfTestingDestinationSubmitter[Possible](test = t))
-          .submitToList(dl, DestinationSubmissionInfo(null, null, template, null, None, null, null), t.formData)(
+          .submitToList(dl, DestinationSubmissionInfo(null, null, template, null, None, null, null, null), t.formData)(
             HeaderCarrier())
       }
       .collect { case Left(error) => error }
