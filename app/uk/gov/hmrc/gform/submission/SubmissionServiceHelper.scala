@@ -27,7 +27,7 @@ import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate.{ RepeatingComponentService, SectionHelper }
 import uk.gov.hmrc.gform.sharedmodel.Visibility
-import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormField, SubmissionData }
+import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormField }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 object SubmissionServiceHelper {

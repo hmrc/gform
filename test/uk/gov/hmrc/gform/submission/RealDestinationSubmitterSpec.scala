@@ -19,14 +19,13 @@ package uk.gov.hmrc.gform.submission
 import cats.{ Applicative, MonadError }
 import cats.syntax.option._
 import org.scalacheck.Gen
-import uk.gov.hmrc.gform.sharedmodel.ExampleData
 import uk.gov.hmrc.gform.{ Possible, Spec, possibleMonadError }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, Destinations, HandlebarsDestinationResponse, HandlebarsTemplateProcessorModel }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, PrimitiveGen }
 import uk.gov.hmrc.gform.submission.handlebars.{ HandlebarsHttpApiSubmitter, HandlebarsTemplateProcessor }
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
-class RealDestinationSubmitterSpec extends Spec with ExampleData {
+class RealDestinationSubmitterSpec extends Spec {
   private implicit val hc: HeaderCarrier = HeaderCarrier()
 
   private def submissionInfoGen: Gen[DestinationSubmissionInfo] =
@@ -38,7 +37,7 @@ class RealDestinationSubmitterSpec extends Spec with ExampleData {
     forAll(submissionInfoGen, DestinationGen.handlebarsHttpApiGen) { (si, generatedHandlebarsHttpApi) =>
       val handlebarsHttpApi = generatedHandlebarsHttpApi.copy(includeIf = None)
       val httpResponse = HttpResponse(200)
-      val model = HandlebarsTemplateProcessorModel(si.form, si.formTemplate)
+      val model = HandlebarsTemplateProcessorModel()
       createSubmitter
         .expectHandlebarsSubmission(handlebarsHttpApi, model, httpResponse)
         .sut
@@ -52,10 +51,10 @@ class RealDestinationSubmitterSpec extends Spec with ExampleData {
       (si, generatedHandlebarsHttpApi, includeIfExpression) =>
         val handlebarsHttpApi = generatedHandlebarsHttpApi.copy(includeIf = Some(includeIfExpression))
         val httpResponse = HttpResponse(200)
-        val model = HandlebarsTemplateProcessorModel(si.form, si.formTemplate)
+        val model = HandlebarsTemplateProcessorModel()
 
         createSubmitter
-          .expectIncludeIfEvaluation(includeIfExpression, model, true)
+          .expectIncludeIfEvaluation(includeIfExpression, model, requiredResult = true)
           .expectHandlebarsSubmission(handlebarsHttpApi, model, httpResponse)
           .sut
           .submitIfIncludeIf(handlebarsHttpApi, si, model) shouldBe Right(
@@ -67,9 +66,9 @@ class RealDestinationSubmitterSpec extends Spec with ExampleData {
     forAll(submissionInfoGen, DestinationGen.handlebarsHttpApiGen, PrimitiveGen.nonEmptyAlphaNumStrGen) {
       (si, generatedHandlebarsHttpApi, includeIfExpression) =>
         val handlebarsHttpApi = generatedHandlebarsHttpApi.copy(includeIf = Some(includeIfExpression))
-        val model = HandlebarsTemplateProcessorModel(si.form, si.formTemplate)
+        val model = HandlebarsTemplateProcessorModel()
         createSubmitter
-          .expectIncludeIfEvaluation(includeIfExpression, model, false)
+          .expectIncludeIfEvaluation(includeIfExpression, model, requiredResult = false)
           .sut
           .submitIfIncludeIf(handlebarsHttpApi, si, model) shouldBe Right(None)
     }
@@ -79,7 +78,7 @@ class RealDestinationSubmitterSpec extends Spec with ExampleData {
     forAll(submissionInfoGen, DestinationGen.handlebarsHttpApiGen) { (si, generatedHandlebarsHttpApi) =>
       val httpResponse = HttpResponse(300)
       val handlebarsHttpApi = generatedHandlebarsHttpApi.copy(failOnError = Option(false), includeIf = None)
-      val model = HandlebarsTemplateProcessorModel(si.form, si.formTemplate)
+      val model = HandlebarsTemplateProcessorModel()
       createSubmitter
         .expectHandlebarsSubmission(handlebarsHttpApi, model, httpResponse)
         .sut
@@ -93,7 +92,7 @@ class RealDestinationSubmitterSpec extends Spec with ExampleData {
       (si, generatedHandlebarsHttpApi, failOnError) =>
         val httpResponse = HttpResponse(300)
         val handlebarsHttpApi = generatedHandlebarsHttpApi.copy(failOnError = failOnError, includeIf = None)
-        val model = HandlebarsTemplateProcessorModel(si.form, si.formTemplate)
+        val model = HandlebarsTemplateProcessorModel()
 
         createSubmitter
           .expectHandlebarsSubmission(handlebarsHttpApi, model, httpResponse)
@@ -106,7 +105,7 @@ class RealDestinationSubmitterSpec extends Spec with ExampleData {
   "A Destination.DmsSubmission" should "be sent to the DmsSubmitter when includeIf is not set" in {
     forAll(submissionInfoGen, DestinationGen.hmrcDmsGen) { (si, generatedHmrcDms) =>
       val hmrcDms = generatedHmrcDms.copy(includeIf = None)
-      val model = HandlebarsTemplateProcessorModel(si.form, si.formTemplate)
+      val model = HandlebarsTemplateProcessorModel()
       createSubmitter
         .expectDmsSubmission(si, hmrcDms.toDeprecatedDmsSubmission)
         .sut
@@ -118,9 +117,9 @@ class RealDestinationSubmitterSpec extends Spec with ExampleData {
     forAll(submissionInfoGen, DestinationGen.hmrcDmsGen, PrimitiveGen.nonEmptyAlphaNumStrGen) {
       (si, generatedHmrcDms, includeIfExpression) =>
         val hmrcDms = generatedHmrcDms.copy(includeIf = Some(includeIfExpression))
-        val model = HandlebarsTemplateProcessorModel(si.form, si.formTemplate)
+        val model = HandlebarsTemplateProcessorModel()
         createSubmitter
-          .expectIncludeIfEvaluation(includeIfExpression, model, true)
+          .expectIncludeIfEvaluation(includeIfExpression, model, requiredResult = true)
           .expectDmsSubmission(si, hmrcDms.toDeprecatedDmsSubmission)
           .sut
           .submitIfIncludeIf(hmrcDms, si, model) shouldBe Right(None)
@@ -131,9 +130,9 @@ class RealDestinationSubmitterSpec extends Spec with ExampleData {
     forAll(submissionInfoGen, DestinationGen.hmrcDmsGen, PrimitiveGen.nonEmptyAlphaNumStrGen) {
       (si, generatedHmrcDms, includeIfExpression) =>
         val hmrcDms = generatedHmrcDms.copy(includeIf = Some(includeIfExpression))
-        val model = HandlebarsTemplateProcessorModel(si.form, si.formTemplate)
+        val model = HandlebarsTemplateProcessorModel()
         createSubmitter
-          .expectIncludeIfEvaluation(includeIfExpression, model, false)
+          .expectIncludeIfEvaluation(includeIfExpression, model, requiredResult = false)
           .sut
           .submitIfIncludeIf(hmrcDms, si, model) shouldBe Right(None)
     }
@@ -145,7 +144,7 @@ class RealDestinationSubmitterSpec extends Spec with ExampleData {
       createSubmitter
         .expectDmsSubmissionFailure(si, hmrcDms.toDeprecatedDmsSubmission, "an error")
         .sut
-        .submitIfIncludeIf(hmrcDms, si, HandlebarsTemplateProcessorModel(si.form, si.formTemplate)) shouldBe Right(None)
+        .submitIfIncludeIf(hmrcDms, si, HandlebarsTemplateProcessorModel()) shouldBe Right(None)
     }
   }
 
@@ -157,7 +156,7 @@ class RealDestinationSubmitterSpec extends Spec with ExampleData {
         createSubmitter
           .expectDmsSubmissionFailure(si, hmrcDms.toDeprecatedDmsSubmission, "an error")
           .sut
-          .submitIfIncludeIf(hmrcDms, si, HandlebarsTemplateProcessorModel(si.form, si.formTemplate)) shouldBe Left(
+          .submitIfIncludeIf(hmrcDms, si, HandlebarsTemplateProcessorModel()) shouldBe Left(
           s"Destination ${hmrcDms.id.id} : an error")
     }
   }

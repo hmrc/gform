@@ -16,8 +16,10 @@
 
 package uk.gov.hmrc.gform.submission
 import uk.gov.hmrc.auth.core.AffinityGroup
-import uk.gov.hmrc.gform.sharedmodel.form.{ Form, Variables }
+import uk.gov.hmrc.gform.sharedmodel.Variables
+import uk.gov.hmrc.gform.sharedmodel.form.Form
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
+import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 
 case class DestinationSubmissionInfo(
   submission: Submission,
@@ -26,4 +28,5 @@ case class DestinationSubmissionInfo(
   customerId: String,
   affinityGroup: Option[AffinityGroup],
   variables: Variables,
+  structuredFormData: StructuredFormValue.ObjectStructure,
   pdfAndXmlSummaryFactory: PdfAndXmlSummariesFactory)

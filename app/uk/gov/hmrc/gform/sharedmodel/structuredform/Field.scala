@@ -14,14 +14,11 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.structuredform
+package uk.gov.hmrc.gform.sharedmodel.structuredform
+import play.api.libs.json.{ Json, OFormat }
 
 case class Field(name: FieldName, value: StructuredFormValue)
 
-sealed trait StructuredFormValue extends Product with Serializable
-
-object StructuredFormValue {
-  case class ObjectStructure(fields: List[Field]) extends StructuredFormValue
-  case class TextNode(value: String) extends StructuredFormValue
-  case class ArrayNode(elements: List[StructuredFormValue]) extends StructuredFormValue
+object Field {
+  implicit val format: OFormat[Field] = Json.format[Field]
 }

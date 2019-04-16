@@ -24,9 +24,9 @@ import uk.gov.hmrc.gform.fileupload.FileUploadService
 import uk.gov.hmrc.gform.form.FormService
 import uk.gov.hmrc.gform.formtemplate.FormTemplateService
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorService
+import uk.gov.hmrc.gform.sharedmodel.SubmissionData
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.gform.structuredform.{ RoboticsXMLGenerator, StructuredFormDataBuilder }
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsHttpApiSubmitter
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.HeaderCarrier
@@ -56,7 +56,7 @@ class SubmissionService(
       submission              =                       createSubmission(form, customerId, formTemplate)
       _                       <-                      submissionRepo.upsert(submission)
       destinationsSubmitter   =                       new DestinationsSubmitter(new RealDestinationSubmitter(new FileUploadServiceDmsSubmitter(fileUploadService), handlebarsApiHttpSubmitter))
-      _                       <-                      destinationsSubmitter.send(DestinationSubmissionInfo(submission, form, formTemplate, customerId, affinityGroup, submissionData.variables, PdfAndXmlSummariesFactory.withPdf(pdfGeneratorService, submissionData.pdfData)))
+      _                       <-                      destinationsSubmitter.send(DestinationSubmissionInfo(submission, form, formTemplate, customerId, affinityGroup, submissionData.variables, submissionData.structuredFormData, PdfAndXmlSummariesFactory.withPdf(pdfGeneratorService, submissionData.pdfData)))
       emailAddress            =                       email.getEmailAddress(form)
       _                       <-                      fromFutureA(email.sendEmail(emailAddress, formTemplate.emailTemplateId, submissionData.emailParameters))
       } yield ()

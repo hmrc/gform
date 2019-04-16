@@ -19,15 +19,15 @@ package uk.gov.hmrc.gform.submission
 import cats.data.NonEmptyList
 import cats.{ Applicative, Monad }
 import cats.syntax.applicative._
+import com.fasterxml.jackson.databind.node.TextNode
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, Destinations, HandlebarsDestinationResponse, HandlebarsTemplateProcessorModel }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, DestinationsGen }
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 import org.scalacheck.Gen
 import play.api.libs.json.{ JsNull, JsNumber, JsObject, JsString }
-import uk.gov.hmrc.gform.sharedmodel.ExampleData
 
-class DestinationsSubmitterSpec extends Spec with ExampleData {
+class DestinationsSubmitterSpec extends Spec {
   private implicit val hc: HeaderCarrier = HeaderCarrier()
 
   private def submissionInfoGen: Gen[DestinationSubmissionInfo] =
@@ -81,7 +81,7 @@ class DestinationsSubmitterSpec extends Spec with ExampleData {
 
       val response1 = HttpResponse(responseCode1, Option(responseJson1))
 
-      val initialModel = HandlebarsTemplateProcessorModel(si.form, si.formTemplate)
+      val initialModel = DestinationsSubmitter.createHandlebarsTemplateProcessorModel(si)
       val response1Model = HandlebarsDestinationResponse(handlebarsHttpApi1, response1)
       val expectedModel2 = initialModel + HandlebarsTemplateProcessorModel(response1Model)
 

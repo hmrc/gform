@@ -40,6 +40,7 @@ class FileUploadServiceDmsSubmitter(fileUploadService: FileUploadService)(implic
                     pdfAndXmlSummaryFactory(
                       form,
                       formTemplate,
+                      structuredFormData,
                       sectionFormFields,
                       customerId,
                       submission.submissionRef,

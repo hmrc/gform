@@ -52,7 +52,7 @@ case class Section(
   private def atomicFields(
     fieldValues: List[FormComponent],
     data: Map[FormComponentId, FormField]): List[FormComponent] =
-    fieldValues.flatMap { (fieldValue) =>
+    fieldValues.flatMap { fieldValue =>
       fieldValue.`type` match {
         case Group(gfvs, _, repMax, _, _, _) =>
           atomicFields(fixLabels(gfvs), data) ++ findIdsInRepeatingGroup(gfvs, repMax, data)
@@ -61,6 +61,8 @@ case class Section(
     }
 
   def atomicFields(data: Map[FormComponentId, FormField]): List[FormComponent] = atomicFields(fields, data)
+
+  def isRepeating: Boolean = repeatsMax.isDefined && repeatsMin.isDefined
 
   private def findIdsInRepeatingGroup(
     fields: List[FormComponent],
@@ -119,7 +121,7 @@ case class Section(
 }
 
 object Section {
-  implicit val format = Json.format[Section]
+  implicit val format: OFormat[Section] = Json.format[Section]
 }
 
 case class DeclarationSection(
@@ -130,7 +132,7 @@ case class DeclarationSection(
 ) extends BaseSection
 
 object DeclarationSection {
-  implicit val format = Json.format[DeclarationSection]
+  implicit val format: OFormat[DeclarationSection] = Json.format[DeclarationSection]
 }
 
 case class AcknowledgementSection(
@@ -141,7 +143,7 @@ case class AcknowledgementSection(
 ) extends BaseSection
 
 object AcknowledgementSection {
-  implicit val format = Json.format[AcknowledgementSection]
+  implicit val format: OFormat[AcknowledgementSection] = Json.format[AcknowledgementSection]
 }
 
 case class EnrolmentSection(
@@ -154,7 +156,7 @@ case class EnrolmentSection(
 
 object EnrolmentSection {
   import JsonUtils._
-  implicit val format = Json.format[EnrolmentSection]
+  implicit val format: OFormat[EnrolmentSection] = Json.format[EnrolmentSection]
 }
 
 case class SectionFormField(title: String, fields: List[(List[FormField], FormComponent)])

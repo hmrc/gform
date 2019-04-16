@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.structuredform
-import uk.gov.hmrc.gform.sharedmodel.form.FormId
+package uk.gov.hmrc.gform.submission
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
-import uk.gov.hmrc.gform.structuredform.StructuredFormValue.{ ArrayNode, ObjectStructure, TextNode }
-import uk.gov.hmrc.gform.submission.SubmissionRef
+import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue.{ ArrayNode, ObjectStructure, TextNode }
+import uk.gov.hmrc.gform.sharedmodel.structuredform.{ FieldName, StructuredFormValue }
 
-import scala.xml.{ Elem, NodeSeq, Text }
+import scala.xml.{ Elem, NodeSeq }
 
 object RoboticsXMLGenerator {
 
@@ -29,7 +28,7 @@ object RoboticsXMLGenerator {
     dmsId: String,
     submissionReference: SubmissionRef,
     structuredForm: ObjectStructure): NodeSeq =
-    <gform id = {formId.value} dms-id = {dmsId} submission-reference = {submissionReference.value}>{buildObjectStructureXml(structuredForm)}</gform>
+    <gform id={formId.value} dms-id={dmsId} submission-reference={submissionReference.value}>{buildObjectStructureXml(structuredForm)}</gform>
 
   private def buildStructuredValueXml(
     fieldName: FieldName,
