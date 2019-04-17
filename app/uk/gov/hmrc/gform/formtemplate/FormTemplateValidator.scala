@@ -147,7 +147,7 @@ object FormTemplateValidator {
 
   def validateEnrolmentSection(formTemplate: FormTemplate): ValidationResult =
     formTemplate.authConfig match {
-      case HasEnrolmentSection(_, enrolmentSection) =>
+      case HasEnrolmentSection(_, enrolmentSection, _) =>
         val fcIds = enrolmentSection.fields.map(_.id).map(_.value).toSet
         val ctxs = enrolmentSection.identifiers.map(_.value.value).toList.toSet ++ enrolmentSection.verifiers
           .map(_.value.value)

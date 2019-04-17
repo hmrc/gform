@@ -115,7 +115,8 @@ class AuthConfigSpec extends Spec {
                 None,
                 List.empty,
                 NonEmptyList.of(IdentifierRecipe("EtmpRegistrationNumber", FormCtx("eeittReferenceNumber"))),
-                List.empty)),
+                List.empty),
+              NoAction),
             NoCheck
           )
         )
@@ -130,6 +131,7 @@ class AuthConfigSpec extends Spec {
                                           |  "serviceId": "Z",
                                           |  "enrolmentCheck": "always",
                                           |  "regimeId": "IP",
+                                          |  "legacyFcEnrolmentVerifier": "NonUKCountryCode",
                                           |  "enrolmentSection": {
                                           |     "title": "t",
                                           |     "fields":[],
@@ -155,12 +157,27 @@ class AuthConfigSpec extends Spec {
                 None,
                 List.empty,
                 NonEmptyList.of(IdentifierRecipe("EtmpRegistrationNumber", FormCtx("eeittReferenceNumber"))),
-                List.empty)),
+                List.empty),
+              LegacyFcEnrolmentVerifier("NonUKCountryCode")
+            ),
             RegimeIdCheck(RegimeId("IP"))
           )
         )
       )
     )
+  }
+
+  "enrolmentActionMatch" should "return no action with input None" in {
+    AuthConfig.enrolmentActionMatch(None) shouldBe NoAction
+  }
+
+  it should "return no action with input NoAction" in {
+    AuthConfig.enrolmentActionMatch(Some(NoAction)) shouldBe NoAction
+  }
+
+  it should "return no action with input LegacyFcEnrolmentVerifier('NonUKCountryCode')" in {
+    AuthConfig.enrolmentActionMatch(Some(LegacyFcEnrolmentVerifier("NonUKCountryCode"))) shouldBe LegacyFcEnrolmentVerifier(
+      "NonUKCountryCode")
   }
 
   private def toAuthConfig(authConfig: String): JsResult[AuthConfig] = {
