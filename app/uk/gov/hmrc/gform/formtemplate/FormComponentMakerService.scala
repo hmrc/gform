@@ -29,47 +29,40 @@ object FormComponentMakerService {
     maybeValueExpr: Option[ValueExpr],
     multiLine: Option[String],
     displayWidth: Option[String],
-    toUpperCase: Option[String],
-    json: Option[JsValue]): Either[UnexpectedState, ComponentType] =
-    (maybeFormatExpr, maybeValueExpr, multiLine, displayWidth, json) match {
-      case (Some(TextFormat(UkSortCodeFormat)), HasTextExpression(expr), IsNotMultiline(), _, _) =>
-        UkSortCode(expr).asRight
-      case (_, _, IsNotMultiline(), _, _) =>
-        createTextObject(maybeFormatExpr, maybeValueExpr, displayWidth, toUpperCase)
-      case (_, _, IsMultiline(), _, _) => createTextAreaObject(maybeFormatExpr, maybeValueExpr, displayWidth)
-      case (_, _, _, _, Some(json))    => Left(createError(maybeFormatExpr, maybeValueExpr, multiLine, json))
-      case (_, _, _, _, _) =>
-        UnexpectedState(s"""|Unsupported type of format and value for text field
-                            | id
-                            |""".stripMargin).asLeft
+    toUpperCase: UpperCaseBoolean,
+    json: JsValue): Either[UnexpectedState, ComponentType] =
+    (maybeFormatExpr, maybeValueExpr, multiLine) match {
+      // format: off
+      case (Some(TextFormat(UkSortCodeFormat)), HasTextExpression(expr), IsNotMultiline()) => UkSortCode(expr).asRight
+      case (_, _, IsNotMultiline()) => createTextObject(maybeFormatExpr, maybeValueExpr, displayWidth, toUpperCase)
+      case (_, _, IsMultiline())    => createTextAreaObject(maybeFormatExpr, maybeValueExpr, displayWidth)
+      case _                        => createError(maybeFormatExpr, maybeValueExpr, multiLine, json).asLeft
+      // format: on
     }
 
   def createTextObject(
     maybeFormatExpr: Option[FormatExpr],
     maybeValueExpr: Option[ValueExpr],
     displayWidth: Option[String],
-    toUpperCase: Option[String]) = (maybeFormatExpr, maybeValueExpr, displayWidth, toUpperCase) match {
-
-    case (Some(TextFormat(f)), HasTextExpression(expr), None, ToUpperCase(a)) =>
-      Text(f, expr, DisplayWidth.DEFAULT, a).asRight
-    case (None, HasTextExpression(expr), None, ToUpperCase(a)) =>
-      Text(ShortText, expr, DisplayWidth.DEFAULT, a).asRight
-    case (Some(TextFormat(f)), HasTextExpression(expr), HasDisplayWidth(dw), ToUpperCase(a)) =>
-      Text(f, expr, dw, a).asRight
-    case (None, HasTextExpression(expr), HasDisplayWidth(dw), ToUpperCase(a)) =>
-      Text(ShortText, expr, dw, a).asRight
+    toUpperCase: UpperCaseBoolean) = (maybeFormatExpr, maybeValueExpr, displayWidth) match {
+    // format: off
+    case (Some(TextFormat(f)), HasTextExpression(expr), None)                => Text(f, expr, DisplayWidth.DEFAULT, toUpperCase).asRight
+    case (None,                HasTextExpression(expr), None)                => Text(ShortText, expr, DisplayWidth.DEFAULT, toUpperCase).asRight
+    case (Some(TextFormat(f)), HasTextExpression(expr), HasDisplayWidth(dw)) => Text(f, expr, dw, toUpperCase).asRight
+    case (None,                HasTextExpression(expr), HasDisplayWidth(dw)) => Text(ShortText, expr, dw, toUpperCase).asRight
+    // format: on
   }
 
   def createTextAreaObject(
     maybeFormatExpr: Option[FormatExpr],
     maybeValueExpr: Option[ValueExpr],
     displayWidth: Option[String]) = (maybeFormatExpr, maybeValueExpr, displayWidth) match {
-
-    case (Some(TextFormat(f)), HasTextExpression(expr), None) => TextArea(f, expr).asRight
-    case (None, HasTextExpression(expr), None)                => TextArea(BasicText, expr).asRight
-    case (Some(TextFormat(f)), HasTextExpression(expr), HasDisplayWidth(dw)) =>
-      TextArea(f, expr, dw).asRight
-    case (None, HasTextExpression(expr), HasDisplayWidth(dw)) => TextArea(BasicText, expr, dw).asRight
+    // format: off
+    case (Some(TextFormat(f)), HasTextExpression(expr), None)                => TextArea(f, expr).asRight
+    case (None,                HasTextExpression(expr), None)                => TextArea(BasicText, expr).asRight
+    case (Some(TextFormat(f)), HasTextExpression(expr), HasDisplayWidth(dw)) => TextArea(f, expr, dw).asRight
+    case (None,                HasTextExpression(expr), HasDisplayWidth(dw)) => TextArea(BasicText, expr, dw).asRight
+    // format: on
   }
 
   def createError(
@@ -152,6 +145,14 @@ object FormComponentMakerService {
     def unapply(maybeBoolean: String): Boolean =
       maybeBoolean.toLowerCase match {
         case "true" | "yes" => true
+        case _              => false
+      }
+  }
+
+  object IsFalseish {
+    def unapply(maybeBoolean: String): Boolean =
+      maybeBoolean.toLowerCase match {
+        case "false" | "no" => true
         case _              => false
       }
   }

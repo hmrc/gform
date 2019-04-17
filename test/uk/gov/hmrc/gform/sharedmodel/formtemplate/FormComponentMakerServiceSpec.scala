@@ -35,7 +35,6 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidth._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyText, Expr, IsUpperCase, ShortText, Text, TextConstraint, TextExpression, TextFormat, Value }
 import cats.syntax.either._
 
 class FormComponentMakerServiceSpec extends Spec {
@@ -52,26 +51,28 @@ class FormComponentMakerServiceSpec extends Spec {
     val table = Table(
       ("actual", "expected"),
       (
-        createTextObject(Some(TextFormat(textConstraint)), Some(TextExpression(expr)), None, None),
+        createTextObject(Some(TextFormat(textConstraint)), Some(TextExpression(expr)), None, IsNotUpperCase),
         Text(textConstraint, expr).asRight),
       (
-        createTextObject(Some(TextFormat(textConstraint)), Some(TextExpression(expr)), None, Some("true")),
-        (Text(textConstraint, expr, defaultDisplayWidth, IsUpperCase).asRight)),
-      (createTextObject(None, Some(TextExpression(expr)), None, None), Text(shortTextConstraint, expr).asRight),
+        createTextObject(Some(TextFormat(textConstraint)), Some(TextExpression(expr)), None, IsUpperCase),
+        Text(textConstraint, expr, defaultDisplayWidth, IsUpperCase).asRight),
       (
-        createTextObject(None, Some(TextExpression(expr)), None, Some("true")),
+        createTextObject(None, Some(TextExpression(expr)), None, IsNotUpperCase),
+        Text(shortTextConstraint, expr).asRight),
+      (
+        createTextObject(None, Some(TextExpression(expr)), None, IsUpperCase),
         Text(shortTextConstraint, expr, defaultDisplayWidth, IsUpperCase).asRight),
       (
-        createTextObject(Some(TextFormat(textConstraint)), Some(TextExpression(expr)), Some("xs"), None),
+        createTextObject(Some(TextFormat(textConstraint)), Some(TextExpression(expr)), Some("xs"), IsNotUpperCase),
         Text(textConstraint, expr, xsDisplayWidth).asRight),
       (
-        createTextObject(Some(TextFormat(textConstraint)), Some(TextExpression(expr)), Some("xs"), Some("true")),
+        createTextObject(Some(TextFormat(textConstraint)), Some(TextExpression(expr)), Some("xs"), IsUpperCase),
         Text(textConstraint, expr, xsDisplayWidth, IsUpperCase).asRight),
       (
-        createTextObject(None, Some(TextExpression(expr)), Some("xs"), None),
+        createTextObject(None, Some(TextExpression(expr)), Some("xs"), IsNotUpperCase),
         Text(shortTextConstraint, expr, xsDisplayWidth).asRight),
       (
-        createTextObject(None, Some(TextExpression(expr)), Some("xs"), Some("true")),
+        createTextObject(None, Some(TextExpression(expr)), Some("xs"), IsUpperCase),
         Text(shortTextConstraint, expr, xsDisplayWidth, IsUpperCase).asRight)
     )
     table.forEvery({ case (expected, result) => expected shouldBe result })

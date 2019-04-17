@@ -66,7 +66,7 @@ class FormComponentMaker(json: JsValue) {
   lazy val mandatory: Option[String] = (json \ "mandatory").asOpt[String]
   lazy val multiline: Option[String] = (json \ "multiline").asOpt[String]
   lazy val displayWidth: Option[String] = (json \ "displayWidth").asOpt[String]
-  lazy val toUpperCase: Option[String] = (json \ "toUpperCase").asOpt[String]
+  lazy val toUpperCase: UpperCaseBoolean = (json \ "toUpperCase").asOpt[UpperCaseBoolean].getOrElse(IsNotUpperCase)
   lazy val roundingMode: RoundingMode = (json \ "round").asOpt[RoundingMode].getOrElse(RoundingMode.defaultRoundingMode)
   lazy val multivalue: Option[String] = (json \ "multivalue").asOpt[String]
   lazy val total: Option[String] = (json \ "total").asOpt[String]
@@ -152,7 +152,7 @@ class FormComponentMaker(json: JsValue) {
     for {
       maybeFormatExpr <- optMaybeFormatExpr(roundingMode)
       maybeValueExpr  <- optMaybeValueExpr
-      result          <- createObject(maybeFormatExpr, maybeValueExpr, multiline, displayWidth, toUpperCase, Option(json))
+      result          <- createObject(maybeFormatExpr, maybeValueExpr, multiline, displayWidth, toUpperCase, json)
     } yield result
   }
 
@@ -402,14 +402,6 @@ class FormComponentMaker(json: JsValue) {
 
   object IsSummaryInfoOnly {
     def unapply(maybeStandard: String): Boolean = maybeStandard.toLowerCase == "summaryinfoonly"
-  }
-
-  object IsFalseish {
-    def unapply(maybeBoolean: String): Boolean =
-      maybeBoolean.toLowerCase match {
-        case "false" | "no" => true
-        case _              => false
-      }
   }
 
   private final object IsInfoType {
