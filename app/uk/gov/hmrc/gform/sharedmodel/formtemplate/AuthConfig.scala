@@ -137,10 +137,8 @@ object AuthConfig {
   def toEnrolmentPostCheck(maybeRegimeId: Option[RegimeId]): EnrolmentPostCheck =
     maybeRegimeId.fold(NoCheck: EnrolmentPostCheck)(RegimeIdCheck.apply)
 
-  def enrolmentActionMatch(enrolmentAction: Option[EnrolmentAction]): EnrolmentAction = enrolmentAction match {
-    case Some(lfcev: LegacyFcEnrolmentVerifier) => lfcev
-    case _                                      => NoAction
-  }
+  def enrolmentActionMatch(enrolmentAction: Option[EnrolmentAction]): EnrolmentAction =
+    enrolmentAction.getOrElse(NoAction)
 
   def toEnrolmentAuth(
     serviceId: ServiceId,
