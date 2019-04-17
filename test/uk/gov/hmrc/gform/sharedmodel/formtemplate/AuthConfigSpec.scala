@@ -131,6 +131,7 @@ class AuthConfigSpec extends Spec {
                                           |  "serviceId": "Z",
                                           |  "enrolmentCheck": "always",
                                           |  "regimeId": "IP",
+                                          |  "legacyFcEnrolmentVerifier": "NonUKCountryCode",
                                           |  "enrolmentSection": {
                                           |     "title": "t",
                                           |     "fields":[],
@@ -157,7 +158,8 @@ class AuthConfigSpec extends Spec {
                 List.empty,
                 NonEmptyList.of(IdentifierRecipe("EtmpRegistrationNumber", FormCtx("eeittReferenceNumber"))),
                 List.empty),
-              NoAction),
+              LegacyFcEnrolmentVerifier("NonUKCountryCode")
+            ),
             RegimeIdCheck(RegimeId("IP"))
           )
         )
