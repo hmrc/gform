@@ -21,6 +21,7 @@ import cats.data.NonEmptyList
 import julienrf.json.derived
 import play.api.data.validation.ValidationError
 import play.api.libs.json._
+import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService.{ IsFalseish, IsTrueish }
 import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidth.DisplayWidth
 
@@ -31,8 +32,26 @@ sealed trait MultiField {
 }
 sealed trait ComponentType
 
-case class Text(constraint: TextConstraint, value: Expr, displayWidth: DisplayWidth = DisplayWidth.DEFAULT)
+case class Text(
+  constraint: TextConstraint,
+  value: Expr,
+  displayWidth: DisplayWidth = DisplayWidth.DEFAULT,
+  toUpperCase: UpperCaseBoolean = IsNotUpperCase)
     extends ComponentType
+
+sealed trait UpperCaseBoolean
+
+case object IsUpperCase extends UpperCaseBoolean
+case object IsNotUpperCase extends UpperCaseBoolean
+
+object UpperCaseBoolean {
+  private val templateReads: Reads[UpperCaseBoolean] = Reads {
+    case JsString(IsTrueish())  => JsSuccess(IsUpperCase)
+    case JsString(IsFalseish()) => JsSuccess(IsNotUpperCase)
+    case invalid                => JsError("toUpperCase needs to be 'true' or 'false', got " + invalid)
+  }
+  implicit val format: OFormat[UpperCaseBoolean] = OFormatWithTemplateReadFallback(templateReads)
+}
 
 case class TextArea(constraint: TextConstraint, value: Expr, displayWidth: DisplayWidth = DisplayWidth.DEFAULT)
     extends ComponentType
@@ -155,7 +174,6 @@ object ComponentType {
   implicit def writesNonEmptyList[T: Writes] = Writes[NonEmptyList[T]] { v =>
     JsArray((v.head :: v.tail).map(Json.toJson(_)).toList)
   }
-
   implicit val format: OFormat[ComponentType] = derived.oformat
 
 }
