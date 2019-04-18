@@ -37,6 +37,10 @@ class RealHandlebarsTemplateProcessor(
       .resolver(JsonNodeValueResolver.INSTANCE)
       .build
 
-    MagicCommasParser(compiledTemplate.apply(context))
+    try {
+      MagicCommasParser(compiledTemplate.apply(context))
+    } catch {
+      case ex: Exception => throw new Exception(model.model.toString, ex)
+    }
   }
 }
