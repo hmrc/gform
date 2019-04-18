@@ -90,7 +90,7 @@ class DmsSubmissionController(
       dmsMetadata = DmsMetaData(formTemplateId, metadata.customerId)
       submission = Submission(
         FormId(metadata.dmsFormId),
-        LocalDateTime.now(clock).plusDays(config.formExpiryDays),
+        LocalDateTime.now(clock),
         submissionRef,
         envId,
         0,

@@ -94,7 +94,6 @@ class DmsSubmissionControllerSpec extends Spec {
   }
 
   it should "upload the PDF and XML metadata to the file upload envelope" in {
-    val submissionRef = SubmissionRef(envelopeId)
 
     val numberOfPages = 1
     val pdfContent = "totally a pdf".getBytes
