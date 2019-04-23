@@ -17,11 +17,11 @@
 package uk.gov.hmrc.gform.dms
 
 import java.time._
-import java.util.{Base64, UUID}
+import java.util.{ Base64, UUID }
 
 import org.apache.pdfbox.pdmodel.PDDocument
-import play.api.libs.Files.{SingletonTemporaryFileCreator, TemporaryFile}
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.Files.{ SingletonTemporaryFileCreator, TemporaryFile }
+import play.api.libs.json.{ JsValue, Json }
 import play.api.mvc.MultipartFormData
 import play.api.mvc.MultipartFormData.FilePart
 import play.api.test.FakeRequest
@@ -32,7 +32,7 @@ import uk.gov.hmrc.gform.fileupload.FileUploadService
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorService
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{Constant, FormTemplateId, TextExpression}
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Constant, FormTemplateId, TextExpression }
 import uk.gov.hmrc.gform.submission._
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -175,11 +175,17 @@ class DmsSubmissionControllerSpec extends Spec {
         "classificationType" -> Seq(""),
         "businessArea"       -> Seq("")
       ),
-      files = Seq(FilePart(key = "test-key", filename = tmpPdf.getName, contentType = Some("application/pdf"), ref = TemporaryFile(tmpPdf))),
+      files = Seq(
+        FilePart(
+          key = "test-key",
+          filename = tmpPdf.getName,
+          contentType = Some("application/pdf"),
+          ref = TemporaryFile(tmpPdf))),
       badParts = Nil
     )
 
-    val res = testController.submitPdfToDms(FakeRequest().withBody(form).withHeaders("Content-Type" -> "multipart/form-data"))
+    val res =
+      testController.submitPdfToDms(FakeRequest().withBody(form).withHeaders("Content-Type" -> "multipart/form-data"))
     status(res) shouldBe NO_CONTENT
   }
 
@@ -196,7 +202,8 @@ class DmsSubmissionControllerSpec extends Spec {
       badParts = Nil
     )
 
-    val res = testController.submitPdfToDms(FakeRequest().withBody(form).withHeaders("Content-Type" -> "multipart/form-data"))
+    val res =
+      testController.submitPdfToDms(FakeRequest().withBody(form).withHeaders("Content-Type" -> "multipart/form-data"))
     status(res) shouldBe BAD_REQUEST
   }
 
@@ -206,15 +213,21 @@ class DmsSubmissionControllerSpec extends Spec {
 
     val form = MultipartFormData[TemporaryFile](
       dataParts = Map(
-        "customerIdxx"         -> Seq("some-customer-id"),
+        "customerIdxx"       -> Seq("some-customer-id"),
         "classificationType" -> Seq(""),
-        "busixnessArea"       -> Seq("")
+        "busixnessArea"      -> Seq("")
       ),
-      files = Seq(FilePart(key = "test-key", filename = tmpPdf.getName, contentType = Some("application/json"), ref = TemporaryFile(tmpPdf))),
+      files = Seq(
+        FilePart(
+          key = "test-key",
+          filename = tmpPdf.getName,
+          contentType = Some("application/json"),
+          ref = TemporaryFile(tmpPdf))),
       badParts = Nil
     )
 
-    val res = testController.submitPdfToDms(FakeRequest().withBody(form).withHeaders("Content-Type" -> "multipart/form-data"))
+    val res =
+      testController.submitPdfToDms(FakeRequest().withBody(form).withHeaders("Content-Type" -> "multipart/form-data"))
     status(res) shouldBe BAD_REQUEST
   }
 

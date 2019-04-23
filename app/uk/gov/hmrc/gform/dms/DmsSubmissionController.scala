@@ -34,10 +34,9 @@ import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
 import uk.gov.hmrc.gform.submission._
-import uk.gov.hmrc.gform.utils.toFuture
 import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ ExecutionContext, Future }
 
 class DmsSubmissionController(
   fileUpload: FileUploadService,
@@ -57,25 +56,30 @@ class DmsSubmissionController(
     }
   }
 
+  /**
+    * This endpoint is not used by gform but its here for other services to leverage our backend integration with DMS via FUaaS
+    * Its currently used by Overseas Agents team
+    */
   def submitPdfToDms: Action[MultipartFormData[Files.TemporaryFile]] = Action.async(parse.multipartFormData) {
     implicit request =>
       def validContentType(filePart: MultipartFormData.FilePart[TemporaryFile]) =
         filePart.contentType.map(_.toLowerCase).contains("application/pdf")
 
-      if (request.body.files.nonEmpty && validContentType(request.body.files.head)) {
-        val dataParts = request.body.dataParts.map(p => p._1 -> p._2.mkString(""))
-        Json.toJson(dataParts).validate[DmsMetadata] match {
-          case JsSuccess(metadata, _) =>
-            val file = request.body.files.head.ref.file.getAbsolutePath
-            val byteArray = java.nio.file.Files.readAllBytes(Paths.get(file))
-            submit(byteArray, metadata)
-          case JsError(errors) =>
-            Logger.info(s"could not parse DmsMetadata from the request, errors: $errors")
-            BadRequest("invalid metadata in the request")
-        }
-      } else {
-        Logger.info("request should contain a pdf file with Content-Type:'application/pdf'")
-        BadRequest("request should contain a pdf file with Content-Type:'application/pdf'")
+      request.body.files.headOption match {
+        case Some(file) if validContentType(file) =>
+          val dataParts = request.body.dataParts.mapValues(_.mkString(""))
+          Json.toJson(dataParts).validate[DmsMetadata] match {
+            case JsSuccess(metadata, _) =>
+              val file = request.body.files.head.ref.file.getAbsolutePath
+              val byteArray = java.nio.file.Files.readAllBytes(Paths.get(file))
+              submit(byteArray, metadata)
+            case JsError(errors) =>
+              Logger.info(s"could not parse DmsMetadata from the request, errors: $errors")
+              Future.successful(BadRequest("invalid metadata in the request"))
+          }
+        case _ =>
+          Logger.info("request should contain a pdf file with Content-Type:'application/pdf'")
+          Future.successful(BadRequest("request should contain a pdf file with Content-Type:'application/pdf'"))
       }
   }
 
