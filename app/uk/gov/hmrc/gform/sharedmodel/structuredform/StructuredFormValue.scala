@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.gform.sharedmodel.structuredform
 
-import play.api.libs.json.OFormat
 import julienrf.json.derived
+import play.api.libs.json.{ Format, OFormat }
 
 sealed trait StructuredFormValue extends Product with Serializable
 
@@ -26,6 +26,6 @@ object StructuredFormValue {
   case class TextNode(value: String) extends StructuredFormValue
   case class ArrayNode(elements: List[StructuredFormValue]) extends StructuredFormValue
 
-  implicit val oFormat: OFormat[StructuredFormValue] = derived.oformat[StructuredFormValue]
+  implicit val oFormat: Format[StructuredFormValue] = derived.oformat[StructuredFormValue]
   implicit val objectStructureFormat: OFormat[ObjectStructure] = derived.oformat[ObjectStructure]
 }

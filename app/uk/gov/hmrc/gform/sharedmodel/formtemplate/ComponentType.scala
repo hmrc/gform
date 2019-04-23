@@ -24,11 +24,16 @@ import play.api.libs.json._
 import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService.{ IsFalseish, IsTrueish }
 import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidth.DisplayWidth
+import uk.gov.hmrc.gform.sharedmodel.structuredform.{ FieldName, RoboticsXml, StructuredFormDataFieldNamePurpose }
 
 import scala.collection.immutable._
 
 sealed trait MultiField {
   def fields(formComponentId: FormComponentId): NonEmptyList[FormComponentId]
+
+  def alternateNamesFor(fcId: FormComponentId): Map[StructuredFormDataFieldNamePurpose, FieldName] =
+    Map(RoboticsXml -> RoboticsXml.replaceStreetWithLine(fcId))
+
 }
 sealed trait ComponentType
 
@@ -75,6 +80,10 @@ case object Date {
 
 case class Address(international: Boolean) extends ComponentType with MultiField {
   override def fields(id: FormComponentId): NonEmptyList[FormComponentId] = Address.fields(id)
+
+  override def alternateNamesFor(fcId: FormComponentId): Map[StructuredFormDataFieldNamePurpose, FieldName] =
+    Map(RoboticsXml -> FieldName(fcId.value.replace("street", "line")))
+
 }
 
 case object Address {

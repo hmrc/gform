@@ -15,11 +15,32 @@
  */
 
 package uk.gov.hmrc.gform.sharedmodel.structuredform
+import play.api.libs.json.{ Format, Json, OFormat }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils
 
-import play.api.libs.json.{ Json, OFormat }
+case class Field(
+  name: FieldName,
+  value: StructuredFormValue,
+  alternativeFieldNames: Map[StructuredFormDataFieldNamePurpose, FieldName] = Map.empty) {
 
-case class Field(name: FieldName, value: StructuredFormValue)
+  def nameFor(structuredFormDataFieldNamePurpose: StructuredFormDataFieldNamePurpose): FieldName =
+    alternativeFieldNames.getOrElse(structuredFormDataFieldNamePurpose, name)
+
+}
 
 object Field {
-  implicit val format: OFormat[Field] = Json.format[Field]
+
+  implicit val format: OFormat[Field] = {
+
+    implicit val alternativeFieldNamesFormat: Format[Map[StructuredFormDataFieldNamePurpose, FieldName]] =
+      JsonUtils.formatMap(
+        {
+          case StructuredFormDataFieldNamePurpose.roboticsXml => RoboticsXml
+        }, {
+          case RoboticsXml => StructuredFormDataFieldNamePurpose.roboticsXml
+        }
+      )
+
+    Json.format[Field]
+  }
 }
