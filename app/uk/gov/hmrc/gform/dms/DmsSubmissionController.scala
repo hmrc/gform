@@ -70,8 +70,7 @@ class DmsSubmissionController(
           val dataParts = request.body.dataParts.mapValues(_.mkString(""))
           Json.toJson(dataParts).validate[DmsMetadata] match {
             case JsSuccess(metadata, _) =>
-              val file = request.body.files.head.ref.file.getAbsolutePath
-              val byteArray = java.nio.file.Files.readAllBytes(Paths.get(file))
+              val byteArray = java.nio.file.Files.readAllBytes(Paths.get(file.ref.file.getAbsolutePath))
               submit(byteArray, metadata)
             case JsError(errors) =>
               Logger.info(s"could not parse DmsMetadata from the request, errors: $errors")
