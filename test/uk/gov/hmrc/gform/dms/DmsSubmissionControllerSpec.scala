@@ -20,22 +20,23 @@ import java.time._
 import java.util.{ Base64, UUID }
 
 import org.apache.pdfbox.pdmodel.PDDocument
+import play.api.libs.Files.{ SingletonTemporaryFileCreator, TemporaryFile }
 import play.api.libs.json.{ JsValue, Json }
+import play.api.mvc.MultipartFormData
+import play.api.mvc.MultipartFormData.FilePart
 import play.api.test.FakeRequest
+import play.api.test.Helpers._
 import uk.gov.hmrc.gform.Spec
+import uk.gov.hmrc.gform.config.AppConfig
 import uk.gov.hmrc.gform.fileupload.FileUploadService
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorService
-import play.api.test.Helpers._
-import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId }
+import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Constant, FormTemplateId, TextExpression }
 import uk.gov.hmrc.gform.submission._
-import uk.gov.hmrc.gform.typeclasses.Rnd
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.gform.config.AppConfig
 
 import scala.concurrent.Future
-import scala.util.Random
 
 class DmsSubmissionControllerSpec extends Spec {
 
@@ -93,7 +94,6 @@ class DmsSubmissionControllerSpec extends Spec {
   }
 
   it should "upload the PDF and XML metadata to the file upload envelope" in {
-    val submissionRef = SubmissionRef(envelopeId)
 
     val numberOfPages = 1
     val pdfContent = "totally a pdf".getBytes
@@ -134,6 +134,100 @@ class DmsSubmissionControllerSpec extends Spec {
 
   it should "return a 400 Bad Request response when the JSON payload is invalid" in {
     val res = testController.submitToDms()(FakeRequest().withBody[JsValue](Json.obj()))
+    status(res) shouldBe BAD_REQUEST
+  }
+
+  it should "handle requests with pdf and submit to DMS" in {
+
+    val numberOfPages = 1
+    val expectedEnvId = EnvelopeId(UUID.randomUUID().toString)
+
+    val expectedDmsSubmission = DmsSubmission(
+      validSubmission.metadata.dmsFormId,
+      TextExpression(Constant(validSubmission.metadata.customerId)),
+      validSubmission.metadata.classificationType,
+      validSubmission.metadata.businessArea
+    )
+
+    (mockFileUpload
+      .createEnvelope(_: FormTemplateId, _: LocalDateTime)(_: HeaderCarrier))
+      .expects(*, LocalDateTime.now(clock).plusDays(mockConfig.formExpiryDays), *)
+      .returning(Future.successful(expectedEnvId))
+
+    mockDocumentLoader
+      .expects(*)
+      .returning(stubPdfDocument)
+
+    (stubPdfDocument.getNumberOfPages _).when().returning(numberOfPages)
+
+    (mockFileUpload
+      .submitEnvelope(_: Submission, _: PdfAndXmlSummaries, _: DmsSubmission, _: Int)(_: HeaderCarrier))
+      .expects(*, *, expectedDmsSubmission, *, *)
+      .returning(Future.successful(()))
+
+    val tmpPdf = SingletonTemporaryFileCreator.create("agents", ".pdf")
+    tmpPdf.deleteOnExit()
+
+    val form = MultipartFormData[TemporaryFile](
+      dataParts = Map(
+        "dmsFormId"          -> Seq("some-form-id"),
+        "customerId"         -> Seq("some-customer-id"),
+        "classificationType" -> Seq(""),
+        "businessArea"       -> Seq("")
+      ),
+      files = Seq(
+        FilePart(
+          key = "test-key",
+          filename = tmpPdf.getName,
+          contentType = Some("application/pdf"),
+          ref = TemporaryFile(tmpPdf))),
+      badParts = Nil
+    )
+
+    val res =
+      testController.submitPdfToDms(FakeRequest().withBody(form).withHeaders("Content-Type" -> "multipart/form-data"))
+    status(res) shouldBe NO_CONTENT
+  }
+
+  it should "return BAD_REQUEST if the request to /dms/submit-pdf doesnt contain a file" in {
+
+    val form = MultipartFormData[TemporaryFile](
+      dataParts = Map(
+        "dmsFormId"          -> Seq("some-form-id"),
+        "customerId"         -> Seq("some-customer-id"),
+        "classificationType" -> Seq(""),
+        "businessArea"       -> Seq("")
+      ),
+      files = Seq.empty,
+      badParts = Nil
+    )
+
+    val res =
+      testController.submitPdfToDms(FakeRequest().withBody(form).withHeaders("Content-Type" -> "multipart/form-data"))
+    status(res) shouldBe BAD_REQUEST
+  }
+
+  it should "return BAD_REQUEST if the request to /dms/submit-pdf doesnt contain a valid metadata" in {
+    val tmpPdf = SingletonTemporaryFileCreator.create("agents", ".pdf")
+    tmpPdf.deleteOnExit()
+
+    val form = MultipartFormData[TemporaryFile](
+      dataParts = Map(
+        "customerIdxx"       -> Seq("some-customer-id"),
+        "classificationType" -> Seq(""),
+        "busixnessArea"      -> Seq("")
+      ),
+      files = Seq(
+        FilePart(
+          key = "test-key",
+          filename = tmpPdf.getName,
+          contentType = Some("application/json"),
+          ref = TemporaryFile(tmpPdf))),
+      badParts = Nil
+    )
+
+    val res =
+      testController.submitPdfToDms(FakeRequest().withBody(form).withHeaders("Content-Type" -> "multipart/form-data"))
     status(res) shouldBe BAD_REQUEST
   }
 
