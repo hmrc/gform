@@ -27,8 +27,12 @@ object RoboticsXMLGenerator {
     formId: FormTemplateId,
     dmsId: String,
     submissionReference: SubmissionRef,
-    structuredForm: ObjectStructure): NodeSeq =
-    <gform id={formId.value} dms-id={dmsId} submission-reference={submissionReference.value}>{buildObjectStructureXml(structuredForm)}</gform>
+    structuredForm: ObjectStructure): NodeSeq = {
+    val a =
+      <gform id={formId.value} dms-id={dmsId} submission-reference={submissionReference.value}>{buildObjectStructureXml(structuredForm)}</gform>
+    println(a + "helloworld")
+    a
+  }
 
   private def buildStructuredValueXml(field: Field, value: StructuredFormValue, index: Option[Int] = None): NodeSeq =
     value match {
