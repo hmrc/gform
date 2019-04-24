@@ -18,8 +18,8 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
 
 import com.fasterxml.jackson.databind.JsonNode
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.JsonNodes._
-import uk.gov.hmrc.gform.sharedmodel.structuredform.{ Field, StructuredFormValue }
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue.{ ArrayNode, ObjectStructure, TextNode }
+import uk.gov.hmrc.gform.sharedmodel.structuredform.{ Field, StructuredFormValue }
 
 object JsonStructuredFormDataBuilder {
   def apply(structuredFormData: StructuredFormValue.ObjectStructure): JsonNode =
