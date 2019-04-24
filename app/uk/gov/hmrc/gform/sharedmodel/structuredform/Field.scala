@@ -15,6 +15,7 @@
  */
 
 package uk.gov.hmrc.gform.sharedmodel.structuredform
+
 import play.api.libs.json.{ Json, OFormat }
 
 case class Field(name: FieldName, value: StructuredFormValue)

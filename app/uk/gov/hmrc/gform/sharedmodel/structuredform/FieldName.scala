@@ -15,6 +15,7 @@
  */
 
 package uk.gov.hmrc.gform.sharedmodel.structuredform
+
 import play.api.libs.json.{ Format, Json }
 import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
 
