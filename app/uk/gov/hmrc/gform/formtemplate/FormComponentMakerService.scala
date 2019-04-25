@@ -47,9 +47,9 @@ object FormComponentMakerService {
     toUpperCase: UpperCaseBoolean) = (maybeFormatExpr, maybeValueExpr, displayWidth) match {
     // format: off
     case (Some(TextFormat(f)), HasTextExpression(expr), None)                => Text(f, expr, DisplayWidth.DEFAULT, toUpperCase).asRight
-    case (None,                HasTextExpression(expr), None)                => Text(ShortText, expr, DisplayWidth.DEFAULT, toUpperCase).asRight
+    case (None,                HasTextExpression(expr), None)                => Text(ShortText(), expr, DisplayWidth.DEFAULT, toUpperCase).asRight
     case (Some(TextFormat(f)), HasTextExpression(expr), HasDisplayWidth(dw)) => Text(f, expr, dw, toUpperCase).asRight
-    case (None,                HasTextExpression(expr), HasDisplayWidth(dw)) => Text(ShortText, expr, dw, toUpperCase).asRight
+    case (None,                HasTextExpression(expr), HasDisplayWidth(dw)) => Text(ShortText(), expr, dw, toUpperCase).asRight
     // format: on
   }
 

@@ -84,9 +84,9 @@ class JsonParseTestFormat extends Spec {
       ("Yes",  TextArea(BasicText, Value)),
       ("true", TextArea(BasicText, Value)),
       ("True", TextArea(BasicText, Value)),
-      ("no",   Text(ShortText, Value, DisplayWidth.DEFAULT)),
-      ("typo", Text(ShortText, Value, DisplayWidth.DEFAULT)),
-      ("",     Text(ShortText, Value, DisplayWidth.DEFAULT))
+      ("no",   Text(ShortText(), Value, DisplayWidth.DEFAULT)),
+      ("typo", Text(ShortText(), Value, DisplayWidth.DEFAULT)),
+      ("",     Text(ShortText(), Value, DisplayWidth.DEFAULT))
       // format: on
     )
 
@@ -105,12 +105,12 @@ class JsonParseTestFormat extends Spec {
     val displayWidthOptions = Table(
       // format: off
       ("displayWidth", "expected"),
-      (DisplayWidth.XS.toString.toLowerCase,  Text(ShortText, Value, DisplayWidth.XS)),
-      (DisplayWidth.S.toString.toLowerCase,   Text(ShortText, Value, DisplayWidth.S)),
-      (DisplayWidth.M.toString.toLowerCase,   Text(ShortText, Value, DisplayWidth.M)),
-      (DisplayWidth.L.toString.toLowerCase,   Text(ShortText, Value, DisplayWidth.L)),
-      (DisplayWidth.XL.toString.toLowerCase,  Text(ShortText, Value, DisplayWidth.XL)),
-      (DisplayWidth.XXL.toString.toLowerCase, Text(ShortText, Value, DisplayWidth.XXL))
+      (DisplayWidth.XS.toString.toLowerCase,  Text(ShortText(), Value, DisplayWidth.XS)),
+      (DisplayWidth.S.toString.toLowerCase,   Text(ShortText(), Value, DisplayWidth.S)),
+      (DisplayWidth.M.toString.toLowerCase,   Text(ShortText(), Value, DisplayWidth.M)),
+      (DisplayWidth.L.toString.toLowerCase,   Text(ShortText(), Value, DisplayWidth.L)),
+      (DisplayWidth.XL.toString.toLowerCase,  Text(ShortText(), Value, DisplayWidth.XL)),
+      (DisplayWidth.XXL.toString.toLowerCase, Text(ShortText(), Value, DisplayWidth.XXL))
       // format: on
     )
 
@@ -156,7 +156,7 @@ class JsonParseTestFormat extends Spec {
       jsResult should beJsSuccess(
         FormComponent(
           FormComponentId("gid"),
-          Text(ShortText, Value, DisplayWidth.DEFAULT),
+          Text(ShortText(), Value, DisplayWidth.DEFAULT),
           "glabel",
           None,
           None,

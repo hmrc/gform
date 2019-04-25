@@ -124,7 +124,9 @@ object FormatParser {
 
   lazy val basicFormat: Parser[TextFormat] = {
     "shortText" ^^ { (loc, _) =>
-      TextFormat(ShortText)
+      TextFormat(ShortText())
+    } | "shortText(" ~ positiveInteger ~ "," ~ positiveInteger ~ ")" ^^ { (loc, _, min, _, max, _) =>
+      TextFormat(ShortText(min, max))
     } | "text" ^^ { (loc, _) =>
       TextFormat(BasicText)
     } | "text(" ~ positiveInteger ~ "," ~ positiveInteger ~ ")" ^^ { (loc, _, min, _, max, _) =>

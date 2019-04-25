@@ -150,7 +150,10 @@ final case class PositiveNumber(
     extends TextConstraint
 
 case object BasicText extends TextConstraint
-case object ShortText extends TextConstraint
+case class ShortText(
+  min: Int = TextConstraint.defaultShortTextMinChars,
+  max: Int = TextConstraint.defaultShortTextMaxChars)
+    extends TextConstraint
 case class TextWithRestrictions(min: Int, max: Int) extends TextConstraint
 case class Sterling(roundingMode: RoundingMode) extends TextConstraint
 case object UkBankAccountNumber extends TextConstraint
@@ -172,6 +175,8 @@ case object EORI extends TextConstraint
 object TextConstraint {
   val defaultWholeDigits = 11
   val defaultFactionalDigits = 2
+  val defaultShortTextMinChars = 0
+  val defaultShortTextMaxChars = 1000
 
   implicit val format: OFormat[TextConstraint] = derived.oformat
 
