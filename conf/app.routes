@@ -5,7 +5,6 @@ POST          /new-form/:formTemplateId/:userId/:accessCode        uk.gov.hmrc.g
 
 PUT           /forms/:formId                                       uk.gov.hmrc.gform.form.FormController.updateFormData(formId: FormId)
 GET           /forms/:formId                                       uk.gov.hmrc.gform.form.FormController.get(formId: FormId)
-GET           /forms/:formId/validate-section/:sectionNumber       uk.gov.hmrc.gform.form.FormController.validateSection(formId: FormId, sectionNumber: SectionNumber)
 POST          /forms/:formId/delete                                uk.gov.hmrc.gform.form.FormController.delete(formId: FormId)
 
 POST          /forms/:formId/enrolment-callback                     uk.gov.hmrc.gform.form.FormController.enrolmentCallBack(formId: FormId)
