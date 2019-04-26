@@ -29,10 +29,10 @@ import uk.gov.hmrc.gform.sharedmodel.structuredform.{ FieldName, RoboticsXml, St
 import scala.collection.immutable._
 
 sealed trait MultiField {
+
   def fields(formComponentId: FormComponentId): NonEmptyList[FormComponentId]
 
-  def alternateNamesFor(fcId: FormComponentId): Map[StructuredFormDataFieldNamePurpose, FieldName] =
-    Map(RoboticsXml -> RoboticsXml.replaceStreetWithLine(fcId))
+  def alternateNamesFor(fcId: FormComponentId): Map[StructuredFormDataFieldNamePurpose, FieldName] = Map.empty
 
 }
 sealed trait ComponentType

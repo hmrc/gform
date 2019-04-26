@@ -19,16 +19,7 @@ import play.api.libs.json.Format
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ ADTFormat, FormComponentId }
 
 trait StructuredFormDataFieldNamePurpose
-case object RoboticsXml extends StructuredFormDataFieldNamePurpose {
-
-  def replaceStreetWithLine(fcId: FormComponentId): FieldName = {
-    val r = "street[1-4]".r
-    val value = fcId.value
-
-    if (r.findFirstIn(value).isDefined) FieldName(value.replace("street", "line"))
-    else FieldName(value)
-  }
-}
+case object RoboticsXml extends StructuredFormDataFieldNamePurpose
 
 object StructuredFormDataFieldNamePurpose {
   val roboticsXml = "RoboticsXml"
