@@ -40,7 +40,7 @@ import cats.syntax.either._
 class FormComponentMakerServiceSpec extends Spec {
 
   private val textConstraint: TextConstraint = AnyText
-  private val shortTextConstraint: TextConstraint = ShortText
+  private val shortTextConstraint: TextConstraint = ShortText.default
 
   private val expr: Expr = Value
   private val xsDisplayWidth = XS

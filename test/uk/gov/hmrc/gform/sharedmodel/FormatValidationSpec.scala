@@ -32,7 +32,7 @@ class FormatValidationSpec extends Spec {
   it should "return nino" in createTest("nino", NINO)
   it should "return BasicText" in createTest("text", BasicText)
   it should "return TextWithRestrictions" in createTest("text(1, 1)", TextWithRestrictions(1, 1))
-  it should "return ShortText" in createTest("shortText", ShortText)
+  it should "return ShortText" in createTest("shortText", ShortText.default)
   it should "return UkVrn" in createTest("ukVrn", UkVrn)
   it should "return countryCode" in createTest("countryCode", CountryCode)
   it should "return nonUkCountryCode" in createTest("nonUkCountryCode", NonUkCountryCode)
@@ -45,7 +45,7 @@ class FormatValidationSpec extends Spec {
       """)) shouldBe JsSuccess(
       FormComponent(
         id = FormComponentId(id),
-        `type` = Text(ShortText, Value),
+        `type` = Text(ShortText.default, Value),
         label = label,
         helpText = None,
         shortName = None,

@@ -71,7 +71,7 @@ class JsonParseTestValue extends Spec {
       jsResult shouldBe a[JsSuccess[_]]
       jsResult.map(fv =>
         fv.`type` match {
-          case Text(constraint, _, _, _) => constraint should equal(ShortText)
+          case Text(constraint, _, _, _) => constraint should equal(ShortText.default)
           case a @ _                     => fail(s"expected a Text, got $a")
       })
     }
