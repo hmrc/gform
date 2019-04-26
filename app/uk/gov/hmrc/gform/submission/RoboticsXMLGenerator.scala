@@ -47,15 +47,18 @@ object RoboticsXMLGenerator {
     }
 
   private def textNodeTag(content: String, field: Field, index: Option[Int]): Elem =
-    <new>{content}</new>.copy(label = field.nameFor(RoboticsXml).name, attributes = getAttribute(index))
+    <new>{content}</new>.copy(label = getRoboticsXmlName(field), attributes = getAttribute(index))
+
+  private def getRoboticsXmlName(field: Field) =
+    field.nameFor(RoboticsXml).name
 
   private def objectStructureTag(objectStructure: ObjectStructure, field: Field, index: Option[Int]): Elem =
     <new>{buildObjectStructureXml(objectStructure)}</new>
-      .copy(label = field.nameFor(RoboticsXml).name, attributes = getAttribute(index))
+      .copy(label = getRoboticsXmlName(field), attributes = getAttribute(index))
 
   private def arrayNodeTag(arrayNode: ArrayNode, field: Field, index: Option[Int]): Elem =
     <new>{buildArrayNodeXml(field, arrayNode)}</new>
-      .copy(label = field.nameFor(RoboticsXml).name + "s", attributes = getAttribute(index))
+      .copy(label = getRoboticsXmlName(field) + "s", attributes = getAttribute(index))
 
   private def getAttribute(index: Option[Int]) = index match {
     case Some(i) => <new seqNum ={i.toString}></new>.attributes
