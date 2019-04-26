@@ -35,7 +35,7 @@ object JsonStructuredFormDataBuilder {
   }
 
   private def buildFieldList(fields: List[Field]): Map[String, JsonNode] =
-    fields.map { case Field(name, value) => name.name -> structuredFormValueToJsonNode(value) }.toMap
+    fields.map { case Field(name, value, _) => name.name -> structuredFormValueToJsonNode(value) }.toMap
 
   private def objectStructureToFieldList(structure: ObjectStructure): Map[String, JsonNode] =
     buildFieldList(structure.fields)

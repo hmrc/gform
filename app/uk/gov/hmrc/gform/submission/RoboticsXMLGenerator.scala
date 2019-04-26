@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.submission
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue.{ ArrayNode, ObjectStructure, TextNode }
-import uk.gov.hmrc.gform.sharedmodel.structuredform.{ FieldName, StructuredFormValue }
+import uk.gov.hmrc.gform.sharedmodel.structuredform.{ Field, FieldName, RoboticsXml, StructuredFormValue }
 
 import scala.xml.{ Elem, NodeSeq }
 
@@ -30,33 +30,35 @@ object RoboticsXMLGenerator {
     structuredForm: ObjectStructure): NodeSeq =
     <gform id={formId.value} dms-id={dmsId} submission-reference={submissionReference.value}>{buildObjectStructureXml(structuredForm)}</gform>
 
-  private def buildStructuredValueXml(
-    fieldName: FieldName,
-    value: StructuredFormValue,
-    index: Option[Int] = None): NodeSeq = value match {
-    case TextNode(content)                => textNodeTag(content, fieldName, index)
-    case objectStructure: ObjectStructure => objectStructureTag(objectStructure, fieldName, index)
-    case arrayNode: ArrayNode             => arrayNodeTag(arrayNode, fieldName, index)
-  }
-
-  private def buildObjectStructureXml(value: ObjectStructure): NodeSeq =
-    value.fields.flatMap(field => buildStructuredValueXml(field.name, field.value))
-
-  private def buildArrayNodeXml(name: FieldName, arrayNode: ArrayNode): NodeSeq =
-    arrayNode.elements.zipWithIndex.flatMap {
-      case (structuredFormValue: StructuredFormValue, index: Int) =>
-        buildStructuredValueXml(name, structuredFormValue, Some(index))
+  private def buildStructuredValueXml(field: Field, value: StructuredFormValue, index: Option[Int] = None): NodeSeq =
+    value match {
+      case TextNode(content)                => textNodeTag(content, field, index)
+      case objectStructure: ObjectStructure => objectStructureTag(objectStructure, field, index)
+      case arrayNode: ArrayNode             => arrayNodeTag(arrayNode, field, index)
     }
 
-  private def textNodeTag(content: String, fieldName: FieldName, index: Option[Int]): Elem =
-    <new>{content}</new>.copy(label = fieldName.name, attributes = getAttribute(index))
+  private def buildObjectStructureXml(value: ObjectStructure): NodeSeq =
+    value.fields.flatMap(field => buildStructuredValueXml(field, field.value))
 
-  private def objectStructureTag(objectStructure: ObjectStructure, fieldName: FieldName, index: Option[Int]): Elem =
-    <new>{buildObjectStructureXml(objectStructure)}</new>.copy(label = fieldName.name, attributes = getAttribute(index))
+  private def buildArrayNodeXml(field: Field, arrayNode: ArrayNode): NodeSeq =
+    arrayNode.elements.zipWithIndex.flatMap {
+      case (structuredFormValue: StructuredFormValue, index: Int) =>
+        buildStructuredValueXml(field, structuredFormValue, Some(index))
+    }
 
-  private def arrayNodeTag(arrayNode: ArrayNode, fieldName: FieldName, index: Option[Int]): Elem =
-    <new>{buildArrayNodeXml(fieldName, arrayNode)}</new>
-      .copy(label = fieldName.name + "s", attributes = getAttribute(index))
+  private def textNodeTag(content: String, field: Field, index: Option[Int]): Elem =
+    <new>{content}</new>.copy(label = getRoboticsXmlName(field), attributes = getAttribute(index))
+
+  private def getRoboticsXmlName(field: Field) =
+    field.nameFor(RoboticsXml).name
+
+  private def objectStructureTag(objectStructure: ObjectStructure, field: Field, index: Option[Int]): Elem =
+    <new>{buildObjectStructureXml(objectStructure)}</new>
+      .copy(label = getRoboticsXmlName(field), attributes = getAttribute(index))
+
+  private def arrayNodeTag(arrayNode: ArrayNode, field: Field, index: Option[Int]): Elem =
+    <new>{buildArrayNodeXml(field, arrayNode)}</new>
+      .copy(label = getRoboticsXmlName(field) + "s", attributes = getAttribute(index))
 
   private def getAttribute(index: Option[Int]) = index match {
     case Some(i) => <new seqNum ={i.toString}></new>.attributes
