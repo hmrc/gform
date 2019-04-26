@@ -23,9 +23,7 @@ import play.api.mvc._
 import uk.gov.hmrc.gform.auditing._
 import uk.gov.hmrc.gform.config.AppConfig
 import uk.gov.hmrc.gform.controllers.BaseController
-import uk.gov.hmrc.gform.core.FormValidator
-import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
+import uk.gov.hmrc.gform.fileupload.FileUploadService
 import uk.gov.hmrc.gform.formtemplate.FormTemplateService
 import uk.gov.hmrc.gform.sharedmodel.form.{ FileId, FormId, UserData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
@@ -83,24 +81,6 @@ class FormController(
     } yield NoContent
   }
 
-  def validateSection(formId: FormId, sectionNumber: SectionNumber): Action[AnyContent] = Action.async {
-    implicit request =>
-      Logger.info(s"Validating sections: '${formId.value}', section number '${sectionNumber.value}', ${loggingHelpers
-        .cleanHeaders(request.headers)}")
-      //TODO check form status. If after submission don't call this function
-      //TODO authentication
-      //TODO authorisation
-      //TODO wrap result into ValidationResult case class containign status of validation and list of errors
-
-      val result: Future[Either[UnexpectedState, Unit]] = for {
-        form         <- formService.get(formId)
-        formTemplate <- formTemplateService.get(form.formTemplateId)
-        section = getSection(formTemplate, sectionNumber)
-      } yield FormValidator.validate(form.formData.fields.toList, section)
-
-      result.map(_.fold(e => e.error, _ => "No errors")).asOkJson
-  }
-
   def delete(formId: FormId): Action[AnyContent] = Action.async { implicit request =>
     Logger.info(s"deleting form: '${formId.value}, ${loggingHelpers.cleanHeaders(request.headers)}'")
     formService.delete(formId).asNoContent
@@ -134,10 +114,4 @@ class FormController(
 
     Results.Ok
   }
-
-  private def getSection(formTemplate: FormTemplate, sectionNumber: SectionNumber): Section =
-    Try(formTemplate.sections(sectionNumber.value))
-      .getOrElse(
-        throw new BadRequestException(
-          s"Wrong sectionNumber: $sectionNumber. There are ${formTemplate.sections.length} sections."))
 }
