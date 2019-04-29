@@ -1,0 +1,59 @@
+{
+  "_id": "group-include-group",
+  "formName": "Group",
+  "description": "",
+  "emailTemplateId": "",
+  "authConfig": {
+    "authModule": "hmrc"
+  },
+  "sections": [
+    {
+      "title": "Page",
+      "fields": [
+        {
+          "type": "group",
+          "id": "group",
+          "label": "Group",
+          "repeatsMax": 5,
+          "repeatsMin": 1,
+          "fields": [
+            {
+              "type": "group",
+              "id": "innerGroup",
+              "label": "Inner Group",
+              "repeatsMax": 5,
+              "repeatsMin": 1,
+              "fields": [
+                {
+                  "id": "groupField",
+                  "type": "text",
+                  "label": "Text label"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "declarationSection": {
+    "title": "Declaration",
+    "fields": []
+  },
+  "acknowledgementSection": {
+    "title": "Acknowledgement",
+    "fields": []
+  },
+  "destinations": [
+    {
+      "id": "queueDestination",
+      "type": "hmrcDms",
+      "dmsFormId": "",
+      "customerId": "${businessUtr}",
+      "classificationType": "",
+      "businessArea": ""
+    }
+  ],
+  "submitErrorUrl": "",
+  "submitSuccessUrl": ""
+}

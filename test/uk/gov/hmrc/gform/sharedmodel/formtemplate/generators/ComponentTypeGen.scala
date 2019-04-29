@@ -61,13 +61,17 @@ trait ComponentTypeGen {
       helpText    <- Gen.option(PrimitiveGen.zeroOrMoreGen(PrimitiveGen.nonEmptyAlphaNumStrGen))
     } yield Choice(tpe, options, orientation, selections, helpText)
 
+  def revealingChoiceElementGen: Gen[RevealingChoiceElement] =
+    for {
+      choice   <- PrimitiveGen.nonEmptyAlphaNumStrGen
+      fields   <- PrimitiveGen.zeroOrMoreGen(FormComponentGen.formComponentGen(3))
+      selected <- PrimitiveGen.booleanGen
+    } yield RevealingChoiceElement(choice, fields, selected)
+
   def revealingChoiceGen: Gen[RevealingChoice] =
     for {
-      options     <- PrimitiveGen.nonEmptyAlphaNumStrGen.map(List(_))
-      selections  <- PrimitiveGen.zeroOrMoreGen(Gen.posNum[Int])
-      hiddenField <- PrimitiveGen.zeroOrMoreGen(FormComponentGen.formComponentGen(1)).map(List(_))
-
-    } yield RevealingChoice(options, selections, hiddenField)
+      revealingChoiceElements <- PrimitiveGen.oneOrMoreGen(revealingChoiceElementGen)
+    } yield RevealingChoice(revealingChoiceElements)
 
   def hmrcTaxPeriodGen: Gen[HmrcTaxPeriod] =
     for {

@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.formtemplate
 import java.time.LocalDate
 
 import cats.Monoid
+import cats.data.NonEmptyList
 import cats.implicits._
 import scalax.collection.Graph
 import scalax.collection.GraphEdge._
@@ -42,8 +43,9 @@ object FormTemplateValidator {
   def validateUniqueFields(sectionsList: List[Section]): ValidationResult = {
     val fieldIds = sectionsList.flatMap(_.fields.flatMap(field =>
       field.`type` match {
-        case group: Group => group.fields.map(_.id) ::: List(field.id)
-        case _            => List(field.id)
+        case group: Group             => group.fields.map(_.id) ::: List(field.id)
+        case RevealingChoice(options) => options.toList.flatMap(_.revealingFields).map(_.id)
+        case _                        => List(field.id)
     }))
     val duplicates = fieldIds.groupBy(identity).collect { case (fId, List(_, _, _*)) => fId }.toSet
     duplicates.isEmpty.validationResult(someFieldsAreDefinedMoreThanOnce(duplicates))
@@ -185,16 +187,17 @@ object FormTemplateValidator {
   }
 
   def validate(componentType: ComponentType, formTemplate: FormTemplate): ValidationResult = componentType match {
-    case HasExpr(SingleExpr(expr))          => validate(expr, formTemplate.sections)
-    case HasExpr(MultipleExpr(fields))      => Valid
-    case Date(_, _, _)                      => Valid
-    case Address(_)                         => Valid
-    case Choice(_, _, _, _, _)              => Valid
-    case RevealingChoice(_, _, hiddenField) => validate(hiddenField.flatMap(_.map(_.`type`)), formTemplate)
-    case HmrcTaxPeriod(_, _, _)             => Valid
-    case Group(fvs, _, _, _, _, _)          => validate(fvs.map(_.`type`), formTemplate)
-    case FileUpload()                       => Valid
-    case InformationMessage(_, _)           => Valid
+    case HasExpr(SingleExpr(expr))     => validate(expr, formTemplate.sections)
+    case HasExpr(MultipleExpr(fields)) => Valid
+    case Date(_, _, _)                 => Valid
+    case Address(_)                    => Valid
+    case Choice(_, _, _, _, _)         => Valid
+    case RevealingChoice(revealingChoiceElements) =>
+      validate(revealingChoiceElements.toList.flatMap(_.revealingFields.map(_.`type`)), formTemplate)
+    case HmrcTaxPeriod(_, _, _)    => Valid
+    case Group(fvs, _, _, _, _, _) => validate(fvs.map(_.`type`), formTemplate)
+    case FileUpload()              => Valid
+    case InformationMessage(_, _)  => Valid
   }
 
   def validateForwardReference(sections: List[Section]): ValidationResult = {
@@ -233,6 +236,7 @@ object FormTemplateValidator {
           .map(_.`type`)
           .collect {
             case Group(fields, _, _, _, _, _) => fields.map(_.id)
+            case RevealingChoice(options)     => options.toList.flatMap(_.revealingFields.map(_.id))
           })
       .flatten
 
@@ -309,9 +313,49 @@ object FormTemplateValidator {
   private def evalExpr(expr: Expr): List[FormComponentId] = expr match {
     case Add(left, right)         => evalExpr(left) ::: evalExpr(right)
     case Subtraction(left, right) => evalExpr(left) ::: evalExpr(right)
-    case Multiply(left, right)    => evalExpr(left) ::: evalExpr(right) //TODO find a way to stop code repeating.
+    case Multiply(left, right)    => evalExpr(left) ::: evalExpr(right)
     case Sum(field1)              => evalExpr(field1)
     case id: FormCtx              => List(id.toFieldId)
     case _                        => Nil
+  }
+
+  private val isRevealingChoice: FormComponent => Boolean = fc =>
+    fc.`type` match {
+      case RevealingChoice(_) => true
+      case _                  => false
+  }
+
+  private val isGroup: FormComponent => Boolean = fc =>
+    fc.`type` match {
+      case group: Group => true
+      case _            => false
+  }
+
+  def validateGroup(formTemplate: FormTemplate): ValidationResult =
+    validateComponents("Group", formTemplate)(f => {
+      case Group(fields, _, _, _, _, _) => fields.forall(f)
+    })
+
+  def validateRevealingChoice(formTemplate: FormTemplate): ValidationResult =
+    validateComponents("Revealing choice", formTemplate)(f => {
+      case RevealingChoice(options) => options.forall(_.revealingFields.forall(f))
+    })
+
+  private def validateComponents(str: String, formTemplate: FormTemplate)(
+    pf: (FormComponent => Boolean) => PartialFunction[ComponentType, Boolean]): ValidationResult = {
+
+    val formComponents: List[FormComponent] = formTemplate.sections.flatMap(_.fields)
+
+    val rcElements: (FormComponent => Boolean) => Boolean = f =>
+      formComponents.map(_.`type`).collect(pf(f)).foldLeft(true)(_ && _)
+
+    val noRevealingChoice = rcElements(fc => !isRevealingChoice(fc))
+    val noGroup = rcElements(fc => !isGroup(fc))
+
+    (noRevealingChoice, noGroup) match {
+      case (true, true) => Valid
+      case (false, _)   => Invalid(str + " cannot contains revealing choice as its element")
+      case (_, false)   => Invalid(str + " cannot contains group as its element")
+    }
   }
 }

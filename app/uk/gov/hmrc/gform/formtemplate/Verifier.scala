@@ -43,6 +43,8 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validateEmailParameter(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateEnrolmentIdentifier(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateDates(formTemplate).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateGroup(formTemplate).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateRevealingChoice(formTemplate).toEither)
     } yield ()
   }
 }

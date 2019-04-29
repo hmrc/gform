@@ -119,9 +119,13 @@ object ChoiceType {
   implicit val format: OFormat[ChoiceType] = derived.oformat
 }
 
-case class RevealingChoice(options: List[String], selections: List[Int], hiddenField: List[List[FormComponent]])
-    extends ComponentType
+case class RevealingChoiceElement(choice: String, revealingFields: List[FormComponent], selected: Boolean)
+object RevealingChoiceElement {
+  implicit val format: OFormat[RevealingChoiceElement] = derived.oformat
+}
+case class RevealingChoice(options: NonEmptyList[RevealingChoiceElement]) extends ComponentType
 object RevealingChoice {
+  import JsonUtils._
   implicit val format: OFormat[RevealingChoice] = derived.oformat
 }
 

@@ -1,0 +1,71 @@
+{
+  "_id": "group-include-revealing-choice",
+  "formName": "Group",
+  "description": "",
+  "emailTemplateId": "",
+  "authConfig": {
+    "authModule": "hmrc"
+  },
+  "sections": [
+    {
+      "title": "Page",
+      "fields": [
+        {
+          "type": "group",
+          "id": "group",
+          "label": "Group",
+          "repeatsMax": 5,
+          "repeatsMin": 1,
+          "fields": [
+            {
+              "id": "tradesUnderDifferentName",
+              "type": "revealingChoice",
+              "label": "Does your company trade under a different name?",
+              "choices": [
+                "Yes",
+                "No"
+              ],
+              "revealingFields": [
+                [
+                  {
+                    "id": "tradingName",
+                    "type": "text",
+                    "label": "Trading name"
+                  }
+                ],
+                [
+                  {
+                    "id": "tradingNameUnknownHelp",
+                    "type": "info",
+                    "label": "Sorry",
+                    "infoText": "Sorry"
+                  }
+                ]
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "declarationSection": {
+    "title": "Declaration",
+    "fields": []
+  },
+  "acknowledgementSection": {
+    "title": "Acknowledgement",
+    "fields": []
+  },
+  "destinations": [
+    {
+      "id": "queueDestination",
+      "type": "hmrcDms",
+      "dmsFormId": "",
+      "customerId": "${businessUtr}",
+      "classificationType": "",
+      "businessArea": ""
+    }
+  ],
+  "submitErrorUrl": "",
+  "submitSuccessUrl": ""
+}

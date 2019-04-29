@@ -19,6 +19,8 @@ package uk.gov.hmrc.gform.formtemplate
 import cats.data.NonEmptyList
 import cats.instances.either._
 import cats.instances.list._
+import cats.instances.int._
+import cats.syntax.eq._
 import cats.syntax.either._
 import cats.syntax.option._
 import cats.syntax.traverse._
@@ -30,7 +32,6 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.RoundingMode._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService._
 
-import scala.collection.immutable.List
 case class MES(
   mandatory: Boolean,
   editable: Boolean,
@@ -284,8 +285,55 @@ class FormComponentMaker(json: JsValue) {
 
   private def createRevealingChoice(maybeValueExpr: Option[ValueExpr]): Opt[RevealingChoice] =
     (choices, maybeValueExpr, revealingChoice.map(_.traverse(_.traverse(_.optFieldValue())))) match {
-      case (Some(options), Selections(selections), Some(Right(hiddenFields))) =>
-        RevealingChoice(options, selections, hiddenFields).asRight
+      case (Some(options), Selections(selections), Some(Right(revealingFields))) =>
+        def mkError[A](error: String): Either[String, A] = s"RevealingChoice error: $error".asLeft
+
+        val selectionE: Either[String, Option[Int]] = selections match {
+          case Nil              => Right(None)
+          case selection :: Nil => Right(Some(selection))
+          case _ :: _ =>
+            val sel = selections.mkString(",")
+            mkError(s"Only single choice can be selected, but $sel has been defined")
+        }
+
+        def rcFromSelection(selections: List[Boolean]): Either[String, RevealingChoice] = {
+          val revealingChoiceElements: List[RevealingChoiceElement] =
+            options.zip(revealingFields).zip(selections).map {
+              case ((choice, fields), selected) => RevealingChoiceElement(choice, fields, selected)
+            }
+
+          revealingChoiceElements match {
+            case (x :: xs) => RevealingChoice(NonEmptyList(x, xs)).asRight
+            case Nil       => mkError("At least one choice needs to be specified")
+          }
+        }
+
+        def construcRevealingChoice(maybeSelection: Option[Int]): Either[String, RevealingChoice] =
+          if (options.size === revealingFields.size) {
+
+            val initialSelections = List.fill(options.size)(false)
+            val selectionsE = maybeSelection.fold[Either[String, List[Boolean]]](initialSelections.asRight) {
+              selection =>
+                if (initialSelections.isDefinedAt(selection)) {
+                  initialSelections.updated(selection, true).asRight
+                } else mkError(s"Selection index $selection doesn't correspond to any of the choices")
+            }
+
+            for {
+              selections <- selectionsE
+              rc         <- rcFromSelection(selections)
+            } yield rc
+
+          } else
+            mkError(
+              s"Number of 'choices': ${options.size} and number of 'revealingFields': ${revealingFields.size} does not match. They need to be identical.")
+
+        val res = for {
+          selection <- selectionE
+          rc        <- construcRevealingChoice(selection)
+        } yield rc
+
+        res.leftMap(UnexpectedState)
       case _ => UnexpectedState(s"""|Wrong revealing choice definition
                                     |choices : ${choices.getOrElse("")}
                                     |selections: ${maybeValueExpr.getOrElse("")}
