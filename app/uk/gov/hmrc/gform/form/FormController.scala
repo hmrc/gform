@@ -23,7 +23,7 @@ import play.api.mvc._
 import uk.gov.hmrc.gform.auditing._
 import uk.gov.hmrc.gform.config.AppConfig
 import uk.gov.hmrc.gform.controllers.BaseController
-import uk.gov.hmrc.gform.fileupload.FileUploadService
+import uk.gov.hmrc.gform.fileupload.{ FileUploadAlgebra, FileUploadService }
 import uk.gov.hmrc.gform.formtemplate.FormTemplateService
 import uk.gov.hmrc.gform.sharedmodel.form.{ FileId, FormId, UserData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._

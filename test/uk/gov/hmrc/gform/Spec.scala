@@ -54,7 +54,7 @@ trait JsResultMatcher { self: Spec =>
   final private class BeJsError[E](message: String) extends Matcher[JsResult[E]] {
     def apply(jsResult: JsResult[E]): MatchResult =
       MatchResult(
-        jsResult.fold(_.exists(_._2.exists(_.messages.exists(_ == message))), _ => false),
+        jsResult.fold(_.exists(_._2.exists(_.messages.exists(_.contains(message)))), _ => false),
         s"'$jsResult' was not an error with a message matching '$message'.",
         s"'$jsResult' contained an error with a message matching '$message', but should not have."
       )

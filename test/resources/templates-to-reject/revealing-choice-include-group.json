@@ -1,0 +1,64 @@
+{
+  "_id": "revealing-choice-include-group",
+  "formName": "Revealing choice",
+  "description": "",
+  "emailTemplateId": "",
+  "authConfig": {
+    "authModule": "hmrc"
+  },
+  "sections": [
+    {
+      "title": "Page",
+      "fields": [
+        {
+          "id": "tradesUnderDifferentName",
+          "type": "revealingChoice",
+          "label": "Does your company trade under a different name?",
+          "choices": ["Yes"],
+          "revealingFields": [
+	    [
+              {
+                "type": "group",
+                "id": "group",
+                "label": "Group",
+                "repeatsMax": 5,
+                "repeatsMin": 1,
+                "fields": [
+                  {
+                    "id": "groupField",
+                    "type": "text",
+                    "label": "Text label"
+                  }
+                ]
+              }
+            ]
+          ]
+        }
+      ]
+    }
+  ],
+  "declarationSection": {
+    "title": "Declaration",
+    "fields": [
+
+    ]
+  },
+  "acknowledgementSection": {
+    "title": "Acknowledgement",
+    "fields": [
+
+    ]
+  },
+  "destinations": [
+    {
+      "id": "queueDestination",
+      "type": "hmrcDms",
+      "dmsFormId": "",
+      "customerId": "${businessUtr}",
+      "classificationType": "",
+      "businessArea": ""
+    }
+  ],
+  "submitErrorUrl": "",
+  "submitSuccessUrl": ""
+}
