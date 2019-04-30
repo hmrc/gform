@@ -16,24 +16,32 @@
 
 package uk.gov.hmrc.gform.submission
 
+import play.api.libs.json.JsValue
 import uk.gov.hmrc.gform.config.ConfigModule
+import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.email.EmailModule
 import uk.gov.hmrc.gform.fileupload.FileUploadModule
-import uk.gov.hmrc.gform.form.{ FormModule, FormService }
+import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorModule
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsHttpApiModule
+import uk.gov.hmrc.gform.submission.ofsted.{ Notifier, OfstedEmailReviewNotifier, OfstedNotificationClient, RealOfstedSubmitter }
 import uk.gov.hmrc.gform.time.TimeModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
+import uk.gov.hmrc.gform.core._
+import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, UserId }
+import uk.gov.hmrc.gform.sharedmodel.form._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
+import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ ExecutionContext, Future }
 
 class SubmissionModule(
   configModule: ConfigModule,
   mongoModule: MongoModule,
   pdfGeneratorModule: PdfGeneratorModule,
-  formService: FormService,
+  formService: FormAlgebra[Future],
   formTemplateModule: FormTemplateModule,
   fileUploadModule: FileUploadModule,
   wsHttpModule: WSHttpModule,
@@ -41,18 +49,67 @@ class SubmissionModule(
   emailModule: EmailModule,
   handlebarsHttpApiModule: HandlebarsHttpApiModule)(implicit ex: ExecutionContext) {
 
+  private val fOptFormAlgebra: FormAlgebra[FOpt] = new FormAlgebra[FOpt] {
+    override def get(formId: FormId)(implicit hc: HeaderCarrier): FOpt[Form] = fromFutureA(formService.get(formId))
+
+    override def delete(formId: FormId)(implicit hc: HeaderCarrier): FOpt[Unit] =
+      fromFutureA(formService.delete(formId))
+
+    override def create(
+      userId: UserId,
+      formTemplateId: FormTemplateId,
+      accessCode: Option[AccessCode],
+      expiryDays: Long,
+      initialFields: Seq[FormField])(implicit hc: HeaderCarrier): FOpt[FormId] =
+      fromFutureA(formService.create(userId, formTemplateId, accessCode, expiryDays, initialFields))
+
+    override def updateUserData(formId: FormId, userData: UserData)(implicit hc: HeaderCarrier): FOpt[Unit] =
+      fromFutureA(formService.updateUserData(formId, userData))
+
+    def updateFormStatus(formId: FormId, newStatus: FormStatus)(implicit hc: HeaderCarrier): FOpt[Unit] =
+      fromFutureA(formService.updateFormStatus(formId, newStatus))
+
+    def updateDestinationSubmissionInfo(formId: FormId, info: Option[DestinationSubmissionInfo])(
+      implicit hc: HeaderCarrier): FOpt[Unit] = fromFutureA(formService.updateDestinationSubmissionInfo(formId, info))
+
+    override def saveKeyStore(formId: FormId, data: Map[String, JsValue])(implicit hc: HeaderCarrier): FOpt[Unit] =
+      fromFutureA(formService.saveKeyStore(formId, data))
+
+    override def getKeyStore(formId: FormId)(implicit hc: HeaderCarrier): FOpt[Option[Map[String, JsValue]]] =
+      fromFutureA(formService.getKeyStore(formId))
+  }
+
   //TODO: this should be replaced with save4later for submissions
 
   val submissionRepo = new SubmissionRepo(mongoModule.mongo)
 
+  private val fileUploadServiceDmsSubmitter = new FileUploadServiceDmsSubmitter(
+    fileUploadModule.fileUploadService,
+    fOptFormAlgebra,
+    formTemplateModule.fOptFormTemplateAlgebra,
+    submissionRepo,
+    pdfGeneratorModule.pdfGeneratorService,
+    timeModule.timeProvider
+  )
+
+  private val realOfstedSubmitter =
+    new RealOfstedSubmitter[FOpt](
+      fOptFormAlgebra,
+      formTemplateModule.fOptFormTemplateAlgebra,
+      new OfstedEmailReviewNotifier[FOpt](new OfstedNotificationClient(new Notifier[FOpt] {})))
+
+  private val realDestinationSubmitter = new RealDestinationSubmitter(
+    fileUploadServiceDmsSubmitter,
+    handlebarsHttpApiModule.handlebarsHttpSubmitter,
+    realOfstedSubmitter
+  )
+
   val submissionService = new SubmissionService(
     pdfGeneratorModule.pdfGeneratorService,
-    formService,
+    fOptFormAlgebra,
     formTemplateModule.formTemplateService,
-    fileUploadModule.fileUploadService,
-    handlebarsHttpApiModule.handlebarsHttpSubmitter,
+    new DestinationsSubmitter(realDestinationSubmitter),
     submissionRepo,
-    timeModule.timeProvider,
     emailModule.emailLogic
   )
 

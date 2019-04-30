@@ -16,7 +16,9 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
+import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.mongo.MongoModule
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId }
 
 import scala.concurrent.ExecutionContext
 
@@ -26,5 +28,9 @@ class FormTemplateModule(mongoModule: MongoModule)(implicit ex: ExecutionContext
   val formTemplateRawRepo: FormTemplateRawRepo = new FormTemplateRawRepo(mongoModule.mongo)
   val formTemplateService: FormTemplateService = new FormTemplateService(formTemplateRepo, formTemplateRawRepo)
   val formTemplatesController: FormTemplatesController = new FormTemplatesController(formTemplateService)
+
+  val fOptFormTemplateAlgebra: FormTemplateAlgebra[FOpt] = new FormTemplateAlgebra[FOpt] {
+    override def get(id: FormTemplateId): FOpt[FormTemplate] = fromFutureA(formTemplateService.get(id))
+  }
 
 }

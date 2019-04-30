@@ -48,7 +48,7 @@ class SelfTestingDestinationSubmitterSpec extends Spec {
       new SelfTestingDestinationSubmitter[Possible](test = DestinationTest("", emptyModel, Nil))
     forAll(includedDestinationGen) { destination =>
       verifyError(
-        submitter.submitIfIncludeIf(destination, null, emptyModel),
+        submitter.submitIfIncludeIf(destination, null, emptyModel, null, null),
         submitter.includeIEvaluatedToTrueButNoTestDestinationInformationWasProvided(destination)
       )
     }
@@ -58,7 +58,7 @@ class SelfTestingDestinationSubmitterSpec extends Spec {
     val submitter =
       new SelfTestingDestinationSubmitter[Possible](test = DestinationTest("", emptyModel, Nil))
     forAll(includeIfDestinationGen(false)) { destination =>
-      submitter.submitIfIncludeIf(destination, null, emptyModel) shouldBe a[Right[_, _]]
+      submitter.submitIfIncludeIf(destination, null, emptyModel, null, null) shouldBe a[Right[_, _]]
     }
   }
 
@@ -76,7 +76,7 @@ class SelfTestingDestinationSubmitterSpec extends Spec {
 
           val submitter = new SelfTestingDestinationSubmitter[Possible](test = test)
           verifyError(
-            submitter.submitIfIncludeIf(destination, null, emptyModel),
+            submitter.submitIfIncludeIf(destination, null, emptyModel, null, null),
             submitter.inconsistentIncludeIfs(destination, destIncludeIf, testIncludeIf)
           )
         }
@@ -103,7 +103,7 @@ class SelfTestingDestinationSubmitterSpec extends Spec {
       val test = DestinationTest("submitIfIncludeIfTest", emptyModel, List(destinationTestResult))
 
       val submitter = new SelfTestingDestinationSubmitter[Possible](test = test)
-      submitter.submitIfIncludeIf(destination, null, emptyModel) shouldBe a[Right[_, _]]
+      submitter.submitIfIncludeIf(destination, null, emptyModel, null, null) shouldBe a[Right[_, _]]
     }
 
   it should "fail if the payloads are invalid json" in {
@@ -121,7 +121,7 @@ class SelfTestingDestinationSubmitterSpec extends Spec {
       val test = DestinationTest("submitIfIncludeIfTest", emptyModel, List(destinationTestResult))
 
       val submitter = new SelfTestingDestinationSubmitter[Possible](test = test)
-      val result = submitter.submitIfIncludeIf(destination, null, emptyModel)
+      val result = submitter.submitIfIncludeIf(destination, null, emptyModel, null, null)
       result should be(submitter.parseTransformedPayload(destination.id, payload))
       result shouldBe a[Left[_, _]]
       result.left.value should include("payload is not valid JSON")
@@ -145,7 +145,7 @@ class SelfTestingDestinationSubmitterSpec extends Spec {
       val test = DestinationTest("submitIfIncludeIfTest", emptyModel, List(destinationTestResult))
 
       val submitter = new SelfTestingDestinationSubmitter[Possible](test = test)
-      val result = submitter.submitIfIncludeIf(destination, null, emptyModel)
+      val result = submitter.submitIfIncludeIf(destination, null, emptyModel, null, null)
       verifyError(result, submitter.generatedPayloadDoesNotMatchExpected(destination))
     }
   }
@@ -166,7 +166,7 @@ class SelfTestingDestinationSubmitterSpec extends Spec {
       val test = DestinationTest("submitIfIncludeIfTest", emptyModel, List(destinationTestResult))
 
       val submitter = new SelfTestingDestinationSubmitter[Possible](test = test)
-      val result = submitter.submitIfIncludeIf(destination, null, emptyModel)
+      val result = submitter.submitIfIncludeIf(destination, null, emptyModel, null, null)
       verifyError(result, submitter.destinationHasNoPayloadButTestDoes(destination))
     }
   }
@@ -182,7 +182,7 @@ class SelfTestingDestinationSubmitterSpec extends Spec {
       val test = DestinationTest("submitIfIncludeIfTest", emptyModel, List(destinationTestResult))
 
       val submitter = new SelfTestingDestinationSubmitter[Possible](test = test)
-      val result = submitter.submitIfIncludeIf(destination, null, emptyModel)
+      val result = submitter.submitIfIncludeIf(destination, null, emptyModel, null, null)
       verifyError(result, submitter.testHasNoPayloadButDestinationDoes(destination))
     }
   }
@@ -204,7 +204,7 @@ class SelfTestingDestinationSubmitterSpec extends Spec {
       val test = DestinationTest("submitIfIncludeIfTest", emptyModel, List(destinationTestResult))
 
       val submitter = new SelfTestingDestinationSubmitter[Possible](test = test)
-      submitter.submitIfIncludeIf(destination, null, emptyModel) shouldBe a[Right[_, _]]
+      submitter.submitIfIncludeIf(destination, null, emptyModel, null, null) shouldBe a[Right[_, _]]
     }
   }
 
@@ -215,7 +215,7 @@ class SelfTestingDestinationSubmitterSpec extends Spec {
       val test = DestinationTest("submitIfIncludeIfTest", emptyModel, List(destinationTestResult))
 
       val submitter = new SelfTestingDestinationSubmitter[Possible](test = test)
-      val result = submitter.submitIfIncludeIf(destination, null, emptyModel)
+      val result = submitter.submitIfIncludeIf(destination, null, emptyModel, null, null)
       verifyError(result, submitter.noResponseSpecified(destination.id))
     }
   }
@@ -229,7 +229,7 @@ class SelfTestingDestinationSubmitterSpec extends Spec {
       val test = DestinationTest("submitIfIncludeIfTest", emptyModel, List(destinationTestResult))
       val submitter = new SelfTestingDestinationSubmitter[Possible](test = test)
       verifyError(
-        submitter.submitIfIncludeIf(destination, null, emptyModel),
+        submitter.submitIfIncludeIf(destination, null, emptyModel, null, null),
         submitter.noExpectedUriSpecified(destination))
     }
   }
@@ -248,7 +248,7 @@ class SelfTestingDestinationSubmitterSpec extends Spec {
       val test = DestinationTest("submitIfIncludeIfTest", model, List(destinationTestResult))
       val submitter = new SelfTestingDestinationSubmitter[Possible](test = test)
       verifyError(
-        submitter.submitIfIncludeIf(destination, null, model),
+        submitter.submitIfIncludeIf(destination, null, model, null, null),
         submitter.mismatchedUri(destination, "www.abc.com/", "www.abc.com/bar"))
     }
   }
@@ -266,7 +266,7 @@ class SelfTestingDestinationSubmitterSpec extends Spec {
         Some(DestinationTestResponse(200, None)))
       val test = DestinationTest("submitIfIncludeIfTest", model, List(destinationTestResult))
       val submitter = new SelfTestingDestinationSubmitter[Possible](test = test)
-      submitter.submitIfIncludeIf(destination, null, model) shouldBe a[Right[_, _]]
+      submitter.submitIfIncludeIf(destination, null, model, null, null) shouldBe a[Right[_, _]]
     }
   }
 
@@ -276,11 +276,17 @@ class SelfTestingDestinationSubmitterSpec extends Spec {
   private def setIncludeIf(destination: Destination, includeIf: Option[String]): Destination = destination match {
     case d: Destination.HmrcDms           => d.copy(includeIf = includeIf)
     case d: Destination.HandlebarsHttpApi => d.copy(includeIf = includeIf)
+    case d: Destination.ReviewingOfsted   => d.copy(includeIf = includeIf)
+    case d: Destination.ReviewRejection   => d.copy(includeIf = includeIf)
+    case d: Destination.ReviewApproval    => d.copy(includeIf = includeIf)
   }
 
   private def setPayload(destination: Destination, payload: Option[String]): Destination = destination match {
     case d: Destination.HandlebarsHttpApi => d.copy(payload = payload)
-    case d: Destination.HmrcDms           => d.copy()
+    case d: Destination.HmrcDms           => d
+    case d: Destination.ReviewingOfsted   => d
+    case d: Destination.ReviewRejection   => d
+    case d: Destination.ReviewApproval    => d
   }
 
   private def includedHandlebarsDestinationGen: Gen[Destination.HandlebarsHttpApi] =

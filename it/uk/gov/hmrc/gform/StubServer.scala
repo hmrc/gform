@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package pact.uk.gov.hmrc.gform
+package uk.gov.hmrc.gform
+
 import play.Mode
 import play.api.ApplicationLoader.Context
 import play.api._
 import play.api.i18n.I18nComponents
 import play.server.Server
-import uk.gov.hmrc.gform.ApplicationModule
-import uk.gov.hmrc.gform.wshttp.{ TestWSHttp, WSHttp, WSHttpModule }
+import uk.gov.hmrc.gform.wshttp.{TestWSHttpIT, WSHttp, WSHttpModule}
 
 class StubApplicationLoader extends play.api.ApplicationLoader {
   def load(context: Context): Application = {
@@ -36,7 +36,7 @@ class StubApplicationModule(context: Context) extends BuiltInComponentsFromConte
   self =>
   val module: ApplicationModule = new ApplicationModule(context) {
     override lazy val wSHttpModule = new WSHttpModule(auditingModule, configModule, playComponents) {
-      override val auditableWSHttp: WSHttp = TestWSHttp
+      override val auditableWSHttp: WSHttp = TestWSHttpIT
     }
   }
   override def router: routing.Router = module.router
@@ -51,3 +51,5 @@ trait StubServer {
 
   Server.forRouter(stubbedModule.router.asJava, Mode.TEST, port)
 }
+
+object StubServer extends StubServer

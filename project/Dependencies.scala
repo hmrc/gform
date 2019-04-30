@@ -30,7 +30,8 @@ object Dependencies {
     "com.github.jknack" % "handlebars-jackson2" % handlebarsVersion,
     "com.itv" %% "scalapact-argonaut-6-2"  % "2.2.5",
     "com.itv" %% "scalapact-http4s-0-16-2" % "2.2.5",
-    "com.softwaremill.quicklens" %% "quicklens" % "1.4.11"
+    "com.softwaremill.quicklens" %% "quicklens" % "1.4.11",
+    "uk.gov.service.notify" % "notifications-java-client" % "3.14.2-RELEASE"
   )
 
 
@@ -45,8 +46,7 @@ object Dependencies {
     "org.jsoup" % "jsoup" % "1.11.3" % scope,
     "com.itv" %% "scalapact-circe-0-9"     % "2.2.5" % scope,
     "com.itv" %% "scalapact-http4s-0-18-0" % "2.2.5" % scope,
-    "com.itv" %% "scalapact-scalatest"     % "2.2.5" % scope
+    "com.itv" %% "scalapact-scalatest"     % "2.2.5" % scope,
+    "com.softwaremill.sttp" %% "core" % "1.5.15" % scope
   )
-
-
 }

@@ -16,47 +16,58 @@
 
 package uk.gov.hmrc.gform.form
 
+import cats.Monad
+import cats.syntax.eq._
+import cats.syntax.functor._
+import cats.syntax.flatMap._
 import play.api.libs.json.JsValue
-import uk.gov.hmrc.gform.save4later.Save4Later
-import uk.gov.hmrc.gform.sharedmodel.form._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ EmailParametersRecalculated, FormTemplateId }
-import uk.gov.hmrc.gform.sharedmodel.{ NotChecked, UserId }
+import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
+import uk.gov.hmrc.gform.save4later.FormPersistenceAlgebra
+import uk.gov.hmrc.gform.sharedmodel.form.{ DestinationSubmissionInfo, _ }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
+import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, UserId }
+import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.{ ExecutionContext, Future }
+class FormService[F[_]: Monad](formPersistence: FormPersistenceAlgebra[F], fileUpload: FileUploadAlgebra[F])
+    extends FormAlgebra[F] {
 
-class FormService(save4Later: Save4Later)(implicit ex: ExecutionContext) {
+  def get(formId: FormId)(implicit hc: HeaderCarrier): F[Form] =
+    formPersistence.get(formId)
 
-  def get(formId: FormId)(implicit hc: HeaderCarrier): Future[Form] =
-    save4Later.get(formId)
+  def delete(formId: FormId)(implicit hc: HeaderCarrier): F[Unit] =
+    formPersistence.delete(formId)
 
-  def delete(formId: FormId)(implicit hc: HeaderCarrier): Future[Unit] =
-    save4Later.delete(formId)
-
-  def insertEmpty(
+  def create(
     userId: UserId,
     formTemplateId: FormTemplateId,
-    envelopeId: EnvelopeId,
-    formId: FormId,
-    envelopeExpiryDate: EnvelopeExpiryDate)(implicit hc: HeaderCarrier): Future[Unit] = {
-    val emptyFormData = FormData(fields = Nil)
-    val form = Form(
-      formId,
-      envelopeId,
-      userId,
-      formTemplateId,
-      emptyFormData,
-      InProgress,
-      VisitIndex.empty,
-      ThirdPartyData.empty,
-      Some(envelopeExpiryDate)
-    )
-    save4Later.upsert(formId, form)
+    accessCode: Option[AccessCode],
+    expiryDays: Long,
+    initialFields: Seq[FormField] = Seq.empty)(implicit hc: HeaderCarrier): F[FormId] = {
+    val timeProvider = new TimeProvider
+    val formId = FormId(userId, formTemplateId, accessCode)
+    val expiryDate = timeProvider.localDateTime().plusDays(expiryDays)
+
+    for {
+      envelopeId <- fileUpload.createEnvelope(formTemplateId, expiryDate)
+      form = Form(
+        formId,
+        envelopeId,
+        userId,
+        formTemplateId,
+        FormData(fields = initialFields),
+        InProgress,
+        VisitIndex.empty,
+        ThirdPartyData.empty,
+        Some(EnvelopeExpiryDate(expiryDate))
+      )
+      _ <- formPersistence.upsert(formId, form)
+    } yield formId
   }
 
-  def updateUserData(formId: FormId, userData: UserData)(implicit hc: HeaderCarrier): Future[Unit] =
+  def updateUserData(formId: FormId, userData: UserData)(implicit hc: HeaderCarrier): F[Unit] =
     for {
-      form <- save4Later.get(formId)
+      form <- get(formId)
       newForm = form
         .copy(
           formData = userData.formData,
@@ -64,26 +75,46 @@ class FormService(save4Later: Save4Later)(implicit ex: ExecutionContext) {
           visitsIndex = userData.visitsIndex,
           thirdPartyData = userData.thirdPartyData
         )
-      _ <- save4Later.upsert(formId, newForm)
+      _ <- formPersistence.upsert(formId, newForm)
+    } yield ()
+
+  def updateFormStatus(formId: FormId, status: FormStatus)(implicit hc: HeaderCarrier): F[Unit] =
+    for {
+      form <- get(formId)
+      _    <- formPersistence.upsert(formId, form.copy(status = newStatus(form, status)))
     } yield ()
 
   private def newStatus(form: Form, status: FormStatus) =
     LifeCycleStatus.newStatus(form, status)
 
-  def saveKeyStore(formId: FormId, data: Map[String, JsValue])(implicit hc: HeaderCarrier): Future[Unit] =
-    save4Later.saveKeyStore(formId, data)
+  def updateDestinationSubmissionInfo(formId: FormId, info: Option[DestinationSubmissionInfo])(
+    implicit hc: HeaderCarrier): F[Unit] =
+    for {
+      form <- get(formId)
+      _    <- formPersistence.upsert(formId, form.copy(destinationSubmissionInfo = info))
+    } yield ()
 
-  def getKeyStore(formId: FormId)(implicit hc: HeaderCarrier): Future[Option[Map[String, JsValue]]] =
-    save4Later.getKeyStore(formId)
+  def saveKeyStore(formId: FormId, data: Map[String, JsValue])(implicit hc: HeaderCarrier): F[Unit] =
+    formPersistence.saveKeyStore(formId, data)
+
+  def getKeyStore(formId: FormId)(implicit hc: HeaderCarrier): F[Option[Map[String, JsValue]]] =
+    formPersistence.getKeyStore(formId)
 }
 
 object LifeCycleStatus {
-  def newStatus(form: Form, status: FormStatus): FormStatus = form.status match {
-    case InProgress => status
-    case Summary    => if (status != InProgress) status else form.status
-    case Validated =>
-      if (status == InProgress) Summary else if (status == Summary || status == Signed) status else form.status
-    case Signed    => if (status == Submitted) status else form.status
-    case Submitted => form.status
+  def newStatus(form: Form, status: FormStatus): FormStatus = (form.status, status) match {
+    case (InProgress, _)                      => status
+    case (NeedsReview, Approved | InProgress) => status
+    case (NeedsReview, _)                     => form.status
+    case (Approved, Submitted)                => status
+    case (Approved, _)                        => form.status
+    case (Summary, InProgress)                => form.status
+    case (Summary, _)                         => status
+    case (Validated, InProgress)              => Summary
+    case (Validated, Summary | Signed)        => status
+    case (Validated, _)                       => form.status
+    case (Signed, Submitted | NeedsReview)    => status
+    case (Signed, _)                          => form.status
+    case (Submitted, _)                       => form.status
   }
 }

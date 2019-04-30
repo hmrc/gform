@@ -25,14 +25,12 @@ import uk.gov.hmrc.gform.config.AppConfig
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.core.FormValidator
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.fileupload.FileUploadService
+import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateService
-import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeExpiryDate, FileId, FormId, UserData }
+import uk.gov.hmrc.gform.sharedmodel.form.{ FileId, FormId, UserData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, UserId }
-import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.{ BadRequestException, NotFoundException }
-import uk.gov.hmrc.play.audit.http.connector.AuditResult
 
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.Try
@@ -40,15 +38,15 @@ import scala.util.Try
 class FormController(
   config: AppConfig,
   formTemplateService: FormTemplateService,
-  fileUploadService: FileUploadService,
-  formService: FormService)(implicit ex: ExecutionContext)
+  fileUpload: FileUploadAlgebra[Future],
+  formService: FormAlgebra[Future])(implicit ex: ExecutionContext)
     extends BaseController {
 
   def newForm(
     userId: UserId,
     formTemplateId: FormTemplateId,
     accessCode: Option[AccessCode]
-  ) = Action.async { implicit request =>
+  ): Action[AnyContent] = Action.async { implicit request =>
     Logger.info(s"new form, userId: '${userId.value}', templateId: '${formTemplateId.value}', accessCode: '${accessCode
       .map(_.value)}', ${loggingHelpers.cleanHeaders(request.headers)}")
     //TODO authentication
@@ -56,20 +54,11 @@ class FormController(
     //TODO authorisation
     //TODO Prevent creating new form when there exist one. Ask user to explicitly delete it
     //TODO: remove userId from argument list (it should be available after authenticating)
-    val timeProvider = new TimeProvider
-    val formId = FormId(userId, formTemplateId, accessCode)
-    val expiryDate = timeProvider.localDateTime().plusDays(config.formExpiryDays.toLong)
-    val envelopeIdF = fileUploadService.createEnvelope(formTemplateId, expiryDate)
-    val formIdF: Future[FormId] = for {
-      envelopeId <- envelopeIdF
-      _          <- formService.insertEmpty(userId, formTemplateId, envelopeId, formId, EnvelopeExpiryDate(expiryDate))
 
-    } yield formId
-
-    formIdF.asOkJson
+    formService.create(userId, formTemplateId, accessCode, config.formExpiryDays.toLong, Seq.empty).asOkJson
   }
 
-  def get(formId: FormId) = Action.async { implicit request =>
+  def get(formId: FormId): Action[AnyContent] = Action.async { implicit request =>
     Logger.info(s"getting form, formId: '${formId.value}', ${loggingHelpers.cleanHeaders(request.headers)}")
 
     //TODO authentication
@@ -79,13 +68,11 @@ class FormController(
       .get(formId)
       .asOkJson
       .recover {
-        case e: NotFoundException => {
-          Result(header = ResponseHeader(NOT_FOUND), body = HttpEntity.NoEntity)
-        }
+        case _: NotFoundException => Result(header = ResponseHeader(NOT_FOUND), body = HttpEntity.NoEntity)
       }
   }
 
-  def updateFormData(formId: FormId) = Action.async(parse.json[UserData]) { implicit request =>
+  def updateFormData(formId: FormId): Action[UserData] = Action.async(parse.json[UserData]) { implicit request =>
     //TODO: check form status. If after submission don't call this function
     //TODO authentication
     //TODO authorisation
@@ -96,21 +83,22 @@ class FormController(
     } yield NoContent
   }
 
-  def validateSection(formId: FormId, sectionNumber: SectionNumber) = Action.async { implicit request =>
-    Logger.info(s"Validating sections: '${formId.value}', section number '${sectionNumber.value}', ${loggingHelpers
-      .cleanHeaders(request.headers)}")
-    //TODO check form status. If after submission don't call this function
-    //TODO authentication
-    //TODO authorisation
-    //TODO wrap result into ValidationResult case class containign status of validation and list of errors
+  def validateSection(formId: FormId, sectionNumber: SectionNumber): Action[AnyContent] = Action.async {
+    implicit request =>
+      Logger.info(s"Validating sections: '${formId.value}', section number '${sectionNumber.value}', ${loggingHelpers
+        .cleanHeaders(request.headers)}")
+      //TODO check form status. If after submission don't call this function
+      //TODO authentication
+      //TODO authorisation
+      //TODO wrap result into ValidationResult case class containign status of validation and list of errors
 
-    val result: Future[Either[UnexpectedState, Unit]] = for {
-      form         <- formService.get(formId)
-      formTemplate <- formTemplateService.get(form.formTemplateId)
-      section = getSection(formTemplate, sectionNumber)
-    } yield FormValidator.validate(form.formData.fields.toList, section)
+      val result: Future[Either[UnexpectedState, Unit]] = for {
+        form         <- formService.get(formId)
+        formTemplate <- formTemplateService.get(form.formTemplateId)
+        section = getSection(formTemplate, sectionNumber)
+      } yield FormValidator.validate(form.formData.fields.toList, section)
 
-    result.map(_.fold(e => e.error, _ => "No errors")).asOkJson
+      result.map(_.fold(e => e.error, _ => "No errors")).asOkJson
   }
 
   def delete(formId: FormId): Action[AnyContent] = Action.async { implicit request =>
@@ -118,25 +106,26 @@ class FormController(
     formService.delete(formId).asNoContent
   }
 
-  def deleteFile(formId: FormId, fileId: FileId) = Action.async { implicit request =>
+  def deleteFile(formId: FormId, fileId: FileId): Action[AnyContent] = Action.async { implicit request =>
     Logger.info(
       s"deleting file, formId: '${formId.value}', fileId: ${fileId.value}, ${loggingHelpers.cleanHeaders(request.headers)} ")
     val result = for {
       form <- formService.get(formId)
-      _    <- fileUploadService.deleteFile(form.envelopeId, fileId)
+      _    <- fileUpload.deleteFile(form.envelopeId, fileId)
     } yield ()
     result.asNoContent
   }
 
   //TODO discuss with Daniel about naming, purpose of it and if we can make it part of a form
-  def saveKeyStore(formId: FormId) = Action.async(parse.json[Map[String, JsValue]]) { implicit request =>
-    formService
-      .saveKeyStore(formId, request.body)
-      .asNoContent
+  def saveKeyStore(formId: FormId): Action[Map[String, JsValue]] = Action.async(parse.json[Map[String, JsValue]]) {
+    implicit request =>
+      formService
+        .saveKeyStore(formId, request.body)
+        .asNoContent
   }
 
   //TODO discuss with Daniel about naming, purpose of it and if we can make it part of a form
-  def getKeyStore(formId: FormId) = Action.async { implicit request =>
+  def getKeyStore(formId: FormId): Action[AnyContent] = Action.async { implicit request =>
     formService.getKeyStore(formId).asOkJson
   }
 

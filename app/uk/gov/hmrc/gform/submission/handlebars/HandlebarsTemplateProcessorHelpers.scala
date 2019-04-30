@@ -28,6 +28,7 @@ import java.time.format.DateTimeFormatter
 import com.fasterxml.jackson.databind.node.{ ArrayNode, ObjectNode, TextNode }
 import com.github.jknack.handlebars.{ Handlebars, Options }
 import play.api.Logger
+import uk.gov.hmrc.gform.sharedmodel.form.{ Approved, FormStatus, Signed }
 
 class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimeProvider) {
   def yesNoToEtmpChoice(yesNoChoice: Any): CharSequence = log("yesNoChoice", yesNoChoice) {
@@ -391,6 +392,21 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
       ifNotNullAsNumber(second) { s =>
         condition(f == s)
       }
+    }
+  }
+
+  def isSigned(options: Options): CharSequence = log("isSigned") {
+    hasStatus(options, Signed)
+  }
+
+  def isApproved(options: Options): CharSequence = log("isApproved") {
+    hasStatus(options, Approved)
+  }
+
+  private def hasStatus(options: Options, requiredStatus: FormStatus) = {
+    val formStatus = options.context.get("formStatus")
+    ifNotNullAsString(formStatus) { s =>
+      (s === requiredStatus.toString).toString
     }
   }
 

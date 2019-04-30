@@ -53,21 +53,6 @@ class DestinationsValidatorSpec extends Spec {
     }
   }
 
-  "validateOneOrMoreHmrcDmsDestination" should "not return an error when there is one or more hmrcDms destinations" in {
-    forAll(PrimitiveGen.oneOrMoreGen(hmrcDmsGen)) { hmrcDms =>
-      val destinations = Destinations.DestinationList(hmrcDms)
-      DestinationsValidator.validateOneOrMoreHmrcDmsDestination(destinations) should be(Valid)
-    }
-  }
-
-  it should "return an error when there are no HmrcDms Destinations" in {
-    forAll(handlebarsHttpApiGen) { d1 =>
-      val destinations = Destinations.DestinationList(NonEmptyList.of(d1))
-      DestinationsValidator.validateOneOrMoreHmrcDmsDestination(destinations) should be(
-        Invalid(DestinationsValidator.oneOrMoreHmrcDestinationsRequired))
-    }
-  }
-
   "validateTestDestinationIdsExist" should "return success when there are no tests" in {
     forAll(destinationGen) { destinations =>
       DestinationsValidator.validateTestDestinationIdsExist(

@@ -15,17 +15,18 @@
  */
 
 package uk.gov.hmrc.gform.form
+
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.fileupload.FileUploadModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ ExecutionContext, Future }
 
 class FormModule(
   configModule: ConfigModule,
   formTemplateModule: FormTemplateModule,
   fileUploadModule: FileUploadModule,
-  formService: FormService)(implicit ex: ExecutionContext) {
+  formService: FormService[Future])(implicit ex: ExecutionContext) {
 
   val formController: FormController =
     new FormController(

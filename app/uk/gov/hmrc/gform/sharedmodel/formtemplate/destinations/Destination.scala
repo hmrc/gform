@@ -22,6 +22,11 @@ import julienrf.json.derived
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import UploadableConditioning._
+import uk.gov.hmrc.gform.sharedmodel.UserId
+
+sealed trait DestinationWithCustomerId {
+  def customerId(): TextExpression
+}
 
 sealed trait Destination extends Product with Serializable {
   def id: DestinationId
@@ -41,7 +46,7 @@ object Destination {
     includeIf: Option[String] = None,
     failOnError: Option[Boolean] = None,
     roboticsXml: Option[Boolean] = None)
-      extends Destination {
+      extends Destination with DestinationWithCustomerId {
     def toDeprecatedDmsSubmission: Destinations.DmsSubmission = Destinations.DmsSubmission(
       dmsFormId,
       customerId,
@@ -57,6 +62,30 @@ object Destination {
     uri: String,
     method: HttpMethod,
     payload: Option[String],
+    includeIf: Option[String],
+    failOnError: Option[Boolean] = None)
+      extends Destination
+
+  case class ReviewingOfsted(
+    id: DestinationId,
+    correlationFieldId: FormComponentId,
+    reviewFormTemplateId: FormTemplateId,
+    userId: UserId,
+    includeIf: Option[String] = None,
+    failOnError: Option[Boolean] = None)
+      extends Destination
+
+  case class ReviewRejection(
+    id: DestinationId,
+    correlationFieldId: FormComponentId,
+    reviewFormCommentFieldId: FormComponentId,
+    includeIf: Option[String] = None,
+    failOnError: Option[Boolean] = None)
+      extends Destination
+
+  case class ReviewApproval(
+    id: DestinationId,
+    correlationFieldId: FormComponentId,
     includeIf: Option[String] = None,
     failOnError: Option[Boolean] = None)
       extends Destination
@@ -64,6 +93,9 @@ object Destination {
   val typeDiscriminatorFieldName: String = "type"
   val hmrcDms: String = "hmrcDms"
   val handlebarsHttpApi: String = "handlebarsHttpApi"
+  val reviewingOfsted: String = "reviewingOfsted"
+  val reviewRejection: String = "reviewRejection"
+  val reviewApproval: String = "reviewApproval"
 
   implicit val format: OFormat[Destination] = {
     implicit val d: OFormat[Destination] = derived.oformat
@@ -72,7 +104,10 @@ object Destination {
       ADTFormat.adtRead[Destination](
         typeDiscriminatorFieldName,
         hmrcDms           -> UploadableHmrcDmsDestination.reads,
-        handlebarsHttpApi -> UploadableHandlebarsHttpApiDestination.reads
+        handlebarsHttpApi -> UploadableHandlebarsHttpApiDestination.reads,
+        reviewingOfsted   -> UploadableReviewingOfstedDestination.reads,
+        reviewRejection   -> UploadableReviewRejectionDestination.reads,
+        reviewApproval    -> UploadableReviewApprovalDestination.reads
       ))
   }
 }
@@ -129,8 +164,80 @@ object UploadableHandlebarsHttpApiDestination {
   }
 }
 
+case class UploadableReviewingOfstedDestination(
+  id: DestinationId,
+  correlationFieldId: FormComponentId,
+  reviewFormTemplateId: FormTemplateId,
+  userId: UserId,
+  convertSingleQuotes: Option[Boolean],
+  includeIf: Option[String],
+  failOnError: Option[Boolean]) {
+
+  def toReviewingOfstedDestination: Either[String, Destination.ReviewingOfsted] =
+    for {
+      cvii <- addErrorInfo(id, "includeIf")(condition(convertSingleQuotes, includeIf))
+    } yield
+      Destination
+        .ReviewingOfsted(id, correlationFieldId, reviewFormTemplateId, userId, cvii, failOnError)
+}
+
+object UploadableReviewingOfstedDestination {
+  implicit val reads: Reads[Destination.ReviewingOfsted] = new Reads[Destination.ReviewingOfsted] {
+    private val d = derived.reads[UploadableReviewingOfstedDestination]
+    override def reads(json: JsValue): JsResult[Destination.ReviewingOfsted] =
+      d.reads(json).flatMap(_.toReviewingOfstedDestination.fold(JsError(_), JsSuccess(_)))
+  }
+}
+
+case class UploadableReviewRejectionDestination(
+  id: DestinationId,
+  correlationFieldId: FormComponentId,
+  reviewFormCommentFieldId: FormComponentId,
+  convertSingleQuotes: Option[Boolean],
+  includeIf: Option[String],
+  failOnError: Option[Boolean]) {
+
+  def toReviewRejectionDestination: Either[String, Destination.ReviewRejection] =
+    for {
+      cvii <- addErrorInfo(id, "includeIf")(condition(convertSingleQuotes, includeIf))
+    } yield
+      Destination
+        .ReviewRejection(id, correlationFieldId, reviewFormCommentFieldId, cvii, failOnError)
+}
+
+object UploadableReviewRejectionDestination {
+  implicit val reads: Reads[Destination.ReviewRejection] = new Reads[Destination.ReviewRejection] {
+    private val d = derived.reads[UploadableReviewRejectionDestination]
+    override def reads(json: JsValue): JsResult[Destination.ReviewRejection] =
+      d.reads(json).flatMap(_.toReviewRejectionDestination.fold(JsError(_), JsSuccess(_)))
+  }
+}
+
+case class UploadableReviewApprovalDestination(
+  id: DestinationId,
+  correlationFieldId: FormComponentId,
+  convertSingleQuotes: Option[Boolean],
+  includeIf: Option[String],
+  failOnError: Option[Boolean]) {
+
+  def toReviewApprovalDestination: Either[String, Destination.ReviewApproval] =
+    for {
+      cvii <- addErrorInfo(id, "includeIf")(condition(convertSingleQuotes, includeIf))
+    } yield
+      Destination
+        .ReviewApproval(id, correlationFieldId, cvii, failOnError)
+}
+
+object UploadableReviewApprovalDestination {
+  implicit val reads: Reads[Destination.ReviewApproval] = new Reads[Destination.ReviewApproval] {
+    private val d = derived.reads[UploadableReviewApprovalDestination]
+    override def reads(json: JsValue): JsResult[Destination.ReviewApproval] =
+      d.reads(json).flatMap(_.toReviewApprovalDestination.fold(JsError(_), JsSuccess(_)))
+  }
+}
+
 object UploadableConditioning {
-  def addErrorInfo[T](destinationId: DestinationId, field: String)(result: Either[String, T]) =
+  def addErrorInfo[T](destinationId: DestinationId, field: String)(result: Either[String, T]): Either[String, T] =
     result.leftMap(e => s"${destinationId.id}/$field $e")
 
   def condition(convertSingleQuotes: Option[Boolean], os: Option[String]): Either[String, Option[String]] = os match {

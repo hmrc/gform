@@ -21,31 +21,48 @@ import cats.syntax.either._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.applicative._
+import uk.gov.hmrc.gform.form.FormAlgebra
+import uk.gov.hmrc.gform.sharedmodel.form.{ DestinationSubmissionInfo, Form }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, Destinations, HandlebarsDestinationResponse, HandlebarsTemplateProcessorModel }
 import uk.gov.hmrc.http.HeaderCarrier
 
-class DestinationsSubmitter[M[_]](destinationSubmitter: DestinationSubmitter[M])(implicit monad: Monad[M]) {
+trait DestinationsSubmitterAlgebra[M[_]] {
+  def send(submissionInfo: DestinationSubmissionInfo, formTemplate: FormTemplate, formAlgebra: FormAlgebra[M])(
+    implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]]
+}
 
-  def send(submissionInfo: DestinationSubmissionInfo)(
+class DestinationsSubmitter[M[_]](destinationSubmitter: DestinationSubmitter[M])(implicit monad: Monad[M])
+    extends DestinationsSubmitterAlgebra[M] {
+
+  override def send(submissionInfo: DestinationSubmissionInfo, formTemplate: FormTemplate, formAlgebra: FormAlgebra[M])(
     implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
-    submissionInfo.formTemplate.destinations match {
+    formTemplate.destinations match {
       case dms: Destinations.DmsSubmission =>
         destinationSubmitter.submitToDms(submissionInfo, dms).map(_ => None)
-      case list: Destinations.DestinationList => submitToList(list, submissionInfo)
+      case list: Destinations.DestinationList =>
+        submitToList(list, submissionInfo, formAlgebra, formTemplate)
     }
 
-  private def submitToList(destinations: Destinations.DestinationList, submissionInfo: DestinationSubmissionInfo)(
-    implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
-    submitToList(
-      destinations,
-      submissionInfo,
-      DestinationsSubmitter.createHandlebarsTemplateProcessorModel(submissionInfo))
+  private def submitToList(
+    destinations: Destinations.DestinationList,
+    submissionInfo: DestinationSubmissionInfo,
+    formAlgebra: FormAlgebra[M],
+    formTemplate: FormTemplate)(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
+    for {
+      form <- formAlgebra.get(submissionInfo.formId)
+      result <- submitToList(
+                 destinations,
+                 submissionInfo,
+                 DestinationsSubmitter.createHandlebarsTemplateProcessorModel(submissionInfo, form),
+                 formTemplate)
+    } yield result
 
   def submitToList(
     destinations: Destinations.DestinationList,
     submissionInfo: DestinationSubmissionInfo,
-    handlebarsModel: HandlebarsTemplateProcessorModel)(
-    implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] = {
+    handlebarsModel: HandlebarsTemplateProcessorModel,
+    formTemplate: FormTemplate)(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] = {
     case class TailRecParameter(
       remainingDestinations: List[Destination],
       accumulatedModel: HandlebarsTemplateProcessorModel)
@@ -54,7 +71,7 @@ class DestinationsSubmitter[M[_]](destinationSubmitter: DestinationSubmitter[M])
       case TailRecParameter(Nil, _) => Option.empty[HandlebarsDestinationResponse].asRight[TailRecParameter].pure
       case TailRecParameter(head :: rest, model) =>
         destinationSubmitter
-          .submitIfIncludeIf(head, submissionInfo, model)
+          .submitIfIncludeIf(head, submissionInfo, model, this, formTemplate)
           .map(submitterResult =>
             TailRecParameter(rest, submitterResult.fold(model) { HandlebarsTemplateProcessorModel(_) + model }).asLeft)
     }
@@ -63,10 +80,12 @@ class DestinationsSubmitter[M[_]](destinationSubmitter: DestinationSubmitter[M])
 
 object DestinationsSubmitter {
   def createHandlebarsTemplateProcessorModel(
-    submissionInfo: DestinationSubmissionInfo): HandlebarsTemplateProcessorModel =
-    HandlebarsTemplateProcessorModel.formId(submissionInfo.form) +
-      HandlebarsTemplateProcessorModel(submissionInfo.structuredFormData) +
-      HandlebarsTemplateProcessorModel.hmrcTaxPeriods(submissionInfo.form) +
-      HandlebarsTemplateProcessorModel.rosmRegistration(submissionInfo.form) +
-      HandlebarsTemplateProcessorModel(submissionInfo.variables)
+    submissionInfo: DestinationSubmissionInfo,
+    form: Form): HandlebarsTemplateProcessorModel =
+    HandlebarsTemplateProcessorModel.formId(form._id) +
+      HandlebarsTemplateProcessorModel(submissionInfo.submissionData.structuredFormData) +
+      HandlebarsTemplateProcessorModel.hmrcTaxPeriods(form) +
+      HandlebarsTemplateProcessorModel.rosmRegistration(form) +
+      HandlebarsTemplateProcessorModel(submissionInfo.submissionData.variables) +
+      HandlebarsTemplateProcessorModel(form.status)
 }

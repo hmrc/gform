@@ -35,7 +35,8 @@ import uk.gov.hmrc.http.HeaderCarrier
 class FileUploadService(
   fileUploadConnector: FileUploadConnector,
   fileUploadFrontendConnector: FileUploadFrontendConnector,
-  timeModule: TimeProvider = new TimeProvider)(implicit ex: ExecutionContext) {
+  timeModule: TimeProvider = new TimeProvider)(implicit ex: ExecutionContext)
+    extends FileUploadAlgebra[Future] {
 
   def createEnvelope(formTypeId: FormTemplateId, expiryDate: LocalDateTime)(
     implicit hc: HeaderCarrier): Future[EnvelopeId] = {

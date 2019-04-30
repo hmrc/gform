@@ -16,16 +16,17 @@
 
 package uk.gov.hmrc.gform.save4later
 
+import cats.instances.future._
+import cats.syntax.functor._
 import play.api.Logger
 import play.api.libs.json.{ JsValue, Json }
-import uk.gov.hmrc.gform.core.{ FOpt, Opt }
 import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormId }
-import uk.gov.hmrc.http.cache.client.{ CacheMap, ShortLivedCache }
+import uk.gov.hmrc.http.cache.client.ShortLivedCache
 
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.http.{ HeaderCarrier, NotFoundException }
 
-class Save4Later(cache: ShortLivedCache)(implicit ex: ExecutionContext) {
+class Save4Later(cache: ShortLivedCache)(implicit ex: ExecutionContext) extends FormPersistenceAlgebra[Future] {
 
   def find(formId: FormId)(implicit hc: HeaderCarrier): Future[Option[Form]] =
     cache.fetchAndGetEntry[Form](formId.value, formCacheKey)
@@ -41,14 +42,14 @@ class Save4Later(cache: ShortLivedCache)(implicit ex: ExecutionContext) {
 
   def upsert(formId: FormId, form: Form)(implicit hc: HeaderCarrier): Future[Unit] = {
     Logger.debug(Json.prettyPrint(Json.toJson(form)) + "PUTFORM")
-    cache.cache[Form](formId.value, formCacheKey, form).map(_ => ())
+    cache.cache[Form](formId.value, formCacheKey, form).void
   }
 
   def delete(formId: FormId)(implicit hc: HeaderCarrier): Future[Unit] =
-    cache.remove(formId.value).map(_ => ())
+    cache.remove(formId.value).void
 
   def saveKeyStore(formId: FormId, data: Map[String, JsValue])(implicit hc: HeaderCarrier): Future[Unit] =
-    cache.cache[Map[String, JsValue]](formId.value, "keystore", data).map(_ => ())
+    cache.cache[Map[String, JsValue]](formId.value, "keystore", data).void
 
   def getKeyStore(formId: FormId)(implicit hc: HeaderCarrier): Future[Option[Map[String, JsValue]]] =
     cache.fetchAndGetEntry[Map[String, JsValue]](formId.value, "keystore")

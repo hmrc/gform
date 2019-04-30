@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform
 
+import cats.instances.future._
 import play.api.ApplicationLoader.Context
 import play.api._
 import play.api.http._
@@ -45,6 +46,8 @@ import uk.gov.hmrc.gform.validation.ValidationModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.gform.obligation.ObligationModule
 
+import scala.concurrent.ExecutionContext
+
 class ApplicationLoader extends play.api.ApplicationLoader {
   def load(context: Context): Application = {
     LoggerConfigurator(context.environment.classLoader).foreach {
@@ -58,7 +61,7 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
 
   Logger.info(s"Starting microservice GFORM}")
 
-  implicit val ec = play.api.libs.concurrent.Execution.defaultContext
+  implicit val ec: ExecutionContext = play.api.libs.concurrent.Execution.defaultContext
 
   private val akkaModule = new AkkaModule(materializer, actorSystem)
   protected val playComponents = new PlayComponents(context, self)
@@ -78,7 +81,7 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
   lazy val save4later =
     new Save4Later(shortLivedCacheModule.shortLivedCache)
 
-  lazy val formService = new FormService(save4later)
+  lazy val formService = new FormService(save4later, fileUploadModule.fileUploadService)
 
   lazy val formModule =
     new FormModule(configModule, formTemplateModule, fileUploadModule, formService)

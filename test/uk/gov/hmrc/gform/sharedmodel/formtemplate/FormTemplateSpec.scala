@@ -40,7 +40,6 @@ class FormTemplateSpec extends Spec {
             case legacy: Destinations.DmsSubmission => legacy should be(dmsSubmission)
             case other                              => fail(s"Got unexpected destinations: $other")
           }
-          value.dmsSubmission should be(dmsSubmission)
         case JsError(errors) => fail(errors.toString)
       }
     }

@@ -49,7 +49,35 @@ trait DestinationGen {
       failOnError <- Gen.option(PrimitiveGen.booleanGen)
     } yield Destination.HandlebarsHttpApi(id, profile, uri, method, payload, includeIf, failOnError)
 
-  def destinationGen: Gen[Destination] = Gen.oneOf(hmrcDmsGen, handlebarsHttpApiGen)
+  def reviewingOfstedGen: Gen[Destination.ReviewingOfsted] =
+    for {
+      id          <- destinationIdGen
+      cfid        <- FormComponentGen.formComponentIdGen
+      rtid        <- FormTemplateGen.formTemplateIdGen
+      userId      <- UserIdGen.userIdGen
+      includeIf   <- Gen.option(Gen.alphaNumStr)
+      failOnError <- Gen.option(PrimitiveGen.booleanGen)
+    } yield Destination.ReviewingOfsted(id, cfid, rtid, userId, includeIf, failOnError)
+
+  def reviewRejectionGen: Gen[Destination.ReviewRejection] =
+    for {
+      id                       <- destinationIdGen
+      correlationFieldId       <- FormComponentGen.formComponentIdGen
+      reviewFormCommentFieldId <- FormComponentGen.formComponentIdGen
+      includeIf                <- Gen.option(Gen.alphaNumStr)
+      failOnError              <- Gen.option(PrimitiveGen.booleanGen)
+    } yield Destination.ReviewRejection(id, correlationFieldId, reviewFormCommentFieldId, includeIf, failOnError)
+
+  def reviewApprovalGen: Gen[Destination.ReviewApproval] =
+    for {
+      id                 <- destinationIdGen
+      correlationFieldId <- FormComponentGen.formComponentIdGen
+      includeIf          <- Gen.option(Gen.alphaNumStr)
+      failOnError        <- Gen.option(PrimitiveGen.booleanGen)
+    } yield Destination.ReviewApproval(id, correlationFieldId, includeIf, failOnError)
+
+  def destinationGen: Gen[Destination] =
+    Gen.oneOf(hmrcDmsGen, handlebarsHttpApiGen, reviewingOfstedGen, reviewRejectionGen, reviewApprovalGen)
 
   def destinationWithFixedIdGen(id: DestinationId): Gen[Destination] = hmrcDmsGen.map(_.copy(id = id))
 }
