@@ -19,11 +19,12 @@ package uk.gov.hmrc.gform.formtemplate
 import cats.instances.either._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
-import uk.gov.hmrc.gform.core.{ Opt, Valid, ValidationResult }
 import uk.gov.hmrc.gform.core.ValidationResult.BooleanToValidationResultSyntax
+import uk.gov.hmrc.gform.core.{ Opt, Valid, ValidationResult }
+import uk.gov.hmrc.gform.sharedmodel.form.DestinationSubmissionInfo
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, DestinationTest, Destinations }
-import uk.gov.hmrc.gform.submission.{ DestinationSubmissionInfo, DestinationsSubmitter, SelfTestingDestinationSubmitter }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationId, DestinationTest, Destinations }
+import uk.gov.hmrc.gform.submission.{ DestinationsSubmitter, SelfTestingDestinationSubmitter }
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.collection.immutable.List
@@ -39,17 +40,6 @@ object DestinationsValidator {
       val destinationIds = destinationList.destinations.map(_.id)
       val duplicates = destinationIds.toList.groupBy(identity).collect { case (dId, List(_, _, _*)) => dId }.toSet
       duplicates.isEmpty.validationResult(someDestinationIdsAreUsedMoreThanOnce(duplicates))
-  }
-
-  val oneOrMoreHmrcDestinationsRequired: String = "There must be at least one hmrcDms destination"
-
-  def validateOneOrMoreHmrcDmsDestination(destinations: Destinations): ValidationResult = destinations match {
-    case _: Destinations.DmsSubmission => Valid
-
-    case destinationList: Destinations.DestinationList =>
-      val hmrcDmsDestinations = destinationList.destinations.collect { case d: Destination.HmrcDms => d }
-      hmrcDmsDestinations.nonEmpty
-        .validationResult(oneOrMoreHmrcDestinationsRequired)
   }
 
   def destinationTestReferencesANonExistentDestination(destinations: Set[DestinationId]): String =
@@ -83,9 +73,9 @@ object DestinationsValidator {
 
     val errors = template.destinationTests.toList.flatten
       .map { t =>
-        new DestinationsSubmitter(new SelfTestingDestinationSubmitter[Possible](test = t))
-          .submitToList(dl, DestinationSubmissionInfo(null, null, template, null, None, null, null, null), t.formData)(
-            HeaderCarrier())
+        val submitter = new DestinationsSubmitter(new SelfTestingDestinationSubmitter[Possible](test = t))
+        submitter
+          .submitToList(dl, DestinationSubmissionInfo(null, null, None, null), t.formData, null)(HeaderCarrier())
       }
       .collect { case Left(error) => error }
 
@@ -95,7 +85,6 @@ object DestinationsValidator {
   def validate(template: FormTemplate): Opt[Unit] =
     for {
       _ <- validateUniqueDestinationIds(template.destinations).toEither
-      _ <- validateOneOrMoreHmrcDmsDestination(template.destinations).toEither
       _ <- validateTestDestinationIdsExist(template.destinations, template.destinationTests.toList.flatten).toEither
       _ <- validateTests(template).toEither
     } yield ()

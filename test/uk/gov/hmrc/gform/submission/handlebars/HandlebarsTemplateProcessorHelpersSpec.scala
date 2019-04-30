@@ -21,6 +21,7 @@ import java.text.DecimalFormat
 import com.fasterxml.jackson.databind.JsonNode
 import uk.gov.hmrc.gform.Spec
 import org.scalacheck.Gen
+import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HandlebarsTemplateProcessorModel
 import uk.gov.hmrc.gform.time.FrozenTimeProvider
 
@@ -554,12 +555,17 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
 
   }
 
-  private def periodGen: Gen[(String, String, String, String)] =
-    for {
-      key  <- Gen.posNum[Int].map(_.toString)
-      from <- Gen.posNum[Int].map(_.toString)
-      to   <- Gen.posNum[Int].map(_.toString)
-    } yield (key, from, to, s"$key|$from|$to")
+  "isSigned" must "return true if the formStatus is Signed, false otherwise" in {
+    FormStatus.all.foreach { status =>
+      process("""{{isSigned}}""", HandlebarsTemplateProcessorModel(status)) shouldBe (status == Signed).toString
+    }
+  }
+
+  "isApproved" must "return true if the formStatus is Approved, false otherwise" in {
+    FormStatus.all.foreach { status =>
+      process("""{{isApproved}}""", HandlebarsTemplateProcessorModel(status)) shouldBe (status == Approved).toString
+    }
+  }
 
   private def quote(s: String): String = raw"""'$s'"""
 

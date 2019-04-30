@@ -18,9 +18,11 @@ package uk.gov.hmrc.gform.sharedmodel.form
 
 import cats.data.NonEmptyList
 import java.time.LocalDate
+
 import org.scalatest.{ FlatSpec, Matchers }
 import java.time.LocalDateTime
 
+import org.scalatest.prop.PropertyChecks
 import play.api.libs.json._
 import play.api.libs.json.Writes.DefaultLocalDateTimeWrites
 import uk.gov.hmrc.gform.Spec
@@ -29,7 +31,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.FormGen
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.des.DesRegistrationResponseGen
 
-class FormSpec extends FlatSpec with Matchers {
+class FormSpec extends FlatSpec with Matchers with PropertyChecks {
 
   val inputJson =
     """|{
@@ -162,7 +164,6 @@ class FormSpec extends FlatSpec with Matchers {
   )
 
   "case class Form" should "be serialized into json" in {
-
     val formJsObject: JsObject = Form.format.writes(form)
 
     def f(d: LocalDateTime): JsValue = DefaultLocalDateTimeWrites.writes(d)
@@ -203,5 +204,11 @@ class FormSpec extends FlatSpec with Matchers {
 
     val expectedForm = form.copy(visitsIndex = VisitIndex.empty, envelopeExpiryDate = None)
     Form.format.reads(inflight) should be(JsSuccess(expectedForm))
+  }
+
+  it should "round trip arbitrary Forms" in {
+    forAll(FormGen.formGen) { form =>
+      verifyRoundTrip(form)
+    }
   }
 }

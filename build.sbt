@@ -45,7 +45,8 @@ lazy val microservice = (project in file("."))
     ),
     resolvers ++= Seq(
       Resolver.jcenterRepo,
-      "bintray-djspiewak-maven" at "https://dl.bintray.com/djspiewak/maven"
+      "bintray-djspiewak-maven" at "https://dl.bintray.com/djspiewak/maven",
+      "ofsted-notify-java-client" at "https://dl.bintray.com/gov-uk-notify/maven/"
     ),
     scalacOptions ++= Seq(
       //        "-Xfatal-warnings",

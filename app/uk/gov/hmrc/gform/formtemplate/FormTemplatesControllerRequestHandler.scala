@@ -18,30 +18,28 @@ package uk.gov.hmrc.gform.formtemplate
 
 import cats.implicits._
 import play.api.libs.json.Reads
-import play.api.mvc.{ Result, Results }
 import uk.gov.hmrc.gform.core.{ FOpt, Opt, fromOptA }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateRaw }
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 
 trait RequestHandlerAlg[F[_]] {
-  def handleRequest(templateRaw: FormTemplateRaw): F[Result]
+  def handleRequest(templateRaw: FormTemplateRaw): F[Unit]
 }
 
 class FormTemplatesControllerRequestHandler[F[_]](
   verifyAndSave: FormTemplate => FOpt[Unit],
   save: FormTemplateRaw => FOpt[Unit]) {
 
-  val futureInterpreter = new RequestHandlerAlg[Future] {
-    override def handleRequest(templateRaw: FormTemplateRaw): Future[Result] = {
+  val futureInterpreter = new RequestHandlerAlg[FOpt] {
+    override def handleRequest(templateRaw: FormTemplateRaw): FOpt[Unit] = {
       val formTemplateOpt: Opt[FormTemplate] =
         implicitly[Reads[FormTemplate]]
           .reads(templateRaw.value)
           .fold(errors => UnexpectedState(errors.toString()).asLeft, valid => valid.asRight)
 
-      processAndPersistTemplate(formTemplateOpt, templateRaw).fold(_.asBadRequest, _ => Results.NoContent)
+      processAndPersistTemplate(formTemplateOpt, templateRaw)
     }
   }
 

@@ -25,7 +25,8 @@ import uk.gov.hmrc.gform.sharedmodel.config.ExposedConfig
 import uk.gov.hmrc.gform.submission.handlebars.{ MdtpServiceConfiguration, MdtpServiceName }
 import uk.gov.hmrc.play.auth.controllers.AuthParamsControllerConfig
 import uk.gov.hmrc.play.config.{ ControllerConfig, ServicesConfig }
-import pureconfig.generic.auto._ // It is now necessary to import `pureconfig.generic.auto._` everywhere a config is loaded or written, even though IntelliJ sees this as unused, its still required
+import pureconfig.generic.auto._
+import uk.gov.service.notify.NotificationClient // It is now necessary to import `pureconfig.generic.auto._` everywhere a config is loaded or written, even though IntelliJ sees this as unused, its still required
 
 class ConfigModule(playComponents: PlayComponents) {
 
@@ -90,8 +91,16 @@ class ConfigModule(playComponents: PlayComponents) {
   }
 }
 
+trait OfstedNotificationConf {
+  val ofstedNotification: OfstedNotificationConfig =
+    pureconfig.loadConfigOrThrow[OfstedNotificationConfig]("ofsted.notifications")
+  val notificationClient: NotificationClient = new NotificationClient(ofstedNotification.apiKey)
+}
+
 case class DesConnectorConfig(basePath: String, authorizationToken: String, environment: String)
 
 case class MdgIntegrationFrameworkConfig(basePath: String, authorizationToken: String)
 
 case class EmailConnectorConfig(host: String, port: String)
+
+case class OfstedNotificationConfig(apiKey: String, template: String, phoneNumber: String, email: String)

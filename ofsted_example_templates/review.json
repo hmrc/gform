@@ -1,0 +1,88 @@
+{
+  "_id": "review",
+  "formName": "Review",
+  "description": "",
+  "developmentPhase": "beta",
+  "emailTemplateId": "al_registration_confirmation",
+  "authConfig": {
+    "authModule": "hmrc"
+  },
+  "sections": [
+    {
+      "title": "Approval",
+      "shortName": "Review",
+      "fields": [
+        {
+          "id": "idOfFormBeingReviewed",
+          "type": "text",
+          "label": "ID Of Form Being Reviewed",
+          "errorMessage": ""
+        },
+        {
+          "id": "approve",
+          "type": "choice",
+          "label": "Do you approve?",
+          "helpText": "Well? Do you?",
+          "format": "yesno",
+          "mandatory": "yes"
+        }
+      ]
+    },
+    {
+      "title": "Rejection",
+      "shortName": "Rejection",
+      "includeIf": "${approve=1}",
+      "fields": [
+        {
+          "id": "rejectionReason",
+          "type": "text",
+          "label": "Reason for rejection",
+          "errorMessage": ""
+        }
+      ]
+
+    }
+  ],
+  "declarationSection": {
+    "title": "Good job!",
+    "fields": [
+    ]
+  },
+  "acknowledgementSection": {
+    "title": "Your registration has been submitted",
+    "fields": [
+    ]
+  },
+  "destinations": [
+    {
+      "id": "rejectDestination",
+      "type": "reviewRejection",
+      "correlationFieldId": "idOfFormBeingReviewed",
+      "reviewFormCommentFieldId": "rejectionReason",
+      "includeIf": "{{equal approve '1,'}}",
+      "failOnError": true,
+      "convertSingleQuotes": true
+    },
+    {
+      "id": "approvalDestination",
+      "type": "reviewApproval",
+      "correlationFieldId": "idOfFormBeingReviewed",
+      "includeIf": "{{equal approve '0,'}}",
+      "failOnError": true,
+      "convertSingleQuotes": true
+    },
+    {
+      "id": "unattendedDmsQueueDestination",
+      "type": "hmrcDms",
+      "includeIf": "false",
+      "failOnError": true,
+      "convertSingleQuotes": true,
+      "dmsFormId": "ALREG",
+      "customerId": "${businessUtr}",
+      "classificationType": "BT-CTO-EMCS Fallback",
+      "businessArea": "BT"
+    }
+  ],
+  "submitErrorUrl": "",
+  "submitSuccessUrl": ""
+}

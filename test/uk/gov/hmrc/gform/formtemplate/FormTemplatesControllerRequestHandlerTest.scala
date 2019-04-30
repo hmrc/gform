@@ -19,10 +19,9 @@ package uk.gov.hmrc.gform.formtemplate
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{ Millis, Seconds, Span }
 import org.scalatest.{ MustMatchers, WordSpec }
-import play.api.http.HttpEntity
 import play.api.libs.json.{ Reads, _ }
-import play.api.mvc.{ ResponseHeader, Result }
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
+import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateRaw }
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -37,8 +36,8 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with MustMatche
       val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
-      whenReady(eventualResult) { response =>
-        response mustBe Result(ResponseHeader(204), HttpEntity.NoEntity)
+      whenReady(eventualResult.value) { response =>
+        response mustBe Right(())
       }
     }
   }
@@ -48,8 +47,10 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with MustMatche
       val handler = new FormTemplatesControllerRequestHandler(_ => sideEffect, _ => sideEffect)
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
-      whenReady(eventualResult) { response =>
-        response.header mustBe ResponseHeader(400)
+      whenReady(eventualResult.value) { response =>
+        response must matchPattern {
+          case Left(UnexpectedState(_)) =>
+        }
       }
     }
   }
@@ -59,8 +60,10 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with MustMatche
       val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
-      whenReady(eventualResult) { response =>
-        response.header mustBe ResponseHeader(400)
+      whenReady(eventualResult.value) { response =>
+        response must matchPattern {
+          case Left(UnexpectedState(_)) =>
+        }
       }
     }
   }

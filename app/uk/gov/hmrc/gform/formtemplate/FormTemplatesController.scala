@@ -18,10 +18,12 @@ package uk.gov.hmrc.gform.formtemplate
 
 import cats.implicits._
 import play.api.Logger
-import play.api.mvc.Action
+import play.api.mvc.{ Action, Results }
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
+import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, FormTemplateRaw, FormTemplateRawId }
+import uk.gov.hmrc.gform.submission.DestinationsSubmitter
 
 import scala.concurrent.ExecutionContext
 
@@ -35,6 +37,7 @@ class FormTemplatesController(formTemplateService: FormTemplateService)(implicit
 
     new FormTemplatesControllerRequestHandler(formTemplateService.verifyAndSave, formTemplateService.save).futureInterpreter
       .handleRequest(templateRaw)
+      .fold(_.asBadRequest, _ => Results.NoContent)
   }
 
   def get(id: FormTemplateId) = Action.async { implicit request =>

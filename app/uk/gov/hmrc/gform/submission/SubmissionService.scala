@@ -20,27 +20,21 @@ import cats.instances.future._
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.email.EmailService
-import uk.gov.hmrc.gform.fileupload.FileUploadService
-import uk.gov.hmrc.gform.form.FormService
+import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateService
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorService
 import uk.gov.hmrc.gform.sharedmodel.SubmissionData
 import uk.gov.hmrc.gform.sharedmodel.form._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.gform.submission.handlebars.HandlebarsHttpApiSubmitter
-import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ ExecutionContext, Future }
 
 class SubmissionService(
   pdfGeneratorService: PdfGeneratorService,
-  formService: FormService,
+  formAlgebra: FormAlgebra[FOpt],
   formTemplateService: FormTemplateService,
-  fileUploadService: FileUploadService,
-  handlebarsApiHttpSubmitter: HandlebarsHttpApiSubmitter[FOpt],
+  destinationsSubmitter: DestinationsSubmitter[FOpt],
   submissionRepo: SubmissionRepo,
-  timeProvider: TimeProvider,
   email: EmailService)(implicit ex: ExecutionContext) {
 
   def submissionWithPdf(
@@ -50,38 +44,14 @@ class SubmissionService(
     submissionData: SubmissionData)(implicit hc: HeaderCarrier): FOpt[Unit] =
     // format: OFF
     for {
-      form                    <- fromFutureA          (formService.get(formId))
-      _                       <- fromFutureA          (formService.updateUserData(form._id, UserData(form.formData, Submitted, form.visitsIndex, form.thirdPartyData)))
+      form                    <-                      formAlgebra.get(formId)
       formTemplate            <- fromFutureA          (formTemplateService.get(form.formTemplateId))
-      submission              =                       createSubmission(form, customerId, formTemplate)
-      _                       <-                      submissionRepo.upsert(submission)
-      destinationsSubmitter   =                       new DestinationsSubmitter(new RealDestinationSubmitter(new FileUploadServiceDmsSubmitter(fileUploadService), handlebarsApiHttpSubmitter))
-      _                       <-                      destinationsSubmitter.send(DestinationSubmissionInfo(submission, form, formTemplate, customerId, affinityGroup, submissionData.variables, submissionData.structuredFormData, PdfAndXmlSummariesFactory.withPdf(pdfGeneratorService, submissionData.pdfData)))
+      submissionInfo          =                       DestinationSubmissionInfo(formId, customerId, affinityGroup, submissionData)
+      _                       <-                      destinationsSubmitter.send(submissionInfo, formTemplate, formAlgebra)
       emailAddress            =                       email.getEmailAddress(form)
       _                       <-                      fromFutureA(email.sendEmail(emailAddress, formTemplate.emailTemplateId, submissionData.emailParameters))
       } yield ()
     // format: ON
-
-  private def getNoOfAttachments(form: Form, formTemplate: FormTemplate): Int = {
-    // TODO two functions are calculating the same thing in different ways! c.f. FileUploadService.SectionFormField.getNumberOfFiles
-    val attachmentsIds: List[String] =
-      formTemplate.sections.flatMap(_.fields.filter(f => f.`type` == FileUpload())).map(_.id.value)
-    val formIds: Seq[String] = form.formData.fields.filterNot(_.value == FileUploadField.noFileUpload).map(_.id.value)
-    attachmentsIds.count(ai => formIds.contains(ai))
-  }
-
-  private def createSubmission(form: Form, customerId: String, formTemplate: FormTemplate) =
-    Submission(
-      submittedDate = timeProvider.localDateTime(),
-      submissionRef = SubmissionRef(form.envelopeId),
-      envelopeId = form.envelopeId,
-      _id = form._id,
-      noOfAttachments = getNoOfAttachments(form, formTemplate),
-      dmsMetaData = DmsMetaData(
-        formTemplateId = form.formTemplateId,
-        customerId //TODO need more secure and safe way of doing this. perhaps moving auth to backend and just pulling value out there.
-      )
-    )
 
   def submissionDetails(formId: FormId)(implicit ex: ExecutionContext): Future[Submission] =
     submissionRepo.get(formId.value)

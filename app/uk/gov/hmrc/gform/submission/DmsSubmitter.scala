@@ -19,7 +19,13 @@ package uk.gov.hmrc.gform.submission
 import cats.instances.future._
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA, fromOptA }
 import uk.gov.hmrc.gform.fileupload.FileUploadService
+import uk.gov.hmrc.gform.form.FormAlgebra
+import uk.gov.hmrc.gform.formtemplate.{ FormTemplateAlgebra, FormTemplateService }
+import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorService
+import uk.gov.hmrc.gform.sharedmodel.form.{ DestinationSubmissionInfo, Form, Submitted }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FileUpload, FormTemplate }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
+import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext
@@ -29,24 +35,61 @@ trait DmsSubmitter[F[_]] {
     implicit hc: HeaderCarrier): F[Unit]
 }
 
-class FileUploadServiceDmsSubmitter(fileUploadService: FileUploadService)(implicit ec: ExecutionContext)
+class FileUploadServiceDmsSubmitter(
+  fileUploadService: FileUploadService,
+  formService: FormAlgebra[FOpt],
+  formTemplateService: FormTemplateAlgebra[FOpt],
+  submissionRepo: SubmissionRepo,
+  pdfGeneratorService: PdfGeneratorService,
+  timeProvider: TimeProvider)(implicit ec: ExecutionContext)
     extends DmsSubmitter[FOpt] {
   def apply(submissionInfo: DestinationSubmissionInfo, dmsSubmission: DmsSubmission)(
     implicit hc: HeaderCarrier): FOpt[Unit] = {
     import submissionInfo._
+    import submissionInfo.submissionData._
+
     for {
+      form         <- formService.get(formId)
+      formTemplate <- formTemplateService.get(form.formTemplateId)
+      submission = createSubmission(form, customerId, formTemplate)
+      _                 <- submissionRepo.upsert(submission)
       sectionFormFields <- fromOptA(SubmissionServiceHelper.getSectionFormFields(form, formTemplate, affinityGroup))
       summaries <- fromFutureA(
-                    pdfAndXmlSummaryFactory(
-                      form,
-                      formTemplate,
-                      structuredFormData,
-                      sectionFormFields,
-                      customerId,
-                      submission.submissionRef,
-                      dmsSubmission))
+                    PdfAndXmlSummariesFactory
+                      .withPdf(pdfGeneratorService, pdfData)
+                      .apply(
+                        form,
+                        formTemplate,
+                        structuredFormData,
+                        sectionFormFields,
+                        customerId,
+                        submission.submissionRef,
+                        dmsSubmission))
       numberOfAttachments = sectionFormFields.map(_.numberOfFiles()).sum
       res <- fromFutureA(fileUploadService.submitEnvelope(submission, summaries, dmsSubmission, numberOfAttachments))
+      _   <- formService.updateFormStatus(submissionInfo.formId, Submitted)
     } yield res
   }
+
+  private def getNoOfAttachments(form: Form, formTemplate: FormTemplate): Int = {
+    // TODO two functions are calculating the same thing in different ways! c.f. FileUploadService.SectionFormField.getNumberOfFiles
+    val attachmentsIds: List[String] =
+      formTemplate.sections.flatMap(_.fields.filter(f => f.`type` == FileUpload())).map(_.id.value)
+    val formIds: Seq[String] = form.formData.fields.filterNot(_.value == FileUploadField.noFileUpload).map(_.id.value)
+    attachmentsIds.count(ai => formIds.contains(ai))
+  }
+
+  private def createSubmission(form: Form, customerId: String, formTemplate: FormTemplate) =
+    Submission(
+      submittedDate = timeProvider.localDateTime(),
+      submissionRef = SubmissionRef(form.envelopeId),
+      envelopeId = form.envelopeId,
+      _id = form._id,
+      noOfAttachments = getNoOfAttachments(form, formTemplate),
+      dmsMetaData = DmsMetaData(
+        formTemplateId = form.formTemplateId,
+        customerId //TODO need more secure and safe way of doing this. perhaps moving auth to backend and just pulling value out there.
+      )
+    )
+
 }

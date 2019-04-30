@@ -1,0 +1,70 @@
+{
+  "_id": "reviewable",
+  "formName": "Register Your School",
+  "description": "",
+  "developmentPhase": "beta",
+  "emailTemplateId": "al_registration_confirmation",
+  "authConfig": {
+    "authModule": "hmrc"
+  },
+  "sections": [
+    {
+      "title": "Name of School",
+      "shortName": "Name of School",
+      "fields": [
+        {
+          "id": "nameOfSchool",
+          "type": "text",
+          "label": "Name of School",
+          "errorMessage": ""
+        }
+      ]
+    }
+  ],
+  "declarationSection": {
+    "title": "Confirm details and send your registration",
+    "fields": [
+      {
+        "id": "declarationFullName",
+        "type": "text",
+        "label": "Full name",
+        "errorMessage": "Enter full name"
+      }
+    ]
+  },
+  "acknowledgementSection": {
+    "title": "Your registration has been submitted",
+    "fields": [
+      {
+        "id": "ackPageInfoTop",
+        "type": "info",
+        "label": "",
+        "infoText": "This is your last opportunity to print or save a PDF copy of your submitted registration.",
+        "infoType": "noformat"
+      }
+    ]
+  },
+  "destinations": [
+    {
+      "id": "createReview",
+      "type": "reviewingOfsted",
+      "correlationFieldId": "idOfFormBeingReviewed",
+      "reviewFormTemplateId": "review",
+      "includeIf": "{{isSigned}}",
+      "userId": "ofstedUsers"
+    },
+    {
+      "id": "unattendedDmsQueueDestination",
+      "type": "hmrcDms",
+      "includeIf": "false",
+      "failOnError": true,
+      "convertSingleQuotes": true,
+      "dmsFormId": "ALREG",
+      "customerId": "${declarationFullName}",
+      "classificationType": "BT-CTO-EMCS Fallback",
+      "businessArea": "BT"
+    }
+  ],
+  "submitErrorUrl": "",
+  "submitSuccessUrl": ""
+}

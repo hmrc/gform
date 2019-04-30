@@ -20,8 +20,8 @@ import com.fasterxml.jackson.databind.JsonNode
 import play.api.libs.json._
 import uk.gov.hmrc.gform.models.helpers.TaxPeriodHelper.formatDate
 import uk.gov.hmrc.gform.sharedmodel._
-import uk.gov.hmrc.gform.sharedmodel.form.Form
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplate }
+import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormId, FormStatus }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormComponentId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.JsonNodes._
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 
@@ -53,8 +53,8 @@ object HandlebarsTemplateProcessorModel {
   def apply(structuredData: StructuredFormValue.ObjectStructure): HandlebarsTemplateProcessorModel =
     HandlebarsTemplateProcessorModel(JsonStructuredFormDataBuilder(structuredData))
 
-  def formId(form: Form): HandlebarsTemplateProcessorModel =
-    HandlebarsTemplateProcessorModel(Map("formId" -> textNode(form._id.value)))
+  def formId(formId: FormId): HandlebarsTemplateProcessorModel =
+    HandlebarsTemplateProcessorModel(Map("formId" -> textNode(formId.value)))
 
   def apply(fields: Map[String, JsonNode]): HandlebarsTemplateProcessorModel =
     HandlebarsTemplateProcessorModel(objectNode(fields))
@@ -64,6 +64,9 @@ object HandlebarsTemplateProcessorModel {
 
   def apply(variables: Variables): HandlebarsTemplateProcessorModel =
     apply(variables.value.toString)
+
+  def apply(status: FormStatus): HandlebarsTemplateProcessorModel =
+    HandlebarsTemplateProcessorModel(Map("formStatus" -> textNode(status.toString)))
 
   def hmrcTaxPeriods(form: Form): HandlebarsTemplateProcessorModel = {
 

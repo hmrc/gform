@@ -45,6 +45,43 @@ package object destinations {
           |  "uri": "$uri",
           |  "method": ${write(method)}
           |}""".stripMargin
+
+    case handlebars: Destination.ReviewingOfsted =>
+      import handlebars._
+      s"""|{
+          |  "id": "${id.id}",
+          |  "correlationFieldId": "${correlationFieldId.value}",
+          |  "reviewFormTemplateId": "${reviewFormTemplateId.value}",
+          |  "userId": "${handlebars.userId.value}",
+          |  ${optionalField("convertSingleQuotes", Option(false))}
+          |  ${optionalField("includeIf", destination.includeIf)}
+          |  ${optionalField("failOnError", destination.failOnError)}
+          |  "${Destination.typeDiscriminatorFieldName}": "${Destination.reviewingOfsted}"
+          |}""".stripMargin
+
+    case handlebars: Destination.ReviewRejection =>
+      import handlebars._
+      s"""|{
+          |  "id": "${id.id}",
+          |  "correlationFieldId": "${correlationFieldId.value}",
+          |  "reviewFormCommentFieldId": "${reviewFormCommentFieldId.value}",
+          |  ${optionalField("convertSingleQuotes", Option(false))}
+          |  ${optionalField("includeIf", destination.includeIf)}
+          |  ${optionalField("failOnError", destination.failOnError)}
+          |  "${Destination.typeDiscriminatorFieldName}": "${Destination.reviewRejection}"
+          |}""".stripMargin
+
+    case handlebars: Destination.ReviewApproval =>
+      import handlebars._
+      s"""|{
+          |  "id": "${id.id}",
+          |  "correlationFieldId": "${correlationFieldId.value}",
+          |  ${optionalField("convertSingleQuotes", Option(false))}
+          |  ${optionalField("includeIf", destination.includeIf)}
+          |  ${optionalField("failOnError", destination.failOnError)}
+          |  "${Destination.typeDiscriminatorFieldName}": "${Destination.reviewApproval}"
+          |}""".stripMargin
+
   }
 
   def optionalField[T: Writes](fieldName: String, ot: Option[T]): String =

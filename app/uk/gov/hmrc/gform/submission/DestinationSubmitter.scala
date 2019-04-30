@@ -25,8 +25,11 @@ import cats.syntax.applicative._
 import cats.syntax.option._
 import play.api.Logger
 import play.api.libs.json.{ JsNull, JsValue, Json }
+import uk.gov.hmrc.gform.sharedmodel.form.{ DestinationSubmissionInfo, FormId }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationTestResult, _ }
 import uk.gov.hmrc.gform.submission.handlebars.{ HandlebarsHttpApiSubmitter, HandlebarsTemplateProcessor, RealHandlebarsTemplateProcessor }
+import uk.gov.hmrc.gform.submission.ofsted.OfstedSubmitter
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 import uk.gov.hmrc.gform.wshttp.HttpResponseSyntax
 
@@ -34,7 +37,9 @@ trait DestinationSubmitter[M[_]] {
   def submitIfIncludeIf(
     destination: Destination,
     submissionInfo: DestinationSubmissionInfo,
-    model: HandlebarsTemplateProcessorModel)(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]]
+    model: HandlebarsTemplateProcessorModel,
+    submitter: DestinationsSubmitterAlgebra[M],
+    formTemplate: FormTemplate)(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]]
 
   def submitToDms(submissionInfo: DestinationSubmissionInfo, submission: Destinations.DmsSubmission)(
     implicit hc: HeaderCarrier): M[Unit]
@@ -43,6 +48,7 @@ trait DestinationSubmitter[M[_]] {
 class RealDestinationSubmitter[M[_], R](
   dms: DmsSubmitter[M],
   handlebars: HandlebarsHttpApiSubmitter[M],
+  ofsted: OfstedSubmitter[M],
   handlebarsTemplateProcessor: HandlebarsTemplateProcessor = new RealHandlebarsTemplateProcessor)(
   implicit monadError: MonadError[M, String])
     extends DestinationSubmitter[M] {
@@ -50,13 +56,15 @@ class RealDestinationSubmitter[M[_], R](
   def submitIfIncludeIf(
     destination: Destination,
     submissionInfo: DestinationSubmissionInfo,
-    model: HandlebarsTemplateProcessorModel)(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
+    model: HandlebarsTemplateProcessorModel,
+    submitter: DestinationsSubmitterAlgebra[M],
+    formTemplate: FormTemplate)(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
     monadError.pure(destination.includeIf.forall(handlebarsTemplateProcessor(_, model) === true.toString)) flatMap {
       include =>
         if (include)
           for {
             _      <- logInfoInMonad(s"Destination ${destination.id.id} is included")
-            result <- submit(destination, submissionInfo, model)
+            result <- submit(destination, submissionInfo, model, submitter, formTemplate)
           } yield result
         else
           for {
@@ -74,11 +82,52 @@ class RealDestinationSubmitter[M[_], R](
   private def submit(
     destination: Destination,
     submissionInfo: DestinationSubmissionInfo,
-    model: HandlebarsTemplateProcessorModel)(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
+    model: HandlebarsTemplateProcessorModel,
+    submitter: DestinationsSubmitterAlgebra[M],
+    formTemplate: FormTemplate)(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
     destination match {
       case d: Destination.HmrcDms           => submitToDms(submissionInfo, d).map(_ => None)
       case d: Destination.HandlebarsHttpApi => submitToHandlebars(d, model)
+      case d: Destination.ReviewingOfsted   => submitForReview(d, submissionInfo).map(_ => None)
+      case d: Destination.ReviewRejection   => submitToReviewRejection(d, submissionInfo.formId).map(_ => None)
+      case d: Destination.ReviewApproval =>
+        submitToReviewApproval(d, submissionInfo.formId, submitter, formTemplate).map(_ => None)
     }
+
+  def submitToReviewApproval(
+    destination: Destination.ReviewApproval,
+    reviewFormId: FormId,
+    submitter: DestinationsSubmitterAlgebra[M],
+    formTemplate: FormTemplate)(implicit hc: HeaderCarrier): M[Unit] =
+    ofsted
+      .approve(
+        reviewFormId,
+        destination.correlationFieldId,
+        submitter,
+        formTemplate
+      )
+      .void
+
+  def submitToReviewRejection(destination: Destination.ReviewRejection, reviewFormId: FormId)(
+    implicit hc: HeaderCarrier): M[Unit] =
+    ofsted
+      .reject(
+        reviewFormId,
+        destination.correlationFieldId,
+        destination.reviewFormCommentFieldId
+      )
+      .void
+
+  def submitForReview(destination: Destination.ReviewingOfsted, submissionInfo: DestinationSubmissionInfo)(
+    implicit hc: HeaderCarrier): M[Unit] =
+    ofsted
+      .submitForReview(
+        submissionInfo,
+        destination.userId,
+        destination.reviewFormTemplateId,
+        destination.correlationFieldId
+      )
+      .void
 
   def submitToDms(submissionInfo: DestinationSubmissionInfo, submission: Destinations.DmsSubmission)(
     implicit hc: HeaderCarrier): M[Unit] = dms(submissionInfo, submission)
@@ -145,7 +194,9 @@ class SelfTestingDestinationSubmitter[M[_]](
   override def submitIfIncludeIf(
     destination: Destination,
     submissionInfo: DestinationSubmissionInfo,
-    model: HandlebarsTemplateProcessorModel)(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
+    model: HandlebarsTemplateProcessorModel,
+    submitter: DestinationsSubmitterAlgebra[M],
+    formTemplate: FormTemplate)(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
     test.expectedResults
       .find(_.destinationId === destination.id)
       .map(verifySpecifiedDestination(destination, model, _))
@@ -187,6 +238,9 @@ class SelfTestingDestinationSubmitter[M[_]](
     destination match {
       case _: Destination.HmrcDms           => succeed(None)
       case d: Destination.HandlebarsHttpApi => verifyHandlebarsDestination(d, model, expected)
+      case _: Destination.ReviewingOfsted   => succeed(None)
+      case _: Destination.ReviewRejection   => succeed(None)
+      case _: Destination.ReviewApproval    => succeed(None)
     }
 
   private def verifyHandlebarsDestination(

@@ -51,7 +51,4 @@ class SubmissionController(submissionService: SubmissionService)(implicit ex: Ex
 
     submissionService.submissionDetails(formId).asOkJson
   }
-
-  private def getFromHeaders[A](header: String, request: Request[AnyContent], f: Option[String] => A): A =
-    f(request.headers.get(header))
 }

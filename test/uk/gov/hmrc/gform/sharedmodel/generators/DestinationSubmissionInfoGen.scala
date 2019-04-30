@@ -14,29 +14,33 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.submission
+package uk.gov.hmrc.gform.sharedmodel.generators
+
 import org.scalacheck.Gen
 import play.api.libs.json.JsObject
-import uk.gov.hmrc.gform.sharedmodel.Variables
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ FormGen, FormTemplateGen, PrimitiveGen }
+import uk.gov.hmrc.gform.sharedmodel.{ SubmissionData, Variables }
+import uk.gov.hmrc.gform.sharedmodel.form.DestinationSubmissionInfo
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.EmailParametersRecalculated
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ FormGen, PrimitiveGen }
 import uk.gov.hmrc.gform.sharedmodel.structuredform.{ Field, FieldName, StructuredFormValue }
 
 trait DestinationSubmissionInfoGen {
   def destinationSubmissionInfoGen: Gen[DestinationSubmissionInfo] =
     for {
-      formTemplate <- FormTemplateGen.formTemplateGen
-      form         <- FormGen.formGen
-      customerId   <- PrimitiveGen.nonEmptyAlphaNumStrGen
+      formId     <- FormGen.formIdGen
+      customerId <- PrimitiveGen.nonEmptyAlphaNumStrGen
+      pdfHtml    <- PrimitiveGen.nonEmptyAlphaNumStrGen
     } yield
       DestinationSubmissionInfo(
-        null,
-        form,
-        formTemplate,
+        formId,
         customerId,
         None,
-        Variables(JsObject(Seq())),
-        StructuredFormValue.ObjectStructure(List(Field(FieldName("foo"), StructuredFormValue.TextNode("fooValue")))),
-        null
+        SubmissionData(
+          pdfHtml,
+          Variables(JsObject(Seq())),
+          StructuredFormValue.ObjectStructure(List(Field(FieldName("foo"), StructuredFormValue.TextNode("fooValue")))),
+          EmailParametersRecalculated(Map.empty)
+        )
       )
 }
 
