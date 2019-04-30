@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.submission.handlebars
 
-import com.github.jknack.handlebars.{ Context, Handlebars, JsonNodeValueResolver }
+import com.github.jknack.handlebars.{ Context, EscapingStrategy, Handlebars, JsonNodeValueResolver }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HandlebarsTemplateProcessorModel
 
 trait HandlebarsTemplateProcessor {
@@ -26,8 +26,7 @@ trait HandlebarsTemplateProcessor {
 class RealHandlebarsTemplateProcessor(
   helpers: HandlebarsTemplateProcessorHelpers = new HandlebarsTemplateProcessorHelpers())
     extends HandlebarsTemplateProcessor {
-  private val handlebars = new Handlebars
-  handlebars.registerHelpers(helpers)
+  private val handlebars = new Handlebars().`with`(EscapingStrategy.JS).registerHelpers(helpers)
 
   def apply(template: String, model: HandlebarsTemplateProcessorModel): String = {
     val compiledTemplate = handlebars.compileInline(template)
