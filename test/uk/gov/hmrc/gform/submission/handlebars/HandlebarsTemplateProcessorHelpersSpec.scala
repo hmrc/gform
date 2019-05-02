@@ -537,7 +537,21 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   }
 
   "plus" must "add a var-args of numbers together" in {
-    process("""{{plus 1 2 3}}""") shouldBe "6"
+    val table = Table(
+      // format: off
+      ("input",   "expected"),
+      ("1 2 3",   "6"),
+      ("1 1.0",   "2.0"),
+      ("1.0 1.0", "2.0"),
+      ("1 1.01",  "2.01")
+      // format: on
+    )
+
+    forAll(table) {
+      case (numbers, expected) =>
+        process(s"{{plus $numbers}}") shouldBe expected
+    }
+
   }
 
   private def periodGen: Gen[(String, String, String, String)] =
