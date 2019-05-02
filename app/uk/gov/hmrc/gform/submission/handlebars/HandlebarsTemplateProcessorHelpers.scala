@@ -520,13 +520,13 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
   }
 
   def plus(first: Any, options: Options): CharSequence = log("plus", (first :: options.params.toList): _*) {
-    condition((first :: options.params.toList).map(asNumber).foldLeft(0) { (acc, d) =>
+    condition((first :: options.params.toList).map(asBigDecimal).foldLeft(BigDecimal(0)) { (acc, d) =>
       acc + d
     })
   }
 
-  private def asNumber(v: Any): Int =
-    asNotNullString(v).fold(throw new Exception("Expected a number. Got '$v'")) { _.toInt }
+  private def asBigDecimal(v: Any): BigDecimal =
+    asNotNullString(v).fold(throw new Exception("Expected a number. Got '$v'"))(BigDecimal(_))
 
   private def ifNotNullAsString(t: Any)(f: String => CharSequence): CharSequence = NullString.ifNotNull(t)(f)
 
