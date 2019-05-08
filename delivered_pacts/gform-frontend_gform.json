@@ -73,7 +73,8 @@
               "businessArea" : "BA"
             }
           },
-          "emailTemplateId" : "classification"
+          "emailTemplateId" : "classification",
+          "languages":["en"]
         }
       },
       "providerState" : "Form 333 exists"

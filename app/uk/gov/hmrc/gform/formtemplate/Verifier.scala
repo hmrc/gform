@@ -30,7 +30,10 @@ trait Verifier {
 
     val exprs: List[ComponentType] = sections.flatMap(_.fields.map(_.`type`))
 
+    val languages = formTemplate.languages
+
     for {
+      _ <- fromOptA(FormTemplateValidator.validateLanguages(languages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateRepeatingSectionFields(sections).toEither)
       _ <- fromOptA(FormTemplateValidator.validateChoiceHelpText(sections).toEither)
       _ <- fromOptA(FormTemplateValidator.validateUniqueFields(sections).toEither)

@@ -42,8 +42,15 @@ class FormComponentSpec2 extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("dutyType"),
-        Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None),
-        "Select the tax type",
+        Choice(
+          Radio,
+          NonEmptyList(
+            LocalisedString(Map(LangADT.En -> "Natural gas")),
+            List(LocalisedString(Map(LangADT.En -> "Other gas")))),
+          Vertical,
+          List.empty[Int],
+          None),
+        LocalisedString(Map(LangADT.En -> "Select the tax type")),
         None,
         None,
         validIf = None,

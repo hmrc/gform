@@ -18,23 +18,23 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import play.api.libs.json._
 import uk.gov.hmrc.gform.formtemplate.FormComponentMaker
-import uk.gov.hmrc.gform.sharedmodel.LabelHelper
+import uk.gov.hmrc.gform.sharedmodel.{ LabelHelper, LangADT, LocalisedString }
 
 case class ExpandedFormComponent(expandedFC: List[FormComponent]) extends AnyVal
 
 case class FormComponent(
   id: FormComponentId,
   `type`: ComponentType,
-  label: String,
-  helpText: Option[String],
-  shortName: Option[String],
+  label: LocalisedString,
+  helpText: Option[LocalisedString],
+  shortName: Option[LocalisedString],
   validIf: Option[ValidIf],
   mandatory: Boolean,
   editable: Boolean,
   submissible: Boolean,
   derived: Boolean,
   onlyShowOnSummary: Boolean = false,
-  errorMessage: Option[String],
+  errorMessage: Option[LocalisedString],
   presentationHint: Option[List[PresentationHint]] = Option.empty[List[PresentationHint]]
 ) {
 

@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.submission
 
+import uk.gov.hmrc.gform.sharedmodel.LocalisedString
 import uk.gov.hmrc.gform.sharedmodel.form.FormField
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FileUpload, FormComponent }
 
@@ -25,7 +26,7 @@ object FileUploadField {
   val noFileUpload = "Upload document"
 }
 
-case class SectionFormField(title: String, fields: List[(List[FormField], FormComponent)]) {
+case class SectionFormField(title: LocalisedString, fields: List[(List[FormField], FormComponent)]) {
 
   // TODO two functions are calculating the same thing in different ways! c.f. SubmissionService.getNoOfAttachments
   def numberOfFiles(): Int =

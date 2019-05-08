@@ -23,6 +23,9 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ ShortText, _ }
 
 class FormComponentSpec extends Spec {
 
+  private def toLocalisedString(string: String) =
+    LocalisedString(Map(LangADT.En -> string))
+
   "FieldValue json object" should "parse as Text if it not include 'type' field" in {
     val fieldValue = toFieldValue("""|{
          |  "id": "regNum",
@@ -35,7 +38,7 @@ class FormComponentSpec extends Spec {
       FormComponent(
         FormComponentId("regNum"),
         Text(ShortText.default, Value),
-        "Registration number",
+        toLocalisedString("Registration number"),
         None,
         None,
         None,
@@ -60,7 +63,7 @@ class FormComponentSpec extends Spec {
       FormComponent(
         FormComponentId("regNum"),
         Text(ShortText.default, Value),
-        "Registration number",
+        toLocalisedString("Registration number"),
         None,
         None,
         None,
@@ -86,7 +89,7 @@ class FormComponentSpec extends Spec {
       FormComponent(
         FormComponentId("regNum"),
         Text(ShortText.default, Value),
-        "Registration number",
+        toLocalisedString("Registration number"),
         None,
         None,
         None,
@@ -112,7 +115,7 @@ class FormComponentSpec extends Spec {
       FormComponent(
         FormComponentId("regNum"),
         Text(ShortText.default, Value),
-        "Registration number",
+        toLocalisedString("Registration number"),
         None,
         None,
         None,
@@ -139,7 +142,7 @@ class FormComponentSpec extends Spec {
       FormComponent(
         FormComponentId("regNum"),
         Text(ShortText.default, Constant("Ahah")),
-        "Registration number",
+        toLocalisedString("Registration number"),
         None,
         None,
         None,
@@ -166,7 +169,7 @@ class FormComponentSpec extends Spec {
       FormComponent(
         FormComponentId("regNum"),
         Text(ShortText.default, Constant("Ahah")),
-        "Registration number",
+        toLocalisedString("Registration number"),
         None,
         None,
         None,
@@ -189,7 +192,7 @@ class FormComponentSpec extends Spec {
       FormComponent(
         FormComponentId("regNum"),
         Text(ShortText.default, Value),
-        "Registration number",
+        toLocalisedString("Registration number"),
         None,
         None,
         None,
@@ -212,7 +215,7 @@ class FormComponentSpec extends Spec {
       FormComponent(
         FormComponentId("regNum"),
         Text(ShortText.default, Value),
-        "Registration number",
+        toLocalisedString("Registration number"),
         None,
         None,
         None,
@@ -234,7 +237,7 @@ class FormComponentSpec extends Spec {
       FormComponent(
         FormComponentId("regNum"),
         Text(ShortText.default, Value),
-        "Registration number",
+        toLocalisedString("Registration number"),
         None,
         None,
         None,
@@ -256,7 +259,7 @@ class FormComponentSpec extends Spec {
       FormComponent(
         FormComponentId("regNum"),
         Text(ShortText.default, Value),
-        "Registration number",
+        toLocalisedString("Registration number"),
         None,
         None,
         None,
@@ -279,7 +282,7 @@ class FormComponentSpec extends Spec {
       FormComponent(
         FormComponentId("regNum"),
         Text(ShortText.default, Value),
-        "Registration number",
+        toLocalisedString("Registration number"),
         None,
         None,
         None,
@@ -302,7 +305,7 @@ class FormComponentSpec extends Spec {
       FormComponent(
         FormComponentId("regNum"),
         Text(ShortText.default, Value),
-        "Registration number",
+        toLocalisedString("Registration number"),
         None,
         None,
         None,
@@ -325,7 +328,7 @@ class FormComponentSpec extends Spec {
       FormComponent(
         FormComponentId("regNum"),
         Text(ShortText.default, Value),
-        "Registration number",
+        toLocalisedString("Registration number"),
         None,
         None,
         None,
@@ -349,8 +352,8 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("taxType"),
-        Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List(1), None),
-        "Gas tax type?",
+        Choice(YesNo, NonEmptyList.of(toLocalisedString("Yes"), toLocalisedString("No")), Horizontal, List(1), None),
+        toLocalisedString("Gas tax type?"),
         None,
         None,
         None,
@@ -399,7 +402,7 @@ class FormComponentSpec extends Spec {
       FormComponent(
         FormComponentId("regNum"),
         Text(ShortText.default, Value),
-        "Registration number",
+        toLocalisedString("Registration number"),
         None,
         None,
         None,
@@ -421,7 +424,7 @@ class FormComponentSpec extends Spec {
       FormComponent(
         FormComponentId("regNum"),
         Text(ShortText.default, Value),
-        "Registration number",
+        toLocalisedString("Registration number"),
         None,
         None,
         None,
@@ -456,8 +459,8 @@ class FormComponentSpec extends Spec {
           Offset(0),
           Some(ExactDateValue(2017, 4, 10))
         ),
-        "Enter a date in April 2017",
-        Some("For example, 10 4 2017"),
+        toLocalisedString("Enter a date in April 2017"),
+        Some(toLocalisedString("For example, 10 4 2017")),
         None,
         None,
         mandatory = true,
@@ -519,7 +522,7 @@ class FormComponentSpec extends Spec {
       FormComponent(
         FormComponentId("homeAddress"),
         Text(ShortText.default, Value),
-        "Home",
+        toLocalisedString("Home"),
         None,
         None,
         None,
@@ -541,7 +544,7 @@ class FormComponentSpec extends Spec {
       FormComponent(
         FormComponentId("homeAddress"),
         Address(international = false),
-        "Home",
+        toLocalisedString("Home"),
         None,
         None,
         None,
@@ -565,7 +568,7 @@ class FormComponentSpec extends Spec {
       FormComponent(
         FormComponentId("homeAddress"),
         Address(international = true),
-        "Home",
+        toLocalisedString("Home"),
         None,
         None,
         None,
@@ -589,7 +592,7 @@ class FormComponentSpec extends Spec {
       FormComponent(
         FormComponentId("homeAddress"),
         Address(international = false),
-        "Home",
+        toLocalisedString("Home"),
         None,
         None,
         None,
@@ -615,8 +618,13 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("dutyType"),
-        Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None),
-        "Select the tax type",
+        Choice(
+          Radio,
+          NonEmptyList(toLocalisedString("Natural gas"), List(toLocalisedString("Other gas"))),
+          Vertical,
+          List.empty[Int],
+          None),
+        toLocalisedString("Select the tax type"),
         None,
         None,
         None,
@@ -644,8 +652,13 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("dutyType"),
-        Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None),
-        "Select the tax type",
+        Choice(
+          Radio,
+          NonEmptyList(toLocalisedString("Natural gas"), List(toLocalisedString("Other gas"))),
+          Vertical,
+          List.empty[Int],
+          None),
+        toLocalisedString("Select the tax type"),
         None,
         None,
         None,
@@ -674,8 +687,13 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("dutyType"),
-        Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None),
-        "Select the tax type",
+        Choice(
+          Radio,
+          NonEmptyList(toLocalisedString("Natural gas"), List(toLocalisedString("Other gas"))),
+          Vertical,
+          List.empty[Int],
+          None),
+        toLocalisedString("Select the tax type"),
         None,
         None,
         None,
@@ -704,8 +722,13 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("dutyType"),
-        Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Horizontal, List.empty[Int], None),
-        "Select the tax type",
+        Choice(
+          Radio,
+          NonEmptyList(toLocalisedString("Natural gas"), List(toLocalisedString("Other gas"))),
+          Horizontal,
+          List.empty[Int],
+          None),
+        toLocalisedString("Select the tax type"),
         None,
         None,
         None,
@@ -733,8 +756,13 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("dutyType"),
-        Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None),
-        "Select the tax type",
+        Choice(
+          Checkbox,
+          NonEmptyList(toLocalisedString("Natural gas"), List(toLocalisedString("Other gas"))),
+          Vertical,
+          List.empty[Int],
+          None),
+        toLocalisedString("Select the tax type"),
         None,
         None,
         None,
@@ -763,8 +791,13 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("dutyType"),
-        Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None),
-        "Select the tax type",
+        Choice(
+          Checkbox,
+          NonEmptyList(toLocalisedString("Natural gas"), List(toLocalisedString("Other gas"))),
+          Vertical,
+          List.empty[Int],
+          None),
+        toLocalisedString("Select the tax type"),
         None,
         None,
         None,
@@ -793,8 +826,13 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("dutyType"),
-        Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Horizontal, List.empty[Int], None),
-        "Select the tax type",
+        Choice(
+          Checkbox,
+          NonEmptyList(toLocalisedString("Natural gas"), List(toLocalisedString("Other gas"))),
+          Horizontal,
+          List.empty[Int],
+          None),
+        toLocalisedString("Select the tax type"),
         None,
         None,
         None,
@@ -818,8 +856,13 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("taxType"),
-        Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int], None),
-        "Gas tax type?",
+        Choice(
+          YesNo,
+          NonEmptyList.of(toLocalisedString("Yes"), toLocalisedString("No")),
+          Horizontal,
+          List.empty[Int],
+          None),
+        toLocalisedString("Gas tax type?"),
         None,
         None,
         None,
@@ -844,8 +887,8 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("taxType"),
-        Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List(1), None),
-        "Gas tax type?",
+        Choice(YesNo, NonEmptyList.of(toLocalisedString("Yes"), toLocalisedString("No")), Horizontal, List(1), None),
+        toLocalisedString("Gas tax type?"),
         None,
         None,
         None,
@@ -870,8 +913,13 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("taxType"),
-        Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int], None),
-        "Gas tax type?",
+        Choice(
+          YesNo,
+          NonEmptyList.of(toLocalisedString("Yes"), toLocalisedString("No")),
+          Horizontal,
+          List.empty[Int],
+          None),
+        toLocalisedString("Gas tax type?"),
         None,
         None,
         None,
@@ -899,8 +947,13 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("taxType"),
-        Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int], None),
-        "Gas tax type?",
+        Choice(
+          YesNo,
+          NonEmptyList.of(toLocalisedString("Yes"), toLocalisedString("No")),
+          Horizontal,
+          List.empty[Int],
+          None),
+        toLocalisedString("Gas tax type?"),
         None,
         None,
         None,
@@ -924,8 +977,13 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("taxType"),
-        Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int], None),
-        "Gas tax type?",
+        Choice(
+          YesNo,
+          NonEmptyList.of(toLocalisedString("Yes"), toLocalisedString("No")),
+          Horizontal,
+          List.empty[Int],
+          None),
+        toLocalisedString("Gas tax type?"),
         None,
         None,
         None,
@@ -949,8 +1007,13 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("haveIncludedInvoice"),
-        Choice(Inline, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int], None),
-        "Original invoice from the supplier",
+        Choice(
+          Inline,
+          NonEmptyList.of(toLocalisedString("Yes"), toLocalisedString("No")),
+          Horizontal,
+          List.empty[Int],
+          None),
+        toLocalisedString("Original invoice from the supplier"),
         None,
         None,
         None,
@@ -975,8 +1038,13 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("haveIncludedInvoice"),
-        Choice(Inline, NonEmptyList.of("Yes", "No", "Not sure"), Horizontal, List(1), None),
-        "Original invoice from the supplier",
+        Choice(
+          Inline,
+          NonEmptyList.of(toLocalisedString("Yes"), toLocalisedString("No"), toLocalisedString("Not sure")),
+          Horizontal,
+          List(1),
+          None),
+        toLocalisedString("Original invoice from the supplier"),
         None,
         None,
         None,
@@ -1051,7 +1119,7 @@ class FormComponentSpec extends Spec {
       FormComponent(
         FormComponentId("attachment1"),
         FileUpload(),
-        label = "Attach evidence of your income",
+        label = toLocalisedString("Attach evidence of your income"),
         helpText = None,
         None,
         None,
@@ -1078,7 +1146,7 @@ class FormComponentSpec extends Spec {
       FormComponent(
         FormComponentId("standardInfoFieldID"),
         InformationMessage(StandardInfo, "This is a sample text for a standard info field"),
-        "Label -- standard info field",
+        toLocalisedString("Label -- standard info field"),
         None,
         None,
         None,
@@ -1106,7 +1174,7 @@ class FormComponentSpec extends Spec {
       FormComponent(
         FormComponentId("standardInfoFieldID"),
         InformationMessage(StandardInfo, "This is a sample text for a standard info field"),
-        "Label -- standard info field",
+        toLocalisedString("Label -- standard info field"),
         None,
         None,
         None,
@@ -1135,7 +1203,7 @@ class FormComponentSpec extends Spec {
       FormComponent(
         FormComponentId("standardInfoFieldID"),
         InformationMessage(StandardInfo, "This is a sample text for a standard info field"),
-        "Label -- standard info field",
+        toLocalisedString("Label -- standard info field"),
         None,
         None,
         Some(ValidIf(Equals(FormCtx("info"), Constant("Hello")))),
@@ -1163,7 +1231,7 @@ class FormComponentSpec extends Spec {
       FormComponent(
         FormComponentId("fieldID"),
         InformationMessage(LongInfo, "This is a sample text for an info field"),
-        "Label -- info field",
+        toLocalisedString("Label -- info field"),
         None,
         None,
         None,
@@ -1191,7 +1259,7 @@ class FormComponentSpec extends Spec {
       FormComponent(
         FormComponentId("fieldID"),
         InformationMessage(ImportantInfo, "This is a sample text for an info field"),
-        "Label -- info field",
+        toLocalisedString("Label -- info field"),
         None,
         None,
         None,
@@ -1219,7 +1287,7 @@ class FormComponentSpec extends Spec {
       FormComponent(
         FormComponentId("fieldID"),
         InformationMessage(BannerInfo, "This is a sample text for an info field"),
-        "Label -- info field",
+        toLocalisedString("Label -- info field"),
         None,
         None,
         None,
@@ -1246,7 +1314,7 @@ class FormComponentSpec extends Spec {
       FormComponent(
         FormComponentId("fieldID"),
         InformationMessage(NoFormat, "This is a sample text for an info field"),
-        "Label -- info field",
+        toLocalisedString("Label -- info field"),
         None,
         None,
         None,
@@ -1301,9 +1369,9 @@ class FormComponentSpec extends Spec {
       FormComponent(
         FormComponentId("regNum"),
         Text(ShortText.default, Value),
-        "Registration number",
+        toLocalisedString("Registration number"),
         None,
-        Some(shortName),
+        Some(toLocalisedString(shortName)),
         None,
         mandatory = true,
         editable = true,
@@ -1326,9 +1394,9 @@ class FormComponentSpec extends Spec {
       FormComponent(
         FormComponentId("homeAddress"),
         Address(international = false),
-        "Home",
+        toLocalisedString("Home"),
         None,
-        Some(shortName),
+        Some(toLocalisedString(shortName)),
         None,
         mandatory = true,
         editable = true,
@@ -1353,10 +1421,15 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("haveIncludedInvoice"),
-        Choice(Inline, NonEmptyList.of("Yes", "No", "Not sure"), Horizontal, List(1), None),
-        "Original invoice from the supplier",
+        Choice(
+          Inline,
+          NonEmptyList.of(toLocalisedString("Yes"), toLocalisedString("No"), toLocalisedString("Not sure")),
+          Horizontal,
+          List(1),
+          None),
+        toLocalisedString("Original invoice from the supplier"),
         None,
-        Some(shortName),
+        Some(toLocalisedString(shortName)),
         None,
         mandatory = true,
         editable = true,

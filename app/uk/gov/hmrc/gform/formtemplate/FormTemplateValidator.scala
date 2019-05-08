@@ -29,12 +29,17 @@ import uk.gov.hmrc.gform.sharedmodel.form.FormField
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.graph.DependencyGraph._
 import uk.gov.hmrc.gform.formtemplate.FormTemplateValidatorHelper._
+import uk.gov.hmrc.gform.sharedmodel.{ AvailableLanguages, LangADT }
 
 import scala.Function.const
 import scala.collection.immutable.List
 import scala.util.{ Failure, Success, Try }
 
 object FormTemplateValidator {
+
+  def validateLanguages(languageList: AvailableLanguages): ValidationResult =
+    if (languageList.languages.contains(LangADT.En)) Valid
+    else Invalid("languages must contain en")
 
   def someFieldsAreDefinedMoreThanOnce(duplicates: Set[FormComponentId]) =
     s"Some FieldIds are defined more than once: ${duplicates.toList.sortBy(_.value).map(_.value)}"

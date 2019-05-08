@@ -16,19 +16,22 @@
 
 package uk.gov.hmrc.gform.core
 
-import play.api.libs.json._
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
+import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString }
 import uk.gov.hmrc.gform.sharedmodel.form.FormField
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyText, _ }
 
 class FormValidatorSpec extends Spec {
 
+  private def toLocalisedString(string: String) =
+    LocalisedString(Map(LangADT.En -> string))
+
   def getMandatoryFieldValue(id: String) =
     FormComponent(
       id = FormComponentId(id),
       `type` = Text(AnyText, Value),
-      label = "",
+      label = LocalisedString(Map(LangADT.En -> "")),
       helpText = None,
       None,
       validIf = None,
@@ -39,13 +42,13 @@ class FormValidatorSpec extends Spec {
       errorMessage = None
     )
 
-  def getAddressFieldValue(id: String) =
+  def getAddressFieldValue(idString: String) =
     FormComponent(
-      id = FormComponentId(id),
+      id = FormComponentId(idString),
       `type` = Address(international = false),
-      label = "",
+      label = LocalisedString(Map(LangADT.En -> "")),
       helpText = None,
-      None,
+      shortName = None,
       validIf = None,
       editable = true,
       mandatory = false,
@@ -66,7 +69,7 @@ class FormValidatorSpec extends Spec {
       )
 
     val section = Section(
-      title = "",
+      title = toLocalisedString(""),
       description = None,
       None,
       shortName = None,
@@ -104,7 +107,7 @@ class FormValidatorSpec extends Spec {
       )
 
     val section = Section(
-      "",
+      toLocalisedString(""),
       None,
       None,
       None,
@@ -133,7 +136,18 @@ class FormValidatorSpec extends Spec {
     val formFields =
       List(FormField(FormComponentId("iptRegNum"), "12AB3456780"))
 
-    val section = Section("", None, None, None, None, None, None, None, fields = List.empty[FormComponent], None, None)
+    val section = Section(
+      toLocalisedString(""),
+      None,
+      None,
+      None,
+      None,
+      None,
+      None,
+      None,
+      fields = List.empty[FormComponent],
+      None,
+      None)
 
     val res = FormValidator.validate(formFields, section)
 
@@ -147,7 +161,7 @@ class FormValidatorSpec extends Spec {
 
     val section =
       Section(
-        "",
+        toLocalisedString(""),
         None,
         None,
         None,

@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
+import uk.gov.hmrc.gform.sharedmodel.LocalisedString
 import uk.gov.hmrc.gform.sharedmodel.form.Form
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
@@ -71,12 +72,15 @@ object RepeatingComponentService {
       }
 
     section.copy(
-      title = buildText(Some(section.title), index, data).getOrElse(""),
+      title = buildText(Some(section.title), index, data).get,
       shortName = buildText(section.shortName, index, data),
       fields = section.fields.map(copyField))
   }
 
-  private def buildText(template: Option[String], index: Int, data: Map[String, String]): Option[String] = {
+  private def buildText(
+    template: Option[LocalisedString],
+    index: Int,
+    data: Map[String, String]): Option[LocalisedString] = {
 
     def evaluateTextExpression(str: String) = {
       val field = str.replaceFirst("""\$\{""", "").replaceFirst("""\}""", "")
@@ -106,8 +110,11 @@ object RepeatingComponentService {
     }
 
     template match {
-      case Some(inputText) => Some(getEvaluatedText(inputText).replace("$n", index.toString))
-      case _               => None
+      case Some(inputText) =>
+        Some(inputText.copy(m = inputText.m.map {
+          case (lang, message) => (lang, getEvaluatedText(message).replace("$n", index.toString))
+        }))
+      case _ => None
     }
   }
 }

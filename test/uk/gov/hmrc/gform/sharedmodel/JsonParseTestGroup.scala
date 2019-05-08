@@ -60,8 +60,13 @@ class JsonParseTestGroup extends Spec {
         Group(
           List(FormComponent(
             FormComponentId("cid"),
-            Choice(Radio, NonEmptyList.of("A", "B"), Vertical, List(), None),
-            "clabel",
+            Choice(
+              Radio,
+              NonEmptyList.of(LocalisedString(Map(LangADT.En -> "A")), LocalisedString(Map(LangADT.En -> "B"))),
+              Vertical,
+              List(),
+              None),
+            LocalisedString(Map(LangADT.En -> "clabel")),
             None,
             None,
             None,
@@ -78,7 +83,7 @@ class JsonParseTestGroup extends Spec {
           Some("repeatLabel"),
           Some("repeatAddAnotherText")
         ),
-        "glabel",
+        LocalisedString(Map(LangADT.En -> "glabel")),
         None,
         None,
         None,
@@ -130,8 +135,13 @@ class JsonParseTestGroup extends Spec {
         Group(
           List(FormComponent(
             FormComponentId("cid"),
-            Choice(Radio, NonEmptyList.of("A", "B"), Vertical, List(), None),
-            "clabel",
+            Choice(
+              Radio,
+              NonEmptyList.of(LocalisedString(Map(LangADT.En -> "A")), LocalisedString(Map(LangADT.En -> "B"))),
+              Vertical,
+              List(),
+              None),
+            LocalisedString(Map(LangADT.En -> "clabel")),
             None,
             None,
             None,
@@ -148,7 +158,7 @@ class JsonParseTestGroup extends Spec {
           Some("repeatLabel"),
           Some("repeatAddAnotherText")
         ),
-        "glabel",
+        LocalisedString(Map(LangADT.En -> "glabel")),
         None,
         None,
         None,

@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
+import uk.gov.hmrc.gform.sharedmodel
+import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString }
 import uk.gov.hmrc.gform.sharedmodel.form.FormField
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
@@ -65,8 +67,10 @@ object SectionHelper {
                 List(
                   fieldInGroup.copy(
                     id = FormComponentId(fieldName),
-                    label = buildRepeatingText(Some(fieldInGroup.label), i + 1).getOrElse(""),
-                    shortName = buildRepeatingText(fieldInGroup.shortName, i + 1)
+                    label = LocalisedString(labelRepeatingGroupComponents(fieldInGroup.label.m, i + 1)),
+                    shortName =
+                      if (fieldInGroup.shortName.isEmpty) None
+                      else Some(LocalisedString(labelRepeatingGroupComponents(fieldInGroup.shortName.get.m, i + 1)))
                   ))
               case false => Nil
             }
@@ -78,18 +82,21 @@ object SectionHelper {
 
   private def fixLabels(fieldValues: List[FormComponent]): List[FormComponent] =
     fieldValues.map { field =>
-      if (field.label.contains("$n") || (field.shortName.isDefined && field.shortName.get.contains("$n"))) {
+      {
         field.copy(
-          label = buildRepeatingText(Some(field.label), 1).get,
-          shortName = buildRepeatingText(field.shortName, 1))
-      } else {
-        field
+          label = LocalisedString(labelRepeatingGroupComponents(field.label.m, 1)),
+          shortName =
+            if (field.shortName.isEmpty) None
+            else Some(LocalisedString(labelRepeatingGroupComponents(field.shortName.get.m, 1)))
+        )
       }
     }
 
-  private def buildRepeatingText(text: Option[String], index: Int) = text match {
-    case Some(txt) if text.get.contains("$n") => Some(txt.replace("$n", index.toString))
-    case _                                    => text
-  }
+  private def buildRepeatingText(text: String, index: Int) =
+    text.replace("$n", index.toString)
 
+  def labelRepeatingGroupComponents(fieldInComponent: Map[LangADT, String], index: Int) =
+    fieldInComponent.map {
+      case (langADT, message) => (langADT, buildRepeatingText(message, index))
+    }
 }

@@ -20,7 +20,7 @@ import java.time.{ Clock, LocalDateTime, ZoneId, ZoneOffset }
 
 import cats.data.NonEmptyList
 import uk.gov.hmrc.gform._
-import uk.gov.hmrc.gform.sharedmodel.NotChecked
+import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString, NotChecked }
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
@@ -49,6 +49,9 @@ class SubmissionServiceSpec extends Spec {
     )
     val formData = FormData(formFields)
 
+    def toLocalisedString(string: String) =
+      LocalisedString(Map(LangADT.En -> string))
+
     val fixedTime = LocalDateTime.of(2018, 3, 2, 0, 0)
     val clock = Clock.fixed(fixedTime.toInstant(ZoneOffset.UTC), ZoneId.systemDefault)
 
@@ -67,7 +70,7 @@ class SubmissionServiceSpec extends Spec {
     val textFieldUno = FormComponent(
       id = FormComponentId("UNO"),
       `type` = Text(AnyText, Constant("UNO")),
-      label = "Editable text label",
+      label = toLocalisedString("Editable text label"),
       helpText = None,
       shortName = None,
       validIf = None,
@@ -93,7 +96,7 @@ class SubmissionServiceSpec extends Spec {
     val groupFieldValue = FormComponent(
       id = FormComponentId("GroupFieldValueId"),
       `type` = group,
-      label = "group FieldValue label",
+      label = toLocalisedString("group FieldValue label"),
       helpText = None,
       shortName = None,
       validIf = None,
@@ -106,7 +109,7 @@ class SubmissionServiceSpec extends Spec {
     )
 
     val section = Section(
-      title = "Section title",
+      title = toLocalisedString("Section title"),
       description = None,
       progressIndicator = None,
       shortName = None,
@@ -116,7 +119,8 @@ class SubmissionServiceSpec extends Spec {
       None,
       fields = List(groupFieldValue),
       None,
-      None)
+      None
+    )
 
     val formTemplate = FormTemplate.withDeprecatedDmsSubmission(
       _id = FormTemplateId("JustAFormTypeId"),
@@ -141,20 +145,20 @@ class SubmissionServiceSpec extends Spec {
       submitErrorUrl = "http://somwehere-nasty.net",
       webChat = Some(WebChat(ChatRoomId("test"), TemplateName("test"))),
       sections = List(section),
-      acknowledgementSection = AcknowledgementSection("", None, None, Nil),
-      declarationSection = DeclarationSection("Declaration", None, None, Nil)
+      acknowledgementSection = AcknowledgementSection(toLocalisedString(""), None, None, Nil),
+      declarationSection = DeclarationSection(toLocalisedString("Declaration"), None, None, Nil)
     )
 
     val expectedResult = List(
       SectionFormField(
-        "Section title",
+        toLocalisedString("Section title"),
         List(
           (
             List(FormField(FormComponentId("UNO"), "UNO")),
             FormComponent(
               FormComponentId("UNO"),
               Text(AnyText, Constant("UNO")),
-              "Editable text label",
+              toLocalisedString("Editable text label"),
               None,
               None,
               None,
@@ -170,7 +174,7 @@ class SubmissionServiceSpec extends Spec {
             FormComponent(
               FormComponentId("DOS"),
               Text(AnyText, Constant("DOS")),
-              "Editable text label",
+              toLocalisedString("Editable text label"),
               None,
               None,
               None,
@@ -186,7 +190,7 @@ class SubmissionServiceSpec extends Spec {
             FormComponent(
               FormComponentId("1_UNO"),
               Text(AnyText, Constant("UNO")),
-              "Editable text label",
+              toLocalisedString("Editable text label"),
               None,
               None,
               None,
@@ -202,7 +206,7 @@ class SubmissionServiceSpec extends Spec {
             FormComponent(
               FormComponentId("1_DOS"),
               Text(AnyText, Constant("DOS")),
-              "Editable text label",
+              toLocalisedString("Editable text label"),
               None,
               None,
               None,
@@ -215,7 +219,7 @@ class SubmissionServiceSpec extends Spec {
             ))
         )
       ),
-      SectionFormField("Declaration", List())
+      SectionFormField(toLocalisedString("Declaration"), List())
     )
 
     val res = SubmissionServiceHelper.getSectionFormFields(form, formTemplate, None)
