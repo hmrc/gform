@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.sharedmodel
 
 import play.api.libs.json._
+import uk.gov.hmrc.gform.Helpers._
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
@@ -46,7 +47,7 @@ class FormatValidationSpec extends Spec {
       FormComponent(
         id = FormComponentId(id),
         `type` = Text(ShortText.default, Value),
-        label = label,
+        label = toLocalisedString(label),
         helpText = None,
         shortName = None,
         validIf = None,
@@ -63,7 +64,7 @@ class FormatValidationSpec extends Spec {
       FormComponent(
         id = FormComponentId(id),
         `type` = UkSortCode(Value),
-        label = label,
+        label = toLocalisedString(label),
         helpText = None,
         shortName = None,
         validIf = None,
@@ -85,7 +86,7 @@ class FormatValidationSpec extends Spec {
       FormComponent(
         id = FormComponentId(id),
         `type` = Text(constraint, Value),
-        label = label,
+        label = toLocalisedString(label),
         helpText = None,
         shortName = None,
         validIf = None,

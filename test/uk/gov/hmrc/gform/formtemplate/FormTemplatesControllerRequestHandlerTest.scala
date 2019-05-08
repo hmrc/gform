@@ -88,6 +88,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with MustMatche
        |  "_id": "newfield",
        |  "formName": "Testing section change label tttt",
        |  "description": "Testing the form change label",
+       |  "languages":["en"],
        |  "dmsSubmission": {
        |    "dmsFormId": "",
        |    "customerId": "$${auth.payenino}",

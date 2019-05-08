@@ -16,14 +16,19 @@
 
 package uk.gov.hmrc.gform.sharedmodel
 
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormComponent
+import play.api.libs.json.{ OFormat, Reads, __ }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.OFormatWithTemplateReadFallback
 
-object LabelHelper {
+case class AvailableLanguages(languages: Set[LangADT]) extends AnyVal
 
-  def buildRepeatingLabel(shortName: Option[LocalisedString], index: Int): Option[LocalisedString] =
-    shortName.map(buildRepeatingLabel(_, index))
+object AvailableLanguages {
 
-  def buildRepeatingLabel(ls: LocalisedString, index: Int): LocalisedString =
-    ls.copy(m = ls.m.map { case (lang, message) => (lang, message.replace("$n", index.toString)) })
+  val default = AvailableLanguages(Set(LangADT.En))
 
+  private val readLanguages: Reads[AvailableLanguages] =
+    __.read[List[LangADT]].map { a =>
+      AvailableLanguages(a.toSet)
+    }
+
+  implicit val format: OFormat[AvailableLanguages] = OFormatWithTemplateReadFallback(readLanguages)
 }

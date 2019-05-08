@@ -17,10 +17,13 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 import cats.data.NonEmptyList
 import org.scalacheck.Gen
+import uk.gov.hmrc.gform.Helpers._
+import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidth.DisplayWidth
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 trait ComponentTypeGen {
+
   def displayWidthGen: Gen[DisplayWidth] = Gen.oneOf(DisplayWidth.values.toSeq)
 
   def textGen: Gen[Text] =
@@ -59,14 +62,14 @@ trait ComponentTypeGen {
       orientation <- orientationGen
       selections  <- PrimitiveGen.zeroOrMoreGen(Gen.posNum[Int])
       helpText    <- Gen.option(PrimitiveGen.zeroOrMoreGen(PrimitiveGen.nonEmptyAlphaNumStrGen))
-    } yield Choice(tpe, options, orientation, selections, helpText)
+    } yield Choice(tpe, toLocalisedString(options), orientation, selections, toLocalisedStrings(helpText))
 
   def revealingChoiceElementGen: Gen[RevealingChoiceElement] =
     for {
       choice   <- PrimitiveGen.nonEmptyAlphaNumStrGen
       fields   <- PrimitiveGen.zeroOrMoreGen(FormComponentGen.formComponentGen(3))
       selected <- PrimitiveGen.booleanGen
-    } yield RevealingChoiceElement(choice, fields, selected)
+    } yield RevealingChoiceElement(toLocalisedString(choice), fields, selected)
 
   def revealingChoiceGen: Gen[RevealingChoice] =
     for {
@@ -88,7 +91,14 @@ trait ComponentTypeGen {
       repeatsMin           <- Gen.option(Gen.posNum[Int])
       repeatLabel          <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
       repeatAddAnotherText <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
-    } yield Group(fields.toList, orientation, repeatsMax, repeatsMin, repeatLabel, repeatAddAnotherText)
+    } yield
+      Group(
+        fields.toList,
+        orientation,
+        repeatsMax,
+        repeatsMin,
+        toLocalisedString(repeatLabel),
+        toLocalisedString(repeatAddAnotherText))
 
   def infoTypeGen: Gen[InfoType] = Gen.oneOf(StandardInfo, LongInfo, ImportantInfo, BannerInfo, NoFormat)
 
@@ -96,7 +106,7 @@ trait ComponentTypeGen {
     for {
       infoType <- infoTypeGen
       infoText <- PrimitiveGen.nonEmptyAlphaNumStrGen
-    } yield InformationMessage(infoType, infoText)
+    } yield InformationMessage(infoType, toLocalisedString(infoText))
 
   def fileUploadGen: Gen[FileUpload] = Gen.const(FileUpload())
 

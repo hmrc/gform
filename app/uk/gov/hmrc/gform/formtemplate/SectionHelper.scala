@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
+import uk.gov.hmrc.gform.sharedmodel.{ LabelHelper, LangADT, LocalisedString }
 import uk.gov.hmrc.gform.sharedmodel.form.FormField
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
@@ -65,8 +66,8 @@ object SectionHelper {
                 List(
                   fieldInGroup.copy(
                     id = FormComponentId(fieldName),
-                    label = buildRepeatingText(Some(fieldInGroup.label), i + 1).getOrElse(""),
-                    shortName = buildRepeatingText(fieldInGroup.shortName, i + 1)
+                    label = LabelHelper.buildRepeatingLabel(fieldInGroup.label, i + 1),
+                    shortName = LabelHelper.buildRepeatingLabel(fieldInGroup.shortName, i + 1)
                   ))
               case false => Nil
             }
@@ -78,18 +79,11 @@ object SectionHelper {
 
   private def fixLabels(fieldValues: List[FormComponent]): List[FormComponent] =
     fieldValues.map { field =>
-      if (field.label.contains("$n") || (field.shortName.isDefined && field.shortName.get.contains("$n"))) {
+      {
         field.copy(
-          label = buildRepeatingText(Some(field.label), 1).get,
-          shortName = buildRepeatingText(field.shortName, 1))
-      } else {
-        field
+          label = LabelHelper.buildRepeatingLabel(field.label, 1),
+          shortName = LabelHelper.buildRepeatingLabel(field.shortName, 1)
+        )
       }
     }
-
-  private def buildRepeatingText(text: Option[String], index: Int) = text match {
-    case Some(txt) if text.get.contains("$n") => Some(txt.replace("$n", index.toString))
-    case _                                    => text
-  }
-
 }

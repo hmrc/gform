@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.gform.submission
 
+import uk.gov.hmrc.gform.Helpers._
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.ExampleData
 import uk.gov.hmrc.gform.sharedmodel.form.FormField
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FileUpload, FormComponent, FormComponentId }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponent, FormComponentId }
 
 import scala.collection.immutable.List
 
@@ -33,35 +34,35 @@ class SectionFormFieldSpec extends Spec with ExampleData {
 
   "numberOfFiles" should "return zero when only text present" in new ExampleData {
 
-    val s = SectionFormField("", List(textField))
+    val s = SectionFormField(toLocalisedString(""), List(textField))
     s.numberOfFiles() shouldBe 0
 
   }
 
   "numberOfFiles" should "return zero when only empty file present" in new ExampleData {
 
-    val s = SectionFormField("", List(emptyFileField))
+    val s = SectionFormField(toLocalisedString(""), List(emptyFileField))
     s.numberOfFiles() shouldBe 0
 
   }
 
   "numberOfFiles" should "return zero when no filename file present" in new ExampleData {
 
-    val s = SectionFormField("", List(noFileField))
+    val s = SectionFormField(toLocalisedString(""), List(noFileField))
     s.numberOfFiles() shouldBe 0
 
   }
 
   "numberOfFiles" should "return zero when no file present" in new ExampleData {
 
-    val s = SectionFormField("", List(noFileField, emptyFileField, textField))
+    val s = SectionFormField(toLocalisedString(""), List(noFileField, emptyFileField, textField))
     s.numberOfFiles() shouldBe 0
 
   }
 
   "numberOfFiles" should "return one when one file present" in new ExampleData {
 
-    val s = SectionFormField("", List(fileField, noFileField, emptyFileField, textField))
+    val s = SectionFormField(toLocalisedString(""), List(fileField, noFileField, emptyFileField, textField))
     s.numberOfFiles() shouldBe 1
 
   }

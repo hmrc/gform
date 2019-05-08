@@ -22,7 +22,7 @@ import julienrf.json.derived
 import play.api.data.validation.ValidationError
 import play.api.libs.json._
 import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService.{ IsFalseish, IsTrueish }
-import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
+import uk.gov.hmrc.gform.sharedmodel.{ LocalisedString, ValueClassFormat }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidth.DisplayWidth
 import uk.gov.hmrc.gform.sharedmodel.structuredform.{ FieldName, RoboticsXml, StructuredFormDataFieldNamePurpose }
 
@@ -103,10 +103,10 @@ object DisplayWidth extends Enumeration {
 
 case class Choice(
   `type`: ChoiceType,
-  options: NonEmptyList[String],
+  options: NonEmptyList[LocalisedString],
   orientation: Orientation,
   selections: List[Int],
-  optionHelpText: Option[List[String]])
+  optionHelpText: Option[List[LocalisedString]])
     extends ComponentType
 
 sealed trait ChoiceType
@@ -119,7 +119,7 @@ object ChoiceType {
   implicit val format: OFormat[ChoiceType] = derived.oformat
 }
 
-case class RevealingChoiceElement(choice: String, revealingFields: List[FormComponent], selected: Boolean)
+case class RevealingChoiceElement(choice: LocalisedString, revealingFields: List[FormComponent], selected: Boolean)
 object RevealingChoiceElement {
   implicit val format: OFormat[RevealingChoiceElement] = derived.oformat
 }
@@ -169,11 +169,11 @@ case class Group(
   orientation: Orientation,
   repeatsMax: Option[Int] = None,
   repeatsMin: Option[Int] = None,
-  repeatLabel: Option[String] = None,
-  repeatAddAnotherText: Option[String] = None)
+  repeatLabel: Option[LocalisedString] = None,
+  repeatAddAnotherText: Option[LocalisedString] = None)
     extends ComponentType
 
-case class InformationMessage(infoType: InfoType, infoText: String) extends ComponentType
+case class InformationMessage(infoType: InfoType, infoText: LocalisedString) extends ComponentType
 
 case class FileUpload() extends ComponentType
 
