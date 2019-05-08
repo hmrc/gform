@@ -18,8 +18,10 @@ package uk.gov.hmrc.gform.formtemplate
 
 import cats.implicits._
 import play.api.libs.json.{ JsObject, Reads }
+import play.api.mvc.{ Result, Results }
 import uk.gov.hmrc.gform.core.{ FOpt, Opt, fromOptA }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
+import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateRaw }
 import play.api.libs.json._
 
@@ -39,7 +41,7 @@ class FormTemplatesControllerRequestHandler[F[_]](
     override def handleRequest(templateRaw: FormTemplateRaw): FOpt[Unit] = {
       val formTemplateOpt: Opt[FormTemplate] =
         implicitly[Reads[FormTemplate]]
-          .reads(templateRaw.value)
+          .reads(backwardsCompatibleLanguage(templateRaw.value))
           .fold(errors => UnexpectedState(errors.toString()).asLeft, valid => valid.asRight)
 
       processAndPersistTemplate(formTemplateOpt, templateRaw)

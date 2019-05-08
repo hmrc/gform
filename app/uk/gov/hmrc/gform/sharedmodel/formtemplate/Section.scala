@@ -17,15 +17,16 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import cats.data.NonEmptyList
-import julienrf.json.derived
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.form.FormField
+import uk.gov.hmrc.gform.formtemplate.SectionHelper.labelRepeatingGroupComponents
+import uk.gov.hmrc.gform.sharedmodel.LocalisedString
 
 import scala.collection.immutable.List
 
 sealed trait BaseSection {
-  def title: String
-  def shortName: Option[String]
+  def title: LocalisedString
+  def shortName: Option[LocalisedString]
   def fields: List[FormComponent]
 }
 
@@ -34,16 +35,16 @@ case class ExpandedSection(expandedFormComponents: List[ExpandedFormComponent]) 
 }
 
 case class Section(
-  title: String,
-  description: Option[String],
-  progressIndicator: Option[String] = None,
-  shortName: Option[String],
+  title: LocalisedString,
+  description: Option[LocalisedString],
+  progressIndicator: Option[LocalisedString] = None,
+  shortName: Option[LocalisedString],
   includeIf: Option[IncludeIf],
   repeatsMax: Option[TextExpression],
   repeatsMin: Option[TextExpression],
   validators: Option[Validator],
   fields: List[FormComponent],
-  continueLabel: Option[String],
+  continueLabel: Option[LocalisedString],
   continueIf: Option[ContinueIf]
 ) extends BaseSection {
 
@@ -92,8 +93,10 @@ case class Section(
                 List(
                   fieldInGroup.copy(
                     id = FormComponentId(fieldName),
-                    label = buildRepeatingText(Some(fieldInGroup.label), i + 1).getOrElse(""),
-                    shortName = buildRepeatingText(fieldInGroup.shortName, i + 1)
+                    label = LocalisedString(labelRepeatingGroupComponents(fieldInGroup.label.m, i + 1)),
+                    shortName =
+                      if (fieldInGroup.shortName.isEmpty) None
+                      else Some(LocalisedString(labelRepeatingGroupComponents(fieldInGroup.shortName.get.m, i + 1)))
                   ))
               case false => Nil
             }
@@ -105,19 +108,13 @@ case class Section(
 
   private def fixLabels(fieldValues: List[FormComponent]): List[FormComponent] =
     fieldValues.map { field =>
-      if (field.label.contains("$n") || (field.shortName.isDefined && field.shortName.get.contains("$n"))) {
-        field.copy(
-          label = buildRepeatingText(Some(field.label), 1).get,
-          shortName = buildRepeatingText(field.shortName, 1))
-      } else {
-        field
-      }
+      field.copy(
+        label = LocalisedString(labelRepeatingGroupComponents(field.label.m, 1)),
+        shortName =
+          if (field.shortName.isEmpty) None
+          else Some(LocalisedString(labelRepeatingGroupComponents(field.shortName.get.m, 1)))
+      )
     }
-
-  private def buildRepeatingText(text: Option[String], index: Int) = text match {
-    case Some(txt) if text.get.contains("$n") => Some(txt.replace("$n", index.toString))
-    case _                                    => text
-  }
 }
 
 object Section {
@@ -125,9 +122,9 @@ object Section {
 }
 
 case class DeclarationSection(
-  title: String,
-  description: Option[String],
-  shortName: Option[String],
+  title: LocalisedString,
+  description: Option[LocalisedString],
+  shortName: Option[LocalisedString],
   fields: List[FormComponent]
 ) extends BaseSection
 
@@ -136,9 +133,9 @@ object DeclarationSection {
 }
 
 case class AcknowledgementSection(
-  title: String,
-  description: Option[String],
-  shortName: Option[String],
+  title: LocalisedString,
+  description: Option[LocalisedString],
+  shortName: Option[LocalisedString],
   fields: List[FormComponent]
 ) extends BaseSection
 
@@ -147,8 +144,8 @@ object AcknowledgementSection {
 }
 
 case class EnrolmentSection(
-  title: String,
-  shortName: Option[String],
+  title: LocalisedString,
+  shortName: Option[LocalisedString],
   fields: List[FormComponent],
   identifiers: NonEmptyList[IdentifierRecipe],
   verifiers: List[VerifierRecipe]
@@ -159,7 +156,7 @@ object EnrolmentSection {
   implicit val format: OFormat[EnrolmentSection] = Json.format[EnrolmentSection]
 }
 
-case class SectionFormField(title: String, fields: List[(List[FormField], FormComponent)])
+case class SectionFormField(title: LocalisedString, fields: List[(List[FormField], FormComponent)])
 
 case class IdentifierRecipe(key: String, value: FormCtx)
 object IdentifierRecipe {

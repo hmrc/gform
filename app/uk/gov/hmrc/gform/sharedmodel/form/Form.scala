@@ -99,7 +99,6 @@ object Form {
         destinationSubmissionInfoOptionFormat.writes(form.destinationSubmissionInfo)
   )
 
-  //implicit val format: OFormat[Form] = OFormatWithTemplateReadFallback(reads)
   implicit val format: OFormat[Form] = OFormat[Form](reads, writes)
 
 }

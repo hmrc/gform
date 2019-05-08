@@ -28,8 +28,8 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationId, 
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
-import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, SubmissionData, UserId, Variables }
-import uk.gov.hmrc.gform.submission.{ DestinationSubmitter, DestinationsSubmitter, DestinationsSubmitterAlgebra }
+import uk.gov.hmrc.gform.sharedmodel.{ UserId, _ }
+import uk.gov.hmrc.gform.submission.DestinationsSubmitterAlgebra
 import uk.gov.hmrc.gform.{ Possible, Spec, possibleMonadError }
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -276,9 +276,10 @@ class RealOfstedSubmitterSpec extends Spec {
       "",
       None,
       Nil,
-      AcknowledgementSection("", None, None, Nil),
-      DeclarationSection("", None, None, Nil),
-      None
+      AcknowledgementSection(LocalisedString(Map(LangADT.En -> "")), None, None, Nil),
+      DeclarationSection(LocalisedString(Map(LangADT.En     -> "")), None, None, Nil),
+      None,
+      AvailableLanguages.default
     )
 
   case class SubmitterParts[M[_]: Applicative](

@@ -33,7 +33,7 @@ class FieldValueFormatValueSpec extends Spec {
       FormComponent(
         FormComponentId("sum"),
         Text(ShortText.default, Add(FormCtx("amountA"), FormCtx("amountB"))),
-        "Label",
+        LocalisedString(Map(LangADT.En -> "Label")),
         None,
         None,
         None,
@@ -59,7 +59,7 @@ class FieldValueFormatValueSpec extends Spec {
       FormComponent(
         FormComponentId("constant"),
         Text(ShortText.default, Constant("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_ ,")),
-        "Label",
+        LocalisedString(Map(LangADT.En -> "Label")),
         None,
         None,
         None,

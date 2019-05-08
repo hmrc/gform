@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.pdfgenerator
 
 import uk.gov.hmrc.gform.Spec
+import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString }
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.submission.{ SectionFormField, SubmissionRef }
@@ -45,16 +46,19 @@ class XmlGeneratorServiceSpec extends Spec {
     )
     val formData = FormData(formFields)
 
+    def toLocalisedString(string: String) =
+      LocalisedString(Map(LangADT.En -> string))
+
     val sectionFormFields = List(
       SectionFormField(
-        "Section title",
+        toLocalisedString("Section title"),
         List(
           (
             List(FormField(FormComponentId("UNO"), "UNO")),
             FormComponent(
               FormComponentId("UNO"),
               Text(AnyText, Value),
-              "Submissible text label",
+              toLocalisedString("Submissible text label"),
               None,
               None,
               None,
@@ -70,7 +74,7 @@ class XmlGeneratorServiceSpec extends Spec {
             FormComponent(
               FormComponentId("DOS"),
               Text(AnyText, Value),
-              "Submissible text label",
+              toLocalisedString("Submissible text label"),
               None,
               None,
               None,
@@ -86,7 +90,7 @@ class XmlGeneratorServiceSpec extends Spec {
             FormComponent(
               FormComponentId("1_UNO"),
               Text(AnyText, Value),
-              "Non-submissible text label",
+              toLocalisedString("Non-submissible text label"),
               None,
               None,
               None,
@@ -102,7 +106,7 @@ class XmlGeneratorServiceSpec extends Spec {
             FormComponent(
               FormComponentId("1_DOS"),
               Text(AnyText, Value),
-              "Submissible text label",
+              toLocalisedString("Submissible text label"),
               None,
               None,
               None,
@@ -116,14 +120,14 @@ class XmlGeneratorServiceSpec extends Spec {
         )
       ),
       SectionFormField(
-        "Declaration",
+        toLocalisedString("Declaration"),
         List(
           (
             List(FormField(FormComponentId("TRES"), "TRES")),
             FormComponent(
               FormComponentId("TRES"),
               Text(AnyText, Constant("TRES")),
-              "Submissible text label",
+              toLocalisedString("Submissible text label"),
               None,
               None,
               None,

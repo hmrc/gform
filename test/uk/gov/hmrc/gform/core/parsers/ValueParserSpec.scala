@@ -21,6 +21,7 @@ import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate._
+import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
 
@@ -336,12 +337,12 @@ class ValueParserSpec extends Spec {
     "submitErrorUrl",
     None,
     List.empty[Section],
-    acknowledgementSection = AcknowledgementSection("", None, None, Nil),
-    declarationSection = DeclarationSection("Declaration", None, None, Nil)
+    acknowledgementSection = AcknowledgementSection(LocalisedString(Map(LangADT.En -> "")), None, None, Nil),
+    declarationSection = DeclarationSection(LocalisedString(Map(LangADT.En         -> "Declaration")), None, None, Nil)
   )
 
   val yourDetailsSection = Section(
-    "Your details",
+    LocalisedString(Map(LangADT.En -> "Your details")),
     None,
     None,
     None,
@@ -353,7 +354,7 @@ class ValueParserSpec extends Spec {
       FormComponent(
         FormComponentId("firstName"),
         Text(AnyText, Value),
-        "Your first name",
+        LocalisedString(Map(LangADT.En -> "Your first name")),
         None,
         None,
         validIf = None,
@@ -366,7 +367,7 @@ class ValueParserSpec extends Spec {
       FormComponent(
         FormComponentId("lastName"),
         Text(AnyText, Value),
-        "Your last name",
+        LocalisedString(Map(LangADT.En -> "Your last name")),
         None,
         None,
         validIf = None,

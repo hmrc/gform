@@ -17,10 +17,21 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 import cats.data.NonEmptyList
 import org.scalacheck.Gen
+import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidth.DisplayWidth
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 trait ComponentTypeGen {
+
+  def toLocalisedString(stringList: NonEmptyList[String]): NonEmptyList[LocalisedString] =
+    stringList.map(s => LocalisedString(Map(LangADT.En -> s)))
+
+  def toLocalisedString(optionalStringList: Option[List[String]]): Option[List[LocalisedString]] =
+    optionalStringList match {
+      case None             => None
+      case Some(stringList) => Some(stringList.map(s => LocalisedString(Map(LangADT.En -> s))))
+    }
+
   def displayWidthGen: Gen[DisplayWidth] = Gen.oneOf(DisplayWidth.values.toSeq)
 
   def textGen: Gen[Text] =
@@ -59,7 +70,7 @@ trait ComponentTypeGen {
       orientation <- orientationGen
       selections  <- PrimitiveGen.zeroOrMoreGen(Gen.posNum[Int])
       helpText    <- Gen.option(PrimitiveGen.zeroOrMoreGen(PrimitiveGen.nonEmptyAlphaNumStrGen))
-    } yield Choice(tpe, options, orientation, selections, helpText)
+    } yield Choice(tpe, toLocalisedString(options), orientation, selections, toLocalisedString(helpText))
 
   def revealingChoiceElementGen: Gen[RevealingChoiceElement] =
     for {
