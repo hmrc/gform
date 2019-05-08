@@ -19,9 +19,7 @@ package uk.gov.hmrc.gform.submission
 import cats.instances.either._
 import cats.instances.list._
 import cats.syntax.either._
-import cats.syntax.eq._
 import cats.syntax.traverse._
-import play.api.libs.json.Json
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState

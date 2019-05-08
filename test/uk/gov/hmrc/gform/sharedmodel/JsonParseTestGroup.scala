@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel
 
 import cats.data.NonEmptyList
 import play.api.libs.json._
+import uk.gov.hmrc.gform.Helpers._
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
@@ -60,8 +61,8 @@ class JsonParseTestGroup extends Spec {
         Group(
           List(FormComponent(
             FormComponentId("cid"),
-            Choice(Radio, NonEmptyList.of("A", "B"), Vertical, List(), None),
-            "clabel",
+            Choice(Radio, NonEmptyList.of(toLocalisedString("A"), toLocalisedString("B")), Vertical, List(), None),
+            toLocalisedString("clabel"),
             None,
             None,
             None,
@@ -75,10 +76,10 @@ class JsonParseTestGroup extends Spec {
           Horizontal,
           Some(5),
           Some(1),
-          Some("repeatLabel"),
-          Some("repeatAddAnotherText")
+          Some(toLocalisedString("repeatLabel")),
+          Some(toLocalisedString("repeatAddAnotherText"))
         ),
-        "glabel",
+        toLocalisedString("glabel"),
         None,
         None,
         None,
@@ -130,8 +131,8 @@ class JsonParseTestGroup extends Spec {
         Group(
           List(FormComponent(
             FormComponentId("cid"),
-            Choice(Radio, NonEmptyList.of("A", "B"), Vertical, List(), None),
-            "clabel",
+            Choice(Radio, NonEmptyList.of(toLocalisedString("A"), toLocalisedString("B")), Vertical, List(), None),
+            toLocalisedString("clabel"),
             None,
             None,
             None,
@@ -145,10 +146,10 @@ class JsonParseTestGroup extends Spec {
           Horizontal,
           Some(5),
           Some(0),
-          Some("repeatLabel"),
-          Some("repeatAddAnotherText")
+          Some(toLocalisedString("repeatLabel")),
+          Some(toLocalisedString("repeatAddAnotherText"))
         ),
-        "glabel",
+        toLocalisedString("glabel"),
         None,
         None,
         None,

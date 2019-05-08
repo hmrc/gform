@@ -20,6 +20,7 @@ import cats.Applicative
 import cats.data.NonEmptyList
 import cats.syntax.applicative._
 import play.api.libs.json.JsNull
+import uk.gov.hmrc.gform.Helpers._
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.sharedmodel.form.{ DestinationSubmissionInfo, _ }
@@ -28,8 +29,8 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationId, 
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
-import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, SubmissionData, UserId, Variables }
-import uk.gov.hmrc.gform.submission.{ DestinationSubmitter, DestinationsSubmitter, DestinationsSubmitterAlgebra }
+import uk.gov.hmrc.gform.sharedmodel.{ UserId, _ }
+import uk.gov.hmrc.gform.submission.DestinationsSubmitterAlgebra
 import uk.gov.hmrc.gform.{ Possible, Spec, possibleMonadError }
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -276,9 +277,10 @@ class RealOfstedSubmitterSpec extends Spec {
       "",
       None,
       Nil,
-      AcknowledgementSection("", None, None, Nil),
-      DeclarationSection("", None, None, Nil),
-      None
+      AcknowledgementSection(toLocalisedString(""), None, None, Nil),
+      DeclarationSection(toLocalisedString(""), None, None, Nil),
+      None,
+      AvailableLanguages.default
     )
 
   case class SubmitterParts[M[_]: Applicative](

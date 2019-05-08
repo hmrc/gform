@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 import cats.data.NonEmptyList
 import org.scalacheck.Gen
+import uk.gov.hmrc.gform.sharedmodel.AvailableLanguages
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 trait FormTemplateGen {
@@ -90,7 +91,8 @@ trait FormTemplateGen {
         sections,
         acknowledgementSection,
         declarationSection,
-        gFC579Ready
+        gFC579Ready,
+        AvailableLanguages.default
       )
 }
 

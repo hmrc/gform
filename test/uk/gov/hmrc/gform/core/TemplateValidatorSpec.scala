@@ -16,11 +16,12 @@
 
 package uk.gov.hmrc.gform.core
 
+import cats.data.NonEmptyList
+import org.scalacheck.Gen
+import uk.gov.hmrc.gform.Helpers._
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.formtemplate.FormTemplateValidator
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import cats.data.NonEmptyList
-import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.form.FormField
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.FormComponentGen._
@@ -134,7 +135,12 @@ class TemplateValidatorSpec extends Spec {
     mkFormComponent("nameOfBusiness", Value) ::
       mkFormComponent(
       "dutyType",
-      Choice(Checkbox, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None)) :: Nil
+      Choice(
+        Checkbox,
+        NonEmptyList(toLocalisedString("Natural gas"), List(toLocalisedString("Other gas"))),
+        Vertical,
+        List.empty[Int],
+        None)) :: Nil
   )
 
   private val sectionWithRadio = mkSection(
@@ -142,13 +148,25 @@ class TemplateValidatorSpec extends Spec {
     mkFormComponent("nameOfBusiness", Value) ::
       mkFormComponent(
       "dutyType",
-      Choice(Radio, NonEmptyList("Natural gas", List("Other gas")), Vertical, List.empty[Int], None)) :: Nil
+      Choice(
+        Radio,
+        NonEmptyList(toLocalisedString("Natural gas"), List(toLocalisedString("Other gas"))),
+        Vertical,
+        List.empty[Int],
+        None)) :: Nil
   )
 
   private val sectionWithYesNo = mkSection(
     "Business details",
     mkFormComponent("nameOfBusiness", Value) ::
-      mkFormComponent("taxType", Choice(YesNo, NonEmptyList.of("Yes", "No"), Horizontal, List.empty[Int], None)) :: Nil
+      mkFormComponent(
+      "taxType",
+      Choice(
+        YesNo,
+        NonEmptyList.of(toLocalisedString("Yes"), toLocalisedString("No")),
+        Horizontal,
+        List.empty[Int],
+        None)) :: Nil
   )
 
   "TemplateValidator.getMatchingSection" should "find matching section containing address component" in {
@@ -346,7 +364,11 @@ class TemplateValidatorSpec extends Spec {
       ))
 
     val newDeclarationSection =
-      DeclarationSection("Declaration", None, None, List(mkFormComponent("declarationFullName", Value)))
+      DeclarationSection(
+        toLocalisedString("Declaration"),
+        None,
+        None,
+        List(mkFormComponent("declarationFullName", Value)))
 
     val newFormTemplate = mkFormTemplate(formComponents, newEmailParameters, declarationSection = newDeclarationSection)
 
@@ -371,7 +393,7 @@ class TemplateValidatorSpec extends Spec {
 
     val formComponent = List(mkFormComponent("fieldInAcknowledgementSections", Value))
     val newAcknowledgementSection =
-      AcknowledgementSection("ack section with email param field", None, None, formComponent)
+      AcknowledgementSection(toLocalisedString("ack section with email param field"), None, None, formComponent)
 
     val newEmailParameters = Some(
       NonEmptyList.of(
@@ -657,7 +679,7 @@ class TemplateValidatorSpec extends Spec {
 
   private def mkSection(name: String, formComponents: List[FormComponent]) =
     Section(
-      name,
+      toLocalisedString(name),
       None,
       None,
       None,
@@ -674,7 +696,7 @@ class TemplateValidatorSpec extends Spec {
     FormComponent(
       FormComponentId(name),
       Text(AnyText, expr),
-      name,
+      toLocalisedString(name),
       None,
       None,
       None,
@@ -691,7 +713,7 @@ class TemplateValidatorSpec extends Spec {
     FormComponent(
       FormComponentId(name),
       ct,
-      name,
+      toLocalisedString(name),
       None,
       None,
       None,

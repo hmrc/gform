@@ -18,29 +18,29 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import play.api.libs.json._
 import uk.gov.hmrc.gform.formtemplate.FormComponentMaker
-import uk.gov.hmrc.gform.sharedmodel.LabelHelper
+import uk.gov.hmrc.gform.sharedmodel.{ LabelHelper, LangADT, LocalisedString }
 
 case class ExpandedFormComponent(expandedFormComponent: List[FormComponent]) extends AnyVal
 
 case class FormComponent(
   id: FormComponentId,
   `type`: ComponentType,
-  label: String,
-  helpText: Option[String],
-  shortName: Option[String],
+  label: LocalisedString,
+  helpText: Option[LocalisedString],
+  shortName: Option[LocalisedString],
   validIf: Option[ValidIf],
   mandatory: Boolean,
   editable: Boolean,
   submissible: Boolean,
   derived: Boolean,
   onlyShowOnSummary: Boolean = false,
-  errorMessage: Option[String],
+  errorMessage: Option[LocalisedString],
   presentationHint: Option[List[PresentationHint]] = Option.empty[List[PresentationHint]]
 ) {
 
   private def updateField(i: Int, fc: FormComponent): FormComponent =
     fc.copy(
-      label = LabelHelper.buildRepeatingLabel(fc, i),
+      label = LabelHelper.buildRepeatingLabel(fc.label, i),
       shortName = LabelHelper.buildRepeatingLabel(fc.shortName, i))
 
   private def loop(fc: FormComponent): List[FormComponent] =

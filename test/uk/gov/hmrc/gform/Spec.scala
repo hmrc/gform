@@ -22,7 +22,7 @@ import org.scalatest.concurrent.{ Eventually, ScalaFutures }
 import org.scalatest.matchers.{ BeMatcher, MatchResult, Matcher }
 import org.scalatest.prop.PropertyChecks
 import play.api.libs.json._
-import uk.gov.hmrc.gform.sharedmodel.ExampleData
+import uk.gov.hmrc.gform.sharedmodel.{ ExampleData, LangADT, LocalisedString }
 
 import scala.concurrent.ExecutionContext
 

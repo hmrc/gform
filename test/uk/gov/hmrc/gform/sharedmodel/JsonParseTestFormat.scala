@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.sharedmodel
 
 import play.api.libs.json._
+import uk.gov.hmrc.gform.Helpers._
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
@@ -157,7 +158,7 @@ class JsonParseTestFormat extends Spec {
         FormComponent(
           FormComponentId("gid"),
           Text(ShortText.default, Value, DisplayWidth.DEFAULT),
-          "glabel",
+          toLocalisedString("glabel"),
           None,
           None,
           None,
@@ -167,7 +168,8 @@ class JsonParseTestFormat extends Spec {
           false,
           false,
           None,
-          None))
+          None
+        ))
     }
   }
 

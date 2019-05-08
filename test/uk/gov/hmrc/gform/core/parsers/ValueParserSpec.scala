@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.core.parsers
 
 import cats.data.NonEmptyList
+import uk.gov.hmrc.gform.Helpers._
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
@@ -336,12 +337,12 @@ class ValueParserSpec extends Spec {
     "submitErrorUrl",
     None,
     List.empty[Section],
-    acknowledgementSection = AcknowledgementSection("", None, None, Nil),
-    declarationSection = DeclarationSection("Declaration", None, None, Nil)
+    acknowledgementSection = AcknowledgementSection(toLocalisedString(""), None, None, Nil),
+    declarationSection = DeclarationSection(toLocalisedString("Declaration"), None, None, Nil)
   )
 
   val yourDetailsSection = Section(
-    "Your details",
+    toLocalisedString("Your details"),
     None,
     None,
     None,
@@ -353,7 +354,7 @@ class ValueParserSpec extends Spec {
       FormComponent(
         FormComponentId("firstName"),
         Text(AnyText, Value),
-        "Your first name",
+        toLocalisedString("Your first name"),
         None,
         None,
         validIf = None,
@@ -366,7 +367,7 @@ class ValueParserSpec extends Spec {
       FormComponent(
         FormComponentId("lastName"),
         Text(AnyText, Value),
-        "Your last name",
+        toLocalisedString("Your last name"),
         None,
         None,
         validIf = None,
