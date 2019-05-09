@@ -26,7 +26,7 @@ class PdfGeneratorService(pdfGeneratorConnector: PdfGeneratorConnector) {
 
   def generatePDF(html: String)(implicit hc: HeaderCarrier): Future[Array[Byte]] = {
     val headers = Seq((HeaderNames.CONTENT_TYPE, MimeTypes.FORM))
-    val body = Map("html" -> Seq(html),"force-pdfa" -> Seq("false"))
+    val body = Map("html" -> Seq(html), "force-pdfa" -> Seq("false"))
     pdfGeneratorConnector.generatePDF(body, headers)
   }
 }
