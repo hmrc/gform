@@ -131,7 +131,36 @@ object FormatParser {
       TextFormat(BasicText)
     } | "text(" ~ positiveInteger ~ "," ~ positiveInteger ~ ")" ^^ { (loc, _, min, _, max, _) =>
       TextFormat(TextWithRestrictions(min, max))
+    } | "lookup(" ~ register ~ ")" ^^ { (loc, _, register, _) =>
+      TextFormat(Lookup(register))
     }
+  }
+
+  lazy val register: Parser[Register] = {
+    "cashType" ^^ { (loc, _) =>
+      Register.CashType
+    } |
+      "country" ^^ { (loc, _) =>
+        Register.Country
+      } |
+      "currency" ^^ { (loc, _) =>
+        Register.Currency
+      } |
+      "intent" ^^ { (loc, _) =>
+        Register.Intent
+      } |
+      "intercept" ^^ { (loc, _) =>
+        Register.Intercept
+      } |
+      "origin" ^^ { (loc, _) =>
+        Register.Origin
+      } |
+      "port" ^^ { (loc, _) =>
+        Register.Port
+      } |
+      "transportMode" ^^ { (loc, _) =>
+        Register.TransportMode
+      }
   }
 
   lazy val contactFormat: Parser[TextFormat] = {
