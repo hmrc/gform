@@ -5,19 +5,13 @@
   "developmentPhase": "beta",
   "emailTemplateId": "al_registration_confirmation",
   "authConfig": {
-    "authModule": "hmrc"
+    "authModule": "ofsted"
   },
   "sections": [
     {
       "title": "Approval",
       "shortName": "Review",
       "fields": [
-        {
-          "id": "idOfFormBeingReviewed",
-          "type": "text",
-          "label": "ID Of Form Being Reviewed",
-          "errorMessage": ""
-        },
         {
           "id": "approve",
           "type": "choice",

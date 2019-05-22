@@ -1,0 +1,72 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<s:Envelope xmlns:u="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
+            xmlns:env="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing"
+            xmlns:s="http://www.w3.org/2003/05/soap-envelope">
+    <s:Header>
+        <a:Action s:mustUnderstand="1">http://tempuri.org/IGatewayOOServices/GetData</a:Action>
+        <a:MessageID>urn:uuid:9179ef63-0733-4c64-bf2c-2763278cb590</a:MessageID>
+        <a:ReplyTo>
+            <a:Address>http://www.w3.org/2005/08/addressing/anonymous</a:Address>
+        </a:ReplyTo>
+        <a:To u:Id="_1" s:mustUnderstand="1">https://testinfogateway.ofsted.gov.uk/OnlineOfsted/GatewayOOServices.svc
+        </a:To>
+        <o:Security s:mustUnderstand="1"
+                    xmlns:o="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
+            <u:Timestamp u:Id="_0">
+                <u:Created>2019-06-06T13:43:52.455Z</u:Created>
+                <u:Expires>2019-06-06T13:48:52.457Z</u:Expires>
+            </u:Timestamp>
+            <o:UsernameToken u:Id="uuid-f2be2b8f-3180-4c01-9639-24502702411a-1">
+                <o:Username>hmrcgforms</o:Username>
+                <o:Password
+                        o:Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText">
+                    B'AXy+AnmGJR4e
+                </o:Password>
+            </o:UsernameToken>
+            <o:BinarySecurityToken u:Id="uuid-f2be2b8f-3180-4c01-9639-24502702411a-2"
+                                   ValueType="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0#X509v3"
+                                   EncodingType="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary">
+                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
+            </o:BinarySecurityToken>
+            <Signature xmlns="http://www.w3.org/2000/09/xmldsig#">
+                <SignedInfo>
+                    <CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
+                    <SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/>
+                    <Reference URI="#_0">
+                        <Transforms>
+                            <Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
+                        </Transforms>
+                        <DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+                        <DigestValue>IK2FtIvRrkjq84ccwaJA1+zDNhw=</DigestValue>
+                    </Reference>
+                    <Reference URI="#_1">
+                        <Transforms>
+                            <Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
+                        </Transforms>
+                        <DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+                        <DigestValue>cXD1SfpOszifeqdm29v/oqAc5aY=</DigestValue>
+                    </Reference>
+                </SignedInfo>
+                <SignatureValue>HI4NK3JBY2yx70JEIhBKzhXzr6SL6XPP6ocN/clOp7AL4k4uanX5UfD+3KGICXI2ruwgZfNsZ4Qs
+                    n+PcyGpDvh6fj1kp51q4JUv3Wy8u1EZfosIqZGN2B8K23Tb0Gk4F2sL6i0av9whrk5ICjmpO9ns4
+                    vwkCWka5ahd3Do8CIIJAZ4G9QxTFgMSTDhr9ZXYgwtqRDXmPaQuxG1oBG5mDSSWkjfS3p6GYdypM
+                    PV8gSdbnFNLi+N+YB0tUQL+km7lGb/XPBDjspmjid7RheM1nK4tDEA9KY3+igTt6qZF5b0wuDvlZ
+                    i1adoizP0Qul4anO55oPZ1J2QgiVWIv5fiuf3w==
+                </SignatureValue>
+                <KeyInfo>
+                    <o:SecurityTokenReference>
+                        <o:Reference
+                                ValueType="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0#X509v3"
+                                URI="#uuid-f2be2b8f-3180-4c01-9639-24502702411a-2"/>
+                    </o:SecurityTokenReference>
+                </KeyInfo>
+            </Signature>
+        </o:Security>
+    </s:Header>
+    <s:Body u:Id="_1">
+        <GetData xmlns="http://tempuri.org/">
+            <Service>GetNewUrn</Service>
+            <InputParameters>&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;&lt;Parameters&gt;&lt;IDs&gt;&lt;ID&gt;SC&lt;/ID&gt;&lt;/IDs&gt;&lt;/Parameters&gt;</InputParameters>
+        </GetData>
+    </s:Body>
+</s:Envelope>

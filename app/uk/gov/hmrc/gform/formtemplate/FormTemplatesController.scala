@@ -18,16 +18,17 @@ package uk.gov.hmrc.gform.formtemplate
 
 import cats.implicits._
 import play.api.Logger
-import play.api.mvc.{ Action, Results }
+import play.api.mvc.{ Action, AnyContent, Results }
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
-import uk.gov.hmrc.gform.core.FOpt
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, FormTemplateRaw, FormTemplateRawId }
-import uk.gov.hmrc.gform.submission.DestinationsSubmitter
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, FormTemplateRaw, FormTemplateRawId, SuperFormTemplate }
+import uk.gov.hmrc.gform.core._
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ ExecutionContext, Future }
 
-class FormTemplatesController(formTemplateService: FormTemplateService)(implicit ex: ExecutionContext)
+class FormTemplatesController(
+  formTemplateService: FormTemplateService,
+  superFormTemplateService: SuperFormTemplateService)(implicit ex: ExecutionContext)
     extends BaseController {
 
   def upsert() = Action.async(parse.json[FormTemplateRaw]) { implicit request =>
@@ -38,6 +39,21 @@ class FormTemplatesController(formTemplateService: FormTemplateService)(implicit
     new FormTemplatesControllerRequestHandler(formTemplateService.verifyAndSave, formTemplateService.save).futureInterpreter
       .handleRequest(templateRaw)
       .fold(_.asBadRequest, _ => Results.NoContent)
+  }
+
+  def upsertSuperForm() = Action.async(parse.json[SuperFormTemplate]) { implicit request =>
+    val templateId = request.body._id.value
+    Logger.info(s"Upserting super form template: $templateId, ${loggingHelpers.cleanHeaders(request.headers)}")
+    fromFutureA(
+      new SuperFormTemplatesRequestHandler[Future]
+        .handleUpsertRequest(superFormTemplateService.save, request.body)).fold(_.asBadRequest, _ => Results.NoContent)
+  }
+
+  def getSuperForm(id: FormTemplateId): Action[AnyContent] = Action.async { implicit request =>
+    Logger.info(s"Get super form template, template id: '${id.value}', ${loggingHelpers.cleanHeaders(request.headers)}")
+    val eventualMaybeTemplate: Future[Option[SuperFormTemplate]] =
+      new SuperFormTemplatesRequestHandler[Future].handleFindRequest(superFormTemplateService.findById, id)
+    eventualMaybeTemplate.asOkJson
   }
 
   def get(id: FormTemplateId) = Action.async { implicit request =>

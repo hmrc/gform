@@ -59,8 +59,7 @@ class RealOfstedSubmitterSpec extends Spec {
     )
 
     submitterParts
-      .expectUpdateFormStatus(idOfFormToBeReviewed, NeedsReview)
-      .expectUpdateDestinationSubmissionInfo(idOfFormToBeReviewed, submissionInfo)
+      .expectUpdateFormStatus(idOfFormToBeReviewed, NeedsReview, NeedsReview)
       .expectCreateForm(newFormId, userId, reviewFormTemplateId, correlationFormField)
       .expectRequestReviewNotification(newFormId)
       .sut
@@ -79,7 +78,7 @@ class RealOfstedSubmitterSpec extends Spec {
     val rejectionCommentFormComponentId = FormComponentId("rejectionComment")
 
     submitterParts
-      .expectUpdateFormStatus(reviewFormId, Submitted)
+      .expectUpdateFormStatus(reviewFormId, Submitted, Submitted)
       .expectRetrieveForm(
         reviewFormId,
         createForm(
@@ -89,7 +88,7 @@ class RealOfstedSubmitterSpec extends Spec {
           (correlationIdFormComponentId, reviewedFormId.value),
           (rejectionCommentFormComponentId, rejectionComment))
       )
-      .expectUpdateFormStatus(reviewedFormId, InProgress)
+      .expectUpdateFormStatus(reviewedFormId, InProgress, InProgress)
       .expectReviewRejectionNotification(reviewedFormId, rejectionComment)
       .sut
       .reject(reviewFormId, correlationIdFormComponentId, rejectionCommentFormComponentId)
@@ -166,10 +165,10 @@ class RealOfstedSubmitterSpec extends Spec {
           (correlationIdFormComponentId, reviewedFormId.value))
       )
       .expectRetrieveFormTemplate(reviewedFormTemplateId, reviewedFormTemplate)
-      .expectUpdateFormStatus(reviewedFormId, Approved)
+      .expectUpdateFormStatus(reviewedFormId, Approved, Approved)
       .expectDestinationsSubmitterSend(destinationSubmissionInfo, reviewedFormTemplate)
-      .expectUpdateFormStatus(reviewFormId, Submitted)
-      .expectUpdateFormStatus(reviewedFormId, Submitted)
+      .expectUpdateFormStatus(reviewFormId, Submitted, Submitted)
+      .expectUpdateFormStatus(reviewedFormId, Submitted, Submitted)
       .expectReviewApprovalNotification(reviewedFormId)
       .sut
       .approve(
@@ -333,27 +332,17 @@ class RealOfstedSubmitterSpec extends Spec {
 
     def expectRequestReviewNotification(formId: FormId): SubmitterParts[M] = {
       (notificationAlgebra
-        .requestReview(_: OfstedNotification))
-        .expects(where { notification: OfstedNotification =>
-          notification.formId === formId
-        })
+        .requestReview(_: FormId))
+        .expects(formId)
         .returning(().pure[M])
       this
     }
 
-    def expectUpdateFormStatus(formId: FormId, status: FormStatus): SubmitterParts[M] = {
+    def expectUpdateFormStatus(formId: FormId, status: FormStatus, newStatus: FormStatus): SubmitterParts[M] = {
       (formAlgebra
         .updateFormStatus(_: FormId, _: FormStatus)(_: HeaderCarrier))
         .expects(formId, status, hc)
-        .returning(().pure[M])
-      this
-    }
-
-    def expectUpdateDestinationSubmissionInfo(formId: FormId, info: DestinationSubmissionInfo): SubmitterParts[M] = {
-      (formAlgebra
-        .updateDestinationSubmissionInfo(_: FormId, _: Option[DestinationSubmissionInfo])(_: HeaderCarrier))
-        .expects(formId, Some(info), hc)
-        .returning(().pure[M])
+        .returning(newStatus.pure[M])
       this
     }
 
@@ -364,7 +353,19 @@ class RealOfstedSubmitterSpec extends Spec {
       initialFields: Seq[FormField]): SubmitterParts[M] = {
       (formAlgebra
         .create(_: SMUserId, _: FormTemplateId, _: Option[AccessCode], _: Long, _: Seq[FormField])(_: HeaderCarrier))
-        .expects(userId, reviewFormTemplateId, None, Int.MaxValue.toLong, initialFields, hc)
+        .expects(where {
+          (
+            expectedUserId: SMUserId,
+            expectedReviewFormTemplateId: FormTemplateId,
+            accessCode: Option[AccessCode],
+            expiryTime: Long,
+            expectedInitialFields: Seq[FormField],
+            hc: HeaderCarrier) =>
+            userId == expectedUserId &&
+            reviewFormTemplateId == expectedReviewFormTemplateId &&
+            accessCode.isDefined &&
+            initialFields == expectedInitialFields
+        })
         .returning(newFormId.pure[M])
       this
     }

@@ -19,16 +19,11 @@ package uk.gov.hmrc.gform.typeclasses
 import scala.util.Random
 
 trait Rnd[T] {
-  def apply(): T
+  def random(i: Int): T
 }
 
 object Rnd {
-
-  def apply[T](value: T): Rnd[T] = new Rnd[T] {
-    override val apply: T = value
-  }
-
-  implicit object RandomRnd extends Rnd[Random] {
-    override val apply: Random = Random
+  implicit object RandomInt extends Rnd[Int] {
+    def random(i: Int) = Random.nextInt(i)
   }
 }

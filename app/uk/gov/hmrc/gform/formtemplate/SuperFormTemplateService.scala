@@ -14,14 +14,18 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
-import org.scalacheck.Gen
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Profile
+package uk.gov.hmrc.gform.formtemplate
 
-trait ProfileGen {
-  def mdtpGen: Gen[Profile.MDTP] = PrimitiveGen.nonEmptyAlphaNumStrGen.map(Profile.MDTP)
+import uk.gov.hmrc.gform.core.FOpt
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, SuperFormTemplate }
 
-  def profileGen: Gen[Profile] = Gen.oneOf(Gen.const(Profile.DES), Gen.const(Profile.MdgIntegrationFramework), mdtpGen)
+import scala.concurrent.{ ExecutionContext, Future }
+
+class SuperFormTemplateService(superFormTemplateRepo: SuperFormTemplateRepo)(implicit ec: ExecutionContext) {
+
+  def save(superFormTemplate: SuperFormTemplate): FOpt[Unit] =
+    superFormTemplateRepo.upsert(superFormTemplate)
+
+  def findById(formTemplateId: FormTemplateId): Future[Option[SuperFormTemplate]] =
+    superFormTemplateRepo.find(formTemplateId.value)
 }
-
-object ProfileGen extends ProfileGen

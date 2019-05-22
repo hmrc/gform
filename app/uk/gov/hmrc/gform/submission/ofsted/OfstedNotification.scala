@@ -21,11 +21,14 @@ import java.time.LocalDateTime
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
 
 case class OfstedNotification(
-  time: LocalDateTime = LocalDateTime.now,
   formId: FormId,
+  formLink: FormLink,
+  time: LocalDateTime = LocalDateTime.now,
   emailAddress: EmailAddress = EmailAddress(""),
   kind: String = "")
 
 case class EmailAddress(email: String)
 
 case class PhoneNumber(number: String)
+
+case class FormLink(link: String)

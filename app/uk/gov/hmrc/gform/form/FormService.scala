@@ -78,11 +78,12 @@ class FormService[F[_]: Monad](formPersistence: FormPersistenceAlgebra[F], fileU
       _ <- formPersistence.upsert(formId, newForm)
     } yield ()
 
-  def updateFormStatus(formId: FormId, status: FormStatus)(implicit hc: HeaderCarrier): F[Unit] =
+  def updateFormStatus(formId: FormId, status: FormStatus)(implicit hc: HeaderCarrier): F[FormStatus] =
     for {
       form <- get(formId)
-      _    <- formPersistence.upsert(formId, form.copy(status = newStatus(form, status)))
-    } yield ()
+      newS = newStatus(form, status)
+      _ <- formPersistence.upsert(formId, form.copy(status = newS))
+    } yield newS
 
   private def newStatus(form: Form, status: FormStatus) =
     LifeCycleStatus.newStatus(form, status)

@@ -31,6 +31,7 @@ object Dependencies {
     "com.itv" %% "scalapact-argonaut-6-2"  % "2.2.5",
     "com.itv" %% "scalapact-http4s-0-16-2" % "2.2.5",
     "com.softwaremill.quicklens" %% "quicklens" % "1.4.11",
+    "com.softwaremill.sttp" %% "core" % "1.5.17",
     "uk.gov.service.notify" % "notifications-java-client" % "3.14.2-RELEASE"
   )
 

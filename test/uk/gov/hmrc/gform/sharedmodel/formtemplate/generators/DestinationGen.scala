@@ -43,7 +43,7 @@ trait DestinationGen {
   def handlebarsHttpApiGen: Gen[Destination.HandlebarsHttpApi] =
     for {
       id          <- destinationIdGen
-      profile     <- ProfileGen.profileGen
+      profile     <- ProfileNameGen.profileGen
       uri         <- PrimitiveGen.urlContextPathGen
       method      <- HttpMethodGen.httpMethodGen
       payload     <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen).map(_.map(s => s""""$s""""))
@@ -78,8 +78,31 @@ trait DestinationGen {
       failOnError        <- PrimitiveGen.booleanGen
     } yield Destination.ReviewApproval(id, correlationFieldId, includeIf, failOnError)
 
-  def destinationGen: Gen[Destination] =
-    Gen.oneOf(hmrcDmsGen, handlebarsHttpApiGen, reviewingOfstedGen, reviewRejectionGen, reviewApprovalGen)
+  def compositeGen: Gen[Destination.Composite] =
+    for {
+      id           <- destinationIdGen
+      includeIf    <- includeIfGen
+      destinations <- PrimitiveGen.oneOrMoreGen(singularDestinationGen)
+    } yield Destination.Composite(id, includeIf, destinations)
+
+  def stateTransitionGen: Gen[Destination.StateTransition] =
+    for {
+      id            <- destinationIdGen
+      includeIf     <- includeIfGen
+      failOnError   <- PrimitiveGen.booleanGen
+      requiredState <- FormGen.formStatusGen
+    } yield Destination.StateTransition(id, requiredState, includeIf, failOnError)
+
+  def singularDestinationGen: Gen[Destination] =
+    Gen.oneOf(
+      hmrcDmsGen,
+      handlebarsHttpApiGen,
+      reviewingOfstedGen,
+      reviewRejectionGen,
+      reviewApprovalGen,
+      stateTransitionGen)
+
+  def destinationGen: Gen[Destination] = Gen.frequency(10 -> singularDestinationGen, 1 -> compositeGen)
 
   def destinationWithFixedIdGen(id: DestinationId): Gen[Destination] = hmrcDmsGen.map(_.copy(id = id))
 

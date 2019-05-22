@@ -19,6 +19,21 @@
           "errorMessage": ""
         }
       ]
+    },
+    {
+      "title": "Review",
+      "shortName": "Review",
+      "includeIf":"${user.affinityGroup=agent}",
+      "fields": [
+        {
+          "id": "approve",
+          "type": "choice",
+          "label": "Do you approve?",
+          "helpText": "Well? Do you?",
+          "format": "yesno",
+          "mandatory": "yes"
+        }
+      ]
     }
   ],
   "declarationSection": {
@@ -47,22 +62,64 @@
   "destinations": [
     {
       "id": "createReview",
-      "type": "reviewingOfsted",
-      "correlationFieldId": "idOfFormBeingReviewed",
-      "reviewFormTemplateId": "review",
+      "type": "composite",
       "includeIf": "{{isSigned}}",
-      "userId": "ofstedUsers"
+      "destinations": [
+        {
+          "id": "transitionToNeedsReview",
+          "type": "stateTransition",
+          "requiredState": "NeedsReview"
+        },
+        {
+          "id": "sendNeedsReviewEmail",
+          "type": "ofstedNotification",
+          "template": "1234-24t246-4t67"
+        }
+      ]
     },
     {
-      "id": "unattendedDmsQueueDestination",
-      "type": "hmrcDms",
-      "includeIf": "false",
-      "failOnError": true,
-      "convertSingleQuotes": true,
-      "dmsFormId": "ALREG",
-      "customerId": "${declarationFullName}",
-      "classificationType": "BT-CTO-EMCS Fallback",
-      "businessArea": "BT"
+      "id": "rejected",
+      "type": "composite",
+      "includeIf": "{{and isReviewComplete (equal approve 'No')}}",
+      "destinations": [
+        {
+          "id": "reviewRejectedTransition",
+          "type": "stateTransition",
+          "requiredState": "InProgress"
+        },
+        {
+          "id": "sendReviewRejectedEmail",
+          "type": "ofstedNotification",
+          "template": "356q36-35yq35-3q576q3"
+        }
+      ]
+    },
+    {
+      "id": "approved",
+      "type": "composite",
+      "includeIf": "{{and isReviewComplete (equal approve 'Yes')}}",
+      "destinations": [
+        {
+          "id": "reviewApprovalTransition",
+          "type": "stateTransition",
+          "requiredState": "Submitted"
+        },
+        {
+          "id": "cygnumURN",
+          "type": "handlebarsHttpApi",
+          "responseBodyType": "plaintext",
+          "profile": "cygnum",
+          "method": "POST",
+          "payload": "<GetData xmlns=\"http://tempuri.org/\"><Service>GetNewUrn</Service><InputParameters>&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;&lt;Parameters&gt;&lt;IDs&gt;&lt;ID&gt;SC&lt;/ID&gt;&lt;/IDs&gt;&lt;/Parameters&gt;</InputParameters></GetData>",
+        },
+        {
+          "id": "cygnumSendApplicationForms",
+          "type": "handlebarsHttpApi",
+          "profile": "cygnum",
+          "method": "POST",
+          "payload": "...<URN>{{cygnumURN.response.body}}</URN>...",
+        }
+      ]
     }
   ],
   "submitErrorUrl": "",

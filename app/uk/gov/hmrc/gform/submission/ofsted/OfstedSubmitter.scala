@@ -23,7 +23,7 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
-import uk.gov.hmrc.gform.sharedmodel.UserId
+import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, UserId }
 import uk.gov.hmrc.gform.sharedmodel.form.{ DestinationSubmissionInfo, _ }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HandlebarsDestinationResponse
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplate, FormTemplateId }
@@ -113,9 +113,8 @@ class RealOfstedSubmitter[F[_]](
     correlationFieldId: FormComponentId)(implicit hc: HeaderCarrier): F[FormId] =
     for {
       _      <- formAlgebra.updateFormStatus(submissionInfo.formId, NeedsReview)
-      _      <- formAlgebra.updateDestinationSubmissionInfo(submissionInfo.formId, Some(submissionInfo))
       formId <- createReviewForm(submissionInfo.formId, userId, formTemplateId, correlationFieldId)
-      _      <- reviewNotificationService.requestReview(OfstedNotification(formId = formId))
+      _      <- reviewNotificationService.requestReview(formId)
     } yield formId
 
   private def findReviewedFormId(reviewForm: Form, correlationFormFieldId: FormComponentId) =
@@ -145,7 +144,7 @@ class RealOfstedSubmitter[F[_]](
     formAlgebra.create(
       userId,
       formTemplateId,
-      None,
+      Some(AccessCode.random),
       Int.MaxValue.longValue,
       Seq(FormField(correlationFieldId, idOfFormToBeReviewed.value))
     )
