@@ -50,7 +50,8 @@ object FormCategory {
         case JsString("ofstedDefault")  => JsSuccess(OfstedDefault)
         case JsString("default")        => JsSuccess(Default)
         case JsString(err) =>
-          JsError(s"only four valid categories, hmrcReturnForm, hmrcClaimForm, ofstedDefault or default $err is not valid")
+          JsError(
+            s"only four valid categories, hmrcReturnForm, hmrcClaimForm, ofstedDefault or default $err is not valid")
         case _ => JsError("Failure")
       }
   }
