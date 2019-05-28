@@ -27,6 +27,9 @@ case object HMRCReturnForm extends FormCategory {
 case object HMRCClaimForm extends FormCategory {
   override def getString: String = "claim"
 }
+case object OfstedDefault extends FormCategory {
+  override def getString: String = "form"
+}
 case object Default extends FormCategory {
   override def getString: String = "form"
 }
@@ -36,6 +39,7 @@ object FormCategory {
     override def writes(o: FormCategory): JsValue = o match {
       case HMRCReturnForm => JsString("hmrcReturnForm")
       case HMRCClaimForm  => JsString("hmrcClaimForm")
+      case OfstedDefault  => JsString("ofstedDefault")
       case Default        => JsString("default")
     }
 
@@ -43,9 +47,10 @@ object FormCategory {
       json match {
         case JsString("hmrcReturnForm") => JsSuccess(HMRCReturnForm)
         case JsString("hmrcClaimForm")  => JsSuccess(HMRCClaimForm)
+        case JsString("ofstedDefault")  => JsSuccess(OfstedDefault)
         case JsString("default")        => JsSuccess(Default)
         case JsString(err) =>
-          JsError(s"only three valid categories, hmrcReturnForm, hmrcClaimForm or default $err is not valid")
+          JsError(s"only four valid categories, hmrcReturnForm, hmrcClaimForm, ofstedDefault or default $err is not valid")
         case _ => JsError("Failure")
       }
   }
