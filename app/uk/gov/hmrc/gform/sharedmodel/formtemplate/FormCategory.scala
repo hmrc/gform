@@ -20,6 +20,7 @@ import play.api.libs.json._
 
 sealed trait FormCategory {
   def getString: String
+  def isHmrc: Boolean = this != OfstedDefault
 }
 case object HMRCReturnForm extends FormCategory {
   override def getString: String = "return"
