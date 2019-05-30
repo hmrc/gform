@@ -56,7 +56,7 @@ trait FormTemplateGen {
       name                   <- formNameGen
       description            <- formTemplateDescriptionGen
       developmentPhase       <- Gen.option(developmentPhaseGen)
-      category               <- Gen.option(formCategoryGen)
+      category               <- formCategoryGen
       draftRetrievalMethod   <- Gen.option(draftRetrievalMethodGen)
       submissionReference    <- Gen.option(FormatExprGen.textExpressionGen)
       destinations           <- DestinationsGen.destinationsGen

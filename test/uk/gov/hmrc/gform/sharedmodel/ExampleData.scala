@@ -325,7 +325,7 @@ trait ExampleFormTemplate {
       _id = formTemplateId,
       formName = formName,
       description = formDescription,
-      formCategory = Some(Default),
+      formCategory = Default,
       submissionReference = None,
       dmsSubmission = dmsSubmission,
       authConfig = authConfig,

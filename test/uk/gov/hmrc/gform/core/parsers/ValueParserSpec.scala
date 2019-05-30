@@ -318,7 +318,7 @@ class ValueParserSpec extends Spec {
     "Insurance Premium Tax Return",
     "description",
     Some(ResearchBanner),
-    Some(Default),
+    Default,
     None,
     None,
     Destinations

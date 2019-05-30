@@ -17,10 +17,11 @@
 package uk.gov.hmrc.gform.formtemplate
 
 import cats.implicits._
-import play.api.libs.json.Reads
+import play.api.libs.json.{ JsObject, Reads }
 import uk.gov.hmrc.gform.core.{ FOpt, Opt, fromOptA }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateRaw }
+import play.api.libs.json._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -31,6 +32,8 @@ trait RequestHandlerAlg[F[_]] {
 class FormTemplatesControllerRequestHandler[F[_]](
   verifyAndSave: FormTemplate => FOpt[Unit],
   save: FormTemplateRaw => FOpt[Unit]) {
+
+  import FormTemplatesControllerRequestHandler._
 
   val futureInterpreter = new RequestHandlerAlg[FOpt] {
     override def handleRequest(templateRaw: FormTemplateRaw): FOpt[Unit] = {
@@ -49,4 +52,22 @@ class FormTemplatesControllerRequestHandler[F[_]](
       _  <- verifyAndSave(ft)
       _  <- save(templateRaw)
     } yield ()
+}
+
+object FormTemplatesControllerRequestHandler {
+  def normaliseJSON(jsonValue: JsValue): JsValue =
+    jsonValue match {
+      case jsonObj: JsObject =>
+        val withFormCategory = ensureFormCategory(jsonObj)
+        val withLang = backwardsCompatibleLanguage(withFormCategory)
+        withLang
+      case _ => jsonValue
+    }
+
+  def backwardsCompatibleLanguage(jsonObj: JsObject): JsObject =
+    if (jsonObj.keys.contains("languages")) jsonObj
+    else jsonObj + ("languages" -> Json.toJson(List("en")))
+  def ensureFormCategory(jsonObj: JsObject): JsObject =
+    if (jsonObj.keys.contains("formCategory")) jsonObj
+    else jsonObj + ("formCategory" -> Json.toJson("default"))
 }
