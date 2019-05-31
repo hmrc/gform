@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import cats.data.NonEmptyList
 import julienrf.json.derived
 import play.api.libs.json._
+import uk.gov.hmrc.gform.formtemplate.FormTemplatesControllerRequestHandler
 import uk.gov.hmrc.gform.sharedmodel.formtemplate
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationTest, Destinations }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
@@ -33,7 +34,7 @@ case class FormTemplate(
   formName: String,
   description: String,
   developmentPhase: Option[DevelopmentPhase],
-  formCategory: Option[FormCategory],
+  formCategory: FormCategory,
   draftRetrievalMethod: Option[DraftRetrievalMethod],
   submissionReference: Option[TextExpression],
   destinations: Destinations,
@@ -61,7 +62,7 @@ object FormTemplate {
     formName: String,
     description: String,
     developmentPhase: Option[DevelopmentPhase],
-    formCategory: Option[FormCategory],
+    formCategory: FormCategory,
     draftRetrievalMethod: Option[DraftRetrievalMethod],
     submissionReference: Option[TextExpression],
     dmsSubmission: DmsSubmission,
@@ -110,10 +111,11 @@ object FormTemplate {
       """One and only one of FormTemplate.{dmsSubmission, destinations} must be defined. FormTemplate.dmsSubmission is deprecated. Prefer FormTemplate.destinations.""")
 
   private val reads = Reads[FormTemplate] { json =>
-    ((json \ "dmsSubmission").toOption, (json \ "destinations").toOption) match {
+    val normalisedJson = FormTemplatesControllerRequestHandler.normaliseJSON(json)
+    ((normalisedJson \ "dmsSubmission").toOption, (normalisedJson \ "destinations").toOption) match {
       case (None, None)       => onlyOneOfDmsSubmissionAndDestinationsMustBeDefined
-      case (None, Some(_))    => readForDestinationsVersion.reads(json)
-      case (Some(_), None)    => readForDeprecatedDmsSubmissionVersion.reads(json).map(_.toNewForm)
+      case (None, Some(_))    => readForDestinationsVersion.reads(normalisedJson)
+      case (Some(_), None)    => readForDeprecatedDmsSubmissionVersion.reads(normalisedJson).map(_.toNewForm)
       case (Some(_), Some(_)) => onlyOneOfDmsSubmissionAndDestinationsMustBeDefined
     }
   }
@@ -125,7 +127,7 @@ object FormTemplate {
     formName: String,
     description: String,
     developmentPhase: Option[DevelopmentPhase] = Some(ResearchBanner),
-    formCategory: Option[FormCategory],
+    formCategory: FormCategory,
     draftRetrievalMethod: Option[DraftRetrievalMethod] = Some(OnePerUser),
     submissionReference: Option[TextExpression],
     dmsSubmission: DmsSubmission,

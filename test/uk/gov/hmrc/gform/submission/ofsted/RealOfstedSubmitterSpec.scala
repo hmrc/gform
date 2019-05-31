@@ -264,7 +264,7 @@ class RealOfstedSubmitterSpec extends Spec {
       "",
       "",
       None,
-      None,
+      Default,
       None,
       None,
       DestinationList(NonEmptyList.one(ReviewApproval(DestinationId("id"), FormComponentId("bar")))),
