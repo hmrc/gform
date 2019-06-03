@@ -18,11 +18,11 @@ package uk.gov.hmrc.gform.sharedmodel.form
 
 import cats.Eq
 import julienrf.json.derived
-import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
+import play.api.libs.json.Reads._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.UserId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, JsonUtils }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{FormTemplateId, JsonUtils}
 case class VisitIndex(visitsIndex: Set[Int]) extends AnyVal
 
 object VisitIndex {
@@ -48,6 +48,9 @@ case class Form(
 )
 
 object Form {
+
+  //TODO: if seed is null then create new seed from the EnvelopeId
+
   private val readVisitIndex: Reads[VisitIndex] =
     (__ \ "visitsIndex").readNullable[List[Int]].map(a => VisitIndex(a.fold(Set.empty[Int])(_.toSet)))
 
@@ -56,6 +59,12 @@ object Form {
       .readNullable[ThirdPartyData]
       .map(_.getOrElse(ThirdPartyData.empty))
       .orElse(JsonUtils.constReads(ThirdPartyData.empty))
+
+  private val readEnvelopeId: Reads[EnvelopeId] =
+    (__ \ "envelopeId").readNullable[EnvelopeId].map(_.getOrElse(EnvelopeId("")))
+
+  private val seedWithFallbackToEnvelopeId: Reads[Seed] =
+    (__ \ "seed").readNullable[Seed].map(_.getOrElse(readEnvelopeId.map(envelopeId => Seed(envelopeId.value))))
 
   private val destinationSubmissionInfoOptionFormat: OFormat[Option[DestinationSubmissionInfo]] =
     new OFormat[Option[DestinationSubmissionInfo]] {
@@ -75,7 +84,7 @@ object Form {
 
   private val reads: Reads[Form] = (
     (FormId.format: Reads[FormId]) and
-      Seed.format and
+      seedWithFallbackToEnvelopeId and
       EnvelopeId.format and
       UserId.oformat and
       FormTemplateId.vformat and
