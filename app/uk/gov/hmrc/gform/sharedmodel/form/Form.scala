@@ -49,8 +49,6 @@ case class Form(
 
 object Form {
 
-  //TODO: if seed is null then create new seed from the EnvelopeId
-
   private val readVisitIndex: Reads[VisitIndex] =
     (__ \ "visitsIndex").readNullable[List[Int]].map(a => VisitIndex(a.fold(Set.empty[Int])(_.toSet)))
 
