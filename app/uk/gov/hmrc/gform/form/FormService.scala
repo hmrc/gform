@@ -52,6 +52,7 @@ class FormService[F[_]: Monad](formPersistence: FormPersistenceAlgebra[F], fileU
       envelopeId <- fileUpload.createEnvelope(formTemplateId, expiryDate)
       form = Form(
         formId,
+        Seed(),
         envelopeId,
         userId,
         formTemplateId,

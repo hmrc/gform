@@ -35,6 +35,7 @@ object VisitIndex {
 
 case class Form(
   _id: FormId,
+  seed: Seed,
   envelopeId: EnvelopeId,
   userId: UserId,
   formTemplateId: FormTemplateId,
@@ -74,6 +75,7 @@ object Form {
 
   private val reads: Reads[Form] = (
     (FormId.format: Reads[FormId]) and
+      Seed.format and
       EnvelopeId.format and
       UserId.oformat and
       FormTemplateId.vformat and
@@ -88,6 +90,7 @@ object Form {
   private val writes: OWrites[Form] = OWrites[Form](
     form =>
       FormId.format.writes(form._id) ++
+        Seed.format.writes(form.seed) ++
         EnvelopeId.format.writes(form.envelopeId) ++
         UserId.oformat.writes(form.userId) ++
         FormTemplateId.oformat.writes(form.formTemplateId) ++

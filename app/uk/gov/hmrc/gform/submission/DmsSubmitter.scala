@@ -20,11 +20,11 @@ import cats.instances.future._
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA, fromOptA }
 import uk.gov.hmrc.gform.fileupload.FileUploadService
 import uk.gov.hmrc.gform.form.FormAlgebra
-import uk.gov.hmrc.gform.formtemplate.{ FormTemplateAlgebra, FormTemplateService }
+import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorService
 import uk.gov.hmrc.gform.sharedmodel.form.{ DestinationSubmissionInfo, Form, Submitted }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FileUpload, FormTemplate }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FileUpload, FormTemplate }
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -82,7 +82,7 @@ class FileUploadServiceDmsSubmitter(
   private def createSubmission(form: Form, customerId: String, formTemplate: FormTemplate) =
     Submission(
       submittedDate = timeProvider.localDateTime(),
-      submissionRef = SubmissionRef(form.envelopeId),
+      submissionRef = SubmissionRef(form.seed.value),
       envelopeId = form.envelopeId,
       _id = form._id,
       noOfAttachments = getNoOfAttachments(form, formTemplate),

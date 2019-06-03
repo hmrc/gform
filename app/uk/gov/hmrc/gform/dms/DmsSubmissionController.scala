@@ -30,7 +30,7 @@ import uk.gov.hmrc.gform.config.AppConfig
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.fileupload.FileUploadService
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorService
-import uk.gov.hmrc.gform.sharedmodel.form.FormId
+import uk.gov.hmrc.gform.sharedmodel.form.{ FormId, Seed }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
 import uk.gov.hmrc.gform.submission._
@@ -89,7 +89,7 @@ class DmsSubmissionController(
       pdfDoc = documentLoader(byteArray)
       pdfSummary = PdfSummary(pdfDoc.getNumberOfPages.toLong, byteArray)
       _ = pdfDoc.close()
-      submissionRef = SubmissionRef(envId)
+      submissionRef = SubmissionRef(Seed().value)
       dmsMetadata = DmsMetaData(formTemplateId, metadata.customerId)
       submission = Submission(
         FormId(metadata.dmsFormId),
