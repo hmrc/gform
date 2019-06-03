@@ -15,7 +15,7 @@ object Dependencies {
     "uk.gov.hmrc" %% "play-reactivemongo" % "6.4.0",
     "com.github.pureconfig" %% "pureconfig" % "0.10.2",
     "uk.gov.hmrc" %% "http-caching-client" % "8.0.0",
-    "uk.gov.hmrc" %% "microservice-bootstrap" % "10.3.0",
+    "uk.gov.hmrc" %% "microservice-bootstrap" % "10.6.0",
     "uk.gov.hmrc" %% "domain" % "5.3.0",
     "com.codecommit" %% "parseback-core" % parsebackVersion,
     "com.codecommit" %% "parseback-cats" % parsebackVersion,
