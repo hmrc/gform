@@ -19,10 +19,9 @@ package uk.gov.hmrc.gform.submission
 import java.math.BigInteger
 import java.security.MessageDigest
 
-import cats.data.State
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
-import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
+import uk.gov.hmrc.gform.sharedmodel.form.Seed
 
 import scala.math.pow
 import scala.util.Random
@@ -41,12 +40,12 @@ object SubmissionRef {
   val vformat: Format[SubmissionRef] =
     ValueClassFormat.vformat("submissionRef", SubmissionRef.apply, x => JsString(x.value))
 
-  def apply(value: EnvelopeId): SubmissionRef = SubmissionRef(getSubmissionReference(value))
+  def apply(seed: Seed): SubmissionRef = SubmissionRef(getSubmissionReference(seed))
 
-  private def getSubmissionReference(envelopeId: EnvelopeId): String =
-    if (!envelopeId.value.isEmpty) {
+  private def getSubmissionReference(seed: Seed): String =
+    if (!seed.value.isEmpty) {
       // As 36^11 (number of combinations of 11 base 36 digits) < 2^63 (number of combinations of 63 base 2 digits) we can get full significance from this digest.
-      val digest = MessageDigest.getInstance("SHA-256").digest(envelopeId.value.getBytes()).take(8)
+      val digest = MessageDigest.getInstance("SHA-256").digest(seed.value.getBytes()).take(8)
       val initialValue = new BigInteger(digest).abs()
       val unformattedString = calculate(initialValue, radix, digits, comb)
       unformattedString.grouped(4).mkString("-").toUpperCase
