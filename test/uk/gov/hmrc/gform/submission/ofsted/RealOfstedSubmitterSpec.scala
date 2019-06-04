@@ -276,8 +276,8 @@ class RealOfstedSubmitterSpec extends Spec {
       "",
       None,
       Nil,
-      AcknowledgementSection(LocalisedString(Map(LangADT.En -> "")), None, None, Nil),
-      DeclarationSection(LocalisedString(Map(LangADT.En     -> "")), None, None, Nil),
+      AcknowledgementSection(toLocalisedString(""), None, None, Nil),
+      DeclarationSection(toLocalisedString(""), None, None, Nil),
       None,
       AvailableLanguages.default
     )

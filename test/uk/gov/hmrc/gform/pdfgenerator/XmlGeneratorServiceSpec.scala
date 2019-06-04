@@ -17,7 +17,6 @@
 package uk.gov.hmrc.gform.pdfgenerator
 
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString }
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.submission.{ SectionFormField, SubmissionRef }
@@ -45,9 +44,6 @@ class XmlGeneratorServiceSpec extends Spec {
       FormField(FormComponentId("4_DOS"), "4_DOS")
     )
     val formData = FormData(formFields)
-
-    def toLocalisedString(string: String) =
-      LocalisedString(Map(LangADT.En -> string))
 
     val sectionFormFields = List(
       SectionFormField(

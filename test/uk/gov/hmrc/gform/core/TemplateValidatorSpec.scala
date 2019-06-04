@@ -21,7 +21,6 @@ import uk.gov.hmrc.gform.formtemplate.FormTemplateValidator
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import cats.data.NonEmptyList
 import org.scalacheck.Gen
-import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString }
 import uk.gov.hmrc.gform.sharedmodel.form.FormField
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.FormComponentGen._
@@ -129,7 +128,6 @@ class TemplateValidatorSpec extends Spec {
     mkFormComponent("nameOfBusiness", Value) ::
       mkFormComponent("startDate", Date(AnyDate, Offset(0), None)) :: Nil
   )
-  private def toLocalsiedString(string: String) = LocalisedString(Map(LangADT.En -> string))
 
   private val sectionWithCheckbox = mkSection(
     "Business details",
@@ -138,7 +136,7 @@ class TemplateValidatorSpec extends Spec {
       "dutyType",
       Choice(
         Checkbox,
-        NonEmptyList(toLocalsiedString("Natural gas"), List(toLocalsiedString("Other gas"))),
+        NonEmptyList(toLocalisedString("Natural gas"), List(toLocalisedString("Other gas"))),
         Vertical,
         List.empty[Int],
         None)) :: Nil
@@ -151,7 +149,7 @@ class TemplateValidatorSpec extends Spec {
       "dutyType",
       Choice(
         Radio,
-        NonEmptyList(toLocalsiedString("Natural gas"), List(toLocalsiedString("Other gas"))),
+        NonEmptyList(toLocalisedString("Natural gas"), List(toLocalisedString("Other gas"))),
         Vertical,
         List.empty[Int],
         None)) :: Nil
@@ -164,7 +162,7 @@ class TemplateValidatorSpec extends Spec {
       "taxType",
       Choice(
         YesNo,
-        NonEmptyList.of(toLocalsiedString("Yes"), toLocalsiedString("No")),
+        NonEmptyList.of(toLocalisedString("Yes"), toLocalisedString("No")),
         Horizontal,
         List.empty[Int],
         None)) :: Nil
@@ -366,7 +364,7 @@ class TemplateValidatorSpec extends Spec {
 
     val newDeclarationSection =
       DeclarationSection(
-        LocalisedString(Map(LangADT.En -> "Declaration")),
+        toLocalisedString("Declaration"),
         None,
         None,
         List(mkFormComponent("declarationFullName", Value)))
@@ -394,11 +392,7 @@ class TemplateValidatorSpec extends Spec {
 
     val formComponent = List(mkFormComponent("fieldInAcknowledgementSections", Value))
     val newAcknowledgementSection =
-      AcknowledgementSection(
-        LocalisedString(Map(LangADT.En -> "ack section with email param field")),
-        None,
-        None,
-        formComponent)
+      AcknowledgementSection(toLocalisedString("ack section with email param field"), None, None, formComponent)
 
     val newEmailParameters = Some(
       NonEmptyList.of(
@@ -684,7 +678,7 @@ class TemplateValidatorSpec extends Spec {
 
   private def mkSection(name: String, formComponents: List[FormComponent]) =
     Section(
-      LocalisedString(Map(LangADT.En -> name)),
+      toLocalisedString(name),
       None,
       None,
       None,
@@ -701,7 +695,7 @@ class TemplateValidatorSpec extends Spec {
     FormComponent(
       FormComponentId(name),
       Text(AnyText, expr),
-      LocalisedString(Map(LangADT.En -> name)),
+      toLocalisedString(name),
       None,
       None,
       None,
@@ -718,7 +712,7 @@ class TemplateValidatorSpec extends Spec {
     FormComponent(
       FormComponentId(name),
       ct,
-      LocalisedString(Map(LangADT.En -> name)),
+      toLocalisedString(name),
       None,
       None,
       None,

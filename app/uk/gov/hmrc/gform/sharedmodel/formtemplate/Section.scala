@@ -95,8 +95,7 @@ case class Section(
                     id = FormComponentId(fieldName),
                     label = LocalisedString(labelRepeatingGroupComponents(fieldInGroup.label.m, i + 1)),
                     shortName =
-                      if (fieldInGroup.shortName.isEmpty) None
-                      else Some(LocalisedString(labelRepeatingGroupComponents(fieldInGroup.shortName.get.m, i + 1)))
+                      fieldInGroup.shortName.map(ls => LocalisedString(labelRepeatingGroupComponents(ls.m, i + 1)))
                   ))
               case false => Nil
             }
@@ -110,9 +109,7 @@ case class Section(
     fieldValues.map { field =>
       field.copy(
         label = LocalisedString(labelRepeatingGroupComponents(field.label.m, 1)),
-        shortName =
-          if (field.shortName.isEmpty) None
-          else Some(LocalisedString(labelRepeatingGroupComponents(field.shortName.get.m, 1)))
+        shortName = field.shortName.map(ls => LocalisedString(labelRepeatingGroupComponents(ls.m, 1)))
       )
     }
 }

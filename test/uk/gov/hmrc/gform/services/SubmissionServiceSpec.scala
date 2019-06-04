@@ -20,7 +20,6 @@ import java.time.{ Clock, LocalDateTime, ZoneId, ZoneOffset }
 
 import cats.data.NonEmptyList
 import uk.gov.hmrc.gform._
-import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString, NotChecked }
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
@@ -48,9 +47,6 @@ class SubmissionServiceSpec extends Spec {
       FormField(FormComponentId("4_DOS"), "4_DOS")
     )
     val formData = FormData(formFields)
-
-    def toLocalisedString(string: String) =
-      LocalisedString(Map(LangADT.En -> string))
 
     val fixedTime = LocalDateTime.of(2018, 3, 2, 0, 0)
     val clock = Clock.fixed(fixedTime.toInstant(ZoneOffset.UTC), ZoneId.systemDefault)

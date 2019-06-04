@@ -18,16 +18,13 @@ package uk.gov.hmrc.gform.services
 
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.formtemplate.RepeatingComponentService
-import uk.gov.hmrc.gform.sharedmodel.{ ExampleData, LangADT, LocalisedString, UserId }
+import uk.gov.hmrc.gform.sharedmodel.ExampleData
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 import scala.collection.immutable.List
 
 class RepeatingComponentServiceSpec extends Spec with ExampleData {
-
-  private def toLocalisedString(string: String) =
-    LocalisedString(Map(LangADT.En -> string))
 
   val testService = RepeatingComponentService
 

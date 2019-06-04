@@ -46,7 +46,7 @@ class FormatValidationSpec extends Spec {
       FormComponent(
         id = FormComponentId(id),
         `type` = Text(ShortText.default, Value),
-        label = LocalisedString(Map(LangADT.En -> label)),
+        label = toLocalisedString(label),
         helpText = None,
         shortName = None,
         validIf = None,
@@ -63,7 +63,7 @@ class FormatValidationSpec extends Spec {
       FormComponent(
         id = FormComponentId(id),
         `type` = UkSortCode(Value),
-        label = LocalisedString(Map(LangADT.En -> label)),
+        label = toLocalisedString(label),
         helpText = None,
         shortName = None,
         validIf = None,
@@ -81,12 +81,11 @@ class FormatValidationSpec extends Spec {
 
   def createTest(format: String, constraint: TextConstraint) = {
     val json: JsValue = makeJson(format)
-    println(json)
     reads.reads(json) shouldBe JsSuccess(
       FormComponent(
         id = FormComponentId(id),
         `type` = Text(constraint, Value),
-        label = LocalisedString(Map(LangADT.En -> label)),
+        label = toLocalisedString(label),
         helpText = None,
         shortName = None,
         validIf = None,

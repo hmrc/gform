@@ -18,20 +18,16 @@ package uk.gov.hmrc.gform.core
 
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString }
 import uk.gov.hmrc.gform.sharedmodel.form.FormField
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyText, _ }
 
 class FormValidatorSpec extends Spec {
 
-  private def toLocalisedString(string: String) =
-    LocalisedString(Map(LangADT.En -> string))
-
   def getMandatoryFieldValue(id: String) =
     FormComponent(
       id = FormComponentId(id),
       `type` = Text(AnyText, Value),
-      label = LocalisedString(Map(LangADT.En -> "")),
+      label = toLocalisedString(""),
       helpText = None,
       None,
       validIf = None,
@@ -46,7 +42,7 @@ class FormValidatorSpec extends Spec {
     FormComponent(
       id = FormComponentId(idString),
       `type` = Address(international = false),
-      label = LocalisedString(Map(LangADT.En -> "")),
+      label = toLocalisedString(""),
       helpText = None,
       shortName = None,
       validIf = None,
