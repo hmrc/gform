@@ -50,7 +50,7 @@ object LangMapMaker {
             case (_, other) => JsError("Expected string, got " + other)
           }
           .map(it => it.toMap)
-      case other => JsError("Expected string, or language pair" + other)
+      case other => JsError("Expected string, or language pair, got " + other)
     }
 
   val langADTMapReads: Reads[Map[LangADT, String]] = Reads.apply[Map[LangADT, String]](convertToLangMap)
