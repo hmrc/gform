@@ -17,16 +17,14 @@
 package uk.gov.hmrc.gform.submission
 
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.{ ExampleData, LangADT, LocalisedString }
+import uk.gov.hmrc.gform.sharedmodel.ExampleData
 import uk.gov.hmrc.gform.sharedmodel.form.FormField
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FileUpload, FormComponent, FormComponentId }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponent, FormComponentId }
 
 import scala.collection.immutable.List
 
 class SectionFormFieldSpec extends Spec with ExampleData {
 
-  private def toLocalisedString(string: String) =
-    LocalisedString(Map(LangADT.En -> string))
   val fileField: (List[FormField], FormComponent) = (List(`formField - facePhoto`), `fieldValue - facePhoto`)
   val noFileField: (List[FormField], FormComponent) =
     (List(FormField(FormComponentId("1"), "")), `fieldValue - facePhoto`)

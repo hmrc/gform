@@ -19,7 +19,6 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import cats.data.NonEmptyList
 import play.api.libs.json.{ JsResult, JsSuccess, Json, Reads }
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.AuthConfigGen
 
 class AuthConfigSpec extends Spec {
@@ -112,7 +111,7 @@ class AuthConfigSpec extends Spec {
             Always,
             RequireEnrolment(
               EnrolmentSection(
-                LocalisedString(Map(LangADT.En -> "t")),
+                toLocalisedString("t"),
                 None,
                 List.empty,
                 NonEmptyList.of(IdentifierRecipe("EtmpRegistrationNumber", FormCtx("eeittReferenceNumber"))),
@@ -156,7 +155,7 @@ class AuthConfigSpec extends Spec {
             Always,
             RequireEnrolment(
               EnrolmentSection(
-                LocalisedString(Map(LangADT.En -> "t")),
+                toLocalisedString("t"),
                 None,
                 List.empty,
                 NonEmptyList.of(IdentifierRecipe("EtmpRegistrationNumber", FormCtx("eeittReferenceNumber"))),

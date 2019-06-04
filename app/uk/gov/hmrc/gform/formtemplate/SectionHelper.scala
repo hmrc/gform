@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
-import uk.gov.hmrc.gform.sharedmodel
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString }
 import uk.gov.hmrc.gform.sharedmodel.form.FormField
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._

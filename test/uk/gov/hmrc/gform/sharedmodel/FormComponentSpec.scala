@@ -23,9 +23,6 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ ShortText, _ }
 
 class FormComponentSpec extends Spec {
 
-  private def toLocalisedString(string: String) =
-    LocalisedString(Map(LangADT.En -> string))
-
   "FieldValue json object" should "parse as Text if it not include 'type' field" in {
     val fieldValue = toFieldValue("""|{
          |  "id": "regNum",

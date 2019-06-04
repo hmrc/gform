@@ -17,10 +17,9 @@
 package uk.gov.hmrc.gform.sharedmodel
 
 import cats.data.NonEmptyList
-import play.api.libs.json.{ Reads, _ }
+import play.api.libs.json._
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.FormComponentGen
 
 class FormComponentSpec2 extends Spec {
 
@@ -44,13 +43,11 @@ class FormComponentSpec2 extends Spec {
         FormComponentId("dutyType"),
         Choice(
           Radio,
-          NonEmptyList(
-            LocalisedString(Map(LangADT.En -> "Natural gas")),
-            List(LocalisedString(Map(LangADT.En -> "Other gas")))),
+          NonEmptyList(toLocalisedString("Natural gas"), List(toLocalisedString("Other gas"))),
           Vertical,
           List.empty[Int],
           None),
-        LocalisedString(Map(LangADT.En -> "Select the tax type")),
+        toLocalisedString("Select the tax type"),
         None,
         None,
         validIf = None,

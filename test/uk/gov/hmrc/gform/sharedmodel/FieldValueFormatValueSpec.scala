@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.gform.sharedmodel
 
-import play.api.libs.json.{ Reads, _ }
+import play.api.libs.json._
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ ShortText, _ }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 class FieldValueFormatValueSpec extends Spec {
 
@@ -33,7 +33,7 @@ class FieldValueFormatValueSpec extends Spec {
       FormComponent(
         FormComponentId("sum"),
         Text(ShortText.default, Add(FormCtx("amountA"), FormCtx("amountB"))),
-        LocalisedString(Map(LangADT.En -> "Label")),
+        toLocalisedString("Label"),
         None,
         None,
         None,
@@ -59,7 +59,7 @@ class FieldValueFormatValueSpec extends Spec {
       FormComponent(
         FormComponentId("constant"),
         Text(ShortText.default, Constant("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_ ,")),
-        LocalisedString(Map(LangADT.En -> "Label")),
+        toLocalisedString("Label"),
         None,
         None,
         None,

@@ -20,12 +20,9 @@ import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 trait SectionGen {
-  def toLocalisedString(string: Option[String]): Option[LocalisedString] = string match {
-    case Some(s) => Some(LocalisedString(Map(LangADT.En -> s)))
-    case _       => None
-  }
-  private def toLocalisedString(string: String) =
-    LocalisedString(Map(LangADT.En -> string))
+  def toLocalisedString(string: Option[String]): Option[LocalisedString] = string.map(s => toLocalisedString(s))
+
+  private def toLocalisedString(string: String) = LocalisedString(Map(LangADT.En -> string))
 
   def verifierRecipeGen: Gen[VerifierRecipe] =
     for {

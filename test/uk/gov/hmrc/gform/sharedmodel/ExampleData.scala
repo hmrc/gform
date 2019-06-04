@@ -64,9 +64,6 @@ trait ExampleFieldId {
 
 trait ExampleFieldValue { dependecies: ExampleFieldId =>
 
-  private def toLocalisedString(string: String) =
-    LocalisedString(Map(LangADT.En -> string))
-
   def `fieldValue - facePhoto` =
     FormComponent(
       `fieldId - facePhoto`,
@@ -242,9 +239,6 @@ trait ExampleValidator {
 
 trait ExampleSection { dependecies: ExampleFieldId with ExampleFieldValue with ExampleValidator =>
 
-  private def toLocalisedString(string: String) =
-    LocalisedString(Map(LangADT.En -> string))
-
   def `section - about you` =
     Section(
       toLocalisedString("About you"),
@@ -297,9 +291,6 @@ trait ExampleSection { dependecies: ExampleFieldId with ExampleFieldValue with E
 
 trait ExampleFormTemplate {
   dependsOn: ExampleAuthConfig with ExampleSection with ExampleFieldId with ExampleFieldValue =>
-
-  private def toLocalisedString(string: String) =
-    LocalisedString(Map(LangADT.En -> string))
 
   def formTemplateId = FormTemplateId("AAA999")
 

@@ -23,8 +23,5 @@ object LabelHelper {
     field.label.copy(m = field.label.m.map { case (lang, message) => (lang, message.replace("$n", index.toString)) })
 
   def buildRepeatingLabel(shortName: Option[LocalisedString], index: Int): Option[LocalisedString] =
-    if (shortName.isDefined) {
-      shortName.map(ls =>
-        ls.copy(m = shortName.get.m.map { case (lang, message) => (lang, message.replace("$n", index.toString)) }))
-    } else None
+    shortName.map(ls => ls.copy(m = ls.m.map { case (lang, message) => (lang, message.replace("$n", index.toString)) }))
 }
