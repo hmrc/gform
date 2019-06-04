@@ -202,7 +202,15 @@ object FormTemplateValidator {
 
   def validateForwardReference(sections: List[Section]): ValidationResult = {
     val fieldNamesIds: Map[FormComponentId, Int] = sections.zipWithIndex.flatMap {
-      case (element, idx) => element.fields.map(_.id -> idx)
+      case (section, idx) =>
+        val standardFields = section.fields.map(_.id -> idx)
+        val revealingChoiceFields = section.fields
+          .map(_.`type`)
+          .collect {
+            case RevealingChoice(options) => options.toList.flatMap(_.revealingFields.map(_.id -> idx))
+          }
+
+        standardFields ::: revealingChoiceFields.flatten
     }.toMap
 
     def boolean(includeIf: BooleanExpr, idx: Int): List[ValidationResult] = includeIf match {
@@ -213,7 +221,7 @@ object FormTemplateValidator {
               fieldNamesIds
                 .get(id)
                 .map(idIdx => (idIdx < idx).validationResult("Forward referencing is not permitted."))
-                .getOrElse(Invalid(s"id named in include if expression does not exist in form ${id.value}")))
+                .getOrElse(Invalid(s"id named in includeIf expression does not exist in form ${id.value}")))
       case Or(left, right)  => boolean(left, idx) ::: boolean(right, idx)
       case And(left, right) => boolean(left, idx) ::: boolean(right, idx)
       case _                => List(Valid)
