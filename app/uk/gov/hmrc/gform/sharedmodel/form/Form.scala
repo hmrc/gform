@@ -22,7 +22,7 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.UserId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{FormTemplateId, JsonUtils}
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, JsonUtils }
 case class VisitIndex(visitsIndex: Set[Int]) extends AnyVal
 
 object VisitIndex {
@@ -58,11 +58,13 @@ object Form {
       .map(_.getOrElse(ThirdPartyData.empty))
       .orElse(JsonUtils.constReads(ThirdPartyData.empty))
 
-  private val readEnvelopeId: Reads[EnvelopeId] =
-    (__ \ "envelopeId").readNullable[EnvelopeId].map(_.getOrElse(EnvelopeId("")))
-
   private val seedWithFallbackToEnvelopeId: Reads[Seed] =
-    (__ \ "seed").readNullable[Seed].map(_.getOrElse(readEnvelopeId.map(envelopeId => Seed(envelopeId.value))))
+    (__ \ "seed").read[Seed].orElse {
+      (__ \ "envelopeId").readNullable[EnvelopeId].map {
+        case Some(envelopeId) => Seed(envelopeId.value)
+        case None             => Seed("")
+      }
+    }
 
   private val destinationSubmissionInfoOptionFormat: OFormat[Option[DestinationSubmissionInfo]] =
     new OFormat[Option[DestinationSubmissionInfo]] {
