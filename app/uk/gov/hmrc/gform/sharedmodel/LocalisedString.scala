@@ -35,7 +35,8 @@ object LocalisedString {
 
   val templateReads: Reads[LocalisedString] = LangMapMaker.langADTMapReads.map(LocalisedString.apply)
 
-  implicit val format: Format[LocalisedString] = FormatLocalisedStringWithTemplateReadFallback(basicFormat, templateReads)
+  implicit val format: Format[LocalisedString] =
+    FormatLocalisedStringWithTemplateReadFallback(basicFormat, templateReads)
 }
 
 object FormatLocalisedStringWithTemplateReadFallback {

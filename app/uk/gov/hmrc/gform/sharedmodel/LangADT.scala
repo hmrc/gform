@@ -37,7 +37,7 @@ object LangADT {
     case _    => En
   }
 
-  private def convertToLang(jsValue: JsValue): JsResult[LangADT] = {
+  private def convertToLang(jsValue: JsValue): JsResult[LangADT] =
     jsValue match {
       case JsString(message) =>
         message match {
@@ -47,7 +47,6 @@ object LangADT {
         }
       case _ => JsError("Expected Lang, got " + jsValue)
     }
-  }
   implicit val langADTReads: Reads[LangADT] = Reads.apply[LangADT](convertToLang)
   implicit val format: OFormat[LangADT] = OFormatWithTemplateReadFallback(langADTReads)
 

@@ -67,7 +67,8 @@ object SectionHelper {
                   fieldInGroup.copy(
                     id = FormComponentId(fieldName),
                     label = LocalisedString(labelRepeatingGroupComponents(fieldInGroup.label.m, i + 1)),
-                    shortName = fieldInGroup.shortName.map(ls=> LocalisedString(labelRepeatingGroupComponents(ls.m,i+1)))
+                    shortName =
+                      fieldInGroup.shortName.map(ls => LocalisedString(labelRepeatingGroupComponents(ls.m, i + 1)))
                   ))
               case false => Nil
             }
@@ -82,7 +83,7 @@ object SectionHelper {
       {
         field.copy(
           label = LocalisedString(labelRepeatingGroupComponents(field.label.m, 1)),
-          shortName = field.shortName.map(ls=> LocalisedString(labelRepeatingGroupComponents(ls.m,1)))
+          shortName = field.shortName.map(ls => LocalisedString(labelRepeatingGroupComponents(ls.m, 1)))
         )
       }
     }

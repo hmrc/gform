@@ -73,7 +73,7 @@ trait ComponentTypeGen {
       choice   <- PrimitiveGen.nonEmptyAlphaNumStrGen
       fields   <- PrimitiveGen.zeroOrMoreGen(FormComponentGen.formComponentGen(3))
       selected <- PrimitiveGen.booleanGen
-    } yield RevealingChoiceElement(choice, fields, selected)
+    } yield RevealingChoiceElement(toLocalisedString(choice), fields, selected)
 
   def revealingChoiceGen: Gen[RevealingChoice] =
     for {
