@@ -38,7 +38,6 @@ object LangADT {
   }
 
   private def convertToLang(jsValue: JsValue): JsResult[LangADT] = {
-    println("jsValue " + jsValue)
     jsValue match {
       case JsString(message) =>
         message match {

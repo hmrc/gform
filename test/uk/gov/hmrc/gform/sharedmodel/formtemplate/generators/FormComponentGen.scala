@@ -37,16 +37,13 @@ trait FormComponentGen {
   def helpTextGen: Gen[String] = PrimitiveGen.nonEmptyAlphaNumStrGen
   def shortNameGen: Gen[String] = PrimitiveGen.nonEmptyAlphaNumStrGen
   def errorMessageGen: Gen[String] = PrimitiveGen.nonEmptyAlphaNumStrGen
-  private def toLocalisedString(string: Option[String]): Option[LocalisedString] = string match {
-    case Some(s) => Some(toLocalisedString(s))
-    case _       => None
-  }
+  private def toLocalisedString(string: Option[String]): Option[LocalisedString] = string.map(s=>toLocalisedString(s))
   private def toLocalisedString(string: String): LocalisedString = LocalisedString(Map(LangADT.En -> string))
 
   def formComponentGen(maxDepth: Int = 3): Gen[FormComponent] =
     for {
       id                <- formComponentIdGen
-      tpe               <- ComponentTypeGen.componentTypeGen(maxDepth)
+      tpe               <- ComponentTypeGensec.componentTypeGen(maxDepth)
       label             <- labelGen
       helpText          <- Gen.option(helpTextGen)
       shortName         <- Gen.option(shortNameGen)
