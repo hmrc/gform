@@ -23,7 +23,6 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils
 
 case class LocalisedString(m: Map[LangADT, String]) {
   def value(implicit l: LangADT): String = m.getOrElse(l, m.getOrElse(LangADT.En, ""))
-  def values: List[String] = m.values.toList
 }
 
 object LocalisedString {
@@ -36,10 +35,10 @@ object LocalisedString {
 
   val templateReads: Reads[LocalisedString] = LangMapMaker.langADTMapReads.map(LocalisedString.apply)
 
-  implicit val format: Format[LocalisedString] = FormatWithTemplateReadFallback2(basicFormat, templateReads)
+  implicit val format: Format[LocalisedString] = FormatLocalisedStringWithTemplateReadFallback(basicFormat, templateReads)
 }
 
-object FormatWithTemplateReadFallback2 {
+object FormatLocalisedStringWithTemplateReadFallback {
   def apply[A](basicReads: Format[A], templateReads: Reads[A]): Format[A] = {
     val reads = (basicReads: Reads[A]) | templateReads
     Format(reads, basicReads)
