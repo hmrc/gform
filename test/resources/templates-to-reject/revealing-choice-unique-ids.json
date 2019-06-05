@@ -11,7 +11,7 @@
       "title": "Page",
       "fields": [
         {
-          "id": "differentName",
+          "id": "companyName",
           "type": "revealingChoice",
           "label": "Does your company trade under a different name?",
           "choices": ["Yes"],
@@ -26,7 +26,7 @@
           ]
         },
 	{
-          "id": "sameName",
+          "id": "companyName",
           "type": "revealingChoice",
           "label": "Does your company trade under a same name?",
           "choices": ["Yes"],

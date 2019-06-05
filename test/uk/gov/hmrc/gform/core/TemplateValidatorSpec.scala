@@ -169,168 +169,6 @@ class TemplateValidatorSpec extends Spec {
         None)) :: Nil
   )
 
-  "TemplateValidator.getMatchingSection" should "find matching section containing address component" in {
-
-    val formFields = List(
-      FormField(FormComponentId("nameOfBusiness"), "Apple inc."),
-      FormField(FormComponentId("businessAddress-street1"), "street1"),
-      FormField(FormComponentId("businessAddress-street2"), "street2"),
-      FormField(FormComponentId("businessAddress-street3"), "street3"),
-      FormField(FormComponentId("businessAddress-street4"), "street4"),
-      FormField(FormComponentId("businessAddress-postcode"), "postcode"),
-      FormField(FormComponentId("businessAddress-country"), "country")
-    )
-    val sections = List(businessDetailsSection)
-    val res = FormTemplateValidator.getMatchingSection(formFields, sections)
-
-    res should be('right)
-  }
-
-  it should "succeed to find matching section containing address component when optional fields are not present" in {
-
-    val formFields = List(
-      FormField(FormComponentId("nameOfBusiness"), "Apple inc."),
-      FormField(FormComponentId("businessAddress-street1"), "street1"),
-      FormField(FormComponentId("businessAddress-postcode"), "postcode")
-    )
-    val sections = List(businessDetailsSection)
-    val res = FormTemplateValidator.getMatchingSection(formFields, sections)
-
-    res should be('right)
-  }
-
-  it should "fail to find matching section containing address component when mandatory fields are not present" in {
-
-    val formFields = List(
-      FormField(FormComponentId("nameOfBusiness"), "Apple inc."),
-      FormField(FormComponentId("businessAddress.town"), "town"),
-      FormField(FormComponentId("businessAddress.county"), "county"),
-      FormField(FormComponentId("businessAddress.postcode"), "postcode")
-    )
-    val sections = List(businessDetailsSection)
-    val res = FormTemplateValidator.getMatchingSection(formFields, sections)
-
-    res should be('left)
-  }
-
-  it should "fail to find matching section containing address component when field not in form template is present" in {
-
-    val formFields = List(
-      FormField(FormComponentId("nameOfBusiness"), "Apple inc."),
-      FormField(FormComponentId("businessAddress.street1"), "street1"),
-      FormField(FormComponentId("businessAddress.town"), "town"),
-      FormField(FormComponentId("businessAddress.county"), "county"),
-      FormField(FormComponentId("businessAddress.postcode"), "postcode"),
-      FormField(FormComponentId("attacker.injected.field"), "); drop all tables;")
-    )
-    val sections = List(businessDetailsSection)
-    val res = FormTemplateValidator.getMatchingSection(formFields, sections)
-
-    res should be('left)
-  }
-
-  it should "find matching section containing date component" in {
-
-    val formFields = List(
-      FormField(FormComponentId("nameOfBusiness"), "Apple inc."),
-      FormField(FormComponentId("startDate-day"), "1"),
-      FormField(FormComponentId("startDate-month"), "12"),
-      FormField(FormComponentId("startDate-year"), "2000")
-    )
-    val sections = List(sectionWithDate)
-    val res = FormTemplateValidator.getMatchingSection(formFields, sections)
-
-    res should be('right)
-  }
-
-  it should "fail to find matching section containing date component when mandatory fields are not present" in {
-
-    val formFields = List(
-      FormField(FormComponentId("nameOfBusiness"), "Apple inc."),
-      FormField(FormComponentId("startDate.month"), "12"),
-      FormField(FormComponentId("startDate.year"), "2000")
-    )
-    val sections = List(sectionWithDate)
-    val res = FormTemplateValidator.getMatchingSection(formFields, sections)
-
-    res should be('left)
-  }
-
-  it should "fail to find matching section containing date component when field not in form template is present" in {
-
-    val formFields = List(
-      FormField(FormComponentId("nameOfBusiness"), "Apple inc."),
-      FormField(FormComponentId("startDate.day"), "1"),
-      FormField(FormComponentId("startDate.month"), "12"),
-      FormField(FormComponentId("startDate.year"), "2000"),
-      FormField(FormComponentId("attacker.injected.field"), "); drop all tables;")
-    )
-    val sections = List(sectionWithDate)
-    val res = FormTemplateValidator.getMatchingSection(formFields, sections)
-
-    res should be('left)
-  }
-
-  it should "succeed to find matching section containing only text field which is not mandatory" in {
-
-    val section = mkSection(
-      "Business details",
-      mkFormComponent("nameOfBusiness", Value).isNotMandatory :: Nil
-    )
-
-    val formFields = List() // Nothing submitted
-
-    val sections = List(section)
-    val res = FormTemplateValidator.getMatchingSection(formFields, sections)
-
-    res should be('right)
-  }
-
-  it should "fail to find matching section containing only text field which is mandatory" in {
-
-    val section = mkSection(
-      "Business details",
-      mkFormComponent("nameOfBusiness", Value).isMandatory :: Nil
-    )
-
-    val formFields = List() // Nothing submittedForm
-
-    val sections = List(section)
-    val res = FormTemplateValidator.getMatchingSection(formFields, sections)
-
-    res should be('left)
-  }
-
-  it should "find matching section containing Checkbox component" in {
-
-    val formFields =
-      List(FormField(FormComponentId("nameOfBusiness"), "Apple inc."), FormField(FormComponentId("dutyType"), "0,1"))
-    val sections = List(sectionWithCheckbox)
-    val res = FormTemplateValidator.getMatchingSection(formFields, sections)
-
-    res should be('right)
-  }
-
-  it should "find matching section containing Radio component" in {
-
-    val formFields =
-      List(FormField(FormComponentId("nameOfBusiness"), "Apple inc."), FormField(FormComponentId("dutyType"), "0"))
-    val sections = List(sectionWithRadio)
-    val res = FormTemplateValidator.getMatchingSection(formFields, sections)
-
-    res should be('right)
-  }
-
-  it should "find matching section containing YesNo component" in {
-
-    val formFields =
-      List(FormField(FormComponentId("nameOfBusiness"), "Apple inc."), FormField(FormComponentId("taxType"), "0"))
-    val sections = List(sectionWithYesNo)
-    val res = FormTemplateValidator.getMatchingSection(formFields, sections)
-
-    res should be('right)
-  }
-
   "TemplateValidator.validateDependencyGraph" should "detect cycle in graph" in {
     val sections =
       mkSection("page 1", mkFormComponent("a", FormCtx("b")) :: mkFormComponent("b", FormCtx("a")) :: Nil) :: Nil
@@ -657,6 +495,50 @@ class TemplateValidatorSpec extends Spec {
     val res = FormTemplateValidator.validateDates(newFormTemplate)
     res should be(Invalid("java.time.DateTimeException: Invalid date 'FEBRUARY 30'"))
 
+  }
+
+  "FormTemplateValidator.validateForwardReference" should "detect invalid references/forward references in a Boolean Expression" in {
+    val formComponentsA = List(mkFormComponent("fieldA", Value))
+    val formComponentsB = List(mkFormComponent("fieldB", Value))
+    val baseSectionA = mkSection("sectionA", formComponentsA)
+    val baseSectionB = mkSection("sectionB", formComponentsB)
+    val constant = Constant("c")
+    val forwardRef = FormCtx("fieldB")
+    val invalidRef = FormCtx("a")
+    val forwardReferenceError = Invalid("id 'fieldB' named in includeIf is forward reference, which is not permitted")
+    val invalidReferenceError = Invalid("id 'a' named in includeIf expression does not exist in a form")
+    val table =
+      Table(
+        // format: off
+        ("booleanExpr",                             "expected"),
+        (Equals              (forwardRef, constant), forwardReferenceError),
+        (NotEquals           (forwardRef, constant), forwardReferenceError),
+        (GreaterThan         (forwardRef, constant), forwardReferenceError),
+        (GreaterThanOrEquals (forwardRef, constant), forwardReferenceError),
+        (LessThan            (forwardRef, constant), forwardReferenceError),
+        (LessThanOrEquals    (forwardRef, constant), forwardReferenceError),
+        (Not(Equals(forwardRef, constant)),          forwardReferenceError),
+        (And(Equals(forwardRef, constant), IsTrue),  forwardReferenceError),
+        (Or (Equals(forwardRef, constant), IsTrue),  forwardReferenceError),
+        (Equals              (invalidRef, constant), invalidReferenceError),
+        (NotEquals           (invalidRef, constant), invalidReferenceError),
+        (GreaterThan         (invalidRef, constant), invalidReferenceError),
+        (GreaterThanOrEquals (invalidRef, constant), invalidReferenceError),
+        (LessThan            (invalidRef, constant), invalidReferenceError),
+        (LessThanOrEquals    (invalidRef, constant), invalidReferenceError),
+        (Not(Equals(invalidRef, constant)),          invalidReferenceError),
+        (And(Equals(invalidRef, constant), IsTrue),  invalidReferenceError),
+        (Or (Equals(invalidRef, constant), IsTrue),  invalidReferenceError),
+        (IsTrue,  Valid),
+        (IsFalse, Valid)
+        // format: on
+      )
+    forAll(table) {
+      case (booleanExpr, expected) =>
+        val sectionA = baseSectionA.copy(includeIf = Some(IncludeIf(booleanExpr)))
+        val res = FormTemplateValidator.validateForwardReference(sectionA :: baseSectionB :: Nil)
+        res shouldBe expected
+    }
   }
 
   private def mkDate(
