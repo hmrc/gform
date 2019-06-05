@@ -42,16 +42,26 @@ object FormTemplateValidator {
     if (languageList.languages.contains(LangADT.En)) Valid
     else Invalid("languages must contain en")
 
+  private def indexedFields(sections: List[Section]): List[(FormComponentId, Int)] =
+    sections.zipWithIndex.flatMap {
+      case (section, idx) =>
+        val standardFields = section.fields.map(_.id -> idx)
+        val subFields = section.fields
+          .map(_.`type`)
+          .collect {
+            case Group(fields, _, _, _, _, _) => fields.map(_.id -> idx)
+            case RevealingChoice(options)     => options.toList.flatMap(_.revealingFields.map(_.id -> idx))
+          }
+
+        standardFields ::: subFields.flatten
+    }
+
   def someFieldsAreDefinedMoreThanOnce(duplicates: Set[FormComponentId]) =
     s"Some FieldIds are defined more than once: ${duplicates.toList.sortBy(_.value).map(_.value)}"
 
   def validateUniqueFields(sectionsList: List[Section]): ValidationResult = {
-    val fieldIds = sectionsList.flatMap(_.fields.flatMap(field =>
-      field.`type` match {
-        case group: Group             => group.fields.map(_.id) ::: List(field.id)
-        case RevealingChoice(options) => options.toList.flatMap(_.revealingFields).map(_.id)
-        case _                        => List(field.id)
-    }))
+    val fieldIds: List[FormComponentId] = indexedFields(sectionsList).map(_._1)
+
     val duplicates = fieldIds.groupBy(identity).collect { case (fId, List(_, _, _*)) => fId }.toSet
     duplicates.isEmpty.validationResult(someFieldsAreDefinedMoreThanOnce(duplicates))
   }
@@ -102,41 +112,6 @@ object FormTemplateValidator {
           case (_, false)                => (mandatoryAcc, optionalAcc + field.id)
         }
     }
-
-  /**
-    * Tries to find section in form template corresponding to submitted data.
-    *
-    * Section is determined by these rules:
-    * - all mandatory fields from the section must be present in submission
-    * - optional fields from section don't need to be present in submission
-    * - presence of any other field than those from form template is resulting in failed location of a section
-    */
-  def getMatchingSection(formFields: Seq[FormField], sections: Seq[Section]): Opt[Section] = {
-    val formFieldIds: Set[FormComponentId] = formFields.map(_.id).toSet
-    val sectionOpt: Option[Section] = sections.find { section =>
-      val (mandatorySectionIds, optionalSectionIds) = getMandatoryAndOptionalFields(section)
-
-      val missingMandatoryFields = mandatorySectionIds diff formFieldIds
-
-      val optionalFieldsFromSubmission =
-        RepeatingComponentService
-          .discardRepeatingFields(formFieldIds diff mandatorySectionIds, mandatorySectionIds, optionalSectionIds)
-
-      val fieldWhichAreNotFromFormTemplate = optionalFieldsFromSubmission diff optionalSectionIds
-
-      missingMandatoryFields.isEmpty && fieldWhichAreNotFromFormTemplate.isEmpty
-    }
-
-    sectionOpt match {
-      case Some(section) => Right(section)
-      case None =>
-        val sectionsForPrint = sections.map(_.fields.map(_.id))
-
-        Left(UnexpectedState(s"""|Cannot find a section corresponding to the formFields
-                                 |FormFields: $formFieldIds
-                                 |Sections: $sectionsForPrint""".stripMargin))
-    }
-  }
 
   val userContextComponentType: List[FormComponent] => List[FormComponent] =
     enrolledIdentifierComponents =>
@@ -206,52 +181,41 @@ object FormTemplateValidator {
   }
 
   def validateForwardReference(sections: List[Section]): ValidationResult = {
-    val fieldNamesIds: Map[FormComponentId, Int] = sections.zipWithIndex.flatMap {
-      case (section, idx) =>
-        val standardFields = section.fields.map(_.id -> idx)
-        val revealingChoiceFields = section.fields
-          .map(_.`type`)
-          .collect {
-            case RevealingChoice(options) => options.toList.flatMap(_.revealingFields.map(_.id -> idx))
-          }
+    val fieldNamesIds: Map[FormComponentId, Int] = indexedFields(sections).toMap
 
-        standardFields ::: revealingChoiceFields.flatten
-    }.toMap
+    def validateExprs(left: Expr, right: Expr, idx: Int): List[ValidationResult] =
+      List(left, right)
+        .flatMap(extractFcIds)
+        .map(
+          id =>
+            fieldNamesIds
+              .get(id)
+              .map(idIdx =>
+                (idIdx < idx).validationResult(
+                  s"id '${id.value}' named in includeIf is forward reference, which is not permitted"))
+              .getOrElse(Invalid(s"id '${id.value}' named in includeIf expression does not exist in a form")))
 
     def boolean(includeIf: BooleanExpr, idx: Int): List[ValidationResult] = includeIf match {
-      case Equals(left, right) =>
-        (evalExpr(left) ::: evalExpr(right))
-          .map(
-            id =>
-              fieldNamesIds
-                .get(id)
-                .map(idIdx => (idIdx < idx).validationResult("Forward referencing is not permitted."))
-                .getOrElse(Invalid(s"id named in includeIf expression does not exist in form ${id.value}")))
-      case Or(left, right)  => boolean(left, idx) ::: boolean(right, idx)
-      case And(left, right) => boolean(left, idx) ::: boolean(right, idx)
-      case _                => List(Valid)
+      case Equals(left, right)              => validateExprs(left, right, idx)
+      case NotEquals(left, right)           => validateExprs(left, right, idx)
+      case GreaterThan(left, right)         => validateExprs(left, right, idx)
+      case GreaterThanOrEquals(left, right) => validateExprs(left, right, idx)
+      case LessThan(left, right)            => validateExprs(left, right, idx)
+      case LessThanOrEquals(left, right)    => validateExprs(left, right, idx)
+      case Not(e)                           => boolean(e, idx)
+      case Or(left, right)                  => boolean(left, idx) ::: boolean(right, idx)
+      case And(left, right)                 => boolean(left, idx) ::: boolean(right, idx)
+      case IsFalse | IsTrue                 => List(Valid)
     }
 
-    Monoid[ValidationResult].combineAll(
-      sections.zipWithIndex
-        .map(section => section._1.includeIf -> section._2)
-        .collect {
-          case (Some(element), idx) => element.expr -> idx
-        }
-        .flatMap(elements => boolean(elements._1, elements._2)))
+    Monoid[ValidationResult]
+      .combineAll(sections.zipWithIndex.collect {
+        case (Section(_, _, _, _, Some(includeIf), _, _, _, _, _, _), idx) => boolean(includeIf.expr, idx)
+      }.flatten)
   }
 
   def validate(expr: Expr, sections: List[Section]): ValidationResult = {
-    val fieldNamesIds: List[FormComponentId] = sections
-      .flatMap(_.fields.map(_.id)) ::: sections
-      .flatMap(
-        _.fields
-          .map(_.`type`)
-          .collect {
-            case Group(fields, _, _, _, _, _) => fields.map(_.id)
-            case RevealingChoice(options)     => options.toList.flatMap(_.revealingFields.map(_.id))
-          })
-      .flatten
+    val fieldNamesIds: List[FormComponentId] = indexedFields(sections).map(_._1)
 
     def checkFields(field1: Expr, field2: Expr): ValidationResult = {
       val checkField1 = validate(field1, sections)
@@ -279,26 +243,17 @@ object FormTemplateValidator {
     }
   }
 
-  private def extractFieldIds(fields: List[FormComponent]): List[FormComponentId] = fields.flatMap(extractFieldIds)
-
-  private def extractFieldIds(field: FormComponent): List[FormComponentId] = field.`type` match {
-    case group: Group => group.fields.map(_.id)
-    case _            => List(field.id)
-  }
-
   def validateEmailParameter(formTemplate: FormTemplate): ValidationResult =
     formTemplate.emailParameters.fold[ValidationResult](Valid) { emailParams =>
-      val ids = extractFieldIds(formTemplate.sections.flatMap(_.fields))
+      val ids = indexedFields(formTemplate.sections).map(_._1)
       emailParams
         .collect {
-          case parameter @ EmailParameter(_, value: FormCtx) if !ids.contains(value.toFieldId) =>
-            (parameter.emailTemplateVariable, value.toFieldId)
+          case EmailParameter(_, value: FormCtx) if !ids.contains(value.toFieldId) => value.toFieldId
         } match {
         case Nil => Valid
         case invalidFields =>
-          Invalid(s"The following email parameters are not fields in the form template's sections: ${invalidFields
-            .map { case (_, formComponentId) => formComponentId }
-            .mkString(", ")}")
+          Invalid(
+            s"The following email parameters are not fields in the form template's sections: ${invalidFields.mkString(", ")}")
       }
     }
 
@@ -323,11 +278,11 @@ object FormTemplateValidator {
       case Success(_)       => ""
     }
 
-  private def evalExpr(expr: Expr): List[FormComponentId] = expr match {
-    case Add(left, right)         => evalExpr(left) ::: evalExpr(right)
-    case Subtraction(left, right) => evalExpr(left) ::: evalExpr(right)
-    case Multiply(left, right)    => evalExpr(left) ::: evalExpr(right)
-    case Sum(field1)              => evalExpr(field1)
+  private def extractFcIds(expr: Expr): List[FormComponentId] = expr match {
+    case Add(left, right)         => extractFcIds(left) ::: extractFcIds(right)
+    case Subtraction(left, right) => extractFcIds(left) ::: extractFcIds(right)
+    case Multiply(left, right)    => extractFcIds(left) ::: extractFcIds(right)
+    case Sum(field1)              => extractFcIds(field1)
     case id: FormCtx              => List(id.toFieldId)
     case _                        => Nil
   }
