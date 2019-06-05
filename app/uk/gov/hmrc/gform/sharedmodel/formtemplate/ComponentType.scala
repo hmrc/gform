@@ -169,8 +169,8 @@ case class Group(
   orientation: Orientation,
   repeatsMax: Option[Int] = None,
   repeatsMin: Option[Int] = None,
-  repeatLabel: Option[String] = None,
-  repeatAddAnotherText: Option[String] = None)
+  repeatLabel: Option[LocalisedString] = None,
+  repeatAddAnotherText: Option[LocalisedString] = None)
     extends ComponentType
 
 case class InformationMessage(infoType: InfoType, infoText: LocalisedString) extends ComponentType

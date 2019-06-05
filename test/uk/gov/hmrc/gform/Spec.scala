@@ -33,8 +33,10 @@ trait Spec
 
   implicit lazy val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
-  def toLocalisedString(string: String) =
+  def toLocalisedString(string: String): LocalisedString =
     LocalisedString(Map(LangADT.En -> string))
+  def toLocalisedString(string: Option[String]): Option[LocalisedString] =
+    string.map(s => toLocalisedString(s))
 }
 
 trait JsResultMatcher { self: Spec =>

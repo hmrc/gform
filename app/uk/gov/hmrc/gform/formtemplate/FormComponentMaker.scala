@@ -83,8 +83,8 @@ class FormComponentMaker(json: JsValue) {
   lazy val shortName: Option[LocalisedString] = (json \ "shortName").asOpt[LocalisedString]
   lazy val optMaybeRepeatsMax: Opt[Option[Int]] = toOpt((json \ "repeatsMax").validateOpt[Int])
   lazy val optMaybeRepeatsMin: Opt[Option[Int]] = toOpt((json \ "repeatsMin").validateOpt[Int])
-  lazy val repeatLabel: Option[String] = (json \ "repeatLabel").asOpt[String]
-  lazy val repeatAddAnotherText: Option[String] = (json \ "repeatAddAnotherText").asOpt[String]
+  lazy val repeatLabel: Option[LocalisedString] = (json \ "repeatLabel").asOpt[LocalisedString]
+  lazy val repeatAddAnotherText: Option[LocalisedString] = (json \ "repeatAddAnotherText").asOpt[LocalisedString]
 
   def optFieldValue(): Opt[FormComponent] =
     for {

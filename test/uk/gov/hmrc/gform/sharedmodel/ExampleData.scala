@@ -169,7 +169,7 @@ trait ExampleFieldValue { dependecies: ExampleFieldId =>
   def `fieldValue - info` =
     FormComponent(
       `fieldId - businessName`,
-      InformationMessage(NoFormat, "some text"),
+      InformationMessage(NoFormat, toLocalisedString("some text")),
       toLocalisedString("someLabel"),
       None,
       None,

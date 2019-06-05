@@ -24,7 +24,13 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 trait ComponentTypeGen {
   def listToLocalisedString(stringList: NonEmptyList[String]): NonEmptyList[LocalisedString] =
     stringList.map(s => toLocalisedString(s))
-  def toLocalisedString(string: String): LocalisedString = LocalisedString(Map(LangADT.En -> string))
+
+  def toLocalisedString(string: String): LocalisedString =
+    LocalisedString(Map(LangADT.En -> string))
+
+  def toOptLocalisedString(optionalString: Option[String]): Option[LocalisedString] =
+    optionalString.map(s => toLocalisedString(s))
+
   def optListToLocalisedString(optionalStringList: Option[List[String]]): Option[List[LocalisedString]] =
     optionalStringList.map(stringList => stringList.map(string => toLocalisedString(string)))
 
@@ -95,7 +101,14 @@ trait ComponentTypeGen {
       repeatsMin           <- Gen.option(Gen.posNum[Int])
       repeatLabel          <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
       repeatAddAnotherText <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
-    } yield Group(fields.toList, orientation, repeatsMax, repeatsMin, repeatLabel, repeatAddAnotherText)
+    } yield
+      Group(
+        fields.toList,
+        orientation,
+        repeatsMax,
+        repeatsMin,
+        toOptLocalisedString(repeatLabel),
+        toOptLocalisedString(repeatAddAnotherText))
 
   def infoTypeGen: Gen[InfoType] = Gen.oneOf(StandardInfo, LongInfo, ImportantInfo, BannerInfo, NoFormat)
 

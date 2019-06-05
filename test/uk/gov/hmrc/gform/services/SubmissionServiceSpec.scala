@@ -85,8 +85,8 @@ class SubmissionServiceSpec extends Spec {
       orientation = Horizontal,
       repeatsMax = Some(2),
       repeatsMin = Some(1),
-      repeatLabel = Some("repeat label"),
-      repeatAddAnotherText = Some("add group button label")
+      repeatLabel = Some(toLocalisedString("repeat label")),
+      repeatAddAnotherText = Some(toLocalisedString("add group button label"))
     )
 
     val groupFieldValue = FormComponent(

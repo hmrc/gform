@@ -75,8 +75,8 @@ class JsonParseTestGroup extends Spec {
           Horizontal,
           Some(5),
           Some(1),
-          Some("repeatLabel"),
-          Some("repeatAddAnotherText")
+          Some(toLocalisedString("repeatLabel")),
+          Some(toLocalisedString("repeatAddAnotherText"))
         ),
         toLocalisedString("glabel"),
         None,
@@ -145,8 +145,8 @@ class JsonParseTestGroup extends Spec {
           Horizontal,
           Some(5),
           Some(0),
-          Some("repeatLabel"),
-          Some("repeatAddAnotherText")
+          Some(toLocalisedString("repeatLabel")),
+          Some(toLocalisedString("repeatAddAnotherText"))
         ),
         toLocalisedString("glabel"),
         None,

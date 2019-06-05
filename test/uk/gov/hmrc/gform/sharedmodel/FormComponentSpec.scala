@@ -1142,7 +1142,7 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("standardInfoFieldID"),
-        InformationMessage(StandardInfo, "This is a sample text for a standard info field"),
+        InformationMessage(StandardInfo, toLocalisedString("This is a sample text for a standard info field")),
         toLocalisedString("Label -- standard info field"),
         None,
         None,
@@ -1170,7 +1170,7 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("standardInfoFieldID"),
-        InformationMessage(StandardInfo, "This is a sample text for a standard info field"),
+        InformationMessage(StandardInfo, toLocalisedString("This is a sample text for a standard info field")),
         toLocalisedString("Label -- standard info field"),
         None,
         None,
@@ -1199,7 +1199,7 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("standardInfoFieldID"),
-        InformationMessage(StandardInfo, "This is a sample text for a standard info field"),
+        InformationMessage(StandardInfo, toLocalisedString("This is a sample text for a standard info field")),
         toLocalisedString("Label -- standard info field"),
         None,
         None,
@@ -1227,7 +1227,7 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("fieldID"),
-        InformationMessage(LongInfo, "This is a sample text for an info field"),
+        InformationMessage(LongInfo, toLocalisedString("This is a sample text for an info field")),
         toLocalisedString("Label -- info field"),
         None,
         None,
@@ -1255,7 +1255,7 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("fieldID"),
-        InformationMessage(ImportantInfo, "This is a sample text for an info field"),
+        InformationMessage(ImportantInfo, toLocalisedString("This is a sample text for an info field")),
         toLocalisedString("Label -- info field"),
         None,
         None,
@@ -1283,7 +1283,7 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("fieldID"),
-        InformationMessage(BannerInfo, "This is a sample text for an info field"),
+        InformationMessage(BannerInfo, toLocalisedString("This is a sample text for an info field")),
         toLocalisedString("Label -- info field"),
         None,
         None,
@@ -1310,7 +1310,7 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("fieldID"),
-        InformationMessage(NoFormat, "This is a sample text for an info field"),
+        InformationMessage(NoFormat, toLocalisedString("This is a sample text for an info field")),
         toLocalisedString("Label -- info field"),
         None,
         None,
