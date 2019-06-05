@@ -173,7 +173,7 @@ case class Group(
   repeatAddAnotherText: Option[String] = None)
     extends ComponentType
 
-case class InformationMessage(infoType: InfoType, infoText: String) extends ComponentType
+case class InformationMessage(infoType: InfoType, infoText: LocalisedString) extends ComponentType
 
 case class FileUpload() extends ComponentType
 

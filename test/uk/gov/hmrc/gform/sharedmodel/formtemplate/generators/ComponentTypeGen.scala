@@ -103,7 +103,7 @@ trait ComponentTypeGen {
     for {
       infoType <- infoTypeGen
       infoText <- PrimitiveGen.nonEmptyAlphaNumStrGen
-    } yield InformationMessage(infoType, infoText)
+    } yield InformationMessage(infoType, toLocalisedString(infoText))
 
   def fileUploadGen: Gen[FileUpload] = Gen.const(FileUpload())
 

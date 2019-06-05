@@ -78,7 +78,7 @@ class FormComponentMaker(json: JsValue) {
   lazy val multivalue: Option[String] = (json \ "multivalue").asOpt[String]
   lazy val total: Option[String] = (json \ "total").asOpt[String]
   lazy val international: Option[String] = (json \ "international").asOpt[String]
-  lazy val infoText: Option[String] = (json \ "infoText").asOpt[String]
+  lazy val infoText: Option[LocalisedString] = (json \ "infoText").asOpt[LocalisedString]
   lazy val infoType: Option[String] = (json \ "infoType").asOpt[String]
   lazy val shortName: Option[LocalisedString] = (json \ "shortName").asOpt[LocalisedString]
   lazy val optMaybeRepeatsMax: Opt[Option[Int]] = toOpt((json \ "repeatsMax").validateOpt[Int])
