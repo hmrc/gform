@@ -160,6 +160,33 @@ object FormatParser {
       } |
       "transportMode" ^^ { (loc, _) =>
         Register.TransportMode
+      } |
+      "originWho" ^^ { (loc, _) =>
+        Register.OriginWho
+      } |
+      "originMainPart" ^^ { (loc, _) =>
+        Register.OriginMainPart
+      } |
+      "originSellingSomething" ^^ { (loc, _) =>
+        Register.OriginSellingSomething
+      } |
+      "originSavingsEarnings" ^^ { (loc, _) =>
+        Register.OriginSavingsEarnings
+      } |
+      "intentBuyingWhat" ^^ { (loc, _) =>
+        Register.IntentBuyingWhat
+      } |
+      "intentBusiness" ^^ { (loc, _) =>
+        Register.IntentBusiness
+      } |
+      "intentLivingCostsAndFees" ^^ { (loc, _) =>
+        Register.IntentLivingCostsAndFees
+      } |
+      "intentOther" ^^ { (loc, _) =>
+        Register.IntentOther
+      } |
+      "intentBigPurchase" ^^ { (loc, _) =>
+        Register.IntentBigPurchase
       }
   }
 

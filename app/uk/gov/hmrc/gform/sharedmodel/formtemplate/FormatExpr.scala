@@ -191,6 +191,15 @@ object Register {
   case object Origin extends Register
   case object Port extends Register
   case object TransportMode extends Register
+  case object OriginWho extends Register
+  case object OriginMainPart extends Register
+  case object OriginSavingsEarnings extends Register
+  case object OriginSellingSomething extends Register
+  case object IntentBuyingWhat extends Register
+  case object IntentBigPurchase extends Register
+  case object IntentBusiness extends Register
+  case object IntentOther extends Register
+  case object IntentLivingCostsAndFees extends Register
 
   implicit val format: OFormat[Register] = derived.oformat
 }
