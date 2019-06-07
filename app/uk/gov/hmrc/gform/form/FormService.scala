@@ -21,6 +21,7 @@ import cats.syntax.eq._
 import cats.syntax.functor._
 import cats.syntax.flatMap._
 import play.api.libs.json.JsValue
+import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
 import uk.gov.hmrc.gform.save4later.FormPersistenceAlgebra
 import uk.gov.hmrc.gform.sharedmodel.form.{ DestinationSubmissionInfo, _ }
@@ -29,7 +30,10 @@ import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, UserId }
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.HeaderCarrier
 
-class FormService[F[_]: Monad](formPersistence: FormPersistenceAlgebra[F], fileUpload: FileUploadAlgebra[F])
+class FormService[F[_]: Monad](
+  formPersistence: FormPersistenceAlgebra[F],
+  fileUpload: FileUploadAlgebra[F],
+  config: ConfigModule)
     extends FormAlgebra[F] {
 
   def get(formId: FormId)(implicit hc: HeaderCarrier): F[Form] =
@@ -48,12 +52,12 @@ class FormService[F[_]: Monad](formPersistence: FormPersistenceAlgebra[F], fileU
     val formId = FormId(userId, formTemplateId, accessCode)
     val expiryDate = timeProvider.localDateTime().plusDays(expiryDays)
 
-    for {
-      envelopeId <- fileUpload.createEnvelope(formTemplateId, expiryDate)
-      form = Form(
+    if (config.env == "OFSTED") {
+      println("+++++++++++++++++++++ I AM HERE ++++++++++++++++++++++++++++++++++++++") //TODO: take out comment
+      val form = Form(
         formId,
         Seed(),
-        envelopeId,
+        EnvelopeId(""),
         userId,
         formTemplateId,
         FormData(fields = initialFields),
@@ -62,8 +66,33 @@ class FormService[F[_]: Monad](formPersistence: FormPersistenceAlgebra[F], fileU
         ThirdPartyData.empty,
         Some(EnvelopeExpiryDate(expiryDate))
       )
-      _ <- formPersistence.upsert(formId, form)
-    } yield formId
+
+      for {
+        _ <- formPersistence.upsert(formId, form)
+      } yield formId
+
+    } else {
+      println(config.env)
+      println("+++++++++++++++++++++ I SHOULD NOT BE HERE ++++++++++++++++++++++++++++++++++++++")
+
+      for {
+        envelopeId <- fileUpload.createEnvelope(formTemplateId, expiryDate)
+        form = Form(
+          formId,
+          Seed(),
+          envelopeId,
+          userId,
+          formTemplateId,
+          FormData(fields = initialFields),
+          InProgress,
+          VisitIndex.empty,
+          ThirdPartyData.empty,
+          Some(EnvelopeExpiryDate(expiryDate))
+        )
+        _ <- formPersistence.upsert(formId, form)
+      } yield formId
+    }
+
   }
 
   def updateUserData(formId: FormId, userData: UserData)(implicit hc: HeaderCarrier): F[Unit] =
