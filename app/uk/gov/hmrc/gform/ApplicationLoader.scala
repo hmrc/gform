@@ -81,7 +81,7 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
   lazy val save4later =
     new Save4Later(shortLivedCacheModule.shortLivedCache)
 
-  lazy val formService = new FormService(save4later, fileUploadModule.fileUploadService)
+  lazy val formService = new FormService(save4later, fileUploadModule.fileUploadService, configModule)
 
   lazy val formModule =
     new FormModule(configModule, formTemplateModule, fileUploadModule, formService)

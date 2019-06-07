@@ -49,6 +49,8 @@ class ConfigModule(playComponents: PlayComponents) {
   val emailConfig: EmailConnectorConfig =
     pureconfig.loadConfigOrThrow[EmailConnectorConfig]("microservice.services.email")
 
+  val env: String = typesafeConfig.getString("gform-environment")
+
   val playConfiguration: Configuration = playComponents.context.initialConfiguration
 
   val serviceConfig: ServicesConfig = new ServicesConfig {
@@ -104,3 +106,5 @@ case class MdgIntegrationFrameworkConfig(basePath: String, authorizationToken: S
 case class EmailConnectorConfig(host: String, port: String)
 
 case class OfstedNotificationConfig(apiKey: String, template: String, phoneNumber: String, email: String)
+
+case class EnvironmentConfig(env: String)
