@@ -24,6 +24,8 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ ShortText, _ }
 
 class FormComponentSpec extends Spec {
 
+  val yesNoLocalisedStrings = NonEmptyList.of(toLocalisedString("Yes", "Ie"), toLocalisedString("No", "Na"))
+
   "FieldValue json object" should "parse as Text if it not include 'type' field" in {
     val fieldValue = toFieldValue("""|{
          |  "id": "regNum",
@@ -350,7 +352,7 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("taxType"),
-        Choice(YesNo, NonEmptyList.of(toLocalisedString("Yes"), toLocalisedString("No")), Horizontal, List(1), None),
+        Choice(YesNo, yesNoLocalisedStrings, Horizontal, List(1), None),
         toLocalisedString("Gas tax type?"),
         None,
         None,
@@ -854,12 +856,7 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("taxType"),
-        Choice(
-          YesNo,
-          NonEmptyList.of(toLocalisedString("Yes"), toLocalisedString("No")),
-          Horizontal,
-          List.empty[Int],
-          None),
+        Choice(YesNo, yesNoLocalisedStrings, Horizontal, List.empty[Int], None),
         toLocalisedString("Gas tax type?"),
         None,
         None,
@@ -885,7 +882,7 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("taxType"),
-        Choice(YesNo, NonEmptyList.of(toLocalisedString("Yes"), toLocalisedString("No")), Horizontal, List(1), None),
+        Choice(YesNo, yesNoLocalisedStrings, Horizontal, List(1), None),
         toLocalisedString("Gas tax type?"),
         None,
         None,
@@ -911,12 +908,7 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("taxType"),
-        Choice(
-          YesNo,
-          NonEmptyList.of(toLocalisedString("Yes"), toLocalisedString("No")),
-          Horizontal,
-          List.empty[Int],
-          None),
+        Choice(YesNo, yesNoLocalisedStrings, Horizontal, List.empty[Int], None),
         toLocalisedString("Gas tax type?"),
         None,
         None,
@@ -945,12 +937,7 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("taxType"),
-        Choice(
-          YesNo,
-          NonEmptyList.of(toLocalisedString("Yes"), toLocalisedString("No")),
-          Horizontal,
-          List.empty[Int],
-          None),
+        Choice(YesNo, yesNoLocalisedStrings, Horizontal, List.empty[Int], None),
         toLocalisedString("Gas tax type?"),
         None,
         None,
@@ -975,12 +962,7 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("taxType"),
-        Choice(
-          YesNo,
-          NonEmptyList.of(toLocalisedString("Yes"), toLocalisedString("No")),
-          Horizontal,
-          List.empty[Int],
-          None),
+        Choice(YesNo, yesNoLocalisedStrings, Horizontal, List.empty[Int], None),
         toLocalisedString("Gas tax type?"),
         None,
         None,
