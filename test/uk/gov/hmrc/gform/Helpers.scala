@@ -23,6 +23,9 @@ object Helpers {
   def toLocalisedString(string: String) =
     LocalisedString(Map(LangADT.En -> string))
 
+  def toLocalisedString(stringEn: String, stringCy: String) =
+    LocalisedString(Map(LangADT.En -> stringEn, LangADT.Cy -> stringCy))
+
   def toLocalisedString(string: Option[String]): Option[LocalisedString] = string.map(s => toLocalisedString(s))
 
   def toLocalisedString(stringList: NonEmptyList[String]): NonEmptyList[LocalisedString] =

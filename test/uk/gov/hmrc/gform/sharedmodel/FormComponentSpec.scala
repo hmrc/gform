@@ -350,7 +350,12 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("taxType"),
-        Choice(YesNo, NonEmptyList.of(toLocalisedString("Yes"), toLocalisedString("No")), Horizontal, List(1), None),
+        Choice(
+          YesNo,
+          NonEmptyList.of(toLocalisedString("Yes", "Ie"), toLocalisedString("No", "Na")),
+          Horizontal,
+          List(1),
+          None),
         toLocalisedString("Gas tax type?"),
         None,
         None,
@@ -856,7 +861,7 @@ class FormComponentSpec extends Spec {
         FormComponentId("taxType"),
         Choice(
           YesNo,
-          NonEmptyList.of(toLocalisedString("Yes"), toLocalisedString("No")),
+          NonEmptyList.of(toLocalisedString("Yes", "Ie"), toLocalisedString("No", "Na")),
           Horizontal,
           List.empty[Int],
           None),
@@ -885,7 +890,12 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("taxType"),
-        Choice(YesNo, NonEmptyList.of(toLocalisedString("Yes"), toLocalisedString("No")), Horizontal, List(1), None),
+        Choice(
+          YesNo,
+          NonEmptyList.of(toLocalisedString("Yes", "Ie"), toLocalisedString("No", "Na")),
+          Horizontal,
+          List(1),
+          None),
         toLocalisedString("Gas tax type?"),
         None,
         None,
@@ -913,7 +923,7 @@ class FormComponentSpec extends Spec {
         FormComponentId("taxType"),
         Choice(
           YesNo,
-          NonEmptyList.of(toLocalisedString("Yes"), toLocalisedString("No")),
+          NonEmptyList.of(toLocalisedString("Yes", "Ie"), toLocalisedString("No", "Na")),
           Horizontal,
           List.empty[Int],
           None),
@@ -947,7 +957,7 @@ class FormComponentSpec extends Spec {
         FormComponentId("taxType"),
         Choice(
           YesNo,
-          NonEmptyList.of(toLocalisedString("Yes"), toLocalisedString("No")),
+          NonEmptyList.of(toLocalisedString("Yes", "Ie"), toLocalisedString("No", "Na")),
           Horizontal,
           List.empty[Int],
           None),
@@ -977,7 +987,7 @@ class FormComponentSpec extends Spec {
         FormComponentId("taxType"),
         Choice(
           YesNo,
-          NonEmptyList.of(toLocalisedString("Yes"), toLocalisedString("No")),
+          NonEmptyList.of(toLocalisedString("Yes", "Ie"), toLocalisedString("No", "Na")),
           Horizontal,
           List.empty[Int],
           None),
