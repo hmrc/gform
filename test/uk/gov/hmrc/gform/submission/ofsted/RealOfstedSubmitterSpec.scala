@@ -262,8 +262,8 @@ class RealOfstedSubmitterSpec extends Spec {
   private def createFormTemplate(id: FormTemplateId) =
     FormTemplate(
       id,
-      "",
-      "",
+      toLocalisedString(""),
+      toLocalisedString(""),
       None,
       Default,
       None,

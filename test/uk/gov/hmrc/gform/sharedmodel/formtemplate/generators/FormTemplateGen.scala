@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 import cats.data.NonEmptyList
 import org.scalacheck.Gen
-import uk.gov.hmrc.gform.sharedmodel.AvailableLanguages
+import uk.gov.hmrc.gform.sharedmodel.{ AvailableLanguages, LangADT, LocalisedString }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 trait FormTemplateGen {
@@ -51,6 +51,8 @@ trait FormTemplateGen {
       templateName <- templateNameGen
     } yield WebChat(ChatRoomId(roomId), templateName)
 
+  def toLocalisedString(s: String): LocalisedString = LocalisedString(Map(LangADT.En -> s))
+
   def formTemplateGen: Gen[FormTemplate] =
     for {
       id                     <- formTemplateIdGen
@@ -74,8 +76,8 @@ trait FormTemplateGen {
     } yield
       FormTemplate(
         id,
-        name,
-        description,
+        toLocalisedString(name),
+        toLocalisedString(description),
         developmentPhase,
         category,
         draftRetrievalMethod,
