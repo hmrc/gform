@@ -26,7 +26,12 @@ final case class OrientationFormat(value: String) extends FormatExpr
 final case class DateFormat(expressions: DateConstraintType) extends FormatExpr
 final case class TextFormat(number: TextConstraint) extends FormatExpr
 
-sealed trait ValueExpr
+sealed trait ValueExpr extends {
+  def rewrite: ValueExpr = this match {
+    case TextExpression(expr) => TextExpression(expr.rewrite)
+    case otherwise            => otherwise
+  }
+}
 
 final case class TextExpression(expr: Expr) extends ValueExpr
 final case class DateExpression(dateValue: DateValue) extends ValueExpr

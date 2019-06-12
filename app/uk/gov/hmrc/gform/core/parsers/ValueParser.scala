@@ -21,18 +21,14 @@ import java.time.LocalDate
 import parseback._
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.BasicParsers._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ ChoiceExpression, DateExpression, TextExpression, ValueExpr, _ }
-import pureconfig.generic.auto._ // It is now necessary to import `pureconfig.generic.auto._` everywhere a config is loaded or written, even though IntelliJ sees this as unused, its still required
+import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 object ValueParser {
 
   implicit val W = Whitespace(() | """\s+""".r)
 
-  case class IsSubtraction(value: Boolean)
-  val isSubtraction =
-    pureconfig.loadConfigOrThrow[IsSubtraction]("feature.subtraction").value
   def validate(expression: String): Opt[ValueExpr] =
-    validateWithParser(expression, exprDeterminer)
+    validateWithParser(expression, exprDeterminer).right.map(_.rewrite)
 
   lazy val exprDeterminer: Parser[ValueExpr] = (dateExpression ^^ ((loc, expr) => DateExpression(expr))
     | positiveIntegers ^^ ((loc, selections) => ChoiceExpression(selections))
@@ -64,11 +60,6 @@ object ValueParser {
   lazy val expr: Parser[Expr] = (quotedConstant
     | "${" ~> parserExpression <~ "}")
 
-  lazy val operation: Parser[Operation] = (
-    "+" ^^ const(Addition)
-      | "*" ^^ const(Multiplication)
-  )
-
   lazy val contextField: Parser[Expr] = ("eeitt" ~ "." ~ eeitt ^^ { (loc, _, _, eeitt) =>
     EeittCtx(eeitt)
   }
@@ -99,25 +90,31 @@ object ValueParser {
       FormCtx(fn)
     })
 
-  lazy val parserExpression: Parser[Expr] = (parserExpression ~ "+" ~ parserExpression ^^ { (loc, expr1, _, expr2) =>
+  lazy val parserExpression: Parser[Expr] = ("(" ~ addExpression ~ ")" ^^ { (loc, _, expr, _) =>
+    expr
+  } | addExpression)
+
+  lazy val addExpression: Parser[Expr] = (parserExpression ~ "+" ~ parserExpression ^^ { (loc, expr1, _, expr2) =>
     Add(expr1, expr2)
   }
-    | subtractionFeatureSwitch)
+    | subtractionExpression)
 
-  lazy val subtractionFeatureSwitch: Parser[Expr] =
-    if (isSubtraction) {
-      (parserExpression ~ "-" ~ parserExpression ^^ { (loc, expr1, _, expr2) =>
-        Subtraction(expr1, expr2)
-      }
-        | product)
-    } else {
-      product
-    }
+  lazy val subtractionExpression: Parser[Expr] = (parserExpression ~ "-" ~ parserExpression ^^ {
+    (loc, expr1, _, expr2) =>
+      Subtraction(expr1, expr2)
+  }
+    | product)
 
-  lazy val product: Parser[Expr] = (product ~ "*" ~ product ^^ { (loc, expr1, _, expr2) =>
+  lazy val product: Parser[Expr] = (parserExpression ~ "*" ~ parserExpression ^^ { (loc, expr1, _, expr2) =>
     Multiply(expr1, expr2)
   }
-    | contextField)
+    | orElseParser)
+
+  lazy val orElseParser: Parser[Expr] = parserExpression ~ "else" ~ parserExpression ^^ { (loc, expr1, _, expr2) =>
+    Else(expr1, expr2)
+  } | contextField ^^ { (loc, value) =>
+    value
+  }
 
   lazy val alphabeticOnly: Parser[String] = """[a-zA-Z]\w*""".r ^^ { (loc, str) =>
     str
