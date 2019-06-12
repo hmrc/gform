@@ -24,6 +24,7 @@ import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
+import scala.language.implicitConversions
 
 class ValueParserSpec extends Spec {
 
@@ -138,10 +139,11 @@ class ValueParserSpec extends Spec {
 
     val res = ValueParser.validate("${user.enrolledIdentifiers}")
     res.left.value should be(
-      UnexpectedState("""Unable to parse expression ${user.enrolledIdentifiers}.
-                        |Errors:
-                        |${user.enrolledIdentifiers}:1: unexpected characters; expected '+' or '}' or '\s+' or '*' or '-'
-                        |${user.enrolledIdentifiers}                         ^""".stripMargin))
+      UnexpectedState(
+        """Unable to parse expression ${user.enrolledIdentifiers}.
+          |Errors:
+          |${user.enrolledIdentifiers}:1: unexpected characters; expected '+' or '}' or '\s+' or '*' or '-' or 'else'
+          |${user.enrolledIdentifiers}                         ^""".stripMargin))
   }
 
   it should "parse ${user.enrolments.<identifierName>.<referenceName>}" in {
@@ -305,6 +307,74 @@ class ValueParserSpec extends Spec {
     val res = ValueParser.validate("${form.submissionReference}")
 
     res.right.value should be(TextExpression(SubmissionReference))
+  }
+
+  it should "parse else expression" in {
+    implicit def liftToFormCtx(s: String): FormCtx = FormCtx(s)
+    val table = Table(
+      ("expression", "result"),
+      // format: off
+      ("a + b + c + d",              Add(Add(Add("a", "b"), "c"), "d")),
+      ("(a + b) + c + d",            Add(Add(Add("a", "b"), "c"), "d")),
+      ("(a + b + c) + d",            Add(Add(Add("a", "b"), "c"), "d")),
+      ("((a + b) + c) + d",          Add(Add(Add("a", "b"), "c"), "d")),
+      ("a + (b + c + d)",            Add("a", Add(Add("b", "c"), "d"))),
+      ("a + (b + (c + d))",          Add("a", Add("b", Add("c", "d")))),
+      ("(a + b) + (c + d)",          Add(Add("a", "b"), Add("c", "d"))),
+      ("a + b - c + d",              Add(Add("a", Subtraction("b", "c")), "d")),
+      ("a + (b - c) + d",            Add(Add("a", Subtraction("b", "c")), "d")),
+      ("(a + b) - (c + d)",          Subtraction(Add("a", "b"), Add("c", "d"))),
+      ("a + b * c + d",              Add(Add("a", Multiply("b", "c")), "d")),
+      ("a + (b * c) + d",            Add(Add("a", Multiply("b", "c")), "d")),
+      ("(a + b) * (c + d)",          Multiply(Add("a", "b"), Add("c", "d"))),
+      ("a + b else c + d",           Add(Add("a", Else("b", "c")), "d")),
+      ("a + (b else c) + d",         Add(Add("a", Else("b", "c")), "d")),
+      ("(a + b) else (c + d)",       Else(Add("a", "b"), Add("c", "d"))),
+      ("a - b + c - d",              Add(Subtraction("a", "b"), Subtraction("c", "d"))),
+      ("a - b - c - d",              Subtraction(Subtraction(Subtraction("a", "b"), "c"), "d")),
+      ("a - (b - (c - d))",          Subtraction("a", Subtraction("b", Subtraction("c", "d")))),
+      ("a - b * c - d",              Subtraction(Subtraction("a", Multiply("b", "c")), "d")),
+      ("a - b else c - d",           Subtraction(Subtraction("a", Else("b", "c")), "d")),
+      ("a * b + c * d",              Add(Multiply("a", "b"), Multiply("c", "d"))),
+      ("a * b - c * d",              Subtraction(Multiply("a", "b"), Multiply("c", "d"))),
+      ("a * b * c * d",              Multiply(Multiply(Multiply("a", "b"), "c"), "d")),
+      ("a * (b * (c * d))",          Multiply("a", Multiply("b", Multiply("c", "d")))),
+      ("a * b else c * d",           Multiply(Multiply("a", Else("b", "c")), "d")),
+      ("a else b + c else d",        Add(Else("a", "b"), Else("c", "d"))),
+      ("a else b - c else d",        Subtraction(Else("a", "b"), Else("c", "d"))),
+      ("a else b * c else d",        Multiply(Else("a", "b"), Else("c", "d"))),
+      ("a else b else c else d",     Else("a", Else("b", Else("c", "d")))),
+      ("a else (b else (c else d))", Else("a", Else("b", Else("c", "d"))))
+      // format: on
+    )
+
+    forAll(table) { (expression, expected) ⇒
+      val res = ValueParser.validate("${" + expression + "}")
+
+      res.right.value shouldBe TextExpression(expected)
+    }
+  }
+
+  it should "else expressions should be rewriten to nesting on right hand side" in {
+    implicit def liftToFormCtx(s: String): FormCtx = FormCtx(s)
+    val table = Table(
+      ("expression", "result"),
+      // format: off
+      (Add(Add(Add("a", "b"), "c"), "d"),           Add(Add(Add("a", "b"), "c"), "d")),
+      (Else(Add("a", "b"), Add("c", "d")),          Else(Add("a", "b"), Add("c", "d"))),
+      (Else(Else(Else("a", "b"), "c"), "d"),        Else("a", Else("b", Else("c", "d")))),
+      (Else("a", Else("b", Else("c", "d"))),        Else("a", Else("b", Else("c", "d")))),
+      (Add(Else("a", "b"), Else("c", "d")),         Add(Else("a", "b"), Else("c", "d"))),
+      (Add(Else(Else("a", "b"), "c"), "d"),         Add(Else("a", Else("b", "c")), "d")),
+      (Subtraction(Else(Else("a", "b"), "c"), "d"), Subtraction(Else("a", Else("b", "c")), "d")),
+      (Multiply(Else(Else("a", "b"), "c"), "d"),    Multiply(Else("a", Else("b", "c")), "d")),
+      (Sum(Else(Else("a", "b"), "c")),              Sum(Else("a", Else("b", "c"))))
+      // format: on
+    )
+
+    forAll(table) { (expression, expected) ⇒
+      expression.rewrite shouldBe expected
+    }
   }
 
   it should "fail parse unclosed parenthesis" in {

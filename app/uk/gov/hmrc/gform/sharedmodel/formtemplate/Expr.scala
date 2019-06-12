@@ -20,10 +20,20 @@ import julienrf.json.derived
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.parsers.ExprParsers
 
-sealed trait Expr
+sealed trait Expr {
+  def rewrite: Expr = this match {
+    case Else(Else(l, r), e) => Else(l.rewrite, Else(r.rewrite, e.rewrite)).rewrite
+    case Add(l, r)           => Add(l.rewrite, r.rewrite)
+    case Multiply(l, r)      => Multiply(l.rewrite, r.rewrite)
+    case Subtraction(l, r)   => Subtraction(l.rewrite, r.rewrite)
+    case Sum(l)              => Sum(l.rewrite)
+    case otherwise           => otherwise
+  }
+}
 final case class Add(field1: Expr, field2: Expr) extends Expr
 final case class Multiply(field1: Expr, field2: Expr) extends Expr
 final case class Subtraction(field1: Expr, field2: Expr) extends Expr
+final case class Else(field1: Expr, field2: Expr) extends Expr
 final case class Sum(field1: Expr) extends Expr
 
 final case class FormCtx(value: String) extends Expr {
@@ -61,10 +71,6 @@ case object RosmIsAGroup extends RosmProp
 object RosmProp {
   implicit val format: OFormat[RosmProp] = derived.oformat
 }
-
-sealed trait Operation
-final case object Addition extends Operation
-final case object Multiplication extends Operation
 
 sealed trait Eeitt
 final case object BusinessUser extends Eeitt
