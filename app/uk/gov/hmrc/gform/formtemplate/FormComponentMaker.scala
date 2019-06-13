@@ -264,8 +264,8 @@ class FormComponentMaker(json: JsValue) {
         case (IsOrientation(VerticalOrientation),   Some(x :: xs), IsMultivalue(MultivalueNo),  Selections(selections), oHelpText) => Choice(Radio,    NonEmptyList(x, xs),          Vertical,   selections, oHelpText).asRight
         case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections), oHelpText) => Choice(Checkbox, NonEmptyList(x, xs),          Horizontal, selections, oHelpText).asRight
         case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueNo),  Selections(selections), oHelpText) => Choice(Radio,    NonEmptyList(x, xs),          Horizontal, selections, oHelpText).asRight
-        case (IsOrientation(YesNoOrientation),      None,          IsMultivalue(MultivalueNo),  Selections(selections), oHelpText) => Choice(YesNo,    NonEmptyList.of(toLocalisedString("Yes","Ie"), toLocalisedString("No","Na")), Horizontal, selections, oHelpText).asRight
-        case (IsOrientation(YesNoOrientation),      _,             _,                           Selections(selections), oHelpText) => Choice(YesNo,    NonEmptyList.of(toLocalisedString("Yes","Ie"), toLocalisedString("No","Na")), Horizontal, selections, oHelpText).asRight
+        case (IsOrientation(YesNoOrientation),      None,          IsMultivalue(MultivalueNo),  Selections(selections), oHelpText) => Choice(YesNo,    NonEmptyList.of(toLocalisedString("Yes","Iawn"), toLocalisedString("No","Na")), Horizontal, selections, oHelpText).asRight
+        case (IsOrientation(YesNoOrientation),      _,             _,                           Selections(selections), oHelpText) => Choice(YesNo,    NonEmptyList.of(toLocalisedString("Yes","Iawn"), toLocalisedString("No","Na")), Horizontal, selections, oHelpText).asRight
         case (IsOrientation(InlineOrientation),     Some(x :: xs), None,                        Selections(selections), oHelpText) => Choice(Inline,   NonEmptyList(x, xs),          Horizontal, selections, oHelpText).asRight
         // format: on
         case (invalidFormat, invalidChoices, invalidMultivalue, invalidValue, invalidHelpText) =>
