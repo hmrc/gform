@@ -295,10 +295,11 @@ trait ExampleFormTemplate {
 
   def formTemplateId = FormTemplateId("AAA999")
 
-  def formName = "AAA999 dev test template"
+  def formName = toLocalisedString("AAA999 dev test template")
 
   def formDescription =
-    "Fill in your insurance premium tax return form online | Llenwch eich ffurflen dreth premiwm yswiriant ar-lein"
+    toLocalisedString(
+      "Fill in your insurance premium tax return form online | Llenwch eich ffurflen dreth premiwm yswiriant ar-lein")
 
   def emailTemplateId = "test-email-template-id"
 
