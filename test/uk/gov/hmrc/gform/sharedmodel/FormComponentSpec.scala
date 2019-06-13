@@ -24,7 +24,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ ShortText, _ }
 
 class FormComponentSpec extends Spec {
 
-  val yesNoLocalisedStrings = NonEmptyList.of(toLocalisedString("Yes", "Ie"), toLocalisedString("No", "Na"))
+  val yesNoLocalisedStrings = NonEmptyList.of(toLocalisedString("Yes", "Iawn"), toLocalisedString("No", "Na"))
 
   "FieldValue json object" should "parse as Text if it not include 'type' field" in {
     val fieldValue = toFieldValue("""|{
