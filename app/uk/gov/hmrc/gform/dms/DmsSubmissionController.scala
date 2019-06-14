@@ -85,7 +85,8 @@ class DmsSubmissionController(
   private def submit(byteArray: Array[Byte], metadata: DmsMetadata)(implicit hc: HeaderCarrier) = {
     val formTemplateId = FormTemplateId(metadata.dmsFormId)
     for {
-      envId <- fileUpload.createEnvelope(formTemplateId, LocalDateTime.now(clock).plusDays(config.formExpiryDays))
+      envId <- fileUpload
+                .createEnvelope(formTemplateId, LocalDateTime.now(clock).plusDays(config.formExpiryDays.longValue))
       pdfDoc = documentLoader(byteArray)
       pdfSummary = PdfSummary(pdfDoc.getNumberOfPages.toLong, byteArray)
       _ = pdfDoc.close()

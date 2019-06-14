@@ -109,7 +109,7 @@ class DmsSubmissionControllerSpec extends Spec {
 
     (mockFileUpload
       .createEnvelope(_: FormTemplateId, _: LocalDateTime)(_: HeaderCarrier))
-      .expects(*, LocalDateTime.now(clock).plusDays(mockConfig.formExpiryDays), *)
+      .expects(*, LocalDateTime.now(clock).plusDays(mockConfig.formExpiryDays.longValue), *)
       .returning(Future.successful(expectedEnvId))
 
     (mockPdfGenerator
@@ -151,7 +151,7 @@ class DmsSubmissionControllerSpec extends Spec {
 
     (mockFileUpload
       .createEnvelope(_: FormTemplateId, _: LocalDateTime)(_: HeaderCarrier))
-      .expects(*, LocalDateTime.now(clock).plusDays(mockConfig.formExpiryDays), *)
+      .expects(*, LocalDateTime.now(clock).plusDays(mockConfig.formExpiryDays.longValue), *)
       .returning(Future.successful(expectedEnvId))
 
     mockDocumentLoader

@@ -59,7 +59,7 @@ class RealDestinationSubmitter[M[_], R](
     model: HandlebarsTemplateProcessorModel,
     submitter: DestinationsSubmitterAlgebra[M],
     formTemplate: FormTemplate)(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
-    monadError.pure(destination.includeIf.forall(handlebarsTemplateProcessor(_, model) === true.toString)) flatMap {
+    monadError.pure(DestinationSubmitter.isIncludeIf(destination, model, handlebarsTemplateProcessor)) flatMap {
       include =>
         if (include)
           for {
@@ -135,7 +135,7 @@ class RealDestinationSubmitter[M[_], R](
   private def submitToDms(submissionInfo: DestinationSubmissionInfo, d: Destination.HmrcDms)(
     implicit hc: HeaderCarrier): M[Unit] =
     monadError.handleErrorWith(submitToDms(submissionInfo, d.toDeprecatedDmsSubmission)) { msg =>
-      if (d.failOnErrorDefaulted)
+      if (d.failOnError)
         monadError.raiseError(s"Destination ${d.id.id} : $msg")
       else {
         Logger.info(s"Destination ${d.id} failed but has 'failOnError' set to false. Ignoring.")
@@ -149,7 +149,7 @@ class RealDestinationSubmitter[M[_], R](
       .flatMap[HandlebarsDestinationResponse] { response =>
         if (response.isSuccess)
           createSuccessResponse(d, response)
-        else if (d.failOnErrorDefaulted)
+        else if (d.failOnError)
           createFailureResponse(d, response)
         else {
           Logger.info(
@@ -171,6 +171,14 @@ class RealDestinationSubmitter[M[_], R](
 
   protected def raiseError(destinationId: DestinationId, msg: String) =
     monadError.raiseError(s"Destination ${destinationId.id} : $msg")
+}
+
+object DestinationSubmitter {
+  def isIncludeIf(
+    destination: Destination,
+    model: HandlebarsTemplateProcessorModel,
+    handlebarsTemplateProcessor: HandlebarsTemplateProcessor): Boolean =
+    handlebarsTemplateProcessor(destination.includeIf, model) === true.toString
 }
 
 object RealDestinationSubmitter {
@@ -205,7 +213,7 @@ class SelfTestingDestinationSubmitter[M[_]](
   private def verifyUnspecifiedDestination(
     destination: Destination,
     model: HandlebarsTemplateProcessorModel): ReturnType =
-    if (isIncludeIf(destination, model))
+    if (DestinationSubmitter.isIncludeIf(destination, model, handlebarsTemplateProcessor))
       includeIEvaluatedToTrueButNoTestDestinationInformationWasProvided(destination)
     else succeed(None)
 
@@ -217,7 +225,7 @@ class SelfTestingDestinationSubmitter[M[_]](
     destination: Destination,
     model: HandlebarsTemplateProcessorModel,
     expected: DestinationTestResult): ReturnType =
-    (isIncludeIf(destination, model), expected.includeIf) match {
+    (DestinationSubmitter.isIncludeIf(destination, model, handlebarsTemplateProcessor), expected.includeIf) match {
       case (false, false)     => succeed(None)
       case (true, true)       => verifyIncludedDestination(destination, model, expected)
       case (actual, expected) => inconsistentIncludeIfs(destination, actual, expected)
@@ -318,9 +326,6 @@ class SelfTestingDestinationSubmitter[M[_]](
 
   private[submission] def theGeneratedPayloadIsNotValidJson(id: DestinationId, message: String) =
     fail[JsValue](id, s"The generated payload is not valid JSON: $message")
-
-  private def isIncludeIf(destination: Destination, model: HandlebarsTemplateProcessorModel) =
-    destination.includeIf.forall(handlebarsTemplateProcessor(_, model) === true.toString)
 
   private def fail[T](id: DestinationId, message: String): M[T] =
     monadError.raiseError(s"Test: ${test.name}, Destination: ${id.id}: $message")

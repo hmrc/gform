@@ -38,25 +38,13 @@ class RealDestinationSubmitterSpec extends Spec {
       _.copy(formId = form._id)
     }
 
-  "A Destination.ReviewApproval" should "be sent to the OfstedSubmitter when includeIf is not set" in {
-    forAll(submissionInfoGen, DestinationGen.reviewApprovalGen, FormTemplateGen.formTemplateGen) {
-      (si, generatedDestination, template) =>
-        val destination = generatedDestination.copy(includeIf = None)
-        val model = HandlebarsTemplateProcessorModel()
-        createSubmitter
-          .expectReviewApproval(si.formId, destination, model)
-          .sut
-          .submitIfIncludeIf(destination, si, model, submitter, template) shouldBe Right(None)
-    }
-  }
-
-  it should "be sent to the OfstedSubmitter when includeIf is evaluated to true" in {
+  "A Destination.ReviewApproval" should "be sent to the OfstedSubmitter when includeIf is evaluated to true" in {
     forAll(
       submissionInfoGen,
       DestinationGen.reviewApprovalGen,
       PrimitiveGen.nonEmptyAlphaNumStrGen,
       FormTemplateGen.formTemplateGen) { (si, generatedDestination, includeIfExpression, template) =>
-      val destination = generatedDestination.copy(includeIf = Some(includeIfExpression))
+      val destination = generatedDestination.copy(includeIf = includeIfExpression)
       val model = HandlebarsTemplateProcessorModel()
 
       createSubmitter
@@ -73,7 +61,7 @@ class RealDestinationSubmitterSpec extends Spec {
       DestinationGen.reviewApprovalGen,
       PrimitiveGen.nonEmptyAlphaNumStrGen,
       FormTemplateGen.formTemplateGen) { (si, generatedDestination, includeIfExpression, template) =>
-      val destination = generatedDestination.copy(includeIf = Some(includeIfExpression))
+      val destination = generatedDestination.copy(includeIf = includeIfExpression)
       val model = HandlebarsTemplateProcessorModel()
       createSubmitter
         .expectIncludeIfEvaluation(includeIfExpression, model, requiredResult = false)
@@ -82,25 +70,13 @@ class RealDestinationSubmitterSpec extends Spec {
     }
   }
 
-  "A Destination.ReviewRejection" should "be sent to the OfstedSubmitter when includeIf is not set" in {
-    forAll(submissionInfoGen, DestinationGen.reviewRejectionGen, FormTemplateGen.formTemplateGen) {
-      (si, generatedDestination, template) =>
-        val rejection = generatedDestination.copy(includeIf = None)
-        val model = HandlebarsTemplateProcessorModel()
-        createSubmitter
-          .expectReviewRejection(si.formId, rejection, model)
-          .sut
-          .submitIfIncludeIf(rejection, si, model, submitter, template) shouldBe Right(None)
-    }
-  }
-
-  it should "be sent to the OfstedSubmitter when includeIf is evaluated to true" in {
+  "A Destination.ReviewRejection" should "be sent to the OfstedSubmitter when includeIf is evaluated to true" in {
     forAll(
       submissionInfoGen,
       DestinationGen.reviewRejectionGen,
       PrimitiveGen.nonEmptyAlphaNumStrGen,
       FormTemplateGen.formTemplateGen) { (si, generatedDestination, includeIfExpression, template) =>
-      val rejection = generatedDestination.copy(includeIf = Some(includeIfExpression))
+      val rejection = generatedDestination.copy(includeIf = includeIfExpression)
       val model = HandlebarsTemplateProcessorModel()
 
       createSubmitter
@@ -117,7 +93,7 @@ class RealDestinationSubmitterSpec extends Spec {
       DestinationGen.reviewRejectionGen,
       PrimitiveGen.nonEmptyAlphaNumStrGen,
       FormTemplateGen.formTemplateGen) { (si, generatedDestination, includeIfExpression, template) =>
-      val rejection = generatedDestination.copy(includeIf = Some(includeIfExpression))
+      val rejection = generatedDestination.copy(includeIf = includeIfExpression)
       val model = HandlebarsTemplateProcessorModel()
       createSubmitter
         .expectIncludeIfEvaluation(includeIfExpression, model, requiredResult = false)
@@ -126,25 +102,13 @@ class RealDestinationSubmitterSpec extends Spec {
     }
   }
 
-  "A Destination.ReviewingOfsed" should "be sent to the OfstedSubmitter when includeIf is not set" in {
-    forAll(submissionInfoGen, DestinationGen.reviewingOfstedGen, FormTemplateGen.formTemplateGen) {
-      (si, generatedDestination, template) =>
-        val destination = generatedDestination.copy(includeIf = None)
-        val model = HandlebarsTemplateProcessorModel()
-        createSubmitter
-          .expectReviewingOfstedSubmission(si, destination, model, FormId("foo"))
-          .sut
-          .submitIfIncludeIf(destination, si, model, submitter, template) shouldBe Right(None)
-    }
-  }
-
-  it should "be sent to the OfstedSubmitter when includeIf is evaluated to true" in {
+  "A Destination.ReviewingOfsed" should "be sent to the OfstedSubmitter when includeIf is evaluated to true" in {
     forAll(
       submissionInfoGen,
       DestinationGen.reviewingOfstedGen,
       PrimitiveGen.nonEmptyAlphaNumStrGen,
       FormTemplateGen.formTemplateGen) { (si, generatedDestination, includeIfExpression, template) =>
-      val destination = generatedDestination.copy(includeIf = Some(includeIfExpression))
+      val destination = generatedDestination.copy(includeIf = includeIfExpression)
       val model = HandlebarsTemplateProcessorModel()
 
       createSubmitter
@@ -161,7 +125,7 @@ class RealDestinationSubmitterSpec extends Spec {
       DestinationGen.reviewingOfstedGen,
       PrimitiveGen.nonEmptyAlphaNumStrGen,
       FormTemplateGen.formTemplateGen) { (si, generatedDestination, includeIfExpression, template) =>
-      val destination = generatedDestination.copy(includeIf = Some(includeIfExpression))
+      val destination = generatedDestination.copy(includeIf = includeIfExpression)
       val model = HandlebarsTemplateProcessorModel()
       createSubmitter
         .expectIncludeIfEvaluation(includeIfExpression, model, requiredResult = false)
@@ -170,27 +134,13 @@ class RealDestinationSubmitterSpec extends Spec {
     }
   }
 
-  "A Destination.HandlebarsHttpApi" should "be sent to the HandlebarsHttpApiSubmitter when includeIf is not set" in {
-    forAll(submissionInfoGen, DestinationGen.handlebarsHttpApiGen, FormTemplateGen.formTemplateGen) {
-      (si, generatedHandlebarsHttpApi, template) =>
-        val handlebarsHttpApi = generatedHandlebarsHttpApi.copy(includeIf = None)
-        val httpResponse = HttpResponse(200)
-        val model = HandlebarsTemplateProcessorModel()
-        createSubmitter
-          .expectHandlebarsSubmission(handlebarsHttpApi, model, httpResponse)
-          .sut
-          .submitIfIncludeIf(handlebarsHttpApi, si, model, submitter, template) shouldBe Right(
-          HandlebarsDestinationResponse(handlebarsHttpApi, httpResponse).some)
-    }
-  }
-
-  it should "be sent to the HandlebarsHttpApiSubmitter when includeIf is evaluated to true" in {
+  "A Destination.HandlebarsHttpApi" should "be sent to the HandlebarsHttpApiSubmitter when includeIf is evaluated to true" in {
     forAll(
       submissionInfoGen,
       DestinationGen.handlebarsHttpApiGen,
       PrimitiveGen.nonEmptyAlphaNumStrGen,
       FormTemplateGen.formTemplateGen) { (si, generatedHandlebarsHttpApi, includeIfExpression, template) =>
-      val handlebarsHttpApi = generatedHandlebarsHttpApi.copy(includeIf = Some(includeIfExpression))
+      val handlebarsHttpApi = generatedHandlebarsHttpApi.copy(includeIf = includeIfExpression)
       val httpResponse = HttpResponse(200)
       val model = HandlebarsTemplateProcessorModel()
 
@@ -209,7 +159,7 @@ class RealDestinationSubmitterSpec extends Spec {
       DestinationGen.handlebarsHttpApiGen,
       PrimitiveGen.nonEmptyAlphaNumStrGen,
       FormTemplateGen.formTemplateGen) { (si, generatedHandlebarsHttpApi, includeIfExpression, template) =>
-      val handlebarsHttpApi = generatedHandlebarsHttpApi.copy(includeIf = Some(includeIfExpression))
+      val handlebarsHttpApi = generatedHandlebarsHttpApi.copy(includeIf = includeIfExpression)
       val model = HandlebarsTemplateProcessorModel()
       createSubmitter
         .expectIncludeIfEvaluation(includeIfExpression, model, requiredResult = false)
@@ -218,45 +168,45 @@ class RealDestinationSubmitterSpec extends Spec {
     }
   }
 
-  it should "return without raising an error if the endpoint returns an error but failOnError is Some(false)" in {
+  it should "return without raising an error if the endpoint returns an error but failOnError is false" in {
     forAll(submissionInfoGen, DestinationGen.handlebarsHttpApiGen, FormTemplateGen.formTemplateGen) {
       (si, generatedHandlebarsHttpApi, template) =>
         val httpResponse = HttpResponse(300)
-        val handlebarsHttpApi = generatedHandlebarsHttpApi.copy(failOnError = Option(false), includeIf = None)
+        val handlebarsHttpApi = generatedHandlebarsHttpApi.copy(failOnError = false, includeIf = true.toString)
         val model = HandlebarsTemplateProcessorModel()
         createSubmitter
           .expectHandlebarsSubmission(handlebarsHttpApi, model, httpResponse)
+          .expectIncludeIfEvaluation("true", model, true)
           .sut
           .submitIfIncludeIf(handlebarsHttpApi, si, model, submitter, template) shouldBe Right(
           HandlebarsDestinationResponse(handlebarsHttpApi, httpResponse).some)
     }
   }
 
-  it should "raise an error if the endpoint returns an error and failOnError is Some(true) or None" in {
-    forAll(
-      submissionInfoGen,
-      DestinationGen.handlebarsHttpApiGen,
-      Gen.option(Gen.const(true)),
-      FormTemplateGen.formTemplateGen) { (si, generatedHandlebarsHttpApi, failOnError, template) =>
-      val httpResponse = HttpResponse(300)
-      val handlebarsHttpApi = generatedHandlebarsHttpApi.copy(failOnError = failOnError, includeIf = None)
-      val model = HandlebarsTemplateProcessorModel()
+  it should "raise an error if the endpoint returns an error and failOnError is true" in {
+    forAll(submissionInfoGen, DestinationGen.handlebarsHttpApiGen, FormTemplateGen.formTemplateGen) {
+      (si, generatedHandlebarsHttpApi, template) =>
+        val httpResponse = HttpResponse(300)
+        val handlebarsHttpApi = generatedHandlebarsHttpApi.copy(failOnError = true, includeIf = true.toString)
+        val model = HandlebarsTemplateProcessorModel()
 
-      createSubmitter
-        .expectHandlebarsSubmission(handlebarsHttpApi, model, httpResponse)
-        .sut
-        .submitIfIncludeIf(handlebarsHttpApi, si, model, submitter, template) shouldBe Left(
-        RealDestinationSubmitter.handlebarsHttpApiFailOnErrorMessage(handlebarsHttpApi, httpResponse))
+        createSubmitter
+          .expectHandlebarsSubmission(handlebarsHttpApi, model, httpResponse)
+          .expectIncludeIfEvaluation("true", model, true)
+          .sut
+          .submitIfIncludeIf(handlebarsHttpApi, si, model, submitter, template) shouldBe Left(
+          RealDestinationSubmitter.handlebarsHttpApiFailOnErrorMessage(handlebarsHttpApi, httpResponse))
     }
   }
 
   "A Destination.DmsSubmission" should "be sent to the DmsSubmitter when includeIf is not set" in {
     forAll(submissionInfoGen, DestinationGen.hmrcDmsGen, FormTemplateGen.formTemplateGen) {
       (si, generatedHmrcDms, template) =>
-        val hmrcDms = generatedHmrcDms.copy(includeIf = None)
+        val hmrcDms = generatedHmrcDms.copy(includeIf = true.toString)
         val model = HandlebarsTemplateProcessorModel()
         createSubmitter
           .expectDmsSubmission(si, hmrcDms.toDeprecatedDmsSubmission)
+          .expectIncludeIfEvaluation("true", model, true)
           .sut
           .submitIfIncludeIf(hmrcDms, si, model, submitter, template) shouldBe Right(None)
     }
@@ -268,7 +218,7 @@ class RealDestinationSubmitterSpec extends Spec {
       DestinationGen.hmrcDmsGen,
       PrimitiveGen.nonEmptyAlphaNumStrGen,
       FormTemplateGen.formTemplateGen) { (si, generatedHmrcDms, includeIfExpression, template) =>
-      val hmrcDms = generatedHmrcDms.copy(includeIf = Some(includeIfExpression))
+      val hmrcDms = generatedHmrcDms.copy(includeIf = includeIfExpression)
       val model = HandlebarsTemplateProcessorModel()
       createSubmitter
         .expectIncludeIfEvaluation(includeIfExpression, model, requiredResult = true)
@@ -284,7 +234,7 @@ class RealDestinationSubmitterSpec extends Spec {
       DestinationGen.hmrcDmsGen,
       PrimitiveGen.nonEmptyAlphaNumStrGen,
       FormTemplateGen.formTemplateGen) { (si, generatedHmrcDms, includeIfExpression, template) =>
-      val hmrcDms = generatedHmrcDms.copy(includeIf = Some(includeIfExpression))
+      val hmrcDms = generatedHmrcDms.copy(includeIf = includeIfExpression)
       val model = HandlebarsTemplateProcessorModel()
       createSubmitter
         .expectIncludeIfEvaluation(includeIfExpression, model, requiredResult = false)
@@ -293,24 +243,26 @@ class RealDestinationSubmitterSpec extends Spec {
     }
   }
 
-  it should "return without raising an error if the endpoint returns an error but failOnError is Some(false)" in {
+  it should "return without raising an error if the endpoint returns an error but failOnError is false" in {
     forAll(submissionInfoGen, DestinationGen.hmrcDmsGen, FormTemplateGen.formTemplateGen) {
       (si, generatedHmrcDms, template) =>
-        val hmrcDms = generatedHmrcDms.copy(failOnError = Option(false), includeIf = None)
+        val hmrcDms = generatedHmrcDms.copy(failOnError = false, includeIf = true.toString)
         createSubmitter
           .expectDmsSubmissionFailure(si, hmrcDms.toDeprecatedDmsSubmission, "an error")
+          .expectIncludeIfEvaluation("true", HandlebarsTemplateProcessorModel.empty, true)
           .sut
           .submitIfIncludeIf(hmrcDms, si, HandlebarsTemplateProcessorModel(), submitter, template) shouldBe Right(None)
     }
   }
 
-  it should "raise a failure if the endpoint returns an error and failOnError is Some(true) or None" in {
-    forAll(submissionInfoGen, DestinationGen.hmrcDmsGen, Gen.option(Gen.const(true)), FormTemplateGen.formTemplateGen) {
-      (si, generatedHmrcDms, failOnError, template) =>
-        val hmrcDms = generatedHmrcDms.copy(failOnError = failOnError, includeIf = None)
+  it should "raise a failure if the endpoint returns an error and failOnError is true" in {
+    forAll(submissionInfoGen, DestinationGen.hmrcDmsGen, FormTemplateGen.formTemplateGen) {
+      (si, generatedHmrcDms, template) =>
+        val hmrcDms = generatedHmrcDms.copy(failOnError = true, includeIf = true.toString)
 
         createSubmitter
           .expectDmsSubmissionFailure(si, hmrcDms.toDeprecatedDmsSubmission, "an error")
+          .expectIncludeIfEvaluation("true", HandlebarsTemplateProcessorModel.empty, true)
           .sut
           .submitIfIncludeIf(hmrcDms, si, HandlebarsTemplateProcessorModel(), submitter, template) shouldBe Left(
           s"Destination ${hmrcDms.id.id} : an error")

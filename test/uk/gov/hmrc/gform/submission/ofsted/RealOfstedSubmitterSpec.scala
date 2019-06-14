@@ -23,13 +23,13 @@ import play.api.libs.json.JsNull
 import uk.gov.hmrc.gform.Helpers._
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
+import uk.gov.hmrc.gform.sharedmodel.{ UserId => SMUserId, _ }
 import uk.gov.hmrc.gform.sharedmodel.form.{ DestinationSubmissionInfo, _ }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.ReviewApproval
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationId, HandlebarsDestinationResponse }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.ReviewApproval
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
-import uk.gov.hmrc.gform.sharedmodel.{ UserId, _ }
 import uk.gov.hmrc.gform.submission.DestinationsSubmitterAlgebra
 import uk.gov.hmrc.gform.{ Possible, Spec, possibleMonadError }
 import uk.gov.hmrc.http.HeaderCarrier
@@ -43,7 +43,7 @@ class RealOfstedSubmitterSpec extends Spec {
     val idOfFormToBeReviewed = FormId("MIO")
     val correlationIdFormComponentId = FormComponentId("correlationIdFormComponentId")
     val reviewFormTemplateId = FormTemplateId("reviewFormTemplateId")
-    val userId = UserId("userId")
+    val userId = SMUserId("userId")
 
     val correlationFormField = Seq(FormField(correlationIdFormComponentId, idOfFormToBeReviewed.value))
     val newFormId = FormId("newForm")
@@ -359,11 +359,11 @@ class RealOfstedSubmitterSpec extends Spec {
 
     def expectCreateForm(
       newFormId: FormId,
-      userId: UserId,
+      userId: SMUserId,
       reviewFormTemplateId: FormTemplateId,
       initialFields: Seq[FormField]): SubmitterParts[M] = {
       (formAlgebra
-        .create(_: UserId, _: FormTemplateId, _: Option[AccessCode], _: Long, _: Seq[FormField])(_: HeaderCarrier))
+        .create(_: SMUserId, _: FormTemplateId, _: Option[AccessCode], _: Long, _: Seq[FormField])(_: HeaderCarrier))
         .expects(userId, reviewFormTemplateId, None, Int.MaxValue.toLong, initialFields, hc)
         .returning(newFormId.pure[M])
       this

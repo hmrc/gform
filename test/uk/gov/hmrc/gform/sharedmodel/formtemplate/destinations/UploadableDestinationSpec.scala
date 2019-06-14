@@ -40,7 +40,7 @@ class UploadableDestinationSpec extends Spec {
       val expected = withQuotes.copy(
         uri = replaceQuotes(withQuotes.uri),
         payload = withQuotes.payload.map(v => replaceQuotes(v)),
-        includeIf = withQuotes.includeIf.map(v => replaceQuotes(v))
+        includeIf = replaceQuotes(withQuotes.includeIf)
       )
 
       createUploadable(withQuotes, Some(true)).toHandlebarsHttpApiDestination shouldBe Right(expected)
@@ -65,7 +65,7 @@ class UploadableDestinationSpec extends Spec {
     forAll(DestinationGen.hmrcDmsGen) { destination =>
       val withQuotes = addQuotes(destination, """"'abc'"""")
       val expected = withQuotes.copy(
-        includeIf = withQuotes.includeIf.map(v => replaceQuotes(v))
+        includeIf = replaceQuotes(withQuotes.includeIf)
       )
 
       createUploadable(withQuotes, Some(true)).toHmrcDmsDestination shouldBe Right(expected)
@@ -83,8 +83,8 @@ class UploadableDestinationSpec extends Spec {
       method,
       payload,
       convertSingleQuotes,
-      includeIf,
-      failOnError
+      Some(includeIf),
+      Some(failOnError)
     )
   }
 
@@ -99,8 +99,8 @@ class UploadableDestinationSpec extends Spec {
       classificationType,
       businessArea,
       convertSingleQuotes,
-      includeIf,
-      failOnError
+      Some(includeIf),
+      Some(failOnError)
     )
   }
 
@@ -109,12 +109,10 @@ class UploadableDestinationSpec extends Spec {
   private def addQuotes(destination: Destination.HandlebarsHttpApi, q: String) =
     destination.copy(
       uri = q,
-      payload = destination.payload.map(_ => q),
-      includeIf = destination.includeIf.map(_ => q)
+      payload = Some(q),
+      includeIf = q
     )
 
   private def addQuotes(destination: Destination.HmrcDms, q: String) =
-    destination.copy(
-      includeIf = destination.includeIf.map(_ => q)
-    )
+    destination.copy(includeIf = q)
 }
