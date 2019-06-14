@@ -26,8 +26,13 @@ trait HandlebarsTemplateProcessor {
 class RealHandlebarsTemplateProcessor(
   helpers: HandlebarsTemplateProcessorHelpers = new HandlebarsTemplateProcessorHelpers())
     extends HandlebarsTemplateProcessor {
-  private val handlebars = new Handlebars().`with`(EscapingStrategy.JS).registerHelpers(helpers)
 
+  object JsonEscapingStrategy extends EscapingStrategy {
+    override def escape(value: CharSequence): CharSequence =
+      if (value == null) null
+      else org.apache.commons.lang3.StringEscapeUtils.unescapeJson(value.toString)
+  }
+  private val handlebars = new Handlebars().`with`(JsonEscapingStrategy).registerHelpers(helpers)
   def apply(template: String, model: HandlebarsTemplateProcessorModel): String = {
     val compiledTemplate = handlebars.compileInline(template)
 

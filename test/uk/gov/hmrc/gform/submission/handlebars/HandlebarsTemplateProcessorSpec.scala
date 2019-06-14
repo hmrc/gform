@@ -24,4 +24,24 @@ class HandlebarsTemplateProcessorSpec extends Spec {
     val processor = new RealHandlebarsTemplateProcessor
     processor("I am a {{name}} template", HandlebarsTemplateProcessorModel("""{"name" : "handlebars"}""")) shouldBe "I am a handlebars template"
   }
+
+  "JsonEscapingStrategy un-escaping" must "work with apostrophes" in {
+    val a = new RealHandlebarsTemplateProcessor
+    a.JsonEscapingStrategy.escape("string with an ' apostrophe") shouldBe "string with an ' apostrophe"
+  }
+
+  "it" must "work with a backslash" in {
+    val a = new RealHandlebarsTemplateProcessor
+    a.JsonEscapingStrategy.escape("""string with a \ backslash""") shouldBe """string with a  backslash"""
+  }
+
+  "it" must "work with two backslashes" in {
+    val a = new RealHandlebarsTemplateProcessor
+    a.JsonEscapingStrategy.escape("""string with \\ backslashes""") shouldBe """string with \ backslashes"""
+  }
+
+  "it" must "work with multiple backslashes" in {
+    val a = new RealHandlebarsTemplateProcessor
+    a.JsonEscapingStrategy.escape("""string with \\\' backslashes""") shouldBe """string with \' backslashes"""
+  }
 }
