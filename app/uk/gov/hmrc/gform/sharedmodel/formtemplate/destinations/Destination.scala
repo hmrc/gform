@@ -30,10 +30,8 @@ sealed trait DestinationWithCustomerId {
 
 sealed trait Destination extends Product with Serializable {
   def id: DestinationId
-  def includeIf: Option[String]
-  def failOnError: Option[Boolean]
-
-  def failOnErrorDefaulted: Boolean = failOnError.getOrElse(true)
+  def includeIf: String
+  def failOnError: Boolean
 }
 
 object Destination {
@@ -43,16 +41,16 @@ object Destination {
     customerId: TextExpression,
     classificationType: String,
     businessArea: String,
-    includeIf: Option[String] = None,
-    failOnError: Option[Boolean] = None,
-    roboticsXml: Option[Boolean] = None)
+    includeIf: String,
+    failOnError: Boolean,
+    roboticsXml: Boolean)
       extends Destination with DestinationWithCustomerId {
     def toDeprecatedDmsSubmission: Destinations.DmsSubmission = Destinations.DmsSubmission(
       dmsFormId,
       customerId,
       classificationType,
       businessArea,
-      includeRoboticsXml = roboticsXml
+      includeRoboticsXml = Some(roboticsXml)
     )
   }
 
@@ -62,8 +60,8 @@ object Destination {
     uri: String,
     method: HttpMethod,
     payload: Option[String],
-    includeIf: Option[String],
-    failOnError: Option[Boolean] = None)
+    includeIf: String,
+    failOnError: Boolean)
       extends Destination
 
   case class ReviewingOfsted(
@@ -71,23 +69,23 @@ object Destination {
     correlationFieldId: FormComponentId,
     reviewFormTemplateId: FormTemplateId,
     userId: UserId,
-    includeIf: Option[String] = None,
-    failOnError: Option[Boolean] = None)
+    includeIf: String,
+    failOnError: Boolean)
       extends Destination
 
   case class ReviewRejection(
     id: DestinationId,
     correlationFieldId: FormComponentId,
     reviewFormCommentFieldId: FormComponentId,
-    includeIf: Option[String] = None,
-    failOnError: Option[Boolean] = None)
+    includeIf: String,
+    failOnError: Boolean)
       extends Destination
 
   case class ReviewApproval(
     id: DestinationId,
     correlationFieldId: FormComponentId,
-    includeIf: Option[String] = None,
-    failOnError: Option[Boolean] = None)
+    includeIf: String = true.toString,
+    failOnError: Boolean = true)
       extends Destination
 
   val typeDiscriminatorFieldName: String = "type"
@@ -125,7 +123,16 @@ case class UploadableHmrcDmsDestination(
   def toHmrcDmsDestination: Either[String, Destination.HmrcDms] =
     for {
       cii <- addErrorInfo(id, "includeIf")(condition(convertSingleQuotes, includeIf))
-    } yield Destination.HmrcDms(id, dmsFormId, customerId, classificationType, businessArea, cii, failOnError)
+    } yield
+      Destination.HmrcDms(
+        id,
+        dmsFormId,
+        customerId,
+        classificationType,
+        businessArea,
+        cii.getOrElse(true.toString),
+        failOnError.getOrElse(true),
+        false)
 }
 
 object UploadableHmrcDmsDestination {
@@ -153,7 +160,7 @@ case class UploadableHandlebarsHttpApiDestination(
       cvuri <- addErrorInfo(id, "uri")(condition(convertSingleQuotes, uri))
     } yield
       Destination
-        .HandlebarsHttpApi(id, profile, cvuri, method, cvp, cvii, failOnError)
+        .HandlebarsHttpApi(id, profile, cvuri, method, cvp, cvii.getOrElse(true.toString), failOnError.getOrElse(true))
 }
 
 object UploadableHandlebarsHttpApiDestination {
@@ -178,7 +185,13 @@ case class UploadableReviewingOfstedDestination(
       cvii <- addErrorInfo(id, "includeIf")(condition(convertSingleQuotes, includeIf))
     } yield
       Destination
-        .ReviewingOfsted(id, correlationFieldId, reviewFormTemplateId, userId, cvii, failOnError)
+        .ReviewingOfsted(
+          id,
+          correlationFieldId,
+          reviewFormTemplateId,
+          userId,
+          cvii.getOrElse(true.toString),
+          failOnError.getOrElse(true))
 }
 
 object UploadableReviewingOfstedDestination {
@@ -202,7 +215,12 @@ case class UploadableReviewRejectionDestination(
       cvii <- addErrorInfo(id, "includeIf")(condition(convertSingleQuotes, includeIf))
     } yield
       Destination
-        .ReviewRejection(id, correlationFieldId, reviewFormCommentFieldId, cvii, failOnError)
+        .ReviewRejection(
+          id,
+          correlationFieldId,
+          reviewFormCommentFieldId,
+          cvii.getOrElse(true.toString),
+          failOnError.getOrElse(true))
 }
 
 object UploadableReviewRejectionDestination {
@@ -225,7 +243,7 @@ case class UploadableReviewApprovalDestination(
       cvii <- addErrorInfo(id, "includeIf")(condition(convertSingleQuotes, includeIf))
     } yield
       Destination
-        .ReviewApproval(id, correlationFieldId, cvii, failOnError)
+        .ReviewApproval(id, correlationFieldId, cvii.getOrElse(true.toString), failOnError.getOrElse(true))
 }
 
 object UploadableReviewApprovalDestination {

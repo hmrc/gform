@@ -274,11 +274,11 @@ class SelfTestingDestinationSubmitterSpec extends Spec {
     destination.copy(uri = uri)
 
   private def setIncludeIf(destination: Destination, includeIf: Option[String]): Destination = destination match {
-    case d: Destination.HmrcDms           => d.copy(includeIf = includeIf)
-    case d: Destination.HandlebarsHttpApi => d.copy(includeIf = includeIf)
-    case d: Destination.ReviewingOfsted   => d.copy(includeIf = includeIf)
-    case d: Destination.ReviewRejection   => d.copy(includeIf = includeIf)
-    case d: Destination.ReviewApproval    => d.copy(includeIf = includeIf)
+    case d: Destination.HmrcDms           => d.copy(includeIf = includeIf.getOrElse(true.toString))
+    case d: Destination.HandlebarsHttpApi => d.copy(includeIf = includeIf.getOrElse(true.toString))
+    case d: Destination.ReviewingOfsted   => d.copy(includeIf = includeIf.getOrElse(true.toString))
+    case d: Destination.ReviewRejection   => d.copy(includeIf = includeIf.getOrElse(true.toString))
+    case d: Destination.ReviewApproval    => d.copy(includeIf = includeIf.getOrElse(true.toString))
   }
 
   private def setPayload(destination: Destination, payload: Option[String]): Destination = destination match {
@@ -291,7 +291,7 @@ class SelfTestingDestinationSubmitterSpec extends Spec {
 
   private def includedHandlebarsDestinationGen: Gen[Destination.HandlebarsHttpApi] =
     DestinationGen.handlebarsHttpApiGen
-      .map(_.copy(includeIf = Some("true"), payload = None))
+      .map(_.copy(includeIf = "true", payload = None))
 
   private def includedDestinationGen: Gen[Destination] = includeIfDestinationGen(true)
 

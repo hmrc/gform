@@ -23,8 +23,8 @@ package object destinations {
       import hmrcDms._
       s"""|{
           |  "id": "${id.id}",
-          |  ${optionalField("includeIf", destination.includeIf)}
-          |  ${optionalField("failOnError", destination.failOnError)}
+          |  ${optionalField("includeIf", Option(destination.includeIf), "true")}
+          |  ${optionalField("failOnError", Option(destination.failOnError), true)}
           |  "${Destination.typeDiscriminatorFieldName}": "${Destination.hmrcDms}",
           |  "dmsFormId": "$dmsFormId",
           |  "customerId": ${TextExpression.format.writes(customerId)},
@@ -38,8 +38,8 @@ package object destinations {
           |  "id": "${id.id}",
           |  ${optionalField("payload", payload)}
           |  ${optionalField("convertSingleQuotes", Option(false))}
-          |  ${optionalField("includeIf", destination.includeIf)}
-          |  ${optionalField("failOnError", destination.failOnError)}
+          |  ${optionalField("includeIf", Option(destination.includeIf), "true")}
+          |  ${optionalField("failOnError", Option(destination.failOnError), true)}
           |  "${Destination.typeDiscriminatorFieldName}": "${Destination.handlebarsHttpApi}",
           |  "profile": ${write(profile)},
           |  "uri": "$uri",
@@ -54,8 +54,8 @@ package object destinations {
           |  "reviewFormTemplateId": "${reviewFormTemplateId.value}",
           |  "userId": "${handlebars.userId.value}",
           |  ${optionalField("convertSingleQuotes", Option(false))}
-          |  ${optionalField("includeIf", destination.includeIf)}
-          |  ${optionalField("failOnError", destination.failOnError)}
+          |  ${optionalField("includeIf", Option(destination.includeIf), "true")}
+          |  ${optionalField("failOnError", Option(destination.failOnError), true)}
           |  "${Destination.typeDiscriminatorFieldName}": "${Destination.reviewingOfsted}"
           |}""".stripMargin
 
@@ -66,8 +66,8 @@ package object destinations {
           |  "correlationFieldId": "${correlationFieldId.value}",
           |  "reviewFormCommentFieldId": "${reviewFormCommentFieldId.value}",
           |  ${optionalField("convertSingleQuotes", Option(false))}
-          |  ${optionalField("includeIf", destination.includeIf)}
-          |  ${optionalField("failOnError", destination.failOnError)}
+          |  ${optionalField("includeIf", Option(destination.includeIf), "true")}
+          |  ${optionalField("failOnError", Option(destination.failOnError), true)}
           |  "${Destination.typeDiscriminatorFieldName}": "${Destination.reviewRejection}"
           |}""".stripMargin
 
@@ -77,8 +77,8 @@ package object destinations {
           |  "id": "${id.id}",
           |  "correlationFieldId": "${correlationFieldId.value}",
           |  ${optionalField("convertSingleQuotes", Option(false))}
-          |  ${optionalField("includeIf", destination.includeIf)}
-          |  ${optionalField("failOnError", destination.failOnError)}
+          |  ${optionalField("includeIf", Option(destination.includeIf), "true")}
+          |  ${optionalField("failOnError", Option(destination.failOnError), true)}
           |  "${Destination.typeDiscriminatorFieldName}": "${Destination.reviewApproval}"
           |}""".stripMargin
 
@@ -86,6 +86,10 @@ package object destinations {
 
   def optionalField[T: Writes](fieldName: String, ot: Option[T]): String =
     ot.fold("")(t => s""""$fieldName": ${write(t)},""")
+
+  def optionalField[T: Writes](fieldName: String, ot: Option[T], dflt: T): String =
+    if (ot.exists(_ == dflt) && Math.random < 0.5) ""
+    else optionalField(fieldName: String, ot: Option[T])
 
   def write[T](t: T)(implicit w: Writes[T]): JsValue = w.writes(t)
 }
