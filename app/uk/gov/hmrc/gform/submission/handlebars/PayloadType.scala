@@ -19,5 +19,5 @@ package uk.gov.hmrc.gform.submission.handlebars
 sealed trait PayloadType extends Product with Serializable
 object PayloadType {
   case object JSON extends PayloadType
-  case object SoapXml extends PayloadType
+  case object CYGNUM extends PayloadType
 }

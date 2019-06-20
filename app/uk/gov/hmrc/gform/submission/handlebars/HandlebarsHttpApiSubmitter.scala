@@ -61,5 +61,7 @@ object RealHandlebarsHttpApiSubmitter {
     implicit me: MonadError[F, String]): F[HttpClient[F]] =
     httpClients
       .get(profile)
-      .fold(me.raiseError[HttpClient[F]](s"No HttpClient found for profile ${profile.name}"))(_.pure)
+      .fold(me.raiseError[HttpClient[F]](
+        s"No HttpClient found for profile ${profile.name}. Have HttpClient for ${httpClients.keySet.map(_.name)}"))(
+        _.pure)
 }

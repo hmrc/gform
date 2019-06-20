@@ -40,13 +40,14 @@ class HandlebarsHttpApiModule(wSHttpModule: WSHttpModule, configModule: ConfigMo
           }
 
         profileConfiguration.payloadContentType match {
-          case PayloadType.JSON    => client.json
-          case PayloadType.SoapXml => client.soapXml
+          case PayloadType.JSON   => client.json
+          case PayloadType.CYGNUM => client.cygnum
         }
       }
 
   private def appendUriSegment(base: String, toAppend: String) =
-    if (base.endsWith("/") || toAppend.startsWith("/")) s"$base$toAppend"
+    if (toAppend.isEmpty) base
+    else if (base.endsWith("/") || toAppend.startsWith("/")) s"$base$toAppend"
     else s"$base/$toAppend"
 
   val handlebarsHttpSubmitter: HandlebarsHttpApiSubmitter[FOpt] =
