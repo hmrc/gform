@@ -16,10 +16,13 @@
 
 package uk.gov.hmrc.gform.submission.ofsted
 
+import java.time.LocalDateTime
+
 import cats.{ Id, MonadError }
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.config.OfstedNotificationConf
-import uk.gov.service.notify.{ SendEmailResponse, SendSmsResponse }
+import uk.gov.hmrc.gform.sharedmodel.form.{ Approved, FormId, InProgress, Submitted }
+import uk.gov.service.notify.SendEmailResponse
 
 class OfstedNotificationClientSpec extends Spec {
 
@@ -31,40 +34,66 @@ class OfstedNotificationClientSpec extends Spec {
     override def pure[A](x: A): Id[A] = x
   }
 
-  it should "send notification by sms and email" in new OfstedNotificationConf {
+  it should "send Accepted notification by email" in new OfstedNotificationConf {
     val notifier = mock[Notifier[Id]]
     val client = new OfstedNotificationClient[Id](notifier)
-    val response = OfstedNotificationClientResponse(smsResponse, Some(emailResponse))
+    val builder = new FormLinkBuilder {}
+    val formId = FormId("123")
 
     (notifier
-      .notifyBySms(_: String, _: PhoneNumber, _: Map[String, _])(_: MonadError[Id, String]))
-      .expects(ofstedNotification.template, PhoneNumber(ofstedNotification.phoneNumber), Map[String, Any](), me)
-      .returns(smsResponse)
+      .notifyByEmail(_: String, _: EmailAddress, _: Map[String, String])(_: MonadError[Id, String]))
+      .expects(where {
+        (id: String, email: EmailAddress, personalisation: Map[String, String], _: MonadError[Id, String]) =>
+          val acceptanceTime = personalisation("acceptance-time")
+          id == formTemplates(Approved) && email == EmailAddress(ofstedNotification.email) &&
+          personalisation("form-id") == formId.value &&
+          LocalDateTime.parse(acceptanceTime).withSecond(0).withNano(0) == LocalDateTime.now.withSecond(0).withNano(0)
+      })
+      .returns(emailResponse)
 
-//    (notifier
-//      .notifyByEmail(_: String, _: EmailAddress, _: Map[String, _])(_: MonadError[Id, String]))
-//      .expects(ofstedNotification.template, EmailAddress(ofstedNotification.email), Map[String, Any](), me)
-//      .returns(emailResponse)
-
-//    client.notify(Map[String, Any]("formId" -> "123", "status" -> "Approved")) shouldBe response
-
-    client.notify(Map[String, Any]()) shouldBe OfstedNotificationClientResponse(response.smsResponse, None)
+    client.send(NotifyRequest(formId, Approved)) shouldBe OfstedNotificationClientResponse(emailResponse)
   }
 
-  private val smsResponse = new SendSmsResponse(
-    """{
-      | "id": "47b1d8b5-8b0a-4377-8a6e-a77175cdf73c",
-      | "content": {
-      |   "notificationId":"47b1d8b5-8b0a-4377-8a6e-a77175cdf73c", "reference":"null",
-      |   "templateId":"47b1d8b5-8b0a-4377-8a6e-a77175cdf73c",
-      |   "body": "'Hey Pas, I'm trying out Notify. Today is Thursday and my favourite colour is black.'"
-      | },
-      | "template": {
-      |   "id":"47b1d8b5-8b0a-4377-8a6e-a77175cdf73c",
-      |   "version":"1",
-      |   "uri":"'https://api.notifications.service.gov.uk/services'"
-      | }
-      |}""".stripMargin)
+  it should "send Reject notification by email" in new OfstedNotificationConf {
+    val notifier = mock[Notifier[Id]]
+    val client = new OfstedNotificationClient[Id](notifier)
+    val builder = new FormLinkBuilder {}
+    val formId = FormId("333")
+
+    (notifier
+      .notifyByEmail(_: String, _: EmailAddress, _: Map[String, String])(_: MonadError[Id, String]))
+      .expects(where {
+        (id: String, email: EmailAddress, personalisation: Map[String, String], _: MonadError[Id, String]) =>
+          val acceptanceTime = personalisation("rejection-time")
+          id == formTemplates(InProgress) && email == EmailAddress(ofstedNotification.email) &&
+          personalisation("form-id") == formId.value &&
+          personalisation("url") == s"http://localhost:9195/submissions/form/${formId.value}" &&
+          LocalDateTime.parse(acceptanceTime).withSecond(0).withNano(0) == LocalDateTime.now.withSecond(0).withNano(0)
+      })
+      .returns(emailResponse)
+
+    client.send(NotifyRequest(formId, InProgress)) shouldBe OfstedNotificationClientResponse(emailResponse)
+  }
+
+  it should "send Submitted notification by email" in new OfstedNotificationConf {
+    val notifier = mock[Notifier[Id]]
+    val client = new OfstedNotificationClient[Id](notifier)
+    val builder = new FormLinkBuilder {}
+    val formId = FormId("777")
+
+    (notifier
+      .notifyByEmail(_: String, _: EmailAddress, _: Map[String, String])(_: MonadError[Id, String]))
+      .expects(where {
+        (id: String, email: EmailAddress, personalisation: Map[String, String], _: MonadError[Id, String]) =>
+          val acceptanceTime = personalisation("submission-time")
+          id == formTemplates(Submitted) && email == EmailAddress(ofstedNotification.email) &&
+          personalisation("form-id") == formId.value &&
+          LocalDateTime.parse(acceptanceTime).withSecond(0).withNano(0) == LocalDateTime.now.withSecond(0).withNano(0)
+      })
+      .returns(emailResponse)
+
+    client.send(NotifyRequest(formId, Submitted)) shouldBe OfstedNotificationClientResponse(emailResponse)
+  }
 
   private val emailResponse = new SendEmailResponse(
     """{

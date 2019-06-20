@@ -16,8 +16,11 @@
 
 package uk.gov.hmrc.gform.submission.handlebars
 
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, HandlebarsTemplateProcessorModel, HttpMethod, Profile }
-import uk.gov.hmrc.gform.wshttp.JsonHttpClient
+import cats.MonadError
+import cats.syntax.applicative._
+import cats.syntax.flatMap._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
+import uk.gov.hmrc.gform.wshttp.HttpClient
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
 trait HandlebarsHttpApiSubmitter[F[_]] {
@@ -26,43 +29,37 @@ trait HandlebarsHttpApiSubmitter[F[_]] {
 }
 
 class RealHandlebarsHttpApiSubmitter[F[_]](
-  des: JsonHttpClient[F],
-  mdg: JsonHttpClient[F],
-  mdtp: MdtpHttpClient[F],
-  handlebarsTemplateProcessor: HandlebarsTemplateProcessor = new RealHandlebarsTemplateProcessor)
+  httpClients: Map[ProfileName, HttpClient[F]],
+  handlebarsTemplateProcessor: HandlebarsTemplateProcessor = new RealHandlebarsTemplateProcessor)(
+  implicit me: MonadError[F, String])
     extends HandlebarsHttpApiSubmitter[F] {
 
   def apply(destination: Destination.HandlebarsHttpApi, model: HandlebarsTemplateProcessorModel)(
-    implicit hc: HeaderCarrier): F[HttpResponse] = {
-    val httpClient = RealHandlebarsHttpApiSubmitter
-      .selectHttpClient(destination.profile, des, mdg, mdtp)
-
-    val uri = handlebarsTemplateProcessor(destination.uri, model)
-    destination.method match {
-      case HttpMethod.GET => httpClient.get(uri)
-      case HttpMethod.POST =>
-        val body = destination.payload.fold("") {
-          handlebarsTemplateProcessor(_, model)
+    implicit hc: HeaderCarrier): F[HttpResponse] =
+    RealHandlebarsHttpApiSubmitter
+      .selectHttpClient(destination.profile, httpClients)
+      .flatMap { httpClient =>
+        val uri = handlebarsTemplateProcessor(destination.uri, model)
+        destination.method match {
+          case HttpMethod.GET => httpClient.get(uri)
+          case HttpMethod.POST =>
+            val body = destination.payload.fold("") {
+              handlebarsTemplateProcessor(_, model)
+            }
+            httpClient.post(uri, body)
+          case HttpMethod.PUT =>
+            val body = destination.payload.fold("") {
+              handlebarsTemplateProcessor(_, model)
+            }
+            httpClient.put(uri, body)
         }
-        httpClient.postJsonString(uri, body)
-      case HttpMethod.PUT =>
-        val body = destination.payload.fold("") {
-          handlebarsTemplateProcessor(_, model)
-        }
-        httpClient.putJsonString(uri, body)
-    }
-  }
+      }
 }
 
 object RealHandlebarsHttpApiSubmitter {
-  def selectHttpClient[F[_]](
-    profile: Profile,
-    des: JsonHttpClient[F],
-    mdg: JsonHttpClient[F],
-    mdtp: MdtpHttpClient[F]): JsonHttpClient[F] =
-    profile match {
-      case Profile.DES                     => des
-      case Profile.MdgIntegrationFramework => mdg
-      case m: Profile.MDTP                 => mdtp.select(MdtpServiceName(m.serviceName))
-    }
+  def selectHttpClient[F[_]](profile: ProfileName, httpClients: Map[ProfileName, HttpClient[F]])(
+    implicit me: MonadError[F, String]): F[HttpClient[F]] =
+    httpClients
+      .get(profile)
+      .fold(me.raiseError[HttpClient[F]](s"No HttpClient found for profile ${profile.name}"))(_.pure)
 }

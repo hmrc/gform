@@ -43,15 +43,16 @@ class SubmissionService(
     affinityGroup: Option[AffinityGroup],
     submissionData: SubmissionData)(implicit hc: HeaderCarrier): FOpt[Unit] =
     // format: OFF
-    for {
-      form                    <-                      formAlgebra.get(formId)
-      formTemplate            <- fromFutureA          (formTemplateService.get(form.formTemplateId))
-      submissionInfo          =                       DestinationSubmissionInfo(formId, customerId, affinityGroup, submissionData)
-      _                       <-                      destinationsSubmitter.send(submissionInfo, formTemplate, formAlgebra)
-      emailAddress            =                       email.getEmailAddress(form)
-      _                       <-                      fromFutureA(email.sendEmail(emailAddress, formTemplate.emailTemplateId, submissionData.emailParameters))
+      for {
+        form          <- formAlgebra.get(formId)
+        submissionInfo = DestinationSubmissionInfo(formId, customerId, affinityGroup, submissionData)
+        _             <- formAlgebra.updateDestinationSubmissionInfo(formId, Some(submissionInfo))
+        formTemplate  <- fromFutureA(formTemplateService.get(form.formTemplateId))
+        _             <- destinationsSubmitter.send(submissionInfo, formTemplate, formAlgebra)
+        emailAddress   = email.getEmailAddress(form)
+        _             <- fromFutureA(email.sendEmail(emailAddress, formTemplate.emailTemplateId, submissionData.emailParameters))
       } yield ()
-    // format: ON
+      // format: ON
 
   def submissionDetails(formId: FormId)(implicit ex: ExecutionContext): Future[Submission] =
     submissionRepo.get(formId.value)

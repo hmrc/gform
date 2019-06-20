@@ -15,15 +15,11 @@
  */
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
+import play.api.libs.json.Format
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils
 
-import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.ProfileGen
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.verifyRoundTrip
+case class ProfileName(name: String) extends AnyVal
 
-class ProfileSpec extends Spec {
-  "Default read and write" should "round trip derived JSON" in {
-    forAll(ProfileGen.profileGen) { value =>
-      verifyRoundTrip(value)
-    }
-  }
+object ProfileName {
+  implicit val format: Format[ProfileName] = JsonUtils.valueClassFormat[ProfileName, String](ProfileName(_), _.name)
 }

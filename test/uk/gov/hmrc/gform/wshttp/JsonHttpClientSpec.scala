@@ -31,26 +31,6 @@ class JsonHttpClientSpec extends HttpClientSpec {
     }
   }
 
-  "post" should "delegate to underlying.post with no changes" in httpClient[Possible] { underlying =>
-    forAll(Gen.alphaNumStr, Gen.alphaNumStr, headerCarrierGen, successfulHttpResponseGen) {
-      (uri, postBody, hc, response) =>
-        underlying.expectPost(uri, postBody, hc, response)
-
-        buildClient(underlying.httpClient)
-          .post(uri, postBody)(hc) shouldBe Right(response)
-    }
-  }
-
-  "put" should "delegate to underlying.put with no changes" in httpClient[Possible] { underlying =>
-    forAll(Gen.alphaNumStr, Gen.alphaNumStr, headerCarrierGen, successfulHttpResponseGen) {
-      (uri, putBody, hc, response) =>
-        underlying.expectPut(uri, putBody, hc, response)
-
-        buildClient(underlying.httpClient)
-          .put(uri, putBody)(hc) shouldBe Right(response)
-    }
-  }
-
   "postJsonString" should "delegate to underlying.post with no changes  when the JSON string is valid" in httpClient[
     Possible] { underlying =>
     forAll(Gen.alphaNumStr, Gen.alphaNumStr, headerCarrierGen, successfulHttpResponseGen) {
@@ -62,21 +42,47 @@ class JsonHttpClientSpec extends HttpClientSpec {
           response)
 
         buildClient(underlying.httpClient)
-          .postJsonString(uri, s""""$postBody"""")(hc) shouldBe Right(response)
+          .post(uri, s""""$postBody"""")(hc) shouldBe Right(response)
     }
   }
 
   it should "not delegate to underlying.post and fail when the JSON string is not valid" in httpClient[Possible] {
     underlying =>
-      forAll(Gen.alphaNumStr, headerCarrierGen, successfulHttpResponseGen) { (uri, hc, response) =>
+      forAll(Gen.alphaNumStr, headerCarrierGen, successfulHttpResponseGen) { (uri, hc, _) =>
         buildClient(underlying.httpClient)
-          .postJsonString(uri, "fail")(hc) match {
+          .post(uri, "fail")(hc) match {
           case Left(_)  => succeed
           case Right(_) => fail("Unexpected response")
         }
       }
   }
 
-  private def buildClient[F[_]](underlying: HttpClient[F])(implicit me: MonadError[F, String]): JsonHttpClient[F] =
+  "putJsonString" should "delegate to underlying.put with no changes  when the JSON string is valid" in httpClient[
+    Possible] { underlying =>
+    forAll(Gen.alphaNumStr, Gen.alphaNumStr, headerCarrierGen, successfulHttpResponseGen) {
+      (uri, putBody, hc, response) =>
+        underlying.expectPut(
+          uri,
+          s""""$putBody"""",
+          hc.copy(extraHeaders = ("Content-Type" -> "application/json") :: hc.extraHeaders.toList),
+          response)
+
+        buildClient(underlying.httpClient)
+          .put(uri, s""""$putBody"""")(hc) shouldBe Right(response)
+    }
+  }
+
+  it should "not delegate to underlying.put and fail when the JSON string is not valid" in httpClient[Possible] {
+    underlying =>
+      forAll(Gen.alphaNumStr, headerCarrierGen, successfulHttpResponseGen) { (uri, hc, _) =>
+        buildClient(underlying.httpClient)
+          .put(uri, "fail")(hc) match {
+          case Left(_)  => succeed
+          case Right(_) => fail("Unexpected response")
+        }
+      }
+  }
+
+  private def buildClient[F[_]](underlying: HttpClient[F])(implicit me: MonadError[F, String]): HttpClient[F] =
     underlying.json
 }

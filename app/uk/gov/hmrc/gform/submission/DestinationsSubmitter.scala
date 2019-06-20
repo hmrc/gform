@@ -30,6 +30,12 @@ import uk.gov.hmrc.http.HeaderCarrier
 trait DestinationsSubmitterAlgebra[M[_]] {
   def send(submissionInfo: DestinationSubmissionInfo, formTemplate: FormTemplate, formAlgebra: FormAlgebra[M])(
     implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]]
+
+  def submitToList(
+    destinations: Destinations.DestinationList,
+    submissionInfo: DestinationSubmissionInfo,
+    handlebarsModel: HandlebarsTemplateProcessorModel,
+    formTemplate: FormTemplate)(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]]
 }
 
 class DestinationsSubmitter[M[_]](destinationSubmitter: DestinationSubmitter[M])(implicit monad: Monad[M])
@@ -44,7 +50,7 @@ class DestinationsSubmitter[M[_]](destinationSubmitter: DestinationSubmitter[M])
         submitToList(list, submissionInfo, formAlgebra, formTemplate)
     }
 
-  private def submitToList(
+  def submitToList(
     destinations: Destinations.DestinationList,
     submissionInfo: DestinationSubmissionInfo,
     formAlgebra: FormAlgebra[M],

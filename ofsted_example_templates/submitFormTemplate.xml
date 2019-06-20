@@ -1,0 +1,35 @@
+<SendData xmlns="http://tempuri.org/">
+  <Service>SendApplicationForms</Service>
+  <InputParameters>&lt;?xml version="1.0" encoding="utf-8"?&gt;&lt;Parameters&gt;&lt;DateRange&gt;&lt;StartDateTime&gt;2019-06-11T08:32:50&lt;/StartDateTime&gt;&lt;EndDateTime&gt;2019-06-11T17:32:50&lt;/EndDateTime&gt;&lt;/DateRange&gt;&lt;/Parameters&gt;</InputParameters>
+
+  <ApplicationForms>
+    <ApplicationForm>
+      <FormType />
+      <FormID>123</FormID>
+      <CreatedBy>str1234</CreatedBy>
+      <CreatedDate>2012-12-13T12:12:12</CreatedDate>
+      <Source>Postal</Source>
+      <ParentID>123</ParentID>
+      <CommunicationID>str1234</CommunicationID>
+      <URN>2502240</URN>
+      <Documents>
+        <Attachment>
+          <Type>CR1</Type>
+          <Name>str1234</Name>
+          <Extension>str1234</Extension>
+          <Data>str1234</Data>
+        </Attachment>
+      </Documents>
+      <FormMetaData>
+        <ReferToCIE>Null</ReferToCIE>
+        <ReferToTeamManager>Null</ReferToTeamManager>
+      </FormMetaData>
+      <Payments>
+        <Payment>
+          <Reference>str1234</Reference>
+          <Amount>str1234</Amount>
+        </Payment>
+      </Payments>
+    </ApplicationForm>
+  </ApplicationForms>
+</SendData>

@@ -16,21 +16,20 @@
 
 package uk.gov.hmrc.gform.submission.ofsted
 
+import java.time.LocalDateTime
+
+import cats.implicits._
 import cats.{ Monad, MonadError }
 import uk.gov.hmrc.gform.config.OfstedNotificationConf
-import uk.gov.service.notify.{ SendEmailResponse, SendSmsResponse }
-import cats.implicits._
+import uk.gov.hmrc.gform.sharedmodel.form._
+import uk.gov.service.notify.SendEmailResponse
 
 import scala.collection.JavaConverters._
 import scala.util.{ Failure, Success, Try }
 
 trait Notifier[F[_]] extends OfstedNotificationConf {
 
-  def notifyBySms(templateId: String, phoneNumber: PhoneNumber, personalisation: Map[String, _])(
-    implicit me: MonadError[F, String]): F[SendSmsResponse] =
-    runNotification(Try(notificationClient.sendSms(templateId, phoneNumber.number, personalisation.asJava, "")))
-
-  def notifyByEmail(templateId: String, emailAddress: EmailAddress, personalisation: Map[String, _])(
+  def notifyByEmail(templateId: String, emailAddress: EmailAddress, personalisation: Map[String, String])(
     implicit me: MonadError[F, String]): F[SendEmailResponse] =
     runNotification(Try(notificationClient.sendEmail(templateId, emailAddress.email, personalisation.asJava, "")))
 
@@ -40,17 +39,33 @@ trait Notifier[F[_]] extends OfstedNotificationConf {
   }
 }
 
-class OfstedNotificationClient[F[_]: Monad](notifier: Notifier[F]) {
+class OfstedNotificationClient[F[_]: Monad](notifier: Notifier[F]) extends FormLinkBuilder {
 
-  import notifier.ofstedNotification._
+  def send(notifyRequest: NotifyRequest)(implicit me: MonadError[F, String]): F[OfstedNotificationClientResponse] =
+    notifier
+      .notifyByEmail(
+        formTemplates(notifyRequest.formStatus),
+        EmailAddress(notifier.ofstedNotification.email),
+        personalise(notifyRequest.formId, notifyRequest.formStatus))
+      .map(emailResponse => OfstedNotificationClientResponse(emailResponse))
 
-  def notify(personalisation: Map[String, Any])(
-    implicit me: MonadError[F, String]): F[OfstedNotificationClientResponse] =
-    for {
-      smsResponse <- notifier.notifyBySms(template, PhoneNumber(phoneNumber), personalisation)
-//      emailResponse <- notifier.notifyByEmail(template, EmailAddress(email), personalisation)
-    } yield OfstedNotificationClientResponse(smsResponse, None)
+  private val basicTemplate: (FormId, String) => Map[String, String] =
+    (formId, key) => Map("form-id" -> formId.value, key -> LocalDateTime.now.toString)
+
+  private def personalise(formId: FormId, status: FormStatus): Map[String, String] = status match {
+    case Approved   => basicTemplate(formId, "acceptance-time")
+    case InProgress => basicTemplate(formId, "rejection-time") + ("url" -> buildLink(formId).link)
+    case Submitted  => basicTemplate(formId, "submission-time")
+    case _          => Map.empty
+  }
 }
 
-//TODO remove Option once we have the template from Notify people
-case class OfstedNotificationClientResponse(smsResponse: SendSmsResponse, emailResponse: Option[SendEmailResponse])
+case class OfstedNotificationClientResponse(emailResponse: SendEmailResponse)
+
+trait FormLinkBuilder extends OfstedNotificationConf {
+  def buildLink(formId: FormId): FormLink = {
+    val link = s"${ofstedNotification.formLinkPrefix}${formId.value}"
+    println(link)
+    FormLink(link)
+  }
+}

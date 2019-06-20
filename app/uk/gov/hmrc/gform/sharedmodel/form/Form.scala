@@ -17,12 +17,15 @@
 package uk.gov.hmrc.gform.sharedmodel.form
 
 import cats.Eq
+import cats.instances.string._
+import cats.syntax.eq._
 import julienrf.json.derived
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.UserId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, JsonUtils }
+
 case class VisitIndex(visitsIndex: Set[Int]) extends AnyVal
 
 object VisitIndex {
@@ -130,4 +133,6 @@ object FormStatus {
   implicit val format: OFormat[FormStatus] = derived.oformat
 
   val all: Set[FormStatus] = Set(InProgress, Summary, Validated, Signed, NeedsReview, Approved, Submitted)
+
+  def unapply(s: String): Option[FormStatus] = all.find(_.toString === s)
 }

@@ -25,8 +25,10 @@ import cats.syntax.applicative._
 import cats.syntax.option._
 import play.api.Logger
 import play.api.libs.json.{ JsNull, JsValue, Json }
-import uk.gov.hmrc.gform.sharedmodel.form.{ DestinationSubmissionInfo, FormId }
+import uk.gov.hmrc.gform.form.FormAlgebra
+import uk.gov.hmrc.gform.sharedmodel.form.{ DestinationSubmissionInfo, FormId, FormStatus }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationTestResult, _ }
 import uk.gov.hmrc.gform.submission.handlebars.{ HandlebarsHttpApiSubmitter, HandlebarsTemplateProcessor, RealHandlebarsTemplateProcessor }
 import uk.gov.hmrc.gform.submission.ofsted.OfstedSubmitter
@@ -49,6 +51,8 @@ class RealDestinationSubmitter[M[_], R](
   dms: DmsSubmitter[M],
   handlebars: HandlebarsHttpApiSubmitter[M],
   ofsted: OfstedSubmitter[M],
+  destinationAuditer: DestinationAuditAlgebra[M],
+  formAlgebra: FormAlgebra[M],
   handlebarsTemplateProcessor: HandlebarsTemplateProcessor = new RealHandlebarsTemplateProcessor)(
   implicit monadError: MonadError[M, String])
     extends DestinationSubmitter[M] {
@@ -65,6 +69,7 @@ class RealDestinationSubmitter[M[_], R](
           for {
             _      <- logInfoInMonad(s"Destination ${destination.id.id} is included")
             result <- submit(destination, submissionInfo, model, submitter, formTemplate)
+            _      <- destinationAuditer(destination.id, result.map(_.status), submissionInfo.formId)
           } yield result
         else
           for {
@@ -87,12 +92,23 @@ class RealDestinationSubmitter[M[_], R](
     formTemplate: FormTemplate)(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
     destination match {
       case d: Destination.HmrcDms           => submitToDms(submissionInfo, d).map(_ => None)
-      case d: Destination.HandlebarsHttpApi => submitToHandlebars(d, model)
-      case d: Destination.ReviewingOfsted   => submitForReview(d, submissionInfo).map(_ => None)
-      case d: Destination.ReviewRejection   => submitToReviewRejection(d, submissionInfo.formId).map(_ => None)
+      case d: Destination.HandlebarsHttpApi => submitToHandlebars(d, model, submissionInfo.formId)
+      case d: Destination.Composite =>
+        submitter.submitToList(DestinationList(d.destinations), submissionInfo, model, formTemplate)
+      case d: Destination.StateTransition => transitionState(d, submissionInfo.formId).map(_ => None)
+      case d: Destination.ReviewingOfsted => submitForReview(d, submissionInfo).map(_ => None)
+      case d: Destination.ReviewRejection => submitToReviewRejection(d, submissionInfo.formId).map(_ => None)
       case d: Destination.ReviewApproval =>
         submitToReviewApproval(d, submissionInfo.formId, submitter, formTemplate).map(_ => None)
     }
+
+  def transitionState(d: Destination.StateTransition, formId: FormId)(implicit hc: HeaderCarrier): M[Unit] =
+    formAlgebra
+      .updateFormStatus(formId, d.requiredState)
+      .flatMap { stateAchieved =>
+        if (stateAchieved === d.requiredState || !d.failOnError) monadError.pure(())
+        else raiseError(d.id, RealDestinationSubmitter.stateTransitionFailOnErrorMessage(d, stateAchieved))
+      }
 
   def submitToReviewApproval(
     destination: Destination.ReviewApproval,
@@ -143,14 +159,16 @@ class RealDestinationSubmitter[M[_], R](
       }
     }
 
-  private def submitToHandlebars(d: Destination.HandlebarsHttpApi, model: HandlebarsTemplateProcessorModel)(
-    implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
+  private def submitToHandlebars(
+    d: Destination.HandlebarsHttpApi,
+    model: HandlebarsTemplateProcessorModel,
+    formId: FormId)(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
     handlebars(d, model)
       .flatMap[HandlebarsDestinationResponse] { response =>
         if (response.isSuccess)
           createSuccessResponse(d, response)
         else if (d.failOnError)
-          createFailureResponse(d, response)
+          createFailureResponse(d, response, formId)
         else {
           Logger.info(
             s"Destination ${d.id} returned status code ${response.status} but has 'failOnError' set to false. Ignoring.")
@@ -159,18 +177,19 @@ class RealDestinationSubmitter[M[_], R](
       }
       .map(Option(_))
 
-  private def createFailureResponse(
-    d: Destination.HandlebarsHttpApi,
-    response: HttpResponse): M[HandlebarsDestinationResponse] =
-    monadError.raiseError(RealDestinationSubmitter.handlebarsHttpApiFailOnErrorMessage(d, response))
+  private def createFailureResponse(d: Destination.HandlebarsHttpApi, response: HttpResponse, formId: FormId)(
+    implicit hc: HeaderCarrier): M[HandlebarsDestinationResponse] =
+    destinationAuditer(d.id, Some(response.status), formId).flatMap { _ =>
+      monadError.raiseError(RealDestinationSubmitter.handlebarsHttpApiFailOnErrorMessage(d, response))
+    }
 
   private def createSuccessResponse(
     d: Destination.HandlebarsHttpApi,
     response: HttpResponse): M[HandlebarsDestinationResponse] =
     monadError.pure(HandlebarsDestinationResponse(d, response))
 
-  protected def raiseError(destinationId: DestinationId, msg: String) =
-    monadError.raiseError(s"Destination ${destinationId.id} : $msg")
+  protected def raiseError[T](destinationId: DestinationId, msg: String) =
+    monadError.raiseError[T](s"Destination ${destinationId.id} : $msg")
 }
 
 object DestinationSubmitter {
@@ -184,6 +203,9 @@ object DestinationSubmitter {
 object RealDestinationSubmitter {
   def handlebarsHttpApiFailOnErrorMessage(d: Destination.HandlebarsHttpApi, response: HttpResponse): String =
     s"Destination ${d.id} returned status code ${response.status} and has 'failOnError' set to true. Failing."
+
+  def stateTransitionFailOnErrorMessage(d: Destination.StateTransition, currentState: FormStatus): String =
+    s"Destination ${d.id} cannot achieve transition from $currentState to ${d.requiredState}"
 }
 
 object SelfTestingDestinationSubmitter {
@@ -207,7 +229,7 @@ class SelfTestingDestinationSubmitter[M[_]](
     formTemplate: FormTemplate)(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
     test.expectedResults
       .find(_.destinationId === destination.id)
-      .map(verifySpecifiedDestination(destination, model, _))
+      .map(verifySpecifiedDestination(destination, model, _, submitter, formTemplate))
       .getOrElse(verifyUnspecifiedDestination(destination, model))
 
   private def verifyUnspecifiedDestination(
@@ -224,10 +246,12 @@ class SelfTestingDestinationSubmitter[M[_]](
   private def verifySpecifiedDestination(
     destination: Destination,
     model: HandlebarsTemplateProcessorModel,
-    expected: DestinationTestResult): ReturnType =
+    expected: DestinationTestResult,
+    destinationsSubmitter: DestinationsSubmitterAlgebra[M],
+    formTemplate: FormTemplate)(implicit hc: HeaderCarrier): ReturnType =
     (DestinationSubmitter.isIncludeIf(destination, model, handlebarsTemplateProcessor), expected.includeIf) match {
       case (false, false)     => succeed(None)
-      case (true, true)       => verifyIncludedDestination(destination, model, expected)
+      case (true, true)       => verifyIncludedDestination(destination, model, expected, destinationsSubmitter, formTemplate)
       case (actual, expected) => inconsistentIncludeIfs(destination, actual, expected)
     }
 
@@ -242,13 +266,18 @@ class SelfTestingDestinationSubmitter[M[_]](
   private def verifyIncludedDestination(
     destination: Destination,
     model: HandlebarsTemplateProcessorModel,
-    expected: DestinationTestResult): M[Option[HandlebarsDestinationResponse]] =
+    expected: DestinationTestResult,
+    destinationsSubmitter: DestinationsSubmitterAlgebra[M],
+    formTemplate: FormTemplate)(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
     destination match {
       case _: Destination.HmrcDms           => succeed(None)
       case d: Destination.HandlebarsHttpApi => verifyHandlebarsDestination(d, model, expected)
-      case _: Destination.ReviewingOfsted   => succeed(None)
-      case _: Destination.ReviewRejection   => succeed(None)
-      case _: Destination.ReviewApproval    => succeed(None)
+      case d: Destination.Composite =>
+        destinationsSubmitter.submitToList(DestinationList(d.destinations), null, model, formTemplate)
+      case _: Destination.StateTransition => succeed(None)
+      case _: Destination.ReviewingOfsted => succeed(None)
+      case _: Destination.ReviewRejection => succeed(None)
+      case _: Destination.ReviewApproval  => succeed(None)
     }
 
   private def verifyHandlebarsDestination(

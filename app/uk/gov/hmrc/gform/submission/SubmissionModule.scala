@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.submission
 
 import play.api.libs.json.JsValue
-import uk.gov.hmrc.gform.config.ConfigModule
+import uk.gov.hmrc.gform.config.{ ConfigModule, OfstedNotificationConf }
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.email.EmailModule
 import uk.gov.hmrc.gform.fileupload.FileUploadModule
@@ -30,6 +30,7 @@ import uk.gov.hmrc.gform.submission.ofsted.{ Notifier, OfstedEmailReviewNotifier
 import uk.gov.hmrc.gform.time.TimeModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.gform.core._
+import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, UserId }
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
@@ -66,7 +67,7 @@ class SubmissionModule(
     override def updateUserData(formId: FormId, userData: UserData)(implicit hc: HeaderCarrier): FOpt[Unit] =
       fromFutureA(formService.updateUserData(formId, userData))
 
-    def updateFormStatus(formId: FormId, newStatus: FormStatus)(implicit hc: HeaderCarrier): FOpt[Unit] =
+    def updateFormStatus(formId: FormId, newStatus: FormStatus)(implicit hc: HeaderCarrier): FOpt[FormStatus] =
       fromFutureA(formService.updateFormStatus(formId, newStatus))
 
     def updateDestinationSubmissionInfo(formId: FormId, info: Option[DestinationSubmissionInfo])(
@@ -98,10 +99,17 @@ class SubmissionModule(
       formTemplateModule.fOptFormTemplateAlgebra,
       new OfstedEmailReviewNotifier[FOpt](new OfstedNotificationClient(new Notifier[FOpt] {})))
 
+  private val destinationAuditer: RepoDestinationAuditer =
+    new RepoDestinationAuditer(
+      new Repo[DestinationAudit]("destinationAudit", mongoModule.mongo, _.id.toString),
+      fOptFormAlgebra)
+
   private val realDestinationSubmitter = new RealDestinationSubmitter(
     fileUploadServiceDmsSubmitter,
     handlebarsHttpApiModule.handlebarsHttpSubmitter,
-    realOfstedSubmitter
+    realOfstedSubmitter,
+    destinationAuditer,
+    fOptFormAlgebra
   )
 
   val submissionService = new SubmissionService(

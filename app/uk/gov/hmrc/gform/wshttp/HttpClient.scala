@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.wshttp
 import cats.{ Endo, MonadError }
 import cats.syntax.applicative._
 import cats.syntax.flatMap._
-import play.api.libs.json.Json
+import play.api.libs.json.{ JsValue, Json }
 import uk.gov.hmrc.gform.core.{ FOpt, _ }
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpReads, HttpResponse }
 
@@ -55,35 +55,43 @@ object HttpClient {
     def successResponsesOnly(implicit monadError: MonadError[F, String]): SuccessfulResponseHttpClient[F] =
       new SuccessfulResponseHttpClient(underlying)
 
-    def json(implicit monadError: MonadError[F, String]): JsonHttpClient[F] = new JsonHttpClient[F] {
+    def json(implicit monadError: MonadError[F, String]): HttpClient[F] = new HttpClient[F] {
+      private val contentType = "application/json"
+
       override def get(uri: String)(implicit hc: HeaderCarrier): F[HttpResponse] = underlying.get(uri)
-      override def post(uri: String, body: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
-        underlying.post(uri, body)
-      override def put(uri: String, body: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
-        underlying.put(uri, body)
 
-      def postJsonString(uri: String, jsonString: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
-        try {
-          post(uri, Json.parse(jsonString).toString)(addJsonContentTypeHeader(hc))
-        } catch {
-          case ex: Exception =>
-            monadError.raiseError(
-              s"Attempt to POST JSON failed because the given String is not valid JSON: ${ex.getMessage}. The String is: $jsonString")
-        }
+      def post(uri: String, jsonString: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
+        httpRequest(underlying.post(_, _)(addContentTypeHeader(hc, contentType)), uri, jsonString)(Some(Json.parse))
 
-      def putJsonString(uri: String, jsonString: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
-        try {
-          put(uri, Json.parse(jsonString).toString)(addJsonContentTypeHeader(hc))
-        } catch {
-          case ex: Exception =>
-            monadError.raiseError(
-              s"Attempt to PUT JSON failed because the given String is not valid JSON: ${ex.getMessage}. The String is: $jsonString")
-        }
+      def put(uri: String, jsonString: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
+        httpRequest(underlying.put(_, _)(addContentTypeHeader(hc, contentType)), uri, jsonString)(Some(Json.parse))
+    }
 
-      private def addJsonContentTypeHeader(hc: HeaderCarrier): HeaderCarrier =
-        hc.copy(extraHeaders = ("Content-Type" -> "application/json") :: hc.extraHeaders.toList)
+    def soapXml(implicit monadError: MonadError[F, String]): HttpClient[F] = new HttpClient[F] {
+      private val contentType = "application/soap+xml; charset=utf-8"
+
+      override def get(uri: String)(implicit hc: HeaderCarrier): F[HttpResponse] = underlying.get(uri)
+
+      def post(uri: String, xmlString: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
+        httpRequest(underlying.post(_, _)(addContentTypeHeader(hc, contentType)), uri, xmlString)(None)
+
+      def put(uri: String, xmlString: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
+        httpRequest(underlying.put(_, _)(addContentTypeHeader(hc, contentType)), uri, xmlString)(None)
     }
   }
+
+  private def addContentTypeHeader(hc: HeaderCarrier, contentType: String): HeaderCarrier =
+    hc.copy(extraHeaders = ("Content-Type" -> contentType) :: hc.extraHeaders.toList)
+
+  private def httpRequest[F[_]](method: (String, String) => F[HttpResponse], uri: String, payload: String)(
+    parser: Option[String => JsValue])(implicit hc: HeaderCarrier, monadError: MonadError[F, String]): F[HttpResponse] =
+    try {
+      method(uri, parser.fold(payload)(fn => fn(payload).toString))
+    } catch {
+      case ex: Exception =>
+        monadError.raiseError(
+          s"Attempt send a request failed because the given String is not valid: ${ex.getMessage}. The String is: $payload")
+    }
 }
 
 class UriBuildingHttpClient[F[_]](uriBuilder: Endo[String], underlying: HttpClient[F]) extends HttpClient[F] {
@@ -127,11 +135,6 @@ class SuccessfulResponseHttpClient[F[_]](underlying: HttpClient[F])(implicit mon
 object SuccessfulResponseHttpClient {
   def unsuccessfulMessage(method: String, uri: String, statusCode: Int): String =
     s"Couldn't $method from URI '$uri'. Got response status code $statusCode"
-}
-
-trait JsonHttpClient[F[_]] extends HttpClient[F] {
-  def postJsonString(uri: String, json: String)(implicit hc: HeaderCarrier): F[HttpResponse]
-  def putJsonString(uri: String, json: String)(implicit hc: HeaderCarrier): F[HttpResponse]
 }
 
 class AuditingHttpClient(wsHttp: WSHttp)(implicit ec: ExecutionContext) extends HttpClient[FOpt] {

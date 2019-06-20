@@ -18,10 +18,10 @@ package uk.gov.hmrc.gform.submission.ofsted
 
 import cats.MonadError
 import cats.syntax.applicative._
-import uk.gov.hmrc.gform.sharedmodel.form.FormId
+import uk.gov.hmrc.gform.sharedmodel.form._
 
 trait OfstedReviewNotificationAlgebra[F[_]] {
-  def requestReview(ofstedNotification: OfstedNotification): F[Unit]
+  def requestReview(requestReviewFormId: FormId): F[Unit]
   def reject(reviewedFormId: FormId, rejectionComment: String): F[Unit]
   def approve(reviewedFormId: FormId): F[Unit]
 }
@@ -29,21 +29,21 @@ trait OfstedReviewNotificationAlgebra[F[_]] {
 class OfstedEmailReviewNotifier[F[_]](notificationClient: OfstedNotificationClient[F])(
   implicit monadError: MonadError[F, String])
     extends OfstedReviewNotificationAlgebra[F] {
-  override def requestReview(ofstedNotification: OfstedNotification): F[Unit] = {
-    notificationClient.notify(personlise("no id yet", "Submitted"))
-    println(s"Review form: ${ofstedNotification.formId}")
+
+  override def requestReview(requestReviewFormId: FormId): F[Unit] = {
+    notificationClient.send(NotifyRequest(requestReviewFormId, Submitted))
+    println(s"Review form: $requestReviewFormId")
   }.pure
 
   override def reject(reviewedFormId: FormId, rejectionComment: String): F[Unit] = {
-    notificationClient.notify(personlise(reviewedFormId.value, "Rejected"))
+    notificationClient.send(NotifyRequest(reviewedFormId, InProgress))
     println(s"Rejected: ${reviewedFormId.value} with comment: $rejectionComment")
   }.pure
 
   override def approve(reviewedFormId: FormId): F[Unit] = {
-    notificationClient.notify(personlise(reviewedFormId.value, "Approved"))
+    notificationClient.send(NotifyRequest(reviewedFormId, Approved))
     println(s"Approved: ${reviewedFormId.value}")
   }.pure
-
-  private val personlise: (String, String) => Map[String, Any] =
-    (id, status) => Map[String, Any]("formId" -> id, "status" -> status)
 }
+
+case class NotifyRequest(formId: FormId, formStatus: FormStatus)

@@ -16,8 +16,10 @@
 
 package uk.gov.hmrc.gform.sharedmodel
 
+import cats.data.State
 import play.api.libs.json._
 import play.api.mvc.JavascriptLiteral
+import uk.gov.hmrc.gform.typeclasses.Rnd
 
 case class AccessCode(value: String) extends AnyVal
 
@@ -26,5 +28,23 @@ object AccessCode {
 
   implicit val jLiteral = new JavascriptLiteral[AccessCode] {
     def to(value: AccessCode): String = value.value
+  }
+
+  def random(implicit rnd: Rnd[Int]): AccessCode = {
+    def alphanumeric() = {
+      val chars = ('A' to 'Z') ++ ('0' to '9').toList
+      def nextAlphaNum: Char = chars.charAt(rnd.random(chars.length))
+      Stream continually nextAlphaNum
+    }
+
+    def getChars(i: Int) = State[Rnd[Int], String](r => (r, alphanumeric.take(i).toList.mkString))
+
+    val refGen = for {
+      a <- getChars(3)
+      b <- getChars(4)
+      c <- getChars(3)
+    } yield AccessCode(a + "-" + b + "-" + c)
+
+    refGen.runA(rnd).value
   }
 }

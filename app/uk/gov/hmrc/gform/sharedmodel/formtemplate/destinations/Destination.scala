@@ -22,7 +22,10 @@ import julienrf.json.derived
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import UploadableConditioning._
+import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.sharedmodel.UserId
+import JsonUtils.nelFormat
+import uk.gov.hmrc.gform.sharedmodel.form.FormStatus
 
 sealed trait DestinationWithCustomerId {
   def customerId(): TextExpression
@@ -56,12 +59,20 @@ object Destination {
 
   case class HandlebarsHttpApi(
     id: DestinationId,
-    profile: Profile,
+    profile: ProfileName,
     uri: String,
     method: HttpMethod,
     payload: Option[String],
     includeIf: String,
     failOnError: Boolean)
+      extends Destination
+
+  case class Composite(id: DestinationId, includeIf: String, destinations: NonEmptyList[Destination])
+      extends Destination {
+    val failOnError: Boolean = false
+  }
+
+  case class StateTransition(id: DestinationId, requiredState: FormStatus, includeIf: String, failOnError: Boolean)
       extends Destination
 
   case class ReviewingOfsted(
@@ -91,18 +102,25 @@ object Destination {
   val typeDiscriminatorFieldName: String = "type"
   val hmrcDms: String = "hmrcDms"
   val handlebarsHttpApi: String = "handlebarsHttpApi"
+  val composite: String = "composite"
+  val stateTransition: String = "stateTransition"
   val reviewingOfsted: String = "reviewingOfsted"
   val reviewRejection: String = "reviewRejection"
   val reviewApproval: String = "reviewApproval"
 
-  implicit val format: OFormat[Destination] = {
-    implicit val d: OFormat[Destination] = derived.oformat
+  private implicit def nonEmptyListOfDestinationsFormat: OFormat[NonEmptyList[Destination]] =
+    derived.oformat[NonEmptyList[Destination]]
+
+  implicit def format: OFormat[Destination] = {
+    implicit def d: OFormat[Destination] = derived.oformat[Destination]
 
     OFormatWithTemplateReadFallback(
       ADTFormat.adtRead[Destination](
         typeDiscriminatorFieldName,
         hmrcDms           -> UploadableHmrcDmsDestination.reads,
         handlebarsHttpApi -> UploadableHandlebarsHttpApiDestination.reads,
+        composite         -> UploadableCompositeDestination.reads,
+        stateTransition   -> UploadableStateTransitionDestination.reads,
         reviewingOfsted   -> UploadableReviewingOfstedDestination.reads,
         reviewRejection   -> UploadableReviewRejectionDestination.reads,
         reviewApproval    -> UploadableReviewApprovalDestination.reads
@@ -143,9 +161,52 @@ object UploadableHmrcDmsDestination {
   }
 }
 
+case class UploadableCompositeDestination(
+  id: DestinationId,
+  convertSingleQuotes: Option[Boolean],
+  includeIf: Option[String],
+  destinations: NonEmptyList[Destination]) {
+  def toCompositeDestination: Either[String, Destination.Composite] =
+    for {
+      cvii <- addErrorInfo(id, "includeIf")(condition(convertSingleQuotes, includeIf))
+    } yield Destination.Composite(id, cvii.getOrElse(true.toString), destinations)
+}
+
+object UploadableCompositeDestination {
+  implicit val reads: Reads[Destination.Composite] = new Reads[Destination.Composite] {
+    private val d: Reads[UploadableCompositeDestination] = derived.reads[UploadableCompositeDestination]
+    override def reads(json: JsValue): JsResult[Destination.Composite] =
+      d.reads(json).flatMap(_.toCompositeDestination.fold(JsError(_), JsSuccess(_)))
+  }
+}
+
+case class UploadableStateTransitionDestination(
+  id: DestinationId,
+  requiredState: String,
+  convertSingleQuotes: Option[Boolean],
+  includeIf: Option[String],
+  failOnError: Option[Boolean] = None) {
+  def toStateTransitionDestination: Either[String, Destination.StateTransition] =
+    for {
+      cvii <- addErrorInfo(id, "includeIf")(condition(convertSingleQuotes, includeIf))
+      rs <- addErrorInfo(id, "requiredState")(
+             FormStatus
+               .unapply(requiredState)
+               .fold[Either[String, FormStatus]](s"Invalid requiredState: '$requiredState'".asLeft) { _.asRight })
+    } yield Destination.StateTransition(id, rs, cvii.getOrElse(true.toString), failOnError.getOrElse(true))
+}
+
+object UploadableStateTransitionDestination {
+  implicit val reads: Reads[Destination.StateTransition] = new Reads[Destination.StateTransition] {
+    private val d: Reads[UploadableStateTransitionDestination] = derived.reads[UploadableStateTransitionDestination]
+    override def reads(json: JsValue): JsResult[Destination.StateTransition] =
+      d.reads(json).flatMap(_.toStateTransitionDestination.fold(JsError(_), JsSuccess(_)))
+  }
+}
+
 case class UploadableHandlebarsHttpApiDestination(
   id: DestinationId,
-  profile: Profile,
+  profile: ProfileName,
   uri: String,
   method: HttpMethod,
   payload: Option[String],

@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.submission.handlebars
+package uk.gov.hmrc.gform.formtemplate
 
-case class MdtpServiceName(name: String) extends AnyVal
-case class MdtpServiceConfiguration(
-  serviceName: MdtpServiceName,
-  baseUrl: String,
-  authorizationToken: Option[String],
-  environment: Option[String])
+import reactivemongo.api.DefaultDB
+import uk.gov.hmrc.gform.repo.Repo
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.SuperFormTemplate
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.SuperFormTemplate._
+
+class SuperFormTemplateRepo(mongo: () => DefaultDB)
+    extends Repo[SuperFormTemplate]("superFormTemplate", mongo, _._id.value)

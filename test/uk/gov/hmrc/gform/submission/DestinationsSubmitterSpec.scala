@@ -44,7 +44,8 @@ class DestinationsSubmitterSpec extends Spec {
       expiryDays: Long,
       initialFields: Seq[FormField])(implicit hc: HeaderCarrier): Id[FormId] = ???
     override def updateUserData(formId: FormId, userData: UserData)(implicit hc: HeaderCarrier): Id[Unit] = ???
-    override def updateFormStatus(formId: FormId, newStatus: FormStatus)(implicit hc: HeaderCarrier): Id[Unit] = ???
+    override def updateFormStatus(formId: FormId, newStatus: FormStatus)(implicit hc: HeaderCarrier): Id[FormStatus] =
+      ???
     override def updateDestinationSubmissionInfo(formId: FormId, info: Option[DestinationSubmissionInfo])(
       implicit hc: HeaderCarrier): Id[Unit] = ???
     override def saveKeyStore(formId: FormId, data: Map[String, JsValue])(implicit hc: HeaderCarrier): Id[Unit] = ???

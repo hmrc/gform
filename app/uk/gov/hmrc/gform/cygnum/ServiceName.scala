@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.submission.handlebars
+package uk.gov.hmrc.gform.cygnum
 
-import uk.gov.hmrc.gform.wshttp.JsonHttpClient
-
-case class MdtpHttpClient[F[_]](clients: Map[MdtpServiceName, JsonHttpClient[F]]) {
-  def select(serviceName: MdtpServiceName): JsonHttpClient[F] = clients(serviceName)
-}
+sealed trait ServiceName
+case object SendData extends ServiceName
+case object GetData extends ServiceName

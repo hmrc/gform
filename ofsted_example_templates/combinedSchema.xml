@@ -1,0 +1,1994 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:pdt="http://www.govtalk.gov.uk" version="2.1">
+    <xs:include schemaLocation="ApplicationFormsCommon.xsd" />
+
+    <xs:element name="ApplicationForms">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="ApplicationForm" type="ApplicationFormType" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="AdditionalContactsType">
+        <xs:sequence>
+            <xs:element name="Contacts" type="IndividualType" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <!--<xs:simpleType name ="YNType" >
+      <xs:restriction base ="xs:string">
+        <xs:enumeration value ="Y"/>
+        <xs:enumeration value ="N"/>
+      </xs:restriction>
+    </xs:simpleType>-->
+
+    <xs:simpleType name ="YesNoType" >
+        <xs:restriction base ="xs:string">
+            <xs:enumeration value ="Null"/>
+            <xs:enumeration value ="Yes"/>
+            <xs:enumeration value ="No"/>
+        </xs:restriction>
+
+    </xs:simpleType>
+    <xs:simpleType name="SexType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="M" />
+            <xs:enumeration value="F" />
+            <xs:enumeration value="U" />
+            <xs:enumeration value="P" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name ="TitleType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Mr" />
+            <xs:enumeration value="Mrs" />
+            <xs:enumeration value="Miss" />
+            <xs:enumeration value="Ms" />
+            <xs:enumeration value="Other" />
+            <xs:enumeration value="Master" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="ForenameType">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="50"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name ="SurnameType">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="30"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name ="EmailAddressType">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="50"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name ="TelephoneNumberType">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="30"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name ="FaxType">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="20"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name ="ShortDescType">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="50"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name ="MediumDescType">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="80"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name ="OrganisationNameType">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="100"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name ="SettingNameType">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="150"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="TimestampType">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="18"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name ="ProvisionTypeIdType">
+        <xs:restriction base="xs:int">
+            <xs:enumeration value="0"/>
+            <xs:enumeration value="1"/>
+            <xs:enumeration value="2"/>
+            <xs:enumeration value="3"/>
+            <xs:enumeration value="4"/>
+            <xs:enumeration value="5"/>
+            <xs:enumeration value="11"/>
+            <xs:enumeration value="12"/>
+            <xs:enumeration value="13"/>
+            <xs:enumeration value="14"/>
+            <xs:enumeration value="15"/>
+            <xs:enumeration value="16"/>
+            <xs:enumeration value="17"/>
+            <xs:enumeration value="18"/>
+            <xs:enumeration value="19"/>
+            <xs:enumeration value="20"/>
+            <xs:enumeration value="21"/>
+            <xs:enumeration value="30"/>
+            <xs:enumeration value="31"/>
+            <xs:enumeration value="32"/>
+            <xs:enumeration value="33"/>
+            <xs:enumeration value="34"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+
+
+
+    <xs:simpleType name="AreaIdType">
+        <xs:restriction base="xs:int">
+            <xs:enumeration value="101" />
+            <xs:enumeration value="102" />
+            <xs:enumeration value="103" />
+            <xs:enumeration value="104" />
+            <xs:enumeration value="105" />
+            <xs:enumeration value="106" />
+            <xs:enumeration value="107" />
+            <xs:enumeration value="108" />
+            <xs:enumeration value="109" />
+            <xs:enumeration value="110" />
+            <xs:enumeration value="111" />
+            <xs:enumeration value="112" />
+            <xs:enumeration value="113" />
+            <xs:enumeration value="114" />
+            <xs:enumeration value="115" />
+            <xs:enumeration value="116" />
+            <xs:enumeration value="117" />
+            <xs:enumeration value="118" />
+            <xs:enumeration value="119" />
+            <xs:enumeration value="120" />
+            <xs:enumeration value="121" />
+            <xs:enumeration value="122" />
+            <xs:enumeration value="123" />
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name ="RegionIdType">
+        <xs:restriction base="xs:int">
+            <xs:enumeration value="11" />
+            <xs:enumeration value="12" />
+            <xs:enumeration value="13" />
+            <xs:enumeration value="14" />
+            <xs:enumeration value="15" />
+            <xs:enumeration value="21" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name ="LocalAuthorityIDType">
+        <xs:restriction base="xs:integer">
+            <!--<xs:restriction base="xs:string">
+              <xs:enumeration value="11"/>
+              <xs:enumeration value="12"/>
+              <xs:enumeration value="13"/>
+              <xs:enumeration value="14"/>
+              <xs:enumeration value="15"/>
+              <xs:enumeration value="21"/>-->
+            <!--FULL LIST TO BE ADDED-->
+        </xs:restriction>
+    </xs:simpleType>
+
+
+    <xs:simpleType name="CompanyNameType">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="100"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="CountyType">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="50"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="TelephoneLongType">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="150"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="PostCodeType">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="9"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="NameType">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="50"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="GenericNameType">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="100"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="TownType">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="50"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="ReferenceNumberType">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="20"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="OrganisationTypeIDType">
+        <xs:restriction base="xs:int">
+            <xs:enumeration value="0"/>
+            <xs:enumeration value="1"/>
+            <xs:enumeration value="2"/>
+            <xs:enumeration value="3"/>
+            <xs:enumeration value="4"/>
+            <xs:enumeration value="5"/>
+            <xs:enumeration value="6"/>
+            <xs:enumeration value="7"/>
+            <xs:enumeration value="8"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="OrganisationTypeDescType">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="100"/>
+            <!--<xs:enumeration value="Unknown"/>
+                <xs:enumeration value="LocalAuthority"/>
+                <xs:enumeration value="Organisation"/>
+                <xs:enumeration value="Committee"/>
+                <xs:enumeration value="Partnership"/>
+                <xs:enumeration value="InformalPartnership"/>
+                <xs:enumeration value="StatutoryBody"/>
+                <xs:enumeration value="Company"/>
+                <xs:enumeration value="Other"/>-->
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="RegistrationStatusIDType">
+        <xs:restriction base="xs:integer">
+            <xs:enumeration value="0"/>
+            <xs:enumeration value="1"/>
+            <xs:enumeration value="2"/>
+            <xs:enumeration value="3"/>
+            <xs:enumeration value="4"/>
+            <xs:enumeration value="5"/>
+            <xs:enumeration value="6"/>
+            <xs:enumeration value="7"/>
+            <xs:enumeration value="8"/>
+            <xs:enumeration value="9"/>
+            <xs:enumeration value="10"/>
+            <xs:enumeration value="11"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="RegistrationStatusDescType">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="100"/>
+            <!--<xs:enumeration value="Null"/>
+                  <xs:enumeration value="NotRegistered"/>
+                  <xs:enumeration value="Active"/>
+                  <xs:enumeration value="ApplicationWithdrawn"/>
+                  <xs:enumeration value="Cancelled"/>
+                  <xs:enumeration value="ClosedOpenedInError"/>
+                  <xs:enumeration value="Exempt"/>
+                  <xs:enumeration value="Proposed"/>
+                  <xs:enumeration value="Refused"/>
+                  <xs:enumeration value="Resigned"/>
+                  <xs:enumeration value="Suspended"/>
+                  <xs:enumeration value="Lapsed"/>-->
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="ProvisionTypeDescType">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="100"/>
+            <!--<xs:enumeration value="Null"/>
+                  <xs:enumeration value="Childminder"/>
+                  <xs:enumeration value="DayCare"/>
+                  <xs:enumeration value="CMNetwork"/>
+                  <xs:enumeration value="PortageScheme"/>
+                  <xs:enumeration value="IndependentSchool"/>
+                  <xs:enumeration value="ChildrensHome"/>
+                  <xs:enumeration value="VoluntaryAdoptionAgency"/>
+                  <xs:enumeration value="IndependentFosteringAgency"/>
+                  <xs:enumeration value="AdoptionSupportAgency"/>
+                  <xs:enumeration value="ResidentialFamilyCentre"/>
+                  <xs:enumeration value="BoardingSchool"/>
+                  <xs:enumeration value="FurtherEducationCollege"/>
+                  <xs:enumeration value="ResidentialSpecialSchool"/>
+                  <xs:enumeration value="LocalAuthorityAdoptionAgency"/>
+                  <xs:enumeration value="LocalAuthorityFosteringAgency"/>
+                  <xs:enumeration value="PrivateFosteringArrangements"/>
+                  <xs:enumeration value="HomeChildcarer"/>
+                  <xs:enumeration value="ChildminderVCR"/>
+                  <xs:enumeration value="ChildcareOnDomesticPremises"/>
+                  <xs:enumeration value="ChildcareOnNonDomesticPremises"/>-->
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="ProvisionTypeIDType">
+        <xs:restriction base="xs:integer">
+            <!--<xs:enumeration value="0"/>
+                  <xs:enumeration value="1"/>
+                  <xs:enumeration value="2"/>
+                  <xs:enumeration value="3"/>
+                  <xs:enumeration value="4"/>
+                  <xs:enumeration value="5"/>
+                  <xs:enumeration value="11"/>
+                  <xs:enumeration value="12"/>
+                  <xs:enumeration value="13"/>
+                  <xs:enumeration value="14"/>
+                  <xs:enumeration value="15"/>
+                  <xs:enumeration value="16"/>
+                  <xs:enumeration value="17"/>
+                  <xs:enumeration value="18"/>
+                  <xs:enumeration value="19"/>
+                  <xs:enumeration value="20"/>
+                  <xs:enumeration value="21"/>
+                  <xs:enumeration value="30"/>
+                  <xs:enumeration value="31"/>
+                  <xs:enumeration value="32"/>
+                  <xs:enumeration value="33"/>-->
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="AssociationCommentsType">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="100"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="IsaRegistrationNumberType">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="20"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="AssociationsType">
+        <xs:sequence>
+            <xs:element name="Association" type="AssociationType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="AssociationType">
+        <xs:sequence>
+            <xs:element name="Comments" type="AssociationCommentsType" minOccurs="0"/>
+            <xs:element name="Paid" type="YesNoType" minOccurs="0"/>
+            <xs:element name="DateFrom" type="xs:date" minOccurs="0"/>
+            <xs:element name="DateTo" type="xs:date" minOccurs="0"/>
+            <xs:element name="TypeID" type="AssociationTypeIDType" minOccurs="1"/>
+            <xs:element name="Type" type="xs:string" minOccurs="0"/>
+            <xs:element name="SettingName" type="SettingNameType" minOccurs ="0"/>
+            <xs:element name="SettingAddress1" type="AddressLineType" minOccurs ="0"/>
+            <xs:element name="SettingPostCode" type="PostCodeType" minOccurs ="0"/>
+            <xs:element name="AssociationID" type="xs:integer" minOccurs ="0"/>
+            <xs:element name="RegistrationID" type="xs:integer" minOccurs ="0"/>
+            <xs:element name="RegistrationStatus" type="xs:string" minOccurs ="0"/>
+            <xs:element name="Timestamp" type="TimestampType" minOccurs ="0"/>
+            <xs:element name="IndividualID" type="xs:integer" minOccurs ="1" />
+            <xs:element name="URN" type="ReferenceNumberType" minOccurs="0"/>
+            <xs:element name="ProvisionTypeID" type="ProvisionTypeIDType" minOccurs ="0"/>
+            <xs:element name="WorkWithChildren" type="YesNoType" minOccurs ="0"/>
+            <xs:element name="PartOfRatio" type="YesNoType" minOccurs ="0"/>
+            <xs:element name="ApplicationReceived" type="YesNoType" minOccurs ="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:simpleType name="AssociationTypeIDType">
+        <xs:restriction base="xs:integer">
+            <xs:enumeration value="0"/>
+            <xs:enumeration value="1"/>
+            <xs:enumeration value="19"/>
+            <xs:enumeration value="9"/>
+            <xs:enumeration value="10"/>
+            <xs:enumeration value="11"/>
+            <xs:enumeration value="12"/>
+            <xs:enumeration value="14"/>
+            <xs:enumeration value="28"/>
+            <xs:enumeration value="30"/>
+            <xs:enumeration value="31"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="AssociationTypeDescType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Null"/>
+            <xs:enumeration value="Provider"/>
+            <xs:enumeration value="NominatedPerson"/>
+            <xs:enumeration value="HouseholdUnder16"/>
+            <xs:enumeration value="HouseholdOver16"/>
+            <xs:enumeration value="Astnt_coCM"/>
+            <xs:enumeration value="Childminder"/>
+            <xs:enumeration value="Manager"/>
+            <xs:enumeration value="Billing"/>
+            <xs:enumeration value="RegisteredManager"/>
+            <xs:enumeration value="RegisteredIndividual"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="OtherNameTypeIDType">
+        <xs:restriction base="xs:integer">
+            <xs:enumeration value="1"/>
+            <xs:enumeration value="2"/>
+            <xs:enumeration value="3"/>
+            <xs:enumeration value="4"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="OtherNameTypeDescType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Null"/>
+            <xs:enumeration value="Name at Birth"/>
+            <xs:enumeration value="Former Name"/>
+            <xs:enumeration value="Any other"/>
+            <xs:enumeration value="LA Prev Name"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+
+    <xs:complexType name="OtherNamesType">
+        <xs:sequence>
+            <xs:element name="OtherName" type="OtherNameType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="OtherNameType">
+        <xs:sequence>
+            <xs:element name="FirstName" type="xs:string" minOccurs="0"/>
+            <xs:element name="Surname" type="xs:string" minOccurs="0"/>
+            <xs:element name="DateFrom" type="xs:dateTime" minOccurs="0" />
+            <xs:element name="DateTo" type="xs:dateTime" minOccurs="0" />
+            <xs:element name="ID" type="xs:int" minOccurs="0"/>
+            <xs:element name="OtherNameTypeDesc" type="OtherNameTypeDescType" minOccurs="0"/>
+            <xs:element name="OtherNameTypeID" type="OtherNameTypeIDType" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+
+    <!-- temporarily renamed from OtherNameType until types can be merged -->
+
+    <xs:simpleType name="ApplicationStatusIDType">
+        <xs:restriction base="xs:integer">
+            <xs:enumeration value="1"/>
+            <xs:enumeration value="2"/>
+            <xs:enumeration value="3"/>
+            <xs:enumeration value="4 "/>
+            <xs:enumeration value="5"/>
+            <xs:enumeration value="6"/>
+            <xs:enumeration value="7"/>
+            <xs:enumeration value="8"/>
+            <xs:enumeration value="9"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="ApplicationStatusDescType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Initiated"/>
+            <xs:enumeration value="ReqChecks"/>
+            <xs:enumeration value="ChecksInProg"/>
+            <xs:enumeration value="ProcToVisit "/>
+            <xs:enumeration value="Accepted"/>
+            <xs:enumeration value="Refused"/>
+            <xs:enumeration value="Closed_OIE"/>
+            <xs:enumeration value="AppWithdrawn"/>
+            <xs:enumeration value="IncUnpaidFee"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="AddressesType">
+        <xs:sequence>
+            <xs:element name="Address" type="AddressType" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="AddressType">
+        <xs:sequence>
+            <xs:element name="ID" type="xs:integer" minOccurs="0"/>
+            <xs:element name="Address1" type="xs:string" minOccurs="1" />
+            <xs:element name="Address2" type="xs:string" minOccurs="1" />
+            <xs:element name="Address3" type="xs:string" minOccurs="0"/>
+            <xs:element name="Town" type="xs:string" minOccurs="1" />
+            <xs:element name="County" type="xs:string" minOccurs="1" />
+            <xs:element name="PostCode" type="xs:string" minOccurs="1" />
+            <xs:element name="LocalAuthorityDescription" type="xs:string" minOccurs="1" />
+            <xs:element name="LocalAuthorityCode" type="xs:string" minOccurs="1" />
+            <xs:element name="RegionId" type="RegionIdType" minOccurs="0" />
+            <xs:element name="FromDate" type="xs:dateTime" minOccurs="0" />
+            <xs:element name="ToDate" type="xs:dateTime" minOccurs="0" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="AddressLineType">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="100"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="AddressSingleLineType">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="255"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="BankAccountAddressType">
+        <xs:sequence>
+            <xs:element name="Name" type="BankAccountNameType" minOccurs="1"/>
+            <xs:element name="Address1" type="BankAccountAddressLineType" minOccurs="1" />
+            <xs:element name="Address2" type="BankAccountAddressLineType" minOccurs="0" />
+            <xs:element name="Address3" type="BankAccountAddressLineType" minOccurs="0"/>
+            <xs:element name="Address4" type="BankAccountAddressLineType" minOccurs="0"/>
+            <xs:element name="Address5" type="BankAccountAddressLineType" minOccurs="0"/>
+            <xs:element name="Address6" type="BankAccountAddressLineType" minOccurs="0"/>
+            <xs:element name="Postcode" type="BankAccountAddressPostcodeType" minOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="BankAccountNameType">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="36"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="BankAccountAddressLineType">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="35"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="BankAccountAddressPostcodeType">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="12"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="ChecksType">
+        <xs:sequence>
+            <xs:element name="Check" type="CheckType" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="CheckType">
+        <xs:sequence>
+            <xs:element name="IndividualId" type="xs:integer" minOccurs="0" maxOccurs="1" />
+            <xs:element name="TypeOfCheckId" type="xs:integer" minOccurs="0" maxOccurs="1" />
+            <xs:element name="CheckStatusId" type="xs:integer" minOccurs="0" maxOccurs="1" />
+            <xs:element name="URN" type="ReferenceNumberType" minOccurs="0" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="SuitabilitiesType">
+        <xs:sequence>
+            <xs:element name="Suitability" type="SuitabilityType" minOccurs="0" maxOccurs ="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="SuitabilityType">
+        <xs:sequence>
+            <xs:element name="IndividualId" type="xs:integer" minOccurs="0" maxOccurs="1" />
+            <xs:element name="OverallSuitabilityDecisionId" type ="xs:integer" minOccurs="0" maxOccurs="1" />
+            <xs:element name="URN" type="ReferenceNumberType" minOccurs="0" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="RegisterStatusType">
+        <xs:restriction base="xs:int">
+            <xs:enumeration value="0" />
+            <xs:enumeration value="1" />
+            <xs:enumeration value="2" />
+        </xs:restriction>
+    </xs:simpleType>
+
+
+    <xs:complexType name="CarePeriodsType">
+        <xs:sequence>
+            <xs:element name="CarePeriod" type="CarePeriodType" minOccurs="15" maxOccurs="15" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="CarePeriodType">
+        <xs:sequence>
+            <xs:element name="CarePeriodTypeID" type="xs:string" minOccurs="1" maxOccurs="1" />
+            <xs:element name="CarePeriodYesNo" type="YesNoType" minOccurs="1" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+
+    <xs:complexType name="VisitsType">
+        <xs:sequence>
+            <xs:element name="Visit" type="VisitType" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+
+
+    <xs:complexType name="VisitType">
+        <xs:sequence>
+            <xs:element name="InspectionNumber" type="xs:integer" minOccurs="1" maxOccurs="1"  />
+            <xs:element name="VisitDate" type="xs:date" minOccurs="1" maxOccurs="1"  />
+            <xs:element name="VisitTypeId" type="xs:integer" minOccurs="1" maxOccurs="1"  />
+            <xs:element name="VisitStatusId" type="xs:integer" minOccurs="0" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+
+
+
+
+
+    <xs:complexType name="ProviderType">
+        <xs:sequence>
+            <xs:element name="RegistrationId" type="xs:int" minOccurs="1" />
+            <xs:element name="ProvisionTypeId" type="ProvisionTypeIdType" minOccurs="1" />
+            <xs:element name="SettingName" type="SettingNameType" minOccurs="0" />
+            <xs:element name="chldMinderCareProviderName" type="xs:string" minOccurs="0" />
+            <xs:element name="URNReferenceNumber" type="xs:string" minOccurs="0" />
+            <xs:element name="RegistrationStatus" type="xs:string" minOccurs="0" />
+            <xs:element name="OfstedRegNo" type="xs:string" minOccurs="0" />
+            <xs:element name="SettingAddress" type="AddressType" minOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="SettingsType">
+        <xs:sequence>
+            <xs:element name="SettingsConnected" type="SettingsConnectedType" minOccurs="1" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="ConnectionWithRegistrationType">
+        <xs:sequence>
+            <xs:element name="LookingAfterAsCM" type="YesNoType" minOccurs="0" />
+            <xs:element name="AtCMPremises" type="YesNoType" minOccurs="0" />
+            <xs:element name="RelationWithCM" type="xs:string" minOccurs="0" />
+            <xs:element name="SoleOwnerCC" type="YesNoType" minOccurs="0" />
+            <xs:element name="MakingUpOrgCC" type="YesNoType" minOccurs="0" />
+            <xs:element name="RoleIsDirector" type="YesNoType" minOccurs="0" />
+            <xs:element name="RoleIsTrustee" type="YesNoType" minOccurs="0" />
+            <xs:element name="RoleIsPartner" type="YesNoType" minOccurs="0" />
+            <xs:element name="RoleIsCommitteeMember" type="YesNoType" minOccurs="0" />
+            <xs:element name="RoleIsOther" type="YesNoType" minOccurs="0" />
+            <xs:element name="RoleOther" type="xs:string" minOccurs="0" />
+            <xs:element name="NominatedPersonForOrg" type="YesNoType" minOccurs="0" />
+            <xs:element name="DirectlyManage" type="YesNoType" minOccurs="0" />
+            <xs:element name="WorkDirectly" type="YesNoType" minOccurs="0" />
+            <xs:element name="MemberOfStaff" type="YesNoType" minOccurs="0" />
+            <xs:element name="LookingAfterAsCC" type="YesNoType" minOccurs="0" />
+            <xs:element name="AtCCPremises" type="YesNoType" minOccurs="0" />
+            <xs:element name="RelationWithCC" type="xs:string" minOccurs="0" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name ="PersonalType">
+        <xs:sequence>
+            <xs:element name="IndividualId" type="xs:int" minOccurs="1" maxOccurs="1" />
+            <xs:element name="Title" type="TitleType" minOccurs="1"  maxOccurs="1" />
+            <xs:element name="OtherTitle" type="xs:string" minOccurs="0"  maxOccurs="1" />
+            <xs:element name="FirstName" type="ForenameType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="MiddleNames" type="ForenameType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="Surname" type="SurnameType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="SurnameUsedUntill" type="xs:dateTime" minOccurs="0" maxOccurs="1" />
+            <xs:element name="SurnameAtBirth" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="AnyOtherNames" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="OtherNames" type="OtherNamesType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="DateOfBirth" type="xs:dateTime" minOccurs="1" />
+            <xs:element name="PlaceOfBirthTown" type="xs:string" minOccurs="1" maxOccurs="1"  />
+            <xs:element name="PlaceOfBirthCounty" type="xs:string" minOccurs="1" maxOccurs="1" />
+            <xs:element name="BornInUK" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="OtherCountry" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="Nationality" type="xs:string" minOccurs="1" maxOccurs="1" />
+            <xs:element name="Sex" type="SexType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="LivedOutsideUK" type="YesNoType" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="CurrentAddressDetails" type="AddressType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="AnyOtherAddresses" type="YesNoType" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="CRBdisclosure" type="YesNoType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="OtherAddresses" type="PreviousAddressesType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="AnyTimeUnaccounted" type="YesNoType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="TimeUnaccounted" type="TimeUnaccountedType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="CertResult" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="DisclosureNumber" type="xs:string" minOccurs="0" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="ContactType">
+        <xs:sequence>
+            <xs:element name="MainContactNumber" type="MainContactNumberType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="EmailAddress" type="EmailAddressType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ReceiveElectronicComm" type="YesNoType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="MorningSuitableTime" type="YesNoType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="AfternoonSuitableTime" type="YesNoType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="EveningSuitableTime" type="YesNoType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="AnySuitableTime" type="YesNoType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="SuitableContactTime" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="DaytimeContactNumber" type="TelephoneNumberType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="MobileContactNumber" type="TelephoneNumberType" minOccurs="0" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="PastRegistrationType">
+        <xs:sequence>
+            <xs:element name="OfstedReg" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="OtherRegBodyUK" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="OtherRegBodyEU" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="OtherBodyName" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="RegistrationRefNumber" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="RegistrationDateFrom" type="xs:dateTime" minOccurs="0" maxOccurs="1" />
+            <xs:element name="RegistrationDateTo" type="xs:dateTime" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ResidentEnglandFiveYears" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="ResidentUkOverseasFiveYears" type="YesNoType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="InArmedForces" type="YesNoType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="MODAccredDetails" type="MODAccredDetailsType" minOccurs="0" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="SCPastRegistrationType">
+        <xs:sequence>
+            <xs:element name="PreviousApplication" type="YesNoType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="OfstedReferenceNumber" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="CarriedOnBusiness" type="YesNoType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="FianancialOrWorkInterestsWithOfsted" type="YesNoType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="RegisteredHomesAct1984" type="YesNoType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="RegisteredHomesAct1991" type="YesNoType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ChildrenAct1989" type="YesNoType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ChildcareAct2006" type="YesNoType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="NursesAgenciesAct1957" type="YesNoType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="CareStandardsAct2000" type="YesNoType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="HealthAndSocialCareAct2008" type="YesNoType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ApplicationRefusedOrCancelled" type="YesNoType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="WithdrawnApplication" type="YesNoType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="BankruptDebtOrOther" type="YesNoType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="DisciplinaryProcedures" type="YesNoType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="RelatedPersonWorking" type="YesNoType" minOccurs="0" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="PremisesType">
+        <xs:sequence>
+            <xs:element name="AddressSameAsPrevious" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="SettingName" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="AddressDetails" type="AddressType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="TelephoneNumber" type="TelephoneNumberType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="FaxNumber" type="FaxType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="EmailAddress" type="EmailAddressType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="LocalAuthority" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="AreaId" type="AreaIdType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="RegionId" type="RegionIdType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="OvernightCare" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="SpecificRequirements" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="HaveSoleUseOfPremises" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="ReadyForInspectorVisit" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="PrposedPremisesReadyDate" type="xs:dateTime" minOccurs="1" maxOccurs="1" />
+            <xs:element name="NoOfToilets" type="xs:int" minOccurs="1" maxOccurs="1" />
+            <xs:element name="NoOfWashbasins" type="xs:int" minOccurs="1" maxOccurs="1" />
+            <xs:element name="OtherPremises" type="OtherPremisesType" minOccurs="0" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="EYSPremisesType">
+        <xs:sequence>
+            <xs:element name="PurchaseExistRegChldcare" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="MovingToNewAddress" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="ExistingSettingURN" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ExistingSettingName" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ExistingSettingAddress" type="AddressType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="SettingName" type="xs:string" minOccurs="1" maxOccurs="1" />
+            <xs:element name="AddressDetails" type="AddressType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="TelephoneNumber" type="TelephoneNumberType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="OvernightCare" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="HaveSoleUseOfPremises" type="YesNoType" minOccurs="1" maxOccurs="1" />
+
+            <xs:element name="OtherThanSchlChldCareOnSchlPremises" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="OfstedSchoolReferenceNumber" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="SchoolName" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="SchoolAddress" type="AddressType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ChldcareAsPartOfChildrenCentre" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="ChildrenCentreNumber" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ChildrenCentreName" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ChildrenCentreNumberType" type="ChildrenCentreNumberType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ChildcareSameSiteAsChildrenCentre" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="ChildrenCentreAddress" type="AddressType" minOccurs="0" maxOccurs="1" />
+
+            <xs:element name="ManageProvisionMyself" type="YesNoType" minOccurs="1" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="PreviousExperienceType">
+        <xs:sequence>
+            <xs:element name="RelaventTrainQual" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="TrainQualDetails" type="TrainQualDetailsType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="AnyFirstAidCert" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="LocalAuthorityTrainingOrgName" type="xs:string" maxOccurs="1" />
+            <xs:element name="LocalAuthorityDateFrom" type="xs:dateTime" minOccurs="0" maxOccurs="1" />
+            <xs:element name="LocalAuthorityDateTo" type="xs:dateTime" minOccurs="0" maxOccurs="1" />
+            <xs:element name="FirstAidCertificateTitle" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="FirstAidCertificateGainedDate" type="xs:dateTime" minOccurs="0" maxOccurs="1" />
+            <xs:element name="FirstAidCertificateAwardingBody" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="FirstAidCertificateExpiryDate" type="xs:dateTime" minOccurs="0" maxOccurs="1" />
+            <xs:element name="FirstAidTrainingTitle" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="FirstAidTrainingStartDate" type="xs:dateTime" minOccurs="0" maxOccurs="1" />
+            <xs:element name="FirstAidTrainingAwardingBody" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ExperienceDetails" type="ExperienceDetailsType" minOccurs="0" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="ProvisionType">
+        <xs:sequence>
+            <xs:element name="ProvisionCareTime" type="ProvisionCareTimeType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ProvisionCareFrequency" type="xs:string" minOccurs="0"  maxOccurs="1" />
+            <xs:element name="BirthToUnderOneChildren" type="xs:int" minOccurs="0" maxOccurs="1" />
+            <xs:element name="BirthToUnderTwoChildren" type="xs:int" minOccurs="1" maxOccurs="1" />
+            <xs:element name="TwoToUnderThreeChildren" type="xs:int" minOccurs="1" maxOccurs="1" />
+            <xs:element name="ThreeToEndOfEarlyYearsChildren" type="xs:int" minOccurs="1" maxOccurs="1" />
+            <xs:element name="OneToEndOfEarlyYearsChildren" type="xs:int" minOccurs="0" maxOccurs="1" />
+            <xs:element name="EarlyYearsToUnderEightChildren" type="xs:int" minOccurs="1" maxOccurs="1" />
+            <xs:element name="EightToUnderElevenChildren" type="xs:int" minOccurs="1" maxOccurs="1" />
+            <xs:element name="ElevenToUnderFifteenChildren" type="xs:int" minOccurs="1" maxOccurs="1" />
+            <xs:element name="FifteenToUnderEighteenChildren" type="xs:int" minOccurs="1" maxOccurs="1" />
+            <xs:element name="ChildrenAged8orOver" type="xs:int" minOccurs="1" maxOccurs="1" />
+            <xs:element name="ProvisionOperateFoursPerDay" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="ProvisionOperateThreeHoursPerDay" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="ProvisionOperateTwoHoursPerDay" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="ProvisionOperateFiveDaysAWeek" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="ProvisionOperateFortyFiveWeeksAYear" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="DayCareType" type="DayCareTypeType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="OtherInformation" type="xs:string" minOccurs="0"  maxOccurs="1" />
+            <xs:element name="SpecialConsiderations" type="SpecialConsiderationsType" minOccurs="1" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="SettingsConnectedType">
+        <xs:sequence>
+            <xs:element name="SettingSummary" minOccurs="1">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="SettingName" type="xs:string" minOccurs="1" maxOccurs="1" />
+                        <xs:element name="Address" type="AddressType" minOccurs="1" maxOccurs="1" />
+                        <xs:element name="ProvisionTypeId" type="ProvisionTypeIdType" minOccurs="1" maxOccurs="1" />
+                        <xs:element name="Registers" type="xs:string" minOccurs="0" maxOccurs="unbounded" />
+                        <xs:element name="TelNumber" type="TelephoneNumberType" minOccurs="1" maxOccurs="1" />
+                        <xs:element name="EmailAddress" type="EmailAddressType" minOccurs="1" maxOccurs="1" />
+                        <xs:element name="EYSStatus" type="xs:string" minOccurs="1" maxOccurs="1" />
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="SCProvisionType">
+        <xs:sequence>
+            <xs:element name="ProvisionSubTypeId" type="xs:int" minOccurs="0" maxOccurs="1" />
+            <xs:element name="NumberFTE" type="xs:short" minOccurs="0"  maxOccurs="1" />
+
+            <xs:element name="ChildrensHome" minOccurs="0" maxOccurs="1">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="MaxUsers" type="xs:short" minOccurs="0"  maxOccurs="1" />
+                        <xs:element name="MaxMale" type="xs:short" minOccurs="0"  maxOccurs="1" />
+                        <xs:element name="MaxFemale" type="xs:short" minOccurs="0"  maxOccurs="1" />
+                        <xs:element name="EBDChildren" type="xs:short" minOccurs="0"  maxOccurs="1" />
+                        <xs:element name="PDChildren" type="xs:short" minOccurs="0"  maxOccurs="1" />
+                        <xs:element name="LDChildren" type="xs:short" minOccurs="0"  maxOccurs="1" />
+                        <xs:element name="MDChildren" type="xs:short" minOccurs="0"  maxOccurs="1" />
+                        <xs:element name="PDPChildren" type="xs:short" minOccurs="0"  maxOccurs="1" />
+                        <xs:element name="PAPChildren" type="xs:short" minOccurs="0"  maxOccurs="1" />
+                        <xs:element name="SIChildren" type="xs:short" minOccurs="0"  maxOccurs="1" />
+                        <xs:element name="OtherChildren" type="xs:short" minOccurs="0"  maxOccurs="1" />
+                        <xs:element name="AdultCare" type="YesNoType" minOccurs="0"  maxOccurs="1" />
+                        <xs:element name="AdultCareDesc" type="xs:string" minOccurs="0"  maxOccurs="1" />
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+
+            <xs:element name="ResidentialFamilyCentre" minOccurs="0" maxOccurs="1">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="FamilyCount" type="xs:int" minOccurs="0"  maxOccurs="1" />
+                        <xs:element name="EmergencyAdmission" type="YesNoType" minOccurs="0"  maxOccurs="1" />
+                        <xs:element name="DirectCourtReferral" type="YesNoType" minOccurs="0"  maxOccurs="1" />
+                        <xs:element name="RefugeService" type="YesNoType" minOccurs="0"  maxOccurs="1" />
+                        <xs:element name="AdultsWithoutChildren" type="YesNoType" minOccurs="0"  maxOccurs="1" />
+                        <xs:element name="ChildrenWithCarers" type="YesNoType" minOccurs="0"  maxOccurs="1" />
+                        <xs:element name="ServiceOtherThanRFC" type="YesNoType" minOccurs="0"  maxOccurs="1" />
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+
+            <xs:element name="IndependentFosteringAgency" minOccurs="0" maxOccurs="1">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="FosteringRefuge" type="YesNoType" minOccurs="0"  maxOccurs="1" />
+                        <xs:element name="FosteringPanel" type="YesNoType" minOccurs="0"  maxOccurs="1" />
+                        <xs:element name="MultipleFosteringPanels" type="YesNoType" minOccurs="0"  maxOccurs="1" />
+                        <xs:element name="JointFosteringPanel" type="YesNoType" minOccurs="0"  maxOccurs="1" />
+                        <xs:element name="PlacementConditions" type="xs:string" minOccurs="0"  maxOccurs="1" />
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+
+            <xs:element name="IndependentAdoptionAgency" minOccurs="0" maxOccurs="1">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="AdoptionPanel" type="YesNoType" minOccurs="0"  maxOccurs="1" />
+                        <xs:element name="MultipleAdoptionPanels" type="YesNoType" minOccurs="0"  maxOccurs="1" />
+                        <xs:element name="AdoptionConditions" type="xs:string" minOccurs="0"  maxOccurs="1" />
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+
+            <xs:element name="AdoptionsSupportAgency" minOccurs="0" maxOccurs="1">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="AdoptionCounselling" type="YesNoType" minOccurs="0"  maxOccurs="1" />
+                        <xs:element name="AdoptionAdvice" type="YesNoType" minOccurs="0"  maxOccurs="1" />
+                        <xs:element name="MediationService" type="YesNoType" minOccurs="0"  maxOccurs="1" />
+                        <xs:element name="TherapeuticService" type="YesNoType" minOccurs="0"  maxOccurs="1" />
+                        <xs:element name="RelationshipSupport" type="YesNoType" minOccurs="0"  maxOccurs="1" />
+                        <xs:element name="DisruptionSupport" type="YesNoType" minOccurs="0"  maxOccurs="1" />
+                        <xs:element name="IntermediaryService" type="YesNoType" minOccurs="0"  maxOccurs="1" />
+                        <xs:element name="AgencySupport" type="YesNoType" minOccurs="0"  maxOccurs="1" />
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+
+            <xs:element name="AgeFrom" type="xs:short" minOccurs="0" maxOccurs="1" />
+            <xs:element name="AgeTo" type="xs:short" minOccurs="0"  maxOccurs="1" />
+            <xs:element name="ChargeRange" type="xs:string" minOccurs="0" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name ="ProvisionTypeType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Childminder" />
+            <xs:enumeration value="DayCare" />
+            <xs:enumeration value="CMNetwork" />
+            <xs:enumeration value="PortageScheme" />
+            <xs:enumeration value="IndependentSchool" />
+            <xs:enumeration value="ChildrensHome" />
+            <xs:enumeration value="VoluntaryAdoptionAgency" />
+            <xs:enumeration value="IndependentFosteringAgency" />
+            <xs:enumeration value="AdoptionSupportAgency" />
+            <xs:enumeration value="ResidentialFamilyCentre" />
+            <xs:enumeration value="BoardingSchool" />
+            <xs:enumeration value="FurtherEducationCollege" />
+            <xs:enumeration value="ResidentialSpecialSchool" />
+            <xs:enumeration value="LocalAuthorityAdoptionAgency" />
+            <xs:enumeration value="LocalAuthorityFosteringAgency" />
+            <xs:enumeration value="PrivateFosteringArrangements" />
+            <xs:enumeration value="HomeChildcarer" />
+            <xs:enumeration value="ChildminderVCR" />
+            <xs:enumeration value="ChildcareOnDomesticPremises" />
+            <xs:enumeration value="ChildcareOnNonDomesticPremises" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="HealthType">
+        <xs:sequence>
+            <xs:element name="AnyIllnesses" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="IllnessDetails" type="IllnessOrAdmissionDetailsType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="AnyAdmissions" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="AdmissionDetails" type="IllnessOrAdmissionDetailsType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="Treatment" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="NatureOfIllness" type="xs:string" minOccurs="0" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="RefereesType">
+        <xs:sequence>
+            <xs:element name="EmployerDetails" type="EmployerDetailsType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ContactEmployerForReference" type="YesNoType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="FirstReferenceAddress" type="ReferenceAddressType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="SecondReferenceAddress" type="ReferenceAddressType" minOccurs="1" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="SuitabilityAndDisqualificationType">
+        <xs:sequence>
+            <xs:element name="CircumApply" type="YesNoType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="CircumApplyDetails" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="Confirm" type="YesNoType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="SocialService" type="YesNoType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="SocialServiceDetails" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="CriminalConviction" type="YesNoType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="CriminalConvictionDetails" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="CRBCheck" type="YesNoType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="Circumstance" type="YesNoType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="CircumstanceDetails" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ISARegNumber" type="YesNoType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ISARegNumberDetails" type="xs:string" minOccurs="0" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="AgreementType">
+        <xs:sequence>
+            <xs:element name="Name" type="xs:string" minOccurs="1" />
+            <xs:element name="Postition" type ="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="DateOfSignature" type="xs:dateTime" minOccurs="0" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="ConsentAndDeclarationType">
+        <xs:sequence>
+            <xs:element name="AgreeConsent" type="xs:boolean" minOccurs="1" />
+            <xs:element name="OrganisationName" type="OrganisationNameType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="Status" type ="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="OrganisationType" type="OrganisationTypeIDType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="OtherOrgType" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="DateOfBirth" type="xs:dateTime" minOccurs="1" />
+            <xs:element name="PublicationDecision" type="xs:string" minOccurs="0" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="EqualOpportunitiesType">
+        <xs:sequence>
+            <xs:element name="EthnicGroupId" type="EthnicGroupType" minOccurs="0" />
+            <xs:element name="OtherEthnicGroup" type="xs:string" minOccurs="0" />
+            <xs:element name="Disability" type="YesNoType" minOccurs="0" />
+            <xs:element name="DisabilityId" type="DisabilityType" minOccurs="0" />
+            <xs:element name="DisabilityDetail" type="xs:string" minOccurs="0" />
+            <xs:element name="EnglishAsFirstLanguage" type="YesNoType" minOccurs="0" />
+            <xs:element name="OtherFirstLanguage" type="xs:string" minOccurs="0" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="CRIndividualType">
+        <xs:sequence>
+            <xs:element name="Title" type="TitleType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="OtherTitle" type="xs:string" minOccurs="1" maxOccurs="1" />
+            <xs:element name="Forename" type="ForenameType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="MiddleNames" type="ForenameType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="Surname" type="SurnameType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="SurnameAtBirth" type="SurnameType" minOccurs="0" maxOccurs="1"  />
+            <xs:element name="SurnameUsedUntil" type="xs:dateTime" minOccurs="1" maxOccurs="1"  />
+            <xs:element name="AliasesUsed" type="xs:boolean" minOccurs="1" maxOccurs="1"  />
+            <xs:element name="Aliases" type="AliasesType" minOccurs="0" maxOccurs="1"  />
+            <xs:element name="LivedOutsideUK" type="xs:boolean" nillable="true" minOccurs="1" maxOccurs="1" />
+            <xs:element name="BritishCitizen" type="xs:boolean" nillable="true" minOccurs="1" maxOccurs="1" />
+            <xs:element name="LivingInSetting" type="xs:boolean" nillable="true" minOccurs="1" maxOccurs="1" />
+            <xs:element name="OrganisationPosition" type="xs:boolean" minOccurs="1" maxOccurs="1" />
+            <xs:element name="ReasonLivedAbroad" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="HomeAddress" type="AddressType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="HomeTelephone" type="TelephoneNumberType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="WorkTelephone" type="TelephoneNumberType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="MobileTelephone" type="TelephoneNumberType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="Email" type="EmailAddressType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="DateOfBirth" type="xs:dateTime" minOccurs="1" maxOccurs="1" />
+            <xs:element name="DetailsCorrect" type="xs:string" nillable="true" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ManagerAppointed" type="ManagerAppointedType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="Disqualification" type="xs:boolean" minOccurs="1" maxOccurs="1" />
+            <xs:element name="OfstedCRBDisclosure" type="xs:boolean" minOccurs="1" maxOccurs="1" />
+            <xs:element name="CRBDateofIssue" type="xs:dateTime" minOccurs="0" maxOccurs="1" />
+            <xs:element name="Convicted" type="xs:boolean" minOccurs="1" maxOccurs="1" />
+            <xs:element name="CriminalConvictions" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ChildrensServices" type="xs:boolean" minOccurs="1" maxOccurs="1" />
+            <xs:element name="ChildrensServicesDetails" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ApplicantHasISA" type="xs:boolean" minOccurs="1" maxOccurs="1" />
+            <xs:element name="ApplicantHasISADetails" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="SuitabilityIssues" type="xs:boolean" minOccurs="1" maxOccurs="1" />
+            <xs:element name="SuitabilityDetails" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="Associations" type="CRAssociationsType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="EthnicGroup" type="EthnicGroupType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="Disability" type="DisabilityType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="EnglishFirstLanguage" type="EnglishFirstLanguageType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="OtherEthnicGroup" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="OtherFirstLanguage" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="DisabilityDescription" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="OwnershipType" type="OwnershipTypeIdType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="PreviousAddresses" type="PreviousAddressesType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="CertResult" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="DisclosureNumber" type="xs:string" minOccurs="0" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="CROrganisationType">
+        <xs:sequence>
+            <xs:element name="OrganisationID" type="xs:int" nillable="true" minOccurs="1" maxOccurs="1" />
+            <xs:element name="OrganisationName" type="OrganisationNameType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="OrganisationType" type="OrganisationTypeIDType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="OrganisationTypeOther" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="OrganisationAddress" type="AddressType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="OrganisationTelephoneNumber" type="TelephoneNumberType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="OrganisationMobileNumber" type="TelephoneNumberType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="OrganisationFaxNumber" type="TelephoneNumberType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="OrganisationEmail" type="EmailAddressType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="OrganisationDateOfBeing" type="xs:dateTime" minOccurs="0" maxOccurs="1" />
+            <xs:element name="RegisteredCharityNumber" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="RegisteredCompanyNumber" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="PrimaryPurposeChildCare" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="RegisteredPerson" type="CRRegisteredPersonsType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ProvisionName" type="SettingNameType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="SettingAddress" type="AddressType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="SettingTelephoneNumber" type="TelephoneNumberType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="OwnedProvision" type="SectorTypeIdType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="LengthOfProvision" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ContinuingChildCare" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="SchoolSite" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="SchoolProvision" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="DFESSchoolNumber" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ValidateSchoolNumber" type="YesNoType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="SchoolName" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="SchoolAddress" type="AddressType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="SchoolStatus" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ChildmindingCenter" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ChildmindingCenterNumber" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ChildmindingCenterNumberType" type="xs:int" minOccurs="0" maxOccurs="1" />
+            <xs:element name="TimesOfProvision" type="ProvisionCareTimeType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ProvisionCareFrequency" type="ProvisionCareFrequencyType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="BirthToUnderOneChildren" type="xs:int" minOccurs="0" maxOccurs="1" />
+            <xs:element name="OneToUnderTwoChildren" type="xs:int" minOccurs="0" maxOccurs="1" />
+            <xs:element name="TwoToUnderThreeChildren" type="xs:int" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ThreeToEndOfEarlyYearsChildren" type="xs:int" minOccurs="0" maxOccurs="1" />
+            <xs:element name="EarlyYearsToUnderEightChildren" type="xs:int" minOccurs="0" maxOccurs="1" />
+            <xs:element name="EightToUnderElevenChildren" type="xs:int" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ElevenToUnderFifteenChildren" type="xs:int" minOccurs="0" maxOccurs="1" />
+            <xs:element name="FifteenToUnderEighteenChildren" type="xs:int" minOccurs="0" maxOccurs="1" />
+            <xs:element name="CCRExemptRegistration" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="EYRExemptRegistration" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ExemptReason" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="NumberOfPlaces" type="xs:int" nillable="true" minOccurs="0" maxOccurs="1" />
+            <xs:element name="FurtherSettingAddress" type="FurtherSettingAddressesType" minOccurs="0" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="CRDeclarationsType">
+        <xs:sequence>
+            <xs:element name="CarersOnpermises" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="FirstAidCertificate" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="Qualifications" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="Complaints" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="AccessibilityAndInclusion" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="CorporalPunishment" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="BehaviourManagement" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="SafegaurdingChildren" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="SafegaurdingChildrenHomeChildCarer" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="AlcoholAndSmoking" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="AlcoholAndSmokingHomeChildCarer" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="RegistrationCertificate" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="RegistrationCertificateHomeChildCarer" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="InformationForParents" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="Insurance" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="HealthAndsafety" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="HealthAndsafetyHomeChildCarer" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="RiskAssessment" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="StatementOfSuitability" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="Disqualifications" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="AlternativePremises" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="RecordKeeping" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="NotificationOfSignificantEvents" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="UnsupervisedAccess_1" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="UnsupervisedAccess_2" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="Declaration" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ConsentForUseOfInformation" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="CorporalPunishmentOthers" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="AllTimePresent" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="SuperviseChildren" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="SuperviseChildrenRegComp" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="AdultSuperviseEvery8children" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="CompleteChildMCourse" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="CompleteChildMCourseVol" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="CompleteChildMCourseComp" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="CompletCoreSkills" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="EnsurePremisesEquipmentSafe" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="EnsureAccompaniedleave" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="EnsureAuthorisedEntry" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="MakeArrangemntOtherChildcare" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="EnsureBehaviourImpactDiffAgeGroup" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="EnsureNeedsRelatedChildcare" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="EnsureAccessToChildrenHaveDisabilities" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="WrittenStatementProceduresComplaint" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="WrittenStatementProceduresComplaintHC" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="EnsureComplaintsInvestigated" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="WrittenRecordComplaints" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="InformOutcomeComplaint" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="MakeOfstedAvailableSummaryRecords" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ProduceOfstedListComplaints" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="KeepRecordsOfMedicine" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="InfoSafeguardingProcParents" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="InfoOpenAccessParents" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="InfoOfstedAddressRegSystem" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="InformOfstedChangeOfCircumstances" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="InformOfstedChangesAddressType" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="InformOfstedChangeNameEventSuitability" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="InformOfstedPeopleDetails" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="InformOfstedChangeMgrorNomPerson" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="InformOfstedchkCCoDNDComldets" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="InformOfstedFoodpoisonSeriousInjury" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="ChildcareRegisterType">
+        <xs:sequence>
+            <xs:element name="CCRChildminder" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="VCRChildminder" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="VCRHomeChildcarer" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="CCROtherChildcare" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="VCROtherChildcare" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="HomeChildcarerAddresses" type="HomeChildcarerAddressesType" minOccurs="0" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="EYSRegistersType">
+        <xs:sequence>
+            <xs:element name="EYROtherChildcare" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="CCROtherChildcare" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="VCROtherChildcare" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="CCRMeetRequirements" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="VCRMeetRequirements " type="YesNoType" minOccurs="1" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="IndividualType">
+        <xs:sequence>
+            <xs:element name="AlreadyKnownOfsted" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="EY2Enclosed" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="IndividualId" type="xs:int" minOccurs="0" maxOccurs="1" />
+            <xs:element name="IndividualTitle" type="TitleType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="IndividualTitleOther" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="IndividualFirstNames" type="ForenameType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="IndividualMiddleNames" type="ForenameType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="IndividualSurname" type="SurnameType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="IndividualDOB" type="xs:dateTime" minOccurs="0" maxOccurs="1" />
+            <xs:element name="IndividualAddress" type="AddressType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="IndividualEmailAddress" type="EmailAddressType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="IndividualContactTelephoneNumber" type="TelephoneNumberType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="IndividualReceiveElectronicCommunication" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="AdditionalContactConnection" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="AdditionalContactSubmitSEF" type="YesNoType" minOccurs="0" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="OtherPeopleType">
+        <xs:sequence>
+            <xs:element name="PeopleLookingAfterchildren" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="PplLkngAfterChldn_PersonalDtls" type="PplLkngAfterChldn_PersonalDtlsType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="PeopleNotLookingChildren" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="PplNotLkngChldn_PersonalDtls" type="PplNotLkngChldn_PersonalDtlsType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="Children" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="Children_Details" type="Children_DetailsType" minOccurs="0" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="OrganisationType">
+        <xs:sequence>
+            <xs:element name="OrganisationId" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="OrganisationType" type="OrganisationTypeType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="OrganisationName" type="OrganisationNameType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="OrgAddress" type="AddressType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="OrganisationTelNo" type="TelephoneNumberType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="OrganisationMobileTelNo" type="TelephoneNumberType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="OrganisationFax" type="FaxType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="OrganisationEmail" type="EmailAddressType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ReceiveElectronicComm" type="YesNoType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="OrganisationDateOfBeing" type="xs:dateTime" minOccurs="0" maxOccurs="1" />
+            <xs:element name="RegisteredCharityNo" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="CompanyRegistrationNo" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="Subsidiary" type="YesNoType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="PrimarypurposeChildCare" type="YesNoType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="RegisteredPersonsDetails" type="RegisteredPersonsDetailsType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="OrganisationTypeOther" type="xs:string" minOccurs="0" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="TypeOfApplicationType">
+        <xs:sequence>
+            <xs:element name="ApplicationType" type="ProvisionTypeType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="SectorType" type="SectorTypeType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="ApplyingAs" type="OwnershipType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="SchoolApplngChldCareU3" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="SchoolApplngChldCarePupils" type="YesNoType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ChldCarebySchlGoverningBody" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="SplSchoolChldCare" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="SettingPupilLeader" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="OtherThanSchlChldCareOnSchlPremises" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="OfstedSchoolReferenceNumber" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="SchoolName" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="SchoolAddress" type="AddressType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="AcceptStatus" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="CCAcceptStatus" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ChldcareAsPartOfChildrenCentre" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="ChildrenCentreNumber" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ChildrenCentreName" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ChildrenCentreNumberType" type="ChildrenCentreNumberType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ChildcareSameSiteAsChildrenCentre" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="ChildrenCentreAddress" type="AddressType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ChldcareAsPartOfChildrenCentreOptions" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="DirectlyManagedChildrenCentre" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="PurchaseExistRegChldcare" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="RegisteredPerson" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="TargetOpeningDate" type="xs:dateTime" minOccurs="0" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="SCTypeOfApplicationType">
+        <xs:sequence>
+            <xs:element name="ApplicationType" type="ProvisionTypeType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="SectorId" type="xs:int" minOccurs="1" maxOccurs="1" />
+            <xs:element name="ApplyingAs" type="OwnershipType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="OnSchoolPremises" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="OfstedSchoolReferenceNumber" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="SchoolName" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="PurchaseExisting" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="TargetOpeningDate" type="xs:dateTime" minOccurs="0" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <!--END Top Level Form Sections-->
+
+    <!--Common subsection Types-->
+
+    <xs:complexType name="AliasesType">
+        <xs:sequence>
+            <xs:element name="Alias" type="AliasType" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="AliasType">
+        <xs:sequence>
+            <xs:element name="ForeName" type="xs:string" minOccurs="0" />
+            <xs:element name="Surname" type="xs:string" minOccurs="0" />
+            <xs:element name="DateFrom" type="xs:dateTime" minOccurs="0" />
+            <xs:element name="DateTo" type="xs:dateTime" minOccurs="0" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="AttachmentTypeType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="CR1" />
+            <xs:enumeration value="CR2" />
+            <xs:enumeration value="EY2" />
+            <xs:enumeration value="EYC" />
+            <xs:enumeration value="EYO" />
+            <xs:enumeration value="SC1" />
+            <xs:enumeration value="SC2" />
+            <xs:enumeration value="SC3" />
+            <xs:enumeration value="CDL999" />
+            <xs:enumeration value="HEALTH" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="ChildrenCentreNumberType">
+        <xs:restriction base="xs:int">
+            <xs:enumeration value="1" />
+            <xs:enumeration value="2" />
+            <xs:enumeration value="3" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="DayCareTypeType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Null" />
+            <xs:enumeration value="Full" />
+            <xs:enumeration value="Sessional" />
+            <xs:enumeration value="OutofSchool" />
+            <xs:enumeration value="Creche" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="DisabilityType">
+        <xs:restriction base="xs:int">
+            <xs:enumeration value="0" />
+            <xs:enumeration value="1" />
+            <xs:enumeration value="2" />
+            <xs:enumeration value="3" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="EmployerDetailsType">
+        <xs:sequence>
+            <xs:element name="Employer" type="xs:string" minOccurs="1" maxOccurs="1" />
+            <xs:element name="Title" type="TitleType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="OtherTitle" type="xs:string" minOccurs="0"  maxOccurs="1" />
+            <xs:element name="FirstName" type="ForenameType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="Surname" type="SurnameType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="Address" type="AddressType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="TelephoneNumber" type="TelephoneNumberType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="EmailAddress" type="EmailAddressType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="JobTitle" type="xs:string" minOccurs="1" maxOccurs="1" />
+            <xs:element name="FromDate" type="xs:dateTime" minOccurs="1" maxOccurs="1" />
+            <xs:element name="ToDate" type="xs:dateTime" minOccurs="1" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="EnglishFirstLanguageType">
+        <xs:restriction base="xs:int">
+            <xs:enumeration value="0" />
+            <xs:enumeration value="1" />
+            <xs:enumeration value="2" />
+        </xs:restriction>
+    </xs:simpleType>
+
+
+    <xs:simpleType name="EthnicGroupType">
+        <xs:restriction base="xs:int">
+            <xs:enumeration value="0" />
+            <xs:enumeration value="1" />
+            <xs:enumeration value="2" />
+            <xs:enumeration value="3" />
+            <xs:enumeration value="4" />
+            <xs:enumeration value="5" />
+            <xs:enumeration value="6" />
+            <xs:enumeration value="7" />
+            <xs:enumeration value="8" />
+            <xs:enumeration value="9" />
+            <xs:enumeration value="10" />
+            <xs:enumeration value="11" />
+            <xs:enumeration value="12" />
+            <xs:enumeration value="13" />
+            <xs:enumeration value="14" />
+            <xs:enumeration value="15" />
+            <xs:enumeration value="16" />
+            <xs:enumeration value="17" />
+            <xs:enumeration value="18" />
+            <xs:enumeration value="19" />
+            <xs:enumeration value="20" />
+            <xs:enumeration value="21" />
+        </xs:restriction>
+    </xs:simpleType>
+
+
+    <xs:complexType name="ExperienceDetailsType">
+        <xs:sequence>
+            <xs:element name="Experience" type="ExperienceType" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+
+
+    <xs:complexType name="ExperienceType">
+        <xs:sequence>
+            <xs:element name="Experience" type="xs:string" minOccurs="0" />
+            <xs:element name="Address" type="AddressType" minOccurs="0" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="FormMetaDataType">
+        <xs:sequence>
+            <xs:element name="ReferToCIE" type="YesNoType" minOccurs="0" />
+            <xs:element name="ReferToTeamManager" type="YesNoType" minOccurs="0" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name ="IndividualNameType" >
+        <xs:restriction base ="xs:string" >
+            <xs:length value ="50"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="IllnessOrAdmissionDetailsType">
+        <xs:sequence>
+            <xs:element name="IllnessOrAdmission" type="IllnessOrAdmissionType" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="IllnessOrAdmissionType">
+        <xs:sequence>
+            <xs:element name="IllnessOrAdmission" type="xs:string" minOccurs="0" />
+            <xs:element name="DateFrom" type="xs:dateTime" minOccurs="0" />
+            <xs:element name="DateTo" type="xs:dateTime" minOccurs="0" />
+            <xs:element name="ID" type="xs:int" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="MainContactNumberType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Unknown" />
+            <xs:enumeration value="Work" />
+            <xs:enumeration value="Home" />
+            <xs:enumeration value="Mobile" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="ManagerAppointedType">
+        <xs:restriction base="xs:int">
+            <xs:enumeration value="0" />
+            <xs:enumeration value="2" />
+            <xs:enumeration value="3" />
+            <xs:enumeration value="4" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="MODAccredDetailsType">
+        <xs:sequence>
+            <xs:element name="RegisteredWorked" type="YesNoType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ReferenceNumber" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="IssueDate" type="xs:dateTime" minOccurs="0" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+
+    <xs:simpleType name="OrganisationTypeType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="LocalAuthority" />
+            <xs:enumeration value="Organisation" />
+            <xs:enumeration value="Committee" />
+            <xs:enumeration value="Partnership" />
+            <xs:enumeration value="InformalPartnership" />
+            <xs:enumeration value="StatutoryBody" />
+            <xs:enumeration value="Company" />
+            <xs:enumeration value="Charity" />
+            <xs:enumeration value="Other" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="OwnershipType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Organisation" />
+            <xs:enumeration value="Individual" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="OwnershipTypeIdType">
+        <xs:restriction base="xs:int">
+            <xs:enumeration value="1" />
+            <xs:enumeration value="3" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="PartsApplyingForType">
+        <xs:sequence>
+            <xs:element name="PartApplyingFor" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+
+
+
+    <xs:complexType name="PersonType">
+        <xs:sequence>
+            <xs:element name="Title" type="TitleType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="FirstName" type="ForenameType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="MiddleNames" type="ForenameType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="Surname" type="SurnameType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="DateOfBirth" type="xs:dateTime" minOccurs="1" maxOccurs="1" />
+            <xs:element name="PositionResponsibilityContactWithChildren" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="HasSubmitedOtherDCXOrCMXColumn" type="xs:boolean" nillable="true" minOccurs="1" maxOccurs="1" />
+            <xs:element name="ID" type="xs:int" minOccurs="0" maxOccurs="1" />
+            <xs:element name="IndividualId" type="xs:int" minOccurs="1" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="PplLkngAfterChldn_PersonalDtlsType">
+        <xs:sequence>
+            <xs:element name="Person" type="PersonType" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="PplNotLkngChldn_PersonalDtlsType">
+        <xs:sequence>
+            <xs:element name="Person" type="PersonType" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="Children_DetailsType">
+        <xs:sequence>
+            <xs:element name="Person" type="PersonType" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="FurtherSettingAddressesType">
+        <xs:sequence>
+            <xs:element name="Address" type="AddressType" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="PreviousAddressesType">
+        <xs:sequence>
+            <xs:element name="Address" type="AddressType" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="OtherPremisesType">
+        <xs:sequence>
+            <xs:element name="Address" type="AddressType" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="HomeChildcarerAddressesType">
+        <xs:sequence>
+            <xs:element name="Address" type="AddressType" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="ProvisionCareFrequencyType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="AllYearRound" />
+            <xs:enumeration value="SchoolTerm" />
+            <xs:enumeration value="Holidays" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="ProvisionCarePeriodType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="AllYearRound" />
+            <xs:enumeration value="SchoolTerm" />
+            <xs:enumeration value="WeekdayAM" />
+            <xs:enumeration value="WeekdayPM" />
+            <xs:enumeration value="BeforeSchool" />
+            <xs:enumeration value="AfterSchool" />
+            <xs:enumeration value="Holidays" />
+            <xs:enumeration value="Weekend" />
+            <xs:enumeration value="Weekday" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="ProvisionCareTimeType">
+        <xs:sequence>
+            <xs:element name="CarePeriodType" type="ProvisionCarePeriodType" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="RegisteredPersonsDetailsType">
+        <xs:sequence>
+            <xs:element name="ReigsteredPerson" type="RegisteredPersonType" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="RegisteredPersonType">
+        <xs:sequence>
+            <xs:element name="Person" type="PersonType" minOccurs="0" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="CRRegisteredPersonsType">
+        <xs:sequence>
+            <xs:element name="Person" type="PersonType" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="ReferenceAddressType">
+        <xs:sequence>
+            <xs:element name="Title" type="TitleType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="OtherTitle" type="xs:string" minOccurs="1" maxOccurs="1" />
+            <xs:element name="FirstName" type="ForenameType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="MiddleNames" type="ForenameType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="Surname" type="SurnameType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="ReferenceAddress" type="AddressType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="TelephoneNumber" type="TelephoneNumberType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="Email" type="EmailAddressType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="Relationship" type="xs:string" minOccurs="1" maxOccurs="1" />
+            <xs:element name="ReferenceEnclosed" type="YesNoType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="TimeKnownMonths" type="xs:string" minOccurs="1" maxOccurs="1" />
+            <xs:element name="TimeKnownYears" type="xs:string" minOccurs="1" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="SectorTypeIdType">
+        <xs:restriction base="xs:int">
+            <xs:enumeration value="1" />
+            <xs:enumeration value="2" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="SectorTypeType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Public" />
+            <xs:enumeration value="Private" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="SpecialConsiderationsType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Null" />
+            <xs:enumeration value="WomensRefuge" />
+            <xs:enumeration value="MilitaryBase" />
+            <xs:enumeration value="AnonymityRequested" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="TimeUnaccountedType">
+        <xs:sequence>
+            <xs:element name="Description" type="xs:string" minOccurs="0" />
+            <xs:element name="DateFrom" type="xs:dateTime" minOccurs="0" />
+            <xs:element name="DateTo" type="xs:dateTime" minOccurs="0" />
+            <xs:element name="ID" type="xs:int" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="TrainQualDetailsType">
+        <xs:sequence>
+            <xs:element name="TrainQual" type="TrainQualType" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="TrainQualType">
+        <xs:sequence>
+            <xs:element name="CourseTitle" type="xs:string" minOccurs="0" />
+            <xs:element name="DateFrom" type="xs:dateTime" minOccurs="0" />
+            <xs:element name="DateTo" type="xs:dateTime" minOccurs="0" />
+            <xs:element name="Qualification" type="xs:string" minOccurs="0" />
+            <xs:element name="DateGained" type="xs:dateTime" minOccurs="0" />
+            <xs:element name="AwardingBody" type="xs:string" minOccurs="0" />
+            <xs:element name="ID" type="xs:int" />
+        </xs:sequence>
+    </xs:complexType>
+
+
+    <xs:complexType name="RecordedNumbersType">
+        <xs:sequence>
+            <xs:element name="RecordedNumberDetails" type="RecordedNumberDetailsType" minOccurs="0" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="RecordedNumberDetailsType">
+        <xs:sequence>
+            <xs:element name="RecordedNumber" type="RecordedNumberType" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="RecordedNumberType">
+        <xs:sequence>
+            <xs:element name="RecordedNumberTypeId" type="RecordedNumberTypeIdType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="RecordedNumber" type="xs:int" minOccurs="1" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="RecordedNumberTypeIdType">
+        <xs:restriction base="xs:int">
+            <xs:enumeration value="1" />
+            <xs:enumeration value="2" />
+            <xs:enumeration value="3" />
+            <xs:enumeration value="4" />
+            <xs:enumeration value="5" />
+            <xs:enumeration value="6" />
+            <xs:enumeration value="7" />
+            <xs:enumeration value="8" />
+            <xs:enumeration value="9" />
+            <xs:enumeration value="10" />
+            <xs:enumeration value="11" />
+            <xs:enumeration value="12" />
+            <xs:enumeration value="13" />
+            <xs:enumeration value="14" />
+            <xs:enumeration value="15" />
+            <xs:enumeration value="16" />
+            <xs:enumeration value="17" />
+            <xs:enumeration value="18" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!--END Common subsection Types-->
+
+    <xs:simpleType name="ApplicationSourceType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Postal" />
+            <xs:enumeration value="Telephone" />
+            <xs:enumeration value="Online" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="ApplicationDocumentsType">
+        <xs:sequence>
+            <xs:element name="Attachment" type="AttachmentType" minOccurs ="0" maxOccurs ="unbounded"></xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="AttachmentType">
+        <xs:sequence>
+            <xs:element name="Type" type="AttachmentTypeType" minOccurs="0"/>
+            <xs:element name="Name" type="xs:string" minOccurs="0"/>
+            <xs:element name="Extension" type="xs:string" minOccurs="0"/>
+            <xs:element name="Data" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+
+    <!--CR Associations Type-->
+
+    <xs:complexType name="CRAssociationsType">
+        <xs:sequence>
+            <xs:element name="Associations" type="CRAssociationType" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="CRAssociationType">
+        <xs:sequence>
+            <xs:element name="MatchId" type="xs:int" minOccurs="1" maxOccurs="1" />
+            <xs:element name="SourceSystem" type="SourceSystemType" minOccurs="1" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="SourceSystemType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="RSA"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!--END CR Associations Type-->
+
+    <!--Payments Type-->
+
+    <xs:complexType name="PaymentsType">
+        <xs:sequence>
+            <xs:element name="Payment" type="PaymentType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="PaymentType">
+        <xs:sequence>
+            <xs:element name="Reference" type="xs:string" minOccurs="1" maxOccurs="1" />
+            <xs:element name="Amount" type="xs:string" minOccurs="1" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="ApplicationFormType">
+        <xs:sequence>
+            <xs:element name="FormType" type="FormTypeType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="FormID" type="xs:int" minOccurs="1" maxOccurs="1" />
+            <xs:element name="CreatedBy" type="xs:string" minOccurs="1" maxOccurs="1" />
+            <xs:element name="CreatedDate" type="xs:dateTime" minOccurs="1" maxOccurs="1" />
+            <xs:element name="Source" type="ApplicationSourceType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="ParentID" type="xs:int" minOccurs="1" maxOccurs="1" />
+            <xs:element name="CommunicationID" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="URN" type="xs:string" minOccurs="1" maxOccurs="1" />
+            <xs:element name="Documents" type ="ApplicationDocumentsType" minOccurs ="0" maxOccurs="1" />
+            <xs:element name="FormMetaData" type ="FormMetaDataType" minOccurs ="1" maxOccurs="1" />
+            <xs:element name="Payments" type="PaymentsType" minOccurs ="0" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="FormTypeType">
+        <xs:choice>
+            <xs:element name="EYO" type="EYOType" />
+            <xs:element name="EYC" type="EYCType" />
+            <xs:element name="EYS" type="EYSType" />
+            <xs:element name="EY2" type="EY2Type" />
+            <xs:element name="CR" type="CRType" /><!-- legacy childminder CR1s-->
+            <xs:element name="CR1" type="CR1Type" />
+            <xs:element name="CR2" type="CR2Type" />
+            <xs:element name="SC1" type="SC1Type" />
+            <xs:element name="SC2" type="SC2Type" />
+            <xs:element name="SC3" type="SC3Type" />
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="EYOType">
+        <xs:sequence>
+            <xs:element name="TypeOfApplication" type="TypeOfApplicationType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="Applicant" type="IndividualType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="Organisation" type="OrganisationType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="NominatedPerson" type="IndividualType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="Settings" type="SettingsType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="ConsentAndDeclaration" type="ConsentAndDeclarationType" minOccurs="1" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="EYCType">
+        <xs:sequence>
+            <xs:element name="Personal" type="PersonalType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="Contact" type="ContactType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="Premises" type="PremisesType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="PastRegistration" type="PastRegistrationType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="Provision" type="ProvisionType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="ChildcareRegister" type="ChildcareRegisterType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="PreviousExperience" type="PreviousExperienceType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="Referees" type="RefereesType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="OtherPeople" type="OtherPeopleType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="SuitabilityAndDisqualification" type="SuitabilityAndDisqualificationType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="ConsentAndDeclaration" type="ConsentAndDeclarationType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="EqualOpportunities" type="EqualOpportunitiesType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="RecordedNumbers" type="RecordedNumbersType" minOccurs="0" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="EYSType">
+        <xs:sequence>
+            <xs:element name="Provider" type="ProviderType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="Premises" type="EYSPremisesType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="Provision" type="ProvisionType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="Registers" type="EYSRegistersType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="Manager" type="IndividualType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="OtherPeople" type="OtherPeopleType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="AdditionalContacts" type="AdditionalContactsType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="ConsentAndDeclaration" type="ConsentAndDeclarationType" minOccurs="1" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="EY2Type">
+        <xs:sequence>
+            <xs:element name="Provider" type="ProviderType" minOccurs="1" maxOccurs="unbounded" />
+            <xs:element name="ConnectionWithRegistration" type="ConnectionWithRegistrationType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="Personal" type="PersonalType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="Contact" type="ContactType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="PastRegistration" type="PastRegistrationType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="PreviousExperience" type="PreviousExperienceType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="Health" type="HealthType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="Referees" type="RefereesType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="SuitabilityAndDisqualification" type="SuitabilityAndDisqualificationType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="ConsentAndDeclaration" type="ConsentAndDeclarationType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="EqualOpportunities" type="EqualOpportunitiesType" minOccurs="0" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="CR1Type">
+        <xs:sequence>
+            <xs:element name="Applicant" type="CRIndividualType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="Organisation" type="CROrganisationType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="Settings" type="SettingsType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="PreviouslyRegistered" type="xs:boolean" minOccurs="1"  maxOccurs="1" />
+            <xs:element name="PreviousRegistrationNumber" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ProvisionType" type="ProvisionTypeIdType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="SecondProvisionType" type="ProvisionTypeIdType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="PartsApplyingFor" type="PartsApplyingForType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="PermissionForResearch" type="xs:boolean" minOccurs="1" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="CR2Type">
+        <xs:sequence>
+            <xs:element name="Provider" type="ProviderType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="ConnectionWithRegistration" type="ConnectionWithRegistrationType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="Personal" type="PersonalType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="Contact" type="ContactType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="SuitabilityAndDisqualification" type="SuitabilityAndDisqualificationType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="ConsentAndDeclaration" type="ConsentAndDeclarationType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="EqualOpportunities" type="EqualOpportunitiesType" minOccurs="1" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="CRType">
+        <xs:annotation>
+            <xs:documentation>Legacy CR1 for Childminder and HomeChildcarer submissions</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="Applicant" type="CRIndividualType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="Organisation" type="CROrganisationType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="Manager" type="CRIndividualType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="objDeclarations" type="CRDeclarationsType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="CR2Children" type="xs:string" minOccurs="0"  maxOccurs="1" />
+            <xs:element name="ApplicationId" type="xs:int" minOccurs="1"  maxOccurs="1" />
+            <xs:element name="IndividualId" type="xs:int" nillable="true" minOccurs="0"  maxOccurs="1" />
+            <xs:element name="ApplicationType" type="xs:string" minOccurs="1"  maxOccurs="1" />
+            <xs:element name="DateCreated" type="xs:dateTime" minOccurs="1"  maxOccurs="1" />
+            <xs:element name="CreatedBy" type="xs:string" minOccurs="1"  maxOccurs="1" />
+            <xs:element name="DateChanged" type="xs:dateTime" minOccurs="1" maxOccurs="1"  />
+            <xs:element name="ChangedBy" type="xs:string" minOccurs="1" maxOccurs="1"  />
+            <xs:element name="ApplicationStatus" type="xs:string" minOccurs="1"  maxOccurs="1" />
+            <xs:element name="ApplicationData" type="xs:string" minOccurs="1"  maxOccurs="1" />
+            <xs:element name="URN" type="xs:string" minOccurs="1"  maxOccurs="1" />
+            <xs:element name="RegistrationId" type="xs:int" minOccurs="1" maxOccurs="1" />
+            <xs:element name="SettingName" type="SettingNameType" minOccurs="1"  maxOccurs="1" />
+            <xs:element name="Source" type="ApplicationSourceType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="Deleted" type="xs:boolean" minOccurs="1"  maxOccurs="1" />
+            <xs:element name="DeclarationsAgreed" type="xs:boolean" minOccurs="1" maxOccurs="1" />
+            <xs:element name="IDMUserId" type="xs:string" minOccurs="0"  maxOccurs="1" />
+            <xs:element name="RegistrationStatusId" type="RegistrationStatusIDType" minOccurs="1"  maxOccurs="1" />
+            <xs:element name="ManagerDetsSupplied" type="xs:boolean" minOccurs="0"  maxOccurs="1" />
+            <xs:element name="CommunicationReference" type="xs:string" minOccurs="0"  maxOccurs="1" />
+            <xs:element name="PreviouslyRegistered" type="xs:boolean" minOccurs="1"  maxOccurs="1" />
+            <xs:element name="PreviousRegistrationNumber" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ProvisionType" type="ProvisionTypeIdType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="SecondProvisionType" type="ProvisionTypeIdType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="PartsApplyingFor" type="PartsApplyingForType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="PermissionForResearch" type="xs:boolean" minOccurs="1" maxOccurs="1" />
+            <xs:element name="OtherPeopleLookingAfterChildrenYN" type="xs:boolean" minOccurs="1" maxOccurs="1" />
+            <xs:element name="OtherPeopleLookingAfterChildren" type="PplLkngAfterChldn_PersonalDtlsType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="OtherPeopleWorkingOnPremisesYN" type="xs:boolean" minOccurs="1" maxOccurs="1" />
+            <xs:element name="OtherPeopleWorkingOnPremises" type="PplNotLkngChldn_PersonalDtlsType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="OtherPeopleChildrenYN" type="xs:boolean" minOccurs="1" maxOccurs="1" />
+            <xs:element name="OtherPeopleChildren" type="Children_DetailsType" minOccurs="0" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="SC1Type">
+        <xs:sequence>
+            <xs:element name="TypeOfApplication" type="SCTypeOfApplicationType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="Applicant" type="IndividualType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="Organisation" type="OrganisationType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="NominatedPerson" type="IndividualType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="Premises" type="PremisesType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="Provision" type="SCProvisionType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="Manager" type="IndividualType" minOccurs="0" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="SC2Type">
+        <xs:sequence>
+            <xs:element name="Provider" type="ProviderType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="Personal" type="PersonalType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="Contact" type="ContactType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="ConnectionWithRegistration" type="ConnectionWithRegistrationType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="PastRegistration" type="SCPastRegistrationType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="Referees" type="RefereesType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="PreviousExperience" type="PreviousExperienceType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="SuitabilityAndDisqualification" type="SuitabilityAndDisqualificationType" minOccurs="1" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="SC3Type">
+        <xs:sequence>
+            <xs:element name="Provider" type="ProviderType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="Agreement" type="AgreementType" minOccurs="1" maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+</xs:schema>

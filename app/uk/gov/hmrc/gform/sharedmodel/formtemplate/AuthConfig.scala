@@ -93,6 +93,7 @@ case object Hmrc extends AuthModule
 case object EeittLegacy extends AuthModule
 case object AnonymousAccess extends AuthModule
 case object AWSALBAccess extends AuthModule
+case object OfstedModule extends AuthModule
 
 object AuthModule {
 
@@ -100,12 +101,14 @@ object AuthModule {
   private val legacyEEITTAuth = "legacyEEITTAuth"
   private val anonymous = "anonymous"
   private val awsAlb = "awsAlbAuth"
+  private val ofstedAuth = "ofsted"
 
   implicit val format: Format[AuthModule] = ADTFormat.formatEnumeration(
     hmrc            -> Hmrc,
     legacyEEITTAuth -> EeittLegacy,
     anonymous       -> AnonymousAccess,
-    awsAlb          -> AWSALBAccess
+    awsAlb          -> AWSALBAccess,
+    ofstedAuth      -> OfstedModule
   )
 
   def asString(o: AuthModule): String = o match {
@@ -113,6 +116,7 @@ object AuthModule {
     case EeittLegacy     => legacyEEITTAuth
     case AnonymousAccess => anonymous
     case AWSALBAccess    => awsAlb
+    case OfstedModule    => ofstedAuth
   }
 }
 
@@ -124,6 +128,7 @@ case object HmrcSimpleModule extends AuthConfig
 case class HmrcEnrolmentModule(enrolmentAuth: EnrolmentAuth) extends AuthConfig
 case class HmrcAgentModule(agentAccess: AgentAccess) extends AuthConfig
 case class HmrcAgentWithEnrolmentModule(agentAccess: AgentAccess, enrolmentAuth: EnrolmentAuth) extends AuthConfig
+case object OfstedUser extends AuthConfig
 
 object HasEnrolmentSection {
   def unapply(ac: AuthConfig): Option[(ServiceId, EnrolmentSection, EnrolmentAction)] = ac match {
@@ -211,6 +216,7 @@ object AuthConfig {
                                  HmrcAgentWithEnrolmentModule(_, enrolmentAuth)))
 
                          }
+                       case OfstedModule => JsSuccess(OfstedUser)
                      }
       } yield authConfig
 

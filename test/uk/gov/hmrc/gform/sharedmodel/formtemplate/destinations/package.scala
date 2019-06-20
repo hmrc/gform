@@ -16,9 +16,29 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import play.api.libs.json.{ JsValue, Writes }
-
 package object destinations {
   def createUploadableJson(destination: Destination): String = destination match {
+    case composite: Destination.Composite =>
+      import composite._
+      s"""|{
+          |  "id": "${id.id}",
+          |  ${optionalField("includeIf", Option(destination.includeIf), "true")}
+          |  "${Destination.typeDiscriminatorFieldName}": "${Destination.composite}",
+          |  "destinations": [
+          ${composite.destinations.map(createUploadableJson).toList.mkString(",\n|")}
+          |  ]
+          |}""".stripMargin
+
+    case stateTransition: Destination.StateTransition =>
+      import stateTransition._
+      s"""|{
+          |  "id": "${id.id}",
+          |  ${optionalField("includeIf", Option(destination.includeIf), "true")}
+          |  ${optionalField("failOnError", Option(destination.failOnError), true)}
+          |  "${Destination.typeDiscriminatorFieldName}": "${Destination.stateTransition}",
+          |  "requiredState": "${requiredState.toString}"
+          |}""".stripMargin
+
     case hmrcDms: Destination.HmrcDms =>
       import hmrcDms._
       s"""|{

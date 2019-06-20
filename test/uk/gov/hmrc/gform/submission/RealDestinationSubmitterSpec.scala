@@ -16,14 +16,15 @@
 
 package uk.gov.hmrc.gform.submission
 
-import cats.{ Applicative, Id, Monad, MonadError }
+import cats.{ Applicative, MonadError }
 import cats.syntax.option._
 import org.scalacheck.Gen
+import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.sharedmodel.UserId
 import uk.gov.hmrc.gform.sharedmodel.form.{ DestinationSubmissionInfo, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplate, FormTemplateId }
 import uk.gov.hmrc.gform.{ Possible, Spec, possibleMonadError }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, Destinations, HandlebarsDestinationResponse, HandlebarsTemplateProcessorModel }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, FormTemplateGen, PrimitiveGen }
 import uk.gov.hmrc.gform.sharedmodel.generators.DestinationSubmissionInfoGen
 import uk.gov.hmrc.gform.submission.handlebars.{ HandlebarsHttpApiSubmitter, HandlebarsTemplateProcessor }
@@ -50,6 +51,7 @@ class RealDestinationSubmitterSpec extends Spec {
       createSubmitter
         .expectIncludeIfEvaluation(includeIfExpression, model, requiredResult = true)
         .expectReviewApproval(si.formId, destination, model)
+        .expectDestinationAudit(destination.id, None, si.formId)
         .sut
         .submitIfIncludeIf(destination, si, model, submitter, template) shouldBe Right(None)
     }
@@ -82,6 +84,7 @@ class RealDestinationSubmitterSpec extends Spec {
       createSubmitter
         .expectIncludeIfEvaluation(includeIfExpression, model, requiredResult = true)
         .expectReviewRejection(si.formId, rejection, model)
+        .expectDestinationAudit(rejection.id, None, si.formId)
         .sut
         .submitIfIncludeIf(rejection, si, model, submitter, template) shouldBe Right(None)
     }
@@ -114,6 +117,7 @@ class RealDestinationSubmitterSpec extends Spec {
       createSubmitter
         .expectIncludeIfEvaluation(includeIfExpression, model, requiredResult = true)
         .expectReviewingOfstedSubmission(si, destination, model, FormId("foo"))
+        .expectDestinationAudit(destination.id, None, si.formId)
         .sut
         .submitIfIncludeIf(destination, si, model, submitter, template) shouldBe Right(None)
     }
@@ -139,14 +143,17 @@ class RealDestinationSubmitterSpec extends Spec {
       submissionInfoGen,
       DestinationGen.handlebarsHttpApiGen,
       PrimitiveGen.nonEmptyAlphaNumStrGen,
-      FormTemplateGen.formTemplateGen) { (si, generatedHandlebarsHttpApi, includeIfExpression, template) =>
+      FormTemplateGen.formTemplateGen,
+      Gen.chooseNum(200, 299)
+    ) { (si, generatedHandlebarsHttpApi, includeIfExpression, template, responseCode) =>
       val handlebarsHttpApi = generatedHandlebarsHttpApi.copy(includeIf = includeIfExpression)
-      val httpResponse = HttpResponse(200)
+      val httpResponse = HttpResponse(responseCode)
       val model = HandlebarsTemplateProcessorModel()
 
       createSubmitter
         .expectIncludeIfEvaluation(includeIfExpression, model, requiredResult = true)
         .expectHandlebarsSubmission(handlebarsHttpApi, model, httpResponse)
+        .expectDestinationAudit(handlebarsHttpApi.id, Some(responseCode), si.formId)
         .sut
         .submitIfIncludeIf(handlebarsHttpApi, si, model, submitter, template) shouldBe Right(
         HandlebarsDestinationResponse(handlebarsHttpApi, httpResponse).some)
@@ -169,33 +176,41 @@ class RealDestinationSubmitterSpec extends Spec {
   }
 
   it should "return without raising an error if the endpoint returns an error but failOnError is false" in {
-    forAll(submissionInfoGen, DestinationGen.handlebarsHttpApiGen, FormTemplateGen.formTemplateGen) {
-      (si, generatedHandlebarsHttpApi, template) =>
-        val httpResponse = HttpResponse(300)
-        val handlebarsHttpApi = generatedHandlebarsHttpApi.copy(failOnError = false, includeIf = true.toString)
-        val model = HandlebarsTemplateProcessorModel()
-        createSubmitter
-          .expectHandlebarsSubmission(handlebarsHttpApi, model, httpResponse)
-          .expectIncludeIfEvaluation("true", model, true)
-          .sut
-          .submitIfIncludeIf(handlebarsHttpApi, si, model, submitter, template) shouldBe Right(
-          HandlebarsDestinationResponse(handlebarsHttpApi, httpResponse).some)
+    forAll(
+      submissionInfoGen,
+      DestinationGen.handlebarsHttpApiGen,
+      FormTemplateGen.formTemplateGen,
+      Gen.chooseNum(300, 500)) { (si, generatedHandlebarsHttpApi, template, responseCode) =>
+      val httpResponse = HttpResponse(responseCode)
+      val handlebarsHttpApi = generatedHandlebarsHttpApi.copy(failOnError = false, includeIf = true.toString)
+      val model = HandlebarsTemplateProcessorModel()
+      createSubmitter
+        .expectHandlebarsSubmission(handlebarsHttpApi, model, httpResponse)
+        .expectIncludeIfEvaluation("true", model, true)
+        .expectDestinationAudit(handlebarsHttpApi.id, Some(responseCode), si.formId)
+        .sut
+        .submitIfIncludeIf(handlebarsHttpApi, si, model, submitter, template) shouldBe Right(
+        HandlebarsDestinationResponse(handlebarsHttpApi, httpResponse).some)
     }
   }
 
   it should "raise an error if the endpoint returns an error and failOnError is true" in {
-    forAll(submissionInfoGen, DestinationGen.handlebarsHttpApiGen, FormTemplateGen.formTemplateGen) {
-      (si, generatedHandlebarsHttpApi, template) =>
-        val httpResponse = HttpResponse(300)
-        val handlebarsHttpApi = generatedHandlebarsHttpApi.copy(failOnError = true, includeIf = true.toString)
-        val model = HandlebarsTemplateProcessorModel()
+    forAll(
+      submissionInfoGen,
+      DestinationGen.handlebarsHttpApiGen,
+      FormTemplateGen.formTemplateGen,
+      Gen.chooseNum(300, 500)) { (si, generatedHandlebarsHttpApi, template, responseCode) =>
+      val httpResponse = HttpResponse(responseCode)
+      val handlebarsHttpApi = generatedHandlebarsHttpApi.copy(failOnError = true, includeIf = true.toString)
+      val model = HandlebarsTemplateProcessorModel()
 
-        createSubmitter
-          .expectHandlebarsSubmission(handlebarsHttpApi, model, httpResponse)
-          .expectIncludeIfEvaluation("true", model, true)
-          .sut
-          .submitIfIncludeIf(handlebarsHttpApi, si, model, submitter, template) shouldBe Left(
-          RealDestinationSubmitter.handlebarsHttpApiFailOnErrorMessage(handlebarsHttpApi, httpResponse))
+      createSubmitter
+        .expectHandlebarsSubmission(handlebarsHttpApi, model, httpResponse)
+        .expectIncludeIfEvaluation("true", model, true)
+        .expectDestinationAudit(handlebarsHttpApi.id, Some(responseCode), si.formId)
+        .sut
+        .submitIfIncludeIf(handlebarsHttpApi, si, model, submitter, template) shouldBe Left(
+        RealDestinationSubmitter.handlebarsHttpApiFailOnErrorMessage(handlebarsHttpApi, httpResponse))
     }
   }
 
@@ -207,6 +222,7 @@ class RealDestinationSubmitterSpec extends Spec {
         createSubmitter
           .expectDmsSubmission(si, hmrcDms.toDeprecatedDmsSubmission)
           .expectIncludeIfEvaluation("true", model, true)
+          .expectDestinationAudit(hmrcDms.id, None, si.formId)
           .sut
           .submitIfIncludeIf(hmrcDms, si, model, submitter, template) shouldBe Right(None)
     }
@@ -223,6 +239,7 @@ class RealDestinationSubmitterSpec extends Spec {
       createSubmitter
         .expectIncludeIfEvaluation(includeIfExpression, model, requiredResult = true)
         .expectDmsSubmission(si, hmrcDms.toDeprecatedDmsSubmission)
+        .expectDestinationAudit(hmrcDms.id, None, si.formId)
         .sut
         .submitIfIncludeIf(hmrcDms, si, model, submitter, template) shouldBe Right(None)
     }
@@ -250,6 +267,7 @@ class RealDestinationSubmitterSpec extends Spec {
         createSubmitter
           .expectDmsSubmissionFailure(si, hmrcDms.toDeprecatedDmsSubmission, "an error")
           .expectIncludeIfEvaluation("true", HandlebarsTemplateProcessorModel.empty, true)
+          .expectDestinationAudit(hmrcDms.id, None, si.formId)
           .sut
           .submitIfIncludeIf(hmrcDms, si, HandlebarsTemplateProcessorModel(), submitter, template) shouldBe Right(None)
     }
@@ -274,6 +292,8 @@ class RealDestinationSubmitterSpec extends Spec {
     dmsSubmitter: DmsSubmitter[F],
     handlebarsSubmitter: HandlebarsHttpApiSubmitter[F],
     ofstedSubmitter: OfstedSubmitter[F],
+    destinationAuditer: DestinationAuditAlgebra[F],
+    formAlgebra: FormAlgebra[F],
     handlebarsTemplateProcessor: HandlebarsTemplateProcessor)(implicit F: MonadError[F, String]) {
 
     def expectDmsSubmission(si: DestinationSubmissionInfo, dms: Destinations.DmsSubmission)(
@@ -361,6 +381,16 @@ class RealDestinationSubmitterSpec extends Spec {
       this
     }
 
+    def expectDestinationAudit(
+      destinationId: DestinationId,
+      response: Option[Int],
+      formId: FormId): SubmitterParts[F] = {
+      (destinationAuditer
+        .apply(_: DestinationId, _: Option[Int], _: FormId)(_: HeaderCarrier))
+        .expects(destinationId, response, formId, hc)
+        .returning(F.pure(()))
+      this
+    }
   }
 
   private def createSubmitter: SubmitterParts[Possible] = {
@@ -368,17 +398,28 @@ class RealDestinationSubmitterSpec extends Spec {
     val handlebarsSubmitter = mock[HandlebarsHttpApiSubmitter[Possible]]
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
     val ofsetReviewSubmitter = mock[OfstedSubmitter[Possible]]
+    val destinationAuditer = mock[DestinationAuditAlgebra[Possible]]
+    val formAlgebra = mock[FormAlgebra[Possible]]
     val submitter =
       new RealDestinationSubmitter[Possible, Unit](
         dmsSubmitter,
         handlebarsSubmitter,
         ofsetReviewSubmitter,
+        destinationAuditer,
+        formAlgebra,
         handlebarsTemplateProcessor)
 
-    SubmitterParts(submitter, dmsSubmitter, handlebarsSubmitter, ofsetReviewSubmitter, handlebarsTemplateProcessor)
+    SubmitterParts(
+      submitter,
+      dmsSubmitter,
+      handlebarsSubmitter,
+      ofsetReviewSubmitter,
+      destinationAuditer,
+      formAlgebra,
+      handlebarsTemplateProcessor)
   }
 
-  private def submitter(): DestinationsSubmitter[Possible] = {
+  private def submitter: DestinationsSubmitter[Possible] = {
     val destinationSubmitter: DestinationSubmitter[Possible] = mock[DestinationSubmitter[Possible]]
     new DestinationsSubmitter[Possible](destinationSubmitter)
   }
