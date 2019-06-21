@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.fileupload
 
+import akka.actor.Scheduler
 import akka.util.ByteString
 import play.api.Logger
 import uk.gov.hmrc.gform.auditing.loggingHelpers
@@ -26,20 +27,25 @@ import uk.gov.hmrc.gform.wshttp.{ FutureHttpResponseSyntax, WSHttp }
 
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.gform.InjectionDodge
+import scala.concurrent.duration._
 
-class FileUploadFrontendConnector(config: FUConfig, wSHttp: WSHttp)(implicit ex: ExecutionContext) {
+class FileUploadFrontendConnector(config: FUConfig, wSHttp: WSHttp)(implicit ex: ExecutionContext) extends Retrying {
 
   def upload(envelopeId: EnvelopeId, fileId: FileId, fileName: String, body: ByteString, contentType: ContentType)(
     implicit hc: HeaderCarrier): Future[Unit] = {
+    implicit val schduler: Scheduler = InjectionDodge.actorSystem.scheduler
     Logger.info(
       s"upload, envelopeId: '${envelopeId.value}',  fileId: '${fileId.value}', fileName: '$fileName', contentType: '${contentType.value}, ${loggingHelpers
         .cleanHeaderCarrierHeader(hc)}'")
 
     val url = s"$baseUrl/file-upload/upload/envelopes/${envelopeId.value}/files/${fileId.value}"
-    wSHttp
-      .POSTFile(url, fileName, body, Seq("CSRF-token" -> "nocheck"), contentType.value)
-      .failWithNonSuccessStatusCodes(url)
-      .void
+    retry(
+      wSHttp
+        .POSTFile(url, fileName, body, Seq("CSRF-token" -> "nocheck"), contentType.value)
+        .failWithNonSuccessStatusCodes(url),
+      Seq(10.milliseconds, 100.milliseconds, 800.millisecond)
+    ).void
   }
 
   private lazy val baseUrl = config.fileUploadFrontendBaseUrl
