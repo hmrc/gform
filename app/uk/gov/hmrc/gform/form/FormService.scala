@@ -53,7 +53,6 @@ class FormService[F[_]: Monad](
     val expiryDate = timeProvider.localDateTime().plusDays(expiryDays)
 
     if (config.env == "OFSTED") {
-      println("+++++++++++++++++++++ I AM HERE ++++++++++++++++++++++++++++++++++++++") //TODO: take out comment
       val form = Form(
         formId,
         Seed(),
@@ -72,9 +71,6 @@ class FormService[F[_]: Monad](
       } yield formId
 
     } else {
-      println(config.env)
-      println("+++++++++++++++++++++ I SHOULD NOT BE HERE ++++++++++++++++++++++++++++++++++++++")
-
       for {
         envelopeId <- fileUpload.createEnvelope(formTemplateId, expiryDate)
         form = Form(
