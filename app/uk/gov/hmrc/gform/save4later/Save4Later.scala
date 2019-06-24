@@ -42,8 +42,6 @@ class Save4Later(cache: ShortLivedCache)(implicit ex: ExecutionContext) extends 
 
   def upsert(formId: FormId, form: Form)(implicit hc: HeaderCarrier): Future[Unit] = {
     Logger.debug(Json.prettyPrint(Json.toJson(form)) + "PUTFORM")
-    println("+++++++++++++++++++++ BEGINNING UPSERT ++++++++++++++++++++++++++++++++++++++") //TODO: take out comment
-
     cache.cache[Form](formId.value, formCacheKey, form).void
   }
 
