@@ -26,6 +26,7 @@ import play.api.libs.json.{ JsObject, Json }
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.http.HttpResponse
+import play.api.Logger
 
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ ExecutionContext, Future }
@@ -60,5 +61,10 @@ class Helper(config: FUConfig) {
 
 trait Retrying {
   def retry[T](f: => Future[T], delays: Seq[FiniteDuration])(implicit ec: ExecutionContext, s: Scheduler): Future[T] =
-    f recoverWith { case _ if delays.nonEmpty => after(delays.head, s)(retry(f, delays.tail)) }
+    f recoverWith {
+      case _ if delays.nonEmpty => {
+        Logger.warn(s"Retrying after ${delays.head}")
+        after(delays.head, s)(retry(f, delays.tail))
+      }
+    }
 }
