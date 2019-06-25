@@ -17,12 +17,12 @@
 package uk.gov.hmrc.gform.cygnum.http
 
 import cats.Monad
-import com.softwaremill.sttp.quick.{emptyRequest, _}
-import com.softwaremill.sttp.{Id, RequestT, Response}
+import com.softwaremill.sttp.quick.{ emptyRequest, _ }
+import com.softwaremill.sttp.{ Id, RequestT, Response }
 import uk.gov.hmrc.gform.config.CygnumConfig
 import uk.gov.hmrc.gform.cygnum.CygnumTemplate._
 import uk.gov.hmrc.gform.cygnum.soap.ProxyCode.buildPayload
-import uk.gov.hmrc.gform.cygnum.{GetData, SendData, ServiceName}
+import uk.gov.hmrc.gform.cygnum.{ GetData, SendData, ServiceName }
 import uk.gov.hmrc.http.HttpResponse
 
 import scala.xml.XML
