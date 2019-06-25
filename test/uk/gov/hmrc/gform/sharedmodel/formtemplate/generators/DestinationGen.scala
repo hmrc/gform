@@ -47,9 +47,10 @@ trait DestinationGen {
       uri         <- PrimitiveGen.urlContextPathGen
       method      <- HttpMethodGen.httpMethodGen
       payload     <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen).map(_.map(s => s""""$s""""))
+      payloadType <- TemplateTypeGen.templateTypeGen
       includeIf   <- includeIfGen
       failOnError <- PrimitiveGen.booleanGen
-    } yield Destination.HandlebarsHttpApi(id, profile, uri, method, payload, includeIf, failOnError)
+    } yield Destination.HandlebarsHttpApi(id, profile, uri, method, payload, payloadType, includeIf, failOnError)
 
   def reviewingOfstedGen: Gen[Destination.ReviewingOfsted] =
     for {

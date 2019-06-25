@@ -17,31 +17,42 @@
 package uk.gov.hmrc.gform.submission.handlebars
 
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HandlebarsTemplateProcessorModel
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ HandlebarsTemplateProcessorModel, SingleQuoteReplacementLexer, TemplateType }
 
 class HandlebarsTemplateProcessorSpec extends Spec {
-  "apply" must "work" in {
-    val processor = new RealHandlebarsTemplateProcessor
-    processor("I am a {{name}} template", HandlebarsTemplateProcessorModel("""{"name" : "handlebars"}""")) shouldBe "I am a handlebars template"
+  "apply" must "work with JSON" in {
+    RealHandlebarsTemplateProcessor(
+      "I am a {{name}} template",
+      HandlebarsTemplateProcessorModel("""{"name" : "handlebars"}"""),
+      TemplateType.JSON) shouldBe "I am a handlebars template"
+  }
+
+  it must "work with XML" in {
+    RealHandlebarsTemplateProcessor(
+      "<foo>I am a {{name}} template</foo>",
+      HandlebarsTemplateProcessorModel("""{"name" : "handlebars"}"""),
+      TemplateType.XML) shouldBe "<foo>I am a handlebars template</foo>"
+  }
+
+  it must "work with plain text" in {
+    RealHandlebarsTemplateProcessor(
+      "I am a {{name}} template",
+      HandlebarsTemplateProcessorModel("""{"name" : "handlebars"}"""),
+      TemplateType.XML) shouldBe "I am a handlebars template"
   }
 
   "JsonEscapingStrategy un-escaping" must "work with apostrophes" in {
-    val a = new RealHandlebarsTemplateProcessor
-    a.JsonEscapingStrategy.escape("string with an ' apostrophe") shouldBe "string with an ' apostrophe"
+    RealHandlebarsTemplateProcessor(
+      "string with an {{apostrophe}}",
+      HandlebarsTemplateProcessorModel("""{"apostrophe" : "'"}"""),
+      TemplateType.JSON) shouldBe "string with an '"
   }
 
-  "it" must "work with a backslash" in {
-    val a = new RealHandlebarsTemplateProcessor
-    a.JsonEscapingStrategy.escape("""string with a \ backslash""") shouldBe """string with a  backslash"""
+  it must "work with a backslash" in {
+    RealHandlebarsTemplateProcessor("""string with a \""", HandlebarsTemplateProcessorModel.empty, TemplateType.JSON) shouldBe """string with a \"""
   }
 
-  "it" must "work with two backslashes" in {
-    val a = new RealHandlebarsTemplateProcessor
-    a.JsonEscapingStrategy.escape("""string with \\ backslashes""") shouldBe """string with \ backslashes"""
-  }
-
-  "it" must "work with multiple backslashes" in {
-    val a = new RealHandlebarsTemplateProcessor
-    a.JsonEscapingStrategy.escape("""string with \\\' backslashes""") shouldBe """string with \' backslashes"""
+  it must "work with two backslashes" in {
+    RealHandlebarsTemplateProcessor("""string with two \\""", HandlebarsTemplateProcessorModel.empty, TemplateType.JSON) shouldBe """string with two \\"""
   }
 }

@@ -16,35 +16,60 @@
 
 package uk.gov.hmrc.gform.submission.handlebars
 
+import cats.Endo
 import com.github.jknack.handlebars.{ Context, EscapingStrategy, Handlebars, JsonNodeValueResolver }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HandlebarsTemplateProcessorModel
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ HandlebarsTemplateProcessorModel, TemplateType }
 
 trait HandlebarsTemplateProcessor {
-  def apply(template: String, model: HandlebarsTemplateProcessorModel): String
+  def apply(template: String, model: HandlebarsTemplateProcessorModel, templateType: TemplateType): String
 }
 
-class RealHandlebarsTemplateProcessor(
-  helpers: HandlebarsTemplateProcessorHelpers = new HandlebarsTemplateProcessorHelpers())
-    extends HandlebarsTemplateProcessor {
+object RealHandlebarsTemplateProcessor extends HandlebarsTemplateProcessor {
+  private class Processor(
+    escapingStrategy: EscapingStrategy,
+    postProcessor: Endo[String],
+    helpers: HandlebarsTemplateProcessorHelpers = new HandlebarsTemplateProcessorHelpers()) {
+    private val handlebars = new Handlebars().`with`(escapingStrategy).registerHelpers(helpers)
 
-  object JsonEscapingStrategy extends EscapingStrategy {
-    override def escape(value: CharSequence): CharSequence =
-      if (value == null) null
-      else org.apache.commons.lang3.StringEscapeUtils.unescapeJson(value.toString)
-  }
-  private val handlebars = new Handlebars().`with`(JsonEscapingStrategy).registerHelpers(helpers)
-  def apply(template: String, model: HandlebarsTemplateProcessorModel): String = {
-    val compiledTemplate = handlebars.compileInline(template)
+    def apply(template: String, model: HandlebarsTemplateProcessorModel): String = {
+      val compiledTemplate = handlebars.compileInline(template)
 
-    val context = Context
-      .newBuilder(model.model)
-      .resolver(JsonNodeValueResolver.INSTANCE)
-      .build
+      val context = Context
+        .newBuilder(model.model)
+        .resolver(JsonNodeValueResolver.INSTANCE)
+        .build
 
-    try {
-      MagicCommasParser(compiledTemplate.apply(context))
-    } catch {
-      case ex: Exception => throw new Exception(model.model.toString, ex)
+      try {
+        postProcessor(compiledTemplate.apply(context))
+      } catch {
+        case ex: Exception => throw new Exception(model.model.toString, ex)
+      }
     }
   }
+
+  private val jsonProcessor: Processor = new Processor(
+    new EscapingStrategy {
+      override def escape(value: CharSequence): CharSequence =
+        if (value == null) null
+        else org.apache.commons.lang3.StringEscapeUtils.unescapeJson(value.toString)
+    },
+    MagicCommasParser.apply
+  )
+
+  private val xmlProcessor: Processor = new Processor(
+    EscapingStrategy.XML,
+    identity
+  )
+
+  private val plainProcessor: Processor = new Processor(
+    EscapingStrategy.NOOP,
+    identity
+  )
+
+  override def apply(template: String, model: HandlebarsTemplateProcessorModel, templateType: TemplateType): String =
+    (templateType match {
+      case TemplateType.JSON  => jsonProcessor
+      case TemplateType.XML   => xmlProcessor
+      case TemplateType.Plain => plainProcessor
+    })(template, model)
 }

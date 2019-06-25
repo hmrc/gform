@@ -17,7 +17,6 @@
 package uk.gov.hmrc.gform.cygnum.soap
 
 import cats.implicits._
-import com.softwaremill.sttp.Id
 import uk.gov.hmrc.gform.cygnum._
 import uk.gov.hmrc.gform.cygnum.http.CygnumClient
 
@@ -28,12 +27,13 @@ object SoapApiSpike extends App {
 
   private val client = new CygnumClient[Try]
 
+  private val hardCodedPayloadFromTemplate: String =
+    Source.fromFile("./ofsted_example_templates/submitFormPayload.xml").getLines.mkString
+
   for {
-    urnResponse <- client.sendRequest(GetData, GetUrnTemplate.urnTemplate)
-    _ = println(s"URN: ${new CygnumDataExtractor(new CygnumDataExtractorProgram[Id]).extractUrn(urnResponse.body)}")
-    formResponse <- client.sendRequest(
-                     SendData,
-                     Source.fromFile("./ofsted_example_templates/submitFormTemplate.xml").getLines.mkString)
-    _ = println(s"Status: ${formResponse.status}\nBody: ${formResponse.body}")
+    urnResponse <- client.sendRequest(GetData, CygnumTemplate.urnTemplate)
+//    _ = println(s"URN: ${new CygnumDataExtractor(new CygnumDataExtractorProgram[Id]).extractUrn(urnResponse.body)}")
+    formResponse <- client.sendRequest(SendData, hardCodedPayloadFromTemplate)
+//    _ = println(s"Status: ${formResponse.status}\nBody: ${formResponse.body}")
   } yield ()
 }

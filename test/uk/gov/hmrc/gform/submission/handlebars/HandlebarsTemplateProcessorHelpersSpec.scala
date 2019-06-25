@@ -22,7 +22,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import uk.gov.hmrc.gform.Spec
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.form._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HandlebarsTemplateProcessorModel
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ HandlebarsTemplateProcessorModel, TemplateType }
 import uk.gov.hmrc.gform.time.FrozenTimeProvider
 
 import scala.language.implicitConversions
@@ -484,12 +484,6 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     process("{{toEtmpTelephoneNumber null}}") shouldBe "null"
   }
 
-  "currentMonth" must "return the current month" in {
-    new RealHandlebarsTemplateProcessor(new HandlebarsTemplateProcessorHelpers(FrozenTimeProvider.exampleInstance))(
-      "{{currentMonth}}",
-      HandlebarsTemplateProcessorModel.empty) shouldBe "1"
-  }
-
   "greaterThan" must "return true if the first parameter is greater than the second, false otherwise" in {
     val table = Table(
       ("first", "second", "result"),
@@ -576,5 +570,5 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     process(functionCall, HandlebarsTemplateProcessorModel(formFields))
 
   private def process(functionCall: String, model: HandlebarsTemplateProcessorModel): String =
-    new RealHandlebarsTemplateProcessor()(functionCall, model)
+    RealHandlebarsTemplateProcessor(functionCall, model, TemplateType.Plain)
 }

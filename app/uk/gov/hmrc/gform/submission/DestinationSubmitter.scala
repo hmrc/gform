@@ -53,7 +53,7 @@ class RealDestinationSubmitter[M[_], R](
   ofsted: OfstedSubmitter[M],
   destinationAuditer: DestinationAuditAlgebra[M],
   formAlgebra: FormAlgebra[M],
-  handlebarsTemplateProcessor: HandlebarsTemplateProcessor = new RealHandlebarsTemplateProcessor)(
+  handlebarsTemplateProcessor: HandlebarsTemplateProcessor = RealHandlebarsTemplateProcessor)(
   implicit monadError: MonadError[M, String])
     extends DestinationSubmitter[M] {
 
@@ -197,7 +197,7 @@ object DestinationSubmitter {
     destination: Destination,
     model: HandlebarsTemplateProcessorModel,
     handlebarsTemplateProcessor: HandlebarsTemplateProcessor): Boolean =
-    handlebarsTemplateProcessor(destination.includeIf, model) === true.toString
+    handlebarsTemplateProcessor(destination.includeIf, model, TemplateType.Plain) === true.toString
 }
 
 object RealDestinationSubmitter {
@@ -213,7 +213,7 @@ object SelfTestingDestinationSubmitter {
 }
 
 class SelfTestingDestinationSubmitter[M[_]](
-  handlebarsTemplateProcessor: HandlebarsTemplateProcessor = new RealHandlebarsTemplateProcessor,
+  handlebarsTemplateProcessor: HandlebarsTemplateProcessor = RealHandlebarsTemplateProcessor,
   test: DestinationTest)(implicit monadError: MonadError[M, String])
     extends DestinationSubmitter[M] {
   type ReturnType = M[Option[HandlebarsDestinationResponse]]
@@ -288,7 +288,7 @@ class SelfTestingDestinationSubmitter[M[_]](
       expected.uri match {
         case None => noExpectedUriSpecified(destination)
         case Some(expectedUri) =>
-          val actualUri = handlebarsTemplateProcessor(destination.uri, model)
+          val actualUri = handlebarsTemplateProcessor(destination.uri, model, TemplateType.Plain)
           if (actualUri =!= expectedUri) mismatchedUri(destination, expectedUri, actualUri)
           else verifyHandlebarsDestinationPayload(destination, model, expected)
       } else verifyHandlebarsDestinationPayload(destination, model, expected)
@@ -334,7 +334,8 @@ class SelfTestingDestinationSubmitter[M[_]](
     result: DestinationTestResult,
     destinationPayloadTemplate: String,
     requiredPayload: JsValue): M[Option[HandlebarsDestinationResponse]] = {
-    val processedDestinationPayload = handlebarsTemplateProcessor(destinationPayloadTemplate, model)
+    val processedDestinationPayload =
+      handlebarsTemplateProcessor(destinationPayloadTemplate, model, destination.payloadType)
     parseTransformedPayload(destination.id, processedDestinationPayload).flatMap { json =>
       if (json != requiredPayload)
         generatedPayloadDoesNotMatchExpected(destination)
