@@ -17,17 +17,23 @@
 package uk.gov.hmrc.gform.cygnum.soap
 
 import cats.implicits._
-import uk.gov.hmrc.gform.cygnum.SoapClient
+import com.softwaremill.sttp.Id
+import uk.gov.hmrc.gform.cygnum._
 import uk.gov.hmrc.gform.cygnum.http.CygnumClient
 
+import scala.io.Source
 import scala.util.Try
 
 object SoapApiSpike extends App {
 
-  private val client = new SoapClient[Try](new CygnumClient[Try])
+  private val client = new CygnumClient[Try]
 
   for {
-    _ <- client.retrieveUrn
-    _ <- client.submitForm
+    urnResponse <- client.sendRequest(GetData, GetUrnTemplate.urnTemplate)
+    _ = println(s"URN: ${new CygnumDataExtractor(new CygnumDataExtractorProgram[Id]).extractUrn(urnResponse.body)}")
+    formResponse <- client.sendRequest(
+                     SendData,
+                     Source.fromFile("./ofsted_example_templates/submitFormTemplate.xml").getLines.mkString)
+    _ = println(s"Status: ${formResponse.status}\nBody: ${formResponse.body}")
   } yield ()
 }

@@ -1,0 +1,3583 @@
+{
+  "formName": "EY2: Apply to register if you are connected with a childcare or daycare",
+  "description": "Become a childcare provider",
+  "formCategory": "ofstedDefault",
+  "GFC579Ready": "true",
+  "emailTemplateId": "eeitt_submission_confirmation",
+  "authConfig": {
+    "authModule": "anonymous"
+  },
+  "sections": [
+    {
+      "title": "Are you the person being added to the registration?",
+      "fields": [
+        {
+          "id": "authYesNo",
+          "type": "choice",
+          "label": "Are you the person being added to the registration?",
+          "helpText": "This form must only be completed by the person who is applying to be connected to the daycare provider.",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Should we add Contact Details via revealing component to the answer yes?",
+            "colour": "#ffe4e1",
+            "date": 1561109172162,
+            "author": "Jonathan-Courage"
+          }
+        ]
+      }
+    },
+    {
+      "title": "You cannot use this service",
+      "includeIf": "${authYesNo = 1}",
+      "continueIf": "false",
+      "fields": [
+        {
+          "id": "generatedId_9dce7117_f9eb_4b64_9081_40de68d3d103",
+          "type": "info",
+          "label": "",
+          "helpText": "This form must only be completed by the person who is applying to be connected to the daycare provider.",
+          "infoText": "As you are not the person we being added to the registration, you cannot complete this form.\n\nThis form must only be completed by the person who is applying to be connected to the daycare provider.\n\nYou'll need to exit this form.",
+          "infoType": "noformat"
+        }
+      ]
+    },
+    {
+      "title": " What type of childcare provider are you connected to?",
+      "progressIndicator": " Provision Details ",
+      "fields": [
+        {
+          "id": "serviceType",
+          "type": "choice",
+          "label": " What type of childcare provider are you connected to?",
+          "choices": [
+            "Childcare on non-domestic premises",
+            "Childcare on domestic premises"
+          ],
+          "optionHelpText": [
+            "For example, nurseries, playgroups, before and after school clubs and other daycare",
+            "This is when a childminder works with 3 or more other childminders or assistants (at the same time) in a private home"
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "This differs from EYO (daycare) make sure this matches.",
+            "colour": "#fffacd",
+            "date": 1560253452947,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Is the daycare you are connected to already registered with Ofsted? (A1)",
+      "progressIndicator": " Provision details",
+      "fields": [
+        {
+          "id": "businessRegisteredCNPAndCDP",
+          "type": "choice",
+          "label": "Is the daycare you are connected to already registered with Ofsted? (A1)",
+          "helpText": " If they are already registered they would have received an Ofsted registration certificate in the post.",
+          "choices": [
+            "Yes",
+            "No, the daycare is in the process of registering"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "How are you connected to the daycare? (A1)",
+      "includeIf": "${businessRegisteredCNPAndCDP = 0}",
+      "progressIndicator": " Provision details",
+      "fields": [
+        {
+          "id": "referenceNumberCNPAlreadyReg",
+          "type": "choice",
+          "label": "How are you connected to the daycare? (A1)",
+          "helpText": "If both options apply select 'I am the nominated individual or a registered individual'.",
+          "choices": [
+            "I am the nominated individual or a registered individual",
+            "I will be living or working at the daycare"
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "*IMPORTANT* \nCheck this page with all stakeholders as the question is asking something different to the NOO form. \n\n\nThis was discussed with Sarah.\n\nNOO original content:\n\nWhat reference number are you providing?\n\n\"Your reference number begins with an 'RP' and/or the number appears at the top of the certificate of registration as the 'Registration Number'\",\n\n\"Your reference number does not begin with an 'RP' and/or the number appears on the certificate as the 'Setting Reference Number'\"",
+            "colour": "#ffe4e1",
+            "date": 1560873199983,
+            "author": "lamaloney"
+          },
+          {
+            "text": "The business use reference numbers on the back end to know which registration to put the details against.\n\nIf we ask for role first we could route question:\n\nIf committee, directors, member -  RP or a 7 digit number\n\n\nReg number only needed for non-domestic.\n\nNon domestic -only ever provide  setting ref number.\n\n\nNeed this page for domestic.\n",
+            "colour": "#fffacd",
+            "date": 1560253846567,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "Non domestic -only ever need to provide  registration number.\n\n\nDomestic - could be either. Will need a routing question or info about which ref applies to the role they will be doing.\n\n\nDomestic - is role going to be part an org (e.g committee member)? (if so collect reg number)\n\nIf no - assume will be living/working where childcare takes place (so ask for setting ref)\n\nCould be both (but just need org details if so (reg number).\n\nHelp text from NOO:\nSelect this option where you wish to apply as the Registered individual or a Nominated individual.\n\nThe nominated individual is responsible for matters relating to the application for registration and subsequent registration on the Early Years Register. They must be part of the registered person's governing body and must oversee (either alone or jointly with others) the management of the early years provision. The nominated individual should not be the manager of a setting unless that manager is also a member of the governing body.\n\nRegistered individuals are the individuals who make up the registered person (such as committee members, directors etc.)\n",
+            "colour": "#fffacd",
+            "date": 1560254856870,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "Check with Naomi about adding repeats?",
+            "colour": "#fffacd",
+            "date": 1560255881357,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "What is the daycare’s application ID? (A1)",
+      "includeIf": "${businessRegisteredCNPAndCDP = 1 && serviceType = 0}",
+      "progressIndicator": " Provision details",
+      "fields": [
+        {
+          "id": "applicationIDCNPInProcessReg",
+          "type": "text",
+          "label": "What is the daycare’s application ID? (A1)",
+          "helpText": "You will have been sent this in an email by the nominated individual when they were completing the EYO form. This is 6 numbers, starting with EYO or CR1. For example, EYO_123456 ."
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Use 'Application ID'.\n\n\nYou will have received an email  when the nominated individual was in the process of completing their EYO.\n\nShow to all domestic/non-domestic who is in process of registering.\n\n\nThis ID is generated by NOO. It could not be replaced with submission ref with Gforms because the EYO can't be submitted until EY2 and EYS is submitted\n\n\n- Alex to look into options for linking forms - with a ref number that would need to be emailed out generated from the EYO.\n\n\n \n\n",
+            "colour": "#fffacd",
+            "date": 1560257300305,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Registered Person’s details",
+      "includeIf": "${businessRegisteredCNPAndCDP = 1 && serviceType = 0}",
+      "progressIndicator": " Provision details",
+      "fields": [
+        {
+          "id": "registeredPersonCNPInfo",
+          "type": "info",
+          "label": "",
+          "infoText": "Provide the details of the daycare provider that you are or will be connected to. \nWe collect these details to match you with the registration.",
+          "infoType": "noformat"
+        },
+        {
+          "id": "registeredPersonNameCNPInProcessReg",
+          "type": "text",
+          "label": "Full name of Registered Person (A3)",
+          "helpText": "This is the individual or organisation registered with Ofsted for daycare"
+        },
+        {
+          "id": "registeredPersonAddressCNPInProcessReg",
+          "type": "address",
+          "label": "Registered address (A4)",
+          "helpText": "This is where Ofsted sends legal documents"
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "The address of the ltd company would need to be provided if a nursery has multiple settings.\n\n\nThis is collected to help match and link with other registration details.\n\n\n\n\nHelp text: This is the registered address where Ofsted sends legal documents.",
+            "colour": "#fffacd",
+            "date": 1560259064489,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "What does the application ID of the daycare begin with? (A1)",
+      "includeIf": "${businessRegisteredCNPAndCDP = 1 && serviceType = 1}",
+      "progressIndicator": " Provision details",
+      "fields": [
+        {
+          "id": "applicationIDCDPStart",
+          "type": "choice",
+          "label": "What does the application ID of the daycare begin with? (A1)",
+          "helpText": "This is also referred to as an application reference.\n\n This is 6 numbers that starts with either EYO, CR1 and EYS.\n\n For example, EYO_123456.",
+          "choices": [
+            "EYO_ ",
+            "CR1_",
+            "EYS_"
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Alex looking into linking reference numbers. Need to work out a system for GForms. Cygnum needs to recognise what it is receiving.\n\n\nNeeds to be submitted all together at the same time. (Hierarchy of application IDs).\n\nCurrent system is this would have been received by email by the person completing the EYO etc. \n\n\n(For domestic in process of registering)\n\n\n",
+            "colour": "#fffacd",
+            "date": 1560259737884,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "What is the daycare’s application ID? (A1)",
+      "includeIf": "${applicationIDCDPStart = 0 || applicationIDCDPStart = 1}",
+      "progressIndicator": " Provision details",
+      "fields": [
+        {
+          "id": "appIDCDP",
+          "type": "text",
+          "label": "What is the daycare’s application ID? (A1)",
+          "helpText": "If the daycare you are connected to is in the process of registering with Ofsted, they will have an application ID or reference.\n\n This is 6 numbers that starts with either EYO or CR1. For example, EYO_123456."
+        }
+      ]
+    },
+    {
+      "title": "Registered Person’s details",
+      "includeIf": "${applicationIDCDPStart = 0 || applicationIDCDPStart = 1}",
+      "progressIndicator": " Provision details",
+      "fields": [
+        {
+          "id": "registeredPersonCNPInfo_copy_1",
+          "type": "info",
+          "label": "",
+          "infoText": "Provide the details of the daycare provider that you are or will be connected to. \nWe collect these details to match you with the registration.",
+          "infoType": "noformat"
+        },
+        {
+          "id": "registeredPersonCDP",
+          "type": "text",
+          "label": "Full name of registered person (A3)",
+          "helpText": "This is the individual or organisation registered with Ofsted for daycare"
+        },
+        {
+          "id": "registeredPersonAddressCDP",
+          "type": "address",
+          "label": "Registered address (A4)",
+          "helpText": "This is where Ofsted sends legal documents"
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Same as page 5: \nThe address of the ltd company would need to be provided if a nursery has multiple settings.\n\n\nThis is collected to help match and link with other registration details.\n\n\n\nHelp text: This is the registered address where Ofsted sends legal documents.",
+            "colour": "#fffacd",
+            "date": 1560263338511,
+            "author": "lamaloney"
+          }
+        ]
+      }
+    },
+    {
+      "title": "What type of Registered Person are you applying to be connected to?  (A1)",
+      "progressIndicator": " Provision details",
+      "fields": [
+        {
+          "id": "connectionToBusinessCNPAlreadyReg",
+          "type": "choice",
+          "label": "What type of Registered Person are you applying to be connected to?  (A1)",
+          "choices": [
+            "Organisation",
+            "Individual"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "You do not need to complete this application (Exit routing page)",
+      "includeIf": "${serviceType = 0 && businessRegisteredCNPAndCDP = 0 &&  connectionToBusinessCNPAlreadyReg = 1}",
+      "continueIf": "false",
+      "progressIndicator": " Provision details",
+      "fields": [
+        {
+          "id": "noCheckIndividualsInfo",
+          "type": "info",
+          "label": "",
+          "infoText": "As you are are an individual in a non-domestic provision and are already registered with Ofsted, you do not need to complete this form.",
+          "infoType": "noformat"
+        }
+      ]
+    },
+    {
+      "title": "Daycare setting details (A5)",
+      "includeIf": "${referenceNumberCNPAlreadyReg=1}",
+      "progressIndicator": "Provision details",
+      "fields": [
+        {
+          "id": "settingCNPAlreadyRegSRNGroup",
+          "type": "group",
+          "label": "",
+          "presentationHint": "summariseGroupAsGrid",
+          "fields": [
+            {
+              "id": "settingURNAlreadyRegSRN",
+              "type": "text",
+              "label": "Setting reference number (A5)",
+              "helpText": "You can find this on the Registered Person's Ofsted registration certificate"
+            },
+            {
+              "id": "settingURNAlreadyRegSRN_regid",
+              "type": "text",
+              "label": "What is the Cygnum Registration ID?",
+              "helpText": "This will be for ARC only during the review process"
+            },
+            {
+              "id": "settingNameCNPAlreadyRegSRN",
+              "type": "text",
+              "label": "Name of the daycare setting (A5)"
+            },
+            {
+              "id": "settingAddressCNPAlreadyRegSRN",
+              "type": "address",
+              "label": "Setting address (A5)",
+              "helpText": "This is where the daycare takes place"
+            },
+            {
+              "id": "otherSettingAddresses",
+              "type": "choice",
+              "label": "Are you connected with any other settings?",
+              "helpText": "You will need to provide all the addresses where you will live or work",
+              "choices": [
+                "Yes",
+                "No"
+              ]
+            }
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "We can add repeating addresses- can only pass 1 address to API, rest go in PDF.\n\nThis is where the childcare takes place.\n\nProvide all addresses where you will live or work.\n\n\nThis page is only for domestic and if they select Setting Ref no.\n\nSetting Ref:\nHelp text: You can find this on the registered person's Ofsted registration certificate.\n",
+            "colour": "#fffacd",
+            "date": 1560263609114,
+            "author": "lamaloney"
+          },
+          {
+            "text": "Jonathan- remove repeatable format from this page but keep on subsequent pages if they select yes- route the question i've added at the bottom",
+            "colour": "#ffe4e1",
+            "date": 1560764489951,
+            "author": "lamaloney"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Additional connected setting details (A5)",
+      "includeIf": "${otherSettingAddresses = 0}",
+      "progressIndicator": " Provision details",
+      "fields": [
+        {
+          "id": "settingAppIDVersionAdditional",
+          "type": "group",
+          "label": "",
+          "repeatsMax": 15,
+          "repeatLabel": "Setting $n",
+          "presentationHint": "summariseGroupAsGrid",
+          "fields": [
+            {
+              "id": "settingURNAlreadyRegSRN2",
+              "type": "text",
+              "label": "Setting reference number (A5)",
+              "helpText": "You can find this on the Registered Person's Ofsted registration certificate"
+            },
+            {
+              "id": "settingURNAlreadyRegSRN2_regid",
+              "type": "text",
+              "label": "What is the Cygnum Registration ID?",
+              "helpText": "This will be for ARC only during the review process"
+            },
+            {
+              "id": "settingNameSRNAdditional",
+              "type": "text",
+              "label": "Name of daycare setting(A5)"
+            },
+            {
+              "id": "settingAddressSRNAdditional",
+              "type": "address",
+              "label": "Setting address (A5)",
+              "helpText": "This is where the daycare takes place"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Connected setting details (A5)",
+      "includeIf": "${applicationIDCDPStart = 2}",
+      "progressIndicator": " Provision details",
+      "fields": [
+        {
+          "id": "settingAppIDVersion",
+          "type": "group",
+          "label": "",
+          "presentationHint": "summariseGroupAsGrid",
+          "fields": [
+            {
+              "id": "settingAppID",
+              "type": "text",
+              "label": "Application ID(A5)",
+              "helpText": "The application ID will look similar to 'EYS_123456'. This will have been sent to you by the Registered Person.",
+              "format": "positiveWholeNumber"
+            },
+            {
+              "id": "settingNameAppID",
+              "type": "text",
+              "label": "Name of daycare setting(A5)"
+            },
+            {
+              "id": "settingAddressAppID",
+              "type": "address",
+              "label": "Setting address (A5)",
+              "helpText": "This is where the daycare takes place"
+            },
+            {
+              "id": "otherSettingAddress2",
+              "type": "choice",
+              "label": "Are you connected with any other settings?",
+              "helpText": "You will need to provide all the addresses where you will live or work",
+              "choices": [
+                "Yes",
+                "No"
+              ]
+            }
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Add help text: this is where the childcare takes place",
+            "colour": "#fffacd",
+            "date": 1560264175274,
+            "author": "lamaloney"
+          },
+          {
+            "text": "Remove repeatable element from page and route from question at bottom",
+            "colour": "#ffe4e1",
+            "date": 1560766894314,
+            "author": "lamaloney"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Additional connected setting details (A5)",
+      "includeIf": "${otherSettingAddress2 = 0}",
+      "progressIndicator": " Provision details",
+      "fields": [
+        {
+          "id": "settingSRNnAdditional",
+          "type": "group",
+          "label": "",
+          "repeatsMax": 15,
+          "repeatLabel": "Setting $n",
+          "presentationHint": "summariseGroupAsGrid",
+          "fields": [
+            {
+              "id": "settingAppIDAdditional",
+              "type": "text",
+              "label": "Application ID(A5)",
+              "helpText": "The application ID will look similar to 'EYS_123456'. This will have been sent to you by the Registered Person.",
+              "format": "positiveWholeNumber"
+            },
+            {
+              "id": "settingNameAppIDAdditional",
+              "type": "text",
+              "label": "Name of daycare setting(A5)"
+            },
+            {
+              "id": "settingAddressAppIDAdditional",
+              "type": "address",
+              "label": "Setting address (A5)",
+              "helpText": "This is where the daycare takes place"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Are you applying as a sole trader to provide early years daycare? (B1)",
+      "includeIf": "${(serviceType = 0 && businessRegisteredCNPAndCDP = 1 && connectionToBusinessCNPAlreadyReg = 1) || (serviceType = 1 && businessRegisteredCNPAndCDP = 1 && applicationIDCDPStart = 0 && connectionToBusinessCNPAlreadyReg = 1) || (serviceType = 1 && businessRegisteredCNPAndCDP = 1 && applicationIDCDPStart = 1 && connectionToBusinessCNPAlreadyReg = 1)}",
+      "progressIndicator": "B: Premises",
+      "fields": [
+        {
+          "id": "soleTrader",
+          "type": "choice",
+          "label": "Are you applying as a sole trader to provide early years daycare? (B1)",
+          "helpText": "A sole trader is a self-employed individual who owns their own business.",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Stack radio buttons\n\ncheck if this should ask 'are you the sole owner of the early years daycare'?\n\ncheck word 'sole trader' as mac may be using another word\n\n\nBA Sarah has said 'early years' must be kept",
+            "colour": "#ffe4e1",
+            "date": 1560764814082,
+            "author": "lamaloney"
+          },
+          {
+            "text": "We need credentials to see original wording for B1\n\nNeed to access test version to see this question: we dont have an Ofsted laptop to access test version.\n\nNOO: Are you applying as a sole trader to provide early years childcare?\n\nTBD- chnage word to daycare\n",
+            "colour": "#fffacd",
+            "date": 1560352337706,
+            "author": "lamaloney"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Is the organisation’s main or only purpose to provide daycare?(B2)",
+      "includeIf": "${(serviceType = 0 && businessRegisteredCNPAndCDP  = 1 && connectionToBusinessCNPAlreadyReg = 0) || (applicationIDCDPStart = 0 && connectionToBusinessCNPAlreadyReg = 0) || (applicationIDCDPStart = 1 && connectionToBusinessCNPAlreadyReg = 0) || (referenceNumberCNPAlreadyReg = 0 && connectionToBusinessCNPAlreadyReg = 0)}",
+      "progressIndicator": "B: Premises",
+      "fields": [
+        {
+          "id": "provideChildcareMainPurpose",
+          "type": "choice",
+          "label": "Is the organisation’s main or only purpose to provide daycare?(B2)",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "What is your role in the organisation? (B3)",
+      "includeIf": "${provideChildcareMainPurpose = 0}",
+      "progressIndicator": "B: Premises",
+      "fields": [
+        {
+          "id": "roleInOrganisationNonDomestic",
+          "type": "revealingChoice",
+          "label": "What is your role in the organisation? (B3)",
+          "helpText": "The organisation is also known by Ofsted as the Registered Person.",
+          "choices": [
+            "Director",
+            "Partner",
+            "Committee member",
+            "Other member of the Registered Person"
+          ],
+          "revealingFields": [
+            [],
+            [],
+            [
+              {
+                "id": "committeeInfo",
+                "type": "info",
+                "label": "",
+                "infoText": "Each committee member is equally responsible and accountable for the childcare provision and ensuring compliance with regulations and any conditions imposed by Ofsted.\n\n Committee members who work directly with children as part of the staff ratio will be asked to complete a health declaration booklet.\n\n This may incur an extra cost.",
+                "infoType": "noformat"
+              }
+            ],
+            [
+              {
+                "id": "specifyOther",
+                "type": "text",
+                "label": "Enter your role",
+                "shortName": "Specify other",
+                "format": "shortText"
+              }
+            ]
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Question for policy:\n\nDo we need to include committee member legal content? \n\nNOO help text: Each committee member is equally responsible and accountable for the childcare provision and ensuring compliance with regulations and any conditions imposed by Ofsted.\n\nCommittee members who work directly with children as part of the staff ratio will be asked to complete a health declaration booklet.\n\nThis may incur an extra cost.\n",
+            "colour": "#ffe4e1",
+            "date": 1560949511557,
+            "author": "lamaloney"
+          },
+          {
+            "text": "Naomi has said Trustees not required by API\n\nHelp text: This is the Ofsted-registered person.\n",
+            "colour": "#fffacd",
+            "date": 1560264763263,
+            "author": "lamaloney"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Will you be the nominated individual of the organisation for Ofsted? (B4)",
+      "includeIf": "${provideChildcareMainPurpose= 0 || provideChildcareMainPurpose = 1 }",
+      "progressIndicator": "B: Premises",
+      "fields": [
+        {
+          "id": "nominatedIndividual",
+          "type": "choice",
+          "label": "Will you be the nominated individual of the organisation for Ofsted? (B4)",
+          "helpText": "The nominated individual is responsible for the organisation’s dealings with Ofsted and is part of the Registered Person.",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "You do not need to complete this application (Exit routing page)",
+      "includeIf": "${nominatedIndividual= 1 && provideChildcareMainPurpose= 1 && serviceType = 0}",
+      "continueIf": "false",
+      "progressIndicator": " Provision details",
+      "fields": [
+        {
+          "id": "noChecksInfo",
+          "type": "info",
+          "label": "",
+          "infoText": "As you have told us that your organisation's main purpose is not to provide daycare and you are not the nominated individual, you do not need to complete this form.",
+          "infoType": "noformat"
+        }
+      ]
+    },
+    {
+      "title": "What is the Registered Person’s unique reference number?",
+      "includeIf": "${referenceNumberCNPAlreadyReg=0}",
+      "progressIndicator": " Provision details",
+      "fields": [
+        {
+          "id": "registeredPersonReferenceCNP",
+          "type": "text",
+          "label": "What is the Registered Person’s unique reference number?",
+          "helpText": "This may also be called a registration number. It can be found at the top of the Ofsted registration certificate of the Registered Person. This is 6 numbers and starts with RP, for example, RP123456."
+        },
+        {
+          "id": "registeredPersonReferenceCNP_regid",
+          "type": "text",
+          "label": "What is the Cygnum Registration ID?",
+          "helpText": "This will be for ARC only during the review process"
+        }
+      ]
+    },
+    {
+      "title": "Registered Person’s details",
+      "includeIf": "${referenceNumberCNPAlreadyReg=0}",
+      "progressIndicator": " Provision",
+      "fields": [
+        {
+          "id": "registeredPersonCNPInfo_copy_3",
+          "type": "info",
+          "label": "",
+          "infoText": "Provide the details of the daycare provider that you are or will be connected to. \nWe collect these details to match you with the registration.",
+          "infoType": "noformat"
+        },
+        {
+          "id": "registeredPersonNameCNP2",
+          "type": "text",
+          "label": "Full name of Registered Person (A3)",
+          "helpText": "This is the individual or organisation registered with Ofsted for daycare"
+        },
+        {
+          "id": "registeredPersonAddressCNP2",
+          "type": "address",
+          "label": "Registered address (A4)",
+          "helpText": "This is where Ofsted sends legal documents"
+        }
+      ]
+    },
+    {
+      "title": "Will you manage the daily operation of the daycare provider? (B5)",
+      "includeIf": "${(serviceType = 1) || (serviceType = 0 && businessRegisteredCNPAndCDP = 0 && referenceNumberCNPAlreadyReg = 1 && connectionToBusinessCNPAlreadyReg = 0)}",
+      "progressIndicator": "B: Premises",
+      "fields": [
+        {
+          "id": "manageDayToDay",
+          "type": "choice",
+          "label": "Will you manage the daily operation of the daycare provider? (B5)",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Will you be working with children as part of the staff:child ratio? (B6)",
+      "progressIndicator": "B: Premises",
+      "fields": [
+        {
+          "id": "adultChildRatio",
+          "type": "choice",
+          "label": "Will you be working with children as part of the staff:child ratio? (B6)",
+          "helpText": "This is the number of adults that are required to care for children in the setting you are connected to. The requirements vary for each early years provider in England.",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        },
+        {
+          "id": "generatedId_4526425c_df63_4b62_978b_3dbc5a3a925c",
+          "type": "info",
+          "label": "Where can I find the staff:child ratio requirements?",
+          "infoText": "1. Open a new window or tab.2. Go to GOV.UK\n3. Search for 'Early Years Foundation Stage (EYFS) statutory framework'.",
+          "infoType": "long"
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Check help text and prog reveal wording with policy ",
+            "colour": "#ffe4e1",
+            "date": 1560949649280,
+            "author": "lamaloney"
+          },
+          {
+            "text": "refer to EYFS regulations-\n\nChanged to Staff as this is used in the EYFS\n\nYou will need to provide details of your health if you work with children as part of the adult child ratio\n\nMapping ID: check with Naomi:\nWorkDirectly\nMemberOfStaff\n",
+            "colour": "#fffacd",
+            "date": 1560266773139,
+            "author": "lamaloney"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Are you living or working on the premises where childcare takes place, or is to take place, but not looking after children? (B7)",
+      "includeIf": "${(applicationIDCDPStart = 2) || (serviceType = 1 && referenceNumberCNPAlreadyReg = 1)}",
+      "progressIndicator": "B: Premises",
+      "fields": [
+        {
+          "id": "notLookingAfter",
+          "type": "choice",
+          "label": "Are you living or working on the premises where childcare takes place, or is to take place, but not looking after children? (B7)",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Revert to original question- they could already be living there as they have 14 days to notify of changes.\n\n\nUsers:\ndomestic, in process, ref starts with EYS_,\n\nJonathan to add users to see this page:\ndom, already registered, setting URN\n\n\n\n\n\n",
+            "colour": "#fffacd",
+            "date": 1560267312497,
+            "author": "lamaloney"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Are you living or working on the premises where childcare takes place, or is to take place, and looking after children? (B8)",
+      "includeIf": "${(applicationIDCDPStart = 2) || (serviceType = 1 && referenceNumberCNPAlreadyReg = 1)}",
+      "progressIndicator": "B: Premises",
+      "fields": [
+        {
+          "id": "lookingAfter",
+          "type": "choice",
+          "label": "Are you living or working on the premises where childcare takes place, or is to take place, and looking after children? (B8)",
+          "validIf": "${(manageDayToDay = 0 && notLookingAfter = 1 && lookingAfter= 1) || (adultChildRatio = 0 && notLookingAfter=1 && lookingAfter=1) || (notLookingAfter=0 && lookingAfter=1) || (notLookingAfter=1 && lookingAfter=0) }",
+          "choices": [
+            "Yes",
+            "No"
+          ],
+          "validIfErrorMessage": "Please answer Yes to B5, B6, B7 and/or B8\n\nYou cannot answer yes to both B7 and B8"
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Revert to original as its important that they are asked about 'living or working on site' AND working directly with children?\n\njonathan will add valid if as cannot answer yes to both questions B7 and B8 or not to both\n\n\nUsers:\ndomestic, in process, ref starts with EYS_,\n\nJonathan to add users to see this page:\ndom, already registered, setting URN",
+            "colour": "#fffacd",
+            "date": 1560267258673,
+            "author": "lamaloney"
+          }
+        ]
+      }
+    },
+    {
+      "title": "You do not need to complete this application (Exit routing page)",
+      "includeIf": "${nominatedIndividual= 1 && provideChildcareMainPurpose= 1}",
+      "continueIf": "false",
+      "progressIndicator": "B: Premises",
+      "fields": [
+        {
+          "id": "noChecksInfo1",
+          "type": "info",
+          "label": "",
+          "infoText": "Content to be decided",
+          "infoType": "noformat"
+        }
+      ]
+    },
+    {
+      "title": "You do not need to complete this application (Exit routing page)",
+      "includeIf": "${soleTrader = 1}",
+      "continueIf": "false",
+      "progressIndicator": "B: Premises",
+      "fields": [
+        {
+          "id": "noChecksInfo2",
+          "type": "info",
+          "label": "",
+          "infoText": "As you are not the sole trader, you do not need to complete this form.\n \nYou need to exit this service.",
+          "infoType": "noformat"
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "To be confirmed, sole trader wording",
+            "colour": "#ffe4e1",
+            "date": 1561109826542,
+            "author": "Jonathan-Courage"
+          }
+        ]
+      }
+    },
+    {
+      "title": "You do not need to complete this application (Exit routing page)",
+      "includeIf": "${serviceType = 0 && businessRegisteredCNPAndCDP = 0 && referenceNumberCNPAlreadyReg = 1 && connectionToBusinessCNPAlreadyReg = 0 }",
+      "continueIf": "false",
+      "progressIndicator": "B: Premises",
+      "fields": [
+        {
+          "id": "noChecksInfoeExtra",
+          "type": "info",
+          "label": "",
+          "infoText": "The answers you have provided have marked you as not eligible to complete this form.",
+          "infoType": "noformat"
+        }
+      ]
+    },
+    {
+      "title": "You do not need to complete this application (Exit routing page)",
+      "includeIf": "${serviceType = 1 && businessRegisteredCNPAndCDP  = 1 && applicationIDCDPStart = 1 && connectionToBusinessCNPAlreadyReg = 1 }",
+      "continueIf": "false",
+      "progressIndicator": "B: Premises",
+      "fields": [
+        {
+          "id": "noChecksInfoeExtra2",
+          "type": "info",
+          "label": "",
+          "infoText": "The answers you have provided have marked you as not eligible to complete this form.",
+          "infoType": "noformat"
+        }
+      ]
+    },
+    {
+      "title": "About you (C1-C10)",
+      "progressIndicator": "C: Personal details",
+      "fields": [
+        {
+          "id": "generatedId_baa9b24f_e224_406b_acfa_8a0b43c8dd44",
+          "type": "info",
+          "label": "",
+          "infoText": "We ask this information to connect the right person to confirm your identify and connect the right person to the daycare provider.",
+          "infoType": "noformat"
+        },
+        {
+          "id": "indId",
+          "type": "text",
+          "label": "What is the Cygnum Individual ID?",
+          "helpText": "This will be for ARC only during the review process",
+          "mandatory": "false"
+        },
+        {
+          "id": "title",
+          "type": "revealingChoice",
+          "label": "Title",
+          "choices": [
+            "Mr",
+            "Mrs",
+            "Miss",
+            "Ms",
+            "Other"
+          ],
+          "revealingFields": [
+            [],
+            [],
+            [],
+            [],
+            [
+              {
+                "id": "personOtherTitle",
+                "type": "text",
+                "label": "Enter your title"
+              }
+            ]
+          ]
+        },
+        {
+          "id": "firstName",
+          "type": "text",
+          "label": "First name (C2)"
+        },
+        {
+          "id": "surname",
+          "type": "text",
+          "label": "Last name (surname) (C3)"
+        },
+        {
+          "id": "anyOtherNames",
+          "type": "choice",
+          "label": "Have you previously been known by any other names? (C4)",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        },
+        {
+          "id": "DoB",
+          "type": "date",
+          "label": "Date of birth (C5)",
+          "helpText": "For example, 31 03 1980"
+        },
+        {
+          "id": "bornUkNo",
+          "type": "revealingChoice",
+          "label": "Were you born in the UK? (C6)",
+          "choices": [
+            "Yes",
+            "No"
+          ],
+          "revealingFields": [
+            [],
+            [
+              {
+                "id": "bornUkSpecify",
+                "type": "text",
+                "label": "Enter your country of birth"
+              }
+            ]
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Make sure the order of titles is the same throughout the form\n\n\nAdd eligibility question asking if they are the person being added to the reg. NOO says the form must be filled by this person.",
+            "colour": "#ffe4e1",
+            "date": 1560951086075,
+            "author": "lamaloney"
+          },
+          {
+            "text": "Gender has been removed from Childminders and Nannies\n(Naomi said we can remove:\nGender- default to unknown\n\nnationality, - empty string\ncounty, - unknown\ntown- empty string)\n\nIf they have lived abroad Ofsted will ask for a Certificate of conduct from that country. (COGC check)\n\nRemoved master\n",
+            "colour": "#fffacd",
+            "date": 1560268102674,
+            "author": "lamaloney"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Birth name details",
+      "includeIf": "${anyOtherNames=0}",
+      "progressIndicator": "C: Personal details",
+      "fields": [
+        {
+          "id": "surnameAtBirth",
+          "type": "text",
+          "label": "Last name (surname) at birth"
+        },
+        {
+          "id": "usedUntil",
+          "type": "date",
+          "label": "Date you stopped using this name",
+          "helpText": "For example, 12 06 2012"
+        },
+        {
+          "id": "anyOtherNamesRepeatingQ",
+          "type": "choice",
+          "label": "Have you been known by any other names?",
+          "helpText": "Including first names and last names",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Review content\n\n\nChange repeating page\n\nNOO: This section asks for basic information about you. We hold this information about you to help us carry out checks to establish if you are suitable to look after children and to make sure that we do not mistake you for anyone with a similar name.\n",
+            "colour": "#fffacd",
+            "date": 1560431916517,
+            "author": "lamaloney"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Name change details",
+      "includeIf": "${anyOtherNamesRepeatingQ = 0}",
+      "progressIndicator": "C: Personal details",
+      "fields": [
+        {
+          "id": "prevKnownNamesGroup",
+          "type": "group",
+          "label": "",
+          "repeatsMax": 15,
+          "repeatLabel": "Name $n",
+          "presentationHint": "summariseGroupAsGrid",
+          "fields": [
+            {
+              "id": "generatedId_af7236b1_ad2a_4c39_a21c_8ba6e016269f",
+              "type": "info",
+              "label": "",
+              "infoText": "Enter both the first and last name you were known by during this time.",
+              "infoType": "noformat"
+            },
+            {
+              "id": "prevFirstName",
+              "type": "text",
+              "label": "First name"
+            },
+            {
+              "id": "prevSurname",
+              "type": "text",
+              "label": "Last name"
+            },
+            {
+              "id": "dateKnownFrom",
+              "type": "date",
+              "label": "Date used from",
+              "helpText": "For example, 12 06 2006"
+            },
+            {
+              "id": "dateKnownUntil",
+              "type": "date",
+              "label": "Date used until",
+              "helpText": "For example, 28 04 2010"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Enter your contact details (D1)",
+      "progressIndicator": "D: Contact details",
+      "fields": [
+        {
+          "id": "generatedId_10975cf0_c0b7_4ba1_ad50_269bb9308986",
+          "type": "info",
+          "label": "",
+          "infoText": "We will use these to contact you if we have any questions about your application. We may also send legal notices to this address.",
+          "infoType": "noformat"
+        },
+        {
+          "id": "email",
+          "type": "text",
+          "label": "Email address",
+          "helpText": "We will also send you an email with your submission reference to confirm we have received your application",
+          "format": "email"
+        },
+        {
+          "id": "phoneNumber",
+          "type": "text",
+          "label": "Telephone number",
+          "helpText": "Include the area code"
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "The original content is: Ofsted’s preferred method of communication is email as this is efficient and direct to the intended recipient. On occasion we may send legal notices or other information which the registered person may not wish to disseminate further. Therefore, please provide a secure email address which is suitable for this purpose and is not a generic email address open to all. By providing your email address you agree to Ofsted sending all communication, including any legal documents, by this means and to this address. If you have accessibility problems please contact Ofsted for assistance",
+            "colour": "#ffe4e1",
+            "date": 1561126988008,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "Confirm that sub ref will be pulled from this page.\n\n\nand that we can remove email from the dec page.",
+            "colour": "#ffe4e1",
+            "date": 1561109019334,
+            "author": "Jonathan-Courage"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Enter your current home address (C12)",
+      "progressIndicator": "C: Personal details",
+      "fields": [
+        {
+          "id": "addressInfo",
+          "type": "info",
+          "label": "",
+          "infoText": "We may use this to send you written correspondence about your application.",
+          "infoType": "noformat"
+        },
+        {
+          "id": "currentAddress",
+          "type": "address",
+          "label": "Address",
+          "format": "international"
+        },
+        {
+          "id": "sinceWhenCurrentAddress",
+          "type": "date",
+          "label": "Date you moved to this address",
+          "helpText": "For example, 12 06 2013"
+        },
+        {
+          "id": "otherAddresses",
+          "type": "choice",
+          "label": "Have you lived at any other UK addresses in the last 5 years?",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Local Authority- Naomi \nIt's been removed from other forms\n\n(Sounds like it can be removed - Alex will pass  default value through to API)\n\n\n\n\n\n",
+            "colour": "#fffacd",
+            "date": 1560268705613,
+            "author": "lamaloney"
+          },
+          {
+            "text": "Removed Local authority\n\n\n\nNOO: Please provide the details of all the other addresses where you have lived in the last five years. You must provide five years of continuous addresses including any overseas addresses as applicable.\n\n\n\nadd repeatable page for addresses if yes",
+            "colour": "#ffe4e1",
+            "date": 1560769586868,
+            "author": "lamaloney"
+          }
+        ]
+      }
+    },
+    {
+      "title": "UK address details",
+      "progressIndicator": "C: Personal details",
+      "fields": [
+        {
+          "id": "uKAddressesFiveYears",
+          "type": "group",
+          "label": "",
+          "repeatsMax": 15,
+          "repeatLabel": "UK address $n",
+          "fields": [
+            {
+              "id": "generatedId_7053982e_cfda_4f93_a76d_7e47618716dc",
+              "type": "info",
+              "label": "",
+              "infoText": "You must provide all the UK addresses you have lived at for the last 5 years. Start with the most recent address.",
+              "infoType": "standard"
+            },
+            {
+              "id": "uKAddresses",
+              "type": "address",
+              "label": "Address"
+            },
+            {
+              "id": "dateMovedInUK",
+              "type": "date",
+              "label": "Date moved in",
+              "helpText": "For example, 12 06 2013"
+            },
+            {
+              "id": "dateMovedOutUK",
+              "type": "date",
+              "label": "Date moved out",
+              "helpText": "For example, 25 06 2014"
+            }
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Local Authority- Naomi \nIt's been removed from other forms\n\n(Sounds like it can be removed - Alex will pass  default value through to API)\n\n\n\n\n\n",
+            "colour": "#fffacd",
+            "date": 1560268705613,
+            "author": "lamaloney"
+          },
+          {
+            "text": "Removed Local authority\n\n\n\nNOO: Please provide the details of all the other addresses where you have lived in the last five years. You must provide five years of continuous addresses including any overseas addresses as applicable.\n\n\n\nadd repeatable page for addresses if yes\n",
+            "colour": "#ffe4e1",
+            "date": 1560769586868,
+            "author": "lamaloney"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Have you lived outside the UK in the past 5 years? (C11)",
+      "progressIndicator": "C: Personal details",
+      "fields": [
+        {
+          "id": "livedOutsideUK",
+          "type": "choice",
+          "label": "Have you lived outside the UK in the past 5 years? (C11)",
+          "helpText": "If you have lived outside of England, Scotland, Wales or Northern Ireland in the last 5 years, we may ask you to obtain a criminal record certificate or a Certificate of Good Character from each country you lived in.",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "NOO calls this 'police check' and 'cert of good conduct'\nGOV.UK calls it a criminal record certificate/check and a 'Cert of Good Character'- check wording with policy\n\n\nRoute to page 29 if yes\nmove this page to after home address page",
+            "colour": "#ffe4e1",
+            "date": 1560773564298,
+            "author": "lamaloney"
+          },
+          {
+            "text": "Help text: If you have lived abroad Ofsted need a certificate of conduct from the country you lived in.\n\nCOGC check\n\nif they select Yes this should go to international address page\n\nIs this the same question as bottom of page 26?",
+            "colour": "#fffacd",
+            "date": 1560269734559,
+            "author": "lamaloney"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Details of addresses outside the UK (C11)",
+      "progressIndicator": "C: Personal details",
+      "fields": [
+        {
+          "id": "internationalAddresses",
+          "type": "group",
+          "label": "",
+          "repeatsMax": 15,
+          "repeatLabel": "International address $n",
+          "fields": [
+            {
+              "id": "generatedId_19c3473b_31fb_458d_86ff_39dbe34d9a95",
+              "type": "info",
+              "label": "",
+              "infoText": "You must provide all the addresses outside the UK which you have lived at for the last 5 years. Start with the most recent address.",
+              "infoType": "standard"
+            },
+            {
+              "id": "internationalAdd",
+              "type": "text",
+              "label": "Full address",
+              "helpText": "Include the country and postcode",
+              "multiline": "true"
+            },
+            {
+              "id": "sinceWhenCurrentAddress_copy_1",
+              "type": "date",
+              "label": "Date moved in",
+              "helpText": "For example, 12 06 2013"
+            },
+            {
+              "id": "sinceWhenCurrentAddress_copy_2",
+              "type": "date",
+              "label": "Date moved out",
+              "helpText": "For example, 25 06 2014"
+            }
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Do they need to provide an explanation for why they lived abroad?",
+            "colour": "#ffe4e1",
+            "date": 1560957785943,
+            "author": "lamaloney"
+          },
+          {
+            "text": "Local Authority- Naomi\nIt's been removed from other forms\n\n(Sounds like it can be removed - Alex will pass  default value through to API)\n\n",
+            "colour": "#fffacd",
+            "date": 1560268705613,
+            "author": "lamaloney"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Do you have any gaps in your address history in the last 5 years?",
+      "progressIndicator": "C: Personal details",
+      "fields": [
+        {
+          "id": "timeUnaccountedFor",
+          "type": "choice",
+          "label": "Do you have any gaps in your address history in the last 5 years?",
+          "helpText": "You must provide an explanation for any periods of time you have not lived at an address or any time spent outside of the UK, for example, if you were travelling.",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Check wording of help text -i've added: 'any periods of time you have not lived at an address or have spent time outside the UK' \n\n\nWhat constitutes a period of time overseas? \n\n\nCan we add help text to say they do not need to provide details if this was for a holiday or anything shorter than a month/ a few weeks?",
+            "colour": "#ffe4e1",
+            "date": 1560874491150,
+            "author": "lamaloney"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Details of gaps in your address history",
+      "includeIf": "${otherAddresses=0 || livedOutsideUK=0} ",
+      "progressIndicator": "C: Personal details",
+      "fields": [
+        {
+          "id": "gapsInAddHistory",
+          "type": "group",
+          "label": "",
+          "repeatsMax": 15,
+          "repeatLabel": "Gap $n",
+          "fields": [
+            {
+              "id": "addressListLast5Y",
+              "type": "text",
+              "label": "Explain any gaps in your address history (C14)",
+              "helpText": "This is any period of time you have not lived at a UK address or an address outside the UK in the last 5 years. Start with the most recent gap.",
+              "multiline": "true"
+            },
+            {
+              "id": "dateMovedIn",
+              "type": "date",
+              "label": "Start date",
+              "helpText": "For example, 25 05 2010"
+            },
+            {
+              "id": "dateMovedOut",
+              "type": "date",
+              "label": "End date",
+              "helpText": "For example, 14 02 2011"
+            }
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "This page is TBC by ALex and API requirements\n\nPut international addresses in time unaccounted for\n\nTime unaccounted for not required by API - but still include.\n\nAlex to check about pattern for gaps in address history",
+            "colour": "#fffacd",
+            "date": 1560268531214,
+            "author": "lamaloney"
+          },
+          {
+            "text": "add repeating page for UK addresses\n\nRemove 2nd box?\nAdd question before for gaps? - AnyTimeUnaccounted -Yes/No",
+            "colour": "#ffe4e1",
+            "date": 1560783088535,
+            "author": "lamaloney"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Have you previously registered or do you still have a registration with Ofsted to provide daycare? (E2a)",
+      "progressIndicator": "E: Past registration",
+      "fields": [
+        {
+          "id": "prevRegOfsted",
+          "type": "revealingChoice",
+          "label": "Have you previously registered or do you still have a registration with Ofsted to provide daycare? (E2a)",
+          "helpText": "We use this information to check the details of your previous or current registration.",
+          "choices": [
+            "Yes",
+            "No"
+          ],
+          "revealingFields": [
+            [
+              {
+                "id": "ofstedRegNumberOtherRegistrations",
+                "type": "text",
+                "label": "Registration number",
+                "helpText": "You can find this on your Ofsted registration certificate. It is 6 numbers."
+              },
+              {
+                "id": "registeredFromOfsted",
+                "type": "date",
+                "label": "Start date of registration",
+                "helpText": "For example, 12 06 2006"
+              },
+              {
+                "id": "registeredToOfsted",
+                "type": "date",
+                "label": "End date of registration (optional)",
+                "helpText": "Leave blank if you are still registered"
+              }
+            ],
+            []
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Suitability section. Use info in this section to check records to see if any history that makes them unsuitable.\n\n\nAdd help text from NOO: we need to know if you have previously held or still hold a registration to provide childcare with Ofsted or any other organisation in the UK or abroad. We use this information to check the details of your registration. This may help us to process your application more quickly.",
+            "colour": "#fffacd",
+            "date": 1560331762026,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "Re-look at text.\n\n\nIs the cert format right? - 6 numbers?",
+            "colour": "#fffacd",
+            "date": 1560331864271,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Have you previously registered or do you still have a registration with another childminder agency or regulatory body to provide daycare? (E2b)",
+      "progressIndicator": "E: Past registration",
+      "fields": [
+        {
+          "id": "prevRegOtherBodyUk",
+          "type": "revealingChoice",
+          "label": "Have you previously registered or do you still have a registration with another childminder agency or regulatory body to provide daycare? (E2b)",
+          "helpText": "For example, with Estyn in Wales or the Care Inspectorate in Scotland. We use this information to check the details of your previous or current registration.",
+          "choices": [
+            "Yes",
+            "No"
+          ],
+          "revealingFields": [
+            [
+              {
+                "id": "nameOtherBodyUK",
+                "type": "text",
+                "label": "Name of childminder agency or regulatory body"
+              },
+              {
+                "id": "registrationOtherBodyUK",
+                "type": "text",
+                "label": "Registration reference number"
+              },
+              {
+                "id": "registeredFromOtherBodyUK",
+                "type": "date",
+                "label": "Start date of registration",
+                "helpText": "For example, 12 06 2006"
+              },
+              {
+                "id": "registeredToOtherBodyUK",
+                "type": "date",
+                "label": "End date of registration (optional)",
+                "helpText": "Leave blank if you are still currently registered ",
+                "mandatory": "false"
+              }
+            ],
+            []
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Check 'Care Inspectorate' for Scottish body is correct\n\n\nShould this question say 'in the UK' other wise they might put in the details for EU question here?",
+            "colour": "#ffe4e1",
+            "date": 1560769871891,
+            "author": "lamaloney"
+          },
+          {
+            "text": "Example regulatory authority for help text? - BA getting back to us with examples.\n\n\nIf still currently registered?\n\nEnd date only required if applicable - adjust content.",
+            "colour": "#fffacd",
+            "date": 1560332060963,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Have you previously registered or do you still have a registration with another regulatory body in a European Union member state to provide childcare?(E2c)",
+      "progressIndicator": "E: Past registration",
+      "fields": [
+        {
+          "id": "prevRegOtherBodyEU",
+          "type": "revealingChoice",
+          "label": "",
+          "helpText": "We use this information to check the details of your previous or current registration.",
+          "choices": [
+            "Yes",
+            "No"
+          ],
+          "revealingFields": [
+            [
+              {
+                "id": "nameOtherBodyEU",
+                "type": "text",
+                "label": "Name of regulatory body"
+              },
+              {
+                "id": "registrationOtherBodyEU",
+                "type": "text",
+                "label": "Registration reference number"
+              },
+              {
+                "id": "registeredFromOtherBodyEU",
+                "type": "date",
+                "label": "Start date of registration",
+                "helpText": "For example, 12 06 2006"
+              },
+              {
+                "id": "registeredToOtherBodyEU",
+                "type": "date",
+                "label": "End date of registration (optional)",
+                "helpText": "Leave blank if you are still registered",
+                "mandatory": "false"
+              }
+            ],
+            []
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Have you been registered or cleared to work with children or vulnerable people by Ministry of Defence–accredited organisations in the last 5 years? (E2d)",
+      "progressIndicator": "E: Past registration",
+      "fields": [
+        {
+          "id": "prevRegMOD",
+          "type": "revealingChoice",
+          "label": "Have you been registered or cleared to work with children or vulnerable people by Ministry of Defence–accredited organisations in the last 5 years? (E2d)",
+          "helpText": "We will check your suitability with the British Forces Early Years Service (BFEYS) and the Soldiers, Sailors, Airmen and Families Association (SSAFA) Forces Help.",
+          "choices": [
+            "Yes",
+            "No"
+          ],
+          "revealingFields": [
+            [
+              {
+                "id": "nameMOD",
+                "type": "text",
+                "label": "Name of the organisation"
+              },
+              {
+                "id": "registrationMOD",
+                "type": "text",
+                "label": "Registration reference number"
+              },
+              {
+                "id": "registeredFromMOD",
+                "type": "date",
+                "label": "Start date of registration",
+                "helpText": "For example, 12 06 2006"
+              },
+              {
+                "id": "registeredToMOD",
+                "type": "date",
+                "label": "End date of registration (optional)",
+                "helpText": "Leave blank if you are still currently registered",
+                "mandatory": "false"
+              }
+            ],
+            []
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "NOO: Have you previously been registered or cleared to work with children and/or vulnerable people by MoD–accredited organisations in the last five years?\n\n\nShould this include 'vulnerable people'? how do we define this?\n\n\nDouble check the helptext, are these the only 2 organisations that are checked?",
+            "colour": "#ffe4e1",
+            "date": 1560936566200,
+            "author": "lamaloney"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Have you lived or worked on a military base in England in the last 5 years? (E3a)",
+      "progressIndicator": "E: Past registration",
+      "fields": [
+        {
+          "id": "livedOrWorkedMilitaryBaseEngland",
+          "type": "choice",
+          "label": "Have you lived or worked on a military base in England in the last 5 years? (E3a)",
+          "helpText": "This includes RAF, Army or Navy military bases.",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Have you lived or worked on a military base outside of England in the last 5 years? (E3b)",
+      "progressIndicator": "E: Past registration",
+      "fields": [
+        {
+          "id": "livedOrWorkedMilitaryBaseOutsideEngland",
+          "type": "choice",
+          "label": "Have you lived or worked on a military base outside of England in the last 5 years? (E3b)",
+          "helpText": "This includes RAF, Army or Navy military bases.",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Ofsted to confirm this is needed and if it should say, England, UK or overseas\n\n\nOfsted getting back to us on whether this is needed (if it is linked to a check).\n",
+            "colour": "#ffe4e1",
+            "date": 1560771054405,
+            "author": "lamaloney"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Are you, or were you a serving member of the armed forces? (E4)",
+      "includeIf": "${livedOrWorkedMilitaryBaseEngland=0 || livedOrWorkedMilitaryBaseOutsideEngland=0}",
+      "progressIndicator": "E: Past registration",
+      "fields": [
+        {
+          "id": "servingArmedForces",
+          "type": "choice",
+          "label": "Are you, or were you a serving member of the armed forces? (E4)",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Do you have SSAFA clearance? (E5)",
+      "includeIf": "${livedOrWorkedMilitaryBaseEngland=0 || livedOrWorkedMilitaryBaseOutsideEngland=0}",
+      "progressIndicator": "E: Past registration",
+      "fields": [
+        {
+          "id": "haveSSAFAClearance",
+          "type": "revealingChoice",
+          "label": "Do you have SSAFA clearance? (E5)",
+          "helpText": "The SSAFA is an Armed Forces charity, formerly known as Soldiers, Sailors, Airmen and Families Association.",
+          "choices": [
+            "Yes",
+            "No"
+          ],
+          "revealingFields": [
+            [
+              {
+                "id": "ssafaClearanceRef",
+                "type": "text",
+                "label": "What is your SSAFA reference number? (E5)"
+              }
+            ],
+            []
+          ]
+        },
+        {
+          "id": "generatedId_822f2807_36f3_4f8c_b624_bc6ed402d3a1",
+          "type": "info",
+          "label": "",
+          "infoText": "Ofsted may use this information to contact SSAFA, to help assess your suitability to provide childcare or be in contact with children.",
+          "infoType": "standard"
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "*Policy and BA suggested that we should remove this question.\n\n\nSarah double checking we can remove this and will come back about this via email.\n",
+            "colour": "#f0f8ff",
+            "date": 1560527096979,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Do you have any experience of caring for children? (F1)",
+      "includeIf": "${(adultChildRatio = 0) || (serviceType = 1 && adultChildRatio = 1 && manageDayToDay = 0)}",
+      "progressIndicator": "F: Previous experience",
+      "fields": [
+        {
+          "id": "previousExperienceCaringChildren",
+          "type": "choice",
+          "label": "Do you have any experience of caring for children? (F1)",
+          "helpText": "For example, as a nursery nurse or childminder.",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        },
+        {
+          "id": "generatedId_3d4f8bb4_0653_4380_a279_fc22e2d88f5f",
+          "type": "info",
+          "label": "",
+          "infoText": "Ofsted will use the details you provide in this section to help assess your suitability to provide childcare or be in contact with children.",
+          "infoType": "standard"
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Ask policy if ok to also include 'childminder' in the example?",
+            "colour": "#ffe4e1",
+            "date": 1560941556193,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "*Policy confirmed this information is needed. Policy suggested we change the  help text from what is in the NOO form (foster parents etc) to 'nursery nurse' as this is a more a common scenario.",
+            "colour": "#fffacd",
+            "date": 1560508353287,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Give details of caring for children (F1 - if Yes)",
+      "includeIf": "${previousExperienceCaringChildren=0}",
+      "progressIndicator": "F: Previous experience",
+      "fields": [
+        {
+          "id": "prevExpCaringChildrenGroup",
+          "type": "group",
+          "label": "",
+          "repeatsMax": 15,
+          "repeatLabel": "Details of previous childcare experience $n",
+          "presentationHint": "summariseGroupAsGrid",
+          "fields": [
+            {
+              "id": "experience",
+              "type": "text",
+              "label": "Description of childcare experience",
+              "helpText": "For example, I worked as a nursery nurse.",
+              "multiline": "true"
+            },
+            {
+              "id": "experienceAddress",
+              "type": "address",
+              "label": "Address",
+              "helpText": "Enter the address of this work or experience."
+            },
+            {
+              "id": "experienceCountry",
+              "type": "text",
+              "label": "Country"
+            },
+            {
+              "id": "generatedId_bf27508e_54d3_4407_b3e2_835bf4af13f6",
+              "type": "info",
+              "label": "",
+              "infoText": "##Dates",
+              "infoType": "noformat"
+            },
+            {
+              "id": "experienceFromDate",
+              "type": "date",
+              "label": "Start date",
+              "helpText": "Enter the date you started this work or experience."
+            },
+            {
+              "id": "experienceToDate",
+              "type": "date",
+              "label": "End date",
+              "helpText": "Enter the date you finished this work or experience."
+            }
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Updated text needs validating with BA/policy.\n\n\nAsk if the example should include the name of or a description of the place they worked?\n\n\nAlso double check if any contact would need to be made with the work place? As if so the business name would be needed - and this page may require an additional field to capture it.",
+            "colour": "#ffe4e1",
+            "date": 1560941618533,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "Policy confirmed we need to keep this page. They say this information is used to help with the application decision. (Have added in text to say this for GDPR compliance.) \n\nAlso updated help text example to 'nursery nurse' as suggested in call with policy.\n\n",
+            "colour": "#fffacd",
+            "date": 1560679698336,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Do you have any relevant childcare qualifications or training? (F2)",
+      "includeIf": "${(adultChildRatio = 0) || (serviceType = 1 && adultChildRatio = 1 && manageDayToDay = 0)}",
+      "progressIndicator": "F: Previous experience",
+      "fields": [
+        {
+          "id": "childcareTraining",
+          "type": "choice",
+          "label": "Do you have any relevant childcare qualifications or training? (F2)",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Ask policy why this is needed and whether we should capture why it is needed on this page, e.g 'Ofsted use this information to help assess your suitability to register.'",
+            "colour": "#ffe4e1",
+            "date": 1560941933722,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "*Policy and BA requested that we do not give examples of training here (listing a specific course as a help text example), as they do not want to advocate any particular courses, or make users think/worry that any particular courses are needed for registration).",
+            "colour": "#fffacd",
+            "date": 1560527858425,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "In first draft on GOV forms this was  written as  - 'training relevant to the early years foundation stage (EYFS) standards'. Not sure where this came from?\n\n\nHave reverted to original NOO question. \n",
+            "colour": "#fffacd",
+            "date": 1560334475444,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "Jonathan - make radios vertical.",
+            "colour": "#f0fff0",
+            "date": 1560956402084,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Childcare training details (F2 - if Yes)",
+      "includeIf": "${childcareTraining=0}",
+      "description": "Provide details of any relevant training and qualifications you have completed. ",
+      "progressIndicator": "F: Previous experience",
+      "fields": [
+        {
+          "id": "relevantTrainingGroup",
+          "type": "group",
+          "label": "",
+          "helpText": "",
+          "repeatsMax": 15,
+          "repeatLabel": "Details of training or qualification $n",
+          "presentationHint": "summariseGroupAsGrid",
+          "fields": [
+            {
+              "id": "titleOfCourse",
+              "type": "text",
+              "label": "Title of course",
+              "helpText": "",
+              "multiline": "true"
+            },
+            {
+              "id": "qualification",
+              "type": "text",
+              "label": "Qualification (optional)",
+              "helpText": "For example, BTEC Level 4.",
+              "mandatory": "false"
+            },
+            {
+              "id": "awardingBody",
+              "type": "text",
+              "label": "Awarding body or training provider (optional)",
+              "helpText": "For example, City & Guilds, or Bath Spa University.",
+              "mandatory": "false"
+            },
+            {
+              "id": "generatedId_d2625bb2_7a6e_4e7f_ae97_4e2f18f49506",
+              "type": "info",
+              "label": "dateHeaderLabel",
+              "infoText": "##Dates",
+              "infoType": "noformat"
+            },
+            {
+              "id": "relevantFromDate",
+              "type": "date",
+              "label": "Training start date (optional)",
+              "helpText": "Enter the date you started the training.",
+              "mandatory": "false"
+            },
+            {
+              "id": "relevantToDate",
+              "type": "date",
+              "label": "Training end date (optional)",
+              "helpText": "Enter the date you finished the training.",
+              "mandatory": "false"
+            },
+            {
+              "id": "dateGained",
+              "type": "date",
+              "label": "Date qualification gained (optional)",
+              "helpText": "Enter the date on your qualification certificate (if applicable).",
+              "mandatory": "false"
+            }
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Ask policy/BA to validate updated content.",
+            "colour": "#ffe4e1",
+            "date": 1560941849066,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "*Policy confirmed that this needs to be kept in and that just the course title should be mandatory.\n\n\nAs per previous slide, policy didn't want to include a course title in case users felt they required this.\n\n\n\n\n",
+            "colour": "#fffacd",
+            "date": 1560334493298,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "Jonathan - can you make just course title to be mandatory on this page.",
+            "colour": "#f0fff0",
+            "date": 1560941786267,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Do you have a valid first aid certificate?",
+      "includeIf": "${(adultChildRatio = 0) || (serviceType = 1 && adultChildRatio = 1 && manageDayToDay = 0)}",
+      "progressIndicator": "F: Previous experience",
+      "fields": [
+        {
+          "id": "firstAidTraining",
+          "type": "choice",
+          "label": "Do you have a valid first aid certificate?",
+          "helpText": "First aid certificates are usually valid for 3 years, but this can vary, check with the training provider if you are unsure.",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "*Policy confirmed we should remove this page  - not required.",
+            "colour": "#f0f8ff",
+            "date": 1560334924254,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Provide details of your first aid certificate",
+      "includeIf": "${firstAidTraining=0}",
+      "progressIndicator": "F: Previous experience",
+      "fields": [
+        {
+          "id": "firstAidGroup",
+          "type": "group",
+          "label": "",
+          "fields": [
+            {
+              "id": "firstAidTitle",
+              "type": "text",
+              "label": "First aid certificate title",
+              "helpText": "For example, Level 3 Paediatric First Aid."
+            },
+            {
+              "id": "firstAidAwardingBody",
+              "type": "text",
+              "label": "First aid awarding body",
+              "helpText": "For example, British Safety Council."
+            },
+            {
+              "id": "firstAidGainedDate",
+              "type": "date",
+              "label": "Date you gained the certificate"
+            },
+            {
+              "id": "firstAidExpiredDate",
+              "type": "date",
+              "label": "Date certificate expires"
+            }
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "*Policy confirmed we should remove this page - as it is not in the NOO form.",
+            "colour": "#f0f8ff",
+            "date": 1560334953248,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Do you have details of a most recent employer?",
+      "includeIf": "${(adultChildRatio = 0) || (serviceType = 1 && adultChildRatio = 1 && manageDayToDay = 0)}",
+      "progressIndicator": "F: Previous experience",
+      "fields": [
+        {
+          "id": "recentEmployer",
+          "type": "choice",
+          "label": "Do you have details of a most recent employer?",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "BA proposed removing these details. Policy suggesting to keep it in. BA looking into this further and will get back about this via email.",
+            "colour": "#f0f8ff",
+            "date": 1560335245227,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "Jonathan - make radios vertical (if keeping page)",
+            "colour": "#f0fff0",
+            "date": 1560956993964,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "If this page is being kept, consider changing the focus of the question to -  do you have a current or recent employer? Or ask Ofsted to define 'recent' and use something like: Have you been employed within the last 5 years?\n\n\nAs this question phrasing leaves it it open for users to not provide details even if they have been recently employed.",
+            "colour": "#fffacd",
+            "date": 1560957321947,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Provide details of your most recent employer",
+      "includeIf": "${recentEmployer=0}",
+      "description": "Ofsted may use these details to contact your employer to ask them about your suitability to register and be in contact with children.",
+      "progressIndicator": "F: Previous experience",
+      "fields": [
+        {
+          "id": "generatedId_cdd93d7b_eb11_45ff_98d7_b959d0a8936e",
+          "type": "info",
+          "label": "",
+          "infoText": "###Employer's contact details",
+          "infoType": "noformat"
+        },
+        {
+          "id": "generatedId_7405fcfc_b1b4_4a09_961c_823ecbec862f",
+          "type": "info",
+          "label": "test",
+          "infoText": "",
+          "infoType": "noformat"
+        },
+        {
+          "id": "employerTitle",
+          "type": "choice",
+          "label": "Title",
+          "choices": [
+            "Miss",
+            "Mrs",
+            "Ms",
+            "Mr",
+            "Other"
+          ],
+          "revealingFields": [
+            [],
+            [],
+            [],
+            [],
+            [
+              {
+                "id": "employerOtherTitle",
+                "type": "text",
+                "label": "Enter your title"
+              }
+            ]
+          ]
+        },
+        {
+          "id": "employerFirstName",
+          "type": "text",
+          "label": "First name"
+        },
+        {
+          "id": "employerSurname",
+          "type": "text",
+          "label": "Last name"
+        },
+        {
+          "id": "employerJobTitle",
+          "type": "text",
+          "label": "Job title"
+        },
+        {
+          "id": "employerBusinessName",
+          "type": "text",
+          "label": "Business name"
+        },
+        {
+          "id": "employerEmail",
+          "type": "text",
+          "label": "Email address",
+          "format": "email",
+          "mandatory": "false"
+        },
+        {
+          "id": "employerPhone",
+          "type": "text",
+          "label": "Telephone number",
+          "format": "telephoneNumber"
+        },
+        {
+          "id": "employerAddress",
+          "type": "address",
+          "label": "Address"
+        },
+        {
+          "id": "generatedId_9defad9b_da0d_4ff1_a63b_877abfba52a4",
+          "type": "info",
+          "label": "",
+          "infoText": "##Dates",
+          "infoType": "noformat"
+        },
+        {
+          "id": "employerDateStart",
+          "type": "date",
+          "label": "Enter the date you started this employment",
+          "helpText": "For example 10 04 2018."
+        },
+        {
+          "id": "currentEmployer",
+          "type": "revealingChoice",
+          "label": "Are you currently employed by this employer?",
+          "choices": [
+            "Yes",
+            "No"
+          ],
+          "revealingFields": [
+            [],
+            [
+              {
+                "id": "employerDateEnd",
+                "type": "date",
+                "label": "Enter the date your employment ended",
+                "helpText": "For example 10 04 2019."
+              }
+            ]
+          ]
+        },
+        {
+          "id": "generatedId_b132cadb_830a_40b0_acfa_48ffb814dc41",
+          "type": "info",
+          "label": "",
+          "infoText": "##Permission to contact this employer",
+          "infoType": "noformat"
+        },
+        {
+          "id": "generatedId_04d1234e_cd02_4bc9_a9a0_49463f1a660f",
+          "type": "info",
+          "label": "Do you give your permission for Ofsted to contact this employer?",
+          "infoText": "",
+          "infoType": "noformat"
+        },
+        {
+          "id": "employerPermission",
+          "type": "choice",
+          "label": "Do you give your permission for Ofsted to contact this employer?",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "*Policy said we need to keep this page as they believe there is a legislative need to ask this.\n\n\nHowever BA thinks this could be removed.\nBA docuble checking with policy and will get back via email about this.\n\n\n\n\n",
+            "colour": "#f0f8ff",
+            "date": 1560249576812,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "Jonathan. If Ofsted confirm that we are keeping this page a revealed text input field for 'other' needs adding with the label ' Enter your title'.",
+            "colour": "#f0fff0",
+            "date": 1560957191106,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "Validate updated content with policy/BA if this page is staying in.",
+            "colour": "#ffe4e1",
+            "date": 1560942398298,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "\nThis is work history information used to assess suitability to register, Ofsted may contact this person in the future - for future suitability checks.\n\n\nAdded in info about how info may be used and permission to contact employer.\nNeeds validating with policy.",
+            "colour": "#fffacd",
+            "date": 1560957156504,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Have you had any serious illnesses or health issues in the last 5 years? (G1)",
+      "includeIf": "${referenceNumberCNPAlreadyReg = 1 && serviceType = 1}",
+      "progressIndicator": "G: Health",
+      "fields": [
+        {
+          "id": "seriousIllness",
+          "type": "revealingChoice",
+          "label": "Have you had any serious illnesses or health issues in the last 5 years? (G1)",
+          "helpText": "You do not have to tell us about any minor illnesses that you have not\nneeded medical treatment for, such as flu.",
+          "choices": [
+            "Yes",
+            "No"
+          ],
+          "revealingFields": [
+            [
+              {
+                "id": "illnessNumber",
+                "type": "text",
+                "label": "How many serious illnesses have you had in the last 5 years?",
+                "displayWidth": "xs"
+              }
+            ],
+            []
+          ]
+        },
+        {
+          "id": "generatedId_994ce0a4_c796_4bc0_baea_b3b79f026d7f",
+          "type": "info",
+          "label": "Why do Ofsted need to know about my health?",
+          "infoText": "Ofsted's medical advisers will assess the information you provide in this section to make sure you are medically fit to look after or be in contact with children. If there are any concerns Ofsted may contact you or your doctor for further details.",
+          "infoType": "long"
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "*Policy confirmed this needs to stay in. \n\n\n",
+            "colour": "#fffacd",
+            "date": 1560714778882,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "Validate updated text with policy/BA.\n",
+            "colour": "#ffe4e1",
+            "date": 1560943615475,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "Some users may be contacted post submission to fill-in a health check with GP.\n\n\nAssess suitability.\n\n\nSystem creates a health check request  - users asked to fill in a health declaration (this is linked to on the other forms).\n\n\nCheck new wording",
+            "colour": "#fffacd",
+            "date": 1560335732147,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "Make field smaller",
+            "colour": "#fffacd",
+            "date": 1560502342889,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Details of illness or health issue $n",
+      "includeIf": "${seriousIllness=0}",
+      "description": "",
+      "progressIndicator": "G: Health",
+      "repeatsMin": "${illnessNumber}",
+      "repeatsMax": "${illnessNumber}",
+      "fields": [
+        {
+          "id": "illnessName",
+          "type": "text",
+          "label": "Enter the illness or health issue"
+        },
+        {
+          "id": "illnessStartDate",
+          "type": "date",
+          "label": "Start date of illness or health issue",
+          "helpText": "Enter an estimated date if you are not sure."
+        },
+        {
+          "id": "illnessOngoing",
+          "type": "revealingChoice",
+          "label": "Is this illness or health issue ongoing?",
+          "choices": [
+            "Yes",
+            "No"
+          ],
+          "revealingFields": [
+            [],
+            [
+              {
+                "id": "illnessEndDate",
+                "type": "date",
+                "label": "End date of illness or health issue",
+                "helpText": "Enter an estimated date if you are not sure."
+              }
+            ]
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Jonathan - does the repeating page work?",
+            "colour": "#f0fff0",
+            "date": 1560975047686,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "Policy confirmed this  is needed.\n\n\nBA requested we change the first field label from 'Illness name' to something different. This was changed to 'Illness details', however when seeing this in situ we felt that this might suggest to users that they need to input more information/details than required. Have changed this again to ' What is the illness of health issue?' A 'For example' or more info in the help text would help clarify this further. Ask Ofsted for some examples to include.\n\n\n\n",
+            "colour": "#ffe4e1",
+            "date": 1560947716189,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Have you been admitted to hospital in the last 2 years? (G2)",
+      "includeIf": "${referenceNumberCNPAlreadyReg = 1 && serviceType = 1}",
+      "progressIndicator": "G: Health",
+      "fields": [
+        {
+          "id": "hospitalAdmission",
+          "type": "choice",
+          "label": "Have you been admitted to hospital in the last 2 years? (G2)",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Check whether we need to tell users why we are asking for this information and what we will do with it on a page by page basis. Or whether the 'catch all' health statement about this at the start of the 'health' section is sufficient?\n\n\nCheck if anything different is done with any of the different health related data that is collected - or whether one statement covers it all?",
+            "colour": "#ffe4e1",
+            "date": 1560957770196,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Give details of all your hospital admissions in the last 2 years (G2 - if Yes)",
+      "includeIf": "${hospitalAdmission=0}",
+      "progressIndicator": "G: Health",
+      "fields": [
+        {
+          "id": "admissionGroup",
+          "type": "group",
+          "label": "",
+          "repeatsMax": 15,
+          "repeatLabel": "Details of admission $n",
+          "presentationHint": "summariseGroupAsGrid",
+          "fields": [
+            {
+              "id": "admissionDetails",
+              "type": "text",
+              "label": "Tell us why you were admitted to hospital",
+              "multiline": "true"
+            },
+            {
+              "id": "hospitalAdmissionStartDate",
+              "type": "date",
+              "label": "Date you were admitted",
+              "helpText": "Enter an estimated date if you are not sure."
+            },
+            {
+              "id": "hospitalAdmissionEndDate",
+              "type": "date",
+              "label": "Date you were discharged",
+              "helpText": "Enter an estimated date if you are not sure."
+            }
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "To ask policy/legal:\nCheck whether details about why we are asking users for details like this need to be covered on each page where we ask it or whether covering it at the beginning of the 'health' section is sufficient?\n\n\nGain input on why this is collected/how used to see if any different from other health details.",
+            "colour": "#ffe4e1",
+            "date": 1560949637056,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Are you currently being treated by your GP, another doctor or a hospital? (G3)",
+      "includeIf": "${referenceNumberCNPAlreadyReg = 1 && serviceType = 1}",
+      "progressIndicator": "G: Health",
+      "fields": [
+        {
+          "id": "currentlyBeingTreated",
+          "type": "choice",
+          "label": "Are you currently being treated by your GP, another doctor or a hospital? (G3)",
+          "helpText": "You do not have to tell us about any minor illnesses, such as flu.",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "GP could need defining in the help text? Just wondering if someone  who has English as a second language for example, would definitely know this term?",
+            "colour": "#fffacd",
+            "date": 1560958094092,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "Jonathan - stack radios vertically.",
+            "colour": "#f0fff0",
+            "date": 1560958578248,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "Validate help text with Ofsted.",
+            "colour": "#ffe4e1",
+            "date": 1560958905284,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Enter details about all the illnesses or health conditions you are currently being treated for (G3 - if Yes)",
+      "includeIf": "${currentlyBeingTreated=0}",
+      "progressIndicator": "G: Health",
+      "fields": [
+        {
+          "id": "currentlyBeingTreatedDetails",
+          "type": "text",
+          "label": "Enter details about all the illnesses or health conditions you are currently being treated for (G3 - if Yes)",
+          "multiline": "true"
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "The API collects this in 1 field (not repeating).",
+            "colour": "#fffacd",
+            "date": 1560958777556,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "Ask Ofsted what sorts of details users need to provide here and include in help text.",
+            "colour": "#ffe4e1",
+            "date": 1560958951972,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Enter the details of someone who can provide a reference about you (H1)",
+      "includeIf": "${adultChildRatio = 0}",
+      "description": "Ofsted collect references to confirm that you are suitable to provide childcare. You must provide details for 2 referees that we can contact about you.",
+      "progressIndicator": "H: Referees",
+      "fields": [
+        {
+          "id": "generatedId_ba8583e2_6b3f_406c_968f_3dcfe1851e6b",
+          "type": "info",
+          "label": "",
+          "infoText": "Each referee must:\n\n- not be a relative\n- have known you for one year or more\n- know you well (for example, a colleague or a friend, neighbour who has known you in a childcare role)",
+          "infoType": "noformat"
+        },
+        {
+          "id": "generatedId_f5bd7064_82a6_4f1d_9a8f_b716a286d4e8",
+          "type": "info",
+          "label": "",
+          "infoText": "##Enter the details of referee 1",
+          "infoType": "noformat"
+        },
+        {
+          "id": "referee2Title",
+          "type": "revealingChoice",
+          "label": "Title",
+          "choices": [
+            "Miss",
+            "Mrs",
+            "Ms",
+            "Mr",
+            "Other"
+          ],
+          "revealingFields": [
+            [],
+            [],
+            [],
+            [],
+            [
+              {
+                "id": "referee2TitleOther",
+                "type": "text",
+                "label": "Enter your title"
+              }
+            ]
+          ]
+        },
+        {
+          "id": "referee1FirstName",
+          "type": "text",
+          "label": "First name"
+        },
+        {
+          "id": "referee1Surname",
+          "type": "text",
+          "label": "Surname"
+        },
+        {
+          "id": "referee2SinceWhenKnownYears_copy_1",
+          "type": "text",
+          "label": "How many years has this person known you?",
+          "helpText": "They must have know you for at least one year.",
+          "format": "positiveNumber",
+          "displayWidth": "xs",
+          "validIf": "${referee2SinceWhenKnownYears_copy_1 > 0}",
+          "validIfErrorMessage": "You must have known this person for 1 year or more."
+        },
+        {
+          "id": "referee1HowKnown",
+          "type": "text",
+          "label": "In what capacity does this person know you?",
+          "helpText": "For example, 'She is my neighbour'."
+        },
+        {
+          "id": "generatedId_9e7be80e_108b_4260_bb8b_d3111baba41a",
+          "type": "info",
+          "label": "",
+          "infoText": "###Referee's contact details",
+          "infoType": "noformat"
+        },
+        {
+          "id": "referee1Phone",
+          "type": "text",
+          "label": "Telephone number",
+          "helpText": "Including area code",
+          "format": "telephoneNumber"
+        },
+        {
+          "id": "referee1Email",
+          "type": "text",
+          "label": "Email address",
+          "format": "email"
+        },
+        {
+          "id": "referee1Address",
+          "type": "address",
+          "label": "Address"
+        },
+        {
+          "id": "generatedId_2dc27070_b425_4edb_afc2_fc74da87ba22",
+          "type": "info",
+          "label": "",
+          "infoText": "##Reference upload details",
+          "infoType": "noformat"
+        },
+        {
+          "id": "referee1ReferenceEnclosed",
+          "type": "choice",
+          "label": "Do you have a reference from this person to upload?",
+          "helpText": "Uploading a reference may help speed up the processing of your application.",
+          "choices": [
+            "Yes",
+            "No"
+          ],
+          "optionHelpText": [
+            "",
+            ""
+          ]
+        },
+        {
+          "id": "generatedId_4d292b50_9eb6_472f_8bcf_3bb2e3ee1d02",
+          "type": "info",
+          "label": "What must the reference include?",
+          "infoText": "It must include the referee's:\n- signature\n- full name, address, email and telephone number \n- present relationship with you \n- opinions of your ability to look after children and your overall character and suitability for being in regular contact with children \n\nIt must also include: \n- how they have known you (for example, as a neighbour)\n- how long they have known you\n- any other relevant information",
+          "infoType": "long"
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Ofsted BA suggested via email that the reference criteria be made more inclusive by changing to: \n\n\n'...know you well (for example, a colleague or a friend, neighbour who has known you in a childcare role)'\n\nClarify with BA if all of these people have to have known the person in a childcare role?  As this seems to imply this? Ask BA - is this correct (ie can users include experience of being a parent or being a foster parent here for example?)\n\n\nThen clarify in the text and insert into this page. ",
+            "colour": "#ffe4e1",
+            "date": 1560952067011,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "Confirm with BA who will see this page? As the text used in the lead paragraph ('suitable to provide childcare') will only apply to some user groups. (This text is used in the original NOO form.) ",
+            "colour": "#ffe4e1",
+            "date": 1560959395196,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "We have updated this text from what is in the NOO form, to simplify it/make more concise. So it will need to be validated. For example the following hasn't been included (as we feel the other text covers this).\n\nWhere possible, these should be individuals who have known you in a childcare role and/or for a significant period of time (12 months or more). Please ask your referee to reply to our request for references promptly. We will not be able to register you until they have submitted their reference.\n",
+            "colour": "#ffe4e1",
+            "date": 1561125722300,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "Have arranged 'title' groups by estimated *most common scenario first (ie females first - ordered alphabetically) then male, then other. 'Other' also allows people to enter their own title (which is required by the API /auto-generated letters posted out from the API data). \n\n*A scan online suggests that females make up the vast majority of early years workers (98%)\nhttp://thelearningstation.co.uk/blog/working-in-childcare-statistics-facts/\n\n\nValidate logic with BA. Apply to all pages on all forms if in agreement?\n\n\nValidate all content with BA/policy.",
+            "colour": "#fffacd",
+            "date": 1560952316130,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "Policy said we do need these details. \n\n\nThey also said that a reference can be uploaded but would need a signature. \n\n\nAlso, that each referee must have known the user for 1 year or more.\n\n\nPolicy also confirmed that they do not need to know how many months the referee has known them (although this is a field captured in the API - so Alex may need to pass a default '0' for this).\n\n\nEmailed policy after the call with the referee criteria wording to check if correct (their feedback is included above).\n\n\nUpdated content will need to be validated.\n\n\nPolicy also want the field that captures years known to have a validation set up where users get an error if they enter less than one. \n\n\n\n\n",
+            "colour": "#fffacd",
+            "date": 1560722118389,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "\nJonathan:\n\nPolicy want the field that captures years known to have a validation set up where users get an error if they enter less than one. \n",
+            "colour": "#f0fff0",
+            "date": 1560950035475,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Upload your first reference (H1)",
+      "shortName": "First Reference Document",
+      "includeIf": "${referee1ReferenceEnclosed=0}",
+      "description": "",
+      "progressIndicator": "H: Referees",
+      "fields": [
+        {
+          "id": "generatedId_e37582f3_eebc_428d_9d23_6767bed04bbb",
+          "type": "info",
+          "label": "",
+          "infoText": "Ofsted may contact your referee to check the reference details.",
+          "infoType": "noformat"
+        },
+        {
+          "id": "Ref1Doc",
+          "type": "file",
+          "label": "Upload reference 1",
+          "mandatory": "yes"
+        },
+        {
+          "id": "ref1DocInfo",
+          "type": "info",
+          "label": "",
+          "infoText": "You can only upload one file here. This needs to be a Word document, PDF or JPEG. The file size must not be more than 15MB.",
+          "infoType": "standard"
+        },
+        {
+          "id": "generatedId_09193ef2_c28a_44f6_9262_7e00aab42efc",
+          "type": "info",
+          "label": "What details must the reference include?",
+          "infoText": "It must include the referee's:\n- signature\n- full name, address, email and telephone number \n- present relationship with you \n- opinions of your ability to look after children and your overall character and suitability for being in regular contact with children \n\nIt must also include: \n- how they have known you (for example, as your neighbour)\n- how long they have known you\n-  any other relevant information",
+          "infoType": "long"
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Policy said we will need to keep the reference upload.\n\n\n\n",
+            "colour": "#fffacd",
+            "date": 1560337360869,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "Jonathan/Matt. Are file size/type requirements accurate?",
+            "colour": "#f0fff0",
+            "date": 1560959593713,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Enter the details of another person who can provide a reference about you (H1)",
+      "includeIf": "${adultChildRatio = 0}",
+      "progressIndicator": "H: Referees",
+      "fields": [
+        {
+          "id": "generatedId_94f16dc4_8902_4dbd_bb9f_322c5ff41807",
+          "type": "info",
+          "label": "",
+          "infoText": "Ofsted will use these details to contact this person for a reference, to assess your suitability to provide childcare. \n\nYour referee must:\n\n- not be a relative\n- have known you for one year or more\n- know you well (for example, a friend or neighbour, or a colleague who has known you in a childcare role)",
+          "infoType": "noformat"
+        },
+        {
+          "id": "generatedId_6c7ebfee_d547_4efe_b0a8_619f51d3d5cd",
+          "type": "info",
+          "label": "",
+          "infoText": "###Enter the details of referee 2",
+          "infoType": "noformat"
+        },
+        {
+          "id": "referee2Title_copy_1",
+          "type": "revealingChoice",
+          "label": "Title",
+          "choices": [
+            "Miss",
+            "Mrs",
+            "Ms",
+            "Mr",
+            "Other"
+          ],
+          "revealingFields": [
+            [],
+            [],
+            [],
+            [],
+            [
+              {
+                "id": "referee2TitleOther_copy_1",
+                "type": "text",
+                "label": "Enter your title",
+                "displayWidth": "s"
+              }
+            ]
+          ]
+        },
+        {
+          "id": "referee2FirstName",
+          "type": "text",
+          "label": "First name"
+        },
+        {
+          "id": "referee2Surname",
+          "type": "text",
+          "label": "Surname"
+        },
+        {
+          "id": "referee2SinceWhenKnownYears",
+          "type": "text",
+          "label": "How many years has this person known you?",
+          "helpText": "They must have known you for one year or more.",
+          "format": "positiveNumber",
+          "displayWidth": "xs",
+          "validIf": "${referee2SinceWhenKnownYears > 0}",
+          "validIfErrorMessage": "You must have known this person for 1 year or more."
+        },
+        {
+          "id": "referee2HowKnown",
+          "type": "text",
+          "label": "What is your relationship with this person?",
+          "helpText": "For example, 'We worked together as nursery nurses'.",
+          "multiline": "true"
+        },
+        {
+          "id": "generatedId_3e55f686_5423_4465_8910_08f5c6cfc1ca",
+          "type": "info",
+          "label": "",
+          "infoText": "###Referee's contact details",
+          "infoType": "noformat"
+        },
+        {
+          "id": "referee2Phone",
+          "type": "text",
+          "label": "Telephone number",
+          "helpText": "Include the area code."
+        },
+        {
+          "id": "referee2Email",
+          "type": "text",
+          "label": "Email address",
+          "format": "email"
+        },
+        {
+          "id": "referee2Address",
+          "type": "address",
+          "label": "Address"
+        },
+        {
+          "id": "generatedId_2fabb526_e6f6_439d_9025_c58259539c36",
+          "type": "info",
+          "label": "",
+          "infoText": "##Reference upload details",
+          "infoType": "noformat"
+        },
+        {
+          "id": "referee2ReferenceEnclosed",
+          "type": "choice",
+          "label": "Do you have a reference from this person to upload?",
+          "helpText": "Uploading a reference may help speed up the processing of your application.",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        },
+        {
+          "id": "generatedId_7a8a9643_1a9c_496f_ad3b_ec6f12ab1b98",
+          "type": "info",
+          "label": "What must the reference include?",
+          "infoText": "It must include the referee's:\n- signature\n- full name, address, email and telephone number \n- present relationship with you \n- opinions of your ability to look after children and your overall character and suitability for being in regular contact with children \n\nIt must also include: \n- how long they have known you\n- how they have known you (for example, as a neighbour)\n-  any other relevant information",
+          "infoType": "long"
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Policy confirmed we can collect time period in whatever way we wish as long as it validates that users have known this person for 1 year or more.",
+            "colour": "#fffacd",
+            "date": 1560337721060,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "The same comments apply on this page  that are on the other (previous) reference page.",
+            "colour": "#fffacd",
+            "date": 1560953398978,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "Ask Ofsted if more details about 'relationship to person' are required for the help text? \n\nCurrently I have: \nFor example, 'We worked together as nursery nurses'.\n\n\nBut would: 'We worked together as nursery nurses at Playdays Nursery.' or 'We worked together as a nursery nurses at a local nursery.' better meet Ofsted's requirements?\n\n\n\n",
+            "colour": "#ffe4e1",
+            "date": 1560962515125,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "Jonathan to input validations for over one year.",
+            "colour": "#f0fff0",
+            "date": 1561025245588,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Upload reference 2 (H2)",
+      "shortName": "2nd Reference Document",
+      "includeIf": "${referee2ReferenceEnclosed=0}",
+      "description": "Ofsted may contact your referee to check the reference details.",
+      "progressIndicator": "H: Referees",
+      "fields": [
+        {
+          "id": "Ref2Doc",
+          "type": "file",
+          "label": "Upload reference 2",
+          "mandatory": "yes"
+        },
+        {
+          "id": "ref1DocInfo_copy_1",
+          "type": "info",
+          "label": "",
+          "infoText": "You can only upload one file here. This needs to be a Word document, PDF or JPEG. The file size must not be more than 15MB.",
+          "infoType": "standard"
+        },
+        {
+          "id": "generatedId_866b3bd3_3126_41dd_901d_fd09cea7290c",
+          "type": "info",
+          "label": "What details must the reference include?",
+          "infoText": "It must include the referee's:\n- signature\n- full name, address, email and telephone number \n- present relationship with you \n- opinions of your ability to look after children and your overall character and suitability for being in regular contact with children \n\nIt must also include: \n- how they have known you (for example as a neighbour)- how long they have known you\n-  any other relevant information",
+          "infoType": "long"
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Policy said keep.",
+            "colour": "#fffacd",
+            "date": 1560726542882,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "Check with Jonathan/Matt that the file type /size info is correct.",
+            "colour": "#f0fff0",
+            "date": 1560953466092,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Are you disqualified from providing childcare for any reason listed in the criteria for disqualification under the Childcare Act 2006? (I1)",
+      "progressIndicator": "I: Suitability",
+      "fields": [
+        {
+          "id": "circumstancesSuitabilityDisqualification",
+          "type": "choice",
+          "label": "Are you disqualified from providing childcare for any reason listed in the criteria for disqualification under the Childcare Act 2006? (I1)",
+          "helpText": "The criteria for disqualification are listed in Section 75 of the Childcare Act 2006.",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        },
+        {
+          "id": "suitabilityInfo",
+          "type": "info",
+          "label": "What are the criteria for disqualification?",
+          "infoText": "The criteria are:\n- having committed certain sexual or violent offences against a child or adult \n- being included on the list of those who are barred from working with children, held by the Independent Safeguarding Authority\n- having been charged with certain offences against an adult, or an offence that is related to an offence, and had a relevant order imposed\n- having been made the subject of a disqualifying order\n- having been made the subject of an order or determination where a child has been removed from their care or been prevented from living with them\n- having been refused registration as a childcare provider or have had a registration cancelled \n- living on the same premises as another individual who is disqualified for one of the above reasons.\n\nThis is a summary. The full list is set out in [Section 75 of the Childcare Act 2006](www.legislation.gov.uk/ukpga/2006/21/section/75) (link does not open in a new window or tab).",
+          "infoType": "long"
+        },
+        {
+          "id": "generatedId_135e8ba3_a042_48f8_baf5_ea3c412fae18",
+          "type": "info",
+          "label": "",
+          "infoText": "Ofsted will use the details you provide in this 'Suitability' section to assess whether you are suitable to provide childcare or be in contact with children.",
+          "infoType": "standard"
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Have made updates to this content. This will need to be validated with policy and legal. \n\n\n(The original Noo form question referred to guidance but it was not clear where this guidance is:' Do any of the circumstances listed in the guidance on suitability and disqualification apply to you?')\n...............................................\nSarah's latest comment (emailed) were: \n\n\nG3: can we go with:  Are you disqualified from childminding or providing childcare for any reason listed in the criteria for disqualification under the Childcare Act 2006, section 75\n\n\nA link to this would be useful which is: www.legislation.gov.uk/ukpga/2006/21/section/75.  \n.........................................................\nHave made updates using Sarah's suggestions, but with a slight adaption to reduce the length of the question/make easier to read.\n\n\n.....\n*NB Have included a link, however this does not open in a new window or tab. Check if there is any legal need to link to the Act. \n\n\nUsually we would not use a direct link, but ask users to open a new window or tab and search for this (so as not to interrupt form journey). But have used a direct link here in case there is a legal need to ensure we  give users full information).\n\n\n",
+            "colour": "#ffe4e1",
+            "date": 1560727364599,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "https://www.gov.uk/government/publications/disqualification-under-the-childcare-act-2006/disqualification-under-the-childcare-act-2006#disqualification-criteria",
+            "colour": "#fffacd",
+            "date": 1560417345578,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "Jonathan - stack radios vertically.",
+            "colour": "#f0fff0",
+            "date": 1560972049710,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Enter details about the disqualification circumstances that apply to you (I1 - if Yes)",
+      "includeIf": "${circumstancesSuitabilityDisqualification=0}",
+      "progressIndicator": "I: Suitability",
+      "fields": [
+        {
+          "id": "circumstancesSuitabilityDisqualificationDetails",
+          "type": "text",
+          "label": "Enter details about the disqualification circumstances that apply to you (I1 - if Yes",
+          "helpText": "You must provide details about all of the circumstances listed in the criteria for disqualification in Section 75 of the Childcare Act 2006 that apply to you.",
+          "multiline": "true"
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Policy said we need this.\n\n\nUpdated content needs validating with policy/legal.",
+            "colour": "#ffe4e1",
+            "date": 1560727473692,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Are you aware of any other circumstances that might affect your suitability to work with or be in contact with children? (I4)",
+      "progressIndicator": "I: Suitability",
+      "fields": [
+        {
+          "id": "suitabilityToWorkWithChildren",
+          "type": "choice",
+          "label": "Are you aware of any other circumstances that might affect your suitability to work with or be in contact with children? (I4)",
+          "helpText": "",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Policy said this is required.\n\nAdded in the word 'other' into the title. Check this is ok with policy? (This was done to address the fact that users are asked a similar question earlier in the form, in relation the Childcare Act).\n\nMoved this question to be directly after the similar (disqualification) question,  to help users understand the differences between these questions (as they are similar).",
+            "colour": "#ffe4e1",
+            "date": 1560420245712,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "Jonathan to stack radios.",
+            "colour": "#f0fff0",
+            "date": 1560976273537,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Enter details about the circumstances that might affect your suitability to work with, or be in contact with children  (I4 - if Yes)",
+      "includeIf": "${suitabilityToWorkWithChildren=0}",
+      "progressIndicator": "I: Suitability",
+      "fields": [
+        {
+          "id": "suitabilityToWorkWithChildrenDetails",
+          "type": "text",
+          "label": "Enter details about the circumstances that might affect your suitability to work with, or be in contact with children  (I4 - if Yes)",
+          "multiline": "true"
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Validate with Ofsted.",
+            "colour": "#ffe4e1",
+            "date": 1561024504063,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Have you ever been involved with social services in connection with your own children? (I2)",
+      "progressIndicator": "I: Suitability",
+      "fields": [
+        {
+          "id": "involvedSocialServicesOwnChildren",
+          "type": "choice",
+          "label": "Choice field: Have you ever been involved with social services in connection with your own children? (I2)\n",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Validate updated content with Ofsted.",
+            "colour": "#ffe4e1",
+            "date": 1560972316020,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "Policy said we need to keep this.\n\nChanged from:\nH1: Have you ever been involved with social services in respect of your own children?",
+            "colour": "#fffacd",
+            "date": 1560162654994,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "Jonathan - stack radios",
+            "colour": "#f0fff0",
+            "date": 1560972354500,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Enter details about your involvement with social services (I2 - if Yes)",
+      "includeIf": "${involvedSocialServicesOwnChildren=0}",
+      "progressIndicator": "I: Suitability",
+      "fields": [
+        {
+          "id": "involvedSocialServicesOwnChildrenDetails",
+          "type": "text",
+          "label": "Enter details about your involvement with social services (I2 - if Yes)",
+          "helpText": "Include dates and a description of why you had involvement with social services in connection with your own children. Give details of all instances.",
+          "multiline": "true"
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Check with legal whether we need to write what Ofsted will do with sensitive / personal information on every page? Or just per section (e.g Health/Suitability etc).",
+            "colour": "#ffe4e1",
+            "date": 1560767037442,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "Validate content with BA/policy",
+            "colour": "#ffe4e1",
+            "date": 1561024424564,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "Changed from (Gform first draft):\nH1: Tell us why you're known to council social services.\nHelp text: Please also include details of dates.",
+            "colour": "#fffacd",
+            "date": 1560162691136,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Do you have any criminal convictions or cautions? (I3)",
+      "progressIndicator": "I: Suitability",
+      "fields": [
+        {
+          "id": "criminalOffences",
+          "type": "choice",
+          "label": "Do you have any criminal convictions or cautions? (I3)",
+          "helpText": "You must tell us about all instances, including any spent or unspent convictions or cautions.",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        },
+        {
+          "id": "criminalOffenceInfo",
+          "type": "info",
+          "label": "Are there any convictions or cautions I do not have to declare?",
+          "infoText": "No, you must tell us about all instances, even if:\n\n- it happened a long time ago\n- you were a juvenile\n- you did not receive a custodial sentence\n\nThis includes anything you accepted voluntarily.The Rehabilitation of Offenders Act 1974 that allows some offences to be treated as 'spent' does not apply in this context.",
+          "infoType": "long"
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Validate updated content with Ofsted.",
+            "colour": "#ffe4e1",
+            "date": 1560982949882,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "Updated text from:\n\n\nDo you have any criminal convictions or cautions? (I3)\n\n\nIn Noo thi sis: \nHave you ever been convicted of any criminal offences or been given a caution?\n\n\nHelp with criminal offences\n\nYou must tell us about any spent or unspent convictions or cautions. You must include anything you accepted voluntarily as this still counts as a criminal record.\n\nYou must include all instances, even if:\n\n- it happened a long time ago\n- you were a juvenile\n- you did not receive a custodial sentence",
+            "colour": "#fffacd",
+            "date": 1560163916957,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Tell us about all of your criminal convictions and cautions (I3 - if Yes)",
+      "includeIf": "${criminalOffences=0}",
+      "progressIndicator": "I: Suitability",
+      "fields": [
+        {
+          "id": "criminalConvictions",
+          "type": "text",
+          "label": "Tell us about all of your criminal convictions and cautions (I3 - if Yes)",
+          "helpText": "For each conviction or caution, give details about: the date the offence took place, the nature of the offence,  the place where the offence occurred,  the name of the court that gave the conviction, and any penalty imposed.",
+          "multiline": "true"
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "*Policy confirmed  we need this.",
+            "colour": "#fffacd",
+            "date": 1560768582561,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "Help text needs validating/checking with legal/policy. Help text was based on GOV.forms draft. Check if valid?",
+            "colour": "#ffe4e1",
+            "date": 1560768461630,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Have you got a Disclosure and Barring Service (DBS) Certificate?",
+      "progressIndicator": "I: Suitability",
+      "fields": [
+        {
+          "id": "dbsCheck",
+          "type": "choice",
+          "label": "Have you got a Disclosure and Barring Service (DBS) Certificate?",
+          "helpText": "Ofsted use this information to check your criminal record history and assess your suitability for providing childcare or being in contact with children.",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "We have slightly changed the order and content for the DBS journey. The BA has given the OK for this.",
+            "colour": "#ffe4e1",
+            "date": 1560983202912,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "Jonathan to update the include-ifs on the DBS journey to match the original Ofsted form.",
+            "colour": "#f0fff0",
+            "date": 1560983240015,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Did you apply for your DBS certificate using the Ofsted DBS Application website? (I5)",
+      "includeIf": "${dbsCheck=0}",
+      "progressIndicator": "I: Suitability",
+      "fields": [
+        {
+          "id": "ofstedDBSNew",
+          "type": "choice",
+          "label": "Did you apply for your DBS certificate using the Ofsted DBS Application website? (I5)",
+          "helpText": "The Ofsted DBS (Disclosure and Barring Service) Application website is Ofsted's online service for DBS certificate applications. It is also known as the Ofsted DBS Application portal. ",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "*Ofsted (Sarah) confirmed that we need to ask this and that it needs to specifically ask about the Ofsted DBS Application. We discussed whether putting in the url might help users identify this further, however Sarah said not to do this in case this/ the provider of the Ofsted DBS Application changes in the future.",
+            "colour": "#fffacd",
+            "date": 1560845896072,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "Jonathan to update the include-ifs on the DBS journey to match the original Ofsted form.\n\nAlso stack radios.",
+            "colour": "#f0fff0",
+            "date": 1560983340268,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Is your DBS certificate dated within the last 3 months?",
+      "includeIf": "${dbsCheck=0}",
+      "progressIndicator": "I: Suitability",
+      "fields": [
+        {
+          "id": "dateDbsCertThreeMonth",
+          "type": "choice",
+          "label": "Is your DBS certificate dated within the last 3 months?",
+          "helpText": "You can find the date of issue on your DBS (Disclosure and Barring Service) certificate.",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Validate with BA/policy and ensure slightly updated DBS journey does the same as the existing NOO Ofsted journey. ",
+            "colour": "#ffe4e1",
+            "date": 1560951342194,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Is your DBS certificate valid for your role? (I5d)",
+      "includeIf": "${ofstedDBSNew= 1}",
+      "progressIndicator": "I: Suitability",
+      "fields": [
+        {
+          "id": "validDBSNew",
+          "type": "revealingChoice",
+          "label": "Is your DBS certificate valid for your role? (I5d)",
+          "helpText": "Your DBS (Disclosure and Barring Service) certificate is valid if it has 'enhanced certificate' and 'child workforce' on it. If the role you are registering for is home-based, your certificate must also state the name of this role on it. For example, 'childminder'.",
+          "choices": [
+            "Yes",
+            "No"
+          ],
+          "revealingFields": [
+            [
+              {
+                "id": "generatedId_a90e4b3a_94d9_435d_98a7_fcc4f03856a6",
+                "type": "info",
+                "label": "",
+                "infoText": "You are confirming that your DBS certificate says the following on it:\n\n- 'enhanced certificate' \n- 'child workforce' \n\nIf the role you are registering for is home based, your certificate must also state the name of this role on it. For example, 'childminder'.",
+                "infoType": "noformat"
+              }
+            ],
+            []
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Validate with Ofsted. (*Including the text that reveals when 'Yes' is selected')",
+            "colour": "#ffe4e1",
+            "date": 1560951281079,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "BA agreed this text over phone but will need to see it.",
+            "colour": "#f0fff0",
+            "date": 1560983446535,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Enter your DBS certificate number (I5a)",
+      "includeIf": "${validDBSNew =0 || ofstedDBSNew = 0 }",
+      "progressIndicator": "I: Suitability",
+      "fields": [
+        {
+          "id": "numberDBSNew",
+          "type": "text",
+          "label": "Enter your DBS certificate number (I5a)",
+          "helpText": "This is 12 numbers and can be found on the top right-hand side of your DBS (Disclosure and Barring Service) certificate."
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Validate with Ofsted.",
+            "colour": "#ffe4e1",
+            "date": 1560951257516,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "Note: (from BA) no DBS uploads are required in this journey as they cannot be accepted digitally for Early Years registrations (apart from via the DBS Update Service).",
+            "colour": "#fffacd",
+            "date": 1560985174949,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Have you subscribed to the DBS Update Service? (I5e)",
+      "includeIf": "${validDBSNew =0 || ofstedDBSNew = 0 }",
+      "progressIndicator": "I: Suitability",
+      "helpText": "We recommend you sign up to keep your certficate up to date",
+      "fields": [
+        {
+          "id": "updateServiceNew",
+          "type": "choice",
+          "label": "Have you subscribed to the DBS Update Service? (I5e)",
+          "helpText": "The Update Service is an online subscription service that lets you keep your DBS certificates up to date without having to reapply each time you need a new one.",
+          "choices": [
+            "Yes",
+            "No"
+          ],
+          "optionHelpText": [
+            "",
+            "We recommend that you subscribe to the Update Service to keep your DBS certificate up-to-date. Details will be provided after you have submitted this registration."
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Validate this content and the DBS journey flow with policy/the BA. \n\n\n*Ensure that you show them the text in the progressive reveal when 'No' is selected:\n\n'We recommend that you subscribe to the Update Service to keep your DBS certificate up-to-date. Details will be provided after you have submitted this registration.'\n\n\n(More info and a link to the service will then be inserted on the Acknowledgement page.)",
+            "colour": "#ffe4e1",
+            "date": 1560951016063,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "You must have a valid DBS certificate to continue with this registration",
+      "includeIf": "${validDBSNew=1 || dbsCheck = 1}",
+      "continueIf": "false",
+      "progressIndicator": "I: Suitability",
+      "fields": [
+        {
+          "id": "dbsApplyInfoNew",
+          "type": "info",
+          "label": "",
+          "continueIf": "false",
+          "infoText": "By law, Ofsted must check your DBS (Disclosure and Barring Service) details to assess your suitability for working or being in contact with children.\n\nYou'll need to save your progress and come back later when you have a valid DBS certificate.\n You can apply for this through the [Ofsted DBS Application website](http://ofsteddbsapplication.co.uk/step-one.aspx).",
+          "infoType": "noformat"
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "Validate this content with Ofsted BA/policy. \n\n\n(Based this on SC2 page)",
+            "colour": "#ffe4e1",
+            "date": 1560950974162,
+            "author": "lizzerjones"
+          },
+          {
+            "text": "Have used, 'registration' as feel that 'application' could get confused between a DBS application and the application to register here.",
+            "colour": "#fffacd",
+            "date": 1560983882053,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Are you registered with the Independent Safeguarding Authority (ISA)? (I6)",
+      "progressIndicator": "I: Suitability",
+      "fields": [
+        {
+          "id": "isaRegistration",
+          "type": "choice",
+          "label": "Are you registered with the Independent Safeguarding Authority (ISA)? (I6)",
+          "choices": [
+            "Yes",
+            "No"
+          ]
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "BA / policy said to remove this.",
+            "colour": "#f0fff0",
+            "date": 1560420293636,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    },
+    {
+      "title": "What is your Independent Safeguarding Authority (ISA)  registration number (I6 - if Yes)",
+      "includeIf": "${isaRegistration=0}",
+      "progressIndicator": "I: Suitability",
+      "fields": [
+        {
+          "id": "isaNumber",
+          "type": "text",
+          "label": "What is your Independent Safeguarding Authority (ISA)  registration number (I6 - if Yes)",
+          "helpText": "An ISA registration number is 16 digits long.",
+          "displayWidth": "l"
+        }
+      ],
+      "metadata": {
+        "comments": [
+          {
+            "text": "BA / policy said to remove this.",
+            "colour": "#f0fff0",
+            "date": 1560420310579,
+            "author": "lizzerjones"
+          }
+        ]
+      }
+    }
+  ],
+  "declarationSection": {
+    "title": "Declaration (J)",
+    "shortName": "Declaration",
+    "progressIndicator": "J: Declaration",
+    "fields": [
+      {
+        "id": "generatedId_b342d3a0_5103_4c8c_b5de_762977eb3147",
+        "type": "info",
+        "label": "",
+        "infoText": "###Confirm that you understand and accept the following:",
+        "infoType": "noformat"
+      },
+      {
+        "id": "declarationInfo",
+        "type": "info",
+        "label": "Declaration Information",
+        "infoText": "- I understand that Ofsted will carry out checks and use information from the checks and this application to make a decision about my suitability to work with or be in regular contact with children. \n\n- I understand that Ofsted will share any information they obtain about me with other organisations where the law requires or permits them to, including where information raises concerns of a child protection nature.\n\n- I understand that Ofsted will share information about my application with inspection service providers who, under law, are permitted to carry out regulatory processes on behalf of Ofsted. \n\n- I understand that my application is not complete until I have paid the application fee.\n\n- I declare that all the information I have given on this form is true to the best of my knowledge and belief.\n\n- I understand Ofsted will recheck my status with the DBS Update Service on a regular basis in order to assess my continued suitability to work with or be in close contact with children.\n\n- I understand that if I give false information it may affect the application to provide childcare or the registration of the childcare provider.",
+        "infoType": "noformat"
+      },
+      {
+        "id": "generatedId_927e06d4_909b_4cd5_a14a_d33f14a461cb",
+        "type": "info",
+        "label": "What checks will Ofsted carry out?",
+        "infoText": "Ofsted will carry out a series of checks to establish your suitability to work with or be in regular contact with children. As part of the checks we ask other authorities and people to share with us information they hold about you. \n\nIt may be necessary to repeat these checks from time to time in order to assess your ongoing suitability. \n\nThe checks we carry out are listed in the Early Years and Childcare Registration Handbook. To view this:\n\n1. Open a new window or tab.\n2. Go to GOV.UK\n3. Search for 'Early Years and Childcare Registration Handbook'.",
+        "infoType": "long"
+      }
+    ],
+    "metadata": {
+      "comments": [
+        {
+          "text": "\n\nAdjusted wording in point 1 as it didn't mention what the information would be used for. Also changed 'consent form' to 'application'. Is this accurate?\n\n\nAsk policy/SME whether the 'application fees'' point (point 4) applies for this form? I believe the BA said it doesn't. If not remove the text about this. \n\nAlso should point 6 on the declaration text be be re-worded to account for the fact that not all users are on the DBS update service?\n\n\nPoint 7 has been added here- this was taken / moved from the declaration help text on the NOO form - as it seemed to fit better here rather than in help text. However it is aimed at childcare providers - is this correct?\n\n\nThe original NOO form also says: \n'By signing this form I confirm that I have read all the above statements.' We have replaced this with 'Confirm that you understand and accept the following:'\n\n\nThe original NOO form also asks for 'signature' and pre-fills date of birth. So a decision will need to be made as to whether the gForm mirrors this.\n\n\nPolicy/legal will need to validate all of this text (including the text in the progressive reveal) as we have updated it in parts (eg removing repeated information) to adapt it for the Gform.\n\n\nDoes 'childcare' in final point need to change to 'daycare'?",
+          "colour": "#ffe4e1",
+          "date": 1561121418441,
+          "author": "lizzerjones"
+        },
+        {
+          "text": "*We have changed the help text a bit so this will need checking. The original help text for this section is as follows. \n\n\nThis section seeks your consent to carry out a series of checks to establish your suitability to work with or be in regular contact with children. \n\n\nAs part of the checks we ask other authorities/people to share with us information that they hold about you. Ofsted uses the information from checks and any interviews to make a decision about your suitability to work with or be in regular contact with children. It may be necessary to repeat these checks from time to time in order to assess your ongoing suitability. The checks we carry out are listed in the Early Years and Childcare Registration Handbook.\n\nBy signing the form you give your consent to these checks. Without your consent and signature, we will not be able to process your application. This form must be signed by the individual named at questions C2 and C3.\n\nIf you give false information on the form it may affect the application to provide childcare or the registration of the childcare provider.",
+          "colour": "#ffe4e1",
+          "date": 1561121367484,
+          "author": "lizzerjones"
+        },
+        {
+          "text": "\nMac is consulting with legal about this. \n\nBA flagged up that this declaration may differ to other forms' declaration content as it's about an individual rather than an organisation.",
+          "colour": "#fffacd",
+          "date": 1560420339053,
+          "author": "lizzerjones"
+        },
+        {
+          "text": "Short names (for previous page) need doing once all form contents are finalised. (Plus all error messages).",
+          "colour": "#fffacd",
+          "date": 1561017918690,
+          "author": "lizzerjones"
+        }
+      ]
+    }
+  },
+  "acknowledgementSection": {
+    "title": "Confirmation page",
+    "shortName": "Acknowledgement Page",
+    "progressIndicator": "J: Declaration",
+    "fields": [
+      {
+        "id": "printOrSaveInfo",
+        "type": "info",
+        "label": "",
+        "infoText": "Print or save a pdf copy of your submitted form."
+      },
+      {
+        "id": "ackPageInfo",
+        "type": "info",
+        "label": "Payment",
+        "infoText": "Ofsted will carry out suitability checks and contact you if we have any questions or need more information. \n\n We will also contact you to let you know whether your application to register has been approved.",
+        "infoType": "noformat"
+      },
+      {
+        "id": "generatedId_93f2fbe9_cde3_4c2f_8991_ff1911848bb6",
+        "type": "info",
+        "label": "",
+        "infoText": "###Childminder assistants",
+        "infoType": "noformat"
+      },
+      {
+        "id": "generatedId_35a5b18b_da95_4ae0_94fe_18da65d90e42",
+        "type": "info",
+        "label": "",
+        "infoText": "If you want to work as a childminder assistant, we will send you a suitability letter once we have finished our checks. You cannot work unsupervised as an assistant until you have this letter.",
+        "infoType": "noformat"
+      },
+      {
+        "id": "generatedId_4057391c_c3ea_4338_b879_529c18bea096",
+        "type": "info",
+        "label": "",
+        "infoText": "###Keeping your DBS certificate up to date",
+        "infoType": "noformat"
+      },
+      {
+        "id": "generatedId_3f37b905_ae54_413b_acbb_530f99076247",
+        "type": "info",
+        "label": "",
+        "infoText": "If you have not subscribed to the [DBS (Disclosure and Barring Service) \nUpdate Service](https://www.gov.uk/dbs-update-service),  Ofsted recommend that you do so to keep your DBS certificate up to date.\n\nThe Update Service needs to receive your application to subscribe within 28 days of your current DBS certificate's issue date.",
+        "infoType": "noformat"
+      }
+    ],
+    "metadata": {
+      "comments": [
+        {
+          "text": "This content has not been checked with policy/BA. It is a starting point but will need more input from BA/policy. \n\n\nThe childminding info came from the guidance page for this service on GOV.UK): https://www.gov.uk/guidance/people-connected-with-ofsted-registered-childcare#after-you-send-us-your-information\nOfsted will need to confirm if valid and if there is any other specific information needed for any other roles?\n\nAlso ask Ofsted whether some text can be inserted that says something like the following: \n\n\nWe will also contact you to let you know whether your application to register has been approved. You must not start the role you are applying to register for, until you have received this.\n\n\n(Although how would this work for someone already living in a childminder premises?)\n\nAlso include how Ofsted will get in touch/let them know? Is it by letter or email.\n\n\n*If it is by email we will need to ensure users don't mistake the submission email confirmation as approval of their registration.",
+          "colour": "#ffe4e1",
+          "date": 1561022343447,
+          "author": "lizzerjones"
+        },
+        {
+          "text": "This page needs details about how to apply for the DBS Update Service on it (as earlier in the form we say that users will be given more details about this once they have submitted their application (so as not to interrupt their journey).\n\n\nAlso include a link to this:[https://www.gov.uk/dbs-update-service\n]\n\n",
+          "colour": "#fffacd",
+          "date": 1560950852362,
+          "author": "lizzerjones"
+        },
+        {
+          "text": "NOTES FOR WHOLE FORM:\nForm name\n\nThe name of the form will need further consideration once the scope of it has been confirmed, and once Mac and the team have decided whether to use the term 'daycare' for domestic childcare. Also when we know how much context a user will already have when they get to the form.\n\nOur initial suggestion was:\n\nApply to register if you are connected with an Ofsted-registered childcare or daycare provider (EY2)\n\n\nHowever some providers may not have registered yet (and be in the process of doing so). Therefore something like the following may work better: \n\n\nApply to register as someone connected with a daycare or childcare provider (EY2)\n\n\nThe BA has flagged up that users are not technically registering, rather they are  - 'applying to be associated'. However the term associated may not be as clear/ plain English as connected?\n\nOther notes\n\nThe following also need doing once the form content is finalised:\n\n\nAcknowledgement page text (this may need to mirror some of the confirmation email content (which Mac is working) - as this often details what happens next/what a user needs to do next. It will also need to be informed by what acknowledgement page content from other Ofsted forms.\n\n\nError messages\n\n\nShortnames\n\nH1 and field label match - checking\n\nValidate all content with Ofsted\n\nCheck whether GDPR info (about how information will be used by Ofsted needs to be on every page - or just sections?\n\nMake sure all radio buttons are stacked vertically\n\n\nWould be good to double check that all help text from the NOO form hasn't been missed.",
+          "colour": "#fffacd",
+          "date": 1560950338836,
+          "author": "lizzerjones"
+        }
+      ]
+    }
+  },
+  "destinations": [
+    {
+      "id": "sendToCygnum",
+      "type": "composite",
+      "destinations": [
+        {
+          "id": "transition",
+          "type": "stateTransition",
+          "requiredState": "Submitted"
+        },
+        {
+          "id": "cygnumSendApplicationForms",
+          "type": "handlebarsHttpApi",
+          "uri": "",
+          "profile": "cygnum",
+          "method": "POST",
+          "payload": "<SendData xmlns=\"http://tempuri.org/\"><Service>SendApplicationForms</Service><InputParameters>&lt;?xml version=\"1.0\" encoding=\"utf-8\"?&gt;&lt;Parameters&gt;&lt;DateRange&gt;&lt;StartDateTime&gt;2019-06-11T08:32:50&lt;/StartDateTime&gt;&lt;EndDateTime&gt;2019-06-11T17:32:50&lt;/EndDateTime&gt;&lt;/DateRange&gt;&lt;/Parameters&gt;</InputParameters>&lt;ApplicationForms&gt;         &lt;ApplicationForm&gt;         &lt;FormType&gt;         &lt;EY2&gt;         {{#if registeredPersonReferenceCNP}}         &lt;Provider&gt;         &lt;RegistrationId&gt;{{registeredPersonReferenceCNP_regid}}&lt;/RegistrationId&gt;         &lt;ProvisionTypeId&gt;{{match ^(&apos;0&apos;) =&gt; &apos;33&apos;; (&apos;1&apos;) =&gt; &apos;32&apos;; (*) =&gt; &apos;99&apos;^ (stripCommas serviceType)}}&lt;/ProvisionTypeId&gt;         &lt;SettingName&gt;{{registeredPersonNameCNP2}}&lt;/SettingName&gt;         &lt;URNReferenceNumber&gt;{{registeredPersonReferenceCNP}}&lt;/URNReferenceNumber&gt;         &lt;SettingAddress&gt;         &lt;Address1&gt;{{registeredPersonAddressCNP2.street1}}&lt;/Address1&gt;         &lt;Address2&gt;{{registeredPersonAddressCNP2.street2}}&lt;/Address2&gt;         &lt;Town&gt;{{registeredPersonAddressCNP2.street3}}&lt;/Town&gt;         &lt;County&gt;{{registeredPersonAddressCNP2.street4}}&lt;/County&gt;         &lt;PostCode&gt;{{registeredPersonAddressCNP2.postcode}}&lt;/PostCode&gt;         &lt;LocalAuthorityDescription&gt;&lt;/LocalAuthorityDescription&gt;         &lt;LocalAuthorityCode&gt;&lt;/LocalAuthorityCode&gt;         &lt;/SettingAddress&gt;         &lt;/Provider&gt;         {{/if}}         {{#if settingNameCNPAlreadyRegSRN}}         &lt;Provider&gt;         &lt;RegistrationId&gt;{{settingURNAlreadyRegSRN_regid}}&lt;/RegistrationId&gt;         &lt;ProvisionTypeId&gt;{{match ^(&apos;0&apos;) =&gt; &apos;33&apos;; (&apos;1&apos;) =&gt; &apos;32&apos;; (*) =&gt; &apos;99&apos;^ (stripCommas serviceType)}}&lt;/ProvisionTypeId&gt;         &lt;SettingName&gt;{{settingURNAlreadyRegSRN}}&lt;/SettingName&gt;         &lt;URNReferenceNumber&gt;{{settingNameCNPAlreadyRegSRN}}&lt;/URNReferenceNumber&gt;         &lt;SettingAddress&gt;         &lt;Address1&gt;{{settingAddressCNPAlreadyRegSRN.street1}}&lt;/Address1&gt;         &lt;Address2&gt;{{settingAddressCNPAlreadyRegSRN.street2}}&lt;/Address2&gt;         &lt;Town&gt;{{settingAddressCNPAlreadyRegSRN.street3}}&lt;/Town&gt;         &lt;County&gt;{{settingAddressCNPAlreadyRegSRN.street4}}&lt;/County&gt;         &lt;PostCode&gt;{{settingAddressCNPAlreadyRegSRN.postcode}}&lt;/PostCode&gt;         &lt;LocalAuthorityDescription&gt;&lt;/LocalAuthorityDescription&gt;         &lt;LocalAuthorityCode&gt;&lt;/LocalAuthorityCode&gt;         &lt;/SettingAddress&gt;         &lt;/Provider&gt;         {{#each settingURNAlreadyRegSRN2}}         &lt;Provider&gt;         &lt;RegistrationId&gt;{{settingURNAlreadyRegSRN2_regid}}&lt;/RegistrationId&gt;         &lt;ProvisionTypeId&gt;{{match ^(&apos;0&apos;) =&gt; &apos;33&apos;; (&apos;1&apos;) =&gt; &apos;32&apos;; (*) =&gt; &apos;99&apos;^ (stripCommas serviceType)}}&lt;/ProvisionTypeId&gt;         &lt;SettingName&gt;{{settingURNAlreadyRegSRN2}}&lt;/SettingName&gt;         &lt;URNReferenceNumber&gt;{{lookup @root.settingNameSRNAdditional @index}}&lt;/URNReferenceNumber&gt;         &lt;SettingAddress&gt;         &lt;Address1&gt;{{lookup @root.settingAddressSRNAdditional.street1 @index}}&lt;/Address1&gt;         &lt;Address2&gt;{{lookup @root.settingAddressSRNAdditional.street2 @index}}&lt;/Address2&gt;         &lt;Town&gt;{{lookup @root.settingAddressSRNAdditional.street3 @index}}&lt;/Town&gt;         &lt;County&gt;{{lookup @root.settingAddressSRNAdditional.street4 @index}}&lt;/County&gt;         &lt;PostCode&gt;{{lookup @root.settingAddressSRNAdditional.postcode @index}}&lt;/PostCode&gt;         &lt;LocalAuthorityDescription&gt;&lt;/LocalAuthorityDescription&gt;         &lt;LocalAuthorityCode&gt;&lt;/LocalAuthorityCode&gt;         &lt;/SettingAddress&gt;         &lt;/Provider&gt;         {{/each}}         {{/if}}         &lt;ConnectionWithRegistration&gt;         {{#if soleTrader}}         &lt;SoleOwnerCC&gt;{{match ^(&apos;0&apos;) =&gt; &apos;Yes&apos;; (&apos;1&apos;) =&gt; &apos;No&apos;; (*) =&gt; &apos;Null&apos;^ (stripCommas soleTrader)}}&lt;/SoleOwnerCC&gt;         {{/if}}         {{#if provideChildcareMainPurpose}}         &lt;MakingUpOrgCC&gt;{{match ^(&apos;0&apos;) =&gt; &apos;Yes&apos;; (&apos;1&apos;) =&gt; &apos;No&apos;; (*) =&gt; &apos;Null&apos;^ (stripCommas provideChildcareMainPurpose)}}&lt;/MakingUpOrgCC&gt;         {{/if}}         {{#if roleInOrganisationNonDomestic}}         &lt;RoleIsDirector&gt;{{match ^(&apos;0&apos;) =&gt; &apos;Yes&apos;; (*) =&gt; &apos;Null&apos;^ (stripCommas roleInOrganisationNonDomestic)}}&lt;/RoleIsDirector&gt;         {{/if}}         {{#if roleInOrganisationNonDomestic}}         &lt;RoleIsPartner&gt;{{match ^(&apos;1&apos;) =&gt; &apos;Yes&apos;; (*) =&gt; &apos;Null&apos;^ (stripCommas roleInOrganisationNonDomestic)}}&lt;/RoleIsPartner&gt;         {{/if}}         {{#if roleInOrganisationNonDomestic}}         &lt;RoleIsCommitteeMember&gt;{{match ^(&apos;2&apos;) =&gt; &apos;Yes&apos;; (*) =&gt; &apos;Null&apos;^ (stripCommas roleInOrganisationNonDomestic)}}&lt;/RoleIsCommitteeMember&gt;         {{/if}}         {{#if roleInOrganisationNonDomestic}}         &lt;RoleIsOther&gt;{{match ^(&apos;3&apos;) =&gt; &apos;Yes&apos;; (*) =&gt; &apos;Null&apos;^ (stripCommas roleInOrganisationNonDomestic)}}&lt;/RoleIsOther&gt;         {{/if}}         &lt;RoleOther&gt;{{roleInOrganisationNonDomestic.revealed.specifyOther}}&lt;/RoleOther&gt;         {{#if nominatedIndividual}}         &lt;NominatedPersonForOrg&gt;{{match ^(&apos;0&apos;) =&gt; &apos;Yes&apos;; (&apos;1&apos;) =&gt; &apos;No&apos;; (*) =&gt; &apos;Null&apos;^ (stripCommas nominatedIndividual)}}&lt;/NominatedPersonForOrg&gt;         {{/if}}         {{#if manageDayToDay}}         &lt;DirectlyManage&gt;{{match ^(&apos;0&apos;) =&gt; &apos;Yes&apos;; (&apos;1&apos;) =&gt; &apos;No&apos;; (*) =&gt; &apos;Null&apos;^ (stripCommas manageDayToDay)}}&lt;/DirectlyManage&gt;         {{/if}}         {{#if adultChildRatio}}         &lt;MemberOfStaff&gt;{{match ^(&apos;0&apos;) =&gt; &apos;Yes&apos;; (&apos;1&apos;) =&gt; &apos;No&apos;; (*) =&gt; &apos;Null&apos;^ (stripCommas adultChildRatio)}}&lt;/MemberOfStaff&gt;         {{/if}}         {{#if lookingAfter}}         &lt;LookingAfterAsCC&gt;{{match ^(&apos;0&apos;) =&gt; &apos;Yes&apos;; (&apos;1&apos;) =&gt; &apos;No&apos;; (*) =&gt; &apos;Null&apos;^ (stripCommas lookingAfter)}}&lt;/LookingAfterAsCC&gt;         {{/if}}         {{#if notLookingAfter}}         &lt;AtCCPremises&gt;{{match ^(&apos;0&apos;) =&gt; &apos;Yes&apos;; (&apos;1&apos;) =&gt; &apos;No&apos;; (*) =&gt; &apos;Null&apos;^ (stripCommas notLookingAfter)}}&lt;/AtCCPremises&gt;         {{/if}}         &lt;/ConnectionWithRegistration&gt;         &lt;Personal&gt;         &lt;IndividualId&gt;{{indId}}&lt;/IndividualId&gt;         &lt;Title&gt;{{match ^(&apos;0&apos;) =&gt; &apos;Mr&apos;; (&apos;1&apos;) =&gt; &apos;Mrs&apos;; (&apos;2&apos;) =&gt; &apos;Miss&apos;; (&apos;3&apos;) =&gt; &apos;Ms&apos;; (&apos;4&apos;) =&gt; &apos;Other&apos;; ^ (stripCommas title)}}&lt;/Title&gt;         &lt;OtherTitle&gt;{{title.revealed.personOtherTitle}}&lt;/OtherTitle&gt;         &lt;FirstName&gt;{{firstName}}&lt;/FirstName&gt;         &lt;MiddleNames&gt;&lt;/MiddleNames&gt;         &lt;Surname&gt;{{surname}}&lt;/Surname&gt;         &lt;SurnameAtBirth&gt;{{surnameAtBirth}}&lt;/SurnameAtBirth&gt;         &lt;AnyOtherNames&gt;{{match ^(&apos;0&apos;) =&gt; &apos;Yes&apos;; (&apos;1&apos;) =&gt; &apos;No&apos;; (*) =&gt; &apos;Null&apos;^ (stripCommas anyOtherNames)}}&lt;/AnyOtherNames&gt;         &lt;OtherNames&gt;         {{#each prevSurname}}         &lt;OtherName&gt;         &lt;FirstName&gt;{{lookup @root.prevFirstName @index}}&lt;/FirstName&gt;         &lt;Surname&gt;{{.}}&lt;/Surname&gt;         &lt;DateFrom&gt;{{lookup @root.dateKnownFrom.year @index}}-{{lookup @root.dateKnownFrom.month @index}}-{{lookup @root.dateKnownFrom.day @index}}T00:00:00&lt;/DateFrom&gt;         &lt;DateTo&gt;{{lookup @root.dateKnownUntil.year @index}}-{{lookup @root.dateKnownUntil.month @index}}-{{lookup @root.dateKnownUntil.day @index}}T00:00:00&lt;/DateTo&gt;         &lt;ID&gt;{{@index}}&lt;/ID&gt;         &lt;/OtherName&gt;         {{/each}}         &lt;/OtherNames&gt;         &lt;DateOfBirth&gt;{{lookup @root.DoB.year @index}}-{{lookup @root.DoB.month @index}}-{{lookup @root.DoB.day @index}}T00:00:00&lt;/DateOfBirth&gt;         &lt;PlaceOfBirthTown&gt;&lt;/PlaceOfBirthTown&gt;         &lt;PlaceOfBirthCounty&gt;&lt;/PlaceOfBirthCounty&gt;         &lt;BornInUK&gt;{{match ^(&apos;0&apos;) =&gt; &apos;Yes&apos;; (&apos;1&apos;) =&gt; &apos;No&apos;; (*) =&gt; &apos;Null&apos;^ (stripCommas bornUkNo)}}&lt;/BornInUK&gt;         &lt;OtherCountry&gt;{{bornUkNo.revealed.bornUkSpecify}}&lt;/OtherCountry&gt;         &lt;Nationality&gt;&lt;/Nationality&gt;         &lt;Sex&gt;U&lt;/Sex&gt;         &lt;LivedOutsideUK&gt;{{match ^(&apos;0&apos;) =&gt; &apos;Yes&apos;; (&apos;1&apos;) =&gt; &apos;No&apos;; (*) =&gt; &apos;Null&apos;^ (stripCommas livedOutsideUK)}}&lt;/LivedOutsideUK&gt;         &lt;CurrentAddressDetails&gt;         &lt;Address1&gt;{{currentAddress.street1}}&lt;/Address1&gt;         &lt;Address2&gt;{{currentAddress.street2}}&lt;/Address2&gt;         &lt;Town&gt;{{currentAddress.street3}}&lt;/Town&gt;         &lt;County&gt;{{currentAddress.street4}}&lt;/County&gt;         &lt;PostCode&gt;{{currentAddress.postcode}}&lt;/PostCode&gt;         &lt;LocalAuthorityDescription&gt;&lt;/LocalAuthorityDescription&gt;         &lt;LocalAuthorityCode&gt;&lt;/LocalAuthorityCode&gt;         {{#if sinceWhenCurrentAddress}}         &lt;FromDate&gt;{{sinceWhenCurrentAddress}}&lt;/FromDate&gt;         {{/if}}         &lt;/CurrentAddressDetails&gt;         &lt;AnyOtherAddresses&gt;{{match ^(&apos;0&apos;) =&gt; &apos;Yes&apos;; (&apos;1&apos;) =&gt; &apos;No&apos;; (*) =&gt; &apos;Null&apos;^ (stripCommas otherAddresses)}}&lt;/AnyOtherAddresses&gt;         &lt;OtherAddresses&gt;         {{#each uKAddresses.street1}}         &lt;Address&gt;         &lt;ID&gt;{{@index}}&lt;/ID&gt;         &lt;Address1&gt;{{.}}&lt;/Address1&gt;         &lt;Address2&gt;{{lookup @root.uKAddresses.street2 @index}}&lt;/Address2&gt;         &lt;Town&gt;{{lookup @root.uKAddresses.street3 @index}}&lt;/Town&gt;         &lt;County&gt;{{lookup @root.uKAddresses.street4 @index}}&lt;/County&gt;         &lt;PostCode&gt;{{lookup @root.uKAddresses.postcode @index}}&lt;/PostCode&gt;         &lt;LocalAuthorityDescription&gt;&lt;/LocalAuthorityDescription&gt;         &lt;LocalAuthorityCode&gt;&lt;/LocalAuthorityCode&gt;         {{#with (lookup @root.dateMovedInUK @index) as |date|}}         {{#if date}}         &lt;FromDate&gt;{{lookup @root.date.year @index}}-{{lookup @root.date.month @index}}-{{lookup @root.date.day @index}}T00:00:00&lt;/FromDate&gt;         {{/if}}         {{/with}}         {{#with (lookup @root.dateMovedOutUK @index) as |date|}}         {{#if date}}         &lt;ToDate&gt;{{lookup @root.date.year @index}}-{{lookup @root.date.month @index}}-{{lookup @root.date.day @index}}T00:00:00&lt;/ToDate&gt;         {{/if}}         {{/with}}         &lt;/Address&gt;         {{/each}}         &lt;/OtherAddresses&gt;         &lt;DisclosureNumber&gt;{{numberDBSNew}}&lt;/DisclosureNumber&gt;         &lt;/Personal&gt;         &lt;Contact&gt;         &lt;MainContactNumber&gt;Unknown&lt;/MainContactNumber&gt;         &lt;EmailAddress&gt;{{email}}&lt;/EmailAddress&gt;         &lt;DaytimeContactNumber&gt;{{phoneNumber}}&lt;/DaytimeContactNumber&gt;         &lt;MobileContactNumber&gt;&lt;/MobileContactNumber&gt;         &lt;/Contact&gt;         &lt;PastRegistration&gt;         {{#if registeredToProvideChildcare}}         &lt;OfstedReg&gt;{{match ^(&apos;0&apos;) =&gt; &apos;Yes&apos;; (&apos;1&apos;) =&gt; &apos;No&apos;; (*) =&gt; &apos;Null&apos;^ (stripCommas registeredToProvideChildcare)}}&lt;/OfstedReg&gt;         {{/if}}         &lt;OtherRegBodyUK&gt;Null&lt;/OtherRegBodyUK&gt;         {{#if }}         &lt;OtherRegBodyEU&gt;Null&lt;/OtherRegBodyEU&gt;         {{/if}}         {{#if }}         &lt;ResidentEnglandFiveYears&gt;Null&lt;/ResidentEnglandFiveYears&gt;         {{/if}}         {{#if livedOrWorkedMilitaryBaseOutsideEngland}}         &lt;ResidentUkOverseasFiveYears&gt;{{match ^(&apos;0&apos;) =&gt; &apos;Yes&apos;; (&apos;1&apos;) =&gt; &apos;No&apos;; (*) =&gt; &apos;Null&apos;^ (stripCommas livedOrWorkedMilitaryBaseOutsideEngland)}}&lt;/ResidentUkOverseasFiveYears&gt;         {{/if}}         {{#if }}         &lt;InArmedForces&gt;Null&lt;/InArmedForces&gt;         {{/if}}         &lt;/PastRegistration&gt;         &lt;PreviousExperience&gt;         &lt;RelaventTrainQual&gt;{{match ^(&apos;0&apos;) =&gt; &apos;Yes&apos;; (&apos;1&apos;) =&gt; &apos;No&apos;; (*) =&gt; &apos;Null&apos;^ (stripCommas childcareTraining)}}&lt;/RelaventTrainQual&gt;         &lt;TrainQualDetails&gt;         {{#each titleOfCourse}}         &lt;TrainQual&gt;         &lt;CourseTitle&gt;{{.}}&lt;/CourseTitle&gt;         {{#with (lookup @root.relevantFromDate @index) as |dateFrom|}}         {{#if dateFrom}}         &lt;DateFrom&gt;{{lookup @root.dateFrom.year @index}}-{{lookup @root.dateFrom.month @index}}-{{lookup @root.dateFrom.day @index}}T00:00:00&lt;/DateFrom&gt;         {{/if}}         {{/with}}         {{#with (lookup @root.relevantToDate @index) as |dateTo|}}         {{#if dateTo}}         &lt;DateTo&gt;{{lookup @root.dateTo.year @index}}-{{lookup @root.dateTo.month @index}}-{{lookup @root.dateTo.day @index}}T00:00:00&lt;/DateTo&gt;         {{/if}}         {{/with}}         {{#with (lookup @root.qualification @index) as |qual|}}         {{#if qual}}         &lt;Qualification&gt;{{lookup @root.qualification @index}}&lt;/Qualification&gt;         {{/if}}         {{/with}}         {{#with (lookup @root.dateGained @index) as |dateGain|}}         {{#if dateGain}}         &lt;DateGained&gt;{{lookup @root.dateGain.year @index}}-{{lookup @root.dateGain.month @index}}-{{lookup @root.dateGain.day @index}}T00:00:00&lt;/DateGained&gt;         {{/if}}         {{/with}}         {{#with (lookup @root.awardingBody @index) as |awardBod|}}         {{#if awardBod}}         &lt;AwardingBody&gt;{{lookup @root.awardingBody @index}}&lt;/AwardingBody&gt;         {{/if}}         {{/with}}         &lt;ID&gt;{{@index}}&lt;/ID&gt;         &lt;/TrainQual&gt;         {{/each}}         &lt;/TrainQualDetails&gt;         &lt;AnyFirstAidCert&gt;Null&lt;/AnyFirstAidCert&gt;         &lt;LocalAuthorityTrainingOrgName&gt;&lt;/LocalAuthorityTrainingOrgName&gt;         &lt;/PreviousExperience&gt;         &lt;Health&gt;         &lt;AnyIllnesses&gt;{{match ^(&apos;0&apos;) =&gt; &apos;Yes&apos;; (&apos;1&apos;) =&gt; &apos;No&apos;; (*) =&gt; &apos;Null&apos;^ (stripCommas seriousIllness)}}&lt;/AnyIllnesses&gt;         &lt;AnyAdmissions&gt;{{match ^(&apos;0&apos;) =&gt; &apos;Yes&apos;; (&apos;1&apos;) =&gt; &apos;No&apos;; (*) =&gt; &apos;Null&apos;^ (stripCommas hospitalAdmission)}}&lt;/AnyAdmissions&gt;         &lt;Treatment&gt;{{match ^(&apos;0&apos;) =&gt; &apos;Yes&apos;; (&apos;1&apos;) =&gt; &apos;No&apos;; (*) =&gt; &apos;Null&apos;^ (stripCommas currentlyBeingTreated)}}&lt;/Treatment&gt;         &lt;/Health&gt;         &lt;Referees&gt;         &lt;FirstReferenceAddress&gt;         &lt;Title&gt;{{match ^(&apos;0&apos;) =&gt; &apos;Mr&apos;; (&apos;1&apos;) =&gt; &apos;Mrs&apos;; (&apos;2&apos;) =&gt; &apos;Miss&apos;; (&apos;3&apos;) =&gt; &apos;Ms&apos;; (&apos;4&apos;) =&gt; &apos;Other&apos;; ^ (stripCommas referee2Title)}}&lt;/Title&gt;         &lt;OtherTitle&gt;{{referee2Title.revealed.referee2TitleOther}}&lt;/OtherTitle&gt;         &lt;FirstName&gt;{{referee1FirstName}}&lt;/FirstName&gt;         &lt;Surname&gt;{{referee1Surname}}&lt;/Surname&gt;         &lt;ReferenceAddress&gt;         &lt;Address1&gt;{{referee1Address.street1}}&lt;/Address1&gt;         &lt;Address2&gt;{{referee1Address.street2}}&lt;/Address2&gt;         &lt;Town&gt;{{referee1Address.street3}}&lt;/Town&gt;         &lt;County&gt;{{referee1Address.street4}}&lt;/County&gt;         &lt;PostCode&gt;{{referee1Address.postcode}}&lt;/PostCode&gt;         &lt;LocalAuthorityDescription&gt;&lt;/LocalAuthorityDescription&gt;         &lt;LocalAuthorityCode&gt;&lt;/LocalAuthorityCode&gt;         &lt;/ReferenceAddress&gt;         &lt;TelephoneNumber&gt;{{referee1Phone}}&lt;/TelephoneNumber&gt;         &lt;Email&gt;{{referee1Email}}&lt;/Email&gt;         &lt;Relationship&gt;{{referee1HowKnown}}&lt;/Relationship&gt;         &lt;ReferenceEnclosed&gt;{{match ^(&apos;0&apos;) =&gt; &apos;Yes&apos;; (&apos;1&apos;) =&gt; &apos;No&apos;; (*) =&gt; &apos;Null&apos;^ (stripCommas referee1ReferenceEnclosed)}}&lt;/ReferenceEnclosed&gt;         &lt;TimeKnownMonths&gt;&lt;/TimeKnownMonths&gt;         &lt;TimeKnownYears&gt;{{referee2SinceWhenKnownYears_copy_1}}&lt;/TimeKnownYears&gt;         &lt;/FirstReferenceAddress&gt;         &lt;SecondReferenceAddress&gt;         &lt;Title&gt;{{match ^(&apos;0&apos;) =&gt; &apos;Mr&apos;; (&apos;1&apos;) =&gt; &apos;Mrs&apos;; (&apos;2&apos;) =&gt; &apos;Miss&apos;; (&apos;3&apos;) =&gt; &apos;Ms&apos;; (&apos;4&apos;) =&gt; &apos;Other&apos;; ^ (stripCommas referee2Title_copy_1)}}&lt;/Title&gt;         &lt;OtherTitle&gt;{{referee2Title_copy_1.revealed.referee2TitleOther_copy_1}}&lt;/OtherTitle&gt;         &lt;FirstName&gt;{{referee2FirstName}}&lt;/FirstName&gt;         &lt;Surname&gt;{{referee2Surname}}&lt;/Surname&gt;         &lt;ReferenceAddress&gt;         &lt;Address1&gt;{{referee2Address.street1}}&lt;/Address1&gt;         &lt;Address2&gt;{{referee2Address.street2}}&lt;/Address2&gt;         &lt;Town&gt;{{referee2Address.street3}}&lt;/Town&gt;         &lt;County&gt;{{referee2Address.street4}}&lt;/County&gt;         &lt;PostCode&gt;{{referee2Address.postcode}}&lt;/PostCode&gt;         &lt;LocalAuthorityDescription&gt;&lt;/LocalAuthorityDescription&gt;         &lt;LocalAuthorityCode&gt;&lt;/LocalAuthorityCode&gt;         &lt;/ReferenceAddress&gt;         &lt;TelephoneNumber&gt;{{referee2Phone}}&lt;/TelephoneNumber&gt;         &lt;Email&gt;{{referee2Email}}&lt;/Email&gt;         &lt;Relationship&gt;{{referee2HowKnown}}&lt;/Relationship&gt;         &lt;ReferenceEnclosed&gt;{{referee2ReferenceEnclosed}}&lt;/ReferenceEnclosed&gt;         &lt;TimeKnownMonths&gt;&lt;/TimeKnownMonths&gt;         &lt;TimeKnownYears&gt;{{referee2SinceWhenKnownYears}}&lt;/TimeKnownYears&gt;         &lt;/SecondReferenceAddress&gt;         &lt;/Referees&gt;         &lt;SuitabilityAndDisqualification&gt;         {{#if circumstancesSuitabilityDisqualification}}         &lt;CircumApply&gt;{{match ^(&apos;0&apos;) =&gt; &apos;Yes&apos;; (&apos;1&apos;) =&gt; &apos;No&apos;; (*) =&gt; &apos;Null&apos;^ (stripCommas circumstancesSuitabilityDisqualification)}}&lt;/CircumApply&gt;         {{/if}}         &lt;CircumApplyDetails&gt;&lt;/CircumApplyDetails&gt;         {{#if }}         &lt;Confirm&gt;&lt;/Confirm&gt;         {{/if}}         {{#if involvedSocialServicesOwnChildren}}         &lt;SocialService&gt;{{match ^(&apos;0&apos;) =&gt; &apos;Yes&apos;; (&apos;1&apos;) =&gt; &apos;No&apos;; (*) =&gt; &apos;Null&apos;^ (stripCommas involvedSocialServicesOwnChildren)}}&lt;/SocialService&gt;         {{/if}}         &lt;SocialServiceDetails&gt;&lt;/SocialServiceDetails&gt;         {{#if criminalOffences}}         &lt;CriminalConviction&gt;{{match ^(&apos;0&apos;) =&gt; &apos;Yes&apos;; (&apos;1&apos;) =&gt; &apos;No&apos;; (*) =&gt; &apos;Null&apos;^ (stripCommas criminalOffences)}}&lt;/CriminalConviction&gt;         {{/if}}         &lt;/SuitabilityAndDisqualification&gt;         &lt;ConsentAndDeclaration&gt;         &lt;AgreeConsent&gt;1&lt;/AgreeConsent&gt;         &lt;DateOfBirth&gt;{{lookup @root.DoB.year @index}}-{{lookup @root.DoB.month @index}}-{{lookup @root.DoB.day @index}}T00:00:00&lt;/DateOfBirth&gt;         &lt;/ConsentAndDeclaration&gt;         &lt;/EY2&gt;         &lt;/FormType&gt;         &lt;FormID&gt;1&lt;/FormID&gt;         &lt;CreatedBy&gt;gForm&lt;/CreatedBy&gt;         &lt;CreatedDate&gt;{{currentTimestamp}}&lt;/CreatedDate&gt;         &lt;Source&gt;Online&lt;/Source&gt;         &lt;ParentID&gt;0&lt;/ParentID&gt;         &lt;URN&gt;{{either registeredPersonReferenceCNP settingNameCNPAlreadyRegSRN}}&lt;/URN&gt;         &lt;FormMetaData&gt;         &lt;/FormMetaData&gt;         &lt;/ApplicationForm&gt;         &lt;/ApplicationForms&gt; </SendData>"
+        }
+      ]
+    }
+  ],
+  "submitErrorUrl": "deprecated",
+  "submitSuccessUrl": "deprecated",
+  "_id": "Alex-Mapping-EY2"
+}

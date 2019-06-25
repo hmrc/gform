@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.gform.config
 
+import java.net.URLDecoder
+
 import com.typesafe.config.{ ConfigFactory, Config => TypeSafeConfig }
 import net.ceedubs.ficus.Ficus._
 import play.api.Configuration
@@ -27,8 +29,10 @@ import uk.gov.hmrc.play.auth.controllers.AuthParamsControllerConfig
 import uk.gov.hmrc.play.config.{ ControllerConfig, ServicesConfig }
 import pureconfig.generic.auto._
 import uk.gov.hmrc.gform.sharedmodel.form.{ Approved, FormStatus, InProgress, Submitted }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ HandlebarsTemplateProcessorModel, JsonNodes, ProfileName }
-import uk.gov.service.notify.NotificationClient // It is now necessary to import `pureconfig.generic.auto._` everywhere a config is loaded or written, even though IntelliJ sees this as unused, its still required
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.ProfileName
+import uk.gov.service.notify.NotificationClient
+
+import scala.util.Try // It is now necessary to import `pureconfig.generic.auto._` everywhere a config is loaded or written, even though IntelliJ sees this as unused, its still required
 
 class ConfigModule(playComponents: PlayComponents) {
 
@@ -75,21 +79,19 @@ class ConfigModule(playComponents: PlayComponents) {
     private def qualifiedDestinationServiceKey(destinationServiceKey: String) =
       s"destination-services.$destinationServiceKey"
 
-    private def asMap[K, V](key: String)(entry: String => Option[(K, V)]): Map[K, V] =
-      try {
-        config(key).subKeys
-          .flatMap(entry(_))
+    private def asMap[K, V](key: String)(entry: String => Option[(K, V)]): Option[Map[K, V]] =
+      Try {
+        config(key)
+      }.toOption.map {
+        _.subKeys
+          .flatMap(v => entry(v))
           .toMap
-      } catch {
-        case _: Exception => Map.empty
       }
 
-    private def asStringStringMap(key: String): Map[String, String] = {
-      val c = config(key)
+    private def asStringStringMap(key: String): Option[Map[String, String]] =
       asMap(key) { k =>
-        c.getString(k).map(v => (k, v))
+        config(key).getString(k).map(v => (k, v))
       }
-    }
 
     private def getString(destinationServiceKey: String, key: String) =
       config(qualifiedDestinationServiceKey(destinationServiceKey)).getString(key)
@@ -122,11 +124,8 @@ class ConfigModule(playComponents: PlayComponents) {
 
     private def httpHeaders(destinationServiceKey: String): Map[String, String] =
       asStringStringMap(s"${qualifiedDestinationServiceKey(destinationServiceKey)}.httpHeaders")
-
-    private def handlebarsModel(destinationServiceKey: String): HandlebarsTemplateProcessorModel =
-      HandlebarsTemplateProcessorModel(
-        asStringStringMap(s"${qualifiedDestinationServiceKey(destinationServiceKey)}.handlebarsModel")
-          .mapValues(JsonNodes.textNode))
+        .getOrElse(Map.empty)
+        .mapValues(URLDecoder.decode(_, "UTF-8"))
 
     private def profileName(destinationServiceKey: String): ProfileName =
       ProfileName(getString(destinationServiceKey, "name").getOrElse(destinationServiceKey))
@@ -134,7 +133,7 @@ class ConfigModule(playComponents: PlayComponents) {
     private def payloadType(destinationServiceKey: String): PayloadType =
       getString(destinationServiceKey, "payloadContentType").getOrElse("json") match {
         case "json"     => PayloadType.JSON
-        case "soap-xml" => PayloadType.SoapXml
+        case "soap-xml" => PayloadType.CYGNUM
         case v          => throw new Exception(s"Invalid payloadContentType in $destinationServiceKey: $v")
       }
 
@@ -149,12 +148,12 @@ class ConfigModule(playComponents: PlayComponents) {
             name,
             baseUrl(destinationServiceKey) + basePath(destinationServiceKey),
             httpHeaders(destinationServiceKey),
-            handlebarsModel(destinationServiceKey),
             payloadType(destinationServiceKey)
           )
+
           Some((name, configuration))
         }
-      }
+      }.getOrElse(Map.empty)
   }
 }
 

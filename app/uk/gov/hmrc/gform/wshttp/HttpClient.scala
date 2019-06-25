@@ -16,14 +16,18 @@
 
 package uk.gov.hmrc.gform.wshttp
 
-import cats.{ Endo, MonadError }
+import cats.{ Endo, Monad, MonadError }
 import cats.syntax.applicative._
 import cats.syntax.flatMap._
 import play.api.libs.json.{ JsValue, Json }
 import uk.gov.hmrc.gform.core.{ FOpt, _ }
+import uk.gov.hmrc.gform.cygnum.SendData
+import uk.gov.hmrc.gform.cygnum.http.CygnumClient
+import uk.gov.hmrc.gform.cygnum.soap.ProxyCode
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpReads, HttpResponse }
 
 import scala.concurrent.ExecutionContext
+import scala.xml.XML
 
 trait HttpClient[F[_]] {
   def get(uri: String)(implicit hc: HeaderCarrier): F[HttpResponse]
@@ -67,16 +71,14 @@ object HttpClient {
         httpRequest(underlying.put(_, _)(addContentTypeHeader(hc, contentType)), uri, jsonString)(Some(Json.parse))
     }
 
-    def soapXml(implicit monadError: MonadError[F, String]): HttpClient[F] = new HttpClient[F] {
-      private val contentType = "application/soap+xml; charset=utf-8"
+    def cygnum(implicit monadError: MonadError[F, String]): HttpClient[F] = new HttpClient[F] {
 
       override def get(uri: String)(implicit hc: HeaderCarrier): F[HttpResponse] = underlying.get(uri)
 
       def post(uri: String, xmlString: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
-        httpRequest(underlying.post(_, _)(addContentTypeHeader(hc, contentType)), uri, xmlString)(None)
+        new CygnumClient[F].sendRequest(SendData, xmlString)
 
-      def put(uri: String, xmlString: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
-        httpRequest(underlying.put(_, _)(addContentTypeHeader(hc, contentType)), uri, xmlString)(None)
+      def put(uri: String, xmlString: String)(implicit hc: HeaderCarrier): F[HttpResponse] = ???
     }
   }
 

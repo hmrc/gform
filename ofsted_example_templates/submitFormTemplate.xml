@@ -11,7 +11,7 @@
       <Source>Postal</Source>
       <ParentID>123</ParentID>
       <CommunicationID>str1234</CommunicationID>
-      <URN>2502240</URN>
+      <URN>2502257</URN>
       <Documents>
         <Attachment>
           <Type>CR1</Type>

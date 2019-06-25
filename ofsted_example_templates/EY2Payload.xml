@@ -1,0 +1,301 @@
+<ApplicationForms>
+  <ApplicationForm>
+    <FormType>
+      <EY2>
+        {{#if registeredPersonReferenceCNP}}
+        <Provider>
+          <RegistrationId>{{registeredPersonReferenceCNP_regid}}</RegistrationId>
+          <ProvisionTypeId>{{match ^('0') => '33'; ('1') => '32'; (*) => '99'^ (stripCommas serviceType)}}</ProvisionTypeId>
+          <SettingName>{{registeredPersonNameCNP2}}</SettingName>
+          <URNReferenceNumber>{{registeredPersonReferenceCNP}}</URNReferenceNumber>
+          <SettingAddress>
+            <Address1>{{registeredPersonAddressCNP2.street1}}</Address1>
+            <Address2>{{registeredPersonAddressCNP2.street2}}</Address2>
+            <Town>{{registeredPersonAddressCNP2.street3}}</Town>
+            <County>{{registeredPersonAddressCNP2.street4}}</County>
+            <PostCode>{{registeredPersonAddressCNP2.postcode}}</PostCode>
+            <LocalAuthorityDescription></LocalAuthorityDescription>
+            <LocalAuthorityCode></LocalAuthorityCode>
+          </SettingAddress>
+        </Provider>
+        {{/if}}
+        {{#if settingNameCNPAlreadyRegSRN}}
+        <Provider>
+          <RegistrationId>{{settingURNAlreadyRegSRN_regid}}</RegistrationId>
+          <ProvisionTypeId>{{match ^('0') => '33'; ('1') => '32'; (*) => '99'^ (stripCommas serviceType)}}</ProvisionTypeId>
+          <SettingName>{{settingURNAlreadyRegSRN}}</SettingName>
+          <URNReferenceNumber>{{settingNameCNPAlreadyRegSRN}}</URNReferenceNumber>
+          <SettingAddress>
+            <Address1>{{settingAddressCNPAlreadyRegSRN.street1}}</Address1>
+            <Address2>{{settingAddressCNPAlreadyRegSRN.street2}}</Address2>
+            <Town>{{settingAddressCNPAlreadyRegSRN.street3}}</Town>
+            <County>{{settingAddressCNPAlreadyRegSRN.street4}}</County>
+            <PostCode>{{settingAddressCNPAlreadyRegSRN.postcode}}</PostCode>
+            <LocalAuthorityDescription></LocalAuthorityDescription>
+            <LocalAuthorityCode></LocalAuthorityCode>
+          </SettingAddress>
+        </Provider>
+        {{#each settingURNAlreadyRegSRN2}}
+        <Provider>
+          <RegistrationId>{{settingURNAlreadyRegSRN2_regid}}</RegistrationId>
+          <ProvisionTypeId>{{match ^('0') => '33'; ('1') => '32'; (*) => '99'^ (stripCommas serviceType)}}</ProvisionTypeId>
+          <SettingName>{{settingURNAlreadyRegSRN2}}</SettingName>
+          <URNReferenceNumber>{{lookup @root.settingNameSRNAdditional @index}}</URNReferenceNumber>
+          <SettingAddress>
+            <Address1>{{lookup @root.settingAddressSRNAdditional.street1 @index}}</Address1>
+            <Address2>{{lookup @root.settingAddressSRNAdditional.street2 @index}}</Address2>
+            <Town>{{lookup @root.settingAddressSRNAdditional.street3 @index}}</Town>
+            <County>{{lookup @root.settingAddressSRNAdditional.street4 @index}}</County>
+            <PostCode>{{lookup @root.settingAddressSRNAdditional.postcode @index}}</PostCode>
+            <LocalAuthorityDescription></LocalAuthorityDescription>
+            <LocalAuthorityCode></LocalAuthorityCode>
+          </SettingAddress>
+        </Provider>
+        {{/each}}
+        {{/if}}
+        <ConnectionWithRegistration>
+          {{#if soleTrader}}
+          <SoleOwnerCC>{{match ^('0') => 'Yes'; ('1') => 'No'; (*) => 'Null'^ (stripCommas soleTrader)}}</SoleOwnerCC>
+          {{/if}}
+          {{#if provideChildcareMainPurpose}}
+          <MakingUpOrgCC>{{match ^('0') => 'Yes'; ('1') => 'No'; (*) => 'Null'^ (stripCommas provideChildcareMainPurpose)}}</MakingUpOrgCC>
+          {{/if}}
+          {{#if roleInOrganisationNonDomestic}}
+          <RoleIsDirector>{{match ^('0') => 'Yes'; (*) => 'Null'^ (stripCommas roleInOrganisationNonDomestic)}}</RoleIsDirector>
+          {{/if}}
+          {{#if roleInOrganisationNonDomestic}}
+          <RoleIsPartner>{{match ^('1') => 'Yes'; (*) => 'Null'^ (stripCommas roleInOrganisationNonDomestic)}}</RoleIsPartner>
+          {{/if}}
+          {{#if roleInOrganisationNonDomestic}}
+          <RoleIsCommitteeMember>{{match ^('2') => 'Yes'; (*) => 'Null'^ (stripCommas roleInOrganisationNonDomestic)}}</RoleIsCommitteeMember>
+          {{/if}}
+          {{#if roleInOrganisationNonDomestic}}
+          <RoleIsOther>{{match ^('3') => 'Yes'; (*) => 'Null'^ (stripCommas roleInOrganisationNonDomestic)}}</RoleIsOther>
+          {{/if}}
+          <RoleOther>{{roleInOrganisationNonDomestic.revealed.specifyOther}}</RoleOther>
+          {{#if nominatedIndividual}}
+          <NominatedPersonForOrg>{{match ^('0') => 'Yes'; ('1') => 'No'; (*) => 'Null'^ (stripCommas nominatedIndividual)}}</NominatedPersonForOrg>
+          {{/if}}
+          {{#if manageDayToDay}}
+          <DirectlyManage>{{match ^('0') => 'Yes'; ('1') => 'No'; (*) => 'Null'^ (stripCommas manageDayToDay)}}</DirectlyManage>
+          {{/if}}
+          {{#if adultChildRatio}}
+          <MemberOfStaff>{{match ^('0') => 'Yes'; ('1') => 'No'; (*) => 'Null'^ (stripCommas adultChildRatio)}}</MemberOfStaff>
+          {{/if}}
+          {{#if lookingAfter}}
+          <LookingAfterAsCC>{{match ^('0') => 'Yes'; ('1') => 'No'; (*) => 'Null'^ (stripCommas lookingAfter)}}</LookingAfterAsCC>
+          {{/if}}
+          {{#if notLookingAfter}}
+          <AtCCPremises>{{match ^('0') => 'Yes'; ('1') => 'No'; (*) => 'Null'^ (stripCommas notLookingAfter)}}</AtCCPremises>
+          {{/if}}
+        </ConnectionWithRegistration>
+        <Personal>
+          <IndividualId>{{indId}}</IndividualId>
+          <Title>{{match ^('0') => 'Mr'; ('1') => 'Mrs'; ('2') => 'Miss'; ('3') => 'Ms'; ('4') => 'Other'; ^ (stripCommas title)}}</Title>
+          <OtherTitle>{{title.revealed.personOtherTitle}}</OtherTitle>
+          <FirstName>{{firstName}}</FirstName>
+          <MiddleNames></MiddleNames>
+          <Surname>{{surname}}</Surname>
+          <SurnameAtBirth>{{surnameAtBirth}}</SurnameAtBirth>
+          <AnyOtherNames>{{match ^('0') => 'Yes'; ('1') => 'No'; (*) => 'Null'^ (stripCommas anyOtherNames)}}</AnyOtherNames>
+          <OtherNames>
+            {{#each prevSurname}}
+            <OtherName>
+              <FirstName>{{lookup @root.prevFirstName @index}}</FirstName>
+              <Surname>{{.}}</Surname>
+              <DateFrom>{{lookup @root.dateKnownFrom.year @index}}-{{lookup @root.dateKnownFrom.month @index}}-{{lookup @root.dateKnownFrom.day @index}}T00:00:00</DateFrom>
+              <DateTo>{{lookup @root.dateKnownUntil.year @index}}-{{lookup @root.dateKnownUntil.month @index}}-{{lookup @root.dateKnownUntil.day @index}}T00:00:00</DateTo>
+              <ID>{{@index}}</ID>
+            </OtherName>
+            {{/each}}
+          </OtherNames>
+          <DateOfBirth>{{lookup @root.DoB.year @index}}-{{lookup @root.DoB.month @index}}-{{lookup @root.DoB.day @index}}T00:00:00</DateOfBirth>
+          <PlaceOfBirthTown></PlaceOfBirthTown>
+          <PlaceOfBirthCounty></PlaceOfBirthCounty>
+          <BornInUK>{{match ^('0') => 'Yes'; ('1') => 'No'; (*) => 'Null'^ (stripCommas bornUkNo)}}</BornInUK>
+          <OtherCountry>{{bornUkNo.revealed.bornUkSpecify}}</OtherCountry>
+          <Nationality></Nationality>
+          <Sex>U</Sex>
+          <LivedOutsideUK>{{match ^('0') => 'Yes'; ('1') => 'No'; (*) => 'Null'^ (stripCommas livedOutsideUK)}}</LivedOutsideUK>
+          <CurrentAddressDetails>
+            <Address1>{{currentAddress.street1}}</Address1>
+            <Address2>{{currentAddress.street2}}</Address2>
+            <Town>{{currentAddress.street3}}</Town>
+            <County>{{currentAddress.street4}}</County>
+            <PostCode>{{currentAddress.postcode}}</PostCode>
+            <LocalAuthorityDescription></LocalAuthorityDescription>
+            <LocalAuthorityCode></LocalAuthorityCode>
+            {{#if sinceWhenCurrentAddress}}
+            <FromDate>{{sinceWhenCurrentAddress}}</FromDate>
+            {{/if}}
+          </CurrentAddressDetails>
+          <AnyOtherAddresses>{{match ^('0') => 'Yes'; ('1') => 'No'; (*) => 'Null'^ (stripCommas otherAddresses)}}</AnyOtherAddresses>
+          <OtherAddresses>
+            {{#each uKAddresses.street1}}
+            <Address>
+              <ID>{{@index}}</ID>
+              <Address1>{{.}}</Address1>
+              <Address2>{{lookup @root.uKAddresses.street2 @index}}</Address2>
+              <Town>{{lookup @root.uKAddresses.street3 @index}}</Town>
+              <County>{{lookup @root.uKAddresses.street4 @index}}</County>
+              <PostCode>{{lookup @root.uKAddresses.postcode @index}}</PostCode>
+              <LocalAuthorityDescription></LocalAuthorityDescription>
+              <LocalAuthorityCode></LocalAuthorityCode>
+              {{#with (lookup @root.dateMovedInUK @index) as |date|}}
+              {{#if date}}
+              <FromDate>{{lookup @root.date.year @index}}-{{lookup @root.date.month @index}}-{{lookup @root.date.day @index}}T00:00:00</FromDate>
+              {{/if}}
+              {{/with}}
+              {{#with (lookup @root.dateMovedOutUK @index) as |date|}}
+              {{#if date}}
+              <ToDate>{{lookup @root.date.year @index}}-{{lookup @root.date.month @index}}-{{lookup @root.date.day @index}}T00:00:00</ToDate>
+              {{/if}}
+              {{/with}}
+            </Address>
+            {{/each}}
+          </OtherAddresses>
+          <DisclosureNumber>{{numberDBSNew}}</DisclosureNumber>
+        </Personal>
+        <Contact>
+          <MainContactNumber>Unknown</MainContactNumber>
+          <EmailAddress>{{email}}</EmailAddress>
+          <DaytimeContactNumber>{{phoneNumber}}</DaytimeContactNumber>
+          <MobileContactNumber></MobileContactNumber>
+        </Contact>
+        <PastRegistration>
+          {{#if registeredToProvideChildcare}}
+          <OfstedReg>{{match ^('0') => 'Yes'; ('1') => 'No'; (*) => 'Null'^ (stripCommas registeredToProvideChildcare)}}</OfstedReg>
+          {{/if}}
+          <OtherRegBodyUK>Null</OtherRegBodyUK>
+          {{#if }}
+          <OtherRegBodyEU>Null</OtherRegBodyEU>
+          {{/if}}
+          {{#if }}
+          <ResidentEnglandFiveYears>Null</ResidentEnglandFiveYears>
+          {{/if}}
+          {{#if livedOrWorkedMilitaryBaseOutsideEngland}}
+          <ResidentUkOverseasFiveYears>{{match ^('0') => 'Yes'; ('1') => 'No'; (*) => 'Null'^ (stripCommas livedOrWorkedMilitaryBaseOutsideEngland)}}</ResidentUkOverseasFiveYears>
+          {{/if}}
+          {{#if }}
+          <InArmedForces>Null</InArmedForces>
+          {{/if}}
+        </PastRegistration>
+        <PreviousExperience>
+          <RelaventTrainQual>{{match ^('0') => 'Yes'; ('1') => 'No'; (*) => 'Null'^ (stripCommas childcareTraining)}}</RelaventTrainQual>
+          <TrainQualDetails>
+            {{#each titleOfCourse}}
+            <TrainQual>
+              <CourseTitle>{{.}}</CourseTitle>
+              {{#with (lookup @root.relevantFromDate @index) as |dateFrom|}}
+              {{#if dateFrom}}
+              <DateFrom>{{lookup @root.dateFrom.year @index}}-{{lookup @root.dateFrom.month @index}}-{{lookup @root.dateFrom.day @index}}T00:00:00</DateFrom>
+              {{/if}}
+              {{/with}}
+              {{#with (lookup @root.relevantToDate @index) as |dateTo|}}
+              {{#if dateTo}}
+              <DateTo>{{lookup @root.dateTo.year @index}}-{{lookup @root.dateTo.month @index}}-{{lookup @root.dateTo.day @index}}T00:00:00</DateTo>
+              {{/if}}
+              {{/with}}
+              {{#with (lookup @root.qualification @index) as |qual|}}
+              {{#if qual}}
+              <Qualification>{{lookup @root.qualification @index}}</Qualification>
+              {{/if}}
+              {{/with}}
+              {{#with (lookup @root.dateGained @index) as |dateGain|}}
+              {{#if dateGain}}
+              <DateGained>{{lookup @root.dateGain.year @index}}-{{lookup @root.dateGain.month @index}}-{{lookup @root.dateGain.day @index}}T00:00:00</DateGained>
+              {{/if}}
+              {{/with}}
+              {{#with (lookup @root.awardingBody @index) as |awardBod|}}
+              {{#if awardBod}}
+              <AwardingBody>{{lookup @root.awardingBody @index}}</AwardingBody>
+              {{/if}}
+              {{/with}}
+              <ID>{{@index}}</ID>
+            </TrainQual>
+            {{/each}}
+          </TrainQualDetails>
+          <AnyFirstAidCert>Null</AnyFirstAidCert>
+          <LocalAuthorityTrainingOrgName></LocalAuthorityTrainingOrgName>
+        </PreviousExperience>
+        <Health>
+          <AnyIllnesses>{{match ^('0') => 'Yes'; ('1') => 'No'; (*) => 'Null'^ (stripCommas seriousIllness)}}</AnyIllnesses>
+          <AnyAdmissions>{{match ^('0') => 'Yes'; ('1') => 'No'; (*) => 'Null'^ (stripCommas hospitalAdmission)}}</AnyAdmissions>
+          <Treatment>{{match ^('0') => 'Yes'; ('1') => 'No'; (*) => 'Null'^ (stripCommas currentlyBeingTreated)}}</Treatment>
+        </Health>
+        <Referees>
+          <FirstReferenceAddress>
+            <Title>{{match ^('0') => 'Mr'; ('1') => 'Mrs'; ('2') => 'Miss'; ('3') => 'Ms'; ('4') => 'Other'; ^ (stripCommas referee2Title)}}</Title>
+            <OtherTitle>{{referee2Title.revealed.referee2TitleOther}}</OtherTitle>
+            <FirstName>{{referee1FirstName}}</FirstName>
+            <Surname>{{referee1Surname}}</Surname>
+            <ReferenceAddress>
+              <Address1>{{referee1Address.street1}}</Address1>
+              <Address2>{{referee1Address.street2}}</Address2>
+              <Town>{{referee1Address.street3}}</Town>
+              <County>{{referee1Address.street4}}</County>
+              <PostCode>{{referee1Address.postcode}}</PostCode>
+              <LocalAuthorityDescription></LocalAuthorityDescription>
+              <LocalAuthorityCode></LocalAuthorityCode>
+            </ReferenceAddress>
+            <TelephoneNumber>{{referee1Phone}}</TelephoneNumber>
+            <Email>{{referee1Email}}</Email>
+            <Relationship>{{referee1HowKnown}}</Relationship>
+            <ReferenceEnclosed>{{match ^('0') => 'Yes'; ('1') => 'No'; (*) => 'Null'^ (stripCommas referee1ReferenceEnclosed)}}</ReferenceEnclosed>
+            <TimeKnownMonths></TimeKnownMonths>
+            <TimeKnownYears>{{referee2SinceWhenKnownYears_copy_1}}</TimeKnownYears>
+          </FirstReferenceAddress>
+          <SecondReferenceAddress>
+            <Title>{{match ^('0') => 'Mr'; ('1') => 'Mrs'; ('2') => 'Miss'; ('3') => 'Ms'; ('4') => 'Other'; ^ (stripCommas referee2Title_copy_1)}}</Title>
+            <OtherTitle>{{referee2Title_copy_1.revealed.referee2TitleOther_copy_1}}</OtherTitle>
+            <FirstName>{{referee2FirstName}}</FirstName>
+            <Surname>{{referee2Surname}}</Surname>
+            <ReferenceAddress>
+              <Address1>{{referee2Address.street1}}</Address1>
+              <Address2>{{referee2Address.street2}}</Address2>
+              <Town>{{referee2Address.street3}}</Town>
+              <County>{{referee2Address.street4}}</County>
+              <PostCode>{{referee2Address.postcode}}</PostCode>
+              <LocalAuthorityDescription></LocalAuthorityDescription>
+              <LocalAuthorityCode></LocalAuthorityCode>
+            </ReferenceAddress>
+            <TelephoneNumber>{{referee2Phone}}</TelephoneNumber>
+            <Email>{{referee2Email}}</Email>
+            <Relationship>{{referee2HowKnown}}</Relationship>
+            <ReferenceEnclosed>{{referee2ReferenceEnclosed}}</ReferenceEnclosed>
+            <TimeKnownMonths></TimeKnownMonths>
+            <TimeKnownYears>{{referee2SinceWhenKnownYears}}</TimeKnownYears>
+          </SecondReferenceAddress>
+        </Referees>
+        <SuitabilityAndDisqualification>
+          {{#if circumstancesSuitabilityDisqualification}}
+          <CircumApply>{{match ^('0') => 'Yes'; ('1') => 'No'; (*) => 'Null'^ (stripCommas circumstancesSuitabilityDisqualification)}}</CircumApply>
+          {{/if}}
+          <CircumApplyDetails></CircumApplyDetails>
+          {{#if }}
+          <Confirm></Confirm>
+          {{/if}}
+          {{#if involvedSocialServicesOwnChildren}}
+          <SocialService>{{match ^('0') => 'Yes'; ('1') => 'No'; (*) => 'Null'^ (stripCommas involvedSocialServicesOwnChildren)}}</SocialService>
+          {{/if}}
+          <SocialServiceDetails></SocialServiceDetails>
+          {{#if criminalOffences}}
+          <CriminalConviction>{{match ^('0') => 'Yes'; ('1') => 'No'; (*) => 'Null'^ (stripCommas criminalOffences)}}</CriminalConviction>
+          {{/if}}
+        </SuitabilityAndDisqualification>
+        <ConsentAndDeclaration>
+          <AgreeConsent>1</AgreeConsent>
+          <DateOfBirth>{{lookup @root.DoB.year @index}}-{{lookup @root.DoB.month @index}}-{{lookup @root.DoB.day @index}}T00:00:00</DateOfBirth>
+        </ConsentAndDeclaration>
+      </EY2>
+    </FormType>
+    <FormID>1</FormID>
+    <CreatedBy>gForm</CreatedBy>
+    <CreatedDate>{{currentTimestamp}}</CreatedDate>
+    <Source>Online</Source>
+    <ParentID>0</ParentID>
+    <URN>{{either registeredPersonReferenceCNP settingNameCNPAlreadyRegSRN}}</URN>
+    <FormMetaData>
+    </FormMetaData>
+  </ApplicationForm>
+</ApplicationForms>
