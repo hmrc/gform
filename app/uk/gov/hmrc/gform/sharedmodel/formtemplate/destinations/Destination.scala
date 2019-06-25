@@ -63,6 +63,7 @@ object Destination {
     uri: String,
     method: HttpMethod,
     payload: Option[String],
+    payloadType: TemplateType,
     includeIf: String,
     failOnError: Boolean)
       extends Destination
@@ -210,6 +211,7 @@ case class UploadableHandlebarsHttpApiDestination(
   uri: String,
   method: HttpMethod,
   payload: Option[String],
+  payloadType: Option[TemplateType],
   convertSingleQuotes: Option[Boolean],
   includeIf: Option[String],
   failOnError: Option[Boolean]) {
@@ -221,7 +223,15 @@ case class UploadableHandlebarsHttpApiDestination(
       cvuri <- addErrorInfo(id, "uri")(condition(convertSingleQuotes, uri))
     } yield
       Destination
-        .HandlebarsHttpApi(id, profile, cvuri, method, cvp, cvii.getOrElse(true.toString), failOnError.getOrElse(true))
+        .HandlebarsHttpApi(
+          id,
+          profile,
+          cvuri,
+          method,
+          cvp,
+          payloadType.getOrElse(TemplateType.JSON),
+          cvii.getOrElse(true.toString),
+          failOnError.getOrElse(true))
 }
 
 object UploadableHandlebarsHttpApiDestination {

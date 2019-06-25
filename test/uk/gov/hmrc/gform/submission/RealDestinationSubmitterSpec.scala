@@ -375,8 +375,8 @@ class RealDestinationSubmitterSpec extends Spec {
       model: HandlebarsTemplateProcessorModel,
       requiredResult: Boolean): SubmitterParts[F] = {
       (handlebarsTemplateProcessor
-        .apply(_: String, _: HandlebarsTemplateProcessorModel))
-        .expects(expression, model)
+        .apply(_: String, _: HandlebarsTemplateProcessorModel, _: TemplateType))
+        .expects(expression, model, TemplateType.Plain)
         .returning(requiredResult.toString)
       this
     }

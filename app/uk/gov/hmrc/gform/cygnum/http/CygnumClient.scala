@@ -20,8 +20,9 @@ import cats.Monad
 import com.softwaremill.sttp.quick.{ emptyRequest, _ }
 import com.softwaremill.sttp.{ Id, RequestT, Response }
 import uk.gov.hmrc.gform.config.CygnumConfig
-import uk.gov.hmrc.gform.cygnum.ServiceName
+import uk.gov.hmrc.gform.cygnum.CygnumTemplate._
 import uk.gov.hmrc.gform.cygnum.soap.ProxyCode.buildPayload
+import uk.gov.hmrc.gform.cygnum.{ GetData, SendData, ServiceName }
 import uk.gov.hmrc.http.HttpResponse
 
 import scala.xml.XML
@@ -29,16 +30,25 @@ import scala.xml.XML
 class CygnumClient[F[_]] extends CygnumConfig {
 
   def sendRequest(serviceName: ServiceName, payload: String)(implicit M: Monad[F]): F[HttpResponse] = {
+    val requestBody = buildPayload(XML.loadString(wrapper(serviceName, payload)), serviceName).getOrElse("")
+
     val soapRequest: RequestT[Id, String, Nothing] = emptyRequest
       .post(uri"$cygnumURL")
-      .body(buildPayload(XML.loadString(payload), serviceName).getOrElse(""))
+      .body(requestBody)
       .header("Content-Type", "application/soap+xml; charset=utf-8", true)
 
     val response: Id[Response[String]] = soapRequest.send()
 
-    M.pure(response.body match {
-      case Right(body) => HttpResponse(response.code, responseString = Some(body))
-      case Left(_)     => HttpResponse(response.code, None)
-    })
+    println(s"Response ${response.code}")
+
+    M.pure(response.body.fold(_ => buildResponse(response, None), body => buildResponse(response, Some(body))))
+  }
+
+  private def buildResponse(response: Response[String], body: Option[String]) =
+    HttpResponse(response.code, responseString = body)
+
+  private def wrapper(serviceName: ServiceName, payload: String): String = serviceName match {
+    case GetData  => urnTemplate
+    case SendData => formSubmissionTemplate(payload)
   }
 }

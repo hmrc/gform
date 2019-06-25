@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.submission.handlebars
 import cats.MonadError
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.{ Possible, Spec, possibleMonadError }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, HandlebarsTemplateProcessorModel, HttpMethod, ProfileName }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, PrimitiveGen }
 import uk.gov.hmrc.gform.wshttp.HttpClient
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
@@ -36,7 +36,7 @@ class HandlebarsHttpApiSubmitterSpec extends Spec {
       val processorModel = HandlebarsTemplateProcessorModel("")
       val expectedResponse = mock[HttpResponse]
 
-      sp.expectTemplateProcessorApplication(destination.uri, processorModel, expectedUri)
+      sp.expectTemplateProcessorApplication(destination.uri, processorModel, TemplateType.Plain, expectedUri)
         .expectHttpGet(destination.profile, expectedUri, Right(expectedResponse))
 
       sp.submitter.apply(destination, processorModel) shouldBe Right(expectedResponse)
@@ -55,8 +55,8 @@ class HandlebarsHttpApiSubmitterSpec extends Spec {
       val processorModel = HandlebarsTemplateProcessorModel("")
       val expectedResponse = mock[HttpResponse]
 
-      sp.expectTemplateProcessorApplication(destination.uri, processorModel, expectedUri)
-        .expectTemplateProcessorApplication(payload, processorModel, expectedBody)
+      sp.expectTemplateProcessorApplication(destination.uri, processorModel, TemplateType.Plain, expectedUri)
+        .expectTemplateProcessorApplication(payload, processorModel, destination.payloadType, expectedBody)
         .expectHttpPostJson(destination.profile, expectedBody, expectedUri, Right(expectedResponse))
 
       sp.submitter.apply(destination, processorModel) shouldBe Right(expectedResponse)
@@ -70,7 +70,7 @@ class HandlebarsHttpApiSubmitterSpec extends Spec {
         val processorModel = HandlebarsTemplateProcessorModel("")
         val expectedResponse = mock[HttpResponse]
 
-        sp.expectTemplateProcessorApplication(destination.uri, processorModel, expectedUri)
+        sp.expectTemplateProcessorApplication(destination.uri, processorModel, TemplateType.Plain, expectedUri)
           .expectHttpPostJson(destination.profile, "", expectedUri, Right(expectedResponse))
 
         sp.submitter.apply(destination, processorModel) shouldBe Right(expectedResponse)
@@ -89,8 +89,8 @@ class HandlebarsHttpApiSubmitterSpec extends Spec {
       val processorModel = HandlebarsTemplateProcessorModel("")
       val expectedResponse = mock[HttpResponse]
 
-      sp.expectTemplateProcessorApplication(destination.uri, processorModel, expectedUri)
-        .expectTemplateProcessorApplication(payload, processorModel, expectedBody)
+      sp.expectTemplateProcessorApplication(destination.uri, processorModel, TemplateType.Plain, expectedUri)
+        .expectTemplateProcessorApplication(payload, processorModel, destination.payloadType, expectedBody)
         .expectHttpPutJson(destination.profile, expectedBody, expectedUri, Right(expectedResponse))
 
       sp.submitter.apply(destination, processorModel) shouldBe Right(expectedResponse)
@@ -104,7 +104,7 @@ class HandlebarsHttpApiSubmitterSpec extends Spec {
         val processorModel = HandlebarsTemplateProcessorModel("")
         val expectedResponse = mock[HttpResponse]
 
-        sp.expectTemplateProcessorApplication(destination.uri, processorModel, expectedUri)
+        sp.expectTemplateProcessorApplication(destination.uri, processorModel, TemplateType.Plain, expectedUri)
           .expectHttpPutJson(destination.profile, "", expectedUri, Right(expectedResponse))
 
         sp.submitter.apply(destination, processorModel) shouldBe Right(expectedResponse)
@@ -119,10 +119,11 @@ class HandlebarsHttpApiSubmitterSpec extends Spec {
     def expectTemplateProcessorApplication(
       in: String,
       model: HandlebarsTemplateProcessorModel,
+      templateType: TemplateType,
       out: String): SubmitterParts[F] = {
       (templateProcessor
-        .apply(_: String, _: HandlebarsTemplateProcessorModel))
-        .expects(in, model)
+        .apply(_: String, _: HandlebarsTemplateProcessorModel, _: TemplateType))
+        .expects(in, model, templateType)
         .returning(out)
 
       this

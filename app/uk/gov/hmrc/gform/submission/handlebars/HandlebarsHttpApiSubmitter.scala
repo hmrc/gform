@@ -30,7 +30,7 @@ trait HandlebarsHttpApiSubmitter[F[_]] {
 
 class RealHandlebarsHttpApiSubmitter[F[_]](
   httpClients: Map[ProfileName, HttpClient[F]],
-  handlebarsTemplateProcessor: HandlebarsTemplateProcessor = new RealHandlebarsTemplateProcessor)(
+  handlebarsTemplateProcessor: HandlebarsTemplateProcessor = RealHandlebarsTemplateProcessor)(
   implicit me: MonadError[F, String])
     extends HandlebarsHttpApiSubmitter[F] {
 
@@ -39,17 +39,17 @@ class RealHandlebarsHttpApiSubmitter[F[_]](
     RealHandlebarsHttpApiSubmitter
       .selectHttpClient(destination.profile, httpClients)
       .flatMap { httpClient =>
-        val uri = handlebarsTemplateProcessor(destination.uri, model)
+        val uri = handlebarsTemplateProcessor(destination.uri, model, TemplateType.Plain)
         destination.method match {
           case HttpMethod.GET => httpClient.get(uri)
           case HttpMethod.POST =>
             val body = destination.payload.fold("") {
-              handlebarsTemplateProcessor(_, model)
+              handlebarsTemplateProcessor(_, model, destination.payloadType)
             }
             httpClient.post(uri, body)
           case HttpMethod.PUT =>
             val body = destination.payload.fold("") {
-              handlebarsTemplateProcessor(_, model)
+              handlebarsTemplateProcessor(_, model, destination.payloadType)
             }
             httpClient.put(uri, body)
         }

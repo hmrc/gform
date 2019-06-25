@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.cygnum
+package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
+import play.api.libs.json.Format
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.ADTFormat
 
-object GetUrnTemplate {
+sealed trait TemplateType extends Product with Serializable
 
-  val urnTemplate: String =
-    s"""<?xml version="1.0" encoding="UTF-8"?>
-       |<GetData xmlns="http://tempuri.org/">
-       |    <Service>GetNewUrn</Service>
-       |    <InputParameters>&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;&lt;Parameters&gt;&lt;IDs&gt;&lt;ID&gt;SC&lt;/ID&gt;&lt;/IDs&gt;&lt;/Parameters&gt;
-       |    </InputParameters>
-       |</GetData>
-     """.stripMargin
+object TemplateType {
+  case object JSON extends TemplateType
+  case object XML extends TemplateType
+  case object Plain extends TemplateType
+
+  implicit val format: Format[TemplateType] =
+    ADTFormat.formatEnumeration("JSON" -> JSON, "XML" -> XML, "PLAIN" -> Plain)
 }

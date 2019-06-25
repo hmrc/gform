@@ -35,7 +35,7 @@ import org.w3c.dom.Document
 import org.xml.sax.InputSource
 import scalaz.{ -\/, \/, \/- }
 import uk.gov.hmrc.gform.config.CygnumConfig
-import uk.gov.hmrc.gform.cygnum.{ GetData, GetUrnTemplate, SendData, ServiceName }
+import uk.gov.hmrc.gform.cygnum.{ CygnumTemplate, GetData, SendData, ServiceName }
 
 import scala.util.{ Failure, Success, Try }
 import scala.xml.{ NodeSeq, XML }
