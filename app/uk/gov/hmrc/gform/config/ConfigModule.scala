@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.gform.config
 
+import java.net.URLDecoder
+
 import com.typesafe.config.{ ConfigFactory, Config => TypeSafeConfig }
 import net.ceedubs.ficus.Ficus._
 import play.api.Configuration
@@ -119,7 +121,9 @@ class ConfigModule(playComponents: PlayComponents) {
       getString(destinationServiceKey, "basePath").getOrElse("")
 
     private def httpHeaders(destinationServiceKey: String): Map[String, String] =
-      asStringStringMap(s"${qualifiedDestinationServiceKey(destinationServiceKey)}.httpHeaders").getOrElse(Map.empty)
+      asStringStringMap(s"${qualifiedDestinationServiceKey(destinationServiceKey)}.httpHeaders")
+        .getOrElse(Map.empty)
+        .mapValues(URLDecoder.decode(_, "UTF-8"))
 
     private def profileName(destinationServiceKey: String): ProfileName =
       ProfileName(getString(destinationServiceKey, "name").getOrElse(destinationServiceKey))
