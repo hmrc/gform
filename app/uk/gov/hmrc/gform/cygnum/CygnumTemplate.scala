@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.gform.cygnum
 
-import java.time.LocalDateTime
-
 object CygnumTemplate {
 
   val urnTemplate: String =
@@ -29,15 +27,11 @@ object CygnumTemplate {
        |</GetData>
      """.stripMargin
 
-  def formSubmissionTemplate(payload: String): String = {
-    val startDateTime = LocalDateTime.now
-
+  def formSubmissionTemplate(payload: String): String =
     s"""<SendData xmlns="http://tempuri.org/">
        |  <Service>SendApplicationForms</Service>
-       |  <InputParameters>&lt;?xml version="1.0" encoding="utf-8"?&gt;&lt;Parameters&gt;&lt;DateRange&gt;&lt;StartDateTime&gt;$startDateTime&lt;/StartDateTime&gt;&lt;EndDateTime&gt;${startDateTime
-         .plusMinutes(5)}&lt;/EndDateTime&gt;&lt;/DateRange&gt;&lt;/Parameters&gt;</InputParameters>
-       |$payload
-       |</SendData>
-     """.stripMargin
-  }
+       |  <InputParameters>&lt;?xml version="1.0" encoding="utf-8"?&gt;&lt;Parameters&gt;&lt;DateRange&gt;&lt;StartDateTime&gt;2019-06-11T08:32:50&lt;/StartDateTime&gt;&lt;EndDateTime&gt;2019-06-11T17:32:50&lt;/EndDateTime&gt;&lt;/DateRange&gt;&lt;/Parameters&gt;</InputParameters>
+       |<Data>
+       |${payload.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")}</Data>
+       |</SendData>""".stripMargin
 }

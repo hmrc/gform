@@ -39,7 +39,9 @@ class CygnumClient[F[_]] extends CygnumConfig {
 
     val response: Id[Response[String]] = soapRequest.send()
 
-    println(s"Response ${response.code}")
+//    println(s"\n\n\n\nRequest:\n$requestBody\n\n\n\n\n")
+
+    println(s"\n\n\n\nResponse:\n$response\n\n\n\n\n")
 
     M.pure(response.body.fold(_ => buildResponse(response, None), body => buildResponse(response, Some(body))))
   }
