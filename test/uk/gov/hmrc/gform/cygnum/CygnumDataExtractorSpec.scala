@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.cygnum
 import cats.Id
 import uk.gov.hmrc.gform.Spec
 
-class CygnumDataExtractorTest extends Spec {
+class CygnumDataExtractorSpec extends Spec {
 
   it should "extract URN from cygnum response" in new CygnumDataExtractor[Id](new CygnumDataExtractorProgram[Id]) {
     extractUrn(response) shouldBe "2502244"
