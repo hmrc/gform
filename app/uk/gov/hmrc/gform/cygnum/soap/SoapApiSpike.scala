@@ -25,7 +25,7 @@ import scala.io.Source
 import scala.util.Try
 
 object SoapApiSpike extends App {
-
+  /*
   private val client = new CygnumClient[Try]
 
   private val hardCodedPayloadFromTemplate: String =
@@ -37,4 +37,5 @@ object SoapApiSpike extends App {
     formResponse <- client.sendRequest(SendData, hardCodedPayloadFromTemplate)
     _ = println(s"Status: ${formResponse.status}\nBody: ${formResponse.body.replaceAll(">", s">\n")}")
   } yield ()
+ */
 }

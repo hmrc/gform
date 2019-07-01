@@ -71,14 +71,17 @@ object HttpClient {
         httpRequest(underlying.put(_, _)(addContentTypeHeader(hc, contentType)), uri, jsonString)(Some(Json.parse))
     }
 
-    def cygnum(implicit monadError: MonadError[F, String]): HttpClient[F] = new HttpClient[F] {
+    def xml(implicit monadError: MonadError[F, String]): HttpClient[F] = new HttpClient[F] {
+      private val contentType = "application/xml"
 
-      override def get(uri: String)(implicit hc: HeaderCarrier): F[HttpResponse] = underlying.get(uri)
+      override def get(uri: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
+        underlying.get(uri)
 
       def post(uri: String, xmlString: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
-        new CygnumClient[F].sendRequest(SendData, xmlString)
+        httpRequest(underlying.post(_, _)(addContentTypeHeader(hc, contentType)), uri, xmlString)(None)
 
-      def put(uri: String, xmlString: String)(implicit hc: HeaderCarrier): F[HttpResponse] = ???
+      def put(uri: String, xmlString: String)(implicit hc: HeaderCarrier): F[HttpResponse] =
+        httpRequest(underlying.put(_, _)(addContentTypeHeader(hc, contentType)), uri, xmlString)(None)
     }
   }
 

@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import play.api.libs.json.{ JsValue, Writes }
-import uk.gov.hmrc.gform.submission.handlebars.PayloadType
 package object destinations {
   def createUploadableJson(destination: Destination): String = destination match {
     case composite: Destination.Composite =>

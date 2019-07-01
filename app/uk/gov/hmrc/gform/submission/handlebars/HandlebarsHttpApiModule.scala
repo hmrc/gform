@@ -33,16 +33,11 @@ class HandlebarsHttpApiModule(wSHttpModule: WSHttpModule, configModule: ConfigMo
     configModule
       .DestinationsServicesConfig()
       .mapValues { profileConfiguration =>
-        val client = rootHttpClient
+        rootHttpClient
           .buildUri(uri => appendUriSegment(profileConfiguration.baseUrl, uri))
           .buildHeaderCarrier { hc =>
             hc.copy(extraHeaders = profileConfiguration.httpHeaders.toSeq ++ hc.extraHeaders)
           }
-
-        profileConfiguration.payloadContentType match {
-          case PayloadType.JSON   => client.json
-          case PayloadType.CYGNUM => client.cygnum
-        }
       }
 
   private def appendUriSegment(base: String, toAppend: String) =

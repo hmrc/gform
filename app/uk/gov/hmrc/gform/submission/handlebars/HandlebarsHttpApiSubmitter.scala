@@ -37,7 +37,7 @@ class RealHandlebarsHttpApiSubmitter[F[_]](
   def apply(destination: Destination.HandlebarsHttpApi, model: HandlebarsTemplateProcessorModel)(
     implicit hc: HeaderCarrier): F[HttpResponse] =
     RealHandlebarsHttpApiSubmitter
-      .selectHttpClient(destination.profile, httpClients)
+      .selectHttpClient(destination.profile, destination.payloadType, httpClients)
       .flatMap { httpClient =>
         val uri = handlebarsTemplateProcessor(destination.uri, model, TemplateType.Plain)
         destination.method match {
@@ -57,11 +57,21 @@ class RealHandlebarsHttpApiSubmitter[F[_]](
 }
 
 object RealHandlebarsHttpApiSubmitter {
-  def selectHttpClient[F[_]](profile: ProfileName, httpClients: Map[ProfileName, HttpClient[F]])(
-    implicit me: MonadError[F, String]): F[HttpClient[F]] =
+  def selectHttpClient[F[_]](
+    profile: ProfileName,
+    payloadType: TemplateType,
+    httpClients: Map[ProfileName, HttpClient[F]])(implicit me: MonadError[F, String]): F[HttpClient[F]] =
     httpClients
       .get(profile)
       .fold(me.raiseError[HttpClient[F]](
         s"No HttpClient found for profile ${profile.name}. Have HttpClient for ${httpClients.keySet.map(_.name)}"))(
-        _.pure)
+        (c: HttpClient[F]) => wrapHttpClient(c, payloadType).pure)
+
+  private def wrapHttpClient[F[_]](http: HttpClient[F], templateType: TemplateType)(
+    implicit me: MonadError[F, String]): HttpClient[F] =
+    templateType match {
+      case TemplateType.JSON  => http.json
+      case TemplateType.XML   => http.xml
+      case TemplateType.Plain => http
+    }
 }

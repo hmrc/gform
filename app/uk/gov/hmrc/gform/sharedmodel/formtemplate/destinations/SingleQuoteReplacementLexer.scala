@@ -50,7 +50,7 @@ object SingleQuoteReplacementLexer extends RegexParsers {
   def nonStringLiteral: Parser[String] = raw"""[^'^]+""".r
 
   private def tokens: Parser[List[String]] =
-    phrase(rep1(powerLiteral | stringLiteral | nonStringLiteral))
+    phrase(rep(powerLiteral | stringLiteral | nonStringLiteral))
 
   def apply(code: String): Either[String, String] =
     parse(tokens, code) match {

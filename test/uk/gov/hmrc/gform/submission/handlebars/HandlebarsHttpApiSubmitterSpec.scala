@@ -51,7 +51,7 @@ class HandlebarsHttpApiSubmitterSpec extends Spec {
       PrimitiveGen.urlContextPathGen,
       Gen.alphaNumStr
     ) { (d, payload, sp, expectedUri, expectedBody) =>
-      val destination = d.copy(payload = Option(payload))
+      val destination = d.copy(payload = Option(payload), payloadType = TemplateType.Plain)
       val processorModel = HandlebarsTemplateProcessorModel("")
       val expectedResponse = mock[HttpResponse]
 
@@ -66,7 +66,7 @@ class HandlebarsHttpApiSubmitterSpec extends Spec {
   it should "make a POST request when there is no payload" in {
     forAll(destinationGen(HttpMethod.POST), submitterPartsGen[Possible], PrimitiveGen.urlContextPathGen) {
       (d, sp, expectedUri) =>
-        val destination = d.copy(payload = None)
+        val destination = d.copy(payload = None, payloadType = TemplateType.Plain)
         val processorModel = HandlebarsTemplateProcessorModel("")
         val expectedResponse = mock[HttpResponse]
 
@@ -85,7 +85,7 @@ class HandlebarsHttpApiSubmitterSpec extends Spec {
       PrimitiveGen.urlContextPathGen,
       Gen.alphaNumStr
     ) { (d, payload, sp, expectedUri, expectedBody) =>
-      val destination = d.copy(payload = Option(payload))
+      val destination = d.copy(payload = Option(payload), payloadType = TemplateType.Plain)
       val processorModel = HandlebarsTemplateProcessorModel("")
       val expectedResponse = mock[HttpResponse]
 
@@ -100,7 +100,7 @@ class HandlebarsHttpApiSubmitterSpec extends Spec {
   it should "make a PUT request when there is no payload" in {
     forAll(destinationGen(HttpMethod.PUT), submitterPartsGen[Possible], PrimitiveGen.urlContextPathGen) {
       (d, sp, expectedUri) =>
-        val destination = d.copy(payload = None)
+        val destination = d.copy(payload = None, payloadType = TemplateType.Plain)
         val processorModel = HandlebarsTemplateProcessorModel("")
         val expectedResponse = mock[HttpResponse]
 

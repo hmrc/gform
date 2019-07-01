@@ -24,7 +24,6 @@ import play.api.Configuration
 import play.api.Mode.Mode
 import uk.gov.hmrc.gform.playcomponents.PlayComponents
 import uk.gov.hmrc.gform.sharedmodel.config.ExposedConfig
-import uk.gov.hmrc.gform.submission.handlebars.PayloadType
 import uk.gov.hmrc.play.auth.controllers.AuthParamsControllerConfig
 import uk.gov.hmrc.play.config.{ ControllerConfig, ServicesConfig }
 import pureconfig.generic.auto._
@@ -128,13 +127,6 @@ class ConfigModule(playComponents: PlayComponents) {
     private def profileName(destinationServiceKey: String): ProfileName =
       ProfileName(getString(destinationServiceKey, "name").getOrElse(destinationServiceKey))
 
-    private def payloadType(destinationServiceKey: String): PayloadType =
-      getString(destinationServiceKey, "payloadContentType").getOrElse("json") match {
-        case "json"     => PayloadType.JSON
-        case "soap-xml" => PayloadType.CYGNUM
-        case v          => throw new Exception(s"Invalid payloadContentType in $destinationServiceKey: $v")
-      }
-
     import cats.syntax.eq._
     import cats.instances.string._
     def apply(): Map[ProfileName, ProfileConfiguration] =
@@ -145,8 +137,7 @@ class ConfigModule(playComponents: PlayComponents) {
           val configuration = ProfileConfiguration(
             name,
             baseUrl(destinationServiceKey) + basePath(destinationServiceKey),
-            httpHeaders(destinationServiceKey),
-            payloadType(destinationServiceKey)
+            httpHeaders(destinationServiceKey)
           )
 
           Some((name, configuration))
