@@ -91,8 +91,9 @@ class RealDestinationSubmitter[M[_], R](
     submitter: DestinationsSubmitterAlgebra[M],
     formTemplate: FormTemplate)(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
     destination match {
-      case d: Destination.HmrcDms           => submitToDms(submissionInfo, d).map(_ => None)
-      case d: Destination.HandlebarsHttpApi => submitToHandlebars(d, model, submissionInfo.formId)
+      case d: Destination.HmrcDms                   => submitToDms(submissionInfo, d).map(_ => None)
+      case _: Destination.SimpleSubmissionReference => monadError.pure(None)
+      case d: Destination.HandlebarsHttpApi         => submitToHandlebars(d, model, submissionInfo.formId)
       case d: Destination.Composite =>
         submitter.submitToList(DestinationList(d.destinations), submissionInfo, model, formTemplate)
       case d: Destination.StateTransition => transitionState(d, submissionInfo.formId).map(_ => None)
@@ -270,8 +271,9 @@ class SelfTestingDestinationSubmitter[M[_]](
     destinationsSubmitter: DestinationsSubmitterAlgebra[M],
     formTemplate: FormTemplate)(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
     destination match {
-      case _: Destination.HmrcDms           => succeed(None)
-      case d: Destination.HandlebarsHttpApi => verifyHandlebarsDestination(d, model, expected)
+      case _: Destination.HmrcDms                   => succeed(None)
+      case _: Destination.SimpleSubmissionReference => succeed(None)
+      case d: Destination.HandlebarsHttpApi         => verifyHandlebarsDestination(d, model, expected)
       case d: Destination.Composite =>
         destinationsSubmitter.submitToList(DestinationList(d.destinations), null, model, formTemplate)
       case _: Destination.StateTransition => succeed(None)

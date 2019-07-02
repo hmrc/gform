@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import play.api.libs.json.{ JsValue, Writes }
+
 package object destinations {
   def createUploadableJson(destination: Destination): String = destination match {
     case composite: Destination.Composite =>
@@ -37,6 +38,11 @@ package object destinations {
           |  ${optionalField("failOnError", Option(destination.failOnError), true)}
           |  "${Destination.typeDiscriminatorFieldName}": "${Destination.stateTransition}",
           |  "requiredState": "${requiredState.toString}"
+          |}""".stripMargin
+
+    case _: Destination.SimpleSubmissionReference =>
+      s"""|{
+          |  "${Destination.typeDiscriminatorFieldName}": "${Destination.simpleSubmissionReference}"
           |}""".stripMargin
 
     case hmrcDms: Destination.HmrcDms =>
