@@ -46,11 +46,55 @@
   },
   "destinations": [
     {
+      "id": "customerSubmits",
+      "type": "composite",
+      "includeIf": "{{isSigned}}",
+      "destinations": [
+        {
+          "id": "transitionToNeedsReview",
+          "type": "stateTransition",
+          "requiredState": "NeedsReview"
+        },
+        {
+          "id": "notifyCustomerOfNeedsReview",
+          "type": "handlebarsHttpApi",
+          "uri": "notify/cea0",
+          "profile": "ofsted-proxy",
+          "method": "POST",
+          "payloadType": "JSON",
+          "convertSingleQuotes": true,
+          "payload": "{ 'address': '{{emailAddress}}', 'properties': { 'firstName': '{{firstName}}', 'lastName': '{{lastName}}', formId: '{{formId}}'}  }"
+        }
+      ]
+    },
+    {
+      "id": "reviewerRejects",
+      "type": "composite",
+      "includeIf": "{{and isRejected}}",
+      "destinations": [
+        {
+          "id": "transitionToNeedsReview",
+          "type": "stateTransition",
+          "requiredState": "InProgress"
+        },
+        {
+          "id": "notifyCustomerOfRejection",
+          "type": "handlebarsHttpApi",
+          "uri": "notify/foobar",
+          "profile": "ofsted-proxy",
+          "method": "POST",
+          "payloadType": "JSON",
+          "convertSingleQuotes": true,
+          "payload": "{ 'address': '{{emailAddress}}', 'properties': { 'firstName': '{{firstName}}', 'lastName': '{{lastName}}', formId: '{{formId}}', 'rejectionReason': '{{rejectionReason}}'}  }"
+        }
+      ]
+    },
+    {
       "id": "sendToCygnum",
       "type": "composite",
       "destinations": [
         {
-          "id": "transition",
+          "id": "transitionToSubmitted",
           "type": "stateTransition",
           "requiredState": "Submitted"
         },
@@ -58,7 +102,7 @@
           "id": "cygnumSendApplicationForms",
           "type": "handlebarsHttpApi",
           "uri": "form",
-          "profile": "cygnum",
+          "profile": "ofsted-proxy",
           "method": "POST",
           "payloadType": "XML",
           "convertSingleQuotes": true,
