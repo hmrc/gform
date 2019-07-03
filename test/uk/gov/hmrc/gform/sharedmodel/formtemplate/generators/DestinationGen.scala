@@ -52,33 +52,6 @@ trait DestinationGen {
       failOnError <- PrimitiveGen.booleanGen
     } yield Destination.HandlebarsHttpApi(id, profile, uri, method, payload, payloadType, includeIf, failOnError)
 
-  def reviewingOfstedGen: Gen[Destination.ReviewingOfsted] =
-    for {
-      id          <- destinationIdGen
-      cfid        <- FormComponentGen.formComponentIdGen
-      rtid        <- FormTemplateGen.formTemplateIdGen
-      userId      <- UserIdGen.userIdGen
-      includeIf   <- includeIfGen
-      failOnError <- PrimitiveGen.booleanGen
-    } yield Destination.ReviewingOfsted(id, cfid, rtid, userId, includeIf, failOnError)
-
-  def reviewRejectionGen: Gen[Destination.ReviewRejection] =
-    for {
-      id                       <- destinationIdGen
-      correlationFieldId       <- FormComponentGen.formComponentIdGen
-      reviewFormCommentFieldId <- FormComponentGen.formComponentIdGen
-      includeIf                <- includeIfGen
-      failOnError              <- PrimitiveGen.booleanGen
-    } yield Destination.ReviewRejection(id, correlationFieldId, reviewFormCommentFieldId, includeIf, failOnError)
-
-  def reviewApprovalGen: Gen[Destination.ReviewApproval] =
-    for {
-      id                 <- destinationIdGen
-      correlationFieldId <- FormComponentGen.formComponentIdGen
-      includeIf          <- includeIfGen
-      failOnError        <- PrimitiveGen.booleanGen
-    } yield Destination.ReviewApproval(id, correlationFieldId, includeIf, failOnError)
-
   def compositeGen: Gen[Destination.Composite] =
     for {
       id           <- destinationIdGen
@@ -95,13 +68,7 @@ trait DestinationGen {
     } yield Destination.StateTransition(id, requiredState, includeIf, failOnError)
 
   def singularDestinationGen: Gen[Destination] =
-    Gen.oneOf(
-      hmrcDmsGen,
-      handlebarsHttpApiGen,
-      reviewingOfstedGen,
-      reviewRejectionGen,
-      reviewApprovalGen,
-      stateTransitionGen)
+    Gen.oneOf(hmrcDmsGen, handlebarsHttpApiGen, stateTransitionGen)
 
   def destinationGen: Gen[Destination] = Gen.frequency(10 -> singularDestinationGen, 1 -> compositeGen)
 
