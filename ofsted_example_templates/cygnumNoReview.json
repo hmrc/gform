@@ -85,7 +85,7 @@
           "method": "POST",
           "payloadType": "JSON",
           "convertSingleQuotes": true,
-          "payload": "{ 'templateId': '1234356', 'emailAddress': '{{emailAddress}}', 'properties': { 'firstName': '{{firstName}}', 'lastName': '{{lastName}}', formId: '{{formId}}', 'rejectionReason': '{{rejectionReason}}'}  }"
+          "payload": "{ 'address': '{{emailAddress}}', 'properties': { 'firstName': '{{firstName}}', 'lastName': '{{lastName}}', formId: '{{formId}}', 'rejectionReason': '{{rejectionReason}}'}  }"
         }
       ]
     },

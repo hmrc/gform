@@ -76,17 +76,6 @@ object Destination {
   case class StateTransition(id: DestinationId, requiredState: FormStatus, includeIf: String, failOnError: Boolean)
       extends Destination
 
-  case class SimpleSubmissionReference() extends Destination with DestinationWithCustomerId {
-    override def id: DestinationId = DestinationId("simpleSubmissionReference")
-    override def includeIf: String = "true"
-    override def failOnError: Boolean = false
-    override def customerId(): TextExpression = TextExpression(SubmissionReference)
-  }
-
-  object SimpleSubmissionReference {
-    implicit val reads: Reads[SimpleSubmissionReference] = derived.reads
-  }
-
   case class ReviewingOfsted(
     id: DestinationId,
     correlationFieldId: FormComponentId,
@@ -114,7 +103,6 @@ object Destination {
   val typeDiscriminatorFieldName: String = "type"
   val hmrcDms: String = "hmrcDms"
   val handlebarsHttpApi: String = "handlebarsHttpApi"
-  val simpleSubmissionReference: String = "simpleSubmissionReference"
   val composite: String = "composite"
   val stateTransition: String = "stateTransition"
   val reviewingOfsted: String = "reviewingOfsted"
@@ -130,14 +118,13 @@ object Destination {
     OFormatWithTemplateReadFallback(
       ADTFormat.adtRead[Destination](
         typeDiscriminatorFieldName,
-        hmrcDms                   -> UploadableHmrcDmsDestination.reads,
-        handlebarsHttpApi         -> UploadableHandlebarsHttpApiDestination.reads,
-        composite                 -> UploadableCompositeDestination.reads,
-        simpleSubmissionReference -> SimpleSubmissionReference.reads,
-        stateTransition           -> UploadableStateTransitionDestination.reads,
-        reviewingOfsted           -> UploadableReviewingOfstedDestination.reads,
-        reviewRejection           -> UploadableReviewRejectionDestination.reads,
-        reviewApproval            -> UploadableReviewApprovalDestination.reads
+        hmrcDms           -> UploadableHmrcDmsDestination.reads,
+        handlebarsHttpApi -> UploadableHandlebarsHttpApiDestination.reads,
+        composite         -> UploadableCompositeDestination.reads,
+        stateTransition   -> UploadableStateTransitionDestination.reads,
+        reviewingOfsted   -> UploadableReviewingOfstedDestination.reads,
+        reviewRejection   -> UploadableReviewRejectionDestination.reads,
+        reviewApproval    -> UploadableReviewApprovalDestination.reads
       ))
   }
 }

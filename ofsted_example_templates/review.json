@@ -5,7 +5,7 @@
   "developmentPhase": "beta",
   "emailTemplateId": "al_registration_confirmation",
   "authConfig": {
-    "authModule": "hmrc"
+    "authModule": "ofsted"
   },
   "sections": [
     {
@@ -49,12 +49,32 @@
   },
   "destinations": [
     {
-      "type": "simpleSubmissionReference"
+      "id": "rejectDestination",
+      "type": "reviewRejection",
+      "correlationFieldId": "idOfFormBeingReviewed",
+      "reviewFormCommentFieldId": "rejectionReason",
+      "includeIf": "{{equal approve '1,'}}",
+      "failOnError": true,
+      "convertSingleQuotes": true
     },
     {
-      "id": "transitionToSubmitted",
-      "type": "stateTransition",
-      "requiredState": "Submitted"
+      "id": "approvalDestination",
+      "type": "reviewApproval",
+      "correlationFieldId": "idOfFormBeingReviewed",
+      "includeIf": "{{equal approve '0,'}}",
+      "failOnError": true,
+      "convertSingleQuotes": true
+    },
+    {
+      "id": "unattendedDmsQueueDestination",
+      "type": "hmrcDms",
+      "includeIf": "false",
+      "failOnError": true,
+      "convertSingleQuotes": true,
+      "dmsFormId": "ALREG",
+      "customerId": "${businessUtr}",
+      "classificationType": "BT-CTO-EMCS Fallback",
+      "businessArea": "BT"
     }
   ],
   "submitErrorUrl": "",
