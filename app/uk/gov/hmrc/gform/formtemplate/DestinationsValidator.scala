@@ -23,7 +23,7 @@ import uk.gov.hmrc.gform.core.ValidationResult.BooleanToValidationResultSyntax
 import uk.gov.hmrc.gform.core.{ Opt, Valid, ValidationResult }
 import uk.gov.hmrc.gform.sharedmodel.form.DestinationSubmissionInfo
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationId, DestinationTest, Destinations }
 import uk.gov.hmrc.gform.submission.{ DestinationsSubmitter, SelfTestingDestinationSubmitter }
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -82,22 +82,9 @@ object DestinationsValidator {
     errors.isEmpty.validationResult(errors.mkString(", "))
   }
 
-  val oneOrMoreCustomerIdDestinationsRequired: String =
-    s"There must be at least one destination that defines a customerId. These are: {${Destination.hmrcDms}, ${Destination.simpleSubmissionReference}}"
-
-  def validateOneOrMoreCustomerIdDestinations(destinations: Destinations): ValidationResult = destinations match {
-    case _: Destinations.DmsSubmission => Valid
-
-    case destinationList: Destinations.DestinationList =>
-      val customerIdDestinations = destinationList.destinations.collect { case d: DestinationWithCustomerId => d }
-      customerIdDestinations.nonEmpty
-        .validationResult(oneOrMoreCustomerIdDestinationsRequired)
-  }
-
   def validate(template: FormTemplate): Opt[Unit] =
     for {
       _ <- validateUniqueDestinationIds(template.destinations).toEither
-      _ <- validateOneOrMoreCustomerIdDestinations(template.destinations).toEither
       _ <- validateTestDestinationIdsExist(template.destinations, template.destinationTests.toList.flatten).toEither
       _ <- validateTests(template).toEither
     } yield ()

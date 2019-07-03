@@ -94,9 +94,6 @@ trait DestinationGen {
       requiredState <- FormGen.formStatusGen
     } yield Destination.StateTransition(id, requiredState, includeIf, failOnError)
 
-  def simpleSubmissionReferenceGen: Gen[Destination.SimpleSubmissionReference] =
-    Gen.const[Destination.SimpleSubmissionReference](Destination.SimpleSubmissionReference())
-
   def singularDestinationGen: Gen[Destination] =
     Gen.oneOf(
       hmrcDmsGen,
@@ -104,8 +101,7 @@ trait DestinationGen {
       reviewingOfstedGen,
       reviewRejectionGen,
       reviewApprovalGen,
-      stateTransitionGen,
-      simpleSubmissionReferenceGen)
+      stateTransitionGen)
 
   def destinationGen: Gen[Destination] = Gen.frequency(10 -> singularDestinationGen, 1 -> compositeGen)
 
