@@ -17,8 +17,12 @@
 package uk.gov.hmrc.gform.sharedmodel.form
 
 import play.api.libs.json._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormComponentId
+import cats.syntax.eq._
 
-case class FormData(fields: Seq[FormField])
+case class FormData(fields: Seq[FormField]) {
+  def find(id: FormComponentId): Option[String] = fields.find(_.id === id).map(_.value)
+}
 
 object FormData {
 

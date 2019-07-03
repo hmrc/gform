@@ -92,10 +92,12 @@ class SubmissionModule(
     timeModule.timeProvider
   )
 
-  private val destinationAuditer: RepoDestinationAuditer =
-    new RepoDestinationAuditer(
-      new Repo[DestinationAudit]("destinationAudit", mongoModule.mongo, _.id.toString),
-      fOptFormAlgebra)
+  private val destinationAuditer: DestinationAuditAlgebra[FOpt] =
+    if (configModule.DestinationsServicesConfig.auditDestinations)
+      new RepoDestinationAuditer(
+        new Repo[DestinationAudit]("destinationAudit", mongoModule.mongo, _.id.toString),
+        fOptFormAlgebra)
+    else new NullDestinationAuditer[FOpt]
 
   private val realDestinationSubmitter = new RealDestinationSubmitter(
     fileUploadServiceDmsSubmitter,

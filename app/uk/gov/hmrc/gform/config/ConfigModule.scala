@@ -127,11 +127,13 @@ class ConfigModule(playComponents: PlayComponents) {
     private def profileName(destinationServiceKey: String): ProfileName =
       ProfileName(getString(destinationServiceKey, "name").getOrElse(destinationServiceKey))
 
+    def auditDestinations: Boolean = getConfBool(s"destination-services.enable-audit", false)
+
     import cats.syntax.eq._
     import cats.instances.string._
     def apply(): Map[ProfileName, ProfileConfiguration] =
       asMap("destination-services") { destinationServiceKey =>
-        if (destinationServiceKey === "protocol") None
+        if (destinationServiceKey === "protocol" || destinationServiceKey === "audit-handlebars") None
         else {
           val name = profileName(destinationServiceKey)
           val configuration = ProfileConfiguration(
