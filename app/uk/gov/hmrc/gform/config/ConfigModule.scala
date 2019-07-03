@@ -146,28 +146,8 @@ class ConfigModule(playComponents: PlayComponents) {
   }
 }
 
-trait OfstedNotificationConf {
-  val ofstedNotification: OfstedNotificationConfig =
-    pureconfig.loadConfigOrThrow[OfstedNotificationConfig]("ofsted.notifications")
-  val notificationClient: NotificationClient = new NotificationClient(ofstedNotification.apiKey)
-
-  private val formTemplatesId: Map[String, String] = ofstedNotification.templates
-
-  val formTemplates: Map[FormStatus, String] = formTemplatesId map {
-    case ("submitted", v) => Submitted  -> v
-    case ("rejected", v)  => InProgress -> v
-    case ("accepted", v)  => Approved   -> v
-  }
-}
-
 case class DesConnectorConfig(basePath: String, authorizationToken: String, environment: String)
 
 case class MdgIntegrationFrameworkConfig(basePath: String, authorizationToken: String)
 
 case class EmailConnectorConfig(host: String, port: String)
-
-case class OfstedNotificationConfig(
-  apiKey: String,
-  templates: Map[String, String],
-  email: String,
-  formLinkPrefix: String)

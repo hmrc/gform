@@ -31,7 +31,6 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationTestResult, _ }
 import uk.gov.hmrc.gform.submission.handlebars.{ HandlebarsHttpApiSubmitter, HandlebarsTemplateProcessor, RealHandlebarsTemplateProcessor }
-import uk.gov.hmrc.gform.submission.ofsted.OfstedSubmitter
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 import uk.gov.hmrc.gform.wshttp.HttpResponseSyntax
 
@@ -50,7 +49,6 @@ trait DestinationSubmitter[M[_]] {
 class RealDestinationSubmitter[M[_], R](
   dms: DmsSubmitter[M],
   handlebars: HandlebarsHttpApiSubmitter[M],
-  ofsted: OfstedSubmitter[M],
   destinationAuditer: DestinationAuditAlgebra[M],
   formAlgebra: FormAlgebra[M],
   handlebarsTemplateProcessor: HandlebarsTemplateProcessor = RealHandlebarsTemplateProcessor)(
@@ -96,10 +94,6 @@ class RealDestinationSubmitter[M[_], R](
       case d: Destination.Composite =>
         submitter.submitToList(DestinationList(d.destinations), submissionInfo, model, formTemplate)
       case d: Destination.StateTransition => transitionState(d, submissionInfo.formId).map(_ => None)
-      case d: Destination.ReviewingOfsted => submitForReview(d, submissionInfo).map(_ => None)
-      case d: Destination.ReviewRejection => submitToReviewRejection(d, submissionInfo.formId).map(_ => None)
-      case d: Destination.ReviewApproval =>
-        submitToReviewApproval(d, submissionInfo.formId, submitter, formTemplate).map(_ => None)
     }
 
   def transitionState(d: Destination.StateTransition, formId: FormId)(implicit hc: HeaderCarrier): M[Unit] =
@@ -109,41 +103,6 @@ class RealDestinationSubmitter[M[_], R](
         if (stateAchieved === d.requiredState || !d.failOnError) monadError.pure(())
         else raiseError(d.id, RealDestinationSubmitter.stateTransitionFailOnErrorMessage(d, stateAchieved))
       }
-
-  def submitToReviewApproval(
-    destination: Destination.ReviewApproval,
-    reviewFormId: FormId,
-    submitter: DestinationsSubmitterAlgebra[M],
-    formTemplate: FormTemplate)(implicit hc: HeaderCarrier): M[Unit] =
-    ofsted
-      .approve(
-        reviewFormId,
-        destination.correlationFieldId,
-        submitter,
-        formTemplate
-      )
-      .void
-
-  def submitToReviewRejection(destination: Destination.ReviewRejection, reviewFormId: FormId)(
-    implicit hc: HeaderCarrier): M[Unit] =
-    ofsted
-      .reject(
-        reviewFormId,
-        destination.correlationFieldId,
-        destination.reviewFormCommentFieldId
-      )
-      .void
-
-  def submitForReview(destination: Destination.ReviewingOfsted, submissionInfo: DestinationSubmissionInfo)(
-    implicit hc: HeaderCarrier): M[Unit] =
-    ofsted
-      .submitForReview(
-        submissionInfo,
-        destination.userId,
-        destination.reviewFormTemplateId,
-        destination.correlationFieldId
-      )
-      .void
 
   def submitToDms(submissionInfo: DestinationSubmissionInfo, submission: Destinations.DmsSubmission)(
     implicit hc: HeaderCarrier): M[Unit] = dms(submissionInfo, submission)
@@ -275,9 +234,6 @@ class SelfTestingDestinationSubmitter[M[_]](
       case d: Destination.Composite =>
         destinationsSubmitter.submitToList(DestinationList(d.destinations), null, model, formTemplate)
       case _: Destination.StateTransition => succeed(None)
-      case _: Destination.ReviewingOfsted => succeed(None)
-      case _: Destination.ReviewRejection => succeed(None)
-      case _: Destination.ReviewApproval  => succeed(None)
     }
 
   private def verifyHandlebarsDestination(

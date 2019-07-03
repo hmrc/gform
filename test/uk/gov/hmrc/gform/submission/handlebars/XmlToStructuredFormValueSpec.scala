@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.submission.ofsted
+package uk.gov.hmrc.gform.submission.handlebars
+
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.structuredform.{ Field, FieldName, StructuredFormValue }
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue._
+import uk.gov.hmrc.gform.sharedmodel.structuredform.{ Field, FieldName, StructuredFormValue }
 
 class XmlToStructuredFormValueSpec extends Spec {
   "apply" should "produce an empty ObjectStructure given an element with no children and no text" in {

@@ -278,9 +278,6 @@ class SelfTestingDestinationSubmitterSpec extends Spec {
     case d: Destination.HandlebarsHttpApi => d.copy(includeIf = includeIf.getOrElse(true.toString))
     case d: Destination.Composite         => d.copy(includeIf = includeIf.getOrElse(true.toString))
     case d: Destination.StateTransition   => d.copy(includeIf = includeIf.getOrElse(true.toString))
-    case d: Destination.ReviewingOfsted   => d.copy(includeIf = includeIf.getOrElse(true.toString))
-    case d: Destination.ReviewRejection   => d.copy(includeIf = includeIf.getOrElse(true.toString))
-    case d: Destination.ReviewApproval    => d.copy(includeIf = includeIf.getOrElse(true.toString))
   }
 
   private def setPayload(destination: Destination, payload: Option[String]): Destination = destination match {
@@ -288,9 +285,6 @@ class SelfTestingDestinationSubmitterSpec extends Spec {
     case d: Destination.Composite         => d
     case d: Destination.StateTransition   => d
     case d: Destination.HmrcDms           => d
-    case d: Destination.ReviewingOfsted   => d
-    case d: Destination.ReviewRejection   => d
-    case d: Destination.ReviewApproval    => d
   }
 
   private def includedHandlebarsDestinationGen: Gen[Destination.HandlebarsHttpApi] =

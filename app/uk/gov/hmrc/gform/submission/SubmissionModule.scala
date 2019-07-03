@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.submission
 
 import play.api.libs.json.JsValue
-import uk.gov.hmrc.gform.config.{ ConfigModule, OfstedNotificationConf }
+import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.email.EmailModule
 import uk.gov.hmrc.gform.fileupload.FileUploadModule
@@ -26,7 +26,6 @@ import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorModule
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsHttpApiModule
-import uk.gov.hmrc.gform.submission.ofsted.{ Notifier, OfstedEmailReviewNotifier, OfstedNotificationClient, RealOfstedSubmitter }
 import uk.gov.hmrc.gform.time.TimeModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.gform.core._
@@ -93,12 +92,6 @@ class SubmissionModule(
     timeModule.timeProvider
   )
 
-  private val realOfstedSubmitter =
-    new RealOfstedSubmitter[FOpt](
-      fOptFormAlgebra,
-      formTemplateModule.fOptFormTemplateAlgebra,
-      new OfstedEmailReviewNotifier[FOpt](new OfstedNotificationClient(new Notifier[FOpt] {})))
-
   private val destinationAuditer: RepoDestinationAuditer =
     new RepoDestinationAuditer(
       new Repo[DestinationAudit]("destinationAudit", mongoModule.mongo, _.id.toString),
@@ -107,7 +100,6 @@ class SubmissionModule(
   private val realDestinationSubmitter = new RealDestinationSubmitter(
     fileUploadServiceDmsSubmitter,
     handlebarsHttpApiModule.handlebarsHttpSubmitter,
-    realOfstedSubmitter,
     destinationAuditer,
     fOptFormAlgebra
   )
