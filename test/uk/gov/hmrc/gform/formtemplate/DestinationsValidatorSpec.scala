@@ -20,7 +20,7 @@ import cats.syntax.eq._
 import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.core.{ Invalid, Valid }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationTest, DestinationTestResult, Destinations, HandlebarsTemplateProcessorModel }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.PrimitiveGen._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators._
 import DestinationGen._
@@ -79,6 +79,28 @@ class DestinationsValidatorSpec extends Spec {
         DestinationsValidator.validateTestDestinationIdsExist(destinations, List(test)) shouldBe
           Invalid(DestinationsValidator.destinationTestReferencesANonExistentDestination(Set(testDestinationId)))
       }
+    }
+  }
+
+  "validateOneOrMoreCustomerIdDestinations" should "not return an error when there is one or more hmrcDms destinations" in {
+    forAll(PrimitiveGen.oneOrMoreGen(hmrcDmsGen)) { destination =>
+      val destinations = Destinations.DestinationList(destination)
+      DestinationsValidator.validateOneOrMoreCustomerIdDestinations(destinations) should be(Valid)
+    }
+  }
+
+  it should "not return an error when there is a simpleSubmissionReference destination" in {
+    forAll(simpleSubmissionReferenceGen) { destination =>
+      val destinations = Destinations.DestinationList(NonEmptyList.of(destination))
+      DestinationsValidator.validateOneOrMoreCustomerIdDestinations(destinations) should be(Valid)
+    }
+  }
+
+  it should "return an error when there are no CustomerId Destinations" in {
+    forAll(handlebarsHttpApiGen) { d1 =>
+      val destinations = Destinations.DestinationList(NonEmptyList.of(d1))
+      DestinationsValidator.validateOneOrMoreCustomerIdDestinations(destinations) should be(
+        Invalid(DestinationsValidator.oneOrMoreCustomerIdDestinationsRequired))
     }
   }
 
