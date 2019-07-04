@@ -62,7 +62,7 @@ object HandlebarsTemplateProcessorModel {
   def apply(fields: (String, JsonNode)*): HandlebarsTemplateProcessorModel =
     HandlebarsTemplateProcessorModel(fields.toMap)
 
-  def apply(variables: Variables): HandlebarsTemplateProcessorModel =
+  def apply(variables: FrontEndSubmissionVariables): HandlebarsTemplateProcessorModel =
     apply(variables.value.toString)
 
   def apply(status: FormStatus): HandlebarsTemplateProcessorModel =

@@ -69,9 +69,6 @@ class SubmissionModule(
     def updateFormStatus(formId: FormId, newStatus: FormStatus)(implicit hc: HeaderCarrier): FOpt[FormStatus] =
       fromFutureA(formService.updateFormStatus(formId, newStatus))
 
-    def updateDestinationSubmissionInfo(formId: FormId, info: Option[DestinationSubmissionInfo])(
-      implicit hc: HeaderCarrier): FOpt[Unit] = fromFutureA(formService.updateDestinationSubmissionInfo(formId, info))
-
     override def saveKeyStore(formId: FormId, data: Map[String, JsValue])(implicit hc: HeaderCarrier): FOpt[Unit] =
       fromFutureA(formService.saveKeyStore(formId, data))
 

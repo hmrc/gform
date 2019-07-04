@@ -46,7 +46,6 @@ class SubmissionService(
       for {
         form          <- formAlgebra.get(formId)
         submissionInfo = DestinationSubmissionInfo(formId, customerId, affinityGroup, submissionData)
-        _             <- formAlgebra.updateDestinationSubmissionInfo(formId, Some(submissionInfo))
         formTemplate  <- fromFutureA(formTemplateService.get(form.formTemplateId))
         _             <- destinationsSubmitter.send(submissionInfo, formTemplate, formAlgebra)
         emailAddress   = email.getEmailAddress(form)

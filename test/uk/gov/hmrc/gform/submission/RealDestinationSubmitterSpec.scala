@@ -20,11 +20,10 @@ import cats.{ Applicative, MonadError }
 import cats.syntax.option._
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.form.FormAlgebra
-import uk.gov.hmrc.gform.sharedmodel.form.{ DestinationSubmissionInfo, FormId }
+import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.gform.{ Possible, Spec, possibleMonadError }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, FormTemplateGen, PrimitiveGen }
-import uk.gov.hmrc.gform.sharedmodel.generators.DestinationSubmissionInfoGen
 import uk.gov.hmrc.gform.submission.handlebars.{ HandlebarsHttpApiSubmitter, HandlebarsTemplateProcessor }
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
@@ -51,7 +50,7 @@ class RealDestinationSubmitterSpec extends Spec {
       createSubmitter
         .expectIncludeIfEvaluation(includeIfExpression, model, requiredResult = true)
         .expectHandlebarsSubmission(handlebarsHttpApi, model, httpResponse)
-        .expectDestinationAudit(handlebarsHttpApi.id, Some(responseCode), si.formId)
+        .expectDestinationAudit(handlebarsHttpApi.id, Some(responseCode), si.formId, si.submissionData.pdfData)
         .sut
         .submitIfIncludeIf(handlebarsHttpApi, si, model, submitter, template) shouldBe Right(
         HandlebarsDestinationResponse(handlebarsHttpApi, httpResponse).some)
@@ -85,7 +84,7 @@ class RealDestinationSubmitterSpec extends Spec {
       createSubmitter
         .expectHandlebarsSubmission(handlebarsHttpApi, model, httpResponse)
         .expectIncludeIfEvaluation("true", model, true)
-        .expectDestinationAudit(handlebarsHttpApi.id, Some(responseCode), si.formId)
+        .expectDestinationAudit(handlebarsHttpApi.id, Some(responseCode), si.formId, si.submissionData.pdfData)
         .sut
         .submitIfIncludeIf(handlebarsHttpApi, si, model, submitter, template) shouldBe Right(
         HandlebarsDestinationResponse(handlebarsHttpApi, httpResponse).some)
@@ -105,7 +104,7 @@ class RealDestinationSubmitterSpec extends Spec {
       createSubmitter
         .expectHandlebarsSubmission(handlebarsHttpApi, model, httpResponse)
         .expectIncludeIfEvaluation("true", model, true)
-        .expectDestinationAudit(handlebarsHttpApi.id, Some(responseCode), si.formId)
+        .expectDestinationAudit(handlebarsHttpApi.id, Some(responseCode), si.formId, si.submissionData.pdfData)
         .sut
         .submitIfIncludeIf(handlebarsHttpApi, si, model, submitter, template) shouldBe Left(
         RealDestinationSubmitter.handlebarsHttpApiFailOnErrorMessage(handlebarsHttpApi, httpResponse))
@@ -120,7 +119,7 @@ class RealDestinationSubmitterSpec extends Spec {
         createSubmitter
           .expectDmsSubmission(si, hmrcDms.toDeprecatedDmsSubmission)
           .expectIncludeIfEvaluation("true", model, true)
-          .expectDestinationAudit(hmrcDms.id, None, si.formId)
+          .expectDestinationAudit(hmrcDms.id, None, si.formId, si.submissionData.pdfData)
           .sut
           .submitIfIncludeIf(hmrcDms, si, model, submitter, template) shouldBe Right(None)
     }
@@ -137,7 +136,7 @@ class RealDestinationSubmitterSpec extends Spec {
       createSubmitter
         .expectIncludeIfEvaluation(includeIfExpression, model, requiredResult = true)
         .expectDmsSubmission(si, hmrcDms.toDeprecatedDmsSubmission)
-        .expectDestinationAudit(hmrcDms.id, None, si.formId)
+        .expectDestinationAudit(hmrcDms.id, None, si.formId, si.submissionData.pdfData)
         .sut
         .submitIfIncludeIf(hmrcDms, si, model, submitter, template) shouldBe Right(None)
     }
@@ -165,7 +164,7 @@ class RealDestinationSubmitterSpec extends Spec {
         createSubmitter
           .expectDmsSubmissionFailure(si, hmrcDms.toDeprecatedDmsSubmission, "an error")
           .expectIncludeIfEvaluation("true", HandlebarsTemplateProcessorModel.empty, true)
-          .expectDestinationAudit(hmrcDms.id, None, si.formId)
+          .expectDestinationAudit(hmrcDms.id, None, si.formId, si.submissionData.pdfData)
           .sut
           .submitIfIncludeIf(hmrcDms, si, HandlebarsTemplateProcessorModel(), submitter, template) shouldBe Right(None)
     }
@@ -238,10 +237,11 @@ class RealDestinationSubmitterSpec extends Spec {
     def expectDestinationAudit(
       destinationId: DestinationId,
       response: Option[Int],
-      formId: FormId): SubmitterParts[F] = {
+      formId: FormId,
+      pdfHtml: String): SubmitterParts[F] = {
       (destinationAuditer
-        .apply(_: DestinationId, _: Option[Int], _: FormId)(_: HeaderCarrier))
-        .expects(destinationId, response, formId, hc)
+        .apply(_: DestinationId, _: Option[Int], _: FormId, _: String)(_: HeaderCarrier))
+        .expects(destinationId, response, formId, pdfHtml, hc)
         .returning(F.pure(()))
       this
     }

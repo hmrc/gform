@@ -29,8 +29,6 @@ import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, UserId }
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId }
-import uk.gov.hmrc.gform.sharedmodel.generators.DestinationSubmissionInfoGen
-
 class DestinationsSubmitterSpec extends Spec {
   private implicit val hc: HeaderCarrier = HeaderCarrier()
 
@@ -46,8 +44,6 @@ class DestinationsSubmitterSpec extends Spec {
     override def updateUserData(formId: FormId, userData: UserData)(implicit hc: HeaderCarrier): Id[Unit] = ???
     override def updateFormStatus(formId: FormId, newStatus: FormStatus)(implicit hc: HeaderCarrier): Id[FormStatus] =
       ???
-    override def updateDestinationSubmissionInfo(formId: FormId, info: Option[DestinationSubmissionInfo])(
-      implicit hc: HeaderCarrier): Id[Unit] = ???
     override def saveKeyStore(formId: FormId, data: Map[String, JsValue])(implicit hc: HeaderCarrier): Id[Unit] = ???
     override def getKeyStore(formId: FormId)(implicit hc: HeaderCarrier): Id[Option[Map[String, JsValue]]] = ???
   }
