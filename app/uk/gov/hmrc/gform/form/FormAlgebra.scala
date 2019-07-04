@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.form
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, UserId }
-import uk.gov.hmrc.gform.sharedmodel.form.{ DestinationSubmissionInfo, _ }
+import uk.gov.hmrc.gform.sharedmodel.form.{ _ }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -36,9 +36,6 @@ trait FormAlgebra[F[_]] {
   def updateUserData(formId: FormId, userData: UserData)(implicit hc: HeaderCarrier): F[Unit]
 
   def updateFormStatus(formId: FormId, newStatus: FormStatus)(implicit hc: HeaderCarrier): F[FormStatus]
-
-  def updateDestinationSubmissionInfo(formId: FormId, info: Option[DestinationSubmissionInfo])(
-    implicit hc: HeaderCarrier): F[Unit]
 
   def saveKeyStore(formId: FormId, data: Map[String, JsValue])(implicit hc: HeaderCarrier): F[Unit]
 

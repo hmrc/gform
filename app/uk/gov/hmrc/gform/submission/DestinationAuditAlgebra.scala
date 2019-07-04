@@ -42,7 +42,7 @@ case class DestinationAudit(
   workflowState: FormStatus,
   userId: UserId,
   caseworkerUserName: Option[String],
-  summaryHtml: Option[String],
+  summaryHtml: String,
   id: UUID = UUID.randomUUID,
   timestamp: LocalDateTime = LocalDateTime.now)
 
@@ -62,26 +62,32 @@ object DestinationAudit {
             "userId"         -> JsString(userId.value),
             "id"             -> JsString(id.toString),
             "timestamp"      -> localDateTimeWrite.writes(timestamp),
-            "submissionRef"  -> JsString("NOT-DONE-YET")
+            "submissionRef"  -> JsString("NOT-DONE-YET"),
+            "summaryHtml"    -> JsString(summaryHtml)
           ),
           destinationResponseStatus.map(s => "destinationResponseStatus" -> JsNumber(s)).toSeq,
-          caseworkerUserName.map(c => "_caseworker_userName"             -> JsString(c)).toSeq,
-          summaryHtml.map(h => "summaryHtml"                             -> JsString(h)).toSeq
+          caseworkerUserName.map(c => "_caseworker_userName"             -> JsString(c)).toSeq
         ).flatten)
     }
   }
 }
 
 trait DestinationAuditAlgebra[M[_]] {
-  def apply(destinationId: DestinationId, handlebarsDestinationResponseStatusCode: Option[Int], formId: FormId)(
-    implicit hc: HeaderCarrier): M[Unit]
+  def apply(
+    destinationId: DestinationId,
+    handlebarsDestinationResponseStatusCode: Option[Int],
+    formId: FormId,
+    pdfHtml: String)(implicit hc: HeaderCarrier): M[Unit]
 }
 
 class RepoDestinationAuditer(repository: Repo[DestinationAudit], formAlgebra: FormAlgebra[FOpt])(
   implicit ec: ExecutionContext)
     extends DestinationAuditAlgebra[FOpt] {
-  def apply(destinationId: DestinationId, handlebarsDestinationResponseStatusCode: Option[Int], formId: FormId)(
-    implicit hc: HeaderCarrier): FOpt[Unit] =
+  def apply(
+    destinationId: DestinationId,
+    handlebarsDestinationResponseStatusCode: Option[Int],
+    formId: FormId,
+    pdfHtml: String)(implicit hc: HeaderCarrier): FOpt[Unit] =
     formAlgebra
       .get(formId)
       .flatMap { form =>
@@ -94,7 +100,7 @@ class RepoDestinationAuditer(repository: Repo[DestinationAudit], formAlgebra: Fo
             form.status,
             form.userId,
             getCaseworkerUsername(form.formData),
-            form.destinationSubmissionInfo.map(_.submissionData.pdfData)
+            pdfHtml
           ))
       }
 
@@ -106,5 +112,6 @@ class NullDestinationAuditer[M[_]: Applicative] extends DestinationAuditAlgebra[
   override def apply(
     destinationId: DestinationId,
     handlebarsDestinationResponseStatusCode: Option[Int],
-    formId: FormId)(implicit hc: HeaderCarrier): M[Unit] = ().pure
+    formId: FormId,
+    pdfHtml: String)(implicit hc: HeaderCarrier): M[Unit] = ().pure
 }
