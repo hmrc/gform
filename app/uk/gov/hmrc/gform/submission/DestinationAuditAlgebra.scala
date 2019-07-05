@@ -15,20 +15,22 @@
  */
 
 package uk.gov.hmrc.gform.submission
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.util.UUID
 
+import cats.Applicative
+import cats.syntax.applicative._
 import cats.instances.future._
+import org.joda.time.LocalDateTime
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel.UserId
-import uk.gov.hmrc.gform.sharedmodel.form.{ FormId, FormStatus, InProgress }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
+import uk.gov.hmrc.gform.sharedmodel.form._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplateId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.mongo.json.ReactiveMongoFormats.localDateTimeWrite
 
 import scala.concurrent.ExecutionContext
 
@@ -39,14 +41,16 @@ case class DestinationAudit(
   destinationResponseStatus: Option[Int],
   workflowState: FormStatus,
   userId: UserId,
+  caseworkerUserName: Option[String],
+  summaryHtml: String,
   id: UUID = UUID.randomUUID,
   timestamp: LocalDateTime = LocalDateTime.now)
 
 object DestinationAudit {
   implicit val format: OFormat[DestinationAudit] = new OFormat[DestinationAudit] {
     override def reads(json: JsValue): JsResult[DestinationAudit] = throw new Exception("Haven't implemented reads yet")
-    override def writes(o: DestinationAudit): JsObject = {
-      import o._
+    override def writes(audit: DestinationAudit): JsObject = {
+      import audit._
 
       JsObject(
         Seq(
@@ -57,24 +61,33 @@ object DestinationAudit {
             "workflowState"  -> JsString(workflowState.toString),
             "userId"         -> JsString(userId.value),
             "id"             -> JsString(id.toString),
-            "timestamp"      -> JsString(DateTimeFormatter.ISO_DATE_TIME.format(timestamp))
+            "timestamp"      -> localDateTimeWrite.writes(timestamp),
+            "submissionRef"  -> JsString("NOT-DONE-YET"),
+            "summaryHtml"    -> JsString(summaryHtml)
           ),
-          destinationResponseStatus.map(s => "destinationResponseStatus" -> JsNumber(s)).toSeq
+          destinationResponseStatus.map(s => "destinationResponseStatus" -> JsNumber(s)).toSeq,
+          caseworkerUserName.map(c => "_caseworker_userName"             -> JsString(c)).toSeq
         ).flatten)
     }
   }
 }
 
 trait DestinationAuditAlgebra[M[_]] {
-  def apply(destinationId: DestinationId, handlebarsDestinationResponseStatusCode: Option[Int], formId: FormId)(
-    implicit hc: HeaderCarrier): M[Unit]
+  def apply(
+    destinationId: DestinationId,
+    handlebarsDestinationResponseStatusCode: Option[Int],
+    formId: FormId,
+    pdfHtml: String)(implicit hc: HeaderCarrier): M[Unit]
 }
 
 class RepoDestinationAuditer(repository: Repo[DestinationAudit], formAlgebra: FormAlgebra[FOpt])(
   implicit ec: ExecutionContext)
     extends DestinationAuditAlgebra[FOpt] {
-  def apply(destinationId: DestinationId, handlebarsDestinationResponseStatusCode: Option[Int], formId: FormId)(
-    implicit hc: HeaderCarrier): FOpt[Unit] =
+  def apply(
+    destinationId: DestinationId,
+    handlebarsDestinationResponseStatusCode: Option[Int],
+    formId: FormId,
+    pdfHtml: String)(implicit hc: HeaderCarrier): FOpt[Unit] =
     formAlgebra
       .get(formId)
       .flatMap { form =>
@@ -85,6 +98,20 @@ class RepoDestinationAuditer(repository: Repo[DestinationAudit], formAlgebra: Fo
             destinationId,
             handlebarsDestinationResponseStatusCode,
             form.status,
-            form.userId))
+            form.userId,
+            getCaseworkerUsername(form.formData),
+            pdfHtml
+          ))
       }
+
+  private def getCaseworkerUsername(formData: FormData): Option[String] =
+    formData.find(FormComponentId("_caseworker_userName"))
+}
+
+class NullDestinationAuditer[M[_]: Applicative] extends DestinationAuditAlgebra[M] {
+  override def apply(
+    destinationId: DestinationId,
+    handlebarsDestinationResponseStatusCode: Option[Int],
+    formId: FormId,
+    pdfHtml: String)(implicit hc: HeaderCarrier): M[Unit] = ().pure
 }

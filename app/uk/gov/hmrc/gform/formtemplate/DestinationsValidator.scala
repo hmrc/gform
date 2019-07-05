@@ -21,10 +21,9 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import uk.gov.hmrc.gform.core.ValidationResult.BooleanToValidationResultSyntax
 import uk.gov.hmrc.gform.core.{ Opt, Valid, ValidationResult }
-import uk.gov.hmrc.gform.sharedmodel.form.DestinationSubmissionInfo
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationId, DestinationTest, Destinations }
-import uk.gov.hmrc.gform.submission.{ DestinationsSubmitter, SelfTestingDestinationSubmitter }
+import uk.gov.hmrc.gform.submission.{ DestinationSubmissionInfo, DestinationsSubmitter, SelfTestingDestinationSubmitter }
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.collection.immutable.List

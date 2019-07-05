@@ -18,8 +18,8 @@ package uk.gov.hmrc.gform.sharedmodel.form
 
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.gform.sharedmodel.generators.DestinationSubmissionInfoGen
 import uk.gov.hmrc.gform.sharedmodel.structuredform.{ Field, FieldName, StructuredFormValue }
+import uk.gov.hmrc.gform.submission.DestinationSubmissionInfoGen
 
 class DestinationSubmissionInfoSpec extends Spec {
 

@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.cygnum
+package uk.gov.hmrc.gform.sharedmodel
 
-sealed trait ServiceName
-case object SendData extends ServiceName
-case object GetData extends ServiceName
+import play.api.libs.json._
+
+case class FrontEndSubmissionVariables(value: JsValue)
+
+object FrontEndSubmissionVariables {
+  implicit val format: Format[FrontEndSubmissionVariables] = Json.format[FrontEndSubmissionVariables]
+}

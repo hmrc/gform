@@ -3534,7 +3534,7 @@
         {
           "id": "cygnumSendApplicationForms",
           "type": "handlebarsHttpApi",
-          "uri": "avc",
+          "uri": "form",
           "profile": "cygnum",
           "method": "POST",
           "payloadType": "XML",

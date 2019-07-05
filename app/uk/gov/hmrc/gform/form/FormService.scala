@@ -17,14 +17,13 @@
 package uk.gov.hmrc.gform.form
 
 import cats.Monad
-import cats.syntax.eq._
 import cats.syntax.functor._
 import cats.syntax.flatMap._
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
 import uk.gov.hmrc.gform.save4later.FormPersistenceAlgebra
-import uk.gov.hmrc.gform.sharedmodel.form.{ DestinationSubmissionInfo, _ }
+import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, UserId }
 import uk.gov.hmrc.gform.time.TimeProvider
@@ -113,13 +112,6 @@ class FormService[F[_]: Monad](
 
   private def newStatus(form: Form, status: FormStatus) =
     LifeCycleStatus.newStatus(form, status)
-
-  def updateDestinationSubmissionInfo(formId: FormId, info: Option[DestinationSubmissionInfo])(
-    implicit hc: HeaderCarrier): F[Unit] =
-    for {
-      form <- get(formId)
-      _    <- formPersistence.upsert(formId, form.copy(destinationSubmissionInfo = info))
-    } yield ()
 
   def saveKeyStore(formId: FormId, data: Map[String, JsValue])(implicit hc: HeaderCarrier): F[Unit] =
     formPersistence.saveKeyStore(formId, data)

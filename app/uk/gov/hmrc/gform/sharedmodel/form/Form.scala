@@ -46,8 +46,7 @@ case class Form(
   status: FormStatus,
   visitsIndex: VisitIndex,
   thirdPartyData: ThirdPartyData,
-  envelopeExpiryDate: Option[EnvelopeExpiryDate],
-  destinationSubmissionInfo: Option[DestinationSubmissionInfo] = None
+  envelopeExpiryDate: Option[EnvelopeExpiryDate] = None
 )
 
 object Form {
@@ -69,22 +68,6 @@ object Form {
       }
     }
 
-  private val destinationSubmissionInfoOptionFormat: OFormat[Option[DestinationSubmissionInfo]] =
-    new OFormat[Option[DestinationSubmissionInfo]] {
-      override def writes(o: Option[DestinationSubmissionInfo]): JsObject = o match {
-        case None      => Json.obj()
-        case Some(dsi) => Json.obj("destinationSubmissionInfo" -> DestinationSubmissionInfo.format.writes(dsi))
-      }
-
-      override def reads(json: JsValue): JsResult[Option[DestinationSubmissionInfo]] =
-        json.\("destinationSubmissionInfo").toOption match {
-          case Some(x) =>
-            val d = DestinationSubmissionInfo.format.reads(x)
-            d.map(Some(_))
-          case None => JsSuccess(None)
-        }
-    }
-
   private val reads: Reads[Form] = (
     (FormId.format: Reads[FormId]) and
       seedWithFallbackToEnvelopeId and
@@ -95,8 +78,7 @@ object Form {
       FormStatus.format and
       readVisitIndex and
       thirdPartyDataWithFallback and
-      EnvelopeExpiryDate.optionFormat and
-      destinationSubmissionInfoOptionFormat
+      EnvelopeExpiryDate.optionFormat
   )(Form.apply _)
 
   private val writes: OWrites[Form] = OWrites[Form](
@@ -110,8 +92,7 @@ object Form {
         FormStatus.format.writes(form.status) ++
         VisitIndex.format.writes(form.visitsIndex) ++
         Json.obj("thirdPartyData" -> ThirdPartyData.format.writes(form.thirdPartyData)) ++
-        EnvelopeExpiryDate.optionFormat.writes(form.envelopeExpiryDate) ++
-        destinationSubmissionInfoOptionFormat.writes(form.destinationSubmissionInfo)
+        EnvelopeExpiryDate.optionFormat.writes(form.envelopeExpiryDate)
   )
 
   implicit val format: OFormat[Form] = OFormat[Form](reads, writes)

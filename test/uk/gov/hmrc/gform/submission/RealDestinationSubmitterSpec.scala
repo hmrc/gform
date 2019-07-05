@@ -20,15 +20,11 @@ import cats.{ Applicative, MonadError }
 import cats.syntax.option._
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.form.FormAlgebra
-import uk.gov.hmrc.gform.sharedmodel.UserId
-import uk.gov.hmrc.gform.sharedmodel.form.{ DestinationSubmissionInfo, FormId }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplate, FormTemplateId }
+import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.gform.{ Possible, Spec, possibleMonadError }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, FormTemplateGen, PrimitiveGen }
-import uk.gov.hmrc.gform.sharedmodel.generators.DestinationSubmissionInfoGen
 import uk.gov.hmrc.gform.submission.handlebars.{ HandlebarsHttpApiSubmitter, HandlebarsTemplateProcessor }
-import uk.gov.hmrc.gform.submission.ofsted.OfstedSubmitter
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
 class RealDestinationSubmitterSpec extends Spec {
@@ -38,105 +34,6 @@ class RealDestinationSubmitterSpec extends Spec {
     DestinationSubmissionInfoGen.destinationSubmissionInfoGen.map {
       _.copy(formId = form._id)
     }
-
-  "A Destination.ReviewApproval" should "be sent to the OfstedSubmitter when includeIf is evaluated to true" in {
-    forAll(
-      submissionInfoGen,
-      DestinationGen.reviewApprovalGen,
-      PrimitiveGen.nonEmptyAlphaNumStrGen,
-      FormTemplateGen.formTemplateGen) { (si, generatedDestination, includeIfExpression, template) =>
-      val destination = generatedDestination.copy(includeIf = includeIfExpression)
-      val model = HandlebarsTemplateProcessorModel()
-
-      createSubmitter
-        .expectIncludeIfEvaluation(includeIfExpression, model, requiredResult = true)
-        .expectReviewApproval(si.formId, destination, model)
-        .expectDestinationAudit(destination.id, None, si.formId)
-        .sut
-        .submitIfIncludeIf(destination, si, model, submitter, template) shouldBe Right(None)
-    }
-  }
-
-  it should "not be sent to the OfstedSubmitter when includeIf is evaluated to false" in {
-    forAll(
-      submissionInfoGen,
-      DestinationGen.reviewApprovalGen,
-      PrimitiveGen.nonEmptyAlphaNumStrGen,
-      FormTemplateGen.formTemplateGen) { (si, generatedDestination, includeIfExpression, template) =>
-      val destination = generatedDestination.copy(includeIf = includeIfExpression)
-      val model = HandlebarsTemplateProcessorModel()
-      createSubmitter
-        .expectIncludeIfEvaluation(includeIfExpression, model, requiredResult = false)
-        .sut
-        .submitIfIncludeIf(destination, si, model, submitter, template) shouldBe Right(None)
-    }
-  }
-
-  "A Destination.ReviewRejection" should "be sent to the OfstedSubmitter when includeIf is evaluated to true" in {
-    forAll(
-      submissionInfoGen,
-      DestinationGen.reviewRejectionGen,
-      PrimitiveGen.nonEmptyAlphaNumStrGen,
-      FormTemplateGen.formTemplateGen) { (si, generatedDestination, includeIfExpression, template) =>
-      val rejection = generatedDestination.copy(includeIf = includeIfExpression)
-      val model = HandlebarsTemplateProcessorModel()
-
-      createSubmitter
-        .expectIncludeIfEvaluation(includeIfExpression, model, requiredResult = true)
-        .expectReviewRejection(si.formId, rejection, model)
-        .expectDestinationAudit(rejection.id, None, si.formId)
-        .sut
-        .submitIfIncludeIf(rejection, si, model, submitter, template) shouldBe Right(None)
-    }
-  }
-
-  it should "not be sent to the OfstedSubmitter when includeIf is evaluated to false" in {
-    forAll(
-      submissionInfoGen,
-      DestinationGen.reviewRejectionGen,
-      PrimitiveGen.nonEmptyAlphaNumStrGen,
-      FormTemplateGen.formTemplateGen) { (si, generatedDestination, includeIfExpression, template) =>
-      val rejection = generatedDestination.copy(includeIf = includeIfExpression)
-      val model = HandlebarsTemplateProcessorModel()
-      createSubmitter
-        .expectIncludeIfEvaluation(includeIfExpression, model, requiredResult = false)
-        .sut
-        .submitIfIncludeIf(rejection, si, model, submitter, template) shouldBe Right(None)
-    }
-  }
-
-  "A Destination.ReviewingOfsed" should "be sent to the OfstedSubmitter when includeIf is evaluated to true" in {
-    forAll(
-      submissionInfoGen,
-      DestinationGen.reviewingOfstedGen,
-      PrimitiveGen.nonEmptyAlphaNumStrGen,
-      FormTemplateGen.formTemplateGen) { (si, generatedDestination, includeIfExpression, template) =>
-      val destination = generatedDestination.copy(includeIf = includeIfExpression)
-      val model = HandlebarsTemplateProcessorModel()
-
-      createSubmitter
-        .expectIncludeIfEvaluation(includeIfExpression, model, requiredResult = true)
-        .expectReviewingOfstedSubmission(si, destination, model, FormId("foo"))
-        .expectDestinationAudit(destination.id, None, si.formId)
-        .sut
-        .submitIfIncludeIf(destination, si, model, submitter, template) shouldBe Right(None)
-    }
-  }
-
-  it should "not be sent to the OfstedSubmitter when includeIf is evaluated to false" in {
-    forAll(
-      submissionInfoGen,
-      DestinationGen.reviewingOfstedGen,
-      PrimitiveGen.nonEmptyAlphaNumStrGen,
-      FormTemplateGen.formTemplateGen) { (si, generatedDestination, includeIfExpression, template) =>
-      val destination = generatedDestination.copy(includeIf = includeIfExpression)
-      val model = HandlebarsTemplateProcessorModel()
-      createSubmitter
-        .expectIncludeIfEvaluation(includeIfExpression, model, requiredResult = false)
-        .sut
-        .submitIfIncludeIf(destination, si, model, submitter, template) shouldBe Right(None)
-    }
-  }
 
   "A Destination.HandlebarsHttpApi" should "be sent to the HandlebarsHttpApiSubmitter when includeIf is evaluated to true" in {
     forAll(
@@ -153,7 +50,7 @@ class RealDestinationSubmitterSpec extends Spec {
       createSubmitter
         .expectIncludeIfEvaluation(includeIfExpression, model, requiredResult = true)
         .expectHandlebarsSubmission(handlebarsHttpApi, model, httpResponse)
-        .expectDestinationAudit(handlebarsHttpApi.id, Some(responseCode), si.formId)
+        .expectDestinationAudit(handlebarsHttpApi.id, Some(responseCode), si.formId, si.submissionData.pdfData)
         .sut
         .submitIfIncludeIf(handlebarsHttpApi, si, model, submitter, template) shouldBe Right(
         HandlebarsDestinationResponse(handlebarsHttpApi, httpResponse).some)
@@ -187,7 +84,7 @@ class RealDestinationSubmitterSpec extends Spec {
       createSubmitter
         .expectHandlebarsSubmission(handlebarsHttpApi, model, httpResponse)
         .expectIncludeIfEvaluation("true", model, true)
-        .expectDestinationAudit(handlebarsHttpApi.id, Some(responseCode), si.formId)
+        .expectDestinationAudit(handlebarsHttpApi.id, Some(responseCode), si.formId, si.submissionData.pdfData)
         .sut
         .submitIfIncludeIf(handlebarsHttpApi, si, model, submitter, template) shouldBe Right(
         HandlebarsDestinationResponse(handlebarsHttpApi, httpResponse).some)
@@ -207,7 +104,7 @@ class RealDestinationSubmitterSpec extends Spec {
       createSubmitter
         .expectHandlebarsSubmission(handlebarsHttpApi, model, httpResponse)
         .expectIncludeIfEvaluation("true", model, true)
-        .expectDestinationAudit(handlebarsHttpApi.id, Some(responseCode), si.formId)
+        .expectDestinationAudit(handlebarsHttpApi.id, Some(responseCode), si.formId, si.submissionData.pdfData)
         .sut
         .submitIfIncludeIf(handlebarsHttpApi, si, model, submitter, template) shouldBe Left(
         RealDestinationSubmitter.handlebarsHttpApiFailOnErrorMessage(handlebarsHttpApi, httpResponse))
@@ -222,7 +119,7 @@ class RealDestinationSubmitterSpec extends Spec {
         createSubmitter
           .expectDmsSubmission(si, hmrcDms.toDeprecatedDmsSubmission)
           .expectIncludeIfEvaluation("true", model, true)
-          .expectDestinationAudit(hmrcDms.id, None, si.formId)
+          .expectDestinationAudit(hmrcDms.id, None, si.formId, si.submissionData.pdfData)
           .sut
           .submitIfIncludeIf(hmrcDms, si, model, submitter, template) shouldBe Right(None)
     }
@@ -239,7 +136,7 @@ class RealDestinationSubmitterSpec extends Spec {
       createSubmitter
         .expectIncludeIfEvaluation(includeIfExpression, model, requiredResult = true)
         .expectDmsSubmission(si, hmrcDms.toDeprecatedDmsSubmission)
-        .expectDestinationAudit(hmrcDms.id, None, si.formId)
+        .expectDestinationAudit(hmrcDms.id, None, si.formId, si.submissionData.pdfData)
         .sut
         .submitIfIncludeIf(hmrcDms, si, model, submitter, template) shouldBe Right(None)
     }
@@ -267,7 +164,7 @@ class RealDestinationSubmitterSpec extends Spec {
         createSubmitter
           .expectDmsSubmissionFailure(si, hmrcDms.toDeprecatedDmsSubmission, "an error")
           .expectIncludeIfEvaluation("true", HandlebarsTemplateProcessorModel.empty, true)
-          .expectDestinationAudit(hmrcDms.id, None, si.formId)
+          .expectDestinationAudit(hmrcDms.id, None, si.formId, si.submissionData.pdfData)
           .sut
           .submitIfIncludeIf(hmrcDms, si, HandlebarsTemplateProcessorModel(), submitter, template) shouldBe Right(None)
     }
@@ -291,7 +188,6 @@ class RealDestinationSubmitterSpec extends Spec {
     sut: RealDestinationSubmitter[F, Unit],
     dmsSubmitter: DmsSubmitter[F],
     handlebarsSubmitter: HandlebarsHttpApiSubmitter[F],
-    ofstedSubmitter: OfstedSubmitter[F],
     destinationAuditer: DestinationAuditAlgebra[F],
     formAlgebra: FormAlgebra[F],
     handlebarsTemplateProcessor: HandlebarsTemplateProcessor)(implicit F: MonadError[F, String]) {
@@ -327,49 +223,6 @@ class RealDestinationSubmitterSpec extends Spec {
       this
     }
 
-    def expectReviewingOfstedSubmission(
-      submissionInfo: DestinationSubmissionInfo,
-      reviewingOfsted: Destination.ReviewingOfsted,
-      model: HandlebarsTemplateProcessorModel,
-      expectedReviewFormid: FormId): SubmitterParts[F] = {
-      (ofstedSubmitter
-        .submitForReview(_: DestinationSubmissionInfo, _: UserId, _: FormTemplateId, _: FormComponentId)(
-          _: HeaderCarrier))
-        .expects(
-          submissionInfo,
-          reviewingOfsted.userId,
-          reviewingOfsted.reviewFormTemplateId,
-          reviewingOfsted.correlationFieldId,
-          hc)
-        .returning(F.pure(expectedReviewFormid))
-      this
-    }
-
-    def expectReviewRejection(
-      formId: FormId,
-      rejection: Destination.ReviewRejection,
-      model: HandlebarsTemplateProcessorModel): SubmitterParts[F] = {
-      (ofstedSubmitter
-        .reject(_: FormId, _: FormComponentId, _: FormComponentId)(_: HeaderCarrier))
-        .expects(formId, rejection.correlationFieldId, rejection.reviewFormCommentFieldId, hc)
-        .returning(F.pure(()))
-      this
-    }
-
-    def expectReviewApproval(
-      formId: FormId,
-      rejection: Destination.ReviewApproval,
-      model: HandlebarsTemplateProcessorModel): SubmitterParts[F] = {
-      (ofstedSubmitter
-        .approve(_: FormId, _: FormComponentId, _: DestinationsSubmitter[F], _: FormTemplate)(_: HeaderCarrier))
-        .expects(where {
-          (formId: FormId, fcId: FormComponentId, _: DestinationsSubmitter[F], _: FormTemplate, hc: HeaderCarrier) =>
-            formId === formId && fcId === rejection.correlationFieldId && hc === hc
-        })
-        .returning(F.pure(()))
-      this
-    }
-
     def expectIncludeIfEvaluation(
       expression: String,
       model: HandlebarsTemplateProcessorModel,
@@ -384,10 +237,11 @@ class RealDestinationSubmitterSpec extends Spec {
     def expectDestinationAudit(
       destinationId: DestinationId,
       response: Option[Int],
-      formId: FormId): SubmitterParts[F] = {
+      formId: FormId,
+      pdfHtml: String): SubmitterParts[F] = {
       (destinationAuditer
-        .apply(_: DestinationId, _: Option[Int], _: FormId)(_: HeaderCarrier))
-        .expects(destinationId, response, formId, hc)
+        .apply(_: DestinationId, _: Option[Int], _: FormId, _: String)(_: HeaderCarrier))
+        .expects(destinationId, response, formId, pdfHtml, hc)
         .returning(F.pure(()))
       this
     }
@@ -397,14 +251,12 @@ class RealDestinationSubmitterSpec extends Spec {
     val dmsSubmitter = mock[DmsSubmitter[Possible]]
     val handlebarsSubmitter = mock[HandlebarsHttpApiSubmitter[Possible]]
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
-    val ofsetReviewSubmitter = mock[OfstedSubmitter[Possible]]
     val destinationAuditer = mock[DestinationAuditAlgebra[Possible]]
     val formAlgebra = mock[FormAlgebra[Possible]]
     val submitter =
       new RealDestinationSubmitter[Possible, Unit](
         dmsSubmitter,
         handlebarsSubmitter,
-        ofsetReviewSubmitter,
         destinationAuditer,
         formAlgebra,
         handlebarsTemplateProcessor)
@@ -413,7 +265,6 @@ class RealDestinationSubmitterSpec extends Spec {
       submitter,
       dmsSubmitter,
       handlebarsSubmitter,
-      ofsetReviewSubmitter,
       destinationAuditer,
       formAlgebra,
       handlebarsTemplateProcessor)

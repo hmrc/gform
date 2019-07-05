@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.submission.ofsted
-
+package uk.gov.hmrc.gform.submission.handlebars
 import uk.gov.hmrc.gform.sharedmodel.structuredform.{ Field, FieldName, StructuredFormValue }
 
-import scala.xml.{ Atom, Node, Text }
+import scala.xml.{ Node, Text }
 
 object XmlToStructuredFormValue {
   def apply(node: Node): StructuredFormValue =

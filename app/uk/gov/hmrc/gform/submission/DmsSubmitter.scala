@@ -22,7 +22,8 @@ import uk.gov.hmrc.gform.fileupload.FileUploadService
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorService
-import uk.gov.hmrc.gform.sharedmodel.form.{ DestinationSubmissionInfo, Form, Submitted }
+import uk.gov.hmrc.gform.sharedmodel.form.{ Form, Submitted }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FileUpload, FormTemplate }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FileUpload, FormTemplate }
 import uk.gov.hmrc.gform.time.TimeProvider

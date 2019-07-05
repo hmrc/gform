@@ -14,21 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.submission.ofsted
+package uk.gov.hmrc.gform.submission
 
-import java.time.LocalDateTime
-
+import play.api.libs.json._
+import uk.gov.hmrc.auth.core.AffinityGroup
+import uk.gov.hmrc.gform.sharedmodel.SubmissionData
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
 
-case class OfstedNotification(
+case class DestinationSubmissionInfo(
   formId: FormId,
-  formLink: FormLink,
-  time: LocalDateTime = LocalDateTime.now,
-  emailAddress: EmailAddress = EmailAddress(""),
-  kind: String = "")
+  customerId: String,
+  affinityGroup: Option[AffinityGroup],
+  submissionData: SubmissionData)
 
-case class EmailAddress(email: String)
-
-case class PhoneNumber(number: String)
-
-case class FormLink(link: String)
+object DestinationSubmissionInfo {
+  implicit val format: OFormat[DestinationSubmissionInfo] = Json.format[DestinationSubmissionInfo]
+}

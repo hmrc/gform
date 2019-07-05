@@ -17,10 +17,5 @@
 package uk.gov.hmrc.gform.config
 
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.ProfileName
-import uk.gov.hmrc.gform.submission.handlebars.PayloadType
 
-case class ProfileConfiguration(
-  name: ProfileName,
-  baseUrl: String,
-  httpHeaders: Map[String, String],
-  payloadContentType: PayloadType)
+case class ProfileConfiguration(name: ProfileName, baseUrl: String, httpHeaders: Map[String, String])

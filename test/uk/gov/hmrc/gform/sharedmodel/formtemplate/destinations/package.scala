@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import play.api.libs.json.{ JsValue, Writes }
-import uk.gov.hmrc.gform.submission.handlebars.PayloadType
 package object destinations {
   def createUploadableJson(destination: Destination): String = destination match {
     case composite: Destination.Composite =>
@@ -67,50 +66,13 @@ package object destinations {
           |  "uri": "$uri",
           |  "method": ${write(method)}
           |}""".stripMargin
-
-    case handlebars: Destination.ReviewingOfsted =>
-      import handlebars._
-      s"""|{
-          |  "id": "${id.id}",
-          |  "correlationFieldId": "${correlationFieldId.value}",
-          |  "reviewFormTemplateId": "${reviewFormTemplateId.value}",
-          |  "userId": "${handlebars.userId.value}",
-          |  ${optionalField("convertSingleQuotes", Option(false))}
-          |  ${optionalField("includeIf", Option(destination.includeIf), "true")}
-          |  ${optionalField("failOnError", Option(destination.failOnError), true)}
-          |  "${Destination.typeDiscriminatorFieldName}": "${Destination.reviewingOfsted}"
-          |}""".stripMargin
-
-    case handlebars: Destination.ReviewRejection =>
-      import handlebars._
-      s"""|{
-          |  "id": "${id.id}",
-          |  "correlationFieldId": "${correlationFieldId.value}",
-          |  "reviewFormCommentFieldId": "${reviewFormCommentFieldId.value}",
-          |  ${optionalField("convertSingleQuotes", Option(false))}
-          |  ${optionalField("includeIf", Option(destination.includeIf), "true")}
-          |  ${optionalField("failOnError", Option(destination.failOnError), true)}
-          |  "${Destination.typeDiscriminatorFieldName}": "${Destination.reviewRejection}"
-          |}""".stripMargin
-
-    case handlebars: Destination.ReviewApproval =>
-      import handlebars._
-      s"""|{
-          |  "id": "${id.id}",
-          |  "correlationFieldId": "${correlationFieldId.value}",
-          |  ${optionalField("convertSingleQuotes", Option(false))}
-          |  ${optionalField("includeIf", Option(destination.includeIf), "true")}
-          |  ${optionalField("failOnError", Option(destination.failOnError), true)}
-          |  "${Destination.typeDiscriminatorFieldName}": "${Destination.reviewApproval}"
-          |}""".stripMargin
-
   }
 
   def optionalField[T: Writes](fieldName: String, ot: Option[T]): String =
     ot.fold("")(t => s""""$fieldName": ${write(t)},""")
 
   def optionalField[T: Writes](fieldName: String, ot: Option[T], dflt: T): String =
-    if (ot.exists(_ == dflt) && Math.random < 0.5) ""
+    if (ot.contains(dflt) && Math.random < 0.5) ""
     else optionalField(fieldName: String, ot: Option[T])
 
   def write[T](t: T)(implicit w: Writes[T]): JsValue = w.writes(t)

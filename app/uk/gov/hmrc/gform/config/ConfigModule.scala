@@ -24,7 +24,6 @@ import play.api.Configuration
 import play.api.Mode.Mode
 import uk.gov.hmrc.gform.playcomponents.PlayComponents
 import uk.gov.hmrc.gform.sharedmodel.config.ExposedConfig
-import uk.gov.hmrc.gform.submission.handlebars.PayloadType
 import uk.gov.hmrc.play.auth.controllers.AuthParamsControllerConfig
 import uk.gov.hmrc.play.config.{ ControllerConfig, ServicesConfig }
 import pureconfig.generic.auto._
@@ -130,25 +129,19 @@ class ConfigModule(playComponents: PlayComponents) {
     private def profileName(destinationServiceKey: String): ProfileName =
       ProfileName(getString(destinationServiceKey, "name").getOrElse(destinationServiceKey))
 
-    private def payloadType(destinationServiceKey: String): PayloadType =
-      getString(destinationServiceKey, "payloadContentType").getOrElse("json") match {
-        case "json"     => PayloadType.JSON
-        case "soap-xml" => PayloadType.CYGNUM
-        case v          => throw new Exception(s"Invalid payloadContentType in $destinationServiceKey: $v")
-      }
+    def auditDestinations: Boolean = getConfBool(s"destination-services.enable-audit", false)
 
     import cats.syntax.eq._
     import cats.instances.string._
     def apply(): Map[ProfileName, ProfileConfiguration] =
       asMap("destination-services") { destinationServiceKey =>
-        if (destinationServiceKey === "protocol") None
+        if (destinationServiceKey === "protocol" || destinationServiceKey === "audit-handlebars") None
         else {
           val name = profileName(destinationServiceKey)
           val configuration = ProfileConfiguration(
             name,
             baseUrl(destinationServiceKey) + basePath(destinationServiceKey),
-            httpHeaders(destinationServiceKey),
-            payloadType(destinationServiceKey)
+            httpHeaders(destinationServiceKey)
           )
 
           Some((name, configuration))
@@ -157,28 +150,8 @@ class ConfigModule(playComponents: PlayComponents) {
   }
 }
 
-trait OfstedNotificationConf {
-  val ofstedNotification: OfstedNotificationConfig =
-    pureconfig.loadConfigOrThrow[OfstedNotificationConfig]("ofsted.notifications")
-  val notificationClient: NotificationClient = new NotificationClient(ofstedNotification.apiKey)
-
-  private val formTemplatesId: Map[String, String] = ofstedNotification.templates
-
-  val formTemplates: Map[FormStatus, String] = formTemplatesId map {
-    case ("submitted", v) => Submitted  -> v
-    case ("rejected", v)  => InProgress -> v
-    case ("accepted", v)  => Approved   -> v
-  }
-}
-
 case class DesConnectorConfig(basePath: String, authorizationToken: String, environment: String)
 
 case class MdgIntegrationFrameworkConfig(basePath: String, authorizationToken: String)
 
 case class EmailConnectorConfig(host: String, port: String)
-
-case class OfstedNotificationConfig(
-  apiKey: String,
-  templates: Map[String, String],
-  email: String,
-  formLinkPrefix: String)
