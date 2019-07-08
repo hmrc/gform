@@ -555,9 +555,15 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     }
   }
 
-  "isApproved" must "return true if the formStatus is Approved, false otherwise" in {
+  "isAccepted" must "return true if the formStatus is Accepted, false otherwise" in {
     FormStatus.all.foreach { status =>
-      process("""{{isApproved}}""", HandlebarsTemplateProcessorModel(status)) shouldBe (status == Approved).toString
+      process("""{{isAccepted}}""", HandlebarsTemplateProcessorModel(status)) shouldBe (status == Accepted).toString
+    }
+  }
+
+  "isAccepting" must "return true if the formStatus is Accepting, false otherwise" in {
+    FormStatus.all.foreach { status =>
+      process("""{{isAccepting}}""", HandlebarsTemplateProcessorModel(status)) shouldBe (status == Accepting).toString
     }
   }
 

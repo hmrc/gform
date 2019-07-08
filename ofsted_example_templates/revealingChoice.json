@@ -1,0 +1,145 @@
+{
+  "_id": "TST123",
+  "formName": "Text Box Component Testing tttt",
+  "description": "Testing standard text box component ",
+  "authConfig": {
+    "authModule": "hmrc"
+  },
+  "emailTemplateId": "eeitt_submission_confirmation",
+  "submitSuccessUrl": "http://www.google.co.uk",
+  "submitErrorUrl": "http://www.yahoo.co.uk",
+  "sections": [
+    {
+      "title": "Trading Additional Details $n",
+      "repeatsMax": "${4}",
+      "repeatsMin": "${4}",
+      "fields": [
+        {
+          "id": "tradesUnderDifferentName1",
+          "type": "revealingChoice",
+          "label": "Trading Details",
+          "choices": [
+            "Address",
+            "Date",
+            "FileUpload",
+            "SortCode",
+            "Telephone",
+            "Tax Amount",
+            "bankAccountNumber"
+          ],
+          "revealingFields": [
+            [
+              {
+                "type":"address",
+                "id":"homeAddress",
+                "label":"Home Address",
+                "postcodeLookup":"no"
+              }
+            ],
+            [
+              {
+                "id":"date2",
+                "type":"date",
+                "label":"Enter the Date Field",
+                "shortName":"date",
+                "format":"precisely YYYY-MM-lastDay"
+              }
+            ],
+            [
+              {
+                "id": "uploadAbbrev",
+                "type": "file",
+                "label": "Upload corporate"
+              }
+            ],
+            [
+              {
+                "id": "sortCode",
+                "type": "text",
+                "label": "Sort code",
+                "format": "ukSortCode"
+              }
+            ],
+            [
+              {
+                "id": "Telephone",
+                "label": "Telephone Number",
+                "mandatory": "true",
+                "format": "telephoneNumber"
+              }
+            ],
+            [
+              {
+                "id": "textBox1",
+                "label": "Enter Tax Amount1",
+                "mandatory": "true",
+                "format":"number(6,2)"
+              },
+              {
+                "id": "textBox2",
+                "label": "Enter Tax Amount2",
+                "mandatory": "true",
+                "format":"number(6,2)"
+              }
+            ],
+            [
+              {
+                "id": "bankAccountNumber",
+                "type": "text",
+                "format": "ukBankAccountNumber",
+                "label": "Account number"
+              }
+            ]
+          ]
+        }
+      ]
+    }
+  ],
+  "declarationSection": {
+    "shortName": "Declaration",
+    "title": "Declaration",
+    "fields": [
+      {
+        "type": "info",
+        "id": "declarationTopInfo",
+        "label": "Declaration copy",
+        "infoText": "Declaration copy"
+      },
+      {
+        "id": "declarationNameGroup",
+        "type": "group",
+        "label": "Provide details below of who is signing the declaration",
+        "fields": [
+          {
+            "id": "declarationFirstName",
+            "type": "text",
+            "label": "First name"
+          }
+        ]
+      }
+    ]
+  },
+  "acknowledgementSection": {
+    "shortName": "Acknowledgement Page",
+    "title": "Acknowledgement Page",
+    "fields": [
+      {
+        "type": "info",
+        "id": "ackpageInfo",
+        "label": "SomeContent",
+        "infoText": "SomeContent"
+      }
+    ]
+  },
+  "destinations": [
+    {
+      "id": "testDestination",
+      "type": "handlebarsHttpApi",
+      "uri": "form",
+      "profile": "des",
+      "method": "POST",
+      "convertSingleQuotes": true
+    }
+  ]
+}
+
