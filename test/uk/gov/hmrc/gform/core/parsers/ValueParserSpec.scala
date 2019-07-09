@@ -360,15 +360,15 @@ class ValueParserSpec extends Spec {
     val table = Table(
       ("expression", "result"),
       // format: off
-      (Add(Add(Add("a", "b"), "c"), "d"),           Add(Add(Add("a", "b"), "c"), "d")),
-      (Else(Add("a", "b"), Add("c", "d")),          Else(Add("a", "b"), Add("c", "d"))),
-      (Else(Else(Else("a", "b"), "c"), "d"),        Else("a", Else("b", Else("c", "d")))),
-      (Else("a", Else("b", Else("c", "d"))),        Else("a", Else("b", Else("c", "d")))),
-      (Add(Else("a", "b"), Else("c", "d")),         Add(Else("a", "b"), Else("c", "d"))),
-      (Add(Else(Else("a", "b"), "c"), "d"),         Add(Else("a", Else("b", "c")), "d")),
-      (Subtraction(Else(Else("a", "b"), "c"), "d"), Subtraction(Else("a", Else("b", "c")), "d")),
-      (Multiply(Else(Else("a", "b"), "c"), "d"),    Multiply(Else("a", Else("b", "c")), "d")),
-      (Sum(Else(Else("a", "b"), "c")),              Sum(Else("a", Else("b", "c"))))
+      (Add(Add(Add("a", "b"), "c"), "d"),               Add(Add(Add("a", "b"), "c"), "d")),
+      (Else(Add("a", "b"), Add("c", "d")),              Else(Add("a", "b"), Add("c", "d"))),
+      (Else(Else(Else(Else("a", "b"), "c"), "d"), "e"), Else("a", Else("b", Else("c", Else("d", "e"))))),
+      (Else("a", Else("b", Else("c", "d"))),            Else("a", Else("b", Else("c", "d")))),
+      (Add(Else("a", "b"), Else("c", "d")),             Add(Else("a", "b"), Else("c", "d"))),
+      (Add(Else(Else("a", "b"), "c"), "d"),             Add(Else("a", Else("b", "c")), "d")),
+      (Subtraction(Else(Else("a", "b"), "c"), "d"),     Subtraction(Else("a", Else("b", "c")), "d")),
+      (Multiply(Else(Else("a", "b"), "c"), "d"),        Multiply(Else("a", Else("b", "c")), "d")),
+      (Sum(Else(Else("a", "b"), "c")),                  Sum(Else("a", Else("b", "c"))))
       // format: on
     )
 
