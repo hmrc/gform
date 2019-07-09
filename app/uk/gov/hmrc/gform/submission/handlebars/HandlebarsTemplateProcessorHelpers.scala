@@ -28,7 +28,7 @@ import java.time.format.DateTimeFormatter
 import com.fasterxml.jackson.databind.node.{ ArrayNode, ObjectNode, TextNode }
 import com.github.jknack.handlebars.{ Handlebars, Options }
 import play.api.Logger
-import uk.gov.hmrc.gform.sharedmodel.form.{ Approved, FormStatus, Signed }
+import uk.gov.hmrc.gform.sharedmodel.form._
 
 class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimeProvider) {
   def yesNoToEtmpChoice(yesNoChoice: Any): CharSequence = log("yesNoChoice", yesNoChoice) {
@@ -399,8 +399,12 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
     hasStatus(options, Signed)
   }
 
-  def isApproved(options: Options): CharSequence = log("isApproved") {
-    hasStatus(options, Approved)
+  def isAccepted(options: Options): CharSequence = log("isAccepted") {
+    hasStatus(options, Accepted)
+  }
+
+  def isAccepting(options: Options): CharSequence = log("isAccepting") {
+    hasStatus(options, Accepting)
   }
 
   private def hasStatus(options: Options, requiredStatus: FormStatus) = {

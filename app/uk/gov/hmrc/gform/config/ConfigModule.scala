@@ -27,9 +27,7 @@ import uk.gov.hmrc.gform.sharedmodel.config.ExposedConfig
 import uk.gov.hmrc.play.auth.controllers.AuthParamsControllerConfig
 import uk.gov.hmrc.play.config.{ ControllerConfig, ServicesConfig }
 import pureconfig.generic.auto._
-import uk.gov.hmrc.gform.sharedmodel.form.{ Approved, FormStatus, InProgress, Submitted }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.ProfileName
-import uk.gov.service.notify.NotificationClient
 
 import scala.util.Try // It is now necessary to import `pureconfig.generic.auto._` everywhere a config is loaded or written, even though IntelliJ sees this as unused, its still required
 
