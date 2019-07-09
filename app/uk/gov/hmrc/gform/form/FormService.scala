@@ -101,6 +101,8 @@ object LifeCycleStatus {
     case (NeedsReview, _)                  => form.status // ToDo: This will be refined as we do more of the review stories
     case (Accepting, Accepted)             => status
     case (Accepting, _)                    => form.status
+    case (Rejecting, InProgress)           => InProgress
+    case (Rejecting, _)                    => form.status
     case (Accepted, _)                     => form.status // ToDo: This will be refined as we do more of the review stories
     case (Summary, InProgress)             => form.status
     case (Summary, _)                      => status
