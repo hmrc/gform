@@ -19,11 +19,10 @@ package uk.gov.hmrc.gform.submission.handlebars
 import java.text.DecimalFormat
 
 import com.fasterxml.jackson.databind.JsonNode
-import uk.gov.hmrc.gform.Spec
 import org.scalacheck.Gen
+import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ HandlebarsTemplateProcessorModel, TemplateType }
-import uk.gov.hmrc.gform.time.FrozenTimeProvider
 
 import scala.language.implicitConversions
 
@@ -564,6 +563,12 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   "isAccepting" must "return true if the formStatus is Accepting, false otherwise" in {
     FormStatus.all.foreach { status =>
       process("""{{isAccepting}}""", HandlebarsTemplateProcessorModel(status)) shouldBe (status == Accepting).toString
+    }
+  }
+
+  "isRejected" must "return true if the formStatus is Rejected, false otherwise" in {
+    FormStatus.all.foreach { status =>
+      process("""{{isRejecting}}""", HandlebarsTemplateProcessorModel(status)) shouldBe (status == Rejecting).toString
     }
   }
 
