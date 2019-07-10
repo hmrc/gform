@@ -93,5 +93,6 @@ object DestinationsSubmitter {
       HandlebarsTemplateProcessorModel.hmrcTaxPeriods(form) +
       HandlebarsTemplateProcessorModel.rosmRegistration(form) +
       HandlebarsTemplateProcessorModel(submissionInfo.submissionData.variables) +
-      HandlebarsTemplateProcessorModel(form.status)
+      HandlebarsTemplateProcessorModel(form.status) +
+      HandlebarsTemplateProcessorModel.summaryHtml(submissionInfo.submissionData.pdfData)
 }
