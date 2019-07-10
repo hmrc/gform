@@ -103,7 +103,8 @@ object FormStatus {
 
   implicit val format: OFormat[FormStatus] = derived.oformat
 
-  val all: Set[FormStatus] = Set(InProgress, Summary, Validated, Signed, NeedsReview, Accepting, Rejecting, Accepted, Submitted)
+  val all: Set[FormStatus] =
+    Set(InProgress, Summary, Validated, Signed, NeedsReview, Accepting, Rejecting, Accepted, Submitted)
 
   def unapply(s: String): Option[FormStatus] = all.find(_.toString === s)
 }
