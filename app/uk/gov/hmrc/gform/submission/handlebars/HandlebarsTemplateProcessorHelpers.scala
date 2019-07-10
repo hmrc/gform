@@ -24,6 +24,7 @@ import cats.syntax.eq._
 import shapeless.syntax.typeable._
 import uk.gov.hmrc.gform.time.TimeProvider
 import java.time.format.DateTimeFormatter
+import java.util.Base64
 
 import com.fasterxml.jackson.databind.node.{ ArrayNode, ObjectNode, TextNode }
 import com.github.jknack.handlebars.{ Handlebars, Options }
@@ -544,6 +545,11 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
       acc + d
     })
   }
+
+  def base64Encode(text: Any): CharSequence =
+    ifNotNullAsString(text) { v =>
+      Base64.getEncoder.encodeToString(v.getBytes("UTF-8"))
+    }
 
   private def asBigDecimal(v: Any): BigDecimal =
     asNotNullString(v).fold(throw new Exception("Expected a number. Got '$v'"))(BigDecimal(_))
