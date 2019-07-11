@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.submission.handlebars
 
 import java.text.DecimalFormat
+import java.util.Base64
 
 import com.fasterxml.jackson.databind.JsonNode
 import org.scalacheck.Gen
@@ -569,6 +570,17 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   "isRejected" must "return true if the formStatus is Rejected, false otherwise" in {
     FormStatus.all.foreach { status =>
       process("""{{isRejecting}}""", HandlebarsTemplateProcessorModel(status)) shouldBe (status == Rejecting).toString
+    }
+  }
+
+  "base64Encode" must "return null if given null" in {
+    process("{{base64Encode null}}", HandlebarsTemplateProcessorModel.empty) shouldBe "null"
+  }
+
+  it must "handle arbitrary strings" in {
+    forAll(Gen.alphaNumStr) { s =>
+      process(s"""{{base64Encode "$s"}}""", HandlebarsTemplateProcessorModel.empty) shouldBe
+        Base64.getEncoder.encodeToString(s.getBytes("UTF-8"))
     }
   }
 
