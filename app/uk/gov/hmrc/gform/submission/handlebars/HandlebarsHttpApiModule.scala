@@ -36,7 +36,7 @@ class HandlebarsHttpApiModule(wSHttpModule: WSHttpModule, configModule: ConfigMo
         rootHttpClient
           .buildUri(uri => appendUriSegment(profileConfiguration.baseUrl, uri))
           .buildHeaderCarrier { hc =>
-            hc.copy(extraHeaders = profileConfiguration.httpHeaders.toSeq ++ hc.extraHeaders)
+            hc.copy(extraHeaders = hc.extraHeaders ++ profileConfiguration.httpHeaders.toSeq)
           }
       }
 

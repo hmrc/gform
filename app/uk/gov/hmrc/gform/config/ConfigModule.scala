@@ -141,7 +141,6 @@ class ConfigModule(playComponents: PlayComponents) {
             baseUrl(destinationServiceKey) + basePath(destinationServiceKey),
             httpHeaders(destinationServiceKey)
           )
-          Logger.error("Destination Service: " + configuration.toString)
           Some((name, configuration))
         }
       }.getOrElse(Map.empty)
