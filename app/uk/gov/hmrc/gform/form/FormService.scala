@@ -97,13 +97,13 @@ class FormService[F[_]: Monad](formPersistence: FormPersistenceAlgebra[F], fileU
 object LifeCycleStatus {
   def newStatus(form: Form, status: FormStatus): FormStatus = (form.status, status) match {
     case (InProgress, _)                   => status
-    case (NeedsReview, Accepting)          => status
-    case (NeedsReview, _)                  => form.status // ToDo: This will be refined as we do more of the review stories
+    case (NeedsReview, _)                  => form.status
     case (Accepting, Accepted)             => status
     case (Accepting, _)                    => form.status
-    case (Rejecting, InProgress)           => InProgress
+    case (Rejecting, InProgress)           => status
     case (Rejecting, _)                    => form.status
-    case (Accepted, _)                     => form.status // ToDo: This will be refined as we do more of the review stories
+    case (Accepted, Submitting)            => status
+    case (Accepted, _)                     => form.status
     case (Summary, InProgress)             => form.status
     case (Summary, _)                      => status
     case (Validated, InProgress)           => Summary
@@ -111,6 +111,8 @@ object LifeCycleStatus {
     case (Validated, _)                    => form.status
     case (Signed, Submitted | NeedsReview) => status
     case (Signed, _)                       => form.status
+    case (Submitting, Submitted)           => status
+    case (Submitting, _)                   => form.status
     case (Submitted, _)                    => form.status
   }
 }

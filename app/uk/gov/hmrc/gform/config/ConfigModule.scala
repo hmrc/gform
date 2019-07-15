@@ -21,6 +21,7 @@ import java.util.Base64
 import com.typesafe.config.{ ConfigFactory, Config => TypeSafeConfig }
 import net.ceedubs.ficus.Ficus._
 import play.api.Configuration
+import play.api.Logger
 import play.api.Mode.Mode
 import uk.gov.hmrc.gform.playcomponents.PlayComponents
 import uk.gov.hmrc.gform.sharedmodel.config.ExposedConfig
@@ -140,8 +141,7 @@ class ConfigModule(playComponents: PlayComponents) {
             baseUrl(destinationServiceKey) + basePath(destinationServiceKey),
             httpHeaders(destinationServiceKey)
           )
-
-          println(configuration)
+          Logger.info("Destination Service: " + configuration.toString)
           Some((name, configuration))
         }
       }.getOrElse(Map.empty)

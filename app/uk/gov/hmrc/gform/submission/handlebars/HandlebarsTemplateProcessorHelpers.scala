@@ -412,6 +412,10 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
     hasStatus(options, Rejecting)
   }
 
+  def isSubmitting(options: Options): CharSequence = log("isSubmitting") {
+    hasStatus(options, Submitting)
+  }
+
   private def hasStatus(options: Options, requiredStatus: FormStatus) = {
     val formStatus = options.context.get("formStatus")
     ifNotNullAsString(formStatus) { s =>
