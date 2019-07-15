@@ -567,9 +567,9 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     }
   }
 
-  "isRejected" must "return true if the formStatus is Rejected, false otherwise" in {
+  "isReturning" must "return true if the formStatus is Returning, false otherwise" in {
     FormStatus.all.foreach { status =>
-      process("""{{isRejecting}}""", HandlebarsTemplateProcessorModel(status)) shouldBe (status == Rejecting).toString
+      process("""{{isReturning}}""", HandlebarsTemplateProcessorModel(status)) shouldBe (status == Returning).toString
     }
   }
 

@@ -408,8 +408,8 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
     hasStatus(options, Accepting)
   }
 
-  def isRejecting(options: Options): CharSequence = log("isRejecting") {
-    hasStatus(options, Rejecting)
+  def isReturning(options: Options): CharSequence = log("isReturning") {
+    hasStatus(options, Returning)
   }
 
   def isSubmitting(options: Options): CharSequence = log("isSubmitting") {

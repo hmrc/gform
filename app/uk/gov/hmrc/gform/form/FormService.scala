@@ -100,8 +100,8 @@ object LifeCycleStatus {
     case (NeedsReview, _)                  => form.status
     case (Accepting, Accepted)             => status
     case (Accepting, _)                    => form.status
-    case (Rejecting, InProgress)           => status
-    case (Rejecting, _)                    => form.status
+    case (Returning, InProgress)           => status
+    case (Returning, _)                    => form.status
     case (Accepted, Submitting)            => status
     case (Accepted, _)                     => form.status
     case (Summary, InProgress)             => form.status
