@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.submission.handlebars
 
 import play.api.Logger
 import uk.gov.hmrc.gform.config.ConfigModule
-import uk.gov.hmrc.gform.core.{FOpt, fOptMonadError}
+import uk.gov.hmrc.gform.core.{ FOpt, fOptMonadError }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.ProfileName
 import uk.gov.hmrc.gform.wshttp._
 import uk.gov.hmrc.gform.wshttp.HttpClient.HttpClientBuildingSyntax
