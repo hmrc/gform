@@ -16,8 +16,9 @@
 
 package uk.gov.hmrc.gform.submission.handlebars
 
+import play.api.Logger
 import uk.gov.hmrc.gform.config.ConfigModule
-import uk.gov.hmrc.gform.core.{ FOpt, fOptMonadError }
+import uk.gov.hmrc.gform.core.{FOpt, fOptMonadError}
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.ProfileName
 import uk.gov.hmrc.gform.wshttp._
 import uk.gov.hmrc.gform.wshttp.HttpClient.HttpClientBuildingSyntax
@@ -36,6 +37,8 @@ class HandlebarsHttpApiModule(wSHttpModule: WSHttpModule, configModule: ConfigMo
         rootHttpClient
           .buildUri(uri => appendUriSegment(profileConfiguration.baseUrl, uri))
           .buildHeaderCarrier { hc =>
+            Logger.error("Current Headers: " + hc.extraHeaders)
+            Logger.error("Headers in profile: " + profileConfiguration.httpHeaders)
             hc.copy(extraHeaders = hc.extraHeaders ++ profileConfiguration.httpHeaders.toSeq)
           }
       }
