@@ -18,14 +18,14 @@ package uk.gov.hmrc.gform.config
 
 import java.util.Base64
 
-import com.typesafe.config.{ConfigFactory, Config => TypeSafeConfig}
+import com.typesafe.config.{ ConfigFactory, Config => TypeSafeConfig }
 import net.ceedubs.ficus.Ficus._
 import play.api.Configuration
 import play.api.Mode.Mode
 import uk.gov.hmrc.gform.playcomponents.PlayComponents
 import uk.gov.hmrc.gform.sharedmodel.config.ExposedConfig
 import uk.gov.hmrc.play.auth.controllers.AuthParamsControllerConfig
-import uk.gov.hmrc.play.config.{ControllerConfig, ServicesConfig}
+import uk.gov.hmrc.play.config.{ ControllerConfig, ServicesConfig }
 import pureconfig.generic.auto._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.ProfileName
 
