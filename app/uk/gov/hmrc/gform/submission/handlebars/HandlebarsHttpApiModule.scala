@@ -16,9 +16,6 @@
 
 package uk.gov.hmrc.gform.submission.handlebars
 
-import cats.syntax.eq._
-import cats.instances.string._
-import play.api.Logger
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.{ FOpt, fOptMonadError }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.ProfileName
@@ -41,19 +38,12 @@ class HandlebarsHttpApiModule(wSHttpModule: WSHttpModule, configModule: ConfigMo
         rootHttpClient
           .buildUri(uri => appendUriSegment(profileConfiguration.baseUrl, uri))
           .buildHeaderCarrier { hc =>
-            Logger.error("Current extraHeader: " + hc.extraHeaders)
-            Logger.error("Current otherHeaders: " + hc.otherHeaders)
-            Logger.error("Headers in profile: " + profileConfiguration.httpHeaders)
-            val result = hc.copy(
+            hc.copy(
               authorization = profileConfiguration.httpHeaders
                 .get(HeaderNames.authorisation)
                 .map(Authorization(_)) orElse hc.authorization,
-              extraHeaders = hc.extraHeaders ++ profileConfiguration.httpHeaders
-                .filterKeys(_ =!= HeaderNames.authorisation)
-                .toSeq
+              extraHeaders = hc.extraHeaders ++ (profileConfiguration.httpHeaders - HeaderNames.authorisation).toSeq
             )
-            Logger.error("Result of adding to HeaderCarrier: " + result.headers)
-            result
           }
       }
 
