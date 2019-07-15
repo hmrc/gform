@@ -115,10 +115,10 @@ class ConfigModule(playComponents: PlayComponents) {
     }
 
     private def basePath(destinationServiceKey: String): String =
-      getString(destinationServiceKey, "basePath").getOrElse("")
+      getString(destinationServiceKey, "base-path").getOrElse("")
 
     private def httpHeaders(destinationServiceKey: String): Map[String, String] =
-      asStringStringMap(s"${qualifiedDestinationServiceKey(destinationServiceKey)}.httpHeaders")
+      asStringStringMap(s"${qualifiedDestinationServiceKey(destinationServiceKey)}.http-headers")
         .getOrElse(Map.empty)
         .mapValues(v => new String(Base64.getDecoder.decode(v), "UTF-8"))
 
