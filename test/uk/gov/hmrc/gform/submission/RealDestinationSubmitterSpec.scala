@@ -51,11 +51,11 @@ class RealDestinationSubmitterSpec extends Spec {
         .expectIncludeIfEvaluation(includeIfExpression, model, requiredResult = true)
         .expectHandlebarsSubmission(handlebarsHttpApi, model, httpResponse)
         .expectDestinationAudit(
-      handlebarsHttpApi.id,
-      Some(responseCode),
-      si.formId,
-      si.submissionData.pdfData,
-      si.submissionReference)
+          handlebarsHttpApi.id,
+          Some(responseCode),
+          si.formId,
+          si.submissionData.pdfData,
+          si.submissionReference)
         .sut
         .submitIfIncludeIf(handlebarsHttpApi, si, model, submitter, template) shouldBe Right(
         HandlebarsDestinationResponse(handlebarsHttpApi, httpResponse).some)
@@ -90,11 +90,11 @@ class RealDestinationSubmitterSpec extends Spec {
         .expectHandlebarsSubmission(handlebarsHttpApi, model, httpResponse)
         .expectIncludeIfEvaluation("true", model, true)
         .expectDestinationAudit(
-      handlebarsHttpApi.id,
-      Some(responseCode),
-      si.formId,
-      si.submissionData.pdfData,
-      si.submissionReference)
+          handlebarsHttpApi.id,
+          Some(responseCode),
+          si.formId,
+          si.submissionData.pdfData,
+          si.submissionReference)
         .sut
         .submitIfIncludeIf(handlebarsHttpApi, si, model, submitter, template) shouldBe Right(
         HandlebarsDestinationResponse(handlebarsHttpApi, httpResponse).some)
@@ -115,11 +115,11 @@ class RealDestinationSubmitterSpec extends Spec {
         .expectHandlebarsSubmission(handlebarsHttpApi, model, httpResponse)
         .expectIncludeIfEvaluation("true", model, true)
         .expectDestinationAudit(
-      handlebarsHttpApi.id,
-      Some(responseCode),
-      si.formId,
-      si.submissionData.pdfData,
-      si.submissionReference)
+          handlebarsHttpApi.id,
+          Some(responseCode),
+          si.formId,
+          si.submissionData.pdfData,
+          si.submissionReference)
         .sut
         .submitIfIncludeIf(handlebarsHttpApi, si, model, submitter, template) shouldBe Left(
         RealDestinationSubmitter.handlebarsHttpApiFailOnErrorMessage(handlebarsHttpApi, httpResponse))

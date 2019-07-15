@@ -27,9 +27,9 @@ trait DestinationSubmissionInfoGen {
   def destinationSubmissionInfoGen: Gen[DestinationSubmissionInfo] =
     for {
       formId        <- FormGen.formIdGen
-    customerId    <- PrimitiveGen.nonEmptyAlphaNumStrGen
-    pdfHtml       <- PrimitiveGen.nonEmptyAlphaNumStrGen
-    submissionRef <- PrimitiveGen.nonEmptyAlphaNumStrGen
+      customerId    <- PrimitiveGen.nonEmptyAlphaNumStrGen
+      pdfHtml       <- PrimitiveGen.nonEmptyAlphaNumStrGen
+      submissionRef <- PrimitiveGen.nonEmptyAlphaNumStrGen
     } yield
       DestinationSubmissionInfo(
         formId,

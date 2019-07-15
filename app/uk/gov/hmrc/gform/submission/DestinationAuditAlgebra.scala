@@ -63,7 +63,7 @@ object DestinationAudit {
             "userId"         -> JsString(userId.value),
             "id"             -> JsString(id.toString),
             "timestamp"      -> localDateTimeWrite.writes(timestamp),
-            "submissionRef" -> JsString(submissionReference.value),
+            "submissionRef"  -> JsString(submissionReference.value),
             "summaryHtml"    -> JsString(summaryHtml)
           ),
           destinationResponseStatus.map(s => "destinationResponseStatus" -> JsNumber(s)).toSeq,
