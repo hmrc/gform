@@ -23,7 +23,7 @@ import uk.gov.hmrc.gform.core.ValidationResult.BooleanToValidationResultSyntax
 import uk.gov.hmrc.gform.core.{ Opt, Valid, ValidationResult }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationId, DestinationTest, Destinations }
-import uk.gov.hmrc.gform.submission.{ DestinationSubmissionInfo, DestinationsSubmitter, SelfTestingDestinationSubmitter }
+import uk.gov.hmrc.gform.submission.{ DestinationSubmissionInfo, DestinationsSubmitter, SelfTestingDestinationSubmitter, SubmissionRef }
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.collection.immutable.List
@@ -74,7 +74,8 @@ object DestinationsValidator {
       .map { t =>
         val submitter = new DestinationsSubmitter(new SelfTestingDestinationSubmitter[Possible](test = t))
         submitter
-          .submitToList(dl, DestinationSubmissionInfo(null, null, None, null), t.formData, null)(HeaderCarrier())
+          .submitToList(dl, DestinationSubmissionInfo(null, null, None, null, SubmissionRef("Test")), t.formData, null)(
+      HeaderCarrier())
       }
       .collect { case Left(error) => error }
 

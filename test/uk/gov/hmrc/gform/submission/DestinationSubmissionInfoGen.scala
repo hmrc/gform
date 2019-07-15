@@ -26,9 +26,10 @@ import uk.gov.hmrc.gform.sharedmodel.{ FrontEndSubmissionVariables, SubmissionDa
 trait DestinationSubmissionInfoGen {
   def destinationSubmissionInfoGen: Gen[DestinationSubmissionInfo] =
     for {
-      formId     <- FormGen.formIdGen
-      customerId <- PrimitiveGen.nonEmptyAlphaNumStrGen
-      pdfHtml    <- PrimitiveGen.nonEmptyAlphaNumStrGen
+      formId        <- FormGen.formIdGen
+    customerId    <- PrimitiveGen.nonEmptyAlphaNumStrGen
+    pdfHtml       <- PrimitiveGen.nonEmptyAlphaNumStrGen
+    submissionRef <- PrimitiveGen.nonEmptyAlphaNumStrGen
     } yield
       DestinationSubmissionInfo(
         formId,
@@ -39,7 +40,8 @@ trait DestinationSubmissionInfoGen {
           FrontEndSubmissionVariables(JsObject(Seq())),
           StructuredFormValue.ObjectStructure(List(Field(FieldName("foo"), StructuredFormValue.TextNode("fooValue")))),
           EmailParametersRecalculated(Map.empty)
-        )
+        ),
+        SubmissionRef(submissionRef)
       )
 }
 

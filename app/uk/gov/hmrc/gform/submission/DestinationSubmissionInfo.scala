@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.gform.submission
 
-import play.api.libs.json._
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.gform.sharedmodel.SubmissionData
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
@@ -25,8 +24,5 @@ case class DestinationSubmissionInfo(
   formId: FormId,
   customerId: String,
   affinityGroup: Option[AffinityGroup],
-  submissionData: SubmissionData)
-
-object DestinationSubmissionInfo {
-  implicit val format: OFormat[DestinationSubmissionInfo] = Json.format[DestinationSubmissionInfo]
-}
+  submissionData: SubmissionData,
+  submissionReference: SubmissionRef)
