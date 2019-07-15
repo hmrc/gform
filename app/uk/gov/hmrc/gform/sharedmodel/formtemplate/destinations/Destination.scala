@@ -162,7 +162,7 @@ case class UploadableStateTransitionDestination(
       rs <- addErrorInfo(id, "requiredState")(
              FormStatus
                .unapply(requiredState)
-               .fold[Either[String, FormStatus]](s"Invalid requiredState: '$requiredState'".asLeft) { _.asRight })
+               .fold[Either[String, FormStatus]](s"Invalid requiredState: '$requiredState'. Allowed states are: ${FormStatus.all}".asLeft) { _.asRight })
     } yield Destination.StateTransition(id, rs, cvii.getOrElse(true.toString), failOnError.getOrElse(true))
 }
 
