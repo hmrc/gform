@@ -110,7 +110,8 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
       configModule,
       playComponents,
       formService,
-      formTemplateModule.formTemplateService)
+      formTemplateModule.formTemplateService,
+      Some(fileUploadModule.fileUploadService))
   private val graphiteModule = new GraphiteModule(self)
 
   val playComponentsModule = new PlayComponentsModule(

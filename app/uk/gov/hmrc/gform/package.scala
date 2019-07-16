@@ -15,6 +15,7 @@
  */
 
 package uk.gov.hmrc
+
 import cats.MonadError
 
 import scala.annotation.tailrec

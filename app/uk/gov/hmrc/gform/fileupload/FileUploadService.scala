@@ -36,7 +36,7 @@ class FileUploadService(
   fileUploadConnector: FileUploadConnector,
   fileUploadFrontendConnector: FileUploadFrontendConnector,
   timeModule: TimeProvider = new TimeProvider)(implicit ex: ExecutionContext)
-    extends FileUploadAlgebra[Future] {
+    extends FileUploadAlgebra[Future] with FileDownloadAlgebra[Future] {
 
   def createEnvelope(formTypeId: FormTemplateId, expiryDate: LocalDateTime)(
     implicit hc: HeaderCarrier): Future[EnvelopeId] = {
@@ -94,6 +94,12 @@ class FileUploadService(
       _ <- fileUploadConnector.routeEnvelope(RouteEnvelopeRequest(envelopeId, "dfs", "DMS"))
     } yield ()
   }
+
+  def getEnvelope(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): Future[Envelope] =
+    fileUploadConnector.getEnvelope(envelopeId)
+
+  def getFileBytes(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): Future[Array[Byte]] =
+    fileUploadConnector.getFileBytes(envelopeId, fileId)
 
   def deleteFile(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): Future[Unit] =
     fileUploadConnector.deleteFile(envelopeId, fileId)

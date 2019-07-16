@@ -19,8 +19,10 @@ package uk.gov.hmrc.gform.formtemplate
 import cats.instances.either._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
+import uk.gov.hmrc.gform.Possible
 import uk.gov.hmrc.gform.core.ValidationResult.BooleanToValidationResultSyntax
 import uk.gov.hmrc.gform.core.{ Opt, Valid, ValidationResult }
+import uk.gov.hmrc.gform.fileupload.FileDownloadAlgebra
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationId, DestinationTest, Destinations }
 import uk.gov.hmrc.gform.submission.{ DestinationSubmissionInfo, DestinationsSubmitter, SelfTestingDestinationSubmitter, SubmissionRef }
@@ -68,11 +70,11 @@ object DestinationsValidator {
     }
 
   private def validateTests(template: FormTemplate, dl: Destinations.DestinationList): ValidationResult = {
-    type Possible[T] = Either[String, T]
-
     val errors = template.destinationTests.toList.flatten
       .map { t =>
-        val submitter = new DestinationsSubmitter(new SelfTestingDestinationSubmitter[Possible](test = t))
+        val submitter = new DestinationsSubmitter[Possible](
+          new SelfTestingDestinationSubmitter[Possible](test = t),
+          Option.empty[FileDownloadAlgebra[Possible]])
         submitter
           .submitToList(dl, DestinationSubmissionInfo(null, null, None, null, null), t.formData, null)(HeaderCarrier())
       }
