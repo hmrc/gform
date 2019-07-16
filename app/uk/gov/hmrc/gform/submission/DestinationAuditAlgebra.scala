@@ -43,6 +43,7 @@ case class DestinationAudit(
   userId: UserId,
   caseworkerUserName: Option[String],
   summaryHtml: String,
+  submissionReference: SubmissionRef,
   id: UUID = UUID.randomUUID,
   timestamp: LocalDateTime = LocalDateTime.now)
 
@@ -62,7 +63,7 @@ object DestinationAudit {
             "userId"         -> JsString(userId.value),
             "id"             -> JsString(id.toString),
             "timestamp"      -> localDateTimeWrite.writes(timestamp),
-            "submissionRef"  -> JsString("NOT-DONE-YET"),
+            "submissionRef"  -> JsString(submissionReference.value),
             "summaryHtml"    -> JsString(summaryHtml)
           ),
           destinationResponseStatus.map(s => "destinationResponseStatus" -> JsNumber(s)).toSeq,
@@ -77,7 +78,8 @@ trait DestinationAuditAlgebra[M[_]] {
     destinationId: DestinationId,
     handlebarsDestinationResponseStatusCode: Option[Int],
     formId: FormId,
-    pdfHtml: String)(implicit hc: HeaderCarrier): M[Unit]
+    pdfHtml: String,
+    submissionReference: SubmissionRef)(implicit hc: HeaderCarrier): M[Unit]
 }
 
 class RepoDestinationAuditer(repository: Repo[DestinationAudit], formAlgebra: FormAlgebra[FOpt])(
@@ -87,7 +89,8 @@ class RepoDestinationAuditer(repository: Repo[DestinationAudit], formAlgebra: Fo
     destinationId: DestinationId,
     handlebarsDestinationResponseStatusCode: Option[Int],
     formId: FormId,
-    pdfHtml: String)(implicit hc: HeaderCarrier): FOpt[Unit] =
+    pdfHtml: String,
+    submissionReference: SubmissionRef)(implicit hc: HeaderCarrier): FOpt[Unit] =
     formAlgebra
       .get(formId)
       .flatMap { form =>
@@ -100,7 +103,8 @@ class RepoDestinationAuditer(repository: Repo[DestinationAudit], formAlgebra: Fo
             form.status,
             form.userId,
             getCaseworkerUsername(form.formData),
-            pdfHtml
+            pdfHtml,
+            submissionReference
           ))
       }
 
@@ -113,5 +117,6 @@ class NullDestinationAuditer[M[_]: Applicative] extends DestinationAuditAlgebra[
     destinationId: DestinationId,
     handlebarsDestinationResponseStatusCode: Option[Int],
     formId: FormId,
-    pdfHtml: String)(implicit hc: HeaderCarrier): M[Unit] = ().pure
+    pdfHtml: String,
+    submissionReference: SubmissionRef)(implicit hc: HeaderCarrier): M[Unit] = ().pure
 }

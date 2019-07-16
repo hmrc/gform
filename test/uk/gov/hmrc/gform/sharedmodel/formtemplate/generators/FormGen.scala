@@ -30,7 +30,7 @@ trait FormGen {
       value <- Gen.alphaNumStr
     } yield FormField(id, value)
   def formDataGen: Gen[FormData] = PrimitiveGen.zeroOrMoreGen(formFieldGen).map(FormData(_))
-  def formStatusGen: Gen[FormStatus] = Gen.oneOf(InProgress, Summary, Validated, Signed, Submitted)
+  def formStatusGen: Gen[FormStatus] = Gen.oneOf(FormStatus.all.toList)
 
   def formGen: Gen[Form] =
     for {

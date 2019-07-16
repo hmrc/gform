@@ -68,6 +68,12 @@ object HandlebarsTemplateProcessorModel {
   def apply(status: FormStatus): HandlebarsTemplateProcessorModel =
     HandlebarsTemplateProcessorModel(Map("formStatus" -> textNode(status.toString)))
 
+  def summaryHtml(html: String): HandlebarsTemplateProcessorModel =
+    HandlebarsTemplateProcessorModel("summaryHtml" -> textNode(html))
+
+  def submissionReference(submissionReference: String): HandlebarsTemplateProcessorModel =
+    HandlebarsTemplateProcessorModel("submissionReference" -> textNode(submissionReference))
+
   def hmrcTaxPeriods(form: Form): HandlebarsTemplateProcessorModel = {
 
     val lookup: Map[FormComponentId, String] = form.formData.fields.map(fd => fd.id -> fd.value).toMap

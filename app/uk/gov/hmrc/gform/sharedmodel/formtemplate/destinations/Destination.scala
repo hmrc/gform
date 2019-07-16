@@ -159,10 +159,10 @@ case class UploadableStateTransitionDestination(
   def toStateTransitionDestination: Either[String, Destination.StateTransition] =
     for {
       cvii <- addErrorInfo(id, "includeIf")(condition(convertSingleQuotes, includeIf))
-      rs <- addErrorInfo(id, "requiredState")(
-             FormStatus
-               .unapply(requiredState)
-               .fold[Either[String, FormStatus]](s"Invalid requiredState: '$requiredState'".asLeft) { _.asRight })
+      rs <- addErrorInfo(id, "requiredState")(FormStatus
+             .unapply(requiredState)
+             .fold[Either[String, FormStatus]](
+               s"Invalid requiredState: '$requiredState'. Allowed states are: ${FormStatus.all}".asLeft) { _.asRight })
     } yield Destination.StateTransition(id, rs, cvii.getOrElse(true.toString), failOnError.getOrElse(true))
 }
 

@@ -17,13 +17,13 @@
 package uk.gov.hmrc.gform.submission.handlebars
 
 import java.text.DecimalFormat
+import java.util.Base64
 
 import com.fasterxml.jackson.databind.JsonNode
-import uk.gov.hmrc.gform.Spec
 import org.scalacheck.Gen
+import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ HandlebarsTemplateProcessorModel, TemplateType }
-import uk.gov.hmrc.gform.time.FrozenTimeProvider
 
 import scala.language.implicitConversions
 
@@ -564,6 +564,23 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   "isAccepting" must "return true if the formStatus is Accepting, false otherwise" in {
     FormStatus.all.foreach { status =>
       process("""{{isAccepting}}""", HandlebarsTemplateProcessorModel(status)) shouldBe (status == Accepting).toString
+    }
+  }
+
+  "isReturning" must "return true if the formStatus is Returning, false otherwise" in {
+    FormStatus.all.foreach { status =>
+      process("""{{isReturning}}""", HandlebarsTemplateProcessorModel(status)) shouldBe (status == Returning).toString
+    }
+  }
+
+  "base64Encode" must "return null if given null" in {
+    process("{{base64Encode null}}", HandlebarsTemplateProcessorModel.empty) shouldBe "null"
+  }
+
+  it must "handle arbitrary strings" in {
+    forAll(Gen.alphaNumStr) { s =>
+      process(s"""{{base64Encode "$s"}}""", HandlebarsTemplateProcessorModel.empty) shouldBe
+        Base64.getEncoder.encodeToString(s.getBytes("UTF-8"))
     }
   }
 

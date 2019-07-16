@@ -36,10 +36,10 @@ class TemplateValidatorSpec extends Spec {
     forAll(
       oneOrMoreGen(sectionGen),
       oneOrMoreGen(sectionGen),
-      formComponentIdGen,
+      formComponentIdGen("a"),
       oneOrMoreGen(sectionGen),
       oneOrMoreGen(sectionGen),
-      formComponentIdGen
+      formComponentIdGen("b")
     ) { (s11, s12, id1, s21, s22, id2) =>
       val ds1 = setAllFieldIds(s11 ::: s12, id1)
       val ds2 = setAllFieldIds(s21 ::: s22, id2)

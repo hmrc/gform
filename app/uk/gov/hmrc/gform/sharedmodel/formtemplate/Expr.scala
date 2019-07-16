@@ -22,7 +22,7 @@ import uk.gov.hmrc.gform.core.parsers.ExprParsers
 
 sealed trait Expr {
   def rewrite: Expr = this match {
-    case Else(Else(l, r), e) => Else(l.rewrite, Else(r.rewrite, e.rewrite)).rewrite
+    case Else(Else(l, r), e) => Else(l.rewrite, Else(r.rewrite, e.rewrite).rewrite).rewrite
     case Add(l, r)           => Add(l.rewrite, r.rewrite)
     case Multiply(l, r)      => Multiply(l.rewrite, r.rewrite)
     case Subtraction(l, r)   => Subtraction(l.rewrite, r.rewrite)

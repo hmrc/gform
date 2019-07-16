@@ -28,6 +28,12 @@ trait FormComponentGen {
       restAfterUnderscore  <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen).map(_.map("_" + _).getOrElse(""))
     } yield FormComponentId(first + restBeforeUnderscore + restAfterUnderscore)
 
+  def formComponentIdGen(prefix: String): Gen[FormComponentId] =
+    for {
+      restBeforeUnderscore <- PrimitiveGen.nonEmptyAlphaNumStrGen
+      restAfterUnderscore  <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen).map(_.map("_" + _).getOrElse(""))
+    } yield FormComponentId(prefix + restBeforeUnderscore + restAfterUnderscore)
+
   def idBeginningWithNumberGen: Gen[FormComponentId] =
     for {
       precedingNumber     <- Gen.numChar.map(_.toString)
