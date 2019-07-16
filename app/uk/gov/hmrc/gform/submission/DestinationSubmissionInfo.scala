@@ -25,4 +25,4 @@ case class DestinationSubmissionInfo(
   customerId: String,
   affinityGroup: Option[AffinityGroup],
   submissionData: SubmissionData,
-  submissionReference: SubmissionRef)
+  submission: Submission)

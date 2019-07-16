@@ -84,9 +84,7 @@ class SubmissionModule(
     fileUploadModule.fileUploadService,
     fOptFormAlgebra,
     formTemplateModule.fOptFormTemplateAlgebra,
-    submissionRepo,
-    pdfGeneratorModule.pdfGeneratorService,
-    timeModule.timeProvider
+    pdfGeneratorModule.pdfGeneratorService
   )
 
   private val destinationAuditer: DestinationAuditAlgebra[FOpt] =
@@ -109,7 +107,8 @@ class SubmissionModule(
     formTemplateModule.formTemplateService,
     new DestinationsSubmitter(realDestinationSubmitter),
     submissionRepo,
-    emailModule.emailLogic
+    emailModule.emailLogic,
+    timeModule.timeProvider
   )
 
   val submissionController = new SubmissionController(submissionService)

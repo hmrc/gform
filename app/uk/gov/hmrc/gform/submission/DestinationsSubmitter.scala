@@ -95,5 +95,5 @@ object DestinationsSubmitter {
       HandlebarsTemplateProcessorModel(submissionInfo.submissionData.variables) +
       HandlebarsTemplateProcessorModel(form.status) +
       HandlebarsTemplateProcessorModel.summaryHtml(submissionInfo.submissionData.pdfData) +
-      HandlebarsTemplateProcessorModel.submissionReference(submissionInfo.submissionReference.value)
+      HandlebarsTemplateProcessorModel.submissionReference(submissionInfo.submission.submissionRef.value)
 }

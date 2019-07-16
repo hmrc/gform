@@ -25,6 +25,8 @@ import uk.gov.hmrc.gform.formtemplate.FormTemplateService
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorService
 import uk.gov.hmrc.gform.sharedmodel.SubmissionData
 import uk.gov.hmrc.gform.sharedmodel.form._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FileUpload, FormTemplate }
+import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -35,7 +37,8 @@ class SubmissionService(
   formTemplateService: FormTemplateService,
   destinationsSubmitter: DestinationsSubmitter[FOpt],
   submissionRepo: SubmissionRepo,
-  email: EmailService)(implicit ex: ExecutionContext) {
+  email: EmailService,
+  timeProvider: TimeProvider)(implicit ex: ExecutionContext) {
 
   def submissionWithPdf(
     formId: FormId,
@@ -45,13 +48,9 @@ class SubmissionService(
     // format: OFF
       for {
         form          <- formAlgebra.get(formId)
-        submissionInfo = DestinationSubmissionInfo(
-      formId,
-      customerId,
-      affinityGroup,
-      submissionData,
-      SubmissionRef(form.envelopeId))
         formTemplate  <- fromFutureA(formTemplateService.get(form.formTemplateId))
+        submission    <- findOrCreateSubmission(form, customerId, formTemplate)
+        submissionInfo = DestinationSubmissionInfo(formId, customerId, affinityGroup, submissionData, submission)
         _             <- destinationsSubmitter.send(submissionInfo, formTemplate, formAlgebra)
         emailAddress   = email.getEmailAddress(form)
         _             <- fromFutureA(email.sendEmail(emailAddress, formTemplate.emailTemplateId, submissionData.emailParameters))
@@ -60,4 +59,34 @@ class SubmissionService(
 
   def submissionDetails(formId: FormId)(implicit ex: ExecutionContext): Future[Submission] =
     submissionRepo.get(formId.value)
+
+  private def findOrCreateSubmission(form: Form, customerId: String, formTemplate: FormTemplate): FOpt[Submission] =
+    fromFutureA(submissionRepo.find(form._id.value))
+      .flatMap(_.fold(insertSubmission(form, customerId, formTemplate)) { uk.gov.hmrc.gform.core.success(_) })
+
+  private def insertSubmission(form: Form, customerId: String, formTemplate: FormTemplate): FOpt[Submission] = {
+    val submission = createSubmission(form, customerId, formTemplate)
+    submissionRepo.upsert(submission).map(_ => submission)
+  }
+
+  private def getNoOfAttachments(form: Form, formTemplate: FormTemplate): Int = {
+    // TODO two functions are calculating the same thing in different ways! c.f. FileUploadService.SectionFormField.getNumberOfFiles
+    val attachmentsIds: List[String] =
+      formTemplate.sections.flatMap(_.fields.filter(f => f.`type` == FileUpload())).map(_.id.value)
+    val formIds: Seq[String] = form.formData.fields.filterNot(_.value == FileUploadField.noFileUpload).map(_.id.value)
+    attachmentsIds.count(ai => formIds.contains(ai))
+  }
+
+  private def createSubmission(form: Form, customerId: String, formTemplate: FormTemplate) =
+    Submission(
+      submittedDate = timeProvider.localDateTime(),
+      submissionRef = SubmissionRef(form.envelopeId),
+      envelopeId = form.envelopeId,
+      _id = form._id,
+      noOfAttachments = getNoOfAttachments(form, formTemplate),
+      dmsMetaData = DmsMetaData(
+        formTemplateId = form.formTemplateId,
+        customerId //TODO need more secure and safe way of doing this. perhaps moving auth to backend and just pulling value out there.
+      )
+    )
 }

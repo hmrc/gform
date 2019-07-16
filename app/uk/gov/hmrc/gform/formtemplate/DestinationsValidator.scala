@@ -74,8 +74,7 @@ object DestinationsValidator {
       .map { t =>
         val submitter = new DestinationsSubmitter(new SelfTestingDestinationSubmitter[Possible](test = t))
         submitter
-          .submitToList(dl, DestinationSubmissionInfo(null, null, None, null, SubmissionRef("Test")), t.formData, null)(
-            HeaderCarrier())
+          .submitToList(dl, DestinationSubmissionInfo(null, null, None, null, null), t.formData, null)(HeaderCarrier())
       }
       .collect { case Left(error) => error }
 

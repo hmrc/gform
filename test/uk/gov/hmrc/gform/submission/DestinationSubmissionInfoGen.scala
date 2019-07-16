@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.gform.submission
 
+import java.time.LocalDateTime
+
 import org.scalacheck.Gen
 import play.api.libs.json.JsObject
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.EmailParametersRecalculated
@@ -29,7 +31,7 @@ trait DestinationSubmissionInfoGen {
       formId        <- FormGen.formIdGen
       customerId    <- PrimitiveGen.nonEmptyAlphaNumStrGen
       pdfHtml       <- PrimitiveGen.nonEmptyAlphaNumStrGen
-      submissionRef <- PrimitiveGen.nonEmptyAlphaNumStrGen
+      submissionRef <- PrimitiveGen.nonEmptyAlphaNumStrGen.map(SubmissionRef(_))
     } yield
       DestinationSubmissionInfo(
         formId,
@@ -41,7 +43,7 @@ trait DestinationSubmissionInfoGen {
           StructuredFormValue.ObjectStructure(List(Field(FieldName("foo"), StructuredFormValue.TextNode("fooValue")))),
           EmailParametersRecalculated(Map.empty)
         ),
-        SubmissionRef(submissionRef)
+        Submission(formId, LocalDateTime.now, submissionRef, null, 0, null)
       )
 }
 

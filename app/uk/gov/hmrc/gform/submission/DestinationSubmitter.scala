@@ -72,7 +72,7 @@ class RealDestinationSubmitter[M[_], R](
                   result.map(_.status),
                   submissionInfo.formId,
                   submissionInfo.submissionData.pdfData,
-                  submissionInfo.submissionReference)
+                  submissionInfo.submission.submissionRef)
           } yield result
         else
           for {
@@ -151,7 +151,7 @@ class RealDestinationSubmitter[M[_], R](
       Some(response.status),
       submissionInfo.formId,
       submissionInfo.submissionData.pdfData,
-      submissionInfo.submissionReference)
+      submissionInfo.submission.submissionRef)
       .flatMap { _ =>
         monadError.raiseError(RealDestinationSubmitter.handlebarsHttpApiFailOnErrorMessage(destination, response))
       }
