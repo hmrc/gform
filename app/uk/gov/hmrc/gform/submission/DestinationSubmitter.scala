@@ -23,7 +23,7 @@ import cats.syntax.functor._
 import cats.syntax.flatMap._
 import cats.syntax.applicative._
 import cats.syntax.option._
-import play.api.Logger
+import org.slf4j.LoggerFactory
 import play.api.libs.json.{ JsNull, JsValue, Json }
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.sharedmodel.form.{ FormId, FormStatus }
@@ -84,7 +84,7 @@ class RealDestinationSubmitter[M[_], R](
 
   private def logInfoInMonad(msg: String): M[Unit] =
     monadError.pure {
-      Logger.info(msg)
+      LoggerFactory.getLogger(getClass.getName).info(msg)
     }
 
   private def submit(
@@ -118,7 +118,9 @@ class RealDestinationSubmitter[M[_], R](
       if (d.failOnError)
         monadError.raiseError(s"Destination ${d.id.id} : $msg")
       else {
-        Logger.info(s"Destination ${d.id} failed but has 'failOnError' set to false. Ignoring.")
+        LoggerFactory
+          .getLogger(getClass.getName)
+          .info(s"Destination ${d.id} failed but has 'failOnError' set to false. Ignoring.")
         monadError.pure(())
       }
     }
@@ -134,8 +136,7 @@ class RealDestinationSubmitter[M[_], R](
         else if (d.failOnError)
           createFailureResponse(d, response, submissionInfo)
         else {
-          Logger.info(
-            s"Destination ${d.id} returned status code ${response.status} but has 'failOnError' set to false. Ignoring.")
+          LoggerFactory.getLogger(getClass.getName) info (s"Destination ${d.id} returned status code ${response.status} but has 'failOnError' set to false. Ignoring.")
           createSuccessResponse(d, response)
         }
       }

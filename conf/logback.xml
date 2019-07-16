@@ -49,6 +49,14 @@
 
     <logger name="org.apache.fontbox" level="INFO"/>>
 
+    <logger name="uk.gov.hmrc.gform.save4later.Save4Later" level="INFO"/>
+
+    <logger name="com.github.jknack.handlebars" level="INFO"/>
+
+    <logger name="uk.gov.hmrc.gform.submission.handlebars" level="WARN"/>
+
+    <logger name="uk.gov.hmrc.gform.submission" level="WARN"/>
+
     <logger name="application" level="DEBUG"/>
 
     <logger name="javax.management.mbeanserver" level="INFO"/>
