@@ -21,7 +21,7 @@ import java.security.MessageDigest
 
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
-import uk.gov.hmrc.gform.sharedmodel.form.Seed
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, Seed }
 
 import scala.math.pow
 import scala.util.Random
@@ -39,6 +39,17 @@ object SubmissionRef {
   val oformat: OFormat[SubmissionRef] = ValueClassFormat.oformat("submissionRef", SubmissionRef.apply, _.value)
   val vformat: Format[SubmissionRef] =
     ValueClassFormat.vformat("submissionRef", SubmissionRef.apply, x => JsString(x.value))
+
+  def apply(value: EnvelopeId): SubmissionRef = SubmissionRef(getSubmissionReference(value))
+
+  private def getSubmissionReference(envelopeId: EnvelopeId): String =
+    if (!envelopeId.value.isEmpty) {
+      // As 36^11 (number of combinations of 11 base 36 digits) < 2^63 (number of combinations of 63 base 2 digits) we can get full significance from this digest.
+      val digest = MessageDigest.getInstance("SHA-256").digest(envelopeId.value.getBytes()).take(8)
+      val initialValue = new BigInteger(digest).abs()
+      val unformattedString = calculate(initialValue, radix, digits, comb)
+      unformattedString.grouped(4).mkString("-").toUpperCase
+    } else { "" }
 
   def apply(seed: Seed): SubmissionRef = SubmissionRef(getSubmissionReference(seed))
 
