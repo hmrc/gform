@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.save4later
 
 import cats.instances.future._
 import cats.syntax.functor._
+import org.slf4j.LoggerFactory
 import play.api.Logger
 import play.api.libs.json.{ JsValue, Json }
 import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormId }
@@ -36,12 +37,12 @@ class Save4Later(cache: ShortLivedCache)(implicit ex: ExecutionContext) extends 
       //use the same API as using WSHTTP
       case None => throw new NotFoundException(s"Not found 'form' for the given id: '${formId.value}'")
       case Some(form) =>
-        Logger.debug(Json.prettyPrint(Json.toJson(form)) + "GETFORM")
+        LoggerFactory.getLogger(getClass.getName).debug(Json.prettyPrint(Json.toJson(form)) + "GETFORM")
         form
     }
 
   def upsert(formId: FormId, form: Form)(implicit hc: HeaderCarrier): Future[Unit] = {
-    Logger.debug(Json.prettyPrint(Json.toJson(form)) + "PUTFORM")
+    LoggerFactory.getLogger(getClass.getName).debug(Json.prettyPrint(Json.toJson(form)) + "PUTFORM")
     cache.cache[Form](formId.value, formCacheKey, form).void
   }
 
