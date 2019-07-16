@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.testonly
 
 import scala.concurrent.Future
 import uk.gov.hmrc.gform.config.ConfigModule
+import uk.gov.hmrc.gform.fileupload.FileDownloadAlgebra
 import uk.gov.hmrc.gform.form.FormService
 import uk.gov.hmrc.gform.formtemplate.{ FormTemplateAlgebra, FormTemplateService }
 import uk.gov.hmrc.gform.mongo.MongoModule
@@ -33,7 +34,8 @@ class TestOnlyModule(
   configModule: ConfigModule,
   playComponents: PlayComponents,
   formService: FormService[Future],
-  formTemplateService: FormTemplateService)(implicit ex: ExecutionContext) {
+  formTemplateService: FormTemplateService,
+  fileDownloadAlgebra: Option[FileDownloadAlgebra[Future]])(implicit ex: ExecutionContext) {
 
   val enrolmentConnector =
     new EnrolmentConnector(
@@ -45,7 +47,7 @@ class TestOnlyModule(
   }
 
   val testOnlyController: TestOnlyController =
-    new TestOnlyController(mongoModule.mongo, enrolmentConnector, formService, formTemplateAlgebra)
+    new TestOnlyController(mongoModule.mongo, enrolmentConnector, formService, formTemplateAlgebra, fileDownloadAlgebra)
   val proxyActions = new Proxy(playComponents.ahcWSComponents.wsClient)
   val fUInterceptor: FUInterceptorController =
     new FUInterceptorController(wSHttpModule.auditableWSHttp, configModule.serviceConfig, proxyActions)

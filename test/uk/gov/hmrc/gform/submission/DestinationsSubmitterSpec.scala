@@ -68,7 +68,7 @@ class DestinationsSubmitterSpec extends Spec {
         .expectDestinationSubmitterSubmitIfIncludeIf(
           destination,
           submissionInfo,
-          DestinationsSubmitter.createHandlebarsTemplateProcessorModel(submissionInfo, form),
+          DestinationsSubmitter.createHandlebarsTemplateProcessorModel(submissionInfo, form, None),
           None)
         .submitter
         .send(submissionInfo, exampleTemplateWithDestinations(destination), formAlgebra)
@@ -90,7 +90,7 @@ class DestinationsSubmitterSpec extends Spec {
 
       val response1 = HttpResponse(responseCode1, Option(responseJson1))
 
-      val initialModel = DestinationsSubmitter.createHandlebarsTemplateProcessorModel(submissionInfo, form)
+      val initialModel = DestinationsSubmitter.createHandlebarsTemplateProcessorModel(submissionInfo, form, None)
       val response1Model = HandlebarsDestinationResponse(handlebarsHttpApi1, response1)
       val expectedModel2 = initialModel + HandlebarsTemplateProcessorModel(response1Model)
 
@@ -197,7 +197,7 @@ class DestinationsSubmitterSpec extends Spec {
 
   private def createSubmitter[M[_]: Monad](): SubmitterParts[M] = {
     val destinationSubmitter: DestinationSubmitter[M] = mock[DestinationSubmitter[M]]
-    val submitter = new DestinationsSubmitter[M](destinationSubmitter)
+    val submitter = new DestinationsSubmitter[M](destinationSubmitter, None)
 
     SubmitterParts(submitter, destinationSubmitter)
   }

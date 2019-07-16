@@ -16,9 +16,11 @@
 
 package uk.gov.hmrc.gform.testonly
 
+import cats.syntax.traverse._
 import cats.data.EitherT
 import cats.instances.option._
 import cats.syntax.eq._
+import cats.instances.future._
 import com.typesafe.config.{ ConfigFactory, ConfigRenderOptions }
 import java.time.LocalDateTime
 
@@ -30,7 +32,7 @@ import reactivemongo.play.json.collection.JSONCollection
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.BuildInfo
 import uk.gov.hmrc.gform.controllers.BaseController
-import uk.gov.hmrc.gform.des._
+import uk.gov.hmrc.gform.fileupload.{ FileDownloadAlgebra, UploadedFile }
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.sharedmodel.AffinityGroupUtil._
@@ -38,17 +40,17 @@ import uk.gov.hmrc.gform.sharedmodel._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.{ DestinationList, DmsSubmission }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, Destinations, HandlebarsTemplateProcessorModel }
-import uk.gov.hmrc.gform.sharedmodel.form.FormId
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId }
 import uk.gov.hmrc.gform.submission.{ DestinationSubmissionInfo, DestinationsSubmitter, DmsMetaData, Submission, SubmissionRef }
 import uk.gov.hmrc.gform.submission.handlebars.RealHandlebarsTemplateProcessor
-
-import scala.annotation.tailrec
+import uk.gov.hmrc.http.HeaderCarrier
 
 class TestOnlyController(
   mongo: () => DB,
   enrolmentConnector: EnrolmentConnector,
   formAlgebra: FormAlgebra[Future],
-  formTemplateAlgebra: FormTemplateAlgebra[Future])(implicit ex: ExecutionContext)
+  formTemplateAlgebra: FormTemplateAlgebra[Future],
+  fileDownloadAlgebra: Option[FileDownloadAlgebra[Future]])(implicit ex: ExecutionContext)
     extends BaseController {
 
   def renderHandlebarPayload(
@@ -73,10 +75,11 @@ class TestOnlyController(
           0,
           DmsMetaData(formTemplate._id, customerId)
         )
+        files <- uploadedFiles(form.envelopeId)
         submissionInfo = DestinationSubmissionInfo(formId, customerId, affinityGroup, submissionData, submission)
       } yield {
         val model: HandlebarsTemplateProcessorModel =
-          DestinationsSubmitter.createHandlebarsTemplateProcessorModel(submissionInfo, form)
+          DestinationsSubmitter.createHandlebarsTemplateProcessorModel(submissionInfo, form, files)
 
         val maybeDestination: Option[Destination.HandlebarsHttpApi] =
           findHandlebarsDestinationWithId(destinationId, formTemplate.destinations)
@@ -121,6 +124,9 @@ class TestOnlyController(
     availableHandlebarsDestinations(destinations).find(_.id === id)
 
   private def fromOption[A, B](a: Option[A], s: B): EitherT[Option, B, A] = EitherT.fromOption(a, s)
+
+  private def uploadedFiles(envelopedId: EnvelopeId)(implicit hc: HeaderCarrier): Future[Option[List[UploadedFile]]] =
+    fileDownloadAlgebra.traverse { _.allUploadedFiles(envelopedId) }
 
   lazy val formTemplates = mongo().collection[JSONCollection]("formTemplate")
   def removeTemplates() = Action.async { implicit request =>

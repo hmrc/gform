@@ -288,6 +288,6 @@ class RealDestinationSubmitterSpec extends Spec {
 
   private def submitter: DestinationsSubmitter[Possible] = {
     val destinationSubmitter: DestinationSubmitter[Possible] = mock[DestinationSubmitter[Possible]]
-    new DestinationsSubmitter[Possible](destinationSubmitter)
+    new DestinationsSubmitter[Possible](destinationSubmitter, None)
   }
 }

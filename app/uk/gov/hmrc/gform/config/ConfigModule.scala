@@ -129,11 +129,16 @@ class ConfigModule(playComponents: PlayComponents) {
     private val enableAuditKey = "enable-audit"
     def auditDestinations: Boolean = getConfBool(s"destination-services.$enableAuditKey", false)
 
+    private val populateHandlebarsModelWithDocumentsKey = "populate-handlebars-model-with-documents"
+    def populateHandlebarsModelWithDocuments: Boolean =
+      getConfBool(s"destination-services.$populateHandlebarsModelWithDocumentsKey", false)
+
     import cats.syntax.eq._
     import cats.instances.string._
     def apply(): Map[ProfileName, ProfileConfiguration] =
       asMap("destination-services") { destinationServiceKey =>
-        if (destinationServiceKey === "protocol" || destinationServiceKey === enableAuditKey) None
+        if (destinationServiceKey === "protocol" || destinationServiceKey === enableAuditKey || destinationServiceKey === populateHandlebarsModelWithDocumentsKey)
+          None
         else {
           val name = profileName(destinationServiceKey)
           val configuration = ProfileConfiguration(
