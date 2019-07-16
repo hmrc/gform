@@ -68,7 +68,7 @@ class RealDestinationSubmitter[M[_], R](
             _      <- logInfoInMonad(s"Destination ${destination.id.id} is included")
             result <- submit(destination, submissionInfo, model, submitter, formTemplate)
             _ <- destinationAuditer(
-                  destination.id,
+                  destination,
                   result.map(_.status),
                   submissionInfo.formId,
                   submissionInfo.submissionData.pdfData,
@@ -143,17 +143,17 @@ class RealDestinationSubmitter[M[_], R](
       .map(Option(_))
 
   private def createFailureResponse(
-    d: Destination.HandlebarsHttpApi,
+    destination: Destination.HandlebarsHttpApi,
     response: HttpResponse,
     submissionInfo: DestinationSubmissionInfo)(implicit hc: HeaderCarrier): M[HandlebarsDestinationResponse] =
     destinationAuditer(
-      d.id,
+      destination,
       Some(response.status),
       submissionInfo.formId,
       submissionInfo.submissionData.pdfData,
       submissionInfo.submissionReference)
       .flatMap { _ =>
-        monadError.raiseError(RealDestinationSubmitter.handlebarsHttpApiFailOnErrorMessage(d, response))
+        monadError.raiseError(RealDestinationSubmitter.handlebarsHttpApiFailOnErrorMessage(destination, response))
       }
 
   private def createSuccessResponse(

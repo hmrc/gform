@@ -51,7 +51,7 @@ class RealDestinationSubmitterSpec extends Spec {
         .expectIncludeIfEvaluation(includeIfExpression, model, requiredResult = true)
         .expectHandlebarsSubmission(handlebarsHttpApi, model, httpResponse)
         .expectDestinationAudit(
-          handlebarsHttpApi.id,
+          handlebarsHttpApi,
           Some(responseCode),
           si.formId,
           si.submissionData.pdfData,
@@ -90,7 +90,7 @@ class RealDestinationSubmitterSpec extends Spec {
         .expectHandlebarsSubmission(handlebarsHttpApi, model, httpResponse)
         .expectIncludeIfEvaluation("true", model, true)
         .expectDestinationAudit(
-          handlebarsHttpApi.id,
+          handlebarsHttpApi,
           Some(responseCode),
           si.formId,
           si.submissionData.pdfData,
@@ -115,7 +115,7 @@ class RealDestinationSubmitterSpec extends Spec {
         .expectHandlebarsSubmission(handlebarsHttpApi, model, httpResponse)
         .expectIncludeIfEvaluation("true", model, true)
         .expectDestinationAudit(
-          handlebarsHttpApi.id,
+          handlebarsHttpApi,
           Some(responseCode),
           si.formId,
           si.submissionData.pdfData,
@@ -134,7 +134,7 @@ class RealDestinationSubmitterSpec extends Spec {
         createSubmitter
           .expectDmsSubmission(si, hmrcDms.toDeprecatedDmsSubmission)
           .expectIncludeIfEvaluation("true", model, true)
-          .expectDestinationAudit(hmrcDms.id, None, si.formId, si.submissionData.pdfData, si.submissionReference)
+          .expectDestinationAudit(hmrcDms, None, si.formId, si.submissionData.pdfData, si.submissionReference)
           .sut
           .submitIfIncludeIf(hmrcDms, si, model, submitter, template) shouldBe Right(None)
     }
@@ -151,7 +151,7 @@ class RealDestinationSubmitterSpec extends Spec {
       createSubmitter
         .expectIncludeIfEvaluation(includeIfExpression, model, requiredResult = true)
         .expectDmsSubmission(si, hmrcDms.toDeprecatedDmsSubmission)
-        .expectDestinationAudit(hmrcDms.id, None, si.formId, si.submissionData.pdfData, si.submissionReference)
+        .expectDestinationAudit(hmrcDms, None, si.formId, si.submissionData.pdfData, si.submissionReference)
         .sut
         .submitIfIncludeIf(hmrcDms, si, model, submitter, template) shouldBe Right(None)
     }
@@ -179,7 +179,7 @@ class RealDestinationSubmitterSpec extends Spec {
         createSubmitter
           .expectDmsSubmissionFailure(si, hmrcDms.toDeprecatedDmsSubmission, "an error")
           .expectIncludeIfEvaluation("true", HandlebarsTemplateProcessorModel.empty, true)
-          .expectDestinationAudit(hmrcDms.id, None, si.formId, si.submissionData.pdfData, si.submissionReference)
+          .expectDestinationAudit(hmrcDms, None, si.formId, si.submissionData.pdfData, si.submissionReference)
           .sut
           .submitIfIncludeIf(hmrcDms, si, HandlebarsTemplateProcessorModel(), submitter, template) shouldBe Right(None)
     }
@@ -250,14 +250,14 @@ class RealDestinationSubmitterSpec extends Spec {
     }
 
     def expectDestinationAudit(
-      destinationId: DestinationId,
+      destination: Destination,
       response: Option[Int],
       formId: FormId,
       pdfHtml: String,
       submissionRef: SubmissionRef): SubmitterParts[F] = {
       (destinationAuditer
-        .apply(_: DestinationId, _: Option[Int], _: FormId, _: String, _: SubmissionRef)(_: HeaderCarrier))
-        .expects(destinationId, response, formId, pdfHtml, submissionRef, hc)
+        .apply(_: Destination, _: Option[Int], _: FormId, _: String, _: SubmissionRef)(_: HeaderCarrier))
+        .expects(destination, response, formId, pdfHtml, submissionRef, hc)
         .returning(F.pure(()))
       this
     }

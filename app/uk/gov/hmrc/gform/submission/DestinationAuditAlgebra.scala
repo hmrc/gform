@@ -28,7 +28,7 @@ import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel.UserId
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplateId }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId }
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongo.json.ReactiveMongoFormats.localDateTimeWrite
 
@@ -38,6 +38,7 @@ case class DestinationAudit(
   formId: FormId,
   formTemplateId: FormTemplateId,
   destinationId: DestinationId,
+  destinationType: String,
   destinationResponseStatus: Option[Int],
   workflowState: FormStatus,
   userId: UserId,
@@ -56,15 +57,16 @@ object DestinationAudit {
       JsObject(
         Seq(
           Seq(
-            "formId"         -> JsString(formId.value),
-            "formTemplateId" -> JsString(formTemplateId.value),
-            "destinationId"  -> JsString(destinationId.id),
-            "workflowState"  -> JsString(workflowState.toString),
-            "userId"         -> JsString(userId.value),
-            "id"             -> JsString(id.toString),
-            "timestamp"      -> localDateTimeWrite.writes(timestamp),
-            "submissionRef"  -> JsString(submissionReference.value),
-            "summaryHtml"    -> JsString(summaryHtml)
+            "formId"          -> JsString(formId.value),
+            "formTemplateId"  -> JsString(formTemplateId.value),
+            "destinationId"   -> JsString(destinationId.id),
+            "destinationType" -> JsString(destinationType),
+            "workflowState"   -> JsString(workflowState.toString),
+            "userId"          -> JsString(userId.value),
+            "id"              -> JsString(id.toString),
+            "timestamp"       -> localDateTimeWrite.writes(timestamp),
+            "submissionRef"   -> JsString(submissionReference.value),
+            "summaryHtml"     -> JsString(summaryHtml)
           ),
           destinationResponseStatus.map(s => "destinationResponseStatus" -> JsNumber(s)).toSeq,
           caseworkerUserName.map(c => "_caseworker_userName"             -> JsString(c)).toSeq
@@ -75,7 +77,7 @@ object DestinationAudit {
 
 trait DestinationAuditAlgebra[M[_]] {
   def apply(
-    destinationId: DestinationId,
+    destination: Destination,
     handlebarsDestinationResponseStatusCode: Option[Int],
     formId: FormId,
     pdfHtml: String,
@@ -86,7 +88,7 @@ class RepoDestinationAuditer(repository: Repo[DestinationAudit], formAlgebra: Fo
   implicit ec: ExecutionContext)
     extends DestinationAuditAlgebra[FOpt] {
   def apply(
-    destinationId: DestinationId,
+    destination: Destination,
     handlebarsDestinationResponseStatusCode: Option[Int],
     formId: FormId,
     pdfHtml: String,
@@ -98,7 +100,8 @@ class RepoDestinationAuditer(repository: Repo[DestinationAudit], formAlgebra: Fo
           new DestinationAudit(
             formId,
             form.formTemplateId,
-            destinationId,
+            destination.id,
+            destination.getClass.getSimpleName,
             handlebarsDestinationResponseStatusCode,
             form.status,
             form.userId,
@@ -114,7 +117,7 @@ class RepoDestinationAuditer(repository: Repo[DestinationAudit], formAlgebra: Fo
 
 class NullDestinationAuditer[M[_]: Applicative] extends DestinationAuditAlgebra[M] {
   override def apply(
-    destinationId: DestinationId,
+    destination: Destination,
     handlebarsDestinationResponseStatusCode: Option[Int],
     formId: FormId,
     pdfHtml: String,
