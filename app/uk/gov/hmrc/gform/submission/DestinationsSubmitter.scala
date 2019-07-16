@@ -16,15 +16,22 @@
 
 package uk.gov.hmrc.gform.submission
 
+import java.util.Base64
+
 import cats.Monad
+import cats.instances.int._
+import cats.instances.option._
+import cats.syntax.applicative._
 import cats.syntax.either._
+import cats.syntax.eq._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
-import cats.syntax.applicative._
+import cats.syntax.traverse._
+import uk.gov.hmrc.gform.fileupload.{ FileDownloadAlgebra, UploadedFile }
 import uk.gov.hmrc.gform.form.FormAlgebra
-import uk.gov.hmrc.gform.sharedmodel.form.Form
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, Form }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, Destinations, HandlebarsDestinationResponse, HandlebarsTemplateProcessorModel }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.http.HeaderCarrier
 
 trait DestinationsSubmitterAlgebra[M[_]] {
@@ -38,7 +45,9 @@ trait DestinationsSubmitterAlgebra[M[_]] {
     formTemplate: FormTemplate)(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]]
 }
 
-class DestinationsSubmitter[M[_]](destinationSubmitter: DestinationSubmitter[M])(implicit monad: Monad[M])
+class DestinationsSubmitter[M[_]](
+  destinationSubmitter: DestinationSubmitter[M],
+  fileDownloadAlgebra: Option[FileDownloadAlgebra[M]])(implicit monad: Monad[M])
     extends DestinationsSubmitterAlgebra[M] {
 
   override def send(submissionInfo: DestinationSubmissionInfo, formTemplate: FormTemplate, formAlgebra: FormAlgebra[M])(
@@ -56,11 +65,12 @@ class DestinationsSubmitter[M[_]](destinationSubmitter: DestinationSubmitter[M])
     formAlgebra: FormAlgebra[M],
     formTemplate: FormTemplate)(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
     for {
-      form <- formAlgebra.get(submissionInfo.formId)
+      form  <- formAlgebra.get(submissionInfo.formId)
+      files <- uploadedFiles(form.envelopeId)
       result <- submitToList(
                  destinations,
                  submissionInfo,
-                 DestinationsSubmitter.createHandlebarsTemplateProcessorModel(submissionInfo, form),
+                 DestinationsSubmitter.createHandlebarsTemplateProcessorModel(submissionInfo, form, files),
                  formTemplate)
     } yield result
 
@@ -74,7 +84,7 @@ class DestinationsSubmitter[M[_]](destinationSubmitter: DestinationSubmitter[M])
       accumulatedModel: HandlebarsTemplateProcessorModel)
 
     TailRecParameter(destinations.destinations.toList, handlebarsModel).tailRecM {
-      case TailRecParameter(Nil, _) => Option.empty[HandlebarsDestinationResponse].asRight[TailRecParameter].pure
+      case TailRecParameter(Nil, _) => Option.empty[HandlebarsDestinationResponse].asRight[TailRecParameter].pure[M]
       case TailRecParameter(head :: rest, model) =>
         destinationSubmitter
           .submitIfIncludeIf(head, submissionInfo, model, this, formTemplate)
@@ -82,12 +92,16 @@ class DestinationsSubmitter[M[_]](destinationSubmitter: DestinationSubmitter[M])
             TailRecParameter(rest, submitterResult.fold(model) { HandlebarsTemplateProcessorModel(_) + model }).asLeft)
     }
   }
+
+  private def uploadedFiles(envelopedId: EnvelopeId)(implicit hc: HeaderCarrier): M[Option[List[UploadedFile]]] =
+    fileDownloadAlgebra.traverse { _.allUploadedFiles(envelopedId) }
 }
 
 object DestinationsSubmitter {
   def createHandlebarsTemplateProcessorModel(
     submissionInfo: DestinationSubmissionInfo,
-    form: Form): HandlebarsTemplateProcessorModel =
+    form: Form,
+    files: Option[List[UploadedFile]]): HandlebarsTemplateProcessorModel =
     HandlebarsTemplateProcessorModel.formId(form._id) +
       HandlebarsTemplateProcessorModel(submissionInfo.submissionData.structuredFormData) +
       HandlebarsTemplateProcessorModel.hmrcTaxPeriods(form) +
@@ -95,5 +109,26 @@ object DestinationsSubmitter {
       HandlebarsTemplateProcessorModel(submissionInfo.submissionData.variables) +
       HandlebarsTemplateProcessorModel(form.status) +
       HandlebarsTemplateProcessorModel.summaryHtml(submissionInfo.submissionData.pdfData) +
-      HandlebarsTemplateProcessorModel.submissionReference(submissionInfo.submissionReference.value)
+      HandlebarsTemplateProcessorModel.submissionReference(submissionInfo.submissionReference.value) +
+      uploadedFilesModel(files)
+
+  private def uploadedFilesModel(oFiles: Option[List[UploadedFile]]) =
+    oFiles.fold(HandlebarsTemplateProcessorModel.empty) { files =>
+      HandlebarsTemplateProcessorModel(
+        "uploadedFiles" -> JsonNodes.arrayNode(files.map(asJson))
+      )
+    }
+
+  private def asJson(file: UploadedFile) =
+    JsonNodes.objectNode(
+      Map(
+        "name"      -> JsonNodes.textNode(file.file.fileName),
+        "extension" -> JsonNodes.textNode(fileExtension(file.file.fileName)),
+        "data"      -> JsonNodes.textNode(Base64.getEncoder.encodeToString(file.data))
+      ))
+
+  private def fileExtension(filename: String): String = {
+    val dotIndex = filename.indexOf(".")
+    if (dotIndex === -1) "" else filename.substring(dotIndex + 1)
+  }
 }

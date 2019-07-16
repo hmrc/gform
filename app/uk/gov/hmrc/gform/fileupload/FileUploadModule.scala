@@ -17,8 +17,11 @@
 package uk.gov.hmrc.gform.fileupload
 
 import uk.gov.hmrc.gform.config.ConfigModule
+import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.time.TimeModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
+import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext
 
@@ -33,6 +36,14 @@ class FileUploadModule(configModule: ConfigModule, wSHttpModule: WSHttpModule, t
 
   val fileUploadService: FileUploadService =
     new FileUploadService(fileUploadConnector, fileUploadFrontendConnector, timeModule.timeProvider)
+
+  val foptFileDownloadService = new FileDownloadAlgebra[FOpt] {
+    override def getEnvelope(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): FOpt[Envelope] =
+      fromFutureA(fileUploadService.getEnvelope(envelopeId))
+
+    override def getFileBytes(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): FOpt[Array[Byte]] =
+      fromFutureA(fileUploadService.getFileBytes(envelopeId, fileId))
+  }
 
   private lazy val config: FUConfig = FUConfig(
     fileUploadBaseUrl,

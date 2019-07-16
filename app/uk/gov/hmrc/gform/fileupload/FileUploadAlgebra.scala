@@ -17,11 +17,36 @@
 package uk.gov.hmrc.gform.fileupload
 import java.time.LocalDateTime
 
+import cats.{ Applicative, Monad }
+import cats.instances.list._
+import cats.syntax.traverse._
+import cats.syntax.functor._
+import cats.syntax.flatMap._
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
 import uk.gov.hmrc.gform.submission.{ PdfAndXmlSummaries, Submission }
 import uk.gov.hmrc.http.HeaderCarrier
+
+trait FileDownloadAlgebra[F[_]] {
+  def getEnvelope(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): F[Envelope]
+
+  def getFileBytes(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): F[Array[Byte]]
+
+  def allUploadedFiles(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier, F: Monad[F]): F[List[UploadedFile]] =
+    for {
+      env  <- getEnvelope(envelopeId)
+      file <- uploadedFiles(envelopeId, env)
+    } yield file
+
+  private def uploadedFiles(envelopeId: EnvelopeId, envelope: Envelope)(
+    implicit hc: HeaderCarrier,
+    applicativeM: Applicative[F]): F[List[UploadedFile]] =
+    envelope.files.traverse[F, UploadedFile] { file: File =>
+      getFileBytes(envelopeId, file.fileId)
+        .map(bytes => UploadedFile(file, bytes))
+    }
+}
 
 trait FileUploadAlgebra[F[_]] {
   def createEnvelope(formTypeId: FormTemplateId, expiryDate: LocalDateTime)(implicit hc: HeaderCarrier): F[EnvelopeId]

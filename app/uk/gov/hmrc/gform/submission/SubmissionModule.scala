@@ -20,7 +20,7 @@ import play.api.libs.json.JsValue
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.email.EmailModule
-import uk.gov.hmrc.gform.fileupload.FileUploadModule
+import uk.gov.hmrc.gform.fileupload.{ FileDownloadAlgebra, FileUploadAlgebra, FileUploadModule }
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.mongo.MongoModule
@@ -103,11 +103,16 @@ class SubmissionModule(
     fOptFormAlgebra
   )
 
+  private val fileDownloadServiceIfPopulating: Option[FileDownloadAlgebra[FOpt]] =
+    if (configModule.DestinationsServicesConfig.populateHandlebarsModelWithDocuments)
+      Some(fileUploadModule.foptFileDownloadService)
+    else None
+
   val submissionService = new SubmissionService(
     pdfGeneratorModule.pdfGeneratorService,
     fOptFormAlgebra,
     formTemplateModule.formTemplateService,
-    new DestinationsSubmitter(realDestinationSubmitter),
+    new DestinationsSubmitter(realDestinationSubmitter, fileDownloadServiceIfPopulating),
     submissionRepo,
     emailModule.emailLogic
   )
