@@ -91,7 +91,9 @@ class SubmissionModule(
     if (configModule.DestinationsServicesConfig.auditDestinations)
       new RepoDestinationAuditer(
         new Repo[DestinationAudit]("destinationAudit", mongoModule.mongo, _.id.toString),
-        fOptFormAlgebra)
+        new Repo[SummaryHtml]("summaryHtml", mongoModule.mongo, _.id.value.toString),
+        fOptFormAlgebra
+      )
     else new NullDestinationAuditer[FOpt]
 
   private val realDestinationSubmitter = new RealDestinationSubmitter(

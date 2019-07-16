@@ -19,10 +19,12 @@ import java.util.UUID
 
 import cats.Applicative
 import cats.syntax.applicative._
+import cats.syntax.eq._
 import cats.instances.future._
+import cats.instances.string._
 import org.joda.time.LocalDateTime
 import play.api.libs.json._
-import uk.gov.hmrc.gform.core.FOpt
+import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel.UserId
@@ -34,6 +36,31 @@ import uk.gov.hmrc.mongo.json.ReactiveMongoFormats.localDateTimeWrite
 
 import scala.concurrent.ExecutionContext
 
+case class SummaryHtmlId(value: UUID) extends AnyVal
+
+case class SummaryHtml(id: SummaryHtmlId, summaryHtml: String)
+
+object SummaryHtml {
+  implicit val format: OFormat[SummaryHtml] = new OFormat[SummaryHtml] {
+    override def reads(json: JsValue): JsResult[SummaryHtml] =
+      for {
+        id          <- (json \ "id").validate[UUID]
+        summaryHtml <- (json \ "summaryHtml").validate[String]
+      } yield SummaryHtml(SummaryHtmlId(id), summaryHtml)
+
+    override def writes(summary: SummaryHtml): JsObject = {
+      import summary._
+
+      JsObject(
+        Seq(
+          "id"          -> JsString(id.value.toString),
+          "hash"        -> JsNumber(summaryHtml.hashCode),
+          "summaryHtml" -> JsString(summaryHtml)
+        ))
+    }
+  }
+}
+
 case class DestinationAudit(
   formId: FormId,
   formTemplateId: FormTemplateId,
@@ -43,8 +70,8 @@ case class DestinationAudit(
   workflowState: FormStatus,
   userId: UserId,
   caseworkerUserName: Option[String],
-  summaryHtml: String,
   submissionReference: SubmissionRef,
+  summaryHtmlId: SummaryHtmlId,
   id: UUID = UUID.randomUUID,
   timestamp: LocalDateTime = LocalDateTime.now)
 
@@ -66,7 +93,7 @@ object DestinationAudit {
             "id"              -> JsString(id.toString),
             "timestamp"       -> localDateTimeWrite.writes(timestamp),
             "submissionRef"   -> JsString(submissionReference.value),
-            "summaryHtml"     -> JsString(summaryHtml)
+            "summaryHtmlId"   -> JsString(summaryHtmlId.value.toString)
           ),
           destinationResponseStatus.map(s => "destinationResponseStatus" -> JsNumber(s)).toSeq,
           caseworkerUserName.map(c => "_caseworker_userName"             -> JsString(c)).toSeq
@@ -80,39 +107,61 @@ trait DestinationAuditAlgebra[M[_]] {
     destination: Destination,
     handlebarsDestinationResponseStatusCode: Option[Int],
     formId: FormId,
-    pdfHtml: String,
+    summaryHtml: String,
     submissionReference: SubmissionRef)(implicit hc: HeaderCarrier): M[Unit]
 }
 
-class RepoDestinationAuditer(repository: Repo[DestinationAudit], formAlgebra: FormAlgebra[FOpt])(
-  implicit ec: ExecutionContext)
+class RepoDestinationAuditer(
+  auditRepository: Repo[DestinationAudit],
+  summaryHtmlRepository: Repo[SummaryHtml],
+  formAlgebra: FormAlgebra[FOpt])(implicit ec: ExecutionContext)
     extends DestinationAuditAlgebra[FOpt] {
   def apply(
     destination: Destination,
     handlebarsDestinationResponseStatusCode: Option[Int],
     formId: FormId,
-    pdfHtml: String,
+    summaryHtml: String,
     submissionReference: SubmissionRef)(implicit hc: HeaderCarrier): FOpt[Unit] =
-    formAlgebra
-      .get(formId)
-      .flatMap { form =>
-        repository.upsert(
-          new DestinationAudit(
-            formId,
-            form.formTemplateId,
-            destination.id,
-            destination.getClass.getSimpleName,
-            handlebarsDestinationResponseStatusCode,
-            form.status,
-            form.userId,
-            getCaseworkerUsername(form.formData),
-            pdfHtml,
-            submissionReference
-          ))
-      }
+    for {
+      form          <- formAlgebra.get(formId)
+      summaryHtmlId <- findOrInsertSummaryHtml(summaryHtml)
+      _ <- auditRepository.upsert(
+            new DestinationAudit(
+              formId,
+              form.formTemplateId,
+              destination.id,
+              destination.getClass.getSimpleName,
+              handlebarsDestinationResponseStatusCode,
+              form.status,
+              form.userId,
+              getCaseworkerUsername(form.formData),
+              submissionReference,
+              summaryHtmlId
+            ))
+    } yield ()
 
   private def getCaseworkerUsername(formData: FormData): Option[String] =
     formData.find(FormComponentId("_caseworker_userName"))
+
+  private def findOrInsertSummaryHtml(summaryHtml: String)(implicit hc: HeaderCarrier): FOpt[SummaryHtmlId] =
+    findSummaryHtml(summaryHtml)
+      .flatMap(_.fold(insertSummaryHtml(summaryHtml)) { _.id.pure[FOpt] })
+
+  private def insertSummaryHtml(summaryHtml: String): FOpt[SummaryHtmlId] = {
+    val id = SummaryHtmlId(UUID.randomUUID)
+    summaryHtmlRepository.upsert(SummaryHtml(id, summaryHtml)).map(_ => id)
+  }
+
+  private def findSummaryHtml(summaryHtml: String): FOpt[Option[SummaryHtml]] = fromFutureA {
+    summaryHtmlRepository
+      .search(
+        JsObject(
+          Seq(
+            "hash" -> JsNumber(summaryHtml.hashCode)
+          )))
+      .map(_.find(_.summaryHtml === summaryHtml))
+  }
+
 }
 
 class NullDestinationAuditer[M[_]: Applicative] extends DestinationAuditAlgebra[M] {
@@ -120,6 +169,6 @@ class NullDestinationAuditer[M[_]: Applicative] extends DestinationAuditAlgebra[
     destination: Destination,
     handlebarsDestinationResponseStatusCode: Option[Int],
     formId: FormId,
-    pdfHtml: String,
+    summaryHtml: String,
     submissionReference: SubmissionRef)(implicit hc: HeaderCarrier): M[Unit] = ().pure
 }
