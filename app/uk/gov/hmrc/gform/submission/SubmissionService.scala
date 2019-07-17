@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.submission
 
 import cats.instances.future._
+import play.api.Logger
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.email.EmailService
@@ -62,11 +63,17 @@ class SubmissionService(
 
   private def findOrCreateSubmission(form: Form, customerId: String, formTemplate: FormTemplate): FOpt[Submission] =
     fromFutureA(submissionRepo.find(form._id.value))
-      .flatMap(_.fold(insertSubmission(form, customerId, formTemplate)) { uk.gov.hmrc.gform.core.success(_) })
+      .flatMap(_.fold(insertSubmission(form, customerId, formTemplate)) { s =>
+        Logger.info(s"Found Submission for ${form._id.value}")
+        uk.gov.hmrc.gform.core.success(s)
+      })
 
   private def insertSubmission(form: Form, customerId: String, formTemplate: FormTemplate): FOpt[Submission] = {
     val submission = createSubmission(form, customerId, formTemplate)
-    submissionRepo.upsert(submission).map(_ => submission)
+    submissionRepo
+      .upsert(submission)
+      .map(_ => Logger.info(s"Inserted Submission for ${form._id.value}"))
+      .map(_ => submission)
   }
 
   private def getNoOfAttachments(form: Form, formTemplate: FormTemplate): Int = {

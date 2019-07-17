@@ -55,7 +55,7 @@
 
     <logger name="uk.gov.hmrc.gform.submission.handlebars" level="WARN"/>
 
-    <logger name="uk.gov.hmrc.gform.submission" level="WARN"/>
+    <logger name="uk.gov.hmrc.gform.submission" level="INFO"/>
 
     <logger name="application" level="DEBUG"/>
 
