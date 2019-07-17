@@ -96,6 +96,7 @@ class FormService[F[_]: Monad](formPersistence: FormPersistenceAlgebra[F], fileU
 
 object LifeCycleStatus {
   def newStatus(form: Form, status: FormStatus): FormStatus = (form.status, status) match {
+    case (_, Validated)                    => Validated // TODO: Lance - This needs to be removed once Alex's Ofsted testing is complete
     case (InProgress, _)                   => status
     case (NeedsReview, _)                  => form.status
     case (Accepting, Accepted)             => status
