@@ -62,17 +62,17 @@ class SubmissionService(
     submissionRepo.get(formId.value)
 
   private def findOrCreateSubmission(form: Form, customerId: String, formTemplate: FormTemplate): FOpt[Submission] =
-    fromFutureA(submissionRepo.find(form._id.value))
-      .flatMap(_.fold(insertSubmission(form, customerId, formTemplate)) { s =>
-        Logger.info(s"Found Submission for ${form._id.value}")
-        uk.gov.hmrc.gform.core.success(s)
-      })
+    form.status match {
+      case NeedsReview | Accepting | Returning | Accepted | Submitting | Submitted =>
+        fromFutureA(submissionRepo.get(form._id.value))
+      case _ => insertSubmission(form, customerId, formTemplate)
+    }
 
   private def insertSubmission(form: Form, customerId: String, formTemplate: FormTemplate): FOpt[Submission] = {
     val submission = createSubmission(form, customerId, formTemplate)
     submissionRepo
       .upsert(submission)
-      .map(_ => Logger.info(s"Inserted Submission for ${form._id.value}"))
+      .map(_ => Logger.info(s"Upserted Submission for ${form._id.value}"))
       .map(_ => submission)
   }
 
