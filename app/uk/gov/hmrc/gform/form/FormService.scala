@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.form
 import cats.Monad
 import cats.syntax.functor._
 import cats.syntax.flatMap._
+import play.api.Logger
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
 import uk.gov.hmrc.gform.save4later.FormPersistenceAlgebra
@@ -96,24 +97,18 @@ class FormService[F[_]: Monad](formPersistence: FormPersistenceAlgebra[F], fileU
 
 object LifeCycleStatus {
   def newStatus(form: Form, status: FormStatus): FormStatus = (form.status, status) match {
-    case (_, Validated)                    => Validated // TODO: Lance - This needs to be removed once Alex's Ofsted testing is complete
-    case (InProgress, _)                   => status
-    case (NeedsReview, _)                  => form.status
-    case (Accepting, Accepted)             => status
-    case (Accepting, _)                    => form.status
-    case (Returning, InProgress)           => status
-    case (Returning, _)                    => form.status
-    case (Accepted, Submitting)            => status
-    case (Accepted, _)                     => form.status
-    case (Summary, InProgress)             => form.status
-    case (Summary, _)                      => status
-    case (Validated, InProgress)           => Summary
-    case (Validated, Summary | Signed)     => status
-    case (Validated, _)                    => form.status
-    case (Signed, Submitted | NeedsReview) => status
-    case (Signed, _)                       => form.status
-    case (Submitting, Submitted)           => status
-    case (Submitting, _)                   => form.status
-    case (Submitted, _)                    => form.status
+    case (InProgress, _)                                   => status
+    case (NeedsReview, Accepting | Returning | Submitting) => status
+    case (Accepting, Accepted)                             => status
+    case (Returning, InProgress)                           => status
+    case (Accepted, Submitting)                            => status
+    case (Summary, _)                                      => status
+    case (Validated, InProgress)                           => Summary // This is odd. What's it about?
+    case (Validated, Summary | Signed)                     => status
+    case (Signed, Submitted | NeedsReview)                 => status
+    case (Submitting, Submitted)                           => status
+    case (current, required) =>
+      Logger.warn(s"Attempted state transition from $current to $required is illegal. Form ID ${form._id.value}")
+      current
   }
 }
