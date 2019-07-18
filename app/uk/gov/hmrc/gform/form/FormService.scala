@@ -96,19 +96,46 @@ class FormService[F[_]: Monad](formPersistence: FormPersistenceAlgebra[F], fileU
 }
 
 object LifeCycleStatus {
-  def newStatus(form: Form, status: FormStatus): FormStatus = (form.status, status) match {
-    case (InProgress, _)                                   => status
-    case (NeedsReview, Accepting | Returning | Submitting) => status
-    case (Accepting, Accepted)                             => status
-    case (Returning, InProgress)                           => status
-    case (Accepted, Submitting)                            => status
-    case (Summary, _)                                      => status
-    case (Validated, InProgress)                           => Summary // This is odd. What's it about?
-    case (Validated, Summary | Signed)                     => status
-    case (Signed, Submitted | NeedsReview)                 => status
-    case (Submitting, Submitted)                           => status
-    case (current, required) =>
-      Logger.warn(s"Attempted state transition from $current to $required is illegal. Form ID ${form._id.value}")
-      current
+  def newStatus(form: Form, status: FormStatus): FormStatus =
+    apply(form.status, status).getOrElse {
+      Logger.warn(s"Attempted state transition from ${form.status} to $status is illegal. Form ID ${form._id.value}")
+      form.status
+    }
+
+  def apply(from: FormStatus, to: FormStatus): Option[FormStatus] = (from, to) match {
+    case (InProgress, _)                                   => Some(to)
+    case (NeedsReview, Accepting | Returning | Submitting) => Some(to)
+    case (Accepting, Accepted)                             => Some(to)
+    case (Returning, InProgress)                           => Some(to)
+    case (Accepted, Submitting)                            => Some(to)
+    case (Summary, _)                                      => Some(to)
+    case (Validated, InProgress)                           => Some(Summary) // This is odd. What's it about?
+    case (Validated, Summary | Signed)                     => Some(to)
+    case (Signed, Submitted | NeedsReview)                 => Some(to)
+    case (Submitting, Submitted)                           => Some(to)
+    case _                                                 => None
   }
+}
+
+object LifeCycleStatusGraphVizRenderer extends App {
+  val transientStates = Set(Accepting, Returning, Submitting)
+
+  println("""|digraph stateTransitionTable {
+             |  rankdir=LR;
+             |  size="8,5"
+             |  node[shape = circle];""".stripMargin)
+  transientStates.foreach(s => println(s"  $s;"))
+  println("  node[shape = doublecircle];")
+  println("  InProgress [style=filled; color=green];")
+  println("  Submitted [style=filled; color=red];")
+  println("  Validated -> Summary [label='InProgress'];")
+
+  for {
+    from <- FormStatus.all
+    to   <- FormStatus.all
+    if from != to
+    if LifeCycleStatus(from, to).exists(_ == to)
+  } println(s"  $from -> $to;")
+
+  println("}")
 }
