@@ -121,7 +121,6 @@ class ConfigModule(playComponents: PlayComponents) {
     private def httpHeaders(destinationServiceKey: String): Map[String, String] =
       asStringStringMap(s"${qualifiedDestinationServiceKey(destinationServiceKey)}.http-headers")
         .getOrElse(Map.empty)
-        .mapValues(v => new String(Base64.getDecoder.decode(v), "UTF-8"))
 
     private def profileName(destinationServiceKey: String): ProfileName =
       ProfileName(getString(destinationServiceKey, "name").getOrElse(destinationServiceKey))

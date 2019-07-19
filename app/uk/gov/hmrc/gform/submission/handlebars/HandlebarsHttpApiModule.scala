@@ -41,7 +41,7 @@ class HandlebarsHttpApiModule(wSHttpModule: WSHttpModule, configModule: ConfigMo
             hc.copy(
               authorization = profileConfiguration.httpHeaders
                 .get(HeaderNames.authorisation)
-                .map(Authorization(_)) orElse hc.authorization,
+                .map(auth => Authorization(s"Bearer $auth")) orElse hc.authorization,
               extraHeaders = hc.extraHeaders ++ (profileConfiguration.httpHeaders - HeaderNames.authorisation).toSeq
             )
           }
