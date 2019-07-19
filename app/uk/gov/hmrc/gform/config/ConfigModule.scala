@@ -16,12 +16,9 @@
 
 package uk.gov.hmrc.gform.config
 
-import java.util.Base64
-
 import com.typesafe.config.{ ConfigFactory, Config => TypeSafeConfig }
 import net.ceedubs.ficus.Ficus._
 import play.api.Configuration
-import play.api.Logger
 import play.api.Mode.Mode
 import uk.gov.hmrc.gform.playcomponents.PlayComponents
 import uk.gov.hmrc.gform.sharedmodel.config.ExposedConfig
@@ -29,6 +26,7 @@ import uk.gov.hmrc.play.auth.controllers.AuthParamsControllerConfig
 import uk.gov.hmrc.play.config.{ ControllerConfig, ServicesConfig }
 import pureconfig.generic.auto._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.ProfileName
+import uk.gov.hmrc.http.logging.Authorization
 
 import scala.util.Try // It is now necessary to import `pureconfig.generic.auto._` everywhere a config is loaded or written, even though IntelliJ sees this as unused, its still required
 
@@ -125,6 +123,9 @@ class ConfigModule(playComponents: PlayComponents) {
     private def profileName(destinationServiceKey: String): ProfileName =
       ProfileName(getString(destinationServiceKey, "name").getOrElse(destinationServiceKey))
 
+    private def authToken(destinationServiceKey: String): Option[Authorization] =
+      getString(destinationServiceKey, "authorization-token").map(a => Authorization(s"Bearer $a"))
+
     private val enableAuditKey = "enable-audit"
     def auditDestinations: Boolean = getConfBool(s"destination-services.$enableAuditKey", false)
 
@@ -138,6 +139,7 @@ class ConfigModule(playComponents: PlayComponents) {
           val configuration = ProfileConfiguration(
             name,
             baseUrl(destinationServiceKey) + basePath(destinationServiceKey),
+            authToken(destinationServiceKey),
             httpHeaders(destinationServiceKey)
           )
           Some((name, configuration))

@@ -21,8 +21,6 @@ import uk.gov.hmrc.gform.core.{ FOpt, fOptMonadError }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.ProfileName
 import uk.gov.hmrc.gform.wshttp._
 import uk.gov.hmrc.gform.wshttp.HttpClient.HttpClientBuildingSyntax
-import uk.gov.hmrc.http.HeaderNames
-import uk.gov.hmrc.http.logging.Authorization
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -39,10 +37,8 @@ class HandlebarsHttpApiModule(wSHttpModule: WSHttpModule, configModule: ConfigMo
           .buildUri(uri => appendUriSegment(profileConfiguration.baseUrl, uri))
           .buildHeaderCarrier { hc =>
             hc.copy(
-              authorization = profileConfiguration.httpHeaders
-                .get(HeaderNames.authorisation)
-                .map(auth => Authorization(s"Bearer $auth")) orElse hc.authorization,
-              extraHeaders = hc.extraHeaders ++ (profileConfiguration.httpHeaders - HeaderNames.authorisation).toSeq
+              authorization = profileConfiguration.authorization orElse hc.authorization,
+              extraHeaders = hc.extraHeaders ++ profileConfiguration.httpHeaders
             )
           }
       }
