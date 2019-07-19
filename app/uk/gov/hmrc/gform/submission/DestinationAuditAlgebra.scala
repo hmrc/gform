@@ -130,7 +130,7 @@ class RepoDestinationAuditer(
               formId,
               form.formTemplateId,
               destination.id,
-              destination.getClass.getSimpleName,
+              getDestinationType(destination),
               handlebarsDestinationResponseStatusCode,
               form.status,
               form.userId,
@@ -162,6 +162,13 @@ class RepoDestinationAuditer(
       .map(_.find(_.summaryHtml === summaryHtml))
   }
 
+  def getDestinationType(destination: Destination): String = destination match {
+    case _: Destination.HmrcDms           => Destination.hmrcDms
+    case _: Destination.Composite         => Destination.composite
+    case _: Destination.StateTransition   => Destination.stateTransition
+    case d: Destination.HandlebarsHttpApi => s"${Destination.handlebarsHttpApi}.${d.profile.name}"
+    case _                                => "Unknown"
+  }
 }
 
 class NullDestinationAuditer[M[_]: Applicative] extends DestinationAuditAlgebra[M] {
