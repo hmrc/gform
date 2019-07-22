@@ -16,24 +16,92 @@
 
 package uk.gov.hmrc.gform.testonly
 
-import java.text.SimpleDateFormat
-
+import cats.data.EitherT
+import cats.instances.option._
 import com.typesafe.config.{ ConfigFactory, ConfigRenderOptions }
-import play.api.Logger
+import java.time.LocalDateTime
 import play.api.libs.json._
 import play.api.mvc._
 import reactivemongo.api.DB
 import reactivemongo.play.json.collection.JSONCollection
+import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.BuildInfo
-import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.des._
+import uk.gov.hmrc.gform.form.FormAlgebra
+import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
+import uk.gov.hmrc.gform.sharedmodel.AffinityGroupUtil._
 import uk.gov.hmrc.gform.sharedmodel._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.{ DestinationList, DmsSubmission }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, HandlebarsTemplateProcessorModel }
+import uk.gov.hmrc.gform.sharedmodel.form.FormId
+import uk.gov.hmrc.gform.submission.{ DestinationSubmissionInfo, DestinationsSubmitter, DmsMetaData, Submission, SubmissionRef }
+import uk.gov.hmrc.gform.submission.handlebars.RealHandlebarsTemplateProcessor
 
-import scala.concurrent.{ ExecutionContext, Future }
-
-class TestOnlyController(mongo: () => DB, enrolmentConnector: EnrolmentConnector)(implicit ex: ExecutionContext)
+class TestOnlyController(
+  mongo: () => DB,
+  enrolmentConnector: EnrolmentConnector,
+  formAlgebra: FormAlgebra[Future],
+  formTemplateAlgebra: FormTemplateAlgebra[Future])(implicit ex: ExecutionContext)
     extends BaseController {
+
+  def renderHandlebarPayload(
+    formTemplateId: FormTemplateId,
+    destinationId: DestinationId,
+    formId: FormId
+  ): Action[SubmissionData] =
+    Action.async(parse.json[SubmissionData]) { implicit request =>
+      val submissionData: SubmissionData = request.body
+
+      val customerId = request.headers.get("customerId").getOrElse("")
+      val affinityGroup = toAffinityGroupO(request.headers.get("affinityGroup"))
+
+      for {
+        formTemplate <- formTemplateAlgebra.get(formTemplateId)
+        form         <- formAlgebra.get(formId)
+        submission = Submission(
+          formId,
+          LocalDateTime.now(),
+          SubmissionRef(form.envelopeId),
+          form.envelopeId,
+          0,
+          DmsMetaData(formTemplate._id, customerId)
+        )
+        submissionInfo = DestinationSubmissionInfo(formId, customerId, affinityGroup, submissionData, submission)
+      } yield {
+        val model: HandlebarsTemplateProcessorModel =
+          DestinationsSubmitter.createHandlebarsTemplateProcessorModel(submissionInfo, form)
+
+        val maybeDestination: Option[Destination.HandlebarsHttpApi] = formTemplate.destinations match {
+          case DestinationList(destinations) =>
+            destinations.toList.collectFirst {
+              case d @ Destination.HandlebarsHttpApi(`destinationId`, _, _, _, _, _, _, _) => d
+            }
+          case _ => None
+        }
+
+        val availableDestinationIds: String = formTemplate.destinations match {
+          case DestinationList(destinations)           => destinations.toList.map(_.id.id).mkString(", ")
+          case DmsSubmission(dmsFormId, _, _, _, _, _) => dmsFormId
+        }
+
+        val resultPayload: EitherT[Option, String, String] =
+          for {
+            destination <- fromOption(
+                            maybeDestination,
+                            s"No destination '${destinationId.id}' found on formTemplate '${formTemplateId.value}'. Available destinations: $availableDestinationIds."
+                          )
+            payload <- fromOption(
+                        destination.payload,
+                        s"There is no payload field on destination '${destinationId.id}' for formTemplate '${formTemplateId.value}'")
+          } yield RealHandlebarsTemplateProcessor(payload, model, destination.payloadType)
+
+        resultPayload.fold(BadRequest(_), Ok(_)).getOrElse(BadRequest("Ups, something went wrong"))
+      }
+    }
+
+  private def fromOption[A, B](a: Option[A], s: B): EitherT[Option, B, A] = EitherT.fromOption(a, s)
 
   lazy val formTemplates = mongo().collection[JSONCollection]("formTemplate")
   def removeTemplates() = Action.async { implicit request =>
