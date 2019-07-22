@@ -16,9 +16,13 @@
 
 package uk.gov.hmrc.gform.testonly
 
+import scala.concurrent.Future
 import uk.gov.hmrc.gform.config.ConfigModule
+import uk.gov.hmrc.gform.form.FormService
+import uk.gov.hmrc.gform.formtemplate.{ FormTemplateAlgebra, FormTemplateService }
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.playcomponents.PlayComponents
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId }
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 
 import scala.concurrent.ExecutionContext
@@ -27,13 +31,21 @@ class TestOnlyModule(
   mongoModule: MongoModule,
   wSHttpModule: WSHttpModule,
   configModule: ConfigModule,
-  playComponents: PlayComponents)(implicit ex: ExecutionContext) {
+  playComponents: PlayComponents,
+  formService: FormService[Future],
+  formTemplateService: FormTemplateService)(implicit ex: ExecutionContext) {
 
   val enrolmentConnector =
     new EnrolmentConnector(
       wSHttpModule.auditableWSHttp,
       "http://enrolment-store-proxy.protected.mdtp:80/enrolment-store-proxy")
-  val testOnlyController: TestOnlyController = new TestOnlyController(mongoModule.mongo, enrolmentConnector)
+
+  val formTemplateAlgebra: FormTemplateAlgebra[Future] = new FormTemplateAlgebra[Future] {
+    override def get(id: FormTemplateId): Future[FormTemplate] = formTemplateService.get(id)
+  }
+
+  val testOnlyController: TestOnlyController =
+    new TestOnlyController(mongoModule.mongo, enrolmentConnector, formService, formTemplateAlgebra)
   val proxyActions = new Proxy(playComponents.ahcWSComponents.wsClient)
   val fUInterceptor: FUInterceptorController =
     new FUInterceptorController(wSHttpModule.auditableWSHttp, configModule.serviceConfig, proxyActions)

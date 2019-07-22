@@ -103,7 +103,14 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
       handlebarsModule)
   private val dmsModule = new DmsModule(fileUploadModule, pdfGeneratorModule, configModule.appConfig)
   private val obligationModule = new ObligationModule(wSHttpModule, configModule)
-  private val testOnlyModule = new TestOnlyModule(mongoModule, wSHttpModule, configModule, playComponents)
+  private val testOnlyModule =
+    new TestOnlyModule(
+      mongoModule,
+      wSHttpModule,
+      configModule,
+      playComponents,
+      formService,
+      formTemplateModule.formTemplateService)
   private val graphiteModule = new GraphiteModule(self)
 
   val playComponentsModule = new PlayComponentsModule(
