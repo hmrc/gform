@@ -18,10 +18,10 @@ package uk.gov.hmrc.gform.submission
 
 import cats.implicits._
 import play.api.Logger
-import play.api.mvc.{ Action, AnyContent, Request }
+import play.api.mvc.{ Action, AnyContent }
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
-import uk.gov.hmrc.gform.sharedmodel.AffinityGroupUtil._
+import uk.gov.hmrc.gform.handlers.SubmissionControllerRequestHandler
 import uk.gov.hmrc.gform.sharedmodel.SubmissionData
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
 
@@ -33,14 +33,15 @@ class SubmissionController(submissionService: SubmissionService)(implicit ex: Ex
     implicit request =>
       Logger.info(s"submit, formId: '${formId.value}, ${loggingHelpers.cleanHeaders(request.headers)}")
 
-      submissionService
-        .submissionWithPdf(
+      import request._
+
+      new SubmissionControllerRequestHandler {}
+        .handleSubmissionRequest(submissionService.submissionWithPdf)(
           formId,
-          request.headers.get("customerId").getOrElse(""),
-          toAffinityGroupO(request.headers.get("affinityGroup")),
-          request.body
-        )
-        .fold(_.asBadRequest, _ => NoContent)
+          headers.get("customerId").getOrElse(""),
+          headers.get("affinityGroup"),
+          body)
+        .fold(unexpectedState => BadRequest(unexpectedState.error), _ => NoContent)
   }
 
   def submissionStatus(formId: FormId): Action[AnyContent] = Action.async { implicit request =>
