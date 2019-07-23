@@ -47,6 +47,13 @@ package object core {
     def void(implicit ec: ExecutionContext): Future[Unit] = f.map(_ => ())
   }
 
+  implicit class FOptToFuture[A](opt: FOpt[A]) {
+    def toFuture(implicit ex: ExecutionContext): Future[A] = opt.value flatMap {
+      case Right(res) => Future.successful(res)
+      case Left(e)    => Future.failed(new Exception(e.error))
+    }
+  }
+
   implicit def fOptMonadError(implicit ec: ExecutionContext): MonadError[FOpt, String] =
     new MonadError[FOpt, String] with StackSafeMonad[FOpt] {
       override def flatMap[A, B](fa: FOpt[A])(f: A => FOpt[B]): FOpt[B] = fa.flatMap(f)
