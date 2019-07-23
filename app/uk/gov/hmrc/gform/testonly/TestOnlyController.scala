@@ -18,12 +18,15 @@ package uk.gov.hmrc.gform.testonly
 
 import cats.data.EitherT
 import cats.instances.option._
+import cats.syntax.eq._
 import com.typesafe.config.{ ConfigFactory, ConfigRenderOptions }
 import java.time.LocalDateTime
+
 import play.api.libs.json._
 import play.api.mvc._
 import reactivemongo.api.DB
 import reactivemongo.play.json.collection.JSONCollection
+
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.BuildInfo
 import uk.gov.hmrc.gform.controllers.BaseController
@@ -34,10 +37,12 @@ import uk.gov.hmrc.gform.sharedmodel.AffinityGroupUtil._
 import uk.gov.hmrc.gform.sharedmodel._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.{ DestinationList, DmsSubmission }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, HandlebarsTemplateProcessorModel }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, Destinations, HandlebarsTemplateProcessorModel }
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.gform.submission.{ DestinationSubmissionInfo, DestinationsSubmitter, DmsMetaData, Submission, SubmissionRef }
 import uk.gov.hmrc.gform.submission.handlebars.RealHandlebarsTemplateProcessor
+
+import scala.annotation.tailrec
 
 class TestOnlyController(
   mongo: () => DB,
@@ -73,33 +78,47 @@ class TestOnlyController(
         val model: HandlebarsTemplateProcessorModel =
           DestinationsSubmitter.createHandlebarsTemplateProcessorModel(submissionInfo, form)
 
-        val maybeDestination: Option[Destination.HandlebarsHttpApi] = formTemplate.destinations match {
-          case DestinationList(destinations) =>
-            destinations.toList.collectFirst {
-              case d @ Destination.HandlebarsHttpApi(`destinationId`, _, _, _, _, _, _, _) => d
-            }
-          case _ => None
-        }
+        val maybeDestination: Option[Destination.HandlebarsHttpApi] =
+          findHandlebarsDestinationWithId(destinationId, formTemplate.destinations)
 
-        val availableDestinationIds: String = formTemplate.destinations match {
-          case DestinationList(destinations)           => destinations.toList.map(_.id.id).mkString(", ")
-          case DmsSubmission(dmsFormId, _, _, _, _, _) => dmsFormId
-        }
+        val availableDestinationIds: String =
+          availableHandlebarsDestinations(formTemplate.destinations).map(_.id.id).mkString(", ")
 
         val resultPayload: EitherT[Option, String, String] =
           for {
             destination <- fromOption(
                             maybeDestination,
-                            s"No destination '${destinationId.id}' found on formTemplate '${formTemplateId.value}'. Available destinations: $availableDestinationIds."
+                            s"No handlebars destination '${destinationId.id}' found on formTemplate '${formTemplateId.value}'. Available handlebars destinations: $availableDestinationIds."
                           )
             payload <- fromOption(
                         destination.payload,
                         s"There is no payload field on destination '${destinationId.id}' for formTemplate '${formTemplateId.value}'")
           } yield RealHandlebarsTemplateProcessor(payload, model, destination.payloadType)
 
-        resultPayload.fold(BadRequest(_), Ok(_)).getOrElse(BadRequest("Ups, something went wrong"))
+        resultPayload.fold(BadRequest(_), Ok(_)).getOrElse(BadRequest("Oops, something went wrong"))
       }
     }
+
+  private def availableHandlebarsDestinations(destinations: Destinations): List[Destination.HandlebarsHttpApi] =
+    destinations match {
+      case DestinationList(destinations) => availableHandlebarsDestinations(destinations.toList)
+      case _: DmsSubmission              => Nil
+    }
+
+  private def availableHandlebarsDestinations(
+    destinations: List[Destination],
+    acc: List[Destination.HandlebarsHttpApi] = Nil): List[Destination.HandlebarsHttpApi] = destinations match {
+    case Nil => acc
+    case (head: Destination.Composite) :: tail =>
+      availableHandlebarsDestinations(tail, availableHandlebarsDestinations(head.destinations.toList, acc))
+    case (head: Destination.HandlebarsHttpApi) :: tail => availableHandlebarsDestinations(tail, head :: acc)
+    case _ :: tail                                     => availableHandlebarsDestinations(tail, acc)
+  }
+
+  private def findHandlebarsDestinationWithId(
+    id: DestinationId,
+    destinations: Destinations): Option[Destination.HandlebarsHttpApi] =
+    availableHandlebarsDestinations(destinations).find(_.id === id)
 
   private def fromOption[A, B](a: Option[A], s: B): EitherT[Option, B, A] = EitherT.fromOption(a, s)
 
