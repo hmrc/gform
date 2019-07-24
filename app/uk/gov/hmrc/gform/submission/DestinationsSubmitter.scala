@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.submission
 
+import java.nio.charset.StandardCharsets
 import java.util.Base64
 
 import cats.Monad
@@ -27,9 +28,10 @@ import cats.syntax.eq._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.traverse._
-import uk.gov.hmrc.gform.fileupload.{ FileDownloadAlgebra, UploadedFile }
+import play.api.Logger
+import uk.gov.hmrc.gform.fileupload.{FileDownloadAlgebra, UploadedFile}
 import uk.gov.hmrc.gform.form.FormAlgebra
-import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, Form }
+import uk.gov.hmrc.gform.sharedmodel.form.{EnvelopeId, Form}
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.http.HeaderCarrier
@@ -119,13 +121,15 @@ object DestinationsSubmitter {
       )
     }
 
-  private def asJson(file: UploadedFile) =
+  private def asJson(file: UploadedFile) = {
+    Logger.info(s"Creating node for : ${file.file.fileName}")
     JsonNodes.objectNode(
       Map(
-        "name"      -> JsonNodes.textNode(file.file.fileName),
+        "name" -> JsonNodes.textNode(file.file.fileName),
         "extension" -> JsonNodes.textNode(fileExtension(file.file.fileName)),
-        "data"      -> JsonNodes.textNode(Base64.getEncoder.encodeToString(file.data))
+        "data" -> JsonNodes.textNode(new String(Base64.getEncoder.encode(file.data), StandardCharsets.UTF_8))
       ))
+  }
 
   private def fileExtension(filename: String): String = {
     val dotIndex = filename.indexOf(".")
