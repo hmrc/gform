@@ -122,12 +122,17 @@ object DestinationsSubmitter {
     }
 
   private def asJson(file: UploadedFile) = {
-    Logger.info(s"Creating node for : ${file.file.fileName}")
+    val name = file.file.fileName
+    val extension = fileExtension(file.file.fileName)
+    val data = new String(Base64.getEncoder.encode(file.data), StandardCharsets.UTF_8)
+
+    Logger.info(s"Creating node for : $name with extension $extension and data $data")
+
     JsonNodes.objectNode(
       Map(
-        "name" -> JsonNodes.textNode(file.file.fileName),
-        "extension" -> JsonNodes.textNode(fileExtension(file.file.fileName)),
-        "data" -> JsonNodes.textNode(new String(Base64.getEncoder.encode(file.data), StandardCharsets.UTF_8))
+        "name" -> JsonNodes.textNode(name),
+        "extension" -> JsonNodes.textNode(extension),
+        "data" -> JsonNodes.textNode(data)
       ))
   }
 
