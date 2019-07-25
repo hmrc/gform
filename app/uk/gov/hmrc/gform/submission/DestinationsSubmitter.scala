@@ -29,9 +29,9 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.traverse._
 import play.api.Logger
-import uk.gov.hmrc.gform.fileupload.{FileDownloadAlgebra, UploadedFile}
+import uk.gov.hmrc.gform.fileupload.{ FileDownloadAlgebra, UploadedFile }
 import uk.gov.hmrc.gform.form.FormAlgebra
-import uk.gov.hmrc.gform.sharedmodel.form.{EnvelopeId, Form}
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, Form }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.http.HeaderCarrier
@@ -130,9 +130,9 @@ object DestinationsSubmitter {
 
     JsonNodes.objectNode(
       Map(
-        "name" -> JsonNodes.textNode(name),
+        "name"      -> JsonNodes.textNode(name),
         "extension" -> JsonNodes.textNode(extension),
-        "data" -> JsonNodes.textNode(data)
+        "data"      -> JsonNodes.textNode(data)
       ))
   }
 
