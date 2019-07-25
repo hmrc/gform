@@ -67,7 +67,7 @@ class FileUploadConnector(config: FUConfig, wSHttp: WSHttp, timeProvider: TimePr
       .buildRequest(url)
       .get
       .flatMap { response =>
-        if (response.status <= 200 || response.status > 299)
+        if (response.status < 200 || response.status > 299)
           Future.failed(new Exception(s"Got status code ${response.status} when trying to get $url"))
         else
           Future.successful(response.bodyAsBytes)
