@@ -16,4 +16,6 @@
 
 package uk.gov.hmrc.gform.fileupload
 
-case class UploadedFile(file: File, data: Array[Byte])
+import akka.util.ByteString
+
+case class UploadedFile(file: File, data: ByteString)

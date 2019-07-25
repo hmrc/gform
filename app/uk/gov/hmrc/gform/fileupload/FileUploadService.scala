@@ -98,7 +98,7 @@ class FileUploadService(
   def getEnvelope(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): Future[Envelope] =
     fileUploadConnector.getEnvelope(envelopeId)
 
-  def getFileBytes(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): Future[Array[Byte]] =
+  def getFileBytes(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): Future[ByteString] =
     fileUploadConnector.getFileBytes(envelopeId, fileId)
 
   def deleteFile(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): Future[Unit] =

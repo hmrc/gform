@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.fileupload
 
+import akka.util.ByteString
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
@@ -41,7 +42,7 @@ class FileUploadModule(configModule: ConfigModule, wSHttpModule: WSHttpModule, t
     override def getEnvelope(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): FOpt[Envelope] =
       fromFutureA(fileUploadService.getEnvelope(envelopeId))
 
-    override def getFileBytes(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): FOpt[Array[Byte]] =
+    override def getFileBytes(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): FOpt[ByteString] =
       fromFutureA(fileUploadService.getFileBytes(envelopeId, fileId))
   }
 

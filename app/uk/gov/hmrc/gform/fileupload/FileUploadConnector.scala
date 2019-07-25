@@ -18,7 +18,9 @@ package uk.gov.hmrc.gform.fileupload
 
 import java.time.LocalDateTime
 
+import akka.util.ByteString
 import play.api.Logger
+import play.api.libs.ws.WSResponse
 
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.gform.auditing.loggingHelpers
@@ -56,10 +58,20 @@ class FileUploadConnector(config: FUConfig, wSHttp: WSHttp, timeProvider: TimePr
     wSHttp.GET[Envelope](s"$baseUrl/file-upload/envelopes/${envelopeId.value}")
   }
 
-  def getFileBytes(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): Future[Array[Byte]] = {
+  def getFileBytes(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): Future[ByteString] = {
     Logger.info(s"get file, envelopeId: '${envelopeId.value}, fileId: '${fileId.value}'', ${loggingHelpers
       .cleanHeaderCarrierHeader(hc)}")
-    wSHttp.GET[Array[Byte]](s"$baseUrl/file-upload/envelopes/${envelopeId.value}/files/${fileId.value}/content")
+
+    val url = s"$baseUrl/file-upload/envelopes/${envelopeId.value}/files/${fileId.value}/content"
+    wSHttp
+      .buildRequest(url)
+      .get
+      .flatMap { response =>
+        if (response.status <= 200 || response.status > 299)
+          Future.failed(new Exception(s"Got status code ${response.status} when trying to get $url"))
+        else
+          Future.successful(response.bodyAsBytes)
+      }
   }
 
   def deleteFile(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): Future[Unit] = {

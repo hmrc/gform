@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.fileupload
 import java.time.LocalDateTime
 
+import akka.util.ByteString
 import cats.{ Applicative, Monad }
 import cats.instances.list._
 import cats.syntax.traverse._
@@ -31,7 +32,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 trait FileDownloadAlgebra[F[_]] {
   def getEnvelope(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): F[Envelope]
 
-  def getFileBytes(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): F[Array[Byte]]
+  def getFileBytes(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): F[ByteString]
 
   def allUploadedFiles(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier, F: Monad[F]): F[List[UploadedFile]] =
     for {
