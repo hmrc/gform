@@ -16,11 +16,12 @@
 
 package uk.gov.hmrc.gform.submission
 
+import play.api.Logger
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.email.EmailModule
-import uk.gov.hmrc.gform.fileupload.{ FileDownloadAlgebra, FileUploadAlgebra, FileUploadModule }
+import uk.gov.hmrc.gform.fileupload.{ FileDownloadAlgebra, FileUploadModule }
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.mongo.MongoModule
@@ -104,9 +105,15 @@ class SubmissionModule(
   )
 
   private val fileDownloadServiceIfPopulating: Option[FileDownloadAlgebra[FOpt]] =
-    if (configModule.DestinationsServicesConfig.populateHandlebarsModelWithDocuments)
+    if (configModule.DestinationsServicesConfig.populateHandlebarsModelWithDocuments) {
+      Logger.info(
+        "The fileDownloadService IS configured for the submission service, so the Handlebars model WILL be populated with uploaded documents")
       Some(fileUploadModule.foptFileDownloadService)
-    else None
+    } else {
+      Logger.info(
+        "The fileDownloadService IS NOT configured for the submission service, so the Handlebars model WILL NOT be populated with uploaded documents")
+      None
+    }
 
   val submissionService = new SubmissionService(
     pdfGeneratorModule.pdfGeneratorService,
