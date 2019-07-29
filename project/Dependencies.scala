@@ -49,3 +49,4 @@ object Dependencies {
     "com.itv" %% "scalapact-scalatest"     % "2.2.5" % scope
   )
 }
+  

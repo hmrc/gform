@@ -37,8 +37,8 @@ object SubmissionRef {
   val digits = 11
   val comb: Stream[Int] = Stream.continually(List(1, 3)).flatten
 
-  val oformat: OFormat[SubmissionRef] = ValueClassFormat.oformat("submissionRef", SubmissionRef.apply, _.value)
-  val vformat: Format[SubmissionRef] =
+  implicit val oformat: OFormat[SubmissionRef] = ValueClassFormat.oformat("submissionRef", SubmissionRef.apply, _.value)
+  implicit val vformat: Format[SubmissionRef] =
     ValueClassFormat.vformat("submissionRef", SubmissionRef.apply, x => JsString(x.value))
 
   def apply(value: EnvelopeId): SubmissionRef = SubmissionRef(getSubmissionReference(value))

@@ -22,8 +22,11 @@ import uk.gov.hmrc.gform.sharedmodel.des.DesRegistrationResponse
 
 case class ThirdPartyData(
   desRegistrationResponse: Option[DesRegistrationResponse],
-  obligations: Obligations
-)
+  obligations: Obligations,
+  reviewData: Option[Map[String, String]] = None) {
+
+  def reviewComments: Option[String] = reviewData.flatMap(_.get("caseworkerComment"))
+}
 
 object ThirdPartyData {
   val empty = ThirdPartyData(None, NotChecked)

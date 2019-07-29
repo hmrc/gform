@@ -20,7 +20,6 @@ import akka.stream.Materializer
 import play.api.Logger
 import play.api.mvc.EssentialFilter
 import play.api.routing.Router
-import testOnlyDoNotUseInAppConf.Routes
 import uk.gov.hmrc.gform.InjectionDodge
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.auditing.AuditingModule

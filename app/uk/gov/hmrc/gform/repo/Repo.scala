@@ -64,8 +64,8 @@ class Repo[T: OWrites: Manifest](name: String, mongo: () => DefaultDB, idLens: T
 
   implicit class FutureWriteResultOps[R](t: Future[R])(implicit ec: ExecutionContext) {
     def asEither: Future[Either[UnexpectedState, Unit]] =
-      t.map {
-        case _ => ().asRight[UnexpectedState]
+      t.map { _ =>
+        ().asRight[UnexpectedState]
       } recover {
         case lastError => UnexpectedState(lastError.getMessage).asLeft[Unit]
       }
