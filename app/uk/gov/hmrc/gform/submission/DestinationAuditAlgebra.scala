@@ -98,7 +98,7 @@ object DestinationAudit {
           (JsPath \ "destinationId").read[DestinationId] and
           (JsPath \ "destinationType").read[String] and
           (JsPath \ "destinationResponseStatus").readNullable[Int] and
-          (JsPath \ "workflowState").read[FormStatus](FormStatus.format) and
+          (JsPath \ "workflowState").read[FormStatus] and
           (JsPath \ "userId").read[UserId] and
           (JsPath \ "_caseworker_userName").readNullable[String] and
           (JsPath \ "_caseworker_comments").readNullable[String] and

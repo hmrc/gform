@@ -30,7 +30,7 @@ class DestinationAuditService(
       JsObject(
         Seq(
           "submissionReference" -> JsString(submissionRef),
-          "workflowState"       -> JsString("InProgress")
+          "workflowState"       -> JsString("Returned")
         )),
       JsObject(
         Seq(
