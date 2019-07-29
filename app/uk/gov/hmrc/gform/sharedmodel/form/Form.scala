@@ -95,6 +95,7 @@ case object Signed extends FormStatus
 case object NeedsReview extends FormStatus
 case object Accepting extends FormStatus
 case object Returning extends FormStatus
+case object Returned extends FormStatus
 case object Accepted extends FormStatus
 case object Submitting extends FormStatus
 case object Submitted extends FormStatus
@@ -102,10 +103,21 @@ case object Submitted extends FormStatus
 object FormStatus {
   implicit val equal: Eq[FormStatus] = Eq.fromUniversalEquals
 
-  implicit val format: OFormat[FormStatus] = derived.oformat
+  implicit val format: OFormat[FormStatus] = derived.oformat[FormStatus]
 
   val all: Set[FormStatus] =
-    Set(InProgress, Summary, Validated, Signed, NeedsReview, Returning, Accepting, Accepted, Submitting, Submitted)
+    Set(
+      InProgress,
+      Summary,
+      Validated,
+      Signed,
+      NeedsReview,
+      Returning,
+      Returned,
+      Accepting,
+      Accepted,
+      Submitting,
+      Submitted)
 
   def unapply(s: String): Option[FormStatus] = all.find(_.toString === s)
 }

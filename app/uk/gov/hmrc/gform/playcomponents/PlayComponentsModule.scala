@@ -30,7 +30,7 @@ import uk.gov.hmrc.gform.form.FormModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.metrics.MetricsModule
 import uk.gov.hmrc.gform.obligation.ObligationModule
-import uk.gov.hmrc.gform.submission.SubmissionModule
+import uk.gov.hmrc.gform.submission.{ DestinationAuditModule, SubmissionModule }
 import uk.gov.hmrc.gform.testonly.TestOnlyModule
 import uk.gov.hmrc.gform.validation.ValidationModule
 import uk.gov.hmrc.gform.wshttp.WSHttp
@@ -57,6 +57,7 @@ class PlayComponentsModule(
   formTemplateModule: FormTemplateModule,
   testOnlyModule: TestOnlyModule,
   submissionModule: SubmissionModule,
+  destinationAuditModule: DestinationAuditModule,
   validationModule: ValidationModule,
   dmsModule: DmsModule,
   obligationModule: ObligationModule) {
@@ -79,6 +80,7 @@ class PlayComponentsModule(
     errorHandler,
     formModule.formController,
     submissionModule.submissionController,
+    destinationAuditModule.destinationAuditController,
     formTemplateModule.formTemplatesController,
     configModule.configController,
     validationModule.validationController,

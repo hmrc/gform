@@ -38,7 +38,7 @@ import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorModule
 import uk.gov.hmrc.gform.playcomponents.{ PlayComponents, PlayComponentsModule }
 import uk.gov.hmrc.gform.save4later.{ Save4Later, Save4LaterModule }
-import uk.gov.hmrc.gform.submission.SubmissionModule
+import uk.gov.hmrc.gform.submission.{ DestinationAuditModule, SubmissionModule }
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsHttpApiModule
 import uk.gov.hmrc.gform.testonly.TestOnlyModule
 import uk.gov.hmrc.gform.time.TimeModule
@@ -88,6 +88,11 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
 
   val validationModule = new ValidationModule(wSHttpModule, configModule)
 
+  private val destinationAuditModule = new DestinationAuditModule(
+    configModule,
+    mongoModule
+  )
+
   private val handlebarsModule = new HandlebarsHttpApiModule(wSHttpModule, configModule)
   private val submissionModule =
     new SubmissionModule(
@@ -124,6 +129,7 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
     formTemplateModule,
     testOnlyModule,
     submissionModule,
+    destinationAuditModule,
     validationModule,
     dmsModule,
     obligationModule

@@ -45,6 +45,10 @@ class Repo[T: OWrites: Manifest](name: String, mongo: () => DefaultDB, idLens: T
     //TODO: don't abuse it to much. If querying for a large underlyingReactiveRepository.collection.consider returning stream instead of packing everything into the list
     underlying.collection.find(selector = selector, npProjection).cursor[T]().collect[List]()
 
+  // Returns the top row after sorting the rows returned according to the selector (sort of equivalent to SQL Top function
+  def top(selector: JsObject, sortCriteria: JsObject)(implicit ec: ExecutionContext): Future[Option[T]] =
+    underlying.collection.find(selector = selector).sort(sortCriteria).one[T]
+
   def projection[P: Format](projection: JsObject)(implicit ec: ExecutionContext): Future[List[P]] =
     underlying.collection.find(selector = Json.obj(), projection).cursor[P]().collect[List]()
 
