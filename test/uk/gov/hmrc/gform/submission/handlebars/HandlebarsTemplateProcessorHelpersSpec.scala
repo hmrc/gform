@@ -584,6 +584,32 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     }
   }
 
+  "yesNoNull" must "return null when null is given" in {
+    process("""{{yesNoNull null}}""") shouldBe "null"
+  }
+
+  it must "return 'Yes' when '0' is given" in {
+    process("""{{yesNoNull "0"}}""") shouldBe "Yes"
+  }
+
+  it must "return 'No' when '1' is given" in {
+    process("""{{yesNoNull "1"}}""") shouldBe "No"
+  }
+
+  it must "return 'null' when anything else is given" in {
+    process("""{{yesNoNull "foo"}}""") shouldBe "null"
+  }
+
+  "indexedLookup" must "return null when null is given" in {
+    process("""{{indexedLookup null}}""") shouldBe "null"
+  }
+
+  it must "return the value at the index if the index exists" in {
+    process("""{{indexedLookup "0" "Foo" "Bar" "Baz"}}""") shouldBe "Foo"
+    process("""{{indexedLookup "1" "Foo" "Bar" "Baz"}}""") shouldBe "Bar"
+    process("""{{indexedLookup "2" "Foo" "Bar" "Baz"}}""") shouldBe "Baz"
+  }
+
   private def quote(s: String): String = raw"""'$s'"""
 
   private def process(functionCall: String, model: String): String =

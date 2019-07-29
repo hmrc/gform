@@ -463,6 +463,23 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
           .mkString(" ")}) failed in "$matchString""""))
     }
 
+  def yesNoNull(v: Any): CharSequence = log("yesNoNull", v) {
+    ifNotNullAsString(v) {
+      _.replaceAll(",", "") match {
+        case "0" => "Yes"
+        case "1" => "No"
+        case _   => NullString
+      }
+    }
+  }
+
+  def indexedLookup(index: Any, options: Options): CharSequence =
+    log("indexedLookup", (index :: options.params.toList): _*) {
+      ifNotNullAsString(index) { s =>
+        condition(options.params(s.replaceAll(",", "").toInt))
+      }
+    }
+
   def toDesAddressWithoutPostcodeFromArray(fromField: ArrayNode, index: Int, options: Options): CharSequence =
     log("toDesAddressWithoutPostcodeFromArray", (fromField :: index :: options.params.toList): _*) {
       def get(line: String) =
