@@ -28,7 +28,6 @@ import cats.syntax.eq._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.traverse._
-import play.api.Logger
 import uk.gov.hmrc.gform.fileupload.{ FileDownloadAlgebra, UploadedFile }
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, Form }
@@ -125,8 +124,6 @@ object DestinationsSubmitter {
     val name = file.file.fileName
     val extension = fileExtension(file.file.fileName)
     val data = new String(Base64.getEncoder.encode(file.data.toArray), StandardCharsets.UTF_8)
-
-    Logger.info(s"Creating node for : $name with extension $extension and data $data")
 
     JsonNodes.objectNode(
       Map(

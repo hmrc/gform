@@ -19,7 +19,6 @@ package uk.gov.hmrc.gform.submission.handlebars
 import cats.MonadError
 import cats.syntax.applicative._
 import cats.syntax.flatMap._
-import play.api.Logger
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.wshttp.HttpClient
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
@@ -47,13 +46,11 @@ class RealHandlebarsHttpApiSubmitter[F[_]](
             val body = destination.payload.fold("") {
               handlebarsTemplateProcessor(_, model, destination.payloadType)
             }
-            Logger.info(s"Destination ${destination.id.id}. Payload: $body")
             httpClient.post(uri, body)
           case HttpMethod.PUT =>
             val body = destination.payload.fold("") {
               handlebarsTemplateProcessor(_, model, destination.payloadType)
             }
-            Logger.info(s"Destination ${destination.id.id}. Payload: $body")
             httpClient.put(uri, body)
         }
       }

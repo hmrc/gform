@@ -1,33 +1,33 @@
 # microservice specific routes
 
-POST          /new-form/:formTemplateId/:userId                    uk.gov.hmrc.gform.form.FormController.newForm(userId: UserId, formTemplateId: FormTemplateId, accessCode: Option[AccessCode] = None)
-POST          /new-form/:formTemplateId/:userId/:accessCode        uk.gov.hmrc.gform.form.FormController.newForm(userId: UserId, formTemplateId: FormTemplateId, accessCode: Option[AccessCode])
+POST          /new-form/:formTemplateId/:userId                             uk.gov.hmrc.gform.form.FormController.newForm(userId: UserId, formTemplateId: FormTemplateId, accessCode: Option[AccessCode] = None)
+POST          /new-form/:formTemplateId/:userId/:accessCode                 uk.gov.hmrc.gform.form.FormController.newForm(userId: UserId, formTemplateId: FormTemplateId, accessCode: Option[AccessCode])
 
-PUT           /forms/:formId                                       uk.gov.hmrc.gform.form.FormController.updateFormData(formId: FormId)
-GET           /forms/:formId                                       uk.gov.hmrc.gform.form.FormController.get(formId: FormId)
-POST          /forms/:formId/delete                                uk.gov.hmrc.gform.form.FormController.delete(formId: FormId)
+PUT           /forms/:formId                                                uk.gov.hmrc.gform.form.FormController.updateFormData(formId: FormId)
+GET           /forms/:formId                                                uk.gov.hmrc.gform.form.FormController.get(formId: FormId)
+POST          /forms/:formId/delete                                         uk.gov.hmrc.gform.form.FormController.delete(formId: FormId)
 
-POST          /forms/:formId/enrolment-callback                     uk.gov.hmrc.gform.form.FormController.enrolmentCallBack(formId: FormId)
+POST          /forms/:formId/enrolment-callback                             uk.gov.hmrc.gform.form.FormController.enrolmentCallBack(formId: FormId)
 
-DELETE        /forms/:formId/deleteFile/:fileId                    uk.gov.hmrc.gform.form.FormController.deleteFile(formId: FormId, fileId: FileId)
+DELETE        /forms/:formId/deleteFile/:fileId                             uk.gov.hmrc.gform.form.FormController.deleteFile(formId: FormId, fileId: FileId)
 
-POST          /forms/:formId/submission-pdf                        uk.gov.hmrc.gform.submission.SubmissionController.submitWithPdf(formId: FormId)
-GET           /forms/:formId/submission                            uk.gov.hmrc.gform.submission.SubmissionController.submissionStatus(formId: FormId)
+POST          /forms/:formId/submission-pdf                                 uk.gov.hmrc.gform.submission.SubmissionController.submitWithPdf(formId: FormId)
+GET           /forms/:formId/submission                                     uk.gov.hmrc.gform.submission.SubmissionController.submissionStatus(formId: FormId)
 
-GET           /formtemplates                                       uk.gov.hmrc.gform.formtemplate.FormTemplatesController.all
-POST          /formtemplates                                       uk.gov.hmrc.gform.formtemplate.FormTemplatesController.upsert
-POST          /superform/formtemplates                             uk.gov.hmrc.gform.formtemplate.FormTemplatesController.upsertSuperForm
-GET           /formtemplates/:formTemplateId                       uk.gov.hmrc.gform.formtemplate.FormTemplatesController.get(formTemplateId: FormTemplateId)
-GET           /superform/:formTemplateId                           uk.gov.hmrc.gform.formtemplate.FormTemplatesController.getSuperForm(formTemplateId: FormTemplateId)
-GET           /formtemplates/:formTemplateId/raw                   uk.gov.hmrc.gform.formtemplate.FormTemplatesController.getRaw(formTemplateId: FormTemplateRawId)
-DELETE        /formtemplates/:formTemplateId                       uk.gov.hmrc.gform.formtemplate.FormTemplatesController.remove(formTemplateId: FormTemplateId)
+GET           /formtemplates                                                uk.gov.hmrc.gform.formtemplate.FormTemplatesController.all
+POST          /formtemplates                                                uk.gov.hmrc.gform.formtemplate.FormTemplatesController.upsert
+POST          /superform/formtemplates                                      uk.gov.hmrc.gform.formtemplate.FormTemplatesController.upsertSuperForm
+GET           /formtemplates/:formTemplateId                                uk.gov.hmrc.gform.formtemplate.FormTemplatesController.get(formTemplateId: FormTemplateId)
+GET           /superform/:formTemplateId                                    uk.gov.hmrc.gform.formtemplate.FormTemplatesController.getSuperForm(formTemplateId: FormTemplateId)
+GET           /formtemplates/:formTemplateId/raw                            uk.gov.hmrc.gform.formtemplate.FormTemplatesController.getRaw(formTemplateId: FormTemplateRawId)
+DELETE        /formtemplates/:formTemplateId                                uk.gov.hmrc.gform.formtemplate.FormTemplatesController.remove(formTemplateId: FormTemplateId)
 
-GET           /exposed-config                                      uk.gov.hmrc.gform.config.ConfigController.exposedConfig()
+GET           /exposed-config                                               uk.gov.hmrc.gform.config.ConfigController.exposedConfig()
 
-POST          /validate/des/:utr                                   uk.gov.hmrc.gform.validation.ValidationController.desRegistration(utr: String)
-POST          /validate/bank                                       uk.gov.hmrc.gform.validation.ValidationController.validateBank()
+POST          /validate/des/:utr                                            uk.gov.hmrc.gform.validation.ValidationController.desRegistration(utr: String)
+POST          /validate/bank                                                uk.gov.hmrc.gform.validation.ValidationController.validateBank()
 
-POST          /dms/submit                                          uk.gov.hmrc.gform.dms.DmsSubmissionController.submitToDms()
-POST          /dms/submit-pdf                                      uk.gov.hmrc.gform.dms.DmsSubmissionController.submitPdfToDms()
+POST          /dms/submit                                                   uk.gov.hmrc.gform.dms.DmsSubmissionController.submitToDms()
+POST          /dms/submit-pdf                                               uk.gov.hmrc.gform.dms.DmsSubmissionController.submitPdfToDms()
 
-POST          /obligation/tax-period                               uk.gov.hmrc.gform.obligation.ObligationController.getAllTaxPeriods()
+POST          /obligation/tax-period                                        uk.gov.hmrc.gform.obligation.ObligationController.getAllTaxPeriods()
