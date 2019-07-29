@@ -121,24 +121,27 @@ class RepoDestinationAuditer(
     handlebarsDestinationResponseStatusCode: Option[Int],
     formId: FormId,
     summaryHtml: String,
-    submissionReference: SubmissionRef)(implicit hc: HeaderCarrier): FOpt[Unit] =
-    for {
-      form          <- formAlgebra.get(formId)
-      summaryHtmlId <- findOrInsertSummaryHtml(summaryHtml)
-      _ <- auditRepository.upsert(
-            new DestinationAudit(
-              formId,
-              form.formTemplateId,
-              destination.id,
-              getDestinationType(destination),
-              handlebarsDestinationResponseStatusCode,
-              form.status,
-              form.userId,
-              getCaseworkerUsername(form.formData),
-              submissionReference,
-              summaryHtmlId
-            ))
-    } yield ()
+    submissionReference: SubmissionRef)(implicit hc: HeaderCarrier): FOpt[Unit] = destination match {
+    case _: Destination.Composite => ().pure[FOpt]
+    case _ =>
+      for {
+        form          <- formAlgebra.get(formId)
+        summaryHtmlId <- findOrInsertSummaryHtml(summaryHtml)
+        _ <- auditRepository.upsert(
+              DestinationAudit(
+                formId,
+                form.formTemplateId,
+                destination.id,
+                getDestinationType(destination),
+                handlebarsDestinationResponseStatusCode,
+                form.status,
+                form.userId,
+                getCaseworkerUsername(form.formData),
+                submissionReference,
+                summaryHtmlId
+              ))
+      } yield ()
+  }
 
   private def getCaseworkerUsername(formData: FormData): Option[String] =
     formData.find(FormComponentId("_caseworker_userName"))
