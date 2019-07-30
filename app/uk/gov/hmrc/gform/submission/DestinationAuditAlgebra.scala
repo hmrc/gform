@@ -36,9 +36,9 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplat
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongo.json.ReactiveMongoFormats._
 
-import scala.concurrent.ExecutionContext // Combinator syntax
+import scala.concurrent.ExecutionContext
 
-case class SummaryHtmlId(value: UUID)
+case class SummaryHtmlId(value: UUID) extends AnyVal
 
 object SummaryHtmlId {
   implicit val oformat: OFormat[SummaryHtmlId] =
@@ -86,8 +86,6 @@ case class DestinationAudit(
   timestamp: LocalDateTime = LocalDateTime.now)
 
 object DestinationAudit {
-
-//  implicit val format2 = Json.format[DestinationAudit]
 
   implicit val format: OFormat[DestinationAudit] = new OFormat[DestinationAudit] {
 
