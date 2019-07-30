@@ -458,6 +458,7 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
       }.toList
 
       LookupMatchStringParser(matchString.toString, key)
+        .map(condition)
         .getOrElse(throw new Exception(s"""Attempt to match (${key
           .map(v => s"'$v'")
           .mkString(" ")}) failed in "$matchString""""))

@@ -34,6 +34,19 @@ class HandlebarsTemplateProcessorSpec extends Spec {
       TemplateType.XML) shouldBe "<foo>I am a handlebars template</foo>"
   }
 
+  it must "work with more complex XML" in {
+    SingleQuoteReplacementLexer(
+      "<foo>I am a {{match ^('0') => '<AdoptionCounselling>Yes</AdoptionCounselling>'; ('1') => '<AdoptionAdvice>Yes</AdoptionAdvice>';^ name}} template</foo>") match {
+      case Left(err) => fail(err)
+      case Right(template) =>
+        RealHandlebarsTemplateProcessor(
+          template,
+          HandlebarsTemplateProcessorModel("""{"name" : "0"}"""),
+          TemplateType.XML
+        ) shouldBe "<foo>I am a <AdoptionCounselling>Yes</AdoptionCounselling> template</foo>"
+    }
+  }
+
   it must "work with plain text" in {
     RealHandlebarsTemplateProcessor(
       "I am a {{name}} template",
