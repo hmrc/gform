@@ -26,7 +26,8 @@ trait FormTemplateGen {
   def formTemplateDescriptionGen: Gen[String] = Gen.alphaNumStr
   def developmentPhaseGen: Gen[DevelopmentPhase] = Gen.oneOf(AlphaBanner, BetaBanner, ResearchBanner, LiveBanner)
   def formCategoryGen: Gen[FormCategory] = Gen.oneOf(HMRCReturnForm, HMRCClaimForm, Default)
-  def draftRetrievalMethodGen: Gen[DraftRetrievalMethod] = Gen.oneOf(OnePerUser, FormAccessCodeForAgents)
+  def draftRetrievalMethodGen: Gen[DraftRetrievalMethod] =
+    Gen.oneOf(OnePerUser, FormAccessCodeForAgents, BySubmissionReference)
   def emailTemplateIdGen: Gen[String] = PrimitiveGen.nonEmptyAlphaNumStrGen
 
   def emailParameterGen: Gen[EmailParameter] =

@@ -18,7 +18,8 @@ package uk.gov.hmrc.gform.sharedmodel
 
 import cats.implicits._
 import play.api.libs.json.{ JsError, JsString, JsSuccess, Reads }
-import play.api.mvc.PathBindable
+import play.api.mvc.{ JavascriptLiteral, PathBindable }
+import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.gform.sharedmodel.form.{ FileId, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, FormTemplateRawId, SectionNumber }
@@ -27,6 +28,11 @@ import scala.util.Try
 
 object ValueClassBinder {
 
+  implicit val jLiteralAffinityGroup = new JavascriptLiteral[AffinityGroup] {
+    def to(value: AffinityGroup): String = AffinityGroupUtil.affinityGroupName(value)
+  }
+  implicit val affinityGroupBinder: PathBindable[Option[AffinityGroup]] = mValueClassBinder(
+    AffinityGroupUtil.affinityGroupName)
   implicit val formTemplateIdBinder: PathBindable[FormTemplateId] = valueClassBinder(_.value)
   implicit val formTemplateRawIdBinder: PathBindable[FormTemplateRawId] = valueClassBinder(_.value)
 

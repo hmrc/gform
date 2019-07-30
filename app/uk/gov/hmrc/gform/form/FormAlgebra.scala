@@ -16,8 +16,9 @@
 
 package uk.gov.hmrc.gform.form
 import play.api.libs.json.JsValue
-import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, UserId }
-import uk.gov.hmrc.gform.sharedmodel.form.{ _ }
+import uk.gov.hmrc.auth.core.AffinityGroup
+import uk.gov.hmrc.gform.sharedmodel.UserId
+import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -29,9 +30,9 @@ trait FormAlgebra[F[_]] {
   def create(
     userId: UserId,
     formTemplateId: FormTemplateId,
-    accessCode: Option[AccessCode],
+    accessCode: Option[AffinityGroup],
     expiryDays: Long,
-    initialFields: Seq[FormField])(implicit hc: HeaderCarrier): F[FormId]
+    initialFields: Seq[FormField])(implicit hc: HeaderCarrier): F[NewFormData]
 
   def updateUserData(formId: FormId, userData: UserData)(implicit hc: HeaderCarrier): F[Unit]
 

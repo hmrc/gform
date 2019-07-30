@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.submission
 import cats.data.NonEmptyList
 import cats.{ Applicative, Id, Monad }
 import cats.syntax.applicative._
+import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, Destinations, HandlebarsDestinationResponse, HandlebarsTemplateProcessorModel }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, DestinationsGen }
@@ -38,9 +39,9 @@ class DestinationsSubmitterSpec extends Spec {
     override def create(
       userId: UserId,
       formTemplateId: FormTemplateId,
-      accessCode: Option[AccessCode],
+      affinityGroup: Option[AffinityGroup],
       expiryDays: Long,
-      initialFields: Seq[FormField])(implicit hc: HeaderCarrier): Id[FormId] = ???
+      initialFields: Seq[FormField])(implicit hc: HeaderCarrier): Id[NewFormData] = ???
     override def updateUserData(formId: FormId, userData: UserData)(implicit hc: HeaderCarrier): Id[Unit] = ???
     override def updateFormStatus(formId: FormId, newStatus: FormStatus)(implicit hc: HeaderCarrier): Id[FormStatus] =
       ???

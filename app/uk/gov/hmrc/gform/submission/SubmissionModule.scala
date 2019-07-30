@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.submission
 
 import play.api.Logger
 import play.api.libs.json.JsValue
+import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.email.EmailModule
@@ -59,10 +60,10 @@ class SubmissionModule(
     override def create(
       userId: UserId,
       formTemplateId: FormTemplateId,
-      accessCode: Option[AccessCode],
+      affinityGroup: Option[AffinityGroup],
       expiryDays: Long,
-      initialFields: Seq[FormField])(implicit hc: HeaderCarrier): FOpt[FormId] =
-      fromFutureA(formService.create(userId, formTemplateId, accessCode, expiryDays, initialFields))
+      initialFields: Seq[FormField])(implicit hc: HeaderCarrier): FOpt[NewFormData] =
+      fromFutureA(formService.create(userId, formTemplateId, affinityGroup, expiryDays, initialFields))
 
     override def updateUserData(formId: FormId, userData: UserData)(implicit hc: HeaderCarrier): FOpt[Unit] =
       fromFutureA(formService.updateUserData(formId, userData))

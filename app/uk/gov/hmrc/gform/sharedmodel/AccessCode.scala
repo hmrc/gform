@@ -18,7 +18,8 @@ package uk.gov.hmrc.gform.sharedmodel
 
 import cats.data.State
 import play.api.libs.json._
-import play.api.mvc.JavascriptLiteral
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.BySubmissionReference
+import uk.gov.hmrc.gform.submission.SubmissionRef
 import uk.gov.hmrc.gform.typeclasses.Rnd
 
 case class AccessCode(value: String) extends AnyVal
@@ -26,9 +27,7 @@ case class AccessCode(value: String) extends AnyVal
 object AccessCode {
   implicit val format: Format[AccessCode] = ValueClassFormat.simpleFormat(AccessCode.apply)(_.value)
 
-  implicit val jLiteral = new JavascriptLiteral[AccessCode] {
-    def to(value: AccessCode): String = value.value
-  }
+  def fromSubmissionRef(submissionRef: SubmissionRef): AccessCode = AccessCode(submissionRef.value)
 
   def random(implicit rnd: Rnd[Int]): AccessCode = {
     def alphanumeric() = {

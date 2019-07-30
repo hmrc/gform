@@ -1,7 +1,7 @@
 # microservice specific routes
 
-POST          /new-form/:formTemplateId/:userId                             uk.gov.hmrc.gform.form.FormController.newForm(userId: UserId, formTemplateId: FormTemplateId, accessCode: Option[AccessCode] = None)
-POST          /new-form/:formTemplateId/:userId/:accessCode                 uk.gov.hmrc.gform.form.FormController.newForm(userId: UserId, formTemplateId: FormTemplateId, accessCode: Option[AccessCode])
+POST          /new-form/:formTemplateId/:userId                             uk.gov.hmrc.gform.form.FormController.newForm(userId: UserId, formTemplateId: FormTemplateId, affinityGroup: Option[AffinityGroup] = None)
+POST          /new-form/:formTemplateId/:userId/:affinityGroup              uk.gov.hmrc.gform.form.FormController.newForm(userId: UserId, formTemplateId: FormTemplateId, affinityGroup: Option[AffinityGroup])
 
 PUT           /forms/:formId                                                uk.gov.hmrc.gform.form.FormController.updateFormData(formId: FormId)
 GET           /forms/:formId                                                uk.gov.hmrc.gform.form.FormController.get(formId: FormId)

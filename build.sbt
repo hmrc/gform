@@ -38,6 +38,7 @@ lazy val microservice = (project in file("."))
     libraryDependencies ++= appDependencies,
     evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
     routesImport ++= Seq(
+      "uk.gov.hmrc.auth.core.AffinityGroup",
       "uk.gov.hmrc.gform.sharedmodel.ValueClassBinder._",
       "uk.gov.hmrc.gform.sharedmodel._",
       "uk.gov.hmrc.gform.sharedmodel.form._",
