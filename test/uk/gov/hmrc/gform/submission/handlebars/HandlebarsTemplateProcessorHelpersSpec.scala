@@ -600,6 +600,30 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     process("""{{yesNoNull "foo"}}""") shouldBe "null"
   }
 
+  "booleanToYesNo" must "return null when null is given" in {
+    process("""{{booleanToYesNo null}}""") shouldBe "null"
+  }
+
+  it must "return Yes when true or \"true\" is given" in {
+    process("""{{booleanToYesNo true}}""") shouldBe "Yes"
+    process("""{{booleanToYesNo "true"}}""") shouldBe "Yes"
+  }
+
+  it must "return No when false or \"false\" is given" in {
+    process("""{{booleanToYesNo false}}""") shouldBe "No"
+    process("""{{booleanToYesNo "false"}}""") shouldBe "No"
+  }
+
+  "capitaliseFirst" must "return null when null is given" in {
+    process("""{{capitaliseFirst null}}""") shouldBe "null"
+  }
+
+  it must "capitalise the first letter of any string" in {
+    forAll(Gen.alphaNumStr) { s =>
+      process(s"""{{capitaliseFirst "$s"}}""") shouldBe s.capitalize
+    }
+  }
+
   "indexedLookup" must "return null when null is given" in {
     process("""{{indexedLookup null}}""") shouldBe "null"
   }

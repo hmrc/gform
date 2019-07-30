@@ -474,6 +474,18 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
     }
   }
 
+  def booleanToYesNo(s: Any): CharSequence = log("booleanToYesNo", s) {
+    ifNotNullAsString(s) { v =>
+      if (asBoolean(v)) "Yes" else "No"
+    }
+  }
+
+  def capitaliseFirst(s: Any): CharSequence = log("capitaliseFirst", s) {
+    ifNotNullAsString(s) { v =>
+      v.capitalize
+    }
+  }
+
   def indexedLookup(index: Any, options: Options): CharSequence =
     log("indexedLookup", (index :: options.params.toList): _*) {
       ifNotNullAsString(index) { s =>
@@ -554,16 +566,18 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
     }
 
   def exists(array: ArrayNode, testValue: Any): CharSequence = log("exists", array, testValue) {
-    ifNotNullAsString(testValue) { v =>
-      (0 until array.size)
-        .map(array.get)
-        .map(
-          _.cast[TextNode]
-            .map(_.asText)
-            .getOrElse(throw new Exception(s"exists($array, 'v'): expected elements in the array to be Strings.")))
-        .exists(_ === v)
-        .toString
-    }
+    if (array == null) NullString
+    else
+      ifNotNullAsString(testValue) { v =>
+        (0 until array.size)
+          .map(array.get)
+          .map(
+            _.cast[TextNode]
+              .map(_.asText)
+              .getOrElse(throw new Exception(s"exists($array, 'v'): expected elements in the array to be Strings.")))
+          .exists(_ === v)
+          .toString
+      }
   }
 
   def plus(first: Any, options: Options): CharSequence = log("plus", (first :: options.params.toList): _*) {
