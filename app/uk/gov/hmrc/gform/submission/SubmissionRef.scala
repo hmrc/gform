@@ -53,9 +53,9 @@ object SubmissionRef {
     } else { "" }
 
   def calculate(value: BigInteger, radix: Int, digits: Int, comb: Stream[Int]): String = {
-    val modulus: BigInteger = BigInteger.valueOf(pow(radix, digits).toLong)
+    val modulus: BigInteger = BigInteger.valueOf(pow(radix.toDouble, digits.toDouble).toLong)
     val derivedDigits = (value.mod(modulus) add modulus).toString(radix).takeRight(digits)
-    val checkCharacter = BigInteger.valueOf(calculateCheckCharacter(derivedDigits, radix, comb)).toString(radix)
+    val checkCharacter = BigInteger.valueOf(calculateCheckCharacter(derivedDigits, radix, comb).toLong).toString(radix)
     checkCharacter + derivedDigits
   }
 
