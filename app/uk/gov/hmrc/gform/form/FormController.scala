@@ -20,18 +20,19 @@ import play.api.Logger
 import play.api.http.HttpEntity
 import play.api.libs.json.JsValue
 import play.api.mvc._
+import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.gform.auditing._
 import uk.gov.hmrc.gform.config.AppConfig
 import uk.gov.hmrc.gform.controllers.BaseController
-import uk.gov.hmrc.gform.fileupload.{ FileUploadAlgebra, FileUploadService }
+import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateService
+import uk.gov.hmrc.gform.sharedmodel.AffinityGroupUtil
 import uk.gov.hmrc.gform.sharedmodel.form.{ FileId, FormId, UserData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, UserId }
-import uk.gov.hmrc.http.{ BadRequestException, NotFoundException }
+import uk.gov.hmrc.gform.sharedmodel.UserId
+import uk.gov.hmrc.http.NotFoundException
 
 import scala.concurrent.{ ExecutionContext, Future }
-import scala.util.Try
 
 class FormController(
   config: AppConfig,
@@ -43,17 +44,18 @@ class FormController(
   def newForm(
     userId: UserId,
     formTemplateId: FormTemplateId,
-    accessCode: Option[AccessCode]
+    affinityGroup: Option[AffinityGroup]
   ): Action[AnyContent] = Action.async { implicit request =>
-    Logger.info(s"new form, userId: '${userId.value}', templateId: '${formTemplateId.value}', accessCode: '${accessCode
-      .map(_.value)}', ${loggingHelpers.cleanHeaders(request.headers)}")
+    Logger.info(
+      s"new form, userId: '${userId.value}', templateId: '${formTemplateId.value}', affinityGroup: '${AffinityGroupUtil
+        .affinityGroupNameO(affinityGroup)}', ${loggingHelpers.cleanHeaders(request.headers)}")
     //TODO authentication
     //TODO user should be obtained from secure action
     //TODO authorisation
     //TODO Prevent creating new form when there exist one. Ask user to explicitly delete it
     //TODO: remove userId from argument list (it should be available after authenticating)
 
-    formService.create(userId, formTemplateId, accessCode, config.formExpiryDays.toLong, Seq.empty).asOkJson
+    formService.create(userId, formTemplateId, affinityGroup, config.formExpiryDays.toLong, Seq.empty).asOkJson
   }
 
   def get(formId: FormId): Action[AnyContent] = Action.async { implicit request =>

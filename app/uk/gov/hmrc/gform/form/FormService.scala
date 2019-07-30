@@ -19,17 +19,24 @@ package uk.gov.hmrc.gform.form
 import cats.Monad
 import cats.syntax.functor._
 import cats.syntax.flatMap._
+import julienrf.json.derived
 import play.api.Logger
-import play.api.libs.json.JsValue
+import play.api.libs.json.{ JsValue, OFormat }
+import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
+import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.save4later.FormPersistenceAlgebra
 import uk.gov.hmrc.gform.sharedmodel.form._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ BySubmissionReference, FormAccessCodeForAgents, FormTemplate, FormTemplateId }
 import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, UserId }
+import uk.gov.hmrc.gform.submission.SubmissionRef
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.HeaderCarrier
 
-class FormService[F[_]: Monad](formPersistence: FormPersistenceAlgebra[F], fileUpload: FileUploadAlgebra[F])
+class FormService[F[_]: Monad](
+  formPersistence: FormPersistenceAlgebra[F],
+  fileUpload: FileUploadAlgebra[F],
+  formTemplateAlgebra: FormTemplateAlgebra[F])
     extends FormAlgebra[F] {
 
   def get(formId: FormId)(implicit hc: HeaderCarrier): F[Form] =
@@ -38,18 +45,42 @@ class FormService[F[_]: Monad](formPersistence: FormPersistenceAlgebra[F], fileU
   def delete(formId: FormId)(implicit hc: HeaderCarrier): F[Unit] =
     formPersistence.delete(formId)
 
+  private def createNewFormData(
+    userId: UserId,
+    formTemplate: FormTemplate,
+    envelopeId: EnvelopeId,
+    affinityGroup: Option[AffinityGroup]
+  ): NewFormData = {
+    val formTemplateId = formTemplate._id
+    (formTemplate.draftRetrievalMethod, affinityGroup) match {
+
+      case (Some(BySubmissionReference), _) =>
+        val submissionRef = SubmissionRef(envelopeId)
+        val ac = AccessCode.fromSubmissionRef(submissionRef)
+        NewFormData(FormId.fromSubmissionRef(userId, formTemplateId, submissionRef), FormAccess.ByAccessCode(ac))
+
+      case (Some(FormAccessCodeForAgents), Some(AffinityGroup.Agent)) =>
+        val ac = AccessCode.random
+        NewFormData(FormId.fromAccessCode(userId, formTemplateId, ac), FormAccess.ByAccessCode(ac))
+
+      case _ => NewFormData(FormId(userId, formTemplateId), FormAccess.Direct)
+    }
+  }
+
   def create(
     userId: UserId,
     formTemplateId: FormTemplateId,
-    accessCode: Option[AccessCode],
+    affinityGroup: Option[AffinityGroup],
     expiryDays: Long,
-    initialFields: Seq[FormField] = Seq.empty)(implicit hc: HeaderCarrier): F[FormId] = {
+    initialFields: Seq[FormField] = Seq.empty)(implicit hc: HeaderCarrier): F[NewFormData] = {
     val timeProvider = new TimeProvider
-    val formId = FormId(userId, formTemplateId, accessCode)
     val expiryDate = timeProvider.localDateTime().plusDays(expiryDays)
 
     for {
-      envelopeId <- fileUpload.createEnvelope(formTemplateId, expiryDate)
+      envelopeId   <- fileUpload.createEnvelope(formTemplateId, expiryDate)
+      formTemplate <- formTemplateAlgebra.get(formTemplateId)
+      formData = createNewFormData(userId, formTemplate, envelopeId, affinityGroup)
+      formId = formData.formId
       form = Form(
         formId,
         envelopeId,
@@ -62,7 +93,7 @@ class FormService[F[_]: Monad](formPersistence: FormPersistenceAlgebra[F], fileU
         Some(EnvelopeExpiryDate(expiryDate))
       )
       _ <- formPersistence.upsert(formId, form)
-    } yield formId
+    } yield formData
   }
 
   def updateUserData(formId: FormId, userData: UserData)(implicit hc: HeaderCarrier): F[Unit] =

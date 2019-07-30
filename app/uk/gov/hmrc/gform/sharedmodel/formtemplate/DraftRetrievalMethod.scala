@@ -22,12 +22,14 @@ sealed trait DraftRetrievalMethod
 
 case object OnePerUser extends DraftRetrievalMethod
 case object FormAccessCodeForAgents extends DraftRetrievalMethod
+case object BySubmissionReference extends DraftRetrievalMethod
 
 object DraftRetrievalMethod {
   implicit val format: Format[DraftRetrievalMethod] = new Format[DraftRetrievalMethod] {
     override def writes(o: DraftRetrievalMethod): JsValue = o match {
       case OnePerUser              => JsString("onePerUser")
       case FormAccessCodeForAgents => JsString("formAccessCodeForAgents")
+      case BySubmissionReference   => JsString("submissionReference")
     }
 
     override def reads(json: JsValue): JsResult[DraftRetrievalMethod] =
@@ -36,9 +38,11 @@ object DraftRetrievalMethod {
           JsSuccess(OnePerUser)
         case JsString("formAccessCodeForAgents") =>
           JsSuccess(FormAccessCodeForAgents)
+        case JsString("submissionReference") =>
+          JsSuccess(BySubmissionReference)
         case JsString(err) =>
           JsError(
-            s"only two values are allowed for draftRetrievalMethod: either onePerUser, or formAccessCodeForAgents; $err is not valid")
+            s"only three values are allowed for draftRetrievalMethod: either onePerUser, submissionReference or formAccessCodeForAgents; $err is not valid")
         case _ => JsError("Failure, a string value is required for a draftRetrievalMethod")
       }
   }
