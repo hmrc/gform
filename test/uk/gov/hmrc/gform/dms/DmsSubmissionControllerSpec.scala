@@ -61,7 +61,7 @@ class DmsSubmissionControllerSpec extends Spec {
       .returning(Future.successful(()))
 
     val res = testController.submitToDms()(validRequest)
-    status(res) shouldBe NO_CONTENT
+    status(res) shouldBe OK
   }
 
   it should "generate a PDF using the decoded HTML" in {
@@ -90,7 +90,7 @@ class DmsSubmissionControllerSpec extends Spec {
       .returning(Future.successful(()))
 
     val res = testController.submitToDms()(FakeRequest().withBody[JsValue](Json.toJson(submissionWithHtml)))
-    status(res) shouldBe NO_CONTENT
+    status(res) shouldBe OK
   }
 
   it should "upload the PDF and XML metadata to the file upload envelope" in {
@@ -129,7 +129,7 @@ class DmsSubmissionControllerSpec extends Spec {
       .returning(Future.successful(()))
 
     val res = testController.submitToDms()(validRequest)
-    status(res) shouldBe NO_CONTENT
+    status(res) shouldBe OK
   }
 
   it should "return a 400 Bad Request response when the JSON payload is invalid" in {
@@ -186,7 +186,7 @@ class DmsSubmissionControllerSpec extends Spec {
 
     val res =
       testController.submitPdfToDms(FakeRequest().withBody(form).withHeaders("Content-Type" -> "multipart/form-data"))
-    status(res) shouldBe NO_CONTENT
+    status(res) shouldBe OK
   }
 
   it should "return BAD_REQUEST if the request to /dms/submit-pdf doesnt contain a file" in {

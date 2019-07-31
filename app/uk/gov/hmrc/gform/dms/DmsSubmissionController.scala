@@ -108,7 +108,7 @@ class DmsSubmissionController(
         metadata.businessArea)
       _ <- fileUpload.submitEnvelope(submission, summaries, dmsSubmission, 0)
     } yield {
-      NoContent
+      Ok(envId.value)
     }
   }
 
