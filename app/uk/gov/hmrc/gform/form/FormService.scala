@@ -112,7 +112,7 @@ object LifeCycleStatus {
     case (Validated, InProgress)                           => Some(Summary) // This is odd. What's it about?
     case (Validated, Summary | Signed)                     => Some(to)
     case (Signed, Submitted | NeedsReview)                 => Some(to)
-    case (Submitting, Submitted)                           => Some(to)
+    case (Submitting, Submitted | NeedsReview | Accepted)  => Some(to)
     case _                                                 => None
   }
 }
