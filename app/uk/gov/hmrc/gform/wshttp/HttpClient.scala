@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.wshttp
 import cats.syntax.applicative._
 import cats.syntax.flatMap._
 import cats.{ Endo, MonadError }
+import play.api.Logger
 import play.api.libs.json.{ JsValue, Json }
 import uk.gov.hmrc.gform.core.{ FOpt, _ }
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpReads, HttpResponse }
@@ -90,8 +91,8 @@ object HttpClient {
       method(uri, parser.fold(payload)(fn => fn(payload).toString))
     } catch {
       case ex: Exception =>
-        monadError.raiseError(
-          s"Attempt send a request failed because the given String is not valid: ${ex.getMessage}. The String is: $payload")
+        Logger.debug(s"Failed to send request to $uri with body: $payload", ex)
+        monadError.raiseError(s"Attempt send a request failed because the given body is not valid.")
     }
 }
 
