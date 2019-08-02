@@ -65,6 +65,24 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
       }
     }
 
+  def toISO8601Date(date: java.util.Map[String, String]): CharSequence =
+    log("toIso8601Date", date) {
+      ifNotNull(date) { df =>
+        extractDateFields(df) { (day, month, year) =>
+          condition(s"$year-${padLeft(month, 2, '0')}-${padLeft(day, 2, '0')}")
+        }.getOrElse(NullString)
+      }
+    }
+
+  def toISO8601DateTime(date: java.util.Map[String, String]): CharSequence =
+    log("toIso8601DateTime", date) {
+      ifNotNull(date) { df =>
+        extractDateFields(df) { (day, month, year) =>
+          condition(s"$year-${padLeft(month, 2, '0')}-${padLeft(day, 2, '0')}T00:00:00")
+        }.getOrElse(NullString)
+      }
+    }
+
   private def extractDateFields[T](date: java.util.Map[String, String])(f: (String, String, String) => T): Option[T] =
     for {
       day   <- extractNonEmptyStringFieldValue(date, "day")
