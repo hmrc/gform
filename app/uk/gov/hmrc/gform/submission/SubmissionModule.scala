@@ -89,13 +89,17 @@ class SubmissionModule(
   )
 
   private val destinationAuditer: DestinationAuditAlgebra[FOpt] =
-    if (configModule.DestinationsServicesConfig.auditDestinations)
+    if (configModule.DestinationsServicesConfig.auditDestinations) {
+      Logger.info("Destination auditing IS enabled")
       new RepoDestinationAuditer(
         new Repo[DestinationAudit]("destinationAudit", mongoModule.mongo, _.id.toString),
         new Repo[SummaryHtml]("summaryHtml", mongoModule.mongo, _.id.value.toString),
         fOptFormAlgebra
       )
-    else new NullDestinationAuditer[FOpt]
+    } else {
+      Logger.info("Destination auditing IS NOT enabled")
+      new NullDestinationAuditer[FOpt]
+    }
 
   private val realDestinationSubmitter = new RealDestinationSubmitter(
     fileUploadServiceDmsSubmitter,

@@ -23,6 +23,7 @@ import cats.syntax.eq._
 import cats.instances.future._
 import cats.instances.string._
 import org.joda.time.LocalDateTime
+import play.api.Logger
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.form.FormAlgebra
@@ -127,19 +128,21 @@ class RepoDestinationAuditer(
       for {
         form          <- formAlgebra.get(formId)
         summaryHtmlId <- findOrInsertSummaryHtml(summaryHtml)
-        _ <- auditRepository.upsert(
-              DestinationAudit(
-                formId,
-                form.formTemplateId,
-                destination.id,
-                getDestinationType(destination),
-                handlebarsDestinationResponseStatusCode,
-                form.status,
-                form.userId,
-                getCaseworkerUsername(form.formData),
-                submissionReference,
-                summaryHtmlId
-              ))
+        audit = DestinationAudit(
+          formId,
+          form.formTemplateId,
+          destination.id,
+          getDestinationType(destination),
+          handlebarsDestinationResponseStatusCode,
+          form.status,
+          form.userId,
+          getCaseworkerUsername(form.formData),
+          submissionReference,
+          summaryHtmlId
+        )
+        _ = Logger.info(s"Writing to destination audit: $audit")
+        _ <- auditRepository.upsert(audit)
+        _ = Logger.info(s"Written to destination audit: $audit")
       } yield ()
   }
 
