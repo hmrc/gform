@@ -16,17 +16,11 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
-import cats.instances.either._
-import cats.syntax.flatMap._
-import cats.syntax.functor._
-import uk.gov.hmrc.gform.Possible
+import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.core.ValidationResult.BooleanToValidationResultSyntax
 import uk.gov.hmrc.gform.core.{ Opt, Valid, ValidationResult }
-import uk.gov.hmrc.gform.fileupload.FileDownloadAlgebra
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationId, DestinationTest, Destinations }
-import uk.gov.hmrc.gform.submission.{ DestinationSubmissionInfo, DestinationsSubmitter, SelfTestingDestinationSubmitter, SubmissionRef }
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, Destinations }
 
 import scala.collection.immutable.List
 
@@ -38,55 +32,22 @@ object DestinationsValidator {
     case _: Destinations.DmsSubmission => Valid
 
     case destinationList: Destinations.DestinationList =>
-      val destinationIds = destinationList.destinations.map(_.id)
+      val destinationIds = extractIds(destinationList.destinations)
       val duplicates = destinationIds.toList.groupBy(identity).collect { case (dId, List(_, _, _*)) => dId }.toSet
       duplicates.isEmpty.validationResult(someDestinationIdsAreUsedMoreThanOnce(duplicates))
+  }
+
+  private def extractIds(destinations: NonEmptyList[Destination]): NonEmptyList[DestinationId] =
+    destinations.flatMap(extractIds)
+
+  private def extractIds(destination: Destination): NonEmptyList[DestinationId] = destination match {
+    case c: Destination.Composite => c.id :: extractIds(c.destinations)
+    case _                        => NonEmptyList.of(destination.id)
   }
 
   def destinationTestReferencesANonExistentDestination(destinations: Set[DestinationId]): String =
     s"Destination tests refer to destinationIds that do not exist: ${destinations.map(_.id).mkString(", ")}"
 
-  def validateTestDestinationIdsExist(destinations: Destinations, tests: List[DestinationTest]): ValidationResult =
-    destinations match {
-      case destinationList: Destinations.DestinationList =>
-        validateDestinationListTestReferences(destinationList, tests)
-      case _: Destinations.DmsSubmission => Valid
-    }
-
-  private def validateDestinationListTestReferences(
-    destinations: Destinations.DestinationList,
-    tests: List[DestinationTest]): ValidationResult = {
-    val destinationIds = destinations.destinations.map(_.id).toList.toSet
-    val referencedDestinationIds = tests.flatMap(_.expectedResults.map(_.destinationId)).toSet
-
-    val badDestinationIds = referencedDestinationIds -- destinationIds
-    badDestinationIds.isEmpty.validationResult(destinationTestReferencesANonExistentDestination(badDestinationIds))
-  }
-
-  def validateTests(template: FormTemplate): ValidationResult =
-    template.destinations match {
-      case destinationList: Destinations.DestinationList => validateTests(template, destinationList)
-      case _: Destinations.DmsSubmission                 => Valid
-    }
-
-  private def validateTests(template: FormTemplate, dl: Destinations.DestinationList): ValidationResult = {
-    val errors = template.destinationTests.toList.flatten
-      .map { t =>
-        val submitter = new DestinationsSubmitter[Possible](
-          new SelfTestingDestinationSubmitter[Possible](test = t),
-          Option.empty[FileDownloadAlgebra[Possible]])
-        submitter
-          .submitToList(dl, DestinationSubmissionInfo(null, null, None, null, null), t.formData, null)(HeaderCarrier())
-      }
-      .collect { case Left(error) => error }
-
-    errors.isEmpty.validationResult(errors.mkString(", "))
-  }
-
   def validate(template: FormTemplate): Opt[Unit] =
-    for {
-      _ <- validateUniqueDestinationIds(template.destinations).toEither
-      _ <- validateTestDestinationIdsExist(template.destinations, template.destinationTests.toList.flatten).toEither
-      _ <- validateTests(template).toEither
-    } yield ()
+    validateUniqueDestinationIds(template.destinations).toEither
 }

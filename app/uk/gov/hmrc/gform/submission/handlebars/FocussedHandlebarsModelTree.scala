@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
+package uk.gov.hmrc.gform.submission.handlebars
 
-import uk.gov.hmrc.gform.Spec
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HandlebarsTemplateProcessorModel
 
-class HandlebarsTemplateProcessorModelSpec extends Spec {
-  "+" must "shallow merge the two models" in {
-    HandlebarsTemplateProcessorModel("""{ "a": 1 }""") + HandlebarsTemplateProcessorModel("""{ "b": 2 }""") shouldBe
-      HandlebarsTemplateProcessorModel("""{ "a": 1, "b": 2 }""")
-  }
+case class FocussedHandlebarsModelTree(tree: HandlebarsModelTree, focus: HandlebarsTemplateProcessorModel)
+
+object FocussedHandlebarsModelTree {
+  def apply(tree: HandlebarsModelTree): FocussedHandlebarsModelTree =
+    FocussedHandlebarsModelTree(tree, tree.value.model)
 }

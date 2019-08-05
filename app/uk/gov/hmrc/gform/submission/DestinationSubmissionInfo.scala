@@ -17,12 +17,8 @@
 package uk.gov.hmrc.gform.submission
 
 import uk.gov.hmrc.auth.core.AffinityGroup
-import uk.gov.hmrc.gform.sharedmodel.SubmissionData
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
 
-case class DestinationSubmissionInfo(
-  formId: FormId,
-  customerId: String,
-  affinityGroup: Option[AffinityGroup],
-  submissionData: SubmissionData,
-  submission: Submission)
+case class DestinationSubmissionInfo(customerId: String, affinityGroup: Option[AffinityGroup], submission: Submission) {
+  def formId: FormId = submission._id
+}

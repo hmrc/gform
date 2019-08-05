@@ -19,12 +19,17 @@ package uk.gov.hmrc.gform.submission.handlebars
 import java.text.DecimalFormat
 import java.util.Base64
 
+import cats.data.NonEmptyList
 import com.fasterxml.jackson.databind.JsonNode
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.Spec
+import uk.gov.hmrc.gform.sharedmodel.PdfHtml
 import uk.gov.hmrc.gform.sharedmodel.form._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ HandlebarsTemplateProcessorModel, TemplateType }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.PrimitiveGen
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destinations, HandlebarsTemplateProcessorModel, TemplateType }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, FormTemplateGen, PrimitiveGen }
+import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
+import uk.gov.hmrc.gform.submission.SubmissionRef
+import uk.gov.hmrc.gform.submission.destinations.DestinationsProcessorModelAlgebra
 
 import scala.language.implicitConversions
 import scala.util.Random
@@ -553,35 +558,35 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
 
   "isSigned" must "return true if the formStatus is Signed, false otherwise" in {
     FormStatus.all.foreach { status =>
-      process("""{{isSigned}}""", HandlebarsTemplateProcessorModel(status)) shouldBe (status == Signed).toString
+      process("""{{isSigned}}""", DestinationsProcessorModelAlgebra.createFormStatus(status)) shouldBe (status == Signed).toString
     }
   }
 
   "isAccepted" must "return true if the formStatus is Accepted, false otherwise" in {
     FormStatus.all.foreach { status =>
-      process("""{{isAccepted}}""", HandlebarsTemplateProcessorModel(status)) shouldBe (status == Accepted).toString
+      process("""{{isAccepted}}""", DestinationsProcessorModelAlgebra.createFormStatus(status)) shouldBe (status == Accepted).toString
     }
   }
 
   "isAccepting" must "return true if the formStatus is Accepting, false otherwise" in {
     FormStatus.all.foreach { status =>
-      process("""{{isAccepting}}""", HandlebarsTemplateProcessorModel(status)) shouldBe (status == Accepting).toString
+      process("""{{isAccepting}}""", DestinationsProcessorModelAlgebra.createFormStatus(status)) shouldBe (status == Accepting).toString
     }
   }
 
   "isReturning" must "return true if the formStatus is Returning, false otherwise" in {
     FormStatus.all.foreach { status =>
-      process("""{{isReturning}}""", HandlebarsTemplateProcessorModel(status)) shouldBe (status == Returning).toString
+      process("""{{isReturning}}""", DestinationsProcessorModelAlgebra.createFormStatus(status)) shouldBe (status == Returning).toString
     }
   }
 
   "base64Encode" must "return null if given null" in {
-    process("{{base64Encode null}}", HandlebarsTemplateProcessorModel.empty) shouldBe "null"
+    process("{{base64Encode null}}") shouldBe "null"
   }
 
   it must "handle arbitrary strings" in {
     forAll(Gen.alphaNumStr) { s =>
-      process(s"""{{base64Encode "$s"}}""", HandlebarsTemplateProcessorModel.empty) shouldBe
+      process(s"""{{base64Encode "$s"}}""") shouldBe
         Base64.getEncoder.encodeToString(s.getBytes("UTF-8"))
     }
   }
@@ -661,6 +666,64 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     }
   }
 
+  "keyedLookup" must "return the value found at a key" in {
+    process(
+      """{{keyedLookup foo.bar baz}}""",
+      """|{
+         |  "foo" : {
+         |    "bar" : {
+         |      "key1" : "value1",
+         |      "key2" : "value2"
+         |    }
+         |  },
+         |  "baz" : "key2"
+         |}""".stripMargin
+    ) shouldBe "value2"
+  }
+
+  it must "return null if the key cannot be found" in {
+    process(
+      """{{keyedLookup field "key2"}}""",
+      """|{
+         |  "field" : {
+         |    "key" : "12345"
+         |  }
+         |}""".stripMargin) shouldBe "null"
+  }
+
+  "importBySubmissionReference" must "import" in {
+    val rootModel: HandlebarsTemplateProcessorModel = HandlebarsTemplateProcessorModel("""{ "foo" : "parent" }""")
+    val childModel: HandlebarsTemplateProcessorModel = HandlebarsTemplateProcessorModel("""{ "foo" : "child" }""")
+
+    val childSubmissionReference = SubmissionRef("mySubmissionReference")
+
+    forAll(
+      DestinationGen.handlebarsHttpApiGen.map(_.copy(payload = Some("I am the {{foo}}."))),
+      FormTemplateGen.formTemplateGen) { (destination, formTemplate) =>
+      val formTemplateWithDestination =
+        formTemplate.copy(destinations = Destinations.DestinationList(NonEmptyList.of(destination)))
+
+      val tree: HandlebarsModelTree =
+        HandlebarsModelTree(
+          SubmissionRef("parent"),
+          null,
+          PdfHtml(""),
+          StructuredFormValue.ObjectStructure(Nil),
+          rootModel,
+          HandlebarsModelTree(
+            childSubmissionReference,
+            formTemplateWithDestination,
+            PdfHtml(""),
+            StructuredFormValue.ObjectStructure(Nil),
+            childModel)
+        )
+
+      process(
+        s"""I am the {{foo}}. {{importBySubmissionReference "${childSubmissionReference.value}" "${destination.id.id}"}}""",
+        FocussedHandlebarsModelTree(tree)) shouldBe "I am the parent. I am the child."
+    }
+  }
+
   private def insertRandomSpaces(s: String, numberOfSpaces: Int): String =
     (0 until numberOfSpaces).foldLeft(s) { (acc, _) =>
       val p = Random.nextInt(acc.length)
@@ -669,12 +732,23 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
 
   private def quote(s: String): String = raw"""'$s'"""
 
-  private def process(functionCall: String, model: String): String =
-    process(functionCall, HandlebarsTemplateProcessorModel(model.stripMargin))
+  private def process(functionCall: String, stringModel: String): String = {
+    val model = HandlebarsTemplateProcessorModel(stringModel.stripMargin)
+    process(
+      functionCall,
+      FocussedHandlebarsModelTree(
+        HandlebarsModelTree(SubmissionRef(""), null, PdfHtml(""), StructuredFormValue.ObjectStructure(Nil), model)))
+  }
 
-  private def process(functionCall: String, formFields: Map[String, JsonNode] = Map.empty): String =
-    process(functionCall, HandlebarsTemplateProcessorModel(formFields))
+  private def process(functionCall: String): String =
+    process(functionCall, HandlebarsTemplateProcessorModel.empty)
 
   private def process(functionCall: String, model: HandlebarsTemplateProcessorModel): String =
-    RealHandlebarsTemplateProcessor(functionCall, model, TemplateType.Plain)
+    process(
+      functionCall,
+      FocussedHandlebarsModelTree(
+        HandlebarsModelTree(SubmissionRef(""), null, PdfHtml(""), StructuredFormValue.ObjectStructure(Nil), model)))
+
+  private def process(functionCall: String, tree: FocussedHandlebarsModelTree): String =
+    RealHandlebarsTemplateProcessor(functionCall, HandlebarsTemplateProcessorModel.empty, tree, TemplateType.Plain)
 }

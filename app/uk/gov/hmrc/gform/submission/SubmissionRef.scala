@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.submission
 import java.math.BigInteger
 import java.security.MessageDigest
 
-import cats.data.State
+import cats.Eq
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
@@ -38,6 +38,8 @@ object SubmissionRef {
   val comb: Stream[Int] = Stream.continually(List(1, 3)).flatten
 
   implicit val oformat: OFormat[SubmissionRef] = ValueClassFormat.oformat("submissionRef", SubmissionRef.apply, _.value)
+
+  implicit val equal: Eq[SubmissionRef] = Eq.fromUniversalEquals
 
   def apply(value: EnvelopeId): SubmissionRef = SubmissionRef(getSubmissionReference(value))
 

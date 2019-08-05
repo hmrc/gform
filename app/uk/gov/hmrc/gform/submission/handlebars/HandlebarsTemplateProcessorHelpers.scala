@@ -30,8 +30,22 @@ import com.fasterxml.jackson.databind.node.{ ArrayNode, ObjectNode, TextNode }
 import com.github.jknack.handlebars.{ Handlebars, Options }
 import uk.gov.hmrc.gform.logging.Loggers
 import uk.gov.hmrc.gform.sharedmodel.form._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, Destinations, HandlebarsTemplateProcessorModel }
+import uk.gov.hmrc.gform.submission.SubmissionRef
 
-class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimeProvider) {
+trait RecursiveHandlebarsTemplateProcessor {
+  def apply(
+    template: String,
+    accumulatedModel: HandlebarsTemplateProcessorModel,
+    focussedTree: FocussedHandlebarsModelTree): String
+}
+
+class HandlebarsTemplateProcessorHelpers(
+  accumulatedModel: HandlebarsTemplateProcessorModel,
+  modelTree: HandlebarsModelTree,
+  processor: RecursiveHandlebarsTemplateProcessor,
+  timeProvider: TimeProvider = new TimeProvider) {
   def yesNoToEtmpChoice(yesNoChoice: Any): CharSequence = log("yesNoChoice", yesNoChoice) {
     ifNotNullAsString(yesNoChoice) {
       case "1"  => condition("0")
@@ -615,6 +629,55 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
         withoutWhitespace.substring(0, withoutWhitespace.length - 3) + " " + withoutWhitespace.substring(
           withoutWhitespace.length - 3)
     }
+
+  def keyedLookup(obj: java.util.Map[String, String], key: Any): CharSequence =
+    ifNotNullAsString(key) { k =>
+      condition(obj.get(k))
+    }
+
+  def importBySubmissionReference(submissionReference: Any, destinationId: Any): CharSequence =
+    ifNotNullAsString(submissionReference) { submissionReferenceString =>
+      ifNotNullAsString(destinationId) { destinationIdString =>
+        (for {
+          node        <- findNodeInFormTree(SubmissionRef(submissionReferenceString)).right
+          destination <- findHandlebarsDestination(node.formTemplate, DestinationId(destinationIdString)).right
+        } yield
+          new Handlebars.SafeString(
+            processor(
+              destination.payload.getOrElse(""),
+              accumulatedModel,
+              FocussedHandlebarsModelTree(modelTree, node.model)))).left
+          .map(m => throw new Exception(m))
+          .merge
+      }
+    }
+
+  private def findNodeInFormTree(submissionRef: SubmissionRef): Either[String, HandlebarsModelTreeNode] =
+    for {
+      node <- modelTree
+               .find(_.submissionRef === submissionRef)
+               .toRight(
+                 s"Cannot find a node in the form tree with submission reference '${submissionRef.value}'. Have ${modelTree
+                   .map(_.submissionRef.value)}")
+               .right
+    } yield node
+
+  private def findHandlebarsDestination(
+    formTemplate: FormTemplate,
+    destinationId: DestinationId): Either[String, Destination.HandlebarsHttpApi] = {
+    def findInList(list: List[Destination]): Option[Destination.HandlebarsHttpApi] = list match {
+      case Nil                                                                        => None
+      case (d: Destination.HandlebarsHttpApi) :: _ if destinationId === destinationId => Some(d)
+      case (c: Destination.Composite) :: rest                                         => findInList(rest ::: c.destinations.toList)
+      case _ :: rest                                                                  => findInList(rest)
+    }
+
+    formTemplate.destinations
+      .cast[Destinations.DestinationList]
+      .flatMap(dl => findInList(dl.destinations.toList))
+      .toRight(
+        s"Cannot find a ${Destination.handlebarsHttpApi} destination with ID `${destinationId.id}` in form template with ID '${formTemplate._id.value}' ")
+  }
 
   private def asBigDecimal(v: Any): BigDecimal =
     asNotNullString(v).fold(throw new Exception("Expected a number. Got '$v'"))(BigDecimal(_))

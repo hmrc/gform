@@ -18,9 +18,11 @@ package uk.gov.hmrc.gform.submission.handlebars
 
 import cats.MonadError
 import org.scalacheck.Gen
+import uk.gov.hmrc.gform.sharedmodel.PdfHtml
 import uk.gov.hmrc.gform.{ Possible, Spec, possibleMonadError }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, PrimitiveGen }
+import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 import uk.gov.hmrc.gform.wshttp.HttpClient
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
@@ -33,13 +35,14 @@ class HandlebarsHttpApiSubmitterSpec extends Spec {
       submitterPartsGen[Possible],
       PrimitiveGen.urlContextPathGen
     ) { (destination, sp, expectedUri) =>
-      val processorModel = HandlebarsTemplateProcessorModel("")
+      val processorModel = HandlebarsTemplateProcessorModel.empty
       val expectedResponse = mock[HttpResponse]
 
       sp.expectTemplateProcessorApplication(destination.uri, processorModel, TemplateType.Plain, expectedUri)
         .expectHttpGet(destination.profile, expectedUri, Right(expectedResponse))
 
-      sp.submitter.apply(destination, processorModel) shouldBe Right(expectedResponse)
+      sp.submitter.apply(destination, HandlebarsTemplateProcessorModel.empty, tree(processorModel)) shouldBe Right(
+        expectedResponse)
     }
   }
 
@@ -52,14 +55,15 @@ class HandlebarsHttpApiSubmitterSpec extends Spec {
       Gen.alphaNumStr
     ) { (d, payload, sp, expectedUri, expectedBody) =>
       val destination = d.copy(payload = Option(payload), payloadType = TemplateType.Plain)
-      val processorModel = HandlebarsTemplateProcessorModel("")
+      val processorModel = HandlebarsTemplateProcessorModel.empty
       val expectedResponse = mock[HttpResponse]
 
       sp.expectTemplateProcessorApplication(destination.uri, processorModel, TemplateType.Plain, expectedUri)
         .expectTemplateProcessorApplication(payload, processorModel, destination.payloadType, expectedBody)
         .expectHttpPostJson(destination.profile, expectedBody, expectedUri, Right(expectedResponse))
 
-      sp.submitter.apply(destination, processorModel) shouldBe Right(expectedResponse)
+      sp.submitter.apply(destination, HandlebarsTemplateProcessorModel.empty, tree(processorModel)) shouldBe Right(
+        expectedResponse)
     }
   }
 
@@ -67,13 +71,14 @@ class HandlebarsHttpApiSubmitterSpec extends Spec {
     forAll(destinationGen(HttpMethod.POST), submitterPartsGen[Possible], PrimitiveGen.urlContextPathGen) {
       (d, sp, expectedUri) =>
         val destination = d.copy(payload = None, payloadType = TemplateType.Plain)
-        val processorModel = HandlebarsTemplateProcessorModel("")
+        val processorModel = HandlebarsTemplateProcessorModel.empty
         val expectedResponse = mock[HttpResponse]
 
         sp.expectTemplateProcessorApplication(destination.uri, processorModel, TemplateType.Plain, expectedUri)
           .expectHttpPostJson(destination.profile, "", expectedUri, Right(expectedResponse))
 
-        sp.submitter.apply(destination, processorModel) shouldBe Right(expectedResponse)
+        sp.submitter.apply(destination, HandlebarsTemplateProcessorModel.empty, tree(processorModel)) shouldBe Right(
+          expectedResponse)
     }
   }
 
@@ -86,14 +91,15 @@ class HandlebarsHttpApiSubmitterSpec extends Spec {
       Gen.alphaNumStr
     ) { (d, payload, sp, expectedUri, expectedBody) =>
       val destination = d.copy(payload = Option(payload), payloadType = TemplateType.Plain)
-      val processorModel = HandlebarsTemplateProcessorModel("")
+      val processorModel = HandlebarsTemplateProcessorModel.empty
       val expectedResponse = mock[HttpResponse]
 
       sp.expectTemplateProcessorApplication(destination.uri, processorModel, TemplateType.Plain, expectedUri)
         .expectTemplateProcessorApplication(payload, processorModel, destination.payloadType, expectedBody)
         .expectHttpPutJson(destination.profile, expectedBody, expectedUri, Right(expectedResponse))
 
-      sp.submitter.apply(destination, processorModel) shouldBe Right(expectedResponse)
+      sp.submitter.apply(destination, HandlebarsTemplateProcessorModel.empty, tree(processorModel)) shouldBe Right(
+        expectedResponse)
     }
   }
 
@@ -101,13 +107,14 @@ class HandlebarsHttpApiSubmitterSpec extends Spec {
     forAll(destinationGen(HttpMethod.PUT), submitterPartsGen[Possible], PrimitiveGen.urlContextPathGen) {
       (d, sp, expectedUri) =>
         val destination = d.copy(payload = None, payloadType = TemplateType.Plain)
-        val processorModel = HandlebarsTemplateProcessorModel("")
+        val processorModel = HandlebarsTemplateProcessorModel.empty
         val expectedResponse = mock[HttpResponse]
 
         sp.expectTemplateProcessorApplication(destination.uri, processorModel, TemplateType.Plain, expectedUri)
           .expectHttpPutJson(destination.profile, "", expectedUri, Right(expectedResponse))
 
-        sp.submitter.apply(destination, processorModel) shouldBe Right(expectedResponse)
+        sp.submitter.apply(destination, HandlebarsTemplateProcessorModel.empty, tree(processorModel)) shouldBe Right(
+          expectedResponse)
     }
   }
 
@@ -118,12 +125,19 @@ class HandlebarsHttpApiSubmitterSpec extends Spec {
 
     def expectTemplateProcessorApplication(
       in: String,
-      model: HandlebarsTemplateProcessorModel,
+      modelInFocus: HandlebarsTemplateProcessorModel,
       templateType: TemplateType,
       out: String): SubmitterParts[F] = {
-      (templateProcessor
-        .apply(_: String, _: HandlebarsTemplateProcessorModel, _: TemplateType))
-        .expects(in, model, templateType)
+      (
+        templateProcessor
+          .apply(
+            _: String,
+            _: HandlebarsTemplateProcessorModel,
+            _: FocussedHandlebarsModelTree,
+            _: TemplateType
+          )
+        )
+        .expects(in, HandlebarsTemplateProcessorModel.empty, rootFocussedTree(modelInFocus), templateType)
         .returning(out)
 
       this
@@ -180,4 +194,11 @@ class HandlebarsHttpApiSubmitterSpec extends Spec {
 
   private def destinationGen(method: HttpMethod): Gen[Destination.HandlebarsHttpApi] =
     DestinationGen.handlebarsHttpApiGen.map(_.copy(method = method, profile = ProfileName("foo")))
+
+  def rootFocussedTree(model: HandlebarsTemplateProcessorModel) =
+    FocussedHandlebarsModelTree(tree(model), model)
+
+  def tree(model: HandlebarsTemplateProcessorModel) =
+    HandlebarsModelTree(submissionRef, null, PdfHtml(""), StructuredFormValue.ObjectStructure(Nil), model)
+
 }

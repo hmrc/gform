@@ -21,28 +21,36 @@ import com.github.jknack.handlebars.{ Context, EscapingStrategy, Handlebars, Jso
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ HandlebarsTemplateProcessorModel, TemplateType }
 
 trait HandlebarsTemplateProcessor {
-  def apply(template: String, model: HandlebarsTemplateProcessorModel, templateType: TemplateType): String
+  def apply(
+    template: String,
+    accumulatedModel: HandlebarsTemplateProcessorModel,
+    focussedTree: FocussedHandlebarsModelTree,
+    templateType: TemplateType): String
 }
 
 object RealHandlebarsTemplateProcessor extends HandlebarsTemplateProcessor {
-  private class Processor(
-    escapingStrategy: EscapingStrategy,
-    postProcessor: Endo[String],
-    helpers: HandlebarsTemplateProcessorHelpers = new HandlebarsTemplateProcessorHelpers()) {
-    private val handlebars = new Handlebars().`with`(escapingStrategy).registerHelpers(helpers)
+  private class Processor(escapingStrategy: EscapingStrategy, postProcessor: Endo[String])
+      extends RecursiveHandlebarsTemplateProcessor {
 
-    def apply(template: String, model: HandlebarsTemplateProcessorModel): String = {
+    def apply(
+      template: String,
+      accumulatedModel: HandlebarsTemplateProcessorModel,
+      focussedTree: FocussedHandlebarsModelTree): String = {
+      val helpers: HandlebarsTemplateProcessorHelpers =
+        new HandlebarsTemplateProcessorHelpers(accumulatedModel, focussedTree.tree, this)
+      val handlebars = new Handlebars().`with`(escapingStrategy).registerHelpers(helpers)
+
       val compiledTemplate = handlebars.compileInline(template)
 
       val context = Context
-        .newBuilder(model.model)
+        .newBuilder((focussedTree.focus + accumulatedModel).model)
         .resolver(JsonNodeValueResolver.INSTANCE)
         .build
 
       try {
         postProcessor(compiledTemplate.apply(context))
       } catch {
-        case ex: Exception => throw new Exception(model.model.toString, ex)
+        case ex: Exception => throw new Exception(focussedTree.focus.model.toString, ex)
       }
     }
   }
@@ -66,10 +74,14 @@ object RealHandlebarsTemplateProcessor extends HandlebarsTemplateProcessor {
     identity
   )
 
-  override def apply(template: String, model: HandlebarsTemplateProcessorModel, templateType: TemplateType): String =
+  override def apply(
+    template: String,
+    accumulatedModel: HandlebarsTemplateProcessorModel,
+    focussedTree: FocussedHandlebarsModelTree,
+    templateType: TemplateType): String =
     (templateType match {
       case TemplateType.JSON  => jsonProcessor
       case TemplateType.XML   => xmlProcessor
       case TemplateType.Plain => plainProcessor
-    })(template, model)
+    })(template, accumulatedModel, focussedTree)
 }

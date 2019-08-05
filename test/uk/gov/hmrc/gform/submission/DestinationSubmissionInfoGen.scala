@@ -30,19 +30,11 @@ trait DestinationSubmissionInfoGen {
     for {
       formId        <- FormGen.formIdGen
       customerId    <- PrimitiveGen.nonEmptyAlphaNumStrGen
-      pdfHtml       <- PrimitiveGen.nonEmptyAlphaNumStrGen
       submissionRef <- PrimitiveGen.nonEmptyAlphaNumStrGen.map(SubmissionRef(_))
     } yield
       DestinationSubmissionInfo(
-        formId,
         customerId,
         None,
-        SubmissionData(
-          pdfHtml,
-          FrontEndSubmissionVariables(JsObject(Seq())),
-          StructuredFormValue.ObjectStructure(List(Field(FieldName("foo"), StructuredFormValue.TextNode("fooValue")))),
-          EmailParametersRecalculated(Map.empty)
-        ),
         Submission(formId, LocalDateTime.now, submissionRef, null, 0, null)
       )
 }

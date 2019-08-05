@@ -35,8 +35,4 @@ class FormTemplateModule(mongoModule: MongoModule)(implicit ex: ExecutionContext
   val fOptFormTemplateAlgebra: FormTemplateAlgebra[FOpt] = new FormTemplateAlgebra[FOpt] {
     override def get(id: FormTemplateId): FOpt[FormTemplate] = fromFutureA(formTemplateService.get(id))
   }
-  val futureFormTemplateAlgebra: FormTemplateAlgebra[Future] = new FormTemplateAlgebra[Future] {
-    override def get(id: FormTemplateId): Future[FormTemplate] = formTemplateService.get(id)
-  }
-
 }

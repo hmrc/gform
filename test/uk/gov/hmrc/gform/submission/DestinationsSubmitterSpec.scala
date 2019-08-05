@@ -17,72 +17,80 @@
 package uk.gov.hmrc.gform.submission
 
 import cats.data.NonEmptyList
-import cats.{ Applicative, Id, Monad }
+import cats.{ Applicative, Monad }
 import cats.syntax.applicative._
-import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, Destinations, HandlebarsDestinationResponse, HandlebarsTemplateProcessorModel }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, DestinationsGen }
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 import org.scalacheck.Gen
 import play.api.libs.json._
-import uk.gov.hmrc.gform.form.FormAlgebra
-import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, UserId }
-import uk.gov.hmrc.gform.sharedmodel.form._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId }
-class DestinationsSubmitterSpec extends Spec {
+import uk.gov.hmrc.gform.sharedmodel.{ FrontEndSubmissionVariables, PdfHtml }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
+import uk.gov.hmrc.gform.sharedmodel.generators.{ PdfDataGen, StructuredFormValueGen }
+import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
+import uk.gov.hmrc.gform.submission.destinations.DestinationsProcessorModelAlgebra
+import uk.gov.hmrc.gform.submission.handlebars.HandlebarsModelTree
+
+class DestinationsSubmitterSpec
+    extends Spec with DestinationGen with DestinationsGen with PdfDataGen with StructuredFormValueGen {
   private implicit val hc: HeaderCarrier = HeaderCarrier()
 
-  private val formAlgebra = new FormAlgebra[Id] {
-    override def get(formId: FormId)(implicit hc: HeaderCarrier): Id[Form] = form
-    override def delete(formId: FormId)(implicit hc: HeaderCarrier): Id[Unit] = ???
-    override def create(
-      userId: UserId,
-      formTemplateId: FormTemplateId,
-      affinityGroup: Option[AffinityGroup],
-      expiryDays: Long,
-      initialFields: Seq[FormField])(implicit hc: HeaderCarrier): Id[NewFormData] = ???
-    override def updateUserData(formId: FormId, userData: UserData)(implicit hc: HeaderCarrier): Id[Unit] = ???
-    override def updateFormStatus(formId: FormId, newStatus: FormStatus)(implicit hc: HeaderCarrier): Id[FormStatus] =
-      ???
-    override def saveKeyStore(formId: FormId, data: Map[String, JsValue])(implicit hc: HeaderCarrier): Id[Unit] = ???
-    override def getKeyStore(formId: FormId)(implicit hc: HeaderCarrier): Id[Option[Map[String, JsValue]]] = ???
-  }
-
   private def submissionInfoGen: Gen[DestinationSubmissionInfo] =
-    DestinationSubmissionInfoGen.destinationSubmissionInfoGen.map {
-      _.copy(formId = form._id)
+    DestinationSubmissionInfoGen.destinationSubmissionInfoGen.map { si =>
+      si.copy(submission = si.submission.copy(_id = form._id))
     }
 
   "Destinations.DmsSubmission" should "be sent to DestinationSubmitter" in {
-    forAll(submissionInfoGen, DestinationsGen.deprecatedDmsSubmissionGen) { (submissionInfo, destination) =>
-      createSubmitter()
-        .expectSubmitToDms(destination, submissionInfo)
-        .submitter
-        .send(submissionInfo, exampleTemplateWithDestinations(destination), formAlgebra)
+    forAll(submissionInfoGen, deprecatedDmsSubmissionGen, pdfDataGen, structureFormValueObjectStructureGen) {
+      (submissionInfo, destination, pdfData, structuredFormValue) =>
+        createSubmitter()
+          .expectSubmitToDms(destination, submissionInfo, pdfData, structuredFormValue)
+          .submitter
+          .send(
+            submissionInfo,
+            HandlebarsModelTree(
+              SubmissionRef(""),
+              exampleTemplateWithDestinations(destination),
+              pdfData,
+              structuredFormValue,
+              HandlebarsTemplateProcessorModel.empty)
+          )
     }
   }
 
   "Every Destination" should "be sent to the DestinationSubmitter" in {
-    forAll(submissionInfoGen, DestinationGen.destinationGen) { (submissionInfo, destination) =>
-      createSubmitter()
-        .expectDestinationSubmitterSubmitIfIncludeIf(
-          destination,
-          submissionInfo,
-          DestinationsSubmitter.createHandlebarsTemplateProcessorModel(submissionInfo, form, None),
-          None)
-        .submitter
-        .send(submissionInfo, exampleTemplateWithDestinations(destination), formAlgebra)
+    forAll(submissionInfoGen, destinationGen, pdfDataGen, structureFormValueObjectStructureGen) {
+      (submissionInfo, destination, pdfData, structuredFormValue) =>
+        val destinationModel = DestinationsProcessorModelAlgebra.createFormId(submissionInfo.formId)
+        createSubmitter()
+          .expectDestinationSubmitterSubmitIfIncludeIf(
+            destination,
+            submissionInfo,
+            HandlebarsTemplateProcessorModel.empty,
+            destinationModel,
+            None)
+          .submitter
+          .send(
+            submissionInfo,
+            HandlebarsModelTree(
+              SubmissionRef(""),
+              exampleTemplateWithDestinations(destination),
+              pdfData,
+              structuredFormValue,
+              destinationModel))
     }
   }
 
   "Subsequent Destination.HandlebarsHttpApi destinations" should "able to use the response codes and bodies from previous Destination.HandlebarsHttpApi destinations" in {
     forAll(
       submissionInfoGen,
-      DestinationGen.handlebarsHttpApiGen,
-      DestinationGen.handlebarsHttpApiGen,
-      Gen.chooseNum(100, 599)
-    ) { (submissionInfo, handlebarsHttpApi1, handlebarsHttpApi2, responseCode1) =>
+      handlebarsHttpApiGen,
+      handlebarsHttpApiGen,
+      Gen.chooseNum(100, 599),
+      pdfDataGen,
+      structureFormValueObjectStructureGen
+    ) { (submissionInfo, handlebarsHttpApi1, handlebarsHttpApi2, responseCode1, pdfData, structuredFormValue) =>
       val responseJson1 = JsObject(
         Seq(
           "intField"    -> JsNumber(2),
@@ -91,24 +99,43 @@ class DestinationsSubmitterSpec extends Spec {
 
       val response1 = HttpResponse(responseCode1, Option(responseJson1))
 
-      val initialModel = DestinationsSubmitter.createHandlebarsTemplateProcessorModel(submissionInfo, form, None)
+      val initialModel = DestinationsProcessorModelAlgebra
+        .createModel(FrontEndSubmissionVariables(JsNull), pdfData, structuredFormValue, form, None)
+
       val response1Model = HandlebarsDestinationResponse(handlebarsHttpApi1, response1)
-      val expectedModel2 = initialModel + HandlebarsTemplateProcessorModel(response1Model)
+      val accumulatedModel1 = DestinationsProcessorModelAlgebra.createDestinationResponse(response1Model)
+
+      val response2Model = HandlebarsDestinationResponse(handlebarsHttpApi2, response1)
 
       createSubmitter()
         .expectDestinationSubmitterSubmitIfIncludeIf(
           handlebarsHttpApi1,
           submissionInfo,
+          HandlebarsTemplateProcessorModel.empty,
           initialModel,
           Option(response1Model))
-        .expectDestinationSubmitterSubmitIfIncludeIf(handlebarsHttpApi2, submissionInfo, expectedModel2, None)
+        .expectDestinationSubmitterSubmitIfIncludeIf(
+          handlebarsHttpApi2,
+          submissionInfo,
+          accumulatedModel1,
+          initialModel,
+          Option(response2Model))
         .submitter
-        .send(submissionInfo, exampleTemplateWithDestinations(handlebarsHttpApi1, handlebarsHttpApi2), formAlgebra)
+        .send(
+          submissionInfo,
+          HandlebarsModelTree(
+            SubmissionRef(""),
+            exampleTemplateWithDestinations(handlebarsHttpApi1, handlebarsHttpApi2),
+            PdfHtml(""),
+            StructuredFormValue.ObjectStructure(Nil),
+            initialModel
+          )
+        )
     }
   }
 
   "createResponseModel" should "build the appropriate JSON" in {
-    forAll(DestinationGen.handlebarsHttpApiGen, Gen.chooseNum(100, 599)) { (destination, responseCode) =>
+    forAll(handlebarsHttpApiGen, Gen.chooseNum(100, 599)) { (destination, responseCode) =>
       val responseBody = JsObject(
         Seq(
           "intField"    -> JsNumber(2),
@@ -116,7 +143,7 @@ class DestinationsSubmitterSpec extends Spec {
         ))
 
       val responseModel =
-        HandlebarsTemplateProcessorModel(
+        DestinationsProcessorModelAlgebra.createDestinationResponse(
           HandlebarsDestinationResponse(destination, HttpResponse(responseCode, Option(responseBody))))
 
       responseModel.model.toString shouldBe
@@ -132,10 +159,10 @@ class DestinationsSubmitterSpec extends Spec {
   }
 
   it should "contain a JsNull when the response body is empty or cannot be parsed" in {
-    forAll(DestinationGen.handlebarsHttpApiGen, Gen.chooseNum(100, 599)) { (destination, responseCode) =>
+    forAll(handlebarsHttpApiGen, Gen.chooseNum(100, 599)) { (destination, responseCode) =>
       val result = HandlebarsDestinationResponse(destination, HttpResponse(responseCode, responseString = Option("")))
 
-      val responseModel = HandlebarsTemplateProcessorModel(result)
+      val responseModel = DestinationsProcessorModelAlgebra.createDestinationResponse(result)
 
       responseModel.model.toString shouldBe
         JsObject(
@@ -162,24 +189,26 @@ class DestinationsSubmitterSpec extends Spec {
     def expectDestinationSubmitterSubmitIfIncludeIf(
       destination: Destination,
       submissionInfo: DestinationSubmissionInfo,
-      model: HandlebarsTemplateProcessorModel,
+      accumulatedModel: HandlebarsTemplateProcessorModel,
+      modelInTree: HandlebarsTemplateProcessorModel,
       response: Option[HandlebarsDestinationResponse]): SubmitterParts[F] = {
       (destinationSubmitter
         .submitIfIncludeIf(
           _: Destination,
           _: DestinationSubmissionInfo,
           _: HandlebarsTemplateProcessorModel,
-          _: DestinationsSubmitter[F],
-          _: FormTemplate)(_: HeaderCarrier))
+          _: HandlebarsModelTree,
+          _: DestinationsSubmitter[F]
+        )(_: HeaderCarrier))
         .expects(where {
           (
             dest: Destination,
             info: DestinationSubmissionInfo,
-            model: HandlebarsTemplateProcessorModel,
+            accModel: HandlebarsTemplateProcessorModel,
+            tree: HandlebarsModelTree,
             _: DestinationsSubmitter[F],
-            _: FormTemplate,
             hc: HeaderCarrier) =>
-            destination === dest && info === submissionInfo && model === model && hc === hc
+            destination === dest && info === submissionInfo && accModel === accumulatedModel && tree.value.model === modelInTree && hc === hc
         })
         .returning(response.pure)
       this
@@ -187,10 +216,16 @@ class DestinationsSubmitterSpec extends Spec {
 
     def expectSubmitToDms(
       destination: Destinations.DmsSubmission,
-      submissionInfo: DestinationSubmissionInfo): SubmitterParts[F] = {
+      submissionInfo: DestinationSubmissionInfo,
+      pdfData: PdfHtml,
+      structuredFormData: StructuredFormValue.ObjectStructure): SubmitterParts[F] = {
       (destinationSubmitter
-        .submitToDms(_: DestinationSubmissionInfo, _: Destinations.DmsSubmission)(_: HeaderCarrier))
-        .expects(submissionInfo, destination, hc)
+        .submitToDms(
+          _: DestinationSubmissionInfo,
+          _: PdfHtml,
+          _: StructuredFormValue.ObjectStructure,
+          _: Destinations.DmsSubmission)(_: HeaderCarrier))
+        .expects(submissionInfo, pdfData, structuredFormData, destination, hc)
         .returning(().pure)
       this
     }
@@ -198,7 +233,7 @@ class DestinationsSubmitterSpec extends Spec {
 
   private def createSubmitter[M[_]: Monad](): SubmitterParts[M] = {
     val destinationSubmitter: DestinationSubmitter[M] = mock[DestinationSubmitter[M]]
-    val submitter = new DestinationsSubmitter[M](destinationSubmitter, None)
+    val submitter = new DestinationsSubmitter[M](destinationSubmitter)
 
     SubmitterParts(submitter, destinationSubmitter)
   }

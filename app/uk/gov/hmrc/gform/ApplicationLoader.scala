@@ -45,6 +45,7 @@ import uk.gov.hmrc.gform.time.TimeModule
 import uk.gov.hmrc.gform.validation.ValidationModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.gform.obligation.ObligationModule
+import uk.gov.hmrc.gform.submission.destinations.DestinationModule
 
 import scala.concurrent.ExecutionContext
 
@@ -82,10 +83,13 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
     new Save4Later(shortLivedCacheModule.shortLivedCache)
 
   lazy val formService =
-    new FormService(save4later, fileUploadModule.fileUploadService, formTemplateModule.futureFormTemplateAlgebra)
+    new FormService(save4later, fileUploadModule.fileUploadService, formTemplateModule.formTemplateService)
 
   lazy val formModule =
     new FormModule(configModule, formTemplateModule, fileUploadModule, formService)
+
+  lazy val destinationModule =
+    new DestinationModule(configModule, mongoModule, formModule, fileUploadModule)
 
   val validationModule = new ValidationModule(wSHttpModule, configModule)
 
@@ -95,13 +99,15 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
       configModule,
       mongoModule,
       pdfGeneratorModule,
-      formService,
+      formModule,
       formTemplateModule,
       fileUploadModule,
       wSHttpModule,
       timeModule,
       emailModule,
-      handlebarsModule)
+      handlebarsModule,
+      destinationModule
+    )
   private val dmsModule = new DmsModule(fileUploadModule, pdfGeneratorModule, configModule.appConfig)
   private val obligationModule = new ObligationModule(wSHttpModule, configModule)
   private val testOnlyModule =
@@ -112,7 +118,9 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
       playComponents,
       formService,
       formTemplateModule.formTemplateService,
-      Some(fileUploadModule.fileUploadService))
+      destinationModule
+    )
+
   private val graphiteModule = new GraphiteModule(self)
 
   val playComponentsModule = new PlayComponentsModule(

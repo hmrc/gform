@@ -78,6 +78,7 @@ class PlayComponentsModule(
     errorHandler,
     formModule.formController,
     submissionModule.submissionController,
+    submissionModule.formBundleController,
     formTemplateModule.formTemplatesController,
     configModule.configController,
     validationModule.validationController,

@@ -14,13 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
+package uk.gov.hmrc.gform.submission.handlebars
 
-import uk.gov.hmrc.gform.Spec
+import uk.gov.hmrc.gform.sharedmodel.PdfHtml
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HandlebarsTemplateProcessorModel
+import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
+import uk.gov.hmrc.gform.submission.SubmissionRef
 
-class HandlebarsTemplateProcessorModelSpec extends Spec {
-  "+" must "shallow merge the two models" in {
-    HandlebarsTemplateProcessorModel("""{ "a": 1 }""") + HandlebarsTemplateProcessorModel("""{ "b": 2 }""") shouldBe
-      HandlebarsTemplateProcessorModel("""{ "a": 1, "b": 2 }""")
-  }
-}
+case class HandlebarsModelTreeNode(
+  submissionRef: SubmissionRef,
+  formTemplate: FormTemplate,
+  model: HandlebarsTemplateProcessorModel,
+  pdfData: PdfHtml,
+  structuredFormData: StructuredFormValue.ObjectStructure)

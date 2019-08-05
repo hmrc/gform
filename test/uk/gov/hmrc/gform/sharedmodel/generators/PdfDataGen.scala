@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
+package uk.gov.hmrc.gform.sharedmodel.generators
 
-import uk.gov.hmrc.gform.Spec
+import org.scalacheck.Gen
+import uk.gov.hmrc.gform.sharedmodel.PdfHtml
 
-class HandlebarsTemplateProcessorModelSpec extends Spec {
-  "+" must "shallow merge the two models" in {
-    HandlebarsTemplateProcessorModel("""{ "a": 1 }""") + HandlebarsTemplateProcessorModel("""{ "b": 2 }""") shouldBe
-      HandlebarsTemplateProcessorModel("""{ "a": 1, "b": 2 }""")
-  }
+trait PdfDataGen {
+  def pdfDataGen: Gen[PdfHtml] = Gen.alphaNumStr.map(PdfHtml(_))
 }
+
+object PdfDataGen extends PdfDataGen

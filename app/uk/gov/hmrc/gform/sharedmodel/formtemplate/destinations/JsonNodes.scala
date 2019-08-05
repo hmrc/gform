@@ -27,6 +27,7 @@ object JsonNodes {
 
   def textNode(s: String): JsonNode = jnf.textNode(s)
   def objectNode(fields: Map[String, JsonNode]): JsonNode = new ObjectNode(jnf, fields)
+  def objectNode(fields: (String, JsonNode)*): JsonNode = new ObjectNode(jnf, fields.toMap[String, JsonNode])
   def arrayNode(elements: List[JsonNode]): JsonNode = new ArrayNode(jnf, elements)
   def numberNode(n: Int): JsonNode = jnf.numberNode(n)
 }

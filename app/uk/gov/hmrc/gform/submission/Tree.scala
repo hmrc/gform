@@ -14,13 +14,24 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
+package uk.gov.hmrc.gform.submission
 
-import uk.gov.hmrc.gform.Spec
+case class Tree[T](value: T, children: List[Tree[T]]) {
+  def find(p: T => Boolean): Option[T] =
+    if (p(value)) Some(value) else children.find(tt => p(tt.value)).map(_.value)
 
-class HandlebarsTemplateProcessorModelSpec extends Spec {
-  "+" must "shallow merge the two models" in {
-    HandlebarsTemplateProcessorModel("""{ "a": 1 }""") + HandlebarsTemplateProcessorModel("""{ "b": 2 }""") shouldBe
-      HandlebarsTemplateProcessorModel("""{ "a": 1, "b": 2 }""")
+  def map[U](f: T => U): Tree[U] = Tree(f(value), children.map(_.map(f)))
+
+  def fold[U](seed: U)(f: (U, T) => U): U = children.foldLeft(f(seed, value)) { (acc, t) =>
+    t.fold(acc)(f)
   }
+
+  def toList(): List[T] =
+    fold(List.empty[T]) { (acc, t) =>
+      t :: acc
+    }.reverse
+}
+
+object Tree {
+  def apply[T](value: T, children: Tree[T]*): Tree[T] = Tree(value, children.toList)
 }

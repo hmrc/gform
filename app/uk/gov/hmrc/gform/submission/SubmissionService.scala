@@ -19,29 +19,30 @@ package uk.gov.hmrc.gform.submission
 import cats.instances.future._
 import play.api.Logger
 import uk.gov.hmrc.auth.core.AffinityGroup
-import uk.gov.hmrc.gform.core._
+import uk.gov.hmrc.gform.core.{ fromFutureA, _ }
 import uk.gov.hmrc.gform.email.EmailService
 import uk.gov.hmrc.gform.form.FormAlgebra
-import uk.gov.hmrc.gform.formtemplate.FormTemplateService
-import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorService
+import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.sharedmodel.SubmissionData
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FileUpload, FormTemplate }
+import uk.gov.hmrc.gform.submission.destinations.DestinationsProcessorModelAlgebra
+import uk.gov.hmrc.gform.submission.handlebars.HandlebarsModelTree
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ ExecutionContext, Future }
 
 class SubmissionService(
-  pdfGeneratorService: PdfGeneratorService,
   formAlgebra: FormAlgebra[FOpt],
-  formTemplateService: FormTemplateService,
-  destinationsSubmitter: DestinationsSubmitter[FOpt],
+  formTemplateService: FormTemplateAlgebra[Future],
+  destinationProcessorModelService: DestinationsProcessorModelAlgebra[FOpt],
+  destinationsSubmitter: DestinationsSubmitterAlgebra[FOpt],
   submissionRepo: SubmissionRepo,
   email: EmailService,
   timeProvider: TimeProvider)(implicit ex: ExecutionContext) {
 
-  def submissionWithPdf(
+  def submitForm(
     formId: FormId,
     customerId: String,
     affinityGroup: Option[AffinityGroup],
@@ -51,22 +52,41 @@ class SubmissionService(
         form          <- formAlgebra.get(formId)
         formTemplate  <- fromFutureA(formTemplateService.get(form.formTemplateId))
         submission    <- findOrCreateSubmission(form, customerId, formTemplate)
-        submissionInfo = DestinationSubmissionInfo(formId, customerId, affinityGroup, submissionData, submission)
-        _             <- destinationsSubmitter.send(submissionInfo, formTemplate, formAlgebra)
+        submissionInfo = DestinationSubmissionInfo(customerId, affinityGroup, submission)
+        modelTree     <- createModelTreeForSingleFormSubmission(form, formTemplate, submissionData, submission.submissionRef)
+        _             <- destinationsSubmitter.send(submissionInfo, modelTree)
         emailAddress   = email.getEmailAddress(form)
         _             <- fromFutureA(email.sendEmail(emailAddress, formTemplate.emailTemplateId, submissionData.emailParameters))
       } yield ()
-      // format: ON
+  // format: ON
+
+  private def createModelTreeForSingleFormSubmission(
+    form: Form,
+    formTemplate: FormTemplate,
+    submissionData: SubmissionData,
+    submissionRef: SubmissionRef)(implicit hc: HeaderCarrier) =
+    destinationProcessorModelService
+      .create(form, submissionData.variables, submissionData.pdfData, submissionData.structuredFormData)
+      .map(
+        model =>
+          HandlebarsModelTree(
+            submissionRef,
+            formTemplate,
+            submissionData.pdfData,
+            submissionData.structuredFormData,
+            model))
 
   def submissionDetails(formId: FormId)(implicit ex: ExecutionContext): Future[Submission] =
     submissionRepo.get(formId.value)
 
   private def findOrCreateSubmission(form: Form, customerId: String, formTemplate: FormTemplate): FOpt[Submission] =
     form.status match {
-      case NeedsReview | Accepting | Returning | Accepted | Submitting | Submitted =>
-        fromFutureA(submissionRepo.get(form._id.value))
-      case _ => insertSubmission(form, customerId, formTemplate)
+      case NeedsReview | Accepting | Returning | Accepted | Submitting | Submitted => findSubmission(form._id)
+      case _                                                                       => insertSubmission(form, customerId, formTemplate)
     }
+
+  private def findSubmission(formId: FormId) =
+    fromFutureA(submissionRepo.get(formId.value))
 
   private def insertSubmission(form: Form, customerId: String, formTemplate: FormTemplate): FOpt[Submission] = {
     val submission = createSubmission(form, customerId, formTemplate)
