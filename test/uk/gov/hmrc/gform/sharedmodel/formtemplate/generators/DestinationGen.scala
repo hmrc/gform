@@ -40,6 +40,11 @@ trait DestinationGen {
       Destination
         .HmrcDms(id, dmsFormId, customerId, classificationType, businessArea, includeIf, failOnError, false)
 
+  def hmrcDmsGen(includeIf: Option[String] = None, failOnError: Option[Boolean] = None): Gen[Destination.HmrcDms] =
+    hmrcDmsGen.map { g =>
+      g.copy(includeIf = includeIf.getOrElse(g.includeIf), failOnError = failOnError.getOrElse(g.failOnError))
+    }
+
   def handlebarsHttpApiGen: Gen[Destination.HandlebarsHttpApi] =
     for {
       id          <- destinationIdGen
@@ -51,6 +56,13 @@ trait DestinationGen {
       includeIf   <- includeIfGen
       failOnError <- PrimitiveGen.booleanGen
     } yield Destination.HandlebarsHttpApi(id, profile, uri, method, payload, payloadType, includeIf, failOnError)
+
+  def handlebarsHttpApiGen(
+    includeIf: Option[String] = None,
+    failOnError: Option[Boolean] = None): Gen[Destination.HandlebarsHttpApi] =
+    handlebarsHttpApiGen.map { g =>
+      g.copy(includeIf = includeIf.getOrElse(g.includeIf), failOnError = failOnError.getOrElse(g.failOnError))
+    }
 
   def compositeGen: Gen[Destination.Composite] =
     for {

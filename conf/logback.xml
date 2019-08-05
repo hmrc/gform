@@ -74,10 +74,12 @@
 
     <logger name="stateTransitions" level="INFO"  additivity="false">
         <appender-ref ref="STATE_TRANSITIONS_LOG_FILE" />
+        <appender-ref ref="STDOUT" />
     </logger>
 
     <logger name="destinations" level="INFO"  additivity="false">
         <appender-ref ref="DESTINATIONS_LOG_FILE" />
+        <appender-ref ref="STDOUT" />
     </logger>
 
     <logger name="javax.management.mbeanserver" level="INFO"/>

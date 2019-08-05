@@ -18,12 +18,12 @@ package uk.gov.hmrc.gform.testonly
 
 import scala.concurrent.Future
 import uk.gov.hmrc.gform.config.ConfigModule
-import uk.gov.hmrc.gform.fileupload.FileDownloadAlgebra
 import uk.gov.hmrc.gform.form.FormService
 import uk.gov.hmrc.gform.formtemplate.{ FormTemplateAlgebra, FormTemplateService }
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.playcomponents.PlayComponents
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId }
+import uk.gov.hmrc.gform.submission.destinations.DestinationModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 
 import scala.concurrent.ExecutionContext
@@ -35,7 +35,7 @@ class TestOnlyModule(
   playComponents: PlayComponents,
   formService: FormService[Future],
   formTemplateService: FormTemplateService,
-  fileDownloadAlgebra: Option[FileDownloadAlgebra[Future]])(implicit ex: ExecutionContext) {
+  destinationModule: DestinationModule)(implicit ex: ExecutionContext) {
 
   val enrolmentConnector =
     new EnrolmentConnector(
@@ -47,7 +47,13 @@ class TestOnlyModule(
   }
 
   val testOnlyController: TestOnlyController =
-    new TestOnlyController(mongoModule.mongo, enrolmentConnector, formService, formTemplateAlgebra, fileDownloadAlgebra)
+    new TestOnlyController(
+      mongoModule.mongo,
+      enrolmentConnector,
+      formService,
+      formTemplateAlgebra,
+      destinationModule.futureDestinationsProcessorModelService
+    )
   val proxyActions = new Proxy(playComponents.ahcWSComponents.wsClient)
   val fUInterceptor: FUInterceptorController =
     new FUInterceptorController(wSHttpModule.auditableWSHttp, configModule.serviceConfig, proxyActions)

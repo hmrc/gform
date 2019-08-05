@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
+package uk.gov.hmrc.gform.sharedmodel
 
-import uk.gov.hmrc.gform.Spec
+import play.api.libs.json.{ Json, OFormat }
+import uk.gov.hmrc.gform.sharedmodel.form.FormId
+import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 
-class HandlebarsTemplateProcessorModelSpec extends Spec {
-  "+" must "shallow merge the two models" in {
-    HandlebarsTemplateProcessorModel("""{ "a": 1 }""") + HandlebarsTemplateProcessorModel("""{ "b": 2 }""") shouldBe
-      HandlebarsTemplateProcessorModel("""{ "a": 1, "b": 2 }""")
-  }
+case class BundledFormSubmissionData(formId: FormId, structuredFormData: StructuredFormValue.ObjectStructure)
+
+object BundledFormSubmissionData {
+  implicit val format: OFormat[BundledFormSubmissionData] = Json.format[BundledFormSubmissionData]
 }

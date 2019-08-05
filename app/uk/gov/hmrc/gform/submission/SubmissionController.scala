@@ -21,26 +21,26 @@ import play.api.Logger
 import play.api.mvc.{ Action, AnyContent }
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
-import uk.gov.hmrc.gform.handlers.SubmissionControllerRequestHandler
+import uk.gov.hmrc.gform.sharedmodel.AffinityGroupUtil.toAffinityGroupO
 import uk.gov.hmrc.gform.sharedmodel.SubmissionData
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
 
 import scala.concurrent.ExecutionContext
 
 class SubmissionController(submissionService: SubmissionService)(implicit ex: ExecutionContext) extends BaseController {
-
   def submitForm(formId: FormId): Action[SubmissionData] = Action.async(parse.json[SubmissionData]) {
     implicit request =>
       Logger.info(s"submitForm, formId: '${formId.value}, ${loggingHelpers.cleanHeaders(request.headers)}")
 
       import request._
 
-      new SubmissionControllerRequestHandler {}
-        .handleSubmissionRequest(submissionService.submissionWithPdf)(
+      submissionService
+        .submitForm(
           formId,
           headers.get("customerId").getOrElse(""),
-          headers.get("affinityGroup"),
-          body)
+          toAffinityGroupO(headers.get("affinityGroup")),
+          body
+        )
         .fold(unexpectedState => BadRequest(unexpectedState.error), _ => NoContent)
   }
 

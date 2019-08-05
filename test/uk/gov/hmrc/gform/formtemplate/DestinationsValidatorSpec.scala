@@ -16,15 +16,14 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
-import cats.syntax.eq._
 import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.core.{ Invalid, Valid }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationTest, DestinationTestResult, Destinations, HandlebarsTemplateProcessorModel }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.PrimitiveGen._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators._
 import DestinationGen._
-import DestinationsGen._
+
 class DestinationsValidatorSpec extends Spec {
   "validateUniqueDestinationIds" should "return an error when there are duplicate ids" in {
     forAll(destinationIdGen, destinationIdGen) { (id1, id2) =>
@@ -50,47 +49,6 @@ class DestinationsValidatorSpec extends Spec {
         DestinationsValidator.validateUniqueDestinationIds(Destinations.DestinationList(NonEmptyList.of(d1, d2))) should be(
           Valid)
       }
-    }
-  }
-
-  "validateTestDestinationIdsExist" should "return success when there are no tests" in {
-    forAll(destinationGen) { destinations =>
-      DestinationsValidator.validateTestDestinationIdsExist(
-        Destinations.DestinationList(NonEmptyList.of(destinations)),
-        Nil) should be(Valid)
-    }
-  }
-
-  "validateTestDestinationIdsExist" should "return success when the formTemplate.destinations is a DmsSubmission" in {
-    forAll(deprecatedDmsSubmissionGen) { destinations =>
-      DestinationsValidator.validateTestDestinationIdsExist(destinations, Nil) should be(Valid)
-    }
-  }
-
-  it should "return failure when a test has a destination id that does not exist in the destination list" in {
-    forAll(destinationGen, DestinationGen.destinationIdGen) { (d1, testDestinationId) =>
-      whenever(d1.id =!= testDestinationId) {
-        val test =
-          DestinationTest(
-            "Foo",
-            HandlebarsTemplateProcessorModel.empty,
-            List(DestinationTestResult(testDestinationId, true, None, None, None)))
-        val destinations = Destinations.DestinationList(NonEmptyList.of(d1))
-        DestinationsValidator.validateTestDestinationIdsExist(destinations, List(test)) shouldBe
-          Invalid(DestinationsValidator.destinationTestReferencesANonExistentDestination(Set(testDestinationId)))
-      }
-    }
-  }
-
-  it should "return success when all destinations ids in tests exist in the destination list" in {
-    forAll(destinationGen) { d1 =>
-      val test =
-        DestinationTest(
-          "Foo",
-          HandlebarsTemplateProcessorModel.empty,
-          List(DestinationTestResult(d1.id, true, None, None, None)))
-      val destinations = Destinations.DestinationList(NonEmptyList.of(d1))
-      DestinationsValidator.validateTestDestinationIdsExist(destinations, List(test)) shouldBe Valid
     }
   }
 }

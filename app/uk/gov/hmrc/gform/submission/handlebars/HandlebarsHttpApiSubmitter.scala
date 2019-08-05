@@ -24,8 +24,10 @@ import uk.gov.hmrc.gform.wshttp.HttpClient
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
 trait HandlebarsHttpApiSubmitter[F[_]] {
-  def apply(destination: Destination.HandlebarsHttpApi, model: HandlebarsTemplateProcessorModel)(
-    implicit hc: HeaderCarrier): F[HttpResponse]
+  def apply(
+    destination: Destination.HandlebarsHttpApi,
+    accumulatedModel: HandlebarsTemplateProcessorModel,
+    modelTree: HandlebarsModelTree)(implicit hc: HeaderCarrier): F[HttpResponse]
 }
 
 class RealHandlebarsHttpApiSubmitter[F[_]](
@@ -34,22 +36,37 @@ class RealHandlebarsHttpApiSubmitter[F[_]](
   implicit me: MonadError[F, String])
     extends HandlebarsHttpApiSubmitter[F] {
 
-  def apply(destination: Destination.HandlebarsHttpApi, model: HandlebarsTemplateProcessorModel)(
-    implicit hc: HeaderCarrier): F[HttpResponse] =
+  def apply(
+    destination: Destination.HandlebarsHttpApi,
+    accumulatedModel: HandlebarsTemplateProcessorModel,
+    modelTree: HandlebarsModelTree)(implicit hc: HeaderCarrier): F[HttpResponse] =
     RealHandlebarsHttpApiSubmitter
       .selectHttpClient(destination.profile, destination.payloadType, httpClients)
       .flatMap { httpClient =>
-        val uri = handlebarsTemplateProcessor(destination.uri, model, TemplateType.Plain)
+        val uri =
+          handlebarsTemplateProcessor(
+            destination.uri,
+            accumulatedModel,
+            FocussedHandlebarsModelTree(modelTree),
+            TemplateType.Plain)
         destination.method match {
           case HttpMethod.GET => httpClient.get(uri)
           case HttpMethod.POST =>
             val body = destination.payload.fold("") {
-              handlebarsTemplateProcessor(_, model, destination.payloadType)
+              handlebarsTemplateProcessor(
+                _,
+                accumulatedModel,
+                FocussedHandlebarsModelTree(modelTree),
+                destination.payloadType)
             }
             httpClient.post(uri, body)
           case HttpMethod.PUT =>
             val body = destination.payload.fold("") {
-              handlebarsTemplateProcessor(_, model, destination.payloadType)
+              handlebarsTemplateProcessor(
+                _,
+                accumulatedModel,
+                FocussedHandlebarsModelTree(modelTree),
+                destination.payloadType)
             }
             httpClient.put(uri, body)
         }

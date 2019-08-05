@@ -21,7 +21,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.EmailParametersRecalculated
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 
 case class SubmissionData(
-  pdfData: String,
+  pdfData: PdfHtml,
   variables: FrontEndSubmissionVariables,
   structuredFormData: StructuredFormValue.ObjectStructure,
   emailParameters: EmailParametersRecalculated)

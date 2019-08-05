@@ -16,9 +16,16 @@
 
 package uk.gov.hmrc.gform.form
 
+import play.api.libs.json.JsValue
+import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.gform.config.ConfigModule
+import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.fileupload.FileUploadModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
+import uk.gov.hmrc.gform.sharedmodel.UserId
+import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormField, FormId, FormStatus, NewFormData, UserData }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
+import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -35,4 +42,32 @@ class FormModule(
       fileUploadModule.fileUploadService,
       formService
     )
+
+  val fOptFormService: FormAlgebra[FOpt] = new FormAlgebra[FOpt] {
+    override def get(formId: FormId)(implicit hc: HeaderCarrier): FOpt[Form] = fromFutureA(formService.get(formId))
+
+    override def delete(formId: FormId)(implicit hc: HeaderCarrier): FOpt[Unit] =
+      fromFutureA(formService.delete(formId))
+
+    override def create(
+      userId: UserId,
+      formTemplateId: FormTemplateId,
+      affinityGroup: Option[AffinityGroup],
+      expiryDays: Long,
+      initialFields: Seq[FormField])(implicit hc: HeaderCarrier): FOpt[NewFormData] =
+      fromFutureA(formService.create(userId, formTemplateId, affinityGroup, expiryDays, initialFields))
+
+    override def updateUserData(formId: FormId, userData: UserData)(implicit hc: HeaderCarrier): FOpt[Unit] =
+      fromFutureA(formService.updateUserData(formId, userData))
+
+    def updateFormStatus(formId: FormId, newStatus: FormStatus)(implicit hc: HeaderCarrier): FOpt[FormStatus] =
+      fromFutureA(formService.updateFormStatus(formId, newStatus))
+
+    override def saveKeyStore(formId: FormId, data: Map[String, JsValue])(implicit hc: HeaderCarrier): FOpt[Unit] =
+      fromFutureA(formService.saveKeyStore(formId, data))
+
+    override def getKeyStore(formId: FormId)(implicit hc: HeaderCarrier): FOpt[Option[Map[String, JsValue]]] =
+      fromFutureA(formService.getKeyStore(formId))
+  }
+
 }

@@ -20,19 +20,22 @@ import cats.instances.future._
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA, fromOptA }
 import uk.gov.hmrc.gform.fileupload.FileUploadService
 import uk.gov.hmrc.gform.form.FormAlgebra
-import uk.gov.hmrc.gform.formtemplate.{ FormTemplateAlgebra, FormTemplateService }
+import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorService
-import uk.gov.hmrc.gform.sharedmodel.form.{ Form, Submitted }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FileUpload, FormTemplate }
+import uk.gov.hmrc.gform.sharedmodel.PdfHtml
+import uk.gov.hmrc.gform.sharedmodel.form.Submitted
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
-import uk.gov.hmrc.gform.time.TimeProvider
+import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext
 
 trait DmsSubmitter[F[_]] {
-  def apply(submissionInfo: DestinationSubmissionInfo, dmsSubmission: DmsSubmission)(
-    implicit hc: HeaderCarrier): F[Unit]
+  def apply(
+    submissionInfo: DestinationSubmissionInfo,
+    pdfData: PdfHtml,
+    structuredFormData: StructuredFormValue.ObjectStructure,
+    dmsSubmission: DmsSubmission)(implicit hc: HeaderCarrier): F[Unit]
 }
 
 class FileUploadServiceDmsSubmitter(
@@ -41,10 +44,12 @@ class FileUploadServiceDmsSubmitter(
   formTemplateService: FormTemplateAlgebra[FOpt],
   pdfGeneratorService: PdfGeneratorService)(implicit ec: ExecutionContext)
     extends DmsSubmitter[FOpt] {
-  def apply(submissionInfo: DestinationSubmissionInfo, dmsSubmission: DmsSubmission)(
-    implicit hc: HeaderCarrier): FOpt[Unit] = {
+  def apply(
+    submissionInfo: DestinationSubmissionInfo,
+    pdfData: PdfHtml,
+    structuredFormData: StructuredFormValue.ObjectStructure,
+    dmsSubmission: DmsSubmission)(implicit hc: HeaderCarrier): FOpt[Unit] = {
     import submissionInfo._
-    import submissionInfo.submissionData._
 
     for {
       form              <- formService.get(formId)
