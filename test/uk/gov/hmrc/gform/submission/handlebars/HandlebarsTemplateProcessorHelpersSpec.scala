@@ -614,8 +614,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     process("""{{booleanToYesNo "false"}}""") shouldBe "No"
   }
 
-  "capitaliseFirst" must "return null when null is given" in {
-    process("""{{capitaliseFirst null}}""") shouldBe "null"
+  "capitaliseFirst" must "return Null when null is given" in {
+    process("""{{capitaliseFirst null}}""") shouldBe "Null"
   }
 
   it must "capitalise the first letter of any string" in {

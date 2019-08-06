@@ -499,7 +499,7 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
   }
 
   def capitaliseFirst(s: Any): CharSequence = log("capitaliseFirst", s) {
-    ifNotNullAsString(s) { v =>
+    ifNotNullAsString(if (s == null) "null" else s) { v =>
       v.capitalize
     }
   }
