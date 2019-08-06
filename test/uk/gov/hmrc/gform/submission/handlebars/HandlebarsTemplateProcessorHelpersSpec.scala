@@ -24,8 +24,10 @@ import org.scalacheck.Gen
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ HandlebarsTemplateProcessorModel, TemplateType }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.PrimitiveGen
 
 import scala.language.implicitConversions
+import scala.util.Random
 
 class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   "yesNoToEtmpChoice" must "return 1 when 0 is passed in" in {
@@ -633,6 +635,37 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     process("""{{indexedLookup "1" "Foo" "Bar" "Baz"}}""") shouldBe "Bar"
     process("""{{indexedLookup "2" "Foo" "Bar" "Baz"}}""") shouldBe "Baz"
   }
+
+  "normalisePostcode" must "return null when null is given" in {
+    process("""{{normalisePostcode null}}""") shouldBe "null"
+  }
+
+  it must "return the given value if it has 3 or fewer characters after removing whitespace" in {
+    forAll(Gen.alphaNumStr.map(s => if (s.length > 3) s.substring(0, 3) else s), Gen.chooseNum(0, 5)) { (s, ws) =>
+      whenever(s.length <= 3) {
+        val withSpaces = if (s.isEmpty) s else insertRandomSpaces(s, ws)
+        process(s"""{{normalisePostcode "$withSpaces"}}""") shouldBe withSpaces
+      }
+    }
+  }
+
+  it must "return the normalised postcode if it has 4 or more characters after removing whitespace" in {
+    forAll(
+      PrimitiveGen.nonEmptyAlphaNumStrGen,
+      PrimitiveGen.nonEmptyAlphaNumStrGen.filter(_.length >= 3).map(_.substring(0, 3)),
+      Gen.chooseNum(0, 5)) { (firstBlock, endTriple, ws) =>
+      whenever(!firstBlock.isEmpty && endTriple.length == 3) {
+        val withSpaces = insertRandomSpaces(firstBlock + endTriple, ws)
+        process(s"""{{normalisePostcode "$withSpaces"}}""") shouldBe s"$firstBlock $endTriple"
+      }
+    }
+  }
+
+  private def insertRandomSpaces(s: String, numberOfSpaces: Int): String =
+    (0 until numberOfSpaces).foldLeft(s) { (acc, _) =>
+      val p = Random.nextInt(acc.length)
+      acc.substring(0, p) + " " + acc.substring(p)
+    }
 
   private def quote(s: String): String = raw"""'$s'"""
 

@@ -96,7 +96,7 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
       if !value.isEmpty
     } yield value
 
-  def either(first: Any, o: Options): CharSequence = eitherN((first :: o.params.toList): _*)
+  def either(first: Any, o: Options): CharSequence = eitherN(first :: o.params.toList: _*)
 
   // Handlebars.java can't deal with a varargs argument in a helper.
   // Neither can it deal with overloading, so we'd need to do something like
@@ -505,14 +505,14 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
   }
 
   def indexedLookup(index: Any, options: Options): CharSequence =
-    log("indexedLookup", (index :: options.params.toList): _*) {
+    log("indexedLookup", index :: options.params.toList: _*) {
       ifNotNullAsString(index) { s =>
         condition(options.params(s.replaceAll(",", "").toInt))
       }
     }
 
   def toDesAddressWithoutPostcodeFromArray(fromField: ArrayNode, index: Int, options: Options): CharSequence =
-    log("toDesAddressWithoutPostcodeFromArray", (fromField :: index :: options.params.toList): _*) {
+    log("toDesAddressWithoutPostcodeFromArray", fromField :: index :: options.params.toList: _*) {
       def get(line: String) =
         fromField.get(index).cast[ObjectNode].flatMap(_.get(line).cast[TextNode]).map(_.asText()).filterNot(_.isEmpty)
 
@@ -536,7 +536,7 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
         .mkString(s",${util.Properties.lineSeparator}"))
 
   def removeEmptyAndGet(dfltAny: Any, index: Int, options: Options): CharSequence =
-    log("removeEmptyAndGet", (dfltAny :: index :: options.params.toList): _*) {
+    log("removeEmptyAndGet", dfltAny :: index :: options.params.toList: _*) {
       ifNotNullAsString(dfltAny) { dflt =>
         val params = options.params.drop(1).flatMap(asNotNullString).filterNot(_.isEmpty)
 
@@ -546,7 +546,7 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
     }
 
   def elementAt(array: ArrayNode, index: Int, options: Options): CharSequence =
-    log("elementAt", (array :: index :: options.params.toList): _*) {
+    log("elementAt", array :: index :: options.params.toList: _*) {
       condition {
         if (index < array.size) array.get(index).textValue else ""
       }
@@ -598,7 +598,7 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
       }
   }
 
-  def plus(first: Any, options: Options): CharSequence = log("plus", (first :: options.params.toList): _*) {
+  def plus(first: Any, options: Options): CharSequence = log("plus", first :: options.params.toList: _*) {
     condition((first :: options.params.toList).map(asBigDecimal).foldLeft(BigDecimal(0)) { (acc, d) =>
       acc + d
     })
@@ -607,6 +607,15 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
   def base64Encode(text: Any): CharSequence =
     ifNotNullAsString(text) { v =>
       Base64.getEncoder.encodeToString(v.getBytes("UTF-8"))
+    }
+
+  def normalisePostcode(v: Any): CharSequence =
+    ifNotNullAsString(v) { postcode =>
+      val withoutWhitespace = postcode.replaceAll("\\s", "")
+      if (withoutWhitespace.length < 4) postcode
+      else
+        withoutWhitespace.substring(0, withoutWhitespace.length - 3) + " " + withoutWhitespace.substring(
+          withoutWhitespace.length - 3)
     }
 
   private def asBigDecimal(v: Any): BigDecimal =
