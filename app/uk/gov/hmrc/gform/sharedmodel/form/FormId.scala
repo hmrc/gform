@@ -29,10 +29,10 @@ object FormId {
     new FormId(s"${userId.value}-${formTemplateId.value}")
 
   def fromAccessCode(userId: UserId, formTemplateId: FormTemplateId, accessCode: AccessCode): FormId =
-    new FormId(s"${userId.value}-${formTemplateId.value}-$accessCode")
+    new FormId(s"${userId.value}-${formTemplateId.value}-${accessCode.value}")
 
   def fromSubmissionRef(userId: UserId, formTemplateId: FormTemplateId, submissionRef: SubmissionRef): FormId =
-    new FormId(s"${userId.value}-${formTemplateId.value}-$submissionRef")
+    new FormId(s"${userId.value}-${formTemplateId.value}-${submissionRef.value}")
 
   implicit val format: OFormat[FormId] = ValueClassFormat.oformat("_id", FormId.apply, _.value)
 
