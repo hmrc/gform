@@ -23,9 +23,9 @@ import cats.syntax.functor._
 import cats.syntax.flatMap._
 import cats.syntax.applicative._
 import cats.syntax.option._
-import org.slf4j.LoggerFactory
 import play.api.libs.json.{ JsNull, JsValue, Json }
 import uk.gov.hmrc.gform.form.FormAlgebra
+import uk.gov.hmrc.gform.logging.Loggers
 import uk.gov.hmrc.gform.sharedmodel.form.{ FormId, FormStatus }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
@@ -65,7 +65,7 @@ class RealDestinationSubmitter[M[_], R](
       include =>
         if (include)
           for {
-            _      <- logInfoInMonad(s"Destination ${destination.id.id} is included")
+            _      <- logInfoInMonad(submissionInfo.formId, destination.id, "Included")
             result <- submit(destination, submissionInfo, model, submitter, formTemplate)
             _ <- destinationAuditer(
                   destination,
@@ -76,15 +76,15 @@ class RealDestinationSubmitter[M[_], R](
           } yield result
         else
           for {
-            _      <- logInfoInMonad(s"Destination ${destination.id.id} is not included")
+            _      <- logInfoInMonad(submissionInfo.formId, destination.id, "Not included")
             result <- Option.empty[HandlebarsDestinationResponse].pure
           } yield result
 
     }
 
-  private def logInfoInMonad(msg: String): M[Unit] =
+  private def logInfoInMonad(formId: FormId, destinationId: DestinationId, msg: String): M[Unit] =
     monadError.pure {
-      LoggerFactory.getLogger(getClass.getName).info(msg)
+      Loggers.destinations.info(RealDestinationSubmitter.genericLogMessage(formId, destinationId, msg))
     }
 
   private def submit(
@@ -106,7 +106,7 @@ class RealDestinationSubmitter[M[_], R](
       .updateFormStatus(formId, d.requiredState)
       .flatMap { stateAchieved =>
         if (stateAchieved === d.requiredState || !d.failOnError) monadError.pure(())
-        else raiseError(d.id, RealDestinationSubmitter.stateTransitionFailOnErrorMessage(d, stateAchieved))
+        else raiseError(formId, d.id, RealDestinationSubmitter.stateTransitionFailOnErrorMessage(d, stateAchieved))
       }
 
   def submitToDms(submissionInfo: DestinationSubmissionInfo, submission: Destinations.DmsSubmission)(
@@ -116,12 +116,9 @@ class RealDestinationSubmitter[M[_], R](
     implicit hc: HeaderCarrier): M[Unit] =
     monadError.handleErrorWith(submitToDms(submissionInfo, d.toDeprecatedDmsSubmission)) { msg =>
       if (d.failOnError)
-        monadError.raiseError(s"Destination ${d.id.id} : $msg")
+        raiseError(submissionInfo.formId, d.id, msg)
       else {
-        LoggerFactory
-          .getLogger(getClass.getName)
-          .info(s"Destination ${d.id} failed but has 'failOnError' set to false. Ignoring.")
-        monadError.pure(())
+        logInfoInMonad(submissionInfo.formId, d.id, "Failed execution but has 'failOnError' set to false. Ignoring.")
       }
     }
 
@@ -136,8 +133,11 @@ class RealDestinationSubmitter[M[_], R](
         else if (d.failOnError)
           createFailureResponse(d, response, submissionInfo)
         else {
-          LoggerFactory.getLogger(getClass.getName) info (s"Destination ${d.id} returned status code ${response.status} but has 'failOnError' set to false. Ignoring.")
-          createSuccessResponse(d, response)
+          logInfoInMonad(
+            submissionInfo.formId,
+            d.id,
+            s"Returned status code ${response.status} but has 'failOnError' set to false. Ignoring.") >>
+            createSuccessResponse(d, response)
         }
       }
       .map(Option(_))
@@ -151,18 +151,22 @@ class RealDestinationSubmitter[M[_], R](
       Some(response.status),
       submissionInfo.formId,
       submissionInfo.submissionData.pdfData,
-      submissionInfo.submission.submissionRef)
-      .flatMap { _ =>
-        monadError.raiseError(RealDestinationSubmitter.handlebarsHttpApiFailOnErrorMessage(destination, response))
-      }
+      submissionInfo.submission.submissionRef) >>
+      raiseError(
+        submissionInfo.formId,
+        destination.id,
+        RealDestinationSubmitter.handlebarsHttpApiFailOnErrorMessage(response))
 
   private def createSuccessResponse(
     d: Destination.HandlebarsHttpApi,
     response: HttpResponse): M[HandlebarsDestinationResponse] =
     monadError.pure(HandlebarsDestinationResponse(d, response))
 
-  protected def raiseError[T](destinationId: DestinationId, msg: String) =
-    monadError.raiseError[T](s"Destination ${destinationId.id} : $msg")
+  protected def raiseError[T](formId: FormId, destinationId: DestinationId, msg: String) = {
+    val fullMsg = RealDestinationSubmitter.genericLogMessage(formId, destinationId, msg)
+    monadError.pure { Loggers.destinations.warn(fullMsg) } >>
+      monadError.raiseError[T](fullMsg)
+  }
 }
 
 object DestinationSubmitter {
@@ -174,11 +178,14 @@ object DestinationSubmitter {
 }
 
 object RealDestinationSubmitter {
-  def handlebarsHttpApiFailOnErrorMessage(d: Destination.HandlebarsHttpApi, response: HttpResponse): String =
-    s"Destination ${d.id} returned status code ${response.status} and has 'failOnError' set to true. Failing."
+  def handlebarsHttpApiFailOnErrorMessage(response: HttpResponse): String =
+    s"Returned status code ${response.status} and has 'failOnError' set to true. Failing."
 
   def stateTransitionFailOnErrorMessage(d: Destination.StateTransition, currentState: FormStatus): String =
-    s"Destination ${d.id} cannot achieve transition from $currentState to ${d.requiredState}"
+    s"Cannot achieve transition from $currentState to ${d.requiredState}"
+
+  def genericLogMessage(formId: FormId, destinationId: DestinationId, msg: String): String =
+    f"${formId.value}%-60s ${destinationId.id}%-30s : $msg"
 }
 
 object SelfTestingDestinationSubmitter {

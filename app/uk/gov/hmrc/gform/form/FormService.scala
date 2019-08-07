@@ -20,11 +20,11 @@ import cats.Monad
 import cats.syntax.functor._
 import cats.syntax.flatMap._
 import julienrf.json.derived
-import play.api.Logger
-import play.api.libs.json.{ JsValue, OFormat }
+import play.api.libs.json.JsValue
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
+import uk.gov.hmrc.gform.logging.Loggers
 import uk.gov.hmrc.gform.save4later.FormPersistenceAlgebra
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ BySubmissionReference, FormAccessCodeForAgents, FormTemplate, FormTemplateId }
@@ -128,9 +128,13 @@ class FormService[F[_]: Monad](
 
 object LifeCycleStatus {
   def newStatus(form: Form, status: FormStatus): FormStatus =
-    apply(form.status, status).getOrElse {
-      Logger.warn(s"Attempted state transition from ${form.status} to $status is illegal. Form ID ${form._id.value}")
-      form.status
+    apply(form.status, status) match {
+      case Some(v) =>
+        Loggers.stateTransitions.info(formatLogMessage(form, status, "Legal"))
+        v
+      case None =>
+        Loggers.stateTransitions.warn(formatLogMessage(form, status, "Illegal"))
+        form.status
     }
 
   def apply(from: FormStatus, to: FormStatus): Option[FormStatus] = (from, to) match {
@@ -146,6 +150,9 @@ object LifeCycleStatus {
     case (Submitting, Submitted | NeedsReview | Accepted)  => Some(to)
     case _                                                 => None
   }
+
+  private def formatLogMessage(form: Form, to: FormStatus, legality: String) =
+    f"$legality%-20s ${form.status}%-20s -> $to%-20s ${form._id.value}"
 }
 
 object LifeCycleStatusGraphVizRenderer extends App {

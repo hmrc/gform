@@ -34,6 +34,19 @@
         </encoder>
     </appender>
 
+    <appender name="STATE_TRANSITIONS_LOG_FILE" class="ch.qos.logback.core.FileAppender">
+        <file>logs/gform-state-transitions.log</file>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%date{ISO8601} %-5level %message%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="DESTINATIONS_LOG_FILE" class="ch.qos.logback.core.FileAppender">
+        <file>logs/gform-destinations.log</file>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%date{ISO8601} %-5level %message%n</pattern>
+        </encoder>
+    </appender>
 
     <logger name="accesslog" level="INFO" additivity="false">
         <appender-ref ref="ACCESS_LOG_FILE" />
@@ -51,13 +64,21 @@
 
     <logger name="uk.gov.hmrc.gform.save4later.Save4Later" level="INFO"/>
 
-    <logger name="com.github.jknack.handlebars" level="INFO"/>
+    <logger name="com.github.jknack.handlebars" level="WARN"/>
 
     <logger name="uk.gov.hmrc.gform.submission.handlebars" level="WARN"/>
 
     <logger name="uk.gov.hmrc.gform.submission" level="INFO"/>
 
     <logger name="application" level="DEBUG"/>
+
+    <logger name="stateTransitions" level="INFO"  additivity="false">
+        <appender-ref ref="STATE_TRANSITIONS_LOG_FILE" />
+    </logger>
+
+    <logger name="destinations" level="INFO"  additivity="false">
+        <appender-ref ref="DESTINATIONS_LOG_FILE" />
+    </logger>
 
     <logger name="javax.management.mbeanserver" level="INFO"/>
 
