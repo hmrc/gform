@@ -26,6 +26,7 @@ import org.joda.time.LocalDateTime
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.form.FormAlgebra
+import uk.gov.hmrc.gform.logging.Loggers
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel.{ UserId, ValueClassFormat }
 import uk.gov.hmrc.gform.sharedmodel.form._
@@ -155,6 +156,7 @@ class RepoDestinationAuditer(
           submissionReference,
           summaryHtmlId
         )
+        _ = Loggers.destinations.info(s"Destination audit: ${DestinationAudit.format.writes(audit)}")
         _ <- auditRepository.upsert(audit)
       } yield ()
   }

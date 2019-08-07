@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.gform.submission
 
-import play.api.Logger
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.gform.config.ConfigModule
@@ -31,8 +30,9 @@ import uk.gov.hmrc.gform.submission.handlebars.HandlebarsHttpApiModule
 import uk.gov.hmrc.gform.time.TimeModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.gform.core._
+import uk.gov.hmrc.gform.logging.Loggers
 import uk.gov.hmrc.gform.repo.Repo
-import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, UserId }
+import uk.gov.hmrc.gform.sharedmodel.UserId
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.http.HeaderCarrier
@@ -91,14 +91,14 @@ class SubmissionModule(
 
   private val destinationAuditer: DestinationAuditAlgebra[FOpt] =
     if (configModule.DestinationsServicesConfig.auditDestinations) {
-      Logger.info("Destination auditing IS enabled")
+      Loggers.destinations.info("Destination auditing IS enabled")
       new RepoDestinationAuditer(
         new Repo[DestinationAudit]("destinationAudit", mongoModule.mongo, _.id.toString),
         new Repo[SummaryHtml]("summaryHtml", mongoModule.mongo, _.id.value.toString),
         fOptFormAlgebra
       )
     } else {
-      Logger.info("Destination auditing IS NOT enabled")
+      Loggers.destinations.info("Destination auditing IS NOT enabled")
       new NullDestinationAuditer[FOpt]
     }
 
@@ -111,11 +111,11 @@ class SubmissionModule(
 
   private val fileDownloadServiceIfPopulating: Option[FileDownloadAlgebra[FOpt]] =
     if (configModule.DestinationsServicesConfig.populateHandlebarsModelWithDocuments) {
-      Logger.info(
+      Loggers.destinations.info(
         "The fileDownloadService IS configured for the submission service, so the Handlebars model WILL be populated with uploaded documents")
       Some(fileUploadModule.foptFileDownloadService)
     } else {
-      Logger.info(
+      Loggers.destinations.info(
         "The fileDownloadService IS NOT configured for the submission service, so the Handlebars model WILL NOT be populated with uploaded documents")
       None
     }

@@ -122,7 +122,10 @@ class RealDestinationSubmitterSpec extends Spec {
           si.submission.submissionRef)
         .sut
         .submitIfIncludeIf(handlebarsHttpApi, si, model, submitter, template) shouldBe Left(
-        RealDestinationSubmitter.handlebarsHttpApiFailOnErrorMessage(handlebarsHttpApi, httpResponse))
+        RealDestinationSubmitter.genericLogMessage(
+          si.formId,
+          handlebarsHttpApi.id,
+          RealDestinationSubmitter.handlebarsHttpApiFailOnErrorMessage(httpResponse)))
     }
   }
 
@@ -195,7 +198,7 @@ class RealDestinationSubmitterSpec extends Spec {
           .expectIncludeIfEvaluation("true", HandlebarsTemplateProcessorModel.empty, true)
           .sut
           .submitIfIncludeIf(hmrcDms, si, HandlebarsTemplateProcessorModel(), submitter, template) shouldBe Left(
-          s"Destination ${hmrcDms.id.id} : an error")
+          RealDestinationSubmitter.genericLogMessage(si.formId, hmrcDms.id, "an error"))
     }
   }
 

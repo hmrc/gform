@@ -28,7 +28,7 @@ import java.util.Base64
 
 import com.fasterxml.jackson.databind.node.{ ArrayNode, ObjectNode, TextNode }
 import com.github.jknack.handlebars.{ Handlebars, Options }
-import org.slf4j.LoggerFactory
+import uk.gov.hmrc.gform.logging.Loggers
 import uk.gov.hmrc.gform.sharedmodel.form._
 
 class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimeProvider) {
@@ -653,9 +653,9 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
     else a.toString.some
 
   private def log(functionName: String, params: Any*)(f: => CharSequence): CharSequence = {
-    LoggerFactory.getLogger(getClass.getName).debug(s"$functionName(${logArgs(params: _*)}) called")
+    Loggers.destinations.debug(s"$functionName(${logArgs(params: _*)}) called")
     val result = f
-    LoggerFactory.getLogger(getClass.getName).debug(s"$functionName(${logArgs(params: _*)}) result is: ${show(result)}")
+    Loggers.destinations.debug(s"$functionName(${logArgs(params: _*)}) result is: ${show(result)}")
     result
   }
 
