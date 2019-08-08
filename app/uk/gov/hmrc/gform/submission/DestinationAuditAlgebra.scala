@@ -78,6 +78,7 @@ case class DestinationAudit(
   workflowState: FormStatus,
   userId: UserId,
   caseworkerUserName: Option[String],
+  parentFormSubmissionRef: Option[String],
   reviewData: Map[String, String],
   submissionReference: SubmissionRef,
   summaryHtmlId: SummaryHtmlId,
@@ -109,6 +110,7 @@ object DestinationAudit {
           ),
           destinationResponseStatus.map(s => "destinationResponseStatus" -> JsNumber(s)).toSeq,
           caseworkerUserName.map(c => "_caseworker_userName"             -> JsString(c)).toSeq,
+          parentFormSubmissionRef.map(c => "_parentFormSubmissionRef"    -> JsString(c)).toSeq,
           workflowState match {
             case Returning => reviewData.map { case (k, v) => k -> JsString(v) }
             case _         => Seq.empty
@@ -152,6 +154,7 @@ class RepoDestinationAuditer(
           form.status,
           form.userId,
           getCaseworkerUsername(form.formData),
+          getParentFormSubmissionRef(form.formData),
           form.thirdPartyData.reviewData.getOrElse(Map.empty),
           submissionReference,
           summaryHtmlId
@@ -163,6 +166,9 @@ class RepoDestinationAuditer(
 
   private def getCaseworkerUsername(formData: FormData): Option[String] =
     formData.find(FormComponentId("_caseworker_userName"))
+
+  private def getParentFormSubmissionRef(formData: FormData): Option[String] =
+    formData.find(FormComponentId("_parentFormSubmissionRef"))
 
   private def findOrInsertSummaryHtml(summaryHtml: String)(implicit hc: HeaderCarrier): FOpt[SummaryHtmlId] =
     findSummaryHtml(summaryHtml)
