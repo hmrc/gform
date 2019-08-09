@@ -36,7 +36,7 @@ case class FormTemplate(
   description: LocalisedString,
   developmentPhase: Option[DevelopmentPhase],
   formCategory: FormCategory,
-  draftRetrievalMethod: Option[DraftRetrievalMethod],
+  draftRetrievalMethod: DraftRetrievalMethod,
   submissionReference: Option[TextExpression],
   destinations: Destinations,
   destinationTests: Option[List[DestinationTest]],
@@ -65,7 +65,7 @@ object FormTemplate {
     description: LocalisedString,
     developmentPhase: Option[DevelopmentPhase],
     formCategory: FormCategory,
-    draftRetrievalMethod: Option[DraftRetrievalMethod],
+    draftRetrievalMethod: DraftRetrievalMethod,
     submissionReference: Option[TextExpression],
     dmsSubmission: DmsSubmission,
     authConfig: formtemplate.AuthConfig,
@@ -86,7 +86,7 @@ object FormTemplate {
         description: LocalisedString,
         developmentPhase: Option[DevelopmentPhase],
         formCategory,
-        draftRetrievalMethod: Option[DraftRetrievalMethod],
+        draftRetrievalMethod: DraftRetrievalMethod,
         submissionReference: Option[TextExpression],
         destinations = dmsSubmission,
         destinationTests = None,
@@ -115,16 +115,20 @@ object FormTemplate {
       """One and only one of FormTemplate.{dmsSubmission, destinations} must be defined. FormTemplate.dmsSubmission is deprecated. Prefer FormTemplate.destinations.""")
 
   private val reads = Reads[FormTemplate] { json =>
-    val normalisedJson = FormTemplatesControllerRequestHandler.normaliseJSON(json)
-    ((normalisedJson \ "dmsSubmission").toOption, (normalisedJson \ "destinations").toOption) match {
+    ((json \ "dmsSubmission").toOption, (json \ "destinations").toOption) match {
       case (None, None)       => onlyOneOfDmsSubmissionAndDestinationsMustBeDefined
-      case (None, Some(_))    => readForDestinationsVersion.reads(normalisedJson)
-      case (Some(_), None)    => readForDeprecatedDmsSubmissionVersion.reads(normalisedJson).map(_.toNewForm)
+      case (None, Some(_))    => readForDestinationsVersion.reads(json)
+      case (Some(_), None)    => readForDeprecatedDmsSubmissionVersion.reads(json).map(_.toNewForm)
       case (Some(_), Some(_)) => onlyOneOfDmsSubmissionAndDestinationsMustBeDefined
     }
   }
 
   implicit val format: OFormat[FormTemplate] = OFormat(reads, derived.owrites[FormTemplate])
+
+  def transformAndReads(json: JsValue): JsResult[FormTemplate] =
+    FormTemplatesControllerRequestHandler
+      .normaliseJSON(json)
+      .flatMap(format.reads)
 
   def withDeprecatedDmsSubmission(
     _id: FormTemplateId,
@@ -132,7 +136,7 @@ object FormTemplate {
     description: LocalisedString,
     developmentPhase: Option[DevelopmentPhase] = Some(ResearchBanner),
     formCategory: FormCategory,
-    draftRetrievalMethod: Option[DraftRetrievalMethod] = Some(OnePerUser),
+    draftRetrievalMethod: DraftRetrievalMethod = OnePerUser(ContinueOrDeletePage.Show),
     submissionReference: Option[TextExpression],
     dmsSubmission: DmsSubmission,
     authConfig: formtemplate.AuthConfig,

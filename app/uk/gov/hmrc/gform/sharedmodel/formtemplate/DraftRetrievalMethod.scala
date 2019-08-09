@@ -17,33 +17,35 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import play.api.libs.json._
+import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService.{ IsFalseish, IsTrueish }
 
 sealed trait DraftRetrievalMethod
 
-case object OnePerUser extends DraftRetrievalMethod
-case object FormAccessCodeForAgents extends DraftRetrievalMethod
+case class OnePerUser(continueOrDeletePage: ContinueOrDeletePage) extends DraftRetrievalMethod
+case class FormAccessCodeForAgents(continueOrDeletePage: ContinueOrDeletePage) extends DraftRetrievalMethod
 case object BySubmissionReference extends DraftRetrievalMethod
 
 object DraftRetrievalMethod {
-  implicit val format: Format[DraftRetrievalMethod] = new Format[DraftRetrievalMethod] {
-    override def writes(o: DraftRetrievalMethod): JsValue = o match {
-      case OnePerUser              => JsString("onePerUser")
-      case FormAccessCodeForAgents => JsString("formAccessCodeForAgents")
-      case BySubmissionReference   => JsString("submissionReference")
+  private case class Helper(value: String, showContinueOrDeletePage: String) {
+    def toDraftRetrievalMethod: JsResult[DraftRetrievalMethod] = (value, showContinueOrDeletePage) match {
+      case ("onePerUser", ContinueOrDeletePage(conOrDel))              => JsSuccess(OnePerUser(conOrDel))
+      case ("formAccessCodeForAgents", ContinueOrDeletePage(conOrDel)) => JsSuccess(FormAccessCodeForAgents(conOrDel))
+      case ("submissionReference", IsTrueish())                        => JsSuccess(BySubmissionReference)
+      case ("submissionReference", IsFalseish()) =>
+        JsError(
+          "Failure, showContinueOrDeletePage is invalid in combination with 'draftRetrievalMethod: submissionReference'")
+      case (err, _) =>
+        JsError(
+          s"only three values are allowed for draftRetrievalMethod: either onePerUser, submissionReference or formAccessCodeForAgents; $err is not valid")
     }
-
-    override def reads(json: JsValue): JsResult[DraftRetrievalMethod] =
-      json match {
-        case JsString("onePerUser") =>
-          JsSuccess(OnePerUser)
-        case JsString("formAccessCodeForAgents") =>
-          JsSuccess(FormAccessCodeForAgents)
-        case JsString("submissionReference") =>
-          JsSuccess(BySubmissionReference)
-        case JsString(err) =>
-          JsError(
-            s"only three values are allowed for draftRetrievalMethod: either onePerUser, submissionReference or formAccessCodeForAgents; $err is not valid")
-        case _ => JsError("Failure, a string value is required for a draftRetrievalMethod")
-      }
   }
+  private object Helper {
+    val reads = Json.reads[Helper]
+  }
+
+  private val templateReads: Reads[DraftRetrievalMethod] = Reads { json =>
+    Helper.reads.reads(json).flatMap(_.toDraftRetrievalMethod)
+  }
+
+  implicit val format: OFormat[DraftRetrievalMethod] = OFormatWithTemplateReadFallback(templateReads)
 }

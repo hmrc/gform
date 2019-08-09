@@ -77,7 +77,7 @@ class FormComponentRejectSpec extends Spec {
   private def readAsFormTemplate(fileName: String): JsResult[FormTemplate] = {
     val source = readFile(fileName)
     val json = Json.parse(source)
-    FormTemplate.format.reads(json)
+    FormTemplate.transformAndReads(json)
   }
 
 }

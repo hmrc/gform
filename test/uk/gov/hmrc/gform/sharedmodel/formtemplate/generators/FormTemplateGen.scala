@@ -26,8 +26,16 @@ trait FormTemplateGen {
   def formTemplateDescriptionGen: Gen[String] = Gen.alphaNumStr
   def developmentPhaseGen: Gen[DevelopmentPhase] = Gen.oneOf(AlphaBanner, BetaBanner, ResearchBanner, LiveBanner)
   def formCategoryGen: Gen[FormCategory] = Gen.oneOf(HMRCReturnForm, HMRCClaimForm, Default)
+
   def draftRetrievalMethodGen: Gen[DraftRetrievalMethod] =
-    Gen.oneOf(OnePerUser, FormAccessCodeForAgents, BySubmissionReference)
+    for {
+      continueOrDeletePage <- ContinueOrDeletePageGen.continueOrDeletePageGen
+      draftRetrievalMethod <- Gen.oneOf(
+                               OnePerUser(continueOrDeletePage),
+                               FormAccessCodeForAgents(continueOrDeletePage),
+                               BySubmissionReference)
+    } yield draftRetrievalMethod
+
   def emailTemplateIdGen: Gen[String] = PrimitiveGen.nonEmptyAlphaNumStrGen
 
   def emailParameterGen: Gen[EmailParameter] =
@@ -61,7 +69,7 @@ trait FormTemplateGen {
       description            <- formTemplateDescriptionGen
       developmentPhase       <- Gen.option(developmentPhaseGen)
       category               <- formCategoryGen
-      draftRetrievalMethod   <- Gen.option(draftRetrievalMethodGen)
+      draftRetrievalMethod   <- draftRetrievalMethodGen
       submissionReference    <- Gen.option(FormatExprGen.textExpressionGen)
       destinations           <- DestinationsGen.destinationsGen
       authConfig             <- AuthConfigGen.authConfigGen

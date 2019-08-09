@@ -74,7 +74,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with MustMatche
     val sideEffect: FOpt[Unit] = fromFutureA(Future.successful(()))
     val json: JsValue = Json.parse(requestBody("hmrc", identifier, serviceId))
     val templateRaw = implicitly[Reads[FormTemplateRaw]].reads(json).get
-    val formTemplate: Option[FormTemplate] = implicitly[Reads[FormTemplate]].reads(json).asOpt
+    val formTemplate: Option[FormTemplate] = FormTemplate.transformAndReads(json).asOpt
     val verifySideEffect: Option[FOpt[Unit]] = formTemplate.map(formTemplate => new Verifier {}.verify(formTemplate))
 
     f(sideEffect, verifySideEffect, templateRaw)
