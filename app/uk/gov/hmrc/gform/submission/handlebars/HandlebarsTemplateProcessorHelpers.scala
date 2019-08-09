@@ -499,9 +499,7 @@ class HandlebarsTemplateProcessorHelpers(timeProvider: TimeProvider = new TimePr
   }
 
   def capitaliseFirst(s: Any): CharSequence = log("capitaliseFirst", s) {
-    ifNotNullAsString(if (s == null) "null" else s) { v =>
-      v.capitalize
-    }
+    ifNotNullAsString(s) { identity }.toString.capitalize
   }
 
   def indexedLookup(index: Any, options: Options): CharSequence =
