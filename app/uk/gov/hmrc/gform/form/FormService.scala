@@ -54,12 +54,12 @@ class FormService[F[_]: Monad](
     val formTemplateId = formTemplate._id
     (formTemplate.draftRetrievalMethod, affinityGroup) match {
 
-      case (Some(BySubmissionReference), _) =>
+      case (BySubmissionReference, _) =>
         val submissionRef = SubmissionRef(envelopeId)
         val ac = AccessCode.fromSubmissionRef(submissionRef)
         NewFormData(FormId.fromSubmissionRef(userId, formTemplateId, submissionRef), FormAccess.ByAccessCode(ac))
 
-      case (Some(FormAccessCodeForAgents), Some(AffinityGroup.Agent)) =>
+      case (FormAccessCodeForAgents(_), Some(AffinityGroup.Agent)) =>
         val ac = AccessCode.random
         NewFormData(FormId.fromAccessCode(userId, formTemplateId, ac), FormAccess.ByAccessCode(ac))
 

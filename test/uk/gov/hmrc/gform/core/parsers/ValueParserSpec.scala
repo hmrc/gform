@@ -390,7 +390,7 @@ class ValueParserSpec extends Spec {
     toLocalisedString("description"),
     Some(ResearchBanner),
     Default,
-    None,
+    OnePerUser(ContinueOrDeletePage.Show),
     None,
     Destinations
       .DmsSubmission("DMS-ID-XX", TextExpression(AuthCtx(PayeNino)), "BT-NRU-Environmental", "FinanceOpsCorpT"),
