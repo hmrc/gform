@@ -11,8 +11,8 @@ POST          /forms/:formId/enrolment-callback                             uk.g
 
 DELETE        /forms/:formId/deleteFile/:fileId                             uk.gov.hmrc.gform.form.FormController.deleteFile(formId: FormId, fileId: FileId)
 
-POST          /forms/:formId/submission-pdf                                 uk.gov.hmrc.gform.submission.SubmissionController.submitWithPdf(formId: FormId)
-GET           /forms/:formId/submission                                     uk.gov.hmrc.gform.submission.SubmissionController.submissionStatus(formId: FormId)
+POST          /forms/:formId/submitForm                                     uk.gov.hmrc.gform.submission.SubmissionController.submitForm(formId: FormId)
+GET           /forms/:formId/submissionDetails                              uk.gov.hmrc.gform.submission.SubmissionController.submissionDetails(formId: FormId)
 
 GET           /formtemplates                                                uk.gov.hmrc.gform.formtemplate.FormTemplatesController.all
 POST          /formtemplates                                                uk.gov.hmrc.gform.formtemplate.FormTemplatesController.upsert
