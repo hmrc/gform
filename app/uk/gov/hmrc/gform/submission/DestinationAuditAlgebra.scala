@@ -26,6 +26,8 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.traverse._
 import cats.syntax.eq._
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.{ ArrayNode, TextNode }
 import org.joda.time.LocalDateTime
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core._
@@ -35,8 +37,8 @@ import uk.gov.hmrc.gform.logging.Loggers
 import uk.gov.hmrc.gform.repo.RepoAlgebra
 import uk.gov.hmrc.gform.sharedmodel.{ PdfHtml, UserId, ValueClassFormat }
 import uk.gov.hmrc.gform.sharedmodel.form._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplateId }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, HandlebarsTemplateProcessorModel }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplate, FormTemplateId }
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongo.json.ReactiveMongoFormats._
 
@@ -83,7 +85,7 @@ case class DestinationAudit(
   workflowState: FormStatus,
   userId: UserId,
   caseworkerUserName: Option[String],
-  parentFormSubmissionRef: Option[String],
+  parentFormSubmissionRefs: List[String],
   reviewData: Map[String, String],
   submissionRef: SubmissionRef,
   summaryHtmlId: SummaryHtmlId,
@@ -104,7 +106,7 @@ object DestinationAudit {
         workflowState             <- readWorkflowState(json)
         userId                    <- (json \ "userId").validate[String].map(UserId(_))
         caseworkerUserName        <- (json \ "caseworkerUserName").validateOpt[String]
-        parentFormSubmissionRef   <- (json \ "_parentFormSubmissionRef").validateOpt[String]
+        parentFormSubmissionRefs  <- (json \ "parentFormSubmissionRefs").validate[List[String]]
         reviewData                <- (json \ "reviewData").validate[Map[String, String]]
         submissionRef             <- (json \ "submissionRef").validate[String].map(SubmissionRef(_))
         summaryHtmlId             <- (json \ "summaryHtmlId").validate[String].map(SummaryHtmlId(_))
@@ -120,7 +122,7 @@ object DestinationAudit {
           workflowState,
           userId,
           caseworkerUserName,
-          parentFormSubmissionRef,
+          parentFormSubmissionRefs,
           reviewData,
           submissionRef,
           summaryHtmlId,
@@ -134,20 +136,20 @@ object DestinationAudit {
       JsObject(
         Seq(
           Seq(
-            "formId"          -> JsString(formId.value),
-            "formTemplateId"  -> JsString(formTemplateId.value),
-            "destinationId"   -> JsString(destinationId.id),
-            "destinationType" -> JsString(destinationType),
-            "workflowState"   -> JsString(workflowState.toString),
-            "userId"          -> JsString(userId.value),
-            "id"              -> JsString(id.toString),
-            "timestamp"       -> localDateTimeWrite.writes(timestamp),
-            "submissionRef"   -> JsString(submissionRef.value),
-            "summaryHtmlId"   -> JsString(summaryHtmlId.value.toString)
+            "formId"                   -> JsString(formId.value),
+            "formTemplateId"           -> JsString(formTemplateId.value),
+            "destinationId"            -> JsString(destinationId.id),
+            "destinationType"          -> JsString(destinationType),
+            "workflowState"            -> JsString(workflowState.toString),
+            "userId"                   -> JsString(userId.value),
+            "id"                       -> JsString(id.toString),
+            "timestamp"                -> localDateTimeWrite.writes(timestamp),
+            "submissionRef"            -> JsString(submissionRef.value),
+            "summaryHtmlId"            -> JsString(summaryHtmlId.value.toString),
+            "parentFormSubmissionRefs" -> JsArray(parentFormSubmissionRefs.map(JsString(_)))
           ),
           destinationResponseStatus.map(s => "destinationResponseStatus" -> JsNumber(s)).toSeq,
           caseworkerUserName.map(c => "_caseworker_userName"             -> JsString(c)).toSeq,
-          parentFormSubmissionRef.map(c => "_parentFormSubmissionRef"    -> JsString(c)).toSeq,
           workflowState match {
             case Returning => reviewData.map { case (k, v) => k -> JsString(v) }
             case _         => Seq.empty
@@ -193,7 +195,9 @@ trait DestinationAuditAlgebra[M[_]] {
     handlebarsDestinationResponseStatusCode: Option[Int],
     formId: FormId,
     summaryHtml: PdfHtml,
-    submissionReference: SubmissionRef)(implicit hc: HeaderCarrier): M[Unit]
+    submissionReference: SubmissionRef,
+    template: FormTemplate,
+    model: HandlebarsTemplateProcessorModel)(implicit hc: HeaderCarrier): M[Unit]
 
   def getLatestForForm(formId: FormId)(implicit hc: HeaderCarrier): M[DestinationAudit]
 
@@ -210,7 +214,9 @@ class RepoDestinationAuditer(
     handlebarsDestinationResponseStatusCode: Option[Int],
     formId: FormId,
     summaryHtml: PdfHtml,
-    submissionReference: SubmissionRef)(implicit hc: HeaderCarrier): FOpt[Unit] = destination match {
+    submissionReference: SubmissionRef,
+    template: FormTemplate,
+    model: HandlebarsTemplateProcessorModel)(implicit hc: HeaderCarrier): FOpt[Unit] = destination match {
     case _: Destination.Composite => ().pure[FOpt]
     case _ =>
       for {
@@ -225,7 +231,7 @@ class RepoDestinationAuditer(
           form.status,
           form.userId,
           getCaseworkerUsername(form.formData),
-          getParentFormSubmissionRef(form.formData),
+          getParentFormSubmissionRef(template, model),
           form.thirdPartyData.reviewData.getOrElse(Map.empty),
           submissionReference,
           summaryHtmlId
@@ -245,7 +251,9 @@ class RepoDestinationAuditer(
 
   def findLatestChildAudits(submissionRef: SubmissionRef): FOpt[List[DestinationAudit]] =
     auditRepository
-      .search(Json.obj("_parentFormSubmissionRef" -> JsString(submissionRef.value)))
+      .search(
+        Json.obj("parentFormSubmissionRefs" ->
+          Json.obj("$in" -> Json.arr(JsString(submissionRef.value)))))
       .map {
         _.groupBy(_.formId).values.toList
           .flatMap(_.sortWith { case (x, y) => x.timestamp.isAfter(y.timestamp) }.headOption)
@@ -259,8 +267,21 @@ class RepoDestinationAuditer(
   private def getCaseworkerUsername(formData: FormData): Option[String] =
     formData.find(FormComponentId("_caseworker_userName"))
 
-  private def getParentFormSubmissionRef(formData: FormData): Option[String] =
-    formData.find(FormComponentId("_parentFormSubmissionRef"))
+  private def getParentFormSubmissionRef(
+    template: FormTemplate,
+    model: HandlebarsTemplateProcessorModel): List[String] = {
+    import shapeless.syntax.typeable._
+    import scala.collection.JavaConversions._
+
+    def extractValuesFromTextOrArrayNode(node: JsonNode): List[String] =
+      node.cast[TextNode].toList.map(_.asText) :::
+        node.cast[ArrayNode].toList.flatMap(n => n.elements.toList.flatMap(extractValuesFromTextOrArrayNode))
+
+    def extractValuesForFormComponent(id: FormComponentId): List[String] =
+      Option(model.model.get(id.value)).toList.flatMap(extractValuesFromTextOrArrayNode)
+
+    template.parentFormSubmissionRefs.flatMap(extractValuesForFormComponent)
+  }
 
   private def findOrInsertSummaryHtml(summaryHtml: PdfHtml)(implicit hc: HeaderCarrier): FOpt[SummaryHtmlId] =
     findSummaryHtml(summaryHtml)

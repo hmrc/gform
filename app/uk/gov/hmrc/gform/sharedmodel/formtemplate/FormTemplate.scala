@@ -48,6 +48,7 @@ case class FormTemplate(
   sections: List[Section],
   acknowledgementSection: AcknowledgementSection,
   declarationSection: DeclarationSection,
+  parentFormSubmissionRefs: List[FormComponentId],
   GFC579Ready: Option[String],
   languages: AvailableLanguages
 ) {
@@ -76,6 +77,7 @@ object FormTemplate {
     sections: List[Section],
     acknowledgementSection: AcknowledgementSection,
     declarationSection: DeclarationSection,
+    parentFormSubmissionRefs: Option[List[FormComponentId]],
     GFC579Ready: Option[String],
     languages: AvailableLanguages) {
     def toNewForm: FormTemplate =
@@ -97,6 +99,7 @@ object FormTemplate {
         sections: List[Section],
         acknowledgementSection: AcknowledgementSection,
         declarationSection: DeclarationSection,
+        parentFormSubmissionRefs.toList.flatten,
         GFC579Ready: Option[String],
         languages: AvailableLanguages
       )
@@ -146,6 +149,7 @@ object FormTemplate {
     sections: List[Section],
     acknowledgementSection: AcknowledgementSection,
     declarationSection: DeclarationSection,
+    parentFormSubmissionRefs: Option[List[FormComponentId]],
     GFC579Ready: Option[String] = Some("false"),
     languages: AvailableLanguages = AvailableLanguages.default): FormTemplate =
     DeprecatedFormTemplateWithDmsSubmission(
@@ -166,6 +170,7 @@ object FormTemplate {
       sections,
       acknowledgementSection,
       declarationSection,
+      parentFormSubmissionRefs,
       GFC579Ready,
       languages
     ).toNewForm

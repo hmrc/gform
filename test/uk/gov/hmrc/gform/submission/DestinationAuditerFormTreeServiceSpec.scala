@@ -28,7 +28,7 @@ class DestinationAuditerFormTreeServiceSpec extends Spec {
 
   "getFormTree" should "return a single level if there are no children" in {
     forAll(destinationAuditGen) { generatedAudit =>
-      val rootAudit = generatedAudit.copy(parentFormSubmissionRef = None)
+      val rootAudit = generatedAudit.copy(parentFormSubmissionRefs = Nil)
 
       createService()
         .expectAuditAlgebraGetLatestForForm(rootAudit.formId, rootAudit)
@@ -41,8 +41,8 @@ class DestinationAuditerFormTreeServiceSpec extends Spec {
 
   it must "return a root-child tree" in {
     forAll(destinationAuditGen, destinationAuditGen) { (generatedRoot, generatedChild) =>
-      val root = generatedRoot.copy(parentFormSubmissionRef = None)
-      val child = generatedChild.copy(parentFormSubmissionRef = Some(root.submissionRef.value))
+      val root = generatedRoot.copy(parentFormSubmissionRefs = Nil)
+      val child = generatedChild.copy(parentFormSubmissionRefs = List(root.submissionRef.value))
 
       whenever(distinct(root, child)(_.submissionRef)) {
         createService()
@@ -59,13 +59,13 @@ class DestinationAuditerFormTreeServiceSpec extends Spec {
   it must "return a root-child-grandchild tree" in {
     forAll(destinationAuditGen, destinationAuditGen, destinationAuditGen) {
       (generatedRoot, generatedChild, generatedGrandchild) =>
-        val root = generatedRoot.copy(parentFormSubmissionRef = None)
-        val child = generatedChild.copy(parentFormSubmissionRef = Some(root.submissionRef.value))
-        val grandchild = generatedGrandchild.copy(parentFormSubmissionRef = Some(child.submissionRef.value))
+        val root = generatedRoot.copy(parentFormSubmissionRefs = Nil)
+        val child = generatedChild.copy(parentFormSubmissionRefs = List(root.submissionRef.value))
+        val grandchild = generatedGrandchild.copy(parentFormSubmissionRefs = List(child.submissionRef.value))
 
         whenever(
           distinct(root, child, grandchild)(_.submissionRef) &&
-            distinct(root, child, grandchild)(_.parentFormSubmissionRef)) {
+            distinct(root, child, grandchild)(_.parentFormSubmissionRefs)) {
           createService()
             .expectAuditAlgebraGetLatestForForm(root.formId, root)
             .expectFindLatestChildAudits(root.submissionRef, List(child))
@@ -81,11 +81,11 @@ class DestinationAuditerFormTreeServiceSpec extends Spec {
   it must "group children by their form template ids" in {
     forAll(destinationAuditGen, destinationAuditGen, destinationAuditGen, destinationAuditGen) {
       (generatedRoot, generatedChild1, generatedChild2, generatedChild3) =>
-        val root = generatedRoot.copy(parentFormSubmissionRef = None)
-        val child1 = generatedChild1.copy(parentFormSubmissionRef = Some(root.submissionRef.value))
+        val root = generatedRoot.copy(parentFormSubmissionRefs = Nil)
+        val child1 = generatedChild1.copy(parentFormSubmissionRefs = List(root.submissionRef.value))
         val child2 = generatedChild2
-          .copy(parentFormSubmissionRef = Some(root.submissionRef.value), formTemplateId = child1.formTemplateId)
-        val child3 = generatedChild3.copy(parentFormSubmissionRef = Some(root.submissionRef.value))
+          .copy(parentFormSubmissionRefs = List(root.submissionRef.value), formTemplateId = child1.formTemplateId)
+        val child3 = generatedChild3.copy(parentFormSubmissionRefs = List(root.submissionRef.value))
 
         whenever(
           distinct(root, child1, child2, child3)(_.submissionRef) &&

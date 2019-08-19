@@ -52,27 +52,27 @@ class RealDestinationSubmitterSpec
     ) { (si, handlebarsHttpApi, template, responseCode, pdfData, structuredFormData) =>
       val httpResponse = HttpResponse(responseCode)
       val model = HandlebarsTemplateProcessorModel()
+      val theTree = tree(model, si.submission.submissionRef, template, pdfData, structuredFormData)
 
       createSubmitter
         .expectIncludeIfEvaluation(
           handlebarsHttpApi.includeIf,
           HandlebarsTemplateProcessorModel.empty,
-          rootFocussedTree(model, si.submission.submissionRef, template, pdfData, structuredFormData),
+          FocussedHandlebarsModelTree(theTree),
           requiredResult = true
         )
-        .expectHandlebarsSubmission(
+        .expectHandlebarsSubmission(handlebarsHttpApi, HandlebarsTemplateProcessorModel.empty, theTree, httpResponse)
+        .expectDestinationAudit(
           handlebarsHttpApi,
-          HandlebarsTemplateProcessorModel.empty,
-          tree(model, si.submission.submissionRef, template, pdfData, structuredFormData),
-          httpResponse)
-        .expectDestinationAudit(handlebarsHttpApi, Some(responseCode), si.formId, pdfData, si.submission.submissionRef)
+          Some(responseCode),
+          si.formId,
+          pdfData,
+          si.submission.submissionRef,
+          template,
+          model)
         .sut
-        .submitIfIncludeIf(
-          handlebarsHttpApi,
-          si,
-          HandlebarsTemplateProcessorModel.empty,
-          tree(model, si.submission.submissionRef, template, pdfData, structuredFormData),
-          submitter) shouldBe Right(HandlebarsDestinationResponse(handlebarsHttpApi, httpResponse).some)
+        .submitIfIncludeIf(handlebarsHttpApi, si, HandlebarsTemplateProcessorModel.empty, theTree, submitter) shouldBe Right(
+        HandlebarsDestinationResponse(handlebarsHttpApi, httpResponse).some)
     }
   }
 
@@ -125,7 +125,14 @@ class RealDestinationSubmitterSpec
           HandlebarsTemplateProcessorModel.empty,
           FocussedHandlebarsModelTree(theTree),
           true)
-        .expectDestinationAudit(handlebarsHttpApi, Some(responseCode), si.formId, pdfData, si.submission.submissionRef)
+        .expectDestinationAudit(
+          handlebarsHttpApi,
+          Some(responseCode),
+          si.formId,
+          pdfData,
+          si.submission.submissionRef,
+          template,
+          model)
         .sut
         .submitIfIncludeIf(
           handlebarsHttpApi,
@@ -156,7 +163,14 @@ class RealDestinationSubmitterSpec
           HandlebarsTemplateProcessorModel.empty,
           FocussedHandlebarsModelTree(theTree),
           true)
-        .expectDestinationAudit(handlebarsHttpApi, Some(responseCode), si.formId, pdfData, si.submission.submissionRef)
+        .expectDestinationAudit(
+          handlebarsHttpApi,
+          Some(responseCode),
+          si.formId,
+          pdfData,
+          si.submission.submissionRef,
+          template,
+          model)
         .sut
         .submitIfIncludeIf(handlebarsHttpApi, si, HandlebarsTemplateProcessorModel.empty, theTree, submitter) shouldBe Left(
         RealDestinationSubmitter.genericLogMessage(
@@ -183,7 +197,7 @@ class RealDestinationSubmitterSpec
           HandlebarsTemplateProcessorModel.empty,
           FocussedHandlebarsModelTree(theTree),
           true)
-        .expectDestinationAudit(hmrcDms, None, si.formId, pdfData, si.submission.submissionRef)
+        .expectDestinationAudit(hmrcDms, None, si.formId, pdfData, si.submission.submissionRef, template, model)
         .sut
         .submitIfIncludeIf(hmrcDms, si, HandlebarsTemplateProcessorModel.empty, theTree, submitter) shouldBe Right(None)
     }
@@ -208,7 +222,7 @@ class RealDestinationSubmitterSpec
           requiredResult = true
         )
         .expectDmsSubmission(si, pdfData, structuredFormData, hmrcDms.toDeprecatedDmsSubmission)
-        .expectDestinationAudit(hmrcDms, None, si.formId, pdfData, si.submission.submissionRef)
+        .expectDestinationAudit(hmrcDms, None, si.formId, pdfData, si.submission.submissionRef, template, model)
         .sut
         .submitIfIncludeIf(hmrcDms, si, HandlebarsTemplateProcessorModel.empty, theTree, submitter) shouldBe Right(None)
     }
@@ -255,7 +269,7 @@ class RealDestinationSubmitterSpec
           FocussedHandlebarsModelTree(theTree),
           true
         )
-        .expectDestinationAudit(hmrcDms, None, si.formId, pdfData, si.submission.submissionRef)
+        .expectDestinationAudit(hmrcDms, None, si.formId, pdfData, si.submission.submissionRef, template, model)
         .sut
         .submitIfIncludeIf(
           hmrcDms,
@@ -369,10 +383,19 @@ class RealDestinationSubmitterSpec
       response: Option[Int],
       formId: FormId,
       pdfHtml: PdfHtml,
-      submissionRef: SubmissionRef): SubmitterParts[F] = {
+      submissionRef: SubmissionRef,
+      template: FormTemplate,
+      model: HandlebarsTemplateProcessorModel): SubmitterParts[F] = {
       (destinationAuditer
-        .apply(_: Destination, _: Option[Int], _: FormId, _: PdfHtml, _: SubmissionRef)(_: HeaderCarrier))
-        .expects(destination, response, formId, pdfHtml, submissionRef, hc)
+        .apply(
+          _: Destination,
+          _: Option[Int],
+          _: FormId,
+          _: PdfHtml,
+          _: SubmissionRef,
+          _: FormTemplate,
+          _: HandlebarsTemplateProcessorModel)(_: HeaderCarrier))
+        .expects(destination, response, formId, pdfHtml, submissionRef, template, model, hc)
         .returning(F.pure(()))
       this
     }
@@ -405,14 +428,6 @@ class RealDestinationSubmitterSpec
     val destinationSubmitter: DestinationSubmitter[Possible] = mock[DestinationSubmitter[Possible]]
     new DestinationsSubmitter[Possible](destinationSubmitter)
   }
-
-  def rootFocussedTree(
-    model: HandlebarsTemplateProcessorModel,
-    submissionRef: SubmissionRef,
-    formTemplate: FormTemplate,
-    pdfData: PdfHtml,
-    structuredFormData: StructuredFormValue.ObjectStructure) =
-    FocussedHandlebarsModelTree(tree(model, submissionRef, formTemplate, pdfData, structuredFormData))
 
   def tree(
     model: HandlebarsTemplateProcessorModel,

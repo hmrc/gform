@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 
 import org.scalacheck.Gen
-import uk.gov.hmrc.gform.submission.{ DestinationAudit, SubmissionRef, SummaryHtmlId }
+import uk.gov.hmrc.gform.submission.{ DestinationAudit, SummaryHtmlId }
 
 trait DestinationAuditGen {
   def destinationAuditGen: Gen[DestinationAudit] =
@@ -30,7 +30,7 @@ trait DestinationAuditGen {
       formStatus                <- FormGen.formStatusGen
       userId                    <- UserIdGen.userIdGen
       caseworkerUserName        <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
-      parentFormSubmissionRef   <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
+      parentFormSubmissionRef   <- PrimitiveGen.zeroOrMoreGen(PrimitiveGen.nonEmptyAlphaNumStrGen)
       submissionRef             <- SubmissionRefGen.submissionRefGen
       summaryHtmlId             <- Gen.uuid.map(SummaryHtmlId(_))
     } yield

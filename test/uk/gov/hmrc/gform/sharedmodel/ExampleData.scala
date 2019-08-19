@@ -340,7 +340,8 @@ trait ExampleFormTemplate {
       webChat = webChat,
       sections = allSections,
       acknowledgementSection = acknowledgementSection,
-      declarationSection = DeclarationSection(toLocalisedString("Declaration"), None, None, Nil)
+      declarationSection = DeclarationSection(toLocalisedString("Declaration"), None, None, Nil),
+      parentFormSubmissionRefs = None
     )
 }
 

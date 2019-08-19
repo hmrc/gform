@@ -143,7 +143,8 @@ class SubmissionServiceSpec extends Spec {
       webChat = Some(WebChat(ChatRoomId("test"), TemplateName("test"))),
       sections = List(section),
       acknowledgementSection = AcknowledgementSection(toLocalisedString(""), None, None, Nil),
-      declarationSection = DeclarationSection(toLocalisedString("Declaration"), None, None, Nil)
+      declarationSection = DeclarationSection(toLocalisedString("Declaration"), None, None, Nil),
+      parentFormSubmissionRefs = None
     )
 
     val expectedResult = List(

@@ -74,8 +74,11 @@ object FormTemplatesControllerRequestHandler {
     val ensureLanguages = (__ \ 'languages).json
       .copyFrom((__ \ 'languages).json.pick orElse Reads.pure(Json.arr("en")))
 
+    val ensureParentFormSubmissionRefs = (__ \ 'parentFormSubmissionRefs).json
+      .copyFrom((__ \ 'parentFormSubmissionRefs).json.pick orElse Reads.pure(Json.arr()))
+
     val transformer: Reads[JsObject] =
-      pruneShowContinueOrDeletePage and drmValue and drmShowContinueOrDeletePage and ensureFormCategory and ensureLanguages reduce
+      pruneShowContinueOrDeletePage and drmValue and drmShowContinueOrDeletePage and ensureFormCategory and ensureLanguages and ensureParentFormSubmissionRefs reduce
 
     jsonValue.transform(transformer)
   }

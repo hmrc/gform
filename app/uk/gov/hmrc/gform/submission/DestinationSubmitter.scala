@@ -70,7 +70,7 @@ class RealDestinationSubmitter[M[_], R](
           for {
             _      <- logInfoInMonad(submissionInfo.formId, destination.id, "Included")
             result <- submit(destination, submissionInfo, accumulatedModel, modelTree, submitter)
-            _      <- audit(destination, result.map(_.status), submissionInfo, modelTree.value.pdfData)
+            _      <- audit(destination, result.map(_.status), submissionInfo, modelTree)
           } yield result
         else
           for {
@@ -84,9 +84,17 @@ class RealDestinationSubmitter[M[_], R](
     destination: Destination,
     responseStatus: Option[Int],
     submissionInfo: DestinationSubmissionInfo,
-    pdfData: PdfHtml)(implicit hc: HeaderCarrier): M[Unit] =
+    modelTree: HandlebarsModelTree)(implicit hc: HeaderCarrier): M[Unit] =
     destinationAuditer.fold(().pure[M])(
-      _(destination, responseStatus, submissionInfo.formId, pdfData, submissionInfo.submission.submissionRef))
+      _(
+        destination,
+        responseStatus,
+        submissionInfo.formId,
+        modelTree.value.pdfData,
+        submissionInfo.submission.submissionRef,
+        modelTree.value.formTemplate,
+        modelTree.value.model
+      ))
 
   private def logInfoInMonad(formId: FormId, destinationId: DestinationId, msg: String): M[Unit] =
     monadError.pure {
@@ -148,7 +156,7 @@ class RealDestinationSubmitter[M[_], R](
         if (response.isSuccess)
           createSuccessResponse(d, response)
         else if (d.failOnError)
-          createFailureResponse(d, response, submissionInfo, modelTree.value.pdfData)
+          createFailureResponse(d, response, submissionInfo, modelTree)
         else {
           logInfoInMonad(
             submissionInfo.formId,
@@ -163,8 +171,8 @@ class RealDestinationSubmitter[M[_], R](
     destination: Destination.HandlebarsHttpApi,
     response: HttpResponse,
     submissionInfo: DestinationSubmissionInfo,
-    pdfHtml: PdfHtml)(implicit hc: HeaderCarrier): M[HandlebarsDestinationResponse] =
-    audit(destination, Some(response.status), submissionInfo, pdfHtml) >>
+    modelTree: HandlebarsModelTree)(implicit hc: HeaderCarrier): M[HandlebarsDestinationResponse] =
+    audit(destination, Some(response.status), submissionInfo, modelTree) >>
       raiseError(
         submissionInfo.formId,
         destination.id,

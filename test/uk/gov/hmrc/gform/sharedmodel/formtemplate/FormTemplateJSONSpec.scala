@@ -30,7 +30,9 @@ class FormTemplateJSONSpec extends Spec {
       "draftRetrievalMethod" -> Json.obj(
         "value"                    -> "onePerUser",
         "showContinueOrDeletePage" -> "true"
-      ))
+      ),
+      "parentFormSubmissionRefs" -> Json.arr()
+    )
 
     val input = Json
       .obj(
@@ -38,7 +40,8 @@ class FormTemplateJSONSpec extends Spec {
         "formCategory"             -> "letter",
         "languages"                -> Json.arr("en", "cy"),
         "draftRetrievalMethod"     -> "formAccessCodeForAgents",
-        "showContinueOrDeletePage" -> "false"
+        "showContinueOrDeletePage" -> "false",
+        "parentFormSubmissionRefs" -> Json.arr("123", "456")
       )
     val expected = Json.obj(
       "abc"          -> "hello",
@@ -47,7 +50,8 @@ class FormTemplateJSONSpec extends Spec {
       "draftRetrievalMethod" -> Json.obj(
         "value"                    -> "formAccessCodeForAgents",
         "showContinueOrDeletePage" -> "false"
-      )
+      ),
+      "parentFormSubmissionRefs" -> Json.arr("123", "456")
     )
 
     val t = Table(

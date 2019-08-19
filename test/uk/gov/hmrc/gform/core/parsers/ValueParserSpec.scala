@@ -408,7 +408,8 @@ class ValueParserSpec extends Spec {
     None,
     List.empty[Section],
     acknowledgementSection = AcknowledgementSection(toLocalisedString(""), None, None, Nil),
-    declarationSection = DeclarationSection(toLocalisedString("Declaration"), None, None, Nil)
+    declarationSection = DeclarationSection(toLocalisedString("Declaration"), None, None, Nil),
+    parentFormSubmissionRefs = None
   )
 
   val yourDetailsSection = Section(
