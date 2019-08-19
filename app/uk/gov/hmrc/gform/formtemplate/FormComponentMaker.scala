@@ -28,6 +28,7 @@ import play.api.libs.json._
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.{ FormatParser, PresentationHintParser, ValueParser }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.RoundingMode._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService._
@@ -52,7 +53,8 @@ class FormComponentMaker(json: JsValue) {
     parse("presentationHint", PresentationHintParser.validate)
 
   lazy val helpText: Option[LocalisedString] = (json \ "helpText").asOpt[LocalisedString]
-  lazy val optionHelpText: Option[List[LocalisedString]] = (json \ "optionHelpText").asOpt[List[LocalisedString]]
+  lazy val optionHelpText: Option[NonEmptyList[LocalisedString]] =
+    (json \ "optionHelpText").asOpt[NonEmptyList[LocalisedString]]
   lazy val submitMode: Option[String] = (json \ "submitMode").asOpt[String]
   lazy val choices: Option[List[LocalisedString]] = (json \ "choices").asOpt[List[LocalisedString]]
 

@@ -40,10 +40,10 @@ trait FormComponentGen {
       followingCharacters <- Gen.alphaChar.map(_.toString)
     } yield FormComponentId(precedingNumber + followingCharacters)
 
-  def labelGen: Gen[String] = PrimitiveGen.nonEmptyAlphaNumStrGen
-  def helpTextGen: Gen[String] = PrimitiveGen.nonEmptyAlphaNumStrGen
-  def shortNameGen: Gen[String] = PrimitiveGen.nonEmptyAlphaNumStrGen
-  def errorMessageGen: Gen[String] = PrimitiveGen.nonEmptyAlphaNumStrGen
+  def labelGen: Gen[LocalisedString] = LocalisedStringGen.localisedStringGen
+  def helpTextGen: Gen[LocalisedString] = LocalisedStringGen.localisedStringGen
+  def shortNameGen: Gen[LocalisedString] = LocalisedStringGen.localisedStringGen
+  def errorMessageGen: Gen[LocalisedString] = LocalisedStringGen.localisedStringGen
 
   def formComponentGen(maxDepth: Int = 3): Gen[FormComponent] =
     for {
@@ -64,16 +64,16 @@ trait FormComponentGen {
       FormComponent(
         id,
         tpe,
-        toLocalisedString(label),
-        toLocalisedString(helpText),
-        toLocalisedString(shortName),
+        label,
+        helpText,
+        shortName,
         validIf,
         mandatory,
         editable,
         submissable,
         derived,
         onlyShowOnSummary,
-        toLocalisedString(errorMessage),
+        errorMessage,
         presentationHint
       )
 }

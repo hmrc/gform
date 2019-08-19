@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform
+package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
-import cats.data.NonEmptyList
-import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString }
+import play.api.libs.json._
+import uk.gov.hmrc.gform.sharedmodel.LocalisedString
 
-object Helpers {
-  def toLocalisedString(string: String) =
-    LocalisedString(Map(LangADT.En -> string))
+case class Save4LaterInfoText(value: LocalisedString) extends AnyVal
 
-  def toLocalisedString(stringEn: String, stringCy: String) =
-    LocalisedString(Map(LangADT.En -> stringEn, LangADT.Cy -> stringCy))
+object Save4LaterInfoText {
+  val templateReads: Reads[Save4LaterInfoText] = LocalisedString.format.map(Save4LaterInfoText(_))
+
+  implicit val format: OFormat[Save4LaterInfoText] = OFormatWithTemplateReadFallback(templateReads)
 
 }

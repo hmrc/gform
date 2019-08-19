@@ -58,18 +58,18 @@ trait ComponentTypeGen {
   def choiceGen: Gen[Choice] =
     for {
       tpe         <- choiceTypeGen
-      options     <- PrimitiveGen.nonEmptyAlphaNumStrGen.map(NonEmptyList.of(_))
+      options     <- PrimitiveGen.oneOrMoreGen(LocalisedStringGen.localisedStringGen)
       orientation <- orientationGen
       selections  <- PrimitiveGen.zeroOrMoreGen(Gen.posNum[Int])
-      helpText    <- Gen.option(PrimitiveGen.zeroOrMoreGen(PrimitiveGen.nonEmptyAlphaNumStrGen))
-    } yield Choice(tpe, toLocalisedString(options), orientation, selections, toLocalisedStrings(helpText))
+      helpText    <- Gen.option(PrimitiveGen.oneOrMoreGen(LocalisedStringGen.localisedStringGen))
+    } yield Choice(tpe, options, orientation, selections, helpText)
 
   def revealingChoiceElementGen: Gen[RevealingChoiceElement] =
     for {
-      choice   <- PrimitiveGen.nonEmptyAlphaNumStrGen
+      choice   <- LocalisedStringGen.localisedStringGen
       fields   <- PrimitiveGen.zeroOrMoreGen(FormComponentGen.formComponentGen(3))
       selected <- PrimitiveGen.booleanGen
-    } yield RevealingChoiceElement(toLocalisedString(choice), fields, selected)
+    } yield RevealingChoiceElement(choice, fields, selected)
 
   def revealingChoiceGen: Gen[RevealingChoice] =
     for {
@@ -89,24 +89,17 @@ trait ComponentTypeGen {
       orientation          <- orientationGen
       repeatsMax           <- Gen.option(Gen.posNum[Int])
       repeatsMin           <- Gen.option(Gen.posNum[Int])
-      repeatLabel          <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
-      repeatAddAnotherText <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
-    } yield
-      Group(
-        fields.toList,
-        orientation,
-        repeatsMax,
-        repeatsMin,
-        toLocalisedString(repeatLabel),
-        toLocalisedString(repeatAddAnotherText))
+      repeatLabel          <- Gen.option(LocalisedStringGen.localisedStringGen)
+      repeatAddAnotherText <- Gen.option(LocalisedStringGen.localisedStringGen)
+    } yield Group(fields.toList, orientation, repeatsMax, repeatsMin, repeatLabel, repeatAddAnotherText)
 
   def infoTypeGen: Gen[InfoType] = Gen.oneOf(StandardInfo, LongInfo, ImportantInfo, BannerInfo, NoFormat)
 
   def informationMessageGen: Gen[InformationMessage] =
     for {
       infoType <- infoTypeGen
-      infoText <- PrimitiveGen.nonEmptyAlphaNumStrGen
-    } yield InformationMessage(infoType, toLocalisedString(infoText))
+      infoText <- LocalisedStringGen.localisedStringGen
+    } yield InformationMessage(infoType, infoText)
 
   def fileUploadGen: Gen[FileUpload] = Gen.const(FileUpload())
 

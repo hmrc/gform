@@ -106,7 +106,7 @@ case class Choice(
   options: NonEmptyList[LocalisedString],
   orientation: Orientation,
   selections: List[Int],
-  optionHelpText: Option[List[LocalisedString]])
+  optionHelpText: Option[NonEmptyList[LocalisedString]])
     extends ComponentType
 
 sealed trait ChoiceType
