@@ -67,19 +67,17 @@ object FormTemplateValidator {
   }
 
   def validateChoiceHelpText(sectionsList: List[Section]): ValidationResult = {
-    val choiceFieldIdMap: Map[FormComponentId, Boolean] = sectionsList
+    val choiceFieldIds: List[FormComponentId] = sectionsList
       .flatMap(_.fields)
       .map(fv => (fv.id, fv.`type`))
       .collect {
-        case (fId, Choice(_, options, _, _, helpTextList @ Some(x :: xs))) =>
-          (fId, options.toList.size.equals(helpTextList.getOrElse(List.empty).size))
+        case (fId, Choice(_, options, _, _, helpTextList))
+            if helpTextList.fold(false)(helpTexts => options.size != helpTexts.size) =>
+          fId
       }
-      .toMap
 
-    val choiceFieldIdResult = choiceFieldIdMap.filter(value => value._2.equals(false))
-
-    choiceFieldIdResult.isEmpty.validationResult(
-      s"Choice components doesn't have equal number of choices and help texts ${choiceFieldIdResult.keys.toList}")
+    choiceFieldIds.isEmpty.validationResult(
+      s"Choice components doesn't have equal number of choices and help texts ${choiceFieldIds.mkString(",")}")
   }
 
   def validateRepeatingSectionFields(sectionList: List[Section]): ValidationResult = {

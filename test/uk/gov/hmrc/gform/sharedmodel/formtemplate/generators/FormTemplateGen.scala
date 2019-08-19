@@ -22,8 +22,8 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 trait FormTemplateGen {
   def formTemplateIdGen: Gen[FormTemplateId] = PrimitiveGen.nonEmptyAlphaNumStrGen.map(FormTemplateId(_))
-  def formNameGen: Gen[String] = PrimitiveGen.nonEmptyAlphaNumStrGen
-  def formTemplateDescriptionGen: Gen[String] = Gen.alphaNumStr
+  def formNameGen: Gen[LocalisedString] = LocalisedStringGen.localisedStringGen
+  def formTemplateDescriptionGen: Gen[LocalisedString] = LocalisedStringGen.localisedStringGen
   def developmentPhaseGen: Gen[DevelopmentPhase] = Gen.oneOf(AlphaBanner, BetaBanner, ResearchBanner, LiveBanner)
   def formCategoryGen: Gen[FormCategory] = Gen.oneOf(HMRCReturnForm, HMRCClaimForm, Default)
 
@@ -60,8 +60,6 @@ trait FormTemplateGen {
       templateName <- templateNameGen
     } yield WebChat(ChatRoomId(roomId), templateName)
 
-  def toLocalisedString(s: String): LocalisedString = LocalisedString(Map(LangADT.En -> s))
-
   def formTemplateGen: Gen[FormTemplate] =
     for {
       id                       <- formTemplateIdGen
@@ -83,11 +81,12 @@ trait FormTemplateGen {
       declarationSection       <- SectionGen.declarationSectionGen
       parentFormSubmissionRefs <- PrimitiveGen.zeroOrMoreGen(FormComponentGen.formComponentIdGen)
       gFC579Ready              <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
+      save4LaterInfoText       <- Gen.option(Save4LaterInfoTextGen.save4LaterInfoTextGen)
     } yield
       FormTemplate(
         id,
-        toLocalisedString(name),
-        toLocalisedString(description),
+        name,
+        description,
         developmentPhase,
         category,
         draftRetrievalMethod,
@@ -104,7 +103,8 @@ trait FormTemplateGen {
         declarationSection,
         parentFormSubmissionRefs,
         gFC579Ready,
-        AvailableLanguages.default
+        AvailableLanguages.default,
+        save4LaterInfoText
       )
 }
 

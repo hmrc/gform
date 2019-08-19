@@ -14,16 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform
+package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 
-import cats.data.NonEmptyList
-import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString }
+import org.scalacheck.Gen
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.Save4LaterInfoText
 
-object Helpers {
-  def toLocalisedString(string: String) =
-    LocalisedString(Map(LangADT.En -> string))
-
-  def toLocalisedString(stringEn: String, stringCy: String) =
-    LocalisedString(Map(LangADT.En -> stringEn, LangADT.Cy -> stringCy))
-
+trait Save4LaterInfoTextGen {
+  def save4LaterInfoTextGen: Gen[Save4LaterInfoText] = LocalisedStringGen.localisedStringGen.map(Save4LaterInfoText(_))
 }
+
+object Save4LaterInfoTextGen extends Save4LaterInfoTextGen

@@ -36,65 +36,54 @@ trait SectionGen {
 
   def enrolmentSectionGen: Gen[EnrolmentSection] =
     for {
-      title       <- PrimitiveGen.nonEmptyAlphaNumStrGen
-      shortName   <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
+      title       <- LocalisedStringGen.localisedStringGen
+      shortName   <- Gen.option(LocalisedStringGen.localisedStringGen)
       fields      <- PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen())
       identifiers <- PrimitiveGen.oneOrMoreGen(identifierRecipeGen)
       verifiers   <- PrimitiveGen.zeroOrMoreGen(verifierRecipeGen)
-    } yield
-      EnrolmentSection(toLocalisedString(title), toLocalisedString(shortName), fields.toList, identifiers, verifiers)
+    } yield EnrolmentSection(title, shortName, fields.toList, identifiers, verifiers)
 
   def acknowledgementSectionGen: Gen[AcknowledgementSection] =
     for {
-      title       <- PrimitiveGen.nonEmptyAlphaNumStrGen
-      description <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
-      shortName   <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
+      title       <- LocalisedStringGen.localisedStringGen
+      description <- Gen.option(LocalisedStringGen.localisedStringGen)
+      shortName   <- Gen.option(LocalisedStringGen.localisedStringGen)
       fields      <- PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen())
-    } yield
-      AcknowledgementSection(
-        toLocalisedString(title),
-        toLocalisedString(description),
-        toLocalisedString(shortName),
-        fields.toList)
+    } yield AcknowledgementSection(title, description, shortName, fields.toList)
 
   def declarationSectionGen: Gen[DeclarationSection] =
     for {
-      title       <- PrimitiveGen.nonEmptyAlphaNumStrGen
-      description <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
-      shortName   <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
+      title       <- LocalisedStringGen.localisedStringGen
+      description <- Gen.option(LocalisedStringGen.localisedStringGen)
+      shortName   <- Gen.option(LocalisedStringGen.localisedStringGen)
       fields      <- PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen())
-    } yield
-      DeclarationSection(
-        toLocalisedString(title),
-        toLocalisedString(description),
-        toLocalisedString(shortName),
-        fields.toList)
+    } yield DeclarationSection(title, description, shortName, fields.toList)
 
   def sectionGen: Gen[Section] =
     for {
-      title             <- PrimitiveGen.nonEmptyAlphaNumStrGen
-      description       <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
-      progressIndicator <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
-      shortName         <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
+      title             <- LocalisedStringGen.localisedStringGen
+      description       <- Gen.option(LocalisedStringGen.localisedStringGen)
+      progressIndicator <- Gen.option(LocalisedStringGen.localisedStringGen)
+      shortName         <- Gen.option(LocalisedStringGen.localisedStringGen)
       includeIf         <- Gen.option(IncludeIfGen.includeIfGen)
       repeatsMax        <- Gen.option(FormatExprGen.textExpressionGen)
       repeatMin         <- Gen.option(FormatExprGen.textExpressionGen)
       validators        <- Gen.option(ValidatorGen.validatorGen)
       fields            <- PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen())
-      continueLabel     <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
+      continueLabel     <- Gen.option(LocalisedStringGen.localisedStringGen)
       continueIf        <- Gen.option(ContinueIfGen.continueIfGen)
     } yield
       Section(
-        toLocalisedString(title),
-        toLocalisedString(description),
-        toLocalisedString(progressIndicator),
-        toLocalisedString(shortName),
+        title,
+        description,
+        progressIndicator,
+        shortName,
         includeIf,
         repeatsMax,
         repeatMin,
         validators,
         fields.toList,
-        toLocalisedString(continueLabel),
+        continueLabel,
         continueIf
       )
 }

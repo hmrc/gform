@@ -14,12 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel.formtemplate
+package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 
-import play.api.libs.json.{ Json, OFormat }
+import org.scalacheck.Gen
+import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString }
 
-case class AckSection(title: String, content: String) //TODO does content support markdown
-
-object AckSection {
-  implicit val format: OFormat[AckSection] = Json.format[AckSection]
+trait LocalisedStringGen {
+  def localisedStringGen: Gen[LocalisedString] =
+    for {
+      string <- PrimitiveGen.nonEmptyAlphaNumStrGen
+    } yield LocalisedString(Map(LangADT.En -> string))
 }
+
+object LocalisedStringGen extends LocalisedStringGen

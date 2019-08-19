@@ -50,7 +50,8 @@ case class FormTemplate(
   declarationSection: DeclarationSection,
   parentFormSubmissionRefs: List[FormComponentId],
   GFC579Ready: Option[String],
-  languages: AvailableLanguages
+  languages: AvailableLanguages,
+  save4LaterInfoText: Option[Save4LaterInfoText]
 ) {
   val expandFormTemplate: ExpandedFormTemplate = ExpandedFormTemplate(sections.map(_.expandSection))
 }
@@ -79,7 +80,8 @@ object FormTemplate {
     declarationSection: DeclarationSection,
     parentFormSubmissionRefs: Option[List[FormComponentId]],
     GFC579Ready: Option[String],
-    languages: AvailableLanguages) {
+    languages: AvailableLanguages,
+    save4LaterInfoText: Option[Save4LaterInfoText]) {
     def toNewForm: FormTemplate =
       FormTemplate(
         _id: FormTemplateId,
@@ -101,7 +103,8 @@ object FormTemplate {
         declarationSection: DeclarationSection,
         parentFormSubmissionRefs.toList.flatten,
         GFC579Ready: Option[String],
-        languages: AvailableLanguages
+        languages: AvailableLanguages,
+        save4LaterInfoText: Option[Save4LaterInfoText]
       )
   }
 
@@ -151,7 +154,8 @@ object FormTemplate {
     declarationSection: DeclarationSection,
     parentFormSubmissionRefs: Option[List[FormComponentId]],
     GFC579Ready: Option[String] = Some("false"),
-    languages: AvailableLanguages = AvailableLanguages.default): FormTemplate =
+    languages: AvailableLanguages = AvailableLanguages.default,
+    save4LaterInfoText: Option[Save4LaterInfoText] = None): FormTemplate =
     DeprecatedFormTemplateWithDmsSubmission(
       _id,
       formName,
@@ -172,6 +176,7 @@ object FormTemplate {
       declarationSection,
       parentFormSubmissionRefs,
       GFC579Ready,
-      languages
+      languages,
+      save4LaterInfoText
     ).toNewForm
 }
