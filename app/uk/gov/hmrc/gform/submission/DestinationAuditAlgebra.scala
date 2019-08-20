@@ -107,7 +107,6 @@ object DestinationAudit {
         userId                    <- (json \ "userId").validate[String].map(UserId(_))
         caseworkerUserName        <- (json \ "caseworkerUserName").validateOpt[String]
         parentFormSubmissionRefs  <- (json \ "parentFormSubmissionRefs").validate[List[String]]
-        reviewData                <- (json \ "reviewData").validate[Map[String, String]]
         submissionRef             <- (json \ "submissionRef").validate[String].map(SubmissionRef(_))
         summaryHtmlId             <- (json \ "summaryHtmlId").validate[String].map(SummaryHtmlId(_))
         id                        <- (json \ "id").validate[String].map(UUID.fromString)
@@ -123,7 +122,7 @@ object DestinationAudit {
           userId,
           caseworkerUserName,
           parentFormSubmissionRefs,
-          reviewData,
+          Map.empty,
           submissionRef,
           summaryHtmlId,
           id,

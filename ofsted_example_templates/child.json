@@ -1,0 +1,70 @@
+{
+  "_id": "child",
+  "formName": "Child Form",
+  "description": "",
+  "developmentPhase": "beta",
+  "emailTemplateId": "al_registration_confirmation",
+  "authConfig": {
+    "authModule": "anonymous"
+  },
+  "parentFormSubmissionRefs": ["parentFormSubmissionRef"],
+  "sections": [
+    {
+      "title": "Name of School",
+      "shortName": "Name of School",
+      "fields": [
+        {
+          "id": "nameOfSchool",
+          "type": "text",
+          "label": "Name of School",
+          "errorMessage": ""
+        },
+        {
+          "id": "parentFormSubmissionRef",
+          "type": "text",
+          "label": "Parent Form Submission Ref",
+          "errorMessage": ""
+        }
+      ]
+    }
+  ],
+  "declarationSection": {
+    "title": "Confirm details and send your registration",
+    "fields": [
+      {
+        "id": "declarationFullName",
+        "type": "text",
+        "label": "Full name",
+        "errorMessage": "Enter full name"
+      }
+    ]
+  },
+  "acknowledgementSection": {
+    "title": "Your registration has been submitted",
+    "fields": [
+      {
+        "id": "ackPageInfoTop",
+        "type": "info",
+        "label": "",
+        "infoText": "This is your last opportunity to print or save a PDF copy of your submitted registration.",
+        "infoType": "noformat"
+      }
+    ]
+  },
+  "destinations": [
+      {
+        "id": "transitionToNeedsReview",
+        "type": "stateTransition",
+        "includeIf": "{{isSigned}}",
+        "requiredState": "NeedsReview"
+      },
+      {
+        "id": "transitionToAccepted",
+        "type": "stateTransition",
+        "includeIf": "{{isAccepting}}",
+        "requiredState": "Accepted"
+      }
+  ],
+  "submitErrorUrl": "",
+  "submitSuccessUrl": ""
+}
