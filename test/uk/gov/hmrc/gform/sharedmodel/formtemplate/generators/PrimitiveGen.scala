@@ -67,6 +67,14 @@ trait PrimitiveGen {
     } yield NonEmptyList.of(t1, t2)
   )
 
+  def possiblyEmptyMapGen[K, V](keyGen: Gen[K], valueGen: Gen[V]): Gen[Map[K, V]] =
+    zeroOrMoreGen {
+      for {
+        k <- keyGen
+        v <- valueGen
+      } yield (k, v)
+    }.map(_.toMap)
+
   def localDateTimeGen: Gen[LocalDateTime] =
     for {
       year       <- Gen.chooseNum(1900, 2100)
@@ -76,6 +84,16 @@ trait PrimitiveGen {
       minute     <- Gen.chooseNum(0, 59)
       second     <- Gen.chooseNum(0, 59)
     } yield LocalDateTime.of(year, month, dayOfMonth, hour, minute, second)
+
+  def jodaLocalDateTimeGen: Gen[org.joda.time.LocalDateTime] =
+    for {
+      year       <- Gen.chooseNum(1900, 2100)
+      month      <- Gen.chooseNum(1, 12)
+      dayOfMonth <- Gen.chooseNum(1, 28)
+      hour       <- Gen.chooseNum(0, 23)
+      minute     <- Gen.chooseNum(0, 59)
+      second     <- Gen.chooseNum(0, 59)
+    } yield new org.joda.time.LocalDateTime(year, month, dayOfMonth, hour, minute, second)
 
   def localDateGen: Gen[LocalDate] =
     for {

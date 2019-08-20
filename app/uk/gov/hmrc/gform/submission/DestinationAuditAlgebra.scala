@@ -105,12 +105,13 @@ object DestinationAudit {
         destinationResponseStatus <- (json \ "destinationResponseStatus").validateOpt[Int]
         workflowState             <- readWorkflowState(json)
         userId                    <- (json \ "userId").validate[String].map(UserId(_))
-        caseworkerUserName        <- (json \ "caseworkerUserName").validateOpt[String]
+        caseworkerUserName        <- (json \ "_caseworker_userName").validateOpt[String]
         parentFormSubmissionRefs  <- (json \ "parentFormSubmissionRefs").validate[List[String]]
         submissionRef             <- (json \ "submissionRef").validate[String].map(SubmissionRef(_))
         summaryHtmlId             <- (json \ "summaryHtmlId").validate[String].map(SummaryHtmlId(_))
         id                        <- (json \ "id").validate[String].map(UUID.fromString)
-        timestamp                 <- (json \ "timestamp").validate[LocalDateTime]
+        timestamp                 <- (json \ "timestamp").validate(localDateTimeRead)
+        reviewData                <- (json \ "reviewData").validate[Map[String, String]]
       } yield
         DestinationAudit(
           formId,
@@ -122,7 +123,7 @@ object DestinationAudit {
           userId,
           caseworkerUserName,
           parentFormSubmissionRefs,
-          Map.empty,
+          reviewData,
           submissionRef,
           summaryHtmlId,
           id,
@@ -145,14 +146,11 @@ object DestinationAudit {
             "timestamp"                -> localDateTimeWrite.writes(timestamp),
             "submissionRef"            -> JsString(submissionRef.value),
             "summaryHtmlId"            -> JsString(summaryHtmlId.value.toString),
-            "parentFormSubmissionRefs" -> JsArray(parentFormSubmissionRefs.map(JsString(_)))
+            "parentFormSubmissionRefs" -> JsArray(parentFormSubmissionRefs.map(JsString(_))),
+            "reviewData"               -> JsObject(reviewData.map { case (k, v) => k -> JsString(v) })
           ),
           destinationResponseStatus.map(s => "destinationResponseStatus" -> JsNumber(s)).toSeq,
-          caseworkerUserName.map(c => "_caseworker_userName"             -> JsString(c)).toSeq,
-          workflowState match {
-            case Returning => reviewData.map { case (k, v) => k -> JsString(v) }
-            case _         => Seq.empty
-          }
+          caseworkerUserName.map(c => "_caseworker_userName"             -> JsString(c)).toSeq
         ).flatten)
     }
   }
