@@ -698,10 +698,12 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     val childSubmissionReference = SubmissionRef("mySubmissionReference")
 
     forAll(
+      DestinationGen.handlebarsHttpApiGen.map(_.copy(payload = Some("The wrong one."))),
       DestinationGen.handlebarsHttpApiGen.map(_.copy(payload = Some("I am the {{foo}}."))),
-      FormTemplateGen.formTemplateGen) { (destination, formTemplate) =>
+      FormTemplateGen.formTemplateGen
+    ) { (wrongDestination, destination, formTemplate) =>
       val formTemplateWithDestination =
-        formTemplate.copy(destinations = Destinations.DestinationList(NonEmptyList.of(destination)))
+        formTemplate.copy(destinations = Destinations.DestinationList(NonEmptyList.of(wrongDestination, destination)))
 
       val tree: HandlebarsModelTree =
         HandlebarsModelTree(
