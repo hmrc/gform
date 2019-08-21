@@ -15,7 +15,7 @@ POST          /forms/:formId/submitForm                                     uk.g
 GET           /forms/:formId/submissionDetails                              uk.gov.hmrc.gform.submission.SubmissionController.submissionDetails(formId: FormId)
 
 GET           /formBundles/:formId                                          uk.gov.hmrc.gform.submission.FormBundleController.getFormBundle(formId: FormId)
-POST          /formbundles/:formId/submitAfterReview                        uk.gov.hmrc.gform.submission.FormBundleController.submitFormBundleAfterReview(formId: FormId)
+POST          /formBundles/:formId/submitAfterReview                        uk.gov.hmrc.gform.submission.FormBundleController.submitFormBundleAfterReview(formId: FormId)
 
 GET           /formtemplates                                                uk.gov.hmrc.gform.formtemplate.FormTemplatesController.all
 POST          /formtemplates                                                uk.gov.hmrc.gform.formtemplate.FormTemplatesController.upsert
