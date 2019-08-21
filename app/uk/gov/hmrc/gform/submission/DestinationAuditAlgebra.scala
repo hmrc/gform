@@ -106,12 +106,12 @@ object DestinationAudit {
         workflowState             <- readWorkflowState(json)
         userId                    <- (json \ "userId").validate[String].map(UserId(_))
         caseworkerUserName        <- (json \ "_caseworker_userName").validateOpt[String]
-        parentFormSubmissionRefs  <- (json \ "parentFormSubmissionRefs").validate[List[String]]
+        parentFormSubmissionRefs  <- (json \ "parentFormSubmissionRefs").validateOpt[List[String]]
         submissionRef             <- (json \ "submissionRef").validate[String].map(SubmissionRef(_))
         summaryHtmlId             <- (json \ "summaryHtmlId").validate[String].map(SummaryHtmlId(_))
         id                        <- (json \ "id").validate[String].map(UUID.fromString)
         timestamp                 <- (json \ "timestamp").validate(localDateTimeRead)
-        reviewData                <- (json \ "reviewData").validate[Map[String, String]]
+        reviewData                <- (json \ "reviewData").validateOpt[Map[String, String]]
       } yield
         DestinationAudit(
           formId,
@@ -122,8 +122,8 @@ object DestinationAudit {
           workflowState,
           userId,
           caseworkerUserName,
-          parentFormSubmissionRefs,
-          reviewData,
+          parentFormSubmissionRefs.getOrElse(Nil),
+          reviewData.getOrElse(Map.empty),
           submissionRef,
           summaryHtmlId,
           id,
