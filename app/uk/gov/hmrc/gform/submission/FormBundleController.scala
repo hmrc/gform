@@ -37,8 +37,7 @@ class FormBundleController(oFormBundleSubmissionService: Option[FormBundleSubmis
       oFormBundleSubmissionService.fold(
         Future.successful(BadRequest("Can't getFormTree. No FormBundleSubmissionService has been configured."))) {
         formBundleSubmissionService =>
-          Logger.info(
-            s"submitFormBundleAfterReview, formId: '${rootFormId.value}, ${loggingHelpers.cleanHeaders(request.headers)}")
+          Logger.info(s"getFormBundle, formId: '${rootFormId.value}, ${loggingHelpers.cleanHeaders(request.headers)}")
 
           formBundleSubmissionService
             .formTree(rootFormId)

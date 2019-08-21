@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.repo
 
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
+import uk.gov.hmrc.gform.logging.Loggers
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -32,6 +33,13 @@ object RepoAlgebra {
     new RepoAlgebra[T, FOpt] {
       override def upsert(t: T): FOpt[Unit] = repo.upsert(t)
       override def get(id: String): FOpt[T] = fromFutureA(repo.get(id))
-      override def search(selector: JsObject): FOpt[List[T]] = fromFutureA(repo.search(selector))
+      override def search(selector: JsObject): FOpt[List[T]] =
+        fromFutureA(
+          for {
+            _      <- Future.successful(Loggers.destinations.info(s"search $selector"))
+            result <- repo.search(selector)
+            _      <- Future.successful(Loggers.destinations.info(result.toString))
+          } yield result
+        )
     }
 }

@@ -96,7 +96,8 @@ object DestinationAudit {
 
   implicit val format: OFormat[DestinationAudit] = new OFormat[DestinationAudit] {
 
-    override def reads(json: JsValue): JsResult[DestinationAudit] =
+    override def reads(json: JsValue): JsResult[DestinationAudit] = {
+      Loggers.destinations.info(json.toString)
       for {
         formId                    <- (json \ "formId").validate[String].map(FormId(_))
         formTemplateId            <- (json \ "formTemplateId").validate[String].map(FormTemplateId(_))
@@ -129,6 +130,7 @@ object DestinationAudit {
           id,
           timestamp
         )
+    }
 
     override def writes(audit: DestinationAudit): JsObject = {
       import audit._
@@ -240,9 +242,12 @@ class RepoDestinationAuditer(
 
   def getLatestForForm(formId: FormId)(implicit hc: HeaderCarrier): FOpt[DestinationAudit] =
     auditRepository
-      .search(Json.obj("formId" -> JsString(formId.value)))
-      .subflatMap {
-        _.sortWith((x, y) => x.timestamp.isAfter(y.timestamp)).headOption
+      .search(DestinationAuditAlgebra.auditRepoFormIdSearch(formId))
+      .subflatMap { list =>
+        Loggers.destinations.info(s"getLatestForForm: $list")
+        list
+          .sortWith((x, y) => x.timestamp.isAfter(y.timestamp))
+          .headOption
           .toRight(UnexpectedState(s"Could not find any audits for form with ID ${formId.value}"))
       }
 
@@ -251,8 +256,12 @@ class RepoDestinationAuditer(
       .search(
         Json.obj("parentFormSubmissionRefs" ->
           Json.obj("$in" -> Json.arr(JsString(submissionRef.value)))))
-      .map {
-        _.groupBy(_.formId).values.toList
+      .map { list =>
+        Loggers.destinations.info(s"findLatestChildAudits: $list")
+        list
+          .groupBy(_.formId)
+          .values
+          .toList
           .flatMap(_.sortWith { case (x, y) => x.timestamp.isAfter(y.timestamp) }.headOption)
       }
 
@@ -301,4 +310,8 @@ class RepoDestinationAuditer(
     case d: Destination.HandlebarsHttpApi => s"${Destination.handlebarsHttpApi}.${d.profile.name}"
     case _                                => "Unknown"
   }
+}
+
+object DestinationAuditAlgebra {
+  def auditRepoFormIdSearch(formId: FormId): JsObject = Json.obj("formId" -> JsString(formId.value))
 }
