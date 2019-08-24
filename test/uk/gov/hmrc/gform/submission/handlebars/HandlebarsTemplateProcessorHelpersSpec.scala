@@ -20,6 +20,7 @@ import java.text.DecimalFormat
 import java.util.Base64
 
 import cats.data.NonEmptyList
+import cats.syntax.eq._
 import com.fasterxml.jackson.databind.JsonNode
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.Spec
@@ -702,27 +703,29 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
       DestinationGen.handlebarsHttpApiGen.map(_.copy(payload = Some("I am the {{foo}}."))),
       FormTemplateGen.formTemplateGen
     ) { (wrongDestination, destination, formTemplate) =>
-      val formTemplateWithDestination =
-        formTemplate.copy(destinations = Destinations.DestinationList(NonEmptyList.of(wrongDestination, destination)))
+      whenever(wrongDestination.id =!= destination.id) {
+        val formTemplateWithDestination =
+          formTemplate.copy(destinations = Destinations.DestinationList(NonEmptyList.of(wrongDestination, destination)))
 
-      val tree: HandlebarsModelTree =
-        HandlebarsModelTree(
-          SubmissionRef("parent"),
-          null,
-          PdfHtml(""),
-          StructuredFormValue.ObjectStructure(Nil),
-          rootModel,
+        val tree: HandlebarsModelTree =
           HandlebarsModelTree(
-            childSubmissionReference,
-            formTemplateWithDestination,
+            SubmissionRef("parent"),
+            null,
             PdfHtml(""),
             StructuredFormValue.ObjectStructure(Nil),
-            childModel)
-        )
+            rootModel,
+            HandlebarsModelTree(
+              childSubmissionReference,
+              formTemplateWithDestination,
+              PdfHtml(""),
+              StructuredFormValue.ObjectStructure(Nil),
+              childModel)
+          )
 
-      process(
-        s"""I am the {{foo}}. {{importBySubmissionReference "${childSubmissionReference.value}" "${destination.id.id}"}}""",
-        FocussedHandlebarsModelTree(tree)) shouldBe "I am the parent. I am the child."
+        process(
+          s"""I am the {{foo}}. {{importBySubmissionReference "${childSubmissionReference.value}" "${destination.id.id}"}}""",
+          FocussedHandlebarsModelTree(tree)) shouldBe "I am the parent. I am the child."
+      }
     }
   }
 

@@ -70,7 +70,7 @@ class RealDestinationSubmitter[M[_], R](
           for {
             _      <- logInfoInMonad(submissionInfo.formId, destination.id, "Included")
             result <- submit(destination, submissionInfo, accumulatedModel, modelTree, submitter)
-            _      <- audit(destination, result.map(_.status), submissionInfo, modelTree)
+            _      <- audit(destination, result.map(_.status), None, submissionInfo, modelTree)
           } yield result
         else
           for {
@@ -83,12 +83,14 @@ class RealDestinationSubmitter[M[_], R](
   private def audit(
     destination: Destination,
     responseStatus: Option[Int],
+    responseBody: Option[String],
     submissionInfo: DestinationSubmissionInfo,
     modelTree: HandlebarsModelTree)(implicit hc: HeaderCarrier): M[Unit] =
     destinationAuditer.fold(().pure[M])(
       _(
         destination,
         responseStatus,
+        responseBody,
         submissionInfo.formId,
         modelTree.value.pdfData,
         submissionInfo.submission.submissionRef,
@@ -172,7 +174,7 @@ class RealDestinationSubmitter[M[_], R](
     response: HttpResponse,
     submissionInfo: DestinationSubmissionInfo,
     modelTree: HandlebarsModelTree)(implicit hc: HeaderCarrier): M[HandlebarsDestinationResponse] =
-    audit(destination, Some(response.status), submissionInfo, modelTree) >>
+    audit(destination, Some(response.status), Some(response.body), submissionInfo, modelTree) >>
       raiseError(
         submissionInfo.formId,
         destination.id,

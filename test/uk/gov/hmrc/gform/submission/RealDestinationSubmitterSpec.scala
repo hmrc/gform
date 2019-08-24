@@ -65,6 +65,7 @@ class RealDestinationSubmitterSpec
         .expectDestinationAudit(
           handlebarsHttpApi,
           Some(responseCode),
+          None,
           si.formId,
           pdfData,
           si.submission.submissionRef,
@@ -113,7 +114,7 @@ class RealDestinationSubmitterSpec
       pdfDataGen,
       structureFormValueObjectStructureGen
     ) { (si, generatedHandlebarsHttpApi, template, responseCode, pdfData, structuredFormData) =>
-      val httpResponse = HttpResponse(responseCode)
+      val httpResponse = HttpResponse(responseCode, responseString = Some("foo"))
       val handlebarsHttpApi = generatedHandlebarsHttpApi.copy(failOnError = false, includeIf = true.toString)
       val model = HandlebarsTemplateProcessorModel()
       val theTree = tree(model, si.submission.submissionRef, template, pdfData, structuredFormData)
@@ -128,6 +129,7 @@ class RealDestinationSubmitterSpec
         .expectDestinationAudit(
           handlebarsHttpApi,
           Some(responseCode),
+          None,
           si.formId,
           pdfData,
           si.submission.submissionRef,
@@ -152,7 +154,7 @@ class RealDestinationSubmitterSpec
       pdfDataGen,
       structureFormValueObjectStructureGen
     ) { (si, handlebarsHttpApi, template, responseCode, pdfData, structuredFormData) =>
-      val httpResponse = HttpResponse(responseCode)
+      val httpResponse = HttpResponse(responseCode, responseString = Some("foobar"))
       val model = HandlebarsTemplateProcessorModel()
 
       val theTree = tree(model, si.submission.submissionRef, template, pdfData, structuredFormData)
@@ -166,6 +168,7 @@ class RealDestinationSubmitterSpec
         .expectDestinationAudit(
           handlebarsHttpApi,
           Some(responseCode),
+          Some("foobar"),
           si.formId,
           pdfData,
           si.submission.submissionRef,
@@ -197,7 +200,7 @@ class RealDestinationSubmitterSpec
           HandlebarsTemplateProcessorModel.empty,
           FocussedHandlebarsModelTree(theTree),
           true)
-        .expectDestinationAudit(hmrcDms, None, si.formId, pdfData, si.submission.submissionRef, template, model)
+        .expectDestinationAudit(hmrcDms, None, None, si.formId, pdfData, si.submission.submissionRef, template, model)
         .sut
         .submitIfIncludeIf(hmrcDms, si, HandlebarsTemplateProcessorModel.empty, theTree, submitter) shouldBe Right(None)
     }
@@ -222,7 +225,7 @@ class RealDestinationSubmitterSpec
           requiredResult = true
         )
         .expectDmsSubmission(si, pdfData, structuredFormData, hmrcDms.toDeprecatedDmsSubmission)
-        .expectDestinationAudit(hmrcDms, None, si.formId, pdfData, si.submission.submissionRef, template, model)
+        .expectDestinationAudit(hmrcDms, None, None, si.formId, pdfData, si.submission.submissionRef, template, model)
         .sut
         .submitIfIncludeIf(hmrcDms, si, HandlebarsTemplateProcessorModel.empty, theTree, submitter) shouldBe Right(None)
     }
@@ -269,7 +272,7 @@ class RealDestinationSubmitterSpec
           FocussedHandlebarsModelTree(theTree),
           true
         )
-        .expectDestinationAudit(hmrcDms, None, si.formId, pdfData, si.submission.submissionRef, template, model)
+        .expectDestinationAudit(hmrcDms, None, None, si.formId, pdfData, si.submission.submissionRef, template, model)
         .sut
         .submitIfIncludeIf(
           hmrcDms,
@@ -380,7 +383,8 @@ class RealDestinationSubmitterSpec
 
     def expectDestinationAudit(
       destination: Destination,
-      response: Option[Int],
+      responseCode: Option[Int],
+      responseBody: Option[String],
       formId: FormId,
       pdfHtml: PdfHtml,
       submissionRef: SubmissionRef,
@@ -390,12 +394,13 @@ class RealDestinationSubmitterSpec
         .apply(
           _: Destination,
           _: Option[Int],
+          _: Option[String],
           _: FormId,
           _: PdfHtml,
           _: SubmissionRef,
           _: FormTemplate,
           _: HandlebarsTemplateProcessorModel)(_: HeaderCarrier))
-        .expects(destination, response, formId, pdfHtml, submissionRef, template, model, hc)
+        .expects(destination, responseCode, responseBody, formId, pdfHtml, submissionRef, template, model, hc)
         .returning(F.pure(()))
       this
     }

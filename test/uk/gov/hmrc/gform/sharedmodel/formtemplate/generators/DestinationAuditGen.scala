@@ -22,17 +22,18 @@ import uk.gov.hmrc.gform.submission.{ DestinationAudit, SummaryHtmlId }
 trait DestinationAuditGen {
   def destinationAuditGen: Gen[DestinationAudit] =
     for {
-      formId                    <- FormGen.formIdGen
-      formTemplateId            <- FormTemplateGen.formTemplateIdGen
-      destinationId             <- DestinationGen.destinationIdGen
-      destinationType           <- PrimitiveGen.nonEmptyAlphaNumStrGen
-      destinationResponseStatus <- Gen.option(Gen.chooseNum(100, 599))
-      formStatus                <- FormGen.formStatusGen
-      userId                    <- UserIdGen.userIdGen
-      caseworkerUserName        <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
-      parentFormSubmissionRef   <- PrimitiveGen.zeroOrMoreGen(PrimitiveGen.nonEmptyAlphaNumStrGen)
-      submissionRef             <- SubmissionRefGen.submissionRefGen
-      summaryHtmlId             <- Gen.uuid.map(SummaryHtmlId(_))
+      formId                       <- FormGen.formIdGen
+      formTemplateId               <- FormTemplateGen.formTemplateIdGen
+      destinationId                <- DestinationGen.destinationIdGen
+      destinationType              <- PrimitiveGen.nonEmptyAlphaNumStrGen
+      destinationResponseStatus    <- Gen.option(Gen.chooseNum(100, 599))
+      destinationResponseErrorBody <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
+      formStatus                   <- FormGen.formStatusGen
+      userId                       <- UserIdGen.userIdGen
+      caseworkerUserName           <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
+      parentFormSubmissionRef      <- PrimitiveGen.zeroOrMoreGen(PrimitiveGen.nonEmptyAlphaNumStrGen)
+      submissionRef                <- SubmissionRefGen.submissionRefGen
+      summaryHtmlId                <- Gen.uuid.map(SummaryHtmlId(_))
     } yield
       DestinationAudit(
         formId,
@@ -40,6 +41,7 @@ trait DestinationAuditGen {
         destinationId,
         destinationType,
         destinationResponseStatus,
+        destinationResponseErrorBody,
         formStatus,
         userId,
         caseworkerUserName,

@@ -82,6 +82,7 @@ case class DestinationAudit(
   destinationId: DestinationId,
   destinationType: String,
   destinationResponseStatus: Option[Int],
+  destinationResponseErrorBody: Option[String],
   workflowState: FormStatus,
   userId: UserId,
   caseworkerUserName: Option[String],
@@ -98,20 +99,21 @@ object DestinationAudit {
 
     override def reads(json: JsValue): JsResult[DestinationAudit] =
       for {
-        formId                    <- (json \ "formId").validate[String].map(FormId(_))
-        formTemplateId            <- (json \ "formTemplateId").validate[String].map(FormTemplateId(_))
-        destinationId             <- (json \ "destinationId").validate[DestinationId]
-        destinationType           <- (json \ "destinationType").validate[String]
-        destinationResponseStatus <- (json \ "destinationResponseStatus").validateOpt[Int]
-        workflowState             <- readWorkflowState(json)
-        userId                    <- (json \ "userId").validate[String].map(UserId(_))
-        caseworkerUserName        <- (json \ "_caseworker_userName").validateOpt[String]
-        parentFormSubmissionRefs  <- (json \ "parentFormSubmissionRefs").validateOpt[List[String]]
-        submissionRef             <- (json \ "submissionRef").validate[String].map(SubmissionRef(_))
-        summaryHtmlId             <- (json \ "summaryHtmlId").validate[String].map(SummaryHtmlId(_))
-        id                        <- (json \ "id").validate[String].map(UUID.fromString)
-        timestamp                 <- (json \ "timestamp").validate(localDateTimeRead)
-        reviewData                <- (json \ "reviewData").validateOpt[Map[String, String]]
+        formId                       <- (json \ "formId").validate[String].map(FormId(_))
+        formTemplateId               <- (json \ "formTemplateId").validate[String].map(FormTemplateId(_))
+        destinationId                <- (json \ "destinationId").validate[DestinationId]
+        destinationType              <- (json \ "destinationType").validate[String]
+        destinationResponseStatus    <- (json \ "destinationResponseStatus").validateOpt[Int]
+        destinationResponseErrorBody <- (json \ "destinationResponseErrorBody").validateOpt[String]
+        workflowState                <- readWorkflowState(json)
+        userId                       <- (json \ "userId").validate[String].map(UserId(_))
+        caseworkerUserName           <- (json \ "_caseworker_userName").validateOpt[String]
+        parentFormSubmissionRefs     <- (json \ "parentFormSubmissionRefs").validateOpt[List[String]]
+        submissionRef                <- (json \ "submissionRef").validate[String].map(SubmissionRef(_))
+        summaryHtmlId                <- (json \ "summaryHtmlId").validate[String].map(SummaryHtmlId(_))
+        id                           <- (json \ "id").validate[String].map(UUID.fromString)
+        timestamp                    <- (json \ "timestamp").validate(localDateTimeRead)
+        reviewData                   <- (json \ "reviewData").validateOpt[Map[String, String]]
       } yield
         DestinationAudit(
           formId,
@@ -119,6 +121,7 @@ object DestinationAudit {
           destinationId,
           destinationType,
           destinationResponseStatus,
+          destinationResponseErrorBody,
           workflowState,
           userId,
           caseworkerUserName,
@@ -149,8 +152,9 @@ object DestinationAudit {
             "parentFormSubmissionRefs" -> JsArray(parentFormSubmissionRefs.map(JsString(_))),
             "reviewData"               -> JsObject(reviewData.map { case (k, v) => k -> JsString(v) })
           ),
-          destinationResponseStatus.map(s => "destinationResponseStatus" -> JsNumber(s)).toSeq,
-          caseworkerUserName.map(c => "_caseworker_userName"             -> JsString(c)).toSeq
+          destinationResponseStatus.map(s => "destinationResponseStatus"       -> JsNumber(s)).toSeq,
+          destinationResponseErrorBody.map(s => "destinationResponseErrorBody" -> JsString(s)).toSeq,
+          caseworkerUserName.map(c => "_caseworker_userName"                   -> JsString(c)).toSeq
         ).flatten)
     }
   }
@@ -190,6 +194,7 @@ trait DestinationAuditAlgebra[M[_]] {
   def apply(
     destination: Destination,
     handlebarsDestinationResponseStatusCode: Option[Int],
+    handlebarsDestinationResponseErrorBody: Option[String],
     formId: FormId,
     summaryHtml: PdfHtml,
     submissionReference: SubmissionRef,
@@ -209,6 +214,7 @@ class RepoDestinationAuditer(
   def apply(
     destination: Destination,
     handlebarsDestinationResponseStatusCode: Option[Int],
+    handlebarsDestinationResponseErrorBody: Option[String],
     formId: FormId,
     summaryHtml: PdfHtml,
     submissionReference: SubmissionRef,
@@ -225,6 +231,7 @@ class RepoDestinationAuditer(
           destination.id,
           getDestinationType(destination),
           handlebarsDestinationResponseStatusCode,
+          handlebarsDestinationResponseErrorBody,
           form.status,
           form.userId,
           getCaseworkerUsername(form.formData),

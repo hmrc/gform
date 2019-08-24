@@ -43,7 +43,7 @@ class RepoDestinationAuditerSpec extends Spec with DestinationAuditGen {
       .value shouldBe UnexpectedState(s"Could not find any audits for form with ID ${formId.value}")
   }
 
-  "getLatestForForm" should "returns the audit if there is only one" in {
+  "getLatestForForm" should "return the audit if there is only one" in {
     forAll(destinationAuditGen) { audit =>
       val fixture = createAuditer
 

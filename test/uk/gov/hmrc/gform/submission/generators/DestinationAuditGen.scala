@@ -29,6 +29,7 @@ trait DestinationAuditGen {
       destinationId             <- DestinationGen.destinationIdGen
       destinationType           <- PrimitiveGen.nonEmptyAlphaNumStrGen
       destinationResponseStatus <- Gen.option(Gen.chooseNum(100, 599))
+      destinationResponseBody   <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
       workflowState             <- Gen.oneOf(FormStatus.all.toList)
       userId                    <- UserIdGen.userIdGen
       caseworkerUserName        <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
@@ -46,6 +47,7 @@ trait DestinationAuditGen {
         destinationId,
         destinationType,
         destinationResponseStatus,
+        destinationResponseBody,
         workflowState,
         userId,
         caseworkerUserName,
