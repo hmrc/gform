@@ -22,6 +22,7 @@ import cats.syntax.eq._
 import com.typesafe.config.{ ConfigFactory, ConfigRenderOptions }
 import java.time.LocalDateTime
 
+import play.api.Logger
 import play.api.libs.json._
 import play.api.mvc._
 import reactivemongo.api.DB
@@ -55,13 +56,19 @@ class TestOnlyController(
     formId: FormId
   ): Action[SubmissionData] =
     Action.async(parse.json[SubmissionData]) { implicit request =>
+      logInfo("TestOnlyController.renderHandlebarPayload starting")
+
       val submissionData: SubmissionData = request.body
+      logInfo("TestOnlyController.renderHandlebarPayload Got submission data")
 
       val customerId = request.headers.get("customerId").getOrElse("")
 
+      logInfo("TestOnlyController.renderHandlebarPayload Getting bits and pieces")
       for {
         formTemplate <- formTemplateAlgebra.get(formTemplateId)
-        form         <- formAlgebra.get(formId)
+        _ = logInfo("TestOnlyController.renderHandlebarPayload Got form template")
+        form <- formAlgebra.get(formId)
+        _ = logInfo("TestOnlyController.renderHandlebarPayload Got form")
         submission = Submission(
           formId,
           LocalDateTime.now(),
@@ -70,8 +77,10 @@ class TestOnlyController(
           0,
           DmsMetaData(formTemplate._id, customerId)
         )
+        _ = logInfo("TestOnlyController.renderHandlebarPayload Got submission")
         model <- destinationsModelProcessorAlgebra
                   .create(form, submissionData.variables, submissionData.pdfData, submissionData.structuredFormData)
+        _ = logInfo("TestOnlyController.renderHandlebarPayload Got model")
       } yield {
         val maybeDestination: Option[Destination.HandlebarsHttpApi] =
           findHandlebarsDestinationWithId(destinationId, formTemplate.destinations)
@@ -84,11 +93,17 @@ class TestOnlyController(
             destination <- fromOption(
                             maybeDestination,
                             s"No handlebars destination '${destinationId.id}' found on formTemplate '${formTemplateId.value}'. Available handlebars destinations: $availableDestinationIds."
-                          )
+                          ).leftMap { s =>
+                            logInfo(s); s
+                          }
             payload <- fromOption(
                         destination.payload,
                         s"There is no payload field on destination '${destinationId.id}' for formTemplate '${formTemplateId.value}'")
-          } yield
+                        .leftMap { s =>
+                          logInfo(s); s
+                        }
+          } yield {
+            logInfo("TestOnlyController.renderHandlebarPayload Rendering")
             RealHandlebarsTemplateProcessor(
               payload,
               HandlebarsTemplateProcessorModel.empty,
@@ -101,6 +116,9 @@ class TestOnlyController(
                   model)),
               destination.payloadType
             )
+          }
+
+        logInfo(s"TestOnlyController.renderHandlebarPayload Complete with ${resultPayload.map(_ => "Success").merge}")
 
         resultPayload.fold(BadRequest(_), Ok(_)).getOrElse(BadRequest("Oops, something went wrong"))
       }
@@ -186,4 +204,6 @@ class TestOnlyController(
     enrolmentConnector.removeUnallocated(user.id).map(_ => NoContent)
   }
 
+  private def logInfo(message: String): Unit =
+    Logger.info(message)
 }

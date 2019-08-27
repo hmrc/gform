@@ -24,6 +24,11 @@
           "type": "text",
           "label": "Parent Form Submission Ref",
           "errorMessage": ""
+        },
+        {
+          "id": "date",
+          "type": "date",
+          "label": "Date"
         }
       ]
     }
