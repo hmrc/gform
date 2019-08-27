@@ -20,7 +20,7 @@ import cats.instances.future._
 import cats.syntax.functor._
 import org.slf4j.LoggerFactory
 import play.api.Logger
-import play.api.libs.json.{ JsValue, Json }
+import play.api.libs.json.Json
 import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormId }
 import uk.gov.hmrc.http.cache.client.ShortLivedCache
 
@@ -48,12 +48,6 @@ class Save4Later(cache: ShortLivedCache)(implicit ex: ExecutionContext) extends 
 
   def delete(formId: FormId)(implicit hc: HeaderCarrier): Future[Unit] =
     cache.remove(formId.value).void
-
-  def saveKeyStore(formId: FormId, data: Map[String, JsValue])(implicit hc: HeaderCarrier): Future[Unit] =
-    cache.cache[Map[String, JsValue]](formId.value, "keystore", data).void
-
-  def getKeyStore(formId: FormId)(implicit hc: HeaderCarrier): Future[Option[Map[String, JsValue]]] =
-    cache.fetchAndGetEntry[Map[String, JsValue]](formId.value, "keystore")
 
   private lazy val formCacheKey = "form"
 }

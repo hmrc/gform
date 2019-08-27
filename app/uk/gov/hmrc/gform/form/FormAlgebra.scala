@@ -15,7 +15,7 @@
  */
 
 package uk.gov.hmrc.gform.form
-import play.api.libs.json.JsValue
+
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.gform.sharedmodel.UserId
 import uk.gov.hmrc.gform.sharedmodel.form._
@@ -38,7 +38,4 @@ trait FormAlgebra[F[_]] {
 
   def updateFormStatus(formId: FormId, newStatus: FormStatus)(implicit hc: HeaderCarrier): F[FormStatus]
 
-  def saveKeyStore(formId: FormId, data: Map[String, JsValue])(implicit hc: HeaderCarrier): F[Unit]
-
-  def getKeyStore(formId: FormId)(implicit hc: HeaderCarrier): F[Option[Map[String, JsValue]]]
 }

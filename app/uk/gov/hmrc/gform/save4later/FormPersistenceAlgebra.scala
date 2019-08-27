@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.gform.save4later
 
-import play.api.libs.json.JsValue
 import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormId }
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -25,6 +24,4 @@ trait FormPersistenceAlgebra[F[_]] {
   def get(formId: FormId)(implicit hc: HeaderCarrier): F[Form]
   def upsert(formId: FormId, form: Form)(implicit hc: HeaderCarrier): F[Unit]
   def delete(formId: FormId)(implicit hc: HeaderCarrier): F[Unit]
-  def saveKeyStore(formId: FormId, data: Map[String, JsValue])(implicit hc: HeaderCarrier): F[Unit]
-  def getKeyStore(formId: FormId)(implicit hc: HeaderCarrier): F[Option[Map[String, JsValue]]]
 }

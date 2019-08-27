@@ -20,7 +20,6 @@ import cats.Monad
 import cats.syntax.functor._
 import cats.syntax.flatMap._
 import julienrf.json.derived
-import play.api.libs.json.JsValue
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
@@ -119,11 +118,6 @@ class FormService[F[_]: Monad](
   private def newStatus(form: Form, status: FormStatus) =
     LifeCycleStatus.newStatus(form, status)
 
-  def saveKeyStore(formId: FormId, data: Map[String, JsValue])(implicit hc: HeaderCarrier): F[Unit] =
-    formPersistence.saveKeyStore(formId, data)
-
-  def getKeyStore(formId: FormId)(implicit hc: HeaderCarrier): F[Option[Map[String, JsValue]]] =
-    formPersistence.getKeyStore(formId)
 }
 
 object LifeCycleStatus {

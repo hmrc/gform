@@ -18,7 +18,6 @@ package uk.gov.hmrc.gform.form
 
 import play.api.Logger
 import play.api.http.HttpEntity
-import play.api.libs.json.JsValue
 import play.api.mvc._
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.gform.auditing._
@@ -96,19 +95,6 @@ class FormController(
       _    <- fileUpload.deleteFile(form.envelopeId, fileId)
     } yield ()
     result.asNoContent
-  }
-
-  //TODO discuss with Daniel about naming, purpose of it and if we can make it part of a form
-  def saveKeyStore(formId: FormId): Action[Map[String, JsValue]] = Action.async(parse.json[Map[String, JsValue]]) {
-    implicit request =>
-      formService
-        .saveKeyStore(formId, request.body)
-        .asNoContent
-  }
-
-  //TODO discuss with Daniel about naming, purpose of it and if we can make it part of a form
-  def getKeyStore(formId: FormId): Action[AnyContent] = Action.async { implicit request =>
-    formService.getKeyStore(formId).asOkJson
   }
 
   def enrolmentCallBack(formId: FormId): Action[AnyContent] = Action { implicit request =>

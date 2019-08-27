@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.gform.form
 
-import play.api.libs.json.JsValue
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
@@ -63,11 +62,6 @@ class FormModule(
     def updateFormStatus(formId: FormId, newStatus: FormStatus)(implicit hc: HeaderCarrier): FOpt[FormStatus] =
       fromFutureA(formService.updateFormStatus(formId, newStatus))
 
-    override def saveKeyStore(formId: FormId, data: Map[String, JsValue])(implicit hc: HeaderCarrier): FOpt[Unit] =
-      fromFutureA(formService.saveKeyStore(formId, data))
-
-    override def getKeyStore(formId: FormId)(implicit hc: HeaderCarrier): FOpt[Option[Map[String, JsValue]]] =
-      fromFutureA(formService.getKeyStore(formId))
   }
 
 }
