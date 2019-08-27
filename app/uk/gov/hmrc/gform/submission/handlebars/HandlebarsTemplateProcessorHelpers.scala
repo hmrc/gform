@@ -632,7 +632,7 @@ class HandlebarsTemplateProcessorHelpers(
 
   def keyedLookup(obj: java.util.Map[String, String], key: Any): CharSequence =
     ifNotNullAsString(key) { k =>
-      condition(obj.get(k))
+      condition { Option(obj).map(_.get(k)).orNull }
     }
 
   def importBySubmissionReference(submissionReference: Any, destinationId: Any): CharSequence =
@@ -646,9 +646,12 @@ class HandlebarsTemplateProcessorHelpers(
             processor(
               destination.payload.getOrElse(""),
               accumulatedModel,
-              FocussedHandlebarsModelTree(modelTree, node.model)))).left
-          .map(m => throw new Exception(m))
-          .merge
+              FocussedHandlebarsModelTree(modelTree, node.model)))).left.map { m =>
+          val msg =
+            s"Attempt to importBySubmissionReference '$submissionReferenceString', destinationId '$destinationIdString' failed"
+          Loggers.destinations.warn(msg)
+          new Handlebars.SafeString(msg)
+        }.merge
       }
     }
 
