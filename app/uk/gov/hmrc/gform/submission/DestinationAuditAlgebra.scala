@@ -183,7 +183,8 @@ class DestinationAuditerFormTreeService[M[_]: Monad](auditAlgebra: DestinationAu
 
   private def buildHierarchyForAudit(audit: DestinationAudit): M[Tree[BundledFormTreeNode]] =
     buildDescendantTreesForSubmissionRef(audit.submissionRef)
-      .map(Tree(BundledFormTreeNode(audit.formId, audit.submissionRef, audit.formTemplateId), _))
+      .map(
+        Tree(BundledFormTreeNode(audit.formId, audit.submissionRef, audit.formTemplateId, audit.caseworkerUserName), _))
 }
 
 trait PdfSummaryAlgebra[M[_]] {

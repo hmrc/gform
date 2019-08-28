@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.submission
 import cats.Monad
 import cats.data.NonEmptyList
 import cats.instances.list._
+import cats.syntax.eq._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.traverse._
@@ -83,15 +84,18 @@ class FormBundleSubmissionService[F[_]](
     formsById: Map[FormId, Form],
     pdfHtmlByFormId: Map[FormId, PdfHtml],
     submissionDataByFormId: Map[FormId, BundledFormSubmissionData])(implicit hc: HeaderCarrier) =
-    buildMap(formTree)(_.formId)(
-      id =>
-        destinationProcessorModelAlgebra
-          .create(
-            formsById(id),
-            FrontEndSubmissionVariables(JsObject(Nil)),
-            pdfHtmlByFormId(id),
-            submissionDataByFormId(id).structuredFormData)
-          .map(_ + DestinationsProcessorModelAlgebra.createBundledFormTree(formTree)))
+    buildMap(formTree)(_.formId)(id =>
+      for {
+        baseModel <- destinationProcessorModelAlgebra
+                      .create(
+                        formsById(id),
+                        FrontEndSubmissionVariables(JsObject(Nil)),
+                        pdfHtmlByFormId(id),
+                        submissionDataByFormId(id).structuredFormData)
+        caseworkerUserName = formTree.find(_.formId === id).flatMap(_.caseworkerUsername).getOrElse("")
+        reviewModel = DestinationsProcessorModelAlgebra.createCaseworker(caseworkerUserName)
+        treeModel = DestinationsProcessorModelAlgebra.createBundledFormTree(formTree)
+      } yield baseModel + reviewModel + treeModel)
 
   private def buildMap[K, V](tree: Tree[BundledFormTreeNode])(key: BundledFormTreeNode => K)(
     value: K => F[V]): F[Map[K, V]] = {

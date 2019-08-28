@@ -91,8 +91,11 @@ class DestinationsProcessorModelAlgebraSpec extends Spec {
         BundledFormTreeNode(
           FormId(s"${prefix}Id"),
           SubmissionRef(s"${prefix}SubmissionRef"),
-          FormTemplateId(templateId)),
-        children: _*)
+          FormTemplateId(templateId),
+          Some(s"${prefix}Reviewer")
+        ),
+        children: _*
+      )
 
     val formTree =
       tree(

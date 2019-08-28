@@ -20,4 +20,8 @@ import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.submission.SubmissionRef
 
-case class BundledFormTreeNode(formId: FormId, submissionRef: SubmissionRef, formTemplateId: FormTemplateId)
+case class BundledFormTreeNode(
+  formId: FormId,
+  submissionRef: SubmissionRef,
+  formTemplateId: FormTemplateId,
+  caseworkerUsername: Option[String])

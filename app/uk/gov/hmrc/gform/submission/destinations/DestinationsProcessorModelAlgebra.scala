@@ -70,6 +70,9 @@ object DestinationsProcessorModelAlgebra {
         result.id.id -> objectNode(
           Map("status" -> numberNode(result.status), "json" -> parseJson(result.json.toString)))))
 
+  def createCaseworker(username: String): HandlebarsTemplateProcessorModel =
+    HandlebarsTemplateProcessorModel("caseworker" -> textNode(username))
+
   def createBundledFormTree(tree: Tree[BundledFormTreeNode]): HandlebarsTemplateProcessorModel = {
     def submissionRefString(tree: BundledFormTreeNode) = tree.submissionRef.value
 
