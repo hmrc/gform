@@ -125,14 +125,16 @@ object FormatParser {
   lazy val basicFormat: Parser[TextFormat] = {
     "shortText" ^^ { (loc, _) =>
       TextFormat(ShortText.default)
-    } | "shortText(" ~ positiveInteger ~ "," ~ positiveInteger ~ ")" ^^ { (loc, _, min, _, max, _) =>
+    } | "shortText(" ~ positiveInteger ~ "," ~ positiveInteger ~ ")" ^^ { (_, _, min, _, max, _) =>
       TextFormat(ShortText(min, max))
-    } | "text" ^^ { (loc, _) =>
+    } | "text" ^^ { (_, _) =>
       TextFormat(BasicText)
-    } | "text(" ~ positiveInteger ~ "," ~ positiveInteger ~ ")" ^^ { (loc, _, min, _, max, _) =>
+    } | "text(" ~ positiveInteger ~ "," ~ positiveInteger ~ ")" ^^ { (_, _, min, _, max, _) =>
       TextFormat(TextWithRestrictions(min, max))
-    } | "lookup(" ~ register ~ ")" ^^ { (loc, _, register, _) =>
+    } | "lookup(" ~ register ~ ")" ^^ { (_, _, register, _) =>
       TextFormat(Lookup(register))
+    } | "submissionRef" ^^ { (_, _) =>
+      TextFormat(SubmissionRefFormat)
     }
   }
 

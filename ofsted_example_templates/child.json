@@ -16,14 +16,13 @@
         {
           "id": "nameOfSchool",
           "type": "text",
-          "label": "Name of School",
-          "errorMessage": ""
+          "label": "Name of School"
         },
         {
           "id": "parentFormSubmissionRef",
           "type": "text",
           "label": "Parent Form Submission Ref",
-          "errorMessage": ""
+          "format": "submissionRef"
         },
         {
           "id": "date",

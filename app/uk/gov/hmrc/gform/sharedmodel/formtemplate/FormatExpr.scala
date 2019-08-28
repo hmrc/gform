@@ -162,14 +162,17 @@ case class TextWithRestrictions(min: Int, max: Int) extends TextConstraint
 case class Sterling(roundingMode: RoundingMode) extends TextConstraint
 case object UkBankAccountNumber extends TextConstraint
 case object UkSortCodeFormat extends TextConstraint
-case object UTR extends TextConstraint
-case object NINO extends TextConstraint
+case object SubmissionRefFormat extends TextConstraint
+
 case object TelephoneNumber extends TextConstraint {
   val minimumLength = 4
   val maximumLength = 25
   val phoneNumberValidation = """^[\+A-Z0-9 )/(*#-]+$""".r
 }
+
 case object Email extends TextConstraint
+case object UTR extends TextConstraint
+case object NINO extends TextConstraint
 case object UkVrn extends TextConstraint
 case object CountryCode extends TextConstraint
 case object NonUkCountryCode extends TextConstraint
