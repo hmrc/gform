@@ -26,11 +26,9 @@ class FormTemplateModule(mongoModule: MongoModule)(implicit ex: ExecutionContext
 
   val formTemplateRepo: FormTemplateRepo = new FormTemplateRepo(mongoModule.mongo)
   val formTemplateRawRepo: FormTemplateRawRepo = new FormTemplateRawRepo(mongoModule.mongo)
-  val superFormTemplateRepo: SuperFormTemplateRepo = new SuperFormTemplateRepo(mongoModule.mongo)
   val formTemplateService: FormTemplateService = new FormTemplateService(formTemplateRepo, formTemplateRawRepo)
-  val superFormTemplateService: SuperFormTemplateService = new SuperFormTemplateService(superFormTemplateRepo)
   val formTemplatesController: FormTemplatesController =
-    new FormTemplatesController(formTemplateService, superFormTemplateService)
+    new FormTemplatesController(formTemplateService)
 
   val fOptFormTemplateAlgebra: FormTemplateAlgebra[FOpt] = new FormTemplateAlgebra[FOpt] {
     override def get(id: FormTemplateId): FOpt[FormTemplate] = fromFutureA(formTemplateService.get(id))
