@@ -649,12 +649,18 @@ class HandlebarsTemplateProcessorHelpers(
               accumulatedModel,
               FocussedHandlebarsModelTree(modelTree, node.model)))).left.map { m =>
           val msg =
-            s"Attempt to importBySubmissionReference '$submissionReferenceString', destinationId '$destinationIdString' failed: $m"
+            s"Attempt to importBySubmissionReference '$submissionReferenceString', destinationId '$destinationIdString' failed: $m. This is the form tree: ${renderFormTree()}"
           Loggers.destinations.warn(msg)
           new Handlebars.SafeString(msg)
         }.merge
       }
     }
+
+  private def renderFormTree(): String = {
+    def recurse(tree: HandlebarsModelTree): String =
+      s"(${tree.value.formTemplate._id}:${tree.value.submissionRef} ${tree.children.map(recurse)})"
+    recurse(modelTree)
+  }
 
   private def findNodeInFormTree(submissionRef: SubmissionRef): Either[String, HandlebarsModelTreeNode] =
     for {
@@ -663,7 +669,6 @@ class HandlebarsTemplateProcessorHelpers(
                .toRight(
                  s"Cannot find a node in the form tree with submission reference '${submissionRef.value}'. Have ${modelTree
                    .map(_.submissionRef.value)}")
-               .right
     } yield node
 
   private def findHandlebarsDestination(
