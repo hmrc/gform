@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.formtemplate
 
 import cats.data.NonEmptyList
+import cats.syntax.eq._
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.core.{ Invalid, Valid }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
@@ -27,18 +28,20 @@ import DestinationGen._
 class DestinationsValidatorSpec extends Spec {
   "validateUniqueDestinationIds" should "return an error when there are duplicate ids" in {
     forAll(destinationIdGen, destinationIdGen) { (id1, id2) =>
-      forAll(
-        oneOrMoreGen(destinationWithFixedIdGen(id1)),
-        oneOrMoreGen(destinationWithFixedIdGen(id1)),
-        oneOrMoreGen(destinationWithFixedIdGen(id2)),
-        oneOrMoreGen(destinationWithFixedIdGen(id2)),
-        destinationGen.filter(d => d.id != id1 && d.id != id2)
-      ) { (d1WithId1, d2WithId1, d1WithId2, d2WithId2, uniqueD) =>
-        val destinations =
-          Destinations.DestinationList(uniqueD :: d1WithId1 ::: d2WithId1 ::: d1WithId2 ::: d2WithId2)
+      whenever(id1 =!= id2) {
+        forAll(
+          oneOrMoreGen(destinationWithFixedIdGen(id1)),
+          oneOrMoreGen(destinationWithFixedIdGen(id1)),
+          oneOrMoreGen(destinationWithFixedIdGen(id2)),
+          oneOrMoreGen(destinationWithFixedIdGen(id2)),
+          destinationGen.filter(d => d.id != id1 && d.id != id2)
+        ) { (d1WithId1, d2WithId1, d1WithId2, d2WithId2, uniqueD) =>
+          val destinations =
+            Destinations.DestinationList(uniqueD :: d1WithId1 ::: d2WithId1 ::: d1WithId2 ::: d2WithId2)
 
-        DestinationsValidator.validateUniqueDestinationIds(destinations) should be(
-          Invalid(DestinationsValidator.someDestinationIdsAreUsedMoreThanOnce(Set(id1, id2))))
+          DestinationsValidator.validateUniqueDestinationIds(destinations) should be(
+            Invalid(DestinationsValidator.someDestinationIdsAreUsedMoreThanOnce(Set(id1, id2))))
+        }
       }
     }
   }

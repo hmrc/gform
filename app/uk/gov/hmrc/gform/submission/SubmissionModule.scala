@@ -79,8 +79,8 @@ class SubmissionModule(
   val submissionController = new SubmissionController(submissionService)
 
   val formBundleSubmissionService: Option[FormBundleSubmissionService[FOpt]] = for {
-    formTreeService                            <- destinationModule.formTreeService
-    pdfSummaryService: PdfSummaryAlgebra[FOpt] <- destinationModule.destinationAuditer
+    formTreeService <- destinationModule.formTreeService
+    auditer         <- destinationModule.destinationAuditer
   } yield {
     new FormBundleSubmissionService(
       formModule.fOptFormService,
@@ -89,7 +89,8 @@ class SubmissionModule(
       destinationsSubmitter,
       RepoAlgebra.fOpt(submissionRepo),
       formTreeService,
-      pdfSummaryService
+      auditer,
+      auditer
     )(fOptMonadError)
   }
 
