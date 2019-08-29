@@ -17,9 +17,8 @@
 package uk.gov.hmrc.gform.form
 
 import cats.Monad
-import cats.syntax.functor._
 import cats.syntax.flatMap._
-import julienrf.json.derived
+import cats.syntax.functor._
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
@@ -27,8 +26,7 @@ import uk.gov.hmrc.gform.logging.Loggers
 import uk.gov.hmrc.gform.save4later.FormPersistenceAlgebra
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ BySubmissionReference, FormAccessCodeForAgents, FormTemplate, FormTemplateId }
-import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, UserId }
-import uk.gov.hmrc.gform.submission.SubmissionRef
+import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, SubmissionRef, UserId }
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.HeaderCarrier
 

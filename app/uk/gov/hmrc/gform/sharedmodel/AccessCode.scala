@@ -18,8 +18,6 @@ package uk.gov.hmrc.gform.sharedmodel
 
 import cats.data.State
 import play.api.libs.json._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.BySubmissionReference
-import uk.gov.hmrc.gform.submission.SubmissionRef
 import uk.gov.hmrc.gform.typeclasses.Rnd
 
 case class AccessCode(value: String) extends AnyVal

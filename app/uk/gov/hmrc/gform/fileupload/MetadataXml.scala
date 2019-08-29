@@ -16,8 +16,9 @@
 
 package uk.gov.hmrc.gform.fileupload
 
+import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
-import uk.gov.hmrc.gform.submission.{ PdfSummary, Submission, SubmissionRef }
+import uk.gov.hmrc.gform.submission.{ PdfSummary, Submission }
 import uk.gov.hmrc.gform.typeclasses.Attribute
 
 import scala.xml.{ Elem, Utility }

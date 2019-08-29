@@ -14,11 +14,18 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.submission
+package uk.gov.hmrc.gform.submission.destinations
 
-import uk.gov.hmrc.auth.core.AffinityGroup
-import uk.gov.hmrc.gform.sharedmodel.form.FormId
+import java.util.UUID
 
-case class DestinationSubmissionInfo(customerId: String, affinityGroup: Option[AffinityGroup], submission: Submission) {
-  def formId: FormId = submission._id
+import play.api.libs.json.OFormat
+import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
+
+case class SummaryHtmlId(value: UUID) extends AnyVal
+
+object SummaryHtmlId {
+  implicit val oformat: OFormat[SummaryHtmlId] =
+    ValueClassFormat.oformat("summaryHtmlId", SummaryHtmlId.apply, _.value.toString)
+
+  def apply(value: String): SummaryHtmlId = SummaryHtmlId(UUID.fromString(value))
 }

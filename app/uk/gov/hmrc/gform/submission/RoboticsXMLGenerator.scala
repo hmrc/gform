@@ -15,9 +15,10 @@
  */
 
 package uk.gov.hmrc.gform.submission
+import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue.{ ArrayNode, ObjectStructure, TextNode }
-import uk.gov.hmrc.gform.sharedmodel.structuredform.{ Field, FieldName, RoboticsXml, StructuredFormValue }
+import uk.gov.hmrc.gform.sharedmodel.structuredform.{ Field, RoboticsXml, StructuredFormValue }
 
 import scala.xml.{ Elem, NodeSeq }
 

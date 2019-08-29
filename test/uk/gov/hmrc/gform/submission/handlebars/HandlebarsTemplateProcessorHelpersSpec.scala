@@ -24,12 +24,11 @@ import cats.syntax.eq._
 import com.fasterxml.jackson.databind.JsonNode
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.PdfHtml
+import uk.gov.hmrc.gform.sharedmodel.{ PdfHtml, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destinations, HandlebarsTemplateProcessorModel, TemplateType }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, FormTemplateGen, PrimitiveGen }
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
-import uk.gov.hmrc.gform.submission.SubmissionRef
 import uk.gov.hmrc.gform.submission.destinations.DestinationsProcessorModelAlgebra
 
 import scala.language.implicitConversions

@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.submission.generators
+package uk.gov.hmrc.gform.submission.destinations
 
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.form.FormStatus
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, FormGen, FormTemplateGen, PrimitiveGen, SubmissionRefGen, UserIdGen }
-import uk.gov.hmrc.gform.submission.{ DestinationAudit, SummaryHtmlId }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators._
 
 trait DestinationAuditGen {
   def destinationAuditGen(): Gen[DestinationAudit] =

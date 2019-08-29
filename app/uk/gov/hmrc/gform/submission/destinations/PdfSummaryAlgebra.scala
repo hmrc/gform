@@ -14,17 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel
+package uk.gov.hmrc.gform.submission.destinations
 
-import uk.gov.hmrc.gform.Spec
+import uk.gov.hmrc.gform.sharedmodel.PdfHtml
+import uk.gov.hmrc.gform.sharedmodel.form.FormId
+import uk.gov.hmrc.http.HeaderCarrier
 
-class SubmissionRefSpec extends Spec {
-
-  "SubmissionRef.createSubmissionRef" should "generate submissionRef" in {
-    val rnd = new scala.util.Random(12)
-    val submissionRef = SubmissionRef(envelopeId)
-
-    submissionRef.value should be("6FJX-HVQL-U4FD")
-
-  }
+trait PdfSummaryAlgebra[M[_]] {
+  def getLatestPdfHtml(formId: FormId)(implicit hc: HeaderCarrier): M[PdfHtml]
 }

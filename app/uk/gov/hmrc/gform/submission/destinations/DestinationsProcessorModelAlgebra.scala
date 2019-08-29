@@ -19,23 +19,19 @@ package uk.gov.hmrc.gform.submission.destinations
 import java.nio.charset.StandardCharsets
 import java.util.Base64
 
-import cats.Monad
 import cats.instances.int._
-import cats.instances.option._
-import cats.syntax.functor._
 import cats.syntax.eq._
-import cats.syntax.traverse._
 import com.fasterxml.jackson.databind.JsonNode
-import uk.gov.hmrc.gform.fileupload.{ FileDownloadAlgebra, UploadedFile }
+import uk.gov.hmrc.gform.fileupload.UploadedFile
 import uk.gov.hmrc.gform.form.BundledFormTreeNode
 import uk.gov.hmrc.gform.models.helpers.TaxPeriodHelper.formatDate
-import uk.gov.hmrc.gform.sharedmodel.{ FrontEndSubmissionVariables, NotChecked, ObligationDetail, PdfHtml, RetrievedObligations, TaxResponse }
-import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, Form, FormId, FormStatus }
+import uk.gov.hmrc.gform.sharedmodel.{ FrontEndSubmissionVariables, NotChecked, ObligationDetail, PdfHtml, RetrievedObligations, SubmissionRef, TaxResponse }
+import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormId, FormStatus }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplateId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.JsonNodes.{ arrayNode, numberNode, objectNode, parseJson, textNode }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ HandlebarsDestinationResponse, HandlebarsTemplateProcessorModel, JsonNodes, JsonStructuredFormDataBuilder }
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
-import uk.gov.hmrc.gform.submission.{ SubmissionRef, Tree }
+import uk.gov.hmrc.gform.submission.Tree
 import uk.gov.hmrc.http.HeaderCarrier
 
 trait DestinationsProcessorModelAlgebra[M[_]] {
@@ -187,22 +183,4 @@ object DestinationsProcessorModelAlgebra {
         "isAGroup"         -> f(_.orgOrInd.getIsAGroup)
       ).mapValues(textNode)))
   }
-}
-
-class DestinationsProcessorModelService[M[_]: Monad](fileDownloadAlgebra: Option[FileDownloadAlgebra[M]])
-    extends DestinationsProcessorModelAlgebra[M] {
-  override def create(
-    form: Form,
-    frontEndSubmissionVariables: FrontEndSubmissionVariables,
-    pdfData: PdfHtml,
-    structuredFormData: StructuredFormValue.ObjectStructure)(
-    implicit hc: HeaderCarrier): M[HandlebarsTemplateProcessorModel] =
-    for {
-      files <- uploadedFiles(form.envelopeId)
-    } yield
-      DestinationsProcessorModelAlgebra
-        .createModel(frontEndSubmissionVariables, pdfData, structuredFormData, form, files)
-
-  private def uploadedFiles(envelopedId: EnvelopeId)(implicit hc: HeaderCarrier): M[Option[List[UploadedFile]]] =
-    fileDownloadAlgebra.traverse { _.allUploadedFiles(envelopedId) }
 }

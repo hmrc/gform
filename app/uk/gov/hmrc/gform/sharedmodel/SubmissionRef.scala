@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.submission
+package uk.gov.hmrc.gform.sharedmodel
 
 import java.math.BigInteger
 import java.security.MessageDigest
 
 import cats.Eq
 import play.api.libs.json._
-import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 
 import scala.math.pow

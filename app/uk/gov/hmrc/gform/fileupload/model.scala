@@ -20,9 +20,9 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 import play.api.libs.json._
+import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
-import uk.gov.hmrc.gform.submission.SubmissionRef
 import uk.gov.hmrc.gform.typeclasses.Now
 
 case class FUConfig(

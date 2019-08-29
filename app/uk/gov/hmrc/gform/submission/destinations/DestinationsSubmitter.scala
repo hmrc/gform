@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.submission
+package uk.gov.hmrc.gform.submission.destinations
 
 import cats.Monad
 import cats.syntax.applicative._
@@ -22,22 +22,10 @@ import cats.syntax.either._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
-import uk.gov.hmrc.gform.submission.destinations.DestinationsProcessorModelAlgebra
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsModelTree
 import uk.gov.hmrc.http.HeaderCarrier
 
-trait DestinationsSubmitterAlgebra[M[_]] {
-  def send(submissionInfo: DestinationSubmissionInfo, modelTree: HandlebarsModelTree)(
-    implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]]
-
-  def submitToList(
-    destinations: Destinations.DestinationList,
-    submissionInfo: DestinationSubmissionInfo,
-    accumulatedModel: HandlebarsTemplateProcessorModel,
-    modelTree: HandlebarsModelTree)(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]]
-}
-
-class DestinationsSubmitter[M[_]](destinationSubmitter: DestinationSubmitter[M])(implicit monad: Monad[M])
+class DestinationsSubmitter[M[_]](destinationSubmitter: DestinationSubmitterAlgebra[M])(implicit monad: Monad[M])
     extends DestinationsSubmitterAlgebra[M] {
 
   override def send(submissionInfo: DestinationSubmissionInfo, modelTree: HandlebarsModelTree)(

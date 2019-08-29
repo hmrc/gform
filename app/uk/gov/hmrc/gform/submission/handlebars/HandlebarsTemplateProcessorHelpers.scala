@@ -30,10 +30,10 @@ import java.util.Base64
 import com.fasterxml.jackson.databind.node.{ ArrayNode, ObjectNode, TextNode }
 import com.github.jknack.handlebars.{ Handlebars, Options }
 import uk.gov.hmrc.gform.logging.Loggers
+import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, Destinations, HandlebarsTemplateProcessorModel }
-import uk.gov.hmrc.gform.submission.SubmissionRef
 
 trait RecursiveHandlebarsTemplateProcessor {
   def apply(

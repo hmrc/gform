@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.submission
+package uk.gov.hmrc.gform.submission.destinations
 
 import cats.instances.future._
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA, fromOptA }
@@ -26,24 +26,17 @@ import uk.gov.hmrc.gform.sharedmodel.PdfHtml
 import uk.gov.hmrc.gform.sharedmodel.form.Submitted
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
+import uk.gov.hmrc.gform.submission.{ PdfAndXmlSummariesFactory, SubmissionServiceHelper }
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext
 
-trait DmsSubmitter[F[_]] {
-  def apply(
-    submissionInfo: DestinationSubmissionInfo,
-    pdfData: PdfHtml,
-    structuredFormData: StructuredFormValue.ObjectStructure,
-    dmsSubmission: DmsSubmission)(implicit hc: HeaderCarrier): F[Unit]
-}
-
-class FileUploadServiceDmsSubmitter(
+class DmsSubmitter(
   fileUploadService: FileUploadService,
   formService: FormAlgebra[FOpt],
   formTemplateService: FormTemplateAlgebra[FOpt],
   pdfGeneratorService: PdfGeneratorService)(implicit ec: ExecutionContext)
-    extends DmsSubmitter[FOpt] {
+    extends DmsSubmitterAlgebra[FOpt] {
   def apply(
     submissionInfo: DestinationSubmissionInfo,
     pdfData: PdfHtml,

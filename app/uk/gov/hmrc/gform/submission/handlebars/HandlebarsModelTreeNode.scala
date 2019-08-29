@@ -16,11 +16,10 @@
 
 package uk.gov.hmrc.gform.submission.handlebars
 
-import uk.gov.hmrc.gform.sharedmodel.PdfHtml
+import uk.gov.hmrc.gform.sharedmodel.{ PdfHtml, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HandlebarsTemplateProcessorModel
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
-import uk.gov.hmrc.gform.submission.SubmissionRef
 
 case class HandlebarsModelTreeNode(
   submissionRef: SubmissionRef,

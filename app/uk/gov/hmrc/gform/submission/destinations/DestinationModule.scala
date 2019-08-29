@@ -27,7 +27,6 @@ import uk.gov.hmrc.gform.sharedmodel.{ FrontEndSubmissionVariables, PdfHtml }
 import uk.gov.hmrc.gform.sharedmodel.form.Form
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HandlebarsTemplateProcessorModel
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
-import uk.gov.hmrc.gform.submission._
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -52,7 +51,7 @@ class DestinationModule(
     }
 
   val formTreeService: Option[FormTreeAlgebra[FOpt]] =
-    destinationAuditer.map { new DestinationAuditerFormTreeService(_) }
+    destinationAuditer.map { new FormTreeService(_) }
 
   private val fileDownloadServiceIfPopulating: Option[FileDownloadAlgebra[FOpt]] =
     if (configModule.DestinationsServicesConfig.populateHandlebarsModelWithDocuments) {

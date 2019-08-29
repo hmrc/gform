@@ -14,23 +14,22 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.submission
+package uk.gov.hmrc.gform.submission.destinations
 
 import cats.data.NonEmptyList
-import cats.{ Applicative, Monad }
 import cats.syntax.applicative._
-import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, Destinations, HandlebarsDestinationResponse, HandlebarsTemplateProcessorModel }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, DestinationsGen }
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
+import cats.{ Applicative, Monad }
 import org.scalacheck.Gen
 import play.api.libs.json._
-import uk.gov.hmrc.gform.sharedmodel.{ FrontEndSubmissionVariables, PdfHtml }
+import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, Destinations, HandlebarsDestinationResponse, HandlebarsTemplateProcessorModel }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, DestinationsGen }
 import uk.gov.hmrc.gform.sharedmodel.generators.{ PdfDataGen, StructuredFormValueGen }
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
-import uk.gov.hmrc.gform.submission.destinations.DestinationsProcessorModelAlgebra
+import uk.gov.hmrc.gform.sharedmodel.{ FrontEndSubmissionVariables, PdfHtml, SubmissionRef }
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsModelTree
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
 class DestinationsSubmitterSpec
     extends Spec with DestinationGen with DestinationsGen with PdfDataGen with StructuredFormValueGen {
@@ -184,7 +183,7 @@ class DestinationsSubmitterSpec
 
   case class SubmitterParts[F[_]: Applicative](
     submitter: DestinationsSubmitter[F],
-    destinationSubmitter: DestinationSubmitter[F]) {
+    destinationSubmitter: DestinationSubmitterAlgebra[F]) {
 
     def expectDestinationSubmitterSubmitIfIncludeIf(
       destination: Destination,
@@ -232,7 +231,7 @@ class DestinationsSubmitterSpec
   }
 
   private def createSubmitter[M[_]: Monad](): SubmitterParts[M] = {
-    val destinationSubmitter: DestinationSubmitter[M] = mock[DestinationSubmitter[M]]
+    val destinationSubmitter: DestinationSubmitterAlgebra[M] = mock[DestinationSubmitterAlgebra[M]]
     val submitter = new DestinationsSubmitter[M](destinationSubmitter)
 
     SubmitterParts(submitter, destinationSubmitter)

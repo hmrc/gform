@@ -14,24 +14,24 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.submission
+package uk.gov.hmrc.gform.submission.destinations
 
-import cats.{ Applicative, MonadError }
 import cats.syntax.option._
+import cats.{ Applicative, MonadError }
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.form.FormAlgebra
-import uk.gov.hmrc.gform.sharedmodel.PdfHtml
+import uk.gov.hmrc.gform.sharedmodel.{ PdfHtml, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
-import uk.gov.hmrc.gform.{ Possible, Spec, possibleMonadError }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, FormTemplateGen, PrimitiveGen }
 import uk.gov.hmrc.gform.sharedmodel.generators.{ PdfDataGen, StructuredFormValueGen }
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 import uk.gov.hmrc.gform.submission.handlebars.{ FocussedHandlebarsModelTree, HandlebarsHttpApiSubmitter, HandlebarsModelTree, HandlebarsTemplateProcessor }
+import uk.gov.hmrc.gform.{ Possible, Spec, possibleMonadError }
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
-class RealDestinationSubmitterSpec
+class DestinationSubmitterSpec
     extends Spec with DestinationSubmissionInfoGen with DestinationGen with PrimitiveGen with FormTemplateGen
     with PdfDataGen with StructuredFormValueGen {
   private implicit val hc: HeaderCarrier = HeaderCarrier()
@@ -176,10 +176,10 @@ class RealDestinationSubmitterSpec
           model)
         .sut
         .submitIfIncludeIf(handlebarsHttpApi, si, HandlebarsTemplateProcessorModel.empty, theTree, submitter) shouldBe Left(
-        RealDestinationSubmitter.genericLogMessage(
+        DestinationSubmitter.genericLogMessage(
           si.formId,
           handlebarsHttpApi.id,
-          RealDestinationSubmitter.handlebarsHttpApiFailOnErrorMessage(httpResponse)))
+          DestinationSubmitter.handlebarsHttpApiFailOnErrorMessage(httpResponse)))
     }
   }
 
@@ -304,13 +304,13 @@ class RealDestinationSubmitterSpec
         )
         .sut
         .submitIfIncludeIf(hmrcDms, si, HandlebarsTemplateProcessorModel.empty, theTree, submitter) shouldBe Left(
-        RealDestinationSubmitter.genericLogMessage(si.formId, hmrcDms.id, "an error"))
+        DestinationSubmitter.genericLogMessage(si.formId, hmrcDms.id, "an error"))
     }
   }
 
   case class SubmitterParts[F[_]](
-    sut: RealDestinationSubmitter[F, Unit],
-    dmsSubmitter: DmsSubmitter[F],
+    sut: DestinationSubmitter[F, Unit],
+    dmsSubmitter: DmsSubmitterAlgebra[F],
     handlebarsSubmitter: HandlebarsHttpApiSubmitter[F],
     destinationAuditer: DestinationAuditAlgebra[F],
     formAlgebra: FormAlgebra[F],
@@ -407,13 +407,13 @@ class RealDestinationSubmitterSpec
   }
 
   private def createSubmitter: SubmitterParts[Possible] = {
-    val dmsSubmitter = mock[DmsSubmitter[Possible]]
+    val dmsSubmitter = mock[DmsSubmitterAlgebra[Possible]]
     val handlebarsSubmitter = mock[HandlebarsHttpApiSubmitter[Possible]]
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
     val destinationAuditer = mock[DestinationAuditAlgebra[Possible]]
     val formAlgebra = mock[FormAlgebra[Possible]]
     val submitter =
-      new RealDestinationSubmitter[Possible, Unit](
+      new DestinationSubmitter[Possible, Unit](
         dmsSubmitter,
         handlebarsSubmitter,
         Some(destinationAuditer),
@@ -430,7 +430,7 @@ class RealDestinationSubmitterSpec
   }
 
   private def submitter: DestinationsSubmitter[Possible] = {
-    val destinationSubmitter: DestinationSubmitter[Possible] = mock[DestinationSubmitter[Possible]]
+    val destinationSubmitter: DestinationSubmitterAlgebra[Possible] = mock[DestinationSubmitterAlgebra[Possible]]
     new DestinationsSubmitter[Possible](destinationSubmitter)
   }
 

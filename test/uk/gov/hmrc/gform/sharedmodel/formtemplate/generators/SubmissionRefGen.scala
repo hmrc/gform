@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 
 import org.scalacheck.Gen
-import uk.gov.hmrc.gform.submission.SubmissionRef
+import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 
 trait SubmissionRefGen {
   def submissionRefGen: Gen[SubmissionRef] = PrimitiveGen.nonEmptyAlphaNumStrGen.map(SubmissionRef(_))

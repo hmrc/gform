@@ -24,7 +24,7 @@ import uk.gov.hmrc.gform.fileupload.RouteEnvelopeRequest
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyText, _ }
-import uk.gov.hmrc.gform.submission.{ DmsMetaData, Submission, SubmissionRef }
+import uk.gov.hmrc.gform.submission.{ DmsMetaData, Submission }
 
 import scala.collection.immutable.List
 

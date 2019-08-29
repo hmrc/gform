@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.submission
+package uk.gov.hmrc.gform.submission.destinations
 
 import java.time.LocalDateTime
 
 import org.scalacheck.Gen
-import play.api.libs.json.JsObject
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.EmailParametersRecalculated
+import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ FormGen, PrimitiveGen }
-import uk.gov.hmrc.gform.sharedmodel.structuredform.{ Field, FieldName, StructuredFormValue }
-import uk.gov.hmrc.gform.sharedmodel.{ FrontEndSubmissionVariables, SubmissionData }
+import uk.gov.hmrc.gform.submission.Submission
 
 trait DestinationSubmissionInfoGen {
   def destinationSubmissionInfoGen: Gen[DestinationSubmissionInfo] =

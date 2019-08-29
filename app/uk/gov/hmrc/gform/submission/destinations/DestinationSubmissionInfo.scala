@@ -14,17 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel
+package uk.gov.hmrc.gform.submission.destinations
 
-import uk.gov.hmrc.gform.Spec
+import uk.gov.hmrc.auth.core.AffinityGroup
+import uk.gov.hmrc.gform.sharedmodel.form.FormId
+import uk.gov.hmrc.gform.submission.Submission
 
-class SubmissionRefSpec extends Spec {
-
-  "SubmissionRef.createSubmissionRef" should "generate submissionRef" in {
-    val rnd = new scala.util.Random(12)
-    val submissionRef = SubmissionRef(envelopeId)
-
-    submissionRef.value should be("6FJX-HVQL-U4FD")
-
-  }
+case class DestinationSubmissionInfo(customerId: String, affinityGroup: Option[AffinityGroup], submission: Submission) {
+  def formId: FormId = submission._id
 }

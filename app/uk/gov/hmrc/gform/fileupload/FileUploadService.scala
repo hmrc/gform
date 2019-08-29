@@ -22,11 +22,12 @@ import java.time.format.DateTimeFormatter
 import akka.util.ByteString
 import play.api.Logger
 import uk.gov.hmrc.gform.fileupload.FileUploadService.FileIds._
+import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
-import uk.gov.hmrc.gform.submission.{ PdfAndXmlSummaries, Submission, SubmissionRef }
+import uk.gov.hmrc.gform.submission.{ PdfAndXmlSummaries, Submission }
 import uk.gov.hmrc.gform.time.TimeProvider
 
 import scala.concurrent.{ ExecutionContext, Future }

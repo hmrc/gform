@@ -16,10 +16,9 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
-import uk.gov.hmrc.gform.core.{ FOpt, Opt, fromOptA }
+import uk.gov.hmrc.gform.core.{ FOpt, fromOptA }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ ComponentType, FormTemplate }
 import cats.implicits._
-import uk.gov.hmrc.gform.submission.DestinationsSubmitter
 
 import scala.concurrent.ExecutionContext
 

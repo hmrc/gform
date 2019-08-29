@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.gform.form
 
+import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
-import uk.gov.hmrc.gform.submission.SubmissionRef
 
 case class BundledFormTreeNode(
   formId: FormId,

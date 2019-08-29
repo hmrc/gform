@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.submission
+package uk.gov.hmrc.gform.submission.destinations
 
 import cats.Id
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.form.BundledFormTreeNode
+import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.DestinationAuditGen._
+import uk.gov.hmrc.gform.submission.Tree
 import uk.gov.hmrc.http.HeaderCarrier
 
-class DestinationAuditerFormTreeServiceSpec extends Spec {
+class DestinationAuditerFormTreeServiceSpec extends Spec with DestinationAuditGen {
   private implicit val hc: HeaderCarrier = HeaderCarrier()
 
   "getFormTree" should "return a single level if there are no children" in {
@@ -116,7 +117,7 @@ class DestinationAuditerFormTreeServiceSpec extends Spec {
       BundledFormTreeNode(audit.formId, audit.submissionRef, audit.formTemplateId, audit.caseworkerUserName),
       children: _*)
 
-  case class Fixture(service: DestinationAuditerFormTreeService[Id], auditAlgebra: DestinationAuditAlgebra[Id]) {
+  case class Fixture(service: FormTreeService[Id], auditAlgebra: DestinationAuditAlgebra[Id]) {
     def expectAuditAlgebraGetLatestForForm(formId: FormId, audit: DestinationAudit): Fixture = {
       (auditAlgebra
         .getLatestForForm(_: FormId)(_: HeaderCarrier))
@@ -136,6 +137,6 @@ class DestinationAuditerFormTreeServiceSpec extends Spec {
 
   def createService(): Fixture = {
     val auditAlgebra = mock[DestinationAuditAlgebra[Id]]
-    Fixture(new DestinationAuditerFormTreeService(auditAlgebra), auditAlgebra)
+    Fixture(new FormTreeService(auditAlgebra), auditAlgebra)
   }
 }

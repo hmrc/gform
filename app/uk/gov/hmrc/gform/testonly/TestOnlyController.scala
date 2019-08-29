@@ -39,7 +39,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.{ De
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, Destinations, HandlebarsTemplateProcessorModel }
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.gform.submission.destinations.DestinationsProcessorModelAlgebra
-import uk.gov.hmrc.gform.submission.{ DmsMetaData, Submission, SubmissionRef }
+import uk.gov.hmrc.gform.submission.{ DmsMetaData, Submission }
 import uk.gov.hmrc.gform.submission.handlebars.{ FocussedHandlebarsModelTree, HandlebarsModelTree, RealHandlebarsTemplateProcessor }
 
 class TestOnlyController(

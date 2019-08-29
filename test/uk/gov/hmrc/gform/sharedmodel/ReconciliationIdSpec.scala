@@ -20,7 +20,6 @@ import java.time.LocalDateTime
 
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.fileupload.ReconciliationId
-import uk.gov.hmrc.gform.submission.SubmissionRef
 import uk.gov.hmrc.gform.typeclasses.Now
 
 class ReconciliationIdSpec extends Spec {

@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.submission
+package uk.gov.hmrc.gform.submission.destinations
 
 import cats.MonadError
 import cats.instances.string._
-import cats.syntax.eq._
-import cats.syntax.functor._
-import cats.syntax.flatMap._
 import cats.syntax.applicative._
+import cats.syntax.eq._
+import cats.syntax.flatMap._
+import cats.syntax.functor._
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.logging.Loggers
 import uk.gov.hmrc.gform.sharedmodel.PdfHtml
@@ -29,33 +29,18 @@ import uk.gov.hmrc.gform.sharedmodel.form.{ FormId, FormStatus }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
-import uk.gov.hmrc.gform.submission.handlebars.{ FocussedHandlebarsModelTree, HandlebarsHttpApiSubmitter, HandlebarsModelTree, HandlebarsTemplateProcessor, RealHandlebarsTemplateProcessor }
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
+import uk.gov.hmrc.gform.submission.handlebars._
 import uk.gov.hmrc.gform.wshttp.HttpResponseSyntax
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
-trait DestinationSubmitter[M[_]] {
-  def submitIfIncludeIf(
-    destination: Destination,
-    submissionInfo: DestinationSubmissionInfo,
-    accumulatedModel: HandlebarsTemplateProcessorModel,
-    modelTree: HandlebarsModelTree,
-    submitter: DestinationsSubmitterAlgebra[M])(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]]
-
-  def submitToDms(
-    submissionInfo: DestinationSubmissionInfo,
-    pdfData: PdfHtml,
-    structuredFormData: StructuredFormValue.ObjectStructure,
-    submission: Destinations.DmsSubmission)(implicit hc: HeaderCarrier): M[Unit]
-}
-
-class RealDestinationSubmitter[M[_], R](
-  dms: DmsSubmitter[M],
+class DestinationSubmitter[M[_], R](
+  dms: DmsSubmitterAlgebra[M],
   handlebars: HandlebarsHttpApiSubmitter[M],
   destinationAuditer: Option[DestinationAuditAlgebra[M]],
   formAlgebra: FormAlgebra[M],
   handlebarsTemplateProcessor: HandlebarsTemplateProcessor = RealHandlebarsTemplateProcessor)(
   implicit monadError: MonadError[M, String])
-    extends DestinationSubmitter[M] {
+    extends DestinationSubmitterAlgebra[M] {
 
   def submitIfIncludeIf(
     destination: Destination,
@@ -64,19 +49,19 @@ class RealDestinationSubmitter[M[_], R](
     modelTree: HandlebarsModelTree,
     submitter: DestinationsSubmitterAlgebra[M])(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
     monadError.pure(
-      DestinationSubmitter.isIncludeIf(destination, accumulatedModel, modelTree, handlebarsTemplateProcessor)) flatMap {
-      include =>
-        if (include)
-          for {
-            _      <- logInfoInMonad(submissionInfo.formId, destination.id, "Included")
-            result <- submit(destination, submissionInfo, accumulatedModel, modelTree, submitter)
-            _      <- audit(destination, result.map(_.status), None, submissionInfo, modelTree)
-          } yield result
-        else
-          for {
-            _      <- logInfoInMonad(submissionInfo.formId, destination.id, "Not included")
-            result <- Option.empty[HandlebarsDestinationResponse].pure
-          } yield result
+      DestinationSubmitterAlgebra
+        .isIncludeIf(destination, accumulatedModel, modelTree, handlebarsTemplateProcessor)) flatMap { include =>
+      if (include)
+        for {
+          _      <- logInfoInMonad(submissionInfo.formId, destination.id, "Included")
+          result <- submit(destination, submissionInfo, accumulatedModel, modelTree, submitter)
+          _      <- audit(destination, result.map(_.status), None, submissionInfo, modelTree)
+        } yield result
+      else
+        for {
+          _      <- logInfoInMonad(submissionInfo.formId, destination.id, "Not included")
+          result <- Option.empty[HandlebarsDestinationResponse].pure
+        } yield result
 
     }
 
@@ -100,7 +85,7 @@ class RealDestinationSubmitter[M[_], R](
 
   private def logInfoInMonad(formId: FormId, destinationId: DestinationId, msg: String): M[Unit] =
     monadError.pure {
-      Loggers.destinations.info(RealDestinationSubmitter.genericLogMessage(formId, destinationId, msg))
+      Loggers.destinations.info(DestinationSubmitter.genericLogMessage(formId, destinationId, msg))
     }
 
   private def submit(
@@ -124,7 +109,7 @@ class RealDestinationSubmitter[M[_], R](
       .updateFormStatus(formId, d.requiredState)
       .flatMap { stateAchieved =>
         if (stateAchieved === d.requiredState || !d.failOnError) monadError.pure(())
-        else raiseError(formId, d.id, RealDestinationSubmitter.stateTransitionFailOnErrorMessage(d, stateAchieved))
+        else raiseError(formId, d.id, DestinationSubmitter.stateTransitionFailOnErrorMessage(d, stateAchieved))
       }
 
   def submitToDms(
@@ -178,7 +163,7 @@ class RealDestinationSubmitter[M[_], R](
       raiseError(
         submissionInfo.formId,
         destination.id,
-        RealDestinationSubmitter.handlebarsHttpApiFailOnErrorMessage(response))
+        DestinationSubmitter.handlebarsHttpApiFailOnErrorMessage(response))
 
   private def createSuccessResponse(
     d: Destination.HandlebarsHttpApi,
@@ -186,26 +171,13 @@ class RealDestinationSubmitter[M[_], R](
     monadError.pure(HandlebarsDestinationResponse(d, response))
 
   protected def raiseError[T](formId: FormId, destinationId: DestinationId, msg: String) = {
-    val fullMsg = RealDestinationSubmitter.genericLogMessage(formId, destinationId, msg)
+    val fullMsg = DestinationSubmitter.genericLogMessage(formId, destinationId, msg)
     monadError.pure { Loggers.destinations.warn(fullMsg) } >>
       monadError.raiseError[T](fullMsg)
   }
 }
 
 object DestinationSubmitter {
-  def isIncludeIf(
-    destination: Destination,
-    accumulatedModel: HandlebarsTemplateProcessorModel,
-    modelTree: HandlebarsModelTree,
-    handlebarsTemplateProcessor: HandlebarsTemplateProcessor): Boolean =
-    handlebarsTemplateProcessor(
-      destination.includeIf,
-      accumulatedModel,
-      FocussedHandlebarsModelTree(modelTree, modelTree.value.model),
-      TemplateType.Plain) === true.toString
-}
-
-object RealDestinationSubmitter {
   def handlebarsHttpApiFailOnErrorMessage(response: HttpResponse): String =
     s"Returned status code ${response.status} and has 'failOnError' set to true. Failing."
 

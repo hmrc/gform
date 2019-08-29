@@ -14,16 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.submission
+package uk.gov.hmrc.gform.submission.destinations
 
-import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.DestinationAuditGen._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.verifyRoundTrip
+import uk.gov.hmrc.gform.form.BundledFormTreeNode
+import uk.gov.hmrc.gform.sharedmodel.form.FormId
+import uk.gov.hmrc.gform.submission.Tree
+import uk.gov.hmrc.http.HeaderCarrier
 
-class DestinationAuditSpec extends Spec {
-  "JSON" should "round trip" in {
-    forAll(destinationAuditGen) { generatedAudit =>
-      verifyRoundTrip(generatedAudit)
-    }
-  }
+trait FormTreeAlgebra[M[_]] {
+  def getFormTree(formId: FormId)(implicit hc: HeaderCarrier): M[Tree[BundledFormTreeNode]]
 }

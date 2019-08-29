@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.submission
+package uk.gov.hmrc.gform.submission.destinations
 
 import play.api.libs.json.JsObject
 import uk.gov.hmrc.gform.Spec
@@ -22,7 +22,6 @@ import uk.gov.hmrc.gform.core.{ FOpt, success }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.repo.RepoAlgebra
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
-import uk.gov.hmrc.gform.submission.generators.DestinationAuditGen
 import uk.gov.hmrc.http.HeaderCarrier
 
 class RepoDestinationAuditerSpec extends Spec with DestinationAuditGen {

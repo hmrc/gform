@@ -22,12 +22,12 @@ import org.scalatest.Assertion
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.form.BundledFormTreeNode
 import uk.gov.hmrc.gform.models.helpers.TaxPeriodHelper.formatDate
-import uk.gov.hmrc.gform.sharedmodel.{ ObligationDetail, ObligationDetailGen, ObligationDetails, RecalculatedTaxPeriodKey, RetrievedObligations, TaxResponse, TaxResponseGen }
+import uk.gov.hmrc.gform.sharedmodel.{ ObligationDetail, ObligationDetailGen, ObligationDetails, RecalculatedTaxPeriodKey, RetrievedObligations, SubmissionRef, TaxResponse, TaxResponseGen }
 import uk.gov.hmrc.gform.sharedmodel.form.{ FormData, FormField, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HandlebarsTemplateProcessorModel
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplateId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ ComponentTypeGen, FormGen }
-import uk.gov.hmrc.gform.submission.{ SubmissionRef, Tree }
+import uk.gov.hmrc.gform.submission.Tree
 
 class DestinationsProcessorModelAlgebraSpec extends Spec {
   "Multiple HmrcTaxPeriod" must "be serialized into json" in {

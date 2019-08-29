@@ -28,7 +28,7 @@ import uk.gov.hmrc.gform.time.TimeModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.repo.RepoAlgebra
-import uk.gov.hmrc.gform.submission.destinations.DestinationModule
+import uk.gov.hmrc.gform.submission.destinations.{ DestinationModule, DestinationSubmitter, DestinationsSubmitter, DestinationsSubmitterAlgebra, DmsSubmitter }
 
 import scala.concurrent.ExecutionContext
 
@@ -49,14 +49,14 @@ class SubmissionModule(
 
   val submissionRepo = new SubmissionRepo(mongoModule.mongo)
 
-  private val fileUploadServiceDmsSubmitter = new FileUploadServiceDmsSubmitter(
+  private val fileUploadServiceDmsSubmitter = new DmsSubmitter(
     fileUploadModule.fileUploadService,
     formModule.fOptFormService,
     formTemplateModule.fOptFormTemplateAlgebra,
     pdfGeneratorModule.pdfGeneratorService
   )
 
-  private val realDestinationSubmitter = new RealDestinationSubmitter(
+  private val realDestinationSubmitter = new DestinationSubmitter(
     fileUploadServiceDmsSubmitter,
     handlebarsHttpApiModule.handlebarsHttpSubmitter,
     destinationModule.destinationAuditer,
