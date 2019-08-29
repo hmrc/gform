@@ -149,7 +149,7 @@ object DestinationAudit {
             "timestamp"                -> localDateTimeWrite.writes(timestamp),
             "submissionRef"            -> JsString(submissionRef.value),
             "summaryHtmlId"            -> JsString(summaryHtmlId.value.toString),
-            "parentFormSubmissionRefs" -> JsArray(parentFormSubmissionRefs.map(JsString(_))),
+            "parentFormSubmissionRefs" -> JsArray(parentFormSubmissionRefs.map(JsString)),
             "reviewData"               -> JsObject(reviewData.map { case (k, v) => k -> JsString(v) })
           ),
           destinationResponseStatus.map(s => "destinationResponseStatus"       -> JsNumber(s)).toSeq,
@@ -202,6 +202,8 @@ trait DestinationAuditAlgebra[M[_]] {
     template: FormTemplate,
     model: HandlebarsTemplateProcessorModel)(implicit hc: HeaderCarrier): M[Unit]
 
+  def auditForcedFormStatusChange(form: Form)(implicit hc: HeaderCarrier): M[Unit]
+
   def getLatestForForm(formId: FormId)(implicit hc: HeaderCarrier): M[DestinationAudit]
 
   def findLatestChildAudits(submissionRef: SubmissionRef): M[List[DestinationAudit]]
@@ -226,25 +228,50 @@ class RepoDestinationAuditer(
       for {
         form          <- formAlgebra.get(formId)
         summaryHtmlId <- findOrInsertSummaryHtml(summaryHtml)
-        audit = DestinationAudit(
-          formId,
-          form.formTemplateId,
-          destination.id,
-          getDestinationType(destination),
-          handlebarsDestinationResponseStatusCode,
-          handlebarsDestinationResponseErrorBody,
-          form.status,
-          form.userId,
-          getCaseworkerUsername(form.formData),
-          getParentFormSubmissionRef(template, model),
-          form.thirdPartyData.reviewData.getOrElse(Map.empty),
-          submissionReference,
-          summaryHtmlId
-        )
-        _ = Loggers.destinations.info(s"Destination audit: ${DestinationAudit.format.writes(audit)}")
-        _ <- auditRepository.upsert(audit)
+        _ <- apply(
+              DestinationAudit(
+                formId,
+                form.formTemplateId,
+                destination.id,
+                getDestinationType(destination),
+                handlebarsDestinationResponseStatusCode,
+                handlebarsDestinationResponseErrorBody,
+                form.status,
+                form.userId,
+                getCaseworkerUsername(form.formData),
+                getParentFormSubmissionRef(template, model),
+                form.thirdPartyData.reviewData.getOrElse(Map.empty),
+                submissionReference,
+                summaryHtmlId
+              ))
       } yield ()
   }
+
+  private def apply(audit: DestinationAudit)(implicit hc: HeaderCarrier): FOpt[Unit] =
+    success(Loggers.destinations.info(s"Destination audit: ${DestinationAudit.format.writes(audit)}")) >>
+      auditRepository.upsert(audit) >>
+      success(())
+
+  def auditForcedFormStatusChange(form: Form)(implicit hc: HeaderCarrier): FOpt[Unit] =
+    for {
+      latestAudit <- getLatestForForm(form._id)
+      _ <- apply(
+            DestinationAudit(
+              form._id,
+              form.formTemplateId,
+              DestinationId("forcedFormStatusChange"),
+              "forcedFormStatusChange",
+              None,
+              None,
+              form.status,
+              form.userId,
+              getCaseworkerUsername(form.formData),
+              latestAudit.parentFormSubmissionRefs,
+              form.thirdPartyData.reviewData.getOrElse(Map.empty),
+              latestAudit.submissionRef,
+              latestAudit.summaryHtmlId
+            ))
+    } yield ()
 
   def getLatestForForm(formId: FormId)(implicit hc: HeaderCarrier): FOpt[DestinationAudit] =
     auditRepository

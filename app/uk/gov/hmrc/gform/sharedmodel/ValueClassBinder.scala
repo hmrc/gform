@@ -20,7 +20,7 @@ import cats.implicits._
 import play.api.libs.json.{ JsError, JsString, JsSuccess, Reads }
 import play.api.mvc.{ JavascriptLiteral, PathBindable }
 import uk.gov.hmrc.auth.core.AffinityGroup
-import uk.gov.hmrc.gform.sharedmodel.form.{ FileId, FormId }
+import uk.gov.hmrc.gform.sharedmodel.form.{ FileId, FormId, FormStatus }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, FormTemplateRawId, SectionNumber }
 
@@ -46,6 +46,16 @@ object ValueClassBinder {
     override def bind(key: String, value: String): Either[String, SectionNumber] =
       Try { SectionNumber(value.toInt) }.map(_.asRight).getOrElse(s"No valid value in path $key: $value".asLeft)
     override def unbind(key: String, sectionNumber: SectionNumber): String = sectionNumber.value.toString
+  }
+
+  implicit val formStatusBinder: PathBindable[FormStatus] = new PathBindable[FormStatus] {
+    override def bind(key: String, value: String): Either[String, FormStatus] =
+      value match {
+        case FormStatus(s) => s.asRight
+        case _             => s"'$value' is not a valid FormStatus. Valid values are: ${FormStatus.all}".asLeft
+      }
+
+    override def unbind(key: String, value: FormStatus): String = value.toString
   }
 
   def valueClassBinder[A: Reads](fromAtoString: A => String)(implicit stringBinder: PathBindable[String]) = {

@@ -14,20 +14,29 @@
       "shortName": "Name of School",
       "fields": [
         {
-          "id": "nameOfSchool",
-          "type": "text",
-          "label": "Name of School"
-        },
-        {
-          "id": "parentFormSubmissionRef",
-          "type": "text",
-          "label": "Parent Form Submission Ref",
-          "format": "submissionRef"
-        },
-        {
-          "id": "date",
-          "type": "date",
-          "label": "Date"
+          "id": "aGroup",
+          "type": "group",
+          "label": "Group",
+          "repeatsMin": 1,
+          "repeatsMax": 3,
+          "fields": [
+            {
+              "id": "nameOfSchool",
+              "type": "text",
+              "label": "Name of School"
+            },
+            {
+              "id": "parentFormSubmissionRef",
+              "type": "text",
+              "label": "Parent Form Submission Ref",
+              "format": "submissionRef"
+            },
+            {
+              "id": "date",
+              "type": "date",
+              "label": "Date"
+            }
+          ]
         }
       ]
     }

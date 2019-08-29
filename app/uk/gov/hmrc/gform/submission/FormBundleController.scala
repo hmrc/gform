@@ -23,7 +23,7 @@ import play.api.mvc.{ Action, AnyContent }
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.core._
-import uk.gov.hmrc.gform.sharedmodel.form.FormId
+import uk.gov.hmrc.gform.sharedmodel.form.{ FormId, FormStatus }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils._
 import uk.gov.hmrc.gform.sharedmodel.BundledFormSubmissionData
 
@@ -54,7 +54,7 @@ class FormBundleController(oFormBundleSubmissionService: Option[FormBundleSubmis
           BadRequest("Can't submitFormBundleAfterReview. No FormBundleSubmissionService has been configured."))) {
         formBundleSubmissionService =>
           Logger.info(
-            s"submitFormBundleAfterReview, formId: '${rootFormId.value}, ${loggingHelpers.cleanHeaders(request.headers)}")
+            s"submitFormBundleAfterReview, formId: ${rootFormId.value}, ${loggingHelpers.cleanHeaders(request.headers)}")
 
           import request._
 
@@ -63,4 +63,16 @@ class FormBundleController(oFormBundleSubmissionService: Option[FormBundleSubmis
             .fold(unexpectedState => BadRequest(unexpectedState.error), _ => NoContent)
       }
     }
+
+  def forceUpdateFormStatus(formId: FormId, status: FormStatus): Action[AnyContent] = Action.async { implicit request =>
+    oFormBundleSubmissionService.fold(
+      Future
+        .successful(BadRequest("Can't forceUpdateFormStatus. No FormBundleSubmissionService has been configured."))) {
+      formBundleSubmissionService =>
+        Logger.info(s"forceUpdateFormStatus, ${formId.value}, $status, ${loggingHelpers.cleanHeaders(request.headers)}")
+        formBundleSubmissionService
+          .forceUpdateFormStatus(formId, status)
+          .fold(unexpectedState => BadRequest(unexpectedState.error), _ => NoContent)
+    }
+  }
 }

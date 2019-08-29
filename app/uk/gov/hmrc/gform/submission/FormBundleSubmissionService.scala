@@ -40,7 +40,15 @@ class FormBundleSubmissionService[F[_]](
   destinationsSubmitterAlgebra: DestinationsSubmitterAlgebra[F],
   submissionRepoAlgebra: RepoAlgebra[Submission, F],
   formTreeAlgebra: FormTreeAlgebra[F],
-  pdfSummaryAlgebra: PdfSummaryAlgebra[F])(implicit M: Monad[F]) {
+  pdfSummaryAlgebra: PdfSummaryAlgebra[F],
+  destinationAuditAlgebra: DestinationAuditAlgebra[F])(implicit M: Monad[F]) {
+
+  def forceUpdateFormStatus(formId: FormId, status: FormStatus)(implicit hc: HeaderCarrier): F[Unit] =
+    for {
+      _    <- formAlgebra.forceUpdateFormStatus(formId, status)
+      form <- formAlgebra.get(formId)
+      _    <- destinationAuditAlgebra.auditForcedFormStatusChange(form)
+    } yield ()
 
   def formTree(rootFormId: FormId)(implicit hc: HeaderCarrier): F[Tree[BundledFormTreeNode]] =
     formTreeAlgebra.getFormTree(rootFormId)

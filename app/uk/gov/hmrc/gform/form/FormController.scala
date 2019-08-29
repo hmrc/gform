@@ -26,7 +26,7 @@ import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateService
 import uk.gov.hmrc.gform.sharedmodel.AffinityGroupUtil
-import uk.gov.hmrc.gform.sharedmodel.form.{ FileId, FormId, UserData }
+import uk.gov.hmrc.gform.sharedmodel.form.{ FileId, FormId, FormStatus, UserData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.UserId
 import uk.gov.hmrc.http.NotFoundException

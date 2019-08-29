@@ -115,6 +115,12 @@ class FormService[F[_]: Monad](
       _ <- formPersistence.upsert(formId, form.copy(status = newS))
     } yield newS
 
+  def forceUpdateFormStatus(formId: FormId, newStatus: FormStatus)(implicit hc: HeaderCarrier): F[Unit] =
+    for {
+      form <- get(formId)
+      _    <- formPersistence.upsert(formId, form.copy(status = newStatus))
+    } yield ()
+
   private def newStatus(form: Form, status: FormStatus) =
     LifeCycleStatus.newStatus(form, status)
 
