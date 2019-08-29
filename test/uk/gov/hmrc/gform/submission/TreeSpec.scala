@@ -27,6 +27,7 @@ class TreeSpec extends Spec {
   it should "return the first matching node value if a node matching the predicate is found" in {
     val tree: Tree[String] = Tree("One", Tree("Two", Tree("Two again")), Tree("Four"))
     tree.find(_.contains("Tw")) shouldBe Some("Two")
+    tree.find(_.contains("again")) shouldBe Some("Two again")
   }
 
   "map" should "return a tree with all node values mapped according to the given function" in {

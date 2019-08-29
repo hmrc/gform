@@ -649,7 +649,7 @@ class HandlebarsTemplateProcessorHelpers(
               accumulatedModel,
               FocussedHandlebarsModelTree(modelTree, node.model)))).left.map { m =>
           val msg =
-            s"Attempt to importBySubmissionReference '$submissionReferenceString', destinationId '$destinationIdString' failed: $m. This is the form tree: ${renderFormTree()}"
+            s"Attempt to importBySubmissionReference '$submissionReferenceString', destinationId '$destinationIdString' failed because $m This is the form tree: ${renderFormTree()}"
           Loggers.destinations.warn(msg)
           new Handlebars.SafeString(msg)
         }.merge
@@ -666,9 +666,7 @@ class HandlebarsTemplateProcessorHelpers(
     for {
       node <- modelTree
                .find(_.submissionRef === submissionRef)
-               .toRight(
-                 s"Cannot find a node in the form tree with submission reference '${submissionRef.value}'. Have ${modelTree
-                   .map(_.submissionRef.value)}")
+               .toRight(s"Cannot find a node in the form tree with submission reference '${submissionRef.value}'.")
     } yield node
 
   private def findHandlebarsDestination(
@@ -685,7 +683,7 @@ class HandlebarsTemplateProcessorHelpers(
       .cast[Destinations.DestinationList]
       .flatMap(dl => findInList(dl.destinations.toList))
       .toRight(
-        s"Cannot find a ${Destination.handlebarsHttpApi} destination with ID `${destinationId.id}` in form template with ID '${formTemplate._id.value}' ")
+        s"Cannot find a ${Destination.handlebarsHttpApi} destination with ID `${destinationId.id}` in form template with ID '${formTemplate._id.value}'.")
   }
 
   private def asBigDecimal(v: Any): BigDecimal =

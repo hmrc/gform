@@ -17,8 +17,7 @@
 package uk.gov.hmrc.gform.submission
 
 case class Tree[T](value: T, children: List[Tree[T]]) {
-  def find(p: T => Boolean): Option[T] =
-    if (p(value)) Some(value) else children.find(tt => p(tt.value)).map(_.value)
+  def find(p: T => Boolean): Option[T] = toList.find(p)
 
   def map[U](f: T => U): Tree[U] = Tree(f(value), children.map(_.map(f)))
 
