@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.submission.handlebars
 import java.text.DecimalFormat
 
 import cats.instances.string._
+import cats.syntax.either._
 import cats.syntax.option._
 import cats.syntax.eq._
 import shapeless.syntax.typeable._
@@ -639,8 +640,8 @@ class HandlebarsTemplateProcessorHelpers(
     ifNotNullAsString(submissionReference) { submissionReferenceString =>
       ifNotNullAsString(destinationId) { destinationIdString =>
         (for {
-          node        <- findNodeInFormTree(SubmissionRef(submissionReferenceString)).right
-          destination <- findHandlebarsDestination(node.formTemplate, DestinationId(destinationIdString)).right
+          node        <- findNodeInFormTree(SubmissionRef(submissionReferenceString))
+          destination <- findHandlebarsDestination(node.formTemplate, DestinationId(destinationIdString))
         } yield
           new Handlebars.SafeString(
             processor(
@@ -648,7 +649,7 @@ class HandlebarsTemplateProcessorHelpers(
               accumulatedModel,
               FocussedHandlebarsModelTree(modelTree, node.model)))).left.map { m =>
           val msg =
-            s"Attempt to importBySubmissionReference '$submissionReferenceString', destinationId '$destinationIdString' failed"
+            s"Attempt to importBySubmissionReference '$submissionReferenceString', destinationId '$destinationIdString' failed: $m"
           Loggers.destinations.warn(msg)
           new Handlebars.SafeString(msg)
         }.merge
