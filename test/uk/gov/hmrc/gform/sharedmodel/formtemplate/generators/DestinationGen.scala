@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 import org.scalacheck.Gen
+import uk.gov.hmrc.gform.sharedmodel.form.FormStatus
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.TextExpression
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId }
 
@@ -78,6 +79,17 @@ trait DestinationGen {
       failOnError   <- PrimitiveGen.booleanGen
       requiredState <- FormGen.formStatusGen
     } yield Destination.StateTransition(id, requiredState, includeIf, failOnError)
+
+  def stateTransitionGen(
+    includeIf: Option[String] = None,
+    failOnError: Option[Boolean] = None,
+    requiredState: Option[FormStatus] = None): Gen[Destination.StateTransition] =
+    stateTransitionGen.map { st =>
+      st.copy(
+        requiredState = requiredState.getOrElse(st.requiredState),
+        includeIf = includeIf.getOrElse(st.includeIf),
+        failOnError = failOnError.getOrElse(st.failOnError))
+    }
 
   def singularDestinationGen: Gen[Destination] =
     Gen.oneOf(hmrcDmsGen, handlebarsHttpApiGen, stateTransitionGen)

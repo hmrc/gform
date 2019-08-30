@@ -17,12 +17,9 @@
 package uk.gov.hmrc.gform.submission.destinations
 
 import cats.MonadError
-import cats.instances.string._
 import cats.syntax.applicative._
-import cats.syntax.eq._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
-import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.logging.Loggers
 import uk.gov.hmrc.gform.sharedmodel.PdfHtml
 import uk.gov.hmrc.gform.sharedmodel.form.{ FormId, FormStatus }
@@ -36,8 +33,8 @@ import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 class DestinationSubmitter[M[_], R](
   dms: DmsSubmitterAlgebra[M],
   handlebars: HandlebarsHttpApiSubmitter[M],
+  stateTransitionAlgebra: StateTransitionAlgebra[M],
   destinationAuditer: Option[DestinationAuditAlgebra[M]],
-  formAlgebra: FormAlgebra[M],
   handlebarsTemplateProcessor: HandlebarsTemplateProcessor = RealHandlebarsTemplateProcessor)(
   implicit monadError: MonadError[M, String])
     extends DestinationSubmitterAlgebra[M] {
@@ -85,7 +82,7 @@ class DestinationSubmitter[M[_], R](
 
   private def logInfoInMonad(formId: FormId, destinationId: DestinationId, msg: String): M[Unit] =
     monadError.pure {
-      Loggers.destinations.info(DestinationSubmitter.genericLogMessage(formId, destinationId, msg))
+      Loggers.destinations.info(genericLogMessage(formId, destinationId, msg))
     }
 
   private def submit(
@@ -101,16 +98,8 @@ class DestinationSubmitter[M[_], R](
       case d: Destination.Composite =>
         submitter
           .submitToList(DestinationList(d.destinations), submissionInfo, accumulatedModel, modelTree)
-      case d: Destination.StateTransition => transitionState(d, submissionInfo.formId).map(_ => None)
+      case d: Destination.StateTransition => stateTransitionAlgebra(d, submissionInfo.formId).map(_ => None)
     }
-
-  def transitionState(d: Destination.StateTransition, formId: FormId)(implicit hc: HeaderCarrier): M[Unit] =
-    formAlgebra
-      .updateFormStatus(formId, d.requiredState)
-      .flatMap { stateAchieved =>
-        if (stateAchieved === d.requiredState || !d.failOnError) monadError.pure(())
-        else raiseError(formId, d.id, DestinationSubmitter.stateTransitionFailOnErrorMessage(d, stateAchieved))
-      }
 
   def submitToDms(
     submissionInfo: DestinationSubmissionInfo,
@@ -169,12 +158,6 @@ class DestinationSubmitter[M[_], R](
     d: Destination.HandlebarsHttpApi,
     response: HttpResponse): M[HandlebarsDestinationResponse] =
     monadError.pure(HandlebarsDestinationResponse(d, response))
-
-  protected def raiseError[T](formId: FormId, destinationId: DestinationId, msg: String) = {
-    val fullMsg = DestinationSubmitter.genericLogMessage(formId, destinationId, msg)
-    monadError.pure { Loggers.destinations.warn(fullMsg) } >>
-      monadError.raiseError[T](fullMsg)
-  }
 }
 
 object DestinationSubmitter {
@@ -183,7 +166,4 @@ object DestinationSubmitter {
 
   def stateTransitionFailOnErrorMessage(d: Destination.StateTransition, currentState: FormStatus): String =
     s"Cannot achieve transition from $currentState to ${d.requiredState}"
-
-  def genericLogMessage(formId: FormId, destinationId: DestinationId, msg: String): String =
-    f"${formId.value}%-60s ${destinationId.id}%-30s $msg"
 }

@@ -28,7 +28,7 @@ import uk.gov.hmrc.gform.time.TimeModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.repo.RepoAlgebra
-import uk.gov.hmrc.gform.submission.destinations.{ DestinationModule, DestinationSubmitter, DestinationsSubmitter, DestinationsSubmitterAlgebra, DmsSubmitter }
+import uk.gov.hmrc.gform.submission.destinations.{ DestinationModule, DestinationSubmitter, DestinationsSubmitter, DestinationsSubmitterAlgebra, DmsSubmitter, StateTransitionService }
 
 import scala.concurrent.ExecutionContext
 
@@ -56,11 +56,13 @@ class SubmissionModule(
     pdfGeneratorModule.pdfGeneratorService
   )
 
+  private val stateTransitionService = new StateTransitionService(formModule.fOptFormService)
+
   private val realDestinationSubmitter = new DestinationSubmitter(
     fileUploadServiceDmsSubmitter,
     handlebarsHttpApiModule.handlebarsHttpSubmitter,
-    destinationModule.destinationAuditer,
-    formModule.fOptFormService
+    stateTransitionService,
+    destinationModule.destinationAuditer
   )
 
   private val destinationsSubmitter: DestinationsSubmitterAlgebra[FOpt] = new DestinationsSubmitter(

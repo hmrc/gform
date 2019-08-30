@@ -19,7 +19,6 @@ package uk.gov.hmrc.gform.submission.destinations
 import cats.syntax.option._
 import cats.{ Applicative, MonadError }
 import org.scalacheck.Gen
-import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.sharedmodel.{ PdfHtml, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
@@ -176,14 +175,14 @@ class DestinationSubmitterSpec
           model)
         .sut
         .submitIfIncludeIf(handlebarsHttpApi, si, HandlebarsTemplateProcessorModel.empty, theTree, submitter) shouldBe Left(
-        DestinationSubmitter.genericLogMessage(
+        genericLogMessage(
           si.formId,
           handlebarsHttpApi.id,
           DestinationSubmitter.handlebarsHttpApiFailOnErrorMessage(httpResponse)))
     }
   }
 
-  "A Destination.DmsSubmission" should "be sent to the DmsSubmitter when includeIf is not set" in {
+  "A Destination.DmsSubmission" should "be processed when includeIf is not set" in {
     forAll(
       submissionInfoGen,
       hmrcDmsGen(includeIf = Some(true.toString)),
@@ -304,7 +303,7 @@ class DestinationSubmitterSpec
         )
         .sut
         .submitIfIncludeIf(hmrcDms, si, HandlebarsTemplateProcessorModel.empty, theTree, submitter) shouldBe Left(
-        DestinationSubmitter.genericLogMessage(si.formId, hmrcDms.id, "an error"))
+        genericLogMessage(si.formId, hmrcDms.id, "an error"))
     }
   }
 
@@ -313,7 +312,6 @@ class DestinationSubmitterSpec
     dmsSubmitter: DmsSubmitterAlgebra[F],
     handlebarsSubmitter: HandlebarsHttpApiSubmitter[F],
     destinationAuditer: DestinationAuditAlgebra[F],
-    formAlgebra: FormAlgebra[F],
     handlebarsTemplateProcessor: HandlebarsTemplateProcessor)(implicit F: MonadError[F, String]) {
 
     def expectDmsSubmission(
@@ -409,24 +407,18 @@ class DestinationSubmitterSpec
   private def createSubmitter: SubmitterParts[Possible] = {
     val dmsSubmitter = mock[DmsSubmitterAlgebra[Possible]]
     val handlebarsSubmitter = mock[HandlebarsHttpApiSubmitter[Possible]]
+    val stateTransitionService = mock[StateTransitionAlgebra[Possible]]
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
     val destinationAuditer = mock[DestinationAuditAlgebra[Possible]]
-    val formAlgebra = mock[FormAlgebra[Possible]]
     val submitter =
       new DestinationSubmitter[Possible, Unit](
         dmsSubmitter,
         handlebarsSubmitter,
+        stateTransitionService,
         Some(destinationAuditer),
-        formAlgebra,
         handlebarsTemplateProcessor)
 
-    SubmitterParts(
-      submitter,
-      dmsSubmitter,
-      handlebarsSubmitter,
-      destinationAuditer,
-      formAlgebra,
-      handlebarsTemplateProcessor)
+    SubmitterParts(submitter, dmsSubmitter, handlebarsSubmitter, destinationAuditer, handlebarsTemplateProcessor)
   }
 
   private def submitter: DestinationsSubmitter[Possible] = {
