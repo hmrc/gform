@@ -40,6 +40,5 @@ class FormTreeService[M[_]: Monad](auditAlgebra: DestinationAuditAlgebra[M]) ext
 
   private def buildHierarchyForAudit(audit: DestinationAudit): M[Tree[BundledFormTreeNode]] =
     buildDescendantTreesForSubmissionRef(audit.submissionRef)
-      .map(
-        Tree(BundledFormTreeNode(audit.formId, audit.submissionRef, audit.formTemplateId, audit.caseworkerUserName), _))
+      .map(Tree(BundledFormTreeNode(audit.formId, audit.submissionRef, audit.formTemplateId), _))
 }

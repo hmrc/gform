@@ -58,16 +58,14 @@ object DestinationsProcessorModelAlgebra {
       createFormStatus(form.status) +
       createPdfHtml(pdfData) +
       createSubmissionReference(SubmissionRef(form.envelopeId).value) +
-      createUploadedFiles(files)
+      createUploadedFiles(files) +
+      createCaseworker(form.thirdPartyData.reviewData.flatMap(_.get("caseworker")))
 
   def createDestinationResponse(result: HandlebarsDestinationResponse): HandlebarsTemplateProcessorModel =
     HandlebarsTemplateProcessorModel(
       Map(
         result.id.id -> objectNode(
           Map("status" -> numberNode(result.status), "json" -> parseJson(result.json.toString)))))
-
-  def createCaseworker(username: String): HandlebarsTemplateProcessorModel =
-    HandlebarsTemplateProcessorModel("caseworker" -> textNode(username))
 
   def createBundledFormTree(tree: Tree[BundledFormTreeNode]): HandlebarsTemplateProcessorModel = {
     def submissionRefString(tree: BundledFormTreeNode) = tree.submissionRef.value
@@ -118,29 +116,36 @@ object DestinationsProcessorModelAlgebra {
     if (dotIndex === -1) "" else filename.substring(dotIndex + 1)
   }
 
-  def createUploadedFiles(oFiles: Option[List[UploadedFile]]): HandlebarsTemplateProcessorModel =
+  private def createCaseworker(maybeCaseworker: Option[String]): HandlebarsTemplateProcessorModel =
+    maybeCaseworker
+      .map(caseworker => HandlebarsTemplateProcessorModel("caseworker" -> textNode(caseworker)))
+      .getOrElse(HandlebarsTemplateProcessorModel.empty)
+
+  private def createUploadedFiles(oFiles: Option[List[UploadedFile]]): HandlebarsTemplateProcessorModel =
     oFiles.fold(HandlebarsTemplateProcessorModel.empty) { files =>
       HandlebarsTemplateProcessorModel(
         "uploadedFiles" -> JsonNodes.arrayNode(files.map(asJson))
       )
     }
 
-  def createStructuredFormData(structuredData: StructuredFormValue.ObjectStructure): HandlebarsTemplateProcessorModel =
+  private def createStructuredFormData(
+    structuredData: StructuredFormValue.ObjectStructure): HandlebarsTemplateProcessorModel =
     HandlebarsTemplateProcessorModel(JsonStructuredFormDataBuilder(structuredData))
 
   def createFormId(formId: FormId): HandlebarsTemplateProcessorModel =
     HandlebarsTemplateProcessorModel(Map("formId" -> textNode(formId.value)))
 
-  def createFrontEndSubmissionVariables(variables: FrontEndSubmissionVariables): HandlebarsTemplateProcessorModel =
+  private def createFrontEndSubmissionVariables(
+    variables: FrontEndSubmissionVariables): HandlebarsTemplateProcessorModel =
     HandlebarsTemplateProcessorModel(variables.value.toString)
 
   def createFormStatus(status: FormStatus): HandlebarsTemplateProcessorModel =
     HandlebarsTemplateProcessorModel(Map("formStatus" -> textNode(status.toString)))
 
-  def createPdfHtml(html: PdfHtml): HandlebarsTemplateProcessorModel =
+  private def createPdfHtml(html: PdfHtml): HandlebarsTemplateProcessorModel =
     HandlebarsTemplateProcessorModel("summaryHtml" -> textNode(html.html))
 
-  def createSubmissionReference(submissionReference: String): HandlebarsTemplateProcessorModel =
+  private def createSubmissionReference(submissionReference: String): HandlebarsTemplateProcessorModel =
     HandlebarsTemplateProcessorModel("submissionReference" -> textNode(submissionReference))
 
   def createHmrcTaxPeriods(form: Form): HandlebarsTemplateProcessorModel = {
@@ -172,7 +177,7 @@ object DestinationsProcessorModelAlgebra {
     HandlebarsTemplateProcessorModel(objectNode(jsonNodes))
   }
 
-  def createRosmRegistration(form: Form): HandlebarsTemplateProcessorModel = {
+  private def createRosmRegistration(form: Form): HandlebarsTemplateProcessorModel = {
     val f = form.thirdPartyData.desRegistrationResponse.fold("") _
 
     HandlebarsTemplateProcessorModel(

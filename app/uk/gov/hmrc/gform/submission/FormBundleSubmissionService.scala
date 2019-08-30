@@ -92,7 +92,7 @@ class FormBundleSubmissionService[F[_]](
     formsById: Map[FormId, Form],
     pdfHtmlByFormId: Map[FormId, PdfHtml],
     submissionDataByFormId: Map[FormId, BundledFormSubmissionData])(implicit hc: HeaderCarrier) =
-    buildMap(formTree)(_.formId)(id =>
+    buildMap(formTree)(_.formId) { id =>
       for {
         baseModel <- destinationProcessorModelAlgebra
                       .create(
@@ -100,10 +100,9 @@ class FormBundleSubmissionService[F[_]](
                         FrontEndSubmissionVariables(JsObject(Nil)),
                         pdfHtmlByFormId(id),
                         submissionDataByFormId(id).structuredFormData)
-        caseworkerUserName = formTree.find(_.formId === id).flatMap(_.caseworkerUsername).getOrElse("")
-        reviewModel = DestinationsProcessorModelAlgebra.createCaseworker(caseworkerUserName)
         treeModel = DestinationsProcessorModelAlgebra.createBundledFormTree(formTree)
-      } yield baseModel + reviewModel + treeModel)
+      } yield baseModel + treeModel
+    }
 
   private def buildMap[K, V](tree: Tree[BundledFormTreeNode])(key: BundledFormTreeNode => K)(
     value: K => F[V]): F[Map[K, V]] = {

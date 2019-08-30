@@ -91,8 +91,7 @@ class DestinationsProcessorModelAlgebraSpec extends Spec {
         BundledFormTreeNode(
           FormId(s"${prefix}Id"),
           SubmissionRef(s"${prefix}SubmissionRef"),
-          FormTemplateId(templateId),
-          Some(s"${prefix}Reviewer")
+          FormTemplateId(templateId)
         ),
         children: _*
       )

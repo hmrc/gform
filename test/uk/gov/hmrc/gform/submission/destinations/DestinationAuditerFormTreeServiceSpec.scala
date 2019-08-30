@@ -36,12 +36,7 @@ class DestinationAuditerFormTreeServiceSpec extends Spec with DestinationAuditGe
         .expectFindLatestChildAudits(rootAudit.submissionRef, Nil)
         .service
         .getFormTree(rootAudit.formId) shouldBe
-        Tree(
-          BundledFormTreeNode(
-            rootAudit.formId,
-            rootAudit.submissionRef,
-            rootAudit.formTemplateId,
-            rootAudit.caseworkerUserName))
+        Tree(BundledFormTreeNode(rootAudit.formId, rootAudit.submissionRef, rootAudit.formTemplateId))
     }
   }
 
@@ -113,9 +108,7 @@ class DestinationAuditerFormTreeServiceSpec extends Spec with DestinationAuditGe
     audits.map(f).toSet.size == audits.size
 
   private def formTree(audit: DestinationAudit, children: Tree[BundledFormTreeNode]*): Tree[BundledFormTreeNode] =
-    Tree(
-      BundledFormTreeNode(audit.formId, audit.submissionRef, audit.formTemplateId, audit.caseworkerUserName),
-      children: _*)
+    Tree(BundledFormTreeNode(audit.formId, audit.submissionRef, audit.formTemplateId), children: _*)
 
   case class Fixture(service: FormTreeService[Id], auditAlgebra: DestinationAuditAlgebra[Id]) {
     def expectAuditAlgebraGetLatestForForm(formId: FormId, audit: DestinationAudit): Fixture = {
