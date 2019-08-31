@@ -22,7 +22,7 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import uk.gov.hmrc.gform.logging.Loggers
 import uk.gov.hmrc.gform.sharedmodel.PdfHtml
-import uk.gov.hmrc.gform.sharedmodel.form.{ FormId, FormStatus }
+import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
@@ -163,7 +163,4 @@ class DestinationSubmitter[M[_], R](
 object DestinationSubmitter {
   def handlebarsHttpApiFailOnErrorMessage(response: HttpResponse): String =
     s"Returned status code ${response.status} and has 'failOnError' set to true. Failing."
-
-  def stateTransitionFailOnErrorMessage(d: Destination.StateTransition, currentState: FormStatus): String =
-    s"Cannot achieve transition from $currentState to ${d.requiredState}"
 }

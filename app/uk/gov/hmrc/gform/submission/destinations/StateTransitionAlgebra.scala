@@ -20,12 +20,17 @@ import cats.MonadError
 import cats.syntax.eq._
 import cats.syntax.flatMap._
 import uk.gov.hmrc.gform.form.FormAlgebra
-import uk.gov.hmrc.gform.sharedmodel.form.FormId
+import uk.gov.hmrc.gform.sharedmodel.form.{ FormId, FormStatus }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination
 import uk.gov.hmrc.http.HeaderCarrier
 
 trait StateTransitionAlgebra[M[_]] {
   def apply(d: Destination.StateTransition, formId: FormId)(implicit hc: HeaderCarrier): M[Unit]
+}
+
+object StateTransitionAlgebra {
+  def failedToAchieveStateTransition(d: Destination.StateTransition, currentState: FormStatus): String =
+    s"Cannot achieve transition from $currentState to ${d.requiredState}"
 }
 
 class StateTransitionService[M[_]](formAlgebra: FormAlgebra[M])(implicit monadError: MonadError[M, String])
@@ -35,6 +40,6 @@ class StateTransitionService[M[_]](formAlgebra: FormAlgebra[M])(implicit monadEr
       .updateFormStatus(formId, d.requiredState)
       .flatMap { stateAchieved =>
         if (stateAchieved === d.requiredState || !d.failOnError) monadError.pure(())
-        else raiseError(formId, d.id, DestinationSubmitter.stateTransitionFailOnErrorMessage(d, stateAchieved))
+        else raiseError(formId, d.id, StateTransitionAlgebra.failedToAchieveStateTransition(d, stateAchieved))
       }
 }

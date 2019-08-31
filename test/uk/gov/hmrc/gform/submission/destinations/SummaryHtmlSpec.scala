@@ -16,10 +16,15 @@
 
 package uk.gov.hmrc.gform.submission.destinations
 
-import java.util.UUID
+import org.scalacheck.Gen
+import uk.gov.hmrc.gform.Spec
+import uk.gov.hmrc.gform.sharedmodel.PdfHtml
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.verifyRoundTrip
 
-case class SummaryHtmlId(value: UUID) extends AnyVal
-
-object SummaryHtmlId {
-  def apply(value: String): SummaryHtmlId = SummaryHtmlId(UUID.fromString(value))
+class SummaryHtmlSpec extends Spec {
+  "JSON" should "round trip" in {
+    forAll(Gen.uuid.map(SummaryHtmlId(_)), Gen.asciiStr.map(PdfHtml(_))) { (id, pdfHtml) =>
+      verifyRoundTrip(SummaryHtml(id, pdfHtml))
+    }
+  }
 }
