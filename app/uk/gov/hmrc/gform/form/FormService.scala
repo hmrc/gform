@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.form
 
 import cats.Monad
+import cats.syntax.eq._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import uk.gov.hmrc.auth.core.AffinityGroup
@@ -136,6 +137,7 @@ object LifeCycleStatus {
     }
 
   def apply(from: FormStatus, to: FormStatus): Option[FormStatus] = (from, to) match {
+    case (f, t) if t === f                                 => Some(to)
     case (InProgress, _)                                   => Some(to)
     case (NeedsReview, Accepting | Returning | Submitting) => Some(to)
     case (Accepting, Accepted)                             => Some(to)

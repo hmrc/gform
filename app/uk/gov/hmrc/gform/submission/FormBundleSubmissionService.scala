@@ -20,6 +20,7 @@ import cats.Monad
 import cats.data.NonEmptyList
 import cats.instances.list._
 import cats.syntax.eq._
+import cats.syntax.applicative._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.traverse._
@@ -61,7 +62,21 @@ class FormBundleSubmissionService[F[_]](
       submissionInfo = DestinationSubmissionInfo("", None, submission)
       modelTree <- createModelTree(rootFormId, submissionData)
       _         <- destinationsSubmitterAlgebra.send(submissionInfo, modelTree)
+      _         <- transitionAllChildNodesToSubmitted(modelTree)
     } yield ()
+
+  private def transitionAllChildNodesToSubmitted(modelTree: HandlebarsModelTree)(implicit hc: HeaderCarrier): F[Unit] = {
+    def doTransitions =
+      modelTree.toList.tail.traverse { node => formAlgebra.forceUpdateFormStatus(node.formId, Submitted) }.void
+
+    formAlgebra
+      .get(modelTree.value.formId)
+      .flatMap { form =>
+        if (form.status === Submitted) doTransitions
+        else ().pure[F]
+      }
+  }
+
 
   private def createModelTree(rootFormId: FormId, submissionData: NonEmptyList[BundledFormSubmissionData])(
     implicit hc: HeaderCarrier): F[HandlebarsModelTree] =
@@ -79,6 +94,7 @@ class FormBundleSubmissionService[F[_]](
     } yield
       formTree.map { formTreeNode =>
         HandlebarsModelTreeNode(
+          formTreeNode.formId,
           formTreeNode.submissionRef,
           templatesById(formTreeNode.formTemplateId),
           processorModelByFormId(formTreeNode.formId),

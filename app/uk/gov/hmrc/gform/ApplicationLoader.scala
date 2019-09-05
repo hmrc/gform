@@ -21,7 +21,7 @@ import play.api.ApplicationLoader.Context
 import play.api._
 import play.api.http._
 import play.api.i18n.I18nComponents
-import play.api.inject.{ Injector, SimpleInjector }
+import play.api.inject.{Injector, SimpleInjector}
 import play.api.mvc.EssentialFilter
 import play.api.routing.Router
 import uk.gov.hmrc.gform.akka.AkkaModule
@@ -30,14 +30,14 @@ import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.dms.DmsModule
 import uk.gov.hmrc.gform.email.EmailModule
 import uk.gov.hmrc.gform.fileupload.FileUploadModule
-import uk.gov.hmrc.gform.form.{ FormModule, FormService }
+import uk.gov.hmrc.gform.form.{FormModule, FormService}
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.graphite.GraphiteModule
 import uk.gov.hmrc.gform.metrics.MetricsModule
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorModule
-import uk.gov.hmrc.gform.playcomponents.{ PlayComponents, PlayComponentsModule }
-import uk.gov.hmrc.gform.save4later.{ Save4Later, Save4LaterModule }
+import uk.gov.hmrc.gform.playcomponents.{PlayComponents, PlayComponentsModule}
+import uk.gov.hmrc.gform.save4later.{Save4Later, Save4LaterModule}
 import uk.gov.hmrc.gform.submission.SubmissionModule
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsHttpApiModule
 import uk.gov.hmrc.gform.testonly.TestOnlyModule
@@ -47,7 +47,7 @@ import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.gform.obligation.ObligationModule
 import uk.gov.hmrc.gform.submission.destinations.DestinationModule
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class ApplicationLoader extends play.api.ApplicationLoader {
   def load(context: Context): Application = {
@@ -82,7 +82,7 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
   lazy val save4later =
     new Save4Later(shortLivedCacheModule.shortLivedCache)
 
-  lazy val formService =
+  lazy val formService: FormService[Future] =
     new FormService(save4later, fileUploadModule.fileUploadService, formTemplateModule.formTemplateService)
 
   lazy val formModule =

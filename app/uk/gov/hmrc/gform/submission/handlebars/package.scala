@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.gform.submission
 
-import uk.gov.hmrc.gform.sharedmodel.{ PdfHtml, SubmissionRef }
+import uk.gov.hmrc.gform.sharedmodel.form.FormId
+import uk.gov.hmrc.gform.sharedmodel.{PdfHtml, SubmissionRef}
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HandlebarsTemplateProcessorModel
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
@@ -26,12 +27,13 @@ package object handlebars {
 
   object HandlebarsModelTree {
     def apply(
+      formId: FormId,
       submissionRef: SubmissionRef,
       formTemplate: FormTemplate,
       pdfData: PdfHtml,
       structuredFormData: StructuredFormValue.ObjectStructure,
       model: HandlebarsTemplateProcessorModel,
       children: HandlebarsModelTree*): HandlebarsModelTree =
-      Tree(HandlebarsModelTreeNode(submissionRef, formTemplate, model, pdfData, structuredFormData), children: _*)
+      Tree(HandlebarsModelTreeNode(formId, submissionRef, formTemplate, model, pdfData, structuredFormData), children: _*)
   }
 }
