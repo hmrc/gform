@@ -109,6 +109,7 @@ class TestOnlyController(
               HandlebarsTemplateProcessorModel.empty,
               FocussedHandlebarsModelTree(
                 HandlebarsModelTree(
+                  submission._id,
                   submission.submissionRef,
                   formTemplate,
                   submissionData.pdfData,

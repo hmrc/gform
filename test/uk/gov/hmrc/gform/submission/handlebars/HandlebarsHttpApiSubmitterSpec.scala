@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.submission.handlebars
 import cats.MonadError
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.PdfHtml
+import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.gform.{ Possible, Spec, possibleMonadError }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, PrimitiveGen }
@@ -199,6 +200,12 @@ class HandlebarsHttpApiSubmitterSpec extends Spec {
     FocussedHandlebarsModelTree(tree(model), model)
 
   def tree(model: HandlebarsTemplateProcessorModel) =
-    HandlebarsModelTree(submissionRef, null, PdfHtml(""), StructuredFormValue.ObjectStructure(Nil), model)
+    HandlebarsModelTree(
+      FormId("someFormId"),
+      submissionRef,
+      null,
+      PdfHtml(""),
+      StructuredFormValue.ObjectStructure(Nil),
+      model)
 
 }

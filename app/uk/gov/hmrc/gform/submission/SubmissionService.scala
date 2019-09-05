@@ -70,6 +70,7 @@ class SubmissionService(
       .map(
         model =>
           HandlebarsModelTree(
+            form._id,
             submissionRef,
             formTemplate,
             submissionData.pdfData,

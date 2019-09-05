@@ -65,9 +65,12 @@ class FormBundleSubmissionService[F[_]](
       _         <- transitionAllChildNodesToSubmitted(modelTree)
     } yield ()
 
-  private def transitionAllChildNodesToSubmitted(modelTree: HandlebarsModelTree)(implicit hc: HeaderCarrier): F[Unit] = {
+  private def transitionAllChildNodesToSubmitted(modelTree: HandlebarsModelTree)(
+    implicit hc: HeaderCarrier): F[Unit] = {
     def doTransitions =
-      modelTree.toList.tail.traverse { node => formAlgebra.forceUpdateFormStatus(node.formId, Submitted) }.void
+      modelTree.toList.tail.traverse { node =>
+        formAlgebra.forceUpdateFormStatus(node.formId, Submitted)
+      }.void
 
     formAlgebra
       .get(modelTree.value.formId)
@@ -76,7 +79,6 @@ class FormBundleSubmissionService[F[_]](
         else ().pure[F]
       }
   }
-
 
   private def createModelTree(rootFormId: FormId, submissionData: NonEmptyList[BundledFormSubmissionData])(
     implicit hc: HeaderCarrier): F[HandlebarsModelTree] =

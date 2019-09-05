@@ -708,12 +708,14 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
 
         val tree: HandlebarsModelTree =
           HandlebarsModelTree(
+            FormId("parentId"),
             SubmissionRef("parent"),
             null,
             PdfHtml(""),
             StructuredFormValue.ObjectStructure(Nil),
             rootModel,
             HandlebarsModelTree(
+              FormId("childId"),
               childSubmissionReference,
               formTemplateWithDestination,
               PdfHtml(""),
@@ -741,7 +743,14 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     process(
       functionCall,
       FocussedHandlebarsModelTree(
-        HandlebarsModelTree(SubmissionRef(""), null, PdfHtml(""), StructuredFormValue.ObjectStructure(Nil), model)))
+        HandlebarsModelTree(
+          FormId("someFormId"),
+          SubmissionRef(""),
+          null,
+          PdfHtml(""),
+          StructuredFormValue.ObjectStructure(Nil),
+          model))
+    )
   }
 
   private def process(functionCall: String): String =
@@ -751,7 +760,14 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     process(
       functionCall,
       FocussedHandlebarsModelTree(
-        HandlebarsModelTree(SubmissionRef(""), null, PdfHtml(""), StructuredFormValue.ObjectStructure(Nil), model)))
+        HandlebarsModelTree(
+          FormId("someFormId"),
+          SubmissionRef(""),
+          null,
+          PdfHtml(""),
+          StructuredFormValue.ObjectStructure(Nil),
+          model))
+    )
 
   private def process(functionCall: String, tree: FocussedHandlebarsModelTree): String =
     RealHandlebarsTemplateProcessor(functionCall, HandlebarsTemplateProcessorModel.empty, tree, TemplateType.Plain)

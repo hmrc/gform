@@ -49,11 +49,13 @@ class DestinationsSubmitterSpec
           .send(
             submissionInfo,
             HandlebarsModelTree(
+              submissionInfo.formId,
               SubmissionRef(""),
               exampleTemplateWithDestinations(destination),
               pdfData,
               structuredFormValue,
-              HandlebarsTemplateProcessorModel.empty)
+              HandlebarsTemplateProcessorModel.empty
+            )
           )
     }
   }
@@ -73,11 +75,13 @@ class DestinationsSubmitterSpec
           .send(
             submissionInfo,
             HandlebarsModelTree(
+              submissionInfo.formId,
               SubmissionRef(""),
               exampleTemplateWithDestinations(destination),
               pdfData,
               structuredFormValue,
-              destinationModel))
+              destinationModel)
+          )
     }
   }
 
@@ -123,6 +127,7 @@ class DestinationsSubmitterSpec
         .send(
           submissionInfo,
           HandlebarsModelTree(
+            submissionInfo.formId,
             SubmissionRef(""),
             exampleTemplateWithDestinations(handlebarsHttpApi1, handlebarsHttpApi2),
             PdfHtml(""),

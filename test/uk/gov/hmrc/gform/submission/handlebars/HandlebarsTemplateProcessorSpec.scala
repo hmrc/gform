@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.submission.handlebars
 
 import uk.gov.hmrc.gform.Spec
+import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.gform.sharedmodel.{ PdfHtml, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ HandlebarsTemplateProcessorModel, SingleQuoteReplacementLexer, TemplateType }
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
@@ -64,7 +65,13 @@ class HandlebarsTemplateProcessorSpec extends Spec {
     process(
       functionCall,
       FocussedHandlebarsModelTree(
-        HandlebarsModelTree(SubmissionRef(""), null, PdfHtml(""), StructuredFormValue.ObjectStructure(Nil), model)),
+        HandlebarsModelTree(
+          FormId("someFormId"),
+          SubmissionRef(""),
+          null,
+          PdfHtml(""),
+          StructuredFormValue.ObjectStructure(Nil),
+          model)),
       templateType
     )
   }
@@ -79,7 +86,13 @@ class HandlebarsTemplateProcessorSpec extends Spec {
     process(
       functionCall,
       FocussedHandlebarsModelTree(
-        HandlebarsModelTree(SubmissionRef(""), null, PdfHtml(""), StructuredFormValue.ObjectStructure(Nil), model)),
+        HandlebarsModelTree(
+          FormId("someFormId"),
+          SubmissionRef(""),
+          null,
+          PdfHtml(""),
+          StructuredFormValue.ObjectStructure(Nil),
+          model)),
       templateType
     )
 
