@@ -697,7 +697,7 @@ class HandlebarsTemplateProcessorHelpers(
   private def ifNotNull[T](t: T)(f: T => CharSequence): CharSequence =
     if (t == null) NullString else f(t)
 
-  private def asBoolean(t: Any): Boolean = t match {
+  private def asBoolean(t: Any): Boolean = t.toString match {
     case "true"  => true
     case "false" => false
     case _ =>
