@@ -245,7 +245,9 @@ object FormatParser {
 
   lazy val moneyFormat: RoundingMode => Parser[TextFormat] = rm => {
     "sterling" ^^ { (loc, _) =>
-      TextFormat(Sterling(rm))
+      TextFormat(Sterling(rm, false))
+    } | "positiveSterling" ^^ { (loc, _) =>
+      TextFormat(Sterling(rm, true))
     } | "ukBankAccountNumber" ^^ { (loc, _) =>
       TextFormat(UkBankAccountNumber)
     } | "ukSortCode" ^^ { (loc, _) =>
