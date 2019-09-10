@@ -69,7 +69,7 @@ class FormBundleSubmissionService[F[_]](
     implicit hc: HeaderCarrier): F[Unit] = {
     def doTransitions =
       modelTree.toList.tail.traverse { node =>
-        formAlgebra.forceUpdateFormStatus(node.formId, Submitted)
+        forceUpdateFormStatus(node.formId, Submitted)
       }.void
 
     formAlgebra
