@@ -73,6 +73,6 @@ class RetryingSpec extends Spec {
   implicit val scheduler: Scheduler = ActorSystem().scheduler
   trait RetryingTest extends Retrying {
     def runWith3Retries(f: StubFunction0[Future[Int]]): Future[Int] =
-      retry(f(), Seq(10.milliseconds, 100.milliseconds))
+      retry(f(), Seq(10.milliseconds, 100.milliseconds), "")
   }
 }

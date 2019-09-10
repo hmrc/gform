@@ -60,11 +60,19 @@ class Helper(config: FUConfig) {
 }
 
 trait Retrying {
-  def retry[T](f: => Future[T], delays: Seq[FiniteDuration])(implicit ec: ExecutionContext, s: Scheduler): Future[T] =
+  def retry[T](f: => Future[T], delays: Seq[FiniteDuration], msg: String)(
+    implicit ec: ExecutionContext,
+    s: Scheduler): Future[T] =
     f recoverWith {
-      case _ if delays.nonEmpty => {
-        Logger.warn(s"Retrying after ${delays.head}")
-        after(delays.head, s)(retry(f, delays.tail))
+      case t => {
+        delays match {
+          case Nil =>
+            Logger.warn(s"Giving up: $msg")
+            Future.failed(t)
+          case delay :: rest =>
+            Logger.warn(s"Retrying after $delay: $msg")
+            after(delay, s)(retry(f, rest, msg))
+        }
       }
     }
 }

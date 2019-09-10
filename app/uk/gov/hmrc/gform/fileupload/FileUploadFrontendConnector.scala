@@ -35,16 +35,19 @@ class FileUploadFrontendConnector(config: FUConfig, wSHttp: WSHttp)(implicit ex:
   def upload(envelopeId: EnvelopeId, fileId: FileId, fileName: String, body: ByteString, contentType: ContentType)(
     implicit hc: HeaderCarrier): Future[Unit] = {
     implicit val schduler: Scheduler = InjectionDodge.actorSystem.scheduler
-    Logger.info(
+
+    val msg =
       s"upload, envelopeId: '${envelopeId.value}',  fileId: '${fileId.value}', fileName: '$fileName', contentType: '${contentType.value}, ${loggingHelpers
-        .cleanHeaderCarrierHeader(hc)}'")
+        .cleanHeaderCarrierHeader(hc)}'"
+    Logger.info(msg)
 
     val url = s"$baseUrl/file-upload/upload/envelopes/${envelopeId.value}/files/${fileId.value}"
     retry(
       wSHttp
         .POSTFile(url, fileName, body, Seq("CSRF-token" -> "nocheck"), contentType.value)
         .failWithNonSuccessStatusCodes(url),
-      Seq(10.milliseconds, 100.milliseconds, 2.seconds)
+      Seq(10.milliseconds, 100.milliseconds, 2.seconds),
+      msg
     ).void
   }
 
