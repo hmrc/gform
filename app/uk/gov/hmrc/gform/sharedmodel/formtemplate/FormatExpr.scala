@@ -159,7 +159,7 @@ case class ShortText(min: Int, max: Int) extends TextConstraint
 object ShortText { val default = ShortText(0, 1000) }
 case class Lookup(register: Register) extends TextConstraint
 case class TextWithRestrictions(min: Int, max: Int) extends TextConstraint
-case class Sterling(roundingMode: RoundingMode) extends TextConstraint
+case class Sterling(roundingMode: RoundingMode, positiveOnly: Boolean) extends TextConstraint
 case object UkBankAccountNumber extends TextConstraint
 case object UkSortCodeFormat extends TextConstraint
 case object SubmissionRefFormat extends TextConstraint

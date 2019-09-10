@@ -54,11 +54,14 @@ trait FormatExprGen {
       max <- Gen.posNum[Int]
     } yield TextWithRestrictions(min, max)
 
-  def shortText: Gen[TextWithRestrictions] =
+  def shortText: Gen[ShortText] =
     for {
       min <- Gen.posNum[Int]
       max <- Gen.posNum[Int]
-    } yield TextWithRestrictions(min, max)
+    } yield ShortText(min, max)
+
+  def sterlingGen: Gen[Sterling] =
+    PrimitiveGen.booleanGen.map(b => Sterling(RoundingMode.defaultRoundingMode, b))
 
   def textConstraintGen: Gen[TextConstraint] = Gen.oneOf(
     Gen.const(AnyText),
@@ -67,7 +70,7 @@ trait FormatExprGen {
     Gen.const(BasicText),
     shortText,
     textWithRestrictions,
-    Gen.const(Sterling(RoundingMode.defaultRoundingMode)),
+    sterlingGen,
     Gen.const(UkBankAccountNumber),
     Gen.const(UkSortCodeFormat),
     Gen.const(UTR),
