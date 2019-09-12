@@ -106,19 +106,20 @@ class RepoDestinationAuditer(
     auditRepository
       .search(DestinationAuditAlgebra.auditRepoFormIdSearch(formId))
       .subflatMap {
-        _.sortWith((x, y) => x.timestamp.isAfter(y.timestamp)).headOption
+        getLatest(_)
           .toRight(UnexpectedState(s"Could not find any audits for form with ID ${formId.value}"))
       }
 
   def findLatestChildAudits(submissionRef: SubmissionRef): FOpt[List[DestinationAudit]] =
     auditRepository
-      .search(
-        Json.obj("parentFormSubmissionRefs" ->
-          Json.obj("$in" -> Json.arr(JsString(submissionRef.value)))))
+      .search(DestinationAuditAlgebra.auditRepoLatestChildAuditsSearch(submissionRef))
       .map {
         _.groupBy(_.formId).values.toList
-          .flatMap(_.sortWith { case (x, y) => x.timestamp.isAfter(y.timestamp) }.headOption)
+          .flatMap(getLatest)
       }
+
+  def getLatest(audits: List[DestinationAudit]): Option[DestinationAudit] =
+    audits.sortWith((x, y) => x.timestamp.isAfter(y.timestamp)).headOption
 
   def getLatestPdfHtml(formId: FormId)(implicit hc: HeaderCarrier): FOpt[PdfHtml] =
     getLatestForForm(formId).flatMap { audit =>

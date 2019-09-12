@@ -43,4 +43,9 @@ trait DestinationAuditAlgebra[M[_]] {
 
 object DestinationAuditAlgebra {
   def auditRepoFormIdSearch(formId: FormId): JsObject = Json.obj("formId" -> JsString(formId.value))
+
+  def auditRepoLatestChildAuditsSearch(parentSubmissionRef: SubmissionRef): JsObject =
+    Json.obj(
+      "parentFormSubmissionRefs" ->
+        Json.obj("$in" -> Json.arr(JsString(parentSubmissionRef.value))))
 }
