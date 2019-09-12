@@ -24,6 +24,7 @@ import cats.syntax.eq._
 import cats.syntax.flatMap._
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.{ ArrayNode, TextNode }
+import play.api.Logger
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
@@ -118,8 +119,16 @@ class RepoDestinationAuditer(
           .flatMap(getLatest)
       }
 
-  def getLatest(audits: List[DestinationAudit]): Option[DestinationAudit] =
-    audits.sortWith((x, y) => x.timestamp.isAfter(y.timestamp)).headOption
+  def getLatest(audits: List[DestinationAudit]): Option[DestinationAudit] = {
+    val sorted = audits.sortWith((x, y) => x.timestamp.isAfter(y.timestamp))
+    val selected = sorted.headOption
+    selected.foreach { s =>
+      Loggers.destinations.info(
+        s"Latest audit record selected for ${s.submissionRef.value} with timestamp ${s.timestamp}. Selected from records with timestamps: ${sorted
+          .map(_.timestamp)}")
+    }
+    selected
+  }
 
   def getLatestPdfHtml(formId: FormId)(implicit hc: HeaderCarrier): FOpt[PdfHtml] =
     getLatestForForm(formId).flatMap { audit =>
