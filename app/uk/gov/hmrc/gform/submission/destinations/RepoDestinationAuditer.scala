@@ -105,9 +105,9 @@ class RepoDestinationAuditer(
 
   def getLatestForForm(formId: FormId)(implicit hc: HeaderCarrier): FOpt[DestinationAudit] =
     auditRepository
-      .search(DestinationAuditAlgebra.auditRepoFormIdSearch(formId))
+      .search(DestinationAuditAlgebra.auditRepoFormIdSearch(formId), DestinationAuditAlgebra.latestTimestampFirst)
       .subflatMap {
-        getLatest(_)
+        _.headOption
           .toRight(UnexpectedState(s"Could not find any audits for form with ID ${formId.value}"))
       }
 

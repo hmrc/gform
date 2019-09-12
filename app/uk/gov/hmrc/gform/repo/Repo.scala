@@ -43,7 +43,20 @@ class Repo[T: OWrites: Manifest](name: String, mongo: () => DefaultDB, idLens: T
 
   def search(selector: JsObject)(implicit ec: ExecutionContext): Future[List[T]] =
     //TODO: don't abuse it to much. If querying for a large underlyingReactiveRepository.collection.consider returning stream instead of packing everything into the list
-    underlying.collection.find(selector = selector, npProjection).cursor[T]().collect[List]()
+    underlying.collection
+      .find(selector = selector, npProjection)
+      .updateOptions(_.batchSize(Integer.MAX_VALUE))
+      .cursor[T]()
+      .collect[List]()
+
+  def search(selector: JsObject, orderBy: JsObject)(implicit ec: ExecutionContext): Future[List[T]] =
+    //TODO: don't abuse it to much. If querying for a large underlyingReactiveRepository.collection.consider returning stream instead of packing everything into the list
+    underlying.collection
+      .find(selector = selector, npProjection)
+      .sort(orderBy)
+      .updateOptions(_.batchSize(Integer.MAX_VALUE))
+      .cursor[T]()
+      .collect[List]()
 
   def projection[P: Format](projection: JsObject)(implicit ec: ExecutionContext): Future[List[P]] =
     underlying.collection.find(selector = Json.obj(), projection).cursor[P]().collect[List]()

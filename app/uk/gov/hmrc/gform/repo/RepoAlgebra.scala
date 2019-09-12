@@ -25,6 +25,7 @@ trait RepoAlgebra[T, F[_]] {
   def upsert(t: T): F[Unit]
   def get(id: String): F[T]
   def search(selector: JsObject): F[List[T]]
+  def search(selector: JsObject, orderBy: JsObject): F[List[T]]
 }
 
 object RepoAlgebra {
@@ -33,5 +34,7 @@ object RepoAlgebra {
       override def upsert(t: T): FOpt[Unit] = repo.upsert(t)
       override def get(id: String): FOpt[T] = fromFutureA(repo.get(id))
       override def search(selector: JsObject): FOpt[List[T]] = fromFutureA(repo.search(selector))
+      override def search(selector: JsObject, orderBy: JsObject): FOpt[List[T]] =
+        fromFutureA(repo.search(selector, orderBy))
     }
 }

@@ -48,4 +48,6 @@ object DestinationAuditAlgebra {
     Json.obj(
       "parentFormSubmissionRefs" ->
         Json.obj("$in" -> Json.arr(JsString(parentSubmissionRef.value))))
+
+  val latestTimestampFirst: JsObject = Json.obj("timestamp" -> JsNumber(-1))
 }
