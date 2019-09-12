@@ -16,8 +16,7 @@
 
 package uk.gov.hmrc.gform.submission.destinations
 
-import cats.Id
-import uk.gov.hmrc.gform.Spec
+import uk.gov.hmrc.gform.{ Possible, Spec, possibleMonadError }
 import uk.gov.hmrc.gform.form.BundledFormTreeNode
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
@@ -35,7 +34,9 @@ class DestinationAuditerFormTreeServiceSpec extends Spec with DestinationAuditGe
         .expectAuditAlgebraGetLatestForForm(rootAudit.formId, rootAudit)
         .expectFindLatestChildAudits(rootAudit.submissionRef, Nil)
         .service
-        .getFormTree(rootAudit.formId) shouldBe
+        .getFormTree(rootAudit.formId)
+        .right
+        .value shouldBe
         Tree(BundledFormTreeNode(rootAudit.formId, rootAudit.submissionRef, rootAudit.formTemplateId))
     }
   }
@@ -51,7 +52,9 @@ class DestinationAuditerFormTreeServiceSpec extends Spec with DestinationAuditGe
           .expectFindLatestChildAudits(root.submissionRef, List(child))
           .expectFindLatestChildAudits(child.submissionRef, Nil)
           .service
-          .getFormTree(root.formId) shouldBe
+          .getFormTree(root.formId)
+          .right
+          .value shouldBe
           formTree(root, formTree(child))
       }
     }
@@ -73,7 +76,9 @@ class DestinationAuditerFormTreeServiceSpec extends Spec with DestinationAuditGe
             .expectFindLatestChildAudits(child.submissionRef, List(grandchild))
             .expectFindLatestChildAudits(grandchild.submissionRef, Nil)
             .service
-            .getFormTree(root.formId) shouldBe
+            .getFormTree(root.formId)
+            .right
+            .value shouldBe
             formTree(root, formTree(child, formTree(grandchild)))
         }
     }
@@ -98,8 +103,34 @@ class DestinationAuditerFormTreeServiceSpec extends Spec with DestinationAuditGe
             .expectFindLatestChildAudits(child2.submissionRef, Nil)
             .expectFindLatestChildAudits(child3.submissionRef, Nil)
             .service
-            .getFormTree(root.formId) shouldBe
+            .getFormTree(root.formId)
+            .right
+            .value shouldBe
             formTree(root, formTree(child1), formTree(child2), formTree(child3))
+        }
+    }
+  }
+
+  it must "detect cycles" in {
+    forAll(destinationAuditGen, destinationAuditGen, destinationAuditGen) {
+      (generatedRoot, generatedChild, generatedGrandchild) =>
+        val root = generatedRoot.copy(parentFormSubmissionRefs = Nil)
+        val child = generatedChild.copy(
+          parentFormSubmissionRefs = List(root.submissionRef.value, generatedGrandchild.submissionRef.value))
+        val grandchild = generatedGrandchild.copy(parentFormSubmissionRefs = List(child.submissionRef.value))
+
+        whenever(
+          distinct(root, child, grandchild)(_.submissionRef) &&
+            distinct(root, child, grandchild)(_.parentFormSubmissionRefs)) {
+          createService()
+            .expectAuditAlgebraGetLatestForForm(root.formId, root)
+            .expectFindLatestChildAudits(root.submissionRef, List(child))
+            .expectFindLatestChildAudits(child.submissionRef, List(grandchild))
+            .expectFindLatestChildAudits(grandchild.submissionRef, List(child))
+            .service
+            .getFormTree(root.formId)
+            .left
+            .value shouldBe FormTreeService.cycleErrorMessage(child.submissionRef)
         }
     }
   }
@@ -110,12 +141,12 @@ class DestinationAuditerFormTreeServiceSpec extends Spec with DestinationAuditGe
   private def formTree(audit: DestinationAudit, children: Tree[BundledFormTreeNode]*): Tree[BundledFormTreeNode] =
     Tree(BundledFormTreeNode(audit.formId, audit.submissionRef, audit.formTemplateId), children: _*)
 
-  case class Fixture(service: FormTreeService[Id], auditAlgebra: DestinationAuditAlgebra[Id]) {
+  case class Fixture(service: FormTreeService[Possible], auditAlgebra: DestinationAuditAlgebra[Possible]) {
     def expectAuditAlgebraGetLatestForForm(formId: FormId, audit: DestinationAudit): Fixture = {
       (auditAlgebra
         .getLatestForForm(_: FormId)(_: HeaderCarrier))
         .expects(formId, hc)
-        .returning(audit)
+        .returning(Right(audit))
       this
     }
 
@@ -123,13 +154,13 @@ class DestinationAuditerFormTreeServiceSpec extends Spec with DestinationAuditGe
       (auditAlgebra
         .findLatestChildAudits(_: SubmissionRef))
         .expects(submissionRef)
-        .returning(childAudits)
+        .returning(Right(childAudits))
       this
     }
   }
 
   def createService(): Fixture = {
-    val auditAlgebra = mock[DestinationAuditAlgebra[Id]]
-    Fixture(new FormTreeService(auditAlgebra), auditAlgebra)
+    val auditAlgebra = mock[DestinationAuditAlgebra[Possible]]
+    Fixture(new FormTreeService[Possible](auditAlgebra), auditAlgebra)
   }
 }

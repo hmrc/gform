@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.submission.destinations
 
-import cats.Monad
+import cats.MonadError
 import cats.instances.list._
 import cats.syntax.applicative._
 import cats.syntax.flatMap._
@@ -29,29 +29,47 @@ import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.gform.submission.Tree
 import uk.gov.hmrc.http.HeaderCarrier
 
-class FormTreeService[M[_]: Monad](auditAlgebra: DestinationAuditAlgebra[M]) extends FormTreeAlgebra[M] {
+class FormTreeService[M[_]](auditAlgebra: DestinationAuditAlgebra[M])(implicit M: MonadError[M, String])
+    extends FormTreeAlgebra[M] {
   def getFormTree(rootFormId: FormId)(implicit hc: HeaderCarrier): M[Tree[BundledFormTreeNode]] =
     for {
       _    <- Logger.info(s"getFormTree(${rootFormId.value})").pure[M]
-      tree <- auditAlgebra.getLatestForForm(rootFormId).flatMap(buildHierarchyForAudit)
+      tree <- auditAlgebra.getLatestForForm(rootFormId).flatMap(buildHierarchyForAudit(_, Set.empty))
     } yield tree
 
-  private def buildDescendantTreesForChildAudits(childAudits: List[DestinationAudit]) =
+  private def buildDescendantTreesForChildAudits(
+    childAudits: List[DestinationAudit],
+    processedSubmissionReferences: Set[SubmissionRef]) =
     childAudits
-      .traverse(buildHierarchyForAudit)
+      .traverse(buildHierarchyForAudit(_, processedSubmissionReferences))
 
-  private def buildDescendantTreesForSubmissionRef(submissionRef: SubmissionRef) =
+  private def buildDescendantTreesForSubmissionRef(
+    submissionRef: SubmissionRef,
+    processedSubmissionReferences: Set[SubmissionRef]) =
     for {
       _           <- Logger.info(s"buildDescendantTreesForSubmissionRef(${submissionRef.value})").pure[M]
+      _           <- verifyNoLoops(submissionRef, processedSubmissionReferences)
       childAudits <- auditAlgebra.findLatestChildAudits(submissionRef)
       _ = Logger.info(
         s"buildDescendantTreesForSubmissionRef(${submissionRef.value}) - child submission references: [${childAudits.map(_.submissionRef.value).mkString(", ")}]")
-      descendantTrees <- buildDescendantTreesForChildAudits(childAudits)
+      descendantTrees <- buildDescendantTreesForChildAudits(childAudits, processedSubmissionReferences + submissionRef)
     } yield descendantTrees
 
-  private def buildHierarchyForAudit(audit: DestinationAudit): M[Tree[BundledFormTreeNode]] =
+  private def buildHierarchyForAudit(
+    audit: DestinationAudit,
+    processedSubmissionReferences: Set[SubmissionRef]): M[Tree[BundledFormTreeNode]] =
     for {
       _     <- Logger.info(s"buildHierarchyForAudit(${audit.submissionRef.value})").pure[M]
-      trees <- buildDescendantTreesForSubmissionRef(audit.submissionRef)
+      trees <- buildDescendantTreesForSubmissionRef(audit.submissionRef, processedSubmissionReferences)
     } yield Tree(BundledFormTreeNode(audit.formId, audit.submissionRef, audit.formTemplateId), trees)
+
+  private def verifyNoLoops(submissionRef: SubmissionRef, processedSubmissionReferences: Set[SubmissionRef]): M[Unit] =
+    if (processedSubmissionReferences.contains(submissionRef))
+      M.raiseError(FormTreeService.cycleErrorMessage(submissionRef))
+    else ().pure[M]
+}
+
+object FormTreeService {
+  def cycleErrorMessage(submissionRef: SubmissionRef): String =
+    s"A cycle of submission references has been detected involving ${submissionRef.value}"
 }
