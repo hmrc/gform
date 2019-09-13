@@ -44,10 +44,14 @@ trait DestinationAuditAlgebra[M[_]] {
 object DestinationAuditAlgebra {
   def auditRepoFormIdSearch(formId: FormId): JsObject = Json.obj("formId" -> JsString(formId.value))
 
-  def auditRepoLatestChildAuditsSearch(parentSubmissionRef: SubmissionRef): JsObject =
+  def auditRepoLatestChildAuditsSearch(parentSubmissionRef: SubmissionRef): JsObject = {
+    val parentSubmissionRefJson = JsString(parentSubmissionRef.value)
     Json.obj(
+      "submissionRef" ->
+        Json.obj("$ne" -> parentSubmissionRefJson),
       "parentFormSubmissionRefs" ->
-        Json.obj("$in" -> Json.arr(JsString(parentSubmissionRef.value))))
+        Json.obj("$in" -> Json.arr(parentSubmissionRefJson)))
+  }
 
   val latestTimestampFirst: JsObject = Json.obj("timestamp" -> JsNumber(-1))
 }
