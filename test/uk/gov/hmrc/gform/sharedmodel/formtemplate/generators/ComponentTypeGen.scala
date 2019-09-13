@@ -67,14 +67,15 @@ trait ComponentTypeGen {
   def revealingChoiceElementGen: Gen[RevealingChoiceElement] =
     for {
       choice   <- LocalisedStringGen.localisedStringGen
-      fields   <- PrimitiveGen.zeroOrMoreGen(FormComponentGen.formComponentGen(3))
+      fields   <- PrimitiveGen.zeroOrMoreGen(FormComponentGen.formComponentGen())
       selected <- PrimitiveGen.booleanGen
     } yield RevealingChoiceElement(choice, fields, selected)
 
   def revealingChoiceGen: Gen[RevealingChoice] =
     for {
       revealingChoiceElements <- PrimitiveGen.oneOrMoreGen(revealingChoiceElementGen)
-    } yield RevealingChoice(revealingChoiceElements)
+      multivalue              <- PrimitiveGen.booleanGen
+    } yield RevealingChoice(revealingChoiceElements, multivalue)
 
   def hmrcTaxPeriodGen: Gen[HmrcTaxPeriod] =
     for {
