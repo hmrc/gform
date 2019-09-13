@@ -10,13 +10,14 @@
   "submitErrorUrl": "http://www.yahoo.co.uk",
   "sections": [
     {
-      "title": "Trading Additional Details $n",
-      "repeatsMax": "${4}",
-      "repeatsMin": "${4}",
+      "title": "Multi-Value Revealing Choice",
+      "repeatsMin": "${2}",
+      "repeatsMax": "${2}",
       "fields": [
         {
-          "id": "tradesUnderDifferentName1",
+          "id": "revealing",
           "type": "revealingChoice",
+          "multivalue": "true",
           "label": "Trading Details",
           "choices": [
             "Address",
@@ -33,15 +34,23 @@
                 "type":"address",
                 "id":"homeAddress",
                 "label":"Home Address",
+                "shortName":"Home Address",
                 "postcodeLookup":"no"
               }
             ],
             [
               {
-                "id":"date2",
+                "id":"startDate",
                 "type":"date",
-                "label":"Enter the Date Field",
-                "shortName":"date",
+                "label":"Enter the Start Date",
+                "shortName":"Start Date",
+                "format":"precisely YYYY-MM-lastDay"
+              },
+              {
+                "id":"endDate",
+                "type":"date",
+                "label":"Enter the End Field",
+                "shortName":"End Date",
                 "format":"precisely YYYY-MM-lastDay"
               }
             ],
@@ -56,7 +65,8 @@
               {
                 "id": "sortCode",
                 "type": "text",
-                "label": "Sort code",
+                "label": "Sort Code",
+                "shortName": "Sort Code",
                 "format": "ukSortCode"
               }
             ],
@@ -133,12 +143,13 @@
   },
   "destinations": [
     {
-      "id": "testDestination",
-      "type": "handlebarsHttpApi",
-      "uri": "form",
-      "profile": "des",
-      "method": "POST",
-      "convertSingleQuotes": true
+      "id": "logit",
+      "type": "log"
+    },
+    {
+      "id": "transitionToSubmitted",
+      "type": "stateTransition",
+      "requiredState": "Submitted"
     }
   ]
 }

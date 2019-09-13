@@ -99,7 +99,24 @@ class DestinationSubmitter[M[_], R](
         submitter
           .submitToList(DestinationList(d.destinations), submissionInfo, accumulatedModel, modelTree)
       case d: Destination.StateTransition => stateTransitionAlgebra(d, submissionInfo.formId).map(_ => None)
+      case d: Destination.Log             => log(d, accumulatedModel, modelTree).map(_ => None)
     }
+
+  def log(
+    d: Destination.Log,
+    accumulatedModel: HandlebarsTemplateProcessorModel,
+    modelTree: HandlebarsModelTree): M[Unit] = {
+    def modelTreeNodeString(node: HandlebarsModelTreeNode): String =
+      s"${node.submissionRef}, ${node.formId.value}".padTo(100, ' ') + s": ${node.model.model}"
+    def modelTreeStrings(tree: HandlebarsModelTree, depth: Int): List[String] =
+      (("|  " * depth) + modelTreeNodeString(tree.value)) :: tree.children.flatMap(modelTreeStrings(_, depth + 1))
+
+    Loggers.destinations.logger
+      .info(
+        s"destination: ${d.id}, accumulatedModel: ${accumulatedModel.model}, modelTree:\n${modelTreeStrings(modelTree, 1)
+          .mkString("\n")}")
+      .pure[M]
+  }
 
   def submitToDms(
     submissionInfo: DestinationSubmissionInfo,

@@ -75,11 +75,14 @@ object Destination {
   case class StateTransition(id: DestinationId, requiredState: FormStatus, includeIf: String, failOnError: Boolean)
       extends Destination
 
+  case class Log(id: DestinationId, includeIf: String, failOnError: Boolean) extends Destination
+
   val typeDiscriminatorFieldName: String = "type"
   val hmrcDms: String = "hmrcDms"
   val handlebarsHttpApi: String = "handlebarsHttpApi"
   val composite: String = "composite"
   val stateTransition: String = "stateTransition"
+  val log: String = "log"
 
   private implicit def nonEmptyListOfDestinationsFormat: OFormat[NonEmptyList[Destination]] =
     derived.oformat[NonEmptyList[Destination]]
@@ -93,7 +96,8 @@ object Destination {
         hmrcDms           -> UploadableHmrcDmsDestination.reads,
         handlebarsHttpApi -> UploadableHandlebarsHttpApiDestination.reads,
         composite         -> UploadableCompositeDestination.reads,
-        stateTransition   -> UploadableStateTransitionDestination.reads
+        stateTransition   -> UploadableStateTransitionDestination.reads,
+        log               -> UploadableLogDestination.reads
       ))
   }
 }
@@ -208,6 +212,18 @@ object UploadableHandlebarsHttpApiDestination {
     private val d = derived.reads[UploadableHandlebarsHttpApiDestination]
     override def reads(json: JsValue): JsResult[Destination.HandlebarsHttpApi] =
       d.reads(json).flatMap(_.toHandlebarsHttpApiDestination.fold(JsError(_), JsSuccess(_)))
+  }
+}
+
+case class UploadableLogDestination(id: DestinationId) {
+  def toLogDestination: Either[String, Destination.Log] = Right(Destination.Log(id, true.toString, true))
+}
+
+object UploadableLogDestination {
+  implicit val reads: Reads[Destination.Log] = new Reads[Destination.Log] {
+    private val d: Reads[UploadableLogDestination] = derived.reads[UploadableLogDestination]
+    override def reads(json: JsValue): JsResult[Destination.Log] =
+      d.reads(json).flatMap(_.toLogDestination.fold(JsError(_), JsSuccess(_)))
   }
 }
 

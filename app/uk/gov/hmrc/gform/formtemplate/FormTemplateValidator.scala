@@ -19,14 +19,11 @@ package uk.gov.hmrc.gform.formtemplate
 import java.time.LocalDate
 
 import cats.Monoid
-import cats.data.NonEmptyList
 import cats.implicits._
 import scalax.collection.Graph
 import scalax.collection.GraphEdge._
-import uk.gov.hmrc.gform.core.{ Invalid, Opt, Valid, ValidationResult }
+import uk.gov.hmrc.gform.core.{ Invalid, Valid, ValidationResult }
 import uk.gov.hmrc.gform.core.ValidationResult.{ BooleanToValidationResultSyntax, validationResultMonoid }
-import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel.form.FormField
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.graph.DependencyGraph._
 import uk.gov.hmrc.gform.formtemplate.FormTemplateValidatorHelper._
@@ -50,7 +47,7 @@ object FormTemplateValidator {
           .map(_.`type`)
           .collect {
             case Group(fields, _, _, _, _, _) => fields.map(_.id -> idx)
-            case RevealingChoice(options)     => options.toList.flatMap(_.revealingFields.map(_.id -> idx))
+            case RevealingChoice(options, _)  => options.toList.flatMap(_.revealingFields.map(_.id -> idx))
           }
 
         standardFields ::: subFields.flatten
@@ -170,7 +167,7 @@ object FormTemplateValidator {
     case Date(_, _, _)                 => Valid
     case Address(_)                    => Valid
     case Choice(_, _, _, _, _)         => Valid
-    case RevealingChoice(revealingChoiceElements) =>
+    case RevealingChoice(revealingChoiceElements, _) =>
       validate(revealingChoiceElements.toList.flatMap(_.revealingFields.map(_.`type`)), formTemplate)
     case HmrcTaxPeriod(_, _, _)    => Valid
     case Group(fvs, _, _, _, _, _) => validate(fvs.map(_.`type`), formTemplate)
@@ -288,7 +285,7 @@ object FormTemplateValidator {
 
   private val isRevealingChoice: FormComponent => Boolean = fc =>
     fc.`type` match {
-      case RevealingChoice(_) => true
+      case _: RevealingChoice => true
       case _                  => false
   }
 
@@ -305,7 +302,7 @@ object FormTemplateValidator {
 
   def validateRevealingChoice(formTemplate: FormTemplate): ValidationResult =
     validateComponents("Revealing choice", formTemplate)(f => {
-      case RevealingChoice(options) => options.forall(_.revealingFields.forall(f))
+      case RevealingChoice(options, _) => options.forall(_.revealingFields.forall(f))
     })
 
   private def validateComponents(str: String, formTemplate: FormTemplate)(
@@ -314,7 +311,7 @@ object FormTemplateValidator {
     val formComponents: List[FormComponent] = formTemplate.sections.flatMap(_.fields)
 
     val rcElements: (FormComponent => Boolean) => Boolean = f =>
-      formComponents.map(_.`type`).collect(pf(f)).foldLeft(true)(_ && _)
+      formComponents.map(_.`type`).collect(pf(f)).forall(identity)
 
     val noRevealingChoice = rcElements(fc => !isRevealingChoice(fc))
     val noGroup = rcElements(fc => !isGroup(fc))

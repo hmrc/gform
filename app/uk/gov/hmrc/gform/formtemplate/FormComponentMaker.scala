@@ -307,9 +307,12 @@ class FormComponentMaker(json: JsValue) {
               case ((choice, fields), selected) => RevealingChoiceElement(choice, fields, selected)
             }
 
-          revealingChoiceElements match {
-            case (x :: xs) => RevealingChoice(NonEmptyList(x, xs)).asRight
-            case Nil       => mkError("At least one choice needs to be specified")
+          (revealingChoiceElements, multivalue) match {
+            case (x :: xs, IsMultivalue(MultivalueYes)) => RevealingChoice(NonEmptyList(x, xs), true).asRight
+            case (x :: xs, IsMultivalue(MultivalueNo))  => RevealingChoice(NonEmptyList(x, xs), false).asRight
+            case (_ :: _, _) =>
+              mkError(s"'$multivalue' is not a valid value for the revealing choice multivalue property")
+            case _ => mkError("At least one choice needs to be specified")
           }
         }
 
