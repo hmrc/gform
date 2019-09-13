@@ -57,8 +57,8 @@ class FormBundleSubmissionService[F[_]](
   def submitFormBundleAfterReview(rootFormId: FormId, submissionData: NonEmptyList[BundledFormSubmissionData])(
     implicit hc: HeaderCarrier): F[Unit] =
     for {
-      modelTree  <- createModelTree(rootFormId, submissionData)
       _          <- formAlgebra.updateFormStatus(rootFormId, Submitting)
+      modelTree  <- createModelTree(rootFormId, submissionData)
       submission <- submissionRepoAlgebra.get(rootFormId.value)
       submissionInfo = DestinationSubmissionInfo("", None, submission)
       _ <- destinationsSubmitterAlgebra.send(submissionInfo, modelTree)
