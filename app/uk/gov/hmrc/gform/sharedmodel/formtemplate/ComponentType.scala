@@ -22,7 +22,7 @@ import julienrf.json.derived
 import play.api.data.validation.ValidationError
 import play.api.libs.json._
 import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService.{ IsFalseish, IsTrueish }
-import uk.gov.hmrc.gform.sharedmodel.{ LocalisedString, ValueClassFormat, formtemplate }
+import uk.gov.hmrc.gform.sharedmodel.{ LocalisedString, ValueClassFormat }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidth.DisplayWidth
 import uk.gov.hmrc.gform.sharedmodel.structuredform.{ FieldName, RoboticsXml, StructuredFormDataFieldNamePurpose }
 
@@ -35,6 +35,7 @@ sealed trait MultiField {
   def alternateNamesFor(fcId: FormComponentId): Map[StructuredFormDataFieldNamePurpose, FieldName] = Map.empty
 
 }
+
 sealed trait ComponentType
 
 case class Text(
@@ -109,8 +110,8 @@ case class Choice(
   options: NonEmptyList[LocalisedString],
   orientation: Orientation,
   selections: List[Int],
-  optionHelpText: Option[NonEmptyList[LocalisedString]])
-    extends ComponentType
+  optionHelpText: Option[NonEmptyList[LocalisedString]]
+) extends ComponentType
 
 sealed trait ChoiceType
 final case object Radio extends ChoiceType
@@ -129,8 +130,10 @@ object RevealingChoiceElement {
 }
 case class RevealingChoice(options: NonEmptyList[RevealingChoiceElement], multiValue: Boolean) extends ComponentType
 object RevealingChoice {
-  import JsonUtils._
-  implicit val format: OFormat[RevealingChoice] = derived.oformat
+  implicit val format: OFormat[RevealingChoice] = {
+    import JsonUtils._
+    derived.oformat
+  }
 }
 
 case class IdType(value: String) extends AnyVal

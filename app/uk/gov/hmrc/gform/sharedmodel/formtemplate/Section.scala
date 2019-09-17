@@ -27,6 +27,14 @@ sealed trait BaseSection {
   def title: LocalisedString
   def shortName: Option[LocalisedString]
   def fields: List[FormComponent]
+
+  def listBasicFormComponents: List[FormComponent] =
+    fields.flatMap { field =>
+      field.`type` match {
+        case g: Group => g.fields
+        case _        => List(field)
+      }
+    }
 }
 
 case class ExpandedSection(expandedFormComponents: List[ExpandedFormComponent]) extends AnyVal {
@@ -114,6 +122,9 @@ case class Section(
 
 object Section {
   implicit val format: OFormat[Section] = Json.format[Section]
+
+  def listBasicFormComponents(sections: List[BaseSection]): List[FormComponent] =
+    sections.flatMap(_.listBasicFormComponents)
 }
 
 case class DeclarationSection(

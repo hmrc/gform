@@ -58,10 +58,10 @@ class FormComponentMaker(json: JsValue) {
   lazy val submitMode: Option[String] = (json \ "submitMode").asOpt[String]
   lazy val choices: Option[List[LocalisedString]] = (json \ "choices").asOpt[List[LocalisedString]]
 
-  lazy val revealingChoiceJson: Option[List[List[JsValue]]] =
+  lazy val revealingFieldsJson: Option[List[List[JsValue]]] =
     (json \ "revealingFields").asOpt[List[List[JsValue]]]
-  lazy val revealingChoice: Option[List[List[FormComponentMaker]]] =
-    revealingChoiceJson.map(_.map(_.map(new FormComponentMaker(_))))
+  lazy val revealingFields: Option[List[List[FormComponentMaker]]] =
+    revealingFieldsJson.map(_.map(_.map(new FormComponentMaker(_))))
 
   lazy val idType: Option[String] = (json \ "idType").asOpt[String]
   lazy val idNumber: Opt[Option[ValueExpr]] = parse("idNumber", ValueParser.validate)
@@ -289,7 +289,7 @@ class FormComponentMaker(json: JsValue) {
   } yield result
 
   private def createRevealingChoice(maybeValueExpr: Option[ValueExpr]): Opt[RevealingChoice] =
-    (choices, maybeValueExpr, revealingChoice.map(_.traverse(_.traverse(_.optFieldValue())))) match {
+    (choices, maybeValueExpr, revealingFields.map(_.traverse(_.traverse(_.optFieldValue())))) match {
       case (Some(options), Selections(selections), Some(Right(revealingFields))) =>
         def mkError[A](error: String): Either[String, A] = s"RevealingChoice error: $error".asLeft
 
@@ -342,10 +342,12 @@ class FormComponentMaker(json: JsValue) {
         } yield rc
 
         res.leftMap(UnexpectedState)
-      case _ => UnexpectedState(s"""|Wrong revealing choice definition
-                                    |choices : ${choices.getOrElse("")}
-                                    |selections: ${maybeValueExpr.getOrElse("")}
-                                    |hidden field ${revealingChoice.getOrElse("")}""".stripMargin).asLeft
+      case _ =>
+        UnexpectedState(s"""|Wrong revealing choice definition
+                            |choices : ${choices.getOrElse("MISSING - This field must be provided")}
+                            |selections: ${maybeValueExpr.getOrElse("")}
+                            |revealingFields: ${revealingFields
+                             .getOrElse("MISSING - This field must be provided")}""".stripMargin).asLeft
     }
 
   private lazy val hmrcTaxPeriodOpt: Opt[HmrcTaxPeriod] = (idType, idNumber, regimeType) match {

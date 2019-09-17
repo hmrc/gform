@@ -201,6 +201,7 @@ object FormTemplateValidator {
       case Or(left, right)                  => boolean(left, idx) ::: boolean(right, idx)
       case And(left, right)                 => boolean(left, idx) ::: boolean(right, idx)
       case IsFalse | IsTrue                 => List(Valid)
+      case Contains(collection, value)      => validateExprs(collection, value, idx)
     }
 
     Monoid[ValidationResult]

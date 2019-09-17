@@ -11,8 +11,6 @@
   "sections": [
     {
       "title": "Multi-Value Revealing Choice",
-      "repeatsMin": "${2}",
-      "repeatsMax": "${2}",
       "fields": [
         {
           "id": "revealing",
@@ -80,14 +78,14 @@
             ],
             [
               {
-                "id": "textBox1",
+                "id": "taxAmount1",
                 "label": "Enter Tax Amount1",
                 "mandatory": "true",
                 "format":"number(6,2)"
               },
               {
-                "id": "textBox2",
-                "label": "Enter Tax Amount2",
+                "id": "taxAmount2",
+                "label": "Enter Tax Amount 2",
                 "mandatory": "true",
                 "format":"number(6,2)"
               }
@@ -101,6 +99,18 @@
               }
             ]
           ]
+        }
+      ]
+    },
+    {
+      "title": "Dependent Field",
+      "includeIf": "${revealing includes 5}",
+      "fields": [
+        {
+          "id": "textBox4",
+          "label": "A field dependent on Tax Amount 2",
+          "mandatory": "false",
+          "format":"number(6,2)"
         }
       ]
     }

@@ -24,7 +24,7 @@ import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate.{ RepeatingComponentService, SectionHelper }
-import uk.gov.hmrc.gform.sharedmodel.Visibility
+import uk.gov.hmrc.gform.sharedmodel.VariadicFormData
 import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormField }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
@@ -80,11 +80,11 @@ object SubmissionServiceHelper {
 
     val allSections = RepeatingComponentService.getAllSections(form, formTemplate)
 
-    val visibility = Visibility(allSections, data.mapValues(_.value :: Nil), affinityGroup)
+    val visibility =
+      Visibility(allSections, VariadicFormData.buildFromMongoData(formTemplate, data.mapValues(_.value)), affinityGroup)
     val filteredSection = allSections.filter(visibility.isVisible)
 
     val sectionsToSubmit = filteredSection :+ formTemplate.declarationSection
     sectionsToSubmit.traverse(toSectionFormField)
   }
-
 }
