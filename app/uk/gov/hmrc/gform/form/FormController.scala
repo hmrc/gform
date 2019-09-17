@@ -55,11 +55,12 @@ class FormController(
   }
 
   def getPlain(userId: UserId, formTemplateId: FormTemplateId): Action[AnyContent] =
-    getByForIdData(FormIdData.Plain(userId, formTemplateId))
-  def get(userId: UserId, formTemplateId: FormTemplateId, accessCode: AccessCode): Action[AnyContent] =
-    getByForIdData(FormIdData.WithAccessCode(userId, formTemplateId, accessCode))
+    getByFormIdData(FormIdData.Plain(userId, formTemplateId))
 
-  private def getByForIdData(formIdData: FormIdData): Action[AnyContent] = Action.async { implicit request =>
+  def get(userId: UserId, formTemplateId: FormTemplateId, accessCode: AccessCode): Action[AnyContent] =
+    getByFormIdData(FormIdData.WithAccessCode(userId, formTemplateId, accessCode))
+
+  private def getByFormIdData(formIdData: FormIdData): Action[AnyContent] = Action.async { implicit request =>
     Logger.info(
       s"getting form, formId: '${formIdData.toFormId.value}', ${loggingHelpers.cleanHeaders(request.headers)}")
     formService
@@ -71,11 +72,11 @@ class FormController(
   }
 
   def updateFormDataPlain(userId: UserId, formTemplateId: FormTemplateId): Action[UserData] =
-    updateFormDataByForIdData(FormIdData.Plain(userId, formTemplateId))
+    updateFormDataByFormIdData(FormIdData.Plain(userId, formTemplateId))
   def updateFormData(userId: UserId, formTemplateId: FormTemplateId, accessCode: AccessCode): Action[UserData] =
-    updateFormDataByForIdData(FormIdData.WithAccessCode(userId, formTemplateId, accessCode))
+    updateFormDataByFormIdData(FormIdData.WithAccessCode(userId, formTemplateId, accessCode))
 
-  private def updateFormDataByForIdData(formIdData: FormIdData): Action[UserData] =
+  private def updateFormDataByFormIdData(formIdData: FormIdData): Action[UserData] =
     Action.async(parse.json[UserData]) { implicit request =>
       for {
         _ <- formService.updateUserData(formIdData, request.body)

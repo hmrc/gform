@@ -47,6 +47,8 @@ class FormService[F[_]: Monad](
   def get(formIdData: FormIdData)(implicit hc: HeaderCarrier): F[Form] =
     formPersistence.get(formIdData)
 
+  private val allowedStates: Set[FormStatus] = Set(InProgress, Summary, Validated, Signed, NeedsReview)
+
   def getAll(userId: UserId, formTemplateId: FormTemplateId)(implicit hc: HeaderCarrier): F[List[FormOverview]] =
     for {
       formMetadatas <- formMetadataAlgebra.getAll(userId, formTemplateId)
@@ -57,7 +59,7 @@ class FormService[F[_]: Monad](
                       }
     } yield {
       val filteredForms: List[(Form, FormMetadata)] = existingForms.flatten.filter {
-        case (form, _) => form.status === InProgress || form.status === Summary || form.status === Validated
+        case (form, _) => allowedStates.contains(form.status)
       }
 
       filteredForms.map { case (_, formMetadata) => FormOverview.fromFormMetadata(formMetadata) }
