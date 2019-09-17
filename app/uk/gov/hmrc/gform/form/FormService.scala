@@ -17,16 +17,19 @@
 package uk.gov.hmrc.gform.form
 
 import cats.Monad
+import cats.instances.list._
 import cats.syntax.eq._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
+import cats.syntax.traverse._
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
+import uk.gov.hmrc.gform.formmetadata.{ FormMetadata, FormMetadataAlgebra }
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.logging.Loggers
 import uk.gov.hmrc.gform.save4later.FormPersistenceAlgebra
 import uk.gov.hmrc.gform.sharedmodel.form._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ BySubmissionReference, FormAccessCodeForAgents, FormTemplate, FormTemplateId }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ BySubmissionReference, FormAccessCodeForAgents, FormComponentId, FormTemplate, FormTemplateId }
 import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, SubmissionRef, UserId }
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.HeaderCarrier
@@ -34,11 +37,31 @@ import uk.gov.hmrc.http.HeaderCarrier
 class FormService[F[_]: Monad](
   formPersistence: FormPersistenceAlgebra[F],
   fileUpload: FileUploadAlgebra[F],
-  formTemplateAlgebra: FormTemplateAlgebra[F])
+  formTemplateAlgebra: FormTemplateAlgebra[F],
+  formMetadataAlgebra: FormMetadataAlgebra[F])
     extends FormAlgebra[F] {
 
   def get(formId: FormId)(implicit hc: HeaderCarrier): F[Form] =
     formPersistence.get(formId)
+
+  def get(formIdData: FormIdData)(implicit hc: HeaderCarrier): F[Form] =
+    formPersistence.get(formIdData)
+
+  def getAll(userId: UserId, formTemplateId: FormTemplateId)(implicit hc: HeaderCarrier): F[List[FormOverview]] =
+    for {
+      formMetadatas <- formMetadataAlgebra.getAll(userId, formTemplateId)
+      existingForms <- formMetadatas.traverse { formMetadata =>
+                        formPersistence
+                          .find(formMetadata._id)
+                          .map(_.map(form => (form, formMetadata)))
+                      }
+    } yield {
+      val filteredForms: List[(Form, FormMetadata)] = existingForms.flatten.filter {
+        case (form, _) => form.status === InProgress || form.status === Summary || form.status === Validated
+      }
+
+      filteredForms.map { case (_, formMetadata) => FormOverview.fromFormMetadata(formMetadata) }
+    }
 
   def delete(formId: FormId)(implicit hc: HeaderCarrier): F[Unit] =
     formPersistence.delete(formId)
@@ -48,20 +71,19 @@ class FormService[F[_]: Monad](
     formTemplate: FormTemplate,
     envelopeId: EnvelopeId,
     affinityGroup: Option[AffinityGroup]
-  ): NewFormData = {
+  ): FormIdData = {
     val formTemplateId = formTemplate._id
     (formTemplate.draftRetrievalMethod, affinityGroup) match {
 
       case (BySubmissionReference, _) =>
         val submissionRef = SubmissionRef(envelopeId)
-        val ac = AccessCode.fromSubmissionRef(submissionRef)
-        NewFormData(FormId.fromSubmissionRef(userId, formTemplateId, submissionRef), FormAccess.ByAccessCode(ac))
+        FormIdData.WithAccessCode(userId, formTemplateId, AccessCode(submissionRef.value))
 
       case (FormAccessCodeForAgents(_), Some(AffinityGroup.Agent)) =>
         val ac = AccessCode.random
-        NewFormData(FormId.fromAccessCode(userId, formTemplateId, ac), FormAccess.ByAccessCode(ac))
+        FormIdData.WithAccessCode(userId, formTemplateId, ac)
 
-      case _ => NewFormData(FormId(userId, formTemplateId), FormAccess.Direct)
+      case _ => FormIdData.Plain(userId, formTemplateId)
     }
   }
 
@@ -70,15 +92,15 @@ class FormService[F[_]: Monad](
     formTemplateId: FormTemplateId,
     affinityGroup: Option[AffinityGroup],
     expiryDays: Long,
-    initialFields: Seq[FormField] = Seq.empty)(implicit hc: HeaderCarrier): F[NewFormData] = {
+    initialFields: Seq[FormField] = Seq.empty)(implicit hc: HeaderCarrier): F[FormIdData] = {
     val timeProvider = new TimeProvider
     val expiryDate = timeProvider.localDateTime().plusDays(expiryDays)
 
     for {
       envelopeId   <- fileUpload.createEnvelope(formTemplateId, expiryDate)
       formTemplate <- formTemplateAlgebra.get(formTemplateId)
-      formData = createNewFormData(userId, formTemplate, envelopeId, affinityGroup)
-      formId = formData.formId
+      formIdData = createNewFormData(userId, formTemplate, envelopeId, affinityGroup)
+      formId = formIdData.toFormId
       form = Form(
         formId,
         envelopeId,
@@ -90,13 +112,14 @@ class FormService[F[_]: Monad](
         ThirdPartyData.empty,
         Some(EnvelopeExpiryDate(expiryDate))
       )
-      _ <- formPersistence.upsert(formId, form)
-    } yield formData
+      _ <- formPersistence.upsert(formIdData.toFormId, form)
+      _ <- formMetadataAlgebra.upsert(formIdData)
+    } yield formIdData
   }
 
-  def updateUserData(formId: FormId, userData: UserData)(implicit hc: HeaderCarrier): F[Unit] =
+  def updateUserData(formIdData: FormIdData, userData: UserData)(implicit hc: HeaderCarrier): F[Unit] =
     for {
-      form <- get(formId)
+      form <- get(formIdData)
       newForm = form
         .copy(
           formData = userData.formData,
@@ -104,8 +127,20 @@ class FormService[F[_]: Monad](
           visitsIndex = userData.visitsIndex,
           thirdPartyData = userData.thirdPartyData
         )
-      _ <- formPersistence.upsert(formId, newForm)
+      _ <- formPersistence.upsert(formIdData.toFormId, newForm)
+      _ <- refreshMetadata(form.formData != newForm.formData, formIdData, newForm.formData)
     } yield ()
+
+  private def refreshMetadata(toRefresh: Boolean, formIdData: FormIdData, formData: FormData) =
+    if (toRefresh) for {
+      formTemplate <- formTemplateAlgebra.get(formIdData.formTemplateId)
+      parentRefs = resolveParentFormSubmissionRefs(formTemplate.parentFormSubmissionRefs, formData)
+      _ <- formMetadataAlgebra.touch(formIdData, parentRefs)
+    } yield ()
+    else implicitly[Monad[F]].pure(())
+
+  private def resolveParentFormSubmissionRefs(fcIds: List[FormComponentId], formData: FormData): List[SubmissionRef] =
+    fcIds.flatMap(fcId => formData.find(fcId).map(SubmissionRef(_)))
 
   def updateFormStatus(formId: FormId, status: FormStatus)(implicit hc: HeaderCarrier): F[FormStatus] =
     for {
@@ -113,6 +148,9 @@ class FormService[F[_]: Monad](
       newS = newStatus(form, status)
       _ <- formPersistence.upsert(formId, form.copy(status = newS))
     } yield newS
+
+  def forceUpdateFormStatus(formIdData: FormIdData, newStatus: FormStatus)(implicit hc: HeaderCarrier): F[Unit] =
+    forceUpdateFormStatus(formIdData.toFormId, newStatus)
 
   def forceUpdateFormStatus(formId: FormId, newStatus: FormStatus)(implicit hc: HeaderCarrier): F[Unit] =
     for {

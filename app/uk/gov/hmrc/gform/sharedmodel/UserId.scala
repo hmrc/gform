@@ -22,7 +22,7 @@ case class UserId(value: String)
 
 object UserId {
 
-  val oformat: OFormat[UserId] = ValueClassFormat.oformat("userId", UserId.apply, _.value)
-  implicit val vformat: OFormat[UserId] = ValueClassFormat.oformat("userId", UserId.apply, _.value)
+  val vformat: Format[UserId] = ValueClassFormat.vformat("userId", UserId.apply, x => JsString(x.value))
+  implicit val oformat: OFormat[UserId] = ValueClassFormat.oformat("userId", UserId.apply, _.value)
 
 }

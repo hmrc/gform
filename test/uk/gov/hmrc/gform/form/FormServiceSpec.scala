@@ -22,10 +22,11 @@ import cats.Id
 import cats.implicits._
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
+import uk.gov.hmrc.gform.formmetadata.FormMetadataAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.save4later.FormPersistenceAlgebra
 import uk.gov.hmrc.gform.sharedmodel.UserId
-import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, Form, FormAccess, FormId, NewFormData }
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, Form, FormId, FormIdData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId }
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -34,13 +35,20 @@ class FormServiceSpec extends Spec {
   it should "create and persist a form" in {
     val formTemplateId = formTemplate._id
     val formId = FormId("usr-AAA999")
+    val formIdData = FormIdData.Plain(UserId("usr"), FormTemplateId("AAA999"))
     val persistenceAlgebra = mock[FormPersistenceAlgebra[Id]]
     val fileUploadAlgebra = mock[FileUploadAlgebra[Id]]
     val formTemplateAlgebra = mock[FormTemplateAlgebra[Id]]
+    val metadataAlgebra = mock[FormMetadataAlgebra[Id]]
 
     (persistenceAlgebra
       .upsert(_: FormId, _: Form)(_: HeaderCarrier))
       .expects(formId, *, *)
+      .returning(().pure[Id])
+
+    (metadataAlgebra
+      .upsert(_: FormIdData))
+      .expects(formIdData)
       .returning(().pure[Id])
 
     (fileUploadAlgebra
@@ -53,10 +61,11 @@ class FormServiceSpec extends Spec {
       .expects(formTemplateId)
       .returning(formTemplate.pure[Id])
 
-    val service = new FormService[Id](persistenceAlgebra, fileUploadAlgebra, formTemplateAlgebra)
+    val service = new FormService[Id](persistenceAlgebra, fileUploadAlgebra, formTemplateAlgebra, metadataAlgebra)
 
-    service.create(UserId("usr"), formTemplateId, None, 2L)(HeaderCarrier()) shouldBe NewFormData(
-      formId,
-      FormAccess.Direct)
+    service.create(UserId("usr"), formTemplateId, None, 2L)(HeaderCarrier()) shouldBe FormIdData.Plain(
+      UserId("usr"),
+      FormTemplateId("AAA999")
+    )
   }
 }

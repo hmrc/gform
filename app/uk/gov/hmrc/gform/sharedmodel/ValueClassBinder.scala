@@ -36,11 +36,12 @@ object ValueClassBinder {
   implicit val formTemplateIdBinder: PathBindable[FormTemplateId] = valueClassBinder(_.value)
   implicit val formTemplateRawIdBinder: PathBindable[FormTemplateRawId] = valueClassBinder(_.value)
 
+  implicit val accessCodeBinder: PathBindable[AccessCode] = valueClassBinder(_.value)
   implicit val destinationIdBinder: PathBindable[DestinationId] = valueClassBinder(_.id)
   implicit val formIdBinder: PathBindable[FormId] = valueClassBinder(_.value)
   implicit val userIdBinder: PathBindable[UserId] = valueClassBinder(_.value)
   implicit val fileIdBinder: PathBindable[FileId] = valueClassBinder(_.value)
-  implicit val accessCodeBinder: PathBindable[Option[AccessCode]] = mValueClassBinder(_.value)
+  //implicit val accessCodeBinder: PathBindable[Option[AccessCode]] = mValueClassBinder(_.value)
 
   implicit val sectionNumberBinder: PathBindable[SectionNumber] = new PathBindable[SectionNumber] {
     override def bind(key: String, value: String): Either[String, SectionNumber] =

@@ -37,6 +37,8 @@ object SubmissionRef {
   val comb: Stream[Int] = Stream.continually(List(1, 3)).flatten
 
   implicit val oformat: OFormat[SubmissionRef] = ValueClassFormat.oformat("submissionRef", SubmissionRef.apply, _.value)
+  val vformat: Format[SubmissionRef] =
+    ValueClassFormat.vformat("submissionRef", SubmissionRef.apply, x => JsString(x.value))
 
   implicit val equal: Eq[SubmissionRef] = Eq.fromUniversalEquals
 

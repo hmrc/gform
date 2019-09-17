@@ -40,6 +40,7 @@ class FormTemplatesController(formTemplateService: FormTemplateService)(implicit
 
   def get(id: FormTemplateId) = Action.async { implicit request =>
     Logger.info(s"Get template, template id: '${id.value}', ${loggingHelpers.cleanHeaders(request.headers)}")
+    println(s"Get template, template id: '${id.value}', ${loggingHelpers.cleanHeaders(request.headers)}")
     formTemplateService
       .get(id)
       .asOkJson

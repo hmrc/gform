@@ -21,34 +21,47 @@ import play.api.Logger
 import play.api.mvc.{ Action, AnyContent }
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
+import uk.gov.hmrc.gform.sharedmodel.AccessCode
 import uk.gov.hmrc.gform.sharedmodel.AffinityGroupUtil.toAffinityGroupO
-import uk.gov.hmrc.gform.sharedmodel.SubmissionData
-import uk.gov.hmrc.gform.sharedmodel.form.FormId
+import uk.gov.hmrc.gform.sharedmodel.form.FormIdData
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
+import uk.gov.hmrc.gform.sharedmodel.{ SubmissionData, UserId }
 
 import scala.concurrent.ExecutionContext
 
 class SubmissionController(submissionService: SubmissionService)(implicit ex: ExecutionContext) extends BaseController {
-  def submitForm(formId: FormId): Action[SubmissionData] = Action.async(parse.json[SubmissionData]) {
-    implicit request =>
-      Logger.info(s"submitForm, formId: '${formId.value}, ${loggingHelpers.cleanHeaders(request.headers)}")
+
+  def submitFormPlain(userId: UserId, formTemplateId: FormTemplateId): Action[SubmissionData] =
+    submitFormByFormIdData(FormIdData.Plain(userId, formTemplateId))
+  def submitForm(userId: UserId, formTemplateId: FormTemplateId, accessCode: AccessCode): Action[SubmissionData] =
+    submitFormByFormIdData(FormIdData.WithAccessCode(userId, formTemplateId, accessCode))
+
+  private def submitFormByFormIdData(formIdData: FormIdData): Action[SubmissionData] =
+    Action.async(parse.json[SubmissionData]) { implicit request =>
+      Logger.info(s"submitForm, formId: '${formIdData.toFormId.value}, ${loggingHelpers.cleanHeaders(request.headers)}")
 
       import request._
 
       submissionService
         .submitForm(
-          formId,
+          formIdData,
           headers.get("customerId").getOrElse(""),
           toAffinityGroupO(headers.get("affinityGroup")),
           body
         )
         .fold(unexpectedState => BadRequest(unexpectedState.error), _ => NoContent)
-  }
+    }
 
-  def submissionDetails(formId: FormId): Action[AnyContent] = Action.async { implicit request =>
-    Logger.info(s"submissionDetails, formId: '${formId.value}, ${loggingHelpers.cleanHeaders(request.headers)}")
-    //TODO authentication
-    //TODO authorisation
+  def submissionDetailsPlain(userId: UserId, formTemplateId: FormTemplateId): Action[AnyContent] =
+    submissionDetailsFormIdData(FormIdData.Plain(userId, formTemplateId))
+  def submissionDetails(userId: UserId, formTemplateId: FormTemplateId, accessCode: AccessCode): Action[AnyContent] =
+    submissionDetailsFormIdData(FormIdData.WithAccessCode(userId, formTemplateId, accessCode))
 
-    submissionService.submissionDetails(formId).asOkJson
-  }
+  private def submissionDetailsFormIdData(formIdData: FormIdData): Action[AnyContent] =
+    Action.async { implicit request =>
+      Logger.info(
+        s"submissionDetails, formId: '${formIdData.toFormId.value}, ${loggingHelpers.cleanHeaders(request.headers)}")
+
+      submissionService.submissionDetails(formIdData).asOkJson
+    }
 }

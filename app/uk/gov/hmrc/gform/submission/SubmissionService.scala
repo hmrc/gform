@@ -23,7 +23,9 @@ import uk.gov.hmrc.gform.core.{ fromFutureA, _ }
 import uk.gov.hmrc.gform.email.EmailService
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
-import uk.gov.hmrc.gform.sharedmodel.{ SubmissionData, SubmissionRef }
+import uk.gov.hmrc.gform.sharedmodel.AccessCode
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
+import uk.gov.hmrc.gform.sharedmodel.{ SubmissionData, SubmissionRef, UserId }
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FileUpload, FormTemplate }
 import uk.gov.hmrc.gform.submission.destinations.{ DestinationSubmissionInfo, DestinationsProcessorModelAlgebra, DestinationsSubmitterAlgebra }
@@ -43,13 +45,13 @@ class SubmissionService(
   timeProvider: TimeProvider)(implicit ex: ExecutionContext) {
 
   def submitForm(
-    formId: FormId,
+    formIdData: FormIdData,
     customerId: String,
     affinityGroup: Option[AffinityGroup],
     submissionData: SubmissionData)(implicit hc: HeaderCarrier): FOpt[Unit] =
     // format: OFF
       for {
-        form          <- formAlgebra.get(formId)
+        form          <- formAlgebra.get(formIdData)
         formTemplate  <- fromFutureA(formTemplateService.get(form.formTemplateId))
         submission    <- findOrCreateSubmission(form, customerId, formTemplate)
         submissionInfo = DestinationSubmissionInfo(customerId, affinityGroup, submission)
@@ -77,8 +79,8 @@ class SubmissionService(
             submissionData.structuredFormData,
             model))
 
-  def submissionDetails(formId: FormId)(implicit ex: ExecutionContext): Future[Submission] =
-    submissionRepo.get(formId.value)
+  def submissionDetails(formIdData: FormIdData)(implicit ex: ExecutionContext): Future[Submission] =
+    submissionRepo.get(formIdData.toFormId.value)
 
   private def findOrCreateSubmission(form: Form, customerId: String, formTemplate: FormTemplate): FOpt[Submission] =
     form.status match {

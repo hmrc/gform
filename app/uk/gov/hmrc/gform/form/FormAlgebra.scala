@@ -25,6 +25,10 @@ import uk.gov.hmrc.http.HeaderCarrier
 trait FormAlgebra[F[_]] {
   def get(formId: FormId)(implicit hc: HeaderCarrier): F[Form]
 
+  def get(formIdData: FormIdData)(implicit hc: HeaderCarrier): F[Form]
+
+  def getAll(userId: UserId, formTemplateId: FormTemplateId)(implicit hc: HeaderCarrier): F[List[FormOverview]]
+
   def delete(formId: FormId)(implicit hc: HeaderCarrier): F[Unit]
 
   def create(
@@ -32,11 +36,13 @@ trait FormAlgebra[F[_]] {
     formTemplateId: FormTemplateId,
     accessCode: Option[AffinityGroup],
     expiryDays: Long,
-    initialFields: Seq[FormField])(implicit hc: HeaderCarrier): F[NewFormData]
+    initialFields: Seq[FormField])(implicit hc: HeaderCarrier): F[FormIdData]
 
-  def updateUserData(formId: FormId, userData: UserData)(implicit hc: HeaderCarrier): F[Unit]
+  def updateUserData(formIdData: FormIdData, userData: UserData)(implicit hc: HeaderCarrier): F[Unit]
 
   def updateFormStatus(formId: FormId, newStatus: FormStatus)(implicit hc: HeaderCarrier): F[FormStatus]
+
+  def forceUpdateFormStatus(formIdData: FormIdData, newStatus: FormStatus)(implicit hc: HeaderCarrier): F[Unit]
 
   def forceUpdateFormStatus(formId: FormId, newStatus: FormStatus)(implicit hc: HeaderCarrier): F[Unit]
 }

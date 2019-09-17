@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.form
 
 import play.api.Logger
 import play.api.http.HttpEntity
+import play.api.libs.json.Json
 import play.api.mvc._
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.gform.auditing._
@@ -25,7 +26,8 @@ import uk.gov.hmrc.gform.config.AppConfig
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateService
-import uk.gov.hmrc.gform.sharedmodel.AffinityGroupUtil
+import uk.gov.hmrc.gform.sharedmodel.form.FormIdData
+import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, AffinityGroupUtil }
 import uk.gov.hmrc.gform.sharedmodel.form.{ FileId, FormId, FormStatus, UserData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.UserId
@@ -48,50 +50,53 @@ class FormController(
     Logger.info(
       s"new form, userId: '${userId.value}', templateId: '${formTemplateId.value}', affinityGroup: '${AffinityGroupUtil
         .affinityGroupNameO(affinityGroup)}', ${loggingHelpers.cleanHeaders(request.headers)}")
-    //TODO authentication
-    //TODO user should be obtained from secure action
-    //TODO authorisation
-    //TODO Prevent creating new form when there exist one. Ask user to explicitly delete it
-    //TODO: remove userId from argument list (it should be available after authenticating)
 
     formService.create(userId, formTemplateId, affinityGroup, config.formExpiryDays.toLong, Seq.empty).asOkJson
   }
 
-  def get(formId: FormId): Action[AnyContent] = Action.async { implicit request =>
-    Logger.info(s"getting form, formId: '${formId.value}', ${loggingHelpers.cleanHeaders(request.headers)}")
+  def getPlain(userId: UserId, formTemplateId: FormTemplateId): Action[AnyContent] =
+    getByForIdData(FormIdData.Plain(userId, formTemplateId))
+  def get(userId: UserId, formTemplateId: FormTemplateId, accessCode: AccessCode): Action[AnyContent] =
+    getByForIdData(FormIdData.WithAccessCode(userId, formTemplateId, accessCode))
 
-    //TODO authentication
-    //TODO authorisation
-
+  private def getByForIdData(formIdData: FormIdData): Action[AnyContent] = Action.async { implicit request =>
+    Logger.info(
+      s"getting form, formId: '${formIdData.toFormId.value}', ${loggingHelpers.cleanHeaders(request.headers)}")
     formService
-      .get(formId)
+      .get(formIdData)
       .asOkJson
       .recover {
         case _: NotFoundException => Result(header = ResponseHeader(NOT_FOUND), body = HttpEntity.NoEntity)
       }
   }
 
-  def updateFormData(formId: FormId): Action[UserData] = Action.async(parse.json[UserData]) { implicit request =>
-    //TODO: check form status. If after submission don't call this function
-    //TODO authentication
-    //TODO authorisation
-    //TODO do we need to split form data into sections and update only part of the form data related to section? It will
+  def updateFormDataPlain(userId: UserId, formTemplateId: FormTemplateId): Action[UserData] =
+    updateFormDataByForIdData(FormIdData.Plain(userId, formTemplateId))
+  def updateFormData(userId: UserId, formTemplateId: FormTemplateId, accessCode: AccessCode): Action[UserData] =
+    updateFormDataByForIdData(FormIdData.WithAccessCode(userId, formTemplateId, accessCode))
 
-    for {
-      _ <- formService.updateUserData(formId, request.body)
-    } yield NoContent
-  }
+  private def updateFormDataByForIdData(formIdData: FormIdData): Action[UserData] =
+    Action.async(parse.json[UserData]) { implicit request =>
+      for {
+        _ <- formService.updateUserData(formIdData, request.body)
+      } yield NoContent
+    }
 
   def delete(formId: FormId): Action[AnyContent] = Action.async { implicit request =>
     Logger.info(s"deleting form: '${formId.value}, ${loggingHelpers.cleanHeaders(request.headers)}'")
     formService.delete(formId).asNoContent
   }
 
-  def deleteFile(formId: FormId, fileId: FileId): Action[AnyContent] = Action.async { implicit request =>
-    Logger.info(
-      s"deleting file, formId: '${formId.value}', fileId: ${fileId.value}, ${loggingHelpers.cleanHeaders(request.headers)} ")
+  def deleteFile(
+    userId: UserId,
+    formTemplateId: FormTemplateId,
+    accessCode: AccessCode,
+    fileId: FileId): Action[AnyContent] = Action.async { implicit request =>
+    val formIdData = FormIdData.WithAccessCode(userId, formTemplateId, accessCode)
+    Logger.info(s"deleting file, formId: '${formIdData.toFormId.value}', fileId: ${fileId.value}, ${loggingHelpers
+      .cleanHeaders(request.headers)} ")
     val result = for {
-      form <- formService.get(formId)
+      form <- formService.get(formIdData)
       _    <- fileUpload.deleteFile(form.envelopeId, fileId)
     } yield ()
     result.asNoContent
@@ -101,5 +106,9 @@ class FormController(
     Logger.info(s"Form ID: $formId. Payload: ${request.body.toString}")
 
     Results.Ok
+  }
+
+  def getAll(userId: UserId, formTemplateId: FormTemplateId): Action[AnyContent] = Action.async { implicit request =>
+    formService.getAll(userId, formTemplateId).map(Json.toJson(_)).map(Ok(_))
   }
 }
