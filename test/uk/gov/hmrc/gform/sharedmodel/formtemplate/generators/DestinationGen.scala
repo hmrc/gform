@@ -91,8 +91,13 @@ trait DestinationGen {
         failOnError = failOnError.getOrElse(st.failOnError))
     }
 
+  def logGen: Gen[Destination.Log] =
+    for {
+      id <- destinationIdGen
+    } yield Destination.Log(id)
+
   def singularDestinationGen: Gen[Destination] =
-    Gen.oneOf(hmrcDmsGen, handlebarsHttpApiGen, stateTransitionGen)
+    Gen.oneOf(hmrcDmsGen, handlebarsHttpApiGen, stateTransitionGen, logGen)
 
   def destinationGen: Gen[Destination] = Gen.frequency(10 -> singularDestinationGen, 1 -> compositeGen)
 

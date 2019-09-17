@@ -66,6 +66,13 @@ package object destinations {
           |  "uri": "$uri",
           |  "method": ${write(method)}
           |}""".stripMargin
+
+    case log: Destination.Log =>
+      import log._
+      s"""|{
+          |  "id": "${id.id}",
+          |  "${Destination.typeDiscriminatorFieldName}": "${Destination.log}"
+          |}""".stripMargin
   }
 
   def optionalField[T: Writes](fieldName: String, ot: Option[T]): String =

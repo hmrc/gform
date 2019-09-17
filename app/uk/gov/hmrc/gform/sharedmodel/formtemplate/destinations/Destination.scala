@@ -75,7 +75,10 @@ object Destination {
   case class StateTransition(id: DestinationId, requiredState: FormStatus, includeIf: String, failOnError: Boolean)
       extends Destination
 
-  case class Log(id: DestinationId, includeIf: String, failOnError: Boolean) extends Destination
+  case class Log(id: DestinationId) extends Destination {
+    val failOnError: Boolean = false
+    val includeIf: String = true.toString
+  }
 
   val typeDiscriminatorFieldName: String = "type"
   val hmrcDms: String = "hmrcDms"
@@ -216,7 +219,7 @@ object UploadableHandlebarsHttpApiDestination {
 }
 
 case class UploadableLogDestination(id: DestinationId) {
-  def toLogDestination: Either[String, Destination.Log] = Right(Destination.Log(id, true.toString, true))
+  def toLogDestination: Either[String, Destination.Log] = Right(Destination.Log(id))
 }
 
 object UploadableLogDestination {
