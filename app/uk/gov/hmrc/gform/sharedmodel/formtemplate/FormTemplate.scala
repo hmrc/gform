@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import cats.data.NonEmptyList
 import julienrf.json.derived
 import play.api.libs.json._
-import uk.gov.hmrc.gform.formtemplate.FormTemplatesControllerRequestHandler
+import uk.gov.hmrc.gform.formtemplate.{ FormTemplatesControllerRequestHandler, SectionHelper }
 import uk.gov.hmrc.gform.sharedmodel.{ AvailableLanguages, LocalisedString, formtemplate }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
@@ -53,6 +53,12 @@ case class FormTemplate(
   languages: AvailableLanguages,
   save4LaterInfoText: Option[Save4LaterInfoText]
 ) {
+  def listBasicFormComponents: List[FormComponent] =
+    Section.listBasicFormComponents(listAllSections)
+
+  def listAllSections: List[BaseSection] =
+    sections ::: List(declarationSection, acknowledgementSection)
+
   val expandFormTemplate: ExpandedFormTemplate = ExpandedFormTemplate(sections.map(_.expandSection))
 }
 

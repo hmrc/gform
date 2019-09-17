@@ -29,10 +29,10 @@ object BooleanExprParser {
   // ||
   // &&
   // !
-  // < <= = != >= >
+  // < <= = != >= > includes
   // ?
 
-  implicit val W = Whitespace(() | """\s+""".r)
+  implicit val W: Whitespace = Whitespace(() | """\s+""".r)
 
   private lazy val p0: Parser[BooleanExpr] = ("true" ^^ { (loc, value) =>
     IsTrue
@@ -59,6 +59,9 @@ object BooleanExprParser {
     }
     | exprFormCtx ~ ">" ~ exprFormCtx ^^ { (loc, expr1, op, expr2) =>
       GreaterThan(expr1, expr2)
+    }
+    | alphabeticOnly ~ "contains" ~ exprFormCtx ^^ { (_, expr1, _, expr2) =>
+      Contains(FormCtx(expr1), expr2)
     }
     | p0)
 

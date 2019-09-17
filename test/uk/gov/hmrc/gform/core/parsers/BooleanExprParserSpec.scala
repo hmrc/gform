@@ -18,7 +18,6 @@ package uk.gov.hmrc.gform.core.parsers
 
 import org.scalatest._
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues with OptionValues {
@@ -62,6 +61,13 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
     val res = BooleanExprParser.validate("${isPremisesSameAsBusinessAddress<=0}")
 
     res shouldBe Right(LessThanOrEquals(FormCtx("isPremisesSameAsBusinessAddress"), Constant("0")))
+
+  }
+
+  "BooleanExprParser" should "parse contains" in {
+    val res = BooleanExprParser.validate("""${fieldId contains 1}""")
+
+    res shouldBe Right(Contains(FormCtx("fieldId"), Constant("1")))
 
   }
 
@@ -182,7 +188,7 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
   }
 
   def spacesBeforeCaret(message: String): Int =
-    ("[ ]+(?=\\^)".r.unanchored.findAllIn(message).toList.last).size
+    "[ ]+(?=\\^)".r.unanchored.findAllIn(message).toList.last.length
 
   it should "fail to parse anything but an equals operator" in {
     val res = BooleanExprParser.validate("${abc|=form.amountA}")
@@ -190,7 +196,7 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
     res should be('left)
 
     res.left.value match {
-      case UnexpectedState(msg) => spacesBeforeCaret(msg) shouldBe "${abc".size
+      case UnexpectedState(msg) => spacesBeforeCaret(msg) shouldBe "${abc".length
       case _                    => fail("${expected an UnexpectedState}")
     }
 
@@ -203,7 +209,7 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
 
     res.left.value match {
       case UnexpectedState(msg) =>
-        spacesBeforeCaret(msg) shouldBe "${eeitt.businessUser".size
+        spacesBeforeCaret(msg) shouldBe "${eeitt.businessUser".length
       case _ => fail("expected an UnexpectedState")
     }
 

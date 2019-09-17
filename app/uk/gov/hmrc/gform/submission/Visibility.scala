@@ -14,21 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel
+package uk.gov.hmrc.gform.submission
 
+import cats.syntax.eq._
 import uk.gov.hmrc.auth.core.AffinityGroup
+import uk.gov.hmrc.gform.sharedmodel.VariadicFormData
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
-case class Visibility(
-  sections: List[Section],
-  data: Map[FormComponentId, Seq[String]],
-  affinityGroup: Option[AffinityGroup]) {
+case class Visibility(sections: List[Section], data: VariadicFormData, affinityGroup: Option[AffinityGroup]) {
 
   private def hasVisibleAncestor(formComponentId: FormComponentId): Boolean =
     sections
-      .find(_.fields.find(_.id == formComponentId).isDefined)
-      .map(isVisible)
-      .getOrElse(true)
+      .find(_.fields.exists(_.id === formComponentId))
+      .forall(isVisible)
 
   private def areAncestorsVisible(beResultWithDep: BooleanExprResultWithDependents): Boolean =
     beResultWithDep.dependingOn.foldLeft(beResultWithDep.beResult)(_ && hasVisibleAncestor(_))
@@ -36,7 +34,7 @@ case class Visibility(
   def isVisible(section: Section): Boolean = {
 
     val isIncludedExpression: Option[BooleanExprResultWithDependents] =
-      section.includeIf.map(incIf => BooleanExpr.isTrue(incIf.expr, data, affinityGroup))
+      section.includeIf.map(incIf => BooleanExprEval.isTrue(incIf.expr, data, affinityGroup))
 
     isIncludedExpression.fold(true)(areAncestorsVisible)
   }

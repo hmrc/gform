@@ -16,14 +16,13 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
-import uk.gov.hmrc.gform.sharedmodel.{ LabelHelper, LangADT, LocalisedString }
+import uk.gov.hmrc.gform.sharedmodel.LabelHelper
 import uk.gov.hmrc.gform.sharedmodel.form.FormField
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 import scala.collection.immutable.List
 
 object SectionHelper {
-
   def atomicFields(section: BaseSection, data: Map[FormComponentId, FormField]): List[FormComponent] =
     atomicFields(section.fields, data)
 
