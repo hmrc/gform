@@ -14,14 +14,25 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel
+package uk.gov.hmrc.gform.sharedmodel.form
 
+import java.time.Instant
 import play.api.libs.json.{ Json, OFormat }
-import uk.gov.hmrc.gform.sharedmodel.form.FormIdData
-import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
+import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
+import uk.gov.hmrc.gform.formmetadata.FormMetadata
 
-case class BundledFormSubmissionData(formIdData: FormIdData, structuredFormData: StructuredFormValue.ObjectStructure)
+case class FormOverview(
+  submissionRef: Option[SubmissionRef],
+  createdAt: Instant,
+  updatedAt: Instant
+)
 
-object BundledFormSubmissionData {
-  implicit val format: OFormat[BundledFormSubmissionData] = Json.format[BundledFormSubmissionData]
+object FormOverview {
+  implicit val format: OFormat[FormOverview] = Json.format
+
+  def fromFormMetadata(formMetadata: FormMetadata) = FormOverview(
+    formMetadata.submissionRef,
+    formMetadata.createdAt,
+    formMetadata.updatedAt
+  )
 }

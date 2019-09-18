@@ -23,7 +23,9 @@ import play.api.mvc.{ Action, AnyContent }
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.core._
-import uk.gov.hmrc.gform.sharedmodel.form.{ FormId, FormStatus }
+import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, UserId }
+import uk.gov.hmrc.gform.sharedmodel.form.{ FormId, FormIdData, FormStatus }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils._
 import uk.gov.hmrc.gform.sharedmodel.BundledFormSubmissionData
 
@@ -32,46 +34,60 @@ import scala.concurrent.{ ExecutionContext, Future }
 class FormBundleController(oFormBundleSubmissionService: Option[FormBundleSubmissionService[FOpt]])(
   implicit ex: ExecutionContext)
     extends BaseController {
-  def getFormBundle(rootFormId: FormId): Action[AnyContent] =
+  def getFormBundle(userId: UserId, formTemplateId: FormTemplateId, accessCode: AccessCode): Action[AnyContent] =
     Action.async { implicit request =>
       oFormBundleSubmissionService.fold(
         Future.successful(BadRequest("Can't getFormTree. No FormBundleSubmissionService has been configured."))) {
         formBundleSubmissionService =>
-          Logger.info(s"getFormBundle, formId: '${rootFormId.value}, ${loggingHelpers.cleanHeaders(request.headers)}")
+          val rootFormIdData = FormIdData.WithAccessCode(userId, formTemplateId, accessCode)
+
+          Logger.info(
+            s"getFormBundle, formId: '${rootFormIdData.toFormId.value}, ${loggingHelpers.cleanHeaders(request.headers)}")
 
           formBundleSubmissionService
-            .formTree(rootFormId)
+            .formTree(rootFormIdData.toFormId)
             .map(_.map(_.formId).toList)
             .toFuture
             .asOkJson
       }
     }
 
-  def submitFormBundleAfterReview(rootFormId: FormId): Action[NonEmptyList[BundledFormSubmissionData]] =
+  def submitFormBundleAfterReview(
+    userId: UserId,
+    formTemplateId: FormTemplateId,
+    accessCode: AccessCode): Action[NonEmptyList[BundledFormSubmissionData]] =
     Action.async(parse.json[NonEmptyList[BundledFormSubmissionData]]) { implicit request =>
       oFormBundleSubmissionService.fold(
         Future.successful(
           BadRequest("Can't submitFormBundleAfterReview. No FormBundleSubmissionService has been configured."))) {
         formBundleSubmissionService =>
-          Logger.info(
-            s"submitFormBundleAfterReview, formId: ${rootFormId.value}, ${loggingHelpers.cleanHeaders(request.headers)}")
+          val rootFormIdData = FormIdData.WithAccessCode(userId, formTemplateId, accessCode)
+
+          Logger.info(s"submitFormBundleAfterReview, formId: ${rootFormIdData.toFormId.value}, ${loggingHelpers
+            .cleanHeaders(request.headers)}")
 
           import request._
 
           formBundleSubmissionService
-            .submitFormBundleAfterReview(rootFormId, body)
+            .submitFormBundleAfterReview(rootFormIdData, body)
             .fold(unexpectedState => BadRequest(unexpectedState.error), _ => NoContent)
       }
     }
 
-  def forceUpdateFormStatus(formId: FormId, status: FormStatus): Action[AnyContent] = Action.async { implicit request =>
+  def forceUpdateFormStatus(
+    userId: UserId,
+    formTemplateId: FormTemplateId,
+    accessCode: AccessCode,
+    status: FormStatus): Action[AnyContent] = Action.async { implicit request =>
     oFormBundleSubmissionService.fold(
       Future
         .successful(BadRequest("Can't forceUpdateFormStatus. No FormBundleSubmissionService has been configured."))) {
       formBundleSubmissionService =>
-        Logger.info(s"forceUpdateFormStatus, ${formId.value}, $status, ${loggingHelpers.cleanHeaders(request.headers)}")
+        val formIdData = FormIdData.WithAccessCode(userId, formTemplateId, accessCode)
+        Logger.info(
+          s"forceUpdateFormStatus, ${formIdData.toFormId.value}, $status, ${loggingHelpers.cleanHeaders(request.headers)}")
         formBundleSubmissionService
-          .forceUpdateFormStatus(formId, status)
+          .forceUpdateFormStatus(formIdData.toFormId, status)
           .fold(unexpectedState => BadRequest(unexpectedState.error), _ => NoContent)
     }
   }

@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.submission.destinations
 
+import cats.data.EitherT
 import java.util.UUID
 
 import cats.instances.future._
@@ -26,11 +27,13 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.{ ArrayNode, TextNode }
 import play.api.Logger
 import play.api.libs.json._
+import scala.concurrent.Future
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.logging.Loggers
 import uk.gov.hmrc.gform.repo.RepoAlgebra
+import uk.gov.hmrc.gform.sharedmodel.form.FormIdData
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, HandlebarsTemplateProcessorModel }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplate }
 import uk.gov.hmrc.gform.sharedmodel.{ PdfHtml, SubmissionRef }
@@ -84,7 +87,9 @@ class RepoDestinationAuditer(
 
   def auditForcedFormStatusChange(form: Form)(implicit hc: HeaderCarrier): FOpt[Unit] =
     for {
-      latestAudit <- getLatestForForm(form._id)
+      formIdData  <- EitherT.fromOption[Future](FormIdData.fromForm(form), UnexpectedState("dsa"))
+      latestAudit <- getLatestForForm(formIdData.toFormId)
+
       _ <- apply(
             DestinationAudit(
               form._id,

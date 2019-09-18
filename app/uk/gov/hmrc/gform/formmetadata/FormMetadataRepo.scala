@@ -14,13 +14,9 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel.form
+package uk.gov.hmrc.gform.formmetadata
 
-import julienrf.json.derived
-import play.api.libs.json.OFormat
+import reactivemongo.api.DefaultDB
+import uk.gov.hmrc.gform.repo.Repo
 
-case class NewFormData(formId: FormId, formAccess: FormAccess)
-
-object NewFormData {
-  implicit val format: OFormat[NewFormData] = derived.oformat
-}
+class FormMetadataRepo(mongo: () => DefaultDB) extends Repo[FormMetadata]("formMetadata", mongo, _._id.value)

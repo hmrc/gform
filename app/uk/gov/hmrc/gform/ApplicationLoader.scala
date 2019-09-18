@@ -31,6 +31,7 @@ import uk.gov.hmrc.gform.dms.DmsModule
 import uk.gov.hmrc.gform.email.EmailModule
 import uk.gov.hmrc.gform.fileupload.FileUploadModule
 import uk.gov.hmrc.gform.form.{ FormModule, FormService }
+import uk.gov.hmrc.gform.formmetadata.FormMetadataModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.graphite.GraphiteModule
 import uk.gov.hmrc.gform.metrics.MetricsModule
@@ -79,11 +80,18 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
   protected lazy val shortLivedCacheModule = new Save4LaterModule(configModule, wSHttpModule)
   lazy val pdfGeneratorModule = new PdfGeneratorModule(configModule, wSHttpModule)
 
+  val formMetadaModule = new FormMetadataModule(mongoModule)
+
   lazy val save4later =
     new Save4Later(shortLivedCacheModule.shortLivedCache)
 
   lazy val formService: FormService[Future] =
-    new FormService(save4later, fileUploadModule.fileUploadService, formTemplateModule.formTemplateService)
+    new FormService(
+      save4later,
+      fileUploadModule.fileUploadService,
+      formTemplateModule.formTemplateService,
+      formMetadaModule.formMetadataService
+    )
 
   lazy val formModule =
     new FormModule(configModule, formTemplateModule, fileUploadModule, formService)

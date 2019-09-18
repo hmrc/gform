@@ -14,16 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel.form
+package uk.gov.hmrc.gform.formmetadata
 
-import julienrf.json.derived
-import play.api.libs.json.OFormat
-import uk.gov.hmrc.gform.sharedmodel.AccessCode
+import scala.concurrent.ExecutionContext
+import uk.gov.hmrc.gform.mongo.MongoModule
 
-sealed trait FormAccess extends Product with Serializable
-object FormAccess {
-  case object Direct extends FormAccess
-  case class ByAccessCode(accessCode: AccessCode) extends FormAccess
-
-  implicit val format: OFormat[FormAccess] = derived.oformat
+class FormMetadataModule(mongoModule: MongoModule)(implicit ex: ExecutionContext) {
+  val formMetadataRepo: FormMetadataRepo = new FormMetadataRepo(mongoModule.mongo)
+  val formMetadataService: FormMetadataService = new FormMetadataService(formMetadataRepo)
 }

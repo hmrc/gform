@@ -54,12 +54,12 @@ class FormBundleSubmissionService[F[_]](
   def formTree(rootFormId: FormId)(implicit hc: HeaderCarrier): F[Tree[BundledFormTreeNode]] =
     formTreeAlgebra.getFormTree(rootFormId)
 
-  def submitFormBundleAfterReview(rootFormId: FormId, submissionData: NonEmptyList[BundledFormSubmissionData])(
+  def submitFormBundleAfterReview(rootFormIdData: FormIdData, submissionData: NonEmptyList[BundledFormSubmissionData])(
     implicit hc: HeaderCarrier): F[Unit] =
     for {
-      _          <- formAlgebra.updateFormStatus(rootFormId, Submitting)
-      modelTree  <- createModelTree(rootFormId, submissionData)
-      submission <- submissionRepoAlgebra.get(rootFormId.value)
+      _          <- formAlgebra.updateFormStatus(rootFormIdData.toFormId, Submitting)
+      modelTree  <- createModelTree(rootFormIdData.toFormId, submissionData)
+      submission <- submissionRepoAlgebra.get(rootFormIdData.toFormId.value)
       submissionInfo = DestinationSubmissionInfo("", None, submission)
       _ <- destinationsSubmitterAlgebra.send(submissionInfo, modelTree)
       _ <- transitionAllChildNodesToSubmitted(modelTree)
@@ -86,7 +86,7 @@ class FormBundleSubmissionService[F[_]](
       formTree      <- formTreeAlgebra.getFormTree(rootFormId)
       formsById     <- buildMap(formTree)(_.formId)(formAlgebra.get)
       templatesById <- buildMap(formTree)(_.formTemplateId)(formTemplateAlgebra.get)
-      submissionDataByFormId = submissionData.map(d => (d.formId, d)).toList.toMap
+      submissionDataByFormId = submissionData.map(d => (d.formIdData.toFormId, d)).toList.toMap
       pdfHtmlByFormId <- buildMap(formTree)(_.formId)(pdfSummaryAlgebra.getLatestPdfHtml)
       processorModelByFormId <- buildProcessorModelByFormId(
                                  formTree,
