@@ -17,18 +17,15 @@ POST          /forms/:formId/enrolment-callback                             uk.g
 
 DELETE        /forms/:userId/:formTemplateId/:accessCode/deleteFile/:fileId uk.gov.hmrc.gform.form.FormController.deleteFile(userId: UserId, formTemplateId: FormTemplateId, accessCode: AccessCode, fileId: FileId)
 
-# POST          /forms/:formId/submitForm                                     uk.gov.hmrc.gform.submission.SubmissionController.submitForm(formId: FormId)
-# GET           /forms/:formId/submissionDetails                              uk.gov.hmrc.gform.submission.SubmissionController.submissionDetails(formId: FormId)
-
 POST          /forms/:userId/:formTemplateId/submitForm                     uk.gov.hmrc.gform.submission.SubmissionController.submitFormPlain(userId: UserId, formTemplateId: FormTemplateId)
 POST          /forms/:userId/:formTemplateId/:accessCode/submitForm         uk.gov.hmrc.gform.submission.SubmissionController.submitForm(userId: UserId, formTemplateId: FormTemplateId, accessCode: AccessCode)
 
-GET           /forms/:userId/:formTemplateId/submissionDetails              uk.gov.hmrc.gform.submission.SubmissionController.submissionDetailsPlain(userId: UserId, formTemplateId: FormTemplateId)
-GET           /forms/:userId/:formTemplateId/:accessCode/submissionDetails  uk.gov.hmrc.gform.submission.SubmissionController.submissionDetails(userId: UserId, formTemplateId: FormTemplateId, accessCode: AccessCode)
+GET           /submissionDetails/:userId/:formTemplateId                    uk.gov.hmrc.gform.submission.SubmissionController.submissionDetailsPlain(userId: UserId, formTemplateId: FormTemplateId)
+GET           /submissionDetails/:userId/:formTemplateId/:accessCode        uk.gov.hmrc.gform.submission.SubmissionController.submissionDetails(userId: UserId, formTemplateId: FormTemplateId, accessCode: AccessCode)
 
-GET           /formBundles/:userId/:formTemplateId/:accessCode              uk.gov.hmrc.gform.submission.FormBundleController.getFormBundle(userId: UserId, formTemplateId: FormTemplateId, accessCode: AccessCode)
-POST          /formBundles/:userId/:formTemplateId/:accessCode/submitAfterReview         uk.gov.hmrc.gform.submission.FormBundleController.submitFormBundleAfterReview(userId: UserId, formTemplateId: FormTemplateId, accessCode: AccessCode)
-PUT           /formBundles/:userId/:formTemplateId/:accessCode/:status/forceStatus       uk.gov.hmrc.gform.submission.FormBundleController.forceUpdateFormStatus(userId: UserId, formTemplateId: FormTemplateId, accessCode: AccessCode, status: FormStatus)
+GET           /formBundles/:userId/:formTemplateId/:accessCode                      uk.gov.hmrc.gform.submission.FormBundleController.getFormBundle(userId: UserId, formTemplateId: FormTemplateId, accessCode: AccessCode)
+POST          /formBundles/:userId/:formTemplateId/:accessCode/submitAfterReview    uk.gov.hmrc.gform.submission.FormBundleController.submitFormBundleAfterReview(userId: UserId, formTemplateId: FormTemplateId, accessCode: AccessCode)
+PUT           /formBundles/:userId/:formTemplateId/:accessCode/:status/forceStatus  uk.gov.hmrc.gform.submission.FormBundleController.forceUpdateFormStatus(userId: UserId, formTemplateId: FormTemplateId, accessCode: AccessCode, status: FormStatus)
 
 GET           /formtemplates                                                uk.gov.hmrc.gform.formtemplate.FormTemplatesController.all
 POST          /formtemplates                                                uk.gov.hmrc.gform.formtemplate.FormTemplatesController.upsert
