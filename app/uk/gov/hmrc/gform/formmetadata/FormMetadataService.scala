@@ -36,7 +36,8 @@ trait FormMetadataAlgebra[F[_]] {
 class FormMetadataService(formMetadataRepo: FormMetadataRepo)(implicit ec: ExecutionContext)
     extends FormMetadataAlgebra[Future] {
 
-  private def get(formIdData: FormIdData): Future[FormMetadata] = formMetadataRepo.get(formIdData.toFormId.value)
+  private def find(formIdData: FormIdData): Future[Option[FormMetadata]] =
+    formMetadataRepo.find(formIdData.toFormId.value)
 
   def getAll(userId: UserId, formTemplateId: FormTemplateId): Future[List[FormMetadata]] = formMetadataRepo.search(
     Json.obj(
@@ -48,36 +49,38 @@ class FormMetadataService(formMetadataRepo: FormMetadataRepo)(implicit ec: Execu
   def touch(formIdData: FormIdData, parentFormSubmissionRefs: List[SubmissionRef]): Future[Unit] = {
     val now = Instant.now()
     for {
-      formMetadata <- get(formIdData)
+      maybeFormMetadata <- find(formIdData)
       _ <- toFuture(
             formMetadataRepo.upsert(
-              formMetadata.copy(
-                updatedAt = now,
-                parentFormSubmissionRefs = parentFormSubmissionRefs
-              )
+              maybeFormMetadata.fold(newFormMetadata(formIdData))(
+                _.copy(
+                  updatedAt = now,
+                  parentFormSubmissionRefs = parentFormSubmissionRefs
+                ))
             )
           )
     } yield ()
   }
 
-  def upsert(formIdData: FormIdData): Future[Unit] =
-    toFuture(formMetadataRepo.upsert {
-      val now = Instant.now()
-      formIdData match {
-        case FormIdData.Plain(userId, formTemplateId) =>
-          FormMetadata(formIdData.toFormId, userId, formTemplateId, None, List.empty, now, now)
-        case FormIdData.WithAccessCode(userId, formTemplateId, AccessCode(accessCode)) =>
-          FormMetadata(
-            formIdData.toFormId,
-            userId,
-            formTemplateId,
-            SubmissionRef(accessCode).some,
-            List.empty,
-            now,
-            now
-          )
-      }
-    })
+  def upsert(formIdData: FormIdData): Future[Unit] = toFuture(formMetadataRepo.upsert(newFormMetadata(formIdData)))
+
+  private def newFormMetadata(formIdData: FormIdData): FormMetadata = {
+    val now = Instant.now()
+    formIdData match {
+      case FormIdData.Plain(userId, formTemplateId) =>
+        FormMetadata(formIdData.toFormId, userId, formTemplateId, None, List.empty, now, now)
+      case FormIdData.WithAccessCode(userId, formTemplateId, AccessCode(accessCode)) =>
+        FormMetadata(
+          formIdData.toFormId,
+          userId,
+          formTemplateId,
+          SubmissionRef(accessCode).some,
+          List.empty,
+          now,
+          now
+        )
+    }
+  }
 
   private def toFuture[A](fOpt: FOpt[A]): Future[A] =
     fOpt.value

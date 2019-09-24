@@ -97,7 +97,7 @@ class ErrorHandler(
 
   private def onNotFoundException(e: Exception) = {
     val response = ErrResponse(s"${e.getMessage}")
-    Logger.logger.info(response.toString, e)
+    Logger.logger.error(response.toString, e)
     Future.successful(NotFound(Json.toJson(response)))
   }
 
