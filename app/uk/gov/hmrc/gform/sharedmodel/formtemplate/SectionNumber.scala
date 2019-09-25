@@ -18,7 +18,9 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import play.api.libs.json._
 
-case class SectionNumber(value: Int)
+case class SectionNumber(value: Int) extends Ordered[SectionNumber] {
+  override def compare(that: SectionNumber): Int = value.compare(that.value)
+}
 
 object SectionNumber {
   implicit val format: Format[SectionNumber] = Format[SectionNumber](
