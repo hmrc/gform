@@ -34,7 +34,7 @@ class DestinationsValidatorSpec extends Spec {
           oneOrMoreGen(destinationWithFixedIdGen(id1)),
           oneOrMoreGen(destinationWithFixedIdGen(id2)),
           oneOrMoreGen(destinationWithFixedIdGen(id2)),
-          destinationGen.filter(d => d.id != id1 && d.id != id2)
+          destinationGen.filter(d => d.id =!= id1 && d.id =!= id2)
         ) { (d1WithId1, d2WithId1, d1WithId2, d2WithId2, uniqueD) =>
           whenever(uniqueD.id =!= id1 && uniqueD.id =!= id2) {
             val destinations =

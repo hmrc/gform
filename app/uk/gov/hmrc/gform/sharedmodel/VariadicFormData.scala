@@ -17,7 +17,6 @@
 package uk.gov.hmrc.gform.sharedmodel
 
 import cats.instances.list._
-import cats.instances.string._
 import cats.syntax.foldable._
 import cats.{ Monoid, Show }
 import cats.syntax.show._
@@ -30,6 +29,8 @@ sealed trait VariadicValue extends Product with Serializable {
     case VariadicValue.One(v)   => Seq(v)
     case VariadicValue.Many(vs) => vs
   }
+
+  def toSet: Set[String] = toSeq.toSet
 
   def exists(pred: String => Boolean): Boolean = toSeq.exists(pred)
 

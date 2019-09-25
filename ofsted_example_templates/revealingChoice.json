@@ -104,7 +104,7 @@
     },
     {
       "title": "Dependent Field",
-      "includeIf": "${revealing includes 5}",
+      "includeIf": "${revealing contains 5}",
       "fields": [
         {
           "id": "textBox4",
@@ -163,4 +163,3 @@
     }
   ]
 }
-
