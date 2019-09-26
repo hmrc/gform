@@ -217,3 +217,74 @@ object LifeCycleStatusGraphVizRenderer extends App {
 
   println("}")
 }
+
+object TransitionsTable extends App {
+  import scala.io.Source
+
+  case class Row(from: FormStatus, to: FormStatus)
+
+  val excludedStates: Set[FormStatus] = Set(NeedsReview, Returning, Accepting, Accepted, Discarded, ManuallySubmitted)
+
+  private val logged: Set[Row] = readLoggedTransitions
+  println(logged)
+
+  private val enumeratedRows: Seq[Row] = sort(enumerateRows)
+  println(enumeratedRows)
+
+  showTable("Tested", row => logged.contains(row))
+  println
+  showTable("Untested Legal", row => !logged.contains(row))
+
+  private def showTable(title: String, pred: Row => Boolean): Unit = {
+    underline(title, "=")
+    underline(showRow("From", "To"), "-")
+
+    enumeratedRows.foreach { row =>
+      if (pred(row)) println(show(row))
+    }
+  }
+
+  private def underline(title: String, c: String): Unit = {
+    println(title)
+    println(c * title.length)
+  }
+
+  private def sort(rows: Set[Row]): Seq[Row] =
+    rows.toList.sortBy(row => (showStatus(row.from), showStatus(row.to)))
+
+  private def show(row: Row): String =
+    showRow(showStatus(row.from), showStatus(row.to))
+
+  private def showRow(from: String, to: String): String = {
+    val paddedFrom = pad(from, 20)
+    val paddedTo = pad(to, 20)
+
+    s"$paddedFrom$paddedTo"
+  }
+
+  private def showStatus(status: FormStatus) = status.toString
+
+  private def pad(s: String, l: Int) = s + (" " * (l - s.length))
+
+  private def enumerateRows: Set[Row] =
+    for {
+      from <- FormStatus.all.filterNot(excludedStates)
+      to   <- FormStatus.all.filterNot(excludedStates)
+      if from =!= to
+      if LifeCycleStatus.apply(from, to).isDefined
+    } yield Row(from, to)
+
+  private def readLoggedTransitions: Set[Row] = {
+    val logPattern =
+      """.{24}[A-Z]+ *(Legal|Illegal) *([A-Za-z]+) *-> *([A-Za-z]+).*""".r
+
+    Source
+      .fromFile("logs/gform-state-transitions.log")
+      .getLines
+      .map {
+        case logPattern(legality, FormStatus(from), FormStatus(to)) =>
+          Row(from, to)
+      }
+      .toSet
+  }
+}
