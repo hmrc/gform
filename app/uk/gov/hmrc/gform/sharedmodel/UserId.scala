@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.sharedmodel
 
+import cats.Show
 import play.api.libs.json._
 
 case class UserId(value: String)
@@ -25,4 +26,5 @@ object UserId {
   val vformat: Format[UserId] = ValueClassFormat.vformat("userId", UserId.apply, x => JsString(x.value))
   implicit val oformat: OFormat[UserId] = ValueClassFormat.oformat("userId", UserId.apply, _.value)
 
+  implicit val show: Show[UserId] = Show.show(_.value)
 }

@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.sharedmodel
 
+import cats.Show
 import cats.data.State
 import play.api.libs.json._
 import uk.gov.hmrc.gform.typeclasses.Rnd
@@ -26,6 +27,8 @@ object AccessCode {
   implicit val format: Format[AccessCode] = ValueClassFormat.simpleFormat(AccessCode.apply)(_.value)
 
   def fromSubmissionRef(submissionRef: SubmissionRef): AccessCode = AccessCode(submissionRef.value)
+
+  implicit val show: Show[AccessCode] = Show.show(_.value)
 
   def random(implicit rnd: Rnd[Int]): AccessCode = {
     def alphanumeric() = {
