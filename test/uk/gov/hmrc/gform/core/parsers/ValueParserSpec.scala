@@ -403,8 +403,6 @@ class ValueParserSpec extends Spec {
         EmailParameter("fullName", FormCtx("directorFullName")),
         EmailParameter("email", FormCtx("directorEmail"))
       )),
-    "submitSuccessUrl",
-    "submitErrorUrl",
     None,
     List.empty[Section],
     acknowledgementSection = AcknowledgementSection(toLocalisedString(""), None, None, Nil),
