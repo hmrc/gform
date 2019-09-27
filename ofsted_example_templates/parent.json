@@ -73,7 +73,5 @@
           }
         ]
       }
-  ],
-  "submitErrorUrl": "",
-  "submitSuccessUrl": ""
+  ]
 }

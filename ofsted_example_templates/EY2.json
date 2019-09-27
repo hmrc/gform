@@ -3632,7 +3632,5 @@
         }
       ]
     }
-  ],
-  "submitErrorUrl": "deprecated",
-  "submitSuccessUrl": "deprecated"
+  ]
 }

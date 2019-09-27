@@ -76,7 +76,5 @@
       "classificationType": "BT-CTO-EMCS Fallback",
       "businessArea": "BT"
     }
-  ],
-  "submitErrorUrl": "",
-  "submitSuccessUrl": ""
+  ]
 }

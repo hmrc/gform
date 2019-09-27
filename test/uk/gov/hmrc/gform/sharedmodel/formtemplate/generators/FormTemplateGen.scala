@@ -73,8 +73,6 @@ trait FormTemplateGen {
       authConfig               <- AuthConfigGen.authConfigGen
       emailTemplateId          <- emailTemplateIdGen
       emailParameters          <- emailParameterListGen
-      submitSuccessUrl         <- PrimitiveGen.urlGen
-      submitErrorUrl           <- PrimitiveGen.urlGen
       sections                 <- PrimitiveGen.zeroOrMoreGen(SectionGen.sectionGen)
       webChat                  <- Gen.option(webChatGen)
       acknowledgementSection   <- SectionGen.acknowledgementSectionGen
@@ -95,8 +93,6 @@ trait FormTemplateGen {
         authConfig,
         emailTemplateId,
         emailParameters,
-        submitSuccessUrl,
-        submitErrorUrl,
         webChat,
         sections,
         acknowledgementSection,

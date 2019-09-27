@@ -138,8 +138,6 @@ class SubmissionServiceSpec extends Spec {
           EmailParameter("fullName", FormCtx("directorFullName")),
           EmailParameter("email", FormCtx("directorEmail"))
         )),
-      submitSuccessUrl = "http://somwehere-nice.net",
-      submitErrorUrl = "http://somwehere-nasty.net",
       webChat = Some(WebChat(ChatRoomId("test"), TemplateName("test"))),
       sections = List(section),
       acknowledgementSection = AcknowledgementSection(toLocalisedString(""), None, None, Nil),

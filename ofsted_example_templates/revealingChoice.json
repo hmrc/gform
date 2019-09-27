@@ -6,8 +6,6 @@
     "authModule": "hmrc"
   },
   "emailTemplateId": "eeitt_submission_confirmation",
-  "submitSuccessUrl": "http://www.google.co.uk",
-  "submitErrorUrl": "http://www.yahoo.co.uk",
   "sections": [
     {
       "title": "Multi-Value Revealing Choice",

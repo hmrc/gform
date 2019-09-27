@@ -57,7 +57,5 @@
         "includeIf": "{{isAccepting}}",
         "requiredState": "Accepted"
       }
-  ],
-  "submitErrorUrl": "",
-  "submitSuccessUrl": ""
+  ]
 }

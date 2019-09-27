@@ -44,17 +44,15 @@
           "sections" : [],
           "description" : "description",
           "_id" : "333",
-          "submitSuccessUrl" : "",
           "authConfig" : {
             "HmrcSimpleModule" : {
-              
+
             }
           },
           "declarationSection" : {
             "title" : "Mr",
             "fields" : []
           },
-          "submitErrorUrl" : "business",
           "acknowledgementSection" : {
             "title" : "Mr",
             "fields" : []

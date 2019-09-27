@@ -312,10 +312,6 @@ trait ExampleFormTemplate {
 
   def webChat = Some(WebChat(ChatRoomId("test"), TemplateName("hmrc7")))
 
-  def submtSuccessUrl = """http://success.com"""
-
-  def submitErrorUrl = """http://imsorry.com"""
-
   def acknowledgementSection =
     AcknowledgementSection(
       toLocalisedString("Acknowledgement Page"),
@@ -335,8 +331,6 @@ trait ExampleFormTemplate {
       authConfig = authConfig,
       emailTemplateId = emailTemplateId,
       emailParameters = emailParameters,
-      submitSuccessUrl = submtSuccessUrl,
-      submitErrorUrl = submitErrorUrl,
       webChat = webChat,
       sections = allSections,
       acknowledgementSection = acknowledgementSection,

@@ -101,8 +101,6 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with MustMatche
        |    "agentAccess": "allowAnyAgentAffinityUser"
        |  },
        |  "emailTemplateId": "",
-       |  "submitSuccessUrl": "",
-       |  "submitErrorUrl": "",
        |  "sections": [{
        |    "title": "Page A",
        |    "fields": [{
