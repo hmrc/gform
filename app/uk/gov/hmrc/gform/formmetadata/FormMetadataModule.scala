@@ -16,10 +16,32 @@
 
 package uk.gov.hmrc.gform.formmetadata
 
-import scala.concurrent.ExecutionContext
+import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
+
+import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.gform.mongo.MongoModule
+import uk.gov.hmrc.gform.sharedmodel.{ SubmissionRef, UserId }
+import uk.gov.hmrc.gform.sharedmodel.form.FormIdData
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 
 class FormMetadataModule(mongoModule: MongoModule)(implicit ex: ExecutionContext) {
   val formMetadataRepo: FormMetadataRepo = new FormMetadataRepo(mongoModule.mongo)
-  val formMetadataService: FormMetadataService = new FormMetadataService(formMetadataRepo)
+  val formMetadataService: FormMetadataAlgebra[Future] = new FormMetadataService(formMetadataRepo)
+
+  val foptFormMetadataService: FormMetadataAlgebra[FOpt] = new FormMetadataAlgebra[FOpt] {
+    override def get(formIdData: FormIdData): FOpt[FormMetadata] =
+      fromFutureA(formMetadataService.get(formIdData))
+
+    override def getAll(userId: UserId, formTemplateId: FormTemplateId): FOpt[List[FormMetadata]] =
+      fromFutureA(formMetadataService.getAll(userId, formTemplateId))
+
+    override def upsert(formIdData: FormIdData): FOpt[Unit] =
+      fromFutureA(formMetadataService.upsert(formIdData))
+
+    override def touch(formIdData: FormIdData, parentFormSubmissionRefs: List[SubmissionRef]): FOpt[Unit] =
+      fromFutureA(formMetadataService.touch(formIdData, parentFormSubmissionRefs))
+
+    override def findByParentFormSubmissionRef(parentFormSubmissionRef: SubmissionRef): FOpt[List[FormMetadata]] =
+      fromFutureA(formMetadataService.findByParentFormSubmissionRef(parentFormSubmissionRef))
+  }
 }

@@ -97,7 +97,7 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
     new FormModule(configModule, formTemplateModule, fileUploadModule, formService)
 
   lazy val destinationModule =
-    new DestinationModule(configModule, mongoModule, formModule, fileUploadModule)
+    new DestinationModule(configModule, mongoModule, formModule, fileUploadModule, formMetadaModule)
 
   val validationModule = new ValidationModule(wSHttpModule, configModule)
 

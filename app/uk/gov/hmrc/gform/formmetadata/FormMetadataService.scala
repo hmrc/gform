@@ -18,19 +18,22 @@ package uk.gov.hmrc.gform.formmetadata
 
 import cats.syntax.option._
 import java.time.Instant
-import play.api.libs.json.Json
+
+import play.api.libs.json.{ JsString, Json }
+
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, SubmissionRef, UserId }
-import uk.gov.hmrc.gform.sharedmodel.form.{ FormId, FormIdData }
+import uk.gov.hmrc.gform.sharedmodel.form.FormIdData
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 
 trait FormMetadataAlgebra[F[_]] {
-  //def get(formIdData: FormIdData): F[FormMetadata]
+  def get(formIdData: FormIdData): F[FormMetadata]
   def getAll(userId: UserId, formTemplateId: FormTemplateId): F[List[FormMetadata]]
   def upsert(formIdData: FormIdData): F[Unit]
   def touch(formIdData: FormIdData, parentFormSubmissionRefs: List[SubmissionRef]): F[Unit]
+  def findByParentFormSubmissionRef(parentFormSubmissionRef: SubmissionRef): F[List[FormMetadata]]
 }
 
 class FormMetadataService(formMetadataRepo: FormMetadataRepo)(implicit ec: ExecutionContext)
@@ -38,6 +41,8 @@ class FormMetadataService(formMetadataRepo: FormMetadataRepo)(implicit ec: Execu
 
   private def find(formIdData: FormIdData): Future[Option[FormMetadata]] =
     formMetadataRepo.find(formIdData.toFormId.value)
+
+  def get(formIdData: FormIdData): Future[FormMetadata] = formMetadataRepo.get(formIdData.toFormId.value)
 
   def getAll(userId: UserId, formTemplateId: FormTemplateId): Future[List[FormMetadata]] = formMetadataRepo.search(
     Json.obj(
@@ -63,6 +68,15 @@ class FormMetadataService(formMetadataRepo: FormMetadataRepo)(implicit ec: Execu
   }
 
   def upsert(formIdData: FormIdData): Future[Unit] = toFuture(formMetadataRepo.upsert(newFormMetadata(formIdData)))
+
+  def findByParentFormSubmissionRef(parentFormSubmissionRef: SubmissionRef): Future[List[FormMetadata]] = {
+    val parentSubmissionRefJson = JsString(parentFormSubmissionRef.value)
+    val query = Json.obj(
+      "submissionRef"            -> Json.obj("$ne" -> parentSubmissionRefJson),
+      "parentFormSubmissionRefs" -> Json.obj("$in" -> Json.arr(parentSubmissionRefJson)))
+
+    formMetadataRepo.search(query)
+  }
 
   private def newFormMetadata(formIdData: FormIdData): FormMetadata = {
     val now = Instant.now()

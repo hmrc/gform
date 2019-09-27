@@ -20,6 +20,7 @@ import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.fileupload.{ FileDownloadAlgebra, FileUploadModule }
 import uk.gov.hmrc.gform.form.FormModule
+import uk.gov.hmrc.gform.formmetadata.FormMetadataModule
 import uk.gov.hmrc.gform.logging.Loggers
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.repo.{ Repo, RepoAlgebra }
@@ -35,7 +36,8 @@ class DestinationModule(
   configModule: ConfigModule,
   mongoModule: MongoModule,
   formModule: FormModule,
-  fileUploadModule: FileUploadModule)(implicit ex: ExecutionContext) {
+  fileUploadModule: FileUploadModule,
+  metadataModule: FormMetadataModule)(implicit ex: ExecutionContext) {
   val destinationAuditer: Option[RepoDestinationAuditer] =
     if (configModule.DestinationsServicesConfig.auditDestinations) {
       Loggers.destinations.info("Destination auditing IS enabled")
@@ -50,8 +52,7 @@ class DestinationModule(
       None
     }
 
-  val formTreeService: Option[FormTreeAlgebra[FOpt]] =
-    destinationAuditer.map { new FormTreeService(_) }
+  val formTreeService: FormTreeAlgebra[FOpt] = new FormTreeService(metadataModule.foptFormMetadataService)
 
   private val fileDownloadServiceIfPopulating: Option[FileDownloadAlgebra[FOpt]] =
     if (configModule.DestinationsServicesConfig.populateHandlebarsModelWithDocuments) {

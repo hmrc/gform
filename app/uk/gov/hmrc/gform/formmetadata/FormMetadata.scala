@@ -17,9 +17,10 @@
 package uk.gov.hmrc.gform.formmetadata
 
 import java.time.Instant
+
 import play.api.libs.json.{ Json, OFormat }
-import uk.gov.hmrc.gform.sharedmodel.{ SubmissionRef, UserId }
-import uk.gov.hmrc.gform.sharedmodel.form.FormId
+import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, SubmissionRef, UserId }
+import uk.gov.hmrc.gform.sharedmodel.form.{ FormId, FormIdData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 
 case class FormMetadata(
@@ -30,7 +31,12 @@ case class FormMetadata(
   parentFormSubmissionRefs: List[SubmissionRef],
   createdAt: Instant,
   updatedAt: Instant
-)
+) {
+  def formIdData: FormIdData = submissionRef match {
+    case None     => FormIdData.Plain(userId, formTemplateId)
+    case Some(sr) => FormIdData.WithAccessCode(userId, formTemplateId, AccessCode.fromSubmissionRef(sr))
+  }
+}
 
 object FormMetadata {
   implicit val format: OFormat[FormMetadata] = {

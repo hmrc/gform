@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.sharedmodel.form
 
-import cats.Eq
+import cats.{ Eq, Show }
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, SubmissionRef, UserId, ValueClassFormat }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
@@ -39,5 +39,7 @@ object FormId {
   val vformat: Format[FormId] = ValueClassFormat.vformat("_id", FormId.apply, x => JsString(x.value))
 
   implicit val equal: Eq[FormId] = Eq.fromUniversalEquals[FormId]
+
+  implicit val show: Show[FormId] = Show.show(_.value)
 
 }

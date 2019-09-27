@@ -21,47 +21,57 @@ import cats.instances.list._
 import cats.syntax.applicative._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
+import cats.syntax.show._
 import cats.syntax.traverse._
 import play.api.Logger
 import uk.gov.hmrc.gform.form.BundledFormTreeNode
+import uk.gov.hmrc.gform.formmetadata.{ FormMetadata, FormMetadataAlgebra }
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
-import uk.gov.hmrc.gform.sharedmodel.form.FormId
+import uk.gov.hmrc.gform.sharedmodel.form.FormIdData
 import uk.gov.hmrc.gform.submission.Tree
-import uk.gov.hmrc.http.HeaderCarrier
 
-class FormTreeService[M[_]](auditAlgebra: DestinationAuditAlgebra[M])(implicit M: MonadError[M, String])
+class FormTreeService[M[_]](formMetadataAlgebra: FormMetadataAlgebra[M])(implicit M: MonadError[M, String])
     extends FormTreeAlgebra[M] {
-  def getFormTree(rootFormId: FormId)(implicit hc: HeaderCarrier): M[Tree[BundledFormTreeNode]] =
+  def getFormTree(rootFormId: FormIdData): M[Tree[BundledFormTreeNode]] =
     for {
-      _    <- Logger.info(s"getFormTree(${rootFormId.value})").pure[M]
-      tree <- auditAlgebra.getLatestForForm(rootFormId).flatMap(buildHierarchyForAudit(_, Set.empty))
+      _    <- Logger.info(s"getFormTree(${rootFormId.toFormId.value})").pure[M]
+      tree <- formMetadataAlgebra.get(rootFormId).flatMap(buildHierarchyForForm(_, Set.empty))
     } yield tree
 
-  private def buildDescendantTreesForChildAudits(
-    childAudits: List[DestinationAudit],
-    processedSubmissionReferences: Set[SubmissionRef]) =
-    childAudits
-      .traverse(buildHierarchyForAudit(_, processedSubmissionReferences))
+  private def buildDescendantTrees(
+    metadataForChildren: List[FormMetadata],
+    processedSubmissionReferences: Set[SubmissionRef]): M[List[Tree[BundledFormTreeNode]]] =
+    metadataForChildren
+      .traverse(buildHierarchyForForm(_, processedSubmissionReferences))
 
   private def buildDescendantTreesForSubmissionRef(
     submissionRef: SubmissionRef,
-    processedSubmissionReferences: Set[SubmissionRef]) =
+    processedSubmissionReferences: Set[SubmissionRef]): M[List[Tree[BundledFormTreeNode]]] =
     for {
-      _           <- Logger.info(s"buildDescendantTreesForSubmissionRef(${submissionRef.value})").pure[M]
-      _           <- verifyNoLoops(submissionRef, processedSubmissionReferences)
-      childAudits <- auditAlgebra.findLatestChildAudits(submissionRef)
+      _             <- Logger.info(s"buildDescendantTreesForSubmissionRef(${submissionRef.value})").pure[M]
+      _             <- verifyNoLoops(submissionRef, processedSubmissionReferences)
+      childMetadata <- formMetadataAlgebra.findByParentFormSubmissionRef(submissionRef)
       _ = Logger.info(
-        s"buildDescendantTreesForSubmissionRef(${submissionRef.value}) - child submission references: [${childAudits.map(_.submissionRef.value).mkString(", ")}]")
-      descendantTrees <- buildDescendantTreesForChildAudits(childAudits, processedSubmissionReferences + submissionRef)
+        s"buildDescendantTreesForSubmissionRef(${submissionRef.value}) - child submission references: [${childMetadata
+          .map(_.submissionRef.fold("") { _.value })
+          .mkString(", ")}]")
+      descendantTrees <- buildDescendantTrees(childMetadata, processedSubmissionReferences + submissionRef)
     } yield descendantTrees
 
-  private def buildHierarchyForAudit(
-    audit: DestinationAudit,
+  private def buildDescendantTreesForSubmissionRef(
+    maybeSubmissionRef: Option[SubmissionRef],
+    processedSubmissionReferences: Set[SubmissionRef]): M[List[Tree[BundledFormTreeNode]]] =
+    maybeSubmissionRef
+      .map(buildDescendantTreesForSubmissionRef(_, processedSubmissionReferences))
+      .getOrElse(List.empty.pure[M])
+
+  private def buildHierarchyForForm(
+    metadata: FormMetadata,
     processedSubmissionReferences: Set[SubmissionRef]): M[Tree[BundledFormTreeNode]] =
     for {
-      _     <- Logger.info(s"buildHierarchyForAudit(${audit.submissionRef.value})").pure[M]
-      trees <- buildDescendantTreesForSubmissionRef(audit.submissionRef, processedSubmissionReferences)
-    } yield Tree(BundledFormTreeNode(audit.formId, audit.submissionRef, audit.formTemplateId), trees)
+      _     <- Logger.info(show"buildHierarchyForForm(${metadata._id})").pure[M]
+      trees <- buildDescendantTreesForSubmissionRef(metadata.submissionRef, processedSubmissionReferences)
+    } yield Tree(BundledFormTreeNode(metadata.formIdData), trees)
 
   private def verifyNoLoops(submissionRef: SubmissionRef, processedSubmissionReferences: Set[SubmissionRef]): M[Unit] =
     if (processedSubmissionReferences.contains(submissionRef))

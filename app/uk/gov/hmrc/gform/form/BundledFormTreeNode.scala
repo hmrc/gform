@@ -17,7 +17,15 @@
 package uk.gov.hmrc.gform.form
 
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
-import uk.gov.hmrc.gform.sharedmodel.form.FormId
+import uk.gov.hmrc.gform.sharedmodel.form.{ FormId, FormIdData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 
-case class BundledFormTreeNode(formId: FormId, submissionRef: SubmissionRef, formTemplateId: FormTemplateId)
+case class BundledFormTreeNode(formIdData: FormIdData) {
+  lazy val submissionRef: SubmissionRef = formIdData match {
+    case _: FormIdData.Plain            => throw new IllegalStateException("BundledFormTreeNode must have an AccessCode!")
+    case wac: FormIdData.WithAccessCode => SubmissionRef(wac.accessCode.value)
+  }
+
+  def formTemplateId: FormTemplateId = formIdData.formTemplateId
+  def formId: FormId = formIdData.toFormId
+}

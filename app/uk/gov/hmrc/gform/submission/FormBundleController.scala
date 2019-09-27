@@ -24,7 +24,7 @@ import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, UserId }
-import uk.gov.hmrc.gform.sharedmodel.form.{ FormId, FormIdData, FormStatus }
+import uk.gov.hmrc.gform.sharedmodel.form.{ FormIdData, FormStatus }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils._
 import uk.gov.hmrc.gform.sharedmodel.BundledFormSubmissionData
@@ -45,8 +45,8 @@ class FormBundleController(oFormBundleSubmissionService: Option[FormBundleSubmis
             s"getFormBundle, formId: '${rootFormIdData.toFormId.value}, ${loggingHelpers.cleanHeaders(request.headers)}")
 
           formBundleSubmissionService
-            .formTree(rootFormIdData.toFormId)
-            .map(_.map(_.formId).toList)
+            .formTree(rootFormIdData)
+            .map(_.map(_.formIdData).toList)
             .toFuture
             .asOkJson
       }

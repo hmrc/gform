@@ -17,10 +17,9 @@
 package uk.gov.hmrc.gform.submission.destinations
 
 import uk.gov.hmrc.gform.form.BundledFormTreeNode
-import uk.gov.hmrc.gform.sharedmodel.form.FormId
+import uk.gov.hmrc.gform.sharedmodel.form.FormIdData
 import uk.gov.hmrc.gform.submission.Tree
-import uk.gov.hmrc.http.HeaderCarrier
 
 trait FormTreeAlgebra[M[_]] {
-  def getFormTree(formId: FormId)(implicit hc: HeaderCarrier): M[Tree[BundledFormTreeNode]]
+  def getFormTree(formId: FormIdData): M[Tree[BundledFormTreeNode]]
 }

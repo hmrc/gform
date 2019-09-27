@@ -22,8 +22,8 @@ import org.scalatest.Assertion
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.form.BundledFormTreeNode
 import uk.gov.hmrc.gform.models.helpers.TaxPeriodHelper.formatDate
-import uk.gov.hmrc.gform.sharedmodel.{ ObligationDetail, ObligationDetailGen, ObligationDetails, RecalculatedTaxPeriodKey, RetrievedObligations, SubmissionRef, TaxResponse, TaxResponseGen }
-import uk.gov.hmrc.gform.sharedmodel.form.{ FormData, FormField, FormId }
+import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, ObligationDetail, ObligationDetailGen, ObligationDetails, RecalculatedTaxPeriodKey, RetrievedObligations, TaxResponse, TaxResponseGen, UserId }
+import uk.gov.hmrc.gform.sharedmodel.form.{ FormData, FormField, FormIdData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HandlebarsTemplateProcessorModel
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplateId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ ComponentTypeGen, FormGen }
@@ -89,9 +89,11 @@ class DestinationsProcessorModelAlgebraSpec extends Spec {
     def tree(prefix: String, templateId: String, children: Tree[BundledFormTreeNode]*) =
       Tree(
         BundledFormTreeNode(
-          FormId(s"${prefix}Id"),
-          SubmissionRef(s"${prefix}SubmissionRef"),
-          FormTemplateId(templateId)
+          FormIdData.WithAccessCode(
+            UserId(s"${prefix}UserId"),
+            FormTemplateId(templateId),
+            AccessCode(s"${prefix}SubmissionRef")
+          )
         ),
         children: _*
       )
@@ -108,21 +110,21 @@ class DestinationsProcessorModelAlgebraSpec extends Spec {
       """|{
          |  "formBundle" : {
          |    "tree" : {
-         |      "formId" : "rootId",
+         |      "formId" : "rootUserId-rootTemplate-rootSubmissionRef",
          |      "submissionRef" : "rootSubmissionRef",
          |      "childTemplate1" : [
          |        {
-         |          "formId" : "child1Id",
+         |          "formId" : "child1UserId-childTemplate1-child1SubmissionRef",
          |          "submissionRef" : "child1SubmissionRef"
          |        },
          |        {
-         |          "formId" : "child2Id",
+         |          "formId" : "child2UserId-childTemplate1-child2SubmissionRef",
          |          "submissionRef" : "child2SubmissionRef"
          |        }
          |      ],
          |      "childTemplate2" : [
          |        {
-         |          "formId" : "child3Id",
+         |          "formId" : "child3UserId-childTemplate2-child3SubmissionRef",
          |          "submissionRef" : "child3SubmissionRef"
          |        }
          |      ]

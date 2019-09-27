@@ -28,7 +28,7 @@ import play.api.libs.json.JsObject
 import uk.gov.hmrc.gform.form.{ BundledFormTreeNode, FormAlgebra }
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.repo.RepoAlgebra
-import uk.gov.hmrc.gform.sharedmodel.{ BundledFormSubmissionData, FrontEndSubmissionVariables, PdfHtml }
+import uk.gov.hmrc.gform.sharedmodel.{ BundledFormSubmissionData, FrontEndSubmissionVariables, PdfHtml, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.submission.destinations.{ DestinationAuditAlgebra, DestinationSubmissionInfo, DestinationsProcessorModelAlgebra, DestinationsSubmitterAlgebra, FormTreeAlgebra, PdfSummaryAlgebra }
 import uk.gov.hmrc.gform.submission.handlebars.{ HandlebarsModelTree, HandlebarsModelTreeNode }
@@ -51,14 +51,14 @@ class FormBundleSubmissionService[F[_]](
       _    <- destinationAuditAlgebra.auditForcedFormStatusChange(form)
     } yield ()
 
-  def formTree(rootFormId: FormId)(implicit hc: HeaderCarrier): F[Tree[BundledFormTreeNode]] =
+  def formTree(rootFormId: FormIdData)(implicit hc: HeaderCarrier): F[Tree[BundledFormTreeNode]] =
     formTreeAlgebra.getFormTree(rootFormId)
 
   def submitFormBundleAfterReview(rootFormIdData: FormIdData, submissionData: NonEmptyList[BundledFormSubmissionData])(
     implicit hc: HeaderCarrier): F[Unit] =
     for {
       _          <- formAlgebra.updateFormStatus(rootFormIdData.toFormId, Submitting)
-      modelTree  <- createModelTree(rootFormIdData.toFormId, submissionData)
+      modelTree  <- createModelTree(rootFormIdData, submissionData)
       submission <- submissionRepoAlgebra.get(rootFormIdData.toFormId.value)
       submissionInfo = DestinationSubmissionInfo("", None, submission)
       _ <- destinationsSubmitterAlgebra.send(submissionInfo, modelTree)
@@ -80,14 +80,14 @@ class FormBundleSubmissionService[F[_]](
       }
   }
 
-  private def createModelTree(rootFormId: FormId, submissionData: NonEmptyList[BundledFormSubmissionData])(
+  private def createModelTree(rootFormId: FormIdData, submissionData: NonEmptyList[BundledFormSubmissionData])(
     implicit hc: HeaderCarrier): F[HandlebarsModelTree] =
     for {
       formTree      <- formTreeAlgebra.getFormTree(rootFormId)
-      formsById     <- buildMap(formTree)(_.formId)(formAlgebra.get)
-      templatesById <- buildMap(formTree)(_.formTemplateId)(formTemplateAlgebra.get)
-      submissionDataByFormId = submissionData.map(d => (d.formIdData.toFormId, d)).toList.toMap
-      pdfHtmlByFormId <- buildMap(formTree)(_.formId)(pdfSummaryAlgebra.getLatestPdfHtml)
+      formsById     <- buildMap(formTree)(_.formIdData)(formAlgebra.get)
+      templatesById <- buildMap(formTree)(_.formIdData.formTemplateId)(formTemplateAlgebra.get)
+      submissionDataByFormId = submissionData.map(d => (d.formIdData, d)).toList.toMap
+      pdfHtmlByFormId <- buildMap(formTree)(_.formIdData)(id => pdfSummaryAlgebra.getLatestPdfHtml(id.toFormId))
       processorModelByFormId <- buildProcessorModelByFormId(
                                  formTree,
                                  formsById,
@@ -96,21 +96,27 @@ class FormBundleSubmissionService[F[_]](
     } yield
       formTree.map { formTreeNode =>
         HandlebarsModelTreeNode(
-          formTreeNode.formId,
-          formTreeNode.submissionRef,
-          templatesById(formTreeNode.formTemplateId),
-          processorModelByFormId(formTreeNode.formId),
-          pdfHtmlByFormId(formTreeNode.formId),
-          submissionDataByFormId(formTreeNode.formId).structuredFormData
+          formTreeNode.formIdData.toFormId,
+          extractSubmissionRef(formTreeNode.formIdData),
+          templatesById(formTreeNode.formIdData.formTemplateId),
+          processorModelByFormId(formTreeNode.formIdData),
+          pdfHtmlByFormId(formTreeNode.formIdData),
+          submissionDataByFormId(formTreeNode.formIdData).structuredFormData
         )
       }
 
+  private def extractSubmissionRef(formIdData: FormIdData): SubmissionRef =
+    formIdData match {
+      case _: FormIdData.Plain            => SubmissionRef("")
+      case wac: FormIdData.WithAccessCode => SubmissionRef(wac.accessCode.value)
+    }
+
   private def buildProcessorModelByFormId(
     formTree: Tree[BundledFormTreeNode],
-    formsById: Map[FormId, Form],
-    pdfHtmlByFormId: Map[FormId, PdfHtml],
-    submissionDataByFormId: Map[FormId, BundledFormSubmissionData])(implicit hc: HeaderCarrier) =
-    buildMap(formTree)(_.formId) { id =>
+    formsById: Map[FormIdData, Form],
+    pdfHtmlByFormId: Map[FormIdData, PdfHtml],
+    submissionDataByFormId: Map[FormIdData, BundledFormSubmissionData])(implicit hc: HeaderCarrier) =
+    buildMap(formTree)(_.formIdData) { id =>
       for {
         baseModel <- destinationProcessorModelAlgebra
                       .create(
