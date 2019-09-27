@@ -22,7 +22,8 @@
             "SortCode",
             "Telephone",
             "Tax Amount",
-            "bankAccountNumber"
+            "Bank Account Number",
+            "Choices"
           ],
           "revealingFields": [
             [
@@ -94,6 +95,16 @@
                 "type": "text",
                 "format": "ukBankAccountNumber",
                 "label": "Account number"
+              }
+            ],
+            [
+              {
+                "id": "approve",
+                "type": "choice",
+                "label": "Do you approve?",
+                "helpText": "Well? Do you?",
+                "format": "yesno",
+                "mandatory": "yes"
               }
             ]
           ]

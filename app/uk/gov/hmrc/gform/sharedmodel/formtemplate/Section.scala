@@ -31,10 +31,12 @@ sealed trait BaseSection {
   def listBasicFormComponents: List[FormComponent] =
     fields.flatMap { field =>
       field.`type` match {
-        case g: Group => g.fields
-        case _        => List(field)
+        case g: Group           => g.fields
+        case r: RevealingChoice => field :: r.options.toList.flatMap(_.revealingFields)
+        case _                  => List(field)
       }
     }
+
 }
 
 case class ExpandedSection(expandedFormComponents: List[ExpandedFormComponent]) extends AnyVal {
