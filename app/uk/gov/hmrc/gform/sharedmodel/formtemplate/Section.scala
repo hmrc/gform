@@ -28,15 +28,18 @@ sealed trait BaseSection {
   def shortName: Option[LocalisedString]
   def fields: List[FormComponent]
 
-  def listBasicFormComponents: List[FormComponent] =
-    fields.flatMap { field =>
-      field.`type` match {
-        case g: Group           => g.fields
-        case r: RevealingChoice => field :: r.options.toList.flatMap(_.revealingFields)
-        case _                  => List(field)
+  def listBasicFormComponents: List[FormComponent] = {
+    def recurse(fs: List[FormComponent]): List[FormComponent] =
+      fs.flatMap { field =>
+        field.`type` match {
+          case g: Group           => recurse(g.fields)
+          case r: RevealingChoice => field :: r.options.toList.flatMap(o => recurse(o.revealingFields))
+          case _                  => List(field)
+        }
       }
-    }
 
+    recurse(fields)
+  }
 }
 
 case class ExpandedSection(expandedFormComponents: List[ExpandedFormComponent]) extends AnyVal {
