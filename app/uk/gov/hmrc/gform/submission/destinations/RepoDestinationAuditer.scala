@@ -87,9 +87,7 @@ class RepoDestinationAuditer(
 
   def auditForcedFormStatusChange(form: Form)(implicit hc: HeaderCarrier): FOpt[Unit] =
     for {
-      formIdData  <- EitherT.fromOption[Future](FormIdData.fromForm(form), UnexpectedState("dsa"))
-      latestAudit <- getLatestForForm(formIdData.toFormId)
-
+      latestAudit <- getLatestForForm(form._id)
       _ <- apply(
             DestinationAudit(
               form._id,
