@@ -136,7 +136,7 @@ object VariadicFormData {
   // with the assumption that a value of any FormComponentId found in the data map that is not
   // in the template should be represented by a VariadicValue.One value.
   def buildFromMongoData(template: FormTemplate, data: Map[FormComponentId, String]): VariadicFormData =
-    buildFromMongoData(listVariadicFormComponentIds(template.listBasicFormComponents), data)
+    buildFromMongoData(listVariadicFormComponentIds(template), data)
 
   // The VariadicFormData instance returned contains ALL fields in the data map, even if
   // there is no corresponding FormComponentId in the given set of form components Ids.
@@ -155,6 +155,21 @@ object VariadicFormData {
       }
     )
 
-  def listVariadicFormComponentIds(formComponents: Seq[FormComponent]): Set[FormComponentId] =
-    formComponents.filter(fc => VariadicValue.isVariadic(fc.`type`)).map(_.id).toSet
+  def listVariadicFormComponentIds(template: FormTemplate): Set[FormComponentId] =
+    template.listAllSections.flatMap(listVariadicFormComponentIds).toSet
+
+  def listVariadicFormComponentIds(section: BaseSection): Set[FormComponentId] =
+    section.fields.flatMap(listVariadicFormComponentIds).toSet
+
+  def listVariadicFormComponentIds(component: FormComponent): Set[FormComponentId] =
+    component.`type` match {
+      case g: Group  => listVariadicFormComponentIds(g.fields)
+      case c: Choice => Set(component.id.reduceToTemplateFieldId)
+      case r: RevealingChoice =>
+        listVariadicFormComponentIds(r.options.toList.flatMap(_.revealingFields)) + component.id.reduceToTemplateFieldId
+      case _ => Set.empty
+    }
+
+  def listVariadicFormComponentIds(components: List[FormComponent]): Set[FormComponentId] =
+    components.flatMap(listVariadicFormComponentIds).toSet
 }

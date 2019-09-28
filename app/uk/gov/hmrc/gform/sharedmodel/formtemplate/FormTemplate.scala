@@ -51,9 +51,6 @@ case class FormTemplate(
   languages: AvailableLanguages,
   save4LaterInfoText: Option[Save4LaterInfoText]
 ) {
-  def listBasicFormComponents: List[FormComponent] =
-    Section.listBasicFormComponents(listAllSections)
-
   def listAllSections: List[BaseSection] =
     sections ::: List(declarationSection, acknowledgementSection)
 

@@ -1,0 +1,90 @@
+{
+  "_id": "TST123",
+  "formName": "Text Box Component Testing tttt",
+  "description": "Testing standard text box component ",
+  "authConfig": {
+    "authModule": "hmrc"
+  },
+  "emailTemplateId": "eeitt_submission_confirmation",
+  "sections": [
+    {
+      "title": "Which of these best describes your organisation?",
+      "shortName": "Type of organisation",
+      "fields": [
+        {
+          "id": "generatedId_b3c2bb2b_3a17_4f7d_8cb4_dc2def86c355",
+          "type": "info",
+          "label": "meh",
+          "infoText": "meh",
+          "infoType": "noformat"
+        }
+      ]
+    },
+    {
+      "title": "Details of the individuals who form part of the organisation that provide daycare",
+      "fields": [
+        {
+          "id": "generatedId_ff2e8c8b_4189_4413_94ac_a4552de1188e",
+          "type": "group",
+          "label": "",
+          "repeatsMin": 1,
+          "repeatsMax": 99,
+          "repeatLabel": "Individual $n",
+          "repeatAddAnotherText": "Add another individual",
+          "fields": [
+            {
+              "id": "PersonKnowtoOfsted",
+              "type": "choice",
+              "label": "Person known to Ofsted",
+              "choices": [
+                "Yes",
+                "No"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "declarationSection": {
+    "title": "Declaration",
+    "shortName": "Declaration",
+    "fields": [
+      {
+        "id": "declarationFullname",
+        "type": "text",
+        "label": "Full name",
+        "errorMessage": "Full name can only include letters a to z, numbers, spaces, hyphens and apostrophes"
+      }
+    ]
+  },
+  "acknowledgementSection": {
+    "title": "Confirmation page",
+    "shortName": "Acknowledgement Page",
+    "fields": [
+      {
+        "id": "generatedId_e4f65fe7_d990_4255_8c49_55ea9e39ae37",
+        "type": "info",
+        "label": "",
+        "infoText": "Your application to register as a nursery or other daycare will not be reviewed by Ofsted until the 2 steps below are also completed.",
+        "infoType": "important"
+      }
+    ]
+  },
+  "destinations": [
+    {
+      "id": "submitToOfsted",
+      "type": "composite",
+      "includeIf": "{{isSigned}}",
+      "destinations": [
+        {
+          "id": "submitToOfstedTransition",
+          "type": "stateTransition",
+          "requiredState": "NeedsReview"
+        }
+      ]
+    }
+  ],
+  "submitErrorUrl": "deprecated",
+  "submitSuccessUrl": "deprecated"
+}
