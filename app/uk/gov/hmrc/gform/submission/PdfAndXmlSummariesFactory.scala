@@ -92,6 +92,7 @@ object PdfAndXmlSummariesFactory {
       dmsSubmission.includeRoboticsXml
         .filter(identity)
         .map(_ => RoboticsXMLGenerator(formTemplate._id, dmsSubmission.dmsFormId, submissionRef, structuredFormData))
+        .map(body => <data xmlns:xfa="http://www.xfa.org/schema/xfa-data/1.0/">{body}</data>)
         .map(addXmlDeclaration)
 
   }
