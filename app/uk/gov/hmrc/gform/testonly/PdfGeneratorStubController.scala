@@ -22,7 +22,9 @@ import play.api.mvc.Action
 import uk.gov.hmrc.gform.controllers.BaseController
 import org.apache.pdfbox.pdmodel.{ PDDocument, PDPage }
 
-class PdfGeneratorStubController extends BaseController {
+import scala.concurrent.ExecutionContext
+
+class PdfGeneratorStubController(implicit ec: ExecutionContext) extends BaseController {
 
   def generate() = Action {
     val document = new PDDocument()

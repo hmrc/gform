@@ -27,21 +27,23 @@ import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.mongo.ReactiveRepository
 
-class Repo[T: OWrites: Manifest](name: String, mongo: () => DefaultDB, idLens: T => String)(implicit formatT: Format[T])
+class Repo[T: OWrites: Manifest](name: String, mongo: () => DefaultDB, idLens: T => String)(
+  implicit formatT: Format[T],
+  ec: ExecutionContext)
     extends ReactiveRepository[T, BSONObjectID](name, mongo, formatT) {
   underlying =>
 
   import reactivemongo.play.json.ImplicitBSONHandlers._
 
-  def find(id: String)(implicit ec: ExecutionContext): Future[Option[T]] =
+  def find(id: String): Future[Option[T]] =
     underlying.collection
       .find(idSelector(id), npProjection)
       .one[T]
 
-  def get(id: String)(implicit ec: ExecutionContext): Future[T] =
+  def get(id: String): Future[T] =
     find(id).map(_.getOrElse(throw new NoSuchElementException(s"$name for given id: '$id' not found")))
 
-  def search(selector: JsObject)(implicit ec: ExecutionContext): Future[List[T]] =
+  def search(selector: JsObject): Future[List[T]] =
     //TODO: don't abuse it to much. If querying for a large underlyingReactiveRepository.collection.consider returning stream instead of packing everything into the list
     underlying.collection
       .find(selector = selector, npProjection)
@@ -49,7 +51,7 @@ class Repo[T: OWrites: Manifest](name: String, mongo: () => DefaultDB, idLens: T
       .cursor[T]()
       .collect[List]()
 
-  def search(selector: JsObject, orderBy: JsObject)(implicit ec: ExecutionContext): Future[List[T]] =
+  def search(selector: JsObject, orderBy: JsObject): Future[List[T]] =
     //TODO: don't abuse it to much. If querying for a large underlyingReactiveRepository.collection.consider returning stream instead of packing everything into the list
     underlying.collection
       .find(selector = selector, npProjection)
@@ -58,24 +60,24 @@ class Repo[T: OWrites: Manifest](name: String, mongo: () => DefaultDB, idLens: T
       .cursor[T]()
       .collect[List]()
 
-  def projection[P: Format](projection: JsObject)(implicit ec: ExecutionContext): Future[List[P]] =
+  def projection[P: Format](projection: JsObject): Future[List[P]] =
     underlying.collection.find(selector = Json.obj(), projection).cursor[P]().collect[List]()
 
-  def upsert(t: T)(implicit ec: ExecutionContext): FOpt[Unit] = EitherT {
+  def upsert(t: T): FOpt[Unit] = EitherT {
     underlying.collection
       .update(idSelector(t), update = t, writeConcern = WriteConcern.Default, upsert = true, multi = false)
       .asEither
   }
 
-  def delete(id: String)(implicit ec: ExecutionContext): FOpt[Unit] = EitherT {
+  def delete(id: String): FOpt[Unit] = EitherT {
     underlying.collection.remove(idSelector(id)).asEither
   }
 
-  private def idSelector(id: String)(implicit ec: ExecutionContext): JsObject = Json.obj("_id" -> id)
-  private def idSelector(t: T)(implicit ec: ExecutionContext): JsObject = idSelector(idLens(t))
+  private def idSelector(id: String): JsObject = Json.obj("_id" -> id)
+  private def idSelector(t: T): JsObject = idSelector(idLens(t))
   private lazy val npProjection = Json.obj()
 
-  implicit class FutureWriteResultOps[R](t: Future[R])(implicit ec: ExecutionContext) {
+  implicit class FutureWriteResultOps[R](t: Future[R]) {
     def asEither: Future[Either[UnexpectedState, Unit]] =
       t.map { _ =>
         ().asRight[UnexpectedState]

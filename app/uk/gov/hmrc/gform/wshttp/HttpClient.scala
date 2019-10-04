@@ -35,12 +35,6 @@ trait HttpClient[F[_]] {
 }
 
 object HttpClient {
-  def wsHttpClient(wsHttp: WSHttp)(implicit ec: ExecutionContext): HttpClient[FOpt] =
-    new WSHttpHttpClient(wsHttp: WSHttp)
-
-  def auditingwsHttpClient[F[_]](wsHttp: WSHttp)(implicit ec: ExecutionContext): HttpClient[FOpt] =
-    new AuditingHttpClient(wsHttp: WSHttp)
-
   def unimplementedHttpClient[F[_]]: HttpClient[F] = new HttpClient[F] {
     override def get(uri: String)(implicit hc: HeaderCarrier): F[HttpResponse] = ???
     override def post(uri: String, body: String)(implicit hc: HeaderCarrier): F[HttpResponse] = ???

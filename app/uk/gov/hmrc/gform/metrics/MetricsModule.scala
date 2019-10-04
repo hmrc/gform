@@ -17,7 +17,6 @@
 package uk.gov.hmrc.gform.metrics
 
 import com.kenshoo.play.metrics.{ MetricsController, MetricsFilter, MetricsFilterImpl, MetricsImpl }
-import play.api.ApplicationLoader
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.playcomponents.PlayComponents
 

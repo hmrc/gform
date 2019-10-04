@@ -34,10 +34,11 @@ import uk.gov.hmrc.gform.sharedmodel.Obligation
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.http.logging.Authorization
 
-class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfig) {
+class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfig)(implicit ec: ExecutionContext) {
 
-  def lookupRegistration(utr: String, desRegistrationRequest: DesRegistrationRequest)(
-    implicit ex: ExecutionContext): Future[ServiceCallResponse[DesRegistrationResponse]] = {
+  def lookupRegistration(
+    utr: String,
+    desRegistrationRequest: DesRegistrationRequest): Future[ServiceCallResponse[DesRegistrationResponse]] = {
 
     implicit val hc = HeaderCarrier(
       extraHeaders = Seq("Environment" -> desConfig.environment),
@@ -88,8 +89,7 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
     }
 
   def lookupTaxPeriod(idType: String, idNumber: String, regimeType: String)(
-    implicit hc: HeaderCarrier,
-    ex: ExecutionContext): Future[Obligation] = {
+    implicit hc: HeaderCarrier): Future[Obligation] = {
     implicit val hc = HeaderCarrier(
       extraHeaders = Seq("Environment" -> desConfig.environment),
       authorization = Some(Authorization(s"Bearer ${desConfig.authorizationToken}")))

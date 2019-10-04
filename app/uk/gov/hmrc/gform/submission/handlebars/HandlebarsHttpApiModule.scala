@@ -22,12 +22,11 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.ProfileName
 import uk.gov.hmrc.gform.wshttp._
 import uk.gov.hmrc.gform.wshttp.HttpClient.HttpClientBuildingSyntax
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.ExecutionContext
 
-class HandlebarsHttpApiModule(wSHttpModule: WSHttpModule, configModule: ConfigModule) {
+class HandlebarsHttpApiModule(wSHttpModule: WSHttpModule, configModule: ConfigModule)(implicit ec: ExecutionContext) {
 
-  private val rootHttpClient: HttpClient[FOpt] =
-    new AuditingHttpClient(wSHttpModule.auditableWSHttp)
+  private val rootHttpClient: HttpClient[FOpt] = wSHttpModule.auditingHttpClient
 
   private val httpClientMap: Map[ProfileName, HttpClient[FOpt]] =
     configModule

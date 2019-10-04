@@ -16,11 +16,11 @@
 
 package uk.gov.hmrc.gform.playcomponents
 
-import akka.stream.Materializer
 import play.api.Logger
+import play.api.http.HttpErrorHandler
 import play.api.mvc.EssentialFilter
 import play.api.routing.Router
-import uk.gov.hmrc.gform.InjectionDodge
+import scala.concurrent.ExecutionContext
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.auditing.AuditingModule
 import uk.gov.hmrc.gform.config.ConfigModule
@@ -32,19 +32,8 @@ import uk.gov.hmrc.gform.obligation.ObligationModule
 import uk.gov.hmrc.gform.submission.SubmissionModule
 import uk.gov.hmrc.gform.testonly.TestOnlyModule
 import uk.gov.hmrc.gform.validation.ValidationModule
-import uk.gov.hmrc.gform.wshttp.WSHttp
-import uk.gov.hmrc.play.auth.controllers.AuthParamsControllerConfig
-import uk.gov.hmrc.play.auth.microservice.connectors.AuthConnector
-import uk.gov.hmrc.play.auth.microservice.filters.AuthorisationFilter
-import uk.gov.hmrc.play.config.ServicesConfig
+import uk.gov.hmrc.play.bootstrap.filters.{ CacheControlConfig, CacheControlFilter, DefaultLoggingFilter, MDCFilter }
 import uk.gov.hmrc.play.health.HealthController
-import uk.gov.hmrc.play.microservice.filters.{ LoggingFilter, NoCacheFilter }
-
-object MicroserviceAuthConnector extends AuthConnector with ServicesConfig with WSHttp {
-  override val authBaseUrl: String = baseUrl("auth")
-  override protected def mode = InjectionDodge.mode
-  override protected val runModeConfiguration = InjectionDodge.configuration
-}
 
 class PlayComponentsModule(
   playComponents: PlayComponents,
@@ -58,21 +47,9 @@ class PlayComponentsModule(
   submissionModule: SubmissionModule,
   validationModule: ValidationModule,
   dmsModule: DmsModule,
-  obligationModule: ObligationModule) {
+  obligationModule: ObligationModule)(implicit ec: ExecutionContext) {
 
-  lazy val loggingFilter = new LoggingFilter {
-    override def mat: Materializer = akkaModule.materializer
-    override def controllerNeedsLogging(controllerName: String): Boolean =
-      configModule.controllerConfig.paramsForController(controllerName).needsLogging
-  }
-
-  lazy val authFilter = new AuthorisationFilter {
-    override def mat: Materializer = akkaModule.materializer
-    override lazy val authParamsConfig: AuthParamsControllerConfig = configModule.authParamsControllerConfig
-    override lazy val authConnector: AuthConnector = MicroserviceAuthConnector
-    override def controllerNeedsAuth(controllerName: String): Boolean =
-      configModule.controllerConfig.paramsForController(controllerName).needsAuth
-  }
+  private lazy val loggingFilter = new DefaultLoggingFilter(configModule.controllerConfigs)(akkaModule.materializer)
 
   lazy val appRoutes: app.Routes = new app.Routes(
     errorHandler,
@@ -86,7 +63,8 @@ class PlayComponentsModule(
     obligationModule.obligationController
   )
 
-  val healthController = new HealthController(configModule.playConfiguration, playComponents.context.environment)
+  private val healthController =
+    new HealthController(configModule.playConfiguration, playComponents.context.environment)
 
   lazy val prodRoutes: prod.Routes =
     new prod.Routes(errorHandler, appRoutes, healthController, metricsModule.metricsController)
@@ -116,18 +94,20 @@ class PlayComponentsModule(
     }
   }
 
-  lazy val errorHandler =
+  lazy val errorHandler: HttpErrorHandler =
     new ErrorHandler(
       playComponents.context.environment,
       playComponents.context.initialConfiguration,
       playComponents.context.sourceMapper)
 
+  private lazy val cacheControlFilter = new CacheControlFilter(new CacheControlConfig(), akkaModule.materializer)
+
   lazy val httpFilters: Seq[EssentialFilter] = Seq(
     metricsModule.metricsFilter,
     auditingModule.microserviceAuditFilter,
     loggingFilter,
-    //    authFilter, it thorws exception instead of working ...
-    NoCacheFilter
+    cacheControlFilter,
+    new MDCFilter(akkaModule.materializer, configModule.playConfiguration)
   )
 
   lazy val httpRequestHandler =

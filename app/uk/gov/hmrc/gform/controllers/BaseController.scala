@@ -21,11 +21,11 @@ import java.util.UUID
 import cats.data.EitherT
 import cats.implicits._
 import play.api.libs.json._
-import play.api.mvc.{ Action, Result }
+import play.api.mvc.Result
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-class BaseController extends uk.gov.hmrc.play.microservice.controller.BaseController {
+class BaseController(implicit ec: ExecutionContext) extends uk.gov.hmrc.play.bootstrap.controller.BaseController {
 
   object O {
     def asOkJson[T: Writes](t: T): Result =
@@ -33,19 +33,19 @@ class BaseController extends uk.gov.hmrc.play.microservice.controller.BaseContro
   }
 
   implicit class FutureOps[T: Writes](f: Future[T]) {
-    def asOkJson(implicit ec: ExecutionContext) = f.map(t => O.asOkJson(t))
+    def asOkJson = f.map(t => O.asOkJson(t))
   }
 
   implicit class FutureOps2(f: Future[_]) {
-    def asNoContent(implicit ec: ExecutionContext) = f.map(_ => NoContent)
+    def asNoContent = f.map(_ => NoContent)
   }
 
   type LeftResult[T] = EitherT[Future, Result, T]
 
-  def asRes[T](fa: Future[T])(implicit ec: ExecutionContext): LeftResult[T] =
+  def asRes[T](fa: Future[T]): LeftResult[T] =
     EitherT[Future, Result, T](fa.map(_.asRight))
 
-  def asRes[E, T](fa: Future[Either[E, T]])(toLeftResult: E => Result)(implicit ec: ExecutionContext): LeftResult[T] =
+  def asRes[E, T](fa: Future[Either[E, T]])(toLeftResult: E => Result): LeftResult[T] =
     EitherT[Future, E, T](fa).leftMap(toLeftResult)
 
   def asRes[T](a: T): LeftResult[T] = EitherT[Future, Result, T](Future.successful(a.asRight))

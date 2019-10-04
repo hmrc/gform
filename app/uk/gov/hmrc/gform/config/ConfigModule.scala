@@ -22,15 +22,16 @@ import play.api.Configuration
 import play.api.Mode.Mode
 import uk.gov.hmrc.gform.playcomponents.PlayComponents
 import uk.gov.hmrc.gform.sharedmodel.config.ExposedConfig
-import uk.gov.hmrc.play.auth.controllers.AuthParamsControllerConfig
 import uk.gov.hmrc.play.config.{ ControllerConfig, ServicesConfig }
 import pureconfig.generic.auto._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.ProfileName
 import uk.gov.hmrc.http.logging.Authorization
+import uk.gov.hmrc.play.bootstrap.config.ControllerConfigs
 
+import scala.concurrent.ExecutionContext
 import scala.util.Try // It is now necessary to import `pureconfig.generic.auto._` everywhere a config is loaded or written, even though IntelliJ sees this as unused, its still required
 
-class ConfigModule(playComponents: PlayComponents) {
+class ConfigModule(playComponents: PlayComponents)(implicit ec: ExecutionContext) {
 
   val typesafeConfig: TypeSafeConfig = ConfigFactory.load()
 
@@ -45,6 +46,8 @@ class ConfigModule(playComponents: PlayComponents) {
 
   val playConfiguration: Configuration = playComponents.context.initialConfiguration
 
+  val controllerConfigs = ControllerConfigs.fromConfig(playConfiguration)
+
   val serviceConfig: ServicesConfig = new ServicesConfig {
     //watch out!
     // ServicesConfig requires running play application so if we don't override these
@@ -55,10 +58,6 @@ class ConfigModule(playComponents: PlayComponents) {
 
   val controllerConfig: ControllerConfig = new ControllerConfig {
     lazy val controllerConfigs = typesafeConfig.as[TypeSafeConfig]("controllers")
-  }
-
-  val authParamsControllerConfig = new AuthParamsControllerConfig {
-    lazy val controllerConfigs = controllerConfig.controllerConfigs
   }
 
   val configController = new ConfigController(this)

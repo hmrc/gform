@@ -20,12 +20,14 @@ import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.gform.mongo.MongoModule
+import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel.{ SubmissionRef, UserId }
 import uk.gov.hmrc.gform.sharedmodel.form.FormIdData
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 
 class FormMetadataModule(mongoModule: MongoModule)(implicit ex: ExecutionContext) {
-  val formMetadataRepo: FormMetadataRepo = new FormMetadataRepo(mongoModule.mongo)
+  private val formMetadataRepo: Repo[FormMetadata] =
+    new Repo[FormMetadata]("formMetadata", mongoModule.mongo, _._id.value)
   val formMetadataService: FormMetadataAlgebra[Future] = new FormMetadataService(formMetadataRepo)
 
   val foptFormMetadataService: FormMetadataAlgebra[FOpt] = new FormMetadataAlgebra[FOpt] {

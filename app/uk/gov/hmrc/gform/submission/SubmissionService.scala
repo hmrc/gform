@@ -23,9 +23,8 @@ import uk.gov.hmrc.gform.core.{ fromFutureA, _ }
 import uk.gov.hmrc.gform.email.EmailService
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
-import uk.gov.hmrc.gform.sharedmodel.AccessCode
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
-import uk.gov.hmrc.gform.sharedmodel.{ SubmissionData, SubmissionRef, UserId }
+import uk.gov.hmrc.gform.repo.Repo
+import uk.gov.hmrc.gform.sharedmodel.{ SubmissionData, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FileUpload, FormTemplate }
 import uk.gov.hmrc.gform.submission.destinations.{ DestinationSubmissionInfo, DestinationsProcessorModelAlgebra, DestinationsSubmitterAlgebra }
@@ -40,7 +39,7 @@ class SubmissionService(
   formTemplateService: FormTemplateAlgebra[Future],
   destinationProcessorModelService: DestinationsProcessorModelAlgebra[FOpt],
   destinationsSubmitter: DestinationsSubmitterAlgebra[FOpt],
-  submissionRepo: SubmissionRepo,
+  submissionRepo: Repo[Submission],
   email: EmailService,
   timeProvider: TimeProvider)(implicit ex: ExecutionContext) {
 
@@ -79,7 +78,7 @@ class SubmissionService(
             submissionData.structuredFormData,
             model))
 
-  def submissionDetails(formIdData: FormIdData)(implicit ex: ExecutionContext): Future[Submission] =
+  def submissionDetails(formIdData: FormIdData): Future[Submission] =
     submissionRepo.get(formIdData.toFormId.value)
 
   private def findOrCreateSubmission(form: Form, customerId: String, formTemplate: FormTemplate): FOpt[Submission] =

@@ -27,7 +27,7 @@ import uk.gov.hmrc.gform.submission.handlebars.HandlebarsHttpApiModule
 import uk.gov.hmrc.gform.time.TimeModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.gform.core._
-import uk.gov.hmrc.gform.repo.RepoAlgebra
+import uk.gov.hmrc.gform.repo.{ Repo, RepoAlgebra }
 import uk.gov.hmrc.gform.submission.destinations.{ DestinationModule, DestinationSubmitter, DestinationsSubmitter, DestinationsSubmitterAlgebra, DmsSubmitter, StateTransitionService }
 
 import scala.concurrent.ExecutionContext
@@ -47,7 +47,7 @@ class SubmissionModule(
 
   //TODO: this should be replaced with save4later for submissions
 
-  val submissionRepo = new SubmissionRepo(mongoModule.mongo)
+  val submissionRepo: Repo[Submission] = new Repo[Submission]("submission", mongoModule.mongo, _._id.value)
 
   private val fileUploadServiceDmsSubmitter = new DmsSubmitter(
     fileUploadModule.fileUploadService,

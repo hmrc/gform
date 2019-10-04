@@ -18,38 +18,32 @@ package uk.gov.hmrc.gform.wshttp
 
 import akka.actor.{ ActorSystem, Terminated }
 import akka.stream.ActorMaterializer
-import play.api.libs.json.Writes
+import com.typesafe.config.Config
 import play.api.libs.ws.WSRequest
 import play.api.libs.ws.ahc.AhcWSClient
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.hooks.HttpHook
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 
 import scala.concurrent.Future
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
-
-/**
-  * Stubbed WSHttp which responses always with the same HttpResponse. Use it for test purposes
-  */
-class StubbedWSHttp(response: HttpResponse) extends WSHttp {
-  override def doGet(url: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = Future.successful(response)
-  override def doPost[A](url: String, body: A, headers: Seq[(String, String)])(
-    implicit rds: Writes[A],
-    hc: HeaderCarrier) =
-    Future.successful(response)
-  override def doFormPost(url: String, body: Map[String, Seq[String]])(implicit hc: HeaderCarrier) =
-    Future.successful(response)
-  override def doPostString(url: String, body: String, headers: Seq[(String, String)])(implicit hc: HeaderCarrier) =
-    Future.successful(response)
-  override def doEmptyPost[A](url: String)(implicit hc: HeaderCarrier) = Future.successful(response)
-  //TODO: PUT, PATCH, DELETE
-}
 
 //If you want to use WSHttp outside play app you must provide your WSClient. Otherwise it blows up.
 //See https://github.com/hmrc/http-verbs/issues/60
 //Don't use it on production ('ws.close()' logic is missing)
 object TestWSHttp extends WSHttp {
-  override def buildRequest[A](url: String)(implicit hc: HeaderCarrier): WSRequest = ws.url(url)
   private implicit lazy val s: ActorSystem = ActorSystem()
   private implicit lazy val mat: ActorMaterializer = ActorMaterializer()
   private lazy val ws = AhcWSClient()(mat)
 
   def stop(): Future[Terminated] = s.terminate()
+
+  override def auditConnector: AuditConnector = ???
+
+  override def appName: String = ???
+
+  override lazy val configuration: Option[Config] = None
+
+  override val hooks: Seq[HttpHook] = Seq.empty
+
+  override protected def actorSystem: ActorSystem = ???
 }

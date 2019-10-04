@@ -24,10 +24,9 @@ import play.api.libs.streams.Accumulator
 import play.api.libs.ws.{ StreamedBody, WSClient, WSRequest, WSResponse }
 import play.api.mvc._
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ ExecutionContext, Future }
 
-class Proxy(wsClient: WSClient) {
+class Proxy(wsClient: WSClient)(implicit ec: ExecutionContext) {
 
   /**
     * This creates action which proxies incoming request to remote service.
