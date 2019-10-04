@@ -24,10 +24,9 @@ import uk.gov.hmrc.play.http._
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
-class EmailConnector(wSHttp: WSHttp, baseUrl: String) {
+class EmailConnector(wSHttp: WSHttp, baseUrl: String)(implicit ec: ExecutionContext) {
 
-  def sendEmail(
-    emailTemplate: EmailTemplate)(implicit headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[Unit] = {
+  def sendEmail(emailTemplate: EmailTemplate)(implicit headerCarrier: HeaderCarrier): Future[Unit] = {
     Logger.info(s"send email, ${loggingHelpers.cleanHeaderCarrierHeader(headerCarrier)}")
     wSHttp
       .POST[EmailTemplate, HttpResponse](baseUrl + "/hmrc/email", emailTemplate)

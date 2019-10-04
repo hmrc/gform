@@ -24,13 +24,15 @@ import uk.gov.hmrc.gform.sharedmodel.des.{ DesRegistrationRequest, DesRegistrati
 import uk.gov.hmrc.gform.sharedmodel.Account
 import uk.gov.hmrc.http.HeaderCarrier
 
-class ValidationService(desConnector: DesConnector, bankAccountReputationConnector: BankAccountReputationConnector) {
+class ValidationService(desConnector: DesConnector, bankAccountReputationConnector: BankAccountReputationConnector)(
+  implicit ec: ExecutionContext) {
 
-  def desRegistration(utr: String, desRegistrationRequest: DesRegistrationRequest)(
-    implicit ex: ExecutionContext): Future[ServiceCallResponse[DesRegistrationResponse]] =
+  def desRegistration(
+    utr: String,
+    desRegistrationRequest: DesRegistrationRequest): Future[ServiceCallResponse[DesRegistrationResponse]] =
     desConnector.lookupRegistration(utr, desRegistrationRequest)
 
-  def callBRS(account: Account)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Boolean] =
+  def callBRS(account: Account)(implicit hc: HeaderCarrier): Future[Boolean] =
     bankAccountReputationConnector.exists(account).map(_.accountNumberWithSortCodeIsValid)
 
 }

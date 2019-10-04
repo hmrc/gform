@@ -26,9 +26,9 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-class BankAccountReputationConnector(wSHttp: WSHttp, baseUrl: String) {
+class BankAccountReputationConnector(wSHttp: WSHttp, baseUrl: String)(implicit ec: ExecutionContext) {
 
-  def exists(account: Account)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Response] = {
+  def exists(account: Account)(implicit hc: HeaderCarrier): Future[Response] = {
     Logger.info(s"Check if bank account exists, headers: '${loggingHelpers.cleanHeaderCarrierHeader(hc)}'")
     wSHttp.POST[Account, Response](s"$baseUrl/modcheck", account)
   }

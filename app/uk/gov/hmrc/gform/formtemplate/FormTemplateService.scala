@@ -20,6 +20,7 @@ import cats.implicits._
 import play.api.Logger
 import play.api.libs.json.{ JsValue, Json }
 import uk.gov.hmrc.gform.core._
+import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -28,7 +29,7 @@ trait FormTemplateAlgebra[F[_]] {
   def get(id: FormTemplateId): F[FormTemplate]
 }
 
-class FormTemplateService(formTemplateRepo: FormTemplateRepo, formTemplateRawRepo: FormTemplateRawRepo)(
+class FormTemplateService(formTemplateRepo: Repo[FormTemplate], formTemplateRawRepo: Repo[FormTemplateRaw])(
   implicit ec: ExecutionContext)
     extends Verifier with FormTemplateAlgebra[Future] {
 

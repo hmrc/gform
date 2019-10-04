@@ -29,6 +29,7 @@ import play.api.libs.json.{ JsString, Json }
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
+import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, SubmissionRef, UserId }
 import uk.gov.hmrc.gform.sharedmodel.form.FormIdData
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
@@ -41,7 +42,7 @@ trait FormMetadataAlgebra[F[_]] {
   def findByParentFormSubmissionRef(parentFormSubmissionRef: SubmissionRef): F[List[FormMetadata]]
 }
 
-class FormMetadataService(formMetadataRepo: FormMetadataRepo)(implicit ec: ExecutionContext)
+class FormMetadataService(formMetadataRepo: Repo[FormMetadata])(implicit ec: ExecutionContext)
     extends FormMetadataAlgebra[Future] {
 
   private def find(formIdData: FormIdData): Future[Option[FormMetadata]] =

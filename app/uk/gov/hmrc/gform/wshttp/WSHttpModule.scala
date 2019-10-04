@@ -16,14 +16,21 @@
 
 package uk.gov.hmrc.gform.wshttp
 
-import play.api.http.HttpVerbs.{ POST => POST_VERB }
 import uk.gov.hmrc.gform.auditing.AuditingModule
 import uk.gov.hmrc.gform.config.ConfigModule
+import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.playcomponents.PlayComponents
 
-class WSHttpModule(auditingModule: AuditingModule, configModule: ConfigModule, playComponents: PlayComponents) {
+import scala.concurrent.ExecutionContext
 
-  val auditableWSHttp: WSHttp = new WSHttp {
-    //    httpHooks = Seq(auditingModule.httpAuditingHook)
-  }
+class WSHttpModule(auditingModule: AuditingModule, configModule: ConfigModule, playComponents: PlayComponents)(
+  implicit ec: ExecutionContext) {
+  val auditableWSHttp: WSHttp = new WSHttpImpl(
+    configModule.appConfig.appName,
+    auditingModule.auditConnector,
+    Some(configModule.playConfiguration.underlying),
+    playComponents.builtInComponents.actorSystem
+  )
+
+  val auditingHttpClient: HttpClient[FOpt] = new AuditingHttpClient(auditableWSHttp)
 }

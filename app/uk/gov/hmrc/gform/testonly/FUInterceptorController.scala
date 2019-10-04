@@ -18,16 +18,16 @@ package uk.gov.hmrc.gform.testonly
 
 import cats.implicits._
 import play.api.libs.json.{ JsValue, Json }
-import play.api.mvc.{ Action, AnyContent, Request, Result }
+import play.api.mvc.{ Action, Request, Result }
 import uk.gov.hmrc.gform.controllers.BaseController
-import uk.gov.hmrc.gform.fileupload.Quarantined
 import uk.gov.hmrc.gform.wshttp.WSHttp
 import uk.gov.hmrc.play.config.ServicesConfig
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ ExecutionContext, Future }
 
-class FUInterceptorController(wSHttp: WSHttp, serviceConfig: ServicesConfig, proxy: Proxy) extends BaseController {
+class FUInterceptorController(wSHttp: WSHttp, serviceConfig: ServicesConfig, proxy: Proxy)(
+  implicit ec: ExecutionContext)
+    extends BaseController {
   self =>
 
   def intercept(pathParam: String) = Action.async(parse.tolerantText) { (r: Request[String]) =>
