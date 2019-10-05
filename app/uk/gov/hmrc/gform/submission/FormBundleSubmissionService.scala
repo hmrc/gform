@@ -61,11 +61,16 @@ class FormBundleSubmissionService[F[_]](
     for {
       _          <- Logger.info(show"submitFormBundleAfterReview(rootFormIdData: $rootFormIdData)").pure[F]
       _          <- formAlgebra.updateFormStatus(rootFormIdData.toFormId, Submitting)
+      _          <- Logger.info(show"Updated root form status to Submitting").pure[F]
       modelTree  <- createModelTree(rootFormIdData, submissionData)
+      _          <- Logger.info(show"Built model tree").pure[F]
       submission <- submissionRepoAlgebra.get(rootFormIdData.toFormId.value)
+      _          <- Logger.info(show"Got submission for rootForm").pure[F]
       submissionInfo = DestinationSubmissionInfo("", None, submission)
       _ <- destinationsSubmitterAlgebra.send(submissionInfo, modelTree)
+      _ <- Logger.info(show"Ran submitter").pure[F]
       _ <- transitionAllChildNodesToSubmitted(modelTree)
+      _ <- Logger.info(show"Transitioned all child nodes to submitter").pure[F]
     } yield ()
 
   private def transitionAllChildNodesToSubmitted(modelTree: HandlebarsModelTree)(
@@ -87,6 +92,7 @@ class FormBundleSubmissionService[F[_]](
     implicit hc: HeaderCarrier): F[HandlebarsModelTree] =
     for {
       formTree      <- formTreeAlgebra.getFormTree(rootFormId)
+      _             <- Logger.info(show"formTree: $formTree").pure[F]
       formsById     <- buildMap(formTree)(_.formIdData)(formAlgebra.get)
       templatesById <- buildMap(formTree)(_.formIdData.formTemplateId)(formTemplateAlgebra.get)
       submissionDataByFormId = submissionData.map(d => (d.formIdData, d)).toList.toMap
