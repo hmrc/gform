@@ -16,9 +16,10 @@
 
 package uk.gov.hmrc.gform.sharedmodel.form
 
+import cats.Show
 import julienrf.json.derived
 import play.api.libs.json._
-import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, SubmissionRef, UserId, ValueClassFormat }
+import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, UserId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 
 sealed trait FormIdData {
@@ -47,4 +48,6 @@ object FormIdData {
   }
 
   implicit val format: OFormat[FormIdData] = derived.oformat
+
+  implicit val show: Show[FormIdData] = Show.show(format.writes(_).toString)
 }

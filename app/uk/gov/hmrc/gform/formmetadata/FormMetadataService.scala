@@ -16,9 +16,14 @@
 
 package uk.gov.hmrc.gform.formmetadata
 
+import cats.instances.future._
+import cats.instances.list._
+import cats.syntax.flatMap._
 import cats.syntax.option._
+import cats.syntax.show._
 import java.time.Instant
 
+import play.api.Logger
 import play.api.libs.json.{ JsString, Json }
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -55,19 +60,25 @@ class FormMetadataService(formMetadataRepo: FormMetadataRepo)(implicit ec: Execu
     val now = Instant.now()
     for {
       maybeFormMetadata <- find(formIdData)
-      _ <- toFuture(
-            formMetadataRepo.upsert(
-              maybeFormMetadata.fold(newFormMetadata(formIdData))(
-                _.copy(
-                  updatedAt = now,
-                  parentFormSubmissionRefs = parentFormSubmissionRefs
-                ))
-            )
-          )
+      newMetadata = maybeFormMetadata.fold(newFormMetadata(formIdData)) {
+        _.copy(
+          updatedAt = now,
+          parentFormSubmissionRefs = parentFormSubmissionRefs
+        )
+      }
+      _ <- toFuture(formMetadataRepo.upsert(newMetadata))
+      _ <- Future.successful {
+            Logger.info(
+              show"FormMetadataService.touch($formIdData, $parentFormSubmissionRefs) - updating with $newMetadata)")
+          }
     } yield ()
   }
 
-  def upsert(formIdData: FormIdData): Future[Unit] = toFuture(formMetadataRepo.upsert(newFormMetadata(formIdData)))
+  def upsert(formIdData: FormIdData): Future[Unit] = {
+    val metadata = newFormMetadata(formIdData)
+    toFuture(formMetadataRepo.upsert(metadata)) >>
+      Future.successful { Logger.info(show"FormMetadataService.upsert($formIdData) - upserting $metadata)") }
+  }
 
   def findByParentFormSubmissionRef(parentFormSubmissionRef: SubmissionRef): Future[List[FormMetadata]] = {
     val parentSubmissionRefJson = JsString(parentFormSubmissionRef.value)

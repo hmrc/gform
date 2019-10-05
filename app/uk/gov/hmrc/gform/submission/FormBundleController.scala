@@ -23,6 +23,7 @@ import play.api.mvc.{ Action, AnyContent }
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.core._
+import uk.gov.hmrc.gform.form.BundledFormTreeNode
 import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, UserId }
 import uk.gov.hmrc.gform.sharedmodel.form.{ FormIdData, FormStatus }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
@@ -46,6 +47,10 @@ class FormBundleController(oFormBundleSubmissionService: Option[FormBundleSubmis
 
           formBundleSubmissionService
             .formTree(rootFormIdData)
+            .map { tree =>
+              Logger.info(show"getFormBundle, formId: '${rootFormIdData.toFormId.value}: $tree")
+              tree
+            }
             .map(_.map(_.formIdData).toList)
             .toFuture
             .asOkJson

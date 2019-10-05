@@ -23,7 +23,9 @@ import cats.syntax.eq._
 import cats.syntax.applicative._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
+import cats.syntax.show._
 import cats.syntax.traverse._
+import play.api.Logger
 import play.api.libs.json.JsObject
 import uk.gov.hmrc.gform.form.{ BundledFormTreeNode, FormAlgebra }
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
@@ -57,6 +59,7 @@ class FormBundleSubmissionService[F[_]](
   def submitFormBundleAfterReview(rootFormIdData: FormIdData, submissionData: NonEmptyList[BundledFormSubmissionData])(
     implicit hc: HeaderCarrier): F[Unit] =
     for {
+      _          <- Logger.info(show"submitFormBundleAfterReview(rootFormIdData: $rootFormIdData)").pure[F]
       _          <- formAlgebra.updateFormStatus(rootFormIdData.toFormId, Submitting)
       modelTree  <- createModelTree(rootFormIdData, submissionData)
       submission <- submissionRepoAlgebra.get(rootFormIdData.toFormId.value)

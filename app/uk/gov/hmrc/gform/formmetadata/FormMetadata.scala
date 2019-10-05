@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.formmetadata
 
 import java.time.Instant
 
+import cats.Show
 import play.api.libs.json.{ Json, OFormat }
 import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, SubmissionRef, UserId }
 import uk.gov.hmrc.gform.sharedmodel.form.{ FormId, FormIdData }
@@ -45,4 +46,6 @@ object FormMetadata {
     implicit val submissionRefFormat = SubmissionRef.vformat
     Json.format
   }
+
+  implicit val show: Show[FormMetadata] = Show.show(format.writes(_).toString)
 }

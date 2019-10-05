@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.sharedmodel
 import java.math.BigInteger
 import java.security.MessageDigest
 
-import cats.Eq
+import cats.{ Eq, Show }
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 
@@ -41,6 +41,8 @@ object SubmissionRef {
     ValueClassFormat.vformat("submissionRef", SubmissionRef.apply, x => JsString(x.value))
 
   implicit val equal: Eq[SubmissionRef] = Eq.fromUniversalEquals
+
+  implicit val show: Show[SubmissionRef] = Show.show(_.value)
 
   def apply(value: EnvelopeId): SubmissionRef = SubmissionRef(getSubmissionReference(value))
 

@@ -16,6 +16,10 @@
 
 package uk.gov.hmrc.gform.submission
 
+import cats.Show
+import cats.instances.string._
+import cats.syntax.show._
+
 case class Tree[T](value: T, children: List[Tree[T]]) {
   def find(p: T => Boolean): Option[T] = toList.find(p)
 
@@ -33,4 +37,7 @@ case class Tree[T](value: T, children: List[Tree[T]]) {
 
 object Tree {
   def apply[T](value: T, children: Tree[T]*): Tree[T] = Tree(value, children.toList)
+
+  implicit def show[T: Show]: Show[Tree[T]] =
+    Show.show(t => show"${t.value} (${t.children.map { Tree.show[T].show }.mkString(", ")})")
 }

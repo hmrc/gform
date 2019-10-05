@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.gform.form
 
+import cats.Show
+import cats.syntax.show._
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.{ FormId, FormIdData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
@@ -28,4 +30,8 @@ case class BundledFormTreeNode(formIdData: FormIdData) {
 
   def formTemplateId: FormTemplateId = formIdData.formTemplateId
   def formId: FormId = formIdData.toFormId
+}
+
+object BundledFormTreeNode {
+  implicit val show: Show[BundledFormTreeNode] = Show.show(d => d.formIdData.show)
 }
