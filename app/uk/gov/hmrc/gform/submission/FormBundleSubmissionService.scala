@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.submission
 
-import cats.Monad
+import cats.MonadError
 import cats.data.NonEmptyList
 import cats.instances.list._
 import cats.syntax.eq._
@@ -45,7 +45,7 @@ class FormBundleSubmissionService[F[_]](
   submissionRepoAlgebra: RepoAlgebra[Submission, F],
   formTreeAlgebra: FormTreeAlgebra[F],
   pdfSummaryAlgebra: PdfSummaryAlgebra[F],
-  destinationAuditAlgebra: DestinationAuditAlgebra[F])(implicit M: Monad[F]) {
+  destinationAuditAlgebra: DestinationAuditAlgebra[F])(implicit M: MonadError[F, String]) {
 
   def forceUpdateFormStatus(formId: FormId, status: FormStatus)(implicit hc: HeaderCarrier): F[Unit] =
     for {
@@ -55,7 +55,25 @@ class FormBundleSubmissionService[F[_]](
     } yield ()
 
   def formTree(rootFormId: FormIdData)(implicit hc: HeaderCarrier): F[Tree[BundledFormTreeNode]] =
-    formTreeAlgebra.getFormTree(rootFormId)
+    for {
+      tree <- formTreeAlgebra.getFormTree(rootFormId)
+      formStatuses <- tree.toList.traverse(node =>
+                       formAlgebra.get(node.formIdData).map { form =>
+                         (node.formIdData, isInAnAppropriateState(form.status))
+                     })
+      validFormIds = formStatuses.collect { case (id, true) => id }.toSet
+      oFiltered = tree.filter(v => validFormIds(v.formIdData))
+      filtered <- oFiltered
+                   .map(M.pure(_))
+                   .getOrElse(M.raiseError("The status of the root form is not NeedsReview or beyond"))
+    } yield filtered
+
+  private def isInAnAppropriateState(status: FormStatus): Boolean =
+    status match {
+      case NeedsReview | Accepting | Returning | Accepted | Submitting | Submitted | Discarded | ManuallySubmitted =>
+        true
+      case _ => false
+    }
 
   def submitFormBundleAfterReview(rootFormIdData: FormIdData, submissionData: NonEmptyList[BundledFormSubmissionData])(
     implicit hc: HeaderCarrier): F[Unit] =
@@ -92,7 +110,7 @@ class FormBundleSubmissionService[F[_]](
   private def createModelTree(rootFormId: FormIdData, submissionData: NonEmptyList[BundledFormSubmissionData])(
     implicit hc: HeaderCarrier): F[HandlebarsModelTree] =
     for {
-      formTree      <- formTreeAlgebra.getFormTree(rootFormId)
+      formTree      <- formTree(rootFormId)
       _             <- Logger.info(show"formTree: $formTree").pure[F]
       formsById     <- buildMap(formTree)(_.formIdData)(findForm)
       templatesById <- buildMap(formTree)(_.formIdData.formTemplateId)(findFormTemplate)

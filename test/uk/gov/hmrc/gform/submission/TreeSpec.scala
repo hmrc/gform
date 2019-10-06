@@ -46,4 +46,14 @@ class TreeSpec extends Spec {
     val tree: Tree[Int] = Tree(1, Tree(2, Tree(3)), Tree(4))
     tree.toList shouldBe List(1, 2, 3, 4)
   }
+
+  "filter" should "remove all nodes and their children if the predicate doesn't match" in {
+    val tree: Tree[Int] = Tree(1, Tree(2, Tree(3)), Tree(4))
+    tree.filter(_ != 2) shouldBe Some(Tree(1, Tree(4)))
+  }
+
+  it should "return None if the root node doesn't match the predicate" in {
+    val tree: Tree[Int] = Tree(1, Tree(2, Tree(3)), Tree(4))
+    tree.filter(_ != 1) shouldBe None
+  }
 }

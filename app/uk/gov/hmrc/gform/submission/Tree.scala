@@ -33,6 +33,10 @@ case class Tree[T](value: T, children: List[Tree[T]]) {
     fold(List.empty[T]) { (acc, t) =>
       t :: acc
     }.reverse
+
+  def filter(f: T => Boolean): Option[Tree[T]] =
+    if (f(value)) Some(Tree(value, children.flatMap(_.filter(f))))
+    else None
 }
 
 object Tree {
