@@ -16,12 +16,15 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
+import cats.Show
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
 
 case class FormTemplateId(value: String) extends AnyVal
 
 object FormTemplateId {
+
+  implicit val show: Show[FormTemplateId] = Show.show(_.value)
 
   implicit val mongoVformat: Format[FormTemplateId] =
     ValueClassFormat.vformat("_id", FormTemplateId.apply, x => JsString(x.value))
@@ -30,5 +33,4 @@ object FormTemplateId {
   val vformat: Format[FormTemplateId] =
     ValueClassFormat.vformat("formTemplateId", FormTemplateId.apply, x => JsString(x.value))
   val oformat: OFormat[FormTemplateId] = ValueClassFormat.oformat("formTemplateId", FormTemplateId.apply, _.value)
-
 }

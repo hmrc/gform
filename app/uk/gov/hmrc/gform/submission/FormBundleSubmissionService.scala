@@ -32,6 +32,7 @@ import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.repo.RepoAlgebra
 import uk.gov.hmrc.gform.sharedmodel.{ BundledFormSubmissionData, FrontEndSubmissionVariables, PdfHtml, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.form._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId }
 import uk.gov.hmrc.gform.submission.destinations.{ DestinationAuditAlgebra, DestinationSubmissionInfo, DestinationsProcessorModelAlgebra, DestinationsSubmitterAlgebra, FormTreeAlgebra, PdfSummaryAlgebra }
 import uk.gov.hmrc.gform.submission.handlebars.{ HandlebarsModelTree, HandlebarsModelTreeNode }
 import uk.gov.hmrc.http.HeaderCarrier
@@ -93,10 +94,10 @@ class FormBundleSubmissionService[F[_]](
     for {
       formTree      <- formTreeAlgebra.getFormTree(rootFormId)
       _             <- Logger.info(show"formTree: $formTree").pure[F]
-      formsById     <- buildMap(formTree)(_.formIdData)(formAlgebra.get)
-      templatesById <- buildMap(formTree)(_.formIdData.formTemplateId)(formTemplateAlgebra.get)
+      formsById     <- buildMap(formTree)(_.formIdData)(findForm)
+      templatesById <- buildMap(formTree)(_.formIdData.formTemplateId)(findFormTemplate)
       submissionDataByFormId = submissionData.map(d => (d.formIdData, d)).toList.toMap
-      pdfHtmlByFormId <- buildMap(formTree)(_.formIdData)(id => pdfSummaryAlgebra.getLatestPdfHtml(id.toFormId))
+      pdfHtmlByFormId <- buildMap(formTree)(_.formIdData)(findSummaryPdf)
       processorModelByFormId <- buildProcessorModelByFormId(
                                  formTree,
                                  formsById,
@@ -113,6 +114,27 @@ class FormBundleSubmissionService[F[_]](
           submissionDataByFormId(formTreeNode.formIdData).structuredFormData
         )
       }
+
+  private def findForm(formId: FormIdData)(implicit hc: HeaderCarrier): F[Form] =
+    for {
+      _    <- Logger.info(show"FormBundleSubmissionService.findForm($formId)").pure[F]
+      form <- formAlgebra.get(formId)
+      _    <- Logger.info(show"FormBundleSubmissionService.findForm($formId) - found").pure[F]
+    } yield form
+
+  private def findFormTemplate(id: FormTemplateId): F[FormTemplate] =
+    for {
+      _        <- Logger.info(show"FormBundleSubmissionService.findFormTemplate($id)").pure[F]
+      template <- formTemplateAlgebra.get(id)
+      _        <- Logger.info(show"FormBundleSubmissionService.findFormTemplate($id) - found").pure[F]
+    } yield template
+
+  private def findSummaryPdf(id: FormIdData)(implicit hc: HeaderCarrier): F[PdfHtml] =
+    for {
+      _   <- Logger.info(show"FormBundleSubmissionService.findSummaryPdf($id) - formId = ${id.toFormId}").pure[F]
+      pdf <- pdfSummaryAlgebra.getLatestPdfHtml(id.toFormId)
+      _   <- Logger.info(show"FormBundleSubmissionService.findSummaryPdf($id) - found").pure[F]
+    } yield pdf
 
   private def extractSubmissionRef(formIdData: FormIdData): SubmissionRef =
     formIdData match {
