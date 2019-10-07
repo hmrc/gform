@@ -56,17 +56,26 @@ class FormBundleSubmissionService[F[_]](
 
   def formTree(rootFormId: FormIdData)(implicit hc: HeaderCarrier): F[Tree[BundledFormTreeNode]] =
     for {
-      tree <- formTreeAlgebra.getFormTree(rootFormId)
+      tree         <- formTreeAlgebra.getFormTree(rootFormId)
+      validFormIds <- workOutValidFormIds(tree)
+      filtered     <- filterForValidFormIds(tree, validFormIds)
+    } yield filtered
+
+  private def filterForValidFormIds(
+    tree: Tree[BundledFormTreeNode],
+    validFormIds: Set[FormIdData]): F[Tree[BundledFormTreeNode]] =
+    tree
+      .filter(v => validFormIds(v.formIdData))
+      .map(_.pure[F])
+      .getOrElse(M.raiseError("The status of the root form must be NeedsReview or beyond"))
+
+  private def workOutValidFormIds(tree: Tree[BundledFormTreeNode])(implicit hc: HeaderCarrier): F[Set[FormIdData]] =
+    for {
       formStatuses <- tree.toList.traverse(node =>
                        formAlgebra.get(node.formIdData).map { form =>
                          (node.formIdData, isInAnAppropriateState(form.status))
                      })
-      validFormIds = formStatuses.collect { case (id, true) => id }.toSet
-      oFiltered = tree.filter(v => validFormIds(v.formIdData))
-      filtered <- oFiltered
-                   .map(M.pure(_))
-                   .getOrElse(M.raiseError("The status of the root form is not NeedsReview or beyond"))
-    } yield filtered
+    } yield formStatuses.collect { case (id, true) => id }.toSet
 
   private def isInAnAppropriateState(status: FormStatus): Boolean =
     status match {
