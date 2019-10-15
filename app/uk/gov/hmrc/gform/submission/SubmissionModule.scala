@@ -78,7 +78,7 @@ class SubmissionModule(
     timeModule.timeProvider
   )
 
-  val submissionController = new SubmissionController(submissionService)
+  val submissionController = new SubmissionController(configModule.controllerComponents, submissionService)
 
   val formBundleSubmissionService: Option[FormBundleSubmissionService[FOpt]] = for {
     auditer <- destinationModule.destinationAuditer
@@ -95,5 +95,5 @@ class SubmissionModule(
     )(fOptMonadError)
   }
 
-  val formBundleController = new FormBundleController(formBundleSubmissionService)
+  val formBundleController = new FormBundleController(configModule.controllerComponents, formBundleSubmissionService)
 }

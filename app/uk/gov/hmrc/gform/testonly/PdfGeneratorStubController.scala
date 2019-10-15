@@ -18,13 +18,14 @@ package uk.gov.hmrc.gform.testonly
 
 import java.io.ByteArrayOutputStream
 
-import play.api.mvc.Action
+import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.controllers.BaseController
 import org.apache.pdfbox.pdmodel.{ PDDocument, PDPage }
 
 import scala.concurrent.ExecutionContext
 
-class PdfGeneratorStubController(implicit ec: ExecutionContext) extends BaseController {
+class PdfGeneratorStubController(controllerComponents: ControllerComponents)(implicit ec: ExecutionContext)
+    extends BaseController(controllerComponents) {
 
   def generate() = Action {
     val document = new PDDocument()

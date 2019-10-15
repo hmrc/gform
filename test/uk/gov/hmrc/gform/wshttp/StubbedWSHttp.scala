@@ -19,9 +19,7 @@ package uk.gov.hmrc.gform.wshttp
 import akka.actor.{ ActorSystem, Terminated }
 import akka.stream.ActorMaterializer
 import com.typesafe.config.Config
-import play.api.libs.ws.WSRequest
-import play.api.libs.ws.ahc.AhcWSClient
-import uk.gov.hmrc.http.HeaderCarrier
+import play.api.libs.ws.WSClient
 import uk.gov.hmrc.http.hooks.HttpHook
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 
@@ -33,7 +31,6 @@ import scala.concurrent.Future
 object TestWSHttp extends WSHttp {
   private implicit lazy val s: ActorSystem = ActorSystem()
   private implicit lazy val mat: ActorMaterializer = ActorMaterializer()
-  private lazy val ws = AhcWSClient()(mat)
 
   def stop(): Future[Terminated] = s.terminate()
 
@@ -46,4 +43,6 @@ object TestWSHttp extends WSHttp {
   override val hooks: Seq[HttpHook] = Seq.empty
 
   override protected def actorSystem: ActorSystem = ???
+
+  override def wsClient: WSClient = ???
 }

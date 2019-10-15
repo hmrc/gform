@@ -54,7 +54,7 @@ object PdfAndXmlSummariesFactory {
       customerId: String,
       submissionRef: SubmissionRef,
       dmsSubmission: DmsSubmission): Future[PdfAndXmlSummaries] =
-      pdfGeneratorService.generatePDF(pdfData.html).map { pdf =>
+      pdfGeneratorService.generatePDFBytes(pdfData.html).map { pdf =>
         PdfAndXmlSummaries(
           pdfSummary = createPdfSummary(pdf),
           xmlSummary = createXmlSummary(sectionFormFields, formTemplate, submissionRef, dmsSubmission),

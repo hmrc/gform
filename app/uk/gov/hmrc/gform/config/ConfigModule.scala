@@ -19,19 +19,20 @@ package uk.gov.hmrc.gform.config
 import com.typesafe.config.{ ConfigFactory, Config => TypeSafeConfig }
 import net.ceedubs.ficus.Ficus._
 import play.api.Configuration
-import play.api.Mode.Mode
+import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.playcomponents.PlayComponents
 import uk.gov.hmrc.gform.sharedmodel.config.ExposedConfig
-import uk.gov.hmrc.play.config.{ ControllerConfig, ServicesConfig }
-import pureconfig.generic.auto._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.ProfileName
 import uk.gov.hmrc.http.logging.Authorization
-import uk.gov.hmrc.play.bootstrap.config.ControllerConfigs
+import uk.gov.hmrc.play.audit.http.config.AuditingConfig
+import uk.gov.hmrc.play.bootstrap.config.{ ControllerConfig, ControllerConfigs, RunMode, ServicesConfig }
 
 import scala.concurrent.ExecutionContext
-import scala.util.Try // It is now necessary to import `pureconfig.generic.auto._` everywhere a config is loaded or written, even though IntelliJ sees this as unused, its still required
+import scala.util.Try
+import pureconfig.generic.auto._ // It is now necessary to import `pureconfig.generic.auto._` everywhere a config is loaded or written, even though IntelliJ sees this as unused, its still required
 
-class ConfigModule(playComponents: PlayComponents)(implicit ec: ExecutionContext) {
+class ConfigModule(playComponents: PlayComponents, val controllerComponents: ControllerComponents)(
+  implicit ec: ExecutionContext) {
 
   val typesafeConfig: TypeSafeConfig = ConfigFactory.load()
 
@@ -48,26 +49,21 @@ class ConfigModule(playComponents: PlayComponents)(implicit ec: ExecutionContext
 
   val controllerConfigs = ControllerConfigs.fromConfig(playConfiguration)
 
-  val serviceConfig: ServicesConfig = new ServicesConfig {
-    //watch out!
-    // ServicesConfig requires running play application so if we don't override these
-    // we will experience 'Caused by: java.lang.RuntimeException: There is no started application'
-    override protected def runModeConfiguration: Configuration = playConfiguration
-    override protected def mode: Mode = playComponents.context.environment.mode
-  }
+  val runMode = new RunMode(playConfiguration, playComponents.context.environment.mode)
+
+  val serviceConfig: ServicesConfig = new ServicesConfig(playConfiguration, runMode)
+
+  val auditingConfig: AuditingConfig = pureconfig.loadConfigOrThrow[AuditingConfig]("auditing")
 
   val controllerConfig: ControllerConfig = new ControllerConfig {
     lazy val controllerConfigs = typesafeConfig.as[TypeSafeConfig]("controllers")
   }
 
-  val configController = new ConfigController(this)
+  val configController = new ConfigController(controllerComponents, this)
 
-  object DestinationsServicesConfig extends ServicesConfig {
-    override protected def mode: Mode = playComponents.context.environment.mode
-    override protected def runModeConfiguration: Configuration = playConfiguration
-
+  object DestinationsServicesConfig extends ServicesConfig(playConfiguration, runMode) {
     override protected lazy val rootServices = "microservice"
-    override protected lazy val services = s"$env.microservice"
+    override protected lazy val services = s"${runMode.env}.microservice"
 
     private def qualifiedDestinationServiceKey(destinationServiceKey: String) =
       s"destination-services.$destinationServiceKey"
@@ -83,11 +79,11 @@ class ConfigModule(playComponents: PlayComponents)(implicit ec: ExecutionContext
 
     private def asStringStringMap(key: String): Option[Map[String, String]] =
       asMap(key) { k =>
-        config(key).getString(k).map(v => (k, v))
+        config(key).getOptional[String](k).map(v => (k, v))
       }
 
     private def getString(destinationServiceKey: String, key: String) =
-      config(qualifiedDestinationServiceKey(destinationServiceKey)).getString(key)
+      config(qualifiedDestinationServiceKey(destinationServiceKey)).getOptional[String](key)
 
     private def getConfString(destinationServiceKey: String, key: String, dflt: => String): String =
       getConfString(s"${qualifiedDestinationServiceKey(destinationServiceKey)}.$key", dflt)
@@ -132,8 +128,8 @@ class ConfigModule(playComponents: PlayComponents)(implicit ec: ExecutionContext
     def populateHandlebarsModelWithDocuments: Boolean =
       getConfBool(s"destination-services.$populateHandlebarsModelWithDocumentsKey", false)
 
-    import cats.syntax.eq._
     import cats.instances.string._
+    import cats.syntax.eq._
     def apply(): Map[ProfileName, ProfileConfiguration] =
       asMap("destination-services") { destinationServiceKey =>
         if (destinationServiceKey === "protocol" || destinationServiceKey === enableAuditKey || destinationServiceKey === populateHandlebarsModelWithDocumentsKey)

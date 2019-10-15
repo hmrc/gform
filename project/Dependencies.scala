@@ -12,12 +12,13 @@ object Dependencies {
 
   val compile = Seq(
     ws,
-    "uk.gov.hmrc" %% "play-reactivemongo" % "6.4.0",
     "com.github.pureconfig" %% "pureconfig" % "0.10.2",
-    "uk.gov.hmrc" %% "http-caching-client" % "9.0.0-play-25",
-    "uk.gov.hmrc" %% "bootstrap-play-25" % "5.1.0",
-    "uk.gov.hmrc" %% "play-graphite" % "4.7.0",
+    "uk.gov.hmrc" %% "simple-reactivemongo" % "7.20.0-play-26",
+    "uk.gov.hmrc" %% "http-caching-client" % "9.0.0-play-26",
+    "uk.gov.hmrc" %% "bootstrap-play-26" % "1.1.0",
     "uk.gov.hmrc" %% "domain" % "5.3.0",
+    "uk.gov.hmrc" %% "auth-client" % "2.27.0-play-26", // we need AffinityGroup type to stay in sync with frontend
+    "com.typesafe.play" %% "play-json" % "2.6.13",
     "com.codecommit" %% "parseback-core" % parsebackVersion,
     "com.codecommit" %% "parseback-cats" % parsebackVersion,
     "org.julienrf" %% "play-json-derived-codecs" % "3.3", //upgrading this has caused play-json comparability issue
@@ -25,7 +26,6 @@ object Dependencies {
     "org.apache.pdfbox" % "pdfbox" % "2.0.13",
     "com.chuusai" %% "shapeless" % "2.3.3",
     "com.github.mpilquist" %% "simulacrum" % "0.15.0",
-    "uk.gov.hmrc" %% "auth-client" % "2.19.0-play-25", // we need AffinityGroup type to stay in sync with frontend
     "org.scala-graph" %% "graph-core" % "1.12.5",
     "com.github.jknack" % "handlebars" % handlebarsVersion,
     "com.github.jknack" % "handlebars-jackson2" % handlebarsVersion,

@@ -28,7 +28,7 @@ import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateService
 import uk.gov.hmrc.gform.sharedmodel.form.FormIdData
 import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, AffinityGroupUtil }
-import uk.gov.hmrc.gform.sharedmodel.form.{ FileId, FormId, FormStatus, UserData }
+import uk.gov.hmrc.gform.sharedmodel.form.{ FileId, FormId, UserData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.UserId
 import uk.gov.hmrc.http.NotFoundException
@@ -36,23 +36,24 @@ import uk.gov.hmrc.http.NotFoundException
 import scala.concurrent.{ ExecutionContext, Future }
 
 class FormController(
+  controllerComponents: ControllerComponents,
   config: AppConfig,
   formTemplateService: FormTemplateService,
   fileUpload: FileUploadAlgebra[Future],
   formService: FormAlgebra[Future])(implicit ex: ExecutionContext)
-    extends BaseController {
+    extends BaseController(controllerComponents) {
 
   def newForm(
     userId: UserId,
     formTemplateId: FormTemplateId,
     affinityGroup: Option[AffinityGroup]
-  ): Action[AnyContent] = Action.async { implicit request =>
-    Logger.info(
-      s"new form, userId: '${userId.value}', templateId: '${formTemplateId.value}', affinityGroup: '${AffinityGroupUtil
-        .affinityGroupNameO(affinityGroup)}', ${loggingHelpers.cleanHeaders(request.headers)}")
-
-    formService.create(userId, formTemplateId, affinityGroup, config.formExpiryDays.toLong, Seq.empty).asOkJson
-  }
+  ): Action[AnyContent] =
+    formAction(
+      "newForm",
+      FormIdData.Plain(userId, formTemplateId),
+      s"affinityGroup: '${AffinityGroupUtil.affinityGroupNameO(affinityGroup)}'") { implicit request =>
+      formService.create(userId, formTemplateId, affinityGroup, config.formExpiryDays.toLong, Seq.empty).asOkJson
+    }
 
   def getPlain(userId: UserId, formTemplateId: FormTemplateId): Action[AnyContent] =
     getByFormIdData(FormIdData.Plain(userId, formTemplateId))
@@ -60,15 +61,14 @@ class FormController(
   def get(userId: UserId, formTemplateId: FormTemplateId, accessCode: AccessCode): Action[AnyContent] =
     getByFormIdData(FormIdData.WithAccessCode(userId, formTemplateId, accessCode))
 
-  private def getByFormIdData(formIdData: FormIdData): Action[AnyContent] = Action.async { implicit request =>
-    Logger.info(
-      s"getting form, formId: '${formIdData.toFormId.value}', ${loggingHelpers.cleanHeaders(request.headers)}")
-    formService
-      .get(formIdData)
-      .asOkJson
-      .recover {
-        case _: NotFoundException => Result(header = ResponseHeader(NOT_FOUND), body = HttpEntity.NoEntity)
-      }
+  private def getByFormIdData(formIdData: FormIdData): Action[AnyContent] = formAction("getByFormIdData", formIdData) {
+    implicit request =>
+      formService
+        .get(formIdData)
+        .asOkJson
+        .recover {
+          case _: NotFoundException => Result(header = ResponseHeader(NOT_FOUND), body = HttpEntity.NoEntity)
+        }
   }
 
   def updateFormDataPlain(userId: UserId, formTemplateId: FormTemplateId): Action[UserData] =
@@ -77,14 +77,13 @@ class FormController(
     updateFormDataByFormIdData(FormIdData.WithAccessCode(userId, formTemplateId, accessCode))
 
   private def updateFormDataByFormIdData(formIdData: FormIdData): Action[UserData] =
-    Action.async(parse.json[UserData]) { implicit request =>
+    formAction(parse.json[UserData])("updateFormDataByFormIdData", formIdData) { implicit request =>
       for {
         _ <- formService.updateUserData(formIdData, request.body)
       } yield NoContent
     }
 
-  def delete(formId: FormId): Action[AnyContent] = Action.async { implicit request =>
-    Logger.info(s"deleting form: '${formId.value}, ${loggingHelpers.cleanHeaders(request.headers)}'")
+  def delete(formId: FormId): Action[AnyContent] = formAction("delete", formId) { implicit request =>
     formService.delete(formId).asNoContent
   }
 
@@ -92,24 +91,27 @@ class FormController(
     userId: UserId,
     formTemplateId: FormTemplateId,
     accessCode: AccessCode,
-    fileId: FileId): Action[AnyContent] = Action.async { implicit request =>
+    fileId: FileId): Action[AnyContent] = {
     val formIdData = FormIdData.WithAccessCode(userId, formTemplateId, accessCode)
-    Logger.info(s"deleting file, formId: '${formIdData.toFormId.value}', fileId: ${fileId.value}, ${loggingHelpers
-      .cleanHeaders(request.headers)} ")
-    val result = for {
-      form <- formService.get(formIdData)
-      _    <- fileUpload.deleteFile(form.envelopeId, fileId)
-    } yield ()
-    result.asNoContent
+    formAction("deleteFile", formIdData, s"fileId: ${fileId.value}") { implicit request =>
+      val result = for {
+        form <- formService.get(formIdData)
+        _    <- fileUpload.deleteFile(form.envelopeId, fileId)
+      } yield ()
+      result.asNoContent
+    }
   }
 
   def enrolmentCallBack(formId: FormId): Action[AnyContent] = Action { implicit request =>
     Logger.info(s"Form ID: $formId. Payload: ${request.body.toString}")
-
     Results.Ok
   }
 
-  def getAll(userId: UserId, formTemplateId: FormTemplateId): Action[AnyContent] = Action.async { implicit request =>
-    formService.getAll(userId, formTemplateId).map(Json.toJson(_)).map(Ok(_))
-  }
+  def getAll(userId: UserId, formTemplateId: FormTemplateId): Action[AnyContent] =
+    formAction("getAll", FormIdData.Plain(userId, formTemplateId)) { implicit request =>
+      formService
+        .getAll(userId, formTemplateId)
+        .map(Json.toJson(_))
+        .map(Ok(_))
+    }
 }

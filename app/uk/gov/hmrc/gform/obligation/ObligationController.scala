@@ -18,14 +18,16 @@ package uk.gov.hmrc.gform.obligation
 
 import cats.data.NonEmptyList
 import play.api.Logger
-import play.api.mvc.Action
+import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.sharedmodel.{ HmrcTaxPeriodWithEvaluatedId, TaxResponse }
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-class ObligationController(obligation: ObligationService)(implicit ex: ExecutionContext) extends BaseController {
+class ObligationController(controllerComponents: ControllerComponents, obligation: ObligationService)(
+  implicit ex: ExecutionContext)
+    extends BaseController(controllerComponents) {
 
   def getAllTaxPeriods() = Action.async(parse.json[NonEmptyList[HmrcTaxPeriodWithEvaluatedId]]) { implicit request =>
     Logger.info(s"Get All Tax Periods from DES, ${loggingHelpers.cleanHeaders(request.headers)}")

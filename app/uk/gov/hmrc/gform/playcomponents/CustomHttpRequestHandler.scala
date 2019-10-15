@@ -27,7 +27,18 @@ class CustomHttpRequestHandler(
   httpFilters: Seq[EssentialFilter])
     extends DefaultHttpRequestHandler(router, httpErrorHandler, httpConfiguration, httpFilters: _*) {
   override def routeRequest(request: RequestHeader): Option[Handler] =
-    router.handlerFor(request).orElse {
-      Some(request.path).filter(_.endsWith("/")).flatMap(p => router.handlerFor(request.copy(path = p.dropRight(1))))
-    }
+    router
+      .handlerFor(request)
+      .orElse {
+        CustomHttpRequestHandler
+          .dropTrailingSlash(request)
+          .flatMap(router.handlerFor)
+      }
+}
+
+object CustomHttpRequestHandler {
+  def dropTrailingSlash(request: RequestHeader): Option[RequestHeader] =
+    Some(request.target.path)
+      .filter(_.endsWith("/"))
+      .map(p => request.withTarget(request.target.withPath(p.dropRight(1))))
 }

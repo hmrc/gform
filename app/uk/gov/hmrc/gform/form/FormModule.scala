@@ -36,6 +36,7 @@ class FormModule(
 
   val formController: FormController =
     new FormController(
+      configModule.controllerComponents,
       configModule.appConfig,
       formTemplateModule.formTemplateService,
       fileUploadModule.fileUploadService,

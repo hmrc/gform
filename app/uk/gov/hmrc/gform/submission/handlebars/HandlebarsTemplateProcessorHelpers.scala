@@ -735,11 +735,6 @@ class HandlebarsTemplateProcessorHelpers(
 
   private def logArgs(args: Any*): String = args.map(show).mkString(", ")
 
-  private def getNonEmpty(o: Options, fieldName: String) = {
-    val value = o.get[String](fieldName, "")
-    if (value.isEmpty) None else value.some
-  }
-
   private def padLeft(s: String, min: Int, c: Char) =
     if (s.length >= min) s
     else c.toString * (min - s.length) + s

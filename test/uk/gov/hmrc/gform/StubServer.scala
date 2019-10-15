@@ -20,6 +20,7 @@ import play.Mode
 import play.api.ApplicationLoader.Context
 import play.api._
 import play.api.i18n.I18nComponents
+import play.api.mvc.EssentialFilter
 import play.server.Server
 import uk.gov.hmrc.gform.wshttp.{ TestWSHttp, WSHttp, WSHttpModule }
 
@@ -35,11 +36,13 @@ class StubApplicationLoader extends play.api.ApplicationLoader {
 class StubApplicationModule(context: Context) extends BuiltInComponentsFromContext(context) with I18nComponents {
   self =>
   val module: ApplicationModule = new ApplicationModule(context) {
-    override lazy val wSHttpModule = new WSHttpModule(auditingModule, configModule, playComponents) {
+    override val wSHttpModule = new WSHttpModule(auditingModule, configModule, playComponents) {
       override val auditableWSHttp: WSHttp = TestWSHttp
     }
   }
   override def router: routing.Router = module.router
+
+  override def httpFilters: Seq[EssentialFilter] = Seq.empty
 }
 
 trait StubServer {

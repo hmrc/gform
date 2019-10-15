@@ -29,5 +29,5 @@ class ObligationModule(wSHttpModule: WSHttpModule, configModule: ConfigModule)(i
     new DesConnector(wSHttpModule.auditableWSHttp, configModule.serviceConfig.baseUrl("etmp-hod"), desConfig)
 
   private val obligationService = new ObligationService(desConnector)
-  val obligationController = new ObligationController(obligationService)
+  val obligationController = new ObligationController(configModule.controllerComponents, obligationService)
 }

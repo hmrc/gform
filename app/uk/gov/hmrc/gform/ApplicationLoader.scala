@@ -24,6 +24,7 @@ import play.api.i18n.I18nComponents
 import play.api.inject.{ Injector, SimpleInjector }
 import play.api.mvc.EssentialFilter
 import play.api.routing.Router
+import play.api.libs.ws.ahc.AhcWSComponents
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.auditing.AuditingModule
 import uk.gov.hmrc.gform.config.ConfigModule
@@ -37,7 +38,7 @@ import uk.gov.hmrc.gform.graphite.GraphiteModule
 import uk.gov.hmrc.gform.metrics.MetricsModule
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorModule
-import uk.gov.hmrc.gform.playcomponents.{ PlayComponents, PlayComponentsModule }
+import uk.gov.hmrc.gform.playcomponents.{ ErrorHandler, PlayComponents, PlayComponentsModule }
 import uk.gov.hmrc.gform.save4later.{ Save4Later, Save4LaterModule }
 import uk.gov.hmrc.gform.submission.SubmissionModule
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsHttpApiModule
@@ -48,7 +49,7 @@ import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.gform.obligation.ObligationModule
 import uk.gov.hmrc.gform.submission.destinations.DestinationModule
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.Future
 
 class ApplicationLoader extends play.api.ApplicationLoader {
   def load(context: Context): Application = {
@@ -59,33 +60,32 @@ class ApplicationLoader extends play.api.ApplicationLoader {
   }
 }
 
-class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(context) with I18nComponents { self =>
+class ApplicationModule(context: Context)
+    extends BuiltInComponentsFromContext(context) with AhcWSComponents with I18nComponents { self =>
 
   Logger.info(s"Starting microservice GFORM}")
 
-  implicit val ec: ExecutionContext = play.api.libs.concurrent.Execution.defaultContext
-
   private val akkaModule = new AkkaModule(materializer, actorSystem)
-  protected val playComponents = new PlayComponents(context, self)
+  protected val playComponents = new PlayComponents(context, self, self)
 
-  private val metricsModule = new MetricsModule(playComponents, akkaModule)
-  protected val configModule = new ConfigModule(playComponents)
-  protected val auditingModule = new AuditingModule(configModule, akkaModule, playComponents)
-  protected lazy val wSHttpModule = new WSHttpModule(auditingModule, configModule, playComponents)
+  protected val configModule = new ConfigModule(playComponents, controllerComponents)
+  private val metricsModule = new MetricsModule(configModule, playComponents, akkaModule, executionContext)
+  protected val auditingModule = new AuditingModule(configModule, akkaModule)
+  protected val wSHttpModule = new WSHttpModule(auditingModule, configModule, playComponents)
   private val emailModule = new EmailModule(configModule, wSHttpModule)
   private val timeModule = new TimeModule
-  val fileUploadModule = new FileUploadModule(configModule, wSHttpModule, timeModule)
+  val fileUploadModule = new FileUploadModule(configModule, wSHttpModule, timeModule, akkaModule)
   private val mongoModule = new MongoModule(playComponents)
-  val formTemplateModule = new FormTemplateModule(mongoModule)
-  protected lazy val shortLivedCacheModule = new Save4LaterModule(configModule, wSHttpModule)
-  lazy val pdfGeneratorModule = new PdfGeneratorModule(configModule, wSHttpModule)
+  val formTemplateModule = new FormTemplateModule(controllerComponents, mongoModule)
+  protected val shortLivedCacheModule = new Save4LaterModule(configModule, wSHttpModule)
+  val pdfGeneratorModule = new PdfGeneratorModule(configModule, wSHttpModule)
 
   val formMetadaModule = new FormMetadataModule(mongoModule)
 
-  lazy val save4later =
+  val save4later =
     new Save4Later(shortLivedCacheModule.shortLivedCache)
 
-  lazy val formService: FormService[Future] =
+  val formService: FormService[Future] =
     new FormService(
       save4later,
       fileUploadModule.fileUploadService,
@@ -93,10 +93,10 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
       formMetadaModule.formMetadataService
     )
 
-  lazy val formModule =
+  val formModule =
     new FormModule(configModule, formTemplateModule, fileUploadModule, formService)
 
-  lazy val destinationModule =
+  val destinationModule =
     new DestinationModule(configModule, mongoModule, formModule, fileUploadModule, formMetadaModule)
 
   val validationModule = new ValidationModule(wSHttpModule, configModule)
@@ -116,7 +116,8 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
       handlebarsModule,
       destinationModule
     )
-  private val dmsModule = new DmsModule(fileUploadModule, pdfGeneratorModule, configModule.appConfig)
+  private val dmsModule =
+    new DmsModule(fileUploadModule, pdfGeneratorModule, configModule.appConfig, controllerComponents)
   private val obligationModule = new ObligationModule(wSHttpModule, configModule)
   private val testOnlyModule =
     new TestOnlyModule(
@@ -126,10 +127,16 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
       playComponents,
       formService,
       formTemplateModule.formTemplateService,
-      destinationModule
+      destinationModule,
+      controllerComponents
     )
 
-  private val graphiteModule = new GraphiteModule(self)
+  val graphiteModule = new GraphiteModule(environment, configuration, configModule.runMode, applicationLifecycle)
+
+  override lazy val httpErrorHandler: HttpErrorHandler = new ErrorHandler(
+    playComponents.context.environment,
+    playComponents.context.initialConfiguration,
+    playComponents.context.sourceMapper)
 
   val playComponentsModule = new PlayComponentsModule(
     playComponents,
@@ -143,28 +150,29 @@ class ApplicationModule(context: Context) extends BuiltInComponentsFromContext(c
     submissionModule,
     validationModule,
     dmsModule,
-    obligationModule
+    obligationModule,
+    httpErrorHandler
   )
 
-  override lazy val httpErrorHandler: HttpErrorHandler = playComponentsModule.errorHandler
   override lazy val httpRequestHandler: HttpRequestHandler = playComponentsModule.httpRequestHandler
   override lazy val httpFilters: Seq[EssentialFilter] = playComponentsModule.httpFilters
 
   override def router: Router = playComponentsModule.router
 
-  lazy val customInjector: Injector = new SimpleInjector(injector) + playComponents.ahcWSComponents.wsApi
+  val customInjector: Injector = new SimpleInjector(injector) + wsClient
   override lazy val application = new DefaultApplication(
     environment,
     applicationLifecycle,
     customInjector,
     configuration,
+    requestFactory,
     httpRequestHandler,
     httpErrorHandler,
     actorSystem,
     materializer)
 
   Logger.info(
-    s"Microservice GFORM started in mode ${environment.mode} at port ${application.configuration.getString("http.port")}")
+    s"Microservice GFORM started in mode ${environment.mode} at port ${application.configuration.getOptional[String]("http.port")}")
 }
 
 object ApplicationModuleHelper {

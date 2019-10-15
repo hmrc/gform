@@ -16,32 +16,40 @@
 
 package uk.gov.hmrc.gform.graphite
 
-import play.api.Application
-import uk.gov.hmrc.gform.ApplicationModule
+import com.codahale.metrics.MetricFilter
+import com.codahale.metrics.graphite.GraphiteReporter
+import com.kenshoo.play.metrics.MetricsImpl
+import play.api.inject.ApplicationLifecycle
+import play.api.{ Configuration, Environment }
+import uk.gov.hmrc.play.bootstrap.config.RunMode
+import uk.gov.hmrc.play.bootstrap.graphite.{ EnabledGraphiteReporting, GraphiteProvider, GraphiteProviderConfig, GraphiteReporterProvider, GraphiteReporterProviderConfig }
 
-class GraphiteModule(applicationModule: ApplicationModule) {
+class GraphiteModule(
+  environment: Environment,
+  configuration: Configuration,
+  runMode: RunMode,
+  applicationLifecycle: ApplicationLifecycle) {
+  // Taken from uk.gov.hmrc.play.bootstrap.graphite.GraphiteMetricsModule of bootstrap-play-26 library
+  private def extractGraphiteConfiguration(environment: Environment, configuration: Configuration): Configuration = {
+    val env = runMode.env
+    configuration
+      .getOptional[Configuration](s"$env.microservice.metrics.graphite")
+      .orElse(configuration.getOptional[Configuration]("microservice.metrics.graphite"))
+      .getOrElse(Configuration())
+  }
 
-  val graphite = new Graphite(applicationModule.configuration).onStart(configurationApp)
+  private val graphiteConfiguration: Configuration = extractGraphiteConfiguration(environment, configuration)
 
-  // To avoid circular dependency when creating Graphite we will provide them this artificial
-  // application. It is ok to do so since both of them are using mainly provided configuration.
-  private lazy val configurationApp = new Application() {
-    def actorSystem = applicationModule.actorSystem
+  private val enableGraphite = graphiteConfiguration.getOptional[Boolean]("enabled").getOrElse(false)
 
-    def classloader = applicationModule.environment.classLoader
-
-    def configuration = applicationModule.configuration
-
-    def errorHandler = applicationModule.httpErrorHandler
-
-    implicit def materializer = applicationModule.materializer
-
-    def mode = applicationModule.environment.mode
-
-    def path = applicationModule.environment.rootPath
-
-    def requestHandler = applicationModule.httpRequestHandler
-
-    def stop() = applicationModule.applicationLifecycle.stop()
+  if (enableGraphite) {
+    val config: GraphiteReporterProviderConfig =
+      GraphiteReporterProviderConfig.fromConfig(configuration, graphiteConfiguration)
+    val graphiteProviderConfig: GraphiteProviderConfig = GraphiteProviderConfig.fromConfig(graphiteConfiguration)
+    val graphite = new GraphiteProvider(graphiteProviderConfig).get()
+    val filter: MetricFilter = MetricFilter.ALL
+    val metrics = new MetricsImpl(applicationLifecycle, configuration)
+    val graphiteReporter: GraphiteReporter = new GraphiteReporterProvider(config, metrics, graphite, filter).get()
+    new EnabledGraphiteReporting(configuration, graphiteReporter, applicationLifecycle)
   }
 }

@@ -17,12 +17,14 @@
 package uk.gov.hmrc.gform.config
 
 import play.api.libs.json.Json
-import play.api.mvc.Action
+import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.controllers.BaseController
 
 import scala.concurrent.ExecutionContext
 
-class ConfigController(configModule: ConfigModule)(implicit ex: ExecutionContext) extends BaseController {
+class ConfigController(controllerComponents: ControllerComponents, configModule: ConfigModule)(
+  implicit ex: ExecutionContext)
+    extends BaseController(controllerComponents) {
 
   def exposedConfig() = Action { r =>
     val json = Json.toJson(configModule.exposedConfig)

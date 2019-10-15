@@ -122,16 +122,10 @@ class RepoDestinationAuditer(
           .flatMap(getLatest)
       }
 
-  def getLatest(audits: List[DestinationAudit]): Option[DestinationAudit] = {
-    val sorted = audits.sortWith((x, y) => x.timestamp.isAfter(y.timestamp))
-    val selected = sorted.headOption
-    selected.foreach { s =>
-      Loggers.destinations.info(
-        s"Latest audit record selected for ${s.submissionRef.value} with timestamp ${s.timestamp}. Selected from records with timestamps: ${sorted
-          .map(_.timestamp)}")
-    }
-    selected
-  }
+  def getLatest(audits: List[DestinationAudit]): Option[DestinationAudit] =
+    audits
+      .sortWith((x, y) => x.timestamp.isAfter(y.timestamp))
+      .headOption
 
   def getLatestPdfHtml(formId: FormId)(implicit hc: HeaderCarrier): FOpt[PdfHtml] =
     getLatestForForm(formId).flatMap { audit =>
