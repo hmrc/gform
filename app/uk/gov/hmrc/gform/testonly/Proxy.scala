@@ -19,37 +19,36 @@ package uk.gov.hmrc.gform.testonly
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import play.api.http.HttpEntity.{ Streamed, Strict }
-import play.api.http.Writeable
 import play.api.libs.streams.Accumulator
-import play.api.libs.ws.{ StreamedBody, WSClient, WSRequest, WSResponse }
+import play.api.libs.ws.{ BodyWritable, WSClient, WSRequest, WSResponse }
 import play.api.mvc._
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-class Proxy(wsClient: WSClient)(implicit ec: ExecutionContext) {
+class Proxy(wsClient: WSClient, controllerComponents: ControllerComponents)(implicit ec: ExecutionContext) {
 
   /**
     * This creates action which proxies incoming request to remote service.
     */
   def apply(remoteServiceBaseUrl: String)(path: String): Action[Source[ByteString, _]] =
-    Action.async(streamedBodyParser) { (inboundRequest: Request[Source[ByteString, _]]) =>
+    controllerComponents.actionBuilder.async(streamedBodyParser) { inboundRequest: Request[Source[ByteString, _]] =>
       for {
-        outboundRequest  <- proxyRequest(s"$remoteServiceBaseUrl/$path", inboundRequest)
-        streamedResponse <- outboundRequest.stream
+        outboundRequest              <- proxyRequest(s"$remoteServiceBaseUrl/$path", inboundRequest)
+        streamedResponse: WSResponse <- outboundRequest.stream
       } yield {
-        val headersMap = streamedResponse.headers.headers
+        val headersMap = streamedResponse.headers
         val contentLength = headersMap.get(contentLengthHeaderKey).flatMap(_.headOption.map(_.toLong))
         val contentType = headersMap.get(contentTypeHeaderKey).map(_.mkString(", "))
         Result(
           ResponseHeader(
-            streamedResponse.headers.status,
-            streamedResponse.headers.headers.mapValues(_.head).filter(filterOutContentHeaders)),
-          Streamed(streamedResponse.body, contentLength, contentType)
+            streamedResponse.status,
+            streamedResponse.headers.mapValues(_.head).filter(filterOutContentHeaders)),
+          Streamed(streamedResponse.bodyAsSource, contentLength, contentType)
         )
       }
     }
 
-  def apply[A: Writeable](
+  def apply[A: BodyWritable](
     baseUrl: String,
     path: String,
     inboundRequest: Request[A],
@@ -59,15 +58,15 @@ class Proxy(wsClient: WSClient)(implicit ec: ExecutionContext) {
       .url(s"$baseUrl$path")
       .withFollowRedirects(false)
       .withMethod(inboundRequest.method)
-      .withHeaders(processHeaders(inboundRequest.headers, extraHeaders = Nil): _*)
-      .withQueryString(inboundRequest.queryString.mapValues(_.head).toSeq: _*)
+      .withHttpHeaders(processHeaders(inboundRequest.headers, extraHeaders = Nil): _*)
+      .withQueryStringParameters(inboundRequest.queryString.mapValues(_.head).toSeq: _*)
       .withBody(inboundRequest.body)
 
     val response: Future[WSResponse] = outboundRequest.execute()
 
     response.map { response =>
       val transformedBody: ByteString = ByteString(bodyTransformer(response.body))
-      Result(ResponseHeader(response.status, response.allHeaders.mapValues(_.head)), Strict(transformedBody, None))
+      Result(ResponseHeader(response.status, response.headers.mapValues(_.head)), Strict(transformedBody, None))
     }
   }
 
@@ -83,9 +82,9 @@ class Proxy(wsClient: WSClient)(implicit ec: ExecutionContext) {
         .url(s"$path")
         .withFollowRedirects(false)
         .withMethod(inboundRequest.method)
-        .withHeaders(processHeaders(inboundRequest.headers, extraHeaders = Nil): _*)
-        .withQueryString(inboundRequest.queryString.mapValues(_.head).toSeq: _*)
-        .withBody(StreamedBody(inboundRequest.body)))
+        .withHttpHeaders(processHeaders(inboundRequest.headers, extraHeaders = Nil): _*)
+        .withQueryStringParameters(inboundRequest.queryString.mapValues(_.head).toSeq: _*)
+        .withBody(inboundRequest.body))
 
   private def processHeaders(inboundHeaders: Headers, extraHeaders: Seq[(String, String)]): Seq[(String, String)] =
     inboundHeaders.toSimpleMap.filter(headerKeyValue => !headerKeyValue._1.equals("Host")).toSeq ++ extraHeaders

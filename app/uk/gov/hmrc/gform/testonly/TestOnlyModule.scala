@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.gform.testonly
 
+import play.api.mvc.ControllerComponents
+
 import scala.concurrent.Future
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.form.FormService
@@ -35,7 +37,8 @@ class TestOnlyModule(
   playComponents: PlayComponents,
   formService: FormService[Future],
   formTemplateService: FormTemplateService,
-  destinationModule: DestinationModule)(implicit ex: ExecutionContext) {
+  destinationModule: DestinationModule,
+  controllerComponents: ControllerComponents)(implicit ex: ExecutionContext) {
 
   val enrolmentConnector =
     new EnrolmentConnector(
@@ -48,14 +51,19 @@ class TestOnlyModule(
 
   val testOnlyController: TestOnlyController =
     new TestOnlyController(
+      configModule.controllerComponents,
       mongoModule.mongo,
       enrolmentConnector,
       formService,
       formTemplateAlgebra,
       destinationModule.futureDestinationsProcessorModelService
     )
-  val proxyActions = new Proxy(playComponents.ahcWSComponents.wsClient)
+  val proxyActions = new Proxy(playComponents.wsClient, controllerComponents)
   val fUInterceptor: FUInterceptorController =
-    new FUInterceptorController(wSHttpModule.auditableWSHttp, configModule.serviceConfig, proxyActions)
-  val pdfGeneratorStub = new PdfGeneratorStubController
+    new FUInterceptorController(
+      configModule.controllerComponents,
+      wSHttpModule.auditableWSHttp,
+      configModule.serviceConfig,
+      proxyActions)
+  val pdfGeneratorStub = new PdfGeneratorStubController(configModule.controllerComponents)
 }

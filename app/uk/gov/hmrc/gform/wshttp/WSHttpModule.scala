@@ -29,7 +29,8 @@ class WSHttpModule(auditingModule: AuditingModule, configModule: ConfigModule, p
     configModule.appConfig.appName,
     auditingModule.auditConnector,
     Some(configModule.playConfiguration.underlying),
-    playComponents.builtInComponents.actorSystem
+    playComponents.builtInComponents.actorSystem,
+    playComponents.wsClient
   )
 
   val auditingHttpClient: HttpClient[FOpt] = new AuditingHttpClient(auditableWSHttp)

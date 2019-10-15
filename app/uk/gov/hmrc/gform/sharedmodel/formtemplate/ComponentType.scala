@@ -188,7 +188,7 @@ object ComponentType {
 
   implicit def readsNonEmptyList[T: Reads] = Reads[NonEmptyList[T]] { json =>
     Json.fromJson[List[T]](json).flatMap {
-      case Nil     => JsError(ValidationError(s"Required at least one element. Got: $json"))
+      case Nil     => JsError(JsonValidationError(s"Required at least one element. Got: $json"))
       case x :: xs => JsSuccess(NonEmptyList(x, xs))
     }
   }

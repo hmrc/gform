@@ -29,6 +29,7 @@ import uk.gov.hmrc.http.hooks.HttpHooks
 import uk.gov.hmrc.play.audit.http.HttpAuditing
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import com.typesafe.config.Config
+import play.api.libs.ws.WSClient
 
 trait WSHttp
     extends HttpGet with WSGet with HttpPut with WSPut with HttpPost with WSPost with HttpDelete with WSDelete
@@ -52,7 +53,7 @@ trait WSHttp
     //      mapErrors(POST_VERB, url, httpResponse).map(rds.read(POST_VERB, url, _))
     //    }
 
-    buildRequest(url).withHeaders(headers: _*).post(source).map(new WSHttpResponse(_))
+    buildRequest(url).withHttpHeaders(headers: _*).post(source).map(new WSHttpResponse(_))
   }
 
 }
@@ -61,7 +62,8 @@ class WSHttpImpl(
   val appName: String,
   val auditConnector: AuditConnector,
   config: Option[Config],
-  override val actorSystem: ActorSystem)
+  override val actorSystem: ActorSystem,
+  val wsClient: WSClient)
     extends WSHttp {
   override val hooks = Seq(AuditingHook)
   override lazy val configuration: Option[Config] = config

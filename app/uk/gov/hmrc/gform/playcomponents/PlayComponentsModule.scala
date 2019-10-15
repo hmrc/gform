@@ -20,6 +20,7 @@ import play.api.Logger
 import play.api.http.HttpErrorHandler
 import play.api.mvc.EssentialFilter
 import play.api.routing.Router
+
 import scala.concurrent.ExecutionContext
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.auditing.AuditingModule
@@ -47,9 +48,10 @@ class PlayComponentsModule(
   submissionModule: SubmissionModule,
   validationModule: ValidationModule,
   dmsModule: DmsModule,
-  obligationModule: ObligationModule)(implicit ec: ExecutionContext) {
+  obligationModule: ObligationModule,
+  errorHandler: HttpErrorHandler)(implicit ec: ExecutionContext) {
 
-  private lazy val loggingFilter = new DefaultLoggingFilter(configModule.controllerConfigs)(akkaModule.materializer)
+  private lazy val loggingFilter = new DefaultLoggingFilter(configModule.controllerConfigs)(akkaModule.materializer, ec)
 
   lazy val appRoutes: app.Routes = new app.Routes(
     errorHandler,
@@ -64,7 +66,10 @@ class PlayComponentsModule(
   )
 
   private val healthController =
-    new HealthController(configModule.playConfiguration, playComponents.context.environment)
+    new HealthController(
+      configModule.playConfiguration,
+      playComponents.context.environment,
+      configModule.controllerComponents)
 
   lazy val prodRoutes: prod.Routes =
     new prod.Routes(errorHandler, appRoutes, healthController, metricsModule.metricsController)
@@ -94,12 +99,6 @@ class PlayComponentsModule(
     }
   }
 
-  lazy val errorHandler: HttpErrorHandler =
-    new ErrorHandler(
-      playComponents.context.environment,
-      playComponents.context.initialConfiguration,
-      playComponents.context.sourceMapper)
-
   private lazy val cacheControlFilter = new CacheControlFilter(new CacheControlConfig(), akkaModule.materializer)
 
   lazy val httpFilters: Seq[EssentialFilter] = Seq(
@@ -107,7 +106,7 @@ class PlayComponentsModule(
     auditingModule.microserviceAuditFilter,
     loggingFilter,
     cacheControlFilter,
-    new MDCFilter(akkaModule.materializer, configModule.playConfiguration)
+    new MDCFilter(akkaModule.materializer, configModule.playConfiguration, configModule.appConfig.appName)
   )
 
   lazy val httpRequestHandler =

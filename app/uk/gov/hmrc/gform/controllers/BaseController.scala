@@ -20,12 +20,19 @@ import java.util.UUID
 
 import cats.data.EitherT
 import cats.implicits._
+import org.slf4j.MDC
+import play.api.Logger
 import play.api.libs.json._
-import play.api.mvc.Result
+import play.api.mvc.{ AbstractController, Action, AnyContent, BodyParser, ControllerComponents, Request, Result }
+import uk.gov.hmrc.gform.auditing.loggingHelpers
+import uk.gov.hmrc.gform.sharedmodel.form.{ FormId, FormIdData }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
+import uk.gov.hmrc.play.bootstrap.controller.{ BackendHeaderCarrierProvider, WithJsonBody }
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-class BaseController(implicit ec: ExecutionContext) extends uk.gov.hmrc.play.bootstrap.controller.BaseController {
+class BaseController(controllerComponents: ControllerComponents)(implicit ec: ExecutionContext)
+    extends AbstractController(controllerComponents) with BackendHeaderCarrierProvider with WithJsonBody {
 
   object O {
     def asOkJson[T: Writes](t: T): Result =
@@ -50,6 +57,39 @@ class BaseController(implicit ec: ExecutionContext) extends uk.gov.hmrc.play.boo
 
   def asRes[T](a: T): LeftResult[T] = EitherT[Future, Result, T](Future.successful(a.asRight))
 
+  def formAction[A](bodyParser: BodyParser[A])(endPoint: String, formIdData: FormIdData)(
+    block: Request[A] => Future[Result]): Action[A] =
+    controllerComponents.actionBuilder.async(bodyParser) { request =>
+      addFormIdToMdc(formIdData.toFormId)
+      Logger.info(s"${getClass.getSimpleName}.$endPoint, ${loggingHelpers.cleanHeaders(request.headers)}")
+      block(request)
+    }
+
+  def formAction(endPoint: String, formIdData: FormIdData, additionalInfo: String*)(
+    block: Request[AnyContent] => Future[Result]): Action[AnyContent] =
+    formAction(endPoint, formIdData.toFormId, additionalInfo: _*)(block)
+
+  def formAction(endPoint: String, formId: FormId, additionalInfo: String*)(
+    block: Request[AnyContent] => Future[Result]): Action[AnyContent] =
+    controllerComponents.actionBuilder.async { request =>
+      addFormIdToMdc(formId)
+      Logger.info(s"${getClass.getSimpleName}.$endPoint, ${additionalInfo.toList.mkString(", ")}")
+      block(request)
+    }
+
+  protected def addFormIdToMdc(formId: FormId): Unit =
+    MDC.put("FormId", formId.value)
+
+  def formTemplateAction(endPoint: String, formTemplateId: FormTemplateId)(
+    block: Request[AnyContent] => Future[Result]): Action[AnyContent] =
+    controllerComponents.actionBuilder.async { request =>
+      addFormTemplateIdToMdc(formTemplateId)
+      Logger.info(s"${getClass.getSimpleName}.$endPoint")
+      block(request)
+    }
+
+  protected def addFormTemplateIdToMdc(formTemplateId: FormTemplateId): Unit =
+    MDC.put("FormTemplateId", formTemplateId.value)
 }
 
 case class ErrResponse(

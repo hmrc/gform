@@ -43,12 +43,13 @@ import uk.gov.hmrc.gform.submission.{ DmsMetaData, Submission }
 import uk.gov.hmrc.gform.submission.handlebars.{ FocussedHandlebarsModelTree, HandlebarsModelTree, RealHandlebarsTemplateProcessor }
 
 class TestOnlyController(
+  controllerComponents: ControllerComponents,
   mongo: () => DB,
   enrolmentConnector: EnrolmentConnector,
   formAlgebra: FormAlgebra[Future],
   formTemplateAlgebra: FormTemplateAlgebra[Future],
   destinationsModelProcessorAlgebra: DestinationsProcessorModelAlgebra[Future])(implicit ex: ExecutionContext)
-    extends BaseController {
+    extends BaseController(controllerComponents) {
 
   def renderHandlebarPayload(
     formTemplateId: FormTemplateId,

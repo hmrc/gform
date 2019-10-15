@@ -23,16 +23,20 @@ import uk.gov.hmrc.gform.playcomponents.PlayComponents
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.bootstrap.audit.DefaultAuditConnector
+import uk.gov.hmrc.play.bootstrap.config.DefaultHttpAuditEvent
 import uk.gov.hmrc.play.bootstrap.filters.microservice.{ DefaultMicroserviceAuditFilter, MicroserviceAuditFilter }
 
-class AuditingModule(configModule: ConfigModule, akkaModule: AkkaModule, playComponents: PlayComponents) { self =>
-  val auditConnector: AuditConnector =
-    new DefaultAuditConnector(configModule.playConfiguration, playComponents.context.environment)
+import scala.concurrent.ExecutionContext
+
+class AuditingModule(configModule: ConfigModule, akkaModule: AkkaModule)(implicit ec: ExecutionContext) {
+  self =>
+
+  val auditConnector: AuditConnector = new DefaultAuditConnector(configModule.auditingConfig)
 
   val microserviceAuditFilter: MicroserviceAuditFilter = new DefaultMicroserviceAuditFilter(
-    configModule.playConfiguration,
     configModule.controllerConfigs,
     auditConnector,
+    new DefaultHttpAuditEvent(configModule.appConfig.appName),
     akkaModule.materializer
   )
 }

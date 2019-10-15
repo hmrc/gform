@@ -27,14 +27,13 @@ import uk.gov.hmrc.gform.wshttp.{ FutureHttpResponseSyntax, WSHttp }
 
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.gform.InjectionDodge
 import scala.concurrent.duration._
 
-class FileUploadFrontendConnector(config: FUConfig, wSHttp: WSHttp)(implicit ex: ExecutionContext) extends Retrying {
+class FileUploadFrontendConnector(config: FUConfig, wSHttp: WSHttp)(implicit ex: ExecutionContext, schduler: Scheduler)
+    extends Retrying {
 
   def upload(envelopeId: EnvelopeId, fileId: FileId, fileName: String, body: ByteString, contentType: ContentType)(
     implicit hc: HeaderCarrier): Future[Unit] = {
-    implicit val schduler: Scheduler = InjectionDodge.actorSystem.scheduler
 
     val msg =
       s"upload, envelopeId: '${envelopeId.value}',  fileId: '${fileId.value}', fileName: '$fileName', contentType: '${contentType.value}, ${loggingHelpers

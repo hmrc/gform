@@ -22,9 +22,13 @@ import uk.gov.hmrc.gform.connectors.PdfGeneratorConnector
 import scala.concurrent.Future
 import uk.gov.hmrc.http.HeaderCarrier
 
-class PdfGeneratorService(pdfGeneratorConnector: PdfGeneratorConnector) {
+trait PdfGeneratorAlgebra[F[_]] {
+  def generatePDFBytes(html: String)(implicit hc: HeaderCarrier): F[Array[Byte]]
+}
 
-  def generatePDF(html: String)(implicit hc: HeaderCarrier): Future[Array[Byte]] = {
+class PdfGeneratorService(pdfGeneratorConnector: PdfGeneratorConnector) extends PdfGeneratorAlgebra[Future] {
+
+  def generatePDFBytes(html: String)(implicit hc: HeaderCarrier): Future[Array[Byte]] = {
     val headers = Seq((HeaderNames.CONTENT_TYPE, MimeTypes.FORM))
     val body = Map("html" -> Seq(html), "force-pdfa" -> Seq("false"))
     pdfGeneratorConnector.generatePDF(body, headers)

@@ -39,5 +39,5 @@ class ValidationModule(wSHttpModule: WSHttpModule, configModule: ConfigModule)(i
       configModule.serviceConfig.baseUrl("bank-account-reputation"))
 
   private val validationService = new ValidationService(desConnector, bankAccountReputationConnector)
-  val validationController = new ValidationController(validationService)
+  val validationController = new ValidationController(configModule.controllerComponents, validationService)
 }

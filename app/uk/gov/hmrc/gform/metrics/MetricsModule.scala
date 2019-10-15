@@ -18,15 +18,22 @@ package uk.gov.hmrc.gform.metrics
 
 import com.kenshoo.play.metrics.{ MetricsController, MetricsFilter, MetricsFilterImpl, MetricsImpl }
 import uk.gov.hmrc.gform.akka.AkkaModule
+import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.playcomponents.PlayComponents
 
-class MetricsModule(playComponents: PlayComponents, akkaModule: AkkaModule) {
+import scala.concurrent.ExecutionContext
+
+class MetricsModule(
+  configModule: ConfigModule,
+  playComponents: PlayComponents,
+  akkaModule: AkkaModule,
+  ec: ExecutionContext) {
 
   // Don't use uk.gov.hmrc.play.graphite.GraphiteMetricsImpl as it won't allow hot reload due to overridden onStop() method
   val metrics = new MetricsImpl(playComponents.context.lifecycle, playComponents.context.initialConfiguration)
 
-  val metricsFilter: MetricsFilter = new MetricsFilterImpl(metrics)(akkaModule.materializer)
+  val metricsFilter: MetricsFilter = new MetricsFilterImpl(metrics)(akkaModule.materializer, ec)
 
-  val metricsController = new MetricsController(metrics)
+  val metricsController = new MetricsController(metrics, configModule.controllerComponents)
 
 }

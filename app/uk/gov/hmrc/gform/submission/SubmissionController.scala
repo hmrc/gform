@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.submission
 
 import cats.implicits._
 import play.api.Logger
-import play.api.mvc.{ Action, AnyContent }
+import play.api.mvc.{ Action, AnyContent, ControllerComponents }
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.sharedmodel.AccessCode
@@ -29,7 +29,9 @@ import uk.gov.hmrc.gform.sharedmodel.{ SubmissionData, UserId }
 
 import scala.concurrent.ExecutionContext
 
-class SubmissionController(submissionService: SubmissionService)(implicit ex: ExecutionContext) extends BaseController {
+class SubmissionController(controllerComponents: ControllerComponents, submissionService: SubmissionService)(
+  implicit ex: ExecutionContext)
+    extends BaseController(controllerComponents) {
 
   def submitFormPlain(userId: UserId, formTemplateId: FormTemplateId): Action[SubmissionData] =
     submitFormByFormIdData(FormIdData.Plain(userId, formTemplateId))
@@ -37,9 +39,7 @@ class SubmissionController(submissionService: SubmissionService)(implicit ex: Ex
     submitFormByFormIdData(FormIdData.WithAccessCode(userId, formTemplateId, accessCode))
 
   private def submitFormByFormIdData(formIdData: FormIdData): Action[SubmissionData] =
-    Action.async(parse.json[SubmissionData]) { implicit request =>
-      Logger.info(s"submitForm, formId: '${formIdData.toFormId.value}, ${loggingHelpers.cleanHeaders(request.headers)}")
-
+    formAction(parse.json[SubmissionData])("submitFormByFormIdData", formIdData) { implicit request =>
       import request._
 
       submissionService
@@ -58,10 +58,7 @@ class SubmissionController(submissionService: SubmissionService)(implicit ex: Ex
     submissionDetailsFormIdData(FormIdData.WithAccessCode(userId, formTemplateId, accessCode))
 
   private def submissionDetailsFormIdData(formIdData: FormIdData): Action[AnyContent] =
-    Action.async { implicit request =>
-      Logger.info(
-        s"submissionDetails, formId: '${formIdData.toFormId.value}, ${loggingHelpers.cleanHeaders(request.headers)}")
-
+    formAction("submissionDetailsFormIdData", formIdData) { _ =>
       submissionService.submissionDetails(formIdData).asOkJson
     }
 }

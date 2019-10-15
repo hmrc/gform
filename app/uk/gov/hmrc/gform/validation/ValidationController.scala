@@ -18,17 +18,17 @@ package uk.gov.hmrc.gform.validation
 
 import play.api.Logger
 import play.api.libs.json.Json
-import play.api.mvc.Action
+import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.auditing.loggingHelpers
-import uk.gov.hmrc.gform.bank_account_reputation.{ BankAccountReputationConnector, Response }
 import uk.gov.hmrc.gform.controllers.BaseController
-import uk.gov.hmrc.gform.des.{ AddressDes, DesConnector }
-import uk.gov.hmrc.gform.sharedmodel.des.DesRegistrationRequest
 import uk.gov.hmrc.gform.sharedmodel.Account
+import uk.gov.hmrc.gform.sharedmodel.des.DesRegistrationRequest
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.ExecutionContext
 
-class ValidationController(validation: ValidationService)(implicit ex: ExecutionContext) extends BaseController {
+class ValidationController(controllerComponents: ControllerComponents, validation: ValidationService)(
+  implicit ex: ExecutionContext)
+    extends BaseController(controllerComponents) {
 
   def desRegistration(utr: String) = Action.async(parse.json[DesRegistrationRequest]) { implicit request =>
     Logger.info(s"validate Address At Des, ${loggingHelpers.cleanHeaders(request.headers)}")

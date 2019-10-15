@@ -18,46 +18,40 @@ package uk.gov.hmrc.gform.formtemplate
 
 import cats.implicits._
 import play.api.Logger
-import play.api.mvc.{ Action, Results }
+import play.api.mvc.{ ControllerComponents, Results }
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, FormTemplateRaw, FormTemplateRawId }
 
 import scala.concurrent.ExecutionContext
 
-class FormTemplatesController(formTemplateService: FormTemplateService)(implicit ex: ExecutionContext)
-    extends BaseController {
+class FormTemplatesController(controllerComponents: ControllerComponents, formTemplateService: FormTemplateService)(
+  implicit ex: ExecutionContext)
+    extends BaseController(controllerComponents) {
 
   def upsert() = Action.async(parse.json[FormTemplateRaw]) { implicit request =>
-    //TODO authorisation (we don't want allow everyone to call this action
     val templateRaw: FormTemplateRaw = request.body
-    Logger.info(s"Upserting template: ${templateRaw._id.value}, ${loggingHelpers.cleanHeaders(request.headers)}")
+    addFormTemplateIdToMdc(FormTemplateId(templateRaw._id.value))
+    Logger.info(s"FormTemplatesController.upsert: ${loggingHelpers.cleanHeaders(request.headers)}")
 
     new FormTemplatesControllerRequestHandler(formTemplateService.verifyAndSave, formTemplateService.save).futureInterpreter
       .handleRequest(templateRaw)
       .fold(_.asBadRequest, _ => Results.NoContent)
   }
 
-  def get(id: FormTemplateId) = Action.async { implicit request =>
-    Logger.info(s"Get template, template id: '${id.value}', ${loggingHelpers.cleanHeaders(request.headers)}")
-    println(s"Get template, template id: '${id.value}', ${loggingHelpers.cleanHeaders(request.headers)}")
+  def get(id: FormTemplateId) = formTemplateAction("get", id) { implicit request =>
     formTemplateService
       .get(id)
       .asOkJson
   }
 
-  def getRaw(id: FormTemplateRawId) = Action.async { implicit request =>
-    Logger.info(s"Get raw template, template id: '${id.value}', ${loggingHelpers.cleanHeaders(request.headers)}")
+  def getRaw(id: FormTemplateRawId) = formTemplateAction("getRaw", FormTemplateId(id.value)) { implicit request =>
     formTemplateService
       .get(id)
       .asOkJson
   }
 
-  def remove(formTemplateId: FormTemplateId) = Action.async { implicit request =>
-    Logger.info(
-      s"Deleting template, template id: '${formTemplateId.value}', ${loggingHelpers.cleanHeaders(request.headers)}")
-    //TODO authorisation (we don't want allow everyone to call this action
-
+  def remove(formTemplateId: FormTemplateId) = formTemplateAction("remove", formTemplateId) { implicit request =>
     val result = for {
       r <- formTemplateService.delete(formTemplateId)
     } yield r
@@ -66,7 +60,7 @@ class FormTemplatesController(formTemplateService: FormTemplateService)(implicit
   }
 
   def all() = Action.async { implicit request =>
-    Logger.info(s"Get all templates, ${loggingHelpers.cleanHeaders(request.headers)}")
+    Logger.info(s"FormTemplatesController.all, ${loggingHelpers.cleanHeaders(request.headers)}")
 
     formTemplateService.list().asOkJson
   }
