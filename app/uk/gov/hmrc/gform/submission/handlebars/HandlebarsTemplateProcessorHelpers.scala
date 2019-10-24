@@ -112,6 +112,7 @@ class HandlebarsTemplateProcessorHelpers(
     } yield value
 
   def either(first: Any, o: Options): CharSequence = eitherN(first :: o.params.toList: _*)
+  def eitherExcludingBlanks(first: Any, o: Options): CharSequence = eitherExcludingBlanksN(first :: o.params.toList: _*)
 
   // Handlebars.java can't deal with a varargs argument in a helper.
   // Neither can it deal with overloading, so we'd need to do something like
@@ -394,6 +395,10 @@ class HandlebarsTemplateProcessorHelpers(
 
   private[handlebars] def eitherN(args: Any*): CharSequence = log("eitherN", args: _*) {
     condition(args.flatMap(asNotNullString).headOption.orNull)
+  }
+
+  private[handlebars] def eitherExcludingBlanksN(args: Any*): CharSequence = log("eitherExcludingBlanksN", args: _*) {
+    condition(args.flatMap(asNotNullNonBlankString).headOption.orNull)
   }
 
   def isSuccessCode(code: Integer): CharSequence = log("isSuccessCode", code) { condition(isSuccCode(code)) }
@@ -719,6 +724,13 @@ class HandlebarsTemplateProcessorHelpers(
   private def asNotNullString(a: Any): Option[String] =
     if (isNullAsBoolean(a)) None
     else a.toString.some
+
+  private def asNotNullNonBlankString(a: Any): Option[String] = {
+    val foo = asNotNullString(a).collect {
+      case s if !s.trim.isEmpty => s
+    }
+    foo
+  }
 
   private def log(functionName: String, params: Any*)(f: => CharSequence): CharSequence = {
     Loggers.destinations.debug(s"$functionName(${logArgs(params: _*)}) called")

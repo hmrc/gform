@@ -120,6 +120,33 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     process("{{either null null}}") shouldBe "null"
   }
 
+  "eitherExcludingBlanks" must "select the first argument if it is non-null and not empty after trimming" in {
+    forAll(PrimitiveGen.nonEmptyAlphaNumStrGen, PrimitiveGen.nonEmptyAlphaNumStrGen) { (v1, v2) =>
+      process(s"{{eitherExcludingBlanks ${quote(v1)} ${quote(v2)}}}") shouldBe v1
+      process(s"{{eitherExcludingBlanks ${quote(v1)} null}}") shouldBe v1
+    }
+  }
+
+  it must "select the second argument if the first is null" in {
+    forAll(PrimitiveGen.nonEmptyAlphaNumStrGen) { v2 =>
+      process(s"{{eitherExcludingBlanks null ${quote(v2)}}}") shouldBe v2
+    }
+  }
+
+  it must "select the second argument if the first is empty after trimming" in {
+    forAll(PrimitiveGen.nonEmptyAlphaNumStrGen) { v2 =>
+      process(s"{{eitherExcludingBlanks ${quote(" ")} ${quote(v2)}}}") shouldBe v2
+    }
+  }
+
+  it must "return null if all arguments are null" in {
+    process(s"{{eitherExcludingBlanks null null}}") shouldBe "null"
+  }
+
+  it must "return null if all arguments are empty after trimming" in {
+    process(s"{{eitherExcludingBlanks ${quote(" ")} ${quote(" ")}}}") shouldBe "null"
+  }
+
   "either2" must "select the first argument if it is non-null" in {
     forAll(Gen.alphaNumStr, Gen.alphaNumStr) { (v1, v2) =>
       process(s"{{either2 ${quote(v1)} ${quote(v2)}}}") shouldBe v1
