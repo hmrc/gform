@@ -55,7 +55,7 @@ class XmlGeneratorServiceSpec extends Spec {
             List(FormField(FormComponentId("UNO"), "UNO")),
             FormComponent(
               FormComponentId("UNO"),
-              Text(AnyText, Value),
+              Text(BasicText, Value),
               toLocalisedString("Submissible text label"),
               None,
               None,
@@ -71,7 +71,7 @@ class XmlGeneratorServiceSpec extends Spec {
             List(FormField(FormComponentId("DOS"), "DOS")),
             FormComponent(
               FormComponentId("DOS"),
-              Text(AnyText, Value),
+              Text(BasicText, Value),
               toLocalisedString("Submissible text label"),
               None,
               None,
@@ -87,7 +87,7 @@ class XmlGeneratorServiceSpec extends Spec {
             List(FormField(FormComponentId("1_UNO"), "1_UNO")),
             FormComponent(
               FormComponentId("1_UNO"),
-              Text(AnyText, Value),
+              Text(BasicText, Value),
               toLocalisedString("Non-submissible text label"),
               None,
               None,
@@ -103,7 +103,7 @@ class XmlGeneratorServiceSpec extends Spec {
             List(FormField(FormComponentId("1_DOS"), "1_DOS")),
             FormComponent(
               FormComponentId("1_DOS"),
-              Text(AnyText, Value),
+              Text(BasicText, Value),
               toLocalisedString("Submissible text label"),
               None,
               None,
@@ -124,7 +124,7 @@ class XmlGeneratorServiceSpec extends Spec {
             List(FormField(FormComponentId("TRES"), "TRES")),
             FormComponent(
               FormComponentId("TRES"),
-              Text(AnyText, Constant("TRES")),
+              Text(BasicText, Constant("TRES")),
               toLocalisedString("Submissible text label"),
               None,
               None,

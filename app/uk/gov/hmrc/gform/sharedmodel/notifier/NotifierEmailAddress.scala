@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.notifier
+package uk.gov.hmrc.gform.sharedmodel.notifier
 
 import cats.Show
 import play.api.libs.json.Format

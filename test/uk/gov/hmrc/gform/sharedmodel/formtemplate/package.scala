@@ -16,11 +16,12 @@
 
 package uk.gov.hmrc.gform.sharedmodel
 import org.scalatest.Assertion
+import org.scalactic.source.Position
 import play.api.libs.json._
 import uk.gov.hmrc.gform.Spec
 
 package object formtemplate extends Spec {
-  def verifyRead[T: Reads](expected: T, json: String): Assertion =
+  def verifyRead[T: Reads](expected: T, json: String)(implicit position: Position): Assertion =
     parseWithMargin(json) should beJsSuccess(expected)
 
   def verifyReadFailure[T: Reads](expectedFailureMessage: String, json: String): Assertion =

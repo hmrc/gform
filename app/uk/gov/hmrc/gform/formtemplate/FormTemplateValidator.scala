@@ -39,15 +39,21 @@ object FormTemplateValidator {
     if (languageList.languages.contains(LangADT.En)) Valid
     else Invalid("languages must contain en")
 
-  private def indexedFields(sections: List[Section]): List[(FormComponentId, Int)] =
+  private def fieldIds(sections: List[Section]) = indexedFieldIds(sections).map(_._1)
+
+  private def indexedFieldIds(sections: List[Section]): List[(FormComponentId, Int)] = indexedFields(sections).map {
+    case (a, b) => a.id -> b
+  }
+
+  private def indexedFields(sections: List[Section]): List[(FormComponent, Int)] =
     sections.zipWithIndex.flatMap {
       case (section, idx) =>
-        val standardFields = section.fields.map(_.id -> idx)
+        val standardFields = section.fields.map(_ -> idx)
         val subFields = section.fields
           .map(_.`type`)
           .collect {
-            case Group(fields, _, _, _, _, _) => fields.map(_.id -> idx)
-            case RevealingChoice(options, _)  => options.toList.flatMap(_.revealingFields.map(_.id -> idx))
+            case Group(fields, _, _, _, _, _) => fields.map(_ -> idx)
+            case RevealingChoice(options, _)  => options.toList.flatMap(_.revealingFields.map(_ -> idx))
           }
 
         standardFields ::: subFields.flatten
@@ -57,9 +63,9 @@ object FormTemplateValidator {
     s"Some FieldIds are defined more than once: ${duplicates.toList.sortBy(_.value).map(_.value)}"
 
   def validateUniqueFields(sectionsList: List[Section]): ValidationResult = {
-    val fieldIds: List[FormComponentId] = indexedFields(sectionsList).map(_._1)
+    val ids: List[FormComponentId] = fieldIds(sectionsList)
 
-    val duplicates = fieldIds.groupBy(identity).collect { case (fId, List(_, _, _*)) => fId }.toSet
+    val duplicates = ids.groupBy(identity).collect { case (fId, List(_, _, _*)) => fId }.toSet
     duplicates.isEmpty.validationResult(someFieldsAreDefinedMoreThanOnce(duplicates))
   }
 
@@ -176,14 +182,14 @@ object FormTemplateValidator {
   }
 
   def validateForwardReference(sections: List[Section]): ValidationResult = {
-    val fieldNamesIds: Map[FormComponentId, Int] = indexedFields(sections).toMap
+    val indexLookup: Map[FormComponentId, Int] = indexedFieldIds(sections).toMap
 
     def validateExprs(left: Expr, right: Expr, idx: Int): List[ValidationResult] =
       List(left, right)
         .flatMap(extractFcIds)
         .map(
           id =>
-            fieldNamesIds
+            indexLookup
               .get(id)
               .map(idIdx =>
                 (idIdx < idx).validationResult(
@@ -211,7 +217,7 @@ object FormTemplateValidator {
   }
 
   def validate(expr: Expr, sections: List[Section]): ValidationResult = {
-    val fieldNamesIds: List[FormComponentId] = indexedFields(sections).map(_._1)
+    val fieldNamesIds: List[FormComponentId] = fieldIds(sections)
 
     def checkFields(field1: Expr, field2: Expr): ValidationResult = {
       val checkField1 = validate(field1, sections)
@@ -242,7 +248,7 @@ object FormTemplateValidator {
 
   def validateEmailParameter(formTemplate: FormTemplate): ValidationResult =
     formTemplate.emailParameters.fold[ValidationResult](Valid) { emailParams =>
-      val ids = indexedFields(formTemplate.sections).map(_._1)
+      val ids = fieldIds(formTemplate.sections)
       emailParams
         .collect {
           case EmailParameter(_, value: FormCtx) if !ids.contains(value.toFieldId) => value.toFieldId
@@ -322,5 +328,41 @@ object FormTemplateValidator {
       case (false, _)   => Invalid(str + " cannot contains revealing choice as its element")
       case (_, false)   => Invalid(str + " cannot contains group as its element")
     }
+  }
+
+  def validateEmailVerification(formTemplate: FormTemplate): ValidationResult = {
+
+    val sections = formTemplate.sections
+
+    val indexLookup: Map[FormComponentId, Int] = indexedFieldIds(sections).toMap
+
+    val allFormComponents: List[FormComponent] = indexedFields(sections).map { case (a, b) => a }
+
+    val emailsWithCodes: List[(FormComponentId, FormComponentId)] =
+      allFormComponents.collect { case IsEmailVerifiedBy(fcId, emailId) => (fcId, emailId) }
+
+    val result = emailsWithCodes.map {
+      case (emailField, codeField) =>
+        val emailIdx = indexLookup.get(emailField) // This is guaranteed to always succeed
+        val codeIdx = indexLookup.get(codeField)
+
+        val res = for {
+          e <- emailIdx
+          c <- codeIdx
+        } yield {
+          (e <= c).validationResult(
+            s"id '$codeField' named in email verification is forward reference, which is not permitted")
+        }
+
+        res.getOrElse(Invalid(s"id '$codeField' named in email verification does not exist in the form"))
+    }
+    Monoid[ValidationResult].combineAll(result)
+  }
+}
+
+object IsEmailVerifiedBy {
+  def unapply(formComponent: FormComponent): Option[(FormComponentId, FormComponentId)] = formComponent.`type` match {
+    case Text(EmailVerifiedBy(fcId), _, _, _) => Some((formComponent.id, fcId))
+    case _                                    => None
   }
 }

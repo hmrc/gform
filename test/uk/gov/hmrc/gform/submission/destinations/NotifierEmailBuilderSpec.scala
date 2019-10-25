@@ -18,12 +18,12 @@ package uk.gov.hmrc.gform.submission.destinations
 
 import cats.Show
 import cats.implicits._
-import uk.gov.hmrc.gform.notifier.{ NotifierEmail, NotifierEmailAddress, NotifierEmailReference }
+import uk.gov.hmrc.gform.notifier.{ NotifierEmail, NotifierEmailReference }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormComponentId
 import uk.gov.hmrc.gform.{ Possible, Spec }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HandlebarsTemplateProcessorModel
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, PrimitiveGen, SubmissionRefGen }
-import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierPersonalisationFieldId
+import uk.gov.hmrc.gform.sharedmodel.notifier.{ NotifierEmailAddress, NotifierPersonalisationFieldId }
 import uk.gov.hmrc.gform.sharedmodel.structuredform.{ Field, FieldName, StructuredFormValue }
 
 class NotifierEmailBuilderSpec extends Spec with DestinationGen with SubmissionRefGen with PrimitiveGen {

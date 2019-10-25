@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.notifier
+package uk.gov.hmrc.gform.sharedmodel.form
 
-import uk.gov.hmrc.gform.sharedmodel.notifier.{ NotifierEmailAddress, NotifierTemplateId }
+import julienrf.json.derived
+import play.api.libs.json.OFormat
+import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierConfirmationCode
 
-case class NotifierEmail(
-  templateId: NotifierTemplateId,
-  to: NotifierEmailAddress,
-  personalisation: Map[String, String],
-  reference: NotifierEmailReference)
+case class EmailAndCode(email: String, code: NotifierConfirmationCode)
+
+object EmailAndCode {
+  implicit val format: OFormat[EmailAndCode] = derived.oformat
+}

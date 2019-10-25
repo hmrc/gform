@@ -1,0 +1,47 @@
+{
+  "_id": "email-verification-invalid-reference",
+  "formName": "Email verification invalid reference",
+  "description": "Testing enrolment journey",
+  "authConfig": {
+    "authModule": "hmrc"
+  },
+  "emailTemplateId": "",
+  "sections": [
+    {
+      "title": "Enter your email",
+      "fields": [
+        {
+          "id": "email",
+          "verifiedBy": "code2",
+          "label": "Email",
+          "format": "email"
+        }
+      ]
+    },
+    {
+      "title": "Verify your email",
+      "fields": [
+        {
+          "id": "code",
+          "label": "Code"
+        }
+      ]
+    }
+  ],
+  "declarationSection": {
+    "shortName": "Declaration",
+    "title": "Declaration",
+    "fields": []
+  },
+  "acknowledgementSection": {
+    "shortName": "Acknowledgement Page",
+    "title": "Acknowledgement Page",
+    "fields": []
+  },
+  "destinations": [
+    {
+      "id": "logit",
+      "type": "log"
+    }
+  ]
+}

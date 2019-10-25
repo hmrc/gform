@@ -138,8 +138,6 @@ object RoundingMode {
 
 sealed trait TextConstraint
 
-final case object AnyText extends TextConstraint
-
 final case class Number(
   maxWholeDigits: Int = TextConstraint.defaultWholeDigits,
   maxFractionalDigits: Int = TextConstraint.defaultFactionalDigits,
@@ -171,6 +169,7 @@ case object TelephoneNumber extends TextConstraint {
 }
 
 case object Email extends TextConstraint
+case class EmailVerifiedBy(formComponentId: FormComponentId) extends TextConstraint
 case object UTR extends TextConstraint
 case object NINO extends TextConstraint
 case object UkVrn extends TextConstraint

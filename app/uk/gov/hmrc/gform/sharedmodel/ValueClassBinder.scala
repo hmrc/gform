@@ -19,18 +19,19 @@ package uk.gov.hmrc.gform.sharedmodel
 import cats.implicits._
 import play.api.libs.json.{ JsError, JsString, JsSuccess, Reads }
 import play.api.mvc.{ JavascriptLiteral, PathBindable }
+import scala.util.Try
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.gform.sharedmodel.form.{ FileId, FormId, FormStatus }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, FormTemplateRawId, SectionNumber }
-
-import scala.util.Try
+import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierEmailAddress
 
 object ValueClassBinder {
 
   implicit val jLiteralAffinityGroup = new JavascriptLiteral[AffinityGroup] {
     def to(value: AffinityGroup): String = AffinityGroupUtil.affinityGroupName(value)
   }
+  implicit val notifierEmailAddressBinder: PathBindable[NotifierEmailAddress] = valueClassBinder(_.value)
   implicit val affinityGroupBinder: PathBindable[Option[AffinityGroup]] = mValueClassBinder(
     AffinityGroupUtil.affinityGroupName)
   implicit val formTemplateIdBinder: PathBindable[FormTemplateId] = valueClassBinder(_.value)

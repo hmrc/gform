@@ -55,7 +55,9 @@ class FormComponentRejectSpec extends Spec {
       ("revealing-choice-include-group",            "Revealing choice cannot contains group as its element"),
       ("group-include-group",                       "Group cannot contains group as its element"),
       ("group-include-revealing-choice",            "Group cannot contains revealing choice as its element"),
-      ("revealing-choice-unique-ids",               "Some FieldIds are defined more than once: List(companyName, tradingName)")
+      ("revealing-choice-unique-ids",               "Some FieldIds are defined more than once: List(companyName, tradingName)"),
+      ("email-verification-forward-reference",      "id 'code' named in email verification is forward reference, which is not permitted"),
+      ("email-verification-invalid-reference",      "id 'code2' named in email verification does not exist in the form")
       // format: on
     )
 

@@ -47,8 +47,11 @@ class FormComponentMaker(json: JsValue) {
   lazy val label: LocalisedString = (json \ "label").as[LocalisedString]
 
   lazy val optMaybeValueExpr: Opt[Option[ValueExpr]] = parse("value", ValueParser.validate)
-  lazy val optMaybeFormatExpr: RoundingMode => Opt[Option[FormatExpr]] = rm =>
-    parse("format", FormatParser.validate(rm))
+  lazy val emailVerification: EmailVerification = (json \ "verifiedBy")
+    .asOpt[String]
+    .fold(EmailVerification.noVerification)(fcId => EmailVerification.verifiedBy(FormComponentId(fcId)))
+  lazy val optMaybeFormatExpr: RoundingMode => EmailVerification => Opt[Option[FormatExpr]] = rm =>
+    emailVerification => parse("format", FormatParser.validate(rm, emailVerification))
   lazy val optMaybePresentationHintExpr: Opt[Option[List[PresentationHint]]] =
     parse("presentationHint", PresentationHintParser.validate)
 
@@ -141,7 +144,7 @@ class FormComponentMaker(json: JsValue) {
                                                                                     MES(mandatory = true,  editable = false, submissible = false, derived = false, onlyShowOnSummary = true).asRight
     case otherwise =>
       UnexpectedState(
-        s"Expected 'standard', summaryinfoonly,'notsubmitted', readonly' or 'info' string or nothing for submitMode and expected 'true' or 'false' string or nothing for mandatory field value, got: $otherwise").asLeft
+        s"Expected 'standard', 'summaryinfoonly', 'notsubmitted', 'readonly' or 'info' string or nothing for submitMode and expected 'true' or 'false' string or nothing for mandatory field value, got: $otherwise").asLeft
     // format: on
   }
 
@@ -160,7 +163,7 @@ class FormComponentMaker(json: JsValue) {
 
   private lazy val textOpt: Opt[ComponentType] = {
     for {
-      maybeFormatExpr <- optMaybeFormatExpr(roundingMode)
+      maybeFormatExpr <- optMaybeFormatExpr(roundingMode)(emailVerification)
       maybeValueExpr  <- optMaybeValueExpr
       result          <- createObject(maybeFormatExpr, maybeValueExpr, multiline, displayWidth, toUpperCase, json)
     } yield result
@@ -179,7 +182,7 @@ class FormComponentMaker(json: JsValue) {
 
     lazy val dateConstraintOpt: Opt[DateConstraintType] =
       for {
-        maybeFormatExpr <- optMaybeFormatExpr(roundingMode)
+        maybeFormatExpr <- optMaybeFormatExpr(roundingMode)(emailVerification)
         optDateConstraintType = maybeFormatExpr match {
           case Some(DateFormat(e)) => e.asRight
           case None                => AnyDate.asRight
@@ -230,7 +233,7 @@ class FormComponentMaker(json: JsValue) {
 
     for {
       fieldValues <- fieldValuesOpt.right
-      format      <- optMaybeFormatExpr(roundingMode).right
+      format      <- optMaybeFormatExpr(roundingMode)(emailVerification).right
       repMax      <- optMaybeRepeatsMax
       repMin      <- optMaybeRepeatsMin
       group       <- validateRepeatsAndBuildGroup(repMax, repMin, fieldValues, orientation(format))
@@ -258,7 +261,7 @@ class FormComponentMaker(json: JsValue) {
 
   private lazy val choiceOpt: Opt[Choice] = {
     for {
-      maybeFormatExpr <- optMaybeFormatExpr(roundingMode)
+      maybeFormatExpr <- optMaybeFormatExpr(roundingMode)(emailVerification)
       maybeValueExpr  <- optMaybeValueExpr
       oChoice: Opt[Choice] = (maybeFormatExpr, choices, multivalue, maybeValueExpr, optionHelpText) match {
         // format: off

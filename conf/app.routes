@@ -42,3 +42,5 @@ POST          /dms/submit                                                   uk.g
 POST          /dms/submit-pdf                                               uk.gov.hmrc.gform.dms.DmsSubmissionController.submitPdfToDms()
 
 POST          /obligation/tax-period                                        uk.gov.hmrc.gform.obligation.ObligationController.getAllTaxPeriods()
+
+POST          /email/:notifierEmailAddress                                  uk.gov.hmrc.gform.notifier.NotifierController.sendEmail(notifierEmailAddress: NotifierEmailAddress)

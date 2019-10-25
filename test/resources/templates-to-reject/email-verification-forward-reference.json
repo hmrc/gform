@@ -1,0 +1,47 @@
+{
+  "_id": "email-verification-forward-reference",
+  "formName": "Email verification forward reference",
+  "description": "Testing enrolment journey",
+  "authConfig": {
+    "authModule": "hmrc"
+  },
+  "emailTemplateId": "",
+  "sections": [
+    {
+      "title": "Verify your email",
+      "fields": [
+        {
+          "id": "code",
+          "label": "Code"
+        }
+      ]
+    },
+    {
+      "title": "Enter your email",
+      "fields": [
+        {
+          "id": "email",
+          "verifiedBy": "code",
+          "label": "Email",
+          "format": "email"
+        }
+      ]
+    }
+  ],
+  "declarationSection": {
+    "shortName": "Declaration",
+    "title": "Declaration",
+    "fields": []
+  },
+  "acknowledgementSection": {
+    "shortName": "Acknowledgement Page",
+    "title": "Acknowledgement Page",
+    "fields": []
+  },
+  "destinations": [
+    {
+      "id": "logit",
+      "type": "log"
+    }
+  ]
+}

@@ -66,7 +66,7 @@ class SubmissionServiceSpec extends Spec {
 
     val textFieldUno = FormComponent(
       id = FormComponentId("UNO"),
-      `type` = Text(AnyText, Constant("UNO")),
+      `type` = Text(BasicText, Constant("UNO")),
       label = toLocalisedString("Editable text label"),
       helpText = None,
       shortName = None,
@@ -79,7 +79,7 @@ class SubmissionServiceSpec extends Spec {
     )
 
     val textFieldDos =
-      textFieldUno.copy(id = FormComponentId("DOS"), `type` = Text(AnyText, Constant("DOS")))
+      textFieldUno.copy(id = FormComponentId("DOS"), `type` = Text(BasicText, Constant("DOS")))
 
     val group = Group(
       fields = List(textFieldUno, textFieldDos),
@@ -153,7 +153,7 @@ class SubmissionServiceSpec extends Spec {
             List(FormField(FormComponentId("UNO"), "UNO")),
             FormComponent(
               FormComponentId("UNO"),
-              Text(AnyText, Constant("UNO")),
+              Text(BasicText, Constant("UNO")),
               toLocalisedString("Editable text label"),
               None,
               None,
@@ -169,7 +169,7 @@ class SubmissionServiceSpec extends Spec {
             List(FormField(FormComponentId("DOS"), "DOS")),
             FormComponent(
               FormComponentId("DOS"),
-              Text(AnyText, Constant("DOS")),
+              Text(BasicText, Constant("DOS")),
               toLocalisedString("Editable text label"),
               None,
               None,
@@ -185,7 +185,7 @@ class SubmissionServiceSpec extends Spec {
             List(FormField(FormComponentId("1_UNO"), "1_UNO")),
             FormComponent(
               FormComponentId("1_UNO"),
-              Text(AnyText, Constant("UNO")),
+              Text(BasicText, Constant("UNO")),
               toLocalisedString("Editable text label"),
               None,
               None,
@@ -201,7 +201,7 @@ class SubmissionServiceSpec extends Spec {
             List(FormField(FormComponentId("1_DOS"), "1_DOS")),
             FormComponent(
               FormComponentId("1_DOS"),
-              Text(AnyText, Constant("DOS")),
+              Text(BasicText, Constant("DOS")),
               toLocalisedString("Editable text label"),
               None,
               None,

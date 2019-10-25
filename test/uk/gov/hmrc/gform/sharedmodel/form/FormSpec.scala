@@ -30,6 +30,7 @@ import uk.gov.hmrc.gform.sharedmodel._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.FormGen
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.des.DesRegistrationResponseGen
+import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierConfirmationCode
 
 class FormSpec extends FlatSpec with Matchers with PropertyChecks {
 
@@ -81,6 +82,12 @@ class FormSpec extends FlatSpec with Matchers with PropertyChecks {
        |          }
        |        } ]
        |      }
+       |    },
+       |    "emailVerification" : {
+       |      "emailId" : {
+       |        "email" : "josef@hmrc.com",
+       |        "code" : "HPKHWB"
+       |      }
        |    }
        |  },
        |  "ldt" : "2064-12-01T00:00:40"
@@ -127,6 +134,9 @@ class FormSpec extends FlatSpec with Matchers with PropertyChecks {
             )
           )
         )
+      ),
+      Map(
+        FormComponentId("emailId") -> EmailAndCode("josef@hmrc.com", NotifierConfirmationCode("HPKHWB"))
       )
     ),
     Some(EnvelopeExpiryDate(LocalDateTime.of(2064, 12, 1, 0, 0, 40)))
@@ -181,7 +191,8 @@ class FormSpec extends FlatSpec with Matchers with PropertyChecks {
       "visitsIndex" -> Json.arr(1, 2, 3),
       "ldt"         -> form.envelopeExpiryDate.map(_.ldt).map(f _).get,
       "thirdPartyData" -> Json.obj(
-        "obligations" -> Json.obj("NotChecked" -> Json.obj())
+        "obligations"       -> Json.obj("NotChecked" -> Json.obj()),
+        "emailVerification" -> Json.obj()
       )
     )
     formJsObject shouldBe expectedFormJsObject

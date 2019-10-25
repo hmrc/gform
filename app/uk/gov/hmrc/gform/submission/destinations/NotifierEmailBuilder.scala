@@ -25,9 +25,10 @@ import cats.syntax.applicative._
 import cats.syntax.functor._
 import cats.syntax.flatMap._
 import cats.syntax.traverse._
-import uk.gov.hmrc.gform.notifier.{ NotifierEmail, NotifierEmailAddress, NotifierEmailReference }
+import uk.gov.hmrc.gform.notifier.{ NotifierEmail, NotifierEmailReference }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormComponentId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId }
+import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierEmailAddress
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 
 object NotifierEmailBuilder {

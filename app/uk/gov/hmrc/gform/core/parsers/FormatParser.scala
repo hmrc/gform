@@ -20,15 +20,18 @@ import parseback._
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.BasicParsers._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.formtemplate.EmailVerification
 
 object FormatParser {
 
-  def validate(rm: RoundingMode)(expression: String): Opt[FormatExpr] = validateWithParser(expression, expr(rm))
+  def validate(rm: RoundingMode, emailVerification: EmailVerification)(expression: String): Opt[FormatExpr] =
+    validateWithParser(expression, expr(rm)(emailVerification))
 
-  lazy val expr: RoundingMode => Parser[FormatExpr] = rm => {
-    dateFormat |
-      textFormat(rm) |
-      anyWordExpression
+  lazy val expr: RoundingMode => EmailVerification => Parser[FormatExpr] = rm =>
+    emailVerification => {
+      dateFormat |
+        textFormat(rm)(emailVerification) |
+        anyWordExpression
   }
 
   lazy val dateFormat: Parser[DateFormat] = {
@@ -103,15 +106,16 @@ object FormatParser {
     OffsetDate(offset)
   }
 
-  lazy val textFormat: RoundingMode => Parser[FormatExpr] = rm => {
-    numberFormat(rm) |
-      positiveNumberFormat(rm) |
-      positiveWholeNumberFormat(rm) |
-      moneyFormat(rm) |
-      contactFormat |
-      governmentIdFormat |
-      basicFormat |
-      countryCodeFormat
+  lazy val textFormat: RoundingMode => EmailVerification => Parser[FormatExpr] = rm =>
+    emailVerification => {
+      numberFormat(rm) |
+        positiveNumberFormat(rm) |
+        positiveWholeNumberFormat(rm) |
+        moneyFormat(rm) |
+        contactFormat(emailVerification) |
+        governmentIdFormat |
+        basicFormat |
+        countryCodeFormat
   }
 
   lazy val countryCodeFormat: Parser[TextFormat] = {
@@ -192,11 +196,11 @@ object FormatParser {
       }
   }
 
-  lazy val contactFormat: Parser[TextFormat] = {
+  lazy val contactFormat: EmailVerification => Parser[TextFormat] = emailVerification => {
     "telephoneNumber" ^^ { (loc, _) =>
       TextFormat(TelephoneNumber)
     } | "email" ^^ { (loc, _) =>
-      TextFormat(Email)
+      TextFormat(emailVerification.textConstraint)
     }
   }
 

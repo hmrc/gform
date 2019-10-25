@@ -31,7 +31,7 @@ import uk.gov.hmrc.gform.submission.handlebars._
 import uk.gov.hmrc.gform.wshttp.HttpResponseSyntax
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
-class DestinationSubmitter[M[_], R](
+class DestinationSubmitter[M[_]](
   dms: DmsSubmitterAlgebra[M],
   handlebars: HandlebarsHttpApiSubmitter[M],
   stateTransitionAlgebra: StateTransitionAlgebra[M],
