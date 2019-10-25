@@ -25,6 +25,7 @@ import UploadableConditioning._
 import cats.data.NonEmptyList
 import JsonUtils.nelFormat
 import uk.gov.hmrc.gform.sharedmodel.form.FormStatus
+import uk.gov.hmrc.gform.sharedmodel.notifier.{ NotifierPersonalisationFieldId, NotifierTemplateId }
 
 sealed trait DestinationWithCustomerId {
   def customerId(): TextExpression
@@ -80,17 +81,30 @@ object Destination {
     val includeIf: String = true.toString
   }
 
+  case class Email(
+    id: DestinationId,
+    emailTemplateId: NotifierTemplateId,
+    includeIf: String,
+    failOnError: Boolean,
+    to: FormComponentId,
+    personalisation: Map[NotifierPersonalisationFieldId, FormComponentId])
+      extends Destination
+
   val typeDiscriminatorFieldName: String = "type"
   val hmrcDms: String = "hmrcDms"
   val handlebarsHttpApi: String = "handlebarsHttpApi"
   val composite: String = "composite"
   val stateTransition: String = "stateTransition"
   val log: String = "log"
+  val email: String = "email"
 
   private implicit def nonEmptyListOfDestinationsFormat: OFormat[NonEmptyList[Destination]] =
     derived.oformat[NonEmptyList[Destination]]
 
   implicit def format: OFormat[Destination] = {
+    implicit val personalisationReads =
+      JsonUtils.formatMap[NotifierPersonalisationFieldId, FormComponentId](NotifierPersonalisationFieldId(_), _.value)
+
     implicit def d: OFormat[Destination] = derived.oformat[Destination]
 
     OFormatWithTemplateReadFallback(
@@ -100,7 +114,8 @@ object Destination {
         handlebarsHttpApi -> UploadableHandlebarsHttpApiDestination.reads,
         composite         -> UploadableCompositeDestination.reads,
         stateTransition   -> UploadableStateTransitionDestination.reads,
-        log               -> UploadableLogDestination.reads
+        log               -> UploadableLogDestination.reads,
+        email             -> UploadableEmailDestination.reads
       ))
   }
 }
@@ -227,6 +242,33 @@ object UploadableLogDestination {
     private val d: Reads[UploadableLogDestination] = derived.reads[UploadableLogDestination]
     override def reads(json: JsValue): JsResult[Destination.Log] =
       d.reads(json).flatMap(_.toLogDestination.fold(JsError(_), JsSuccess(_)))
+  }
+}
+
+case class UploadableEmailDestination(
+  id: DestinationId,
+  emailTemplateId: NotifierTemplateId,
+  convertSingleQuotes: Option[Boolean],
+  includeIf: Option[String],
+  failOnError: Option[Boolean],
+  to: FormComponentId,
+  personalisation: Map[NotifierPersonalisationFieldId, FormComponentId]) {
+  def toEmailDestination: Either[String, Destination.Email] =
+    for {
+      cvii <- addErrorInfo(id, "includeIf")(condition(convertSingleQuotes, includeIf))
+    } yield
+      Destination
+        .Email(id, emailTemplateId, cvii.getOrElse(true.toString), failOnError.getOrElse(true), to, personalisation)
+}
+
+object UploadableEmailDestination {
+  private implicit val personalisationReads =
+    JsonUtils.formatMap[NotifierPersonalisationFieldId, FormComponentId](NotifierPersonalisationFieldId(_), _.value)
+
+  implicit val reads: Reads[Destination.Email] = new Reads[Destination.Email] {
+    private val d: Reads[UploadableEmailDestination] = derived.reads[UploadableEmailDestination]
+    override def reads(json: JsValue): JsResult[Destination.Email] =
+      d.reads(json).flatMap(_.toEmailDestination.fold(JsError(_), JsSuccess(_)))
   }
 }
 

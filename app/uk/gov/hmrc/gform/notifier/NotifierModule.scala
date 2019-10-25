@@ -14,19 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
+package uk.gov.hmrc.gform.notifier
 
-import cats.{ Eq, Show }
-import play.api.libs.json.Reads._
-import play.api.libs.json._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.config.ConfigModule
+import uk.gov.hmrc.gform.core.{ FOpt, fOptMonadError }
+import uk.gov.service.notify.NotificationClient
 
-case class DestinationId(id: String) extends AnyVal
+import scala.concurrent.ExecutionContext
 
-object DestinationId {
-  implicit val format: Format[DestinationId] = JsonUtils.valueClassFormat[DestinationId, String](DestinationId(_), _.id)
+class NotifierModule(configModule: ConfigModule)(implicit ec: ExecutionContext) {
+  private val config = configModule.notifierConfig
+  private val client = new NotificationClient(config.apiKey)
 
-  implicit val equal: Eq[DestinationId] = Eq.fromUniversalEquals
-
-  implicit val show: Show[DestinationId] = Show.show(_.id)
+  val fOptNotifierService = new NotifierService[FOpt](client)
 }

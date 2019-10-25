@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.submission.destinations
 import cats.syntax.option._
 import cats.{ Applicative, MonadError }
 import org.scalacheck.Gen
+import uk.gov.hmrc.gform.notifier.NotifierAlgebra
 import uk.gov.hmrc.gform.sharedmodel.{ PdfHtml, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
@@ -401,12 +402,14 @@ class DestinationSubmitterSpec
     val handlebarsSubmitter = mock[HandlebarsHttpApiSubmitter[Possible]]
     val stateTransitionService = mock[StateTransitionAlgebra[Possible]]
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
+    val notifierService = mock[NotifierAlgebra[Possible]]
     val destinationAuditer = mock[DestinationAuditAlgebra[Possible]]
     val submitter =
       new DestinationSubmitter[Possible, Unit](
         dmsSubmitter,
         handlebarsSubmitter,
         stateTransitionService,
+        notifierService,
         Some(destinationAuditer),
         handlebarsTemplateProcessor)
 
