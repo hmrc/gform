@@ -15,7 +15,12 @@
  */
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
+
+import cats.Show
+import cats.instances.string._
+import cats.syntax.show._
 import play.api.libs.json.{ JsValue, Writes }
+
 package object destinations {
   def createUploadableJson(destination: Destination): String = destination match {
     case composite: Destination.Composite =>
@@ -73,6 +78,21 @@ package object destinations {
           |  "id": "${id.id}",
           |  "${Destination.typeDiscriminatorFieldName}": "${Destination.log}"
           |}""".stripMargin
+
+    case email: Destination.Email =>
+      import email._
+      show"""|{
+             |  "id": "$id",
+             |  ${optionalField("convertSingleQuotes", Option(false))}
+             |  ${optionalField("includeIf", Option(destination.includeIf), "true")}
+             |  ${optionalField("failOnError", Option(destination.failOnError), true)}
+             |  "emailTemplateId": "${email.emailTemplateId}",
+             |  "to": "$to",
+             |  "personalisation": {
+             |    ${email.personalisation.map { case (k, v) => s"${quote(k)}: ${quote(v)}" }.mkString(", ")}
+             |  },
+             |  "${Destination.typeDiscriminatorFieldName}": "${Destination.email}"
+             |}""".stripMargin
   }
 
   def optionalField[T: Writes](fieldName: String, ot: Option[T]): String =
@@ -81,6 +101,8 @@ package object destinations {
   def optionalField[T: Writes](fieldName: String, ot: Option[T], dflt: T): String =
     if (ot.contains(dflt) && Math.random < 0.5) ""
     else optionalField(fieldName: String, ot: Option[T])
+
+  def quote[T](s: T)(implicit show: Show[T]) = show""""$s""""
 
   def write[T](t: T)(implicit w: Writes[T]): JsValue = w.writes(t)
 }

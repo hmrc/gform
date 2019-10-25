@@ -37,6 +37,7 @@ import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.graphite.GraphiteModule
 import uk.gov.hmrc.gform.metrics.MetricsModule
 import uk.gov.hmrc.gform.mongo.MongoModule
+import uk.gov.hmrc.gform.notifier.NotifierModule
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorModule
 import uk.gov.hmrc.gform.playcomponents.{ ErrorHandler, PlayComponents, PlayComponentsModule }
 import uk.gov.hmrc.gform.save4later.{ Save4Later, Save4LaterModule }
@@ -101,7 +102,10 @@ class ApplicationModule(context: Context)
 
   val validationModule = new ValidationModule(wSHttpModule, configModule)
 
+  val notifierModule = new NotifierModule(configModule)
+
   private val handlebarsModule = new HandlebarsHttpApiModule(wSHttpModule, configModule)
+
   private val submissionModule =
     new SubmissionModule(
       configModule,
@@ -114,8 +118,10 @@ class ApplicationModule(context: Context)
       timeModule,
       emailModule,
       handlebarsModule,
-      destinationModule
+      destinationModule,
+      notifierModule
     )
+
   private val dmsModule =
     new DmsModule(fileUploadModule, pdfGeneratorModule, configModule.appConfig, controllerComponents)
   private val obligationModule = new ObligationModule(wSHttpModule, configModule)

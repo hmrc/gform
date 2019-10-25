@@ -21,6 +21,7 @@ import cats.syntax.applicative._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import uk.gov.hmrc.gform.logging.Loggers
+import uk.gov.hmrc.gform.notifier.NotifierAlgebra
 import uk.gov.hmrc.gform.sharedmodel.PdfHtml
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
@@ -34,6 +35,7 @@ class DestinationSubmitter[M[_], R](
   dms: DmsSubmitterAlgebra[M],
   handlebars: HandlebarsHttpApiSubmitter[M],
   stateTransitionAlgebra: StateTransitionAlgebra[M],
+  notifier: NotifierAlgebra[M],
   destinationAuditer: Option[DestinationAuditAlgebra[M]],
   handlebarsTemplateProcessor: HandlebarsTemplateProcessor = RealHandlebarsTemplateProcessor)(
   implicit monadError: MonadError[M, String])
@@ -100,6 +102,21 @@ class DestinationSubmitter[M[_], R](
           .submitToList(DestinationList(d.destinations), submissionInfo, accumulatedModel, modelTree)
       case d: Destination.StateTransition => stateTransitionAlgebra(d, submissionInfo.formId).map(_ => None)
       case d: Destination.Log             => log(d, accumulatedModel, modelTree).map(_ => None)
+      case d: Destination.Email           => submitToEmail(d, submissionInfo, modelTree.value.structuredFormData).map(_ => None)
+    }
+
+  def submitToEmail(
+    d: Destination.Email,
+    submissionInfo: DestinationSubmissionInfo,
+    structuredFormData: StructuredFormValue.ObjectStructure): M[Unit] =
+    monadError.handleErrorWith(
+      NotifierEmailBuilder(d, structuredFormData) >>=
+        notifier.email) { msg =>
+      if (d.failOnError)
+        raiseError(submissionInfo.formId, d.id, msg)
+      else {
+        logInfoInMonad(submissionInfo.formId, d.id, "Failed execution but has 'failOnError' set to false. Ignoring.")
+      }
     }
 
   def log(

@@ -27,6 +27,7 @@ import uk.gov.hmrc.gform.submission.handlebars.HandlebarsHttpApiModule
 import uk.gov.hmrc.gform.time.TimeModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.gform.core._
+import uk.gov.hmrc.gform.notifier.NotifierModule
 import uk.gov.hmrc.gform.repo.{ Repo, RepoAlgebra }
 import uk.gov.hmrc.gform.submission.destinations.{ DestinationModule, DestinationSubmitter, DestinationsSubmitter, DestinationsSubmitterAlgebra, DmsSubmitter, StateTransitionService }
 
@@ -43,7 +44,8 @@ class SubmissionModule(
   timeModule: TimeModule,
   emailModule: EmailModule,
   handlebarsHttpApiModule: HandlebarsHttpApiModule,
-  destinationModule: DestinationModule)(implicit ex: ExecutionContext) {
+  destinationModule: DestinationModule,
+  notifierModule: NotifierModule)(implicit ex: ExecutionContext) {
 
   //TODO: this should be replaced with save4later for submissions
 
@@ -62,6 +64,7 @@ class SubmissionModule(
     fileUploadServiceDmsSubmitter,
     handlebarsHttpApiModule.handlebarsHttpSubmitter,
     stateTransitionService,
+    notifierModule.fOptNotifierService,
     destinationModule.destinationAuditer
   )
 

@@ -29,7 +29,8 @@ import uk.gov.hmrc.play.bootstrap.config.{ ControllerConfig, ControllerConfigs, 
 
 import scala.concurrent.ExecutionContext
 import scala.util.Try
-import pureconfig.generic.auto._ // It is now necessary to import `pureconfig.generic.auto._` everywhere a config is loaded or written, even though IntelliJ sees this as unused, its still required
+import pureconfig.generic.auto._
+import uk.gov.hmrc.gform.notifier.NotifierConfig // It is now necessary to import `pureconfig.generic.auto._` everywhere a config is loaded or written, even though IntelliJ sees this as unused, its still required
 
 class ConfigModule(playComponents: PlayComponents, val controllerComponents: ControllerComponents)(
   implicit ec: ExecutionContext) {
@@ -54,6 +55,8 @@ class ConfigModule(playComponents: PlayComponents, val controllerComponents: Con
   val serviceConfig: ServicesConfig = new ServicesConfig(playConfiguration, runMode)
 
   val auditingConfig: AuditingConfig = pureconfig.loadConfigOrThrow[AuditingConfig]("auditing")
+
+  val notifierConfig: NotifierConfig = pureconfig.loadConfigOrThrow[NotifierConfig]("microservice.services.notifier")
 
   val controllerConfig: ControllerConfig = new ControllerConfig {
     lazy val controllerConfigs = typesafeConfig.as[TypeSafeConfig]("controllers")

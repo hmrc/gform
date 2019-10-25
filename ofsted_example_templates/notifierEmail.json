@@ -1,0 +1,87 @@
+{
+  "_id": "TST123",
+  "formName": "Notifier Email",
+  "description": "Testing notifier email",
+  "authConfig": {
+    "authModule": "hmrc"
+  },
+  "emailTemplateId": "eeitt_submission_confirmation",
+  "sections": [
+    {
+      "title": "Your name",
+      "shortName": "Name",
+      "fields": [
+        {
+          "id": "name",
+          "type": "text",
+          "label": "Name",
+          "errorMessage": ""
+        }
+      ]
+    },
+    {
+      "title": "Email Address",
+      "shortName": "Email",
+      "fields": [
+        {
+          "id": "emailAddress",
+          "type": "text",
+          "format": "email",
+          "label": "Email Address",
+          "errorMessage": ""
+        }
+      ]
+    }
+  ],
+  "declarationSection": {
+    "shortName": "Declaration",
+    "title": "Declaration",
+    "fields": [
+      {
+        "type": "info",
+        "id": "declarationTopInfo",
+        "label": "Declaration copy",
+        "infoText": "Declaration copy"
+      },
+      {
+        "id": "declarationNameGroup",
+        "type": "group",
+        "label": "Provide details below of who is signing the declaration",
+        "fields": [
+          {
+            "id": "declarationFirstName",
+            "type": "text",
+            "label": "First name"
+          }
+        ]
+      }
+    ]
+  },
+  "acknowledgementSection": {
+    "shortName": "Acknowledgement Page",
+    "title": "Acknowledgement Page",
+    "fields": [
+      {
+        "type": "info",
+        "id": "ackpageInfo",
+        "label": "SomeContent",
+        "infoText": "SomeContent"
+      }
+    ]
+  },
+  "destinations": [
+    {
+      "id": "logit",
+      "type": "log"
+    },
+    {
+      "id": "email",
+      "type": "email",
+      "emailTemplateId": "4f438fe6-680d-4610-9e55-b50f711326e4",
+      "to": "emailAddress",
+      "personalisation": {
+        "customer name": "name"
+      }
+    }
+  ]
+}

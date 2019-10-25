@@ -14,19 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
+package uk.gov.hmrc.gform.sharedmodel.notifier
 
-import cats.{ Eq, Show }
-import play.api.libs.json.Reads._
-import play.api.libs.json._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import cats.Show
+import play.api.libs.json.Format
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils
 
-case class DestinationId(id: String) extends AnyVal
+case class NotifierPersonalisationFieldId(value: String) extends AnyVal
 
-object DestinationId {
-  implicit val format: Format[DestinationId] = JsonUtils.valueClassFormat[DestinationId, String](DestinationId(_), _.id)
+object NotifierPersonalisationFieldId {
+  implicit val format: Format[NotifierPersonalisationFieldId] =
+    JsonUtils.valueClassFormat[NotifierPersonalisationFieldId, String](NotifierPersonalisationFieldId.apply, _.value)
 
-  implicit val equal: Eq[DestinationId] = Eq.fromUniversalEquals
-
-  implicit val show: Show[DestinationId] = Show.show(_.id)
+  implicit val show: Show[NotifierPersonalisationFieldId] = Show.show(_.value)
 }

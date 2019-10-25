@@ -19,6 +19,7 @@ import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.form.FormStatus
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.TextExpression
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId }
+import uk.gov.hmrc.gform.sharedmodel.notifier.{ NotifierPersonalisationFieldId, NotifierTemplateId }
 
 trait DestinationGen {
   def destinationIdGen: Gen[DestinationId] = PrimitiveGen.nonEmptyAlphaNumStrGen.map(DestinationId(_))
@@ -96,8 +97,20 @@ trait DestinationGen {
       id <- destinationIdGen
     } yield Destination.Log(id)
 
+  def emailGen: Gen[Destination.Email] =
+    for {
+      id              <- destinationIdGen
+      emailTemplateId <- PrimitiveGen.nonEmptyAlphaNumStrGen.map(NotifierTemplateId(_))
+      includeIf       <- includeIfGen
+      to              <- FormComponentGen.formComponentIdGen
+      personalisation <- PrimitiveGen.possiblyEmptyMapGen(
+                          PrimitiveGen.nonEmptyAlphaNumStrGen.map(NotifierPersonalisationFieldId(_)),
+                          FormComponentGen.formComponentIdGen)
+      failOnError <- PrimitiveGen.booleanGen
+    } yield Destination.Email(id, emailTemplateId, includeIf, failOnError, to, personalisation)
+
   def singularDestinationGen: Gen[Destination] =
-    Gen.oneOf(hmrcDmsGen, handlebarsHttpApiGen, stateTransitionGen, logGen)
+    Gen.oneOf(hmrcDmsGen, handlebarsHttpApiGen, stateTransitionGen, logGen, emailGen)
 
   def destinationGen: Gen[Destination] = Gen.frequency(10 -> singularDestinationGen, 1 -> compositeGen)
 
