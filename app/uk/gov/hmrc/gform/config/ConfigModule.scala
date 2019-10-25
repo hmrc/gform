@@ -23,6 +23,7 @@ import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.playcomponents.PlayComponents
 import uk.gov.hmrc.gform.sharedmodel.config.ExposedConfig
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.ProfileName
+import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierTemplateId
 import uk.gov.hmrc.http.logging.Authorization
 import uk.gov.hmrc.play.audit.http.config.AuditingConfig
 import uk.gov.hmrc.play.bootstrap.config.{ ControllerConfig, ControllerConfigs, RunMode, ServicesConfig }
@@ -30,7 +31,7 @@ import uk.gov.hmrc.play.bootstrap.config.{ ControllerConfig, ControllerConfigs, 
 import scala.concurrent.ExecutionContext
 import scala.util.Try
 import pureconfig.generic.auto._
-import uk.gov.hmrc.gform.notifier.NotifierConfig // It is now necessary to import `pureconfig.generic.auto._` everywhere a config is loaded or written, even though IntelliJ sees this as unused, its still required
+import uk.gov.hmrc.gform.notifier.NotifierConfig
 
 class ConfigModule(playComponents: PlayComponents, val controllerComponents: ControllerComponents)(
   implicit ec: ExecutionContext) {
@@ -49,6 +50,9 @@ class ConfigModule(playComponents: PlayComponents, val controllerComponents: Con
   val playConfiguration: Configuration = playComponents.context.initialConfiguration
 
   val controllerConfigs = ControllerConfigs.fromConfig(playConfiguration)
+
+  val adjudicatorsEmailTemplateId = NotifierTemplateId(
+    typesafeConfig.getString("notify-email-templates.confirm-email-adjudicator-office"))
 
   val runMode = new RunMode(playConfiguration, playComponents.context.environment.mode)
 

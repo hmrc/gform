@@ -29,6 +29,7 @@ import uk.gov.hmrc.gform.dms.DmsModule
 import uk.gov.hmrc.gform.form.FormModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.metrics.MetricsModule
+import uk.gov.hmrc.gform.notifier.NotifierModule
 import uk.gov.hmrc.gform.obligation.ObligationModule
 import uk.gov.hmrc.gform.submission.SubmissionModule
 import uk.gov.hmrc.gform.testonly.TestOnlyModule
@@ -49,6 +50,7 @@ class PlayComponentsModule(
   validationModule: ValidationModule,
   dmsModule: DmsModule,
   obligationModule: ObligationModule,
+  notifierModule: NotifierModule,
   errorHandler: HttpErrorHandler)(implicit ec: ExecutionContext) {
 
   private lazy val loggingFilter = new DefaultLoggingFilter(configModule.controllerConfigs)(akkaModule.materializer, ec)
@@ -62,7 +64,8 @@ class PlayComponentsModule(
     configModule.configController,
     validationModule.validationController,
     dmsModule.dmsSubmissionController,
-    obligationModule.obligationController
+    obligationModule.obligationController,
+    notifierModule.notifierController
   )
 
   private val healthController =

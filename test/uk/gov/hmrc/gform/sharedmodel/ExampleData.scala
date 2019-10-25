@@ -23,7 +23,7 @@ import uk.gov.hmrc.gform.Helpers._
 import uk.gov.hmrc.gform.fileupload.RouteEnvelopeRequest
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyText, _ }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.submission.{ DmsMetaData, Submission }
 
 import scala.collection.immutable.List
@@ -85,7 +85,7 @@ trait ExampleFieldValue { dependecies: ExampleFieldId =>
   def `fieldValue - firstName` =
     FormComponent(
       `fieldId - firstName`,
-      Text(AnyText, Constant("any text")),
+      Text(BasicText, Constant("any text")),
       toLocalisedString("First Name"),
       None,
       None,
@@ -102,7 +102,7 @@ trait ExampleFieldValue { dependecies: ExampleFieldId =>
   def `fieldValue - surname` =
     FormComponent(
       `fieldId - surname`,
-      Text(AnyText, Constant("any text")),
+      Text(BasicText, Constant("any text")),
       toLocalisedString("Last Name"),
       None,
       None,
@@ -119,7 +119,7 @@ trait ExampleFieldValue { dependecies: ExampleFieldId =>
   def `fieldValue - iptRegNum` =
     FormComponent(
       `fieldId - iptRegNum`,
-      Text(AnyText, Constant("any text")),
+      Text(BasicText, Constant("any text")),
       toLocalisedString("Insurance Premium Tax (IPT) number"),
       None,
       None,
@@ -136,7 +136,7 @@ trait ExampleFieldValue { dependecies: ExampleFieldId =>
   def `fieldValue - businessName` =
     FormComponent(
       `fieldId - businessName`,
-      Text(AnyText, Constant("any text")),
+      Text(BasicText, Constant("any text")),
       toLocalisedString("Name of business"),
       None,
       None,

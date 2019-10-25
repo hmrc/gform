@@ -16,19 +16,23 @@
 
 package uk.gov.hmrc.gform.sharedmodel.form
 
-import play.api.libs.json.{ Json, OFormat }
+import play.api.libs.json.{ Format, Json, OFormat }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, JsonUtils }
 import uk.gov.hmrc.gform.sharedmodel.{ NotChecked, Obligations }
 import uk.gov.hmrc.gform.sharedmodel.des.DesRegistrationResponse
 
 case class ThirdPartyData(
   desRegistrationResponse: Option[DesRegistrationResponse],
   obligations: Obligations,
+  emailVerification: Map[FormComponentId, EmailAndCode],
   reviewData: Option[Map[String, String]] = None) {
 
   def reviewComments: Option[String] = reviewData.flatMap(_.get("caseworkerComment"))
 }
 
 object ThirdPartyData {
-  val empty = ThirdPartyData(None, NotChecked)
+  val empty = ThirdPartyData(None, NotChecked, Map.empty)
+  implicit val formatMap: Format[Map[FormComponentId, EmailAndCode]] =
+    JsonUtils.formatMap(FormComponentId.apply, _.value)
   implicit val format: OFormat[ThirdPartyData] = Json.format
 }

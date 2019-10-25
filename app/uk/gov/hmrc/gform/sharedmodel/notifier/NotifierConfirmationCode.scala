@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.notifier
+package uk.gov.hmrc.gform.sharedmodel.notifier
 
-import uk.gov.hmrc.gform.sharedmodel.notifier.{ NotifierEmailAddress, NotifierTemplateId }
+import play.api.libs.json.Format
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils
 
-case class NotifierEmail(
-  templateId: NotifierTemplateId,
-  to: NotifierEmailAddress,
-  personalisation: Map[String, String],
-  reference: NotifierEmailReference)
+case class NotifierConfirmationCode(code: String) extends AnyVal
+
+object NotifierConfirmationCode {
+  implicit val format: Format[NotifierConfirmationCode] =
+    JsonUtils.valueClassFormat[NotifierConfirmationCode, String](NotifierConfirmationCode.apply, _.code)
+}

@@ -158,6 +158,7 @@ class ApplicationModule(context: Context)
     validationModule,
     dmsModule,
     obligationModule,
+    notifierModule,
     httpErrorHandler
   )
 

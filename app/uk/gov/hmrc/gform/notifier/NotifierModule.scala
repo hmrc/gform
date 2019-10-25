@@ -27,4 +27,9 @@ class NotifierModule(configModule: ConfigModule)(implicit ec: ExecutionContext) 
   private val client = new NotificationClient(config.apiKey)
 
   val fOptNotifierService = new NotifierService[FOpt](client)
+
+  val notifierController = new NotifierController(
+    configModule.controllerComponents,
+    fOptNotifierService,
+    configModule.adjudicatorsEmailTemplateId)
 }

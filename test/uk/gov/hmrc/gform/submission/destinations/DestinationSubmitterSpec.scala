@@ -301,7 +301,7 @@ class DestinationSubmitterSpec
   }
 
   case class SubmitterParts[F[_]](
-    sut: DestinationSubmitter[F, Unit],
+    sut: DestinationSubmitter[F],
     dmsSubmitter: DmsSubmitterAlgebra[F],
     handlebarsSubmitter: HandlebarsHttpApiSubmitter[F],
     destinationAuditer: DestinationAuditAlgebra[F],
@@ -405,7 +405,7 @@ class DestinationSubmitterSpec
     val notifierService = mock[NotifierAlgebra[Possible]]
     val destinationAuditer = mock[DestinationAuditAlgebra[Possible]]
     val submitter =
-      new DestinationSubmitter[Possible, Unit](
+      new DestinationSubmitter[Possible](
         dmsSubmitter,
         handlebarsSubmitter,
         stateTransitionService,

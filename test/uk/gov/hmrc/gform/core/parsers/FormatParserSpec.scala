@@ -24,7 +24,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 class FormatParserSpec extends Spec {
 
-  val validate = FormatParser.validate(RoundingMode.defaultRoundingMode) _
+  val validate = FormatParser.validate(RoundingMode.defaultRoundingMode, EmailVerification.NoVerification) _
 
   "YYY-MM-DD" should "be passed as it is" in {
     val res = validate("anyDate")
