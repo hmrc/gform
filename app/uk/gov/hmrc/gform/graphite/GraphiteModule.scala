@@ -18,9 +18,9 @@ package uk.gov.hmrc.gform.graphite
 
 import com.codahale.metrics.MetricFilter
 import com.codahale.metrics.graphite.GraphiteReporter
-import com.kenshoo.play.metrics.MetricsImpl
 import play.api.inject.ApplicationLifecycle
 import play.api.{ Configuration, Environment }
+import uk.gov.hmrc.gform.metrics.MetricsModule
 import uk.gov.hmrc.play.bootstrap.config.RunMode
 import uk.gov.hmrc.play.bootstrap.graphite.{ EnabledGraphiteReporting, GraphiteProvider, GraphiteProviderConfig, GraphiteReporterProvider, GraphiteReporterProviderConfig }
 
@@ -28,7 +28,8 @@ class GraphiteModule(
   environment: Environment,
   configuration: Configuration,
   runMode: RunMode,
-  applicationLifecycle: ApplicationLifecycle) {
+  applicationLifecycle: ApplicationLifecycle,
+  metricsModule: MetricsModule) {
   // Taken from uk.gov.hmrc.play.bootstrap.graphite.GraphiteMetricsModule of bootstrap-play-26 library
   private def extractGraphiteConfiguration(environment: Environment, configuration: Configuration): Configuration = {
     val env = runMode.env
@@ -48,8 +49,8 @@ class GraphiteModule(
     val graphiteProviderConfig: GraphiteProviderConfig = GraphiteProviderConfig.fromConfig(graphiteConfiguration)
     val graphite = new GraphiteProvider(graphiteProviderConfig).get()
     val filter: MetricFilter = MetricFilter.ALL
-    val metrics = new MetricsImpl(applicationLifecycle, configuration)
-    val graphiteReporter: GraphiteReporter = new GraphiteReporterProvider(config, metrics, graphite, filter).get()
+    val graphiteReporter: GraphiteReporter =
+      new GraphiteReporterProvider(config, metricsModule.metrics, graphite, filter).get()
     new EnabledGraphiteReporting(configuration, graphiteReporter, applicationLifecycle)
   }
 }

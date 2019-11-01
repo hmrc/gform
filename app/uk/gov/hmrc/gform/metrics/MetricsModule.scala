@@ -29,7 +29,6 @@ class MetricsModule(
   akkaModule: AkkaModule,
   ec: ExecutionContext) {
 
-  // Don't use uk.gov.hmrc.play.graphite.GraphiteMetricsImpl as it won't allow hot reload due to overridden onStop() method
   val metrics = new MetricsImpl(playComponents.context.lifecycle, playComponents.context.initialConfiguration)
 
   val metricsFilter: MetricsFilter = new MetricsFilterImpl(metrics)(akkaModule.materializer, ec)

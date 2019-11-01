@@ -137,7 +137,8 @@ class ApplicationModule(context: Context)
       controllerComponents
     )
 
-  val graphiteModule = new GraphiteModule(environment, configuration, configModule.runMode, applicationLifecycle)
+  val graphiteModule =
+    new GraphiteModule(environment, configuration, configModule.runMode, applicationLifecycle, metricsModule)
 
   override lazy val httpErrorHandler: HttpErrorHandler = new ErrorHandler(
     playComponents.context.environment,
