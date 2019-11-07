@@ -590,7 +590,7 @@ class HandlebarsTemplateProcessorHelpers(
   def isNotNull(s: Any): CharSequence = log("isNotNull", s) { condition(!isNullAsBoolean(s)) }
 
   private val etmpParamSequenceFormat = new DecimalFormat("00")
-  def toEtmpParamSequence(index: Int): CharSequence = etmpParamSequenceFormat.format(index.toLong + 1)
+  def toEtmpParamSequence(index: Any): CharSequence = etmpParamSequenceFormat.format(asBigDecimal(index) + 1)
 
   def toEtmpTelephoneNumber(tn: Any): CharSequence =
     log("toEtmpTelephoneNumber", tn) {

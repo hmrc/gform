@@ -506,6 +506,23 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     }
   }
 
+  "toEtmpParamSequence" must "should work with other numeric functions" in {
+    val table = Table(
+      ("in", "out"),
+      (0, "06"),
+      (1, "07"),
+      (8, "14"),
+      (9, "15"),
+      (10, "16"),
+      (93, "99")
+    )
+
+    forAll(table) {
+      case (in, out) =>
+        process(s"{{toEtmpParamSequence (plus 5 $in)}}") shouldBe out
+    }
+  }
+
   "toEtmpTelephoneNumber" must "return the value untouched if it doesn't start with a '+'" in {
     process("{{toEtmpTelephoneNumber '12345'}}") shouldBe "12345"
   }
