@@ -49,6 +49,7 @@ import uk.gov.hmrc.gform.validation.ValidationModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.gform.obligation.ObligationModule
 import uk.gov.hmrc.gform.submission.destinations.DestinationModule
+import uk.gov.hmrc.play.bootstrap.config.AppName
 
 import scala.concurrent.Future
 
@@ -64,12 +65,14 @@ class ApplicationLoader extends play.api.ApplicationLoader {
 class ApplicationModule(context: Context)
     extends BuiltInComponentsFromContext(context) with AhcWSComponents with I18nComponents { self =>
 
-  Logger.info(s"Starting microservice GFORM}")
+  val appName = AppName.fromConfiguration(configuration)
+
+  Logger.info(s"Starting microservice $appName")
 
   private val akkaModule = new AkkaModule(materializer, actorSystem)
   protected val playComponents = new PlayComponents(context, self, self)
 
-  protected val configModule = new ConfigModule(playComponents, controllerComponents)
+  protected val configModule = new ConfigModule(configuration, playComponents, controllerComponents, appName)
   private val metricsModule = new MetricsModule(configModule, playComponents, akkaModule, executionContext)
   protected val auditingModule = new AuditingModule(configModule, akkaModule)
   protected val wSHttpModule = new WSHttpModule(auditingModule, configModule, playComponents)
@@ -180,7 +183,7 @@ class ApplicationModule(context: Context)
     materializer)
 
   Logger.info(
-    s"Microservice GFORM started in mode ${environment.mode} at port ${application.configuration.getOptional[String]("http.port")}")
+    s"Microservice $appName started in mode ${environment.mode} at port ${application.configuration.getOptional[String]("http.port")}")
 }
 
 object ApplicationModuleHelper {

@@ -70,7 +70,7 @@ class PlayComponentsModule(
 
   private val healthController =
     new HealthController(
-      configModule.playConfiguration,
+      configModule.configuration,
       playComponents.context.environment,
       configModule.controllerComponents)
 
@@ -109,7 +109,7 @@ class PlayComponentsModule(
     auditingModule.microserviceAuditFilter,
     loggingFilter,
     cacheControlFilter,
-    new MDCFilter(akkaModule.materializer, configModule.playConfiguration, configModule.appConfig.appName)
+    new MDCFilter(akkaModule.materializer, configModule.configuration, configModule.appConfig.appName)
   )
 
   lazy val httpRequestHandler =

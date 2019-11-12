@@ -28,13 +28,8 @@ import uk.gov.hmrc.play.http._
 import scala.concurrent.Future
 import uk.gov.hmrc.http.{ HttpException, JsValidationException, NotFoundException, Upstream4xxResponse, Upstream5xxResponse }
 
-class ErrorHandler(
-  //  val auditConnector: AuditConnector,
-  environment: Environment,
-  configuration: Configuration,
-  sourceMapper: Option[SourceMapper])
-    extends DefaultHttpErrorHandler(environment, configuration, sourceMapper, None) //    with JsonErrorHandling //    with ErrorAuditingSettings // TODO: auditConnector.sendEvent(dataEvent(code, unexpectedError, request)
-    {
+class ErrorHandler(environment: Environment, configuration: Configuration, sourceMapper: Option[SourceMapper])
+    extends DefaultHttpErrorHandler(environment, configuration, sourceMapper, None) {
 
   override protected def onBadRequest(request: RequestHeader, message: String): Future[Result] = {
     val response = ErrResponse(message)
@@ -49,7 +44,6 @@ class ErrorHandler(
   }
 
   override protected def onNotFound(request: RequestHeader, message: String): Future[Result] = {
-    //if (environment.mode == Mode.Dev) super.onNotFound(request, message) else { below code }
     val m = if (message.isEmpty) s"Resource not found: '${request.path}'" else message
     val response = ErrResponse(m)
     Logger.logger.info(response.toString)
@@ -102,13 +96,6 @@ class ErrorHandler(
   }
 
   private def onJsValidationException(e: JsValidationException) = {
-
-    //    implicit val writes: Writes[Seq[(JsPath, Seq[ValidationError])]] = {
-    //      Writes.at(???)
-    //      TODO: finish it
-    //      ???
-    //    }
-    //    val details: JsValue = Json.toJson(e.errors)
     val temporaryDetails = Some(Json.obj("details" -> e.errors.toString))
     val response = ErrResponse("Invalid json", temporaryDetails)
     Logger.logger.info(response.toString, e)

@@ -26,15 +26,18 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.ProfileName
 import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierTemplateId
 import uk.gov.hmrc.http.logging.Authorization
 import uk.gov.hmrc.play.audit.http.config.AuditingConfig
-import uk.gov.hmrc.play.bootstrap.config.{ ControllerConfig, ControllerConfigs, RunMode, ServicesConfig }
+import uk.gov.hmrc.play.bootstrap.config.{ AuditingConfigProvider, ControllerConfig, ControllerConfigs, RunMode, ServicesConfig }
 
 import scala.concurrent.ExecutionContext
 import scala.util.Try
 import pureconfig.generic.auto._
 import uk.gov.hmrc.gform.notifier.NotifierConfig
 
-class ConfigModule(playComponents: PlayComponents, val controllerComponents: ControllerComponents)(
-  implicit ec: ExecutionContext) {
+class ConfigModule(
+  val configuration: Configuration,
+  playComponents: PlayComponents,
+  val controllerComponents: ControllerComponents,
+  appName: String)(implicit ec: ExecutionContext) {
 
   val typesafeConfig: TypeSafeConfig = ConfigFactory.load()
 
@@ -47,18 +50,16 @@ class ConfigModule(playComponents: PlayComponents, val controllerComponents: Con
   val emailConfig: EmailConnectorConfig =
     pureconfig.loadConfigOrThrow[EmailConnectorConfig]("microservice.services.email")
 
-  val playConfiguration: Configuration = playComponents.context.initialConfiguration
-
-  val controllerConfigs = ControllerConfigs.fromConfig(playConfiguration)
+  val controllerConfigs = ControllerConfigs.fromConfig(configuration)
 
   val adjudicatorsEmailTemplateId = NotifierTemplateId(
     typesafeConfig.getString("notify-email-templates.confirm-email-adjudicator-office"))
 
-  val runMode = new RunMode(playConfiguration, playComponents.context.environment.mode)
+  val runMode = new RunMode(configuration, playComponents.context.environment.mode)
 
-  val serviceConfig: ServicesConfig = new ServicesConfig(playConfiguration, runMode)
+  val serviceConfig: ServicesConfig = new ServicesConfig(configuration, runMode)
 
-  val auditingConfig: AuditingConfig = pureconfig.loadConfigOrThrow[AuditingConfig]("auditing")
+  val auditingConfig: AuditingConfig = new AuditingConfigProvider(configuration, runMode, appName).get()
 
   val notifierConfig: NotifierConfig = pureconfig.loadConfigOrThrow[NotifierConfig]("microservice.services.notifier")
 
@@ -68,7 +69,7 @@ class ConfigModule(playComponents: PlayComponents, val controllerComponents: Con
 
   val configController = new ConfigController(controllerComponents, this)
 
-  object DestinationsServicesConfig extends ServicesConfig(playConfiguration, runMode) {
+  object DestinationsServicesConfig extends ServicesConfig(configuration, runMode) {
     override protected lazy val rootServices = "microservice"
     override protected lazy val services = s"${runMode.env}.microservice"
 
