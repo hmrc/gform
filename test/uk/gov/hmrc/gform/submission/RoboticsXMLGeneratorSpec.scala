@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.submission
 
+import java.time.{ Instant, LocalDate, ZoneId }
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
@@ -121,9 +122,12 @@ case object RoboticsXMLGeneratorSpec extends Spec {
     val submissionRef = SubmissionRef("submissionRef")
 
     val expected: Elem =
-      <gform id={formId.value} dms-id={dmsId} submission-reference={submissionRef.value}>{removeWhitespace(expectedFields)}</gform>
+      <gform id={formId.value} dms-id={dmsId} submission-reference={submissionRef.value}>{removeWhitespace(expectedFields)}<dateSubmitted>02/01/2019</dateSubmitted></gform>
 
-    RoboticsXMLGenerator.apply(formId, dmsId, submissionRef, objectStructure) shouldBe expected
+    val dateSubmitted = Instant.from(LocalDate.of(2019, 1, 2).atStartOfDay(ZoneId.of("Europe/London")))
+
+    RoboticsXMLGenerator
+      .apply(formId, dmsId, submissionRef, objectStructure, dateSubmitted) shouldBe expected
   }
 
   def removeWhitespace(ns: NodeSeq): NodeSeq = ns.map {

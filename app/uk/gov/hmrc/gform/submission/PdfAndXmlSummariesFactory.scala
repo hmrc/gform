@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.submission
 
+import java.time.Instant
 import org.apache.pdfbox.pdmodel.PDDocument
 import uk.gov.hmrc.gform.pdfgenerator.{ PdfGeneratorService, XmlGeneratorService }
 import uk.gov.hmrc.gform.sharedmodel.{ PdfHtml, SubmissionRef }
@@ -91,7 +92,14 @@ object PdfAndXmlSummariesFactory {
       submissionRef: SubmissionRef): Option[String] =
       dmsSubmission.includeRoboticsXml
         .filter(identity)
-        .map(_ => RoboticsXMLGenerator(formTemplate._id, dmsSubmission.dmsFormId, submissionRef, structuredFormData))
+        .map(
+          _ =>
+            RoboticsXMLGenerator(
+              formTemplate._id,
+              dmsSubmission.dmsFormId,
+              submissionRef,
+              structuredFormData,
+              Instant.now()))
         .map(body =>
           // No whitespace of anysort after xml declaration. Robot won't be able to process xml otherwise
           XmlGeneratorService.xmlDec + <data xmlns:xfa="http://www.xfa.org/schema/xfa-data/1.0/">{body}</data>)

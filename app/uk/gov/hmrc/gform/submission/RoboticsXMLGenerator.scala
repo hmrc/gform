@@ -15,6 +15,8 @@
  */
 
 package uk.gov.hmrc.gform.submission
+import java.time.{ Instant, ZoneId }
+import java.time.format.DateTimeFormatter
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue.{ ArrayNode, ObjectStructure, TextNode }
@@ -28,8 +30,14 @@ object RoboticsXMLGenerator {
     formId: FormTemplateId,
     dmsId: String,
     submissionReference: SubmissionRef,
-    structuredForm: ObjectStructure): NodeSeq =
-    <gform id={formId.value} dms-id={dmsId} submission-reference={submissionReference.withoutHyphens}>{buildObjectStructureXml(structuredForm)}</gform>
+    structuredForm: ObjectStructure,
+    now: Instant): NodeSeq =
+    <gform id={formId.value} dms-id={dmsId} submission-reference={submissionReference.withoutHyphens}>{buildObjectStructureXml(structuredForm)}{dateSubmitted(now)}</gform>
+
+  private val dateSubmittedFormater = DateTimeFormatter.ofPattern("dd/MM/yyyy").withZone(ZoneId.of("Europe/London"))
+
+  private def dateSubmitted(now: Instant): NodeSeq =
+    <dateSubmitted>{dateSubmittedFormater.format(now)}</dateSubmitted>
 
   private def buildStructuredValueXml(field: Field, value: StructuredFormValue, index: Option[Int] = None): NodeSeq =
     value match {
