@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import play.api.libs.json._
+import shapeless.syntax.typeable._
 import uk.gov.hmrc.gform.formtemplate.FormComponentMaker
 import uk.gov.hmrc.gform.sharedmodel.{ LabelHelper, LangADT, LocalisedString }
 
@@ -67,4 +68,20 @@ object FormComponent {
     json => new FormComponentMaker(json).optFieldValue() fold (us => JsError(us.toString), fv => JsSuccess(fv)))
 
   implicit val format: OFormat[FormComponent] = OFormatWithTemplateReadFallback(templateReads)
+}
+
+object IsGroup {
+  def unapply(fc: FormComponent): Option[Group] = fc.`type`.cast[Group]
+}
+
+object IsText {
+  def unapply(fc: FormComponent): Option[Text] = fc.`type`.cast[Text]
+}
+
+object IsTextArea {
+  def unapply(fc: FormComponent): Option[TextArea] = fc.`type`.cast[TextArea]
+}
+
+object IsRevealingChoice {
+  def unapply(fc: FormComponent): Option[RevealingChoice] = fc.`type`.cast[RevealingChoice]
 }

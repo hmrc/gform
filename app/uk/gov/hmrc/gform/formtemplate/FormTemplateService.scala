@@ -59,6 +59,7 @@ class FormTemplateService(formTemplateRepo: Repo[FormTemplate], formTemplateRawR
   def verifyAndSave(formTemplate: FormTemplate): FOpt[Unit] =
     for {
       _   <- verify(formTemplate)
+      _   <- formTemplateRepo.upsert(mkSpecimen(formTemplate))
       res <- formTemplateRepo.upsert(formTemplate)
     } yield res
 }

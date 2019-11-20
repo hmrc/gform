@@ -16,8 +16,13 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
+import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.core.{ FOpt, fromOptA }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ ComponentType, FormTemplate }
+import uk.gov.hmrc.gform.sharedmodel.form.Submitted
+import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.StateTransition
 import cats.implicits._
 
 import scala.concurrent.ExecutionContext
@@ -50,4 +55,50 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validateEmailVerification(formTemplate).toEither)
     } yield ()
   }
+
+  def mkSpecimen(formTemplate: FormTemplate): FormTemplate =
+    formTemplate.copy(
+      _id = FormTemplateId("specimen-" + formTemplate._id.value),
+      authConfig = Anonymous,
+      sections = formTemplate.sections.map(
+        removeIncludeIf _ andThen mkComponentsOptional _ andThen noValidators _ andThen noEeittExpression _),
+      destinations = DestinationList(NonEmptyList.of(StateTransition(DestinationId("abc"), Submitted, "true", true)))
+    )
+
+  private def removeIncludeIf(section: Section): Section = section.copy(includeIf = None)
+
+  private def mkComponentsOptional(section: Section): Section =
+    section.copy(
+      fields = mkOptional(section.fields),
+      repeatsMax = Some(TextExpression(Constant("1"))),
+      repeatsMin = Some(TextExpression(Constant("1")))
+    )
+
+  private def noValidators(section: Section): Section =
+    section.copy(validators = None)
+
+  private def noEeittExpression(section: Section): Section =
+    section.copy(fields = section.fields.map {
+      case f @ IsText(text @ Text(_, EeittCtx(eeitt), _, _)) =>
+        f.copy(`type` = text.copy(value = Constant(eeitt.toString)))
+      case f @ IsTextArea(textArea @ TextArea(_, EeittCtx(eeitt), _)) =>
+        f.copy(`type` = textArea.copy(value = Constant(eeitt.toString)))
+      case f => f
+    })
+
+  private def mkOptional(fcs: List[FormComponent]): List[FormComponent] = fcs.map {
+    case fc @ IsGroup(group) =>
+      fc.copy(
+        mandatory = false,
+        `type` = group.copy(fields = mkOptional(group.fields))
+      )
+    case fc @ IsRevealingChoice(revealingChoice) =>
+      fc.copy(
+        mandatory = false,
+        `type` = revealingChoice.copy(
+          options = revealingChoice.options.map(rce => rce.copy(revealingFields = mkOptional(rce.revealingFields))))
+      )
+    case fc => fc.copy(mandatory = false)
+  }
+
 }
