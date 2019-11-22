@@ -15,7 +15,7 @@ object Dependencies {
     "com.github.pureconfig" %% "pureconfig" % "0.10.2",
     "uk.gov.hmrc" %% "simple-reactivemongo" % "7.20.0-play-26",
     "uk.gov.hmrc" %% "http-caching-client" % "9.0.0-play-26",
-    "uk.gov.hmrc" %% "bootstrap-play-26" % "1.1.0",
+    "uk.gov.hmrc" %% "bootstrap-play-26" % "1.3.0",
     "uk.gov.hmrc" %% "domain" % "5.3.0",
     "uk.gov.hmrc" %% "auth-client" % "2.27.0-play-26", // we need AffinityGroup type to stay in sync with frontend
     "com.typesafe.play" %% "play-json" % "2.6.13",
