@@ -52,11 +52,14 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
         List.empty[(String, String)]
       )
       .map { httpResponse =>
-        if (httpResponse.status === 400) {
+        val status = httpResponse.status
+        if (status === 404 || status === 400) {
           processResponse[DesRegistrationResponseError, Nothing](httpResponse) { desError =>
             if (desError.code === "NOT_FOUND" || desError.code === "INVALID_UTR") NotFound
             else {
-              Logger.error("Problem when calling des registration: " + Json.prettyPrint(Json.toJson(desError)))
+              val jsonResponse = Json.prettyPrint(Json.toJson(desError))
+              Logger.error(
+                s"Problem when calling des registration. Response status: $status, body response: $jsonResponse")
               CannotRetrieveResponse
             }
           }
@@ -71,22 +74,24 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
 
   private def processResponse[A: Format: TypeTag, B](httpResponse: HttpResponse)(
     f: A => ServiceCallResponse[B]
-  ): ServiceCallResponse[B] =
+  ): ServiceCallResponse[B] = {
+    val status = httpResponse.status
     Try(httpResponse.json) match {
       case Success(jsValue) =>
         jsValue.validate[A].map(f).recoverTotal { jsError =>
           val tpe = implicitly[TypeTag[A]].tpe
-          Logger.error(s"Unknown problem when calling des registration. Expected json for $tpe, but got: $jsError")
+          Logger.error(
+            s"Unknown problem when calling des registration. Response status was: $status. Expected json for $tpe, but got: $jsError")
           CannotRetrieveResponse
         }
       case Failure(failure) =>
         val tpe = implicitly[TypeTag[A]].tpe
-        val status = httpResponse.status
         Logger.error(
           s"Unknown problem when calling des registration. Response status was: $status. Expected json for $tpe, but got :",
           failure)
         CannotRetrieveResponse
     }
+  }
 
   def lookupTaxPeriod(idType: String, idNumber: String, regimeType: String)(
     implicit hc: HeaderCarrier): Future[Obligation] = {
