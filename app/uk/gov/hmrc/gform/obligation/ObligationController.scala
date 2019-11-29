@@ -25,7 +25,7 @@ import uk.gov.hmrc.gform.sharedmodel.{ HmrcTaxPeriodWithEvaluatedId, TaxResponse
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-class ObligationController(controllerComponents: ControllerComponents, obligation: ObligationService)(
+class ObligationController(controllerComponents: ControllerComponents, obligation: ObligationService[Future])(
   implicit ex: ExecutionContext)
     extends BaseController(controllerComponents) {
 

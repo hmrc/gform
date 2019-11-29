@@ -20,6 +20,7 @@ import play.api.mvc.ControllerComponents
 
 import scala.concurrent.Future
 import uk.gov.hmrc.gform.config.ConfigModule
+import uk.gov.hmrc.gform.des.DesConnector
 import uk.gov.hmrc.gform.form.FormService
 import uk.gov.hmrc.gform.formtemplate.{ FormTemplateAlgebra, FormTemplateService }
 import uk.gov.hmrc.gform.mongo.MongoModule
@@ -45,6 +46,11 @@ class TestOnlyModule(
       wSHttpModule.auditableWSHttp,
       "http://enrolment-store-proxy.protected.mdtp:80/enrolment-store-proxy")
 
+  val desConnector = new DesConnector(
+    wSHttpModule.auditableWSHttp,
+    configModule.serviceConfig.baseUrl("etmp-hod"),
+    configModule.desConfig)
+
   val formTemplateAlgebra: FormTemplateAlgebra[Future] = new FormTemplateAlgebra[Future] {
     override def get(id: FormTemplateId): Future[FormTemplate] = formTemplateService.get(id)
   }
@@ -56,7 +62,8 @@ class TestOnlyModule(
       enrolmentConnector,
       formService,
       formTemplateAlgebra,
-      destinationModule.futureDestinationsProcessorModelService
+      destinationModule.futureDestinationsProcessorModelService,
+      desConnector
     )
   val proxyActions = new Proxy(playComponents.wsClient, controllerComponents)
   val fUInterceptor: FUInterceptorController =

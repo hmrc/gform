@@ -20,7 +20,6 @@ import cats.syntax.eq._
 import cats.instances.string._
 import cats.instances.int._
 import play.api.Logger
-import play.api.http.Status
 import play.api.libs.json._
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.reflect.runtime.universe.TypeTag
@@ -34,15 +33,27 @@ import uk.gov.hmrc.gform.sharedmodel.Obligation
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.http.logging.Authorization
 
-class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfig)(implicit ec: ExecutionContext) {
+trait DesAlgebra[F[_]] {
+  def lookupRegistration(
+    utr: String,
+    desRegistrationRequest: DesRegistrationRequest): F[ServiceCallResponse[DesRegistrationResponse]]
+
+  def lookupTaxPeriod(idType: String, idNumber: String, regimeType: String): F[Obligation]
+
+  def testOnlyGet(url: String): Future[HttpResponse]
+}
+
+class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfig)(implicit ec: ExecutionContext)
+    extends DesAlgebra[Future] {
+
+  private implicit val hc = HeaderCarrier(
+    extraHeaders = Seq("Environment" -> desConfig.environment),
+    authorization = Some(Authorization(s"Bearer ${desConfig.authorizationToken}")))
 
   def lookupRegistration(
     utr: String,
     desRegistrationRequest: DesRegistrationRequest): Future[ServiceCallResponse[DesRegistrationResponse]] = {
 
-    implicit val hc = HeaderCarrier(
-      extraHeaders = Seq("Environment" -> desConfig.environment),
-      authorization = Some(Authorization(s"Bearer ${desConfig.authorizationToken}")))
     Logger.info(s"Des registration, UTR: '$utr', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
 
     wSHttp
@@ -93,16 +104,19 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
     }
   }
 
-  def lookupTaxPeriod(idType: String, idNumber: String, regimeType: String)(
-    implicit hc: HeaderCarrier): Future[Obligation] = {
-    implicit val hc = HeaderCarrier(
-      extraHeaders = Seq("Environment" -> desConfig.environment),
-      authorization = Some(Authorization(s"Bearer ${desConfig.authorizationToken}")))
+  def lookupTaxPeriod(idType: String, idNumber: String, regimeType: String): Future[Obligation] = {
     Logger.info(
       s"Des lookup, Tax Periods: '$idType, $idNumber, $regimeType', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
     val value = s"$baseUrl${desConfig.basePath}/enterprise/obligation-data/$idType/$idNumber/$regimeType?status=O"
     wSHttp.GET[Obligation](value).recover { case _ => Obligation(List()) }
   }
+
+  def testOnlyGet(url: String): Future[HttpResponse] =
+    wSHttp
+      .doGet(
+        s"$baseUrl${desConfig.basePath}/$url",
+        List.empty[(String, String)]
+      )
 }
 
 case class AddressDes(postalCode: String)
