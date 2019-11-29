@@ -22,7 +22,9 @@ import cats.syntax.eq._
 import com.typesafe.config.{ ConfigFactory, ConfigRenderOptions }
 import java.time.LocalDateTime
 
+import akka.util.ByteString
 import play.api.Logger
+import play.api.http.HttpEntity
 import play.api.libs.json._
 import play.api.mvc._
 import reactivemongo.api.DB
@@ -31,6 +33,7 @@ import reactivemongo.play.json.collection.JSONCollection
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.BuildInfo
 import uk.gov.hmrc.gform.controllers.BaseController
+import uk.gov.hmrc.gform.des.DesAlgebra
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.sharedmodel._
@@ -48,8 +51,31 @@ class TestOnlyController(
   enrolmentConnector: EnrolmentConnector,
   formAlgebra: FormAlgebra[Future],
   formTemplateAlgebra: FormTemplateAlgebra[Future],
-  destinationsModelProcessorAlgebra: DestinationsProcessorModelAlgebra[Future])(implicit ex: ExecutionContext)
+  destinationsModelProcessorAlgebra: DestinationsProcessorModelAlgebra[Future],
+  des: DesAlgebra[Future])(implicit ex: ExecutionContext)
     extends BaseController(controllerComponents) {
+
+  def getFromDes(url: String): Action[AnyContent] =
+    Action.async { request =>
+      val urlWithQueryString = url + Option(request.rawQueryString)
+        .filterNot(_.isEmpty)
+        .map(qs => s"?$qs")
+        .getOrElse("")
+
+      logInfo(s"TestOnlyController.getFromDes: $urlWithQueryString")
+
+      des
+        .testOnlyGet(urlWithQueryString)
+        .map { response =>
+          Result(
+            header = ResponseHeader(response.status, Map.empty),
+            body = HttpEntity.Strict(ByteString(response.body), None))
+        }
+        .recover {
+          case t: Throwable =>
+            Result(header = ResponseHeader(500, Map.empty), body = HttpEntity.Strict(ByteString(t.toString), None))
+        }
+    }
 
   def renderHandlebarPayload(
     formTemplateId: FormTemplateId,

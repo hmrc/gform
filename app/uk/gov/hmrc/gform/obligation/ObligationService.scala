@@ -16,9 +16,10 @@
 
 package uk.gov.hmrc.gform.obligation
 
-import uk.gov.hmrc.gform.des.DesConnector
-import uk.gov.hmrc.http.HeaderCarrier
-class ObligationService(desConnector: DesConnector) {
-  def callDES(idType: String, idNumber: String, regimeType: String)(implicit hc: HeaderCarrier) =
+import uk.gov.hmrc.gform.des.DesAlgebra
+import uk.gov.hmrc.gform.sharedmodel.Obligation
+
+class ObligationService[F[_]](desConnector: DesAlgebra[F]) {
+  def callDES(idType: String, idNumber: String, regimeType: String): F[Obligation] =
     desConnector.lookupTaxPeriod(idType, idNumber, regimeType)
 }

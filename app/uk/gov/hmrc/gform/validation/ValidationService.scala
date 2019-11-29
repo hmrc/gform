@@ -16,23 +16,21 @@
 
 package uk.gov.hmrc.gform.validation
 
-import scala.concurrent.{ ExecutionContext, Future }
-import uk.gov.hmrc.gform.bank_account_reputation.BankAccountReputationConnector
-import uk.gov.hmrc.gform.des.{ AddressDes, DesConnector }
+import cats.Functor
+import cats.syntax.functor._
+import uk.gov.hmrc.gform.bank_account_reputation.BankAccountReputationAlgebra
+import uk.gov.hmrc.gform.des.DesAlgebra
 import uk.gov.hmrc.gform.sharedmodel.ServiceCallResponse
 import uk.gov.hmrc.gform.sharedmodel.des.{ DesRegistrationRequest, DesRegistrationResponse }
 import uk.gov.hmrc.gform.sharedmodel.Account
 import uk.gov.hmrc.http.HeaderCarrier
 
-class ValidationService(desConnector: DesConnector, bankAccountReputationConnector: BankAccountReputationConnector)(
-  implicit ec: ExecutionContext) {
-
+class ValidationService[F[_]: Functor](des: DesAlgebra[F], bankAccountReputation: BankAccountReputationAlgebra[F]) {
   def desRegistration(
     utr: String,
-    desRegistrationRequest: DesRegistrationRequest): Future[ServiceCallResponse[DesRegistrationResponse]] =
-    desConnector.lookupRegistration(utr, desRegistrationRequest)
+    desRegistrationRequest: DesRegistrationRequest): F[ServiceCallResponse[DesRegistrationResponse]] =
+    des.lookupRegistration(utr, desRegistrationRequest)
 
-  def callBRS(account: Account)(implicit hc: HeaderCarrier): Future[Boolean] =
-    bankAccountReputationConnector.exists(account).map(_.accountNumberWithSortCodeIsValid)
-
+  def bankAccountReputation(account: Account)(implicit hc: HeaderCarrier): F[Boolean] =
+    bankAccountReputation.exists(account).map(_.accountNumberWithSortCodeIsValid)
 }

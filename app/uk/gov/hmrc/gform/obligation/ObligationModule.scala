@@ -17,15 +17,15 @@
 package uk.gov.hmrc.gform.obligation
 
 import uk.gov.hmrc.gform.config.ConfigModule
-import uk.gov.hmrc.gform.des.DesConnector
+import uk.gov.hmrc.gform.des.{ DesAlgebra, DesConnector }
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ ExecutionContext, Future }
 
 class ObligationModule(wSHttpModule: WSHttpModule, configModule: ConfigModule)(implicit ex: ExecutionContext) {
 
   private val desConfig = configModule.desConfig
-  private val desConnector: DesConnector =
+  private val desConnector: DesAlgebra[Future] =
     new DesConnector(wSHttpModule.auditableWSHttp, configModule.serviceConfig.baseUrl("etmp-hod"), desConfig)
 
   private val obligationService = new ObligationService(desConnector)

@@ -24,9 +24,9 @@ import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.sharedmodel.Account
 import uk.gov.hmrc.gform.sharedmodel.des.DesRegistrationRequest
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ ExecutionContext, Future }
 
-class ValidationController(controllerComponents: ControllerComponents, validation: ValidationService)(
+class ValidationController(controllerComponents: ControllerComponents, validation: ValidationService[Future])(
   implicit ex: ExecutionContext)
     extends BaseController(controllerComponents) {
 
@@ -37,6 +37,6 @@ class ValidationController(controllerComponents: ControllerComponents, validatio
 
   def validateBank() = Action.async(parse.json[Account]) { implicit request =>
     Logger.info(s"validate bank, ${loggingHelpers.cleanHeaders(request.headers)}'")
-    validation.callBRS(request.body).map(if (_) NoContent else NotFound)
+    validation.bankAccountReputation(request.body).map(if (_) NoContent else NotFound)
   }
 }
