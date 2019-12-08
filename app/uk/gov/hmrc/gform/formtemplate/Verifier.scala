@@ -67,11 +67,13 @@ trait Verifier {
 
   private def removeIncludeIf(section: Section): Section = section.copy(includeIf = None)
 
+  private val constant1 = TextExpression(Constant("1"))
+
   private def mkComponentsOptional(section: Section): Section =
     section.copy(
       fields = mkOptional(section.fields),
-      repeatsMax = Some(TextExpression(Constant("1"))),
-      repeatsMin = Some(TextExpression(Constant("1")))
+      repeatsMax = section.repeatsMax.map(_ => constant1),
+      repeatsMin = section.repeatsMin.map(_ => constant1)
     )
 
   private def noValidators(section: Section): Section =

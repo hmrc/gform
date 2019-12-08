@@ -21,6 +21,7 @@ import play.api.Logger
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.gform.core.{ fromFutureA, _ }
 import uk.gov.hmrc.gform.email.EmailService
+import uk.gov.hmrc.gform.fileupload.Attachments
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.repo.Repo
@@ -52,7 +53,7 @@ class SubmissionService(
       for {
         form          <- formAlgebra.get(formIdData)
         formTemplate  <- fromFutureA(formTemplateService.get(form.formTemplateId))
-        submission    <- findOrCreateSubmission(form, customerId, formTemplate)
+        submission    <- findOrCreateSubmission(form, customerId, formTemplate, submissionData.attachments)
         submissionInfo = DestinationSubmissionInfo(customerId, affinityGroup, submission)
         modelTree     <- createModelTreeForSingleFormSubmission(form, formTemplate, submissionData, submission.submissionRef)
         _             <- destinationsSubmitter.send(submissionInfo, modelTree)
@@ -81,38 +82,38 @@ class SubmissionService(
   def submissionDetails(formIdData: FormIdData): Future[Submission] =
     submissionRepo.get(formIdData.toFormId.value)
 
-  private def findOrCreateSubmission(form: Form, customerId: String, formTemplate: FormTemplate): FOpt[Submission] =
+  private def findOrCreateSubmission(
+    form: Form,
+    customerId: String,
+    formTemplate: FormTemplate,
+    attachments: Attachments): FOpt[Submission] =
     form.status match {
       case NeedsReview | Accepting | Returning | Accepted | Submitting | Submitted => findSubmission(form._id)
-      case _                                                                       => insertSubmission(form, customerId, formTemplate)
+      case _                                                                       => insertSubmission(form, customerId, formTemplate, attachments)
     }
 
   private def findSubmission(formId: FormId) =
     fromFutureA(submissionRepo.get(formId.value))
 
-  private def insertSubmission(form: Form, customerId: String, formTemplate: FormTemplate): FOpt[Submission] = {
-    val submission = createSubmission(form, customerId, formTemplate)
+  private def insertSubmission(
+    form: Form,
+    customerId: String,
+    formTemplate: FormTemplate,
+    attachments: Attachments): FOpt[Submission] = {
+    val submission = createSubmission(form, customerId, formTemplate, attachments)
     submissionRepo
       .upsert(submission)
       .map(_ => Logger.info(s"Upserted Submission for ${form._id.value}"))
       .map(_ => submission)
   }
 
-  private def getNoOfAttachments(form: Form, formTemplate: FormTemplate): Int = {
-    // TODO two functions are calculating the same thing in different ways! c.f. FileUploadService.SectionFormField.getNumberOfFiles
-    val attachmentsIds: List[String] =
-      formTemplate.sections.flatMap(_.fields.filter(f => f.`type` == FileUpload())).map(_.id.value)
-    val formIds: Seq[String] = form.formData.fields.filterNot(_.value == FileUploadField.noFileUpload).map(_.id.value)
-    attachmentsIds.count(ai => formIds.contains(ai))
-  }
-
-  private def createSubmission(form: Form, customerId: String, formTemplate: FormTemplate) =
+  private def createSubmission(form: Form, customerId: String, formTemplate: FormTemplate, attachments: Attachments) =
     Submission(
       submittedDate = timeProvider.localDateTime(),
       submissionRef = SubmissionRef(form.envelopeId),
       envelopeId = form.envelopeId,
       _id = form._id,
-      noOfAttachments = getNoOfAttachments(form, formTemplate),
+      noOfAttachments = attachments.size,
       dmsMetaData = DmsMetaData(
         formTemplateId = form.formTemplateId,
         customerId //TODO need more secure and safe way of doing this. perhaps moving auth to backend and just pulling value out there.

@@ -28,7 +28,7 @@ import play.api.mvc.MultipartFormData
 import play.api.mvc.MultipartFormData.{ BadPart, FilePart }
 import play.api.test.FakeRequest
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
+import uk.gov.hmrc.gform.fileupload.{ Attachments, FileUploadAlgebra }
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorAlgebra
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
@@ -47,7 +47,8 @@ class DmsSubmissionServiceSpec extends Spec {
     val expectedPdfAndXmlSummaries = PdfAndXmlSummaries(PdfSummary(numberOfPages.longValue, pdfContent))
 
     val expectedDmsSubmission = DmsSubmissionService.createDmsSubmission(validSubmission.metadata)
-    val expectedSubmission = DmsSubmissionService.createSubmission(validSubmission.metadata, expectedEnvId, fixedTime)
+    val expectedSubmission =
+      DmsSubmissionService.createSubmission(validSubmission.metadata, expectedEnvId, fixedTime, Attachments.empty)
 
     (stubPdfDocument.getNumberOfPages _).when().returning(numberOfPages)
 
@@ -67,7 +68,8 @@ class DmsSubmissionServiceSpec extends Spec {
     val expectedPdfAndXmlSummaries = PdfAndXmlSummaries(PdfSummary(numberOfPages.longValue, pdfContent))
 
     val expectedDmsSubmission = DmsSubmissionService.createDmsSubmission(validSubmission.metadata)
-    val expectedSubmission = DmsSubmissionService.createSubmission(validSubmission.metadata, expectedEnvId, fixedTime)
+    val expectedSubmission =
+      DmsSubmissionService.createSubmission(validSubmission.metadata, expectedEnvId, fixedTime, Attachments.empty)
 
     (stubPdfDocument.getNumberOfPages _).when().returning(numberOfPages)
 
@@ -126,8 +128,8 @@ class DmsSubmissionServiceSpec extends Spec {
       dmsSubmission: DmsSubmission,
       numberOfAttachments: Int): Fixture = {
       (fileUpload
-        .submitEnvelope(_: Submission, _: PdfAndXmlSummaries, _: DmsSubmission, _: Int)(_: HeaderCarrier))
-        .expects(submission, pdfAndXmlSummaries, dmsSubmission, numberOfAttachments, hc)
+        .submitEnvelope(_: Submission, _: PdfAndXmlSummaries, _: DmsSubmission)(_: HeaderCarrier))
+        .expects(submission, pdfAndXmlSummaries, dmsSubmission, hc)
         .returning(())
 
       this

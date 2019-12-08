@@ -37,6 +37,7 @@ class MetadataXmlSpec extends Spec {
       submissionRef = SubmissionRef("some-submission-ref"),
       _id = FormId("some-form-type-id"),
       envelopeId = EnvelopeId("some-envelope-id"),
+      noOfAttachments = 2,
       dmsMetaData = dmsMetaData
     )
 
@@ -150,7 +151,7 @@ class MetadataXmlSpec extends Spec {
       </documents>
 
     val metadataXml = MetadataXml
-      .getXml(submission, ReconciliationId("some-recocilliatin-id"), pdfSummary, dmsSubmission, 2)
+      .getXml(submission, ReconciliationId("some-recocilliatin-id"), pdfSummary, dmsSubmission)
 
     metadataXml should equal(Utility.trim(expected).asInstanceOf[Elem])(after being streamlined[Elem])
 

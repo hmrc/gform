@@ -48,11 +48,8 @@ class FileUploadService(
     f
   }
 
-  def submitEnvelope(
-    submission: Submission,
-    summaries: PdfAndXmlSummaries,
-    dmsSubmission: DmsSubmission,
-    numberOfAttachments: Int)(implicit hc: HeaderCarrier): Future[Unit] = {
+  def submitEnvelope(submission: Submission, summaries: PdfAndXmlSummaries, dmsSubmission: DmsSubmission)(
+    implicit hc: HeaderCarrier): Future[Unit] = {
 
     val submissionRef: SubmissionRef = submission.submissionRef
     val envelopeId: EnvelopeId = submission.envelopeId
@@ -61,7 +58,7 @@ class FileUploadService(
     val fileNamePrefix = s"${submissionRef.withoutHyphens}-$date"
     val reconciliationId = ReconciliationId.create(submissionRef)
     val metadataXml = MetadataXml.xmlDec + "\n" + MetadataXml
-      .getXml(submission, reconciliationId, summaries.pdfSummary, dmsSubmission, numberOfAttachments)
+      .getXml(submission, reconciliationId, summaries.pdfSummary, dmsSubmission)
 
     def uploadPfdF: Future[Unit] =
       fileUploadFrontendConnector.upload(

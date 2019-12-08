@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.submission
 import java.time.LocalDateTime
 
 import play.api.libs.functional.syntax._
-import play.api.libs.json.{ Json, OFormat, OWrites, Reads, _ }
+import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
@@ -35,7 +35,7 @@ case class Submission(
   submittedDate: LocalDateTime,
   submissionRef: SubmissionRef,
   envelopeId: EnvelopeId,
-  noOfAttachments: Int = 0,
+  noOfAttachments: Int,
   dmsMetaData: DmsMetaData)
 
 object Submission {
