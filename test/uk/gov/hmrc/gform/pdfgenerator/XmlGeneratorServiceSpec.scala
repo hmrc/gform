@@ -21,7 +21,6 @@ import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.gform.submission.SectionFormField
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.collection.immutable.List

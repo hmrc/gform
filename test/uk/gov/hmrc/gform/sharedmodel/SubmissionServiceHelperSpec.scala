@@ -20,8 +20,8 @@ import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormData, FormField }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ EmailParameter, FormComponentId, FormCtx, IncludeIf, IsFalse, IsTrue, TextExpression }
-import uk.gov.hmrc.gform.submission.{ SectionFormField, SubmissionServiceHelper }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ EmailParameter, FormComponentId, FormCtx, IncludeIf, IsFalse, IsTrue, SectionFormField, TextExpression }
+import uk.gov.hmrc.gform.submission.SubmissionServiceHelper
 
 class SubmissionServiceHelperSpec extends Spec {
 

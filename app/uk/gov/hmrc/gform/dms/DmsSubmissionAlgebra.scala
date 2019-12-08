@@ -23,7 +23,7 @@ import cats.Monad
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import org.apache.pdfbox.pdmodel.PDDocument
-import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
+import uk.gov.hmrc.gform.fileupload.{ Attachments, FileUploadAlgebra }
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorAlgebra
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId }
@@ -58,10 +58,10 @@ class DmsSubmissionService[F[_]](
       pdfDoc = documentLoader(pdfBytes)
       pdfSummary = PdfSummary(pdfDoc.getNumberOfPages.toLong, pdfBytes)
       _ = pdfDoc.close()
-      submission = DmsSubmissionService.createSubmission(metadata, envId, LocalDateTime.now(clock))
+      submission = DmsSubmissionService.createSubmission(metadata, envId, LocalDateTime.now(clock), Attachments.empty)
       summaries = PdfAndXmlSummaries(pdfSummary)
       dmsSubmission = DmsSubmissionService.createDmsSubmission(metadata)
-      _ <- fileUpload.submitEnvelope(submission, summaries, dmsSubmission, 0)
+      _ <- fileUpload.submitEnvelope(submission, summaries, dmsSubmission)
     } yield envId
   }
 
@@ -76,12 +76,17 @@ object DmsSubmissionService {
       metadata.classificationType,
       metadata.businessArea)
 
-  def createSubmission(metadata: DmsMetadata, envId: EnvelopeId, submittedDate: LocalDateTime): Submission =
+  def createSubmission(
+    metadata: DmsMetadata,
+    envId: EnvelopeId,
+    submittedDate: LocalDateTime,
+    attachments: Attachments): Submission =
     Submission(
       FormId(metadata.dmsFormId),
       submittedDate,
       SubmissionRef(envId),
       envId,
-      0,
-      DmsMetaData(FormTemplateId(metadata.dmsFormId), metadata.customerId))
+      attachments.size,
+      DmsMetaData(FormTemplateId(metadata.dmsFormId), metadata.customerId)
+    )
 }

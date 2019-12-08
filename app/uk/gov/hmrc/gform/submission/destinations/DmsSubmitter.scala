@@ -59,8 +59,7 @@ class DmsSubmitter(
                         customerId,
                         submission.submissionRef,
                         dmsSubmission))
-      numberOfAttachments = sectionFormFields.map(_.numberOfFiles()).sum
-      res <- fromFutureA(fileUploadService.submitEnvelope(submission, summaries, dmsSubmission, numberOfAttachments))
+      res <- fromFutureA(fileUploadService.submitEnvelope(submission, summaries, dmsSubmission))
       _   <- formService.updateFormStatus(submissionInfo.formId, Submitted)
     } yield res
   }

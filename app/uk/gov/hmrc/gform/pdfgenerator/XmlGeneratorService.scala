@@ -19,7 +19,6 @@ package uk.gov.hmrc.gform.pdfgenerator
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.FormField
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.gform.submission.SectionFormField
 import uk.gov.hmrc.gform.typeclasses.Attribute
 
 import scala.collection.immutable.List

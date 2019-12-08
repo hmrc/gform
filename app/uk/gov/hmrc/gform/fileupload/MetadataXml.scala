@@ -27,11 +27,7 @@ object MetadataXml {
 
   val xmlDec = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>"""
 
-  private def createMetadata(
-    submission: Submission,
-    pdfSummary: PdfSummary,
-    dmsSubmission: DmsSubmission,
-    numberOfAttachments: Int): Elem = {
+  private def createMetadata(submission: Submission, pdfSummary: PdfSummary, dmsSubmission: DmsSubmission): Elem = {
     val attributes = List(
       createAttribute("hmrc_time_of_receipt", submission.submittedDate),
       createAttribute("time_xml_created", submission.submittedDate),
@@ -44,7 +40,7 @@ object MetadataXml {
       createAttribute("cas_key", "AUDIT_SERVICE"), // We are not using CAS
       createAttribute("classification_type", dmsSubmission.classificationType),
       createAttribute("business_area", dmsSubmission.businessArea),
-      createAttribute("attachment_count", numberOfAttachments)
+      createAttribute("attachment_count", submission.noOfAttachments)
     )
     <metadata></metadata>.copy(child = attributes)
   }
@@ -69,12 +65,11 @@ object MetadataXml {
     submission: Submission,
     reconciliationId: ReconciliationId,
     pdfSummary: PdfSummary,
-    dmsSubmission: DmsSubmission,
-    numberOfAttachments: Int): Elem = {
+    dmsSubmission: DmsSubmission): Elem = {
     val body =
       List(
         createHeader(submission.submissionRef, reconciliationId),
-        createMetadata(submission, pdfSummary, dmsSubmission, numberOfAttachments))
+        createMetadata(submission, pdfSummary, dmsSubmission))
 
     trim(createDocument(body))
   }

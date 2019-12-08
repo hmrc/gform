@@ -25,6 +25,15 @@ import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.typeclasses.Now
 
+case class Attachments(files: List[String]) {
+  def size = files.size
+}
+
+object Attachments {
+  val empty = Attachments(Nil)
+  implicit val format = Json.format[Attachments]
+}
+
 case class FUConfig(
   fileUploadBaseUrl: String,
   fileUploadFrontendBaseUrl: String,
