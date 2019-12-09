@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
-import uk.gov.hmrc.gform.sharedmodel.LocalisedString
+import uk.gov.hmrc.gform.sharedmodel.SmartString
 import uk.gov.hmrc.gform.sharedmodel.form.Form
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
@@ -77,42 +77,9 @@ object RepeatingComponentService {
       fields = section.fields.map(copyField))
   }
 
-  private def optBuildText(
-    maybeLs: Option[LocalisedString],
-    index: Int,
-    data: Map[String, String]): Option[LocalisedString] = maybeLs.map(ls => buildText(ls, index, data))
+  private def optBuildText(maybeLs: Option[SmartString], index: Int, data: Map[String, String]): Option[SmartString] =
+    maybeLs.map(ls => buildText(ls, index, data))
 
-  private def buildText(ls: LocalisedString, index: Int, data: Map[String, String]): LocalisedString = {
-
-    def evaluateTextExpression(str: String) = {
-      val field = str.replaceFirst("""\$\{""", "").replaceFirst("""\}""", "")
-      if (field.startsWith("n_")) { // "n_"  in the expression means nth instance a field in a repeating group
-        if (index == 1) { // the first element in a repeating group doesn't have an index
-          val fieldName = field.replaceFirst("n_", "")
-          data.getOrElse(fieldName, "")
-        } else {
-          val fieldName = field.replaceFirst("n_", s"${index - 1}_")
-          data.getOrElse(fieldName, "")
-        }
-      } else {
-        // depending on the specified form validation we might have an empty string
-        // in which case it means deleting the expression from the final text
-        data.getOrElse(field, "")
-      }
-    }
-
-    def getEvaluatedText(str: String) = {
-      val pattern = """.*(\$\{.*\}).*""".r
-      val expression = str match {
-        case pattern(txtExpr) => txtExpr
-        case _                => ""
-      }
-      val evaluatedText = evaluateTextExpression(expression)
-      str.replace(expression, evaluatedText)
-    }
-
-    ls.copy(m = ls.m.map {
-      case (lang, message) => (lang, getEvaluatedText(message).replace("$n", index.toString))
-    })
-  }
+  private def buildText(ls: SmartString, index: Int, data: Map[String, String]): SmartString =
+    ls.replace("$n", index.toString)
 }

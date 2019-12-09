@@ -32,7 +32,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.RoundingMode._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService._
-import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString }
+import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString, SmartString }
 case class MES(
   mandatory: Boolean,
   editable: Boolean,
@@ -44,7 +44,7 @@ class FormComponentMaker(json: JsValue) {
 
   lazy val id: FormComponentId = (json \ "id").as[FormComponentId]
   lazy val `type`: Option[ComponentTypeRaw] = (json \ "type").asOpt[ComponentTypeRaw]
-  lazy val label: LocalisedString = (json \ "label").as[LocalisedString]
+  lazy val label: SmartString = (json \ "label").as[SmartString]
 
   lazy val optMaybeValueExpr: Opt[Option[ValueExpr]] = parse("value", ValueParser.validate)
   lazy val emailVerification: EmailVerification = (json \ "verifiedBy")
@@ -55,11 +55,11 @@ class FormComponentMaker(json: JsValue) {
   lazy val optMaybePresentationHintExpr: Opt[Option[List[PresentationHint]]] =
     parse("presentationHint", PresentationHintParser.validate)
 
-  lazy val helpText: Option[LocalisedString] = (json \ "helpText").asOpt[LocalisedString]
-  lazy val optionHelpText: Option[NonEmptyList[LocalisedString]] =
-    (json \ "optionHelpText").asOpt[NonEmptyList[LocalisedString]]
+  lazy val helpText: Option[SmartString] = (json \ "helpText").asOpt[SmartString]
+  lazy val optionHelpText: Option[NonEmptyList[SmartString]] =
+    (json \ "optionHelpText").asOpt[NonEmptyList[SmartString]]
   lazy val submitMode: Option[String] = (json \ "submitMode").asOpt[String]
-  lazy val choices: Option[List[LocalisedString]] = (json \ "choices").asOpt[List[LocalisedString]]
+  lazy val choices: Option[List[SmartString]] = (json \ "choices").asOpt[List[SmartString]]
 
   lazy val revealingFieldsJson: Option[List[List[JsValue]]] =
     (json \ "revealingFields").asOpt[List[List[JsValue]]]
@@ -71,7 +71,7 @@ class FormComponentMaker(json: JsValue) {
   lazy val regimeType: Option[String] = (json \ "regimeType").asOpt[String]
 
   lazy val fieldsJson: Option[List[JsValue]] = (json \ "fields").asOpt[List[JsValue]]
-  lazy val errorMessage: Option[LocalisedString] = (json \ "errorMessage").asOpt[LocalisedString]
+  lazy val errorMessage: Option[SmartString] = (json \ "errorMessage").asOpt[SmartString]
 
   lazy val fields: Option[List[FormComponentMaker]] = fieldsJson.map(_.map(new FormComponentMaker(_)))
   lazy val validIf: Option[ValidIf] = (json \ "validIf").asOpt[ValidIf]
@@ -83,13 +83,13 @@ class FormComponentMaker(json: JsValue) {
   lazy val multivalue: Option[String] = (json \ "multivalue").asOpt[String]
   lazy val total: Option[String] = (json \ "total").asOpt[String]
   lazy val international: Option[String] = (json \ "international").asOpt[String]
-  lazy val infoText: Option[LocalisedString] = (json \ "infoText").asOpt[LocalisedString]
+  lazy val infoText: Option[SmartString] = (json \ "infoText").asOpt[SmartString]
   lazy val infoType: Option[String] = (json \ "infoType").asOpt[String]
-  lazy val shortName: Option[LocalisedString] = (json \ "shortName").asOpt[LocalisedString]
+  lazy val shortName: Option[SmartString] = (json \ "shortName").asOpt[SmartString]
   lazy val optMaybeRepeatsMax: Opt[Option[Int]] = toOpt((json \ "repeatsMax").validateOpt[Int])
   lazy val optMaybeRepeatsMin: Opt[Option[Int]] = toOpt((json \ "repeatsMin").validateOpt[Int])
-  lazy val repeatLabel: Option[LocalisedString] = (json \ "repeatLabel").asOpt[LocalisedString]
-  lazy val repeatAddAnotherText: Option[LocalisedString] = (json \ "repeatAddAnotherText").asOpt[LocalisedString]
+  lazy val repeatLabel: Option[SmartString] = (json \ "repeatLabel").asOpt[SmartString]
+  lazy val repeatAddAnotherText: Option[SmartString] = (json \ "repeatAddAnotherText").asOpt[SmartString]
 
   def optFieldValue(): Opt[FormComponent] =
     for {
@@ -256,8 +256,8 @@ class FormComponentMaker(json: JsValue) {
         Group(fieldsMandatory, orientation, repMax, repMin, repeatLabel, repeatAddAnotherText).asRight
     }
 
-  private def toLocalisedString(stringEn: String, stringCy: String) =
-    LocalisedString(Map(LangADT.En -> stringEn, LangADT.Cy -> stringCy))
+  private def toSmartString(stringEn: String, stringCy: String) =
+    SmartString(LocalisedString(Map(LangADT.En -> stringEn, LangADT.Cy -> stringCy)), Nil)
 
   private lazy val choiceOpt: Opt[Choice] = {
     for {
@@ -269,8 +269,8 @@ class FormComponentMaker(json: JsValue) {
         case (IsOrientation(VerticalOrientation),   Some(x :: xs), IsMultivalue(MultivalueNo),  Selections(selections), oHelpText) => Choice(Radio,    NonEmptyList(x, xs),          Vertical,   selections, oHelpText).asRight
         case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections), oHelpText) => Choice(Checkbox, NonEmptyList(x, xs),          Horizontal, selections, oHelpText).asRight
         case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueNo),  Selections(selections), oHelpText) => Choice(Radio,    NonEmptyList(x, xs),          Horizontal, selections, oHelpText).asRight
-        case (IsOrientation(YesNoOrientation),      None,          IsMultivalue(MultivalueNo),  Selections(selections), oHelpText) => Choice(YesNo,    NonEmptyList.of(toLocalisedString("Yes","Iawn"), toLocalisedString("No","Na")), Horizontal, selections, oHelpText).asRight
-        case (IsOrientation(YesNoOrientation),      _,             _,                           Selections(selections), oHelpText) => Choice(YesNo,    NonEmptyList.of(toLocalisedString("Yes","Iawn"), toLocalisedString("No","Na")), Horizontal, selections, oHelpText).asRight
+        case (IsOrientation(YesNoOrientation),      None,          IsMultivalue(MultivalueNo),  Selections(selections), oHelpText) => Choice(YesNo,    NonEmptyList.of(toSmartString("Yes","Iawn"), toSmartString("No","Na")), Horizontal, selections, oHelpText).asRight
+        case (IsOrientation(YesNoOrientation),      _,             _,                           Selections(selections), oHelpText) => Choice(YesNo,    NonEmptyList.of(toSmartString("Yes","Iawn"), toSmartString("No","Na")), Horizontal, selections, oHelpText).asRight
         case (IsOrientation(InlineOrientation),     Some(x :: xs), None,                        Selections(selections), oHelpText) => Choice(Inline,   NonEmptyList(x, xs),          Horizontal, selections, oHelpText).asRight
         // format: on
         case (invalidFormat, invalidChoices, invalidMultivalue, invalidValue, invalidHelpText) =>

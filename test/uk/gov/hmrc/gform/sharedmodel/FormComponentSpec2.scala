@@ -44,11 +44,11 @@ class FormComponentSpec2 extends Spec {
         FormComponentId("dutyType"),
         Choice(
           Radio,
-          NonEmptyList(toLocalisedString("Natural gas"), List(toLocalisedString("Other gas"))),
+          NonEmptyList(toSmartString("Natural gas"), List(toSmartString("Other gas"))),
           Vertical,
           List.empty[Int],
           None),
-        toLocalisedString("Select the tax type"),
+        toSmartString("Select the tax type"),
         None,
         None,
         validIf = None,

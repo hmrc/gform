@@ -23,9 +23,12 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils
 
 case class LocalisedString(m: Map[LangADT, String]) {
   def value(implicit l: LangADT): String = m.getOrElse(l, m.getOrElse(LangADT.En, ""))
+  def replace(toReplace: String, replaceWith: String): LocalisedString =
+    copy(m = m.map { case (lang, message) => (lang, message.replace(toReplace, replaceWith)) })
 }
 
 object LocalisedString {
+  val empty: LocalisedString = LocalisedString(Map.empty)
 
   val formatMap: Format[Map[LangADT, String]] =
     JsonUtils.formatMap(LangADT.stringToLangADT, LangADT.langADTToString)

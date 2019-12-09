@@ -48,14 +48,14 @@ class XmlGeneratorServiceSpec extends Spec {
 
     val sectionFormFields = List(
       SectionFormField(
-        toLocalisedString("Section title"),
+        toSmartString("Section title"),
         List(
           (
             List(FormField(FormComponentId("UNO"), "UNO")),
             FormComponent(
               FormComponentId("UNO"),
               Text(BasicText, Value),
-              toLocalisedString("Submissible text label"),
+              toSmartString("Submissible text label"),
               None,
               None,
               None,
@@ -71,7 +71,7 @@ class XmlGeneratorServiceSpec extends Spec {
             FormComponent(
               FormComponentId("DOS"),
               Text(BasicText, Value),
-              toLocalisedString("Submissible text label"),
+              toSmartString("Submissible text label"),
               None,
               None,
               None,
@@ -87,7 +87,7 @@ class XmlGeneratorServiceSpec extends Spec {
             FormComponent(
               FormComponentId("1_UNO"),
               Text(BasicText, Value),
-              toLocalisedString("Non-submissible text label"),
+              toSmartString("Non-submissible text label"),
               None,
               None,
               None,
@@ -103,7 +103,7 @@ class XmlGeneratorServiceSpec extends Spec {
             FormComponent(
               FormComponentId("1_DOS"),
               Text(BasicText, Value),
-              toLocalisedString("Submissible text label"),
+              toSmartString("Submissible text label"),
               None,
               None,
               None,
@@ -117,14 +117,14 @@ class XmlGeneratorServiceSpec extends Spec {
         )
       ),
       SectionFormField(
-        toLocalisedString("Declaration"),
+        toSmartString("Declaration"),
         List(
           (
             List(FormField(FormComponentId("TRES"), "TRES")),
             FormComponent(
               FormComponentId("TRES"),
               Text(BasicText, Constant("TRES")),
-              toLocalisedString("Submissible text label"),
+              toSmartString("Submissible text label"),
               None,
               None,
               None,
@@ -186,5 +186,5 @@ class XmlGeneratorServiceSpec extends Spec {
     dataXml should equal(Utility.trim(expected).asInstanceOf[Elem])(after being streamlined[Elem])
   }
 
-  implicit lazy val hc = new HeaderCarrier()
+  implicit lazy val hc: HeaderCarrier = HeaderCarrier()
 }

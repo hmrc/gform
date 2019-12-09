@@ -137,7 +137,7 @@ class TemplateValidatorSpec extends Spec {
       "dutyType",
       Choice(
         Checkbox,
-        NonEmptyList(toLocalisedString("Natural gas"), List(toLocalisedString("Other gas"))),
+        NonEmptyList(toSmartString("Natural gas"), List(toSmartString("Other gas"))),
         Vertical,
         List.empty[Int],
         None)) :: Nil
@@ -150,7 +150,7 @@ class TemplateValidatorSpec extends Spec {
       "dutyType",
       Choice(
         Radio,
-        NonEmptyList(toLocalisedString("Natural gas"), List(toLocalisedString("Other gas"))),
+        NonEmptyList(toSmartString("Natural gas"), List(toSmartString("Other gas"))),
         Vertical,
         List.empty[Int],
         None)) :: Nil
@@ -161,12 +161,7 @@ class TemplateValidatorSpec extends Spec {
     mkFormComponent("nameOfBusiness", Value) ::
       mkFormComponent(
       "taxType",
-      Choice(
-        YesNo,
-        NonEmptyList.of(toLocalisedString("Yes"), toLocalisedString("No")),
-        Horizontal,
-        List.empty[Int],
-        None)) :: Nil
+      Choice(YesNo, NonEmptyList.of(toSmartString("Yes"), toSmartString("No")), Horizontal, List.empty[Int], None)) :: Nil
   )
 
   "TemplateValidator.validateDependencyGraph" should "detect cycle in graph" in {
@@ -202,11 +197,7 @@ class TemplateValidatorSpec extends Spec {
       ))
 
     val newDeclarationSection =
-      DeclarationSection(
-        toLocalisedString("Declaration"),
-        None,
-        None,
-        List(mkFormComponent("declarationFullName", Value)))
+      DeclarationSection(toSmartString("Declaration"), None, None, List(mkFormComponent("declarationFullName", Value)))
 
     val newFormTemplate = mkFormTemplate(formComponents, newEmailParameters, declarationSection = newDeclarationSection)
 
@@ -231,7 +222,7 @@ class TemplateValidatorSpec extends Spec {
 
     val formComponent = List(mkFormComponent("fieldInAcknowledgementSections", Value))
     val newAcknowledgementSection =
-      AcknowledgementSection(toLocalisedString("ack section with email param field"), None, None, formComponent)
+      AcknowledgementSection(toSmartString("ack section with email param field"), None, None, formComponent)
 
     val newEmailParameters = Some(
       NonEmptyList.of(
@@ -561,7 +552,7 @@ class TemplateValidatorSpec extends Spec {
 
   private def mkSection(name: String, formComponents: List[FormComponent]) =
     Section(
-      toLocalisedString(name),
+      toSmartString(name),
       None,
       None,
       None,
@@ -578,7 +569,7 @@ class TemplateValidatorSpec extends Spec {
     FormComponent(
       FormComponentId(name),
       Text(BasicText, expr),
-      toLocalisedString(name),
+      toSmartString(name),
       None,
       None,
       None,
@@ -595,7 +586,7 @@ class TemplateValidatorSpec extends Spec {
     FormComponent(
       FormComponentId(name),
       ct,
-      toLocalisedString(name),
+      toSmartString(name),
       None,
       None,
       None,

@@ -67,7 +67,7 @@ class SubmissionServiceSpec extends Spec {
     val textFieldUno = FormComponent(
       id = FormComponentId("UNO"),
       `type` = Text(BasicText, Constant("UNO")),
-      label = toLocalisedString("Editable text label"),
+      label = toSmartString("Editable text label"),
       helpText = None,
       shortName = None,
       validIf = None,
@@ -86,14 +86,14 @@ class SubmissionServiceSpec extends Spec {
       orientation = Horizontal,
       repeatsMax = Some(2),
       repeatsMin = Some(1),
-      repeatLabel = Some(toLocalisedString("repeat label")),
-      repeatAddAnotherText = Some(toLocalisedString("add group button label"))
+      repeatLabel = Some(toSmartString("repeat label")),
+      repeatAddAnotherText = Some(toSmartString("add group button label"))
     )
 
     val groupFieldValue = FormComponent(
       id = FormComponentId("GroupFieldValueId"),
       `type` = group,
-      label = toLocalisedString("group FieldValue label"),
+      label = toSmartString("group FieldValue label"),
       helpText = None,
       shortName = None,
       validIf = None,
@@ -106,10 +106,10 @@ class SubmissionServiceSpec extends Spec {
     )
 
     val section = Section(
-      title = toLocalisedString("Section title"),
+      title = toSmartString("Section title"),
       description = None,
-      progressIndicator = None,
       shortName = None,
+      progressIndicator = None,
       includeIf = None,
       None,
       None,
@@ -140,21 +140,21 @@ class SubmissionServiceSpec extends Spec {
         )),
       webChat = Some(WebChat(ChatRoomId("test"), TemplateName("test"))),
       sections = List(section),
-      acknowledgementSection = AcknowledgementSection(toLocalisedString(""), None, None, Nil),
-      declarationSection = DeclarationSection(toLocalisedString("Declaration"), None, None, Nil),
+      acknowledgementSection = AcknowledgementSection(toSmartString(""), None, None, Nil),
+      declarationSection = DeclarationSection(toSmartString("Declaration"), None, None, Nil),
       parentFormSubmissionRefs = None
     )
 
     val expectedResult = List(
       SectionFormField(
-        toLocalisedString("Section title"),
+        toSmartString("Section title"),
         List(
           (
             List(FormField(FormComponentId("UNO"), "UNO")),
             FormComponent(
               FormComponentId("UNO"),
               Text(BasicText, Constant("UNO")),
-              toLocalisedString("Editable text label"),
+              toSmartString("Editable text label"),
               None,
               None,
               None,
@@ -170,7 +170,7 @@ class SubmissionServiceSpec extends Spec {
             FormComponent(
               FormComponentId("DOS"),
               Text(BasicText, Constant("DOS")),
-              toLocalisedString("Editable text label"),
+              toSmartString("Editable text label"),
               None,
               None,
               None,
@@ -186,7 +186,7 @@ class SubmissionServiceSpec extends Spec {
             FormComponent(
               FormComponentId("1_UNO"),
               Text(BasicText, Constant("UNO")),
-              toLocalisedString("Editable text label"),
+              toSmartString("Editable text label"),
               None,
               None,
               None,
@@ -202,7 +202,7 @@ class SubmissionServiceSpec extends Spec {
             FormComponent(
               FormComponentId("1_DOS"),
               Text(BasicText, Constant("DOS")),
-              toLocalisedString("Editable text label"),
+              toSmartString("Editable text label"),
               None,
               None,
               None,
@@ -215,7 +215,7 @@ class SubmissionServiceSpec extends Spec {
             ))
         )
       ),
-      SectionFormField(toLocalisedString("Declaration"), List())
+      SectionFormField(toSmartString("Declaration"), List())
     )
 
     val res = SubmissionServiceHelper.getSectionFormFields(form, formTemplate, None)
@@ -224,6 +224,6 @@ class SubmissionServiceSpec extends Spec {
 
   }
 
-  implicit lazy val hc = new HeaderCarrier()
+  implicit lazy val hc: HeaderCarrier = HeaderCarrier()
 
 }

@@ -15,10 +15,7 @@
  */
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
-import cats.data.NonEmptyList
 import org.scalacheck.Gen
-import uk.gov.hmrc.gform.Helpers._
-import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidth.DisplayWidth
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
@@ -58,18 +55,18 @@ trait ComponentTypeGen {
   def choiceGen: Gen[Choice] =
     for {
       tpe         <- choiceTypeGen
-      options     <- PrimitiveGen.oneOrMoreGen(LocalisedStringGen.localisedStringGen)
+      options     <- PrimitiveGen.oneOrMoreGen(SmartStringGen.smartStringGen)
       orientation <- orientationGen
       selections  <- PrimitiveGen.zeroOrMoreGen(Gen.posNum[Int])
-      helpText    <- Gen.option(PrimitiveGen.oneOrMoreGen(LocalisedStringGen.localisedStringGen))
+      helpText    <- Gen.option(PrimitiveGen.oneOrMoreGen(SmartStringGen.smartStringGen))
     } yield Choice(tpe, options, orientation, selections, helpText)
 
   def revealingChoiceElementGen: Gen[RevealingChoiceElement] =
     for {
-      choice   <- LocalisedStringGen.localisedStringGen
-      fields   <- PrimitiveGen.zeroOrMoreGen(FormComponentGen.formComponentGen())
-      selected <- PrimitiveGen.booleanGen
-    } yield RevealingChoiceElement(choice, fields, selected)
+      choice          <- SmartStringGen.smartStringGen
+      revealingFields <- PrimitiveGen.zeroOrMoreGen(FormComponentGen.formComponentGen(1))
+      selected        <- PrimitiveGen.booleanGen
+    } yield RevealingChoiceElement(choice, revealingFields, selected)
 
   def revealingChoiceGen: Gen[RevealingChoice] =
     for {
@@ -90,8 +87,8 @@ trait ComponentTypeGen {
       orientation          <- orientationGen
       repeatsMax           <- Gen.option(Gen.posNum[Int])
       repeatsMin           <- Gen.option(Gen.posNum[Int])
-      repeatLabel          <- Gen.option(LocalisedStringGen.localisedStringGen)
-      repeatAddAnotherText <- Gen.option(LocalisedStringGen.localisedStringGen)
+      repeatLabel          <- Gen.option(SmartStringGen.smartStringGen)
+      repeatAddAnotherText <- Gen.option(SmartStringGen.smartStringGen)
     } yield Group(fields.toList, orientation, repeatsMax, repeatsMin, repeatLabel, repeatAddAnotherText)
 
   def infoTypeGen: Gen[InfoType] = Gen.oneOf(StandardInfo, LongInfo, ImportantInfo, BannerInfo, NoFormat)
@@ -99,7 +96,7 @@ trait ComponentTypeGen {
   def informationMessageGen: Gen[InformationMessage] =
     for {
       infoType <- infoTypeGen
-      infoText <- LocalisedStringGen.localisedStringGen
+      infoText <- SmartStringGen.smartStringGen
     } yield InformationMessage(infoType, infoText)
 
   def fileUploadGen: Gen[FileUpload] = Gen.const(FileUpload())

@@ -16,9 +16,8 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 import org.scalacheck.Gen
-import uk.gov.hmrc.gform.Helpers._
-import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import SmartStringGen.smartStringGen
 
 trait SectionGen {
 
@@ -36,8 +35,8 @@ trait SectionGen {
 
   def enrolmentSectionGen: Gen[EnrolmentSection] =
     for {
-      title       <- LocalisedStringGen.localisedStringGen
-      shortName   <- Gen.option(LocalisedStringGen.localisedStringGen)
+      title       <- smartStringGen
+      shortName   <- Gen.option(smartStringGen)
       fields      <- PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen())
       identifiers <- PrimitiveGen.oneOrMoreGen(identifierRecipeGen)
       verifiers   <- PrimitiveGen.zeroOrMoreGen(verifierRecipeGen)
@@ -45,32 +44,32 @@ trait SectionGen {
 
   def acknowledgementSectionGen: Gen[AcknowledgementSection] =
     for {
-      title       <- LocalisedStringGen.localisedStringGen
-      description <- Gen.option(LocalisedStringGen.localisedStringGen)
-      shortName   <- Gen.option(LocalisedStringGen.localisedStringGen)
+      title       <- smartStringGen
+      description <- Gen.option(smartStringGen)
+      shortName   <- Gen.option(smartStringGen)
       fields      <- PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen())
     } yield AcknowledgementSection(title, description, shortName, fields.toList)
 
   def declarationSectionGen: Gen[DeclarationSection] =
     for {
-      title       <- LocalisedStringGen.localisedStringGen
-      description <- Gen.option(LocalisedStringGen.localisedStringGen)
-      shortName   <- Gen.option(LocalisedStringGen.localisedStringGen)
+      title       <- smartStringGen
+      description <- Gen.option(smartStringGen)
+      shortName   <- Gen.option(smartStringGen)
       fields      <- PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen())
     } yield DeclarationSection(title, description, shortName, fields.toList)
 
   def sectionGen: Gen[Section] =
     for {
-      title             <- LocalisedStringGen.localisedStringGen
-      description       <- Gen.option(LocalisedStringGen.localisedStringGen)
-      progressIndicator <- Gen.option(LocalisedStringGen.localisedStringGen)
-      shortName         <- Gen.option(LocalisedStringGen.localisedStringGen)
+      title             <- smartStringGen
+      description       <- Gen.option(smartStringGen)
+      progressIndicator <- Gen.option(smartStringGen)
+      shortName         <- Gen.option(smartStringGen)
       includeIf         <- Gen.option(IncludeIfGen.includeIfGen)
       repeatsMax        <- Gen.option(FormatExprGen.textExpressionGen)
       repeatMin         <- Gen.option(FormatExprGen.textExpressionGen)
       validators        <- Gen.option(ValidatorGen.validatorGen)
       fields            <- PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen())
-      continueLabel     <- Gen.option(LocalisedStringGen.localisedStringGen)
+      continueLabel     <- Gen.option(smartStringGen)
       continueIf        <- Gen.option(ContinueIfGen.continueIfGen)
     } yield
       Section(

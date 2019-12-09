@@ -52,7 +52,7 @@ class FormatValidationSpec extends Spec {
       FormComponent(
         id = FormComponentId(id),
         `type` = Text(ShortText.default, Value),
-        label = toLocalisedString(label),
+        label = toSmartString(label),
         helpText = None,
         shortName = None,
         validIf = None,
@@ -69,7 +69,7 @@ class FormatValidationSpec extends Spec {
       FormComponent(
         id = FormComponentId(id),
         `type` = UkSortCode(Value),
-        label = toLocalisedString(label),
+        label = toSmartString(label),
         helpText = None,
         shortName = None,
         validIf = None,
@@ -93,7 +93,7 @@ class FormatValidationSpec extends Spec {
       FormComponent(
         id = FormComponentId(id),
         `type` = Text(constraint, Value),
-        label = toLocalisedString(label),
+        label = toSmartString(label),
         helpText = None,
         shortName = None,
         validIf = None,
