@@ -112,7 +112,7 @@ class AuthConfigSpec extends Spec {
             Always,
             RequireEnrolment(
               EnrolmentSection(
-                toLocalisedString("t"),
+                toSmartString("t"),
                 None,
                 List.empty,
                 NonEmptyList.of(IdentifierRecipe("EtmpRegistrationNumber", FormCtx("eeittReferenceNumber"))),
@@ -156,7 +156,7 @@ class AuthConfigSpec extends Spec {
             Always,
             RequireEnrolment(
               EnrolmentSection(
-                toLocalisedString("t"),
+                toSmartString("t"),
                 None,
                 List.empty,
                 NonEmptyList.of(IdentifierRecipe("EtmpRegistrationNumber", FormCtx("eeittReferenceNumber"))),

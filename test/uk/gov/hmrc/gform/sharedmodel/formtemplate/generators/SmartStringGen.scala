@@ -14,12 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel
+package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 
-object LabelHelper {
-  def buildRepeatingLabel(shortName: Option[SmartString], index: Int): Option[SmartString] =
-    shortName.map(buildRepeatingLabel(_, index))
+import org.scalacheck.Gen
+import uk.gov.hmrc.gform.sharedmodel.SmartString
 
-  def buildRepeatingLabel(ls: SmartString, index: Int): SmartString =
-    ls.replace("$n", index.toString)
+trait SmartStringGen {
+  def smartStringGen: Gen[SmartString] =
+    for {
+      string <- LocalisedStringGen.localisedStringGen
+    } yield SmartString(string, Nil)
 }
+
+object SmartStringGen extends SmartStringGen

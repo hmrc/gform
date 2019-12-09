@@ -19,10 +19,9 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import cats.Eq
 import cats.data.NonEmptyList
 import julienrf.json.derived
-import play.api.data.validation.ValidationError
 import play.api.libs.json._
 import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService.{ IsFalseish, IsTrueish }
-import uk.gov.hmrc.gform.sharedmodel.{ LocalisedString, ValueClassFormat }
+import uk.gov.hmrc.gform.sharedmodel.{ SmartString, ValueClassFormat }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidth.DisplayWidth
 import uk.gov.hmrc.gform.sharedmodel.structuredform.{ FieldName, RoboticsXml, StructuredFormDataFieldNamePurpose }
 
@@ -42,8 +41,8 @@ case class Text(
   constraint: TextConstraint,
   value: Expr,
   displayWidth: DisplayWidth = DisplayWidth.DEFAULT,
-  toUpperCase: UpperCaseBoolean = IsNotUpperCase)
-    extends ComponentType
+  toUpperCase: UpperCaseBoolean = IsNotUpperCase
+) extends ComponentType
 
 sealed trait UpperCaseBoolean
 
@@ -59,8 +58,11 @@ object UpperCaseBoolean {
   implicit val format: OFormat[UpperCaseBoolean] = OFormatWithTemplateReadFallback(templateReads)
 }
 
-case class TextArea(constraint: TextConstraint, value: Expr, displayWidth: DisplayWidth = DisplayWidth.DEFAULT)
-    extends ComponentType
+case class TextArea(
+  constraint: TextConstraint,
+  value: Expr,
+  displayWidth: DisplayWidth = DisplayWidth.DEFAULT
+) extends ComponentType
 
 case class UkSortCode(value: Expr) extends ComponentType with MultiField {
   override def fields(id: FormComponentId): NonEmptyList[FormComponentId] = UkSortCode.fields(id)
@@ -71,8 +73,11 @@ object UkSortCode {
     NonEmptyList.of("1", "2", "3").map(id.withSuffix)
 }
 
-case class Date(constraintType: DateConstraintType, offset: Offset, value: Option[DateValue])
-    extends ComponentType with MultiField {
+case class Date(
+  constraintType: DateConstraintType,
+  offset: Offset,
+  value: Option[DateValue]
+) extends ComponentType with MultiField {
   override def fields(id: FormComponentId): NonEmptyList[FormComponentId] = Date.fields(id)
 }
 
@@ -107,10 +112,10 @@ object DisplayWidth extends Enumeration {
 
 case class Choice(
   `type`: ChoiceType,
-  options: NonEmptyList[LocalisedString],
+  options: NonEmptyList[SmartString],
   orientation: Orientation,
   selections: List[Int],
-  optionHelpText: Option[NonEmptyList[LocalisedString]]
+  optionHelpText: Option[NonEmptyList[SmartString]]
 ) extends ComponentType
 
 sealed trait ChoiceType
@@ -124,7 +129,7 @@ object ChoiceType {
   implicit val equal: Eq[ChoiceType] = Eq.fromUniversalEquals
 }
 
-case class RevealingChoiceElement(choice: LocalisedString, revealingFields: List[FormComponent], selected: Boolean)
+case class RevealingChoiceElement(choice: SmartString, revealingFields: List[FormComponent], selected: Boolean)
 object RevealingChoiceElement {
   implicit val format: OFormat[RevealingChoiceElement] = derived.oformat
 }
@@ -163,10 +168,15 @@ object Orientation {
 
 sealed trait InfoType
 case object StandardInfo extends InfoType
+
 case object LongInfo extends InfoType
+
 case object ImportantInfo extends InfoType
+
 case object BannerInfo extends InfoType
+
 case object NoFormat extends InfoType
+
 object InfoType {
   implicit val format: OFormat[InfoType] = derived.oformat
 }
@@ -176,11 +186,11 @@ case class Group(
   orientation: Orientation,
   repeatsMax: Option[Int] = None,
   repeatsMin: Option[Int] = None,
-  repeatLabel: Option[LocalisedString] = None,
-  repeatAddAnotherText: Option[LocalisedString] = None)
-    extends ComponentType
+  repeatLabel: Option[SmartString] = None,
+  repeatAddAnotherText: Option[SmartString] = None
+) extends ComponentType
 
-case class InformationMessage(infoType: InfoType, infoText: LocalisedString) extends ComponentType
+case class InformationMessage(infoType: InfoType, infoText: SmartString) extends ComponentType
 
 case class FileUpload() extends ComponentType
 

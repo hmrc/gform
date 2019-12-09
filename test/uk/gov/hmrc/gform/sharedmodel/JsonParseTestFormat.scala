@@ -158,7 +158,7 @@ class JsonParseTestFormat extends Spec {
         FormComponent(
           FormComponentId("gid"),
           Text(ShortText.default, Value, DisplayWidth.DEFAULT),
-          toLocalisedString("glabel"),
+          toSmartString("glabel"),
           None,
           None,
           None,

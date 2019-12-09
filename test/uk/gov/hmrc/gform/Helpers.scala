@@ -16,8 +16,7 @@
 
 package uk.gov.hmrc.gform
 
-import cats.data.NonEmptyList
-import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString }
+import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString, SmartString }
 
 object Helpers {
   def toLocalisedString(string: String) =
@@ -26,4 +25,9 @@ object Helpers {
   def toLocalisedString(stringEn: String, stringCy: String) =
     LocalisedString(Map(LangADT.En -> stringEn, LangADT.Cy -> stringCy))
 
+  def toSmartString(string: String): SmartString =
+    SmartString(toLocalisedString(string), Nil)
+
+  def toSmartString(stringEn: String, stringCy: String): SmartString =
+    SmartString(LocalisedString(Map(LangADT.En -> stringEn, LangADT.Cy -> stringCy)), Nil)
 }

@@ -405,13 +405,13 @@ class ValueParserSpec extends Spec {
       )),
     None,
     List.empty[Section],
-    acknowledgementSection = AcknowledgementSection(toLocalisedString(""), None, None, Nil),
-    declarationSection = DeclarationSection(toLocalisedString("Declaration"), None, None, Nil),
+    acknowledgementSection = AcknowledgementSection(toSmartString(""), None, None, Nil),
+    declarationSection = DeclarationSection(toSmartString("Declaration"), None, None, Nil),
     parentFormSubmissionRefs = None
   )
 
   val yourDetailsSection = Section(
-    toLocalisedString("Your details"),
+    toSmartString("Your details"),
     None,
     None,
     None,
@@ -423,7 +423,7 @@ class ValueParserSpec extends Spec {
       FormComponent(
         FormComponentId("firstName"),
         Text(BasicText, Value),
-        toLocalisedString("Your first name"),
+        toSmartString("Your first name"),
         None,
         None,
         validIf = None,
@@ -436,7 +436,7 @@ class ValueParserSpec extends Spec {
       FormComponent(
         FormComponentId("lastName"),
         Text(BasicText, Value),
-        toLocalisedString("Your last name"),
+        toSmartString("Your last name"),
         None,
         None,
         validIf = None,

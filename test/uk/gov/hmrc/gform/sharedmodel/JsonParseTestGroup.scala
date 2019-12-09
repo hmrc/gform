@@ -61,8 +61,8 @@ class JsonParseTestGroup extends Spec {
         Group(
           List(FormComponent(
             FormComponentId("cid"),
-            Choice(Radio, NonEmptyList.of(toLocalisedString("A"), toLocalisedString("B")), Vertical, List(), None),
-            toLocalisedString("clabel"),
+            Choice(Radio, NonEmptyList.of(toSmartString("A"), toSmartString("B")), Vertical, List(), None),
+            toSmartString("clabel"),
             None,
             None,
             None,
@@ -76,10 +76,10 @@ class JsonParseTestGroup extends Spec {
           Horizontal,
           Some(5),
           Some(1),
-          Some(toLocalisedString("repeatLabel")),
-          Some(toLocalisedString("repeatAddAnotherText"))
+          Some(toSmartString("repeatLabel")),
+          Some(toSmartString("repeatAddAnotherText"))
         ),
-        toLocalisedString("glabel"),
+        toSmartString("glabel"),
         None,
         None,
         None,
@@ -131,8 +131,8 @@ class JsonParseTestGroup extends Spec {
         Group(
           List(FormComponent(
             FormComponentId("cid"),
-            Choice(Radio, NonEmptyList.of(toLocalisedString("A"), toLocalisedString("B")), Vertical, List(), None),
-            toLocalisedString("clabel"),
+            Choice(Radio, NonEmptyList.of(toSmartString("A"), toSmartString("B")), Vertical, List(), None),
+            toSmartString("clabel"),
             None,
             None,
             None,
@@ -146,10 +146,10 @@ class JsonParseTestGroup extends Spec {
           Horizontal,
           Some(5),
           Some(0),
-          Some(toLocalisedString("repeatLabel")),
-          Some(toLocalisedString("repeatAddAnotherText"))
+          Some(toSmartString("repeatLabel")),
+          Some(toSmartString("repeatAddAnotherText"))
         ),
-        toLocalisedString("glabel"),
+        toSmartString("glabel"),
         None,
         None,
         None,

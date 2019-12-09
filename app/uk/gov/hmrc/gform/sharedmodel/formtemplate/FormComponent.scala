@@ -19,24 +19,24 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import play.api.libs.json._
 import shapeless.syntax.typeable._
 import uk.gov.hmrc.gform.formtemplate.FormComponentMaker
-import uk.gov.hmrc.gform.sharedmodel.{ LabelHelper, LangADT, LocalisedString }
+import uk.gov.hmrc.gform.sharedmodel.{ LabelHelper, SmartString }
 
 case class ExpandedFormComponent(expandedFormComponent: List[FormComponent]) extends AnyVal
 
 case class FormComponent(
   id: FormComponentId,
   `type`: ComponentType,
-  label: LocalisedString,
-  helpText: Option[LocalisedString],
-  shortName: Option[LocalisedString],
+  label: SmartString,
+  helpText: Option[SmartString],
+  shortName: Option[SmartString],
   validIf: Option[ValidIf],
   mandatory: Boolean,
   editable: Boolean,
   submissible: Boolean,
   derived: Boolean,
   onlyShowOnSummary: Boolean = false,
-  errorMessage: Option[LocalisedString],
-  presentationHint: Option[List[PresentationHint]] = Option.empty[List[PresentationHint]]
+  errorMessage: Option[SmartString],
+  presentationHint: Option[List[PresentationHint]] = None
 ) {
 
   private def updateField(i: Int, fc: FormComponent): FormComponent =
