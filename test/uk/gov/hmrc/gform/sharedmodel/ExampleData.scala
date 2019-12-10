@@ -229,12 +229,15 @@ trait ExampleValidator {
   def defaultValidator = hMRCUTRPostcodeCheckValidator
   def hMRCUTRPostcodeCheckValidator =
     HmrcRosmRegistrationCheckValidator(
-      "The UTR could not be foundor the postcode did not match. | <Welsh...>",
+      toSmartString("The UTR could not be foundor the postcode did not match. | <Welsh...>"),
       "ITSA",
       FormCtx("utrToCheck"),
       FormCtx("postcodeToCheck"))
   def bankAccoutnModulusCheckValidator =
-    BankAccoutnModulusCheck("This is an error message for Bank", FormCtx("accountNumber"), FormCtx("sortCode"))
+    BankAccoutnModulusCheck(
+      toSmartString("This is an error message for Bank"),
+      FormCtx("accountNumber"),
+      FormCtx("sortCode"))
   //todo other example validators
 }
 
