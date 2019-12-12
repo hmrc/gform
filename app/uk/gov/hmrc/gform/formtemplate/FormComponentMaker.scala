@@ -75,6 +75,8 @@ class FormComponentMaker(json: JsValue) {
 
   lazy val fields: Option[List[FormComponentMaker]] = fieldsJson.map(_.map(new FormComponentMaker(_)))
   lazy val validIf: Option[ValidIf] = (json \ "validIf").asOpt[ValidIf]
+  lazy val optValidators: Opt[List[FormComponentValidator]] =
+    toOpt((json \ "validators").validateOpt[List[FormComponentValidator]]).map(_.toList.flatten)
   lazy val mandatory: Option[String] = (json \ "mandatory").asOpt[String]
   lazy val multiline: Option[String] = (json \ "multiline").asOpt[String]
   lazy val displayWidth: Option[String] = (json \ "displayWidth").asOpt[String]
@@ -93,10 +95,11 @@ class FormComponentMaker(json: JsValue) {
 
   def optFieldValue(): Opt[FormComponent] =
     for {
-      presHint <- optMaybePresentationHintExpr
-      mes      <- optMES
-      ct       <- componentTypeOpt
-    } yield mkFieldValue(presHint, mes, ct)
+      presHint   <- optMaybePresentationHintExpr
+      mes        <- optMES
+      ct         <- componentTypeOpt
+      validators <- optValidators
+    } yield mkFieldValue(presHint, mes, ct, validators)
 
   private def toOpt[A](result: JsResult[A]): Opt[A] =
     result match {
@@ -111,7 +114,11 @@ class FormComponentMaker(json: JsValue) {
             .mkString(",")).asLeft
     }
 
-  private def mkFieldValue(presHint: Option[List[PresentationHint]], mes: MES, ct: ComponentType): FormComponent =
+  private def mkFieldValue(
+    presHint: Option[List[PresentationHint]],
+    mes: MES,
+    ct: ComponentType,
+    validators: List[FormComponentValidator]): FormComponent =
     FormComponent(
       id = id,
       `type` = ct,
@@ -125,7 +132,8 @@ class FormComponentMaker(json: JsValue) {
       derived = mes.derived,
       onlyShowOnSummary = mes.onlyShowOnSummary,
       presentationHint = presHint,
-      errorMessage = errorMessage
+      errorMessage = errorMessage,
+      validators = validators
     )
 
   private lazy val optMES: Opt[MES] = (submitMode, mandatory, optMaybeValueExpr) match {

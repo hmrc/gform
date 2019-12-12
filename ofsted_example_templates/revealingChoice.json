@@ -1,6 +1,7 @@
 {
   "_id": "TST123",
   "formName": "Text Box Component Testing tttt",
+  "languages": ["en", "cy"],
   "description": "Testing standard text box component ",
   "authConfig": {
     "authModule": "hmrc"
@@ -15,6 +16,12 @@
           "type": "revealingChoice",
           "multivalue": "true",
           "label": "Trading Details",
+          "validators": [
+            {
+              "validIf" : "${revealing contains 0}",
+              "errorMessage": "Wrong!"
+            }
+          ],
           "choices": [
             "Address",
             "Date",
@@ -80,13 +87,45 @@
                 "id": "taxAmount1",
                 "label": "Enter Tax Amount1",
                 "mandatory": "true",
-                "format":"number(6,2)"
+                "format":"number(6,2)",
+                "validators": [
+                  {
+                    "validIf" : "${taxAmount1 < 100}",
+                    "errorMessage": {
+                      "en": "Must be less than £100",
+                      "cy": "Error in Welsh"
+                    }
+                  },
+                  {
+                    "validIf" : "${taxAmount1 > 50}",
+                    "errorMessage": {
+                      "en": "Must be greater than £50",
+                      "cy": "Error in Welsh"
+                    }
+                  }
+                ]
               },
               {
                 "id": "taxAmount2",
                 "label": "Enter Tax Amount 2",
                 "mandatory": "true",
-                "format":"number(6,2)"
+                "format":"number(6,2)",
+                "validators": [
+                  {
+                    "validIf" : "${taxAmount2 < 100}",
+                    "errorMessage": {
+                      "en": "Must be less than £100",
+                      "cy": "Error in Welsh"
+                    }
+                  },
+                  {
+                    "validIf" : "${taxAmount2 > 50}",
+                    "errorMessage": {
+                      "en": "Must be greater than £50",
+                      "cy": "Error in Welsh"
+                    }
+                  }
+                ]
               }
             ],
             [
