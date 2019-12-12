@@ -36,7 +36,8 @@ case class FormComponent(
   derived: Boolean,
   onlyShowOnSummary: Boolean = false,
   errorMessage: Option[SmartString],
-  presentationHint: Option[List[PresentationHint]] = None
+  presentationHint: Option[List[PresentationHint]] = None,
+  validators: List[FormComponentValidator] = Nil
 ) {
 
   private def updateField(i: Int, fc: FormComponent): FormComponent =
