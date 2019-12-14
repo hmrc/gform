@@ -122,7 +122,6 @@ class SubmissionServiceSpec extends Spec {
     val formTemplate = FormTemplate.withDeprecatedDmsSubmission(
       _id = FormTemplateId("JustAFormTypeId"),
       formName = toLocalisedString("formName"),
-      description = toLocalisedString("formTemplateDescription"),
       developmentPhase = Some(ResearchBanner),
       formCategory = Default,
       draftRetrievalMethod = OnePerUser(ContinueOrDeletePage.Show),

@@ -300,10 +300,6 @@ trait ExampleFormTemplate {
 
   def formName = toLocalisedString("AAA999 dev test template")
 
-  def formDescription =
-    toLocalisedString(
-      "Fill in your insurance premium tax return form online | Llenwch eich ffurflen dreth premiwm yswiriant ar-lein")
-
   def emailTemplateId = "test-email-template-id"
 
   def emailParameters =
@@ -327,7 +323,6 @@ trait ExampleFormTemplate {
     FormTemplate.withDeprecatedDmsSubmission(
       _id = formTemplateId,
       formName = formName,
-      description = formDescription,
       formCategory = Default,
       dmsSubmission = dmsSubmission,
       authConfig = authConfig,

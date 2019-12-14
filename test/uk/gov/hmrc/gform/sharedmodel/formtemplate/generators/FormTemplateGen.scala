@@ -23,7 +23,6 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 trait FormTemplateGen {
   def formTemplateIdGen: Gen[FormTemplateId] = PrimitiveGen.nonEmptyAlphaNumStrGen.map(FormTemplateId(_))
   def formNameGen: Gen[LocalisedString] = LocalisedStringGen.localisedStringGen
-  def formTemplateDescriptionGen: Gen[LocalisedString] = LocalisedStringGen.localisedStringGen
   def developmentPhaseGen: Gen[DevelopmentPhase] = Gen.oneOf(AlphaBanner, BetaBanner, ResearchBanner, LiveBanner)
   def formCategoryGen: Gen[FormCategory] = Gen.oneOf(HMRCReturnForm, HMRCClaimForm, Default)
 
@@ -64,7 +63,6 @@ trait FormTemplateGen {
     for {
       id                       <- formTemplateIdGen
       name                     <- formNameGen
-      description              <- formTemplateDescriptionGen
       developmentPhase         <- Gen.option(developmentPhaseGen)
       category                 <- formCategoryGen
       draftRetrievalMethod     <- draftRetrievalMethodGen
@@ -83,7 +81,6 @@ trait FormTemplateGen {
       FormTemplate(
         id,
         name,
-        description,
         developmentPhase,
         category,
         draftRetrievalMethod,

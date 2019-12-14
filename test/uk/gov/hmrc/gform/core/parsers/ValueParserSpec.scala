@@ -387,7 +387,6 @@ class ValueParserSpec extends Spec {
   val plainFormTemplate = FormTemplate.withDeprecatedDmsSubmission(
     FormTemplateId("IPT100"),
     toLocalisedString("Insurance Premium Tax Return"),
-    toLocalisedString("description"),
     Some(ResearchBanner),
     Default,
     OnePerUser(ContinueOrDeletePage.Show),
