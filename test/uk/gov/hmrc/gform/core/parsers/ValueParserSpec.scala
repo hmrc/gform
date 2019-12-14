@@ -391,7 +391,6 @@ class ValueParserSpec extends Spec {
     Some(ResearchBanner),
     Default,
     OnePerUser(ContinueOrDeletePage.Show),
-    None,
     Destinations
       .DmsSubmission("DMS-ID-XX", TextExpression(AuthCtx(PayeNino)), "BT-NRU-Environmental", "FinanceOpsCorpT"),
     HmrcAgentWithEnrolmentModule(
