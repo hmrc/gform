@@ -126,7 +126,6 @@ class SubmissionServiceSpec extends Spec {
       developmentPhase = Some(ResearchBanner),
       formCategory = Default,
       draftRetrievalMethod = OnePerUser(ContinueOrDeletePage.Show),
-      submissionReference = None,
       dmsSubmission =
         DmsSubmission("DMS-ID-XX", TextExpression(AuthCtx(PayeNino)), "classificationType", "businessArea"),
       authConfig = HmrcAgentWithEnrolmentModule(

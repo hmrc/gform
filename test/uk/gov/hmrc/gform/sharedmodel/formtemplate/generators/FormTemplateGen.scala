@@ -68,7 +68,6 @@ trait FormTemplateGen {
       developmentPhase         <- Gen.option(developmentPhaseGen)
       category                 <- formCategoryGen
       draftRetrievalMethod     <- draftRetrievalMethodGen
-      submissionReference      <- Gen.option(FormatExprGen.textExpressionGen)
       destinations             <- DestinationsGen.destinationsGen
       authConfig               <- AuthConfigGen.authConfigGen
       emailTemplateId          <- emailTemplateIdGen
@@ -88,7 +87,6 @@ trait FormTemplateGen {
         developmentPhase,
         category,
         draftRetrievalMethod,
-        submissionReference,
         destinations,
         authConfig,
         emailTemplateId,

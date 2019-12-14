@@ -329,7 +329,6 @@ trait ExampleFormTemplate {
       formName = formName,
       description = formDescription,
       formCategory = Default,
-      submissionReference = None,
       dmsSubmission = dmsSubmission,
       authConfig = authConfig,
       emailTemplateId = emailTemplateId,
