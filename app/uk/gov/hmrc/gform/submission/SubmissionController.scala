@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.submission
 
 import cats.implicits._
 import play.api.Logger
+import play.api.libs.json.Json
 import play.api.mvc.{ Action, AnyContent, ControllerComponents }
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
@@ -61,4 +62,8 @@ class SubmissionController(controllerComponents: ControllerComponents, submissio
     formAction("submissionDetailsFormIdData", formIdData) { _ =>
       submissionService.submissionDetails(formIdData).asOkJson
     }
+
+  def retrieveAll(formTemplateId: FormTemplateId): Action[AnyContent] = Action.async { implicit request =>
+    submissionService.submissionDetailsAll(formTemplateId).map(submissions => Ok(Json.toJson(submissions)))
+  }
 }

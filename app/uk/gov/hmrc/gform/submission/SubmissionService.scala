@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.submission
 
 import cats.instances.future._
 import play.api.Logger
+import play.api.libs.json.Json
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.gform.core.{ fromFutureA, _ }
 import uk.gov.hmrc.gform.email.EmailService
@@ -25,6 +26,7 @@ import uk.gov.hmrc.gform.fileupload.Attachments
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.repo.Repo
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.{ SubmissionData, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FileUpload, FormTemplate }
@@ -119,4 +121,11 @@ class SubmissionService(
         customerId //TODO need more secure and safe way of doing this. perhaps moving auth to backend and just pulling value out there.
       )
     )
+
+  def submissionDetailsAll(formTemplateId: FormTemplateId): Future[List[Submission]] = {
+    val query = Json.obj(
+      "formTemplateId" -> formTemplateId.value
+    )
+    submissionRepo.search(query)
+  }
 }
