@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
+import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.sharedmodel.LabelHelper
 import uk.gov.hmrc.gform.sharedmodel.form.FormField
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
@@ -23,17 +24,37 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import scala.collection.immutable.List
 
 object SectionHelper {
-  def atomicFields(section: BaseSection, data: Map[FormComponentId, FormField]): List[FormComponent] =
-    atomicFields(section.fields, data)
+  def pages(section: Section): NonEmptyList[Page] =
+    section match {
+      case s: Section.NonRepeatingPage => NonEmptyList.of(s.page)
+      case s: Section.RepeatingPage    => NonEmptyList.of(s.page)
+      case s: Section.AddToList        => s.pages
+    }
 
-  private def atomicFields(
-    fieldValues: List[FormComponent],
+  def pages(sections: List[Section]): List[Page] =
+    sections.flatMap(pages(_).toList)
+
+  def atomicLeafFields(section: Section, data: Map[FormComponentId, FormField]): List[FormComponent] =
+    atomicLeafFields(listTopLevelFormComponents(section), data)
+
+  // The FormComponents returned include those with ContainerComponent `type` (e.g. Group).
+  // We don't drill down into the ContainerComponents to get at the leaves in this method
+  private def listTopLevelFormComponents(section: Section): List[FormComponent] =
+    pages(section).toList.flatMap(_.fields)
+
+  def atomicLeafFields(
+    formComponents: List[FormComponent],
     data: Map[FormComponentId, FormField]): List[FormComponent] =
-    fieldValues.flatMap { (fieldValue) =>
-      fieldValue.`type` match {
+    formComponents.flatMap { formComponent =>
+      formComponent.`type` match {
+        case _: Text | _: TextArea | _: Choice | _: HmrcTaxPeriod | _: FileUpload | _: Date | _: Address |
+            _: UkSortCode =>
+          List(formComponent)
         case Group(gfvs, _, repMax, _, _, _) =>
-          atomicFields(fixLabels(gfvs), data) ++ findIdsInRepeatingGroup(gfvs, repMax, data)
-        case fv @ _ => List(fieldValue)
+          atomicLeafFields(fixLabels(gfvs), data) ++ findIdsInRepeatingGroup(gfvs, repMax, data)
+        case RevealingChoice(opts, _) =>
+          formComponent :: atomicLeafFields(opts.toList.flatMap(_.revealingFields), data)
+        case _: InformationMessage => Nil
       }
     }
 
@@ -48,7 +69,7 @@ object SectionHelper {
       repeatsMax.map(extractRepeatingGroupFieldIds(fields, _, data)).getOrElse(Nil)
     }
 
-    atomicFields(result, data)
+    atomicLeafFields(result, data)
   }
 
   private def extractRepeatingGroupFieldIds(

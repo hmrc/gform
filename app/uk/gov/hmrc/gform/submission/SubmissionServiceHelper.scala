@@ -16,15 +16,18 @@
 
 package uk.gov.hmrc.gform.submission
 
+import cats.data.NonEmptyList
 import cats.instances.either._
 import cats.instances.list._
+import cats.instances.string._
 import cats.syntax.either._
+import cats.syntax.show._
 import cats.syntax.traverse._
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.formtemplate.{ RepeatingComponentService, SectionHelper }
-import uk.gov.hmrc.gform.sharedmodel.VariadicFormData
+import uk.gov.hmrc.gform.formtemplate.SectionHelper
+import uk.gov.hmrc.gform.sharedmodel.SmartString
 import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormField }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
@@ -33,58 +36,58 @@ object SubmissionServiceHelper {
   def getSectionFormFields(
     form: Form,
     formTemplate: FormTemplate,
-    affinityGroup: Option[AffinityGroup]): Opt[List[SectionFormField]] = {
+    affinityGroup: Option[AffinityGroup]): Opt[List[SectionFormFieldsByAtomicFormComponents]] = {
 
-    val data: Map[FormComponentId, FormField] = form.formData.fields.map(field => field.id -> field).toMap
+    val formFieldByFormComponentId: Map[FormComponentId, FormField] =
+      form.formData.fields.map(field => field.id -> field).toMap
 
-    val formFieldByFieldValue: FormComponent => Opt[(List[FormField], FormComponent)] = fieldValue => {
-      val fieldValueIds: List[FormComponentId] =
-        fieldValue.`type` match {
-          case Address(_)    => Address.fields(fieldValue.id).toList
-          case Date(_, _, _) => Date.fields(fieldValue.id).toList
-          case FileUpload()  => List(fieldValue.id)
-          case UkSortCode(_) => UkSortCode.fields(fieldValue.id).toList
-          case Text(_, _, _, _) | TextArea(_, _, _) | Choice(_, _, _, _, _) | Group(_, _, _, _, _, _) =>
-            List(fieldValue.id)
-          case InformationMessage(_, _) => Nil
-          case HmrcTaxPeriod(_, _, _)   => List(fieldValue.id)
-          case _                        => Nil
+    def atomicFormComponentFormFields(formComponent: FormComponent): Opt[AtomicFormComponentFormFields] = {
+      val consituentFormComponentIds: Opt[NonEmptyList[FormComponentId]] =
+        formComponent.`type` match {
+          case d: Date        => Right(d.fields(formComponent.id))
+          case sc: UkSortCode => Right(sc.fields(formComponent.id))
+          case a: Address     => Right(a.fields(formComponent.id))
+          case _: Text | _: TextArea | _: Choice | _: HmrcTaxPeriod | _: FileUpload =>
+            Right(NonEmptyList.of(formComponent.id))
+          case _: Group | _: RevealingChoice | _: InformationMessage =>
+            Left(UnexpectedState(
+              show"Got an unexpected non-atomic field (${formComponent.id} of type ${formComponent.`type`.getClass.getName})"))
         }
 
-      val formFieldAndFieldValues: Opt[List[FormField]] = {
-        fieldValueIds
-          .map { fieldValueId =>
-            data.get(fieldValueId) match {
-              case Some(formField) => Right(formField)
-              case None            => Left(UnexpectedState(s"No formField for field.id: ${fieldValue.id} found"))
-            }
+      val formFields: Opt[NonEmptyList[FormField]] =
+        consituentFormComponentIds.flatMap {
+          _.map(
+            id =>
+              formFieldByFormComponentId
+                .get(id)
+                .toRight(UnexpectedState(show"No formField for field.id: ${formComponent.id} found"))).toList
+            .partition(_.isLeft) match {
+            case (Nil, list) =>
+              Right(NonEmptyList.fromListUnsafe(list.collect { case Right(formField) => formField }))
+            case (invalidStates, _) =>
+              Left(
+                UnexpectedState(invalidStates.collect { case Left(invalidState) => invalidState.error }.mkString(", ")))
           }
-          .partition(_.isLeft) match {
-          case (Nil, list) => Right(for (Right(formField) <- list) yield formField)
-          case (invalidStates, _) =>
-            Left(UnexpectedState((for (Left(invalidState) <- invalidStates) yield invalidState.error).mkString(", ")))
         }
-      }
 
-      formFieldAndFieldValues match {
-        case Right(list)        => Right((list, fieldValue))
-        case Left(invalidState) => Left(invalidState)
-      }
+      formFields.map(formFieldList => AtomicFormComponentFormFields(formComponent, formFieldList))
     }
 
-    val toSectionFormField: BaseSection => Opt[SectionFormField] = section =>
+    def formFieldsByAtomicFormComponents(
+      sectionTitle: SmartString,
+      fields: List[FormComponent]): Opt[SectionFormFieldsByAtomicFormComponents] =
       SectionHelper
-        .atomicFields(section, data)
-        .traverse(formFieldByFieldValue)
-        .map(ff => SectionFormField(section.shortName.getOrElse(section.title), ff))
+        .atomicLeafFields(fields, formFieldByFormComponentId)
+        .traverse(atomicFormComponentFormFields)
+        .map(ff => SectionFormFieldsByAtomicFormComponents(sectionTitle, ff))
 
-    val allSections = RepeatingComponentService.getAllSections(form, formTemplate)
+    val allVisiblePages: List[Page] = RepeatingComponentService.getAllVisiblePages(form, formTemplate, affinityGroup)
 
-    val visibility =
-      Visibility(allSections, VariadicFormData.buildFromMongoData(formTemplate, data.mapValues(_.value)), affinityGroup)
-    val filteredSection = allSections.filter(visibility.isVisible)
-
-    val sectionsToSubmit = filteredSection :+ formTemplate.declarationSection
-    sectionsToSubmit.traverse(toSectionFormField)
+    for {
+      formSectionFields <- allVisiblePages.traverse(p => formFieldsByAtomicFormComponents(p.title, p.fields))
+      declararationSectionFields <- formFieldsByAtomicFormComponents(
+                                     formTemplate.declarationSection.title,
+                                     formTemplate.declarationSection.fields)
+    } yield (declararationSectionFields :: formSectionFields.reverse).reverse
   }
 }

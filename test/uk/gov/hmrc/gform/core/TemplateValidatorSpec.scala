@@ -22,15 +22,21 @@ import uk.gov.hmrc.gform.Helpers._
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.formtemplate.FormTemplateValidator
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.gform.sharedmodel.form.FormField
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.FormComponentGen._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.PrimitiveGen._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.SectionGen._
 
 class TemplateValidatorSpec extends Spec {
+  private def setAllFieldIds(page: Page, id: FormComponentId): Page =
+    page.copy(fields = page.fields.map(_.copy(id = id)))
+
   private def setAllFieldIds(sections: NonEmptyList[Section], id: FormComponentId): NonEmptyList[Section] =
-    sections.map(s => s.copy(fields = s.fields.map(_.copy(id = id))))
+    sections.map {
+      case s: Section.NonRepeatingPage => s.copy(page = setAllFieldIds(s.page, id))
+      case s: Section.RepeatingPage    => s.copy(page = setAllFieldIds(s.page, id))
+      case s: Section.AddToList        => s.copy(pages = s.pages.map(setAllFieldIds(_, id)))
+    }
 
   "Section.validate" should "validate unique FieldIds" in {
     forAll(
@@ -98,13 +104,15 @@ class TemplateValidatorSpec extends Spec {
     forAll(
       FormTemplateGen.formTemplateGen,
       Gen.oneOf(hmrcEnrolmentModuleGen, hmrcAgentWithEnrolmentModuleGen),
-      formComponentGen()) { (template, authConfig, fc) =>
+      formComponentGen(),
+      pageGen) { (template, authConfig, fc, page) =>
       val componentType = Text(EORI, UserCtx(EnrolledIdentifier))
       val newFormComponents: List[FormComponent] = fc.copy(`type` = componentType) :: Nil
-      val newSections = template.sections.map(_.copy(fields = newFormComponents))
+      val newPage = page.copy(fields = newFormComponents)
+      val newSections = List(Section.NonRepeatingPage(newPage))
       val newTemplate = template.copy(sections = newSections).copy(authConfig = authConfig)
 
-      val isAUserCtx = userContextComponentType(formTemplate.expandFormTemplate.allFormComponents)
+      val isAUserCtx = userContextComponentType(formTemplate.expandedFormComponentsInMainSections)
 
       whenever(
         authConfig.isInstanceOf[HmrcEnrolmentModule] || authConfig
@@ -117,52 +125,6 @@ class TemplateValidatorSpec extends Spec {
       }
     }
   }
-
-  private val businessDetailsSection = mkSection(
-    "Business details",
-    mkFormComponent("nameOfBusiness", Value) ::
-      mkFormComponent("businessAddress", Address(international = false)) :: Nil
-  )
-
-  private val sectionWithDate = mkSection(
-    "Business details",
-    mkFormComponent("nameOfBusiness", Value) ::
-      mkFormComponent("startDate", Date(AnyDate, Offset(0), None)) :: Nil
-  )
-
-  private val sectionWithCheckbox = mkSection(
-    "Business details",
-    mkFormComponent("nameOfBusiness", Value) ::
-      mkFormComponent(
-      "dutyType",
-      Choice(
-        Checkbox,
-        NonEmptyList(toSmartString("Natural gas"), List(toSmartString("Other gas"))),
-        Vertical,
-        List.empty[Int],
-        None)) :: Nil
-  )
-
-  private val sectionWithRadio = mkSection(
-    "Business details",
-    mkFormComponent("nameOfBusiness", Value) ::
-      mkFormComponent(
-      "dutyType",
-      Choice(
-        Radio,
-        NonEmptyList(toSmartString("Natural gas"), List(toSmartString("Other gas"))),
-        Vertical,
-        List.empty[Int],
-        None)) :: Nil
-  )
-
-  private val sectionWithYesNo = mkSection(
-    "Business details",
-    mkFormComponent("nameOfBusiness", Value) ::
-      mkFormComponent(
-      "taxType",
-      Choice(YesNo, NonEmptyList.of(toSmartString("Yes"), toSmartString("No")), Horizontal, List.empty[Int], None)) :: Nil
-  )
 
   "TemplateValidator.validateDependencyGraph" should "detect cycle in graph" in {
     val sections =
@@ -526,7 +488,7 @@ class TemplateValidatorSpec extends Spec {
       )
     forAll(table) {
       case (booleanExpr, expected) =>
-        val sectionA = baseSectionA.copy(includeIf = Some(IncludeIf(booleanExpr)))
+        val sectionA = baseSectionA.copy(page = baseSectionA.page.copy(includeIf = Some(IncludeIf(booleanExpr))))
         val res = FormTemplateValidator.validateForwardReference(sectionA :: baseSectionB :: Nil)
         res shouldBe expected
     }
@@ -551,19 +513,18 @@ class TemplateValidatorSpec extends Spec {
       value)
 
   private def mkSection(name: String, formComponents: List[FormComponent]) =
-    Section(
-      toSmartString(name),
-      None,
-      None,
-      None,
-      None,
-      None,
-      None,
-      None,
-      formComponents,
-      None,
-      None
-    )
+    Section.NonRepeatingPage(
+      Page(
+        toSmartString(name),
+        None,
+        None,
+        None,
+        None,
+        None,
+        formComponents,
+        None,
+        None
+      ))
 
   private def mkFormComponent(name: String, expr: Expr) =
     FormComponent(

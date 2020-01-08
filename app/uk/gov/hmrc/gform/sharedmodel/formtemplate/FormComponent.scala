@@ -16,12 +16,12 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
+import cats.instances.list._
+import cats.syntax.foldable._
 import play.api.libs.json._
 import shapeless.syntax.typeable._
 import uk.gov.hmrc.gform.formtemplate.FormComponentMaker
 import uk.gov.hmrc.gform.sharedmodel.{ LabelHelper, SmartString }
-
-case class ExpandedFormComponent(expandedFormComponent: List[FormComponent]) extends AnyVal
 
 case class FormComponent(
   id: FormComponentId,
@@ -39,7 +39,6 @@ case class FormComponent(
   presentationHint: Option[List[PresentationHint]] = None,
   validators: List[FormComponentValidator] = Nil
 ) {
-
   private def updateField(i: Int, fc: FormComponent): FormComponent =
     fc.copy(
       label = LabelHelper.buildRepeatingLabel(fc.label, i),
@@ -56,11 +55,11 @@ case class FormComponent(
                     .toList
           } yield res
         expandedFields.flatMap(loop) // for case when there is group inside group (Note: it does not work, we would need to handle prefix)
-      case _ => fc :: Nil
+      case RevealingChoice(options, _) => fc :: options.toList.foldMap(_.revealingFields.map(loop)).flatten
+      case _                           => fc :: Nil
     }
 
-  val expandFormComponent: ExpandedFormComponent = ExpandedFormComponent(loop(this))
-
+  lazy val expandedFormComponents: List[FormComponent] = loop(this)
 }
 
 object FormComponent {

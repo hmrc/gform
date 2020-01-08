@@ -32,18 +32,19 @@ trait Verifier {
 
     val sections = formTemplate.sections
 
-    val exprs: List[ComponentType] = sections.flatMap(_.fields.map(_.`type`))
+    val pages = SectionHelper.pages(sections)
+
+    val componentTypes: List[ComponentType] = pages.flatMap(_.fields.map(_.`type`))
 
     val languages = formTemplate.languages
 
     for {
       _ <- fromOptA(FormTemplateValidator.validateLanguages(languages).toEither)
-      _ <- fromOptA(FormTemplateValidator.validateRepeatingSectionFields(sections).toEither)
-      _ <- fromOptA(FormTemplateValidator.validateChoiceHelpText(sections).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateChoiceHelpText(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateUniqueFields(sections).toEither)
       _ <- fromOptA(DestinationsValidator.validate(formTemplate))
       _ <- fromOptA(FormTemplateValidator.validateForwardReference(sections).toEither)
-      _ <- fromOptA(FormTemplateValidator.validate(exprs, formTemplate).toEither)
+      _ <- fromOptA(FormTemplateValidator.validate(componentTypes, formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateDependencyGraph(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateEnrolmentSection(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateRegimeId(formTemplate).toEither)
@@ -60,26 +61,32 @@ trait Verifier {
     formTemplate.copy(
       _id = FormTemplateId("specimen-" + formTemplate._id.value),
       authConfig = Anonymous,
-      sections = formTemplate.sections.map(
-        removeIncludeIf _ andThen mkComponentsOptional _ andThen noValidators _ andThen noEeittExpression _),
+      sections = formTemplate.sections.flatMap {
+        case p: Section.NonRepeatingPage => List(mkSpecimen(p.page))
+        case p: Section.RepeatingPage    => List(mkSpecimen(p.page))
+        case l: Section.AddToList        => l.pages.toList.map(mkSpecimen)
+      },
       destinations = DestinationList(NonEmptyList.of(StateTransition(DestinationId("abc"), Submitted, "true", true)))
     )
 
-  private def removeIncludeIf(section: Section): Section = section.copy(includeIf = None)
+  private def mkSpecimen(page: Page): Section.NonRepeatingPage =
+    Section.NonRepeatingPage(
+      (removeIncludeIf _ andThen mkComponentsOptional _ andThen noValidators _ andThen noEeittExpression _)(page)
+    )
+
+  private def removeIncludeIf(section: Page): Page = section.copy(includeIf = None)
 
   private val constant1 = TextExpression(Constant("1"))
 
-  private def mkComponentsOptional(section: Section): Section =
-    section.copy(
-      fields = mkOptional(section.fields),
-      repeatsMax = section.repeatsMax.map(_ => constant1),
-      repeatsMin = section.repeatsMin.map(_ => constant1)
+  private def mkComponentsOptional(page: Page): Page =
+    page.copy(
+      fields = mkOptional(page.fields)
     )
 
-  private def noValidators(section: Section): Section =
+  private def noValidators(section: Page): Page =
     section.copy(validators = None)
 
-  private def noEeittExpression(section: Section): Section =
+  private def noEeittExpression(section: Page): Page =
     section.copy(fields = section.fields.map {
       case f @ IsText(text @ Text(_, EeittCtx(eeitt), _, _)) =>
         f.copy(`type` = text.copy(value = Constant(eeitt.toString)))

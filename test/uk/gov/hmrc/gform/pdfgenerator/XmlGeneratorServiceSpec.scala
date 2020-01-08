@@ -16,11 +16,13 @@
 
 package uk.gov.hmrc.gform.pdfgenerator
 
+import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.Helpers._
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.submission.{ AtomicFormComponentFormFields, SectionFormFieldsByAtomicFormComponents }
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.collection.immutable.List
@@ -47,11 +49,10 @@ class XmlGeneratorServiceSpec extends Spec {
     val formData = FormData(formFields)
 
     val sectionFormFields = List(
-      SectionFormField(
+      SectionFormFieldsByAtomicFormComponents(
         toSmartString("Section title"),
         List(
-          (
-            List(FormField(FormComponentId("UNO"), "UNO")),
+          AtomicFormComponentFormFields(
             FormComponent(
               FormComponentId("UNO"),
               Text(BasicText, Value),
@@ -65,9 +66,10 @@ class XmlGeneratorServiceSpec extends Spec {
               derived = false,
               onlyShowOnSummary = false,
               None
-            )),
-          (
-            List(FormField(FormComponentId("DOS"), "DOS")),
+            ),
+            NonEmptyList.of(FormField(FormComponentId("UNO"), "UNO"))
+          ),
+          AtomicFormComponentFormFields(
             FormComponent(
               FormComponentId("DOS"),
               Text(BasicText, Value),
@@ -81,9 +83,10 @@ class XmlGeneratorServiceSpec extends Spec {
               derived = false,
               onlyShowOnSummary = false,
               None
-            )),
-          (
-            List(FormField(FormComponentId("1_UNO"), "1_UNO")),
+            ),
+            NonEmptyList.of(FormField(FormComponentId("DOS"), "DOS"))
+          ),
+          AtomicFormComponentFormFields(
             FormComponent(
               FormComponentId("1_UNO"),
               Text(BasicText, Value),
@@ -97,9 +100,10 @@ class XmlGeneratorServiceSpec extends Spec {
               derived = false,
               onlyShowOnSummary = false,
               None
-            )),
-          (
-            List(FormField(FormComponentId("1_DOS"), "1_DOS")),
+            ),
+            NonEmptyList.of(FormField(FormComponentId("1_UNO"), "1_UNO"))
+          ),
+          AtomicFormComponentFormFields(
             FormComponent(
               FormComponentId("1_DOS"),
               Text(BasicText, Value),
@@ -113,14 +117,15 @@ class XmlGeneratorServiceSpec extends Spec {
               derived = false,
               onlyShowOnSummary = false,
               None
-            ))
+            ),
+            NonEmptyList.of(FormField(FormComponentId("1_DOS"), "1_DOS"))
+          )
         )
       ),
-      SectionFormField(
+      SectionFormFieldsByAtomicFormComponents(
         toSmartString("Declaration"),
         List(
-          (
-            List(FormField(FormComponentId("TRES"), "TRES")),
+          AtomicFormComponentFormFields(
             FormComponent(
               FormComponentId("TRES"),
               Text(BasicText, Constant("TRES")),
@@ -134,7 +139,9 @@ class XmlGeneratorServiceSpec extends Spec {
               derived = false,
               onlyShowOnSummary = false,
               None
-            )))
+            ),
+            NonEmptyList.of(FormField(FormComponentId("TRES"), "TRES"))
+          ))
       )
     )
 

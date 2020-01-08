@@ -58,7 +58,11 @@ object FormTemplateValidatorHelper {
     getAllDatesFromFormat(fields) ::: getAllDatesFromValue(fields)
 
   def getAllDates(template: FormTemplate) = {
-    val sectionsDates = template.sections.flatMap(_.fields.flatMap(field => extractDatesFromField(field)))
+    val sectionsDates = for {
+      formComponent <- template.expandedFormComponentsInMainSections
+      date          <- extractDatesFromField(formComponent)
+    } yield date
+
     val declarationSectionDates = template.declarationSection.fields.flatMap(field => extractDatesFromField(field))
     val acknowledgementSectionDates =
       template.acknowledgementSection.fields.flatMap(field => extractDatesFromField(field))

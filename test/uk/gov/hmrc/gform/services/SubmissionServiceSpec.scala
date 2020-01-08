@@ -24,7 +24,7 @@ import uk.gov.hmrc.gform.Helpers._
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
-import uk.gov.hmrc.gform.submission.SubmissionServiceHelper
+import uk.gov.hmrc.gform.submission.{ AtomicFormComponentFormFields, SectionFormFieldsByAtomicFormComponents, SubmissionServiceHelper }
 
 import scala.collection.immutable.List
 import uk.gov.hmrc.http.HeaderCarrier
@@ -105,19 +105,18 @@ class SubmissionServiceSpec extends Spec {
       errorMessage = None
     )
 
-    val section = Section(
-      title = toSmartString("Section title"),
-      description = None,
-      shortName = None,
-      progressIndicator = None,
-      includeIf = None,
-      None,
-      None,
-      None,
-      fields = List(groupFieldValue),
-      None,
-      None
-    )
+    val section = Section.NonRepeatingPage(
+      Page(
+        title = toSmartString("Section title"),
+        description = None,
+        shortName = None,
+        progressIndicator = None,
+        includeIf = None,
+        None,
+        fields = List(groupFieldValue),
+        None,
+        None
+      ))
 
     val formTemplate = FormTemplate.withDeprecatedDmsSubmission(
       _id = FormTemplateId("JustAFormTypeId"),
@@ -144,11 +143,10 @@ class SubmissionServiceSpec extends Spec {
     )
 
     val expectedResult = List(
-      SectionFormField(
+      SectionFormFieldsByAtomicFormComponents(
         toSmartString("Section title"),
         List(
-          (
-            List(FormField(FormComponentId("UNO"), "UNO")),
+          AtomicFormComponentFormFields(
             FormComponent(
               FormComponentId("UNO"),
               Text(BasicText, Constant("UNO")),
@@ -162,9 +160,10 @@ class SubmissionServiceSpec extends Spec {
               derived = false,
               onlyShowOnSummary = false,
               None
-            )),
-          (
-            List(FormField(FormComponentId("DOS"), "DOS")),
+            ),
+            NonEmptyList.of(FormField(FormComponentId("UNO"), "UNO"))
+          ),
+          AtomicFormComponentFormFields(
             FormComponent(
               FormComponentId("DOS"),
               Text(BasicText, Constant("DOS")),
@@ -178,9 +177,10 @@ class SubmissionServiceSpec extends Spec {
               derived = false,
               onlyShowOnSummary = false,
               None
-            )),
-          (
-            List(FormField(FormComponentId("1_UNO"), "1_UNO")),
+            ),
+            NonEmptyList.of(FormField(FormComponentId("DOS"), "DOS"))
+          ),
+          AtomicFormComponentFormFields(
             FormComponent(
               FormComponentId("1_UNO"),
               Text(BasicText, Constant("UNO")),
@@ -194,9 +194,10 @@ class SubmissionServiceSpec extends Spec {
               derived = false,
               onlyShowOnSummary = false,
               None
-            )),
-          (
-            List(FormField(FormComponentId("1_DOS"), "1_DOS")),
+            ),
+            NonEmptyList.of(FormField(FormComponentId("1_UNO"), "1_UNO"))
+          ),
+          AtomicFormComponentFormFields(
             FormComponent(
               FormComponentId("1_DOS"),
               Text(BasicText, Constant("DOS")),
@@ -210,10 +211,12 @@ class SubmissionServiceSpec extends Spec {
               derived = false,
               onlyShowOnSummary = false,
               None
-            ))
+            ),
+            NonEmptyList.of(FormField(FormComponentId("1_DOS"), "1_DOS"))
+          )
         )
       ),
-      SectionFormField(toSmartString("Declaration"), List())
+      SectionFormFieldsByAtomicFormComponents(toSmartString("Declaration"), List())
     )
 
     val res = SubmissionServiceHelper.getSectionFormFields(form, formTemplate, None)

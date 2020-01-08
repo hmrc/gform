@@ -25,13 +25,12 @@ object DependencyGraph {
 
   val emptyGraph: Graph[FormComponentId, DiEdge] = Graph.empty
 
-  def toGraph(formTemplate: FormTemplate): Graph[FormComponentId, DiEdge] = graphFrom(formTemplate.expandFormTemplate)
-  def toGraph(section: Section): Graph[FormComponentId, DiEdge] =
-    graphFrom(section.expandSection.toExpandedFormTemplate)
+  def toGraph(formTemplate: FormTemplate): Graph[FormComponentId, DiEdge] =
+    graphFrom(formTemplate.expandedFormComponentsInMainSections)
 
-  private def graphFrom(expandedFormTemplate: ExpandedFormTemplate): Graph[FormComponentId, DiEdge] = {
+  private def graphFrom(expandedFormComponents: List[FormComponent]): Graph[FormComponentId, DiEdge] = {
 
-    val allFcIds = expandedFormTemplate.allFormComponentIds
+    val allFcIds = expandedFormComponents.map(_.id)
 
     def fromFormComponent(fc: FormComponent): Graph[FormComponentId, DiEdge] = {
       def fcIds(fc: FormComponent): List[FormComponentId] = fc match {
@@ -51,11 +50,10 @@ object DependencyGraph {
         case otherwise                   => List.empty
       }
 
-    expandedFormTemplate.allFormComponents.foldLeft(emptyGraph)(_ ++ fromFormComponent(_))
-
+    expandedFormComponents.foldLeft(emptyGraph)(_ ++ fromFormComponent(_))
   }
 
-  def constructDepencyGraph(
+  def constructDependencyGraph(
     graph: Graph[FormComponentId, DiEdge]): Either[graph.NodeT, graph.LayeredTopologicalOrder[graph.NodeT]] =
     graph.topologicalSort.map(_.toLayered)
 }

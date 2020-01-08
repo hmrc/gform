@@ -17,10 +17,8 @@
 package uk.gov.hmrc.gform.sharedmodel
 
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormData, FormField }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ EmailParameter, FormComponentId, FormCtx, IncludeIf, IsFalse, IsTrue, SectionFormField, TextExpression }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ IncludeIf, IsFalse, IsTrue }
 import uk.gov.hmrc.gform.submission.SubmissionServiceHelper
 
 class SubmissionServiceHelperSpec extends Spec {
@@ -31,27 +29,27 @@ class SubmissionServiceHelperSpec extends Spec {
 
   it should "return a Left if formData is missing" in new ExampleData {
     override lazy val formData = super.formData.copy(formFields.init)
-    val sectionFormFieldsOpt: Opt[List[SectionFormField]] =
+    val sectionFormFieldsOpt =
       SubmissionServiceHelper.getSectionFormFields(form, formTemplate, None)
     sectionFormFieldsOpt.left.value shouldBe UnexpectedState("No formField for field.id: startDate found")
   }
 
   it should "filter not included Sections" in new ExampleData {
-    override val `section - about you` = super.`section - about you`.copy(includeIf = Some(IncludeIf(IsFalse)))
+    override val `section - about you` = nonRepeatingPageSection(includeIf = Some(IncludeIf(IsFalse)))
     val sections = SubmissionServiceHelper.getSectionFormFields(form, formTemplate, None).right.value
     val expectedSize = formTemplate.sections.size // this includes the declaration  section
     sections.size shouldBe expectedSize withClue "sections included"
-    sections.map(_.title) should not contain `fieldValue - firstName`.label
-    sections.map(_.title) should not contain `fieldValue - surname`.label
-    sections.map(_.title) should not contain `fieldValue - facePhoto`.label
+    sections.map(_.sectionTitle) should not contain `fieldValue - firstName`.label
+    sections.map(_.sectionTitle) should not contain `fieldValue - surname`.label
+    sections.map(_.sectionTitle) should not contain `fieldValue - facePhoto`.label
   }
 
   it should "return only the formData on included Sections" in new ExampleData {
-    override val `section - about you` = super.`section - about you`.copy(includeIf = Some(IncludeIf(IsTrue)))
+    override val `section - about you` = nonRepeatingPageSection(includeIf = Some(IncludeIf(IsTrue)))
     val sectionFormFields1 = SubmissionServiceHelper.getSectionFormFields(form, formTemplate, None).right.get
     sectionFormFields1.size shouldBe formTemplate.sections.size + 1 // This includes the declaration section
 
-    sectionFormFields1.map(_.title) should contain allOf (`section - about you`.title,
+    sectionFormFields1.map(_.sectionTitle) should contain allOf (`section - about you`.title,
     `section - businessDetails`.title)
   }
 
