@@ -17,8 +17,7 @@
 package uk.gov.hmrc.gform.pdfgenerator
 
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
-import uk.gov.hmrc.gform.sharedmodel.form.FormField
-import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.submission.{ AtomicFormComponentFormFields, SectionFormFieldsByAtomicFormComponents }
 import uk.gov.hmrc.gform.typeclasses.Attribute
 
 import scala.collection.immutable.List
@@ -36,16 +35,16 @@ trait XmlGeneratorService {
   private def createAttribute[T: Attribute](name: String, values: List[T]): Elem =
     implicitly[Attribute[T]].attribute(name, values)
 
-  private def createFieldData(formFields: List[FormField], formComponent: FormComponent): List[Elem] =
-    if (formComponent.submissible)
-      formFields.map(formField => createAttribute(formField.id.toString, formField.value))
+  private def createFieldData(field: AtomicFormComponentFormFields): List[Elem] =
+    if (field.formComponent.submissible)
+      field.fields.toList.map(formField => createAttribute(formField.id.toString, formField.value))
     else
       List()
 
-  private def createSectionData(section: SectionFormField): List[Elem] =
-    section.fields.flatMap(field => createFieldData(field._1, field._2))
+  private def createSectionData(section: SectionFormFieldsByAtomicFormComponents): List[Elem] =
+    section.fields.flatMap(createFieldData)
 
-  private def createSubmissionData(sectionFormFields: List[SectionFormField]): Elem = {
+  private def createSubmissionData(sectionFormFields: List[SectionFormFieldsByAtomicFormComponents]): Elem = {
     val attributes = sectionFormFields.flatMap(section => createSectionData(section))
     <submission></submission>.copy(child = attributes)
   }
@@ -65,7 +64,7 @@ trait XmlGeneratorService {
 
   private def trim(e: Elem): Elem = Utility.trim(e).asInstanceOf[Elem]
 
-  def getXml(sectionFormFields: List[SectionFormField], submissionRef: SubmissionRef): Elem = {
+  def getXml(sectionFormFields: List[SectionFormFieldsByAtomicFormComponents], submissionRef: SubmissionRef): Elem = {
     val body = List(createHeader(submissionRef), createSubmissionData(sectionFormFields))
 
     trim(createDocument(body))

@@ -17,103 +17,42 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import cats.data.NonEmptyList
+import julienrf.json.derived
 import play.api.libs.json._
-import uk.gov.hmrc.gform.sharedmodel.{ LabelHelper, SmartString }
-import uk.gov.hmrc.gform.sharedmodel.form.FormField
+import uk.gov.hmrc.gform.sharedmodel.SmartString
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils.nelFormat
 
-import scala.collection.immutable.List
-
-sealed trait BaseSection {
-  def title: SmartString
-  def shortName: Option[SmartString]
-  def fields: List[FormComponent]
-}
-
-case class ExpandedSection(expandedFormComponents: List[ExpandedFormComponent]) extends AnyVal {
-  def toExpandedFormTemplate: ExpandedFormTemplate = ExpandedFormTemplate(this :: Nil)
-}
-
-case class Section(
-  title: SmartString,
-  description: Option[SmartString],
-  shortName: Option[SmartString],
-  progressIndicator: Option[SmartString] = None,
-  includeIf: Option[IncludeIf],
-  repeatsMax: Option[TextExpression],
-  repeatsMin: Option[TextExpression],
-  validators: Option[Validator],
-  fields: List[FormComponent],
-  continueLabel: Option[SmartString],
-  continueIf: Option[ContinueIf]
-) extends BaseSection {
-
-  val expandSection: ExpandedSection = ExpandedSection(fields.map(_.expandFormComponent)) // TODO expand sections
-
-  private def atomicFields(
-    fieldValues: List[FormComponent],
-    data: Map[FormComponentId, FormField]): List[FormComponent] =
-    fieldValues.flatMap { fieldValue =>
-      fieldValue.`type` match {
-        case Group(gfvs, _, repMax, _, _, _) =>
-          atomicFields(fixLabels(gfvs), data) ++ findIdsInRepeatingGroup(gfvs, repMax, data)
-        case fv @ _ => List(fieldValue)
-      }
-    }
-
-  def atomicFields(data: Map[FormComponentId, FormField]): List[FormComponent] = atomicFields(fields, data)
-
-  def isRepeating: Boolean = repeatsMax.isDefined && repeatsMin.isDefined
-
-  private def findIdsInRepeatingGroup(
-    fields: List[FormComponent],
-    repeatsMax: Option[Int],
-    data: Map[FormComponentId, FormField]): List[FormComponent] = {
-
-    val result = if (data.isEmpty) {
-      Nil // no data, no way of knowing if we have repeating groups
-    } else {
-      repeatsMax.map(extractRepeatingGroupFieldIds(fields, _, data)).getOrElse(Nil)
-    }
-
-    atomicFields(result, data)
-  }
-
-  private def extractRepeatingGroupFieldIds(
-    fields: List[FormComponent],
-    repeatsMax: Int,
-    data: Map[FormComponentId, FormField]): List[FormComponent] =
-    (1 until repeatsMax)
-      .map { i =>
-        fields.flatMap { fieldInGroup =>
-          data.keys.flatMap { key =>
-            val fieldName = s"${i}_${fieldInGroup.id.value}"
-            key.value.startsWith(fieldName) match {
-              case true =>
-                List(
-                  fieldInGroup.copy(
-                    id = FormComponentId(fieldName),
-                    label = LabelHelper.buildRepeatingLabel(fieldInGroup.label, i + 1),
-                    shortName = LabelHelper.buildRepeatingLabel(fieldInGroup.shortName, i + 1)
-                  ))
-              case false => Nil
-            }
-          }.toSet
-        }
-      }
-      .toList
-      .flatten
-
-  private def fixLabels(fieldValues: List[FormComponent]): List[FormComponent] =
-    fieldValues.map { field =>
-      field.copy(
-        label = LabelHelper.buildRepeatingLabel(field.label, 1),
-        shortName = LabelHelper.buildRepeatingLabel(field.shortName, 1)
-      )
-    }
+sealed trait Section extends Product with Serializable {
+  def title(): SmartString
+  def expandedFormComponents(): List[FormComponent]
 }
 
 object Section {
-  implicit val format: OFormat[Section] = Json.format[Section]
+  case class NonRepeatingPage(page: Page) extends Section {
+    override def title: SmartString = page.title
+    override def expandedFormComponents: List[FormComponent] = page.expandedFormComponents
+  }
+
+  case class RepeatingPage(page: Page, repeats: TextExpression) extends Section {
+    override def title: SmartString = page.title
+    override def expandedFormComponents: List[FormComponent] = page.expandedFormComponents
+  }
+
+  case class AddToList(
+    title: SmartString,
+    description: Option[SmartString],
+    shortName: Option[SmartString],
+    includeIf: Option[IncludeIf],
+    repeatsMax: Option[TextExpression],
+    pages: NonEmptyList[Page])
+      extends Section {
+    override lazy val expandedFormComponents: List[FormComponent] = pages.toList.flatMap(_.expandedFormComponents)
+  }
+
+  implicit val format: OFormat[Section] = {
+    implicit val derivedFormat = derived.oformat[Section]
+    OFormatWithTemplateReadFallback(SectionTemplateReads.reads)
+  }
 }
 
 case class DeclarationSection(
@@ -121,7 +60,7 @@ case class DeclarationSection(
   description: Option[SmartString],
   shortName: Option[SmartString],
   fields: List[FormComponent]
-) extends BaseSection
+)
 
 object DeclarationSection {
   implicit val format: OFormat[DeclarationSection] = Json.format[DeclarationSection]
@@ -132,7 +71,7 @@ case class AcknowledgementSection(
   description: Option[SmartString],
   shortName: Option[SmartString],
   fields: List[FormComponent]
-) extends BaseSection
+)
 
 object AcknowledgementSection {
   implicit val format: OFormat[AcknowledgementSection] = Json.format[AcknowledgementSection]
@@ -144,14 +83,12 @@ case class EnrolmentSection(
   fields: List[FormComponent],
   identifiers: NonEmptyList[IdentifierRecipe],
   verifiers: List[VerifierRecipe]
-) extends BaseSection
+)
 
 object EnrolmentSection {
   import JsonUtils._
   implicit val format: OFormat[EnrolmentSection] = Json.format[EnrolmentSection]
 }
-
-case class SectionFormField(title: SmartString, fields: List[(List[FormField], FormComponent)])
 
 case class IdentifierRecipe(key: String, value: FormCtx)
 object IdentifierRecipe {

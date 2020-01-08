@@ -24,12 +24,6 @@ import uk.gov.hmrc.gform.sharedmodel.{ AvailableLanguages, LocalisedString, form
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
 
-case class ExpandedFormTemplate(expandedSection: List[ExpandedSection]) {
-  val allFormComponents: List[FormComponent] =
-    expandedSection.flatMap(_.expandedFormComponents.flatMap(_.expandedFormComponent))
-  val allFormComponentIds: List[FormComponentId] = allFormComponents.map(_.id)
-}
-
 case class FormTemplate(
   _id: FormTemplateId,
   formName: LocalisedString,
@@ -49,10 +43,7 @@ case class FormTemplate(
   languages: AvailableLanguages,
   save4LaterInfoText: Option[Save4LaterInfoText]
 ) {
-  def listAllSections: List[BaseSection] =
-    sections ::: List(declarationSection, acknowledgementSection)
-
-  val expandFormTemplate: ExpandedFormTemplate = ExpandedFormTemplate(sections.map(_.expandSection))
+  lazy val expandedFormComponentsInMainSections: List[FormComponent] = sections.flatMap(_.expandedFormComponents)
 }
 
 object FormTemplate {
@@ -79,23 +70,23 @@ object FormTemplate {
     save4LaterInfoText: Option[Save4LaterInfoText]) {
     def toNewForm: FormTemplate =
       FormTemplate(
-        _id: FormTemplateId,
-        formName: LocalisedString,
-        developmentPhase: Option[DevelopmentPhase],
+        _id,
+        formName,
+        developmentPhase,
         formCategory,
-        draftRetrievalMethod: DraftRetrievalMethod,
+        draftRetrievalMethod,
         destinations = dmsSubmission,
-        authConfig: formtemplate.AuthConfig,
-        emailTemplateId: String,
-        emailParameters: Option[NonEmptyList[EmailParameter]],
-        webChat: Option[WebChat],
-        sections: List[Section],
-        acknowledgementSection: AcknowledgementSection,
-        declarationSection: DeclarationSection,
+        authConfig,
+        emailTemplateId,
+        emailParameters,
+        webChat,
+        sections,
+        acknowledgementSection,
+        declarationSection,
         parentFormSubmissionRefs.toList.flatten,
-        GFC579Ready: Option[String],
-        languages: AvailableLanguages,
-        save4LaterInfoText: Option[Save4LaterInfoText]
+        GFC579Ready,
+        languages,
+        save4LaterInfoText
       )
   }
 

@@ -46,7 +46,7 @@ object FormTemplateValidator {
   }
 
   private def indexedFields(sections: List[Section]): List[(FormComponent, Int)] =
-    sections.zipWithIndex.flatMap {
+    SectionHelper.pages(sections).zipWithIndex.flatMap {
       case (section, idx) =>
         val standardFields = section.fields.map(_ -> idx)
         val subFields = section.fields
@@ -69,7 +69,7 @@ object FormTemplateValidator {
     duplicates.isEmpty.validationResult(someFieldsAreDefinedMoreThanOnce(duplicates))
   }
 
-  def validateChoiceHelpText(sectionsList: List[Section]): ValidationResult = {
+  def validateChoiceHelpText(sectionsList: List[Page]): ValidationResult = {
     val choiceFieldIds: List[FormComponentId] = sectionsList
       .flatMap(_.fields)
       .map(fv => (fv.id, fv.`type`))
@@ -83,37 +83,6 @@ object FormTemplateValidator {
       s"Choice components doesn't have equal number of choices and help texts ${choiceFieldIds.mkString(",")}")
   }
 
-  def validateRepeatingSectionFields(sectionList: List[Section]): ValidationResult = {
-    val results = sectionList.map { section =>
-      (section.repeatsMax, section.repeatsMin) match {
-        case (Some(repMax), Some(repMin)) if !repMax.equals(repMin) =>
-          Invalid(
-            s"The repeatsMax and repeatsMin fields must be the same in a repeating section: repeatsMax=[$repMax], repeatsMin=[$repMin]")
-        case (Some(_), None) | (None, Some(_)) =>
-          val repMax = section.repeatsMax.getOrElse("")
-          val repMin = section.repeatsMin.getOrElse("")
-          Invalid(
-            s"Both repeatsMax and repeatsMin fields must be provided in a repeating section: repeatsMax=[$repMax], repeatsMin=[$repMin]")
-        case _ => Valid
-      }
-    }
-    Monoid[ValidationResult].combineAll(results)
-  }
-
-  private def getMandatoryAndOptionalFields(section: Section): (Set[FormComponentId], Set[FormComponentId]) =
-    SectionHelper.atomicFields(section, Map.empty).foldLeft((Set.empty[FormComponentId], Set.empty[FormComponentId])) {
-      case ((mandatoryAcc, optionalAcc), field) =>
-        (field.`type`, field.mandatory) match {
-          case (Address(_), _) =>
-            (mandatoryAcc ++ Address.mandatoryFields(field.id), optionalAcc ++ Address.optionalFields(field.id))
-          case (Date(_, _, _), _)        => (mandatoryAcc ++ Date.fields(field.id).toList, optionalAcc)
-          case (Text(_, _, _, _), true)  => (mandatoryAcc + field.id, optionalAcc)
-          case (Text(_, _, _, _), false) => (mandatoryAcc, optionalAcc + field.id)
-          case (_, true)                 => (mandatoryAcc + field.id, optionalAcc)
-          case (_, false)                => (mandatoryAcc, optionalAcc + field.id)
-        }
-    }
-
   val userContextComponentType: List[FormComponent] => List[FormComponent] =
     enrolledIdentifierComponents =>
       enrolledIdentifierComponents.collect {
@@ -121,7 +90,7 @@ object FormTemplateValidator {
     }
 
   def validateEnrolmentIdentifier(formTemplate: FormTemplate): ValidationResult =
-    if (userContextComponentType(formTemplate.expandFormTemplate.allFormComponents).nonEmpty) {
+    if (userContextComponentType(formTemplate.expandedFormComponentsInMainSections).nonEmpty) {
       formTemplate.authConfig match {
         case HmrcEnrolmentModule(_) | HmrcAgentWithEnrolmentModule(_, _) => Valid
         case _                                                           => Invalid("You used '${user.enrolledIdentifier}' but you didn't provide 'serviceId'.")
@@ -159,7 +128,9 @@ object FormTemplateValidator {
 
   def validateDependencyGraph(formTemplate: FormTemplate): ValidationResult = {
     val graph: Graph[FormComponentId, DiEdge] = toGraph(formTemplate)
-    constructDepencyGraph(graph).bimap(const(Invalid(s"Graph contains cycle ${graph.findCycle}")), const(Valid)).merge
+    constructDependencyGraph(graph)
+      .bimap(const(Invalid(s"Graph contains cycle ${graph.findCycle}")), const(Valid))
+      .merge
   }
 
   def validate(exprs: List[ComponentType], formTemplate: FormTemplate): ValidationResult = {
@@ -211,9 +182,14 @@ object FormTemplateValidator {
     }
 
     Monoid[ValidationResult]
-      .combineAll(sections.zipWithIndex.collect {
-        case (Section(_, _, _, _, Some(includeIf), _, _, _, _, _, _), idx) => boolean(includeIf.expr, idx)
-      }.flatten)
+      .combineAll(
+        SectionHelper
+          .pages(sections)
+          .zipWithIndex
+          .flatMap {
+            case (page: Page, idx) =>
+              page.includeIf.map(i => boolean(i.expr, idx)).getOrElse(List(Valid))
+          })
   }
 
   def validate(expr: Expr, sections: List[Section]): ValidationResult = {
@@ -315,7 +291,7 @@ object FormTemplateValidator {
   private def validateComponents(str: String, formTemplate: FormTemplate)(
     pf: (FormComponent => Boolean) => PartialFunction[ComponentType, Boolean]): ValidationResult = {
 
-    val formComponents: List[FormComponent] = formTemplate.sections.flatMap(_.fields)
+    val formComponents: List[FormComponent] = SectionHelper.pages(formTemplate.sections).flatMap(_.fields)
 
     val rcElements: (FormComponent => Boolean) => Boolean = f =>
       formComponents.map(_.`type`).collect(pf(f)).forall(identity)

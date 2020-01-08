@@ -21,7 +21,8 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormComponentId
 import cats.syntax.eq._
 
 case class FormData(fields: Seq[FormField]) {
-  def find(id: FormComponentId): Option[String] = fields.find(_.id === id).map(_.value)
+  lazy val toData: Map[FormComponentId, String] = fields.map(x => x.id -> x.value).toMap
+  def find(id: FormComponentId): Option[String] = toData.get(id)
 }
 
 object FormData {

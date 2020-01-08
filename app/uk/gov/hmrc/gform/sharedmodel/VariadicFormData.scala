@@ -17,9 +17,11 @@
 package uk.gov.hmrc.gform.sharedmodel
 
 import cats.instances.list._
+import cats.instances.set._
 import cats.syntax.foldable._
 import cats.{ Monoid, Show }
 import cats.syntax.show._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.Section.{ AddToList, NonRepeatingPage, RepeatingPage }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 import scala.collection.GenTraversableOnce
@@ -156,18 +158,26 @@ object VariadicFormData {
     )
 
   def listVariadicFormComponentIds(template: FormTemplate): Set[FormComponentId] =
-    template.listAllSections.flatMap(listVariadicFormComponentIds).toSet
+    listVariadicFormComponentIds(template.acknowledgementSection.fields) ++
+      listVariadicFormComponentIds(template.declarationSection.fields) ++
+      template.sections.foldMap {
+        case s: NonRepeatingPage => listVariadicFormComponentIds(s.page)
+        case s: RepeatingPage    => listVariadicFormComponentIds(s.page)
+        case s: AddToList        => s.pages.foldMap(listVariadicFormComponentIds)
+      }
 
-  def listVariadicFormComponentIds(section: BaseSection): Set[FormComponentId] =
-    section.fields.flatMap(listVariadicFormComponentIds).toSet
+  def listVariadicFormComponentIds(page: Page): Set[FormComponentId] =
+    page.fields.flatMap(listVariadicFormComponentIds).toSet
 
   def listVariadicFormComponentIds(component: FormComponent): Set[FormComponentId] =
     component.`type` match {
       case g: Group  => listVariadicFormComponentIds(g.fields)
-      case c: Choice => Set(component.id.reduceToTemplateFieldId)
+      case _: Choice => Set(component.id.reduceToTemplateFieldId)
       case r: RevealingChoice =>
         listVariadicFormComponentIds(r.options.toList.flatMap(_.revealingFields)) + component.id.reduceToTemplateFieldId
-      case _ => Set.empty
+      case _: Text | _: TextArea | _: UkSortCode | _: Date | _: Address | _: HmrcTaxPeriod | _: InformationMessage |
+          _: FileUpload =>
+        Set.empty
     }
 
   def listVariadicFormComponentIds(components: List[FormComponent]): Set[FormComponentId] =
