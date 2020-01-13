@@ -76,7 +76,7 @@ object FormatParser {
   lazy val exactDateExpr: Parser[DateConstraintInfo] = {
     "today" ^^ { (loc, today) =>
       Today
-    } | exactYearParserWithNextAndPrevious ~ delimiter ~ exactMonthParser ~ delimiter ~ exactYearParserWithFirstAndLastDay ^^ {
+    } | exactYearParserWithNextAndPrevious ~ delimiter ~ exactMonthParser ~ delimiter ~ exactDayParserWithFirstAndLastDay ^^ {
       (_, year, _, month, _, day) =>
         ConcreteDate(year, ExactMonth(month), day)
     } | "${" ~ alphabeticOnly ~ "}" ^^ { (_, _, field, _) =>

@@ -106,7 +106,7 @@ object BasicParsers {
     : Parser[Year] = """(19|20)\d\d""".r ^^ ((_, year) => ExactYear(year.toInt)) | "next" ^^ ((_, _) => Next) |
     "previous" ^^ ((_, _) => Previous)
 
-  lazy val exactYearParserWithFirstAndLastDay: Parser[Day] = """0[1-9]|[12][0-9]|3[01]""".r ^^ (
+  lazy val exactDayParserWithFirstAndLastDay: Parser[Day] = """0[1-9]|[12][0-9]|3[01]""".r ^^ (
     (
       _,
       day) => ExactDay(day.toInt)) | "firstDay" ^^ ((_, _) => FirstDay) |
