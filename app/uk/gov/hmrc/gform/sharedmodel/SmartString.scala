@@ -38,10 +38,13 @@ object SmartString {
 }
 
 object SmartStringTemplateReader {
+
+  def escape(s: String): String = s.replace("'", "''").replace("{", "'{'").replace("}", "'}'")
+
   private def interpolationsFieldName = "interpolations"
 
   private def extractInterpolations(s: String, initialInterpolations: List[Expr]): JsResult[(String, List[Expr])] = {
-    val pattern = """(.*?)(\$\{.*?\})(.*)""".r
+    val pattern = """(?s)(.*?)(\$\{.*?\})(.*)""".r
 
     @tailrec
     def recurse(processed: String, unprocessed: String, interpolations: List[Expr]): JsResult[(String, List[Expr])] =
@@ -51,11 +54,14 @@ object SmartStringTemplateReader {
             case Left(unexpectedState) =>
               JsError(
                 s"""Error while parsing "$s". Failed at the expression $exprWithParentheses: ${unexpectedState.toString}""")
-            case Right(expr) => recurse(s"$processed$pre{${interpolations.size}}", post, expr :: interpolations)
+            case Right(expr) =>
+              val preEscaped = escape(pre)
+              recurse(s"$processed$preEscaped{${interpolations.size}}", post, expr :: interpolations)
           }
-        case other => JsSuccess((s"$processed$other", interpolations.reverse))
+        case other =>
+          val otherEscaped = escape(other)
+          JsSuccess((s"$processed$otherEscaped", interpolations.reverse))
       }
-
     recurse("", s, initialInterpolations.reverse)
   }
 
