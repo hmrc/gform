@@ -26,7 +26,7 @@ import uk.gov.hmrc.gform.sharedmodel.PdfHtml
 import uk.gov.hmrc.gform.sharedmodel.form.Submitted
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
-import uk.gov.hmrc.gform.submission.{ PdfAndXmlSummariesFactory, SubmissionServiceHelper }
+import uk.gov.hmrc.gform.submission.PdfAndXmlSummariesFactory
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext
@@ -45,20 +45,11 @@ class DmsSubmitter(
     import submissionInfo._
 
     for {
-      form              <- formService.get(formId)
-      formTemplate      <- formTemplateService.get(form.formTemplateId)
-      sectionFormFields <- fromOptA(SubmissionServiceHelper.getSectionFormFields(form, formTemplate, affinityGroup))
-      summaries <- fromFutureA(
-                    PdfAndXmlSummariesFactory
-                      .withPdf(pdfGeneratorService, pdfData)
-                      .apply(
-                        form,
-                        formTemplate,
-                        structuredFormData,
-                        sectionFormFields,
-                        customerId,
-                        submission.submissionRef,
-                        dmsSubmission))
+      form         <- formService.get(formId)
+      formTemplate <- formTemplateService.get(form.formTemplateId)
+      summaries <- fromFutureA(PdfAndXmlSummariesFactory
+                    .withPdf(pdfGeneratorService, pdfData)
+                    .apply(form, formTemplate, structuredFormData, customerId, submission.submissionRef, dmsSubmission))
       res <- fromFutureA(fileUploadService.submitEnvelope(submission, summaries, dmsSubmission))
       _   <- formService.updateFormStatus(submissionInfo.formId, Submitted)
     } yield res
