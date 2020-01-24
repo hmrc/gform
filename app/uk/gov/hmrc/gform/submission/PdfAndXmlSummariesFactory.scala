@@ -35,7 +35,6 @@ trait PdfAndXmlSummariesFactory {
     form: Form,
     formTemplate: FormTemplate,
     structuredFormData: StructuredFormValue.ObjectStructure,
-    sectionFormFields: List[SectionFormFieldsByAtomicFormComponents],
     customerId: String,
     submissionRef: SubmissionRef,
     dmsSubmission: DmsSubmission): Future[PdfAndXmlSummaries]
@@ -51,14 +50,12 @@ object PdfAndXmlSummariesFactory {
       form: Form,
       formTemplate: FormTemplate,
       structuredFormData: StructuredFormValue.ObjectStructure,
-      sectionFormFields: List[SectionFormFieldsByAtomicFormComponents],
       customerId: String,
       submissionRef: SubmissionRef,
       dmsSubmission: DmsSubmission): Future[PdfAndXmlSummaries] =
       pdfGeneratorService.generatePDFBytes(pdfData.html).map { pdf =>
         PdfAndXmlSummaries(
           pdfSummary = createPdfSummary(pdf),
-          xmlSummary = createXmlSummary(sectionFormFields, formTemplate, submissionRef, dmsSubmission),
           roboticsXml = createRoboticsXml(formTemplate, form, structuredFormData, dmsSubmission, submissionRef)
         )
       }
@@ -70,18 +67,6 @@ object PdfAndXmlSummariesFactory {
       } finally {
         pDDocument.close()
       }
-    }
-
-    private def createXmlSummary(
-      sectionFormFields: List[SectionFormFieldsByAtomicFormComponents],
-      formTemplate: FormTemplate,
-      submissionRef: SubmissionRef,
-      dmsSubmission: Destinations.DmsSubmission) = {
-      val xmlSummary = dmsSubmission.dataXml
-        .filter(identity)
-        .map(_ => XmlGeneratorService.getXml(sectionFormFields, submissionRef))
-        .map(addXmlDeclaration)
-      xmlSummary
     }
 
     private def createRoboticsXml(
@@ -105,7 +90,4 @@ object PdfAndXmlSummariesFactory {
           XmlGeneratorService.xmlDec + <data xmlns:xfa="http://www.xfa.org/schema/xfa-data/1.0/">{body}</data>)
 
   }
-
-  private def addXmlDeclaration(xml: NodeSeq) =
-    XmlGeneratorService.xmlDec + "\n" + xml
 }

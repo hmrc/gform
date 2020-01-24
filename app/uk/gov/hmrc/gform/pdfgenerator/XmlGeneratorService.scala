@@ -16,58 +16,10 @@
 
 package uk.gov.hmrc.gform.pdfgenerator
 
-import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
-import uk.gov.hmrc.gform.submission.{ AtomicFormComponentFormFields, SectionFormFieldsByAtomicFormComponents }
-import uk.gov.hmrc.gform.typeclasses.Attribute
-
-import scala.collection.immutable.List
-import scala.xml.{ Elem, Utility }
-
 object XmlGeneratorService extends XmlGeneratorService
 
 trait XmlGeneratorService {
 
   val xmlDec = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>"""
-
-  private def createAttribute[T: Attribute](name: String, value: T): Elem =
-    createAttribute(name, List(value))
-
-  private def createAttribute[T: Attribute](name: String, values: List[T]): Elem =
-    implicitly[Attribute[T]].attribute(name, values)
-
-  private def createFieldData(field: AtomicFormComponentFormFields): List[Elem] =
-    if (field.formComponent.submissible)
-      field.fields.toList.map(formField => createAttribute(formField.id.toString, formField.value))
-    else
-      List()
-
-  private def createSectionData(section: SectionFormFieldsByAtomicFormComponents): List[Elem] =
-    section.fields.flatMap(createFieldData)
-
-  private def createSubmissionData(sectionFormFields: List[SectionFormFieldsByAtomicFormComponents]): Elem = {
-    val attributes = sectionFormFields.flatMap(section => createSectionData(section))
-    <submission></submission>.copy(child = attributes)
-  }
-
-  private def createHeader(submissionRef: SubmissionRef): Elem =
-    <header>
-      <title>{ submissionRef.value.replace("-", "") }</title>
-      <source>gform</source>
-      <target>DMS</target>
-    </header>
-
-  // TODO header etc.
-  private def createDocument(elems: List[Elem]): Elem =
-    <documents>
-      { <document></document>.copy(child = elems) }
-    </documents>
-
-  private def trim(e: Elem): Elem = Utility.trim(e).asInstanceOf[Elem]
-
-  def getXml(sectionFormFields: List[SectionFormFieldsByAtomicFormComponents], submissionRef: SubmissionRef): Elem = {
-    val body = List(createHeader(submissionRef), createSubmissionData(sectionFormFields))
-
-    trim(createDocument(body))
-  }
 
 }

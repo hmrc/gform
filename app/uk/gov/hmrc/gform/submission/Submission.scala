@@ -65,7 +65,4 @@ case class PdfSummary(
   //TODO get rid of byte array and operate on streams or something similar
   pdfContent: Array[Byte])
 
-case class PdfAndXmlSummaries(
-  pdfSummary: PdfSummary,
-  xmlSummary: Option[String] = None,
-  roboticsXml: Option[String] = None)
+case class PdfAndXmlSummaries(pdfSummary: PdfSummary, roboticsXml: Option[String] = None)

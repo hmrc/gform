@@ -23,7 +23,6 @@ import play.api.mvc.{ Action, AnyContent, ControllerComponents }
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.sharedmodel.AccessCode
-import uk.gov.hmrc.gform.sharedmodel.AffinityGroupUtil.toAffinityGroupO
 import uk.gov.hmrc.gform.sharedmodel.form.FormIdData
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.{ SubmissionData, UserId }
@@ -47,7 +46,6 @@ class SubmissionController(controllerComponents: ControllerComponents, submissio
         .submitForm(
           formIdData,
           headers.get("customerId").getOrElse(""),
-          toAffinityGroupO(headers.get("affinityGroup")),
           body
         )
         .fold(unexpectedState => BadRequest(unexpectedState.error), _ => NoContent)

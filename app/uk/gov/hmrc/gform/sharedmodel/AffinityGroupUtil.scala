@@ -28,9 +28,6 @@ object AffinityGroupUtil {
     case AffinityGroup.Organisation => "organisation"
   }
 
-  def toAffinityGroupO(asStr: Option[String]): Option[AffinityGroup] =
-    asStr.flatMap(toAffinityGroup)
-
   def toAffinityGroup(affinityGroupAsStr: String): Option[AffinityGroup] = affinityGroupAsStr match {
     case "individual"   => Some(AffinityGroup.Individual)
     case "agent"        => Some(AffinityGroup.Agent)

@@ -70,11 +70,6 @@ class FileUploadService(
 
     def uploadXmlF: Future[Unit] = uploadXml(xml, s"$fileNamePrefix-metadata.xml", metadataXml)
 
-    def uploadAnyDataXmlF: Future[Unit] = summaries.xmlSummary match {
-      case Some(elem) => uploadXml(data, s"$fileNamePrefix-data.xml", elem)
-      case _          => Future.successful(())
-    }
-
     def uploadRoboticsXmlF: Future[Unit] = summaries.roboticsXml match {
       case Some(elem) => uploadXml(roboticsXml, s"$fileNamePrefix-robotic.xml", elem)
       case _          => Future.successful(())
@@ -87,7 +82,6 @@ class FileUploadService(
     for {
       _ <- uploadPfdF
       _ <- uploadXmlF
-      _ <- uploadAnyDataXmlF
       _ <- uploadRoboticsXmlF
       _ <- fileUploadConnector.routeEnvelope(RouteEnvelopeRequest(envelopeId, "dfs", "DMS"))
     } yield ()
@@ -109,7 +103,6 @@ object FileUploadService {
   object FileIds {
     val pdf = FileId("pdf")
     val xml = FileId("xmlDocument")
-    val data = FileId("xmlSubmission")
     val roboticsXml = FileId("roboticsXml")
   }
 }
