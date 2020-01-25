@@ -12,7 +12,11 @@
       "fields": [
         {
           "id": "email",
-          "verifiedBy": "code2",
+          "verifiedBy": {
+            "service": "notify",
+            "emailTemplateId": "4f438fe6-680d-4610-9e55-b50f711326e4",
+            "codeField": "code2"
+          },
           "label": "Email",
           "format": "email"
         }

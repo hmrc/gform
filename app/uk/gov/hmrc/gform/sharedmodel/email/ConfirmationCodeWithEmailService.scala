@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel.notifier
+package uk.gov.hmrc.gform.sharedmodel.email
 
+import julienrf.json.derived
 import play.api.libs.json.Format
+import uk.gov.hmrc.gform.sharedmodel.EmailVerifierService
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils
 
-case class NotifierConfirmationCode(code: String) extends AnyVal
+case class ConfirmationCodeWithEmailService(code: EmailConfirmationCode, emailVerifierService: EmailVerifierService)
 
-object NotifierConfirmationCode {
-  implicit val format: Format[NotifierConfirmationCode] =
-    JsonUtils.valueClassFormat[NotifierConfirmationCode, String](NotifierConfirmationCode.apply, _.code)
+object ConfirmationCodeWithEmailService {
+  implicit val format: Format[ConfirmationCodeWithEmailService] = derived.oformat
 }

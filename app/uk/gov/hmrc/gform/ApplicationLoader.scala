@@ -76,7 +76,8 @@ class ApplicationModule(context: Context)
   private val metricsModule = new MetricsModule(configModule, playComponents, akkaModule, executionContext)
   protected val auditingModule = new AuditingModule(configModule, akkaModule)
   protected val wSHttpModule = new WSHttpModule(auditingModule, configModule, playComponents)
-  private val emailModule = new EmailModule(configModule, wSHttpModule)
+  private val notifierModule = new NotifierModule(configModule)
+  private val emailModule = new EmailModule(configModule, wSHttpModule, notifierModule)
   private val timeModule = new TimeModule
   val fileUploadModule = new FileUploadModule(configModule, wSHttpModule, timeModule, akkaModule)
   private val mongoModule = new MongoModule(playComponents)
@@ -104,8 +105,6 @@ class ApplicationModule(context: Context)
     new DestinationModule(configModule, mongoModule, formModule, fileUploadModule, formMetadaModule)
 
   val validationModule = new ValidationModule(wSHttpModule, configModule)
-
-  val notifierModule = new NotifierModule(configModule)
 
   private val handlebarsModule = new HandlebarsHttpApiModule(wSHttpModule, configModule)
 
@@ -161,7 +160,7 @@ class ApplicationModule(context: Context)
     validationModule,
     dmsModule,
     obligationModule,
-    notifierModule,
+    emailModule,
     httpErrorHandler
   )
 

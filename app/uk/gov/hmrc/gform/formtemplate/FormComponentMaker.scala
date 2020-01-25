@@ -47,9 +47,15 @@ class FormComponentMaker(json: JsValue) {
   lazy val label: SmartString = (json \ "label").as[SmartString]
 
   lazy val optMaybeValueExpr: Opt[Option[ValueExpr]] = parse("value", ValueParser.validate)
-  lazy val emailVerification: EmailVerification = (json \ "verifiedBy")
-    .asOpt[String]
-    .fold(EmailVerification.noVerification)(fcId => EmailVerification.verifiedBy(FormComponentId(fcId)))
+  lazy val optEmailVerification: Opt[EmailVerification] = (json \ "verifiedBy") match {
+    case JsDefined(verifiedBy) =>
+      EmailVerification.reads.reads(verifiedBy) match {
+        case JsSuccess(emailVerification, _) => Right(emailVerification)
+        case JsError(error)                  => Left(UnexpectedState(JsError.toJson(error).toString()))
+      }
+    case JsUndefined() => Right(EmailVerification.noVerification)
+  }
+
   lazy val optMaybeFormatExpr: RoundingMode => EmailVerification => Opt[Option[FormatExpr]] = rm =>
     emailVerification => parse("format", FormatParser.validate(rm, emailVerification))
   lazy val optMaybePresentationHintExpr: Opt[Option[List[PresentationHint]]] =
@@ -171,9 +177,10 @@ class FormComponentMaker(json: JsValue) {
 
   private lazy val textOpt: Opt[ComponentType] = {
     for {
-      maybeFormatExpr <- optMaybeFormatExpr(roundingMode)(emailVerification)
-      maybeValueExpr  <- optMaybeValueExpr
-      result          <- createObject(maybeFormatExpr, maybeValueExpr, multiline, displayWidth, toUpperCase, json)
+      emailVerification <- optEmailVerification
+      maybeFormatExpr   <- optMaybeFormatExpr(roundingMode)(emailVerification)
+      maybeValueExpr    <- optMaybeValueExpr
+      result            <- createObject(maybeFormatExpr, maybeValueExpr, multiline, displayWidth, toUpperCase, json)
     } yield result
   }
 
@@ -190,7 +197,8 @@ class FormComponentMaker(json: JsValue) {
 
     lazy val dateConstraintOpt: Opt[DateConstraintType] =
       for {
-        maybeFormatExpr <- optMaybeFormatExpr(roundingMode)(emailVerification)
+        emailVerification <- optEmailVerification
+        maybeFormatExpr   <- optMaybeFormatExpr(roundingMode)(emailVerification)
         optDateConstraintType = maybeFormatExpr match {
           case Some(DateFormat(e)) => e.asRight
           case None                => AnyDate.asRight
@@ -240,11 +248,12 @@ class FormComponentMaker(json: JsValue) {
     val fieldValuesOpt: Opt[List[FormComponent]] = fields.traverse(_.optFieldValue())
 
     for {
-      fieldValues <- fieldValuesOpt.right
-      format      <- optMaybeFormatExpr(roundingMode)(emailVerification).right
-      repMax      <- optMaybeRepeatsMax
-      repMin      <- optMaybeRepeatsMin
-      group       <- validateRepeatsAndBuildGroup(repMax, repMin, fieldValues, orientation(format))
+      emailVerification <- optEmailVerification
+      fieldValues       <- fieldValuesOpt.right
+      format            <- optMaybeFormatExpr(roundingMode)(emailVerification).right
+      repMax            <- optMaybeRepeatsMax
+      repMin            <- optMaybeRepeatsMin
+      group             <- validateRepeatsAndBuildGroup(repMax, repMin, fieldValues, orientation(format))
     } yield group
   }
 
@@ -269,8 +278,9 @@ class FormComponentMaker(json: JsValue) {
 
   private lazy val choiceOpt: Opt[Choice] = {
     for {
-      maybeFormatExpr <- optMaybeFormatExpr(roundingMode)(emailVerification)
-      maybeValueExpr  <- optMaybeValueExpr
+      emailVerification <- optEmailVerification
+      maybeFormatExpr   <- optMaybeFormatExpr(roundingMode)(emailVerification)
+      maybeValueExpr    <- optMaybeValueExpr
       oChoice: Opt[Choice] = (maybeFormatExpr, choices, multivalue, maybeValueExpr, optionHelpText) match {
         // format: off
         case (IsOrientation(VerticalOrientation),   Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections), oHelpText) => Choice(Checkbox, NonEmptyList(x, xs),          Vertical,   selections, oHelpText).asRight

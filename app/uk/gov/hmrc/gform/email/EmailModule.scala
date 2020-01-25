@@ -16,14 +16,21 @@
 
 package uk.gov.hmrc.gform.email
 
-import javax.inject.Inject
 import uk.gov.hmrc.gform.config.ConfigModule
+import uk.gov.hmrc.gform.notifier.NotifierModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 
 import scala.concurrent.ExecutionContext
 
-class EmailModule @Inject()(configModule: ConfigModule, wSHttpModule: WSHttpModule)(implicit ec: ExecutionContext) {
+class EmailModule(configModule: ConfigModule, wSHttpModule: WSHttpModule, notifierModule: NotifierModule)(
+  implicit ec: ExecutionContext) {
   val emailConnector = new EmailConnector(wSHttpModule.auditableWSHttp, configModule.serviceConfig.baseUrl("email"))
   val emailLogic = new EmailService(emailConnector)
+
+  val emailCodeVerificationController = new EmailCodeVerificationController(
+    configModule.controllerComponents,
+    notifierModule.fOptNotifierService,
+    emailLogic
+  )
 
 }

@@ -34,7 +34,7 @@ trait Spec
   implicit lazy val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 }
 
-trait JsResultMatcher { self: Spec =>
+trait JsResultMatcher {
 
   def beJsSuccess[E](element: E): Matcher[JsResult[E]] = new BeJsSuccess[E](element)
 
