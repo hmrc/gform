@@ -27,10 +27,16 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 class EmailService(emailConnector: EmailConnector) {
 
-  def sendEmail(optemailAddress: Option[String], templateId: String, emailParameters: EmailParametersRecalculated)(
-    implicit hc: HeaderCarrier,
-    mdc: ExecutionContext): Future[Unit] = {
-    Logger.info(s" Sending email, template: $templateId, headers: '${loggingHelpers.cleanHeaderCarrierHeader(hc)}'")
+  def sendEmail(
+    optemailAddress: Option[String],
+    templateId: String,
+    emailParameters: EmailParametersRecalculated
+  )(
+    implicit
+    hc: HeaderCarrier,
+    mdc: ExecutionContext
+  ): Future[Unit] = {
+    Logger.info(s"Sending email, template: $templateId, headers: '${loggingHelpers.cleanHeaderCarrierHeader(hc)}'")
     optemailAddress.fold(().pure[Future])(email => sendEmailTemplate(email, templateId, emailParameters))
   }
 

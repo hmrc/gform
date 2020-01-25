@@ -16,19 +16,33 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
+import play.api.libs.json.{ JsDefined, JsError, JsResult, JsString, JsSuccess, JsUndefined, Reads }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Email, EmailVerifiedBy, FormComponentId, TextConstraint }
+import uk.gov.hmrc.gform.sharedmodel.EmailVerifierService
 
 sealed trait EmailVerification extends Product with Serializable {
   val textConstraint: TextConstraint = this match {
-    case EmailVerification.NoVerification   => Email
-    case EmailVerification.VerifiedBy(fcId) => EmailVerifiedBy(fcId)
+    case EmailVerification.NoVerification                         => Email
+    case EmailVerification.VerifiedBy(fcId, emailVerifierService) => EmailVerifiedBy(fcId, emailVerifierService)
   }
 }
 object EmailVerification {
 
   val noVerification: EmailVerification = NoVerification
-  def verifiedBy(formComponentId: FormComponentId) = VerifiedBy(formComponentId)
+  def verifiedBy(formComponentId: FormComponentId, emailVerifierService: EmailVerifierService) =
+    VerifiedBy(formComponentId, emailVerifierService)
 
   case object NoVerification extends EmailVerification
-  case class VerifiedBy(formComponentId: FormComponentId) extends EmailVerification
+  case class VerifiedBy(formComponentId: FormComponentId, emailVerifierService: EmailVerifierService)
+      extends EmailVerification
+
+  implicit val reads: Reads[EmailVerification] = Reads { json =>
+    EmailVerifierService.format.reads(json).flatMap { emailVerifierService =>
+      (json \ "codeField") match {
+        case JsDefined(JsString(field)) => JsSuccess(verifiedBy(FormComponentId(field), emailVerifierService))
+        case JsDefined(unknown)         => JsError(s"Expected string for field 'codeField', got $unknown")
+        case JsUndefined()              => JsError(s"Missing field 'codeField' in json $json")
+      }
+    }
+  }
 }
