@@ -99,13 +99,9 @@ object FormTemplatesControllerRequestHandler {
       }
 
     val transformer: Reads[JsObject] =
-      destinationsOrPrintSection and pruneShowContinueOrDeletePage and drmValue and drmShowContinueOrDeletePage and ensureFormCategory and
-        ensureLanguages and ensureParentFormSubmissionRefs and prunePrintSection reduce
+       pruneShowContinueOrDeletePage and drmValue and drmShowContinueOrDeletePage and ensureFormCategory and
+        ensureLanguages and ensureParentFormSubmissionRefs and destinationsOrPrintSection and prunePrintSection reduce
 
-    val r = destinationsOrPrintSectionValidation andKeep jsonValue.transform(transformer)
-
-    Logger.info(s"==========================   After transformer rrrrrrrrrrrrrrrrrrrrrrrrrr   =====================")
-
-    r
+    destinationsOrPrintSectionValidation andKeep jsonValue.transform(transformer)
   }
 }
