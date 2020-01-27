@@ -18,7 +18,8 @@ package uk.gov.hmrc.gform.formtemplate
 
 import cats.instances.future._
 import cats.syntax.either._
-import play.api.libs.json.{ Format, JsObject, JsResult, JsString, JsValue, Json, Reads, __ }
+import play.api.Logger
+import play.api.libs.json._
 import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
 import scala.concurrent.ExecutionContext
@@ -77,9 +78,34 @@ object FormTemplatesControllerRequestHandler {
     val ensureParentFormSubmissionRefs = (__ \ 'parentFormSubmissionRefs).json
       .copyFrom((__ \ 'parentFormSubmissionRefs).json.pick orElse Reads.pure(Json.arr()))
 
-    val transformer: Reads[JsObject] =
-      pruneShowContinueOrDeletePage and drmValue and drmShowContinueOrDeletePage and ensureFormCategory and ensureLanguages and ensureParentFormSubmissionRefs reduce
+    val destinationsOrPrintSection = (__ \ 'destinations).json
+      .copyFrom((__ \ 'destinations).json.pick orElse (__ \ 'printSection).json.pick)
 
-    jsonValue.transform(transformer)
+    val prunePrintSection = (__ \ 'printSection).json.prune
+
+    val destinationsOrPrintSectionValidation: JsResult[Unit] =
+      ((jsonValue \ "destinations").toOption, (jsonValue \ "printSection").toOption) match {
+        case (Some(_), Some(_)) =>
+          JsError("""One and only one of FormTemplate.{destinations, printSection} must be defined.""")
+
+        case (None, None) =>
+          JsError("""One and only one of FormTemplate.{destinations, printSection} must be defined.""")
+
+        case (Some(_), None) =>
+          JsSuccess(())
+
+        case (None, Some(_)) =>
+          JsSuccess(())
+      }
+
+    val transformer: Reads[JsObject] =
+      destinationsOrPrintSection and pruneShowContinueOrDeletePage and drmValue and drmShowContinueOrDeletePage and ensureFormCategory and
+        ensureLanguages and ensureParentFormSubmissionRefs and prunePrintSection reduce
+
+    val r = destinationsOrPrintSectionValidation andKeep jsonValue.transform(transformer)
+
+    Logger.info(s"==========================   After transformer rrrrrrrrrrrrrrrrrrrrrrrrrr   =====================")
+
+    r
   }
 }

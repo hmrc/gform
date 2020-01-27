@@ -31,6 +31,8 @@ object DestinationsValidator {
   def validateUniqueDestinationIds(destinations: Destinations): ValidationResult = destinations match {
     case _: Destinations.DmsSubmission => Valid
 
+    case _: Destinations.PrintSection => Valid
+
     case destinationList: Destinations.DestinationList =>
       val destinationIds = extractIds(destinationList.destinations)
       val duplicates = destinationIds.toList.groupBy(identity).collect { case (dId, List(_, _, _*)) => dId }.toSet

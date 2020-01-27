@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import cats.data.NonEmptyList
 import julienrf.json.derived
+import play.api.Logger
 import play.api.libs.json._
 import uk.gov.hmrc.gform.formtemplate.FormTemplatesControllerRequestHandler
 import uk.gov.hmrc.gform.sharedmodel.{ AvailableLanguages, LocalisedString, formtemplate }
@@ -120,10 +121,36 @@ object FormTemplate {
 
   implicit val format: OFormat[FormTemplate] = OFormat(reads, derived.owrites[FormTemplate])
 
-  def transformAndReads(json: JsValue): JsResult[FormTemplate] =
+  /*  def transformAndReads(json: JsValue): JsResult[FormTemplate] =
     FormTemplatesControllerRequestHandler
       .normaliseJSON(json)
-      .flatMap(format.reads)
+      .flatMap(format.reads)*/
+
+  def transformAndReads(json: JsValue): JsResult[FormTemplate] = {
+    Logger.info(s"=======================================   transformAndReads  ===========================")
+    Logger.info(s"json = ${json.toString}")
+
+    val a: JsResult[JsValue] = FormTemplatesControllerRequestHandler
+      .normaliseJSON(json)
+
+    a.asOpt match {
+      case Some(j) => Logger.info(s"111111111111111111111111111111111111111111111    =  ${j.toString}")
+      case None    => Logger.info(s"222222222222222222222222222222222222222222")
+    }
+
+    val b: JsResult[FormTemplate] = a.flatMap(format.reads)
+
+    b.asOpt match {
+      case Some(ft) => Logger.info(s"333333333333333333333333333333333333333333   =  ${Json.toJson(ft)}")
+      case None     => Logger.info(s"444444444444444444444444444444444444444444444444444444")
+    }
+
+    /*    FormTemplatesControllerRequestHandler
+      .normaliseJSON(json)
+      .flatMap(format.reads)*/
+
+    b
+  }
 
   def withDeprecatedDmsSubmission(
     _id: FormTemplateId,
