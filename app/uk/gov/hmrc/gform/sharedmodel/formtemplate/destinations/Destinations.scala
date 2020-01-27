@@ -20,15 +20,21 @@ import cats.data.NonEmptyList
 import julienrf.json.derived
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.sharedmodel.SmartString
 import JsonUtils._
 
 sealed trait Destinations extends Product with Serializable
 
 object Destinations {
 
-  case class DestinationList(destinations: NonEmptyList[Destination]) extends Destinations
+  case class DestinationList(destinations: NonEmptyList[Destination], acknowledgementSection: AcknowledgementSection)
+      extends Destinations
 
-  implicit val destinationListReads: OFormat[DestinationList] = derived.oformat
+  case class PrintSection(title: SmartString, summaryPdf: SmartString) extends Destinations
+
+  implicit val destinationListFormat: OFormat[DestinationList] = derived.oformat
+
+  implicit val printSectionFormat: OFormat[PrintSection] = Json.format[PrintSection]
 
   implicit val format: OFormat[Destinations] = {
     implicit val destinationsFormat: OFormat[Destinations] = derived.oformat
@@ -36,6 +42,12 @@ object Destinations {
     OFormatWithTemplateReadFallback(
       // When uploading the template and loading a Destinations, we can only read the DestinationList branch.
       // See the comment above DmsSubmission.
-      JsonUtils.valueClassReads[Destinations, NonEmptyList[Destination]](DestinationList))
+      /*       JsonUtils
+        .valueClassTupleReads[Destinations, NonEmptyList[Destination], AcknowledgementSection](DestinationList) orElse
+        JsonUtils.valueClassReads[Destinations, SmartString](PrintSection)*/
+
+      destinationListFormat.asInstanceOf[Reads[Destinations]] orElse printSectionFormat
+        .asInstanceOf[Reads[Destinations]]
+    )
   }
 }

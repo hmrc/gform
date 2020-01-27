@@ -65,11 +65,23 @@ class TemplateValidatorSpec extends Spec {
     val table =
       Table(
         ("actual", "expected"),
-        (validateFieldIds(List(mkGroupFormComponent(formComponent("field1"), formComponent("field2")))), Valid),
+        (
+          validateFieldIds(
+            List(
+              mkGroupFormComponent(
+                TemplateValidatorSpec.formComponent("field1"),
+                TemplateValidatorSpec.formComponent("field2")))),
+          Valid),
         (validateMultipleGroupIds(groupOfGroups), Valid),
-        (validateFieldIds(List(mkGroupFormComponent(formComponent("a"), formComponent("b")))), Valid),
-        (validateFieldIds(List(mkGroupFormComponent(formComponent("")))), Valid),
-        (validateFieldIds(List(formComponent("field1"), formComponent("field2"))), Valid)
+        (
+          validateFieldIds(List(
+            mkGroupFormComponent(TemplateValidatorSpec.formComponent("a"), TemplateValidatorSpec.formComponent("b")))),
+          Valid),
+        (validateFieldIds(List(mkGroupFormComponent(TemplateValidatorSpec.formComponent("")))), Valid),
+        (
+          validateFieldIds(
+            List(TemplateValidatorSpec.formComponent("field1"), TemplateValidatorSpec.formComponent("field2"))),
+          Valid)
       )
     table.forEvery { case (expected, result) => expected shouldBe result }
   }
@@ -77,7 +89,7 @@ class TemplateValidatorSpec extends Spec {
   it should "all return invalid in table" in {
     import TemplateValidatorSpec._
 
-    val fieldId = formComponent("fieldId")
+    val fieldId = TemplateValidatorSpec.formComponent("fieldId")
     val groupOfGroupsDuplicateIds =
       List(mkGroupFormComponent("group1", fieldId, fieldId), mkGroupFormComponent("group2", fieldId, fieldId))
     val groupOfGroups = List(mkGroupFormComponent("fieldId"), mkGroupFormComponent("fieldId"))
@@ -191,7 +203,7 @@ class TemplateValidatorSpec extends Spec {
         EmailParameter("fieldEmailTemplateId", FormCtx("fieldInAcknowledgementSection"))
       ))
     val newFormTemplate =
-      mkFormTemplate(formComponent, newEmailParameters, acknowledgementSection = newAcknowledgementSection)
+      mkFormTemplate(formComponent, newEmailParameters)
 
     val res = FormTemplateValidator.validateEmailParameter(newFormTemplate)
     res should be(
@@ -563,15 +575,11 @@ class TemplateValidatorSpec extends Spec {
   private def mkFormTemplate(
     formComponents: List[FormComponent],
     emailParameters: Option[NonEmptyList[EmailParameter]] = emailParameters,
-    declarationSection: DeclarationSection = formTemplate.declarationSection,
-    acknowledgementSection: AcknowledgementSection = formTemplate.acknowledgementSection): FormTemplate = {
+    declarationSection: DeclarationSection = formTemplate.declarationSection): FormTemplate = {
     val section = mkSection("example", formComponents)
 
-    formTemplate.copy(
-      sections = List(section),
-      emailParameters = emailParameters,
-      declarationSection = declarationSection,
-      acknowledgementSection = acknowledgementSection)
+    formTemplate
+      .copy(sections = List(section), emailParameters = emailParameters, declarationSection = declarationSection)
   }
 
   private def mkGroupFormComponent(formComponents: FormComponent*): FormComponent =

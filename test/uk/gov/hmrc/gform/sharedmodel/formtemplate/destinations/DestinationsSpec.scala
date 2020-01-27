@@ -27,7 +27,7 @@ class DestinationsSpec extends Spec {
     }
   }
 
-  it should "read template upload JSON for DestinationList" in {
+  /*  it should "read template upload JSON for DestinationList" in {
     forAll(DestinationsGen.destinationListGen) { destinations =>
       val json = createJson(destinations)
       verifyRead[Destinations](destinations, json)
@@ -41,5 +41,5 @@ class DestinationsSpec extends Spec {
       .mkString(", ")
 
     s"[$listBody]"
-  }
+  }*/
 }

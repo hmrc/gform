@@ -38,7 +38,8 @@ class DestinationsValidatorSpec extends Spec {
         ) { (d1WithId1, d2WithId1, d1WithId2, d2WithId2, uniqueD) =>
           whenever(uniqueD.id =!= id1 && uniqueD.id =!= id2) {
             val destinations =
-              Destinations.DestinationList(uniqueD :: d1WithId1 ::: d2WithId1 ::: d1WithId2 ::: d2WithId2)
+              Destinations
+                .DestinationList(uniqueD :: d1WithId1 ::: d2WithId1 ::: d1WithId2 ::: d2WithId2, ackSection)
 
             DestinationsValidator.validateUniqueDestinationIds(destinations) should be(
               Invalid(DestinationsValidator.someDestinationIdsAreUsedMoreThanOnce(Set(id1, id2))))
@@ -51,8 +52,8 @@ class DestinationsValidatorSpec extends Spec {
   it should "not return an error when there are no duplicate ids" in {
     forAll(destinationGen, destinationGen) { (d1, d2) =>
       whenever(d1.id != d2.id) {
-        DestinationsValidator.validateUniqueDestinationIds(Destinations.DestinationList(NonEmptyList.of(d1, d2))) should be(
-          Valid)
+        DestinationsValidator.validateUniqueDestinationIds(
+          Destinations.DestinationList(NonEmptyList.of(d1, d2), ackSection)) should be(Valid)
       }
     }
   }

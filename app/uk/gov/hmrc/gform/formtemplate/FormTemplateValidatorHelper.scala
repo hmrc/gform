@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.formtemplate
 import java.time.LocalDate
 
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
 
 import scala.collection.immutable.List
 
@@ -64,8 +65,12 @@ object FormTemplateValidatorHelper {
     } yield date
 
     val declarationSectionDates = template.declarationSection.fields.flatMap(field => extractDatesFromField(field))
-    val acknowledgementSectionDates =
-      template.acknowledgementSection.fields.flatMap(field => extractDatesFromField(field))
+
+    val acknowledgementSectionDates = template.destinations match {
+      case destinationList: DestinationList =>
+        destinationList.acknowledgementSection.fields.flatMap(field => extractDatesFromField(field))
+      case _ => Nil
+    }
 
     sectionsDates ::: declarationSectionDates ::: acknowledgementSectionDates
   }

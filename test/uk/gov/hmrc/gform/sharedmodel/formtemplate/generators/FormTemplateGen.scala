@@ -90,7 +90,6 @@ trait FormTemplateGen {
         emailParameters,
         webChat,
         sections,
-        acknowledgementSection,
         declarationSection,
         parentFormSubmissionRefs,
         gFC579Ready,

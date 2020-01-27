@@ -23,7 +23,7 @@ import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.AvailableLanguages
-import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AcknowledgementSection, _ }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationId, Destinations }
 
@@ -395,16 +395,19 @@ class ValueParserSpec extends Spec {
     OnePerUser(ContinueOrDeletePage.Show),
     Destinations
       .DestinationList(
-        NonEmptyList.of(HmrcDms(
-          DestinationId("TestHmrcDmsId"),
-          "TestHmrcDmsFormId",
-          TextExpression(Constant("TestHmrcDmsCustomerId")),
-          "TestHmrcDmsClassificationType",
-          "TestHmrcDmsBusinessArea",
-          "",
-          true,
-          true
-        ))),
+        NonEmptyList.of(
+          HmrcDms(
+            DestinationId("TestHmrcDmsId"),
+            "TestHmrcDmsFormId",
+            TextExpression(Constant("TestHmrcDmsCustomerId")),
+            "TestHmrcDmsClassificationType",
+            "TestHmrcDmsBusinessArea",
+            "",
+            true,
+            true
+          )),
+        ackSection
+      ),
     HmrcAgentWithEnrolmentModule(
       RequireMTDAgentEnrolment,
       EnrolmentAuth(ServiceId("TEST"), DoCheck(Always, RejectAccess, RegimeIdCheck(RegimeId("TEST"))))),
@@ -416,7 +419,6 @@ class ValueParserSpec extends Spec {
       )),
     None,
     List.empty[Section],
-    acknowledgementSection = AcknowledgementSection(toSmartString(""), None, None, Nil),
     declarationSection = DeclarationSection(toSmartString("Declaration"), None, None, Nil),
     Nil,
     Some("false"),

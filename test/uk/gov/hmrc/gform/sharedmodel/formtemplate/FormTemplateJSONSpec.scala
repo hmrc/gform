@@ -23,40 +23,201 @@ class FormTemplateJSONSpec extends Spec {
 
   "normaliseJSON" should "ensure default values for missing fields" in {
 
-    val emptyInput = Json.obj()
-    val emptyExpected = Json.obj(
-      "formCategory" -> "default",
-      "languages"    -> Json.arr("en"),
-      "draftRetrievalMethod" -> Json.obj(
-        "value"                    -> "onePerUser",
-        "showContinueOrDeletePage" -> "true"
-      ),
-      "parentFormSubmissionRefs" -> Json.arr()
-    )
+    val printSectionInput = Json.parse("""
+                                         |{
+                                         |  "printSection": "TestPrintSection"
+                                         |}
+      """.stripMargin)
 
-    val input = Json
-      .obj(
-        "abc"                      -> "hello",
-        "formCategory"             -> "letter",
-        "languages"                -> Json.arr("en", "cy"),
-        "draftRetrievalMethod"     -> "formAccessCodeForAgents",
-        "showContinueOrDeletePage" -> "false",
-        "parentFormSubmissionRefs" -> Json.arr("123", "456")
-      )
-    val expected = Json.obj(
-      "abc"          -> "hello",
-      "formCategory" -> "letter",
-      "languages"    -> Json.arr("en", "cy"),
-      "draftRetrievalMethod" -> Json.obj(
-        "value"                    -> "formAccessCodeForAgents",
-        "showContinueOrDeletePage" -> "false"
-      ),
-      "parentFormSubmissionRefs" -> Json.arr("123", "456")
-    )
+    val printSectionExpected = Json.parse("""
+                                            |{
+                                            |  "draftRetrievalMethod": {
+                                            |    "showContinueOrDeletePage": "true",
+                                            |    "value": "onePerUser"
+                                            |  },
+                                            |  "formCategory": "default",
+                                            |  "languages": [
+                                            |    "en"
+                                            |  ],
+                                            |  "destinations": "TestPrintSection",
+                                            |  "parentFormSubmissionRefs": []
+                                            |}
+      """.stripMargin)
+
+    val destinationsInput = Json.parse("""
+                                         |{
+                                         |  "formCategory": "letter",
+                                         |  "draftRetrievalMethod": "formAccessCodeForAgents",
+                                         |  "showContinueOrDeletePage": "false",
+                                         |  "parentFormSubmissionRefs": [
+                                         |    "123",
+                                         |    "456"
+                                         |  ],
+                                         |  "destinations": [
+                                         |    {
+                                         |      "id": "HMRCDMS",
+                                         |      "type": "hmrcDms",
+                                         |      "dmsFormId": "TST123",
+                                         |      "customerId": "${auth.gg}",
+                                         |      "classificationType": "BT-NRU-Environmental",
+                                         |      "businessArea": "FinanceOpsCorpT"
+                                         |    }
+                                         |  ],
+                                         |  "acknowledgementSection": {
+                                         |    "shortName": "Acknowledgement Page",
+                                         |    "title": "Acknowledgement Page",
+                                         |    "fields": [
+                                         |      {
+                                         |        "type": "info",
+                                         |        "id": "ackpageInfo",
+                                         |        "label": "SomeContent",
+                                         |        "infoText": "SomeContent"
+                                         |      }
+                                         |    ]
+                                         |  }
+                                         |}
+      """.stripMargin)
+
+    val destinationsExpected = Json.parse("""
+                                            |{
+                                            |  "draftRetrievalMethod": {
+                                            |    "showContinueOrDeletePage": "false",
+                                            |    "value": "formAccessCodeForAgents"
+                                            |  },
+                                            |  "formCategory": "letter",
+                                            |  "languages": [
+                                            |    "en"
+                                            |  ],
+                                            |  "destinations": {
+                                            |    "destinations": [
+                                            |      {
+                                            |        "id": "HMRCDMS",
+                                            |        "type": "hmrcDms",
+                                            |        "dmsFormId": "TST123",
+                                            |        "customerId": "${auth.gg}",
+                                            |        "classificationType": "BT-NRU-Environmental",
+                                            |        "businessArea": "FinanceOpsCorpT"
+                                            |      }
+                                            |    ],
+                                            |    "acknowledgementSection": {
+                                            |      "shortName": "Acknowledgement Page",
+                                            |      "title": "Acknowledgement Page",
+                                            |      "fields": [
+                                            |        {
+                                            |          "type": "info",
+                                            |          "id": "ackpageInfo",
+                                            |          "label": "SomeContent",
+                                            |          "infoText": "SomeContent"
+                                            |        }
+                                            |      ]
+                                            |    }
+                                            |  },
+                                            |  "parentFormSubmissionRefs": [
+                                            |    "123",
+                                            |    "456"
+                                            |  ]
+                                            |}
+      """.stripMargin)
+
+    val input = Json.parse("""
+                             |{
+                             |  "testText": "hello",
+                             |  "testJsonObj": {
+                             |    "id": "transitionToSubmitted",
+                             |    "type": "stateTransition",
+                             |    "requiredState": "Submitted"
+                             |  },
+                             |  "testJsonArr": [
+                             |    "en",
+                             |    "cy"
+                             |  ],
+                             |  "formCategory": "letter",
+                             |  "draftRetrievalMethod": "formAccessCodeForAgents",
+                             |  "showContinueOrDeletePage": "false",
+                             |  "parentFormSubmissionRefs": [
+                             |    "123",
+                             |    "456"
+                             |  ],
+                             |  "destinations": [
+                             |    {
+                             |      "id": "HMRCDMS",
+                             |      "type": "hmrcDms",
+                             |      "dmsFormId": "TST123",
+                             |      "customerId": "${auth.gg}",
+                             |      "classificationType": "BT-NRU-Environmental",
+                             |      "businessArea": "FinanceOpsCorpT"
+                             |    }
+                             |  ],
+                             |  "acknowledgementSection": {
+                             |    "shortName": "Acknowledgement Page",
+                             |    "title": "Acknowledgement Page",
+                             |    "fields": [
+                             |      {
+                             |        "type": "info",
+                             |        "id": "ackpageInfo",
+                             |        "label": "SomeContent",
+                             |        "infoText": "SomeContent"
+                             |      }
+                             |    ]
+                             |  }
+                             |}
+      """.stripMargin)
+
+    val expected = Json.parse("""
+                                |{
+                                |  "draftRetrievalMethod": {
+                                |    "showContinueOrDeletePage": "false",
+                                |    "value": "formAccessCodeForAgents"
+                                |  },
+                                |  "formCategory": "letter",
+                                |  "languages": [
+                                |    "en"
+                                |  ],
+                                |  "testJsonObj": {
+                                |    "id": "transitionToSubmitted",
+                                |    "type": "stateTransition",
+                                |    "requiredState": "Submitted"
+                                |  },
+                                |  "destinations": {
+                                |    "destinations": [
+                                |      {
+                                |        "id": "HMRCDMS",
+                                |        "type": "hmrcDms",
+                                |        "dmsFormId": "TST123",
+                                |        "customerId": "${auth.gg}",
+                                |        "classificationType": "BT-NRU-Environmental",
+                                |        "businessArea": "FinanceOpsCorpT"
+                                |      }
+                                |    ],
+                                |    "acknowledgementSection": {
+                                |      "shortName": "Acknowledgement Page",
+                                |      "title": "Acknowledgement Page",
+                                |      "fields": [
+                                |        {
+                                |          "type": "info",
+                                |          "id": "ackpageInfo",
+                                |          "label": "SomeContent",
+                                |          "infoText": "SomeContent"
+                                |        }
+                                |      ]
+                                |    }
+                                |  },
+                                |  "testText": "hello",
+                                |  "testJsonArr": [
+                                |    "en",
+                                |    "cy"
+                                |  ],
+                                |  "parentFormSubmissionRefs": [
+                                |    "123",
+                                |    "456"
+                                |  ]
+                                |}
+      """.stripMargin)
 
     val t = Table(
       ("input", "expected"),
-      (emptyInput, emptyExpected),
+      (printSectionInput, printSectionExpected),
+      (destinationsInput, destinationsExpected),
       (input, expected)
     )
 
@@ -66,4 +227,91 @@ class FormTemplateJSONSpec extends Spec {
         result should beJsSuccess(expected)
     }
   }
+
+  it should "return validation error when both destinations and printSection are present" in {
+
+    val input = Json.parse("""
+                             |{
+                             |  "destinations": [
+                             |    {
+                             |      "id": "HMRCDMS",
+                             |      "type": "hmrcDms",
+                             |      "dmsFormId": "TST123",
+                             |      "customerId": "${auth.gg}",
+                             |      "classificationType": "BT-NRU-Environmental",
+                             |      "businessArea": "FinanceOpsCorpT"
+                             |    }
+                             |  ],
+                             | "printSection": "TestPrintSection"
+                             |}
+      """.stripMargin)
+
+    FormTemplatesControllerRequestHandler.normaliseJSON(input) should be(
+      FormTemplatesControllerRequestHandler.onlyOneOfDestinationsAndPrintSection)
+  }
+
+  it should "return validation error when both destinations and printSection are missing" in {
+
+    val input = Json.parse("""
+                             |{
+                             |  "_id": "TST123"
+                             |}
+      """.stripMargin)
+
+    FormTemplatesControllerRequestHandler.normaliseJSON(input) should be(
+      FormTemplatesControllerRequestHandler.onlyOneOfDestinationsAndPrintSection)
+  }
+
+  it should "return validation error when destinations is present but acknowledgementSection is missing" in {
+
+    val input = Json.parse("""
+                             |{
+                             |  "formCategory": "letter",
+                             |  "draftRetrievalMethod": "formAccessCodeForAgents",
+                             |  "showContinueOrDeletePage": "false",
+                             |  "parentFormSubmissionRefs": [
+                             |    "123",
+                             |    "456"
+                             |  ],
+                             |  "destinations": [
+                             |    {
+                             |      "id": "HMRCDMS",
+                             |      "type": "hmrcDms",
+                             |      "dmsFormId": "TST123",
+                             |      "customerId": "${auth.gg}",
+                             |      "classificationType": "BT-NRU-Environmental",
+                             |      "businessArea": "FinanceOpsCorpT"
+                             |    }
+                             |  ]
+                             |}
+      """.stripMargin)
+
+    FormTemplatesControllerRequestHandler.normaliseJSON(input) should be(
+      FormTemplatesControllerRequestHandler.mandatoryAcknowledgementForDestinationSection)
+  }
+
+  it should "return validation error when printSection is present and acknowledgementSection is also present" in {
+
+    val input = Json.parse("""
+                             |{
+                             |  "printSection": "TestPrintSection",
+                             |  "acknowledgementSection": {
+                             |    "shortName": "Acknowledgement Page",
+                             |    "title": "Acknowledgement Page",
+                             |    "fields": [
+                             |      {
+                             |        "type": "info",
+                             |        "id": "ackpageInfo",
+                             |        "label": "SomeContent",
+                             |        "infoText": "SomeContent"
+                             |      }
+                             |    ]
+                             |  }
+                             |}
+                           """.stripMargin)
+
+    FormTemplatesControllerRequestHandler.normaliseJSON(input) should be(
+      FormTemplatesControllerRequestHandler.avoidAcknowledgementForPrintSection)
+  }
+
 }

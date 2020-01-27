@@ -23,6 +23,7 @@ import cats.{ Monoid, Show }
 import cats.syntax.show._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.Section.{ AddToList, NonRepeatingPage, RepeatingPage }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
 
 import scala.collection.GenTraversableOnce
 
@@ -157,14 +158,22 @@ object VariadicFormData {
       }
     )
 
-  def listVariadicFormComponentIds(template: FormTemplate): Set[FormComponentId] =
-    listVariadicFormComponentIds(template.acknowledgementSection.fields) ++
+  def listVariadicFormComponentIds(template: FormTemplate): Set[FormComponentId] = {
+    val acknowledgementSectionFields = template.destinations match {
+      case destinationList: DestinationList =>
+        destinationList.acknowledgementSection.fields
+      case _ =>
+        Nil
+    }
+
+    listVariadicFormComponentIds(acknowledgementSectionFields) ++
       listVariadicFormComponentIds(template.declarationSection.fields) ++
       template.sections.foldMap {
         case s: NonRepeatingPage => listVariadicFormComponentIds(s.page)
         case s: RepeatingPage    => listVariadicFormComponentIds(s.page)
         case s: AddToList        => s.pages.foldMap(listVariadicFormComponentIds)
       }
+  }
 
   def listVariadicFormComponentIds(page: Page): Set[FormComponentId] =
     page.fields.flatMap(listVariadicFormComponentIds).toSet
