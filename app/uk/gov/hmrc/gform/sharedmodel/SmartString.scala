@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel
 
 import cats.instances.string._
 import cats.syntax.eq._
-import play.api.libs.json.{ JsError, JsObject, JsResult, JsString, JsSuccess, JsValue, OFormat, Reads }
+import play.api.libs.json.{ Format, JsError, JsObject, JsResult, JsString, JsSuccess, JsValue, OFormat, Reads }
 import uk.gov.hmrc.gform.core.parsers.{ BasicParsers, ValueParser }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Expr, OFormatWithTemplateReadFallback }
 
@@ -34,7 +34,7 @@ case class SmartString(localised: LocalisedString, interpolations: List[Expr]) {
 object SmartString {
   val empty: SmartString = SmartString(LocalisedString.empty, Nil)
 
-  implicit val format: OFormat[SmartString] = OFormatWithTemplateReadFallback(SmartStringTemplateReader.templateReads)
+  implicit val format: Format[SmartString] = OFormatWithTemplateReadFallback(SmartStringTemplateReader.templateReads)
 }
 
 object SmartStringTemplateReader {

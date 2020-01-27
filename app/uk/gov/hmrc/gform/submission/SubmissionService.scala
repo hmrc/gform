@@ -46,17 +46,14 @@ class SubmissionService(
   email: EmailService,
   timeProvider: TimeProvider)(implicit ex: ExecutionContext) {
 
-  def submitForm(
-    formIdData: FormIdData,
-    customerId: String,
-    affinityGroup: Option[AffinityGroup],
-    submissionData: SubmissionData)(implicit hc: HeaderCarrier): FOpt[Unit] =
+  def submitForm(formIdData: FormIdData, customerId: String, submissionData: SubmissionData)(
+    implicit hc: HeaderCarrier): FOpt[Unit] =
     // format: OFF
       for {
         form          <- formAlgebra.get(formIdData)
         formTemplate  <- fromFutureA(formTemplateService.get(form.formTemplateId))
         submission    <- findOrCreateSubmission(form, customerId, formTemplate, submissionData.attachments)
-        submissionInfo = DestinationSubmissionInfo(customerId, affinityGroup, submission)
+        submissionInfo = DestinationSubmissionInfo(customerId, submission)
         modelTree     <- createModelTreeForSingleFormSubmission(form, formTemplate, submissionData, submission.submissionRef)
         _             <- destinationsSubmitter.send(submissionInfo, modelTree)
         emailAddress   = email.getEmailAddress(form)

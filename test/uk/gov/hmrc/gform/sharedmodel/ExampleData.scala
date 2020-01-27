@@ -242,53 +242,53 @@ trait ExampleValidator {
 }
 
 trait ExampleSection { dependecies: ExampleFieldId with ExampleFieldValue with ExampleValidator =>
+  def nonRepeatingPageSection(
+    title: String = "About you",
+    validators: Option[Validator] = Some(defaultValidator),
+    fields: List[FormComponent] = List(`fieldValue - firstName`, `fieldValue - surname`, `fieldValue - facePhoto`),
+    includeIf: Option[IncludeIf] = None) =
+    Section.NonRepeatingPage(
+      Page(
+        toSmartString(title),
+        None,
+        None,
+        None,
+        includeIf,
+        validators,
+        fields,
+        None,
+        None
+      ))
 
   def `section - about you` =
-    Section(
-      toSmartString("About you"),
-      None,
-      None,
-      None,
-      None,
-      None,
-      None,
-      Some(defaultValidator),
-      List(`fieldValue - firstName`, `fieldValue - surname`, `fieldValue - facePhoto`),
-      None,
-      None
-    )
+    nonRepeatingPageSection()
 
   def `section - businessDetails` =
-    Section(
-      toSmartString("Business details"),
-      None,
-      None,
-      None,
-      None,
-      None,
-      None,
-      None,
-      List(`fieldValue - businessName`, `fieldValue - startDate`, `fieldValue - iptRegNum`),
-      None,
-      None
-    )
+    nonRepeatingPageSection(
+      title = "Business details",
+      validators = None,
+      fields = List(`fieldValue - businessName`, `fieldValue - startDate`, `fieldValue - iptRegNum`))
 
   def `repeating section` =
-    Section(
-      toSmartString("Repeating section"),
-      None,
-      None,
-      None,
-      None,
-      repeatsMax = Some(TextExpression(FormCtx(`fieldId - firstName`.value))),
-      repeatsMin = Some(TextExpression(FormCtx(`fieldId - firstName`.value))),
-      None,
-      List(`fieldValue - surname`),
-      None,
-      None
+    Section.RepeatingPage(
+      Page(
+        toSmartString("Repeating section"),
+        None,
+        None,
+        None,
+        None,
+        None,
+        List(`fieldValue - surname`),
+        None,
+        None
+      ),
+      repeats = TextExpression(FormCtx(`fieldId - firstName`.value))
     )
 
-  def `section - group` = `section - about you`.copy(fields = List(`fieldValue - group`))
+  def `section - group` =
+    nonRepeatingPageSection(
+      fields = List(`fieldValue - group`)
+    )
 
   def allSections = List(`section - about you`, `section - businessDetails`)
 }

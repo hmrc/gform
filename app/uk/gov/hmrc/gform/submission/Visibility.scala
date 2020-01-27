@@ -21,7 +21,7 @@ import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.gform.sharedmodel.VariadicFormData
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
-case class Visibility(sections: List[Section], data: VariadicFormData, affinityGroup: Option[AffinityGroup]) {
+case class Visibility(sections: List[Page], data: VariadicFormData, affinityGroup: Option[AffinityGroup]) {
 
   private def hasVisibleAncestor(formComponentId: FormComponentId): Boolean =
     sections
@@ -31,7 +31,7 @@ case class Visibility(sections: List[Section], data: VariadicFormData, affinityG
   private def areAncestorsVisible(beResultWithDep: BooleanExprResultWithDependents): Boolean =
     beResultWithDep.dependingOn.foldLeft(beResultWithDep.beResult)(_ && hasVisibleAncestor(_))
 
-  def isVisible(section: Section): Boolean = {
+  def isVisible(section: Page): Boolean = {
 
     val isIncludedExpression: Option[BooleanExprResultWithDependents] =
       section.includeIf.map(incIf => BooleanExprEval.isTrue(incIf.expr, data, affinityGroup))

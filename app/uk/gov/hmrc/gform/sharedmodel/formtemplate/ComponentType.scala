@@ -26,15 +26,6 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidth.DisplayWidth
 import uk.gov.hmrc.gform.sharedmodel.structuredform.{ FieldName, RoboticsXml, StructuredFormDataFieldNamePurpose }
 
 import scala.collection.immutable._
-
-sealed trait MultiField {
-
-  def fields(formComponentId: FormComponentId): NonEmptyList[FormComponentId]
-
-  def alternateNamesFor(fcId: FormComponentId): Map[StructuredFormDataFieldNamePurpose, FieldName] = Map.empty
-
-}
-
 sealed trait ComponentType
 
 case class Text(
@@ -64,8 +55,8 @@ case class TextArea(
   displayWidth: DisplayWidth = DisplayWidth.DEFAULT
 ) extends ComponentType
 
-case class UkSortCode(value: Expr) extends ComponentType with MultiField {
-  override def fields(id: FormComponentId): NonEmptyList[FormComponentId] = UkSortCode.fields(id)
+case class UkSortCode(value: Expr) extends ComponentType {
+  def fields(id: FormComponentId): NonEmptyList[FormComponentId] = UkSortCode.fields(id)
 }
 
 object UkSortCode {
@@ -77,8 +68,8 @@ case class Date(
   constraintType: DateConstraintType,
   offset: Offset,
   value: Option[DateValue]
-) extends ComponentType with MultiField {
-  override def fields(id: FormComponentId): NonEmptyList[FormComponentId] = Date.fields(id)
+) extends ComponentType {
+  def fields(id: FormComponentId): NonEmptyList[FormComponentId] = Date.fields(id)
 }
 
 case object Date {
@@ -86,10 +77,10 @@ case object Date {
     NonEmptyList.of("day", "month", "year").map(id.withSuffix)
 }
 
-case class Address(international: Boolean) extends ComponentType with MultiField {
-  override def fields(id: FormComponentId): NonEmptyList[FormComponentId] = Address.fields(id)
+case class Address(international: Boolean) extends ComponentType {
+  def fields(id: FormComponentId): NonEmptyList[FormComponentId] = Address.fields(id)
 
-  override def alternateNamesFor(fcId: FormComponentId): Map[StructuredFormDataFieldNamePurpose, FieldName] =
+  def alternateNamesFor(fcId: FormComponentId): Map[StructuredFormDataFieldNamePurpose, FieldName] =
     Map(RoboticsXml -> FieldName(fcId.value.replace("street", "line")))
 
 }

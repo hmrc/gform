@@ -22,7 +22,11 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, De
 import uk.gov.hmrc.gform.sharedmodel.notifier.{ NotifierPersonalisationFieldId, NotifierTemplateId }
 
 trait DestinationGen {
-  def destinationIdGen: Gen[DestinationId] = PrimitiveGen.nonEmptyAlphaNumStrGen.map(DestinationId(_))
+  def destinationIdGen: Gen[DestinationId] =
+    for {
+      f <- Gen.alphaChar
+      r <- Gen.alphaNumStr
+    } yield DestinationId(f.toString + r)
 
   def dmsFormIdGen: Gen[String] = PrimitiveGen.nonEmptyAlphaNumStrGen
   def classificationTypeGen: Gen[String] = PrimitiveGen.nonEmptyAlphaNumStrGen

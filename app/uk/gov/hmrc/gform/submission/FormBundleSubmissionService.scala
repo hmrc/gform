@@ -94,7 +94,7 @@ class FormBundleSubmissionService[F[_]](
       _          <- Logger.info(show"Built model tree").pure[F]
       submission <- submissionRepoAlgebra.get(rootFormIdData.toFormId.value)
       _          <- Logger.info(show"Got submission for rootForm").pure[F]
-      submissionInfo = DestinationSubmissionInfo("", None, submission)
+      submissionInfo = DestinationSubmissionInfo("", submission)
       _ <- destinationsSubmitterAlgebra.send(submissionInfo, modelTree)
       _ <- Logger.info(show"Ran submitter").pure[F]
       _ <- transitionAllChildNodesToSubmitted(modelTree)

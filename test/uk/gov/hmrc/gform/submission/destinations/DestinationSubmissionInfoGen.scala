@@ -32,7 +32,6 @@ trait DestinationSubmissionInfoGen {
     } yield
       DestinationSubmissionInfo(
         customerId,
-        None,
         Submission(formId, LocalDateTime.now, submissionRef, null, 0, null)
       )
 }

@@ -58,7 +58,7 @@ trait SectionGen {
       fields      <- PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen())
     } yield DeclarationSection(title, description, shortName, fields.toList)
 
-  def sectionGen: Gen[Section] =
+  def pageGen: Gen[Page] =
     for {
       title             <- smartStringGen
       description       <- Gen.option(smartStringGen)
@@ -72,19 +72,37 @@ trait SectionGen {
       continueLabel     <- Gen.option(smartStringGen)
       continueIf        <- Gen.option(ContinueIfGen.continueIfGen)
     } yield
-      Section(
+      Page(
         title,
         description,
         progressIndicator,
         shortName,
         includeIf,
-        repeatsMax,
-        repeatMin,
         validators,
         fields.toList,
         continueLabel,
         continueIf
       )
+
+  def nonRepeatingPageSectionGen: Gen[Section.NonRepeatingPage] = pageGen.map(Section.NonRepeatingPage)
+
+  def repeatingPageSectionGen: Gen[Section.RepeatingPage] =
+    for {
+      page    <- pageGen
+      repeats <- FormatExprGen.textExpressionGen
+    } yield Section.RepeatingPage(page, repeats)
+
+  def addToListSectionGen: Gen[Section.AddToList] =
+    for {
+      title       <- smartStringGen
+      description <- Gen.option(smartStringGen)
+      shortName   <- Gen.option(smartStringGen)
+      includeIf   <- Gen.option(IncludeIfGen.includeIfGen)
+      repeatsMax  <- Gen.option(FormatExprGen.textExpressionGen)
+      pages       <- PrimitiveGen.oneOrMoreGen(pageGen)
+    } yield Section.AddToList(title, description, shortName, includeIf, repeatsMax, pages)
+
+  def sectionGen: Gen[Section] = Gen.oneOf(nonRepeatingPageSectionGen, repeatingPageSectionGen, addToListSectionGen)
 }
 
 object SectionGen extends SectionGen

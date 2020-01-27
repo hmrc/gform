@@ -16,14 +16,23 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
-import uk.gov.hmrc.gform._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.SectionGen
+import play.api.libs.json.{ Json, OFormat }
+import uk.gov.hmrc.gform.sharedmodel.SmartString
 
-class SectionSpec extends Spec with GeneratorDrivenPropertyChecks {
-  "Section" should "round trip derived JSON" in {
-    forAll(SectionGen.sectionGen) { section =>
-      verifyRoundTrip(section)
-    }
-  }
+case class Page(
+  title: SmartString,
+  description: Option[SmartString],
+  shortName: Option[SmartString],
+  progressIndicator: Option[SmartString] = None,
+  includeIf: Option[IncludeIf],
+  validators: Option[Validator],
+  fields: List[FormComponent],
+  continueLabel: Option[SmartString],
+  continueIf: Option[ContinueIf]
+) {
+  lazy val expandedFormComponents: List[FormComponent] = fields.flatMap(_.expandedFormComponents)
+}
+
+object Page {
+  implicit val pageFormat: OFormat[Page] = Json.format[Page]
 }
