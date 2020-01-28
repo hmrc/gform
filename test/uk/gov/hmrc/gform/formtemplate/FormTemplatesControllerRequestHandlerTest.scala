@@ -31,48 +31,102 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with MustMatche
 
   implicit val defaultPatience = PatienceConfig(timeout = Span(6, Seconds), interval = Span(5, Millis))
 
-  "handle a valid upsert request" in {
-    withFixture("${user.enrolledIdentifier}") { (sideEffect, verifySideEffect, templateRaw) =>
+  "handle a valid upsert request with Destinations section" in {
+    withFixture(
+      Json.parse(
+        validRequestBodyWithDestinations("hmrc", "${user.enrolledIdentifier}", Some(""""serviceId": "someId",""")))) {
+      (sideEffect, verifySideEffect, templateRaw) =>
+        val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
+        val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+
+        whenReady(eventualResult.value) { response =>
+          response mustBe Right(())
+        }
+    }
+  }
+
+  "handle a valid upsert request with Print section" in {
+    withFixture(
+      Json.parse(
+        validRequestBodyWithPrintSection("hmrc", "${user.enrolledIdentifier}", Some(""""serviceId": "someId",""")))) {
+      (sideEffect, verifySideEffect, templateRaw) =>
+        val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
+        val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+
+        whenReady(eventualResult.value) { response =>
+          response mustBe Right(())
+        }
+    }
+  }
+
+  "handle an invalid upsert request with no Destinations or Print section" in {
+    withFixture(
+      Json.parse(
+        invalidRequestBodyWithNoDestinationsOrPrintSection(
+          "hmrc",
+          "${user.enrolledIdentifier}",
+          Some(""""serviceId": "someId",""")))) { (sideEffect, verifySideEffect, templateRaw) =>
       val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
       whenReady(eventualResult.value) { response =>
-        response mustBe Right(())
+        response must matchPattern {
+          case Left(UnexpectedState(_)) =>
+        }
+      }
+    }
+  }
+
+  "handle an invalid upsert request with both Destinations and Print sections" in {
+    withFixture(
+      Json.parse(
+        invalidRequestBodyWithBothDestinationsAndPrintSections(
+          "hmrc",
+          "${user.enrolledIdentifier}",
+          Some(""""serviceId": "someId",""")))) { (sideEffect, verifySideEffect, templateRaw) =>
+      val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
+      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+
+      whenReady(eventualResult.value) { response =>
+        response must matchPattern {
+          case Left(UnexpectedState(_)) =>
+        }
       }
     }
   }
 
   "handle an invalid identifier upsert request" in {
-    withFixture("${user.broken}") { (sideEffect, _, templateRaw) =>
-      val handler = new FormTemplatesControllerRequestHandler(_ => sideEffect, _ => sideEffect)
-      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+    withFixture(
+      Json.parse(validRequestBodyWithPrintSection("hmrc", "${user.broken}", Some(""""serviceId": "someId",""")))) {
+      (sideEffect, _, templateRaw) =>
+        val handler = new FormTemplatesControllerRequestHandler(_ => sideEffect, _ => sideEffect)
+        val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
-      whenReady(eventualResult.value) { response =>
-        response must matchPattern {
-          case Left(UnexpectedState(_)) =>
+        whenReady(eventualResult.value) { response =>
+          response must matchPattern {
+            case Left(UnexpectedState(_)) =>
+          }
         }
-      }
     }
   }
 
   "return an error when identifier is ${user.enrolledIdentifier} && authConf is HmrcSimpleModule or HmrcAgentModule" in {
-    withFixture("${user.enrolledIdentifier}", None) { (sideEffect, verifySideEffect, templateRaw) =>
-      val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
-      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+    withFixture(Json.parse(validRequestBodyWithPrintSection("hmrc", "${user.enrolledIdentifier}", None))) {
+      (sideEffect, verifySideEffect, templateRaw) =>
+        val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
+        val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
-      whenReady(eventualResult.value) { response =>
-        response must matchPattern {
-          case Left(UnexpectedState(_)) =>
+        whenReady(eventualResult.value) { response =>
+          response must matchPattern {
+            case Left(UnexpectedState(_)) =>
+          }
         }
-      }
     }
   }
 
-  private def withFixture(identifier: String, serviceId: Option[String] = Some(""""serviceId": "someId","""))(
-    f: (FOpt[Unit], Option[FOpt[Unit]], FormTemplateRaw) => Any) = {
+  private def withFixture(json: JsValue)(f: (FOpt[Unit], Option[FOpt[Unit]], FormTemplateRaw) => Any) = {
 
     val sideEffect: FOpt[Unit] = fromFutureA(Future.successful(()))
-    val json: JsValue = Json.parse(requestBody("hmrc", identifier, serviceId))
     val templateRaw = implicitly[Reads[FormTemplateRaw]].reads(json).get
     val formTemplate: Option[FormTemplate] = FormTemplate.transformAndReads(json).asOpt
     val verifySideEffect: Option[FOpt[Unit]] = formTemplate.map(formTemplate => new Verifier {}.verify(formTemplate))
@@ -80,7 +134,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with MustMatche
     f(sideEffect, verifySideEffect, templateRaw)
   }
 
-  private def requestBody(
+  private def validRequestBodyWithDestinations(
     authModule: String,
     identifier: String,
     serviceId: Option[String] = Some(""""serviceId": "Id",""")) =
@@ -89,12 +143,13 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with MustMatche
        |  "formName": "Testing section change label tttt",
        |  "description": "Testing the form change label",
        |  "languages":["en"],
-       |  "dmsSubmission": {
-       |    "dmsFormId": "",
-       |    "customerId": "$${auth.payenino}",
-       |    "classificationType": "",
-       |    "businessArea": ""
-       |  },
+       |  "destinations": [
+       |        {
+       |            "id": "transitionToSubmitted",
+       |            "type": "stateTransition",
+       |            "requiredState": "Submitted"
+       |        }
+       |   ],
        |  "authConfig": {
        |    "authModule": "$authModule",
        |    ${serviceId.getOrElse("")}
@@ -128,4 +183,143 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with MustMatche
        |    "fields": []
        |  }
        |}""".stripMargin
+
+  private def validRequestBodyWithPrintSection(
+    authModule: String,
+    identifier: String,
+    serviceId: Option[String] = Some(""""serviceId": "Id",""")) =
+    s"""{
+       |  "_id": "newfield",
+       |  "formName": "Testing section change label tttt",
+       |  "description": "Testing the form change label",
+       |  "languages":["en"],
+       |  "printSection": "TestPrintSection",
+       |  "authConfig": {
+       |    "authModule": "$authModule",
+       |    ${serviceId.getOrElse("")}
+       |    "agentAccess": "allowAnyAgentAffinityUser"
+       |  },
+       |  "emailTemplateId": "",
+       |  "sections": [{
+       |    "title": "Page A",
+       |    "fields": [{
+       |      "id": "elementA",
+       |      "type": "text",
+       |      "format": "sterling",
+       |      "value": "$identifier",
+       |      "submitMode": "readonly",
+       |      "label": "Element A"
+       |    },{
+       |      "id": "elementB",
+       |      "format": "text",
+       |      "submitMode": "readonly",
+       |      "label": "Element B",
+       |      "validIf": "$${elementA=''}"
+       |    }]
+       |  }],
+       |
+       |  "declarationSection": {
+       |    "title": "",
+       |    "fields": []
+       |  },
+       |  "acknowledgementSection": {
+       |    "title": "",
+       |    "fields": []
+       |  }
+       |}""".stripMargin
+
+  private def invalidRequestBodyWithNoDestinationsOrPrintSection(
+    authModule: String,
+    identifier: String,
+    serviceId: Option[String] = Some(""""serviceId": "Id",""")) =
+    s"""{
+       |  "_id": "newfield",
+       |  "formName": "Testing section change label tttt",
+       |  "description": "Testing the form change label",
+       |  "languages":["en"],
+       |  "authConfig": {
+       |    "authModule": "$authModule",
+       |    ${serviceId.getOrElse("")}
+       |    "agentAccess": "allowAnyAgentAffinityUser"
+       |  },
+       |  "emailTemplateId": "",
+       |  "sections": [{
+       |    "title": "Page A",
+       |    "fields": [{
+       |      "id": "elementA",
+       |      "type": "text",
+       |      "format": "sterling",
+       |      "value": "$identifier",
+       |      "submitMode": "readonly",
+       |      "label": "Element A"
+       |    },{
+       |      "id": "elementB",
+       |      "format": "text",
+       |      "submitMode": "readonly",
+       |      "label": "Element B",
+       |      "validIf": "$${elementA=''}"
+       |    }]
+       |  }],
+       |
+       |  "declarationSection": {
+       |    "title": "",
+       |    "fields": []
+       |  },
+       |  "acknowledgementSection": {
+       |    "title": "",
+       |    "fields": []
+       |  }
+       |}""".stripMargin
+
+  private def invalidRequestBodyWithBothDestinationsAndPrintSections(
+    authModule: String,
+    identifier: String,
+    serviceId: Option[String] = Some(""""serviceId": "Id",""")) =
+    s"""{
+       |  "_id": "newfield",
+       |  "formName": "Testing section change label tttt",
+       |  "description": "Testing the form change label",
+       |  "languages":["en"],
+       |  "printSection": "TestPrintSection",
+       |   "destinations": [
+       |        {
+       |            "id": "transitionToSubmitted",
+       |            "type": "stateTransition",
+       |            "requiredState": "Submitted"
+       |        }
+       |   ],
+       |  "authConfig": {
+       |    "authModule": "$authModule",
+       |    ${serviceId.getOrElse("")}
+       |    "agentAccess": "allowAnyAgentAffinityUser"
+       |  },
+       |  "emailTemplateId": "",
+       |  "sections": [{
+       |    "title": "Page A",
+       |    "fields": [{
+       |      "id": "elementA",
+       |      "type": "text",
+       |      "format": "sterling",
+       |      "value": "$identifier",
+       |      "submitMode": "readonly",
+       |      "label": "Element A"
+       |    },{
+       |      "id": "elementB",
+       |      "format": "text",
+       |      "submitMode": "readonly",
+       |      "label": "Element B",
+       |      "validIf": "$${elementA=''}"
+       |    }]
+       |  }],
+       |
+       |  "declarationSection": {
+       |    "title": "",
+       |    "fields": []
+       |  },
+       |  "acknowledgementSection": {
+       |    "title": "",
+       |    "fields": []
+       |  }
+       |}""".stripMargin
+
 }

@@ -18,7 +18,6 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import cats.data.NonEmptyList
 import julienrf.json.derived
-import play.api.Logger
 import play.api.libs.json._
 import uk.gov.hmrc.gform.formtemplate.FormTemplatesControllerRequestHandler
 import uk.gov.hmrc.gform.sharedmodel.{ AvailableLanguages, LocalisedString, formtemplate }
@@ -112,7 +111,7 @@ object FormTemplate {
 
   implicit val format: OFormat[FormTemplate] = OFormat(reads, derived.owrites[FormTemplate])
 
-    def transformAndReads(json: JsValue): JsResult[FormTemplate] =
+  def transformAndReads(json: JsValue): JsResult[FormTemplate] =
     FormTemplatesControllerRequestHandler
       .normaliseJSON(json)
       .flatMap(format.reads)

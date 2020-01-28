@@ -18,7 +18,6 @@ package uk.gov.hmrc.gform.formtemplate
 
 import cats.instances.future._
 import cats.syntax.either._
-import play.api.Logger
 import play.api.libs.json._
 import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
@@ -35,8 +34,6 @@ trait RequestHandlerAlg[F[_]] {
 class FormTemplatesControllerRequestHandler[F[_]](
   verifyAndSave: FormTemplate => FOpt[Unit],
   save: FormTemplateRaw => FOpt[Unit])(implicit ec: ExecutionContext) {
-
-  import FormTemplatesControllerRequestHandler._
 
   val futureInterpreter = new RequestHandlerAlg[FOpt] {
     override def handleRequest(templateRaw: FormTemplateRaw): FOpt[Unit] = {
@@ -59,48 +56,50 @@ class FormTemplatesControllerRequestHandler[F[_]](
 
 object FormTemplatesControllerRequestHandler {
 
+  val onlyOneOfDestinationsAndPrintSection = JsError(
+    """One and only one of FormTemplate.{destinations, printSection} must be defined.""")
+
   def normaliseJSON(jsonValue: JsValue): JsResult[JsObject] = {
 
-    val drmValue = (__ \ 'draftRetrievalMethod \ 'value).json
-      .copyFrom((__ \ 'draftRetrievalMethod).json.pick orElse Reads.pure(JsString("onePerUser")))
+    val drmValue =
+      (__ \ 'draftRetrievalMethod \ 'value).json
+        .copyFrom((__ \ 'draftRetrievalMethod).json.pick orElse Reads.pure(JsString("onePerUser")))
 
-    val drmShowContinueOrDeletePage = (__ \ 'draftRetrievalMethod \ 'showContinueOrDeletePage).json
-      .copyFrom((__ \ 'showContinueOrDeletePage).json.pick orElse Reads.pure(JsString("true")))
+    val drmShowContinueOrDeletePage =
+      (__ \ 'draftRetrievalMethod \ 'showContinueOrDeletePage).json
+        .copyFrom((__ \ 'showContinueOrDeletePage).json.pick orElse Reads.pure(JsString("true")))
 
     val pruneShowContinueOrDeletePage = (__ \ 'showContinueOrDeletePage).json.prune
 
-    val ensureFormCategory = (__ \ 'formCategory).json
-      .copyFrom((__ \ 'formCategory).json.pick orElse Reads.pure(JsString("default")))
+    val ensureFormCategory =
+      (__ \ 'formCategory).json
+        .copyFrom((__ \ 'formCategory).json.pick orElse Reads.pure(JsString("default")))
 
-    val ensureLanguages = (__ \ 'languages).json
-      .copyFrom((__ \ 'languages).json.pick orElse Reads.pure(Json.arr("en")))
+    val ensureLanguages =
+      (__ \ 'languages).json
+        .copyFrom((__ \ 'languages).json.pick orElse Reads.pure(Json.arr("en")))
 
-    val ensureParentFormSubmissionRefs = (__ \ 'parentFormSubmissionRefs).json
-      .copyFrom((__ \ 'parentFormSubmissionRefs).json.pick orElse Reads.pure(Json.arr()))
+    val ensureParentFormSubmissionRefs =
+      (__ \ 'parentFormSubmissionRefs).json
+        .copyFrom((__ \ 'parentFormSubmissionRefs).json.pick orElse Reads.pure(Json.arr()))
 
-    val destinationsOrPrintSection = (__ \ 'destinations).json
-      .copyFrom((__ \ 'destinations).json.pick orElse (__ \ 'printSection).json.pick)
+    val destinationsOrPrintSection =
+      (__ \ 'destinations).json
+        .copyFrom((__ \ 'destinations).json.pick orElse (__ \ 'printSection).json.pick orElse Reads.pure(JsString("")))
 
     val prunePrintSection = (__ \ 'printSection).json.prune
 
     val destinationsOrPrintSectionValidation: JsResult[Unit] =
       ((jsonValue \ "destinations").toOption, (jsonValue \ "printSection").toOption) match {
-        case (Some(_), Some(_)) =>
-          JsError("""One and only one of FormTemplate.{destinations, printSection} must be defined.""")
-
-        case (None, None) =>
-          JsError("""One and only one of FormTemplate.{destinations, printSection} must be defined.""")
-
-        case (Some(_), None) =>
-          JsSuccess(())
-
-        case (None, Some(_)) =>
-          JsSuccess(())
+        case (Some(_), Some(_)) => onlyOneOfDestinationsAndPrintSection
+        case (None, None)       => onlyOneOfDestinationsAndPrintSection
+        case (Some(_), None)    => JsSuccess(())
+        case (None, Some(_))    => JsSuccess(())
       }
 
     val transformer: Reads[JsObject] =
-       pruneShowContinueOrDeletePage and drmValue and drmShowContinueOrDeletePage and ensureFormCategory and
-        ensureLanguages and ensureParentFormSubmissionRefs and destinationsOrPrintSection and prunePrintSection reduce
+      pruneShowContinueOrDeletePage andThen prunePrintSection and drmValue and drmShowContinueOrDeletePage and ensureFormCategory and
+        ensureLanguages and ensureParentFormSubmissionRefs and destinationsOrPrintSection reduce
 
     destinationsOrPrintSectionValidation andKeep jsonValue.transform(transformer)
   }
