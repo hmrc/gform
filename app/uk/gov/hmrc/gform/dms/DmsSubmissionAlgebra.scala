@@ -27,14 +27,16 @@ import uk.gov.hmrc.gform.fileupload.{ Attachments, FileUploadAlgebra }
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorAlgebra
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Constant, FormTemplateId, TextExpression }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Constant, FormTemplateId, TextExpression }
 import uk.gov.hmrc.gform.submission.{ DmsMetaData, PdfAndXmlSummaries, PdfSummary, Submission }
 import uk.gov.hmrc.http.HeaderCarrier
 
 trait DmsSubmissionAlgebra[F[_]] {
   def submitToDms(dmsHtmlSubmission: DmsHtmlSubmission)(implicit hc: HeaderCarrier): F[EnvelopeId]
   def submitPdfToDms(pdfBytes: Array[Byte], dmsMetaData: DmsMetadata)(implicit hc: HeaderCarrier): F[EnvelopeId]
+  def submitPdfToDmsWithAttachments(html: String, attachments: List[Array[Byte]], metaData: DmsMetadata)(
+    implicit hc: HeaderCarrier): F[EnvelopeId]
 }
 
 class DmsSubmissionService[F[_]](
@@ -45,7 +47,7 @@ class DmsSubmissionService[F[_]](
     extends DmsSubmissionAlgebra[F] {
   override def submitToDms(dmsHtmlSubmission: DmsHtmlSubmission)(implicit hc: HeaderCarrier): F[EnvelopeId] =
     pdfGenerator
-      .generatePDFBytes(decode(dmsHtmlSubmission.html))
+      .generatePDFBytes(decode(dmsHtmlSubmission.b64html))
       .flatMap { byteArray =>
         submitPdfToDms(byteArray, dmsHtmlSubmission.metadata)
       }
@@ -65,7 +67,28 @@ class DmsSubmissionService[F[_]](
     } yield envId
   }
 
+  override def submitPdfToDmsWithAttachments(html: String, attachments: List[Array[Byte]], metaData: DmsMetadata)(
+    implicit hc: HeaderCarrier): F[EnvelopeId] = {
+
+    val formTemplateId = FormTemplateId(metaData.dmsFormId)
+
+    for {
+      pdfBytes   <- pdfGenerator.generatePDFBytes(decode(html))
+      envelopeId <- fileUpload.createEnvelope(formTemplateId, LocalDateTime.now(clock).plusDays(formExpiryDays))
+      pdfDoc = documentLoader(pdfBytes)
+      pdfSummary = PdfSummary(pdfDoc.getNumberOfPages.toLong, pdfBytes)
+      _ = pdfDoc.close()
+      submission = DmsSubmissionService
+        .createSubmission(metaData, envelopeId, LocalDateTime.now(clock), Attachments.empty)
+      summaries = PdfAndXmlSummaries(pdfSummary)
+      dmsSubmission = DmsSubmissionService.createDmsSubmission(metaData)
+      _ <- fileUpload.submitEnvelope(submission, summaries, dmsSubmission)
+    } yield (envelopeId)
+
+  }
+
   private val decode = (s: String) => new String(Base64.getDecoder.decode(s))
+
 }
 
 object DmsSubmissionService {

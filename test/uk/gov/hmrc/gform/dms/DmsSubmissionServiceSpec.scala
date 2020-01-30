@@ -54,7 +54,7 @@ class DmsSubmissionServiceSpec extends Spec {
 
     fixture
       .expectCreateEnvelope(FormTemplateId(validSubmission.metadata.dmsFormId), expectedEnvId)
-      .expectGeneratePdfBytes(validSubmission.html, pdfContent)
+      .expectGeneratePdfBytes(validSubmission.b64html, pdfContent)
       .expectLoadDocument(pdfContent, stubPdfDocument)
       .expectSubmitEnvelope(expectedSubmission, expectedPdfAndXmlSummaries, expectedDmsSubmission, 0)
       .service

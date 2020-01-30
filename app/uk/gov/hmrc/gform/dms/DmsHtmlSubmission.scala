@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.dms
 
 import play.api.libs.json.{ Format, Json }
 
-case class DmsHtmlSubmission(html: String, metadata: DmsMetadata)
+case class DmsHtmlSubmission(b64html: String, attachments: List[Array[Byte]], metadata: DmsMetadata)
 
 object DmsHtmlSubmission {
   implicit val format: Format[DmsHtmlSubmission] = Json.format[DmsHtmlSubmission]
