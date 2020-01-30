@@ -25,18 +25,6 @@ import JsonUtils._
 sealed trait Destinations extends Product with Serializable
 
 object Destinations {
-  // This is for handling the case of the deprecated FormTemplate.dmsSubmission field.
-  // In the FormTemplate template upload Reads, we will take the content of the dmsSubmission field
-  // and put it here.
-  case class DmsSubmission(
-    dmsFormId: String,
-    customerId: TextExpression,
-    classificationType: String,
-    businessArea: String,
-    includeRoboticsXml: Option[Boolean] = None)
-      extends Destinations
-
-  implicit val dmsSubmissionFormat: OFormat[DmsSubmission] = Json.format
 
   case class DestinationList(destinations: NonEmptyList[Destination]) extends Destinations
 
@@ -47,10 +35,7 @@ object Destinations {
   implicit val printSectionFormat: OFormat[PrintSection] = Json.format[PrintSection]
 
   implicit val format: OFormat[Destinations] = {
-    implicit val destinationsFormat: OFormat[Destinations] = {
-      implicit val _ = derived.reads[DmsSubmission]
-      derived.oformat
-    }
+    implicit val destinationsFormat: OFormat[Destinations] = derived.oformat
 
     OFormatWithTemplateReadFallback(
       // When uploading the template and loading a Destinations, we can only read the DestinationList branch.

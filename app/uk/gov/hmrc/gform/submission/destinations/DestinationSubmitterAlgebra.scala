@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.submission.destinations
 import cats.instances.string._
 import cats.syntax.eq._
 import uk.gov.hmrc.gform.sharedmodel.PdfHtml
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 import uk.gov.hmrc.gform.submission.handlebars._
@@ -36,7 +37,7 @@ trait DestinationSubmitterAlgebra[M[_]] {
     submissionInfo: DestinationSubmissionInfo,
     pdfData: PdfHtml,
     structuredFormData: StructuredFormValue.ObjectStructure,
-    submission: Destinations.DmsSubmission)(implicit hc: HeaderCarrier): M[Unit]
+    hmrcDms: HmrcDms)(implicit hc: HeaderCarrier): M[Unit]
 }
 
 object DestinationSubmitterAlgebra {

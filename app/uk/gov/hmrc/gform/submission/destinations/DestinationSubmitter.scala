@@ -139,21 +139,13 @@ class DestinationSubmitter[M[_]](
     submissionInfo: DestinationSubmissionInfo,
     pdfData: PdfHtml,
     structuredFormData: StructuredFormValue.ObjectStructure,
-    submission: Destinations.DmsSubmission)(implicit hc: HeaderCarrier): M[Unit] =
-    dms(submissionInfo, pdfData, structuredFormData, submission)
-
-  private def submitToDms(
-    submissionInfo: DestinationSubmissionInfo,
-    pdfData: PdfHtml,
-    structuredFormData: StructuredFormValue.ObjectStructure,
     d: Destination.HmrcDms)(implicit hc: HeaderCarrier): M[Unit] =
-    monadError.handleErrorWith(submitToDms(submissionInfo, pdfData, structuredFormData, d.toDeprecatedDmsSubmission)) {
-      msg =>
-        if (d.failOnError)
-          raiseError(submissionInfo.formId, d.id, msg)
-        else {
-          logInfoInMonad(submissionInfo.formId, d.id, "Failed execution but has 'failOnError' set to false. Ignoring.")
-        }
+    monadError.handleErrorWith(dms(submissionInfo, pdfData, structuredFormData, d)) { msg =>
+      if (d.failOnError)
+        raiseError(submissionInfo.formId, d.id, msg)
+      else {
+        logInfoInMonad(submissionInfo.formId, d.id, "Failed execution but has 'failOnError' set to false. Ignoring.")
+      }
     }
 
   private def submitToHandlebars(

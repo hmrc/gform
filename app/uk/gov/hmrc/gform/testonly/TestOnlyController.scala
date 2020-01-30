@@ -38,7 +38,7 @@ import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.sharedmodel._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.{ DestinationList, DmsSubmission }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.{ DestinationList, PrintSection }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, Destinations, HandlebarsTemplateProcessorModel }
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.gform.submission.destinations.DestinationsProcessorModelAlgebra
@@ -155,7 +155,7 @@ class TestOnlyController(
   private def availableHandlebarsDestinations(destinations: Destinations): List[Destination.HandlebarsHttpApi] =
     destinations match {
       case DestinationList(list) => availableHandlebarsDestinations(list.toList)
-      case _: DmsSubmission      => Nil
+      case _: PrintSection       => Nil
     }
 
   private def availableHandlebarsDestinations(
