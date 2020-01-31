@@ -32,6 +32,7 @@ trait DestinationGen {
   def classificationTypeGen: Gen[String] = PrimitiveGen.nonEmptyAlphaNumStrGen
   def customerIdGen: Gen[TextExpression] = FormatExprGen.textExpressionGen
   def businessAreaGen: Gen[String] = PrimitiveGen.nonEmptyAlphaNumStrGen
+  def signatureGen: Gen[String] = PrimitiveGen.nonEmptyAsciiPrintableString
 
   def hmrcDmsGen: Gen[Destination.HmrcDms] =
     for {

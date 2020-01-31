@@ -23,16 +23,12 @@ import cats.Id
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.scalamock.function.MockFunction1
 import play.api.libs.Files.{ SingletonTemporaryFileCreator, TemporaryFile }
-import play.api.libs.json.{ JsValue, Json }
-import play.api.mvc.MultipartFormData
-import play.api.mvc.MultipartFormData.{ BadPart, FilePart }
-import play.api.test.FakeRequest
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.fileupload.{ Attachments, FileUploadAlgebra }
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorAlgebra
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.submission._
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -46,7 +42,7 @@ class DmsSubmissionServiceSpec extends Spec {
     val expectedEnvId = EnvelopeId(UUID.randomUUID().toString)
     val expectedPdfAndXmlSummaries = PdfAndXmlSummaries(PdfSummary(numberOfPages.longValue, pdfContent))
 
-    val expectedDmsSubmission = DmsSubmissionService.createDmsSubmission(validSubmission.metadata)
+    val expectedHmrcDms = DmsSubmissionService.createHmrcDms(validSubmission.metadata)
     val expectedSubmission =
       DmsSubmissionService.createSubmission(validSubmission.metadata, expectedEnvId, fixedTime, Attachments.empty)
 
@@ -56,7 +52,7 @@ class DmsSubmissionServiceSpec extends Spec {
       .expectCreateEnvelope(FormTemplateId(validSubmission.metadata.dmsFormId), expectedEnvId)
       .expectGeneratePdfBytes(validSubmission.html, pdfContent)
       .expectLoadDocument(pdfContent, stubPdfDocument)
-      .expectSubmitEnvelope(expectedSubmission, expectedPdfAndXmlSummaries, expectedDmsSubmission, 0)
+      .expectSubmitEnvelope(expectedSubmission, expectedPdfAndXmlSummaries, expectedHmrcDms, 0)
       .service
       .submitToDms(validSubmission) shouldBe expectedEnvId
   }
@@ -67,7 +63,7 @@ class DmsSubmissionServiceSpec extends Spec {
     val pdfContent = "totally a pdf".getBytes
     val expectedPdfAndXmlSummaries = PdfAndXmlSummaries(PdfSummary(numberOfPages.longValue, pdfContent))
 
-    val expectedDmsSubmission = DmsSubmissionService.createDmsSubmission(validSubmission.metadata)
+    val expectedHmrcDms = DmsSubmissionService.createHmrcDms(validSubmission.metadata)
     val expectedSubmission =
       DmsSubmissionService.createSubmission(validSubmission.metadata, expectedEnvId, fixedTime, Attachments.empty)
 
@@ -79,7 +75,7 @@ class DmsSubmissionServiceSpec extends Spec {
     fixture
       .expectCreateEnvelope(FormTemplateId(validSubmission.metadata.dmsFormId), expectedEnvId)
       .expectLoadDocument(pdfContent, stubPdfDocument)
-      .expectSubmitEnvelope(expectedSubmission, expectedPdfAndXmlSummaries, expectedDmsSubmission, 0)
+      .expectSubmitEnvelope(expectedSubmission, expectedPdfAndXmlSummaries, expectedHmrcDms, 0)
       .service
       .submitPdfToDms(pdfContent, validSubmission.metadata) shouldBe expectedEnvId
   }
@@ -125,11 +121,11 @@ class DmsSubmissionServiceSpec extends Spec {
     def expectSubmitEnvelope(
       submission: Submission,
       pdfAndXmlSummaries: PdfAndXmlSummaries,
-      dmsSubmission: DmsSubmission,
+      hmrcDms: HmrcDms,
       numberOfAttachments: Int): Fixture = {
       (fileUpload
-        .submitEnvelope(_: Submission, _: PdfAndXmlSummaries, _: DmsSubmission)(_: HeaderCarrier))
-        .expects(submission, pdfAndXmlSummaries, dmsSubmission, hc)
+        .submitEnvelope(_: Submission, _: PdfAndXmlSummaries, _: HmrcDms)(_: HeaderCarrier))
+        .expects(submission, pdfAndXmlSummaries, hmrcDms, hc)
         .returning(())
 
       this
