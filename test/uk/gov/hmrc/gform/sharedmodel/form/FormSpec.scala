@@ -30,7 +30,7 @@ import uk.gov.hmrc.gform.sharedmodel._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.FormGen
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.des.DesRegistrationResponseGen
-import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierConfirmationCode
+import uk.gov.hmrc.gform.sharedmodel.email.EmailConfirmationCode
 
 class FormSpec extends FlatSpec with Matchers with PropertyChecks {
 
@@ -136,7 +136,7 @@ class FormSpec extends FlatSpec with Matchers with PropertyChecks {
         )
       ),
       Map(
-        FormComponentId("emailId") -> EmailAndCode("josef@hmrc.com", NotifierConfirmationCode("HPKHWB"))
+        FormComponentId("emailId") -> EmailAndCode("josef@hmrc.com", EmailConfirmationCode("HPKHWB"))
       )
     ),
     Some(EnvelopeExpiryDate(LocalDateTime.of(2064, 12, 1, 0, 0, 40)))

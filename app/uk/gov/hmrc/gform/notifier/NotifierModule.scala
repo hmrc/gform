@@ -22,14 +22,14 @@ import uk.gov.service.notify.NotificationClient
 
 import scala.concurrent.ExecutionContext
 
-class NotifierModule(configModule: ConfigModule)(implicit ec: ExecutionContext) {
+class NotifierModule(
+  configModule: ConfigModule
+)(
+  implicit ec: ExecutionContext
+) {
   private val config = configModule.notifierConfig
   private val client = new NotificationClient(config.apiKey)
 
   val fOptNotifierService = new NotifierService[FOpt](client)
 
-  val notifierController = new NotifierController(
-    configModule.controllerComponents,
-    fOptNotifierService,
-    configModule.adjudicatorsEmailTemplateId)
 }

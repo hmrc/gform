@@ -52,9 +52,6 @@ class ConfigModule(
 
   val controllerConfigs = ControllerConfigs.fromConfig(configuration)
 
-  val adjudicatorsEmailTemplateId = NotifierTemplateId(
-    typesafeConfig.getString("notify-email-templates.confirm-email-adjudicator-office"))
-
   val runMode = new RunMode(configuration, playComponents.context.environment.mode)
 
   val serviceConfig: ServicesConfig = new ServicesConfig(configuration, runMode)

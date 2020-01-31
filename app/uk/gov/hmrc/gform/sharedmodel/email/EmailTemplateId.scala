@@ -14,14 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel.form
+package uk.gov.hmrc.gform.sharedmodel.email
 
-import julienrf.json.derived
-import play.api.libs.json.OFormat
-import uk.gov.hmrc.gform.sharedmodel.email.EmailConfirmationCode
+import cats.Show
+import play.api.libs.json.Format
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils
 
-case class EmailAndCode(email: String, code: EmailConfirmationCode)
+case class EmailTemplateId(value: String) extends AnyVal
 
-object EmailAndCode {
-  implicit val format: OFormat[EmailAndCode] = derived.oformat
+object EmailTemplateId {
+  implicit val format: Format[EmailTemplateId] =
+    JsonUtils.valueClassFormat[EmailTemplateId, String](EmailTemplateId.apply, _.value)
+
+  implicit val show: Show[EmailTemplateId] = Show.show(_.value)
 }
