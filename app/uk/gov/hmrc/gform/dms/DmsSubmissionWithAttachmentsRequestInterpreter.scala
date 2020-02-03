@@ -25,7 +25,7 @@ import play.api.mvc.{ MultipartFormData, Request }
 
 object DmsSubmissionWithAttachmentsRequestInterpreter {
   def apply(
-    request: Request[MultipartFormData[TemporaryFile]]): Either[String, (String, List[Array[Byte]], DmsMetadata)] = {
+    request: Request[MultipartFormData[TemporaryFile]]): Either[String, (String, List[FileAttachment], DmsMetadata)] = {
 
     val maybeHtml: Option[Seq[String]] = request.body.dataParts.get("html")
     val maybeMetadata: Option[DmsMetadata] = Json
@@ -35,10 +35,12 @@ object DmsSubmissionWithAttachmentsRequestInterpreter {
       case JsError(_)                          => None
     }
 
-    val maybeFiles: List[Array[Byte]] = request.body.files.map { file =>
+    val maybeFiles: List[FileAttachment] = request.body.files.map { file =>
       {
         val filename = Paths.get(file.filename).getFileName
-        readAllBytes(file.ref.moveTo(Paths.get(s"/tmp/dms/$filename"), replace = true))
+        val bytes = readAllBytes(file.ref.moveTo(Paths.get(s"/tmp/dms/$filename"), replace = true))
+        val contentType = file.contentType
+        FileAttachment(filename, bytes, contentType)
       }
     }.toList
 

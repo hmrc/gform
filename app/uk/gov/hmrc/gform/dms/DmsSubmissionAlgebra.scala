@@ -19,32 +19,42 @@ package uk.gov.hmrc.gform.dms
 import java.time.{ Clock, LocalDateTime }
 import java.util.Base64
 
+import akka.util.ByteString
 import cats.Monad
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import org.apache.pdfbox.pdmodel.PDDocument
-import uk.gov.hmrc.gform.fileupload.{ Attachments, FileUploadAlgebra }
+import uk.gov.hmrc.gform.fileupload.{ Attachments, FileUploadAlgebra, FileUploadFrontendConnector }
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorAlgebra
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
-import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId }
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Constant, FormTemplateId, TextExpression }
 import uk.gov.hmrc.gform.submission.{ DmsMetaData, PdfAndXmlSummaries, PdfSummary, Submission }
 import uk.gov.hmrc.http.HeaderCarrier
+import cats.instances.list._
+import cats.syntax.traverse._
+import cats.syntax.functor._
+import cats.syntax.flatMap._
+
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
 trait DmsSubmissionAlgebra[F[_]] {
   def submitToDms(dmsHtmlSubmission: DmsHtmlSubmission)(implicit hc: HeaderCarrier): F[EnvelopeId]
   def submitPdfToDms(pdfBytes: Array[Byte], dmsMetaData: DmsMetadata)(implicit hc: HeaderCarrier): F[EnvelopeId]
-  def submitPdfToDmsWithAttachments(html: String, attachments: List[Array[Byte]], metaData: DmsMetadata)(
+  def submitPdfToDmsWithAttachments(html: String, attachments: List[FileAttachment], metaData: DmsMetadata)(
     implicit hc: HeaderCarrier): F[EnvelopeId]
 }
 
 class DmsSubmissionService[F[_]](
   fileUpload: FileUploadAlgebra[F],
+  fileUploadFrontendConnector: FileUploadFrontendConnector,
   pdfGenerator: PdfGeneratorAlgebra[F],
   documentLoader: Array[Byte] => PDDocument,
   formExpiryDays: Long)(implicit clock: Clock, M: Monad[F])
     extends DmsSubmissionAlgebra[F] {
+
   override def submitToDms(dmsHtmlSubmission: DmsHtmlSubmission)(implicit hc: HeaderCarrier): F[EnvelopeId] =
     pdfGenerator
       .generatePDFBytes(decode(dmsHtmlSubmission.b64html))
@@ -67,7 +77,7 @@ class DmsSubmissionService[F[_]](
     } yield envId
   }
 
-  override def submitPdfToDmsWithAttachments(html: String, attachments: List[Array[Byte]], metaData: DmsMetadata)(
+  override def submitPdfToDmsWithAttachments(html: String, attachments: List[FileAttachment], metaData: DmsMetadata)(
     implicit hc: HeaderCarrier): F[EnvelopeId] = {
 
     val formTemplateId = FormTemplateId(metaData.dmsFormId)
@@ -78,6 +88,9 @@ class DmsSubmissionService[F[_]](
       pdfDoc = documentLoader(pdfBytes)
       pdfSummary = PdfSummary(pdfDoc.getNumberOfPages.toLong, pdfBytes)
       _ = pdfDoc.close()
+      _ <- attachments.traverse { fileAttachment =>
+            fileUpload.uploadAttachment(envelopeId, fileAttachment)
+          }
       submission = DmsSubmissionService
         .createSubmission(metaData, envelopeId, LocalDateTime.now(clock), Attachments.empty)
       summaries = PdfAndXmlSummaries(pdfSummary)

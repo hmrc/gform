@@ -126,7 +126,12 @@ class ApplicationModule(context: Context)
     )
 
   private val dmsModule =
-    new DmsModule(fileUploadModule, pdfGeneratorModule, configModule.appConfig, controllerComponents)
+    new DmsModule(
+      fileUploadModule,
+      fileUploadModule.fileUploadFrontendConnector,
+      pdfGeneratorModule,
+      configModule.appConfig,
+      controllerComponents)
   private val obligationModule = new ObligationModule(wSHttpModule, configModule)
   private val testOnlyModule =
     new TestOnlyModule(

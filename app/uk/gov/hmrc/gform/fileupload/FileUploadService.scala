@@ -21,6 +21,7 @@ import java.time.format.DateTimeFormatter
 
 import akka.util.ByteString
 import play.api.Logger
+import uk.gov.hmrc.gform.dms.FileAttachment
 import uk.gov.hmrc.gform.fileupload.FileUploadService.FileIds._
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
@@ -95,6 +96,17 @@ class FileUploadService(
 
   def deleteFile(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): Future[Unit] =
     fileUploadConnector.deleteFile(envelopeId, fileId)
+
+  def uploadAttachment(envelopeId: EnvelopeId, fileAttachment: FileAttachment)(
+    implicit hc: HeaderCarrier): Future[Unit] =
+    fileUploadFrontendConnector.upload(
+      envelopeId,
+      FileId("anything"),
+      fileAttachment.filename.getFileName.toString,
+      ByteString(fileAttachment.bytes),
+      ContentType(fileAttachment.contentType.getOrElse("application/json"))
+    )
+
 }
 
 object FileUploadService {
