@@ -48,7 +48,7 @@ class DmsSubmissionServiceSpec extends Spec {
 
     val expectedDmsSubmission = DmsSubmissionService.createDmsSubmission(validSubmission.metadata)
     val expectedSubmission =
-      DmsSubmissionService.createSubmission(validSubmission.metadata, expectedEnvId, fixedTime, Attachments.empty)
+      DmsSubmissionService.createSubmission(validSubmission.metadata, expectedEnvId, fixedTime, 0)
 
     (stubPdfDocument.getNumberOfPages _).when().returning(numberOfPages)
 
@@ -69,7 +69,7 @@ class DmsSubmissionServiceSpec extends Spec {
 
     val expectedDmsSubmission = DmsSubmissionService.createDmsSubmission(validSubmission.metadata)
     val expectedSubmission =
-      DmsSubmissionService.createSubmission(validSubmission.metadata, expectedEnvId, fixedTime, Attachments.empty)
+      DmsSubmissionService.createSubmission(validSubmission.metadata, expectedEnvId, fixedTime, 0)
 
     (stubPdfDocument.getNumberOfPages _).when().returning(numberOfPages)
 
@@ -82,6 +82,34 @@ class DmsSubmissionServiceSpec extends Spec {
       .expectSubmitEnvelope(expectedSubmission, expectedPdfAndXmlSummaries, expectedDmsSubmission, 0)
       .service
       .submitPdfToDms(pdfContent, validSubmission.metadata) shouldBe expectedEnvId
+  }
+
+  "submitPdfToDmsWithAttachments" should "create the correct uploadable things and do the submission" in {
+    val numberOfPages = 1
+    val expectedEnvId = EnvelopeId(UUID.randomUUID().toString)
+    val pdfContent = "totally a pdf".getBytes
+    val expectedPdfAndXmlSummaries = PdfAndXmlSummaries(PdfSummary(numberOfPages.longValue, pdfContent))
+    val fileAttachment =
+      FileAttachment(java.nio.file.Path.of("some-file-name"), "file-content".getBytes(), Some("application/json"))
+    val fileAttachments = List(fileAttachment)
+
+    val expectedDmsSubmission = DmsSubmissionService.createDmsSubmission(validSubmission.metadata)
+    val expectedSubmission =
+      DmsSubmissionService.createSubmission(validSubmission.metadata, expectedEnvId, fixedTime, 1)
+
+    (stubPdfDocument.getNumberOfPages _).when().returning(numberOfPages)
+
+    val tmpPdf: TemporaryFile = SingletonTemporaryFileCreator.create("agents", ".pdf")
+    tmpPdf.deleteOnExit()
+
+    fixture
+      .expectGeneratePdfBytes(validSubmission.b64html, pdfContent)
+      .expectCreateEnvelope(FormTemplateId(validSubmission.metadata.dmsFormId), expectedEnvId)
+      .expectLoadDocument(pdfContent, stubPdfDocument)
+      .expectUploadAttachment(expectedEnvId, fileAttachments.head)
+      .expectSubmitEnvelope(expectedSubmission, expectedPdfAndXmlSummaries, expectedDmsSubmission, fileAttachments.size)
+      .service
+      .submitPdfToDmsWithAttachments(validSubmission.b64html, fileAttachments, validSubmission.metadata) shouldBe expectedEnvId
   }
 
   private val validSubmission = DmsHtmlSubmission("", DmsMetadata("some-form-id", "some-customer-id", "", ""))
@@ -101,6 +129,15 @@ class DmsSubmissionServiceSpec extends Spec {
         .createEnvelope(_: FormTemplateId, _: LocalDateTime)(_: HeaderCarrier))
         .expects(FormTemplateId(validSubmission.metadata.dmsFormId), fixedTime.plusDays(envelopeExpiryDays), hc)
         .returning(envelopeId)
+
+      this
+    }
+
+    def expectUploadAttachment(envelopeId: EnvelopeId, fileAttachment: FileAttachment): Fixture = {
+      (fileUpload
+        .uploadAttachment(_: EnvelopeId, _: FileAttachment)(_: HeaderCarrier))
+        .expects(envelopeId, fileAttachment, hc)
+        .returning(())
 
       this
     }

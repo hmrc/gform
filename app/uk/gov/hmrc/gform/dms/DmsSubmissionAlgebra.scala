@@ -49,7 +49,6 @@ trait DmsSubmissionAlgebra[F[_]] {
 
 class DmsSubmissionService[F[_]](
   fileUpload: FileUploadAlgebra[F],
-  fileUploadFrontendConnector: FileUploadFrontendConnector,
   pdfGenerator: PdfGeneratorAlgebra[F],
   documentLoader: Array[Byte] => PDDocument,
   formExpiryDays: Long)(implicit clock: Clock, M: Monad[F])
@@ -70,7 +69,7 @@ class DmsSubmissionService[F[_]](
       pdfDoc = documentLoader(pdfBytes)
       pdfSummary = PdfSummary(pdfDoc.getNumberOfPages.toLong, pdfBytes)
       _ = pdfDoc.close()
-      submission = DmsSubmissionService.createSubmission(metadata, envId, LocalDateTime.now(clock), Attachments.empty)
+      submission = DmsSubmissionService.createSubmission(metadata, envId, LocalDateTime.now(clock), 0)
       summaries = PdfAndXmlSummaries(pdfSummary)
       dmsSubmission = DmsSubmissionService.createDmsSubmission(metadata)
       _ <- fileUpload.submitEnvelope(submission, summaries, dmsSubmission)
@@ -92,7 +91,7 @@ class DmsSubmissionService[F[_]](
             fileUpload.uploadAttachment(envelopeId, fileAttachment)
           }
       submission = DmsSubmissionService
-        .createSubmission(metaData, envelopeId, LocalDateTime.now(clock), Attachments.empty)
+        .createSubmission(metaData, envelopeId, LocalDateTime.now(clock), attachments.size)
       summaries = PdfAndXmlSummaries(pdfSummary)
       dmsSubmission = DmsSubmissionService.createDmsSubmission(metaData)
       _ <- fileUpload.submitEnvelope(submission, summaries, dmsSubmission)
@@ -116,13 +115,13 @@ object DmsSubmissionService {
     metadata: DmsMetadata,
     envId: EnvelopeId,
     submittedDate: LocalDateTime,
-    attachments: Attachments): Submission =
+    attachments: Int): Submission =
     Submission(
       FormId(metadata.dmsFormId),
       submittedDate,
       SubmissionRef(envId),
       envId,
-      attachments.size,
+      attachments,
       DmsMetaData(FormTemplateId(metadata.dmsFormId), metadata.customerId)
     )
 }

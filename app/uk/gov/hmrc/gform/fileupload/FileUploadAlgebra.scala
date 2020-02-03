@@ -22,12 +22,12 @@ import cats.instances.list._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.traverse._
-import cats.{Applicative, Monad}
+import cats.{ Applicative, Monad }
 import uk.gov.hmrc.gform.dms.FileAttachment
-import uk.gov.hmrc.gform.sharedmodel.form.{EnvelopeId, FileId}
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
-import uk.gov.hmrc.gform.submission.{PdfAndXmlSummaries, Submission}
+import uk.gov.hmrc.gform.submission.{ PdfAndXmlSummaries, Submission }
 import uk.gov.hmrc.http.HeaderCarrier
 
 trait FileDownloadAlgebra[F[_]] {

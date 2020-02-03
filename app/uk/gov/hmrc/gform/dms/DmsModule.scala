@@ -22,14 +22,13 @@ import cats.instances.future._
 import org.apache.pdfbox.pdmodel.PDDocument
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.config.AppConfig
-import uk.gov.hmrc.gform.fileupload.{ FileUploadFrontendConnector, FileUploadModule }
+import uk.gov.hmrc.gform.fileupload.FileUploadModule
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorModule
 
 import scala.concurrent.{ ExecutionContext, Future }
 
 class DmsModule(
   fileUploadModule: FileUploadModule,
-  fileUploadFrontendConnector: FileUploadFrontendConnector,
   pdfGeneratorModule: PdfGeneratorModule,
   config: AppConfig,
   controllerComponents: ControllerComponents)(implicit ex: ExecutionContext) {
@@ -37,7 +36,6 @@ class DmsModule(
   private lazy val dmsSubmissionService: DmsSubmissionService[Future] =
     new DmsSubmissionService(
       fileUploadModule.fileUploadService,
-      fileUploadFrontendConnector,
       pdfGeneratorModule.pdfGeneratorService,
       PDDocument.load,
       config.formExpiryDays.longValue
