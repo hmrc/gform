@@ -18,7 +18,6 @@ package uk.gov.hmrc.gform.formtemplate
 
 import cats.instances.future._
 import cats.syntax.either._
-import play.api.Logger
 import play.api.libs.json.{ Format, JsObject, JsResult, JsString, JsValue, Json, Reads, __ }
 import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
@@ -42,7 +41,6 @@ class FormTemplatesControllerRequestHandler[F[_]](
   val futureInterpreter = new RequestHandlerAlg[FOpt] {
     override def handleRequest(templateRaw: FormTemplateRaw): FOpt[Unit] = {
 
-      Logger.info(s"11111111111   templateRaw = $templateRaw")
 
       val formTemplateOpt: Opt[FormTemplate] = FormTemplate
         .transformAndReads(templateRaw.value)
