@@ -23,12 +23,8 @@ import cats.Id
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.scalamock.function.MockFunction1
 import play.api.libs.Files.{ SingletonTemporaryFileCreator, TemporaryFile }
-import play.api.libs.json.{ JsValue, Json }
-import play.api.mvc.MultipartFormData
-import play.api.mvc.MultipartFormData.{ BadPart, FilePart }
-import play.api.test.FakeRequest
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.fileupload.{ Attachments, FileUploadAlgebra }
+import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorAlgebra
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
@@ -58,7 +54,33 @@ class DmsSubmissionServiceSpec extends Spec {
       .expectLoadDocument(pdfContent, stubPdfDocument)
       .expectSubmitEnvelope(expectedSubmission, expectedPdfAndXmlSummaries, expectedDmsSubmission, 0)
       .service
-      .submitToDms(validSubmission) shouldBe expectedEnvId
+      .submitToDms(validSubmission, List.empty) shouldBe expectedEnvId
+  }
+
+  "submitToDms with attachment" should "create the correct uploadable things and do the submission" in {
+
+    val numberOfPages = 1
+    val pdfContent = "totally a pdf".getBytes
+    val expectedEnvId = EnvelopeId(UUID.randomUUID().toString)
+    val expectedPdfAndXmlSummaries = PdfAndXmlSummaries(PdfSummary(numberOfPages.longValue, pdfContent))
+    val fileAttachment =
+      FileAttachment(java.nio.file.Path.of("some-file-name"), "file-content".getBytes(), Some("application/json"))
+    val fileAttachments = List(fileAttachment)
+
+    val expectedDmsSubmission = DmsSubmissionService.createDmsSubmission(validSubmission.metadata)
+    val expectedSubmission =
+      DmsSubmissionService.createSubmission(validSubmission.metadata, expectedEnvId, fixedTime, 1)
+
+    (stubPdfDocument.getNumberOfPages _).when().returning(numberOfPages)
+
+    fixture
+      .expectCreateEnvelope(FormTemplateId(validSubmission.metadata.dmsFormId), expectedEnvId)
+      .expectGeneratePdfBytes(validSubmission.b64html, pdfContent)
+      .expectLoadDocument(pdfContent, stubPdfDocument)
+      .expectUploadAttachment(expectedEnvId, fileAttachments.head)
+      .expectSubmitEnvelope(expectedSubmission, expectedPdfAndXmlSummaries, expectedDmsSubmission, 1)
+      .service
+      .submitToDms(validSubmission, fileAttachments) shouldBe expectedEnvId
   }
 
   "submitPdfToDms" should "create the correct uploadable things and do the submission" in {
@@ -81,37 +103,7 @@ class DmsSubmissionServiceSpec extends Spec {
       .expectLoadDocument(pdfContent, stubPdfDocument)
       .expectSubmitEnvelope(expectedSubmission, expectedPdfAndXmlSummaries, expectedDmsSubmission, 0)
       .service
-      .submitPdfToDms(pdfContent, validSubmission.metadata) shouldBe expectedEnvId
-  }
-
-  "submitPdfToDmsWithAttachments" should "create the correct uploadable things and do the submission" in {
-    val numberOfPages = 1
-    val expectedEnvId = EnvelopeId(UUID.randomUUID().toString)
-    val pdfContent = "totally a pdf".getBytes
-    val expectedPdfAndXmlSummaries = PdfAndXmlSummaries(PdfSummary(numberOfPages.longValue, pdfContent))
-    val fileAttachment =
-      FileAttachment(java.nio.file.Path.of("some-file-name"), "file-content".getBytes(), Some("application/json"))
-    val fileAttachments = List(fileAttachment)
-
-    val expectedDmsSubmission = DmsSubmissionService.createDmsSubmission(validSubmission.metadata)
-    val expectedSubmission =
-      DmsSubmissionService.createSubmission(validSubmission.metadata, expectedEnvId, fixedTime, 1)
-
-    (stubPdfDocument.getNumberOfPages _).when().returning(numberOfPages)
-
-    val tmpPdf: TemporaryFile = SingletonTemporaryFileCreator.create("agents", ".pdf")
-    tmpPdf.deleteOnExit()
-
-    fixture
-      .expectGeneratePdfBytes(validSubmission.b64html, pdfContent)
-      .expectCreateEnvelope(FormTemplateId(validSubmission.metadata.dmsFormId), expectedEnvId)
-      .expectLoadDocument(pdfContent, stubPdfDocument)
-      .expectUploadAttachment(expectedEnvId, fileAttachments.head)
-      .expectSubmitEnvelope(expectedSubmission, expectedPdfAndXmlSummaries, expectedDmsSubmission, fileAttachments.size)
-      .service
-      .submitPdfToDmsWithAttachments(
-        DmsHtmlSubmission(validSubmission.b64html, validSubmission.metadata),
-        fileAttachments) shouldBe expectedEnvId
+      .submitPdfToDms(pdfContent, validSubmission.metadata, List.empty) shouldBe expectedEnvId
   }
 
   private val validSubmission = DmsHtmlSubmission("", DmsMetadata("some-form-id", "some-customer-id", "", ""))
