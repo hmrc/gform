@@ -20,7 +20,7 @@ import java.nio.file.Files.readAllBytes
 import java.nio.file.Paths
 
 import play.api.libs.Files.TemporaryFile
-import play.api.libs.json.{ JsError, JsSuccess, Json }
+import play.api.libs.json.Json
 import play.api.mvc.{ MultipartFormData, Request }
 
 object DmsSubmissionWithAttachmentsRequestInterpreter {
@@ -30,18 +30,14 @@ object DmsSubmissionWithAttachmentsRequestInterpreter {
     val maybeHtml: Option[Seq[String]] = request.body.dataParts.get("html")
     val maybeMetadata: Option[DmsMetadata] = Json
       .toJson(request.body.dataParts.filterKeys(_ == "html").mapValues(_.mkString("")))
-      .validate[DmsMetadata] match {
-      case JsSuccess(metadata: DmsMetadata, _) => Some(metadata)
-      case JsError(_)                          => None
-    }
+      .validate[DmsMetadata]
+      .asOpt
 
     val maybeFiles: List[FileAttachment] = request.body.files.map { file =>
-      {
-        val filename = Paths.get(file.filename).getFileName
-        val bytes = readAllBytes(file.ref.moveTo(Paths.get(s"/tmp/dms/$filename"), replace = true))
-        val contentType = file.contentType
-        FileAttachment(filename, bytes, contentType)
-      }
+      val filename = Paths.get(file.filename).getFileName
+      val bytes = readAllBytes(file.ref.moveTo(Paths.get(s"/tmp/dms/$filename"), replace = true))
+      val contentType = file.contentType
+      FileAttachment(filename, bytes, contentType)
     }.toList
 
     (maybeHtml, maybeMetadata) match {
