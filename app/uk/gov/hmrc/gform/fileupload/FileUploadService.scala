@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.fileupload
 
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.UUID
 
 import akka.util.ByteString
 import play.api.Logger
@@ -101,7 +102,7 @@ class FileUploadService(
     implicit hc: HeaderCarrier): Future[Unit] =
     fileUploadFrontendConnector.upload(
       envelopeId,
-      FileId("anything"),
+      FileId(UUID.randomUUID().toString),
       fileAttachment.filename.getFileName.toString,
       ByteString(fileAttachment.bytes),
       ContentType(fileAttachment.contentType.getOrElse("application/json"))
