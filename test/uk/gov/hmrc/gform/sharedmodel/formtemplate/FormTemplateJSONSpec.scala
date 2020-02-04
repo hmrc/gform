@@ -23,36 +23,10 @@ class FormTemplateJSONSpec extends Spec {
 
   "normaliseJSON" should "ensure default values for missing fields" in {
 
-    val printSectionInput = Json.obj(
-      "printSection" -> "TestPrintSection"
-    )
-    val printSectionExpected = Json.obj(
+    val emptyInput = Json.obj()
+    val emptyExpected = Json.obj(
       "formCategory" -> "default",
       "languages"    -> Json.arr("en"),
-      "destinations" -> "TestPrintSection",
-      "draftRetrievalMethod" -> Json.obj(
-        "value"                    -> "onePerUser",
-        "showContinueOrDeletePage" -> "true"
-      ),
-      "parentFormSubmissionRefs" -> Json.arr()
-    )
-
-    val destinationsInput = Json.obj(
-      "destinations" -> Json.obj(
-        "id"            -> "transitionToSubmitted",
-        "type"          -> "stateTransition",
-        "requiredState" -> "Submitted"
-      )
-    )
-
-    val destinationsExpected = Json.obj(
-      "formCategory" -> "default",
-      "languages"    -> Json.arr("en"),
-      "destinations" -> Json.obj(
-        "id"            -> "transitionToSubmitted",
-        "type"          -> "stateTransition",
-        "requiredState" -> "Submitted"
-      ),
       "draftRetrievalMethod" -> Json.obj(
         "value"                    -> "onePerUser",
         "showContinueOrDeletePage" -> "true"
@@ -62,32 +36,17 @@ class FormTemplateJSONSpec extends Spec {
 
     val input = Json
       .obj(
-        "testText" -> "hello",
-        "testJsonObj" -> Json.obj(
-          "id"            -> "transitionToSubmitted",
-          "type"          -> "stateTransition",
-          "requiredState" -> "Submitted"
-        ),
-        "testJsonArr"              -> Json.arr("en", "cy"),
+        "abc"                      -> "hello",
         "formCategory"             -> "letter",
         "languages"                -> Json.arr("en", "cy"),
-        "printSection"             -> "TestPrintSection",
         "draftRetrievalMethod"     -> "formAccessCodeForAgents",
         "showContinueOrDeletePage" -> "false",
         "parentFormSubmissionRefs" -> Json.arr("123", "456")
       )
-
     val expected = Json.obj(
-      "testText" -> "hello",
-      "testJsonObj" -> Json.obj(
-        "id"            -> "transitionToSubmitted",
-        "type"          -> "stateTransition",
-        "requiredState" -> "Submitted"
-      ),
-      "testJsonArr"  -> Json.arr("en", "cy"),
+      "abc"          -> "hello",
       "formCategory" -> "letter",
       "languages"    -> Json.arr("en", "cy"),
-      "destinations" -> "TestPrintSection",
       "draftRetrievalMethod" -> Json.obj(
         "value"                    -> "formAccessCodeForAgents",
         "showContinueOrDeletePage" -> "false"
@@ -97,8 +56,7 @@ class FormTemplateJSONSpec extends Spec {
 
     val t = Table(
       ("input", "expected"),
-      (printSectionInput, printSectionExpected),
-      (destinationsInput, destinationsExpected),
+      (emptyInput, emptyExpected),
       (input, expected)
     )
 
@@ -108,28 +66,4 @@ class FormTemplateJSONSpec extends Spec {
         result should beJsSuccess(expected)
     }
   }
-
-  it should "return validation error when both destinations and printSection are present" in {
-
-    val input = Json.obj(
-      "printSection" -> "TestPrintSection",
-      "destinations" -> Json.obj(
-        "id"            -> "transitionToSubmitted",
-        "type"          -> "stateTransition",
-        "requiredState" -> "Submitted"
-      )
-    )
-
-    FormTemplatesControllerRequestHandler.normaliseJSON(input) should be(
-      FormTemplatesControllerRequestHandler.onlyOneOfDestinationsAndPrintSection)
-  }
-
-  it should "return validation error when both destinations and printSection are missing" in {
-
-    val input = Json.obj()
-
-    FormTemplatesControllerRequestHandler.normaliseJSON(input) should be(
-      FormTemplatesControllerRequestHandler.onlyOneOfDestinationsAndPrintSection)
-  }
-
 }

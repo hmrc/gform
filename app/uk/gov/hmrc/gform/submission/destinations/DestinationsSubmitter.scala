@@ -31,8 +31,6 @@ class DestinationsSubmitter[M[_]](destinationSubmitter: DestinationSubmitterAlge
   override def send(submissionInfo: DestinationSubmissionInfo, modelTree: HandlebarsModelTree)(
     implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
     modelTree.value.formTemplate.destinations match {
-      case dms: Destinations.PrintSection =>
-        ???
       case list: Destinations.DestinationList =>
         submitToList(list, submissionInfo, HandlebarsTemplateProcessorModel.empty, modelTree)
     }

@@ -20,15 +20,11 @@ import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
 
 trait DestinationsGen {
-  def printSectionGen: Gen[Destinations.PrintSection] =
-    for {
-      signature <- DestinationGen.signatureGen
-    } yield Destinations.PrintSection(signature)
 
   def destinationListGen: Gen[Destinations.DestinationList] =
     PrimitiveGen.oneOrMoreGen(DestinationGen.destinationGen).map(Destinations.DestinationList(_))
 
-  def destinationsGen: Gen[Destinations] = Gen.oneOf(destinationListGen, printSectionGen)
+  def destinationsGen: Gen[Destinations] = Gen.oneOf(destinationListGen, destinationListGen)
 }
 
 object DestinationsGen extends DestinationsGen
