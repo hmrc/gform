@@ -109,7 +109,9 @@ class DmsSubmissionServiceSpec extends Spec {
       .expectUploadAttachment(expectedEnvId, fileAttachments.head)
       .expectSubmitEnvelope(expectedSubmission, expectedPdfAndXmlSummaries, expectedDmsSubmission, fileAttachments.size)
       .service
-      .submitPdfToDmsWithAttachments(validSubmission.b64html, fileAttachments, validSubmission.metadata) shouldBe expectedEnvId
+      .submitPdfToDmsWithAttachments(
+        DmsHtmlSubmission(validSubmission.b64html, validSubmission.metadata),
+        fileAttachments) shouldBe expectedEnvId
   }
 
   private val validSubmission = DmsHtmlSubmission("", DmsMetadata("some-form-id", "some-customer-id", "", ""))

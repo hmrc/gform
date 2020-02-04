@@ -25,7 +25,7 @@ import play.api.mvc.{ MultipartFormData, Request }
 
 object DmsSubmissionWithAttachmentsRequestInterpreter {
   def apply(
-    request: Request[MultipartFormData[TemporaryFile]]): Either[String, (String, List[FileAttachment], DmsMetadata)] = {
+    request: Request[MultipartFormData[TemporaryFile]]): Either[String, (DmsHtmlSubmission, List[FileAttachment])] = {
 
     val maybeHtml: Option[Seq[String]] = request.body.dataParts.get("html")
     val maybeMetadata: Option[DmsMetadata] = Json
@@ -45,7 +45,7 @@ object DmsSubmissionWithAttachmentsRequestInterpreter {
     }.toList
 
     (maybeHtml, maybeMetadata) match {
-      case (Some(html), Some(meta)) => Right((html.mkString(""), maybeFiles, meta))
+      case (Some(html), Some(meta)) => Right((DmsHtmlSubmission(html.mkString(""), meta), maybeFiles))
       case (None, _)                => Left("request should contain html")
       case (_, None)                => Left("request should contain DMS meta data")
       case (_, _)                   => Left("request should contain html and DMS meta data")
