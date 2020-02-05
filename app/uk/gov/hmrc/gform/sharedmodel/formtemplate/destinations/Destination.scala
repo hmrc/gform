@@ -119,8 +119,9 @@ case class UploadableHmrcDmsDestination(
   classificationType: String,
   businessArea: String,
   convertSingleQuotes: Option[Boolean],
-  includeIf: Option[String] = None,
-  failOnError: Option[Boolean] = None) {
+  includeIf: Option[String],
+  failOnError: Option[Boolean],
+  roboticsXml: Option[Boolean]) {
 
   def toHmrcDmsDestination: Either[String, Destination.HmrcDms] =
     for {
@@ -134,7 +135,7 @@ case class UploadableHmrcDmsDestination(
         businessArea,
         cii.getOrElse(true.toString),
         failOnError.getOrElse(true),
-        false)
+        roboticsXml.getOrElse(false))
 }
 
 object UploadableHmrcDmsDestination {
