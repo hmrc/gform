@@ -14,17 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
+package uk.gov.hmrc.gform.sharedmodel.email
 
-import org.scalacheck.Gen
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
+import play.api.libs.json.Format
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils
 
-trait DestinationsGen {
+case class EmailConfirmationCode(code: String) extends AnyVal
 
-  def destinationListGen: Gen[Destinations.DestinationList] =
-    PrimitiveGen.oneOrMoreGen(DestinationGen.destinationGen).map(Destinations.DestinationList(_))
-
-  def destinationsGen: Gen[Destinations] = Gen.oneOf(destinationListGen, destinationListGen)
+object EmailConfirmationCode {
+  implicit val format: Format[EmailConfirmationCode] =
+    JsonUtils.valueClassFormat[EmailConfirmationCode, String](EmailConfirmationCode.apply, _.code)
 }
-
-object DestinationsGen extends DestinationsGen

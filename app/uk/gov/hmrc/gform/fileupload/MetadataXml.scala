@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.fileupload
 
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.submission.{ PdfSummary, Submission }
 import uk.gov.hmrc.gform.typeclasses.Attribute
 
@@ -27,19 +27,19 @@ object MetadataXml {
 
   val xmlDec = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>"""
 
-  private def createMetadata(submission: Submission, pdfSummary: PdfSummary, dmsSubmission: DmsSubmission): Elem = {
+  private def createMetadata(submission: Submission, pdfSummary: PdfSummary, hmrcDms: HmrcDms): Elem = {
     val attributes = List(
       createAttribute("hmrc_time_of_receipt", submission.submittedDate),
       createAttribute("time_xml_created", submission.submittedDate),
       createAttribute("submission_reference", submission.submissionRef.withoutHyphens),
-      createAttribute("form_id", dmsSubmission.dmsFormId),
+      createAttribute("form_id", hmrcDms.dmsFormId),
       createAttribute("number_pages", pdfSummary.numberOfPages),
       createAttribute("source", "dfs"),
       createAttribute("customer_id", submission.dmsMetaData.customerId),
       createAttribute("submission_mark", "AUDIT_SERVICE"), // We are not using CAS
       createAttribute("cas_key", "AUDIT_SERVICE"), // We are not using CAS
-      createAttribute("classification_type", dmsSubmission.classificationType),
-      createAttribute("business_area", dmsSubmission.businessArea),
+      createAttribute("classification_type", hmrcDms.classificationType),
+      createAttribute("business_area", hmrcDms.businessArea),
       createAttribute("attachment_count", submission.noOfAttachments)
     )
     <metadata></metadata>.copy(child = attributes)
@@ -65,11 +65,9 @@ object MetadataXml {
     submission: Submission,
     reconciliationId: ReconciliationId,
     pdfSummary: PdfSummary,
-    dmsSubmission: DmsSubmission): Elem = {
+    hmrcDms: HmrcDms): Elem = {
     val body =
-      List(
-        createHeader(submission.submissionRef, reconciliationId),
-        createMetadata(submission, pdfSummary, dmsSubmission))
+      List(createHeader(submission.submissionRef, reconciliationId), createMetadata(submission, pdfSummary, hmrcDms))
 
     trim(createDocument(body))
   }

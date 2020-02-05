@@ -17,13 +17,13 @@
 package uk.gov.hmrc.gform.submission
 
 import java.time.Instant
+
 import org.apache.pdfbox.pdmodel.PDDocument
 import uk.gov.hmrc.gform.pdfgenerator.{ PdfGeneratorService, XmlGeneratorService }
 import uk.gov.hmrc.gform.sharedmodel.{ PdfHtml, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.form.Form
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -37,7 +37,7 @@ trait PdfAndXmlSummariesFactory {
     structuredFormData: StructuredFormValue.ObjectStructure,
     customerId: String,
     submissionRef: SubmissionRef,
-    dmsSubmission: DmsSubmission): Future[PdfAndXmlSummaries]
+    hmrcDms: HmrcDms): Future[PdfAndXmlSummaries]
 }
 
 object PdfAndXmlSummariesFactory {
@@ -52,11 +52,11 @@ object PdfAndXmlSummariesFactory {
       structuredFormData: StructuredFormValue.ObjectStructure,
       customerId: String,
       submissionRef: SubmissionRef,
-      dmsSubmission: DmsSubmission): Future[PdfAndXmlSummaries] =
+      hmrcDms: HmrcDms): Future[PdfAndXmlSummaries] =
       pdfGeneratorService.generatePDFBytes(pdfData.html).map { pdf =>
         PdfAndXmlSummaries(
           pdfSummary = createPdfSummary(pdf),
-          roboticsXml = createRoboticsXml(formTemplate, form, structuredFormData, dmsSubmission, submissionRef)
+          roboticsXml = createRoboticsXml(formTemplate, form, structuredFormData, hmrcDms, submissionRef)
         )
       }
 
@@ -73,21 +73,19 @@ object PdfAndXmlSummariesFactory {
       formTemplate: FormTemplate,
       form: Form,
       structuredFormData: StructuredFormValue.ObjectStructure,
-      dmsSubmission: DmsSubmission,
+      hmrcDms: HmrcDms,
       submissionRef: SubmissionRef): Option[String] =
-      dmsSubmission.includeRoboticsXml
-        .filter(identity)
-        .map(
-          _ =>
-            RoboticsXMLGenerator(
-              formTemplate._id,
-              dmsSubmission.dmsFormId,
-              submissionRef,
-              structuredFormData,
-              Instant.now()))
-        .map(body =>
-          // No whitespace of anysort after xml declaration. Robot won't be able to process xml otherwise
-          XmlGeneratorService.xmlDec + <data xmlns:xfa="http://www.xfa.org/schema/xfa-data/1.0/">{body}</data>)
+      if (hmrcDms.roboticsXml) {
+        Some(
+          RoboticsXMLGenerator(formTemplate._id, hmrcDms.dmsFormId, submissionRef, structuredFormData, Instant.now()))
+          .map(
+            body =>
+              // No whitespace of anysort after xml declaration. Robot won't be able to process xml otherwise
+              XmlGeneratorService.xmlDec + <data xmlns:xfa="http://www.xfa.org/schema/xfa-data/1.0/">
+                {body}
+              </data>)
+      } else
+        None
 
   }
 }

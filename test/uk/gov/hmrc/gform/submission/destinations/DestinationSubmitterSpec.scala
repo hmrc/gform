@@ -23,6 +23,7 @@ import uk.gov.hmrc.gform.notifier.NotifierAlgebra
 import uk.gov.hmrc.gform.sharedmodel.{ PdfHtml, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, FormTemplateGen, PrimitiveGen }
 import uk.gov.hmrc.gform.sharedmodel.generators.{ PdfDataGen, StructuredFormValueGen }
@@ -186,7 +187,7 @@ class DestinationSubmitterSpec
       val theTree = tree(si.formId, model, si.submission.submissionRef, template, pdfData, structuredFormData)
 
       createSubmitter
-        .expectDmsSubmission(si, pdfData, structuredFormData, hmrcDms.toDeprecatedDmsSubmission)
+        .expectHmrcDmsSubmission(si, pdfData, structuredFormData, hmrcDms)
         .expectIncludeIfEvaluation(
           "true",
           HandlebarsTemplateProcessorModel.empty,
@@ -216,7 +217,7 @@ class DestinationSubmitterSpec
           FocussedHandlebarsModelTree(theTree),
           requiredResult = true
         )
-        .expectDmsSubmission(si, pdfData, structuredFormData, hmrcDms.toDeprecatedDmsSubmission)
+        .expectHmrcDmsSubmission(si, pdfData, structuredFormData, hmrcDms)
         .expectDestinationAudit(hmrcDms, None, None, si.formId, pdfData, si.submission.submissionRef, template, model)
         .sut
         .submitIfIncludeIf(hmrcDms, si, HandlebarsTemplateProcessorModel.empty, theTree, submitter) shouldBe Right(None)
@@ -257,7 +258,7 @@ class DestinationSubmitterSpec
       val theTree = tree(si.formId, model, si.submission.submissionRef, template, pdfData, structuredFormData)
 
       createSubmitter
-        .expectDmsSubmissionFailure(si, pdfData, structuredFormData, hmrcDms.toDeprecatedDmsSubmission, "an error")
+        .expectHmrcDmsSubmissionFailure(si, pdfData, structuredFormData, hmrcDms, "an error")
         .expectIncludeIfEvaluation(
           "true",
           HandlebarsTemplateProcessorModel.empty,
@@ -287,7 +288,7 @@ class DestinationSubmitterSpec
       val theTree = tree(si.formId, model, si.submission.submissionRef, template, pdfData, structuredFormData)
 
       createSubmitter
-        .expectDmsSubmissionFailure(si, pdfData, structuredFormData, hmrcDms.toDeprecatedDmsSubmission, "an error")
+        .expectHmrcDmsSubmissionFailure(si, pdfData, structuredFormData, hmrcDms, "an error")
         .expectIncludeIfEvaluation(
           "true",
           HandlebarsTemplateProcessorModel.empty,
@@ -307,35 +308,29 @@ class DestinationSubmitterSpec
     destinationAuditer: DestinationAuditAlgebra[F],
     handlebarsTemplateProcessor: HandlebarsTemplateProcessor)(implicit F: MonadError[F, String]) {
 
-    def expectDmsSubmission(
+    def expectHmrcDmsSubmission(
       si: DestinationSubmissionInfo,
       pdfData: PdfHtml,
       structuredFormData: StructuredFormValue.ObjectStructure,
-      dms: Destinations.DmsSubmission)(implicit F: Applicative[F]): SubmitterParts[F] = {
+      hmrcDms: HmrcDms)(implicit F: Applicative[F]): SubmitterParts[F] = {
       (dmsSubmitter
-        .apply(
-          _: DestinationSubmissionInfo,
-          _: PdfHtml,
-          _: StructuredFormValue.ObjectStructure,
-          _: Destinations.DmsSubmission)(_: HeaderCarrier))
-        .expects(si, pdfData, structuredFormData, dms, hc)
+        .apply(_: DestinationSubmissionInfo, _: PdfHtml, _: StructuredFormValue.ObjectStructure, _: HmrcDms)(
+          _: HeaderCarrier))
+        .expects(si, pdfData, structuredFormData, hmrcDms, hc)
         .returning(F.pure(()))
       this
     }
 
-    def expectDmsSubmissionFailure(
+    def expectHmrcDmsSubmissionFailure(
       si: DestinationSubmissionInfo,
       pdfData: PdfHtml,
       structuredFormData: StructuredFormValue.ObjectStructure,
-      dms: Destinations.DmsSubmission,
+      hmrcDms: HmrcDms,
       error: String): SubmitterParts[F] = {
       (dmsSubmitter
-        .apply(
-          _: DestinationSubmissionInfo,
-          _: PdfHtml,
-          _: StructuredFormValue.ObjectStructure,
-          _: Destinations.DmsSubmission)(_: HeaderCarrier))
-        .expects(si, pdfData, structuredFormData, dms, hc)
+        .apply(_: DestinationSubmissionInfo, _: PdfHtml, _: StructuredFormValue.ObjectStructure, _: HmrcDms)(
+          _: HeaderCarrier))
+        .expects(si, pdfData, structuredFormData, hmrcDms, hc)
         .returning(F.raiseError(error))
       this
     }

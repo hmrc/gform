@@ -89,12 +89,16 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with MustMatche
        |  "formName": "Testing section change label tttt",
        |  "description": "Testing the form change label",
        |  "languages":["en"],
-       |  "dmsSubmission": {
-       |    "dmsFormId": "",
-       |    "customerId": "$${auth.payenino}",
-       |    "classificationType": "",
-       |    "businessArea": ""
-       |  },
+       |  "destinations": [
+       |    {
+       |      "id": "HMRCDMS",
+       |      "type": "hmrcDms",
+       |      "dmsFormId": "TST123",
+       |      "customerId": "'123'",
+       |      "classificationType": "BT-NRU-Environmental",
+       |      "businessArea": "FinanceOpsCorpT"
+       |    }
+       |  ],
        |  "authConfig": {
        |    "authModule": "$authModule",
        |    ${serviceId.getOrElse("")}

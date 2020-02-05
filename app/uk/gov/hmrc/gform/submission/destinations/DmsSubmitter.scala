@@ -24,7 +24,7 @@ import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorService
 import uk.gov.hmrc.gform.sharedmodel.PdfHtml
 import uk.gov.hmrc.gform.sharedmodel.form.Submitted
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 import uk.gov.hmrc.gform.submission.PdfAndXmlSummariesFactory
 import uk.gov.hmrc.http.HeaderCarrier
@@ -41,16 +41,17 @@ class DmsSubmitter(
     submissionInfo: DestinationSubmissionInfo,
     pdfData: PdfHtml,
     structuredFormData: StructuredFormValue.ObjectStructure,
-    dmsSubmission: DmsSubmission)(implicit hc: HeaderCarrier): FOpt[Unit] = {
+    hmrcDms: HmrcDms)(implicit hc: HeaderCarrier): FOpt[Unit] = {
     import submissionInfo._
 
     for {
       form         <- formService.get(formId)
       formTemplate <- formTemplateService.get(form.formTemplateId)
-      summaries <- fromFutureA(PdfAndXmlSummariesFactory
-                    .withPdf(pdfGeneratorService, pdfData)
-                    .apply(form, formTemplate, structuredFormData, customerId, submission.submissionRef, dmsSubmission))
-      res <- fromFutureA(fileUploadService.submitEnvelope(submission, summaries, dmsSubmission))
+      summaries <- fromFutureA(
+                    PdfAndXmlSummariesFactory
+                      .withPdf(pdfGeneratorService, pdfData)
+                      .apply(form, formTemplate, structuredFormData, customerId, submission.submissionRef, hmrcDms))
+      res <- fromFutureA(fileUploadService.submitEnvelope(submission, summaries, hmrcDms))
       _   <- formService.updateFormStatus(submissionInfo.formId, Submitted)
     } yield res
   }

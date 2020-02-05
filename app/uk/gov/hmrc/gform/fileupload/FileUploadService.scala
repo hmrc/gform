@@ -28,7 +28,7 @@ import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.submission.{ PdfAndXmlSummaries, Submission }
 import uk.gov.hmrc.gform.time.TimeProvider
 
@@ -50,7 +50,7 @@ class FileUploadService(
     f
   }
 
-  def submitEnvelope(submission: Submission, summaries: PdfAndXmlSummaries, dmsSubmission: DmsSubmission)(
+  def submitEnvelope(submission: Submission, summaries: PdfAndXmlSummaries, hmrcDms: HmrcDms)(
     implicit hc: HeaderCarrier): Future[Unit] = {
 
     val submissionRef: SubmissionRef = submission.submissionRef
@@ -60,7 +60,7 @@ class FileUploadService(
     val fileNamePrefix = s"${submissionRef.withoutHyphens}-$date"
     val reconciliationId = ReconciliationId.create(submissionRef)
     val metadataXml = MetadataXml.xmlDec + "\n" + MetadataXml
-      .getXml(submission, reconciliationId, summaries.pdfSummary, dmsSubmission)
+      .getXml(submission, reconciliationId, summaries.pdfSummary, hmrcDms)
 
     def uploadPfdF: Future[Unit] =
       fileUploadFrontendConnector.upload(

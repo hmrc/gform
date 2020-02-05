@@ -29,7 +29,8 @@ import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorAlgebra
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Constant, FormTemplateId, TextExpression }
 import uk.gov.hmrc.gform.submission.{ DmsMetaData, PdfAndXmlSummaries, PdfSummary, Submission }
 import uk.gov.hmrc.http.HeaderCarrier
@@ -70,8 +71,8 @@ class DmsSubmissionService[F[_]](
       submission = DmsSubmissionService
         .createSubmission(metadata, envId, LocalDateTime.now(clock), fileAttachments.size)
       summaries = PdfAndXmlSummaries(pdfSummary)
-      dmsSubmission = DmsSubmissionService.createDmsSubmission(metadata)
-      _ <- fileUpload.submitEnvelope(submission, summaries, dmsSubmission)
+      hmrcDms = DmsSubmissionService.createHmrcDms(metadata)
+      _ <- fileUpload.submitEnvelope(submission, summaries, hmrcDms)
     } yield envId
   }
 
@@ -80,12 +81,18 @@ class DmsSubmissionService[F[_]](
 }
 
 object DmsSubmissionService {
-  def createDmsSubmission(metadata: DmsMetadata): DmsSubmission =
-    DmsSubmission(
+
+  def createHmrcDms(metadata: DmsMetadata): HmrcDms =
+    HmrcDms(
+      DestinationId("HmrcDms"),
       metadata.dmsFormId,
       TextExpression(Constant(metadata.customerId)),
       metadata.classificationType,
-      metadata.businessArea)
+      metadata.businessArea,
+      "",
+      true,
+      true
+    )
 
   def createSubmission(
     metadata: DmsMetadata,
