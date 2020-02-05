@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.dms
 
+import java.nio.file.FileSystems
 import java.time._
 import java.util.UUID
 
@@ -64,7 +65,10 @@ class DmsSubmissionServiceSpec extends Spec {
     val expectedEnvId = EnvelopeId(UUID.randomUUID().toString)
     val expectedPdfAndXmlSummaries = PdfAndXmlSummaries(PdfSummary(numberOfPages.longValue, pdfContent))
     val fileAttachment =
-      FileAttachment(java.nio.file.Path.of("some-file-name"), "file-content".getBytes(), Some("application/json"))
+      FileAttachment(
+        FileSystems.getDefault().getPath("some-dir", "some-file"),
+        "file-content".getBytes(),
+        Some("application/json"))
     val fileAttachments = List(fileAttachment)
 
     val expectedDmsSubmission = DmsSubmissionService.createHmrcDms(validSubmission.metadata)
