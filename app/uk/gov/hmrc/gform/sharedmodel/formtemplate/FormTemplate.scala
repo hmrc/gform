@@ -22,7 +22,6 @@ import play.api.libs.json._
 import uk.gov.hmrc.gform.formtemplate.FormTemplatesControllerRequestHandler
 import uk.gov.hmrc.gform.sharedmodel.{ AvailableLanguages, LocalisedString, formtemplate }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
 
 case class FormTemplate(
   _id: FormTemplateId,
@@ -50,63 +49,8 @@ object FormTemplate {
 
   import JsonUtils._
 
-  private case class DeprecatedFormTemplateWithDmsSubmission(
-    _id: FormTemplateId,
-    formName: LocalisedString,
-    developmentPhase: Option[DevelopmentPhase],
-    formCategory: FormCategory,
-    draftRetrievalMethod: DraftRetrievalMethod,
-    dmsSubmission: DmsSubmission,
-    authConfig: formtemplate.AuthConfig,
-    emailTemplateId: String,
-    emailParameters: Option[NonEmptyList[EmailParameter]],
-    webChat: Option[WebChat],
-    sections: List[Section],
-    acknowledgementSection: AcknowledgementSection,
-    declarationSection: DeclarationSection,
-    parentFormSubmissionRefs: Option[List[FormComponentId]],
-    GFC579Ready: Option[String],
-    languages: AvailableLanguages,
-    save4LaterInfoText: Option[Save4LaterInfoText]) {
-    def toNewForm: FormTemplate =
-      FormTemplate(
-        _id,
-        formName,
-        developmentPhase,
-        formCategory,
-        draftRetrievalMethod,
-        destinations = dmsSubmission,
-        authConfig,
-        emailTemplateId,
-        emailParameters,
-        webChat,
-        sections,
-        acknowledgementSection,
-        declarationSection,
-        parentFormSubmissionRefs.toList.flatten,
-        GFC579Ready,
-        languages,
-        save4LaterInfoText
-      )
-  }
-
-  private val readForDeprecatedDmsSubmissionVersion: Reads[DeprecatedFormTemplateWithDmsSubmission] =
-    Json.reads[DeprecatedFormTemplateWithDmsSubmission]
-
-  private val readForDestinationsVersion: Reads[FormTemplate] =
-    Json.reads[FormTemplate]
-
-  val onlyOneOfDmsSubmissionAndDestinationsMustBeDefined =
-    JsError(
-      """One and only one of FormTemplate.{dmsSubmission, destinations} must be defined. FormTemplate.dmsSubmission is deprecated. Prefer FormTemplate.destinations.""")
-
   private val reads = Reads[FormTemplate] { json =>
-    ((json \ "dmsSubmission").toOption, (json \ "destinations").toOption) match {
-      case (None, None)       => onlyOneOfDmsSubmissionAndDestinationsMustBeDefined
-      case (None, Some(_))    => readForDestinationsVersion.reads(json)
-      case (Some(_), None)    => readForDeprecatedDmsSubmissionVersion.reads(json).map(_.toNewForm)
-      case (Some(_), Some(_)) => onlyOneOfDmsSubmissionAndDestinationsMustBeDefined
-    }
+    Json.reads[FormTemplate].reads(json)
   }
 
   implicit val format: OFormat[FormTemplate] = OFormat(reads, derived.owrites[FormTemplate])
@@ -116,41 +60,4 @@ object FormTemplate {
       .normaliseJSON(json)
       .flatMap(format.reads)
 
-  def withDeprecatedDmsSubmission(
-    _id: FormTemplateId,
-    formName: LocalisedString,
-    developmentPhase: Option[DevelopmentPhase] = Some(ResearchBanner),
-    formCategory: FormCategory,
-    draftRetrievalMethod: DraftRetrievalMethod = OnePerUser(ContinueOrDeletePage.Show),
-    dmsSubmission: DmsSubmission,
-    authConfig: formtemplate.AuthConfig,
-    emailTemplateId: String,
-    emailParameters: Option[NonEmptyList[EmailParameter]],
-    webChat: Option[WebChat],
-    sections: List[Section],
-    acknowledgementSection: AcknowledgementSection,
-    declarationSection: DeclarationSection,
-    parentFormSubmissionRefs: Option[List[FormComponentId]],
-    GFC579Ready: Option[String] = Some("false"),
-    languages: AvailableLanguages = AvailableLanguages.default,
-    save4LaterInfoText: Option[Save4LaterInfoText] = None): FormTemplate =
-    DeprecatedFormTemplateWithDmsSubmission(
-      _id,
-      formName,
-      developmentPhase,
-      formCategory,
-      draftRetrievalMethod,
-      dmsSubmission,
-      authConfig,
-      emailTemplateId,
-      emailParameters,
-      webChat,
-      sections,
-      acknowledgementSection,
-      declarationSection,
-      parentFormSubmissionRefs,
-      GFC579Ready,
-      languages,
-      save4LaterInfoText
-    ).toNewForm
 }

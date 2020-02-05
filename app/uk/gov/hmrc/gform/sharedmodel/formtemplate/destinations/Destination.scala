@@ -47,15 +47,7 @@ object Destination {
     includeIf: String,
     failOnError: Boolean,
     roboticsXml: Boolean)
-      extends Destination with DestinationWithCustomerId {
-    def toDeprecatedDmsSubmission: Destinations.DmsSubmission = Destinations.DmsSubmission(
-      dmsFormId,
-      customerId,
-      classificationType,
-      businessArea,
-      includeRoboticsXml = Some(roboticsXml)
-    )
-  }
+      extends Destination with DestinationWithCustomerId
 
   case class HandlebarsHttpApi(
     id: DestinationId,

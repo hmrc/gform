@@ -22,7 +22,8 @@ import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.fileupload.{ MetadataXml, ReconciliationId }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
 import uk.gov.hmrc.gform.submission._
 
 import scala.xml.{ Elem, Utility }
@@ -43,11 +44,16 @@ class MetadataXmlSpec extends Spec {
 
     val pdfSummary = PdfSummary(numberOfPages = 10L, pdfContent = Array.empty[Byte])
 
-    val dmsSubmission = DmsSubmission(
-      dmsFormId = "some-id",
-      customerId = TextExpression(AuthCtx(PayeNino)),
-      classificationType = "some-classification-type",
-      businessArea = "some-business-area")
+    val hmrcDms = HmrcDms(
+      DestinationId("TestHmrcDmsId"),
+      "some-id",
+      TextExpression(Constant("TestHmrcDmsCustomerId")),
+      "some-classification-type",
+      "some-business-area",
+      "",
+      true,
+      true
+    )
 
     val expected =
       <documents xmlns="http://govtalk.gov.uk/hmrc/gis/content/1">
@@ -151,7 +157,7 @@ class MetadataXmlSpec extends Spec {
       </documents>
 
     val metadataXml = MetadataXml
-      .getXml(submission, ReconciliationId("some-recocilliatin-id"), pdfSummary, dmsSubmission)
+      .getXml(submission, ReconciliationId("some-recocilliatin-id"), pdfSummary, hmrcDms)
 
     metadataXml should equal(Utility.trim(expected).asInstanceOf[Elem])(after being streamlined[Elem])
 

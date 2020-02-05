@@ -20,18 +20,11 @@ import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
 
 trait DestinationsGen {
-  def deprecatedDmsSubmissionGen: Gen[Destinations.DmsSubmission] =
-    for {
-      dmsFormId          <- DestinationGen.dmsFormIdGen
-      customerId         <- DestinationGen.customerIdGen
-      classificationType <- DestinationGen.classificationTypeGen
-      businessArea       <- DestinationGen.businessAreaGen
-    } yield Destinations.DmsSubmission(dmsFormId, customerId, classificationType, businessArea)
 
   def destinationListGen: Gen[Destinations.DestinationList] =
     PrimitiveGen.oneOrMoreGen(DestinationGen.destinationGen).map(Destinations.DestinationList(_))
 
-  def destinationsGen: Gen[Destinations] = Gen.oneOf(deprecatedDmsSubmissionGen, destinationListGen)
+  def destinationsGen: Gen[Destinations] = Gen.oneOf(destinationListGen, destinationListGen)
 }
 
 object DestinationsGen extends DestinationsGen

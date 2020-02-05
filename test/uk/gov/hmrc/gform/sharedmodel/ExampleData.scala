@@ -22,8 +22,11 @@ import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.Helpers._
 import uk.gov.hmrc.gform.fileupload.RouteEnvelopeRequest
 import uk.gov.hmrc.gform.sharedmodel.form._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DmsSubmission
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.DestinationGen
 import uk.gov.hmrc.gform.submission.{ DmsMetaData, Submission }
 
 import scala.collection.immutable.List
@@ -34,10 +37,20 @@ trait ExampleData
     extends ExampleFormTemplate with ExampleFieldId with ExampleFieldValue with ExampleFormField with ExampleValidator
     with ExampleSection with ExampleForm with ExampleAuthConfig with ExampleSubmission with ExampleRouteEnvelopeRequest
 
-trait ExampleAuthConfig {
+trait ExampleAuthConfig extends DestinationGen {
 
-  def dmsSubmission =
-    DmsSubmission("DMS-ID-XX", TextExpression(AuthCtx(PayeNino)), "BT-NRU-Environmental", "FinanceOpsCorpT")
+  val hmrcDms = HmrcDms(
+    DestinationId("TestHmrcDmsId"),
+    "TestHmrcDmsFormId",
+    TextExpression(Constant("TestHmrcDmsCustomerId")),
+    "TestHmrcDmsClassificationType",
+    "TestHmrcDmsBusinessArea",
+    "",
+    true,
+    true
+  )
+
+  def destinationList = DestinationList(NonEmptyList.of(hmrcDms))
 
   def serviceId = ServiceId("TestServiceId")
 
@@ -319,21 +332,33 @@ trait ExampleFormTemplate {
       List(`fieldValue - info`)
     )
 
-  def formTemplate =
-    FormTemplate.withDeprecatedDmsSubmission(
-      _id = formTemplateId,
-      formName = formName,
-      formCategory = Default,
-      dmsSubmission = dmsSubmission,
-      authConfig = authConfig,
-      emailTemplateId = emailTemplateId,
-      emailParameters = emailParameters,
-      webChat = webChat,
-      sections = allSections,
-      acknowledgementSection = acknowledgementSection,
-      declarationSection = DeclarationSection(toSmartString("Declaration"), None, None, Nil),
-      parentFormSubmissionRefs = None
+  def declarationSection =
+    DeclarationSection(
+      toSmartString("Declaration"),
+      None,
+      None,
+      Nil
     )
+
+  def formTemplate = FormTemplate(
+    formTemplateId,
+    formName,
+    Some(ResearchBanner),
+    Default,
+    OnePerUser(ContinueOrDeletePage.Show),
+    destinationList,
+    authConfig,
+    emailTemplateId,
+    emailParameters,
+    webChat,
+    allSections,
+    acknowledgementSection,
+    declarationSection,
+    Nil,
+    Some("false"),
+    AvailableLanguages.default,
+    None
+  )
 }
 
 trait ExampleFormField { dependsOn: ExampleFormTemplate with ExampleFieldId =>

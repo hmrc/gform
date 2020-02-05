@@ -22,8 +22,11 @@ import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate._
+import uk.gov.hmrc.gform.sharedmodel.AvailableLanguages
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationId, Destinations }
+
 import scala.language.implicitConversions
 
 class ValueParserSpec extends Spec {
@@ -384,14 +387,24 @@ class ValueParserSpec extends Spec {
                                                 |${name: unexpected end-of-file; expected '}'""".stripMargin))
   }
 
-  val plainFormTemplate = FormTemplate.withDeprecatedDmsSubmission(
+  val plainFormTemplate = FormTemplate(
     FormTemplateId("IPT100"),
     toLocalisedString("Insurance Premium Tax Return"),
     Some(ResearchBanner),
     Default,
     OnePerUser(ContinueOrDeletePage.Show),
     Destinations
-      .DmsSubmission("DMS-ID-XX", TextExpression(AuthCtx(PayeNino)), "BT-NRU-Environmental", "FinanceOpsCorpT"),
+      .DestinationList(
+        NonEmptyList.of(HmrcDms(
+          DestinationId("TestHmrcDmsId"),
+          "TestHmrcDmsFormId",
+          TextExpression(Constant("TestHmrcDmsCustomerId")),
+          "TestHmrcDmsClassificationType",
+          "TestHmrcDmsBusinessArea",
+          "",
+          true,
+          true
+        ))),
     HmrcAgentWithEnrolmentModule(
       RequireMTDAgentEnrolment,
       EnrolmentAuth(ServiceId("TEST"), DoCheck(Always, RejectAccess, RegimeIdCheck(RegimeId("TEST"))))),
@@ -405,7 +418,10 @@ class ValueParserSpec extends Spec {
     List.empty[Section],
     acknowledgementSection = AcknowledgementSection(toSmartString(""), None, None, Nil),
     declarationSection = DeclarationSection(toSmartString("Declaration"), None, None, Nil),
-    parentFormSubmissionRefs = None
+    Nil,
+    Some("false"),
+    AvailableLanguages.default,
+    None
   )
 
   val yourDetailsSection = Section.NonRepeatingPage(

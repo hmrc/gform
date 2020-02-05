@@ -23,6 +23,7 @@ import org.scalacheck.Gen
 import play.api.libs.json._
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, Destinations, HandlebarsDestinationResponse, HandlebarsTemplateProcessorModel }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, DestinationsGen }
 import uk.gov.hmrc.gform.sharedmodel.generators.{ PdfDataGen, StructuredFormValueGen }
@@ -39,26 +40,6 @@ class DestinationsSubmitterSpec
     DestinationSubmissionInfoGen.destinationSubmissionInfoGen.map { si =>
       si.copy(submission = si.submission.copy(_id = form._id))
     }
-
-  "Destinations.DmsSubmission" should "be sent to DestinationSubmitter" in {
-    forAll(submissionInfoGen, deprecatedDmsSubmissionGen, pdfDataGen, structureFormValueObjectStructureGen) {
-      (submissionInfo, destination, pdfData, structuredFormValue) =>
-        createSubmitter()
-          .expectSubmitToDms(destination, submissionInfo, pdfData, structuredFormValue)
-          .submitter
-          .send(
-            submissionInfo,
-            HandlebarsModelTree(
-              submissionInfo.formId,
-              SubmissionRef(""),
-              exampleTemplateWithDestinations(destination),
-              pdfData,
-              structuredFormValue,
-              HandlebarsTemplateProcessorModel.empty
-            )
-          )
-    }
-  }
 
   "Every Destination" should "be sent to the DestinationSubmitter" in {
     forAll(submissionInfoGen, destinationGen, pdfDataGen, structureFormValueObjectStructureGen) {
@@ -219,16 +200,13 @@ class DestinationsSubmitterSpec
     }
 
     def expectSubmitToDms(
-      destination: Destinations.DmsSubmission,
+      destination: HmrcDms,
       submissionInfo: DestinationSubmissionInfo,
       pdfData: PdfHtml,
       structuredFormData: StructuredFormValue.ObjectStructure): SubmitterParts[F] = {
       (destinationSubmitter
-        .submitToDms(
-          _: DestinationSubmissionInfo,
-          _: PdfHtml,
-          _: StructuredFormValue.ObjectStructure,
-          _: Destinations.DmsSubmission)(_: HeaderCarrier))
+        .submitToDms(_: DestinationSubmissionInfo, _: PdfHtml, _: StructuredFormValue.ObjectStructure, _: HmrcDms)(
+          _: HeaderCarrier))
         .expects(submissionInfo, pdfData, structuredFormData, destination, hc)
         .returning(().pure)
       this
