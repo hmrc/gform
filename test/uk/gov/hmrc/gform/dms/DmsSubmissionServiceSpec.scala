@@ -64,11 +64,10 @@ class DmsSubmissionServiceSpec extends Spec {
     val pdfContent = "totally a pdf".getBytes
     val expectedEnvId = EnvelopeId(UUID.randomUUID().toString)
     val expectedPdfAndXmlSummaries = PdfAndXmlSummaries(PdfSummary(numberOfPages.longValue, pdfContent))
-    val fileAttachment =
-      FileAttachment(
-        FileSystems.getDefault().getPath("some-dir", "some-file"),
-        "file-content".getBytes(),
-        Some("application/json"))
+    val fileAttachment = FileAttachment(
+      FileSystems.getDefault().getPath("some-dir", "some-file"),
+      "file-content".getBytes(),
+      Some("application/json"))
     val fileAttachments = List(fileAttachment)
 
     val expectedDmsSubmission = DmsSubmissionService.createHmrcDms(validSubmission.metadata)
