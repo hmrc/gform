@@ -35,7 +35,7 @@ object DmsSubmissionWithAttachmentsRequestInterpreter {
 
     val maybeFiles: List[FileAttachment] = request.body.files.map { file =>
       val filename = Paths.get(file.filename).getFileName
-      val bytes = readAllBytes(file.ref.moveTo(Paths.get(s"/tmp/dms/$filename"), replace = true))
+      val bytes = readAllBytes(file.ref.path)
       val contentType = file.contentType
       FileAttachment(filename, bytes, contentType)
     }.toList
