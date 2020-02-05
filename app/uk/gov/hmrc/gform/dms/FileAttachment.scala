@@ -16,10 +16,6 @@
 
 package uk.gov.hmrc.gform.dms
 
-import play.api.libs.json.{ Format, Json }
+import java.nio.file.Path
 
-case class DmsHtmlSubmission(b64html: String, metadata: DmsMetadata)
-
-object DmsHtmlSubmission {
-  implicit val format: Format[DmsHtmlSubmission] = Json.format[DmsHtmlSubmission]
-}
+case class FileAttachment(filename: Path, bytes: Array[Byte], contentType: Option[String])

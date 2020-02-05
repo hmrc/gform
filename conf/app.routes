@@ -41,6 +41,7 @@ POST          /validate/bank                                                uk.g
 
 POST          /dms/submit                                                   uk.gov.hmrc.gform.dms.DmsSubmissionController.submitToDms()
 POST          /dms/submit-pdf                                               uk.gov.hmrc.gform.dms.DmsSubmissionController.submitPdfToDms()
+POST          /dms/submit-pdf-with-attachments                              uk.gov.hmrc.gform.dms.DmsSubmissionController.submitPdfToDmsWithAttachments
 
 POST          /obligation/tax-period                                        uk.gov.hmrc.gform.obligation.ObligationController.getAllTaxPeriods()
 

@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.gform.dms
 
-import cats.instances.future._
 import java.time.Clock
 
+import cats.instances.future._
 import org.apache.pdfbox.pdmodel.PDDocument
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.config.AppConfig
@@ -38,7 +38,8 @@ class DmsModule(
       fileUploadModule.fileUploadService,
       pdfGeneratorModule.pdfGeneratorService,
       PDDocument.load,
-      config.formExpiryDays.longValue)(Clock.systemDefaultZone, catsStdInstancesForFuture)
+      config.formExpiryDays.longValue
+    )(Clock.systemDefaultZone, catsStdInstancesForFuture)
 
   lazy val dmsSubmissionController: DmsSubmissionController = {
     new DmsSubmissionController(controllerComponents, dmsSubmissionService)

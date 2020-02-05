@@ -20,10 +20,12 @@ import java.time.{ Clock, LocalDateTime }
 import java.util.Base64
 
 import cats.Monad
+import cats.instances.list._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
+import cats.syntax.traverse._
 import org.apache.pdfbox.pdmodel.PDDocument
-import uk.gov.hmrc.gform.fileupload.{ Attachments, FileUploadAlgebra }
+import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorAlgebra
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId }
@@ -34,8 +36,10 @@ import uk.gov.hmrc.gform.submission.{ DmsMetaData, PdfAndXmlSummaries, PdfSummar
 import uk.gov.hmrc.http.HeaderCarrier
 
 trait DmsSubmissionAlgebra[F[_]] {
-  def submitToDms(dmsHtmlSubmission: DmsHtmlSubmission)(implicit hc: HeaderCarrier): F[EnvelopeId]
-  def submitPdfToDms(pdfBytes: Array[Byte], dmsMetaData: DmsMetadata)(implicit hc: HeaderCarrier): F[EnvelopeId]
+  def submitToDms(dmsHtmlSubmission: DmsHtmlSubmission, fileAttachments: List[FileAttachment])(
+    implicit hc: HeaderCarrier): F[EnvelopeId]
+  def submitPdfToDms(pdfBytes: Array[Byte], dmsMetaData: DmsMetadata, fileAttachments: List[FileAttachment])(
+    implicit hc: HeaderCarrier): F[EnvelopeId]
 }
 
 class DmsSubmissionService[F[_]](
@@ -44,22 +48,28 @@ class DmsSubmissionService[F[_]](
   documentLoader: Array[Byte] => PDDocument,
   formExpiryDays: Long)(implicit clock: Clock, M: Monad[F])
     extends DmsSubmissionAlgebra[F] {
-  override def submitToDms(dmsHtmlSubmission: DmsHtmlSubmission)(implicit hc: HeaderCarrier): F[EnvelopeId] =
+
+  override def submitToDms(dmsHtmlSubmission: DmsHtmlSubmission, fileAttachments: List[FileAttachment])(
+    implicit hc: HeaderCarrier): F[EnvelopeId] =
     pdfGenerator
-      .generatePDFBytes(decode(dmsHtmlSubmission.html))
+      .generatePDFBytes(decode(dmsHtmlSubmission.b64html))
       .flatMap { byteArray =>
-        submitPdfToDms(byteArray, dmsHtmlSubmission.metadata)
+        submitPdfToDms(byteArray, dmsHtmlSubmission.metadata, fileAttachments)
       }
 
-  override def submitPdfToDms(pdfBytes: Array[Byte], metadata: DmsMetadata)(
+  override def submitPdfToDms(pdfBytes: Array[Byte], metadata: DmsMetadata, fileAttachments: List[FileAttachment])(
     implicit hc: HeaderCarrier): F[EnvelopeId] = {
-    val formTemplateId = FormTemplateId(metadata.dmsFormId)
+    val formTemplateId: FormTemplateId = FormTemplateId(metadata.dmsFormId)
     for {
       envId <- fileUpload.createEnvelope(formTemplateId, LocalDateTime.now(clock).plusDays(formExpiryDays))
       pdfDoc = documentLoader(pdfBytes)
       pdfSummary = PdfSummary(pdfDoc.getNumberOfPages.toLong, pdfBytes)
       _ = pdfDoc.close()
-      submission = DmsSubmissionService.createSubmission(metadata, envId, LocalDateTime.now(clock), Attachments.empty)
+      _ <- fileAttachments.traverse { fileAttachment =>
+            fileUpload.uploadAttachment(envId, fileAttachment)
+          }
+      submission = DmsSubmissionService
+        .createSubmission(metadata, envId, LocalDateTime.now(clock), fileAttachments.size)
       summaries = PdfAndXmlSummaries(pdfSummary)
       hmrcDms = DmsSubmissionService.createHmrcDms(metadata)
       _ <- fileUpload.submitEnvelope(submission, summaries, hmrcDms)
@@ -67,6 +77,7 @@ class DmsSubmissionService[F[_]](
   }
 
   private val decode = (s: String) => new String(Base64.getDecoder.decode(s))
+
 }
 
 object DmsSubmissionService {
@@ -87,13 +98,13 @@ object DmsSubmissionService {
     metadata: DmsMetadata,
     envId: EnvelopeId,
     submittedDate: LocalDateTime,
-    attachments: Attachments): Submission =
+    attachments: Int): Submission =
     Submission(
       FormId(metadata.dmsFormId),
       submittedDate,
       SubmissionRef(envId),
       envId,
-      attachments.size,
+      attachments,
       DmsMetaData(FormTemplateId(metadata.dmsFormId), metadata.customerId)
     )
 }
