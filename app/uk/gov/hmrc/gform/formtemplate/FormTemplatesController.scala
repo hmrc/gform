@@ -39,19 +39,19 @@ class FormTemplatesController(controllerComponents: ControllerComponents, formTe
       .fold(_.asBadRequest, _ => Results.NoContent)
   }
 
-  def get(id: FormTemplateId) = formTemplateAction("get", id) { implicit request =>
+  def get(id: FormTemplateId) = formTemplateAction("get", id) { _ =>
     formTemplateService
       .get(id)
       .asOkJson
   }
 
-  def getRaw(id: FormTemplateRawId) = formTemplateAction("getRaw", FormTemplateId(id.value)) { implicit request =>
+  def getRaw(id: FormTemplateRawId) = formTemplateAction("getRaw", FormTemplateId(id.value)) { _ =>
     formTemplateService
       .get(id)
       .asOkJson
   }
 
-  def remove(formTemplateId: FormTemplateId) = formTemplateAction("remove", formTemplateId) { implicit request =>
+  def remove(formTemplateId: FormTemplateId) = formTemplateAction("remove", formTemplateId) { _ =>
     val result = for {
       r <- formTemplateService.delete(formTemplateId)
     } yield r

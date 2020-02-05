@@ -17,7 +17,6 @@
 package uk.gov.hmrc.gform.config
 
 import com.typesafe.config.{ ConfigFactory, Config => TypeSafeConfig }
-import net.ceedubs.ficus.Ficus._
 import play.api.Configuration
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.playcomponents.PlayComponents
@@ -25,11 +24,12 @@ import uk.gov.hmrc.gform.sharedmodel.config.ExposedConfig
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.ProfileName
 import uk.gov.hmrc.http.logging.Authorization
 import uk.gov.hmrc.play.audit.http.config.AuditingConfig
-import uk.gov.hmrc.play.bootstrap.config.{ AuditingConfigProvider, ControllerConfig, ControllerConfigs, RunMode, ServicesConfig }
+import uk.gov.hmrc.play.bootstrap.config.{ AuditingConfigProvider, ControllerConfigs, RunMode, ServicesConfig }
 
 import scala.concurrent.ExecutionContext
 import scala.util.Try
 import pureconfig.generic.auto._
+import pureconfig.ConfigSource
 import uk.gov.hmrc.gform.notifier.NotifierConfig
 
 class ConfigModule(
@@ -44,10 +44,11 @@ class ConfigModule(
 
   val exposedConfig: ExposedConfig = ExposedConfigHelper.exposedConfig(appConfig)
 
-  val desConfig: DesConnectorConfig = pureconfig.loadConfigOrThrow[DesConnectorConfig]("microservice.services.etmp-hod")
+  val desConfig: DesConnectorConfig =
+    ConfigSource.default.at("microservice.services.etmp-hod").loadOrThrow[DesConnectorConfig]
 
   val emailConfig: EmailConnectorConfig =
-    pureconfig.loadConfigOrThrow[EmailConnectorConfig]("microservice.services.email")
+    ConfigSource.default.at("microservice.services.email").loadOrThrow[EmailConnectorConfig]
 
   val controllerConfigs = ControllerConfigs.fromConfig(configuration)
 
@@ -57,7 +58,8 @@ class ConfigModule(
 
   val auditingConfig: AuditingConfig = new AuditingConfigProvider(configuration, runMode, appName).get()
 
-  val notifierConfig: NotifierConfig = pureconfig.loadConfigOrThrow[NotifierConfig]("microservice.services.notifier")
+  val notifierConfig: NotifierConfig =
+    ConfigSource.default.at("microservice.services.notifier").loadOrThrow[NotifierConfig]
 
   val configController = new ConfigController(controllerComponents, this)
 

@@ -20,7 +20,6 @@ import java.time.LocalDateTime
 
 import akka.util.ByteString
 import play.api.Logger
-import play.api.libs.ws.WSResponse
 
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.gform.auditing.loggingHelpers

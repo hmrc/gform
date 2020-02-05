@@ -38,7 +38,7 @@ object AppConfig {
 
   def loadOrThrow(config: TypeSafeConfig): AppConfig = {
 
-    implicit def hint[AppConfig]: ProductHint[AppConfig] = ProductHint(ConfigFieldMapping(CamelCase, CamelCase))
+    implicit def hint: ProductHint[AppConfig] = ProductHint(ConfigFieldMapping(CamelCase, CamelCase))
     val appConfig = ConfigSource.fromConfig(config).loadOrThrow[AppConfig]
 
     appConfig.formExpiryDays.verifyThat(_ > 0, s"'formExpiryDays' must be positive, was ${appConfig.formExpiryDays}")

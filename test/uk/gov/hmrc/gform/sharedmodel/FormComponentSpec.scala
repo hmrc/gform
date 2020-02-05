@@ -457,8 +457,8 @@ class FormComponentSpec extends Spec {
         FormComponentId("aprilDate"),
         Date(
           DateConstraints(List(
-            DateConstraint(After, ConcreteDate(ExactYear(2017), ExactMonth(3), ExactDay(31)), OffsetDate(0)),
-            DateConstraint(Before, ConcreteDate(ExactYear(2017), ExactMonth(5), ExactDay(1)), OffsetDate(0))
+            DateConstraint(After, ConcreteDate(Year.Exact(2017), Month.Exact(3), Day.Exact(31)), OffsetDate(0)),
+            DateConstraint(Before, ConcreteDate(Year.Exact(2017), Month.Exact(5), Day.Exact(1)), OffsetDate(0))
           )),
           Offset(0),
           Some(ExactDateValue(2017, 4, 10))
@@ -1129,7 +1129,7 @@ class FormComponentSpec extends Spec {
         toSmartString("Label -- standard info field"),
         None,
         None,
-        Some(ValidIf(Equals(FormCtx("info"), Constant("Hello")))),
+        Some(ValidIf(Equals(FormCtx(FormComponentId("info")), Constant("Hello")))),
         true,
         false,
         false,

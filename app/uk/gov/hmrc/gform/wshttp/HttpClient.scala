@@ -80,7 +80,7 @@ object HttpClient {
     hc.copy(extraHeaders = ("Content-Type" -> contentType) :: hc.extraHeaders.toList)
 
   private def httpRequest[F[_]](method: (String, String) => F[HttpResponse], uri: String, payload: String)(
-    parser: Option[String => JsValue])(implicit hc: HeaderCarrier, monadError: MonadError[F, String]): F[HttpResponse] =
+    parser: Option[String => JsValue])(implicit monadError: MonadError[F, String]): F[HttpResponse] =
     try {
       method(uri, parser.fold(payload)(fn => fn(payload).toString))
     } catch {

@@ -45,14 +45,14 @@ object FormTemplateValidatorHelper {
       .flatMap(_.collect { case dateValue: DateValue => dateValue }
         .collect {
           case exactDate: ExactDateValue =>
-            ConcreteDate(ExactYear(exactDate.year), ExactMonth(exactDate.month), ExactDay(exactDate.day))
+            ConcreteDate(Year.Exact(exactDate.year), Month.Exact(exactDate.month), Day.Exact(exactDate.day))
           case nextDate: NextDateValue =>
-            ConcreteDate(ExactYear(LocalDate.now().getYear + 1), ExactMonth(nextDate.month), ExactDay(nextDate.day))
+            ConcreteDate(Year.Exact(LocalDate.now().getYear + 1), Month.Exact(nextDate.month), Day.Exact(nextDate.day))
           case previousDate: PreviousDateValue =>
             ConcreteDate(
-              ExactYear(LocalDate.now().getYear - 1),
-              ExactMonth(previousDate.month),
-              ExactDay(previousDate.day))
+              Year.Exact(LocalDate.now().getYear - 1),
+              Month.Exact(previousDate.month),
+              Day.Exact(previousDate.day))
         })
 
   private def getAllDatesFromListOfFields(fields: List[FormComponent]): List[ConcreteDate] =

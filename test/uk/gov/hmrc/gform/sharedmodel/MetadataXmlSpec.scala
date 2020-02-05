@@ -47,7 +47,7 @@ class MetadataXmlSpec extends Spec {
     val hmrcDms = HmrcDms(
       DestinationId("TestHmrcDmsId"),
       "some-id",
-      TextExpression(Constant("TestHmrcDmsCustomerId")),
+      Constant("TestHmrcDmsCustomerId"),
       "some-classification-type",
       "some-business-area",
       "",

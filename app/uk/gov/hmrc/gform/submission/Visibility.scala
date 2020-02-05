@@ -34,7 +34,7 @@ case class Visibility(sections: List[Page], data: VariadicFormData, affinityGrou
   def isVisible(section: Page): Boolean = {
 
     val isIncludedExpression: Option[BooleanExprResultWithDependents] =
-      section.includeIf.map(incIf => BooleanExprEval.isTrue(incIf.expr, data, affinityGroup))
+      section.includeIf.map(incIf => BooleanExprEval.isTrue(incIf.booleanExpr, data, affinityGroup))
 
     isIncludedExpression.fold(true)(areAncestorsVisible)
   }

@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.repo
 import cats.data.EitherT
 import cats.syntax.either._
 import play.api.libs.json._
-import reactivemongo.api.{ Cursor, DefaultDB, WriteConcern }
+import reactivemongo.api.{ Cursor, DefaultDB }
 import reactivemongo.bson.BSONObjectID
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -33,6 +33,8 @@ class Repo[T: OWrites: Manifest](name: String, mongo: () => DefaultDB, idLens: T
   ec: ExecutionContext)
     extends ReactiveRepository[T, BSONObjectID](name, mongo, formatT) {
   underlying =>
+
+  private val options = reactivemongo.api.QueryOpts(batchSizeN = Integer.MAX_VALUE)
 
   import reactivemongo.play.json.ImplicitBSONHandlers._
 
@@ -50,17 +52,18 @@ class Repo[T: OWrites: Manifest](name: String, mongo: () => DefaultDB, idLens: T
     //TODO: don't abuse it to much. If querying for a large underlyingReactiveRepository.collection.consider returning stream instead of packing everything into the list
     underlying.collection
       .find[JsObject, T](selector = selector, None)
-      .updateOptions(_.batchSize(Integer.MAX_VALUE))
+      .options(options)
       .cursor[T]()
       .collect[List](Integer.MAX_VALUE, Cursor.FailOnError())
   }
 
   def search(selector: JsObject, orderBy: JsObject): Future[List[T]] = preservingMdc {
     //TODO: don't abuse it to much. If querying for a large underlyingReactiveRepository.collection.consider returning stream instead of packing everything into the list
+
     underlying.collection
       .find[JsObject, T](selector = selector, None)
       .sort(orderBy)
-      .updateOptions(_.batchSize(Integer.MAX_VALUE))
+      .options(options)
       .cursor[T]()
       .collect[List](Integer.MAX_VALUE, Cursor.FailOnError())
   }
@@ -75,7 +78,8 @@ class Repo[T: OWrites: Manifest](name: String, mongo: () => DefaultDB, idLens: T
   def upsert(t: T): FOpt[Unit] = EitherT {
     preservingMdc {
       underlying.collection
-        .update(idSelector(t), update = t, writeConcern = WriteConcern.Default, upsert = true, multi = false)
+        .update(ordered = false)
+        .one[JsObject, T](q = idSelector(t), u = t, upsert = true, multi = false)
         .asEither
     }
   }

@@ -30,16 +30,6 @@ class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
     }
   }
 
-  it should "parse legacy EEITT auth" in {
-    val authConfigValue = toAuthConfig(s"""|{
-     |  "authModule": "legacyEEITTAuth",
-     |  "regimeId": "IP"
-     |}""")
-    authConfigValue shouldBe JsSuccess(
-      EeittModule(RegimeId("IP"))
-    )
-  }
-
   it should "parse simplest HMRC auth" in {
     val authConfigValue = toAuthConfig(s"""|{
      |  "authModule": "hmrc"
@@ -116,7 +106,8 @@ class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
                 toSmartString("t"),
                 None,
                 List.empty,
-                NonEmptyList.of(IdentifierRecipe("EtmpRegistrationNumber", FormCtx("eeittReferenceNumber"))),
+                NonEmptyList.of(
+                  IdentifierRecipe("EtmpRegistrationNumber", FormCtx(FormComponentId("eeittReferenceNumber")))),
                 List.empty
               ),
               NoAction
@@ -160,7 +151,8 @@ class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
                 toSmartString("t"),
                 None,
                 List.empty,
-                NonEmptyList.of(IdentifierRecipe("EtmpRegistrationNumber", FormCtx("eeittReferenceNumber"))),
+                NonEmptyList.of(
+                  IdentifierRecipe("EtmpRegistrationNumber", FormCtx(FormComponentId("eeittReferenceNumber")))),
                 List.empty
               ),
               LegacyFcEnrolmentVerifier("NonUKCountryCode")

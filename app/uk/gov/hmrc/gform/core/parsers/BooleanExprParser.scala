@@ -60,8 +60,8 @@ object BooleanExprParser {
     | exprFormCtx ~ ">" ~ exprFormCtx ^^ { (loc, expr1, op, expr2) =>
       GreaterThan(expr1, expr2)
     }
-    | alphabeticOnly ~ "contains" ~ exprFormCtx ^^ { (_, expr1, _, expr2) =>
-      Contains(FormCtx(expr1), expr2)
+    | FormComponentId.unanchoredIdValidation ~ "contains" ~ exprFormCtx ^^ { (_, expr1, _, expr2) =>
+      Contains(FormCtx(FormComponentId(expr1)), expr2)
     }
     | contextField ~ "in" ~ dataSourceParse ^^ { (_, expr, _, dataSource) =>
       In(expr, dataSource)

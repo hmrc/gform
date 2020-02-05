@@ -19,7 +19,6 @@ package uk.gov.hmrc.gform.submission.handlebars
 import java.text.DecimalFormat
 
 import cats.instances.string._
-import cats.syntax.either._
 import cats.syntax.option._
 import cats.syntax.eq._
 import shapeless.syntax.typeable._

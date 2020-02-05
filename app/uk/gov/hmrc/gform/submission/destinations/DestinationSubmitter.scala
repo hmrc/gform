@@ -23,7 +23,7 @@ import cats.syntax.functor._
 import uk.gov.hmrc.gform.logging.Loggers
 import uk.gov.hmrc.gform.notifier.NotifierAlgebra
 import uk.gov.hmrc.gform.sharedmodel.PdfHtml
-import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormData, FormId }
+import uk.gov.hmrc.gform.sharedmodel.form.{ FormData, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 import uk.gov.hmrc.gform.submission.handlebars._

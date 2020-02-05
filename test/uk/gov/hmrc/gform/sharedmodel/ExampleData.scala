@@ -42,7 +42,7 @@ trait ExampleAuthConfig extends DestinationGen {
   val hmrcDms = HmrcDms(
     DestinationId("TestHmrcDmsId"),
     "TestHmrcDmsFormId",
-    TextExpression(Constant("TestHmrcDmsCustomerId")),
+    Constant("TestHmrcDmsCustomerId"),
     "TestHmrcDmsClassificationType",
     "TestHmrcDmsBusinessArea",
     "",
@@ -94,7 +94,7 @@ trait ExampleAuthConfig extends DestinationGen {
 
   def regimeId = RegimeId("TestRegimeId")
 
-  def authConfig = EeittModule(regimeId)
+  def authConfig = Anonymous
 }
 
 trait ExampleFieldId {
@@ -281,13 +281,14 @@ trait ExampleValidator {
     HmrcRosmRegistrationCheckValidator(
       toSmartString("The UTR could not be foundor the postcode did not match. | <Welsh...>"),
       "ITSA",
-      FormCtx("utrToCheck"),
-      FormCtx("postcodeToCheck"))
-  def bankAccoutnModulusCheckValidator =
-    BankAccoutnModulusCheck(
+      FormCtx(FormComponentId("utrToCheck")),
+      FormCtx(FormComponentId("postcodeToCheck"))
+    )
+  def bankAccountModulusCheckValidator =
+    BankAccountModulusCheck(
       toSmartString("This is an error message for Bank"),
-      FormCtx("accountNumber"),
-      FormCtx("sortCode"))
+      FormCtx(FormComponentId("accountNumber")),
+      FormCtx(FormComponentId("sortCode")))
   //todo other example validators
 }
 
@@ -332,7 +333,7 @@ trait ExampleSection { dependecies: ExampleFieldId with ExampleFieldValue with E
         None,
         None
       ),
-      repeats = TextExpression(FormCtx(`fieldId - firstName`.value))
+      repeats = FormCtx(`fieldId - firstName`)
     )
 
   def `section - group` =
@@ -355,8 +356,8 @@ trait ExampleFormTemplate {
   def emailParameters =
     Some(
       NonEmptyList.of(
-        EmailParameter("fullName", FormCtx("directorFullName")),
-        EmailParameter("email", FormCtx("directorEmail"))
+        EmailParameter("fullName", FormCtx(FormComponentId("directorFullName"))),
+        EmailParameter("email", FormCtx(FormComponentId("directorEmail")))
       ))
 
   def webChat = Some(WebChat(ChatRoomId("test"), TemplateName("hmrc7")))

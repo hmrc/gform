@@ -24,7 +24,6 @@ import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 
 import scala.math.pow
-import scala.util.Random
 
 case class SubmissionRef(value: String) extends AnyVal {
   override def toString = value
@@ -65,12 +64,6 @@ object SubmissionRef {
   private def calculateCheckCharacter(digits: String, radix: Int, comb: Stream[Int]): Int = {
     val stringToInts = digits.toCharArray.map(i => Integer.parseInt(i.toString, radix))
     stringToInts.zip(comb).map(i => i._1 * i._2).sum % radix
-  }
-
-  private def alphanumeric(rnd: Random): Stream[Char] = {
-    val chars = ('A' to 'Z') ++ ('0' to '9').toList
-    def nextAlphaNum: Char = chars.charAt(rnd.nextInt(chars.length))
-    Stream continually nextAlphaNum
   }
 
   def verifyCheckChar(reference: String): Boolean =

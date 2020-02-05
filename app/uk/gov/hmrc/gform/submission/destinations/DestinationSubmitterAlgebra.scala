@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.submission.destinations
 import cats.instances.string._
 import cats.syntax.eq._
 import uk.gov.hmrc.gform.sharedmodel.PdfHtml
-import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormData }
+import uk.gov.hmrc.gform.sharedmodel.form.FormData
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue

@@ -42,8 +42,8 @@ object DependencyGraph {
 
     def eval(expr: Expr): List[FormComponentId] =
       expr match {
-        case fc @ FormCtx(_)             => fc.toFieldId :: Nil
-        case Sum(FormCtx(fc))            => allFcIds.filter(_.value.endsWith(fc))
+        case FormCtx(fcId)               => fcId :: Nil
+        case Sum(FormCtx(fc))            => allFcIds.filter(_.value.endsWith(fc.value))
         case Add(field1, field2)         => eval(field1) ++ eval(field2)
         case Subtraction(field1, field2) => eval(field1) ++ eval(field2)
         case Multiply(field1, field2)    => eval(field1) ++ eval(field2)

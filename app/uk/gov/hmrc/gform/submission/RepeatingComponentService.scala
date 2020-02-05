@@ -64,7 +64,7 @@ object RepeatingComponentService {
     variadicData: VariadicFormData,
     affinityGroup: Option[AffinityGroup]): Boolean =
     includeIf
-      .map(incIf => BooleanExprEval.isTrue(incIf.expr, variadicData, affinityGroup))
+      .map(incIf => BooleanExprEval.isTrue(incIf.booleanExpr, variadicData, affinityGroup))
       .map { res =>
         res.beResult &&
         res.dependingOn.forall(formComponentId =>
@@ -77,8 +77,8 @@ object RepeatingComponentService {
       case g: Group => g.fields.flatMap(getIdsOfLeafFormComponents)
       case rc: RevealingChoice =>
         field.id :: rc.options.toList.flatMap(_.revealingFields.flatMap(getIdsOfLeafFormComponents))
-      case _: Text | _: TextArea | _: UkSortCode | _: Date | _: Address | _: Address | _: Choice | _: HmrcTaxPeriod |
-          _: InformationMessage | _: FileUpload =>
+      case _: Text | _: TextArea | _: UkSortCode | _: Date | _: Time | _: Address | _: Address | _: Choice |
+          _: HmrcTaxPeriod | _: InformationMessage | _: FileUpload =>
         List(field.id)
     }
 
@@ -102,8 +102,8 @@ object RepeatingComponentService {
             `type` = rc.copy(
               options = rc.options.map(option => option.copy(revealingFields = option.revealingFields.map(copyField))))
           )
-        case _: Text | _: TextArea | _: UkSortCode | _: Date | _: Address | _: Address | _: Choice | _: HmrcTaxPeriod |
-            _: InformationMessage | _: FileUpload =>
+        case _: Text | _: TextArea | _: UkSortCode | _: Date | _: Time | _: Address | _: Address | _: Choice |
+            _: HmrcTaxPeriod | _: InformationMessage | _: FileUpload =>
           field.copy(id = field.id.extendForRepeatingSection(index))
       }
 

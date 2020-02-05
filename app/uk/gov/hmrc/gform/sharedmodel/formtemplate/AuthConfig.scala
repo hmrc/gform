@@ -21,12 +21,6 @@ import play.api.libs.json._
 import play.api.libs.functional.syntax._
 import uk.gov.hmrc.gform.sharedmodel.{ LocalisedString, ValueClassFormat }
 
-object EEITTAuthConfig {
-  val eeittAuth = "legacyEEITTAuth"
-  val nonAgentIdName = "registrationNumber"
-  val agentIdName = "arn"
-}
-
 case class EnrolmentAuth(
   serviceId: ServiceId,
   enrolmentCheck: EnrolmentCheck
@@ -95,7 +89,6 @@ object AuthModule {
   case object Hmrc extends AuthModule
   case object HmrcAny extends AuthModule
   case object HmrcVerified extends AuthModule
-  case object EeittLegacy extends AuthModule
   case object AnonymousAccess extends AuthModule
   case object AWSALBAccess extends AuthModule
   case object OfstedModule extends AuthModule
@@ -103,26 +96,23 @@ object AuthModule {
   private val hmrc = "hmrc"
   private val hmrcAny = "hmrcAny"
   private val hmrcVerified = "hmrcVerified"
-  private val legacyEEITTAuth = "legacyEEITTAuth"
   private val anonymous = "anonymous"
   private val awsAlb = "awsAlbAuth"
   private val ofstedAuth = "ofsted"
 
   implicit val format: Format[AuthModule] = ADTFormat.formatEnumeration(
-    hmrc            -> Hmrc,
-    hmrcAny         -> HmrcAny,
-    hmrcVerified    -> HmrcVerified,
-    legacyEEITTAuth -> EeittLegacy,
-    anonymous       -> AnonymousAccess,
-    awsAlb          -> AWSALBAccess,
-    ofstedAuth      -> OfstedModule
+    hmrc         -> Hmrc,
+    hmrcAny      -> HmrcAny,
+    hmrcVerified -> HmrcVerified,
+    anonymous    -> AnonymousAccess,
+    awsAlb       -> AWSALBAccess,
+    ofstedAuth   -> OfstedModule
   )
 
   def asString(o: AuthModule): String = o match {
     case Hmrc            => hmrc
     case HmrcAny         => hmrcAny
     case HmrcVerified    => hmrcVerified
-    case EeittLegacy     => legacyEEITTAuth
     case AnonymousAccess => anonymous
     case AWSALBAccess    => awsAlb
     case OfstedModule    => ofstedAuth
@@ -132,7 +122,6 @@ object AuthModule {
 sealed trait AuthConfig extends Product with Serializable
 case object Anonymous extends AuthConfig
 case object AWSALBAuth extends AuthConfig
-case class EeittModule(regimeId: RegimeId) extends AuthConfig
 case object HmrcAny extends AuthConfig
 case class HmrcVerified(ivFailure: LocalisedString, notAllowedIn: LocalisedString) extends AuthConfig
 case object HmrcSimpleModule extends AuthConfig
@@ -204,13 +193,7 @@ object AuthConfig {
         authConfig <- authModule match {
                        case AuthModule.AnonymousAccess => JsSuccess(Anonymous)
                        case AuthModule.AWSALBAccess    => JsSuccess(AWSALBAuth)
-                       case AuthModule.EeittLegacy =>
-                         maybeRegimeId match {
-                           case None =>
-                             JsError(s"Missing regimeId (regimeId is mandatory for legacyEEITTAuth)")
-                           case Some(regimeId) => JsSuccess(EeittModule(regimeId))
-                         }
-                       case AuthModule.HmrcAny => JsSuccess(HmrcAny)
+                       case AuthModule.HmrcAny         => JsSuccess(HmrcAny)
                        case AuthModule.HmrcVerified =>
                          (maybeIvFailure, maybeNotAllowedIn) match {
                            case (Some(ivFailure), Some(notAllowedIn)) =>
@@ -249,8 +232,6 @@ object AuthConfig {
 
     OFormat(reads | rawTemplateReads, writes)
   }
-
-  val missingRegimeIdForLegacyEEITTAuth: String = "Missing regimeId (regimeId is mandatory for legacyEEITTAuth)"
 }
 
 case class ServiceId(value: String) extends AnyVal

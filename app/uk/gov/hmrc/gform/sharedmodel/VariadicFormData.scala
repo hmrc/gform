@@ -183,8 +183,8 @@ object VariadicFormData {
       case _: Choice => Set(component.id.reduceToTemplateFieldId)
       case r: RevealingChoice =>
         listVariadicFormComponentIds(r.options.toList.flatMap(_.revealingFields)) + component.id.reduceToTemplateFieldId
-      case _: Text | _: TextArea | _: UkSortCode | _: Date | _: Address | _: HmrcTaxPeriod | _: InformationMessage |
-          _: FileUpload =>
+      case _: Text | _: TextArea | _: UkSortCode | _: Date | _: Time | _: Address | _: HmrcTaxPeriod |
+          _: InformationMessage | _: FileUpload =>
         Set.empty
     }
 

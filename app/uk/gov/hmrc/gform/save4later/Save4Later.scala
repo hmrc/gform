@@ -19,10 +19,7 @@ package uk.gov.hmrc.gform.save4later
 import cats.instances.future._
 import cats.syntax.functor._
 import org.slf4j.LoggerFactory
-import play.api.Logger
 import play.api.libs.json.Json
-import uk.gov.hmrc.gform.core.FOpt
-import uk.gov.hmrc.gform.formmetadata.FormMetadataAlgebra
 import uk.gov.hmrc.gform.sharedmodel.UserId
 import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormId, FormIdData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId

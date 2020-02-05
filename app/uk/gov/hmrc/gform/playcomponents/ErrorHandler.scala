@@ -24,7 +24,6 @@ import play.api.mvc.{ RequestHeader, Result }
 import play.core.SourceMapper
 import uk.gov.hmrc.gform.controllers.ErrResponse
 import uk.gov.hmrc.gform.core.UniqueIdGenerator
-import uk.gov.hmrc.play.http._
 
 import scala.concurrent.Future
 import uk.gov.hmrc.http.{ HttpException, JsValidationException, NotFoundException, Upstream4xxResponse, Upstream5xxResponse }

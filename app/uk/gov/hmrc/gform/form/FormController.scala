@@ -21,13 +21,12 @@ import play.api.http.HttpEntity
 import play.api.libs.json.Json
 import play.api.mvc._
 import uk.gov.hmrc.auth.core.AffinityGroup
-import uk.gov.hmrc.gform.auditing._
 import uk.gov.hmrc.gform.config.AppConfig
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateService
 import uk.gov.hmrc.gform.sharedmodel.form.{ FormIdData, QueryParams }
-import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, AffinityGroupUtil }
+import uk.gov.hmrc.gform.sharedmodel.AccessCode
 import uk.gov.hmrc.gform.sharedmodel.form.{ FileId, FormId, UserData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.UserId

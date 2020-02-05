@@ -31,7 +31,8 @@ class FormComponentValidatorSpec extends Spec with ScalaCheckDrivenPropertyCheck
   it should "read valid form component templates JSON" in {
     val errorMessage = toSmartString("sometext")
     val json = """{"validIf" : "${hallo='goobye'}", "errorMessage": "sometext"}"""
-    val validator = FormComponentValidator(ValidIf(Equals(FormCtx("hallo"), Constant("goobye"))), errorMessage)
+    val validator =
+      FormComponentValidator(ValidIf(Equals(FormCtx(FormComponentId("hallo")), Constant("goobye"))), errorMessage)
     verifyRead(validator, json)
   }
 }

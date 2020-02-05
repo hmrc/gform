@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.booleanParser.booleanExprParser
 
-case class IncludeIf(expr: BooleanExpr)
+case class IncludeIf(booleanExpr: BooleanExpr)
 
 object IncludeIf {
 

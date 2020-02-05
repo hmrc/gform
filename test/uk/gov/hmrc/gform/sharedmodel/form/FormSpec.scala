@@ -88,6 +88,12 @@ class FormSpec extends FlatSpec with Matchers with ScalaCheckDrivenPropertyCheck
        |        "email" : "josef@hmrc.com",
        |        "code" : "HPKHWB"
        |      }
+       |    },
+       |    "queryParams" : {
+       |        "params" : { }
+       |    },
+       |    "booleanExprCache" : {
+       |        "mapping": { }
        |    }
        |  },
        |  "ldt" : "2064-12-01T00:00:40"
@@ -138,7 +144,9 @@ class FormSpec extends FlatSpec with Matchers with ScalaCheckDrivenPropertyCheck
       Map(
         FormComponentId("emailId") -> EmailAndCode("josef@hmrc.com", EmailConfirmationCode("HPKHWB"))
       ),
-      QueryParams.empty
+      QueryParams.empty,
+      None,
+      BooleanExprCache.empty
     ),
     Some(EnvelopeExpiryDate(LocalDateTime.of(2064, 12, 1, 0, 0, 40)))
   )
@@ -194,7 +202,8 @@ class FormSpec extends FlatSpec with Matchers with ScalaCheckDrivenPropertyCheck
       "thirdPartyData" -> Json.obj(
         "obligations"       -> Json.obj("NotChecked" -> Json.obj()),
         "emailVerification" -> Json.obj(),
-        "queryParams"       -> Json.obj("params" -> Json.obj())
+        "queryParams"       -> Json.obj("params" -> Json.obj()),
+        "booleanExprCache"  -> Json.obj("mapping" -> Json.obj())
       )
     )
     formJsObject shouldBe expectedFormJsObject

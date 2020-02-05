@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.core.parsers
 
 import cats.data.NonEmptyList
 import org.scalatest.prop.TableDrivenPropertyChecks
+import scala.language.implicitConversions
 import uk.gov.hmrc.gform.Helpers._
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.core._
@@ -32,7 +33,7 @@ import scala.language.implicitConversions
 
 class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
 
-  //TODO: use ExampleData
+  implicit def implicitToFormComponentId(str: String): FormComponentId = FormComponentId(str)
 
   "ValueParser" should "parse integer" in {
     val res = ValueParser.validate("${1}")
@@ -50,6 +51,10 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
   it should "parse an empty string" in {
     val res = ValueParser.validate("${''}")
     res.right.value should be(TextExpression(Constant("")))
+  }
+  it should "parse an anything except singe quote" in {
+    val res = ValueParser.validate("${' --+===> '}")
+    res.right.value should be(TextExpression(Constant("--+===> ")))
   }
   it should "parse double digit integer" in {
     val res = ValueParser.validate("${1234}")
@@ -104,21 +109,6 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
   it should "parse ${age-1}" in {
     val res = ValueParser.validate("${age-1}")
     res.right.value should be(TextExpression(Subtraction(FormCtx("age"), Constant("1"))))
-  }
-
-  it should "parse ${eeitt.businessUser}" in {
-    val res = ValueParser.validate("${eeitt.businessUser}")
-    res.right.value should be(TextExpression(EeittCtx(BusinessUser)))
-  }
-
-  it should "parse ${eeitt.agent}" in {
-    val res = ValueParser.validate("${eeitt.agent}")
-    res.right.value should be(TextExpression(EeittCtx(Agent)))
-  }
-
-  it should "parse ${eeitt.userId}" in {
-    val res = ValueParser.validate("${eeitt.userId}")
-    res.right.value should be(TextExpression(EeittCtx(UserId)))
   }
 
   it should "parse ${form.firstName}" in {
@@ -194,16 +184,6 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     val res = ValueParser.validate("${age.sum}")
 
     res.right.value should be(TextExpression(Sum(FormCtx("age"))))
-  }
-
-  it should "parse ${eeitt.firstName + form.secondName}" in {
-    val res = ValueParser.validate("${eeitt.businessUser + form.secondName}")
-    res.right.value should be(TextExpression(Add(EeittCtx(BusinessUser), FormCtx("secondName"))))
-  }
-
-  it should "parse ${eeitt.firstName * form.secondName}" in {
-    val res = ValueParser.validate("${eeitt.businessUser * form.secondName}")
-    res.right.value should be(TextExpression(Multiply(EeittCtx(BusinessUser), FormCtx("secondName"))))
   }
 
   it should "parse ${firstName * secondName}" in {
@@ -407,7 +387,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
           HmrcDms(
             DestinationId("TestHmrcDmsId"),
             "TestHmrcDmsFormId",
-            TextExpression(Constant("TestHmrcDmsCustomerId")),
+            Constant("TestHmrcDmsCustomerId"),
             "TestHmrcDmsClassificationType",
             "TestHmrcDmsBusinessArea",
             "",

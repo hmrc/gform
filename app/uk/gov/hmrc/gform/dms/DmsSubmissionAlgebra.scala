@@ -31,7 +31,7 @@ import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Constant, FormTemplateId, TextExpression }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Constant, FormTemplateId }
 import uk.gov.hmrc.gform.submission.{ DmsMetaData, PdfAndXmlSummaries, PdfSummary, Submission }
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -86,7 +86,7 @@ object DmsSubmissionService {
     HmrcDms(
       DestinationId("HmrcDms"),
       metadata.dmsFormId,
-      TextExpression(Constant(metadata.customerId)),
+      Constant(metadata.customerId),
       metadata.classificationType,
       metadata.businessArea,
       "",

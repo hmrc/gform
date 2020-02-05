@@ -16,13 +16,8 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
-import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.core.{ FOpt, fromOptA }
-import uk.gov.hmrc.gform.sharedmodel.form.Submitted
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.StateTransition
 import cats.implicits._
 
 import scala.concurrent.ExecutionContext
@@ -71,12 +66,10 @@ trait Verifier {
 
   private def mkSpecimen(page: Page): Section.NonRepeatingPage =
     Section.NonRepeatingPage(
-      (removeIncludeIf _ andThen mkComponentsOptional _ andThen noValidators _ andThen noEeittExpression _)(page)
+      (removeIncludeIf _ andThen mkComponentsOptional _ andThen noValidators _)(page)
     )
 
   private def removeIncludeIf(section: Page): Page = section.copy(includeIf = None)
-
-  private val constant1 = TextExpression(Constant("1"))
 
   private def mkComponentsOptional(page: Page): Page =
     page.copy(
@@ -85,15 +78,6 @@ trait Verifier {
 
   private def noValidators(section: Page): Page =
     section.copy(validators = None)
-
-  private def noEeittExpression(section: Page): Page =
-    section.copy(fields = section.fields.map {
-      case f @ IsText(text @ Text(_, EeittCtx(eeitt), _, _)) =>
-        f.copy(`type` = text.copy(value = Constant(eeitt.toString)))
-      case f @ IsTextArea(textArea @ TextArea(_, EeittCtx(eeitt), _)) =>
-        f.copy(`type` = textArea.copy(value = Constant(eeitt.toString)))
-      case f => f
-    })
 
   private def mkOptional(fcs: List[FormComponent]): List[FormComponent] = fcs.map {
     case fc @ IsGroup(group) =>

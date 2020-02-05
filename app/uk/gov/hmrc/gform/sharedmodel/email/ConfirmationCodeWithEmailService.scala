@@ -19,7 +19,6 @@ package uk.gov.hmrc.gform.sharedmodel.email
 import julienrf.json.derived
 import play.api.libs.json.Format
 import uk.gov.hmrc.gform.sharedmodel.EmailVerifierService
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils
 
 case class ConfirmationCodeWithEmailService(code: EmailConfirmationCode, emailVerifierService: EmailVerifierService)
 

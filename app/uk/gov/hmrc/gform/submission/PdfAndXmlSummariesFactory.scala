@@ -28,7 +28,6 @@ import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ ExecutionContext, Future }
-import scala.xml.NodeSeq
 
 trait PdfAndXmlSummariesFactory {
   def apply(

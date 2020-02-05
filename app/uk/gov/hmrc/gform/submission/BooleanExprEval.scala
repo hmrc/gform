@@ -52,12 +52,12 @@ object BooleanExprEval {
         case Add(field1, field2)         => (operate(field1, _ + _, field2), List.empty)
         case Subtraction(field1, field2) => (operate(field1, _ - _, field2), List.empty)
         case Multiply(field1, field2)    => (operate(field1, _ * _, field2), List.empty)
-        case id: FormCtx                 => (data.get(id.toFieldId).flatMap(_.toSeq.headOption).getOrElse(""), List(id.toFieldId))
+        case FormCtx(fcId)               => (data.get(fcId).flatMap(_.toSeq.headOption).getOrElse(""), List(fcId))
         case _                           => ("", List.empty)
       }
 
     def multiValue(collectionFieldId: FormCtx): (Seq[String], List[FormComponentId]) =
-      (data.many(collectionFieldId.toFieldId).toSeq.flatten, List(collectionFieldId.toFieldId))
+      (data.many(collectionFieldId.formComponentId).toSeq.flatten, List(collectionFieldId.formComponentId))
 
     def toMaybeBigDecimal(str: String): Option[BigDecimal] =
       Try(BigDecimal(str.replace(",", ""))).toOption

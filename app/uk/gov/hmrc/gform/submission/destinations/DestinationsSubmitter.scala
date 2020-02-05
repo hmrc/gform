@@ -22,7 +22,7 @@ import cats.syntax.applicative._
 import cats.syntax.either._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
-import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormData }
+import uk.gov.hmrc.gform.sharedmodel.form.FormData
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsModelTree
 import uk.gov.hmrc.http.HeaderCarrier

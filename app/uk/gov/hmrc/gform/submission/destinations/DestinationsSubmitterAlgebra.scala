@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.submission.destinations
 
 import cats.data.NonEmptyList
-import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormData }
+import uk.gov.hmrc.gform.sharedmodel.form.FormData
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsModelTree
 import uk.gov.hmrc.http.HeaderCarrier
