@@ -32,9 +32,22 @@ class DmsSubmissionController(
 
   def submitToDms: Action[JsValue] = Action.async(parse.json) { implicit request =>
     withJsonBody[DmsHtmlSubmission] { dmsHtmlSubmission =>
-      dmsSubmissionAlgebra.submitToDms(dmsHtmlSubmission).map(id => Ok(id.value))
+      dmsSubmissionAlgebra.submitToDms(dmsHtmlSubmission, List.empty).map(id => Ok(id.value))
     }
   }
+
+  def submitPdfToDmsWithAttachments: Action[MultipartFormData[Files.TemporaryFile]] =
+    Action.async(parse.multipartFormData) { implicit request: Request[MultipartFormData[TemporaryFile]] =>
+      DmsSubmissionWithAttachmentsRequestInterpreter(request) match {
+        case Right((dmsHtmlSubmission, fileAttachments)) =>
+          dmsSubmissionAlgebra
+            .submitToDms(dmsHtmlSubmission, fileAttachments)
+            .map(id => Ok(id.value))
+        case Left(message) =>
+          Logger.info(message)
+          Future.successful(BadRequest(message))
+      }
+    }
 
   /**
     * This endpoint is not used by gform but its here for other services to leverage our backend integration with DMS via FUaaS
@@ -45,7 +58,7 @@ class DmsSubmissionController(
       DmsSubmissionRequestInterpreter(request) match {
         case Right((pdfBytes, metadata)) =>
           dmsSubmissionAlgebra
-            .submitPdfToDms(pdfBytes, metadata)
+            .submitPdfToDms(pdfBytes, metadata, List.empty)
             .map(id => Ok(id.value))
         case Left(message) =>
           Logger.info(message)
