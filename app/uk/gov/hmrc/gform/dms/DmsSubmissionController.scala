@@ -36,7 +36,7 @@ class DmsSubmissionController(
     }
   }
 
-  def submitPdfToDmsWithAttachments: Action[MultipartFormData[Files.TemporaryFile]] =
+  def submitToDmsWithAttachments: Action[MultipartFormData[Files.TemporaryFile]] =
     Action.async(parse.multipartFormData) { implicit request: Request[MultipartFormData[TemporaryFile]] =>
       DmsSubmissionWithAttachmentsRequestInterpreter(request) match {
         case Right((dmsHtmlSubmission, fileAttachments)) =>
