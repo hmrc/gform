@@ -52,7 +52,7 @@ class DmsSubmissionService[F[_]](
   override def submitToDms(dmsHtmlSubmission: DmsHtmlSubmission, fileAttachments: List[FileAttachment])(
     implicit hc: HeaderCarrier): F[EnvelopeId] =
     pdfGenerator
-      .generatePDFBytes(decode(dmsHtmlSubmission.b64html))
+      .generatePDFBytes(decode(dmsHtmlSubmission.html))
       .flatMap { byteArray =>
         submitPdfToDms(byteArray, dmsHtmlSubmission.metadata, fileAttachments)
       }
