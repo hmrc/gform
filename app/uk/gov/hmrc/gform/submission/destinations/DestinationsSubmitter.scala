@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.submission.destinations
 
 import cats.Monad
+import cats.data.NonEmptyList
 import cats.syntax.applicative._
 import cats.syntax.either._
 import cats.syntax.flatMap._
@@ -25,18 +26,20 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsModelTree
 import uk.gov.hmrc.http.HeaderCarrier
 
-class DestinationsSubmitter[M[_]](destinationSubmitter: DestinationSubmitterAlgebra[M])(implicit monad: Monad[M])
+class DestinationsSubmitter[M[_]: Monad](destinationSubmitter: DestinationSubmitterAlgebra[M])
     extends DestinationsSubmitterAlgebra[M] {
 
   override def send(submissionInfo: DestinationSubmissionInfo, modelTree: HandlebarsModelTree)(
     implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
     modelTree.value.formTemplate.destinations match {
       case list: Destinations.DestinationList =>
-        submitToList(list, submissionInfo, HandlebarsTemplateProcessorModel.empty, modelTree)
+        submitToList(list.destinations, submissionInfo, HandlebarsTemplateProcessorModel.empty, modelTree)
+
+      case _ => Option.empty[HandlebarsDestinationResponse].pure[M]
     }
 
   def submitToList(
-    destinations: Destinations.DestinationList,
+    destinations: NonEmptyList[Destination],
     submissionInfo: DestinationSubmissionInfo,
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree)(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] = {
@@ -44,7 +47,7 @@ class DestinationsSubmitter[M[_]](destinationSubmitter: DestinationSubmitterAlge
       remainingDestinations: List[Destination],
       accumulatedModel: HandlebarsTemplateProcessorModel)
 
-    TailRecParameter(destinations.destinations.toList, accumulatedModel).tailRecM {
+    TailRecParameter(destinations.toList, accumulatedModel).tailRecM {
       case TailRecParameter(Nil, _) => Option.empty[HandlebarsDestinationResponse].asRight[TailRecParameter].pure[M]
       case TailRecParameter(head :: rest, updatedAccumulatedModel) =>
         destinationSubmitter

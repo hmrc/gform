@@ -65,8 +65,7 @@ trait Verifier {
         case p: Section.NonRepeatingPage => List(mkSpecimen(p.page))
         case p: Section.RepeatingPage    => List(mkSpecimen(p.page))
         case l: Section.AddToList        => l.pages.toList.map(mkSpecimen)
-      },
-      destinations = DestinationList(NonEmptyList.of(StateTransition(DestinationId("abc"), Submitted, "true", true)))
+      }
     )
 
   private def mkSpecimen(page: Page): Section.NonRepeatingPage =

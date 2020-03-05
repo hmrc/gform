@@ -35,7 +35,6 @@ case class FormTemplate(
   emailParameters: Option[NonEmptyList[EmailParameter]],
   webChat: Option[WebChat],
   sections: List[Section],
-  acknowledgementSection: AcknowledgementSection,
   declarationSection: DeclarationSection,
   parentFormSubmissionRefs: List[FormComponentId],
   GFC579Ready: Option[String],

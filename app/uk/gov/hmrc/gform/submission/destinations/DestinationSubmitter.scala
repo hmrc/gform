@@ -99,7 +99,7 @@ class DestinationSubmitter[M[_]](
       case d: Destination.HandlebarsHttpApi => submitToHandlebars(d, accumulatedModel, modelTree, submissionInfo)
       case d: Destination.Composite =>
         submitter
-          .submitToList(DestinationList(d.destinations), submissionInfo, accumulatedModel, modelTree)
+          .submitToList(d.destinations, submissionInfo, accumulatedModel, modelTree)
       case d: Destination.StateTransition => stateTransitionAlgebra(d, submissionInfo.formId).map(_ => None)
       case d: Destination.Log             => log(d, accumulatedModel, modelTree).map(_ => None)
       case d: Destination.Email           => submitToEmail(d, submissionInfo, modelTree.value.structuredFormData).map(_ => None)
