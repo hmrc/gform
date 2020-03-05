@@ -51,21 +51,6 @@ trait JsonUtils {
   def valueClassFormat[C, V: Format](construct: V => C, extract: C => V): Format[C] =
     Format(valueClassReads(construct), valueClassWrites(extract))
 
-  def valueClassTupleReads[C, V1, V2](construct: (V1, V2) => C)(implicit vReads: Reads[(V1, V2)]): Reads[C] =
-    new Reads[C] {
-      override def reads(json: JsValue): JsResult[C] = vReads.reads(json).map { case (v1, v2) => construct(v1, v2) }
-    }
-
-  def valueClassTupleWrites[C, V1, V2](extract: C => (V1, V2))(implicit vWrites: Writes[(V1, V2)]): Writes[C] =
-    new Writes[C] {
-      override def writes(o: C): JsValue = vWrites.writes(extract(o))
-    }
-
-  def valueClassFormat[C, V1, V2](construct: (V1, V2) => C, extract: C => (V1, V2))(
-    implicit vReads: Reads[(V1, V2)],
-    vWrites: Writes[(V1, V2)]): Format[C] =
-    Format(valueClassTupleReads(construct), valueClassTupleWrites(extract))
-
   def formatMap[A, B: Format](stringToA: String => A, aToString: A => String): Format[Map[A, B]] =
     implicitly[Format[Map[String, B]]].inmap(_.map {
       case (k, v) => stringToA(k) -> v
@@ -76,6 +61,8 @@ trait JsonUtils {
   def constReads[A](a: A): Reads[A] = new Reads[A] {
     def reads(json: JsValue): JsResult[A] = JsSuccess(a)
   }
+
+  def safeCast[A, B >: A](reads: Reads[A]): Reads[B] = reads.asInstanceOf[Reads[B]]
 }
 
 object JsonUtils extends JsonUtils

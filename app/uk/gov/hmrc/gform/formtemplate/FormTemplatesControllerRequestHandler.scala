@@ -97,11 +97,11 @@ object FormTemplatesControllerRequestHandler {
 
     val moveAcknowledgementSection =
       (__ \ 'destinations \ 'acknowledgementSection).json
-        .copyFrom((__ \ 'acknowledgementSection).json.pick)
+        .copyFrom((__ \ 'acknowledgementSection).json.pick) orElse Reads.pure(Json.obj())
 
     val moveDestinations =
       (__ \ 'destinations \ 'destinations).json
-        .copyFrom((__ \ 'destinations).json.pick)
+        .copyFrom((__ \ 'destinations).json.pick) orElse Reads.pure(Json.obj())
 
     val pruneAcknowledgementSection = (__ \ 'acknowledgementSection).json.prune
 
@@ -118,23 +118,8 @@ object FormTemplatesControllerRequestHandler {
         case (None, Some(_), None)    => JsSuccess(())
       }
 
-    ((jsonValue \ "acknowledgementSection").toOption, (jsonValue \ "destinations").toOption) match {
-      case (Some(_), Some(_)) =>
-        sectionValidations andKeep jsonValue.transform(
-          pruneShowContinueOrDeletePage andThen pruneAcknowledgementSection andThen prunePrintSection and drmValue and drmShowContinueOrDeletePage and ensureFormCategory and
-            ensureLanguages and ensureParentFormSubmissionRefs and destinationsOrPrintSection and moveAcknowledgementSection and moveDestinations reduce)
-      case (Some(_), None) =>
-        sectionValidations andKeep jsonValue.transform(
-          pruneShowContinueOrDeletePage andThen pruneAcknowledgementSection andThen prunePrintSection and drmValue and drmShowContinueOrDeletePage and ensureFormCategory and
-            ensureLanguages and ensureParentFormSubmissionRefs and destinationsOrPrintSection and moveAcknowledgementSection reduce)
-      case (None, Some(_)) =>
-        sectionValidations andKeep jsonValue.transform(
-          pruneShowContinueOrDeletePage andThen pruneAcknowledgementSection andThen prunePrintSection and drmValue and drmShowContinueOrDeletePage and ensureFormCategory and
-            ensureLanguages and ensureParentFormSubmissionRefs and destinationsOrPrintSection and moveDestinations reduce)
-      case (None, None) =>
-        sectionValidations andKeep jsonValue.transform(
-          pruneShowContinueOrDeletePage andThen prunePrintSection and drmValue and drmShowContinueOrDeletePage and ensureFormCategory and
-            ensureLanguages and ensureParentFormSubmissionRefs and destinationsOrPrintSection reduce)
-    }
+    sectionValidations andKeep jsonValue.transform(
+      pruneShowContinueOrDeletePage andThen pruneAcknowledgementSection andThen prunePrintSection and drmValue and drmShowContinueOrDeletePage and ensureFormCategory and
+        ensureLanguages and ensureParentFormSubmissionRefs and destinationsOrPrintSection and moveAcknowledgementSection and moveDestinations reduce)
   }
 }

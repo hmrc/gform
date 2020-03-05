@@ -26,7 +26,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsModelTree
 import uk.gov.hmrc.http.HeaderCarrier
 
-class DestinationsSubmitter[M[_]](destinationSubmitter: DestinationSubmitterAlgebra[M])(implicit monad: Monad[M])
+class DestinationsSubmitter[M[_]: Monad](destinationSubmitter: DestinationSubmitterAlgebra[M])
     extends DestinationsSubmitterAlgebra[M] {
 
   override def send(submissionInfo: DestinationSubmissionInfo, modelTree: HandlebarsModelTree)(
@@ -34,6 +34,8 @@ class DestinationsSubmitter[M[_]](destinationSubmitter: DestinationSubmitterAlge
     modelTree.value.formTemplate.destinations match {
       case list: Destinations.DestinationList =>
         submitToList(list.destinations, submissionInfo, HandlebarsTemplateProcessorModel.empty, modelTree)
+
+      case _ => Option.empty[HandlebarsDestinationResponse].pure[M]
     }
 
   def submitToList(

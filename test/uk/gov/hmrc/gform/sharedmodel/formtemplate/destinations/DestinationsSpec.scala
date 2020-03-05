@@ -26,20 +26,4 @@ class DestinationsSpec extends Spec {
       Destinations.format.reads(Destinations.format.writes(obj)) should beJsSuccess(obj)
     }
   }
-
-  /*  it should "read template upload JSON for DestinationList" in {
-    forAll(DestinationsGen.destinationListGen) { destinations =>
-      val json = createJson(destinations)
-      verifyRead[Destinations](destinations, json)
-    }
-  }
-
-  private def createJson(destinations: Destinations.DestinationList): String = {
-    val listBody = destinations.destinations
-      .map { createUploadableJson }
-      .toList
-      .mkString(", ")
-
-    s"[$listBody]"
-  }*/
 }

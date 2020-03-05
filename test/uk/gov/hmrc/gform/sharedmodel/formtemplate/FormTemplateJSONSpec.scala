@@ -25,7 +25,10 @@ class FormTemplateJSONSpec extends Spec {
 
     val printSectionInput = Json.parse("""
                                          |{
-                                         |  "printSection": "TestPrintSection"
+                                         |  "printSection": {
+                                         |    "title": "Next Steps",
+                                         |    "summaryPdf": "TestSummaryPdf"
+                                         |  }
                                          |}
       """.stripMargin)
 
@@ -39,7 +42,10 @@ class FormTemplateJSONSpec extends Spec {
                                             |  "languages": [
                                             |    "en"
                                             |  ],
-                                            |  "destinations": "TestPrintSection",
+                                            |  "destinations": {
+                                            |    "title": "Next Steps",
+                                            |    "summaryPdf": "TestSummaryPdf"
+                                            |  },
                                             |  "parentFormSubmissionRefs": []
                                             |}
       """.stripMargin)
@@ -242,7 +248,10 @@ class FormTemplateJSONSpec extends Spec {
                              |      "businessArea": "FinanceOpsCorpT"
                              |    }
                              |  ],
-                             | "printSection": "TestPrintSection"
+                             | "printSection": {
+                             |    "title": "Next Steps",
+                             |    "summaryPdf": "TestSummaryPdf"
+                             |  }
                              |}
       """.stripMargin)
 
@@ -294,7 +303,10 @@ class FormTemplateJSONSpec extends Spec {
 
     val input = Json.parse("""
                              |{
-                             |  "printSection": "TestPrintSection",
+                             |  "printSection": {
+                             |    "title": "Next Steps",
+                             |    "summaryPdf": "TestSummaryPdf"
+                             |  },
                              |  "acknowledgementSection": {
                              |    "shortName": "Acknowledgement Page",
                              |    "title": "Acknowledgement Page",

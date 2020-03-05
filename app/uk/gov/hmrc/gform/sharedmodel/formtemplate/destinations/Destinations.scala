@@ -40,14 +40,8 @@ object Destinations {
     implicit val destinationsFormat: OFormat[Destinations] = derived.oformat
 
     OFormatWithTemplateReadFallback(
-      // When uploading the template and loading a Destinations, we can only read the DestinationList branch.
-      // See the comment above DmsSubmission.
-      /*       JsonUtils
-        .valueClassTupleReads[Destinations, NonEmptyList[Destination], AcknowledgementSection](DestinationList) orElse
-        JsonUtils.valueClassReads[Destinations, SmartString](PrintSection)*/
-
-      destinationListFormat.asInstanceOf[Reads[Destinations]] orElse printSectionFormat
-        .asInstanceOf[Reads[Destinations]]
+      safeCast[DestinationList, Destinations](destinationListFormat) orElse
+        safeCast[PrintSection, Destinations](printSectionFormat)
     )
   }
 }
