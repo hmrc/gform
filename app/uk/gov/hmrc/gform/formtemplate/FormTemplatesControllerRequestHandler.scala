@@ -62,8 +62,13 @@ object FormTemplatesControllerRequestHandler {
 
   val avoidAcknowledgementForPrintSection = JsError("""Avoid acknowledgement section in case of print section.""")
 
+  val avoidDeclarationForPrintSection = JsError("""Avoid declaration section in case of print section.""")
+
   val mandatoryAcknowledgementForDestinationSection = JsError(
     """Acknowledgement section is mandatory in case of destination section.""")
+
+  val mandatoryDeclarationForDestinationSection = JsError(
+    """Declaration section is mandatory in case of destination section.""")
 
   def normaliseJSON(jsonValue: JsValue): JsResult[JsObject] = {
 
@@ -103,23 +108,32 @@ object FormTemplatesControllerRequestHandler {
       (__ \ 'destinations \ 'destinations).json
         .copyFrom((__ \ 'destinations).json.pick) orElse Reads.pure(Json.obj())
 
+    val moveDeclarationSection =
+      (__ \ 'destinations \ 'declarationSection).json
+        .copyFrom((__ \ 'declarationSection).json.pick) orElse Reads.pure(Json.obj())
+
     val pruneAcknowledgementSection = (__ \ 'acknowledgementSection).json.prune
+
+    val pruneDeclarationSection = (__ \ 'declarationSection).json.prune
 
     val sectionValidations: JsResult[Unit] =
       (
         (jsonValue \ "destinations").toOption,
         (jsonValue \ "printSection").toOption,
-        (jsonValue \ "acknowledgementSection").toOption) match {
-        case (Some(_), Some(_), _)    => onlyOneOfDestinationsAndPrintSection
-        case (None, None, _)          => onlyOneOfDestinationsAndPrintSection
-        case (Some(_), None, None)    => mandatoryAcknowledgementForDestinationSection
-        case (None, Some(_), Some(_)) => avoidAcknowledgementForPrintSection
-        case (Some(_), None, Some(_)) => JsSuccess(())
-        case (None, Some(_), None)    => JsSuccess(())
+        (jsonValue \ "acknowledgementSection").toOption,
+        (jsonValue \ "declarationSection").toOption) match {
+        case (Some(_), Some(_), _, _)          => onlyOneOfDestinationsAndPrintSection
+        case (None, None, _, _)                => onlyOneOfDestinationsAndPrintSection
+        case (Some(_), None, None, _)          => mandatoryAcknowledgementForDestinationSection
+        case (Some(_), None, _, None)          => mandatoryDeclarationForDestinationSection
+        case (None, Some(_), Some(_), _)       => avoidAcknowledgementForPrintSection
+        case (None, Some(_), _, Some(_))       => avoidDeclarationForPrintSection
+        case (Some(_), None, Some(_), Some(_)) => JsSuccess(())
+        case (None, Some(_), None, None)       => JsSuccess(())
       }
 
     sectionValidations andKeep jsonValue.transform(
-      pruneShowContinueOrDeletePage andThen pruneAcknowledgementSection andThen prunePrintSection and drmValue and drmShowContinueOrDeletePage and ensureFormCategory and
-        ensureLanguages and ensureParentFormSubmissionRefs and destinationsOrPrintSection and moveAcknowledgementSection and moveDestinations reduce)
+      pruneShowContinueOrDeletePage andThen pruneAcknowledgementSection andThen prunePrintSection andThen pruneDeclarationSection and drmValue and drmShowContinueOrDeletePage and ensureFormCategory and
+        ensureLanguages and ensureParentFormSubmissionRefs and destinationsOrPrintSection and moveAcknowledgementSection and moveDestinations and moveDeclarationSection reduce)
   }
 }

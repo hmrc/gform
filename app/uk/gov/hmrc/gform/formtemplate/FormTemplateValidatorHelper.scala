@@ -64,15 +64,15 @@ object FormTemplateValidatorHelper {
       date          <- extractDatesFromField(formComponent)
     } yield date
 
-    val declarationSectionDates = template.declarationSection.fields.flatMap(field => extractDatesFromField(field))
-
-    val acknowledgementSectionDates = template.destinations match {
+    val acknowledgementAndDeclarationSectionDates = template.destinations match {
       case destinationList: DestinationList =>
-        destinationList.acknowledgementSection.fields.flatMap(field => extractDatesFromField(field))
+        destinationList.acknowledgementSection.fields.flatMap(field => extractDatesFromField(field)) :::
+          destinationList.declarationSection.fields.flatMap(field => extractDatesFromField(field))
+
       case _ => Nil
     }
 
-    sectionsDates ::: declarationSectionDates ::: acknowledgementSectionDates
+    sectionsDates ::: acknowledgementAndDeclarationSectionDates
   }
 
 }

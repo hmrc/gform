@@ -22,6 +22,8 @@ import uk.gov.hmrc.gform.Helpers._
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.formtemplate.FormTemplateValidator
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.FormComponentGen._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.PrimitiveGen._
@@ -170,10 +172,17 @@ class TemplateValidatorSpec extends Spec {
         EmailParameter("fullName", FormCtx("declarationFullName"))
       ))
 
-    val newDeclarationSection =
-      DeclarationSection(toSmartString("Declaration"), None, None, List(mkFormComponent("declarationFullName", Value)))
+    val newDestinationsSection: Destinations =
+      DestinationList(
+        NonEmptyList.of(hmrcDms),
+        ackSection,
+        DeclarationSection(
+          toSmartString("Declaration"),
+          None,
+          None,
+          List(mkFormComponent("declarationFullName", Value))))
 
-    val newFormTemplate = mkFormTemplate(formComponents, newEmailParameters, declarationSection = newDeclarationSection)
+    val newFormTemplate = mkFormTemplate(formComponents, newEmailParameters, destinations = newDestinationsSection)
 
     val res = FormTemplateValidator.validateEmailParameter(newFormTemplate)
     res should be(
@@ -575,11 +584,11 @@ class TemplateValidatorSpec extends Spec {
   private def mkFormTemplate(
     formComponents: List[FormComponent],
     emailParameters: Option[NonEmptyList[EmailParameter]] = emailParameters,
-    declarationSection: DeclarationSection = formTemplate.declarationSection): FormTemplate = {
+    destinations: Destinations = formTemplate.destinations): FormTemplate = {
     val section = mkSection("example", formComponents)
 
     formTemplate
-      .copy(sections = List(section), emailParameters = emailParameters, declarationSection = declarationSection)
+      .copy(sections = List(section), emailParameters = emailParameters, destinations = destinations)
   }
 
   private def mkGroupFormComponent(formComponents: FormComponent*): FormComponent =

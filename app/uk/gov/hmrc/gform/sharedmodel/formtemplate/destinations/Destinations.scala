@@ -27,7 +27,10 @@ sealed trait Destinations extends Product with Serializable
 
 object Destinations {
 
-  case class DestinationList(destinations: NonEmptyList[Destination], acknowledgementSection: AcknowledgementSection)
+  case class DestinationList(
+    destinations: NonEmptyList[Destination],
+    acknowledgementSection: AcknowledgementSection,
+    declarationSection: DeclarationSection)
       extends Destinations
 
   case class PrintSection(title: SmartString, summaryPdf: SmartString) extends Destinations
