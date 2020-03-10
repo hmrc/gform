@@ -29,7 +29,7 @@ object DmsSubmissionWithAttachmentsRequestInterpreter {
 
     val maybeHtml: Option[Seq[String]] = request.body.dataParts.get("html")
     val maybeMetadata: Option[DmsMetadata] = Json
-      .toJson(request.body.dataParts.filterKeys(_ == "html").mapValues(_.mkString("")))
+      .toJson(request.body.dataParts.filterKeys(_ != "html").mapValues(_.mkString("")))
       .validate[DmsMetadata]
       .asOpt
 
