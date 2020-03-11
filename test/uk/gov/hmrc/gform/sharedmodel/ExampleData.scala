@@ -367,6 +367,8 @@ trait ExampleFormTemplate {
       Nil
     )
 
+  def summarySection = SummarySection(toSmartString("Title"), toSmartString("Header"), toSmartString("Footer"))
+
   def formTemplate = FormTemplate(
     formTemplateId,
     formName,
@@ -382,7 +384,8 @@ trait ExampleFormTemplate {
     Nil,
     Some("false"),
     AvailableLanguages.default,
-    None
+    None,
+    summarySection
   )
 }
 

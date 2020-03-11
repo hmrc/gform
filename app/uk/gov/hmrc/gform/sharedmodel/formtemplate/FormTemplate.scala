@@ -38,7 +38,8 @@ case class FormTemplate(
   parentFormSubmissionRefs: List[FormComponentId],
   GFC579Ready: Option[String],
   languages: AvailableLanguages,
-  save4LaterInfoText: Option[Save4LaterInfoText]
+  save4LaterInfoText: Option[Save4LaterInfoText],
+  summarySection: SummarySection
 ) {
   lazy val expandedFormComponentsInMainSections: List[FormComponent] = sections.flatMap(_.expandedFormComponents)
 }

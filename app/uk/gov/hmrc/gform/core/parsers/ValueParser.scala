@@ -67,7 +67,10 @@ object ValueParser {
       UserCtx(userField)
     }
     | "form" ~ "." ~ "submissionReference" ^^ { (loc, _, _, fieldName) =>
-      SubmissionReference
+      FormTemplateCtx(FormTemplateProp.SubmissionReference)
+    }
+    | "form" ~ "." ~ "id" ^^ { (loc, _, _, fieldName) =>
+      FormTemplateCtx(FormTemplateProp.Id)
     }
     | "form" ~ "." ~ alphabeticOnly ^^ { (loc, _, _, fieldName) =>
       FormCtx(fieldName)

@@ -75,6 +75,7 @@ trait FormTemplateGen {
       parentFormSubmissionRefs <- PrimitiveGen.zeroOrMoreGen(FormComponentGen.formComponentIdGen)
       gFC579Ready              <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
       save4LaterInfoText       <- Gen.option(Save4LaterInfoTextGen.save4LaterInfoTextGen)
+      summarySection           <- SummarySectionGen.summarySectionGen
     } yield
       FormTemplate(
         id,
@@ -91,7 +92,8 @@ trait FormTemplateGen {
         parentFormSubmissionRefs,
         gFC579Ready,
         AvailableLanguages.default,
-        save4LaterInfoText
+        save4LaterInfoText,
+        summarySection
       )
 }
 

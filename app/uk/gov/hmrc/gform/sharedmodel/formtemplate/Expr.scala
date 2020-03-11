@@ -55,8 +55,8 @@ final case class EeittCtx(value: Eeitt) extends Expr
 final case class UserCtx(value: UserField) extends Expr
 final case class Constant(value: String) extends Expr
 final case class HmrcRosmRegistrationCheck(value: RosmProp) extends Expr
+final case class FormTemplateCtx(value: FormTemplateProp) extends Expr
 final case object Value extends Expr
-final case object SubmissionReference extends Expr
 
 object Expr {
   implicit val format: OFormat[Expr] = derived.oformat
@@ -107,4 +107,12 @@ final case object CtUtr extends AuthInfo
 
 object AuthInfo {
   implicit val format: OFormat[AuthInfo] = derived.oformat
+}
+
+sealed trait FormTemplateProp extends Product with Serializable
+object FormTemplateProp {
+  case object Id extends FormTemplateProp
+  case object SubmissionReference extends FormTemplateProp
+
+  implicit val format: OFormat[FormTemplateProp] = derived.oformat
 }

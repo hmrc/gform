@@ -32,22 +32,25 @@ class FormTemplateJSONSpec extends Spec {
                                          |}
       """.stripMargin)
 
-    val printSectionExpected = Json.parse("""
-                                            |{
-                                            |  "draftRetrievalMethod": {
-                                            |    "showContinueOrDeletePage": "true",
-                                            |    "value": "onePerUser"
-                                            |  },
-                                            |  "formCategory": "default",
-                                            |  "languages": [
-                                            |    "en"
-                                            |  ],
-                                            |  "destinations": {
-                                            |    "title": "Next Steps",
-                                            |    "summaryPdf": "TestSummaryPdf"
-                                            |  },
-                                            |  "parentFormSubmissionRefs": []
-                                            |}
+    val summarySection = SummarySection.defaultJson(Default)
+
+    val printSectionExpected = Json.parse(s"""
+                                             |{
+                                             |  "draftRetrievalMethod": {
+                                             |    "showContinueOrDeletePage": "true",
+                                             |    "value": "onePerUser"
+                                             |  },
+                                             |  "formCategory": "default",
+                                             |  "languages": [
+                                             |    "en"
+                                             |  ],
+                                             |  "destinations": {
+                                             |    "title": "Next Steps",
+                                             |    "summaryPdf": "TestSummaryPdf"
+                                             |  },
+                                             |  "parentFormSubmissionRefs": [],
+                                             |  "summarySection": $summarySection
+                                             |}
       """.stripMargin)
 
     val destinationsInput = Json.parse("""
@@ -98,59 +101,60 @@ class FormTemplateJSONSpec extends Spec {
                                          |}
       """.stripMargin)
 
-    val destinationsExpected = Json.parse("""
-                                            |{
-                                            |  "draftRetrievalMethod": {
-                                            |    "showContinueOrDeletePage": "false",
-                                            |    "value": "formAccessCodeForAgents"
-                                            |  },
-                                            |  "formCategory": "letter",
-                                            |  "languages": [
-                                            |    "en"
-                                            |  ],
-                                            |  "destinations": {
-                                            |    "destinations": [
-                                            |      {
-                                            |        "id": "HMRCDMS",
-                                            |        "type": "hmrcDms",
-                                            |        "dmsFormId": "TST123",
-                                            |        "customerId": "${auth.gg}",
-                                            |        "classificationType": "BT-NRU-Environmental",
-                                            |        "businessArea": "FinanceOpsCorpT"
-                                            |      }
-                                            |    ],
-                                            |    "acknowledgementSection": {
-                                            |      "shortName": "Acknowledgement Page",
-                                            |      "title": "Acknowledgement Page",
-                                            |      "fields": [
-                                            |        {
-                                            |          "type": "info",
-                                            |          "id": "ackpageInfo",
-                                            |          "label": "SomeContent",
-                                            |          "infoText": "SomeContent"
-                                            |        }
-                                            |      ]
-                                            |    },
-                                            |    "declarationSection": {
-                                            |     "title": "Declaration",
-                                            |      "shortName": "Declaration",
-                                            |      "fields": [
-                                            |          {
-                                            |              "id": "helloD",
-                                            |              "type": "text",
-                                            |              "label": {
-                                            |                  "en": "Hello World",
-                                            |                  "cy": "Welsh Hello World"
-                                            |              }
-                                            |          }
-                                            |      ]
-                                            |   }
-                                            |  },
-                                            |  "parentFormSubmissionRefs": [
-                                            |    "123",
-                                            |    "456"
-                                            |  ]
-                                            |}
+    val destinationsExpected = Json.parse(s"""
+                                             |{
+                                             |  "draftRetrievalMethod": {
+                                             |    "showContinueOrDeletePage": "false",
+                                             |    "value": "formAccessCodeForAgents"
+                                             |  },
+                                             |  "formCategory": "letter",
+                                             |  "languages": [
+                                             |    "en"
+                                             |  ],
+                                             |  "destinations": {
+                                             |    "destinations": [
+                                             |      {
+                                             |        "id": "HMRCDMS",
+                                             |        "type": "hmrcDms",
+                                             |        "dmsFormId": "TST123",
+                                             |        "customerId": "$${auth.gg}",
+                                             |        "classificationType": "BT-NRU-Environmental",
+                                             |        "businessArea": "FinanceOpsCorpT"
+                                             |      }
+                                             |    ],
+                                             |    "acknowledgementSection": {
+                                             |      "shortName": "Acknowledgement Page",
+                                             |      "title": "Acknowledgement Page",
+                                             |      "fields": [
+                                             |        {
+                                             |          "type": "info",
+                                             |          "id": "ackpageInfo",
+                                             |          "label": "SomeContent",
+                                             |          "infoText": "SomeContent"
+                                             |        }
+                                             |      ]
+                                             |    },
+                                             |    "declarationSection": {
+                                             |     "title": "Declaration",
+                                             |      "shortName": "Declaration",
+                                             |      "fields": [
+                                             |          {
+                                             |              "id": "helloD",
+                                             |              "type": "text",
+                                             |              "label": {
+                                             |                  "en": "Hello World",
+                                             |                  "cy": "Welsh Hello World"
+                                             |              }
+                                             |          }
+                                             |      ]
+                                             |   }
+                                             |  },
+                                             |  "parentFormSubmissionRefs": [
+                                             |    "123",
+                                             |    "456"
+                                             |  ],
+                                             |  "summarySection": $summarySection
+                                             |}
       """.stripMargin)
 
     val input = Json.parse("""
@@ -211,69 +215,70 @@ class FormTemplateJSONSpec extends Spec {
                              |}
                             """.stripMargin)
 
-    val expected = Json.parse("""
-                                |{
-                                |  "draftRetrievalMethod": {
-                                |    "showContinueOrDeletePage": "false",
-                                |    "value": "formAccessCodeForAgents"
-                                |  },
-                                |  "formCategory": "letter",
-                                |  "languages": [
-                                |    "en"
-                                |  ],
-                                |  "testJsonObj": {
-                                |    "id": "transitionToSubmitted",
-                                |    "type": "stateTransition",
-                                |    "requiredState": "Submitted"
-                                |  },
-                                |  "destinations": {
-                                |    "destinations": [
-                                |      {
-                                |        "id": "HMRCDMS",
-                                |        "type": "hmrcDms",
-                                |        "dmsFormId": "TST123",
-                                |        "customerId": "${auth.gg}",
-                                |        "classificationType": "BT-NRU-Environmental",
-                                |        "businessArea": "FinanceOpsCorpT"
-                                |      }
-                                |    ],
-                                |    "acknowledgementSection": {
-                                |      "shortName": "Acknowledgement Page",
-                                |      "title": "Acknowledgement Page",
-                                |      "fields": [
-                                |        {
-                                |          "type": "info",
-                                |          "id": "ackpageInfo",
-                                |          "label": "SomeContent",
-                                |          "infoText": "SomeContent"
-                                |        }
-                                |      ]
-                                |    },
-                                |    "declarationSection": {
-                                |      "title": "Declaration",
-                                |      "shortName": "Declaration",
-                                |      "fields": [
-                                |        {
-                                |          "id": "helloD",
-                                |          "type": "text",
-                                |          "label": {
-                                |            "en": "Hello World",
-                                |            "cy": "Welsh Hello World"
-                                |          }
-                                |        }
-                                |      ]
-                                |    }
-                                |  },
-                                |  "testText": "hello",
-                                |  "testJsonArr": [
-                                |    "en",
-                                |    "cy"
-                                |  ],
-                                |  "parentFormSubmissionRefs": [
-                                |    "123",
-                                |    "456"
-                                |  ]
-                                |}
+    val expected = Json.parse(s"""
+                                 |{
+                                 |  "draftRetrievalMethod": {
+                                 |    "showContinueOrDeletePage": "false",
+                                 |    "value": "formAccessCodeForAgents"
+                                 |  },
+                                 |  "formCategory": "letter",
+                                 |  "languages": [
+                                 |    "en"
+                                 |  ],
+                                 |  "testJsonObj": {
+                                 |    "id": "transitionToSubmitted",
+                                 |    "type": "stateTransition",
+                                 |    "requiredState": "Submitted"
+                                 |  },
+                                 |  "destinations": {
+                                 |    "destinations": [
+                                 |      {
+                                 |        "id": "HMRCDMS",
+                                 |        "type": "hmrcDms",
+                                 |        "dmsFormId": "TST123",
+                                 |        "customerId": "$${auth.gg}",
+                                 |        "classificationType": "BT-NRU-Environmental",
+                                 |        "businessArea": "FinanceOpsCorpT"
+                                 |      }
+                                 |    ],
+                                 |    "acknowledgementSection": {
+                                 |      "shortName": "Acknowledgement Page",
+                                 |      "title": "Acknowledgement Page",
+                                 |      "fields": [
+                                 |        {
+                                 |          "type": "info",
+                                 |          "id": "ackpageInfo",
+                                 |          "label": "SomeContent",
+                                 |          "infoText": "SomeContent"
+                                 |        }
+                                 |      ]
+                                 |    },
+                                 |    "declarationSection": {
+                                 |      "title": "Declaration",
+                                 |      "shortName": "Declaration",
+                                 |      "fields": [
+                                 |        {
+                                 |          "id": "helloD",
+                                 |          "type": "text",
+                                 |          "label": {
+                                 |            "en": "Hello World",
+                                 |            "cy": "Welsh Hello World"
+                                 |          }
+                                 |        }
+                                 |      ]
+                                 |    }
+                                 |  },
+                                 |  "testText": "hello",
+                                 |  "testJsonArr": [
+                                 |    "en",
+                                 |    "cy"
+                                 |  ],
+                                 |  "parentFormSubmissionRefs": [
+                                 |    "123",
+                                 |    "456"
+                                 |  ],
+                                 |  "summarySection": $summarySection
+                                 |}
                                 """.stripMargin)
 
     val t = Table(
