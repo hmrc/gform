@@ -26,7 +26,7 @@ import scala.concurrent.ExecutionContext
 import scala.language.postfixOps
 import uk.gov.hmrc.gform.core.{ FOpt, Opt, fromOptA }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateRaw }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Default, FormCategory, FormTemplate, FormTemplateRaw, SummarySection }
 
 trait RequestHandlerAlg[F[_]] {
   def handleRequest(templateRaw: FormTemplateRaw): F[Unit]
@@ -90,6 +90,20 @@ object FormTemplatesControllerRequestHandler {
       (__ \ 'languages).json
         .copyFrom((__ \ 'languages).json.pick orElse Reads.pure(Json.arr("en")))
 
+    val formCategoryReads: Reads[FormCategory] = (__ \ 'formCategory).json.pick
+      .flatMap { jsValue =>
+        val formCategoryJsRsult: JsResult[FormCategory] = Reads.of[FormCategory].reads(jsValue)
+        Reads.pure(formCategoryJsRsult.getOrElse(Default))
+      }
+      .orElse(Reads.pure(Default))
+
+    val defaultSummarySection: Reads[JsValue] =
+      formCategoryReads.map(formCategory => SummarySection.defaultJson(formCategory))
+
+    val ensureSummarySection =
+      (__ \ 'summarySection).json
+        .copyFrom((__ \ 'summarySection).json.pick orElse defaultSummarySection)
+
     val ensureParentFormSubmissionRefs =
       (__ \ 'parentFormSubmissionRefs).json
         .copyFrom((__ \ 'parentFormSubmissionRefs).json.pick orElse Reads.pure(Json.arr()))
@@ -134,6 +148,6 @@ object FormTemplatesControllerRequestHandler {
 
     sectionValidations andKeep jsonValue.transform(
       pruneShowContinueOrDeletePage andThen pruneAcknowledgementSection andThen prunePrintSection andThen pruneDeclarationSection and drmValue and drmShowContinueOrDeletePage and ensureFormCategory and
-        ensureLanguages and ensureParentFormSubmissionRefs and destinationsOrPrintSection and moveAcknowledgementSection and moveDestinations and moveDeclarationSection reduce)
+        ensureLanguages and ensureSummarySection and ensureParentFormSubmissionRefs and destinationsOrPrintSection and moveAcknowledgementSection and moveDestinations and moveDeclarationSection reduce)
   }
 }

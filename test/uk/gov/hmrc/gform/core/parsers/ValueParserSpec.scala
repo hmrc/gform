@@ -309,7 +309,7 @@ class ValueParserSpec extends Spec {
   it should "parse submissionReference" in {
     val res = ValueParser.validate("${form.submissionReference}")
 
-    res.right.value should be(TextExpression(SubmissionReference))
+    res.right.value should be(TextExpression(FormTemplateCtx(FormTemplateProp.SubmissionReference)))
   }
 
   it should "parse else expression" in {
@@ -423,7 +423,8 @@ class ValueParserSpec extends Spec {
     Nil,
     Some("false"),
     AvailableLanguages.default,
-    None
+    None,
+    SummarySection(toSmartString("Title"), toSmartString("Header"), toSmartString("Footer"))
   )
 
   val yourDetailsSection = Section.NonRepeatingPage(

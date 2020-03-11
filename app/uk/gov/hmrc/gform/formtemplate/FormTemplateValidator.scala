@@ -213,12 +213,12 @@ object FormTemplateValidator {
           .map(_.value)
           .contains(value)
           .validationResult(s"Form field '$value' is not defined in form template.")
-      case AuthCtx(_)          => Valid
-      case EeittCtx(_)         => Valid
-      case UserCtx(_)          => Valid
-      case Constant(_)         => Valid
-      case Value               => Valid
-      case SubmissionReference => Valid
+      case AuthCtx(_)         => Valid
+      case EeittCtx(_)        => Valid
+      case UserCtx(_)         => Valid
+      case Constant(_)        => Valid
+      case Value              => Valid
+      case FormTemplateCtx(_) => Valid
     }
   }
 

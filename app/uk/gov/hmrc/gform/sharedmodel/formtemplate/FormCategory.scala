@@ -17,22 +17,35 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import play.api.libs.json._
+import uk.gov.hmrc.gform.sharedmodel.LangADT
 
 sealed trait FormCategory {
-  def getString: String
+  def localised(l: LangADT): String
   def isHmrc: Boolean = this != OfstedDefault
 }
 case object HMRCReturnForm extends FormCategory {
-  override def getString: String = "return"
+  override def localised(l: LangADT): String = l match {
+    case LangADT.En => "return"
+    case LangADT.Cy => "datganiad"
+  }
 }
 case object HMRCClaimForm extends FormCategory {
-  override def getString: String = "claim"
+  override def localised(l: LangADT): String = l match {
+    case LangADT.En => "claim"
+    case LangADT.Cy => "hawliad"
+  }
 }
 case object OfstedDefault extends FormCategory {
-  override def getString: String = "form"
+  override def localised(l: LangADT): String = l match {
+    case LangADT.En => "form"
+    case LangADT.Cy => "ffurflen"
+  }
 }
 case object Default extends FormCategory {
-  override def getString: String = "form"
+  override def localised(l: LangADT): String = l match {
+    case LangADT.En => "form"
+    case LangADT.Cy => "ffurflen"
+  }
 }
 
 object FormCategory {
