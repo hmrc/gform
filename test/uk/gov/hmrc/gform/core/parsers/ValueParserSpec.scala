@@ -406,7 +406,8 @@ class ValueParserSpec extends Spec {
             true,
             true
           )),
-        ackSection
+        ackSection,
+        DeclarationSection(toSmartString("Declaration"), None, None, Nil)
       ),
     HmrcAgentWithEnrolmentModule(
       RequireMTDAgentEnrolment,
@@ -419,7 +420,6 @@ class ValueParserSpec extends Spec {
       )),
     None,
     List.empty[Section],
-    declarationSection = DeclarationSection(toSmartString("Declaration"), None, None, Nil),
     Nil,
     Some("false"),
     AvailableLanguages.default,

@@ -67,12 +67,17 @@ trait ExampleAuthConfig extends DestinationGen {
       None
     )
 
-  val formComponent = List(buildFormComponent("fieldInAcknowledgementSections", Value))
+  val ackFormComponent = List(buildFormComponent("fieldInAcknowledgementSections", Value))
 
   val ackSection =
-    AcknowledgementSection(toSmartString("ack section with email param field"), None, None, formComponent)
+    AcknowledgementSection(toSmartString("ack section with email param field"), None, None, ackFormComponent)
 
-  def destinationList = DestinationList(NonEmptyList.of(hmrcDms), ackSection)
+  val decFormComponent = List(buildFormComponent("fieldInDeclarationSections", Value))
+
+  val decSection =
+    DeclarationSection(toSmartString("declaration section with email param field"), None, None, decFormComponent)
+
+  def destinationList = DestinationList(NonEmptyList.of(hmrcDms), ackSection, decSection)
 
   def serviceId = ServiceId("TestServiceId")
 
@@ -374,7 +379,6 @@ trait ExampleFormTemplate {
     emailParameters,
     webChat,
     allSections,
-    declarationSection,
     Nil,
     Some("false"),
     AvailableLanguages.default,

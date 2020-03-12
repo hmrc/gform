@@ -80,7 +80,21 @@ class FormTemplateJSONSpec extends Spec {
                                          |        "infoText": "SomeContent"
                                          |      }
                                          |    ]
-                                         |  }
+                                         |  },
+                                         |  "declarationSection": {
+                                         |      "title": "Declaration",
+                                         |      "shortName": "Declaration",
+                                         |      "fields": [
+                                         |          {
+                                         |              "id": "helloD",
+                                         |              "type": "text",
+                                         |              "label": {
+                                         |                  "en": "Hello World",
+                                         |                  "cy": "Welsh Hello World"
+                                         |              }
+                                         |          }
+                                         |      ]
+                                         |   }
                                          |}
       """.stripMargin)
 
@@ -116,7 +130,21 @@ class FormTemplateJSONSpec extends Spec {
                                             |          "infoText": "SomeContent"
                                             |        }
                                             |      ]
-                                            |    }
+                                            |    },
+                                            |    "declarationSection": {
+                                            |     "title": "Declaration",
+                                            |      "shortName": "Declaration",
+                                            |      "fields": [
+                                            |          {
+                                            |              "id": "helloD",
+                                            |              "type": "text",
+                                            |              "label": {
+                                            |                  "en": "Hello World",
+                                            |                  "cy": "Welsh Hello World"
+                                            |              }
+                                            |          }
+                                            |      ]
+                                            |   }
                                             |  },
                                             |  "parentFormSubmissionRefs": [
                                             |    "123",
@@ -165,9 +193,23 @@ class FormTemplateJSONSpec extends Spec {
                              |        "infoText": "SomeContent"
                              |      }
                              |    ]
+                             |  },
+                             |  "declarationSection": {
+                             |    "title": "Declaration",
+                             |    "shortName": "Declaration",
+                             |    "fields": [
+                             |      {
+                             |        "id": "helloD",
+                             |        "type": "text",
+                             |        "label": {
+                             |          "en": "Hello World",
+                             |          "cy": "Welsh Hello World"
+                             |        }
+                             |      }
+                             |    ]
                              |  }
                              |}
-      """.stripMargin)
+                            """.stripMargin)
 
     val expected = Json.parse("""
                                 |{
@@ -206,6 +248,20 @@ class FormTemplateJSONSpec extends Spec {
                                 |          "infoText": "SomeContent"
                                 |        }
                                 |      ]
+                                |    },
+                                |    "declarationSection": {
+                                |      "title": "Declaration",
+                                |      "shortName": "Declaration",
+                                |      "fields": [
+                                |        {
+                                |          "id": "helloD",
+                                |          "type": "text",
+                                |          "label": {
+                                |            "en": "Hello World",
+                                |            "cy": "Welsh Hello World"
+                                |          }
+                                |        }
+                                |      ]
                                 |    }
                                 |  },
                                 |  "testText": "hello",
@@ -218,7 +274,7 @@ class FormTemplateJSONSpec extends Spec {
                                 |    "456"
                                 |  ]
                                 |}
-      """.stripMargin)
+                                """.stripMargin)
 
     val t = Table(
       ("input", "expected"),
@@ -299,6 +355,46 @@ class FormTemplateJSONSpec extends Spec {
       FormTemplatesControllerRequestHandler.mandatoryAcknowledgementForDestinationSection)
   }
 
+  it should "return validation error when destinations is present but declarationSection is missing" in {
+
+    val input = Json.parse("""
+                             |{
+                             |  "formCategory": "letter",
+                             |  "draftRetrievalMethod": "formAccessCodeForAgents",
+                             |  "showContinueOrDeletePage": "false",
+                             |  "parentFormSubmissionRefs": [
+                             |    "123",
+                             |    "456"
+                             |  ],
+                             |  "destinations": [
+                             |    {
+                             |      "id": "HMRCDMS",
+                             |      "type": "hmrcDms",
+                             |      "dmsFormId": "TST123",
+                             |      "customerId": "${auth.gg}",
+                             |      "classificationType": "BT-NRU-Environmental",
+                             |      "businessArea": "FinanceOpsCorpT"
+                             |    }
+                             |  ],
+                             |  "acknowledgementSection": {
+                             |    "shortName": "Acknowledgement Page",
+                             |    "title": "Acknowledgement Page",
+                             |    "fields": [
+                             |      {
+                             |        "type": "info",
+                             |        "id": "ackpageInfo",
+                             |        "label": "SomeContent",
+                             |        "infoText": "SomeContent"
+                             |      }
+                             |    ]
+                             |  }
+                             |}
+                           """.stripMargin)
+
+    FormTemplatesControllerRequestHandler.normaliseJSON(input) should be(
+      FormTemplatesControllerRequestHandler.mandatoryDeclarationForDestinationSection)
+  }
+
   it should "return validation error when printSection is present and acknowledgementSection is also present" in {
 
     val input = Json.parse("""
@@ -324,6 +420,35 @@ class FormTemplateJSONSpec extends Spec {
 
     FormTemplatesControllerRequestHandler.normaliseJSON(input) should be(
       FormTemplatesControllerRequestHandler.avoidAcknowledgementForPrintSection)
+  }
+
+  it should "return validation error when printSection is present and declarationSection is also present" in {
+
+    val input = Json.parse("""
+                             |{
+                             |  "printSection": {
+                             |    "title": "Next Steps",
+                             |    "summaryPdf": "TestSummaryPdf"
+                             |  },
+                             |  "declarationSection": {
+                             |    "title": "Declaration",
+                             |    "shortName": "Declaration",
+                             |    "fields": [
+                             |      {
+                             |        "id": "helloD",
+                             |        "type": "text",
+                             |        "label": {
+                             |          "en": "Hello World",
+                             |          "cy": "Welsh Hello World"
+                             |        }
+                             |      }
+                             |    ]
+                             |  }
+                             |}
+                           """.stripMargin)
+
+    FormTemplatesControllerRequestHandler.normaliseJSON(input) should be(
+      FormTemplatesControllerRequestHandler.avoidDeclarationForPrintSection)
   }
 
 }

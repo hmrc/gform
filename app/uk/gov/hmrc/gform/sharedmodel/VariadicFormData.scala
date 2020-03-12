@@ -159,15 +159,14 @@ object VariadicFormData {
     )
 
   def listVariadicFormComponentIds(template: FormTemplate): Set[FormComponentId] = {
-    val acknowledgementSectionFields = template.destinations match {
+    val acknowledgementAndDeclarationSectionFields = template.destinations match {
       case destinationList: DestinationList =>
-        destinationList.acknowledgementSection.fields
+        destinationList.acknowledgementSection.fields ++ destinationList.declarationSection.fields
       case _ =>
         Nil
     }
 
-    listVariadicFormComponentIds(acknowledgementSectionFields) ++
-      listVariadicFormComponentIds(template.declarationSection.fields) ++
+    listVariadicFormComponentIds(acknowledgementAndDeclarationSectionFields) ++
       template.sections.foldMap {
         case s: NonRepeatingPage => listVariadicFormComponentIds(s.page)
         case s: RepeatingPage    => listVariadicFormComponentIds(s.page)

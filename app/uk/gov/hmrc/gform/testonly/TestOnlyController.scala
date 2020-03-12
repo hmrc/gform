@@ -154,7 +154,8 @@ class TestOnlyController(
 
   private def availableHandlebarsDestinations(destinations: Destinations): List[Destination.HandlebarsHttpApi] =
     destinations match {
-      case DestinationList(list, acknowledgementSection) => availableHandlebarsDestinations(list.toList)
+      case DestinationList(list, acknowledgementSection, declarationSection) =>
+        availableHandlebarsDestinations(list.toList)
 
       case _ => List.empty
     }

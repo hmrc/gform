@@ -113,10 +113,46 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with MustMatche
     }
   }
 
+  "handle an invalid upsert request with Destinations but DeclarationSection is missing" in {
+    withFixture(
+      Json.parse(
+        invalidRequestBodyWithDestinationsWithoutDeclarationSection(
+          "hmrc",
+          "${user.enrolledIdentifier}",
+          Some(""""serviceId": "someId",""")))) { (sideEffect, verifySideEffect, templateRaw) =>
+      val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
+      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+
+      whenReady(eventualResult.value) { response =>
+        response must matchPattern {
+          case Left(UnexpectedState(_)) =>
+        }
+      }
+    }
+  }
+
   "handle an invalid upsert request with PrintSection and acknowledgementSection is also present" in {
     withFixture(
       Json.parse(
         invalidRequestBodyWithPrintSectionAndAcknowledgementSection(
+          "hmrc",
+          "${user.enrolledIdentifier}",
+          Some(""""serviceId": "someId",""")))) { (sideEffect, verifySideEffect, templateRaw) =>
+      val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
+      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+
+      whenReady(eventualResult.value) { response =>
+        response must matchPattern {
+          case Left(UnexpectedState(_)) =>
+        }
+      }
+    }
+  }
+
+  "handle an invalid upsert request with PrintSection and DeclarationSection is also present" in {
+    withFixture(
+      Json.parse(
+        invalidRequestBodyWithPrintSectionAndDeclarationSection(
           "hmrc",
           "${user.enrolledIdentifier}",
           Some(""""serviceId": "someId",""")))) { (sideEffect, verifySideEffect, templateRaw) =>
@@ -266,12 +302,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with MustMatche
        |      "label": "Element B",
        |      "validIf": "$${elementA=''}"
        |    }]
-       |  }],
-       |
-       |  "declarationSection": {
-       |    "title": "",
-       |    "fields": []
-       |  }
+       |  }]
        |}""".stripMargin
 
   private def invalidRequestBodyWithNoDestinationsOrPrintSection(
@@ -417,6 +448,62 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with MustMatche
        |  }
        |}""".stripMargin
 
+  private def invalidRequestBodyWithDestinationsWithoutDeclarationSection(
+    authModule: String,
+    identifier: String,
+    serviceId: Option[String] = Some(""""serviceId": "Id",""")) =
+    s"""{
+       |  "_id": "newfield",
+       |  "formName": "Testing section change label tttt",
+       |  "description": "Testing the form change label",
+       |  "languages":["en"],
+       |  "destinations": [
+       |    {
+       |      "id": "HMRCDMS",
+       |      "type": "hmrcDms",
+       |      "dmsFormId": "TST123",
+       |      "customerId": "'123'",
+       |      "classificationType": "BT-NRU-Environmental",
+       |      "businessArea": "FinanceOpsCorpT"
+       |    }
+       |  ],
+       |  "authConfig": {
+       |    "authModule": "$authModule",
+       |    ${serviceId.getOrElse("")}
+       |    "agentAccess": "allowAnyAgentAffinityUser"
+       |  },
+       |  "emailTemplateId": "",
+       |  "sections": [{
+       |    "title": "Page A",
+       |    "fields": [{
+       |      "id": "elementA",
+       |      "type": "text",
+       |      "format": "sterling",
+       |      "value": "$identifier",
+       |      "submitMode": "readonly",
+       |      "label": "Element A"
+       |    },{
+       |      "id": "elementB",
+       |      "format": "text",
+       |      "submitMode": "readonly",
+       |      "label": "Element B",
+       |      "validIf": "$${elementA=''}"
+       |    }]
+       |  }],
+       |  "acknowledgementSection": {
+       |    "shortName": "Acknowledgement Page",
+       |    "title": "Acknowledgement Page",
+       |    "fields": [
+       |      {
+       |        "type": "info",
+       |        "id": "ackpageInfo",
+       |        "label": "SomeContent",
+       |        "infoText": "SomeContent"
+       |      }
+       |    ]
+       |  }
+       |}""".stripMargin
+
   private def invalidRequestBodyWithPrintSectionAndAcknowledgementSection(
     authModule: String,
     identifier: String,
@@ -459,6 +546,49 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with MustMatche
        |    "fields": []
        |  },
        |  "acknowledgementSection": {
+       |    "title": "",
+       |    "fields": []
+       |  }
+       |}""".stripMargin
+
+  private def invalidRequestBodyWithPrintSectionAndDeclarationSection(
+    authModule: String,
+    identifier: String,
+    serviceId: Option[String] = Some(""""serviceId": "Id",""")) =
+    s"""{
+       |  "_id": "newfield",
+       |  "formName": "Testing section change label tttt",
+       |  "description": "Testing the form change label",
+       |  "languages":["en"],
+       |  "printSection": {
+       |    "title": "Next Steps",
+       |    "summaryPdf": "TestSummaryPdf"
+       |  },
+       |  "authConfig": {
+       |    "authModule": "$authModule",
+       |    ${serviceId.getOrElse("")}
+       |    "agentAccess": "allowAnyAgentAffinityUser"
+       |  },
+       |  "emailTemplateId": "",
+       |  "sections": [{
+       |    "title": "Page A",
+       |    "fields": [{
+       |      "id": "elementA",
+       |      "type": "text",
+       |      "format": "sterling",
+       |      "value": "$identifier",
+       |      "submitMode": "readonly",
+       |      "label": "Element A"
+       |    },{
+       |      "id": "elementB",
+       |      "format": "text",
+       |      "submitMode": "readonly",
+       |      "label": "Element B",
+       |      "validIf": "$${elementA=''}"
+       |    }]
+       |  }],
+       |
+       |  "declarationSection": {
        |    "title": "",
        |    "fields": []
        |  }
