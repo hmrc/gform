@@ -20,7 +20,9 @@ import org.scalacheck.Gen
 import uk.gov.hmrc.gform.Helpers.toSmartString
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
 import uk.gov.hmrc.gform.sharedmodel.ExampleData._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.PrintSection
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormComponentId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationPrint
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.PrintSection.{ Page, Pdf }
 
 trait DestinationsGen {
 
@@ -29,12 +31,24 @@ trait DestinationsGen {
       .oneOrMoreGen(DestinationGen.destinationGen)
       .map(Destinations.DestinationList(_, ackSection, decSection))
 
-  def printSectionGen: Gen[Destinations.PrintSection] =
-    PrimitiveGen
-      .oneOrMoreGen(Gen.const(PrintSection(toSmartString("TestTitle"), toSmartString("TestSummaryPdf"))))
-      .map(_.head)
+  def destinationPrintGen: Gen[DestinationPrint] =
+    for {
+      pdf <- Gen.option(
+              Pdf(
+                toSmartString("TestHeader"),
+                toSmartString("TestFooter"),
+                List(FormComponentId("TestId1"), FormComponentId("TestId2"))))
 
-  def destinationsGen: Gen[Destinations] = Gen.oneOf(destinationListGen, printSectionGen)
+      destinationPrint <- PrimitiveGen
+                           .oneOrMoreGen(
+                             Gen.const(
+                               DestinationPrint(
+                                 Page(toSmartString("TestTitle"), toSmartString("TestInstructions")),
+                                 pdf)))
+                           .map(_.head)
+    } yield destinationPrint
+
+  def destinationsGen: Gen[Destinations] = Gen.oneOf(destinationListGen, destinationPrintGen)
 }
 
 object DestinationsGen extends DestinationsGen

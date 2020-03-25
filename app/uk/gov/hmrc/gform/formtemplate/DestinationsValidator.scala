@@ -19,8 +19,10 @@ package uk.gov.hmrc.gform.formtemplate
 import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.core.ValidationResult.BooleanToValidationResultSyntax
 import uk.gov.hmrc.gform.core.{ Opt, Valid, ValidationResult }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplate }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, Destinations }
+import uk.gov.hmrc.gform.formtemplate.FormTemplateValidator._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationPrint
 
 import scala.collection.immutable.List
 
@@ -30,7 +32,7 @@ object DestinationsValidator {
 
   def validateUniqueDestinationIds(destinations: Destinations): ValidationResult = destinations match {
 
-    case _: Destinations.PrintSection => Valid
+    case _: Destinations.DestinationPrint => Valid
 
     case destinationList: Destinations.DestinationList =>
       val destinationIds = extractIds(destinationList.destinations)
@@ -51,4 +53,31 @@ object DestinationsValidator {
 
   def validate(template: FormTemplate): Opt[Unit] =
     validateUniqueDestinationIds(template.destinations).toEither
+
+  def nonExistentFieldId(nonExistentFieldIds: List[FormComponentId]) =
+    s"Pdf FieldId(s) ${nonExistentFieldIds.mkString(", ")} doesn't exist."
+
+  def validatePdfFieldIds(formTemplate: FormTemplate): Opt[Unit] = {
+    val allFormComponentIds: List[FormComponentId] = fieldIds(formTemplate.sections)
+
+    val pdfFieldIds: Option[List[FormComponentId]] = formTemplate.destinations match {
+      case destinationPrint: DestinationPrint => {
+        destinationPrint.pdf.flatMap { v =>
+          if (v.fieldIds.nonEmpty)
+            Some(v.fieldIds)
+          else
+            None
+        }
+      }
+
+      case _ => None
+    }
+
+    val nonExistentFieldIds: List[FormComponentId] = pdfFieldIds match {
+      case Some(v) => v diff allFormComponentIds
+      case None    => Nil
+    }
+
+    nonExistentFieldIds.isEmpty.validationResult(nonExistentFieldId(nonExistentFieldIds))
+  }.toEither
 }
