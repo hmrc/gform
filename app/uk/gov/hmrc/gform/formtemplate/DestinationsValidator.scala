@@ -60,23 +60,14 @@ object DestinationsValidator {
   def validatePdfFieldIds(formTemplate: FormTemplate): Opt[Unit] = {
     val allFormComponentIds: List[FormComponentId] = fieldIds(formTemplate.sections)
 
-    val pdfFieldIds: Option[List[FormComponentId]] = formTemplate.destinations match {
-      case destinationPrint: DestinationPrint => {
-        destinationPrint.pdf.flatMap { v =>
-          if (v.fieldIds.nonEmpty)
-            Some(v.fieldIds)
-          else
-            None
-        }
-      }
+    val pdfFieldIds = formTemplate.destinations match {
+      case DestinationPrint(_, Some(pdf)) =>
+        pdf.fieldIds
 
-      case _ => None
+      case _ => Nil
     }
 
-    val nonExistentFieldIds: List[FormComponentId] = pdfFieldIds match {
-      case Some(v) => v diff allFormComponentIds
-      case None    => Nil
-    }
+    val nonExistentFieldIds: List[FormComponentId] = pdfFieldIds diff allFormComponentIds
 
     nonExistentFieldIds.isEmpty.validationResult(nonExistentFieldId(nonExistentFieldIds))
   }.toEither
