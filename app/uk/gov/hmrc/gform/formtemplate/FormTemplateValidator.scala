@@ -39,7 +39,7 @@ object FormTemplateValidator {
     if (languageList.languages.contains(LangADT.En)) Valid
     else Invalid("languages must contain en")
 
-  private def fieldIds(sections: List[Section]) = indexedFieldIds(sections).map(_._1)
+  def fieldIds(sections: List[Section]) = indexedFieldIds(sections).map(_._1)
 
   private def indexedFieldIds(sections: List[Section]): List[(FormComponentId, Int)] = indexedFields(sections).map {
     case (a, b) => a.id -> b

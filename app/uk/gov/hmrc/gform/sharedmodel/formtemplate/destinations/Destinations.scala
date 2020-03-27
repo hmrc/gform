@@ -20,7 +20,6 @@ import cats.data.NonEmptyList
 import julienrf.json.derived
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.gform.sharedmodel.SmartString
 import JsonUtils._
 
 sealed trait Destinations extends Product with Serializable
@@ -33,18 +32,16 @@ object Destinations {
     declarationSection: DeclarationSection)
       extends Destinations
 
-  case class PrintSection(title: SmartString, summaryPdf: SmartString) extends Destinations
+  case class DestinationPrint(page: PrintSection.Page, pdf: Option[PrintSection.Pdf]) extends Destinations
 
   implicit val destinationListFormat: OFormat[DestinationList] = derived.oformat
 
-  implicit val printSectionFormat: OFormat[PrintSection] = Json.format[PrintSection]
+  implicit val destinationPrintFormat: OFormat[DestinationPrint] = Json.format[DestinationPrint]
 
   implicit val format: OFormat[Destinations] = {
-    implicit val destinationsFormat: OFormat[Destinations] = derived.oformat
-
     OFormatWithTemplateReadFallback(
       safeCast[DestinationList, Destinations](destinationListFormat) orElse
-        safeCast[PrintSection, Destinations](printSectionFormat)
+        safeCast[DestinationPrint, Destinations](destinationPrintFormat)
     )
   }
 }

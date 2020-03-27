@@ -59,6 +59,38 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with MustMatche
     }
   }
 
+  "handle a valid upsert request with Print section having no Pdf" in {
+    withFixture(
+      Json.parse(
+        validRequestBodyWithPrintSectionAndNoPdf(
+          "hmrc",
+          "${user.enrolledIdentifier}",
+          Some(""""serviceId": "someId",""")))) { (sideEffect, verifySideEffect, templateRaw) =>
+      val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
+      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+
+      whenReady(eventualResult.value) { response =>
+        response mustBe Right(())
+      }
+    }
+  }
+
+  "handle a valid upsert request with Print section having empty Pdf" in {
+    withFixture(
+      Json.parse(
+        validRequestBodyWithPrintSectionWithEmptyPdf(
+          "hmrc",
+          "${user.enrolledIdentifier}",
+          Some(""""serviceId": "someId",""")))) { (sideEffect, verifySideEffect, templateRaw) =>
+      val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
+      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+
+      whenReady(eventualResult.value) { response =>
+        response mustBe Right(())
+      }
+    }
+  }
+
   "handle an invalid upsert request with no Destinations or Print section" in {
     withFixture(
       Json.parse(
@@ -276,10 +308,102 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with MustMatche
        |  "formName": "Testing section change label tttt",
        |  "description": "Testing the form change label",
        |  "languages":["en"],
-       |  "printSection": {
-       |    "title": "Next Steps",
-       |    "summaryPdf": "TestSummaryPdf"
+       |    "printSection": {
+       |        "page": {
+       |            "title": "Test Title",
+       |            "instructions": "Test Instructions"
+       |        },
+       |        "pdf": {
+       |        	"header": "##Test PDF Header",
+       |        	"footer": "##Test PDF Footer",
+       |        	"fieldIds": ["elementA", "elementB"]
+       |        }
+       |    },
+       |  "authConfig": {
+       |    "authModule": "$authModule",
+       |    ${serviceId.getOrElse("")}
+       |    "agentAccess": "allowAnyAgentAffinityUser"
        |  },
+       |  "emailTemplateId": "",
+       |  "sections": [{
+       |    "title": "Page A",
+       |    "fields": [{
+       |      "id": "elementA",
+       |      "type": "text",
+       |      "format": "sterling",
+       |      "value": "$identifier",
+       |      "submitMode": "readonly",
+       |      "label": "Element A"
+       |    },{
+       |      "id": "elementB",
+       |      "format": "text",
+       |      "submitMode": "readonly",
+       |      "label": "Element B",
+       |      "validIf": "$${elementA=''}"
+       |    }]
+       |  }]
+       |}""".stripMargin
+
+  private def validRequestBodyWithPrintSectionAndNoPdf(
+    authModule: String,
+    identifier: String,
+    serviceId: Option[String] = Some(""""serviceId": "Id",""")) =
+    s"""{
+       |  "_id": "newfield",
+       |  "formName": "Testing section change label tttt",
+       |  "description": "Testing the form change label",
+       |  "languages":["en"],
+       |    "printSection": {
+       |        "page": {
+       |            "title": "Test Title",
+       |            "instructions": "Test Instructions"
+       |        }
+       |    },
+       |  "authConfig": {
+       |    "authModule": "$authModule",
+       |    ${serviceId.getOrElse("")}
+       |    "agentAccess": "allowAnyAgentAffinityUser"
+       |  },
+       |  "emailTemplateId": "",
+       |  "sections": [{
+       |    "title": "Page A",
+       |    "fields": [{
+       |      "id": "elementA",
+       |      "type": "text",
+       |      "format": "sterling",
+       |      "value": "$identifier",
+       |      "submitMode": "readonly",
+       |      "label": "Element A"
+       |    },{
+       |      "id": "elementB",
+       |      "format": "text",
+       |      "submitMode": "readonly",
+       |      "label": "Element B",
+       |      "validIf": "$${elementA=''}"
+       |    }]
+       |  }]
+       |}""".stripMargin
+
+  private def validRequestBodyWithPrintSectionWithEmptyPdf(
+    authModule: String,
+    identifier: String,
+    serviceId: Option[String] = Some(""""serviceId": "Id",""")) =
+    s"""{
+       |  "_id": "newfield",
+       |  "formName": "Testing section change label tttt",
+       |  "description": "Testing the form change label",
+       |  "languages":["en"],
+       |    "printSection": {
+       |        "page": {
+       |            "title": "Test Title",
+       |            "instructions": "Test Instructions"
+       |        },
+       |        "pdf": {
+       |        	"header": "",
+       |        	"footer": "",
+       |        	"fieldIds": []
+       |        }
+       |    },
        |  "authConfig": {
        |    "authModule": "$authModule",
        |    ${serviceId.getOrElse("")}
