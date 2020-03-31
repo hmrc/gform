@@ -29,7 +29,9 @@ trait DestinationPrintGen {
     for {
       titleSmartString        <- SmartStringGen.smartStringGen
       instructionsSmartString <- SmartStringGen.smartStringGen
-    } yield Page(titleSmartString, instructionsSmartString)
+      pdfHeaderSmartString    <- Gen.option(SmartStringGen.smartStringGen)
+      pdfFooterSmartString    <- Gen.option(SmartStringGen.smartStringGen)
+    } yield Page(titleSmartString, instructionsSmartString, pdfHeaderSmartString, pdfFooterSmartString)
 
   def destinationPrintPdfGen: Gen[Pdf] =
     for {

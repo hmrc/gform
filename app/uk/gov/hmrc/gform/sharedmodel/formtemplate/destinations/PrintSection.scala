@@ -23,7 +23,11 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormComponentId
 sealed trait PrintSection extends Product with Serializable
 
 object PrintSection {
-  case class Page(title: SmartString, instructions: SmartString)
+  case class Page(
+    title: SmartString,
+    instructions: SmartString,
+    pdfHeader: Option[SmartString],
+    pdfFooter: Option[SmartString])
 
   object Page {
     implicit val format: OFormat[Page] = Json.format[Page]

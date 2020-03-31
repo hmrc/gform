@@ -91,6 +91,54 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with MustMatche
     }
   }
 
+  "handle a valid upsert request with Print section having Page Pdf Header Footer" in {
+    withFixture(
+      Json.parse(
+        validRequestBodyWithPrintSectionAndPagePdfHeaderFooter(
+          "hmrc",
+          "${user.enrolledIdentifier}",
+          Some(""""serviceId": "someId",""")))) { (sideEffect, verifySideEffect, templateRaw) =>
+      val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
+      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+
+      whenReady(eventualResult.value) { response =>
+        response mustBe Right(())
+      }
+    }
+  }
+
+  "handle a valid upsert request with Print section And Empty Page Pdf Header Footer" in {
+    withFixture(
+      Json.parse(
+        validRequestBodyWithPrintSectionAndEmptyPagePdfHeaderFooter(
+          "hmrc",
+          "${user.enrolledIdentifier}",
+          Some(""""serviceId": "someId",""")))) { (sideEffect, verifySideEffect, templateRaw) =>
+      val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
+      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+
+      whenReady(eventualResult.value) { response =>
+        response mustBe Right(())
+      }
+    }
+  }
+
+  "handle a valid upsert request with Print section And No Page Pdf Header Footer" in {
+    withFixture(
+      Json.parse(
+        validRequestBodyWithPrintSectionAndNoPagePdfHeaderFooter(
+          "hmrc",
+          "${user.enrolledIdentifier}",
+          Some(""""serviceId": "someId",""")))) { (sideEffect, verifySideEffect, templateRaw) =>
+      val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
+      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+
+      whenReady(eventualResult.value) { response =>
+        response mustBe Right(())
+      }
+    }
+  }
+
   "handle an invalid upsert request with no Destinations or Print section" in {
     withFixture(
       Json.parse(
@@ -300,6 +348,145 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with MustMatche
        |}""".stripMargin
 
   private def validRequestBodyWithPrintSection(
+    authModule: String,
+    identifier: String,
+    serviceId: Option[String] = Some(""""serviceId": "Id",""")) =
+    s"""{
+       |  "_id": "newfield",
+       |  "formName": "Testing section change label tttt",
+       |  "description": "Testing the form change label",
+       |  "languages":["en"],
+       |    "printSection": {
+       |        "page": {
+       |            "title": "Test Title",
+       |            "instructions": "Test Instructions"
+       |        },
+       |        "pdf": {
+       |        	"header": "##Test PDF Header",
+       |        	"footer": "##Test PDF Footer",
+       |        	"fieldIds": ["elementA", "elementB"]
+       |        }
+       |    },
+       |  "authConfig": {
+       |    "authModule": "$authModule",
+       |    ${serviceId.getOrElse("")}
+       |    "agentAccess": "allowAnyAgentAffinityUser"
+       |  },
+       |  "emailTemplateId": "",
+       |  "sections": [{
+       |    "title": "Page A",
+       |    "fields": [{
+       |      "id": "elementA",
+       |      "type": "text",
+       |      "format": "sterling",
+       |      "value": "$identifier",
+       |      "submitMode": "readonly",
+       |      "label": "Element A"
+       |    },{
+       |      "id": "elementB",
+       |      "format": "text",
+       |      "submitMode": "readonly",
+       |      "label": "Element B",
+       |      "validIf": "$${elementA=''}"
+       |    }]
+       |  }]
+       |}""".stripMargin
+
+  private def validRequestBodyWithPrintSectionAndPagePdfHeaderFooter(
+    authModule: String,
+    identifier: String,
+    serviceId: Option[String] = Some(""""serviceId": "Id",""")) =
+    s"""{
+       |  "_id": "newfield",
+       |  "formName": "Testing section change label tttt",
+       |  "description": "Testing the form change label",
+       |  "languages":["en"],
+       |    "printSection": {
+       |        "page": {
+       |            "title": "Test Title",
+       |            "instructions": "Test Instructions",
+       |            "pdfHeader": "#Test PDF Header",
+       |            "pdfFooter": "##Test PDF Footer"
+       |        },
+       |        "pdf": {
+       |        	"header": "##Test PDF Header",
+       |        	"footer": "##Test PDF Footer",
+       |        	"fieldIds": ["elementA", "elementB"]
+       |        }
+       |    },
+       |  "authConfig": {
+       |    "authModule": "$authModule",
+       |    ${serviceId.getOrElse("")}
+       |    "agentAccess": "allowAnyAgentAffinityUser"
+       |  },
+       |  "emailTemplateId": "",
+       |  "sections": [{
+       |    "title": "Page A",
+       |    "fields": [{
+       |      "id": "elementA",
+       |      "type": "text",
+       |      "format": "sterling",
+       |      "value": "$identifier",
+       |      "submitMode": "readonly",
+       |      "label": "Element A"
+       |    },{
+       |      "id": "elementB",
+       |      "format": "text",
+       |      "submitMode": "readonly",
+       |      "label": "Element B",
+       |      "validIf": "$${elementA=''}"
+       |    }]
+       |  }]
+       |}""".stripMargin
+
+  private def validRequestBodyWithPrintSectionAndEmptyPagePdfHeaderFooter(
+    authModule: String,
+    identifier: String,
+    serviceId: Option[String] = Some(""""serviceId": "Id",""")) =
+    s"""{
+       |  "_id": "newfield",
+       |  "formName": "Testing section change label tttt",
+       |  "description": "Testing the form change label",
+       |  "languages":["en"],
+       |    "printSection": {
+       |        "page": {
+       |            "title": "Test Title",
+       |            "instructions": "Test Instructions",
+       |            "pdfHeader": "",
+       |            "pdfFooter": ""
+       |        },
+       |        "pdf": {
+       |        	"header": "##Test PDF Header",
+       |        	"footer": "##Test PDF Footer",
+       |        	"fieldIds": ["elementA", "elementB"]
+       |        }
+       |    },
+       |  "authConfig": {
+       |    "authModule": "$authModule",
+       |    ${serviceId.getOrElse("")}
+       |    "agentAccess": "allowAnyAgentAffinityUser"
+       |  },
+       |  "emailTemplateId": "",
+       |  "sections": [{
+       |    "title": "Page A",
+       |    "fields": [{
+       |      "id": "elementA",
+       |      "type": "text",
+       |      "format": "sterling",
+       |      "value": "$identifier",
+       |      "submitMode": "readonly",
+       |      "label": "Element A"
+       |    },{
+       |      "id": "elementB",
+       |      "format": "text",
+       |      "submitMode": "readonly",
+       |      "label": "Element B",
+       |      "validIf": "$${elementA=''}"
+       |    }]
+       |  }]
+       |}""".stripMargin
+
+  private def validRequestBodyWithPrintSectionAndNoPagePdfHeaderFooter(
     authModule: String,
     identifier: String,
     serviceId: Option[String] = Some(""""serviceId": "Id",""")) =
