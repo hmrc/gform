@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormComponentId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationPrint
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.PrintSection.{ Page, Pdf }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.PrintSection._
 
 trait DestinationPrintGen {
 
@@ -35,14 +35,21 @@ trait DestinationPrintGen {
     for {
       headerSmartString <- SmartStringGen.smartStringGen
       footerSmartString <- SmartStringGen.smartStringGen
+    } yield Pdf(headerSmartString, footerSmartString)
+
+  def destinationPrintPdfNotificationGen: Gen[PdfNotification] =
+    for {
+      headerSmartString <- SmartStringGen.smartStringGen
+      footerSmartString <- SmartStringGen.smartStringGen
       fieldIds          <- formIdListGen
-    } yield Pdf(headerSmartString, footerSmartString, fieldIds)
+    } yield PdfNotification(headerSmartString, footerSmartString, fieldIds)
 
   def destinationPrintGen: Gen[DestinationPrint] =
     for {
-      page <- destinationPrintPageGen
-      pdf  <- Gen.option(destinationPrintPdfGen)
-    } yield DestinationPrint(page, pdf)
+      page            <- destinationPrintPageGen
+      pdf             <- destinationPrintPdfGen
+      pdfNotification <- Gen.option(destinationPrintPdfNotificationGen)
+    } yield DestinationPrint(page, pdf, pdfNotification)
 }
 
 object DestinationPrintGen extends DestinationPrintGen

@@ -29,9 +29,15 @@ object PrintSection {
     implicit val format: OFormat[Page] = Json.format[Page]
   }
 
-  case class Pdf(header: SmartString, footer: SmartString, fieldIds: List[FormComponentId])
+  case class Pdf(header: SmartString, footer: SmartString)
 
   object Pdf {
     implicit val format: OFormat[Pdf] = Json.format[Pdf]
+  }
+
+  case class PdfNotification(header: SmartString, footer: SmartString, fieldIds: List[FormComponentId])
+
+  object PdfNotification {
+    implicit val format: OFormat[PdfNotification] = Json.format[PdfNotification]
   }
 }
