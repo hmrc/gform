@@ -32,7 +32,11 @@ object Destinations {
     declarationSection: DeclarationSection)
       extends Destinations
 
-  case class DestinationPrint(page: PrintSection.Page, pdf: Option[PrintSection.Pdf]) extends Destinations
+  case class DestinationPrint(
+    page: PrintSection.Page,
+    pdf: PrintSection.Pdf,
+    pdfNotification: Option[PrintSection.PdfNotification])
+      extends Destinations
 
   implicit val destinationListFormat: OFormat[DestinationList] = derived.oformat
 

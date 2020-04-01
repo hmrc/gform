@@ -61,8 +61,8 @@ object DestinationsValidator {
     val allFormComponentIds: List[FormComponentId] = fieldIds(formTemplate.sections)
 
     val pdfFieldIds = formTemplate.destinations match {
-      case DestinationPrint(_, Some(pdf)) =>
-        pdf.fieldIds
+      case DestinationPrint(_, _, Some(pdfNotification)) =>
+        pdfNotification.fieldIds
 
       case _ => Nil
     }
