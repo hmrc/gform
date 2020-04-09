@@ -21,6 +21,7 @@ import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.BasicParsers._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.formtemplate.EmailVerification
+import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString }
 
 object FormatParser {
 
@@ -261,8 +262,8 @@ object FormatParser {
     }
   }
 
-  lazy val numberArgs: Parser[(Int, Int, Option[String])] = {
-    wholeFractional ~ "," ~ quotedString ~ ")" ^^ { (loc, wf, _, q, _) =>
+  lazy val numberArgs: Parser[(Int, Int, Option[LocalisedString])] = {
+    wholeFractional ~ "," ~ localisedString ~ ")" ^^ { (loc, wf, _, q, _) =>
       (wf.w, wf.f, Option(q))
     } | wholeFractional ~ ")" ^^ { (loc, wf, _) =>
       (wf.w, wf.f, None)
@@ -278,6 +279,18 @@ object FormatParser {
 
   lazy val quotedString: Parser[String] = "'" ~ "[^']+".r ~ "'" ^^ { (loc, _, s, _) =>
     s
+
+  }
+  lazy val localisedString: Parser[LocalisedString] = english ~ "," ~ welsh ^^ { (loc, en, _, cy) =>
+    LocalisedString(en ++ cy)
+  } | quotedString.map(value => LocalisedString(Map(LangADT.En -> value)))
+
+  def english: Parser[Map[LangADT, String]] = "'" ~ "en" ~ "'" ~ ":" ~ quotedString ^^ { (loc, _, s, _, _, en) =>
+    Map(LangADT.En -> en)
   }
 
+  def welsh: Parser[Map[LangADT, String]] = "'" ~ "cy" ~ "'" ~ ":" ~ quotedString ^^ { (loc, _, s, _, _, cy) =>
+    Map(LangADT.Cy -> cy)
+  }
+  //"format": "positiveNumber(11, 2, 'en':'litres','cy':'litrau')"
 }

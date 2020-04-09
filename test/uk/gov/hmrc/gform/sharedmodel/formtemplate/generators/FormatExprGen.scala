@@ -23,7 +23,7 @@ trait FormatExprGen {
     for {
       maxWholeDigits      <- Gen.posNum[Int]
       maxFractionalDigits <- Gen.posNum[Int]
-      units               <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
+      units               <- Gen.option(LocalisedStringGen.localisedStringGen)
       roundingMode        <- roundingModeGen
     } yield Number(maxWholeDigits, maxFractionalDigits, roundingMode, units)
 
@@ -31,7 +31,7 @@ trait FormatExprGen {
     for {
       maxWholeDigits      <- Gen.posNum[Int]
       maxFractionalDigits <- Gen.posNum[Int]
-      units               <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
+      units               <- Gen.option(LocalisedStringGen.localisedStringGen)
       roundingMode        <- roundingModeGen
     } yield PositiveNumber(maxWholeDigits, maxFractionalDigits, roundingMode, units)
 
