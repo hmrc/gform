@@ -20,7 +20,7 @@ import cats.Eq
 import julienrf.json.derived
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.parsers.{ BasicParsers, ValueParser }
-import uk.gov.hmrc.gform.sharedmodel.EmailVerifierService
+import uk.gov.hmrc.gform.sharedmodel.{ EmailVerifierService, LocalisedString }
 
 sealed trait FormatExpr
 final case class OrientationFormat(value: String) extends FormatExpr
@@ -143,14 +143,14 @@ final case class Number(
   maxWholeDigits: Int = TextConstraint.defaultWholeDigits,
   maxFractionalDigits: Int = TextConstraint.defaultFactionalDigits,
   roundingMode: RoundingMode = RoundingMode.defaultRoundingMode,
-  unit: Option[String] = None)
+  unit: Option[LocalisedString] = None)
     extends TextConstraint
 
 final case class PositiveNumber(
   maxWholeDigits: Int = TextConstraint.defaultWholeDigits,
   maxFractionalDigits: Int = TextConstraint.defaultFactionalDigits,
   roundingMode: RoundingMode = RoundingMode.defaultRoundingMode,
-  unit: Option[String] = None)
+  unit: Option[LocalisedString] = None)
     extends TextConstraint
 
 case object BasicText extends TextConstraint
