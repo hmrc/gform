@@ -21,6 +21,8 @@ import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.sharedmodel.LocalisedString
+import uk.gov.hmrc.gform.Helpers._
 
 class FormatParserSpec extends Spec {
 
@@ -180,7 +182,7 @@ class FormatParserSpec extends Spec {
 
   "number(n,m,'u')" should "be parsed successfully" in {
     val res = validate("number(3,4,'u')")
-    res.right.value should be(TextFormat(Number(3, 4, RoundingMode.defaultRoundingMode, Some("u"))))
+    res.right.value should be(TextFormat(Number(3, 4, RoundingMode.defaultRoundingMode, Some(toLocalisedString("u")))))
   }
 
   "positiveNumber" should "be parsed successfully" in {
@@ -195,7 +197,8 @@ class FormatParserSpec extends Spec {
 
   "positiveNumber(n,m,'u')" should "be parsed successfully" in {
     val res = validate("positiveNumber(3,4,'u')")
-    res.right.value should be(TextFormat(PositiveNumber(3, 4, RoundingMode.defaultRoundingMode, Some("u"))))
+    res.right.value should be(
+      TextFormat(PositiveNumber(3, 4, RoundingMode.defaultRoundingMode, Some(toLocalisedString("u")))))
   }
 
   "positiveWholeNumber" should "be parsed successfully" in {
