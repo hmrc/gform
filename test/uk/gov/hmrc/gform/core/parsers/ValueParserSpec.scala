@@ -130,6 +130,11 @@ class ValueParserSpec extends Spec {
     res.right.value should be(TextExpression(UserCtx(EnrolledIdentifier)))
   }
 
+  it should "parse anything except singe quote" in {
+    val res = ValueParser.validate("${' --+===>., '}")
+    res.right.value should be(TextExpression(Constant("--+===>., ")))
+  }
+
   it should "fail to parse ${user.enrolledIdentifier" in {
 
     val res = ValueParser.validate("${user.enrolledIdentifier")
