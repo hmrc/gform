@@ -130,7 +130,7 @@ object ValueParser {
         Constant("")
       })
 
-  lazy val anyConstant: Parser[Constant] = ("""[ \w,]+""".r ^^ { (loc, str) =>
+  lazy val anyConstant: Parser[Constant] = ("""[^']+""".r ^^ { (loc, str) =>
     Constant(str)
   })
 
