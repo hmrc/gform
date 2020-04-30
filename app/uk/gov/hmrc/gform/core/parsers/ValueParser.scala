@@ -75,6 +75,9 @@ object ValueParser {
     | "form" ~ "." ~ alphabeticOnly ^^ { (loc, _, _, fieldName) =>
       FormCtx(fieldName)
     }
+    | "param" ~ "." ~ alphabeticOnly ^^ { (loc, _, _, param) =>
+      ParamCtx(QueryParam(param))
+    }
     | "auth" ~ "." ~ authInfo ^^ { (loc, _, _, authInfo) =>
       AuthCtx(authInfo)
     }

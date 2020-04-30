@@ -77,6 +77,7 @@ object Form {
     (__ \ "thirdPartyData")
       .readNullable[ThirdPartyData]
       .map(_.getOrElse(ThirdPartyData.empty))
+      .orElse(ThirdPartyData.readsWithDefaultQueryParams)
       .orElse(JsonUtils.constReads(ThirdPartyData.empty))
 
   private val reads: Reads[Form] = (

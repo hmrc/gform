@@ -26,7 +26,7 @@ import uk.gov.hmrc.gform.config.AppConfig
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateService
-import uk.gov.hmrc.gform.sharedmodel.form.FormIdData
+import uk.gov.hmrc.gform.sharedmodel.form.{ FormIdData, QueryParams }
 import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, AffinityGroupUtil }
 import uk.gov.hmrc.gform.sharedmodel.form.{ FileId, FormId, UserData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
@@ -47,12 +47,11 @@ class FormController(
     userId: UserId,
     formTemplateId: FormTemplateId,
     affinityGroup: Option[AffinityGroup]
-  ): Action[AnyContent] =
-    formAction(
-      "newForm",
-      FormIdData.Plain(userId, formTemplateId),
-      s"affinityGroup: '${AffinityGroupUtil.affinityGroupNameO(affinityGroup)}'") { implicit request =>
-      formService.create(userId, formTemplateId, affinityGroup, config.formExpiryDays.toLong, Seq.empty).asOkJson
+  ): Action[QueryParams] =
+    formAction(parse.json[QueryParams])("newForm", FormIdData.Plain(userId, formTemplateId)) { implicit request =>
+      formService
+        .create(userId, formTemplateId, affinityGroup, config.formExpiryDays.toLong, request.body)
+        .asOkJson
     }
 
   def getPlain(userId: UserId, formTemplateId: FormTemplateId): Action[AnyContent] =

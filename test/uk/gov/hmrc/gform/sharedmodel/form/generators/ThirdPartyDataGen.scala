@@ -31,7 +31,8 @@ trait ThirdPartyDataGen {
       emailVerification <- PrimitiveGen.possiblyEmptyMapGen(
                             FormComponentGen.formComponentIdGen,
                             EmailVerificationCodeGen.emailVerificationCodeGen)
-    } yield ThirdPartyData(desRegistrationResponse, obligations, emailVerification)
+      queryParams <- QueryParamsGen.queryParamsGen
+    } yield ThirdPartyData(desRegistrationResponse, obligations, emailVerification, queryParams)
 }
 
 object ThirdPartyDataGen extends ThirdPartyDataGen
