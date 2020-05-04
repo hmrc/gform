@@ -137,7 +137,8 @@ class FormSpec extends FlatSpec with Matchers with PropertyChecks {
       ),
       Map(
         FormComponentId("emailId") -> EmailAndCode("josef@hmrc.com", EmailConfirmationCode("HPKHWB"))
-      )
+      ),
+      QueryParams.empty
     ),
     Some(EnvelopeExpiryDate(LocalDateTime.of(2064, 12, 1, 0, 0, 40)))
   )
@@ -192,7 +193,8 @@ class FormSpec extends FlatSpec with Matchers with PropertyChecks {
       "ldt"         -> form.envelopeExpiryDate.map(_.ldt).map(f _).get,
       "thirdPartyData" -> Json.obj(
         "obligations"       -> Json.obj("NotChecked" -> Json.obj()),
-        "emailVerification" -> Json.obj()
+        "emailVerification" -> Json.obj(),
+        "queryParams"       -> Json.obj("params" -> Json.obj())
       )
     )
     formJsObject shouldBe expectedFormJsObject

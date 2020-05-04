@@ -26,7 +26,7 @@ import uk.gov.hmrc.gform.formmetadata.FormMetadataAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.save4later.FormPersistenceAlgebra
 import uk.gov.hmrc.gform.sharedmodel.UserId
-import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, Form, FormId, FormIdData }
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, Form, FormId, FormIdData, QueryParams }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId }
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -63,9 +63,10 @@ class FormServiceSpec extends Spec {
 
     val service = new FormService[Id](persistenceAlgebra, fileUploadAlgebra, formTemplateAlgebra, metadataAlgebra)
 
-    service.create(UserId("usr"), formTemplateId, None, 2L)(HeaderCarrier()) shouldBe FormIdData.Plain(
-      UserId("usr"),
-      FormTemplateId("AAA999")
-    )
+    service.create(UserId("usr"), formTemplateId, None, 2L, QueryParams.empty)(HeaderCarrier()) shouldBe FormIdData
+      .Plain(
+        UserId("usr"),
+        FormTemplateId("AAA999")
+      )
   }
 }

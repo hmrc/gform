@@ -36,7 +36,7 @@ trait FormAlgebra[F[_]] {
     formTemplateId: FormTemplateId,
     accessCode: Option[AffinityGroup],
     expiryDays: Long,
-    initialFields: Seq[FormField])(implicit hc: HeaderCarrier): F[FormIdData]
+    queryParams: QueryParams)(implicit hc: HeaderCarrier): F[FormIdData]
 
   def updateUserData(formIdData: FormIdData, userData: UserData)(implicit hc: HeaderCarrier): F[Unit]
 

@@ -94,7 +94,8 @@ class FormService[F[_]: Monad](
     formTemplateId: FormTemplateId,
     affinityGroup: Option[AffinityGroup],
     expiryDays: Long,
-    initialFields: Seq[FormField] = Seq.empty)(implicit hc: HeaderCarrier): F[FormIdData] = {
+    queryParams: QueryParams
+  )(implicit hc: HeaderCarrier): F[FormIdData] = {
     val timeProvider = new TimeProvider
     val expiryDate = timeProvider.localDateTime().plusDays(expiryDays)
 
@@ -108,10 +109,10 @@ class FormService[F[_]: Monad](
         envelopeId,
         userId,
         formTemplateId,
-        FormData(fields = initialFields),
+        FormData(fields = Seq.empty),
         InProgress,
         VisitIndex.empty,
-        ThirdPartyData.empty,
+        ThirdPartyData.empty.copy(queryParams = queryParams),
         Some(EnvelopeExpiryDate(expiryDate))
       )
       _ <- formPersistence.upsert(formIdData.toFormId, form)

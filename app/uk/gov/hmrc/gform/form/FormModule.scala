@@ -22,7 +22,7 @@ import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.fileupload.FileUploadModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.sharedmodel.UserId
-import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormField, FormId, FormIdData, FormOverview, FormStatus, UserData }
+import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormId, FormIdData, FormOverview, FormStatus, QueryParams, UserData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -62,8 +62,8 @@ class FormModule(
       formTemplateId: FormTemplateId,
       affinityGroup: Option[AffinityGroup],
       expiryDays: Long,
-      initialFields: Seq[FormField])(implicit hc: HeaderCarrier): FOpt[FormIdData] =
-      fromFutureA(formService.create(userId, formTemplateId, affinityGroup, expiryDays, initialFields))
+      queryParams: QueryParams)(implicit hc: HeaderCarrier): FOpt[FormIdData] =
+      fromFutureA(formService.create(userId, formTemplateId, affinityGroup, expiryDays, queryParams))
 
     override def updateUserData(formIdData: FormIdData, userData: UserData)(implicit hc: HeaderCarrier): FOpt[Unit] =
       fromFutureA(formService.updateUserData(formIdData, userData))
