@@ -48,7 +48,7 @@ trait ComponentTypeGen {
 
   def addressGen: Gen[Address] = PrimitiveGen.booleanGen.map(Address(_))
 
-  def choiceTypeGen: Gen[ChoiceType] = Gen.oneOf(Radio, Checkbox, YesNo, Inline)
+  def choiceTypeGen: Gen[ChoiceType] = Gen.oneOf(Radio, Checkbox, YesNo)
 
   def orientationGen: Gen[Orientation] = Gen.oneOf(Vertical, Horizontal)
 

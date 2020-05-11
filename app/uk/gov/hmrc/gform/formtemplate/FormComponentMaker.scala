@@ -289,7 +289,6 @@ class FormComponentMaker(json: JsValue) {
         case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueNo),  Selections(selections), oHelpText) => Choice(Radio,    NonEmptyList(x, xs),          Horizontal, selections, oHelpText).asRight
         case (IsOrientation(YesNoOrientation),      None,          IsMultivalue(MultivalueNo),  Selections(selections), oHelpText) => Choice(YesNo,    NonEmptyList.of(toSmartString("Yes","Iawn"), toSmartString("No","Na")), Horizontal, selections, oHelpText).asRight
         case (IsOrientation(YesNoOrientation),      _,             _,                           Selections(selections), oHelpText) => Choice(YesNo,    NonEmptyList.of(toSmartString("Yes","Iawn"), toSmartString("No","Na")), Horizontal, selections, oHelpText).asRight
-        case (IsOrientation(InlineOrientation),     Some(x :: xs), None,                        Selections(selections), oHelpText) => Choice(Inline,   NonEmptyList(x, xs),          Horizontal, selections, oHelpText).asRight
         // format: on
         case (invalidFormat, invalidChoices, invalidMultivalue, invalidValue, invalidHelpText) =>
           UnexpectedState(s"""|Unsupported combination of 'format, choices, multivalue and value':
@@ -412,7 +411,6 @@ class FormComponentMaker(json: JsValue) {
   private final case object VerticalOrientation extends ChoiceOrientation
   private final case object HorizontalOrientation extends ChoiceOrientation
   private final case object YesNoOrientation extends ChoiceOrientation
-  private final case object InlineOrientation extends ChoiceOrientation
 
   private final object IsOrientation {
     def unapply(orientation: Option[FormatExpr]): Option[ChoiceOrientation] =
@@ -420,9 +418,7 @@ class FormComponentMaker(json: JsValue) {
         case Some(OrientationFormat("vertical")) | None => Some(VerticalOrientation)
         case Some(OrientationFormat("horizontal"))      => Some(HorizontalOrientation)
         case Some(OrientationFormat("yesno"))           => Some(YesNoOrientation)
-        case Some(OrientationFormat("inline"))          => Some(InlineOrientation)
-
-        case _ => None
+        case _                                          => None
       }
   }
 

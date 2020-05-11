@@ -975,62 +975,6 @@ class FormComponentSpec extends Spec {
       ))
   }
 
-  it should "parse 'choice' type as inline" in {
-    val fieldValue = toFieldValue("""{
-           "type": "choice",
-           "id": "haveIncludedInvoice",
-           "label": "Original invoice from the supplier",
-           "format": "inline",
-           "choices": ["Yes","No"]
-         }""")
-
-    fieldValue should beJsSuccess(
-      FormComponent(
-        FormComponentId("haveIncludedInvoice"),
-        Choice(Inline, NonEmptyList.of(toSmartString("Yes"), toSmartString("No")), Horizontal, List.empty[Int], None),
-        toSmartString("Original invoice from the supplier"),
-        None,
-        None,
-        None,
-        mandatory = true,
-        editable = true,
-        submissible = true,
-        derived = false,
-        errorMessage = None
-      ))
-  }
-
-  it should "parse 'choice' type as inline with value" in {
-    val fieldValue = toFieldValue("""{
-           "type": "choice",
-           "id": "haveIncludedInvoice",
-           "label": "Original invoice from the supplier",
-           "format": "inline",
-           "choices": ["Yes","No", "Not sure"],
-           "value": "1"
-         }""")
-
-    fieldValue should beJsSuccess(
-      FormComponent(
-        FormComponentId("haveIncludedInvoice"),
-        Choice(
-          Inline,
-          NonEmptyList.of(toSmartString("Yes"), toSmartString("No"), toSmartString("Not sure")),
-          Horizontal,
-          List(1),
-          None),
-        toSmartString("Original invoice from the supplier"),
-        None,
-        None,
-        None,
-        mandatory = true,
-        editable = true,
-        submissible = true,
-        derived = false,
-        errorMessage = None
-      ))
-  }
-
   it should "faile parse 'choice' type when not enough choices" in {
     val fieldValue = toFieldValue("""{
            "type": "choice",
@@ -1388,7 +1332,7 @@ class FormComponentSpec extends Spec {
            "id": "haveIncludedInvoice",
            "label": "Original invoice from the supplier",
            "shortName" : "$shortName",
-           "format": "inline",
+           "format": "vertical",
            "choices": ["Yes","No", "Not sure"],
            "value": "1"
          }""")
@@ -1397,9 +1341,9 @@ class FormComponentSpec extends Spec {
       FormComponent(
         FormComponentId("haveIncludedInvoice"),
         Choice(
-          Inline,
+          Radio,
           NonEmptyList.of(toSmartString("Yes"), toSmartString("No"), toSmartString("Not sure")),
-          Horizontal,
+          Vertical,
           List(1),
           None),
         toSmartString("Original invoice from the supplier"),
