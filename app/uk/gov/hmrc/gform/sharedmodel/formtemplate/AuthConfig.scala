@@ -89,15 +89,18 @@ object EnrolmentCheckVerb {
 }
 
 sealed trait AuthModule extends Product with Serializable
-case object Hmrc extends AuthModule
-case object EeittLegacy extends AuthModule
-case object AnonymousAccess extends AuthModule
-case object AWSALBAccess extends AuthModule
-case object OfstedModule extends AuthModule
 
 object AuthModule {
 
+  case object Hmrc extends AuthModule
+  case object HmrcAny extends AuthModule
+  case object EeittLegacy extends AuthModule
+  case object AnonymousAccess extends AuthModule
+  case object AWSALBAccess extends AuthModule
+  case object OfstedModule extends AuthModule
+
   private val hmrc = "hmrc"
+  private val hmrcAny = "hmrcAny"
   private val legacyEEITTAuth = "legacyEEITTAuth"
   private val anonymous = "anonymous"
   private val awsAlb = "awsAlbAuth"
@@ -105,6 +108,7 @@ object AuthModule {
 
   implicit val format: Format[AuthModule] = ADTFormat.formatEnumeration(
     hmrc            -> Hmrc,
+    hmrcAny         -> HmrcAny,
     legacyEEITTAuth -> EeittLegacy,
     anonymous       -> AnonymousAccess,
     awsAlb          -> AWSALBAccess,
@@ -113,6 +117,7 @@ object AuthModule {
 
   def asString(o: AuthModule): String = o match {
     case Hmrc            => hmrc
+    case HmrcAny         => hmrcAny
     case EeittLegacy     => legacyEEITTAuth
     case AnonymousAccess => anonymous
     case AWSALBAccess    => awsAlb
@@ -124,6 +129,7 @@ sealed trait AuthConfig extends Product with Serializable
 case object Anonymous extends AuthConfig
 case object AWSALBAuth extends AuthConfig
 case class EeittModule(regimeId: RegimeId) extends AuthConfig
+case object HmrcAny extends AuthConfig
 case object HmrcSimpleModule extends AuthConfig
 case class HmrcEnrolmentModule(enrolmentAuth: EnrolmentAuth) extends AuthConfig
 case class HmrcAgentModule(agentAccess: AgentAccess) extends AuthConfig
@@ -189,15 +195,16 @@ object AuthConfig {
         maybeEnrolmentSection          <- (json \ "enrolmentSection").validateOpt[EnrolmentSection]
         maybeEnrolmentCheck            <- (json \ "enrolmentCheck").validateOpt[EnrolmentCheckVerb]
         authConfig <- authModule match {
-                       case AnonymousAccess => JsSuccess(Anonymous)
-                       case AWSALBAccess    => JsSuccess(AWSALBAuth)
-                       case EeittLegacy =>
+                       case AuthModule.AnonymousAccess => JsSuccess(Anonymous)
+                       case AuthModule.AWSALBAccess    => JsSuccess(AWSALBAuth)
+                       case AuthModule.EeittLegacy =>
                          maybeRegimeId match {
                            case None =>
                              JsError(s"Missing regimeId (regimeId is mandatory for legacyEEITTAuth)")
                            case Some(regimeId) => JsSuccess(EeittModule(regimeId))
                          }
-                       case Hmrc =>
+                       case AuthModule.HmrcAny => JsSuccess(HmrcAny)
+                       case AuthModule.Hmrc =>
                          maybeServiceId match {
                            case None =>
                              maybeAgentAccess.fold(JsSuccess(HmrcSimpleModule: AuthConfig))(agentAccess =>
@@ -216,7 +223,7 @@ object AuthConfig {
                                  HmrcAgentWithEnrolmentModule(_, enrolmentAuth)))
 
                          }
-                       case OfstedModule => JsSuccess(OfstedUser)
+                       case AuthModule.OfstedModule => JsSuccess(OfstedUser)
                      }
       } yield authConfig
 
