@@ -43,7 +43,14 @@ trait AuthConfigGen {
 
   def enrolmentCheckVerbGen: Gen[EnrolmentCheckVerb] = Gen.oneOf(NeverVerb, AlwaysVerb, ForNonAgentsVerb)
 
-  def authModuleGen: Gen[AuthModule] = Gen.oneOf(Hmrc, EeittLegacy)
+  def authModuleGen: Gen[AuthModule] =
+    Gen.oneOf(
+      AuthModule.Hmrc,
+      AuthModule.HmrcAny,
+      AuthModule.EeittLegacy,
+      AuthModule.AnonymousAccess,
+      AuthModule.AWSALBAccess,
+      AuthModule.OfstedModule)
 
   def doCheckGen: Gen[DoCheck] =
     for {
