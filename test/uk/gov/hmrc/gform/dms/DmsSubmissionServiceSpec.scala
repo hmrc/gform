@@ -110,7 +110,7 @@ class DmsSubmissionServiceSpec extends Spec {
       .submitPdfToDms(pdfContent, validSubmission.metadata, List.empty) shouldBe expectedEnvId
   }
 
-  private val validSubmission = DmsHtmlSubmission("", DmsMetadata("some-form-id", "some-customer-id", "", ""))
+  private val validSubmission = DmsHtmlSubmission("", DmsMetadata("some-form-id", "some-customer-id", "", "", None))
   private val stubPdfDocument = stub[PDDocument]
 
   private val envelopeExpiryDays: Long = 5L

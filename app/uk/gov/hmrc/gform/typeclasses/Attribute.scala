@@ -47,6 +47,11 @@ object Attribute {
       createAttribute(a, "string", c)
   }
 
+  implicit object boolean extends Attribute[Boolean] {
+    def attribute(a: String, c: List[Boolean]): Elem =
+      createAttribute(a, "boolean", c.map(_.toString))
+  }
+
   implicit object int extends Attribute[Int] {
     def attribute(a: String, c: List[Int]): Elem =
       createAttribute(a, "int", c.map(_.toString))

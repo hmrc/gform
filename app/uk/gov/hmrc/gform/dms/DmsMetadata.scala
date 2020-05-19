@@ -18,7 +18,12 @@ package uk.gov.hmrc.gform.dms
 
 import play.api.libs.json.{ Format, Json }
 
-case class DmsMetadata(dmsFormId: String, customerId: String, classificationType: String, businessArea: String)
+case class DmsMetadata(
+  dmsFormId: String,
+  customerId: String,
+  classificationType: String,
+  businessArea: String,
+  backscan: Option[Boolean])
 
 object DmsMetadata {
   implicit val format: Format[DmsMetadata] = Json.format[DmsMetadata]

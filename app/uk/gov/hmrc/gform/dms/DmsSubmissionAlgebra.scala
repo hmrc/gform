@@ -91,7 +91,8 @@ object DmsSubmissionService {
       metadata.businessArea,
       "",
       true,
-      true
+      true,
+      metadata.backscan
     )
 
   def createSubmission(

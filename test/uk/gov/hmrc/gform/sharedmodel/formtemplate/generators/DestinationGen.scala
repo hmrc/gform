@@ -45,7 +45,7 @@ trait DestinationGen {
       failOnError        <- PrimitiveGen.booleanGen
     } yield
       Destination
-        .HmrcDms(id, dmsFormId, customerId, classificationType, businessArea, includeIf, failOnError, false)
+        .HmrcDms(id, dmsFormId, customerId, classificationType, businessArea, includeIf, failOnError, false, None)
 
   def hmrcDmsGen(includeIf: Option[String] = None, failOnError: Option[Boolean] = None): Gen[Destination.HmrcDms] =
     hmrcDmsGen.map { g =>

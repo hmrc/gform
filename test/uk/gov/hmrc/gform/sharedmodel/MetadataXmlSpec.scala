@@ -52,7 +52,8 @@ class MetadataXmlSpec extends Spec {
       "some-business-area",
       "",
       true,
-      true
+      true,
+      None
     )
 
     val expected =
