@@ -46,7 +46,8 @@ object Destination {
     businessArea: String,
     includeIf: String,
     failOnError: Boolean,
-    roboticsXml: Boolean)
+    roboticsXml: Boolean,
+    backscan: Option[Boolean])
       extends Destination with DestinationWithCustomerId
 
   case class HandlebarsHttpApi(
@@ -135,7 +136,8 @@ case class UploadableHmrcDmsDestination(
         businessArea,
         cii.getOrElse(true.toString),
         failOnError.getOrElse(true),
-        roboticsXml.getOrElse(false))
+        roboticsXml.getOrElse(false),
+        None)
 }
 
 object UploadableHmrcDmsDestination {

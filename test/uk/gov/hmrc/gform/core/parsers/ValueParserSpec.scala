@@ -409,7 +409,8 @@ class ValueParserSpec extends Spec {
             "TestHmrcDmsBusinessArea",
             "",
             true,
-            true
+            true,
+            None
           )),
         ackSection,
         DeclarationSection(toSmartString("Declaration"), None, None, Nil)

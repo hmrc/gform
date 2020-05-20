@@ -47,7 +47,8 @@ trait ExampleAuthConfig extends DestinationGen {
     "TestHmrcDmsBusinessArea",
     "",
     true,
-    true
+    true,
+    None
   )
 
   private def buildFormComponent(name: String, expr: Expr) =

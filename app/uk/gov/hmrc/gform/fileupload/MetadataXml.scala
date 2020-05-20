@@ -28,6 +28,9 @@ object MetadataXml {
   val xmlDec = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>"""
 
   private def createMetadata(submission: Submission, pdfSummary: PdfSummary, hmrcDms: HmrcDms): Elem = {
+
+    val backscan = hmrcDms.backscan.map(backscan => createAttribute("backscan", backscan)).toList
+
     val attributes = List(
       createAttribute("hmrc_time_of_receipt", submission.submittedDate),
       createAttribute("time_xml_created", submission.submittedDate),
@@ -41,7 +44,8 @@ object MetadataXml {
       createAttribute("classification_type", hmrcDms.classificationType),
       createAttribute("business_area", hmrcDms.businessArea),
       createAttribute("attachment_count", submission.noOfAttachments)
-    )
+    ) ++ backscan
+
     <metadata></metadata>.copy(child = attributes)
   }
 
