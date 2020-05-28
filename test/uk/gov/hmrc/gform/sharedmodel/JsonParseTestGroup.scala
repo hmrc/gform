@@ -48,7 +48,7 @@ class JsonParseTestGroup extends Spec {
             ]
           }
         ],
-        "presentationHint" : "collapseGroupUnderLabel"
+        "presentationHint" : "totalValue"
 
       }
     """
@@ -73,7 +73,6 @@ class JsonParseTestGroup extends Spec {
             onlyShowOnSummary = false,
             None
           )),
-          Horizontal,
           Some(5),
           Some(1),
           Some(toSmartString("repeatLabel")),
@@ -89,7 +88,7 @@ class JsonParseTestGroup extends Spec {
         derived = false,
         onlyShowOnSummary = false,
         None,
-        Some(List(CollapseGroupUnderLabel))
+        Some(List(TotalValue))
       ))
 
   }
@@ -118,7 +117,7 @@ class JsonParseTestGroup extends Spec {
             ]
           }
         ],
-        "presentationHint" : "collapseGroupUnderLabel"
+        "presentationHint" : "summariseGroupAsGrid"
 
       }
     """
@@ -143,7 +142,6 @@ class JsonParseTestGroup extends Spec {
             false,
             None
           )),
-          Horizontal,
           Some(5),
           Some(0),
           Some(toSmartString("repeatLabel")),
@@ -159,7 +157,7 @@ class JsonParseTestGroup extends Spec {
         derived = false,
         false,
         None,
-        Some(List(CollapseGroupUnderLabel))
+        Some(List(SummariseGroupAsGrid))
       ))
   }
 
@@ -187,7 +185,7 @@ class JsonParseTestGroup extends Spec {
             ]
           }
         ],
-        "presentationHint" : "collapseGroupUnderLabel"
+        "presentationHint" : "totalValue"
 
       }
     """

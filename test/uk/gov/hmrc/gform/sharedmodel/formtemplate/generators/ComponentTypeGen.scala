@@ -84,12 +84,11 @@ trait ComponentTypeGen {
   def groupGen(maxDepth: Int): Gen[Group] =
     for {
       fields               <- PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen(maxDepth - 1))
-      orientation          <- orientationGen
       repeatsMax           <- Gen.option(Gen.posNum[Int])
       repeatsMin           <- Gen.option(Gen.posNum[Int])
       repeatLabel          <- Gen.option(SmartStringGen.smartStringGen)
       repeatAddAnotherText <- Gen.option(SmartStringGen.smartStringGen)
-    } yield Group(fields.toList, orientation, repeatsMax, repeatsMin, repeatLabel, repeatAddAnotherText)
+    } yield Group(fields.toList, repeatsMax, repeatsMin, repeatLabel, repeatAddAnotherText)
 
   def infoTypeGen: Gen[InfoType] = Gen.oneOf(StandardInfo, LongInfo, ImportantInfo, BannerInfo, NoFormat)
 

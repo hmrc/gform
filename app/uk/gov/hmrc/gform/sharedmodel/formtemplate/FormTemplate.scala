@@ -36,7 +36,6 @@ case class FormTemplate(
   webChat: Option[WebChat],
   sections: List[Section],
   parentFormSubmissionRefs: List[FormComponentId],
-  GFC579Ready: Option[String],
   languages: AvailableLanguages,
   save4LaterInfoText: Option[Save4LaterInfoText],
   summarySection: SummarySection

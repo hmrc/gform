@@ -427,7 +427,6 @@ class ValueParserSpec extends Spec {
     None,
     List.empty[Section],
     Nil,
-    Some("false"),
     AvailableLanguages.default,
     None,
     SummarySection(toSmartString("Title"), toSmartString("Header"), toSmartString("Footer"))

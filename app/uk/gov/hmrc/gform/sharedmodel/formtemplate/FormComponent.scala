@@ -46,7 +46,7 @@ case class FormComponent(
 
   private def loop(fc: FormComponent): List[FormComponent] =
     fc.`type` match {
-      case Group(fields, _, max, _, _, _) =>
+      case Group(fields, max, _, _, _) =>
         val expandedFields =
           for {
             field <- fields

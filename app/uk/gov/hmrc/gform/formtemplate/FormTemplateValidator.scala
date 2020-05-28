@@ -52,8 +52,8 @@ object FormTemplateValidator {
         val subFields = section.fields
           .map(_.`type`)
           .collect {
-            case Group(fields, _, _, _, _, _) => fields.map(_ -> idx)
-            case RevealingChoice(options, _)  => options.toList.flatMap(_.revealingFields.map(_ -> idx))
+            case Group(fields, _, _, _, _)   => fields.map(_ -> idx)
+            case RevealingChoice(options, _) => options.toList.flatMap(_.revealingFields.map(_ -> idx))
           }
 
         standardFields ::: subFields.flatten
@@ -146,10 +146,10 @@ object FormTemplateValidator {
     case Choice(_, _, _, _, _)         => Valid
     case RevealingChoice(revealingChoiceElements, _) =>
       validate(revealingChoiceElements.toList.flatMap(_.revealingFields.map(_.`type`)), formTemplate)
-    case HmrcTaxPeriod(_, _, _)    => Valid
-    case Group(fvs, _, _, _, _, _) => validate(fvs.map(_.`type`), formTemplate)
-    case FileUpload()              => Valid
-    case InformationMessage(_, _)  => Valid
+    case HmrcTaxPeriod(_, _, _)   => Valid
+    case Group(fvs, _, _, _, _)   => validate(fvs.map(_.`type`), formTemplate)
+    case FileUpload()             => Valid
+    case InformationMessage(_, _) => Valid
   }
 
   def validateForwardReference(sections: List[Section]): ValidationResult = {
@@ -290,7 +290,7 @@ object FormTemplateValidator {
 
   def validateGroup(formTemplate: FormTemplate): ValidationResult =
     validateComponents("Group", formTemplate)(f => {
-      case Group(fields, _, _, _, _, _) => fields.forall(f)
+      case Group(fields, _, _, _, _) => fields.forall(f)
     })
 
   def validateRevealingChoice(formTemplate: FormTemplate): ValidationResult =

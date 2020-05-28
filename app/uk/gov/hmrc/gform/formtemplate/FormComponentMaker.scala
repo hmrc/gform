@@ -240,11 +240,6 @@ class FormComponentMaker(json: JsValue) {
 
   def groupOpt(fields: List[FormComponentMaker]): Opt[Group] = {
 
-    def orientation(format: Option[FormatExpr]) = format match {
-      case IsGroupOrientation(VerticalGroupOrientation) | None => Vertical
-      case IsGroupOrientation(HorizontalGroupOrientation)      => Horizontal
-    }
-
     val fieldValuesOpt: Opt[List[FormComponent]] = fields.traverse(_.optFieldValue())
 
     for {
@@ -253,15 +248,14 @@ class FormComponentMaker(json: JsValue) {
       format            <- optMaybeFormatExpr(roundingMode)(emailVerification).right
       repMax            <- optMaybeRepeatsMax
       repMin            <- optMaybeRepeatsMin
-      group             <- validateRepeatsAndBuildGroup(repMax, repMin, fieldValues, orientation(format))
+      group             <- validateRepeatsAndBuildGroup(repMax, repMin, fieldValues)
     } yield group
   }
 
   private def validateRepeatsAndBuildGroup(
     repMax: Option[Int],
     repMin: Option[Int],
-    fields: List[FormComponent],
-    orientation: Orientation): Either[UnexpectedState, Group] =
+    fields: List[FormComponent]): Either[UnexpectedState, Group] =
     (repMax, repMin) match {
       case (Some(repMaxV), Some(repMinV)) if repMaxV < repMinV =>
         UnexpectedState(s"""repeatsMax should be higher than repeatsMin in Group field""").asLeft
@@ -270,7 +264,7 @@ class FormComponentMaker(json: JsValue) {
       case (_, repeatsMin) =>
         val fieldsMandatory =
           if (repeatsMin.getOrElse(None) == 0) fields.map(field => field.copy(mandatory = false)) else fields
-        Group(fieldsMandatory, orientation, repMax, repMin, repeatLabel, repeatAddAnotherText).asRight
+        Group(fieldsMandatory, repMax, repMin, repeatLabel, repeatAddAnotherText).asRight
     }
 
   private def toSmartString(stringEn: String, stringCy: String) =

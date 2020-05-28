@@ -20,7 +20,7 @@ import julienrf.json.derived
 import play.api.libs.json._
 
 sealed trait PresentationHint
-case object CollapseGroupUnderLabel extends PresentationHint
+
 case object InvisibleInSummary extends PresentationHint
 case object SummariseGroupAsGrid extends PresentationHint
 case object TotalValue extends PresentationHint

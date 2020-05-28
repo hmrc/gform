@@ -391,7 +391,7 @@ class TemplateValidatorSpec extends Spec {
 
     val dateFormComponent = mkFormComponent("fieldContainedInFormTemplate", mkDate(Some(ExactDateValue(2018, 2, 31))))
 
-    val formComponents = List(mkFormComponent("group", Group(List(dateFormComponent), Vertical)))
+    val formComponents = List(mkFormComponent("group", Group(List(dateFormComponent))))
 
     val newFormTemplate = mkFormTemplate(formComponents)
 
@@ -405,7 +405,7 @@ class TemplateValidatorSpec extends Spec {
     val dateFormComponent1 = mkFormComponent("fieldInGroup1", mkDate(Some(ExactDateValue(2018, 2, 15))))
     val dateFormComponent2 = mkFormComponent("fieldInGroup2", mkDate(Some(ExactDateValue(2019, 3, 14))))
 
-    val formComponents = List(mkFormComponent("group", Group(List(dateFormComponent1, dateFormComponent2), Vertical)))
+    val formComponents = List(mkFormComponent("group", Group(List(dateFormComponent1, dateFormComponent2))))
 
     val newFormTemplate = mkFormTemplate(formComponents)
 
@@ -421,7 +421,7 @@ class TemplateValidatorSpec extends Spec {
     val dateFormComponent2 =
       mkFormComponent("fieldInGroup2", mkDate(ExactYear(2019), ExactMonth(11), ExactDay(31), None))
 
-    val formComponents = List(mkFormComponent("group", Group(List(dateFormComponent1, dateFormComponent2), Vertical)))
+    val formComponents = List(mkFormComponent("group", Group(List(dateFormComponent1, dateFormComponent2))))
 
     val newFormTemplate = mkFormTemplate(formComponents)
 
@@ -435,7 +435,7 @@ class TemplateValidatorSpec extends Spec {
 
     val dateFormComponent = mkFormComponent("fieldContainedInFormTemplate", mkDate(Some(ExactDateValue(2018, 2, 25))))
 
-    val formComponents = List(mkFormComponent("group", Group(List(dateFormComponent), Vertical)))
+    val formComponents = List(mkFormComponent("group", Group(List(dateFormComponent))))
 
     val newFormTemplate = mkFormTemplate(formComponents)
 
@@ -448,7 +448,7 @@ class TemplateValidatorSpec extends Spec {
 
     val dateFormComponent = mkFormComponent("fieldContainedInFormTemplate", mkDate(Some(ExactDateValue(2018, 2, 25))))
 
-    val formComponents = List(mkFormComponent("group", Group(List(dateFormComponent), Vertical)))
+    val formComponents = List(mkFormComponent("group", Group(List(dateFormComponent))))
 
     val newFormTemplate = mkFormTemplate(formComponents)
 
@@ -594,10 +594,10 @@ class TemplateValidatorSpec extends Spec {
   }
 
   private def mkGroupFormComponent(formComponents: FormComponent*): FormComponent =
-    mkFormComponent("group", Group(formComponents.toList, Vertical))
+    mkFormComponent("group", Group(formComponents.toList))
 
   private def mkGroupFormComponent(groupName: String, formComponents: FormComponent*): FormComponent =
-    mkFormComponent(groupName, Group(formComponents.toList, Vertical))
+    mkFormComponent(groupName, Group(formComponents.toList))
 
   private def dateValidation(year: Year, month: Month, day: Day): ValidationResult =
     FormTemplateValidator.validateDates(

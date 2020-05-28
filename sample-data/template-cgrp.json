@@ -6,9 +6,9 @@
     "customerId": "${auth.payenino}",
     "classificationType": "BT-NRU-Environmental",
     "businessArea": "FinanceOpsCorpT",
-    "dmsFormId" : "exprtest4"
+    "dmsFormId": "exprtest4"
   },
-  "authConfig":{
+  "authConfig": {
     "authModule": "legacyEEITTAuth",
     "regimeId": "GF"
   },
@@ -21,11 +21,11 @@
           "type": "group",
           "id": "gid",
           "label": "glabel",
-          "format" : "horizontal",
-          "repeatsMin":1,
-          "repeatsMax":5,
-          "repeatLabel":"repeatLabel",
-          "repeatAddAnotherText":"repeatAddAnotherText",
+          "format": "horizontal",
+          "repeatsMin": 1,
+          "repeatsMax": 5,
+          "repeatLabel": "repeatLabel",
+          "repeatAddAnotherText": "repeatAddAnotherText",
           "fields": [
             {
               "type": "text",
@@ -34,14 +34,13 @@
               "mandatory": "false"
             }
           ],
-          "presentationHint" : "collapseGroupUnderLabel,summariseGroupAsGrid"
-
+          "presentationHint": "summariseGroupAsGrid"
         },
         {
           "type": "group",
           "id": "gid2",
           "label": "glabel2",
-          "presentationHint" : "collapseGroupUnderLabel,summariseGroupAsGrid",
+          "presentationHint": "summariseGroupAsGrid",
           "fields": [
             {
               "type": "text",
@@ -55,18 +54,14 @@
           "type": "group",
           "id": "gid3",
           "label": "glabel3",
-          "presentationHint" : "collapseGroupUnderLabel",
           "fields": [
             {
               "type": "choice",
               "id": "cid",
               "label": "clabel",
-              "multivalue":"yes",
+              "multivalue": "yes",
               "mandatory": "false",
-              "choices": [
-                "A",
-                "B"
-              ]
+              "choices": ["A", "B"]
             }
           ]
         },
@@ -107,4 +102,5 @@
         "infoText": "thingy copy"
       }
     ]
-  }}
+  }
+}

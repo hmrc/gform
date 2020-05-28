@@ -20,7 +20,6 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 trait PresentationHintGen {
   def presentationHintGen: Gen[PresentationHint] = Gen.oneOf(
-    CollapseGroupUnderLabel,
     InvisibleInSummary,
     SummariseGroupAsGrid,
     TotalValue

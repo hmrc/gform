@@ -173,7 +173,6 @@ object InfoType {
 
 case class Group(
   fields: List[FormComponent],
-  orientation: Orientation,
   repeatsMax: Option[Int] = None,
   repeatsMin: Option[Int] = None,
   repeatLabel: Option[SmartString] = None,

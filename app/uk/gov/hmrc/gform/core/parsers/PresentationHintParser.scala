@@ -36,12 +36,9 @@ object PresentationHintParser {
       List(presHint)
     })
 
-  lazy val presentationHint: Parser[PresentationHint] = ("collapseGroupUnderLabel" ^^ { (loc, unparsed) =>
-    CollapseGroupUnderLabel
+  lazy val presentationHint: Parser[PresentationHint] = ("summariseGroupAsGrid" ^^ { (loc, unparsed) =>
+    SummariseGroupAsGrid
   }
-    | "summariseGroupAsGrid" ^^ { (loc, unparsed) =>
-      SummariseGroupAsGrid
-    }
     | "invisibleInSummary" ^^ { (loc, unparsed) =>
       InvisibleInSummary
     }

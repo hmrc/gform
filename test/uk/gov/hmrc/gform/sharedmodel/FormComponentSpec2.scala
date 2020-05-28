@@ -35,7 +35,7 @@ class FormComponentSpec2 extends Spec {
          |  ],
          |  "multivalue":"no",
          |  "format":"vertical",
-         |  "presentationHint" : "collapseGroupUnderLabel"
+         |  "presentationHint" : "summariseGroupAsGrid"
          |
          |}""")
 
@@ -58,7 +58,7 @@ class FormComponentSpec2 extends Spec {
         derived = false,
         onlyShowOnSummary = false,
         None,
-        Some(List(CollapseGroupUnderLabel))
+        Some(List(SummariseGroupAsGrid))
       ))
   }
 

@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel
 
 import play.api.libs.json._
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ CollapseGroupUnderLabel, FormComponent, PresentationHint, SummariseGroupAsGrid }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponent, PresentationHint, SummariseGroupAsGrid, TotalValue }
 
 class JsonParseTestPresentationHint extends Spec {
 
@@ -65,17 +65,17 @@ class JsonParseTestPresentationHint extends Spec {
   "A component with a valid presentationHint" should "parse correctly" in {
 
     for {
-      snippet <- List(""", "presentationHint" : "collapseGroupUnderLabel,summariseGroupAsGrid" }""")
+      snippet <- List(""", "presentationHint" : "totalValue, summariseGroupAsGrid" }""")
     } {
       val jsResult = implicitly[Reads[FormComponent]].reads(Json.parse(startOfJson + snippet))
       jsResult shouldBe a[JsSuccess[_]]
-      jsResult.map(_.presentationHint).get should equal(Some(List(CollapseGroupUnderLabel, SummariseGroupAsGrid)))
+      jsResult.map(_.presentationHint).get should equal(Some(List(TotalValue, SummariseGroupAsGrid)))
     }
   }
 
   "A list of presentation hints" should "transform to and from Json correctly" in {
 
-    val hints = List(CollapseGroupUnderLabel, SummariseGroupAsGrid)
+    val hints = List(TotalValue, SummariseGroupAsGrid)
     Json.parse(Json.toJson(hints).toString()).validate[List[PresentationHint]] shouldBe (JsSuccess(hints))
 
   }
