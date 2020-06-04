@@ -38,7 +38,7 @@ trait DesAlgebra[F[_]] {
     utr: String,
     desRegistrationRequest: DesRegistrationRequest): F[ServiceCallResponse[DesRegistrationResponse]]
 
-  def lookupTaxPeriod(idType: String, idNumber: String, regimeType: String): F[Obligation]
+  def lookupTaxPeriod(idType: String, idNumber: String, regimeType: String): F[ServiceCallResponse[Obligation]]
 
   def testOnlyGet(url: String): Future[HttpResponse]
 }
@@ -104,11 +104,17 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
     }
   }
 
-  def lookupTaxPeriod(idType: String, idNumber: String, regimeType: String): Future[Obligation] = {
+  def lookupTaxPeriod(idType: String, idNumber: String, regimeType: String): Future[ServiceCallResponse[Obligation]] = {
     Logger.info(
       s"Des lookup, Tax Periods: '$idType, $idNumber, $regimeType', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
     val value = s"$baseUrl${desConfig.basePath}/enterprise/obligation-data/$idType/$idNumber/$regimeType?status=O"
-    wSHttp.GET[Obligation](value).recover { case _ => Obligation(List()) }
+    wSHttp.GET[Obligation](value).map(ServiceResponse.apply).recover {
+      case ex: NotFoundException =>
+        NotFound
+      case other =>
+        Logger.error("Unknown problem when calling des obligation-data", other)
+        CannotRetrieveResponse
+    }
   }
 
   def testOnlyGet(url: String): Future[HttpResponse] =

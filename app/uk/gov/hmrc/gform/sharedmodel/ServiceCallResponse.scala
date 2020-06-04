@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.sharedmodel
 
+import cats.Functor
 import play.api.libs.json._
 
 sealed trait ServiceCallResponse[+A] extends Product with Serializable
@@ -25,12 +26,20 @@ case object CannotRetrieveResponse extends ServiceCallResponse[Nothing]
 case class ServiceResponse[A](value: A) extends ServiceCallResponse[A]
 
 object ServiceCallResponse {
-  implicit def format[A: OWrites: Reads]: OFormat[ServiceCallResponse[A]] = new OFormat[ServiceCallResponse[A]] {
+  implicit val functor: Functor[ServiceCallResponse] = new Functor[ServiceCallResponse] {
+    def map[A, B](fa: ServiceCallResponse[A])(f: A => B): ServiceCallResponse[B] = fa match {
+      case NotFound               => NotFound
+      case CannotRetrieveResponse => CannotRetrieveResponse
+      case ServiceResponse(a)     => ServiceResponse(f(a))
+    }
+  }
+
+  implicit def format[A: Writes: Reads]: Format[ServiceCallResponse[A]] = new OFormat[ServiceCallResponse[A]] {
     override def writes(o: ServiceCallResponse[A]): JsObject =
       o match {
         case NotFound               => Json.obj("det" -> "NotFound")
         case CannotRetrieveResponse => Json.obj("det" -> "CannotRetrieveResponse")
-        case ServiceResponse(a)     => Json.obj("det" -> implicitly[OWrites[A]].writes(a))
+        case ServiceResponse(a)     => Json.obj("det" -> implicitly[Writes[A]].writes(a))
       }
 
     override def reads(json: JsValue): JsResult[ServiceCallResponse[A]] =

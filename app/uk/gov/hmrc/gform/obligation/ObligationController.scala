@@ -17,11 +17,12 @@
 package uk.gov.hmrc.gform.obligation
 
 import cats.data.NonEmptyList
+import cats.syntax.functor._
 import play.api.Logger
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
-import uk.gov.hmrc.gform.sharedmodel.{ HmrcTaxPeriodWithEvaluatedId, TaxResponse }
+import uk.gov.hmrc.gform.sharedmodel.{ HmrcTaxPeriodWithEvaluatedId, Obligation, ServiceResponse, TaxResponse }
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -36,7 +37,11 @@ class ObligationController(controllerComponents: ControllerComponents, obligatio
       val hmrcTaxPeriod = i.recalculatedTaxPeriodKey.hmrcTaxPeriod
       obligation
         .callDES(hmrcTaxPeriod.idType.value, i.idNumberValue.value, hmrcTaxPeriod.regimeType.value)
-        .map(x => TaxResponse(i, x))
+        .map {
+          case uk.gov.hmrc.gform.sharedmodel.NotFound => ServiceResponse(Obligation(Nil))
+          case other                                  => other
+        }
+        .map(_.map(r => TaxResponse(i, r)))
     }
     Future.sequence(b.toList).asOkJson
   }
