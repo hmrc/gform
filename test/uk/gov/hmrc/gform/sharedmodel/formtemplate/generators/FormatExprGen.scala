@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 import org.scalacheck.Gen
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ After, AnyDate, AnyDay, AnyMonth, AnyYear, BasicText, Before, BeforeAfterPrecisely, CompanyRegistrationNumber, ConcreteDate, CountryCode, DateConstraint, DateConstraintInfo, DateConstraintType, DateConstraints, DateField, EORI, Email, ExactDay, ExactMonth, ExactYear, FirstDay, LastDay, NINO, Next, NonUkCountryCode, Number, OffsetDate, PositiveNumber, Precisely, Previous, RoundingMode, ShortText, Sterling, TelephoneNumber, TextConstraint, TextExpression, TextWithRestrictions, Today, UTR, UkBankAccountNumber, UkEORI, UkSortCodeFormat, UkVrn }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ After, AnyDate, AnyDay, AnyMonth, AnyYear, BasicText, Before, BeforeAfterPrecisely, ChildBenefitNumber, CompanyRegistrationNumber, ConcreteDate, CountryCode, DateConstraint, DateConstraintInfo, DateConstraintType, DateConstraints, DateField, EORI, Email, ExactDay, ExactMonth, ExactYear, FirstDay, LastDay, NINO, Next, NonUkCountryCode, Number, OffsetDate, PositiveNumber, Precisely, Previous, RoundingMode, ShortText, Sterling, TelephoneNumber, TextConstraint, TextExpression, TextWithRestrictions, Today, UTR, UkBankAccountNumber, UkEORI, UkSortCodeFormat, UkVrn }
 
 trait FormatExprGen {
   def numberGen: Gen[Number] =
@@ -82,7 +82,8 @@ trait FormatExprGen {
     Gen.const(NonUkCountryCode),
     Gen.const(CompanyRegistrationNumber),
     Gen.const(EORI),
-    Gen.const(UkEORI)
+    Gen.const(UkEORI),
+    Gen.const(ChildBenefitNumber)
   )
 
   def textExpressionGen: Gen[TextExpression] = ExprGen.exprGen().map(TextExpression(_))

@@ -87,6 +87,8 @@ class FormatValidationSpec extends Spec {
 
   it should "return UkEORI" in createTest("UkEORI", UkEORI)
 
+  it should "return ChildBenefitNumber" in createTest("childBenefitNumber", ChildBenefitNumber)
+
   def createTest(format: String, constraint: TextConstraint) = {
     val json: JsValue = makeJson(format)
     reads.reads(json) shouldBe JsSuccess(
