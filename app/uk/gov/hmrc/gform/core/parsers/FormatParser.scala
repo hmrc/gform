@@ -242,6 +242,8 @@ object FormatParser {
       TextFormat(EORI)
     } | "UkEORI" ^^ { (loc, _) =>
       TextFormat(UkEORI)
+    } | "childBenefitNumber" ^^ { (loc, _) =>
+      TextFormat(ChildBenefitNumber)
     }
   }
 
