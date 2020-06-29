@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import julienrf.json.derived
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
-import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
+import uk.gov.hmrc.gform.sharedmodel.{ LocalisedString, ValueClassFormat }
 
 object EEITTAuthConfig {
   val eeittAuth = "legacyEEITTAuth"
@@ -94,6 +94,7 @@ object AuthModule {
 
   case object Hmrc extends AuthModule
   case object HmrcAny extends AuthModule
+  case object HmrcVerified extends AuthModule
   case object EeittLegacy extends AuthModule
   case object AnonymousAccess extends AuthModule
   case object AWSALBAccess extends AuthModule
@@ -101,6 +102,7 @@ object AuthModule {
 
   private val hmrc = "hmrc"
   private val hmrcAny = "hmrcAny"
+  private val hmrcVerified = "hmrcVerified"
   private val legacyEEITTAuth = "legacyEEITTAuth"
   private val anonymous = "anonymous"
   private val awsAlb = "awsAlbAuth"
@@ -109,6 +111,7 @@ object AuthModule {
   implicit val format: Format[AuthModule] = ADTFormat.formatEnumeration(
     hmrc            -> Hmrc,
     hmrcAny         -> HmrcAny,
+    hmrcVerified    -> HmrcVerified,
     legacyEEITTAuth -> EeittLegacy,
     anonymous       -> AnonymousAccess,
     awsAlb          -> AWSALBAccess,
@@ -118,6 +121,7 @@ object AuthModule {
   def asString(o: AuthModule): String = o match {
     case Hmrc            => hmrc
     case HmrcAny         => hmrcAny
+    case HmrcVerified    => hmrcVerified
     case EeittLegacy     => legacyEEITTAuth
     case AnonymousAccess => anonymous
     case AWSALBAccess    => awsAlb
@@ -130,6 +134,7 @@ case object Anonymous extends AuthConfig
 case object AWSALBAuth extends AuthConfig
 case class EeittModule(regimeId: RegimeId) extends AuthConfig
 case object HmrcAny extends AuthConfig
+case class HmrcVerified(ivFailure: LocalisedString, notAllowedIn: LocalisedString) extends AuthConfig
 case object HmrcSimpleModule extends AuthConfig
 case class HmrcEnrolmentModule(enrolmentAuth: EnrolmentAuth) extends AuthConfig
 case class HmrcAgentModule(agentAccess: AgentAccess) extends AuthConfig
@@ -194,6 +199,8 @@ object AuthConfig {
         maybeAgentAccess               <- (json \ "agentAccess").validateOpt[AgentAccess]
         maybeEnrolmentSection          <- (json \ "enrolmentSection").validateOpt[EnrolmentSection]
         maybeEnrolmentCheck            <- (json \ "enrolmentCheck").validateOpt[EnrolmentCheckVerb]
+        maybeIvFailure                 <- (json \ "ivFailure").validateOpt[LocalisedString]
+        maybeNotAllowedIn              <- (json \ "notAllowedIn").validateOpt[LocalisedString]
         authConfig <- authModule match {
                        case AuthModule.AnonymousAccess => JsSuccess(Anonymous)
                        case AuthModule.AWSALBAccess    => JsSuccess(AWSALBAuth)
@@ -204,6 +211,14 @@ object AuthConfig {
                            case Some(regimeId) => JsSuccess(EeittModule(regimeId))
                          }
                        case AuthModule.HmrcAny => JsSuccess(HmrcAny)
+                       case AuthModule.HmrcVerified =>
+                         (maybeIvFailure, maybeNotAllowedIn) match {
+                           case (Some(ivFailure), Some(notAllowedIn)) =>
+                             JsSuccess(HmrcVerified(ivFailure, notAllowedIn))
+                           case (Some(_), None) => JsError(s"Missing 'notAllowedIn' field")
+                           case (None, Some(_)) => JsError(s"Missing 'ivFailure' field")
+                           case (None, None)    => JsError(s"Missing 'notAllowedIn' and 'ivFailure' fields")
+                         }
                        case AuthModule.Hmrc =>
                          maybeServiceId match {
                            case None =>
