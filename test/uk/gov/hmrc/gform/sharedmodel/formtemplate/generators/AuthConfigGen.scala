@@ -47,10 +47,12 @@ trait AuthConfigGen {
     Gen.oneOf(
       AuthModule.Hmrc,
       AuthModule.HmrcAny,
+      AuthModule.HmrcVerified,
       AuthModule.EeittLegacy,
       AuthModule.AnonymousAccess,
       AuthModule.AWSALBAccess,
-      AuthModule.OfstedModule)
+      AuthModule.OfstedModule
+    )
 
   def doCheckGen: Gen[DoCheck] =
     for {
