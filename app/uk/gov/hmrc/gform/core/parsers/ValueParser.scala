@@ -71,6 +71,10 @@ object ValueParser {
   lazy val expr: Parser[Expr] = (quotedConstant
     | "${" ~> parserExpression <~ "}")
 
+  lazy val internalLinkParser: Parser[InternalLink] = "printAcknowledgementPdf" ^^ { (loc, _) =>
+    InternalLink.printAcknowledgementPdf
+  }
+
   lazy val contextField: Parser[Expr] = ("eeitt" ~ "." ~ eeitt ^^ { (loc, _, _, eeitt) =>
     EeittCtx(eeitt)
   }
@@ -94,6 +98,9 @@ object ValueParser {
     }
     | "hmrcRosmRegistrationCheck" ~ "." ~ rosmProp ^^ { (loc, _, _, rosmProp) =>
       HmrcRosmRegistrationCheck(rosmProp)
+    }
+    | "link" ~ "." ~ internalLinkParser ^^ { (loc, _, _, internalLink) =>
+      LinkCtx(internalLink)
     }
     | quotedConstant
 

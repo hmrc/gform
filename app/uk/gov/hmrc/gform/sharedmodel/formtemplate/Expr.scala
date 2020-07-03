@@ -56,6 +56,7 @@ final case class EeittCtx(value: Eeitt) extends Expr
 final case class UserCtx(value: UserField) extends Expr
 final case class Constant(value: String) extends Expr
 final case class HmrcRosmRegistrationCheck(value: RosmProp) extends Expr
+final case class LinkCtx(link: InternalLink) extends Expr
 final case class FormTemplateCtx(value: FormTemplateProp) extends Expr
 final case object Value extends Expr
 
