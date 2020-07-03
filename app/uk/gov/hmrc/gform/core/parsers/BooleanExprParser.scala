@@ -63,6 +63,9 @@ object BooleanExprParser {
     | alphabeticOnly ~ "contains" ~ exprFormCtx ^^ { (_, expr1, _, expr2) =>
       Contains(FormCtx(expr1), expr2)
     }
+    | alphabeticOnly ~ "in" ~ dataSourceParse ^^ { (_, expr, _, dataSource) =>
+      In(FormCtx(expr), dataSource)
+    }
     | p0)
 
   private lazy val p2: Parser[BooleanExpr] = ("!" ~ p1 ^^ { (loc, _, e) =>

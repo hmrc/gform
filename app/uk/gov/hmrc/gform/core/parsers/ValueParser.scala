@@ -21,6 +21,7 @@ import java.time.LocalDate
 import parseback._
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.BasicParsers._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.DataSource._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 object ValueParser {
@@ -56,6 +57,16 @@ object ValueParser {
 
   lazy val exprFormCtx: Parser[Expr] = (quotedConstant
     | parserExpression)
+
+  lazy val dataSourceParse: Parser[DataSource] = (
+    "service" ~ "." ~ "seiss" ^^ { (_, _, _, serviceName) =>
+      SeissEligible
+    }
+      |
+        "mongo" ~ "." ~ alphabeticOnly ^^ { (_, _, _, collectionName) =>
+          Mongo(collectionName)
+        }
+  )
 
   lazy val expr: Parser[Expr] = (quotedConstant
     | "${" ~> parserExpression <~ "}")
@@ -125,6 +136,7 @@ object ValueParser {
   lazy val alphabeticOnly: Parser[String] = """[a-zA-Z]\w*""".r ^^ { (loc, str) =>
     str
   }
+
   lazy val quotedConstant: Parser[Expr] = ("'" ~ anyConstant ~ "'" ^^ { (loc, _, str, _) =>
     str
   }
