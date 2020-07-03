@@ -167,6 +167,14 @@ object FormTemplateValidator {
                   s"id '${id.value}' named in includeIf is forward reference, which is not permitted"))
               .getOrElse(Invalid(s"id '${id.value}' named in includeIf expression does not exist in a form")))
 
+    def validateValueField(valueField: Expr): List[ValidationResult] =
+      extractFcIds(valueField).map(
+        id =>
+          indexLookup
+            .get(id)
+            .map(_ => Valid)
+            .getOrElse(Invalid(s"id '${id.value}' named in includeIf expression does not exist in a form")))
+
     def boolean(includeIf: BooleanExpr, idx: Int): List[ValidationResult] = includeIf match {
       case Equals(left, right)              => validateExprs(left, right, idx)
       case NotEquals(left, right)           => validateExprs(left, right, idx)
@@ -179,6 +187,7 @@ object FormTemplateValidator {
       case And(left, right)                 => boolean(left, idx) ::: boolean(right, idx)
       case IsFalse | IsTrue                 => List(Valid)
       case Contains(collection, value)      => validateExprs(collection, value, idx)
+      case In(valueField, _)                => validateValueField(valueField)
     }
 
     Monoid[ValidationResult]
