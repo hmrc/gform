@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.submission
 import org.scalatest._
 import org.scalatest.prop.PropertyChecks
 import uk.gov.hmrc.gform.sharedmodel.VariadicFormData
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.DataSource.SeissEligible
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 class BooleanExprEvalSpec extends FlatSpec with Matchers with EitherValues with PropertyChecks {
@@ -90,5 +91,12 @@ class BooleanExprEvalSpec extends FlatSpec with Matchers with EitherValues with 
     BooleanExprEval.isTrue(Contains(FormCtx("multichoice"), Constant("0")), data, None).beResult shouldBe true
     BooleanExprEval.isTrue(Contains(FormCtx("multichoice"), Constant("2")), data, None).beResult shouldBe true
     BooleanExprEval.isTrue(Contains(FormCtx("multichoice"), Constant("1")), data, None).beResult shouldBe false
+  }
+
+  it should "evaluate exits" in {
+    val data = VariadicFormData.one(FormComponentId("singleField"), "1234567890")
+
+    BooleanExprEval.isTrue(In(FormCtx("singleField"), SeissEligible), data, None).beResult shouldBe true
+    BooleanExprEval.isTrue(In(FormCtx("noSingleField"), SeissEligible), data, None).beResult shouldBe false
   }
 }

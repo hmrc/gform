@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.submission
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.gform.sharedmodel.AffinityGroupUtil.affinityGroupNameO
 import uk.gov.hmrc.gform.sharedmodel.VariadicFormData
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Add, And, BooleanExpr, Constant, Contains, Equals, Expr, FormComponentId, FormCtx, GreaterThan, GreaterThanOrEquals, IsTrue, LessThan, LessThanOrEquals, Multiply, Not, NotEquals, Or, Subtraction, UserCtx }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 import scala.util.Try
 
@@ -81,6 +81,11 @@ object BooleanExprEval {
       BooleanExprResultWithDependents(collection.contains(right), xs1 ++ xs2)
     }
 
+    def exists(singleFieldId: FormCtx): BooleanExprResultWithDependents = {
+      val (singleField, xs) = stringValue(singleFieldId)
+      BooleanExprResultWithDependents(singleField.nonEmpty, xs)
+    }
+
     expr match {
       case Equals(field1, field2)              => compare(field1, _ == _, _ == _, field2)
       case NotEquals(field1, field2)           => compare(field1, _ != _, _ != _, field2)
@@ -103,6 +108,7 @@ object BooleanExprEval {
         BooleanExprResultWithDependents(b1 & b2, xs1 ++ xs2)
       case IsTrue                      => BooleanExprResultWithDependents.justResult(true)
       case Contains(collection, value) => includes(collection, value)
+      case In(valueField, _)           => exists(valueField)
       case _                           => BooleanExprResultWithDependents.justResult(false)
     }
   }

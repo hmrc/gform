@@ -21,6 +21,7 @@ import org.scalacheck.Gen
 import uk.gov.hmrc.gform.Helpers._
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.formtemplate.FormTemplateValidator
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.DataSource.SeissEligible
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
@@ -504,7 +505,8 @@ class TemplateValidatorSpec extends Spec {
         (And(Equals(invalidRef, constant), IsTrue),  invalidReferenceError),
         (Or (Equals(invalidRef, constant), IsTrue),  invalidReferenceError),
         (IsTrue,  Valid),
-        (IsFalse, Valid)
+        (IsFalse, Valid),
+        (In (invalidRef, SeissEligible),  invalidReferenceError)
         // format: on
       )
     forAll(table) {
