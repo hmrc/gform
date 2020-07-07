@@ -206,7 +206,7 @@ class TemplateValidatorSpec extends Spec {
 
     val formComponent = List(mkFormComponent("fieldInAcknowledgementSections", Value))
     val newAcknowledgementSection =
-      AcknowledgementSection(toSmartString("ack section with email param field"), None, None, formComponent)
+      AcknowledgementSection(toSmartString("ack section with email param field"), None, None, formComponent, true)
 
     val newEmailParameters = Some(
       NonEmptyList.of(

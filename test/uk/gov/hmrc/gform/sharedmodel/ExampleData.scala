@@ -71,7 +71,7 @@ trait ExampleAuthConfig extends DestinationGen {
   val ackFormComponent = List(buildFormComponent("fieldInAcknowledgementSections", Value))
 
   val ackSection =
-    AcknowledgementSection(toSmartString("ack section with email param field"), None, None, ackFormComponent)
+    AcknowledgementSection(toSmartString("ack section with email param field"), None, None, ackFormComponent, true)
 
   val decFormComponent = List(buildFormComponent("fieldInDeclarationSections", Value))
 
@@ -356,7 +356,8 @@ trait ExampleFormTemplate {
       toSmartString("Acknowledgement Page"),
       Some(toSmartString("this page is to acknowledge submission")),
       Some(toSmartString(("shortName for acknowledgement"))),
-      List(`fieldValue - info`)
+      List(`fieldValue - info`),
+      true
     )
 
   def declarationSection =

@@ -44,11 +44,12 @@ trait SectionGen {
 
   def acknowledgementSectionGen: Gen[AcknowledgementSection] =
     for {
-      title       <- smartStringGen
-      description <- Gen.option(smartStringGen)
-      shortName   <- Gen.option(smartStringGen)
-      fields      <- PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen())
-    } yield AcknowledgementSection(title, description, shortName, fields.toList)
+      title         <- smartStringGen
+      description   <- Gen.option(smartStringGen)
+      shortName     <- Gen.option(smartStringGen)
+      fields        <- PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen())
+      showReference <- PrimitiveGen.booleanGen
+    } yield AcknowledgementSection(title, description, shortName, fields.toList, showReference)
 
   def declarationSectionGen: Gen[DeclarationSection] =
     for {

@@ -21,6 +21,7 @@ import julienrf.json.derived
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.SmartString
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils.nelFormat
+import uk.gov.hmrc.gform.formtemplate.AcknowledgementSectionMaker
 
 sealed trait Section extends Product with Serializable {
   def title(): SmartString
@@ -70,11 +71,19 @@ case class AcknowledgementSection(
   title: SmartString,
   description: Option[SmartString],
   shortName: Option[SmartString],
-  fields: List[FormComponent]
+  fields: List[FormComponent],
+  showReference: Boolean
 )
 
 object AcknowledgementSection {
-  implicit val format: OFormat[AcknowledgementSection] = Json.format[AcknowledgementSection]
+
+  private val templateReads: Reads[AcknowledgementSection] = Reads(
+    json =>
+      new AcknowledgementSectionMaker(json)
+        .optAcknowledgementSection()
+        .fold(us => JsError(us.toString), as => JsSuccess(as)))
+
+  implicit val format: OFormat[AcknowledgementSection] = OFormatWithTemplateReadFallback(templateReads)
 }
 
 case class EnrolmentSection(
