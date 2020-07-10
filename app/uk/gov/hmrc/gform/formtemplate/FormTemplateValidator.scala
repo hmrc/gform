@@ -41,7 +41,7 @@ object FormTemplateValidator {
 
   def fieldIds(sections: List[Section]) = indexedFieldIds(sections).map(_._1)
 
-  def indexedFieldIds(sections: List[Section]): List[(FormComponentId, Int)] = indexedFields(sections).map {
+  private def indexedFieldIds(sections: List[Section]): List[(FormComponentId, Int)] = indexedFields(sections).map {
     case (a, b) => a.id -> b
   }
 
@@ -268,7 +268,7 @@ object FormTemplateValidator {
       case Success(_)       => ""
     }
 
-  def extractFcIds(expr: Expr): List[FormComponentId] = expr match {
+  private def extractFcIds(expr: Expr): List[FormComponentId] = expr match {
     case Add(left, right)         => extractFcIds(left) ::: extractFcIds(right)
     case Subtraction(left, right) => extractFcIds(left) ::: extractFcIds(right)
     case Multiply(left, right)    => extractFcIds(left) ::: extractFcIds(right)
