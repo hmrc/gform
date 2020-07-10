@@ -472,6 +472,29 @@ class TemplateValidatorSpec extends Spec {
 
   }
 
+  "FormTemplateValidator.validateForwardReference" should "detect valid references in an In expression" in {
+    val formComponentsA = List(mkFormComponent("fieldA", Value))
+    val formComponentsB = List(mkFormComponent("fieldB", Value))
+    val baseSectionA = mkSection("sectionA", formComponentsA)
+    val baseSectionB = mkSection("sectionB", formComponentsB)
+
+    val table =
+      Table(
+        // format: off
+        ("expr", "expected"),
+        (In (FormCtx("fieldB"), SeissEligible),  Valid),
+        (In (AuthCtx(SaUtr), SeissEligible),  Valid),
+        (In (ParamCtx(QueryParam("test")), SeissEligible),  Valid)
+        // format: on
+      )
+    forAll(table) {
+      case (booleanExpr, expected) =>
+        val sectionA = baseSectionA.copy(page = baseSectionA.page.copy(includeIf = Some(IncludeIf(booleanExpr))))
+        val res = FormTemplateValidator.validateForwardReference(sectionA :: baseSectionB :: Nil)
+        res shouldBe expected
+    }
+  }
+
   "FormTemplateValidator.validateForwardReference" should "detect invalid references/forward references in a Boolean Expression" in {
     val formComponentsA = List(mkFormComponent("fieldA", Value))
     val formComponentsB = List(mkFormComponent("fieldB", Value))
