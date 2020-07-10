@@ -41,7 +41,7 @@ object FormTemplateValidator {
 
   def fieldIds(sections: List[Section]) = indexedFieldIds(sections).map(_._1)
 
-  private def indexedFieldIds(sections: List[Section]): List[(FormComponentId, Int)] = indexedFields(sections).map {
+  def indexedFieldIds(sections: List[Section]): List[(FormComponentId, Int)] = indexedFields(sections).map {
     case (a, b) => a.id -> b
   }
 
@@ -187,7 +187,7 @@ object FormTemplateValidator {
       case And(left, right)                 => boolean(left, idx) ::: boolean(right, idx)
       case IsFalse | IsTrue                 => List(Valid)
       case Contains(collection, value)      => validateExprs(collection, value, idx)
-      case In(valueField, _)                => validateValueField(valueField)
+      case In(value, _)                     => validateValueField(value)
     }
 
     Monoid[ValidationResult]
@@ -268,7 +268,7 @@ object FormTemplateValidator {
       case Success(_)       => ""
     }
 
-  private def extractFcIds(expr: Expr): List[FormComponentId] = expr match {
+  def extractFcIds(expr: Expr): List[FormComponentId] = expr match {
     case Add(left, right)         => extractFcIds(left) ::: extractFcIds(right)
     case Subtraction(left, right) => extractFcIds(left) ::: extractFcIds(right)
     case Multiply(left, right)    => extractFcIds(left) ::: extractFcIds(right)

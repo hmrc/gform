@@ -63,8 +63,8 @@ object BooleanExprParser {
     | alphabeticOnly ~ "contains" ~ exprFormCtx ^^ { (_, expr1, _, expr2) =>
       Contains(FormCtx(expr1), expr2)
     }
-    | alphabeticOnly ~ "in" ~ dataSourceParse ^^ { (_, expr, _, dataSource) =>
-      In(FormCtx(expr), dataSource)
+    | contextField ~ "in" ~ dataSourceParse ^^ { (_, expr, _, dataSource) =>
+      In(expr, dataSource)
     }
     | p0)
 
