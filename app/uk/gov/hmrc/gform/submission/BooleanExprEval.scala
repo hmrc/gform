@@ -81,8 +81,8 @@ object BooleanExprEval {
       BooleanExprResultWithDependents(collection.contains(right), xs1 ++ xs2)
     }
 
-    def exists(singleFieldId: FormCtx): BooleanExprResultWithDependents = {
-      val (singleField, xs) = stringValue(singleFieldId)
+    def exists(value: Expr): BooleanExprResultWithDependents = {
+      val (singleField, xs) = stringValue(value)
       BooleanExprResultWithDependents(singleField.nonEmpty, xs)
     }
 
@@ -108,7 +108,7 @@ object BooleanExprEval {
         BooleanExprResultWithDependents(b1 & b2, xs1 ++ xs2)
       case IsTrue                      => BooleanExprResultWithDependents.justResult(true)
       case Contains(collection, value) => includes(collection, value)
-      case In(valueField, _)           => exists(valueField)
+      case In(value, _)                => exists(value)
       case _                           => BooleanExprResultWithDependents.justResult(false)
     }
   }
