@@ -13,7 +13,7 @@ object Dependencies {
   val compile = Seq(
     ws,
     "com.github.pureconfig" %% "pureconfig" % "0.10.2",
-    "uk.gov.hmrc" %% "simple-reactivemongo" % "7.20.0-play-26",
+    "uk.gov.hmrc" %% "simple-reactivemongo" % "7.30.0-play-26",
     "uk.gov.hmrc" %% "http-caching-client" % "9.0.0-play-26",
     "uk.gov.hmrc" %% "bootstrap-play-26" % "1.1.0",
     "uk.gov.hmrc" %% "domain" % "5.3.0",
@@ -45,4 +45,3 @@ object Dependencies {
     "org.jsoup" % "jsoup" % "1.11.3" % scope
   )
 }
-  
