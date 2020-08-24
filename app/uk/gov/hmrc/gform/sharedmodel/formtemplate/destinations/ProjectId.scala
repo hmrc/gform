@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.support
+package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
 
-import org.scalatest._
-import org.scalatest.concurrent.{ Eventually, ScalaFutures }
-import org.scalatest.time.{ Millis, Seconds, Span }
+import play.api.libs.json._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils
 
-trait ITSpecBase
-    extends FreeSpecLike with Matchers with DiagrammedAssertions with TryValues with EitherValues with OptionValues
-    with AppendedClues with ScalaFutures with Eventually {
+case class ProjectId(id: String) extends AnyVal
 
-  implicit override val patienceConfig = PatienceConfig(timeout = Span(15, Seconds), interval = Span(5, Millis))
+object ProjectId {
+  implicit val format: Format[ProjectId] = JsonUtils.valueClassFormat[ProjectId, String](ProjectId(_), _.id)
 }
