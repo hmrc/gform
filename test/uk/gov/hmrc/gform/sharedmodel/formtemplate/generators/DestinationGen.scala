@@ -18,8 +18,8 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.form.FormStatus
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.TextExpression
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{Destination, DestinationId, ProjectId}
-import uk.gov.hmrc.gform.sharedmodel.notifier.{NotifierPersonalisationFieldId, NotifierTemplateId}
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, ProjectId }
+import uk.gov.hmrc.gform.sharedmodel.notifier.{ NotifierPersonalisationFieldId, NotifierTemplateId }
 
 trait DestinationGen {
   def destinationIdGen: Gen[DestinationId] =
@@ -52,14 +52,15 @@ trait DestinationGen {
 
   def submissionConsolidatorGen: Gen[Destination.SubmissionConsolidator] =
     for {
-      id                 <- destinationIdGen
-      projectId          <- projectIdGen
-      customerId         <- customerIdGen
+      id            <- destinationIdGen
+      projectId     <- projectIdGen
+      customerId    <- customerIdGen
       submissionRef <- submissionRefExprGen
-      templateId       <- templateIdExprGen
-      includeIf          <- includeIfGen()
-      failOnError        <- PrimitiveGen.booleanGen
-    } yield Destination.SubmissionConsolidator(id, projectId, submissionRef, templateId, customerId, includeIf, failOnError)
+      templateId    <- templateIdExprGen
+      includeIf     <- includeIfGen()
+      failOnError   <- PrimitiveGen.booleanGen
+    } yield
+      Destination.SubmissionConsolidator(id, projectId, submissionRef, templateId, customerId, includeIf, failOnError)
 
   def hmrcDmsGen(includeIf: Option[String] = None, failOnError: Option[Boolean] = None): Gen[Destination.HmrcDms] =
     hmrcDmsGen.map { g =>
