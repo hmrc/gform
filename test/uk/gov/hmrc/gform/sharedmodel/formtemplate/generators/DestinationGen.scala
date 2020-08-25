@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.form.FormStatus
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.TextExpression
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, ProjectId }
 import uk.gov.hmrc.gform.sharedmodel.notifier.{ NotifierPersonalisationFieldId, NotifierTemplateId }
 
 trait DestinationGen {
@@ -33,6 +33,9 @@ trait DestinationGen {
   def customerIdGen: Gen[TextExpression] = FormatExprGen.textExpressionGen
   def businessAreaGen: Gen[String] = PrimitiveGen.nonEmptyAlphaNumStrGen
   def signatureGen: Gen[String] = PrimitiveGen.nonEmptyAsciiPrintableString
+  def projectIdGen: Gen[ProjectId] = PrimitiveGen.nonEmptyAlphaNumStrGen.map(ProjectId(_))
+  def submissionRefExprGen: Gen[TextExpression] = FormatExprGen.textExpressionGen
+  def templateIdExprGen: Gen[TextExpression] = FormatExprGen.textExpressionGen
 
   def hmrcDmsGen: Gen[Destination.HmrcDms] =
     for {
@@ -46,6 +49,18 @@ trait DestinationGen {
     } yield
       Destination
         .HmrcDms(id, dmsFormId, customerId, classificationType, businessArea, includeIf, failOnError, false, None)
+
+  def submissionConsolidatorGen: Gen[Destination.SubmissionConsolidator] =
+    for {
+      id            <- destinationIdGen
+      projectId     <- projectIdGen
+      customerId    <- customerIdGen
+      submissionRef <- submissionRefExprGen
+      templateId    <- templateIdExprGen
+      includeIf     <- includeIfGen()
+      failOnError   <- PrimitiveGen.booleanGen
+    } yield
+      Destination.SubmissionConsolidator(id, projectId, submissionRef, templateId, customerId, includeIf, failOnError)
 
   def hmrcDmsGen(includeIf: Option[String] = None, failOnError: Option[Boolean] = None): Gen[Destination.HmrcDms] =
     hmrcDmsGen.map { g =>
@@ -115,7 +130,7 @@ trait DestinationGen {
     } yield Destination.Email(id, emailTemplateId, includeIf, failOnError, to, personalisation)
 
   def singularDestinationGen: Gen[Destination] =
-    Gen.oneOf(hmrcDmsGen, handlebarsHttpApiGen, stateTransitionGen, logGen, emailGen)
+    Gen.oneOf(hmrcDmsGen, handlebarsHttpApiGen, stateTransitionGen, logGen, emailGen, submissionConsolidatorGen)
 
   def destinationGen: Gen[Destination] = Gen.frequency(10 -> singularDestinationGen, 1 -> compositeGen)
 

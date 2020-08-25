@@ -29,6 +29,7 @@ class DestinationSpec extends Spec {
 
   it should "read custom JSON for all destinations" in {
     forAll(DestinationGen.destinationGen) { destination =>
+      println(destination)
       verifyRead[Destination](
         destination,
         createUploadableJson(destination)
