@@ -81,6 +81,7 @@ object Destination {
     submissionRef: TextExpression,
     templateId: TextExpression,
     customerId: TextExpression,
+    formData: Option[String],
     includeIf: String,
     failOnError: Boolean)
       extends Destination with DestinationWithCustomerId
@@ -171,6 +172,7 @@ case class UploadableSubmissionConsolidator(
   submissionRef: TextExpression,
   templateId: TextExpression,
   customerId: TextExpression,
+  formData: Option[String],
   convertSingleQuotes: Option[Boolean],
   includeIf: Option[String],
   failOnError: Option[Boolean]
@@ -185,6 +187,7 @@ case class UploadableSubmissionConsolidator(
         submissionRef,
         templateId,
         customerId,
+        formData,
         cii.getOrElse(true.toString),
         failOnError.getOrElse(true))
 }

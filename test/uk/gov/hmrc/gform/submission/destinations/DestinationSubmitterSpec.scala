@@ -21,14 +21,15 @@ import cats.{ Applicative, MonadError }
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.notifier.NotifierAlgebra
 import uk.gov.hmrc.gform.sharedmodel.{ PdfHtml, SubmissionRef }
-import uk.gov.hmrc.gform.sharedmodel.form.FormId
+import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.{ HmrcDms, SubmissionConsolidator }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, FormTemplateGen, PrimitiveGen }
 import uk.gov.hmrc.gform.sharedmodel.generators.{ PdfDataGen, StructuredFormValueGen }
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 import uk.gov.hmrc.gform.submission.handlebars.{ FocussedHandlebarsModelTree, HandlebarsHttpApiSubmitter, HandlebarsModelTree, HandlebarsTemplateProcessor }
+import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorAlgebra
 import uk.gov.hmrc.gform.{ Possible, Spec, possibleMonadError }
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
@@ -301,12 +302,167 @@ class DestinationSubmitterSpec
     }
   }
 
+  "A submission to destination SubmissionConsolidator" should "send to submission-consolidator when includeIf is true" in {
+    forAll(
+      submissionConsolidatorGen.map(_.copy(includeIf = "true")),
+      submissionInfoGen,
+      formTemplateGen,
+      structureFormValueObjectStructureGen) {
+      (submissionConsolidator, submissionInfo, formTemplate, structuredFormData) =>
+        {
+          val model = HandlebarsTemplateProcessorModel.empty
+          val modelTree = tree(
+            submissionInfo.formId,
+            model,
+            submissionInfo.submission.submissionRef,
+            formTemplate,
+            PdfHtml(""),
+            structuredFormData)
+          createSubmitter
+            .expectIncludeIfEvaluation(
+              submissionConsolidator.includeIf,
+              HandlebarsTemplateProcessorModel.empty,
+              FocussedHandlebarsModelTree(modelTree),
+              true
+            )
+            .expectSubmissionConsolidatorSubmission(submissionConsolidator, submissionInfo, model, modelTree, form)
+            .expectDestinationAudit(
+              submissionConsolidator,
+              None,
+              None,
+              submissionInfo.formId,
+              PdfHtml(""),
+              submissionInfo.submission.submissionRef,
+              formTemplate,
+              model)
+            .sut
+            .submitIfIncludeIf(submissionConsolidator, submissionInfo, model, modelTree, submitter, Some(form)) shouldBe Right(
+            None)
+        }
+    }
+  }
+
+  it should "not be sent to the submission-consolidator when includeIf is false" in {
+    forAll(
+      submissionConsolidatorGen.map(_.copy(includeIf = "false")),
+      submissionInfoGen,
+      formTemplateGen,
+      structureFormValueObjectStructureGen) {
+      (submissionConsolidator, submissionInfo, formTemplate, structuredFormData) =>
+        {
+          val model = HandlebarsTemplateProcessorModel.empty
+          val modelTree = tree(
+            submissionInfo.formId,
+            model,
+            submissionInfo.submission.submissionRef,
+            formTemplate,
+            PdfHtml(""),
+            structuredFormData)
+          createSubmitter
+            .expectIncludeIfEvaluation(
+              submissionConsolidator.includeIf,
+              HandlebarsTemplateProcessorModel.empty,
+              FocussedHandlebarsModelTree(modelTree),
+              false
+            )
+            .sut
+            .submitIfIncludeIf(submissionConsolidator, submissionInfo, model, modelTree, submitter, Some(form)) shouldBe Right(
+            None)
+        }
+    }
+  }
+
+  it should "return without raising an error if the endpoint returns an error but failOnError is false" in {
+
+    forAll(
+      submissionConsolidatorGen.map(_.copy(includeIf = "true", failOnError = false)),
+      submissionInfoGen,
+      formTemplateGen,
+      structureFormValueObjectStructureGen) {
+      (submissionConsolidator, submissionInfo, formTemplate, structuredFormData) =>
+        {
+          val model = HandlebarsTemplateProcessorModel.empty
+          val modelTree = tree(
+            submissionInfo.formId,
+            model,
+            submissionInfo.submission.submissionRef,
+            formTemplate,
+            PdfHtml(""),
+            structuredFormData)
+          createSubmitter
+            .expectIncludeIfEvaluation(
+              submissionConsolidator.includeIf,
+              HandlebarsTemplateProcessorModel.empty,
+              FocussedHandlebarsModelTree(modelTree),
+              true
+            )
+            .expectSubmissionConsolidatorSubmissionFailure(
+              submissionConsolidator,
+              submissionInfo,
+              model,
+              modelTree,
+              form,
+              "some error")
+            .expectDestinationAudit(
+              submissionConsolidator,
+              None,
+              None,
+              submissionInfo.formId,
+              PdfHtml(""),
+              submissionInfo.submission.submissionRef,
+              formTemplate,
+              model)
+            .sut
+            .submitIfIncludeIf(submissionConsolidator, submissionInfo, model, modelTree, submitter, Some(form)) shouldBe Right(
+            None)
+        }
+    }
+  }
+
+  it should "raise a failure if the endpoint returns an error and failOnError is true" in {
+    forAll(
+      submissionConsolidatorGen.map(_.copy(includeIf = "true", failOnError = true)),
+      submissionInfoGen,
+      formTemplateGen,
+      structureFormValueObjectStructureGen) {
+      (submissionConsolidator, submissionInfo, formTemplate, structuredFormData) =>
+        {
+          val model = HandlebarsTemplateProcessorModel.empty
+          val modelTree = tree(
+            submissionInfo.formId,
+            model,
+            submissionInfo.submission.submissionRef,
+            formTemplate,
+            PdfHtml(""),
+            structuredFormData)
+          createSubmitter
+            .expectIncludeIfEvaluation(
+              submissionConsolidator.includeIf,
+              HandlebarsTemplateProcessorModel.empty,
+              FocussedHandlebarsModelTree(modelTree),
+              true
+            )
+            .expectSubmissionConsolidatorSubmissionFailure(
+              submissionConsolidator,
+              submissionInfo,
+              model,
+              modelTree,
+              form,
+              "some error")
+            .sut
+            .submitIfIncludeIf(submissionConsolidator, submissionInfo, model, modelTree, submitter, Some(form)) shouldBe Left(
+            genericLogMessage(submissionInfo.formId, submissionConsolidator.id, "some error"))
+        }
+    }
+  }
+
   case class SubmitterParts[F[_]](
     sut: DestinationSubmitter[F],
     dmsSubmitter: DmsSubmitterAlgebra[F],
     handlebarsSubmitter: HandlebarsHttpApiSubmitter[F],
     destinationAuditer: DestinationAuditAlgebra[F],
-    handlebarsTemplateProcessor: HandlebarsTemplateProcessor)(implicit F: MonadError[F, String]) {
+    handlebarsTemplateProcessor: HandlebarsTemplateProcessor,
+    submissionConsolidatorService: SubmissionConsolidatorAlgebra[F])(implicit F: MonadError[F, String]) {
 
     def expectHmrcDmsSubmission(
       si: DestinationSubmissionInfo,
@@ -317,6 +473,49 @@ class DestinationSubmitterSpec
         .apply(_: DestinationSubmissionInfo, _: PdfHtml, _: StructuredFormValue.ObjectStructure, _: HmrcDms)(
           _: HeaderCarrier))
         .expects(si, pdfData, structuredFormData, hmrcDms, hc)
+        .returning(F.pure(()))
+      this
+    }
+
+    def expectSubmissionConsolidatorSubmissionFailure(
+      destination: SubmissionConsolidator,
+      submissionInfo: DestinationSubmissionInfo,
+      accumulatedModel: HandlebarsTemplateProcessorModel,
+      model: HandlebarsModelTree,
+      form: Form,
+      error: String): SubmitterParts[F] = {
+      (
+        submissionConsolidatorService
+          .submit(
+            _: SubmissionConsolidator,
+            _: DestinationSubmissionInfo,
+            _: HandlebarsTemplateProcessorModel,
+            _: HandlebarsModelTree,
+            _: Option[Form]
+          )(_: HeaderCarrier)
+        )
+        .expects(destination, submissionInfo, accumulatedModel, model, Some(form), hc)
+        .returning(F.raiseError(error))
+      this
+    }
+
+    def expectSubmissionConsolidatorSubmission(
+      destination: SubmissionConsolidator,
+      submissionInfo: DestinationSubmissionInfo,
+      accumulatedModel: HandlebarsTemplateProcessorModel,
+      model: HandlebarsModelTree,
+      form: Form): SubmitterParts[F] = {
+      (
+        submissionConsolidatorService
+          .submit(
+            _: SubmissionConsolidator,
+            _: DestinationSubmissionInfo,
+            _: HandlebarsTemplateProcessorModel,
+            _: HandlebarsModelTree,
+            _: Option[Form]
+          )(_: HeaderCarrier)
+        )
+        .expects(destination, submissionInfo, accumulatedModel, model, Some(form), hc)
         .returning(F.pure(()))
       this
     }
@@ -399,6 +598,7 @@ class DestinationSubmitterSpec
     val handlebarsTemplateProcessor = mock[HandlebarsTemplateProcessor]
     val notifierService = mock[NotifierAlgebra[Possible]]
     val destinationAuditer = mock[DestinationAuditAlgebra[Possible]]
+    val submissionConsolidator = mock[SubmissionConsolidatorAlgebra[Possible]]
     val submitter =
       new DestinationSubmitter[Possible](
         dmsSubmitter,
@@ -406,9 +606,16 @@ class DestinationSubmitterSpec
         stateTransitionService,
         notifierService,
         Some(destinationAuditer),
+        submissionConsolidator,
         handlebarsTemplateProcessor)
 
-    SubmitterParts(submitter, dmsSubmitter, handlebarsSubmitter, destinationAuditer, handlebarsTemplateProcessor)
+    SubmitterParts(
+      submitter,
+      dmsSubmitter,
+      handlebarsSubmitter,
+      destinationAuditer,
+      handlebarsTemplateProcessor,
+      submissionConsolidator)
   }
 
   private def submitter: DestinationsSubmitter[Possible] = {

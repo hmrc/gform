@@ -49,6 +49,7 @@ import uk.gov.hmrc.gform.validation.ValidationModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.gform.obligation.ObligationModule
 import uk.gov.hmrc.gform.submission.destinations.DestinationModule
+import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorModule
 import uk.gov.hmrc.play.bootstrap.config.AppName
 
 import scala.concurrent.Future
@@ -108,6 +109,8 @@ class ApplicationModule(context: Context)
 
   private val handlebarsModule = new HandlebarsHttpApiModule(wSHttpModule, configModule)
 
+  private val submissionConsolidatorModule = new SubmissionConsolidatorModule(wSHttpModule, formModule, configModule)
+
   private val submissionModule =
     new SubmissionModule(
       configModule,
@@ -119,6 +122,7 @@ class ApplicationModule(context: Context)
       wSHttpModule,
       timeModule,
       emailModule,
+      submissionConsolidatorModule,
       handlebarsModule,
       destinationModule,
       notifierModule

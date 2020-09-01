@@ -22,6 +22,7 @@ import cats.syntax.applicative._
 import cats.syntax.either._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
+import uk.gov.hmrc.gform.sharedmodel.form.Form
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsModelTree
 import uk.gov.hmrc.http.HeaderCarrier
@@ -29,11 +30,11 @@ import uk.gov.hmrc.http.HeaderCarrier
 class DestinationsSubmitter[M[_]: Monad](destinationSubmitter: DestinationSubmitterAlgebra[M])
     extends DestinationsSubmitterAlgebra[M] {
 
-  override def send(submissionInfo: DestinationSubmissionInfo, modelTree: HandlebarsModelTree)(
+  override def send(submissionInfo: DestinationSubmissionInfo, modelTree: HandlebarsModelTree, form: Option[Form])(
     implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
     modelTree.value.formTemplate.destinations match {
       case list: Destinations.DestinationList =>
-        submitToList(list.destinations, submissionInfo, HandlebarsTemplateProcessorModel.empty, modelTree)
+        submitToList(list.destinations, submissionInfo, HandlebarsTemplateProcessorModel.empty, modelTree, form)
 
       case _ => Option.empty[HandlebarsDestinationResponse].pure[M]
     }
@@ -42,7 +43,8 @@ class DestinationsSubmitter[M[_]: Monad](destinationSubmitter: DestinationSubmit
     destinations: NonEmptyList[Destination],
     submissionInfo: DestinationSubmissionInfo,
     accumulatedModel: HandlebarsTemplateProcessorModel,
-    modelTree: HandlebarsModelTree)(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] = {
+    modelTree: HandlebarsModelTree,
+    form: Option[Form])(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] = {
     case class TailRecParameter(
       remainingDestinations: List[Destination],
       accumulatedModel: HandlebarsTemplateProcessorModel)
@@ -51,7 +53,7 @@ class DestinationsSubmitter[M[_]: Monad](destinationSubmitter: DestinationSubmit
       case TailRecParameter(Nil, _) => Option.empty[HandlebarsDestinationResponse].asRight[TailRecParameter].pure[M]
       case TailRecParameter(head :: rest, updatedAccumulatedModel) =>
         destinationSubmitter
-          .submitIfIncludeIf(head, submissionInfo, updatedAccumulatedModel, modelTree, this)
+          .submitIfIncludeIf(head, submissionInfo, updatedAccumulatedModel, modelTree, this, form)
           .map(submitterResult =>
             TailRecParameter(rest, submitterResult.fold(updatedAccumulatedModel) {
               DestinationsProcessorModelAlgebra.createDestinationResponse(_) + updatedAccumulatedModel

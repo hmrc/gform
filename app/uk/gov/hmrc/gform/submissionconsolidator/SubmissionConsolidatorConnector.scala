@@ -31,13 +31,13 @@ class SubmissionConsolidatorConnector(wSHttp: WSHttp, baseUrl: String)(implicit 
     override def read(method: String, url: String, response: HttpResponse): Either[String, Unit] =
       response.status match {
         case 200 => Right(())
-        case _   => Left(Try(Json.parse(response.body).as[APIError].formatted).getOrElse(response.body))
+        case _   => Left(Try(Json.parse(response.body).as[SCError].formatted).getOrElse(response.body))
       }
   }
 
-  def sendForm(apiForm: APIForm)(implicit headerCarrier: HeaderCarrier): Future[Either[String, Unit]] =
+  def sendForm(scForm: SCForm)(implicit headerCarrier: HeaderCarrier): Future[Either[String, Unit]] =
     wSHttp
-      .POST(s"$baseUrl/form", apiForm, headers)
+      .POST(s"$baseUrl/submission-consolidator/form", scForm, headers)
       .recover {
         case e => Left(e.getMessage)
       }

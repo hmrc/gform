@@ -16,23 +16,27 @@
 
 package uk.gov.hmrc.gform.submission.destinations
 
-import java.time.LocalDateTime
-
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ FormGen, PrimitiveGen }
-import uk.gov.hmrc.gform.submission.Submission
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ FormGen, FormTemplateGen, PrimitiveGen }
 
 trait DestinationSubmissionInfoGen {
   def destinationSubmissionInfoGen: Gen[DestinationSubmissionInfo] =
     for {
+      formTemplate  <- FormTemplateGen.formTemplateGen
       formId        <- FormGen.formIdGen
       customerId    <- PrimitiveGen.nonEmptyAlphaNumStrGen
       submissionRef <- PrimitiveGen.nonEmptyAlphaNumStrGen.map(SubmissionRef(_))
+      submission <- SubmissionGen.submissionGen.map(s => {
+                     s.copy(
+                       _id = formId,
+                       submissionRef = submissionRef,
+                       dmsMetaData = s.dmsMetaData.copy(customerId = customerId, formTemplateId = formTemplate._id))
+                   })
     } yield
       DestinationSubmissionInfo(
         customerId,
-        Submission(formId, LocalDateTime.now, submissionRef, null, 0, null)
+        submission
       )
 }
 

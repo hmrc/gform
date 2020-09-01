@@ -55,7 +55,7 @@ class SubmissionService(
         submission    <- findOrCreateSubmission(form, customerId, formTemplate, submissionData.attachments)
         submissionInfo = DestinationSubmissionInfo(customerId, submission)
         modelTree     <- createModelTreeForSingleFormSubmission(form, formTemplate, submissionData, submission.submissionRef)
-        _             <- destinationsSubmitter.send(submissionInfo, modelTree)
+        _             <- destinationsSubmitter.send(submissionInfo, modelTree, Some(form))
         emailAddress   = email.getEmailAddress(form)
         _             <- fromFutureA(email.sendEmail(emailAddress, formTemplate.emailTemplateId, submissionData.emailParameters))
       } yield ()

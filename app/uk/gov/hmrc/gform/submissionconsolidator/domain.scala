@@ -18,35 +18,35 @@ package uk.gov.hmrc.gform.submissionconsolidator
 
 import play.api.libs.json.{ Format, Json }
 
-case class APIFormField(id: String, value: String)
+case class SCFormField(id: String, value: String)
 
-object APIFormField {
-  implicit val formats = Json.format[APIFormField]
+object SCFormField {
+  implicit val formats = Json.format[SCFormField]
 }
 
-case class APIForm(
+case class SCForm(
   submissionRef: String,
   projectId: String,
   templateId: String,
   customerId: String,
   submissionTimestamp: String,
-  formData: List[APIFormField]
+  formData: List[SCFormField]
 )
 
-object APIForm {
-  implicit val formats: Format[APIForm] = Json.format[APIForm]
+object SCForm {
+  implicit val formats: Format[SCForm] = Json.format[SCForm]
 }
 
-case class APIFieldError(path: String, message: String) {
+case class SCFieldError(path: String, message: String) {
   def formatted = s"$path=$message"
 }
-object APIFieldError {
-  implicit val formats: Format[APIFieldError] = Json.format[APIFieldError]
+object SCFieldError {
+  implicit val formats: Format[SCFieldError] = Json.format[SCFieldError]
 }
 
-case class APIError(code: String, message: String, fieldErrors: List[APIFieldError] = List.empty) {
+case class SCError(code: String, message: String, fieldErrors: List[SCFieldError] = List.empty) {
   def formatted = s"code=$code, message=$message, fieldErrors=[${fieldErrors.map(_.formatted).mkString(",")}]"
 }
-object APIError {
-  implicit val formats: Format[APIError] = Json.format[APIError]
+object SCError {
+  implicit val formats: Format[SCError] = Json.format[SCError]
 }

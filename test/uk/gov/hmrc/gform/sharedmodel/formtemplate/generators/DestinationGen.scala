@@ -59,8 +59,13 @@ trait DestinationGen {
       templateId    <- templateIdExprGen
       includeIf     <- includeIfGen()
       failOnError   <- PrimitiveGen.booleanGen
+      formData <- Gen.option(for {
+                   id    <- Gen.alphaStr.suchThat(_.nonEmpty)
+                   value <- Gen.alphaNumStr.suchThat(_.nonEmpty)
+                 } yield s"""[{"id": "$id", "value": "$value"}]""")
     } yield
-      Destination.SubmissionConsolidator(id, projectId, submissionRef, templateId, customerId, includeIf, failOnError)
+      Destination
+        .SubmissionConsolidator(id, projectId, submissionRef, templateId, customerId, formData, includeIf, failOnError)
 
   def hmrcDmsGen(includeIf: Option[String] = None, failOnError: Option[Boolean] = None): Gen[Destination.HmrcDms] =
     hmrcDmsGen.map { g =>

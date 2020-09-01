@@ -37,7 +37,7 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class SubmissionConsolidatorConnectorSpec
-    extends FlatSpec with MockFactory with WiremockSupport with APIFormGen with ScalaFutures with Matchers {
+    extends FlatSpec with MockFactory with WiremockSupport with SCFormGen with ScalaFutures with Matchers {
 
   override implicit val patienceConfig = PatienceConfig(Span(10, Seconds), Span(1, Millis))
   val _actorSystem: ActorSystem = ActorSystem("SubmissionConsolidatorConnectorSpec")
@@ -58,9 +58,9 @@ class SubmissionConsolidatorConnectorSpec
   }
 
   trait TestFixture {
-    val form: APIForm = genForm.pureApply(Gen.Parameters.default, Seed(1))
-    lazy val responseStatus: Int = ???
-    lazy val responseBody: String = ???
+    val form: SCForm = genForm.pureApply(Gen.Parameters.default, Seed(1))
+    lazy val responseStatus: Int = 200
+    lazy val responseBody: String = ""
     stubFor(
       post(urlEqualTo("/submission-consolidator/form"))
         .willReturn(
@@ -68,7 +68,7 @@ class SubmissionConsolidatorConnectorSpec
             .withStatus(responseStatus)
             .withBody(responseBody)
         ))
-    val baseUrl = s"http://localhost:$wiremockPort/submission-consolidator"
+    val baseUrl = s"http://localhost:$wiremockPort"
     val submissionConsolidatorConnector =
       new SubmissionConsolidatorConnector(wsHttp, baseUrl)
   }
@@ -94,7 +94,7 @@ class SubmissionConsolidatorConnectorSpec
     //given
     override lazy val responseStatus: Int = 400
     override lazy val responseBody: String =
-      Json.toJson(APIError("ERROR_CODE", "Error message", List(APIFieldError("/path", "message")))).toString
+      Json.toJson(SCError("ERROR_CODE", "Error message", List(SCFieldError("/path", "message")))).toString
 
     //when
     val future = submissionConsolidatorConnector.sendForm(form)(HeaderCarrier())
@@ -137,7 +137,7 @@ class SubmissionConsolidatorConnectorSpec
     //then
     whenReady(future) { result =>
       result shouldBe Left(
-        s"POST of '$baseUrl/form' failed. Caused by: 'Connection refused: localhost/127.0.0.1:$wiremockPort'")
+        s"POST of '$baseUrl/submission-consolidator/form' failed. Caused by: 'Connection refused: localhost/127.0.0.1:$wiremockPort'")
       startServer()
     }
   }

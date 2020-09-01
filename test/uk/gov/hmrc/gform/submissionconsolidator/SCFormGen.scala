@@ -21,7 +21,7 @@ import java.time.{ Instant, ZoneOffset }
 
 import org.scalacheck.Gen
 
-trait APIFormGen {
+trait SCFormGen {
 
   val DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
 
@@ -30,13 +30,13 @@ trait APIFormGen {
       numSeconds <- Gen.choose(0, 10000)
     } yield Instant.now().minusSeconds(numSeconds.toLong).atOffset(ZoneOffset.UTC).format(DATE_TIME_FORMATTER)
 
-  def genFormField: Gen[APIFormField] =
+  def genFormField: Gen[SCFormField] =
     for {
       id    <- Gen.alphaNumStr.suchThat(!_.isEmpty)
       value <- Gen.alphaNumStr.suchThat(!_.isEmpty)
-    } yield APIFormField(id, value)
+    } yield SCFormField(id, value)
 
-  def genForm: Gen[APIForm] =
+  def genForm: Gen[SCForm] =
     for {
       submissionRef       <- Gen.uuid.map(_.toString)
       projectId           <- Gen.alphaNumStr.suchThat(!_.isEmpty)
@@ -45,7 +45,7 @@ trait APIFormGen {
       submissionTimestamp <- genTimestampStr
       formData            <- Gen.listOf(genFormField)
     } yield
-      APIForm(
+      SCForm(
         submissionRef,
         projectId,
         templateId,
@@ -55,4 +55,4 @@ trait APIFormGen {
       )
 }
 
-object APIFormGen extends APIFormGen
+object SCFormGen extends SCFormGen

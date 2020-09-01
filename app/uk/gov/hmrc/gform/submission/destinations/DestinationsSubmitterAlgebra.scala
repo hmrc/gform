@@ -17,17 +17,19 @@
 package uk.gov.hmrc.gform.submission.destinations
 
 import cats.data.NonEmptyList
+import uk.gov.hmrc.gform.sharedmodel.form.Form
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsModelTree
 import uk.gov.hmrc.http.HeaderCarrier
 
 trait DestinationsSubmitterAlgebra[M[_]] {
-  def send(submissionInfo: DestinationSubmissionInfo, modelTree: HandlebarsModelTree)(
+  def send(submissionInfo: DestinationSubmissionInfo, modelTree: HandlebarsModelTree, form: Option[Form] = None)(
     implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]]
 
   def submitToList(
     destinations: NonEmptyList[Destination],
     submissionInfo: DestinationSubmissionInfo,
     accumulatedModel: HandlebarsTemplateProcessorModel,
-    modelTree: HandlebarsModelTree)(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]]
+    modelTree: HandlebarsModelTree,
+    form: Option[Form] = None)(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]]
 }
