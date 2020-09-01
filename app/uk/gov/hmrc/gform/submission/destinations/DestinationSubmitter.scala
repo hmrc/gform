@@ -23,7 +23,7 @@ import cats.syntax.functor._
 import uk.gov.hmrc.gform.logging.Loggers
 import uk.gov.hmrc.gform.notifier.NotifierAlgebra
 import uk.gov.hmrc.gform.sharedmodel.PdfHtml
-import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormId }
+import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormData, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 import uk.gov.hmrc.gform.submission.handlebars._
@@ -48,14 +48,14 @@ class DestinationSubmitter[M[_]](
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree,
     submitter: DestinationsSubmitterAlgebra[M],
-    form: Option[Form] = None)(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
+    formData: Option[FormData] = None)(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
     monadError.pure(
       DestinationSubmitterAlgebra
         .isIncludeIf(destination, accumulatedModel, modelTree, handlebarsTemplateProcessor)) flatMap { include =>
       if (include)
         for {
           _      <- logInfoInMonad(submissionInfo.formId, destination.id, "Included")
-          result <- submit(destination, submissionInfo, accumulatedModel, modelTree, submitter, form)
+          result <- submit(destination, submissionInfo, accumulatedModel, modelTree, submitter, formData)
           _      <- audit(destination, result.map(_.status), None, submissionInfo, modelTree)
         } yield result
       else
@@ -95,19 +95,19 @@ class DestinationSubmitter[M[_]](
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree,
     submitter: DestinationsSubmitterAlgebra[M],
-    form: Option[Form])(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
+    formData: Option[FormData])(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
     destination match {
       case d: Destination.HmrcDms =>
         submitToDms(submissionInfo, modelTree.value.pdfData, modelTree.value.structuredFormData, d).map(_ => None)
       case d: Destination.HandlebarsHttpApi => submitToHandlebars(d, accumulatedModel, modelTree, submissionInfo)
       case d: Destination.Composite =>
         submitter
-          .submitToList(d.destinations, submissionInfo, accumulatedModel, modelTree, form)
+          .submitToList(d.destinations, submissionInfo, accumulatedModel, modelTree, formData)
       case d: Destination.StateTransition => stateTransitionAlgebra(d, submissionInfo.formId).map(_ => None)
       case d: Destination.Log             => log(d, accumulatedModel, modelTree).map(_ => None)
       case d: Destination.Email           => submitToEmail(d, submissionInfo, modelTree.value.structuredFormData).map(_ => None)
       case d: Destination.SubmissionConsolidator =>
-        submitToSubmissionConsolidator(d, submissionInfo, accumulatedModel, modelTree, form).map(_ => None)
+        submitToSubmissionConsolidator(d, submissionInfo, accumulatedModel, modelTree, formData).map(_ => None)
     }
 
   def submitToSubmissionConsolidator(
@@ -115,8 +115,8 @@ class DestinationSubmitter[M[_]](
     submissionInfo: DestinationSubmissionInfo,
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree,
-    form: Option[Form])(implicit hc: HeaderCarrier): M[Unit] =
-    monadError.handleErrorWith(submissionConsolidator.submit(d, submissionInfo, accumulatedModel, modelTree, form)) {
+    formData: Option[FormData])(implicit hc: HeaderCarrier): M[Unit] =
+    monadError.handleErrorWith(submissionConsolidator.submit(d, submissionInfo, accumulatedModel, modelTree, formData)) {
       msg =>
         if (d.failOnError)
           raiseError(submissionInfo.formId, d.id, msg)

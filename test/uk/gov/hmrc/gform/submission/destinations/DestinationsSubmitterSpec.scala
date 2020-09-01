@@ -22,7 +22,7 @@ import cats.{ Applicative, Monad }
 import org.scalacheck.Gen
 import play.api.libs.json._
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.form.Form
+import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, Destinations, HandlebarsDestinationResponse, HandlebarsTemplateProcessorModel }
@@ -53,7 +53,7 @@ class DestinationsSubmitterSpec
             HandlebarsTemplateProcessorModel.empty,
             destinationModel,
             None,
-            form)
+            formData)
           .submitter
           .send(
             submissionInfo,
@@ -64,7 +64,7 @@ class DestinationsSubmitterSpec
               pdfData,
               structuredFormValue,
               destinationModel),
-            Some(form)
+            Some(formData)
           )
     }
   }
@@ -101,14 +101,14 @@ class DestinationsSubmitterSpec
           HandlebarsTemplateProcessorModel.empty,
           initialModel,
           Option(response1Model),
-          form)
+          formData)
         .expectDestinationSubmitterSubmitIfIncludeIf(
           handlebarsHttpApi2,
           submissionInfo,
           accumulatedModel1,
           initialModel,
           Option(response2Model),
-          form)
+          formData)
         .submitter
         .send(
           submissionInfo,
@@ -120,7 +120,7 @@ class DestinationsSubmitterSpec
             StructuredFormValue.ObjectStructure(Nil),
             initialModel
           ),
-          Some(form)
+          Some(formData)
         )
     }
   }
@@ -185,7 +185,7 @@ class DestinationsSubmitterSpec
       accumulatedModel: HandlebarsTemplateProcessorModel,
       modelInTree: HandlebarsTemplateProcessorModel,
       response: Option[HandlebarsDestinationResponse],
-      form: Form): SubmitterParts[F] = {
+      formData: FormData): SubmitterParts[F] = {
       (destinationSubmitter
         .submitIfIncludeIf(
           _: Destination,
@@ -193,7 +193,7 @@ class DestinationsSubmitterSpec
           _: HandlebarsTemplateProcessorModel,
           _: HandlebarsModelTree,
           _: DestinationsSubmitter[F],
-          _: Option[Form]
+          _: Option[FormData]
         )(_: HeaderCarrier))
         .expects(where {
           (
@@ -202,10 +202,10 @@ class DestinationsSubmitterSpec
             accModel: HandlebarsTemplateProcessorModel,
             tree: HandlebarsModelTree,
             _: DestinationsSubmitter[F],
-            actualform: Option[Form],
+            actualformData: Option[FormData],
             hc: HeaderCarrier) =>
-            destination === dest && info === submissionInfo && accModel === accumulatedModel && tree.value.model === modelInTree && hc === hc && actualform
-              .contains(form)
+            destination === dest && info === submissionInfo && accModel === accumulatedModel && tree.value.model === modelInTree && hc === hc && actualformData
+              .contains(formData)
         })
         .returning(response.pure)
       this

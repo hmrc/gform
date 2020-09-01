@@ -21,7 +21,7 @@ import cats.{ Applicative, MonadError }
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.notifier.NotifierAlgebra
 import uk.gov.hmrc.gform.sharedmodel.{ PdfHtml, SubmissionRef }
-import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormId }
+import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormData, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.{ HmrcDms, SubmissionConsolidator }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
@@ -325,7 +325,7 @@ class DestinationSubmitterSpec
               FocussedHandlebarsModelTree(modelTree),
               true
             )
-            .expectSubmissionConsolidatorSubmission(submissionConsolidator, submissionInfo, model, modelTree, form)
+            .expectSubmissionConsolidatorSubmission(submissionConsolidator, submissionInfo, model, modelTree, formData)
             .expectDestinationAudit(
               submissionConsolidator,
               None,
@@ -336,7 +336,7 @@ class DestinationSubmitterSpec
               formTemplate,
               model)
             .sut
-            .submitIfIncludeIf(submissionConsolidator, submissionInfo, model, modelTree, submitter, Some(form)) shouldBe Right(
+            .submitIfIncludeIf(submissionConsolidator, submissionInfo, model, modelTree, submitter, Some(formData)) shouldBe Right(
             None)
         }
     }
@@ -366,7 +366,7 @@ class DestinationSubmitterSpec
               false
             )
             .sut
-            .submitIfIncludeIf(submissionConsolidator, submissionInfo, model, modelTree, submitter, Some(form)) shouldBe Right(
+            .submitIfIncludeIf(submissionConsolidator, submissionInfo, model, modelTree, submitter, Some(formData)) shouldBe Right(
             None)
         }
     }
@@ -413,7 +413,7 @@ class DestinationSubmitterSpec
               formTemplate,
               model)
             .sut
-            .submitIfIncludeIf(submissionConsolidator, submissionInfo, model, modelTree, submitter, Some(form)) shouldBe Right(
+            .submitIfIncludeIf(submissionConsolidator, submissionInfo, model, modelTree, submitter, Some(formData)) shouldBe Right(
             None)
         }
     }
@@ -450,7 +450,7 @@ class DestinationSubmitterSpec
               form,
               "some error")
             .sut
-            .submitIfIncludeIf(submissionConsolidator, submissionInfo, model, modelTree, submitter, Some(form)) shouldBe Left(
+            .submitIfIncludeIf(submissionConsolidator, submissionInfo, model, modelTree, submitter, Some(formData)) shouldBe Left(
             genericLogMessage(submissionInfo.formId, submissionConsolidator.id, "some error"))
         }
     }
@@ -491,10 +491,10 @@ class DestinationSubmitterSpec
             _: DestinationSubmissionInfo,
             _: HandlebarsTemplateProcessorModel,
             _: HandlebarsModelTree,
-            _: Option[Form]
+            _: Option[FormData]
           )(_: HeaderCarrier)
         )
-        .expects(destination, submissionInfo, accumulatedModel, model, Some(form), hc)
+        .expects(destination, submissionInfo, accumulatedModel, model, Some(formData), hc)
         .returning(F.raiseError(error))
       this
     }
@@ -504,7 +504,7 @@ class DestinationSubmitterSpec
       submissionInfo: DestinationSubmissionInfo,
       accumulatedModel: HandlebarsTemplateProcessorModel,
       model: HandlebarsModelTree,
-      form: Form): SubmitterParts[F] = {
+      formData: FormData): SubmitterParts[F] = {
       (
         submissionConsolidatorService
           .submit(
@@ -512,10 +512,10 @@ class DestinationSubmitterSpec
             _: DestinationSubmissionInfo,
             _: HandlebarsTemplateProcessorModel,
             _: HandlebarsModelTree,
-            _: Option[Form]
+            _: Option[FormData]
           )(_: HeaderCarrier)
         )
-        .expects(destination, submissionInfo, accumulatedModel, model, Some(form), hc)
+        .expects(destination, submissionInfo, accumulatedModel, model, Some(formData), hc)
         .returning(F.pure(()))
       this
     }

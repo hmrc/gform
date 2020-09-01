@@ -25,7 +25,7 @@ import org.scalatest.time.{ Millis, Seconds, Span }
 import org.scalatest.{ Matchers, WordSpecLike }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.PdfHtml
-import uk.gov.hmrc.gform.sharedmodel.form.Form
+import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.SubmissionConsolidator
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, HandlebarsTemplateProcessorModel, JsonNodes }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.DestinationGen.submissionConsolidatorGen
@@ -53,7 +53,7 @@ class SubmissionConsolidatorServiceSpec
   case class TestData(
     submissionConsolidator: SubmissionConsolidator,
     destinationSubmissionInfo: DestinationSubmissionInfo,
-    form: Form,
+    formData: FormData,
     formTemplate: FormTemplate,
     structuredFormData: StructuredFormValue.ObjectStructure,
     model: HandlebarsTemplateProcessorModel,
@@ -73,11 +73,11 @@ class SubmissionConsolidatorServiceSpec
           val destination = submissionConsolidator.copy(formData = None)
           (mockSubmissionConsolidatorConnector
             .sendForm(_: SCForm)(_: HeaderCarrier))
-            .expects(expectedAPIForm(destinationSubmissionInfo, form, destination, structuredFormData), hc)
+            .expects(expectedAPIForm(destinationSubmissionInfo, formData, destination, structuredFormData), hc)
             .returns(Future.successful(Right(())))
 
           val future = submissionConsolidatorService
-            .submit(destination, destinationSubmissionInfo, model, modelTree, Some(form))
+            .submit(destination, destinationSubmissionInfo, model, modelTree, Some(formData))
             .value
 
           future.futureValue shouldBe Right(())
@@ -91,11 +91,13 @@ class SubmissionConsolidatorServiceSpec
           import testData._
           (mockSubmissionConsolidatorConnector
             .sendForm(_: SCForm)(_: HeaderCarrier))
-            .expects(expectedAPIForm(destinationSubmissionInfo, form, submissionConsolidator, structuredFormData), hc)
+            .expects(
+              expectedAPIForm(destinationSubmissionInfo, formData, submissionConsolidator, structuredFormData),
+              hc)
             .returns(Future.successful(Right(())))
 
           val future = submissionConsolidatorService
-            .submit(submissionConsolidator, destinationSubmissionInfo, model, modelTree, Some(form))
+            .submit(submissionConsolidator, destinationSubmissionInfo, model, modelTree, Some(formData))
             .value
 
           future.futureValue shouldBe Right(())
@@ -115,7 +117,7 @@ class SubmissionConsolidatorServiceSpec
             .never()
 
           val future = submissionConsolidatorService
-            .submit(destination, destinationSubmissionInfo, model, modelTree, Some(form))
+            .submit(destination, destinationSubmissionInfo, model, modelTree, Some(formData))
             .value
 
           future.futureValue shouldBe Left(UnexpectedState(
@@ -127,7 +129,7 @@ class SubmissionConsolidatorServiceSpec
 
   private def expectedAPIForm(
     destinationSubmissionInfo: DestinationSubmissionInfo,
-    form: Form,
+    formData: FormData,
     destination: Destination.SubmissionConsolidator,
     structuredFormData: StructuredFormValue.ObjectStructure) =
     SCForm(
@@ -138,7 +140,7 @@ class SubmissionConsolidatorServiceSpec
       destinationSubmissionInfo.submission.submittedDate.format(DATE_TIME_FORMAT),
       destination.formData
         .map(_ => structuredFormData.fields.map(f => SCFormField(f.name.name, f.value.asInstanceOf[TextNode].value)))
-        .getOrElse(form.formData.toData.toList.map {
+        .getOrElse(formData.toData.toList.map {
           case (FormComponentId(id), value) => SCFormField(id, value)
         })
     )
@@ -153,10 +155,9 @@ class SubmissionConsolidatorServiceSpec
                                    s"""{"id": "${f.name.name}", "value": "{{${f.name.name}}}"}"""
                                  }
                                  .mkString(",")}]""")))
-    formTemplate <- formTemplateGen
-    form         <- formGen.map(_.copy(formTemplateId = formTemplate._id))
-    destinationSubmissionInfo <- destinationSubmissionInfoGen.map(d =>
-                                  d.copy(submission = d.submission.copy(_id = form._id)))
+    formTemplate              <- formTemplateGen
+    formData                  <- formDataGen
+    destinationSubmissionInfo <- destinationSubmissionInfoGen
     modelTree = HandlebarsModelTree(
       destinationSubmissionInfo.formId,
       destinationSubmissionInfo.submission.submissionRef,
@@ -168,7 +169,7 @@ class SubmissionConsolidatorServiceSpec
     TestData(
       submissionConsolidator,
       destinationSubmissionInfo,
-      form,
+      formData,
       formTemplate,
       structuredFormData,
       model,

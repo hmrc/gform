@@ -23,7 +23,7 @@ import cats.implicits._
 import play.api.libs.json.Json
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel.form.Form
+import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormComponentId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, HandlebarsTemplateProcessorModel, TemplateType }
 import uk.gov.hmrc.gform.submission.destinations.DestinationSubmissionInfo
@@ -39,7 +39,7 @@ trait SubmissionConsolidatorAlgebra[F[_]] {
     submissionInfo: DestinationSubmissionInfo,
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree,
-    form: Option[Form])(implicit headerCarrier: HeaderCarrier): F[Unit]
+    formData: Option[FormData])(implicit headerCarrier: HeaderCarrier): F[Unit]
 }
 
 class SubmissionConsolidatorService(
@@ -54,20 +54,20 @@ class SubmissionConsolidatorService(
     submissionInfo: DestinationSubmissionInfo,
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree,
-    form: Option[Form])(implicit headerCarrier: HeaderCarrier): FOpt[Unit] =
+    formData: Option[FormData])(implicit headerCarrier: HeaderCarrier): FOpt[Unit] =
     for {
-      scForm         <- buildSCForm(destination, submissionInfo, form, accumulatedModel, modelTree)
+      scForm         <- buildSCForm(destination, submissionInfo, formData, accumulatedModel, modelTree)
       sendFormResult <- EitherT(submissionConsolidatorConnector.sendForm(scForm)).leftMap(UnexpectedState)
     } yield sendFormResult
 
   private def buildSCForm(
     destination: Destination.SubmissionConsolidator,
     submissionInfo: DestinationSubmissionInfo,
-    form: Option[Form],
+    formData: Option[FormData],
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree): EitherT[Future, UnexpectedState, SCForm] =
     for {
-      scFormFields <- buildSCFormFields(destination, form, accumulatedModel, modelTree)
+      scFormFields <- buildSCFormFields(destination, formData, accumulatedModel, modelTree)
     } yield
       SCForm(
         submissionInfo.submission.submissionRef.value,
@@ -80,21 +80,22 @@ class SubmissionConsolidatorService(
 
   private def buildSCFormFields(
     destination: Destination.SubmissionConsolidator,
-    form: Option[Form],
+    formData: Option[FormData],
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree): EitherT[Future, UnexpectedState, List[SCFormField]] =
     destination.formData
       .map(buildSCFormFieldsFromTemplate(_, accumulatedModel, modelTree))
-      .orElse(form.map(buildSCFormFieldsFromForm))
+      .orElse(formData.map(buildSCFormFieldsFromForm))
       .getOrElse(EitherT.pure(List.empty))
 
-  private def buildSCFormFieldsFromForm(form: Form): EitherT[Future, UnexpectedState, List[SCFormField]] = EitherT {
-    Future.successful {
-      Right(form.formData.toData.toList.map {
-        case (FormComponentId(id), value) => SCFormField(id, value)
-      }): Either[UnexpectedState, List[SCFormField]]
+  private def buildSCFormFieldsFromForm(formData: FormData): EitherT[Future, UnexpectedState, List[SCFormField]] =
+    EitherT {
+      Future.successful {
+        Right(formData.toData.toList.map {
+          case (FormComponentId(id), value) => SCFormField(id, value)
+        }): Either[UnexpectedState, List[SCFormField]]
+      }
     }
-  }
 
   private def buildSCFormFieldsFromTemplate(
     formDataTemplate: String,
