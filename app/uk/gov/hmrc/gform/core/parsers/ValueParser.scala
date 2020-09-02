@@ -195,7 +195,7 @@ object ValueParser {
     ServiceName(str)
   }
 
-  lazy val identifierName: Parser[IdentifierName] = """[^.}]+""".r ^^ { (loc, str) =>
+  lazy val identifierName: Parser[IdentifierName] = """[^.= }]+""".r ^^ { (loc, str) =>
     IdentifierName(str)
   }
 

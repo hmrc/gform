@@ -160,7 +160,7 @@ class ValueParserSpec extends Spec {
       // format: off
       ("serviceName", "identifierName"),
       ("HMRC-AS-AGENT", "AgentReferenceNumber"),
-      ("HMRC AS-AGENT", "Agent Reference Number"),
+      ("HMRC AS-AGENT", "AgentReferenceNumber"),
       ("test-{{}}}}", ")(*&^%$#@@@)")
       // format: on
     )
@@ -170,7 +170,9 @@ class ValueParserSpec extends Spec {
       ("serviceName", "identifierName"),
       ("HMRC.AA.AGENT", "AgentReferenceNumber"),  // serviceName    cannot include `.`
       ("HMRC-AS-AGENT", "Agent.ReferenceNumber"), // identifierName cannot include `.`
-      ("HMRC-AS-AGENT", "Agent}ReferenceNumber")  // identifierName cannot include `}`
+      ("HMRC-AS-AGENT", "Agent}ReferenceNumber"), // identifierName cannot include `}`
+      ("HMRC-AS-AGENT", "Agent ReferenceNumber"), // identifierName cannot include ` `
+      ("HMRC-AS-AGENT", "Agent=ReferenceNumber")  // identifierName cannot include `=`
       // format: on
     )
 
