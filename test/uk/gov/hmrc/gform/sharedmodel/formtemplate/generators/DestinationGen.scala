@@ -34,8 +34,6 @@ trait DestinationGen {
   def businessAreaGen: Gen[String] = PrimitiveGen.nonEmptyAlphaNumStrGen
   def signatureGen: Gen[String] = PrimitiveGen.nonEmptyAsciiPrintableString
   def projectIdGen: Gen[ProjectId] = PrimitiveGen.nonEmptyAlphaNumStrGen.map(ProjectId(_))
-  def submissionRefExprGen: Gen[TextExpression] = FormatExprGen.textExpressionGen
-  def templateIdExprGen: Gen[TextExpression] = FormatExprGen.textExpressionGen
 
   def hmrcDmsGen: Gen[Destination.HmrcDms] =
     for {
@@ -52,20 +50,18 @@ trait DestinationGen {
 
   def submissionConsolidatorGen: Gen[Destination.SubmissionConsolidator] =
     for {
-      id            <- destinationIdGen
-      projectId     <- projectIdGen
-      customerId    <- customerIdGen
-      submissionRef <- submissionRefExprGen
-      templateId    <- templateIdExprGen
-      includeIf     <- includeIfGen()
-      failOnError   <- PrimitiveGen.booleanGen
+      id          <- destinationIdGen
+      projectId   <- projectIdGen
+      customerId  <- customerIdGen
+      includeIf   <- includeIfGen()
+      failOnError <- PrimitiveGen.booleanGen
       formData <- Gen.option(for {
                    id    <- Gen.alphaStr.suchThat(_.nonEmpty)
                    value <- Gen.alphaNumStr.suchThat(_.nonEmpty)
                  } yield s"""[{"id": "$id", "value": "$value"}]""")
     } yield
       Destination
-        .SubmissionConsolidator(id, projectId, submissionRef, templateId, customerId, formData, includeIf, failOnError)
+        .SubmissionConsolidator(id, projectId, customerId, formData, includeIf, failOnError)
 
   def hmrcDmsGen(includeIf: Option[String] = None, failOnError: Option[Boolean] = None): Gen[Destination.HmrcDms] =
     hmrcDmsGen.map { g =>

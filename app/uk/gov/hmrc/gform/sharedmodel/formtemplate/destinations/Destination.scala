@@ -78,8 +78,6 @@ object Destination {
   case class SubmissionConsolidator(
     id: DestinationId,
     projectId: ProjectId,
-    submissionRef: TextExpression,
-    templateId: TextExpression,
     customerId: TextExpression,
     formData: Option[String],
     includeIf: String,
@@ -169,8 +167,6 @@ object UploadableHmrcDmsDestination {
 case class UploadableSubmissionConsolidator(
   id: DestinationId,
   projectId: ProjectId,
-  submissionRef: TextExpression,
-  templateId: TextExpression,
   customerId: TextExpression,
   formData: Option[String],
   convertSingleQuotes: Option[Boolean],
@@ -184,8 +180,6 @@ case class UploadableSubmissionConsolidator(
       SubmissionConsolidator(
         id,
         projectId,
-        submissionRef,
-        templateId,
         customerId,
         formData,
         cii.getOrElse(true.toString),

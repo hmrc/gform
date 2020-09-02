@@ -65,8 +65,6 @@ package object destinations {
           |  ${optionalField("formData", submissionConsolidator.formData)}
           |  "${Destination.typeDiscriminatorFieldName}": "${Destination.submissionConsolidator}",
           |  "projectId": "${submissionConsolidator.projectId.id}",
-          |  "submissionRef": ${TextExpression.format.writes(submissionConsolidator.submissionRef)},
-          |  "templateId": ${TextExpression.format.writes(submissionConsolidator.templateId)},
           |  "customerId": ${TextExpression.format.writes(submissionConsolidator.customerId)}
           |}""".stripMargin
 
