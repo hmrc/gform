@@ -23,7 +23,7 @@ import uk.gov.hmrc.gform.sharedmodel.structuredform.{ Field, FieldName, Structur
 trait StructuredFormValueGen {
   def structureFormValueObjectStructureGen: Gen[StructuredFormValue.ObjectStructure] =
     for {
-      name  <- PrimitiveGen.nonEmptyAlphaNumStrGen
+      name  <- PrimitiveGen.variableNameGen
       value <- Gen.alphaNumStr
     } yield
       StructuredFormValue.ObjectStructure(

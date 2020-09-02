@@ -42,6 +42,7 @@ object Dependencies {
     "com.typesafe.play" %% "play-test" % PlayVersion.current % scope,
     "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % scope,
     "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.1" % scope,
-    "org.jsoup" % "jsoup" % "1.11.3" % scope
+    "org.jsoup" % "jsoup" % "1.11.3" % scope,
+    "com.github.tomakehurst" % "wiremock-jre8" % "2.27.1" % scope
   )
 }

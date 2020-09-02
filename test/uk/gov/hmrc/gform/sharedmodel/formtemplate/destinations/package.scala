@@ -62,10 +62,9 @@ package object destinations {
           |  "id": "${submissionConsolidator.id.id}",
           |  ${optionalField("includeIf", Option(submissionConsolidator.includeIf), "true")}
           |  ${optionalField("failOnError", Option(submissionConsolidator.failOnError), true)}
+          |  ${optionalField("formData", submissionConsolidator.formData)}
           |  "${Destination.typeDiscriminatorFieldName}": "${Destination.submissionConsolidator}",
           |  "projectId": "${submissionConsolidator.projectId.id}",
-          |  "submissionRef": ${TextExpression.format.writes(submissionConsolidator.submissionRef)},
-          |  "templateId": ${TextExpression.format.writes(submissionConsolidator.templateId)},
           |  "customerId": ${TextExpression.format.writes(submissionConsolidator.customerId)}
           |}""".stripMargin
 

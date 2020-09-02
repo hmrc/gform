@@ -22,6 +22,7 @@ import cats.{ Applicative, Monad }
 import org.scalacheck.Gen
 import play.api.libs.json._
 import uk.gov.hmrc.gform.Spec
+import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, Destinations, HandlebarsDestinationResponse, HandlebarsTemplateProcessorModel }
@@ -51,7 +52,8 @@ class DestinationsSubmitterSpec
             submissionInfo,
             HandlebarsTemplateProcessorModel.empty,
             destinationModel,
-            None)
+            None,
+            formData)
           .submitter
           .send(
             submissionInfo,
@@ -61,7 +63,8 @@ class DestinationsSubmitterSpec
               exampleTemplateWithDestinations(destination),
               pdfData,
               structuredFormValue,
-              destinationModel)
+              destinationModel),
+            Some(formData)
           )
     }
   }
@@ -97,13 +100,15 @@ class DestinationsSubmitterSpec
           submissionInfo,
           HandlebarsTemplateProcessorModel.empty,
           initialModel,
-          Option(response1Model))
+          Option(response1Model),
+          formData)
         .expectDestinationSubmitterSubmitIfIncludeIf(
           handlebarsHttpApi2,
           submissionInfo,
           accumulatedModel1,
           initialModel,
-          Option(response2Model))
+          Option(response2Model),
+          formData)
         .submitter
         .send(
           submissionInfo,
@@ -114,7 +119,8 @@ class DestinationsSubmitterSpec
             PdfHtml(""),
             StructuredFormValue.ObjectStructure(Nil),
             initialModel
-          )
+          ),
+          Some(formData)
         )
     }
   }
@@ -178,14 +184,16 @@ class DestinationsSubmitterSpec
       submissionInfo: DestinationSubmissionInfo,
       accumulatedModel: HandlebarsTemplateProcessorModel,
       modelInTree: HandlebarsTemplateProcessorModel,
-      response: Option[HandlebarsDestinationResponse]): SubmitterParts[F] = {
+      response: Option[HandlebarsDestinationResponse],
+      formData: FormData): SubmitterParts[F] = {
       (destinationSubmitter
         .submitIfIncludeIf(
           _: Destination,
           _: DestinationSubmissionInfo,
           _: HandlebarsTemplateProcessorModel,
           _: HandlebarsModelTree,
-          _: DestinationsSubmitter[F]
+          _: DestinationsSubmitter[F],
+          _: Option[FormData]
         )(_: HeaderCarrier))
         .expects(where {
           (
@@ -194,8 +202,10 @@ class DestinationsSubmitterSpec
             accModel: HandlebarsTemplateProcessorModel,
             tree: HandlebarsModelTree,
             _: DestinationsSubmitter[F],
+            actualformData: Option[FormData],
             hc: HeaderCarrier) =>
-            destination === dest && info === submissionInfo && accModel === accumulatedModel && tree.value.model === modelInTree && hc === hc
+            destination === dest && info === submissionInfo && accModel === accumulatedModel && tree.value.model === modelInTree && hc === hc && actualformData
+              .contains(formData)
         })
         .returning(response.pure)
       this

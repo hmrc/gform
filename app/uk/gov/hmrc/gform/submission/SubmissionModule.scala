@@ -30,6 +30,7 @@ import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.notifier.NotifierModule
 import uk.gov.hmrc.gform.repo.{ Repo, RepoAlgebra }
 import uk.gov.hmrc.gform.submission.destinations.{ DestinationModule, DestinationSubmitter, DestinationsSubmitter, DestinationsSubmitterAlgebra, DmsSubmitter, StateTransitionService }
+import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorModule
 
 import scala.concurrent.ExecutionContext
 
@@ -43,6 +44,7 @@ class SubmissionModule(
   wsHttpModule: WSHttpModule,
   timeModule: TimeModule,
   emailModule: EmailModule,
+  submissionConsolidatorModule: SubmissionConsolidatorModule,
   handlebarsHttpApiModule: HandlebarsHttpApiModule,
   destinationModule: DestinationModule,
   notifierModule: NotifierModule)(implicit ex: ExecutionContext) {
@@ -65,7 +67,8 @@ class SubmissionModule(
     handlebarsHttpApiModule.handlebarsHttpSubmitter,
     stateTransitionService,
     notifierModule.fOptNotifierService,
-    destinationModule.destinationAuditer
+    destinationModule.destinationAuditer,
+    submissionConsolidatorModule.submissionConsolidator
   )
 
   private val destinationsSubmitter: DestinationsSubmitterAlgebra[FOpt] = new DestinationsSubmitter(

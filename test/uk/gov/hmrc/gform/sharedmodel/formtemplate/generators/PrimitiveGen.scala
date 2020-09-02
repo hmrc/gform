@@ -33,6 +33,12 @@ trait PrimitiveGen {
       r <- Gen.alphaNumStr
     } yield f.toString + r
 
+  def variableNameGen: Gen[String] =
+    for {
+      f <- Gen.alphaChar
+      r <- Gen.alphaNumStr
+    } yield f.toString + r
+
   def booleanGen: Gen[Boolean] = Gen.oneOf(false, true)
 
   def urlGen: Gen[String] =
