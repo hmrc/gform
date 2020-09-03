@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
+import java.time.format.DateTimeFormatter
+
 import cats.data.NonEmptyList
 import cats.instances.either._
 import cats.instances.list._
@@ -99,6 +101,10 @@ class FormComponentMaker(json: JsValue) {
   lazy val repeatLabel: Option[SmartString] = (json \ "repeatLabel").asOpt[SmartString]
   lazy val repeatAddAnotherText: Option[SmartString] = (json \ "repeatAddAnotherText").asOpt[SmartString]
 
+  lazy val rangesJson: Option[List[JsValue]] = (json \ "ranges").asOpt[List[JsValue]]
+  lazy val ranges: Option[List[Range]] = rangesJson.map(_.map(getTimeRange _))
+  lazy val intervalMins: Option[Int] = (json \ "intervalMins").asOpt[Int]
+
   def optFieldValue(): Opt[FormComponent] =
     for {
       presHint   <- optMaybePresentationHintExpr
@@ -172,7 +178,7 @@ class FormComponentMaker(json: JsValue) {
     case Some(FileUploadRaw)      => fileUploadOpt
     case Some(InfoRaw)            => infoOpt
     case Some(HmrcTaxPeriodRaw)   => hmrcTaxPeriodOpt
-    //TODO: What if there is None
+    case Some(TimeRaw)            => timeOpt
   }
 
   private lazy val textOpt: Opt[ComponentType] = {
@@ -391,6 +397,20 @@ class FormComponentMaker(json: JsValue) {
        """.stripMargin).asLeft
   }
 
+  private lazy val timeOpt: Opt[Time] = (ranges, intervalMins) match {
+    case (Some(ranges), Some(mins)) if !ranges.exists(r => r.startTime.time.isAfter(r.endTime.time)) && mins >= 1 =>
+      Time(ranges, IntervalMins(mins)).asRight
+    case _ =>
+      UnexpectedState(s"""
+                         |Wrong Time definition:
+                         |Ranges must be in valid HH:mm format with startTime same as or before endTime  : $ranges
+                         |IntervalMins must be greater than 0 minutes  : $intervalMins
+                         |""".stripMargin).asLeft
+  }
+
+  private def checkRanges(ranges: List[Range]): Boolean =
+    ranges.exists(r => r.startTime.time.isAfter(r.endTime.time))
+
   private final object Selections {
     def unapply(choiceExpr: Option[ValueExpr]): Option[List[Int]] =
       choiceExpr match {
@@ -524,6 +544,15 @@ class FormComponentMaker(json: JsValue) {
       res         <- maybeString.traverse[Opt, R](validate).right
 
     } yield res
+  }
+
+  private def getTimeRange(json: JsValue): Range = {
+    val formatter = DateTimeFormatter.ofPattern("HH:mm")
+    val startTime = (json \ "startTime").as[String]
+    val endTime = (json \ "endTime").as[String]
+    Range(
+      StartTime(Range.stringToLocalTime(formatter, startTime)),
+      EndTime(Range.stringToLocalTime(formatter, endTime)))
   }
 
 }
