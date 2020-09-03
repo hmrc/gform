@@ -30,5 +30,8 @@ class SubmissionConsolidatorModule(wsHttpModule: WSHttpModule, formModule: FormM
     configModule.serviceConfig.baseUrl("submission-consolidator"))
 
   val submissionConsolidator =
-    new SubmissionConsolidatorService(RealHandlebarsTemplateProcessor, submissionConsolidatorConnector)
+    new SubmissionConsolidatorService(
+      RealHandlebarsTemplateProcessor,
+      submissionConsolidatorConnector,
+      formModule.fOptFormService)
 }
