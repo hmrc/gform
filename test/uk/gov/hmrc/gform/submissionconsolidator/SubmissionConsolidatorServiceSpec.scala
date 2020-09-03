@@ -17,15 +17,18 @@
 package uk.gov.hmrc.gform.submissionconsolidator
 
 import java.time.format.DateTimeFormatter
-
+import cats.syntax.either._
+import cats.data.EitherT
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.time.{ Millis, Seconds, Span }
 import org.scalatest.{ Matchers, WordSpecLike }
+import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
+import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.sharedmodel.PdfHtml
-import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormData }
+import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormData, FormId, FormStatus, Submitted }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.SubmissionConsolidator
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, HandlebarsTemplateProcessorModel, JsonNodes }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.DestinationGen.submissionConsolidatorGen
@@ -61,8 +64,12 @@ class SubmissionConsolidatorServiceSpec
 
   trait TestFixture {
     val mockSubmissionConsolidatorConnector = mock[SubmissionConsolidatorConnector]
+    val mockFormService = mock[FormAlgebra[FOpt]]
     val submissionConsolidatorService =
-      new SubmissionConsolidatorService(RealHandlebarsTemplateProcessor, mockSubmissionConsolidatorConnector)
+      new SubmissionConsolidatorService(
+        RealHandlebarsTemplateProcessor,
+        mockSubmissionConsolidatorConnector,
+        mockFormService)
   }
 
   "submit" when {
@@ -75,7 +82,10 @@ class SubmissionConsolidatorServiceSpec
             .sendForm(_: SCForm)(_: HeaderCarrier))
             .expects(expectedAPIForm(destinationSubmissionInfo, formData, destination, structuredFormData), hc)
             .returns(Future.successful(Right(())))
-
+          (mockFormService
+            .updateFormStatus(_: FormId, _: FormStatus)(_: HeaderCarrier))
+            .expects(destinationSubmissionInfo.formId, Submitted, hc)
+            .returns(EitherT(Future.successful[Either[UnexpectedState, FormStatus]](Right(Submitted))))
           val future = submissionConsolidatorService
             .submit(destination, destinationSubmissionInfo, model, modelTree, Some(formData))
             .value
@@ -95,7 +105,10 @@ class SubmissionConsolidatorServiceSpec
               expectedAPIForm(destinationSubmissionInfo, formData, submissionConsolidator, structuredFormData),
               hc)
             .returns(Future.successful(Right(())))
-
+          (mockFormService
+            .updateFormStatus(_: FormId, _: FormStatus)(_: HeaderCarrier))
+            .expects(destinationSubmissionInfo.formId, Submitted, hc)
+            .returns(EitherT(Future.successful[Either[UnexpectedState, FormStatus]](Right(Submitted))))
           val future = submissionConsolidatorService
             .submit(submissionConsolidator, destinationSubmissionInfo, model, modelTree, Some(formData))
             .value

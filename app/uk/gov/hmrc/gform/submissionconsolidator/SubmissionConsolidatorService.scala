@@ -23,7 +23,8 @@ import cats.implicits._
 import play.api.libs.json.Json
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormData }
+import uk.gov.hmrc.gform.form.FormAlgebra
+import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormData, Submitted }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormComponentId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, HandlebarsTemplateProcessorModel, TemplateType }
 import uk.gov.hmrc.gform.submission.destinations.DestinationSubmissionInfo
@@ -44,7 +45,8 @@ trait SubmissionConsolidatorAlgebra[F[_]] {
 
 class SubmissionConsolidatorService(
   handlebarsTemplateProcessor: HandlebarsTemplateProcessor,
-  submissionConsolidatorConnector: SubmissionConsolidatorConnector)(implicit ec: ExecutionContext)
+  submissionConsolidatorConnector: SubmissionConsolidatorConnector,
+  formService: FormAlgebra[FOpt])(implicit ec: ExecutionContext)
     extends SubmissionConsolidatorAlgebra[FOpt] {
 
   private val DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
@@ -58,6 +60,7 @@ class SubmissionConsolidatorService(
     for {
       scForm         <- buildSCForm(destination, submissionInfo, formData, accumulatedModel, modelTree)
       sendFormResult <- EitherT(submissionConsolidatorConnector.sendForm(scForm)).leftMap(UnexpectedState)
+      _              <- formService.updateFormStatus(submissionInfo.formId, Submitted)
     } yield sendFormResult
 
   private def buildSCForm(
