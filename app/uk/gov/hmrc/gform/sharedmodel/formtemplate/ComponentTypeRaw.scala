@@ -39,6 +39,8 @@ case object GroupRaw extends ComponentTypeRaw
 
 case object InfoRaw extends ComponentTypeRaw
 
+case object TimeRaw extends ComponentTypeRaw
+
 object ComponentTypeRaw {
 
   val componentMap: Map[String, ComponentTypeRaw] =
@@ -52,6 +54,7 @@ object ComponentTypeRaw {
       "file"            -> FileUploadRaw,
       "info"            -> InfoRaw,
       "hmrcTaxPeriod"   -> HmrcTaxPeriodRaw,
+      "time"            -> TimeRaw,
       ""                -> TextRaw
     )
 

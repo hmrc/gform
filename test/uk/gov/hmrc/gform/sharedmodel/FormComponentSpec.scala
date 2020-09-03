@@ -16,7 +16,11 @@
 
 package uk.gov.hmrc.gform.sharedmodel
 
+import java.time.LocalTime
+import java.time.format.{ DateTimeFormatter, DateTimeParseException }
+
 import cats.data.NonEmptyList
+import com.fasterxml.jackson.core.JsonParseException
 import play.api.libs.json.{ Reads, _ }
 import uk.gov.hmrc.gform.Helpers._
 import uk.gov.hmrc.gform.Spec
@@ -1403,6 +1407,238 @@ class FormComponentSpec extends Spec {
         """)
 
     fieldValue shouldBe an[JsSuccess[FormComponent]]
+  }
+
+  it should "parse as Time with one Range" in {
+    val id = "timeOfCall"
+    val label = "Time of call"
+    val helpText = "Select a time from the list."
+    val shortName = "shortNameForTimeOfCall"
+    val sTime = "10:00"
+    val eTime = "14:00"
+    val intervalMins = 15
+    val fieldValue = toFieldValue(s""" {
+                    "id": "$id",
+                    "type": "time",
+                    "label": "$label",
+                    "shortName": "$shortName",
+                    "helpText": "$helpText",
+                    "ranges": [
+                        {
+                            "startTime": "$sTime",
+                            "endTime": "$eTime"
+                        }
+                    ],
+                    "intervalMins": $intervalMins
+                }""")
+
+    fieldValue should beJsSuccess(
+      FormComponent(
+        FormComponentId(id),
+        Time(
+          List(Range(StartTime(LocalTime.parse(sTime)), EndTime(LocalTime.parse(eTime)))),
+          IntervalMins(intervalMins)),
+        toSmartString(label),
+        Some(toSmartString(helpText)),
+        Some(toSmartString(shortName)),
+        None,
+        mandatory = true,
+        editable = true,
+        submissible = true,
+        derived = false,
+        errorMessage = None
+      ))
+  }
+
+  it should "parse as Time with multiple Ranges" in {
+    val id = "timeOfCall"
+    val label = "Time of call"
+    val helpText = "Select a time from the list."
+    val shortName = "shortNameForTimeOfCall"
+    val sTime1 = "10:00"
+    val eTime1 = "14:00"
+    val sTime2 = "15:45"
+    val eTime2 = "18:00"
+    val sTime3 = "20:00"
+    val eTime3 = "23:59"
+    val intervalMins = 15
+    val fieldValue = toFieldValue(s""" {
+                    "id": "$id",
+                    "type": "time",
+                    "label": "$label",
+                    "shortName": "$shortName",
+                    "helpText": "$helpText",
+                    "ranges": [
+                        {
+                            "startTime": "$sTime1",
+                            "endTime": "$eTime1"
+                        },
+                        {
+                            "startTime": "$sTime2",
+                            "endTime": "$eTime2"
+                        },
+                        {
+                            "startTime": "$sTime3",
+                            "endTime": "$eTime3"
+                        }
+                    ],
+                    "intervalMins": $intervalMins
+                }""")
+
+    fieldValue should beJsSuccess(
+      FormComponent(
+        FormComponentId(id),
+        Time(
+          List(
+            Range(StartTime(LocalTime.parse(sTime1)), EndTime(LocalTime.parse(eTime1))),
+            Range(StartTime(LocalTime.parse(sTime2)), EndTime(LocalTime.parse(eTime2))),
+            Range(StartTime(LocalTime.parse(sTime3)), EndTime(LocalTime.parse(eTime3)))
+          ),
+          IntervalMins(intervalMins)
+        ),
+        toSmartString(label),
+        Some(toSmartString(helpText)),
+        Some(toSmartString(shortName)),
+        None,
+        mandatory = true,
+        editable = true,
+        submissible = true,
+        derived = false,
+        errorMessage = None
+      ))
+  }
+
+  it should "throw DateTimeParseException while parsing as Time with invalid LocalTime format" in {
+    val id = "timeOfCall"
+    val label = "Time of call"
+    val helpText = "Select a time from the list."
+    val shortName = "shortNameForTimeOfCall"
+    val sTime = "HH:mm"
+    val eTime = "14:00"
+    val intervalMins = 0
+
+    assertThrows[DateTimeParseException] {
+      toFieldValue(s""" {
+                    "id": "$id",
+                    "type": "time",
+                    "label": "$label",
+                    "shortName": "$shortName",
+                    "helpText": "$helpText",
+                    "ranges": [
+                        {
+                            "startTime": "$sTime",
+                            "endTime": "$eTime"
+                        }
+                    ],
+                    "intervalMins": $intervalMins
+                }""")
+    }
+  }
+
+  it should "throw DateTimeParseException while parsing as Time with invalid LocalTime values" in {
+    val id = "timeOfCall"
+    val label = "Time of call"
+    val helpText = "Select a time from the list."
+    val shortName = "shortNameForTimeOfCall"
+    val sTime = "10:70"
+    val eTime = "26:00"
+    val intervalMins = 0
+
+    assertThrows[DateTimeParseException] {
+      toFieldValue(s""" {
+                    "id": "$id",
+                    "type": "time",
+                    "label": "$label",
+                    "shortName": "$shortName",
+                    "helpText": "$helpText",
+                    "ranges": [
+                        {
+                            "startTime": "$sTime",
+                            "endTime": "$eTime"
+                        }
+                    ],
+                    "intervalMins": $intervalMins
+                }""")
+    }
+  }
+
+  it should "throw JsonParseException while parsing as Time with invalid IntervalMins value" in {
+    val id = "timeOfCall"
+    val label = "Time of call"
+    val helpText = "Select a time from the list."
+    val shortName = "shortNameForTimeOfCall"
+    val sTime = "10:70"
+    val eTime = "26:00"
+    val intervalMins = "i"
+
+    assertThrows[JsonParseException] {
+      toFieldValue(s""" {
+                    "id": "$id",
+                    "type": "time",
+                    "label": "$label",
+                    "shortName": "$shortName",
+                    "helpText": "$helpText",
+                    "ranges": [
+                        {
+                            "startTime": "$sTime",
+                            "endTime": "$eTime"
+                        }
+                    ],
+                    "intervalMins": $intervalMins
+                }""")
+    }
+  }
+
+  it should "fail to parse as Time with startTime after endTime" in {
+    val id = "timeOfCall"
+    val label = "Time of call"
+    val helpText = "Select a time from the list."
+    val shortName = "shortNameForTimeOfCall"
+    val sTime = "16:00"
+    val eTime = "14:00"
+    val intervalMins = 15
+    val fieldValue = toFieldValue(s""" {
+                    "id": "$id",
+                    "type": "time",
+                    "label": "$label",
+                    "shortName": "$shortName",
+                    "helpText": "$helpText",
+                    "ranges": [
+                        {
+                            "startTime": "$sTime",
+                            "endTime": "$eTime"
+                        }
+                    ],
+                    "intervalMins": $intervalMins
+                }""")
+
+    fieldValue should be(jsError)
+  }
+
+  it should "fail to parse as Time with intervalMins less than 1" in {
+    val id = "timeOfCall"
+    val label = "Time of call"
+    val helpText = "Select a time from the list."
+    val shortName = "shortNameForTimeOfCall"
+    val sTime = "10:00"
+    val eTime = "14:00"
+    val intervalMins = 0
+    val fieldValue = toFieldValue(s""" {
+                    "id": "$id",
+                    "type": "time",
+                    "label": "$label",
+                    "shortName": "$shortName",
+                    "helpText": "$helpText",
+                    "ranges": [
+                        {
+                            "startTime": "$sTime",
+                            "endTime": "$eTime"
+                        }
+                    ],
+                    "intervalMins": $intervalMins
+                }""")
+
+    fieldValue should be(jsError)
   }
 
   private def toFieldValue(template: String): JsResult[FormComponent] = {

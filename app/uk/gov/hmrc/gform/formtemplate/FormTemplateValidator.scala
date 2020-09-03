@@ -150,6 +150,7 @@ object FormTemplateValidator {
     case Group(fvs, _, _, _, _)   => validate(fvs.map(_.`type`), formTemplate)
     case FileUpload()             => Valid
     case InformationMessage(_, _) => Valid
+    case Time(_, _)               => Valid
   }
 
   def validateForwardReference(sections: List[Section]): ValidationResult = {

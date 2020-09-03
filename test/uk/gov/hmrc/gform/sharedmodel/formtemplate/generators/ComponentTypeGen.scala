@@ -15,6 +15,8 @@
  */
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
+import java.time.LocalTime
+
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidth.DisplayWidth
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
@@ -100,6 +102,45 @@ trait ComponentTypeGen {
 
   def fileUploadGen: Gen[FileUpload] = Gen.const(FileUpload())
 
+  def localTimeGen(baseTime: LocalTime): Gen[LocalTime] =
+    Gen.oneOf(
+      Seq(
+        baseTime,
+        baseTime.plusHours(2),
+        baseTime.plusHours(4),
+        baseTime.plusHours(6),
+        baseTime.plusHours(8),
+        baseTime.plusHours(10)
+      )
+    )
+
+  def startTimeGen: Gen[StartTime] =
+    for {
+      localTime <- localTimeGen(LocalTime.MIN)
+    } yield StartTime(localTime)
+
+  def endTimeGen: Gen[EndTime] =
+    for {
+      localTime <- localTimeGen(LocalTime.NOON)
+    } yield EndTime(localTime)
+
+  def rangeGen: Gen[Range] =
+    for {
+      startTime <- startTimeGen
+      endTime   <- endTimeGen
+    } yield Range(startTime, endTime)
+
+  def intervalMinsGen: Gen[IntervalMins] =
+    for {
+      intervalMins <- Gen.choose(1, 60)
+    } yield IntervalMins(intervalMins)
+
+  def timeGen: Gen[Time] =
+    for {
+      ranges       <- Gen.listOf(rangeGen)
+      intervalMins <- intervalMinsGen
+    } yield Time(ranges, intervalMins)
+
   def componentTypeGen(maxDepth: Int = 3): Gen[ComponentType] =
     if (maxDepth <= 1)
       Gen.oneOf(
@@ -112,7 +153,8 @@ trait ComponentTypeGen {
         informationMessageGen,
         fileUploadGen,
         hmrcTaxPeriodGen,
-        revealingChoiceGen
+        revealingChoiceGen,
+        timeGen
       )
     else
       Gen.oneOf(
@@ -126,6 +168,7 @@ trait ComponentTypeGen {
         fileUploadGen,
         hmrcTaxPeriodGen,
         revealingChoiceGen,
+        timeGen,
         groupGen(maxDepth)
       )
 }
