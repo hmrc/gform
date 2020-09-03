@@ -17,7 +17,6 @@
 package uk.gov.hmrc.gform.submissionconsolidator
 
 import java.time.format.DateTimeFormatter
-import cats.syntax.either._
 import cats.data.EitherT
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
