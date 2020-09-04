@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.submissionconsolidator
 
 import java.time.format.DateTimeFormatter
+
 import cats.data.EitherT
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
@@ -27,7 +28,7 @@ import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.sharedmodel.PdfHtml
-import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormData, FormId, FormStatus, Submitted }
+import uk.gov.hmrc.gform.sharedmodel.form.{ FormData, FormField, FormId, FormStatus, Submitted }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.SubmissionConsolidator
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, HandlebarsTemplateProcessorModel, JsonNodes }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.DestinationGen.submissionConsolidatorGen
@@ -76,10 +77,70 @@ class SubmissionConsolidatorServiceSpec
       "send submission with all form fields" in new TestFixture {
         forAll(testDataGen) { testData =>
           import testData._
-          val destination = submissionConsolidator.copy(formData = None)
+          val expectedScFormFields = formData.fields
+            .map {
+              case FormField(FormComponentId(id), value) => SCFormField(id, value)
+            }
+            .filter(_.value.nonEmpty)
           (mockSubmissionConsolidatorConnector
             .sendForm(_: SCForm)(_: HeaderCarrier))
-            .expects(expectedAPIForm(destinationSubmissionInfo, formData, destination, structuredFormData), hc)
+            .expects(expectedAPIForm(destinationSubmissionInfo, submissionConsolidator, expectedScFormFields), hc)
+            .returns(Future.successful(Right(())))
+          (mockFormService
+            .updateFormStatus(_: FormId, _: FormStatus)(_: HeaderCarrier))
+            .expects(destinationSubmissionInfo.formId, Submitted, hc)
+            .returns(EitherT(Future.successful[Either[UnexpectedState, FormStatus]](Right(Submitted))))
+          val future = submissionConsolidatorService
+            .submit(submissionConsolidator, destinationSubmissionInfo, model, modelTree, Some(formData))
+            .value
+
+          future.futureValue shouldBe Right(())
+        }
+      }
+
+      "send submission with all form fields, skipping form fields with empty values" in new TestFixture {
+        forAll(testDataGen) { testData =>
+          import testData._
+          val formDataWithEmptyFieldValues = formData.copy(formData.fields.map(_.copy(value = "")))
+          (mockSubmissionConsolidatorConnector
+            .sendForm(_: SCForm)(_: HeaderCarrier))
+            .expects(expectedAPIForm(destinationSubmissionInfo, submissionConsolidator), hc)
+            .returns(Future.successful(Right(())))
+          (mockFormService
+            .updateFormStatus(_: FormId, _: FormStatus)(_: HeaderCarrier))
+            .expects(destinationSubmissionInfo.formId, Submitted, hc)
+            .returns(EitherT(Future.successful[Either[UnexpectedState, FormStatus]](Right(Submitted))))
+          val future = submissionConsolidatorService
+            .submit(
+              submissionConsolidator,
+              destinationSubmissionInfo,
+              model,
+              modelTree,
+              Some(formDataWithEmptyFieldValues))
+            .value
+
+          future.futureValue shouldBe Right(())
+        }
+      }
+    }
+
+    "destination has formData template" should {
+      "send submission with fields from formData template" in new TestFixture {
+        forAll(testDataGen) { testData =>
+          import testData._
+          val destination = submissionConsolidator.copy(formData = Some(s"""[${structuredFormData.fields
+            .map { f =>
+              s"""{"id": "${f.name.name}", "value": "{{${f.name.name}}}"}"""
+            }
+            .mkString(",")}]"""))
+          val expectedSCFormFields =
+            structuredFormData.fields
+              .map(f => SCFormField(f.name.name, f.value.asInstanceOf[TextNode].value))
+              .filter(_.value.nonEmpty)
+
+          (mockSubmissionConsolidatorConnector
+            .sendForm(_: SCForm)(_: HeaderCarrier))
+            .expects(expectedAPIForm(destinationSubmissionInfo, destination, expectedSCFormFields), hc)
             .returns(Future.successful(Right(())))
           (mockFormService
             .updateFormStatus(_: FormId, _: FormStatus)(_: HeaderCarrier))
@@ -92,24 +153,25 @@ class SubmissionConsolidatorServiceSpec
           future.futureValue shouldBe Right(())
         }
       }
-    }
 
-    "destination has formData template" should {
-      "send submission with fields from formData template" in new TestFixture {
+      "send submission with fields from formData template, skipping form fields with empty values" in new TestFixture {
         forAll(testDataGen) { testData =>
           import testData._
+          val destination = submissionConsolidator.copy(formData = Some(s"""[${structuredFormData.fields
+            .map { f =>
+              s"""{"id": "${f.name.name}", "value": ""}"""
+            }
+            .mkString(",")}]"""))
           (mockSubmissionConsolidatorConnector
             .sendForm(_: SCForm)(_: HeaderCarrier))
-            .expects(
-              expectedAPIForm(destinationSubmissionInfo, formData, submissionConsolidator, structuredFormData),
-              hc)
+            .expects(expectedAPIForm(destinationSubmissionInfo, destination), hc)
             .returns(Future.successful(Right(())))
           (mockFormService
             .updateFormStatus(_: FormId, _: FormStatus)(_: HeaderCarrier))
             .expects(destinationSubmissionInfo.formId, Submitted, hc)
             .returns(EitherT(Future.successful[Either[UnexpectedState, FormStatus]](Right(Submitted))))
           val future = submissionConsolidatorService
-            .submit(submissionConsolidator, destinationSubmissionInfo, model, modelTree, Some(formData))
+            .submit(destination, destinationSubmissionInfo, model, modelTree, Some(formData))
             .value
 
           future.futureValue shouldBe Right(())
@@ -141,32 +203,22 @@ class SubmissionConsolidatorServiceSpec
 
   private def expectedAPIForm(
     destinationSubmissionInfo: DestinationSubmissionInfo,
-    formData: FormData,
     destination: Destination.SubmissionConsolidator,
-    structuredFormData: StructuredFormValue.ObjectStructure) =
+    scFormFields: Seq[SCFormField] = Seq.empty) =
     SCForm(
       destinationSubmissionInfo.submission.submissionRef.value,
       destination.projectId.id,
       destinationSubmissionInfo.submission.dmsMetaData.formTemplateId.value,
       destinationSubmissionInfo.customerId,
       destinationSubmissionInfo.submission.submittedDate.format(DATE_TIME_FORMAT),
-      destination.formData
-        .map(_ => structuredFormData.fields.map(f => SCFormField(f.name.name, f.value.asInstanceOf[TextNode].value)))
-        .getOrElse(formData.toData.toList.map {
-          case (FormComponentId(id), value) => SCFormField(id, value)
-        })
+      scFormFields
     )
 
   private val testDataGen = for {
     structuredFormData <- structureFormValueObjectStructureGen
     model = HandlebarsTemplateProcessorModel(
       structuredFormData.fields.map(f => (f.name.name, JsonNodes.textNode(f.value.asInstanceOf[TextNode].value))): _*)
-    submissionConsolidator <- submissionConsolidatorGen.map(d =>
-                               d.copy(formData = Some(s"""[${structuredFormData.fields
-                                 .map { f =>
-                                   s"""{"id": "${f.name.name}", "value": "{{${f.name.name}}}"}"""
-                                 }
-                                 .mkString(",")}]""")))
+    submissionConsolidator    <- submissionConsolidatorGen.map(_.copy(formData = None))
     formTemplate              <- formTemplateGen
     formData                  <- formDataGen
     destinationSubmissionInfo <- destinationSubmissionInfoGen
