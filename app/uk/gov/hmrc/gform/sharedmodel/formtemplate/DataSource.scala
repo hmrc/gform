@@ -24,6 +24,7 @@ sealed trait DataSource
 object DataSource {
   case object SeissEligible extends DataSource
   case class Mongo(collectionName: String) extends DataSource
+  case class Enrolment(serviceName: ServiceName, identifierName: IdentifierName) extends DataSource
 
   implicit val format: OFormat[DataSource] = derived.oformat
 }

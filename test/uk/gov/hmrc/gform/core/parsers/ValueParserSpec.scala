@@ -127,7 +127,7 @@ class ValueParserSpec extends Spec {
 
   it should "parse ${user.enrolledIdentifier}" in {
     val res = ValueParser.validate("${user.enrolledIdentifier}")
-    res.right.value should be(TextExpression(UserCtx(EnrolledIdentifier)))
+    res.right.value should be(TextExpression(UserCtx(UserField.EnrolledIdentifier)))
   }
 
   it should "parse anything except singe quote" in {
@@ -179,7 +179,7 @@ class ValueParserSpec extends Spec {
     forAll(validIdentifiersCombinations) { (serviceName, identifierName) ⇒
       val res = ValueParser.validate(s"$${user.enrolments.$serviceName.$identifierName}")
       res.right.value should be(
-        TextExpression(UserCtx(Enrolment(ServiceName(serviceName), IdentifierName(identifierName)))))
+        TextExpression(UserCtx(UserField.Enrolment(ServiceName(serviceName), IdentifierName(identifierName)))))
     }
 
     forAll(invalidIdentifiersCombinations) { (serviceName, identifierName) ⇒
