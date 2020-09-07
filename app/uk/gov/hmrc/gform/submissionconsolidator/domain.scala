@@ -30,7 +30,7 @@ case class SCForm(
   templateId: String,
   customerId: String,
   submissionTimestamp: String,
-  formData: List[SCFormField]
+  formData: Seq[SCFormField]
 )
 
 object SCForm {

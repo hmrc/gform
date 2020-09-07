@@ -24,7 +24,7 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.form.FormAlgebra
-import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormData, Submitted }
+import uk.gov.hmrc.gform.sharedmodel.form.{ FormData, FormField, Submitted }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormComponentId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, HandlebarsTemplateProcessorModel, TemplateType }
 import uk.gov.hmrc.gform.submission.destinations.DestinationSubmissionInfo
@@ -78,32 +78,32 @@ class SubmissionConsolidatorService(
         submissionInfo.submission.dmsMetaData.formTemplateId.value,
         submissionInfo.customerId,
         submissionInfo.submission.submittedDate.format(DATE_TIME_FORMAT),
-        scFormFields
+        scFormFields.filter(_.value.trim.nonEmpty)
       )
 
   private def buildSCFormFields(
     destination: Destination.SubmissionConsolidator,
     formData: Option[FormData],
     accumulatedModel: HandlebarsTemplateProcessorModel,
-    modelTree: HandlebarsModelTree): EitherT[Future, UnexpectedState, List[SCFormField]] =
+    modelTree: HandlebarsModelTree): EitherT[Future, UnexpectedState, Seq[SCFormField]] =
     destination.formData
       .map(buildSCFormFieldsFromTemplate(_, accumulatedModel, modelTree))
       .orElse(formData.map(buildSCFormFieldsFromForm))
       .getOrElse(EitherT.pure(List.empty))
 
-  private def buildSCFormFieldsFromForm(formData: FormData): EitherT[Future, UnexpectedState, List[SCFormField]] =
+  private def buildSCFormFieldsFromForm(formData: FormData): EitherT[Future, UnexpectedState, Seq[SCFormField]] =
     EitherT {
       Future.successful {
-        Right(formData.toData.toList.map {
-          case (FormComponentId(id), value) => SCFormField(id, value)
-        }): Either[UnexpectedState, List[SCFormField]]
+        Right(formData.fields.map {
+          case FormField(FormComponentId(id), value) => SCFormField(id, value)
+        }): Either[UnexpectedState, Seq[SCFormField]]
       }
     }
 
   private def buildSCFormFieldsFromTemplate(
     formDataTemplate: String,
     accumulatedModel: HandlebarsTemplateProcessorModel,
-    modelTree: HandlebarsModelTree): EitherT[Future, UnexpectedState, List[SCFormField]] = EitherT {
+    modelTree: HandlebarsModelTree): EitherT[Future, UnexpectedState, Seq[SCFormField]] = EitherT {
     Future.successful {
       Try(
         Json
@@ -113,7 +113,7 @@ class SubmissionConsolidatorService(
               accumulatedModel,
               FocussedHandlebarsModelTree(modelTree),
               TemplateType.JSON))
-          .as[List[SCFormField]]) match {
+          .as[Seq[SCFormField]]) match {
         case Success(scFormFields) => Right(scFormFields)
         case Failure(exception)    => Left(UnexpectedState(exception.getMessage))
       }
