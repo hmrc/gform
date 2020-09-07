@@ -86,7 +86,7 @@ object FormTemplateValidator {
   val userContextComponentType: List[FormComponent] => List[FormComponent] =
     enrolledIdentifierComponents =>
       enrolledIdentifierComponents.collect {
-        case expr @ HasExpr(SingleExpr(UserCtx(EnrolledIdentifier))) => expr
+        case expr @ HasExpr(SingleExpr(UserCtx(UserField.EnrolledIdentifier))) => expr
     }
 
   def validateEnrolmentIdentifier(formTemplate: FormTemplate): ValidationResult =

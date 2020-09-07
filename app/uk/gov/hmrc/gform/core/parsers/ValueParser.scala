@@ -21,7 +21,6 @@ import java.time.LocalDate
 import parseback._
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.BasicParsers._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.DataSource._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 object ValueParser {
@@ -60,12 +59,14 @@ object ValueParser {
 
   lazy val dataSourceParse: Parser[DataSource] = (
     "service" ~ "." ~ "seiss" ^^ { (_, _, _, serviceName) =>
-      SeissEligible
+      DataSource.SeissEligible
     }
-      |
-        "mongo" ~ "." ~ alphabeticOnly ^^ { (_, _, _, collectionName) =>
-          Mongo(collectionName)
-        }
+      | "mongo" ~ "." ~ alphabeticOnly ^^ { (_, _, _, collectionName) =>
+        DataSource.Mongo(collectionName)
+      }
+      | "user" ~ "." ~ "enrolments" ~ "." ~ enrolment ^^ { (_, _, _, _, _, enrolment) =>
+        DataSource.Enrolment(enrolment.serviceName, enrolment.identifierName)
+      }
   )
 
   lazy val expr: Parser[Expr] = (quotedConstant
@@ -182,13 +183,13 @@ object ValueParser {
   )
 
   lazy val userField: Parser[UserField] = (
-    "affinityGroup" ^^ const(AffinityGroup)
+    "affinityGroup" ^^ const(UserField.AffinityGroup)
       | "enrolments" ~ "." ~ enrolment ^^ ((_, _, _, en) => en)
-      | "enrolledIdentifier" ^^ const(EnrolledIdentifier)
+      | "enrolledIdentifier" ^^ const(UserField.EnrolledIdentifier)
   )
 
-  lazy val enrolment: Parser[Enrolment] = serviceName ~ "." ~ identifierName ^^ { (_, sn, _, in) =>
-    Enrolment(sn, in)
+  lazy val enrolment: Parser[UserField.Enrolment] = serviceName ~ "." ~ identifierName ^^ { (_, sn, _, in) =>
+    UserField.Enrolment(sn, in)
   }
 
   lazy val serviceName: Parser[ServiceName] = """[^.]+""".r ^^ { (loc, str) =>
