@@ -16,15 +16,40 @@
 
 package uk.gov.hmrc.gform.dms
 
-import play.api.libs.json.{ Format, Json }
+import play.api.libs.json.{ Format, JsError, JsObject, JsSuccess, Json, OFormat, Reads }
 
 case class DmsMetadata(
   dmsFormId: String,
   customerId: String,
   classificationType: String,
   businessArea: String,
-  backscan: Option[Boolean])
+  backscan: Option[Boolean]
+)
 
 object DmsMetadata {
-  implicit val format: Format[DmsMetadata] = Json.format[DmsMetadata]
+
+  implicit val format: Format[DmsMetadata] = OFormat(
+    Reads { json =>
+      for {
+        jsObject           <- json.validate[JsObject]
+        dmsFormId          <- (jsObject \ "dmsFormId").validate[String]
+        customerId         <- (jsObject \ "customerId").validate[String]
+        classificationType <- (jsObject \ "classificationType").validate[String]
+        businessArea       <- (jsObject \ "businessArea").validate[String]
+        backscan <- {
+          val backscanPath = jsObject \ "backscan"
+          backscanPath
+            .validateOpt[Boolean]
+            .orElse(backscanPath.validateOpt[String].flatMap {
+              case None          => JsSuccess(None)
+              case Some("true")  => JsSuccess(Some(true))
+              case Some("false") => JsSuccess(Some(false))
+              case Some(other)   => JsError(s"Could not read value for backscan: '$other'")
+            })
+        }
+      } yield DmsMetadata(dmsFormId, customerId, classificationType, businessArea, backscan)
+    },
+    Json.writes[DmsMetadata]
+  )
+
 }
