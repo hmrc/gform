@@ -28,6 +28,7 @@ import play.api.libs.ws.ahc.AhcWSComponents
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.auditing.AuditingModule
 import uk.gov.hmrc.gform.config.ConfigModule
+import uk.gov.hmrc.gform.dblookup.DbLookupModule
 import uk.gov.hmrc.gform.dms.DmsModule
 import uk.gov.hmrc.gform.email.EmailModule
 import uk.gov.hmrc.gform.fileupload.FileUploadModule
@@ -146,6 +147,8 @@ class ApplicationModule(context: Context)
   val graphiteModule =
     new GraphiteModule(environment, configuration, configModule.runMode, applicationLifecycle, metricsModule)
 
+  val dbLookupModule = new DbLookupModule(controllerComponents, mongoModule)
+
   override lazy val httpErrorHandler: HttpErrorHandler = new ErrorHandler(
     playComponents.context.environment,
     playComponents.context.initialConfiguration,
@@ -165,6 +168,7 @@ class ApplicationModule(context: Context)
     dmsModule,
     obligationModule,
     emailModule,
+    dbLookupModule,
     httpErrorHandler
   )
 

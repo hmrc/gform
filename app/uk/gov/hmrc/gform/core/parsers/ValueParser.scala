@@ -21,6 +21,7 @@ import java.time.LocalDate
 import parseback._
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.BasicParsers._
+import uk.gov.hmrc.gform.sharedmodel.dblookup.CollectionName
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 object ValueParser {
@@ -61,8 +62,8 @@ object ValueParser {
     "service" ~ "." ~ "seiss" ^^ { (_, _, _, serviceName) =>
       DataSource.SeissEligible
     }
-      | "mongo" ~ "." ~ alphabeticOnly ^^ { (_, _, _, collectionName) =>
-        DataSource.Mongo(collectionName)
+      | "mongo" ~ "." ~ alphabeticOnly ^^ { (_, _, _, name) =>
+        DataSource.Mongo(CollectionName(name))
       }
       | "user" ~ "." ~ "enrolments" ~ "." ~ enrolment ^^ { (_, _, _, _, _, enrolment) =>
         DataSource.Enrolment(enrolment.serviceName, enrolment.identifierName)

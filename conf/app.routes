@@ -46,3 +46,5 @@ POST          /dms/submit-with-attachments                                  uk.g
 POST          /obligation/tax-period                                        uk.gov.hmrc.gform.obligation.ObligationController.getAllTaxPeriods()
 
 POST          /email/:notifierEmailAddress                                  uk.gov.hmrc.gform.email.EmailCodeVerificationController.sendEmail(notifierEmailAddress: NotifierEmailAddress)
+
+GET           /dblookup/:id/:collectionName                                 uk.gov.hmrc.gform.dblookup.DbLookupController.exists(id: DbLookupId, collectionName: CollectionName)

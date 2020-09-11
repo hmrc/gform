@@ -21,6 +21,7 @@ import play.api.libs.json.{ JsError, JsString, JsSuccess, Reads }
 import play.api.mvc.{ JavascriptLiteral, PathBindable }
 import scala.util.Try
 import uk.gov.hmrc.auth.core.AffinityGroup
+import uk.gov.hmrc.gform.sharedmodel.dblookup.{ CollectionName, DbLookupId }
 import uk.gov.hmrc.gform.sharedmodel.form.{ FileId, FormId, FormStatus }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, FormTemplateRawId, SectionNumber }
@@ -42,6 +43,8 @@ object ValueClassBinder {
   implicit val formIdBinder: PathBindable[FormId] = valueClassBinder(_.value)
   implicit val userIdBinder: PathBindable[UserId] = valueClassBinder(_.value)
   implicit val fileIdBinder: PathBindable[FileId] = valueClassBinder(_.value)
+  implicit val dbLookupIdBinder: PathBindable[DbLookupId] = valueClassBinder(_.id)
+  implicit val collectionNameBinder: PathBindable[CollectionName] = valueClassBinder(_.name)
   //implicit val accessCodeBinder: PathBindable[Option[AccessCode]] = mValueClassBinder(_.value)
 
   implicit val sectionNumberBinder: PathBindable[SectionNumber] = new PathBindable[SectionNumber] {
