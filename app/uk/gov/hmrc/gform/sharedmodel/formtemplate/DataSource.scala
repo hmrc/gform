@@ -26,6 +26,7 @@ object DataSource {
   case object SeissEligible extends DataSource
   case class Mongo(collectionName: CollectionName) extends DataSource
   case class Enrolment(serviceName: ServiceName, identifierName: IdentifierName) extends DataSource
+  case class DelegatedEnrolment(serviceName: ServiceName, identifierName: IdentifierName) extends DataSource
 
   implicit val format: OFormat[DataSource] = derived.oformat
 }
