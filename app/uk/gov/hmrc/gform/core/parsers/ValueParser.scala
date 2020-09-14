@@ -59,7 +59,7 @@ object ValueParser {
     | parserExpression)
 
   lazy val dataSourceParse: Parser[DataSource] = (
-    "service" ~ "." ~ "seiss" ^^ { (_, _, _, serviceName) =>
+    "service" ~ "." ~ "seiss" ^^ { (_, _, _, _) =>
       DataSource.SeissEligible
     }
       | "mongo" ~ "." ~ alphabeticOnly ^^ { (_, _, _, name) =>
@@ -67,6 +67,9 @@ object ValueParser {
       }
       | "user" ~ "." ~ "enrolments" ~ "." ~ enrolment ^^ { (_, _, _, _, _, enrolment) =>
         DataSource.Enrolment(enrolment.serviceName, enrolment.identifierName)
+      }
+      | "delegated.classic.enrolments." ~ enrolment ^^ { (_, _, enrolment) =>
+        DataSource.DelegatedEnrolment(enrolment.serviceName, enrolment.identifierName)
       }
   )
 
@@ -193,7 +196,7 @@ object ValueParser {
     UserField.Enrolment(sn, in)
   }
 
-  lazy val serviceName: Parser[ServiceName] = """[^.]+""".r ^^ { (loc, str) =>
+  lazy val serviceName: Parser[ServiceName] = """[^.= }]+""".r ^^ { (loc, str) =>
     ServiceName(str)
   }
 
