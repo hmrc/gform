@@ -172,8 +172,8 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
 
     res shouldBe Right(
       Or(
-        Equals(UserCtx(AffinityGroup), Constant("organisation")),
-        Equals(UserCtx(AffinityGroup), Constant("individual"))))
+        Equals(UserCtx(UserField.AffinityGroup), Constant("organisation")),
+        Equals(UserCtx(UserField.AffinityGroup), Constant("individual"))))
 
   }
 

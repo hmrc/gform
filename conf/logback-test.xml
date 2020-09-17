@@ -70,7 +70,7 @@
 
     <logger name="uk.gov.hmrc.gform.submission" level="INFO"/>
 
-    <logger name="application" level="DEBUG"/>
+    <logger name="application" level="INFO"/>
 
     <logger name="stateTransitions" level="INFO"  additivity="false">
         <appender-ref ref="STATE_TRANSITIONS_LOG_FILE" />
@@ -88,11 +88,11 @@
 
     <logger name="reactivemongo.core.actors.MongoDBSystem" level="INFO"/>
 
-    <logger name="connector" level="TRACE">
+    <logger name="connector" level="INFO">
         <appender-ref ref="STDOUT"/>
     </logger>
 
-    <root level="DEBUG">
+    <root level="INFO">
         <appender-ref ref="FILE"/>
         <appender-ref ref="STDOUT"/>
     </root>

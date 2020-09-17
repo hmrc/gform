@@ -14,19 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel.formtemplate
+package uk.gov.hmrc.gform.sharedmodel.dblookup
 
-import julienrf.json.derived
-import play.api.libs.json._
-import uk.gov.hmrc.gform.sharedmodel.dblookup.CollectionName
+import play.api.libs.json.OFormat
+import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
 
-sealed trait DataSource
+case class DbLookupId(id: String) extends AnyVal
 
-object DataSource {
-  case object SeissEligible extends DataSource
-  case class Mongo(collectionName: CollectionName) extends DataSource
-  case class Enrolment(serviceName: ServiceName, identifierName: IdentifierName) extends DataSource
-  case class DelegatedEnrolment(serviceName: ServiceName, identifierName: IdentifierName) extends DataSource
+object DbLookupId {
 
-  implicit val format: OFormat[DataSource] = derived.oformat
+  implicit val oformat: OFormat[DbLookupId] =
+    ValueClassFormat.oformat("_id", DbLookupId.apply, _.id)
 }

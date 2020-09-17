@@ -27,13 +27,13 @@ trait ExprGen {
 
   def identifierNameGen: Gen[IdentifierName] = PrimitiveGen.nonEmptyAlphaNumStrGen.map(IdentifierName(_))
 
-  def enrolmentGen: Gen[Enrolment] =
+  def enrolmentGen: Gen[UserField.Enrolment] =
     for {
       serviceName    <- serviceNameGen
       identifierName <- identifierNameGen
-    } yield Enrolment(serviceName, identifierName)
+    } yield UserField.Enrolment(serviceName, identifierName)
 
-  def userFieldGen: Gen[UserField] = Gen.oneOf(Gen.const(AffinityGroup), enrolmentGen)
+  def userFieldGen: Gen[UserField] = Gen.oneOf(Gen.const(UserField.AffinityGroup), enrolmentGen)
 
   def addGen(maxDepth: Int): Gen[Add] =
     for {

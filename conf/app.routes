@@ -47,4 +47,6 @@ POST          /obligation/tax-period                                        uk.g
 
 POST          /email/:notifierEmailAddress                                  uk.gov.hmrc.gform.email.EmailCodeVerificationController.sendEmail(notifierEmailAddress: NotifierEmailAddress)
 
+GET           /dblookup/:id/:collectionName                                 uk.gov.hmrc.gform.dblookup.DbLookupController.exists(id: DbLookupId, collectionName: CollectionName)
+
 PUT           /allowedList/:allowedListName                                  uk.gov.hmrc.gform.allowedlist.AllowedListController.add(allowedListName: uk.gov.hmrc.gform.allowedlist.AllowedListName.AllowedListName)

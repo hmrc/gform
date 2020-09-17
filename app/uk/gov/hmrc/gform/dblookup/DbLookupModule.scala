@@ -14,19 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel.formtemplate
+package uk.gov.hmrc.gform.dblookup
 
-import julienrf.json.derived
-import play.api.libs.json._
-import uk.gov.hmrc.gform.sharedmodel.dblookup.CollectionName
+import play.api.mvc.ControllerComponents
+import uk.gov.hmrc.gform.mongo.MongoModule
 
-sealed trait DataSource
+import scala.concurrent.ExecutionContext
 
-object DataSource {
-  case object SeissEligible extends DataSource
-  case class Mongo(collectionName: CollectionName) extends DataSource
-  case class Enrolment(serviceName: ServiceName, identifierName: IdentifierName) extends DataSource
-  case class DelegatedEnrolment(serviceName: ServiceName, identifierName: IdentifierName) extends DataSource
+class DbLookupModule(controllerComponents: ControllerComponents, mongoModule: MongoModule)(
+  implicit ex: ExecutionContext) {
 
-  implicit val format: OFormat[DataSource] = derived.oformat
+  val dbLookupService = new DbLookupService(mongoModule)
+  val dbLookupController = new DbLookupController(controllerComponents, dbLookupService)
 }

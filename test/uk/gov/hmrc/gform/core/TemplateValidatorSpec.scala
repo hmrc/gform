@@ -121,7 +121,7 @@ class TemplateValidatorSpec extends Spec {
       Gen.oneOf(hmrcEnrolmentModuleGen, hmrcAgentWithEnrolmentModuleGen),
       formComponentGen(),
       pageGen) { (template, authConfig, fc, page) =>
-      val componentType = Text(EORI, UserCtx(EnrolledIdentifier))
+      val componentType = Text(EORI, UserCtx(UserField.EnrolledIdentifier))
       val newFormComponents: List[FormComponent] = fc.copy(`type` = componentType) :: Nil
       val newPage = page.copy(fields = newFormComponents)
       val newSections = List(Section.NonRepeatingPage(newPage))

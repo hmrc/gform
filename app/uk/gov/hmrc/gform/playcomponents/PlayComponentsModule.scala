@@ -26,6 +26,7 @@ import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.allowedlist.AllowedListModule
 import uk.gov.hmrc.gform.auditing.AuditingModule
 import uk.gov.hmrc.gform.config.ConfigModule
+import uk.gov.hmrc.gform.dblookup.DbLookupModule
 import uk.gov.hmrc.gform.dms.DmsModule
 import uk.gov.hmrc.gform.email.EmailModule
 import uk.gov.hmrc.gform.form.FormModule
@@ -52,6 +53,7 @@ class PlayComponentsModule(
   dmsModule: DmsModule,
   obligationModule: ObligationModule,
   emailModule: EmailModule,
+  dbLookupModule: DbLookupModule,
   allowedListModule: AllowedListModule,
   errorHandler: HttpErrorHandler)(implicit ec: ExecutionContext) {
 
@@ -68,6 +70,7 @@ class PlayComponentsModule(
     dmsModule.dmsSubmissionController,
     obligationModule.obligationController,
     emailModule.emailCodeVerificationController,
+    dbLookupModule.dbLookupController,
     allowedListModule.allowedListController
   )
 
