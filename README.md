@@ -105,6 +105,8 @@ Execute submission of the given form instance to the configured destination
 ##### GET /forms/:formId/submission
 Get the submission status of the given form instance
 
+##### PUT /dbLookup/:collectionName
+Persists the given list of values for mongo collection `collectionName`. Body should be a list of objects, with a single `_id` field e.g: `[ { "_id": "123456789" } ]`
 
 ### License
 

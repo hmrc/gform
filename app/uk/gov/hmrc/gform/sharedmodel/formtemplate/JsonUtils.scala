@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import cats.data.NonEmptyList
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
+import uk.gov.hmrc.mongo.json.JsonExtensions
 
 import scala.reflect.runtime.universe.TypeTag
 

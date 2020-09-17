@@ -18,17 +18,19 @@ package uk.gov.hmrc.gform.playcomponents
 
 import play.api._
 import play.api.http.DefaultHttpErrorHandler
-import play.api.libs.json.Json
+import play.api.libs.json.{ JsResultException, Json }
 import play.api.mvc.Results._
 import play.api.mvc.{ RequestHeader, Result }
 import play.core.SourceMapper
 import uk.gov.hmrc.gform.controllers.ErrResponse
+import uk.gov.hmrc.gform.core.UniqueIdGenerator
 import uk.gov.hmrc.play.http._
 
 import scala.concurrent.Future
 import uk.gov.hmrc.http.{ HttpException, JsValidationException, NotFoundException, Upstream4xxResponse, Upstream5xxResponse }
 
-class ErrorHandler(environment: Environment, configuration: Configuration, sourceMapper: Option[SourceMapper])
+class ErrorHandler(environment: Environment, configuration: Configuration, sourceMapper: Option[SourceMapper])(
+  implicit uniqueIdGenerator: UniqueIdGenerator)
     extends DefaultHttpErrorHandler(environment, configuration, sourceMapper, None) {
 
   override protected def onBadRequest(request: RequestHeader, message: String): Future[Result] = {
@@ -67,6 +69,7 @@ class ErrorHandler(environment: Environment, configuration: Configuration, sourc
      case e: java.util.NoSuchElementException  => onNotFoundException(e)
      case e: HttpException                     => onHttpException(e)
      case e: JsValidationException             => onJsValidationException(e)
+     case e: JsResultException                 => onJsResultException(e)
      case e: Throwable                         => onOtherException(e)
     // format: ON
   }
@@ -98,6 +101,13 @@ class ErrorHandler(environment: Environment, configuration: Configuration, sourc
   private def onJsValidationException(e: JsValidationException) = {
     val temporaryDetails = Some(Json.obj("details" -> e.errors.toString))
     val response = ErrResponse("Invalid json", temporaryDetails)
+    Logger.logger.info(response.toString, e)
+    Future.successful(BadRequest(Json.toJson(response)))
+  }
+
+  private def onJsResultException(e: JsResultException): Future[Result] = {
+    val temporaryDetails = Some(Json.obj("details" -> e.errors.toString))
+    val response = ErrResponse("Invalid json", temporaryDetails, uniqueIdGenerator.generate)
     Logger.logger.info(response.toString, e)
     Future.successful(BadRequest(Json.toJson(response)))
   }
