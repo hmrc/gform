@@ -23,6 +23,7 @@ import play.api.routing.Router
 
 import scala.concurrent.ExecutionContext
 import uk.gov.hmrc.gform.akka.AkkaModule
+import uk.gov.hmrc.gform.allowedlist.AllowedListModule
 import uk.gov.hmrc.gform.auditing.AuditingModule
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.dms.DmsModule
@@ -51,6 +52,7 @@ class PlayComponentsModule(
   dmsModule: DmsModule,
   obligationModule: ObligationModule,
   emailModule: EmailModule,
+  allowedListModule: AllowedListModule,
   errorHandler: HttpErrorHandler)(implicit ec: ExecutionContext) {
 
   private lazy val loggingFilter = new DefaultLoggingFilter(configModule.controllerConfigs)(akkaModule.materializer, ec)
@@ -65,7 +67,8 @@ class PlayComponentsModule(
     validationModule.validationController,
     dmsModule.dmsSubmissionController,
     obligationModule.obligationController,
-    emailModule.emailCodeVerificationController
+    emailModule.emailCodeVerificationController,
+    allowedListModule.allowedListController
   )
 
   private val healthController =

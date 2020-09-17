@@ -46,3 +46,5 @@ POST          /dms/submit-with-attachments                                  uk.g
 POST          /obligation/tax-period                                        uk.gov.hmrc.gform.obligation.ObligationController.getAllTaxPeriods()
 
 POST          /email/:notifierEmailAddress                                  uk.gov.hmrc.gform.email.EmailCodeVerificationController.sendEmail(notifierEmailAddress: NotifierEmailAddress)
+
+PUT           /allowedList/:allowedListName                                  uk.gov.hmrc.gform.allowedlist.AllowedListController.add(allowedListName: uk.gov.hmrc.gform.allowedlist.AllowedListName.AllowedListName)

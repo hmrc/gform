@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.exceptions
+package uk.gov.hmrc.gform.core
 
-import play.api.libs.json.Json
-import play.api.mvc.Results._
-import uk.gov.hmrc.gform.controllers.ErrResponse
-import uk.gov.hmrc.gform.core.UniqueIdGenerator
+import java.util.UUID
 
-case class UnexpectedState(error: String) {
-  def asBadRequest = BadRequest(Json.toJson(ErrResponse(error)))
+trait UniqueIdGenerator {
+  def generate: String
+}
 
-  def asInternalServerError(implicit uniqueIdGenerator: UniqueIdGenerator) =
-    InternalServerError(Json.toJson(ErrResponse(error, None, uniqueIdGenerator.generate)))
+object UniqueIdGenerator {
+  implicit val uuidStringGenerator = new UniqueIdGenerator {
+    override def generate: String = UUID.randomUUID().toString
+  }
 }

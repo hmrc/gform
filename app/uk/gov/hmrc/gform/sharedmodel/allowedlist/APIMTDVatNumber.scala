@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.exceptions
+package uk.gov.hmrc.gform.sharedmodel.allowedlist
 
 import play.api.libs.json.Json
-import play.api.mvc.Results._
-import uk.gov.hmrc.gform.controllers.ErrResponse
-import uk.gov.hmrc.gform.core.UniqueIdGenerator
+import uk.gov.hmrc.gform.allowedlist.MTDVatNumber
 
-case class UnexpectedState(error: String) {
-  def asBadRequest = BadRequest(Json.toJson(ErrResponse(error)))
+case class APIMTDVatNumber(id: String) {
+  def toMTDVatNumber: MTDVatNumber =
+    MTDVatNumber(id)
+}
 
-  def asInternalServerError(implicit uniqueIdGenerator: UniqueIdGenerator) =
-    InternalServerError(Json.toJson(ErrResponse(error, None, uniqueIdGenerator.generate)))
+object APIMTDVatNumber {
+  implicit val formats = Json.format[APIMTDVatNumber]
 }

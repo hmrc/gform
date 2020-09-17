@@ -26,6 +26,7 @@ import play.api.mvc.EssentialFilter
 import play.api.routing.Router
 import play.api.libs.ws.ahc.AhcWSComponents
 import uk.gov.hmrc.gform.akka.AkkaModule
+import uk.gov.hmrc.gform.allowedlist.AllowedListModule
 import uk.gov.hmrc.gform.auditing.AuditingModule
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.dms.DmsModule
@@ -83,6 +84,7 @@ class ApplicationModule(context: Context)
   val fileUploadModule = new FileUploadModule(configModule, wSHttpModule, timeModule, akkaModule)
   private val mongoModule = new MongoModule(playComponents)
   val formTemplateModule = new FormTemplateModule(controllerComponents, mongoModule)
+  val allowedListModule = new AllowedListModule(controllerComponents, mongoModule)
   protected val shortLivedCacheModule = new Save4LaterModule(configModule, wSHttpModule)
   val pdfGeneratorModule = new PdfGeneratorModule(configModule, wSHttpModule)
 
@@ -165,6 +167,7 @@ class ApplicationModule(context: Context)
     dmsModule,
     obligationModule,
     emailModule,
+    allowedListModule,
     httpErrorHandler
   )
 

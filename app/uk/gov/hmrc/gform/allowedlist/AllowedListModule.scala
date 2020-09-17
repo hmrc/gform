@@ -14,16 +14,18 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.exceptions
+package uk.gov.hmrc.gform.allowedlist
 
-import play.api.libs.json.Json
-import play.api.mvc.Results._
-import uk.gov.hmrc.gform.controllers.ErrResponse
-import uk.gov.hmrc.gform.core.UniqueIdGenerator
+import play.api.mvc.ControllerComponents
+import uk.gov.hmrc.gform.mongo.MongoModule
+import uk.gov.hmrc.gform.repo.{ Repo, RepoAlgebra }
 
-case class UnexpectedState(error: String) {
-  def asBadRequest = BadRequest(Json.toJson(ErrResponse(error)))
+import scala.concurrent.ExecutionContext
 
-  def asInternalServerError(implicit uniqueIdGenerator: UniqueIdGenerator) =
-    InternalServerError(Json.toJson(ErrResponse(error, None, uniqueIdGenerator.generate)))
+class AllowedListModule(controllerComponents: ControllerComponents, mongoModule: MongoModule)(
+  implicit ex: ExecutionContext) {
+
+  val mtdVatNumberRepo = RepoAlgebra.fOpt(new Repo[MTDVatNumber]("mtdVatNumber", mongoModule.mongo, _.id))
+
+  val allowedListController = new AllowedListController(mtdVatNumberRepo, controllerComponents)
 }

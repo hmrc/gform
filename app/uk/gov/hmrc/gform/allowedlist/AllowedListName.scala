@@ -14,16 +14,9 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.exceptions
+package uk.gov.hmrc.gform.allowedlist
 
-import play.api.libs.json.Json
-import play.api.mvc.Results._
-import uk.gov.hmrc.gform.controllers.ErrResponse
-import uk.gov.hmrc.gform.core.UniqueIdGenerator
-
-case class UnexpectedState(error: String) {
-  def asBadRequest = BadRequest(Json.toJson(ErrResponse(error)))
-
-  def asInternalServerError(implicit uniqueIdGenerator: UniqueIdGenerator) =
-    InternalServerError(Json.toJson(ErrResponse(error, None, uniqueIdGenerator.generate)))
+object AllowedListName extends Enumeration {
+  type AllowedListName = Value
+  val mtdVatNumber = Value
 }

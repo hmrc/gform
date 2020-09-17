@@ -80,6 +80,12 @@ class Repo[T: OWrites: Manifest](name: String, mongo: () => DefaultDB, idLens: T
     }
   }
 
+  def upsertBulk(t: Seq[T]): FOpt[Unit] = EitherT {
+    preservingMdc {
+      underlying.collection.insert(ordered = false).many(t).asEither
+    }
+  }
+
   def delete(id: String): FOpt[Unit] = EitherT {
     preservingMdc {
       underlying.collection.delete().one(idSelector(id)).asEither

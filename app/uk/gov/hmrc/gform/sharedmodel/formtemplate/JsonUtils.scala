@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import cats.data.NonEmptyList
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
+import uk.gov.hmrc.mongo.json.JsonExtensions
 
 import scala.reflect.runtime.universe.TypeTag
 
@@ -63,6 +64,19 @@ trait JsonUtils {
   }
 
   def safeCast[A, B >: A](reads: Reads[A]): Reads[B] = reads.asInstanceOf[Reads[B]]
+
+  def dbIdOFormat[A](baseFormat: OFormat[A]): OFormat[A] = {
+    import JsonExtensions._
+    val publicIdPath: JsPath = __ \ '_id
+    val privateIdPath: JsPath = __ \ 'id
+    new OFormat[A] {
+      def reads(json: JsValue): JsResult[A] =
+        baseFormat.compose(copyKey(publicIdPath, privateIdPath)).reads(json)
+
+      def writes(o: A): JsObject =
+        baseFormat.transform(moveKey(privateIdPath, publicIdPath)).writes(o)
+    }
+  }
 }
 
 object JsonUtils extends JsonUtils

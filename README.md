@@ -105,6 +105,14 @@ Execute submission of the given form instance to the configured destination
 ##### GET /forms/:formId/submission
 Get the submission status of the given form instance
 
+##### PUT /allowedList/:allowedListName
+Persists the given list of values for the specified allowed list type `allowedListName`.
+
+The list of supported names are below
+
+|  allowedListName | description | body format |
+|------------------|-------------|-------------|
+|  mtdVatNumber    | Stores the given list of MTD VAT numbers  |  [ { "id": "123456789" } ] |
 
 ### License
 

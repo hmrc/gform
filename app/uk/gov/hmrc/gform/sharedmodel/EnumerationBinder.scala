@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.exceptions
+package uk.gov.hmrc.gform.sharedmodel
 
-import play.api.libs.json.Json
-import play.api.mvc.Results._
-import uk.gov.hmrc.gform.controllers.ErrResponse
-import uk.gov.hmrc.gform.core.UniqueIdGenerator
+import play.api.mvc.PathBindable
+import uk.gov.hmrc.gform.allowedlist.AllowedListName
+import uk.gov.hmrc.gform.allowedlist.AllowedListName.AllowedListName
 
-case class UnexpectedState(error: String) {
-  def asBadRequest = BadRequest(Json.toJson(ErrResponse(error)))
+object EnumerationBinder {
+  implicit val allowedListNamePathBindable: PathBindable[AllowedListName] = new PathBindable[AllowedListName] {
+    override def bind(key: String, value: String): Either[String, AllowedListName] =
+      Right(AllowedListName.withName(value))
 
-  def asInternalServerError(implicit uniqueIdGenerator: UniqueIdGenerator) =
-    InternalServerError(Json.toJson(ErrResponse(error, None, uniqueIdGenerator.generate)))
+    override def unbind(key: String, value: AllowedListName): String = value.toString
+  }
 }
