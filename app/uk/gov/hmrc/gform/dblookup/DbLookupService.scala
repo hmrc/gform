@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.gform.dblookup
 
+import uk.gov.hmrc.gform.core.FOpt
+import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate.Verifier
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.repo.Repo
@@ -35,4 +37,7 @@ class DbLookupService(mongoModule: MongoModule)(implicit ec: ExecutionContext)
 
   def find(dbLookupId: DbLookupId, collectionName: CollectionName): Future[Option[DbLookupId]] =
     dbLookupRepo(collectionName).find(dbLookupId.id)
+
+  def addMulti(dbLookupIds: Seq[DbLookupId], collectionName: CollectionName): Future[Either[UnexpectedState, Unit]] =
+    dbLookupRepo(collectionName).upsertBulk(dbLookupIds)
 }

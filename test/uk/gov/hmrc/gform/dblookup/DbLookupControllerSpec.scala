@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.allowedlist
+package uk.gov.hmrc.gform.dblookup
 
-import cats.data.EitherT
 import cats.syntax.either._
 import org.scalacheck.Gen
 import org.scalamock.scalatest.MockFactory
@@ -27,51 +26,49 @@ import play.api.http.Status
 import play.api.libs.json.{ JsResultException, JsValue, Json }
 import play.api.mvc.Result
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.{ contentAsString, status, stubControllerComponents, _ }
 import uk.gov.hmrc.gform.controllers.ErrResponse
-import uk.gov.hmrc.gform.core.{ FOpt, UniqueIdGenerator }
+import uk.gov.hmrc.gform.core.UniqueIdGenerator
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.repo.RepoAlgebra
-import uk.gov.hmrc.gform.sharedmodel.allowedlist.APIMTDVatNumber
-
+import uk.gov.hmrc.gform.sharedmodel.dblookup.{ CollectionName, DbLookupId }
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class AllowedListControllerSpec
+class DbLookupControllerSpec
     extends WordSpecLike with MockFactory with ScalaFutures with Matchers with GeneratorDrivenPropertyChecks {
 
-  val apiMTDVatNumberListGen = for {
+  val dbLookupIdListGen = for {
     id   <- Gen.numStr
-    list <- Gen.listOf(APIMTDVatNumber(id))
+    list <- Gen.listOf(DbLookupId(id))
   } yield list
 
   trait Fixture {
-    val mockMTDVatNumberRepo = mock[RepoAlgebra[MTDVatNumber, FOpt]]
+    val mockDbLookupService = mock[DbLookupService]
     implicit val uniqueIdGenerator = new UniqueIdGenerator {
       override def generate: String = "some-unique-id"
     }
-    val controller = new AllowedListController(mockMTDVatNumberRepo, stubControllerComponents())
+    val controller = new DbLookupController(stubControllerComponents(), mockDbLookupService)
     def request(request: JsValue) =
       FakeRequest("PUT", "/")
         .withBody(request)
     def initMocks(
-      apiMTDVatNumberList: List[APIMTDVatNumber] = List.empty,
-      response: FOpt[Unit] = EitherT(Future.successful(().asRight[UnexpectedState]))) =
-      (mockMTDVatNumberRepo
-        .upsertBulk(_: Seq[MTDVatNumber]))
-        .expects(apiMTDVatNumberList.map(_.toMTDVatNumber))
+      dbLookupIds: List[DbLookupId] = List.empty,
+      response: Future[Either[UnexpectedState, Unit]] = Future.successful(().asRight[UnexpectedState])) =
+      (mockDbLookupService
+        .addMulti(_: Seq[DbLookupId], _: CollectionName))
+        .expects(dbLookupIds, CollectionName("mtdVatNumber"))
         .returns(response)
   }
 
   "add for mtdVatNumber" should {
 
     "bulk upsert mtdVatNumber entries" in new Fixture {
-      forAll(apiMTDVatNumberListGen) { apiMTDVatNumberList =>
-        initMocks(apiMTDVatNumberList = apiMTDVatNumberList)
+      forAll(dbLookupIdListGen) { dbLookupIds =>
+        initMocks(dbLookupIds = dbLookupIds)
 
         val future: Future[Result] = controller
-          .add(AllowedListName.mtdVatNumber)
-          .apply(request(Json.toJson(apiMTDVatNumberList)))
+          .add(CollectionName("mtdVatNumber"))
+          .apply(request(Json.toJson(dbLookupIds)))
 
         val statusCode = status(future)
         val bodyText: String = contentAsString(future)
@@ -82,11 +79,11 @@ class AllowedListControllerSpec
 
     "handle UnexpectedState error" in new Fixture {
 
-      initMocks(response = EitherT(Future.successful(UnexpectedState("some-error").asLeft[Unit])))
+      initMocks(response = Future.successful(UnexpectedState("some-error").asLeft[Unit]))
 
       val future: Future[Result] = controller
-        .add(AllowedListName.mtdVatNumber)
-        .apply(request(Json.toJson(List[APIMTDVatNumber]())))
+        .add(CollectionName("mtdVatNumber"))
+        .apply(request(Json.toJson(List[DbLookupId]())))
 
       val statusCode = status(future)
       val bodyText: String = contentAsString(future)
@@ -98,7 +95,7 @@ class AllowedListControllerSpec
     "handle request body parsing error by throwing JsResultException" in new Fixture {
       assertThrows[JsResultException] {
         controller
-          .add(AllowedListName.mtdVatNumber)
+          .add(CollectionName("mtdVatNumber"))
           .apply(request(Json.parse("""[ { "id-missing": "" }]""")))
       }
     }

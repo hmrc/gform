@@ -41,7 +41,6 @@ lazy val microservice = (project in file("."))
       "uk.gov.hmrc.auth.core.AffinityGroup",
       "uk.gov.hmrc.gform.sharedmodel.notifier.NotifierEmailAddress",
       "uk.gov.hmrc.gform.sharedmodel.ValueClassBinder._",
-      "uk.gov.hmrc.gform.sharedmodel.EnumerationBinder._",
       "uk.gov.hmrc.gform.sharedmodel._",
       "uk.gov.hmrc.gform.sharedmodel.form._",
       "uk.gov.hmrc.gform.sharedmodel.formtemplate._",

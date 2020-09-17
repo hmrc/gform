@@ -16,14 +16,17 @@
 
 package uk.gov.hmrc.gform.dblookup
 
+import play.api.libs.json.JsValue
 import play.api.mvc.{ Action, AnyContent, ControllerComponents }
 import uk.gov.hmrc.gform.controllers.BaseController
+import uk.gov.hmrc.gform.core.UniqueIdGenerator
 import uk.gov.hmrc.gform.sharedmodel.dblookup.{ CollectionName, DbLookupId }
 
 import scala.concurrent.ExecutionContext
 
 class DbLookupController(controllerComponents: ControllerComponents, dbLookupService: DbLookupService)(
-  implicit ex: ExecutionContext)
+  implicit ex: ExecutionContext,
+  uniqueIdGenerator: UniqueIdGenerator)
     extends BaseController(controllerComponents) {
 
   def exists(dbLookupId: DbLookupId, collectionName: CollectionName): Action[AnyContent] = Action.async {
@@ -32,6 +35,14 @@ class DbLookupController(controllerComponents: ControllerComponents, dbLookupSer
         case Some(_) => Ok
         case None    => NotFound
       }
+  }
+
+  def add(collectionName: CollectionName): Action[JsValue] = Action.async(parse.json) { implicit request =>
+    val dbLookupIds = request.body.as[List[DbLookupId]]
+    dbLookupService.addMulti(dbLookupIds, collectionName) map {
+      case Right(_) => Created
+      case Left(u)  => u.asInternalServerError
+    }
   }
 
 }

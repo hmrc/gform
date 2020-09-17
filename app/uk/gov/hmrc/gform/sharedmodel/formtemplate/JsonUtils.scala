@@ -64,19 +64,6 @@ trait JsonUtils {
   }
 
   def safeCast[A, B >: A](reads: Reads[A]): Reads[B] = reads.asInstanceOf[Reads[B]]
-
-  def dbIdOFormat[A](baseFormat: OFormat[A]): OFormat[A] = {
-    import JsonExtensions._
-    val publicIdPath: JsPath = __ \ '_id
-    val privateIdPath: JsPath = __ \ 'id
-    new OFormat[A] {
-      def reads(json: JsValue): JsResult[A] =
-        baseFormat.compose(copyKey(publicIdPath, privateIdPath)).reads(json)
-
-      def writes(o: A): JsObject =
-        baseFormat.transform(moveKey(privateIdPath, publicIdPath)).writes(o)
-    }
-  }
 }
 
 object JsonUtils extends JsonUtils
