@@ -22,7 +22,7 @@ import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService.{ IsFalseish, IsTrueish }
 import uk.gov.hmrc.gform.sharedmodel.SmartString
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AcknowledgementSection, FormComponent }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AcknowledgementSection, AcknowledgementSectionPdf, FormComponent }
 
 class AcknowledgementSectionMaker(json: JsValue) {
   val title: SmartString = (json \ "title").as[SmartString]
@@ -37,9 +37,11 @@ class AcknowledgementSectionMaker(json: JsValue) {
     case otherwise                         => Left(UnexpectedState(s"Expected 'true'/'yes' or 'false'/'no' for showReference. Got: $otherwise"))
   }
 
+  val acknowledgementSectionPdf: Option[AcknowledgementSectionPdf] = (json \ "pdf").asOpt[AcknowledgementSectionPdf]
+
   def optAcknowledgementSection(): Opt[AcknowledgementSection] =
     for {
       sr <- showReference
-    } yield AcknowledgementSection(title, description, shortName, fields, sr)
+    } yield AcknowledgementSection(title, description, shortName, fields, sr, acknowledgementSectionPdf)
 
 }
