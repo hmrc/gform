@@ -26,12 +26,12 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 class PdfGeneratorConnector(servicesConfig: ServicesConfig, wSHttp: WSHttp)(implicit ex: ExecutionContext) {
 
-  //TODO: use stream
   def generatePDF(payload: Map[String, Seq[String]], headers: Seq[(String, String)])(
     implicit hc: HeaderCarrier): Future[Array[Byte]] = {
-    Logger.info(s"generate pdf, ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
     val url = s"$baseURL/pdf-generator-service/generate"
 
+    val payloadSize = payload.foldLeft(0) { case (acc, (key, value)) => acc + key.size + value.map(_.size).sum }
+    Logger.info(s"Generate pdf. Html payload size is: $payloadSize bytes.")
     wSHttp.buildRequest(url).withHttpHeaders(headers: _*).post(payload).flatMap { response =>
       {
         val status = response.status
