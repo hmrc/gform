@@ -132,8 +132,8 @@ class UploadableDestinationSpec extends Spec {
   }
 
   private def createUploadable(
-                                destination: Destination.SubmissionConsolidator,
-                                convertSingleQuotes: Option[Boolean]): UploadableSubmissionConsolidator = {
+    destination: Destination.SubmissionConsolidator,
+    convertSingleQuotes: Option[Boolean]): UploadableSubmissionConsolidator = {
     import destination._
     UploadableSubmissionConsolidator(
       id,
