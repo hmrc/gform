@@ -176,6 +176,7 @@ case class UploadableSubmissionConsolidator(
   def toSubmissionConsolidatorDestination: Either[String, Destination.SubmissionConsolidator] =
     for {
       cii <- addErrorInfo(id, "includeIf")(condition(convertSingleQuotes, includeIf))
+      formData <- addErrorInfo(id, "formData")(condition(convertSingleQuotes, formData))
     } yield
       SubmissionConsolidator(
         id,

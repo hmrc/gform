@@ -72,6 +72,31 @@ class UploadableDestinationSpec extends Spec {
     }
   }
 
+  "UploadableSubmissionConsolidator.toHmrctoSubmissionConsolidatorDestinationDmsDestination" should "not condition the includeIf,formData if convertSingleQuotes is None" in {
+    forAll(DestinationGen.submissionConsolidatorGen) { destination =>
+      val withQuotes = addQuotes(destination, """"'abc'"""")
+      createUploadable(withQuotes, None).toSubmissionConsolidatorDestination shouldBe Right(withQuotes)
+    }
+  }
+
+  it should "not condition the includeIf,formData if convertSingleQuotes is Some(false)" in {
+    forAll(DestinationGen.submissionConsolidatorGen) { destination =>
+      val withQuotes = addQuotes(destination, """"'abc'"""")
+      createUploadable(withQuotes, Some(false)).toSubmissionConsolidatorDestination shouldBe Right(withQuotes)
+    }
+  }
+
+  it should "condition the includeIf,formData if convertSingleQuotes is Some(true)" in {
+    forAll(DestinationGen.submissionConsolidatorGen) { destination =>
+      val withQuotes = addQuotes(destination, """"'abc'"""")
+      val expected = withQuotes.copy(
+        includeIf = replaceQuotes(withQuotes.includeIf),
+        formData = withQuotes.formData.map(replaceQuotes)
+      )
+      createUploadable(withQuotes, Some(true)).toSubmissionConsolidatorDestination shouldBe Right(expected)
+    }
+  }
+
   private def createUploadable(
     destination: Destination.HandlebarsHttpApi,
     convertSingleQuotes: Option[Boolean]): UploadableHandlebarsHttpApiDestination = {
@@ -106,12 +131,33 @@ class UploadableDestinationSpec extends Spec {
     )
   }
 
+  private def createUploadable(
+                                destination: Destination.SubmissionConsolidator,
+                                convertSingleQuotes: Option[Boolean]): UploadableSubmissionConsolidator = {
+    import destination._
+    UploadableSubmissionConsolidator(
+      id,
+      projectId,
+      customerId,
+      destination.formData,
+      convertSingleQuotes,
+      Some(includeIf),
+      Some(failOnError)
+    )
+  }
+
   private def replaceQuotes(s: String): String = SingleQuoteReplacementLexer(s).merge
 
   private def addQuotes(destination: Destination.HandlebarsHttpApi, q: String) =
     destination.copy(
       uri = q,
       payload = Some(q),
+      includeIf = q
+    )
+
+  private def addQuotes(destination: Destination.SubmissionConsolidator, q: String) =
+    destination.copy(
+      formData = Some(q),
       includeIf = q
     )
 
