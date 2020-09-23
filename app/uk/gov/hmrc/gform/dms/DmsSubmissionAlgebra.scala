@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.dms
 
-import java.time.{Clock, LocalDateTime}
+import java.time.{ Clock, LocalDateTime }
 import java.util.Base64
 
 import cats.Monad
@@ -29,11 +29,11 @@ import play.api.Logger
 import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorAlgebra
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
-import uk.gov.hmrc.gform.sharedmodel.form.{EnvelopeId, FormId}
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{Constant, FormTemplateId, TextExpression}
-import uk.gov.hmrc.gform.submission.{DmsMetaData, PdfAndXmlSummaries, PdfSummary, Submission}
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Constant, FormTemplateId, TextExpression }
+import uk.gov.hmrc.gform.submission.{ DmsMetaData, PdfAndXmlSummaries, PdfSummary, Submission }
 import uk.gov.hmrc.http.HeaderCarrier
 
 trait DmsSubmissionAlgebra[F[_]] {
@@ -79,7 +79,8 @@ class DmsSubmissionService[F[_]](
   }
 
   private def logAttachmentSizeBreach(pdfBytes: Array[Byte], fileAttachments: List[FileAttachment]) = {
-    val totalAttachmentsSizeInMB = Math.ceil((pdfBytes.length + fileAttachments.map(_.bytes.length).sum) / (1024 * 1024).toDouble)
+    val totalAttachmentsSizeInMB =
+      Math.ceil((pdfBytes.length + fileAttachments.map(_.bytes.length).sum) / (1024 * 1024).toDouble)
     val thresholdMB = 26
     if (totalAttachmentsSizeInMB > thresholdMB) {
       Logger.info(s"DMS submission attachments size exceeds $thresholdMB")
