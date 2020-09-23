@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.dms
 
-import java.time.{ Clock, LocalDateTime }
+import java.time.{Clock, LocalDateTime}
 import java.util.Base64
 
 import cats.Monad
@@ -25,14 +25,15 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.traverse._
 import org.apache.pdfbox.pdmodel.PDDocument
+import play.api.Logger
 import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorAlgebra
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
-import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId }
+import uk.gov.hmrc.gform.sharedmodel.form.{EnvelopeId, FormId}
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Constant, FormTemplateId, TextExpression }
-import uk.gov.hmrc.gform.submission.{ DmsMetaData, PdfAndXmlSummaries, PdfSummary, Submission }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{Constant, FormTemplateId, TextExpression}
+import uk.gov.hmrc.gform.submission.{DmsMetaData, PdfAndXmlSummaries, PdfSummary, Submission}
 import uk.gov.hmrc.http.HeaderCarrier
 
 trait DmsSubmissionAlgebra[F[_]] {
@@ -60,6 +61,7 @@ class DmsSubmissionService[F[_]](
   override def submitPdfToDms(pdfBytes: Array[Byte], metadata: DmsMetadata, fileAttachments: List[FileAttachment])(
     implicit hc: HeaderCarrier): F[EnvelopeId] = {
     val formTemplateId: FormTemplateId = FormTemplateId(metadata.dmsFormId)
+    logAttachmentSizeBreach(pdfBytes, fileAttachments)
     for {
       envId <- fileUpload.createEnvelope(formTemplateId, LocalDateTime.now(clock).plusDays(formExpiryDays))
       pdfDoc = documentLoader(pdfBytes)
@@ -74,6 +76,14 @@ class DmsSubmissionService[F[_]](
       hmrcDms = DmsSubmissionService.createHmrcDms(metadata)
       _ <- fileUpload.submitEnvelope(submission, summaries, hmrcDms)
     } yield envId
+  }
+
+  private def logAttachmentSizeBreach(pdfBytes: Array[Byte], fileAttachments: List[FileAttachment]) = {
+    val totalAttachmentsSizeInMB = Math.ceil((pdfBytes.length + fileAttachments.map(_.bytes.length).sum) / (1024 * 1024).toDouble)
+    val thresholdMB = 26
+    if (totalAttachmentsSizeInMB > thresholdMB) {
+      Logger.info(s"DMS submission attachments size exceeds $thresholdMB")
+    }
   }
 
   private val decode = (s: String) => new String(Base64.getDecoder.decode(s))
