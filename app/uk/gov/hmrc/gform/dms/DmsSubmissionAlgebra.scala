@@ -83,7 +83,7 @@ class DmsSubmissionService[F[_]](
       Math.ceil((pdfBytes.length + fileAttachments.map(_.bytes.length).sum) / (1024 * 1024).toDouble)
     val thresholdMB = 26
     if (totalAttachmentsSizeInMB > thresholdMB) {
-      Logger.info(s"DMS submission attachments size exceeds $thresholdMB")
+      Logger.info(s"DMS submission attachments size exceeds $thresholdMB MB")
     }
   }
 
