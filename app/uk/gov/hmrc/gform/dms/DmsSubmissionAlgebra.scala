@@ -61,7 +61,6 @@ class DmsSubmissionService[F[_]](
   override def submitPdfToDms(pdfBytes: Array[Byte], metadata: DmsMetadata, fileAttachments: List[FileAttachment])(
     implicit hc: HeaderCarrier): F[EnvelopeId] = {
     val formTemplateId: FormTemplateId = FormTemplateId(metadata.dmsFormId)
-    logAttachmentSizeBreach(pdfBytes, fileAttachments)
     for {
       envId <- fileUpload.createEnvelope(formTemplateId, LocalDateTime.now(clock).plusDays(formExpiryDays))
       pdfDoc = documentLoader(pdfBytes)
@@ -76,15 +75,6 @@ class DmsSubmissionService[F[_]](
       hmrcDms = DmsSubmissionService.createHmrcDms(metadata)
       _ <- fileUpload.submitEnvelope(submission, summaries, hmrcDms)
     } yield envId
-  }
-
-  private def logAttachmentSizeBreach(pdfBytes: Array[Byte], fileAttachments: List[FileAttachment]) = {
-    val totalAttachmentsSizeInMB =
-      Math.ceil((pdfBytes.length + fileAttachments.map(_.bytes.length).sum) / (1024 * 1024).toDouble)
-    val thresholdMB = 26
-    if (totalAttachmentsSizeInMB > thresholdMB) {
-      Logger.info(s"DMS submission attachments size exceeds $thresholdMB MB")
-    }
   }
 
   private val decode = (s: String) => new String(Base64.getDecoder.decode(s))

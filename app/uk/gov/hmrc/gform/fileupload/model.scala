@@ -81,26 +81,26 @@ object Envelope {
 }
 
 case class EnvelopeRaw(files: Option[List[File]])
-case class File(fileId: FileId, status: Status, fileName: String)
+case class File(fileId: FileId, status: Status, fileName: String, length: Long)
 
 object File {
 
   //TIP: look for FileStatus trait in https://github.com/hmrc/file-upload/blob/master/app/uk/gov/hmrc/fileupload/read/envelope/model.scala
   implicit val format: Reads[File] = fileRawReads.map {
     // format: OFF
-    case FileRaw(id, name, "QUARANTINED", _)        => File(FileId(id), Quarantined, name)
-    case FileRaw(id, name, "CLEANED", _)            => File(FileId(id), Cleaned, name)
-    case FileRaw(id, name, "AVAILABLE", _)          => File(FileId(id), Available, name)
-    case FileRaw(id, name, "INFECTED", _)           => File(FileId(id), Infected, name)
-    case FileRaw(id, name, ERROR, Some(reason))     => File(FileId(id), Error(reason), name)
-    case FileRaw(id, name, other, _)                => File(FileId(id), Other(other), name)
+    case FileRaw(id, name, "QUARANTINED", _, length)        => File(FileId(id), Quarantined, name, length)
+    case FileRaw(id, name, "CLEANED", _, length)            => File(FileId(id), Cleaned, name, length)
+    case FileRaw(id, name, "AVAILABLE", _, length)          => File(FileId(id), Available, name, length)
+    case FileRaw(id, name, "INFECTED", _, length)           => File(FileId(id), Infected, name, length)
+    case FileRaw(id, name, ERROR, Some(reason), length)     => File(FileId(id), Error(reason), name, length)
+    case FileRaw(id, name, other, _, length)                => File(FileId(id), Other(other), name, length)
     // format: ON
   }
   private lazy val fileRawReads: Reads[FileRaw] = Json.reads[FileRaw]
   private lazy val ERROR = "UnKnownFileStatusERROR"
 }
 
-case class FileRaw(id: String, name: String, status: String, reason: Option[String])
+case class FileRaw(id: String, name: String, status: String, reason: Option[String], length: Long)
 
 sealed trait Status
 case object Quarantined extends Status

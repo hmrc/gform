@@ -17,8 +17,9 @@
 package uk.gov.hmrc.gform.submission.destinations
 
 import cats.instances.future._
-import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA, fromOptA }
-import uk.gov.hmrc.gform.fileupload.FileUploadService
+import play.api.Logger
+import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA, success }
+import uk.gov.hmrc.gform.fileupload.{ File, FileUploadService }
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorService
@@ -51,8 +52,25 @@ class DmsSubmitter(
                     PdfAndXmlSummariesFactory
                       .withPdf(pdfGeneratorService, pdfData)
                       .apply(form, formTemplate, structuredFormData, customerId, submission.submissionRef, hmrcDms))
-      res <- fromFutureA(fileUploadService.submitEnvelope(submission, summaries, hmrcDms))
-      _   <- formService.updateFormStatus(submissionInfo.formId, Submitted)
+      res             <- fromFutureA(fileUploadService.submitEnvelope(submission, summaries, hmrcDms))
+      envelopeDetails <- fromFutureA(fileUploadService.getEnvelope(submission.envelopeId))
+      _               <- success(logFileSizeBreach(envelopeDetails.files))
+      _               <- formService.updateFormStatus(submissionInfo.formId, Submitted)
     } yield res
+  }
+
+  /**
+   * This log line is used in alert-config, to trigger a pager duty alert when files sizes exceeds the threshold
+   * value (currently 26 MB)
+   * @param files
+   */
+  private def logFileSizeBreach(files: List[File]) = {
+    val totalFileSize = files.map(_.length).sum
+    val totalFileSizeMB = Math.ceil(totalFileSize / (1024 * 1024).toDouble)
+    val thresholdMB = 26
+    Logger.info(s"GForm DMS submission attachments size is $totalFileSize B (rounded to $totalFileSizeMB MB)")
+    if (totalFileSizeMB > thresholdMB) {
+      Logger.warn(s"GForm DMS submission attachments size exceeds $thresholdMB MB")
+    }
   }
 }
