@@ -60,10 +60,10 @@ class DmsSubmitter(
   }
 
   /**
-   * This log line is used in alert-config, to trigger a pager duty alert when files sizes exceeds the threshold
-   * value (currently 26 MB)
-   * @param files
-   */
+    * This log line is used in alert-config, to trigger a pager duty alert when files sizes exceeds the threshold
+    * value (currently 26 MB)
+    * @param files
+    */
   private def logFileSizeBreach(files: List[File]) = {
     val totalFileSize = files.map(_.length).sum
     val totalFileSizeMB = Math.ceil(totalFileSize / (1024 * 1024).toDouble)
