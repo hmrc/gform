@@ -24,7 +24,7 @@ import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorService
 import uk.gov.hmrc.gform.sharedmodel.PdfHtml
-import uk.gov.hmrc.gform.sharedmodel.form.Submitted
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, Submitted }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 import uk.gov.hmrc.gform.submission.PdfAndXmlSummariesFactory
@@ -54,7 +54,7 @@ class DmsSubmitter(
                       .apply(form, formTemplate, structuredFormData, customerId, submission.submissionRef, hmrcDms))
       res             <- fromFutureA(fileUploadService.submitEnvelope(submission, summaries, hmrcDms))
       envelopeDetails <- fromFutureA(fileUploadService.getEnvelope(submission.envelopeId))
-      _               <- success(logFileSizeBreach(envelopeDetails.files))
+      _               <- success(logFileSizeBreach(submission.envelopeId, envelopeDetails.files))
       _               <- formService.updateFormStatus(submissionInfo.formId, Submitted)
     } yield res
   }
@@ -64,13 +64,14 @@ class DmsSubmitter(
     * value (currently 26 MB)
     * @param files
     */
-  private def logFileSizeBreach(files: List[File]) = {
+  private def logFileSizeBreach(envelopeId: EnvelopeId, files: List[File]) = {
     val totalFileSize = files.map(_.length).sum
     val totalFileSizeMB = Math.ceil(totalFileSize / (1024 * 1024).toDouble)
     val thresholdMB = 26
-    Logger.info(s"GForm DMS submission attachments size is $totalFileSize B (rounded to $totalFileSizeMB MB)")
+    Logger.info(
+      s"GForm DMS submission attachments size is $totalFileSize B (rounded to $totalFileSizeMB MB) [envelopeId=${envelopeId.value}]")
     if (totalFileSizeMB > thresholdMB) {
-      Logger.warn(s"GForm DMS submission attachments size exceeds $thresholdMB MB")
+      Logger.warn(s"GForm DMS submission attachments size exceeds $thresholdMB MB [envelopeId=${envelopeId.value}]")
     }
   }
 }
