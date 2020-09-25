@@ -38,7 +38,7 @@ object Destinations {
     pdfNotification: Option[PrintSection.PdfNotification])
       extends Destinations
 
-  implicit val destinationListFormat: OFormat[DestinationList] = derived.oformat
+  implicit val destinationListFormat: OFormat[DestinationList] = derived.oformat[DestinationList]()
 
   implicit val destinationPrintFormat: OFormat[DestinationPrint] = Json.format[DestinationPrint]
 

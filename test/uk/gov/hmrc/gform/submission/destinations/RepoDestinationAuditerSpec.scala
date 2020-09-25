@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.submission.destinations
 
 import cats.syntax.eq._
 import org.scalatest.time.{ Millis, Span }
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.libs.json.JsObject
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.core.{ FOpt, success }
@@ -28,7 +29,8 @@ import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.SubmissionRefGen
 import uk.gov.hmrc.http.HeaderCarrier
 
-class RepoDestinationAuditerSpec extends Spec with DestinationAuditGen with SubmissionRefGen {
+class RepoDestinationAuditerSpec
+    extends Spec with DestinationAuditGen with SubmissionRefGen with ScalaCheckDrivenPropertyChecks {
   implicit val pc = patienceConfig.copy(timeout = scaled(Span(500, Millis)), interval = scaled(Span(50, Millis)))
 
   private implicit val hc = HeaderCarrier()

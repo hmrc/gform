@@ -47,11 +47,7 @@ object FormTemplate {
 
   import JsonUtils._
 
-  private val reads = Reads[FormTemplate] { json =>
-    Json.reads[FormTemplate].reads(json)
-  }
-
-  implicit val format: OFormat[FormTemplate] = OFormat(reads, derived.owrites[FormTemplate])
+  implicit val format: OFormat[FormTemplate] = derived.oformat()
 
   def transformAndReads(json: JsValue): JsResult[FormTemplate] =
     FormTemplatesControllerRequestHandler

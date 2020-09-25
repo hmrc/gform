@@ -60,7 +60,7 @@ object ComponentTypeRaw {
 
   implicit val format: OFormat[ComponentTypeRaw] = {
 
-    val format: OFormat[ComponentTypeRaw] = derived.oformat
+    val format: OFormat[ComponentTypeRaw] = derived.oformat()
 
     val reads: Reads[ComponentTypeRaw] = Reads {
 

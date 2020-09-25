@@ -28,5 +28,5 @@ object DataSource {
   case class Enrolment(serviceName: ServiceName, identifierName: IdentifierName) extends DataSource
   case class DelegatedEnrolment(serviceName: ServiceName, identifierName: IdentifierName) extends DataSource
 
-  implicit val format: OFormat[DataSource] = derived.oformat
+  implicit val format: OFormat[DataSource] = derived.oformat()
 }

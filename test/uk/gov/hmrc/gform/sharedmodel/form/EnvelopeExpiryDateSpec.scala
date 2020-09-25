@@ -16,11 +16,12 @@
 
 package uk.gov.hmrc.gform.sharedmodel.form
 
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.form.generators.EnvelopeExpiryDateGen
 
-class EnvelopeExpiryDateSpec extends Spec {
+class EnvelopeExpiryDateSpec extends Spec with ScalaCheckDrivenPropertyChecks {
 
   "EnvelopeExpiryDate JSON" should "round trip" in {
     forAll(EnvelopeExpiryDateGen.envelopeExpiryDateGen) { eed =>

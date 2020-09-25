@@ -27,8 +27,8 @@ object StructuredFormValue {
   case class ArrayNode(elements: List[StructuredFormValue]) extends StructuredFormValue
 
   object ObjectStructure {
-    implicit val objectStructureFormat: OFormat[ObjectStructure] = derived.oformat[ObjectStructure]
+    implicit val objectStructureFormat: OFormat[ObjectStructure] = derived.oformat[ObjectStructure]()
   }
 
-  implicit val oFormat: Format[StructuredFormValue] = derived.oformat[StructuredFormValue]
+  implicit val oFormat: Format[StructuredFormValue] = derived.oformat[StructuredFormValue]()
 }

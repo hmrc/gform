@@ -19,9 +19,10 @@ package uk.gov.hmrc.gform.sharedmodel
 import uk.gov.hmrc.gform._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import org.scalacheck.Gen
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ ExprGen, PrimitiveGen }
 
-class SmartStringSpec extends Spec {
+class SmartStringSpec extends Spec with ScalaCheckDrivenPropertyChecks {
   "JSON" should "read a simple String with no embedded interpolations" in {
     forAll(Gen.asciiStr) { s =>
       val c = condition(s)

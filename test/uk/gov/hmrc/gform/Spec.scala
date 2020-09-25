@@ -17,19 +17,18 @@
 package uk.gov.hmrc.gform
 
 import org.scalamock.scalatest.MockFactory
-import org.scalatest._
+import org.scalatest.{ AppendedClues, DiagrammedAssertions, EitherValues, FlatSpec, Inside, Matchers, OptionValues, StreamlinedXml, TryValues }
 import org.scalatest.concurrent.{ Eventually, ScalaFutures }
 import org.scalatest.matchers.{ BeMatcher, MatchResult, Matcher }
-import org.scalatest.prop.PropertyChecks
 import play.api.libs.json._
-import uk.gov.hmrc.gform.sharedmodel.{ ExampleData, LangADT, LocalisedString }
+import uk.gov.hmrc.gform.sharedmodel.ExampleData
 
 import scala.concurrent.ExecutionContext
 
 trait Spec
-    extends FlatSpecLike with Matchers with DiagrammedAssertions with TryValues with EitherValues with OptionValues
+    extends FlatSpec with Matchers with DiagrammedAssertions with TryValues with EitherValues with OptionValues
     with AppendedClues with ScalaFutures with StreamlinedXml with JsResultMatcher with MockFactory with Inside
-    with Eventually with ExampleData with PropertyChecks {
+    with Eventually with ExampleData {
 
   implicit lazy val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 }

@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.gform.submission.destinations
 
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.verifyRoundTrip
 
-class DestinationAuditSpec extends Spec with DestinationAuditGen {
+class DestinationAuditSpec extends Spec with DestinationAuditGen with ScalaCheckDrivenPropertyChecks {
   "JSON" should "round trip" in {
     forAll(destinationAuditGen) { generatedAudit =>
       verifyRoundTrip(generatedAudit)

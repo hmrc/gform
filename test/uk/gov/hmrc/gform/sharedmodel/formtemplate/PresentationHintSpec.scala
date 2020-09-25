@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.PresentationHintGen
 
-class PresentationHintSpec extends Spec {
+class PresentationHintSpec extends Spec with ScalaCheckDrivenPropertyChecks {
   "PresentationHint" should "round trip derived JSON" in {
     forAll(PresentationHintGen.presentationHintGen) { obj =>
       PresentationHint.format.reads(PresentationHint.format.writes(obj)) should beJsSuccess(obj)

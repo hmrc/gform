@@ -16,11 +16,12 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.libs.json.Json
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.FormTemplateGen
 
-class WebChatSpec extends Spec {
+class WebChatSpec extends Spec with ScalaCheckDrivenPropertyChecks {
 
   "WebChat" should "round trip derived json" in {
     forAll(FormTemplateGen.webChatGen) { obj =>

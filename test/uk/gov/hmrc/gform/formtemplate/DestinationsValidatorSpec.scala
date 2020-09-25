@@ -24,8 +24,9 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.PrimitiveGen._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators._
 import DestinationGen._
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 
-class DestinationsValidatorSpec extends Spec {
+class DestinationsValidatorSpec extends Spec with ScalaCheckDrivenPropertyChecks {
   "validateUniqueDestinationIds" should "return an error when there are duplicate ids" in {
     forAll(destinationIdGen, destinationIdGen) { (id1, id2) =>
       whenever(id1 =!= id2) {

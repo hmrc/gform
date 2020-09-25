@@ -20,6 +20,7 @@ import cats.data.NonEmptyList
 import cats.syntax.applicative._
 import cats.{ Applicative, Monad }
 import org.scalacheck.Gen
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.libs.json._
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormData }
@@ -34,7 +35,8 @@ import uk.gov.hmrc.gform.submission.handlebars.HandlebarsModelTree
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
 class DestinationsSubmitterSpec
-    extends Spec with DestinationGen with DestinationsGen with PdfDataGen with StructuredFormValueGen {
+    extends Spec with DestinationGen with DestinationsGen with PdfDataGen with StructuredFormValueGen
+    with ScalaCheckDrivenPropertyChecks {
   private implicit val hc: HeaderCarrier = HeaderCarrier()
 
   private def submissionInfoGen: Gen[DestinationSubmissionInfo] =

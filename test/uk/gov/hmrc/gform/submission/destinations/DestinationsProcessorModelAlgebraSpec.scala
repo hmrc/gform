@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.submission.destinations
 import cats.data.NonEmptyList
 import com.softwaremill.quicklens._
 import org.scalatest.Assertion
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.form.BundledFormTreeNode
 import uk.gov.hmrc.gform.models.helpers.TaxPeriodHelper.formatDate
@@ -29,7 +30,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplat
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ ComponentTypeGen, FormGen }
 import uk.gov.hmrc.gform.submission.Tree
 
-class DestinationsProcessorModelAlgebraSpec extends Spec {
+class DestinationsProcessorModelAlgebraSpec extends Spec with ScalaCheckDrivenPropertyChecks {
   "Multiple HmrcTaxPeriod" must "be serialized into json" in {
 
     forAll(

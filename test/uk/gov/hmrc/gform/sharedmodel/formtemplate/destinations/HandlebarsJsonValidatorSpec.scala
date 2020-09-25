@@ -16,9 +16,10 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
 
-import uk.gov.hmrc.gform.Spec
+import org.scalatest.{ FlatSpec, Matchers }
+import org.scalatest.prop.TableDrivenPropertyChecks
 
-class HandlebarsJsonValidatorSpec extends Spec {
+class HandlebarsJsonValidatorSpec extends FlatSpec with TableDrivenPropertyChecks with Matchers {
   "null" should "be accepted" in {
     ok("null")
   }
@@ -135,7 +136,7 @@ class HandlebarsJsonValidatorSpec extends Spec {
       ("json", "expectedMessage"),
       ("""{ "abc": "def" ] }""", "'}' expected but ']' found"),
       ("""[ "abc", "def" } ]""", "']' expected but '}' found"),
-      (""" "{{foo "}} """, "'\"' expected but end of source found"),
+      (""" "{{foo "}} """, "Line 1, Column 10: end of input expected"),
       ("""{{#each foo}}"abc"{{/wrong}}""", "Expected {{/each}}. Got {{/wrong}}.")
     )
 

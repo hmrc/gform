@@ -15,11 +15,12 @@
  */
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
+import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.libs.json._
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.formtemplate.FormTemplatesControllerRequestHandler
 
-class FormTemplateJSONSpec extends Spec {
+class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
 
   "normaliseJSON" should "ensure default values for missing fields" in {
 

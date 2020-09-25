@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.gform.dblookup
 
-import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate.Verifier
 import uk.gov.hmrc.gform.mongo.MongoModule

@@ -23,7 +23,6 @@ import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.playcomponents.PlayComponents
 import uk.gov.hmrc.gform.sharedmodel.config.ExposedConfig
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.ProfileName
-import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierTemplateId
 import uk.gov.hmrc.http.logging.Authorization
 import uk.gov.hmrc.play.audit.http.config.AuditingConfig
 import uk.gov.hmrc.play.bootstrap.config.{ AuditingConfigProvider, ControllerConfig, ControllerConfigs, RunMode, ServicesConfig }
@@ -59,10 +58,6 @@ class ConfigModule(
   val auditingConfig: AuditingConfig = new AuditingConfigProvider(configuration, runMode, appName).get()
 
   val notifierConfig: NotifierConfig = pureconfig.loadConfigOrThrow[NotifierConfig]("microservice.services.notifier")
-
-  val controllerConfig: ControllerConfig = new ControllerConfig {
-    lazy val controllerConfigs = typesafeConfig.as[TypeSafeConfig]("controllers")
-  }
 
   val configController = new ConfigController(controllerComponents, this)
 

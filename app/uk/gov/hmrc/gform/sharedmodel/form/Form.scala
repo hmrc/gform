@@ -126,7 +126,7 @@ case object ManuallySubmitted extends FormStatus
 object FormStatus {
   implicit val equal: Eq[FormStatus] = Eq.fromUniversalEquals
 
-  implicit val format: OFormat[FormStatus] = derived.oformat[FormStatus]
+  implicit val format: OFormat[FormStatus] = derived.oformat()
 
   val all: Set[FormStatus] =
     Set(

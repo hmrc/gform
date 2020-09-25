@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.submission.destinations
 import cats.syntax.option._
 import cats.{ Applicative, MonadError }
 import org.scalacheck.Gen
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.notifier.NotifierAlgebra
 import uk.gov.hmrc.gform.sharedmodel.{ PdfHtml, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormData, FormId }
@@ -35,7 +36,7 @@ import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
 class DestinationSubmitterSpec
     extends Spec with DestinationSubmissionInfoGen with DestinationGen with PrimitiveGen with FormTemplateGen
-    with PdfDataGen with StructuredFormValueGen {
+    with PdfDataGen with StructuredFormValueGen with ScalaCheckDrivenPropertyChecks {
   private implicit val hc: HeaderCarrier = HeaderCarrier()
 
   private def submissionInfoGen: Gen[DestinationSubmissionInfo] =

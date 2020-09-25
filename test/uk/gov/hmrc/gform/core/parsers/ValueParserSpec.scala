@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.core.parsers
 
 import cats.data.NonEmptyList
+import org.scalatest.prop.TableDrivenPropertyChecks
 import uk.gov.hmrc.gform.Helpers._
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.core._
@@ -29,7 +30,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationId, 
 
 import scala.language.implicitConversions
 
-class ValueParserSpec extends Spec {
+class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
 
   //TODO: use ExampleData
 
@@ -271,7 +272,7 @@ class ValueParserSpec extends Spec {
     val res = ValueParser.validate("201568-01-12")
     res.left.value should be(UnexpectedState("""Unable to parse expression 201568-01-12.
                                                |Errors:
-                                               |201568-01-12:1: unexpected characters; expected '\s+' or ','
+                                               |201568-01-12:1: unexpected characters; expected ',' or '\s+'
                                                |201568-01-12      ^""".stripMargin))
   }
 
@@ -279,7 +280,7 @@ class ValueParserSpec extends Spec {
     val res = ValueParser.validate("65841-351")
     res.left.value should be(UnexpectedState("""Unable to parse expression 65841-351.
                                                |Errors:
-                                               |65841-351:1: unexpected characters; expected '\s+' or ','
+                                               |65841-351:1: unexpected characters; expected ',' or '\s+'
                                                |65841-351     ^""".stripMargin))
   }
 

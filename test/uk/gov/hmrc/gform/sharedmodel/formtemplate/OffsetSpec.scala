@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.OffsetGen
 
-class OffsetSpec extends Spec {
+class OffsetSpec extends Spec with ScalaCheckDrivenPropertyChecks {
   "Offset" should "round trip derived JSON" in {
     forAll(OffsetGen.offsetGen) { obj =>
       Offset.format.reads(Offset.format.writes(obj)) should beJsSuccess(obj)

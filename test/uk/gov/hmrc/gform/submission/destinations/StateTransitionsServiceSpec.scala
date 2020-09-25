@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.submission.destinations
 
 import cats.syntax.eq._
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.sharedmodel.form.{ FormId, FormStatus }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
@@ -24,7 +25,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, F
 import uk.gov.hmrc.gform.{ Possible, Spec, possibleMonadError }
 import uk.gov.hmrc.http.HeaderCarrier
 
-class StateTransitionsServiceSpec extends Spec with DestinationGen with FormGen {
+class StateTransitionsServiceSpec extends Spec with DestinationGen with FormGen with ScalaCheckDrivenPropertyChecks {
   private implicit val hc: HeaderCarrier = HeaderCarrier()
 
   "A Destination.StateTransition" should "return successfully if the state transition succeeds" in {

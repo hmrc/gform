@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.email
 
 import cats.instances.future._
 import play.api.mvc.ControllerComponents
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.ExecutionContext
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.core._

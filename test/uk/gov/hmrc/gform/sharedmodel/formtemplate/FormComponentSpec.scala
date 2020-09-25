@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.FormComponentGen
 
-class FormComponentSpec extends Spec {
+class FormComponentSpec extends Spec with ScalaCheckDrivenPropertyChecks {
   "FormComponent" should "round trip derived JSON" in {
     forAll(FormComponentGen.formComponentGen()) { value =>
       FormComponent.format.reads(FormComponent.format.writes(value)) should beJsSuccess(value)

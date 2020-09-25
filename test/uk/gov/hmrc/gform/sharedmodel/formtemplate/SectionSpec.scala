@@ -16,11 +16,11 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.SectionGen
 
-class SectionSpec extends Spec with GeneratorDrivenPropertyChecks {
+class SectionSpec extends Spec with ScalaCheckDrivenPropertyChecks {
   "Section" should "round trip derived JSON" in {
     forAll(SectionGen.sectionGen) { section =>
       verifyRoundTrip(section)

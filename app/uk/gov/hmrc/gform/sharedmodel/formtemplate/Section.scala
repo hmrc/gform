@@ -51,7 +51,7 @@ object Section {
   }
 
   implicit val format: OFormat[Section] = {
-    implicit val derivedFormat = derived.oformat[Section]
+    implicit val derivedFormat: OFormat[Section] = derived.oformat()
     OFormatWithTemplateReadFallback(SectionTemplateReads.reads)
   }
 }

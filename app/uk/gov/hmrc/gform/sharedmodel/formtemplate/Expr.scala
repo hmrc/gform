@@ -61,7 +61,7 @@ final case class FormTemplateCtx(value: FormTemplateProp) extends Expr
 final case object Value extends Expr
 
 object Expr {
-  implicit val format: OFormat[Expr] = derived.oformat
+  implicit val format: OFormat[Expr] = derived.oformat()
 }
 
 sealed trait RosmProp extends Product with Serializable
@@ -71,7 +71,7 @@ case object RosmOrganisationType extends RosmProp
 case object RosmIsAGroup extends RosmProp
 
 object RosmProp {
-  implicit val format: OFormat[RosmProp] = derived.oformat
+  implicit val format: OFormat[RosmProp] = derived.oformat()
 }
 
 sealed trait Eeitt
@@ -80,7 +80,7 @@ final case object Agent extends Eeitt
 final case object UserId extends Eeitt
 
 object Eeitt {
-  implicit val format: OFormat[Eeitt] = derived.oformat
+  implicit val format: OFormat[Eeitt] = derived.oformat()
 }
 
 sealed trait UserField
@@ -90,16 +90,16 @@ object UserField {
   final case class Enrolment(serviceName: ServiceName, identifierName: IdentifierName) extends UserField
   final case object EnrolledIdentifier extends UserField
 
-  implicit val format: OFormat[UserField] = derived.oformat
+  implicit val format: OFormat[UserField] = derived.oformat()
 }
 
 final case class ServiceName(value: String) extends AnyVal
 object ServiceName {
-  implicit val format: OFormat[ServiceName] = derived.oformat
+  implicit val format: OFormat[ServiceName] = derived.oformat()
 }
 final case class IdentifierName(value: String) extends AnyVal
 object IdentifierName {
-  implicit val format: OFormat[IdentifierName] = derived.oformat
+  implicit val format: OFormat[IdentifierName] = derived.oformat()
 }
 
 sealed trait AuthInfo
@@ -109,7 +109,7 @@ final case object SaUtr extends AuthInfo
 final case object CtUtr extends AuthInfo
 
 object AuthInfo {
-  implicit val format: OFormat[AuthInfo] = derived.oformat
+  implicit val format: OFormat[AuthInfo] = derived.oformat()
 }
 
 sealed trait FormTemplateProp extends Product with Serializable
@@ -117,5 +117,5 @@ object FormTemplateProp {
   case object Id extends FormTemplateProp
   case object SubmissionReference extends FormTemplateProp
 
-  implicit val format: OFormat[FormTemplateProp] = derived.oformat
+  implicit val format: OFormat[FormTemplateProp] = derived.oformat()
 }

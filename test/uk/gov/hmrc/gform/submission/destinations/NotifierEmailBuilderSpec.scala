@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.submission.destinations
 
 import cats.Show
 import cats.implicits._
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.notifier.{ NotifierEmail, NotifierEmailReference }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormComponentId
 import uk.gov.hmrc.gform.{ Possible, Spec }
@@ -26,7 +27,8 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, P
 import uk.gov.hmrc.gform.sharedmodel.notifier.{ NotifierEmailAddress, NotifierPersonalisationFieldId }
 import uk.gov.hmrc.gform.sharedmodel.structuredform.{ Field, FieldName, StructuredFormValue }
 
-class NotifierEmailBuilderSpec extends Spec with DestinationGen with SubmissionRefGen with PrimitiveGen {
+class NotifierEmailBuilderSpec
+    extends Spec with DestinationGen with SubmissionRefGen with PrimitiveGen with ScalaCheckDrivenPropertyChecks {
   "apply" must "fail if the 'to' field does not exist in the model" in {
     forAll(emailGen.map(_.copy(personalisation = Map.empty))) { destination =>
       NotifierEmailBuilder[Possible](

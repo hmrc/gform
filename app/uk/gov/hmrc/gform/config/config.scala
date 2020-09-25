@@ -37,8 +37,9 @@ case class AppConfig(
 object AppConfig {
 
   def loadOrThrow(config: TypeSafeConfig): AppConfig = {
-    implicit def hint[T] = ProductHint[T](ConfigFieldMapping(CamelCase, CamelCase))
-    val appConfig = loadConfigOrThrow[AppConfig](config)
+
+    implicit def hint[AppConfig]: ProductHint[AppConfig] = ProductHint(ConfigFieldMapping(CamelCase, CamelCase))
+    val appConfig = ConfigSource.fromConfig(config).loadOrThrow[AppConfig]
 
     appConfig.formExpiryDays.verifyThat(_ > 0, s"'formExpiryDays' must be positive, was ${appConfig.formExpiryDays}")
     appConfig.formMaxAttachments
@@ -58,26 +59,4 @@ object AppConfig {
   }
 
   class AppConfigException(message: String) extends IllegalArgumentException(message)
-
-  /**
-    * This is copy/paste from file-upload project. This is how they validate config. We will do the same:
-    */
-  private def isAValidSize(size: String): Boolean = {
-
-    val sizeRegex = "([1-9][0-9]{0,3})([KB,MB]{2})".r
-
-    if (size.isEmpty) false
-    else {
-      size.toUpperCase match {
-        case sizeRegex(num, unit) =>
-          unit match {
-            case "KB" => true
-            case "MB" => true
-            case _    => false
-          }
-        case _ => false
-      }
-    }
-  }
-
 }

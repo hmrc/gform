@@ -17,16 +17,12 @@
 package uk.gov.hmrc.gform.config
 
 import com.typesafe.config.ConfigFactory
-import uk.gov.hmrc.gform.Spec
+import org.scalatest.{ FlatSpec, Matchers }
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 
-case class SampleConf(fooFoo: Int, bar: String)
+class AppConfigSpec extends FlatSpec with Matchers {
 
-class AppConfigSpec extends Spec {
-
-  behavior of "AppConfig"
-
-  it should "be loadable" in {
+  "AppConfig" should "be loadable" in {
 
     val appConfig = AppConfig.loadOrThrow(ConfigFactory.load())
     appConfig.appName shouldBe "gform"
@@ -50,7 +46,6 @@ class AppConfigSpec extends Spec {
       ContentType("application/vnd.oasis.opendocument.presentation"),
       ContentType(".odp")
     )
-
   }
 
 }

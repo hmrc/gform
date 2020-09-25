@@ -29,12 +29,11 @@ class DbLookupController(controllerComponents: ControllerComponents, dbLookupSer
   uniqueIdGenerator: UniqueIdGenerator)
     extends BaseController(controllerComponents) {
 
-  def exists(dbLookupId: DbLookupId, collectionName: CollectionName): Action[AnyContent] = Action.async {
-    implicit request =>
-      dbLookupService.find(dbLookupId, collectionName) map {
-        case Some(_) => Ok
-        case None    => NotFound
-      }
+  def exists(dbLookupId: DbLookupId, collectionName: CollectionName): Action[AnyContent] = Action.async { _ =>
+    dbLookupService.find(dbLookupId, collectionName) map {
+      case Some(_) => Ok
+      case None    => NotFound
+    }
   }
 
   def add(collectionName: CollectionName): Action[JsValue] = Action.async(parse.json) { implicit request =>
