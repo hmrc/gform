@@ -412,7 +412,7 @@ class ValueParserSpec extends Spec {
             "",
             true,
             true,
-            None
+            true
           )),
         ackSection,
         DeclarationSection(toSmartString("Declaration"), None, None, Nil)

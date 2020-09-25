@@ -48,7 +48,7 @@ object Destination {
     includeIf: String,
     failOnError: Boolean,
     roboticsXml: Boolean,
-    backscan: Option[Boolean])
+    backscan: Boolean)
       extends Destination with DestinationWithCustomerId
 
   case class HandlebarsHttpApi(
@@ -138,7 +138,8 @@ case class UploadableHmrcDmsDestination(
   convertSingleQuotes: Option[Boolean],
   includeIf: Option[String],
   failOnError: Option[Boolean],
-  roboticsXml: Option[Boolean]) {
+  roboticsXml: Option[Boolean],
+  closedStatus: Option[Boolean]) {
 
   def toHmrcDmsDestination: Either[String, Destination.HmrcDms] =
     for {
@@ -153,7 +154,8 @@ case class UploadableHmrcDmsDestination(
         cii.getOrElse(true.toString),
         failOnError.getOrElse(true),
         roboticsXml.getOrElse(false),
-        None)
+        closedStatus.getOrElse(false)
+      )
 }
 
 object UploadableHmrcDmsDestination {

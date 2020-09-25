@@ -127,7 +127,8 @@ class UploadableDestinationSpec extends Spec {
       convertSingleQuotes,
       Some(includeIf),
       Some(failOnError),
-      Some(roboticsXml)
+      Some(roboticsXml),
+      Some(backscan)
     )
   }
 
