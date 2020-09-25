@@ -44,9 +44,20 @@ trait DestinationGen {
       businessArea       <- businessAreaGen
       includeIf          <- includeIfGen
       failOnError        <- PrimitiveGen.booleanGen
+      roboticsXml        <- PrimitiveGen.booleanGen
+      backscan           <- PrimitiveGen.booleanGen
     } yield
       Destination
-        .HmrcDms(id, dmsFormId, customerId, classificationType, businessArea, includeIf, failOnError, false, None)
+        .HmrcDms(
+          id,
+          dmsFormId,
+          customerId,
+          classificationType,
+          businessArea,
+          includeIf,
+          failOnError,
+          roboticsXml,
+          backscan)
 
   def submissionConsolidatorGen: Gen[Destination.SubmissionConsolidator] =
     for {

@@ -53,7 +53,7 @@ class MetadataXmlSpec extends Spec {
       "",
       true,
       true,
-      None
+      true
     )
 
     val expected =
@@ -151,6 +151,13 @@ class MetadataXmlSpec extends Spec {
               <attribute_type>int</attribute_type>
               <attribute_values>
                 <attribute_value>2</attribute_value>
+              </attribute_values>
+            </attribute>
+            <attribute>
+              <attribute_name>backscan</attribute_name>
+              <attribute_type>boolean</attribute_type>
+              <attribute_values>
+                <attribute_value>true</attribute_value>
               </attribute_values>
             </attribute>
           </metadata>
