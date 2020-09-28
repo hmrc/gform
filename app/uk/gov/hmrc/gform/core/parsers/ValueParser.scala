@@ -78,6 +78,8 @@ object ValueParser {
 
   lazy val internalLinkParser: Parser[InternalLink] = "printAcknowledgementPdf" ^^ { (loc, _) =>
     InternalLink.printAcknowledgementPdf
+  } | "printSummaryPdf" ^^ { (loc, _) =>
+    InternalLink.printSummaryPdf
   }
 
   lazy val contextField: Parser[Expr] = ("eeitt" ~ "." ~ eeitt ^^ { (loc, _, _, eeitt) =>
