@@ -90,5 +90,5 @@ case class HmrcTaxPeriodWithEvaluatedId(
   idNumberValue: IdNumberValue)
 
 object HmrcTaxPeriodWithEvaluatedId extends JsonUtils {
-  implicit lazy val format: OFormat[HmrcTaxPeriodWithEvaluatedId] = derived.oformat()
+  implicit val format: OFormat[HmrcTaxPeriodWithEvaluatedId] = derived.oformat()
 }
