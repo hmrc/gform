@@ -23,8 +23,10 @@ sealed trait InternalLink extends Product with Serializable
 
 object InternalLink {
   case object PrintAcknowledgementPdf extends InternalLink
+  case object PrintSummaryPdf extends InternalLink
 
   val printAcknowledgementPdf: InternalLink = PrintAcknowledgementPdf
+  val printSummaryPdf: InternalLink = PrintSummaryPdf
 
   implicit val format: OFormat[InternalLink] = derived.oformat
 }
