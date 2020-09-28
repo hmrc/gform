@@ -54,6 +54,8 @@ package object destinations {
           |  "dmsFormId": "$dmsFormId",
           |  "customerId": ${TextExpression.format.writes(customerId)},
           |  "classificationType": "$classificationType",
+          |  ${optionalField("roboticsXml", Option(roboticsXml), false)}
+          |  ${optionalField("closedStatus", Option(backscan), false)}
           |  "businessArea": "$businessArea"
           |}""".stripMargin
 
