@@ -45,7 +45,7 @@ trait DestinationGen {
       includeIf          <- includeIfGen
       failOnError        <- PrimitiveGen.booleanGen
       roboticsXml        <- PrimitiveGen.booleanGen
-      backscan           <- PrimitiveGen.booleanGen
+      backscan           <- Gen.option(PrimitiveGen.booleanGen)
     } yield
       Destination
         .HmrcDms(

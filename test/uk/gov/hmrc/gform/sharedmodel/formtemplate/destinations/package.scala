@@ -55,7 +55,7 @@ package object destinations {
           |  "customerId": ${TextExpression.format.writes(customerId)},
           |  "classificationType": "$classificationType",
           |  ${optionalField("roboticsXml", Option(roboticsXml), false)}
-          |  ${optionalField("closedStatus", Option(backscan), false)}
+          |  ${optionalField("closedStatus", Option(backscan), None)}
           |  "businessArea": "$businessArea"
           |}""".stripMargin
 
