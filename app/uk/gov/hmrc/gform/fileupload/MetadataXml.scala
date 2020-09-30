@@ -29,6 +29,8 @@ object MetadataXml {
 
   private def createMetadata(submission: Submission, pdfSummary: PdfSummary, hmrcDms: HmrcDms): Elem = {
 
+    val backscan = hmrcDms.backscan.map(backscan => createAttribute("backscan", backscan)).toList
+
     val attributes = List(
       createAttribute("hmrc_time_of_receipt", submission.submittedDate),
       createAttribute("time_xml_created", submission.submittedDate),
@@ -41,9 +43,8 @@ object MetadataXml {
       createAttribute("cas_key", "AUDIT_SERVICE"), // We are not using CAS
       createAttribute("classification_type", hmrcDms.classificationType),
       createAttribute("business_area", hmrcDms.businessArea),
-      createAttribute("attachment_count", submission.noOfAttachments),
-      createAttribute("backscan", hmrcDms.backscan)
-    )
+      createAttribute("attachment_count", submission.noOfAttachments)
+    ) ++ backscan
 
     <metadata></metadata>.copy(child = attributes)
   }

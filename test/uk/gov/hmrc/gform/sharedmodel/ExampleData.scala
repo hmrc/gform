@@ -48,7 +48,7 @@ trait ExampleAuthConfig extends DestinationGen {
     "",
     true,
     true,
-    true
+    Some(true)
   )
 
   private def buildFormComponent(name: String, expr: Expr) =
