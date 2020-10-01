@@ -22,7 +22,7 @@ import java.time.LocalDate
 import org.scalatest.{ FlatSpec, Matchers }
 import java.time.LocalDateTime
 
-import org.scalatest.prop.PropertyChecks
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.libs.json._
 import play.api.libs.json.Writes.DefaultLocalDateTimeWrites
 import uk.gov.hmrc.gform.Spec
@@ -32,7 +32,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.FormGen
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.des.DesRegistrationResponseGen
 import uk.gov.hmrc.gform.sharedmodel.email.EmailConfirmationCode
 
-class FormSpec extends FlatSpec with Matchers with PropertyChecks {
+class FormSpec extends FlatSpec with Matchers with ScalaCheckDrivenPropertyChecks {
 
   val inputJson =
     """|{

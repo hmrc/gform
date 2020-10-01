@@ -25,7 +25,6 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.traverse._
 import org.apache.pdfbox.pdmodel.PDDocument
-import play.api.Logger
 import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorAlgebra
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef

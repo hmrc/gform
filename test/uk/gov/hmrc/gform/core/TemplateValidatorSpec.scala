@@ -18,6 +18,8 @@ package uk.gov.hmrc.gform.core
 
 import cats.data.NonEmptyList
 import org.scalacheck.Gen
+import org.scalatest.prop.TableDrivenPropertyChecks
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.Helpers._
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.formtemplate.FormTemplateValidator
@@ -42,6 +44,7 @@ class TemplateValidatorSpec extends Spec {
     }
 
   "Section.validate" should "validate unique FieldIds" in {
+    import ScalaCheckDrivenPropertyChecks._
     forAll(
       oneOrMoreGen(sectionGen),
       oneOrMoreGen(sectionGen),
@@ -61,6 +64,7 @@ class TemplateValidatorSpec extends Spec {
   }
 
   "validateUniqueFields" should "all return valid in table" in {
+    import TableDrivenPropertyChecks._
     import TemplateValidatorSpec._
 
     val groupOfGroups = List(mkGroupFormComponent("field1"), mkGroupFormComponent("field2"))
@@ -90,6 +94,7 @@ class TemplateValidatorSpec extends Spec {
   }
 
   it should "all return invalid in table" in {
+    import TableDrivenPropertyChecks._
     import TemplateValidatorSpec._
 
     val fieldId = TemplateValidatorSpec.formComponent("fieldId")
@@ -115,6 +120,7 @@ class TemplateValidatorSpec extends Spec {
     import FormTemplateValidator._
     import AuthConfigGen._
     import FormComponentGen._
+    import ScalaCheckDrivenPropertyChecks._
 
     forAll(
       FormTemplateGen.formTemplateGen,
@@ -276,6 +282,8 @@ class TemplateValidatorSpec extends Spec {
   }
 
   "TemplateValidator.validateDates with multiple abstract and exact valid dates" should "all return Valid" in {
+    import TableDrivenPropertyChecks._
+
     val table =
       Table(
         ("actual", "expected"),
@@ -296,6 +304,7 @@ class TemplateValidatorSpec extends Spec {
   }
 
   "TemplateValidator.validateDates with multiple invalid dates" should "all return Invalid" in {
+    import TableDrivenPropertyChecks._
 
     val monthOutOfRangeFailure: Int => Invalid =
       month => Invalid(s"java.time.DateTimeException: Invalid value for MonthOfYear (valid values 1 - 12): $month")
@@ -483,6 +492,8 @@ class TemplateValidatorSpec extends Spec {
   }
 
   "FormTemplateValidator.validateForwardReference" should "detect valid references in an In expression" in {
+    import TableDrivenPropertyChecks._
+
     val formComponentsA = List(mkFormComponent("fieldA", Value))
     val formComponentsB = List(mkFormComponent("fieldB", Value))
     val baseSectionA = mkSection("sectionA", formComponentsA)
@@ -506,6 +517,8 @@ class TemplateValidatorSpec extends Spec {
   }
 
   "FormTemplateValidator.validateForwardReference" should "detect invalid references/forward references in a Boolean Expression" in {
+    import TableDrivenPropertyChecks._
+
     val formComponentsA = List(mkFormComponent("fieldA", Value))
     val formComponentsB = List(mkFormComponent("fieldB", Value))
     val baseSectionA = mkSection("sectionA", formComponentsA)

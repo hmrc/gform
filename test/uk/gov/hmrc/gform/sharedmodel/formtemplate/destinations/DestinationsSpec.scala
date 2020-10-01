@@ -16,11 +16,12 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
 
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.DestinationsGen
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.verifyRead
 
-class DestinationsSpec extends Spec {
+class DestinationsSpec extends Spec with ScalaCheckDrivenPropertyChecks {
   "Destinations" should "round trip derived JSON" in {
     forAll(DestinationsGen.destinationsGen) { obj =>
       Destinations.format.reads(Destinations.format.writes(obj)) should beJsSuccess(obj)

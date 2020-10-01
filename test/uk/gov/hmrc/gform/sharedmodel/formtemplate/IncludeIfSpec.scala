@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.IncludeIfGen
 
-class IncludeIfSpec extends Spec {
+class IncludeIfSpec extends Spec with ScalaCheckDrivenPropertyChecks {
   "IncludeIf" should "round trip derived JSON" in {
     forAll(IncludeIfGen.includeIfGen) { obj =>
       IncludeIf.format.reads(IncludeIf.format.writes(obj)) should beJsSuccess(obj)

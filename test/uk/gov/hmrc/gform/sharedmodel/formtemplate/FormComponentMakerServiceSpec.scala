@@ -36,8 +36,9 @@ import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidth._
 import cats.syntax.either._
+import org.scalatest.prop.TableDrivenPropertyChecks
 
-class FormComponentMakerServiceSpec extends Spec {
+class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks {
 
   private val textConstraint: TextConstraint = BasicText
   private val shortTextConstraint: TextConstraint = ShortText.default

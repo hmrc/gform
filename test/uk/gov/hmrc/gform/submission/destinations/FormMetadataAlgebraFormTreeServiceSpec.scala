@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.submission.destinations
 
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.{ Possible, Spec, possibleMonadError }
 import uk.gov.hmrc.gform.form.BundledFormTreeNode
 import uk.gov.hmrc.gform.formmetadata.{ FormMetadata, FormMetadataAlgebra, FormMetadataGen }
@@ -24,7 +25,7 @@ import uk.gov.hmrc.gform.sharedmodel.form.FormIdData
 import uk.gov.hmrc.gform.submission.Tree
 import uk.gov.hmrc.http.HeaderCarrier
 
-class FormMetadataAlgebraFormTreeServiceSpec extends Spec with FormMetadataGen {
+class FormMetadataAlgebraFormTreeServiceSpec extends Spec with FormMetadataGen with ScalaCheckDrivenPropertyChecks {
   "getFormTree" should "return a single level if there are no children" in {
     forAll(formMetadataGenWithSubmissionRef) { generatedAudit =>
       val rootAudit = generatedAudit.copy(parentFormSubmissionRefs = Nil)

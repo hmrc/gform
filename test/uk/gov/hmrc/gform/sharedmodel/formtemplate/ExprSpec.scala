@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.ExprGen
 
-class ExprSpec extends Spec {
+class ExprSpec extends Spec with ScalaCheckDrivenPropertyChecks {
   "Expr" should "round trip derived JSON" in {
     forAll(ExprGen.exprGen()) { obj =>
       Expr.format.reads(Expr.format.writes(obj)) should beJsSuccess(obj)

@@ -26,7 +26,7 @@ object ContinueOrDeletePage {
   case object Skip extends ContinueOrDeletePage
   case object Show extends ContinueOrDeletePage
 
-  implicit val format: OFormat[ContinueOrDeletePage] = derived.oformat
+  implicit val format: OFormat[ContinueOrDeletePage] = derived.oformat()
 
   def unapply(str: String): Option[ContinueOrDeletePage] = str match {
     case IsFalseish() => Some(Skip)

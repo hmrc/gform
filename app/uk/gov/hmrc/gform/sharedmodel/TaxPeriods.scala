@@ -22,7 +22,6 @@ import cats.syntax.eq._
 import java.time.LocalDate
 
 import julienrf.json.derived
-import play.api.data.validation.ValidationError
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
@@ -34,7 +33,7 @@ case class ObligationDetail(
   periodKey: String)
 
 object ObligationDetail {
-  implicit val format: OFormat[ObligationDetail] = Json.format[ObligationDetail]
+  implicit val format: OFormat[ObligationDetail] = derived.oformat()
 }
 
 case class ObligationDetails(obligationDetails: List[ObligationDetail])
@@ -52,7 +51,7 @@ object Obligation {
 case class TaxResponse(id: HmrcTaxPeriodWithEvaluatedId, obligation: Obligation)
 
 object TaxResponse {
-  implicit val format: OFormat[TaxResponse] = Json.format[TaxResponse]
+  implicit val format: OFormat[TaxResponse] = derived.oformat()
 }
 
 sealed trait Obligations {
@@ -73,23 +72,23 @@ final case class RetrievedObligations(obligation: NonEmptyList[TaxResponse]) ext
 
 object Obligations {
   import JsonUtils._
-  implicit val format: OFormat[Obligations] = derived.oformat[Obligations]
+  implicit val format: OFormat[Obligations] = derived.oformat()
 }
 
 case class IdNumberValue(value: String) extends AnyVal
 
 object IdNumberValue {
-  implicit val format: OFormat[IdNumberValue] = derived.oformat
+  implicit val format: OFormat[IdNumberValue] = derived.oformat()
 }
 
 case class RecalculatedTaxPeriodKey(fcId: FormComponentId, hmrcTaxPeriod: HmrcTaxPeriod)
 object RecalculatedTaxPeriodKey {
-  implicit val format: OFormat[RecalculatedTaxPeriodKey] = derived.oformat
+  implicit val format: OFormat[RecalculatedTaxPeriodKey] = derived.oformat()
 }
 case class HmrcTaxPeriodWithEvaluatedId(
   recalculatedTaxPeriodKey: RecalculatedTaxPeriodKey,
   idNumberValue: IdNumberValue)
 
 object HmrcTaxPeriodWithEvaluatedId extends JsonUtils {
-  implicit val format: OFormat[HmrcTaxPeriodWithEvaluatedId] = derived.oformat
+  implicit val format: OFormat[HmrcTaxPeriodWithEvaluatedId] = derived.oformat()
 }

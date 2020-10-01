@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.submission.handlebars
 
 import cats.MonadError
 import org.scalacheck.Gen
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.sharedmodel.PdfHtml
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.gform.{ Possible, Spec, possibleMonadError }
@@ -27,7 +28,7 @@ import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 import uk.gov.hmrc.gform.wshttp.HttpClient
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
-class HandlebarsHttpApiSubmitterSpec extends Spec {
+class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyChecks {
   private implicit val hc: HeaderCarrier = HeaderCarrier()
 
   "A GET destination" should "make a GET request, applying the template to the URI" in {

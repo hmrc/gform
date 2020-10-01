@@ -19,10 +19,11 @@ package uk.gov.hmrc.gform.submission.handlebars
 import cats.syntax.eq._
 import cats.instances.char._
 import org.scalacheck.Gen
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.PrimitiveGen
 
-class MagicCommasParserSpec extends Spec {
+class MagicCommasParserSpec extends Spec with ScalaCheckDrivenPropertyChecks {
   private def stringWithNoSpecialCharsGen: Gen[String] =
     Gen.asciiPrintableStr.map(
       _.replace(",", "")

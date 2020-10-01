@@ -47,7 +47,7 @@ object FormIdData {
     }
   }
 
-  implicit val format: OFormat[FormIdData] = derived.oformat
+  implicit val format: OFormat[FormIdData] = derived.oformat()
 
   implicit val show: Show[FormIdData] = Show.show(format.writes(_).toString)
 }

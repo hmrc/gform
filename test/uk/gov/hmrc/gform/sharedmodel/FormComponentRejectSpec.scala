@@ -16,8 +16,10 @@
 
 package uk.gov.hmrc.gform.sharedmodel
 
+import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatest.time.{ Millis, Seconds, Span }
 import play.api.libs.json.{ JsError, JsResult, JsSuccess, Json }
+
 import scala.io.Source
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.core.FOpt
@@ -25,7 +27,7 @@ import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate.Verifier
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 
-class FormComponentRejectSpec extends Spec {
+class FormComponentRejectSpec extends Spec with TableDrivenPropertyChecks {
 
   implicit val defaultPatience = PatienceConfig(timeout = Span(6, Seconds), interval = Span(5, Millis))
 

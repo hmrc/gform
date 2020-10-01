@@ -17,12 +17,13 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import cats.data.NonEmptyList
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.libs.json.{ JsResult, JsSuccess, Json, Reads }
 import uk.gov.hmrc.gform.Helpers._
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.AuthConfigGen
 
-class AuthConfigSpec extends Spec {
+class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
   "Default Read and Write" should "round trip derived JSON" in {
     forAll(AuthConfigGen.authConfigGen) { c =>
       verifyRoundTrip(c)

@@ -19,9 +19,10 @@ package uk.gov.hmrc.gform.wshttp
 import cats.MonadError
 import cats.syntax.either._
 import org.scalacheck.Gen
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.{ Possible, possibleMonadError }
 
-class SuccessfulResponseHttpClientSpec extends HttpClientSpec {
+class SuccessfulResponseHttpClientSpec extends HttpClientSpec with ScalaCheckDrivenPropertyChecks {
   "get" should "delegate to underlying.get and return any response with a successful status" in httpClient[Possible] {
     underlying =>
       forAll(Gen.alphaNumStr, headerCarrierGen, successfulHttpResponseGen) { (uri, hc, response) =>

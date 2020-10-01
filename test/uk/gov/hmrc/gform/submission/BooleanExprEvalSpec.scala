@@ -16,13 +16,13 @@
 
 package uk.gov.hmrc.gform.submission
 
-import org.scalatest._
-import org.scalatest.prop.PropertyChecks
+import org.scalatest.{ EitherValues, FlatSpec, Matchers }
 import uk.gov.hmrc.gform.sharedmodel.VariadicFormData
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.DataSource.SeissEligible
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import org.scalatest.prop.TableDrivenPropertyChecks
 
-class BooleanExprEvalSpec extends FlatSpec with Matchers with EitherValues with PropertyChecks {
+class BooleanExprEvalSpec extends FlatSpec with Matchers with EitherValues with TableDrivenPropertyChecks {
   "isTrue" should "evaluate Equals with simple FormCtx fields" in {
     val data = VariadicFormData.ones(FormComponentId("firstName") -> "Pete")
 
@@ -51,9 +51,8 @@ class BooleanExprEvalSpec extends FlatSpec with Matchers with EitherValues with 
       (Equals(FormCtx("startDate.year"), Constant("2011")), Equals(FormCtx("firstName"), Constant("Pete")), false)
     )
 
-    forAll(table) {
-      case (lhs, rhs, expected) =>
-        BooleanExprEval.isTrue(And(lhs, rhs), data, None).beResult shouldBe expected
+    forAll(table) { (lhs: BooleanExpr, rhs: BooleanExpr, expected: Boolean) =>
+      BooleanExprEval.isTrue(And(lhs, rhs), data, None).beResult shouldBe expected
     }
   }
 
@@ -71,9 +70,8 @@ class BooleanExprEvalSpec extends FlatSpec with Matchers with EitherValues with 
       (Equals(FormCtx("startDate.year"), Constant("2011")), Equals(FormCtx("firstName"), Constant("Pete")), true)
     )
 
-    forAll(table) {
-      case (lhs, rhs, expected) =>
-        BooleanExprEval.isTrue(Or(lhs, rhs), data, None).beResult shouldBe expected
+    forAll(table) { (lhs: BooleanExpr, rhs: BooleanExpr, expected: Boolean) =>
+      BooleanExprEval.isTrue(Or(lhs, rhs), data, None).beResult shouldBe expected
     }
   }
 

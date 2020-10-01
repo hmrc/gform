@@ -19,8 +19,9 @@ package uk.gov.hmrc.gform.wshttp
 import HttpClient.HttpClientBuildingSyntax
 import cats.Id
 import org.scalacheck.Gen
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 
-class UriBuildingHttpClientSpec extends HttpClientSpec {
+class UriBuildingHttpClientSpec extends HttpClientSpec with ScalaCheckDrivenPropertyChecks {
   "get" should "delegate to underlying.get with the extended URL" in httpClient[Id] { underlying =>
     forAll(Gen.alphaNumStr, Gen.alphaNumStr, headerCarrierGen, httpResponseGen) { (uri, uri2, hc, response) =>
       underlying.expectGet(uri2, hc, response)

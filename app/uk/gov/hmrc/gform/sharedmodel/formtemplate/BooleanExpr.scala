@@ -35,5 +35,5 @@ final case class Contains(multiValueField: FormCtx, value: Expr) extends Boolean
 final case class In(value: Expr, dataSource: DataSource) extends BooleanExpr
 
 object BooleanExpr {
-  implicit val format: OFormat[BooleanExpr] = derived.oformat
+  implicit val format: OFormat[BooleanExpr] = derived.oformat()
 }

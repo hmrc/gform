@@ -20,8 +20,8 @@ import cats.syntax.either._
 import org.scalacheck.Gen
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatest.{ Matchers, WordSpecLike }
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.http.Status
 import play.api.libs.json.{ JsResultException, JsValue, Json }
 import play.api.mvc.Result
@@ -31,11 +31,12 @@ import uk.gov.hmrc.gform.controllers.ErrResponse
 import uk.gov.hmrc.gform.core.UniqueIdGenerator
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.dblookup.{ CollectionName, DbLookupId }
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class DbLookupControllerSpec
-    extends WordSpecLike with MockFactory with ScalaFutures with Matchers with GeneratorDrivenPropertyChecks {
+    extends WordSpecLike with MockFactory with ScalaFutures with Matchers with ScalaCheckDrivenPropertyChecks {
 
   val dbLookupIdListGen = for {
     id   <- Gen.numStr

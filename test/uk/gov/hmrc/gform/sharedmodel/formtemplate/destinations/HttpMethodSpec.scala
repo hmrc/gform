@@ -16,11 +16,12 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
 
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.HttpMethodGen
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.verifyRoundTrip
 
-class HttpMethodSpec extends Spec {
+class HttpMethodSpec extends Spec with ScalaCheckDrivenPropertyChecks {
   "Default read and write" should "round trip derived JSON" in {
     forAll(HttpMethodGen.httpMethodGen) { value =>
       verifyRoundTrip(value)

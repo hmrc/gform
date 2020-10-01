@@ -19,7 +19,6 @@ package uk.gov.hmrc.gform.auditing
 import play.api.mvc.Headers
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.config.ConfigModule
-import uk.gov.hmrc.gform.playcomponents.PlayComponents
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.bootstrap.audit.DefaultAuditConnector

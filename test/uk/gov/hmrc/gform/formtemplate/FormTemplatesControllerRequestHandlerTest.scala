@@ -16,18 +16,18 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
+import org.scalatest.{ Matchers, WordSpec }
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{ Millis, Seconds, Span }
-import org.scalatest.{ MustMatchers, WordSpec }
 import play.api.libs.json.{ Reads, _ }
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Constant, FormTemplate, FormTemplateRaw, TextExpression }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateRaw }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class FormTemplatesControllerRequestHandlerTest extends WordSpec with MustMatchers with ScalaFutures { // TODO Change to use an Id monad
+class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers with ScalaFutures { // TODO Change to use an Id monad
 
   implicit val defaultPatience = PatienceConfig(timeout = Span(6, Seconds), interval = Span(5, Millis))
 
@@ -40,7 +40,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with MustMatche
         val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
         whenReady(eventualResult.value) { response =>
-          response mustBe Right(())
+          response shouldBe Right(())
         }
     }
   }
@@ -54,7 +54,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with MustMatche
         val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
         whenReady(eventualResult.value) { response =>
-          response mustBe Right(())
+          response shouldBe Right(())
         }
     }
   }
@@ -70,7 +70,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with MustMatche
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
       whenReady(eventualResult.value) { response =>
-        response mustBe Right(())
+        response shouldBe Right(())
       }
     }
   }
@@ -86,7 +86,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with MustMatche
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
       whenReady(eventualResult.value) { response =>
-        response mustBe Right(())
+        response shouldBe Right(())
       }
     }
   }
@@ -102,7 +102,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with MustMatche
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
       whenReady(eventualResult.value) { response =>
-        response mustBe Right(())
+        response shouldBe Right(())
       }
     }
   }
@@ -118,7 +118,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with MustMatche
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
       whenReady(eventualResult.value) { response =>
-        response must matchPattern {
+        response should matchPattern {
           case Left(UnexpectedState(_)) =>
         }
       }
@@ -136,7 +136,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with MustMatche
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
       whenReady(eventualResult.value) { response =>
-        response must matchPattern {
+        response should matchPattern {
           case Left(UnexpectedState(_)) =>
         }
       }
@@ -154,7 +154,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with MustMatche
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
       whenReady(eventualResult.value) { response =>
-        response must matchPattern {
+        response should matchPattern {
           case Left(UnexpectedState(_)) =>
         }
       }
@@ -172,7 +172,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with MustMatche
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
       whenReady(eventualResult.value) { response =>
-        response must matchPattern {
+        response should matchPattern {
           case Left(UnexpectedState(_)) =>
         }
       }
@@ -190,7 +190,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with MustMatche
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
       whenReady(eventualResult.value) { response =>
-        response must matchPattern {
+        response should matchPattern {
           case Left(UnexpectedState(_)) =>
         }
       }
@@ -208,7 +208,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with MustMatche
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
       whenReady(eventualResult.value) { response =>
-        response must matchPattern {
+        response should matchPattern {
           case Left(UnexpectedState(_)) =>
         }
       }
@@ -223,7 +223,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with MustMatche
         val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
         whenReady(eventualResult.value) { response =>
-          response must matchPattern {
+          response should matchPattern {
             case Left(UnexpectedState(_)) =>
           }
         }
@@ -237,7 +237,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with MustMatche
         val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
         whenReady(eventualResult.value) { response =>
-          response must matchPattern {
+          response should matchPattern {
             case Left(UnexpectedState(_)) =>
           }
         }

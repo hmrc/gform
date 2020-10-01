@@ -28,5 +28,5 @@ object InternalLink {
   val printAcknowledgementPdf: InternalLink = PrintAcknowledgementPdf
   val printSummaryPdf: InternalLink = PrintSummaryPdf
 
-  implicit val format: OFormat[InternalLink] = derived.oformat
+  implicit val format: OFormat[InternalLink] = derived.oformat()
 }

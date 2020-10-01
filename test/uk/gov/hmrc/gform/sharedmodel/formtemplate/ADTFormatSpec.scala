@@ -21,8 +21,9 @@ import play.api.libs.json.{ Format, JsNumber, JsString, Reads }
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.PrimitiveGen
 import julienrf.json.derived
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 
-class ADTFormatSpec extends Spec {
+class ADTFormatSpec extends Spec with ScalaCheckDrivenPropertyChecks {
   sealed trait EnumerationFoo
   case object EnumerationBar extends EnumerationFoo
   case object EnumerationBaz extends EnumerationFoo
@@ -90,7 +91,7 @@ class ADTFormatSpec extends Spec {
   case class AdtBaz(name: String, age: Int) extends AdtFoo
 
   implicit val adtFooRead: Reads[AdtFoo] =
-    ADTFormat.adtRead("type", "bar" -> derived.reads[AdtBar], "baz" -> derived.reads[AdtBaz])
+    ADTFormat.adtRead("type", "bar" -> derived.reads[AdtBar](), "baz" -> derived.reads[AdtBaz]())
 
   "adtRead" should "correctly read an ADT with a type discriminator" in {
 

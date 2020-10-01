@@ -19,9 +19,10 @@ package uk.gov.hmrc.gform.wshttp
 import HttpClient.HttpClientBuildingSyntax
 import cats.Id
 import org.scalacheck.Gen
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.http.HeaderCarrier
 
-class HeaderCarrierBuildingHttpClientSpec extends HttpClientSpec {
+class HeaderCarrierBuildingHttpClientSpec extends HttpClientSpec with ScalaCheckDrivenPropertyChecks {
   "get" should "delegate to underlying.get with the modified HeaderCarrier" in httpClient[Id] { underlying =>
     forAll(Gen.alphaNumStr, headerCarrierGen, headerCarrierGen, httpResponseGen) { (url, hc, hc2, response) =>
       underlying.expectGet(url, hc2, response)

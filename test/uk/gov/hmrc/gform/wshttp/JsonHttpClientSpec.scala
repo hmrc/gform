@@ -19,9 +19,10 @@ package uk.gov.hmrc.gform.wshttp
 import HttpClient.HttpClientBuildingSyntax
 import cats.MonadError
 import org.scalacheck.Gen
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.{ Possible, possibleMonadError }
 
-class JsonHttpClientSpec extends HttpClientSpec {
+class JsonHttpClientSpec extends HttpClientSpec with ScalaCheckDrivenPropertyChecks {
   "get" should "delegate to underlying.get with no changes" in httpClient[Possible] { underlying =>
     forAll(Gen.alphaNumStr, headerCarrierGen, successfulHttpResponseGen) { (uri, hc, response) =>
       underlying.expectGet(uri, hc, response)

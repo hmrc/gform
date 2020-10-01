@@ -107,13 +107,13 @@ object Destination {
   val email: String = "email"
 
   private implicit def nonEmptyListOfDestinationsFormat: OFormat[NonEmptyList[Destination]] =
-    derived.oformat[NonEmptyList[Destination]]
+    derived.oformat[NonEmptyList[Destination]]()
 
   implicit def format: OFormat[Destination] = {
     implicit val personalisationReads =
       JsonUtils.formatMap[NotifierPersonalisationFieldId, FormComponentId](NotifierPersonalisationFieldId(_), _.value)
 
-    implicit def d: OFormat[Destination] = derived.oformat[Destination]
+    implicit def d: OFormat[Destination] = derived.oformat()
 
     OFormatWithTemplateReadFallback(
       ADTFormat.adtRead[Destination](
@@ -160,7 +160,7 @@ case class UploadableHmrcDmsDestination(
 
 object UploadableHmrcDmsDestination {
   implicit val reads: Reads[Destination.HmrcDms] = new Reads[Destination.HmrcDms] {
-    private val d: Reads[UploadableHmrcDmsDestination] = derived.reads[UploadableHmrcDmsDestination]
+    private val d: Reads[UploadableHmrcDmsDestination] = derived.reads[UploadableHmrcDmsDestination]()
     override def reads(json: JsValue): JsResult[Destination.HmrcDms] =
       d.reads(json).flatMap(_.toHmrcDmsDestination.fold(JsError(_), JsSuccess(_)))
   }
@@ -191,7 +191,7 @@ case class UploadableSubmissionConsolidator(
 
 object UploadableSubmissionConsolidator {
   implicit val reads: Reads[Destination.SubmissionConsolidator] = new Reads[Destination.SubmissionConsolidator] {
-    private val d: Reads[UploadableSubmissionConsolidator] = derived.reads[UploadableSubmissionConsolidator]
+    private val d: Reads[UploadableSubmissionConsolidator] = derived.reads[UploadableSubmissionConsolidator]()
     override def reads(json: JsValue): JsResult[Destination.SubmissionConsolidator] =
       d.reads(json).flatMap(_.toSubmissionConsolidatorDestination.fold(JsError(_), JsSuccess(_)))
   }
@@ -210,7 +210,7 @@ case class UploadableCompositeDestination(
 
 object UploadableCompositeDestination {
   implicit val reads: Reads[Destination.Composite] = new Reads[Destination.Composite] {
-    private val d: Reads[UploadableCompositeDestination] = derived.reads[UploadableCompositeDestination]
+    private val d: Reads[UploadableCompositeDestination] = derived.reads[UploadableCompositeDestination]()
     override def reads(json: JsValue): JsResult[Destination.Composite] =
       d.reads(json).flatMap(_.toCompositeDestination.fold(JsError(_), JsSuccess(_)))
   }
@@ -234,7 +234,7 @@ case class UploadableStateTransitionDestination(
 
 object UploadableStateTransitionDestination {
   implicit val reads: Reads[Destination.StateTransition] = new Reads[Destination.StateTransition] {
-    private val d: Reads[UploadableStateTransitionDestination] = derived.reads[UploadableStateTransitionDestination]
+    private val d: Reads[UploadableStateTransitionDestination] = derived.reads[UploadableStateTransitionDestination]()
     override def reads(json: JsValue): JsResult[Destination.StateTransition] =
       d.reads(json).flatMap(_.toStateTransitionDestination.fold(JsError(_), JsSuccess(_)))
   }
@@ -271,7 +271,7 @@ case class UploadableHandlebarsHttpApiDestination(
 
 object UploadableHandlebarsHttpApiDestination {
   implicit val reads: Reads[Destination.HandlebarsHttpApi] = new Reads[Destination.HandlebarsHttpApi] {
-    private val d = derived.reads[UploadableHandlebarsHttpApiDestination]
+    private val d = derived.reads[UploadableHandlebarsHttpApiDestination]()
     override def reads(json: JsValue): JsResult[Destination.HandlebarsHttpApi] =
       d.reads(json).flatMap(_.toHandlebarsHttpApiDestination.fold(JsError(_), JsSuccess(_)))
   }
@@ -283,7 +283,7 @@ case class UploadableLogDestination(id: DestinationId) {
 
 object UploadableLogDestination {
   implicit val reads: Reads[Destination.Log] = new Reads[Destination.Log] {
-    private val d: Reads[UploadableLogDestination] = derived.reads[UploadableLogDestination]
+    private val d: Reads[UploadableLogDestination] = derived.reads[UploadableLogDestination]()
     override def reads(json: JsValue): JsResult[Destination.Log] =
       d.reads(json).flatMap(_.toLogDestination.fold(JsError(_), JsSuccess(_)))
   }
@@ -310,7 +310,7 @@ object UploadableEmailDestination {
     JsonUtils.formatMap[NotifierPersonalisationFieldId, FormComponentId](NotifierPersonalisationFieldId(_), _.value)
 
   implicit val reads: Reads[Destination.Email] = new Reads[Destination.Email] {
-    private val d: Reads[UploadableEmailDestination] = derived.reads[UploadableEmailDestination]
+    private val d: Reads[UploadableEmailDestination] = derived.reads[UploadableEmailDestination]()
     override def reads(json: JsValue): JsResult[Destination.Email] =
       d.reads(json).flatMap(_.toEmailDestination.fold(JsError(_), JsSuccess(_)))
   }

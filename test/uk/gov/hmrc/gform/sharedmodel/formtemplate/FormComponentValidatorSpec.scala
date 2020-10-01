@@ -16,11 +16,12 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.Helpers.toSmartString
 import uk.gov.hmrc.gform.sharedmodel.generators.FormComponentValidatorGen
 
-class FormComponentValidatorSpec extends Spec {
+class FormComponentValidatorSpec extends Spec with ScalaCheckDrivenPropertyChecks {
   "FormComponentValidator" should "round trip derived JSON" in {
     forAll(FormComponentValidatorGen.formComponentValidatorGen) { obj =>
       verifyRoundTrip(obj)

@@ -27,5 +27,5 @@ case class UserData(
 )
 
 object UserData {
-  implicit val format: OFormat[UserData] = derived.oformat
+  implicit val format: OFormat[UserData] = derived.oformat()
 }

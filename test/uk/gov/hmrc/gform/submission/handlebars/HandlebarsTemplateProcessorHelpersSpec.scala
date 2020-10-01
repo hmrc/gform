@@ -23,6 +23,8 @@ import cats.data.NonEmptyList
 import cats.syntax.eq._
 import com.fasterxml.jackson.databind.JsonNode
 import org.scalacheck.Gen
+import org.scalatest.prop.TableDrivenPropertyChecks
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.{ PdfHtml, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.form._
@@ -36,6 +38,7 @@ import scala.util.Random
 
 class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   "yesNoToEtmpChoice" must "return 1 when 0 is passed in" in {
+    import org.scalatest.prop.TableDrivenPropertyChecks._
     val table = Table(("value", "expected"), ("0", "1"), ("1", "0"), ("0,", "1"), ("1,", "0"))
 
     forAll(table) {
@@ -53,6 +56,7 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   }
 
   it must "convert a date of the form yyyy-mm-dd into yyyymmdd" in {
+    import ScalaCheckDrivenPropertyChecks._
     forAll(Gen.chooseNum[Long](1900, 2100), Gen.chooseNum[Long](1, 12), Gen.chooseNum[Long](1, 31)) { (y, m, d) =>
       val yearFormat = new DecimalFormat("0000")
       val monthAndDayFormat = new DecimalFormat("00")
@@ -64,6 +68,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   }
 
   "toEtmpDate" must "return the date in the given date field as an ETMP formatted date" in {
+    import org.scalatest.prop.TableDrivenPropertyChecks._
+
     val t = Table(
       ("day", "month", "year", "expected"),
       ("", "12", "2019", "null"),
@@ -84,6 +90,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   }
 
   "toDesDate" must "return the date in the given date field as an DES formatted date" in {
+    import org.scalatest.prop.TableDrivenPropertyChecks._
+
     val t = Table(
       ("day", "month", "year", "expected"),
       ("", "12", "2019", "null"),
@@ -104,6 +112,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   }
 
   "either" must "select the first argument if it is non-null" in {
+    import ScalaCheckDrivenPropertyChecks._
+
     forAll(Gen.alphaNumStr, Gen.alphaNumStr) { (v1, v2) =>
       process(s"{{either ${quote(v1)} ${quote(v2)}}}") shouldBe v1
       process(s"{{either ${quote(v1)} null}}") shouldBe v1
@@ -111,6 +121,7 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   }
 
   it must "select the second argument if the first is null" in {
+    import ScalaCheckDrivenPropertyChecks._
     forAll(Gen.alphaNumStr) { v2 =>
       process(s"{{either null ${quote(v2)}}}") shouldBe v2
     }
@@ -121,6 +132,7 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   }
 
   "eitherExcludingBlanks" must "select the first argument if it is non-null and not empty after trimming" in {
+    import ScalaCheckDrivenPropertyChecks._
     forAll(PrimitiveGen.nonEmptyAlphaNumStrGen, PrimitiveGen.nonEmptyAlphaNumStrGen) { (v1, v2) =>
       process(s"{{eitherExcludingBlanks ${quote(v1)} ${quote(v2)}}}") shouldBe v1
       process(s"{{eitherExcludingBlanks ${quote(v1)} null}}") shouldBe v1
@@ -128,12 +140,14 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   }
 
   it must "select the second argument if the first is null" in {
+    import ScalaCheckDrivenPropertyChecks._
     forAll(PrimitiveGen.nonEmptyAlphaNumStrGen) { v2 =>
       process(s"{{eitherExcludingBlanks null ${quote(v2)}}}") shouldBe v2
     }
   }
 
   it must "select the second argument if the first is empty after trimming" in {
+    import ScalaCheckDrivenPropertyChecks._
     forAll(PrimitiveGen.nonEmptyAlphaNumStrGen) { v2 =>
       process(s"{{eitherExcludingBlanks ${quote(" ")} ${quote(v2)}}}") shouldBe v2
     }
@@ -148,6 +162,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   }
 
   "either2" must "select the first argument if it is non-null" in {
+    import ScalaCheckDrivenPropertyChecks._
+
     forAll(Gen.alphaNumStr, Gen.alphaNumStr) { (v1, v2) =>
       process(s"{{either2 ${quote(v1)} ${quote(v2)}}}") shouldBe v1
       process(s"{{either2 ${quote(v1)} null}}") shouldBe v1
@@ -155,6 +171,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   }
 
   it must "select the second argument if the first is null" in {
+    import ScalaCheckDrivenPropertyChecks._
+
     forAll(Gen.alphaNumStr) { v2 =>
       process(s"{{either2 null ${quote(v2)}}}") shouldBe v2
     }
@@ -173,6 +191,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   }
 
   "isSuccessCode" must "return true for all codes that begin with '2'" in {
+    import ScalaCheckDrivenPropertyChecks._
+
     forAll(Gen.chooseNum(200, 299)) { code =>
       whenever(code >= 200 && code <= 299) {
         process(s"{{isSuccessCode $code}}") shouldBe "true"
@@ -181,6 +201,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   }
 
   it must "return false for all codes that do not begin with '2'" in {
+    import ScalaCheckDrivenPropertyChecks._
+
     forAll(Gen.chooseNum(100, 599)) { code =>
       whenever(code < 200 || code >= 300) {
         process(s"{{isSuccessCode $code}}") shouldBe "false"
@@ -193,6 +215,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   }
 
   "isNotSuccessCode" must "return false for all codes that begin with '2'" in {
+    import ScalaCheckDrivenPropertyChecks._
+
     forAll(Gen.chooseNum(200, 299)) { code =>
       whenever(code >= 200 && code <= 299) {
         process(s"{{isNotSuccessCode $code}}") shouldBe "false"
@@ -201,6 +225,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   }
 
   it must "return true for all codes that do not begin with '2'" in {
+    import ScalaCheckDrivenPropertyChecks._
+
     forAll(Gen.chooseNum(100, 599)) { code =>
       whenever(code < 200 || code >= 300) {
         process(s"{{isNotSuccessCode $code}}") shouldBe "true"
@@ -217,6 +243,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   }
 
   it must "return the appropriate value given the index and position of nulls" in {
+    import org.scalatest.prop.TableDrivenPropertyChecks._
+
     val t = Table(
       ("default", "index", "params", "expected"),
       (""""a"""", 0, "", "a"),
@@ -362,6 +390,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   }
 
   it must "find the appropriate value for a composite with a wildcard" in {
+    import ScalaCheckDrivenPropertyChecks._
+
     forAll(Gen.alphaNumStr) { v =>
       process(s"""{{match "('0' *) => 'A'; ('1' '0') => 'B'; ('1' '1') => 'C'; ('1' '2') => 'D'" "0" "$v"}}""") shouldBe "A"
     }
@@ -407,6 +437,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   }
 
   it must "invert boolean values" in {
+    import org.scalatest.prop.TableDrivenPropertyChecks._
+
     val table = Table(("value", "expected"), ("false", "true"), ("true", "false"))
 
     forAll(table) {
@@ -420,6 +452,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   }
 
   it must "or boolean values, ignoring nulls" in {
+    import org.scalatest.prop.TableDrivenPropertyChecks._
+
     val table = Table(
       ("one", "two", "expected"),
       ("false", "false", "false"),
@@ -441,6 +475,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   }
 
   it must "and boolean values, ignoring nulls" in {
+    import org.scalatest.prop.TableDrivenPropertyChecks._
+
     val table = Table(
       ("one", "two", "expected"),
       ("false", "false", "false"),
@@ -490,6 +526,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   }
 
   "toEtmpParamSequence" must "add one to the given index and pad-left with 0 if it is less than or equal to 9" in {
+    import org.scalatest.prop.TableDrivenPropertyChecks._
+
     val table = Table(
       ("in", "out"),
       (0, "01"),
@@ -507,6 +545,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   }
 
   "toEtmpParamSequence" must "should work with other numeric functions" in {
+    import org.scalatest.prop.TableDrivenPropertyChecks._
+
     val table = Table(
       ("in", "out"),
       (0, "06"),
@@ -536,6 +576,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   }
 
   "greaterThan" must "return true if the first parameter is greater than the second, false otherwise" in {
+    import org.scalatest.prop.TableDrivenPropertyChecks._
+
     val table = Table(
       ("first", "second", "result"),
       ("1,000", "0", "true"),
@@ -549,6 +591,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   }
 
   "lessThan" must "return true if the first parameter is less than the second, false otherwise" in {
+    import org.scalatest.prop.TableDrivenPropertyChecks._
+
     val table = Table(
       ("first", "second", "result"),
       ("1", "0", "false"),
@@ -562,6 +606,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   }
 
   "equal" must "return true if the first parameter is equal to the second, false otherwise" in {
+    import org.scalatest.prop.TableDrivenPropertyChecks._
+
     val table = Table(
       ("first", "second", "result"),
       ("1,000", "0", "false"),
@@ -583,6 +629,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   }
 
   "plus" must "add a var-args of numbers together" in {
+    import org.scalatest.prop.TableDrivenPropertyChecks._
+
     val table = Table(
       // format: off
       ("input",   "expected"),
@@ -629,6 +677,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   }
 
   it must "handle arbitrary strings" in {
+    import ScalaCheckDrivenPropertyChecks._
+
     forAll(Gen.alphaNumStr) { s =>
       process(s"""{{base64Encode "$s"}}""") shouldBe
         Base64.getEncoder.encodeToString(s.getBytes("UTF-8"))
@@ -670,6 +720,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   }
 
   it must "capitalise the first letter of any string" in {
+    import ScalaCheckDrivenPropertyChecks._
+
     forAll(Gen.alphaNumStr) { s =>
       process(s"""{{capitaliseFirst "$s"}}""") shouldBe s.capitalize
     }
@@ -690,6 +742,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   }
 
   it must "return the given value if it has 3 or fewer characters after removing whitespace" in {
+    import ScalaCheckDrivenPropertyChecks._
+
     forAll(Gen.alphaNumStr.map(s => if (s.length > 3) s.substring(0, 3) else s), Gen.chooseNum(0, 5)) { (s, ws) =>
       whenever(s.length <= 3) {
         val withSpaces = if (s.isEmpty) s else insertRandomSpaces(s, ws)
@@ -699,6 +753,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   }
 
   it must "return the normalised postcode if it has 4 or more characters after removing whitespace" in {
+    import ScalaCheckDrivenPropertyChecks._
+
     forAll(
       PrimitiveGen.nonEmptyAlphaNumStrGen,
       PrimitiveGen.nonEmptyAlphaNumStrGen.filter(_.length >= 3).map(_.substring(0, 3)),
@@ -736,6 +792,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
   }
 
   "importBySubmissionReference" must "import" in {
+    import ScalaCheckDrivenPropertyChecks._
+
     val rootModel: HandlebarsTemplateProcessorModel = HandlebarsTemplateProcessorModel("""{ "foo" : "parent" }""")
     val childModel: HandlebarsTemplateProcessorModel = HandlebarsTemplateProcessorModel("""{ "foo" : "child" }""")
 

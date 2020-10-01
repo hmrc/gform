@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
 
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.DestinationGen
 
-class UploadableDestinationSpec extends Spec {
+class UploadableDestinationSpec extends Spec with ScalaCheckDrivenPropertyChecks {
   "UploadableHandlebarsHttpApiDestination.toHandlebarsHttpApiDestination" should "not condition the uri, payload and includeIf if convertSingleQuotes is None" in {
     forAll(DestinationGen.handlebarsHttpApiGen) { destination =>
       val withQuotes = addQuotes(destination, """"'abc'"""")

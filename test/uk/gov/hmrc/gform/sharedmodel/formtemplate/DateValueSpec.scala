@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.DateValueGen
 
-class DateValueSpec extends Spec {
+class DateValueSpec extends Spec with ScalaCheckDrivenPropertyChecks {
   "DateValue" should "round trip derived JSON" in {
     forAll(DateValueGen.dateValueGen) { obj =>
       DateValue.format.reads(DateValue.format.writes(obj)) should beJsSuccess(obj)
