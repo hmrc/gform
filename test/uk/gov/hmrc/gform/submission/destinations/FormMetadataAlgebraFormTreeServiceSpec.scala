@@ -23,7 +23,6 @@ import uk.gov.hmrc.gform.formmetadata.{ FormMetadata, FormMetadataAlgebra, FormM
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.FormIdData
 import uk.gov.hmrc.gform.submission.Tree
-import uk.gov.hmrc.http.HeaderCarrier
 
 class FormMetadataAlgebraFormTreeServiceSpec extends Spec with FormMetadataGen with ScalaCheckDrivenPropertyChecks {
   "getFormTree" should "return a single level if there are no children" in {

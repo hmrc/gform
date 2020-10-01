@@ -15,6 +15,7 @@
 POST        /gform/test-only/de-enrol/userId/:userId                             uk.gov.hmrc.gform.testonly.TestOnlyController.deEnrolUser(userId: String)
 POST        /gform/test-only/upload                                              uk.gov.hmrc.gform.testonly.TestOnlyController.upload()
 POST        /gform/test-only/delete                                              uk.gov.hmrc.gform.testonly.TestOnlyController.delete()
+POST        /gform/test-only/handlebars-model/:formTemplateId/:formId            uk.gov.hmrc.gform.testonly.TestOnlyController.renderHandlebarModel(formTemplateId: FormTemplateId, formId: FormId)
 POST        /gform/test-only/:formTemplateId/:formId/:destinationId              uk.gov.hmrc.gform.testonly.TestOnlyController.renderHandlebarPayload(formTemplateId: FormTemplateId, destinationId: DestinationId, formId: FormId)
 
 GET           /gform/test-only/remove-templates                                  uk.gov.hmrc.gform.testonly.TestOnlyController.removeTemplates()

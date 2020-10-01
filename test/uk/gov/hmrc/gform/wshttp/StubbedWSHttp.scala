@@ -17,7 +17,6 @@
 package uk.gov.hmrc.gform.wshttp
 
 import akka.actor.{ ActorSystem, Terminated }
-import akka.stream.ActorMaterializer
 import com.typesafe.config.Config
 import play.api.libs.ws.WSClient
 import uk.gov.hmrc.http.hooks.HttpHook
@@ -30,7 +29,6 @@ import scala.concurrent.Future
 //Don't use it on production ('ws.close()' logic is missing)
 object TestWSHttp extends WSHttp {
   private implicit lazy val s: ActorSystem = ActorSystem()
-  private implicit lazy val mat: ActorMaterializer = ActorMaterializer()
 
   def stop(): Future[Terminated] = s.terminate()
 

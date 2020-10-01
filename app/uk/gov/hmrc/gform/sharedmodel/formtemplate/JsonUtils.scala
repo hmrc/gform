@@ -19,7 +19,6 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import cats.data.NonEmptyList
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
-import uk.gov.hmrc.mongo.json.JsonExtensions
 
 import scala.reflect.runtime.universe.TypeTag
 
@@ -55,6 +54,13 @@ trait JsonUtils {
   def formatMap[A, B: Format](stringToA: String => A, aToString: A => String): Format[Map[A, B]] =
     implicitly[Format[Map[String, B]]].inmap(_.map {
       case (k, v) => stringToA(k) -> v
+    }, _.map {
+      case (k, v) => aToString(k) -> v
+    })
+
+  def formatMapO[A, B: Format](stringToA: String => Option[A], aToString: A => String): Format[Map[A, B]] =
+    implicitly[Format[Map[String, B]]].inmap(_.flatMap {
+      case (k, v) => stringToA(k).fold(Map.empty[A, B])(s => Map(s -> v))
     }, _.map {
       case (k, v) => aToString(k) -> v
     })

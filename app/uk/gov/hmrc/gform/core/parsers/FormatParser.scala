@@ -52,12 +52,10 @@ object FormatParser {
   }
 
   lazy val dateConstraint: Parser[DateConstraint] = {
-    beforeOrAfter ~ exactDateExpr ~ offsetExpression ^^ { (loc, beforeOrAfter, dateExpr, offset) =>
+    beforeAfterPreciselyParser ~ exactDateExpr ~ offsetExpression ^^ { (loc, beforeOrAfter, dateExpr, offset) =>
       DateConstraint(beforeOrAfter, dateExpr, offset)
-    } | beforeOrAfter ~ exactDateExpr ^^ { (loc, beforeOrAfter, dateExpr) =>
+    } | beforeAfterPreciselyParser ~ exactDateExpr ^^ { (loc, beforeOrAfter, dateExpr) =>
       DateConstraint(beforeOrAfter, dateExpr, OffsetDate(0))
-    } | "precisely" ~ abstractDateExpr ^^ { (loc, _, dateExpr) =>
-      DateConstraint(Precisely, dateExpr, OffsetDate(0))
     }
   }
 
@@ -65,34 +63,24 @@ object FormatParser {
     AnyDate
   }
 
-  lazy val beforeOrAfter: Parser[BeforeAfterPrecisely] = {
-    "after" ^^ { (loc, after) =>
+  lazy val beforeAfterPreciselyParser: Parser[BeforeAfterPrecisely] = {
+    "after" ^^ { (loc, _) =>
       After
-    } | "before" ^^ { (loc, before) =>
+    } | "before" ^^ { (loc, _) =>
       Before
+    } | "precisely" ^^ { (loc, _) =>
+      Precisely
     }
-
   }
 
   lazy val exactDateExpr: Parser[DateConstraintInfo] = {
     "today" ^^ { (loc, today) =>
       Today
-    } | exactYearParserWithNextAndPrevious ~ delimiter ~ exactMonthParser ~ delimiter ~ exactDayParserWithFirstAndLastDay ^^ {
-      (_, year, _, month, _, day) =>
-        ConcreteDate(year, ExactMonth(month), day)
+    } | yearParser ~ delimiter ~ monthParser ~ delimiter ~ dayParser ^^ { (_, year, _, month, _, day) =>
+      ConcreteDate(year, month, day)
     } | "${" ~ alphabeticOnly ~ "}" ^^ { (_, _, field, _) =>
       DateField(FormComponentId(field))
     }
-  }
-
-  lazy val abstractDateExpr: Parser[DateConstraintInfo] = {
-    yearParser ~ monthDay ^^ { (loc, year, month, day) =>
-      ConcreteDate(year, month, day)
-    }
-  }
-
-  lazy val contextField: Parser[String] = alphabeticOnly ^^ { (loc, fn) =>
-    fn
   }
 
   lazy val alphabeticOnly: Parser[String] = """\w+""".r ^^ { (loc, str) =>

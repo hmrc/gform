@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
-import play.api.libs.json.{ JsDefined, JsError, JsResult, JsString, JsSuccess, JsUndefined, Reads }
+import play.api.libs.json.{ JsDefined, JsError, JsString, JsSuccess, JsUndefined, Reads }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Email, EmailVerifiedBy, FormComponentId, TextConstraint }
 import uk.gov.hmrc.gform.sharedmodel.EmailVerifierService
 

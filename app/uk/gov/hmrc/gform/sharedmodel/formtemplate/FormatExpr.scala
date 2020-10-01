@@ -69,31 +69,35 @@ sealed trait ExactParameter
 sealed trait DateParameter
 
 sealed trait Year extends DateParameter
-case object Next extends Year with ExactParameter
-case object Previous extends Year with ExactParameter
-case object AnyYear extends Year
-case class ExactYear(year: Int) extends Year
 
 object Year {
   implicit val format: OFormat[Year] = derived.oformat()
+
+  case object Next extends Year with ExactParameter
+  case object Previous extends Year with ExactParameter
+  case object Any extends Year
+  case class Exact(year: Int) extends Year with ExactParameter
 }
 
 sealed trait Month extends DateParameter
-case object AnyMonth extends Month
-case class ExactMonth(month: Int) extends Month with ExactParameter
 
 object Month {
   implicit val format: OFormat[Month] = derived.oformat()
+
+  case object Any extends Month
+  case class Exact(month: Int) extends Month with ExactParameter
+
 }
 
 sealed trait Day extends DateParameter
-case object AnyDay extends Day
-case class ExactDay(day: Int) extends Day with ExactParameter
-case object FirstDay extends Day with ExactParameter
-case object LastDay extends Day with ExactParameter
 
 object Day {
   implicit val format: OFormat[Day] = derived.oformat()
+
+  case object Any extends Day
+  case class Exact(day: Int) extends Day with ExactParameter
+  case object First extends Day with ExactParameter
+  case object Last extends Day with ExactParameter
 }
 
 sealed trait DateConstraintInfo

@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.booleanParser.booleanExprParser
 
-case class ValidIf(expr: BooleanExpr)
+case class ValidIf(booleanExpr: BooleanExpr)
 object ValidIf {
 
   private val templateReads: Reads[ValidIf] = Reads(json => booleanExprParser(json).map(ValidIf.apply))

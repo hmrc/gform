@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.gform.submission.destinations
 
-import cats.data.EitherT
 import java.util.UUID
 
 import cats.instances.future._
@@ -25,15 +24,12 @@ import cats.syntax.eq._
 import cats.syntax.flatMap._
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.{ ArrayNode, TextNode }
-import play.api.Logger
 import play.api.libs.json._
-import scala.concurrent.Future
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.logging.Loggers
 import uk.gov.hmrc.gform.repo.RepoAlgebra
-import uk.gov.hmrc.gform.sharedmodel.form.FormIdData
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, HandlebarsTemplateProcessorModel }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplate }
 import uk.gov.hmrc.gform.sharedmodel.{ PdfHtml, SubmissionRef }
@@ -80,7 +76,7 @@ class RepoDestinationAuditer(
       } yield ()
   }
 
-  private def apply(audit: DestinationAudit)(implicit hc: HeaderCarrier): FOpt[Unit] =
+  private def apply(audit: DestinationAudit): FOpt[Unit] =
     success(Loggers.destinations.info(s"Destination audit: ${DestinationAudit.format.writes(audit)}")) >>
       auditRepository.upsert(audit) >>
       success(())
@@ -140,11 +136,11 @@ class RepoDestinationAuditer(
     model: HandlebarsTemplateProcessorModel): List[String] = {
     import shapeless.syntax.typeable._
 
-    import scala.collection.JavaConversions._
+    import scala.collection.JavaConverters._
 
     def extractValuesFromTextOrArrayNode(node: JsonNode): List[String] =
       node.cast[TextNode].toList.map(_.asText) :::
-        node.cast[ArrayNode].toList.flatMap(n => n.elements.toList.flatMap(extractValuesFromTextOrArrayNode))
+        node.cast[ArrayNode].toList.flatMap(n => n.elements.asScala.flatMap(extractValuesFromTextOrArrayNode))
 
     def extractValuesForFormComponent(id: FormComponentId): List[String] =
       Option(model.model.get(id.value)).toList.flatMap(extractValuesFromTextOrArrayNode)
@@ -152,7 +148,7 @@ class RepoDestinationAuditer(
     template.parentFormSubmissionRefs.flatMap(extractValuesForFormComponent)
   }
 
-  private def findOrInsertSummaryHtml(summaryHtml: PdfHtml)(implicit hc: HeaderCarrier): FOpt[SummaryHtmlId] =
+  private def findOrInsertSummaryHtml(summaryHtml: PdfHtml): FOpt[SummaryHtmlId] =
     findSummaryHtml(summaryHtml)
       .flatMap(_.fold(insertSummaryHtml(summaryHtml)) { _.id.pure[FOpt] })
 

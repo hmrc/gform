@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 import org.scalacheck.Gen
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ After, AnyDate, AnyDay, AnyMonth, AnyYear, BasicText, Before, BeforeAfterPrecisely, ChildBenefitNumber, CompanyRegistrationNumber, ConcreteDate, CountryCode, DateConstraint, DateConstraintInfo, DateConstraintType, DateConstraints, DateField, EORI, Email, ExactDay, ExactMonth, ExactYear, FirstDay, LastDay, NINO, Next, NonUkCountryCode, Number, OffsetDate, PositiveNumber, Precisely, Previous, RoundingMode, ShortText, Sterling, TelephoneNumber, TextConstraint, TextExpression, TextWithRestrictions, Today, UTR, UkBankAccountNumber, UkEORI, UkSortCodeFormat, UkVrn }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ After, AnyDate, BasicText, Before, BeforeAfterPrecisely, ChildBenefitNumber, CompanyRegistrationNumber, ConcreteDate, CountryCode, DateConstraint, DateConstraintInfo, DateConstraintType, DateConstraints, DateField, Day, EORI, Email, Month, NINO, NonUkCountryCode, Number, OffsetDate, PositiveNumber, Precisely, RoundingMode, ShortText, Sterling, TelephoneNumber, TextConstraint, TextWithRestrictions, Today, UTR, UkBankAccountNumber, UkEORI, UkSortCodeFormat, UkVrn, Year }
 
 trait FormatExprGen {
   def numberGen: Gen[Number] =
@@ -86,21 +86,19 @@ trait FormatExprGen {
     Gen.const(ChildBenefitNumber)
   )
 
-  def textExpressionGen: Gen[TextExpression] = ExprGen.exprGen().map(TextExpression(_))
-
   def beforeOrAfterOrPreciselyGen: Gen[BeforeAfterPrecisely] = Gen.oneOf(Before, After, Precisely)
 
-  def exactYearGen: Gen[ExactYear] = Gen.posNum[Int].map(ExactYear)
+  def exactYearGen: Gen[Year.Exact] = Gen.posNum[Int].map(Year.Exact)
 
-  def exactMonthGen: Gen[ExactMonth] = Gen.posNum[Int].map(ExactMonth)
+  def exactMonthGen: Gen[Month.Exact] = Gen.posNum[Int].map(Month.Exact)
 
-  def exactDayGen: Gen[ExactDay] = Gen.posNum[Int].map(ExactDay)
+  def exactDayGen: Gen[Day.Exact] = Gen.posNum[Int].map(Day.Exact)
 
   def concreteDateGen: Gen[ConcreteDate] =
     for {
-      year  <- Gen.oneOf(exactYearGen, Gen.const(AnyYear), Gen.const(Next), Gen.const(Previous))
-      month <- Gen.oneOf(exactMonthGen, Gen.const(AnyMonth))
-      day   <- Gen.oneOf(exactDayGen, Gen.const(AnyDay), Gen.const(FirstDay), Gen.const(LastDay))
+      year  <- Gen.oneOf(exactYearGen, Gen.const(Year.Any), Gen.const(Year.Next), Gen.const(Year.Previous))
+      month <- Gen.oneOf(exactMonthGen, Gen.const(Month.Any))
+      day   <- Gen.oneOf(exactDayGen, Gen.const(Day.Any), Gen.const(Day.First), Gen.const(Day.Last))
     } yield ConcreteDate(year, month, day)
 
   def dateFieldGen: Gen[DateField] = FormComponentGen.formComponentIdGen.map(DateField)

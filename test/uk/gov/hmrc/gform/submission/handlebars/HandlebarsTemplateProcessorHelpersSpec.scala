@@ -23,7 +23,6 @@ import cats.data.NonEmptyList
 import cats.syntax.eq._
 import com.fasterxml.jackson.databind.JsonNode
 import org.scalacheck.Gen
-import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.{ PdfHtml, SubmissionRef }

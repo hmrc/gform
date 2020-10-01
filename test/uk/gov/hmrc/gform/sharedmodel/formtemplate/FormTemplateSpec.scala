@@ -17,10 +17,8 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
-import play.api.libs.json.{ JsError, JsSuccess }
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, DestinationsGen, FormTemplateGen }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.FormTemplateGen
 
 class FormTemplateSpec extends Spec with ScalaCheckDrivenPropertyChecks {
   "FormTemplate" should "round trip derived JSON" in {

@@ -29,7 +29,7 @@ case object Validator {
   private val templateReads: Reads[Validator] = Reads { json =>
     (json \ "validatorName").as[String] match {
       case "hmrcRosmRegistrationCheck" => json.validate[HmrcRosmRegistrationCheckValidator]
-      case "bankAccountModulusCheck"   => json.validate[BankAccoutnModulusCheck]
+      case "bankAccountModulusCheck"   => json.validate[BankAccountModulusCheck]
       case unsupported                 => JsError("Unsupported '" + unsupported + "' kind of validator.")
     }
   }
@@ -54,14 +54,14 @@ object HmrcRosmRegistrationCheckValidator {
   implicit val format: OFormat[HmrcRosmRegistrationCheckValidator] = OFormatWithTemplateReadFallback(readCustom)
 }
 
-case class BankAccoutnModulusCheck(errorMessage: SmartString, accountNumber: FormCtx, sortCode: FormCtx)
+case class BankAccountModulusCheck(errorMessage: SmartString, accountNumber: FormCtx, sortCode: FormCtx)
     extends Validator
 
-object BankAccoutnModulusCheck {
-  private val readCustom: Reads[BankAccoutnModulusCheck] =
+object BankAccountModulusCheck {
+  private val readCustom: Reads[BankAccountModulusCheck] =
     ((JsPath \ "errorMessage").read[SmartString] and
       (JsPath \ "parameters" \ "accountNumber").read(FormCtx.readsForTemplateJson) and
-      (JsPath \ "parameters" \ "sortCode").read(FormCtx.readsForTemplateJson))(BankAccoutnModulusCheck.apply _)
+      (JsPath \ "parameters" \ "sortCode").read(FormCtx.readsForTemplateJson))(BankAccountModulusCheck.apply _)
 
-  implicit val format: OFormat[BankAccoutnModulusCheck] = OFormatWithTemplateReadFallback(readCustom)
+  implicit val format: OFormat[BankAccountModulusCheck] = OFormatWithTemplateReadFallback(readCustom)
 }

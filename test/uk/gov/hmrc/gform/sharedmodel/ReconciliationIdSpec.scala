@@ -26,8 +26,6 @@ class ReconciliationIdSpec extends Spec {
 
   "ReconciliationId.create" should "generate reconciliationId based on submissionRef and current time" in {
 
-    val rnd = new scala.util.Random(123)
-
     implicit val now = Now(LocalDateTime.of(2017, 1, 31, 13, 53, 45))
 
     val submissionRef = SubmissionRef(envelopeId)

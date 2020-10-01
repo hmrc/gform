@@ -35,10 +35,10 @@ package object formtemplate {
         case s: Section.AddToList        => s.copy(title = title)
       }
 
-    def updateShortName(shortName: Option[SmartString]): Section =
+    def updateShortName(shortName: SmartString): Section =
       section match {
-        case s: Section.NonRepeatingPage => s.copy(page = s.page.copy(shortName = shortName))
-        case s: Section.RepeatingPage    => s.copy(page = s.page.copy(shortName = shortName))
+        case s: Section.NonRepeatingPage => s.copy(page = s.page.copy(shortName = Some(shortName)))
+        case s: Section.RepeatingPage    => s.copy(page = s.page.copy(shortName = Some(shortName)))
         case s: Section.AddToList        => s.copy(shortName = shortName)
       }
 

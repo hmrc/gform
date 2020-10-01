@@ -254,10 +254,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
     f(sideEffect, verifySideEffect, templateRaw)
   }
 
-  private def validRequestBodyWithDestinations(
-    authModule: String,
-    identifier: String,
-    serviceId: Option[String] = Some(""""serviceId": "Id",""")) =
+  private def validRequestBodyWithDestinations(authModule: String, identifier: String, serviceId: Option[String]) =
     s"""{
        |  "_id": "newfield",
        |  "formName": "Testing section change label tttt",
@@ -315,10 +312,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
        |  }
        |}""".stripMargin
 
-  private def validRequestBodyWithPrintSection(
-    authModule: String,
-    identifier: String,
-    serviceId: Option[String] = Some(""""serviceId": "Id",""")) =
+  private def validRequestBodyWithPrintSection(authModule: String, identifier: String, serviceId: Option[String]) =
     s"""{
        |  "_id": "newfield",
        |  "formName": "Testing section change label tttt",
@@ -367,7 +361,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
   private def validRequestBodyWithPrintSectionAndEmptyPdfHeaderFooter(
     authModule: String,
     identifier: String,
-    serviceId: Option[String] = Some(""""serviceId": "Id",""")) =
+    serviceId: Option[String]) =
     s"""{
        |  "_id": "newfield",
        |  "formName": "Testing section change label tttt",
@@ -416,7 +410,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
   private def validRequestBodyWithPrintSectionAndNoPdfNotification(
     authModule: String,
     identifier: String,
-    serviceId: Option[String] = Some(""""serviceId": "Id",""")) =
+    serviceId: Option[String]) =
     s"""{
        |  "_id": "newfield",
        |  "formName": "Testing section change label tttt",
@@ -460,7 +454,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
   private def validRequestBodyWithPrintSectionWithEmptyPdfNotification(
     authModule: String,
     identifier: String,
-    serviceId: Option[String] = Some(""""serviceId": "Id",""")) =
+    serviceId: Option[String]) =
     s"""{
        |  "_id": "newfield",
        |  "formName": "Testing section change label tttt",
@@ -509,7 +503,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
   private def invalidRequestBodyWithNoDestinationsOrPrintSection(
     authModule: String,
     identifier: String,
-    serviceId: Option[String] = Some(""""serviceId": "Id",""")) =
+    serviceId: Option[String]) =
     s"""{
        |  "_id": "newfield",
        |  "formName": "Testing section change label tttt",
@@ -552,7 +546,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
   private def invalidRequestBodyWithBothDestinationsAndPrintSections(
     authModule: String,
     identifier: String,
-    serviceId: Option[String] = Some(""""serviceId": "Id",""")) =
+    serviceId: Option[String]) =
     s"""{
        |  "_id": "newfield",
        |  "formName": "Testing section change label tttt",
@@ -606,7 +600,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
   private def invalidRequestBodyWithDestinationsWithoutAcknowledgementSection(
     authModule: String,
     identifier: String,
-    serviceId: Option[String] = Some(""""serviceId": "Id",""")) =
+    serviceId: Option[String]) =
     s"""{
        |  "_id": "newfield",
        |  "formName": "Testing section change label tttt",
@@ -652,7 +646,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
   private def invalidRequestBodyWithDestinationsWithoutDeclarationSection(
     authModule: String,
     identifier: String,
-    serviceId: Option[String] = Some(""""serviceId": "Id",""")) =
+    serviceId: Option[String]) =
     s"""{
        |  "_id": "newfield",
        |  "formName": "Testing section change label tttt",
@@ -708,7 +702,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
   private def invalidRequestBodyWithPrintSectionAndAcknowledgementSection(
     authModule: String,
     identifier: String,
-    serviceId: Option[String] = Some(""""serviceId": "Id",""")) =
+    serviceId: Option[String]) =
     s"""{
        |  "_id": "newfield",
        |  "formName": "Testing section change label tttt",
@@ -755,7 +749,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
   private def invalidRequestBodyWithPrintSectionAndDeclarationSection(
     authModule: String,
     identifier: String,
-    serviceId: Option[String] = Some(""""serviceId": "Id",""")) =
+    serviceId: Option[String]) =
     s"""{
        |  "_id": "newfield",
        |  "formName": "Testing section change label tttt",

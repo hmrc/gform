@@ -42,7 +42,7 @@ trait WSHttp
     body: ByteString,
     headers: Seq[(String, String)],
     contentType: String //TODO: change type to ContentType
-  )(implicit hc: HeaderCarrier, ec: ExecutionContext, rds: HttpReads[O]): Future[HttpResponse] = {
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
 
     val source: Source[FilePart[Source[ByteString, NotUsed]], NotUsed] = Source(
       FilePart(fileName, fileName, Some(contentType), Source.single(body)) :: Nil)

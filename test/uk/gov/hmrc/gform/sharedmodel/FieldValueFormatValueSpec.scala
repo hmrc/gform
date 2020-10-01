@@ -33,7 +33,7 @@ class FieldValueFormatValueSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("sum"),
-        Text(ShortText.default, Add(FormCtx("amountA"), FormCtx("amountB"))),
+        Text(ShortText.default, Add(FormCtx(FormComponentId("amountA")), FormCtx(FormComponentId("amountB")))),
         toSmartString("Label"),
         None,
         None,

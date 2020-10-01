@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
-import cats.syntax.either._
 import play.api.libs.json.{ JsDefined, JsString, JsUndefined, JsValue }
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState

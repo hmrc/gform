@@ -17,7 +17,6 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import cats.data.NonEmptyList
-import julienrf.json.derived
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.SmartString
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils.nelFormat
@@ -34,24 +33,24 @@ object Section {
     override def expandedFormComponents: List[FormComponent] = page.expandedFormComponents
   }
 
-  case class RepeatingPage(page: Page, repeats: TextExpression) extends Section {
+  case class RepeatingPage(page: Page, repeats: Expr) extends Section {
     override def title: SmartString = page.title
     override def expandedFormComponents: List[FormComponent] = page.expandedFormComponents
   }
 
   case class AddToList(
     title: SmartString,
-    description: Option[SmartString],
-    shortName: Option[SmartString],
+    description: SmartString,
+    shortName: SmartString,
     includeIf: Option[IncludeIf],
-    repeatsMax: Option[TextExpression],
-    pages: NonEmptyList[Page])
-      extends Section {
+    repeatsMax: Option[Expr],
+    pages: NonEmptyList[Page],
+    addAnotherQuestion: FormComponent
+  ) extends Section {
     override lazy val expandedFormComponents: List[FormComponent] = pages.toList.flatMap(_.expandedFormComponents)
   }
 
   implicit val format: OFormat[Section] = {
-    implicit val derivedFormat: OFormat[Section] = derived.oformat()
     OFormatWithTemplateReadFallback(SectionTemplateReads.reads)
   }
 }

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 import org.scalacheck.Gen
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ BankAccoutnModulusCheck, HmrcRosmRegistrationCheckValidator, Validator }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ BankAccountModulusCheck, HmrcRosmRegistrationCheckValidator, Validator }
 import ExprGen.formCtxGen
 import SmartStringGen.smartStringGen
 
@@ -29,12 +29,12 @@ trait ValidatorGen {
       postcode     <- formCtxGen
     } yield HmrcRosmRegistrationCheckValidator(errorMessage, regime, utr, postcode)
 
-  def bankAccountModulusCheckGen: Gen[BankAccoutnModulusCheck] =
+  def bankAccountModulusCheckGen: Gen[BankAccountModulusCheck] =
     for {
       errorMessage  <- smartStringGen
       sortCode      <- formCtxGen
       accountNumber <- formCtxGen
-    } yield BankAccoutnModulusCheck(errorMessage, accountNumber, sortCode)
+    } yield BankAccountModulusCheck(errorMessage, accountNumber, sortCode)
 
   def validatorGen: Gen[Validator] = Gen.oneOf(hMRCUTRPostcodeCheckValidatorGen, bankAccountModulusCheckGen)
 }

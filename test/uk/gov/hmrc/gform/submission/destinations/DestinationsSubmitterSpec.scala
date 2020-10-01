@@ -23,7 +23,7 @@ import org.scalacheck.Gen
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.libs.json._
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormData }
+import uk.gov.hmrc.gform.sharedmodel.form.FormData
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, Destinations, HandlebarsDestinationResponse, HandlebarsTemplateProcessorModel }
@@ -173,9 +173,6 @@ class DestinationsSubmitterSpec
     formTemplate.copy(
       destinations =
         Destinations.DestinationList(NonEmptyList.of(destination1, moreDestinations: _*), ackSection, decSection))
-
-  private def exampleTemplateWithDestinations(destinations: Destinations): FormTemplate =
-    formTemplate.copy(destinations = destinations)
 
   case class SubmitterParts[F[_]: Applicative](
     submitter: DestinationsSubmitter[F],

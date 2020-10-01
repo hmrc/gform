@@ -100,9 +100,9 @@ object FormTemplateValidator {
   def validateEnrolmentSection(formTemplate: FormTemplate): ValidationResult =
     formTemplate.authConfig match {
       case HasEnrolmentSection(_, enrolmentSection, _) =>
-        val fcIds = enrolmentSection.fields.map(_.id).map(_.value).toSet
-        val ctxs = enrolmentSection.identifiers.map(_.value.value).toList.toSet ++ enrolmentSection.verifiers
-          .map(_.value.value)
+        val fcIds = enrolmentSection.fields.map(_.id).toSet
+        val ctxs = enrolmentSection.identifiers.map(_.value.formComponentId).toList.toSet ++ enrolmentSection.verifiers
+          .map(_.value.formComponentId)
           .toSet
         ctxs
           .subsetOf(fcIds)
@@ -198,7 +198,7 @@ object FormTemplateValidator {
           .zipWithIndex
           .flatMap {
             case (page: Page, idx) =>
-              page.includeIf.map(i => boolean(i.expr, idx)).getOrElse(List(Valid))
+              page.includeIf.map(i => boolean(i.booleanExpr, idx)).getOrElse(List(Valid))
           })
   }
 
@@ -220,12 +220,10 @@ object FormTemplateValidator {
       case HmrcRosmRegistrationCheck(_) => Valid
       case FormCtx(value) =>
         fieldNamesIds
-          .map(_.value)
           .contains(value)
           .validationResult(s"Form field '$value' is not defined in form template.")
       case ParamCtx(_)        => Valid
       case AuthCtx(_)         => Valid
-      case EeittCtx(_)        => Valid
       case UserCtx(_)         => Valid
       case Constant(_)        => Valid
       case Value              => Valid
@@ -239,7 +237,7 @@ object FormTemplateValidator {
       val ids = fieldIds(formTemplate.sections)
       emailParams
         .collect {
-          case EmailParameter(_, value: FormCtx) if !ids.contains(value.toFieldId) => value.toFieldId
+          case EmailParameter(_, FormCtx(value)) if !ids.contains(value) => value
         } match {
         case Nil => Valid
         case invalidFields =>
@@ -251,9 +249,9 @@ object FormTemplateValidator {
   def validateDates(formTemplate: FormTemplate): ValidationResult =
     getAllDates(formTemplate)
       .map {
-        case ConcreteDate(ExactYear(year), ExactMonth(month), ExactDay(day)) =>
+        case ConcreteDate(Year.Exact(year), Month.Exact(month), Day.Exact(day)) =>
           validateYearMonthAndDay(year, month, day)
-        case ConcreteDate(AnyYear, ExactMonth(month), ExactDay(day)) =>
+        case ConcreteDate(Year.Any, Month.Exact(month), Day.Exact(day)) =>
           val leapYear = 2020 //makes 29th of feb valid when we dont know the year
           validateYearMonthAndDay(leapYear, month, day)
         case _ => ""
@@ -274,7 +272,7 @@ object FormTemplateValidator {
     case Subtraction(left, right) => extractFcIds(left) ::: extractFcIds(right)
     case Multiply(left, right)    => extractFcIds(left) ::: extractFcIds(right)
     case Sum(field1)              => extractFcIds(field1)
-    case id: FormCtx              => List(id.toFieldId)
+    case FormCtx(fcId)            => List(fcId)
     case _                        => Nil
   }
 

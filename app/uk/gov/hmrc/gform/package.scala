@@ -23,7 +23,6 @@ import scala.annotation.tailrec
 package object gform {
   type Possible[T] = Either[String, T]
   implicit val possibleMonadError: MonadError[Possible, String] = new MonadError[Possible, String] {
-    import cats.syntax.either._
     override def flatMap[A, B](fa: Possible[A])(f: A => Possible[B]): Possible[B] = fa.flatMap(f)
 
     @tailrec

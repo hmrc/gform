@@ -22,8 +22,6 @@ import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.core.{ Invalid, Valid }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.PrimitiveGen._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators._
-import DestinationGen._
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 
 class DestinationsValidatorSpec extends Spec with ScalaCheckDrivenPropertyChecks {

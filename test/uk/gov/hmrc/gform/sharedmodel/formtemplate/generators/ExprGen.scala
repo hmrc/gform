@@ -21,8 +21,6 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 trait ExprGen {
   def authInfoGen: Gen[AuthInfo] = Gen.oneOf(GG, PayeNino, SaUtr, CtUtr)
 
-  def eeittGen: Gen[Eeitt] = Gen.oneOf(BusinessUser, Agent, UserId)
-
   def serviceNameGen: Gen[ServiceName] = PrimitiveGen.nonEmptyAlphaNumStrGen.map(ServiceName(_))
 
   def identifierNameGen: Gen[IdentifierName] = PrimitiveGen.nonEmptyAlphaNumStrGen.map(IdentifierName(_))
@@ -56,11 +54,9 @@ trait ExprGen {
   def sumGen(maxDepth: Int): Gen[Sum] =
     exprGen(maxDepth - 1).map(Sum)
 
-  def formCtxGen: Gen[FormCtx] = PrimitiveGen.nonEmptyAlphaNumStrGen.map(FormCtx(_))
+  def formCtxGen: Gen[FormCtx] = FormComponentGen.formComponentIdGen.map(FormCtx(_))
 
   def authCtxGen: Gen[AuthCtx] = authInfoGen.map(AuthCtx)
-
-  def eeittCtxGen: Gen[EeittCtx] = eeittGen.map(EeittCtx)
 
   def userCtxGen: Gen[UserCtx] = userFieldGen.map(UserCtx)
 
@@ -70,7 +66,7 @@ trait ExprGen {
     Gen.oneOf(FormTemplateCtx(FormTemplateProp.SubmissionReference), FormTemplateCtx(FormTemplateProp.Id))
 
   def nonRecursiveExprGen: Gen[Expr] =
-    Gen.oneOf(formCtxGen, authCtxGen, eeittCtxGen, userCtxGen, constantGen, Gen.const(Value), formTemplateCtxGen)
+    Gen.oneOf(formCtxGen, authCtxGen, userCtxGen, constantGen, Gen.const(Value), formTemplateCtxGen)
 
   def recursiveExprGen(maxDepth: Int = 3): Gen[Expr] =
     Gen.oneOf(addGen(maxDepth), multiplyGen(maxDepth), subtractionGen(maxDepth), sumGen(maxDepth))

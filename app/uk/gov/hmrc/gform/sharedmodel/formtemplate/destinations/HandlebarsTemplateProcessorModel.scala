@@ -20,12 +20,12 @@ import com.fasterxml.jackson.databind.JsonNode
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.JsonNodes._
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 case class HandlebarsTemplateProcessorModel(model: JsonNode) extends AnyVal {
   def +(that: HandlebarsTemplateProcessorModel): HandlebarsTemplateProcessorModel =
     HandlebarsTemplateProcessorModel(fieldMap ++ that.fieldMap)
-  private def fieldMap: Map[String, JsonNode] = model.fields.toList.map(e => e.getKey -> e.getValue).toMap
+  private def fieldMap: Map[String, JsonNode] = model.fields.asScala.map(e => e.getKey -> e.getValue).toMap
 }
 
 object HandlebarsTemplateProcessorModel {

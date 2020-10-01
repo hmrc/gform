@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
 
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.Spec
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.TextExpression
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.DestinationGen
 
 class UploadableDestinationSpec extends Spec with ScalaCheckDrivenPropertyChecks {
@@ -122,7 +123,7 @@ class UploadableDestinationSpec extends Spec with ScalaCheckDrivenPropertyChecks
     UploadableHmrcDmsDestination(
       id,
       dmsFormId,
-      customerId,
+      TextExpression(customerId),
       classificationType,
       businessArea,
       convertSingleQuotes,
@@ -140,7 +141,7 @@ class UploadableDestinationSpec extends Spec with ScalaCheckDrivenPropertyChecks
     UploadableSubmissionConsolidator(
       id,
       projectId,
-      customerId,
+      TextExpression(customerId),
       destination.formData,
       convertSingleQuotes,
       Some(includeIf),

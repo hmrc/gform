@@ -48,7 +48,7 @@ class RepeatingComponentServiceSpec extends Spec with ExampleData {
   it should "return a dynamically created section when field to track in a NON-repeating group" in {
     val thisSection2 = `repeating section`
       .updateTitle(toSmartString("Repeating section title $n"))
-      .updateShortName(Some(toSmartString("shortName $n")))
+      .updateShortName(toSmartString("shortName $n"))
 
     val formTemplate = super.formTemplate.copy(sections = List(`section - group`, thisSection2))
 
@@ -56,7 +56,7 @@ class RepeatingComponentServiceSpec extends Spec with ExampleData {
 
     val sectionR = thisSection2
       .updateTitle(toSmartString("Repeating section title 1"))
-      .updateShortName(Some(toSmartString("shortName 1")))
+      .updateShortName(toSmartString("shortName 1"))
       .updateFields(List(textFieldDosR))
 
     val expectedList = List(`section - group`, sectionR).map(_.page)
@@ -74,7 +74,7 @@ class RepeatingComponentServiceSpec extends Spec with ExampleData {
   it should "return dynamically created sections (title and shortName text built dynamically) when field to track in a NON-repeating group, with form data" in {
     val thisSection2 = `repeating section`
       .updateTitle(toSmartString("Repeating section title $n"))
-      .updateShortName(Some(toSmartString("shortName $n")))
+      .updateShortName(toSmartString("shortName $n"))
 
     val formTemplate = super.formTemplate.copy(sections = List(`section - group`, thisSection2))
 
@@ -84,12 +84,12 @@ class RepeatingComponentServiceSpec extends Spec with ExampleData {
 
     val sectionR1 = thisSection2
       .updateTitle(toSmartString("Repeating section title 1"))
-      .updateShortName(Some(toSmartString("shortName 1")))
+      .updateShortName(toSmartString("shortName 1"))
       .updateFields(List(textFieldDos1))
 
     val sectionR2 = thisSection2
       .updateTitle(toSmartString("Repeating section title 2"))
-      .updateShortName(Some(toSmartString("shortName 2")))
+      .updateShortName(toSmartString("shortName 2"))
       .updateFields(List(textFieldDos2))
 
     val expectedList = List(`section - group`, sectionR1, sectionR2).map(_.page)

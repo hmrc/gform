@@ -16,10 +16,9 @@
 
 package uk.gov.hmrc.gform
 
-import org.scalatest.{ BeforeAndAfterAll, Suite, TestData, TestSuite }
+import org.scalatest.{ BeforeAndAfterAll, TestSuite }
 import org.scalatestplus.play.guice.GuiceOneAppPerTest
 import play.api._
-import play.api.test.Helpers._
 
 trait ApplicationComponents extends GuiceOneAppPerTest with BeforeAndAfterAll {
   this: TestSuite =>

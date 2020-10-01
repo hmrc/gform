@@ -35,10 +35,7 @@ final case class Multiply(field1: Expr, field2: Expr) extends Expr
 final case class Subtraction(field1: Expr, field2: Expr) extends Expr
 final case class Else(field1: Expr, field2: Expr) extends Expr
 final case class Sum(field1: Expr) extends Expr
-
-final case class FormCtx(value: String) extends Expr {
-  def toFieldId = FormComponentId(this.value)
-}
+final case class FormCtx(formComponentId: FormComponentId) extends Expr
 
 object FormCtx {
   lazy val readsForTemplateJson: Reads[FormCtx] = Reads {
@@ -52,7 +49,6 @@ object FormCtx {
 
 final case class ParamCtx(queryParam: QueryParam) extends Expr
 final case class AuthCtx(value: AuthInfo) extends Expr
-final case class EeittCtx(value: Eeitt) extends Expr
 final case class UserCtx(value: UserField) extends Expr
 final case class Constant(value: String) extends Expr
 final case class HmrcRosmRegistrationCheck(value: RosmProp) extends Expr
@@ -72,15 +68,6 @@ case object RosmIsAGroup extends RosmProp
 
 object RosmProp {
   implicit val format: OFormat[RosmProp] = derived.oformat()
-}
-
-sealed trait Eeitt
-final case object BusinessUser extends Eeitt
-final case object Agent extends Eeitt
-final case object UserId extends Eeitt
-
-object Eeitt {
-  implicit val format: OFormat[Eeitt] = derived.oformat()
 }
 
 sealed trait UserField

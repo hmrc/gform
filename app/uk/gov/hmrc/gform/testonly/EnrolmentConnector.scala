@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.testonly
 
-import play.api.libs.json.{ JsValue, Json }
+import play.api.libs.json.JsValue
 import uk.gov.hmrc.gform.wshttp.WSHttp
 
 import scala.concurrent.{ ExecutionContext, Future }

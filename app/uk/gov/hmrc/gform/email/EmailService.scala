@@ -16,11 +16,11 @@
 
 package uk.gov.hmrc.gform.email
 
-import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormField }
+import uk.gov.hmrc.gform.sharedmodel.form.Form
 import cats.implicits._
 import play.api.Logger
 import uk.gov.hmrc.gform.auditing.loggingHelpers
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ EmailParameter, EmailParametersRecalculated }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.EmailParametersRecalculated
 
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.http.HeaderCarrier
@@ -41,8 +41,7 @@ class EmailService(emailConnector: EmailConnector) {
   }
 
   private def sendEmailTemplate(email: String, templateId: String, emailParameters: EmailParametersRecalculated)(
-    implicit hc: HeaderCarrier,
-    mdc: ExecutionContext) =
+    implicit hc: HeaderCarrier) =
     emailConnector.sendEmail(
       new EmailTemplate(
         Seq(email),

@@ -20,14 +20,14 @@ import com.fasterxml.jackson.databind.node.{ ArrayNode, ObjectNode }
 import com.fasterxml.jackson.databind.{ JsonNode, ObjectMapper }
 import com.fasterxml.jackson.databind.node.JsonNodeFactory.{ instance => jnf }
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 object JsonNodes {
   def parseJson(json: String): JsonNode = new ObjectMapper().readTree(json)
 
   def textNode(s: String): JsonNode = jnf.textNode(s)
-  def objectNode(fields: Map[String, JsonNode]): JsonNode = new ObjectNode(jnf, fields)
-  def objectNode(fields: (String, JsonNode)*): JsonNode = new ObjectNode(jnf, fields.toMap[String, JsonNode])
-  def arrayNode(elements: List[JsonNode]): JsonNode = new ArrayNode(jnf, elements)
+  def objectNode(fields: Map[String, JsonNode]): JsonNode = new ObjectNode(jnf, fields.asJava)
+  def objectNode(fields: (String, JsonNode)*): JsonNode = new ObjectNode(jnf, fields.toMap[String, JsonNode].asJava)
+  def arrayNode(elements: List[JsonNode]): JsonNode = new ArrayNode(jnf, elements.asJava)
   def numberNode(n: Int): JsonNode = jnf.numberNode(n)
 }

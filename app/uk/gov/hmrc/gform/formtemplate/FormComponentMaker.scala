@@ -408,9 +408,6 @@ class FormComponentMaker(json: JsValue) {
                          |""".stripMargin).asLeft
   }
 
-  private def checkRanges(ranges: List[Range]): Boolean =
-    ranges.exists(r => r.startTime.time.isAfter(r.endTime.time))
-
   private final object Selections {
     def unapply(choiceExpr: Option[ValueExpr]): Option[List[Int]] =
       choiceExpr match {
@@ -433,34 +430,6 @@ class FormComponentMaker(json: JsValue) {
         case Some(OrientationFormat("horizontal"))      => Some(HorizontalOrientation)
         case Some(OrientationFormat("yesno"))           => Some(YesNoOrientation)
         case _                                          => None
-      }
-  }
-
-  private sealed trait GroupOrientation
-
-  private final case object VerticalGroupOrientation extends GroupOrientation
-  private final case object HorizontalGroupOrientation extends GroupOrientation
-
-  private final object IsGroupOrientation {
-    def unapply(orientation: Option[FormatExpr]): Option[GroupOrientation] =
-      orientation match {
-        case Some(OrientationFormat("vertical")) | None => Some(VerticalGroupOrientation)
-        case Some(OrientationFormat("horizontal"))      => Some(HorizontalGroupOrientation)
-        case _                                          => None
-      }
-  }
-
-  private sealed trait Total
-
-  private final case object TotalYes extends Total
-  private final case object TotalNo extends Total
-
-  private final object IsTotal {
-    def unapply(total: Option[String]): Option[Total] =
-      total match {
-        case Some(IsFalseish()) | None => Some(TotalNo)
-        case Some(IsTrueish())         => Some(TotalYes)
-        case _                         => None
       }
   }
 

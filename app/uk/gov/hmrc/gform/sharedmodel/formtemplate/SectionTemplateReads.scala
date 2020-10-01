@@ -59,7 +59,7 @@ object SectionTemplateReads {
       } yield Section.RepeatingPage(page, repeats)
   }
 
-  private def readRepeatsRangeOrRepeats(json: JsValue) =
+  private def readRepeatsRangeOrRepeats(json: JsValue): JsResult[Expr] =
     for {
       (oRepeatsMin, oRepeatsMax) <- readRepeatsRange(json)
       oRepeats                   <- readRepeats(json)
@@ -74,9 +74,9 @@ object SectionTemplateReads {
 
   private def readRepeatsRange(json: JsValue) =
     for {
-      repeatsMin <- (json \ "repeatsMin").validateOpt[TextExpression]
-      repeatsMax <- (json \ "repeatsMax").validateOpt[TextExpression]
+      repeatsMin <- (json \ "repeatsMin").validateOpt[TextExpression].map(_.map(_.expr))
+      repeatsMax <- (json \ "repeatsMax").validateOpt[TextExpression].map(_.map(_.expr))
     } yield (repeatsMin, repeatsMax)
 
-  private def readRepeats(json: JsValue) = (json \ "repeats").validateOpt[TextExpression]
+  private def readRepeats(json: JsValue) = (json \ "repeats").validateOpt[Expr]
 }

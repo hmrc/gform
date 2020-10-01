@@ -16,12 +16,10 @@
 
 package uk.gov.hmrc.gform
 
-import play.Mode
 import play.api.ApplicationLoader.Context
 import play.api._
 import play.api.i18n.I18nComponents
 import play.api.mvc.EssentialFilter
-import play.server.Server
 import uk.gov.hmrc.gform.wshttp.{ TestWSHttp, WSHttp, WSHttpModule }
 
 class StubApplicationLoader extends play.api.ApplicationLoader {
@@ -44,15 +42,3 @@ class StubApplicationModule(context: Context) extends BuiltInComponentsFromConte
 
   override def httpFilters: Seq[EssentialFilter] = Seq.empty
 }
-
-trait StubServer {
-  lazy val env: Environment = Environment.simple(mode = play.api.Mode.Test)
-  val ctx = ApplicationLoader.createContext(env)
-  val stubbedModule = new StubApplicationModule(ctx)
-  lazy val port = 9199
-  lazy val baseUrl = s"http://localhost:$port"
-
-  Server.forRouter(stubbedModule.router.asJava, Mode.TEST, port)
-}
-
-object StubServer extends StubServer

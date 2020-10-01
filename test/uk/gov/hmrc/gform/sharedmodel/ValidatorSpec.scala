@@ -40,21 +40,21 @@ class ValidatorSpec extends Spec {
       .as[Validator] shouldBe hMRCUTRPostcodeCheckValidator
   }
 
-  "BankAccoutnModulusValidator" should "Write and Read default JSON correctly" in {
-    verifyRoundTrip(bankAccoutnModulusCheckValidator)
+  "BankAccountModulusValidator" should "Write and Read default JSON correctly" in {
+    verifyRoundTrip(bankAccountModulusCheckValidator)
   }
 
   it should "parse custom JSON correctly" in {
     Json
       .obj(
         "validatorName" -> "bankAccountModulusCheck",
-        "errorMessage"  -> bankAccoutnModulusCheckValidator.errorMessage,
+        "errorMessage"  -> bankAccountModulusCheckValidator.errorMessage,
         "parameters" -> Json.obj(
-          "accountNumber" -> customFormCtxJson(bankAccoutnModulusCheckValidator.accountNumber),
-          "sortCode"      -> customFormCtxJson(bankAccoutnModulusCheckValidator.sortCode)
+          "accountNumber" -> customFormCtxJson(bankAccountModulusCheckValidator.accountNumber),
+          "sortCode"      -> customFormCtxJson(bankAccountModulusCheckValidator.sortCode)
         )
       )
-      .as[Validator] shouldBe bankAccoutnModulusCheckValidator
+      .as[Validator] shouldBe bankAccountModulusCheckValidator
   }
 
   private def verifyRoundTrip[T <: Validator: OFormat](t: T) = {
@@ -63,5 +63,5 @@ class ValidatorSpec extends Spec {
     validator shouldBe t
   }
 
-  private def customFormCtxJson(fc: FormCtx): JsString = JsString(s"""$${${fc.value}}""")
+  private def customFormCtxJson(fc: FormCtx): JsString = JsString(s"""$${${fc.formComponentId.value}}""")
 }

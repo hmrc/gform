@@ -17,7 +17,6 @@
 package uk.gov.hmrc.gform.connectors
 
 import play.api.Logger
-import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.wshttp.WSHttp
 
 import scala.concurrent.{ ExecutionContext, Future }

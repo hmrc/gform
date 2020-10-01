@@ -29,7 +29,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.Submi
 import uk.gov.hmrc.gform.sharedmodel.notifier.{ NotifierPersonalisationFieldId, NotifierTemplateId }
 
 sealed trait DestinationWithCustomerId {
-  def customerId(): TextExpression
+  def customerId(): Expr
 }
 
 sealed trait Destination extends Product with Serializable {
@@ -42,7 +42,7 @@ object Destination {
   case class HmrcDms(
     id: DestinationId,
     dmsFormId: String,
-    customerId: TextExpression,
+    customerId: Expr,
     classificationType: String,
     businessArea: String,
     includeIf: String,
@@ -78,7 +78,7 @@ object Destination {
   case class SubmissionConsolidator(
     id: DestinationId,
     projectId: ProjectId,
-    customerId: TextExpression,
+    customerId: Expr,
     formData: Option[String],
     includeIf: String,
     failOnError: Boolean)
@@ -113,8 +113,6 @@ object Destination {
     implicit val personalisationReads =
       JsonUtils.formatMap[NotifierPersonalisationFieldId, FormComponentId](NotifierPersonalisationFieldId(_), _.value)
 
-    implicit def d: OFormat[Destination] = derived.oformat()
-
     OFormatWithTemplateReadFallback(
       ADTFormat.adtRead[Destination](
         typeDiscriminatorFieldName,
@@ -148,7 +146,7 @@ case class UploadableHmrcDmsDestination(
       Destination.HmrcDms(
         id,
         dmsFormId,
-        customerId,
+        customerId.expr,
         classificationType,
         businessArea,
         cii.getOrElse(true.toString),
@@ -183,7 +181,7 @@ case class UploadableSubmissionConsolidator(
       SubmissionConsolidator(
         id,
         projectId,
-        customerId,
+        customerId.expr,
         formData,
         cii.getOrElse(true.toString),
         failOnError.getOrElse(true))

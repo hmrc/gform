@@ -60,7 +60,7 @@ class FUInterceptorController(
     Ok(Json.toJson(predefinedResponses))
   }
 
-  def getPredefinedResponses = Action { implicit r =>
+  def getPredefinedResponses = Action { _ =>
     Ok(Json.toJson(predefinedResponses))
   }
 

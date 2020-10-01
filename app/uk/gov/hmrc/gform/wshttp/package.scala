@@ -16,14 +16,13 @@
 
 package uk.gov.hmrc.gform
 
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
+import uk.gov.hmrc.http.HttpResponse
 
 import scala.concurrent.{ ExecutionContext, Future }
 
 package object wshttp {
   implicit class FutureHttpResponseSyntax(fr: Future[HttpResponse]) {
-    def failWithNonSuccessStatusCodes(
-      url: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] =
+    def failWithNonSuccessStatusCodes(url: String)(implicit ec: ExecutionContext): Future[HttpResponse] =
       fr.flatMap { response =>
         val status = response.status
         if (status >= 200 && status < 300) {

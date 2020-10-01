@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.testonly
 import cats.data.EitherT
 import cats.instances.option._
 import cats.syntax.eq._
+import com.fasterxml.jackson.databind.JsonNode
 import com.typesafe.config.{ ConfigFactory, ConfigRenderOptions }
 import java.time.LocalDateTime
 
@@ -75,6 +76,34 @@ class TestOnlyController(
           case t: Throwable =>
             Result(header = ResponseHeader(500, Map.empty), body = HttpEntity.Strict(ByteString(t.toString), None))
         }
+    }
+
+  def renderHandlebarModel(
+    formTemplateId: FormTemplateId,
+    formId: FormId
+  ): Action[SubmissionData] =
+    Action.async(parse.json[SubmissionData]) { implicit request =>
+      val submissionData: SubmissionData = request.body
+
+      val customerId = request.headers.get("customerId").getOrElse("")
+
+      for {
+        formTemplate <- formTemplateAlgebra.get(formTemplateId)
+        form         <- formAlgebra.get(formId)
+        submission = Submission(
+          formId,
+          LocalDateTime.now(),
+          SubmissionRef(form.envelopeId),
+          form.envelopeId,
+          0,
+          DmsMetaData(formTemplate._id, customerId)
+        )
+        model <- destinationsModelProcessorAlgebra
+                  .create(form, submissionData.variables, submissionData.pdfData, submissionData.structuredFormData)
+      } yield {
+        val jsValue: JsValue = Json.toJson[JsonNode](model.model)
+        Ok(jsValue)
+      }
     }
 
   def renderHandlebarPayload(
@@ -178,7 +207,7 @@ class TestOnlyController(
   private def fromOption[A, B](a: Option[A], s: B): EitherT[Option, B, A] = EitherT.fromOption(a, s)
 
   private lazy val formTemplates = mongo().collection[JSONCollection]("formTemplate")
-  def removeTemplates() = Action.async { implicit request =>
+  def removeTemplates() = Action.async { _ =>
     println("purging mongo database ....")
     formTemplates.drop(failIfNotFound = false).map(_ => Results.Ok("Mongo purged")).recover {
 

@@ -58,25 +58,10 @@ object BasicParsers {
       fn(month, day)
     })
 
-  def nextOrPrevious[A](string: String, fn: (Month, Day) => A): Parser[A] =
-    (string ~ monthDay ^^ { (loc, _, month, day) =>
-      fn(month, day)
-    })
-
-  lazy val monthDay: Parser[(Month, Day)] = (delimiter ~ monthParser ~ delimiter ~ dayParser ^^ {
-    (loc, _, month, _, day) =>
-      (month, day)
-  })
-
   lazy val exactMonthDay: Parser[(Int, Int)] = (delimiter ~ exactMonthParser ~ delimiter ~ exactDayParser ^^ {
     (loc, _, month, _, day) =>
       (month, day)
   })
-
-  lazy val yearMonth: Parser[(Year, Month)] = yearParser ~ delimiter ~ monthParser ~ delimiter ^^ {
-    (loc, year, _, month, _) =>
-      (year, month)
-  }
 
   lazy val exactYearMonth: Parser[(Int, Int)] = exactYearParser ~ delimiter ~ exactMonthParser ~ delimiter ^^ {
     (loc, year, _, month, _) =>
@@ -90,27 +75,21 @@ object BasicParsers {
   val anyWordFormat = """\w+""".r
   val delimiter = "[- /.]".r
 
-  lazy val yearParser: Parser[Year] = exactYearParser ^^ ((_, year) => ExactYear(year)) | "YYYY" ^^ (
-    (
-      _,
-      _) => AnyYear: Year) | "next" ^^ ((_, _) => Next: Year) | "previous" ^^ ((_, _) => Previous: Year)
+  lazy val yearParser: Parser[Year] =
+    exactYearParser ^^ ((_, year) => Year.Exact(year)) |
+      "YYYY" ^^ ((_, _) => Year.Any) |
+      "next" ^^ ((_, _) => Year.Next) |
+      "previous" ^^ ((_, _) => Year.Previous)
 
-  lazy val monthParser
-    : Parser[Month] = exactMonthParser ^^ ((_, month) => ExactMonth(month)) | "MM" ^^ ((_, _) => AnyMonth: Month)
+  lazy val monthParser: Parser[Month] =
+    exactMonthParser ^^ ((_, month) => Month.Exact(month)) |
+      "MM" ^^ ((_, _) => Month.Any: Month)
 
-  lazy val dayParser: Parser[Day] = exactDayParser ^^ ((_, day) => ExactDay(day)) |
-    "firstDay" ^^ ((_, _) => FirstDay) |
-    "lastDay" ^^ ((_, _) => LastDay) | "DD" ^^ ((_, _) => AnyDay)
-
-  lazy val exactYearParserWithNextAndPrevious
-    : Parser[Year] = """(19|20)\d\d""".r ^^ ((_, year) => ExactYear(year.toInt)) | "next" ^^ ((_, _) => Next) |
-    "previous" ^^ ((_, _) => Previous)
-
-  lazy val exactDayParserWithFirstAndLastDay: Parser[Day] = """0[1-9]|[12][0-9]|3[01]""".r ^^ (
-    (
-      _,
-      day) => ExactDay(day.toInt)) | "firstDay" ^^ ((_, _) => FirstDay) |
-    "lastDay" ^^ ((_, _) => LastDay)
+  lazy val dayParser: Parser[Day] =
+    exactDayParser ^^ ((_, day) => Day.Exact(day)) |
+      "DD" ^^ ((_, _) => Day.Any) |
+      "firstDay" ^^ ((_, _) => Day.First) |
+      "lastDay" ^^ ((_, _) => Day.Last)
 
   lazy val exactYearParser: Parser[Int] = intParser("""(19|20)\d\d""")
 

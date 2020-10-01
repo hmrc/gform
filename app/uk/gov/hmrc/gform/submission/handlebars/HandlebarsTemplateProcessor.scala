@@ -59,7 +59,7 @@ object RealHandlebarsTemplateProcessor extends HandlebarsTemplateProcessor {
     new EscapingStrategy {
       override def escape(value: CharSequence): CharSequence =
         if (value == null) null
-        else org.apache.commons.lang3.StringEscapeUtils.unescapeJson(value.toString)
+        else org.apache.commons.text.StringEscapeUtils.unescapeJson(value.toString)
     },
     MagicCommasParser.apply
   )

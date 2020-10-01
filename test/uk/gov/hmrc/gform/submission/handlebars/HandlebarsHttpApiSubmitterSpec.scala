@@ -123,7 +123,7 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
   case class SubmitterParts[F[_]](
     submitter: HandlebarsHttpApiSubmitter[F],
     httpClient: HttpClient[F],
-    templateProcessor: HandlebarsTemplateProcessor)(implicit me: MonadError[F, String]) {
+    templateProcessor: HandlebarsTemplateProcessor) {
 
     def expectTemplateProcessorApplication(
       in: String,

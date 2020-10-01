@@ -17,11 +17,12 @@
 package uk.gov.hmrc.gform.config
 
 import java.util.Base64
+import pureconfig.ConfigSource
 import pureconfig.generic.auto._
 
 trait CygnumConfig {
   val cygnumSoap: CygnumSoapApiConf =
-    pureconfig.loadConfigOrThrow[CygnumSoapApiConf]("microservice.destination-services.cygnum.cygnum-conf")
+    ConfigSource.default.at("microservice.destination-services.cygnum.cygnum-conf").loadOrThrow[CygnumSoapApiConf]
 
   import cygnumSoap._
 

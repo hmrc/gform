@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel.structuredform
-import play.api.libs.json.Format
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.ADTFormat
+package uk.gov.hmrc.gform.sharedmodel
 
-trait StructuredFormDataFieldNamePurpose
-case object RoboticsXml extends StructuredFormDataFieldNamePurpose
+import play.api.libs.json.{ Format, Json }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ DataSource, JsonUtils }
 
-object StructuredFormDataFieldNamePurpose {
-  val roboticsXml = "RoboticsXml"
+case class BooleanExprCache(mapping: Map[DataSource, Map[String, Boolean]]) extends AnyVal
 
-  implicit val format: Format[StructuredFormDataFieldNamePurpose] =
-    ADTFormat.formatEnumeration(roboticsXml -> RoboticsXml)
+object BooleanExprCache {
+  implicit val b: Format[Map[DataSource, Map[String, Boolean]]] =
+    JsonUtils.formatMapO[DataSource, Map[String, Boolean]](DataSource.fromString, _.convertToString)
+
+  implicit val format: Format[BooleanExprCache] = Json.format
+  val empty = BooleanExprCache(Map.empty)
 }

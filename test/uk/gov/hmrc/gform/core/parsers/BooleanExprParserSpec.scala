@@ -17,10 +17,13 @@
 package uk.gov.hmrc.gform.core.parsers
 
 import org.scalatest._
+import scala.language.implicitConversions
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues with OptionValues {
+
+  implicit def implicitToFormComponentId(str: String): FormComponentId = FormComponentId(str)
 
   "BooleanExprParser" should "parse equality" in {
     val res = BooleanExprParser.validate("${isPremisesSameAsBusinessAddress=0}")
@@ -209,10 +212,13 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
 
     res.left.value match {
       case UnexpectedState(msg) =>
-        spacesBeforeCaret(msg) shouldBe "${eeitt.businessUser".length
+        msg shouldBe """|Unable to parse expression ${eeitt.businessUserx=XYZ}.
+                        |Errors:
+                        |${eeitt.businessUserx=XYZ}:1: unexpected characters; expected 'sum'
+                        |${eeitt.businessUserx=XYZ}        ^
+                        |""".stripMargin.trim
       case _ => fail("expected an UnexpectedState")
     }
-
   }
 
   it should "parse true" in {
