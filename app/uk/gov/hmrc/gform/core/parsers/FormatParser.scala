@@ -128,6 +128,10 @@ object FormatParser {
       TextFormat(Lookup(register))
     } | "submissionRef" ^^ { (_, _) =>
       TextFormat(SubmissionRefFormat)
+    } | "referenceNumber(" ~ positiveInteger ~ ")" ^^ { (_, _, min, _) =>
+      TextFormat(ReferenceNumber(min, min))
+    } | "referenceNumber(" ~ positiveInteger ~ "," ~ positiveInteger ~ ")" ^^ { (_, _, min, _, max, _) =>
+      TextFormat(ReferenceNumber(min, max))
     }
   }
 
