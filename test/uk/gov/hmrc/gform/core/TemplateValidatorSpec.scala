@@ -527,7 +527,6 @@ class TemplateValidatorSpec extends Spec {
         // format: off
         ("booleanExpr",                             "expected"),
         (Equals              (forwardRef, constant), forwardReferenceError),
-        (NotEquals           (forwardRef, constant), forwardReferenceError),
         (GreaterThan         (forwardRef, constant), forwardReferenceError),
         (GreaterThanOrEquals (forwardRef, constant), forwardReferenceError),
         (LessThan            (forwardRef, constant), forwardReferenceError),
@@ -536,7 +535,6 @@ class TemplateValidatorSpec extends Spec {
         (And(Equals(forwardRef, constant), IsTrue),  forwardReferenceError),
         (Or (Equals(forwardRef, constant), IsTrue),  forwardReferenceError),
         (Equals              (invalidRef, constant), invalidReferenceError),
-        (NotEquals           (invalidRef, constant), invalidReferenceError),
         (GreaterThan         (invalidRef, constant), invalidReferenceError),
         (GreaterThanOrEquals (invalidRef, constant), invalidReferenceError),
         (LessThan            (invalidRef, constant), invalidReferenceError),

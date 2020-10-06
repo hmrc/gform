@@ -21,7 +21,6 @@ import play.api.libs.json._
 
 sealed trait BooleanExpr
 final case class Equals(left: Expr, right: Expr) extends BooleanExpr
-final case class NotEquals(left: Expr, right: Expr) extends BooleanExpr
 final case class GreaterThan(left: Expr, right: Expr) extends BooleanExpr
 final case class GreaterThanOrEquals(left: Expr, right: Expr) extends BooleanExpr
 final case class LessThan(left: Expr, right: Expr) extends BooleanExpr

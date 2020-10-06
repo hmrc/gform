@@ -51,6 +51,7 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validateRevealingChoice(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateEmailVerification(formTemplate).toEither)
     } yield ()
+
   }
 
   def mkSpecimen(formTemplate: FormTemplate): FormTemplate =

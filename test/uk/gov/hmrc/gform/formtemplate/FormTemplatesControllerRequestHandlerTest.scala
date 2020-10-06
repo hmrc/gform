@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.formtemplate
 import org.scalatest.{ Matchers, WordSpec }
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{ Millis, Seconds, Span }
-import play.api.libs.json.{ Reads, _ }
+import play.api.libs.json._
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateRaw }
@@ -249,7 +249,8 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
     val sideEffect: FOpt[Unit] = fromFutureA(Future.successful(()))
     val templateRaw = implicitly[Reads[FormTemplateRaw]].reads(json).get
     val formTemplate: Option[FormTemplate] = FormTemplate.transformAndReads(json).asOpt
-    val verifySideEffect: Option[FOpt[Unit]] = formTemplate.map(formTemplate => new Verifier {}.verify(formTemplate))
+    val verifySideEffect: Option[FOpt[Unit]] =
+      formTemplate.map(formTemplate => new Verifier {}.verify(formTemplate))
 
     f(sideEffect, verifySideEffect, templateRaw)
   }

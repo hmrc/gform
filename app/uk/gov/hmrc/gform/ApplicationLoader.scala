@@ -144,8 +144,8 @@ class ApplicationModule(context: Context)
       controllerComponents
     )
 
-  val graphiteModule =
-    new GraphiteModule(environment, configuration, configModule.runMode, applicationLifecycle, metricsModule)
+  // Execute side effects
+  new GraphiteModule(environment, configuration, configModule.runMode, applicationLifecycle, metricsModule)
 
   val dbLookupModule = new DbLookupModule(controllerComponents, mongoModule)
 
