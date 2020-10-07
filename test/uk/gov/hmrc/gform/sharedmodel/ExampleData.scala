@@ -48,6 +48,7 @@ trait ExampleAuthConfig extends DestinationGen {
     "",
     true,
     true,
+    true,
     Some(true)
   )
 

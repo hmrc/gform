@@ -24,7 +24,6 @@ import akka.util.ByteString
 import play.api.Logger
 import uk.gov.hmrc.gform.dms.FileAttachment
 import uk.gov.hmrc.gform.fileupload.FileUploadService.FileIds._
-import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
@@ -52,25 +51,32 @@ class FileUploadService(
 
   def submitEnvelope(submission: Submission, summaries: PdfAndXmlSummaries, hmrcDms: HmrcDms)(
     implicit hc: HeaderCarrier): Future[Unit] = {
-
-    val submissionRef: SubmissionRef = submission.submissionRef
-    val envelopeId: EnvelopeId = submission.envelopeId
-    Logger.debug(s"env-id submit: $envelopeId")
+    Logger.debug(s"env-id submit: ${submission.envelopeId}")
     val date = timeModule.localDateTime().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
-    val fileNamePrefix = s"${submissionRef.withoutHyphens}-$date"
-    val reconciliationId = ReconciliationId.create(submissionRef)
-    val metadataXml = MetadataXml.xmlDec + "\n" + MetadataXml
-      .getXml(submission, reconciliationId, summaries.pdfSummary, hmrcDms)
+    val fileNamePrefix = s"${submission.submissionRef.withoutHyphens}-$date"
 
     def uploadPfdF: Future[Unit] =
       fileUploadFrontendConnector.upload(
-        envelopeId,
+        submission.envelopeId,
         pdf,
         s"$fileNamePrefix-iform.pdf",
         ByteString(summaries.pdfSummary.pdfContent),
         ContentType.`application/pdf`)
 
-    def uploadXmlF: Future[Unit] = uploadXml(xml, s"$fileNamePrefix-metadata.xml", metadataXml)
+    def uploadFormDataF: Future[Boolean] =
+      summaries.roboticsXml
+        .map(roboticsXmlElm => uploadXml(formdataXml, s"$fileNamePrefix-formdata.xml", roboticsXmlElm).map(_ => true))
+        .getOrElse(Future.successful(false))
+
+    def uploadMetadataXmlF(uploadedFormDataXml: Boolean): Future[Unit] = {
+      // increment no_of_attachments if FormData Xml was uploaded
+      val submissionU =
+        if (uploadedFormDataXml) submission.copy(noOfAttachments = submission.noOfAttachments + 1) else submission
+      val reconciliationId = ReconciliationId.create(submissionU.submissionRef)
+      val metadataXml = MetadataXml.xmlDec + "\n" + MetadataXml
+        .getXml(submissionU, reconciliationId, summaries.pdfSummary, hmrcDms)
+      uploadXml(xml, s"$fileNamePrefix-metadata.xml", metadataXml)
+    }
 
     def uploadRoboticsXmlF: Future[Unit] = summaries.roboticsXml match {
       case Some(elem) => uploadXml(roboticsXml, s"$fileNamePrefix-robotic.xml", elem)
@@ -79,13 +85,14 @@ class FileUploadService(
 
     def uploadXml(fileId: FileId, fileName: String, xml: String): Future[Unit] =
       fileUploadFrontendConnector
-        .upload(envelopeId, fileId, fileName, ByteString(xml.getBytes), ContentType.`application/xml`)
+        .upload(submission.envelopeId, fileId, fileName, ByteString(xml.getBytes), ContentType.`application/xml`)
 
     for {
-      _ <- uploadPfdF
-      _ <- uploadXmlF
-      _ <- uploadRoboticsXmlF
-      _ <- fileUploadConnector.routeEnvelope(RouteEnvelopeRequest(envelopeId, "dfs", "DMS"))
+      _                   <- uploadPfdF
+      uploadedFormDataXml <- uploadFormDataF
+      _                   <- uploadMetadataXmlF(uploadedFormDataXml)
+      _                   <- uploadRoboticsXmlF
+      _                   <- fileUploadConnector.routeEnvelope(RouteEnvelopeRequest(submission.envelopeId, "dfs", "DMS"))
     } yield ()
   }
 
@@ -115,6 +122,7 @@ object FileUploadService {
   //forbidden keys. make sure they aren't used in templates
   object FileIds {
     val pdf = FileId("pdf")
+    val formdataXml = FileId("formdataXml")
     val xml = FileId("xmlDocument")
     val roboticsXml = FileId("roboticsXml")
   }

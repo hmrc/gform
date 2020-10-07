@@ -53,6 +53,7 @@ class MetadataXmlSpec extends Spec {
       "",
       true,
       true,
+      true,
       Some(true)
     )
 

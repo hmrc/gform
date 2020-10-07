@@ -412,6 +412,7 @@ class ValueParserSpec extends Spec {
             "",
             true,
             true,
+            true,
             Some(true)
           )),
         ackSection,

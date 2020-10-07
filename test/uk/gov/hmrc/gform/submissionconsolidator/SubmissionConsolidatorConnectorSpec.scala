@@ -136,8 +136,9 @@ class SubmissionConsolidatorConnectorSpec
 
     //then
     whenReady(future) { result =>
-      result shouldBe Left(
-        s"POST of '$baseUrl/submission-consolidator/form' failed. Caused by: 'Connection refused: localhost/127.0.0.1:$wiremockPort'")
+      result.isLeft shouldBe true
+      result.left.get.contains(
+        s"POST of '$baseUrl/submission-consolidator/form' failed. Caused by: 'Connection refused:") shouldBe true
       startServer()
     }
   }
