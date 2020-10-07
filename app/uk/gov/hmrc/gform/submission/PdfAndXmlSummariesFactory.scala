@@ -36,7 +36,7 @@ trait PdfAndXmlSummariesFactory {
     structuredFormData: StructuredFormValue.ObjectStructure,
     customerId: String,
     submissionRef: SubmissionRef,
-    hmrcDms: HmrcDms): Future[PdfAndXmlSummaries]
+    hmrcDms: HmrcDms)(implicit now: Instant): Future[PdfAndXmlSummaries]
 }
 
 object PdfAndXmlSummariesFactory {
@@ -51,11 +51,12 @@ object PdfAndXmlSummariesFactory {
       structuredFormData: StructuredFormValue.ObjectStructure,
       customerId: String,
       submissionRef: SubmissionRef,
-      hmrcDms: HmrcDms): Future[PdfAndXmlSummaries] =
+      hmrcDms: HmrcDms)(implicit now: Instant): Future[PdfAndXmlSummaries] =
       pdfGeneratorService.generatePDFBytes(pdfData.html).map { pdf =>
         PdfAndXmlSummaries(
           pdfSummary = createPdfSummary(pdf),
-          roboticsXml = createRoboticsXml(formTemplate, form, structuredFormData, hmrcDms, submissionRef)
+          roboticsXml = createRoboticsXml(formTemplate, structuredFormData, hmrcDms, submissionRef),
+          formDataXml = createFormdataXml(formTemplate, structuredFormData, hmrcDms, submissionRef)
         )
       }
 
@@ -68,23 +69,36 @@ object PdfAndXmlSummariesFactory {
       }
     }
 
-    private def createRoboticsXml(
+    private def createFormdataXml(
       formTemplate: FormTemplate,
-      form: Form,
       structuredFormData: StructuredFormValue.ObjectStructure,
       hmrcDms: HmrcDms,
-      submissionRef: SubmissionRef): Option[String] =
-      if (hmrcDms.roboticsXml) {
-        Some(
-          RoboticsXMLGenerator(formTemplate._id, hmrcDms.dmsFormId, submissionRef, structuredFormData, Instant.now()))
+      submissionRef: SubmissionRef)(implicit now: Instant): Option[String] =
+      generateRoboticsXml(formTemplate, structuredFormData, hmrcDms, submissionRef, _.formdataXml)
+
+    private def createRoboticsXml(
+      formTemplate: FormTemplate,
+      structuredFormData: StructuredFormValue.ObjectStructure,
+      hmrcDms: HmrcDms,
+      submissionRef: SubmissionRef)(implicit now: Instant): Option[String] =
+      generateRoboticsXml(formTemplate, structuredFormData, hmrcDms, submissionRef, _.roboticsXml)
+
+    private def generateRoboticsXml(
+      formTemplate: FormTemplate,
+      structuredFormData: StructuredFormValue.ObjectStructure,
+      hmrcDms: HmrcDms,
+      submissionRef: SubmissionRef,
+      condition: HmrcDms => Boolean)(implicit now: Instant) =
+      if (condition(hmrcDms)) {
+        Some(RoboticsXMLGenerator(formTemplate._id, hmrcDms.dmsFormId, submissionRef, structuredFormData, now))
           .map(
             body =>
               // No whitespace of anysort after xml declaration. Robot won't be able to process xml otherwise
               XmlGeneratorService.xmlDec + <data xmlns:xfa="http://www.xfa.org/schema/xfa-data/1.0/">
                 {body}
               </data>)
-      } else
+      } else {
         None
-
+      }
   }
 }

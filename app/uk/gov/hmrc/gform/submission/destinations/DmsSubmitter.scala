@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.gform.submission.destinations
 
+import java.time.Instant
+
 import cats.instances.future._
 import play.api.Logger
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA, success }
@@ -44,7 +46,7 @@ class DmsSubmitter(
     structuredFormData: StructuredFormValue.ObjectStructure,
     hmrcDms: HmrcDms)(implicit hc: HeaderCarrier): FOpt[Unit] = {
     import submissionInfo._
-
+    implicit val now: Instant = Instant.now()
     for {
       form         <- formService.get(formId)
       formTemplate <- formTemplateService.get(form.formTemplateId)
