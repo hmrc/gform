@@ -24,7 +24,7 @@ import scala.io.Source
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.formtemplate.Verifier
+import uk.gov.hmrc.gform.formtemplate.{ Rewriter, Verifier }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 
 class FormComponentRejectSpec extends Spec with TableDrivenPropertyChecks {
@@ -69,6 +69,30 @@ class FormComponentRejectSpec extends Spec with TableDrivenPropertyChecks {
         jsResult match {
           case JsSuccess(formTemplate, _) =>
             val verificationResult: FOpt[Unit] = new Verifier {}.verify(formTemplate)
+            verificationResult.value.futureValue shouldBe Left(UnexpectedState(expectedMessage))
+          case JsError(errors) => fail("Invalid formTemplate definition: " + errors)
+        }
+    }
+  }
+
+  it should "reject syntactically valid templates violating specification rewrite" in {
+    val table = Table(
+      // format: off
+      ("json",                             "expectedMessage"),
+      ("choice-wrong-index",               "Expression 'fcChoice contains 10' has wrong index 10. Choice fcChoice has only 2 elements. Use index from 0 to 1"),
+      ("choice-wrong-index-equals",        "Expression 'simpleChoice = 10' has wrong index 10. Choice simpleChoice has only 2 elements. Use index from 0 to 1"),
+      ("choice-multivalue-equals",         "Multivalue choice cannot be used together with '='. Replace 'simpleChoice = 1' with 'simpleChoice contains 1' instead."),
+      ("choice-multivalue-equals-swapped", "Multivalue choice cannot be used together with '='. Replace '1 = simpleChoice' with 'simpleChoice contains 1' instead."),
+      ("revealing-choice-wrong-index",     "Expression 'rChoice contains 10' has wrong index 10. Revealing choice rChoice has only 2 elements. Use index from 0 to 1")
+      // format: on
+    )
+
+    forAll(table) {
+      case (fileName, expectedMessage) =>
+        val jsResult = readAsFormTemplate(fileName)
+        jsResult match {
+          case JsSuccess(formTemplate, _) =>
+            val verificationResult: FOpt[FormTemplate] = new Rewriter {}.rewrite(formTemplate)
             verificationResult.value.futureValue shouldBe Left(UnexpectedState(expectedMessage))
           case JsError(errors) => fail("Invalid formTemplate definition: " + errors)
         }

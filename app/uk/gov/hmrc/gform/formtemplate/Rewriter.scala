@@ -39,6 +39,9 @@ trait Rewriter {
   private def lookupFromPage(page: Page): Map[FormComponentId, ComponentType] =
     page.fields.foldLeft(Map.empty[FormComponentId, ComponentType])((acc, fc) => mkComponentTypeLookup(fc) ++ acc)
 
+  private def missingFormComponentId[A](formComponentId: FormComponentId): Either[UnexpectedState, A] =
+    Left(UnexpectedState(s"Missing component with id $formComponentId"))
+
   private def validateAndRewriteIncludeIf(formTemplate: FormTemplate): Either[UnexpectedState, FormTemplate] = {
     val fcLookup: Map[FormComponentId, ComponentType] =
       formTemplate.sections.foldLeft(Map.empty[FormComponentId, ComponentType]) {
@@ -54,21 +57,21 @@ trait Rewriter {
     }
 
     def validate(
-      ctx: FormCtx,
       c: String,
       optionsSize: Int,
       formComponentId: FormComponentId,
+      exprString: String,
       componentDescription: String
-    ): Either[UnexpectedState, BooleanExpr] =
+    ): Either[UnexpectedState, Unit] =
       Try(c.toInt) match {
         case Success(index) =>
           val maxIndex = optionsSize - 1
           if (maxIndex < index) {
             Left(UnexpectedState(
-              s"Expression '$formComponentId = $c' has wrong index $c. $componentDescription $formComponentId has only $optionsSize elements. Use index from 0 to $maxIndex"))
-          } else Right(Contains(ctx, Constant(c)))
+              s"Expression '$exprString' has wrong index $c. $componentDescription $formComponentId has only $optionsSize elements. Use index from 0 to $maxIndex"))
+          } else Right(())
         case Failure(f) =>
-          Left(UnexpectedState(s"Expression '$formComponentId = $c' is invalid. '$c' needs to be a number"))
+          Left(UnexpectedState(s"Expression '$exprString' is invalid. '$c' needs to be a number"))
       }
 
     def rewrite(booleanExpr: BooleanExpr): Either[UnexpectedState, BooleanExpr] = booleanExpr match {
@@ -83,20 +86,35 @@ trait Rewriter {
           l <- rewrite(booleanExprL)
           r <- rewrite(booleanExprR)
         } yield Or(l, r)
-      case be @ Equals(ctx @ FormCtx(formComponentId), Constant(c)) =>
-        def invalidUsage(component: String): Either[UnexpectedState, BooleanExpr] =
-          Left(UnexpectedState(
-            s"Multivalue $component cannot be used together with '='. Replace '$formComponentId = $c' with '$formComponentId contains $c' instead."))
-
+      case be @ Contains(ctx @ FormCtx(formComponentId), Constant(c)) =>
+        val exprString = s"$formComponentId contains $c"
         fcLookup
           .get(formComponentId)
-          .fold[Either[UnexpectedState, BooleanExpr]](
-            Left(UnexpectedState(s"Missing component with id $formComponentId"))) {
-            case Choice(Radio, options, _, _, _) => validate(ctx, c, options.size, formComponentId, "Choice")
-            case Choice(Checkbox, _, _, _, _)    => invalidUsage("choice")
-            case RevealingChoice(_, true)        => invalidUsage("revealing choice")
-            case RevealingChoice(options, false) => validate(ctx, c, options.size, formComponentId, "Revealing choice")
-            case otherwise                       => Right(be)
+          .fold[Either[UnexpectedState, BooleanExpr]](missingFormComponentId(formComponentId)) {
+            case Choice(_, options, _, _, _) =>
+              validate(c, options.size, formComponentId, exprString, "Choice").map(_ => be)
+            case RevealingChoice(options, _) =>
+              validate(c, options.size, formComponentId, exprString, "Revealing choice").map(_ => be)
+            case otherwise => Right(be)
+          }
+      case be @ EqualsWithConstant(ctx @ FormCtx(formComponentId), Constant(c), swapped) =>
+        val exprString = if (swapped) s"$c = $formComponentId" else s"$formComponentId = $c"
+
+        def invalidUsage(component: String): Either[UnexpectedState, BooleanExpr] =
+          Left(UnexpectedState(
+            s"Multivalue $component cannot be used together with '='. Replace '$exprString' with '$formComponentId contains $c' instead."))
+
+        val rewriter = Contains(ctx, Constant(c))
+        fcLookup
+          .get(formComponentId)
+          .fold[Either[UnexpectedState, BooleanExpr]](missingFormComponentId(formComponentId)) {
+            case Choice(Radio | YesNo, options, _, _, _) =>
+              validate(c, options.size, formComponentId, exprString, "Choice").map(_ => rewriter)
+            case Choice(Checkbox, _, _, _, _) => invalidUsage("choice")
+            case RevealingChoice(_, true)     => invalidUsage("revealing choice")
+            case RevealingChoice(options, false) =>
+              validate(c, options.size, formComponentId, exprString, "Revealing choice").map(_ => rewriter)
+            case otherwise => Right(be)
           }
       case be => Right(be)
     }

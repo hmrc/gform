@@ -1,0 +1,54 @@
+{
+  "_id": "choice-multivalue-equals",
+  "formName": "Choice multivalue",
+  "description": "",
+  "emailTemplateId": "",
+  "authConfig": {
+    "authModule": "hmrc"
+  },
+  "sections": [
+    {
+      "title": "Page",
+      "fields": [
+        {
+          "id": "simpleChoice",
+          "type": "choice",
+          "label": "Does your company trade under a different name?",
+          "choices": ["A", "B"],
+          "optionHelpText": ["", ""],
+          "multivalue": "true"
+        }
+      ]
+    },
+    {
+      "title": "Text box number format CCCC",
+      "includeIf": "${simpleChoice = 1}",
+      "fields": [
+        {
+          "id": "textBox",
+          "type": "text",
+          "format": "positiveWholeNumber",
+          "label": "Number"
+        }
+      ]
+    }
+  ],
+  "declarationSection": {
+    "title": "Declaration",
+    "fields": []
+  },
+  "acknowledgementSection": {
+    "title": "Acknowledgement",
+    "fields": []
+  },
+  "destinations": [
+    {
+      "id": "queueDestination",
+      "type": "hmrcDms",
+      "dmsFormId": "",
+      "customerId": "${businessUtr}",
+      "classificationType": "",
+      "businessArea": ""
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "_id": "choice-wrong-index",
+  "formName": "Choice wrong index",
+  "description": "",
+  "emailTemplateId": "",
+  "authConfig": {
+    "authModule": "hmrc"
+  },
+  "sections": [
+    {
+      "title": "Page",
+      "fields": [
+        {
+          "id": "fcChoice",
+          "type": "choice",
+          "label": "Does your company trade under a different name?",
+          "choices": ["A", "B"],
+          "optionHelpText": ["", ""]
+        }
+      ]
+    },
+    {
+      "title": "Text box number format CCCC",
+      "includeIf": "${fcChoice contains 10}",
+      "fields": [
+        {
+          "id": "textBox",
+          "type": "text",
+          "format": "positiveWholeNumber",
+          "label": "Number"
+        }
+      ]
+    }
+  ],
+  "declarationSection": {
+    "title": "Declaration",
+    "fields": []
+  },
+  "acknowledgementSection": {
+    "title": "Acknowledgement",
+    "fields": []
+  },
+  "destinations": [
+    {
+      "id": "queueDestination",
+      "type": "hmrcDms",
+      "dmsFormId": "",
+      "customerId": "${businessUtr}",
+      "classificationType": "",
+      "businessArea": ""
+    }
+  ]
+}
