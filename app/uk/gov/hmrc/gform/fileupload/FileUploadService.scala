@@ -63,18 +63,15 @@ class FileUploadService(
         ByteString(summaries.pdfSummary.pdfContent),
         ContentType.`application/pdf`)
 
-    def uploadFormDataF: Future[Boolean] =
-      summaries.roboticsXml
-        .map(roboticsXmlElm => uploadXml(formdataXml, s"$fileNamePrefix-formdata.xml", roboticsXmlElm).map(_ => true))
-        .getOrElse(Future.successful(false))
+    def uploadFormDataF: Future[Unit] =
+      summaries.formDataXml
+        .map(elem => uploadXml(formdataXml, s"$fileNamePrefix-formdata.xml", elem))
+        .getOrElse(Future.successful(()))
 
-    def uploadMetadataXmlF(uploadedFormDataXml: Boolean): Future[Unit] = {
-      // increment no_of_attachments if FormData Xml was uploaded
-      val submissionU =
-        if (uploadedFormDataXml) submission.copy(noOfAttachments = submission.noOfAttachments + 1) else submission
-      val reconciliationId = ReconciliationId.create(submissionU.submissionRef)
+    def uploadMetadataXmlF: Future[Unit] = {
+      val reconciliationId = ReconciliationId.create(submission.submissionRef)
       val metadataXml = MetadataXml.xmlDec + "\n" + MetadataXml
-        .getXml(submissionU, reconciliationId, summaries.pdfSummary, hmrcDms)
+        .getXml(submission, reconciliationId, summaries.pdfSummary, hmrcDms)
       uploadXml(xml, s"$fileNamePrefix-metadata.xml", metadataXml)
     }
 
@@ -88,11 +85,11 @@ class FileUploadService(
         .upload(submission.envelopeId, fileId, fileName, ByteString(xml.getBytes), ContentType.`application/xml`)
 
     for {
-      _                   <- uploadPfdF
-      uploadedFormDataXml <- uploadFormDataF
-      _                   <- uploadMetadataXmlF(uploadedFormDataXml)
-      _                   <- uploadRoboticsXmlF
-      _                   <- fileUploadConnector.routeEnvelope(RouteEnvelopeRequest(submission.envelopeId, "dfs", "DMS"))
+      _ <- uploadPfdF
+      _ <- uploadFormDataF
+      _ <- uploadRoboticsXmlF
+      _ <- uploadMetadataXmlF
+      _ <- fileUploadConnector.routeEnvelope(RouteEnvelopeRequest(submission.envelopeId, "dfs", "DMS"))
     } yield ()
   }
 
