@@ -92,6 +92,7 @@ object DmsSubmissionService {
       "",
       true,
       true,
+      true,
       metadata.backscan
     )
 

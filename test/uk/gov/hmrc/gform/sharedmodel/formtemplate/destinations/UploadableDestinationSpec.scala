@@ -130,6 +130,7 @@ class UploadableDestinationSpec extends Spec with ScalaCheckDrivenPropertyChecks
       Some(includeIf),
       Some(failOnError),
       Some(roboticsXml),
+      Some(formdataXml),
       backscan
     )
   }

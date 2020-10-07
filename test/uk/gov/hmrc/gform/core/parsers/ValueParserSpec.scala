@@ -393,6 +393,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
             "",
             true,
             true,
+            true,
             Some(true)
           )),
         ackSection,
