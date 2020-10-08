@@ -31,7 +31,7 @@ trait FormTemplateAlgebra[F[_]] {
 
 class FormTemplateService(formTemplateRepo: Repo[FormTemplate], formTemplateRawRepo: Repo[FormTemplateRaw])(
   implicit ec: ExecutionContext)
-    extends Verifier with FormTemplateAlgebra[Future] {
+    extends Verifier with Rewriter with FormTemplateAlgebra[Future] {
 
   def save(formTemplateRaw: FormTemplateRaw): FOpt[Unit] =
     formTemplateRawRepo.upsert(formTemplateRaw)
@@ -58,8 +58,9 @@ class FormTemplateService(formTemplateRepo: Repo[FormTemplate], formTemplateRawR
 
   def verifyAndSave(formTemplate: FormTemplate): FOpt[Unit] =
     for {
-      _   <- verify(formTemplate)
-      _   <- formTemplateRepo.upsert(mkSpecimen(formTemplate))
-      res <- formTemplateRepo.upsert(formTemplate)
+      _                  <- verify(formTemplate)
+      formTemplateToSave <- rewrite(formTemplate)
+      _                  <- formTemplateRepo.upsert(mkSpecimen(formTemplateToSave))
+      res                <- formTemplateRepo.upsert(formTemplateToSave)
     } yield res
 }

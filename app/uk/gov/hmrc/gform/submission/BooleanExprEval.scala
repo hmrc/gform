@@ -88,7 +88,6 @@ object BooleanExprEval {
 
     expr match {
       case Equals(field1, field2)              => compare(field1, _ == _, _ == _, field2)
-      case NotEquals(field1, field2)           => compare(field1, _ != _, _ != _, field2)
       case GreaterThan(field1, field2)         => compare(field1, _ > _, _ > _, field2)
       case GreaterThanOrEquals(field1, field2) => compare(field1, _ >= _, _ >= _, field2)
       case LessThan(field1, field2)            => compare(field1, _ < _, _ < _, field2)

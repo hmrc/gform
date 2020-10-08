@@ -35,7 +35,7 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
   "BooleanExprParser" should "parse inequality" in {
     val res = BooleanExprParser.validate("${isPremisesSameAsBusinessAddress!=0}")
 
-    res shouldBe Right(NotEquals(FormCtx("isPremisesSameAsBusinessAddress"), Constant("0")))
+    res shouldBe Right(Not(Equals(FormCtx("isPremisesSameAsBusinessAddress"), Constant("0"))))
 
   }
 

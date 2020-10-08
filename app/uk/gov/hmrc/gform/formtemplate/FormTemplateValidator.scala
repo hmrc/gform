@@ -178,7 +178,6 @@ object FormTemplateValidator {
 
     def boolean(includeIf: BooleanExpr, idx: Int): List[ValidationResult] = includeIf match {
       case Equals(left, right)              => validateExprs(left, right, idx)
-      case NotEquals(left, right)           => validateExprs(left, right, idx)
       case GreaterThan(left, right)         => validateExprs(left, right, idx)
       case GreaterThanOrEquals(left, right) => validateExprs(left, right, idx)
       case LessThan(left, right)            => validateExprs(left, right, idx)

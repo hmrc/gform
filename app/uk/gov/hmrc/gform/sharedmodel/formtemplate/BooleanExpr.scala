@@ -21,7 +21,6 @@ import play.api.libs.json._
 
 sealed trait BooleanExpr
 final case class Equals(left: Expr, right: Expr) extends BooleanExpr
-final case class NotEquals(left: Expr, right: Expr) extends BooleanExpr
 final case class GreaterThan(left: Expr, right: Expr) extends BooleanExpr
 final case class GreaterThanOrEquals(left: Expr, right: Expr) extends BooleanExpr
 final case class LessThan(left: Expr, right: Expr) extends BooleanExpr
@@ -36,4 +35,13 @@ final case class In(value: Expr, dataSource: DataSource) extends BooleanExpr
 
 object BooleanExpr {
   implicit val format: OFormat[BooleanExpr] = derived.oformat()
+}
+
+object EqualsWithConstant {
+  def unapply(be: BooleanExpr): Option[(FormCtx, Constant, Boolean)] =
+    be match {
+      case Equals(f @ FormCtx(_), c @ Constant(_)) => Some((f, c, false))
+      case Equals(c @ Constant(_), f @ FormCtx(_)) => Some((f, c, true))
+      case _                                       => None
+    }
 }

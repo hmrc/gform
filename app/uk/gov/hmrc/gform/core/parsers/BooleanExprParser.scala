@@ -52,7 +52,7 @@ object BooleanExprParser {
       Equals(expr1, expr2)
     }
     | exprFormCtx ~ "!=" ~ exprFormCtx ^^ { (loc, expr1, op, expr2) =>
-      NotEquals(expr1, expr2)
+      Not(Equals(expr1, expr2))
     }
     | exprFormCtx ~ ">=" ~ exprFormCtx ^^ { (loc, expr1, op, expr2) =>
       GreaterThanOrEquals(expr1, expr2)

@@ -1,0 +1,53 @@
+{
+  "_id": "revealing-choice-wrong-index",
+  "formName": "Choice wrong index",
+  "description": "",
+  "emailTemplateId": "",
+  "authConfig": {
+    "authModule": "hmrc"
+  },
+  "sections": [
+    {
+      "title": "Page",
+      "fields": [
+        {
+          "id": "rChoice",
+          "type": "revealingChoice",
+          "label": "Does your company trade under a different name?",
+          "choices": ["Yes", "No"],
+          "revealingFields": [[], []]
+        }
+      ]
+    },
+    {
+      "title": "Text box number format",
+      "includeIf": "${rChoice contains 10}",
+      "fields": [
+        {
+          "id": "textBox",
+          "type": "text",
+          "format": "positiveWholeNumber",
+          "label": "Number"
+        }
+      ]
+    }
+  ],
+  "declarationSection": {
+    "title": "Declaration",
+    "fields": []
+  },
+  "acknowledgementSection": {
+    "title": "Acknowledgement",
+    "fields": []
+  },
+  "destinations": [
+    {
+      "id": "queueDestination",
+      "type": "hmrcDms",
+      "dmsFormId": "",
+      "customerId": "${businessUtr}",
+      "classificationType": "",
+      "businessArea": ""
+    }
+  ]
+}

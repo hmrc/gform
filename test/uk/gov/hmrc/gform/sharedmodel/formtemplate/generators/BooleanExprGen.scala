@@ -34,7 +34,6 @@ trait BooleanExprGen {
     } yield f(left, right)
 
   def equalsGen(maxDepth: Int): Gen[Equals] = binaryExprRelationGen(maxDepth, Equals(_, _))
-  def notEqualsGen(maxDepth: Int): Gen[NotEquals] = binaryExprRelationGen(maxDepth, NotEquals(_, _))
   def greaterThanGen(maxDepth: Int): Gen[GreaterThan] = binaryExprRelationGen(maxDepth, GreaterThan(_, _))
   def greaterThanOrEqualsGen(maxDepth: Int): Gen[GreaterThanOrEquals] =
     binaryExprRelationGen(maxDepth, GreaterThanOrEquals(_, _))
@@ -50,7 +49,6 @@ trait BooleanExprGen {
 
   def recursiveBooleanExprGen(maxDepth: Int = 3): Gen[BooleanExpr] = Gen.oneOf(
     equalsGen(maxDepth),
-    notEqualsGen(maxDepth),
     greaterThanGen(maxDepth),
     greaterThanOrEqualsGen(maxDepth),
     lessThanGen(maxDepth),
