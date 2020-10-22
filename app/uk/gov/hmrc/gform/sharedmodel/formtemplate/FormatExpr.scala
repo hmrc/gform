@@ -19,8 +19,10 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import cats.Eq
 import julienrf.json.derived
 import play.api.libs.json._
-import uk.gov.hmrc.gform.core.parsers.{ BasicParsers, ValueParser }
+import uk.gov.hmrc.gform.core.parsers.{ BasicParsers, SelectionCriteriaParser, ValueParser }
 import uk.gov.hmrc.gform.sharedmodel.{ EmailVerifierService, LocalisedString }
+
+import scala.collection.immutable.List
 
 sealed trait FormatExpr
 final case class OrientationFormat(value: String) extends FormatExpr
@@ -160,7 +162,7 @@ final case class PositiveNumber(
 case object BasicText extends TextConstraint
 case class ShortText(min: Int, max: Int) extends TextConstraint
 object ShortText { val default = ShortText(0, 1000) }
-case class Lookup(register: Register) extends TextConstraint
+case class Lookup(register: Register, selectionCriteria: Option[List[SelectionCriteria]]) extends TextConstraint
 case class TextWithRestrictions(min: Int, max: Int) extends TextConstraint
 case class Sterling(roundingMode: RoundingMode, positiveOnly: Boolean) extends TextConstraint
 case class ReferenceNumber(min: Int, max: Int) extends TextConstraint
@@ -218,6 +220,54 @@ object Register {
   case object IntentLivingCostsAndFees extends Register
 
   implicit val format: OFormat[Register] = derived.oformat()
+}
+
+case class CsvColumnName(column: String) extends AnyVal
+
+object CsvColumnName {
+
+  implicit val format: OFormat[CsvColumnName] = derived.oformat()
+}
+
+sealed trait SelectionCriteriaValue
+
+object SelectionCriteriaValue {
+  case class SelectionCriteriaExpr(expr: FormCtx) extends SelectionCriteriaValue
+  case class SelectionCriteriaReference(expr: FormCtx, name: CsvColumnName) extends SelectionCriteriaValue
+  case class SelectionCriteriaSimpleValue(value: List[String]) extends SelectionCriteriaValue
+
+  private val reads: Reads[SelectionCriteriaValue] = Reads { json =>
+    json \ "value" match {
+      case JsDefined(JsArray(values)) =>
+        JsSuccess(SelectionCriteriaSimpleValue(values.toList.map(_.as[String])))
+
+      case JsDefined(JsString(value)) =>
+        SelectionCriteriaParser.validate(value).fold(error => JsError(error.toString), JsSuccess(_))
+
+      case JsDefined(unknown) =>
+        JsError(s"Unexpected type $unknown for field 'value'. Expected types are Array and String.")
+
+      case JsUndefined() => JsError(s"Missing field 'value' in json $json")
+    }
+  }
+  implicit val format: OFormat[SelectionCriteriaValue] = OFormatWithTemplateReadFallback(reads)
+}
+
+case class SelectionCriteria(column: CsvColumnName, value: SelectionCriteriaValue)
+
+object SelectionCriteria {
+
+  implicit val reads: Reads[SelectionCriteria] = Reads { json =>
+    SelectionCriteriaValue.format.reads(json).flatMap { value =>
+      json \ "column" match {
+        case JsDefined(JsString(column)) => JsSuccess(SelectionCriteria(CsvColumnName(column), value))
+        case JsDefined(unknown)          => JsError(s"Unexpected type $unknown for field 'column'. Expected type is String.")
+        case JsUndefined()               => JsError(s"Missing field 'column' in json $json")
+      }
+    }
+  }
+
+  implicit val format: OFormat[SelectionCriteria] = OFormatWithTemplateReadFallback(reads)
 }
 
 object TextExpression {

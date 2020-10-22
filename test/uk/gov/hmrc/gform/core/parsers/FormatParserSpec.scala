@@ -21,10 +21,20 @@ import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.Helpers._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.Register.Port
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.SelectionCriteriaValue.SelectionCriteriaExpr
 
 class FormatParserSpec extends Spec {
 
-  val validate = FormatParser.validate(RoundingMode.defaultRoundingMode, EmailVerification.NoVerification) _
+  val validate = FormatParser.validate(RoundingMode.defaultRoundingMode, None, EmailVerification.NoVerification) _
+
+  val validateWithSelectionCriteria = FormatParser.validate(
+    RoundingMode.defaultRoundingMode,
+    Some(
+      List(
+        SelectionCriteria(CsvColumnName("PortType"), SelectionCriteriaExpr(FormCtx(FormComponentId("travelMethod")))))),
+    EmailVerification.NoVerification
+  ) _
 
   "YYY-MM-DD" should "be passed as it is" in {
     val res = validate("anyDate")
@@ -202,4 +212,21 @@ class FormatParserSpec extends Spec {
     val res = validate("positiveWholeNumber")
     res.right.value should be(TextFormat(PositiveNumber(11, 0, RoundingMode.defaultRoundingMode, None)))
   }
+
+  "Lookup without SelectionCriteria" should "be parsed successfully" in {
+    val res = validate("lookup(port)")
+    res.right.value should be(TextFormat(Lookup(Port, None)))
+  }
+
+  "Lookup with SelectionCriteria" should "be parsed successfully" in {
+    val res = validateWithSelectionCriteria("lookup(port)")
+    res.right.value should be(
+      TextFormat(
+        Lookup(
+          Port,
+          Some(List(SelectionCriteria(
+            CsvColumnName("PortType"),
+            SelectionCriteriaExpr(FormCtx(FormComponentId("travelMethod")))))))))
+  }
+
 }
