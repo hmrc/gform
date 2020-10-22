@@ -3,7 +3,6 @@
   "formName": "EY2: Apply to register if you are connected with a childcare or daycare",
   "description": "Become a childcare provider",
   "formCategory": "ofstedDefault",
-  "GFC579Ready": "true",
   "emailTemplateId": "eeitt_submission_confirmation",
   "authConfig": {
     "authModule": "hmrc"

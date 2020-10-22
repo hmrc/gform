@@ -208,11 +208,7 @@ object FormatParser {
     "number" ~ numberArgs ^^ { (loc, _, na) =>
       TextFormat(Number(maxWholeDigits = na._1, maxFractionalDigits = na._2, rm, unit = na._3))
     } | "number" ^^ { (loc, _) =>
-      TextFormat(
-        Number(
-          TextConstraint.defaultWholeDigits,
-          TextConstraint.defaultFactionalDigits,
-          RoundingMode.defaultRoundingMode))
+      TextFormat(Number(TextConstraint.defaultWholeDigits, TextConstraint.defaultFractionalDigits, rm))
     }
   }
 
@@ -220,11 +216,7 @@ object FormatParser {
     "positiveNumber" ~ numberArgs ^^ { (loc, _, na) =>
       TextFormat(PositiveNumber(maxWholeDigits = na._1, maxFractionalDigits = na._2, rm, unit = na._3))
     } | "positiveNumber" ^^ { (loc, _) =>
-      TextFormat(
-        PositiveNumber(
-          TextConstraint.defaultWholeDigits,
-          TextConstraint.defaultFactionalDigits,
-          RoundingMode.defaultRoundingMode))
+      TextFormat(PositiveNumber(TextConstraint.defaultWholeDigits, TextConstraint.defaultFractionalDigits, rm))
     }
   }
 
