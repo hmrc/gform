@@ -72,7 +72,8 @@ case class AcknowledgementSection(
   shortName: Option[SmartString],
   fields: List[FormComponent],
   showReference: Boolean,
-  pdf: Option[AcknowledgementSectionPdf]
+  pdf: Option[AcknowledgementSectionPdf],
+  instructionPdf: Option[AcknowledgementSectionPdf]
 )
 
 object AcknowledgementSection {
