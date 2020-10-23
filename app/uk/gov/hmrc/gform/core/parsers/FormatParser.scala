@@ -294,8 +294,4 @@ object FormatParser {
     Map(LangADT.Cy -> cy)
   }
   //"format": "positiveNumber(11, 2, 'en':'litres','cy':'litrau')"
-
-  lazy val fieldId: Parser[String] = FormComponentId.unanchoredIdValidation ^^ { (_, id) =>
-    id
-  }
 }

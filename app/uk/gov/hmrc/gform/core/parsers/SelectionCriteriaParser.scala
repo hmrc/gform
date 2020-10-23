@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.core.parsers
 
+import parseback._
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ CsvColumnName, FormComponentId, FormCtx, SelectionCriteriaValue }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.SelectionCriteriaValue._
@@ -30,7 +31,7 @@ object SelectionCriteriaParser {
       SelectionCriteriaExpr(expr)
     }
       |
-        FormatParser.fieldId ~ "." ~ FormatParser.alphabeticOnly ^^ { (_, id, _, column) =>
+        FormComponentId.unanchoredIdValidation ~ "." ~ FormatParser.alphabeticOnly ^^ { (_, id, _, column) =>
           SelectionCriteriaReference(FormCtx(FormComponentId(id)), CsvColumnName(column))
         } |
       FormatParser.alphabeticOnly ^^ { (_, value) =>
