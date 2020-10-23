@@ -66,7 +66,12 @@ class SubmissionService(
     submissionData: SubmissionData,
     submissionRef: SubmissionRef)(implicit hc: HeaderCarrier) =
     destinationProcessorModelService
-      .create(form, submissionData.variables, submissionData.pdfData, submissionData.structuredFormData)
+      .create(
+        form,
+        submissionData.variables,
+        submissionData.pdfData,
+        submissionData.instructionPDFData,
+        submissionData.structuredFormData)
       .map(
         model =>
           HandlebarsModelTree(
@@ -74,6 +79,7 @@ class SubmissionService(
             submissionRef,
             formTemplate,
             submissionData.pdfData,
+            submissionData.instructionPDFData,
             submissionData.structuredFormData,
             model))
 

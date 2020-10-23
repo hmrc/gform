@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel.generators
+package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
-import org.scalacheck.Gen
-import uk.gov.hmrc.gform.sharedmodel.PdfHtml
+import play.api.libs.json.{ Format, Json }
+import uk.gov.hmrc.gform.sharedmodel.SmartString
 
-trait PdfDataGen {
-  def pdfDataGen: Gen[PdfHtml] = Gen.alphaNumStr.map(PdfHtml(_))
+case class Instruction(name: SmartString, order: Int)
 
-  def instructionPdfDataGen: Gen[Option[PdfHtml]] = Gen.option(pdfDataGen)
+object Instruction {
+  implicit val format: Format[Instruction] = Json.format[Instruction]
 }
-
-object PdfDataGen extends PdfDataGen

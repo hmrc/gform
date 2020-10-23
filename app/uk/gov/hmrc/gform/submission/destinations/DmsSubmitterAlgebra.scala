@@ -25,6 +25,7 @@ trait DmsSubmitterAlgebra[F[_]] {
   def apply(
     submissionInfo: DestinationSubmissionInfo,
     pdfData: PdfHtml,
+    instructionPdfData: Option[PdfHtml],
     structuredFormData: StructuredFormValue.ObjectStructure,
     hmrcDms: HmrcDms)(implicit hc: HeaderCarrier): F[Unit]
 }

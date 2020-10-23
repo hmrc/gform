@@ -57,6 +57,7 @@ package object destinations {
           |  ${optionalField("roboticsXml", Option(roboticsXml), false)}
           |  ${optionalField("closedStatus", Option(backscan), None)}
           |  ${optionalField("formdataXml", Option(formdataXml), false)}
+          |  ${optionalField("includeInstructionPdf", Option(includeInstructionPdf), false)}
           |  "businessArea": "$businessArea"
           |}""".stripMargin
 

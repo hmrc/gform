@@ -227,6 +227,7 @@ class SubmissionConsolidatorServiceSpec
       destinationSubmissionInfo.submission.submissionRef,
       formTemplate,
       PdfHtml(""),
+      None,
       structuredFormData,
       model)
   } yield

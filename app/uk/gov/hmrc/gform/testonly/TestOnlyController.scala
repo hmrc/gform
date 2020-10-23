@@ -99,7 +99,12 @@ class TestOnlyController(
           DmsMetaData(formTemplate._id, customerId)
         )
         model <- destinationsModelProcessorAlgebra
-                  .create(form, submissionData.variables, submissionData.pdfData, submissionData.structuredFormData)
+                  .create(
+                    form,
+                    submissionData.variables,
+                    submissionData.pdfData,
+                    submissionData.instructionPDFData,
+                    submissionData.structuredFormData)
       } yield {
         val jsValue: JsValue = Json.toJson[JsonNode](model.model)
         Ok(jsValue)
@@ -135,7 +140,12 @@ class TestOnlyController(
         )
         _ = logInfo("TestOnlyController.renderHandlebarPayload Got submission")
         model <- destinationsModelProcessorAlgebra
-                  .create(form, submissionData.variables, submissionData.pdfData, submissionData.structuredFormData)
+                  .create(
+                    form,
+                    submissionData.variables,
+                    submissionData.pdfData,
+                    submissionData.instructionPDFData,
+                    submissionData.structuredFormData)
         _ = logInfo("TestOnlyController.renderHandlebarPayload Got model")
       } yield {
         val maybeDestination: Option[Destination.HandlebarsHttpApi] =
@@ -169,6 +179,7 @@ class TestOnlyController(
                   submission.submissionRef,
                   formTemplate,
                   submissionData.pdfData,
+                  submissionData.instructionPDFData,
                   submissionData.structuredFormData,
                   model)),
               destination.payloadType

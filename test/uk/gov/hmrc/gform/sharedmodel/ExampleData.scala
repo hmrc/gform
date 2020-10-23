@@ -49,7 +49,8 @@ trait ExampleAuthConfig extends DestinationGen {
     true,
     true,
     true,
-    Some(true)
+    Some(true),
+    true
   )
 
   private def buildFormComponent(name: String, expr: Expr) =
@@ -309,6 +310,7 @@ trait ExampleSection { dependecies: ExampleFieldId with ExampleFieldValue with E
         validators,
         fields,
         None,
+        None,
         None
       ))
 
@@ -331,6 +333,7 @@ trait ExampleSection { dependecies: ExampleFieldId with ExampleFieldValue with E
         None,
         None,
         List(`fieldValue - surname`),
+        None,
         None,
         None
       ),

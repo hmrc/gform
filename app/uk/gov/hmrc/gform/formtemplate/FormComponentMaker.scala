@@ -104,6 +104,7 @@ class FormComponentMaker(json: JsValue) {
   lazy val rangesJson: Option[List[JsValue]] = (json \ "ranges").asOpt[List[JsValue]]
   lazy val ranges: Option[List[Range]] = rangesJson.map(_.map(getTimeRange _))
   lazy val intervalMins: Option[Int] = (json \ "intervalMins").asOpt[Int]
+  lazy val optInstruction: Option[Instruction] = (json \ "instruction").asOpt[Instruction]
 
   def optFieldValue(): Opt[FormComponent] =
     for {
@@ -145,7 +146,8 @@ class FormComponentMaker(json: JsValue) {
       onlyShowOnSummary = mes.onlyShowOnSummary,
       presentationHint = presHint,
       errorMessage = errorMessage,
-      validators = validators
+      validators = validators,
+      instruction = optInstruction
     )
 
   private lazy val optMES: Opt[MES] = (submitMode, mandatory, optMaybeValueExpr) match {

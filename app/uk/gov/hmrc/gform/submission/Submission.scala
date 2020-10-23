@@ -67,5 +67,6 @@ case class PdfSummary(
 
 case class PdfAndXmlSummaries(
   pdfSummary: PdfSummary,
+  instructionPdfSummary: Option[PdfSummary] = None,
   roboticsXml: Option[String] = None,
   formDataXml: Option[String] = None)

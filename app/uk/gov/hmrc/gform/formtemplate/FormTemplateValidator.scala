@@ -30,7 +30,6 @@ import uk.gov.hmrc.gform.formtemplate.FormTemplateValidatorHelper._
 import uk.gov.hmrc.gform.sharedmodel.{ AvailableLanguages, LangADT }
 
 import scala.Function.const
-import scala.collection.immutable.List
 import scala.util.{ Failure, Success, Try }
 
 object FormTemplateValidator {
@@ -68,6 +67,31 @@ object FormTemplateValidator {
     val duplicates = ids.groupBy(identity).collect { case (fId, List(_, _, _*)) => fId }.toSet
     duplicates.isEmpty.validationResult(someFieldsAreDefinedMoreThanOnce(duplicates))
   }
+
+  def validateInstructions(pages: List[Page]): ValidationResult =
+    if (!pages.flatMap(_.instruction).forall(_.name.nonEmpty)) {
+      Invalid("One or more sections have instruction attribute with empty names")
+    } else if (!pages.flatMap(_.instruction).forall(_.order >= 0)) {
+      Invalid("One or more sections have instruction attribute with negative order")
+    } else if (pages.flatMap(_.instruction).map(_.order).distinct.size != pages
+                 .flatMap(_.instruction)
+                 .map(_.order)
+                 .size) {
+      Invalid("One or more sections have instruction attribute with duplicate order value")
+    } else if (!pages.flatMap(_.fields).flatMap(_.instruction).forall(_.name.nonEmpty)) {
+      Invalid("One or more section fields have instruction attribute with empty names")
+    } else if (!pages.flatMap(_.fields).flatMap(_.instruction).forall(_.order >= 0)) {
+      Invalid("One or more section fields have instruction attribute with negative order")
+    } else if (pages.forall(
+                 p =>
+                   p.fields.flatMap(_.instruction).map(_.order).distinct.size != p.fields
+                     .flatMap(_.instruction)
+                     .map(_.order)
+                     .size)) {
+      Invalid("All fields within sections that have instruction defined, must have a unique order value")
+    } else {
+      Valid
+    }
 
   def validateChoiceHelpText(sectionsList: List[Page]): ValidationResult = {
     val choiceFieldIds: List[FormComponentId] = sectionsList

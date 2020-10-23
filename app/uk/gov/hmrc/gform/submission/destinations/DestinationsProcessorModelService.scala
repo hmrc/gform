@@ -33,13 +33,14 @@ class DestinationsProcessorModelService[M[_]: Monad](fileDownloadAlgebra: Option
     form: Form,
     frontEndSubmissionVariables: FrontEndSubmissionVariables,
     pdfData: PdfHtml,
+    instructionPdfData: Option[PdfHtml],
     structuredFormData: StructuredFormValue.ObjectStructure)(
     implicit hc: HeaderCarrier): M[HandlebarsTemplateProcessorModel] =
     for {
       files <- uploadedFiles(form.envelopeId)
     } yield
       DestinationsProcessorModelAlgebra
-        .createModel(frontEndSubmissionVariables, pdfData, structuredFormData, form, files)
+        .createModel(frontEndSubmissionVariables, pdfData, instructionPdfData, structuredFormData, form, files)
 
   private def uploadedFiles(envelopedId: EnvelopeId)(implicit hc: HeaderCarrier): M[Option[List[UploadedFile]]] =
     fileDownloadAlgebra.traverse { _.allUploadedFiles(envelopedId) }

@@ -815,6 +815,7 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
             SubmissionRef("parent"),
             null,
             PdfHtml(""),
+            None,
             StructuredFormValue.ObjectStructure(Nil),
             rootModel,
             HandlebarsModelTree(
@@ -822,6 +823,7 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
               childSubmissionReference,
               formTemplateWithDestination,
               PdfHtml(""),
+              None,
               StructuredFormValue.ObjectStructure(Nil),
               childModel)
           )
@@ -851,6 +853,7 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
           SubmissionRef(""),
           null,
           PdfHtml(""),
+          None,
           StructuredFormValue.ObjectStructure(Nil),
           model))
     )
@@ -868,6 +871,7 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
           SubmissionRef(""),
           null,
           PdfHtml(""),
+          None,
           StructuredFormValue.ObjectStructure(Nil),
           model))
     )

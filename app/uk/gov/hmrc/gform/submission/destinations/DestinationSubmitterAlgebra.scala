@@ -38,6 +38,7 @@ trait DestinationSubmitterAlgebra[M[_]] {
   def submitToDms(
     submissionInfo: DestinationSubmissionInfo,
     pdfData: PdfHtml,
+    instructionPdfData: Option[PdfHtml],
     structuredFormData: StructuredFormValue.ObjectStructure,
     hmrcDms: HmrcDms)(implicit hc: HeaderCarrier): M[Unit]
 }

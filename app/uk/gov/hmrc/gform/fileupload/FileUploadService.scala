@@ -63,6 +63,16 @@ class FileUploadService(
         ByteString(summaries.pdfSummary.pdfContent),
         ContentType.`application/pdf`)
 
+    def uploadInstructionPdfF: Future[Unit] =
+      summaries.instructionPdfSummary.fold(Future.successful(())) { iPdf =>
+        fileUploadFrontendConnector.upload(
+          submission.envelopeId,
+          instructionPdf,
+          s"$fileNamePrefix-instruction.pdf",
+          ByteString(iPdf.pdfContent),
+          ContentType.`application/pdf`)
+      }
+
     def uploadFormDataF: Future[Unit] =
       summaries.formDataXml
         .map(elem => uploadXml(formdataXml, s"$fileNamePrefix-formdata.xml", elem))
@@ -86,6 +96,7 @@ class FileUploadService(
 
     for {
       _ <- uploadPfdF
+      _ <- uploadInstructionPdfF
       _ <- uploadFormDataF
       _ <- uploadRoboticsXmlF
       _ <- uploadMetadataXmlF
@@ -119,6 +130,7 @@ object FileUploadService {
   //forbidden keys. make sure they aren't used in templates
   object FileIds {
     val pdf = FileId("pdf")
+    val instructionPdf = FileId("instructionPdf")
     val formdataXml = FileId("formdataXml")
     val xml = FileId("xmlDocument")
     val roboticsXml = FileId("roboticsXml")

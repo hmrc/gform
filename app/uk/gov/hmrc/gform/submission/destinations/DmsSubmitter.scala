@@ -43,6 +43,7 @@ class DmsSubmitter(
   def apply(
     submissionInfo: DestinationSubmissionInfo,
     pdfData: PdfHtml,
+    instructionPdfData: Option[PdfHtml],
     structuredFormData: StructuredFormValue.ObjectStructure,
     hmrcDms: HmrcDms)(implicit hc: HeaderCarrier): FOpt[Unit] = {
     import submissionInfo._
@@ -52,7 +53,7 @@ class DmsSubmitter(
       formTemplate <- formTemplateService.get(form.formTemplateId)
       summaries <- fromFutureA(
                     PdfAndXmlSummariesFactory
-                      .withPdf(pdfGeneratorService, pdfData)
+                      .withPdf(pdfGeneratorService, pdfData, instructionPdfData)
                       .apply(form, formTemplate, structuredFormData, customerId, submission.submissionRef, hmrcDms))
       res             <- fromFutureA(fileUploadService.submitEnvelope(submission, summaries, hmrcDms))
       envelopeDetails <- fromFutureA(fileUploadService.getEnvelope(submission.envelopeId))

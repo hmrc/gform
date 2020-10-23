@@ -31,11 +31,19 @@ package object handlebars {
       submissionRef: SubmissionRef,
       formTemplate: FormTemplate,
       pdfData: PdfHtml,
+      instructionPdfData: Option[PdfHtml],
       structuredFormData: StructuredFormValue.ObjectStructure,
       model: HandlebarsTemplateProcessorModel,
       children: HandlebarsModelTree*): HandlebarsModelTree =
       Tree(
-        HandlebarsModelTreeNode(formId, submissionRef, formTemplate, model, pdfData, structuredFormData),
+        HandlebarsModelTreeNode(
+          formId,
+          submissionRef,
+          formTemplate,
+          model,
+          pdfData,
+          instructionPdfData,
+          structuredFormData),
         children: _*)
   }
 }

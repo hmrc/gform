@@ -584,6 +584,7 @@ class TemplateValidatorSpec extends Spec {
         None,
         formComponents,
         None,
+        None,
         None
       ))
 
