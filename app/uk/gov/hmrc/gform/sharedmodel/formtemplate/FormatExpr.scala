@@ -22,8 +22,6 @@ import play.api.libs.json._
 import uk.gov.hmrc.gform.core.parsers.{ BasicParsers, SelectionCriteriaParser, ValueParser }
 import uk.gov.hmrc.gform.sharedmodel.{ EmailVerifierService, LocalisedString }
 
-import scala.collection.immutable.List
-
 sealed trait FormatExpr
 final case class OrientationFormat(value: String) extends FormatExpr
 final case class DateFormat(expressions: DateConstraintType) extends FormatExpr
