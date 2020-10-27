@@ -36,9 +36,9 @@ class VerifierSpec extends WordSpecLike with Matchers with ScalaFutures {
         mkSection(
           name = "section1",
           formComponents = List(
-            mkFormComponent("section1Component1", Some(Instruction(toSmartString("section1Component1Instruction"), 1)))
+            mkFormComponent("section1Component1", Some(Instruction(toSmartString("section1Component1Instruction"), Some(1))))
           ),
-          Some(Instruction(toSmartString(""), 1))
+          Some(Instruction(toSmartString(""), Some(1)))
         ),
       )
 

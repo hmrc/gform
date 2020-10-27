@@ -71,22 +71,20 @@ object FormTemplateValidator {
   def validateInstructions(pages: List[Page]): ValidationResult =
     if (!pages.flatMap(_.instruction).forall(_.name.nonEmpty)) {
       Invalid("One or more sections have instruction attribute with empty names")
-    } else if (!pages.flatMap(_.instruction).forall(_.order >= 0)) {
+    } else if (!pages.flatMap(_.instruction.flatMap(_.order)).forall(_ >= 0)) {
       Invalid("One or more sections have instruction attribute with negative order")
-    } else if (pages.flatMap(_.instruction).map(_.order).distinct.size != pages
-                 .flatMap(_.instruction)
-                 .map(_.order)
+    } else if (pages.flatMap(_.instruction.flatMap(_.order)).distinct.size != pages
+                 .flatMap(_.instruction.flatMap(_.order))
                  .size) {
       Invalid("One or more sections have instruction attribute with duplicate order value")
     } else if (!pages.flatMap(_.fields).flatMap(_.instruction).forall(_.name.nonEmpty)) {
       Invalid("One or more section fields have instruction attribute with empty names")
-    } else if (!pages.flatMap(_.fields).flatMap(_.instruction).forall(_.order >= 0)) {
+    } else if (!pages.flatMap(_.fields).flatMap(_.instruction.flatMap(_.order)).forall(_ >= 0)) {
       Invalid("One or more section fields have instruction attribute with negative order")
     } else if (pages.forall(
                  p =>
-                   p.fields.flatMap(_.instruction).map(_.order).distinct.size != p.fields
-                     .flatMap(_.instruction)
-                     .map(_.order)
+                   p.fields.flatMap(_.instruction.flatMap(_.order)).distinct.size != p.fields
+                     .flatMap(_.instruction.flatMap(_.order))
                      .size)) {
       Invalid("All fields within sections that have instruction defined, must have a unique order value")
     } else {

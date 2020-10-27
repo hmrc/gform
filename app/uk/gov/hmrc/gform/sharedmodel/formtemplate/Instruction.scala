@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import play.api.libs.json.{ Format, Json }
 import uk.gov.hmrc.gform.sharedmodel.SmartString
 
-case class Instruction(name: SmartString, order: Int)
+case class Instruction(name: SmartString, order: Option[Int])
 
 object Instruction {
   implicit val format: Format[Instruction] = Json.format[Instruction]
