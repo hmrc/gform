@@ -45,7 +45,8 @@ object Section {
     includeIf: Option[IncludeIf],
     repeatsMax: Option[Expr],
     pages: NonEmptyList[Page],
-    addAnotherQuestion: FormComponent
+    addAnotherQuestion: FormComponent,
+    instruction: Option[Instruction]
   ) extends Section {
     override lazy val expandedFormComponents: List[FormComponent] = pages.toList.flatMap(_.expandedFormComponents)
   }
