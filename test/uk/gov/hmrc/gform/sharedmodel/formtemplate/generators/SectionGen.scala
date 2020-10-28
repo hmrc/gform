@@ -44,13 +44,13 @@ trait SectionGen {
 
   def acknowledgementSectionGen: Gen[AcknowledgementSection] =
     for {
-      title         <- smartStringGen
-      description   <- Gen.option(smartStringGen)
-      shortName     <- Gen.option(smartStringGen)
-      fields        <- PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen())
-      showReference <- PrimitiveGen.booleanGen
-      pdf           <- Gen.option(acknowledgementSectionPdfGen)
-      instructionPdf           <- Gen.option(acknowledgementSectionPdfGen)
+      title          <- smartStringGen
+      description    <- Gen.option(smartStringGen)
+      shortName      <- Gen.option(smartStringGen)
+      fields         <- PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen())
+      showReference  <- PrimitiveGen.booleanGen
+      pdf            <- Gen.option(acknowledgementSectionPdfGen)
+      instructionPdf <- Gen.option(acknowledgementSectionPdfGen)
     } yield AcknowledgementSection(title, description, shortName, fields.toList, showReference, pdf, instructionPdf)
 
   def acknowledgementSectionPdfGen: Gen[AcknowledgementSectionPdf] =
@@ -111,9 +111,18 @@ trait SectionGen {
       pages         <- PrimitiveGen.oneOrMoreGen(pageGen)
       formComponent <- FormComponentGen.formComponentGen(0)
       choice        <- ComponentTypeGen.choiceGen
+      instruction   <- Gen.option(InstructionGen.instructionGen)
     } yield
       Section
-        .AddToList(title, description, shortName, includeIf, repeatsMax, pages, formComponent.copy(`type` = choice))
+        .AddToList(
+          title,
+          description,
+          shortName,
+          includeIf,
+          repeatsMax,
+          pages,
+          formComponent.copy(`type` = choice),
+          instruction)
 
   def sectionGen: Gen[Section] = Gen.oneOf(nonRepeatingPageSectionGen, repeatingPageSectionGen, addToListSectionGen)
 }

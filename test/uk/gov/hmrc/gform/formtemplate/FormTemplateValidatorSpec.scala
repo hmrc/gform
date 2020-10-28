@@ -90,7 +90,9 @@ class FormTemplateValidatorSpec extends WordSpecLike with Matchers {
         val page = mkPage(
           name = "section1",
           formComponents = List(
-            mkFormComponent("section1Component1", Some(Instruction(toSmartString("section1Component1Instruction"), Some(1))))
+            mkFormComponent(
+              "section1Component1",
+              Some(Instruction(toSmartString("section1Component1Instruction"), Some(1))))
           ),
           Some(Instruction(toSmartString("section1Instruction"), Some(1)))
         )
