@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel.generators
+package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 
 import org.scalacheck.Gen
-import uk.gov.hmrc.gform.sharedmodel.PdfHtml
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.Instruction
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.SmartStringGen.smartStringGen
 
-trait PdfDataGen {
-  def pdfDataGen: Gen[PdfHtml] = Gen.alphaNumStr.map(PdfHtml(_))
-
-  def instructionPdfDataGen: Gen[Option[PdfHtml]] = Gen.option(pdfDataGen)
+object InstructionGen {
+  val instructionGen = for {
+    name  <- smartStringGen
+    order <- Gen.option(Gen.posNum[Int])
+  } yield Instruction(name, order)
 }
-
-object PdfDataGen extends PdfDataGen

@@ -28,7 +28,8 @@ case class Page(
   validators: Option[Validator],
   fields: List[FormComponent],
   continueLabel: Option[SmartString],
-  continueIf: Option[ContinueIf]
+  continueIf: Option[ContinueIf],
+  instruction: Option[Instruction]
 ) {
   lazy val expandedFormComponents: List[FormComponent] = fields.flatMap(_.expandedFormComponents)
 }

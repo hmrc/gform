@@ -45,8 +45,8 @@ class DestinationsSubmitterSpec
     }
 
   "Every Destination" should "be sent to the DestinationSubmitter" in {
-    forAll(submissionInfoGen, destinationGen, pdfDataGen, structureFormValueObjectStructureGen) {
-      (submissionInfo, destination, pdfData, structuredFormValue) =>
+    forAll(submissionInfoGen, destinationGen, pdfDataGen, instructionPdfDataGen, structureFormValueObjectStructureGen) {
+      (submissionInfo, destination, pdfData, instructionPdfData, structuredFormValue) =>
         val destinationModel = DestinationsProcessorModelAlgebra.createFormId(submissionInfo.formId)
         createSubmitter()
           .expectDestinationSubmitterSubmitIfIncludeIf(
@@ -64,6 +64,7 @@ class DestinationsSubmitterSpec
               SubmissionRef(""),
               exampleTemplateWithDestinations(destination),
               pdfData,
+              instructionPdfData,
               structuredFormValue,
               destinationModel),
             Some(formData)
@@ -89,7 +90,7 @@ class DestinationsSubmitterSpec
       val response1 = HttpResponse(responseCode1, Option(responseJson1))
 
       val initialModel = DestinationsProcessorModelAlgebra
-        .createModel(FrontEndSubmissionVariables(JsNull), pdfData, structuredFormValue, form, None)
+        .createModel(FrontEndSubmissionVariables(JsNull), pdfData, None, structuredFormValue, form, None)
 
       val response1Model = HandlebarsDestinationResponse(handlebarsHttpApi1, response1)
       val accumulatedModel1 = DestinationsProcessorModelAlgebra.createDestinationResponse(response1Model)
@@ -119,6 +120,7 @@ class DestinationsSubmitterSpec
             SubmissionRef(""),
             exampleTemplateWithDestinations(handlebarsHttpApi1, handlebarsHttpApi2),
             PdfHtml(""),
+            None,
             StructuredFormValue.ObjectStructure(Nil),
             initialModel
           ),
@@ -214,11 +216,16 @@ class DestinationsSubmitterSpec
       destination: HmrcDms,
       submissionInfo: DestinationSubmissionInfo,
       pdfData: PdfHtml,
+      instructionPdfData: Option[PdfHtml],
       structuredFormData: StructuredFormValue.ObjectStructure): SubmitterParts[F] = {
       (destinationSubmitter
-        .submitToDms(_: DestinationSubmissionInfo, _: PdfHtml, _: StructuredFormValue.ObjectStructure, _: HmrcDms)(
-          _: HeaderCarrier))
-        .expects(submissionInfo, pdfData, structuredFormData, destination, hc)
+        .submitToDms(
+          _: DestinationSubmissionInfo,
+          _: PdfHtml,
+          _: Option[PdfHtml],
+          _: StructuredFormValue.ObjectStructure,
+          _: HmrcDms)(_: HeaderCarrier))
+        .expects(submissionInfo, pdfData, instructionPdfData, structuredFormData, destination, hc)
         .returning(().pure)
       this
     }

@@ -50,6 +50,7 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validateGroup(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateRevealingChoice(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateEmailVerification(formTemplate).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateInstructions(pages).toEither)
     } yield ()
 
   }
@@ -96,3 +97,5 @@ trait Verifier {
   }
 
 }
+
+object Verifier extends Verifier

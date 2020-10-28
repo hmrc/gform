@@ -39,6 +39,7 @@ trait DestinationsProcessorModelAlgebra[M[_]] {
     form: Form,
     frontEndSubmissionVariables: FrontEndSubmissionVariables,
     pdfData: PdfHtml,
+    instructionPdfHtml: Option[PdfHtml],
     structuredFormData: StructuredFormValue.ObjectStructure)(
     implicit hc: HeaderCarrier): M[HandlebarsTemplateProcessorModel]
 }
@@ -47,6 +48,7 @@ object DestinationsProcessorModelAlgebra {
   def createModel(
     frontEndSubmissionVariables: FrontEndSubmissionVariables,
     pdfData: PdfHtml,
+    instructionPdfData: Option[PdfHtml],
     structuredFormData: StructuredFormValue.ObjectStructure,
     form: Form,
     files: Option[List[UploadedFile]]): HandlebarsTemplateProcessorModel =
@@ -57,6 +59,7 @@ object DestinationsProcessorModelAlgebra {
       createFrontEndSubmissionVariables(frontEndSubmissionVariables) +
       createFormStatus(form.status) +
       createPdfHtml(pdfData) +
+      createInstructionPdfHtml(instructionPdfData) +
       createSubmissionReference(SubmissionRef(form.envelopeId).value) +
       createUploadedFiles(files) +
       createCaseworker(form.thirdPartyData.reviewData.flatMap(_.get("caseworker")))
@@ -144,6 +147,11 @@ object DestinationsProcessorModelAlgebra {
 
   private def createPdfHtml(html: PdfHtml): HandlebarsTemplateProcessorModel =
     HandlebarsTemplateProcessorModel("summaryHtml" -> textNode(html.html))
+
+  private def createInstructionPdfHtml(html: Option[PdfHtml]): HandlebarsTemplateProcessorModel =
+    html.fold(HandlebarsTemplateProcessorModel.empty) { html =>
+      HandlebarsTemplateProcessorModel("instructionHtml" -> textNode(html.html))
+    }
 
   private def createSubmissionReference(submissionReference: String): HandlebarsTemplateProcessorModel =
     HandlebarsTemplateProcessorModel("submissionReference" -> textNode(submissionReference))

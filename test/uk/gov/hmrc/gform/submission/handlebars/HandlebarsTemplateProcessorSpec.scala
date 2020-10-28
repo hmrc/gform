@@ -70,6 +70,7 @@ class HandlebarsTemplateProcessorSpec extends Spec {
           SubmissionRef(""),
           null,
           PdfHtml(""),
+          None,
           StructuredFormValue.ObjectStructure(Nil),
           model)),
       templateType
@@ -91,6 +92,7 @@ class HandlebarsTemplateProcessorSpec extends Spec {
           SubmissionRef(""),
           null,
           PdfHtml(""),
+          None,
           StructuredFormValue.ObjectStructure(Nil),
           model)),
       templateType

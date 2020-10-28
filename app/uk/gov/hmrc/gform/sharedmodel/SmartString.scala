@@ -29,6 +29,10 @@ case class SmartString(localised: LocalisedString, interpolations: List[Expr]) {
     copy(localised = localised.replace(toReplace, replaceWith))
 
   def rawValue(implicit l: LangADT): String = localised.value(l)
+
+  def nonEmpty: Boolean = localised.m.nonEmpty && localised.m.forall {
+    case (_: LangADT, value: String) => value.nonEmpty
+  }
 }
 
 object SmartString {

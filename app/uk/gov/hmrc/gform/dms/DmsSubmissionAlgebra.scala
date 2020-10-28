@@ -93,7 +93,8 @@ object DmsSubmissionService {
       true,
       true,
       true,
-      metadata.backscan
+      metadata.backscan,
+      true
     )
 
   def createSubmission(

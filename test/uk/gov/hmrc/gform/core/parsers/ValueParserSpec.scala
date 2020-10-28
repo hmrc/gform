@@ -394,7 +394,8 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
             true,
             true,
             true,
-            Some(true)
+            Some(true),
+            true
           )),
         ackSection,
         DeclarationSection(toSmartString("Declaration"), None, None, Nil)
@@ -452,6 +453,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
           errorMessage = None
         )
       ),
+      None,
       None,
       None
     ))

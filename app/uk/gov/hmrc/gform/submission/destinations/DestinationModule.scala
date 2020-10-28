@@ -76,10 +76,11 @@ class DestinationModule(
         form: Form,
         frontEndSubmissionVariables: FrontEndSubmissionVariables,
         pdfData: PdfHtml,
+        instructionPdfHtml: Option[PdfHtml],
         structuredFormData: StructuredFormValue.ObjectStructure)(
         implicit hc: HeaderCarrier): Future[HandlebarsTemplateProcessorModel] =
         destinationsProcessorModelService
-          .create(form, frontEndSubmissionVariables, pdfData, structuredFormData)
+          .create(form, frontEndSubmissionVariables, pdfData, instructionPdfHtml, structuredFormData)
           .toFuture
     }
 }

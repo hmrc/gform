@@ -138,6 +138,7 @@ class FormBundleSubmissionService[F[_]](
           templatesById(formTreeNode.formIdData.formTemplateId),
           processorModelByFormId(formTreeNode.formIdData),
           pdfHtmlByFormId(formTreeNode.formIdData),
+          None,
           submissionDataByFormId(formTreeNode.formIdData).structuredFormData
         )
       }
@@ -181,6 +182,7 @@ class FormBundleSubmissionService[F[_]](
                         formsById(id),
                         FrontEndSubmissionVariables(JsObject(Nil)),
                         pdfHtmlByFormId(id),
+                        None,
                         submissionDataByFormId(id).structuredFormData)
         treeModel = DestinationsProcessorModelAlgebra.createBundledFormTree(formTree)
       } yield baseModel + treeModel

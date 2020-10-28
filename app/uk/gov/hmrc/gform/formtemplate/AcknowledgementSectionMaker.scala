@@ -37,10 +37,20 @@ class AcknowledgementSectionMaker(json: JsValue) {
   }
 
   val acknowledgementSectionPdf: Option[AcknowledgementSectionPdf] = (json \ "pdf").asOpt[AcknowledgementSectionPdf]
+  val acknowledgementSectionInstructionPdf: Option[AcknowledgementSectionPdf] =
+    (json \ "instructionPdf").asOpt[AcknowledgementSectionPdf]
 
   def optAcknowledgementSection(): Opt[AcknowledgementSection] =
     for {
       sr <- showReference
-    } yield AcknowledgementSection(title, description, shortName, fields, sr, acknowledgementSectionPdf)
+    } yield
+      AcknowledgementSection(
+        title,
+        description,
+        shortName,
+        fields,
+        sr,
+        acknowledgementSectionPdf,
+        acknowledgementSectionInstructionPdf)
 
 }

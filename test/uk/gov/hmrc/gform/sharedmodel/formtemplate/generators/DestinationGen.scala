@@ -37,16 +37,17 @@ trait DestinationGen {
 
   def hmrcDmsGen: Gen[Destination.HmrcDms] =
     for {
-      id                 <- destinationIdGen
-      dmsFormId          <- dmsFormIdGen
-      customerId         <- customerIdGen
-      classificationType <- classificationTypeGen
-      businessArea       <- businessAreaGen
-      includeIf          <- includeIfGen
-      failOnError        <- PrimitiveGen.booleanGen
-      roboticsXml        <- PrimitiveGen.booleanGen
-      formdataXml        <- PrimitiveGen.booleanGen
-      backscan           <- Gen.option(PrimitiveGen.booleanGen)
+      id                    <- destinationIdGen
+      dmsFormId             <- dmsFormIdGen
+      customerId            <- customerIdGen
+      classificationType    <- classificationTypeGen
+      businessArea          <- businessAreaGen
+      includeIf             <- includeIfGen
+      failOnError           <- PrimitiveGen.booleanGen
+      roboticsXml           <- PrimitiveGen.booleanGen
+      formdataXml           <- PrimitiveGen.booleanGen
+      backscan              <- Gen.option(PrimitiveGen.booleanGen)
+      includeInstructionPdf <- PrimitiveGen.booleanGen
     } yield
       Destination
         .HmrcDms(
@@ -59,7 +60,8 @@ trait DestinationGen {
           failOnError,
           roboticsXml,
           formdataXml,
-          backscan)
+          backscan,
+          includeInstructionPdf)
 
   def submissionConsolidatorGen: Gen[Destination.SubmissionConsolidator] =
     for {

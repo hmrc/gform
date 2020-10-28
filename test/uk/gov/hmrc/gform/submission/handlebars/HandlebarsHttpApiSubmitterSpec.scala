@@ -206,6 +206,7 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
       submissionRef,
       null,
       PdfHtml(""),
+      None,
       StructuredFormValue.ObjectStructure(Nil),
       model)
 
