@@ -24,6 +24,8 @@ import com.fasterxml.jackson.core.JsonParseException
 import play.api.libs.json.{ Reads, _ }
 import uk.gov.hmrc.gform.Helpers._
 import uk.gov.hmrc.gform.Spec
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.Register.{ Country, Port }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.SelectionCriteriaValue.{ SelectionCriteriaExpr, SelectionCriteriaReference, SelectionCriteriaSimpleValue }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ ShortText, _ }
 
 class FormComponentSpec extends Spec {
@@ -1639,6 +1641,103 @@ class FormComponentSpec extends Spec {
                 }""")
 
     fieldValue should be(jsError)
+  }
+
+  it should "parse as Lookup with no selection criteria " in {
+    val id = "country"
+    val label = "Select Any country from below ?"
+    val helpText = "Select a country from the list."
+    val shortName = "shortNameForCountry"
+    val fieldValue = toFieldValue(s""" {
+                    "id": "$id",
+                    "type": "text",
+                    "format": "lookup(country)",
+                    "label": "$label",
+                    "shortName": "$shortName",
+                    "helpText": "$helpText"
+                }""")
+
+    fieldValue should beJsSuccess(
+      FormComponent(
+        FormComponentId(id),
+        Text(Lookup(Country, None), Value),
+        toSmartString(label),
+        Some(toSmartString(helpText)),
+        Some(toSmartString(shortName)),
+        None,
+        mandatory = true,
+        editable = true,
+        submissible = true,
+        derived = false,
+        errorMessage = None
+      ))
+  }
+
+  it should "parse as Lookup with selection criteria " in {
+    val id = "port"
+    val label = "Enter port"
+    val helpText = "Select a port from the list."
+    val shortName = "shortNameForPort"
+    val fieldValue = toFieldValue(""" {
+                    "id": "port",
+                    "type": "text",
+                    "format": "lookup(port)",
+                    "label": "Enter port",
+                    "shortName": "shortNameForPort",
+                    "helpText": "Select a port from the list.",
+                    "selectionCriteria": [
+                        {
+                            "column": "PortType",
+                            "value": "${travelMethod}"
+                        },
+                        {
+                            "column": "Region",
+                            "value": "2"
+                        },
+                        {
+                            "column": "PortId",
+                            "value": [
+                                "441",
+                                "442"
+                            ]
+                        },
+                        {
+                            "column": "CountryCode",
+                            "value": "country.CountryCode"
+                        }
+                    ]
+                }
+      """.stripMargin)
+
+    fieldValue should beJsSuccess(
+      FormComponent(
+        FormComponentId(id),
+        Text(
+          Lookup(
+            Port,
+            Some(List(
+              SelectionCriteria(
+                CsvColumnName("PortType"),
+                SelectionCriteriaExpr(FormCtx(FormComponentId("travelMethod")))),
+              SelectionCriteria(CsvColumnName("Region"), SelectionCriteriaSimpleValue(List("2"))),
+              SelectionCriteria(CsvColumnName("PortId"), SelectionCriteriaSimpleValue(List("441", "442"))),
+              SelectionCriteria(
+                CsvColumnName("CountryCode"),
+                SelectionCriteriaReference(FormCtx(FormComponentId("country")), CsvColumnName("CountryCode")))
+            ))
+          ),
+          Value
+        ),
+        toSmartString(label),
+        Some(toSmartString(helpText)),
+        Some(toSmartString(shortName)),
+        None,
+        mandatory = true,
+        editable = true,
+        submissible = true,
+        derived = false,
+        errorMessage = None
+      ))
   }
 
   private def toFieldValue(template: String): JsResult[FormComponent] = {

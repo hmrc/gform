@@ -20,20 +20,20 @@ import java.time.format.DateTimeFormatter
 
 import cats.data.NonEmptyList
 import cats.instances.either._
-import cats.instances.list._
 import cats.instances.int._
-import cats.syntax.eq._
+import cats.instances.list._
 import cats.syntax.either._
+import cats.syntax.eq._
 import cats.syntax.option._
 import cats.syntax.traverse._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.{ FormatParser, PresentationHintParser, ValueParser }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
+import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.RoundingMode._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService._
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString, SmartString }
 case class MES(
   mandatory: Boolean,
@@ -58,8 +58,10 @@ class FormComponentMaker(json: JsValue) {
     case JsUndefined() => Right(EmailVerification.noVerification)
   }
 
-  lazy val optMaybeFormatExpr: RoundingMode => EmailVerification => Opt[Option[FormatExpr]] = rm =>
-    emailVerification => parse("format", FormatParser.validate(rm, emailVerification))
+  lazy val optMaybeFormatExpr
+    : RoundingMode => Option[List[SelectionCriteria]] => EmailVerification => Opt[Option[FormatExpr]] = rm =>
+    selectionCriteria =>
+      emailVerification => parse("format", FormatParser.validate(rm, selectionCriteria, emailVerification))
   lazy val optMaybePresentationHintExpr: Opt[Option[List[PresentationHint]]] =
     parse("presentationHint", PresentationHintParser.validate)
 
@@ -105,6 +107,28 @@ class FormComponentMaker(json: JsValue) {
   lazy val ranges: Option[List[Range]] = rangesJson.map(_.map(getTimeRange _))
   lazy val intervalMins: Option[Int] = (json \ "intervalMins").asOpt[Int]
   lazy val optInstruction: Option[Instruction] = (json \ "instruction").asOpt[Instruction]
+  lazy val optSelectionCriteria: Opt[Option[List[SelectionCriteria]]] =
+    json \ "selectionCriteria" match {
+      case JsDefined(JsArray(selectionCriterias)) =>
+        val r = selectionCriterias.toList
+          .map { selectionCriteria =>
+            SelectionCriteria.reads.reads(selectionCriteria) match {
+              case JsSuccess(selectionCriteria, _) => Right(selectionCriteria)
+              case JsError(error)                  => Left(UnexpectedState(JsError.toJson(error).toString()))
+            }
+          }
+          .partition(_.isLeft) match {
+          case (Nil, rights) => Right(for (Right(i) <- rights) yield i)
+          case (lefts, _)    => Left(for (Left(s)   <- lefts) yield s)
+        }
+
+        r match {
+          case Right(r) => Right(Some(r))
+          case Left(e)  => Left(UnexpectedState(e.map(_.error).mkString(" ")))
+        }
+
+      case JsUndefined() => Right(None)
+    }
 
   def optFieldValue(): Opt[FormComponent] =
     for {
@@ -186,7 +210,8 @@ class FormComponentMaker(json: JsValue) {
   private lazy val textOpt: Opt[ComponentType] = {
     for {
       emailVerification <- optEmailVerification
-      maybeFormatExpr   <- optMaybeFormatExpr(roundingMode)(emailVerification)
+      selectionCriteria <- optSelectionCriteria
+      maybeFormatExpr   <- optMaybeFormatExpr(roundingMode)(selectionCriteria)(emailVerification)
       maybeValueExpr    <- optMaybeValueExpr
       result            <- createObject(maybeFormatExpr, maybeValueExpr, multiline, displayWidth, toUpperCase, json)
     } yield result
@@ -206,7 +231,8 @@ class FormComponentMaker(json: JsValue) {
     lazy val dateConstraintOpt: Opt[DateConstraintType] =
       for {
         emailVerification <- optEmailVerification
-        maybeFormatExpr   <- optMaybeFormatExpr(roundingMode)(emailVerification)
+        selectionCriteria <- optSelectionCriteria
+        maybeFormatExpr   <- optMaybeFormatExpr(roundingMode)(selectionCriteria)(emailVerification)
         optDateConstraintType = maybeFormatExpr match {
           case Some(DateFormat(e)) => e.asRight
           case None                => AnyDate.asRight
@@ -252,8 +278,9 @@ class FormComponentMaker(json: JsValue) {
 
     for {
       emailVerification <- optEmailVerification
+      selectionCriteria <- optSelectionCriteria
       fieldValues       <- fieldValuesOpt.right
-      format            <- optMaybeFormatExpr(roundingMode)(emailVerification).right
+      format            <- optMaybeFormatExpr(roundingMode)(selectionCriteria)(emailVerification).right
       repMax            <- optMaybeRepeatsMax
       repMin            <- optMaybeRepeatsMin
       group             <- validateRepeatsAndBuildGroup(repMax, repMin, fieldValues)
@@ -281,7 +308,8 @@ class FormComponentMaker(json: JsValue) {
   private lazy val choiceOpt: Opt[Choice] = {
     for {
       emailVerification <- optEmailVerification
-      maybeFormatExpr   <- optMaybeFormatExpr(roundingMode)(emailVerification)
+      selectionCriteria <- optSelectionCriteria
+      maybeFormatExpr   <- optMaybeFormatExpr(roundingMode)(selectionCriteria)(emailVerification)
       maybeValueExpr    <- optMaybeValueExpr
       oChoice: Opt[Choice] = (maybeFormatExpr, choices, multivalue, maybeValueExpr, optionHelpText) match {
         // format: off
