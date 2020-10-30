@@ -106,7 +106,10 @@ class FormComponentMaker(json: JsValue) {
   lazy val rangesJson: Option[List[JsValue]] = (json \ "ranges").asOpt[List[JsValue]]
   lazy val ranges: Option[List[Range]] = rangesJson.map(_.map(getTimeRange _))
   lazy val intervalMins: Option[Int] = (json \ "intervalMins").asOpt[Int]
-  lazy val optInstruction: Option[Instruction] = (json \ "instruction").asOpt[Instruction]
+  lazy val optInstruction: Opt[Option[Instruction]] = (json \ "instruction").validateOpt[Instruction] match {
+    case JsSuccess(instruction, _) => instruction.asRight[UnexpectedState]
+    case JsError(error)            => UnexpectedState(error.toString).asLeft[Option[Instruction]]
+  }
   lazy val optSelectionCriteria: Opt[Option[List[SelectionCriteria]]] =
     json \ "selectionCriteria" match {
       case JsDefined(JsArray(selectionCriterias)) =>
@@ -132,11 +135,12 @@ class FormComponentMaker(json: JsValue) {
 
   def optFieldValue(): Opt[FormComponent] =
     for {
-      presHint   <- optMaybePresentationHintExpr
-      mes        <- optMES
-      ct         <- componentTypeOpt
-      validators <- optValidators
-    } yield mkFieldValue(presHint, mes, ct, validators)
+      presHint    <- optMaybePresentationHintExpr
+      mes         <- optMES
+      ct          <- componentTypeOpt
+      validators  <- optValidators
+      instruction <- optInstruction
+    } yield mkFieldValue(presHint, mes, ct, validators, instruction)
 
   private def toOpt[A](result: JsResult[A]): Opt[A] =
     result match {
@@ -155,7 +159,8 @@ class FormComponentMaker(json: JsValue) {
     presHint: Option[List[PresentationHint]],
     mes: MES,
     ct: ComponentType,
-    validators: List[FormComponentValidator]): FormComponent =
+    validators: List[FormComponentValidator],
+    instruction: Option[Instruction]): FormComponent =
     FormComponent(
       id = id,
       `type` = ct,
@@ -171,7 +176,7 @@ class FormComponentMaker(json: JsValue) {
       presentationHint = presHint,
       errorMessage = errorMessage,
       validators = validators,
-      instruction = optInstruction
+      instruction = instruction
     )
 
   private lazy val optMES: Opt[MES] = (submitMode, mandatory, optMaybeValueExpr) match {
