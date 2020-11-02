@@ -86,7 +86,7 @@ class FormComponentMaker(json: JsValue) {
   lazy val fields: Option[List[FormComponentMaker]] = fieldsJson.map(_.map(new FormComponentMaker(_)))
   lazy val validIf: Option[ValidIf] = (json \ "validIf").asOpt[ValidIf]
   lazy val optValidators: Opt[List[FormComponentValidator]] =
-    toOpt((json \ "validators").validateOpt[List[FormComponentValidator]]).map(_.toList.flatten)
+    toOpt((json \ "validators").validateOpt[List[FormComponentValidator]], "/validators").map(_.toList.flatten)
   lazy val mandatory: Option[String] = (json \ "mandatory").asOpt[String]
   lazy val multiline: Option[String] = (json \ "multiline").asOpt[String]
   lazy val displayWidth: Option[String] = (json \ "displayWidth").asOpt[String]
@@ -98,18 +98,16 @@ class FormComponentMaker(json: JsValue) {
   lazy val infoText: Option[SmartString] = (json \ "infoText").asOpt[SmartString]
   lazy val infoType: Option[String] = (json \ "infoType").asOpt[String]
   lazy val shortName: Option[SmartString] = (json \ "shortName").asOpt[SmartString]
-  lazy val optMaybeRepeatsMax: Opt[Option[Int]] = toOpt((json \ "repeatsMax").validateOpt[Int])
-  lazy val optMaybeRepeatsMin: Opt[Option[Int]] = toOpt((json \ "repeatsMin").validateOpt[Int])
+  lazy val optMaybeRepeatsMax: Opt[Option[Int]] = toOpt((json \ "repeatsMax").validateOpt[Int], "/repeatsMax")
+  lazy val optMaybeRepeatsMin: Opt[Option[Int]] = toOpt((json \ "repeatsMin").validateOpt[Int], "/repeatsMin")
   lazy val repeatLabel: Option[SmartString] = (json \ "repeatLabel").asOpt[SmartString]
   lazy val repeatAddAnotherText: Option[SmartString] = (json \ "repeatAddAnotherText").asOpt[SmartString]
 
   lazy val rangesJson: Option[List[JsValue]] = (json \ "ranges").asOpt[List[JsValue]]
   lazy val ranges: Option[List[Range]] = rangesJson.map(_.map(getTimeRange _))
   lazy val intervalMins: Option[Int] = (json \ "intervalMins").asOpt[Int]
-  lazy val optInstruction: Opt[Option[Instruction]] = (json \ "instruction").validateOpt[Instruction] match {
-    case JsSuccess(instruction, _) => instruction.asRight[UnexpectedState]
-    case JsError(error)            => UnexpectedState(error.toString).asLeft[Option[Instruction]]
-  }
+  lazy val optInstruction: Opt[Option[Instruction]] =
+    toOpt((json \ "instruction").validateOpt[Instruction], "/instruction")
   lazy val optSelectionCriteria: Opt[Option[List[SelectionCriteria]]] =
     json \ "selectionCriteria" match {
       case JsDefined(JsArray(selectionCriterias)) =>
@@ -142,17 +140,16 @@ class FormComponentMaker(json: JsValue) {
       instruction <- optInstruction
     } yield mkFieldValue(presHint, mes, ct, validators, instruction)
 
-  private def toOpt[A](result: JsResult[A]): Opt[A] =
+  private def toOpt[A](result: JsResult[A], pathPrefix: String): Opt[A] =
     result match {
       case JsSuccess(a, _) => a.asRight
       case JsError(errors) =>
-        UnexpectedState(
-          errors
-            .map {
-              case (path, validationErrors) =>
-                s"Path: ${path.toString}, Errors: ${validationErrors.map(_.messages.mkString(",")).mkString(",")}"
-            }
-            .mkString(",")).asLeft
+        UnexpectedState(errors
+          .map {
+            case (path, validationErrors) =>
+              s"Path: $pathPrefix${path.toString}, Errors: ${validationErrors.map(_.messages.mkString(",")).mkString(",")}"
+          }
+          .mkString(",")).asLeft
     }
 
   private def mkFieldValue(
@@ -541,7 +538,7 @@ class FormComponentMaker(json: JsValue) {
   }
 
   private def parse[T: Reads, R](path: String, validate: T => Opt[R]): Opt[Option[R]] = {
-    val optMaybeString: Opt[Option[T]] = toOpt((json \ path).validateOpt[T])
+    val optMaybeString: Opt[Option[T]] = toOpt((json \ path).validateOpt[T], path)
     import cats.implicits._
     for {
       maybeString <- optMaybeString.right
