@@ -49,7 +49,7 @@ object BasicParsers {
     (for {
       catenable <- parse(parser)
       expr      <- reconstruct(catenable)
-    } yield expr).run(expression)
+    } yield expr).run(expression.trim)
 
   implicit val W = Whitespace(() | """\s+""".r)
 
