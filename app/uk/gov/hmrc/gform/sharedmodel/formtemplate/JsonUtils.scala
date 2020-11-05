@@ -88,7 +88,7 @@ trait JsonUtils {
     }
 
   def parseOpt[T: Reads, R](jsLookupResult: JsLookupResult, validate: T => Opt[R]): Opt[Option[R]] = {
-    val optMaybeString: Opt[Option[T]] = JsonUtils.toOpt(jsLookupResult.validateOpt[T])
+    val optMaybeString: Opt[Option[T]] = toOpt(jsLookupResult.validateOpt[T])
     import cats.implicits._
     for {
       maybeString <- optMaybeString.right

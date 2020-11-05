@@ -65,10 +65,10 @@ object Section {
         (JsPath \ "pages").read[NonEmptyList[Page]] and
         (JsPath \ "addAnotherQuestion").read[FormComponent] and
         (JsPath \ "instruction").readNullable[Instruction] and
-        (JsPath \ "presentationHint").read[Option[List[PresentationHint]]](
+        (JsPath \ "presentationHint").readNullable[List[PresentationHint]](
           (json: JsValue) =>
             parseOpt(JsDefined(json), PresentationHintParser.validate)
-              .fold(us => JsError(us.toString), fv => JsSuccess(fv)))
+              .fold(us => JsError(us.toString), fv => JsSuccess(fv.getOrElse(List.empty))))
     )(AddToList.apply _)
 
     val writes: Writes[AddToList] = Json.writes[AddToList]
