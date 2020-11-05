@@ -45,15 +45,15 @@ trait Rewriter {
   private def validateAndRewriteIncludeIf(formTemplate: FormTemplate): Either[UnexpectedState, FormTemplate] = {
     val fcLookup: Map[FormComponentId, ComponentType] =
       formTemplate.sections.foldLeft(Map.empty[FormComponentId, ComponentType]) {
-        case (acc, Section.NonRepeatingPage(page))            => acc ++ lookupFromPage(page)
-        case (acc, Section.RepeatingPage(page, _))            => acc ++ lookupFromPage(page)
-        case (acc, Section.AddToList(_, _, _, _, _, _, _, _)) => acc
+        case (acc, Section.NonRepeatingPage(page))               => acc ++ lookupFromPage(page)
+        case (acc, Section.RepeatingPage(page, _))               => acc ++ lookupFromPage(page)
+        case (acc, Section.AddToList(_, _, _, _, _, _, _, _, _)) => acc
       }
 
     val includeIfs: List[IncludeIf] = formTemplate.sections.flatMap {
-      case Section.NonRepeatingPage(page)                    => page.includeIf
-      case Section.RepeatingPage(page, _)                    => page.includeIf
-      case Section.AddToList(_, _, _, includeIf, _, _, _, _) => includeIf
+      case Section.NonRepeatingPage(page)                       => page.includeIf
+      case Section.RepeatingPage(page, _)                       => page.includeIf
+      case Section.AddToList(_, _, _, includeIf, _, _, _, _, _) => includeIf
     }
 
     def validate(

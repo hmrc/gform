@@ -16,9 +16,8 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
-import play.api.libs.json.{ JsError, JsResult, JsSuccess, JsValue, Json, Reads }
-
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils.nelFormat
+import play.api.libs.json._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.Section.AddToList
 
 object SectionTemplateReads {
   def reads: Reads[Section] = new Reads[Section] {
@@ -47,7 +46,7 @@ object SectionTemplateReads {
     }
 
     private def readAddToList(json: JsValue) =
-      Json.format[Section.AddToList].reads(json)
+      AddToList.format.reads(json)
 
     private def readNonRepeatingPage(json: JsValue) =
       Page.pageFormat.reads(json).map(Section.NonRepeatingPage)
