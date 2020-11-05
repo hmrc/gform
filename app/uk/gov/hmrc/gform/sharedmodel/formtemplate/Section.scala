@@ -22,7 +22,6 @@ import uk.gov.hmrc.gform.sharedmodel.SmartString
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils._
 import uk.gov.hmrc.gform.formtemplate.AcknowledgementSectionMaker
 import uk.gov.hmrc.gform.core.parsers.PresentationHintParser
-import play.api.libs.functional.syntax._
 
 sealed trait Section extends Product with Serializable {
   def title(): SmartString
@@ -56,24 +55,11 @@ object Section {
 
   object AddToList {
 
-    val reads: Reads[AddToList] = (
-      (JsPath \ "title").read[SmartString] and
-        (JsPath \ "description").read[SmartString] and
-        (JsPath \ "shortName").read[SmartString] and
-        (JsPath \ "includeIf").readNullable[IncludeIf] and
-        (JsPath \ "repeatsMax").readNullable[Expr] and
-        (JsPath \ "pages").read[NonEmptyList[Page]] and
-        (JsPath \ "addAnotherQuestion").read[FormComponent] and
-        (JsPath \ "instruction").readNullable[Instruction] and
-        (JsPath \ "presentationHint").readNullable[List[PresentationHint]](
-          (json: JsValue) =>
-            parseOpt(JsDefined(json), PresentationHintParser.validate)
-              .fold(us => JsError(us.toString), fv => JsSuccess(fv.getOrElse(List.empty))))
-    )(AddToList.apply _)
+    implicit val presentationHintReads: Reads[List[PresentationHint]] = (json: JsValue) =>
+      parseOpt(JsDefined(json), PresentationHintParser.validate)
+        .fold(us => JsError(us.toString), fv => JsSuccess(fv.getOrElse(List.empty)))
 
-    val writes: Writes[AddToList] = Json.writes[AddToList]
-
-    implicit val format: Format[AddToList] = Format(reads, writes)
+    implicit val format: Format[AddToList] = Json.format[AddToList]
   }
 
   implicit val format: OFormat[Section] = {
