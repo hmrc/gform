@@ -22,7 +22,8 @@ trait PresentationHintGen {
   def presentationHintGen: Gen[PresentationHint] = Gen.oneOf(
     InvisibleInSummary,
     SummariseGroupAsGrid,
-    TotalValue
+    TotalValue,
+    InvisiblePageTitleInSummary
   )
 }
 

@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import cats.data.NonEmptyList
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.SmartString
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils.nelFormat
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils._
 import uk.gov.hmrc.gform.formtemplate.AcknowledgementSectionMaker
 
 sealed trait Section extends Product with Serializable {
@@ -46,7 +46,8 @@ object Section {
     repeatsMax: Option[Expr],
     pages: NonEmptyList[Page],
     addAnotherQuestion: FormComponent,
-    instruction: Option[Instruction]
+    instruction: Option[Instruction],
+    presentationHint: Option[PresentationHint]
   ) extends Section {
     override lazy val expandedFormComponents: List[FormComponent] = pages.toList.flatMap(_.expandedFormComponents)
   }
