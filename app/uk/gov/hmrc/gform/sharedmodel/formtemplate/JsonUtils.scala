@@ -19,11 +19,8 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import cats.data.NonEmptyList
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
-import uk.gov.hmrc.gform.core.Opt
-import uk.gov.hmrc.gform.exceptions.UnexpectedState
 
 import scala.reflect.runtime.universe.TypeTag
-import cats.syntax.either._
 
 trait JsonUtils {
 
@@ -73,28 +70,6 @@ trait JsonUtils {
   }
 
   def safeCast[A, B >: A](reads: Reads[A]): Reads[B] = reads.asInstanceOf[Reads[B]]
-
-  def toOpt[A](result: JsResult[A], pathPrefix: Option[String] = None): Opt[A] =
-    result match {
-      case JsSuccess(a, _) => a.asRight
-      case JsError(errors) =>
-        UnexpectedState(errors
-          .map {
-            case (path, validationErrors) =>
-              s"Path: ${pathPrefix
-                .getOrElse("")}${path.toString}, Errors: ${validationErrors.map(_.messages.mkString(",")).mkString(",")}"
-          }
-          .mkString(",")).asLeft
-    }
-
-  def parseOpt[T: Reads, R](jsLookupResult: JsLookupResult, validate: T => Opt[R]): Opt[Option[R]] = {
-    val optMaybeString: Opt[Option[T]] = toOpt(jsLookupResult.validateOpt[T])
-    import cats.implicits._
-    for {
-      maybeString <- optMaybeString.right
-      res         <- maybeString.traverse[Opt, R](validate).right
-    } yield res
-  }
 }
 
 object JsonUtils extends JsonUtils

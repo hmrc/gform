@@ -17,7 +17,9 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import play.api.libs.json._
+import uk.gov.hmrc.gform.core.parsers.PresentationHintParser
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.Section.AddToList
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils.nelFormat
 
 object SectionTemplateReads {
   def reads: Reads[Section] = new Reads[Section] {
@@ -45,8 +47,14 @@ object SectionTemplateReads {
       case "addToList"        => readAddToList(json)
     }
 
-    private def readAddToList(json: JsValue) =
-      AddToList.format.reads(json)
+    private def readAddToList(json: JsValue) = {
+      implicit val presentationHintsReads: OFormat[PresentationHint] =
+        OFormatWithTemplateReadFallback {
+          case JsString(str) => PresentationHintParser.validateSingle(str).fold(e => JsError(e.error), JsSuccess(_))
+          case unknown       => JsError("Expected String, got " + unknown)
+        }
+      Json.format[AddToList].reads(json)
+    }
 
     private def readNonRepeatingPage(json: JsValue) =
       Page.pageFormat.reads(json).map(Section.NonRepeatingPage)

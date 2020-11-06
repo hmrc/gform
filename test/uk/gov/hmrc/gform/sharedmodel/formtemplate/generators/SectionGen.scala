@@ -112,7 +112,7 @@ trait SectionGen {
       formComponent    <- FormComponentGen.formComponentGen(0)
       choice           <- ComponentTypeGen.choiceGen
       instruction      <- Gen.option(InstructionGen.instructionGen)
-      presentationHint <- Gen.option(PrimitiveGen.zeroOrMoreGen(PresentationHintGen.presentationHintGen))
+      presentationHint <- Gen.option(PresentationHintGen.presentationHintGen)
     } yield
       Section
         .AddToList(

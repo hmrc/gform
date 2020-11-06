@@ -21,7 +21,6 @@ import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.SmartString
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils._
 import uk.gov.hmrc.gform.formtemplate.AcknowledgementSectionMaker
-import uk.gov.hmrc.gform.core.parsers.PresentationHintParser
 
 sealed trait Section extends Product with Serializable {
   def title(): SmartString
@@ -48,18 +47,9 @@ object Section {
     pages: NonEmptyList[Page],
     addAnotherQuestion: FormComponent,
     instruction: Option[Instruction],
-    presentationHint: Option[List[PresentationHint]]
+    presentationHint: Option[PresentationHint]
   ) extends Section {
     override lazy val expandedFormComponents: List[FormComponent] = pages.toList.flatMap(_.expandedFormComponents)
-  }
-
-  object AddToList {
-
-    implicit val presentationHintReads: Reads[List[PresentationHint]] = (json: JsValue) =>
-      parseOpt(JsDefined(json), PresentationHintParser.validate)
-        .fold(us => JsError(us.toString), fv => JsSuccess(fv.getOrElse(List.empty)))
-
-    implicit val format: Format[AddToList] = Json.format[AddToList]
   }
 
   implicit val format: OFormat[Section] = {

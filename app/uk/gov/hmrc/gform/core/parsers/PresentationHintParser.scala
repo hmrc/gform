@@ -25,6 +25,8 @@ object PresentationHintParser {
 
   def validate(expression: String): Opt[List[PresentationHint]] = validateWithParser(expression, presentationHints)
 
+  def validateSingle(expression: String): Opt[PresentationHint] = validateWithParser(expression, presentationHint)
+
   lazy val presentationHints: Parser[List[PresentationHint]] = (presentationHint ~ "," ~ presentationHints ^^ {
     (loc, presHint, _, presHints) =>
       presHint :: presHints
@@ -41,5 +43,8 @@ object PresentationHintParser {
     }
     | "totalValue" ^^ { (loc, unparsed) =>
       TotalValue
+    }
+    | "invisiblePageTitleInSummary" ^^ { (loc, unparsed) =>
+      InvisiblePageTitleInSummary
     })
 }
