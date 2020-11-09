@@ -59,17 +59,15 @@ trait Verifier {
     formTemplate.copy(
       _id = FormTemplateId("specimen-" + formTemplate._id.value),
       authConfig = Anonymous,
-      sections = formTemplate.sections.flatMap {
-        case p: Section.NonRepeatingPage => List(mkSpecimen(p.page))
-        case p: Section.RepeatingPage    => List(mkSpecimen(p.page))
-        case l: Section.AddToList        => l.pages.toList.map(mkSpecimen)
+      sections = formTemplate.sections.map {
+        case p: Section.NonRepeatingPage => p.copy(page = mkSpecimen(p.page))
+        case p: Section.RepeatingPage    => p.copy(page = mkSpecimen(p.page))
+        case l: Section.AddToList        => l.copy(pages = l.pages.map(mkSpecimen))
       }
     )
 
-  private def mkSpecimen(page: Page): Section.NonRepeatingPage =
-    Section.NonRepeatingPage(
-      (removeIncludeIf _ andThen mkComponentsOptional _ andThen noValidators _)(page)
-    )
+  private def mkSpecimen(page: Page): Page =
+    (removeIncludeIf _ andThen mkComponentsOptional _ andThen noValidators _)(page)
 
   private def removeIncludeIf(section: Page): Page = section.copy(includeIf = None)
 
