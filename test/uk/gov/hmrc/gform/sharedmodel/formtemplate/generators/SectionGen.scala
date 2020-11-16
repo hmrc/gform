@@ -106,6 +106,7 @@ trait SectionGen {
       title            <- smartStringGen
       description      <- smartStringGen
       shortName        <- smartStringGen
+      summaryName      <- Gen.option(smartStringGen)
       includeIf        <- Gen.option(IncludeIfGen.includeIfGen)
       repeatsMax       <- Gen.option(ExprGen.exprGen())
       pages            <- PrimitiveGen.oneOrMoreGen(pageGen)
@@ -119,6 +120,7 @@ trait SectionGen {
           title,
           description,
           shortName,
+          summaryName,
           includeIf,
           repeatsMax,
           pages,
