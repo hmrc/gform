@@ -23,20 +23,12 @@ import julienrf.json.derived
 import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
-import uk.gov.hmrc.gform.sharedmodel.{ UserId, VariadicFormData }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplateId, JsonUtils, SectionNumber }
+import uk.gov.hmrc.gform.sharedmodel.UserId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplateId, JsonUtils }
 
 import scala.util.Try
 
-case class VisitIndex(visitsIndex: Set[Int]) extends AnyVal {
-  def toFormFields: Set[FormField] =
-    visitsIndex.map(i => FormField(VisitIndex.formComponentId, i.toString))
-
-  def variadicFormData: VariadicFormData =
-    VariadicFormData.manys(VisitIndex.formComponentId -> visitsIndex.toSeq.map(_.toString))
-
-  def visit(sectionNumber: SectionNumber): VisitIndex = VisitIndex(visitsIndex + sectionNumber.value)
-}
+case class VisitIndex(visitsIndex: Set[Int]) extends AnyVal
 
 object VisitIndex {
 

@@ -45,15 +45,17 @@ trait Rewriter {
   private def validateAndRewriteIncludeIf(formTemplate: FormTemplate): Either[UnexpectedState, FormTemplate] = {
     val fcLookup: Map[FormComponentId, ComponentType] =
       formTemplate.sections.foldLeft(Map.empty[FormComponentId, ComponentType]) {
-        case (acc, Section.NonRepeatingPage(page))                  => acc ++ lookupFromPage(page)
-        case (acc, Section.RepeatingPage(page, _))                  => acc ++ lookupFromPage(page)
-        case (acc, Section.AddToList(_, _, _, _, _, _, _, _, _, _)) => acc
+        case (acc, Section.NonRepeatingPage(page)) => acc ++ lookupFromPage(page)
+        case (acc, Section.RepeatingPage(page, _)) => acc ++ lookupFromPage(page)
+        case (acc, Section.AddToList(_, _, _, _, _, _, pages, _, _, _)) =>
+          acc ++ pages.toList.flatMap(page => lookupFromPage(page))
       }
 
     val includeIfs: List[IncludeIf] = formTemplate.sections.flatMap {
-      case Section.NonRepeatingPage(page)                          => page.includeIf
-      case Section.RepeatingPage(page, _)                          => page.includeIf
-      case Section.AddToList(_, _, _, _, includeIf, _, _, _, _, _) => includeIf
+      case Section.NonRepeatingPage(page) => page.includeIf.toList
+      case Section.RepeatingPage(page, _) => page.includeIf.toList
+      case Section.AddToList(_, _, _, _, includeIf, _, pages, _, _, _) =>
+        includeIf.toList ++ pages.toList.flatMap(_.includeIf.toList)
     }
 
     def validate(
@@ -137,7 +139,10 @@ trait Rewriter {
         sections = formTemplate.sections.map {
           case s: Section.NonRepeatingPage => s.copy(page = s.page.copy(includeIf = replace(s.page.includeIf)))
           case s: Section.RepeatingPage    => s.copy(page = s.page.copy(includeIf = replace(s.page.includeIf)))
-          case s: Section.AddToList        => s.copy(includeIf = replace(s.includeIf))
+          case s: Section.AddToList =>
+            s.copy(
+              includeIf = replace(s.includeIf),
+              pages = s.pages.map(page => page.copy(includeIf = replace(page.includeIf))))
         }
       )
     }
