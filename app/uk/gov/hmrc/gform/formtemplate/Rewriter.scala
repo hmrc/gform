@@ -47,14 +47,14 @@ trait Rewriter {
       formTemplate.sections.foldLeft(Map.empty[FormComponentId, ComponentType]) {
         case (acc, Section.NonRepeatingPage(page)) => acc ++ lookupFromPage(page)
         case (acc, Section.RepeatingPage(page, _)) => acc ++ lookupFromPage(page)
-        case (acc, Section.AddToList(_, _, _, _, _, pages, _, _, _)) =>
+        case (acc, Section.AddToList(_, _, _, _, _, _, pages, _, _, _)) =>
           acc ++ pages.toList.flatMap(page => lookupFromPage(page))
       }
 
     val includeIfs: List[IncludeIf] = formTemplate.sections.flatMap {
       case Section.NonRepeatingPage(page) => page.includeIf.toList
       case Section.RepeatingPage(page, _) => page.includeIf.toList
-      case Section.AddToList(_, _, _, includeIf, _, pages, _, _, _) =>
+      case Section.AddToList(_, _, _, _, includeIf, _, pages, _, _, _) =>
         includeIf.toList ++ pages.toList.flatMap(_.includeIf.toList)
     }
 
