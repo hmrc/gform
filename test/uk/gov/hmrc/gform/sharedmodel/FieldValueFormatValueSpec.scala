@@ -27,13 +27,14 @@ class FieldValueFormatValueSpec extends Spec {
     val fieldValue = toFieldValue("""{
            "id": "sum",
            "label": "Label",
-           "value": "${amountA + amountB}"
+           "value": "${amountA + amountB}",
+           "format": "text"
           }
       """)
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("sum"),
-        Text(ShortText.default, Add(FormCtx(FormComponentId("amountA")), FormCtx(FormComponentId("amountB")))),
+        Text(BasicText, Add(FormCtx(FormComponentId("amountA")), FormCtx(FormComponentId("amountB")))),
         toSmartString("Label"),
         None,
         None,
@@ -53,13 +54,14 @@ class FieldValueFormatValueSpec extends Spec {
     val fieldValue = toFieldValue("""{
            "id": "constant",
            "label": "Label",
-           "value": "'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_ ,'"
+           "value": "'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_ ,'",
+           "format": "text"
           }
       """)
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("constant"),
-        Text(ShortText.default, Constant("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_ ,")),
+        Text(BasicText, Constant("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_ ,")),
         toSmartString("Label"),
         None,
         None,

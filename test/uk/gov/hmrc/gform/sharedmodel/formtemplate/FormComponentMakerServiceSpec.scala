@@ -32,16 +32,17 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
-import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidth._
 import cats.syntax.either._
 import org.scalatest.prop.TableDrivenPropertyChecks
+import play.api.libs.json.{ JsObject, JsString }
+import uk.gov.hmrc.gform.Spec
+import uk.gov.hmrc.gform.exceptions.UnexpectedState
+import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidth._
 
 class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks {
 
   private val textConstraint: TextConstraint = BasicText
-  private val shortTextConstraint: TextConstraint = ShortText.default
 
   private val expr: Expr = Value
   private val xsDisplayWidth = XS
@@ -52,31 +53,28 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
     val table = Table(
       ("actual", "expected"),
       (
-        createTextObject(Some(TextFormat(textConstraint)), Some(TextExpression(expr)), None, IsNotUpperCase),
+        createTextObject(TextFormat(textConstraint), Some(TextExpression(expr)), None, IsNotUpperCase),
         Text(textConstraint, expr).asRight),
       (
-        createTextObject(Some(TextFormat(textConstraint)), Some(TextExpression(expr)), None, IsUpperCase),
+        createTextObject(TextFormat(textConstraint), Some(TextExpression(expr)), None, IsUpperCase),
         Text(textConstraint, expr, defaultDisplayWidth, IsUpperCase).asRight),
       (
-        createTextObject(None, Some(TextExpression(expr)), None, IsNotUpperCase),
-        Text(shortTextConstraint, expr).asRight),
-      (
-        createTextObject(None, Some(TextExpression(expr)), None, IsUpperCase),
-        Text(shortTextConstraint, expr, defaultDisplayWidth, IsUpperCase).asRight),
-      (
-        createTextObject(Some(TextFormat(textConstraint)), Some(TextExpression(expr)), Some("xs"), IsNotUpperCase),
+        createTextObject(TextFormat(textConstraint), Some(TextExpression(expr)), Some("xs"), IsNotUpperCase),
         Text(textConstraint, expr, xsDisplayWidth).asRight),
       (
-        createTextObject(Some(TextFormat(textConstraint)), Some(TextExpression(expr)), Some("xs"), IsUpperCase),
-        Text(textConstraint, expr, xsDisplayWidth, IsUpperCase).asRight),
-      (
-        createTextObject(None, Some(TextExpression(expr)), Some("xs"), IsNotUpperCase),
-        Text(shortTextConstraint, expr, xsDisplayWidth).asRight),
-      (
-        createTextObject(None, Some(TextExpression(expr)), Some("xs"), IsUpperCase),
-        Text(shortTextConstraint, expr, xsDisplayWidth, IsUpperCase).asRight)
+        createTextObject(TextFormat(textConstraint), Some(TextExpression(expr)), Some("xs"), IsUpperCase),
+        Text(textConstraint, expr, xsDisplayWidth, IsUpperCase).asRight)
     )
     table.forEvery({ case (expected, result) => expected shouldBe result })
+  }
+
+  "createObject" should "return error when format is empty for text type" in {
+    val isMultiline = Some("no") // denotes text type
+    val result = createObject(None, None, isMultiline, None, IsNotUpperCase, JsObject(Seq("id" -> JsString("text1"))))
+    result shouldBe Left(UnexpectedState(s"""|Missing format for text field
+                                             |Id: text1
+                                             |Value: must supply a value
+                                             |""".stripMargin))
   }
 
 }

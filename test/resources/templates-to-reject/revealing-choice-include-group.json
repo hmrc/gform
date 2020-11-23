@@ -27,7 +27,8 @@
                   {
                     "id": "groupField",
                     "type": "text",
-                    "label": "Text label"
+                    "label": "Text label",
+                    "format": "text"
                   }
                 ]
               }

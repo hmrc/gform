@@ -26,7 +26,8 @@ class JsonParseTestPresentationHint extends Spec {
     """
     {
       "id": "gid",
-      "label": "glabel"
+      "label": "glabel",
+      "format": "text"
       """
 
   "A component without presentationHint" should "parse successfully" in {

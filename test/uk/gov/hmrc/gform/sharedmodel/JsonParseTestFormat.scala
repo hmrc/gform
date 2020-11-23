@@ -31,15 +31,6 @@ class JsonParseTestFormat extends Spec with TableDrivenPropertyChecks {
       "label": "glabel"
       """
 
-  "A component without format" should "parse successfully" in {
-
-    val jsonStr =
-      s"""$startOfJson
-         }"""
-
-    implicitly[Reads[FormComponent]].reads(Json.parse(jsonStr)) shouldBe a[JsSuccess[_]]
-  }
-
   "A component with a format that is not a String" should "fail to parse" in {
 
     for {
@@ -85,10 +76,7 @@ class JsonParseTestFormat extends Spec with TableDrivenPropertyChecks {
       ("yes",  TextArea(BasicText, Value)),
       ("Yes",  TextArea(BasicText, Value)),
       ("true", TextArea(BasicText, Value)),
-      ("True", TextArea(BasicText, Value)),
-      ("no",   Text(ShortText.default, Value, DisplayWidth.DEFAULT)),
-      ("typo", Text(ShortText.default, Value, DisplayWidth.DEFAULT)),
-      ("",     Text(ShortText.default, Value, DisplayWidth.DEFAULT))
+      ("True", TextArea(BasicText, Value))
       // format: on
     )
 
@@ -102,23 +90,40 @@ class JsonParseTestFormat extends Spec with TableDrivenPropertyChecks {
     }
   }
 
+  "A component with invalid multiline" should "default to text" in {
+    val table = Table(
+      ("multiline", "expected"),
+      ("typo", Text(BasicText, Value, DisplayWidth.DEFAULT, IsNotUpperCase)),
+      ("", Text(BasicText, Value, DisplayWidth.DEFAULT, IsNotUpperCase))
+    )
+
+    forAll(table) { (multiline, expected) ⇒
+      val jsResult =
+        implicitly[Reads[FormComponent]]
+          .reads(Json.parse(startOfJson + s""", "format" : "text", "multiline" : "$multiline" }"""))
+      jsResult shouldBe a[JsSuccess[_]]
+      jsResult.map(fv => fv.`type` shouldBe expected)
+    }
+  }
+
   "A text component with a valid display width" should "parse correctly" in {
 
     val displayWidthOptions = Table(
       // format: off
       ("displayWidth", "expected"),
-      (DisplayWidth.XS.toString.toLowerCase,  Text(ShortText.default, Value, DisplayWidth.XS)),
-      (DisplayWidth.S.toString.toLowerCase,   Text(ShortText.default, Value, DisplayWidth.S)),
-      (DisplayWidth.M.toString.toLowerCase,   Text(ShortText.default, Value, DisplayWidth.M)),
-      (DisplayWidth.L.toString.toLowerCase,   Text(ShortText.default, Value, DisplayWidth.L)),
-      (DisplayWidth.XL.toString.toLowerCase,  Text(ShortText.default, Value, DisplayWidth.XL)),
-      (DisplayWidth.XXL.toString.toLowerCase, Text(ShortText.default, Value, DisplayWidth.XXL))
+      (DisplayWidth.XS.toString.toLowerCase,  Text(BasicText, Value, DisplayWidth.XS)),
+      (DisplayWidth.S.toString.toLowerCase,   Text(BasicText, Value, DisplayWidth.S)),
+      (DisplayWidth.M.toString.toLowerCase,   Text(BasicText, Value, DisplayWidth.M)),
+      (DisplayWidth.L.toString.toLowerCase,   Text(BasicText, Value, DisplayWidth.L)),
+      (DisplayWidth.XL.toString.toLowerCase,  Text(BasicText, Value, DisplayWidth.XL)),
+      (DisplayWidth.XXL.toString.toLowerCase, Text(BasicText, Value, DisplayWidth.XXL))
       // format: on
     )
 
     forAll(displayWidthOptions) { (displayWidth, expected) =>
       val jsResult: JsResult[FormComponent] =
-        implicitly[Reads[FormComponent]].reads(Json.parse(startOfJson + s""", "displayWidth" : "$displayWidth" }"""))
+        implicitly[Reads[FormComponent]]
+          .reads(Json.parse(startOfJson + s""", "format": "text", "displayWidth" : "$displayWidth" }"""))
       jsResult shouldBe a[JsSuccess[_]]
       jsResult.map(fv => fv.`type` shouldBe expected)
     }
@@ -152,13 +157,13 @@ class JsonParseTestFormat extends Spec with TableDrivenPropertyChecks {
   "A text component with an invalid display width format" should "fail to parse" in {
 
     for {
-      snippet <- List(""", "displayWidth" : "INVALID DISPLAY WIDTH"}""")
+      snippet <- List(""", "format": "text", "displayWidth" : "INVALID DISPLAY WIDTH"}""")
     } {
       val jsResult = implicitly[Reads[FormComponent]].reads(Json.parse(startOfJson + snippet))
       jsResult should beJsSuccess(
         FormComponent(
           FormComponentId("gid"),
-          Text(ShortText.default, Value, DisplayWidth.DEFAULT),
+          Text(BasicText, Value, DisplayWidth.DEFAULT),
           toSmartString("glabel"),
           None,
           None,

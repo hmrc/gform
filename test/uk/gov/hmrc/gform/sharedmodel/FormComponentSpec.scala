@@ -26,7 +26,7 @@ import uk.gov.hmrc.gform.Helpers._
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.Register.{ Country, Port }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.SelectionCriteriaValue.{ SelectionCriteriaExpr, SelectionCriteriaReference, SelectionCriteriaSimpleValue }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ ShortText, _ }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 class FormComponentSpec extends Spec {
 
@@ -37,13 +37,14 @@ class FormComponentSpec extends Spec {
          |  "id": "regNum",
          |  "label": "Registration number",
          |  "readonly": "true",
-         |  "mandatory": "true"
+         |  "mandatory": "true",
+         |  "format": "text"
          |}""")
 
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("regNum"),
-        Text(ShortText.default, Value),
+        Text(BasicText, Value),
         toSmartString("Registration number"),
         None,
         None,
@@ -62,13 +63,14 @@ class FormComponentSpec extends Spec {
          |  "id": "regNum",
          |  "label": "Registration number",
          |  "readonly": "true",
-         |  "mandatory": "true"
+         |  "mandatory": "true",
+         |  "format": "text"
          |}""")
 
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("regNum"),
-        Text(ShortText.default, Value),
+        Text(BasicText, Value),
         toSmartString("Registration number"),
         None,
         None,
@@ -88,13 +90,14 @@ class FormComponentSpec extends Spec {
          |  "label": "Registration number",
          |  "readonly": "true",
          |  "mandatory": "true",
-         |  "total": "false"
+         |  "total": "false",
+         |  "format": "text"
          |}""")
 
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("regNum"),
-        Text(ShortText.default, Value),
+        Text(BasicText, Value),
         toSmartString("Registration number"),
         None,
         None,
@@ -114,13 +117,14 @@ class FormComponentSpec extends Spec {
          |  "label": "Registration number",
          |  "readonly": "true",
          |  "mandatory": "true",
-         |  "total": "true"
+         |  "total": "true",
+         |  "format": "text"
          |}""")
 
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("regNum"),
-        Text(ShortText.default, Value),
+        Text(BasicText, Value),
         toSmartString("Registration number"),
         None,
         None,
@@ -141,13 +145,14 @@ class FormComponentSpec extends Spec {
          |  "readonly": "true",
          |  "mandatory": "true",
          |  "value": "'Ahah'",
-         |  "total": "false"
+         |  "total": "false",
+         |  "format": "text"
          |}""")
 
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("regNum"),
-        Text(ShortText.default, Constant("Ahah")),
+        Text(BasicText, Constant("Ahah")),
         toSmartString("Registration number"),
         None,
         None,
@@ -168,13 +173,14 @@ class FormComponentSpec extends Spec {
          |  "readonly": "true",
          |  "mandatory": "true",
          |  "value": "'Ahah'",
-         |  "total": "true"
+         |  "total": "true",
+         |  "format": "text"
          |}""")
 
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("regNum"),
-        Text(ShortText.default, Constant("Ahah")),
+        Text(BasicText, Constant("Ahah")),
         toSmartString("Registration number"),
         None,
         None,
@@ -191,13 +197,14 @@ class FormComponentSpec extends Spec {
     val fieldValue = toFieldValue("""|{
          |  "id": "regNum",
          |  "label": "Registration number",
-         |  "mandatory": "true"
+         |  "mandatory": "true",
+         |  "format": "text"
          |}""")
 
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("regNum"),
-        Text(ShortText.default, Value),
+        Text(BasicText, Value),
         toSmartString("Registration number"),
         None,
         None,
@@ -214,13 +221,14 @@ class FormComponentSpec extends Spec {
     val fieldValue = toFieldValue("""|{
          |  "id": "regNum",
          |  "label": "Registration number",
-         |  "mandatory": "false"
+         |  "mandatory": "false",
+         |  "format": "text"
          |}""")
 
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("regNum"),
-        Text(ShortText.default, Value),
+        Text(BasicText, Value),
         toSmartString("Registration number"),
         None,
         None,
@@ -236,13 +244,14 @@ class FormComponentSpec extends Spec {
   it should "parse as Text without 'mandatory' as mandatory" in {
     val fieldValue = toFieldValue("""|{
          |  "id": "regNum",
-         |  "label": "Registration number"
+         |  "label": "Registration number",
+         |  "format": "text"
          |}""")
 
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("regNum"),
-        Text(ShortText.default, Value),
+        Text(BasicText, Value),
         toSmartString("Registration number"),
         None,
         None,
@@ -258,13 +267,14 @@ class FormComponentSpec extends Spec {
   it should "parse as Text without 'submitMode' as editable and submissible" in {
     val fieldValue = toFieldValue("""|{
          |  "id": "regNum",
-         |  "label": "Registration number"
+         |  "label": "Registration number",
+         |  "format": "text"
          |}""")
 
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("regNum"),
-        Text(ShortText.default, Value),
+        Text(BasicText, Value),
         toSmartString("Registration number"),
         None,
         None,
@@ -281,13 +291,14 @@ class FormComponentSpec extends Spec {
     val fieldValue = toFieldValue("""|{
          |  "id": "regNum",
          |  "label": "Registration number",
-         |  "submitMode": "standard"
+         |  "submitMode": "standard",
+         |  "format": "text"
          |}""")
 
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("regNum"),
-        Text(ShortText.default, Value),
+        Text(BasicText, Value),
         toSmartString("Registration number"),
         None,
         None,
@@ -304,13 +315,15 @@ class FormComponentSpec extends Spec {
     val fieldValue = toFieldValue("""|{
          |  "id": "regNum",
          |  "label": "Registration number",
-         |  "submitMode": "readonly"
+         |  "submitMode": "readonly",
+         |  "format": "text"
+         |
          |}""")
 
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("regNum"),
-        Text(ShortText.default, Value),
+        Text(BasicText, Value),
         toSmartString("Registration number"),
         None,
         None,
@@ -327,13 +340,15 @@ class FormComponentSpec extends Spec {
     val fieldValue = toFieldValue("""|{
          |  "id": "regNum",
          |  "label": "Registration number",
-         |  "submitMode": "info"
+         |  "submitMode": "info",
+         |  "format": "text"
+         |
          |}""")
 
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("regNum"),
-        Text(ShortText.default, Value),
+        Text(BasicText, Value),
         toSmartString("Registration number"),
         None,
         None,
@@ -345,7 +360,7 @@ class FormComponentSpec extends Spec {
         errorMessage = None
       ))
   }
-  it should "parse as Text with 'submitMode' derived as non-editable and submissible" in {
+  it should "parse as Choice with 'submitMode' derived as non-editable and submissible" in {
     val fieldValue = toFieldValue("""|{
          |  "type": "choice",
          |  "id":"taxType",
@@ -377,7 +392,9 @@ class FormComponentSpec extends Spec {
          |  "id":"taxType",
          |  "label":"Gas tax type?",
          |  "format":"yesno",
-         |  "submitMode": "derived"
+         |  "submitMode": "derived",
+         |  "format": "text"
+         |
          |}""")
 
     fieldValue shouldBe jsError
@@ -390,7 +407,9 @@ class FormComponentSpec extends Spec {
          |  "label":"Gas tax type?",
          |  "format":"yesno",
          |  "submitMode": "derived",
-         |  "value": "I am an Invalid value"
+         |  "value": "I am an Invalid value",
+         |  "format": "text"
+         |
          |}""")
 
     fieldValue shouldBe jsError
@@ -401,13 +420,15 @@ class FormComponentSpec extends Spec {
          |  "id": "regNum",
          |  "label": "Registration number",
          |  "mandatory": "false",
-         |  "submitMode": "info"
+         |  "submitMode": "info",
+         |  "format": "text"
+         |
          |}""")
 
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("regNum"),
-        Text(ShortText.default, Value),
+        Text(BasicText, Value),
         toSmartString("Registration number"),
         None,
         None,
@@ -423,13 +444,15 @@ class FormComponentSpec extends Spec {
     val fieldValue = toFieldValue("""|{
          |  "id": "regNum",
          |  "label": "Registration number",
-         |  "submitMode": "notsubmitted"
+         |  "submitMode": "notsubmitted",
+         |  "format": "text"
+         |
          |}""")
 
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("regNum"),
-        Text(ShortText.default, Value),
+        Text(BasicText, Value),
         toSmartString("Registration number"),
         None,
         None,
@@ -521,13 +544,14 @@ class FormComponentSpec extends Spec {
   it should "Default to text if no type is set" in {
     val fieldValue = toFieldValue("""|{
          |  "id": "homeAddress",
-         |  "label": "Home"
+         |  "label": "Home",
+         |  "format": "text"
          |}""")
 
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("homeAddress"),
-        Text(ShortText.default, Value),
+        Text(BasicText, Value),
         toSmartString("Home"),
         None,
         None,
@@ -1287,13 +1311,14 @@ class FormComponentSpec extends Spec {
                                       |  "label": "Registration number",
                                       |  "shortName" : "$shortName",
                                       |  "readonly": "true",
-                                      |  "mandatory": "true"
+                                      |  "mandatory": "true",
+                                      |  "format": "text"
                                       |}""".stripMargin)
 
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("regNum"),
-        Text(ShortText.default, Value),
+        Text(BasicText, Value),
         toSmartString("Registration number"),
         None,
         Some(toSmartString(shortName)),
