@@ -288,7 +288,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
        |      "label": "Element A"
        |    },{
        |      "id": "elementB",
-       |      "format": "text",
+       |      "format": "shortText",
        |      "submitMode": "readonly",
        |      "label": "Element B",
        |      "validIf": "$${elementA=''}"
@@ -351,7 +351,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
        |      "label": "Element A"
        |    },{
        |      "id": "elementB",
-       |      "format": "text",
+       |      "format": "shortText",
        |      "submitMode": "readonly",
        |      "label": "Element B",
        |      "validIf": "$${elementA=''}"
@@ -400,7 +400,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
        |      "label": "Element A"
        |    },{
        |      "id": "elementB",
-       |      "format": "text",
+       |      "format": "shortText",
        |      "submitMode": "readonly",
        |      "label": "Element B",
        |      "validIf": "$${elementA=''}"
@@ -444,7 +444,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
        |      "label": "Element A"
        |    },{
        |      "id": "elementB",
-       |      "format": "text",
+       |      "format": "shortText",
        |      "submitMode": "readonly",
        |      "label": "Element B",
        |      "validIf": "$${elementA=''}"
@@ -493,7 +493,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
        |      "label": "Element A"
        |    },{
        |      "id": "elementB",
-       |      "format": "text",
+       |      "format": "shortText",
        |      "submitMode": "readonly",
        |      "label": "Element B",
        |      "validIf": "$${elementA=''}"
@@ -527,7 +527,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
        |      "label": "Element A"
        |    },{
        |      "id": "elementB",
-       |      "format": "text",
+       |      "format": "shortText",
        |      "submitMode": "readonly",
        |      "label": "Element B",
        |      "validIf": "$${elementA=''}"
@@ -581,7 +581,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
        |      "label": "Element A"
        |    },{
        |      "id": "elementB",
-       |      "format": "text",
+       |      "format": "shortText",
        |      "submitMode": "readonly",
        |      "label": "Element B",
        |      "validIf": "$${elementA=''}"
@@ -631,7 +631,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
        |      "label": "Element A"
        |    },{
        |      "id": "elementB",
-       |      "format": "text",
+       |      "format": "shortText",
        |      "submitMode": "readonly",
        |      "label": "Element B",
        |      "validIf": "$${elementA=''}"
@@ -680,7 +680,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
        |      "label": "Element A"
        |    },{
        |      "id": "elementB",
-       |      "format": "text",
+       |      "format": "shortText",
        |      "submitMode": "readonly",
        |      "label": "Element B",
        |      "validIf": "$${elementA=''}"
@@ -730,7 +730,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
        |      "label": "Element A"
        |    },{
        |      "id": "elementB",
-       |      "format": "text",
+       |      "format": "shortText",
        |      "submitMode": "readonly",
        |      "label": "Element B",
        |      "validIf": "$${elementA=''}"
@@ -777,7 +777,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
        |      "label": "Element A"
        |    },{
        |      "id": "elementB",
-       |      "format": "text",
+       |      "format": "shortText",
        |      "submitMode": "readonly",
        |      "label": "Element B",
        |      "validIf": "$${elementA=''}"

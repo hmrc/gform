@@ -56,7 +56,7 @@ trait ExampleAuthConfig extends DestinationGen {
   private def buildFormComponent(name: String, expr: Expr) =
     FormComponent(
       FormComponentId(name),
-      Text(BasicText, expr),
+      Text(ShortText.default, expr),
       toSmartString(name),
       None,
       None,
@@ -143,7 +143,7 @@ trait ExampleFieldValue { dependecies: ExampleFieldId =>
   def `fieldValue - firstName` =
     FormComponent(
       `fieldId - firstName`,
-      Text(BasicText, Constant("any text")),
+      Text(ShortText.default, Constant("any text")),
       toSmartString("First Name"),
       None,
       None,
@@ -160,7 +160,7 @@ trait ExampleFieldValue { dependecies: ExampleFieldId =>
   def `fieldValue - surname` =
     FormComponent(
       `fieldId - surname`,
-      Text(BasicText, Constant("any text")),
+      Text(ShortText.default, Constant("any text")),
       toSmartString("Last Name"),
       None,
       None,
@@ -177,7 +177,7 @@ trait ExampleFieldValue { dependecies: ExampleFieldId =>
   def `fieldValue - iptRegNum` =
     FormComponent(
       `fieldId - iptRegNum`,
-      Text(BasicText, Constant("any text")),
+      Text(ShortText.default, Constant("any text")),
       toSmartString("Insurance Premium Tax (IPT) number"),
       None,
       None,
@@ -194,7 +194,7 @@ trait ExampleFieldValue { dependecies: ExampleFieldId =>
   def `fieldValue - businessName` =
     FormComponent(
       `fieldId - businessName`,
-      Text(BasicText, Constant("any text")),
+      Text(ShortText.default, Constant("any text")),
       toSmartString("Name of business"),
       None,
       None,

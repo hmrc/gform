@@ -22,7 +22,7 @@ import org.scalatest.{ Matchers, WordSpecLike }
 import uk.gov.hmrc.gform.Helpers.toSmartString
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.ExampleData
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ BasicText, FormComponent, FormComponentId, Instruction, Page, Section, Text, Value }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponent, FormComponentId, Instruction, Page, Section, ShortText, Text, Value }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -59,7 +59,7 @@ class VerifierSpec extends WordSpecLike with Matchers with ScalaFutures {
   private def mkFormComponent(id: String, instruction: Option[Instruction]) =
     FormComponent(
       FormComponentId(id),
-      Text(BasicText, Value),
+      Text(ShortText.default, Value),
       toSmartString(id),
       None,
       None,

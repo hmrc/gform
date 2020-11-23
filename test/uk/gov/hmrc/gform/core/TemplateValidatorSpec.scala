@@ -591,7 +591,7 @@ class TemplateValidatorSpec extends Spec {
   private def mkFormComponent(name: String, expr: Expr) =
     FormComponent(
       FormComponentId(name),
-      Text(BasicText, expr),
+      Text(ShortText.default, expr),
       toSmartString(name),
       None,
       None,

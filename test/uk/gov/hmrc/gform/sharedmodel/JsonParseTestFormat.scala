@@ -73,16 +73,17 @@ class JsonParseTestFormat extends Spec with TableDrivenPropertyChecks {
     val multilineCombinations = Table(
       // format: off
       ("multiline", "expected"),
-      ("yes",  TextArea(BasicText, Value)),
-      ("Yes",  TextArea(BasicText, Value)),
-      ("true", TextArea(BasicText, Value)),
-      ("True", TextArea(BasicText, Value))
+      ("yes",  TextArea(ShortText.default, Value)),
+      ("Yes",  TextArea(ShortText.default, Value)),
+      ("true", TextArea(ShortText.default, Value)),
+      ("True", TextArea(ShortText.default, Value))
       // format: on
     )
 
     forAll(multilineCombinations) { (multiline, expected) ⇒
       val jsResult =
-        implicitly[Reads[FormComponent]].reads(Json.parse(startOfJson + s""", "multiline" : "$multiline" }"""))
+        implicitly[Reads[FormComponent]]
+          .reads(Json.parse(startOfJson + s""", "format" : "shortText", "multiline" : "$multiline" }"""))
 
       jsResult shouldBe a[JsSuccess[_]]
       jsResult.map(fv => fv.`type` shouldBe expected)
@@ -93,14 +94,14 @@ class JsonParseTestFormat extends Spec with TableDrivenPropertyChecks {
   "A component with invalid multiline" should "default to text" in {
     val table = Table(
       ("multiline", "expected"),
-      ("typo", Text(BasicText, Value, DisplayWidth.DEFAULT, IsNotUpperCase)),
-      ("", Text(BasicText, Value, DisplayWidth.DEFAULT, IsNotUpperCase))
+      ("typo", Text(ShortText.default, Value, DisplayWidth.DEFAULT, IsNotUpperCase)),
+      ("", Text(ShortText.default, Value, DisplayWidth.DEFAULT, IsNotUpperCase))
     )
 
     forAll(table) { (multiline, expected) ⇒
       val jsResult =
         implicitly[Reads[FormComponent]]
-          .reads(Json.parse(startOfJson + s""", "format" : "text", "multiline" : "$multiline" }"""))
+          .reads(Json.parse(startOfJson + s""", "format" : "shortText", "multiline" : "$multiline" }"""))
       jsResult shouldBe a[JsSuccess[_]]
       jsResult.map(fv => fv.`type` shouldBe expected)
     }
@@ -111,19 +112,19 @@ class JsonParseTestFormat extends Spec with TableDrivenPropertyChecks {
     val displayWidthOptions = Table(
       // format: off
       ("displayWidth", "expected"),
-      (DisplayWidth.XS.toString.toLowerCase,  Text(BasicText, Value, DisplayWidth.XS)),
-      (DisplayWidth.S.toString.toLowerCase,   Text(BasicText, Value, DisplayWidth.S)),
-      (DisplayWidth.M.toString.toLowerCase,   Text(BasicText, Value, DisplayWidth.M)),
-      (DisplayWidth.L.toString.toLowerCase,   Text(BasicText, Value, DisplayWidth.L)),
-      (DisplayWidth.XL.toString.toLowerCase,  Text(BasicText, Value, DisplayWidth.XL)),
-      (DisplayWidth.XXL.toString.toLowerCase, Text(BasicText, Value, DisplayWidth.XXL))
+      (DisplayWidth.XS.toString.toLowerCase,  Text(ShortText.default, Value, DisplayWidth.XS)),
+      (DisplayWidth.S.toString.toLowerCase,   Text(ShortText.default, Value, DisplayWidth.S)),
+      (DisplayWidth.M.toString.toLowerCase,   Text(ShortText.default, Value, DisplayWidth.M)),
+      (DisplayWidth.L.toString.toLowerCase,   Text(ShortText.default, Value, DisplayWidth.L)),
+      (DisplayWidth.XL.toString.toLowerCase,  Text(ShortText.default, Value, DisplayWidth.XL)),
+      (DisplayWidth.XXL.toString.toLowerCase, Text(ShortText.default, Value, DisplayWidth.XXL))
       // format: on
     )
 
     forAll(displayWidthOptions) { (displayWidth, expected) =>
       val jsResult: JsResult[FormComponent] =
         implicitly[Reads[FormComponent]]
-          .reads(Json.parse(startOfJson + s""", "format": "text", "displayWidth" : "$displayWidth" }"""))
+          .reads(Json.parse(startOfJson + s""", "format": "shortText", "displayWidth" : "$displayWidth" }"""))
       jsResult shouldBe a[JsSuccess[_]]
       jsResult.map(fv => fv.`type` shouldBe expected)
     }
@@ -135,19 +136,20 @@ class JsonParseTestFormat extends Spec with TableDrivenPropertyChecks {
     val displayWidthOptions = Table(
       // format: off
       ("displayWidth", "expected"),
-      (DisplayWidth.XS.toString.toLowerCase,  TextArea(BasicText, Value, DisplayWidth.XS)),
-      (DisplayWidth.S.toString.toLowerCase,   TextArea(BasicText, Value, DisplayWidth.S)),
-      (DisplayWidth.M.toString.toLowerCase,   TextArea(BasicText, Value, DisplayWidth.M)),
-      (DisplayWidth.L.toString.toLowerCase,   TextArea(BasicText, Value, DisplayWidth.L)),
-      (DisplayWidth.XL.toString.toLowerCase,  TextArea(BasicText, Value, DisplayWidth.XL)),
-      (DisplayWidth.XXL.toString.toLowerCase, TextArea(BasicText, Value, DisplayWidth.XXL))
+      (DisplayWidth.XS.toString.toLowerCase,  TextArea(ShortText.default, Value, DisplayWidth.XS)),
+      (DisplayWidth.S.toString.toLowerCase,   TextArea(ShortText.default, Value, DisplayWidth.S)),
+      (DisplayWidth.M.toString.toLowerCase,   TextArea(ShortText.default, Value, DisplayWidth.M)),
+      (DisplayWidth.L.toString.toLowerCase,   TextArea(ShortText.default, Value, DisplayWidth.L)),
+      (DisplayWidth.XL.toString.toLowerCase,  TextArea(ShortText.default, Value, DisplayWidth.XL)),
+      (DisplayWidth.XXL.toString.toLowerCase, TextArea(ShortText.default, Value, DisplayWidth.XXL))
       // format: on
     )
 
     forAll(displayWidthOptions) { (displayWidth, expected) =>
       val jsResult: JsResult[FormComponent] =
         implicitly[Reads[FormComponent]]
-          .reads(Json.parse(startOfJson + s""", "multiline" : "true" """ + s""", "displayWidth" : "$displayWidth" }"""))
+          .reads(Json.parse(
+            startOfJson + s""", "format": "shortText", "multiline" : "true" """ + s""", "displayWidth" : "$displayWidth" }"""))
       jsResult shouldBe a[JsSuccess[_]]
       jsResult.map(fv => fv.`type` shouldBe expected)
     }
@@ -157,13 +159,13 @@ class JsonParseTestFormat extends Spec with TableDrivenPropertyChecks {
   "A text component with an invalid display width format" should "fail to parse" in {
 
     for {
-      snippet <- List(""", "format": "text", "displayWidth" : "INVALID DISPLAY WIDTH"}""")
+      snippet <- List(""", "format": "shortText", "displayWidth" : "INVALID DISPLAY WIDTH"}""")
     } {
       val jsResult = implicitly[Reads[FormComponent]].reads(Json.parse(startOfJson + snippet))
       jsResult should beJsSuccess(
         FormComponent(
           FormComponentId("gid"),
-          Text(BasicText, Value, DisplayWidth.DEFAULT),
+          Text(ShortText.default, Value, DisplayWidth.DEFAULT),
           toSmartString("glabel"),
           None,
           None,

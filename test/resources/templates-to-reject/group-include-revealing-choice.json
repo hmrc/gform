@@ -31,7 +31,7 @@
                     "id": "tradingName",
                     "type": "text",
                     "label": "Trading name",
-                    "format": "text"
+                    "format": "shortText"
                   }
                 ],
                 [

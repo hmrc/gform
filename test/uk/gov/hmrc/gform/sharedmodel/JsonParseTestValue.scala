@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel
 
 import play.api.libs.json._
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ BasicText, FormComponent, Text }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponent, ShortText, Text }
 
 class JsonParseTestValue extends Spec {
 
@@ -27,7 +27,7 @@ class JsonParseTestValue extends Spec {
     {
       "id": "gid",
       "label": "glabel",
-      "format": "text"
+      "format": "shortText"
       """
 
   "A component without value" should "parse successfully" in {
@@ -72,7 +72,7 @@ class JsonParseTestValue extends Spec {
       jsResult shouldBe a[JsSuccess[_]]
       jsResult.map(fv =>
         fv.`type` match {
-          case Text(constraint, _, _, _) => constraint should equal(BasicText)
+          case Text(constraint, _, _, _) => constraint should equal(ShortText.default)
           case a @ _                     => fail(s"expected a Text, got $a")
       })
     }

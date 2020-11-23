@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.formtemplate
 import org.scalatest.{ Matchers, WordSpecLike }
 import uk.gov.hmrc.gform.Helpers.toSmartString
 import uk.gov.hmrc.gform.core.{ Invalid, Valid }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ BasicText, FormComponent, FormComponentId, Instruction, Page, Text, Value }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponent, FormComponentId, Instruction, Page, ShortText, Text, Value }
 
 class FormTemplateValidatorSpec extends WordSpecLike with Matchers {
 
@@ -172,7 +172,7 @@ class FormTemplateValidatorSpec extends WordSpecLike with Matchers {
   private def mkFormComponent(id: String, instruction: Option[Instruction]) =
     FormComponent(
       FormComponentId(id),
-      Text(BasicText, Value),
+      Text(ShortText.default, Value),
       toSmartString(id),
       None,
       None,

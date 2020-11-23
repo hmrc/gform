@@ -42,7 +42,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidth._
 
 class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks {
 
-  private val textConstraint: TextConstraint = BasicText
+  private val textConstraint: TextConstraint = ShortText.default
 
   private val expr: Expr = Value
   private val xsDisplayWidth = XS
@@ -73,7 +73,18 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
     val result = createObject(None, None, isMultiline, None, IsNotUpperCase, JsObject(Seq("id" -> JsString("text1"))))
     result shouldBe Left(UnexpectedState(s"""|Missing format for text field
                                              |Id: text1
-                                             |Value: must supply a value
+                                             |Format: None
+                                             |Value: None
+                                             |""".stripMargin))
+  }
+
+  it should "return error when format is empty for multiline text type" in {
+    val isMultiline = Some("yes") // denotes multiline text type
+    val result = createObject(None, None, isMultiline, None, IsNotUpperCase, JsObject(Seq("id" -> JsString("text1"))))
+    result shouldBe Left(UnexpectedState(s"""|Missing format for multiline text field
+                                             |Id: text1
+                                             |Format: None
+                                             |Value: None
                                              |""".stripMargin))
   }
 

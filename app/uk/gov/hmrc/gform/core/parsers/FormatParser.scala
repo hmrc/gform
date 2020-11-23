@@ -127,8 +127,6 @@ object FormatParser {
         TextFormat(ShortText.default)
       } | "shortText(" ~ positiveInteger ~ "," ~ positiveInteger ~ ")" ^^ { (_, _, min, _, max, _) =>
         TextFormat(ShortText(min, max))
-      } | "text" ^^ { (_, _) =>
-        TextFormat(BasicText)
       } | "text(" ~ positiveInteger ~ "," ~ positiveInteger ~ ")" ^^ { (_, _, min, _, max, _) =>
         TextFormat(TextWithRestrictions(min, max))
       } | "lookup(" ~ register ~ ")" ^^ { (_, _, register, _) =>

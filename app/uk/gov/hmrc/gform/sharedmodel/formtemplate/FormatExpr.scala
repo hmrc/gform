@@ -157,7 +157,6 @@ final case class PositiveNumber(
   unit: Option[LocalisedString] = None)
     extends TextConstraint
 
-case object BasicText extends TextConstraint
 case class ShortText(min: Int, max: Int) extends TextConstraint
 object ShortText { val default = ShortText(0, 1000) }
 case class Lookup(register: Register, selectionCriteria: Option[List[SelectionCriteria]]) extends TextConstraint

@@ -13,7 +13,7 @@
         {
           "id": "code",
           "label": "Code",
-          "format": "text"
+          "format": "shortText"
         }
       ]
     },
