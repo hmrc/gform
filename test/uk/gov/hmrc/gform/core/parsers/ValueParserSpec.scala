@@ -428,7 +428,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       List(
         FormComponent(
           FormComponentId("firstName"),
-          Text(BasicText, Value),
+          Text(ShortText.default, Value),
           toSmartString("Your first name"),
           None,
           None,
@@ -441,7 +441,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
         ),
         FormComponent(
           FormComponentId("lastName"),
-          Text(BasicText, Value),
+          Text(ShortText.default, Value),
           toSmartString("Your last name"),
           None,
           None,
@@ -463,14 +463,16 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
   "Expr.validate" should "return Valid if expression include fieldName id present in the form template" in {
 
     val res = FormTemplateValidator
-      .validate(List(Text(BasicText, FormCtx("firstName"))), formTemplateWithOneSection)
+      .validate(List(Text(ShortText.default, FormCtx("firstName"))), formTemplateWithOneSection)
     res should be(Valid)
   }
 
   it should "return Valid if expression Add fields present in the form template" in {
     val res =
       FormTemplateValidator
-        .validate(List(Text(BasicText, Add(FormCtx("firstName"), FormCtx("lastName")))), formTemplateWithOneSection)
+        .validate(
+          List(Text(ShortText.default, Add(FormCtx("firstName"), FormCtx("lastName")))),
+          formTemplateWithOneSection)
     res should be(Valid)
   }
 
@@ -478,19 +480,19 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     val res =
       FormTemplateValidator
         .validate(
-          List(Text(BasicText, Multiply(FormCtx("firstName"), FormCtx("lastName")))),
+          List(Text(ShortText.default, Multiply(FormCtx("firstName"), FormCtx("lastName")))),
           formTemplateWithOneSection)
     res should be(Valid)
   }
 
   it should "return Invalid if expression include fieldName id not present in the form template" in {
     val res = FormTemplateValidator
-      .validate(List(Text(BasicText, FormCtx("firstNameTypo"))), formTemplateWithOneSection)
+      .validate(List(Text(ShortText.default, FormCtx("firstNameTypo"))), formTemplateWithOneSection)
     res should be(Invalid("Form field 'firstNameTypo' is not defined in form template."))
   }
   it should "return invalid and not be parsed as empty string" in {
     val res = FormTemplateValidator
-      .validate(List(Text(BasicText, FormCtx("'' * ''"))), formTemplateWithOneSection)
+      .validate(List(Text(ShortText.default, FormCtx("'' * ''"))), formTemplateWithOneSection)
     res should be(Invalid("Form field ''' * ''' is not defined in form template."))
   }
 

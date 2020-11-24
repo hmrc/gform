@@ -22,7 +22,8 @@
               {
                 "id": "tradingName",
                 "type": "text",
-                "label": "Trading name"
+                "label": "Trading name",
+                "format": "shortText"
               }
             ],
             [

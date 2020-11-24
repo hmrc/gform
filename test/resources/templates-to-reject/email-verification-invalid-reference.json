@@ -27,7 +27,8 @@
       "fields": [
         {
           "id": "code",
-          "label": "Code"
+          "label": "Code",
+          "format": "shortText"
         }
       ]
     }

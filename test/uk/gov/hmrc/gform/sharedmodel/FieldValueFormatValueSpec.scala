@@ -27,7 +27,8 @@ class FieldValueFormatValueSpec extends Spec {
     val fieldValue = toFieldValue("""{
            "id": "sum",
            "label": "Label",
-           "value": "${amountA + amountB}"
+           "value": "${amountA + amountB}",
+           "format": "shortText"
           }
       """)
     fieldValue should beJsSuccess(
@@ -53,7 +54,8 @@ class FieldValueFormatValueSpec extends Spec {
     val fieldValue = toFieldValue("""{
            "id": "constant",
            "label": "Label",
-           "value": "'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_ ,'"
+           "value": "'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_ ,'",
+           "format": "shortText"
           }
       """)
     fieldValue should beJsSuccess(

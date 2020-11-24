@@ -36,34 +36,11 @@ class FormatValidationSpec extends Spec {
   it should "return email" in createTest("email", Email)
   it should "return utr" in createTest("utr", UTR)
   it should "return nino" in createTest("nino", NINO)
-  it should "return BasicText" in createTest("text", BasicText)
   it should "return TextWithRestrictions" in createTest("text(1, 1)", TextWithRestrictions(1, 1))
   it should "return ShortText" in createTest("shortText", ShortText.default)
   it should "return UkVrn" in createTest("ukVrn", UkVrn)
   it should "return countryCode" in createTest("countryCode", CountryCode)
   it should "return nonUkCountryCode" in createTest("nonUkCountryCode", NonUkCountryCode)
-  it should "return ShortText when not provided" in {
-    reads.reads(Json.parse(s"""{
-         "id": "$id",
-         "type": "text",
-         "label": "$label"
-        }
-      """)) shouldBe JsSuccess(
-      FormComponent(
-        id = FormComponentId(id),
-        `type` = Text(ShortText.default, Value),
-        label = toSmartString(label),
-        helpText = None,
-        shortName = None,
-        validIf = None,
-        mandatory = true,
-        editable = true,
-        submissible = true,
-        derived = false,
-        errorMessage = None,
-        presentationHint = None
-      ))
-  }
   it should "return UkSortCode Component" in {
     reads.reads(makeJson("ukSortCode")) shouldBe JsSuccess(
       FormComponent(

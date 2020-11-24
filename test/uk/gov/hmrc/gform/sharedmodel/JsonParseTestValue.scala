@@ -26,7 +26,8 @@ class JsonParseTestValue extends Spec {
     """
     {
       "id": "gid",
-      "label": "glabel"
+      "label": "glabel",
+      "format": "shortText"
       """
 
   "A component without value" should "parse successfully" in {
