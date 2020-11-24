@@ -130,7 +130,7 @@ object FormatParser {
       } | "text(" ~ positiveInteger ~ "," ~ positiveInteger ~ ")" ^^ { (_, _, min, _, max, _) =>
         TextFormat(TextWithRestrictions(min, max))
       } | "text" ^^ { (_, _) =>
-        TextFormat(TextWithRestrictions(0, 100000))
+        TextFormat(TextConstraint.default)
       } | "lookup(" ~ register ~ ")" ^^ { (_, _, register, _) =>
         TextFormat(Lookup(register, selectionCriteria))
       } | "submissionRef" ^^ { (_, _) =>
