@@ -123,12 +123,14 @@ object FormatParser {
 
   lazy val basicFormat: Option[List[SelectionCriteria]] => Parser[TextFormat] =
     selectionCriteria => {
-      "shortText" ^^ { (loc, _) =>
+      "shortText" ^^ { (_, _) =>
         TextFormat(ShortText.default)
       } | "shortText(" ~ positiveInteger ~ "," ~ positiveInteger ~ ")" ^^ { (_, _, min, _, max, _) =>
         TextFormat(ShortText(min, max))
       } | "text(" ~ positiveInteger ~ "," ~ positiveInteger ~ ")" ^^ { (_, _, min, _, max, _) =>
         TextFormat(TextWithRestrictions(min, max))
+      } | "text" ^^ { (_, _) =>
+        TextFormat(TextWithRestrictions(0, 100000))
       } | "lookup(" ~ register ~ ")" ^^ { (_, _, register, _) =>
         TextFormat(Lookup(register, selectionCriteria))
       } | "submissionRef" ^^ { (_, _) =>
