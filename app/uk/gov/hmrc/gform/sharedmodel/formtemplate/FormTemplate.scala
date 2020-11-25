@@ -23,6 +23,8 @@ import uk.gov.hmrc.gform.formtemplate.FormTemplatesControllerRequestHandler
 import uk.gov.hmrc.gform.sharedmodel.{ AvailableLanguages, LocalisedString, formtemplate }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
 
+case class DisplayHmrcLogo(value: Boolean) extends AnyVal
+
 case class FormTemplate(
   _id: FormTemplateId,
   formName: LocalisedString,
@@ -38,7 +40,8 @@ case class FormTemplate(
   parentFormSubmissionRefs: List[FormComponentId],
   languages: AvailableLanguages,
   save4LaterInfoText: Option[Save4LaterInfoText],
-  summarySection: SummarySection
+  summarySection: SummarySection,
+  displayHMRCLogo: Option[Boolean]
 ) {
   lazy val expandedFormComponentsInMainSections: List[FormComponent] = sections.flatMap(_.expandedFormComponents)
 }
