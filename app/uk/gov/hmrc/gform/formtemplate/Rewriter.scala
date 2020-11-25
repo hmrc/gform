@@ -21,9 +21,10 @@ import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import cats.implicits._
 import scala.util.{ Failure, Success, Try }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
 
 trait Rewriter {
-  def rewrite(formTemplate: FormTemplate): FOpt[FormTemplate] = fromOptA(validateAndRewriteIncludeIf(formTemplate))
+  def rewrite(formTemplate: FormTemplate): FOpt[FormTemplate] = fromOptA(validateAndRewriteBooleanExprs(formTemplate))
 
   private def mkComponentTypeLookup(formComponent: FormComponent): Map[FormComponentId, ComponentType] = {
     val mainComponent: Map[FormComponentId, ComponentType] = Map(formComponent.id -> formComponent.`type`)
@@ -36,8 +37,8 @@ trait Rewriter {
     mainComponent ++ subComponent
   }
 
-  private def lookupFromPage(page: Page): Map[FormComponentId, ComponentType] =
-    page.fields.foldLeft(Map.empty[FormComponentId, ComponentType])((acc, fc) => mkComponentTypeLookup(fc) ++ acc)
+  private def lookupFromPage(fields: List[FormComponent]): Map[FormComponentId, ComponentType] =
+    fields.foldLeft(Map.empty[FormComponentId, ComponentType])((acc, fc) => mkComponentTypeLookup(fc) ++ acc)
 
   private def missingFormComponentId[A](formComponentId: FormComponentId): Either[UnexpectedState, A] =
     Left(UnexpectedState(s"Missing component with id $formComponentId"))
@@ -55,21 +56,32 @@ trait Rewriter {
       case fc => nonNestedFormComponentValidIf(fc)
     }
 
-  private def validateAndRewriteIncludeIf(formTemplate: FormTemplate): Either[UnexpectedState, FormTemplate] = {
+  private def validateAndRewriteBooleanExprs(formTemplate: FormTemplate): Either[UnexpectedState, FormTemplate] = {
+
+    val fcLookupDeclaration: Map[FormComponentId, ComponentType] = formTemplate.destinations match {
+      case dl: Destinations.DestinationList  => lookupFromPage(dl.declarationSection.fields)
+      case dp: Destinations.DestinationPrint => Map.empty[FormComponentId, ComponentType]
+    }
+
     val fcLookup: Map[FormComponentId, ComponentType] =
-      formTemplate.sections.foldLeft(Map.empty[FormComponentId, ComponentType]) {
-        case (acc, Section.NonRepeatingPage(page)) => acc ++ lookupFromPage(page)
-        case (acc, Section.RepeatingPage(page, _)) => acc ++ lookupFromPage(page)
+      formTemplate.sections.foldLeft(fcLookupDeclaration) {
+        case (acc, Section.NonRepeatingPage(page)) => acc ++ lookupFromPage(page.fields)
+        case (acc, Section.RepeatingPage(page, _)) => acc ++ lookupFromPage(page.fields)
         case (acc, Section.AddToList(_, _, _, _, _, _, pages, _, _, _)) =>
-          acc ++ pages.toList.flatMap(page => lookupFromPage(page))
+          acc ++ pages.toList.flatMap(page => lookupFromPage(page.fields))
       }
+
+    val validIfsDeclaration = formTemplate.destinations match {
+      case dl: Destinations.DestinationList  => dl.declarationSection.fields.flatMap(formComponentValidIf)
+      case dp: Destinations.DestinationPrint => Nil
+    }
 
     val validIfs: List[ValidIf] = formTemplate.sections.flatMap {
       case Section.NonRepeatingPage(page) => page.fields.flatMap(formComponentValidIf)
       case Section.RepeatingPage(page, _) => page.fields.flatMap(formComponentValidIf)
       case Section.AddToList(_, _, _, _, _, _, pages, _, _, _) =>
         pages.toList.flatMap(page => page.fields.flatMap(formComponentValidIf))
-    }
+    } ++ validIfsDeclaration
 
     val includeIfs: List[IncludeIf] = formTemplate.sections.flatMap {
       case Section.NonRepeatingPage(page) => page.includeIf.toList
@@ -193,6 +205,15 @@ trait Rewriter {
 
       def replaceFields(fields: List[FormComponent]): List[FormComponent] = fields.map(replaceFormComponent)
 
+      def replaceDeclarationSection(declarationSection: DeclarationSection): DeclarationSection =
+        declarationSection.copy(fields = replaceFields(declarationSection.fields))
+
+      def replaceDestinations(destinations: Destinations): Destinations = destinations match {
+        case dl: Destinations.DestinationList =>
+          dl.copy(declarationSection = replaceDeclarationSection(dl.declarationSection))
+        case dp: Destinations.DestinationPrint => dp
+      }
+
       formTemplate.copy(
         sections = formTemplate.sections.map {
           case s: Section.NonRepeatingPage =>
@@ -204,7 +225,8 @@ trait Rewriter {
               includeIf = replace(s.includeIf),
               pages = s.pages.map(page =>
                 page.copy(includeIf = replace(page.includeIf), fields = replaceFields(page.fields))))
-        }
+        },
+        destinations = replaceDestinations(formTemplate.destinations)
       )
     }
   }
