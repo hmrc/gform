@@ -39,7 +39,7 @@ case class FormTemplate(
   languages: AvailableLanguages,
   save4LaterInfoText: Option[Save4LaterInfoText],
   summarySection: SummarySection,
-  displayHMRCLogo: Option[Boolean]
+  displayHMRCLogo: Boolean
 ) {
   lazy val expandedFormComponentsInMainSections: List[FormComponent] = sections.flatMap(_.expandedFormComponents)
 }

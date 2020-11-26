@@ -49,6 +49,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                              |    "title": "Next Steps",
                                              |    "summaryPdf": "TestSummaryPdf"
                                              |  },
+                                             |  "displayHMRCLogo": true,
                                              |  "parentFormSubmissionRefs": [],
                                              |  "summarySection": $summarySection
                                              |}
@@ -150,6 +151,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                              |      ]
                                              |   }
                                              |  },
+                                             |  "displayHMRCLogo": true,
                                              |  "parentFormSubmissionRefs": [
                                              |    "123",
                                              |    "456"
@@ -269,6 +271,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                  |      ]
                                  |    }
                                  |  },
+                                 |  "displayHMRCLogo": true,
                                  |  "testText": "hello",
                                  |  "testJsonArr": [
                                  |    "en",
