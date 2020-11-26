@@ -80,6 +80,10 @@ object FormTemplatesControllerRequestHandler {
       (__ \ 'draftRetrievalMethod \ 'showContinueOrDeletePage).json
         .copyFrom((__ \ 'showContinueOrDeletePage).json.pick orElse Reads.pure(JsString("true")))
 
+    val ensureDisplayHMRCLogo =
+      (__ \ 'displayHMRCLogo).json
+        .copyFrom((__ \ 'displayHMRCLogo).json.pick orElse Reads.pure(JsTrue))
+
     val pruneShowContinueOrDeletePage = (__ \ 'showContinueOrDeletePage).json.prune
 
     val ensureFormCategory =
@@ -147,7 +151,7 @@ object FormTemplatesControllerRequestHandler {
       }
 
     sectionValidations andKeep jsonValue.transform(
-      pruneShowContinueOrDeletePage andThen pruneAcknowledgementSection andThen prunePrintSection andThen pruneDeclarationSection and drmValue and drmShowContinueOrDeletePage and ensureFormCategory and
+      pruneShowContinueOrDeletePage andThen pruneAcknowledgementSection andThen prunePrintSection andThen pruneDeclarationSection and drmValue and drmShowContinueOrDeletePage and ensureDisplayHMRCLogo and ensureFormCategory and
         ensureLanguages and ensureSummarySection and ensureParentFormSubmissionRefs and destinationsOrPrintSection and moveAcknowledgementSection and moveDestinations and moveDeclarationSection reduce)
   }
 }

@@ -414,7 +414,8 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     Nil,
     AvailableLanguages.default,
     None,
-    SummarySection(toSmartString("Title"), toSmartString("Header"), toSmartString("Footer"))
+    SummarySection(toSmartString("Title"), toSmartString("Header"), toSmartString("Footer")),
+    true
   )
 
   val yourDetailsSection = Section.NonRepeatingPage(
