@@ -23,8 +23,6 @@ import uk.gov.hmrc.gform.formtemplate.FormTemplatesControllerRequestHandler
 import uk.gov.hmrc.gform.sharedmodel.{ AvailableLanguages, LocalisedString, formtemplate }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
 
-case class DisplayHmrcLogo(value: Boolean) extends AnyVal
-
 case class FormTemplate(
   _id: FormTemplateId,
   formName: LocalisedString,
