@@ -187,7 +187,7 @@ case object UkEORI extends TextConstraint
 case object ChildBenefitNumber extends TextConstraint
 
 object TextConstraint {
-  val default = TextWithRestrictions(0, 100000)
+  val default = TextWithRestrictions(0, 1000)
   val defaultWholeDigits = 11
   val defaultFractionalDigits = 2
 
