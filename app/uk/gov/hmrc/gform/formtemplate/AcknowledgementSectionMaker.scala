@@ -28,6 +28,7 @@ class AcknowledgementSectionMaker(json: JsValue) {
   val description: Option[SmartString] = (json \ "description").asOpt[SmartString]
   val shortName: Option[SmartString] = (json \ "shortName").asOpt[SmartString]
   val fields: List[FormComponent] = (json \ "fields").as[List[FormComponent]]
+  val displayFeedbackLink: Boolean = (json \ "displayFeedbackLink").as[Boolean]
 
   val showReference: Opt[Boolean] = (json \ "showReference") match {
     case JsDefined(JsString(IsTrueish()))  => Right(true)
@@ -51,6 +52,7 @@ class AcknowledgementSectionMaker(json: JsValue) {
         fields,
         sr,
         acknowledgementSectionPdf,
-        acknowledgementSectionInstructionPdf)
+        acknowledgementSectionInstructionPdf,
+        displayFeedbackLink)
 
 }

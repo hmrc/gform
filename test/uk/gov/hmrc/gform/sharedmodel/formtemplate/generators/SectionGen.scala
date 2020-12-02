@@ -51,7 +51,8 @@ trait SectionGen {
       showReference  <- PrimitiveGen.booleanGen
       pdf            <- Gen.option(acknowledgementSectionPdfGen)
       instructionPdf <- Gen.option(acknowledgementSectionPdfGen)
-    } yield AcknowledgementSection(title, description, shortName, fields.toList, showReference, pdf, instructionPdf)
+      displayFeedbackLink  <- PrimitiveGen.booleanGen
+    } yield AcknowledgementSection(title, description, shortName, fields.toList, showReference, pdf, instructionPdf, displayFeedbackLink)
 
   def acknowledgementSectionPdfGen: Gen[AcknowledgementSectionPdf] =
     for {

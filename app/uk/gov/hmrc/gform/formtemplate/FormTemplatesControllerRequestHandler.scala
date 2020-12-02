@@ -118,9 +118,16 @@ object FormTemplatesControllerRequestHandler {
 
     val prunePrintSection = (__ \ 'printSection).json.prune
 
+    def defaultDisplayFeedbackLink(jsValue: JsValue): JsValue = {
+      val jsObject = jsValue.as[JsObject]
+      val displayFeedbackLinkValue: JsValue = jsObject.value.getOrElse("displayFeedbackLink", JsTrue)
+      jsObject ++ Json.obj("displayFeedbackLink" -> displayFeedbackLinkValue)
+    }
+
     val moveAcknowledgementSection =
       (__ \ 'destinations \ 'acknowledgementSection).json
-        .copyFrom((__ \ 'acknowledgementSection).json.pick) orElse Reads.pure(Json.obj())
+        .copyFrom(
+          (__ \ 'acknowledgementSection).json.pick.map(defaultDisplayFeedbackLink) orElse Reads.pure(Json.obj()))
 
     val moveDestinations =
       (__ \ 'destinations \ 'destinations).json

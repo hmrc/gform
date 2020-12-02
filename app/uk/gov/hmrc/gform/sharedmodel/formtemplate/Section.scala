@@ -76,7 +76,8 @@ case class AcknowledgementSection(
   fields: List[FormComponent],
   showReference: Boolean,
   pdf: Option[AcknowledgementSectionPdf],
-  instructionPdf: Option[AcknowledgementSectionPdf]
+  instructionPdf: Option[AcknowledgementSectionPdf],
+  displayFeedbackLink: Boolean
 )
 
 object AcknowledgementSection {
