@@ -47,9 +47,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                              |  ],
                                              |  "destinations": {
                                              |    "title": "Next Steps",
-                                             |    "summaryPdf": "TestSummaryPdf",
-                                             |    "acknowledgementSection": {
-                                             |    }
+                                             |    "summaryPdf": "TestSummaryPdf"
                                              |  },
                                              |  "displayHMRCLogo": true,
                                              |  "parentFormSubmissionRefs": [],

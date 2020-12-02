@@ -118,16 +118,16 @@ object FormTemplatesControllerRequestHandler {
 
     val prunePrintSection = (__ \ 'printSection).json.prune
 
-    def defaultDisplayFeedbackLink(jsValue: JsValue): JsValue = {
+    val transformAcknowledgementSection = (jsValue: JsValue) => {
       val jsObject = jsValue.as[JsObject]
-      val displayFeedbackLinkValue: JsValue = jsObject.value.getOrElse("displayFeedbackLink", JsTrue)
-      jsObject ++ Json.obj("displayFeedbackLink" -> displayFeedbackLinkValue)
+      val displayFeedbackLinkValueOrDefault: JsValue = jsObject.value.getOrElse("displayFeedbackLink", JsTrue)
+      jsObject ++ Json.obj("displayFeedbackLink" -> displayFeedbackLinkValueOrDefault)
     }
 
-    val moveAcknowledgementSection =
+    val transformAndMoveAcknowledgementSection =
       (__ \ 'destinations \ 'acknowledgementSection).json
-        .copyFrom(
-          (__ \ 'acknowledgementSection).json.pick.map(defaultDisplayFeedbackLink) orElse Reads.pure(Json.obj()))
+        .copyFrom((__ \ 'acknowledgementSection).json.pick.map(transformAcknowledgementSection)) orElse Reads.pure(
+        Json.obj())
 
     val moveDestinations =
       (__ \ 'destinations \ 'destinations).json
@@ -159,6 +159,6 @@ object FormTemplatesControllerRequestHandler {
 
     sectionValidations andKeep jsonValue.transform(
       pruneShowContinueOrDeletePage andThen pruneAcknowledgementSection andThen prunePrintSection andThen pruneDeclarationSection and drmValue and drmShowContinueOrDeletePage and ensureDisplayHMRCLogo and ensureFormCategory and
-        ensureLanguages and ensureSummarySection and ensureParentFormSubmissionRefs and destinationsOrPrintSection and moveAcknowledgementSection and moveDestinations and moveDeclarationSection reduce)
+        ensureLanguages and ensureSummarySection and ensureParentFormSubmissionRefs and destinationsOrPrintSection and transformAndMoveAcknowledgementSection and moveDestinations and moveDeclarationSection reduce)
   }
 }
