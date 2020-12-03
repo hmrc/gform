@@ -125,6 +125,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                              |      }
                                              |    ],
                                              |    "acknowledgementSection": {
+                                             |      "displayFeedbackLink": true,
                                              |      "shortName": "Acknowledgement Page",
                                              |      "title": "Acknowledgement Page",
                                              |      "fields": [
@@ -245,6 +246,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                  |      }
                                  |    ],
                                  |    "acknowledgementSection": {
+                                 |      "displayFeedbackLink": true,
                                  |      "shortName": "Acknowledgement Page",
                                  |      "title": "Acknowledgement Page",
                                  |      "fields": [
