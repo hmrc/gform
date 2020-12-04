@@ -30,7 +30,7 @@ object Dependencies {
     "com.github.jknack" % "handlebars" % handlebarsVersion,
     "com.github.jknack" % "handlebars-jackson2" % handlebarsVersion,
     "com.softwaremill.quicklens" %% "quicklens" % "1.4.11",
-    "uk.gov.service.notify" % "notifications-java-client" % "3.14.2-RELEASE",
+    "uk.gov.service.notify" % "notifications-java-client" % "3.17.0-RELEASE",
     "org.apache.commons" % "commons-text" % "1.9"
   )
 
