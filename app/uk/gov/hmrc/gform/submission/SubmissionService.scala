@@ -21,7 +21,6 @@ import play.api.Logger
 import play.api.libs.json.Json
 import uk.gov.hmrc.gform.core.{ fromFutureA, _ }
 import uk.gov.hmrc.gform.email.EmailService
-import uk.gov.hmrc.gform.fileupload.Attachments
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.repo.Repo
@@ -45,13 +44,26 @@ class SubmissionService(
   email: EmailService,
   timeProvider: TimeProvider)(implicit ex: ExecutionContext) {
 
+  def createSubmission(
+    formId: FormId,
+    formTemplateId: FormTemplateId,
+    envelopeId: EnvelopeId,
+    customerId: String,
+    noOfAttachments: Int): FOpt[Submission] = {
+    val submission = buildSubmission(formId, formTemplateId, envelopeId, customerId, noOfAttachments)
+    submissionRepo
+      .upsert(submission)
+      .map(_ => Logger.info(s"Upserted Submission for ${formId.value}"))
+      .map(_ => submission)
+  }
+
   def submitForm(formIdData: FormIdData, customerId: String, submissionData: SubmissionData)(
     implicit hc: HeaderCarrier): FOpt[Unit] =
     // format: OFF
       for {
         form          <- formAlgebra.get(formIdData)
         formTemplate  <- fromFutureA(formTemplateService.get(form.formTemplateId))
-        submission    <- findOrCreateSubmission(form, customerId, formTemplate, submissionData.attachments)
+        submission    <- findSubmission(form._id)
         submissionInfo = DestinationSubmissionInfo(customerId, submission)
         modelTree     <- createModelTreeForSingleFormSubmission(form, formTemplate, submissionData, submission.submissionRef)
         _             <- destinationsSubmitter.send(submissionInfo, modelTree, Some(form.formData))
@@ -86,40 +98,23 @@ class SubmissionService(
   def submissionDetails(formIdData: FormIdData): Future[Submission] =
     submissionRepo.get(formIdData.toFormId.value)
 
-  private def findOrCreateSubmission(
-    form: Form,
-    customerId: String,
-    formTemplate: FormTemplate,
-    attachments: Attachments): FOpt[Submission] =
-    form.status match {
-      case NeedsReview | Accepting | Returning | Accepted | Submitting | Submitted => findSubmission(form._id)
-      case _                                                                       => insertSubmission(form, customerId, formTemplate, attachments)
-    }
-
   private def findSubmission(formId: FormId) =
     fromFutureA(submissionRepo.get(formId.value))
 
-  private def insertSubmission(
-    form: Form,
+  private def buildSubmission(
+    formId: FormId,
+    formTemplateId: FormTemplateId,
+    envelopeId: EnvelopeId,
     customerId: String,
-    formTemplate: FormTemplate,
-    attachments: Attachments): FOpt[Submission] = {
-    val submission = createSubmission(form, customerId, formTemplate, attachments)
-    submissionRepo
-      .upsert(submission)
-      .map(_ => Logger.info(s"Upserted Submission for ${form._id.value}"))
-      .map(_ => submission)
-  }
-
-  private def createSubmission(form: Form, customerId: String, formTemplate: FormTemplate, attachments: Attachments) =
+    noOfAttachments: Int) =
     Submission(
       submittedDate = timeProvider.localDateTime(),
-      submissionRef = SubmissionRef(form.envelopeId),
-      envelopeId = form.envelopeId,
-      _id = form._id,
-      noOfAttachments = attachments.size,
+      submissionRef = SubmissionRef(envelopeId),
+      envelopeId = envelopeId,
+      _id = formId,
+      noOfAttachments = noOfAttachments,
       dmsMetaData = DmsMetaData(
-        formTemplateId = form.formTemplateId,
+        formTemplateId = formTemplateId,
         customerId //TODO need more secure and safe way of doing this. perhaps moving auth to backend and just pulling value out there.
       )
     )
