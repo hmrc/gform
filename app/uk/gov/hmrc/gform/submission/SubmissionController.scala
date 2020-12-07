@@ -21,7 +21,7 @@ import play.api.libs.json.Json
 import play.api.mvc.{ Action, AnyContent, ControllerComponents }
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.sharedmodel.AccessCode
-import uk.gov.hmrc.gform.sharedmodel.form.FormIdData
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId, FormIdData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.{ SubmissionData, UserId }
 
@@ -30,6 +30,17 @@ import scala.concurrent.ExecutionContext
 class SubmissionController(controllerComponents: ControllerComponents, submissionService: SubmissionService)(
   implicit ex: ExecutionContext)
     extends BaseController(controllerComponents) {
+
+  def createSubmission(
+    formId: FormId,
+    formTemplateId: FormTemplateId,
+    envelopeId: EnvelopeId,
+    customerId: String,
+    noOfAttachments: Int) = formAction("createSubmission", formId) { _ =>
+    submissionService
+      .createSubmission(formId, formTemplateId, envelopeId, customerId, noOfAttachments)
+      .fold(unexpectedState => BadRequest(unexpectedState.error), submission => Ok(Json.toJson(submission)))
+  }
 
   def submitFormPlain(userId: UserId, formTemplateId: FormTemplateId): Action[SubmissionData] =
     submitFormByFormIdData(FormIdData.Plain(userId, formTemplateId))
