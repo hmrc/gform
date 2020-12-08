@@ -58,5 +58,7 @@ class ProxyModule(val configModule: ConfigModule) {
 }
 
 class ProxyAuthenticator(username: String, password: Array[Char]) extends Authenticator {
+  Logger.info(s"Proxy password authentication. Username: $username")
+  System.setProperty("jdk.http.auth.tunneling.disabledSchemes", "")
   override val getPasswordAuthentication: PasswordAuthentication = new PasswordAuthentication(username, password)
 }
