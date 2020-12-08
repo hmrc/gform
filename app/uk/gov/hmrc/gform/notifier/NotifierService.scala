@@ -33,7 +33,7 @@ class NotifierService[F[_]](client: NotificationClientApi)(implicit F: Applicati
     } match {
       case Success(_) => F.pure(())
       case Failure(t) =>
-        Logger.error(show"Failed to send a Notifier email with template ID ${details.templateId} to ${details.to}", t)
+        Logger.error(show"Failed to send a Notifier email with template ID ${details.templateId}", t)
         F.raiseError(t.getMessage)
     }
 }

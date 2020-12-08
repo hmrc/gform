@@ -41,6 +41,7 @@ import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.notifier.NotifierModule
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorModule
 import uk.gov.hmrc.gform.playcomponents.{ ErrorHandler, PlayComponents, PlayComponentsModule }
+import uk.gov.hmrc.gform.proxy.ProxyModule
 import uk.gov.hmrc.gform.save4later.{ Save4Later, Save4LaterModule }
 import uk.gov.hmrc.gform.submission.SubmissionModule
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsHttpApiModule
@@ -78,7 +79,8 @@ class ApplicationModule(context: Context)
   private val metricsModule = new MetricsModule(configModule, playComponents, akkaModule, executionContext)
   protected val auditingModule = new AuditingModule(configModule, akkaModule)
   protected val wSHttpModule = new WSHttpModule(auditingModule, configModule, playComponents)
-  private val notifierModule = new NotifierModule(configModule)
+  private val proxyModule = new ProxyModule(configModule)
+  private val notifierModule = new NotifierModule(configModule, proxyModule)
   private val emailModule = new EmailModule(configModule, wSHttpModule, notifierModule)
   private val timeModule = new TimeModule
   val fileUploadModule = new FileUploadModule(configModule, wSHttpModule, timeModule, akkaModule)
