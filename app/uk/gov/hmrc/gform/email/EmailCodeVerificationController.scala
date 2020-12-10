@@ -26,7 +26,6 @@ import uk.gov.hmrc.gform.notifier.{ NotifierAlgebra, NotifierEmail, NotifierEmai
 import uk.gov.hmrc.gform.sharedmodel.EmailVerifierService
 import uk.gov.hmrc.gform.sharedmodel.email.ConfirmationCodeWithEmailService
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ EmailParameterValue, EmailParametersRecalculated, EmailTemplateVariable }
-import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierEmailAddress
 
 class EmailCodeVerificationController(
   controllerComponents: ControllerComponents,
@@ -36,9 +35,9 @@ class EmailCodeVerificationController(
   implicit ex: ExecutionContext
 ) extends BaseController(controllerComponents) {
 
-  def sendEmail(notifierEmailAddress: NotifierEmailAddress) =
+  def sendEmail() =
     Action.async(parse.json[ConfirmationCodeWithEmailService]) { implicit request =>
-      val ConfirmationCodeWithEmailService(code, emailVerifierService) = request.body
+      val ConfirmationCodeWithEmailService(notifierEmailAddress, code, emailVerifierService) = request.body
       emailVerifierService match {
         case EmailVerifierService.Notify(emailTemplateId) =>
           val notifierEmail: NotifierEmail =

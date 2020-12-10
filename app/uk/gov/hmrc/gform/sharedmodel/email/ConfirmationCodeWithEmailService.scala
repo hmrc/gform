@@ -19,8 +19,12 @@ package uk.gov.hmrc.gform.sharedmodel.email
 import julienrf.json.derived
 import play.api.libs.json.Format
 import uk.gov.hmrc.gform.sharedmodel.EmailVerifierService
+import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierEmailAddress
 
-case class ConfirmationCodeWithEmailService(code: EmailConfirmationCode, emailVerifierService: EmailVerifierService)
+case class ConfirmationCodeWithEmailService(
+  notifierEmailAddress: NotifierEmailAddress,
+  code: EmailConfirmationCode,
+  emailVerifierService: EmailVerifierService)
 
 object ConfirmationCodeWithEmailService {
   implicit val format: Format[ConfirmationCodeWithEmailService] = derived.oformat()
