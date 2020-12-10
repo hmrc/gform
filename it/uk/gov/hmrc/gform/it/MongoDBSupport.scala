@@ -3,9 +3,9 @@ package uk.gov.hmrc.gform.it
 import org.apache.commons.lang3.RandomStringUtils
 import reactivemongo.bson.BSONObjectID
 import uk.gov.hmrc.gform.formmetadata.FormMetadata
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{FormTemplate, FormTemplateRaw}
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateRaw }
 import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
-import uk.gov.hmrc.mongo.{MongoConnector, ReactiveRepository}
+import uk.gov.hmrc.mongo.{ MongoConnector, ReactiveRepository }
 
 trait MongoDBSupport {
 

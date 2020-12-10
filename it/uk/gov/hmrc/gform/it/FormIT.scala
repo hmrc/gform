@@ -5,19 +5,21 @@ import java.time.Instant
 import akka.http.scaladsl.model.StatusCodes
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.verification.LoggedRequest
-import org.scalatest.time.{Millis, Seconds, Span}
+import org.scalatest.time.{ Millis, Seconds, Span }
 import play.api.libs.json.Json
-import uk.gov.hmrc.gform.it.sample.{FormDataSample, FormTemplateSample, QueryParamsSample}
-import uk.gov.hmrc.gform.it.wiremock.{FileUploadServiceStubs, Save4LaterServiceStubs}
+import uk.gov.hmrc.gform.it.sample.{ FormDataSample, FormTemplateSample, QueryParamsSample }
+import uk.gov.hmrc.gform.it.wiremock.{ FileUploadServiceStubs, Save4LaterServiceStubs }
 import uk.gov.hmrc.gform.sharedmodel.UserId
 import uk.gov.hmrc.gform.sharedmodel.form.FormIdData.Plain
-import uk.gov.hmrc.gform.sharedmodel.form.{Form, FormData, FormField, FormId, FormIdData, InProgress}
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{FormComponentId, FormTemplateId}
+import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormData, FormField, FormId, FormIdData, InProgress }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplateId }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.collection.JavaConverters._
 
-class FormIT extends ITSpec with FormTemplateSample with FormDataSample with QueryParamsSample with Save4LaterServiceStubs with FileUploadServiceStubs {
+class FormIT
+    extends ITSpec with FormTemplateSample with FormDataSample with QueryParamsSample with Save4LaterServiceStubs
+    with FileUploadServiceStubs {
   override implicit val defaultPatience: PatienceConfig =
     PatienceConfig(timeout = Span(15, Seconds), interval = Span(500, Millis))
 
@@ -44,7 +46,8 @@ class FormIT extends ITSpec with FormTemplateSample with FormDataSample with Que
     Json.parse(newForm.body).as[FormIdData] shouldBe Plain(UserId("123"), FormTemplateId("BASIC"))
 
     And("The new form should be sent to save4later service")
-    val save4LaterRequests: Seq[LoggedRequest] = findAll(putRequestedFor(urlEqualTo("/save4later/gform/123-BASIC/data/form"))).asScala.toList
+    val save4LaterRequests: Seq[LoggedRequest] =
+      findAll(putRequestedFor(urlEqualTo("/save4later/gform/123-BASIC/data/form"))).asScala.toList
     save4LaterRequests.size shouldBe 1
     val form = decryptAs[Form](save4LaterRequests.head.getBodyAsString)
     form.formData.fields shouldBe Seq.empty
@@ -72,7 +75,8 @@ class FormIT extends ITSpec with FormTemplateSample with FormDataSample with Que
 
     And("The new form should updated in save4later service")
     verify(1, getRequestedFor(urlEqualTo("/save4later/gform/123-BASIC")))
-    val save4LaterRequests: Seq[LoggedRequest] = findAll(putRequestedFor(urlEqualTo("/save4later/gform/123-BASIC/data/form"))).asScala.toList
+    val save4LaterRequests: Seq[LoggedRequest] =
+      findAll(putRequestedFor(urlEqualTo("/save4later/gform/123-BASIC/data/form"))).asScala.toList
     save4LaterRequests.size shouldBe 1
     val form = decryptAs[Form](save4LaterRequests.head.getBodyAsString)
     form.formData.fields shouldBe Seq(FormField(FormComponentId("textField1"), "textField1Value"))

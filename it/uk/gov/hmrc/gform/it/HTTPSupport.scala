@@ -1,9 +1,9 @@
 package uk.gov.hmrc.gform.it
 
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.time.{Millis, Seconds, Span}
+import org.scalatest.time.{ Millis, Seconds, Span }
 import play.api.libs.ws.ahc.StandaloneAhcWSClient
-import uk.gov.hmrc.gform.it.HTTPSupport.{Empty, Request}
+import uk.gov.hmrc.gform.it.HTTPSupport.{ Empty, Request }
 
 trait HTTPSupport extends ScalaFutures {
 
@@ -22,7 +22,7 @@ trait HTTPSupport extends ScalaFutures {
 
   def to(url: String): HTTPSupport = newHTTPSupport(this.request.copy(url = url))
 
-  private def newHTTPSupport(updatedRequest: Request):HTTPSupport = new HTTPSupport {
+  private def newHTTPSupport(updatedRequest: Request): HTTPSupport = new HTTPSupport {
     override val request: Request = updatedRequest
   }
 

@@ -8,12 +8,12 @@ import com.github.tomakehurst.wiremock.client.WireMock.configureFor
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 import com.typesafe.config.ConfigFactory
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FlatSpecLike, GivenWhenThen, Matchers}
-import org.scalatestplus.play.{BaseOneServerPerSuite, FakeApplicationFactory}
-import play.api.libs.json.{Json, Reads}
+import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach, FlatSpecLike, GivenWhenThen, Matchers }
+import org.scalatestplus.play.{ BaseOneServerPerSuite, FakeApplicationFactory }
+import play.api.libs.json.{ Json, Reads }
 import play.api.libs.ws.ahc.StandaloneAhcWSClient
-import play.api.{Application, Environment}
-import uk.gov.hmrc.crypto.{Crypted, CryptoWithKeysFromConfig}
+import play.api.{ Application, Environment }
+import uk.gov.hmrc.crypto.{ Crypted, CryptoWithKeysFromConfig }
 import uk.gov.hmrc.gform.ApplicationLoader
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -22,21 +22,23 @@ import scala.collection.JavaConverters._
 
 trait ITSpec
     extends MongoDBSupport with HTTPSupport with FlatSpecLike with GivenWhenThen with Matchers
-    with BaseOneServerPerSuite with BeforeAndAfterAll with FakeApplicationFactory with ScalaFutures with BeforeAndAfterEach {
+    with BaseOneServerPerSuite with BeforeAndAfterAll with FakeApplicationFactory with ScalaFutures
+    with BeforeAndAfterEach {
 
   implicit val system: ActorSystem = ActorSystem()
   implicit val materializer: ActorMaterializer = ActorMaterializer()
 
   val wiremockPort: Int = 10000 + Random.nextInt(10000)
-  val wireMockServer: WireMockServer = new WireMockServer(options().port(wiremockPort).extensions(new ResponseTemplateTransformer(false)))
+  val wireMockServer: WireMockServer = new WireMockServer(
+    options().port(wiremockPort).extensions(new ResponseTemplateTransformer(false)))
 
   val settingsOverride: Map[String, String] = Map(
-    "auditing.enabled" -> "false",
-    "json.encryption.key" -> "fqpLDZ4sumDsekHkeEBlCA==",
-    "json.encryption.previousKeys" -> "",
-    "microservice.services.file-upload.port" ->  s"$wiremockPort",
-    "microservice.services.file-upload.path-prefix" ->  "",
-    "microservice.services.save4later.port" ->  s"$wiremockPort",
+    "auditing.enabled"                              -> "false",
+    "json.encryption.key"                           -> "fqpLDZ4sumDsekHkeEBlCA==",
+    "json.encryption.previousKeys"                  -> "",
+    "microservice.services.file-upload.port"        -> s"$wiremockPort",
+    "microservice.services.file-upload.path-prefix" -> "",
+    "microservice.services.save4later.port"         -> s"$wiremockPort",
   ) ++ mongoSettings
 
   override def fakeApplication(): Application = {
@@ -45,16 +47,13 @@ trait ITSpec
     new ApplicationLoader().load(context)
   }
 
-
   override protected def beforeAll(): Unit = {
     wireMockServer.start()
     configureFor("localhost", wiremockPort)
   }
 
-
-  override protected def beforeEach(): Unit = {
+  override protected def beforeEach(): Unit =
     wireMockServer.resetAll()
-  }
 
   override protected def afterAll(): Unit = {
     app.stop().futureValue
@@ -64,12 +63,12 @@ trait ITSpec
     ()
   }
 
-  def decryptAs[T: Reads](json: String) = {
+  def decryptAs[T: Reads](json: String) =
     Json.parse(jsonCrypto.decrypt(Crypted(Json.parse(json).toString())).value).as[T]
-  }
 
   implicit lazy val baseUrl: String = s"http://localhost:$port/gform"
   implicit val wsClient: StandaloneAhcWSClient = StandaloneAhcWSClient()
 
-  val jsonCrypto = new CryptoWithKeysFromConfig(baseConfigKey    = "json.encryption", ConfigFactory.parseMap(settingsOverride.asJava))
+  val jsonCrypto =
+    new CryptoWithKeysFromConfig(baseConfigKey = "json.encryption", ConfigFactory.parseMap(settingsOverride.asJava))
 }

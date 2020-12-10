@@ -18,8 +18,8 @@ package uk.gov.hmrc.gform.it
 import akka.http.scaladsl.model.StatusCodes
 import cats.data.NonEmptyList
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.time.{Millis, Seconds, Span}
-import play.api.libs.json.{JsObject, Json}
+import org.scalatest.time.{ Millis, Seconds, Span }
+import play.api.libs.json.{ JsObject, Json }
 import uk.gov.hmrc.gform.Helpers.toSmartString
 import uk.gov.hmrc.gform.it.sample.FormTemplateSample
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PrintSummaryPdf
@@ -27,8 +27,8 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.Section.NonRepeatingPage
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{AcknowledgementSection, Anonymous, AuthCtx, ContinueOrDeletePage, DeclarationSection, Default, FormTemplate, FormTemplateRaw, GG, LinkCtx, OnePerUser, Text, TextWithRestrictions, Value}
-import uk.gov.hmrc.gform.sharedmodel.{AvailableLanguages, LangADT, LocalisedString, SmartString}
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AcknowledgementSection, Anonymous, AuthCtx, ContinueOrDeletePage, DeclarationSection, Default, FormTemplate, FormTemplateRaw, GG, LinkCtx, OnePerUser, Text, TextWithRestrictions, Value }
+import uk.gov.hmrc.gform.sharedmodel.{ AvailableLanguages, LangADT, LocalisedString, SmartString }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -75,7 +75,7 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
     post(basicFormTemplate.toString()).to("/formtemplates").send()
 
     When("I get the form template by id")
-    val result =  get("/formtemplates/BASIC").send()
+    val result = get("/formtemplates/BASIC").send()
 
     Then("I receive form template")
     result.status shouldBe StatusCodes.OK.intValue
