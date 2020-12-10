@@ -18,17 +18,22 @@ package uk.gov.hmrc.gform.notifier
 
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.{ FOpt, fOptMonadError }
+import uk.gov.hmrc.gform.proxy.ProxyModule
 import uk.gov.service.notify.NotificationClient
 
 import scala.concurrent.ExecutionContext
 
 class NotifierModule(
-  configModule: ConfigModule
+  configModule: ConfigModule,
+  proxyModule: ProxyModule
 )(
   implicit ec: ExecutionContext
 ) {
+
   private val config = configModule.notifierConfig
-  private val client = new NotificationClient(config.apiKey)
+  private val client = proxyModule.maybeProxy.fold(new NotificationClient(config.apiKey)) { proxy =>
+    new NotificationClient(config.apiKey, proxy)
+  }
 
   val fOptNotifierService = new NotifierService[FOpt](client)
 
