@@ -3,7 +3,6 @@ import com.lucidchart.sbt.scalafmt.ScalafmtCorePlugin.autoImport._
 import play.sbt.PlayImport.PlayKeys
 import play.sbt.routes.RoutesKeys.routesImport
 import sbt.Keys.{ resolvers, _ }
-import sbt.Tests.{ Group, SubProcess }
 import sbt._
 import uk.gov.hmrc.DefaultBuildSettings.{ addTestReportOption, defaultSettings, scalaSettings }
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
@@ -24,6 +23,8 @@ lazy val scoverageSettings = {
 }
 
 val silencerVersion = "1.7.0"
+
+lazy val IntegrationTest = config("it") extend (Test)
 
 lazy val microservice = (project in file("."))
   .enablePlugins(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin, SbtArtifactory)
@@ -81,5 +82,6 @@ lazy val microservice = (project in file("."))
     Keys.fork in IntegrationTest := false,
     unmanagedSourceDirectories in IntegrationTest := { (baseDirectory in IntegrationTest)(base => Seq(base / "it")) }.value,
     addTestReportOption(IntegrationTest, "int-test-reports"),
-    parallelExecution in IntegrationTest := false
+    parallelExecution in IntegrationTest := false,
+    scalafmtOnCompile := true
   )
