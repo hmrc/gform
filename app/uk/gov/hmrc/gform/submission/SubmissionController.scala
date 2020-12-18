@@ -70,7 +70,9 @@ class SubmissionController(controllerComponents: ControllerComponents, submissio
       submissionService.submissionDetails(formIdData).asOkJson
     }
 
-  def retrieveAll(formTemplateId: FormTemplateId): Action[AnyContent] = Action.async { _ =>
-    submissionService.submissionDetailsAll(formTemplateId).map(submissions => Ok(Json.toJson(submissions)))
+  def retrieveAll(formTemplateId: FormTemplateId, page: Int, pageSize: Int): Action[AnyContent] = Action.async { _ =>
+    submissionService
+      .submissionPageDetails(formTemplateId, page, pageSize)
+      .map(submissions => Ok(Json.toJson(submissions)))
   }
 }
