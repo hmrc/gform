@@ -119,10 +119,20 @@ class SubmissionService(
       )
     )
 
-  def submissionDetailsAll(formTemplateId: FormTemplateId): Future[List[Submission]] = {
+  def submissionPageDetails(formTemplateId: FormTemplateId, page: Int, pageSize: Int): Future[SubmissionPageData] = {
     val query = Json.obj(
       "formTemplateId" -> formTemplateId.value
     )
-    submissionRepo.search(query)
+    val sort = Json.obj(
+      "submittedDate" -> -1
+    )
+
+    val skip = page * pageSize
+    for {
+      submissions <- submissionRepo.page(query, sort, skip, pageSize)
+      count       <- submissionRepo.count(query)
+    } yield {
+      SubmissionPageData(submissions, count)
+    }
   }
 }

@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.repo
 import cats.data.EitherT
 import cats.syntax.either._
 import play.api.libs.json._
-import reactivemongo.api.{ Cursor, DefaultDB }
+import reactivemongo.api.{ Cursor, DefaultDB, ReadConcern }
 import reactivemongo.bson.BSONObjectID
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -66,6 +66,20 @@ class Repo[T: OWrites: Manifest](name: String, mongo: () => DefaultDB, idLens: T
       .options(options)
       .cursor[T]()
       .collect[List](Integer.MAX_VALUE, Cursor.FailOnError())
+  }
+
+  def page(selector: JsObject, orderBy: JsObject, skip: Int, limit: Int): Future[List[T]] = preservingMdc {
+    underlying.collection
+      .find[JsObject, T](selector = selector, None)
+      .sort(orderBy)
+      .skip(skip)
+      .cursor[T]()
+      .collect[List](limit, Cursor.FailOnError())
+  }
+
+  def count(selector: JsObject): Future[Long] = preservingMdc {
+    underlying.collection
+      .count(selector = Some(selector), limit = None, skip = 0, hint = None, readConcern = ReadConcern.Local)
   }
 
   def projection[P: Format](projection: JsObject): Future[List[P]] = preservingMdc {
