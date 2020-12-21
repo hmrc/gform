@@ -209,7 +209,7 @@ class FormComponentMaker(json: JsValue) {
     case Some(TimeRaw)            => timeOpt
   }
 
-  private lazy val textOpt: Opt[ComponentType] = {
+  lazy val textOpt: Opt[ComponentType] = {
     for {
       emailVerification <- optEmailVerification
       selectionCriteria <- optSelectionCriteria

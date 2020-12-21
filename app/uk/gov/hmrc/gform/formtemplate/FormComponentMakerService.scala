@@ -32,31 +32,35 @@ object FormComponentMakerService {
     toUpperCase: UpperCaseBoolean,
     json: JsValue): Either[UnexpectedState, ComponentType] =
     (maybeFormatExpr, maybeValueExpr, multiLine) match {
-      // format: off
       case (Some(TextFormat(UkSortCodeFormat)), HasTextExpression(expr), IsNotMultiline()) => UkSortCode(expr).asRight
-      case (Some(formatExpr), _, IsNotMultiline()) => createTextObject(formatExpr, maybeValueExpr, maybeDisplayWidth, toUpperCase)
-      case (Some(formatExpr), _, IsMultiline())    => createTextAreaObject(formatExpr, maybeValueExpr, maybeDisplayWidth)
-      case _                        => createError(maybeFormatExpr, maybeValueExpr, multiLine, json).asLeft
-      // format: on
+      case (Some(formatExpr), _, IsNotMultiline()) =>
+        createTextObject(formatExpr, maybeValueExpr, maybeDisplayWidth, toUpperCase, json)
+      case (Some(formatExpr), _, IsMultiline()) =>
+        createTextAreaObject(formatExpr, maybeValueExpr, maybeDisplayWidth, multiLine, json)
+      case _ => createError(maybeFormatExpr, maybeValueExpr, multiLine, json).asLeft
     }
 
   def createTextObject(
     formatExpr: FormatExpr,
     maybeValueExpr: Option[ValueExpr],
     maybeDisplayWidth: Option[String],
-    toUpperCase: UpperCaseBoolean) = (formatExpr, maybeValueExpr, maybeDisplayWidth) match {
-    // format: off
+    toUpperCase: UpperCaseBoolean,
+    json: JsValue) = (formatExpr, maybeValueExpr, maybeDisplayWidth) match {
     case (TextFormat(f), HasTextExpression(expr), None)                => Text(f, expr, DisplayWidth.DEFAULT, toUpperCase).asRight
     case (TextFormat(f), HasTextExpression(expr), HasDisplayWidth(dw)) => Text(f, expr, dw, toUpperCase).asRight
-    // format: on
+    case _                                                             => createError(Some(formatExpr), maybeValueExpr, None, json).asLeft
   }
 
-  def createTextAreaObject(formatExpr: FormatExpr, maybeValueExpr: Option[ValueExpr], displayWidth: Option[String]) =
+  def createTextAreaObject(
+    formatExpr: FormatExpr,
+    maybeValueExpr: Option[ValueExpr],
+    displayWidth: Option[String],
+    multiLine: Option[String],
+    json: JsValue) =
     (formatExpr, maybeValueExpr, displayWidth) match {
-      // format: off
-    case (TextFormat(f), HasTextExpression(expr), None)                => TextArea(f, expr).asRight
-    case (TextFormat(f), HasTextExpression(expr), HasDisplayWidth(dw)) => TextArea(f, expr, dw).asRight
-    // format: on
+      case (TextFormat(f), HasTextExpression(expr), None)                => TextArea(f, expr).asRight
+      case (TextFormat(f), HasTextExpression(expr), HasDisplayWidth(dw)) => TextArea(f, expr, dw).asRight
+      case _                                                             => createError(Some(formatExpr), maybeValueExpr, multiLine, json).asLeft
     }
 
   def createError(
@@ -67,13 +71,13 @@ object FormComponentMakerService {
     val formComponentMaker = new FormComponentMaker(json)
     (maybeFormatExpr, maybeValueExpr, multiLine) match {
       case (maybeInvalidFormat, maybeValue, IsNotMultiline()) =>
-        UnexpectedState(s"""|Missing format for text field
+        UnexpectedState(s"""|Missing or invalid format for text field
                             |Id: ${formComponentMaker.id}
                             |Format: $maybeInvalidFormat
                             |Value: $maybeValue
                             |""".stripMargin)
       case (maybeInvalidFormat, maybeValue, IsMultiline()) =>
-        UnexpectedState(s"""|Missing format for multiline text field
+        UnexpectedState(s"""|Missing or invalid format for multiline text field
                             |Id: ${formComponentMaker.id}
                             |Format: $maybeInvalidFormat
                             |Value: $maybeValue

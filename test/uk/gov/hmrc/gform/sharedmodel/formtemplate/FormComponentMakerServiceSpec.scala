@@ -34,7 +34,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import cats.syntax.either._
 import org.scalatest.prop.TableDrivenPropertyChecks
-import play.api.libs.json.{ JsObject, JsString }
+import play.api.libs.json.{ JsObject, JsString, Json }
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService._
@@ -53,16 +53,21 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
     val table = Table(
       ("actual", "expected"),
       (
-        createTextObject(TextFormat(textConstraint), Some(TextExpression(expr)), None, IsNotUpperCase),
+        createTextObject(TextFormat(textConstraint), Some(TextExpression(expr)), None, IsNotUpperCase, Json.obj()),
         Text(textConstraint, expr).asRight),
       (
-        createTextObject(TextFormat(textConstraint), Some(TextExpression(expr)), None, IsUpperCase),
+        createTextObject(TextFormat(textConstraint), Some(TextExpression(expr)), None, IsUpperCase, Json.obj()),
         Text(textConstraint, expr, defaultDisplayWidth, IsUpperCase).asRight),
       (
-        createTextObject(TextFormat(textConstraint), Some(TextExpression(expr)), Some("xs"), IsNotUpperCase),
+        createTextObject(
+          TextFormat(textConstraint),
+          Some(TextExpression(expr)),
+          Some("xs"),
+          IsNotUpperCase,
+          Json.obj()),
         Text(textConstraint, expr, xsDisplayWidth).asRight),
       (
-        createTextObject(TextFormat(textConstraint), Some(TextExpression(expr)), Some("xs"), IsUpperCase),
+        createTextObject(TextFormat(textConstraint), Some(TextExpression(expr)), Some("xs"), IsUpperCase, Json.obj()),
         Text(textConstraint, expr, xsDisplayWidth, IsUpperCase).asRight)
     )
     table.forEvery({ case (expected, result) => expected shouldBe result })
@@ -71,7 +76,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
   "createObject" should "return error when format is empty for text type" in {
     val isMultiline = Some("no") // denotes text type
     val result = createObject(None, None, isMultiline, None, IsNotUpperCase, JsObject(Seq("id" -> JsString("text1"))))
-    result shouldBe Left(UnexpectedState(s"""|Missing format for text field
+    result shouldBe Left(UnexpectedState(s"""|Missing or invalid format for text field
                                              |Id: text1
                                              |Format: None
                                              |Value: None
@@ -81,9 +86,39 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
   it should "return error when format is empty for multiline text type" in {
     val isMultiline = Some("yes") // denotes multiline text type
     val result = createObject(None, None, isMultiline, None, IsNotUpperCase, JsObject(Seq("id" -> JsString("text1"))))
-    result shouldBe Left(UnexpectedState(s"""|Missing format for multiline text field
+    result shouldBe Left(UnexpectedState(s"""|Missing or invalid format for multiline text field
                                              |Id: text1
                                              |Format: None
+                                             |Value: None
+                                             |""".stripMargin))
+  }
+
+  it should "return error when format is invalid for text type" in {
+    val result = createObject(
+      Some(OrientationFormat("xxx")),
+      None,
+      None,
+      None,
+      IsNotUpperCase,
+      JsObject(Seq("id" -> JsString("text1"))))
+    result shouldBe Left(UnexpectedState(s"""|Missing or invalid format for text field
+                                             |Id: text1
+                                             |Format: Some(OrientationFormat(xxx))
+                                             |Value: None
+                                             |""".stripMargin))
+  }
+
+  it should "return error when format is invalid for multiline text type" in {
+    val result = createObject(
+      Some(OrientationFormat("xxx")),
+      None,
+      Some("yes"),
+      None,
+      IsNotUpperCase,
+      JsObject(Seq("id" -> JsString("text1"))))
+    result shouldBe Left(UnexpectedState(s"""|Missing or invalid format for multiline text field
+                                             |Id: text1
+                                             |Format: Some(OrientationFormat(xxx))
                                              |Value: None
                                              |""".stripMargin))
   }
