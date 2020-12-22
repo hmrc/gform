@@ -63,5 +63,4 @@ class FormTemplateService(formTemplateRepo: Repo[FormTemplate], formTemplateRawR
       _                  <- formTemplateRepo.upsert(mkSpecimen(formTemplateToSave))
       res                <- formTemplateRepo.upsert(formTemplateToSave)
     } yield res
-
 }
