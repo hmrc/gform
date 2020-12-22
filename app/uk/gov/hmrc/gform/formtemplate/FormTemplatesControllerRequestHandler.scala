@@ -70,6 +70,11 @@ object FormTemplatesControllerRequestHandler {
   val mandatoryDeclarationForDestinationSection = JsError(
     """Declaration section is mandatory in case of destination section.""")
 
+  val invalidDmsFormId = (id: String) =>
+    s"For Destination $id, dmsFormId should have minimum 1 and maximum 12 characters."
+
+  val missingDmsFormId = (id: String) => s"For Destination $id, dmsFormId is missing."
+
   def normaliseJSON(jsonValue: JsValue): JsResult[JsObject] = {
 
     val drmValue =
@@ -157,7 +162,35 @@ object FormTemplatesControllerRequestHandler {
         case (None, Some(_), None, None)       => JsSuccess(())
       }
 
-    sectionValidations andKeep jsonValue.transform(
+    val dmsFormIdValidations: JsResult[Unit] =
+      (jsonValue \ "destinations").toOption match {
+        case Some(id) =>
+          val errorMessages = id
+            .as[JsArray]
+            .value
+            .map { jv =>
+              ((jv \ "id").as[String], (jv \ "type").as[String], (jv \ "dmsFormId").toOption.map(_.as[String]))
+            }
+            .map {
+              // format: off
+              case (_, "hmrcDms", Some(dmsFormId))
+                  if dmsFormId.toString.length > 0 && dmsFormId.toString.length <= 12 => ""
+              case (id, "hmrcDms", Some(_))                                           => invalidDmsFormId(id)
+              case (id, "hmrcDms", None)                                              => missingDmsFormId(id)
+              case _                                                                  => ""
+              // format: on
+            }
+            .filter(_.nonEmpty)
+
+          if (errorMessages.isEmpty)
+            JsSuccess(())
+          else
+            JsError(errorMessages.mkString(" "))
+
+        case None => JsSuccess(())
+      }
+
+    sectionValidations andKeep dmsFormIdValidations andKeep jsonValue.transform(
       pruneShowContinueOrDeletePage andThen pruneAcknowledgementSection andThen prunePrintSection andThen pruneDeclarationSection and drmValue and drmShowContinueOrDeletePage and ensureDisplayHMRCLogo and ensureFormCategory and
         ensureLanguages and ensureSummarySection and ensureParentFormSubmissionRefs and destinationsOrPrintSection and transformAndMoveAcknowledgementSection and moveDestinations and moveDeclarationSection reduce)
   }

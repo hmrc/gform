@@ -28,7 +28,12 @@ trait DestinationGen {
       r <- Gen.alphaNumStr
     } yield DestinationId(f.toString + r)
 
-  def dmsFormIdGen: Gen[String] = PrimitiveGen.nonEmptyAlphaNumStrGen
+  def dmsFormIdGen: Gen[String] = PrimitiveGen.nonEmptyAlphaNumStrGen.map { dmsFormId =>
+    if (dmsFormId.length > 12)
+      dmsFormId.take(12)
+    else
+      dmsFormId
+  }
   def classificationTypeGen: Gen[String] = PrimitiveGen.nonEmptyAlphaNumStrGen
   def customerIdGen: Gen[Expr] = ExprGen.exprGen()
   def businessAreaGen: Gen[String] = PrimitiveGen.nonEmptyAlphaNumStrGen
