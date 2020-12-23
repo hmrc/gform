@@ -107,6 +107,23 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
     }
   }
 
+  "handle a valid upsert request with Destinations section having valid DmsFormIds" in {
+    withFixture(
+      Json.parse(
+        requestBodyWithDestinationsWithDmsFormIds(
+          "hmrc",
+          "${user.enrolledIdentifier}",
+          Some(""""dmsFormId": "TST123","""),
+          Some(""""serviceId": "someId",""")))) { (sideEffect, verifySideEffect, templateRaw) =>
+      val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
+      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+
+      whenReady(eventualResult.value) { response =>
+        response shouldBe Right(())
+      }
+    }
+  }
+
   "handle an invalid upsert request with no Destinations or Print section" in {
     withFixture(
       Json.parse(
@@ -241,6 +258,82 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
             case Left(UnexpectedState(_)) =>
           }
         }
+    }
+  }
+
+  "handle an invalid upsert request with Destinations having dmsFormId with Zero char" in {
+    withFixture(
+      Json.parse(
+        requestBodyWithDestinationsWithDmsFormIds(
+          "hmrc",
+          "${user.enrolledIdentifier}",
+          Some(""""dmsFormId": "","""),
+          Some(""""serviceId": "someId",""")))) { (sideEffect, verifySideEffect, templateRaw) =>
+      val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
+      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+
+      whenReady(eventualResult.value) { response =>
+        response should matchPattern {
+          case Left(UnexpectedState(_)) =>
+        }
+      }
+    }
+  }
+
+  "handle an invalid upsert request with Destinations having dmsFormId with space" in {
+    withFixture(
+      Json.parse(
+        requestBodyWithDestinationsWithDmsFormIds(
+          "hmrc",
+          "${user.enrolledIdentifier}",
+          Some(""""dmsFormId": " ","""),
+          Some(""""serviceId": "someId",""")))) { (sideEffect, verifySideEffect, templateRaw) =>
+      val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
+      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+
+      whenReady(eventualResult.value) { response =>
+        response should matchPattern {
+          case Left(UnexpectedState(_)) =>
+        }
+      }
+    }
+  }
+
+  "handle an invalid upsert request with Destinations having dmsFormId with more than 12 chars" in {
+    withFixture(
+      Json.parse(
+        requestBodyWithDestinationsWithDmsFormIds(
+          "hmrc",
+          "${user.enrolledIdentifier}",
+          Some(""""dmsFormId": "TST0123456789","""),
+          Some(""""serviceId": "someId",""")))) { (sideEffect, verifySideEffect, templateRaw) =>
+      val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
+      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+
+      whenReady(eventualResult.value) { response =>
+        response should matchPattern {
+          case Left(UnexpectedState(_)) =>
+        }
+      }
+    }
+  }
+
+  "handle an invalid upsert request with Destinations missing dmsFormId" in {
+    withFixture(
+      Json.parse(
+        requestBodyWithDestinationsWithDmsFormIds(
+          "hmrc",
+          "${user.enrolledIdentifier}",
+          None,
+          Some(""""serviceId": "someId",""")))) { (sideEffect, verifySideEffect, templateRaw) =>
+      val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
+      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+
+      whenReady(eventualResult.value) { response =>
+        response should matchPattern {
+          case Left(UnexpectedState(_)) =>
+        }
+      }
     }
   }
 
@@ -787,6 +880,79 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
        |  "declarationSection": {
        |    "title": "",
        |    "fields": []
+       |  }
+       |}""".stripMargin
+
+  private def requestBodyWithDestinationsWithDmsFormIds(
+    authModule: String,
+    identifier: String,
+    dmsFormId: Option[String],
+    serviceId: Option[String]) =
+    s"""{
+       |  "_id": "newfield",
+       |  "formName": "Testing section change label tttt",
+       |  "description": "Testing the form change label",
+       |  "languages":["en"],
+       |  "destinations": [
+       |    {
+       |      "id": "HMRCDMS1",
+       |      "type": "hmrcDms",
+       |      ${dmsFormId.getOrElse("")}
+       |      "customerId": "'123'",
+       |      "classificationType": "BT-NRU-Environmental",
+       |      "businessArea": "FinanceOpsCorpT"
+       |    },
+       |    {
+       |      "id": "submitToADJNotify",
+       |      "type": "email",
+       |      "convertSingleQuotes": true,
+       |      "failOnError": false,
+       |      "emailTemplateId": "4f438fe6-680d-4610-9e55-b50f711326e4",
+       |      "to": "emailAddress",
+       |      "personalisation": {
+       |        "customerName": "nameHidden"
+       |      }
+       |    }
+       |  ],
+       |  "authConfig": {
+       |    "authModule": "$authModule",
+       |    ${serviceId.getOrElse("")}
+       |    "agentAccess": "allowAnyAgentAffinityUser"
+       |  },
+       |  "emailTemplateId": "",
+       |  "sections": [{
+       |    "title": "Page A",
+       |    "fields": [{
+       |      "id": "elementA",
+       |      "type": "text",
+       |      "format": "sterling",
+       |      "value": "$identifier",
+       |      "submitMode": "readonly",
+       |      "label": "Element A"
+       |    },{
+       |      "id": "elementB",
+       |      "format": "shortText",
+       |      "submitMode": "readonly",
+       |      "label": "Element B",
+       |      "validIf": "$${elementA=''}"
+       |    }]
+       |  }],
+       |
+       |  "declarationSection": {
+       |    "title": "",
+       |    "fields": []
+       |  },
+       |  "acknowledgementSection": {
+       |    "shortName": "Acknowledgement Page",
+       |    "title": "Acknowledgement Page",
+       |    "fields": [
+       |      {
+       |        "type": "info",
+       |        "id": "ackpageInfo",
+       |        "label": "SomeContent",
+       |        "infoText": "SomeContent"
+       |      }
+       |    ]
        |  }
        |}""".stripMargin
 }

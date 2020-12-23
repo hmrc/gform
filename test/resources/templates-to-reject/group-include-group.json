@@ -49,7 +49,7 @@
     {
       "id": "queueDestination",
       "type": "hmrcDms",
-      "dmsFormId": "",
+      "dmsFormId": "TST1234",
       "customerId": "${businessUtr}",
       "classificationType": "",
       "businessArea": ""

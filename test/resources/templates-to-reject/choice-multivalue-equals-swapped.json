@@ -45,7 +45,7 @@
     {
       "id": "queueDestination",
       "type": "hmrcDms",
-      "dmsFormId": "",
+      "dmsFormId": "TST123",
       "customerId": "${businessUtr}",
       "classificationType": "",
       "businessArea": ""

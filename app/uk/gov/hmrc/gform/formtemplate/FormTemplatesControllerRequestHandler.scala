@@ -70,6 +70,11 @@ object FormTemplatesControllerRequestHandler {
   val mandatoryDeclarationForDestinationSection = JsError(
     """Declaration section is mandatory in case of destination section.""")
 
+  val invalidDmsFormId = (id: String) =>
+    s"For Destination $id, dmsFormId should have minimum 1 and maximum 12 characters."
+
+  val missingDmsFormId = (id: String) => s"For Destination $id, dmsFormId is missing."
+
   def normaliseJSON(jsonValue: JsValue): JsResult[JsObject] = {
 
     val drmValue =
@@ -157,7 +162,34 @@ object FormTemplatesControllerRequestHandler {
         case (None, Some(_), None, None)       => JsSuccess(())
       }
 
-    sectionValidations andKeep jsonValue.transform(
+    val dmsFormIdValidations: JsResult[Unit] =
+      (jsonValue \ "destinations").toOption match {
+        case Some(id) =>
+          val errorMessages = id
+            .as[JsArray]
+            .value
+            .map { jv =>
+              ((jv \ "id").as[String], (jv \ "type").as[String], (jv \ "dmsFormId").asOpt[String].map(_.trim))
+            }
+            .flatMap {
+              // format: off
+              case (_, "hmrcDms", Some(dmsFormId))
+                  if dmsFormId.length > 0 && dmsFormId.length <= 12  => None
+              case (id, "hmrcDms", Some(_))                          => Some(invalidDmsFormId(id))
+              case (id, "hmrcDms", None)                             => Some(missingDmsFormId(id))
+              case _                                                 => None
+              // format: on
+            }
+
+          if (errorMessages.isEmpty)
+            JsSuccess(())
+          else
+            JsError(errorMessages.mkString(" "))
+
+        case None => JsSuccess(())
+      }
+
+    sectionValidations andKeep dmsFormIdValidations andKeep jsonValue.transform(
       pruneShowContinueOrDeletePage andThen pruneAcknowledgementSection andThen prunePrintSection andThen pruneDeclarationSection and drmValue and drmShowContinueOrDeletePage and ensureDisplayHMRCLogo and ensureFormCategory and
         ensureLanguages and ensureSummarySection and ensureParentFormSubmissionRefs and destinationsOrPrintSection and transformAndMoveAcknowledgementSection and moveDestinations and moveDeclarationSection reduce)
   }
