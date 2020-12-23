@@ -17,7 +17,7 @@ POST          /forms/:formId/enrolment-callback                                 
 
 DELETE        /forms/:userId/:formTemplateId/:accessCode/deleteFile/:fileId                             uk.gov.hmrc.gform.form.FormController.deleteFile(userId: UserId, formTemplateId: FormTemplateId, accessCode: AccessCode, fileId: FileId)
 
-POST          /forms/:formId/:formTemplateId/:envelopeId/:customerId/:noOfAttachments/createSubmission  uk.gov.hmrc.gform.submission.SubmissionController.createSubmission(formId: FormId, formTemplateId: FormTemplateId, envelopeId: EnvelopeId, customerId: String, noOfAttachments: Int)
+POST          /forms/:formId/:formTemplateId/:envelopeId/:noOfAttachments/createSubmission              uk.gov.hmrc.gform.submission.SubmissionController.createSubmission(formId: FormId, formTemplateId: FormTemplateId, envelopeId: EnvelopeId, noOfAttachments: Int)
 POST          /forms/:userId/:formTemplateId/submitForm                                                 uk.gov.hmrc.gform.submission.SubmissionController.submitFormPlain(userId: UserId, formTemplateId: FormTemplateId)
 POST          /forms/:userId/:formTemplateId/:accessCode/submitForm                                     uk.gov.hmrc.gform.submission.SubmissionController.submitForm(userId: UserId, formTemplateId: FormTemplateId, accessCode: AccessCode)
 

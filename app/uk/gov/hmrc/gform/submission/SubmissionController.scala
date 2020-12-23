@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.submission
 
 import cats.implicits._
 import play.api.libs.json.Json
-import play.api.mvc.{ Action, AnyContent, ControllerComponents }
+import play.api.mvc.{ Action, AnyContent, ControllerComponents, Request }
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.sharedmodel.AccessCode
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId, FormIdData }
@@ -31,16 +31,12 @@ class SubmissionController(controllerComponents: ControllerComponents, submissio
   implicit ex: ExecutionContext)
     extends BaseController(controllerComponents) {
 
-  def createSubmission(
-    formId: FormId,
-    formTemplateId: FormTemplateId,
-    envelopeId: EnvelopeId,
-    customerId: String,
-    noOfAttachments: Int) = formAction("createSubmission", formId) { _ =>
-    submissionService
-      .createSubmission(formId, formTemplateId, envelopeId, customerId, noOfAttachments)
-      .fold(unexpectedState => BadRequest(unexpectedState.error), submission => Ok(Json.toJson(submission)))
-  }
+  def createSubmission(formId: FormId, formTemplateId: FormTemplateId, envelopeId: EnvelopeId, noOfAttachments: Int) =
+    formAction("createSubmission", formId) { implicit request =>
+      submissionService
+        .createSubmission(formId, formTemplateId, envelopeId, customerIdHeader, noOfAttachments)
+        .fold(unexpectedState => BadRequest(unexpectedState.error), submission => Ok(Json.toJson(submission)))
+    }
 
   def submitFormPlain(userId: UserId, formTemplateId: FormTemplateId): Action[SubmissionData] =
     submitFormByFormIdData(FormIdData.Plain(userId, formTemplateId))
@@ -54,7 +50,7 @@ class SubmissionController(controllerComponents: ControllerComponents, submissio
       submissionService
         .submitForm(
           formIdData,
-          headers.get("customerId").getOrElse(""),
+          customerIdHeader,
           body
         )
         .fold(unexpectedState => BadRequest(unexpectedState.error), _ => NoContent)
@@ -75,4 +71,7 @@ class SubmissionController(controllerComponents: ControllerComponents, submissio
       .submissionPageDetails(formTemplateId, page, pageSize)
       .map(submissions => Ok(Json.toJson(submissions)))
   }
+
+  def customerIdHeader(implicit request: Request[_]): String =
+    request.headers.get("customerId").getOrElse("")
 }
