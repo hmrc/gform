@@ -171,16 +171,15 @@ object FormTemplatesControllerRequestHandler {
             .map { jv =>
               ((jv \ "id").as[String], (jv \ "type").as[String], (jv \ "dmsFormId").asOpt[String].map(_.trim))
             }
-            .map {
+            .flatMap {
               // format: off
               case (_, "hmrcDms", Some(dmsFormId))
-                  if dmsFormId.length > 0 && dmsFormId.length <= 12  => ""
-              case (id, "hmrcDms", Some(_))                          => invalidDmsFormId(id)
-              case (id, "hmrcDms", None)                             => missingDmsFormId(id)
-              case _                                                 => ""
+                  if dmsFormId.length > 0 && dmsFormId.length <= 12  => None
+              case (id, "hmrcDms", Some(_))                          => Some(invalidDmsFormId(id))
+              case (id, "hmrcDms", None)                             => Some(missingDmsFormId(id))
+              case _                                                 => None
               // format: on
             }
-            .filter(_.nonEmpty)
 
           if (errorMessages.isEmpty)
             JsSuccess(())

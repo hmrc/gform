@@ -110,10 +110,10 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
   "handle a valid upsert request with Destinations section having valid DmsFormIds" in {
     withFixture(
       Json.parse(
-        requestBodyWithDestinationsHavingValidDmsFormIds(
+        requestBodyWithDestinationsWithDmsFormIds(
           "hmrc",
           "${user.enrolledIdentifier}",
-          "TST1234",
+          Some(""""dmsFormId": "TST123","""),
           Some(""""serviceId": "someId",""")))) { (sideEffect, verifySideEffect, templateRaw) =>
       val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
@@ -264,10 +264,10 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
   "handle an invalid upsert request with Destinations having dmsFormId with Zero char" in {
     withFixture(
       Json.parse(
-        requestBodyWithDestinationsHavingValidDmsFormIds(
+        requestBodyWithDestinationsWithDmsFormIds(
           "hmrc",
           "${user.enrolledIdentifier}",
-          "",
+          Some(""""dmsFormId": "","""),
           Some(""""serviceId": "someId",""")))) { (sideEffect, verifySideEffect, templateRaw) =>
       val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
@@ -283,10 +283,10 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
   "handle an invalid upsert request with Destinations having dmsFormId with space" in {
     withFixture(
       Json.parse(
-        requestBodyWithDestinationsHavingValidDmsFormIds(
+        requestBodyWithDestinationsWithDmsFormIds(
           "hmrc",
           "${user.enrolledIdentifier}",
-          " ",
+          Some(""""dmsFormId": " ","""),
           Some(""""serviceId": "someId",""")))) { (sideEffect, verifySideEffect, templateRaw) =>
       val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
@@ -302,10 +302,10 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
   "handle an invalid upsert request with Destinations having dmsFormId with more than 12 chars" in {
     withFixture(
       Json.parse(
-        requestBodyWithDestinationsHavingValidDmsFormIds(
+        requestBodyWithDestinationsWithDmsFormIds(
           "hmrc",
           "${user.enrolledIdentifier}",
-          "TST0123456789",
+          Some(""""dmsFormId": "TST0123456789","""),
           Some(""""serviceId": "someId",""")))) { (sideEffect, verifySideEffect, templateRaw) =>
       val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
@@ -321,9 +321,10 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
   "handle an invalid upsert request with Destinations missing dmsFormId" in {
     withFixture(
       Json.parse(
-        invalidRequestBodyWithDestinationsMissingDmsFormId(
+        requestBodyWithDestinationsWithDmsFormIds(
           "hmrc",
           "${user.enrolledIdentifier}",
+          None,
           Some(""""serviceId": "someId",""")))) { (sideEffect, verifySideEffect, templateRaw) =>
       val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
@@ -882,10 +883,10 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
        |  }
        |}""".stripMargin
 
-  private def requestBodyWithDestinationsHavingValidDmsFormIds(
+  private def requestBodyWithDestinationsWithDmsFormIds(
     authModule: String,
     identifier: String,
-    dmsFormId: String,
+    dmsFormId: Option[String],
     serviceId: Option[String]) =
     s"""{
        |  "_id": "newfield",
@@ -896,7 +897,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
        |    {
        |      "id": "HMRCDMS1",
        |      "type": "hmrcDms",
-       |      "dmsFormId": "$dmsFormId",
+       |      ${dmsFormId.getOrElse("")}
        |      "customerId": "'123'",
        |      "classificationType": "BT-NRU-Environmental",
        |      "businessArea": "FinanceOpsCorpT"
@@ -911,66 +912,6 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
        |      "personalisation": {
        |        "customerName": "nameHidden"
        |      }
-       |    }
-       |  ],
-       |  "authConfig": {
-       |    "authModule": "$authModule",
-       |    ${serviceId.getOrElse("")}
-       |    "agentAccess": "allowAnyAgentAffinityUser"
-       |  },
-       |  "emailTemplateId": "",
-       |  "sections": [{
-       |    "title": "Page A",
-       |    "fields": [{
-       |      "id": "elementA",
-       |      "type": "text",
-       |      "format": "sterling",
-       |      "value": "$identifier",
-       |      "submitMode": "readonly",
-       |      "label": "Element A"
-       |    },{
-       |      "id": "elementB",
-       |      "format": "shortText",
-       |      "submitMode": "readonly",
-       |      "label": "Element B",
-       |      "validIf": "$${elementA=''}"
-       |    }]
-       |  }],
-       |
-       |  "declarationSection": {
-       |    "title": "",
-       |    "fields": []
-       |  },
-       |  "acknowledgementSection": {
-       |    "shortName": "Acknowledgement Page",
-       |    "title": "Acknowledgement Page",
-       |    "fields": [
-       |      {
-       |        "type": "info",
-       |        "id": "ackpageInfo",
-       |        "label": "SomeContent",
-       |        "infoText": "SomeContent"
-       |      }
-       |    ]
-       |  }
-       |}""".stripMargin
-
-  private def invalidRequestBodyWithDestinationsMissingDmsFormId(
-    authModule: String,
-    identifier: String,
-    serviceId: Option[String]) =
-    s"""{
-       |  "_id": "newfield",
-       |  "formName": "Testing section change label tttt",
-       |  "description": "Testing the form change label",
-       |  "languages":["en"],
-       |  "destinations": [
-       |    {
-       |      "id": "HMRCDMS",
-       |      "type": "hmrcDms",
-       |      "customerId": "'123'",
-       |      "classificationType": "BT-NRU-Environmental",
-       |      "businessArea": "FinanceOpsCorpT"
        |    }
        |  ],
        |  "authConfig": {
