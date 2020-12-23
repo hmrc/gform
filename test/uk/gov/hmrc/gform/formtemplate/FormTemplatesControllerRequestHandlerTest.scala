@@ -110,9 +110,10 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
   "handle a valid upsert request with Destinations section having valid DmsFormIds" in {
     withFixture(
       Json.parse(
-        validRequestBodyWithDestinationsHavingValidDmsFormIds(
+        requestBodyWithDestinationsHavingValidDmsFormIds(
           "hmrc",
           "${user.enrolledIdentifier}",
+          "TST1234",
           Some(""""serviceId": "someId",""")))) { (sideEffect, verifySideEffect, templateRaw) =>
       val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
@@ -263,9 +264,29 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
   "handle an invalid upsert request with Destinations having dmsFormId with Zero char" in {
     withFixture(
       Json.parse(
-        invalidRequestBodyWithDestinationsHavingDmsFormIdWithZeroChar(
+        requestBodyWithDestinationsHavingValidDmsFormIds(
           "hmrc",
           "${user.enrolledIdentifier}",
+          "",
+          Some(""""serviceId": "someId",""")))) { (sideEffect, verifySideEffect, templateRaw) =>
+      val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
+      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+
+      whenReady(eventualResult.value) { response =>
+        response should matchPattern {
+          case Left(UnexpectedState(_)) =>
+        }
+      }
+    }
+  }
+
+  "handle an invalid upsert request with Destinations having dmsFormId with space" in {
+    withFixture(
+      Json.parse(
+        requestBodyWithDestinationsHavingValidDmsFormIds(
+          "hmrc",
+          "${user.enrolledIdentifier}",
+          " ",
           Some(""""serviceId": "someId",""")))) { (sideEffect, verifySideEffect, templateRaw) =>
       val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
@@ -281,9 +302,10 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
   "handle an invalid upsert request with Destinations having dmsFormId with more than 12 chars" in {
     withFixture(
       Json.parse(
-        invalidRequestBodyWithDestinationsHavingDmsFormIdWithMoreThan12Chars(
+        requestBodyWithDestinationsHavingValidDmsFormIds(
           "hmrc",
           "${user.enrolledIdentifier}",
+          "TST0123456789",
           Some(""""serviceId": "someId",""")))) { (sideEffect, verifySideEffect, templateRaw) =>
       val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
@@ -569,86 +591,6 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
        |      "validIf": "$${elementA=''}"
        |    }]
        |  }]
-       |}""".stripMargin
-
-  private def validRequestBodyWithDestinationsHavingValidDmsFormIds(
-    authModule: String,
-    identifier: String,
-    serviceId: Option[String]) =
-    s"""{
-       |  "_id": "newfield",
-       |  "formName": "Testing section change label tttt",
-       |  "description": "Testing the form change label",
-       |  "languages":["en"],
-       |  "destinations": [
-       |    {
-       |      "id": "HMRCDMS1",
-       |      "type": "hmrcDms",
-       |      "dmsFormId": "TST123",
-       |      "customerId": "'123'",
-       |      "classificationType": "BT-NRU-Environmental",
-       |      "businessArea": "FinanceOpsCorpT"
-       |    },
-       |    {
-       |      "id": "HMRCDMS2",
-       |      "type": "hmrcDms",
-       |      "dmsFormId": "TST124",
-       |      "customerId": "'123'",
-       |      "classificationType": "BT-NRU-Environmental",
-       |      "businessArea": "FinanceOpsCorpT"
-       |    },
-       |    {
-       |      "id": "submitToADJNotify",
-       |      "type": "email",
-       |      "convertSingleQuotes": true,
-       |      "failOnError": false,
-       |      "emailTemplateId": "4f438fe6-680d-4610-9e55-b50f711326e4",
-       |      "to": "emailAddress",
-       |      "personalisation": {
-       |        "customerName": "nameHidden"
-       |      }
-       |    }
-       |  ],
-       |  "authConfig": {
-       |    "authModule": "$authModule",
-       |    ${serviceId.getOrElse("")}
-       |    "agentAccess": "allowAnyAgentAffinityUser"
-       |  },
-       |  "emailTemplateId": "",
-       |  "sections": [{
-       |    "title": "Page A",
-       |    "fields": [{
-       |      "id": "elementA",
-       |      "type": "text",
-       |      "format": "sterling",
-       |      "value": "$identifier",
-       |      "submitMode": "readonly",
-       |      "label": "Element A"
-       |    },{
-       |      "id": "elementB",
-       |      "format": "shortText",
-       |      "submitMode": "readonly",
-       |      "label": "Element B",
-       |      "validIf": "$${elementA=''}"
-       |    }]
-       |  }],
-       |
-       |  "declarationSection": {
-       |    "title": "",
-       |    "fields": []
-       |  },
-       |  "acknowledgementSection": {
-       |    "shortName": "Acknowledgement Page",
-       |    "title": "Acknowledgement Page",
-       |    "fields": [
-       |      {
-       |        "type": "info",
-       |        "id": "ackpageInfo",
-       |        "label": "SomeContent",
-       |        "infoText": "SomeContent"
-       |      }
-       |    ]
-       |  }
        |}""".stripMargin
 
   private def invalidRequestBodyWithNoDestinationsOrPrintSection(
@@ -940,9 +882,10 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
        |  }
        |}""".stripMargin
 
-  private def invalidRequestBodyWithDestinationsHavingDmsFormIdWithZeroChar(
+  private def requestBodyWithDestinationsHavingValidDmsFormIds(
     authModule: String,
     identifier: String,
+    dmsFormId: String,
     serviceId: Option[String]) =
     s"""{
        |  "_id": "newfield",
@@ -951,73 +894,23 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
        |  "languages":["en"],
        |  "destinations": [
        |    {
-       |      "id": "HMRCDMS",
+       |      "id": "HMRCDMS1",
        |      "type": "hmrcDms",
-       |      "dmsFormId": "",
+       |      "dmsFormId": "$dmsFormId",
        |      "customerId": "'123'",
        |      "classificationType": "BT-NRU-Environmental",
        |      "businessArea": "FinanceOpsCorpT"
-       |    }
-       |  ],
-       |  "authConfig": {
-       |    "authModule": "$authModule",
-       |    ${serviceId.getOrElse("")}
-       |    "agentAccess": "allowAnyAgentAffinityUser"
-       |  },
-       |  "emailTemplateId": "",
-       |  "sections": [{
-       |    "title": "Page A",
-       |    "fields": [{
-       |      "id": "elementA",
-       |      "type": "text",
-       |      "format": "sterling",
-       |      "value": "$identifier",
-       |      "submitMode": "readonly",
-       |      "label": "Element A"
-       |    },{
-       |      "id": "elementB",
-       |      "format": "shortText",
-       |      "submitMode": "readonly",
-       |      "label": "Element B",
-       |      "validIf": "$${elementA=''}"
-       |    }]
-       |  }],
-       |
-       |  "declarationSection": {
-       |    "title": "",
-       |    "fields": []
-       |  },
-       |  "acknowledgementSection": {
-       |    "shortName": "Acknowledgement Page",
-       |    "title": "Acknowledgement Page",
-       |    "fields": [
-       |      {
-       |        "type": "info",
-       |        "id": "ackpageInfo",
-       |        "label": "SomeContent",
-       |        "infoText": "SomeContent"
+       |    },
+       |    {
+       |      "id": "submitToADJNotify",
+       |      "type": "email",
+       |      "convertSingleQuotes": true,
+       |      "failOnError": false,
+       |      "emailTemplateId": "4f438fe6-680d-4610-9e55-b50f711326e4",
+       |      "to": "emailAddress",
+       |      "personalisation": {
+       |        "customerName": "nameHidden"
        |      }
-       |    ]
-       |  }
-       |}""".stripMargin
-
-  private def invalidRequestBodyWithDestinationsHavingDmsFormIdWithMoreThan12Chars(
-    authModule: String,
-    identifier: String,
-    serviceId: Option[String]) =
-    s"""{
-       |  "_id": "newfield",
-       |  "formName": "Testing section change label tttt",
-       |  "description": "Testing the form change label",
-       |  "languages":["en"],
-       |  "destinations": [
-       |    {
-       |      "id": "HMRCDMS",
-       |      "type": "hmrcDms",
-       |      "dmsFormId": "TST0123456789",
-       |      "customerId": "'123'",
-       |      "classificationType": "BT-NRU-Environmental",
-       |      "businessArea": "FinanceOpsCorpT"
        |    }
        |  ],
        |  "authConfig": {

@@ -169,15 +169,15 @@ object FormTemplatesControllerRequestHandler {
             .as[JsArray]
             .value
             .map { jv =>
-              ((jv \ "id").as[String], (jv \ "type").as[String], (jv \ "dmsFormId").toOption.map(_.as[String]))
+              ((jv \ "id").as[String], (jv \ "type").as[String], (jv \ "dmsFormId").asOpt[String].map(_.trim))
             }
             .map {
               // format: off
               case (_, "hmrcDms", Some(dmsFormId))
-                  if dmsFormId.toString.length > 0 && dmsFormId.toString.length <= 12 => ""
-              case (id, "hmrcDms", Some(_))                                           => invalidDmsFormId(id)
-              case (id, "hmrcDms", None)                                              => missingDmsFormId(id)
-              case _                                                                  => ""
+                  if dmsFormId.length > 0 && dmsFormId.length <= 12  => ""
+              case (id, "hmrcDms", Some(_))                          => invalidDmsFormId(id)
+              case (id, "hmrcDms", None)                             => missingDmsFormId(id)
+              case _                                                 => ""
               // format: on
             }
             .filter(_.nonEmpty)
