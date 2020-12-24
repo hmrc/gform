@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.email
 
 import uk.gov.hmrc.gform.sharedmodel.form.Form
 import cats.implicits._
-import play.api.Logger
+import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.EmailParametersRecalculated
 
@@ -26,6 +26,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.http.HeaderCarrier
 
 class EmailService(emailConnector: EmailConnector) {
+  private val logger = LoggerFactory.getLogger(getClass)
 
   def sendEmail(
     optemailAddress: Option[String],
@@ -36,7 +37,7 @@ class EmailService(emailConnector: EmailConnector) {
     hc: HeaderCarrier,
     mdc: ExecutionContext
   ): Future[Unit] = {
-    Logger.info(s"Sending email, template: $templateId, headers: '${loggingHelpers.cleanHeaderCarrierHeader(hc)}'")
+    logger.info(s"Sending email, template: $templateId, headers: '${loggingHelpers.cleanHeaderCarrierHeader(hc)}'")
     optemailAddress.fold(().pure[Future])(email => sendEmailTemplate(email, templateId, emailParameters))
   }
 

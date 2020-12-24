@@ -53,7 +53,16 @@ trait WSHttp
     //      mapErrors(POST_VERB, url, httpResponse).map(rds.read(POST_VERB, url, _))
     //    }
 
-    buildRequest(url).withHttpHeaders(headers: _*).post(source).map(new WSHttpResponse(_))
+    buildRequest(url)
+      .withHttpHeaders(headers: _*)
+      .post(source)
+      .map(
+        wsResponse =>
+          HttpResponse(
+            status = wsResponse.status,
+            body = wsResponse.body,
+            headers = wsResponse.headers
+        ))
   }
 
 }

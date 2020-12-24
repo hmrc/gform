@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.obligation
 
 import cats.data.NonEmptyList
 import cats.syntax.functor._
-import play.api.Logger
+import org.slf4j.LoggerFactory
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
@@ -29,9 +29,10 @@ import scala.concurrent.{ ExecutionContext, Future }
 class ObligationController(controllerComponents: ControllerComponents, obligation: ObligationService[Future])(
   implicit ex: ExecutionContext)
     extends BaseController(controllerComponents) {
+  private val logger = LoggerFactory.getLogger(getClass)
 
   def getAllTaxPeriods() = Action.async(parse.json[NonEmptyList[HmrcTaxPeriodWithEvaluatedId]]) { implicit request =>
-    Logger.info(s"Get All Tax Periods from DES, ${loggingHelpers.cleanHeaders(request.headers)}")
+    logger.info(s"Get All Tax Periods from DES, ${loggingHelpers.cleanHeaders(request.headers)}")
     val body: NonEmptyList[HmrcTaxPeriodWithEvaluatedId] = request.body
     val b = body.map { i =>
       val hmrcTaxPeriod = i.recalculatedTaxPeriodKey.hmrcTaxPeriod

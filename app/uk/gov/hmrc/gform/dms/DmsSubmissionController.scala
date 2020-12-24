@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.dms
 
-import play.api.Logger
+import org.slf4j.LoggerFactory
 import play.api.libs.Files
 import play.api.libs.Files.TemporaryFile
 import play.api.libs.json.JsValue
@@ -29,6 +29,7 @@ class DmsSubmissionController(
   controllerComponents: ControllerComponents,
   dmsSubmissionAlgebra: DmsSubmissionAlgebra[Future])(implicit ex: ExecutionContext)
     extends BaseController(controllerComponents) {
+  private val logger = LoggerFactory.getLogger(getClass)
 
   def submitToDms: Action[JsValue] = Action.async(parse.json) { implicit request =>
     withJsonBody[DmsHtmlSubmission] { dmsHtmlSubmission =>
@@ -44,7 +45,7 @@ class DmsSubmissionController(
             .submitToDms(dmsHtmlSubmission, fileAttachments)
             .map(id => Ok(id.value))
         case Left(message) =>
-          Logger.info(message)
+          logger.info(message)
           Future.successful(BadRequest(message))
       }
     }
@@ -61,7 +62,7 @@ class DmsSubmissionController(
             .submitPdfToDms(pdfBytes, metadata, List.empty)
             .map(id => Ok(id.value))
         case Left(message) =>
-          Logger.info(message)
+          logger.info(message)
           Future.successful(BadRequest(message))
       }
   }

@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.submission
 
 import cats.instances.future._
-import play.api.Logger
+import org.slf4j.LoggerFactory
 import play.api.libs.json.Json
 import uk.gov.hmrc.gform.core.{ fromFutureA, _ }
 import uk.gov.hmrc.gform.email.EmailService
@@ -43,6 +43,7 @@ class SubmissionService(
   submissionRepo: Repo[Submission],
   email: EmailService,
   timeProvider: TimeProvider)(implicit ex: ExecutionContext) {
+  private val logger = LoggerFactory.getLogger(getClass)
 
   def createSubmission(
     formId: FormId,
@@ -53,7 +54,7 @@ class SubmissionService(
     val submission = buildSubmission(formId, formTemplateId, envelopeId, customerId, noOfAttachments)
     submissionRepo
       .upsert(submission)
-      .map(_ => Logger.info(s"Upserted Submission for ${formId.value}"))
+      .map(_ => logger.info(s"Upserted Submission for ${formId.value}"))
       .map(_ => submission)
   }
 

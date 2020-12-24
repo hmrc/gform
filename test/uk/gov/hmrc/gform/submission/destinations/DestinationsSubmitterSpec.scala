@@ -87,7 +87,7 @@ class DestinationsSubmitterSpec
           "stringField" -> JsString("stringNodeValue")
         ))
 
-      val response1 = HttpResponse(responseCode1, Option(responseJson1))
+      val response1 = HttpResponse(responseCode1, responseJson1, Map.empty[String, Seq[String]])
 
       val initialModel = DestinationsProcessorModelAlgebra
         .createModel(FrontEndSubmissionVariables(JsNull), pdfData, None, structuredFormValue, form, None)
@@ -139,7 +139,9 @@ class DestinationsSubmitterSpec
 
       val responseModel =
         DestinationsProcessorModelAlgebra.createDestinationResponse(
-          HandlebarsDestinationResponse(destination, HttpResponse(responseCode, Option(responseBody))))
+          HandlebarsDestinationResponse(
+            destination,
+            HttpResponse(responseCode, responseBody, Map.empty[String, Seq[String]])))
 
       responseModel.model.toString shouldBe
         JsObject(
@@ -155,7 +157,7 @@ class DestinationsSubmitterSpec
 
   it should "contain a JsNull when the response body is empty or cannot be parsed" in {
     forAll(handlebarsHttpApiGen, Gen.chooseNum(100, 599)) { (destination, responseCode) =>
-      val result = HandlebarsDestinationResponse(destination, HttpResponse(responseCode, responseString = Option("")))
+      val result = HandlebarsDestinationResponse(destination, HttpResponse(responseCode, ""))
 
       val responseModel = DestinationsProcessorModelAlgebra.createDestinationResponse(result)
 

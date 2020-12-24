@@ -53,7 +53,7 @@ class DestinationSubmitterSpec
       pdfDataGen,
       structureFormValueObjectStructureGen
     ) { (si, handlebarsHttpApi, template, responseCode, pdfData, structuredFormData) =>
-      val httpResponse = HttpResponse(responseCode)
+      val httpResponse = HttpResponse(responseCode, null)
       val model = HandlebarsTemplateProcessorModel()
       val theTree = tree(si.formId, model, si.submission.submissionRef, template, pdfData, None, structuredFormData)
 
@@ -114,7 +114,7 @@ class DestinationSubmitterSpec
       pdfDataGen,
       structureFormValueObjectStructureGen
     ) { (si, generatedHandlebarsHttpApi, template, responseCode, pdfData, structuredFormData) =>
-      val httpResponse = HttpResponse(responseCode, responseString = Some("foo"))
+      val httpResponse = HttpResponse(responseCode, "foo")
       val handlebarsHttpApi = generatedHandlebarsHttpApi.copy(failOnError = false, includeIf = true.toString)
       val model = HandlebarsTemplateProcessorModel()
       val theTree = tree(si.formId, model, si.submission.submissionRef, template, pdfData, None, structuredFormData)
@@ -150,7 +150,7 @@ class DestinationSubmitterSpec
       pdfDataGen,
       structureFormValueObjectStructureGen
     ) { (si, handlebarsHttpApi, template, responseCode, pdfData, structuredFormData) =>
-      val httpResponse = HttpResponse(responseCode, responseString = Some("foobar"))
+      val httpResponse = HttpResponse(responseCode, "foobar")
       val model = HandlebarsTemplateProcessorModel()
 
       val theTree = tree(si.formId, model, si.submission.submissionRef, template, pdfData, None, structuredFormData)

@@ -16,17 +16,20 @@
 
 package uk.gov.hmrc.gform.email
 
-import play.api.Logger
+import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.wshttp.WSHttp
 
 import scala.concurrent.{ ExecutionContext, Future }
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpReads, HttpReadsInstances, HttpResponse }
 
 class EmailConnector(wSHttp: WSHttp, baseUrl: String)(implicit ec: ExecutionContext) {
 
+  private val logger = LoggerFactory.getLogger(getClass)
+
   def sendEmail(emailTemplate: EmailTemplate)(implicit headerCarrier: HeaderCarrier): Future[Unit] = {
-    Logger.info(s"send email, ${loggingHelpers.cleanHeaderCarrierHeader(headerCarrier)}")
+    logger.info(s"send email, ${loggingHelpers.cleanHeaderCarrierHeader(headerCarrier)}")
+    implicit val httpJsonReads: HttpReads[HttpResponse] = HttpReadsInstances.readRaw
     wSHttp
       .POST[EmailTemplate, HttpResponse](baseUrl + "/hmrc/email", emailTemplate)
       .map(_ => ())

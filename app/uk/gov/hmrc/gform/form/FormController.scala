@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.form
 
-import play.api.Logger
+import org.slf4j.LoggerFactory
 import play.api.http.HttpEntity
 import play.api.libs.json.Json
 import play.api.mvc._
@@ -41,6 +41,7 @@ class FormController(
   fileUpload: FileUploadAlgebra[Future],
   formService: FormAlgebra[Future])(implicit ex: ExecutionContext)
     extends BaseController(controllerComponents) {
+  private val logger = LoggerFactory.getLogger(getClass)
 
   def newForm(
     userId: UserId,
@@ -101,7 +102,7 @@ class FormController(
   }
 
   def enrolmentCallBack(formId: FormId): Action[AnyContent] = Action { implicit request =>
-    Logger.info(s"Form ID: $formId. Payload: ${request.body.toString}")
+    logger.info(s"Form ID: $formId. Payload: ${request.body.toString}")
     Results.Ok
   }
 

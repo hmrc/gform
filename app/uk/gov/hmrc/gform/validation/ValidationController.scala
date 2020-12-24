@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.validation
 
-import play.api.Logger
+import org.slf4j.LoggerFactory
 import play.api.libs.json.Json
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.auditing.loggingHelpers
@@ -30,13 +30,15 @@ class ValidationController(controllerComponents: ControllerComponents, validatio
   implicit ex: ExecutionContext)
     extends BaseController(controllerComponents) {
 
+  private val logger = LoggerFactory.getLogger(getClass)
+
   def desRegistration(utr: String) = Action.async(parse.json[DesRegistrationRequest]) { implicit request =>
-    Logger.info(s"validate Address At Des, ${loggingHelpers.cleanHeaders(request.headers)}")
+    logger.info(s"validate Address At Des, ${loggingHelpers.cleanHeaders(request.headers)}")
     validation.desRegistration(utr, request.body).map(a => Ok(Json.toJson(a)))
   }
 
   def validateBank() = Action.async(parse.json[Account]) { implicit request =>
-    Logger.info(s"validate bank, ${loggingHelpers.cleanHeaders(request.headers)}'")
+    logger.info(s"validate bank, ${loggingHelpers.cleanHeaders(request.headers)}'")
     validation.bankAccountReputation(request.body).map(if (_) NoContent else NotFound)
   }
 }

@@ -2,5 +2,4 @@
 ->         /gform                app.Routes
 
 GET        /ping/ping            uk.gov.hmrc.play.health.HealthController.ping
-GET        /admin/details        uk.gov.hmrc.play.health.HealthController.details
 GET        /admin/metrics        com.kenshoo.play.metrics.MetricsController.metrics

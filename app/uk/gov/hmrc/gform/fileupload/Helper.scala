@@ -21,12 +21,12 @@ import java.time.format.DateTimeFormatter
 
 import akka.actor.Scheduler
 import akka.pattern.after
+import org.slf4j.LoggerFactory
 import play.api.http.HeaderNames.LOCATION
 import play.api.libs.json.{ JsObject, Json }
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.http.HttpResponse
-import play.api.Logger
 
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ ExecutionContext, Future }
@@ -60,6 +60,9 @@ class Helper(config: FUConfig) {
 }
 
 trait Retrying {
+
+  private val logger = LoggerFactory.getLogger(getClass)
+
   def retry[T](f: => Future[T], delays: Seq[FiniteDuration], msg: String)(
     implicit ec: ExecutionContext,
     s: Scheduler): Future[T] =
@@ -67,10 +70,10 @@ trait Retrying {
       case t => {
         delays match {
           case Nil =>
-            Logger.warn(s"Giving up: $msg")
+            logger.warn(s"Giving up: $msg")
             Future.failed(t)
           case delay :: rest =>
-            Logger.warn(s"Retrying after $delay: $msg")
+            logger.warn(s"Retrying after $delay: $msg")
             after(delay, s)(retry(f, rest, msg))
         }
       }

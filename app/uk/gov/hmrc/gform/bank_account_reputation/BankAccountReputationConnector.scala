@@ -16,14 +16,14 @@
 
 package uk.gov.hmrc.gform.bank_account_reputation
 
-import play.api.Logger
+import org.slf4j.LoggerFactory
 import play.api.libs.json._
 import uk.gov.hmrc.gform.wshttp.WSHttp
 import play.api.libs.functional.syntax._
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.sharedmodel.Account
-import uk.gov.hmrc.http.HeaderCarrier
-
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpReads }
+import uk.gov.hmrc.http.HttpReadsInstances
 import scala.concurrent.{ ExecutionContext, Future }
 
 trait BankAccountReputationAlgebra[F[_]] {
@@ -32,9 +32,12 @@ trait BankAccountReputationAlgebra[F[_]] {
 
 class BankAccountReputationConnector(wSHttp: WSHttp, baseUrl: String)(implicit ec: ExecutionContext)
     extends BankAccountReputationAlgebra[Future] {
+  private val logger = LoggerFactory.getLogger(getClass)
 
   def exists(account: Account)(implicit hc: HeaderCarrier): Future[Response] = {
-    Logger.info(s"Check if bank account exists, headers: '${loggingHelpers.cleanHeaderCarrierHeader(hc)}'")
+    logger.info(s"Check if bank account exists, headers: '${loggingHelpers.cleanHeaderCarrierHeader(hc)}'")
+    implicit val httpJsonReads: HttpReads[Response] = HttpReads.Implicits.throwOnFailure(
+      HttpReadsInstances.readEitherOf(HttpReadsInstances.readJsValue.map(_.as[Response])))
     wSHttp.POST[Account, Response](s"$baseUrl/modcheck", account)
   }
 }

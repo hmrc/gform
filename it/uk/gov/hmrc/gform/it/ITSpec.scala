@@ -8,12 +8,13 @@ import com.github.tomakehurst.wiremock.client.WireMock.configureFor
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 import com.typesafe.config.ConfigFactory
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach, FlatSpecLike, GivenWhenThen, Matchers }
-import org.scalatestplus.play.{ BaseOneServerPerSuite, FakeApplicationFactory }
-import play.api.libs.json.{ Json, Reads }
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FlatSpecLike, GivenWhenThen, Matchers}
+import org.scalatestplus.play.{BaseOneServerPerSuite, FakeApplicationFactory}
+import play.api.ApplicationLoader.Context
+import play.api.libs.json.{Json, Reads}
 import play.api.libs.ws.ahc.StandaloneAhcWSClient
-import play.api.{ Application, Environment }
-import uk.gov.hmrc.crypto.{ Crypted, CryptoWithKeysFromConfig }
+import play.api.{Application, Environment}
+import uk.gov.hmrc.crypto.{Crypted, CryptoWithKeysFromConfig}
 import uk.gov.hmrc.gform.ApplicationLoader
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -43,7 +44,7 @@ trait ITSpec
 
   override def fakeApplication(): Application = {
     val context =
-      play.api.ApplicationLoader.createContext(environment = Environment.simple(), initialSettings = settingsOverride)
+      Context.create(environment = Environment.simple(), initialSettings = settingsOverride)
     new ApplicationLoader().load(context)
   }
 

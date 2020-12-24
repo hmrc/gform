@@ -24,7 +24,7 @@ import uk.gov.hmrc.gform.sharedmodel.config.ExposedConfig
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.ProfileName
 import uk.gov.hmrc.http.logging.Authorization
 import uk.gov.hmrc.play.audit.http.config.AuditingConfig
-import uk.gov.hmrc.play.bootstrap.config.{ AuditingConfigProvider, ControllerConfigs, RunMode, ServicesConfig }
+import uk.gov.hmrc.play.bootstrap.config.{ AuditingConfigProvider, ControllerConfigs, ServicesConfig }
 
 import scala.concurrent.ExecutionContext
 import scala.util.Try
@@ -52,20 +52,17 @@ class ConfigModule(
 
   val controllerConfigs = ControllerConfigs.fromConfig(configuration)
 
-  val runMode = new RunMode(configuration, playComponents.context.environment.mode)
+  val serviceConfig: ServicesConfig = new ServicesConfig(configuration)
 
-  val serviceConfig: ServicesConfig = new ServicesConfig(configuration, runMode)
-
-  val auditingConfig: AuditingConfig = new AuditingConfigProvider(configuration, runMode, appName).get()
+  val auditingConfig: AuditingConfig = new AuditingConfigProvider(configuration, appName).get()
 
   val notifierConfig: NotifierConfig =
     ConfigSource.default.at("microservice.services.notifier").loadOrThrow[NotifierConfig]
 
   val configController = new ConfigController(controllerComponents, this)
 
-  object DestinationsServicesConfig extends ServicesConfig(configuration, runMode) {
+  object DestinationsServicesConfig extends ServicesConfig(configuration) {
     override protected lazy val rootServices = "microservice"
-    override protected lazy val services = s"${runMode.env}.microservice"
 
     private def qualifiedDestinationServiceKey(destinationServiceKey: String) =
       s"destination-services.$destinationServiceKey"

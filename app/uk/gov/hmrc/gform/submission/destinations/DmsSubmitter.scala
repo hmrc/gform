@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.submission.destinations
 import java.time.Instant
 
 import cats.instances.future._
-import play.api.Logger
+import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA, success }
 import uk.gov.hmrc.gform.fileupload.{ File, FileUploadService }
 import uk.gov.hmrc.gform.form.FormAlgebra
@@ -40,6 +40,8 @@ class DmsSubmitter(
   formTemplateService: FormTemplateAlgebra[FOpt],
   pdfGeneratorService: PdfGeneratorService)(implicit ec: ExecutionContext)
     extends DmsSubmitterAlgebra[FOpt] {
+  private val logger = LoggerFactory.getLogger(getClass)
+
   def apply(
     submissionInfo: DestinationSubmissionInfo,
     pdfData: PdfHtml,
@@ -73,10 +75,10 @@ class DmsSubmitter(
     val totalFileSize = files.map(_.length).sum
     val totalFileSizeMB = Math.ceil(totalFileSize / 1000000.toDouble)
     val thresholdMB = 40
-    Logger.info(
+    logger.info(
       s"GForm DMS submission attachments size is $totalFileSize B (rounded to $totalFileSizeMB MB) [envelopeId=${envelopeId.value}]")
     if (totalFileSizeMB > thresholdMB) {
-      Logger.warn(s"GForm DMS submission attachments size exceeds $thresholdMB MB [envelopeId=${envelopeId.value}]")
+      logger.warn(s"GForm DMS submission attachments size exceeds $thresholdMB MB [envelopeId=${envelopeId.value}]")
     }
   }
 }

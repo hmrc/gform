@@ -17,7 +17,8 @@
 package uk.gov.hmrc.gform.proxy
 
 import java.net.{ Authenticator, InetSocketAddress, PasswordAuthentication, Proxy }
-import play.api.Logger
+
+import org.slf4j.LoggerFactory
 import pureconfig._
 import pureconfig.generic.ProductHint
 import pureconfig.generic.auto._
@@ -33,6 +34,7 @@ case class ProxyConfig(
 )
 
 class ProxyModule(val configModule: ConfigModule) {
+  private val logger = LoggerFactory.getLogger(getClass)
 
   implicit def hint: ProductHint[ProxyConfig] = ProductHint(ConfigFieldMapping(CamelCase, CamelCase))
 
@@ -43,7 +45,7 @@ class ProxyModule(val configModule: ConfigModule) {
         .load[ProxyConfig]
         .fold[Option[Proxy]](
           failures => {
-            Logger.error(s"Proxy configuration corrupted. Outbound connections will fail. " + failures.prettyPrint())
+            logger.error(s"Proxy configuration corrupted. Outbound connections will fail. " + failures.prettyPrint())
             None
           },
           proxyConfig =>
@@ -59,15 +61,17 @@ class ProxyModule(val configModule: ConfigModule) {
     else None
 
   maybeProxy.fold {
-    Logger.warn(s"No proxy configuration found. Outbound connections will fail.")
+    logger.warn(s"No proxy configuration found. Outbound connections will fail.")
   } { proxy =>
-    Logger.info(s"Proxy configuration found. Using proxy: $proxy.")
+    logger.info(s"Proxy configuration found. Using proxy: $proxy.")
   }
 
 }
 
 class ProxyAuthenticator(username: String, password: Array[Char]) extends Authenticator {
-  Logger.info(s"Proxy password authentication. Username: $username")
+  private val logger = LoggerFactory.getLogger(getClass)
+
+  logger.info(s"Proxy password authentication. Username: $username")
   System.setProperty("jdk.http.auth.tunneling.disabledSchemes", "")
   override val getPasswordAuthentication: PasswordAuthentication = new PasswordAuthentication(username, password)
 }

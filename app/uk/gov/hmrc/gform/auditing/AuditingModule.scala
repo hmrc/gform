@@ -16,23 +16,26 @@
 
 package uk.gov.hmrc.gform.auditing
 
+import play.api.inject.ApplicationLifecycle
 import play.api.mvc.Headers
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.bootstrap.audit.DefaultAuditConnector
+import uk.gov.hmrc.play.bootstrap.backend.filters.{ BackendAuditFilter, DefaultBackendAuditFilter }
 import uk.gov.hmrc.play.bootstrap.config.DefaultHttpAuditEvent
-import uk.gov.hmrc.play.bootstrap.filters.microservice.{ DefaultMicroserviceAuditFilter, MicroserviceAuditFilter }
 
 import scala.concurrent.ExecutionContext
 
-class AuditingModule(configModule: ConfigModule, akkaModule: AkkaModule)(implicit ec: ExecutionContext) {
+class AuditingModule(configModule: ConfigModule, akkaModule: AkkaModule, applicationLifecycle: ApplicationLifecycle)(
+  implicit ec: ExecutionContext) {
   self =>
 
-  val auditConnector: AuditConnector = new DefaultAuditConnector(configModule.auditingConfig)
+  val auditConnector: AuditConnector =
+    new DefaultAuditConnector(configModule.auditingConfig, akkaModule.materializer, applicationLifecycle)
 
-  val microserviceAuditFilter: MicroserviceAuditFilter = new DefaultMicroserviceAuditFilter(
+  val microserviceAuditFilter: BackendAuditFilter = new DefaultBackendAuditFilter(
     configModule.controllerConfigs,
     auditConnector,
     new DefaultHttpAuditEvent(configModule.appConfig.appName),

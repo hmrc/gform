@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.submission
 
 import cats.data.NonEmptyList
 import cats.implicits._
-import play.api.Logger
+import org.slf4j.LoggerFactory
 import play.api.mvc.{ Action, AnyContent, ControllerComponents }
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.core._
@@ -34,6 +34,8 @@ class FormBundleController(
   controllerComponents: ControllerComponents,
   oFormBundleSubmissionService: Option[FormBundleSubmissionService[FOpt]])(implicit ex: ExecutionContext)
     extends BaseController(controllerComponents) {
+  private val logger = LoggerFactory.getLogger(getClass)
+
   def getFormBundle(userId: UserId, formTemplateId: FormTemplateId, accessCode: AccessCode): Action[AnyContent] =
     formAction("getFormBundle", FormIdData.WithAccessCode(userId, formTemplateId, accessCode)) { implicit request =>
       oFormBundleSubmissionService.fold(
@@ -44,7 +46,7 @@ class FormBundleController(
           formBundleSubmissionService
             .formTree(rootFormIdData)
             .map { tree =>
-              Logger.info(show"getFormBundle, formId: '${rootFormIdData.toFormId.value}: $tree")
+              logger.info(show"getFormBundle, formId: '${rootFormIdData.toFormId.value}: $tree")
               tree
             }
             .map(_.map(_.formIdData).toList)

@@ -23,7 +23,7 @@ import cats.syntax.option._
 import cats.syntax.show._
 import java.time.Instant
 
-import play.api.Logger
+import org.slf4j.LoggerFactory
 import play.api.libs.json.{ JsString, Json }
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -44,6 +44,7 @@ trait FormMetadataAlgebra[F[_]] {
 
 class FormMetadataService(formMetadataRepo: Repo[FormMetadata])(implicit ec: ExecutionContext)
     extends FormMetadataAlgebra[Future] {
+  private val logger = LoggerFactory.getLogger(getClass)
 
   private def find(formIdData: FormIdData): Future[Option[FormMetadata]] =
     formMetadataRepo.find(formIdData.toFormId.value)
@@ -69,7 +70,7 @@ class FormMetadataService(formMetadataRepo: Repo[FormMetadata])(implicit ec: Exe
       }
       _ <- toFuture(formMetadataRepo.upsert(newMetadata))
       _ <- Future.successful {
-            Logger.info(
+            logger.info(
               show"FormMetadataService.touch($formIdData, $parentFormSubmissionRefs) - updating with $newMetadata)")
           }
     } yield ()
@@ -78,7 +79,7 @@ class FormMetadataService(formMetadataRepo: Repo[FormMetadata])(implicit ec: Exe
   def upsert(formIdData: FormIdData): Future[Unit] = {
     val metadata = newFormMetadata(formIdData)
     toFuture(formMetadataRepo.upsert(metadata)) >>
-      Future.successful { Logger.info(show"FormMetadataService.upsert($formIdData) - upserting $metadata)") }
+      Future.successful { logger.info(show"FormMetadataService.upsert($formIdData) - upserting $metadata)") }
   }
 
   def findByParentFormSubmissionRef(parentFormSubmissionRef: SubmissionRef): Future[List[FormMetadata]] = {

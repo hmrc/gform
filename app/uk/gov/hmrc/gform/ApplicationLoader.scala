@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform
 
 import cats.instances.future._
+import org.slf4j.LoggerFactory
 import play.api.ApplicationLoader.Context
 import play.api._
 import play.api.http._
@@ -68,16 +69,18 @@ class ApplicationLoader extends play.api.ApplicationLoader {
 class ApplicationModule(context: Context)
     extends BuiltInComponentsFromContext(context) with AhcWSComponents with I18nComponents { self =>
 
+  private val logger = LoggerFactory.getLogger(getClass)
+
   val appName = AppName.fromConfiguration(configuration)
 
-  Logger.info(s"Starting microservice $appName")
+  logger.info(s"Starting microservice $appName")
 
   private val akkaModule = new AkkaModule(materializer, actorSystem)
   protected val playComponents = new PlayComponents(context, self, self)
 
   protected val configModule = new ConfigModule(configuration, playComponents, controllerComponents, appName)
   private val metricsModule = new MetricsModule(configModule, playComponents, akkaModule, executionContext)
-  protected val auditingModule = new AuditingModule(configModule, akkaModule)
+  protected val auditingModule = new AuditingModule(configModule, akkaModule, applicationLifecycle)
   protected val wSHttpModule = new WSHttpModule(auditingModule, configModule, playComponents)
   private val proxyModule = new ProxyModule(configModule)
   private val notifierModule = new NotifierModule(configModule, proxyModule)
@@ -147,14 +150,14 @@ class ApplicationModule(context: Context)
     )
 
   // Execute side effects
-  new GraphiteModule(environment, configuration, configModule.runMode, applicationLifecycle, metricsModule)
+  new GraphiteModule(environment, configuration, applicationLifecycle, metricsModule)
 
   val dbLookupModule = new DbLookupModule(controllerComponents, mongoModule)
 
   override lazy val httpErrorHandler: HttpErrorHandler = new ErrorHandler(
     playComponents.context.environment,
     playComponents.context.initialConfiguration,
-    playComponents.context.sourceMapper)
+    playComponents.context.devContext.map(_.sourceMapper))
 
   val playComponentsModule = new PlayComponentsModule(
     playComponents,
@@ -191,7 +194,7 @@ class ApplicationModule(context: Context)
     actorSystem,
     materializer)
 
-  Logger.info(
+  logger.info(
     s"Microservice $appName started in mode ${environment.mode} at port ${application.configuration.getOptional[String]("http.port")}")
 }
 

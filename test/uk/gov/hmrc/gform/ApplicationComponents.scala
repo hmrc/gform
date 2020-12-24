@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform
 
 import org.scalatest.{ BeforeAndAfterAll, TestSuite }
 import org.scalatestplus.play.guice.GuiceOneAppPerTest
+import play.api.ApplicationLoader.Context
 import play.api._
 
 trait ApplicationComponents extends GuiceOneAppPerTest with BeforeAndAfterAll {
@@ -28,7 +29,7 @@ trait ApplicationComponents extends GuiceOneAppPerTest with BeforeAndAfterAll {
   def context: ApplicationLoader.Context = {
     val classLoader = ApplicationLoader.getClass.getClassLoader
     val env = new Environment(new java.io.File("."), classLoader, Mode.Test)
-    ApplicationLoader.createContext(env)
+    Context.create(env)
   }
 
   override def beforeAll() {
