@@ -8,7 +8,7 @@ object Dependencies {
   lazy val appDependencies: Seq[ModuleID] = compile ++ test()
 
   val parsebackVersion = "0.3"
-  val handlebarsVersion = "4.1.2"
+  val handlebarsVersion = "4.2.0"
 
   val compile = Seq(
     ws,
@@ -18,7 +18,7 @@ object Dependencies {
     "uk.gov.hmrc" %% "bootstrap-backend-play-27" % "3.2.0",
     "uk.gov.hmrc" %% "domain" % "5.10.0-play-27",
     "uk.gov.hmrc" %% "auth-client" % "3.0.0-play-27", // we need AffinityGroup type to stay in sync with frontend
-    "com.typesafe.play" %% "play-json" % "2.6.14",
+    "com.typesafe.play" %% "play-json" % "2.7.4",
     "com.codecommit" %% "parseback-core" % parsebackVersion,
     "com.codecommit" %% "parseback-cats" % parsebackVersion,
     "org.julienrf" %% "play-json-derived-codecs" % "4.0.1", //upgrading this has caused play-json comparability issue
