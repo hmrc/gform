@@ -22,7 +22,7 @@ import cats.{ Endo, MonadError }
 import org.slf4j.LoggerFactory
 import play.api.libs.json.{ JsValue, Json }
 import uk.gov.hmrc.gform.core.{ FOpt, _ }
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpReads, HttpResponse }
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpReads, HttpReadsInstances, HttpResponse }
 
 import scala.concurrent.ExecutionContext
 
@@ -137,9 +137,7 @@ object SuccessfulResponseHttpClient {
 }
 
 class AuditingHttpClient(wsHttp: WSHttp)(implicit ec: ExecutionContext) extends HttpClient[FOpt] {
-  private implicit val httpReads: HttpReads[HttpResponse] = new HttpReads[HttpResponse] {
-    override def read(method: String, url: String, response: HttpResponse): HttpResponse = response
-  }
+  private implicit val httpReads: HttpReads[HttpResponse] = HttpReadsInstances.readRaw
 
   override def get(uri: String)(implicit hc: HeaderCarrier): FOpt[HttpResponse] = fromFutureA(wsHttp.GET(uri))
 

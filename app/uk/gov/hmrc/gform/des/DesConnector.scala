@@ -26,6 +26,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 import scala.reflect.runtime.universe.TypeTag
 import scala.util.{ Failure, Success, Try }
 import uk.gov.hmrc.gform.auditing.loggingHelpers
+import uk.gov.hmrc.gform.commons.HttpFunctions
 import uk.gov.hmrc.gform.config.DesConnectorConfig
 import uk.gov.hmrc.gform.sharedmodel.{ CannotRetrieveResponse, NotFound, ServiceCallResponse, ServiceResponse }
 import uk.gov.hmrc.gform.sharedmodel.des.{ DesRegistrationRequest, DesRegistrationResponse, DesRegistrationResponseError }
@@ -45,7 +46,7 @@ trait DesAlgebra[F[_]] {
 }
 
 class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfig)(implicit ec: ExecutionContext)
-    extends DesAlgebra[Future] {
+    extends DesAlgebra[Future] with HttpFunctions {
   private val logger = LoggerFactory.getLogger(getClass)
 
   private implicit val hc = HeaderCarrier(
@@ -110,8 +111,7 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
     logger.info(
       s"Des lookup, Tax Periods: '$idType, $idNumber, $regimeType', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
     val value = s"$baseUrl${desConfig.basePath}/enterprise/obligation-data/$idType/$idNumber/$regimeType?status=O"
-    implicit val httpJsonReads: HttpReads[Obligation] = HttpReads.Implicits.throwOnFailure(
-      HttpReadsInstances.readEitherOf(HttpReadsInstances.readJsValue.map(_.as[Obligation])))
+    implicit val httpReads: HttpReads[Obligation] = jsonHttpReads(HttpReadsInstances.readJsValue.map(_.as[Obligation]))
     wSHttp.GET[Obligation](value).map(ServiceResponse.apply).recover {
       case ex: NotFoundException =>
         NotFound

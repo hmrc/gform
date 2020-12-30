@@ -18,21 +18,21 @@ package uk.gov.hmrc.gform.email
 
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.auditing.loggingHelpers
+import uk.gov.hmrc.gform.commons.HttpFunctions
 import uk.gov.hmrc.gform.wshttp.WSHttp
 
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpReads, HttpReadsInstances, HttpResponse }
 
-class EmailConnector(wSHttp: WSHttp, baseUrl: String)(implicit ec: ExecutionContext) {
+class EmailConnector(wSHttp: WSHttp, baseUrl: String)(implicit ec: ExecutionContext) extends HttpFunctions {
 
   private val logger = LoggerFactory.getLogger(getClass)
 
   def sendEmail(emailTemplate: EmailTemplate)(implicit headerCarrier: HeaderCarrier): Future[Unit] = {
     logger.info(s"send email, ${loggingHelpers.cleanHeaderCarrierHeader(headerCarrier)}")
-    implicit val httpJsonReads: HttpReads[HttpResponse] = HttpReadsInstances.readRaw
+    implicit val httpReads: HttpReads[HttpResponse] = jsonHttpReads(HttpReadsInstances.readRaw)
     wSHttp
       .POST[EmailTemplate, HttpResponse](baseUrl + "/hmrc/email", emailTemplate)
       .map(_ => ())
-
   }
 }

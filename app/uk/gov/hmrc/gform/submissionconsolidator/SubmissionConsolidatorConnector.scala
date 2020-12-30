@@ -27,12 +27,10 @@ class SubmissionConsolidatorConnector(wSHttp: WSHttp, baseUrl: String)(implicit 
 
   private val headers = Seq("Content-Type" -> "application/json")
 
-  implicit val reads: HttpReads[Either[String, Unit]] = new HttpReads[Either[String, Unit]] {
-    override def read(method: String, url: String, response: HttpResponse): Either[String, Unit] =
-      response.status match {
-        case 200 => Right(())
-        case _   => Left(Try(Json.parse(response.body).as[SCError].formatted).getOrElse(response.body))
-      }
+  implicit val reads: HttpReads[Either[String, Unit]] = (_: String, _: String, response: HttpResponse) =>
+    response.status match {
+      case 200 => Right(())
+      case _   => Left(Try(Json.parse(response.body).as[SCError].formatted).getOrElse(response.body))
   }
 
   def sendForm(scForm: SCForm)(implicit headerCarrier: HeaderCarrier): Future[Either[String, Unit]] =

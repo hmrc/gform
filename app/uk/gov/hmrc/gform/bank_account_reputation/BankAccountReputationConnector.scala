@@ -21,6 +21,7 @@ import play.api.libs.json._
 import uk.gov.hmrc.gform.wshttp.WSHttp
 import play.api.libs.functional.syntax._
 import uk.gov.hmrc.gform.auditing.loggingHelpers
+import uk.gov.hmrc.gform.commons.HttpFunctions
 import uk.gov.hmrc.gform.sharedmodel.Account
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpReads }
 import uk.gov.hmrc.http.HttpReadsInstances
@@ -31,13 +32,12 @@ trait BankAccountReputationAlgebra[F[_]] {
 }
 
 class BankAccountReputationConnector(wSHttp: WSHttp, baseUrl: String)(implicit ec: ExecutionContext)
-    extends BankAccountReputationAlgebra[Future] {
+    extends BankAccountReputationAlgebra[Future] with HttpFunctions {
   private val logger = LoggerFactory.getLogger(getClass)
 
   def exists(account: Account)(implicit hc: HeaderCarrier): Future[Response] = {
     logger.info(s"Check if bank account exists, headers: '${loggingHelpers.cleanHeaderCarrierHeader(hc)}'")
-    implicit val httpJsonReads: HttpReads[Response] = HttpReads.Implicits.throwOnFailure(
-      HttpReadsInstances.readEitherOf(HttpReadsInstances.readJsValue.map(_.as[Response])))
+    implicit val httpReads: HttpReads[Response] = jsonHttpReads(HttpReadsInstances.readJsValue.map(_.as[Response]))
     wSHttp.POST[Account, Response](s"$baseUrl/modcheck", account)
   }
 }
