@@ -14,7 +14,7 @@ object Dependencies {
     ws,
     "com.github.pureconfig" %% "pureconfig" % "0.14.0",
     "uk.gov.hmrc" %% "simple-reactivemongo" % "7.30.0-play-27",
-    "uk.gov.hmrc" %% "http-caching-client" % "9.1.0-play-27",
+    "uk.gov.hmrc" %% "http-caching-client" % "9.2.0-play-27",
     "uk.gov.hmrc" %% "bootstrap-backend-play-27" % "3.2.0",
     "uk.gov.hmrc" %% "domain" % "5.10.0-play-27",
     "uk.gov.hmrc" %% "auth-client" % "3.0.0-play-27", // we need AffinityGroup type to stay in sync with frontend

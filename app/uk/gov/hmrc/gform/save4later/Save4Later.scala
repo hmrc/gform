@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.save4later
 
+import akka.http.scaladsl.model.StatusCodes
 import cats.instances.future._
 import cats.syntax.functor._
 import org.slf4j.LoggerFactory
@@ -26,7 +27,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.http.cache.client.ShortLivedCache
 
 import scala.concurrent.{ ExecutionContext, Future }
-import uk.gov.hmrc.http.{ HeaderCarrier, NotFoundException }
+import uk.gov.hmrc.http.{ HeaderCarrier, UpstreamErrorResponse }
 
 class Save4Later(cache: ShortLivedCache)(implicit ex: ExecutionContext) extends FormPersistenceAlgebra[Future] {
 
@@ -36,7 +37,10 @@ class Save4Later(cache: ShortLivedCache)(implicit ex: ExecutionContext) extends 
   def get(formId: FormId)(implicit hc: HeaderCarrier): Future[Form] =
     find(formId) map {
       //use the same API as using WSHTTP
-      case None => throw new NotFoundException(s"Not found 'form' for the given id: '${formId.value}'")
+      case None =>
+        throw UpstreamErrorResponse(
+          s"Not found 'form' for the given id: '${formId.value}'",
+          StatusCodes.NotFound.intValue)
       case Some(form) =>
         LoggerFactory.getLogger(getClass.getName).debug(Json.prettyPrint(Json.toJson(form)) + "GETFORM")
         form

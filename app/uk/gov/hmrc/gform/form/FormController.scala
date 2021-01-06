@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.form
 
+import akka.http.scaladsl.model.StatusCodes
 import org.slf4j.LoggerFactory
 import play.api.http.HttpEntity
 import play.api.libs.json.Json
@@ -30,7 +31,7 @@ import uk.gov.hmrc.gform.sharedmodel.AccessCode
 import uk.gov.hmrc.gform.sharedmodel.form.{ FileId, FormId, UserData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.UserId
-import uk.gov.hmrc.http.NotFoundException
+import uk.gov.hmrc.http.UpstreamErrorResponse
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -66,7 +67,8 @@ class FormController(
         .get(formIdData)
         .asOkJson
         .recover {
-          case _: NotFoundException => Result(header = ResponseHeader(NOT_FOUND), body = HttpEntity.NoEntity)
+          case UpstreamErrorResponse.WithStatusCode(statusCode, _) if statusCode == StatusCodes.NotFound.intValue =>
+            Result(header = ResponseHeader(NOT_FOUND), body = HttpEntity.NoEntity)
         }
   }
 
