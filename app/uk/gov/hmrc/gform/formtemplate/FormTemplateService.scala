@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.formtemplate
 
 import cats.implicits._
-import play.api.Logger
+import org.slf4j.LoggerFactory
 import play.api.libs.json.{ JsValue, Json }
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.repo.Repo
@@ -32,6 +32,7 @@ trait FormTemplateAlgebra[F[_]] {
 class FormTemplateService(formTemplateRepo: Repo[FormTemplate], formTemplateRawRepo: Repo[FormTemplateRaw])(
   implicit ec: ExecutionContext)
     extends Verifier with Rewriter with FormTemplateAlgebra[Future] {
+  private val logger = LoggerFactory.getLogger(getClass)
 
   def save(formTemplateRaw: FormTemplateRaw): FOpt[Unit] =
     formTemplateRawRepo.upsert(formTemplateRaw)
@@ -50,7 +51,7 @@ class FormTemplateService(formTemplateRepo: Repo[FormTemplate], formTemplateRawR
       .map(_.flatMap { jsValue =>
         (jsValue \ "_id").asOpt[String] match {
           case None =>
-            Logger.error("Failed to extract _id as a String from json: " + jsValue)
+            logger.error("Failed to extract _id as a String from json: " + jsValue)
             None
           case some => some
         }

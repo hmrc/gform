@@ -21,7 +21,7 @@ import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 import akka.util.ByteString
-import play.api.Logger
+import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.dms.FileAttachment
 import uk.gov.hmrc.gform.fileupload.FileUploadService.FileIds._
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
@@ -39,19 +39,20 @@ class FileUploadService(
   fileUploadFrontendConnector: FileUploadFrontendConnector,
   timeModule: TimeProvider = new TimeProvider)(implicit ex: ExecutionContext)
     extends FileUploadAlgebra[Future] with FileDownloadAlgebra[Future] {
+  private val logger = LoggerFactory.getLogger(getClass)
 
   def createEnvelope(formTypeId: FormTemplateId, expiryDate: LocalDateTime)(
     implicit hc: HeaderCarrier): Future[EnvelopeId] = {
     val f = fileUploadConnector.createEnvelope(formTypeId, expiryDate)
     f map { id =>
-      Logger.debug(s"env-id creation: $id")
+      logger.debug(s"env-id creation: $id")
     }
     f
   }
 
   def submitEnvelope(submission: Submission, summaries: PdfAndXmlSummaries, hmrcDms: HmrcDms)(
     implicit hc: HeaderCarrier): Future[Unit] = {
-    Logger.debug(s"env-id submit: ${submission.envelopeId}")
+    logger.debug(s"env-id submit: ${submission.envelopeId}")
     val date = timeModule.localDateTime().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
     val fileNamePrefix = s"${submission.submissionRef.withoutHyphens}-$date"
 

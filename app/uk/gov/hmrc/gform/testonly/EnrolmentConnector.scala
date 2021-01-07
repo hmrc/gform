@@ -18,17 +18,21 @@ package uk.gov.hmrc.gform.testonly
 
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.gform.wshttp.WSHttp
+import uk.gov.hmrc.http._
 
 import scala.concurrent.{ ExecutionContext, Future }
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
 class EnrolmentConnector(wSHttp: WSHttp, baseUrl: String)(implicit ec: ExecutionContext) {
+
+  implicit val legacyRawReads: HttpReads[HttpResponse] =
+    HttpReadsInstances.throwOnFailure(HttpReadsInstances.readEitherOf(HttpReadsInstances.readRaw))
 
   def upload(id: String, body: JsValue)(implicit hc: HeaderCarrier) =
     wSHttp.PUT[JsValue, HttpResponse](s"$ES6url/HMRC-OBTDS-ORG~EtmpRegistrationNumber~$id", body)
 
   def deEnrol(userId: String, id: String)(implicit hc: HeaderCarrier) =
-    wSHttp.DELETE(s"$baseUrl/enrolment-store/users/$userId/enrolments/HMRC-OBTDS-ORG~EtmpRegistrationNumber~$id")
+    wSHttp.DELETE[HttpResponse](
+      s"$baseUrl/enrolment-store/users/$userId/enrolments/HMRC-OBTDS-ORG~EtmpRegistrationNumber~$id")
 
   def removeUnallocated(id: String)(implicit hc: HeaderCarrier): Future[Unit] =
     wSHttp.DELETE[HttpResponse](s"$ES6url/HMRC-OBTDS-ORG~EtmpRegistrationNumber~$id").map(_ => ())

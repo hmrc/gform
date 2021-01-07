@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.formtemplate
 
 import cats.implicits._
-import play.api.Logger
+import org.slf4j.LoggerFactory
 import play.api.mvc.{ ControllerComponents, Results }
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
@@ -28,11 +28,12 @@ import scala.concurrent.ExecutionContext
 class FormTemplatesController(controllerComponents: ControllerComponents, formTemplateService: FormTemplateService)(
   implicit ex: ExecutionContext)
     extends BaseController(controllerComponents) {
+  private val logger = LoggerFactory.getLogger(getClass)
 
   def upsert() = Action.async(parse.json[FormTemplateRaw]) { implicit request =>
     val templateRaw: FormTemplateRaw = request.body
     addFormTemplateIdToMdc(FormTemplateId(templateRaw._id.value))
-    Logger.info(s"FormTemplatesController.upsert: ${loggingHelpers.cleanHeaders(request.headers)}")
+    logger.info(s"FormTemplatesController.upsert: ${loggingHelpers.cleanHeaders(request.headers)}")
 
     new FormTemplatesControllerRequestHandler(formTemplateService.verifyAndSave, formTemplateService.save).futureInterpreter
       .handleRequest(templateRaw)
@@ -60,7 +61,7 @@ class FormTemplatesController(controllerComponents: ControllerComponents, formTe
   }
 
   def all() = Action.async { implicit request =>
-    Logger.info(s"FormTemplatesController.all, ${loggingHelpers.cleanHeaders(request.headers)}")
+    logger.info(s"FormTemplatesController.all, ${loggingHelpers.cleanHeaders(request.headers)}")
 
     formTemplateService.list().asOkJson
   }

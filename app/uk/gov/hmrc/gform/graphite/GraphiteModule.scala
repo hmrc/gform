@@ -21,23 +21,18 @@ import com.codahale.metrics.graphite.GraphiteReporter
 import play.api.inject.ApplicationLifecycle
 import play.api.{ Configuration, Environment }
 import uk.gov.hmrc.gform.metrics.MetricsModule
-import uk.gov.hmrc.play.bootstrap.config.RunMode
 import uk.gov.hmrc.play.bootstrap.graphite.{ EnabledGraphiteReporting, GraphiteProvider, GraphiteProviderConfig, GraphiteReporterProvider, GraphiteReporterProviderConfig }
 
 class GraphiteModule(
   environment: Environment,
   configuration: Configuration,
-  runMode: RunMode,
   applicationLifecycle: ApplicationLifecycle,
   metricsModule: MetricsModule) {
   // Taken from uk.gov.hmrc.play.bootstrap.graphite.GraphiteMetricsModule of bootstrap-play-26 library
-  private def extractGraphiteConfiguration(environment: Environment, configuration: Configuration): Configuration = {
-    val env = runMode.env
+  private def extractGraphiteConfiguration(environment: Environment, configuration: Configuration): Configuration =
     configuration
-      .getOptional[Configuration](s"$env.microservice.metrics.graphite")
-      .orElse(configuration.getOptional[Configuration]("microservice.metrics.graphite"))
+      .getOptional[Configuration]("microservice.metrics.graphite")
       .getOrElse(Configuration())
-  }
 
   private val graphiteConfiguration: Configuration = extractGraphiteConfiguration(environment, configuration)
 

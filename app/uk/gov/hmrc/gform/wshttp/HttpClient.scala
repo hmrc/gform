@@ -19,10 +19,10 @@ package uk.gov.hmrc.gform.wshttp
 import cats.syntax.applicative._
 import cats.syntax.flatMap._
 import cats.{ Endo, MonadError }
-import play.api.Logger
+import org.slf4j.LoggerFactory
 import play.api.libs.json.{ JsValue, Json }
 import uk.gov.hmrc.gform.core.{ FOpt, _ }
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpReads, HttpResponse }
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpReads, HttpReadsInstances, HttpResponse }
 
 import scala.concurrent.ExecutionContext
 
@@ -35,6 +35,9 @@ trait HttpClient[F[_]] {
 }
 
 object HttpClient {
+
+  private val logger = LoggerFactory.getLogger(getClass)
+
   def unimplementedHttpClient[F[_]]: HttpClient[F] = new HttpClient[F] {
     override def get(uri: String)(implicit hc: HeaderCarrier): F[HttpResponse] = ???
     override def post(uri: String, body: String)(implicit hc: HeaderCarrier): F[HttpResponse] = ???
@@ -85,7 +88,7 @@ object HttpClient {
       method(uri, parser.fold(payload)(fn => fn(payload).toString))
     } catch {
       case ex: Exception =>
-        Logger.debug(s"Failed to send request to $uri with body: $payload", ex)
+        logger.debug(s"Failed to send request to $uri with body: $payload", ex)
         monadError.raiseError(s"Attempt send a request failed because the given body is not valid.")
     }
 }
@@ -134,9 +137,7 @@ object SuccessfulResponseHttpClient {
 }
 
 class AuditingHttpClient(wsHttp: WSHttp)(implicit ec: ExecutionContext) extends HttpClient[FOpt] {
-  private implicit val httpReads: HttpReads[HttpResponse] = new HttpReads[HttpResponse] {
-    override def read(method: String, url: String, response: HttpResponse): HttpResponse = response
-  }
+  private implicit val httpReads: HttpReads[HttpResponse] = HttpReadsInstances.readRaw
 
   override def get(uri: String)(implicit hc: HeaderCarrier): FOpt[HttpResponse] = fromFutureA(wsHttp.GET(uri))
 

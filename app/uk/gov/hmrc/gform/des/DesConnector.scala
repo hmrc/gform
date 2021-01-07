@@ -16,22 +16,23 @@
 
 package uk.gov.hmrc.gform.des
 
-import cats.syntax.eq._
-import cats.instances.string._
+import akka.http.scaladsl.model.StatusCodes
 import cats.instances.int._
-import play.api.Logger
+import cats.instances.string._
+import cats.syntax.eq._
+import org.slf4j.LoggerFactory
 import play.api.libs.json._
+import uk.gov.hmrc.gform.auditing.loggingHelpers
+import uk.gov.hmrc.gform.config.DesConnectorConfig
+import uk.gov.hmrc.gform.sharedmodel.des.{ DesRegistrationRequest, DesRegistrationResponse, DesRegistrationResponseError }
+import uk.gov.hmrc.gform.sharedmodel._
+import uk.gov.hmrc.gform.wshttp.WSHttp
+import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.logging.Authorization
+
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.reflect.runtime.universe.TypeTag
 import scala.util.{ Failure, Success, Try }
-import uk.gov.hmrc.gform.auditing.loggingHelpers
-import uk.gov.hmrc.gform.config.DesConnectorConfig
-import uk.gov.hmrc.gform.sharedmodel.{ CannotRetrieveResponse, NotFound, ServiceCallResponse, ServiceResponse }
-import uk.gov.hmrc.gform.sharedmodel.des.{ DesRegistrationRequest, DesRegistrationResponse, DesRegistrationResponseError }
-import uk.gov.hmrc.gform.wshttp.WSHttp
-import uk.gov.hmrc.gform.sharedmodel.Obligation
-import uk.gov.hmrc.http._
-import uk.gov.hmrc.http.logging.Authorization
 
 trait DesAlgebra[F[_]] {
   def lookupRegistration(
@@ -44,7 +45,9 @@ trait DesAlgebra[F[_]] {
 }
 
 class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfig)(implicit ec: ExecutionContext)
-    extends DesAlgebra[Future] {
+    extends DesAlgebra[Future] with LowPriorityHttpReadsJson with HttpReadsEither with HttpReadsHttpResponse {
+
+  private val logger = LoggerFactory.getLogger(getClass)
 
   private implicit val hc = HeaderCarrier(
     extraHeaders = Seq("Environment" -> desConfig.environment),
@@ -54,7 +57,7 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
     utr: String,
     desRegistrationRequest: DesRegistrationRequest): Future[ServiceCallResponse[DesRegistrationResponse]] = {
 
-    Logger.info(s"Des registration, UTR: '$utr', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
+    logger.info(s"Des registration, UTR: '$utr', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
 
     wSHttp
       .doPost[DesRegistrationRequest](
@@ -69,7 +72,7 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
             if (desError.code === "NOT_FOUND" || desError.code === "INVALID_UTR") NotFound
             else {
               val jsonResponse = Json.prettyPrint(Json.toJson(desError))
-              Logger.error(
+              logger.error(
                 s"Problem when calling des registration. Response status: $status, body response: $jsonResponse")
               CannotRetrieveResponse
             }
@@ -78,7 +81,7 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
       }
       .recover {
         case ex =>
-          Logger.error("Unknown problem when calling des registration", ex)
+          logger.error("Unknown problem when calling des registration", ex)
           CannotRetrieveResponse
       }
   }
@@ -91,13 +94,13 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
       case Success(jsValue) =>
         jsValue.validate[A].map(f).recoverTotal { jsError =>
           val tpe = implicitly[TypeTag[A]].tpe
-          Logger.error(
+          logger.error(
             s"Unknown problem when calling des registration. Response status was: $status. Expected json for $tpe, but got: $jsError")
           CannotRetrieveResponse
         }
       case Failure(failure) =>
         val tpe = implicitly[TypeTag[A]].tpe
-        Logger.error(
+        logger.error(
           s"Unknown problem when calling des registration. Response status was: $status. Expected json for $tpe, but got :",
           failure)
         CannotRetrieveResponse
@@ -105,14 +108,14 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
   }
 
   def lookupTaxPeriod(idType: String, idNumber: String, regimeType: String): Future[ServiceCallResponse[Obligation]] = {
-    Logger.info(
+    logger.info(
       s"Des lookup, Tax Periods: '$idType, $idNumber, $regimeType', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
     val value = s"$baseUrl${desConfig.basePath}/enterprise/obligation-data/$idType/$idNumber/$regimeType?status=O"
     wSHttp.GET[Obligation](value).map(ServiceResponse.apply).recover {
-      case ex: NotFoundException =>
+      case UpstreamErrorResponse.WithStatusCode(statusCode, _) if statusCode == StatusCodes.NotFound.intValue =>
         NotFound
       case other =>
-        Logger.error("Unknown problem when calling des obligation-data", other)
+        logger.error("Unknown problem when calling des obligation-data", other)
         CannotRetrieveResponse
     }
   }

@@ -19,13 +19,20 @@ package uk.gov.hmrc.gform.playcomponents
 import play.api.http.{ DefaultHttpRequestHandler, HttpConfiguration, HttpErrorHandler }
 import play.api.mvc.{ EssentialFilter, Handler, RequestHeader }
 import play.api.routing.Router
+import play.core.DefaultWebCommands
 
 class CustomHttpRequestHandler(
   router: Router,
   httpErrorHandler: HttpErrorHandler,
   httpConfiguration: HttpConfiguration,
   httpFilters: Seq[EssentialFilter])
-    extends DefaultHttpRequestHandler(router, httpErrorHandler, httpConfiguration, httpFilters: _*) {
+    extends DefaultHttpRequestHandler(
+      new DefaultWebCommands,
+      None,
+      router,
+      httpErrorHandler,
+      httpConfiguration,
+      httpFilters) {
   override def routeRequest(request: RequestHeader): Option[Handler] =
     router
       .handlerFor(request)

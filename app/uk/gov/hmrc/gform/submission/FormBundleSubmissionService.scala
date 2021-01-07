@@ -25,7 +25,7 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.show._
 import cats.syntax.traverse._
-import play.api.Logger
+import org.slf4j.LoggerFactory
 import play.api.libs.json.JsObject
 import uk.gov.hmrc.gform.form.{ BundledFormTreeNode, FormAlgebra }
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
@@ -46,6 +46,7 @@ class FormBundleSubmissionService[F[_]](
   formTreeAlgebra: FormTreeAlgebra[F],
   pdfSummaryAlgebra: PdfSummaryAlgebra[F],
   destinationAuditAlgebra: DestinationAuditAlgebra[F])(implicit M: MonadError[F, String]) {
+  private val logger = LoggerFactory.getLogger(getClass)
 
   def forceUpdateFormStatus(formId: FormId, status: FormStatus)(implicit hc: HeaderCarrier): F[Unit] =
     for {
@@ -87,18 +88,18 @@ class FormBundleSubmissionService[F[_]](
   def submitFormBundleAfterReview(rootFormIdData: FormIdData, submissionData: NonEmptyList[BundledFormSubmissionData])(
     implicit hc: HeaderCarrier): F[Unit] =
     for {
-      _          <- Logger.info(show"submitFormBundleAfterReview(rootFormIdData: $rootFormIdData)").pure[F]
+      _          <- logger.info(show"submitFormBundleAfterReview(rootFormIdData: $rootFormIdData)").pure[F]
       _          <- formAlgebra.updateFormStatus(rootFormIdData.toFormId, Submitting)
-      _          <- Logger.info(show"Updated root form status to Submitting").pure[F]
+      _          <- logger.info(show"Updated root form status to Submitting").pure[F]
       modelTree  <- createModelTree(rootFormIdData, submissionData)
-      _          <- Logger.info(show"Built model tree").pure[F]
+      _          <- logger.info(show"Built model tree").pure[F]
       submission <- submissionRepoAlgebra.get(rootFormIdData.toFormId.value)
-      _          <- Logger.info(show"Got submission for rootForm").pure[F]
+      _          <- logger.info(show"Got submission for rootForm").pure[F]
       submissionInfo = DestinationSubmissionInfo("", submission)
       _ <- destinationsSubmitterAlgebra.send(submissionInfo, modelTree)
-      _ <- Logger.info(show"Ran submitter").pure[F]
+      _ <- logger.info(show"Ran submitter").pure[F]
       _ <- transitionAllChildNodesToSubmitted(modelTree)
-      _ <- Logger.info(show"Transitioned all child nodes to submitter").pure[F]
+      _ <- logger.info(show"Transitioned all child nodes to submitter").pure[F]
     } yield ()
 
   private def transitionAllChildNodesToSubmitted(modelTree: HandlebarsModelTree)(
@@ -120,7 +121,7 @@ class FormBundleSubmissionService[F[_]](
     implicit hc: HeaderCarrier): F[HandlebarsModelTree] =
     for {
       formTree      <- formTree(rootFormId)
-      _             <- Logger.info(show"formTree: $formTree").pure[F]
+      _             <- logger.info(show"formTree: $formTree").pure[F]
       formsById     <- buildMap(formTree)(_.formIdData)(findForm)
       templatesById <- buildMap(formTree)(_.formIdData.formTemplateId)(findFormTemplate)
       submissionDataByFormId = submissionData.map(d => (d.formIdData, d)).toList.toMap
@@ -145,23 +146,23 @@ class FormBundleSubmissionService[F[_]](
 
   private def findForm(formId: FormIdData)(implicit hc: HeaderCarrier): F[Form] =
     for {
-      _    <- Logger.info(show"FormBundleSubmissionService.findForm($formId)").pure[F]
+      _    <- logger.info(show"FormBundleSubmissionService.findForm($formId)").pure[F]
       form <- formAlgebra.get(formId)
-      _    <- Logger.info(show"FormBundleSubmissionService.findForm($formId) - found").pure[F]
+      _    <- logger.info(show"FormBundleSubmissionService.findForm($formId) - found").pure[F]
     } yield form
 
   private def findFormTemplate(id: FormTemplateId): F[FormTemplate] =
     for {
-      _        <- Logger.info(show"FormBundleSubmissionService.findFormTemplate($id)").pure[F]
+      _        <- logger.info(show"FormBundleSubmissionService.findFormTemplate($id)").pure[F]
       template <- formTemplateAlgebra.get(id)
-      _        <- Logger.info(show"FormBundleSubmissionService.findFormTemplate($id) - found").pure[F]
+      _        <- logger.info(show"FormBundleSubmissionService.findFormTemplate($id) - found").pure[F]
     } yield template
 
   private def findSummaryPdf(id: FormIdData)(implicit hc: HeaderCarrier): F[PdfHtml] =
     for {
-      _   <- Logger.info(show"FormBundleSubmissionService.findSummaryPdf($id) - formId = ${id.toFormId}").pure[F]
+      _   <- logger.info(show"FormBundleSubmissionService.findSummaryPdf($id) - formId = ${id.toFormId}").pure[F]
       pdf <- pdfSummaryAlgebra.getLatestPdfHtml(id.toFormId)
-      _   <- Logger.info(show"FormBundleSubmissionService.findSummaryPdf($id) - found").pure[F]
+      _   <- logger.info(show"FormBundleSubmissionService.findSummaryPdf($id) - found").pure[F]
     } yield pdf
 
   private def extractSubmissionRef(formIdData: FormIdData): SubmissionRef =

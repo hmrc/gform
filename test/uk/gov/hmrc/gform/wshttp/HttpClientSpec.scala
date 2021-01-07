@@ -20,7 +20,7 @@ import org.scalacheck.Gen
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.PrimitiveGen
 import uk.gov.hmrc.http.logging._
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse, Token, UserId }
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
 trait HttpClientSpec extends Spec {
   case class Underlying[F[_]](httpClient: HttpClient[F])(implicit A: Applicative[F]) {
@@ -52,24 +52,22 @@ trait HttpClientSpec extends Spec {
   def unsuccessfulHttpResponseGen: Gen[HttpResponse] =
     for {
       status         <- Gen.oneOf(Gen.chooseNum(100, 199), Gen.chooseNum(300, 599))
-      responseString <- Gen.option(Gen.alphaNumStr)
-    } yield HttpResponse(status, responseString = responseString)
+      responseString <- Gen.alphaNumStr
+    } yield HttpResponse(status, responseString)
 
   def successfulHttpResponseGen: Gen[HttpResponse] =
     for {
       status         <- Gen.chooseNum(200, 299)
-      responseString <- Gen.option(Gen.alphaNumStr)
-    } yield HttpResponse(status, responseString = responseString)
+      responseString <- Gen.alphaNumStr
+    } yield HttpResponse(status, responseString)
 
   def httpResponseGen: Gen[HttpResponse] =
     for {
       status         <- Gen.chooseNum(100, 599)
-      responseString <- Gen.option(Gen.alphaNumStr)
-    } yield HttpResponse(status, responseString = responseString)
+      responseString <- Gen.alphaNumStr
+    } yield HttpResponse(status, responseString)
 
   def authorizationGen: Gen[Authorization] = Gen.alphaNumStr.map(Authorization)
-  def userIdGen: Gen[UserId] = Gen.alphaNumStr.map(UserId)
-  def tokenGen: Gen[Token] = Gen.alphaNumStr.map(Token)
   def forwardedForGen: Gen[ForwardedFor] = Gen.alphaNumStr.map(ForwardedFor)
   def sessionIdGen: Gen[SessionId] = Gen.alphaNumStr.map(SessionId)
   def requestIdGen: Gen[RequestId] = Gen.alphaNumStr.map(RequestId)
@@ -85,8 +83,6 @@ trait HttpClientSpec extends Spec {
   def headerCarrierGen: Gen[HeaderCarrier] =
     for {
       authorization    <- Gen.option(authorizationGen)
-      userId           <- Gen.option(userIdGen)
-      token            <- Gen.option(tokenGen)
       forwarded        <- Gen.option(forwardedForGen)
       sessionId        <- Gen.option(sessionIdGen)
       requestId        <- Gen.option(requestIdGen)
@@ -103,8 +99,6 @@ trait HttpClientSpec extends Spec {
     } yield
       HeaderCarrier(
         authorization = authorization,
-        userId = userId,
-        token = token,
         forwarded = forwarded,
         sessionId = sessionId,
         requestId = requestId,

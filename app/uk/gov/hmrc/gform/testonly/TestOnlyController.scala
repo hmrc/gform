@@ -24,7 +24,7 @@ import com.typesafe.config.{ ConfigFactory, ConfigRenderOptions }
 import java.time.LocalDateTime
 
 import akka.util.ByteString
-import play.api.Logger
+import org.slf4j.LoggerFactory
 import play.api.http.HttpEntity
 import play.api.libs.json._
 import play.api.mvc._
@@ -55,6 +55,7 @@ class TestOnlyController(
   destinationsModelProcessorAlgebra: DestinationsProcessorModelAlgebra[Future],
   des: DesAlgebra[Future])(implicit ex: ExecutionContext)
     extends BaseController(controllerComponents) {
+  private val logger = LoggerFactory.getLogger(getClass)
 
   def getFromDes(url: String): Action[AnyContent] =
     Action.async { request =>
@@ -275,5 +276,5 @@ class TestOnlyController(
   }
 
   private def logInfo(message: String): Unit =
-    Logger.info(message)
+    logger.info(message)
 }

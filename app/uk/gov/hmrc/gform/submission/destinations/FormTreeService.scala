@@ -23,7 +23,7 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.show._
 import cats.syntax.traverse._
-import play.api.Logger
+import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.form.BundledFormTreeNode
 import uk.gov.hmrc.gform.formmetadata.{ FormMetadata, FormMetadataAlgebra }
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
@@ -32,9 +32,11 @@ import uk.gov.hmrc.gform.submission.Tree
 
 class FormTreeService[M[_]](formMetadataAlgebra: FormMetadataAlgebra[M])(implicit M: MonadError[M, String])
     extends FormTreeAlgebra[M] {
+  private val logger = LoggerFactory.getLogger(getClass)
+
   def getFormTree(rootFormId: FormIdData): M[Tree[BundledFormTreeNode]] =
     for {
-      _    <- Logger.info(s"getFormTree(${rootFormId.toFormId.value})").pure[M]
+      _    <- logger.info(s"getFormTree(${rootFormId.toFormId.value})").pure[M]
       tree <- formMetadataAlgebra.get(rootFormId).flatMap(buildHierarchyForForm(_, Set.empty))
     } yield tree
 
@@ -48,10 +50,10 @@ class FormTreeService[M[_]](formMetadataAlgebra: FormMetadataAlgebra[M])(implici
     submissionRef: SubmissionRef,
     processedSubmissionReferences: Set[SubmissionRef]): M[List[Tree[BundledFormTreeNode]]] =
     for {
-      _             <- Logger.info(s"buildDescendantTreesForSubmissionRef(${submissionRef.value})").pure[M]
+      _             <- logger.info(s"buildDescendantTreesForSubmissionRef(${submissionRef.value})").pure[M]
       _             <- verifyNoLoops(submissionRef, processedSubmissionReferences)
       childMetadata <- formMetadataAlgebra.findByParentFormSubmissionRef(submissionRef)
-      _ = Logger.info(
+      _ = logger.info(
         s"buildDescendantTreesForSubmissionRef(${submissionRef.value}) - child submission references: [${childMetadata
           .map(_.submissionRef.fold("") { _.value })
           .mkString(", ")}]")
@@ -69,7 +71,7 @@ class FormTreeService[M[_]](formMetadataAlgebra: FormMetadataAlgebra[M])(implici
     metadata: FormMetadata,
     processedSubmissionReferences: Set[SubmissionRef]): M[Tree[BundledFormTreeNode]] =
     for {
-      _     <- Logger.info(show"buildHierarchyForForm(${metadata._id})").pure[M]
+      _     <- logger.info(show"buildHierarchyForForm(${metadata._id})").pure[M]
       trees <- buildDescendantTreesForSubmissionRef(metadata.submissionRef, processedSubmissionReferences)
     } yield Tree(BundledFormTreeNode(metadata.formIdData), trees)
 

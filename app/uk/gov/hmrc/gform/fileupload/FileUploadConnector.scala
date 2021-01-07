@@ -16,35 +16,40 @@
 
 package uk.gov.hmrc.gform.fileupload
 
-import java.time.LocalDateTime
-
 import akka.util.ByteString
-import play.api.Logger
-
-import scala.concurrent.{ ExecutionContext, Future }
+import org.slf4j.LoggerFactory
+import play.api.libs.json.JsObject
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.core.FutureSyntax
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.gform.wshttp.{ FutureHttpResponseSyntax, WSHttp }
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
+import uk.gov.hmrc.http.HttpReads.Implicits.readFromJson
+import uk.gov.hmrc.http._
+
+import java.time.LocalDateTime
+import scala.concurrent.{ ExecutionContext, Future }
 
 class FileUploadConnector(config: FUConfig, wSHttp: WSHttp, timeProvider: TimeProvider)(implicit ex: ExecutionContext) {
+  private val logger = LoggerFactory.getLogger(getClass)
+
+  implicit val legacyRawReads: HttpReads[HttpResponse] =
+    HttpReadsInstances.throwOnFailure(HttpReadsInstances.readEitherOf(HttpReadsInstances.readRaw))
 
   val helper = new Helper(config)
   def createEnvelope(formTemplateId: FormTemplateId, expiryDate: LocalDateTime)(
     implicit hc: HeaderCarrier): Future[EnvelopeId] = {
-    Logger.info(
+    logger.info(
       s"creating envelope, formTemplateId: '${formTemplateId.value}', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
     val requestBody = helper.createEnvelopeRequestBody(formTemplateId, expiryDate)
     wSHttp
-      .POST(s"$baseUrl/file-upload/envelopes", requestBody, headers)
+      .POST[JsObject, HttpResponse](s"$baseUrl/file-upload/envelopes", requestBody, headers)
       .map(helper.extractEnvelopId)
   }
 
   def routeEnvelope(input: RouteEnvelopeRequest)(implicit hc: HeaderCarrier): Future[Unit] = {
-    Logger.info(s"route envelope, input: '${input.envelopeId.value}, ${loggingHelpers.cleanHeaderCarrierHeader(hc)} ")
+    logger.info(s"route envelope, input: '${input.envelopeId.value}, ${loggingHelpers.cleanHeaderCarrierHeader(hc)} ")
     val url = s"$baseUrl/file-routing/requests"
     wSHttp
       .POST[RouteEnvelopeRequest, HttpResponse](url, input, headers)
@@ -53,12 +58,12 @@ class FileUploadConnector(config: FUConfig, wSHttp: WSHttp, timeProvider: TimePr
   }
 
   def getEnvelope(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): Future[Envelope] = {
-    Logger.info(s"get envelope, envelopeId: '${envelopeId.value}', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
+    logger.info(s"get envelope, envelopeId: '${envelopeId.value}', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
     wSHttp.GET[Envelope](s"$baseUrl/file-upload/envelopes/${envelopeId.value}")
   }
 
   def getFileBytes(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): Future[ByteString] = {
-    Logger.info(s"get file, envelopeId: '${envelopeId.value}, fileId: '${fileId.value}'', ${loggingHelpers
+    logger.info(s"get file, envelopeId: '${envelopeId.value}, fileId: '${fileId.value}'', ${loggingHelpers
       .cleanHeaderCarrierHeader(hc)}")
 
     val url = s"$baseUrl/file-upload/envelopes/${envelopeId.value}/files/${fileId.value}/content"
@@ -74,7 +79,7 @@ class FileUploadConnector(config: FUConfig, wSHttp: WSHttp, timeProvider: TimePr
   }
 
   def deleteFile(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): Future[Unit] = {
-    Logger.info(s"delete file, envelopeId: ' ${envelopeId.value}', fileId: '${fileId.value}', ${loggingHelpers
+    logger.info(s"delete file, envelopeId: ' ${envelopeId.value}', fileId: '${fileId.value}', ${loggingHelpers
       .cleanHeaderCarrierHeader(hc)}")
     val url = s"$baseUrl/file-upload/envelopes/${envelopeId.value}/files/${fileId.value}"
     wSHttp

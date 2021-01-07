@@ -20,19 +20,21 @@ import java.util.UUID
 
 import cats.data.EitherT
 import cats.implicits._
-import org.slf4j.MDC
-import play.api.Logger
+import org.slf4j.{ LoggerFactory, MDC }
 import play.api.libs.json._
 import play.api.mvc.{ AbstractController, Action, AnyContent, BodyParser, ControllerComponents, Request, Result }
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.sharedmodel.form.{ FormId, FormIdData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
-import uk.gov.hmrc.play.bootstrap.controller.{ BackendHeaderCarrierProvider, WithJsonBody }
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendHeaderCarrierProvider
+import uk.gov.hmrc.play.bootstrap.controller.WithJsonBody
 
 import scala.concurrent.{ ExecutionContext, Future }
 
 class BaseController(controllerComponents: ControllerComponents)(implicit ec: ExecutionContext)
     extends AbstractController(controllerComponents) with BackendHeaderCarrierProvider with WithJsonBody {
+
+  private val logger = LoggerFactory.getLogger(getClass)
 
   object O {
     def asOkJson[T: Writes](t: T): Result =
@@ -61,7 +63,7 @@ class BaseController(controllerComponents: ControllerComponents)(implicit ec: Ex
     block: Request[A] => Future[Result]): Action[A] =
     controllerComponents.actionBuilder.async(bodyParser) { request =>
       addFormIdToMdc(formIdData.toFormId)
-      Logger.info(s"${getClass.getSimpleName}.$endPoint, ${loggingHelpers.cleanHeaders(request.headers)}")
+      logger.info(s"${getClass.getSimpleName}.$endPoint, ${loggingHelpers.cleanHeaders(request.headers)}")
       block(request)
     }
 
@@ -73,7 +75,7 @@ class BaseController(controllerComponents: ControllerComponents)(implicit ec: Ex
     block: Request[AnyContent] => Future[Result]): Action[AnyContent] =
     controllerComponents.actionBuilder.async { request =>
       addFormIdToMdc(formId)
-      Logger.info(s"${getClass.getSimpleName}.$endPoint, ${additionalInfo.toList.mkString(", ")}")
+      logger.info(s"${getClass.getSimpleName}.$endPoint, ${additionalInfo.toList.mkString(", ")}")
       block(request)
     }
 
@@ -84,7 +86,7 @@ class BaseController(controllerComponents: ControllerComponents)(implicit ec: Ex
     block: Request[AnyContent] => Future[Result]): Action[AnyContent] =
     controllerComponents.actionBuilder.async { request =>
       addFormTemplateIdToMdc(formTemplateId)
-      Logger.info(s"${getClass.getSimpleName}.$endPoint")
+      logger.info(s"${getClass.getSimpleName}.$endPoint")
       block(request)
     }
 

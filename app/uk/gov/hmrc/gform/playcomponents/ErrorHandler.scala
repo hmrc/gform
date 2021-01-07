@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.playcomponents
 
+import org.slf4j.LoggerFactory
 import play.api._
 import play.api.http.DefaultHttpErrorHandler
 import play.api.libs.json.{ JsResultException, Json }
@@ -26,28 +27,30 @@ import uk.gov.hmrc.gform.controllers.ErrResponse
 import uk.gov.hmrc.gform.core.UniqueIdGenerator
 
 import scala.concurrent.Future
-import uk.gov.hmrc.http.{ HttpException, JsValidationException, NotFoundException, Upstream4xxResponse, Upstream5xxResponse }
+import uk.gov.hmrc.http.{ HttpException, JsValidationException, NotFoundException, UpstreamErrorResponse }
 
 class ErrorHandler(environment: Environment, configuration: Configuration, sourceMapper: Option[SourceMapper])(
   implicit uniqueIdGenerator: UniqueIdGenerator)
     extends DefaultHttpErrorHandler(environment, configuration, sourceMapper, None) {
 
+  private val logger = LoggerFactory.getLogger(getClass)
+
   override protected def onBadRequest(request: RequestHeader, message: String): Future[Result] = {
     val response = ErrResponse(message)
-    Logger.logger.info(response.toString)
+    logger.info(response.toString)
     Future.successful(BadRequest(Json.toJson(response)))
   }
 
   override protected def onForbidden(request: RequestHeader, message: String): Future[Result] = {
     val response = ErrResponse(message)
-    Logger.logger.info(response.toString)
+    logger.info(response.toString)
     Future.successful(Forbidden(Json.toJson(response)))
   }
 
   override protected def onNotFound(request: RequestHeader, message: String): Future[Result] = {
     val m = if (message.isEmpty) s"Resource not found: '${request.path}'" else message
     val response = ErrResponse(m)
-    Logger.logger.info(response.toString)
+    logger.info(response.toString)
     Future.successful(NotFound(Json.toJson(response)))
   }
 
@@ -56,64 +59,64 @@ class ErrorHandler(environment: Environment, configuration: Configuration, sourc
     statusCode: Int,
     message: String): Future[Result] = {
     val response = ErrResponse(message)
-    Logger.logger.info(response.toString)
+    logger.info(response.toString)
     Future.successful(Status(statusCode)(Json.toJson(response)))
   }
 
   override def onServerError(request: RequestHeader, exception: Throwable): Future[Result] = exception match {
     // format: OFF
-     case e: Upstream4xxResponse               => onUpstream4xxResponse(e)
-     case e: Upstream5xxResponse               => onUpstream5xxResponse(e)
+     case e: UpstreamErrorResponse             => onUpstreamErrorResponse(e)
      case e: NotFoundException                 => onNotFoundException(e)
      case e: java.util.NoSuchElementException  => onNotFoundException(e)
      case e: HttpException                     => onHttpException(e)
      case e: JsValidationException             => onJsValidationException(e)
      case e: JsResultException                 => onJsResultException(e)
      case e: Throwable                         => onOtherException(e)
-    // format: ON
+     // format: ON
   }
 
   private def onHttpException(e: HttpException) = {
     val response = ErrResponse(e.getMessage)
-    Logger.logger.error(response.toString, e)
+    logger.error(response.toString, e)
     Future.successful(InternalServerError(Json.toJson(response)))
   }
 
-  private def onUpstream4xxResponse(e: Upstream4xxResponse) = {
-    val response = ErrResponse(s"Upstream4xx: ${e.getMessage}")
-    Logger.logger.info(response.toString, e)
-    Future.successful(BadRequest(Json.toJson(response)))
-  }
-
-  private def onUpstream5xxResponse(e: Upstream5xxResponse) = {
-    val response = ErrResponse(s"Upstream5xx: ${e.getMessage}")
-    Logger.logger.error(response.toString, e)
-    Future.successful(InternalServerError(Json.toJson(response)))
+  private def onUpstreamErrorResponse(e: UpstreamErrorResponse) = {
+    val (response, result) = e match {
+      case UpstreamErrorResponse.Upstream4xxResponse(e) =>
+        val response = ErrResponse(s"Upstream4xx: ${e.message}")
+        (response, BadRequest(Json.toJson(response)))
+      case UpstreamErrorResponse.Upstream5xxResponse(e) =>
+        val response = ErrResponse(s"Upstream5xx: ${e.message}")
+        (response, InternalServerError(Json.toJson(response)))
+    }
+    logger.info(response.toString, e)
+    Future.successful(result)
   }
 
   private def onNotFoundException(e: Exception) = {
     val response = ErrResponse(s"${e.getMessage}")
-    Logger.logger.error(response.toString, e)
+    logger.error(response.toString, e)
     Future.successful(NotFound(Json.toJson(response)))
   }
 
   private def onJsValidationException(e: JsValidationException) = {
     val temporaryDetails = Some(Json.obj("details" -> e.errors.toString))
     val response = ErrResponse("Invalid json", temporaryDetails)
-    Logger.logger.info(response.toString, e)
+    logger.info(response.toString, e)
     Future.successful(BadRequest(Json.toJson(response)))
   }
 
   private def onJsResultException(e: JsResultException): Future[Result] = {
     val temporaryDetails = Some(Json.obj("details" -> e.errors.toString))
     val response = ErrResponse("Invalid json", temporaryDetails, uniqueIdGenerator.generate)
-    Logger.logger.info(response.toString, e)
+    logger.info(response.toString, e)
     Future.successful(BadRequest(Json.toJson(response)))
   }
 
   private def onOtherException(e: Throwable) = {
     val response = ErrResponse(e.getMessage)
-    Logger.logger.error(response.toString, e)
+    logger.error(response.toString, e)
     Future.successful(InternalServerError(Json.toJson(response)))
   }
 }

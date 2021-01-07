@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.fileupload
 
 import akka.actor.Scheduler
 import akka.util.ByteString
-import play.api.Logger
+import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.core.FutureSyntax
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
@@ -27,10 +27,12 @@ import uk.gov.hmrc.gform.wshttp.{ FutureHttpResponseSyntax, WSHttp }
 
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.http.HeaderCarrier
+
 import scala.concurrent.duration._
 
 class FileUploadFrontendConnector(config: FUConfig, wSHttp: WSHttp)(implicit ex: ExecutionContext, schduler: Scheduler)
     extends Retrying {
+  private val logger = LoggerFactory.getLogger(getClass)
 
   def upload(envelopeId: EnvelopeId, fileId: FileId, fileName: String, body: ByteString, contentType: ContentType)(
     implicit hc: HeaderCarrier): Future[Unit] = {
@@ -38,7 +40,7 @@ class FileUploadFrontendConnector(config: FUConfig, wSHttp: WSHttp)(implicit ex:
     val msg =
       s"upload, envelopeId: '${envelopeId.value}',  fileId: '${fileId.value}', fileName: '$fileName', contentType: '${contentType.value}, ${loggingHelpers
         .cleanHeaderCarrierHeader(hc)}'"
-    Logger.info(msg)
+    logger.info(msg)
 
     val url = s"$baseUrl/file-upload/upload/envelopes/${envelopeId.value}/files/${fileId.value}"
     retry(
