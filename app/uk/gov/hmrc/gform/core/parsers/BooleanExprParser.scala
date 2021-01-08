@@ -34,13 +34,11 @@ object BooleanExprParser {
 
   implicit val W: Whitespace = Whitespace(() | """\s+""".r)
 
-  private lazy val p0: Parser[BooleanExpr] = ("true" ^^ { (loc, value) =>
-    IsTrue
-  }
-    | "yes" ^^^ IsTrue
-    | "false" ^^^ IsFalse
-    | "no" ^^^ IsFalse
-    | "(" ~> p4 <~ ")")
+  private lazy val p0: Parser[BooleanExpr] = "true" ^^^ IsTrue |
+    "yes" ^^^ IsTrue |
+    "false" ^^^ IsFalse |
+    "no" ^^^ IsFalse |
+    "(" ~> p4 <~ ")"
 
   private lazy val p1: Parser[BooleanExpr] = (exprFormCtx ~ "<" ~ exprFormCtx ^^ { (loc, expr1, op, expr2) =>
     LessThan(expr1, expr2)
@@ -59,6 +57,12 @@ object BooleanExprParser {
     }
     | exprFormCtx ~ ">" ~ exprFormCtx ^^ { (loc, expr1, op, expr2) =>
       GreaterThan(expr1, expr2)
+    }
+    | dateExpr ~ "before" ~ dateExpr ^^ { (_, expr1, _, expr2) =>
+      DateBefore(expr1, expr2)
+    }
+    | dateExpr ~ "after" ~ dateExpr ^^ { (_, expr1, _, expr2) =>
+      DateAfter(expr1, expr2)
     }
     | FormComponentId.unanchoredIdValidation ~ "contains" ~ exprFormCtx ^^ { (_, expr1, _, expr2) =>
       Contains(FormCtx(FormComponentId(expr1)), expr2)

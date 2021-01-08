@@ -178,17 +178,23 @@ object FormTemplateValidator {
   def validateForwardReference(sections: List[Section]): ValidationResult = {
     val indexLookup: Map[FormComponentId, Int] = indexedFieldIds(sections).toMap
 
+    def validateIdIdx(id: FormComponentId, idx: Int) =
+      indexLookup
+        .get(id)
+        .map(idIdx =>
+          (idIdx < idx).validationResult(
+            s"id '${id.value}' named in includeIf is forward reference, which is not permitted"))
+        .getOrElse(Invalid(s"id '${id.value}' named in includeIf expression does not exist in a form"))
+
     def validateExprs(left: Expr, right: Expr, idx: Int): List[ValidationResult] =
       List(left, right)
         .flatMap(extractFcIds)
-        .map(
-          id =>
-            indexLookup
-              .get(id)
-              .map(idIdx =>
-                (idIdx < idx).validationResult(
-                  s"id '${id.value}' named in includeIf is forward reference, which is not permitted"))
-              .getOrElse(Invalid(s"id '${id.value}' named in includeIf expression does not exist in a form")))
+        .map(validateIdIdx(_, idx))
+
+    def validateDateExprs(left: DateExpr, right: DateExpr, idx: Int): List[ValidationResult] =
+      List(left, right)
+        .flatMap(extractFcIds)
+        .map(validateIdIdx(_, idx))
 
     def validateValueField(valueField: Expr): List[ValidationResult] =
       extractFcIds(valueField).map(
@@ -210,6 +216,8 @@ object FormTemplateValidator {
       case IsFalse | IsTrue                 => List(Valid)
       case Contains(collection, value)      => validateExprs(collection, value, idx)
       case In(value, _)                     => validateValueField(value)
+      case DateBefore(left, right)          => validateDateExprs(left, right, idx)
+      case DateAfter(left, right)           => validateDateExprs(left, right, idx)
     }
 
     Monoid[ValidationResult]
@@ -295,6 +303,12 @@ object FormTemplateValidator {
     case Sum(field1)              => extractFcIds(field1)
     case FormCtx(fcId)            => List(fcId)
     case _                        => Nil
+  }
+
+  private def extractFcIds(expr: DateExpr): List[FormComponentId] = expr match {
+    case DateExprWithOffset(dateExpr, _, _) => extractFcIds(dateExpr)
+    case DateFormCtxVar(fcId)               => List(fcId)
+    case _                                  => Nil
   }
 
   private val isRevealingChoice: FormComponent => Boolean = fc =>
