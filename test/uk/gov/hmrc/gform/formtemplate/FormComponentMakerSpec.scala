@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.formtemplate
 
 import org.scalatest.{ FlatSpecLike, Matchers }
 import play.api.libs.json.Json
+import uk.gov.hmrc.gform.Helpers.toSmartString
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormatExpr, RoundingMode, Text, TextArea, TextFormat, TextWithRestrictions, Value }
@@ -62,6 +63,54 @@ class FormComponentMakerSpec extends FlatSpecLike with Matchers {
                                                                  |""".stripMargin))
     val result = formComponentMaker.textOpt
     result shouldBe Right(Text(TextWithRestrictions(0, 1000), Value))
+  }
+
+  it should "parse text component with both prefix and suffix" in {
+    val formComponentMaker = new FormComponentMaker(Json.parse("""
+                                                                 |{
+                                                                 |   "id": "id1",
+                                                                 |   "type": "text",
+                                                                 |   "label": "Field 1",
+                                                                 |   "format": "text",
+                                                                 |   "prefix": "prefixTest",
+                                                                 |   "suffix": "suffixTest"
+                                                                 |}
+                                                                 |""".stripMargin))
+    val result = formComponentMaker.textOpt
+    result shouldBe Right(
+      Text(
+        TextWithRestrictions(0, 1000),
+        Value,
+        prefix = Some(toSmartString("prefixTest")),
+        suffix = Some(toSmartString("suffixTest"))))
+  }
+
+  it should "parse text component with only prefix" in {
+    val formComponentMaker = new FormComponentMaker(Json.parse("""
+                                                                 |{
+                                                                 |   "id": "id1",
+                                                                 |   "type": "text",
+                                                                 |   "label": "Field 1",
+                                                                 |   "format": "text",
+                                                                 |   "prefix": "prefixTest"
+                                                                 |}
+                                                                 |""".stripMargin))
+    val result = formComponentMaker.textOpt
+    result shouldBe Right(Text(TextWithRestrictions(0, 1000), Value, prefix = Some(toSmartString("prefixTest"))))
+  }
+
+  it should "parse text component with only suffix" in {
+    val formComponentMaker = new FormComponentMaker(Json.parse("""
+                                                                 |{
+                                                                 |   "id": "id1",
+                                                                 |   "type": "text",
+                                                                 |   "label": "Field 1",
+                                                                 |   "format": "text",
+                                                                 |   "suffix": "suffixTest"
+                                                                 |}
+                                                                 |""".stripMargin))
+    val result = formComponentMaker.textOpt
+    result shouldBe Right(Text(TextWithRestrictions(0, 1000), Value, suffix = Some(toSmartString("suffixTest"))))
   }
 
   it should "return error when format is not valid for text" in {

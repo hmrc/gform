@@ -369,7 +369,7 @@ object FormTemplateValidator {
 
 object IsEmailVerifiedBy {
   def unapply(formComponent: FormComponent): Option[(FormComponentId, FormComponentId)] = formComponent.`type` match {
-    case Text(EmailVerifiedBy(fcId, _), _, _, _) => Some((formComponent.id, fcId))
-    case _                                       => None
+    case Text(EmailVerifiedBy(fcId, _), _, _, _, _, _) => Some((formComponent.id, fcId))
+    case _                                             => None
   }
 }

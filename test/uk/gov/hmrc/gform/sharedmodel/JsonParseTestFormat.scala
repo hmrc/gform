@@ -61,7 +61,7 @@ class JsonParseTestFormat extends Spec with TableDrivenPropertyChecks {
       jsResult shouldBe a[JsSuccess[_]]
       jsResult.map(fv =>
         fv.`type` match {
-          case Text(constraint, _, DisplayWidth.DEFAULT, _) =>
+          case Text(constraint, _, DisplayWidth.DEFAULT, _, _, _) =>
             constraint should equal(Number(11, 2, RoundingMode.defaultRoundingMode, None))
           case a @ _ => fail(s"expected a Text, got $a")
       })

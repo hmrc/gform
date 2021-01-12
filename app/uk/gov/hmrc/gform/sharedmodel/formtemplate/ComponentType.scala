@@ -35,7 +35,9 @@ case class Text(
   constraint: TextConstraint,
   value: Expr,
   displayWidth: DisplayWidth = DisplayWidth.DEFAULT,
-  toUpperCase: UpperCaseBoolean = IsNotUpperCase
+  toUpperCase: UpperCaseBoolean = IsNotUpperCase,
+  prefix: Option[SmartString] = None,
+  suffix: Option[SmartString] = None
 ) extends ComponentType
 
 sealed trait UpperCaseBoolean
