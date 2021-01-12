@@ -39,6 +39,7 @@ import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidth._
+import uk.gov.hmrc.gform.Helpers.toSmartString
 
 class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks {
 
@@ -53,10 +54,24 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
     val table = Table(
       ("actual", "expected"),
       (
-        createTextObject(TextFormat(textConstraint), Some(TextExpression(expr)), None, IsNotUpperCase, Json.obj()),
+        createTextObject(
+          TextFormat(textConstraint),
+          Some(TextExpression(expr)),
+          None,
+          IsNotUpperCase,
+          None,
+          None,
+          Json.obj()),
         Text(textConstraint, expr).asRight),
       (
-        createTextObject(TextFormat(textConstraint), Some(TextExpression(expr)), None, IsUpperCase, Json.obj()),
+        createTextObject(
+          TextFormat(textConstraint),
+          Some(TextExpression(expr)),
+          None,
+          IsUpperCase,
+          None,
+          None,
+          Json.obj()),
         Text(textConstraint, expr, defaultDisplayWidth, IsUpperCase).asRight),
       (
         createTextObject(
@@ -64,18 +79,54 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           Some(TextExpression(expr)),
           Some("xs"),
           IsNotUpperCase,
+          None,
+          None,
           Json.obj()),
         Text(textConstraint, expr, xsDisplayWidth).asRight),
       (
-        createTextObject(TextFormat(textConstraint), Some(TextExpression(expr)), Some("xs"), IsUpperCase, Json.obj()),
-        Text(textConstraint, expr, xsDisplayWidth, IsUpperCase).asRight)
+        createTextObject(
+          TextFormat(textConstraint),
+          Some(TextExpression(expr)),
+          Some("xs"),
+          IsUpperCase,
+          None,
+          None,
+          Json.obj()),
+        Text(textConstraint, expr, xsDisplayWidth, IsUpperCase).asRight),
+      (
+        createTextObject(
+          TextFormat(textConstraint),
+          Some(TextExpression(expr)),
+          Some("xs"),
+          IsNotUpperCase,
+          Some(toSmartString("prefixTest")),
+          None,
+          Json.obj()),
+        Text(textConstraint, expr, xsDisplayWidth, prefix = Some(toSmartString("prefixTest"))).asRight),
+      (
+        createTextObject(
+          TextFormat(textConstraint),
+          Some(TextExpression(expr)),
+          Some("xs"),
+          IsNotUpperCase,
+          Some(toSmartString("prefixTest")),
+          Some(toSmartString("suffixTest")),
+          Json.obj()
+        ),
+        Text(
+          textConstraint,
+          expr,
+          xsDisplayWidth,
+          prefix = Some(toSmartString("prefixTest")),
+          suffix = Some(toSmartString("suffixTest"))).asRight)
     )
     table.forEvery({ case (expected, result) => expected shouldBe result })
   }
 
   "createObject" should "return error when format is empty for text type" in {
     val isMultiline = Some("no") // denotes text type
-    val result = createObject(None, None, isMultiline, None, IsNotUpperCase, JsObject(Seq("id" -> JsString("text1"))))
+    val result =
+      createObject(None, None, isMultiline, None, IsNotUpperCase, None, None, JsObject(Seq("id" -> JsString("text1"))))
     result shouldBe Left(UnexpectedState(s"""|Missing or invalid format for text field
                                              |Id: text1
                                              |Format: None
@@ -85,7 +136,8 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
 
   it should "return error when format is empty for multiline text type" in {
     val isMultiline = Some("yes") // denotes multiline text type
-    val result = createObject(None, None, isMultiline, None, IsNotUpperCase, JsObject(Seq("id" -> JsString("text1"))))
+    val result =
+      createObject(None, None, isMultiline, None, IsNotUpperCase, None, None, JsObject(Seq("id" -> JsString("text1"))))
     result shouldBe Left(UnexpectedState(s"""|Missing or invalid format for multiline text field
                                              |Id: text1
                                              |Format: None
@@ -100,6 +152,8 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
       None,
       None,
       IsNotUpperCase,
+      None,
+      None,
       JsObject(Seq("id" -> JsString("text1"))))
     result shouldBe Left(UnexpectedState(s"""|Missing or invalid format for text field
                                              |Id: text1
@@ -115,6 +169,8 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
       Some("yes"),
       None,
       IsNotUpperCase,
+      None,
+      None,
       JsObject(Seq("id" -> JsString("text1"))))
     result shouldBe Left(UnexpectedState(s"""|Missing or invalid format for multiline text field
                                              |Id: text1

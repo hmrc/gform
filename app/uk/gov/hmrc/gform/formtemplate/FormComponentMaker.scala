@@ -91,6 +91,8 @@ class FormComponentMaker(json: JsValue) {
   lazy val multiline: Option[String] = (json \ "multiline").asOpt[String]
   lazy val displayWidth: Option[String] = (json \ "displayWidth").asOpt[String]
   lazy val toUpperCase: UpperCaseBoolean = (json \ "toUpperCase").asOpt[UpperCaseBoolean].getOrElse(IsNotUpperCase)
+  lazy val prefix: Option[SmartString] = (json \ "prefix").asOpt[SmartString]
+  lazy val suffix: Option[SmartString] = (json \ "suffix").asOpt[SmartString]
   lazy val roundingMode: RoundingMode = (json \ "round").asOpt[RoundingMode].getOrElse(RoundingMode.defaultRoundingMode)
   lazy val multivalue: Option[String] = (json \ "multivalue").asOpt[String]
   lazy val total: Option[String] = (json \ "total").asOpt[String]
@@ -215,7 +217,15 @@ class FormComponentMaker(json: JsValue) {
       selectionCriteria <- optSelectionCriteria
       maybeFormatExpr   <- optMaybeFormatExpr(roundingMode)(selectionCriteria)(emailVerification)
       maybeValueExpr    <- optMaybeValueExpr
-      result            <- createObject(maybeFormatExpr, maybeValueExpr, multiline, displayWidth, toUpperCase, json)
+      result <- createObject(
+                 maybeFormatExpr,
+                 maybeValueExpr,
+                 multiline,
+                 displayWidth,
+                 toUpperCase,
+                 prefix,
+                 suffix,
+                 json)
     } yield result
   }
 
