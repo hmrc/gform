@@ -61,7 +61,7 @@ object ValueParser {
   lazy val dateExprExactParser
     : Parser[DateExpr] = exactDayParser ~ delimiter ~ exactMonthParser ~ delimiter ~ exactYearParser ^^ {
     (_, day, _, month, _, year) =>
-      DateValueExpr(ExactDateValue(year, month, day))
+      DateValueExpr(ExactDateExprValue(year, month, day))
   }
 
   lazy val dateExprExactQuoted: Parser[DateExpr] = "'" ~ dateExprExactParser ~ "'" ^^ { (_, _, dateExpr, _) =>
@@ -85,7 +85,7 @@ object ValueParser {
       DateExprWithOffset(dateExprExact, offset, offsetUnit)
   } | dateExprExactQuoted
 
-  lazy val dateExprTODAY: Parser[DateExpr] = "TODAY" ^^^ DateValueExpr(TodayDateValue)
+  lazy val dateExprTODAY: Parser[DateExpr] = "TODAY" ^^^ DateValueExpr(TodayDateExprValue)
 
   lazy val dateExprTODAYOffset: Parser[DateExpr] = dateExprTODAY ~ dateExprOffset ^^ {
     (_, dateExprToday, offset, offsetUnit) =>
@@ -161,7 +161,7 @@ object ValueParser {
       FormCtx(FormComponentId(fn))
     })
 
-lazy val contextFieldForDate: Parser[DateExpr] = "form" ~ "." ~ FormComponentId.unanchoredIdValidation ^^ {
+  lazy val contextFieldForDate: Parser[DateExpr] = "form" ~ "." ~ FormComponentId.unanchoredIdValidation ^^ {
     (_, _, _, fieldName) =>
       DateFormCtxVar(FormComponentId(fieldName))
   } | FormComponentId.unanchoredIdValidation ^^ { (_, fn) =>

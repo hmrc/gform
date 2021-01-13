@@ -30,9 +30,17 @@ object OffsetUnit {
   implicit val format: OFormat[OffsetUnit] = derived.oformat()
 }
 
-case class DateValueExpr(value: DateValue) extends DateExpr
+sealed trait DateExprValue
+case object TodayDateExprValue extends DateExprValue
+case class ExactDateExprValue(year: Int, month: Int, day: Int) extends DateExprValue
+
+object DateExprValue {
+  implicit val format: OFormat[DateExprValue] = derived.oformat()
+}
+
+case class DateValueExpr(value: DateExprValue) extends DateExpr
 case class DateFormCtxVar(formComponentId: FormComponentId) extends DateExpr
-case class DateExprWithOffset(dateExpr: DateExpr, offset: Int, offsetUnit: OffsetUnit) extends DateExpr
+case class DateExprWithOffset(dExpr: DateExpr, offset: Int, offsetUnit: OffsetUnit) extends DateExpr
 
 object DateExpr {
   implicit val format: OFormat[DateExpr] = derived.oformat()

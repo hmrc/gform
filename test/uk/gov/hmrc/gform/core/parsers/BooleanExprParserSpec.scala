@@ -239,25 +239,26 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
   it should "parse before - TODAY" in {
     val res = BooleanExprParser.validate("${TODAY before TODAY}")
 
-    res shouldBe Right(DateBefore(DateValueExpr(TodayDateValue), DateValueExpr(TodayDateValue)))
+    res shouldBe Right(DateBefore(DateValueExpr(TodayDateExprValue), DateValueExpr(TodayDateExprValue)))
   }
 
   it should "parse before - exact value" in {
     val res = BooleanExprParser.validate("${01-02-2020 before 01-02-2021}")
 
-    res shouldBe Right(DateBefore(DateValueExpr(ExactDateValue(2020, 2, 1)), DateValueExpr(ExactDateValue(2021, 2, 1))))
+    res shouldBe Right(
+      DateBefore(DateValueExpr(ExactDateExprValue(2020, 2, 1)), DateValueExpr(ExactDateExprValue(2021, 2, 1))))
   }
 
   it should "parse before - TODAY and exact value" in {
     val res = BooleanExprParser.validate("${TODAY before '01-02-2020'}")
 
-    res shouldBe Right(DateBefore(DateValueExpr(TodayDateValue), DateValueExpr(ExactDateValue(2020, 2, 1))))
+    res shouldBe Right(DateBefore(DateValueExpr(TodayDateExprValue), DateValueExpr(ExactDateExprValue(2020, 2, 1))))
   }
 
   it should "parse before - TODAY and form context variable" in {
     val res = BooleanExprParser.validate("${TODAY before startDate}")
 
-    res shouldBe Right(DateBefore(DateValueExpr(TodayDateValue), DateFormCtxVar("startDate")))
+    res shouldBe Right(DateBefore(DateValueExpr(TodayDateExprValue), DateFormCtxVar("startDate")))
   }
 
   it should "parse before - exact value + offset" in {
@@ -265,7 +266,7 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
 
     res shouldBe Right(
       DateBefore(
-        DateExprWithOffset(DateValueExpr(ExactDateValue(2020, 2, 1)), 1, OffsetUnitDay),
+        DateExprWithOffset(DateValueExpr(ExactDateExprValue(2020, 2, 1)), 1, OffsetUnitDay),
         DateFormCtxVar("startDate")))
   }
 
@@ -273,7 +274,7 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
     val res = BooleanExprParser.validate("${TODAY +1d before startDate}")
 
     res shouldBe Right(
-      DateBefore(DateExprWithOffset(DateValueExpr(TodayDateValue), 1, OffsetUnitDay), DateFormCtxVar("startDate")))
+      DateBefore(DateExprWithOffset(DateValueExpr(TodayDateExprValue), 1, OffsetUnitDay), DateFormCtxVar("startDate")))
   }
 
   it should "parse before - form context variable + offset" in {
