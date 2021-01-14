@@ -39,9 +39,15 @@ object DateExprValue {
 }
 
 case class DateValueExpr(value: DateExprValue) extends DateExpr
-case class DateFormCtxVar(formComponentId: FormComponentId) extends DateExpr
+case class DateFormCtxVar(formCtx: FormCtx) extends DateExpr
 case class DateExprWithOffset(dExpr: DateExpr, offset: Int, offsetUnit: OffsetUnit) extends DateExpr
 
 object DateExpr {
   implicit val format: OFormat[DateExpr] = derived.oformat()
+
+  def allFormCtxExprs(dateExpr: DateExpr): List[FormCtx] = dateExpr match {
+    case DateValueExpr(_)                => Nil
+    case DateFormCtxVar(formCtx)         => formCtx :: Nil
+    case DateExprWithOffset(dExpr, _, _) => allFormCtxExprs(dExpr)
+  }
 }

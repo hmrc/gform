@@ -58,9 +58,8 @@ object ValueParser {
   lazy val exprFormCtx: Parser[Expr] = (quotedConstant
     | parserExpression)
 
-  lazy val dateExprExactParser
-    : Parser[DateExpr] = exactDayParser ~ delimiter ~ exactMonthParser ~ delimiter ~ exactYearParser ^^ {
-    (_, day, _, month, _, year) =>
+  lazy val dateExprExactParser: Parser[DateExpr] = exactDayParser ~ exactMonthParser ~ exactYearParser ^^ {
+    (_, day, month, year) =>
       DateValueExpr(ExactDateExprValue(year, month, day))
   }
 
@@ -76,14 +75,13 @@ object ValueParser {
     }
   }
 
-  lazy val dateExprOffset: Parser[(Int, OffsetUnit)] = anyInteger ~ dateExprOffsetUnit ^^ { (_, offset, offsetUnit) =>
-    (offset, offsetUnit)
+  lazy val dateExprOffset: Parser[(Int, OffsetUnit)] = plusOrMinus ~ positiveInteger ~ dateExprOffsetUnit ^^ {
+    (_, plusOrMinus, offset, offsetUnit) =>
+      (offset * (plusOrMinus match {
+        case "+" => 1
+        case "-" => -1
+      }), offsetUnit)
   }
-
-  lazy val dateExprExactQuotedOffset: Parser[DateExpr] = dateExprExactQuoted ~ dateExprOffset ^^ {
-    (_, dateExprExact, offset, offsetUnit) =>
-      DateExprWithOffset(dateExprExact, offset, offsetUnit)
-  } | dateExprExactQuoted
 
   lazy val dateExprTODAY: Parser[DateExpr] = "TODAY" ^^^ DateValueExpr(TodayDateExprValue)
 
@@ -96,10 +94,8 @@ object ValueParser {
     (_, dateExprCtx, offset, offsetUnit) =>
       DateExprWithOffset(dateExprCtx, offset, offsetUnit)
   } | contextFieldForDate
-  lazy val dateExprTODAYOrContextOffset: Parser[DateExpr] = dateExprTODAYOffset | contextFieldForDateOffset
 
-  lazy val dateExpr: Parser[DateExpr] = (dateExprExactQuotedOffset
-    | dateExprTODAYOrContextOffset)
+  lazy val dateExpr: Parser[DateExpr] = dateExprExactQuoted | dateExprTODAYOffset | contextFieldForDateOffset
 
   lazy val dataSourceParse: Parser[DataSource] = (
     "service" ~ "." ~ "seiss" ^^ { (_, _, _, _) =>
@@ -163,9 +159,9 @@ object ValueParser {
 
   lazy val contextFieldForDate: Parser[DateExpr] = "form" ~ "." ~ FormComponentId.unanchoredIdValidation ^^ {
     (_, _, _, fieldName) =>
-      DateFormCtxVar(FormComponentId(fieldName))
+      DateFormCtxVar(FormCtx(FormComponentId(fieldName)))
   } | FormComponentId.unanchoredIdValidation ^^ { (_, fn) =>
-    DateFormCtxVar(FormComponentId(fn))
+    DateFormCtxVar(FormCtx(FormComponentId(fn)))
   }
 
   lazy val parserExpression: Parser[Expr] = ("(" ~ addExpression ~ ")" ^^ { (loc, _, expr, _) =>

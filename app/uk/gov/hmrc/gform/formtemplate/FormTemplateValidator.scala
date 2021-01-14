@@ -306,9 +306,9 @@ object FormTemplateValidator {
   }
 
   private def extractFcIds(expr: DateExpr): List[FormComponentId] = expr match {
-    case DateExprWithOffset(dateExpr, _, _) => extractFcIds(dateExpr)
-    case DateFormCtxVar(fcId)               => List(fcId)
-    case _                                  => Nil
+    case DateExprWithOffset(dateExpr, _, _)       => extractFcIds(dateExpr)
+    case DateFormCtxVar(FormCtx(formComponentId)) => List(formComponentId)
+    case _                                        => Nil
   }
 
   private val isRevealingChoice: FormComponent => Boolean = fc =>

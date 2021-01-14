@@ -228,12 +228,12 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
   it should "parse before - form context variables" in {
     val res = BooleanExprParser.validate("${startDate before endDate}")
 
-    res shouldBe Right(DateBefore(DateFormCtxVar("startDate"), DateFormCtxVar("endDate")))
+    res shouldBe Right(DateBefore(DateFormCtxVar(FormCtx("startDate")), DateFormCtxVar(FormCtx("endDate"))))
   }
 
   it should "parse before - with braces" in {
     val res = BooleanExprParser.validate("${(startDate before endDate)}")
-    res shouldBe Right(DateBefore(DateFormCtxVar("startDate"), DateFormCtxVar("endDate")))
+    res shouldBe Right(DateBefore(DateFormCtxVar(FormCtx("startDate")), DateFormCtxVar(FormCtx("endDate"))))
   }
 
   it should "parse before - TODAY" in {
@@ -243,14 +243,14 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
   }
 
   it should "parse before - exact value" in {
-    val res = BooleanExprParser.validate("${01-02-2020 before 01-02-2021}")
+    val res = BooleanExprParser.validate("${01022020 before 01022021}")
 
     res shouldBe Right(
       DateBefore(DateValueExpr(ExactDateExprValue(2020, 2, 1)), DateValueExpr(ExactDateExprValue(2021, 2, 1))))
   }
 
   it should "parse before - TODAY and exact value" in {
-    val res = BooleanExprParser.validate("${TODAY before '01-02-2020'}")
+    val res = BooleanExprParser.validate("${TODAY before '01022020'}")
 
     res shouldBe Right(DateBefore(DateValueExpr(TodayDateExprValue), DateValueExpr(ExactDateExprValue(2020, 2, 1))))
   }
@@ -258,30 +258,25 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
   it should "parse before - TODAY and form context variable" in {
     val res = BooleanExprParser.validate("${TODAY before startDate}")
 
-    res shouldBe Right(DateBefore(DateValueExpr(TodayDateExprValue), DateFormCtxVar("startDate")))
-  }
-
-  it should "parse before - exact value + offset" in {
-    val res = BooleanExprParser.validate("${'01-02-2020' +1d before startDate}")
-
-    res shouldBe Right(
-      DateBefore(
-        DateExprWithOffset(DateValueExpr(ExactDateExprValue(2020, 2, 1)), 1, OffsetUnitDay),
-        DateFormCtxVar("startDate")))
+    res shouldBe Right(DateBefore(DateValueExpr(TodayDateExprValue), DateFormCtxVar(FormCtx("startDate"))))
   }
 
   it should "parse before - TODAY + offset" in {
-    val res = BooleanExprParser.validate("${TODAY +1d before startDate}")
+    val res = BooleanExprParser.validate("${TODAY + 1d before startDate}")
 
     res shouldBe Right(
-      DateBefore(DateExprWithOffset(DateValueExpr(TodayDateExprValue), 1, OffsetUnitDay), DateFormCtxVar("startDate")))
+      DateBefore(
+        DateExprWithOffset(DateValueExpr(TodayDateExprValue), 1, OffsetUnitDay),
+        DateFormCtxVar(FormCtx("startDate"))))
   }
 
   it should "parse before - form context variable + offset" in {
-    val res = BooleanExprParser.validate("${startDate +1d before endDate}")
+    val res = BooleanExprParser.validate("${startDate + 1d before endDate}")
 
     res shouldBe Right(
-      DateBefore(DateExprWithOffset(DateFormCtxVar("startDate"), 1, OffsetUnitDay), DateFormCtxVar("endDate")))
+      DateBefore(
+        DateExprWithOffset(DateFormCtxVar(FormCtx("startDate")), 1, OffsetUnitDay),
+        DateFormCtxVar(FormCtx("endDate"))))
   }
 
   it should "parse before - return error when offset is invalid" in {
@@ -300,13 +295,16 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
 
     res shouldBe Right(
       And(
-        DateAfter(DateExprWithOffset(DateFormCtxVar("startDate"), -1, OffsetUnitDay), DateFormCtxVar("endDate")),
-        Equals(FormCtx("field1"), FormCtx("field2"))))
+        DateAfter(
+          DateExprWithOffset(DateFormCtxVar(FormCtx("startDate")), -1, OffsetUnitDay),
+          DateFormCtxVar(FormCtx("endDate"))),
+        Equals(FormCtx("field1"), FormCtx("field2"))
+      ))
   }
 
   it should "parse after - form context variables" in {
     val res = BooleanExprParser.validate("${startDate after endDate}")
 
-    res shouldBe Right(DateAfter(DateFormCtxVar("startDate"), DateFormCtxVar("endDate")))
+    res shouldBe Right(DateAfter(DateFormCtxVar(FormCtx("startDate")), DateFormCtxVar(FormCtx("endDate"))))
   }
 }
