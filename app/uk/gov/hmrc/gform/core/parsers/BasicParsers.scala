@@ -101,8 +101,12 @@ object BasicParsers {
 
   lazy val anyInteger: Parser[Int] = intParser("""(\+|-)?\d+""")
 
+  lazy val plusOrMinus: Parser[String] = """[+-]""".r ^^ { (_, plusOrMinus) =>
+    plusOrMinus
+  }
+
   private def intParser(str: String): Parser[Int] =
-    (str.r ^^ { (loc, number) =>
+    str.r ^^ { (_, number) =>
       number.toInt
-    })
+    }
 }
