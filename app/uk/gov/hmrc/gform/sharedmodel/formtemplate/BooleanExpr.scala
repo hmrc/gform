@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import julienrf.json.derived
 import play.api.libs.json._
+import scala.util.matching.Regex
 
 sealed trait BooleanExpr
 final case class Equals(left: Expr, right: Expr) extends BooleanExpr
@@ -32,12 +33,20 @@ final case object IsTrue extends BooleanExpr
 final case object IsFalse extends BooleanExpr
 final case class Contains(multiValueField: FormCtx, value: Expr) extends BooleanExpr
 final case class In(value: Expr, dataSource: DataSource) extends BooleanExpr
+final case class MatchRegex(formCtx: FormCtx, regex: Regex) extends BooleanExpr
 
 final case class DateBefore(left: DateExpr, right: DateExpr) extends BooleanExpr
 final case class DateAfter(left: DateExpr, right: DateExpr) extends BooleanExpr
 
 object BooleanExpr {
   implicit val format: OFormat[BooleanExpr] = derived.oformat()
+
+  implicit val regexFormat: Format[Regex] = {
+    val reads: Reads[Regex] = Reads.of[String].map(_.r)
+    val writes: Writes[Regex] = Writes.of[String].contramap(_.toString)
+    Format(reads, writes)
+  }
+
 }
 
 object EqualsWithConstant {

@@ -218,6 +218,7 @@ object FormTemplateValidator {
       case In(value, _)                     => validateValueField(value)
       case DateBefore(left, right)          => validateDateExprs(left, right, idx)
       case DateAfter(left, right)           => validateDateExprs(left, right, idx)
+      case MatchRegex(value, _)             => validateValueField(value)
     }
 
     Monoid[ValidationResult]
