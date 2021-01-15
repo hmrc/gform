@@ -84,7 +84,7 @@ class FormComponentMaker(json: JsValue) {
   lazy val errorMessage: Option[SmartString] = (json \ "errorMessage").asOpt[SmartString]
 
   lazy val fields: Option[List[FormComponentMaker]] = fieldsJson.map(_.map(new FormComponentMaker(_)))
-  lazy val validIf: Option[ValidIf] = (json \ "validIf").asOpt[ValidIf]
+  lazy val optValidIf: Opt[Option[ValidIf]] = toOpt((json \ "validIf").validateOpt[ValidIf], "/validIf")
   lazy val optValidators: Opt[List[FormComponentValidator]] =
     toOpt((json \ "validators").validateOpt[List[FormComponentValidator]], "/validators").map(_.toList.flatten)
   lazy val mandatory: Option[String] = (json \ "mandatory").asOpt[String]
@@ -140,7 +140,8 @@ class FormComponentMaker(json: JsValue) {
       ct          <- componentTypeOpt
       validators  <- optValidators
       instruction <- optInstruction
-    } yield mkFieldValue(presHint, mes, ct, validators, instruction)
+      validIf     <- optValidIf
+    } yield mkFieldValue(presHint, mes, ct, validators, instruction, validIf)
 
   private def toOpt[A](result: JsResult[A], pathPrefix: String): Opt[A] =
     result match {
@@ -159,7 +160,8 @@ class FormComponentMaker(json: JsValue) {
     mes: MES,
     ct: ComponentType,
     validators: List[FormComponentValidator],
-    instruction: Option[Instruction]): FormComponent =
+    instruction: Option[Instruction],
+    validIf: Option[ValidIf]): FormComponent =
     FormComponent(
       id = id,
       `type` = ct,

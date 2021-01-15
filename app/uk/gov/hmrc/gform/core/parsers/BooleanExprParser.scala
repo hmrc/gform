@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.core.parsers
 
 import parseback._
+import scala.util.matching.Regex
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.BasicParsers._
 import uk.gov.hmrc.gform.core.parsers.ValueParser._
@@ -39,6 +40,14 @@ object BooleanExprParser {
     "false" ^^^ IsFalse |
     "no" ^^^ IsFalse |
     "(" ~> p4 <~ ")"
+
+  lazy val quoteRegexParse: Parser[Regex] = "'" ~> "[^']+".r <~ "'" ^^ { (loc, regex) =>
+    regex.r
+  }
+
+  private lazy val formCtxParse: Parser[FormCtx] = FormComponentId.unanchoredIdValidation ^^ { (_, fcId) =>
+    FormCtx(FormComponentId(fcId))
+  }
 
   private lazy val p1: Parser[BooleanExpr] = (exprFormCtx ~ "<" ~ exprFormCtx ^^ { (loc, expr1, op, expr2) =>
     LessThan(expr1, expr2)
@@ -64,8 +73,11 @@ object BooleanExprParser {
     | dateExpr ~ "after" ~ dateExpr ^^ { (_, expr1, _, expr2) =>
       DateAfter(expr1, expr2)
     }
-    | FormComponentId.unanchoredIdValidation ~ "contains" ~ exprFormCtx ^^ { (_, expr1, _, expr2) =>
-      Contains(FormCtx(FormComponentId(expr1)), expr2)
+    | formCtxParse ~ "contains" ~ exprFormCtx ^^ { (_, formCtx, _, expr) =>
+      Contains(formCtx, expr)
+    }
+    | formCtxParse ~ "match" ~ quoteRegexParse ^^ { (_, formCtx, _, regex) =>
+      MatchRegex(formCtx, regex)
     }
     | contextField ~ "in" ~ dataSourceParse ^^ { (_, expr, _, dataSource) =>
       In(expr, dataSource)
