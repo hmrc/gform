@@ -22,7 +22,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.SmartStringGen.smar
 
 object InstructionGen {
   val instructionGen = for {
-    name  <- smartStringGen
+    name  <- Gen.option(smartStringGen)
     order <- Gen.option(Gen.posNum[Int])
   } yield Instruction(name, order)
 }

@@ -89,6 +89,7 @@ trait SectionGen {
       continueLabel     <- Gen.option(smartStringGen)
       continueIf        <- Gen.option(ContinueIfGen.continueIfGen)
       instruction       <- Gen.option(InstructionGen.instructionGen)
+      presentationHint  <- Gen.option(PresentationHintGen.presentationHintGen)
     } yield
       Page(
         title,
@@ -100,7 +101,8 @@ trait SectionGen {
         fields.toList,
         continueLabel,
         continueIf,
-        instruction
+        instruction,
+        presentationHint
       )
 
   def nonRepeatingPageSectionGen: Gen[Section.NonRepeatingPage] = pageGen.map(Section.NonRepeatingPage)

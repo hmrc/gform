@@ -38,16 +38,16 @@ class VerifierSpec extends WordSpecLike with Matchers with ScalaFutures {
           formComponents = List(
             mkFormComponent(
               "section1Component1",
-              Some(Instruction(toSmartString("section1Component1Instruction"), Some(1))))
+              Some(Instruction(Some(toSmartString("section1Component1Instruction")), Some(1))))
           ),
-          Some(Instruction(toSmartString(""), Some(1)))
+          Some(Instruction(Some(toSmartString("section1 - instruction")), Some(-1)))
         ),
       )
 
       val result = Verifier.verify(mkFormTemplate(sections))
 
       result.value.futureValue shouldBe Left(
-        UnexpectedState("One or more sections have instruction attribute with empty names"))
+        UnexpectedState("One or more sections have instruction attribute with negative order"))
     }
   }
 
@@ -87,6 +87,7 @@ class VerifierSpec extends WordSpecLike with Matchers with ScalaFutures {
         formComponents,
         None,
         None,
-        instruction
+        instruction,
+        None
       ))
 }
