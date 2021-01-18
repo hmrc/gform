@@ -46,5 +46,8 @@ object PresentationHintParser {
     }
     | "invisiblePageTitleInSummary" ^^ { (loc, unparsed) =>
       InvisiblePageTitleInSummary
+    }
+    | "invisiblePageTitle" ^^ { (loc, unparsed) =>
+      InvisiblePageTitle
     })
 }

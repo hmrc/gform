@@ -69,9 +69,7 @@ object FormTemplateValidator {
   }
 
   def validateInstructions(pages: List[Page]): ValidationResult =
-    if (!pages.flatMap(_.instruction).forall(_.name.nonEmpty)) {
-      Invalid("One or more sections have instruction attribute with empty names")
-    } else if (!pages.flatMap(_.instruction.flatMap(_.order)).forall(_ >= 0)) {
+    if (!pages.flatMap(_.instruction.flatMap(_.order)).forall(_ >= 0)) {
       Invalid("One or more sections have instruction attribute with negative order")
     } else if (pages.flatMap(_.instruction.flatMap(_.order)).distinct.size != pages
                  .flatMap(_.instruction.flatMap(_.order))

@@ -56,14 +56,26 @@ object SectionTemplateReads {
       Json.format[AddToList].reads(json)
     }
 
-    private def readNonRepeatingPage(json: JsValue) =
-      Page.pageFormat.reads(json).map(Section.NonRepeatingPage)
+    private def readNonRepeatingPage(json: JsValue) = {
+      implicit val presentationHintsReads: OFormat[PresentationHint] =
+        OFormatWithTemplateReadFallback {
+          case JsString(str) => PresentationHintParser.validateSingle(str).fold(e => JsError(e.error), JsSuccess(_))
+          case unknown       => JsError("Expected String, got " + unknown)
+        }
+      Json.format[Page].reads(json).map(Section.NonRepeatingPage)
+    }
 
-    private def readRepeatingPage(json: JsValue) =
+    private def readRepeatingPage(json: JsValue) = {
+      implicit val presentationHintsReads: OFormat[PresentationHint] =
+        OFormatWithTemplateReadFallback {
+          case JsString(str) => PresentationHintParser.validateSingle(str).fold(e => JsError(e.error), JsSuccess(_))
+          case unknown       => JsError("Expected String, got " + unknown)
+        }
       for {
         repeats <- readRepeatsRangeOrRepeats(json)
-        page    <- Page.pageFormat.reads(json)
+        page    <- Json.format[Page].reads(json)
       } yield Section.RepeatingPage(page, repeats)
+    }
   }
 
   private def readRepeatsRangeOrRepeats(json: JsValue): JsResult[Expr] =

@@ -25,6 +25,7 @@ case object InvisibleInSummary extends PresentationHint
 case object SummariseGroupAsGrid extends PresentationHint
 case object TotalValue extends PresentationHint
 case object InvisiblePageTitleInSummary extends PresentationHint
+case object InvisiblePageTitle extends PresentationHint
 
 object PresentationHint {
   implicit val format: OFormat[PresentationHint] = derived.oformat()
