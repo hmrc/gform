@@ -144,6 +144,21 @@ class FormComponentMakerSpec extends FlatSpecLike with Matchers {
     result shouldBe Right(TextArea(TextWithRestrictions(0, 1000), Value))
   }
 
+  it should "parse multiline text component with no of rows" in {
+    val formComponentMaker = new FormComponentMaker(Json.parse("""
+                                                                 |{
+                                                                 |   "id": "id1",
+                                                                 |   "type": "text",
+                                                                 |   "label": "Field 1",
+                                                                 |   "format": "text",
+                                                                 |   "multiline": "yes",
+                                                                 |   "rows": 7
+                                                                 |}
+                                                                 |""".stripMargin))
+    val result = formComponentMaker.textOpt
+    result shouldBe Right(TextArea(TextWithRestrictions(0, 1000), Value, rows = Some(7)))
+  }
+
   it should "return error when format is not valid for multiline text" in {
     val formComponentMaker = new FormComponentMaker(Json.parse("""
                                                                  |{

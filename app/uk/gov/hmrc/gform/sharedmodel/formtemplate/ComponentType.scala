@@ -57,7 +57,8 @@ object UpperCaseBoolean {
 case class TextArea(
   constraint: TextConstraint,
   value: Expr,
-  displayWidth: DisplayWidth = DisplayWidth.DEFAULT
+  displayWidth: DisplayWidth = DisplayWidth.DEFAULT,
+  rows: Option[Int] = None
 ) extends ComponentType
 
 case class UkSortCode(value: Expr) extends ComponentType {

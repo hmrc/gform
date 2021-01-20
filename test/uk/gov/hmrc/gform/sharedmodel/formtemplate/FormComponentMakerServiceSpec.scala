@@ -126,7 +126,16 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
   "createObject" should "return error when format is empty for text type" in {
     val isMultiline = Some("no") // denotes text type
     val result =
-      createObject(None, None, isMultiline, None, IsNotUpperCase, None, None, JsObject(Seq("id" -> JsString("text1"))))
+      createObject(
+        None,
+        None,
+        isMultiline,
+        None,
+        IsNotUpperCase,
+        None,
+        None,
+        None,
+        JsObject(Seq("id" -> JsString("text1"))))
     result shouldBe Left(UnexpectedState(s"""|Missing or invalid format for text field
                                              |Id: text1
                                              |Format: None
@@ -137,7 +146,16 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
   it should "return error when format is empty for multiline text type" in {
     val isMultiline = Some("yes") // denotes multiline text type
     val result =
-      createObject(None, None, isMultiline, None, IsNotUpperCase, None, None, JsObject(Seq("id" -> JsString("text1"))))
+      createObject(
+        None,
+        None,
+        isMultiline,
+        None,
+        IsNotUpperCase,
+        None,
+        None,
+        None,
+        JsObject(Seq("id" -> JsString("text1"))))
     result shouldBe Left(UnexpectedState(s"""|Missing or invalid format for multiline text field
                                              |Id: text1
                                              |Format: None
@@ -152,6 +170,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
       None,
       None,
       IsNotUpperCase,
+      None,
       None,
       None,
       JsObject(Seq("id" -> JsString("text1"))))
@@ -169,6 +188,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
       Some("yes"),
       None,
       IsNotUpperCase,
+      None,
       None,
       None,
       JsObject(Seq("id" -> JsString("text1"))))
