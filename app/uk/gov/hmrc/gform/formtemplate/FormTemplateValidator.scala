@@ -69,7 +69,7 @@ object FormTemplateValidator {
   }
 
   def validateInstructions(pages: List[Page]): ValidationResult =
-    if (!pages.flatMap(_.instruction).forall(_.name.nonEmpty)) {
+    if (!pages.flatMap(_.instruction).flatMap(_.name).forall(_.nonEmpty)) {
       Invalid("One or more sections have instruction attribute with empty names")
     } else if (!pages.flatMap(_.instruction.flatMap(_.order)).forall(_ >= 0)) {
       Invalid("One or more sections have instruction attribute with negative order")
@@ -77,7 +77,7 @@ object FormTemplateValidator {
                  .flatMap(_.instruction.flatMap(_.order))
                  .size) {
       Invalid("One or more sections have instruction attribute with duplicate order value")
-    } else if (!pages.flatMap(_.fields).flatMap(_.instruction).forall(_.name.nonEmpty)) {
+    } else if (!pages.flatMap(_.fields).flatMap(_.instruction).flatMap(_.name).forall(_.nonEmpty)) {
       Invalid("One or more section fields have instruction attribute with empty names")
     } else if (!pages.flatMap(_.fields).flatMap(_.instruction.flatMap(_.order)).forall(_ >= 0)) {
       Invalid("One or more section fields have instruction attribute with negative order")

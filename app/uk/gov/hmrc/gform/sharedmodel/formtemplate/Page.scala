@@ -29,7 +29,8 @@ case class Page(
   fields: List[FormComponent],
   continueLabel: Option[SmartString],
   continueIf: Option[ContinueIf],
-  instruction: Option[Instruction]
+  instruction: Option[Instruction],
+  presentationHint: Option[PresentationHint]
 ) {
   lazy val expandedFormComponents: List[FormComponent] = fields.flatMap(_.expandedFormComponents)
 }
