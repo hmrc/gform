@@ -55,7 +55,12 @@ object ValueParser {
   lazy val lastDate: Parser[PreviousDateValue] =
     nextOrPreviousValue("last", PreviousDateValue.apply)
 
+  lazy val formPhaseExpr: Parser[FormPhase.type] = "PHASE" ^^ { (_, _) =>
+    FormPhase
+  }
+
   lazy val exprFormCtx: Parser[Expr] = (quotedConstant
+    | formPhaseExpr
     | parserExpression)
 
   lazy val dateExprExactParser: Parser[DateExpr] = exactDayParser ~ exactMonthParser ~ exactYearParser ^^ {

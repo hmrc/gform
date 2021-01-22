@@ -55,6 +55,7 @@ final case class HmrcRosmRegistrationCheck(value: RosmProp) extends Expr
 final case class LinkCtx(link: InternalLink) extends Expr
 final case class FormTemplateCtx(value: FormTemplateProp) extends Expr
 final case object Value extends Expr
+case object FormPhase extends Expr
 
 object Expr {
   implicit val format: OFormat[Expr] = derived.oformat()
