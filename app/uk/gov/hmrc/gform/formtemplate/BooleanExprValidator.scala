@@ -24,7 +24,7 @@ class BooleanExprValidator(
   indexLookup: Map[FormComponentId, Int],
   wrapperType: BooleanExprWrapperType
 )(
-  idx: Int
+  pageIdx: Int
 ) {
 
   private def extractFcIds(expr: Expr): List[FormComponentId] = expr match {
@@ -45,12 +45,12 @@ class BooleanExprValidator(
   private def validateIdIdx(id: FormComponentId) =
     indexLookup
       .get(id)
-      .map { idIdx =>
+      .map { formComponentPageIdx =>
         wrapperType
-          .isForwardReference(idIdx, idx)
+          .isForwardReference(formComponentPageIdx, pageIdx)
           .validationResult(s"id '${id.value}' named in $wrapperType is forward reference, which is not permitted")
       }
-      .getOrElse(Invalid(s"id '${id.value}' named in $wrapperType expression does not exist in a form"))
+      .getOrElse(Invalid(s"id '${id.value}' named in $wrapperType expression does not exist in the form"))
 
   private def validateExprs(left: Expr, right: Expr): List[ValidationResult] =
     List(left, right)

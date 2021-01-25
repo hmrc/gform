@@ -513,7 +513,7 @@ class TemplateValidatorSpec extends Spec {
     val forwardRef = FormCtx(FormComponentId("fieldB"))
     val invalidRef = FormCtx(FormComponentId("a"))
     val forwardReferenceError = Invalid("id 'fieldB' named in includeIf is forward reference, which is not permitted")
-    val invalidReferenceError = Invalid("id 'a' named in includeIf expression does not exist in a form")
+    val invalidReferenceError = Invalid("id 'a' named in includeIf expression does not exist in the form")
     val table =
       Table(
         // format: off
@@ -554,21 +554,30 @@ class TemplateValidatorSpec extends Spec {
     val baseSectionB = mkSection("sectionB", formComponentsB)
     val invalidRef = FormCtx(FormComponentId("a"))
     val forwardReferenceError = Invalid("id 'fieldB' named in validIf is forward reference, which is not permitted")
-    val invalidReferenceError = Invalid("id 'a' named in validIf expression does not exist in a form")
+    val invalidReferenceError = Invalid("id 'a' named in validIf expression does not exist in the form")
+
+    val validIfInValidIf =
+      (booleanExpr: BooleanExpr) => mkFormComponent("fieldA", Value).copy(validIf = Some(ValidIf(booleanExpr)))
+    val validIfInValidator = (booleanExpr: BooleanExpr) =>
+      mkFormComponent("fieldA", Value).copy(
+        validators = FormComponentValidator(ValidIf(booleanExpr), toSmartString("")) :: Nil)
     val table =
       Table(
-        ("booleanExpr", "expected"),
-        (Equals(forwardRef, constant), forwardReferenceError),
-        (Equals(invalidRef, constant), invalidReferenceError),
+        ("booleanExpr", "mkComponent", "expected"),
+        (Equals(forwardRef, constant), validIfInValidIf, forwardReferenceError),
+        (Equals(invalidRef, constant), validIfInValidIf, invalidReferenceError),
+        (Equals(forwardRef, constant), validIfInValidator, forwardReferenceError),
+        (Equals(invalidRef, constant), validIfInValidator, invalidReferenceError),
       )
     forAll(table) {
-      case (booleanExpr, expected) =>
-        val formComponentsA = List(mkFormComponent("fieldA", Value).copy(validIf = Some(ValidIf(booleanExpr))))
-        val sectionA = mkSection("sectionA", formComponentsA)
+      case (booleanExpr, mkComponent, expected) =>
+        val formComponentA = mkComponent(booleanExpr)
+        val sectionA = mkSection("sectionA", formComponentA :: Nil)
         val res = FormTemplateValidator.validateForwardReference(sectionA :: baseSectionB :: Nil)
         res shouldBe expected
     }
   }
+
   it should "allow reference within the same page inside of validIf" in {
 
     val constant = Constant("")
