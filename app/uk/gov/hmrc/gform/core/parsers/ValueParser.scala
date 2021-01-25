@@ -55,12 +55,7 @@ object ValueParser {
   lazy val lastDate: Parser[PreviousDateValue] =
     nextOrPreviousValue("last", PreviousDateValue.apply)
 
-  lazy val formPhaseExpr: Parser[FormPhase.type] = "PHASE" ^^ { (_, _) =>
-    FormPhase
-  }
-
   lazy val exprFormCtx: Parser[Expr] = (quotedConstant
-    | formPhaseExpr
     | parserExpression)
 
   lazy val dateExprExactParser: Parser[DateExpr] = exactDayParser ~ exactMonthParser ~ exactYearParser ^^ {
@@ -134,6 +129,9 @@ object ValueParser {
     }
     | "form" ~ "." ~ "id" ^^ { (loc, _, _, fieldName) =>
       FormTemplateCtx(FormTemplateProp.Id)
+    }
+    | "form" ~ "." ~ "phase" ^^ { (loc, _, _, fieldName) =>
+      CurrentFormPhase
     }
     | "form" ~ "." ~ FormComponentId.unanchoredIdValidation ^^ { (loc, _, _, fieldName) =>
       FormCtx(FormComponentId(fieldName))

@@ -259,7 +259,7 @@ object FormTemplateValidator {
       case Value              => Valid
       case FormTemplateCtx(_) => Valid
       case LinkCtx(_)         => Valid
-      case FormPhase          => Valid
+      case CurrentFormPhase   => Valid
     }
   }
 
