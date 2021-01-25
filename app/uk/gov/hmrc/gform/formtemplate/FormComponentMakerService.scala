@@ -33,7 +33,7 @@ object FormComponentMakerService {
     toUpperCase: UpperCaseBoolean,
     maybePrefix: Option[SmartString],
     maybeSuffix: Option[SmartString],
-    rows: Option[Int],
+    rows: Int,
     json: JsValue): Either[UnexpectedState, ComponentType] =
     (maybeFormatExpr, maybeValueExpr, multiLine) match {
       case (Some(TextFormat(UkSortCodeFormat)), HasTextExpression(expr), IsNotMultiline()) => UkSortCode(expr).asRight
@@ -64,13 +64,13 @@ object FormComponentMakerService {
     maybeValueExpr: Option[ValueExpr],
     displayWidth: Option[String],
     multiLine: Option[String],
-    rows: Option[Int],
+    rows: Int,
     json: JsValue) =
     (formatExpr, maybeValueExpr, displayWidth) match {
       case (TextFormat(f), HasTextExpression(expr), None) =>
-        TextArea(f, expr, rows = rows.getOrElse(TextAreaRows.default)).asRight
+        TextArea(f, expr, rows = rows).asRight
       case (TextFormat(f), HasTextExpression(expr), HasDisplayWidth(dw)) =>
-        TextArea(f, expr, dw, rows.getOrElse(TextAreaRows.default)).asRight
+        TextArea(f, expr, dw, rows).asRight
       case _ => createError(Some(formatExpr), maybeValueExpr, multiLine, json).asLeft
     }
 

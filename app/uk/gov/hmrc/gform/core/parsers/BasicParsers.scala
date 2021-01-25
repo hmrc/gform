@@ -102,7 +102,7 @@ object BasicParsers {
 
   lazy val positiveInteger: Parser[Int] = intParser("""\d+""")
 
-  lazy val nonZeroPositiveInteger: Parser[Int] = intParser("""^\d*[1-9]\d*$""")
+  lazy val nonZeroPositiveInteger: Parser[Int] = intParser("""[1-9]{1}\d*""")
 
   lazy val anyInteger: Parser[Int] = intParser("""(\+|-)?\d+""")
 

@@ -229,7 +229,7 @@ class FormComponentMaker(json: JsValue) {
                  toUpperCase,
                  prefix,
                  suffix,
-                 rows,
+                 rows.getOrElse(TextArea.defaultRows),
                  json)
     } yield result
   }

@@ -58,8 +58,12 @@ case class TextArea(
   constraint: TextConstraint,
   value: Expr,
   displayWidth: DisplayWidth = DisplayWidth.DEFAULT,
-  rows: Int = TextAreaRows.default
+  rows: Int = TextArea.defaultRows
 ) extends ComponentType
+
+object TextArea {
+  val defaultRows = 5
+}
 
 case class UkSortCode(value: Expr) extends ComponentType {
   def fields(id: FormComponentId): NonEmptyList[FormComponentId] = UkSortCode.fields(id)
@@ -105,10 +109,6 @@ object DisplayWidth extends Enumeration {
 
   implicit val displayWidthReads: Reads[DisplayWidth] = Reads.enumNameReads(DisplayWidth)
   implicit val displayWidthWrites: Writes[DisplayWidth] = Writes.enumNameWrites
-}
-
-object TextAreaRows {
-  val default = 5
 }
 
 case class Choice(
