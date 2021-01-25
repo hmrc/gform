@@ -24,7 +24,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 trait ComponentTypeGen {
 
   def displayWidthGen: Gen[DisplayWidth] = Gen.oneOf(DisplayWidth.values.toSeq)
-  def rowsGen: Gen[Option[Int]] = Gen.option(Gen.chooseNum(5, 50))
+  def rowsGen: Gen[Int] = Gen.posNum[Int]
 
   def textGen: Gen[Text] =
     for {

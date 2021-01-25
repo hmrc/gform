@@ -183,50 +183,50 @@ class JsonParseTestFormat extends Spec with TableDrivenPropertyChecks {
 
   "A text area component with a valid no of rows" should "parse correctly" in {
 
-    val multilineCombinations = Table(
-      ("rows", "expected"),
-      (7, TextArea(ShortText.default, Value, rows = Some(7))),
-      (10, TextArea(ShortText.default, Value, rows = Some(10))),
-      (40, TextArea(ShortText.default, Value, rows = Some(40)))
-    )
+    val jsResult =
+      implicitly[Reads[FormComponent]]
+        .reads(Json.parse(startOfJson + s""", "format" : "shortText", "multiline" : "yes", "rows" : 101 }"""))
 
-    forAll(multilineCombinations) { (rows, expected) ⇒
-      val jsResult =
-        implicitly[Reads[FormComponent]]
-          .reads(Json.parse(startOfJson + s""", "format" : "shortText", "multiline" : "yes", "rows" : $rows }"""))
-
-      jsResult shouldBe a[JsSuccess[_]]
-      jsResult.map(fv => fv.`type` shouldBe expected)
-
-    }
+    jsResult shouldBe a[JsSuccess[_]]
+    jsResult.map(fv => fv.`type` shouldBe TextArea(ShortText.default, Value, rows = 101))
   }
 
-  "A text area component with an invalid no of rows" should "default to text area" in {
+  "A text area component without a no of rows" should "parse correctly to default no of rows" in {
 
-    for {
-      snippet <- List(""", "format": "shortText", "multiline" : "yes", "rows" : "INVALID NO OF ROWS"}""")
-    } {
-      val jsResult = implicitly[Reads[FormComponent]].reads(Json.parse(startOfJson + snippet))
+    val jsResult =
+      implicitly[Reads[FormComponent]]
+        .reads(Json.parse(startOfJson + s""", "format" : "shortText", "multiline" : "yes"}"""))
 
-      jsResult should beJsSuccess(
-        FormComponent(
-          FormComponentId("gid"),
-          TextArea(ShortText.default, Value, DisplayWidth.DEFAULT, None),
-          toSmartString("glabel"),
-          None,
-          None,
-          None,
-          true,
-          true,
-          true,
-          false,
-          false,
-          None,
-          None,
-          List(),
-          None
-        ))
-    }
+    jsResult shouldBe a[JsSuccess[_]]
+    jsResult.map(fv => fv.`type` shouldBe TextArea(ShortText.default, Value))
+  }
+
+  "A text area component with a non positive no of rows" should "fail to parse" in {
+
+    val jsResult =
+      implicitly[Reads[FormComponent]]
+        .reads(Json.parse(startOfJson + """, "format": "shortText", "multiline" : "yes", "rows" : -2}"""))
+
+    jsResult should be(jsError)
+  }
+
+  "A text area component with a zero no of rows" should "fail to parse" in {
+
+    val jsResult =
+      implicitly[Reads[FormComponent]]
+        .reads(Json.parse(startOfJson + """, "format": "shortText", "multiline" : "yes", "rows" : 0}"""))
+
+    jsResult should be(jsError)
+  }
+
+  "A text area component with a non-numeric no of rows" should "fail to parse" in {
+
+    val jsResult =
+      implicitly[Reads[FormComponent]]
+        .reads(
+          Json.parse(startOfJson + """, "format": "shortText", "multiline" : "yes", "rows" : "INVALID NO OF ROWS"}"""))
+
+    jsResult should be(jsError)
   }
 
 }

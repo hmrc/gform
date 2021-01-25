@@ -39,6 +39,7 @@ import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidth._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.TextAreaRows._
 import uk.gov.hmrc.gform.Helpers.toSmartString
 
 class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks {
@@ -48,6 +49,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
   private val expr: Expr = Value
   private val xsDisplayWidth = XS
   private val defaultDisplayWidth = DEFAULT
+  private val defaultTextAreaRows = default
 
   "createTextObject" should "return a valid text object" in {
 
@@ -119,6 +121,41 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           xsDisplayWidth,
           prefix = Some(toSmartString("prefixTest")),
           suffix = Some(toSmartString("suffixTest"))).asRight)
+    )
+    table.forEvery({ case (expected, result) => expected shouldBe result })
+  }
+
+  "createTextAreaObject" should "return a valid TextArea object" in {
+
+    val table = Table(
+      ("actual", "expected"),
+      (
+        createTextAreaObject(
+          TextFormat(textConstraint),
+          Some(TextExpression(expr)),
+          None,
+          Some("yes"),
+          None,
+          Json.obj()),
+        TextArea(textConstraint, expr, defaultDisplayWidth, defaultTextAreaRows).asRight),
+      (
+        createTextAreaObject(
+          TextFormat(textConstraint),
+          Some(TextExpression(expr)),
+          Some("xs"),
+          Some("true"),
+          None,
+          Json.obj()),
+        TextArea(textConstraint, expr, xsDisplayWidth, defaultTextAreaRows).asRight),
+      (
+        createTextAreaObject(
+          TextFormat(textConstraint),
+          Some(TextExpression(expr)),
+          Some("xs"),
+          Some("true"),
+          Some(10),
+          Json.obj()),
+        TextArea(textConstraint, expr, xsDisplayWidth, 10).asRight)
     )
     table.forEvery({ case (expected, result) => expected shouldBe result })
   }

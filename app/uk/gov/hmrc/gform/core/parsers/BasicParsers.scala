@@ -51,6 +51,9 @@ object BasicParsers {
       expr      <- reconstruct(catenable)
     } yield expr).run(expression.trim)
 
+  def validateNonZeroPositiveNumber(expression: Int): Opt[Int] =
+    validateWithParser(expression.toString, nonZeroPositiveInteger)
+
   implicit val W = Whitespace(() | """\s+""".r)
 
   def nextOrPreviousValue[A](string: String, fn: (Int, Int) => A): Parser[A] =
@@ -98,6 +101,8 @@ object BasicParsers {
   lazy val exactDayParser: Parser[Int] = intParser("""0[1-9]|[12][0-9]|3[01]""")
 
   lazy val positiveInteger: Parser[Int] = intParser("""\d+""")
+
+  lazy val nonZeroPositiveInteger: Parser[Int] = intParser("""^\d*[1-9]\d*$""")
 
   lazy val anyInteger: Parser[Int] = intParser("""(\+|-)?\d+""")
 

@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.formtemplate
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidth.DisplayWidth
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ ComponentType, DisplayWidth, Expr, FormatExpr, IsNotUpperCase, IsUpperCase, Text, TextArea, TextExpression, TextFormat, UkSortCode, UkSortCodeFormat, UpperCaseBoolean, Value, ValueExpr }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import cats.syntax.either._
 import uk.gov.hmrc.gform.sharedmodel.SmartString
 
@@ -67,9 +67,11 @@ object FormComponentMakerService {
     rows: Option[Int],
     json: JsValue) =
     (formatExpr, maybeValueExpr, displayWidth) match {
-      case (TextFormat(f), HasTextExpression(expr), None)                => TextArea(f, expr, rows = rows).asRight
-      case (TextFormat(f), HasTextExpression(expr), HasDisplayWidth(dw)) => TextArea(f, expr, dw, rows).asRight
-      case _                                                             => createError(Some(formatExpr), maybeValueExpr, multiLine, json).asLeft
+      case (TextFormat(f), HasTextExpression(expr), None) =>
+        TextArea(f, expr, rows = rows.getOrElse(TextAreaRows.default)).asRight
+      case (TextFormat(f), HasTextExpression(expr), HasDisplayWidth(dw)) =>
+        TextArea(f, expr, dw, rows.getOrElse(TextAreaRows.default)).asRight
+      case _ => createError(Some(formatExpr), maybeValueExpr, multiLine, json).asLeft
     }
 
   def createError(
@@ -119,6 +121,14 @@ object FormComponentMakerService {
         case _           => Some(DisplayWidth.DEFAULT)
       }
   }
+
+  /*  final object IsValidTextAreaRows {
+    def unapply(rows: Int): Boolean =
+      rows match {
+        case r if r > 0 => true
+        case _          => false
+      }
+  }*/
 
   final object ToUpperCase {
     def unapply(isUpperCase: Option[String]): Option[UpperCaseBoolean] =

@@ -156,7 +156,7 @@ class FormComponentMakerSpec extends FlatSpecLike with Matchers {
                                                                  |}
                                                                  |""".stripMargin))
     val result = formComponentMaker.textOpt
-    result shouldBe Right(TextArea(TextWithRestrictions(0, 1000), Value, rows = Some(7)))
+    result shouldBe Right(TextArea(TextWithRestrictions(0, 1000), Value, rows = 7))
   }
 
   it should "return error when format is not valid for multiline text" in {
