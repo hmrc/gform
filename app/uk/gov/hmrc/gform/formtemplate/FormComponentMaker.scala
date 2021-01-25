@@ -89,7 +89,6 @@ class FormComponentMaker(json: JsValue) {
     toOpt((json \ "validators").validateOpt[List[FormComponentValidator]], "/validators").map(_.toList.flatten)
   lazy val mandatory: Option[String] = (json \ "mandatory").asOpt[String]
   lazy val multiline: Option[String] = (json \ "multiline").asOpt[String]
-  //lazy val rows: Int = (json \ "rows").as[Int]
   lazy val optRows: Opt[Option[Int]] = parse("rows", BasicParsers.validateNonZeroPositiveNumber)
   lazy val displayWidth: Option[String] = (json \ "displayWidth").asOpt[String]
   lazy val toUpperCase: UpperCaseBoolean = (json \ "toUpperCase").asOpt[UpperCaseBoolean].getOrElse(IsNotUpperCase)

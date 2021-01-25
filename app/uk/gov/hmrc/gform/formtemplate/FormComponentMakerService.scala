@@ -122,14 +122,6 @@ object FormComponentMakerService {
       }
   }
 
-  /*  final object IsValidTextAreaRows {
-    def unapply(rows: Int): Boolean =
-      rows match {
-        case r if r > 0 => true
-        case _          => false
-      }
-  }*/
-
   final object ToUpperCase {
     def unapply(isUpperCase: Option[String]): Option[UpperCaseBoolean] =
       isUpperCase match {
