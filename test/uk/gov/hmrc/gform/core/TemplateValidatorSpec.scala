@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.core
 
 import cats.data.NonEmptyList
 import org.scalacheck.Gen
-import org.scalatest.prop.TableDrivenPropertyChecks
+import org.scalatest.prop.TableDrivenPropertyChecks._
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.Helpers._
 import uk.gov.hmrc.gform.Spec
@@ -64,7 +64,6 @@ class TemplateValidatorSpec extends Spec {
   }
 
   "validateUniqueFields" should "all return valid in table" in {
-    import TableDrivenPropertyChecks._
     import TemplateValidatorSpec._
 
     val groupOfGroups = List(mkGroupFormComponent("field1"), mkGroupFormComponent("field2"))
@@ -94,7 +93,6 @@ class TemplateValidatorSpec extends Spec {
   }
 
   it should "all return invalid in table" in {
-    import TableDrivenPropertyChecks._
     import TemplateValidatorSpec._
 
     val fieldId = TemplateValidatorSpec.formComponent("fieldId")
@@ -274,7 +272,6 @@ class TemplateValidatorSpec extends Spec {
   }
 
   "TemplateValidator.validateDates with multiple abstract and exact valid dates" should "all return Valid" in {
-    import TableDrivenPropertyChecks._
 
     val table =
       Table(
@@ -296,7 +293,6 @@ class TemplateValidatorSpec extends Spec {
   }
 
   "TemplateValidator.validateDates with multiple invalid dates" should "all return Invalid" in {
-    import TableDrivenPropertyChecks._
 
     val monthOutOfRangeFailure: Int => Invalid =
       month => Invalid(s"java.time.DateTimeException: Invalid value for MonthOfYear (valid values 1 - 12): $month")
@@ -486,7 +482,6 @@ class TemplateValidatorSpec extends Spec {
   }
 
   "FormTemplateValidator.validateForwardReference" should "detect valid references in an In expression" in {
-    import TableDrivenPropertyChecks._
 
     val formComponentsA = List(mkFormComponent("fieldA", Value))
     val formComponentsB = List(mkFormComponent("fieldB", Value))
@@ -495,23 +490,20 @@ class TemplateValidatorSpec extends Spec {
 
     val table =
       Table(
-        // format: off
         ("expr", "expected"),
-        (In (FormCtx(FormComponentId("fieldB")), SeissEligible),  Valid),
-        (In (AuthCtx(SaUtr), SeissEligible),  Valid),
-        (In (ParamCtx(QueryParam("test")), SeissEligible),  Valid)
-        // format: on
+        (In(FormCtx(FormComponentId("fieldA")), SeissEligible), Valid),
+        (In(AuthCtx(SaUtr), SeissEligible), Valid),
+        (In(ParamCtx(QueryParam("test")), SeissEligible), Valid)
       )
     forAll(table) {
       case (booleanExpr, expected) =>
-        val sectionA = baseSectionA.copy(page = baseSectionA.page.copy(includeIf = Some(IncludeIf(booleanExpr))))
-        val res = FormTemplateValidator.validateForwardReference(sectionA :: baseSectionB :: Nil)
+        val sectionB = baseSectionB.copy(page = baseSectionB.page.copy(includeIf = Some(IncludeIf(booleanExpr))))
+        val res = FormTemplateValidator.validateForwardReference(baseSectionA :: sectionB :: Nil)
         res shouldBe expected
     }
   }
 
-  "FormTemplateValidator.validateForwardReference" should "detect invalid references/forward references in a Boolean Expression" in {
-    import TableDrivenPropertyChecks._
+  it should "detect invalid references/forward references in an IncludeIf Boolean Expression" in {
 
     val formComponentsA = List(mkFormComponent("fieldA", Value))
     val formComponentsB = List(mkFormComponent("fieldB", Value))
@@ -553,6 +545,43 @@ class TemplateValidatorSpec extends Spec {
         val res = FormTemplateValidator.validateForwardReference(sectionA :: baseSectionB :: Nil)
         res shouldBe expected
     }
+  }
+
+  it should "detect invalid references/forward references in a ValidIf Boolean expression" in {
+    val constant = Constant("")
+    val forwardRef = FormCtx(FormComponentId("fieldB"))
+    val formComponentsB = List(mkFormComponent("fieldB", Value))
+    val baseSectionB = mkSection("sectionB", formComponentsB)
+    val invalidRef = FormCtx(FormComponentId("a"))
+    val forwardReferenceError = Invalid("id 'fieldB' named in validIf is forward reference, which is not permitted")
+    val invalidReferenceError = Invalid("id 'a' named in validIf expression does not exist in a form")
+    val table =
+      Table(
+        ("booleanExpr", "expected"),
+        (Equals(forwardRef, constant), forwardReferenceError),
+        (Equals(invalidRef, constant), invalidReferenceError),
+      )
+    forAll(table) {
+      case (booleanExpr, expected) =>
+        val formComponentsA = List(mkFormComponent("fieldA", Value).copy(validIf = Some(ValidIf(booleanExpr))))
+        val sectionA = mkSection("sectionA", formComponentsA)
+        val res = FormTemplateValidator.validateForwardReference(sectionA :: baseSectionB :: Nil)
+        res shouldBe expected
+    }
+  }
+  it should "allow reference within the same page inside of validIf" in {
+
+    val constant = Constant("")
+    val samePageRef = FormCtx(FormComponentId("fieldB"))
+
+    val formComponents = List(
+      mkFormComponent("fieldB", Value),
+      mkFormComponent("fieldA", Value).copy(validIf = Some(ValidIf(Equals(samePageRef, constant)))))
+
+    val section = mkSection("section", formComponents)
+
+    val res = FormTemplateValidator.validateForwardReference(section :: Nil)
+    res shouldBe Valid
   }
 
   private def mkDate(

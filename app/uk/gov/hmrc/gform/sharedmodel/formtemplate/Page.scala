@@ -33,6 +33,12 @@ case class Page(
   presentationHint: Option[PresentationHint]
 ) {
   lazy val expandedFormComponents: List[FormComponent] = fields.flatMap(_.expandedFormComponents)
+
+  val allFormComponents: List[FormComponent] = fields.flatMap {
+    case IsGroup(group)                     => group.fields
+    case IsRevealingChoice(revealingChoice) => revealingChoice.options.toList.flatMap(_.revealingFields)
+    case otherwise                          => otherwise :: Nil
+  }
 }
 
 object Page {

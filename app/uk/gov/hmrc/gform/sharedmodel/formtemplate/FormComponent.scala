@@ -61,6 +61,12 @@ case class FormComponent(
     }
 
   lazy val expandedFormComponents: List[FormComponent] = loop(this)
+
+  val allValidIfs: List[ValidIf] = {
+    val xs = validators.map(_.validIf)
+    validIf.fold(xs)(_ :: xs)
+  }
+
 }
 
 object FormComponent {
