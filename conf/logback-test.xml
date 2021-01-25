@@ -60,6 +60,8 @@
 
     <logger name="uk.gov" level="INFO"/>
 
+    <logger name="org.eclipse.jetty.util.log" level="WARN"/>
+
     <logger name="org.apache.fontbox" level="INFO"/>>
 
     <logger name="uk.gov.hmrc.gform.save4later.Save4Later" level="INFO"/>
@@ -68,16 +70,17 @@
 
     <logger name="uk.gov.hmrc.gform.submission.handlebars" level="WARN"/>
 
-    <logger name="uk.gov.hmrc.gform.submission" level="INFO"/>
+    <logger name="uk.gov.hmrc.gform.submission" level="WARN"/>
 
     <logger name="application" level="INFO"/>
+    <logger name="org.eclipse.jetty.server" level="WARN"/>
 
     <logger name="stateTransitions" level="INFO"  additivity="false">
         <appender-ref ref="STATE_TRANSITIONS_LOG_FILE" />
         <appender-ref ref="STDOUT" />
     </logger>
 
-    <logger name="destinations" level="INFO"  additivity="false">
+    <logger name="destinations" level="WARN"  additivity="false">
         <appender-ref ref="DESTINATIONS_LOG_FILE" />
         <appender-ref ref="STDOUT" />
     </logger>
