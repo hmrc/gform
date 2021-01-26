@@ -39,6 +39,9 @@ object BooleanExprParser {
     "yes" ^^^ IsTrue |
     "false" ^^^ IsFalse |
     "no" ^^^ IsFalse |
+    "form.phase.is.instructionPDF" ^^ { (loc, _) =>
+      FormPhase(InstructionPDF)
+    } |
     "(" ~> p4 <~ ")"
 
   lazy val quoteRegexParse: Parser[Regex] = "'" ~> "[^']+".r <~ "'" ^^ { (loc, regex) =>

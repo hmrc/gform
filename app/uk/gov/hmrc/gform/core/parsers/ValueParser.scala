@@ -130,9 +130,6 @@ object ValueParser {
     | "form" ~ "." ~ "id" ^^ { (loc, _, _, fieldName) =>
       FormTemplateCtx(FormTemplateProp.Id)
     }
-    | "form" ~ "." ~ "phase" ^^ { (loc, _, _, fieldName) =>
-      CurrentFormPhase
-    }
     | "form" ~ "." ~ FormComponentId.unanchoredIdValidation ^^ { (loc, _, _, fieldName) =>
       FormCtx(FormComponentId(fieldName))
     }

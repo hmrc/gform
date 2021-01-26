@@ -213,7 +213,7 @@ object FormTemplateValidator {
       case Not(e)                           => boolean(e, idx)
       case Or(left, right)                  => boolean(left, idx) ::: boolean(right, idx)
       case And(left, right)                 => boolean(left, idx) ::: boolean(right, idx)
-      case IsFalse | IsTrue                 => List(Valid)
+      case IsFalse | IsTrue | FormPhase(_)  => List(Valid)
       case Contains(collection, value)      => validateExprs(collection, value, idx)
       case In(value, _)                     => validateValueField(value)
       case DateBefore(left, right)          => validateDateExprs(left, right, idx)
@@ -259,7 +259,6 @@ object FormTemplateValidator {
       case Value              => Valid
       case FormTemplateCtx(_) => Valid
       case LinkCtx(_)         => Valid
-      case CurrentFormPhase   => Valid
     }
   }
 
