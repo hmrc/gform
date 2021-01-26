@@ -74,7 +74,7 @@ class BooleanExprValidator(
     case Not(e)                           => apply(e)
     case Or(left, right)                  => apply(left) ::: apply(right)
     case And(left, right)                 => apply(left) ::: apply(right)
-    case IsFalse | IsTrue                 => List(Valid)
+    case IsFalse | IsTrue | FormPhase(_)  => List(Valid)
     case Contains(collection, value)      => validateExprs(collection, value)
     case In(value, _)                     => validateValueField(value)
     case DateBefore(left, right)          => validateDateExprs(left, right)
