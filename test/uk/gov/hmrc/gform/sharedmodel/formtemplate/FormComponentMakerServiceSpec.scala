@@ -39,6 +39,7 @@ import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidth._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.TextArea._
 import uk.gov.hmrc.gform.Helpers.toSmartString
 
 class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks {
@@ -123,10 +124,54 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
     table.forEvery({ case (expected, result) => expected shouldBe result })
   }
 
+  "createTextAreaObject" should "return a valid TextArea object" in {
+
+    val table = Table(
+      ("actual", "expected"),
+      (
+        createTextAreaObject(
+          TextFormat(textConstraint),
+          Some(TextExpression(expr)),
+          None,
+          Some("yes"),
+          defaultRows,
+          Json.obj()),
+        TextArea(textConstraint, expr, defaultDisplayWidth).asRight),
+      (
+        createTextAreaObject(
+          TextFormat(textConstraint),
+          Some(TextExpression(expr)),
+          Some("xs"),
+          Some("true"),
+          defaultRows,
+          Json.obj()),
+        TextArea(textConstraint, expr, xsDisplayWidth).asRight),
+      (
+        createTextAreaObject(
+          TextFormat(textConstraint),
+          Some(TextExpression(expr)),
+          Some("xs"),
+          Some("true"),
+          10,
+          Json.obj()),
+        TextArea(textConstraint, expr, xsDisplayWidth, 10).asRight)
+    )
+    table.forEvery({ case (expected, result) => expected shouldBe result })
+  }
+
   "createObject" should "return error when format is empty for text type" in {
     val isMultiline = Some("no") // denotes text type
     val result =
-      createObject(None, None, isMultiline, None, IsNotUpperCase, None, None, JsObject(Seq("id" -> JsString("text1"))))
+      createObject(
+        None,
+        None,
+        isMultiline,
+        None,
+        IsNotUpperCase,
+        None,
+        None,
+        TextArea.defaultRows,
+        JsObject(Seq("id" -> JsString("text1"))))
     result shouldBe Left(UnexpectedState(s"""|Missing or invalid format for text field
                                              |Id: text1
                                              |Format: None
@@ -137,7 +182,36 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
   it should "return error when format is empty for multiline text type" in {
     val isMultiline = Some("yes") // denotes multiline text type
     val result =
-      createObject(None, None, isMultiline, None, IsNotUpperCase, None, None, JsObject(Seq("id" -> JsString("text1"))))
+      createObject(
+        None,
+        None,
+        isMultiline,
+        None,
+        IsNotUpperCase,
+        None,
+        None,
+        TextArea.defaultRows,
+        JsObject(Seq("id" -> JsString("text1"))))
+    result shouldBe Left(UnexpectedState(s"""|Missing or invalid format for multiline text field
+                                             |Id: text1
+                                             |Format: None
+                                             |Value: None
+                                             |""".stripMargin))
+  }
+
+  it should "return error when format is empty for multiline text type having no of rows" in {
+    val isMultiline = Some("yes") // denotes multiline text type
+    val result =
+      createObject(
+        None,
+        None,
+        isMultiline,
+        None,
+        IsNotUpperCase,
+        None,
+        None,
+        10,
+        JsObject(Seq("id" -> JsString("text1"))))
     result shouldBe Left(UnexpectedState(s"""|Missing or invalid format for multiline text field
                                              |Id: text1
                                              |Format: None
@@ -154,6 +228,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
       IsNotUpperCase,
       None,
       None,
+      defaultRows,
       JsObject(Seq("id" -> JsString("text1"))))
     result shouldBe Left(UnexpectedState(s"""|Missing or invalid format for text field
                                              |Id: text1
@@ -171,6 +246,25 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
       IsNotUpperCase,
       None,
       None,
+      defaultRows,
+      JsObject(Seq("id" -> JsString("text1"))))
+    result shouldBe Left(UnexpectedState(s"""|Missing or invalid format for multiline text field
+                                             |Id: text1
+                                             |Format: Some(OrientationFormat(xxx))
+                                             |Value: None
+                                             |""".stripMargin))
+  }
+
+  it should "return error when format is invalid for multiline text type having no of rows" in {
+    val result = createObject(
+      Some(OrientationFormat("xxx")),
+      None,
+      Some("yes"),
+      None,
+      IsNotUpperCase,
+      None,
+      None,
+      10,
       JsObject(Seq("id" -> JsString("text1"))))
     result shouldBe Left(UnexpectedState(s"""|Missing or invalid format for multiline text field
                                              |Id: text1

@@ -24,6 +24,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 trait ComponentTypeGen {
 
   def displayWidthGen: Gen[DisplayWidth] = Gen.oneOf(DisplayWidth.values.toSeq)
+  def rowsGen: Gen[Int] = Gen.posNum[Int]
 
   def textGen: Gen[Text] =
     for {
@@ -37,7 +38,8 @@ trait ComponentTypeGen {
       constraint   <- FormatExprGen.textConstraintGen
       value        <- ExprGen.exprGen()
       displayWidth <- displayWidthGen
-    } yield TextArea(constraint, value, displayWidth)
+      rows         <- rowsGen
+    } yield TextArea(constraint, value, displayWidth, rows)
 
   def ukSortCodeGen: Gen[UkSortCode] = ExprGen.exprGen().map(UkSortCode(_))
 
