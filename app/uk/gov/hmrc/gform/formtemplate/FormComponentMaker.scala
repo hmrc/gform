@@ -28,7 +28,7 @@ import cats.syntax.option._
 import cats.syntax.traverse._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.Opt
-import uk.gov.hmrc.gform.core.parsers.{ FormatParser, PresentationHintParser, ValueParser }
+import uk.gov.hmrc.gform.core.parsers.{ BasicParsers, FormatParser, PresentationHintParser, ValueParser }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils._
@@ -89,6 +89,7 @@ class FormComponentMaker(json: JsValue) {
     toOpt((json \ "validators").validateOpt[List[FormComponentValidator]], "/validators").map(_.toList.flatten)
   lazy val mandatory: Option[String] = (json \ "mandatory").asOpt[String]
   lazy val multiline: Option[String] = (json \ "multiline").asOpt[String]
+  lazy val optRows: Opt[Option[Int]] = parse("rows", BasicParsers.validateNonZeroPositiveNumber)
   lazy val displayWidth: Option[String] = (json \ "displayWidth").asOpt[String]
   lazy val toUpperCase: UpperCaseBoolean = (json \ "toUpperCase").asOpt[UpperCaseBoolean].getOrElse(IsNotUpperCase)
   lazy val prefix: Option[SmartString] = (json \ "prefix").asOpt[SmartString]
@@ -219,6 +220,7 @@ class FormComponentMaker(json: JsValue) {
       selectionCriteria <- optSelectionCriteria
       maybeFormatExpr   <- optMaybeFormatExpr(roundingMode)(selectionCriteria)(emailVerification)
       maybeValueExpr    <- optMaybeValueExpr
+      rows              <- optRows
       result <- createObject(
                  maybeFormatExpr,
                  maybeValueExpr,
@@ -227,6 +229,7 @@ class FormComponentMaker(json: JsValue) {
                  toUpperCase,
                  prefix,
                  suffix,
+                 rows.getOrElse(TextArea.defaultRows),
                  json)
     } yield result
   }

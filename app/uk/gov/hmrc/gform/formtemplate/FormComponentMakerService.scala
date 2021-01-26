@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.formtemplate
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidth.DisplayWidth
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ ComponentType, DisplayWidth, Expr, FormatExpr, IsNotUpperCase, IsUpperCase, Text, TextArea, TextExpression, TextFormat, UkSortCode, UkSortCodeFormat, UpperCaseBoolean, Value, ValueExpr }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import cats.syntax.either._
 import uk.gov.hmrc.gform.sharedmodel.SmartString
 
@@ -33,13 +33,14 @@ object FormComponentMakerService {
     toUpperCase: UpperCaseBoolean,
     maybePrefix: Option[SmartString],
     maybeSuffix: Option[SmartString],
+    rows: Int,
     json: JsValue): Either[UnexpectedState, ComponentType] =
     (maybeFormatExpr, maybeValueExpr, multiLine) match {
       case (Some(TextFormat(UkSortCodeFormat)), HasTextExpression(expr), IsNotMultiline()) => UkSortCode(expr).asRight
       case (Some(formatExpr), _, IsNotMultiline()) =>
         createTextObject(formatExpr, maybeValueExpr, maybeDisplayWidth, toUpperCase, maybePrefix, maybeSuffix, json)
       case (Some(formatExpr), _, IsMultiline()) =>
-        createTextAreaObject(formatExpr, maybeValueExpr, maybeDisplayWidth, multiLine, json)
+        createTextAreaObject(formatExpr, maybeValueExpr, maybeDisplayWidth, multiLine, rows, json)
       case _ => createError(maybeFormatExpr, maybeValueExpr, multiLine, json).asLeft
     }
 
@@ -63,11 +64,14 @@ object FormComponentMakerService {
     maybeValueExpr: Option[ValueExpr],
     displayWidth: Option[String],
     multiLine: Option[String],
+    rows: Int,
     json: JsValue) =
     (formatExpr, maybeValueExpr, displayWidth) match {
-      case (TextFormat(f), HasTextExpression(expr), None)                => TextArea(f, expr).asRight
-      case (TextFormat(f), HasTextExpression(expr), HasDisplayWidth(dw)) => TextArea(f, expr, dw).asRight
-      case _                                                             => createError(Some(formatExpr), maybeValueExpr, multiLine, json).asLeft
+      case (TextFormat(f), HasTextExpression(expr), None) =>
+        TextArea(f, expr, rows = rows).asRight
+      case (TextFormat(f), HasTextExpression(expr), HasDisplayWidth(dw)) =>
+        TextArea(f, expr, dw, rows).asRight
+      case _ => createError(Some(formatExpr), maybeValueExpr, multiLine, json).asLeft
     }
 
   def createError(
