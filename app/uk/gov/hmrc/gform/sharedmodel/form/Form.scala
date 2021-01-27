@@ -58,18 +58,28 @@ case class Form(
   status: FormStatus,
   visitsIndex: VisitIndex,
   thirdPartyData: ThirdPartyData,
-  envelopeExpiryDate: Option[EnvelopeExpiryDate] = None
+  envelopeExpiryDate: Option[EnvelopeExpiryDate],
+  componentIdToFileId: FormComponentIdToFileIdMapping
 )
 
 object Form {
+  private val thirdPartyData = "thirdPartyData"
+  private val componentIdToFileId = "componentIdToFileId"
+
   private val readVisitIndex: Reads[VisitIndex] =
     (__ \ "visitsIndex").readNullable[List[Int]].map(a => VisitIndex(a.fold(Set.empty[Int])(_.toSet)))
 
   private val thirdPartyDataWithFallback: Reads[ThirdPartyData] =
-    (__ \ "thirdPartyData")
+    (__ \ thirdPartyData)
       .readNullable[ThirdPartyData]
       .map(_.getOrElse(ThirdPartyData.empty))
       .orElse(JsonUtils.constReads(ThirdPartyData.empty))
+
+  private val componentIdToFileIdWithFallback: Reads[FormComponentIdToFileIdMapping] =
+    (__ \ componentIdToFileId)
+      .readNullable[FormComponentIdToFileIdMapping]
+      .map(_.getOrElse(FormComponentIdToFileIdMapping.empty))
+      .orElse(JsonUtils.constReads(FormComponentIdToFileIdMapping.empty))
 
   private val reads: Reads[Form] = (
     (FormId.format: Reads[FormId]) and
@@ -80,7 +90,8 @@ object Form {
       FormStatus.format and
       readVisitIndex and
       thirdPartyDataWithFallback and
-      EnvelopeExpiryDate.optionFormat
+      EnvelopeExpiryDate.optionFormat and
+      componentIdToFileIdWithFallback
   )(Form.apply _)
 
   private val writes: OWrites[Form] = OWrites[Form](
@@ -92,8 +103,9 @@ object Form {
         FormData.format.writes(form.formData) ++
         FormStatus.format.writes(form.status) ++
         VisitIndex.format.writes(form.visitsIndex) ++
-        Json.obj("thirdPartyData" -> ThirdPartyData.format.writes(form.thirdPartyData)) ++
-        EnvelopeExpiryDate.optionFormat.writes(form.envelopeExpiryDate)
+        Json.obj(thirdPartyData -> ThirdPartyData.format.writes(form.thirdPartyData)) ++
+        EnvelopeExpiryDate.optionFormat.writes(form.envelopeExpiryDate) ++
+        Json.obj(componentIdToFileId -> FormComponentIdToFileIdMapping.format.writes(form.componentIdToFileId))
   )
 
   implicit val format: OFormat[Form] = OFormat[Form](reads, writes)
