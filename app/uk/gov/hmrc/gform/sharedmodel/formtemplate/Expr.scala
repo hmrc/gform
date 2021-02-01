@@ -54,6 +54,7 @@ final case class Constant(value: String) extends Expr
 final case class HmrcRosmRegistrationCheck(value: RosmProp) extends Expr
 final case class LinkCtx(link: InternalLink) extends Expr
 final case class FormTemplateCtx(value: FormTemplateProp) extends Expr
+final case class DateCtx(value: DateExpr) extends Expr
 final case object Value extends Expr
 
 object Expr {
