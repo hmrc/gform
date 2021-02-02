@@ -150,6 +150,9 @@ object ValueParser {
     | FormComponentId.unanchoredIdValidation ~ ".sum" ^^ { (loc, value, _) =>
       Sum(FormCtx(FormComponentId(value)))
     }
+    | FormComponentId.unanchoredIdValidation ~ ".count" ^^ { (loc, value, _) =>
+      Count(FormComponentId(value))
+    }
     | anyDigitConst ^^ { (loc, str) =>
       str
     }
