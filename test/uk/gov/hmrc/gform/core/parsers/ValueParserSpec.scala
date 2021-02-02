@@ -533,8 +533,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
 
   private def uncons[A](cat: Catenable[A]) =
     cat.uncons match {
-      case Some((expr, b)) =>
-        println(expr + "****" + b)
+      case Some((expr, _)) =>
         Some(expr)
       case None => None
     }
