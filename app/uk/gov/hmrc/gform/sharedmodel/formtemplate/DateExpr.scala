@@ -19,7 +19,13 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import julienrf.json.derived
 import play.api.libs.json.OFormat
 
-sealed trait DateExpr
+sealed trait DateExpr {
+  def leafExprs: List[Expr] = this match {
+    case DateValueExpr(_)                => DateCtx(this) :: Nil
+    case DateFormCtxVar(formCtx)         => formCtx :: Nil
+    case DateExprWithOffset(dExpr, _, _) => dExpr.leafExprs
+  }
+}
 
 sealed trait OffsetUnit
 case object OffsetUnitDay extends OffsetUnit

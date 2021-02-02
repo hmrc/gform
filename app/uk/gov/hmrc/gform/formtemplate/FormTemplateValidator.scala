@@ -225,6 +225,15 @@ object FormTemplateValidator {
       case Value              => Valid
       case FormTemplateCtx(_) => Valid
       case LinkCtx(_)         => Valid
+      case DateCtx(value) =>
+        val invalidFCIds = value.leafExprs
+          .collect {
+            case FormCtx(formComponentId) => formComponentId
+          }
+          .filter(!fieldNamesIds.contains(_))
+          .map(_.value)
+        invalidFCIds.isEmpty.validationResult(
+          s"Form field(s) '${invalidFCIds.mkString(",")}' not defined in form template.")
     }
   }
 

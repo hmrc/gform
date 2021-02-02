@@ -90,12 +90,16 @@ object ValueParser {
       DateExprWithOffset(dateExprToday, offset, offsetUnit)
   } | dateExprTODAY
 
-  lazy val contextFieldForDateOffset: Parser[DateExpr] = contextFieldForDate ~ dateExprOffset ^^ {
+  lazy val formCtxFieldDateWithOffset: Parser[DateExprWithOffset] = formCtxFieldDate ~ dateExprOffset ^^ {
     (_, dateExprCtx, offset, offsetUnit) =>
       DateExprWithOffset(dateExprCtx, offset, offsetUnit)
-  } | contextFieldForDate
+  }
 
-  lazy val dateExpr: Parser[DateExpr] = dateExprExactQuoted | dateExprTODAYOffset | contextFieldForDateOffset
+  lazy val dateExpr
+    : Parser[DateExpr] = dateExprExactQuoted | dateExprTODAYOffset | formCtxFieldDate | formCtxFieldDateWithOffset
+
+  lazy val dateExprWithoutFormCtxFieldDate
+    : Parser[DateExpr] = dateExprExactQuoted | dateExprTODAYOffset | formCtxFieldDateWithOffset
 
   lazy val dataSourceParse: Parser[DataSource] = (
     "service" ~ "." ~ "seiss" ^^ { (_, _, _, _) =>
@@ -145,8 +149,8 @@ object ValueParser {
     | "link" ~ "." ~ internalLinkParser ^^ { (loc, _, _, internalLink) =>
       LinkCtx(internalLink)
     }
+    | dateExprWithoutFormCtxFieldDate.map(DateCtx.apply) // to parse date form fields with offset or date constants i.e TODAY, 01012020 etc (with or without offset)
     | quotedConstant
-
     | FormComponentId.unanchoredIdValidation ~ ".sum" ^^ { (loc, value, _) =>
       Sum(FormCtx(FormComponentId(value)))
     }
@@ -157,7 +161,7 @@ object ValueParser {
       FormCtx(FormComponentId(fn))
     })
 
-  lazy val contextFieldForDate: Parser[DateExpr] = "form" ~ "." ~ FormComponentId.unanchoredIdValidation ^^ {
+  lazy val formCtxFieldDate: Parser[DateExpr] = "form" ~ "." ~ FormComponentId.unanchoredIdValidation ^^ {
     (_, _, _, fieldName) =>
       DateFormCtxVar(FormCtx(FormComponentId(fieldName)))
   } | FormComponentId.unanchoredIdValidation ^^ { (_, fn) =>

@@ -19,16 +19,36 @@ package uk.gov.hmrc.gform.formtemplate
 import org.scalatest.{ Matchers, WordSpecLike }
 import uk.gov.hmrc.gform.Helpers.toSmartString
 import uk.gov.hmrc.gform.core.{ Invalid, Valid }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponent, FormComponentId, Instruction, Page, ShortText, Text, Value }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ DateCtx, DateFormCtxVar, FormComponentId, FormCtx, Instruction }
 
-class FormTemplateValidatorSpec extends WordSpecLike with Matchers {
+class FormTemplateValidatorSpec extends WordSpecLike with Matchers with FormTemplateSupport {
+
+  "validate - for DateCtx" when {
+    "expression refers to existing Form field" should {
+      "return Valid" in {
+        val sections = List(mkSectionNonRepeatingPage(formComponents = List(mkFormComponent(id = "someExistingId"))))
+        val result =
+          FormTemplateValidator.validate(DateCtx(DateFormCtxVar(FormCtx(FormComponentId("someExistingId")))), sections)
+        result shouldBe Valid
+      }
+    }
+
+    "expression refers to non-existing Form field" should {
+      "return Invalid" in {
+        val sections = List(mkSectionNonRepeatingPage(formComponents = List(mkFormComponent(id = "someExistingId"))))
+        val result = FormTemplateValidator
+          .validate(DateCtx(DateFormCtxVar(FormCtx(FormComponentId("someNonExistingId")))), sections)
+        result shouldBe Invalid("Form field(s) 'someNonExistingId' not defined in form template.")
+      }
+    }
+  }
 
   "validateInstructions" when {
 
     "instructions have valid fields" should {
       "return valid" in {
         val pages = List(
-          mkPage(
+          mkSectionNonRepeatingPage(
             name = "section1",
             formComponents = List(
               mkFormComponent(
@@ -36,7 +56,7 @@ class FormTemplateValidatorSpec extends WordSpecLike with Matchers {
                 Some(Instruction(Some(toSmartString("section1Component1Instruction")), Some(1))))
             ),
             Some(Instruction(Some(toSmartString("section1Instruction")), Some(1)))
-          )
+          ).page
         )
 
         val result = FormTemplateValidator.validateInstructions(pages)
@@ -48,7 +68,7 @@ class FormTemplateValidatorSpec extends WordSpecLike with Matchers {
     "instructions with no names (section)" should {
       "passes validation" in {
         val pages = List(
-          mkPage(
+          mkSectionNonRepeatingPage(
             name = "section1",
             formComponents = List(
               mkFormComponent(
@@ -56,7 +76,7 @@ class FormTemplateValidatorSpec extends WordSpecLike with Matchers {
                 Some(Instruction(Some(toSmartString("section1Component1Instruction")), Some(1))))
             ),
             Some(Instruction(None, None))
-          )
+          ).page
         )
 
         val result = FormTemplateValidator.validateInstructions(pages)
@@ -68,7 +88,7 @@ class FormTemplateValidatorSpec extends WordSpecLike with Matchers {
     "instructions have empty names (section)" should {
       "return validation error" in {
         val pages = List(
-          mkPage(
+          mkSectionNonRepeatingPage(
             name = "section1",
             formComponents = List(
               mkFormComponent(
@@ -76,7 +96,7 @@ class FormTemplateValidatorSpec extends WordSpecLike with Matchers {
                 Some(Instruction(Some(toSmartString("section1Component1Instruction")), Some(1))))
             ),
             Some(Instruction(Some(toSmartString("")), Some(1)))
-          )
+          ).page
         )
 
         val result = FormTemplateValidator.validateInstructions(pages)
@@ -88,7 +108,7 @@ class FormTemplateValidatorSpec extends WordSpecLike with Matchers {
     "instructions have negative order (section)" should {
       "return validation error" in {
         val pages = List(
-          mkPage(
+          mkSectionNonRepeatingPage(
             name = "section1",
             formComponents = List(
               mkFormComponent(
@@ -96,7 +116,7 @@ class FormTemplateValidatorSpec extends WordSpecLike with Matchers {
                 Some(Instruction(Some(toSmartString("section1Component1Instruction")), Some(1))))
             ),
             Some(Instruction(Some(toSmartString("section1Instruction")), Some(-1)))
-          ),
+          ).page
         )
 
         val result = FormTemplateValidator.validateInstructions(pages)
@@ -107,7 +127,7 @@ class FormTemplateValidatorSpec extends WordSpecLike with Matchers {
 
     "instructions in section have duplicate order" should {
       "return validation error" in {
-        val page = mkPage(
+        val page = mkSectionNonRepeatingPage(
           name = "section1",
           formComponents = List(
             mkFormComponent(
@@ -115,7 +135,7 @@ class FormTemplateValidatorSpec extends WordSpecLike with Matchers {
               Some(Instruction(Some(toSmartString("section1Component1Instruction")), Some(1))))
           ),
           Some(Instruction(Some(toSmartString("section1Instruction")), Some(1)))
-        )
+        ).page
         val pages = List(
           page,
           page.copy(title = toSmartString("section2"))
@@ -130,7 +150,7 @@ class FormTemplateValidatorSpec extends WordSpecLike with Matchers {
     "instructions on fields within a section have duplicate order" should {
       "return validation error" in {
         val pages = List(
-          mkPage(
+          mkSectionNonRepeatingPage(
             name = "section1",
             formComponents = List(
               mkFormComponent(
@@ -141,7 +161,7 @@ class FormTemplateValidatorSpec extends WordSpecLike with Matchers {
                 Some(Instruction(Some(toSmartString("section1Component2Instruction")), Some(1))))
             ),
             Some(Instruction(Some(toSmartString("section1Instruction")), Some(1)))
-          ))
+          ).page)
 
         val result = FormTemplateValidator.validateInstructions(pages)
 
@@ -153,13 +173,13 @@ class FormTemplateValidatorSpec extends WordSpecLike with Matchers {
     "instructions have empty names (field)" should {
       "return validation error" in {
         val pages = List(
-          mkPage(
+          mkSectionNonRepeatingPage(
             name = "section1",
             formComponents = List(
               mkFormComponent("section1Component1", Some(Instruction(Some(toSmartString("")), Some(1))))
             ),
             Some(Instruction(Some(toSmartString("section1Instruction")), Some(1)))
-          ),
+          ).page
         )
 
         val result = FormTemplateValidator.validateInstructions(pages)
@@ -171,7 +191,7 @@ class FormTemplateValidatorSpec extends WordSpecLike with Matchers {
     "instructions have negative order (field)" should {
       "return validation error" in {
         val pages = List(
-          mkPage(
+          mkSectionNonRepeatingPage(
             name = "section1",
             formComponents = List(
               mkFormComponent(
@@ -179,7 +199,7 @@ class FormTemplateValidatorSpec extends WordSpecLike with Matchers {
                 Some(Instruction(Some(toSmartString("section1Component1Instruction")), Some(-1))))
             ),
             Some(Instruction(Some(toSmartString("section1Instruction")), Some(1)))
-          )
+          ).page
         )
 
         val result = FormTemplateValidator.validateInstructions(pages)
@@ -188,38 +208,4 @@ class FormTemplateValidatorSpec extends WordSpecLike with Matchers {
       }
     }
   }
-
-  private def mkFormComponent(id: String, instruction: Option[Instruction]) =
-    FormComponent(
-      FormComponentId(id),
-      Text(ShortText.default, Value),
-      toSmartString(id),
-      None,
-      None,
-      None,
-      true,
-      false,
-      true,
-      false,
-      false,
-      None,
-      None,
-      Nil,
-      instruction
-    )
-
-  private def mkPage(name: String, formComponents: List[FormComponent], instruction: Option[Instruction]) =
-    Page(
-      toSmartString(name),
-      None,
-      None,
-      None,
-      None,
-      None,
-      formComponents,
-      None,
-      None,
-      instruction,
-      None
-    )
 }

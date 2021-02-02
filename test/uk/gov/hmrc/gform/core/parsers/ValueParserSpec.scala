@@ -16,8 +16,14 @@
 
 package uk.gov.hmrc.gform.core.parsers
 
+import cats.Eval
 import cats.data.NonEmptyList
 import org.scalatest.prop.TableDrivenPropertyChecks
+import parseback.LineStream
+import parseback.compat.cats._
+import parseback.util.Catenable
+import parseback.util.Catenable.Single
+
 import scala.language.implicitConversions
 import uk.gov.hmrc.gform.Helpers._
 import uk.gov.hmrc.gform.Spec
@@ -303,7 +309,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
   it should "parse else expression" in {
     implicit def liftToFormCtx(s: String): FormCtx = FormCtx(s)
     val table = Table(
-      ("expression", "result"),
+      ("expression", "catenable"),
       // format: off
       ("a + b + c + d",              Add(Add(Add("a", "b"), "c"), "d")),
       ("(a + b) + c + d",            Add(Add(Add("a", "b"), "c"), "d")),
@@ -349,7 +355,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
   it should "else expressions should be rewriten to nesting on right hand side" in {
     implicit def liftToFormCtx(s: String): FormCtx = FormCtx(s)
     val table = Table(
-      ("expression", "result"),
+      ("expression", "catenable"),
       // format: off
       (Add(Add(Add("a", "b"), "c"), "d"),               Add(Add(Add("a", "b"), "c"), "d")),
       (Else(Add("a", "b"), Add("c", "d")),              Else(Add("a", "b"), Add("c", "d"))),
@@ -498,4 +504,37 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     res should be(Invalid("Form field ''' * ''' is not defined in form template."))
   }
 
+  "Parser - contextField" should "parse form field with date offset as DateCtx (form.)" in {
+    val result = ValueParser.contextField(LineStream[Eval]("form.dateField + 1d")).value.toOption
+    result shouldBe Some(
+      Single(DateCtx(DateExprWithOffset(DateFormCtxVar(FormCtx(FormComponentId("dateField"))), 1, OffsetUnitDay))))
+  }
+
+  it should "parse form field with date offset as DateCtx" in {
+    val result = ValueParser.contextField(LineStream[Eval]("dateField + 1d")).value.toOption.flatMap(uncons)
+    result shouldBe Some(
+      DateCtx(DateExprWithOffset(DateFormCtxVar(FormCtx(FormComponentId("dateField"))), 1, OffsetUnitDay)))
+  }
+
+  it should "parse TODAY as DateCtx" in {
+    val result = ValueParser.contextField(LineStream[Eval]("TODAY")).value.toOption.flatMap(uncons)
+    result shouldBe Some(DateCtx(DateValueExpr(TodayDateExprValue)))
+  }
+
+  it should "parse TODAY with offset as DateCtx" in {
+    val result = ValueParser.contextField(LineStream[Eval]("TODAY + 1m")).value.toOption.flatMap(uncons)
+    result shouldBe Some(DateCtx(DateExprWithOffset(DateValueExpr(TodayDateExprValue), 1, OffsetUnitMonth)))
+  }
+
+  it should "parse fixed date string as DateCtx" in {
+    val result = ValueParser.contextField(LineStream[Eval]("01012020")).value.toOption.flatMap(uncons)
+    result shouldBe Some(DateCtx(DateValueExpr(ExactDateExprValue(2020, 1, 1))))
+  }
+
+  private def uncons[A](cat: Catenable[A]) =
+    cat.uncons match {
+      case Some((expr, _)) =>
+        Some(expr)
+      case None => None
+    }
 }
