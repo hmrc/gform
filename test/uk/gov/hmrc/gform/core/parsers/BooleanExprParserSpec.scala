@@ -214,7 +214,7 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
       case UnexpectedState(msg) =>
         msg shouldBe """|Unable to parse expression ${eeitt.businessUserx=XYZ}.
                         |Errors:
-                        |${eeitt.businessUserx=XYZ}:1: unexpected characters; expected 'sum'
+                        |${eeitt.businessUserx=XYZ}:1: unexpected characters; expected 'count' or 'sum'
                         |${eeitt.businessUserx=XYZ}        ^
                         |""".stripMargin.trim
       case _ => fail("expected an UnexpectedState")
