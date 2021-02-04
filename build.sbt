@@ -42,7 +42,6 @@ lazy val microservice = (project in file("."))
     libraryDependencies ++= Seq(
       compilerPlugin("com.github.ghik" % "silencer-plugin" % silencerVersion cross CrossVersion.full)
     ),
-    evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
     routesImport ++= Seq(
       "uk.gov.hmrc.auth.core.AffinityGroup",
       "uk.gov.hmrc.gform.sharedmodel.notifier.NotifierEmailAddress",
