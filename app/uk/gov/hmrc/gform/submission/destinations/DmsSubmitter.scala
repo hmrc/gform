@@ -66,7 +66,7 @@ class DmsSubmitter(
 
   /**
     * This log line is used in alert-config, to trigger a pager duty alert when files sizes exceeds the threshold
-    * value (currently 40 MB)
+    * value (currently 50 MB)
     *
     *  1 MB = 1000000 Bytes in base 10 system
     * @param files
@@ -74,7 +74,7 @@ class DmsSubmitter(
   private def logFileSizeBreach(envelopeId: EnvelopeId, files: List[File]) = {
     val totalFileSize = files.map(_.length).sum
     val totalFileSizeMB = Math.ceil(totalFileSize / 1000000.toDouble)
-    val thresholdMB = 40
+    val thresholdMB = 50
     logger.info(
       s"GForm DMS submission attachments size is $totalFileSize B (rounded to $totalFileSizeMB MB) [envelopeId=${envelopeId.value}]")
     if (totalFileSizeMB > thresholdMB) {
