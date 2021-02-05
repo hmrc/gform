@@ -90,6 +90,7 @@ class FormComponentMaker(json: JsValue) {
   lazy val mandatory: Option[String] = (json \ "mandatory").asOpt[String]
   lazy val multiline: Option[String] = (json \ "multiline").asOpt[String]
   lazy val optRows: Opt[Option[Int]] = parse("rows", BasicParsers.validateNonZeroPositiveNumber)
+  lazy val displayCharCount: Option[String] = (json \ "displayCharCount").asOpt[String]
   lazy val displayWidth: Option[String] = (json \ "displayWidth").asOpt[String]
   lazy val toUpperCase: UpperCaseBoolean = (json \ "toUpperCase").asOpt[UpperCaseBoolean].getOrElse(IsNotUpperCase)
   lazy val prefix: Option[SmartString] = (json \ "prefix").asOpt[SmartString]
@@ -230,7 +231,9 @@ class FormComponentMaker(json: JsValue) {
                  prefix,
                  suffix,
                  rows.getOrElse(TextArea.defaultRows),
-                 json)
+                 IsDisplayCharCountTrue.unapply(displayCharCount),
+                 json
+               )
     } yield result
   }
 

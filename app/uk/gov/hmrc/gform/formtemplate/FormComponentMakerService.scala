@@ -34,13 +34,14 @@ object FormComponentMakerService {
     maybePrefix: Option[SmartString],
     maybeSuffix: Option[SmartString],
     rows: Int,
+    displayCharCount: Boolean,
     json: JsValue): Either[UnexpectedState, ComponentType] =
     (maybeFormatExpr, maybeValueExpr, multiLine) match {
       case (Some(TextFormat(UkSortCodeFormat)), HasTextExpression(expr), IsNotMultiline()) => UkSortCode(expr).asRight
       case (Some(formatExpr), _, IsNotMultiline()) =>
         createTextObject(formatExpr, maybeValueExpr, maybeDisplayWidth, toUpperCase, maybePrefix, maybeSuffix, json)
       case (Some(formatExpr), _, IsMultiline()) =>
-        createTextAreaObject(formatExpr, maybeValueExpr, maybeDisplayWidth, multiLine, rows, json)
+        createTextAreaObject(formatExpr, maybeValueExpr, maybeDisplayWidth, multiLine, rows, displayCharCount, json)
       case _ => createError(maybeFormatExpr, maybeValueExpr, multiLine, json).asLeft
     }
 
@@ -65,12 +66,13 @@ object FormComponentMakerService {
     displayWidth: Option[String],
     multiLine: Option[String],
     rows: Int,
+    displayCharCount: Boolean,
     json: JsValue) =
     (formatExpr, maybeValueExpr, displayWidth) match {
       case (TextFormat(f), HasTextExpression(expr), None) =>
-        TextArea(f, expr, rows = rows).asRight
+        TextArea(f, expr, rows = rows, displayCharCount = displayCharCount).asRight
       case (TextFormat(f), HasTextExpression(expr), HasDisplayWidth(dw)) =>
-        TextArea(f, expr, dw, rows).asRight
+        TextArea(f, expr, dw, rows, displayCharCount).asRight
       case _ => createError(Some(formatExpr), maybeValueExpr, multiLine, json).asLeft
     }
 
@@ -152,5 +154,18 @@ object FormComponentMakerService {
         case "false" | "no" => true
         case _              => false
       }
+  }
+
+  final object IsDisplayCharCountFalse {
+    def unapply(displayCharCount: Option[String]): Boolean =
+      displayCharCount match {
+        case Some(IsFalseish()) => true
+        case _                  => false
+      }
+  }
+
+  final object IsDisplayCharCountTrue {
+    def unapply(displayCharCount: Option[String]): Boolean =
+      !IsDisplayCharCountFalse.unapply(displayCharCount)
   }
 }
