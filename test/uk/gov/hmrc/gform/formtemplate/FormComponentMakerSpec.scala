@@ -174,6 +174,36 @@ class FormComponentMakerSpec extends FlatSpecLike with Matchers {
     result shouldBe Right(TextArea(TextWithRestrictions(0, 1000), Value, displayCharCount = false))
   }
 
+  it should "parse multiline text component with displayCharCount no" in {
+    val formComponentMaker = new FormComponentMaker(Json.parse("""
+                                                                 |{
+                                                                 |   "id": "id1",
+                                                                 |   "type": "text",
+                                                                 |   "label": "Field 1",
+                                                                 |   "format": "text",
+                                                                 |   "multiline": "yes",
+                                                                 |   "displayCharCount": "no"
+                                                                 |}
+                                                                 |""".stripMargin))
+    val result = formComponentMaker.textOpt
+    result shouldBe Right(TextArea(TextWithRestrictions(0, 1000), Value, displayCharCount = false))
+  }
+
+  it should "parse multiline text component with displayCharCount nO" in {
+    val formComponentMaker = new FormComponentMaker(Json.parse("""
+                                                                 |{
+                                                                 |   "id": "id1",
+                                                                 |   "type": "text",
+                                                                 |   "label": "Field 1",
+                                                                 |   "format": "text",
+                                                                 |   "multiline": "yes",
+                                                                 |   "displayCharCount": "false"
+                                                                 |}
+                                                                 |""".stripMargin))
+    val result = formComponentMaker.textOpt
+    result shouldBe Right(TextArea(TextWithRestrictions(0, 1000), Value, displayCharCount = false))
+  }
+
   it should "parse multiline text component with displayCharCount fAlSe" in {
     val formComponentMaker = new FormComponentMaker(Json.parse("""
                                                                  |{
