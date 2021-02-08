@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.formtemplate
 
 import cats.data.NonEmptyList
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Page, Section }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponent, Page, Section }
 
 object SectionHelper {
   def pages(section: Section): NonEmptyList[Page] =
@@ -29,4 +29,13 @@ object SectionHelper {
 
   def pages(sections: List[Section]): List[Page] =
     sections.flatMap(pages(_).toList)
+
+  def addToListRepeater(section: Section): Option[FormComponent] =
+    section match {
+      case s: Section.AddToList => Some(s.addAnotherQuestion)
+      case _                    => None
+    }
+
+  def addToListRepeaters(sections: List[Section]): List[FormComponent] =
+    sections.flatMap(addToListRepeater(_))
 }
