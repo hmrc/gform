@@ -593,6 +593,23 @@ class TemplateValidatorSpec extends Spec {
     res shouldBe Valid
   }
 
+  it should "allow reference to addAnotherQuestion of AddToList section" in {
+
+    val yesNoLocalisedStrings = NonEmptyList.of(toSmartString("Yes"), toSmartString("No"))
+
+    val addToListPage = mkSection("addToListPage", List(mkFormComponent("fieldA", Value))).page
+    val addAnotherQuestion = mkFormComponent("addAnother", Choice(YesNo, yesNoLocalisedStrings, Horizontal, Nil, None))
+    val referenceToAddAnotherQuestion = mkFormComponent("fieldC", Count(FormComponentId("addAnother")))
+
+    val sectionA = mkAddToList("AddToList", NonEmptyList.one(addToListPage), addAnotherQuestion)
+    val sectionB = mkSection("NonRepeated", List(referenceToAddAnotherQuestion))
+
+    val formTemplateUpd = formTemplate.copy(sections = List(sectionA, sectionB))
+
+    val res = FormTemplateValidator.validate(List(referenceToAddAnotherQuestion.`type`), formTemplateUpd)
+    res shouldBe Valid
+  }
+
   private def mkDate(
     year: Year,
     month: Month,
@@ -626,6 +643,20 @@ class TemplateValidatorSpec extends Spec {
         None,
         None
       ))
+
+  private def mkAddToList(name: String, pages: NonEmptyList[Page], addAnotherQuestion: FormComponent) =
+    Section.AddToList(
+      toSmartString(name),
+      toSmartString(name),
+      toSmartString(name),
+      toSmartString(name),
+      None,
+      None,
+      pages,
+      addAnotherQuestion,
+      None,
+      None
+    )
 
   private def mkFormComponent(name: String, expr: Expr) =
     FormComponent(

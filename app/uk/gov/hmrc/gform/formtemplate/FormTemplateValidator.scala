@@ -38,7 +38,8 @@ object FormTemplateValidator {
     if (languageList.languages.contains(LangADT.En)) Valid
     else Invalid("languages must contain en")
 
-  def fieldIds(sections: List[Section]) = indexedFieldIds(sections).map(_._1)
+  def fieldIds(sections: List[Section]): List[FormComponentId] =
+    indexedFieldIds(sections).map(_._1) ::: SectionHelper.addToListRepeaters(sections).map(_.id)
 
   private def indexedFieldIds(sections: List[Section]): List[(FormComponentId, Int)] = indexedFields(sections).map {
     case (a, b) => a.id -> b
@@ -155,8 +156,8 @@ object FormTemplateValidator {
       .merge
   }
 
-  def validate(exprs: List[ComponentType], formTemplate: FormTemplate): ValidationResult = {
-    val results = exprs.map(validate(_, formTemplate))
+  def validate(componentTypes: List[ComponentType], formTemplate: FormTemplate): ValidationResult = {
+    val results = componentTypes.map(validate(_, formTemplate))
     Monoid[ValidationResult].combineAll(results)
   }
 
