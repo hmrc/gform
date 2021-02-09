@@ -135,6 +135,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           None,
           Some("yes"),
           defaultRows,
+          defaultDisplayCharCount,
           Json.obj()),
         TextArea(textConstraint, expr, defaultDisplayWidth).asRight),
       (
@@ -144,6 +145,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           Some("xs"),
           Some("true"),
           defaultRows,
+          defaultDisplayCharCount,
           Json.obj()),
         TextArea(textConstraint, expr, xsDisplayWidth).asRight),
       (
@@ -153,8 +155,29 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           Some("xs"),
           Some("true"),
           10,
+          defaultDisplayCharCount,
           Json.obj()),
-        TextArea(textConstraint, expr, xsDisplayWidth, 10).asRight)
+        TextArea(textConstraint, expr, xsDisplayWidth, 10).asRight),
+      (
+        createTextAreaObject(
+          TextFormat(textConstraint),
+          Some(TextExpression(expr)),
+          None,
+          Some("yes"),
+          defaultRows,
+          false,
+          Json.obj()),
+        TextArea(textConstraint, expr, defaultDisplayWidth, displayCharCount = false).asRight),
+      (
+        createTextAreaObject(
+          TextFormat(textConstraint),
+          Some(TextExpression(expr)),
+          None,
+          Some("yes"),
+          defaultRows,
+          true,
+          Json.obj()),
+        TextArea(textConstraint, expr, defaultDisplayWidth).asRight)
     )
     table.forEvery({ case (expected, result) => expected shouldBe result })
   }
@@ -170,7 +193,8 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
         IsNotUpperCase,
         None,
         None,
-        TextArea.defaultRows,
+        defaultRows,
+        defaultDisplayCharCount,
         JsObject(Seq("id" -> JsString("text1"))))
     result shouldBe Left(UnexpectedState(s"""|Missing or invalid format for text field
                                              |Id: text1
@@ -190,7 +214,8 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
         IsNotUpperCase,
         None,
         None,
-        TextArea.defaultRows,
+        defaultRows,
+        defaultDisplayCharCount,
         JsObject(Seq("id" -> JsString("text1"))))
     result shouldBe Left(UnexpectedState(s"""|Missing or invalid format for multiline text field
                                              |Id: text1
@@ -211,6 +236,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
         None,
         None,
         10,
+        defaultDisplayCharCount,
         JsObject(Seq("id" -> JsString("text1"))))
     result shouldBe Left(UnexpectedState(s"""|Missing or invalid format for multiline text field
                                              |Id: text1
@@ -229,6 +255,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
       None,
       None,
       defaultRows,
+      defaultDisplayCharCount,
       JsObject(Seq("id" -> JsString("text1"))))
     result shouldBe Left(UnexpectedState(s"""|Missing or invalid format for text field
                                              |Id: text1
@@ -247,7 +274,9 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
       None,
       None,
       defaultRows,
-      JsObject(Seq("id" -> JsString("text1"))))
+      defaultDisplayCharCount,
+      JsObject(Seq("id" -> JsString("text1")))
+    )
     result shouldBe Left(UnexpectedState(s"""|Missing or invalid format for multiline text field
                                              |Id: text1
                                              |Format: Some(OrientationFormat(xxx))
@@ -265,6 +294,7 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
       None,
       None,
       10,
+      defaultDisplayCharCount,
       JsObject(Seq("id" -> JsString("text1"))))
     result shouldBe Left(UnexpectedState(s"""|Missing or invalid format for multiline text field
                                              |Id: text1

@@ -58,11 +58,13 @@ case class TextArea(
   constraint: TextConstraint,
   value: Expr,
   displayWidth: DisplayWidth = DisplayWidth.DEFAULT,
-  rows: Int = TextArea.defaultRows
+  rows: Int = TextArea.defaultRows,
+  displayCharCount: Boolean = TextArea.defaultDisplayCharCount
 ) extends ComponentType
 
 object TextArea {
   val defaultRows = 5
+  val defaultDisplayCharCount = true
 }
 
 case class UkSortCode(value: Expr) extends ComponentType {
