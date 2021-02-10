@@ -23,7 +23,8 @@ case class UserData(
   formData: FormData,
   formStatus: FormStatus,
   visitsIndex: VisitIndex,
-  thirdPartyData: ThirdPartyData
+  thirdPartyData: ThirdPartyData,
+  componentIdToFileId: FormComponentIdToFileIdMapping
 )
 
 object UserData {

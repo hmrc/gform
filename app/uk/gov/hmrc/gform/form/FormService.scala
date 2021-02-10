@@ -113,7 +113,8 @@ class FormService[F[_]: Monad](
         InProgress,
         VisitIndex.empty,
         ThirdPartyData.empty.copy(queryParams = queryParams),
-        Some(EnvelopeExpiryDate(expiryDate))
+        Some(EnvelopeExpiryDate(expiryDate)),
+        FormComponentIdToFileIdMapping.empty
       )
       _ <- formPersistence.upsert(formIdData.toFormId, form)
       _ <- formMetadataAlgebra.upsert(formIdData)
@@ -128,7 +129,8 @@ class FormService[F[_]: Monad](
           formData = userData.formData,
           status = newStatus(form, userData.formStatus),
           visitsIndex = userData.visitsIndex,
-          thirdPartyData = userData.thirdPartyData
+          thirdPartyData = userData.thirdPartyData,
+          componentIdToFileId = userData.componentIdToFileId
         )
       _ <- formPersistence.upsert(formIdData.toFormId, newForm)
       _ <- refreshMetadata(form.formData != newForm.formData, formIdData, newForm.formData)

@@ -146,7 +146,8 @@ class FormSpec extends FlatSpec with Matchers with ScalaCheckDrivenPropertyCheck
       None,
       BooleanExprCache.empty
     ),
-    Some(EnvelopeExpiryDate(LocalDateTime.of(2064, 12, 1, 0, 0, 40)))
+    Some(EnvelopeExpiryDate(LocalDateTime.of(2064, 12, 1, 0, 0, 40))),
+    FormComponentIdToFileIdMapping.empty
   )
 
   "Format for Form" should "read json" in {
@@ -177,7 +178,8 @@ class FormSpec extends FlatSpec with Matchers with ScalaCheckDrivenPropertyCheck
     InProgress,
     VisitIndex(Set(1, 2, 3)),
     ThirdPartyData.empty,
-    Some(EnvelopeExpiryDate(LocalDateTime.now.plusDays(1)))
+    Some(EnvelopeExpiryDate(LocalDateTime.now.plusDays(1))),
+    FormComponentIdToFileIdMapping.empty
   )
 
   "case class Form" should "be serialized into json" in {
@@ -202,7 +204,8 @@ class FormSpec extends FlatSpec with Matchers with ScalaCheckDrivenPropertyCheck
         "emailVerification" -> Json.obj(),
         "queryParams"       -> Json.obj("params" -> Json.obj()),
         "booleanExprCache"  -> Json.obj("mapping" -> Json.obj())
-      )
+      ),
+      "componentIdToFileId" -> Json.obj()
     )
     formJsObject shouldBe expectedFormJsObject
 
@@ -230,5 +233,19 @@ class FormSpec extends FlatSpec with Matchers with ScalaCheckDrivenPropertyCheck
     forAll(FormGen.formGen) { form =>
       verifyRoundTrip(form)
     }
+  }
+
+  "FormComponentIdToFileIdMapping" should "be flat when serialized" in {
+    val componentIdToFileId = FormComponentIdToFileIdMapping(
+      Map(FormComponentId("1_abc") -> FileId("invoice.pdf"), FormComponentId("2_abc") -> FileId("book.pdf")))
+
+    verifyRoundTrip(componentIdToFileId)
+    val json = Json.toJson(componentIdToFileId)
+    val expected = Json.obj(
+      "1_abc" -> "invoice.pdf",
+      "2_abc" -> "book.pdf"
+    )
+    json shouldBe expected
+
   }
 }
