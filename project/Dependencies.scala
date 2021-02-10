@@ -23,7 +23,7 @@ object Dependencies {
     "com.codecommit" %% "parseback-cats" % parsebackVersion,
     "org.julienrf" %% "play-json-derived-codecs" % "4.0.1", //upgrading this has caused play-json comparability issue
     "org.typelevel" %% "cats-core" % "1.6.0",
-    "org.apache.pdfbox" % "pdfbox" % "2.0.13",
+    "com.openhtmltopdf" % "openhtmltopdf-pdfbox" % "1.0.6",
     "com.chuusai" %% "shapeless" % "2.3.3",
     "com.github.mpilquist" %% "simulacrum" % "0.15.0",
     "org.scala-graph" %% "graph-core" % "1.12.5",

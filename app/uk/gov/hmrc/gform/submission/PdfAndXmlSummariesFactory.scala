@@ -55,7 +55,7 @@ object PdfAndXmlSummariesFactory {
       for {
         pdf <- pdfGeneratorService.generatePDFBytes(pdfData.html)
         instructionPdf <- instructionPdfData.fold(Future.successful(Option.empty[Array[Byte]]))(iPdfData =>
-                           pdfGeneratorService.generatePDFBytes(iPdfData.html).map(Option(_)))
+                           pdfGeneratorService.generatePDFBytesLocal(iPdfData.html).map(Option(_)))
       } yield
         PdfAndXmlSummaries(
           pdfSummary = createPdfSummary(pdf),
