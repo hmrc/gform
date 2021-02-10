@@ -51,7 +51,8 @@ trait Save4LaterServiceStubs {
       status,
       VisitIndex.empty,
       ThirdPartyData.empty,
-      Some(EnvelopeExpiryDate(LocalDateTime.now().plusDays(28)))
+      Some(EnvelopeExpiryDate(LocalDateTime.now().plusDays(28))),
+      FormComponentIdToFileIdMapping.empty
     )
     stubFor(
       WireMock

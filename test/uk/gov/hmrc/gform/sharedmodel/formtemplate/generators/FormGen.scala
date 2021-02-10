@@ -43,6 +43,7 @@ trait FormGen {
       visitIndex     <- VisitIndexGen.visitIndexGen
       thirdPartyData <- ThirdPartyDataGen.thirdPartyDataGen
       expiryDate     <- Gen.option(EnvelopeExpiryDateGen.envelopeExpiryDateGen)
+      formComponentIdToFileIdMapping = FormComponentIdToFileIdMapping.empty
     } yield
       Form(
         formId,
@@ -53,7 +54,8 @@ trait FormGen {
         status,
         visitIndex,
         thirdPartyData,
-        expiryDate
+        expiryDate,
+        formComponentIdToFileIdMapping
       )
 }
 
