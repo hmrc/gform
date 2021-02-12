@@ -598,7 +598,8 @@ class TemplateValidatorSpec extends Spec {
     val yesNoLocalisedStrings = NonEmptyList.of(toSmartString("Yes"), toSmartString("No"))
 
     val addToListPage = mkSection("addToListPage", List(mkFormComponent("fieldA", Value))).page
-    val addAnotherQuestion = mkFormComponent("addAnother", Choice(YesNo, yesNoLocalisedStrings, Horizontal, Nil, None))
+    val addAnotherQuestion =
+      mkFormComponent("addAnother", Choice(YesNo, yesNoLocalisedStrings, Horizontal, Nil, None))
     val referenceToAddAnotherQuestion = mkFormComponent("fieldC", Count(FormComponentId("addAnother")))
 
     val sectionA = mkAddToList("AddToList", NonEmptyList.one(addToListPage), addAnotherQuestion)
