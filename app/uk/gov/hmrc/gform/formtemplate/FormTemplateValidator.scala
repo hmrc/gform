@@ -92,18 +92,34 @@ object FormTemplateValidator {
       Valid
     }
 
-  def validateChoiceHelpText(sectionsList: List[Page]): ValidationResult = {
+  def validateChoice(
+    sectionsList: List[Page],
+    choiceChecker: Choice => Boolean,
+    errorMessage: String): ValidationResult = {
     val choiceFieldIds: List[FormComponentId] = sectionsList
       .flatMap(_.fields)
       .map(fv => (fv.id, fv.`type`))
       .collect {
-        case (fId, Choice(_, options, _, _, helpTextList))
-            if helpTextList.fold(false)(helpTexts => options.size != helpTexts.size) =>
+        case (fId, choice: Choice) if choiceChecker(choice) =>
           fId
       }
 
-    choiceFieldIds.isEmpty.validationResult(
-      s"Choice components doesn't have equal number of choices and help texts ${choiceFieldIds.mkString(",")}")
+    choiceFieldIds.isEmpty.validationResult(errorMessage + ": " + choiceFieldIds.mkString(","))
+
+  }
+
+  def validateChoiceHelpText(sectionsList: List[Page]): ValidationResult = {
+    def check(choice: Choice): Boolean =
+      choice.optionHelpText.fold(false)(helpTexts => choice.options.size != helpTexts.size)
+
+    validateChoice(sectionsList, check, "Choice components doesn't have equal number of choices and help texts")
+  }
+
+  def validateChoiceHints(sectionsList: List[Page]): ValidationResult = {
+    def check(choice: Choice): Boolean =
+      choice.hints.fold(false)(hints => choice.options.size != hints.size)
+
+    validateChoice(sectionsList, check, "Choice components doesn't have equal number of choices and hints")
   }
 
   val userContextComponentType: List[FormComponent] => List[FormComponent] =
@@ -166,7 +182,7 @@ object FormTemplateValidator {
     case HasExpr(MultipleExpr(fields)) => Valid
     case Date(_, _, _)                 => Valid
     case Address(_)                    => Valid
-    case Choice(_, _, _, _, _)         => Valid
+    case Choice(_, _, _, _, _, _)      => Valid
     case RevealingChoice(revealingChoiceElements, _) =>
       validate(revealingChoiceElements.toList.flatMap(_.revealingFields.map(_.`type`)), formTemplate)
     case HmrcTaxPeriod(_, _, _)   => Valid

@@ -599,7 +599,7 @@ class TemplateValidatorSpec extends Spec {
 
     val addToListPage = mkSection("addToListPage", List(mkFormComponent("fieldA", Value))).page
     val addAnotherQuestion =
-      mkFormComponent("addAnother", Choice(YesNo, yesNoLocalisedStrings, Horizontal, Nil, None))
+      mkFormComponent("addAnother", Choice(YesNo, yesNoLocalisedStrings, Horizontal, Nil, None, None))
     val referenceToAddAnotherQuestion = mkFormComponent("fieldC", Count(FormComponentId("addAnother")))
 
     val sectionA = mkAddToList("AddToList", NonEmptyList.one(addToListPage), addAnotherQuestion)

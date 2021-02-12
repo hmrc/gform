@@ -47,6 +47,7 @@ class FormComponentSpec2 extends Spec {
           NonEmptyList(toSmartString("Natural gas"), List(toSmartString("Other gas"))),
           Vertical,
           List.empty[Int],
+          None,
           None),
         toSmartString("Select the tax type"),
         None,
