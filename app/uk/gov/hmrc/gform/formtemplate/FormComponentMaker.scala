@@ -66,6 +66,8 @@ class FormComponentMaker(json: JsValue) {
     parse("presentationHint", PresentationHintParser.validate)
 
   lazy val helpText: Option[SmartString] = (json \ "helpText").asOpt[SmartString]
+  lazy val optionHints: Option[NonEmptyList[SmartString]] =
+    (json \ "hints").asOpt[NonEmptyList[SmartString]]
   lazy val optionHelpText: Option[NonEmptyList[SmartString]] =
     (json \ "optionHelpText").asOpt[NonEmptyList[SmartString]]
   lazy val submitMode: Option[String] = (json \ "submitMode").asOpt[String]
@@ -331,22 +333,23 @@ class FormComponentMaker(json: JsValue) {
       selectionCriteria <- optSelectionCriteria
       maybeFormatExpr   <- optMaybeFormatExpr(roundingMode)(selectionCriteria)(emailVerification)
       maybeValueExpr    <- optMaybeValueExpr
-      oChoice: Opt[Choice] = (maybeFormatExpr, choices, multivalue, maybeValueExpr, optionHelpText) match {
+      oChoice: Opt[Choice] = (maybeFormatExpr, choices, multivalue, maybeValueExpr) match {
         // format: off
-        case (IsOrientation(VerticalOrientation),   Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections), oHelpText) => Choice(Checkbox, NonEmptyList(x, xs),          Vertical,   selections, oHelpText).asRight
-        case (IsOrientation(VerticalOrientation),   Some(x :: xs), IsMultivalue(MultivalueNo),  Selections(selections), oHelpText) => Choice(Radio,    NonEmptyList(x, xs),          Vertical,   selections, oHelpText).asRight
-        case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections), oHelpText) => Choice(Checkbox, NonEmptyList(x, xs),          Horizontal, selections, oHelpText).asRight
-        case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueNo),  Selections(selections), oHelpText) => Choice(Radio,    NonEmptyList(x, xs),          Horizontal, selections, oHelpText).asRight
-        case (IsOrientation(YesNoOrientation),      None,          IsMultivalue(MultivalueNo),  Selections(selections), oHelpText) => Choice(YesNo,    NonEmptyList.of(toSmartString("Yes","Iawn"), toSmartString("No","Na")), Horizontal, selections, oHelpText).asRight
-        case (IsOrientation(YesNoOrientation),      _,             _,                           Selections(selections), oHelpText) => Choice(YesNo,    NonEmptyList.of(toSmartString("Yes","Iawn"), toSmartString("No","Na")), Horizontal, selections, oHelpText).asRight
+        case (IsOrientation(VerticalOrientation),   Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections)) => Choice(Checkbox, NonEmptyList(x, xs),          Vertical,   selections, optionHints, optionHelpText).asRight
+        case (IsOrientation(VerticalOrientation),   Some(x :: xs), IsMultivalue(MultivalueNo),  Selections(selections)) => Choice(Radio,    NonEmptyList(x, xs),          Vertical,   selections, optionHints, optionHelpText).asRight
+        case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections)) => Choice(Checkbox, NonEmptyList(x, xs),          Horizontal, selections, optionHints, optionHelpText).asRight
+        case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueNo),  Selections(selections)) => Choice(Radio,    NonEmptyList(x, xs),          Horizontal, selections, optionHints, optionHelpText).asRight
+        case (IsOrientation(YesNoOrientation),      None,          IsMultivalue(MultivalueNo),  Selections(selections)) => Choice(YesNo,    NonEmptyList.of(toSmartString("Yes","Iawn"), toSmartString("No","Na")), Horizontal, selections, optionHints, optionHelpText).asRight
+        case (IsOrientation(YesNoOrientation),      _,             _,                           Selections(selections)) => Choice(YesNo,    NonEmptyList.of(toSmartString("Yes","Iawn"), toSmartString("No","Na")), Horizontal, selections, optionHints, optionHelpText).asRight
         // format: on
-        case (invalidFormat, invalidChoices, invalidMultivalue, invalidValue, invalidHelpText) =>
+        case (invalidFormat, invalidChoices, invalidMultivalue, invalidValue) =>
           UnexpectedState(s"""|Unsupported combination of 'format, choices, multivalue and value':
                               |Format     : $invalidFormat
                               |Choices    : $invalidChoices
                               |Multivalue : $invalidMultivalue
                               |Value      : $invalidValue
-                              |optionHelpText: $invalidHelpText
+                              |optionHints: $optionHints
+                              |optionHelpText: $optionHelpText
                               |""".stripMargin).asLeft
       }
       result <- oChoice.right
@@ -358,8 +361,12 @@ class FormComponentMaker(json: JsValue) {
     result         <- createRevealingChoice(maybeValueExpr)
   } yield result
 
-  private def createRevealingChoice(maybeValueExpr: Option[ValueExpr]): Opt[RevealingChoice] =
-    (choices, maybeValueExpr, revealingFields.map(_.traverse(_.traverse(_.optFieldValue())))) match {
+  private def createRevealingChoice(maybeValueExpr: Option[ValueExpr]): Opt[RevealingChoice] = {
+
+    val maybeRevealingFields: Option[Opt[List[List[FormComponent]]]] =
+      revealingFields.map(_.traverse(_.traverse(_.optFieldValue())))
+
+    (choices, maybeValueExpr, maybeRevealingFields) match {
       case (Some(options), Selections(selections), Some(Right(revealingFields))) =>
         def mkError[A](error: String): Either[String, A] = s"RevealingChoice error: $error".asLeft
 
@@ -372,10 +379,19 @@ class FormComponentMaker(json: JsValue) {
         }
 
         def rcFromSelection(selections: List[Boolean]): Either[String, RevealingChoice] = {
+          val hints =
+            optionHints.fold[List[Option[SmartString]]](List.fill(revealingFields.size)(None))(_.toList.map(hint =>
+              if (hint.nonEmpty) Some(hint) else None))
+
           val revealingChoiceElements: List[RevealingChoiceElement] =
-            options.zip(revealingFields).zip(selections).map {
-              case ((choice, fields), selected) => RevealingChoiceElement(choice, fields, selected)
-            }
+            options
+              .zip(revealingFields)
+              .zip(selections)
+              .zip(hints)
+              .map {
+                case (((choice, fields), selected), hint) =>
+                  RevealingChoiceElement(choice, fields, hint, selected)
+              }
 
           (revealingChoiceElements, multivalue) match {
             case (x :: xs, IsMultivalue(MultivalueYes)) => RevealingChoice(NonEmptyList(x, xs), true).asRight
@@ -387,7 +403,13 @@ class FormComponentMaker(json: JsValue) {
         }
 
         def construcRevealingChoice(maybeSelection: Option[Int]): Either[String, RevealingChoice] =
-          if (options.size === revealingFields.size) {
+          if (optionHints.fold(false)(_.size =!= options.size)) {
+            mkError(
+              s"Number of 'choices': ${options.size} and number of 'hints': ${optionHints.map(_.size)} does not match. They need to be identical.")
+          } else if (options.size =!= revealingFields.size) {
+            mkError(
+              s"Number of 'choices': ${options.size} and number of 'revealingFields': ${revealingFields.size} does not match. They need to be identical.")
+          } else {
 
             val initialSelections = List.fill(options.size)(false)
             val selectionsE = maybeSelection.fold[Either[String, List[Boolean]]](initialSelections.asRight) {
@@ -402,9 +424,7 @@ class FormComponentMaker(json: JsValue) {
               rc         <- rcFromSelection(selections)
             } yield rc
 
-          } else
-            mkError(
-              s"Number of 'choices': ${options.size} and number of 'revealingFields': ${revealingFields.size} does not match. They need to be identical.")
+          }
 
         val res = for {
           selection <- selectionE
@@ -419,6 +439,7 @@ class FormComponentMaker(json: JsValue) {
                             |revealingFields: ${revealingFields
                              .getOrElse("MISSING - This field must be provided")}""".stripMargin).asLeft
     }
+  }
 
   private lazy val hmrcTaxPeriodOpt: Opt[HmrcTaxPeriod] = (idType, idNumber, regimeType) match {
     case (Some(a), Right(Some(b: TextExpression)), Some(c)) => HmrcTaxPeriod(IdType(a), b.expr, RegimeType(c)).asRight

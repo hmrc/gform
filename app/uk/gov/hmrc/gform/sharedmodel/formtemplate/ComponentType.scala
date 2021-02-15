@@ -118,6 +118,7 @@ case class Choice(
   options: NonEmptyList[SmartString],
   orientation: Orientation,
   selections: List[Int],
+  hints: Option[NonEmptyList[SmartString]],
   optionHelpText: Option[NonEmptyList[SmartString]]
 ) extends ComponentType
 
@@ -131,7 +132,11 @@ object ChoiceType {
   implicit val equal: Eq[ChoiceType] = Eq.fromUniversalEquals
 }
 
-case class RevealingChoiceElement(choice: SmartString, revealingFields: List[FormComponent], selected: Boolean)
+case class RevealingChoiceElement(
+  choice: SmartString,
+  revealingFields: List[FormComponent],
+  hint: Option[SmartString],
+  selected: Boolean)
 object RevealingChoiceElement {
   implicit val format: OFormat[RevealingChoiceElement] = derived.oformat()
 }

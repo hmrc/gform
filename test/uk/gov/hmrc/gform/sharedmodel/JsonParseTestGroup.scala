@@ -61,7 +61,7 @@ class JsonParseTestGroup extends Spec {
         Group(
           List(FormComponent(
             FormComponentId("cid"),
-            Choice(Radio, NonEmptyList.of(toSmartString("A"), toSmartString("B")), Vertical, List(), None),
+            Choice(Radio, NonEmptyList.of(toSmartString("A"), toSmartString("B")), Vertical, List(), None, None),
             toSmartString("clabel"),
             None,
             None,
@@ -130,7 +130,7 @@ class JsonParseTestGroup extends Spec {
         Group(
           List(FormComponent(
             FormComponentId("cid"),
-            Choice(Radio, NonEmptyList.of(toSmartString("A"), toSmartString("B")), Vertical, List(), None),
+            Choice(Radio, NonEmptyList.of(toSmartString("A"), toSmartString("B")), Vertical, List(), None, None),
             toSmartString("clabel"),
             None,
             None,
