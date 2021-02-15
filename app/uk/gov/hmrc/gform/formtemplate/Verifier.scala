@@ -36,6 +36,7 @@ trait Verifier {
     for {
       _ <- fromOptA(FormTemplateValidator.validateLanguages(languages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateChoiceHelpText(pages).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateChoiceHints(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateUniqueFields(sections).toEither)
       _ <- fromOptA(DestinationsValidator.validate(formTemplate))
       _ <- fromOptA(DestinationsValidator.validatePdfFieldIds(formTemplate))

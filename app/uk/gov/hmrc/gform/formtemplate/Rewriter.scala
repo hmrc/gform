@@ -125,7 +125,7 @@ trait Rewriter {
         fcLookup
           .get(formComponentId)
           .fold[Either[UnexpectedState, BooleanExpr]](missingFormComponentId(formComponentId)) {
-            case Choice(_, options, _, _, _) =>
+            case Choice(_, options, _, _, _, _) =>
               validate(c, options.size, formComponentId, exprString, "Choice").map(_ => be)
             case RevealingChoice(options, _) =>
               validate(c, options.size, formComponentId, exprString, "Revealing choice").map(_ => be)
@@ -142,10 +142,10 @@ trait Rewriter {
         fcLookup
           .get(formComponentId)
           .fold[Either[UnexpectedState, BooleanExpr]](missingFormComponentId(formComponentId)) {
-            case Choice(Radio | YesNo, options, _, _, _) =>
+            case Choice(Radio | YesNo, options, _, _, _, _) =>
               validate(c, options.size, formComponentId, exprString, "Choice").map(_ => rewriter)
-            case Choice(Checkbox, _, _, _, _) => invalidUsage("choice")
-            case RevealingChoice(_, true)     => invalidUsage("revealing choice")
+            case Choice(Checkbox, _, _, _, _, _) => invalidUsage("choice")
+            case RevealingChoice(_, true)        => invalidUsage("revealing choice")
             case RevealingChoice(options, false) =>
               validate(c, options.size, formComponentId, exprString, "Revealing choice").map(_ => rewriter)
             case otherwise => Right(be)
