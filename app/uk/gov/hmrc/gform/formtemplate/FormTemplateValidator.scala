@@ -203,15 +203,19 @@ object FormTemplateValidator {
           .zipWithIndex
           .flatMap {
             case (page: Page, idx) =>
-              val allValidfs: List[BooleanExpr] = page.allFormComponents.flatMap(_.allValidIfs).map(_.booleanExpr)
-              val verifiedValidIf = allValidfs.flatMap(verifyValidIf(idx).apply)
+              val allValidIfs: List[BooleanExpr] = page.allFormComponents.flatMap(_.allValidIfs).map(_.booleanExpr)
+              val verifiedValidIf = allValidIfs.flatMap(verifyValidIf(idx).apply)
+
+              val allComponentIncludeIfs: List[BooleanExpr] =
+                page.allFormComponents.flatMap(_.includeIf).map(_.booleanExpr)
+              val verifiedComponentIncludeIfs = allComponentIncludeIfs.flatMap(verifyIncludeIf(idx).apply)
 
               val verifiedIncludeIf = page.includeIf
                 .map(_.booleanExpr)
                 .map(verifyIncludeIf(idx).apply)
                 .getOrElse(List(Valid))
 
-              verifiedValidIf ++ verifiedIncludeIf
+              verifiedValidIf ++ verifiedIncludeIf ++ verifiedComponentIncludeIfs
           })
   }
 

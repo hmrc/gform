@@ -66,6 +66,7 @@ class JsonParseTestGroup extends Spec {
             None,
             None,
             None,
+            None,
             true,
             true,
             true,
@@ -79,6 +80,7 @@ class JsonParseTestGroup extends Spec {
           Some(toSmartString("repeatAddAnotherText"))
         ),
         toSmartString("glabel"),
+        None,
         None,
         None,
         None,
@@ -135,6 +137,7 @@ class JsonParseTestGroup extends Spec {
             None,
             None,
             None,
+            None,
             mandatory = false,
             true,
             true,
@@ -148,6 +151,7 @@ class JsonParseTestGroup extends Spec {
           Some(toSmartString("repeatAddAnotherText"))
         ),
         toSmartString("glabel"),
+        None,
         None,
         None,
         None,

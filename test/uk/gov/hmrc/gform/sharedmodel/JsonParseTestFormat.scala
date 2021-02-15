@@ -170,6 +170,7 @@ class JsonParseTestFormat extends Spec with TableDrivenPropertyChecks {
           None,
           None,
           None,
+          None,
           true,
           true,
           true,
