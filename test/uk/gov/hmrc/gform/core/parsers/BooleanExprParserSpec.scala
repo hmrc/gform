@@ -67,7 +67,19 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
 
   }
 
-  it should "parse contains" in {
+  "BooleanExprParser" should "parse expression with negative operand" in {
+    val res = BooleanExprParser.validate("${isPremisesSameAsBusinessAddress<=-1}")
+
+    res shouldBe Right(LessThanOrEquals(FormCtx("isPremisesSameAsBusinessAddress"), Constant("-1")))
+  }
+
+  it should "parse expression with positive operand" in {
+    val res = BooleanExprParser.validate("${isPremisesSameAsBusinessAddress<=+1}")
+
+    res shouldBe Right(LessThanOrEquals(FormCtx("isPremisesSameAsBusinessAddress"), Constant("+1")))
+  }
+
+  "BooleanExprParser" should "parse contains" in {
     val res = BooleanExprParser.validate("""${fieldId contains 1}""")
 
     res shouldBe Right(Contains(FormCtx("fieldId"), Constant("1")))

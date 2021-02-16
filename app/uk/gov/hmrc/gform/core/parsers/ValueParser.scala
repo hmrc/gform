@@ -214,20 +214,20 @@ object ValueParser {
   })
 
   lazy val anyDigitConst: Parser[Expr] = (
-    // parse single digit, e.g. "9"
-    """\d""".r ^^ { (loc, str) =>
+    // parse single digit, e.g. "9", "+9"
+    """[+-]?\d""".r ^^ { (loc, str) =>
       Constant(str)
     }
     // parse two or more digits with commas as thousands separators digit, e.g. "9,876"
-      | """\d[\d,]*[\d]""".r ^^ { (loc, str) =>
+      | """[+-]?\d[\d,]*[\d]""".r ^^ { (loc, str) =>
         Constant(str)
       }
     // parse decimal fraction, e.g. ".56"
-      | """\.[\d]*\d""".r ^^ { (loc, str) =>
+      | """[+-]?\.[\d]*\d""".r ^^ { (loc, str) =>
         Constant(str)
       }
     // parse number plus decimal fraction, e.g. "1,234.56"
-      | """\d[\d,]*\.([\d]*\d)?""".r ^^ { (loc, str) =>
+      | """[+-]?\d[\d,]*\.([\d]*\d)?""".r ^^ { (loc, str) =>
         Constant(str)
       }
   )
