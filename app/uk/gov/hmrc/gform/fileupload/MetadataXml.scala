@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.fileupload
 
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
-import uk.gov.hmrc.gform.submission.{ PdfSummary, Submission }
+import uk.gov.hmrc.gform.submission.Submission
 import uk.gov.hmrc.gform.typeclasses.Attribute
 
 import scala.xml.{ Elem, Utility }
@@ -27,7 +27,7 @@ object MetadataXml {
 
   val xmlDec = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>"""
 
-  private def createMetadata(submission: Submission, pdfSummary: PdfSummary, hmrcDms: HmrcDms): Elem = {
+  private def createMetadata(submission: Submission, noOfPages: Long, hmrcDms: HmrcDms): Elem = {
 
     val backscan = hmrcDms.backscan.map(backscan => createAttribute("backscan", backscan)).toList
 
@@ -36,7 +36,7 @@ object MetadataXml {
       createAttribute("time_xml_created", submission.submittedDate),
       createAttribute("submission_reference", submission.submissionRef.withoutHyphens),
       createAttribute("form_id", hmrcDms.dmsFormId),
-      createAttribute("number_pages", pdfSummary.numberOfPages),
+      createAttribute("number_pages", noOfPages),
       createAttribute("source", "dfs"),
       createAttribute("customer_id", submission.dmsMetaData.customerId),
       createAttribute("submission_mark", "AUDIT_SERVICE"), // We are not using CAS
@@ -65,13 +65,9 @@ object MetadataXml {
       { <document></document>.copy(child = elems) }
     </documents>
 
-  def getXml(
-    submission: Submission,
-    reconciliationId: ReconciliationId,
-    pdfSummary: PdfSummary,
-    hmrcDms: HmrcDms): Elem = {
+  def getXml(submission: Submission, reconciliationId: ReconciliationId, noOfPages: Long, hmrcDms: HmrcDms): Elem = {
     val body =
-      List(createHeader(submission.submissionRef, reconciliationId), createMetadata(submission, pdfSummary, hmrcDms))
+      List(createHeader(submission.submissionRef, reconciliationId), createMetadata(submission, noOfPages, hmrcDms))
 
     trim(createDocument(body))
   }

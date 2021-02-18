@@ -56,20 +56,25 @@ class FileUploadService(
     val date = timeModule.localDateTime().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
     val fileNamePrefix = s"${submission.submissionRef.withoutHyphens}-$date"
 
-    def uploadPfdF: Future[Unit] =
+    def uploadPfdF: Future[Unit] = {
+      val (fileId, fileNameSuffix) =
+        if (hmrcDms.includeInstructionPdf)
+          (customerSummaryPdf, "customerSummary")
+        else (pdf, "iform")
       fileUploadFrontendConnector.upload(
         submission.envelopeId,
-        pdf,
-        s"$fileNamePrefix-iform.pdf",
+        fileId,
+        s"$fileNamePrefix-$fileNameSuffix.pdf",
         ByteString(summaries.pdfSummary.pdfContent),
         ContentType.`application/pdf`)
+    }
 
     def uploadInstructionPdfF: Future[Unit] =
       summaries.instructionPdfSummary.fold(Future.successful(())) { iPdf =>
         fileUploadFrontendConnector.upload(
           submission.envelopeId,
-          instructionPdf,
-          s"$fileNamePrefix-instruction.pdf",
+          pdf,
+          s"$fileNamePrefix-iform.pdf",
           ByteString(iPdf.pdfContent),
           ContentType.`application/pdf`)
       }
@@ -82,7 +87,11 @@ class FileUploadService(
     def uploadMetadataXmlF: Future[Unit] = {
       val reconciliationId = ReconciliationId.create(submission.submissionRef)
       val metadataXml = MetadataXml.xmlDec + "\n" + MetadataXml
-        .getXml(submission, reconciliationId, summaries.pdfSummary, hmrcDms)
+        .getXml(
+          submission,
+          reconciliationId,
+          summaries.instructionPdfSummary.fold(summaries.pdfSummary.numberOfPages)(_.numberOfPages),
+          hmrcDms)
       uploadXml(xml, s"$fileNamePrefix-metadata.xml", metadataXml)
     }
 
@@ -131,7 +140,7 @@ object FileUploadService {
   //forbidden keys. make sure they aren't used in templates
   object FileIds {
     val pdf = FileId("pdf")
-    val instructionPdf = FileId("instructionPdf")
+    val customerSummaryPdf = FileId("customerSummaryPdf")
     val formdataXml = FileId("formdataXml")
     val xml = FileId("xmlDocument")
     val roboticsXml = FileId("roboticsXml")
