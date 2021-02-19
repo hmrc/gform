@@ -91,7 +91,9 @@ class FileUploadService(
           submission,
           reconciliationId,
           summaries.instructionPdfSummary.fold(summaries.pdfSummary.numberOfPages)(_.numberOfPages),
-          hmrcDms)
+          submission.noOfAttachments + summaries.instructionPdfSummary.fold(0)(_ => 1),
+          hmrcDms
+        )
       uploadXml(xml, s"$fileNamePrefix-metadata.xml", metadataXml)
     }
 

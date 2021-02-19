@@ -27,7 +27,7 @@ object MetadataXml {
 
   val xmlDec = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>"""
 
-  private def createMetadata(submission: Submission, noOfPages: Long, hmrcDms: HmrcDms): Elem = {
+  private def createMetadata(submission: Submission, noOfPages: Long, attachmentCount: Int, hmrcDms: HmrcDms): Elem = {
 
     val backscan = hmrcDms.backscan.map(backscan => createAttribute("backscan", backscan)).toList
 
@@ -43,7 +43,7 @@ object MetadataXml {
       createAttribute("cas_key", "AUDIT_SERVICE"), // We are not using CAS
       createAttribute("classification_type", hmrcDms.classificationType),
       createAttribute("business_area", hmrcDms.businessArea),
-      createAttribute("attachment_count", submission.noOfAttachments)
+      createAttribute("attachment_count", attachmentCount)
     ) ++ backscan
 
     <metadata></metadata>.copy(child = attributes)
@@ -65,9 +65,16 @@ object MetadataXml {
       { <document></document>.copy(child = elems) }
     </documents>
 
-  def getXml(submission: Submission, reconciliationId: ReconciliationId, noOfPages: Long, hmrcDms: HmrcDms): Elem = {
+  def getXml(
+    submission: Submission,
+    reconciliationId: ReconciliationId,
+    noOfPages: Long,
+    attachmentCount: Int,
+    hmrcDms: HmrcDms): Elem = {
     val body =
-      List(createHeader(submission.submissionRef, reconciliationId), createMetadata(submission, noOfPages, hmrcDms))
+      List(
+        createHeader(submission.submissionRef, reconciliationId),
+        createMetadata(submission, noOfPages, attachmentCount, hmrcDms))
 
     trim(createDocument(body))
   }
