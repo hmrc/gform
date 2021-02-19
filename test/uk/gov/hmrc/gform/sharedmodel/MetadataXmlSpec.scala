@@ -167,7 +167,12 @@ class MetadataXmlSpec extends Spec {
       </documents>
 
     val metadataXml = MetadataXml
-      .getXml(submission, ReconciliationId("some-recocilliatin-id"), pdfSummary.numberOfPages, hmrcDms)
+      .getXml(
+        submission,
+        ReconciliationId("some-recocilliatin-id"),
+        pdfSummary.numberOfPages,
+        submission.noOfAttachments,
+        hmrcDms)
 
     metadataXml should equal(Utility.trim(expected).asInstanceOf[Elem])(after being streamlined[Elem])
 
