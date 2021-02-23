@@ -64,6 +64,7 @@ class VerifierSpec extends WordSpecLike with Matchers with ScalaFutures {
       None,
       None,
       None,
+      None,
       true,
       false,
       true,

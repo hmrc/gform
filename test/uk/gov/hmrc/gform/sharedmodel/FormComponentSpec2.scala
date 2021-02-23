@@ -52,6 +52,7 @@ class FormComponentSpec2 extends Spec {
         toSmartString("Select the tax type"),
         None,
         None,
+        None,
         validIf = None,
         mandatory = true,
         editable = true,

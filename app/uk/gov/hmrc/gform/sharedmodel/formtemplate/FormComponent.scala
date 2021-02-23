@@ -29,6 +29,7 @@ case class FormComponent(
   label: SmartString,
   helpText: Option[SmartString],
   shortName: Option[SmartString],
+  includeIf: Option[IncludeIf],
   validIf: Option[ValidIf],
   mandatory: Boolean,
   editable: Boolean,
