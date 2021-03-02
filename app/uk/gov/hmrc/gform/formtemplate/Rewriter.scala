@@ -47,13 +47,19 @@ trait Rewriter {
     formComponent.validIf.toList ++ formComponent.validators.map(_.validIf)
 
   private def formComponentValidIf(formComponent: FormComponent): List[ValidIf] =
+    fetchFromFormComponent(nonNestedFormComponentValidIf)(formComponent)
+
+  private def formComponentIncludeIf(formComponent: FormComponent): List[IncludeIf] =
+    fetchFromFormComponent(_.includeIf.toList)(formComponent)
+
+  private def fetchFromFormComponent[A](f: FormComponent => List[A])(formComponent: FormComponent): List[A] =
     formComponent match {
-      case fc @ IsGroup(group) => nonNestedFormComponentValidIf(fc) ++ group.fields.flatMap(formComponentValidIf)
+      case fc @ IsGroup(group) => f(fc) ++ group.fields.flatMap(fetchFromFormComponent(f))
       case fc @ IsRevealingChoice(revealingChoice) =>
-        nonNestedFormComponentValidIf(fc) ++ revealingChoice.options.toList
+        f(fc) ++ revealingChoice.options.toList
           .flatMap(_.revealingFields)
-          .flatMap(formComponentValidIf)
-      case fc => nonNestedFormComponentValidIf(fc)
+          .flatMap(fetchFromFormComponent(f))
+      case fc => f(fc)
     }
 
   private def validateAndRewriteBooleanExprs(formTemplate: FormTemplate): Either[UnexpectedState, FormTemplate] = {
@@ -76,19 +82,23 @@ trait Rewriter {
       case dp: Destinations.DestinationPrint => Nil
     }
 
-    val validIfs: List[ValidIf] = formTemplate.sections.flatMap {
-      case Section.NonRepeatingPage(page) => page.fields.flatMap(formComponentValidIf)
-      case Section.RepeatingPage(page, _) => page.fields.flatMap(formComponentValidIf)
+    def traverseFormComponents[A](f: FormComponent => List[A]): List[A] = formTemplate.sections.flatMap {
+      case Section.NonRepeatingPage(page) => page.fields.flatMap(f)
+      case Section.RepeatingPage(page, _) => page.fields.flatMap(f)
       case Section.AddToList(_, _, _, _, _, _, pages, _, _, _) =>
-        pages.toList.flatMap(page => page.fields.flatMap(formComponentValidIf))
-    } ++ validIfsDeclaration
+        pages.toList.flatMap(page => page.fields.flatMap(f))
+    }
+
+    val validIfs: List[ValidIf] = traverseFormComponents(formComponentValidIf) ++ validIfsDeclaration
+
+    val fieldsIncludeIfs: List[IncludeIf] = traverseFormComponents(formComponentIncludeIf)
 
     val includeIfs: List[IncludeIf] = formTemplate.sections.flatMap {
       case Section.NonRepeatingPage(page) => page.includeIf.toList
       case Section.RepeatingPage(page, _) => page.includeIf.toList
       case Section.AddToList(_, _, _, _, includeIf, _, pages, _, _, _) =>
         includeIf.toList ++ pages.toList.flatMap(_.includeIf.toList)
-    }
+    } ++ fieldsIncludeIfs
 
     def validate(
       c: String,
