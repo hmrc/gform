@@ -83,7 +83,8 @@ class FormComponentRejectSpec extends Spec with TableDrivenPropertyChecks {
       ("choice-wrong-index-equals",        "Expression 'simpleChoice = 10' has wrong index 10. Choice simpleChoice has only 2 elements. Use index from 0 to 1"),
       ("choice-multivalue-equals",         "Multivalue choice cannot be used together with '='. Replace 'simpleChoice = 1' with 'simpleChoice contains 1' instead."),
       ("choice-multivalue-equals-swapped", "Multivalue choice cannot be used together with '='. Replace '1 = simpleChoice' with 'simpleChoice contains 1' instead."),
-      ("revealing-choice-wrong-index",     "Expression 'rChoice contains 10' has wrong index 10. Revealing choice rChoice has only 2 elements. Use index from 0 to 1")
+      ("revealing-choice-wrong-index",     "Expression 'rChoice contains 10' has wrong index 10. Revealing choice rChoice has only 2 elements. Use index from 0 to 1"),
+      ("component-level-include-if",       "Multivalue choice cannot be used together with '='. Replace 'choice = 0' with 'choice contains 0' instead."),
       // format: on
     )
 

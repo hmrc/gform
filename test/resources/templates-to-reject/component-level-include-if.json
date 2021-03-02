@@ -1,0 +1,50 @@
+{
+  "_id": "component-level-include-if",
+  "formName": "Component level includeIf",
+  "description": "",
+  "emailTemplateId": "",
+  "authConfig": {
+    "authModule": "hmrc"
+  },
+  "sections": [
+    {
+      "title": "Page",
+      "fields": [
+        {
+          "id": "choice",
+          "type": "choice",
+          "label": "Does your company trade under a different name?",
+          "choices": ["Yes", "No"],
+          "multivalue": "true"
+        }
+      ]
+    },
+    {
+      "title": "Text box number format",
+      "fields": [
+        {
+          "id": "textBox",
+          "includeIf": "${choice = 0}",
+          "type": "text",
+          "format": "positiveWholeNumber",
+          "label": "Number"
+        }
+      ]
+    }
+  ],
+  "declarationSection": {
+    "title": "Declaration",
+    "fields": []
+  },
+  "acknowledgementSection": {
+    "title": "Acknowledgement",
+    "fields": []
+  },
+  "destinations": [
+    {
+      "id": "transitionToSubmitted",
+      "type": "stateTransition",
+      "requiredState": "Submitted"
+    }
+  ]
+}
