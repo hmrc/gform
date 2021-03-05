@@ -84,7 +84,7 @@ case class Date(
   def fields(id: FormComponentId): NonEmptyList[FormComponentId] = Date.fields(id)
 }
 
-case object Date {
+object Date {
   val fields: FormComponentId => NonEmptyList[FormComponentId] = (id: FormComponentId) =>
     NonEmptyList.of("day", "month", "year").map(id.withSuffix)
 }
@@ -97,12 +97,52 @@ case class Address(international: Boolean) extends ComponentType {
 
 }
 
-case object Address {
+object Address {
   val mandatoryFields: FormComponentId => List[FormComponentId] = id => List("street1").map(id.withSuffix)
   val optionalFields: FormComponentId => List[FormComponentId] = id =>
     List("street2", "street3", "street4", "uk", "postcode", "country").map(id.withSuffix)
   val fields: FormComponentId => NonEmptyList[FormComponentId] = id =>
     NonEmptyList.fromListUnsafe(mandatoryFields(id) ++ optionalFields(id))
+}
+
+case class OverseasAddress(
+  mandatoryFields: List[OverseasAddress.Configurable.Mandatory],
+  optionalFields: List[OverseasAddress.Configurable.Optional],
+  value: Option[OverseasAddress.Value]
+) extends ComponentType
+
+object OverseasAddress {
+
+  object Configurable {
+    sealed trait Mandatory
+    object Mandatory {
+      case object Line2 extends Mandatory
+      case object Postcode extends Mandatory
+      implicit val format: OFormat[Mandatory] = derived.oformat()
+    }
+
+    sealed trait Optional
+    object Optional {
+      case object City extends Optional
+      implicit val format: OFormat[Optional] = derived.oformat()
+    }
+  }
+
+  case class Value(
+    line1: SmartString,
+    line2: SmartString,
+    line3: SmartString,
+    city: SmartString,
+    postcode: SmartString,
+    country: SmartString
+  )
+
+  object Value {
+    implicit val format: OFormat[Value] = derived.oformat()
+  }
+
+  implicit val format: OFormat[OverseasAddress] = derived.oformat()
+
 }
 
 object DisplayWidth extends Enumeration {

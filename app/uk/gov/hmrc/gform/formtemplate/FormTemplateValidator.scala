@@ -190,6 +190,7 @@ object FormTemplateValidator {
     case FileUpload()             => Valid
     case InformationMessage(_, _) => Valid
     case Time(_, _)               => Valid
+    case OverseasAddress(_, _, _) => Valid
   }
 
   def validateForwardReference(sections: List[Section]): ValidationResult = {

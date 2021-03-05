@@ -41,6 +41,8 @@ case object InfoRaw extends ComponentTypeRaw
 
 case object TimeRaw extends ComponentTypeRaw
 
+case object OverseasAddressRaw extends ComponentTypeRaw
+
 object ComponentTypeRaw {
 
   val componentMap: Map[String, ComponentTypeRaw] =
@@ -55,6 +57,7 @@ object ComponentTypeRaw {
       "info"            -> InfoRaw,
       "hmrcTaxPeriod"   -> HmrcTaxPeriodRaw,
       "time"            -> TimeRaw,
+      "overseasAddress" -> OverseasAddressRaw,
       ""                -> TextRaw
     )
 
@@ -68,8 +71,9 @@ object ComponentTypeRaw {
         componentMap.get(compTypeAsString) match {
           case Some(componentType) => JsSuccess(componentType)
           case None =>
+            val componentNames = componentMap.keys.filterNot(_.isEmpty).mkString(", ")
             throw new Exception(JsError(
-              s"Expected one of the following types: ${componentMap.values}, you entered: $compTypeAsString").toString)
+              s"Unknown component type: $compTypeAsString. Expected one of the following: $componentNames").toString)
         }
 
       case otherwise => JsError(s"Expected String as JsValue, got: $otherwise")
