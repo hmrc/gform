@@ -21,12 +21,11 @@ import org.scalatest.time.{ Millis, Seconds, Span }
 import org.scalatest.{ Matchers, WordSpecLike }
 import uk.gov.hmrc.gform.Helpers.toSmartString
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel.ExampleData
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponent, FormComponentId, Instruction, Page, Section, ShortText, Text, Value }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.Instruction
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class VerifierSpec extends WordSpecLike with Matchers with ScalaFutures {
+class VerifierSpec extends WordSpecLike with Matchers with ScalaFutures with FormTemplateSupport {
 
   implicit val defaultPatience = PatienceConfig(timeout = Span(6, Seconds), interval = Span(5, Millis))
 
@@ -50,45 +49,4 @@ class VerifierSpec extends WordSpecLike with Matchers with ScalaFutures {
         UnexpectedState("One or more sections have instruction attribute with negative order"))
     }
   }
-
-  private def mkFormTemplate(sections: List[Section.NonRepeatingPage]) = {
-    val formTemplate = ExampleData.formTemplate.copy(sections = sections, emailParameters = None)
-    formTemplate
-  }
-
-  private def mkFormComponent(id: String, instruction: Option[Instruction]) =
-    FormComponent(
-      FormComponentId(id),
-      Text(ShortText.default, Value),
-      toSmartString(id),
-      None,
-      None,
-      None,
-      None,
-      true,
-      false,
-      true,
-      false,
-      false,
-      None,
-      None,
-      Nil,
-      instruction
-    )
-
-  private def mkSection(name: String, formComponents: List[FormComponent], instruction: Option[Instruction]) =
-    Section.NonRepeatingPage(
-      Page(
-        toSmartString(name),
-        None,
-        None,
-        None,
-        None,
-        None,
-        formComponents,
-        None,
-        None,
-        instruction,
-        None
-      ))
 }

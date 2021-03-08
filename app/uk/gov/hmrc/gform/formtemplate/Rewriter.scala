@@ -183,7 +183,7 @@ trait Rewriter {
       val includeIfRulesLookup: Map[IncludeIf, IncludeIf] = includeIfRules.toMap
       val validIfRulesLookup: Map[ValidIf, ValidIf] = validIfRules.toMap
 
-      def replace(includeIf: Option[IncludeIf]): Option[IncludeIf] =
+      def replaceIncludeIf(includeIf: Option[IncludeIf]): Option[IncludeIf] =
         includeIf.flatMap(includeIfRulesLookup.get)
 
       def replaceValidIf(validIf: Option[ValidIf]): Option[ValidIf] =
@@ -192,28 +192,26 @@ trait Rewriter {
       def replaceValidator(validator: FormComponentValidator): FormComponentValidator =
         validator.copy(validIf = validIfRulesLookup.get(validator.validIf).getOrElse(validator.validIf))
 
-      def replaceFormComponent(formComponent: FormComponent): FormComponent = formComponent match {
+      def replaceFormComponentNested(formComponent: FormComponent): FormComponent = formComponent match {
         case IsGroup(group) =>
-          formComponent.copy(
-            validIf = replaceValidIf(formComponent.validIf),
-            validators = formComponent.validators.map(replaceValidator),
+          replaceFormComponent(formComponent).copy(
             `type` = group.copy(fields = group.fields.map(replaceFormComponent))
           )
         case IsRevealingChoice(revealingChoice) =>
-          formComponent.copy(
-            validIf = replaceValidIf(formComponent.validIf),
-            validators = formComponent.validators.map(replaceValidator),
+          replaceFormComponent(formComponent).copy(
             `type` = revealingChoice.copy(options = revealingChoice.options.map(rcElement =>
               rcElement.copy(revealingFields = rcElement.revealingFields.map(replaceFormComponent))))
           )
-        case otherwise =>
-          formComponent.copy(
-            validIf = replaceValidIf(formComponent.validIf),
-            validators = formComponent.validators.map(replaceValidator)
-          )
+        case otherwise => replaceFormComponent(formComponent)
       }
 
-      def replaceFields(fields: List[FormComponent]): List[FormComponent] = fields.map(replaceFormComponent)
+      def replaceFormComponent(formComponent: FormComponent): FormComponent = formComponent.copy(
+        validIf = replaceValidIf(formComponent.validIf),
+        includeIf = replaceIncludeIf(formComponent.includeIf),
+        validators = formComponent.validators.map(replaceValidator)
+      )
+
+      def replaceFields(fields: List[FormComponent]): List[FormComponent] = fields.map(replaceFormComponentNested)
 
       def replaceDeclarationSection(declarationSection: DeclarationSection): DeclarationSection =
         declarationSection.copy(fields = replaceFields(declarationSection.fields))
@@ -227,14 +225,17 @@ trait Rewriter {
       formTemplate.copy(
         sections = formTemplate.sections.map {
           case s: Section.NonRepeatingPage =>
-            s.copy(page = s.page.copy(includeIf = replace(s.page.includeIf), fields = replaceFields(s.page.fields)))
+            s.copy(
+              page = s.page.copy(includeIf = replaceIncludeIf(s.page.includeIf), fields = replaceFields(s.page.fields)))
           case s: Section.RepeatingPage =>
-            s.copy(page = s.page.copy(includeIf = replace(s.page.includeIf), fields = replaceFields(s.page.fields)))
+            s.copy(
+              page = s.page.copy(includeIf = replaceIncludeIf(s.page.includeIf), fields = replaceFields(s.page.fields)))
           case s: Section.AddToList =>
             s.copy(
-              includeIf = replace(s.includeIf),
+              includeIf = replaceIncludeIf(s.includeIf),
               pages = s.pages.map(page =>
-                page.copy(includeIf = replace(page.includeIf), fields = replaceFields(page.fields))))
+                page.copy(includeIf = replaceIncludeIf(page.includeIf), fields = replaceFields(page.fields)))
+            )
         },
         destinations = replaceDestinations(formTemplate.destinations)
       )
