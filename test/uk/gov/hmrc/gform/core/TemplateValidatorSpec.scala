@@ -656,6 +656,7 @@ class TemplateValidatorSpec extends Spec {
       pages,
       addAnotherQuestion,
       None,
+      None,
       None
     )
 

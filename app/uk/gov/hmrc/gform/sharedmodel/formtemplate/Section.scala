@@ -48,7 +48,8 @@ object Section {
     pages: NonEmptyList[Page],
     addAnotherQuestion: FormComponent,
     instruction: Option[Instruction],
-    presentationHint: Option[PresentationHint]
+    presentationHint: Option[PresentationHint],
+    infoMessage: Option[SmartString]
   ) extends Section {
     override lazy val expandedFormComponents: List[FormComponent] = pages.toList.flatMap(_.expandedFormComponents)
   }
