@@ -36,14 +36,16 @@ trait PdfAndXmlSummariesFactory {
     structuredFormData: StructuredFormValue.ObjectStructure,
     customerId: String,
     submissionRef: SubmissionRef,
-    hmrcDms: HmrcDms)(implicit now: Instant): Future[PdfAndXmlSummaries]
+    hmrcDms: HmrcDms
+  )(implicit now: Instant): Future[PdfAndXmlSummaries]
 }
 
 object PdfAndXmlSummariesFactory {
 
-  def withPdf(pdfGeneratorService: PdfGeneratorService, pdfData: PdfHtml, instructionPdfData: Option[PdfHtml])(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): PdfAndXmlSummariesFactory = new PdfAndXmlSummariesFactory {
+  def withPdf(pdfGeneratorService: PdfGeneratorService, pdfData: PdfHtml, instructionPdfData: Option[PdfHtml])(implicit
+    hc: HeaderCarrier,
+    ec: ExecutionContext
+  ): PdfAndXmlSummariesFactory = new PdfAndXmlSummariesFactory {
 
     override def apply(
       form: Form,
@@ -51,40 +53,40 @@ object PdfAndXmlSummariesFactory {
       structuredFormData: StructuredFormValue.ObjectStructure,
       customerId: String,
       submissionRef: SubmissionRef,
-      hmrcDms: HmrcDms)(implicit now: Instant): Future[PdfAndXmlSummaries] =
+      hmrcDms: HmrcDms
+    )(implicit now: Instant): Future[PdfAndXmlSummaries] =
       for {
         pdf <- pdfGeneratorService.generatePDFBytes(pdfData.html)
         instructionPdf <- instructionPdfData.fold(Future.successful(Option.empty[Array[Byte]]))(iPdfData =>
-                           pdfGeneratorService.generatePDFBytesLocal(iPdfData.html).map(Option(_)))
-      } yield
-        PdfAndXmlSummaries(
-          pdfSummary = createPdfSummary(pdf),
-          instructionPdfSummary = instructionPdf.map(createPdfSummary),
-          roboticsXml = createRoboticsXml(formTemplate, structuredFormData, hmrcDms, submissionRef),
-          formDataXml = createFormdataXml(formTemplate, structuredFormData, hmrcDms, submissionRef)
-        )
+                            pdfGeneratorService.generatePDFBytesLocal(iPdfData.html).map(Option(_))
+                          )
+      } yield PdfAndXmlSummaries(
+        pdfSummary = createPdfSummary(pdf),
+        instructionPdfSummary = instructionPdf.map(createPdfSummary),
+        roboticsXml = createRoboticsXml(formTemplate, structuredFormData, hmrcDms, submissionRef),
+        formDataXml = createFormdataXml(formTemplate, structuredFormData, hmrcDms, submissionRef)
+      )
 
     private def createPdfSummary(pdf: Array[Byte]) = {
       val pDDocument: PDDocument = PDDocument.load(pdf)
-      try {
-        PdfSummary(numberOfPages = pDDocument.getNumberOfPages.toLong, pdfContent = pdf)
-      } finally {
-        pDDocument.close()
-      }
+      try PdfSummary(numberOfPages = pDDocument.getNumberOfPages.toLong, pdfContent = pdf)
+      finally pDDocument.close()
     }
 
     private def createFormdataXml(
       formTemplate: FormTemplate,
       structuredFormData: StructuredFormValue.ObjectStructure,
       hmrcDms: HmrcDms,
-      submissionRef: SubmissionRef)(implicit now: Instant): Option[String] =
+      submissionRef: SubmissionRef
+    )(implicit now: Instant): Option[String] =
       generateRoboticsXml(formTemplate, structuredFormData, hmrcDms, submissionRef, _.formdataXml)
 
     private def createRoboticsXml(
       formTemplate: FormTemplate,
       structuredFormData: StructuredFormValue.ObjectStructure,
       hmrcDms: HmrcDms,
-      submissionRef: SubmissionRef)(implicit now: Instant): Option[String] =
+      submissionRef: SubmissionRef
+    )(implicit now: Instant): Option[String] =
       generateRoboticsXml(formTemplate, structuredFormData, hmrcDms, submissionRef, _.roboticsXml)
 
     private def generateRoboticsXml(
@@ -92,15 +94,16 @@ object PdfAndXmlSummariesFactory {
       structuredFormData: StructuredFormValue.ObjectStructure,
       hmrcDms: HmrcDms,
       submissionRef: SubmissionRef,
-      condition: HmrcDms => Boolean)(implicit now: Instant) =
+      condition: HmrcDms => Boolean
+    )(implicit now: Instant) =
       if (condition(hmrcDms)) {
         Some(RoboticsXMLGenerator(formTemplate._id, hmrcDms.dmsFormId, submissionRef, structuredFormData, now))
-          .map(
-            body =>
-              // No whitespace of anysort after xml declaration. Robot won't be able to process xml otherwise
-              XmlGeneratorService.xmlDec + <data xmlns:xfa="http://www.xfa.org/schema/xfa-data/1.0/">
+          .map(body =>
+            // No whitespace of anysort after xml declaration. Robot won't be able to process xml otherwise
+            XmlGeneratorService.xmlDec + <data xmlns:xfa="http://www.xfa.org/schema/xfa-data/1.0/">
                 {body}
-              </data>)
+              </data>
+          )
       } else {
         None
       }

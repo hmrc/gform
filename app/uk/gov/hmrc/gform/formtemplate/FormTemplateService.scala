@@ -29,9 +29,9 @@ trait FormTemplateAlgebra[F[_]] {
   def get(id: FormTemplateId): F[FormTemplate]
 }
 
-class FormTemplateService(formTemplateRepo: Repo[FormTemplate], formTemplateRawRepo: Repo[FormTemplateRaw])(
-  implicit ec: ExecutionContext)
-    extends Verifier with Rewriter with FormTemplateAlgebra[Future] {
+class FormTemplateService(formTemplateRepo: Repo[FormTemplate], formTemplateRawRepo: Repo[FormTemplateRaw])(implicit
+  ec: ExecutionContext
+) extends Verifier with Rewriter with FormTemplateAlgebra[Future] {
   private val logger = LoggerFactory.getLogger(getClass)
 
   def save(formTemplateRaw: FormTemplateRaw): FOpt[Unit] =

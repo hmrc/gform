@@ -54,9 +54,10 @@ class JsonParseTestPresentationHint extends Spec {
 
     for {
       snippet <- List(
-                  """, "presentationHint" : "collapseGroupUnder" }""",
-                  """, "presentationHint" : "summarizeGroupAsGrid" }""",
-                  """, "presentationHint" : "anyString" }""")
+                   """, "presentationHint" : "collapseGroupUnder" }""",
+                   """, "presentationHint" : "summarizeGroupAsGrid" }""",
+                   """, "presentationHint" : "anyString" }"""
+                 )
     } {
       val jsResult = implicitly[Reads[FormComponent]].reads(Json.parse(startOfJson + snippet))
       jsResult should be(jsError)

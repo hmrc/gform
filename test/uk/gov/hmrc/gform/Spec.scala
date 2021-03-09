@@ -63,6 +63,7 @@ trait JsResultMatcher {
       MatchResult(
         jsResult.isError,
         s"'$jsResult' was not an JsError, but should have been.",
-        s"'$jsResult' was an JsError, but should *NOT* have been.")
+        s"'$jsResult' was an JsError, but should *NOT* have been."
+      )
   }
 }

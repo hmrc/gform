@@ -24,14 +24,17 @@ import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import scala.concurrent.ExecutionContext
 
 class SubmissionConsolidatorModule(wsHttpModule: WSHttpModule, formModule: FormModule, configModule: ConfigModule)(
-  implicit ec: ExecutionContext) {
+  implicit ec: ExecutionContext
+) {
   val submissionConsolidatorConnector = new SubmissionConsolidatorConnector(
     wsHttpModule.auditableWSHttp,
-    configModule.serviceConfig.baseUrl("submission-consolidator"))
+    configModule.serviceConfig.baseUrl("submission-consolidator")
+  )
 
   val submissionConsolidator =
     new SubmissionConsolidatorService(
       RealHandlebarsTemplateProcessor,
       submissionConsolidatorConnector,
-      formModule.fOptFormService)
+      formModule.fOptFormService
+    )
 }

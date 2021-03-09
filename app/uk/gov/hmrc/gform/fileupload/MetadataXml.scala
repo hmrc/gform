@@ -51,18 +51,18 @@ object MetadataXml {
 
   private def createHeader(submissionRef: SubmissionRef, reconciliationId: ReconciliationId): Elem =
     <header>
-      <title>{ submissionRef.withoutHyphens }</title>
+      <title>{submissionRef.withoutHyphens}</title>
       <format>pdf</format>
       <mime_type>application/pdf</mime_type>
       <store>true</store>
       <source>dfs</source>
       <target>DMS</target>
-      <reconciliation_id>{ reconciliationId.value }</reconciliation_id>
+      <reconciliation_id>{reconciliationId.value}</reconciliation_id>
     </header>
 
   private def createDocument(elems: List[Elem]): Elem =
     <documents xmlns="http://govtalk.gov.uk/hmrc/gis/content/1">
-      { <document></document>.copy(child = elems) }
+      {<document></document>.copy(child = elems)}
     </documents>
 
   def getXml(
@@ -70,11 +70,13 @@ object MetadataXml {
     reconciliationId: ReconciliationId,
     noOfPages: Long,
     attachmentCount: Int,
-    hmrcDms: HmrcDms): Elem = {
+    hmrcDms: HmrcDms
+  ): Elem = {
     val body =
       List(
         createHeader(submission.submissionRef, reconciliationId),
-        createMetadata(submission, noOfPages, attachmentCount, hmrcDms))
+        createMetadata(submission, noOfPages, attachmentCount, hmrcDms)
+      )
 
     trim(createDocument(body))
   }

@@ -40,8 +40,8 @@ case class HmrcRosmRegistrationCheckValidator(
   errorMessage: SmartString,
   regime: String,
   utr: FormCtx,
-  postcode: FormCtx)
-    extends Validator
+  postcode: FormCtx
+) extends Validator
 
 object HmrcRosmRegistrationCheckValidator {
   private val readCustom: Reads[HmrcRosmRegistrationCheckValidator] =

@@ -157,7 +157,8 @@ class ApplicationModule(context: Context)
   override lazy val httpErrorHandler: HttpErrorHandler = new ErrorHandler(
     playComponents.context.environment,
     playComponents.context.initialConfiguration,
-    playComponents.context.devContext.map(_.sourceMapper))
+    playComponents.context.devContext.map(_.sourceMapper)
+  )
 
   val playComponentsModule = new PlayComponentsModule(
     playComponents,
@@ -192,10 +193,12 @@ class ApplicationModule(context: Context)
     httpRequestHandler,
     httpErrorHandler,
     actorSystem,
-    materializer)
+    materializer
+  )
 
   logger.info(
-    s"Microservice $appName started in mode ${environment.mode} at port ${application.configuration.getOptional[String]("http.port")}")
+    s"Microservice $appName started in mode ${environment.mode} at port ${application.configuration.getOptional[String]("http.port")}"
+  )
 }
 
 object ApplicationModuleHelper {

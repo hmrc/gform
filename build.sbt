@@ -1,5 +1,5 @@
 import Dependencies.appDependencies
-import com.lucidchart.sbt.scalafmt.ScalafmtCorePlugin.autoImport._
+import org.scalafmt.sbt.ScalafmtPlugin
 import play.sbt.PlayImport.PlayKeys
 import play.sbt.routes.RoutesKeys.routesImport
 import sbt.Keys.{ resolvers, _ }
@@ -87,7 +87,7 @@ lazy val microservice = (project in file("."))
   .configs(IntegrationTest)
   .settings(
     inConfig(IntegrationTest)(Defaults.itSettings),
-    inConfig(IntegrationTest)(scalafmtCoreSettings),
+    inConfig(IntegrationTest)(ScalafmtPlugin.scalafmtConfigSettings),
     Keys.fork in IntegrationTest := false,
     unmanagedSourceDirectories in IntegrationTest := { (baseDirectory in IntegrationTest)(base => Seq(base / "it")) }.value,
     addTestReportOption(IntegrationTest, "int-test-reports"),

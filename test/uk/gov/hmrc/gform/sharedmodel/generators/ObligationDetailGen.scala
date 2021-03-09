@@ -27,14 +27,13 @@ trait ObligationDetailGen {
       inboundCorrespondenceToDate   <- PrimitiveGen.localDateGen
       inboundCorrespondenceDueDate  <- PrimitiveGen.localDateGen
       periodKey                     <- PrimitiveGen.nonEmptyAlphaNumStrGen
-    } yield
-      ObligationDetail(
-        status,
-        inboundCorrespondenceFromDate,
-        inboundCorrespondenceToDate,
-        inboundCorrespondenceDueDate,
-        periodKey
-      )
+    } yield ObligationDetail(
+      status,
+      inboundCorrespondenceFromDate,
+      inboundCorrespondenceToDate,
+      inboundCorrespondenceDueDate,
+      periodKey
+    )
 }
 
 object ObligationDetailGen extends ObligationDetailGen

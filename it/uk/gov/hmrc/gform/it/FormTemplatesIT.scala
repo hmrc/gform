@@ -132,13 +132,15 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
     formTemplate.summarySection.title shouldBe toSmartString("Check your answers", "Gwiriwch eich atebion")
     formTemplate.summarySection.header shouldBe toSmartString(
       "Make sure the information you have given is correct",
-      "Gwnewch yn siŵr bod yr wybodaeth a roddwyd gennych yn gywir")
+      "Gwnewch yn siŵr bod yr wybodaeth a roddwyd gennych yn gywir"
+    )
     formTemplate.summarySection.footer shouldBe SmartString(
       LocalisedString(
         Map(
           LangADT.En -> "##Now send your form\n\nYou need to submit your form on the next screen.\n\nBefore you do this you can [print or save a PDF copy of your answers (opens in a new window or tab)]({0}).",
           LangADT.Cy -> "##Nawr anfonwch eich ffurflen\n\nMae angen i chi gyflwyno’ch ffurflen ar y sgrin nesaf.\n\nCyn i chi wneud hyn gallwch, [argraffu neu gadw copi PDF o’ch atebion (yn agor ffenestr neu dab newydd)]({1})."
-        )),
+        )
+      ),
       List(LinkCtx(link = PrintSummaryPdf), LinkCtx(link = PrintSummaryPdf))
     )
     formTemplate.authConfig shouldBe Anonymous
@@ -158,7 +160,9 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
         false,
         false,
         None,
-        false))
+        false
+      )
+    )
     destinationList.acknowledgementSection shouldBe AcknowledgementSection(
       toSmartString("Acknowledgement Page"),
       None,
@@ -167,12 +171,14 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
       true,
       None,
       None,
-      true)
+      true
+    )
     destinationList.declarationSection shouldBe DeclarationSection(
       toSmartString("Declaration Page"),
       None,
       None,
-      List.empty)
+      List.empty
+    )
 
     val formTemplateRaw = formTemplateRawRepo.find("_id" -> "BASIC").futureValue
     formTemplateRaw shouldBe List(FormTemplateRaw(basicFormTemplate.as[JsObject]))

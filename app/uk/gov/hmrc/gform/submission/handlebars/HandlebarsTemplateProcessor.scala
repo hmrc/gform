@@ -25,7 +25,8 @@ trait HandlebarsTemplateProcessor {
     template: String,
     accumulatedModel: HandlebarsTemplateProcessorModel,
     focussedTree: FocussedHandlebarsModelTree,
-    templateType: TemplateType): String
+    templateType: TemplateType
+  ): String
 }
 
 object RealHandlebarsTemplateProcessor extends HandlebarsTemplateProcessor {
@@ -35,7 +36,8 @@ object RealHandlebarsTemplateProcessor extends HandlebarsTemplateProcessor {
     def apply(
       template: String,
       accumulatedModel: HandlebarsTemplateProcessorModel,
-      focussedTree: FocussedHandlebarsModelTree): String = {
+      focussedTree: FocussedHandlebarsModelTree
+    ): String = {
       val helpers: HandlebarsTemplateProcessorHelpers =
         new HandlebarsTemplateProcessorHelpers(accumulatedModel, focussedTree.tree, this)
       val handlebars = new Handlebars().`with`(escapingStrategy).registerHelpers(helpers)
@@ -47,9 +49,8 @@ object RealHandlebarsTemplateProcessor extends HandlebarsTemplateProcessor {
         .resolver(JsonNodeValueResolver.INSTANCE)
         .build
 
-      try {
-        postProcessor(compiledTemplate.apply(context))
-      } catch {
+      try postProcessor(compiledTemplate.apply(context))
+      catch {
         case ex: Exception => throw new Exception(focussedTree.focus.model.toString, ex)
       }
     }
@@ -78,7 +79,8 @@ object RealHandlebarsTemplateProcessor extends HandlebarsTemplateProcessor {
     template: String,
     accumulatedModel: HandlebarsTemplateProcessorModel,
     focussedTree: FocussedHandlebarsModelTree,
-    templateType: TemplateType): String =
+    templateType: TemplateType
+  ): String =
     (templateType match {
       case TemplateType.JSON  => jsonProcessor
       case TemplateType.XML   => xmlProcessor

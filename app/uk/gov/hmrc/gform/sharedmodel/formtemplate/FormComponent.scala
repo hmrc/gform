@@ -44,7 +44,8 @@ case class FormComponent(
   private def updateField(i: Int, fc: FormComponent): FormComponent =
     fc.copy(
       label = LabelHelper.buildRepeatingLabel(fc.label, i),
-      shortName = LabelHelper.buildRepeatingLabel(fc.shortName, i))
+      shortName = LabelHelper.buildRepeatingLabel(fc.shortName, i)
+    )
 
   private def loop(fc: FormComponent): List[FormComponent] =
     fc.`type` match {
@@ -53,10 +54,12 @@ case class FormComponent(
           for {
             field <- fields
             res <- updateField(1, field) :: (1 until max.getOrElse(1))
-                    .map(i => updateField(i + 1, field.copy(id = FormComponentId(i + "_" + field.id.value))))
-                    .toList
+                     .map(i => updateField(i + 1, field.copy(id = FormComponentId(i + "_" + field.id.value))))
+                     .toList
           } yield res
-        expandedFields.flatMap(loop) // for case when there is group inside group (Note: it does not work, we would need to handle prefix)
+        expandedFields.flatMap(
+          loop
+        ) // for case when there is group inside group (Note: it does not work, we would need to handle prefix)
       case RevealingChoice(options, _) => fc :: options.toList.foldMap(_.revealingFields.map(loop)).flatten
       case _                           => fc :: Nil
     }
@@ -72,8 +75,8 @@ case class FormComponent(
 
 object FormComponent {
 
-  private val templateReads: Reads[FormComponent] = Reads(
-    json => new FormComponentMaker(json).optFieldValue() fold (us => JsError(us.toString), fv => JsSuccess(fv)))
+  private val templateReads: Reads[FormComponent] =
+    Reads(json => new FormComponentMaker(json).optFieldValue() fold (us => JsError(us.toString), fv => JsSuccess(fv)))
 
   implicit val format: OFormat[FormComponent] = OFormatWithTemplateReadFallback(templateReads)
 }

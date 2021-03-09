@@ -24,10 +24,10 @@ import uk.gov.hmrc.gform.sharedmodel.dblookup.{ CollectionName, DbLookupId }
 
 import scala.concurrent.ExecutionContext
 
-class DbLookupController(controllerComponents: ControllerComponents, dbLookupService: DbLookupService)(
-  implicit ex: ExecutionContext,
-  uniqueIdGenerator: UniqueIdGenerator)
-    extends BaseController(controllerComponents) {
+class DbLookupController(controllerComponents: ControllerComponents, dbLookupService: DbLookupService)(implicit
+  ex: ExecutionContext,
+  uniqueIdGenerator: UniqueIdGenerator
+) extends BaseController(controllerComponents) {
 
   def exists(dbLookupId: DbLookupId, collectionName: CollectionName): Action[AnyContent] = Action.async { _ =>
     dbLookupService.find(dbLookupId, collectionName) map {

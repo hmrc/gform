@@ -30,11 +30,18 @@ trait ThirdPartyDataGen {
       desRegistrationResponse <- Gen.option(DesRegistrationResponseGen.desRegistrationResponseGen)
       obligations             <- ObligationsGen.obligationsGen
       emailVerification <- PrimitiveGen.possiblyEmptyMapGen(
-                            FormComponentGen.formComponentIdGen,
-                            EmailVerificationCodeGen.emailVerificationCodeGen)
+                             FormComponentGen.formComponentIdGen,
+                             EmailVerificationCodeGen.emailVerificationCodeGen
+                           )
       queryParams <- QueryParamsGen.queryParamsGen
-    } yield
-      ThirdPartyData(desRegistrationResponse, obligations, emailVerification, queryParams, None, BooleanExprCache.empty)
+    } yield ThirdPartyData(
+      desRegistrationResponse,
+      obligations,
+      emailVerification,
+      queryParams,
+      None,
+      BooleanExprCache.empty
+    )
 }
 
 object ThirdPartyDataGen extends ThirdPartyDataGen

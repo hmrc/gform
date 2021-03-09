@@ -140,9 +140,8 @@ class HandlebarsJsonValidatorSpec extends FlatSpec with TableDrivenPropertyCheck
       ("""{{#each foo}}"abc"{{/wrong}}""", "Expected {{/each}}. Got {{/wrong}}.")
     )
 
-    forAll(table) {
-      case (json, expectedMessage) =>
-        notOk(json, expectedMessage)
+    forAll(table) { case (json, expectedMessage) =>
+      notOk(json, expectedMessage)
     }
   }
 

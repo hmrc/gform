@@ -123,10 +123,12 @@ class RepoDestinationAuditerSpec
           val audit2 = generatedAudit2.copy(
             formId = audit1.formId,
             parentFormSubmissionRefs = List(parentSubmissionRef.value),
-            timestamp = audit1.timestamp.plusSeconds(1))
+            timestamp = audit1.timestamp.plusSeconds(1)
+          )
           val audit3 = generatedAudit3.copy(
             parentFormSubmissionRefs = List(parentSubmissionRef.value),
-            timestamp = audit1.timestamp.minusSeconds(1))
+            timestamp = audit1.timestamp.minusSeconds(1)
+          )
 
           createAuditer
             .expectAuditRepositoryFindLatestChildAudits(parentSubmissionRef, List(audit3, audit2, audit1))
@@ -153,7 +155,8 @@ class RepoDestinationAuditerSpec
 
     def expectAuditRepositoryFindLatestChildAudits(
       submissionRef: SubmissionRef,
-      result: List[DestinationAudit]): Fixture = {
+      result: List[DestinationAudit]
+    ): Fixture = {
       (auditRepository
         .search(_: JsObject))
         .expects(DestinationAuditAlgebra.auditRepoLatestChildAuditsSearch(submissionRef))

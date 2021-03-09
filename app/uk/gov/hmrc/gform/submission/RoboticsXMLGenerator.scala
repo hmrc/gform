@@ -31,8 +31,11 @@ object RoboticsXMLGenerator {
     dmsId: String,
     submissionReference: SubmissionRef,
     structuredForm: ObjectStructure,
-    now: Instant): NodeSeq =
-    <gform id={formId.value} dms-id={dmsId} submission-reference={submissionReference.withoutHyphens}>{buildObjectStructureXml(structuredForm)}{dateSubmitted(now)}</gform>
+    now: Instant
+  ): NodeSeq =
+    <gform id={formId.value} dms-id={dmsId} submission-reference={submissionReference.withoutHyphens}>{
+      buildObjectStructureXml(structuredForm)
+    }{dateSubmitted(now)}</gform>
 
   private val dateSubmittedFormater = DateTimeFormatter.ofPattern("dd/MM/yyyy").withZone(ZoneId.of("Europe/London"))
 
@@ -50,9 +53,8 @@ object RoboticsXMLGenerator {
     value.fields.flatMap(field => buildStructuredValueXml(field, field.value))
 
   private def buildArrayNodeXml(field: Field, arrayNode: ArrayNode): NodeSeq =
-    arrayNode.elements.zipWithIndex.flatMap {
-      case (structuredFormValue: StructuredFormValue, index: Int) =>
-        buildStructuredValueXml(field, structuredFormValue, Some(index))
+    arrayNode.elements.zipWithIndex.flatMap { case (structuredFormValue: StructuredFormValue, index: Int) =>
+      buildStructuredValueXml(field, structuredFormValue, Some(index))
     }
 
   private def textNodeTag(content: String, field: Field, index: Option[Int]): Elem =

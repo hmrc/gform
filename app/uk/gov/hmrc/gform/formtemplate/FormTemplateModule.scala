@@ -24,8 +24,9 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId
 
 import scala.concurrent.ExecutionContext
 
-class FormTemplateModule(controllerComponents: ControllerComponents, mongoModule: MongoModule)(
-  implicit ex: ExecutionContext) {
+class FormTemplateModule(controllerComponents: ControllerComponents, mongoModule: MongoModule)(implicit
+  ex: ExecutionContext
+) {
 
   private val formTemplateRepo: Repo[FormTemplate] =
     new Repo[FormTemplate]("formTemplate", mongoModule.mongo, _._id.value)

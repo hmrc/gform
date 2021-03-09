@@ -27,11 +27,11 @@ class RetryingSpec extends Spec {
 
   "Retrying with 3 attempts" should
     "run a test function only once if the first attempt is successful" in {
-    val m = stubFunction[Future[Int]]
-    m.when().returns(Future.successful(1))
-    Await.result(retryingTest.runWith3Retries(m), 2.seconds) should be(1)
-    m.verify().once()
-  }
+      val m = stubFunction[Future[Int]]
+      m.when().returns(Future.successful(1))
+      Await.result(retryingTest.runWith3Retries(m), 2.seconds) should be(1)
+      m.verify().once()
+    }
 
   it should "run a test function 3 times and fails if all attempts fail" in {
     val m = stubFunction[Future[Int]]
@@ -40,7 +40,7 @@ class RetryingSpec extends Spec {
       m.when().returns(Future.failed(new Exception("exception2"))).once
       m.when().returns(Future.failed(new Exception("exception3"))).once
     }
-    val thrown = intercept[Exception] { Await.result(retryingTest.runWith3Retries(m), 2.seconds) }
+    val thrown = intercept[Exception](Await.result(retryingTest.runWith3Retries(m), 2.seconds))
     withClue("the 3-d exception should be thrown") {
       thrown.getMessage should be("exception3")
     }
@@ -63,7 +63,7 @@ class RetryingSpec extends Spec {
       m.when().returns(Future.failed(new Exception())).repeated(3)
       m.when().returns(Future.successful(1)).once()
     }
-    intercept[Exception] { Await.result(retryingTest.runWith3Retries(m), 2.seconds) }
+    intercept[Exception](Await.result(retryingTest.runWith3Retries(m), 2.seconds))
     Await.result(retryingTest.runWith3Retries(m), 2.seconds) should be(1)
     m.verify().repeated(4)
   }

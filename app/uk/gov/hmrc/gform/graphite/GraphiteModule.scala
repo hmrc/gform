@@ -27,7 +27,8 @@ class GraphiteModule(
   environment: Environment,
   configuration: Configuration,
   applicationLifecycle: ApplicationLifecycle,
-  metricsModule: MetricsModule) {
+  metricsModule: MetricsModule
+) {
   // Taken from uk.gov.hmrc.play.bootstrap.graphite.GraphiteMetricsModule of bootstrap-play-26 library
   private def extractGraphiteConfiguration(environment: Environment, configuration: Configuration): Configuration =
     configuration

@@ -84,7 +84,8 @@ class SmartStringSpec extends Spec with ScalaCheckDrivenPropertyChecks {
 
       val expectedSmartString = SmartString(
         LocalisedString(Map(LangADT.En -> s"$c1Escaped{0}$c2Escaped{1}$c3Escaped{2}")),
-        List(FormCtx("id0"), FormCtx("id2"), FormCtx("id1")))
+        List(FormCtx("id0"), FormCtx("id2"), FormCtx("id1"))
+      )
 
       verifyRead(
         expectedSmartString,

@@ -94,18 +94,17 @@ object Form {
       componentIdToFileIdWithFallback
   )(Form.apply _)
 
-  private val writes: OWrites[Form] = OWrites[Form](
-    form =>
-      FormId.format.writes(form._id) ++
-        EnvelopeId.format.writes(form.envelopeId) ++
-        UserId.oformat.writes(form.userId) ++
-        FormTemplateId.oformat.writes(form.formTemplateId) ++
-        FormData.format.writes(form.formData) ++
-        FormStatus.format.writes(form.status) ++
-        VisitIndex.format.writes(form.visitsIndex) ++
-        Json.obj(thirdPartyData -> ThirdPartyData.format.writes(form.thirdPartyData)) ++
-        EnvelopeExpiryDate.optionFormat.writes(form.envelopeExpiryDate) ++
-        Json.obj(componentIdToFileId -> FormComponentIdToFileIdMapping.format.writes(form.componentIdToFileId))
+  private val writes: OWrites[Form] = OWrites[Form](form =>
+    FormId.format.writes(form._id) ++
+      EnvelopeId.format.writes(form.envelopeId) ++
+      UserId.oformat.writes(form.userId) ++
+      FormTemplateId.oformat.writes(form.formTemplateId) ++
+      FormData.format.writes(form.formData) ++
+      FormStatus.format.writes(form.status) ++
+      VisitIndex.format.writes(form.visitsIndex) ++
+      Json.obj(thirdPartyData -> ThirdPartyData.format.writes(form.thirdPartyData)) ++
+      EnvelopeExpiryDate.optionFormat.writes(form.envelopeExpiryDate) ++
+      Json.obj(componentIdToFileId -> FormComponentIdToFileIdMapping.format.writes(form.componentIdToFileId))
   )
 
   implicit val format: OFormat[Form] = OFormat[Form](reads, writes)
@@ -144,7 +143,8 @@ object FormStatus {
       Submitting,
       Submitted,
       Discarded,
-      ManuallySubmitted)
+      ManuallySubmitted
+    )
 
   def unapply(s: String): Option[FormStatus] = all.find(_.toString === s)
 }

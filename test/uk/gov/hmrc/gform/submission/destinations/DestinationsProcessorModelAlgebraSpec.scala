@@ -105,7 +105,8 @@ class DestinationsProcessorModelAlgebraSpec extends Spec with ScalaCheckDrivenPr
         "rootTemplate",
         tree("child1", "childTemplate1"),
         tree("child2", "childTemplate1"),
-        tree("child3", "childTemplate2"))
+        tree("child3", "childTemplate2")
+      )
 
     DestinationsProcessorModelAlgebra.createBundledFormTree(formTree) shouldBe HandlebarsTemplateProcessorModel(
       """|{
@@ -137,6 +138,7 @@ class DestinationsProcessorModelAlgebraSpec extends Spec with ScalaCheckDrivenPr
          |      "child3SubmissionRef"
          |    ]
          |  }
-         |}""".stripMargin)
+         |}""".stripMargin
+    )
   }
 }

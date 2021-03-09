@@ -57,23 +57,23 @@ object BasicParsers {
   implicit val W = Whitespace(() | """\s+""".r)
 
   def nextOrPreviousValue[A](string: String, fn: (Int, Int) => A): Parser[A] =
-    (string ~ exactMonthDay ^^ { (loc, _, month, day) =>
+    string ~ exactMonthDay ^^ { (loc, _, month, day) =>
       fn(month, day)
-    })
+    }
 
-  lazy val exactMonthDay: Parser[(Int, Int)] = (delimiter ~ exactMonthParser ~ delimiter ~ exactDayParser ^^ {
+  lazy val exactMonthDay: Parser[(Int, Int)] = delimiter ~ exactMonthParser ~ delimiter ~ exactDayParser ^^ {
     (loc, _, month, _, day) =>
       (month, day)
-  })
+  }
 
   lazy val exactYearMonth: Parser[(Int, Int)] = exactYearParser ~ delimiter ~ exactMonthParser ~ delimiter ^^ {
     (loc, year, _, month, _) =>
       (year, month)
   }
 
-  lazy val positiveIntegers
-    : Parser[List[Int]] = (positiveInteger ~ "," ~ positiveIntegers ^^ ((loc, x, _, xs) => x :: xs)
-    | positiveInteger ^^ ((loc, x) => List(x)))
+  lazy val positiveIntegers: Parser[List[Int]] =
+    (positiveInteger ~ "," ~ positiveIntegers ^^ ((loc, x, _, xs) => x :: xs)
+      | positiveInteger ^^ ((loc, x) => List(x)))
 
   val anyWordFormat = """\w+""".r
   val delimiter = "[- /.]".r

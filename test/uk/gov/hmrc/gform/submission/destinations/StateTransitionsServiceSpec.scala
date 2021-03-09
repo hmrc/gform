@@ -67,7 +67,8 @@ class StateTransitionsServiceSpec extends Spec with DestinationGen with FormGen 
           .apply(destination, formId) shouldBe raiseError(
           formId,
           destination.id,
-          StateTransitionAlgebra.failedToAchieveStateTransition(destination, returnedFormStatus))
+          StateTransitionAlgebra.failedToAchieveStateTransition(destination, returnedFormStatus)
+        )
       }
     }
   }

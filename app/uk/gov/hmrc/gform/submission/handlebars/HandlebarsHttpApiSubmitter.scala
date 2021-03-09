@@ -27,19 +27,21 @@ trait HandlebarsHttpApiSubmitter[F[_]] {
   def apply(
     destination: Destination.HandlebarsHttpApi,
     accumulatedModel: HandlebarsTemplateProcessorModel,
-    modelTree: HandlebarsModelTree)(implicit hc: HeaderCarrier): F[HttpResponse]
+    modelTree: HandlebarsModelTree
+  )(implicit hc: HeaderCarrier): F[HttpResponse]
 }
 
 class RealHandlebarsHttpApiSubmitter[F[_]](
   httpClients: Map[ProfileName, HttpClient[F]],
-  handlebarsTemplateProcessor: HandlebarsTemplateProcessor = RealHandlebarsTemplateProcessor)(
-  implicit me: MonadError[F, String])
+  handlebarsTemplateProcessor: HandlebarsTemplateProcessor = RealHandlebarsTemplateProcessor
+)(implicit me: MonadError[F, String])
     extends HandlebarsHttpApiSubmitter[F] {
 
   def apply(
     destination: Destination.HandlebarsHttpApi,
     accumulatedModel: HandlebarsTemplateProcessorModel,
-    modelTree: HandlebarsModelTree)(implicit hc: HeaderCarrier): F[HttpResponse] =
+    modelTree: HandlebarsModelTree
+  )(implicit hc: HeaderCarrier): F[HttpResponse] =
     RealHandlebarsHttpApiSubmitter
       .selectHttpClient(destination.profile, destination.payloadType, httpClients)
       .flatMap { httpClient =>
@@ -48,7 +50,8 @@ class RealHandlebarsHttpApiSubmitter[F[_]](
             destination.uri,
             accumulatedModel,
             FocussedHandlebarsModelTree(modelTree),
-            TemplateType.Plain)
+            TemplateType.Plain
+          )
         destination.method match {
           case HttpMethod.GET => httpClient.get(uri)
           case HttpMethod.POST =>
@@ -57,7 +60,8 @@ class RealHandlebarsHttpApiSubmitter[F[_]](
                 _,
                 accumulatedModel,
                 FocussedHandlebarsModelTree(modelTree),
-                destination.payloadType)
+                destination.payloadType
+              )
             }
             httpClient.post(uri, body)
           case HttpMethod.PUT =>
@@ -66,7 +70,8 @@ class RealHandlebarsHttpApiSubmitter[F[_]](
                 _,
                 accumulatedModel,
                 FocussedHandlebarsModelTree(modelTree),
-                destination.payloadType)
+                destination.payloadType
+              )
             }
             httpClient.put(uri, body)
         }
@@ -77,15 +82,19 @@ object RealHandlebarsHttpApiSubmitter {
   def selectHttpClient[F[_]](
     profile: ProfileName,
     payloadType: TemplateType,
-    httpClients: Map[ProfileName, HttpClient[F]])(implicit me: MonadError[F, String]): F[HttpClient[F]] =
+    httpClients: Map[ProfileName, HttpClient[F]]
+  )(implicit me: MonadError[F, String]): F[HttpClient[F]] =
     httpClients
       .get(profile)
-      .fold(me.raiseError[HttpClient[F]](
-        s"No HttpClient found for profile ${profile.name}. Have HttpClient for ${httpClients.keySet.map(_.name)}"))(
-        (c: HttpClient[F]) => wrapHttpClient(c, payloadType).pure)
+      .fold(
+        me.raiseError[HttpClient[F]](
+          s"No HttpClient found for profile ${profile.name}. Have HttpClient for ${httpClients.keySet.map(_.name)}"
+        )
+      )((c: HttpClient[F]) => wrapHttpClient(c, payloadType).pure)
 
-  private def wrapHttpClient[F[_]](http: HttpClient[F], templateType: TemplateType)(
-    implicit me: MonadError[F, String]): HttpClient[F] =
+  private def wrapHttpClient[F[_]](http: HttpClient[F], templateType: TemplateType)(implicit
+    me: MonadError[F, String]
+  ): HttpClient[F] =
     templateType match {
       case TemplateType.JSON  => http.json
       case TemplateType.XML   => http.xml

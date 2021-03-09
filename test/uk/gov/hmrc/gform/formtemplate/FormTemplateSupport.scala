@@ -33,7 +33,8 @@ trait FormTemplateSupport {
   def mkSectionNonRepeatingPage(
     name: String = "Some Page",
     formComponents: List[FormComponent],
-    instruction: Option[Instruction] = None) =
+    instruction: Option[Instruction] = None
+  ) =
     Section.NonRepeatingPage(
       Page(
         toSmartString(name),
@@ -47,7 +48,8 @@ trait FormTemplateSupport {
         None,
         instruction,
         None
-      ))
+      )
+    )
 
   def mkFormComponent(id: String, expr: Expr) =
     FormComponent(
@@ -119,6 +121,7 @@ trait FormTemplateSupport {
         None,
         instruction,
         None
-      ))
+      )
+    )
 
 }

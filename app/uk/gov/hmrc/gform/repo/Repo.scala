@@ -28,10 +28,10 @@ import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.mongo.ReactiveRepository
 import uk.gov.hmrc.play.http.logging.Mdc.preservingMdc
 
-class Repo[T: OWrites: Manifest](name: String, mongo: () => DefaultDB, idLens: T => String)(
-  implicit formatT: Format[T],
-  ec: ExecutionContext)
-    extends ReactiveRepository[T, BSONObjectID](name, mongo, formatT) {
+class Repo[T: OWrites: Manifest](name: String, mongo: () => DefaultDB, idLens: T => String)(implicit
+  formatT: Format[T],
+  ec: ExecutionContext
+) extends ReactiveRepository[T, BSONObjectID](name, mongo, formatT) {
   underlying =>
 
   private val options = reactivemongo.api.QueryOpts(batchSizeN = Integer.MAX_VALUE)
@@ -116,8 +116,8 @@ class Repo[T: OWrites: Manifest](name: String, mongo: () => DefaultDB, idLens: T
     def asEither: Future[Either[UnexpectedState, Unit]] =
       t.map { _ =>
         ().asRight[UnexpectedState]
-      } recover {
-        case lastError => UnexpectedState(lastError.getMessage).asLeft[Unit]
+      } recover { case lastError =>
+        UnexpectedState(lastError.getMessage).asLeft[Unit]
       }
   }
 }

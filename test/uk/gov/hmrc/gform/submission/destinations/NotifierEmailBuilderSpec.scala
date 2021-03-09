@@ -40,7 +40,8 @@ class NotifierEmailBuilderSpec
     forAll(emailGen.map(_.copy(personalisation = Map.empty)), nonEmptyAlphaNumStrGen) { (destination, to) =>
       val structuredFormData =
         StructuredFormValue.ObjectStructure(
-          List(Field(FieldName(destination.to.value), StructuredFormValue.TextNode(to))))
+          List(Field(FieldName(destination.to.value), StructuredFormValue.TextNode(to)))
+        )
 
       val expectedNotifierEmail =
         NotifierEmail(
@@ -64,7 +65,8 @@ class NotifierEmailBuilderSpec
       )
       val structuredFormData =
         StructuredFormValue.ObjectStructure(
-          List(Field(FieldName(destination.to.value), StructuredFormValue.TextNode(to))))
+          List(Field(FieldName(destination.to.value), StructuredFormValue.TextNode(to)))
+        )
 
       NotifierEmailBuilder[Possible](
         destination,
@@ -82,7 +84,9 @@ class NotifierEmailBuilderSpec
         StructuredFormValue.ObjectStructure(
           List(
             Field(FieldName(destination.to.value), StructuredFormValue.TextNode(to)),
-            Field(FieldName(s"_$pf"), StructuredFormValue.TextNode("some value"))))
+            Field(FieldName(s"_$pf"), StructuredFormValue.TextNode("some value"))
+          )
+        )
 
       val expectedNotifierEmail =
         NotifierEmail(

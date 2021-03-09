@@ -27,13 +27,13 @@ object PresentationHintParser {
 
   def validateSingle(expression: String): Opt[PresentationHint] = validateWithParser(expression, presentationHint)
 
-  lazy val presentationHints: Parser[List[PresentationHint]] = (presentationHint ~ "," ~ presentationHints ^^ {
-    (loc, presHint, _, presHints) =>
+  lazy val presentationHints: Parser[List[PresentationHint]] =
+    (presentationHint ~ "," ~ presentationHints ^^ { (loc, presHint, _, presHints) =>
       presHint :: presHints
-  }
-    | presentationHint ^^ { (loc, presHint) =>
-      List(presHint)
-    })
+    }
+      | presentationHint ^^ { (loc, presHint) =>
+        List(presHint)
+      })
 
   lazy val presentationHint: Parser[PresentationHint] = ("summariseGroupAsGrid" ^^ { (loc, unparsed) =>
     SummariseGroupAsGrid

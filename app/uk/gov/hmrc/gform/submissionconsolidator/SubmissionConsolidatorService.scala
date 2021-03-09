@@ -40,13 +40,15 @@ trait SubmissionConsolidatorAlgebra[F[_]] {
     submissionInfo: DestinationSubmissionInfo,
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree,
-    formData: Option[FormData])(implicit headerCarrier: HeaderCarrier): F[Unit]
+    formData: Option[FormData]
+  )(implicit headerCarrier: HeaderCarrier): F[Unit]
 }
 
 class SubmissionConsolidatorService(
   handlebarsTemplateProcessor: HandlebarsTemplateProcessor,
   submissionConsolidatorConnector: SubmissionConsolidatorConnector,
-  formService: FormAlgebra[FOpt])(implicit ec: ExecutionContext)
+  formService: FormAlgebra[FOpt]
+)(implicit ec: ExecutionContext)
     extends SubmissionConsolidatorAlgebra[FOpt] {
 
   private val DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
@@ -56,7 +58,8 @@ class SubmissionConsolidatorService(
     submissionInfo: DestinationSubmissionInfo,
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree,
-    formData: Option[FormData])(implicit headerCarrier: HeaderCarrier): FOpt[Unit] =
+    formData: Option[FormData]
+  )(implicit headerCarrier: HeaderCarrier): FOpt[Unit] =
     for {
       scForm         <- buildSCForm(destination, submissionInfo, formData, accumulatedModel, modelTree)
       sendFormResult <- EitherT(submissionConsolidatorConnector.sendForm(scForm)).leftMap(UnexpectedState)
@@ -68,24 +71,25 @@ class SubmissionConsolidatorService(
     submissionInfo: DestinationSubmissionInfo,
     formData: Option[FormData],
     accumulatedModel: HandlebarsTemplateProcessorModel,
-    modelTree: HandlebarsModelTree): EitherT[Future, UnexpectedState, SCForm] =
+    modelTree: HandlebarsModelTree
+  ): EitherT[Future, UnexpectedState, SCForm] =
     for {
       scFormFields <- buildSCFormFields(destination, formData, accumulatedModel, modelTree)
-    } yield
-      SCForm(
-        submissionInfo.submission.submissionRef.value,
-        destination.projectId.id,
-        submissionInfo.submission.dmsMetaData.formTemplateId.value,
-        submissionInfo.customerId,
-        submissionInfo.submission.submittedDate.format(DATE_TIME_FORMAT),
-        scFormFields.filter(_.value.trim.nonEmpty)
-      )
+    } yield SCForm(
+      submissionInfo.submission.submissionRef.value,
+      destination.projectId.id,
+      submissionInfo.submission.dmsMetaData.formTemplateId.value,
+      submissionInfo.customerId,
+      submissionInfo.submission.submittedDate.format(DATE_TIME_FORMAT),
+      scFormFields.filter(_.value.trim.nonEmpty)
+    )
 
   private def buildSCFormFields(
     destination: Destination.SubmissionConsolidator,
     formData: Option[FormData],
     accumulatedModel: HandlebarsTemplateProcessorModel,
-    modelTree: HandlebarsModelTree): EitherT[Future, UnexpectedState, Seq[SCFormField]] =
+    modelTree: HandlebarsModelTree
+  ): EitherT[Future, UnexpectedState, Seq[SCFormField]] =
     destination.formData
       .map(buildSCFormFieldsFromTemplate(_, accumulatedModel, modelTree))
       .orElse(formData.map(buildSCFormFieldsFromForm))
@@ -94,8 +98,8 @@ class SubmissionConsolidatorService(
   private def buildSCFormFieldsFromForm(formData: FormData): EitherT[Future, UnexpectedState, Seq[SCFormField]] =
     EitherT {
       Future.successful {
-        Right(formData.fields.map {
-          case FormField(FormComponentId(id), value) => SCFormField(id, value)
+        Right(formData.fields.map { case FormField(FormComponentId(id), value) =>
+          SCFormField(id, value)
         }): Either[UnexpectedState, Seq[SCFormField]]
       }
     }
@@ -103,7 +107,8 @@ class SubmissionConsolidatorService(
   private def buildSCFormFieldsFromTemplate(
     formDataTemplate: String,
     accumulatedModel: HandlebarsTemplateProcessorModel,
-    modelTree: HandlebarsModelTree): EitherT[Future, UnexpectedState, Seq[SCFormField]] = EitherT {
+    modelTree: HandlebarsModelTree
+  ): EitherT[Future, UnexpectedState, Seq[SCFormField]] = EitherT {
     Future.successful {
       Try(
         Json
@@ -112,8 +117,11 @@ class SubmissionConsolidatorService(
               formDataTemplate,
               accumulatedModel,
               FocussedHandlebarsModelTree(modelTree),
-              TemplateType.JSON))
-          .as[Seq[SCFormField]]) match {
+              TemplateType.JSON
+            )
+          )
+          .as[Seq[SCFormField]]
+      ) match {
         case Success(scFormFields) => Right(scFormFields)
         case Failure(exception)    => Left(UnexpectedState(exception.getMessage))
       }

@@ -36,7 +36,8 @@ case class Submission(
   submissionRef: SubmissionRef,
   envelopeId: EnvelopeId,
   noOfAttachments: Int,
-  dmsMetaData: DmsMetaData)
+  dmsMetaData: DmsMetaData
+)
 
 object Submission {
 
@@ -47,14 +48,14 @@ object Submission {
     (JsPath \ "attachment_count").read[Int] and
     DmsMetaData.format)(Submission.apply _)
 
-  private val writes: OWrites[Submission] = OWrites[Submission](
-    s =>
-      FormId.format.writes(s._id) ++
-        Json.obj("submittedDate" -> Writes.DefaultLocalDateTimeWrites.writes(s.submittedDate)) ++
-        SubmissionRef.oformat.writes(s.submissionRef) ++
-        EnvelopeId.format.writes(s.envelopeId) ++
-        Json.obj("attachment_count" -> Writes.IntWrites.writes(s.noOfAttachments)) ++
-        DmsMetaData.format.writes(s.dmsMetaData))
+  private val writes: OWrites[Submission] = OWrites[Submission](s =>
+    FormId.format.writes(s._id) ++
+      Json.obj("submittedDate" -> Writes.DefaultLocalDateTimeWrites.writes(s.submittedDate)) ++
+      SubmissionRef.oformat.writes(s.submissionRef) ++
+      EnvelopeId.format.writes(s.envelopeId) ++
+      Json.obj("attachment_count" -> Writes.IntWrites.writes(s.noOfAttachments)) ++
+      DmsMetaData.format.writes(s.dmsMetaData)
+  )
 
   implicit val format: OFormat[Submission] = OFormat[Submission](reads, writes)
 
@@ -63,10 +64,12 @@ object Submission {
 case class PdfSummary(
   numberOfPages: Long,
   //TODO get rid of byte array and operate on streams or something similar
-  pdfContent: Array[Byte])
+  pdfContent: Array[Byte]
+)
 
 case class PdfAndXmlSummaries(
   pdfSummary: PdfSummary,
   instructionPdfSummary: Option[PdfSummary] = None,
   roboticsXml: Option[String] = None,
-  formDataXml: Option[String] = None)
+  formDataXml: Option[String] = None
+)

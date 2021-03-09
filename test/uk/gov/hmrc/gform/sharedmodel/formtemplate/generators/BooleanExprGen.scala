@@ -27,7 +27,8 @@ trait BooleanExprGen {
 
   private def binaryBooleanExprRelationGen[T <: BooleanExpr](
     maxDepth: Int,
-    f: (BooleanExpr, BooleanExpr) => T): Gen[T] =
+    f: (BooleanExpr, BooleanExpr) => T
+  ): Gen[T] =
     for {
       left  <- booleanExprGen(maxDepth - 1)
       right <- booleanExprGen(maxDepth - 1)

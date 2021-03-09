@@ -41,4 +41,5 @@ case class CygnumClient(
   base64KeystoreType: String = "jks",
   base64Keystore: String,
   base64KeystorePassword: String,
-  base64PrivateKeyAlias: String)
+  base64PrivateKeyAlias: String
+)

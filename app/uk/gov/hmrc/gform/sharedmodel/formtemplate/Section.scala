@@ -54,9 +54,8 @@ object Section {
     override lazy val expandedFormComponents: List[FormComponent] = pages.toList.flatMap(_.expandedFormComponents)
   }
 
-  implicit val format: OFormat[Section] = {
+  implicit val format: OFormat[Section] =
     OFormatWithTemplateReadFallback(SectionTemplateReads.reads)
-  }
 }
 
 case class DeclarationSection(
@@ -83,11 +82,11 @@ case class AcknowledgementSection(
 
 object AcknowledgementSection {
 
-  private val templateReads: Reads[AcknowledgementSection] = Reads(
-    json =>
-      new AcknowledgementSectionMaker(json)
-        .optAcknowledgementSection()
-        .fold(us => JsError(us.toString), as => JsSuccess(as)))
+  private val templateReads: Reads[AcknowledgementSection] = Reads(json =>
+    new AcknowledgementSectionMaker(json)
+      .optAcknowledgementSection()
+      .fold(us => JsError(us.toString), as => JsSuccess(as))
+  )
 
   implicit val format: OFormat[AcknowledgementSection] = OFormatWithTemplateReadFallback(templateReads)
 }

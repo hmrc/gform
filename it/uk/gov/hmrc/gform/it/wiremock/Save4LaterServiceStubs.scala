@@ -36,7 +36,8 @@ trait Save4LaterServiceStubs {
                          |        "$$oid": "5fd0ec06170000164c12ecaa"
                          |    }
                          |}""".stripMargin)
-            .withTransformers("response-template"))
+            .withTransformers("response-template")
+        )
     )
     ()
   }
@@ -57,24 +58,26 @@ trait Save4LaterServiceStubs {
     stubFor(
       WireMock
         .get(s"/save4later/gform/$userId-$formTemplateId")
-        .willReturn(ok()
-          .withBody(s"""{
-                       |    "id": "$userId-$formTemplateId",
-                       |    "data": {
-                       |       "form": "${jsonCrypto.encrypt(PlainText(Json.toJson(form).toString)).value}"
-                       |    },
-                       |    "modifiedDetails": {
-                       |        "createdAt": {
-                       |            "$$date": 1607527430069
-                       |        },
-                       |        "lastUpdated": {
-                       |            "$$date": 1607527430069
-                       |        }
-                       |    },
-                       |    "atomicId": {
-                       |        "$$oid": "5fd0ec06170000164c12ecaa"
-                       |    }
-                       |}""".stripMargin))
+        .willReturn(
+          ok()
+            .withBody(s"""{
+                         |    "id": "$userId-$formTemplateId",
+                         |    "data": {
+                         |       "form": "${jsonCrypto.encrypt(PlainText(Json.toJson(form).toString)).value}"
+                         |    },
+                         |    "modifiedDetails": {
+                         |        "createdAt": {
+                         |            "$$date": 1607527430069
+                         |        },
+                         |        "lastUpdated": {
+                         |            "$$date": 1607527430069
+                         |        }
+                         |    },
+                         |    "atomicId": {
+                         |        "$$oid": "5fd0ec06170000164c12ecaa"
+                         |    }
+                         |}""".stripMargin)
+        )
     )
     ()
   }

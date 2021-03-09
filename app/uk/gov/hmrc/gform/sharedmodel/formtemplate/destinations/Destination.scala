@@ -50,8 +50,8 @@ object Destination {
     roboticsXml: Boolean,
     formdataXml: Boolean,
     backscan: Option[Boolean],
-    includeInstructionPdf: Boolean)
-      extends Destination with DestinationWithCustomerId
+    includeInstructionPdf: Boolean
+  ) extends Destination with DestinationWithCustomerId
 
   case class HandlebarsHttpApi(
     id: DestinationId,
@@ -61,8 +61,8 @@ object Destination {
     payload: Option[String],
     payloadType: TemplateType,
     includeIf: String,
-    failOnError: Boolean)
-      extends Destination
+    failOnError: Boolean
+  ) extends Destination
 
   case class Composite(id: DestinationId, includeIf: String, destinations: NonEmptyList[Destination])
       extends Destination {
@@ -83,8 +83,8 @@ object Destination {
     customerId: Expr,
     formData: Option[String],
     includeIf: String,
-    failOnError: Boolean)
-      extends Destination with DestinationWithCustomerId
+    failOnError: Boolean
+  ) extends Destination with DestinationWithCustomerId
 
   object SubmissionConsolidator {
     implicit val reads = Json.reads[SubmissionConsolidator]
@@ -96,8 +96,8 @@ object Destination {
     includeIf: String,
     failOnError: Boolean,
     to: FormComponentId,
-    personalisation: Map[NotifierPersonalisationFieldId, FormComponentId])
-      extends Destination
+    personalisation: Map[NotifierPersonalisationFieldId, FormComponentId]
+  ) extends Destination
 
   val typeDiscriminatorFieldName: String = "type"
   val hmrcDms: String = "hmrcDms"
@@ -125,7 +125,8 @@ object Destination {
         stateTransition        -> UploadableStateTransitionDestination.reads,
         log                    -> UploadableLogDestination.reads,
         email                  -> UploadableEmailDestination.reads
-      ))
+      )
+    )
   }
 }
 
@@ -141,25 +142,25 @@ case class UploadableHmrcDmsDestination(
   roboticsXml: Option[Boolean],
   formdataXml: Option[Boolean],
   closedStatus: Option[Boolean],
-  includeInstructionPdf: Option[Boolean] = None) {
+  includeInstructionPdf: Option[Boolean] = None
+) {
 
   def toHmrcDmsDestination: Either[String, Destination.HmrcDms] =
     for {
       cii <- addErrorInfo(id, "includeIf")(condition(convertSingleQuotes, includeIf))
-    } yield
-      Destination.HmrcDms(
-        id,
-        dmsFormId,
-        customerId.expr,
-        classificationType,
-        businessArea,
-        cii.getOrElse(true.toString),
-        failOnError.getOrElse(true),
-        roboticsXml.getOrElse(false),
-        formdataXml.getOrElse(false),
-        closedStatus,
-        includeInstructionPdf.getOrElse(false)
-      )
+    } yield Destination.HmrcDms(
+      id,
+      dmsFormId,
+      customerId.expr,
+      classificationType,
+      businessArea,
+      cii.getOrElse(true.toString),
+      failOnError.getOrElse(true),
+      roboticsXml.getOrElse(false),
+      formdataXml.getOrElse(false),
+      closedStatus,
+      includeInstructionPdf.getOrElse(false)
+    )
 }
 
 object UploadableHmrcDmsDestination {
@@ -183,14 +184,14 @@ case class UploadableSubmissionConsolidator(
     for {
       cii      <- addErrorInfo(id, "includeIf")(condition(convertSingleQuotes, includeIf))
       formData <- addErrorInfo(id, "formData")(condition(convertSingleQuotes, formData))
-    } yield
-      SubmissionConsolidator(
-        id,
-        projectId,
-        customerId.expr,
-        formData,
-        cii.getOrElse(true.toString),
-        failOnError.getOrElse(true))
+    } yield SubmissionConsolidator(
+      id,
+      projectId,
+      customerId.expr,
+      formData,
+      cii.getOrElse(true.toString),
+      failOnError.getOrElse(true)
+    )
 }
 
 object UploadableSubmissionConsolidator {
@@ -205,7 +206,8 @@ case class UploadableCompositeDestination(
   id: DestinationId,
   convertSingleQuotes: Option[Boolean],
   includeIf: Option[String],
-  destinations: NonEmptyList[Destination]) {
+  destinations: NonEmptyList[Destination]
+) {
   def toCompositeDestination: Either[String, Destination.Composite] =
     for {
       cvii <- addErrorInfo(id, "includeIf")(condition(convertSingleQuotes, includeIf))
@@ -225,14 +227,18 @@ case class UploadableStateTransitionDestination(
   requiredState: String,
   convertSingleQuotes: Option[Boolean],
   includeIf: Option[String],
-  failOnError: Option[Boolean] = None) {
+  failOnError: Option[Boolean] = None
+) {
   def toStateTransitionDestination: Either[String, Destination.StateTransition] =
     for {
       cvii <- addErrorInfo(id, "includeIf")(condition(convertSingleQuotes, includeIf))
-      rs <- addErrorInfo(id, "requiredState")(FormStatus
-             .unapply(requiredState)
-             .fold[Either[String, FormStatus]](
-               s"Invalid requiredState: '$requiredState'. Allowed states are: ${FormStatus.all}".asLeft) { _.asRight })
+      rs <- addErrorInfo(id, "requiredState")(
+              FormStatus
+                .unapply(requiredState)
+                .fold[Either[String, FormStatus]](
+                  s"Invalid requiredState: '$requiredState'. Allowed states are: ${FormStatus.all}".asLeft
+                )(_.asRight)
+            )
     } yield Destination.StateTransition(id, rs, cvii.getOrElse(true.toString), failOnError.getOrElse(true))
 }
 
@@ -253,24 +259,25 @@ case class UploadableHandlebarsHttpApiDestination(
   payloadType: Option[TemplateType],
   convertSingleQuotes: Option[Boolean],
   includeIf: Option[String],
-  failOnError: Option[Boolean]) {
+  failOnError: Option[Boolean]
+) {
 
   def toHandlebarsHttpApiDestination: Either[String, Destination.HandlebarsHttpApi] =
     for {
       cvp   <- addErrorInfo(id, "payload")(conditionAndValidate(convertSingleQuotes, payload))
       cvii  <- addErrorInfo(id, "includeIf")(condition(convertSingleQuotes, includeIf))
       cvuri <- addErrorInfo(id, "uri")(condition(convertSingleQuotes, uri))
-    } yield
-      Destination
-        .HandlebarsHttpApi(
-          id,
-          profile,
-          cvuri,
-          method,
-          cvp,
-          payloadType.getOrElse(TemplateType.JSON),
-          cvii.getOrElse(true.toString),
-          failOnError.getOrElse(true))
+    } yield Destination
+      .HandlebarsHttpApi(
+        id,
+        profile,
+        cvuri,
+        method,
+        cvp,
+        payloadType.getOrElse(TemplateType.JSON),
+        cvii.getOrElse(true.toString),
+        failOnError.getOrElse(true)
+      )
 }
 
 object UploadableHandlebarsHttpApiDestination {
@@ -300,13 +307,13 @@ case class UploadableEmailDestination(
   includeIf: Option[String],
   failOnError: Option[Boolean],
   to: FormComponentId,
-  personalisation: Map[NotifierPersonalisationFieldId, FormComponentId]) {
+  personalisation: Map[NotifierPersonalisationFieldId, FormComponentId]
+) {
   def toEmailDestination: Either[String, Destination.Email] =
     for {
       cvii <- addErrorInfo(id, "includeIf")(condition(convertSingleQuotes, includeIf))
-    } yield
-      Destination
-        .Email(id, emailTemplateId, cvii.getOrElse(true.toString), failOnError.getOrElse(true), to, personalisation)
+    } yield Destination
+      .Email(id, emailTemplateId, cvii.getOrElse(true.toString), failOnError.getOrElse(true), to, personalisation)
 }
 
 object UploadableEmailDestination {

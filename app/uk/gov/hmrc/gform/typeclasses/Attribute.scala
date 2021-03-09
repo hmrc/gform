@@ -27,15 +27,15 @@ sealed trait Attribute[T] {
   protected def createAttribute(name: String, tpe: String, values: List[String]): Elem = {
     val attributeElem =
       <attribute>
-        <attribute_name>{ name }</attribute_name>
-        <attribute_type>{ tpe }</attribute_type>
+        <attribute_name>{name}</attribute_name>
+        <attribute_type>{tpe}</attribute_type>
       </attribute>
     val attributeValues = createAttributeValues(values)
     attributeElem.copy(child = attributeElem.child ++ attributeValues)
   }
 
   private def createAttributeValues(values: List[String]): Elem = {
-    val child = values.map(value => <attribute_value>{ value }</attribute_value>)
+    val child = values.map(value => <attribute_value>{value}</attribute_value>)
     val attributeValues = <attribute_values></attribute_values>
     attributeValues.copy(child = child)
   }

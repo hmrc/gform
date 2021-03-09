@@ -44,15 +44,14 @@ trait SCFormGen {
       customerId          <- Gen.alphaNumStr.suchThat(!_.isEmpty)
       submissionTimestamp <- genTimestampStr
       formData            <- Gen.listOf(genFormField)
-    } yield
-      SCForm(
-        submissionRef,
-        projectId,
-        templateId,
-        customerId,
-        submissionTimestamp,
-        formData
-      )
+    } yield SCForm(
+      submissionRef,
+      projectId,
+      templateId,
+      customerId,
+      submissionTimestamp,
+      formData
+    )
 }
 
 object SCFormGen extends SCFormGen

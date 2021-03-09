@@ -27,9 +27,9 @@ import uk.gov.hmrc.gform.sharedmodel.{ SubmissionData, UserId }
 
 import scala.concurrent.ExecutionContext
 
-class SubmissionController(controllerComponents: ControllerComponents, submissionService: SubmissionService)(
-  implicit ex: ExecutionContext)
-    extends BaseController(controllerComponents) {
+class SubmissionController(controllerComponents: ControllerComponents, submissionService: SubmissionService)(implicit
+  ex: ExecutionContext
+) extends BaseController(controllerComponents) {
 
   def createSubmission(formId: FormId, formTemplateId: FormTemplateId, envelopeId: EnvelopeId, noOfAttachments: Int) =
     formAction("createSubmission", formId) { implicit request =>

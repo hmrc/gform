@@ -34,10 +34,10 @@ class FormComponentSpec extends Spec with ScalaCheckDrivenPropertyChecks {
 
   it should "return a JsSuccess when given an id which does not start with a number and doesn't contain any special " +
     "characters, apart from underscores." in {
-    forAll(FormComponentGen.formComponentIdGen) { input =>
-      formIdValidator(input.value) should beJsSuccess(input)
+      forAll(FormComponentGen.formComponentIdGen) { input =>
+        formIdValidator(input.value) should beJsSuccess(input)
+      }
     }
-  }
 
   it should "return a JsError when validated if it begins with a number" in {
     forAll(FormComponentGen.idBeginningWithNumberGen) { input =>

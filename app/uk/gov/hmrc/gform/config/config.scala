@@ -29,7 +29,8 @@ case class AppConfig(
   formMaxAttachments: Int,
   formMaxAttachmentTotalSizeMB: Int,
   /*we can't override list in app-config-base:*/
-  contentTypesSeparatedByPipe: String) {
+  contentTypesSeparatedByPipe: String
+) {
 
   def contentTypes: List[ContentType] = contentTypesSeparatedByPipe.split('|').toList.map(ContentType.apply)
 }

@@ -33,14 +33,16 @@ trait DestinationSubmitterAlgebra[M[_]] {
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree,
     submitter: DestinationsSubmitterAlgebra[M],
-    formData: Option[FormData] = None)(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]]
+    formData: Option[FormData] = None
+  )(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]]
 
   def submitToDms(
     submissionInfo: DestinationSubmissionInfo,
     pdfData: PdfHtml,
     instructionPdfData: Option[PdfHtml],
     structuredFormData: StructuredFormValue.ObjectStructure,
-    hmrcDms: HmrcDms)(implicit hc: HeaderCarrier): M[Unit]
+    hmrcDms: HmrcDms
+  )(implicit hc: HeaderCarrier): M[Unit]
 }
 
 object DestinationSubmitterAlgebra {
@@ -48,10 +50,12 @@ object DestinationSubmitterAlgebra {
     destination: Destination,
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree,
-    handlebarsTemplateProcessor: HandlebarsTemplateProcessor): Boolean =
+    handlebarsTemplateProcessor: HandlebarsTemplateProcessor
+  ): Boolean =
     handlebarsTemplateProcessor(
       destination.includeIf,
       accumulatedModel,
       FocussedHandlebarsModelTree(modelTree, modelTree.value.model),
-      TemplateType.Plain) === true.toString
+      TemplateType.Plain
+    ) === true.toString
 }

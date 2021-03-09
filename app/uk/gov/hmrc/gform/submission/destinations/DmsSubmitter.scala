@@ -38,7 +38,8 @@ class DmsSubmitter(
   fileUploadService: FileUploadService,
   formService: FormAlgebra[FOpt],
   formTemplateService: FormTemplateAlgebra[FOpt],
-  pdfGeneratorService: PdfGeneratorService)(implicit ec: ExecutionContext)
+  pdfGeneratorService: PdfGeneratorService
+)(implicit ec: ExecutionContext)
     extends DmsSubmitterAlgebra[FOpt] {
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -47,16 +48,18 @@ class DmsSubmitter(
     pdfData: PdfHtml,
     instructionPdfData: Option[PdfHtml],
     structuredFormData: StructuredFormValue.ObjectStructure,
-    hmrcDms: HmrcDms)(implicit hc: HeaderCarrier): FOpt[Unit] = {
+    hmrcDms: HmrcDms
+  )(implicit hc: HeaderCarrier): FOpt[Unit] = {
     import submissionInfo._
     implicit val now: Instant = Instant.now()
     for {
       form         <- formService.get(formId)
       formTemplate <- formTemplateService.get(form.formTemplateId)
       summaries <- fromFutureA(
-                    PdfAndXmlSummariesFactory
-                      .withPdf(pdfGeneratorService, pdfData, instructionPdfData)
-                      .apply(form, formTemplate, structuredFormData, customerId, submission.submissionRef, hmrcDms))
+                     PdfAndXmlSummariesFactory
+                       .withPdf(pdfGeneratorService, pdfData, instructionPdfData)
+                       .apply(form, formTemplate, structuredFormData, customerId, submission.submissionRef, hmrcDms)
+                   )
       res             <- fromFutureA(fileUploadService.submitEnvelope(submission, summaries, hmrcDms))
       envelopeDetails <- fromFutureA(fileUploadService.getEnvelope(submission.envelopeId))
       _               <- success(logFileSizeBreach(submission.envelopeId, envelopeDetails.files))
@@ -64,8 +67,7 @@ class DmsSubmitter(
     } yield res
   }
 
-  /**
-    * This log line is used in alert-config, to trigger a pager duty alert when files sizes exceeds the threshold
+  /** This log line is used in alert-config, to trigger a pager duty alert when files sizes exceeds the threshold
     * value (currently 50 MB)
     *
     *  1 MB = 1000000 Bytes in base 10 system
@@ -76,7 +78,8 @@ class DmsSubmitter(
     val totalFileSizeMB = Math.ceil(totalFileSize / 1000000.toDouble)
     val thresholdMB = 50
     logger.info(
-      s"GForm DMS submission attachments size is $totalFileSize B (rounded to $totalFileSizeMB MB) [envelopeId=${envelopeId.value}]")
+      s"GForm DMS submission attachments size is $totalFileSize B (rounded to $totalFileSizeMB MB) [envelopeId=${envelopeId.value}]"
+    )
     if (totalFileSizeMB > thresholdMB) {
       logger.warn(s"GForm DMS submission attachments size exceeds $thresholdMB MB [envelopeId=${envelopeId.value}]")
     }

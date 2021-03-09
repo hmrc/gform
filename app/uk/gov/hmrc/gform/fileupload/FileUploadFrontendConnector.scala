@@ -35,7 +35,8 @@ class FileUploadFrontendConnector(config: FUConfig, wSHttp: WSHttp)(implicit ex:
   private val logger = LoggerFactory.getLogger(getClass)
 
   def upload(envelopeId: EnvelopeId, fileId: FileId, fileName: String, body: ByteString, contentType: ContentType)(
-    implicit hc: HeaderCarrier): Future[Unit] = {
+    implicit hc: HeaderCarrier
+  ): Future[Unit] = {
 
     val msg =
       s"upload, envelopeId: '${envelopeId.value}',  fileId: '${fileId.value}', fileName: '$fileName', contentType: '${contentType.value}, ${loggingHelpers

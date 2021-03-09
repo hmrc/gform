@@ -54,7 +54,8 @@ class DbLookupControllerSpec
         .withBody(request)
     def initMocks(
       dbLookupIds: List[DbLookupId] = List.empty,
-      response: Future[Either[UnexpectedState, Unit]] = Future.successful(().asRight[UnexpectedState])) =
+      response: Future[Either[UnexpectedState, Unit]] = Future.successful(().asRight[UnexpectedState])
+    ) =
       (mockDbLookupService
         .addMulti(_: Seq[DbLookupId], _: CollectionName))
         .expects(dbLookupIds, CollectionName("mtdVatNumber"))

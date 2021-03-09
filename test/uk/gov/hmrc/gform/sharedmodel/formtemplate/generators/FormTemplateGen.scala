@@ -29,10 +29,9 @@ trait FormTemplateGen {
   def draftRetrievalMethodGen: Gen[DraftRetrievalMethod] =
     for {
       continueOrDeletePage <- ContinueOrDeletePageGen.continueOrDeletePageGen
-      draftRetrievalMethod <- Gen.oneOf(
-                               OnePerUser(continueOrDeletePage),
-                               FormAccessCodeForAgents(continueOrDeletePage),
-                               BySubmissionReference)
+      draftRetrievalMethod <-
+        Gen
+          .oneOf(OnePerUser(continueOrDeletePage), FormAccessCodeForAgents(continueOrDeletePage), BySubmissionReference)
     } yield draftRetrievalMethod
 
   def emailTemplateIdGen: Gen[String] = PrimitiveGen.nonEmptyAlphaNumStrGen
@@ -76,25 +75,24 @@ trait FormTemplateGen {
       save4LaterInfoText       <- Gen.option(Save4LaterInfoTextGen.save4LaterInfoTextGen)
       summarySection           <- SummarySectionGen.summarySectionGen
       displayHMRCLogo          <- PrimitiveGen.booleanGen
-    } yield
-      FormTemplate(
-        id,
-        name,
-        developmentPhase,
-        category,
-        draftRetrievalMethod,
-        destinations,
-        authConfig,
-        emailTemplateId,
-        emailParameters,
-        webChat,
-        sections,
-        parentFormSubmissionRefs,
-        AvailableLanguages.default,
-        save4LaterInfoText,
-        summarySection,
-        displayHMRCLogo
-      )
+    } yield FormTemplate(
+      id,
+      name,
+      developmentPhase,
+      category,
+      draftRetrievalMethod,
+      destinations,
+      authConfig,
+      emailTemplateId,
+      emailParameters,
+      webChat,
+      sections,
+      parentFormSubmissionRefs,
+      AvailableLanguages.default,
+      save4LaterInfoText,
+      summarySection,
+      displayHMRCLogo
+    )
 }
 
 object FormTemplateGen extends FormTemplateGen

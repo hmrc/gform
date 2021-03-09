@@ -38,7 +38,8 @@ class WebChatSpec extends Spec with ScalaCheckDrivenPropertyChecks {
               |  "chatRoomId": "1001",
               |  "templateName": "hmrc6"
               |}""".stripMargin
-        ))
+        )
+      )
       .get shouldBe WebChat(ChatRoomId("1001"), TemplateName("hmrc6"))
   }
 
@@ -50,7 +51,8 @@ class WebChatSpec extends Spec with ScalaCheckDrivenPropertyChecks {
           s"""|{
               |  "chatRoomId": "1001"
               |}""".stripMargin
-        ))
+        )
+      )
       .get shouldBe WebChat(ChatRoomId("1001"), TemplateName("hmrc7"))
   }
 

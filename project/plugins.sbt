@@ -12,7 +12,7 @@ addSbtPlugin("uk.gov.hmrc" % "sbt-distributables" % "2.0.0")
 
 addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.7.5")
 
-addSbtPlugin("com.lucidchart" % "sbt-scalafmt" % "1.16")
+addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.4.2")
 
 addSbtPlugin("com.timushev.sbt" % "sbt-updates" % "0.3.4") //sbt dependencyUpdates
 

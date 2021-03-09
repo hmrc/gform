@@ -62,8 +62,10 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           IsNotUpperCase,
           None,
           None,
-          Json.obj()),
-        Text(textConstraint, expr).asRight),
+          Json.obj()
+        ),
+        Text(textConstraint, expr).asRight
+      ),
       (
         createTextObject(
           TextFormat(textConstraint),
@@ -72,8 +74,10 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           IsUpperCase,
           None,
           None,
-          Json.obj()),
-        Text(textConstraint, expr, defaultDisplayWidth, IsUpperCase).asRight),
+          Json.obj()
+        ),
+        Text(textConstraint, expr, defaultDisplayWidth, IsUpperCase).asRight
+      ),
       (
         createTextObject(
           TextFormat(textConstraint),
@@ -82,8 +86,10 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           IsNotUpperCase,
           None,
           None,
-          Json.obj()),
-        Text(textConstraint, expr, xsDisplayWidth).asRight),
+          Json.obj()
+        ),
+        Text(textConstraint, expr, xsDisplayWidth).asRight
+      ),
       (
         createTextObject(
           TextFormat(textConstraint),
@@ -92,8 +98,10 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           IsUpperCase,
           None,
           None,
-          Json.obj()),
-        Text(textConstraint, expr, xsDisplayWidth, IsUpperCase).asRight),
+          Json.obj()
+        ),
+        Text(textConstraint, expr, xsDisplayWidth, IsUpperCase).asRight
+      ),
       (
         createTextObject(
           TextFormat(textConstraint),
@@ -102,8 +110,10 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           IsNotUpperCase,
           Some(toSmartString("prefixTest")),
           None,
-          Json.obj()),
-        Text(textConstraint, expr, xsDisplayWidth, prefix = Some(toSmartString("prefixTest"))).asRight),
+          Json.obj()
+        ),
+        Text(textConstraint, expr, xsDisplayWidth, prefix = Some(toSmartString("prefixTest"))).asRight
+      ),
       (
         createTextObject(
           TextFormat(textConstraint),
@@ -119,7 +129,9 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           expr,
           xsDisplayWidth,
           prefix = Some(toSmartString("prefixTest")),
-          suffix = Some(toSmartString("suffixTest"))).asRight)
+          suffix = Some(toSmartString("suffixTest"))
+        ).asRight
+      )
     )
     table.forEvery({ case (expected, result) => expected shouldBe result })
   }
@@ -136,8 +148,10 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           Some("yes"),
           defaultRows,
           defaultDisplayCharCount,
-          Json.obj()),
-        TextArea(textConstraint, expr, defaultDisplayWidth).asRight),
+          Json.obj()
+        ),
+        TextArea(textConstraint, expr, defaultDisplayWidth).asRight
+      ),
       (
         createTextAreaObject(
           TextFormat(textConstraint),
@@ -146,8 +160,10 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           Some("true"),
           defaultRows,
           defaultDisplayCharCount,
-          Json.obj()),
-        TextArea(textConstraint, expr, xsDisplayWidth).asRight),
+          Json.obj()
+        ),
+        TextArea(textConstraint, expr, xsDisplayWidth).asRight
+      ),
       (
         createTextAreaObject(
           TextFormat(textConstraint),
@@ -156,8 +172,10 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           Some("true"),
           10,
           defaultDisplayCharCount,
-          Json.obj()),
-        TextArea(textConstraint, expr, xsDisplayWidth, 10).asRight),
+          Json.obj()
+        ),
+        TextArea(textConstraint, expr, xsDisplayWidth, 10).asRight
+      ),
       (
         createTextAreaObject(
           TextFormat(textConstraint),
@@ -166,8 +184,10 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           Some("yes"),
           defaultRows,
           false,
-          Json.obj()),
-        TextArea(textConstraint, expr, defaultDisplayWidth, displayCharCount = false).asRight),
+          Json.obj()
+        ),
+        TextArea(textConstraint, expr, defaultDisplayWidth, displayCharCount = false).asRight
+      ),
       (
         createTextAreaObject(
           TextFormat(textConstraint),
@@ -176,8 +196,10 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
           Some("yes"),
           defaultRows,
           true,
-          Json.obj()),
-        TextArea(textConstraint, expr, defaultDisplayWidth).asRight)
+          Json.obj()
+        ),
+        TextArea(textConstraint, expr, defaultDisplayWidth).asRight
+      )
     )
     table.forEvery({ case (expected, result) => expected shouldBe result })
   }
@@ -195,7 +217,8 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
         None,
         defaultRows,
         defaultDisplayCharCount,
-        JsObject(Seq("id" -> JsString("text1"))))
+        JsObject(Seq("id" -> JsString("text1")))
+      )
     result shouldBe Left(UnexpectedState(s"""|Missing or invalid format for text field
                                              |Id: text1
                                              |Format: None
@@ -216,7 +239,8 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
         None,
         defaultRows,
         defaultDisplayCharCount,
-        JsObject(Seq("id" -> JsString("text1"))))
+        JsObject(Seq("id" -> JsString("text1")))
+      )
     result shouldBe Left(UnexpectedState(s"""|Missing or invalid format for multiline text field
                                              |Id: text1
                                              |Format: None
@@ -237,7 +261,8 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
         None,
         10,
         defaultDisplayCharCount,
-        JsObject(Seq("id" -> JsString("text1"))))
+        JsObject(Seq("id" -> JsString("text1")))
+      )
     result shouldBe Left(UnexpectedState(s"""|Missing or invalid format for multiline text field
                                              |Id: text1
                                              |Format: None
@@ -256,7 +281,8 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
       None,
       defaultRows,
       defaultDisplayCharCount,
-      JsObject(Seq("id" -> JsString("text1"))))
+      JsObject(Seq("id" -> JsString("text1")))
+    )
     result shouldBe Left(UnexpectedState(s"""|Missing or invalid format for text field
                                              |Id: text1
                                              |Format: Some(OrientationFormat(xxx))
@@ -295,7 +321,8 @@ class FormComponentMakerServiceSpec extends Spec with TableDrivenPropertyChecks 
       None,
       10,
       defaultDisplayCharCount,
-      JsObject(Seq("id" -> JsString("text1"))))
+      JsObject(Seq("id" -> JsString("text1")))
+    )
     result shouldBe Left(UnexpectedState(s"""|Missing or invalid format for multiline text field
                                              |Id: text1
                                              |Format: Some(OrientationFormat(xxx))

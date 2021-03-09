@@ -23,4 +23,5 @@ case class ProfileConfiguration(
   name: ProfileName,
   baseUrl: String,
   authorization: Option[Authorization],
-  httpHeaders: Map[String, String])
+  httpHeaders: Map[String, String]
+)

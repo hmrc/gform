@@ -27,7 +27,8 @@ class MetricsModule(
   configModule: ConfigModule,
   playComponents: PlayComponents,
   akkaModule: AkkaModule,
-  ec: ExecutionContext) {
+  ec: ExecutionContext
+) {
 
   val metrics = new MetricsImpl(playComponents.context.lifecycle, playComponents.context.initialConfiguration)
 

@@ -32,32 +32,35 @@ import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierEmailAddress
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 
 object NotifierEmailBuilder {
-  def apply[M[_]](d: Destination.Email, structuredFormData: StructuredFormValue.ObjectStructure)(
-    implicit M: MonadError[M, String]): M[NotifierEmail] =
+  def apply[M[_]](d: Destination.Email, structuredFormData: StructuredFormValue.ObjectStructure)(implicit
+    M: MonadError[M, String]
+  ): M[NotifierEmail] =
     for {
       to              <- extractTo(d, structuredFormData)
       personalisation <- extractPersonalisation(d, structuredFormData)
     } yield NotifierEmail(d.emailTemplateId, to, personalisation, NotifierEmailReference(""))
 
-  private def extractTo[M[_]](d: Destination.Email, structuredFormData: StructuredFormValue.ObjectStructure)(
-    implicit M: MonadError[M, String]): M[NotifierEmailAddress] =
+  private def extractTo[M[_]](d: Destination.Email, structuredFormData: StructuredFormValue.ObjectStructure)(implicit
+    M: MonadError[M, String]
+  ): M[NotifierEmailAddress] =
     extractText(d.id, structuredFormData, d.to)
       .map(NotifierEmailAddress(_))
 
   private def extractPersonalisation[M[_]](
     d: Destination.Email,
-    structuredFormData: StructuredFormValue.ObjectStructure)(
-    implicit M: ApplicativeError[M, String]): M[Map[String, String]] =
+    structuredFormData: StructuredFormValue.ObjectStructure
+  )(implicit M: ApplicativeError[M, String]): M[Map[String, String]] =
     d.personalisation.toList
-      .traverse {
-        case (k, v) => extractText(d.id, structuredFormData, v).map(value => (k.value, value))
+      .traverse { case (k, v) =>
+        extractText(d.id, structuredFormData, v).map(value => (k.value, value))
       }
-      .map { _.toMap }
+      .map(_.toMap)
 
   private def extractText[M[_]](
     destinationId: DestinationId,
     structuredFormData: StructuredFormValue.ObjectStructure,
-    formComponentId: FormComponentId)(implicit M: ApplicativeError[M, String]): M[String] =
+    formComponentId: FormComponentId
+  )(implicit M: ApplicativeError[M, String]): M[String] =
     structuredFormData.fields
       .find(_.name.name === formComponentId.value)
       .map(_.value)

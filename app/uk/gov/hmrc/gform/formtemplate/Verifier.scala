@@ -90,7 +90,8 @@ trait Verifier {
       fc.copy(
         mandatory = false,
         `type` = revealingChoice.copy(
-          options = revealingChoice.options.map(rce => rce.copy(revealingFields = mkOptional(rce.revealingFields))))
+          options = revealingChoice.options.map(rce => rce.copy(revealingFields = mkOptional(rce.revealingFields)))
+        )
       )
     case fc => fc.copy(mandatory = false)
   }

@@ -26,7 +26,7 @@ object SectionTemplateReads {
     override def reads(json: JsValue): JsResult[Section] =
       (json \ "type")
         .validateOpt[String]
-        .flatMap { _.fold(readWithoutType(json)) { readWithType(_, json) } }
+        .flatMap(_.fold(readWithoutType(json))(readWithType(_, json)))
 
     private def readWithoutType(json: JsValue) =
       if ((json \ "pages").isDefined)
@@ -86,12 +86,13 @@ object SectionTemplateReads {
       (oRepeatsMin, oRepeatsMax) <- readRepeatsRange(json)
       oRepeats                   <- readRepeats(json)
       result <- (oRepeatsMin, oRepeatsMax, oRepeats) match {
-                 case (None, None, Some(repeats))                     => JsSuccess(repeats)
-                 case (Some(min), Some(max), None) if min.equals(max) => JsSuccess(min)
-                 case _ =>
-                   JsError(
-                     s"""A "repeatingPage" section must have either "repeatsMin" and "repeatsMax" fields (which must be identical), or a "repeats" field : $json""")
-               }
+                  case (None, None, Some(repeats))                     => JsSuccess(repeats)
+                  case (Some(min), Some(max), None) if min.equals(max) => JsSuccess(min)
+                  case _ =>
+                    JsError(
+                      s"""A "repeatingPage" section must have either "repeatsMin" and "repeatsMax" fields (which must be identical), or a "repeats" field : $json"""
+                    )
+                }
     } yield result
 
   private def readRepeatsRange(json: JsValue) =

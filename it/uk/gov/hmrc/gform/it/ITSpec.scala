@@ -31,7 +31,8 @@ trait ITSpec
 
   val wiremockPort: Int = 10000 + Random.nextInt(10000)
   val wireMockServer: WireMockServer = new WireMockServer(
-    options().port(wiremockPort).extensions(new ResponseTemplateTransformer(false)))
+    options().port(wiremockPort).extensions(new ResponseTemplateTransformer(false))
+  )
 
   val settingsOverride: Map[String, String] = Map(
     "auditing.enabled"                              -> "false",
@@ -39,7 +40,7 @@ trait ITSpec
     "json.encryption.previousKeys"                  -> "",
     "microservice.services.file-upload.port"        -> s"$wiremockPort",
     "microservice.services.file-upload.path-prefix" -> "",
-    "microservice.services.save4later.port"         -> s"$wiremockPort",
+    "microservice.services.save4later.port"         -> s"$wiremockPort"
   ) ++ mongoSettings
 
   override def fakeApplication(): Application = {

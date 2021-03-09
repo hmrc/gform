@@ -45,7 +45,8 @@ class FormBundleSubmissionService[F[_]](
   submissionRepoAlgebra: RepoAlgebra[Submission, F],
   formTreeAlgebra: FormTreeAlgebra[F],
   pdfSummaryAlgebra: PdfSummaryAlgebra[F],
-  destinationAuditAlgebra: DestinationAuditAlgebra[F])(implicit M: MonadError[F, String]) {
+  destinationAuditAlgebra: DestinationAuditAlgebra[F]
+)(implicit M: MonadError[F, String]) {
   private val logger = LoggerFactory.getLogger(getClass)
 
   def forceUpdateFormStatus(formId: FormId, status: FormStatus)(implicit hc: HeaderCarrier): F[Unit] =
@@ -64,7 +65,8 @@ class FormBundleSubmissionService[F[_]](
 
   private def filterForValidFormIds(
     tree: Tree[BundledFormTreeNode],
-    validFormIds: Set[FormIdData]): F[Tree[BundledFormTreeNode]] =
+    validFormIds: Set[FormIdData]
+  ): F[Tree[BundledFormTreeNode]] =
     tree
       .filter(v => validFormIds(v.formIdData))
       .map(_.pure[F])
@@ -73,9 +75,10 @@ class FormBundleSubmissionService[F[_]](
   private def workOutValidFormIds(tree: Tree[BundledFormTreeNode])(implicit hc: HeaderCarrier): F[Set[FormIdData]] =
     for {
       formStatuses <- tree.toList.traverse(node =>
-                       formAlgebra.get(node.formIdData).map { form =>
-                         (node.formIdData, isInAnAppropriateState(form.status))
-                     })
+                        formAlgebra.get(node.formIdData).map { form =>
+                          (node.formIdData, isInAnAppropriateState(form.status))
+                        }
+                      )
     } yield formStatuses.collect { case (id, true) => id }.toSet
 
   private def isInAnAppropriateState(status: FormStatus): Boolean =
@@ -86,7 +89,8 @@ class FormBundleSubmissionService[F[_]](
     }
 
   def submitFormBundleAfterReview(rootFormIdData: FormIdData, submissionData: NonEmptyList[BundledFormSubmissionData])(
-    implicit hc: HeaderCarrier): F[Unit] =
+    implicit hc: HeaderCarrier
+  ): F[Unit] =
     for {
       _          <- logger.info(show"submitFormBundleAfterReview(rootFormIdData: $rootFormIdData)").pure[F]
       _          <- formAlgebra.updateFormStatus(rootFormIdData.toFormId, Submitting)
@@ -102,8 +106,9 @@ class FormBundleSubmissionService[F[_]](
       _ <- logger.info(show"Transitioned all child nodes to submitter").pure[F]
     } yield ()
 
-  private def transitionAllChildNodesToSubmitted(modelTree: HandlebarsModelTree)(
-    implicit hc: HeaderCarrier): F[Unit] = {
+  private def transitionAllChildNodesToSubmitted(
+    modelTree: HandlebarsModelTree
+  )(implicit hc: HeaderCarrier): F[Unit] = {
     def doTransitions =
       modelTree.toList.tail.traverse { node =>
         forceUpdateFormStatus(node.formId, Submitted)
@@ -117,8 +122,9 @@ class FormBundleSubmissionService[F[_]](
       }
   }
 
-  private def createModelTree(rootFormId: FormIdData, submissionData: NonEmptyList[BundledFormSubmissionData])(
-    implicit hc: HeaderCarrier): F[HandlebarsModelTree] =
+  private def createModelTree(rootFormId: FormIdData, submissionData: NonEmptyList[BundledFormSubmissionData])(implicit
+    hc: HeaderCarrier
+  ): F[HandlebarsModelTree] =
     for {
       formTree      <- formTree(rootFormId)
       _             <- logger.info(show"formTree: $formTree").pure[F]
@@ -126,23 +132,19 @@ class FormBundleSubmissionService[F[_]](
       templatesById <- buildMap(formTree)(_.formIdData.formTemplateId)(findFormTemplate)
       submissionDataByFormId = submissionData.map(d => (d.formIdData, d)).toList.toMap
       pdfHtmlByFormId <- buildMap(formTree)(_.formIdData)(findSummaryPdf)
-      processorModelByFormId <- buildProcessorModelByFormId(
-                                 formTree,
-                                 formsById,
-                                 pdfHtmlByFormId,
-                                 submissionDataByFormId)
-    } yield
-      formTree.map { formTreeNode =>
-        HandlebarsModelTreeNode(
-          formTreeNode.formIdData.toFormId,
-          extractSubmissionRef(formTreeNode.formIdData),
-          templatesById(formTreeNode.formIdData.formTemplateId),
-          processorModelByFormId(formTreeNode.formIdData),
-          pdfHtmlByFormId(formTreeNode.formIdData),
-          None,
-          submissionDataByFormId(formTreeNode.formIdData).structuredFormData
-        )
-      }
+      processorModelByFormId <-
+        buildProcessorModelByFormId(formTree, formsById, pdfHtmlByFormId, submissionDataByFormId)
+    } yield formTree.map { formTreeNode =>
+      HandlebarsModelTreeNode(
+        formTreeNode.formIdData.toFormId,
+        extractSubmissionRef(formTreeNode.formIdData),
+        templatesById(formTreeNode.formIdData.formTemplateId),
+        processorModelByFormId(formTreeNode.formIdData),
+        pdfHtmlByFormId(formTreeNode.formIdData),
+        None,
+        submissionDataByFormId(formTreeNode.formIdData).structuredFormData
+      )
+    }
 
   private def findForm(formId: FormIdData)(implicit hc: HeaderCarrier): F[Form] =
     for {
@@ -175,22 +177,25 @@ class FormBundleSubmissionService[F[_]](
     formTree: Tree[BundledFormTreeNode],
     formsById: Map[FormIdData, Form],
     pdfHtmlByFormId: Map[FormIdData, PdfHtml],
-    submissionDataByFormId: Map[FormIdData, BundledFormSubmissionData])(implicit hc: HeaderCarrier) =
+    submissionDataByFormId: Map[FormIdData, BundledFormSubmissionData]
+  )(implicit hc: HeaderCarrier) =
     buildMap(formTree)(_.formIdData) { id =>
       for {
         baseModel <- destinationProcessorModelAlgebra
-                      .create(
-                        formsById(id),
-                        FrontEndSubmissionVariables(JsObject(Nil)),
-                        pdfHtmlByFormId(id),
-                        None,
-                        submissionDataByFormId(id).structuredFormData)
+                       .create(
+                         formsById(id),
+                         FrontEndSubmissionVariables(JsObject(Nil)),
+                         pdfHtmlByFormId(id),
+                         None,
+                         submissionDataByFormId(id).structuredFormData
+                       )
         treeModel = DestinationsProcessorModelAlgebra.createBundledFormTree(formTree)
       } yield baseModel + treeModel
     }
 
-  private def buildMap[K, V](tree: Tree[BundledFormTreeNode])(key: BundledFormTreeNode => K)(
-    value: K => F[V]): F[Map[K, V]] = {
+  private def buildMap[K, V](
+    tree: Tree[BundledFormTreeNode]
+  )(key: BundledFormTreeNode => K)(value: K => F[V]): F[Map[K, V]] = {
     val keys = tree
       .fold(Set.empty[K]) { (acc, n) =>
         acc + key(n)

@@ -110,13 +110,15 @@ class ADTFormatSpec extends Spec with ScalaCheckDrivenPropertyChecks {
     forAll(Gen.alphaNumStr.filterNot(s => s === "bar" || s === "baz")) { tpe =>
       verifyReadFailure[AdtFoo](
         ADTFormat.invalidTypeValue[AdtFoo]("type", tpe, Set("bar", "baz")),
-        s"""{ "type" : "$tpe" }""")
+        s"""{ "type" : "$tpe" }"""
+      )
     }
   }
 
   it should "reject json with an invalid type value type" in {
     verifyReadFailure[AdtFoo](
       ADTFormat.invalidTypeValueType[AdtFoo]("type", JsNumber(1), Set("bar", "baz")),
-      s"""{ "type" : 1 }""")
+      s"""{ "type" : 1 }"""
+    )
   }
 }

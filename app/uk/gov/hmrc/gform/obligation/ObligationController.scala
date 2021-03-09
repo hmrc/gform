@@ -26,9 +26,9 @@ import uk.gov.hmrc.gform.sharedmodel.{ HmrcTaxPeriodWithEvaluatedId, Obligation,
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-class ObligationController(controllerComponents: ControllerComponents, obligation: ObligationService[Future])(
-  implicit ex: ExecutionContext)
-    extends BaseController(controllerComponents) {
+class ObligationController(controllerComponents: ControllerComponents, obligation: ObligationService[Future])(implicit
+  ex: ExecutionContext
+) extends BaseController(controllerComponents) {
   private val logger = LoggerFactory.getLogger(getClass)
 
   def getAllTaxPeriods() = Action.async(parse.json[NonEmptyList[HmrcTaxPeriodWithEvaluatedId]]) { implicit request =>

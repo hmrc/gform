@@ -37,7 +37,8 @@ class DestinationModule(
   mongoModule: MongoModule,
   formModule: FormModule,
   fileUploadModule: FileUploadModule,
-  metadataModule: FormMetadataModule)(implicit ex: ExecutionContext) {
+  metadataModule: FormMetadataModule
+)(implicit ex: ExecutionContext) {
   val destinationAuditer: Option[RepoDestinationAuditer] =
     if (configModule.DestinationsServicesConfig.auditDestinations) {
       Loggers.destinations.info("Destination auditing IS enabled")
@@ -46,7 +47,8 @@ class DestinationModule(
           RepoAlgebra.fOpt(new Repo[DestinationAudit]("destinationAudit", mongoModule.mongo, _.id.toString)),
           RepoAlgebra.fOpt(new Repo[SummaryHtml]("summaryHtml", mongoModule.mongo, _.id.value.toString)),
           formModule.fOptFormService
-        ))
+        )
+      )
     } else {
       Loggers.destinations.info("Destination auditing IS NOT enabled")
       None
@@ -57,11 +59,13 @@ class DestinationModule(
   private val fileDownloadServiceIfPopulating: Option[FileDownloadAlgebra[FOpt]] =
     if (configModule.DestinationsServicesConfig.populateHandlebarsModelWithDocuments) {
       Loggers.destinations.info(
-        "The fileDownloadService IS configured for the submission service, so the Handlebars model WILL be populated with uploaded documents")
+        "The fileDownloadService IS configured for the submission service, so the Handlebars model WILL be populated with uploaded documents"
+      )
       Some(fileUploadModule.foptFileDownloadService)
     } else {
       Loggers.destinations.info(
-        "The fileDownloadService IS NOT configured for the submission service, so the Handlebars model WILL NOT be populated with uploaded documents")
+        "The fileDownloadService IS NOT configured for the submission service, so the Handlebars model WILL NOT be populated with uploaded documents"
+      )
       None
     }
 
@@ -77,8 +81,8 @@ class DestinationModule(
         frontEndSubmissionVariables: FrontEndSubmissionVariables,
         pdfData: PdfHtml,
         instructionPdfHtml: Option[PdfHtml],
-        structuredFormData: StructuredFormValue.ObjectStructure)(
-        implicit hc: HeaderCarrier): Future[HandlebarsTemplateProcessorModel] =
+        structuredFormData: StructuredFormValue.ObjectStructure
+      )(implicit hc: HeaderCarrier): Future[HandlebarsTemplateProcessorModel] =
         destinationsProcessorModelService
           .create(form, frontEndSubmissionVariables, pdfData, instructionPdfHtml, structuredFormData)
           .toFuture

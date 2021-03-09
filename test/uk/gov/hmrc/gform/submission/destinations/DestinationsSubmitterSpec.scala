@@ -55,7 +55,8 @@ class DestinationsSubmitterSpec
             HandlebarsTemplateProcessorModel.empty,
             destinationModel,
             None,
-            formData)
+            formData
+          )
           .submitter
           .send(
             submissionInfo,
@@ -66,7 +67,8 @@ class DestinationsSubmitterSpec
               pdfData,
               instructionPdfData,
               structuredFormValue,
-              destinationModel),
+              destinationModel
+            ),
             Some(formData)
           )
     }
@@ -85,7 +87,8 @@ class DestinationsSubmitterSpec
         Seq(
           "intField"    -> JsNumber(2),
           "stringField" -> JsString("stringNodeValue")
-        ))
+        )
+      )
 
       val response1 = HttpResponse(responseCode1, responseJson1, Map.empty[String, Seq[String]])
 
@@ -104,14 +107,16 @@ class DestinationsSubmitterSpec
           HandlebarsTemplateProcessorModel.empty,
           initialModel,
           Option(response1Model),
-          formData)
+          formData
+        )
         .expectDestinationSubmitterSubmitIfIncludeIf(
           handlebarsHttpApi2,
           submissionInfo,
           accumulatedModel1,
           initialModel,
           Option(response2Model),
-          formData)
+          formData
+        )
         .submitter
         .send(
           submissionInfo,
@@ -135,13 +140,16 @@ class DestinationsSubmitterSpec
         Seq(
           "intField"    -> JsNumber(2),
           "stringField" -> JsString("stringNodeValue")
-        ))
+        )
+      )
 
       val responseModel =
         DestinationsProcessorModelAlgebra.createDestinationResponse(
           HandlebarsDestinationResponse(
             destination,
-            HttpResponse(responseCode, responseBody, Map.empty[String, Seq[String]])))
+            HttpResponse(responseCode, responseBody, Map.empty[String, Seq[String]])
+          )
+        )
 
       responseModel.model.toString shouldBe
         JsObject(
@@ -150,8 +158,10 @@ class DestinationsSubmitterSpec
               Seq(
                 "status" -> JsNumber(responseCode),
                 "json"   -> responseBody
-              ))
-          )).toString
+              )
+            )
+          )
+        ).toString
     }
   }
 
@@ -168,19 +178,23 @@ class DestinationsSubmitterSpec
               Seq(
                 "status" -> JsNumber(responseCode),
                 "json"   -> JsNull
-              ))
-          )).toString
+              )
+            )
+          )
+        ).toString
     }
   }
 
   private def exampleTemplateWithDestinations(destination1: Destination, moreDestinations: Destination*): FormTemplate =
     formTemplate.copy(
       destinations =
-        Destinations.DestinationList(NonEmptyList.of(destination1, moreDestinations: _*), ackSection, decSection))
+        Destinations.DestinationList(NonEmptyList.of(destination1, moreDestinations: _*), ackSection, decSection)
+    )
 
   case class SubmitterParts[F[_]: Applicative](
     submitter: DestinationsSubmitter[F],
-    destinationSubmitter: DestinationSubmitterAlgebra[F]) {
+    destinationSubmitter: DestinationSubmitterAlgebra[F]
+  ) {
 
     def expectDestinationSubmitterSubmitIfIncludeIf(
       destination: Destination,
@@ -188,7 +202,8 @@ class DestinationsSubmitterSpec
       accumulatedModel: HandlebarsTemplateProcessorModel,
       modelInTree: HandlebarsTemplateProcessorModel,
       response: Option[HandlebarsDestinationResponse],
-      formData: FormData): SubmitterParts[F] = {
+      formData: FormData
+    ): SubmitterParts[F] = {
       (destinationSubmitter
         .submitIfIncludeIf(
           _: Destination,
@@ -206,7 +221,8 @@ class DestinationsSubmitterSpec
             tree: HandlebarsModelTree,
             _: DestinationsSubmitter[F],
             actualformData: Option[FormData],
-            hc: HeaderCarrier) =>
+            hc: HeaderCarrier
+          ) =>
             destination === dest && info === submissionInfo && accModel === accumulatedModel && tree.value.model === modelInTree && hc === hc && actualformData
               .contains(formData)
         })
@@ -219,14 +235,16 @@ class DestinationsSubmitterSpec
       submissionInfo: DestinationSubmissionInfo,
       pdfData: PdfHtml,
       instructionPdfData: Option[PdfHtml],
-      structuredFormData: StructuredFormValue.ObjectStructure): SubmitterParts[F] = {
+      structuredFormData: StructuredFormValue.ObjectStructure
+    ): SubmitterParts[F] = {
       (destinationSubmitter
         .submitToDms(
           _: DestinationSubmissionInfo,
           _: PdfHtml,
           _: Option[PdfHtml],
           _: StructuredFormValue.ObjectStructure,
-          _: HmrcDms)(_: HeaderCarrier))
+          _: HmrcDms
+        )(_: HeaderCarrier))
         .expects(submissionInfo, pdfData, instructionPdfData, structuredFormData, destination, hc)
         .returning(().pure)
       this

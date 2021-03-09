@@ -34,28 +34,30 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
   "handle a valid upsert request with Destinations section" in {
     withFixture(
       Json.parse(
-        validRequestBodyWithDestinations("hmrc", "${user.enrolledIdentifier}", Some(""""serviceId": "someId",""")))) {
-      (sideEffect, verifySideEffect, templateRaw) =>
-        val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
-        val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+        validRequestBodyWithDestinations("hmrc", "${user.enrolledIdentifier}", Some(""""serviceId": "someId","""))
+      )
+    ) { (sideEffect, verifySideEffect, templateRaw) =>
+      val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
+      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
-        whenReady(eventualResult.value) { response =>
-          response shouldBe Right(())
-        }
+      whenReady(eventualResult.value) { response =>
+        response shouldBe Right(())
+      }
     }
   }
 
   "handle a valid upsert request with Print section" in {
     withFixture(
       Json.parse(
-        validRequestBodyWithPrintSection("hmrc", "${user.enrolledIdentifier}", Some(""""serviceId": "someId",""")))) {
-      (sideEffect, verifySideEffect, templateRaw) =>
-        val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
-        val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+        validRequestBodyWithPrintSection("hmrc", "${user.enrolledIdentifier}", Some(""""serviceId": "someId","""))
+      )
+    ) { (sideEffect, verifySideEffect, templateRaw) =>
+      val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
+      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
-        whenReady(eventualResult.value) { response =>
-          response shouldBe Right(())
-        }
+      whenReady(eventualResult.value) { response =>
+        response shouldBe Right(())
+      }
     }
   }
 
@@ -65,7 +67,10 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
         validRequestBodyWithPrintSectionAndNoPdfNotification(
           "hmrc",
           "${user.enrolledIdentifier}",
-          Some(""""serviceId": "someId",""")))) { (sideEffect, verifySideEffect, templateRaw) =>
+          Some(""""serviceId": "someId",""")
+        )
+      )
+    ) { (sideEffect, verifySideEffect, templateRaw) =>
       val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
@@ -81,7 +86,10 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
         validRequestBodyWithPrintSectionWithEmptyPdfNotification(
           "hmrc",
           "${user.enrolledIdentifier}",
-          Some(""""serviceId": "someId",""")))) { (sideEffect, verifySideEffect, templateRaw) =>
+          Some(""""serviceId": "someId",""")
+        )
+      )
+    ) { (sideEffect, verifySideEffect, templateRaw) =>
       val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
@@ -97,7 +105,10 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
         validRequestBodyWithPrintSectionAndEmptyPdfHeaderFooter(
           "hmrc",
           "${user.enrolledIdentifier}",
-          Some(""""serviceId": "someId",""")))) { (sideEffect, verifySideEffect, templateRaw) =>
+          Some(""""serviceId": "someId",""")
+        )
+      )
+    ) { (sideEffect, verifySideEffect, templateRaw) =>
       val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
@@ -114,7 +125,10 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
           "hmrc",
           "${user.enrolledIdentifier}",
           Some(""""dmsFormId": "TST123","""),
-          Some(""""serviceId": "someId",""")))) { (sideEffect, verifySideEffect, templateRaw) =>
+          Some(""""serviceId": "someId",""")
+        )
+      )
+    ) { (sideEffect, verifySideEffect, templateRaw) =>
       val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
@@ -130,13 +144,15 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
         invalidRequestBodyWithNoDestinationsOrPrintSection(
           "hmrc",
           "${user.enrolledIdentifier}",
-          Some(""""serviceId": "someId",""")))) { (sideEffect, verifySideEffect, templateRaw) =>
+          Some(""""serviceId": "someId",""")
+        )
+      )
+    ) { (sideEffect, verifySideEffect, templateRaw) =>
       val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
       whenReady(eventualResult.value) { response =>
-        response should matchPattern {
-          case Left(UnexpectedState(_)) =>
+        response should matchPattern { case Left(UnexpectedState(_)) =>
         }
       }
     }
@@ -148,13 +164,15 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
         invalidRequestBodyWithBothDestinationsAndPrintSections(
           "hmrc",
           "${user.enrolledIdentifier}",
-          Some(""""serviceId": "someId",""")))) { (sideEffect, verifySideEffect, templateRaw) =>
+          Some(""""serviceId": "someId",""")
+        )
+      )
+    ) { (sideEffect, verifySideEffect, templateRaw) =>
       val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
       whenReady(eventualResult.value) { response =>
-        response should matchPattern {
-          case Left(UnexpectedState(_)) =>
+        response should matchPattern { case Left(UnexpectedState(_)) =>
         }
       }
     }
@@ -166,13 +184,15 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
         invalidRequestBodyWithDestinationsWithoutAcknowledgementSection(
           "hmrc",
           "${user.enrolledIdentifier}",
-          Some(""""serviceId": "someId",""")))) { (sideEffect, verifySideEffect, templateRaw) =>
+          Some(""""serviceId": "someId",""")
+        )
+      )
+    ) { (sideEffect, verifySideEffect, templateRaw) =>
       val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
       whenReady(eventualResult.value) { response =>
-        response should matchPattern {
-          case Left(UnexpectedState(_)) =>
+        response should matchPattern { case Left(UnexpectedState(_)) =>
         }
       }
     }
@@ -184,13 +204,15 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
         invalidRequestBodyWithDestinationsWithoutDeclarationSection(
           "hmrc",
           "${user.enrolledIdentifier}",
-          Some(""""serviceId": "someId",""")))) { (sideEffect, verifySideEffect, templateRaw) =>
+          Some(""""serviceId": "someId",""")
+        )
+      )
+    ) { (sideEffect, verifySideEffect, templateRaw) =>
       val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
       whenReady(eventualResult.value) { response =>
-        response should matchPattern {
-          case Left(UnexpectedState(_)) =>
+        response should matchPattern { case Left(UnexpectedState(_)) =>
         }
       }
     }
@@ -202,13 +224,15 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
         invalidRequestBodyWithPrintSectionAndAcknowledgementSection(
           "hmrc",
           "${user.enrolledIdentifier}",
-          Some(""""serviceId": "someId",""")))) { (sideEffect, verifySideEffect, templateRaw) =>
+          Some(""""serviceId": "someId",""")
+        )
+      )
+    ) { (sideEffect, verifySideEffect, templateRaw) =>
       val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
       whenReady(eventualResult.value) { response =>
-        response should matchPattern {
-          case Left(UnexpectedState(_)) =>
+        response should matchPattern { case Left(UnexpectedState(_)) =>
         }
       }
     }
@@ -220,13 +244,15 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
         invalidRequestBodyWithPrintSectionAndDeclarationSection(
           "hmrc",
           "${user.enrolledIdentifier}",
-          Some(""""serviceId": "someId",""")))) { (sideEffect, verifySideEffect, templateRaw) =>
+          Some(""""serviceId": "someId",""")
+        )
+      )
+    ) { (sideEffect, verifySideEffect, templateRaw) =>
       val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
       whenReady(eventualResult.value) { response =>
-        response should matchPattern {
-          case Left(UnexpectedState(_)) =>
+        response should matchPattern { case Left(UnexpectedState(_)) =>
         }
       }
     }
@@ -234,16 +260,15 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
 
   "handle an invalid identifier upsert request" in {
     withFixture(
-      Json.parse(validRequestBodyWithPrintSection("hmrc", "${user.broken}", Some(""""serviceId": "someId",""")))) {
-      (sideEffect, _, templateRaw) =>
-        val handler = new FormTemplatesControllerRequestHandler(_ => sideEffect, _ => sideEffect)
-        val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+      Json.parse(validRequestBodyWithPrintSection("hmrc", "${user.broken}", Some(""""serviceId": "someId",""")))
+    ) { (sideEffect, _, templateRaw) =>
+      val handler = new FormTemplatesControllerRequestHandler(_ => sideEffect, _ => sideEffect)
+      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
-        whenReady(eventualResult.value) { response =>
-          response should matchPattern {
-            case Left(UnexpectedState(_)) =>
-          }
+      whenReady(eventualResult.value) { response =>
+        response should matchPattern { case Left(UnexpectedState(_)) =>
         }
+      }
     }
   }
 
@@ -254,8 +279,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
         val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
         whenReady(eventualResult.value) { response =>
-          response should matchPattern {
-            case Left(UnexpectedState(_)) =>
+          response should matchPattern { case Left(UnexpectedState(_)) =>
           }
         }
     }
@@ -268,13 +292,15 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
           "hmrc",
           "${user.enrolledIdentifier}",
           Some(""""dmsFormId": "","""),
-          Some(""""serviceId": "someId",""")))) { (sideEffect, verifySideEffect, templateRaw) =>
+          Some(""""serviceId": "someId",""")
+        )
+      )
+    ) { (sideEffect, verifySideEffect, templateRaw) =>
       val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
       whenReady(eventualResult.value) { response =>
-        response should matchPattern {
-          case Left(UnexpectedState(_)) =>
+        response should matchPattern { case Left(UnexpectedState(_)) =>
         }
       }
     }
@@ -287,13 +313,15 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
           "hmrc",
           "${user.enrolledIdentifier}",
           Some(""""dmsFormId": " ","""),
-          Some(""""serviceId": "someId",""")))) { (sideEffect, verifySideEffect, templateRaw) =>
+          Some(""""serviceId": "someId",""")
+        )
+      )
+    ) { (sideEffect, verifySideEffect, templateRaw) =>
       val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
       whenReady(eventualResult.value) { response =>
-        response should matchPattern {
-          case Left(UnexpectedState(_)) =>
+        response should matchPattern { case Left(UnexpectedState(_)) =>
         }
       }
     }
@@ -306,13 +334,15 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
           "hmrc",
           "${user.enrolledIdentifier}",
           Some(""""dmsFormId": "TST0123456789","""),
-          Some(""""serviceId": "someId",""")))) { (sideEffect, verifySideEffect, templateRaw) =>
+          Some(""""serviceId": "someId",""")
+        )
+      )
+    ) { (sideEffect, verifySideEffect, templateRaw) =>
       val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
       whenReady(eventualResult.value) { response =>
-        response should matchPattern {
-          case Left(UnexpectedState(_)) =>
+        response should matchPattern { case Left(UnexpectedState(_)) =>
         }
       }
     }
@@ -325,13 +355,15 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
           "hmrc",
           "${user.enrolledIdentifier}",
           None,
-          Some(""""serviceId": "someId",""")))) { (sideEffect, verifySideEffect, templateRaw) =>
+          Some(""""serviceId": "someId",""")
+        )
+      )
+    ) { (sideEffect, verifySideEffect, templateRaw) =>
       val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
       whenReady(eventualResult.value) { response =>
-        response should matchPattern {
-          case Left(UnexpectedState(_)) =>
+        response should matchPattern { case Left(UnexpectedState(_)) =>
         }
       }
     }
@@ -455,7 +487,8 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
   private def validRequestBodyWithPrintSectionAndEmptyPdfHeaderFooter(
     authModule: String,
     identifier: String,
-    serviceId: Option[String]) =
+    serviceId: Option[String]
+  ) =
     s"""{
        |  "_id": "newfield",
        |  "formName": "Testing section change label tttt",
@@ -504,7 +537,8 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
   private def validRequestBodyWithPrintSectionAndNoPdfNotification(
     authModule: String,
     identifier: String,
-    serviceId: Option[String]) =
+    serviceId: Option[String]
+  ) =
     s"""{
        |  "_id": "newfield",
        |  "formName": "Testing section change label tttt",
@@ -548,7 +582,8 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
   private def validRequestBodyWithPrintSectionWithEmptyPdfNotification(
     authModule: String,
     identifier: String,
-    serviceId: Option[String]) =
+    serviceId: Option[String]
+  ) =
     s"""{
        |  "_id": "newfield",
        |  "formName": "Testing section change label tttt",
@@ -597,7 +632,8 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
   private def invalidRequestBodyWithNoDestinationsOrPrintSection(
     authModule: String,
     identifier: String,
-    serviceId: Option[String]) =
+    serviceId: Option[String]
+  ) =
     s"""{
        |  "_id": "newfield",
        |  "formName": "Testing section change label tttt",
@@ -640,7 +676,8 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
   private def invalidRequestBodyWithBothDestinationsAndPrintSections(
     authModule: String,
     identifier: String,
-    serviceId: Option[String]) =
+    serviceId: Option[String]
+  ) =
     s"""{
        |  "_id": "newfield",
        |  "formName": "Testing section change label tttt",
@@ -694,7 +731,8 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
   private def invalidRequestBodyWithDestinationsWithoutAcknowledgementSection(
     authModule: String,
     identifier: String,
-    serviceId: Option[String]) =
+    serviceId: Option[String]
+  ) =
     s"""{
        |  "_id": "newfield",
        |  "formName": "Testing section change label tttt",
@@ -740,7 +778,8 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
   private def invalidRequestBodyWithDestinationsWithoutDeclarationSection(
     authModule: String,
     identifier: String,
-    serviceId: Option[String]) =
+    serviceId: Option[String]
+  ) =
     s"""{
        |  "_id": "newfield",
        |  "formName": "Testing section change label tttt",
@@ -796,7 +835,8 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
   private def invalidRequestBodyWithPrintSectionAndAcknowledgementSection(
     authModule: String,
     identifier: String,
-    serviceId: Option[String]) =
+    serviceId: Option[String]
+  ) =
     s"""{
        |  "_id": "newfield",
        |  "formName": "Testing section change label tttt",
@@ -843,7 +883,8 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
   private def invalidRequestBodyWithPrintSectionAndDeclarationSection(
     authModule: String,
     identifier: String,
-    serviceId: Option[String]) =
+    serviceId: Option[String]
+  ) =
     s"""{
        |  "_id": "newfield",
        |  "formName": "Testing section change label tttt",
@@ -887,7 +928,8 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
     authModule: String,
     identifier: String,
     dmsFormId: Option[String],
-    serviceId: Option[String]) =
+    serviceId: Option[String]
+  ) =
     s"""{
        |  "_id": "newfield",
        |  "formName": "Testing section change label tttt",

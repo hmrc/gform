@@ -38,8 +38,8 @@ class FormService[F[_]: Monad](
   formPersistence: FormPersistenceAlgebra[F],
   fileUpload: FileUploadAlgebra[F],
   formTemplateAlgebra: FormTemplateAlgebra[F],
-  formMetadataAlgebra: FormMetadataAlgebra[F])
-    extends FormAlgebra[F] {
+  formMetadataAlgebra: FormMetadataAlgebra[F]
+) extends FormAlgebra[F] {
 
   def get(formId: FormId)(implicit hc: HeaderCarrier): F[Form] =
     formPersistence.get(formId)
@@ -53,13 +53,13 @@ class FormService[F[_]: Monad](
     for {
       formMetadatas <- formMetadataAlgebra.getAll(userId, formTemplateId)
       existingForms <- formMetadatas.traverse { formMetadata =>
-                        formPersistence
-                          .find(formMetadata._id)
-                          .map(_.map(form => (form, formMetadata)))
-                      }
+                         formPersistence
+                           .find(formMetadata._id)
+                           .map(_.map(form => (form, formMetadata)))
+                       }
     } yield {
-      val filteredForms: List[(Form, FormMetadata)] = existingForms.flatten.filter {
-        case (form, _) => allowedStates.contains(form.status)
+      val filteredForms: List[(Form, FormMetadata)] = existingForms.flatten.filter { case (form, _) =>
+        allowedStates.contains(form.status)
       }
 
       filteredForms.map { case (_, formMetadata) => FormOverview.fromFormMetadata(formMetadata) }
@@ -105,17 +105,17 @@ class FormService[F[_]: Monad](
       formIdData = createNewFormData(userId, formTemplate, envelopeId, affinityGroup)
       formId = formIdData.toFormId
       form = Form(
-        formId,
-        envelopeId,
-        userId,
-        formTemplateId,
-        FormData(fields = Seq.empty),
-        InProgress,
-        VisitIndex.empty,
-        ThirdPartyData.empty.copy(queryParams = queryParams),
-        Some(EnvelopeExpiryDate(expiryDate)),
-        FormComponentIdToFileIdMapping.empty
-      )
+               formId,
+               envelopeId,
+               userId,
+               formTemplateId,
+               FormData(fields = Seq.empty),
+               InProgress,
+               VisitIndex.empty,
+               ThirdPartyData.empty.copy(queryParams = queryParams),
+               Some(EnvelopeExpiryDate(expiryDate)),
+               FormComponentIdToFileIdMapping.empty
+             )
       _ <- formPersistence.upsert(formIdData.toFormId, form)
       _ <- formMetadataAlgebra.upsert(formIdData)
     } yield formIdData
@@ -125,13 +125,13 @@ class FormService[F[_]: Monad](
     for {
       form <- get(formIdData)
       newForm = form
-        .copy(
-          formData = userData.formData,
-          status = newStatus(form, userData.formStatus),
-          visitsIndex = userData.visitsIndex,
-          thirdPartyData = userData.thirdPartyData,
-          componentIdToFileId = userData.componentIdToFileId
-        )
+                  .copy(
+                    formData = userData.formData,
+                    status = newStatus(form, userData.formStatus),
+                    visitsIndex = userData.visitsIndex,
+                    thirdPartyData = userData.thirdPartyData,
+                    componentIdToFileId = userData.componentIdToFileId
+                  )
       _ <- formPersistence.upsert(formIdData.toFormId, newForm)
       _ <- refreshMetadata(form.formData != newForm.formData, formIdData, newForm.formData)
     } yield ()
@@ -284,9 +284,8 @@ object TransitionsTable extends App {
     Source
       .fromFile("logs/gform-state-transitions.log")
       .getLines
-      .map {
-        case logPattern(legality, FormStatus(from), FormStatus(to)) =>
-          Row(from, to)
+      .map { case logPattern(legality, FormStatus(from), FormStatus(to)) =>
+        Row(from, to)
       }
       .toSet
   }

@@ -60,7 +60,8 @@ class SubmissionConsolidatorServiceSpec
     formTemplate: FormTemplate,
     structuredFormData: StructuredFormValue.ObjectStructure,
     model: HandlebarsTemplateProcessorModel,
-    modelTree: HandlebarsModelTree)
+    modelTree: HandlebarsModelTree
+  )
 
   trait TestFixture {
     val mockSubmissionConsolidatorConnector = mock[SubmissionConsolidatorConnector]
@@ -69,7 +70,8 @@ class SubmissionConsolidatorServiceSpec
       new SubmissionConsolidatorService(
         RealHandlebarsTemplateProcessor,
         mockSubmissionConsolidatorConnector,
-        mockFormService)
+        mockFormService
+      )
   }
 
   "submit" when {
@@ -78,8 +80,8 @@ class SubmissionConsolidatorServiceSpec
         forAll(testDataGen) { testData =>
           import testData._
           val expectedScFormFields = formData.fields
-            .map {
-              case FormField(FormComponentId(id), value) => SCFormField(id, value)
+            .map { case FormField(FormComponentId(id), value) =>
+              SCFormField(id, value)
             }
             .filter(_.value.nonEmpty)
           (mockSubmissionConsolidatorConnector
@@ -116,7 +118,8 @@ class SubmissionConsolidatorServiceSpec
               destinationSubmissionInfo,
               model,
               modelTree,
-              Some(formDataWithEmptyFieldValues))
+              Some(formDataWithEmptyFieldValues)
+            )
             .value
 
           future.futureValue shouldBe Right(())
@@ -194,8 +197,11 @@ class SubmissionConsolidatorServiceSpec
             .submit(destination, destinationSubmissionInfo, model, modelTree, Some(formData))
             .value
 
-          future.futureValue shouldBe Left(UnexpectedState(
-            "Unrecognized token 'invalid_template': was expecting (JSON String, Number, Array, Object or token 'null', 'true' or 'false')\n at [Source: (String)\"invalid_template\"; line: 1, column: 17]"))
+          future.futureValue shouldBe Left(
+            UnexpectedState(
+              "Unrecognized token 'invalid_template': was expecting (JSON String, Number, Array, Object or token 'null', 'true' or 'false')\n at [Source: (String)\"invalid_template\"; line: 1, column: 17]"
+            )
+          )
         }
       }
     }
@@ -204,7 +210,8 @@ class SubmissionConsolidatorServiceSpec
   private def expectedAPIForm(
     destinationSubmissionInfo: DestinationSubmissionInfo,
     destination: Destination.SubmissionConsolidator,
-    scFormFields: Seq[SCFormField] = Seq.empty) =
+    scFormFields: Seq[SCFormField] = Seq.empty
+  ) =
     SCForm(
       destinationSubmissionInfo.submission.submissionRef.value,
       destination.projectId.id,
@@ -216,27 +223,30 @@ class SubmissionConsolidatorServiceSpec
 
   private val testDataGen = for {
     structuredFormData <- structureFormValueObjectStructureGen
-    model = HandlebarsTemplateProcessorModel(
-      structuredFormData.fields.map(f => (f.name.name, JsonNodes.textNode(f.value.asInstanceOf[TextNode].value))): _*)
+    model =
+      HandlebarsTemplateProcessorModel(
+        structuredFormData.fields.map(f => (f.name.name, JsonNodes.textNode(f.value.asInstanceOf[TextNode].value))): _*
+      )
     submissionConsolidator    <- submissionConsolidatorGen.map(_.copy(formData = None))
     formTemplate              <- formTemplateGen
     formData                  <- formDataGen
     destinationSubmissionInfo <- destinationSubmissionInfoGen
     modelTree = HandlebarsModelTree(
-      destinationSubmissionInfo.formId,
-      destinationSubmissionInfo.submission.submissionRef,
-      formTemplate,
-      PdfHtml(""),
-      None,
-      structuredFormData,
-      model)
-  } yield
-    TestData(
-      submissionConsolidator,
-      destinationSubmissionInfo,
-      formData,
-      formTemplate,
-      structuredFormData,
-      model,
-      modelTree)
+                  destinationSubmissionInfo.formId,
+                  destinationSubmissionInfo.submission.submissionRef,
+                  formTemplate,
+                  PdfHtml(""),
+                  None,
+                  structuredFormData,
+                  model
+                )
+  } yield TestData(
+    submissionConsolidator,
+    destinationSubmissionInfo,
+    formData,
+    formTemplate,
+    structuredFormData,
+    model,
+    modelTree
+  )
 }

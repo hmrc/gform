@@ -22,19 +22,22 @@ trait MongoDBSupport {
       collectionName = "formTemplate",
       mongo = mongoConnector.db,
       domainFormat = FormTemplate.format,
-      idFormat = ReactiveMongoFormats.objectIdFormats) {}
+      idFormat = ReactiveMongoFormats.objectIdFormats
+    ) {}
 
   val formTemplateRawRepo: ReactiveRepository[FormTemplateRaw, BSONObjectID] =
     new ReactiveRepository[FormTemplateRaw, BSONObjectID](
       collectionName = "formTemplateRaw",
       mongo = mongoConnector.db,
       domainFormat = FormTemplateRaw.format,
-      idFormat = ReactiveMongoFormats.objectIdFormats) {}
+      idFormat = ReactiveMongoFormats.objectIdFormats
+    ) {}
 
   val formMetadataRepo: ReactiveRepository[FormMetadata, BSONObjectID] =
     new ReactiveRepository[FormMetadata, BSONObjectID](
       collectionName = "formMetadata",
       mongo = mongoConnector.db,
       domainFormat = FormMetadata.format,
-      idFormat = ReactiveMongoFormats.objectIdFormats) {}
+      idFormat = ReactiveMongoFormats.objectIdFormats
+    ) {}
 }

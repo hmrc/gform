@@ -37,7 +37,7 @@ object OFormatWithTemplateReadFallback {
               case successB @ JsSuccess(_, _) => successB
               case JsError(errorB)            => JsError(errorB)
             }
-      }
+        }
 
     def empty: Reads[Nothing] = _ => JsError(Seq())
   }

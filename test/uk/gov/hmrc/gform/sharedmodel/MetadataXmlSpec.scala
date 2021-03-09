@@ -172,7 +172,8 @@ class MetadataXmlSpec extends Spec {
         ReconciliationId("some-recocilliatin-id"),
         pdfSummary.numberOfPages,
         submission.noOfAttachments,
-        hmrcDms)
+        hmrcDms
+      )
 
     metadataXml should equal(Utility.trim(expected).asInstanceOf[Elem])(after being streamlined[Elem])
 

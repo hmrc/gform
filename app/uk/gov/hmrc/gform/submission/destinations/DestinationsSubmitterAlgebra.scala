@@ -26,12 +26,14 @@ trait DestinationsSubmitterAlgebra[M[_]] {
   def send(
     submissionInfo: DestinationSubmissionInfo,
     modelTree: HandlebarsModelTree,
-    formData: Option[FormData] = None)(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]]
+    formData: Option[FormData] = None
+  )(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]]
 
   def submitToList(
     destinations: NonEmptyList[Destination],
     submissionInfo: DestinationSubmissionInfo,
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree,
-    formData: Option[FormData] = None)(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]]
+    formData: Option[FormData] = None
+  )(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]]
 }

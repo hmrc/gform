@@ -36,8 +36,8 @@ case object WebChat {
   val reads: Reads[WebChat] = for {
     chatRoomId <- (JsPath \ "chatRoomId").read[String]
     templateName <- (JsPath \ "templateName")
-                     .readNullable[String]
-                     .map(_.fold(TemplateName("hmrc7"))(value => TemplateName(value)))
+                      .readNullable[String]
+                      .map(_.fold(TemplateName("hmrc7"))(value => TemplateName(value)))
 
   } yield WebChat(ChatRoomId(chatRoomId), templateName)
 

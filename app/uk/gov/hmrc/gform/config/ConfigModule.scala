@@ -36,7 +36,8 @@ class ConfigModule(
   val configuration: Configuration,
   playComponents: PlayComponents,
   val controllerComponents: ControllerComponents,
-  appName: String)(implicit ec: ExecutionContext) {
+  appName: String
+)(implicit ec: ExecutionContext) {
 
   val typesafeConfig: TypeSafeConfig = ConfigFactory.load()
 
@@ -92,17 +93,21 @@ class ConfigModule(
         getConfString(
           destinationServiceKey,
           "protocol",
-          getConfString(s"destination-services.protocol", defaultProtocol))
+          getConfString(s"destination-services.protocol", defaultProtocol)
+        )
       val host =
         getConfString(
           destinationServiceKey,
           "host",
           throw new RuntimeException(
-            s"Could not find config ${qualifiedDestinationServiceKey(destinationServiceKey)}.host"))
+            s"Could not find config ${qualifiedDestinationServiceKey(destinationServiceKey)}.host"
+          )
+        )
       val port = getConfInt(
         s"${qualifiedDestinationServiceKey(destinationServiceKey)}.port",
         throw new RuntimeException(
-          s"Could not find config ${qualifiedDestinationServiceKey(destinationServiceKey)}.port")
+          s"Could not find config ${qualifiedDestinationServiceKey(destinationServiceKey)}.port"
+        )
       )
       s"$protocol://$host:$port"
     }
@@ -131,7 +136,9 @@ class ConfigModule(
     import cats.syntax.eq._
     def apply(): Map[ProfileName, ProfileConfiguration] =
       asMap("destination-services") { destinationServiceKey =>
-        if (destinationServiceKey === "protocol" || destinationServiceKey === enableAuditKey || destinationServiceKey === populateHandlebarsModelWithDocumentsKey)
+        if (
+          destinationServiceKey === "protocol" || destinationServiceKey === enableAuditKey || destinationServiceKey === populateHandlebarsModelWithDocumentsKey
+        )
           None
         else {
           val name = profileName(destinationServiceKey)

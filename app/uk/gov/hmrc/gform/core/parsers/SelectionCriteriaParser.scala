@@ -31,9 +31,9 @@ object SelectionCriteriaParser {
       SelectionCriteriaExpr(expr)
     }
       |
-        FormComponentId.unanchoredIdValidation ~ "." ~ FormatParser.alphabeticOnly ^^ { (_, id, _, column) =>
-          SelectionCriteriaReference(FormCtx(FormComponentId(id)), CsvColumnName(column))
-        } |
+      FormComponentId.unanchoredIdValidation ~ "." ~ FormatParser.alphabeticOnly ^^ { (_, id, _, column) =>
+        SelectionCriteriaReference(FormCtx(FormComponentId(id)), CsvColumnName(column))
+      } |
       FormatParser.alphabeticOnly ^^ { (_, value) =>
         SelectionCriteriaSimpleValue(List(value))
       }

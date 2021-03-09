@@ -83,12 +83,15 @@ trait ExampleAuthConfig extends DestinationGen {
       Some(
         AcknowledgementSectionPdf(
           Some(toSmartString("It's a Acknowledgement Section Pdf header.")),
-          Some(toSmartString("It's a Acknowledgement Section Pdf footer.")))),
+          Some(toSmartString("It's a Acknowledgement Section Pdf footer."))
+        )
+      ),
       Some(
         AcknowledgementSectionPdf(
           Some(toSmartString("It's a Acknowledgement Section Instruction Pdf header.")),
           Some(toSmartString("It's a Acknowledgement Section Instruction Pdf footer."))
-        )),
+        )
+      ),
       true
     )
 
@@ -256,7 +259,8 @@ trait ExampleFieldValue { dependecies: ExampleFieldId =>
       repeatsMax = None,
       repeatsMin = None,
       repeatLabel = None,
-      repeatAddAnotherText = None)
+      repeatAddAnotherText = None
+    )
 
   def `fieldValue - group` =
     FormComponent(
@@ -306,7 +310,8 @@ trait ExampleValidator {
     BankAccountModulusCheck(
       toSmartString("This is an error message for Bank"),
       FormCtx(FormComponentId("accountNumber")),
-      FormCtx(FormComponentId("sortCode")))
+      FormCtx(FormComponentId("sortCode"))
+    )
   //todo other example validators
 }
 
@@ -315,7 +320,8 @@ trait ExampleSection { dependecies: ExampleFieldId with ExampleFieldValue with E
     title: String = "About you",
     validators: Option[Validator] = Some(defaultValidator),
     fields: List[FormComponent] = List(`fieldValue - firstName`, `fieldValue - surname`, `fieldValue - facePhoto`),
-    includeIf: Option[IncludeIf] = None) =
+    includeIf: Option[IncludeIf] = None
+  ) =
     Section.NonRepeatingPage(
       Page(
         toSmartString(title),
@@ -329,7 +335,8 @@ trait ExampleSection { dependecies: ExampleFieldId with ExampleFieldValue with E
         None,
         None,
         None
-      ))
+      )
+    )
 
   def `section - about you` =
     nonRepeatingPageSection()
@@ -338,7 +345,8 @@ trait ExampleSection { dependecies: ExampleFieldId with ExampleFieldValue with E
     nonRepeatingPageSection(
       title = "Business details",
       validators = None,
-      fields = List(`fieldValue - businessName`, `fieldValue - startDate`, `fieldValue - iptRegNum`))
+      fields = List(`fieldValue - businessName`, `fieldValue - startDate`, `fieldValue - iptRegNum`)
+    )
 
   def `repeating section` =
     Section.RepeatingPage(
@@ -380,7 +388,8 @@ trait ExampleFormTemplate {
       NonEmptyList.of(
         EmailParameter("fullName", FormCtx(FormComponentId("directorFullName"))),
         EmailParameter("email", FormCtx(FormComponentId("directorEmail")))
-      ))
+      )
+    )
 
   def webChat = Some(WebChat(ChatRoomId("test"), TemplateName("hmrc7")))
 
@@ -388,7 +397,7 @@ trait ExampleFormTemplate {
     AcknowledgementSection(
       toSmartString("Acknowledgement Page"),
       Some(toSmartString("this page is to acknowledge submission")),
-      Some(toSmartString(("shortName for acknowledgement"))),
+      Some(toSmartString("shortName for acknowledgement")),
       List(`fieldValue - info`),
       true,
       None,

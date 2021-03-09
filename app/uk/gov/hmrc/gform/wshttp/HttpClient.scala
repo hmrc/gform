@@ -83,10 +83,10 @@ object HttpClient {
     hc.copy(extraHeaders = ("Content-Type" -> contentType) :: hc.extraHeaders.toList)
 
   private def httpRequest[F[_]](method: (String, String) => F[HttpResponse], uri: String, payload: String)(
-    parser: Option[String => JsValue])(implicit monadError: MonadError[F, String]): F[HttpResponse] =
-    try {
-      method(uri, parser.fold(payload)(fn => fn(payload).toString))
-    } catch {
+    parser: Option[String => JsValue]
+  )(implicit monadError: MonadError[F, String]): F[HttpResponse] =
+    try method(uri, parser.fold(payload)(fn => fn(payload).toString))
+    catch {
       case ex: Exception =>
         logger.debug(s"Failed to send request to $uri with body: $payload", ex)
         monadError.raiseError(s"Attempt send a request failed because the given body is not valid.")

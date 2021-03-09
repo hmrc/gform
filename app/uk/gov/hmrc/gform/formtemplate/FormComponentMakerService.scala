@@ -35,7 +35,8 @@ object FormComponentMakerService {
     maybeSuffix: Option[SmartString],
     rows: Int,
     displayCharCount: Boolean,
-    json: JsValue): Either[UnexpectedState, ComponentType] =
+    json: JsValue
+  ): Either[UnexpectedState, ComponentType] =
     (maybeFormatExpr, maybeValueExpr, multiLine) match {
       case (Some(TextFormat(UkSortCodeFormat)), HasTextExpression(expr), IsNotMultiline()) => UkSortCode(expr).asRight
       case (Some(formatExpr), _, IsNotMultiline()) =>
@@ -52,7 +53,8 @@ object FormComponentMakerService {
     toUpperCase: UpperCaseBoolean,
     maybePrefix: Option[SmartString],
     maybeSuffix: Option[SmartString],
-    json: JsValue) = (formatExpr, maybeValueExpr, maybeDisplayWidth) match {
+    json: JsValue
+  ) = (formatExpr, maybeValueExpr, maybeDisplayWidth) match {
     case (TextFormat(f), HasTextExpression(expr), None) =>
       Text(f, expr, DisplayWidth.DEFAULT, toUpperCase, maybePrefix, maybeSuffix).asRight
     case (TextFormat(f), HasTextExpression(expr), HasDisplayWidth(dw)) =>
@@ -67,7 +69,8 @@ object FormComponentMakerService {
     multiLine: Option[String],
     rows: Int,
     displayCharCount: Boolean,
-    json: JsValue) =
+    json: JsValue
+  ) =
     (formatExpr, maybeValueExpr, displayWidth) match {
       case (TextFormat(f), HasTextExpression(expr), None) =>
         TextArea(f, expr, rows = rows, displayCharCount = displayCharCount).asRight
@@ -80,7 +83,8 @@ object FormComponentMakerService {
     maybeFormatExpr: Option[FormatExpr],
     maybeValueExpr: Option[ValueExpr],
     multiLine: Option[String],
-    json: JsValue): UnexpectedState = {
+    json: JsValue
+  ): UnexpectedState = {
     val formComponentMaker = new FormComponentMaker(json)
     (maybeFormatExpr, maybeValueExpr, multiLine) match {
       case (maybeInvalidFormat, maybeValue, IsNotMultiline()) =>

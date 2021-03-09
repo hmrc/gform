@@ -101,7 +101,8 @@ class UploadableDestinationSpec extends Spec with ScalaCheckDrivenPropertyChecks
 
   private def createUploadable(
     destination: Destination.HandlebarsHttpApi,
-    convertSingleQuotes: Option[Boolean]): UploadableHandlebarsHttpApiDestination = {
+    convertSingleQuotes: Option[Boolean]
+  ): UploadableHandlebarsHttpApiDestination = {
     import destination._
     UploadableHandlebarsHttpApiDestination(
       id,
@@ -118,7 +119,8 @@ class UploadableDestinationSpec extends Spec with ScalaCheckDrivenPropertyChecks
 
   private def createUploadable(
     destination: Destination.HmrcDms,
-    convertSingleQuotes: Option[Boolean]): UploadableHmrcDmsDestination = {
+    convertSingleQuotes: Option[Boolean]
+  ): UploadableHmrcDmsDestination = {
     import destination._
     UploadableHmrcDmsDestination(
       id,
@@ -138,7 +140,8 @@ class UploadableDestinationSpec extends Spec with ScalaCheckDrivenPropertyChecks
 
   private def createUploadable(
     destination: Destination.SubmissionConsolidator,
-    convertSingleQuotes: Option[Boolean]): UploadableSubmissionConsolidator = {
+    convertSingleQuotes: Option[Boolean]
+  ): UploadableSubmissionConsolidator = {
     import destination._
     UploadableSubmissionConsolidator(
       id,

@@ -82,7 +82,9 @@ class FormComponentMakerSpec extends FlatSpecLike with Matchers {
         TextWithRestrictions(0, 1000),
         Value,
         prefix = Some(toSmartString("prefixTest")),
-        suffix = Some(toSmartString("suffixTest"))))
+        suffix = Some(toSmartString("suffixTest"))
+      )
+    )
   }
 
   it should "parse text component with only prefix" in {

@@ -33,10 +33,12 @@ object DraftRetrievalMethod {
       case ("submissionReference", IsTrueish())                        => JsSuccess(BySubmissionReference)
       case ("submissionReference", IsFalseish()) =>
         JsError(
-          "Failure, showContinueOrDeletePage is invalid in combination with 'draftRetrievalMethod: submissionReference'")
+          "Failure, showContinueOrDeletePage is invalid in combination with 'draftRetrievalMethod: submissionReference'"
+        )
       case (err, _) =>
         JsError(
-          s"only three values are allowed for draftRetrievalMethod: either onePerUser, submissionReference or formAccessCodeForAgents; $err is not valid")
+          s"only three values are allowed for draftRetrievalMethod: either onePerUser, submissionReference or formAccessCodeForAgents; $err is not valid"
+        )
     }
   }
   private object Helper {

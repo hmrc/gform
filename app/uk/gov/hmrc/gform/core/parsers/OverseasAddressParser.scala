@@ -30,19 +30,22 @@ object OverseasAddressParser {
 
   def mandatoryField(
     string: Option[String],
-    obj: OverseasAddress.Configurable.Mandatory): Opt[Option[OverseasAddress.Configurable.Mandatory]] =
+    obj: OverseasAddress.Configurable.Mandatory
+  ): Opt[Option[OverseasAddress.Configurable.Mandatory]] =
     field(string, obj, Some(_), _ => None)
 
   def optionalField(
     string: Option[String],
-    obj: OverseasAddress.Configurable.Optional): Opt[Option[OverseasAddress.Configurable.Optional]] =
+    obj: OverseasAddress.Configurable.Optional
+  ): Opt[Option[OverseasAddress.Configurable.Optional]] =
     field(string, obj, _ => None, Some(_))
 
   private def field[A](
     string: Option[String],
     obj: A,
     onTrue: A => Option[A],
-    onFalse: A => Option[A]): Opt[Option[A]] =
+    onFalse: A => Option[A]
+  ): Opt[Option[A]] =
     string
       .map {
         case IsTrueish()  => Right(onTrue(obj))

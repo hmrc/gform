@@ -47,7 +47,8 @@ class SubmissionModule(
   submissionConsolidatorModule: SubmissionConsolidatorModule,
   handlebarsHttpApiModule: HandlebarsHttpApiModule,
   destinationModule: DestinationModule,
-  notifierModule: NotifierModule)(implicit ex: ExecutionContext) {
+  notifierModule: NotifierModule
+)(implicit ex: ExecutionContext) {
 
   //TODO: this should be replaced with save4later for submissions
 
@@ -72,7 +73,8 @@ class SubmissionModule(
   )
 
   private val destinationsSubmitter: DestinationsSubmitterAlgebra[FOpt] = new DestinationsSubmitter(
-    realDestinationSubmitter)
+    realDestinationSubmitter
+  )
 
   val submissionService = new SubmissionService(
     formModule.fOptFormService,
@@ -88,18 +90,16 @@ class SubmissionModule(
 
   val formBundleSubmissionService: Option[FormBundleSubmissionService[FOpt]] = for {
     auditer <- destinationModule.destinationAuditer
-  } yield {
-    new FormBundleSubmissionService(
-      formModule.fOptFormService,
-      formTemplateModule.fOptFormTemplateAlgebra,
-      destinationModule.destinationsProcessorModelService,
-      destinationsSubmitter,
-      RepoAlgebra.fOpt(submissionRepo),
-      destinationModule.formTreeService,
-      auditer,
-      auditer
-    )(fOptMonadError)
-  }
+  } yield new FormBundleSubmissionService(
+    formModule.fOptFormService,
+    formTemplateModule.fOptFormTemplateAlgebra,
+    destinationModule.destinationsProcessorModelService,
+    destinationsSubmitter,
+    RepoAlgebra.fOpt(submissionRepo),
+    destinationModule.formTreeService,
+    auditer,
+    auditer
+  )(fOptMonadError)
 
   val formBundleController = new FormBundleController(configModule.controllerComponents, formBundleSubmissionService)
 }

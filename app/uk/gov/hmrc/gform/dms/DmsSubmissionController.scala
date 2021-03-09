@@ -27,7 +27,8 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 class DmsSubmissionController(
   controllerComponents: ControllerComponents,
-  dmsSubmissionAlgebra: DmsSubmissionAlgebra[Future])(implicit ex: ExecutionContext)
+  dmsSubmissionAlgebra: DmsSubmissionAlgebra[Future]
+)(implicit ex: ExecutionContext)
     extends BaseController(controllerComponents) {
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -50,8 +51,7 @@ class DmsSubmissionController(
       }
     }
 
-  /**
-    * This endpoint is not used by gform but its here for other services to leverage our backend integration with DMS via FUaaS
+  /** This endpoint is not used by gform but its here for other services to leverage our backend integration with DMS via FUaaS
     * Its currently used by Overseas Agents team
     */
   def submitPdfToDms: Action[MultipartFormData[Files.TemporaryFile]] = Action.async(parse.multipartFormData) {

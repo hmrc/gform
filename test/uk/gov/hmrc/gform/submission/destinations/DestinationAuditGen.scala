@@ -34,27 +34,26 @@ trait DestinationAuditGen {
       caseworkerUserName        <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen)
       parentFormSubmissionRefs  <- PrimitiveGen.zeroOrMoreGen(PrimitiveGen.nonEmptyAlphaNumStrGen)
       reviewData <- PrimitiveGen
-                     .possiblyEmptyMapGen(PrimitiveGen.nonEmptyAlphaNumStrGen, PrimitiveGen.nonEmptyAlphaNumStrGen)
+                      .possiblyEmptyMapGen(PrimitiveGen.nonEmptyAlphaNumStrGen, PrimitiveGen.nonEmptyAlphaNumStrGen)
       submissionRef <- SubmissionRefGen.submissionRefGen
       summaryHtmlId <- Gen.uuid.map(SummaryHtmlId(_))
       id            <- Gen.uuid
       timestamp     <- PrimitiveGen.jodaLocalDateTimeGen
-    } yield
-      DestinationAudit(
-        formId,
-        formTemplateId,
-        destinationId,
-        destinationType,
-        destinationResponseStatus,
-        destinationResponseBody,
-        workflowState,
-        userId,
-        caseworkerUserName,
-        parentFormSubmissionRefs,
-        reviewData,
-        submissionRef,
-        summaryHtmlId,
-        id,
-        timestamp
-      )
+    } yield DestinationAudit(
+      formId,
+      formTemplateId,
+      destinationId,
+      destinationType,
+      destinationResponseStatus,
+      destinationResponseBody,
+      workflowState,
+      userId,
+      caseworkerUserName,
+      parentFormSubmissionRefs,
+      reviewData,
+      submissionRef,
+      summaryHtmlId,
+      id,
+      timestamp
+    )
 }

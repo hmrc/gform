@@ -59,8 +59,9 @@ class BaseController(controllerComponents: ControllerComponents)(implicit ec: Ex
 
   def asRes[T](a: T): LeftResult[T] = EitherT[Future, Result, T](Future.successful(a.asRight))
 
-  def formAction[A](bodyParser: BodyParser[A])(endPoint: String, formIdData: FormIdData)(
-    block: Request[A] => Future[Result]): Action[A] =
+  def formAction[A](
+    bodyParser: BodyParser[A]
+  )(endPoint: String, formIdData: FormIdData)(block: Request[A] => Future[Result]): Action[A] =
     controllerComponents.actionBuilder.async(bodyParser) { request =>
       addFormIdToMdc(formIdData.toFormId)
       logger.info(s"${getClass.getSimpleName}.$endPoint, ${loggingHelpers.cleanHeaders(request.headers)}")
@@ -68,11 +69,13 @@ class BaseController(controllerComponents: ControllerComponents)(implicit ec: Ex
     }
 
   def formAction(endPoint: String, formIdData: FormIdData, additionalInfo: String*)(
-    block: Request[AnyContent] => Future[Result]): Action[AnyContent] =
+    block: Request[AnyContent] => Future[Result]
+  ): Action[AnyContent] =
     formAction(endPoint, formIdData.toFormId, additionalInfo: _*)(block)
 
   def formAction(endPoint: String, formId: FormId, additionalInfo: String*)(
-    block: Request[AnyContent] => Future[Result]): Action[AnyContent] =
+    block: Request[AnyContent] => Future[Result]
+  ): Action[AnyContent] =
     controllerComponents.actionBuilder.async { request =>
       addFormIdToMdc(formId)
       logger.info(s"${getClass.getSimpleName}.$endPoint, ${additionalInfo.toList.mkString(", ")}")
@@ -83,7 +86,8 @@ class BaseController(controllerComponents: ControllerComponents)(implicit ec: Ex
     MDC.put("FormId", formId.value)
 
   def formTemplateAction(endPoint: String, formTemplateId: FormTemplateId)(
-    block: Request[AnyContent] => Future[Result]): Action[AnyContent] =
+    block: Request[AnyContent] => Future[Result]
+  ): Action[AnyContent] =
     controllerComponents.actionBuilder.async { request =>
       addFormTemplateIdToMdc(formTemplateId)
       logger.info(s"${getClass.getSimpleName}.$endPoint")
@@ -97,7 +101,8 @@ class BaseController(controllerComponents: ControllerComponents)(implicit ec: Ex
 case class ErrResponse(
   error: String,
   details: Option[JsValue] = None,
-  occurrenceId: String = UUID.randomUUID().toString)
+  occurrenceId: String = UUID.randomUUID().toString
+)
 
 object ErrResponse {
   implicit val format: OFormat[ErrResponse] = Json.format[ErrResponse]

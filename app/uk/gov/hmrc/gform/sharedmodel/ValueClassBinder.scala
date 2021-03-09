@@ -34,7 +34,8 @@ object ValueClassBinder {
   }
   implicit val notifierEmailAddressBinder: PathBindable[NotifierEmailAddress] = valueClassBinder(_.value)
   implicit val affinityGroupBinder: PathBindable[Option[AffinityGroup]] = mValueClassBinder(
-    AffinityGroupUtil.affinityGroupName)
+    AffinityGroupUtil.affinityGroupName
+  )
   implicit val formTemplateIdBinder: PathBindable[FormTemplateId] = valueClassBinder(_.value)
   implicit val formTemplateRawIdBinder: PathBindable[FormTemplateRawId] = valueClassBinder(_.value)
 
@@ -50,7 +51,7 @@ object ValueClassBinder {
 
   implicit val sectionNumberBinder: PathBindable[SectionNumber] = new PathBindable[SectionNumber] {
     override def bind(key: String, value: String): Either[String, SectionNumber] =
-      Try { SectionNumber(value.toInt) }.map(_.asRight).getOrElse(s"No valid value in path $key: $value".asLeft)
+      Try(SectionNumber(value.toInt)).map(_.asRight).getOrElse(s"No valid value in path $key: $value".asLeft)
     override def unbind(key: String, sectionNumber: SectionNumber): String = sectionNumber.value.toString
   }
 

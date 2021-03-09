@@ -26,9 +26,9 @@ import uk.gov.hmrc.gform.sharedmodel.des.DesRegistrationRequest
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-class ValidationController(controllerComponents: ControllerComponents, validation: ValidationService[Future])(
-  implicit ex: ExecutionContext)
-    extends BaseController(controllerComponents) {
+class ValidationController(controllerComponents: ControllerComponents, validation: ValidationService[Future])(implicit
+  ex: ExecutionContext
+) extends BaseController(controllerComponents) {
 
   private val logger = LoggerFactory.getLogger(getClass)
 

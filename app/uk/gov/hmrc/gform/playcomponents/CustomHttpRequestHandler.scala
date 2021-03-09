@@ -25,14 +25,15 @@ class CustomHttpRequestHandler(
   router: Router,
   httpErrorHandler: HttpErrorHandler,
   httpConfiguration: HttpConfiguration,
-  httpFilters: Seq[EssentialFilter])
-    extends DefaultHttpRequestHandler(
+  httpFilters: Seq[EssentialFilter]
+) extends DefaultHttpRequestHandler(
       new DefaultWebCommands,
       None,
       router,
       httpErrorHandler,
       httpConfiguration,
-      httpFilters) {
+      httpFilters
+    ) {
   override def routeRequest(request: RequestHeader): Option[Handler] =
     router
       .handlerFor(request)

@@ -30,7 +30,8 @@ case class ObligationDetail(
   inboundCorrespondenceFromDate: LocalDate,
   inboundCorrespondenceToDate: LocalDate,
   inboundCorrespondenceDueDate: LocalDate,
-  periodKey: String)
+  periodKey: String
+)
 
 object ObligationDetail {
   implicit val format: OFormat[ObligationDetail] = derived.oformat()
@@ -87,7 +88,8 @@ object RecalculatedTaxPeriodKey {
 }
 case class HmrcTaxPeriodWithEvaluatedId(
   recalculatedTaxPeriodKey: RecalculatedTaxPeriodKey,
-  idNumberValue: IdNumberValue)
+  idNumberValue: IdNumberValue
+)
 
 object HmrcTaxPeriodWithEvaluatedId extends JsonUtils {
   implicit val format: OFormat[HmrcTaxPeriodWithEvaluatedId] = derived.oformat()

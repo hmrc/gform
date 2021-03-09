@@ -52,16 +52,16 @@ trait SectionGen {
       pdf                 <- Gen.option(acknowledgementSectionPdfGen)
       instructionPdf      <- Gen.option(acknowledgementSectionPdfGen)
       displayFeedbackLink <- PrimitiveGen.booleanGen
-    } yield
-      AcknowledgementSection(
-        title,
-        description,
-        shortName,
-        fields.toList,
-        showReference,
-        pdf,
-        instructionPdf,
-        displayFeedbackLink)
+    } yield AcknowledgementSection(
+      title,
+      description,
+      shortName,
+      fields.toList,
+      showReference,
+      pdf,
+      instructionPdf,
+      displayFeedbackLink
+    )
 
   def acknowledgementSectionPdfGen: Gen[AcknowledgementSectionPdf] =
     for {
@@ -90,20 +90,19 @@ trait SectionGen {
       continueIf        <- Gen.option(ContinueIfGen.continueIfGen)
       instruction       <- Gen.option(InstructionGen.instructionGen)
       presentationHint  <- Gen.option(PresentationHintGen.presentationHintGen)
-    } yield
-      Page(
-        title,
-        description,
-        progressIndicator,
-        shortName,
-        includeIf,
-        validators,
-        fields.toList,
-        continueLabel,
-        continueIf,
-        instruction,
-        presentationHint
-      )
+    } yield Page(
+      title,
+      description,
+      progressIndicator,
+      shortName,
+      includeIf,
+      validators,
+      fields.toList,
+      continueLabel,
+      continueIf,
+      instruction,
+      presentationHint
+    )
 
   def nonRepeatingPageSectionGen: Gen[Section.NonRepeatingPage] = pageGen.map(Section.NonRepeatingPage)
 
@@ -127,20 +126,20 @@ trait SectionGen {
       instruction      <- Gen.option(InstructionGen.instructionGen)
       presentationHint <- Gen.option(PresentationHintGen.presentationHintGen)
       infoMessage      <- Gen.option(smartStringGen)
-    } yield
-      Section
-        .AddToList(
-          title,
-          description,
-          shortName,
-          summaryName,
-          includeIf,
-          repeatsMax,
-          pages,
-          formComponent.copy(`type` = choice),
-          instruction,
-          presentationHint,
-          infoMessage)
+    } yield Section
+      .AddToList(
+        title,
+        description,
+        shortName,
+        summaryName,
+        includeIf,
+        repeatsMax,
+        pages,
+        formComponent.copy(`type` = choice),
+        instruction,
+        presentationHint,
+        infoMessage
+      )
 
   def sectionGen: Gen[Section] = Gen.oneOf(nonRepeatingPageSectionGen, repeatingPageSectionGen, addToListSectionGen)
 }

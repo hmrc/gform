@@ -23,7 +23,7 @@ import uk.gov.hmrc.gform.sharedmodel.ExampleData
 class HelperSpec extends Spec {
 
   "helper.createEnvelopeRequestBody" should "be compatible with fileuplod expectations" in new ExampleData
-  with ExampleFileUploadData {
+    with ExampleFileUploadData {
     val date = form.envelopeExpiryDate.map(_.ldt).get
     val helper = new Helper(config)
     helper.createEnvelopeRequestBody(formTemplateId, date) shouldBe Json.obj(

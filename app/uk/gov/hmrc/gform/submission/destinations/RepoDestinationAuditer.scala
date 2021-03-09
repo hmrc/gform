@@ -41,7 +41,8 @@ import scala.concurrent.ExecutionContext
 class RepoDestinationAuditer(
   auditRepository: RepoAlgebra[DestinationAudit, FOpt],
   summaryHtmlRepository: RepoAlgebra[SummaryHtml, FOpt],
-  formAlgebra: FormAlgebra[FOpt])(implicit ec: ExecutionContext)
+  formAlgebra: FormAlgebra[FOpt]
+)(implicit ec: ExecutionContext)
     extends DestinationAuditAlgebra[FOpt] with PdfSummaryAlgebra[FOpt] {
   def apply(
     destination: Destination,
@@ -51,28 +52,30 @@ class RepoDestinationAuditer(
     summaryHtml: PdfHtml,
     submissionReference: SubmissionRef,
     template: FormTemplate,
-    model: HandlebarsTemplateProcessorModel)(implicit hc: HeaderCarrier): FOpt[Unit] = destination match {
+    model: HandlebarsTemplateProcessorModel
+  )(implicit hc: HeaderCarrier): FOpt[Unit] = destination match {
     case _: Destination.Composite => ().pure[FOpt]
     case _ =>
       for {
         form          <- formAlgebra.get(formId)
         summaryHtmlId <- findOrInsertSummaryHtml(summaryHtml)
         _ <- apply(
-              DestinationAudit(
-                formId,
-                form.formTemplateId,
-                destination.id,
-                getDestinationType(destination),
-                handlebarsDestinationResponseStatusCode,
-                handlebarsDestinationResponseErrorBody,
-                form.status,
-                form.userId,
-                getCaseworkerUsername(form.formData),
-                getParentFormSubmissionRef(template, model),
-                form.thirdPartyData.reviewData.getOrElse(Map.empty),
-                submissionReference,
-                summaryHtmlId
-              ))
+               DestinationAudit(
+                 formId,
+                 form.formTemplateId,
+                 destination.id,
+                 getDestinationType(destination),
+                 handlebarsDestinationResponseStatusCode,
+                 handlebarsDestinationResponseErrorBody,
+                 form.status,
+                 form.userId,
+                 getCaseworkerUsername(form.formData),
+                 getParentFormSubmissionRef(template, model),
+                 form.thirdPartyData.reviewData.getOrElse(Map.empty),
+                 submissionReference,
+                 summaryHtmlId
+               )
+             )
       } yield ()
   }
 
@@ -85,21 +88,22 @@ class RepoDestinationAuditer(
     for {
       latestAudit <- getLatestForForm(form._id)
       _ <- apply(
-            DestinationAudit(
-              form._id,
-              form.formTemplateId,
-              DestinationId("forcedFormStatusChange"),
-              "forcedFormStatusChange",
-              None,
-              None,
-              form.status,
-              form.userId,
-              getCaseworkerUsername(form.formData),
-              latestAudit.parentFormSubmissionRefs,
-              form.thirdPartyData.reviewData.getOrElse(Map.empty),
-              latestAudit.submissionRef,
-              latestAudit.summaryHtmlId
-            ))
+             DestinationAudit(
+               form._id,
+               form.formTemplateId,
+               DestinationId("forcedFormStatusChange"),
+               "forcedFormStatusChange",
+               None,
+               None,
+               form.status,
+               form.userId,
+               getCaseworkerUsername(form.formData),
+               latestAudit.parentFormSubmissionRefs,
+               form.thirdPartyData.reviewData.getOrElse(Map.empty),
+               latestAudit.submissionRef,
+               latestAudit.summaryHtmlId
+             )
+           )
     } yield ()
 
   def getLatestForForm(formId: FormId)(implicit hc: HeaderCarrier): FOpt[DestinationAudit] =
@@ -133,7 +137,8 @@ class RepoDestinationAuditer(
 
   private def getParentFormSubmissionRef(
     template: FormTemplate,
-    model: HandlebarsTemplateProcessorModel): List[String] = {
+    model: HandlebarsTemplateProcessorModel
+  ): List[String] = {
     import shapeless.syntax.typeable._
 
     import scala.collection.JavaConverters._
@@ -150,7 +155,7 @@ class RepoDestinationAuditer(
 
   private def findOrInsertSummaryHtml(summaryHtml: PdfHtml): FOpt[SummaryHtmlId] =
     findSummaryHtml(summaryHtml)
-      .flatMap(_.fold(insertSummaryHtml(summaryHtml)) { _.id.pure[FOpt] })
+      .flatMap(_.fold(insertSummaryHtml(summaryHtml))(_.id.pure[FOpt]))
 
   private def insertSummaryHtml(summaryHtml: PdfHtml): FOpt[SummaryHtmlId] = {
     val id = SummaryHtmlId(UUID.randomUUID)

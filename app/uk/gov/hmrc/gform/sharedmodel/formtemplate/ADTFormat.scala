@@ -52,7 +52,8 @@ object ADTFormat {
   def adtRead[T: TypeTag](
     typeFieldName: String,
     read1: (String, Reads[_ <: T]),
-    reads: (String, Reads[_ <: T])*): Reads[T] = {
+    reads: (String, Reads[_ <: T])*
+  ): Reads[T] = {
     val readMap = (read1 :: reads.toList).toMap
 
     new Reads[T] {
@@ -69,15 +70,19 @@ object ADTFormat {
   }
 
   def missingTypeFieldValue[T: TypeTag](typeFieldName: String, valid: Set[String]): String =
-    s"""Missing type discriminator field "$typeFieldName" in ${typeName[T]}. Allowed values are ${prettifyList(valid)}."""
+    s"""Missing type discriminator field "$typeFieldName" in ${typeName[T]}. Allowed values are ${prettifyList(
+      valid
+    )}."""
 
   def invalidTypeValueType[T: TypeTag](typeFieldName: String, tpe: JsValue, valid: Set[String]): String =
-    s"""Invalid value ($tpe) for type discriminator field "$typeFieldName" of $tpe in ${typeName[T]}. Allowed values are ${prettifyList(
-      valid)}."""
+    s"""Invalid value ($tpe) for type discriminator field "$typeFieldName" of $tpe in ${typeName[
+      T
+    ]}. Allowed values are ${prettifyList(valid)}."""
 
   def invalidTypeValue[T: TypeTag](typeFieldName: String, tpe: String, valid: Set[String]): String =
-    s"""Invalid value ($tpe) for type discriminator field "$typeFieldName" value of "$tpe" in ${typeName[T]}. Allowed values are ${prettifyList(
-      valid)}."""
+    s"""Invalid value ($tpe) for type discriminator field "$typeFieldName" value of "$tpe" in ${typeName[
+      T
+    ]}. Allowed values are ${prettifyList(valid)}."""
 
   def invalidReadValue[T: TypeTag](s: String, translations: (String, T)*): String =
     s"Invalid JSON value ($s) for custom read of ${typeName[T]}. allowed values are ${prettifyList(translations.map(_._1))}."

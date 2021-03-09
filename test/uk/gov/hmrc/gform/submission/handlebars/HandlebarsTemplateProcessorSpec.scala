@@ -24,16 +24,25 @@ import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 
 class HandlebarsTemplateProcessorSpec extends Spec {
   "apply" must "work with JSON" in {
-    process("I am a {{name}} template", """{"name" : "handlebars"}""", TemplateType.JSON) shouldBe "I am a handlebars template"
+    process(
+      "I am a {{name}} template",
+      """{"name" : "handlebars"}""",
+      TemplateType.JSON
+    ) shouldBe "I am a handlebars template"
   }
 
   it must "work with XML" in {
-    process("<foo>I am a {{name}} template</foo>", """{"name" : "handlebars"}""", TemplateType.XML) shouldBe "<foo>I am a handlebars template</foo>"
+    process(
+      "<foo>I am a {{name}} template</foo>",
+      """{"name" : "handlebars"}""",
+      TemplateType.XML
+    ) shouldBe "<foo>I am a handlebars template</foo>"
   }
 
   it must "work with more complex XML" in {
     SingleQuoteReplacementLexer(
-      "<foo>I am a {{match ^('0') => '<AdoptionCounselling>Yes</AdoptionCounselling>'; ('1') => '<AdoptionAdvice>Yes</AdoptionAdvice>';^ name}} template</foo>") match {
+      "<foo>I am a {{match ^('0') => '<AdoptionCounselling>Yes</AdoptionCounselling>'; ('1') => '<AdoptionAdvice>Yes</AdoptionAdvice>';^ name}} template</foo>"
+    ) match {
       case Left(err) => fail(err)
       case Right(template) =>
         process(
@@ -45,7 +54,11 @@ class HandlebarsTemplateProcessorSpec extends Spec {
   }
 
   it must "work with plain text" in {
-    process("I am a {{name}} template", """{"name" : "handlebars"}""", TemplateType.XML) shouldBe "I am a handlebars template"
+    process(
+      "I am a {{name}} template",
+      """{"name" : "handlebars"}""",
+      TemplateType.XML
+    ) shouldBe "I am a handlebars template"
   }
 
   "JsonEscapingStrategy un-escaping" must "work with apostrophes" in {
@@ -72,7 +85,9 @@ class HandlebarsTemplateProcessorSpec extends Spec {
           PdfHtml(""),
           None,
           StructuredFormValue.ObjectStructure(Nil),
-          model)),
+          model
+        )
+      ),
       templateType
     )
   }
@@ -83,7 +98,8 @@ class HandlebarsTemplateProcessorSpec extends Spec {
   private def process(
     functionCall: String,
     model: HandlebarsTemplateProcessorModel,
-    templateType: TemplateType): String =
+    templateType: TemplateType
+  ): String =
     process(
       functionCall,
       FocussedHandlebarsModelTree(
@@ -94,7 +110,9 @@ class HandlebarsTemplateProcessorSpec extends Spec {
           PdfHtml(""),
           None,
           StructuredFormValue.ObjectStructure(Nil),
-          model)),
+          model
+        )
+      ),
       templateType
     )
 

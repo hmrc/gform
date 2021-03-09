@@ -31,8 +31,8 @@ class EmailCodeVerificationController(
   controllerComponents: ControllerComponents,
   notifierAlgebra: NotifierAlgebra[FOpt],
   emailService: EmailService
-)(
-  implicit ex: ExecutionContext
+)(implicit
+  ex: ExecutionContext
 ) extends BaseController(controllerComponents) {
 
   def sendEmail() =
@@ -54,7 +54,8 @@ class EmailCodeVerificationController(
               Some(notifierEmailAddress.value),
               emailTemplateId.value,
               EmailParametersRecalculated(
-                Map(EmailTemplateVariable("confirmationCode") -> EmailParameterValue(code.code)))
+                Map(EmailTemplateVariable("confirmationCode") -> EmailParameterValue(code.code))
+              )
             )
             .map(_ => NoContent)
       }

@@ -40,9 +40,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     import org.scalatest.prop.TableDrivenPropertyChecks._
     val table = Table(("value", "expected"), ("0", "1"), ("1", "0"), ("0,", "1"), ("1,", "0"))
 
-    forAll(table) {
-      case (v, expected) =>
-        process(s"{{yesNoToEtmpChoice ${quote(v)}}}") shouldBe expected
+    forAll(table) { case (v, expected) =>
+      process(s"{{yesNoToEtmpChoice ${quote(v)}}}") shouldBe expected
     }
   }
 
@@ -79,12 +78,11 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
       ("2", "8", "2019", "20190802"),
       ("10", "11", "2020", "20201110")
     )
-    forAll(t) {
-      case (d, m, y, expected) =>
-        process(
-          "{{toEtmpDate myDate}}",
-          s"""{ "myDate": { "day": "$d", "month": "$m", "year": "$y" } }"""
-        ) shouldBe expected
+    forAll(t) { case (d, m, y, expected) =>
+      process(
+        "{{toEtmpDate myDate}}",
+        s"""{ "myDate": { "day": "$d", "month": "$m", "year": "$y" } }"""
+      ) shouldBe expected
     }
   }
 
@@ -101,12 +99,11 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
       ("2", "8", "2019", "2019-08-02"),
       ("10", "11", "2020", "2020-11-10")
     )
-    forAll(t) {
-      case (d, m, y, expected) =>
-        process(
-          "{{toDesDate myDate}}",
-          s"""{ "myDate": { "day": "$d", "month": "$m", "year": "$y" } }"""
-        ) shouldBe expected
+    forAll(t) { case (d, m, y, expected) =>
+      process(
+        "{{toDesDate myDate}}",
+        s"""{ "myDate": { "day": "$d", "month": "$m", "year": "$y" } }"""
+      ) shouldBe expected
     }
   }
 
@@ -257,9 +254,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
       (""""d"""", 2, """"" "p1" "" "p3"""", "d")
     )
 
-    forAll(t) {
-      case (dflt, index, params, expected) =>
-        process(s"{{removeEmptyAndGet $dflt $index $params}}") shouldBe expected
+    forAll(t) { case (dflt, index, params, expected) =>
+      process(s"{{removeEmptyAndGet $dflt $index $params}}") shouldBe expected
     }
   }
 
@@ -392,7 +388,9 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     import ScalaCheckDrivenPropertyChecks._
 
     forAll(Gen.alphaNumStr) { v =>
-      process(s"""{{match "('0' *) => 'A'; ('1' '0') => 'B'; ('1' '1') => 'C'; ('1' '2') => 'D'" "0" "$v"}}""") shouldBe "A"
+      process(
+        s"""{{match "('0' *) => 'A'; ('1' '0') => 'B'; ('1' '1') => 'C'; ('1' '2') => 'D'" "0" "$v"}}"""
+      ) shouldBe "A"
     }
   }
 
@@ -440,9 +438,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
 
     val table = Table(("value", "expected"), ("false", "true"), ("true", "false"))
 
-    forAll(table) {
-      case (v, expected) =>
-        process(s"{{not ${quote(v)}}}") shouldBe expected
+    forAll(table) { case (v, expected) =>
+      process(s"{{not ${quote(v)}}}") shouldBe expected
     }
   }
 
@@ -461,11 +458,10 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
       ("true", "false", "true")
     )
 
-    forAll(table) {
-      case (v1, v2, expected) =>
-        process(s"{{or ${quote(v1)} ${quote(v2)} null}}") shouldBe expected
-        process(s"{{or ${quote(v1)} null ${quote(v2)}}}") shouldBe expected
-        process(s"{{or null ${quote(v1)} ${quote(v2)}}}") shouldBe expected
+    forAll(table) { case (v1, v2, expected) =>
+      process(s"{{or ${quote(v1)} ${quote(v2)} null}}") shouldBe expected
+      process(s"{{or ${quote(v1)} null ${quote(v2)}}}") shouldBe expected
+      process(s"{{or null ${quote(v1)} ${quote(v2)}}}") shouldBe expected
     }
   }
 
@@ -484,11 +480,10 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
       ("true", "false", "false")
     )
 
-    forAll(table) {
-      case (v1, v2, expected) =>
-        process(s"{{and ${quote(v1)} ${quote(v2)} null}}") shouldBe expected
-        process(s"{{and ${quote(v1)} null ${quote(v2)}}}") shouldBe expected
-        process(s"{{and null ${quote(v1)} ${quote(v2)}}}") shouldBe expected
+    forAll(table) { case (v1, v2, expected) =>
+      process(s"{{and ${quote(v1)} ${quote(v2)} null}}") shouldBe expected
+      process(s"{{and ${quote(v1)} null ${quote(v2)}}}") shouldBe expected
+      process(s"{{and null ${quote(v1)} ${quote(v2)}}}") shouldBe expected
     }
   }
 
@@ -537,9 +532,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
       (98, "99")
     )
 
-    forAll(table) {
-      case (in, out) =>
-        process(s"{{toEtmpParamSequence $in}}") shouldBe out
+    forAll(table) { case (in, out) =>
+      process(s"{{toEtmpParamSequence $in}}") shouldBe out
     }
   }
 
@@ -556,9 +550,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
       (93, "99")
     )
 
-    forAll(table) {
-      case (in, out) =>
-        process(s"{{toEtmpParamSequence (plus 5 $in)}}") shouldBe out
+    forAll(table) { case (in, out) =>
+      process(s"{{toEtmpParamSequence (plus 5 $in)}}") shouldBe out
     }
   }
 
@@ -583,9 +576,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
       ("1", "1", "false"),
       ("1", "2", "false")
     )
-    forAll(table) {
-      case (first, second, result) =>
-        process(s"""{{greaterThan "$first" "$second"}}""") shouldBe result
+    forAll(table) { case (first, second, result) =>
+      process(s"""{{greaterThan "$first" "$second"}}""") shouldBe result
     }
   }
 
@@ -598,9 +590,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
       ("1", "1", "false"),
       ("1", "2,000", "true")
     )
-    forAll(table) {
-      case (first, second, result) =>
-        process(s"""{{lessThan "$first" "$second"}}""") shouldBe result
+    forAll(table) { case (first, second, result) =>
+      process(s"""{{lessThan "$first" "$second"}}""") shouldBe result
     }
   }
 
@@ -613,9 +604,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
       ("1", "1", "true"),
       ("1", "2", "false")
     )
-    forAll(table) {
-      case (first, second, result) =>
-        process(s"""{{equal "$first" "$second"}}""") shouldBe result
+    forAll(table) { case (first, second, result) =>
+      process(s"""{{equal "$first" "$second"}}""") shouldBe result
     }
   }
 
@@ -640,34 +630,45 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
       // format: on
     )
 
-    forAll(table) {
-      case (numbers, expected) =>
-        process(s"{{plus $numbers}}") shouldBe expected
+    forAll(table) { case (numbers, expected) =>
+      process(s"{{plus $numbers}}") shouldBe expected
     }
 
   }
 
   "isSigned" must "return true if the formStatus is Signed, false otherwise" in {
     FormStatus.all.foreach { status =>
-      process("""{{isSigned}}""", DestinationsProcessorModelAlgebra.createFormStatus(status)) shouldBe (status == Signed).toString
+      process(
+        """{{isSigned}}""",
+        DestinationsProcessorModelAlgebra.createFormStatus(status)
+      ) shouldBe (status == Signed).toString
     }
   }
 
   "isAccepted" must "return true if the formStatus is Accepted, false otherwise" in {
     FormStatus.all.foreach { status =>
-      process("""{{isAccepted}}""", DestinationsProcessorModelAlgebra.createFormStatus(status)) shouldBe (status == Accepted).toString
+      process(
+        """{{isAccepted}}""",
+        DestinationsProcessorModelAlgebra.createFormStatus(status)
+      ) shouldBe (status == Accepted).toString
     }
   }
 
   "isAccepting" must "return true if the formStatus is Accepting, false otherwise" in {
     FormStatus.all.foreach { status =>
-      process("""{{isAccepting}}""", DestinationsProcessorModelAlgebra.createFormStatus(status)) shouldBe (status == Accepting).toString
+      process(
+        """{{isAccepting}}""",
+        DestinationsProcessorModelAlgebra.createFormStatus(status)
+      ) shouldBe (status == Accepting).toString
     }
   }
 
   "isReturning" must "return true if the formStatus is Returning, false otherwise" in {
     FormStatus.all.foreach { status =>
-      process("""{{isReturning}}""", DestinationsProcessorModelAlgebra.createFormStatus(status)) shouldBe (status == Returning).toString
+      process(
+        """{{isReturning}}""",
+        DestinationsProcessorModelAlgebra.createFormStatus(status)
+      ) shouldBe (status == Returning).toString
     }
   }
 
@@ -757,7 +758,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
     forAll(
       PrimitiveGen.nonEmptyAlphaNumStrGen,
       PrimitiveGen.nonEmptyAlphaNumStrGen.filter(_.length >= 3).map(_.substring(0, 3)),
-      Gen.chooseNum(0, 5)) { (firstBlock, endTriple, ws) =>
+      Gen.chooseNum(0, 5)
+    ) { (firstBlock, endTriple, ws) =>
       whenever(!firstBlock.isEmpty && endTriple.length == 3) {
         val withSpaces = insertRandomSpaces(firstBlock + endTriple, ws)
         process(s"""{{normalisePostcode "$withSpaces"}}""") shouldBe s"$firstBlock $endTriple"
@@ -787,7 +789,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
          |  "field" : {
          |    "key" : "12345"
          |  }
-         |}""".stripMargin) shouldBe "null"
+         |}""".stripMargin
+    ) shouldBe "null"
   }
 
   "importBySubmissionReference" must "import" in {
@@ -807,7 +810,8 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
         val formTemplateWithDestination =
           formTemplate.copy(
             destinations =
-              Destinations.DestinationList(NonEmptyList.of(wrongDestination, destination), ackSection, decSection))
+              Destinations.DestinationList(NonEmptyList.of(wrongDestination, destination), ackSection, decSection)
+          )
 
         val tree: HandlebarsModelTree =
           HandlebarsModelTree(
@@ -825,12 +829,14 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
               PdfHtml(""),
               None,
               StructuredFormValue.ObjectStructure(Nil),
-              childModel)
+              childModel
+            )
           )
 
         process(
           s"""I am the {{foo}}. {{importBySubmissionReference "${childSubmissionReference.value}" "${destination.id.id}"}}""",
-          FocussedHandlebarsModelTree(tree)) shouldBe "I am the parent. I am the child."
+          FocussedHandlebarsModelTree(tree)
+        ) shouldBe "I am the parent. I am the child."
       }
     }
   }
@@ -855,7 +861,9 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
           PdfHtml(""),
           None,
           StructuredFormValue.ObjectStructure(Nil),
-          model))
+          model
+        )
+      )
     )
   }
 
@@ -873,7 +881,9 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
           PdfHtml(""),
           None,
           StructuredFormValue.ObjectStructure(Nil),
-          model))
+          model
+        )
+      )
     )
 
   private def process(functionCall: String, tree: FocussedHandlebarsModelTree): String =

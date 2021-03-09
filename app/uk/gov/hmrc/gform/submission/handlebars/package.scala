@@ -34,7 +34,8 @@ package object handlebars {
       instructionPdfData: Option[PdfHtml],
       structuredFormData: StructuredFormValue.ObjectStructure,
       model: HandlebarsTemplateProcessorModel,
-      children: HandlebarsModelTree*): HandlebarsModelTree =
+      children: HandlebarsModelTree*
+    ): HandlebarsModelTree =
       Tree(
         HandlebarsModelTreeNode(
           formId,
@@ -43,7 +44,9 @@ package object handlebars {
           model,
           pdfData,
           instructionPdfData,
-          structuredFormData),
-        children: _*)
+          structuredFormData
+        ),
+        children: _*
+      )
   }
 }

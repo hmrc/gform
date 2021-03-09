@@ -43,5 +43,5 @@ object Tree {
   def apply[T](value: T, children: Tree[T]*): Tree[T] = Tree(value, children.toList)
 
   implicit def show[T: Show]: Show[Tree[T]] =
-    Show.show(t => show"${t.value} (${t.children.map { Tree.show[T].show }.mkString(", ")})")
+    Show.show(t => show"${t.value} (${t.children.map(Tree.show[T].show).mkString(", ")})")
 }

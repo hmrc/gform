@@ -40,7 +40,8 @@ class FormController(
   config: AppConfig,
   formTemplateService: FormTemplateService,
   fileUpload: FileUploadAlgebra[Future],
-  formService: FormAlgebra[Future])(implicit ex: ExecutionContext)
+  formService: FormAlgebra[Future]
+)(implicit ex: ExecutionContext)
     extends BaseController(controllerComponents) {
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -92,7 +93,8 @@ class FormController(
     userId: UserId,
     formTemplateId: FormTemplateId,
     accessCode: AccessCode,
-    fileId: FileId): Action[AnyContent] = {
+    fileId: FileId
+  ): Action[AnyContent] = {
     val formIdData = FormIdData.WithAccessCode(userId, formTemplateId, accessCode)
     formAction("deleteFile", formIdData, s"fileId: ${fileId.value}") { implicit request =>
       val result = for {

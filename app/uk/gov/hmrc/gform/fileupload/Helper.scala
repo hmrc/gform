@@ -39,13 +39,13 @@ class Helper(config: FUConfig) {
         "contentTypes"   -> contentTypesJson,
         "maxItems"       -> config.maxItems,
         "maxSize"        -> config.maxSize,
-        "maxSizePerItem" -> config.maxSizePerItem),
+        "maxSizePerItem" -> config.maxSizePerItem
+      ),
       "expiryDate" -> envelopeExpiryDate(expiryDate),
       "metadata"   -> Json.obj("application" -> "gform", "formTemplateId" -> s"${formTemplateId.value}")
     )
 
-  /**
-    * There must be Location header. If not this is exceptional situation!
+  /** There must be Location header. If not this is exceptional situation!
     */
   def extractEnvelopId(resp: HttpResponse): EnvelopeId = resp.header(LOCATION) match {
     case Some(EnvelopeIdExtractor(envelopeId)) => EnvelopeId(envelopeId)
@@ -63,19 +63,18 @@ trait Retrying {
 
   private val logger = LoggerFactory.getLogger(getClass)
 
-  def retry[T](f: => Future[T], delays: Seq[FiniteDuration], msg: String)(
-    implicit ec: ExecutionContext,
-    s: Scheduler): Future[T] =
-    f recoverWith {
-      case t => {
-        delays match {
-          case Nil =>
-            logger.warn(s"Giving up: $msg")
-            Future.failed(t)
-          case delay :: rest =>
-            logger.warn(s"Retrying after $delay: $msg")
-            after(delay, s)(retry(f, rest, msg))
-        }
+  def retry[T](f: => Future[T], delays: Seq[FiniteDuration], msg: String)(implicit
+    ec: ExecutionContext,
+    s: Scheduler
+  ): Future[T] =
+    f recoverWith { case t =>
+      delays match {
+        case Nil =>
+          logger.warn(s"Giving up: $msg")
+          Future.failed(t)
+        case delay :: rest =>
+          logger.warn(s"Retrying after $delay: $msg")
+          after(delay, s)(retry(f, rest, msg))
       }
     }
 }

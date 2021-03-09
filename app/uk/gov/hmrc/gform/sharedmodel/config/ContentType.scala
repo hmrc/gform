@@ -29,16 +29,15 @@ object ContentType {
   val `image/jpeg` = ContentType("image/jpeg")
   val `text/xml` = ContentType("text/xml")
 
-  /**
-    * .xls files
+  /** .xls files
     */
   val `application/vnd.ms-excel` = ContentType("application/vnd.ms-excel")
 
-  /**
-    * Excel2007 and above .xlsx files
+  /** Excel2007 and above .xlsx files
     */
   val `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet` = ContentType(
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  )
 
   implicit val format: Format[ContentType] =
     ValueClassFormat.vformat("contentType", ContentType(_), x => JsString(x.value))

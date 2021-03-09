@@ -41,9 +41,10 @@ trait FileDownloadAlgebra[F[_]] {
       file <- uploadedFiles(envelopeId, env)
     } yield file
 
-  private def uploadedFiles(envelopeId: EnvelopeId, envelope: Envelope)(
-    implicit hc: HeaderCarrier,
-    applicativeM: Applicative[F]): F[List[UploadedFile]] =
+  private def uploadedFiles(envelopeId: EnvelopeId, envelope: Envelope)(implicit
+    hc: HeaderCarrier,
+    applicativeM: Applicative[F]
+  ): F[List[UploadedFile]] =
     envelope.files.traverse[F, UploadedFile] { file: File =>
       getFileBytes(envelopeId, file.fileId)
         .map(bytes => UploadedFile(file, bytes))
@@ -53,8 +54,9 @@ trait FileDownloadAlgebra[F[_]] {
 trait FileUploadAlgebra[F[_]] {
   def createEnvelope(formTypeId: FormTemplateId, expiryDate: LocalDateTime)(implicit hc: HeaderCarrier): F[EnvelopeId]
 
-  def submitEnvelope(submission: Submission, summaries: PdfAndXmlSummaries, hmrcDms: HmrcDms)(
-    implicit hc: HeaderCarrier): F[Unit]
+  def submitEnvelope(submission: Submission, summaries: PdfAndXmlSummaries, hmrcDms: HmrcDms)(implicit
+    hc: HeaderCarrier
+  ): F[Unit]
 
   def deleteFile(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): F[Unit]
 

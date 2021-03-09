@@ -48,7 +48,8 @@ class FormComponentSpec2 extends Spec {
           Vertical,
           List.empty[Int],
           None,
-          None),
+          None
+        ),
         toSmartString("Select the tax type"),
         None,
         None,
@@ -61,7 +62,8 @@ class FormComponentSpec2 extends Spec {
         onlyShowOnSummary = false,
         None,
         Some(List(SummariseGroupAsGrid))
-      ))
+      )
+    )
   }
 
   private def toFieldValue(template: String): JsResult[FormComponent] = {

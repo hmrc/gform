@@ -22,7 +22,8 @@ case class EmailTemplate(
   to: Seq[String],
   templateId: String, //the template ID that the content will be put into
   parameters: Map[String, String], //the fieldId and values that will be passed into the email
-  private val force: Boolean = false)
+  private val force: Boolean = false
+)
 
 object EmailTemplate {
   implicit val format: OFormat[EmailTemplate] = Json.format[EmailTemplate]

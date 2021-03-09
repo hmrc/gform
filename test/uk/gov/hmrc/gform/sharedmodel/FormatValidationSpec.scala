@@ -27,10 +27,12 @@ class FormatValidationSpec extends Spec {
 
   it should "return Sterling with positiveOnly=false" in createTest(
     "sterling",
-    Sterling(RoundingMode.defaultRoundingMode, false))
+    Sterling(RoundingMode.defaultRoundingMode, false)
+  )
   it should "return Sterling with positiveOnly=true" in createTest(
     "positiveSterling",
-    Sterling(RoundingMode.defaultRoundingMode, true))
+    Sterling(RoundingMode.defaultRoundingMode, true)
+  )
   it should "return ukBankAccountNumber" in createTest("ukBankAccountNumber", UkBankAccountNumber)
   it should "return telephoneNumber" in createTest("telephoneNumber", TelephoneNumber)
   it should "return email" in createTest("email", Email)
@@ -57,7 +59,8 @@ class FormatValidationSpec extends Spec {
         derived = false,
         errorMessage = None,
         presentationHint = None
-      ))
+      )
+    )
   }
   it should "return CompanyRegistrationNumber" in createTest("companyRegistrationNumber", CompanyRegistrationNumber)
 
@@ -84,7 +87,8 @@ class FormatValidationSpec extends Spec {
         derived = false,
         errorMessage = None,
         presentationHint = None
-      ))
+      )
+    )
   }
 
   private def makeJson(format: String) = Json.parse(getJson(format))

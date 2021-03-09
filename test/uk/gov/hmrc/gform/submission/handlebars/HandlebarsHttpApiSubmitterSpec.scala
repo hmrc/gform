@@ -44,7 +44,8 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
         .expectHttpGet(destination.profile, expectedUri, Right(expectedResponse))
 
       sp.submitter.apply(destination, HandlebarsTemplateProcessorModel.empty, tree(processorModel)) shouldBe Right(
-        expectedResponse)
+        expectedResponse
+      )
     }
   }
 
@@ -65,7 +66,8 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
         .expectHttpPostJson(destination.profile, expectedBody, expectedUri, Right(expectedResponse))
 
       sp.submitter.apply(destination, HandlebarsTemplateProcessorModel.empty, tree(processorModel)) shouldBe Right(
-        expectedResponse)
+        expectedResponse
+      )
     }
   }
 
@@ -80,7 +82,8 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
           .expectHttpPostJson(destination.profile, "", expectedUri, Right(expectedResponse))
 
         sp.submitter.apply(destination, HandlebarsTemplateProcessorModel.empty, tree(processorModel)) shouldBe Right(
-          expectedResponse)
+          expectedResponse
+        )
     }
   }
 
@@ -101,7 +104,8 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
         .expectHttpPutJson(destination.profile, expectedBody, expectedUri, Right(expectedResponse))
 
       sp.submitter.apply(destination, HandlebarsTemplateProcessorModel.empty, tree(processorModel)) shouldBe Right(
-        expectedResponse)
+        expectedResponse
+      )
     }
   }
 
@@ -116,20 +120,23 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
           .expectHttpPutJson(destination.profile, "", expectedUri, Right(expectedResponse))
 
         sp.submitter.apply(destination, HandlebarsTemplateProcessorModel.empty, tree(processorModel)) shouldBe Right(
-          expectedResponse)
+          expectedResponse
+        )
     }
   }
 
   case class SubmitterParts[F[_]](
     submitter: HandlebarsHttpApiSubmitter[F],
     httpClient: HttpClient[F],
-    templateProcessor: HandlebarsTemplateProcessor) {
+    templateProcessor: HandlebarsTemplateProcessor
+  ) {
 
     def expectTemplateProcessorApplication(
       in: String,
       modelInFocus: HandlebarsTemplateProcessorModel,
       templateType: TemplateType,
-      out: String): SubmitterParts[F] = {
+      out: String
+    ): SubmitterParts[F] = {
       (
         templateProcessor
           .apply(
@@ -148,7 +155,8 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
     def expectHttpGet(
       profile: ProfileName,
       expectedUri: String,
-      expectedResponse: F[HttpResponse]): SubmitterParts[F] = {
+      expectedResponse: F[HttpResponse]
+    ): SubmitterParts[F] = {
       (httpClient
         .get(_: String)(_: HeaderCarrier))
         .expects(expectedUri, hc)
@@ -161,7 +169,8 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
       profile: ProfileName,
       expectedBody: String,
       expectedUri: String,
-      expectedResponse: F[HttpResponse]): SubmitterParts[F] = {
+      expectedResponse: F[HttpResponse]
+    ): SubmitterParts[F] = {
       (httpClient
         .post(_: String, _: String)(_: HeaderCarrier))
         .expects(expectedUri, expectedBody, hc)
@@ -174,7 +183,8 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
       profile: ProfileName,
       expectedBody: String,
       expectedUri: String,
-      expectedResponse: F[HttpResponse]): SubmitterParts[F] = {
+      expectedResponse: F[HttpResponse]
+    ): SubmitterParts[F] = {
       (httpClient
         .put(_: String, _: String)(_: HeaderCarrier))
         .expects(expectedUri, expectedBody, hc)
@@ -208,6 +218,7 @@ class HandlebarsHttpApiSubmitterSpec extends Spec with ScalaCheckDrivenPropertyC
       PdfHtml(""),
       None,
       StructuredFormValue.ObjectStructure(Nil),
-      model)
+      model
+    )
 
 }

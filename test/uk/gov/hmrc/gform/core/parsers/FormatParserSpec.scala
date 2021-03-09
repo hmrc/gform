@@ -32,7 +32,9 @@ class FormatParserSpec extends Spec {
     RoundingMode.defaultRoundingMode,
     Some(
       List(
-        SelectionCriteria(CsvColumnName("PortType"), SelectionCriteriaExpr(FormCtx(FormComponentId("travelMethod")))))),
+        SelectionCriteria(CsvColumnName("PortType"), SelectionCriteriaExpr(FormCtx(FormComponentId("travelMethod"))))
+      )
+    ),
     EmailVerification.NoVerification
   ) _
 
@@ -49,28 +51,41 @@ class FormatParserSpec extends Spec {
   "after 2017-04-02 -2" should "be parsed successfully" in {
     val res = validate("after 2017-04-02 -2")
     res.right.value should be(
-      DateFormat(DateConstraints(
-        List(DateConstraint(After, ConcreteDate(Year.Exact(2017), Month.Exact(4), Day.Exact(2)), OffsetDate(-2))))))
+      DateFormat(
+        DateConstraints(
+          List(DateConstraint(After, ConcreteDate(Year.Exact(2017), Month.Exact(4), Day.Exact(2)), OffsetDate(-2)))
+        )
+      )
+    )
   }
 
   "after next-05-06 -2" should "be parsed successfully" ignore { //ignored until handled in gform-frontend
     val res = validate("after next-05-06 -2")
     res.right.value should be(
-      DateFormat(DateConstraints(
-        List(DateConstraint(After, ConcreteDate(Year.Next, Month.Exact(5), Day.Exact(6)), OffsetDate(-2))))))
+      DateFormat(
+        DateConstraints(
+          List(DateConstraint(After, ConcreteDate(Year.Next, Month.Exact(5), Day.Exact(6)), OffsetDate(-2)))
+        )
+      )
+    )
   }
 
   "after ${otherField}" should "be parsed successfully" in {
     val res = validate("after ${otherField}")
     res.right.value should be(
-      DateFormat(DateConstraints(List(DateConstraint(After, DateField(FormComponentId("otherField")), OffsetDate(0))))))
+      DateFormat(DateConstraints(List(DateConstraint(After, DateField(FormComponentId("otherField")), OffsetDate(0)))))
+    )
   }
 
   "after previous-05-06 0" should "be parsed successfully" ignore { //ignored until handled in gform-frontend
     val res = validate("after previous-05-06 0")
     res.right.value should be(
-      DateFormat(DateConstraints(
-        List(DateConstraint(After, ConcreteDate(Year.Previous, Month.Exact(5), Day.Exact(6)), OffsetDate(0))))))
+      DateFormat(
+        DateConstraints(
+          List(DateConstraint(After, ConcreteDate(Year.Previous, Month.Exact(5), Day.Exact(6)), OffsetDate(0)))
+        )
+      )
+    )
   }
 
   "before anyFieldId anotherWord 9" should "throw exception" in {
@@ -81,7 +96,9 @@ class FormatParserSpec extends Spec {
         """Unable to parse expression before anyFieldId anotherWord 9.
           |Errors:
           |before anyFieldId anotherWord 9:1: unexpected characters; expected '${' or 'previous' or 'next' or '(19|20)\d\d' or 'today' or 'YYYY'
-          |before anyFieldId anotherWord 9       ^""".stripMargin))
+          |before anyFieldId anotherWord 9       ^""".stripMargin
+      )
+    )
   }
 
   "after 2016-6-9 9" should "throw exception" in {
@@ -91,7 +108,8 @@ class FormatParserSpec extends Spec {
       UnexpectedState("""|Unable to parse expression after 2016-6-9 9.
                          |Errors:
                          |after 2016-6-9 9:1: unexpected characters; expected 'MM' or '0[1-9]|1[012]' or '\s+'
-                         |after 2016-6-9 9           ^""".stripMargin))
+                         |after 2016-6-9 9           ^""".stripMargin)
+    )
   }
 
   "after YYYY-04-DD" should "be parsed successfully" in {
@@ -99,7 +117,9 @@ class FormatParserSpec extends Spec {
 
     res.right.value should be(
       DateFormat(
-        DateConstraints(List(DateConstraint(After, ConcreteDate(Year.Any, Month.Exact(4), Day.Any), OffsetDate(0))))))
+        DateConstraints(List(DateConstraint(After, ConcreteDate(Year.Any, Month.Exact(4), Day.Any), OffsetDate(0))))
+      )
+    )
 
   }
 
@@ -111,70 +131,109 @@ class FormatParserSpec extends Spec {
   "before 2017-04-02 -2" should "be parsed successfully" in {
     val res = validate("before 2017-04-02 -2")
     res.right.value should be(
-      DateFormat(DateConstraints(
-        List(DateConstraint(Before, ConcreteDate(Year.Exact(2017), Month.Exact(4), Day.Exact(2)), OffsetDate(-2))))))
+      DateFormat(
+        DateConstraints(
+          List(DateConstraint(Before, ConcreteDate(Year.Exact(2017), Month.Exact(4), Day.Exact(2)), OffsetDate(-2)))
+        )
+      )
+    )
   }
 
   "before and after" should "be parsed successfully" in {
     val res = validate("before 2017-04-02 -2,after 2015-02-01 +42")
     res.right.value should be(
-      DateFormat(DateConstraints(List(
-        DateConstraint(Before, ConcreteDate(Year.Exact(2017), Month.Exact(4), Day.Exact(2)), OffsetDate(-2)),
-        DateConstraint(After, ConcreteDate(Year.Exact(2015), Month.Exact(2), Day.Exact(1)), OffsetDate(42))
-      ))))
+      DateFormat(
+        DateConstraints(
+          List(
+            DateConstraint(Before, ConcreteDate(Year.Exact(2017), Month.Exact(4), Day.Exact(2)), OffsetDate(-2)),
+            DateConstraint(After, ConcreteDate(Year.Exact(2015), Month.Exact(2), Day.Exact(1)), OffsetDate(42))
+          )
+        )
+      )
+    )
   }
 
   "before and after with first and last day" should "be parsed successfully" in {
     val res = validate("before 2017-04-firstDay -2, after 2015-02-lastDay +42")
     res.right.value should be(
-      DateFormat(DateConstraints(List(
-        DateConstraint(Before, ConcreteDate(Year.Exact(2017), Month.Exact(4), Day.First), OffsetDate(-2)),
-        DateConstraint(After, ConcreteDate(Year.Exact(2015), Month.Exact(2), Day.Last), OffsetDate(42))
-      ))))
+      DateFormat(
+        DateConstraints(
+          List(
+            DateConstraint(Before, ConcreteDate(Year.Exact(2017), Month.Exact(4), Day.First), OffsetDate(-2)),
+            DateConstraint(After, ConcreteDate(Year.Exact(2015), Month.Exact(2), Day.Last), OffsetDate(42))
+          )
+        )
+      )
+    )
   }
 
   "precisely 2018-04-firstDay" should "be parsed successfully" in {
     val res = validate("precisely 2018-04-firstDay")
     res.right.value should be(
-      DateFormat(DateConstraints(
-        List(DateConstraint(Precisely, ConcreteDate(Year.Exact(2018), Month.Exact(4), Day.First), OffsetDate(0))))))
+      DateFormat(
+        DateConstraints(
+          List(DateConstraint(Precisely, ConcreteDate(Year.Exact(2018), Month.Exact(4), Day.First), OffsetDate(0)))
+        )
+      )
+    )
   }
 
   "precisely 2019-08-lastDay" should "be parsed successfully" in {
     val res = validate("precisely 2019-08-lastDay")
     res.right.value should be(
-      DateFormat(DateConstraints(
-        List(DateConstraint(Precisely, ConcreteDate(Year.Exact(2019), Month.Exact(8), Day.Last), OffsetDate(0))))))
+      DateFormat(
+        DateConstraints(
+          List(DateConstraint(Precisely, ConcreteDate(Year.Exact(2019), Month.Exact(8), Day.Last), OffsetDate(0)))
+        )
+      )
+    )
   }
 
   "before 2019-08-lastDay" should "be parsed successfully" in {
     val res = validate("before 2019-08-lastDay")
     res.right.value should be(
-      DateFormat(DateConstraints(
-        List(DateConstraint(Before, ConcreteDate(Year.Exact(2019), Month.Exact(8), Day.Last), OffsetDate(0))))))
+      DateFormat(
+        DateConstraints(
+          List(DateConstraint(Before, ConcreteDate(Year.Exact(2019), Month.Exact(8), Day.Last), OffsetDate(0)))
+        )
+      )
+    )
   }
 
   "before 2019-08-lastDay -2" should "be parsed successfully" in {
     val res = validate("before 2019-08-lastDay -2")
     res.right.value should be(
-      DateFormat(DateConstraints(
-        List(DateConstraint(Before, ConcreteDate(Year.Exact(2019), Month.Exact(8), Day.Last), OffsetDate(-2))))))
+      DateFormat(
+        DateConstraints(
+          List(DateConstraint(Before, ConcreteDate(Year.Exact(2019), Month.Exact(8), Day.Last), OffsetDate(-2)))
+        )
+      )
+    )
   }
 
   "precisely 2019-08-03" should "be parsed successfully" in {
     val res = validate("precisely 2019-08-03")
     res.right.value should be(
-      DateFormat(DateConstraints(
-        List(DateConstraint(Precisely, ConcreteDate(Year.Exact(2019), Month.Exact(8), Day.Exact(3)), OffsetDate(0))))))
+      DateFormat(
+        DateConstraints(
+          List(DateConstraint(Precisely, ConcreteDate(Year.Exact(2019), Month.Exact(8), Day.Exact(3)), OffsetDate(0)))
+        )
+      )
+    )
   }
 
   "expressions without offset" should "be parsed successfully" in {
     val res = validate("before 2017-04-02,after 2017-02-01")
     res.right.value should be(
-      DateFormat(DateConstraints(List(
-        DateConstraint(Before, ConcreteDate(Year.Exact(2017), Month.Exact(4), Day.Exact(2)), OffsetDate(0)),
-        DateConstraint(After, ConcreteDate(Year.Exact(2017), Month.Exact(2), Day.Exact(1)), OffsetDate(0))
-      ))))
+      DateFormat(
+        DateConstraints(
+          List(
+            DateConstraint(Before, ConcreteDate(Year.Exact(2017), Month.Exact(4), Day.Exact(2)), OffsetDate(0)),
+            DateConstraint(After, ConcreteDate(Year.Exact(2017), Month.Exact(2), Day.Exact(1)), OffsetDate(0))
+          )
+        )
+      )
+    )
   }
 
   "number" should "be parsed successfully" in {
@@ -205,7 +264,8 @@ class FormatParserSpec extends Spec {
   "positiveNumber(n,m,'u')" should "be parsed successfully" in {
     val res = validate("positiveNumber(3,4,'u')")
     res.right.value should be(
-      TextFormat(PositiveNumber(3, 4, RoundingMode.defaultRoundingMode, Some(toLocalisedString("u")))))
+      TextFormat(PositiveNumber(3, 4, RoundingMode.defaultRoundingMode, Some(toLocalisedString("u"))))
+    )
   }
 
   "positiveWholeNumber" should "be parsed successfully" in {
@@ -224,9 +284,17 @@ class FormatParserSpec extends Spec {
       TextFormat(
         Lookup(
           Port,
-          Some(List(SelectionCriteria(
-            CsvColumnName("PortType"),
-            SelectionCriteriaExpr(FormCtx(FormComponentId("travelMethod")))))))))
+          Some(
+            List(
+              SelectionCriteria(
+                CsvColumnName("PortType"),
+                SelectionCriteriaExpr(FormCtx(FormComponentId("travelMethod")))
+              )
+            )
+          )
+        )
+      )
+    )
   }
 
 }

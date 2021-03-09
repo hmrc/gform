@@ -37,12 +37,14 @@ import uk.gov.hmrc.http.HeaderCarrier
 class FileUploadService(
   fileUploadConnector: FileUploadConnector,
   fileUploadFrontendConnector: FileUploadFrontendConnector,
-  timeModule: TimeProvider = new TimeProvider)(implicit ex: ExecutionContext)
+  timeModule: TimeProvider = new TimeProvider
+)(implicit ex: ExecutionContext)
     extends FileUploadAlgebra[Future] with FileDownloadAlgebra[Future] {
   private val logger = LoggerFactory.getLogger(getClass)
 
-  def createEnvelope(formTypeId: FormTemplateId, expiryDate: LocalDateTime)(
-    implicit hc: HeaderCarrier): Future[EnvelopeId] = {
+  def createEnvelope(formTypeId: FormTemplateId, expiryDate: LocalDateTime)(implicit
+    hc: HeaderCarrier
+  ): Future[EnvelopeId] = {
     val f = fileUploadConnector.createEnvelope(formTypeId, expiryDate)
     f map { id =>
       logger.debug(s"env-id creation: $id")
@@ -50,8 +52,9 @@ class FileUploadService(
     f
   }
 
-  def submitEnvelope(submission: Submission, summaries: PdfAndXmlSummaries, hmrcDms: HmrcDms)(
-    implicit hc: HeaderCarrier): Future[Unit] = {
+  def submitEnvelope(submission: Submission, summaries: PdfAndXmlSummaries, hmrcDms: HmrcDms)(implicit
+    hc: HeaderCarrier
+  ): Future[Unit] = {
     logger.debug(s"env-id submit: ${submission.envelopeId}")
     val date = timeModule.localDateTime().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
     val fileNamePrefix = s"${submission.submissionRef.withoutHyphens}-$date"
@@ -66,7 +69,8 @@ class FileUploadService(
         fileId,
         s"$fileNamePrefix-$fileNameSuffix.pdf",
         ByteString(summaries.pdfSummary.pdfContent),
-        ContentType.`application/pdf`)
+        ContentType.`application/pdf`
+      )
     }
 
     def uploadInstructionPdfF: Future[Unit] =
@@ -76,7 +80,8 @@ class FileUploadService(
           pdf,
           s"$fileNamePrefix-iform.pdf",
           ByteString(iPdf.pdfContent),
-          ContentType.`application/pdf`)
+          ContentType.`application/pdf`
+        )
       }
 
     def uploadFormDataF: Future[Unit] =
@@ -125,8 +130,9 @@ class FileUploadService(
   def deleteFile(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): Future[Unit] =
     fileUploadConnector.deleteFile(envelopeId, fileId)
 
-  def uploadAttachment(envelopeId: EnvelopeId, fileAttachment: FileAttachment)(
-    implicit hc: HeaderCarrier): Future[Unit] =
+  def uploadAttachment(envelopeId: EnvelopeId, fileAttachment: FileAttachment)(implicit
+    hc: HeaderCarrier
+  ): Future[Unit] =
     fileUploadFrontendConnector.upload(
       envelopeId,
       FileId(UUID.randomUUID().toString),

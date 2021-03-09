@@ -26,9 +26,8 @@ object HandlebarsDestinationResponse {
     HandlebarsDestinationResponse(destination.id, response.status, responseJson(response))
 
   private def responseJson(response: HttpResponse): JsValue =
-    try {
-      Option(response.json) getOrElse JsNull
-    } catch {
+    try Option(response.json) getOrElse JsNull
+    catch {
       case _: Exception => JsNull
     }
 }

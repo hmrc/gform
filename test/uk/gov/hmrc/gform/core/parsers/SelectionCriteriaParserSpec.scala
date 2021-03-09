@@ -35,7 +35,8 @@ class SelectionCriteriaParserSpec extends Spec {
     val res = validate("country.CountryCode")
 
     res.right.value should be(
-      SelectionCriteriaReference(FormCtx(FormComponentId("country")), CsvColumnName("CountryCode")))
+      SelectionCriteriaReference(FormCtx(FormComponentId("country")), CsvColumnName("CountryCode"))
+    )
   }
 
   "Numeric value" should "be parsed successfully" in {

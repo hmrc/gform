@@ -39,7 +39,8 @@ object SummaryHtml {
           "id"          -> JsString(id.value.toString),
           "hash"        -> JsNumber(summaryHtml.hashCode),
           "summaryHtml" -> JsString(summaryHtml.html)
-        ))
+        )
+      )
     }
   }
 }

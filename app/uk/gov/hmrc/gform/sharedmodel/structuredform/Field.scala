@@ -21,7 +21,8 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils
 case class Field(
   name: FieldName,
   value: StructuredFormValue,
-  alternativeFieldNames: Map[StructuredFormDataFieldNamePurpose, FieldName] = Map.empty) {
+  alternativeFieldNames: Map[StructuredFormDataFieldNamePurpose, FieldName] = Map.empty
+) {
 
   def nameFor(structuredFormDataFieldNamePurpose: StructuredFormDataFieldNamePurpose): FieldName =
     alternativeFieldNames.getOrElse(structuredFormDataFieldNamePurpose, name)
@@ -34,10 +35,11 @@ object Field {
 
     implicit val alternativeFieldNamesFormat: Format[Map[StructuredFormDataFieldNamePurpose, FieldName]] =
       JsonUtils.formatMap(
-        {
-          case StructuredFormDataFieldNamePurpose.roboticsXml => RoboticsXml
-        }, {
-          case RoboticsXml => StructuredFormDataFieldNamePurpose.roboticsXml
+        { case StructuredFormDataFieldNamePurpose.roboticsXml =>
+          RoboticsXml
+        },
+        { case RoboticsXml =>
+          StructuredFormDataFieldNamePurpose.roboticsXml
         }
       )
 

@@ -57,7 +57,8 @@ class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
     authConfigValue shouldBe JsSuccess(
       HmrcAgentWithEnrolmentModule(
         AllowAnyAgentAffinityUser,
-        EnrolmentAuth(ServiceId("Z"), DoCheck(Always, RejectAccess, NoCheck)))
+        EnrolmentAuth(ServiceId("Z"), DoCheck(Always, RejectAccess, NoCheck))
+      )
     )
   }
 
@@ -72,7 +73,8 @@ class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
     authConfigValue shouldBe JsSuccess(
       HmrcAgentWithEnrolmentModule(
         AllowAnyAgentAffinityUser,
-        EnrolmentAuth(ServiceId("Z"), DoCheck(Always, RejectAccess, RegimeIdCheck(RegimeId("IP")))))
+        EnrolmentAuth(ServiceId("Z"), DoCheck(Always, RejectAccess, RegimeIdCheck(RegimeId("IP"))))
+      )
     )
   }
 
@@ -107,7 +109,8 @@ class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
                 None,
                 List.empty,
                 NonEmptyList.of(
-                  IdentifierRecipe("EtmpRegistrationNumber", FormCtx(FormComponentId("eeittReferenceNumber")))),
+                  IdentifierRecipe("EtmpRegistrationNumber", FormCtx(FormComponentId("eeittReferenceNumber")))
+                ),
                 List.empty
               ),
               NoAction
@@ -152,7 +155,8 @@ class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
                 None,
                 List.empty,
                 NonEmptyList.of(
-                  IdentifierRecipe("EtmpRegistrationNumber", FormCtx(FormComponentId("eeittReferenceNumber")))),
+                  IdentifierRecipe("EtmpRegistrationNumber", FormCtx(FormComponentId("eeittReferenceNumber")))
+                ),
                 List.empty
               ),
               LegacyFcEnrolmentVerifier("NonUKCountryCode")
@@ -173,8 +177,9 @@ class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
   }
 
   it should "return no action with input LegacyFcEnrolmentVerifier('NonUKCountryCode')" in {
-    AuthConfig.enrolmentActionMatch(Some(LegacyFcEnrolmentVerifier("NonUKCountryCode"))) shouldBe LegacyFcEnrolmentVerifier(
-      "NonUKCountryCode")
+    AuthConfig.enrolmentActionMatch(
+      Some(LegacyFcEnrolmentVerifier("NonUKCountryCode"))
+    ) shouldBe LegacyFcEnrolmentVerifier("NonUKCountryCode")
   }
 
   private def toAuthConfig(authConfig: String): JsResult[AuthConfig] = {

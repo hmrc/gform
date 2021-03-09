@@ -28,7 +28,8 @@ object SchemaValidator extends App {
 
   validate2(
     "/home/pasquale/Downloads/SendApplicationForms.xsd",
-    "/home/pasquale/hmrc/dev/gform/ofsted_example_templates/SendApplicationFormSchema.xml")
+    "/home/pasquale/hmrc/dev/gform/ofsted_example_templates/SendApplicationFormSchema.xml"
+  )
 
   def validate(xmlFile: String, xsdFile: String): Boolean = {
     try {

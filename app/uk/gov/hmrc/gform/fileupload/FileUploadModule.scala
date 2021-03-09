@@ -31,7 +31,8 @@ class FileUploadModule(
   configModule: ConfigModule,
   wSHttpModule: WSHttpModule,
   timeModule: TimeModule,
-  akkaModule: AkkaModule)(implicit ex: ExecutionContext) {
+  akkaModule: AkkaModule
+)(implicit ex: ExecutionContext) {
 
   val fileUploadConnector: FileUploadConnector =
     new FileUploadConnector(config, wSHttpModule.auditableWSHttp, timeModule.timeProvider)

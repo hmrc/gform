@@ -28,7 +28,8 @@ object FormatParser {
   def validate(
     rm: RoundingMode,
     selectionCriteria: Option[List[SelectionCriteria]],
-    emailVerification: EmailVerification)(expression: String): Opt[FormatExpr] =
+    emailVerification: EmailVerification
+  )(expression: String): Opt[FormatExpr] =
     validateWithParser(expression, expr(rm)(selectionCriteria)(emailVerification))
 
   lazy val expr: RoundingMode => Option[List[SelectionCriteria]] => EmailVerification => Parser[FormatExpr] = rm =>
@@ -37,7 +38,7 @@ object FormatParser {
         dateFormat |
           textFormat(rm)(selectionCriteria)(emailVerification) |
           anyWordExpression
-  }
+      }
 
   lazy val dateFormat: Parser[DateFormat] = {
     anyDateConstraint ^^ { (loc, constraints) =>
@@ -111,7 +112,7 @@ object FormatParser {
             governmentIdFormat |
             basicFormat(selectionCriteria) |
             countryCodeFormat
-    }
+        }
 
   lazy val countryCodeFormat: Parser[TextFormat] = {
     "countryCode" ^^ { (loc, _) =>
@@ -241,7 +242,7 @@ object FormatParser {
   lazy val positiveWholeNumberFormat: RoundingMode => Parser[TextFormat] = rm =>
     "positiveWholeNumber" ^^ { (loc, _) =>
       TextFormat(PositiveNumber(maxFractionalDigits = 0, roundingMode = rm))
-  }
+    }
 
   lazy val moneyFormat: RoundingMode => Parser[TextFormat] = rm => {
     "sterling" ^^ { (loc, _) =>

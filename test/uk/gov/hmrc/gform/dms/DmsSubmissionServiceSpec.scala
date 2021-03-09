@@ -67,7 +67,8 @@ class DmsSubmissionServiceSpec extends Spec {
     val fileAttachment = FileAttachment(
       FileSystems.getDefault().getPath("some-dir", "some-file"),
       "file-content".getBytes(),
-      Some("application/json"))
+      Some("application/json")
+    )
 
     val fileAttachments = List(fileAttachment)
 
@@ -121,7 +122,8 @@ class DmsSubmissionServiceSpec extends Spec {
     fileUpload: FileUploadAlgebra[Id],
     pdfGenerator: PdfGeneratorAlgebra[Id],
     documentLoader: MockFunction1[Array[Byte], PDDocument],
-    clock: Clock) {
+    clock: Clock
+  ) {
     def expectCreateEnvelope(formTemplateId: FormTemplateId, envelopeId: EnvelopeId): Fixture = {
       (fileUpload
         .createEnvelope(_: FormTemplateId, _: LocalDateTime)(_: HeaderCarrier))
@@ -161,7 +163,8 @@ class DmsSubmissionServiceSpec extends Spec {
       submission: Submission,
       pdfAndXmlSummaries: PdfAndXmlSummaries,
       hmrcDms: HmrcDms,
-      numberOfAttachments: Int): Fixture = {
+      numberOfAttachments: Int
+    ): Fixture = {
       (fileUpload
         .submitEnvelope(_: Submission, _: PdfAndXmlSummaries, _: HmrcDms)(_: HeaderCarrier))
         .expects(submission, pdfAndXmlSummaries, hmrcDms, hc)

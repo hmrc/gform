@@ -36,7 +36,8 @@ class XmlToStructuredFormValueSpec extends Spec {
         List(
           Field(FieldName("bar"), ArrayNode(List(TextNode("Hello"), TextNode("World")))),
           Field(FieldName("baz"), ArrayNode(List(TextNode("Goodbye"))))
-        ))
+        )
+      )
     )
   }
 
@@ -47,7 +48,8 @@ class XmlToStructuredFormValueSpec extends Spec {
         List(
           Field(FieldName("bar"), ArrayNode(List(TextNode("Hello"), TextNode("World")))),
           Field(FieldName("baz"), ArrayNode(List(TextNode("Goodbye"))))
-        ))
+        )
+      )
     )
   }
 
