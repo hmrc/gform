@@ -44,19 +44,18 @@ trait FormGen {
       thirdPartyData <- ThirdPartyDataGen.thirdPartyDataGen
       expiryDate     <- Gen.option(EnvelopeExpiryDateGen.envelopeExpiryDateGen)
       formComponentIdToFileIdMapping = FormComponentIdToFileIdMapping.empty
-    } yield
-      Form(
-        formId,
-        envelopeId,
-        userId,
-        formTemplateId,
-        formData,
-        status,
-        visitIndex,
-        thirdPartyData,
-        expiryDate,
-        formComponentIdToFileIdMapping
-      )
+    } yield Form(
+      formId,
+      envelopeId,
+      userId,
+      formTemplateId,
+      formData,
+      status,
+      visitIndex,
+      thirdPartyData,
+      expiryDate,
+      formComponentIdToFileIdMapping
+    )
 }
 
 object FormGen extends FormGen

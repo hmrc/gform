@@ -54,6 +54,7 @@ object DependencyGraph {
   }
 
   def constructDependencyGraph(
-    graph: Graph[FormComponentId, DiEdge]): Either[graph.NodeT, graph.LayeredTopologicalOrder[graph.NodeT]] =
+    graph: Graph[FormComponentId, DiEdge]
+  ): Either[graph.NodeT, graph.LayeredTopologicalOrder[graph.NodeT]] =
     graph.topologicalSort.map(_.toLayered)
 }

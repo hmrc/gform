@@ -29,7 +29,8 @@ import uk.gov.hmrc.play.bootstrap.config.DefaultHttpAuditEvent
 import scala.concurrent.ExecutionContext
 
 class AuditingModule(configModule: ConfigModule, akkaModule: AkkaModule, applicationLifecycle: ApplicationLifecycle)(
-  implicit ec: ExecutionContext) {
+  implicit ec: ExecutionContext
+) {
   self =>
 
   val auditConnector: AuditConnector =

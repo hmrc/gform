@@ -21,17 +21,18 @@ import scala.xml.{ Node, Text }
 
 object XmlToStructuredFormValue {
   def apply(node: Node): StructuredFormValue =
-    (node.child.toList.partition(_.isInstanceOf[Text]) match {
+    node.child.toList.partition(_.isInstanceOf[Text]) match {
       case (Nil, children) => buildObjectStructureFromChildren(children)
       case (texts, Nil)    => StructuredFormValue.TextNode(texts.mkString(""))
       case (_, children)   => buildObjectStructureFromChildren(children)
-    })
+    }
 
   private def buildObjectStructureFromChildren(children: List[Node]): StructuredFormValue.ObjectStructure =
     buildObjectStructureFromGroupedChildren(children.groupBy(_.label))
 
   private def buildObjectStructureFromGroupedChildren(
-    children: Map[String, List[Node]]): StructuredFormValue.ObjectStructure =
+    children: Map[String, List[Node]]
+  ): StructuredFormValue.ObjectStructure =
     StructuredFormValue.ObjectStructure(
       children.toList.map { case (n, vs) => createField(FieldName(n), vs) }
     )

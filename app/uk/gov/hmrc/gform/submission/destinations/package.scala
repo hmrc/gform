@@ -26,10 +26,11 @@ package object destinations {
   def genericLogMessage(formId: FormId, destinationId: DestinationId, msg: String): String =
     f"${formId.value}%-60s ${destinationId.id}%-30s $msg"
 
-  def raiseError[T, M[_]](formId: FormId, destinationId: DestinationId, msg: String)(
-    implicit monadError: MonadError[M, String]): M[T] = {
+  def raiseError[T, M[_]](formId: FormId, destinationId: DestinationId, msg: String)(implicit
+    monadError: MonadError[M, String]
+  ): M[T] = {
     val fullMsg = genericLogMessage(formId, destinationId, msg)
-    monadError.pure { Loggers.destinations.warn(fullMsg) } >>
+    monadError.pure(Loggers.destinations.warn(fullMsg)) >>
       monadError.raiseError[T](fullMsg)
   }
 }

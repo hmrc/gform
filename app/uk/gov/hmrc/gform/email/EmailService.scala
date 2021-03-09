@@ -32,8 +32,7 @@ class EmailService(emailConnector: EmailConnector) {
     optemailAddress: Option[String],
     templateId: String,
     emailParameters: EmailParametersRecalculated
-  )(
-    implicit
+  )(implicit
     hc: HeaderCarrier,
     mdc: ExecutionContext
   ): Future[Unit] = {
@@ -42,18 +41,19 @@ class EmailService(emailConnector: EmailConnector) {
   }
 
   private def sendEmailTemplate(email: String, templateId: String, emailParameters: EmailParametersRecalculated)(
-    implicit hc: HeaderCarrier) =
+    implicit hc: HeaderCarrier
+  ) =
     emailConnector.sendEmail(
       new EmailTemplate(
         Seq(email),
         templateId,
         emailParametersRecalculatedToMap(emailParameters)
-      ))
+      )
+    )
 
   private def emailParametersRecalculatedToMap(emailParameters: EmailParametersRecalculated): Map[String, String] =
-    emailParameters.emailParametersMap.map {
-      case (emailTemplateVariable, emailParameterValue) =>
-        (emailTemplateVariable.emailTemplateVariableId, emailParameterValue.value)
+    emailParameters.emailParametersMap.map { case (emailTemplateVariable, emailParameterValue) =>
+      (emailTemplateVariable.emailTemplateVariableId, emailParameterValue.value)
     }
 
   def getEmailAddress(form: Form): Option[String] =

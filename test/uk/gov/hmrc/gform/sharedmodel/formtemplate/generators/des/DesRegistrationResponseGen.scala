@@ -33,19 +33,18 @@ trait DesRegistrationResponseGen {
       orgOrInd             <- DesEntityGen.desEntityGen
       address              <- AddressGen.addressGen
       contactDetails       <- Gen.option(ContactDetailsGen.contactDetailsGen)
-    } yield
-      DesRegistrationResponse(
-        safeId,
-        agentReferenceNumber,
-        sapNumber,
-        isEditable,
-        isAnAgent,
-        isAnASAgent,
-        isAnIndividual,
-        orgOrInd,
-        address,
-        contactDetails
-      )
+    } yield DesRegistrationResponse(
+      safeId,
+      agentReferenceNumber,
+      sapNumber,
+      isEditable,
+      isAnAgent,
+      isAnASAgent,
+      isAnIndividual,
+      orgOrInd,
+      address,
+      contactDetails
+    )
 }
 
 object DesRegistrationResponseGen extends DesRegistrationResponseGen

@@ -26,7 +26,8 @@ import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService.{ IsFalseish, Is
 
 object DmsSubmissionWithAttachmentsRequestInterpreter {
   def apply(
-    request: Request[MultipartFormData[TemporaryFile]]): Either[String, (DmsHtmlSubmission, List[FileAttachment])] = {
+    request: Request[MultipartFormData[TemporaryFile]]
+  ): Either[String, (DmsHtmlSubmission, List[FileAttachment])] = {
 
     val maybeHtml: Option[Seq[String]] = request.body.dataParts.get("html")
     val maybeMetadata: Option[DmsMetadata] = Json

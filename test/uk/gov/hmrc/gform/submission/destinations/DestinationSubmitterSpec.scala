@@ -73,10 +73,16 @@ class DestinationSubmitterSpec
           pdfData,
           si.submission.submissionRef,
           template,
-          model)
+          model
+        )
         .sut
-        .submitIfIncludeIf(handlebarsHttpApi, si, HandlebarsTemplateProcessorModel.empty, theTree, submitter) shouldBe Right(
-        HandlebarsDestinationResponse(handlebarsHttpApi, httpResponse).some)
+        .submitIfIncludeIf(
+          handlebarsHttpApi,
+          si,
+          HandlebarsTemplateProcessorModel.empty,
+          theTree,
+          submitter
+        ) shouldBe Right(HandlebarsDestinationResponse(handlebarsHttpApi, httpResponse).some)
     }
   }
 
@@ -100,8 +106,13 @@ class DestinationSubmitterSpec
           requiredResult = false
         )
         .sut
-        .submitIfIncludeIf(handlebarsHttpApi, si, HandlebarsTemplateProcessorModel.empty, theTree, submitter) shouldBe Right(
-        None)
+        .submitIfIncludeIf(
+          handlebarsHttpApi,
+          si,
+          HandlebarsTemplateProcessorModel.empty,
+          theTree,
+          submitter
+        ) shouldBe Right(None)
     }
   }
 
@@ -125,7 +136,8 @@ class DestinationSubmitterSpec
           "true",
           HandlebarsTemplateProcessorModel.empty,
           FocussedHandlebarsModelTree(theTree),
-          true)
+          true
+        )
         .expectDestinationAudit(
           handlebarsHttpApi,
           Some(responseCode),
@@ -134,10 +146,16 @@ class DestinationSubmitterSpec
           pdfData,
           si.submission.submissionRef,
           template,
-          model)
+          model
+        )
         .sut
-        .submitIfIncludeIf(handlebarsHttpApi, si, HandlebarsTemplateProcessorModel.empty, theTree, submitter) shouldBe Right(
-        HandlebarsDestinationResponse(handlebarsHttpApi, httpResponse).some)
+        .submitIfIncludeIf(
+          handlebarsHttpApi,
+          si,
+          HandlebarsTemplateProcessorModel.empty,
+          theTree,
+          submitter
+        ) shouldBe Right(HandlebarsDestinationResponse(handlebarsHttpApi, httpResponse).some)
     }
   }
 
@@ -160,7 +178,8 @@ class DestinationSubmitterSpec
           "true",
           HandlebarsTemplateProcessorModel.empty,
           FocussedHandlebarsModelTree(theTree),
-          true)
+          true
+        )
         .expectDestinationAudit(
           handlebarsHttpApi,
           Some(responseCode),
@@ -169,13 +188,22 @@ class DestinationSubmitterSpec
           pdfData,
           si.submission.submissionRef,
           template,
-          model)
+          model
+        )
         .sut
-        .submitIfIncludeIf(handlebarsHttpApi, si, HandlebarsTemplateProcessorModel.empty, theTree, submitter) shouldBe Left(
+        .submitIfIncludeIf(
+          handlebarsHttpApi,
+          si,
+          HandlebarsTemplateProcessorModel.empty,
+          theTree,
+          submitter
+        ) shouldBe Left(
         genericLogMessage(
           si.formId,
           handlebarsHttpApi.id,
-          DestinationSubmitter.handlebarsHttpApiFailOnErrorMessage(httpResponse)))
+          DestinationSubmitter.handlebarsHttpApiFailOnErrorMessage(httpResponse)
+        )
+      )
     }
   }
 
@@ -186,23 +214,23 @@ class DestinationSubmitterSpec
       formTemplateGen,
       pdfDataGen,
       instructionPdfDataGen,
-      structureFormValueObjectStructureGen) {
-      (si, hmrcDms, template, pdfData, instructionPdfData, structuredFormData) =>
-        val model = HandlebarsTemplateProcessorModel()
-        val theTree =
-          tree(si.formId, model, si.submission.submissionRef, template, pdfData, instructionPdfData, structuredFormData)
+      structureFormValueObjectStructureGen
+    ) { (si, hmrcDms, template, pdfData, instructionPdfData, structuredFormData) =>
+      val model = HandlebarsTemplateProcessorModel()
+      val theTree =
+        tree(si.formId, model, si.submission.submissionRef, template, pdfData, instructionPdfData, structuredFormData)
 
-        createSubmitter
-          .expectHmrcDmsSubmission(si, pdfData, instructionPdfData, structuredFormData, hmrcDms)
-          .expectIncludeIfEvaluation(
-            "true",
-            HandlebarsTemplateProcessorModel.empty,
-            FocussedHandlebarsModelTree(theTree),
-            true)
-          .expectDestinationAudit(hmrcDms, None, None, si.formId, pdfData, si.submission.submissionRef, template, model)
-          .sut
-          .submitIfIncludeIf(hmrcDms, si, HandlebarsTemplateProcessorModel.empty, theTree, submitter) shouldBe Right(
-          None)
+      createSubmitter
+        .expectHmrcDmsSubmission(si, pdfData, instructionPdfData, structuredFormData, hmrcDms)
+        .expectIncludeIfEvaluation(
+          "true",
+          HandlebarsTemplateProcessorModel.empty,
+          FocussedHandlebarsModelTree(theTree),
+          true
+        )
+        .expectDestinationAudit(hmrcDms, None, None, si.formId, pdfData, si.submission.submissionRef, template, model)
+        .sut
+        .submitIfIncludeIf(hmrcDms, si, HandlebarsTemplateProcessorModel.empty, theTree, submitter) shouldBe Right(None)
     }
   }
 
@@ -314,7 +342,8 @@ class DestinationSubmitterSpec
         )
         .sut
         .submitIfIncludeIf(hmrcDms, si, HandlebarsTemplateProcessorModel.empty, theTree, submitter) shouldBe Left(
-        genericLogMessage(si.formId, hmrcDms.id, "an error"))
+        genericLogMessage(si.formId, hmrcDms.id, "an error")
+      )
     }
   }
 
@@ -323,39 +352,45 @@ class DestinationSubmitterSpec
       submissionConsolidatorGen.map(_.copy(includeIf = "true")),
       submissionInfoGen,
       formTemplateGen,
-      structureFormValueObjectStructureGen) {
-      (submissionConsolidator, submissionInfo, formTemplate, structuredFormData) =>
-        {
-          val model = HandlebarsTemplateProcessorModel.empty
-          val modelTree = tree(
-            submissionInfo.formId,
-            model,
-            submissionInfo.submission.submissionRef,
-            formTemplate,
-            PdfHtml(""),
-            None,
-            structuredFormData)
-          createSubmitter
-            .expectIncludeIfEvaluation(
-              submissionConsolidator.includeIf,
-              HandlebarsTemplateProcessorModel.empty,
-              FocussedHandlebarsModelTree(modelTree),
-              true
-            )
-            .expectSubmissionConsolidatorSubmission(submissionConsolidator, submissionInfo, model, modelTree, formData)
-            .expectDestinationAudit(
-              submissionConsolidator,
-              None,
-              None,
-              submissionInfo.formId,
-              PdfHtml(""),
-              submissionInfo.submission.submissionRef,
-              formTemplate,
-              model)
-            .sut
-            .submitIfIncludeIf(submissionConsolidator, submissionInfo, model, modelTree, submitter, Some(formData)) shouldBe Right(
-            None)
-        }
+      structureFormValueObjectStructureGen
+    ) { (submissionConsolidator, submissionInfo, formTemplate, structuredFormData) =>
+      val model = HandlebarsTemplateProcessorModel.empty
+      val modelTree = tree(
+        submissionInfo.formId,
+        model,
+        submissionInfo.submission.submissionRef,
+        formTemplate,
+        PdfHtml(""),
+        None,
+        structuredFormData
+      )
+      createSubmitter
+        .expectIncludeIfEvaluation(
+          submissionConsolidator.includeIf,
+          HandlebarsTemplateProcessorModel.empty,
+          FocussedHandlebarsModelTree(modelTree),
+          true
+        )
+        .expectSubmissionConsolidatorSubmission(submissionConsolidator, submissionInfo, model, modelTree, formData)
+        .expectDestinationAudit(
+          submissionConsolidator,
+          None,
+          None,
+          submissionInfo.formId,
+          PdfHtml(""),
+          submissionInfo.submission.submissionRef,
+          formTemplate,
+          model
+        )
+        .sut
+        .submitIfIncludeIf(
+          submissionConsolidator,
+          submissionInfo,
+          model,
+          modelTree,
+          submitter,
+          Some(formData)
+        ) shouldBe Right(None)
     }
   }
 
@@ -364,29 +399,34 @@ class DestinationSubmitterSpec
       submissionConsolidatorGen.map(_.copy(includeIf = "false")),
       submissionInfoGen,
       formTemplateGen,
-      structureFormValueObjectStructureGen) {
-      (submissionConsolidator, submissionInfo, formTemplate, structuredFormData) =>
-        {
-          val model = HandlebarsTemplateProcessorModel.empty
-          val modelTree = tree(
-            submissionInfo.formId,
-            model,
-            submissionInfo.submission.submissionRef,
-            formTemplate,
-            PdfHtml(""),
-            None,
-            structuredFormData)
-          createSubmitter
-            .expectIncludeIfEvaluation(
-              submissionConsolidator.includeIf,
-              HandlebarsTemplateProcessorModel.empty,
-              FocussedHandlebarsModelTree(modelTree),
-              false
-            )
-            .sut
-            .submitIfIncludeIf(submissionConsolidator, submissionInfo, model, modelTree, submitter, Some(formData)) shouldBe Right(
-            None)
-        }
+      structureFormValueObjectStructureGen
+    ) { (submissionConsolidator, submissionInfo, formTemplate, structuredFormData) =>
+      val model = HandlebarsTemplateProcessorModel.empty
+      val modelTree = tree(
+        submissionInfo.formId,
+        model,
+        submissionInfo.submission.submissionRef,
+        formTemplate,
+        PdfHtml(""),
+        None,
+        structuredFormData
+      )
+      createSubmitter
+        .expectIncludeIfEvaluation(
+          submissionConsolidator.includeIf,
+          HandlebarsTemplateProcessorModel.empty,
+          FocussedHandlebarsModelTree(modelTree),
+          false
+        )
+        .sut
+        .submitIfIncludeIf(
+          submissionConsolidator,
+          submissionInfo,
+          model,
+          modelTree,
+          submitter,
+          Some(formData)
+        ) shouldBe Right(None)
     }
   }
 
@@ -396,45 +436,52 @@ class DestinationSubmitterSpec
       submissionConsolidatorGen.map(_.copy(includeIf = "true", failOnError = false)),
       submissionInfoGen,
       formTemplateGen,
-      structureFormValueObjectStructureGen) {
-      (submissionConsolidator, submissionInfo, formTemplate, structuredFormData) =>
-        {
-          val model = HandlebarsTemplateProcessorModel.empty
-          val modelTree = tree(
-            submissionInfo.formId,
-            model,
-            submissionInfo.submission.submissionRef,
-            formTemplate,
-            PdfHtml(""),
-            None,
-            structuredFormData)
-          createSubmitter
-            .expectIncludeIfEvaluation(
-              submissionConsolidator.includeIf,
-              HandlebarsTemplateProcessorModel.empty,
-              FocussedHandlebarsModelTree(modelTree),
-              true
-            )
-            .expectSubmissionConsolidatorSubmissionFailure(
-              submissionConsolidator,
-              submissionInfo,
-              model,
-              modelTree,
-              form,
-              "some error")
-            .expectDestinationAudit(
-              submissionConsolidator,
-              None,
-              None,
-              submissionInfo.formId,
-              PdfHtml(""),
-              submissionInfo.submission.submissionRef,
-              formTemplate,
-              model)
-            .sut
-            .submitIfIncludeIf(submissionConsolidator, submissionInfo, model, modelTree, submitter, Some(formData)) shouldBe Right(
-            None)
-        }
+      structureFormValueObjectStructureGen
+    ) { (submissionConsolidator, submissionInfo, formTemplate, structuredFormData) =>
+      val model = HandlebarsTemplateProcessorModel.empty
+      val modelTree = tree(
+        submissionInfo.formId,
+        model,
+        submissionInfo.submission.submissionRef,
+        formTemplate,
+        PdfHtml(""),
+        None,
+        structuredFormData
+      )
+      createSubmitter
+        .expectIncludeIfEvaluation(
+          submissionConsolidator.includeIf,
+          HandlebarsTemplateProcessorModel.empty,
+          FocussedHandlebarsModelTree(modelTree),
+          true
+        )
+        .expectSubmissionConsolidatorSubmissionFailure(
+          submissionConsolidator,
+          submissionInfo,
+          model,
+          modelTree,
+          form,
+          "some error"
+        )
+        .expectDestinationAudit(
+          submissionConsolidator,
+          None,
+          None,
+          submissionInfo.formId,
+          PdfHtml(""),
+          submissionInfo.submission.submissionRef,
+          formTemplate,
+          model
+        )
+        .sut
+        .submitIfIncludeIf(
+          submissionConsolidator,
+          submissionInfo,
+          model,
+          modelTree,
+          submitter,
+          Some(formData)
+        ) shouldBe Right(None)
     }
   }
 
@@ -443,36 +490,42 @@ class DestinationSubmitterSpec
       submissionConsolidatorGen.map(_.copy(includeIf = "true", failOnError = true)),
       submissionInfoGen,
       formTemplateGen,
-      structureFormValueObjectStructureGen) {
-      (submissionConsolidator, submissionInfo, formTemplate, structuredFormData) =>
-        {
-          val model = HandlebarsTemplateProcessorModel.empty
-          val modelTree = tree(
-            submissionInfo.formId,
-            model,
-            submissionInfo.submission.submissionRef,
-            formTemplate,
-            PdfHtml(""),
-            None,
-            structuredFormData)
-          createSubmitter
-            .expectIncludeIfEvaluation(
-              submissionConsolidator.includeIf,
-              HandlebarsTemplateProcessorModel.empty,
-              FocussedHandlebarsModelTree(modelTree),
-              true
-            )
-            .expectSubmissionConsolidatorSubmissionFailure(
-              submissionConsolidator,
-              submissionInfo,
-              model,
-              modelTree,
-              form,
-              "some error")
-            .sut
-            .submitIfIncludeIf(submissionConsolidator, submissionInfo, model, modelTree, submitter, Some(formData)) shouldBe Left(
-            genericLogMessage(submissionInfo.formId, submissionConsolidator.id, "some error"))
-        }
+      structureFormValueObjectStructureGen
+    ) { (submissionConsolidator, submissionInfo, formTemplate, structuredFormData) =>
+      val model = HandlebarsTemplateProcessorModel.empty
+      val modelTree = tree(
+        submissionInfo.formId,
+        model,
+        submissionInfo.submission.submissionRef,
+        formTemplate,
+        PdfHtml(""),
+        None,
+        structuredFormData
+      )
+      createSubmitter
+        .expectIncludeIfEvaluation(
+          submissionConsolidator.includeIf,
+          HandlebarsTemplateProcessorModel.empty,
+          FocussedHandlebarsModelTree(modelTree),
+          true
+        )
+        .expectSubmissionConsolidatorSubmissionFailure(
+          submissionConsolidator,
+          submissionInfo,
+          model,
+          modelTree,
+          form,
+          "some error"
+        )
+        .sut
+        .submitIfIncludeIf(
+          submissionConsolidator,
+          submissionInfo,
+          model,
+          modelTree,
+          submitter,
+          Some(formData)
+        ) shouldBe Left(genericLogMessage(submissionInfo.formId, submissionConsolidator.id, "some error"))
     }
   }
 
@@ -482,21 +535,24 @@ class DestinationSubmitterSpec
     handlebarsSubmitter: HandlebarsHttpApiSubmitter[F],
     destinationAuditer: DestinationAuditAlgebra[F],
     handlebarsTemplateProcessor: HandlebarsTemplateProcessor,
-    submissionConsolidatorService: SubmissionConsolidatorAlgebra[F])(implicit F: MonadError[F, String]) {
+    submissionConsolidatorService: SubmissionConsolidatorAlgebra[F]
+  )(implicit F: MonadError[F, String]) {
 
     def expectHmrcDmsSubmission(
       si: DestinationSubmissionInfo,
       pdfData: PdfHtml,
       instructionPdfData: Option[PdfHtml],
       structuredFormData: StructuredFormValue.ObjectStructure,
-      hmrcDms: HmrcDms)(implicit F: Applicative[F]): SubmitterParts[F] = {
+      hmrcDms: HmrcDms
+    )(implicit F: Applicative[F]): SubmitterParts[F] = {
       (dmsSubmitter
         .apply(
           _: DestinationSubmissionInfo,
           _: PdfHtml,
           _: Option[PdfHtml],
           _: StructuredFormValue.ObjectStructure,
-          _: HmrcDms)(_: HeaderCarrier))
+          _: HmrcDms
+        )(_: HeaderCarrier))
         .expects(si, pdfData, instructionPdfData, structuredFormData, hmrcDms, hc)
         .returning(F.pure(()))
       this
@@ -508,7 +564,8 @@ class DestinationSubmitterSpec
       accumulatedModel: HandlebarsTemplateProcessorModel,
       model: HandlebarsModelTree,
       form: Form,
-      error: String): SubmitterParts[F] = {
+      error: String
+    ): SubmitterParts[F] = {
       (
         submissionConsolidatorService
           .submit(
@@ -529,7 +586,8 @@ class DestinationSubmitterSpec
       submissionInfo: DestinationSubmissionInfo,
       accumulatedModel: HandlebarsTemplateProcessorModel,
       model: HandlebarsModelTree,
-      formData: FormData): SubmitterParts[F] = {
+      formData: FormData
+    ): SubmitterParts[F] = {
       (
         submissionConsolidatorService
           .submit(
@@ -551,14 +609,16 @@ class DestinationSubmitterSpec
       instructionPdfData: Option[PdfHtml],
       structuredFormData: StructuredFormValue.ObjectStructure,
       hmrcDms: HmrcDms,
-      error: String): SubmitterParts[F] = {
+      error: String
+    ): SubmitterParts[F] = {
       (dmsSubmitter
         .apply(
           _: DestinationSubmissionInfo,
           _: PdfHtml,
           _: Option[PdfHtml],
           _: StructuredFormValue.ObjectStructure,
-          _: HmrcDms)(_: HeaderCarrier))
+          _: HmrcDms
+        )(_: HeaderCarrier))
         .expects(si, pdfData, instructionPdfData, structuredFormData, hmrcDms, hc)
         .returning(F.raiseError(error))
       this
@@ -568,10 +628,12 @@ class DestinationSubmitterSpec
       handlebarsHttpApi: Destination.HandlebarsHttpApi,
       accumulatedModel: HandlebarsTemplateProcessorModel,
       tree: HandlebarsModelTree,
-      response: HttpResponse): SubmitterParts[F] = {
+      response: HttpResponse
+    ): SubmitterParts[F] = {
       (handlebarsSubmitter
         .apply(_: Destination.HandlebarsHttpApi, _: HandlebarsTemplateProcessorModel, _: HandlebarsModelTree)(
-          _: HeaderCarrier))
+          _: HeaderCarrier
+        ))
         .expects(handlebarsHttpApi, accumulatedModel, tree, hc)
         .returning(F.pure(response))
       this
@@ -581,7 +643,8 @@ class DestinationSubmitterSpec
       expression: String,
       accumulatedModel: HandlebarsTemplateProcessorModel,
       tree: FocussedHandlebarsModelTree,
-      requiredResult: Boolean): SubmitterParts[F] = {
+      requiredResult: Boolean
+    ): SubmitterParts[F] = {
       (
         handlebarsTemplateProcessor
           .apply(
@@ -604,7 +667,8 @@ class DestinationSubmitterSpec
       pdfHtml: PdfHtml,
       submissionRef: SubmissionRef,
       template: FormTemplate,
-      model: HandlebarsTemplateProcessorModel): SubmitterParts[F] = {
+      model: HandlebarsTemplateProcessorModel
+    ): SubmitterParts[F] = {
       (destinationAuditer
         .apply(
           _: Destination,
@@ -614,7 +678,8 @@ class DestinationSubmitterSpec
           _: PdfHtml,
           _: SubmissionRef,
           _: FormTemplate,
-          _: HandlebarsTemplateProcessorModel)(_: HeaderCarrier))
+          _: HandlebarsTemplateProcessorModel
+        )(_: HeaderCarrier))
         .expects(destination, responseCode, responseBody, formId, pdfHtml, submissionRef, template, model, hc)
         .returning(F.pure(()))
       this
@@ -637,7 +702,8 @@ class DestinationSubmitterSpec
         notifierService,
         Some(destinationAuditer),
         submissionConsolidator,
-        handlebarsTemplateProcessor)
+        handlebarsTemplateProcessor
+      )
 
     SubmitterParts(
       submitter,
@@ -645,7 +711,8 @@ class DestinationSubmitterSpec
       handlebarsSubmitter,
       destinationAuditer,
       handlebarsTemplateProcessor,
-      submissionConsolidator)
+      submissionConsolidator
+    )
   }
 
   private def submitter: DestinationsSubmitter[Possible] = {
@@ -660,6 +727,7 @@ class DestinationSubmitterSpec
     formTemplate: FormTemplate,
     pdfData: PdfHtml,
     instructionPdfData: Option[PdfHtml],
-    structuredFormData: StructuredFormValue.ObjectStructure) =
+    structuredFormData: StructuredFormValue.ObjectStructure
+  ) =
     HandlebarsModelTree(id, submissionRef, formTemplate, pdfData, instructionPdfData, structuredFormData, model)
 }

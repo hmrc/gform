@@ -29,4 +29,5 @@ case class HandlebarsModelTreeNode(
   model: HandlebarsTemplateProcessorModel,
   pdfData: PdfHtml,
   instructionPdfData: Option[PdfHtml],
-  structuredFormData: StructuredFormValue.ObjectStructure)
+  structuredFormData: StructuredFormValue.ObjectStructure
+)

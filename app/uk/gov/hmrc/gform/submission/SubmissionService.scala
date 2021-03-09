@@ -42,7 +42,8 @@ class SubmissionService(
   destinationsSubmitter: DestinationsSubmitterAlgebra[FOpt],
   submissionRepo: Repo[Submission],
   email: EmailService,
-  timeProvider: TimeProvider)(implicit ex: ExecutionContext) {
+  timeProvider: TimeProvider
+)(implicit ex: ExecutionContext) {
   private val logger = LoggerFactory.getLogger(getClass)
 
   def createSubmission(
@@ -50,7 +51,8 @@ class SubmissionService(
     formTemplateId: FormTemplateId,
     envelopeId: EnvelopeId,
     customerId: String,
-    noOfAttachments: Int): FOpt[Submission] = {
+    noOfAttachments: Int
+  ): FOpt[Submission] = {
     val submission = buildSubmission(formId, formTemplateId, envelopeId, customerId, noOfAttachments)
     submissionRepo
       .upsert(submission)
@@ -58,8 +60,9 @@ class SubmissionService(
       .map(_ => submission)
   }
 
-  def submitForm(formIdData: FormIdData, customerId: String, submissionData: SubmissionData)(
-    implicit hc: HeaderCarrier): FOpt[Unit] =
+  def submitForm(formIdData: FormIdData, customerId: String, submissionData: SubmissionData)(implicit
+    hc: HeaderCarrier
+  ): FOpt[Unit] =
     // format: OFF
       for {
         form          <- formAlgebra.get(formIdData)
@@ -77,24 +80,27 @@ class SubmissionService(
     form: Form,
     formTemplate: FormTemplate,
     submissionData: SubmissionData,
-    submissionRef: SubmissionRef)(implicit hc: HeaderCarrier) =
+    submissionRef: SubmissionRef
+  )(implicit hc: HeaderCarrier) =
     destinationProcessorModelService
       .create(
         form,
         submissionData.variables,
         submissionData.pdfData,
         submissionData.instructionPDFData,
-        submissionData.structuredFormData)
-      .map(
-        model =>
-          HandlebarsModelTree(
-            form._id,
-            submissionRef,
-            formTemplate,
-            submissionData.pdfData,
-            submissionData.instructionPDFData,
-            submissionData.structuredFormData,
-            model))
+        submissionData.structuredFormData
+      )
+      .map(model =>
+        HandlebarsModelTree(
+          form._id,
+          submissionRef,
+          formTemplate,
+          submissionData.pdfData,
+          submissionData.instructionPDFData,
+          submissionData.structuredFormData,
+          model
+        )
+      )
 
   def submissionDetails(formIdData: FormIdData): Future[Submission] =
     submissionRepo.get(formIdData.toFormId.value)
@@ -107,7 +113,8 @@ class SubmissionService(
     formTemplateId: FormTemplateId,
     envelopeId: EnvelopeId,
     customerId: String,
-    noOfAttachments: Int) =
+    noOfAttachments: Int
+  ) =
     Submission(
       submittedDate = timeProvider.localDateTime(),
       submissionRef = SubmissionRef(envelopeId),
@@ -132,8 +139,6 @@ class SubmissionService(
     for {
       submissions <- submissionRepo.page(query, sort, skip, pageSize)
       count       <- submissionRepo.count(query)
-    } yield {
-      SubmissionPageData(submissions, count)
-    }
+    } yield SubmissionPageData(submissions, count)
   }
 }

@@ -120,8 +120,10 @@ class FormSpec extends FlatSpec with Matchers with ScalaCheckDrivenPropertyCheck
             HmrcTaxPeriodWithEvaluatedId(
               RecalculatedTaxPeriodKey(
                 FormComponentId("compId"),
-                HmrcTaxPeriod(IdType("eeits"), Value, RegimeType("ITSA"))),
-              IdNumberValue("123")),
+                HmrcTaxPeriod(IdType("eeits"), Value, RegimeType("ITSA"))
+              ),
+              IdNumberValue("123")
+            ),
             Obligation(
               List(
                 ObligationDetails(
@@ -131,7 +133,8 @@ class FormSpec extends FlatSpec with Matchers with ScalaCheckDrivenPropertyCheck
                       LocalDate.of(2100, 1, 15),
                       LocalDate.of(1900, 10, 28),
                       LocalDate.of(2061, 1, 25),
-                      "fxzaz")
+                      "fxzaz"
+                    )
                   )
                 )
               )
@@ -158,7 +161,10 @@ class FormSpec extends FlatSpec with Matchers with ScalaCheckDrivenPropertyCheck
 
     val formWithEmptyThirdParty = exampleForm.copy(thirdPartyData = ThirdPartyData.empty)
 
-    val incompatibleJson = inputJson.replace("hmrcTaxPeriod", "wrongName") // This simulates change in ADT which will not be backwards compatible
+    val incompatibleJson = inputJson.replace(
+      "hmrcTaxPeriod",
+      "wrongName"
+    ) // This simulates change in ADT which will not be backwards compatible
 
     verifyRead(formWithEmptyThirdParty, incompatibleJson)
 
@@ -195,7 +201,8 @@ class FormSpec extends FlatSpec with Matchers with ScalaCheckDrivenPropertyCheck
       "fields" -> Json
         .arr(
           Json.obj("id" -> "facePhoto", "value"      -> "face-photo.jpg"),
-          Json.obj("id" -> "startDate-year", "value" -> "2008")),
+          Json.obj("id" -> "startDate-year", "value" -> "2008")
+        ),
       "InProgress"  -> Json.obj(),
       "visitsIndex" -> Json.arr(1, 2, 3),
       "ldt"         -> form.envelopeExpiryDate.map(_.ldt).map(f _).get,
@@ -221,7 +228,8 @@ class FormSpec extends FlatSpec with Matchers with ScalaCheckDrivenPropertyCheck
       "fields" -> Json
         .arr(
           Json.obj("id" -> "facePhoto", "value"      -> "face-photo.jpg"),
-          Json.obj("id" -> "startDate-year", "value" -> "2008")),
+          Json.obj("id" -> "startDate-year", "value" -> "2008")
+        ),
       "InProgress" -> Json.obj()
     )
 
@@ -237,7 +245,8 @@ class FormSpec extends FlatSpec with Matchers with ScalaCheckDrivenPropertyCheck
 
   "FormComponentIdToFileIdMapping" should "be flat when serialized" in {
     val componentIdToFileId = FormComponentIdToFileIdMapping(
-      Map(FormComponentId("1_abc") -> FileId("invoice.pdf"), FormComponentId("2_abc") -> FileId("book.pdf")))
+      Map(FormComponentId("1_abc") -> FileId("invoice.pdf"), FormComponentId("2_abc") -> FileId("book.pdf"))
+    )
 
     verifyRoundTrip(componentIdToFileId)
     val json = Json.toJson(componentIdToFileId)

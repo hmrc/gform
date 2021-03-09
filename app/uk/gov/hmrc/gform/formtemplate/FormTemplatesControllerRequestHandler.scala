@@ -34,7 +34,8 @@ trait RequestHandlerAlg[F[_]] {
 
 class FormTemplatesControllerRequestHandler[F[_]](
   verifyAndSave: FormTemplate => FOpt[Unit],
-  save: FormTemplateRaw => FOpt[Unit])(implicit ec: ExecutionContext) {
+  save: FormTemplateRaw => FOpt[Unit]
+)(implicit ec: ExecutionContext) {
 
   val futureInterpreter = new RequestHandlerAlg[FOpt] {
     override def handleRequest(templateRaw: FormTemplateRaw): FOpt[Unit] = {
@@ -58,17 +59,20 @@ class FormTemplatesControllerRequestHandler[F[_]](
 object FormTemplatesControllerRequestHandler {
 
   val onlyOneOfDestinationsAndPrintSection = JsError(
-    """One and only one of FormTemplate.{destinations, printSection} must be defined.""")
+    """One and only one of FormTemplate.{destinations, printSection} must be defined."""
+  )
 
   val avoidAcknowledgementForPrintSection = JsError("""Avoid acknowledgement section in case of print section.""")
 
   val avoidDeclarationForPrintSection = JsError("""Avoid declaration section in case of print section.""")
 
   val mandatoryAcknowledgementForDestinationSection = JsError(
-    """Acknowledgement section is mandatory in case of destination section.""")
+    """Acknowledgement section is mandatory in case of destination section."""
+  )
 
   val mandatoryDeclarationForDestinationSection = JsError(
-    """Declaration section is mandatory in case of destination section.""")
+    """Declaration section is mandatory in case of destination section."""
+  )
 
   val invalidDmsFormId = (id: String) =>
     s"For Destination $id, dmsFormId should have minimum 1 and maximum 12 characters."
@@ -132,7 +136,8 @@ object FormTemplatesControllerRequestHandler {
     val transformAndMoveAcknowledgementSection =
       (__ \ 'destinations \ 'acknowledgementSection).json
         .copyFrom((__ \ 'acknowledgementSection).json.pick.map(transformAcknowledgementSection)) orElse Reads.pure(
-        Json.obj())
+        Json.obj()
+      )
 
     val moveDestinations =
       (__ \ 'destinations \ 'destinations).json
@@ -151,7 +156,8 @@ object FormTemplatesControllerRequestHandler {
         (jsonValue \ "destinations").toOption,
         (jsonValue \ "printSection").toOption,
         (jsonValue \ "acknowledgementSection").toOption,
-        (jsonValue \ "declarationSection").toOption) match {
+        (jsonValue \ "declarationSection").toOption
+      ) match {
         case (Some(_), Some(_), _, _)          => onlyOneOfDestinationsAndPrintSection
         case (None, None, _, _)                => onlyOneOfDestinationsAndPrintSection
         case (Some(_), None, None, _)          => mandatoryAcknowledgementForDestinationSection
@@ -191,6 +197,7 @@ object FormTemplatesControllerRequestHandler {
 
     sectionValidations andKeep dmsFormIdValidations andKeep jsonValue.transform(
       pruneShowContinueOrDeletePage andThen pruneAcknowledgementSection andThen prunePrintSection andThen pruneDeclarationSection and drmValue and drmShowContinueOrDeletePage and ensureDisplayHMRCLogo and ensureFormCategory and
-        ensureLanguages and ensureSummarySection and ensureParentFormSubmissionRefs and destinationsOrPrintSection and transformAndMoveAcknowledgementSection and moveDestinations and moveDeclarationSection reduce)
+        ensureLanguages and ensureSummarySection and ensureParentFormSubmissionRefs and destinationsOrPrintSection and transformAndMoveAcknowledgementSection and moveDestinations and moveDeclarationSection reduce
+    )
   }
 }

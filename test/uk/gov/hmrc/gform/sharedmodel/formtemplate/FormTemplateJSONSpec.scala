@@ -294,10 +294,9 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
       (input, expected)
     )
 
-    forAll(t) {
-      case (input, expected) =>
-        val result = FormTemplatesControllerRequestHandler.normaliseJSON(input)
-        result should beJsSuccess(expected)
+    forAll(t) { case (input, expected) =>
+      val result = FormTemplatesControllerRequestHandler.normaliseJSON(input)
+      result should beJsSuccess(expected)
     }
   }
 
@@ -323,7 +322,8 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
       """.stripMargin)
 
     FormTemplatesControllerRequestHandler.normaliseJSON(input) should be(
-      FormTemplatesControllerRequestHandler.onlyOneOfDestinationsAndPrintSection)
+      FormTemplatesControllerRequestHandler.onlyOneOfDestinationsAndPrintSection
+    )
   }
 
   it should "return validation error when both destinations and printSection are missing" in {
@@ -335,7 +335,8 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
       """.stripMargin)
 
     FormTemplatesControllerRequestHandler.normaliseJSON(input) should be(
-      FormTemplatesControllerRequestHandler.onlyOneOfDestinationsAndPrintSection)
+      FormTemplatesControllerRequestHandler.onlyOneOfDestinationsAndPrintSection
+    )
   }
 
   it should "return validation error when destinations is present but acknowledgementSection is missing" in {
@@ -363,7 +364,8 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
       """.stripMargin)
 
     FormTemplatesControllerRequestHandler.normaliseJSON(input) should be(
-      FormTemplatesControllerRequestHandler.mandatoryAcknowledgementForDestinationSection)
+      FormTemplatesControllerRequestHandler.mandatoryAcknowledgementForDestinationSection
+    )
   }
 
   it should "return validation error when destinations is present but declarationSection is missing" in {
@@ -403,7 +405,8 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                            """.stripMargin)
 
     FormTemplatesControllerRequestHandler.normaliseJSON(input) should be(
-      FormTemplatesControllerRequestHandler.mandatoryDeclarationForDestinationSection)
+      FormTemplatesControllerRequestHandler.mandatoryDeclarationForDestinationSection
+    )
   }
 
   it should "return validation error when printSection is present and acknowledgementSection is also present" in {
@@ -430,7 +433,8 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                            """.stripMargin)
 
     FormTemplatesControllerRequestHandler.normaliseJSON(input) should be(
-      FormTemplatesControllerRequestHandler.avoidAcknowledgementForPrintSection)
+      FormTemplatesControllerRequestHandler.avoidAcknowledgementForPrintSection
+    )
   }
 
   it should "return validation error when printSection is present and declarationSection is also present" in {
@@ -459,7 +463,8 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                            """.stripMargin)
 
     FormTemplatesControllerRequestHandler.normaliseJSON(input) should be(
-      FormTemplatesControllerRequestHandler.avoidDeclarationForPrintSection)
+      FormTemplatesControllerRequestHandler.avoidDeclarationForPrintSection
+    )
   }
 
 }

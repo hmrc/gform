@@ -26,7 +26,8 @@ class MongoModule(playComponents: PlayComponents) {
     new ReactiveMongoComponentImpl(
       playComponents.context.initialConfiguration,
       playComponents.context.environment,
-      playComponents.context.lifecycle)
+      playComponents.context.lifecycle
+    )
   val mongo: () => DefaultDB = reactiveMongoComponent.mongoConnector.db
 
 }

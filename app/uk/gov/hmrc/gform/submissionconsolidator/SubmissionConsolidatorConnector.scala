@@ -31,12 +31,12 @@ class SubmissionConsolidatorConnector(wSHttp: WSHttp, baseUrl: String)(implicit 
     response.status match {
       case 200 => Right(())
       case _   => Left(Try(Json.parse(response.body).as[SCError].formatted).getOrElse(response.body))
-  }
+    }
 
   def sendForm(scForm: SCForm)(implicit headerCarrier: HeaderCarrier): Future[Either[String, Unit]] =
     wSHttp
       .POST(s"$baseUrl/submission-consolidator/form", scForm, headers)
-      .recover {
-        case e => Left(e.getMessage)
+      .recover { case e =>
+        Left(e.getMessage)
       }
 }

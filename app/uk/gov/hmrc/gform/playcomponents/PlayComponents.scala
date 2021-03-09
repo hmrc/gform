@@ -23,6 +23,7 @@ import play.api.libs.ws.ahc.AhcWSComponents
 class PlayComponents(
   val context: ApplicationLoader.Context,
   val builtInComponents: BuiltInComponents,
-  ahcWSComponents: AhcWSComponents) {
+  ahcWSComponents: AhcWSComponents
+) {
   def wsClient: WSClient = ahcWSComponents.wsClient
 }

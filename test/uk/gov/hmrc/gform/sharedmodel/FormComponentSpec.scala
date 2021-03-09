@@ -55,7 +55,8 @@ class FormComponentSpec extends Spec {
         submissible = true,
         derived = false,
         errorMessage = None
-      ))
+      )
+    )
   }
 
   it should "parse 'text' type without total if no total specified" in {
@@ -82,7 +83,8 @@ class FormComponentSpec extends Spec {
         submissible = true,
         derived = false,
         errorMessage = None
-      ))
+      )
+    )
   }
 
   it should "parse 'text' type without total if total false specified" in {
@@ -110,7 +112,8 @@ class FormComponentSpec extends Spec {
         submissible = true,
         derived = false,
         errorMessage = None
-      ))
+      )
+    )
   }
 
   it should "parse 'text' type with total specified" in {
@@ -138,7 +141,8 @@ class FormComponentSpec extends Spec {
         submissible = true,
         derived = false,
         errorMessage = None
-      ))
+      )
+    )
   }
 
   it should "parse 'text' type including value without total if total false specified" in {
@@ -167,7 +171,8 @@ class FormComponentSpec extends Spec {
         submissible = true,
         derived = false,
         errorMessage = None
-      ))
+      )
+    )
   }
 
   it should "parse 'text' type including value with total specified" in {
@@ -196,7 +201,8 @@ class FormComponentSpec extends Spec {
         submissible = true,
         derived = false,
         errorMessage = None
-      ))
+      )
+    )
   }
 
   it should "parse as Text with 'mandatory' true as mandatory" in {
@@ -221,7 +227,8 @@ class FormComponentSpec extends Spec {
         submissible = true,
         derived = false,
         errorMessage = None
-      ))
+      )
+    )
   }
 
   it should "parse as Text with 'mandatory' false as not mandatory" in {
@@ -246,7 +253,8 @@ class FormComponentSpec extends Spec {
         submissible = true,
         derived = false,
         errorMessage = None
-      ))
+      )
+    )
   }
 
   it should "parse as Text without 'mandatory' as mandatory" in {
@@ -270,7 +278,8 @@ class FormComponentSpec extends Spec {
         submissible = true,
         derived = false,
         errorMessage = None
-      ))
+      )
+    )
   }
 
   it should "parse as Text without 'submitMode' as editable and submissible" in {
@@ -294,7 +303,8 @@ class FormComponentSpec extends Spec {
         submissible = true,
         derived = false,
         errorMessage = None
-      ))
+      )
+    )
   }
 
   it should "parse as Text with 'submitMode' standard as editable and submissible" in {
@@ -319,7 +329,8 @@ class FormComponentSpec extends Spec {
         submissible = true,
         derived = false,
         errorMessage = None
-      ))
+      )
+    )
   }
 
   it should "parse as Text with 'submitMode' readonly as non-editable and submissible" in {
@@ -345,7 +356,8 @@ class FormComponentSpec extends Spec {
         submissible = true,
         derived = false,
         errorMessage = None
-      ))
+      )
+    )
   }
 
   it should "parse as Text with 'submitMode' info as non-editable and non-submissible" in {
@@ -371,7 +383,8 @@ class FormComponentSpec extends Spec {
         submissible = false,
         derived = false,
         errorMessage = None
-      ))
+      )
+    )
   }
   it should "parse as Choice with 'submitMode' derived as non-editable and submissible" in {
     val fieldValue = toFieldValue("""|{
@@ -398,7 +411,8 @@ class FormComponentSpec extends Spec {
         derived = true,
         onlyShowOnSummary = false,
         None
-      ))
+      )
+    )
   }
   it should "throw an error with 'submitMode' derived where there is no Value" in {
     val fieldValue = toFieldValue("""|{
@@ -453,7 +467,8 @@ class FormComponentSpec extends Spec {
         submissible = false,
         derived = false,
         errorMessage = None
-      ))
+      )
+    )
   }
   it should "parse as Text with 'submitMode' notsubmitted  non-submissible and editable" in {
     val fieldValue = toFieldValue("""|{
@@ -478,7 +493,8 @@ class FormComponentSpec extends Spec {
         submissible = false,
         derived = false,
         errorMessage = None
-      ))
+      )
+    )
   }
 
   it should "parse as Date with 'summaryinfoonly' info as mandatory, non-editable and submissible" in {
@@ -497,10 +513,12 @@ class FormComponentSpec extends Spec {
       FormComponent(
         FormComponentId("aprilDate"),
         Date(
-          DateConstraints(List(
-            DateConstraint(After, ConcreteDate(Year.Exact(2017), Month.Exact(3), Day.Exact(31)), OffsetDate(0)),
-            DateConstraint(Before, ConcreteDate(Year.Exact(2017), Month.Exact(5), Day.Exact(1)), OffsetDate(0))
-          )),
+          DateConstraints(
+            List(
+              DateConstraint(After, ConcreteDate(Year.Exact(2017), Month.Exact(3), Day.Exact(31)), OffsetDate(0)),
+              DateConstraint(Before, ConcreteDate(Year.Exact(2017), Month.Exact(5), Day.Exact(1)), OffsetDate(0))
+            )
+          ),
           Offset(0),
           Some(ExactDateValue(2017, 4, 10))
         ),
@@ -515,7 +533,8 @@ class FormComponentSpec extends Spec {
         derived = false,
         onlyShowOnSummary = true,
         errorMessage = None
-      ))
+      )
+    )
   }
 
   it should "throw an error with 'summaryinfoonly' with no value" in {
@@ -579,7 +598,8 @@ class FormComponentSpec extends Spec {
         submissible = true,
         derived = false,
         errorMessage = None
-      ))
+      )
+    )
   }
   it should "parse as Address with 'international' false  when not specified" in {
     val fieldValue = toFieldValue("""|{
@@ -602,7 +622,8 @@ class FormComponentSpec extends Spec {
         submissible = true,
         derived = false,
         errorMessage = None
-      ))
+      )
+    )
   }
 
   it should "parse as Address with 'international' true when specified yes" in {
@@ -627,7 +648,8 @@ class FormComponentSpec extends Spec {
         submissible = true,
         derived = false,
         errorMessage = None
-      ))
+      )
+    )
   }
 
   it should "parse as Address with 'international' false when specified no" in {
@@ -652,7 +674,8 @@ class FormComponentSpec extends Spec {
         submissible = true,
         derived = false,
         errorMessage = None
-      ))
+      )
+    )
   }
 
   it should "parse 'choice' type as Radio with Vertical orientation if no multivalue & no format is provided" in {
@@ -675,7 +698,8 @@ class FormComponentSpec extends Spec {
           Vertical,
           List.empty[Int],
           None,
-          None),
+          None
+        ),
         toSmartString("Select the tax type"),
         None,
         None,
@@ -687,7 +711,8 @@ class FormComponentSpec extends Spec {
         derived = false,
         onlyShowOnSummary = false,
         None
-      ))
+      )
+    )
   }
 
   it should "parse 'choice' type as Radio with Vertical orientation if 'multivalue=no' is provided" in {
@@ -711,7 +736,8 @@ class FormComponentSpec extends Spec {
           Vertical,
           List.empty[Int],
           None,
-          None),
+          None
+        ),
         toSmartString("Select the tax type"),
         None,
         None,
@@ -723,7 +749,8 @@ class FormComponentSpec extends Spec {
         derived = false,
         onlyShowOnSummary = false,
         None
-      ))
+      )
+    )
   }
 
   it should "parse 'choice' type as Radio with Vertical orientation if 'multivalue=no & format=vertical' is provided" in {
@@ -748,7 +775,8 @@ class FormComponentSpec extends Spec {
           Vertical,
           List.empty[Int],
           None,
-          None),
+          None
+        ),
         toSmartString("Select the tax type"),
         None,
         None,
@@ -760,7 +788,8 @@ class FormComponentSpec extends Spec {
         derived = false,
         onlyShowOnSummary = false,
         None
-      ))
+      )
+    )
   }
 
   it should "parse 'choice' type as Radio with Horizontal orientation if 'multivalue=no & format=horizontal' is provided" in {
@@ -785,7 +814,8 @@ class FormComponentSpec extends Spec {
           Horizontal,
           List.empty[Int],
           None,
-          None),
+          None
+        ),
         toSmartString("Select the tax type"),
         None,
         None,
@@ -797,7 +827,8 @@ class FormComponentSpec extends Spec {
         derived = false,
         onlyShowOnSummary = false,
         None
-      ))
+      )
+    )
   }
 
   it should "parse 'choice' type as Checkbox with Vertical orientation if 'multivalue=yes' is provided" in {
@@ -821,7 +852,8 @@ class FormComponentSpec extends Spec {
           Vertical,
           List.empty[Int],
           None,
-          None),
+          None
+        ),
         toSmartString("Select the tax type"),
         None,
         None,
@@ -833,7 +865,8 @@ class FormComponentSpec extends Spec {
         derived = false,
         onlyShowOnSummary = false,
         None
-      ))
+      )
+    )
   }
 
   it should "parse 'choice' type as Checkbox with Vertical orientation if 'multivalue=yes & format=vertical' is provided" in {
@@ -858,7 +891,8 @@ class FormComponentSpec extends Spec {
           Vertical,
           List.empty[Int],
           None,
-          None),
+          None
+        ),
         toSmartString("Select the tax type"),
         None,
         None,
@@ -870,7 +904,8 @@ class FormComponentSpec extends Spec {
         derived = false,
         onlyShowOnSummary = false,
         None
-      ))
+      )
+    )
   }
 
   it should "parse 'choice' type as Checkbox with Horizontal orientation if 'multivalue=yes & format=horizontal' is provided" in {
@@ -895,7 +930,8 @@ class FormComponentSpec extends Spec {
           Horizontal,
           List.empty[Int],
           None,
-          None),
+          None
+        ),
         toSmartString("Select the tax type"),
         None,
         None,
@@ -907,7 +943,8 @@ class FormComponentSpec extends Spec {
         derived = false,
         onlyShowOnSummary = false,
         None
-      ))
+      )
+    )
   }
 
   it should "parse 'choice' type as YesNo if 'format=yesno' is provided" in {
@@ -933,7 +970,8 @@ class FormComponentSpec extends Spec {
         derived = false,
         onlyShowOnSummary = false,
         None
-      ))
+      )
+    )
   }
 
   it should "parse 'choice' type as YesNo if 'format=yesno' and 'value=1' are provided" in {
@@ -960,7 +998,8 @@ class FormComponentSpec extends Spec {
         derived = false,
         onlyShowOnSummary = false,
         None
-      ))
+      )
+    )
   }
 
   it should "parse 'choice' type as YesNo if 'format=yesno & multivalue=no' is provided" in {
@@ -987,7 +1026,8 @@ class FormComponentSpec extends Spec {
         derived = false,
         onlyShowOnSummary = false,
         None
-      ))
+      )
+    )
   }
 
   it should "parse 'choice' type as YesNo ignoring 'choices' if they are provided" in {
@@ -1016,7 +1056,8 @@ class FormComponentSpec extends Spec {
         submissible = true,
         derived = false,
         errorMessage = None
-      ))
+      )
+    )
   }
 
   it should "parse 'choice' type as YesNo even though 'multivalue=yes' is provided" in {
@@ -1042,7 +1083,8 @@ class FormComponentSpec extends Spec {
         submissible = true,
         derived = false,
         errorMessage = None
-      ))
+      )
+    )
   }
 
   it should "faile parse 'choice' type when not enough choices" in {
@@ -1119,7 +1161,8 @@ class FormComponentSpec extends Spec {
         derived = false,
         onlyShowOnSummary = false,
         None
-      ))
+      )
+    )
   }
 
   it should "parse info field and select Standard type if infoType not provided" in {
@@ -1147,7 +1190,8 @@ class FormComponentSpec extends Spec {
         derived = false,
         onlyShowOnSummary = false,
         None
-      ))
+      )
+    )
   }
 
   it should "parse info field and correctly build a standard type info field" in {
@@ -1176,7 +1220,8 @@ class FormComponentSpec extends Spec {
         derived = false,
         onlyShowOnSummary = false,
         None
-      ))
+      )
+    )
   }
 
   it should "parse the includeIf and correctly set it to it's Boolean Expression" in {
@@ -1237,7 +1282,8 @@ class FormComponentSpec extends Spec {
         derived = false,
         onlyShowOnSummary = false,
         None
-      ))
+      )
+    )
   }
 
   it should "parse info field and correctly build a long type info field" in {
@@ -1266,7 +1312,8 @@ class FormComponentSpec extends Spec {
         derived = false,
         onlyShowOnSummary = false,
         None
-      ))
+      )
+    )
   }
 
   it should "parse info field and correctly build an important type info field" in {
@@ -1295,7 +1342,8 @@ class FormComponentSpec extends Spec {
         derived = false,
         onlyShowOnSummary = false,
         None
-      ))
+      )
+    )
   }
 
   it should "parse info field and correctly build a banner type info field" in {
@@ -1324,7 +1372,8 @@ class FormComponentSpec extends Spec {
         derived = false,
         onlyShowOnSummary = false,
         None
-      ))
+      )
+    )
   }
   it should "parse info field and correctly build a noformat type info field" in {
     val fieldValue = toFieldValue("""
@@ -1352,7 +1401,8 @@ class FormComponentSpec extends Spec {
         derived = false,
         onlyShowOnSummary = false,
         None
-      ))
+      )
+    )
   }
 
   it should "fail to parse if info field is not one of a valid types" in {
@@ -1408,7 +1458,8 @@ class FormComponentSpec extends Spec {
         submissible = true,
         derived = false,
         errorMessage = None
-      ))
+      )
+    )
   }
 
   it should "parse as Address with shortName" in {
@@ -1434,7 +1485,8 @@ class FormComponentSpec extends Spec {
         submissible = true,
         derived = false,
         errorMessage = None
-      ))
+      )
+    )
   }
 
   it should "parse as Choice field shortName" in {
@@ -1458,7 +1510,8 @@ class FormComponentSpec extends Spec {
           Vertical,
           List(1),
           None,
-          None),
+          None
+        ),
         toSmartString("Original invoice from the supplier"),
         None,
         Some(toSmartString(shortName)),
@@ -1469,7 +1522,8 @@ class FormComponentSpec extends Spec {
         submissible = true,
         derived = false,
         errorMessage = None
-      ))
+      )
+    )
   }
 
   it should "parse as Date constraint to April 17" in {
@@ -1547,7 +1601,8 @@ class FormComponentSpec extends Spec {
         FormComponentId(id),
         Time(
           List(Range(StartTime(LocalTime.parse(sTime)), EndTime(LocalTime.parse(eTime)))),
-          IntervalMins(intervalMins)),
+          IntervalMins(intervalMins)
+        ),
         toSmartString(label),
         Some(toSmartString(helpText)),
         Some(toSmartString(shortName)),
@@ -1558,7 +1613,8 @@ class FormComponentSpec extends Spec {
         submissible = true,
         derived = false,
         errorMessage = None
-      ))
+      )
+    )
   }
 
   it should "parse as Time with multiple Ranges" in {
@@ -1617,7 +1673,8 @@ class FormComponentSpec extends Spec {
         submissible = true,
         derived = false,
         errorMessage = None
-      ))
+      )
+    )
   }
 
   it should "throw DateTimeParseException while parsing as Time with invalid LocalTime format" in {
@@ -1781,7 +1838,8 @@ class FormComponentSpec extends Spec {
         submissible = true,
         derived = false,
         errorMessage = None
-      ))
+      )
+    )
   }
 
   it should "parse as Lookup with selection criteria " in {
@@ -1826,16 +1884,20 @@ class FormComponentSpec extends Spec {
         Text(
           Lookup(
             Port,
-            Some(List(
-              SelectionCriteria(
-                CsvColumnName("PortType"),
-                SelectionCriteriaExpr(FormCtx(FormComponentId("travelMethod")))),
-              SelectionCriteria(CsvColumnName("Region"), SelectionCriteriaSimpleValue(List("2"))),
-              SelectionCriteria(CsvColumnName("PortId"), SelectionCriteriaSimpleValue(List("441", "442"))),
-              SelectionCriteria(
-                CsvColumnName("CountryCode"),
-                SelectionCriteriaReference(FormCtx(FormComponentId("country")), CsvColumnName("CountryCode")))
-            ))
+            Some(
+              List(
+                SelectionCriteria(
+                  CsvColumnName("PortType"),
+                  SelectionCriteriaExpr(FormCtx(FormComponentId("travelMethod")))
+                ),
+                SelectionCriteria(CsvColumnName("Region"), SelectionCriteriaSimpleValue(List("2"))),
+                SelectionCriteria(CsvColumnName("PortId"), SelectionCriteriaSimpleValue(List("441", "442"))),
+                SelectionCriteria(
+                  CsvColumnName("CountryCode"),
+                  SelectionCriteriaReference(FormCtx(FormComponentId("country")), CsvColumnName("CountryCode"))
+                )
+              )
+            )
           ),
           Value
         ),
@@ -1849,7 +1911,8 @@ class FormComponentSpec extends Spec {
         submissible = true,
         derived = false,
         errorMessage = None
-      ))
+      )
+    )
   }
 
   private def toFieldValue(template: String): JsResult[FormComponent] = {

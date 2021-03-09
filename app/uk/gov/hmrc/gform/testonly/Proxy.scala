@@ -27,8 +27,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 class Proxy(wsClient: WSClient, controllerComponents: ControllerComponents)(implicit ec: ExecutionContext) {
 
-  /**
-    * This creates action which proxies incoming request to remote service.
+  /** This creates action which proxies incoming request to remote service.
     */
   def apply(remoteServiceBaseUrl: String)(path: String): Action[Source[ByteString, _]] =
     controllerComponents.actionBuilder.async(streamedBodyParser) { inboundRequest: Request[Source[ByteString, _]] =>
@@ -42,7 +41,8 @@ class Proxy(wsClient: WSClient, controllerComponents: ControllerComponents)(impl
         Result(
           ResponseHeader(
             streamedResponse.status,
-            streamedResponse.headers.mapValues(_.head).filter(filterOutContentHeaders)),
+            streamedResponse.headers.mapValues(_.head).filter(filterOutContentHeaders)
+          ),
           Streamed(streamedResponse.bodyAsSource, contentLength, contentType)
         )
       }
@@ -52,7 +52,8 @@ class Proxy(wsClient: WSClient, controllerComponents: ControllerComponents)(impl
     baseUrl: String,
     path: String,
     inboundRequest: Request[A],
-    bodyTransformer: String => String = identity): Future[Result] = {
+    bodyTransformer: String => String = identity
+  ): Future[Result] = {
 
     val outboundRequest = wsClient
       .url(s"$baseUrl$path")
@@ -72,8 +73,8 @@ class Proxy(wsClient: WSClient, controllerComponents: ControllerComponents)(impl
 
   private lazy val contentTypeHeaderKey = "Content-Type"
   private lazy val contentLengthHeaderKey = "Content-Length"
-  private lazy val filterOutContentHeaders: ((String, String)) => Boolean = {
-    case (key, _) => !key.equalsIgnoreCase(contentTypeHeaderKey) && !key.equalsIgnoreCase(contentLengthHeaderKey)
+  private lazy val filterOutContentHeaders: ((String, String)) => Boolean = { case (key, _) =>
+    !key.equalsIgnoreCase(contentTypeHeaderKey) && !key.equalsIgnoreCase(contentLengthHeaderKey)
   }
 
   private def proxyRequest(path: String, inboundRequest: Request[Source[ByteString, _]]): Future[WSRequest] =
@@ -84,7 +85,8 @@ class Proxy(wsClient: WSClient, controllerComponents: ControllerComponents)(impl
         .withMethod(inboundRequest.method)
         .withHttpHeaders(processHeaders(inboundRequest.headers, extraHeaders = Nil): _*)
         .withQueryStringParameters(inboundRequest.queryString.mapValues(_.head).toSeq: _*)
-        .withBody(inboundRequest.body))
+        .withBody(inboundRequest.body)
+    )
 
   private def processHeaders(inboundHeaders: Headers, extraHeaders: Seq[(String, String)]): Seq[(String, String)] =
     inboundHeaders.toSimpleMap.filter(headerKeyValue => !headerKeyValue._1.equals("Host")).toSeq ++ extraHeaders

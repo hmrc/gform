@@ -39,17 +39,20 @@ class TestOnlyModule(
   formService: FormService[Future],
   formTemplateService: FormTemplateService,
   destinationModule: DestinationModule,
-  controllerComponents: ControllerComponents)(implicit ex: ExecutionContext) {
+  controllerComponents: ControllerComponents
+)(implicit ex: ExecutionContext) {
 
   val enrolmentConnector =
     new EnrolmentConnector(
       wSHttpModule.auditableWSHttp,
-      "http://enrolment-store-proxy.protected.mdtp:80/enrolment-store-proxy")
+      "http://enrolment-store-proxy.protected.mdtp:80/enrolment-store-proxy"
+    )
 
   val desConnector = new DesConnector(
     wSHttpModule.auditableWSHttp,
     configModule.serviceConfig.baseUrl("etmp-hod"),
-    configModule.desConfig)
+    configModule.desConfig
+  )
 
   val formTemplateAlgebra: FormTemplateAlgebra[Future] = new FormTemplateAlgebra[Future] {
     override def get(id: FormTemplateId): Future[FormTemplate] = formTemplateService.get(id)
@@ -71,6 +74,7 @@ class TestOnlyModule(
       configModule.controllerComponents,
       wSHttpModule.auditableWSHttp,
       configModule.serviceConfig,
-      proxyActions)
+      proxyActions
+    )
   val pdfGeneratorStub = new PdfGeneratorStubController(configModule.controllerComponents)
 }

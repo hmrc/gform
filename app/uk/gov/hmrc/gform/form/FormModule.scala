@@ -32,7 +32,8 @@ class FormModule(
   configModule: ConfigModule,
   formTemplateModule: FormTemplateModule,
   fileUploadModule: FileUploadModule,
-  formService: FormService[Future])(implicit ex: ExecutionContext) {
+  formService: FormService[Future]
+)(implicit ex: ExecutionContext) {
 
   val formController: FormController =
     new FormController(
@@ -50,8 +51,9 @@ class FormModule(
     override def get(formId: FormId)(implicit hc: HeaderCarrier): FOpt[Form] =
       fromFutureA(formService.get(formId))
 
-    override def getAll(userId: UserId, formTemplateId: FormTemplateId)(
-      implicit hc: HeaderCarrier): FOpt[List[FormOverview]] =
+    override def getAll(userId: UserId, formTemplateId: FormTemplateId)(implicit
+      hc: HeaderCarrier
+    ): FOpt[List[FormOverview]] =
       fromFutureA(formService.getAll(userId, formTemplateId))
 
     override def delete(formId: FormId)(implicit hc: HeaderCarrier): FOpt[Unit] =
@@ -62,7 +64,8 @@ class FormModule(
       formTemplateId: FormTemplateId,
       affinityGroup: Option[AffinityGroup],
       expiryDays: Long,
-      queryParams: QueryParams)(implicit hc: HeaderCarrier): FOpt[FormIdData] =
+      queryParams: QueryParams
+    )(implicit hc: HeaderCarrier): FOpt[FormIdData] =
       fromFutureA(formService.create(userId, formTemplateId, affinityGroup, expiryDays, queryParams))
 
     override def updateUserData(formIdData: FormIdData, userData: UserData)(implicit hc: HeaderCarrier): FOpt[Unit] =
@@ -71,8 +74,9 @@ class FormModule(
     def updateFormStatus(formId: FormId, newStatus: FormStatus)(implicit hc: HeaderCarrier): FOpt[FormStatus] =
       fromFutureA(formService.updateFormStatus(formId, newStatus))
 
-    override def forceUpdateFormStatus(formIdData: FormIdData, newStatus: FormStatus)(
-      implicit hc: HeaderCarrier): FOpt[Unit] =
+    override def forceUpdateFormStatus(formIdData: FormIdData, newStatus: FormStatus)(implicit
+      hc: HeaderCarrier
+    ): FOpt[Unit] =
       forceUpdateFormStatus(formIdData.toFormId, newStatus)
 
     override def forceUpdateFormStatus(formId: FormId, newStatus: FormStatus)(implicit hc: HeaderCarrier): FOpt[Unit] =

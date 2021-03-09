@@ -36,7 +36,8 @@ class SuccessfulResponseHttpClientSpec extends HttpClientSpec with ScalaCheckDri
   }
 
   it should "delegate to underlying.get and then fail when the response with an successful status" in httpClient[
-    Possible] { underlying =>
+    Possible
+  ] { underlying =>
     forAll(Gen.alphaNumStr, headerCarrierGen, unsuccessfulHttpResponseGen) { (uri, hc, response) =>
       whenever(!response.isSuccess) {
         underlying.expectGet(uri, hc, response)
@@ -61,7 +62,8 @@ class SuccessfulResponseHttpClientSpec extends HttpClientSpec with ScalaCheckDri
   }
 
   it should "delegate to underlying.post and then fail when the response with an successful status" in httpClient[
-    Possible] { underlying =>
+    Possible
+  ] { underlying =>
     forAll(Gen.alphaNumStr, Gen.alphaNumStr, headerCarrierGen, unsuccessfulHttpResponseGen) {
       (uri, postBody, hc, response) =>
         whenever(!response.isSuccess) {
@@ -89,7 +91,8 @@ class SuccessfulResponseHttpClientSpec extends HttpClientSpec with ScalaCheckDri
   }
 
   it should "delegate to underlying.put and then fail when the response with an successful status" in httpClient[
-    Possible] { underlying =>
+    Possible
+  ] { underlying =>
     forAll(Gen.alphaNumStr, Gen.alphaNumStr, headerCarrierGen, unsuccessfulHttpResponseGen) {
       (uri, putBody, hc, response) =>
         whenever(!response.isSuccess) {

@@ -29,8 +29,15 @@ trait FormMetadataGen {
       formTemplateId           <- FormTemplateGen.formTemplateIdGen
       submissionRef            <- Gen.option(SubmissionRefGen.submissionRefGen)
       parentFormSubmissionRefs <- PrimitiveGen.zeroOrMoreGen(SubmissionRefGen.submissionRefGen)
-    } yield
-      FormMetadata(formId, userId, formTemplateId, submissionRef, parentFormSubmissionRefs, Instant.now, Instant.now)
+    } yield FormMetadata(
+      formId,
+      userId,
+      formTemplateId,
+      submissionRef,
+      parentFormSubmissionRefs,
+      Instant.now,
+      Instant.now
+    )
 
   def formMetadataGenWithSubmissionRef: Gen[FormMetadata] =
     for {
@@ -39,15 +46,15 @@ trait FormMetadataGen {
       formTemplateId           <- FormTemplateGen.formTemplateIdGen
       submissionRef            <- SubmissionRefGen.submissionRefGen
       parentFormSubmissionRefs <- PrimitiveGen.zeroOrMoreGen(SubmissionRefGen.submissionRefGen)
-    } yield
-      FormMetadata(
-        formId,
-        userId,
-        formTemplateId,
-        Some(submissionRef),
-        parentFormSubmissionRefs,
-        Instant.now,
-        Instant.now)
+    } yield FormMetadata(
+      formId,
+      userId,
+      formTemplateId,
+      Some(submissionRef),
+      parentFormSubmissionRefs,
+      Instant.now,
+      Instant.now
+    )
 }
 
 object FormMetadataGen extends FormMetadataGen

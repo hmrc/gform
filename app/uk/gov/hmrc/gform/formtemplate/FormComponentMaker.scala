@@ -41,7 +41,8 @@ case class MES(
   editable: Boolean,
   submissible: Boolean,
   derived: Boolean,
-  onlyShowOnSummary: Boolean = false)
+  onlyShowOnSummary: Boolean = false
+)
 
 class FormComponentMaker(json: JsValue) {
 
@@ -134,7 +135,7 @@ class FormComponentMaker(json: JsValue) {
           }
           .partition(_.isLeft) match {
           case (Nil, rights) => Right(for (Right(i) <- rights) yield i)
-          case (lefts, _)    => Left(for (Left(s)   <- lefts) yield s)
+          case (lefts, _)    => Left(for (Left(s) <- lefts) yield s)
         }
 
         r match {
@@ -160,12 +161,13 @@ class FormComponentMaker(json: JsValue) {
     result match {
       case JsSuccess(a, _) => a.asRight
       case JsError(errors) =>
-        UnexpectedState(errors
-          .map {
-            case (path, validationErrors) =>
+        UnexpectedState(
+          errors
+            .map { case (path, validationErrors) =>
               s"Path: $pathPrefix${path.toString}, Errors: ${validationErrors.map(_.messages.mkString(",")).mkString(",")}"
-          }
-          .mkString(",")).asLeft
+            }
+            .mkString(",")
+        ).asLeft
     }
 
   private def mkFieldValue(
@@ -238,17 +240,17 @@ class FormComponentMaker(json: JsValue) {
       maybeValueExpr    <- optMaybeValueExpr
       rows              <- optRows
       result <- createObject(
-                 maybeFormatExpr,
-                 maybeValueExpr,
-                 multiline,
-                 displayWidth,
-                 toUpperCase,
-                 prefix,
-                 suffix,
-                 rows.getOrElse(TextArea.defaultRows),
-                 IsDisplayCharCountTrue.unapply(displayCharCount),
-                 json
-               )
+                  maybeFormatExpr,
+                  maybeValueExpr,
+                  multiline,
+                  displayWidth,
+                  toUpperCase,
+                  prefix,
+                  suffix,
+                  rows.getOrElse(TextArea.defaultRows),
+                  IsDisplayCharCountTrue.unapply(displayCharCount),
+                  json
+                )
     } yield result
   }
 
@@ -269,13 +271,13 @@ class FormComponentMaker(json: JsValue) {
         selectionCriteria <- optSelectionCriteria
         maybeFormatExpr   <- optMaybeFormatExpr(roundingMode)(selectionCriteria)(emailVerification)
         optDateConstraintType = maybeFormatExpr match {
-          case Some(DateFormat(e)) => e.asRight
-          case None                => AnyDate.asRight
-          case Some(invalidFormat) =>
-            UnexpectedState(s"""|Unsupported type of format for date field
-                                |Id: $id
-                                |Format: $invalidFormat""".stripMargin).asLeft
-        }
+                                  case Some(DateFormat(e)) => e.asRight
+                                  case None                => AnyDate.asRight
+                                  case Some(invalidFormat) =>
+                                    UnexpectedState(s"""|Unsupported type of format for date field
+                                                        |Id: $id
+                                                        |Format: $invalidFormat""".stripMargin).asLeft
+                                }
         dateConstraintType <- optDateConstraintType
       } yield dateConstraintType
 
@@ -284,13 +286,13 @@ class FormComponentMaker(json: JsValue) {
       for {
         maybeValueExpr <- optMaybeValueExpr
         optMaybeDateValue = maybeValueExpr match {
-          case Some(DateExpression(dateExpr)) => dateExpr.some.asRight
-          case None                           => none.asRight
-          case Some(invalidValue) =>
-            UnexpectedState(s"""|Unsupported type of value for date field
-                                |Id: $id
-                                |Value: $invalidValue""".stripMargin).asLeft
-        }
+                              case Some(DateExpression(dateExpr)) => dateExpr.some.asRight
+                              case None                           => none.asRight
+                              case Some(invalidValue) =>
+                                UnexpectedState(s"""|Unsupported type of value for date field
+                                                    |Id: $id
+                                                    |Value: $invalidValue""".stripMargin).asLeft
+                            }
         maybeDateValue <- optMaybeDateValue
       } yield maybeDateValue
 
@@ -325,7 +327,8 @@ class FormComponentMaker(json: JsValue) {
   private def validateRepeatsAndBuildGroup(
     repMax: Option[Int],
     repMin: Option[Int],
-    fields: List[FormComponent]): Either[UnexpectedState, Group] =
+    fields: List[FormComponent]
+  ): Either[UnexpectedState, Group] =
     (repMax, repMin) match {
       case (Some(repMaxV), Some(repMinV)) if repMaxV < repMinV =>
         UnexpectedState(s"""repeatsMax should be higher than repeatsMin in Group field""").asLeft
@@ -347,7 +350,7 @@ class FormComponentMaker(json: JsValue) {
       maybeFormatExpr   <- optMaybeFormatExpr(roundingMode)(selectionCriteria)(emailVerification)
       maybeValueExpr    <- optMaybeValueExpr
       oChoice: Opt[Choice] = (maybeFormatExpr, choices, multivalue, maybeValueExpr) match {
-        // format: off
+                               // format: off
         case (IsOrientation(VerticalOrientation),   Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections)) => Choice(Checkbox, NonEmptyList(x, xs),          Vertical,   selections, optionHints, optionHelpText).asRight
         case (IsOrientation(VerticalOrientation),   Some(x :: xs), IsMultivalue(MultivalueNo),  Selections(selections)) => Choice(Radio,    NonEmptyList(x, xs),          Vertical,   selections, optionHints, optionHelpText).asRight
         case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections)) => Choice(Checkbox, NonEmptyList(x, xs),          Horizontal, selections, optionHints, optionHelpText).asRight
@@ -355,16 +358,18 @@ class FormComponentMaker(json: JsValue) {
         case (IsOrientation(YesNoOrientation),      None,          IsMultivalue(MultivalueNo),  Selections(selections)) => Choice(YesNo,    NonEmptyList.of(toSmartString("Yes","Iawn"), toSmartString("No","Na")), Horizontal, selections, optionHints, optionHelpText).asRight
         case (IsOrientation(YesNoOrientation),      _,             _,                           Selections(selections)) => Choice(YesNo,    NonEmptyList.of(toSmartString("Yes","Iawn"), toSmartString("No","Na")), Horizontal, selections, optionHints, optionHelpText).asRight
         // format: on
-        case (invalidFormat, invalidChoices, invalidMultivalue, invalidValue) =>
-          UnexpectedState(s"""|Unsupported combination of 'format, choices, multivalue and value':
-                              |Format     : $invalidFormat
-                              |Choices    : $invalidChoices
-                              |Multivalue : $invalidMultivalue
-                              |Value      : $invalidValue
-                              |optionHints: $optionHints
-                              |optionHelpText: $optionHelpText
-                              |""".stripMargin).asLeft
-      }
+                               case (invalidFormat, invalidChoices, invalidMultivalue, invalidValue) =>
+                                 UnexpectedState(
+                                   s"""|Unsupported combination of 'format, choices, multivalue and value':
+                                       |Format     : $invalidFormat
+                                       |Choices    : $invalidChoices
+                                       |Multivalue : $invalidMultivalue
+                                       |Value      : $invalidValue
+                                       |optionHints: $optionHints
+                                       |optionHelpText: $optionHelpText
+                                       |""".stripMargin
+                                 ).asLeft
+                             }
       result <- oChoice.right
     } yield result
   }
@@ -393,17 +398,17 @@ class FormComponentMaker(json: JsValue) {
 
         def rcFromSelection(selections: List[Boolean]): Either[String, RevealingChoice] = {
           val hints =
-            optionHints.fold[List[Option[SmartString]]](List.fill(revealingFields.size)(None))(_.toList.map(hint =>
-              if (hint.nonEmpty) Some(hint) else None))
+            optionHints.fold[List[Option[SmartString]]](List.fill(revealingFields.size)(None))(
+              _.toList.map(hint => if (hint.nonEmpty) Some(hint) else None)
+            )
 
           val revealingChoiceElements: List[RevealingChoiceElement] =
             options
               .zip(revealingFields)
               .zip(selections)
               .zip(hints)
-              .map {
-                case (((choice, fields), selected), hint) =>
-                  RevealingChoiceElement(choice, fields, hint, selected)
+              .map { case (((choice, fields), selected), hint) =>
+                RevealingChoiceElement(choice, fields, hint, selected)
               }
 
           (revealingChoiceElements, multivalue) match {
@@ -418,10 +423,12 @@ class FormComponentMaker(json: JsValue) {
         def construcRevealingChoice(maybeSelection: Option[Int]): Either[String, RevealingChoice] =
           if (optionHints.fold(false)(_.size =!= options.size)) {
             mkError(
-              s"Number of 'choices': ${options.size} and number of 'hints': ${optionHints.map(_.size)} does not match. They need to be identical.")
+              s"Number of 'choices': ${options.size} and number of 'hints': ${optionHints.map(_.size)} does not match. They need to be identical."
+            )
           } else if (options.size =!= revealingFields.size) {
             mkError(
-              s"Number of 'choices': ${options.size} and number of 'revealingFields': ${revealingFields.size} does not match. They need to be identical.")
+              s"Number of 'choices': ${options.size} and number of 'revealingFields': ${revealingFields.size} does not match. They need to be identical."
+            )
           } else {
 
             val initialSelections = List.fill(options.size)(false)
@@ -450,7 +457,7 @@ class FormComponentMaker(json: JsValue) {
                             |choices : ${choices.getOrElse("MISSING - This field must be provided")}
                             |selections: ${maybeValueExpr.getOrElse("")}
                             |revealingFields: ${revealingFields
-                             .getOrElse("MISSING - This field must be provided")}""".stripMargin).asLeft
+          .getOrElse("MISSING - This field must be provided")}""".stripMargin).asLeft
     }
   }
 
@@ -621,7 +628,8 @@ class FormComponentMaker(json: JsValue) {
     val endTime = (json \ "endTime").as[String]
     Range(
       StartTime(Range.stringToLocalTime(formatter, startTime)),
-      EndTime(Range.stringToLocalTime(formatter, endTime)))
+      EndTime(Range.stringToLocalTime(formatter, endTime))
+    )
   }
 
 }

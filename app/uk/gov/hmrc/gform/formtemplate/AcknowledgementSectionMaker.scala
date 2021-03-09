@@ -44,15 +44,15 @@ class AcknowledgementSectionMaker(json: JsValue) {
   def optAcknowledgementSection(): Opt[AcknowledgementSection] =
     for {
       sr <- showReference
-    } yield
-      AcknowledgementSection(
-        title,
-        description,
-        shortName,
-        fields,
-        sr,
-        acknowledgementSectionPdf,
-        acknowledgementSectionInstructionPdf,
-        displayFeedbackLink)
+    } yield AcknowledgementSection(
+      title,
+      description,
+      shortName,
+      fields,
+      sr,
+      acknowledgementSectionPdf,
+      acknowledgementSectionInstructionPdf,
+      displayFeedbackLink
+    )
 
 }

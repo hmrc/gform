@@ -30,8 +30,8 @@ case class SmartString(localised: LocalisedString, interpolations: List[Expr]) {
 
   def rawValue(implicit l: LangADT): String = localised.value(l)
 
-  def nonEmpty: Boolean = localised.m.nonEmpty && localised.m.forall {
-    case (_: LangADT, value: String) => value.nonEmpty
+  def nonEmpty: Boolean = localised.m.nonEmpty && localised.m.forall { case (_: LangADT, value: String) =>
+    value.nonEmpty
   }
 }
 
@@ -57,7 +57,8 @@ object SmartStringTemplateReader {
           BasicParsers.validateWithParser(exprWithParentheses, ValueParser.expr) match {
             case Left(unexpectedState) =>
               JsError(
-                s"""Error while parsing "$s". Failed at the expression $exprWithParentheses: ${unexpectedState.toString}""")
+                s"""Error while parsing "$s". Failed at the expression $exprWithParentheses: ${unexpectedState.toString}"""
+              )
             case Right(expr) =>
               val preEscaped = escape(pre)
               recurse(s"$processed$preEscaped{${interpolations.size}}", post, expr :: interpolations)
@@ -88,16 +89,16 @@ object SmartStringTemplateReader {
     ls.m.foldLeft(JsSuccess(SmartString.empty).asInstanceOf[JsResult[SmartString]]) {
       case (acc: JsResult[SmartString], (lang: LangADT, s: String)) =>
         acc.flatMap { ss =>
-          extractInterpolations(s, ss.interpolations).map {
-            case (stringWithPlaceholders, interpolations) =>
-              SmartString(LocalisedString(ss.localised.m + (lang -> stringWithPlaceholders)), interpolations)
+          extractInterpolations(s, ss.interpolations).map { case (stringWithPlaceholders, interpolations) =>
+            SmartString(LocalisedString(ss.localised.m + (lang -> stringWithPlaceholders)), interpolations)
           }
         }
     }
 
   private def buildSmartStringFromLocalisedStringAndInterpolations(
     ls: LocalisedString,
-    interpolations: List[Expr]): JsResult[SmartString] =
+    interpolations: List[Expr]
+  ): JsResult[SmartString] =
     buildSmartStringFromLocalisedStringWithPossibleExpressions(ls)
       .flatMap { ss =>
         if (interpolations.isEmpty)

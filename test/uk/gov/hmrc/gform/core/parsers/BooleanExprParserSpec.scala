@@ -97,7 +97,8 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
     val res = BooleanExprParser.validate("${isPremisesSameAsBusinessAddress=0||amountA=22}")
 
     res shouldBe Right(
-      Or(Equals(FormCtx("isPremisesSameAsBusinessAddress"), Constant("0")), Equals(FormCtx("amountA"), Constant("22"))))
+      Or(Equals(FormCtx("isPremisesSameAsBusinessAddress"), Constant("0")), Equals(FormCtx("amountA"), Constant("22")))
+    )
 
   }
 
@@ -108,7 +109,8 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
       Or(
         Or(
           Equals(FormCtx("isPremisesSameAsBusinessAddress"), Constant("0")),
-          Equals(FormCtx("amountA"), Constant("22"))),
+          Equals(FormCtx("amountA"), Constant("22"))
+        ),
         Equals(FormCtx("amountB"), Constant("33"))
       )
     )
@@ -119,9 +121,8 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
     val res = BooleanExprParser.validate("${isPremisesSameAsBusinessAddress=0&&amountA=22}")
 
     res shouldBe Right(
-      And(
-        Equals(FormCtx("isPremisesSameAsBusinessAddress"), Constant("0")),
-        Equals(FormCtx("amountA"), Constant("22"))))
+      And(Equals(FormCtx("isPremisesSameAsBusinessAddress"), Constant("0")), Equals(FormCtx("amountA"), Constant("22")))
+    )
 
   }
 
@@ -132,7 +133,8 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
       And(
         And(
           Equals(FormCtx("isPremisesSameAsBusinessAddress"), Constant("0")),
-          Equals(FormCtx("amountA"), Constant("22"))),
+          Equals(FormCtx("amountA"), Constant("22"))
+        ),
         Equals(FormCtx("amountB"), Constant("33"))
       )
     )
@@ -146,7 +148,8 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
       Or(
         And(
           Equals(FormCtx("isPremisesSameAsBusinessAddress"), Constant("0")),
-          Equals(FormCtx("amountA"), Constant("22"))),
+          Equals(FormCtx("amountA"), Constant("22"))
+        ),
         Equals(FormCtx("amountB"), Constant("33"))
       )
     )
@@ -175,7 +178,8 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
       And(
         Or(
           Equals(FormCtx("isPremisesSameAsBusinessAddress"), Constant("0")),
-          Equals(FormCtx("amountA"), Constant("22"))),
+          Equals(FormCtx("amountA"), Constant("22"))
+        ),
         Equals(FormCtx("amountB"), Constant("33"))
       )
     )
@@ -188,7 +192,9 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
     res shouldBe Right(
       Or(
         Equals(UserCtx(UserField.AffinityGroup), Constant("organisation")),
-        Equals(UserCtx(UserField.AffinityGroup), Constant("individual"))))
+        Equals(UserCtx(UserField.AffinityGroup), Constant("individual"))
+      )
+    )
 
   }
 
@@ -198,7 +204,9 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
     res shouldBe Right(
       Or(
         Equals(FormCtx("hasOrgsAddressChanged"), Constant("1")),
-        Equals(FormCtx("hasOrgsAddressChanged"), Constant("0"))))
+        Equals(FormCtx("hasOrgsAddressChanged"), Constant("0"))
+      )
+    )
 
   }
 
@@ -258,7 +266,8 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
     val res = BooleanExprParser.validate("${01022020 before 01022021}")
 
     res shouldBe Right(
-      DateBefore(DateValueExpr(ExactDateExprValue(2020, 2, 1)), DateValueExpr(ExactDateExprValue(2021, 2, 1))))
+      DateBefore(DateValueExpr(ExactDateExprValue(2020, 2, 1)), DateValueExpr(ExactDateExprValue(2021, 2, 1)))
+    )
   }
 
   it should "parse before - TODAY and exact value" in {
@@ -279,7 +288,9 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
     res shouldBe Right(
       DateBefore(
         DateExprWithOffset(DateValueExpr(TodayDateExprValue), 1, OffsetUnitDay),
-        DateFormCtxVar(FormCtx("startDate"))))
+        DateFormCtxVar(FormCtx("startDate"))
+      )
+    )
   }
 
   it should "parse before - form context variable + offset" in {
@@ -288,7 +299,9 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
     res shouldBe Right(
       DateBefore(
         DateExprWithOffset(DateFormCtxVar(FormCtx("startDate")), 1, OffsetUnitDay),
-        DateFormCtxVar(FormCtx("endDate"))))
+        DateFormCtxVar(FormCtx("endDate"))
+      )
+    )
   }
 
   it should "parse before - return error when offset is invalid" in {
@@ -299,7 +312,9 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
         """Unable to parse expression ${startDate *1d after endDate}.
           |Errors:
           |${startDate *1d after endDate}:1: unexpected characters; expected '+' or '=' or '\s+' or '<=' or '*' or '>=' or '!=' or '-' or 'else' or '>' or '<'
-          |${startDate *1d after endDate}              ^""".stripMargin))
+          |${startDate *1d after endDate}              ^""".stripMargin
+      )
+    )
   }
 
   it should "parse before - should work with other expressions" in {
@@ -309,9 +324,11 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
       And(
         DateAfter(
           DateExprWithOffset(DateFormCtxVar(FormCtx("startDate")), -1, OffsetUnitDay),
-          DateFormCtxVar(FormCtx("endDate"))),
+          DateFormCtxVar(FormCtx("endDate"))
+        ),
         Equals(FormCtx("field1"), FormCtx("field2"))
-      ))
+      )
+    )
   }
 
   it should "parse after - form context variables" in {

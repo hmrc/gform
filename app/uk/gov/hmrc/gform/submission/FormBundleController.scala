@@ -32,47 +32,51 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 class FormBundleController(
   controllerComponents: ControllerComponents,
-  oFormBundleSubmissionService: Option[FormBundleSubmissionService[FOpt]])(implicit ex: ExecutionContext)
+  oFormBundleSubmissionService: Option[FormBundleSubmissionService[FOpt]]
+)(implicit ex: ExecutionContext)
     extends BaseController(controllerComponents) {
   private val logger = LoggerFactory.getLogger(getClass)
 
   def getFormBundle(userId: UserId, formTemplateId: FormTemplateId, accessCode: AccessCode): Action[AnyContent] =
     formAction("getFormBundle", FormIdData.WithAccessCode(userId, formTemplateId, accessCode)) { implicit request =>
       oFormBundleSubmissionService.fold(
-        Future.successful(BadRequest("Can't getFormTree. No FormBundleSubmissionService has been configured."))) {
-        formBundleSubmissionService =>
-          val rootFormIdData = FormIdData.WithAccessCode(userId, formTemplateId, accessCode)
+        Future.successful(BadRequest("Can't getFormTree. No FormBundleSubmissionService has been configured."))
+      ) { formBundleSubmissionService =>
+        val rootFormIdData = FormIdData.WithAccessCode(userId, formTemplateId, accessCode)
 
-          formBundleSubmissionService
-            .formTree(rootFormIdData)
-            .map { tree =>
-              logger.info(show"getFormBundle, formId: '${rootFormIdData.toFormId.value}: $tree")
-              tree
-            }
-            .map(_.map(_.formIdData).toList)
-            .toFuture
-            .asOkJson
+        formBundleSubmissionService
+          .formTree(rootFormIdData)
+          .map { tree =>
+            logger.info(show"getFormBundle, formId: '${rootFormIdData.toFormId.value}: $tree")
+            tree
+          }
+          .map(_.map(_.formIdData).toList)
+          .toFuture
+          .asOkJson
       }
     }
 
   def submitFormBundleAfterReview(
     userId: UserId,
     formTemplateId: FormTemplateId,
-    accessCode: AccessCode): Action[NonEmptyList[BundledFormSubmissionData]] =
+    accessCode: AccessCode
+  ): Action[NonEmptyList[BundledFormSubmissionData]] =
     formAction(parse.json[NonEmptyList[BundledFormSubmissionData]])(
       "submitFormBundleAfterReview",
-      FormIdData.WithAccessCode(userId, formTemplateId, accessCode)) { implicit request =>
+      FormIdData.WithAccessCode(userId, formTemplateId, accessCode)
+    ) { implicit request =>
       oFormBundleSubmissionService.fold(
         Future.successful(
-          BadRequest("Can't submitFormBundleAfterReview. No FormBundleSubmissionService has been configured."))) {
-        formBundleSubmissionService =>
-          val rootFormIdData = FormIdData.WithAccessCode(userId, formTemplateId, accessCode)
+          BadRequest("Can't submitFormBundleAfterReview. No FormBundleSubmissionService has been configured.")
+        )
+      ) { formBundleSubmissionService =>
+        val rootFormIdData = FormIdData.WithAccessCode(userId, formTemplateId, accessCode)
 
-          import request._
+        import request._
 
-          formBundleSubmissionService
-            .submitFormBundleAfterReview(rootFormIdData, body)
-            .fold(unexpectedState => BadRequest(unexpectedState.error), _ => NoContent)
+        formBundleSubmissionService
+          .submitFormBundleAfterReview(rootFormIdData, body)
+          .fold(unexpectedState => BadRequest(unexpectedState.error), _ => NoContent)
       }
     }
 
@@ -80,16 +84,18 @@ class FormBundleController(
     userId: UserId,
     formTemplateId: FormTemplateId,
     accessCode: AccessCode,
-    status: FormStatus): Action[AnyContent] =
+    status: FormStatus
+  ): Action[AnyContent] =
     formAction("forceUpdateFormStatus", FormIdData.WithAccessCode(userId, formTemplateId, accessCode)) {
       implicit request =>
-        oFormBundleSubmissionService.fold(Future
-          .successful(BadRequest("Can't forceUpdateFormStatus. No FormBundleSubmissionService has been configured."))) {
-          formBundleSubmissionService =>
-            val formIdData = FormIdData.WithAccessCode(userId, formTemplateId, accessCode)
-            formBundleSubmissionService
-              .forceUpdateFormStatus(formIdData.toFormId, status)
-              .fold(unexpectedState => BadRequest(unexpectedState.error), _ => NoContent)
+        oFormBundleSubmissionService.fold(
+          Future
+            .successful(BadRequest("Can't forceUpdateFormStatus. No FormBundleSubmissionService has been configured."))
+        ) { formBundleSubmissionService =>
+          val formIdData = FormIdData.WithAccessCode(userId, formTemplateId, accessCode)
+          formBundleSubmissionService
+            .forceUpdateFormStatus(formIdData.toFormId, status)
+            .fold(unexpectedState => BadRequest(unexpectedState.error), _ => NoContent)
         }
     }
 }

@@ -38,14 +38,16 @@ trait RecursiveHandlebarsTemplateProcessor {
   def apply(
     template: String,
     accumulatedModel: HandlebarsTemplateProcessorModel,
-    focussedTree: FocussedHandlebarsModelTree): String
+    focussedTree: FocussedHandlebarsModelTree
+  ): String
 }
 
 class HandlebarsTemplateProcessorHelpers(
   accumulatedModel: HandlebarsTemplateProcessorModel,
   modelTree: HandlebarsModelTree,
   processor: RecursiveHandlebarsTemplateProcessor,
-  timeProvider: TimeProvider = new TimeProvider) {
+  timeProvider: TimeProvider = new TimeProvider
+) {
   def yesNoToEtmpChoice(yesNoChoice: Any): CharSequence = log("yesNoChoice", yesNoChoice) {
     ifNotNullAsString(yesNoChoice) {
       case "1"  => condition("0")
@@ -140,7 +142,8 @@ class HandlebarsTemplateProcessorHelpers(
     arg7: Any,
     arg8: Any,
     arg9: Any,
-    arg10: Any): CharSequence =
+    arg10: Any
+  ): CharSequence =
     eitherN(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
   def either11(
     arg1: Any,
@@ -153,7 +156,8 @@ class HandlebarsTemplateProcessorHelpers(
     arg8: Any,
     arg9: Any,
     arg10: Any,
-    arg11: Any): CharSequence =
+    arg11: Any
+  ): CharSequence =
     eitherN(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11)
   def either12(
     arg1: Any,
@@ -167,7 +171,8 @@ class HandlebarsTemplateProcessorHelpers(
     arg9: Any,
     arg10: Any,
     arg11: Any,
-    arg12: Any): CharSequence =
+    arg12: Any
+  ): CharSequence =
     eitherN(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12)
   def either13(
     arg1: Any,
@@ -182,7 +187,8 @@ class HandlebarsTemplateProcessorHelpers(
     arg10: Any,
     arg11: Any,
     arg12: Any,
-    arg13: Any): CharSequence =
+    arg13: Any
+  ): CharSequence =
     eitherN(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13)
   def either14(
     arg1: Any,
@@ -198,7 +204,8 @@ class HandlebarsTemplateProcessorHelpers(
     arg11: Any,
     arg12: Any,
     arg13: Any,
-    arg14: Any): CharSequence =
+    arg14: Any
+  ): CharSequence =
     eitherN(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14)
   def either15(
     arg1: Any,
@@ -215,7 +222,8 @@ class HandlebarsTemplateProcessorHelpers(
     arg12: Any,
     arg13: Any,
     arg14: Any,
-    arg15: Any): CharSequence =
+    arg15: Any
+  ): CharSequence =
     eitherN(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15)
   def either16(
     arg1: Any,
@@ -233,7 +241,8 @@ class HandlebarsTemplateProcessorHelpers(
     arg13: Any,
     arg14: Any,
     arg15: Any,
-    arg16: Any): CharSequence =
+    arg16: Any
+  ): CharSequence =
     eitherN(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16)
   def either17(
     arg1: Any,
@@ -252,7 +261,8 @@ class HandlebarsTemplateProcessorHelpers(
     arg14: Any,
     arg15: Any,
     arg16: Any,
-    arg17: Any): CharSequence =
+    arg17: Any
+  ): CharSequence =
     eitherN(
       arg1,
       arg2,
@@ -270,7 +280,8 @@ class HandlebarsTemplateProcessorHelpers(
       arg14,
       arg15,
       arg16,
-      arg17)
+      arg17
+    )
   def either18(
     arg1: Any,
     arg2: Any,
@@ -289,7 +300,8 @@ class HandlebarsTemplateProcessorHelpers(
     arg15: Any,
     arg16: Any,
     arg17: Any,
-    arg18: Any): CharSequence =
+    arg18: Any
+  ): CharSequence =
     eitherN(
       arg1,
       arg2,
@@ -308,7 +320,8 @@ class HandlebarsTemplateProcessorHelpers(
       arg15,
       arg16,
       arg17,
-      arg18)
+      arg18
+    )
   def either19(
     arg1: Any,
     arg2: Any,
@@ -328,7 +341,8 @@ class HandlebarsTemplateProcessorHelpers(
     arg16: Any,
     arg17: Any,
     arg18: Any,
-    arg19: Any): CharSequence =
+    arg19: Any
+  ): CharSequence =
     eitherN(
       arg1,
       arg2,
@@ -348,7 +362,8 @@ class HandlebarsTemplateProcessorHelpers(
       arg16,
       arg17,
       arg18,
-      arg19)
+      arg19
+    )
   def either20(
     arg1: Any,
     arg2: Any,
@@ -369,7 +384,8 @@ class HandlebarsTemplateProcessorHelpers(
     arg17: Any,
     arg18: Any,
     arg19: Any,
-    arg20: Any): CharSequence =
+    arg20: Any
+  ): CharSequence =
     eitherN(
       arg1,
       arg2,
@@ -390,7 +406,8 @@ class HandlebarsTemplateProcessorHelpers(
       arg17,
       arg18,
       arg19,
-      arg20)
+      arg20
+    )
 
   private[handlebars] def eitherN(args: Any*): CharSequence = log("eitherN", args: _*) {
     condition(args.flatMap(asNotNullString).headOption.orNull)
@@ -400,8 +417,8 @@ class HandlebarsTemplateProcessorHelpers(
     condition(args.flatMap(asNotNullNonBlankString).headOption.orNull)
   }
 
-  def isSuccessCode(code: Integer): CharSequence = log("isSuccessCode", code) { condition(isSuccCode(code)) }
-  def isNotSuccessCode(code: Integer): CharSequence = log("isNotSuccessCode", code) { condition(!isSuccCode(code)) }
+  def isSuccessCode(code: Integer): CharSequence = log("isSuccessCode", code)(condition(isSuccCode(code)))
+  def isNotSuccessCode(code: Integer): CharSequence = log("isNotSuccessCode", code)(condition(!isSuccCode(code)))
   private def isSuccCode(code: Integer): Boolean = code != null && code >= 200 && code <= 299
 
   def desCurrentDate: CharSequence = condition(DateTimeFormatter.ISO_LOCAL_DATE.format(timeProvider.localDateTime))
@@ -518,7 +535,7 @@ class HandlebarsTemplateProcessorHelpers(
   }
 
   def capitaliseFirst(s: Any): CharSequence = log("capitaliseFirst", s) {
-    ifNotNullAsString(s) { identity }.toString.capitalize
+    ifNotNullAsString(s)(identity).toString.capitalize
   }
 
   def indexedLookup(index: Any, options: Options): CharSequence =
@@ -550,7 +567,8 @@ class HandlebarsTemplateProcessorHelpers(
         .padTo(2, " ")
         .zipWithIndex
         .map { case (l, i) => s""""addressLine${i + 1}": "${condition(l)}"""" }
-        .mkString(s",${util.Properties.lineSeparator}"))
+        .mkString(s",${util.Properties.lineSeparator}")
+    )
 
   def removeEmptyAndGet(dfltAny: Any, index: Int, options: Options): CharSequence =
     log("removeEmptyAndGet", dfltAny :: index :: options.params.toList: _*) {
@@ -569,7 +587,7 @@ class HandlebarsTemplateProcessorHelpers(
       }
     }
 
-  def stripCommas(s: Any): CharSequence = log("stripCommas", s) { ifNotNullAsString(s) { _.replaceAll(",", "") } }
+  def stripCommas(s: Any): CharSequence = log("stripCommas", s)(ifNotNullAsString(s)(_.replaceAll(",", "")))
 
   def not(s: Any): CharSequence = log("not", s) {
     ifNotNullAsString(s) { v =>
@@ -585,8 +603,8 @@ class HandlebarsTemplateProcessorHelpers(
     (first :: options.params.toList).filterNot(isNullAsBoolean).map(asBoolean).forall(identity)
   }
 
-  def isNull(s: Any): CharSequence = log("isNull", s) { condition(isNullAsBoolean(s)) }
-  def isNotNull(s: Any): CharSequence = log("isNotNull", s) { condition(!isNullAsBoolean(s)) }
+  def isNull(s: Any): CharSequence = log("isNull", s)(condition(isNullAsBoolean(s)))
+  def isNotNull(s: Any): CharSequence = log("isNotNull", s)(condition(!isNullAsBoolean(s)))
 
   private val etmpParamSequenceFormat = new DecimalFormat("00")
   def toEtmpParamSequence(index: Any): CharSequence = etmpParamSequenceFormat.format(asBigDecimal(index) + 1)
@@ -609,7 +627,8 @@ class HandlebarsTemplateProcessorHelpers(
           .map(
             _.cast[TextNode]
               .map(_.asText)
-              .getOrElse(throw new Exception(s"exists($array, 'v'): expected elements in the array to be Strings.")))
+              .getOrElse(throw new Exception(s"exists($array, 'v'): expected elements in the array to be Strings."))
+          )
           .exists(_ === v)
           .toString
       }
@@ -632,12 +651,13 @@ class HandlebarsTemplateProcessorHelpers(
       if (withoutWhitespace.length < 4) postcode
       else
         withoutWhitespace.substring(0, withoutWhitespace.length - 3) + " " + withoutWhitespace.substring(
-          withoutWhitespace.length - 3)
+          withoutWhitespace.length - 3
+        )
     }
 
   def keyedLookup(obj: java.util.Map[String, String], key: Any): CharSequence =
     ifNotNullAsString(key) { k =>
-      condition { Option(obj).map(_.get(k)).orNull }
+      condition(Option(obj).map(_.get(k)).orNull)
     }
 
   def importBySubmissionReference(submissionReference: Any, destinationId: Any): CharSequence =
@@ -646,12 +666,13 @@ class HandlebarsTemplateProcessorHelpers(
         (for {
           node        <- findNodeInFormTree(SubmissionRef(submissionReferenceString))
           destination <- findHandlebarsDestination(node.formTemplate, DestinationId(destinationIdString))
-        } yield
-          new Handlebars.SafeString(
-            processor(
-              destination.payload.getOrElse(""),
-              accumulatedModel,
-              FocussedHandlebarsModelTree(modelTree, node.model)))).left.map { m =>
+        } yield new Handlebars.SafeString(
+          processor(
+            destination.payload.getOrElse(""),
+            accumulatedModel,
+            FocussedHandlebarsModelTree(modelTree, node.model)
+          )
+        )).left.map { m =>
           val msg =
             s"Attempt to importBySubmissionReference '$submissionReferenceString', destinationId '$destinationIdString' failed because $m This is the form tree: ${renderFormTree()}"
           Loggers.destinations.warn(msg)
@@ -669,13 +690,14 @@ class HandlebarsTemplateProcessorHelpers(
   private def findNodeInFormTree(submissionRef: SubmissionRef): Either[String, HandlebarsModelTreeNode] =
     for {
       node <- modelTree
-               .find(_.submissionRef === submissionRef)
-               .toRight(s"Cannot find a node in the form tree with submission reference '${submissionRef.value}'.")
+                .find(_.submissionRef === submissionRef)
+                .toRight(s"Cannot find a node in the form tree with submission reference '${submissionRef.value}'.")
     } yield node
 
   private def findHandlebarsDestination(
     formTemplate: FormTemplate,
-    destinationId: DestinationId): Either[String, Destination.HandlebarsHttpApi] = {
+    destinationId: DestinationId
+  ): Either[String, Destination.HandlebarsHttpApi] = {
     def findInList(list: List[Destination]): Option[Destination.HandlebarsHttpApi] = list match {
       case Nil                                                               => None
       case (d: Destination.HandlebarsHttpApi) :: _ if destinationId === d.id => Some(d)
@@ -687,7 +709,8 @@ class HandlebarsTemplateProcessorHelpers(
       .cast[Destinations.DestinationList]
       .flatMap(dl => findInList(dl.destinations.toList))
       .toRight(
-        s"Cannot find a ${Destination.handlebarsHttpApi} destination with ID `${destinationId.id}` in form template with ID '${formTemplate._id.value}'.")
+        s"Cannot find a ${Destination.handlebarsHttpApi} destination with ID `${destinationId.id}` in form template with ID '${formTemplate._id.value}'."
+      )
   }
 
   private def asBigDecimal(v: Any): BigDecimal =
@@ -706,7 +729,8 @@ class HandlebarsTemplateProcessorHelpers(
     case "false" => false
     case _ =>
       throw new Exception(
-        s"Expected 'true' or 'false'. Got $t of type ${if (t != null) t.getClass.getName else "null"}")
+        s"Expected 'true' or 'false'. Got $t of type ${if (t != null) t.getClass.getName else "null"}"
+      )
   }
 
   private def condition(v: Any): CharSequence =

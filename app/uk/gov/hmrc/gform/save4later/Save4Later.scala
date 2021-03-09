@@ -40,7 +40,8 @@ class Save4Later(cache: ShortLivedCache)(implicit ex: ExecutionContext) extends 
       case None =>
         throw UpstreamErrorResponse(
           s"Not found 'form' for the given id: '${formId.value}'",
-          StatusCodes.NotFound.intValue)
+          StatusCodes.NotFound.intValue
+        )
       case Some(form) =>
         LoggerFactory.getLogger(getClass.getName).debug(Json.prettyPrint(Json.toJson(form)) + "GETFORM")
         form

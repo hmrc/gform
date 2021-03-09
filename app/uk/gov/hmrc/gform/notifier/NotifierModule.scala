@@ -26,8 +26,8 @@ import scala.concurrent.ExecutionContext
 class NotifierModule(
   configModule: ConfigModule,
   proxyModule: ProxyModule
-)(
-  implicit ec: ExecutionContext
+)(implicit
+  ec: ExecutionContext
 ) {
 
   private val config = configModule.notifierConfig

@@ -72,8 +72,11 @@ object ComponentTypeRaw {
           case Some(componentType) => JsSuccess(componentType)
           case None =>
             val componentNames = componentMap.keys.filterNot(_.isEmpty).mkString(", ")
-            throw new Exception(JsError(
-              s"Unknown component type: $compTypeAsString. Expected one of the following: $componentNames").toString)
+            throw new Exception(
+              JsError(
+                s"Unknown component type: $compTypeAsString. Expected one of the following: $componentNames"
+              ).toString
+            )
         }
 
       case otherwise => JsError(s"Expected String as JsValue, got: $otherwise")

@@ -64,7 +64,8 @@ class JsonParseTestFormat extends Spec with TableDrivenPropertyChecks {
           case Text(constraint, _, DisplayWidth.DEFAULT, _, _, _) =>
             constraint should equal(Number(11, 2, RoundingMode.defaultRoundingMode, None))
           case a @ _ => fail(s"expected a Text, got $a")
-      })
+        }
+      )
     }
   }
 
@@ -148,8 +149,11 @@ class JsonParseTestFormat extends Spec with TableDrivenPropertyChecks {
     forAll(displayWidthOptions) { (displayWidth, expected) =>
       val jsResult: JsResult[FormComponent] =
         implicitly[Reads[FormComponent]]
-          .reads(Json.parse(
-            startOfJson + s""", "format": "shortText", "multiline" : "true" """ + s""", "displayWidth" : "$displayWidth" }"""))
+          .reads(
+            Json.parse(
+              startOfJson + s""", "format": "shortText", "multiline" : "true" """ + s""", "displayWidth" : "$displayWidth" }"""
+            )
+          )
       jsResult shouldBe a[JsSuccess[_]]
       jsResult.map(fv => fv.`type` shouldBe expected)
     }
@@ -178,7 +182,8 @@ class JsonParseTestFormat extends Spec with TableDrivenPropertyChecks {
           false,
           None,
           None
-        ))
+        )
+      )
     }
   }
 
@@ -225,7 +230,8 @@ class JsonParseTestFormat extends Spec with TableDrivenPropertyChecks {
     val jsResult =
       implicitly[Reads[FormComponent]]
         .reads(
-          Json.parse(startOfJson + """, "format": "shortText", "multiline" : "yes", "rows" : "INVALID NO OF ROWS"}"""))
+          Json.parse(startOfJson + """, "format": "shortText", "multiline" : "yes", "rows" : "INVALID NO OF ROWS"}""")
+        )
 
     jsResult should be(jsError)
   }

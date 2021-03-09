@@ -135,9 +135,11 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
   it should "fail to parse ${user.enrolledIdentifier" in {
 
     val res = ValueParser.validate("${user.enrolledIdentifier")
-    res.left.value should be(UnexpectedState("""Unable to parse expression ${user.enrolledIdentifier.
-                                               |Errors:
-                                               |${user.enrolledIdentifier: unexpected end-of-file; expected '}'""".stripMargin))
+    res.left.value should be(
+      UnexpectedState("""Unable to parse expression ${user.enrolledIdentifier.
+                        |Errors:
+                        |${user.enrolledIdentifier: unexpected end-of-file; expected '}'""".stripMargin)
+    )
   }
 
   it should "fail to parse ${user.enrolledIdentifiers}" in {
@@ -148,7 +150,9 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
         """Unable to parse expression ${user.enrolledIdentifiers}.
           |Errors:
           |${user.enrolledIdentifiers}:1: unexpected characters; expected '+' or '}' or '\s+' or '*' or '-' or 'else'
-          |${user.enrolledIdentifiers}                         ^""".stripMargin))
+          |${user.enrolledIdentifiers}                         ^""".stripMargin
+      )
+    )
   }
 
   it should "parse ${user.enrolments.<identifierName>.<referenceName>}" in {
@@ -176,13 +180,15 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     forAll(validIdentifiersCombinations) { (serviceName, identifierName) ⇒
       val res = ValueParser.validate(s"$${user.enrolments.$serviceName.$identifierName}")
       res.right.value should be(
-        TextExpression(UserCtx(UserField.Enrolment(ServiceName(serviceName), IdentifierName(identifierName)))))
+        TextExpression(UserCtx(UserField.Enrolment(ServiceName(serviceName), IdentifierName(identifierName))))
+      )
     }
 
     forAll(invalidIdentifiersCombinations) { (serviceName, identifierName) ⇒
       val res = ValueParser.validate("${user.enrolments." + serviceName + "." + identifierName + "}")
       res.left.value.error should include(
-        s"Unable to parse expression $${user.enrolments.$serviceName.$identifierName}")
+        s"Unable to parse expression $${user.enrolments.$serviceName.$identifierName}"
+      )
     }
   }
 
@@ -205,7 +211,8 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
   it should "parse ${a - b  * c}" in {
     val res = ValueParser.validate("${firstName - secondName * thirdname}")
     res.right.value should be(
-      TextExpression(Subtraction(FormCtx("firstName"), Multiply(FormCtx("secondName"), FormCtx("thirdname")))))
+      TextExpression(Subtraction(FormCtx("firstName"), Multiply(FormCtx("secondName"), FormCtx("thirdname"))))
+    )
   }
 
   it should "parse string constant" in {
@@ -228,8 +235,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     res.right.value should be(ChoiceExpression(List(1, 2, 3, 4)))
   }
 
-  /**
-    * Date cases
+  /** Date cases
     */
   it should "parse Date" in {
     val res = ValueParser.validate("2015-01-15")
@@ -402,19 +408,22 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
             true,
             Some(true),
             true
-          )),
+          )
+        ),
         ackSection,
         DeclarationSection(toSmartString("Declaration"), None, None, Nil)
       ),
     HmrcAgentWithEnrolmentModule(
       RequireMTDAgentEnrolment,
-      EnrolmentAuth(ServiceId("TEST"), DoCheck(Always, RejectAccess, RegimeIdCheck(RegimeId("TEST"))))),
+      EnrolmentAuth(ServiceId("TEST"), DoCheck(Always, RejectAccess, RegimeIdCheck(RegimeId("TEST"))))
+    ),
     "test-email-template-id",
     Some(
       NonEmptyList.of(
         EmailParameter("fullName", FormCtx("directorFullName")),
         EmailParameter("email", FormCtx("directorEmail"))
-      )),
+      )
+    ),
     None,
     List.empty[Section],
     Nil,
@@ -466,7 +475,8 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       None,
       None,
       None
-    ))
+    )
+  )
 
   val formTemplateWithOneSection = plainFormTemplate.copy(sections = List(yourDetailsSection))
 
@@ -482,7 +492,8 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       FormTemplateValidator
         .validate(
           List(Text(ShortText.default, Add(FormCtx("firstName"), FormCtx("lastName")))),
-          formTemplateWithOneSection)
+          formTemplateWithOneSection
+        )
     res should be(Valid)
   }
 
@@ -491,7 +502,8 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       FormTemplateValidator
         .validate(
           List(Text(ShortText.default, Multiply(FormCtx("firstName"), FormCtx("lastName")))),
-          formTemplateWithOneSection)
+          formTemplateWithOneSection
+        )
     res should be(Valid)
   }
 
@@ -509,13 +521,15 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
   "Parser - contextField" should "parse form field with date offset as DateCtx (form.)" in {
     val result = ValueParser.contextField(LineStream[Eval]("form.dateField + 1d")).value.toOption
     result shouldBe Some(
-      Single(DateCtx(DateExprWithOffset(DateFormCtxVar(FormCtx(FormComponentId("dateField"))), 1, OffsetUnitDay))))
+      Single(DateCtx(DateExprWithOffset(DateFormCtxVar(FormCtx(FormComponentId("dateField"))), 1, OffsetUnitDay)))
+    )
   }
 
   it should "parse form field with date offset as DateCtx" in {
     val result = ValueParser.contextField(LineStream[Eval]("dateField + 1d")).value.toOption.flatMap(uncons)
     result shouldBe Some(
-      DateCtx(DateExprWithOffset(DateFormCtxVar(FormCtx(FormComponentId("dateField"))), 1, OffsetUnitDay)))
+      DateCtx(DateExprWithOffset(DateFormCtxVar(FormCtx(FormComponentId("dateField"))), 1, OffsetUnitDay))
+    )
   }
 
   it should "parse TODAY as DateCtx" in {

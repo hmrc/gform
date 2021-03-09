@@ -32,7 +32,8 @@ trait DestinationAuditAlgebra[M[_]] {
     summaryHtml: PdfHtml,
     submissionReference: SubmissionRef,
     template: FormTemplate,
-    model: HandlebarsTemplateProcessorModel)(implicit hc: HeaderCarrier): M[Unit]
+    model: HandlebarsTemplateProcessorModel
+  )(implicit hc: HeaderCarrier): M[Unit]
 
   def auditForcedFormStatusChange(form: Form)(implicit hc: HeaderCarrier): M[Unit]
 
@@ -50,7 +51,8 @@ object DestinationAuditAlgebra {
       "submissionRef" ->
         Json.obj("$ne" -> parentSubmissionRefJson),
       "parentFormSubmissionRefs" ->
-        Json.obj("$in" -> Json.arr(parentSubmissionRefJson)))
+        Json.obj("$in" -> Json.arr(parentSubmissionRefJson))
+    )
   }
 
   val latestTimestampFirst: JsObject = Json.obj("timestamp" -> JsNumber(-1))

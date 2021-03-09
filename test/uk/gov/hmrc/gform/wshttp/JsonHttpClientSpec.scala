@@ -33,14 +33,16 @@ class JsonHttpClientSpec extends HttpClientSpec with ScalaCheckDrivenPropertyChe
   }
 
   "postJsonString" should "delegate to underlying.post with no changes  when the JSON string is valid" in httpClient[
-    Possible] { underlying =>
+    Possible
+  ] { underlying =>
     forAll(Gen.alphaNumStr, Gen.alphaNumStr, headerCarrierGen, successfulHttpResponseGen) {
       (uri, postBody, hc, response) =>
         underlying.expectPost(
           uri,
           s""""$postBody"""",
           hc.copy(extraHeaders = ("Content-Type" -> "application/json") :: hc.extraHeaders.toList),
-          response)
+          response
+        )
 
         buildClient(underlying.httpClient)
           .post(uri, s""""$postBody"""")(hc) shouldBe Right(response)
@@ -59,14 +61,16 @@ class JsonHttpClientSpec extends HttpClientSpec with ScalaCheckDrivenPropertyChe
   }
 
   "putJsonString" should "delegate to underlying.put with no changes  when the JSON string is valid" in httpClient[
-    Possible] { underlying =>
+    Possible
+  ] { underlying =>
     forAll(Gen.alphaNumStr, Gen.alphaNumStr, headerCarrierGen, successfulHttpResponseGen) {
       (uri, putBody, hc, response) =>
         underlying.expectPut(
           uri,
           s""""$putBody"""",
           hc.copy(extraHeaders = ("Content-Type" -> "application/json") :: hc.extraHeaders.toList),
-          response)
+          response
+        )
 
         buildClient(underlying.httpClient)
           .put(uri, s""""$putBody"""")(hc) shouldBe Right(response)

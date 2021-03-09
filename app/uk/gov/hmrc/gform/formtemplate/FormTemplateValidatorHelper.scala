@@ -52,7 +52,8 @@ object FormTemplateValidatorHelper {
             ConcreteDate(
               Year.Exact(LocalDate.now().getYear - 1),
               Month.Exact(previousDate.month),
-              Day.Exact(previousDate.day))
+              Day.Exact(previousDate.day)
+            )
         })
 
   private def getAllDatesFromListOfFields(fields: List[FormComponent]): List[ConcreteDate] =

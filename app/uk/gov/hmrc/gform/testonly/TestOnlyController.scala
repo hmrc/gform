@@ -53,7 +53,8 @@ class TestOnlyController(
   formAlgebra: FormAlgebra[Future],
   formTemplateAlgebra: FormTemplateAlgebra[Future],
   destinationsModelProcessorAlgebra: DestinationsProcessorModelAlgebra[Future],
-  des: DesAlgebra[Future])(implicit ex: ExecutionContext)
+  des: DesAlgebra[Future]
+)(implicit ex: ExecutionContext)
     extends BaseController(controllerComponents) {
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -71,11 +72,11 @@ class TestOnlyController(
         .map { response =>
           Result(
             header = ResponseHeader(response.status, Map.empty),
-            body = HttpEntity.Strict(ByteString(response.body), None))
+            body = HttpEntity.Strict(ByteString(response.body), None)
+          )
         }
-        .recover {
-          case t: Throwable =>
-            Result(header = ResponseHeader(500, Map.empty), body = HttpEntity.Strict(ByteString(t.toString), None))
+        .recover { case t: Throwable =>
+          Result(header = ResponseHeader(500, Map.empty), body = HttpEntity.Strict(ByteString(t.toString), None))
         }
     }
 
@@ -92,20 +93,21 @@ class TestOnlyController(
         formTemplate <- formTemplateAlgebra.get(formTemplateId)
         form         <- formAlgebra.get(formId)
         submission = Submission(
-          formId,
-          LocalDateTime.now(),
-          SubmissionRef(form.envelopeId),
-          form.envelopeId,
-          0,
-          DmsMetaData(formTemplate._id, customerId)
-        )
+                       formId,
+                       LocalDateTime.now(),
+                       SubmissionRef(form.envelopeId),
+                       form.envelopeId,
+                       0,
+                       DmsMetaData(formTemplate._id, customerId)
+                     )
         model <- destinationsModelProcessorAlgebra
-                  .create(
-                    form,
-                    submissionData.variables,
-                    submissionData.pdfData,
-                    submissionData.instructionPDFData,
-                    submissionData.structuredFormData)
+                   .create(
+                     form,
+                     submissionData.variables,
+                     submissionData.pdfData,
+                     submissionData.instructionPDFData,
+                     submissionData.structuredFormData
+                   )
       } yield {
         val jsValue: JsValue = Json.toJson[JsonNode](model.model)
         Ok(jsValue)
@@ -132,21 +134,22 @@ class TestOnlyController(
         form <- formAlgebra.get(formId)
         _ = logInfo("TestOnlyController.renderHandlebarPayload Got form")
         submission = Submission(
-          formId,
-          LocalDateTime.now(),
-          SubmissionRef(form.envelopeId),
-          form.envelopeId,
-          0,
-          DmsMetaData(formTemplate._id, customerId)
-        )
+                       formId,
+                       LocalDateTime.now(),
+                       SubmissionRef(form.envelopeId),
+                       form.envelopeId,
+                       0,
+                       DmsMetaData(formTemplate._id, customerId)
+                     )
         _ = logInfo("TestOnlyController.renderHandlebarPayload Got submission")
         model <- destinationsModelProcessorAlgebra
-                  .create(
-                    form,
-                    submissionData.variables,
-                    submissionData.pdfData,
-                    submissionData.instructionPDFData,
-                    submissionData.structuredFormData)
+                   .create(
+                     form,
+                     submissionData.variables,
+                     submissionData.pdfData,
+                     submissionData.instructionPDFData,
+                     submissionData.structuredFormData
+                   )
         _ = logInfo("TestOnlyController.renderHandlebarPayload Got model")
       } yield {
         val maybeDestination: Option[Destination.HandlebarsHttpApi] =
@@ -158,17 +161,19 @@ class TestOnlyController(
         val resultPayload: EitherT[Option, String, String] =
           for {
             destination <- fromOption(
-                            maybeDestination,
-                            s"No handlebars destination '${destinationId.id}' found on formTemplate '${formTemplateId.value}'. Available handlebars destinations: $availableDestinationIds."
-                          ).leftMap { s =>
-                            logInfo(s); s
-                          }
-            payload <- fromOption(
-                        destination.payload,
-                        s"There is no payload field on destination '${destinationId.id}' for formTemplate '${formTemplateId.value}'")
-                        .leftMap { s =>
-                          logInfo(s); s
-                        }
+                             maybeDestination,
+                             s"No handlebars destination '${destinationId.id}' found on formTemplate '${formTemplateId.value}'. Available handlebars destinations: $availableDestinationIds."
+                           ).leftMap { s =>
+                             logInfo(s); s
+                           }
+            payload <-
+              fromOption(
+                destination.payload,
+                s"There is no payload field on destination '${destinationId.id}' for formTemplate '${formTemplateId.value}'"
+              )
+                .leftMap { s =>
+                  logInfo(s); s
+                }
           } yield {
             logInfo("TestOnlyController.renderHandlebarPayload Rendering")
             RealHandlebarsTemplateProcessor(
@@ -182,7 +187,9 @@ class TestOnlyController(
                   submissionData.pdfData,
                   submissionData.instructionPDFData,
                   submissionData.structuredFormData,
-                  model)),
+                  model
+                )
+              ),
               destination.payloadType
             )
           }
@@ -203,7 +210,8 @@ class TestOnlyController(
 
   private def availableHandlebarsDestinations(
     destinations: List[Destination],
-    acc: List[Destination.HandlebarsHttpApi] = Nil): List[Destination.HandlebarsHttpApi] = destinations match {
+    acc: List[Destination.HandlebarsHttpApi] = Nil
+  ): List[Destination.HandlebarsHttpApi] = destinations match {
     case Nil => acc
     case (head: Destination.Composite) :: tail =>
       availableHandlebarsDestinations(tail, availableHandlebarsDestinations(head.destinations.toList, acc))
@@ -213,7 +221,8 @@ class TestOnlyController(
 
   private def findHandlebarsDestinationWithId(
     id: DestinationId,
-    destinations: Destinations): Option[Destination.HandlebarsHttpApi] =
+    destinations: Destinations
+  ): Option[Destination.HandlebarsHttpApi] =
     availableHandlebarsDestinations(destinations).find(_.id === id)
 
   private def fromOption[A, B](a: Option[A], s: B): EitherT[Option, B, A] = EitherT.fromOption(a, s)
@@ -221,11 +230,9 @@ class TestOnlyController(
   private lazy val formTemplates = mongo().collection[JSONCollection]("formTemplate")
   def removeTemplates() = Action.async { _ =>
     println("purging mongo database ....")
-    formTemplates.drop(failIfNotFound = false).map(_ => Results.Ok("Mongo purged")).recover {
-
-      case e =>
-        e.printStackTrace()
-        Results.InternalServerError(e.toString)
+    formTemplates.drop(failIfNotFound = false).map(_ => Results.Ok("Mongo purged")).recover { case e =>
+      e.printStackTrace()
+      Results.InternalServerError(e.toString)
     }
   }
 
@@ -255,7 +262,9 @@ class TestOnlyController(
       Json.obj(
         "verifiers" -> Json.arr(
           Json.obj("key" -> "NonUkCountryCode", "value" -> user.countryCode),
-          Json.obj("key" -> "BusinessPostcode", "value" -> user.postCode))) //{"verifiers" : [{"key" : "NonUkCountryCode","value" : "GB"},{"key" : "BusinessPostcode","value" : "E499OL"}]}
+          Json.obj("key" -> "BusinessPostcode", "value" -> user.postCode)
+        )
+      ) //{"verifiers" : [{"key" : "NonUkCountryCode","value" : "GB"},{"key" : "BusinessPostcode","value" : "E499OL"}]}
     } else {
       Json.obj("verifiers" -> Json.arr(Json.obj("key" -> "NonUkCountryCode", "value" -> user.countryCode)))
     }

@@ -135,8 +135,9 @@ object HasEnrolmentSection {
     case HmrcEnrolmentModule(EnrolmentAuth(serviceId, DoCheck(_, RequireEnrolment(es, enrolmentAction), _))) =>
       Some((serviceId, es, enrolmentAction))
     case HmrcAgentWithEnrolmentModule(
-        _,
-        EnrolmentAuth(serviceId, DoCheck(_, RequireEnrolment(es, enrolmentAction), _))) =>
+          _,
+          EnrolmentAuth(serviceId, DoCheck(_, RequireEnrolment(es, enrolmentAction), _))
+        ) =>
       Some((serviceId, es, enrolmentAction))
     case _ => None
   }
@@ -155,7 +156,8 @@ object AuthConfig {
     maybeRegimeId: Option[RegimeId],
     maybeEnrolmentAction: Option[EnrolmentAction],
     maybeEnrolmentCheck: Option[EnrolmentCheckVerb],
-    maybeEnrolmentSection: Option[EnrolmentSection]): EnrolmentAuth =
+    maybeEnrolmentSection: Option[EnrolmentSection]
+  ): EnrolmentAuth =
     (maybeEnrolmentCheck, maybeEnrolmentSection) match {
       case (Some(AlwaysVerb), Some(enrolmentSection)) =>
         EnrolmentAuth(
@@ -163,14 +165,18 @@ object AuthConfig {
           DoCheck(
             Always,
             RequireEnrolment(enrolmentSection, enrolmentActionMatch(maybeEnrolmentAction)),
-            toEnrolmentPostCheck(maybeRegimeId)))
+            toEnrolmentPostCheck(maybeRegimeId)
+          )
+        )
       case (Some(ForNonAgentsVerb), Some(enrolmentSection)) =>
         EnrolmentAuth(
           serviceId,
           DoCheck(
             ForNonAgents,
             RequireEnrolment(enrolmentSection, enrolmentActionMatch(maybeEnrolmentAction)),
-            toEnrolmentPostCheck(maybeRegimeId)))
+            toEnrolmentPostCheck(maybeRegimeId)
+          )
+        )
       case (Some(AlwaysVerb), None) =>
         EnrolmentAuth(serviceId, DoCheck(Always, RejectAccess, toEnrolmentPostCheck(maybeRegimeId)))
       case (Some(ForNonAgentsVerb), None) =>
@@ -191,38 +197,42 @@ object AuthConfig {
         maybeIvFailure                 <- (json \ "ivFailure").validateOpt[LocalisedString]
         maybeNotAllowedIn              <- (json \ "notAllowedIn").validateOpt[LocalisedString]
         authConfig <- authModule match {
-                       case AuthModule.AnonymousAccess => JsSuccess(Anonymous)
-                       case AuthModule.AWSALBAccess    => JsSuccess(AWSALBAuth)
-                       case AuthModule.HmrcAny         => JsSuccess(HmrcAny)
-                       case AuthModule.HmrcVerified =>
-                         (maybeIvFailure, maybeNotAllowedIn) match {
-                           case (Some(ivFailure), Some(notAllowedIn)) =>
-                             JsSuccess(HmrcVerified(ivFailure, notAllowedIn))
-                           case (Some(_), None) => JsError(s"Missing 'notAllowedIn' field")
-                           case (None, Some(_)) => JsError(s"Missing 'ivFailure' field")
-                           case (None, None)    => JsError(s"Missing 'notAllowedIn' and 'ivFailure' fields")
-                         }
-                       case AuthModule.Hmrc =>
-                         maybeServiceId match {
-                           case None =>
-                             maybeAgentAccess.fold(JsSuccess(HmrcSimpleModule: AuthConfig))(agentAccess =>
-                               JsSuccess(HmrcAgentModule(agentAccess)))
-                           case Some(serviceId) =>
-                             val enrolmentAuth =
-                               toEnrolmentAuth(
-                                 serviceId,
-                                 maybeRegimeId,
-                                 maybeLegacyFcEnrolmentVerifier,
-                                 maybeEnrolmentCheck,
-                                 maybeEnrolmentSection)
+                        case AuthModule.AnonymousAccess => JsSuccess(Anonymous)
+                        case AuthModule.AWSALBAccess    => JsSuccess(AWSALBAuth)
+                        case AuthModule.HmrcAny         => JsSuccess(HmrcAny)
+                        case AuthModule.HmrcVerified =>
+                          (maybeIvFailure, maybeNotAllowedIn) match {
+                            case (Some(ivFailure), Some(notAllowedIn)) =>
+                              JsSuccess(HmrcVerified(ivFailure, notAllowedIn))
+                            case (Some(_), None) => JsError(s"Missing 'notAllowedIn' field")
+                            case (None, Some(_)) => JsError(s"Missing 'ivFailure' field")
+                            case (None, None)    => JsError(s"Missing 'notAllowedIn' and 'ivFailure' fields")
+                          }
+                        case AuthModule.Hmrc =>
+                          maybeServiceId match {
+                            case None =>
+                              maybeAgentAccess.fold(JsSuccess(HmrcSimpleModule: AuthConfig))(agentAccess =>
+                                JsSuccess(HmrcAgentModule(agentAccess))
+                              )
+                            case Some(serviceId) =>
+                              val enrolmentAuth =
+                                toEnrolmentAuth(
+                                  serviceId,
+                                  maybeRegimeId,
+                                  maybeLegacyFcEnrolmentVerifier,
+                                  maybeEnrolmentCheck,
+                                  maybeEnrolmentSection
+                                )
 
-                             JsSuccess(
-                               maybeAgentAccess.fold(HmrcEnrolmentModule(enrolmentAuth): AuthConfig)(
-                                 HmrcAgentWithEnrolmentModule(_, enrolmentAuth)))
+                              JsSuccess(
+                                maybeAgentAccess.fold(HmrcEnrolmentModule(enrolmentAuth): AuthConfig)(
+                                  HmrcAgentWithEnrolmentModule(_, enrolmentAuth)
+                                )
+                              )
 
-                         }
-                       case AuthModule.OfstedModule => JsSuccess(OfstedUser)
-                     }
+                          }
+                        case AuthModule.OfstedModule => JsSuccess(OfstedUser)
+                      }
       } yield authConfig
 
     }
@@ -269,7 +279,8 @@ object AgentAccess {
 
   implicit val format: Format[AgentAccess] = ADTFormat.formatEnumerationWithDefault(
     RequireMTDAgentEnrolment,
-    Seq(RequireMTDAgentEnrolment, DenyAnyAgentAffinityUser, AllowAnyAgentAffinityUser).map(t => (asString(t) -> t)): _*)
+    Seq(RequireMTDAgentEnrolment, DenyAnyAgentAffinityUser, AllowAnyAgentAffinityUser).map(t => (asString(t) -> t)): _*
+  )
 
   def asString(access: AgentAccess): String = access match {
     case RequireMTDAgentEnrolment  => requireMTDAgentEnrolment

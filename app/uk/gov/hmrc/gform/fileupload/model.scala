@@ -41,7 +41,8 @@ case class FUConfig(
   maxSize: String,
   maxSizePerItem: String,
   maxItems: Int,
-  contentTypes: List[ContentType])
+  contentTypes: List[ContentType]
+)
 
 class SpoiltLocationHeader(val message: String) extends RuntimeException(message)
 

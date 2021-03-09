@@ -22,9 +22,9 @@ import uk.gov.hmrc.gform.controllers.BaseController
 
 import scala.concurrent.ExecutionContext
 
-class ConfigController(controllerComponents: ControllerComponents, configModule: ConfigModule)(
-  implicit ex: ExecutionContext)
-    extends BaseController(controllerComponents) {
+class ConfigController(controllerComponents: ControllerComponents, configModule: ConfigModule)(implicit
+  ex: ExecutionContext
+) extends BaseController(controllerComponents) {
 
   def exposedConfig() = Action { r =>
     val json = Json.toJson(configModule.exposedConfig)

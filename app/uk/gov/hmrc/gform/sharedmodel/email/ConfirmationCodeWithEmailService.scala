@@ -24,7 +24,8 @@ import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierEmailAddress
 case class ConfirmationCodeWithEmailService(
   notifierEmailAddress: NotifierEmailAddress,
   code: EmailConfirmationCode,
-  emailVerifierService: EmailVerifierService)
+  emailVerifierService: EmailVerifierService
+)
 
 object ConfirmationCodeWithEmailService {
   implicit val format: Format[ConfirmationCodeWithEmailService] = derived.oformat()

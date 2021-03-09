@@ -22,4 +22,5 @@ case class NotifierEmail(
   templateId: NotifierTemplateId,
   to: NotifierEmailAddress,
   personalisation: Map[String, String],
-  reference: NotifierEmailReference)
+  reference: NotifierEmailReference
+)

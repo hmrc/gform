@@ -63,24 +63,23 @@ trait FormComponentGen {
       errorMessage      <- Gen.option(errorMessageGen)
       presentationHint  <- Gen.option(PrimitiveGen.zeroOrMoreGen(PresentationHintGen.presentationHintGen))
       validators        <- PrimitiveGen.zeroOrMoreGen(FormComponentValidatorGen.formComponentValidatorGen)
-    } yield
-      FormComponent(
-        id,
-        tpe,
-        label,
-        helpText,
-        shortName,
-        includeIf,
-        validIf,
-        mandatory,
-        editable,
-        submissable,
-        derived,
-        onlyShowOnSummary,
-        errorMessage,
-        presentationHint,
-        validators
-      )
+    } yield FormComponent(
+      id,
+      tpe,
+      label,
+      helpText,
+      shortName,
+      includeIf,
+      validIf,
+      mandatory,
+      editable,
+      submissable,
+      derived,
+      onlyShowOnSummary,
+      errorMessage,
+      presentationHint,
+      validators
+    )
 }
 
 object FormComponentGen extends FormComponentGen

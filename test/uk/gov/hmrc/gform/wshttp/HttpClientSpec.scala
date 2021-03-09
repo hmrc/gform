@@ -96,23 +96,22 @@ trait HttpClientSpec extends Spec {
       deviceID         <- Gen.option(Gen.alphaNumStr)
       akamaiReputation <- Gen.option(akamaiReputationGen)
       otherHeaders     <- stringPairSeqGen
-    } yield
-      HeaderCarrier(
-        authorization = authorization,
-        forwarded = forwarded,
-        sessionId = sessionId,
-        requestId = requestId,
-        requestChain = requestChain,
-        nsStamp = nsStamp,
-        extraHeaders = extraHeaders,
-        trueClientIp = trueClientIp,
-        trueClientPort = trueClientPort,
-        gaToken = gaToken,
-        gaUserId = gaUserId,
-        deviceID = deviceID,
-        akamaiReputation = akamaiReputation,
-        otherHeaders = otherHeaders
-      )
+    } yield HeaderCarrier(
+      authorization = authorization,
+      forwarded = forwarded,
+      sessionId = sessionId,
+      requestId = requestId,
+      requestChain = requestChain,
+      nsStamp = nsStamp,
+      extraHeaders = extraHeaders,
+      trueClientIp = trueClientIp,
+      trueClientPort = trueClientPort,
+      gaToken = gaToken,
+      gaUserId = gaUserId,
+      deviceID = deviceID,
+      akamaiReputation = akamaiReputation,
+      otherHeaders = otherHeaders
+    )
 
   def httpClient[F[_]: Applicative](f: Underlying[F] => Any): Any = {
     val httpClient = mock[HttpClient[F]]

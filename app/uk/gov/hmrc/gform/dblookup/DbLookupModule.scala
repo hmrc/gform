@@ -21,8 +21,9 @@ import uk.gov.hmrc.gform.mongo.MongoModule
 
 import scala.concurrent.ExecutionContext
 
-class DbLookupModule(controllerComponents: ControllerComponents, mongoModule: MongoModule)(
-  implicit ex: ExecutionContext) {
+class DbLookupModule(controllerComponents: ControllerComponents, mongoModule: MongoModule)(implicit
+  ex: ExecutionContext
+) {
 
   val dbLookupService = new DbLookupService(mongoModule)
   val dbLookupController = new DbLookupController(controllerComponents, dbLookupService)

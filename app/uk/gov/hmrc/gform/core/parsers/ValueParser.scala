@@ -77,10 +77,13 @@ object ValueParser {
 
   lazy val dateExprOffset: Parser[(Int, OffsetUnit)] = plusOrMinus ~ positiveInteger ~ dateExprOffsetUnit ^^ {
     (_, plusOrMinus, offset, offsetUnit) =>
-      (offset * (plusOrMinus match {
-        case "+" => 1
-        case "-" => -1
-      }), offsetUnit)
+      (
+        offset * (plusOrMinus match {
+          case "+" => 1
+          case "-" => -1
+        }),
+        offsetUnit
+      )
   }
 
   lazy val dateExprTODAY: Parser[DateExpr] = "TODAY" ^^^ DateValueExpr(TodayDateExprValue)
@@ -95,11 +98,11 @@ object ValueParser {
       DateExprWithOffset(dateExprCtx, offset, offsetUnit)
   }
 
-  lazy val dateExpr
-    : Parser[DateExpr] = dateExprExactQuoted | dateExprTODAYOffset | formCtxFieldDate | formCtxFieldDateWithOffset
+  lazy val dateExpr: Parser[DateExpr] =
+    dateExprExactQuoted | dateExprTODAYOffset | formCtxFieldDate | formCtxFieldDateWithOffset
 
-  lazy val dateExprWithoutFormCtxFieldDate
-    : Parser[DateExpr] = dateExprExactQuoted | dateExprTODAYOffset | formCtxFieldDateWithOffset
+  lazy val dateExprWithoutFormCtxFieldDate: Parser[DateExpr] =
+    dateExprExactQuoted | dateExprTODAYOffset | formCtxFieldDateWithOffset
 
   lazy val dataSourceParse: Parser[DataSource] = (
     "service" ~ "." ~ "seiss" ^^ { (_, _, _, _) =>
@@ -149,7 +152,9 @@ object ValueParser {
     | "link" ~ "." ~ internalLinkParser ^^ { (loc, _, _, internalLink) =>
       LinkCtx(internalLink)
     }
-    | dateExprWithoutFormCtxFieldDate.map(DateCtx.apply) // to parse date form fields with offset or date constants i.e TODAY, 01012020 etc (with or without offset)
+    | dateExprWithoutFormCtxFieldDate.map(
+      DateCtx.apply
+    ) // to parse date form fields with offset or date constants i.e TODAY, 01012020 etc (with or without offset)
     | quotedConstant
     | FormComponentId.unanchoredIdValidation ~ ".sum" ^^ { (loc, value, _) =>
       Sum(FormCtx(FormComponentId(value)))
@@ -171,20 +176,20 @@ object ValueParser {
     DateFormCtxVar(FormCtx(FormComponentId(fn)))
   }
 
-  lazy val parserExpression: Parser[Expr] = ("(" ~ addExpression ~ ")" ^^ { (loc, _, expr, _) =>
+  lazy val parserExpression: Parser[Expr] = "(" ~ addExpression ~ ")" ^^ { (loc, _, expr, _) =>
     expr
-  } | addExpression)
+  } | addExpression
 
   lazy val addExpression: Parser[Expr] = (parserExpression ~ "+" ~ parserExpression ^^ { (loc, expr1, _, expr2) =>
     Add(expr1, expr2)
   }
     | subtractionExpression)
 
-  lazy val subtractionExpression: Parser[Expr] = (parserExpression ~ "-" ~ parserExpression ^^ {
-    (loc, expr1, _, expr2) =>
+  lazy val subtractionExpression: Parser[Expr] =
+    (parserExpression ~ "-" ~ parserExpression ^^ { (loc, expr1, _, expr2) =>
       Subtraction(expr1, expr2)
-  }
-    | product)
+    }
+      | product)
 
   lazy val product: Parser[Expr] = (parserExpression ~ "*" ~ parserExpression ^^ { (loc, expr1, _, expr2) =>
     Multiply(expr1, expr2)
@@ -205,13 +210,13 @@ object ValueParser {
     str
   }
     |
-      "''".r ^^ { (loc, value) =>
-        Constant("")
-      })
+    "''".r ^^ { (loc, value) =>
+      Constant("")
+    })
 
-  lazy val anyConstant: Parser[Constant] = ("""[^']+""".r ^^ { (loc, str) =>
+  lazy val anyConstant: Parser[Constant] = """[^']+""".r ^^ { (loc, str) =>
     Constant(str)
-  })
+  }
 
   lazy val anyDigitConst: Parser[Expr] = (
     // parse single digit, e.g. "9", "+9"
@@ -222,11 +227,11 @@ object ValueParser {
       | """[+-]?\d[\d,]*[\d]""".r ^^ { (loc, str) =>
         Constant(str)
       }
-    // parse decimal fraction, e.g. ".56"
+      // parse decimal fraction, e.g. ".56"
       | """[+-]?\.[\d]*\d""".r ^^ { (loc, str) =>
         Constant(str)
       }
-    // parse number plus decimal fraction, e.g. "1,234.56"
+      // parse number plus decimal fraction, e.g. "1,234.56"
       | """[+-]?\d[\d,]*\.([\d]*\d)?""".r ^^ { (loc, str) =>
         Constant(str)
       }

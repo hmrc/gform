@@ -29,7 +29,8 @@ class FUInterceptorController(
   controllerComponents: ControllerComponents,
   wSHttp: WSHttp,
   serviceConfig: ServicesConfig,
-  proxy: Proxy)(implicit ec: ExecutionContext)
+  proxy: Proxy
+)(implicit ec: ExecutionContext)
     extends BaseController(controllerComponents) {
   self =>
 
@@ -43,7 +44,8 @@ class FUInterceptorController(
           baseUrl = originalFileUploadBaseUrl,
           path = path,
           inboundRequest = r,
-          bodyTransformer = makeAllFilesScanned(_))
+          bodyTransformer = makeAllFilesScanned(_)
+        )
       response
     }
   }

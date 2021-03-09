@@ -53,7 +53,8 @@ class PlayComponentsModule(
   obligationModule: ObligationModule,
   emailModule: EmailModule,
   dbLookupModule: DbLookupModule,
-  errorHandler: HttpErrorHandler)(implicit ec: ExecutionContext) {
+  errorHandler: HttpErrorHandler
+)(implicit ec: ExecutionContext) {
   private val logger = LoggerFactory.getLogger(getClass)
 
   private lazy val loggingFilter = new DefaultLoggingFilter(configModule.controllerConfigs)(akkaModule.materializer, ec)
@@ -76,7 +77,8 @@ class PlayComponentsModule(
     new HealthController(
       configModule.configuration,
       playComponents.context.environment,
-      configModule.controllerComponents)
+      configModule.controllerComponents
+    )
 
   lazy val prodRoutes: prod.Routes =
     new prod.Routes(errorHandler, appRoutes, healthController, metricsModule.metricsController)
@@ -87,7 +89,8 @@ class PlayComponentsModule(
       prodRoutes,
       testOnlyModule.testOnlyController,
       testOnlyModule.fUInterceptor,
-      testOnlyModule.pdfGeneratorStub)
+      testOnlyModule.pdfGeneratorStub
+    )
 
   lazy val router: Router = {
     val key = "application.router"
@@ -101,7 +104,8 @@ class PlayComponentsModule(
         testOnlyDoNotUseInAppConfRoutes
       case _ =>
         logger.error(
-          s"The option $key has unsupported value: $property. We support only prod.Routes and testOnlyDoNotUseInAppConf.Routes . Using prod.Routes .")
+          s"The option $key has unsupported value: $property. We support only prod.Routes and testOnlyDoNotUseInAppConf.Routes . Using prod.Routes ."
+        )
         prodRoutes
     }
   }

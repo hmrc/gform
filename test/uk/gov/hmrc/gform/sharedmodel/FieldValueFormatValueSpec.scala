@@ -46,7 +46,8 @@ class FieldValueFormatValueSpec extends Spec {
         derived = false,
         onlyShowOnSummary = false,
         None
-      ))
+      )
+    )
 
   }
 
@@ -74,7 +75,8 @@ class FieldValueFormatValueSpec extends Spec {
         derived = false,
         onlyShowOnSummary = false,
         None
-      ))
+      )
+    )
 
   }
 

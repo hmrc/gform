@@ -23,7 +23,8 @@ case class DmsMetadata(
   customerId: String,
   classificationType: String,
   businessArea: String,
-  backscan: Option[Boolean])
+  backscan: Option[Boolean]
+)
 
 object DmsMetadata {
   implicit val format: Format[DmsMetadata] = Json.format[DmsMetadata]

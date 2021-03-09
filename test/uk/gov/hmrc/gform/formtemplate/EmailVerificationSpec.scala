@@ -103,8 +103,9 @@ class EmailVerificationSpec extends FlatSpec with Matchers with JsResultMatcher 
     verifyWrongPayload(jsonPayload, "Missing field 'codeField' in json")
   }
 
-  private def verifyPayload(jsonPayload: String, emailVerification: EmailVerification)(
-    implicit position: Position): Assertion = {
+  private def verifyPayload(jsonPayload: String, emailVerification: EmailVerification)(implicit
+    position: Position
+  ): Assertion = {
     val json = Json.parse(jsonPayload.stripMargin)
 
     val jsResult = EmailVerification.reads.reads(json)

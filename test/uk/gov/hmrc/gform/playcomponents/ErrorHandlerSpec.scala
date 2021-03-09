@@ -51,7 +51,10 @@ class ErrorHandlerSpec extends WordSpecLike with MockFactory with Matchers with 
               ErrResponse(
                 "Invalid json",
                 Some(Json.obj("details" -> jsResultException.errors.toString)),
-                uniqueIdGenerator.generate)))
+                uniqueIdGenerator.generate
+              )
+            )
+          )
         }
       }
     }

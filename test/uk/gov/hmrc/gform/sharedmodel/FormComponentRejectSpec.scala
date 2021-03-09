@@ -42,10 +42,9 @@ class FormComponentRejectSpec extends Spec with TableDrivenPropertyChecks {
       // format: on
     )
 
-    forAll(table) {
-      case (fileName, expectedMessage) =>
-        val source = readFile(fileName)
-        formtemplate.verifyReadFailure[FormTemplate](expectedMessage, source)
+    forAll(table) { case (fileName, expectedMessage) =>
+      val source = readFile(fileName)
+      formtemplate.verifyReadFailure[FormTemplate](expectedMessage, source)
     }
   }
 
@@ -63,15 +62,14 @@ class FormComponentRejectSpec extends Spec with TableDrivenPropertyChecks {
       // format: on
     )
 
-    forAll(table) {
-      case (fileName, expectedMessage) =>
-        val jsResult = readAsFormTemplate(fileName)
-        jsResult match {
-          case JsSuccess(formTemplate, _) =>
-            val verificationResult: FOpt[Unit] = new Verifier {}.verify(formTemplate)
-            verificationResult.value.futureValue shouldBe Left(UnexpectedState(expectedMessage))
-          case JsError(errors) => fail("Invalid formTemplate definition: " + errors)
-        }
+    forAll(table) { case (fileName, expectedMessage) =>
+      val jsResult = readAsFormTemplate(fileName)
+      jsResult match {
+        case JsSuccess(formTemplate, _) =>
+          val verificationResult: FOpt[Unit] = new Verifier {}.verify(formTemplate)
+          verificationResult.value.futureValue shouldBe Left(UnexpectedState(expectedMessage))
+        case JsError(errors) => fail("Invalid formTemplate definition: " + errors)
+      }
     }
   }
 
@@ -88,15 +86,14 @@ class FormComponentRejectSpec extends Spec with TableDrivenPropertyChecks {
       // format: on
     )
 
-    forAll(table) {
-      case (fileName, expectedMessage) =>
-        val jsResult = readAsFormTemplate(fileName)
-        jsResult match {
-          case JsSuccess(formTemplate, _) =>
-            val verificationResult: FOpt[FormTemplate] = new Rewriter {}.rewrite(formTemplate)
-            verificationResult.value.futureValue shouldBe Left(UnexpectedState(expectedMessage))
-          case JsError(errors) => fail("Invalid formTemplate definition: " + errors)
-        }
+    forAll(table) { case (fileName, expectedMessage) =>
+      val jsResult = readAsFormTemplate(fileName)
+      jsResult match {
+        case JsSuccess(formTemplate, _) =>
+          val verificationResult: FOpt[FormTemplate] = new Rewriter {}.rewrite(formTemplate)
+          verificationResult.value.futureValue shouldBe Left(UnexpectedState(expectedMessage))
+        case JsError(errors) => fail("Invalid formTemplate definition: " + errors)
+      }
     }
   }
 

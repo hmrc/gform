@@ -27,7 +27,8 @@ object Address {
     (json \ "countryCode").asOpt[String] match {
       case Some("GB") => UkAddress.format.reads(json)
       case _          => InternationalAddress.format.reads(json)
-  })
+    }
+  )
 
   implicit val format: OFormat[Address] = OFormatWithTemplateReadFallback(desReads)
 }
@@ -90,7 +91,8 @@ object DesEntity {
       case (JsDefined(js), JsUndefined()) => Individual.format.reads(js)
       case (JsUndefined(), JsDefined(js)) => Organisation.format.reads(js)
       case _                              => JsError("Not Supported, expected 'individual' or 'organisation'")
-  })
+    }
+  )
 
   implicit val format: OFormat[DesEntity] = OFormatWithTemplateReadFallback(desReads)
 }
@@ -144,7 +146,8 @@ object DesRegistrationResponse {
       case (JsDefined(_), JsUndefined()) => readDesRegistrationResponse(json, 'individual)
       case (JsUndefined(), JsDefined(_)) => readDesRegistrationResponse(json, 'organisation)
       case _                             => JsError("[DesRegistrationResponse] Not Supported json: " + json)
-  })
+    }
+  )
 
   implicit val format: OFormat[DesRegistrationResponse] = OFormatWithTemplateReadFallback(desReads)
 }

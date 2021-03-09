@@ -27,17 +27,17 @@ trait DestinationSubmissionInfoGen {
       formId        <- FormGen.formIdGen
       customerId    <- PrimitiveGen.nonEmptyAlphaNumStrGen
       submissionRef <- PrimitiveGen.nonEmptyAlphaNumStrGen.map(SubmissionRef(_))
-      submission <- SubmissionGen.submissionGen.map(s => {
-                     s.copy(
-                       _id = formId,
-                       submissionRef = submissionRef,
-                       dmsMetaData = s.dmsMetaData.copy(customerId = customerId, formTemplateId = formTemplate._id))
-                   })
-    } yield
-      DestinationSubmissionInfo(
-        customerId,
-        submission
-      )
+      submission <- SubmissionGen.submissionGen.map { s =>
+                      s.copy(
+                        _id = formId,
+                        submissionRef = submissionRef,
+                        dmsMetaData = s.dmsMetaData.copy(customerId = customerId, formTemplateId = formTemplate._id)
+                      )
+                    }
+    } yield DestinationSubmissionInfo(
+      customerId,
+      submission
+    )
 }
 
 object DestinationSubmissionInfoGen extends DestinationSubmissionInfoGen

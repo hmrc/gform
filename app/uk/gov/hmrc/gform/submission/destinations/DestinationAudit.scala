@@ -41,7 +41,8 @@ case class DestinationAudit(
   submissionRef: SubmissionRef,
   summaryHtmlId: SummaryHtmlId,
   id: UUID = UUID.randomUUID,
-  timestamp: LocalDateTime = LocalDateTime.now)
+  timestamp: LocalDateTime = LocalDateTime.now
+)
 
 object DestinationAudit {
 
@@ -64,24 +65,23 @@ object DestinationAudit {
         id                           <- (json \ "id").validate[String].map(UUID.fromString)
         timestamp                    <- (json \ "timestamp").validate(localDateTimeRead)
         reviewData                   <- (json \ "reviewData").validateOpt[Map[String, String]]
-      } yield
-        DestinationAudit(
-          formId,
-          formTemplateId,
-          destinationId,
-          destinationType,
-          destinationResponseStatus,
-          destinationResponseErrorBody,
-          workflowState,
-          userId,
-          caseworkerUserName,
-          parentFormSubmissionRefs.getOrElse(Nil),
-          reviewData.getOrElse(Map.empty),
-          submissionRef,
-          summaryHtmlId,
-          id,
-          timestamp
-        )
+      } yield DestinationAudit(
+        formId,
+        formTemplateId,
+        destinationId,
+        destinationType,
+        destinationResponseStatus,
+        destinationResponseErrorBody,
+        workflowState,
+        userId,
+        caseworkerUserName,
+        parentFormSubmissionRefs.getOrElse(Nil),
+        reviewData.getOrElse(Map.empty),
+        submissionRef,
+        summaryHtmlId,
+        id,
+        timestamp
+      )
 
     override def writes(audit: DestinationAudit): JsObject = {
       import audit._
@@ -102,10 +102,11 @@ object DestinationAudit {
             "parentFormSubmissionRefs" -> JsArray(parentFormSubmissionRefs.map(JsString)),
             "reviewData"               -> JsObject(reviewData.map { case (k, v) => k -> JsString(v) })
           ),
-          destinationResponseStatus.map(s => "destinationResponseStatus"       -> JsNumber(s)).toSeq,
+          destinationResponseStatus.map(s => "destinationResponseStatus" -> JsNumber(s)).toSeq,
           destinationResponseErrorBody.map(s => "destinationResponseErrorBody" -> JsString(s)).toSeq,
-          caseworkerUserName.map(c => "_caseworker_userName"                   -> JsString(c)).toSeq
-        ).flatten)
+          caseworkerUserName.map(c => "_caseworker_userName" -> JsString(c)).toSeq
+        ).flatten
+      )
     }
   }
 

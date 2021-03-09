@@ -29,7 +29,9 @@ class ExprSpec extends Spec {
   private val addJson = Json.obj(
     "Add" -> Json.obj(
       "field1" -> Json.obj("FormCtx" -> Json.obj("formComponentId" -> "fieldA")),
-      "field2" -> Json.obj("FormCtx" -> Json.obj("formComponentId" -> "fieldB"))))
+      "field2" -> Json.obj("FormCtx" -> Json.obj("formComponentId" -> "fieldB"))
+    )
+  )
 
   "Expr" should "write Add case class to json" in {
     val res: JsValue = implicitly[Writes[Expr]].writes(add)

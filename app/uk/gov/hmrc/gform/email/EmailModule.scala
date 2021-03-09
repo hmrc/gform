@@ -22,8 +22,9 @@ import uk.gov.hmrc.gform.wshttp.WSHttpModule
 
 import scala.concurrent.ExecutionContext
 
-class EmailModule(configModule: ConfigModule, wSHttpModule: WSHttpModule, notifierModule: NotifierModule)(
-  implicit ec: ExecutionContext) {
+class EmailModule(configModule: ConfigModule, wSHttpModule: WSHttpModule, notifierModule: NotifierModule)(implicit
+  ec: ExecutionContext
+) {
   val emailConnector = new EmailConnector(wSHttpModule.auditableWSHttp, configModule.serviceConfig.baseUrl("email"))
   val emailLogic = new EmailService(emailConnector)
 

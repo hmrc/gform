@@ -63,30 +63,32 @@ class FormMetadataService(formMetadataRepo: Repo[FormMetadata])(implicit ec: Exe
     for {
       maybeFormMetadata <- find(formIdData)
       newMetadata = maybeFormMetadata.fold(newFormMetadata(formIdData)) {
-        _.copy(
-          updatedAt = now,
-          parentFormSubmissionRefs = parentFormSubmissionRefs
-        )
-      }
+                      _.copy(
+                        updatedAt = now,
+                        parentFormSubmissionRefs = parentFormSubmissionRefs
+                      )
+                    }
       _ <- toFuture(formMetadataRepo.upsert(newMetadata))
       _ <- Future.successful {
-            logger.info(
-              show"FormMetadataService.touch($formIdData, $parentFormSubmissionRefs) - updating with $newMetadata)")
-          }
+             logger.info(
+               show"FormMetadataService.touch($formIdData, $parentFormSubmissionRefs) - updating with $newMetadata)"
+             )
+           }
     } yield ()
   }
 
   def upsert(formIdData: FormIdData): Future[Unit] = {
     val metadata = newFormMetadata(formIdData)
     toFuture(formMetadataRepo.upsert(metadata)) >>
-      Future.successful { logger.info(show"FormMetadataService.upsert($formIdData) - upserting $metadata)") }
+      Future.successful(logger.info(show"FormMetadataService.upsert($formIdData) - upserting $metadata)"))
   }
 
   def findByParentFormSubmissionRef(parentFormSubmissionRef: SubmissionRef): Future[List[FormMetadata]] = {
     val parentSubmissionRefJson = JsString(parentFormSubmissionRef.value)
     val query = Json.obj(
       "submissionRef"            -> Json.obj("$ne" -> parentSubmissionRefJson),
-      "parentFormSubmissionRefs" -> Json.obj("$in" -> Json.arr(parentSubmissionRefJson)))
+      "parentFormSubmissionRefs" -> Json.obj("$in" -> Json.arr(parentSubmissionRefJson))
+    )
 
     formMetadataRepo.search(query)
   }

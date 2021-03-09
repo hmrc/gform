@@ -38,14 +38,14 @@ trait FormatExprGen {
   def roundingModeGen: Gen[RoundingMode] =
     for {
       roundingMode <- Gen.oneOf(
-                       RoundingMode.Up,
-                       RoundingMode.Down,
-                       RoundingMode.Floor,
-                       RoundingMode.Ceiling,
-                       RoundingMode.HalfEven,
-                       RoundingMode.HalfDown,
-                       RoundingMode.HalfUp
-                     )
+                        RoundingMode.Up,
+                        RoundingMode.Down,
+                        RoundingMode.Floor,
+                        RoundingMode.Ceiling,
+                        RoundingMode.HalfEven,
+                        RoundingMode.HalfDown,
+                        RoundingMode.HalfUp
+                      )
     } yield roundingMode
 
   def textWithRestrictions: Gen[TextWithRestrictions] =

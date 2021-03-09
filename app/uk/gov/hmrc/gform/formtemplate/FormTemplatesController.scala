@@ -26,8 +26,8 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, FormTemplate
 import scala.concurrent.ExecutionContext
 
 class FormTemplatesController(controllerComponents: ControllerComponents, formTemplateService: FormTemplateService)(
-  implicit ex: ExecutionContext)
-    extends BaseController(controllerComponents) {
+  implicit ex: ExecutionContext
+) extends BaseController(controllerComponents) {
   private val logger = LoggerFactory.getLogger(getClass)
 
   def upsert() = Action.async(parse.json[FormTemplateRaw]) { implicit request =>
@@ -35,7 +35,10 @@ class FormTemplatesController(controllerComponents: ControllerComponents, formTe
     addFormTemplateIdToMdc(FormTemplateId(templateRaw._id.value))
     logger.info(s"FormTemplatesController.upsert: ${loggingHelpers.cleanHeaders(request.headers)}")
 
-    new FormTemplatesControllerRequestHandler(formTemplateService.verifyAndSave, formTemplateService.save).futureInterpreter
+    new FormTemplatesControllerRequestHandler(
+      formTemplateService.verifyAndSave,
+      formTemplateService.save
+    ).futureInterpreter
       .handleRequest(templateRaw)
       .fold(_.asBadRequest, _ => Results.NoContent)
   }

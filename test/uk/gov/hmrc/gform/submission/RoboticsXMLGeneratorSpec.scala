@@ -48,7 +48,8 @@ class RoboticsXMLGeneratorSpec extends Spec {
   it should "generate the correct XML for an object structure with a field that is also an object structure" in {
     verifyXml(
       objectStructure("objectStructureField" ~ ("field" ~ "value")),
-      <objectStructureField><field>value</field></objectStructureField>)
+      <objectStructureField><field>value</field></objectStructureField>
+    )
   }
 
   it should "generate the correct XML for an object structure with a field that is an array" in {
@@ -70,9 +71,12 @@ class RoboticsXMLGeneratorSpec extends Spec {
             objectStructureField(
               "objectStructureField",
               textField("txtfield1", "txtval1"),
-              textField("txtfield2", "txtval2"))),
+              textField("txtfield2", "txtval2")
+            )
+          ),
           TextNode("value2")
-        )),
+        )
+      ),
       <arrayFields>
         <arrayField seqNum ="0">
           <objectStructureField>
@@ -122,7 +126,9 @@ case object RoboticsXMLGeneratorSpec extends Spec {
     val submissionRef = SubmissionRef("submissionRef")
 
     val expected: Elem =
-      <gform id={formId.value} dms-id={dmsId} submission-reference={submissionRef.value}>{removeWhitespace(expectedFields)}<dateSubmitted>02/01/2019</dateSubmitted></gform>
+      <gform id={formId.value} dms-id={dmsId} submission-reference={submissionRef.value}>{
+        removeWhitespace(expectedFields)
+      }<dateSubmitted>02/01/2019</dateSubmitted></gform>
 
     val dateSubmitted = Instant.from(LocalDate.of(2019, 1, 2).atStartOfDay(ZoneId.of("Europe/London")))
 

@@ -25,10 +25,9 @@ trait StructuredFormValueGen {
     for {
       name  <- PrimitiveGen.variableNameGen
       value <- Gen.alphaNumStr
-    } yield
-      StructuredFormValue.ObjectStructure(
-        List(Field(FieldName(name), StructuredFormValue.TextNode(value)))
-      )
+    } yield StructuredFormValue.ObjectStructure(
+      List(Field(FieldName(name), StructuredFormValue.TextNode(value)))
+    )
 }
 
 object StructuredFormValueGen extends StructuredFormValueGen

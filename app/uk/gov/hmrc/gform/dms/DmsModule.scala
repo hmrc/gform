@@ -31,7 +31,8 @@ class DmsModule(
   fileUploadModule: FileUploadModule,
   pdfGeneratorModule: PdfGeneratorModule,
   config: AppConfig,
-  controllerComponents: ControllerComponents)(implicit ex: ExecutionContext) {
+  controllerComponents: ControllerComponents
+)(implicit ex: ExecutionContext) {
 
   private lazy val dmsSubmissionService: DmsSubmissionService[Future] =
     new DmsSubmissionService(
@@ -41,7 +42,6 @@ class DmsModule(
       config.formExpiryDays.longValue
     )(Clock.systemDefaultZone, catsStdInstancesForFuture)
 
-  lazy val dmsSubmissionController: DmsSubmissionController = {
+  lazy val dmsSubmissionController: DmsSubmissionController =
     new DmsSubmissionController(controllerComponents, dmsSubmissionService)
-  }
 }

@@ -29,7 +29,8 @@ class MagicCommasParserSpec extends Spec with ScalaCheckDrivenPropertyChecks {
       _.replace(",", "")
         .replace("\"", "")
         .replace("[", "")
-        .replace("]", ""))
+        .replace("]", "")
+    )
 
   "apply" should "return any string that is inputted" in {
     forAll(stringWithNoSpecialCharsGen) { input =>
@@ -43,7 +44,8 @@ class MagicCommasParserSpec extends Spec with ScalaCheckDrivenPropertyChecks {
     forAll(
       stringWithNoSpecialCharsGen,
       PrimitiveGen.zeroOrMoreGen(Gen.oneOf(" ", "\n", "\r", "\t")).map(_.mkString("")),
-      stringWithNoSpecialCharsGen) { (beforeCommas, spaces, afterCommas) =>
+      stringWithNoSpecialCharsGen
+    ) { (beforeCommas, spaces, afterCommas) =>
       whenever(isUn(beforeCommas, afterCommas)) {
         verifySuccess(s"$beforeCommas,$spaces]$afterCommas", s"$beforeCommas$spaces]$afterCommas")
       }
@@ -54,7 +56,8 @@ class MagicCommasParserSpec extends Spec with ScalaCheckDrivenPropertyChecks {
     forAll(
       stringWithNoSpecialCharsGen,
       PrimitiveGen.zeroOrMoreGen(Gen.oneOf(" ", "\n", "\r", "\t")).map(_.mkString("")),
-      stringWithNoSpecialCharsGen) { (beforeCommas, spaces, afterCommas) =>
+      stringWithNoSpecialCharsGen
+    ) { (beforeCommas, spaces, afterCommas) =>
       whenever(isUn(beforeCommas, afterCommas)) {
         verifySuccess(s"$beforeCommas,$spaces}$afterCommas", s"$beforeCommas$spaces}$afterCommas")
       }
@@ -142,8 +145,9 @@ class MagicCommasParserSpec extends Spec with ScalaCheckDrivenPropertyChecks {
     MagicCommasParser(input) shouldBe expected
 
   private def isUn(s: String*) =
-    isAscii(s: _*) && hasNoDoubleCommas(s: _*) && hasNoFinalCommas(s: _*) && hasNoInitialClosingSquareBrackets(s: _*) && hasNoQuotes(
-      s: _*)
+    isAscii(s: _*) && hasNoDoubleCommas(s: _*) && hasNoFinalCommas(s: _*) && hasNoInitialClosingSquareBrackets(
+      s: _*
+    ) && hasNoQuotes(s: _*)
 
   private def isAscii(s: String*): Boolean = s.forall(_.forall(c => c >= 32 && c <= 126))
   private def hasNoFinalCommas(s: String*): Boolean = s.forall(s => s.isEmpty || s.last =!= ',')

@@ -25,7 +25,7 @@ trait QueryParamsGen {
   def queryParamsGen: Gen[QueryParams] =
     for {
       queryParams <- PrimitiveGen
-                      .possiblyEmptyMapGen(QueryParamGen.queryParamGen, QueryParamValueGen.queryParamValueGen)
+                       .possiblyEmptyMapGen(QueryParamGen.queryParamGen, QueryParamValueGen.queryParamValueGen)
     } yield QueryParams(queryParams)
 
 }

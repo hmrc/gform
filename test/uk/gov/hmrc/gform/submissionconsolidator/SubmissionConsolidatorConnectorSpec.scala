@@ -67,7 +67,8 @@ class SubmissionConsolidatorConnectorSpec
           aResponse()
             .withStatus(responseStatus)
             .withBody(responseBody)
-        ))
+        )
+    )
     val baseUrl = s"http://localhost:$wiremockPort"
     val submissionConsolidatorConnector =
       new SubmissionConsolidatorConnector(wsHttp, baseUrl)
@@ -86,7 +87,8 @@ class SubmissionConsolidatorConnectorSpec
       result shouldBe Right(())
       verify(
         postRequestedFor(urlEqualTo("/submission-consolidator/form"))
-          .withRequestBody(equalTo(Json.toJson(form).toString)))
+          .withRequestBody(equalTo(Json.toJson(form).toString))
+      )
     }
   }
 
@@ -104,7 +106,8 @@ class SubmissionConsolidatorConnectorSpec
       result shouldBe Left("code=ERROR_CODE, message=Error message, fieldErrors=[/path=message]")
       verify(
         postRequestedFor(urlEqualTo("/submission-consolidator/form"))
-          .withRequestBody(equalTo(Json.toJson(form).toString)))
+          .withRequestBody(equalTo(Json.toJson(form).toString))
+      )
     }
   }
 
@@ -121,7 +124,8 @@ class SubmissionConsolidatorConnectorSpec
       result shouldBe Left("Some error message")
       verify(
         postRequestedFor(urlEqualTo("/submission-consolidator/form"))
-          .withRequestBody(equalTo(Json.toJson(form).toString)))
+          .withRequestBody(equalTo(Json.toJson(form).toString))
+      )
     }
   }
 
@@ -138,7 +142,8 @@ class SubmissionConsolidatorConnectorSpec
     whenReady(future) { result =>
       result.isLeft shouldBe true
       result.left.get.contains(
-        s"POST of '$baseUrl/submission-consolidator/form' failed. Caused by: 'Connection refused:") shouldBe true
+        s"POST of '$baseUrl/submission-consolidator/form' failed. Caused by: 'Connection refused:"
+      ) shouldBe true
       startServer()
     }
   }

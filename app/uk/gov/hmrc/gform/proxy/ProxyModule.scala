@@ -51,12 +51,14 @@ class ProxyModule(val configModule: ConfigModule) {
           proxyConfig =>
             if (proxyConfig.proxyRequiredForThisEnvironment) {
               Authenticator
-                .setDefault(new ProxyAuthenticator(proxyConfig.username, proxyConfig.password.toCharArray)) // [1] look on javadoc
+                .setDefault(
+                  new ProxyAuthenticator(proxyConfig.username, proxyConfig.password.toCharArray)
+                ) // [1] look on javadoc
               val address = new InetSocketAddress(proxyConfig.host, proxyConfig.port)
               Some(new Proxy(Proxy.Type.HTTP, address))
             } else {
               None
-          }
+            }
         )
     else None
 

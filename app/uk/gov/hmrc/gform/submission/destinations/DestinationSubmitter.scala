@@ -38,8 +38,8 @@ class DestinationSubmitter[M[_]](
   notifier: NotifierAlgebra[M],
   destinationAuditer: Option[DestinationAuditAlgebra[M]],
   submissionConsolidator: SubmissionConsolidatorAlgebra[M],
-  handlebarsTemplateProcessor: HandlebarsTemplateProcessor = RealHandlebarsTemplateProcessor)(
-  implicit monadError: MonadError[M, String])
+  handlebarsTemplateProcessor: HandlebarsTemplateProcessor = RealHandlebarsTemplateProcessor
+)(implicit monadError: MonadError[M, String])
     extends DestinationSubmitterAlgebra[M] {
 
   def submitIfIncludeIf(
@@ -48,10 +48,12 @@ class DestinationSubmitter[M[_]](
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree,
     submitter: DestinationsSubmitterAlgebra[M],
-    formData: Option[FormData] = None)(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
+    formData: Option[FormData] = None
+  )(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
     monadError.pure(
       DestinationSubmitterAlgebra
-        .isIncludeIf(destination, accumulatedModel, modelTree, handlebarsTemplateProcessor)) flatMap { include =>
+        .isIncludeIf(destination, accumulatedModel, modelTree, handlebarsTemplateProcessor)
+    ) flatMap { include =>
       if (include)
         for {
           _      <- logInfoInMonad(submissionInfo.formId, destination.id, "Included")
@@ -71,7 +73,8 @@ class DestinationSubmitter[M[_]](
     responseStatus: Option[Int],
     responseBody: Option[String],
     submissionInfo: DestinationSubmissionInfo,
-    modelTree: HandlebarsModelTree)(implicit hc: HeaderCarrier): M[Unit] =
+    modelTree: HandlebarsModelTree
+  )(implicit hc: HeaderCarrier): M[Unit] =
     destinationAuditer.fold(().pure[M])(
       _(
         destination,
@@ -82,7 +85,8 @@ class DestinationSubmitter[M[_]](
         submissionInfo.submission.submissionRef,
         modelTree.value.formTemplate,
         modelTree.value.model
-      ))
+      )
+    )
 
   private def logInfoInMonad(formId: FormId, destinationId: DestinationId, msg: String): M[Unit] =
     monadError.pure {
@@ -95,7 +99,8 @@ class DestinationSubmitter[M[_]](
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree,
     submitter: DestinationsSubmitterAlgebra[M],
-    formData: Option[FormData])(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
+    formData: Option[FormData]
+  )(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
     destination match {
       case d: Destination.HmrcDms =>
         submitToDms(
@@ -103,7 +108,8 @@ class DestinationSubmitter[M[_]](
           modelTree.value.pdfData,
           modelTree.value.instructionPdfData,
           modelTree.value.structuredFormData,
-          d).map(_ => None)
+          d
+        ).map(_ => None)
       case d: Destination.HandlebarsHttpApi => submitToHandlebars(d, accumulatedModel, modelTree, submissionInfo)
       case d: Destination.Composite =>
         submitter
@@ -120,23 +126,27 @@ class DestinationSubmitter[M[_]](
     submissionInfo: DestinationSubmissionInfo,
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree,
-    formData: Option[FormData])(implicit hc: HeaderCarrier): M[Unit] =
-    monadError.handleErrorWith(submissionConsolidator.submit(d, submissionInfo, accumulatedModel, modelTree, formData)) {
-      msg =>
-        if (d.failOnError)
-          raiseError(submissionInfo.formId, d.id, msg)
-        else {
-          logInfoInMonad(submissionInfo.formId, d.id, "Failed execution but has 'failOnError' set to false. Ignoring.")
-        }
+    formData: Option[FormData]
+  )(implicit hc: HeaderCarrier): M[Unit] =
+    monadError.handleErrorWith(
+      submissionConsolidator.submit(d, submissionInfo, accumulatedModel, modelTree, formData)
+    ) { msg =>
+      if (d.failOnError)
+        raiseError(submissionInfo.formId, d.id, msg)
+      else {
+        logInfoInMonad(submissionInfo.formId, d.id, "Failed execution but has 'failOnError' set to false. Ignoring.")
+      }
     }
 
   def submitToEmail(
     d: Destination.Email,
     submissionInfo: DestinationSubmissionInfo,
-    structuredFormData: StructuredFormValue.ObjectStructure): M[Unit] =
+    structuredFormData: StructuredFormValue.ObjectStructure
+  ): M[Unit] =
     monadError.handleErrorWith(
       NotifierEmailBuilder(d, structuredFormData) >>=
-        notifier.email) { msg =>
+        notifier.email
+    ) { msg =>
       if (d.failOnError)
         raiseError(submissionInfo.formId, d.id, msg)
       else {
@@ -147,7 +157,8 @@ class DestinationSubmitter[M[_]](
   def log(
     d: Destination.Log,
     accumulatedModel: HandlebarsTemplateProcessorModel,
-    modelTree: HandlebarsModelTree): M[Unit] = {
+    modelTree: HandlebarsModelTree
+  ): M[Unit] = {
     def modelTreeNodeString(node: HandlebarsModelTreeNode): String =
       s"${node.submissionRef}, ${node.formId.value}".padTo(100, ' ') + s": ${node.model.model}"
     def modelTreeStrings(tree: HandlebarsModelTree, depth: Int): List[String] =
@@ -156,7 +167,8 @@ class DestinationSubmitter[M[_]](
     Loggers.destinations.logger
       .info(
         s"destination: ${d.id}, accumulatedModel: ${accumulatedModel.model}, modelTree:\n${modelTreeStrings(modelTree, 1)
-          .mkString("\n")}")
+          .mkString("\n")}"
+      )
       .pure[M]
   }
 
@@ -165,7 +177,8 @@ class DestinationSubmitter[M[_]](
     pdfData: PdfHtml,
     instructionPdfData: Option[PdfHtml],
     structuredFormData: StructuredFormValue.ObjectStructure,
-    d: Destination.HmrcDms)(implicit hc: HeaderCarrier): M[Unit] =
+    d: Destination.HmrcDms
+  )(implicit hc: HeaderCarrier): M[Unit] =
     monadError.handleErrorWith(dms(submissionInfo, pdfData, instructionPdfData, structuredFormData, d)) { msg =>
       if (d.failOnError)
         raiseError(submissionInfo.formId, d.id, msg)
@@ -178,7 +191,8 @@ class DestinationSubmitter[M[_]](
     d: Destination.HandlebarsHttpApi,
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree,
-    submissionInfo: DestinationSubmissionInfo)(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
+    submissionInfo: DestinationSubmissionInfo
+  )(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
     handlebars(d, accumulatedModel, modelTree)
       .flatMap[HandlebarsDestinationResponse] { response =>
         if (response.isSuccess)
@@ -189,7 +203,8 @@ class DestinationSubmitter[M[_]](
           logInfoInMonad(
             submissionInfo.formId,
             d.id,
-            s"Returned status code ${response.status} but has 'failOnError' set to false. Ignoring.") >>
+            s"Returned status code ${response.status} but has 'failOnError' set to false. Ignoring."
+          ) >>
             createSuccessResponse(d, response)
         }
       }
@@ -199,16 +214,19 @@ class DestinationSubmitter[M[_]](
     destination: Destination.HandlebarsHttpApi,
     response: HttpResponse,
     submissionInfo: DestinationSubmissionInfo,
-    modelTree: HandlebarsModelTree)(implicit hc: HeaderCarrier): M[HandlebarsDestinationResponse] =
+    modelTree: HandlebarsModelTree
+  )(implicit hc: HeaderCarrier): M[HandlebarsDestinationResponse] =
     audit(destination, Some(response.status), Some(response.body), submissionInfo, modelTree) >>
       raiseError(
         submissionInfo.formId,
         destination.id,
-        DestinationSubmitter.handlebarsHttpApiFailOnErrorMessage(response))
+        DestinationSubmitter.handlebarsHttpApiFailOnErrorMessage(response)
+      )
 
   private def createSuccessResponse(
     d: Destination.HandlebarsHttpApi,
-    response: HttpResponse): M[HandlebarsDestinationResponse] =
+    response: HttpResponse
+  ): M[HandlebarsDestinationResponse] =
     monadError.pure(HandlebarsDestinationResponse(d, response))
 }
 

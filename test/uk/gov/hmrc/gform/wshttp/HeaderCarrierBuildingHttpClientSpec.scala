@@ -55,13 +55,15 @@ class HeaderCarrierBuildingHttpClientSpec extends HttpClientSpec with ScalaCheck
   private def buildClient[F[_]](
     underlying: HttpClient[F],
     expected: HeaderCarrier,
-    replacement: HeaderCarrier): HttpClient[F] =
+    replacement: HeaderCarrier
+  ): HttpClient[F] =
     underlying.buildHeaderCarrier(verifyAndSwap(_, expected, replacement))
 
   private def verifyAndSwap(
     actual: HeaderCarrier,
     expected: HeaderCarrier,
-    replacement: HeaderCarrier): HeaderCarrier = {
+    replacement: HeaderCarrier
+  ): HeaderCarrier = {
     actual shouldBe expected
     replacement
   }

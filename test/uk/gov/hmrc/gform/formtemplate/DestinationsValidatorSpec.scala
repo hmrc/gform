@@ -41,7 +41,8 @@ class DestinationsValidatorSpec extends Spec with ScalaCheckDrivenPropertyChecks
                 .DestinationList(uniqueD :: d1WithId1 ::: d2WithId1 ::: d1WithId2 ::: d2WithId2, ackSection, decSection)
 
             DestinationsValidator.validateUniqueDestinationIds(destinations) should be(
-              Invalid(DestinationsValidator.someDestinationIdsAreUsedMoreThanOnce(Set(id1, id2))))
+              Invalid(DestinationsValidator.someDestinationIdsAreUsedMoreThanOnce(Set(id1, id2)))
+            )
           }
         }
       }
@@ -52,7 +53,8 @@ class DestinationsValidatorSpec extends Spec with ScalaCheckDrivenPropertyChecks
     forAll(destinationGen, destinationGen) { (d1, d2) =>
       whenever(d1.id != d2.id) {
         DestinationsValidator.validateUniqueDestinationIds(
-          Destinations.DestinationList(NonEmptyList.of(d1, d2), ackSection, decSection)) should be(Valid)
+          Destinations.DestinationList(NonEmptyList.of(d1, d2), ackSection, decSection)
+        ) should be(Valid)
       }
     }
   }

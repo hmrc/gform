@@ -32,7 +32,8 @@ class EnrolmentConnector(wSHttp: WSHttp, baseUrl: String)(implicit ec: Execution
 
   def deEnrol(userId: String, id: String)(implicit hc: HeaderCarrier) =
     wSHttp.DELETE[HttpResponse](
-      s"$baseUrl/enrolment-store/users/$userId/enrolments/HMRC-OBTDS-ORG~EtmpRegistrationNumber~$id")
+      s"$baseUrl/enrolment-store/users/$userId/enrolments/HMRC-OBTDS-ORG~EtmpRegistrationNumber~$id"
+    )
 
   def removeUnallocated(id: String)(implicit hc: HeaderCarrier): Future[Unit] =
     wSHttp.DELETE[HttpResponse](s"$ES6url/HMRC-OBTDS-ORG~EtmpRegistrationNumber~$id").map(_ => ())

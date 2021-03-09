@@ -53,7 +53,8 @@ class FormTemplateValidatorSpec extends WordSpecLike with Matchers with FormTemp
             formComponents = List(
               mkFormComponent(
                 "section1Component1",
-                Some(Instruction(Some(toSmartString("section1Component1Instruction")), Some(1))))
+                Some(Instruction(Some(toSmartString("section1Component1Instruction")), Some(1)))
+              )
             ),
             Some(Instruction(Some(toSmartString("section1Instruction")), Some(1)))
           ).page
@@ -73,7 +74,8 @@ class FormTemplateValidatorSpec extends WordSpecLike with Matchers with FormTemp
             formComponents = List(
               mkFormComponent(
                 "section1Component1",
-                Some(Instruction(Some(toSmartString("section1Component1Instruction")), Some(1))))
+                Some(Instruction(Some(toSmartString("section1Component1Instruction")), Some(1)))
+              )
             ),
             Some(Instruction(None, None))
           ).page
@@ -93,7 +95,8 @@ class FormTemplateValidatorSpec extends WordSpecLike with Matchers with FormTemp
             formComponents = List(
               mkFormComponent(
                 "section1Component1",
-                Some(Instruction(Some(toSmartString("section1Component1Instruction")), Some(1))))
+                Some(Instruction(Some(toSmartString("section1Component1Instruction")), Some(1)))
+              )
             ),
             Some(Instruction(Some(toSmartString("")), Some(1)))
           ).page
@@ -113,7 +116,8 @@ class FormTemplateValidatorSpec extends WordSpecLike with Matchers with FormTemp
             formComponents = List(
               mkFormComponent(
                 "section1Component1",
-                Some(Instruction(Some(toSmartString("section1Component1Instruction")), Some(1))))
+                Some(Instruction(Some(toSmartString("section1Component1Instruction")), Some(1)))
+              )
             ),
             Some(Instruction(Some(toSmartString("section1Instruction")), Some(-1)))
           ).page
@@ -132,7 +136,8 @@ class FormTemplateValidatorSpec extends WordSpecLike with Matchers with FormTemp
           formComponents = List(
             mkFormComponent(
               "section1Component1",
-              Some(Instruction(Some(toSmartString("section1Component1Instruction")), Some(1))))
+              Some(Instruction(Some(toSmartString("section1Component1Instruction")), Some(1)))
+            )
           ),
           Some(Instruction(Some(toSmartString("section1Instruction")), Some(1)))
         ).page
@@ -155,18 +160,22 @@ class FormTemplateValidatorSpec extends WordSpecLike with Matchers with FormTemp
             formComponents = List(
               mkFormComponent(
                 "section1Component1",
-                Some(Instruction(Some(toSmartString("section1Component1Instruction")), Some(1)))),
+                Some(Instruction(Some(toSmartString("section1Component1Instruction")), Some(1)))
+              ),
               mkFormComponent(
                 "section1Component2",
-                Some(Instruction(Some(toSmartString("section1Component2Instruction")), Some(1))))
+                Some(Instruction(Some(toSmartString("section1Component2Instruction")), Some(1)))
+              )
             ),
             Some(Instruction(Some(toSmartString("section1Instruction")), Some(1)))
-          ).page)
+          ).page
+        )
 
         val result = FormTemplateValidator.validateInstructions(pages)
 
         result shouldBe Invalid(
-          "All fields within sections that have instruction defined, must have a unique order value")
+          "All fields within sections that have instruction defined, must have a unique order value"
+        )
       }
     }
 
@@ -196,7 +205,8 @@ class FormTemplateValidatorSpec extends WordSpecLike with Matchers with FormTemp
             formComponents = List(
               mkFormComponent(
                 "section1Component1",
-                Some(Instruction(Some(toSmartString("section1Component1Instruction")), Some(-1))))
+                Some(Instruction(Some(toSmartString("section1Component1Instruction")), Some(-1)))
+              )
             ),
             Some(Instruction(Some(toSmartString("section1Instruction")), Some(1)))
           ).page

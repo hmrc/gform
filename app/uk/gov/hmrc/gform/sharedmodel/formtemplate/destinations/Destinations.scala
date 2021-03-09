@@ -29,23 +29,22 @@ object Destinations {
   case class DestinationList(
     destinations: NonEmptyList[Destination],
     acknowledgementSection: AcknowledgementSection,
-    declarationSection: DeclarationSection)
-      extends Destinations
+    declarationSection: DeclarationSection
+  ) extends Destinations
 
   case class DestinationPrint(
     page: PrintSection.Page,
     pdf: PrintSection.Pdf,
-    pdfNotification: Option[PrintSection.PdfNotification])
-      extends Destinations
+    pdfNotification: Option[PrintSection.PdfNotification]
+  ) extends Destinations
 
   implicit val destinationListFormat: OFormat[DestinationList] = derived.oformat[DestinationList]()
 
   implicit val destinationPrintFormat: OFormat[DestinationPrint] = Json.format[DestinationPrint]
 
-  implicit val format: OFormat[Destinations] = {
+  implicit val format: OFormat[Destinations] =
     OFormatWithTemplateReadFallback(
       safeCast[DestinationList, Destinations](destinationListFormat) orElse
         safeCast[DestinationPrint, Destinations](destinationPrintFormat)
     )
-  }
 }

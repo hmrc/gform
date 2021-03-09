@@ -40,8 +40,8 @@ trait DestinationsProcessorModelAlgebra[M[_]] {
     frontEndSubmissionVariables: FrontEndSubmissionVariables,
     pdfData: PdfHtml,
     instructionPdfHtml: Option[PdfHtml],
-    structuredFormData: StructuredFormValue.ObjectStructure)(
-    implicit hc: HeaderCarrier): M[HandlebarsTemplateProcessorModel]
+    structuredFormData: StructuredFormValue.ObjectStructure
+  )(implicit hc: HeaderCarrier): M[HandlebarsTemplateProcessorModel]
 }
 
 object DestinationsProcessorModelAlgebra {
@@ -51,7 +51,8 @@ object DestinationsProcessorModelAlgebra {
     instructionPdfData: Option[PdfHtml],
     structuredFormData: StructuredFormValue.ObjectStructure,
     form: Form,
-    files: Option[List[UploadedFile]]): HandlebarsTemplateProcessorModel =
+    files: Option[List[UploadedFile]]
+  ): HandlebarsTemplateProcessorModel =
     createFormId(form._id) +
       createStructuredFormData(structuredFormData) +
       createHmrcTaxPeriods(form) +
@@ -68,7 +69,10 @@ object DestinationsProcessorModelAlgebra {
     HandlebarsTemplateProcessorModel(
       Map(
         result.id.id -> objectNode(
-          Map("status" -> numberNode(result.status), "json" -> parseJson(result.json.toString)))))
+          Map("status" -> numberNode(result.status), "json" -> parseJson(result.json.toString))
+        )
+      )
+    )
 
   def createBundledFormTree(tree: Tree[BundledFormTreeNode]): HandlebarsTemplateProcessorModel = {
     def submissionRefString(tree: BundledFormTreeNode) = tree.submissionRef.value
@@ -82,14 +86,17 @@ object DestinationsProcessorModelAlgebra {
       }
 
     def treeNode(tree: Tree[BundledFormTreeNode]): JsonNode =
-      objectNode(Map(
-        "formId"        -> textNode(tree.value.formId.value),
-        "submissionRef" -> textNode(submissionRefString(tree.value))) ++
-        childGroups(tree))
+      objectNode(
+        Map(
+          "formId"        -> textNode(tree.value.formId.value),
+          "submissionRef" -> textNode(submissionRefString(tree.value))
+        ) ++
+          childGroups(tree)
+      )
 
     def submissionRefs: JsonNode = {
       def extractSubmissionRefs(t: Tree[BundledFormTreeNode]): Set[String] =
-        t.fold(Set.empty[String]) { _ + submissionRefString(_) }
+        t.fold(Set.empty[String])(_ + submissionRefString(_))
 
       arrayNode(extractSubmissionRefs(tree).map(textNode).toList)
     }
@@ -98,7 +105,8 @@ object DestinationsProcessorModelAlgebra {
       "formBundle" -> objectNode(
         "tree"           -> treeNode(tree),
         "submissionRefs" -> submissionRefs
-      ))
+      )
+    )
   }
 
   private def asJson(file: UploadedFile) = {
@@ -111,7 +119,8 @@ object DestinationsProcessorModelAlgebra {
         "name"      -> JsonNodes.textNode(name),
         "extension" -> JsonNodes.textNode(extension),
         "data"      -> JsonNodes.textNode(data)
-      ))
+      )
+    )
   }
 
   private def fileExtension(filename: String): String = {
@@ -132,14 +141,16 @@ object DestinationsProcessorModelAlgebra {
     }
 
   private def createStructuredFormData(
-    structuredData: StructuredFormValue.ObjectStructure): HandlebarsTemplateProcessorModel =
+    structuredData: StructuredFormValue.ObjectStructure
+  ): HandlebarsTemplateProcessorModel =
     HandlebarsTemplateProcessorModel(JsonStructuredFormDataBuilder(structuredData))
 
   def createFormId(formId: FormId): HandlebarsTemplateProcessorModel =
     HandlebarsTemplateProcessorModel(Map("formId" -> textNode(formId.value)))
 
   private def createFrontEndSubmissionVariables(
-    variables: FrontEndSubmissionVariables): HandlebarsTemplateProcessorModel =
+    variables: FrontEndSubmissionVariables
+  ): HandlebarsTemplateProcessorModel =
     HandlebarsTemplateProcessorModel(variables.value.toString)
 
   def createFormStatus(status: FormStatus): HandlebarsTemplateProcessorModel =
@@ -171,7 +182,7 @@ object DestinationsProcessorModelAlgebra {
       for {
         periodKey <- lookup.get(fcId)
         obligationDetail <- form.thirdPartyData.obligations
-                             .findByPeriodKey(taxResponse.id.recalculatedTaxPeriodKey.hmrcTaxPeriod, periodKey)
+                              .findByPeriodKey(taxResponse.id.recalculatedTaxPeriodKey.hmrcTaxPeriod, periodKey)
       } yield Map(fcId.value -> objectNode(mkMap(obligationDetail).mapValues(textNode)))
     }
 
@@ -189,11 +200,14 @@ object DestinationsProcessorModelAlgebra {
     val f = form.thirdPartyData.desRegistrationResponse.fold("") _
 
     HandlebarsTemplateProcessorModel(
-      "hmrcRosmRegistrationCheck" -> objectNode(Map(
-        "safeId"           -> f(_.safeId),
-        "organisationName" -> f(_.orgOrInd.getOrganisationName),
-        "organisationType" -> f(_.orgOrInd.getOrganisationType),
-        "isAGroup"         -> f(_.orgOrInd.getIsAGroup)
-      ).mapValues(textNode)))
+      "hmrcRosmRegistrationCheck" -> objectNode(
+        Map(
+          "safeId"           -> f(_.safeId),
+          "organisationName" -> f(_.orgOrInd.getOrganisationName),
+          "organisationType" -> f(_.orgOrInd.getOrganisationType),
+          "isAGroup"         -> f(_.orgOrInd.getIsAGroup)
+        ).mapValues(textNode)
+      )
+    )
   }
 }

@@ -45,7 +45,8 @@ trait WSHttp
   )(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
 
     val source: Source[FilePart[Source[ByteString, NotUsed]], NotUsed] = Source(
-      FilePart(fileName, fileName, Some(contentType), Source.single(body)) :: Nil)
+      FilePart(fileName, fileName, Some(contentType), Source.single(body)) :: Nil
+    )
     //    withTracing(POST_VERB, url) {
     //      import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
     //      val httpResponse = buildRequest(url).withHeaders(headers: _*).post(source).map(new WSHttpResponse(_))
@@ -56,13 +57,13 @@ trait WSHttp
     buildRequest(url)
       .withHttpHeaders(headers: _*)
       .post(source)
-      .map(
-        wsResponse =>
-          HttpResponse(
-            status = wsResponse.status,
-            body = wsResponse.body,
-            headers = wsResponse.headers
-        ))
+      .map(wsResponse =>
+        HttpResponse(
+          status = wsResponse.status,
+          body = wsResponse.body,
+          headers = wsResponse.headers
+        )
+      )
   }
 
 }
@@ -72,8 +73,8 @@ class WSHttpImpl(
   val auditConnector: AuditConnector,
   config: Option[Config],
   override val actorSystem: ActorSystem,
-  val wsClient: WSClient)
-    extends WSHttp {
+  val wsClient: WSClient
+) extends WSHttp {
   override val hooks = Seq(AuditingHook)
   override lazy val configuration: Option[Config] = config
 }

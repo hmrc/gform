@@ -23,8 +23,9 @@ import uk.gov.hmrc.gform.playcomponents.PlayComponents
 
 import scala.concurrent.ExecutionContext
 
-class WSHttpModule(auditingModule: AuditingModule, configModule: ConfigModule, playComponents: PlayComponents)(
-  implicit ec: ExecutionContext) {
+class WSHttpModule(auditingModule: AuditingModule, configModule: ConfigModule, playComponents: PlayComponents)(implicit
+  ec: ExecutionContext
+) {
   val auditableWSHttp: WSHttp = new WSHttpImpl(
     configModule.appConfig.appName,
     auditingModule.auditConnector,

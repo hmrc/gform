@@ -176,7 +176,8 @@ case class RevealingChoiceElement(
   choice: SmartString,
   revealingFields: List[FormComponent],
   hint: Option[SmartString],
-  selected: Boolean)
+  selected: Boolean
+)
 object RevealingChoiceElement {
   implicit val format: OFormat[RevealingChoiceElement] = derived.oformat()
 }

@@ -68,7 +68,8 @@ class FormMetadataAlgebraFormTreeServiceSpec extends Spec with FormMetadataGen w
 
         whenever(
           distinct(root, child, grandchild)(_.submissionRef) &&
-            distinct(root, child, grandchild)(_.parentFormSubmissionRefs)) {
+            distinct(root, child, grandchild)(_.parentFormSubmissionRefs)
+        ) {
           createService()
             .expectMetaDataAlgebraGet(root.formIdData, root)
             .expectMetadataAlgebraFindByParentFormSubmissionRef(root.submissionRef.get, List(child))
@@ -88,7 +89,8 @@ class FormMetadataAlgebraFormTreeServiceSpec extends Spec with FormMetadataGen w
       formMetadataGenWithSubmissionRef,
       formMetadataGenWithSubmissionRef,
       formMetadataGenWithSubmissionRef,
-      formMetadataGenWithSubmissionRef) { (generatedRoot, generatedChild1, generatedChild2, generatedChild3) =>
+      formMetadataGenWithSubmissionRef
+    ) { (generatedRoot, generatedChild1, generatedChild2, generatedChild3) =>
       val root = generatedRoot.copy(parentFormSubmissionRefs = Nil)
       val child1 = generatedChild1.copy(parentFormSubmissionRefs = List(root.submissionRef.value))
       val child2 = generatedChild2
@@ -97,7 +99,8 @@ class FormMetadataAlgebraFormTreeServiceSpec extends Spec with FormMetadataGen w
 
       whenever(
         distinct(root, child1, child2, child3)(_.submissionRef) &&
-          distinct(child1, child3)(_.formTemplateId)) {
+          distinct(child1, child3)(_.formTemplateId)
+      ) {
         createService()
           .expectMetaDataAlgebraGet(root.formIdData, root)
           .expectMetadataAlgebraFindByParentFormSubmissionRef(root.submissionRef.get, List(child1, child2, child3))
@@ -118,12 +121,14 @@ class FormMetadataAlgebraFormTreeServiceSpec extends Spec with FormMetadataGen w
       (generatedRoot, generatedChild, generatedGrandchild) =>
         val root = generatedRoot.copy(parentFormSubmissionRefs = Nil)
         val child = generatedChild.copy(
-          parentFormSubmissionRefs = List(root.submissionRef.value, generatedGrandchild.submissionRef.value))
+          parentFormSubmissionRefs = List(root.submissionRef.value, generatedGrandchild.submissionRef.value)
+        )
         val grandchild = generatedGrandchild.copy(parentFormSubmissionRefs = List(child.submissionRef.value))
 
         whenever(
           distinct(root, child, grandchild)(_.submissionRef) &&
-            distinct(root, child, grandchild)(_.parentFormSubmissionRefs)) {
+            distinct(root, child, grandchild)(_.parentFormSubmissionRefs)
+        ) {
           createService()
             .expectMetaDataAlgebraGet(root.formIdData, root)
             .expectMetadataAlgebraFindByParentFormSubmissionRef(root.submissionRef.get, List(child))
@@ -157,7 +162,8 @@ class FormMetadataAlgebraFormTreeServiceSpec extends Spec with FormMetadataGen w
 
     def expectMetadataAlgebraFindByParentFormSubmissionRef(
       submissionRef: SubmissionRef,
-      childMetadata: List[FormMetadata]): Fixture = {
+      childMetadata: List[FormMetadata]
+    ): Fixture = {
       (metadataAlgebra
         .findByParentFormSubmissionRef(_: SubmissionRef))
         .expects(submissionRef)

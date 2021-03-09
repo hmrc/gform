@@ -147,15 +147,15 @@ final case class Number(
   maxWholeDigits: Int = TextConstraint.defaultWholeDigits,
   maxFractionalDigits: Int = TextConstraint.defaultFractionalDigits,
   roundingMode: RoundingMode = RoundingMode.defaultRoundingMode,
-  unit: Option[LocalisedString] = None)
-    extends TextConstraint
+  unit: Option[LocalisedString] = None
+) extends TextConstraint
 
 final case class PositiveNumber(
   maxWholeDigits: Int = TextConstraint.defaultWholeDigits,
   maxFractionalDigits: Int = TextConstraint.defaultFractionalDigits,
   roundingMode: RoundingMode = RoundingMode.defaultRoundingMode,
-  unit: Option[LocalisedString] = None)
-    extends TextConstraint
+  unit: Option[LocalisedString] = None
+) extends TextConstraint
 
 case class ShortText(min: Int, max: Int) extends TextConstraint
 object ShortText { val default = ShortText(0, 1000) }

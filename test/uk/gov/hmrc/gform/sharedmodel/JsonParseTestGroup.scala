@@ -59,21 +59,23 @@ class JsonParseTestGroup extends Spec {
       FormComponent(
         FormComponentId("gid"),
         Group(
-          List(FormComponent(
-            FormComponentId("cid"),
-            Choice(Radio, NonEmptyList.of(toSmartString("A"), toSmartString("B")), Vertical, List(), None, None),
-            toSmartString("clabel"),
-            None,
-            None,
-            None,
-            None,
-            true,
-            true,
-            true,
-            derived = false,
-            onlyShowOnSummary = false,
-            None
-          )),
+          List(
+            FormComponent(
+              FormComponentId("cid"),
+              Choice(Radio, NonEmptyList.of(toSmartString("A"), toSmartString("B")), Vertical, List(), None, None),
+              toSmartString("clabel"),
+              None,
+              None,
+              None,
+              None,
+              true,
+              true,
+              true,
+              derived = false,
+              onlyShowOnSummary = false,
+              None
+            )
+          ),
           Some(5),
           Some(1),
           Some(toSmartString("repeatLabel")),
@@ -91,7 +93,8 @@ class JsonParseTestGroup extends Spec {
         onlyShowOnSummary = false,
         None,
         Some(List(TotalValue))
-      ))
+      )
+    )
 
   }
 
@@ -130,21 +133,23 @@ class JsonParseTestGroup extends Spec {
       FormComponent(
         FormComponentId("gid"),
         Group(
-          List(FormComponent(
-            FormComponentId("cid"),
-            Choice(Radio, NonEmptyList.of(toSmartString("A"), toSmartString("B")), Vertical, List(), None, None),
-            toSmartString("clabel"),
-            None,
-            None,
-            None,
-            None,
-            mandatory = false,
-            true,
-            true,
-            derived = false,
-            false,
-            None
-          )),
+          List(
+            FormComponent(
+              FormComponentId("cid"),
+              Choice(Radio, NonEmptyList.of(toSmartString("A"), toSmartString("B")), Vertical, List(), None, None),
+              toSmartString("clabel"),
+              None,
+              None,
+              None,
+              None,
+              mandatory = false,
+              true,
+              true,
+              derived = false,
+              false,
+              None
+            )
+          ),
           Some(5),
           Some(0),
           Some(toSmartString("repeatLabel")),
@@ -162,7 +167,8 @@ class JsonParseTestGroup extends Spec {
         false,
         None,
         Some(List(SummariseGroupAsGrid))
-      ))
+      )
+    )
   }
 
   "A raw group" should "fail to parse if repeatsMin/Max has errors" in {

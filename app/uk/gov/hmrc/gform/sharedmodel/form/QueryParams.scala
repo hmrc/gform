@@ -22,8 +22,8 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ JsonUtils, QueryParam }
 
 case class QueryParams(params: Map[QueryParam, QueryParamValue]) extends AnyVal {
 
-  def toPlayQueryParams: Map[String, Seq[String]] = params.map {
-    case (param, value) => param.value -> Seq(value.value)
+  def toPlayQueryParams: Map[String, Seq[String]] = params.map { case (param, value) =>
+    param.value -> Seq(value.value)
   }
 
   def apply(queryParam: QueryParam): String = params.get(queryParam).fold("")(_.value)
@@ -38,8 +38,8 @@ object QueryParams {
   implicit val format: Format[QueryParams] = Json.format
 
   def fromRequest[A](request: Request[A]): QueryParams = QueryParams {
-    request.queryString.map {
-      case (key, values) => QueryParam(key) -> QueryParamValue(values.headOption.getOrElse(""))
+    request.queryString.map { case (key, values) =>
+      QueryParam(key) -> QueryParamValue(values.headOption.getOrElse(""))
     }
   }
 }

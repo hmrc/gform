@@ -111,8 +111,11 @@ trait Rewriter {
         case Success(index) =>
           val maxIndex = optionsSize - 1
           if (maxIndex < index) {
-            Left(UnexpectedState(
-              s"Expression '$exprString' has wrong index $c. $componentDescription $formComponentId has only $optionsSize elements. Use index from 0 to $maxIndex"))
+            Left(
+              UnexpectedState(
+                s"Expression '$exprString' has wrong index $c. $componentDescription $formComponentId has only $optionsSize elements. Use index from 0 to $maxIndex"
+              )
+            )
           } else Right(())
         case Failure(f) =>
           Left(UnexpectedState(s"Expression '$exprString' is invalid. '$c' needs to be a number"))
@@ -145,8 +148,11 @@ trait Rewriter {
         val exprString = if (swapped) s"$c = $formComponentId" else s"$formComponentId = $c"
 
         def invalidUsage(component: String): Either[UnexpectedState, BooleanExpr] =
-          Left(UnexpectedState(
-            s"Multivalue $component cannot be used together with '='. Replace '$exprString' with '$formComponentId contains $c' instead."))
+          Left(
+            UnexpectedState(
+              s"Multivalue $component cannot be used together with '='. Replace '$exprString' with '$formComponentId contains $c' instead."
+            )
+          )
 
         val rewriter = Contains(ctx, Constant(c))
         fcLookup
@@ -199,8 +205,11 @@ trait Rewriter {
           )
         case IsRevealingChoice(revealingChoice) =>
           replaceFormComponent(formComponent).copy(
-            `type` = revealingChoice.copy(options = revealingChoice.options.map(rcElement =>
-              rcElement.copy(revealingFields = rcElement.revealingFields.map(replaceFormComponent))))
+            `type` = revealingChoice.copy(options =
+              revealingChoice.options.map(rcElement =>
+                rcElement.copy(revealingFields = rcElement.revealingFields.map(replaceFormComponent))
+              )
+            )
           )
         case otherwise => replaceFormComponent(formComponent)
       }
@@ -226,15 +235,18 @@ trait Rewriter {
         sections = formTemplate.sections.map {
           case s: Section.NonRepeatingPage =>
             s.copy(
-              page = s.page.copy(includeIf = replaceIncludeIf(s.page.includeIf), fields = replaceFields(s.page.fields)))
+              page = s.page.copy(includeIf = replaceIncludeIf(s.page.includeIf), fields = replaceFields(s.page.fields))
+            )
           case s: Section.RepeatingPage =>
             s.copy(
-              page = s.page.copy(includeIf = replaceIncludeIf(s.page.includeIf), fields = replaceFields(s.page.fields)))
+              page = s.page.copy(includeIf = replaceIncludeIf(s.page.includeIf), fields = replaceFields(s.page.fields))
+            )
           case s: Section.AddToList =>
             s.copy(
               includeIf = replaceIncludeIf(s.includeIf),
               pages = s.pages.map(page =>
-                page.copy(includeIf = replaceIncludeIf(page.includeIf), fields = replaceFields(page.fields)))
+                page.copy(includeIf = replaceIncludeIf(page.includeIf), fields = replaceFields(page.fields))
+              )
             )
         },
         destinations = replaceDestinations(formTemplate.destinations)

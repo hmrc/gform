@@ -28,7 +28,8 @@ import uk.gov.hmrc.http.HeaderCarrier
 class ValidationService[F[_]: Functor](des: DesAlgebra[F], bankAccountReputation: BankAccountReputationAlgebra[F]) {
   def desRegistration(
     utr: String,
-    desRegistrationRequest: DesRegistrationRequest): F[ServiceCallResponse[DesRegistrationResponse]] =
+    desRegistrationRequest: DesRegistrationRequest
+  ): F[ServiceCallResponse[DesRegistrationResponse]] =
     des.lookupRegistration(utr, desRegistrationRequest)
 
   def bankAccountReputation(account: Account)(implicit hc: HeaderCarrier): F[Boolean] =

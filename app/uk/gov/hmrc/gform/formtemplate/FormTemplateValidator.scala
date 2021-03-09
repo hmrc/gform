@@ -46,17 +46,16 @@ object FormTemplateValidator {
   }
 
   private def indexedFields(sections: List[Section]): List[(FormComponent, Int)] =
-    SectionHelper.pages(sections).zipWithIndex.flatMap {
-      case (section, idx) =>
-        val standardFields = section.fields.map(_ -> idx)
-        val subFields = section.fields
-          .map(_.`type`)
-          .collect {
-            case Group(fields, _, _, _, _)   => fields.map(_ -> idx)
-            case RevealingChoice(options, _) => options.toList.flatMap(_.revealingFields.map(_ -> idx))
-          }
+    SectionHelper.pages(sections).zipWithIndex.flatMap { case (section, idx) =>
+      val standardFields = section.fields.map(_ -> idx)
+      val subFields = section.fields
+        .map(_.`type`)
+        .collect {
+          case Group(fields, _, _, _, _)   => fields.map(_ -> idx)
+          case RevealingChoice(options, _) => options.toList.flatMap(_.revealingFields.map(_ -> idx))
+        }
 
-        standardFields ::: subFields.flatten
+      standardFields ::: subFields.flatten
     }
 
   def someFieldsAreDefinedMoreThanOnce(duplicates: Set[FormComponentId]) =
@@ -74,19 +73,23 @@ object FormTemplateValidator {
       Invalid("One or more sections have instruction attribute with empty names")
     } else if (!pages.flatMap(_.instruction.flatMap(_.order)).forall(_ >= 0)) {
       Invalid("One or more sections have instruction attribute with negative order")
-    } else if (pages.flatMap(_.instruction.flatMap(_.order)).distinct.size != pages
-                 .flatMap(_.instruction.flatMap(_.order))
-                 .size) {
+    } else if (
+      pages.flatMap(_.instruction.flatMap(_.order)).distinct.size != pages
+        .flatMap(_.instruction.flatMap(_.order))
+        .size
+    ) {
       Invalid("One or more sections have instruction attribute with duplicate order value")
     } else if (!pages.flatMap(_.fields).flatMap(_.instruction).flatMap(_.name).forall(_.nonEmpty)) {
       Invalid("One or more section fields have instruction attribute with empty names")
     } else if (!pages.flatMap(_.fields).flatMap(_.instruction.flatMap(_.order)).forall(_ >= 0)) {
       Invalid("One or more section fields have instruction attribute with negative order")
-    } else if (pages.forall(
-                 p =>
-                   p.fields.flatMap(_.instruction.flatMap(_.order)).distinct.size != p.fields
-                     .flatMap(_.instruction.flatMap(_.order))
-                     .size)) {
+    } else if (
+      pages.forall(p =>
+        p.fields.flatMap(_.instruction.flatMap(_.order)).distinct.size != p.fields
+          .flatMap(_.instruction.flatMap(_.order))
+          .size
+      )
+    ) {
       Invalid("All fields within sections that have instruction defined, must have a unique order value")
     } else {
       Valid
@@ -95,7 +98,8 @@ object FormTemplateValidator {
   def validateChoice(
     sectionsList: List[Page],
     choiceChecker: Choice => Boolean,
-    errorMessage: String): ValidationResult = {
+    errorMessage: String
+  ): ValidationResult = {
     val choiceFieldIds: List[FormComponentId] = sectionsList
       .flatMap(_.fields)
       .map(fv => (fv.id, fv.`type`))
@@ -124,9 +128,9 @@ object FormTemplateValidator {
 
   val userContextComponentType: List[FormComponent] => List[FormComponent] =
     enrolledIdentifierComponents =>
-      enrolledIdentifierComponents.collect {
-        case expr @ HasExpr(SingleExpr(UserCtx(UserField.EnrolledIdentifier))) => expr
-    }
+      enrolledIdentifierComponents.collect { case expr @ HasExpr(SingleExpr(UserCtx(UserField.EnrolledIdentifier))) =>
+        expr
+      }
 
   def validateEnrolmentIdentifier(formTemplate: FormTemplate): ValidationResult =
     if (userContextComponentType(formTemplate.expandedFormComponentsInMainSections).nonEmpty) {
@@ -148,7 +152,8 @@ object FormTemplateValidator {
           .validationResult(
             s"Following identifiers and/or verifiers don't have corresponding field entry: " + ctxs
               .diff(fcIds)
-              .mkString(", "))
+              .mkString(", ")
+          )
       case _ => Valid
     }
 
@@ -202,22 +207,22 @@ object FormTemplateValidator {
         SectionHelper
           .pages(sections)
           .zipWithIndex
-          .flatMap {
-            case (page: Page, idx) =>
-              val allValidIfs: List[BooleanExpr] = page.allFormComponents.flatMap(_.allValidIfs).map(_.booleanExpr)
-              val verifiedValidIf = allValidIfs.flatMap(verifyValidIf(idx).apply)
+          .flatMap { case (page: Page, idx) =>
+            val allValidIfs: List[BooleanExpr] = page.allFormComponents.flatMap(_.allValidIfs).map(_.booleanExpr)
+            val verifiedValidIf = allValidIfs.flatMap(verifyValidIf(idx).apply)
 
-              val allComponentIncludeIfs: List[BooleanExpr] =
-                page.allFormComponents.flatMap(_.includeIf).map(_.booleanExpr)
-              val verifiedComponentIncludeIfs = allComponentIncludeIfs.flatMap(verifyIncludeIf(idx).apply)
+            val allComponentIncludeIfs: List[BooleanExpr] =
+              page.allFormComponents.flatMap(_.includeIf).map(_.booleanExpr)
+            val verifiedComponentIncludeIfs = allComponentIncludeIfs.flatMap(verifyIncludeIf(idx).apply)
 
-              val verifiedIncludeIf = page.includeIf
-                .map(_.booleanExpr)
-                .map(verifyIncludeIf(idx).apply)
-                .getOrElse(List(Valid))
+            val verifiedIncludeIf = page.includeIf
+              .map(_.booleanExpr)
+              .map(verifyIncludeIf(idx).apply)
+              .getOrElse(List(Valid))
 
-              verifiedValidIf ++ verifiedIncludeIf ++ verifiedComponentIncludeIfs
-          })
+            verifiedValidIf ++ verifiedIncludeIf ++ verifiedComponentIncludeIfs
+          }
+      )
   }
 
   def validate(expr: Expr, sections: List[Section]): ValidationResult = {
@@ -250,13 +255,14 @@ object FormTemplateValidator {
       case LinkCtx(_)         => Valid
       case DateCtx(value) =>
         val invalidFCIds = value.leafExprs
-          .collect {
-            case FormCtx(formComponentId) => formComponentId
+          .collect { case FormCtx(formComponentId) =>
+            formComponentId
           }
           .filter(!fieldNamesIds.contains(_))
           .map(_.value)
         invalidFCIds.isEmpty.validationResult(
-          s"Form field(s) '${invalidFCIds.mkString(",")}' not defined in form template.")
+          s"Form field(s) '${invalidFCIds.mkString(",")}' not defined in form template."
+        )
     }
   }
 
@@ -270,7 +276,8 @@ object FormTemplateValidator {
         case Nil => Valid
         case invalidFields =>
           Invalid(
-            s"The following email parameters are not fields in the form template's sections: ${invalidFields.mkString(", ")}")
+            s"The following email parameters are not fields in the form template's sections: ${invalidFields.mkString(", ")}"
+          )
       }
     }
 
@@ -299,26 +306,27 @@ object FormTemplateValidator {
     fc.`type` match {
       case _: RevealingChoice => true
       case _                  => false
-  }
+    }
 
   private val isGroup: FormComponent => Boolean = fc =>
     fc.`type` match {
       case group: Group => true
       case _            => false
-  }
+    }
 
   def validateGroup(formTemplate: FormTemplate): ValidationResult =
-    validateComponents("Group", formTemplate)(f => {
-      case Group(fields, _, _, _, _) => fields.forall(f)
+    validateComponents("Group", formTemplate)(f => { case Group(fields, _, _, _, _) =>
+      fields.forall(f)
     })
 
   def validateRevealingChoice(formTemplate: FormTemplate): ValidationResult =
-    validateComponents("Revealing choice", formTemplate)(f => {
-      case RevealingChoice(options, _) => options.forall(_.revealingFields.forall(f))
+    validateComponents("Revealing choice", formTemplate)(f => { case RevealingChoice(options, _) =>
+      options.forall(_.revealingFields.forall(f))
     })
 
   private def validateComponents(str: String, formTemplate: FormTemplate)(
-    pf: (FormComponent => Boolean) => PartialFunction[ComponentType, Boolean]): ValidationResult = {
+    pf: (FormComponent => Boolean) => PartialFunction[ComponentType, Boolean]
+  ): ValidationResult = {
 
     val formComponents: List[FormComponent] = SectionHelper.pages(formTemplate.sections).flatMap(_.fields)
 
@@ -346,20 +354,18 @@ object FormTemplateValidator {
     val emailsWithCodes: List[(FormComponentId, FormComponentId)] =
       allFormComponents.collect { case IsEmailVerifiedBy(fcId, emailId) => (fcId, emailId) }
 
-    val result = emailsWithCodes.map {
-      case (emailField, codeField) =>
-        val emailIdx = indexLookup.get(emailField) // This is guaranteed to always succeed
-        val codeIdx = indexLookup.get(codeField)
+    val result = emailsWithCodes.map { case (emailField, codeField) =>
+      val emailIdx = indexLookup.get(emailField) // This is guaranteed to always succeed
+      val codeIdx = indexLookup.get(codeField)
 
-        val res = for {
-          e <- emailIdx
-          c <- codeIdx
-        } yield {
-          (e <= c).validationResult(
-            s"id '$codeField' named in email verification is forward reference, which is not permitted")
-        }
+      val res = for {
+        e <- emailIdx
+        c <- codeIdx
+      } yield (e <= c).validationResult(
+        s"id '$codeField' named in email verification is forward reference, which is not permitted"
+      )
 
-        res.getOrElse(Invalid(s"id '$codeField' named in email verification does not exist in the form"))
+      res.getOrElse(Invalid(s"id '$codeField' named in email verification does not exist in the form"))
     }
     Monoid[ValidationResult].combineAll(result)
   }

@@ -48,7 +48,8 @@ object Response {
       case Some(str) => parse(json, str)
       case None =>
         JsError(
-          "the response does not match desired parameters : accountNumberWithSortCodeIsValid, accountNumberWithSortCodeIsValid")
+          "the response does not match desired parameters : accountNumberWithSortCodeIsValid, accountNumberWithSortCodeIsValid"
+        )
     }
   }
 

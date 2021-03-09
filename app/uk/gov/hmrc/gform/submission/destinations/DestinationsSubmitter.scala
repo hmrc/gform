@@ -33,7 +33,8 @@ class DestinationsSubmitter[M[_]: Monad](destinationSubmitter: DestinationSubmit
   override def send(
     submissionInfo: DestinationSubmissionInfo,
     modelTree: HandlebarsModelTree,
-    formData: Option[FormData])(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
+    formData: Option[FormData]
+  )(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
     modelTree.value.formTemplate.destinations match {
       case list: Destinations.DestinationList =>
         submitToList(list.destinations, submissionInfo, HandlebarsTemplateProcessorModel.empty, modelTree, formData)
@@ -46,10 +47,12 @@ class DestinationsSubmitter[M[_]: Monad](destinationSubmitter: DestinationSubmit
     submissionInfo: DestinationSubmissionInfo,
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree,
-    formData: Option[FormData])(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] = {
+    formData: Option[FormData]
+  )(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] = {
     case class TailRecParameter(
       remainingDestinations: List[Destination],
-      accumulatedModel: HandlebarsTemplateProcessorModel)
+      accumulatedModel: HandlebarsTemplateProcessorModel
+    )
 
     TailRecParameter(destinations.toList, accumulatedModel).tailRecM {
       case TailRecParameter(Nil, _) => Option.empty[HandlebarsDestinationResponse].asRight[TailRecParameter].pure[M]
@@ -57,9 +60,13 @@ class DestinationsSubmitter[M[_]: Monad](destinationSubmitter: DestinationSubmit
         destinationSubmitter
           .submitIfIncludeIf(head, submissionInfo, updatedAccumulatedModel, modelTree, this, formData)
           .map(submitterResult =>
-            TailRecParameter(rest, submitterResult.fold(updatedAccumulatedModel) {
-              DestinationsProcessorModelAlgebra.createDestinationResponse(_) + updatedAccumulatedModel
-            }).asLeft)
+            TailRecParameter(
+              rest,
+              submitterResult.fold(updatedAccumulatedModel) {
+                DestinationsProcessorModelAlgebra.createDestinationResponse(_) + updatedAccumulatedModel
+              }
+            ).asLeft
+          )
     }
   }
 }
