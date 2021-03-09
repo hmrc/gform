@@ -17,9 +17,19 @@
 package uk.gov.hmrc.gform.formtemplate
 
 import uk.gov.hmrc.gform.Helpers.toSmartString
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponent, FormComponentId, Instruction, Page, Section, ShortText, Text, Value }
+import uk.gov.hmrc.gform.sharedmodel.ExampleData
+import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 trait FormTemplateSupport {
+
+  def mkFormTemplate(sections: List[Section.NonRepeatingPage]) = {
+    val formTemplate = ExampleData.formTemplate.copy(sections = sections, emailParameters = None)
+    formTemplate
+  }
+
+  def mkSectionNonRepeatingPage(formComponent: FormComponent): Section.NonRepeatingPage =
+    mkSectionNonRepeatingPage(formComponents = List(formComponent))
+
   def mkSectionNonRepeatingPage(
     name: String = "Some Page",
     formComponents: List[FormComponent],
@@ -38,6 +48,42 @@ trait FormTemplateSupport {
         instruction,
         None
       ))
+
+  def mkFormComponent(id: String, expr: Expr) =
+    FormComponent(
+      FormComponentId(id),
+      Text(ShortText.default, expr),
+      toSmartString(id),
+      None,
+      None,
+      None,
+      None,
+      true,
+      false,
+      true,
+      false,
+      false,
+      None,
+      None
+    )
+
+  def mkFormComponent(id: String, ct: ComponentType) =
+    FormComponent(
+      FormComponentId(id),
+      ct,
+      toSmartString(id),
+      None,
+      None,
+      None,
+      None,
+      true,
+      false,
+      true,
+      false,
+      false,
+      None,
+      None
+    )
 
   def mkFormComponent(id: String, instruction: Option[Instruction] = None) =
     FormComponent(
@@ -58,4 +104,21 @@ trait FormTemplateSupport {
       Nil,
       instruction
     )
+
+  def mkSection(name: String, formComponents: List[FormComponent], instruction: Option[Instruction]) =
+    Section.NonRepeatingPage(
+      Page(
+        toSmartString(name),
+        None,
+        None,
+        None,
+        None,
+        None,
+        formComponents,
+        None,
+        None,
+        instruction,
+        None
+      ))
+
 }

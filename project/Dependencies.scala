@@ -43,6 +43,7 @@ object Dependencies {
     "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % scope,
     "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.3" % scope,
     "org.jsoup" % "jsoup" % "1.11.3" % scope,
-    "com.github.tomakehurst" % "wiremock-jre8" % "2.27.1" % scope
+    "com.github.tomakehurst" % "wiremock-jre8" % "2.27.1" % scope,
+    "org.scalameta" %% "munit" % "0.7.22" % scope
   )
 }

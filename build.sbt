@@ -38,6 +38,16 @@ lazy val microservice = (project in file("."))
     defaultSettings(),
     scalafmtOnCompile := true,
     scalaVersion := "2.12.11",
+    testFrameworks += new TestFramework("munit.Framework"),
+    testOptions in Test := (testOptions in Test).value
+      .map {
+        // Default Argument added by https://github.com/hmrc/sbt-settings
+        // are clashing with munit arguments, so we scope them to ScalaTest instead.
+        case sbt.Tests.Argument(None, args) => sbt.Tests.Argument(Some(TestFrameworks.ScalaTest), args)
+        case otherwise                      => otherwise
+      }
+      .toSet
+      .toSeq, // get rid of duplicates
     libraryDependencies ++= appDependencies,
     libraryDependencies ++= Seq(
       compilerPlugin("com.github.ghik" % "silencer-plugin" % silencerVersion cross CrossVersion.full)
