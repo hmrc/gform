@@ -21,7 +21,7 @@ import java.time.format.DateTimeParseException
 
 import cats.data.NonEmptyList
 import com.fasterxml.jackson.core.JsonParseException
-import play.api.libs.json.{ Reads, _ }
+import play.api.libs.json._
 import uk.gov.hmrc.gform.Helpers._
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.Register.{ Country, Port }

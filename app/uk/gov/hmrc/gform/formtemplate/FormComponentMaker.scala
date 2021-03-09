@@ -28,13 +28,14 @@ import cats.syntax.option._
 import cats.syntax.traverse._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.Opt
-import uk.gov.hmrc.gform.core.parsers.{ BasicParsers, FormatParser, PresentationHintParser, ValueParser }
+import uk.gov.hmrc.gform.core.parsers.{ BasicParsers, FormatParser, OverseasAddressParser, PresentationHintParser, ValueParser }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.RoundingMode._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString, SmartString }
+
 case class MES(
   mandatory: Boolean,
   editable: Boolean,
@@ -49,6 +50,9 @@ class FormComponentMaker(json: JsValue) {
   lazy val label: SmartString = (json \ "label").as[SmartString]
 
   lazy val optMaybeValueExpr: Opt[Option[ValueExpr]] = parse("value", ValueParser.validate)
+  lazy val optMaybeOverseasAddressValue: Opt[Option[OverseasAddress.Value]] =
+    parse("value", OverseasAddressParser.validate)
+
   lazy val optEmailVerification: Opt[EmailVerification] = (json \ "verifiedBy") match {
     case JsDefined(verifiedBy) =>
       EmailVerification.reads.reads(verifiedBy) match {
@@ -91,6 +95,9 @@ class FormComponentMaker(json: JsValue) {
   lazy val optValidators: Opt[List[FormComponentValidator]] =
     toOpt((json \ "validators").validateOpt[List[FormComponentValidator]], "/validators").map(_.toList.flatten)
   lazy val mandatory: Option[String] = (json \ "mandatory").asOpt[String]
+  lazy val mandatoryLine2: Option[String] = (json \ "line2Mandatory").asOpt[String]
+  lazy val mandatoryCity: Option[String] = (json \ "cityMandatory").asOpt[String]
+  lazy val mandatoryPostcode: Option[String] = (json \ "postcodeMandatory").asOpt[String]
   lazy val multiline: Option[String] = (json \ "multiline").asOpt[String]
   lazy val optRows: Opt[Option[Int]] = parse("rows", BasicParsers.validateNonZeroPositiveNumber)
   lazy val displayCharCount: Option[String] = (json \ "displayCharCount").asOpt[String]
@@ -220,6 +227,7 @@ class FormComponentMaker(json: JsValue) {
     case Some(InfoRaw)            => infoOpt
     case Some(HmrcTaxPeriodRaw)   => hmrcTaxPeriodOpt
     case Some(TimeRaw)            => timeOpt
+    case Some(OverseasAddressRaw) => overseasAddressOpt
   }
 
   lazy val textOpt: Opt[ComponentType] = {
@@ -482,6 +490,22 @@ class FormComponentMaker(json: JsValue) {
                          |Ranges must be in valid HH:mm format with startTime same as or before endTime  : $ranges
                          |IntervalMins must be greater than 0 minutes  : $intervalMins
                          |""".stripMargin).asLeft
+  }
+
+  private val overseasAddressOpt: Opt[OverseasAddress] = {
+
+    import OverseasAddress.Configurable._
+    for {
+      maybeOverseasAddressValue <- optMaybeOverseasAddressValue
+      line2                     <- OverseasAddressParser.mandatoryField(mandatoryLine2, Mandatory.Line2)
+      city                      <- OverseasAddressParser.optionalField(mandatoryCity, Optional.City)
+      postcode                  <- OverseasAddressParser.mandatoryField(mandatoryPostcode, Mandatory.Postcode)
+    } yield {
+      val mandatoryFields: List[Mandatory] = List(line2, postcode).flatten
+      val optionalFields: List[Optional] = List(city).flatten
+
+      OverseasAddress(mandatoryFields, optionalFields, maybeOverseasAddressValue)
+    }
   }
 
   private final object Selections {
