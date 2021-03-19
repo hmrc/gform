@@ -87,6 +87,7 @@ sealed trait AuthModule extends Product with Serializable
 object AuthModule {
 
   case object Hmrc extends AuthModule
+  case object Email extends AuthModule
   case object HmrcAny extends AuthModule
   case object HmrcVerified extends AuthModule
   case object AnonymousAccess extends AuthModule
@@ -94,6 +95,7 @@ object AuthModule {
   case object OfstedModule extends AuthModule
 
   private val hmrc = "hmrc"
+  private val email = "email"
   private val hmrcAny = "hmrcAny"
   private val hmrcVerified = "hmrcVerified"
   private val anonymous = "anonymous"
@@ -102,6 +104,7 @@ object AuthModule {
 
   implicit val format: Format[AuthModule] = ADTFormat.formatEnumeration(
     hmrc         -> Hmrc,
+    email        -> Email,
     hmrcAny      -> HmrcAny,
     hmrcVerified -> HmrcVerified,
     anonymous    -> AnonymousAccess,
@@ -111,6 +114,7 @@ object AuthModule {
 
   def asString(o: AuthModule): String = o match {
     case Hmrc            => hmrc
+    case Email           => email
     case HmrcAny         => hmrcAny
     case HmrcVerified    => hmrcVerified
     case AnonymousAccess => anonymous
@@ -122,6 +126,7 @@ object AuthModule {
 sealed trait AuthConfig extends Product with Serializable
 case object Anonymous extends AuthConfig
 case object AWSALBAuth extends AuthConfig
+case class EmailAuthConfig(emailCodeTemplate: EmailCodeTemplate) extends AuthConfig
 case object HmrcAny extends AuthConfig
 case class HmrcVerified(ivFailure: LocalisedString, notAllowedIn: LocalisedString) extends AuthConfig
 case object HmrcSimpleModule extends AuthConfig
@@ -196,6 +201,7 @@ object AuthConfig {
         maybeEnrolmentCheck            <- (json \ "enrolmentCheck").validateOpt[EnrolmentCheckVerb]
         maybeIvFailure                 <- (json \ "ivFailure").validateOpt[LocalisedString]
         maybeNotAllowedIn              <- (json \ "notAllowedIn").validateOpt[LocalisedString]
+        maybeEmailCodeTemplate         <- (json \ "emailCodeTemplate").validateOpt[EmailCodeTemplate]
         authConfig <- authModule match {
                         case AuthModule.AnonymousAccess => JsSuccess(Anonymous)
                         case AuthModule.AWSALBAccess    => JsSuccess(AWSALBAuth)
@@ -231,10 +237,14 @@ object AuthConfig {
                               )
 
                           }
+                        case AuthModule.Email =>
+                          maybeEmailCodeTemplate match {
+                            case Some(emailCodeTemplate) => JsSuccess(EmailAuthConfig(emailCodeTemplate))
+                            case None                    => JsError("Missing 'emailCodeTemplate' field for email auth")
+                          }
                         case AuthModule.OfstedModule => JsSuccess(OfstedUser)
                       }
       } yield authConfig
-
     }
 
     val writes: OWrites[AuthConfig] = derived.owrites()
@@ -265,6 +275,11 @@ object LegacyFcEnrolmentVerifier {
 case class RegimeId(value: String) extends AnyVal
 object RegimeId {
   implicit val format: Format[RegimeId] = ValueClassFormat.oformat("regimeId", RegimeId.apply, _.value)
+}
+
+case class EmailCodeTemplate(value: String) extends AnyVal
+object EmailCodeTemplate {
+  implicit val format: Format[EmailCodeTemplate] = ValueClassFormat.simpleFormat(EmailCodeTemplate.apply)(_.value)
 }
 
 sealed trait AgentAccess
