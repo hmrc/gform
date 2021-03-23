@@ -287,7 +287,7 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
 
     res shouldBe Right(
       DateBefore(
-        DateExprWithOffset(DateValueExpr(TodayDateExprValue), 1, OffsetUnitDay),
+        DateExprWithOffset(DateValueExpr(TodayDateExprValue), OffsetYMD(OffsetUnit.Day(1))),
         DateFormCtxVar(FormCtx("startDate"))
       )
     )
@@ -298,7 +298,7 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
 
     res shouldBe Right(
       DateBefore(
-        DateExprWithOffset(DateFormCtxVar(FormCtx("startDate")), 1, OffsetUnitDay),
+        DateExprWithOffset(DateFormCtxVar(FormCtx("startDate")), OffsetYMD(OffsetUnit.Day(1))),
         DateFormCtxVar(FormCtx("endDate"))
       )
     )
@@ -323,7 +323,7 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
     res shouldBe Right(
       And(
         DateAfter(
-          DateExprWithOffset(DateFormCtxVar(FormCtx("startDate")), -1, OffsetUnitDay),
+          DateExprWithOffset(DateFormCtxVar(FormCtx("startDate")), OffsetYMD(OffsetUnit.Day(-1))),
           DateFormCtxVar(FormCtx("endDate"))
         ),
         Equals(FormCtx("field1"), FormCtx("field2"))

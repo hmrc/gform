@@ -31,7 +31,8 @@ class DateExprSpec extends FlatSpecLike with Matchers {
   }
 
   it should "return all leaf values for DateExprWithOffset" in {
-    val leafs = DateExprWithOffset(DateFormCtxVar(FormCtx(FormComponentId("someId"))), 1, OffsetUnitDay).leafExprs
+    val leafs =
+      DateExprWithOffset(DateFormCtxVar(FormCtx(FormComponentId("someId"))), OffsetYMD(OffsetUnit.Day(1))).leafExprs
     leafs shouldBe List(FormCtx(FormComponentId("someId")))
   }
 }
