@@ -23,10 +23,11 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.SmartStringGen.smar
 trait SummarySectionGen {
   def summarySectionGen: Gen[SummarySection] =
     for {
-      title  <- smartStringGen
-      header <- smartStringGen
-      footer <- smartStringGen
-    } yield SummarySection(title, header, footer)
+      title         <- smartStringGen
+      header        <- smartStringGen
+      footer        <- smartStringGen
+      continueLabel <- Gen.option(smartStringGen)
+    } yield SummarySection(title, header, footer, continueLabel)
 }
 
 object SummarySectionGen extends SummarySectionGen
