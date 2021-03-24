@@ -54,7 +54,7 @@ object ValueClassFormat {
       Writes[A](a => write(a))
     )
 
-  def simpleFormat[A: Format](fromStringToA: String => A)(fromAToString: A => String) =
+  def simpleFormat[A](fromStringToA: String => A)(fromAToString: A => String) =
     Format[A](
       Reads[A] {
         case JsString(str) => JsSuccess(fromStringToA(str))
