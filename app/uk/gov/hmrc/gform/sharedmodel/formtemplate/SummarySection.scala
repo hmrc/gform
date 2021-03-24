@@ -22,7 +22,8 @@ import uk.gov.hmrc.gform.sharedmodel.{ LangADT, SmartString }
 case class SummarySection(
   title: SmartString,
   header: SmartString,
-  footer: SmartString
+  footer: SmartString,
+  continueLabel: Option[SmartString]
 )
 
 object SummarySection {

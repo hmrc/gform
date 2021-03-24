@@ -411,7 +411,13 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
           )
         ),
         ackSection,
-        DeclarationSection(toSmartString("Declaration"), None, None, Nil)
+        DeclarationSection(
+          toSmartString("Declaration"),
+          None,
+          None,
+          Some(toSmartString("ContinueLabel")),
+          Nil
+        )
       ),
     HmrcAgentWithEnrolmentModule(
       RequireMTDAgentEnrolment,
@@ -429,7 +435,12 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     Nil,
     AvailableLanguages.default,
     None,
-    SummarySection(toSmartString("Title"), toSmartString("Header"), toSmartString("Footer")),
+    SummarySection(
+      toSmartString("Title"),
+      toSmartString("Header"),
+      toSmartString("Footer"),
+      Some(toSmartString("ContinueLabel"))
+    ),
     true
   )
 

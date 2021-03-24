@@ -71,11 +71,12 @@ trait SectionGen {
 
   def declarationSectionGen: Gen[DeclarationSection] =
     for {
-      title       <- smartStringGen
-      description <- Gen.option(smartStringGen)
-      shortName   <- Gen.option(smartStringGen)
-      fields      <- PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen())
-    } yield DeclarationSection(title, description, shortName, fields.toList)
+      title         <- smartStringGen
+      description   <- Gen.option(smartStringGen)
+      shortName     <- Gen.option(smartStringGen)
+      continueLabel <- Gen.option(smartStringGen)
+      fields        <- PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen())
+    } yield DeclarationSection(title, description, shortName, continueLabel, fields.toList)
 
   def pageGen: Gen[Page] =
     for {

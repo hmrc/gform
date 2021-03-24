@@ -98,7 +98,13 @@ trait ExampleAuthConfig extends DestinationGen {
   val decFormComponent = List(buildFormComponent("fieldInDeclarationSections", Value))
 
   val decSection =
-    DeclarationSection(toSmartString("declaration section with email param field"), None, None, decFormComponent)
+    DeclarationSection(
+      toSmartString("declaration section with email param field"),
+      None,
+      None,
+      Some(toSmartString("Declaration section with continueLabel")),
+      decFormComponent
+    )
 
   def destinationList = DestinationList(NonEmptyList.of(hmrcDms), ackSection, decSection)
 
@@ -410,10 +416,16 @@ trait ExampleFormTemplate {
       toSmartString("Declaration"),
       None,
       None,
+      Some(toSmartString("ContinueLabel")),
       Nil
     )
 
-  def summarySection = SummarySection(toSmartString("Title"), toSmartString("Header"), toSmartString("Footer"))
+  def summarySection = SummarySection(
+    toSmartString("Title"),
+    toSmartString("Header"),
+    toSmartString("Footer"),
+    Some(toSmartString("ContinueLabel"))
+  )
 
   def formTemplate = FormTemplate(
     formTemplateId,

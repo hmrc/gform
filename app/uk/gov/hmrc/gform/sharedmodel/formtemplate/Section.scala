@@ -62,6 +62,7 @@ case class DeclarationSection(
   title: SmartString,
   description: Option[SmartString],
   shortName: Option[SmartString],
+  continueLabel: Option[SmartString],
   fields: List[FormComponent]
 )
 
