@@ -282,6 +282,7 @@ object ValueParser {
       | "payenino" ^^ const(PayeNino)
       | "sautr" ^^ const(SaUtr)
       | "ctutr" ^^ const(CtUtr)
+      | "email" ^^ const(EmailId)
   )
   lazy val rosmProp: Parser[RosmProp] = (
     "safeId" ^^ const(RosmSafeId)
