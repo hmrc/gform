@@ -532,14 +532,16 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
   "Parser - contextField" should "parse form field with date offset as DateCtx (form.)" in {
     val result = ValueParser.contextField(LineStream[Eval]("form.dateField + 1d")).value.toOption
     result shouldBe Some(
-      Single(DateCtx(DateExprWithOffset(DateFormCtxVar(FormCtx(FormComponentId("dateField"))), 1, OffsetUnitDay)))
+      Single(
+        DateCtx(DateExprWithOffset(DateFormCtxVar(FormCtx(FormComponentId("dateField"))), OffsetYMD(OffsetUnit.Day(1))))
+      )
     )
   }
 
   it should "parse form field with date offset as DateCtx" in {
     val result = ValueParser.contextField(LineStream[Eval]("dateField + 1d")).value.toOption.flatMap(uncons)
     result shouldBe Some(
-      DateCtx(DateExprWithOffset(DateFormCtxVar(FormCtx(FormComponentId("dateField"))), 1, OffsetUnitDay))
+      DateCtx(DateExprWithOffset(DateFormCtxVar(FormCtx(FormComponentId("dateField"))), OffsetYMD(OffsetUnit.Day(1))))
     )
   }
 
@@ -550,7 +552,19 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
 
   it should "parse TODAY with offset as DateCtx" in {
     val result = ValueParser.contextField(LineStream[Eval]("TODAY + 1m")).value.toOption.flatMap(uncons)
-    result shouldBe Some(DateCtx(DateExprWithOffset(DateValueExpr(TodayDateExprValue), 1, OffsetUnitMonth)))
+    result shouldBe Some(DateCtx(DateExprWithOffset(DateValueExpr(TodayDateExprValue), OffsetYMD(OffsetUnit.Month(1)))))
+  }
+
+  it should "parse TODAY with offset as DateCtx y m d" in {
+    val result = ValueParser.contextField(LineStream[Eval]("TODAY + 2y + 3m + 4d")).value.toOption.flatMap(uncons)
+    result shouldBe Some(
+      DateCtx(
+        DateExprWithOffset(
+          DateValueExpr(TodayDateExprValue),
+          OffsetYMD(OffsetUnit.Year(2), OffsetUnit.Month(3), OffsetUnit.Day(4))
+        )
+      )
+    )
   }
 
   it should "parse fixed date string as DateCtx" in {
@@ -564,4 +578,76 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
         Some(expr)
       case None => None
     }
+
+  it should "support year/month/day offset for dates" in {
+    val today = DateValueExpr(TodayDateExprValue)
+    val fieldReference = DateFormCtxVar(FormCtx("dateField"))
+    val table = Table(
+      ("expression", "dateExpr", "offset"),
+      ("TODAY + 2y + 3m + 4d", today, OffsetYMD(OffsetUnit.Year(2), OffsetUnit.Month(3), OffsetUnit.Day(4))),
+      ("TODAY + 2y + 3d + 4m", today, OffsetYMD(OffsetUnit.Year(2), OffsetUnit.Day(3), OffsetUnit.Month(4))),
+      ("TODAY + 2d + 3m + 4y", today, OffsetYMD(OffsetUnit.Day(2), OffsetUnit.Month(3), OffsetUnit.Year(4))),
+      ("TODAY + 2d + 3y + 4m", today, OffsetYMD(OffsetUnit.Day(2), OffsetUnit.Year(3), OffsetUnit.Month(4))),
+      ("TODAY + 2m + 3d + 4y", today, OffsetYMD(OffsetUnit.Month(2), OffsetUnit.Day(3), OffsetUnit.Year(4))),
+      ("TODAY + 2m + 3y + 4d", today, OffsetYMD(OffsetUnit.Month(2), OffsetUnit.Year(3), OffsetUnit.Day(4))),
+      ("TODAY + 2y + 3m", today, OffsetYMD(OffsetUnit.Year(2), OffsetUnit.Month(3))),
+      ("TODAY + 2m + 3y", today, OffsetYMD(OffsetUnit.Month(2), OffsetUnit.Year(3))),
+      ("TODAY + 2y + 4d", today, OffsetYMD(OffsetUnit.Year(2), OffsetUnit.Day(4))),
+      ("TODAY + 2d + 4y", today, OffsetYMD(OffsetUnit.Day(2), OffsetUnit.Year(4))),
+      ("TODAY + 3m + 4d", today, OffsetYMD(OffsetUnit.Month(3), OffsetUnit.Day(4))),
+      ("TODAY + 3d + 4m", today, OffsetYMD(OffsetUnit.Day(3), OffsetUnit.Month(4))),
+      ("TODAY + 2y", today, OffsetYMD(OffsetUnit.Year(2))),
+      ("TODAY + 2m", today, OffsetYMD(OffsetUnit.Month(2))),
+      ("TODAY + 2d", today, OffsetYMD(OffsetUnit.Day(2))),
+      ("TODAY - 2y - 3m - 4d", today, OffsetYMD(OffsetUnit.Year(-2), OffsetUnit.Month(-3), OffsetUnit.Day(-4))),
+      ("TODAY - 2y - 3m", today, OffsetYMD(OffsetUnit.Year(-2), OffsetUnit.Month(-3))),
+      ("TODAY - 2y - 4d", today, OffsetYMD(OffsetUnit.Year(-2), OffsetUnit.Day(-4))),
+      ("TODAY - 3m - 4d", today, OffsetYMD(OffsetUnit.Month(-3), OffsetUnit.Day(-4))),
+      ("TODAY - 2y", today, OffsetYMD(OffsetUnit.Year(-2))),
+      ("TODAY - 2m", today, OffsetYMD(OffsetUnit.Month(-2))),
+      ("TODAY - 2d", today, OffsetYMD(OffsetUnit.Day(-2))),
+      (
+        "dateField + 2y + 3m + 4d",
+        fieldReference,
+        OffsetYMD(OffsetUnit.Year(2), OffsetUnit.Month(3), OffsetUnit.Day(4))
+      ),
+      ("dateField + 2y + 3m", fieldReference, OffsetYMD(OffsetUnit.Year(2), OffsetUnit.Month(3))),
+      ("dateField + 2y + 4d", fieldReference, OffsetYMD(OffsetUnit.Year(2), OffsetUnit.Day(4))),
+      ("dateField + 3m + 4d", fieldReference, OffsetYMD(OffsetUnit.Month(3), OffsetUnit.Day(4))),
+      ("dateField + 2y", fieldReference, OffsetYMD(OffsetUnit.Year(2))),
+      ("dateField + 2m", fieldReference, OffsetYMD(OffsetUnit.Month(2))),
+      ("dateField + 2d", fieldReference, OffsetYMD(OffsetUnit.Day(2))),
+      (
+        "dateField - 2y - 3m - 4d",
+        fieldReference,
+        OffsetYMD(OffsetUnit.Year(-2), OffsetUnit.Month(-3), OffsetUnit.Day(-4))
+      ),
+      ("dateField - 2y - 3m", fieldReference, OffsetYMD(OffsetUnit.Year(-2), OffsetUnit.Month(-3))),
+      ("dateField - 2y - 4d", fieldReference, OffsetYMD(OffsetUnit.Year(-2), OffsetUnit.Day(-4))),
+      ("dateField - 3m - 4d", fieldReference, OffsetYMD(OffsetUnit.Month(-3), OffsetUnit.Day(-4))),
+      ("dateField - 2y", fieldReference, OffsetYMD(OffsetUnit.Year(-2))),
+      ("dateField - 2m", fieldReference, OffsetYMD(OffsetUnit.Month(-2))),
+      ("dateField - 2d", fieldReference, OffsetYMD(OffsetUnit.Day(-2)))
+    )
+
+    def expected(dateExpr: DateExpr, offset: OffsetYMD) = TextExpression(DateCtx(DateExprWithOffset(dateExpr, offset)))
+
+    forAll(table) { (expression, dateExpr, offset) ⇒
+      ValueParser.validate("${" + expression + "}") shouldBe Right(expected(dateExpr, offset))
+    }
+  }
+
+  it should "not support repeated year/month/day offset" in {
+    val table = Table(
+      "expression",
+      "TODAY + 2y + 3m + 4m",
+      "TODAY + 2y + 3y",
+      "TODAY + 2m + 3m",
+      "TODAY + 2d + 3d"
+    )
+
+    forAll(table) { expression ⇒
+      ValueParser.validate("${" + expression + "}").isLeft shouldBe true
+    }
+  }
 }

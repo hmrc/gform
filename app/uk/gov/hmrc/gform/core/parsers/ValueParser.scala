@@ -67,35 +67,57 @@ object ValueParser {
     dateExpr
   } | dateExprExactParser
 
-  lazy val dateExprOffsetUnit: Parser[OffsetUnit] = "[dmy]".r ^^ { (_, symbol) =>
-    symbol match {
-      case "d" => OffsetUnitDay
-      case "m" => OffsetUnitMonth
-      case "y" => OffsetUnitYear
+  lazy val signedInt: Parser[Int] = plusOrMinus ~ positiveInteger ^^ { (_, plusOrMinus, i) =>
+    i * (plusOrMinus match {
+      case "+" => 1
+      case "-" => -1
+    })
+  }
+
+  lazy val signedYear: Parser[OffsetUnit] = signedInt ~ "y" ^^ { (_, year, _) =>
+    OffsetUnit.Year(year)
+  }
+
+  lazy val signedMonth: Parser[OffsetUnit] = signedInt ~ "m" ^^ { (_, month, _) =>
+    OffsetUnit.Month(month)
+  }
+
+  lazy val signedDay: Parser[OffsetUnit] = signedInt ~ "d" ^^ { (_, day, _) =>
+    OffsetUnit.Day(day)
+  }
+
+  private val offsets = List(signedYear, signedMonth, signedDay)
+
+  private val perms1: List[Parser[OffsetYMD]] = offsets.map { ap =>
+    ap ^^ { (_, a) => OffsetYMD(a) }
+  }
+
+  private val perms2: Iterator[Parser[OffsetYMD]] =
+    offsets.combinations(2).flatMap(_.permutations).map { case List(ap, bp) =>
+      ap ~ bp ^^ { (_, a, b) =>
+        OffsetYMD(a, b)
+      }
+    }
+
+  private val perms3: Iterator[Parser[OffsetYMD]] = offsets.permutations.map { case List(ap, bp, cp) =>
+    ap ~ bp ~ cp ^^ { (_, a, b, c) =>
+      OffsetYMD(a, b, c)
     }
   }
 
-  lazy val dateExprOffset: Parser[(Int, OffsetUnit)] = plusOrMinus ~ positiveInteger ~ dateExprOffsetUnit ^^ {
-    (_, plusOrMinus, offset, offsetUnit) =>
-      (
-        offset * (plusOrMinus match {
-          case "+" => 1
-          case "-" => -1
-        }),
-        offsetUnit
-      )
-  }
+  private val allYMDVariations = perms1 ++ perms2 ++ perms3
+
+  lazy val offsetYMD: Parser[OffsetYMD] = allYMDVariations.reduce(_ | _)
 
   lazy val dateExprTODAY: Parser[DateExpr] = "TODAY" ^^^ DateValueExpr(TodayDateExprValue)
 
-  lazy val dateExprTODAYOffset: Parser[DateExpr] = dateExprTODAY ~ dateExprOffset ^^ {
-    (_, dateExprToday, offset, offsetUnit) =>
-      DateExprWithOffset(dateExprToday, offset, offsetUnit)
+  lazy val dateExprTODAYOffset: Parser[DateExpr] = dateExprTODAY ~ offsetYMD ^^ { (_, dateExprToday, offsetYMD) =>
+    DateExprWithOffset(dateExprToday, offsetYMD)
   } | dateExprTODAY
 
-  lazy val formCtxFieldDateWithOffset: Parser[DateExprWithOffset] = formCtxFieldDate ~ dateExprOffset ^^ {
-    (_, dateExprCtx, offset, offsetUnit) =>
-      DateExprWithOffset(dateExprCtx, offset, offsetUnit)
+  lazy val formCtxFieldDateWithOffset: Parser[DateExprWithOffset] = formCtxFieldDate ~ offsetYMD ^^ {
+    (_, dateExprCtx, offsetYMD) =>
+      DateExprWithOffset(dateExprCtx, offsetYMD)
   }
 
   lazy val dateExpr: Parser[DateExpr] =

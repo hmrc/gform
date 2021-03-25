@@ -21,19 +21,28 @@ import play.api.libs.json.OFormat
 
 sealed trait DateExpr {
   def leafExprs: List[Expr] = this match {
-    case DateValueExpr(_)                => DateCtx(this) :: Nil
-    case DateFormCtxVar(formCtx)         => formCtx :: Nil
-    case DateExprWithOffset(dExpr, _, _) => dExpr.leafExprs
+    case DateValueExpr(_)             => DateCtx(this) :: Nil
+    case DateFormCtxVar(formCtx)      => formCtx :: Nil
+    case DateExprWithOffset(dExpr, _) => dExpr.leafExprs
   }
 }
 
 sealed trait OffsetUnit
-case object OffsetUnitDay extends OffsetUnit
-case object OffsetUnitYear extends OffsetUnit
-case object OffsetUnitMonth extends OffsetUnit
-
 object OffsetUnit {
+  case class Day(n: Int) extends OffsetUnit
+  case class Year(n: Int) extends OffsetUnit
+  case class Month(n: Int) extends OffsetUnit
+
   implicit val format: OFormat[OffsetUnit] = derived.oformat()
+}
+
+case class OffsetYMD(offsets: List[OffsetUnit]) // Order matters, since OffsetUnit is not commutative
+
+object OffsetYMD {
+  def apply(offsets: OffsetUnit*): OffsetYMD =
+    OffsetYMD(offsets.toList)
+
+  implicit val format: OFormat[OffsetYMD] = derived.oformat()
 }
 
 sealed trait DateExprValue
@@ -46,14 +55,14 @@ object DateExprValue {
 
 case class DateValueExpr(value: DateExprValue) extends DateExpr
 case class DateFormCtxVar(formCtx: FormCtx) extends DateExpr
-case class DateExprWithOffset(dExpr: DateExpr, offset: Int, offsetUnit: OffsetUnit) extends DateExpr
+case class DateExprWithOffset(dExpr: DateExpr, offset: OffsetYMD) extends DateExpr
 
 object DateExpr {
   implicit val format: OFormat[DateExpr] = derived.oformat()
 
   def allFormCtxExprs(dateExpr: DateExpr): List[FormCtx] = dateExpr match {
-    case DateValueExpr(_)                => Nil
-    case DateFormCtxVar(formCtx)         => formCtx :: Nil
-    case DateExprWithOffset(dExpr, _, _) => allFormCtxExprs(dExpr)
+    case DateValueExpr(_)             => Nil
+    case DateFormCtxVar(formCtx)      => formCtx :: Nil
+    case DateExprWithOffset(dExpr, _) => allFormCtxExprs(dExpr)
   }
 }
