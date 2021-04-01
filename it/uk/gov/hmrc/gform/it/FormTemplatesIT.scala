@@ -138,7 +138,7 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
       LocalisedString(
         Map(
           LangADT.En -> "##Now send your form\n\nYou need to submit your form on the next screen.\n\nBefore you do this you can [print or save a PDF copy of your answers (opens in a new window or tab)]({0}).",
-          LangADT.Cy -> "##Nawr anfonwch eich ffurflen\n\nMae angen i chi gyflwyno’ch ffurflen ar y sgrin nesaf.\n\nCyn i chi wneud hyn gallwch, [argraffu neu gadw copi PDF o’ch atebion (yn agor ffenestr neu dab newydd)]({1})."
+          LangADT.Cy -> "##Nawr anfonwch eich ffurflen\n\nMae angen i chi gyflwyno’ch ffurflen ar y sgrin nesaf.\n\nCyn i chi wneud hyn gallwch [argraffu neu gadw copi PDF o’ch atebion (yn agor ffenestr neu dab newydd)]({1})."
         )
       ),
       List(LinkCtx(link = PrintSummaryPdf), LinkCtx(link = PrintSummaryPdf))

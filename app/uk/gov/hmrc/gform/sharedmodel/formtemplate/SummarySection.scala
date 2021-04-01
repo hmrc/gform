@@ -44,7 +44,7 @@ object SummarySection {
       ),
       "footer" -> Json.obj(
         "en" -> s"##Now send your $categoryEn\n\nYou need to submit your $categoryEn on the next screen.\n\nBefore you do this you can [print or save a PDF copy of your answers (opens in a new window or tab)]($${link.printSummaryPdf}).",
-        "cy" -> s"##Nawr anfonwch eich $categoryCy\n\nMae angen i chi gyflwyno’ch $categoryCy ar y sgrin nesaf.\n\nCyn i chi wneud hyn gallwch, [argraffu neu gadw copi PDF o’ch atebion (yn agor ffenestr neu dab newydd)]($${link.printSummaryPdf})."
+        "cy" -> s"##Nawr anfonwch eich $categoryCy\n\nMae angen i chi gyflwyno’ch $categoryCy ar y sgrin nesaf.\n\nCyn i chi wneud hyn gallwch [argraffu neu gadw copi PDF o’ch atebion (yn agor ffenestr neu dab newydd)]($${link.printSummaryPdf})."
       )
     )
   }
