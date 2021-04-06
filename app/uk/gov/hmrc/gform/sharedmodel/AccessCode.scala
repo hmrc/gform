@@ -32,8 +32,8 @@ object AccessCode {
 
   def random(implicit rnd: Rnd[Int]): AccessCode = {
     def alphanumeric() = {
-      val chars = ('A' to 'Z') ++ ('0' to '9').toList
-      def nextAlphaNum: Char = chars.charAt(rnd.random(chars.length))
+      val chars = ('A' to 'Z') ++ ('0' to '9')
+      def nextAlphaNum: Char = chars(rnd.random(chars.length))
       Stream continually nextAlphaNum
     }
 

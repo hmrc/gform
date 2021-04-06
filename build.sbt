@@ -18,11 +18,11 @@ lazy val scoverageSettings = {
     ScoverageKeys.coverageMinimum := 80.00,
     ScoverageKeys.coverageFailOnMinimum := false,
     ScoverageKeys.coverageHighlighting := true,
-    parallelExecution in Test := false
+    Test / parallelExecution := false
   )
 }
 
-val silencerVersion = "1.7.0"
+val silencerVersion = "1.7.3"
 
 lazy val IntegrationTest = config("it") extend Test
 
@@ -37,9 +37,8 @@ lazy val microservice = (project in file("."))
     publishingSettings,
     defaultSettings(),
     scalafmtOnCompile := true,
-    scalaVersion := "2.12.11",
-    testFrameworks += new TestFramework("munit.Framework"),
-    testOptions in Test := (testOptions in Test).value
+    scalaVersion := "2.12.13",
+    Test / testOptions := (Test / testOptions).value
       .map {
         // Default Argument added by https://github.com/hmrc/sbt-settings
         // are clashing with munit arguments, so we scope them to ScalaTest instead.
@@ -88,9 +87,9 @@ lazy val microservice = (project in file("."))
   .settings(
     inConfig(IntegrationTest)(Defaults.itSettings),
     inConfig(IntegrationTest)(ScalafmtPlugin.scalafmtConfigSettings),
-    Keys.fork in IntegrationTest := false,
-    unmanagedSourceDirectories in IntegrationTest := (baseDirectory in IntegrationTest)(base => Seq(base / "it")).value,
+    IntegrationTest / Keys.fork := false,
+    IntegrationTest / unmanagedSourceDirectories := (IntegrationTest / baseDirectory)(base => Seq(base / "it")).value,
     addTestReportOption(IntegrationTest, "int-test-reports"),
-    parallelExecution in IntegrationTest := false,
+    IntegrationTest / parallelExecution := false,
     scalafmtOnCompile := true
   )
