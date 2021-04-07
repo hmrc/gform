@@ -33,7 +33,7 @@ class RewriterSpec extends FunSuite with FormTemplateSupport {
 
     val choice = Choice(YesNo, yesNoLocalisedStrings, Horizontal, Nil, None, None)
 
-    val fcChoice = mkFormComponent("a", choice)
+    val fcChoice = mkFormComponent("a", choice, false)
     val fcText = mkFormComponent("b", Value)
 
     val fcTextWithIncludeIf =

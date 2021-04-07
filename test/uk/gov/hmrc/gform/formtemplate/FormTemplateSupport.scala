@@ -69,7 +69,7 @@ trait FormTemplateSupport {
       None
     )
 
-  def mkFormComponent(id: String, ct: ComponentType) =
+  def mkFormComponent(id: String, ct: ComponentType, editable: Boolean) =
     FormComponent(
       FormComponentId(id),
       ct,
@@ -79,7 +79,7 @@ trait FormTemplateSupport {
       None,
       None,
       true,
-      false,
+      editable,
       true,
       false,
       false,
