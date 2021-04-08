@@ -18,8 +18,9 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import cats.data.NonEmptyList
 import play.api.libs.json.{ Format, Json }
+import uk.gov.hmrc.gform.sharedmodel.LocalisedString
 
-case class ReferrerConfig(allowedReferrerUrls: NonEmptyList[ReferrerUrlPattern], exitMessage: String)
+case class ReferrerConfig(allowedReferrerUrls: NonEmptyList[ReferrerUrlPattern], exitMessage: LocalisedString)
 
 object ReferrerConfig {
   import JsonUtils._
