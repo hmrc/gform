@@ -220,6 +220,7 @@ class FormComponentMaker(json: JsValue) {
 
   private lazy val componentTypeOpt: Opt[ComponentType] = `type` match {
     case Some(TextRaw) | None     => textOpt
+    case Some(CalendarDateRaw)    => calendarDateOpt
     case Some(DateRaw)            => dateOpt
     case Some(AddressRaw)         => addressOpt
     case Some(GroupRaw)           => groupOpt
@@ -262,6 +263,8 @@ class FormComponentMaker(json: JsValue) {
                           |Id: $id
                           |Total: $invalidInternational""".stripMargin).asLeft
   }
+
+  private lazy val calendarDateOpt: Opt[CalendarDate.type] = Right(CalendarDate)
 
   private lazy val dateOpt: Opt[Date] = {
 

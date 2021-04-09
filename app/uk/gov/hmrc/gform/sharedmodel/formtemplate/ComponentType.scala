@@ -89,6 +89,8 @@ object Date {
     NonEmptyList.of("day", "month", "year").map(id.withSuffix)
 }
 
+case object CalendarDate extends ComponentType
+
 case class Address(international: Boolean) extends ComponentType {
   def fields(id: FormComponentId): NonEmptyList[FormComponentId] = Address.fields(id)
 

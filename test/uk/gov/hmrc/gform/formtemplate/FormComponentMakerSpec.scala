@@ -21,9 +21,9 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.gform.Helpers.toSmartString
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormatExpr, RoundingMode, Text, TextArea, TextFormat, TextWithRestrictions, Value }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ CalendarDate, FormatExpr, RoundingMode, Text, TextArea, TextFormat, TextWithRestrictions, Value }
 
-class FormComponentMakerSpec extends FlatSpecLike with Matchers {
+class FormComponentMakerSpec extends FlatSpecLike with Matchers with FormTemplateSupport {
 
   "optMaybeFormatExpr" should "parse and validate format expression" in {
     val formComponentMaker = new FormComponentMaker(Json.parse("""
@@ -296,6 +296,17 @@ class FormComponentMakerSpec extends FlatSpecLike with Matchers {
                                             |Format: Some(OrientationFormat(invalid))
                                             |Value: None
                                             |""".stripMargin))
+  }
+
+  it should "parse calendarDate component" in {
+    val formComponentMaker = new FormComponentMaker(Json.parse("""
+                                                                 |{
+                                                                 |   "id": "calendarDate1",
+                                                                 |   "type": "calendarDate",
+                                                                 |   "label": "calendarDate1"
+                                                                 |}
+                                                                 |""".stripMargin))
+    formComponentMaker.optFieldValue() shouldBe Right(mkFormComponent("calendarDate1", CalendarDate, true))
   }
 
 }
