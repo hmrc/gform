@@ -18,10 +18,13 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import cats.data.NonEmptyList
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
-import play.api.libs.json.{ JsResult, JsSuccess, Json, Reads }
+import play.api.libs.json.{ JsError, JsResult, JsSuccess, Json, JsonValidationError, Reads }
 import uk.gov.hmrc.gform.Helpers._
 import uk.gov.hmrc.gform.Spec
+import uk.gov.hmrc.gform.sharedmodel.EmailVerifierService.{ DigitalContact, Notify }
+import uk.gov.hmrc.gform.sharedmodel.email.EmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.AuthConfigGen
+import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierTemplateId
 
 class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
   "Default Read and Write" should "round trip derived JSON" in {
@@ -165,6 +168,60 @@ class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
           )
         )
       )
+    )
+  }
+
+  it should "parse email auth with no 'emailService'" in {
+    val authConfigValue = toAuthConfig(s"""|{
+                                           |  "authModule": "email",
+                                           |  "emailCodeTemplate": "someTemplate"
+                                           |}""".stripMargin)
+    authConfigValue shouldBe JsSuccess(
+      EmailAuthConfig(DigitalContact(EmailTemplateId("someTemplate")))
+    )
+  }
+
+  it should "parse email auth with 'emailService' (dc)" in {
+    val authConfigValue = toAuthConfig(s"""|{
+                                           |  "authModule": "email",
+                                           |  "emailCodeTemplate": "someTemplate",
+                                           |  "emailService": "dc"
+                                           |}""".stripMargin)
+    authConfigValue shouldBe JsSuccess(
+      EmailAuthConfig(DigitalContact(EmailTemplateId("someTemplate")))
+    )
+  }
+
+  it should "parse email auth with 'emailService' (notify)" in {
+    val authConfigValue = toAuthConfig(s"""|{
+                                           |  "authModule": "email",
+                                           |  "emailCodeTemplate": "someTemplate",
+                                           |  "emailService": "notify"
+                                           |}""".stripMargin)
+    authConfigValue shouldBe JsSuccess(
+      EmailAuthConfig(Notify(NotifierTemplateId("someTemplate")))
+    )
+  }
+
+  it should "return error for email auth with invalid 'emailService'" in {
+    val authConfigValue = toAuthConfig(s"""|{
+                                           |  "authModule": "email",
+                                           |  "emailCodeTemplate": "someTemplate",
+                                           |  "emailService": "invalid"
+                                           |}""".stripMargin)
+    authConfigValue.isError shouldBe true
+    authConfigValue.asInstanceOf[JsError].errors.flatMap(_._2) should contain(
+      JsonValidationError("Invalid 'emailService' value for email auth invalid")
+    )
+  }
+
+  it should "return error for email auth when 'emailCodeTemplate' missing" in {
+    val authConfigValue = toAuthConfig(s"""|{
+                                           |  "authModule": "email"
+                                           |}""".stripMargin)
+    authConfigValue.isError shouldBe true
+    authConfigValue.asInstanceOf[JsError].errors.flatMap(_._2) should contain(
+      JsonValidationError("Missing 'emailCodeTemplate' field for email auth")
     )
   }
 
