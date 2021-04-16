@@ -19,7 +19,9 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import julienrf.json.derived
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
-import uk.gov.hmrc.gform.sharedmodel.{ LocalisedString, ValueClassFormat }
+import uk.gov.hmrc.gform.sharedmodel.email.EmailTemplateId
+import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierTemplateId
+import uk.gov.hmrc.gform.sharedmodel.{ EmailVerifierService, LocalisedString, ValueClassFormat }
 
 case class EnrolmentAuth(
   serviceId: ServiceId,
@@ -126,7 +128,7 @@ object AuthModule {
 sealed trait AuthConfig extends Product with Serializable
 case object Anonymous extends AuthConfig
 case object AWSALBAuth extends AuthConfig
-case class EmailAuthConfig(emailCodeTemplate: EmailCodeTemplate) extends AuthConfig
+case class EmailAuthConfig(service: EmailVerifierService) extends AuthConfig
 case object HmrcAny extends AuthConfig
 case class HmrcVerified(ivFailure: LocalisedString, notAllowedIn: LocalisedString) extends AuthConfig
 case object HmrcSimpleModule extends AuthConfig
@@ -201,7 +203,8 @@ object AuthConfig {
         maybeEnrolmentCheck            <- (json \ "enrolmentCheck").validateOpt[EnrolmentCheckVerb]
         maybeIvFailure                 <- (json \ "ivFailure").validateOpt[LocalisedString]
         maybeNotAllowedIn              <- (json \ "notAllowedIn").validateOpt[LocalisedString]
-        maybeEmailCodeTemplate         <- (json \ "emailCodeTemplate").validateOpt[EmailCodeTemplate]
+        maybeEmailCodeTemplate         <- (json \ "emailCodeTemplate").validateOpt[String]
+        maybeEmailService              <- (json \ "emailService").validateOpt[String]
         authConfig <- authModule match {
                         case AuthModule.AnonymousAccess => JsSuccess(Anonymous)
                         case AuthModule.AWSALBAccess    => JsSuccess(AWSALBAuth)
@@ -239,8 +242,19 @@ object AuthConfig {
                           }
                         case AuthModule.Email =>
                           maybeEmailCodeTemplate match {
-                            case Some(emailCodeTemplate) => JsSuccess(EmailAuthConfig(emailCodeTemplate))
-                            case None                    => JsError("Missing 'emailCodeTemplate' field for email auth")
+                            case Some(templateId) =>
+                              maybeEmailService match {
+                                case Some("dc") | None =>
+                                  JsSuccess(
+                                    EmailAuthConfig(EmailVerifierService.digitalContact(EmailTemplateId(templateId)))
+                                  )
+                                case Some("notify") =>
+                                  JsSuccess(
+                                    EmailAuthConfig(EmailVerifierService.notify(NotifierTemplateId(templateId)))
+                                  )
+                                case Some(other) => JsError(s"Invalid 'emailService' value for email auth $other")
+                              }
+                            case None => JsError("Missing 'emailCodeTemplate' field for email auth")
                           }
                         case AuthModule.OfstedModule => JsSuccess(OfstedUser)
                       }
@@ -275,11 +289,6 @@ object LegacyFcEnrolmentVerifier {
 case class RegimeId(value: String) extends AnyVal
 object RegimeId {
   implicit val format: Format[RegimeId] = ValueClassFormat.oformat("regimeId", RegimeId.apply, _.value)
-}
-
-case class EmailCodeTemplate(value: String) extends AnyVal
-object EmailCodeTemplate {
-  implicit val format: Format[EmailCodeTemplate] = ValueClassFormat.simpleFormat(EmailCodeTemplate.apply)(_.value)
 }
 
 sealed trait AgentAccess
