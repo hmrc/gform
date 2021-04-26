@@ -177,7 +177,25 @@ class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
                                            |  "emailCodeTemplate": "someTemplate"
                                            |}""".stripMargin)
     authConfigValue shouldBe JsSuccess(
-      EmailAuthConfig(DigitalContact(EmailTemplateId("someTemplate")))
+      EmailAuthConfig(DigitalContact(EmailTemplateId("someTemplate")), None, None, None)
+    )
+  }
+
+  it should "parse email auth with no 'emailService' but having optional EmailAuthConfig details" in {
+    val authConfigValue = toAuthConfig(s"""|{
+                                           |  "authModule": "email",
+                                           |  "emailCodeTemplate": "someTemplate",
+                                           |  "emailUseInfo": "useInfo",
+                                           |  "emailCodeHelp": "codeHelp",
+                                           |  "emailConfirmation": "confirmation"
+                                           |}""".stripMargin)
+    authConfigValue shouldBe JsSuccess(
+      EmailAuthConfig(
+        DigitalContact(EmailTemplateId("someTemplate")),
+        Some(toLocalisedString("useInfo")),
+        Some(toLocalisedString("codeHelp")),
+        Some(toLocalisedString("confirmation"))
+      )
     )
   }
 
@@ -188,7 +206,26 @@ class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
                                            |  "emailService": "dc"
                                            |}""".stripMargin)
     authConfigValue shouldBe JsSuccess(
-      EmailAuthConfig(DigitalContact(EmailTemplateId("someTemplate")))
+      EmailAuthConfig(DigitalContact(EmailTemplateId("someTemplate")), None, None, None)
+    )
+  }
+
+  it should "parse email auth with 'emailService' (dc) having optional EmailAuthConfig details" in {
+    val authConfigValue = toAuthConfig(s"""|{
+                                           |  "authModule": "email",
+                                           |  "emailCodeTemplate": "someTemplate",
+                                           |  "emailService": "dc",
+                                           |  "emailUseInfo": "useInfo",
+                                           |  "emailCodeHelp": "codeHelp",
+                                           |  "emailConfirmation": "confirmation"
+                                           |}""".stripMargin)
+    authConfigValue shouldBe JsSuccess(
+      EmailAuthConfig(
+        DigitalContact(EmailTemplateId("someTemplate")),
+        Some(toLocalisedString("useInfo")),
+        Some(toLocalisedString("codeHelp")),
+        Some(toLocalisedString("confirmation"))
+      )
     )
   }
 
@@ -199,7 +236,26 @@ class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
                                            |  "emailService": "notify"
                                            |}""".stripMargin)
     authConfigValue shouldBe JsSuccess(
-      EmailAuthConfig(Notify(NotifierTemplateId("someTemplate")))
+      EmailAuthConfig(Notify(NotifierTemplateId("someTemplate")), None, None, None)
+    )
+  }
+
+  it should "parse email auth with 'emailService' (notify) having optional EmailAuthConfig details" in {
+    val authConfigValue = toAuthConfig(s"""|{
+                                           |  "authModule": "email",
+                                           |  "emailCodeTemplate": "someTemplate",
+                                           |  "emailService": "notify",
+                                           |  "emailUseInfo": "useInfo",
+                                           |  "emailCodeHelp": "codeHelp",
+                                           |  "emailConfirmation": "confirmation"
+                                           |}""".stripMargin)
+    authConfigValue shouldBe JsSuccess(
+      EmailAuthConfig(
+        Notify(NotifierTemplateId("someTemplate")),
+        Some(toLocalisedString("useInfo")),
+        Some(toLocalisedString("codeHelp")),
+        Some(toLocalisedString("confirmation"))
+      )
     )
   }
 
