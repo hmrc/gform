@@ -9,7 +9,7 @@
           "id": "textA",
           "type": "text",
           "label": "Text D",
-          "format": "sterling"
+          "format": "shortText"
         },
         {
           "id": "lastInfo",

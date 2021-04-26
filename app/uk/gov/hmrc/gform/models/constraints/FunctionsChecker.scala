@@ -28,8 +28,8 @@ class FunctionsChecker(formTemplate: FormTemplate) {
 
   private val allowedSumIds: Set[FormComponentId] = formTemplate.sections
     .collect {
+      case s: Section.NonRepeatingPage => s.page.numericFields
       case s: Section.RepeatingPage    => s.page.numericFields
-      case s: Section.NonRepeatingPage => s.page.numericGroupFields
       case s: Section.AddToList        => s.pages.toList.flatMap(_.numericFields)
     }
     .flatten

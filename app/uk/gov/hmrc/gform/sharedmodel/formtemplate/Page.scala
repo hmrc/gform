@@ -48,14 +48,7 @@ case class Page(
     })
     .map(_.id)
 
-  val numericGroupFields: List[FormComponentId] = fields
-    .flatMap {
-      case IsGroup(group) => group.fields.filter(_.isNumeric)
-      case otherwise      => Nil
-    }
-    .map(_.id)
-
-  val numericFields: List[FormComponentId] = fields.filter(_.isNumeric).map(_.id)
+  val numericFields: List[FormComponentId] = allFormComponents.filter(_.isNumeric).map(_.id)
 }
 
 object Page {
