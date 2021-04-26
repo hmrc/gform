@@ -128,7 +128,12 @@ object AuthModule {
 sealed trait AuthConfig extends Product with Serializable
 case object Anonymous extends AuthConfig
 case object AWSALBAuth extends AuthConfig
-case class EmailAuthConfig(service: EmailVerifierService) extends AuthConfig
+case class EmailAuthConfig(
+  service: EmailVerifierService,
+  emailUseInfo: Option[LocalisedString],
+  emailCodeHelp: Option[LocalisedString],
+  emailConfirmation: Option[LocalisedString]
+) extends AuthConfig
 case object HmrcAny extends AuthConfig
 case class HmrcVerified(ivFailure: LocalisedString, notAllowedIn: LocalisedString) extends AuthConfig
 case object HmrcSimpleModule extends AuthConfig
@@ -204,6 +209,9 @@ object AuthConfig {
         maybeIvFailure                 <- (json \ "ivFailure").validateOpt[LocalisedString]
         maybeNotAllowedIn              <- (json \ "notAllowedIn").validateOpt[LocalisedString]
         maybeEmailCodeTemplate         <- (json \ "emailCodeTemplate").validateOpt[String]
+        maybeEmailUseInfo              <- (json \ "emailUseInfo").validateOpt[LocalisedString]
+        maybeEmailCodeHelp             <- (json \ "emailCodeHelp").validateOpt[LocalisedString]
+        maybeEmailConfirmation         <- (json \ "emailConfirmation").validateOpt[LocalisedString]
         maybeEmailService              <- (json \ "emailService").validateOpt[String]
         authConfig <- authModule match {
                         case AuthModule.AnonymousAccess => JsSuccess(Anonymous)
@@ -246,11 +254,21 @@ object AuthConfig {
                               maybeEmailService match {
                                 case Some("dc") | None =>
                                   JsSuccess(
-                                    EmailAuthConfig(EmailVerifierService.digitalContact(EmailTemplateId(templateId)))
+                                    EmailAuthConfig(
+                                      EmailVerifierService.digitalContact(EmailTemplateId(templateId)),
+                                      maybeEmailUseInfo,
+                                      maybeEmailCodeHelp,
+                                      maybeEmailConfirmation
+                                    )
                                   )
                                 case Some("notify") =>
                                   JsSuccess(
-                                    EmailAuthConfig(EmailVerifierService.notify(NotifierTemplateId(templateId)))
+                                    EmailAuthConfig(
+                                      EmailVerifierService.notify(NotifierTemplateId(templateId)),
+                                      maybeEmailUseInfo,
+                                      maybeEmailCodeHelp,
+                                      maybeEmailConfirmation
+                                    )
                                   )
                                 case Some(other) => JsError(s"Invalid 'emailService' value for email auth $other")
                               }
