@@ -56,6 +56,24 @@ object Section {
 
   implicit val format: OFormat[Section] =
     OFormatWithTemplateReadFallback(SectionTemplateReads.reads)
+
+  implicit val leafExprs: LeafExpr[Section] = new LeafExpr[Section] {
+    def exprs(path: TemplatePath, t: Section): List[ExprWithPath] = t match {
+      case n: Section.NonRepeatingPage => LeafExpr(path, n.page)
+      case r: Section.RepeatingPage    => ExprWithPath(path, r.repeats) :: LeafExpr(path, r.page)
+      case a: Section.AddToList =>
+        LeafExpr(path + "title", a.title) ++
+          LeafExpr(path + "description", a.description) ++
+          LeafExpr(path + "shortName", a.shortName) ++
+          LeafExpr(path + "summaryName", a.summaryName) ++
+          LeafExpr(path + "includeIf", a.includeIf) ++
+          a.repeatsMax.toList.map(rMax => ExprWithPath(path + "repeatsMax", rMax)) ++
+          LeafExpr(path + "pages", a.pages) ++
+          LeafExpr(path + "addAnotherQuestion", a.addAnotherQuestion) ++
+          LeafExpr(path + "instruction", a.instruction) ++
+          LeafExpr(path + "infoMessage", a.infoMessage)
+    }
+  }
 }
 
 case class DeclarationSection(
@@ -68,6 +86,15 @@ case class DeclarationSection(
 
 object DeclarationSection {
   implicit val format: OFormat[DeclarationSection] = Json.format[DeclarationSection]
+
+  implicit val leafExprs: LeafExpr[DeclarationSection] = new LeafExpr[DeclarationSection] {
+    def exprs(path: TemplatePath, t: DeclarationSection): List[ExprWithPath] =
+      LeafExpr(path + "title", t.title) ++
+        LeafExpr(path + "description", t.description) ++
+        LeafExpr(path + "shortName", t.shortName) ++
+        LeafExpr(path + "continueLabel", t.continueLabel) ++
+        LeafExpr(path + "fields", t.fields)
+  }
 }
 
 case class AcknowledgementSection(
@@ -90,12 +117,28 @@ object AcknowledgementSection {
   )
 
   implicit val format: OFormat[AcknowledgementSection] = OFormatWithTemplateReadFallback(templateReads)
+
+  implicit val leafExprs: LeafExpr[AcknowledgementSection] = new LeafExpr[AcknowledgementSection] {
+    def exprs(path: TemplatePath, t: AcknowledgementSection): List[ExprWithPath] =
+      LeafExpr(path + "title", t.title) ++
+        LeafExpr(path + "description", t.description) ++
+        LeafExpr(path + "shortName", t.shortName) ++
+        LeafExpr(path + "fields", t.fields) ++
+        LeafExpr(path + "pdf", t.pdf) ++
+        LeafExpr(path + "instructionPdf", t.instructionPdf)
+  }
 }
 
 case class AcknowledgementSectionPdf(header: Option[SmartString], footer: Option[SmartString])
 
 object AcknowledgementSectionPdf {
   implicit val format: OFormat[AcknowledgementSectionPdf] = Json.format[AcknowledgementSectionPdf]
+
+  implicit val leafExprs: LeafExpr[AcknowledgementSectionPdf] = new LeafExpr[AcknowledgementSectionPdf] {
+    def exprs(path: TemplatePath, t: AcknowledgementSectionPdf): List[ExprWithPath] =
+      LeafExpr(path + "header", t.header) ++
+        LeafExpr(path + "footer", t.footer)
+  }
 }
 
 case class EnrolmentSection(

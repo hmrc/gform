@@ -54,6 +54,33 @@ object BooleanExpr {
     Format(reads, writes)
   }
 
+  implicit val leafExprs: LeafExpr[BooleanExpr] = new LeafExpr[BooleanExpr] {
+    def exprs(path: TemplatePath, be: BooleanExpr): List[ExprWithPath] = {
+
+      def WithPath(xs: Expr*): List[ExprWithPath] = xs.toList.map(x => ExprWithPath(path, x))
+
+      def loop(t: BooleanExpr): List[ExprWithPath] = t match {
+        case Equals(left: Expr, right: Expr)                 => WithPath(left, right)
+        case GreaterThan(left: Expr, right: Expr)            => WithPath(left, right)
+        case GreaterThanOrEquals(left: Expr, right: Expr)    => WithPath(left, right)
+        case LessThan(left: Expr, right: Expr)               => WithPath(left, right)
+        case LessThanOrEquals(left: Expr, right: Expr)       => WithPath(left, right)
+        case Not(e: BooleanExpr)                             => loop(e)
+        case Or(left: BooleanExpr, right: BooleanExpr)       => loop(left) ++ loop(right)
+        case And(left: BooleanExpr, right: BooleanExpr)      => loop(left) ++ loop(right)
+        case IsTrue                                          => Nil
+        case IsFalse                                         => Nil
+        case Contains(multiValueField: FormCtx, value: Expr) => WithPath(value, multiValueField)
+        case In(value: Expr, dataSource: DataSource)         => WithPath(value)
+        case MatchRegex(formCtx: FormCtx, regex: Regex)      => WithPath(formCtx)
+        case DateBefore(left: DateExpr, right: DateExpr)     => WithPath(left.leafExprs ++ right.leafExprs: _*)
+        case DateAfter(left: DateExpr, right: DateExpr)      => WithPath(left.leafExprs ++ right.leafExprs: _*)
+        case FormPhase(value: FormPhaseValue)                => Nil
+      }
+      loop(be)
+    }
+
+  }
 }
 
 object EqualsWithConstant {

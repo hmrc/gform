@@ -14,21 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel.formtemplate
+package uk.gov.hmrc.gform.model.constraints
 
-import play.api.libs.json._
-import uk.gov.hmrc.gform.sharedmodel.booleanParser.booleanExprParser
+import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
-case class ValidIf(booleanExpr: BooleanExpr)
-object ValidIf {
+sealed trait ReferenceInfo {
+  def path: TemplatePath
+}
 
-  private val templateReads: Reads[ValidIf] = Reads(json => booleanExprParser(json).map(ValidIf.apply))
-
-  implicit val format: OFormat[ValidIf] = OFormatWithTemplateReadFallback(templateReads)
-
-  implicit val leafExprs = new LeafExpr[ValidIf] {
-    def exprs(path: TemplatePath, t: ValidIf): List[ExprWithPath] =
-      implicitly[LeafExpr[BooleanExpr]].exprs(path + "validIf", t.booleanExpr)
-  }
-
+object ReferenceInfo {
+  case class SumExpr(path: TemplatePath, sum: Sum) extends ReferenceInfo
+  case class CountExpr(path: TemplatePath, count: Count) extends ReferenceInfo
+  case class FormCtxExpr(path: TemplatePath, formCtx: FormCtx) extends ReferenceInfo
 }

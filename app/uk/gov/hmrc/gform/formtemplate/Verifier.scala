@@ -52,6 +52,7 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validateRevealingChoice(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateEmailVerification(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateInstructions(pages).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateInvalidAddToListReferences(formTemplate).toEither)
     } yield ()
 
   }

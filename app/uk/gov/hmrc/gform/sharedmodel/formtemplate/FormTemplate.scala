@@ -56,4 +56,17 @@ object FormTemplate {
       .normaliseJSON(json)
       .flatMap(format.reads)
 
+  implicit val leafExprs: LeafExpr[FormTemplate] = new LeafExpr[FormTemplate] {
+    def exprs(path: TemplatePath, t: FormTemplate): List[ExprWithPath] =
+      LeafExpr(path + "sections", t.sections) ++
+        leafExprsNoSections.exprs(path, t)
+  }
+
+  val leafExprsNoSections: LeafExpr[FormTemplate] = new LeafExpr[FormTemplate] {
+    def exprs(path: TemplatePath, t: FormTemplate): List[ExprWithPath] =
+      LeafExpr(path + "summarySection", t.summarySection) ++
+        LeafExpr(path, t.destinations)
+
+  }
+
 }

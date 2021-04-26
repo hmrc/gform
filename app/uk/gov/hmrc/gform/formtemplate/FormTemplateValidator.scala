@@ -24,6 +24,7 @@ import scalax.collection.Graph
 import scalax.collection.GraphEdge._
 import uk.gov.hmrc.gform.core.{ Invalid, Valid, ValidationResult }
 import uk.gov.hmrc.gform.core.ValidationResult.{ BooleanToValidationResultSyntax, validationResultMonoid }
+import uk.gov.hmrc.gform.model.constraints.{ FunctionsChecker, MutualReferenceChecker, ReferenceInfo, ReferenceKind, ReferenceKindDescriptor }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.graph.DependencyGraph._
 import uk.gov.hmrc.gform.formtemplate.FormTemplateValidatorHelper._
@@ -94,6 +95,80 @@ object FormTemplateValidator {
     } else {
       Valid
     }
+
+  def validateInvalidAddToListReferences(formTemplate: FormTemplate): ValidationResult = {
+
+    val addToListIds: Set[FormComponentId] = formTemplate.sections
+      .collect { case s: Section.AddToList =>
+        s.pages.toList.flatMap(_.allFormComponentIds).toSet
+      }
+      .toSet
+      .flatten
+
+    val repeatedSectionIds: Set[FormComponentId] = formTemplate.sections
+      .collect { case s: Section.RepeatingPage =>
+        s.page.allFormComponentIds
+      }
+      .toSet
+      .flatten
+
+    val groupFieldsIds: Set[FormComponentId] = formTemplate.sections
+      .collect { case s: Section.NonRepeatingPage =>
+        s.page.fields.collect { case fc @ IsGroup(g) =>
+          g.fields.map(_.id)
+        }.flatten
+      }
+      .toSet
+      .flatten
+
+    val formTemplateExprs = FormTemplate.leafExprsNoSections.exprs(TemplatePath.root, formTemplate)
+
+    val withoutAddToLists: List[ExprWithPath] = formTemplate.sections.collect {
+      case s: Section.NonRepeatingPage => LeafExpr(TemplatePath.root, s)
+      case s: Section.RepeatingPage    => LeafExpr(TemplatePath.root, s)
+    }.flatten ++ formTemplateExprs
+
+    val withoutRepeatingPages: List[ExprWithPath] = formTemplate.sections.collect {
+      case s: Section.NonRepeatingPage => LeafExpr(TemplatePath.root, s)
+      case s: Section.AddToList        => LeafExpr(TemplatePath.root, s)
+    }.flatten ++ formTemplateExprs
+
+    val withoutGroups: List[ExprWithPath] = formTemplate.sections.collect {
+      case s: Section.NonRepeatingPage =>
+        Page.leafExprsNoFields.exprs(TemplatePath.root, s.page) ++
+          s.page.fields.flatMap {
+            case IsGroup(group) => Nil // We want to ignore groups
+            case otherwise      => LeafExpr(TemplatePath("fields"), otherwise)
+          }
+      case s: Section.RepeatingPage => LeafExpr(TemplatePath.root, s)
+      case s: Section.AddToList     => LeafExpr(TemplatePath.root, s)
+    }.flatten ++ formTemplateExprs
+
+    val addToListChecks: ValidationResult = checkReferenceInfo[ReferenceKind.AddToList](withoutAddToLists, addToListIds)
+
+    val repeatingPagesChecks: ValidationResult =
+      checkReferenceInfo[ReferenceKind.RepeatingPage](withoutRepeatingPages, repeatedSectionIds)
+
+    val groupChecks: ValidationResult = checkReferenceInfo[ReferenceKind.Group](withoutGroups, groupFieldsIds)
+
+    val mrc = new MutualReferenceChecker(formTemplate)
+    val functionsChecker = new FunctionsChecker(formTemplate)
+
+    Monoid.combineAll(List(mrc.result, functionsChecker.result, addToListChecks, groupChecks, repeatingPagesChecks))
+  }
+
+  private def checkReferenceInfo[A](xs: List[ExprWithPath], set: Set[FormComponentId])(implicit
+    descriptor: ReferenceKindDescriptor[A]
+  ): ValidationResult = {
+
+    val referenceInfos: List[ReferenceInfo] = xs.flatMap(_.referenceInfos)
+
+    referenceInfos.foldMap {
+      case ReferenceInfo.FormCtxExpr(path, FormCtx(formComponentId)) if set(formComponentId) =>
+        Invalid(s"${path.path}: $formComponentId belongs to ${descriptor.describe} and cannot be referenced outside")
+      case _ => Valid
+    }
+  }
 
   def validateChoice(
     sectionsList: List[Page],

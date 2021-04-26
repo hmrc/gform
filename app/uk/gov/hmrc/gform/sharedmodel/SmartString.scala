@@ -20,7 +20,7 @@ import cats.instances.string._
 import cats.syntax.eq._
 import play.api.libs.json.{ Format, JsError, JsObject, JsResult, JsString, JsSuccess, JsValue, Reads }
 import uk.gov.hmrc.gform.core.parsers.{ BasicParsers, ValueParser }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Expr, OFormatWithTemplateReadFallback }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Expr, ExprWithPath, LeafExpr, OFormatWithTemplateReadFallback, TemplatePath }
 
 import scala.annotation.tailrec
 
@@ -39,6 +39,10 @@ object SmartString {
   val empty: SmartString = SmartString(LocalisedString.empty, Nil)
 
   implicit val format: Format[SmartString] = OFormatWithTemplateReadFallback(SmartStringTemplateReader.templateReads)
+
+  implicit val leafExprs: LeafExpr[SmartString] = new LeafExpr[SmartString] {
+    def exprs(path: TemplatePath, t: SmartString): List[ExprWithPath] = t.interpolations.map(ExprWithPath(path, _))
+  }
 }
 
 object SmartStringTemplateReader {

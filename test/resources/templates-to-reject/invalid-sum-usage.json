@@ -1,0 +1,42 @@
+{
+  "_id": "invalid-sum-usage",
+  "formName": "Forbidden reference",
+  "sections": [
+    {
+      "title": "Page A",
+      "fields": [
+        {
+          "id": "textA",
+          "type": "text",
+          "label": "Text D",
+          "format": "sterling"
+        },
+        {
+          "id": "lastInfo",
+          "type": "info",
+          "label": "Info",
+          "infoText": "${textA.sum}"
+        }
+      ]
+    }
+  ],
+  "emailTemplateId": "confirmation",
+  "authConfig": {
+    "authModule": "anonymous"
+  },
+  "declarationSection": {
+    "title": "Declaration",
+    "fields": []
+  },
+  "acknowledgementSection": {
+    "title": "Confirmation page",
+    "fields": []
+  },
+  "destinations": [
+    {
+      "id": "transitionToSubmitted",
+      "type": "stateTransition",
+      "requiredState": "Submitted"
+    }
+  ]
+}

@@ -14,17 +14,9 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel.formtemplate
+package uk.gov.hmrc.gform.model.constraints
 
-import play.api.libs.json.{ Format, Json }
-import uk.gov.hmrc.gform.sharedmodel.SmartString
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, TemplatePath }
 
-case class Instruction(name: Option[SmartString], order: Option[Int])
-
-object Instruction {
-  implicit val format: Format[Instruction] = Json.format[Instruction]
-
-  implicit val leafExprs: LeafExpr[Instruction] = new LeafExpr[Instruction] {
-    def exprs(path: TemplatePath, t: Instruction): List[ExprWithPath] = LeafExpr(path + "name", t.name)
-  }
-}
+case class Reference[A <: ReferenceKind](scopeId: A, formComponentId: FormComponentId)
+case class ReferenceWithPath[A <: ReferenceKind](path: TemplatePath, reference: Reference[A])

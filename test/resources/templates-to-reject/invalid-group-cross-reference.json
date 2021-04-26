@@ -1,0 +1,56 @@
+{
+  "_id": "invalid-group-cross-reference",
+  "formName": "Forbidden reference",
+  "sections": [
+    {
+      "title": "First Page",
+      "fields": [
+        {
+          "id": "group",
+          "type": "group",
+          "label": "Group",
+          "fields": [
+            {
+              "id": "fieldA",
+              "type": "text",
+              "label": "Field A",
+              "format": "sterling"
+            }
+          ]
+        },
+        {
+          "id": "groupB",
+          "type": "group",
+          "label": "Group",
+          "fields": [
+            {
+              "id": "fieldB",
+              "type": "text",
+              "label": "Field B ${fieldA}",
+              "format": "sterling"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "emailTemplateId": "confirmation",
+  "authConfig": {
+    "authModule": "anonymous"
+  },
+  "declarationSection": {
+    "title": "Declaration",
+    "fields": []
+  },
+  "acknowledgementSection": {
+    "title": "Confirmation page",
+    "fields": []
+  },
+  "destinations": [
+    {
+      "id": "transitionToSubmitted",
+      "type": "stateTransition",
+      "requiredState": "Submitted"
+    }
+  ]
+}
