@@ -1,0 +1,36 @@
+{
+  "_id": "nonexistent-field-reference",
+  "formName": "Forbidden reference",
+  "sections": [
+    {
+      "title": "Page A",
+      "fields": [
+        {
+          "id": "textA",
+          "type": "text",
+          "label": "Text A ${textB}",
+          "format": "shortText"
+        }
+      ]
+    }
+  ],
+  "emailTemplateId": "confirmation",
+  "authConfig": {
+    "authModule": "anonymous"
+  },
+  "declarationSection": {
+    "title": "Declaration",
+    "fields": []
+  },
+  "acknowledgementSection": {
+    "title": "Confirmation page",
+    "fields": []
+  },
+  "destinations": [
+    {
+      "id": "transitionToSubmitted",
+      "type": "stateTransition",
+      "requiredState": "Submitted"
+    }
+  ]
+}

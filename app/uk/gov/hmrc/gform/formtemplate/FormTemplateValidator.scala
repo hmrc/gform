@@ -96,7 +96,33 @@ object FormTemplateValidator {
       Valid
     }
 
-  def validateInvalidAddToListReferences(formTemplate: FormTemplate): ValidationResult = {
+  def validateInvalidReferences(formTemplate: FormTemplate): ValidationResult = {
+    val allFcIds: Set[FormComponentId] = formTemplate.sections
+      .collect {
+        case s: Section.NonRepeatingPage => s.page.allFormComponentIds.toSet
+        case s: Section.RepeatingPage    => s.page.allFormComponentIds.toSet
+        case s: Section.AddToList        => s.pages.toList.flatMap(_.allFormComponentIds).toSet
+      }
+      .toSet
+      .flatten
+
+    val allExprs: List[ExprWithPath] = FormTemplate.leafExprs.exprs(TemplatePath.root, formTemplate)
+
+    def invalid(path: TemplatePath, formComponentId: FormComponentId): Invalid =
+      Invalid(s"${path.path}: $formComponentId doesn't exist in the form")
+
+    allExprs.flatMap(_.referenceInfos).foldMap {
+      case ReferenceInfo.FormCtxExpr(path, FormCtx(formComponentId)) if !allFcIds(formComponentId) =>
+        invalid(path, formComponentId)
+      case ReferenceInfo.SumExpr(path, Sum(FormCtx(formComponentId))) if !allFcIds(formComponentId) =>
+        invalid(path, formComponentId)
+      case ReferenceInfo.CountExpr(path, Count(formComponentId)) if !allFcIds(formComponentId) =>
+        invalid(path, formComponentId)
+      case _ => Valid
+    }
+  }
+
+  def validateReferencesConstraints(formTemplate: FormTemplate): ValidationResult = {
 
     val addToListIds: Set[FormComponentId] = formTemplate.sections
       .collect { case s: Section.AddToList =>

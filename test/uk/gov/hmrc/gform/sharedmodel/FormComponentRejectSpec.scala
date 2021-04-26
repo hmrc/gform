@@ -109,6 +109,7 @@ class FormComponentRejectSpec extends Spec with TableDrivenPropertyChecks {
       ("invalid-repeated-section-cross-reference", "fields.[id=fieldB].label: fieldA belongs to different Repeated section"),
       ("invalid-group-field-reference",            "includeIf: fieldA belongs to Group component and cannot be referenced outside"),
       ("invalid-group-cross-reference",            "fields.[id=groupB].[id=fieldB].label: fieldA belongs to different Group component"),
+      ("nonexistent-field-reference",              "sections.fields.[id=textA].label: textB doesn't exist in the form"),
          // format: on
     )
 

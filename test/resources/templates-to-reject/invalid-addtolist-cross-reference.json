@@ -32,7 +32,7 @@
       "type": "addToList",
       "title": "Add To List ${fieldA}",
       "shortName": "Add To List",
-      "description": "${xtA}",
+      "description": "${fieldB}",
       "summaryName": "Add To List",
       "addAnotherQuestion": {
         "id": "addToListB",
