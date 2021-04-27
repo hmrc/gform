@@ -54,7 +54,8 @@ object PrintSection {
     implicit val leafExprs: LeafExpr[PdfNotification] = new LeafExpr[PdfNotification] {
       def exprs(path: TemplatePath, t: PdfNotification): List[ExprWithPath] =
         LeafExpr(path + "header", t.header) ++
-          LeafExpr(path + "footer", t.footer)
+          LeafExpr(path + "footer", t.footer) ++
+          LeafExpr(path + "fieldIds", t.fieldIds)
     }
   }
 }

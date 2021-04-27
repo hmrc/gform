@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.model.constraints
+package uk.gov.hmrc.gform.models.constraints
 
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
@@ -23,7 +23,7 @@ sealed trait ReferenceInfo {
 }
 
 object ReferenceInfo {
-  case class SumExpr(path: TemplatePath, sum: Sum) extends ReferenceInfo
-  case class CountExpr(path: TemplatePath, count: Count) extends ReferenceInfo
-  case class FormCtxExpr(path: TemplatePath, formCtx: FormCtx) extends ReferenceInfo
+  final case class SumExpr(path: TemplatePath, sum: Sum) extends ReferenceInfo
+  final case class CountExpr(path: TemplatePath, count: Count) extends ReferenceInfo
+  final case class FormCtxExpr(path: TemplatePath, formCtx: FormCtx) extends ReferenceInfo
 }

@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.model.constraints
+package uk.gov.hmrc.gform.models.constraints
 
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, TemplatePath }
 
-case class Reference[A <: ReferenceKind](scopeId: A, formComponentId: FormComponentId)
-case class ReferenceWithPath[A <: ReferenceKind](path: TemplatePath, reference: Reference[A])
+final case class Reference[A <: ReferenceKind](scopeId: A, formComponentId: FormComponentId)
+final case class ReferenceWithPath[A <: ReferenceKind](path: TemplatePath, reference: Reference[A])

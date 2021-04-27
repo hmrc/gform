@@ -24,7 +24,7 @@ import scalax.collection.Graph
 import scalax.collection.GraphEdge._
 import uk.gov.hmrc.gform.core.{ Invalid, Valid, ValidationResult }
 import uk.gov.hmrc.gform.core.ValidationResult.{ BooleanToValidationResultSyntax, validationResultMonoid }
-import uk.gov.hmrc.gform.model.constraints.{ FunctionsChecker, MutualReferenceChecker, ReferenceInfo, ReferenceKind, ReferenceKindDescriptor }
+import uk.gov.hmrc.gform.models.constraints.{ FunctionsChecker, MutualReferenceChecker, ReferenceInfo, ReferenceKind, ReferenceKindDescriptor }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.graph.DependencyGraph._
 import uk.gov.hmrc.gform.formtemplate.FormTemplateValidatorHelper._

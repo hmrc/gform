@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.model.constraints
+package uk.gov.hmrc.gform.models.constraints
 
 import cats.Monoid
 import uk.gov.hmrc.gform.core.ValidationResult

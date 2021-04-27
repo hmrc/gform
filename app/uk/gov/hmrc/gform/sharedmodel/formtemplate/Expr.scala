@@ -60,6 +60,10 @@ final case object Value extends Expr
 
 object Expr {
   implicit val format: OFormat[Expr] = derived.oformat()
+
+  implicit val leafExprs: LeafExpr[Expr] = new LeafExpr[Expr] {
+    def exprs(path: TemplatePath, t: Expr): List[ExprWithPath] = List(ExprWithPath(path, t))
+  }
 }
 
 sealed trait RosmProp extends Product with Serializable

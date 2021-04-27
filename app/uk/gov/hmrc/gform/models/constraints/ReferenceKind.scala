@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.model.constraints
+package uk.gov.hmrc.gform.models.constraints
 
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormComponentId
 
 sealed trait ReferenceKind
 
 object ReferenceKind {
-  case class Group(fc: FormComponentId) extends ReferenceKind
-  case class AddToList(fc: FormComponentId) extends ReferenceKind
-  case class RepeatingPage(index: Int)
+  final case class Group(fc: FormComponentId) extends ReferenceKind
+  final case class AddToList(fc: FormComponentId) extends ReferenceKind
+  final case class RepeatingPage(index: Int)
       extends ReferenceKind // Repeated section has no explixit identifier, so let's use its index instead
 
   object Group {

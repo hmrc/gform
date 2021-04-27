@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import cats.instances.string._
 import cats.syntax.eq._
 import cats.data.NonEmptyList
-import uk.gov.hmrc.gform.model.constraints.{ ReferenceInfo }
+import uk.gov.hmrc.gform.models.constraints.{ ReferenceInfo }
 
 case class TemplatePath(path: String) extends AnyVal {
   def +(subPath: String) = if (path === TemplatePath.root.path)
@@ -33,15 +33,16 @@ object TemplatePath {
   val leaf = TemplatePath("")
 }
 
-case class ExprWithPath(path: TemplatePath, expr: Expr) {
+final case class ExprWithPath(path: TemplatePath, expr: Expr) {
 
-  def ToReferenceInfo(es: Expr*): List[ReferenceInfo] = es.toList.flatMap(e => ExprWithPath(path, e).referenceInfos)
+  private def toReferenceInfo(es: Expr*): List[ReferenceInfo] =
+    es.toList.flatMap(e => ExprWithPath(path, e).referenceInfos)
 
   def referenceInfos: List[ReferenceInfo] = expr match {
-    case Add(field1: Expr, field2: Expr)               => ToReferenceInfo(field1, field2)
-    case Multiply(field1: Expr, field2: Expr)          => ToReferenceInfo(field1, field2)
-    case Subtraction(field1: Expr, field2: Expr)       => ToReferenceInfo(field1, field2)
-    case Else(field1: Expr, field2: Expr)              => ToReferenceInfo(field1, field2)
+    case Add(field1: Expr, field2: Expr)               => toReferenceInfo(field1, field2)
+    case Multiply(field1: Expr, field2: Expr)          => toReferenceInfo(field1, field2)
+    case Subtraction(field1: Expr, field2: Expr)       => toReferenceInfo(field1, field2)
+    case Else(field1: Expr, field2: Expr)              => toReferenceInfo(field1, field2)
     case f @ FormCtx(formComponentId: FormComponentId) => ReferenceInfo.FormCtxExpr(path, f) :: Nil
     case s @ Sum(field1: Expr)                         => ReferenceInfo.SumExpr(path, s) :: Nil
     case c @ Count(formComponentId: FormComponentId)   => ReferenceInfo.CountExpr(path, c) :: Nil

@@ -67,7 +67,7 @@ object Section {
           LeafExpr(path + "shortName", a.shortName) ++
           LeafExpr(path + "summaryName", a.summaryName) ++
           LeafExpr(path + "includeIf", a.includeIf) ++
-          a.repeatsMax.toList.map(rMax => ExprWithPath(path + "repeatsMax", rMax)) ++
+          LeafExpr(path + "repeatsMax", a.repeatsMax) ++
           LeafExpr(path + "pages", a.pages) ++
           LeafExpr(path + "addAnotherQuestion", a.addAnotherQuestion) ++
           LeafExpr(path + "instruction", a.instruction) ++

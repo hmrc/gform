@@ -51,7 +51,8 @@ object Destinations {
   implicit val leafExprs: LeafExpr[Destinations] = new LeafExpr[Destinations] {
     def exprs(path: TemplatePath, t: Destinations): List[ExprWithPath] = t match {
       case DestinationList(destinations, acknowledgementSection, declarationSection) =>
-        LeafExpr(path + "declarationSection", declarationSection) ++
+        LeafExpr(path + "destinations", destinations) ++
+          LeafExpr(path + "declarationSection", declarationSection) ++
           LeafExpr(path + "acknowledgementSection", acknowledgementSection)
       case DestinationPrint(page, pdf, pdfNotification) =>
         LeafExpr(path + "printSection.page", page) ++

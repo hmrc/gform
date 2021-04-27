@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import julienrf.json.derived
 import play.api.libs.json.OFormat
-import uk.gov.hmrc.gform.model.constraints.ReferenceInfo
+import uk.gov.hmrc.gform.models.constraints.ReferenceInfo
 
 sealed trait DateExpr {
   def leafExprs: List[Expr] = this match {
