@@ -26,4 +26,7 @@ object FormComponentValidator {
 
   implicit val format: OFormat[FormComponentValidator] = derived.oformat()
 
+  implicit val leafExprs: LeafExpr[FormComponentValidator] = (path: TemplatePath, t: FormComponentValidator) =>
+    LeafExpr(path + "validIf", t.validIf) ++ LeafExpr(path + "errorMessage", t.errorMessage)
+
 }

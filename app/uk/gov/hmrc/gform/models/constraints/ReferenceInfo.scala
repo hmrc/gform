@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel.formtemplate
+package uk.gov.hmrc.gform.models.constraints
 
-import play.api.libs.json.{ Format, Json }
-import uk.gov.hmrc.gform.sharedmodel.SmartString
+import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
-case class Instruction(name: Option[SmartString], order: Option[Int])
+sealed trait ReferenceInfo {
+  def path: TemplatePath
+}
 
-object Instruction {
-  implicit val format: Format[Instruction] = Json.format[Instruction]
-
-  implicit val leafExprs: LeafExpr[Instruction] = (path: TemplatePath, t: Instruction) =>
-    LeafExpr(path + "name", t.name)
+object ReferenceInfo {
+  final case class SumExpr(path: TemplatePath, sum: Sum) extends ReferenceInfo
+  final case class CountExpr(path: TemplatePath, count: Count) extends ReferenceInfo
+  final case class FormCtxExpr(path: TemplatePath, formCtx: FormCtx) extends ReferenceInfo
 }

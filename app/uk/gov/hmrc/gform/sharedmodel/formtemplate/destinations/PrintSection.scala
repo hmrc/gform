@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
 
 import play.api.libs.json.{ Json, OFormat }
 import uk.gov.hmrc.gform.sharedmodel.SmartString
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormComponentId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, LeafExpr, TemplatePath }
 
 sealed trait PrintSection extends Product with Serializable
 
@@ -27,17 +27,32 @@ object PrintSection {
 
   object Page {
     implicit val format: OFormat[Page] = Json.format[Page]
+
+    implicit val leafExprs: LeafExpr[Page] = (path: TemplatePath, t: Page) =>
+      LeafExpr(path + "title", t.title) ++
+        LeafExpr(path + "instructions", t.instructions)
+
   }
 
   case class Pdf(header: SmartString, footer: SmartString)
 
   object Pdf {
     implicit val format: OFormat[Pdf] = Json.format[Pdf]
+    implicit val leafExprs: LeafExpr[Pdf] = (path: TemplatePath, t: Pdf) =>
+      LeafExpr(path + "header", t.header) ++
+        LeafExpr(path + "footer", t.footer)
+
   }
 
   case class PdfNotification(header: SmartString, footer: SmartString, fieldIds: List[FormComponentId])
 
   object PdfNotification {
     implicit val format: OFormat[PdfNotification] = Json.format[PdfNotification]
+
+    implicit val leafExprs: LeafExpr[PdfNotification] = (path: TemplatePath, t: PdfNotification) =>
+      LeafExpr(path + "header", t.header) ++
+        LeafExpr(path + "footer", t.footer) ++
+        LeafExpr(path + "fieldIds", t.fieldIds)
+
   }
 }

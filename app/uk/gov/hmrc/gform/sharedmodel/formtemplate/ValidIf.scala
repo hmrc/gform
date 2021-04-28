@@ -26,4 +26,6 @@ object ValidIf {
 
   implicit val format: OFormat[ValidIf] = OFormatWithTemplateReadFallback(templateReads)
 
+  implicit val leafExprs: LeafExpr[ValidIf] = (path: TemplatePath, t: ValidIf) => LeafExpr(path, t.booleanExpr)
+
 }

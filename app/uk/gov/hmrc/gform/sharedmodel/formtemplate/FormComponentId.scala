@@ -65,4 +65,8 @@ object FormComponentId {
     if (anchoredIdValidation.findFirstIn(s).isDefined) JsSuccess(FormComponentId(s))
     else
       JsError(errorMessage(s))
+
+  implicit val leafExprs: LeafExpr[FormComponentId] = (path: TemplatePath, t: FormComponentId) =>
+    List(ExprWithPath(path, FormCtx(t)))
+
 }

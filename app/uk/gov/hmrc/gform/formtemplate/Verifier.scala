@@ -39,7 +39,6 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validateChoiceHints(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateUniqueFields(sections).toEither)
       _ <- fromOptA(DestinationsValidator.validate(formTemplate))
-      _ <- fromOptA(DestinationsValidator.validatePdfFieldIds(formTemplate))
       _ <- fromOptA(FormTemplateValidator.validateForwardReference(sections).toEither)
       _ <- fromOptA(FormTemplateValidator.validate(componentTypes, formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateDependencyGraph(formTemplate).toEither)
@@ -52,6 +51,8 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validateRevealingChoice(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateEmailVerification(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateInstructions(pages).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateInvalidReferences(formTemplate).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateReferencesConstraints(formTemplate).toEither)
     } yield ()
 
   }

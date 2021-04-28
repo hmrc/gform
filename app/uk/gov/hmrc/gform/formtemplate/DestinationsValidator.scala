@@ -19,12 +19,8 @@ package uk.gov.hmrc.gform.formtemplate
 import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.core.ValidationResult.BooleanToValidationResultSyntax
 import uk.gov.hmrc.gform.core.{ Opt, Valid, ValidationResult }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplate }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, Destinations }
-import uk.gov.hmrc.gform.formtemplate.FormTemplateValidator._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationPrint
-
-import scala.collection.immutable.List
 
 object DestinationsValidator {
   def someDestinationIdsAreUsedMoreThanOnce(duplicates: Set[DestinationId]) =
@@ -48,27 +44,7 @@ object DestinationsValidator {
     case _                        => NonEmptyList.of(destination.id)
   }
 
-  def destinationTestReferencesANonExistentDestination(destinations: Set[DestinationId]): String =
-    s"Destination tests refer to destinationIds that do not exist: ${destinations.map(_.id).mkString(", ")}"
-
   def validate(template: FormTemplate): Opt[Unit] =
     validateUniqueDestinationIds(template.destinations).toEither
 
-  def nonExistentFieldId(nonExistentFieldIds: List[FormComponentId]) =
-    s"Pdf FieldId(s) ${nonExistentFieldIds.mkString(", ")} doesn't exist."
-
-  def validatePdfFieldIds(formTemplate: FormTemplate): Opt[Unit] = {
-    val allFormComponentIds: List[FormComponentId] = fieldIds(formTemplate.sections)
-
-    val pdfFieldIds = formTemplate.destinations match {
-      case DestinationPrint(_, _, Some(pdfNotification)) =>
-        pdfNotification.fieldIds
-
-      case _ => Nil
-    }
-
-    val nonExistentFieldIds: List[FormComponentId] = pdfFieldIds diff allFormComponentIds
-
-    nonExistentFieldIds.isEmpty.validationResult(nonExistentFieldId(nonExistentFieldIds))
-  }.toEither
 }

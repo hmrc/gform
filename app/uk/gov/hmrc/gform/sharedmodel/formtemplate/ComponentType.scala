@@ -28,7 +28,6 @@ import uk.gov.hmrc.gform.sharedmodel.{ SmartString, ValueClassFormat }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidth.DisplayWidth
 import uk.gov.hmrc.gform.sharedmodel.structuredform.{ FieldName, RoboticsXml, StructuredFormDataFieldNamePurpose }
 
-import scala.collection.immutable._
 sealed trait ComponentType
 
 case class Text(
@@ -141,6 +140,15 @@ object OverseasAddress {
 
   object Value {
     implicit val format: OFormat[Value] = derived.oformat()
+
+    implicit val leafExprs: LeafExpr[Value] = (path: TemplatePath, t: Value) =>
+      LeafExpr(path + "line1", t.line1) ++
+        LeafExpr(path + "line2", t.line2) ++
+        LeafExpr(path + "line3", t.line3) ++
+        LeafExpr(path + "city", t.city) ++
+        LeafExpr(path + "postcode", t.postcode) ++
+        LeafExpr(path + "country", t.country)
+
   }
 
   implicit val format: OFormat[OverseasAddress] = derived.oformat()
@@ -182,6 +190,12 @@ case class RevealingChoiceElement(
 )
 object RevealingChoiceElement {
   implicit val format: OFormat[RevealingChoiceElement] = derived.oformat()
+
+  implicit val leafExprs: LeafExpr[RevealingChoiceElement] = (path: TemplatePath, t: RevealingChoiceElement) =>
+    LeafExpr(path + "choice", t.choice) ++
+      LeafExpr(path + "revealingFields", t.revealingFields) ++
+      LeafExpr(path + "hint", t.hint)
+
 }
 case class RevealingChoice(options: NonEmptyList[RevealingChoiceElement], multiValue: Boolean) extends ComponentType
 object RevealingChoice {
@@ -292,5 +306,34 @@ object ComponentType {
     JsArray((v.head :: v.tail).map(Json.toJson(_)))
   }
   implicit val format: OFormat[ComponentType] = derived.oformat()
+
+  implicit val leafExprs: LeafExpr[ComponentType] = (path: TemplatePath, t: ComponentType) =>
+    t match {
+      case Text(constraint, expr, _, _, prefix, suffix) =>
+        ExprWithPath(path + "value", expr) ::
+          LeafExpr(path + "prefix", prefix) ++
+          LeafExpr(path + "suffix", suffix) ++
+          LeafExpr(path + "format", constraint)
+      case TextArea(constraint, expr, _, _, _) => ExprWithPath(path, expr) :: LeafExpr(path, constraint)
+      case UkSortCode(expr)                    => List(ExprWithPath(path, expr))
+      case Date(_, _, _)                       => Nil
+      case CalendarDate                        => Nil
+      case Address(_)                          => Nil
+      case OverseasAddress(_, _, value)        => LeafExpr(path, value)
+      case Choice(_, options, _, _, hints, optionHelpText) =>
+        LeafExpr(path + "choices", options) ++
+          LeafExpr(path + "hints", hints) ++
+          LeafExpr(path + "optionHelpText", optionHelpText)
+      case RevealingChoice(options, _)   => LeafExpr(path, options)
+      case HmrcTaxPeriod(_, idNumber, _) => List(ExprWithPath(path, idNumber))
+      case Group(fields, _, _, repeatLabel, addAnotherText) =>
+        LeafExpr(path, fields) ++
+          LeafExpr(path + "repeatLabel", repeatLabel) ++
+          LeafExpr(path + "repeatAddAnotherText", addAnotherText)
+      case InformationMessage(_, infoText) => LeafExpr(path + "infoText", infoText)
+      case FileUpload()                    => Nil
+      case Time(_, _)                      => Nil
+
+    }
 
 }

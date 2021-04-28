@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import play.api.libs.json.{ Json, OFormat }
 import uk.gov.hmrc.gform.sharedmodel.SmartString
+import uk.gov.hmrc.gform.ops.FormComponentOps
 
 case class Page(
   title: SmartString,
@@ -39,8 +40,32 @@ case class Page(
     case IsRevealingChoice(revealingChoice) => revealingChoice.options.toList.flatMap(_.revealingFields)
     case otherwise                          => otherwise :: Nil
   }
+  val allFormComponentIds: List[FormComponentId] = (fields ++ fields
+    .flatMap {
+      case IsGroup(group)                     => group.fields
+      case IsRevealingChoice(revealingChoice) => revealingChoice.options.toList.flatMap(_.revealingFields)
+      case otherwise                          => Nil
+    })
+    .map(_.id)
+
+  val numericFields: List[FormComponentId] = allFormComponents.filter(_.isNumeric).map(_.id)
 }
 
 object Page {
   implicit val pageFormat: OFormat[Page] = Json.format[Page]
+
+  implicit val leafExprs: LeafExpr[Page] = (path: TemplatePath, t: Page) =>
+    leafExprsNoFields.exprs(path, t) ++
+      LeafExpr(path + "fields", t.fields)
+
+  val leafExprsNoFields: LeafExpr[Page] = (path: TemplatePath, t: Page) =>
+    LeafExpr(path + "title", t.title) ++
+      LeafExpr(path + "description", t.description) ++
+      LeafExpr(path + "shortName", t.shortName) ++
+      LeafExpr(path + "progressIndicator", t.progressIndicator) ++
+      LeafExpr(path + "continueLabel", t.continueLabel) ++
+      LeafExpr(path + "includeIf", t.includeIf) ++
+      LeafExpr(path + "validators", t.validators) ++
+      LeafExpr(path + "instruction", t.instruction)
+
 }

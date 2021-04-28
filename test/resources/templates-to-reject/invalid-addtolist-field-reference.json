@@ -1,0 +1,62 @@
+{
+  "_id": "invalid-addtolist-field-reference",
+  "formName": "Forbidden reference",
+  "sections": [
+    {
+      "type": "addToList",
+      "title": "Add To List",
+      "shortName": "Add To List",
+      "description": "${fieldA}",
+      "summaryName": "Add To List",
+      "addAnotherQuestion": {
+        "id": "addToList",
+        "type": "choice",
+        "label": "Add another?",
+        "format": "yesno"
+      },
+      "pages": [
+        {
+          "title": "Page $n",
+          "fields": [
+            {
+              "id": "fieldA",
+              "type": "text",
+              "label": "Field A",
+              "format": "sterling"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Page Last ${fieldA}",
+      "fields": [
+        {
+          "id": "fieldB",
+          "type": "text",
+          "label": "Field B",
+          "format": "sterling"
+        }
+      ]
+    }
+  ],
+  "emailTemplateId": "confirmation",
+  "authConfig": {
+    "authModule": "anonymous"
+  },
+  "declarationSection": {
+    "title": "Declaration",
+    "fields": []
+  },
+  "acknowledgementSection": {
+    "title": "Confirmation page",
+    "fields": []
+  },
+  "destinations": [
+    {
+      "id": "transitionToSubmitted",
+      "type": "stateTransition",
+      "requiredState": "Submitted"
+    }
+  ]
+}

@@ -97,6 +97,34 @@ class FormComponentRejectSpec extends Spec with TableDrivenPropertyChecks {
     }
   }
 
+  it should "reject template containing invalid reference field" in {
+    val table = Table(
+      // format: off
+      ("json",                                     "expectedMessage"),
+      ("invalid-count-usage",                      "sections.fields.[id=lastInfo].infoText: textA cannot be use with .count function. Only AddToList id can be used with .count"),
+      ("invalid-sum-usage",                        "sections.fields.[id=lastInfo].infoText: textA cannot be use with .sum function. Only numeric fields from Group component, Repeated section or AddToList section can be used with .sum function"),
+      ("invalid-addtolist-field-reference",        "title: fieldA belongs to Add To List section and cannot be referenced outside"),
+      ("invalid-addtolist-cross-reference",        "title: fieldA belongs to different Add To List section"),
+      ("invalid-repeated-section-field-reference", "includeIf: fieldA belongs to Repeated section and cannot be referenced outside"),
+      ("invalid-repeated-section-cross-reference", "fields.[id=fieldB].label: fieldA belongs to different Repeated section"),
+      ("invalid-group-field-reference",            "includeIf: fieldA belongs to Group component and cannot be referenced outside"),
+      ("invalid-group-cross-reference",            "fields.[id=groupB].[id=fieldB].label: fieldA belongs to different Group component"),
+      ("nonexistent-field-reference",              "sections.fields.[id=textA].label: textB doesn't exist in the form"),
+         // format: on
+    )
+
+    forAll(table) { case (fileName, expectedMessage) =>
+      val jsResult = readAsFormTemplate(fileName)
+      jsResult match {
+        case JsSuccess(formTemplate, _) =>
+          val verificationResult: FOpt[Unit] = new Verifier {}.verify(formTemplate)
+          verificationResult.value.futureValue shouldBe Left(UnexpectedState(expectedMessage))
+        case JsError(errors) => fail("Invalid formTemplate definition: " + errors)
+      }
+    }
+
+  }
+
   private def readFile(fileName: String): String =
     Source.fromFile(s"test/resources/templates-to-reject/$fileName.json").mkString
 
