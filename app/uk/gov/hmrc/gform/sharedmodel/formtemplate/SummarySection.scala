@@ -28,13 +28,11 @@ case class SummarySection(
 
 object SummarySection {
 
-  implicit val leafExprs: LeafExpr[SummarySection] = new LeafExpr[SummarySection] {
-    def exprs(path: TemplatePath, t: SummarySection): List[ExprWithPath] =
-      LeafExpr(path + "title", t.title) ++
-        LeafExpr(path + "header", t.header) ++
-        LeafExpr(path + "footer", t.footer) ++
-        LeafExpr(path + "continueLabel", t.continueLabel)
-  }
+  implicit val leafExprs: LeafExpr[SummarySection] = (path: TemplatePath, t: SummarySection) =>
+    LeafExpr(path + "title", t.title) ++
+      LeafExpr(path + "header", t.header) ++
+      LeafExpr(path + "footer", t.footer) ++
+      LeafExpr(path + "continueLabel", t.continueLabel)
 
   def defaultJson(formCategory: FormCategory): JsValue = {
 

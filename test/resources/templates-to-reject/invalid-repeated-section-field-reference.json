@@ -17,13 +17,13 @@
     },
     {
       "title": "Page Last",
-      "includeIf": "${fieldA = ''}",
+      "includeIf": "${fieldA = 0}",
       "fields": [
         {
           "id": "lastInfo",
           "type": "info",
           "label": "",
-          "infoText": "${fieldA}"
+          "infoText": "Info"
         }
       ]
     }

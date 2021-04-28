@@ -24,7 +24,6 @@ case class Instruction(name: Option[SmartString], order: Option[Int])
 object Instruction {
   implicit val format: Format[Instruction] = Json.format[Instruction]
 
-  implicit val leafExprs: LeafExpr[Instruction] = new LeafExpr[Instruction] {
-    def exprs(path: TemplatePath, t: Instruction): List[ExprWithPath] = LeafExpr(path + "name", t.name)
-  }
+  implicit val leafExprs: LeafExpr[Instruction] = (path: TemplatePath, t: Instruction) =>
+    LeafExpr(path + "name", t.name)
 }

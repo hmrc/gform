@@ -54,21 +54,18 @@ case class Page(
 object Page {
   implicit val pageFormat: OFormat[Page] = Json.format[Page]
 
-  implicit val leafExprs: LeafExpr[Page] = new LeafExpr[Page] {
-    def exprs(path: TemplatePath, t: Page): List[ExprWithPath] =
-      leafExprsNoFields.exprs(path, t) ++
-        LeafExpr(path + "fields", t.fields)
-  }
+  implicit val leafExprs: LeafExpr[Page] = (path: TemplatePath, t: Page) =>
+    leafExprsNoFields.exprs(path, t) ++
+      LeafExpr(path + "fields", t.fields)
 
-  val leafExprsNoFields: LeafExpr[Page] = new LeafExpr[Page] {
-    def exprs(path: TemplatePath, t: Page): List[ExprWithPath] =
-      LeafExpr(path + "title", t.title) ++
-        LeafExpr(path + "description", t.description) ++
-        LeafExpr(path + "shortName", t.shortName) ++
-        LeafExpr(path + "progressIndicator", t.progressIndicator) ++
-        LeafExpr(path + "continueLabel", t.continueLabel) ++
-        LeafExpr(path + "includeIf", t.includeIf) ++
-        LeafExpr(path + "validators", t.validators) ++
-        LeafExpr(path + "instruction", t.instruction)
-  }
+  val leafExprsNoFields: LeafExpr[Page] = (path: TemplatePath, t: Page) =>
+    LeafExpr(path + "title", t.title) ++
+      LeafExpr(path + "description", t.description) ++
+      LeafExpr(path + "shortName", t.shortName) ++
+      LeafExpr(path + "progressIndicator", t.progressIndicator) ++
+      LeafExpr(path + "continueLabel", t.continueLabel) ++
+      LeafExpr(path + "includeIf", t.includeIf) ++
+      LeafExpr(path + "validators", t.validators) ++
+      LeafExpr(path + "instruction", t.instruction)
+
 }

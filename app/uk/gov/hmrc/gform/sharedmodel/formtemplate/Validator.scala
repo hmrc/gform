@@ -35,14 +35,13 @@ case object Validator {
   }
   implicit val format: OFormat[Validator] = OFormatWithTemplateReadFallback(templateReads)
 
-  implicit val leafExprs: LeafExpr[Validator] = new LeafExpr[Validator] {
-    def exprs(path: TemplatePath, t: Validator): List[ExprWithPath] = t match {
+  implicit val leafExprs: LeafExpr[Validator] = (path: TemplatePath, t: Validator) =>
+    t match {
       case HmrcRosmRegistrationCheckValidator(errorMessage, _, utr, postcode) =>
         LeafExpr(path + "errorMessage", errorMessage) ++ List(utr, postcode).map(e => ExprWithPath(path, e))
       case BankAccountModulusCheck(errorMessage, accountNumber, sortCode) =>
         LeafExpr(path + "errorMessage", errorMessage) ++ List(accountNumber, sortCode).map(e => ExprWithPath(path, e))
     }
-  }
 }
 
 case class HmrcRosmRegistrationCheckValidator(

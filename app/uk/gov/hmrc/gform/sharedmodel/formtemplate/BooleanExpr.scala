@@ -54,31 +54,29 @@ object BooleanExpr {
     Format(reads, writes)
   }
 
-  implicit val leafExprs: LeafExpr[BooleanExpr] = new LeafExpr[BooleanExpr] {
-    def exprs(path: TemplatePath, be: BooleanExpr): List[ExprWithPath] = {
+  implicit val leafExprs: LeafExpr[BooleanExpr] = (path: TemplatePath, be: BooleanExpr) => {
 
-      def withPath(xs: Expr*): List[ExprWithPath] = xs.toList.map(x => ExprWithPath(path, x))
+    def withPath(xs: Expr*): List[ExprWithPath] = xs.toList.map(x => ExprWithPath(path, x))
 
-      def loop(t: BooleanExpr): List[ExprWithPath] = t match {
-        case Equals(left: Expr, right: Expr)                 => withPath(left, right)
-        case GreaterThan(left: Expr, right: Expr)            => withPath(left, right)
-        case GreaterThanOrEquals(left: Expr, right: Expr)    => withPath(left, right)
-        case LessThan(left: Expr, right: Expr)               => withPath(left, right)
-        case LessThanOrEquals(left: Expr, right: Expr)       => withPath(left, right)
-        case Not(e: BooleanExpr)                             => loop(e)
-        case Or(left: BooleanExpr, right: BooleanExpr)       => loop(left) ++ loop(right)
-        case And(left: BooleanExpr, right: BooleanExpr)      => loop(left) ++ loop(right)
-        case IsTrue                                          => Nil
-        case IsFalse                                         => Nil
-        case Contains(multiValueField: FormCtx, value: Expr) => withPath(value, multiValueField)
-        case In(value: Expr, dataSource: DataSource)         => withPath(value)
-        case MatchRegex(formCtx: FormCtx, regex: Regex)      => withPath(formCtx)
-        case DateBefore(left: DateExpr, right: DateExpr)     => withPath(left.leafExprs ++ right.leafExprs: _*)
-        case DateAfter(left: DateExpr, right: DateExpr)      => withPath(left.leafExprs ++ right.leafExprs: _*)
-        case FormPhase(value: FormPhaseValue)                => Nil
-      }
-      loop(be)
+    def loop(t: BooleanExpr): List[ExprWithPath] = t match {
+      case Equals(left: Expr, right: Expr)                 => withPath(left, right)
+      case GreaterThan(left: Expr, right: Expr)            => withPath(left, right)
+      case GreaterThanOrEquals(left: Expr, right: Expr)    => withPath(left, right)
+      case LessThan(left: Expr, right: Expr)               => withPath(left, right)
+      case LessThanOrEquals(left: Expr, right: Expr)       => withPath(left, right)
+      case Not(e: BooleanExpr)                             => loop(e)
+      case Or(left: BooleanExpr, right: BooleanExpr)       => loop(left) ++ loop(right)
+      case And(left: BooleanExpr, right: BooleanExpr)      => loop(left) ++ loop(right)
+      case IsTrue                                          => Nil
+      case IsFalse                                         => Nil
+      case Contains(multiValueField: FormCtx, value: Expr) => withPath(value, multiValueField)
+      case In(value: Expr, dataSource: DataSource)         => withPath(value)
+      case MatchRegex(formCtx: FormCtx, regex: Regex)      => withPath(formCtx)
+      case DateBefore(left: DateExpr, right: DateExpr)     => withPath(left.leafExprs ++ right.leafExprs: _*)
+      case DateAfter(left: DateExpr, right: DateExpr)      => withPath(left.leafExprs ++ right.leafExprs: _*)
+      case FormPhase(value: FormPhaseValue)                => Nil
     }
+    loop(be)
 
   }
 }

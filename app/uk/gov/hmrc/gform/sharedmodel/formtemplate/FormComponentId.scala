@@ -66,7 +66,7 @@ object FormComponentId {
     else
       JsError(errorMessage(s))
 
-  implicit val leafExprs: LeafExpr[FormComponentId] = new LeafExpr[FormComponentId] {
-    def exprs(path: TemplatePath, t: FormComponentId): List[ExprWithPath] = List(ExprWithPath(path, FormCtx(t)))
-  }
+  implicit val leafExprs: LeafExpr[FormComponentId] = (path: TemplatePath, t: FormComponentId) =>
+    List(ExprWithPath(path, FormCtx(t)))
+
 }

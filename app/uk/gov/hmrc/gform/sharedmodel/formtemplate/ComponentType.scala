@@ -141,15 +141,14 @@ object OverseasAddress {
   object Value {
     implicit val format: OFormat[Value] = derived.oformat()
 
-    implicit val leafExprs: LeafExpr[Value] = new LeafExpr[Value] {
-      def exprs(path: TemplatePath, t: Value): List[ExprWithPath] =
-        LeafExpr(path + "line1", t.line1) ++
-          LeafExpr(path + "line2", t.line2) ++
-          LeafExpr(path + "line3", t.line3) ++
-          LeafExpr(path + "city", t.city) ++
-          LeafExpr(path + "postcode", t.postcode) ++
-          LeafExpr(path + "country", t.country)
-    }
+    implicit val leafExprs: LeafExpr[Value] = (path: TemplatePath, t: Value) =>
+      LeafExpr(path + "line1", t.line1) ++
+        LeafExpr(path + "line2", t.line2) ++
+        LeafExpr(path + "line3", t.line3) ++
+        LeafExpr(path + "city", t.city) ++
+        LeafExpr(path + "postcode", t.postcode) ++
+        LeafExpr(path + "country", t.country)
+
   }
 
   implicit val format: OFormat[OverseasAddress] = derived.oformat()
@@ -192,12 +191,10 @@ case class RevealingChoiceElement(
 object RevealingChoiceElement {
   implicit val format: OFormat[RevealingChoiceElement] = derived.oformat()
 
-  implicit val leafExprs: LeafExpr[RevealingChoiceElement] = new LeafExpr[RevealingChoiceElement] {
-    def exprs(path: TemplatePath, t: RevealingChoiceElement): List[ExprWithPath] =
-      LeafExpr(path + "choice", t.choice) ++
-        LeafExpr(path + "revealingFields", t.revealingFields) ++
-        LeafExpr(path + "hint", t.hint)
-  }
+  implicit val leafExprs: LeafExpr[RevealingChoiceElement] = (path: TemplatePath, t: RevealingChoiceElement) =>
+    LeafExpr(path + "choice", t.choice) ++
+      LeafExpr(path + "revealingFields", t.revealingFields) ++
+      LeafExpr(path + "hint", t.hint)
 
 }
 case class RevealingChoice(options: NonEmptyList[RevealingChoiceElement], multiValue: Boolean) extends ComponentType
@@ -310,8 +307,8 @@ object ComponentType {
   }
   implicit val format: OFormat[ComponentType] = derived.oformat()
 
-  implicit val leafExprs: LeafExpr[ComponentType] = new LeafExpr[ComponentType] {
-    def exprs(path: TemplatePath, t: ComponentType): List[ExprWithPath] = t match {
+  implicit val leafExprs: LeafExpr[ComponentType] = (path: TemplatePath, t: ComponentType) =>
+    t match {
       case Text(constraint, expr, _, _, prefix, suffix) =>
         ExprWithPath(path + "value", expr) ::
           LeafExpr(path + "prefix", prefix) ++
@@ -336,7 +333,7 @@ object ComponentType {
       case InformationMessage(_, infoText) => LeafExpr(path + "infoText", infoText)
       case FileUpload()                    => Nil
       case Time(_, _)                      => Nil
+
     }
-  }
 
 }

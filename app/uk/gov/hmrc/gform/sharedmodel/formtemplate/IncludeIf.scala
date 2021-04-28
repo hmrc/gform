@@ -27,9 +27,6 @@ object IncludeIf {
 
   implicit val format: OFormat[IncludeIf] = OFormatWithTemplateReadFallback(templateReads)
 
-  implicit val leafExprs = new LeafExpr[IncludeIf] {
-    def exprs(path: TemplatePath, t: IncludeIf): List[ExprWithPath] =
-      implicitly[LeafExpr[BooleanExpr]].exprs(path, t.booleanExpr)
-  }
+  implicit val leafExprs: LeafExpr[IncludeIf] = (path: TemplatePath, t: IncludeIf) => LeafExpr(path, t.booleanExpr)
 
 }

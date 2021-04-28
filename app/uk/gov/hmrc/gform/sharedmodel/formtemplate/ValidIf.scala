@@ -26,9 +26,6 @@ object ValidIf {
 
   implicit val format: OFormat[ValidIf] = OFormatWithTemplateReadFallback(templateReads)
 
-  implicit val leafExprs = new LeafExpr[ValidIf] {
-    def exprs(path: TemplatePath, t: ValidIf): List[ExprWithPath] =
-      implicitly[LeafExpr[BooleanExpr]].exprs(path + "validIf", t.booleanExpr)
-  }
+  implicit val leafExprs: LeafExpr[ValidIf] = (path: TemplatePath, t: ValidIf) => LeafExpr(path, t.booleanExpr)
 
 }

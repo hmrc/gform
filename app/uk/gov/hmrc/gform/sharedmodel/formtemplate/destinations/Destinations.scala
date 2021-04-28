@@ -48,8 +48,8 @@ object Destinations {
         safeCast[DestinationPrint, Destinations](destinationPrintFormat)
     )
 
-  implicit val leafExprs: LeafExpr[Destinations] = new LeafExpr[Destinations] {
-    def exprs(path: TemplatePath, t: Destinations): List[ExprWithPath] = t match {
+  implicit val leafExprs: LeafExpr[Destinations] = (path: TemplatePath, t: Destinations) =>
+    t match {
       case DestinationList(destinations, acknowledgementSection, declarationSection) =>
         LeafExpr(path + "destinations", destinations) ++
           LeafExpr(path + "declarationSection", declarationSection) ++
@@ -59,6 +59,4 @@ object Destinations {
           LeafExpr(path + "printSection.pdf", pdf) ++
           LeafExpr(path + "printSection.pdfNotification", pdfNotification)
     }
-
-  }
 }

@@ -58,7 +58,7 @@ final case class ExprWithPath(path: TemplatePath, expr: Expr) {
   }
 }
 
-trait LeafExpr[-T] {
+abstract class LeafExpr[-T] {
   def exprs(path: TemplatePath, t: T): List[ExprWithPath]
 }
 

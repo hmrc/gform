@@ -80,18 +80,17 @@ object FormComponent {
 
   implicit val format: OFormat[FormComponent] = OFormatWithTemplateReadFallback(templateReads)
 
-  implicit val leafExprs = new LeafExpr[FormComponent] {
-    def exprs(path: TemplatePath, t: FormComponent): List[ExprWithPath] =
-      LeafExpr(path + s"[id=${t.id}]", t.`type`) ++
-        LeafExpr(path + s"[id=${t.id}].label", t.label) ++
-        LeafExpr(path + s"[id=${t.id}].helpText", t.helpText) ++
-        LeafExpr(path + s"[id=${t.id}].shortName", t.shortName) ++
-        LeafExpr(path + s"[id=${t.id}].errorMessage", t.errorMessage) ++
-        LeafExpr(path + s"[id=${t.id}].includeIf", t.includeIf) ++
-        LeafExpr(path + s"[id=${t.id}].validIf", t.validIf) ++
-        LeafExpr(path + s"[id=${t.id}].validators", t.validators) ++
-        LeafExpr(path + s"[id=${t.id}].instruction", t.instruction)
-  }
+  implicit val leafExprs: LeafExpr[FormComponent] = (path: TemplatePath, t: FormComponent) =>
+    LeafExpr(path + s"[id=${t.id}]", t.`type`) ++
+      LeafExpr(path + s"[id=${t.id}].label", t.label) ++
+      LeafExpr(path + s"[id=${t.id}].helpText", t.helpText) ++
+      LeafExpr(path + s"[id=${t.id}].shortName", t.shortName) ++
+      LeafExpr(path + s"[id=${t.id}].errorMessage", t.errorMessage) ++
+      LeafExpr(path + s"[id=${t.id}].includeIf", t.includeIf) ++
+      LeafExpr(path + s"[id=${t.id}].validIf", t.validIf) ++
+      LeafExpr(path + s"[id=${t.id}].validators", t.validators) ++
+      LeafExpr(path + s"[id=${t.id}].instruction", t.instruction)
+
 }
 
 object IsGroup {

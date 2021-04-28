@@ -195,13 +195,13 @@ object TextConstraint {
 
   def filterNumberValue(s: String): String = s.filterNot(c => (c == '£' || c == ','))
 
-  implicit def leafExprs: LeafExpr[TextConstraint] = new LeafExpr[TextConstraint] {
-    def exprs(path: TemplatePath, t: TextConstraint): List[ExprWithPath] = t match {
+  implicit def leafExprs: LeafExpr[TextConstraint] = (path: TemplatePath, t: TextConstraint) =>
+    t match {
       case Lookup(register: Register, selectionCriteria: Option[List[SelectionCriteria]]) =>
         LeafExpr(path + "selectionCriteria", selectionCriteria)
       case _ => List.empty[ExprWithPath]
     }
-  }
+
 }
 
 sealed trait Register
@@ -258,13 +258,13 @@ object SelectionCriteriaValue {
   }
   implicit val format: OFormat[SelectionCriteriaValue] = OFormatWithTemplateReadFallback(reads)
 
-  implicit val leafExprs = new LeafExpr[SelectionCriteriaValue] {
-    def exprs(path: TemplatePath, t: SelectionCriteriaValue): List[ExprWithPath] = t match {
+  implicit val leafExprs: LeafExpr[SelectionCriteriaValue] = (path: TemplatePath, t: SelectionCriteriaValue) =>
+    t match {
       case SelectionCriteriaExpr(formCtx)         => List(ExprWithPath(path, formCtx))
       case SelectionCriteriaReference(formCtx, _) => List(ExprWithPath(path, formCtx))
       case SelectionCriteriaSimpleValue(_)        => Nil
+
     }
-  }
 }
 
 case class SelectionCriteria(column: CsvColumnName, value: SelectionCriteriaValue)
@@ -283,10 +283,9 @@ object SelectionCriteria {
 
   implicit val format: OFormat[SelectionCriteria] = OFormatWithTemplateReadFallback(reads)
 
-  implicit val leafExprs: LeafExpr[SelectionCriteria] = new LeafExpr[SelectionCriteria] {
-    def exprs(path: TemplatePath, t: SelectionCriteria): List[ExprWithPath] =
-      implicitly[LeafExpr[SelectionCriteriaValue]].exprs(path + "value", t.value)
-  }
+  implicit val leafExprs: LeafExpr[SelectionCriteria] = (path: TemplatePath, t: SelectionCriteria) =>
+    implicitly[LeafExpr[SelectionCriteriaValue]].exprs(path + "value", t.value)
+
 }
 
 object TextExpression {

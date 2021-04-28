@@ -40,9 +40,8 @@ object SmartString {
 
   implicit val format: Format[SmartString] = OFormatWithTemplateReadFallback(SmartStringTemplateReader.templateReads)
 
-  implicit val leafExprs: LeafExpr[SmartString] = new LeafExpr[SmartString] {
-    def exprs(path: TemplatePath, t: SmartString): List[ExprWithPath] = t.interpolations.map(ExprWithPath(path, _))
-  }
+  implicit val leafExprs: LeafExpr[SmartString] = (path: TemplatePath, t: SmartString) =>
+    t.interpolations.map(ExprWithPath(path, _))
 }
 
 object SmartStringTemplateReader {
