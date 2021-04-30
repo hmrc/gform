@@ -25,6 +25,7 @@ import scalax.collection.GraphEdge._
 import uk.gov.hmrc.gform.core.{ Invalid, Valid, ValidationResult }
 import uk.gov.hmrc.gform.core.ValidationResult.{ BooleanToValidationResultSyntax, validationResultMonoid }
 import uk.gov.hmrc.gform.models.constraints.{ FunctionsChecker, MutualReferenceChecker, ReferenceInfo, ReferenceKind, ReferenceKindDescriptor }
+import uk.gov.hmrc.gform.sharedmodel.SmartString
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.graph.DependencyGraph._
 import uk.gov.hmrc.gform.formtemplate.FormTemplateValidatorHelper._
@@ -120,6 +121,31 @@ object FormTemplateValidator {
         invalid(path, formComponentId)
       case _ => Valid
     }
+  }
+
+  def validateSectionShortNames(formTemplate: FormTemplate): ValidationResult = {
+
+    def checkEmpty(maybeSmartString: Option[SmartString]): Boolean =
+      maybeSmartString.fold(false) { smartString =>
+        smartString.localised.m.values.forall(_.trim.isEmpty)
+      }
+
+    def checkPage(page: Page): ValidationResult =
+      if (checkEmpty(page.shortName)) {
+        val title = page.title.rawValue(LangADT.En)
+        Invalid(
+          s"shortName is empty for title: '$title'. If you want to hide page title on summary page, use 'presentationHint': 'invisiblePageTitle' instead."
+        )
+      } else Valid
+
+    val isEmptyShortNamePresent: List[ValidationResult] = formTemplate.sections.flatMap {
+      case s: Section.NonRepeatingPage => checkPage(s.page) :: Nil
+      case s: Section.RepeatingPage    => checkPage(s.page) :: Nil
+      case s: Section.AddToList        => s.pages.toList.map(page => checkPage(page))
+    }
+
+    isEmptyShortNamePresent.find(!_.isValid).getOrElse(Valid)
+
   }
 
   def validateReferencesConstraints(formTemplate: FormTemplate): ValidationResult = {
