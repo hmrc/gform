@@ -16,11 +16,13 @@
 
 package uk.gov.hmrc.gform.core
 
-import cats.Monoid
+import cats.{ Eq, Monoid }
+import cats.syntax.eq._
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 
 //TODO: use either
 sealed trait ValidationResult {
+  def isValid: Boolean = this === Valid
   def toEither: Opt[Unit] = this match {
     case Valid           => Right(())
     case Invalid(reason) => Left(UnexpectedState(reason))
@@ -44,4 +46,6 @@ object ValidationResult {
   implicit class BooleanToValidationResultSyntax(b: Boolean) {
     def validationResult(invalidReason: => String): ValidationResult = if (b) Valid else Invalid(invalidReason)
   }
+
+  implicit val equal: Eq[ValidationResult] = Eq.fromUniversalEquals
 }

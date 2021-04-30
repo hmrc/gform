@@ -1,0 +1,52 @@
+{
+  "_id": "empty-shortname-add-to-list",
+  "formName": "Empty shortName",
+  "sections": [
+    {
+      "type": "addToList",
+      "title": "Add To List",
+      "shortName": "Add To List",
+      "description": "${fieldA}",
+      "summaryName": "Add To List",
+      "addAnotherQuestion": {
+        "id": "addToListA",
+        "type": "choice",
+        "label": "Add another?",
+        "format": "yesno"
+      },
+      "pages": [
+        {
+          "title": "Page $n",
+          "shortName": " ",
+          "fields": [
+            {
+              "id": "fieldA",
+              "type": "text",
+              "label": "Field A",
+              "format": "sterling"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "emailTemplateId": "confirmation",
+  "authConfig": {
+    "authModule": "anonymous"
+  },
+  "declarationSection": {
+    "title": "Declaration",
+    "fields": []
+  },
+  "acknowledgementSection": {
+    "title": "Confirmation page",
+    "fields": []
+  },
+  "destinations": [
+    {
+      "id": "transitionToSubmitted",
+      "type": "stateTransition",
+      "requiredState": "Submitted"
+    }
+  ]
+}

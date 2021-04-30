@@ -53,6 +53,7 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validateInstructions(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateInvalidReferences(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateReferencesConstraints(formTemplate).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateSectionShortNames(formTemplate).toEither)
     } yield ()
 
   }

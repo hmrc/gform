@@ -23,7 +23,7 @@ trait PresentationHintGen {
     InvisibleInSummary,
     SummariseGroupAsGrid,
     TotalValue,
-    InvisiblePageTitleInSummary
+    InvisiblePageTitle
   )
 }
 
