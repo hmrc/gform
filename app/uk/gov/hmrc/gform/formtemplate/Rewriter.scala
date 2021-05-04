@@ -22,6 +22,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import cats.implicits._
 import scala.util.{ Failure, Success, Try }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
 
 trait Rewriter {
   def rewrite(formTemplate: FormTemplate): FOpt[FormTemplate] = fromOptA(validateAndRewriteBooleanExprs(formTemplate))
@@ -93,12 +94,17 @@ trait Rewriter {
 
     val fieldsIncludeIfs: List[IncludeIf] = traverseFormComponents(formComponentIncludeIf)
 
+    val acknowledgementSectionIncludeIfs: List[IncludeIf] = formTemplate.destinations match {
+      case dl: DestinationList => dl.acknowledgementSection.fields.flatMap(_.includeIf)
+      case _                   => Nil
+    }
+
     val includeIfs: List[IncludeIf] = formTemplate.sections.flatMap {
       case Section.NonRepeatingPage(page) => page.includeIf.toList
       case Section.RepeatingPage(page, _) => page.includeIf.toList
       case Section.AddToList(_, _, _, _, includeIf, _, pages, _, _, _, _) =>
         includeIf.toList ++ pages.toList.flatMap(_.includeIf.toList)
-    } ++ fieldsIncludeIfs
+    } ++ fieldsIncludeIfs ++ acknowledgementSectionIncludeIfs
 
     def validate(
       c: String,
@@ -225,9 +231,15 @@ trait Rewriter {
       def replaceDeclarationSection(declarationSection: DeclarationSection): DeclarationSection =
         declarationSection.copy(fields = replaceFields(declarationSection.fields))
 
+      def replaceAcknowledgementSection(acknowledgementSection: AcknowledgementSection): AcknowledgementSection =
+        acknowledgementSection.copy(fields = replaceFields(acknowledgementSection.fields))
+
       def replaceDestinations(destinations: Destinations): Destinations = destinations match {
         case dl: Destinations.DestinationList =>
-          dl.copy(declarationSection = replaceDeclarationSection(dl.declarationSection))
+          dl.copy(
+            declarationSection = replaceDeclarationSection(dl.declarationSection),
+            acknowledgementSection = replaceAcknowledgementSection(dl.acknowledgementSection)
+          )
         case dp: Destinations.DestinationPrint => dp
       }
 
