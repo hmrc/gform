@@ -184,12 +184,23 @@ object ValueParser {
     | FormComponentId.unanchoredIdValidation ~ ".count" ^^ { (loc, value, _) =>
       Count(FormComponentId(value))
     }
+    | FormComponentId.unanchoredIdValidation ~ "." ~ addressDetail ^^ { (loc, value, _, addressDetail) =>
+      AddressLens(FormComponentId(value), addressDetail)
+    }
     | anyDigitConst ^^ { (loc, str) =>
       str
     }
     | FormComponentId.unanchoredIdValidation ^^ { (loc, fn) =>
       FormCtx(FormComponentId(fn))
     })
+
+  lazy val addressDetail: Parser[AddressDetail] =
+    "line1" ^^^ AddressDetail.Line1 |
+      "line2" ^^^ AddressDetail.Line2 |
+      "line3" ^^^ AddressDetail.Line3 |
+      "line4" ^^^ AddressDetail.Line4 |
+      "postcode" ^^^ AddressDetail.Postcode |
+      "country" ^^^ AddressDetail.Country
 
   lazy val formCtxFieldDate: Parser[DateExpr] = "form" ~ "." ~ FormComponentId.unanchoredIdValidation ^^ {
     (_, _, _, fieldName) =>

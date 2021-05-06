@@ -37,6 +37,31 @@ final case class Else(field1: Expr, field2: Expr) extends Expr
 final case class Sum(field1: Expr) extends Expr
 final case class Count(formComponentId: FormComponentId) extends Expr
 final case class FormCtx(formComponentId: FormComponentId) extends Expr
+final case class AddressLens(formComponentId: FormComponentId, detail: AddressDetail) extends Expr
+
+sealed trait AddressDetail {
+
+  import AddressDetail._
+  def functionName: String = this match {
+    case Line1    => "line1"
+    case Line2    => "line2"
+    case Line3    => "line3"
+    case Line4    => "line4"
+    case Postcode => "postcode"
+    case Country  => "country"
+  }
+}
+
+object AddressDetail {
+  case object Line1 extends AddressDetail
+  case object Line2 extends AddressDetail
+  case object Line3 extends AddressDetail
+  case object Line4 extends AddressDetail
+  case object Postcode extends AddressDetail
+  case object Country extends AddressDetail
+
+  implicit val format: OFormat[AddressDetail] = derived.oformat()
+}
 
 object FormCtx {
   lazy val readsForTemplateJson: Reads[FormCtx] = Reads {

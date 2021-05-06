@@ -25,6 +25,17 @@ import uk.gov.hmrc.gform.formtemplate.AcknowledgementSectionMaker
 sealed trait Section extends Product with Serializable {
   def title(): SmartString
   def expandedFormComponents(): List[FormComponent]
+
+  def formComponents[A](predicate: PartialFunction[FormComponent, A]): List[A] = fold(_.page.formComponents(predicate))(
+    _.page.formComponents(predicate)
+  )(_.pages.toList.flatMap(_.formComponents(predicate)))
+
+  def fold[B](f: Section.NonRepeatingPage => B)(g: Section.RepeatingPage => B)(h: Section.AddToList => B): B =
+    this match {
+      case n: Section.NonRepeatingPage => f(n)
+      case r: Section.RepeatingPage    => g(r)
+      case a: Section.AddToList        => h(a)
+    }
 }
 
 object Section {

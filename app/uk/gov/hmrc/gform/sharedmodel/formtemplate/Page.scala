@@ -35,6 +35,8 @@ case class Page(
 ) {
   lazy val expandedFormComponents: List[FormComponent] = fields.flatMap(_.expandedFormComponents)
 
+  def formComponents[A](predicate: PartialFunction[FormComponent, A]): List[A] = allFormComponents.collect(predicate)
+
   val allFormComponents: List[FormComponent] = fields.flatMap {
     case IsGroup(group)                     => group.fields
     case IsRevealingChoice(revealingChoice) => revealingChoice.options.toList.flatMap(_.revealingFields)

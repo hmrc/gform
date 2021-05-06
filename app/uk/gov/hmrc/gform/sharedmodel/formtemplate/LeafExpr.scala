@@ -46,6 +46,7 @@ final case class ExprWithPath(path: TemplatePath, expr: Expr) {
     case f @ FormCtx(formComponentId: FormComponentId) => ReferenceInfo.FormCtxExpr(path, f) :: Nil
     case s @ Sum(field1: Expr)                         => ReferenceInfo.SumExpr(path, s) :: Nil
     case c @ Count(formComponentId: FormComponentId)   => ReferenceInfo.CountExpr(path, c) :: Nil
+    case a @ AddressLens(_, _)                         => ReferenceInfo.AddressExpr(path, a) :: Nil
     case AuthCtx(value: AuthInfo)                      => Nil
     case UserCtx(value: UserField)                     => Nil
     case Constant(value: String)                       => Nil

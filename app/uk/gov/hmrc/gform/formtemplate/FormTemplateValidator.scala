@@ -24,7 +24,7 @@ import scalax.collection.Graph
 import scalax.collection.GraphEdge._
 import uk.gov.hmrc.gform.core.{ Invalid, Valid, ValidationResult }
 import uk.gov.hmrc.gform.core.ValidationResult.{ BooleanToValidationResultSyntax, validationResultMonoid }
-import uk.gov.hmrc.gform.models.constraints.{ FunctionsChecker, MutualReferenceChecker, ReferenceInfo, ReferenceKind, ReferenceKindDescriptor }
+import uk.gov.hmrc.gform.models.constraints.{ AddressLensChecker, FunctionsChecker, MutualReferenceChecker, ReferenceInfo, ReferenceKind, ReferenceKindDescriptor }
 import uk.gov.hmrc.gform.sharedmodel.SmartString
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.graph.DependencyGraph._
@@ -209,6 +209,11 @@ object FormTemplateValidator {
     Monoid.combineAll(List(mrc.result, functionsChecker.result, addToListChecks, groupChecks, repeatingPagesChecks))
   }
 
+  def validateAddressReferencesConstraints(formTemplate: FormTemplate): ValidationResult = {
+    val addressLensChecker = new AddressLensChecker(formTemplate)
+    addressLensChecker.result
+  }
+
   private def checkReferenceInfo[A](xs: List[ExprWithPath], set: Set[FormComponentId])(implicit
     descriptor: ReferenceKindDescriptor[A]
   ): ValidationResult = {
@@ -374,13 +379,14 @@ object FormTemplateValidator {
         fieldNamesIds
           .contains(value)
           .validationResult(s"Form field '$value' is not defined in form template.")
-      case ParamCtx(_)        => Valid
-      case AuthCtx(_)         => Valid
-      case UserCtx(_)         => Valid
-      case Constant(_)        => Valid
-      case Value              => Valid
-      case FormTemplateCtx(_) => Valid
-      case LinkCtx(_)         => Valid
+      case ParamCtx(_)           => Valid
+      case AuthCtx(_)            => Valid
+      case UserCtx(_)            => Valid
+      case Constant(_)           => Valid
+      case Value                 => Valid
+      case FormTemplateCtx(_)    => Valid
+      case LinkCtx(_)            => Valid
+      case AddressLens(value, _) => validate(FormCtx(value), sections)
       case DateCtx(value) =>
         val invalidFCIds = value.leafExprs
           .collect { case FormCtx(formComponentId) =>
