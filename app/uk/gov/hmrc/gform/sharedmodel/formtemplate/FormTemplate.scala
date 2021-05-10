@@ -42,7 +42,12 @@ case class FormTemplate(
   displayHMRCLogo: Boolean,
   referrerConfig: Option[ReferrerConfig] = None
 ) {
-  lazy val expandedFormComponentsInMainSections: List[FormComponent] = sections.flatMap(_.expandedFormComponents)
+
+  def formComponents[A](predicate: PartialFunction[FormComponent, A]): List[A] = sections.flatMap { section =>
+    section.formComponents(predicate)
+  }
+
+  def expandedFormComponentsInMainSections: List[FormComponent] = sections.flatMap(_.expandedFormComponents)
 }
 
 object FormTemplate {

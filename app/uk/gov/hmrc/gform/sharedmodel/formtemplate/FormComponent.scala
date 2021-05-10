@@ -108,3 +108,7 @@ object IsTextArea {
 object IsRevealingChoice {
   def unapply(fc: FormComponent): Option[RevealingChoice] = fc.`type`.cast[RevealingChoice]
 }
+
+object IsAddress {
+  def unapply(fc: FormComponent): Option[Address] = fc.`type`.cast[Address]
+}
