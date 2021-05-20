@@ -22,8 +22,9 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 class AddressLensChecker(formTemplate: FormTemplate) {
 
-  private val allAddressIds: Set[FormComponentId] = formTemplate.formComponents { case fc @ IsAddress(_) =>
-    fc.id
+  private val allAddressIds: Set[FormComponentId] = formTemplate.formComponents {
+    case fc @ (IsAddress(_) | IsOverseasAddress(_)) =>
+      fc.id
   }.toSet
 
   private val allExpressions: List[ExprWithPath] = LeafExpr(TemplatePath.root, formTemplate)
@@ -32,7 +33,7 @@ class AddressLensChecker(formTemplate: FormTemplate) {
     allExpressions.flatMap(_.referenceInfos).foldMap {
       case ReferenceInfo.AddressExpr(path, AddressLens(formComponentId, detail)) if !allAddressIds(formComponentId) =>
         Invalid(
-          s"${path.path}: $formComponentId cannot be use with .${detail.functionName} function. $formComponentId is not an address component"
+          s"${path.path}: $formComponentId cannot be use with .${detail.functionName} function. $formComponentId is not an Address or OverseasAddress component"
         )
       case _ => Valid
     }
