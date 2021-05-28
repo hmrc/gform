@@ -79,6 +79,10 @@ object FormTemplatesControllerRequestHandler {
 
   val missingDmsFormId = (id: String) => s"For Destination $id, dmsFormId is missing."
 
+  val invalidGroupComponentInDeclarationSection = JsError(
+    """Group component is not allowed in Declaration section."""
+  )
+
   def normaliseJSON(jsonValue: JsValue): JsResult[JsObject] = {
 
     val drmValue =
@@ -195,7 +199,13 @@ object FormTemplatesControllerRequestHandler {
         case None => JsSuccess(())
       }
 
-    sectionValidations andKeep dmsFormIdValidations andKeep jsonValue.transform(
+    val declarationSectionValidations: JsResult[Unit] = (jsonValue \ "declarationSection" \ "fields").toOption match {
+      case Some(fields) if fields.as[JsArray].value.flatMap(jv => (jv \ "type").asOpt[String]).contains("group") =>
+        invalidGroupComponentInDeclarationSection
+      case _ => JsSuccess(())
+    }
+
+    declarationSectionValidations andKeep sectionValidations andKeep dmsFormIdValidations andKeep jsonValue.transform(
       pruneShowContinueOrDeletePage andThen pruneAcknowledgementSection andThen prunePrintSection andThen pruneDeclarationSection and drmValue and drmShowContinueOrDeletePage and ensureDisplayHMRCLogo and ensureFormCategory and
         ensureLanguages and ensureSummarySection and ensureParentFormSubmissionRefs and destinationsOrPrintSection and transformAndMoveAcknowledgementSection and moveDestinations and moveDeclarationSection reduce
     )

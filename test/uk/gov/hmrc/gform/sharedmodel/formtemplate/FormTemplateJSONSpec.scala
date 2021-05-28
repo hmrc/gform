@@ -467,4 +467,63 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
+  it should "return validation error when declarationSection has Group component" in {
+
+    val input = Json.parse("""
+                             |{
+                             |  "formCategory": "letter",
+                             |  "draftRetrievalMethod": "formAccessCodeForAgents",
+                             |  "showContinueOrDeletePage": "false",
+                             |  "parentFormSubmissionRefs": [
+                             |    "123",
+                             |    "456"
+                             |  ],
+                             |  "destinations": [
+                             |    {
+                             |      "id": "HMRCDMS",
+                             |      "type": "hmrcDms",
+                             |      "dmsFormId": "TST123",
+                             |      "customerId": "${auth.gg}",
+                             |      "classificationType": "BT-NRU-Environmental",
+                             |      "businessArea": "FinanceOpsCorpT"
+                             |    }
+                             |  ],
+                             |  "acknowledgementSection": {
+                             |    "shortName": "Acknowledgement Page",
+                             |    "title": "Acknowledgement Page",
+                             |    "fields": [
+                             |      {
+                             |        "type": "info",
+                             |        "id": "ackpageInfo",
+                             |        "label": "SomeContent",
+                             |        "infoText": "SomeContent"
+                             |      }
+                             |    ]
+                             |  },
+                             |  "declarationSection": {
+                             |      "title": "Declaration",
+                             |      "shortName": "Declaration",
+                             |      "fields": [
+                             |        {
+                             |          "id": "declarationSectionGroup",
+                             |          "type": "group",
+                             |          "label": "Declaration Section Group label",
+                             |          "fields": [
+                             |              {
+                             |                  "id": "firstName",
+                             |                  "format": "text",
+                             |                  "label": "First name"
+                             |              }
+                             |          ]
+                             |        }
+                             |      ]
+                             |   }
+                             |}
+      """.stripMargin)
+
+    FormTemplatesControllerRequestHandler.normaliseJSON(input) should be(
+      FormTemplatesControllerRequestHandler.invalidGroupComponentInDeclarationSection
+    )
+  }
+
 }
