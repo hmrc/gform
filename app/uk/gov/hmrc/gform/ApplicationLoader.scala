@@ -88,7 +88,7 @@ class ApplicationModule(context: Context)
   private val timeModule = new TimeModule
   val fileUploadModule = new FileUploadModule(configModule, wSHttpModule, timeModule, akkaModule)
   private val mongoModule = new MongoModule(playComponents)
-  val formTemplateModule = new FormTemplateModule(controllerComponents, mongoModule)
+  val formTemplateModule = new FormTemplateModule(controllerComponents, emailModule, mongoModule)
   protected val shortLivedCacheModule = new Save4LaterModule(configModule, wSHttpModule)
   val pdfGeneratorModule = new PdfGeneratorModule(configModule, wSHttpModule)
 

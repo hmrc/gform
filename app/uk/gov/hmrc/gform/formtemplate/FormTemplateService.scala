@@ -22,6 +22,7 @@ import play.api.libs.json.{ JsValue, Json }
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -29,7 +30,11 @@ trait FormTemplateAlgebra[F[_]] {
   def get(id: FormTemplateId): F[FormTemplate]
 }
 
-class FormTemplateService(formTemplateRepo: Repo[FormTemplate], formTemplateRawRepo: Repo[FormTemplateRaw])(implicit
+class FormTemplateService(
+  formTemplateRepo: Repo[FormTemplate],
+  formTemplateRawRepo: Repo[FormTemplateRaw],
+  emailTemplateVerifier: EmailTemplateVerifier
+)(implicit
   ec: ExecutionContext
 ) extends Verifier with Rewriter with FormTemplateAlgebra[Future] {
   private val logger = LoggerFactory.getLogger(getClass)
@@ -57,9 +62,10 @@ class FormTemplateService(formTemplateRepo: Repo[FormTemplate], formTemplateRawR
         }
       })
 
-  def verifyAndSave(formTemplate: FormTemplate): FOpt[Unit] =
+  def verifyAndSave(formTemplate: FormTemplate)(implicit hc: HeaderCarrier): FOpt[Unit] =
     for {
       _                  <- verify(formTemplate)
+      _                  <- emailTemplateVerifier.verifyEmailTemplate(formTemplate)
       formTemplateToSave <- rewrite(formTemplate)
       _                  <- formTemplateRepo.upsert(mkSpecimen(formTemplateToSave))
       res                <- formTemplateRepo.upsert(formTemplateToSave)

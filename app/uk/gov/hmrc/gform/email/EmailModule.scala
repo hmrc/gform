@@ -25,6 +25,10 @@ import scala.concurrent.ExecutionContext
 class EmailModule(configModule: ConfigModule, wSHttpModule: WSHttpModule, notifierModule: NotifierModule)(implicit
   ec: ExecutionContext
 ) {
+  val emailRendererConnector = new HMRCEmailRendererConnector(
+    wSHttpModule.auditableWSHttp,
+    configModule.serviceConfig.baseUrl("hmrc-email-renderer")
+  )
   val emailConnector = new EmailConnector(wSHttpModule.auditableWSHttp, configModule.serviceConfig.baseUrl("email"))
   val emailLogic = new EmailService(emailConnector)
 

@@ -18,13 +18,18 @@ package uk.gov.hmrc.gform.formtemplate
 
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
+import uk.gov.hmrc.gform.email.EmailModule
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId, FormTemplateRaw }
 
 import scala.concurrent.ExecutionContext
 
-class FormTemplateModule(controllerComponents: ControllerComponents, mongoModule: MongoModule)(implicit
+class FormTemplateModule(
+  controllerComponents: ControllerComponents,
+  emailModule: EmailModule,
+  mongoModule: MongoModule
+)(implicit
   ex: ExecutionContext
 ) {
 
@@ -32,7 +37,9 @@ class FormTemplateModule(controllerComponents: ControllerComponents, mongoModule
     new Repo[FormTemplate]("formTemplate", mongoModule.mongo, _._id.value)
   private val formTemplateRawRepo: Repo[FormTemplateRaw] =
     new Repo[FormTemplateRaw]("formTemplateRaw", mongoModule.mongo, _._id.value)
-  val formTemplateService: FormTemplateService = new FormTemplateService(formTemplateRepo, formTemplateRawRepo)
+  val emailTemplateVerifier: EmailTemplateVerifier = new EmailTemplateVerifier(emailModule.emailRendererConnector)
+  val formTemplateService: FormTemplateService =
+    new FormTemplateService(formTemplateRepo, formTemplateRawRepo, emailTemplateVerifier)
   val formTemplatesController: FormTemplatesController =
     new FormTemplatesController(controllerComponents, formTemplateService)
 
