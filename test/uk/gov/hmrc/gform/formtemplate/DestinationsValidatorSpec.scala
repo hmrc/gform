@@ -60,7 +60,7 @@ class DestinationsValidatorSpec extends Spec with ScalaCheckDrivenPropertyChecks
   }
 
   "validateNoGroupInDeclaration" should "return an error when there is Group component in Declaration section" in {
-    val groupComponentIds = DestinationsValidator.extractGroupComponentIds(
+    val groupComponentIds = DestinationsValidator.extractGroupComponentId(
       destinationListWithGroupComponentInDecSection.declarationSection.fields
     )
 

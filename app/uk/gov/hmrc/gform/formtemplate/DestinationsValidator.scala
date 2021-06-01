@@ -19,15 +19,15 @@ package uk.gov.hmrc.gform.formtemplate
 import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.core.ValidationResult.BooleanToValidationResultSyntax
 import uk.gov.hmrc.gform.core.{ Valid, ValidationResult }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponent, FormComponentId, Group }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponent, FormComponentId, IsGroup }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, Destinations }
 
 object DestinationsValidator {
   def someDestinationIdsAreUsedMoreThanOnce(duplicates: Set[DestinationId]) =
     s"Some DestinationIds are defined more than once: ${duplicates.toList.sortBy(_.id).map(_.id)}"
 
-  def groupComponentInDeclaration(groupComponentIds: List[FormComponentId]) =
-    s"Group component(s) ${groupComponentIds.mkString(", ")} are not allowed in Declaration"
+  def groupComponentInDeclaration(groupComponentId: Option[FormComponentId]) =
+    groupComponentId.fold("")(id => s"Group component $id is not allowed in Declaration")
 
   def validateUniqueDestinationIds(destinations: Destinations): ValidationResult = destinations match {
 
@@ -42,16 +42,14 @@ object DestinationsValidator {
   def validateNoGroupInDeclaration(destinations: Destinations): ValidationResult = destinations match {
     case _: Destinations.DestinationPrint => Valid
     case destinationList: Destinations.DestinationList =>
-      val groupComponentIds = extractGroupComponentIds(destinationList.declarationSection.fields)
-      groupComponentIds.isEmpty.validationResult(groupComponentInDeclaration(groupComponentIds))
+      val groupComponentId = extractGroupComponentId(destinationList.declarationSection.fields)
+      groupComponentId.isEmpty.validationResult(groupComponentInDeclaration(groupComponentId))
   }
 
-  def extractGroupComponentIds(fcs: List[FormComponent]): List[FormComponentId] = fcs
-    .map(fc => (fc.id, fc.`type`))
-    .collect { case (fcId, Group(gFields, _, _, _, _)) =>
-      fcId :: extractGroupComponentIds(gFields)
+  def extractGroupComponentId(fcs: List[FormComponent]): Option[FormComponentId] =
+    fcs.collectFirst { case fc @ IsGroup(_) =>
+      fc.id
     }
-    .flatten
 
   private def extractIds(destinations: NonEmptyList[Destination]): NonEmptyList[DestinationId] =
     destinations.flatMap(extractIds)
