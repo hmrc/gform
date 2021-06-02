@@ -18,13 +18,16 @@ package uk.gov.hmrc.gform.formtemplate
 
 import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.core.ValidationResult.BooleanToValidationResultSyntax
-import uk.gov.hmrc.gform.core.{ Opt, Valid, ValidationResult }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
+import uk.gov.hmrc.gform.core.{ Invalid, Valid, ValidationResult }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponent, FormComponentId, IsGroup }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, Destinations }
 
 object DestinationsValidator {
   def someDestinationIdsAreUsedMoreThanOnce(duplicates: Set[DestinationId]) =
     s"Some DestinationIds are defined more than once: ${duplicates.toList.sortBy(_.id).map(_.id)}"
+
+  def groupComponentInDeclaration(groupComponentId: FormComponentId) =
+    s"Group component $groupComponentId is not allowed in Declaration"
 
   def validateUniqueDestinationIds(destinations: Destinations): ValidationResult = destinations match {
 
@@ -36,6 +39,21 @@ object DestinationsValidator {
       duplicates.isEmpty.validationResult(someDestinationIdsAreUsedMoreThanOnce(duplicates))
   }
 
+  def validateNoGroupInDeclaration(destinations: Destinations): ValidationResult = destinations match {
+    case _: Destinations.DestinationPrint => Valid
+    case destinationList: Destinations.DestinationList =>
+      val groupComponentId = extractGroupComponentId(destinationList.declarationSection.fields)
+      groupComponentId match {
+        case Some(id) => Invalid(groupComponentInDeclaration(id))
+        case None     => Valid
+      }
+  }
+
+  def extractGroupComponentId(fcs: List[FormComponent]): Option[FormComponentId] =
+    fcs.collectFirst { case fc @ IsGroup(_) =>
+      fc.id
+    }
+
   private def extractIds(destinations: NonEmptyList[Destination]): NonEmptyList[DestinationId] =
     destinations.flatMap(extractIds)
 
@@ -43,8 +61,4 @@ object DestinationsValidator {
     case c: Destination.Composite => c.id :: extractIds(c.destinations)
     case _                        => NonEmptyList.of(destination.id)
   }
-
-  def validate(template: FormTemplate): Opt[Unit] =
-    validateUniqueDestinationIds(template.destinations).toEither
-
 }

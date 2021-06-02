@@ -106,7 +106,36 @@ trait ExampleAuthConfig extends DestinationGen {
       decFormComponent
     )
 
+  val decSectionWithGroupComponent =
+    DeclarationSection(
+      toSmartString("Declaration section with Group Component"),
+      None,
+      None,
+      Some(toSmartString("Declaration section with Group Component")),
+      List(
+        FormComponent(
+          FormComponentId("groupComponentInDeclarationSection"),
+          Group(List(buildFormComponent("fieldInDeclarationSections", Value)), None, None, None, None),
+          toSmartString("groupComponentInDeclarationSection"),
+          None,
+          None,
+          None,
+          None,
+          true,
+          false,
+          true,
+          false,
+          false,
+          None,
+          None
+        )
+      )
+    )
+
   def destinationList = DestinationList(NonEmptyList.of(hmrcDms), ackSection, decSection)
+
+  def destinationListWithGroupComponentInDecSection =
+    DestinationList(NonEmptyList.of(hmrcDms), ackSection, decSectionWithGroupComponent)
 
   def serviceId = ServiceId("TestServiceId")
 
