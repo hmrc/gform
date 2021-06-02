@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.formtemplate
 
 import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.core.ValidationResult.BooleanToValidationResultSyntax
-import uk.gov.hmrc.gform.core.{ Valid, ValidationResult }
+import uk.gov.hmrc.gform.core.{ Invalid, Valid, ValidationResult }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponent, FormComponentId, IsGroup }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, Destinations }
 
@@ -26,8 +26,8 @@ object DestinationsValidator {
   def someDestinationIdsAreUsedMoreThanOnce(duplicates: Set[DestinationId]) =
     s"Some DestinationIds are defined more than once: ${duplicates.toList.sortBy(_.id).map(_.id)}"
 
-  def groupComponentInDeclaration(groupComponentId: Option[FormComponentId]) =
-    groupComponentId.fold("")(id => s"Group component $id is not allowed in Declaration")
+  def groupComponentInDeclaration(groupComponentId: FormComponentId) =
+    s"Group component $groupComponentId is not allowed in Declaration"
 
   def validateUniqueDestinationIds(destinations: Destinations): ValidationResult = destinations match {
 
@@ -43,7 +43,10 @@ object DestinationsValidator {
     case _: Destinations.DestinationPrint => Valid
     case destinationList: Destinations.DestinationList =>
       val groupComponentId = extractGroupComponentId(destinationList.declarationSection.fields)
-      groupComponentId.isEmpty.validationResult(groupComponentInDeclaration(groupComponentId))
+      groupComponentId match {
+        case Some(id) => Invalid(groupComponentInDeclaration(id))
+        case None     => Valid
+      }
   }
 
   def extractGroupComponentId(fcs: List[FormComponent]): Option[FormComponentId] =
