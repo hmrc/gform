@@ -110,6 +110,18 @@ object BasicParsers {
     plusOrMinus
   }
 
+  lazy val periodValueParser: Parser[String] = {
+    val periodComps = List("Y", "M", "D")
+    (periodComps.combinations(1) ++ periodComps.combinations(2) ++ periodComps.combinations(3))
+      .map(_.map("\\d" + _))
+      .map(s =>
+        ("P" + s.mkString).r ^^ { (_, period) =>
+          period
+        }
+      )
+      .reduce(_ | _)
+  }
+
   private def intParser(str: String): Parser[Int] =
     str.r ^^ { (_, number) =>
       number.toInt
