@@ -17,7 +17,6 @@
 package uk.gov.hmrc.gform.formtemplate
 
 import java.time.format.DateTimeFormatter
-
 import cats.data.NonEmptyList
 import cats.instances.either._
 import cats.instances.int._
@@ -28,7 +27,7 @@ import cats.syntax.option._
 import cats.syntax.traverse._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.Opt
-import uk.gov.hmrc.gform.core.parsers.{ BasicParsers, FormatParser, OverseasAddressParser, PresentationHintParser, ValueParser }
+import uk.gov.hmrc.gform.core.parsers.{ BasicParsers, FormatParser, LabelSizeParser, OverseasAddressParser, PresentationHintParser, ValueParser }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils._
@@ -146,6 +145,9 @@ class FormComponentMaker(json: JsValue) {
       case JsUndefined() => Right(None)
     }
 
+  lazy val optLabelSize: Opt[Option[LabelSize]] =
+    parse("labelSize", LabelSizeParser.validate)
+
   def optFieldValue(): Opt[FormComponent] =
     for {
       presHint    <- optMaybePresentationHintExpr
@@ -155,7 +157,8 @@ class FormComponentMaker(json: JsValue) {
       instruction <- optInstruction
       includeIf   <- optIncludeIf
       validIf     <- optValidIf
-    } yield mkFieldValue(presHint, mes, ct, validators, instruction, includeIf, validIf)
+      labelSize   <- optLabelSize
+    } yield mkFieldValue(presHint, mes, ct, validators, instruction, includeIf, validIf, labelSize)
 
   private def toOpt[A](result: JsResult[A], pathPrefix: String): Opt[A] =
     result match {
@@ -177,7 +180,8 @@ class FormComponentMaker(json: JsValue) {
     validators: List[FormComponentValidator],
     instruction: Option[Instruction],
     includeIf: Option[IncludeIf],
-    validIf: Option[ValidIf]
+    validIf: Option[ValidIf],
+    labelSize: Option[LabelSize]
   ): FormComponent =
     FormComponent(
       id = id,
@@ -195,7 +199,8 @@ class FormComponentMaker(json: JsValue) {
       presentationHint = presHint,
       errorMessage = errorMessage,
       validators = validators,
-      instruction = instruction
+      instruction = instruction,
+      labelSize = labelSize
     )
 
   private lazy val optMES: Opt[MES] = (submitMode, mandatory, optMaybeValueExpr) match {
