@@ -107,6 +107,27 @@ trait FormTemplateSupport {
       instruction
     )
 
+  def mkFormComponentWithLabelSize(id: String, ct: ComponentType, labelSize: Option[LabelSize]) =
+    FormComponent(
+      FormComponentId(id),
+      ct,
+      toSmartString(id),
+      None,
+      None,
+      None,
+      None,
+      true,
+      true,
+      true,
+      false,
+      false,
+      None,
+      None,
+      Nil,
+      None,
+      labelSize
+    )
+
   def mkSection(name: String, formComponents: List[FormComponent], instruction: Option[Instruction]) =
     Section.NonRepeatingPage(
       Page(

@@ -21,7 +21,7 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.gform.Helpers.toSmartString
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ CalendarDate, FormatExpr, RoundingMode, Text, TextArea, TextFormat, TextWithRestrictions, Value }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ CalendarDate, FormatExpr, Medium, RoundingMode, Text, TextArea, TextFormat, TextWithRestrictions, Value }
 
 class FormComponentMakerSpec extends FlatSpecLike with Matchers with FormTemplateSupport {
 
@@ -307,6 +307,37 @@ class FormComponentMakerSpec extends FlatSpecLike with Matchers with FormTemplat
                                                                  |}
                                                                  |""".stripMargin))
     formComponentMaker.optFieldValue() shouldBe Right(mkFormComponent("calendarDate1", CalendarDate, true))
+  }
+
+  it should "parse calendarDate component with labelSize" in {
+    val formComponentMaker = new FormComponentMaker(Json.parse("""
+                                                                 |{
+                                                                 |   "id": "calendarDate1",
+                                                                 |   "type": "calendarDate",
+                                                                 |   "label": "calendarDate1",
+                                                                 |   "labelSize": "m"
+                                                                 |}
+                                                                 |""".stripMargin))
+    formComponentMaker.optFieldValue() shouldBe Right(
+      mkFormComponentWithLabelSize("calendarDate1", CalendarDate, Some(Medium))
+    )
+  }
+
+  it should "return error when labelSize input is not valid" in {
+    val formComponentMaker = new FormComponentMaker(Json.parse("""
+                                                                 |{
+                                                                 |   "id": "calendarDate1",
+                                                                 |   "type": "calendarDate",
+                                                                 |   "label": "calendarDate1",
+                                                                 |   "labelSize": "invalid"
+                                                                 |}
+                                                                 |""".stripMargin))
+    formComponentMaker.optFieldValue() shouldBe Left(
+      UnexpectedState("""|Unable to parse expression invalid.
+                         |Errors:
+                         |invalid:1: unexpected characters; expected 'l' or 'm' or 's' or 'xs' or 'xl'
+                         |invalid^""".stripMargin)
+    )
   }
 
 }
