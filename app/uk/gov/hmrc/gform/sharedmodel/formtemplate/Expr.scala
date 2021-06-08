@@ -38,6 +38,7 @@ final case class Sum(field1: Expr) extends Expr
 final case class Count(formComponentId: FormComponentId) extends Expr
 final case class FormCtx(formComponentId: FormComponentId) extends Expr
 final case class AddressLens(formComponentId: FormComponentId, detail: AddressDetail) extends Expr
+final case class PeriodFun(dateCtx1: Expr, dateCtx2: Expr) extends Expr
 
 sealed trait AddressDetail {
 
@@ -77,6 +78,7 @@ final case class ParamCtx(queryParam: QueryParam) extends Expr
 final case class AuthCtx(value: AuthInfo) extends Expr
 final case class UserCtx(value: UserField) extends Expr
 final case class Constant(value: String) extends Expr
+final case class PeriodValue(value: String) extends Expr
 final case class HmrcRosmRegistrationCheck(value: RosmProp) extends Expr
 final case class LinkCtx(link: InternalLink) extends Expr
 final case class FormTemplateCtx(value: FormTemplateProp) extends Expr

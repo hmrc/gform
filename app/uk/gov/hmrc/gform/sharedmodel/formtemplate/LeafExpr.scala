@@ -50,12 +50,14 @@ final case class ExprWithPath(path: TemplatePath, expr: Expr) {
     case AuthCtx(value: AuthInfo)                      => Nil
     case UserCtx(value: UserField)                     => Nil
     case Constant(value: String)                       => Nil
+    case PeriodValue(value: String)                    => Nil
     case HmrcRosmRegistrationCheck(value: RosmProp)    => Nil
     case Value                                         => Nil
     case FormTemplateCtx(value: FormTemplateProp)      => Nil
     case ParamCtx(_)                                   => Nil
     case LinkCtx(_)                                    => Nil
     case DateCtx(dateExpr)                             => dateExpr.referenceInfos
+    case PeriodFun(dateCtx1, dateCtx2)                 => toReferenceInfo(dateCtx1, dateCtx2)
   }
 }
 

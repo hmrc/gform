@@ -655,4 +655,16 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       ValueParser.validate("${" + expression + "}").isLeft shouldBe true
     }
   }
+
+  it should "parse period(d1, d2) function" in {
+    val res = ValueParser.validate("${period(d1, d2)}")
+    res.right.value should be(
+      TextExpression(
+        PeriodFun(
+          DateCtx(DateFormCtxVar(FormCtx("d1"))),
+          DateCtx(DateFormCtxVar(FormCtx("d2")))
+        )
+      )
+    )
+  }
 }

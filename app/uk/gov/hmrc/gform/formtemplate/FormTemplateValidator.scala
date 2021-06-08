@@ -383,6 +383,7 @@ object FormTemplateValidator {
       case AuthCtx(_)            => Valid
       case UserCtx(_)            => Valid
       case Constant(_)           => Valid
+      case PeriodValue(_)        => Valid
       case Value                 => Valid
       case FormTemplateCtx(_)    => Valid
       case LinkCtx(_)            => Valid
@@ -397,6 +398,7 @@ object FormTemplateValidator {
         invalidFCIds.isEmpty.validationResult(
           s"Form field(s) '${invalidFCIds.mkString(",")}' not defined in form template."
         )
+      case PeriodFun(dateCtx1, dateCtx2) => Valid //TODO: Implement validation
     }
   }
 

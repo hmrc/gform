@@ -177,6 +177,12 @@ object ValueParser {
     | dateExprWithoutFormCtxFieldDate.map(
       DateCtx.apply
     ) // to parse date form fields with offset or date constants i.e TODAY, 01012020 etc (with or without offset)
+    | periodValueParser ^^ { (loc, period) =>
+      PeriodValue(period)
+    }
+    | "period(" ~ dateExpr ~ "," ~ dateExpr ~ ")" ^^ { (loc, _, dateExpr1, _, dateExpr2, _) =>
+      PeriodFun(DateCtx(dateExpr1), DateCtx(dateExpr2))
+    }
     | quotedConstant
     | FormComponentId.unanchoredIdValidation ~ ".sum" ^^ { (loc, value, _) =>
       Sum(FormCtx(FormComponentId(value)))
