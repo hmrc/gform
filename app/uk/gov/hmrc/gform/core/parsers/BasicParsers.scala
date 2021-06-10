@@ -113,7 +113,7 @@ object BasicParsers {
   lazy val periodValueParser: Parser[String] = {
     val periodComps = List("Y", "M", "D")
     (periodComps.combinations(1) ++ periodComps.combinations(2) ++ periodComps.combinations(3))
-      .map(_.map("\\d" + _))
+      .map(_.map("(\\+|-)?\\d" + _))
       .map(s =>
         ("P" + s.mkString).r ^^ { (_, period) =>
           period
