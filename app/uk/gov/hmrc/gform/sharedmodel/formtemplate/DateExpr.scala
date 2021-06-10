@@ -32,6 +32,12 @@ sealed trait DateExpr {
     case DateFormCtxVar(formCtx)      => ReferenceInfo.FormCtxExpr(TemplatePath.leaf, formCtx) :: Nil
     case DateExprWithOffset(dExpr, _) => dExpr.referenceInfos
   }
+
+  def maybeFormCtx: Option[FormCtx] = this match {
+    case DateValueExpr(_)             => None
+    case DateFormCtxVar(formCtx)      => Some(formCtx)
+    case DateExprWithOffset(dExpr, _) => dExpr.maybeFormCtx
+  }
 }
 
 sealed trait OffsetUnit

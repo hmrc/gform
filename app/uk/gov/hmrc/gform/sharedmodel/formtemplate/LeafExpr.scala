@@ -57,7 +57,7 @@ final case class ExprWithPath(path: TemplatePath, expr: Expr) {
     case ParamCtx(_)                                   => Nil
     case LinkCtx(_)                                    => Nil
     case DateCtx(dateExpr)                             => dateExpr.referenceInfos
-    case PeriodFun(dateCtx1, dateCtx2)                 => toReferenceInfo(dateCtx1, dateCtx2)
+    case p @ PeriodFun(_, _)                           => ReferenceInfo.PeriodFunExpr(path, p) :: Nil
   }
 }
 

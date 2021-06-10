@@ -29,8 +29,9 @@ import uk.gov.hmrc.gform.sharedmodel.SmartString
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.graph.DependencyGraph._
 import uk.gov.hmrc.gform.formtemplate.FormTemplateValidatorHelper._
+import uk.gov.hmrc.gform.models.constraints.ReferenceInfo.{ PeriodFunExpr }
 import uk.gov.hmrc.gform.sharedmodel.{ AvailableLanguages, LangADT }
-
+import shapeless.syntax.typeable._
 import scala.Function.const
 import scala.util.{ Failure, Success, Try }
 
@@ -109,8 +110,15 @@ object FormTemplateValidator {
 
     val allExprs: List[ExprWithPath] = FormTemplate.leafExprs.exprs(TemplatePath.root, formTemplate)
 
-    def invalid(path: TemplatePath, formComponentId: FormComponentId): Invalid =
-      Invalid(s"${path.path}: $formComponentId doesn't exist in the form")
+    def dateExprInvalidRefs(dateExpr: DateExpr*): Seq[FormComponentId] =
+      dateExpr.flatMap(
+        _.maybeFormCtx.fold(Option.empty[FormComponentId])(fCtx =>
+          if (!allFcIds(fCtx.formComponentId)) Some(fCtx.formComponentId) else None
+        )
+      )
+
+    def invalid(path: TemplatePath, formComponentIds: FormComponentId*): Invalid =
+      Invalid(s"${path.path}: ${formComponentIds.mkString(",")} doesn't exist in the form")
 
     allExprs.flatMap(_.referenceInfos).foldMap {
       case ReferenceInfo.FormCtxExpr(path, FormCtx(formComponentId)) if !allFcIds(formComponentId) =>
@@ -119,6 +127,9 @@ object FormTemplateValidator {
         invalid(path, formComponentId)
       case ReferenceInfo.CountExpr(path, Count(formComponentId)) if !allFcIds(formComponentId) =>
         invalid(path, formComponentId)
+      case ReferenceInfo.PeriodFunExpr(path, PeriodFun(DateCtx(dateExpr1), DateCtx(dateExpr2)))
+          if dateExprInvalidRefs(dateExpr1, dateExpr2).nonEmpty =>
+        invalid(path, dateExprInvalidRefs(dateExpr1, dateExpr2): _*)
       case _ => Valid
     }
   }
@@ -212,6 +223,36 @@ object FormTemplateValidator {
   def validateAddressReferencesConstraints(formTemplate: FormTemplate): ValidationResult = {
     val addressLensChecker = new AddressLensChecker(formTemplate)
     addressLensChecker.result
+  }
+
+  def validatePeriodFunReferenceConstraints(formTemplate: FormTemplate): ValidationResult = {
+
+    val fcIdToComponentType: Map[FormComponentId, ComponentType] =
+      SectionHelper.pages(formTemplate.sections).flatMap(_.fields.map(f => (f.id, f.`type`))).toMap
+
+    def validateExpr(expr: Expr, path: TemplatePath): ValidationResult = {
+      def validateFormComponentTypeDate(path: TemplatePath, formComponentId: FormComponentId) =
+        fcIdToComponentType(formComponentId)
+          .cast[Date]
+          .fold[ValidationResult](
+            Invalid(
+              s"${path.path}: Form component '$formComponentId' used in period function should be date type"
+            )
+          )(_ => Valid)
+      expr
+        .cast[DateCtx]
+        .map(
+          _.value.maybeFormCtx
+            .fold[ValidationResult](Valid)(formCtx => validateFormComponentTypeDate(path, formCtx.formComponentId))
+        )
+        .getOrElse(Invalid(s"${path.path}: Expression $expr used in period function should be a date expression"))
+    }
+
+    val referenceInfos = LeafExpr(TemplatePath.root, formTemplate).flatMap(_.referenceInfos)
+    val validations = referenceInfos.collect { case PeriodFunExpr(path, PeriodFun(expr1, expr2)) =>
+      List(validateExpr(expr1, path), validateExpr(expr2, path))
+    }
+    Monoid.combineAll(validations.flatten)
   }
 
   private def checkReferenceInfo[A](xs: List[ExprWithPath], set: Set[FormComponentId])(implicit
@@ -398,7 +439,8 @@ object FormTemplateValidator {
         invalidFCIds.isEmpty.validationResult(
           s"Form field(s) '${invalidFCIds.mkString(",")}' not defined in form template."
         )
-      case PeriodFun(dateCtx1, dateCtx2) => Valid //TODO: Implement validation
+      case PeriodFun(dateCtx1, dateCtx2) =>
+        checkFields(dateCtx1, dateCtx2)
     }
   }
 

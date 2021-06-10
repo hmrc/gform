@@ -28,12 +28,17 @@ class BasicParsersSpec extends FlatSpecLike with Matchers with TableDrivenProper
     val table = Table(
       ("input", "output"),
       ("P1Y", Some(List("P1Y"))),
+      ("P-1Y", Some(List("P-1Y"))),
       ("P1M", Some(List("P1M"))),
+      ("P-1M", Some(List("P-1M"))),
       ("P1D", Some(List("P1D"))),
+      ("P-1D", Some(List("P-1D"))),
       ("P1Y1M", Some(List("P1Y1M"))),
       ("P1Y1D", Some(List("P1Y1D"))),
       ("P1M1D", Some(List("P1M1D"))),
       ("P1Y1M1D", Some(List("P1Y1M1D"))),
+      ("P1Y-1M-1D", Some(List("P1Y-1M-1D"))),
+      ("P+1Y-1M-1D", Some(List("P+1Y-1M-1D"))),
       ("ABC", None)
     )
     forAll(table) { (input, output) =>
