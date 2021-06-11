@@ -76,7 +76,7 @@ class DmsSubmitter(
   private def logFileSizeBreach(envelopeId: EnvelopeId, files: List[File]) = {
     val totalFileSize = files.map(_.length).sum
     val totalFileSizeMB = Math.ceil(totalFileSize / 1000000.toDouble)
-    val thresholdMB = 50
+    val thresholdMB = 100
     logger.info(
       s"GForm DMS submission attachments size is $totalFileSize B (rounded to $totalFileSizeMB MB) [envelopeId=${envelopeId.value}]"
     )
