@@ -27,6 +27,6 @@ object ReferenceInfo {
   final case class CountExpr(path: TemplatePath, count: Count) extends ReferenceInfo
   final case class FormCtxExpr(path: TemplatePath, formCtx: FormCtx) extends ReferenceInfo
   final case class AddressExpr(path: TemplatePath, addressLens: AddressLens) extends ReferenceInfo
-  final case class PeriodFunExpr(path: TemplatePath, periodFun: PeriodFun) extends ReferenceInfo
-  final case class PeriodFunExtExpr(path: TemplatePath, periodFunExt: PeriodFunExt) extends ReferenceInfo
+  final case class PeriodExpr(path: TemplatePath, period: Period) extends ReferenceInfo
+  final case class PeriodExtExpr(path: TemplatePath, periodExt: PeriodExt) extends ReferenceInfo
 }

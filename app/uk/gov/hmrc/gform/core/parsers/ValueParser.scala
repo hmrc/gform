@@ -184,14 +184,14 @@ object ValueParser {
     }
     | (periodFun ~ "." ~ "sum|totalMonths|years|months|days".r mapWithLines {
       case (loc, _ ~ (dateExpr1: DateExpr) ~ _ ~ (dateExpr2: DateExpr) ~ _ ~ _ ~ prop) =>
-        PeriodFunExt(
-          PeriodFun(DateCtx(dateExpr1), DateCtx(dateExpr2)),
+        PeriodExt(
+          Period(DateCtx(dateExpr1), DateCtx(dateExpr2)),
           prop match {
-            case "sum"         => SumProp
-            case "totalMonths" => TotalMonthsProp
-            case "years"       => YearsProp
-            case "months"      => MonthsProp
-            case "days"        => DaysProp
+            case "sum"         => PeriodFn.Sum
+            case "totalMonths" => PeriodFn.TotalMonths
+            case "years"       => PeriodFn.Years
+            case "months"      => PeriodFn.Months
+            case "days"        => PeriodFn.Days
             case _ =>
               throw new IllegalArgumentException(
                 "period(*,*).prop value is invalid. Allowed prop values are sum,totalMonths,years,months,days"
@@ -200,7 +200,7 @@ object ValueParser {
         )
     })
     | periodFun ^^ { (loc, _, dateExpr1, _, dateExpr2, _) =>
-      PeriodFun(DateCtx(dateExpr1), DateCtx(dateExpr2))
+      Period(DateCtx(dateExpr1), DateCtx(dateExpr2))
     }
     | quotedConstant
     | FormComponentId.unanchoredIdValidation ~ ".sum" ^^ { (loc, value, _) =>
