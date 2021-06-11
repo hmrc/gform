@@ -16,12 +16,19 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
+import cats.Eval
+import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatest.{ Matchers, WordSpecLike }
+import parseback.LineStream
 import uk.gov.hmrc.gform.Helpers.toSmartString
+import uk.gov.hmrc.gform.core.parsers.ValueParser
 import uk.gov.hmrc.gform.core.{ Invalid, Valid }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ DateCtx, DateFormCtxVar, FormComponentId, FormCtx, Instruction }
+import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString, SmartString }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, Date, DateCtx, DateFormCtxVar, FormComponentId, FormCtx, InformationMessage, Instruction, Offset, StandardInfo }
+import parseback.compat.cats._
 
-class FormTemplateValidatorSpec extends WordSpecLike with Matchers with FormTemplateSupport {
+class FormTemplateValidatorSpec
+    extends WordSpecLike with Matchers with FormTemplateSupport with TableDrivenPropertyChecks {
 
   "validate - for DateCtx" when {
     "expression refers to existing Form field" should {
@@ -215,6 +222,62 @@ class FormTemplateValidatorSpec extends WordSpecLike with Matchers with FormTemp
         val result = FormTemplateValidator.validateInstructions(pages)
 
         result shouldBe Invalid("One or more section fields have instruction attribute with negative order")
+      }
+    }
+  }
+
+  "validatePeriodFunReferenceConstraints" should {
+
+    "validate references in period function" in {
+
+      val table = Table(
+        ("expression", "expectedResult"),
+        ("${period(startDate, endDate)}", Valid),
+        (
+          "${period(startDate, name)}",
+          Invalid(
+            "sections.fields.[id=infoField].infoText: Form component 'name' used in period function should be date type"
+          )
+        ),
+        (
+          "${period(startDate, name).sum}",
+          Invalid(
+            "sections.fields.[id=infoField].infoText: Form component 'name' used in period function should be date type"
+          )
+        )
+      )
+
+      forAll(table) { (expression, expectedResult) =>
+        val formTemplate = mkFormTemplate(
+          List(
+            mkSectionNonRepeatingPage(
+              name = "section1",
+              formComponents = List(
+                mkFormComponent("name"),
+                mkFormComponent("startDate", Date(AnyDate, Offset(0), None), true),
+                mkFormComponent("endDate", Date(AnyDate, Offset(0), None), true)
+              )
+            ),
+            mkSectionNonRepeatingPage(
+              name = "section2",
+              formComponents = List(
+                mkFormComponent(
+                  "infoField",
+                  InformationMessage(
+                    StandardInfo,
+                    SmartString(
+                      LocalisedString(Map(LangADT.En -> "{0}")),
+                      ValueParser.expr(LineStream[Eval](expression)).value.toSeq.flatMap(_.toList).toList
+                    )
+                  ),
+                  true
+                )
+              )
+            )
+          )
+        )
+        val result = FormTemplateValidator.validatePeriodFunReferenceConstraints(formTemplate)
+        result shouldBe expectedResult
       }
     }
   }

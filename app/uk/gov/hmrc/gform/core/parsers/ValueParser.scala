@@ -150,6 +150,8 @@ object ValueParser {
     InternalLink.printSummaryPdf
   }
 
+  private lazy val periodFun = "period(" ~ dateExpr ~ "," ~ dateExpr ~ ")"
+
   lazy val contextField: Parser[Expr] = ("user" ~ "." ~ userField ^^ { (loc, _, _, userField) =>
     UserCtx(userField)
   }
@@ -180,7 +182,24 @@ object ValueParser {
     | periodValueParser ^^ { (loc, period) =>
       PeriodValue(period)
     }
-    | "period(" ~ dateExpr ~ "," ~ dateExpr ~ ")" ^^ { (loc, _, dateExpr1, _, dateExpr2, _) =>
+    | (periodFun ~ "." ~ "sum|totalMonths|years|months|days".r mapWithLines {
+      case (loc, _ ~ (dateExpr1: DateExpr) ~ _ ~ (dateExpr2: DateExpr) ~ _ ~ _ ~ prop) =>
+        PeriodFunExt(
+          PeriodFun(DateCtx(dateExpr1), DateCtx(dateExpr2)),
+          prop match {
+            case "sum"         => SumProp
+            case "totalMonths" => TotalMonthsProp
+            case "years"       => YearsProp
+            case "months"      => MonthsProp
+            case "days"        => DaysProp
+            case _ =>
+              throw new IllegalArgumentException(
+                "period(*,*).prop value is invalid. Allowed prop values are sum,totalMonths,years,months,days"
+              )
+          }
+        )
+    })
+    | periodFun ^^ { (loc, _, dateExpr1, _, dateExpr2, _) =>
       PeriodFun(DateCtx(dateExpr1), DateCtx(dateExpr2))
     }
     | quotedConstant

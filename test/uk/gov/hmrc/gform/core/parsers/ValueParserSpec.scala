@@ -667,4 +667,29 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       )
     )
   }
+
+  it should "parse period(d1, d2) extension functions" in {
+    val table = Table(
+      ("function", "expected prop"),
+      ("${period(d1, d2).sum}", SumProp),
+      ("${period(d1, d2).totalMonths}", TotalMonthsProp),
+      ("${period(d1, d2).years}", YearsProp),
+      ("${period(d1, d2).months}", MonthsProp),
+      ("${period(d1, d2).days}", DaysProp)
+    )
+    forAll(table) { (f: String, expectedProp: FunctionProp) =>
+      val res = ValueParser.validate(f)
+      res.right.value should be(
+        TextExpression(
+          PeriodFunExt(
+            PeriodFun(
+              DateCtx(DateFormCtxVar(FormCtx("d1"))),
+              DateCtx(DateFormCtxVar(FormCtx("d2")))
+            ),
+            expectedProp
+          )
+        )
+      )
+    }
+  }
 }

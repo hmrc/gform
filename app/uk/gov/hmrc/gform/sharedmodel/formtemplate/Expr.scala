@@ -40,6 +40,17 @@ final case class FormCtx(formComponentId: FormComponentId) extends Expr
 final case class AddressLens(formComponentId: FormComponentId, detail: AddressDetail) extends Expr
 final case class PeriodFun(dateCtx1: Expr, dateCtx2: Expr) extends Expr
 
+sealed trait FunctionProp
+case object SumProp extends FunctionProp
+case object TotalMonthsProp extends FunctionProp
+case object YearsProp extends FunctionProp
+case object MonthsProp extends FunctionProp
+case object DaysProp extends FunctionProp
+object FunctionProp {
+  implicit val format: OFormat[FunctionProp] = derived.oformat()
+}
+final case class PeriodFunExt(periodFun: Expr, prop: FunctionProp) extends Expr
+
 sealed trait AddressDetail {
 
   import AddressDetail._

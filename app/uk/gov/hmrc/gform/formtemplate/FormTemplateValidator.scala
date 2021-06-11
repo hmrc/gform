@@ -29,7 +29,7 @@ import uk.gov.hmrc.gform.sharedmodel.SmartString
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.graph.DependencyGraph._
 import uk.gov.hmrc.gform.formtemplate.FormTemplateValidatorHelper._
-import uk.gov.hmrc.gform.models.constraints.ReferenceInfo.{ PeriodFunExpr }
+import uk.gov.hmrc.gform.models.constraints.ReferenceInfo.{ PeriodFunExpr, PeriodFunExtExpr }
 import uk.gov.hmrc.gform.sharedmodel.{ AvailableLanguages, LangADT }
 import shapeless.syntax.typeable._
 import scala.Function.const
@@ -128,6 +128,9 @@ object FormTemplateValidator {
       case ReferenceInfo.CountExpr(path, Count(formComponentId)) if !allFcIds(formComponentId) =>
         invalid(path, formComponentId)
       case ReferenceInfo.PeriodFunExpr(path, PeriodFun(DateCtx(dateExpr1), DateCtx(dateExpr2)))
+          if dateExprInvalidRefs(dateExpr1, dateExpr2).nonEmpty =>
+        invalid(path, dateExprInvalidRefs(dateExpr1, dateExpr2): _*)
+      case ReferenceInfo.PeriodFunExtExpr(path, PeriodFunExt(PeriodFun(DateCtx(dateExpr1), DateCtx(dateExpr2)), _))
           if dateExprInvalidRefs(dateExpr1, dateExpr2).nonEmpty =>
         invalid(path, dateExprInvalidRefs(dateExpr1, dateExpr2): _*)
       case _ => Valid
@@ -232,13 +235,16 @@ object FormTemplateValidator {
 
     def validateExpr(expr: Expr, path: TemplatePath): ValidationResult = {
       def validateFormComponentTypeDate(path: TemplatePath, formComponentId: FormComponentId) =
-        fcIdToComponentType(formComponentId)
-          .cast[Date]
-          .fold[ValidationResult](
-            Invalid(
-              s"${path.path}: Form component '$formComponentId' used in period function should be date type"
-            )
-          )(_ => Valid)
+        fcIdToComponentType
+          .get(formComponentId)
+          .fold[ValidationResult](Invalid(s"${path.path}: Form component $formComponentId is invalid"))(
+            _.cast[Date]
+              .fold[ValidationResult](
+                Invalid(
+                  s"${path.path}: Form component '$formComponentId' used in period function should be date type"
+                )
+              )(_ => Valid)
+          )
       expr
         .cast[DateCtx]
         .map(
@@ -249,8 +255,10 @@ object FormTemplateValidator {
     }
 
     val referenceInfos = LeafExpr(TemplatePath.root, formTemplate).flatMap(_.referenceInfos)
-    val validations = referenceInfos.collect { case PeriodFunExpr(path, PeriodFun(expr1, expr2)) =>
-      List(validateExpr(expr1, path), validateExpr(expr2, path))
+    val validations = referenceInfos.collect {
+      case PeriodFunExpr(path, PeriodFun(expr1, expr2)) => List(validateExpr(expr1, path), validateExpr(expr2, path))
+      case PeriodFunExtExpr(path, PeriodFunExt(PeriodFun(expr1, expr2), _)) =>
+        List(validateExpr(expr1, path), validateExpr(expr2, path))
     }
     Monoid.combineAll(validations.flatten)
   }
@@ -441,6 +449,7 @@ object FormTemplateValidator {
         )
       case PeriodFun(dateCtx1, dateCtx2) =>
         checkFields(dateCtx1, dateCtx2)
+      case PeriodFunExt(periodFun, _) => validate(periodFun, sections)
     }
   }
 
