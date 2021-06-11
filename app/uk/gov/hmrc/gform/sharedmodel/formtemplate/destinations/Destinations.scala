@@ -22,7 +22,13 @@ import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import JsonUtils._
 
-sealed trait Destinations extends Product with Serializable
+sealed trait Destinations extends Product with Serializable {
+  def allFormComponents: List[FormComponent] = this match {
+    case Destinations.DestinationList(_, acknowledgementSection, declarationSection) =>
+      acknowledgementSection.fields ++ declarationSection.fields
+    case Destinations.DestinationPrint(_, _, _) => Nil
+  }
+}
 
 object Destinations {
 
