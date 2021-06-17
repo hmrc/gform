@@ -47,7 +47,16 @@ class FileUploadConnector(config: FUConfig, wSHttp: WSHttp, timeProvider: TimePr
     val requestBody = helper.createEnvelopeRequestBody(formTemplateId, expiryDate)
     wSHttp
       .POST[JsObject, HttpResponse](s"$baseUrl/file-upload/envelopes", requestBody, headers)
-      .map(helper.extractEnvelopId)
+      .flatMap { response =>
+        Future.successful(helper.extractEnvelopId(response))
+      } recoverWith { case ex =>
+      logger.error(s"Logger :::: Couldn't create Envelope. Unexpected exception from FileUpload service ", ex)
+      Future.failed(
+        new IllegalStateException(
+          s"Exception ::: Couldn't create Envelope. Unexpected exception from FileUpload service $ex}"
+        )
+      )
+    }
   }
 
   def routeEnvelope(input: RouteEnvelopeRequest)(implicit hc: HeaderCarrier): Future[Unit] = {
