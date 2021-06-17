@@ -287,11 +287,138 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                  |}
                                 """.stripMargin)
 
+    val inputDraftRetrievalMethodIsNotPermitted = Json.parse("""
+                                                               |{
+                                                               |  "testText": "hello",
+                                                               |  "testJsonObj": {
+                                                               |    "id": "transitionToSubmitted",
+                                                               |    "type": "stateTransition",
+                                                               |    "requiredState": "Submitted"
+                                                               |  },
+                                                               |  "testJsonArr": [
+                                                               |    "en",
+                                                               |    "cy"
+                                                               |  ],
+                                                               |  "formCategory": "letter",
+                                                               |  "draftRetrievalMethod": "notPermitted",
+                                                               |  "showContinueOrDeletePage": "false",
+                                                               |  "parentFormSubmissionRefs": [
+                                                               |    "123",
+                                                               |    "456"
+                                                               |  ],
+                                                               |  "destinations": [
+                                                               |    {
+                                                               |      "id": "HMRCDMS",
+                                                               |      "type": "hmrcDms",
+                                                               |      "dmsFormId": "TST123",
+                                                               |      "customerId": "${auth.gg}",
+                                                               |      "classificationType": "BT-NRU-Environmental",
+                                                               |      "businessArea": "FinanceOpsCorpT"
+                                                               |    }
+                                                               |  ],
+                                                               |  "acknowledgementSection": {
+                                                               |    "shortName": "Acknowledgement Page",
+                                                               |    "title": "Acknowledgement Page",
+                                                               |    "fields": [
+                                                               |      {
+                                                               |        "type": "info",
+                                                               |        "id": "ackpageInfo",
+                                                               |        "label": "SomeContent",
+                                                               |        "infoText": "SomeContent"
+                                                               |      }
+                                                               |    ]
+                                                               |  },
+                                                               |  "declarationSection": {
+                                                               |    "title": "Declaration",
+                                                               |    "shortName": "Declaration",
+                                                               |    "fields": [
+                                                               |      {
+                                                               |        "id": "helloD",
+                                                               |        "type": "text",
+                                                               |        "label": {
+                                                               |          "en": "Hello World",
+                                                               |          "cy": "Welsh Hello World"
+                                                               |        }
+                                                               |      }
+                                                               |    ]
+                                                               |  }
+                                                               |}
+                            """.stripMargin)
+
+    val expectedDraftRetrievalMethodIsNotPermitted = Json.parse(s"""
+                                                                   |{
+                                                                   |    "draftRetrievalMethod": {
+                                                                   |    "showContinueOrDeletePage": "false",
+                                                                   |    "value": "notPermitted"
+                                                                   |  },
+                                                                   |  "formCategory": "letter",
+                                                                   |  "languages": [
+                                                                   |    "en"
+                                                                   |  ],
+                                                                   |  "testJsonObj": {
+                                                                   |    "id": "transitionToSubmitted",
+                                                                   |    "type": "stateTransition",
+                                                                   |    "requiredState": "Submitted"
+                                                                   |  },
+                                                                   |  "destinations": {
+                                                                   |    "destinations": [
+                                                                   |      {
+                                                                   |        "id": "HMRCDMS",
+                                                                   |        "type": "hmrcDms",
+                                                                   |        "dmsFormId": "TST123",
+                                                                   |        "customerId": "$${auth.gg}",
+                                                                   |        "classificationType": "BT-NRU-Environmental",
+                                                                   |        "businessArea": "FinanceOpsCorpT"
+                                                                   |      }
+                                                                   |    ],
+                                                                   |    "acknowledgementSection": {
+                                                                   |      "displayFeedbackLink": true,
+                                                                   |      "shortName": "Acknowledgement Page",
+                                                                   |      "title": "Acknowledgement Page",
+                                                                   |      "fields": [
+                                                                   |        {
+                                                                   |          "type": "info",
+                                                                   |          "id": "ackpageInfo",
+                                                                   |          "label": "SomeContent",
+                                                                   |          "infoText": "SomeContent"
+                                                                   |        }
+                                                                   |      ]
+                                                                   |    },
+                                                                   |    "declarationSection": {
+                                                                   |      "title": "Declaration",
+                                                                   |      "shortName": "Declaration",
+                                                                   |      "fields": [
+                                                                   |        {
+                                                                   |          "id": "helloD",
+                                                                   |          "type": "text",
+                                                                   |          "label": {
+                                                                   |            "en": "Hello World",
+                                                                   |            "cy": "Welsh Hello World"
+                                                                   |          }
+                                                                   |        }
+                                                                   |      ]
+                                                                   |    }
+                                                                   |  },
+                                                                   |  "displayHMRCLogo": true,
+                                                                   |  "testText": "hello",
+                                                                   |  "testJsonArr": [
+                                                                   |    "en",
+                                                                   |    "cy"
+                                                                   |  ],
+                                                                   |  "parentFormSubmissionRefs": [
+                                                                   |    "123",
+                                                                   |    "456"
+                                                                   |  ],
+                                                                   |  "summarySection": $summarySection
+                                                                   |}
+                                """.stripMargin)
+
     val t = Table(
       ("input", "expected"),
       (printSectionInput, printSectionExpected),
       (destinationsInput, destinationsExpected),
-      (input, expected)
+      (input, expected),
+      (inputDraftRetrievalMethodIsNotPermitted, expectedDraftRetrievalMethodIsNotPermitted)
     )
 
     forAll(t) { case (input, expected) =>

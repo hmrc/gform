@@ -46,6 +46,26 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
     }
   }
 
+  "handle a valid upsert request with draftRetrievalMethod is notPermitted" in {
+    withFixture(
+      Json.parse(
+        validRequestBodyWithDestinations(
+          "hmrc",
+          "${user.enrolledIdentifier}",
+          Some(""""serviceId": "someId","""),
+          Some(""""draftRetrievalMethod": "notPermitted",""")
+        )
+      )
+    ) { (sideEffect, verifySideEffect, templateRaw) =>
+      val handler = new FormTemplatesControllerRequestHandler(_ => verifySideEffect.get, _ => sideEffect)
+      val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
+
+      whenReady(eventualResult.value) { response =>
+        response shouldBe Right(())
+      }
+    }
+  }
+
   "handle a valid upsert request with Print section" in {
     withFixture(
       Json.parse(
@@ -380,11 +400,17 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
     f(sideEffect, verifySideEffect, templateRaw)
   }
 
-  private def validRequestBodyWithDestinations(authModule: String, identifier: String, serviceId: Option[String]) =
+  private def validRequestBodyWithDestinations(
+    authModule: String,
+    identifier: String,
+    serviceId: Option[String],
+    draftRetrievalMethod: Option[String] = None
+  ) =
     s"""{
        |  "_id": "newfield",
        |  "formName": "Testing section change label tttt",
        |  "description": "Testing the form change label",
+       |  ${draftRetrievalMethod.getOrElse("")}
        |  "languages":["en"],
        |  "destinations": [
        |    {

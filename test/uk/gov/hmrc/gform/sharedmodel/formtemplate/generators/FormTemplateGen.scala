@@ -31,7 +31,12 @@ trait FormTemplateGen {
       continueOrDeletePage <- ContinueOrDeletePageGen.continueOrDeletePageGen
       draftRetrievalMethod <-
         Gen
-          .oneOf(OnePerUser(continueOrDeletePage), FormAccessCodeForAgents(continueOrDeletePage), BySubmissionReference)
+          .oneOf(
+            OnePerUser(continueOrDeletePage),
+            FormAccessCodeForAgents(continueOrDeletePage),
+            BySubmissionReference,
+            NotPermitted
+          )
     } yield draftRetrievalMethod
 
   def emailTemplateIdGen: Gen[String] = PrimitiveGen.nonEmptyAlphaNumStrGen
