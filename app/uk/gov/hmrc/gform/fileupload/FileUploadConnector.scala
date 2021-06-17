@@ -56,7 +56,9 @@ class FileUploadConnector(config: FUConfig, wSHttp: WSHttp, timeProvider: TimePr
           Future.successful(helper.extractEnvelopId(response))
         } else {
           logger.error(s"Logger :::: POST to $url failed with status $status. Response body: '${response.body}'")
-          Future.failed(new Exception(s"Exception :::: POST to $url failed with status $status. Response body: '${response.body}'"))
+          Future.failed(
+            new Exception(s"Exception :::: POST to $url failed with status $status. Response body: '${response.body}'")
+          )
         }
       } recoverWith { case ex =>
       logger.error(s"Logger :::: POST to $url failed. $ex")
