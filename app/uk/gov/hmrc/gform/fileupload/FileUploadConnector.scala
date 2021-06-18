@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.fileupload
 
+import akka.http.scaladsl.model.StatusCodes
 import akka.util.ByteString
 import org.slf4j.LoggerFactory
 import play.api.libs.json.JsObject
@@ -52,7 +53,7 @@ class FileUploadConnector(config: FUConfig, wSHttp: WSHttp, timeProvider: TimePr
       .POST[JsObject, HttpResponse](url, requestBody, headers)
       .flatMap { response =>
         val status = response.status
-        if (status >= 200 && status < 300) {
+        if (status == StatusCodes.Created.intValue) {
           Future.successful(helper.extractEnvelopId(response))
         } else {
           Future.failed(
