@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.fileupload
 
+import akka.http.scaladsl.model.StatusCodes
 import akka.util.ByteString
 import org.slf4j.LoggerFactory
 import play.api.libs.json.JsObject
@@ -45,9 +46,23 @@ class FileUploadConnector(config: FUConfig, wSHttp: WSHttp, timeProvider: TimePr
       s"creating envelope, formTemplateId: '${formTemplateId.value}', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}"
     )
     val requestBody = helper.createEnvelopeRequestBody(formTemplateId, expiryDate)
+
+    val url = s"$baseUrl/file-upload/envelopes"
+
     wSHttp
-      .POST[JsObject, HttpResponse](s"$baseUrl/file-upload/envelopes", requestBody, headers)
-      .map(helper.extractEnvelopId)
+      .POST[JsObject, HttpResponse](url, requestBody, headers)
+      .flatMap { response =>
+        val status = response.status
+        if (status == StatusCodes.Created.intValue) {
+          Future.successful(helper.extractEnvelopId(response))
+        } else {
+          Future.failed(
+            new Exception(s"POST to $url failed with status $status. Response body: '${response.body}'")
+          )
+        }
+      } recoverWith { case ex =>
+      Future.failed(new Exception(s"POST to $url failed. $ex"))
+    }
   }
 
   def routeEnvelope(input: RouteEnvelopeRequest)(implicit hc: HeaderCarrier): Future[Unit] = {
