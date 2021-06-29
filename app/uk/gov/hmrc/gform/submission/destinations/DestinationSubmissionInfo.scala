@@ -20,5 +20,5 @@ import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.gform.submission.Submission
 
 case class DestinationSubmissionInfo(customerId: String, submission: Submission) {
-  def formId: FormId = submission._id
+  def formId: FormId = submission._id.formId
 }

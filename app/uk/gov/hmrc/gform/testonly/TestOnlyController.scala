@@ -43,7 +43,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.Dest
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, Destinations, HandlebarsTemplateProcessorModel }
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.gform.submission.destinations.DestinationsProcessorModelAlgebra
-import uk.gov.hmrc.gform.submission.{ DmsMetaData, Submission }
+import uk.gov.hmrc.gform.submission.{ DmsMetaData, Submission, SubmissionId }
 import uk.gov.hmrc.gform.submission.handlebars.{ FocussedHandlebarsModelTree, HandlebarsModelTree, RealHandlebarsTemplateProcessor }
 
 class TestOnlyController(
@@ -93,7 +93,7 @@ class TestOnlyController(
         formTemplate <- formTemplateAlgebra.get(formTemplateId)
         form         <- formAlgebra.get(formId)
         submission = Submission(
-                       formId,
+                       SubmissionId(formId, form.envelopeId),
                        LocalDateTime.now(),
                        SubmissionRef(form.envelopeId),
                        form.envelopeId,
@@ -134,7 +134,7 @@ class TestOnlyController(
         form <- formAlgebra.get(formId)
         _ = logInfo("TestOnlyController.renderHandlebarPayload Got form")
         submission = Submission(
-                       formId,
+                       SubmissionId(formId, form.envelopeId),
                        LocalDateTime.now(),
                        SubmissionRef(form.envelopeId),
                        form.envelopeId,
@@ -181,7 +181,7 @@ class TestOnlyController(
               HandlebarsTemplateProcessorModel.empty,
               FocussedHandlebarsModelTree(
                 HandlebarsModelTree(
-                  submission._id,
+                  submission._id.formId,
                   submission.submissionRef,
                   formTemplate,
                   submissionData.pdfData,

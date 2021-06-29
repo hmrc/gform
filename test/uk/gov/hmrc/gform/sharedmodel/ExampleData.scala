@@ -17,7 +17,6 @@
 package uk.gov.hmrc.gform.sharedmodel
 
 import java.time.LocalDateTime
-
 import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.Helpers._
 import uk.gov.hmrc.gform.fileupload.RouteEnvelopeRequest
@@ -27,7 +26,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.DestinationGen
-import uk.gov.hmrc.gform.submission.{ DmsMetaData, Submission }
+import uk.gov.hmrc.gform.submission.{ DmsMetaData, Submission, SubmissionId }
 
 import scala.collection.immutable.List
 
@@ -546,7 +545,8 @@ trait ExampleSubmission { dependsOn: ExampleForm with ExampleFormTemplate =>
 
   def dmsMetaData = DmsMetaData(formTemplateId, "TESTNINO")
 
-  def submission = Submission(formId, submittedDate, submissionRef, envelopeId, 0, dmsMetaData)
+  def submission =
+    Submission(SubmissionId(formId, envelopeId), submittedDate, submissionRef, envelopeId, 0, dmsMetaData)
 
 }
 

@@ -41,7 +41,7 @@ class DestinationSubmitterSpec
 
   private def submissionInfoGen: Gen[DestinationSubmissionInfo] =
     destinationSubmissionInfoGen.map { dsi =>
-      dsi.copy(submission = dsi.submission.copy(_id = form._id))
+      dsi.copy(submission = dsi.submission.copy(_id = dsi.submission._id.copy(formId = form._id)))
     }
 
   "A Destination.HandlebarsHttpApi" should "be sent to the HandlebarsHttpApiSubmitter when includeIf is evaluated to true" in {

@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.submission
 
+import reactivemongo.api.indexes.{ Index, IndexType }
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.email.EmailModule
 import uk.gov.hmrc.gform.fileupload.FileUploadModule
@@ -52,7 +53,15 @@ class SubmissionModule(
 
   //TODO: this should be replaced with save4later for submissions
 
-  val submissionRepo: Repo[Submission] = new Repo[Submission]("submission", mongoModule.mongo, _._id.value)
+  val submissionRepo: Repo[Submission] = new Repo[Submission](
+    "submission",
+    mongoModule.mongo,
+    _._id.idString,
+    Seq(
+      Index(Seq("formTemplateId" -> IndexType.Ascending), name = Some("formTemplateIdIdx"), background = true),
+      Index(Seq("submittedDate" -> IndexType.Ascending), name = Some("submittedDateIdx"), background = true)
+    )
+  )
 
   private val fileUploadServiceDmsSubmitter = new DmsSubmitter(
     fileUploadModule.fileUploadService,

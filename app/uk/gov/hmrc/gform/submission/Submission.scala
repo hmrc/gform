@@ -20,7 +20,7 @@ import java.time.LocalDateTime
 
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
-import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
+import uk.gov.hmrc.gform.sharedmodel.{ SubmissionRef, ValueClassFormat }
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 
@@ -30,8 +30,24 @@ object DmsMetaData {
   implicit val format: OFormat[DmsMetaData] = Json.format[DmsMetaData]
 }
 
+case class SubmissionId(formId: FormId, envelopeId: EnvelopeId) {
+  def idString = s"${formId.value}${if (envelopeId.value.isEmpty) "" else ":" + envelopeId.value}"
+}
+
+object SubmissionId {
+  implicit val format: OFormat[SubmissionId] = ValueClassFormat.oformat(
+    "_id",
+    _.split(":").toList match {
+      case formId :: Nil               => SubmissionId(FormId(formId), EnvelopeId(""))
+      case formId :: envelopeId :: Nil => SubmissionId(FormId(formId), EnvelopeId(envelopeId))
+      case _                           => throw new IllegalArgumentException("Invalid SubmissionId format")
+    },
+    _.idString
+  )
+}
+
 case class Submission(
-  _id: FormId,
+  _id: SubmissionId,
   submittedDate: LocalDateTime,
   submissionRef: SubmissionRef,
   envelopeId: EnvelopeId,
@@ -41,7 +57,7 @@ case class Submission(
 
 object Submission {
 
-  private val reads: Reads[Submission] = ((FormId.format: Reads[FormId]) and
+  private val reads: Reads[Submission] = ((SubmissionId.format: Reads[SubmissionId]) and
     (JsPath \ "submittedDate").read[LocalDateTime] and
     SubmissionRef.oformat and
     EnvelopeId.format and
@@ -49,7 +65,7 @@ object Submission {
     DmsMetaData.format)(Submission.apply _)
 
   private val writes: OWrites[Submission] = OWrites[Submission](s =>
-    FormId.format.writes(s._id) ++
+    SubmissionId.format.writes(s._id) ++
       Json.obj("submittedDate" -> Writes.DefaultLocalDateTimeWrites.writes(s.submittedDate)) ++
       SubmissionRef.oformat.writes(s.submissionRef) ++
       EnvelopeId.format.writes(s.envelopeId) ++

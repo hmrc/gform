@@ -32,7 +32,7 @@ import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Constant, FormTemplateId }
-import uk.gov.hmrc.gform.submission.{ DmsMetaData, PdfAndXmlSummaries, PdfSummary, Submission }
+import uk.gov.hmrc.gform.submission.{ DmsMetaData, PdfAndXmlSummaries, PdfSummary, Submission, SubmissionId }
 import uk.gov.hmrc.http.HeaderCarrier
 
 trait DmsSubmissionAlgebra[F[_]] {
@@ -109,7 +109,7 @@ object DmsSubmissionService {
     attachments: Int
   ): Submission =
     Submission(
-      FormId(metadata.dmsFormId),
+      SubmissionId(FormId(metadata.dmsFormId), envId),
       submittedDate,
       SubmissionRef(envId),
       envId,
