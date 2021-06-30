@@ -60,7 +60,8 @@ object Section {
     addAnotherQuestion: FormComponent,
     instruction: Option[Instruction],
     presentationHint: Option[PresentationHint],
-    infoMessage: Option[SmartString]
+    infoMessage: Option[SmartString],
+    defaultPage: Option[Page] = None
   ) extends Section {
     override lazy val expandedFormComponents: List[FormComponent] = pages.toList.flatMap(_.expandedFormComponents)
   }
@@ -82,7 +83,8 @@ object Section {
           LeafExpr(path + "pages", a.pages) ++
           LeafExpr(path + "addAnotherQuestion", a.addAnotherQuestion) ++
           LeafExpr(path + "instruction", a.instruction) ++
-          LeafExpr(path + "infoMessage", a.infoMessage)
+          LeafExpr(path + "infoMessage", a.infoMessage) ++
+          LeafExpr(path + "defaultPage", a.defaultPage)
     }
 }
 

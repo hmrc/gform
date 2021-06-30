@@ -560,6 +560,29 @@ object FormTemplateValidator {
     }
     Monoid[ValidationResult].combineAll(result)
   }
+
+  def validateAddToListDefaultPage(formTemplate: FormTemplate): ValidationResult = {
+
+    def checkComponentTypes(page: Page): List[ValidationResult] = {
+      val title = page.title.rawValue(LangADT.En)
+
+      page.fields.map(_.`type`) map {
+        case InformationMessage(_, _) => Valid
+        case _ =>
+          Invalid(
+            s"AddToList, '$title', cannot contains fields in defaultPage other than Info type. " +
+              s"All fields in defaultPage for AddToList must be Info type."
+          )
+      }
+    }
+
+    val isNonInformationMessagePresent: List[ValidationResult] = formTemplate.sections.flatMap {
+      case s: Section.AddToList => s.defaultPage.toList.flatMap(checkComponentTypes _)
+      case _                    => Nil
+    }
+
+    isNonInformationMessagePresent.find(!_.isValid).getOrElse(Valid)
+  }
 }
 
 object IsEmailVerifiedBy {
