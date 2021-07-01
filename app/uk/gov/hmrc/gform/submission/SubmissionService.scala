@@ -67,7 +67,7 @@ class SubmissionService(
       for {
         form          <- formAlgebra.get(formIdData)
         formTemplate  <- fromFutureA(formTemplateService.get(form.formTemplateId))
-        submission    <- findSubmission(form._id)
+        submission    <- findSubmission(SubmissionId(formIdData.toFormId, form.envelopeId))
         submissionInfo = DestinationSubmissionInfo(customerId, submission)
         modelTree     <- createModelTreeForSingleFormSubmission(form, formTemplate, submissionData, submission.submissionRef)
         _             <- destinationsSubmitter.send(submissionInfo, modelTree, Some(form.formData))
@@ -102,11 +102,11 @@ class SubmissionService(
         )
       )
 
-  def submissionDetails(formIdData: FormIdData): Future[Submission] =
-    submissionRepo.get(formIdData.toFormId.value)
+  def submissionDetails(submissionId: SubmissionId): Future[Submission] =
+    submissionRepo.get(submissionId.idString)
 
-  private def findSubmission(formId: FormId) =
-    fromFutureA(submissionRepo.get(formId.value))
+  private def findSubmission(submissionId: SubmissionId) =
+    fromFutureA(submissionRepo.get(submissionId.idString))
 
   private def buildSubmission(
     formId: FormId,
@@ -119,7 +119,7 @@ class SubmissionService(
       submittedDate = timeProvider.localDateTime(),
       submissionRef = SubmissionRef(envelopeId),
       envelopeId = envelopeId,
-      _id = formId,
+      _id = SubmissionId(formId, envelopeId),
       noOfAttachments = noOfAttachments,
       dmsMetaData = DmsMetaData(
         formTemplateId = formTemplateId,

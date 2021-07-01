@@ -36,7 +36,7 @@ class MetadataXmlSpec extends Spec {
     val submission = Submission(
       submittedDate = LocalDateTime.of(2012, 12, 3, 12, 45),
       submissionRef = SubmissionRef("some-submission-ref"),
-      _id = FormId("some-form-type-id"),
+      _id = SubmissionId(FormId("some-form-type-id"), EnvelopeId("some-envelope-id")),
       envelopeId = EnvelopeId("some-envelope-id"),
       noOfAttachments = 2,
       dmsMetaData = dmsMetaData

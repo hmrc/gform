@@ -18,8 +18,7 @@ package uk.gov.hmrc.gform.submission.destinations
 
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ FormGen, PrimitiveGen }
-import uk.gov.hmrc.gform.submission.{ DmsMetaData, Submission }
-
+import uk.gov.hmrc.gform.submission.{ DmsMetaData, Submission, SubmissionId }
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
@@ -39,7 +38,14 @@ trait SubmissionGen {
       envelopedId        <- Gen.uuid.map(uuid => EnvelopeId(uuid.toString))
       numberOfAttacments <- Gen.choose(1, 10)
       dmsMetadata        <- dmsMetataGen
-    } yield Submission(formId, submittedDate, submissionRef, envelopedId, numberOfAttacments, dmsMetadata)
+    } yield Submission(
+      SubmissionId(formId, envelopedId),
+      submittedDate,
+      submissionRef,
+      envelopedId,
+      numberOfAttacments,
+      dmsMetadata
+    )
 }
 
 object SubmissionGen extends SubmissionGen

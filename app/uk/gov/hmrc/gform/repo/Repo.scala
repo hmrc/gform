@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.repo
 import cats.data.EitherT
 import cats.syntax.either._
 import play.api.libs.json._
+import reactivemongo.api.indexes.Index
 import reactivemongo.api.{ Cursor, DefaultDB, ReadConcern }
 import reactivemongo.bson.BSONObjectID
 
@@ -28,7 +29,12 @@ import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.mongo.ReactiveRepository
 import uk.gov.hmrc.play.http.logging.Mdc.preservingMdc
 
-class Repo[T: OWrites: Manifest](name: String, mongo: () => DefaultDB, idLens: T => String)(implicit
+class Repo[T: OWrites: Manifest](
+  name: String,
+  mongo: () => DefaultDB,
+  idLens: T => String,
+  indexS: Seq[Index] = Seq.empty
+)(implicit
   formatT: Format[T],
   ec: ExecutionContext
 ) extends ReactiveRepository[T, BSONObjectID](name, mongo, formatT) {
@@ -37,6 +43,8 @@ class Repo[T: OWrites: Manifest](name: String, mongo: () => DefaultDB, idLens: T
   private val options = reactivemongo.api.QueryOpts(batchSizeN = Integer.MAX_VALUE)
 
   import reactivemongo.play.json.ImplicitBSONHandlers._
+
+  override def indexes: Seq[Index] = indexS
 
   def find(id: String): Future[Option[T]] = preservingMdc {
     underlying.collection

@@ -56,14 +56,23 @@ class SubmissionController(controllerComponents: ControllerComponents, submissio
         .fold(unexpectedState => BadRequest(unexpectedState.error), _ => NoContent)
     }
 
-  def submissionDetailsPlain(userId: UserId, formTemplateId: FormTemplateId): Action[AnyContent] =
-    submissionDetailsFormIdData(FormIdData.Plain(userId, formTemplateId))
-  def submissionDetails(userId: UserId, formTemplateId: FormTemplateId, accessCode: AccessCode): Action[AnyContent] =
-    submissionDetailsFormIdData(FormIdData.WithAccessCode(userId, formTemplateId, accessCode))
+  def submissionDetailsPlain(
+    userId: UserId,
+    formTemplateId: FormTemplateId,
+    envelopeId: EnvelopeId
+  ): Action[AnyContent] =
+    submissionDetailsFormIdData(FormIdData.Plain(userId, formTemplateId), envelopeId)
+  def submissionDetails(
+    userId: UserId,
+    formTemplateId: FormTemplateId,
+    accessCode: AccessCode,
+    envelopeId: EnvelopeId
+  ): Action[AnyContent] =
+    submissionDetailsFormIdData(FormIdData.WithAccessCode(userId, formTemplateId, accessCode), envelopeId)
 
-  private def submissionDetailsFormIdData(formIdData: FormIdData): Action[AnyContent] =
+  private def submissionDetailsFormIdData(formIdData: FormIdData, envelopeId: EnvelopeId): Action[AnyContent] =
     formAction("submissionDetailsFormIdData", formIdData) { _ =>
-      submissionService.submissionDetails(formIdData).asOkJson
+      submissionService.submissionDetails(SubmissionId(formIdData.toFormId, envelopeId)).asOkJson
     }
 
   def retrieveAll(formTemplateId: FormTemplateId, page: Int, pageSize: Int): Action[AnyContent] = Action.async { _ =>

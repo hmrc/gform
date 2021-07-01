@@ -30,7 +30,7 @@ class SubmissionSpec extends Spec {
     val expecteJsonString =
       """
       {
-        "_id": "James007-AAA999",
+        "_id": "James007-AAA999:b66c5979-e885-49cd-9281-c7f42ce6b307",
         "submittedDate": "2007-12-03T10:15:30",
         "submissionRef": "DMS",
         "envelopeId": "b66c5979-e885-49cd-9281-c7f42ce6b307",

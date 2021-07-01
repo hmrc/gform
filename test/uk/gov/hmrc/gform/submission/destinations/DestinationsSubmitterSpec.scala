@@ -41,7 +41,7 @@ class DestinationsSubmitterSpec
 
   private def submissionInfoGen: Gen[DestinationSubmissionInfo] =
     DestinationSubmissionInfoGen.destinationSubmissionInfoGen.map { si =>
-      si.copy(submission = si.submission.copy(_id = form._id))
+      si.copy(submission = si.submission.copy(_id = si.submission._id.copy(formId = form._id)))
     }
 
   "Every Destination" should "be sent to the DestinationSubmitter" in {
