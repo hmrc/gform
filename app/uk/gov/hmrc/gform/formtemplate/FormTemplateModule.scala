@@ -29,9 +29,9 @@ class FormTemplateModule(controllerComponents: ControllerComponents, mongoModule
 ) {
 
   private val formTemplateRepo: Repo[FormTemplate] =
-    new Repo[FormTemplate]("formTemplate", mongoModule.mongo, _._id.value)
+    new Repo[FormTemplate]("formTemplate", mongoModule.mongoComponent, _._id.value)
   private val formTemplateRawRepo: Repo[FormTemplateRaw] =
-    new Repo[FormTemplateRaw]("formTemplateRaw", mongoModule.mongo, _._id.value)
+    new Repo[FormTemplateRaw]("formTemplateRaw", mongoModule.mongoComponent, _._id.value)
   val formTemplateService: FormTemplateService = new FormTemplateService(formTemplateRepo, formTemplateRawRepo)
   val formTemplatesController: FormTemplatesController =
     new FormTemplatesController(controllerComponents, formTemplateService)

@@ -16,18 +16,10 @@
 
 package uk.gov.hmrc.gform.mongo
 
-import play.modules.reactivemongo.ReactiveMongoComponentImpl
-import reactivemongo.api.DefaultDB
-import uk.gov.hmrc.gform.playcomponents.PlayComponents
+import uk.gov.hmrc.gform.config.ConfigModule
+import uk.gov.hmrc.mongo.MongoComponent
 
-class MongoModule(playComponents: PlayComponents) {
+class MongoModule(configModule: ConfigModule) {
 
-  val reactiveMongoComponent: ReactiveMongoComponentImpl =
-    new ReactiveMongoComponentImpl(
-      playComponents.context.initialConfiguration,
-      playComponents.context.environment,
-      playComponents.context.lifecycle
-    )
-  val mongo: () => DefaultDB = reactiveMongoComponent.mongoConnector.db
-
+  val mongoComponent: MongoComponent = MongoComponent(configModule.typesafeConfig.getString("mongodb.uri"))
 }

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.config
 
-import com.typesafe.config.{ ConfigFactory, Config => TypeSafeConfig }
+import com.typesafe.config.{ Config => TypeSafeConfig }
 import play.api.Configuration
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.playcomponents.PlayComponents
@@ -39,7 +39,7 @@ class ConfigModule(
   appName: String
 )(implicit ec: ExecutionContext) {
 
-  val typesafeConfig: TypeSafeConfig = ConfigFactory.load()
+  val typesafeConfig: TypeSafeConfig = configuration.underlying
 
   val appConfig: AppConfig = AppConfig.loadOrThrow(typesafeConfig)
 

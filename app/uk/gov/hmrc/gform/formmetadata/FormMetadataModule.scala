@@ -27,7 +27,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 
 class FormMetadataModule(mongoModule: MongoModule)(implicit ex: ExecutionContext) {
   private val formMetadataRepo: Repo[FormMetadata] =
-    new Repo[FormMetadata]("formMetadata", mongoModule.mongo, _._id.value)
+    new Repo[FormMetadata]("formMetadata", mongoModule.mongoComponent, _._id.value)
   val formMetadataService: FormMetadataAlgebra[Future] = new FormMetadataService(formMetadataRepo)
 
   val foptFormMetadataService: FormMetadataAlgebra[FOpt] = new FormMetadataAlgebra[FOpt] {

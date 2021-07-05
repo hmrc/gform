@@ -24,7 +24,7 @@ import cats.syntax.eq._
 import cats.syntax.flatMap._
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.{ ArrayNode, TextNode }
-import play.api.libs.json._
+import org.mongodb.scala.model.Filters
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.form.FormAlgebra
@@ -164,7 +164,7 @@ class RepoDestinationAuditer(
 
   private def findSummaryHtml(summaryHtml: PdfHtml): FOpt[Option[SummaryHtml]] =
     summaryHtmlRepository
-      .search(Json.obj("hash" -> JsNumber(summaryHtml.hashCode)))
+      .search(Filters.equal("hash", summaryHtml.hashCode))
       .map(_.find(_.summaryHtml === summaryHtml))
 
   private def getDestinationType(destination: Destination): String = destination match {

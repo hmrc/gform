@@ -16,15 +16,14 @@
 
 package uk.gov.hmrc.gform.submission.destinations
 
-import java.util.UUID
-
-import org.joda.time.LocalDateTime
-import play.api.libs.json.{ JsArray, JsError, JsNumber, JsObject, JsResult, JsString, JsSuccess, JsValue, OFormat }
-import uk.gov.hmrc.gform.sharedmodel.{ SubmissionRef, UserId }
+import org.joda.time.{ DateTimeZone, LocalDateTime }
+import play.api.libs.json.{ JsArray, JsError, JsNumber, JsObject, JsResult, JsString, JsSuccess, JsValue, OFormat, Reads, _ }
 import uk.gov.hmrc.gform.sharedmodel.form.{ FormId, FormStatus }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
-import uk.gov.hmrc.mongo.json.ReactiveMongoFormats._
+import uk.gov.hmrc.gform.sharedmodel.{ SubmissionRef, UserId }
+
+import java.util.UUID
 
 case class DestinationAudit(
   formId: FormId,
@@ -45,6 +44,16 @@ case class DestinationAudit(
 )
 
 object DestinationAudit {
+
+  val localDateTimeRead: Reads[LocalDateTime] =
+    (__ \ "$date").read[Long].map { dateTime =>
+      new LocalDateTime(dateTime, DateTimeZone.UTC)
+    }
+
+  val localDateTimeWrite: Writes[LocalDateTime] = (dateTime: LocalDateTime) =>
+    Json.obj(
+      "$date" -> dateTime.toDateTime(DateTimeZone.UTC).getMillis
+    )
 
   implicit val format: OFormat[DestinationAudit] = new OFormat[DestinationAudit] {
 

@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.gform.submission.destinations
 
-import play.api.libs.json._
+import org.bson.conversions.Bson
+import org.mongodb.scala.model.Filters.{ and, equal, in, notEqual }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, HandlebarsTemplateProcessorModel }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import uk.gov.hmrc.gform.sharedmodel.{ PdfHtml, SubmissionRef }
@@ -43,17 +44,13 @@ trait DestinationAuditAlgebra[M[_]] {
 }
 
 object DestinationAuditAlgebra {
-  def auditRepoFormIdSearch(formId: FormId): JsObject = Json.obj("formId" -> JsString(formId.value))
+  def auditRepoFormIdSearch(formId: FormId): Bson = equal("formId", formId.value)
 
-  def auditRepoLatestChildAuditsSearch(parentSubmissionRef: SubmissionRef): JsObject = {
-    val parentSubmissionRefJson = JsString(parentSubmissionRef.value)
-    Json.obj(
-      "submissionRef" ->
-        Json.obj("$ne" -> parentSubmissionRefJson),
-      "parentFormSubmissionRefs" ->
-        Json.obj("$in" -> Json.arr(parentSubmissionRefJson))
+  def auditRepoLatestChildAuditsSearch(parentSubmissionRef: SubmissionRef): Bson =
+    and(
+      notEqual("submissionRef", parentSubmissionRef.value),
+      in("parentFormSubmissionRefs", parentSubmissionRef.value)
     )
-  }
 
-  val latestTimestampFirst: JsObject = Json.obj("timestamp" -> JsNumber(-1))
+  val latestTimestampFirst: Bson = equal("timestamp", -1)
 }

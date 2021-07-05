@@ -1,20 +1,19 @@
 package uk.gov.hmrc.gform.it
 
-import java.time.Instant
-
 import akka.http.scaladsl.model.StatusCodes
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.verification.LoggedRequest
+import com.mongodb.{ BasicDBObject, ReadPreference }
 import org.scalatest.time.{ Millis, Seconds, Span }
 import play.api.libs.json.Json
 import uk.gov.hmrc.gform.it.sample.{ FormDataSample, FormTemplateSample, QueryParamsSample }
 import uk.gov.hmrc.gform.it.wiremock.{ FileUploadServiceStubs, Save4LaterServiceStubs }
 import uk.gov.hmrc.gform.sharedmodel.UserId
 import uk.gov.hmrc.gform.sharedmodel.form.FormIdData.Plain
-import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormData, FormField, FormId, FormIdData, InProgress }
+import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplateId }
-
 import scala.concurrent.ExecutionContext.Implicits.global
+import java.time.Instant
 import scala.collection.JavaConverters._
 
 class FormIT
@@ -25,8 +24,8 @@ class FormIT
 
   override protected def afterEach(): Unit = {
     super.afterEach()
-    formTemplateRepo.removeAll().futureValue
-    formTemplateRawRepo.removeAll().futureValue
+    formTemplateRepo.collection.deleteMany(new BasicDBObject()).toFuture().futureValue
+    formTemplateRawRepo.collection.deleteMany(new BasicDBObject()).toFuture().futureValue
     ()
   }
 
@@ -85,7 +84,12 @@ class FormIT
   }
 
   private def assertFormMetadata(startInstant: Instant): Unit = {
-    val formMetadatas = formMetadataRepo.findAll().futureValue
+    val formMetadatas = formMetadataRepo.collection
+      .withReadPreference(ReadPreference.secondaryPreferred)
+      .find()
+      .toFuture()
+      .map(_.toList)
+      .futureValue
     formMetadatas.size shouldBe 1
     formMetadatas.head._id shouldBe FormId("123-BASIC")
     formMetadatas.head.userId shouldBe UserId("123")

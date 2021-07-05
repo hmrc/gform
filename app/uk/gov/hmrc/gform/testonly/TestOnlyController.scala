@@ -28,8 +28,6 @@ import org.slf4j.LoggerFactory
 import play.api.http.HttpEntity
 import play.api.libs.json._
 import play.api.mvc._
-import reactivemongo.api.DB
-import reactivemongo.play.json.collection.JSONCollection
 
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.BuildInfo
@@ -37,18 +35,20 @@ import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.des.DesAlgebra
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
+import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, Destinations, HandlebarsTemplateProcessorModel }
 import uk.gov.hmrc.gform.sharedmodel.form.FormId
 import uk.gov.hmrc.gform.submission.destinations.DestinationsProcessorModelAlgebra
 import uk.gov.hmrc.gform.submission.{ DmsMetaData, Submission, SubmissionId }
 import uk.gov.hmrc.gform.submission.handlebars.{ FocussedHandlebarsModelTree, HandlebarsModelTree, RealHandlebarsTemplateProcessor }
+import uk.gov.hmrc.mongo.MongoComponent
 
 class TestOnlyController(
   controllerComponents: ControllerComponents,
-  mongo: () => DB,
+  mongoComponent: MongoComponent,
   enrolmentConnector: EnrolmentConnector,
   formAlgebra: FormAlgebra[Future],
   formTemplateAlgebra: FormTemplateAlgebra[Future],
@@ -57,6 +57,8 @@ class TestOnlyController(
 )(implicit ex: ExecutionContext)
     extends BaseController(controllerComponents) {
   private val logger = LoggerFactory.getLogger(getClass)
+
+  private val formTemplatesRepo = new Repo[FormTemplate]("formTemplate", mongoComponent, _._id.value)
 
   def getFromDes(url: String): Action[AnyContent] =
     Action.async { request =>
@@ -227,10 +229,9 @@ class TestOnlyController(
 
   private def fromOption[A, B](a: Option[A], s: B): EitherT[Option, B, A] = EitherT.fromOption(a, s)
 
-  private lazy val formTemplates = mongo().collection[JSONCollection]("formTemplate")
   def removeTemplates() = Action.async { _ =>
     println("purging mongo database ....")
-    formTemplates.drop(failIfNotFound = false).map(_ => Results.Ok("Mongo purged")).recover { case e =>
+    formTemplatesRepo.collection.drop().toFuture().map(_ => Results.Ok("Mongo purged")).recover { case e =>
       e.printStackTrace()
       Results.InternalServerError(e.toString)
     }

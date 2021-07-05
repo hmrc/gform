@@ -32,7 +32,7 @@ class DbLookupService(mongoModule: MongoModule)(implicit ec: ExecutionContext)
     extends Verifier with DbLookupAlgebra[Future] {
 
   private def dbLookupRepo(collectionName: CollectionName): Repo[DbLookupId] =
-    new Repo[DbLookupId](collectionName.name, mongoModule.mongo, _.id)
+    new Repo[DbLookupId](collectionName.name, mongoModule.mongoComponent, _.id)
 
   def find(dbLookupId: DbLookupId, collectionName: CollectionName): Future[Option[DbLookupId]] =
     dbLookupRepo(collectionName).find(dbLookupId.id)
