@@ -18,107 +18,101 @@ package uk.gov.hmrc.gform.repo
 
 import cats.data.EitherT
 import cats.syntax.either._
+import com.mongodb.ReadPreference
+import org.bson.Document
+import org.mongodb.scala.bson.conversions.Bson
+import org.mongodb.scala.model.Filters._
+import org.mongodb.scala.model.{ Filters, FindOneAndReplaceOptions, IndexModel, InsertManyOptions }
 import play.api.libs.json._
-import reactivemongo.api.indexes.Index
-import reactivemongo.api.{ Cursor, DefaultDB, ReadConcern }
-import reactivemongo.bson.BSONObjectID
-
-import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.mongo.ReactiveRepository
-import uk.gov.hmrc.play.http.logging.Mdc.preservingMdc
+import uk.gov.hmrc.mongo.MongoComponent
+import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
+import org.mongodb.scala.model.Projections._
+import scala.concurrent.{ ExecutionContext, Future }
 
 class Repo[T: OWrites: Manifest](
   name: String,
-  mongo: () => DefaultDB,
+  mongoComponent: MongoComponent,
   idLens: T => String,
-  indexS: Seq[Index] = Seq.empty
+  indexes: Seq[IndexModel] = Seq.empty
 )(implicit
   formatT: Format[T],
   ec: ExecutionContext
-) extends ReactiveRepository[T, BSONObjectID](name, mongo, formatT) {
+) extends PlayMongoRepository[T](mongoComponent, name, formatT, indexes) {
   underlying =>
 
-  private val options = reactivemongo.api.QueryOpts(batchSizeN = Integer.MAX_VALUE)
-
-  import reactivemongo.play.json.ImplicitBSONHandlers._
-
-  override def indexes: Seq[Index] = indexS
-
-  def find(id: String): Future[Option[T]] = preservingMdc {
+  def find(id: String): Future[Option[T]] =
     underlying.collection
-      .find[JsObject, T](idSelector(id), None)
-      .one[T]
-  }
+      .find(equal("_id", id))
+      .first()
+      .toFutureOption()
 
-  def get(id: String): Future[T] = preservingMdc {
+  def findAll(): Future[List[T]] = underlying.collection
+    .withReadPreference(ReadPreference.secondaryPreferred)
+    .find()
+    .toFuture()
+    .map(_.toList)
+
+  def get(id: String): Future[T] =
     find(id).map(_.getOrElse(throw new NoSuchElementException(s"$name for given id: '$id' not found")))
-  }
 
-  def search(selector: JsObject): Future[List[T]] = preservingMdc {
+  def search(selector: Bson): Future[List[T]] =
     //TODO: don't abuse it to much. If querying for a large underlyingReactiveRepository.collection.consider returning stream instead of packing everything into the list
     underlying.collection
-      .find[JsObject, T](selector = selector, None)
-      .options(options)
-      .cursor[T]()
-      .collect[List](Integer.MAX_VALUE, Cursor.FailOnError())
-  }
+      .find(selector)
+      .batchSize(Integer.MAX_VALUE)
+      .toFuture()
+      .map(_.toList)
 
-  def search(selector: JsObject, orderBy: JsObject): Future[List[T]] = preservingMdc {
+  def search(selector: Bson, orderBy: Bson): Future[List[T]] =
     //TODO: don't abuse it to much. If querying for a large underlyingReactiveRepository.collection.consider returning stream instead of packing everything into the list
-
     underlying.collection
-      .find[JsObject, T](selector = selector, None)
+      .find(selector)
+      .batchSize(Integer.MAX_VALUE)
       .sort(orderBy)
-      .options(options)
-      .cursor[T]()
-      .collect[List](Integer.MAX_VALUE, Cursor.FailOnError())
-  }
+      .toFuture()
+      .map(_.toList)
 
-  def page(selector: JsObject, orderBy: JsObject, skip: Int, limit: Int): Future[List[T]] = preservingMdc {
+  def page(selector: Bson, orderBy: Bson, skip: Int, limit: Int): Future[List[T]] =
     underlying.collection
-      .find[JsObject, T](selector = selector, None)
+      .find(selector)
       .sort(orderBy)
       .skip(skip)
-      .cursor[T]()
-      .collect[List](limit, Cursor.FailOnError())
-  }
+      .limit(limit)
+      .toFuture()
+      .map(_.toList)
 
-  def count(selector: JsObject): Future[Long] = preservingMdc {
+  def count(selector: Bson): Future[Long] =
     underlying.collection
-      .count(selector = Some(selector), limit = None, skip = 0, hint = None, readConcern = ReadConcern.Local)
-  }
+      .countDocuments(selector)
+      .toFuture()
 
-  def projection[P: Format](projection: JsObject): Future[List[P]] = preservingMdc {
+  def projection(includes: String*): Future[List[JsValue]] =
     underlying.collection
-      .find[JsObject, JsObject](selector = Json.obj(), Some(projection))
-      .cursor[P]()
-      .collect[List](Integer.MAX_VALUE, Cursor.FailOnError())
-  }
+      .find[Document]()
+      .projection(include(includes: _*))
+      .toFuture()
+      .map(_.toList.map(d => Json.parse(d.toJson())))
 
   def upsert(t: T): FOpt[Unit] = EitherT {
-    preservingMdc {
-      underlying.collection
-        .update(ordered = false)
-        .one[JsObject, T](q = idSelector(t), u = t, upsert = true, multi = false)
-        .asEither
-    }
+    underlying.collection
+      .findOneAndReplace(idSelector(t), t, FindOneAndReplaceOptions().upsert(true))
+      .toFuture()
+      .asEither
   }
 
   def upsertBulk(t: Seq[T]): Future[Either[UnexpectedState, Unit]] =
-    preservingMdc {
-      underlying.collection.insert(ordered = false).many(t).asEither
-    }
+    underlying.collection.insertMany(t, InsertManyOptions().ordered(false)).toFuture().asEither
 
   def delete(id: String): FOpt[Unit] = EitherT {
-    preservingMdc {
-      underlying.collection.delete().one(idSelector(id)).asEither
-    }
+    underlying.collection
+      .deleteOne(Filters.equal("_id", id))
+      .toFuture()
+      .asEither
   }
 
-  private def idSelector(id: String): JsObject = Json.obj("_id" -> id)
-  private def idSelector(t: T): JsObject = idSelector(idLens(t))
+  private def idSelector(item: T): Bson = Filters.equal("_id", idLens(item))
 
   implicit class FutureWriteResultOps[R](t: Future[R]) {
     def asEither: Future[Either[UnexpectedState, Unit]] =

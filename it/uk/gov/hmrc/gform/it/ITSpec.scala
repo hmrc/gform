@@ -17,7 +17,6 @@ import play.api.{ Application, Environment }
 import uk.gov.hmrc.crypto.{ Crypted, CryptoWithKeysFromConfig }
 import uk.gov.hmrc.gform.ApplicationLoader
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Random
 import scala.collection.JavaConverters._
 
@@ -60,7 +59,7 @@ trait ITSpec
   override protected def afterAll(): Unit = {
     app.stop().futureValue
     wireMockServer.stop()
-    mongoConnector.db().drop().futureValue
+    mongoComponent.database.drop().toFuture().futureValue
     system.terminate()
     ()
   }

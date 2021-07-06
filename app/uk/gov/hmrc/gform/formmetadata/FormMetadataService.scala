@@ -21,10 +21,11 @@ import cats.instances.list._
 import cats.syntax.flatMap._
 import cats.syntax.option._
 import cats.syntax.show._
+import org.mongodb.scala.model.Filters._
 import java.time.Instant
 
 import org.slf4j.LoggerFactory
-import play.api.libs.json.{ JsString, Json }
+import play.api.libs.json.JsString
 
 import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.gform.core.FOpt
@@ -52,9 +53,9 @@ class FormMetadataService(formMetadataRepo: Repo[FormMetadata])(implicit ec: Exe
   def get(formIdData: FormIdData): Future[FormMetadata] = formMetadataRepo.get(formIdData.toFormId.value)
 
   def getAll(userId: UserId, formTemplateId: FormTemplateId): Future[List[FormMetadata]] = formMetadataRepo.search(
-    Json.obj(
-      "userId"         -> userId.value,
-      "formTemplateId" -> formTemplateId.value
+    and(
+      equal("userId", userId.value),
+      equal("formTemplateId", formTemplateId.value)
     )
   )
 
@@ -85,11 +86,10 @@ class FormMetadataService(formMetadataRepo: Repo[FormMetadata])(implicit ec: Exe
 
   def findByParentFormSubmissionRef(parentFormSubmissionRef: SubmissionRef): Future[List[FormMetadata]] = {
     val parentSubmissionRefJson = JsString(parentFormSubmissionRef.value)
-    val query = Json.obj(
-      "submissionRef"            -> Json.obj("$ne" -> parentSubmissionRefJson),
-      "parentFormSubmissionRefs" -> Json.obj("$in" -> Json.arr(parentSubmissionRefJson))
+    val query = and(
+      notEqual("submissionRef", parentSubmissionRefJson),
+      in("parentFormSubmissionRefs", parentSubmissionRefJson)
     )
-
     formMetadataRepo.search(query)
   }
 

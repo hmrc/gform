@@ -44,8 +44,8 @@ class DestinationModule(
       Loggers.destinations.info("Destination auditing IS enabled")
       Some(
         new RepoDestinationAuditer(
-          RepoAlgebra.fOpt(new Repo[DestinationAudit]("destinationAudit", mongoModule.mongo, _.id.toString)),
-          RepoAlgebra.fOpt(new Repo[SummaryHtml]("summaryHtml", mongoModule.mongo, _.id.value.toString)),
+          RepoAlgebra.fOpt(new Repo[DestinationAudit]("destinationAudit", mongoModule.mongoComponent, _.id.toString)),
+          RepoAlgebra.fOpt(new Repo[SummaryHtml]("summaryHtml", mongoModule.mongoComponent, _.id.value.toString)),
           formModule.fOptFormService
         )
       )

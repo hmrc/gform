@@ -17,6 +17,8 @@ package uk.gov.hmrc.gform.it
 
 import akka.http.scaladsl.model.StatusCodes
 import cats.data.NonEmptyList
+import com.mongodb.{ BasicDBObject, ReadPreference }
+import org.mongodb.scala.model.Filters
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.time.{ Millis, Seconds, Span }
 import play.api.libs.json.{ JsObject, Json }
@@ -38,8 +40,8 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
     PatienceConfig(timeout = Span(15, Seconds), interval = Span(500, Millis))
 
   override protected def afterEach(): Unit = {
-    formTemplateRepo.removeAll().futureValue
-    formTemplateRawRepo.removeAll().futureValue
+    formTemplateRepo.collection.deleteMany(new BasicDBObject()).toFuture().futureValue
+    formTemplateRawRepo.collection.deleteMany(new BasicDBObject()).toFuture().futureValue
     ()
   }
 
@@ -52,7 +54,12 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
     result.status shouldBe StatusCodes.NoContent.intValue
     result.body shouldBe ""
 
-    val formTemplates = formTemplateRepo.findAll().futureValue
+    val formTemplates = formTemplateRepo.collection
+      .withReadPreference(ReadPreference.secondaryPreferred)
+      .find()
+      .toFuture()
+      .map(_.toList)
+      .futureValue
     formTemplates.size shouldBe 2
     formTemplates.map(_._id.value) shouldBe List("specimen-BASIC", "BASIC")
     assertBasicFormTemplate(formTemplates.head)
@@ -181,7 +188,7 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
       List.empty
     )
 
-    val formTemplateRaw = formTemplateRawRepo.find("_id" -> "BASIC").futureValue
+    val formTemplateRaw = formTemplateRawRepo.collection.find(Filters.equal("_id", "BASIC")).toFuture().futureValue
     formTemplateRaw shouldBe List(FormTemplateRaw(basicFormTemplate.as[JsObject]))
     ()
   }

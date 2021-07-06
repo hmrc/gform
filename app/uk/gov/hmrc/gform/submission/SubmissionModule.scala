@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.gform.submission
 
-import reactivemongo.api.indexes.{ Index, IndexType }
+import org.mongodb.scala.model.{ IndexModel, IndexOptions }
+import org.mongodb.scala.model.Indexes.ascending
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.email.EmailModule
 import uk.gov.hmrc.gform.fileupload.FileUploadModule
@@ -55,11 +56,11 @@ class SubmissionModule(
 
   val submissionRepo: Repo[Submission] = new Repo[Submission](
     "submission",
-    mongoModule.mongo,
+    mongoModule.mongoComponent,
     _._id.idString,
     Seq(
-      Index(Seq("formTemplateId" -> IndexType.Ascending), name = Some("formTemplateIdIdx"), background = true),
-      Index(Seq("submittedDate" -> IndexType.Ascending), name = Some("submittedDateIdx"), background = true)
+      IndexModel(ascending("formTemplateId"), IndexOptions().name("formTemplateIdIdx").background(true)),
+      IndexModel(ascending("submittedDate"), IndexOptions().name("submittedDateIdx").background(true))
     )
   )
 

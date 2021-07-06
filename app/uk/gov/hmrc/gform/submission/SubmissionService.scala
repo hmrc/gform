@@ -17,8 +17,8 @@
 package uk.gov.hmrc.gform.submission
 
 import cats.instances.future._
+import org.mongodb.scala.model.Filters.equal
 import org.slf4j.LoggerFactory
-import play.api.libs.json.Json
 import uk.gov.hmrc.gform.core.{ fromFutureA, _ }
 import uk.gov.hmrc.gform.email.EmailService
 import uk.gov.hmrc.gform.form.FormAlgebra
@@ -128,12 +128,8 @@ class SubmissionService(
     )
 
   def submissionPageDetails(formTemplateId: FormTemplateId, page: Int, pageSize: Int): Future[SubmissionPageData] = {
-    val query = Json.obj(
-      "formTemplateId" -> formTemplateId.value
-    )
-    val sort = Json.obj(
-      "submittedDate" -> -1
-    )
+    val query = equal("formTemplateId", formTemplateId.value)
+    val sort = equal("submittedDate", -1)
 
     val skip = page * pageSize
     for {

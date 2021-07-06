@@ -61,7 +61,7 @@ class TestOnlyModule(
   val testOnlyController: TestOnlyController =
     new TestOnlyController(
       configModule.controllerComponents,
-      mongoModule.mongo,
+      mongoModule.mongoComponent,
       enrolmentConnector,
       formService,
       formTemplateAlgebra,

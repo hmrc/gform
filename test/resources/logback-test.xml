@@ -89,14 +89,15 @@
 
     <logger name="org.asynchttpclient.netty.channel.DefaultChannelPool" level="INFO"/>
 
-    <logger name="reactivemongo.core.actors.MongoDBSystem" level="INFO"/>
+    <logger name="org.mongodb" level="INFO"/>
+
+    <logger name="com.mongodb" level="INFO"/>
 
     <logger name="connector" level="INFO">
         <appender-ref ref="STDOUT"/>
     </logger>
 
-    <root level="INFO">
-        <appender-ref ref="FILE"/>
+    <root level="ERROR">
         <appender-ref ref="STDOUT"/>
     </root>
 </configuration>

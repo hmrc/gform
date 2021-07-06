@@ -18,7 +18,6 @@ package uk.gov.hmrc.gform.formtemplate
 
 import cats.implicits._
 import org.slf4j.LoggerFactory
-import play.api.libs.json.{ JsValue, Json }
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
@@ -47,7 +46,7 @@ class FormTemplateService(formTemplateRepo: Repo[FormTemplate], formTemplateRawR
 
   def list(): Future[List[String]] =
     formTemplateRepo
-      .projection[JsValue](Json.obj("_id" -> "true"))
+      .projection("_id")
       .map(_.flatMap { jsValue =>
         (jsValue \ "_id").asOpt[String] match {
           case None =>

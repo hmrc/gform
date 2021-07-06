@@ -9,11 +9,12 @@ object Dependencies {
 
   val parsebackVersion = "0.3"
   val handlebarsVersion = "4.2.0"
+  val hmrcMongoVersion = "0.50.0"
 
   val compile = Seq(
     ws,
     "com.github.pureconfig"      %% "pureconfig"                % "0.14.0",
-    "uk.gov.hmrc"                %% "simple-reactivemongo"      % "7.30.0-play-27",
+    "uk.gov.hmrc.mongo"          %% "hmrc-mongo-play-27"        % hmrcMongoVersion,
     "uk.gov.hmrc"                %% "http-caching-client"       % "9.2.0-play-27",
     "uk.gov.hmrc"                %% "bootstrap-backend-play-27" % "3.2.0",
     "uk.gov.hmrc"                %% "domain"                    % "5.10.0-play-27",
@@ -43,6 +44,7 @@ object Dependencies {
     "org.scalatestplus.play" %% "scalatestplus-play"          % "4.0.3"             % scope,
     "org.jsoup"               % "jsoup"                       % "1.11.3"            % scope,
     "com.github.tomakehurst"  % "wiremock-jre8"               % "2.27.1"            % scope,
-    "org.scalameta"          %% "munit"                       % "0.7.22"            % scope
+    "org.scalameta"          %% "munit"                       % "0.7.22"            % scope,
+    "uk.gov.hmrc.mongo"      %% "hmrc-mongo-test-play-27"     % hmrcMongoVersion    % scope
   )
 }

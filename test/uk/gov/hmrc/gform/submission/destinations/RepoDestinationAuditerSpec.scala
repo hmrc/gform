@@ -17,9 +17,9 @@
 package uk.gov.hmrc.gform.submission.destinations
 
 import cats.syntax.eq._
+import org.mongodb.scala.bson.conversions.Bson
 import org.scalatest.time.{ Millis, Span }
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
-import play.api.libs.json.JsObject
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.core.{ FOpt, success }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
@@ -146,7 +146,7 @@ class RepoDestinationAuditerSpec
   case class Fixture(auditer: RepoDestinationAuditer, auditRepository: RepoAlgebra[DestinationAudit, FOpt]) {
     def expectAuditRepositoryFormIdSearch(formId: FormId, result: List[DestinationAudit]): Fixture = {
       (auditRepository
-        .search(_: JsObject, _: JsObject))
+        .search(_: Bson, _: Bson))
         .expects(DestinationAuditAlgebra.auditRepoFormIdSearch(formId), DestinationAuditAlgebra.latestTimestampFirst)
         .returning(success(result))
 
@@ -158,7 +158,7 @@ class RepoDestinationAuditerSpec
       result: List[DestinationAudit]
     ): Fixture = {
       (auditRepository
-        .search(_: JsObject))
+        .search(_: Bson))
         .expects(DestinationAuditAlgebra.auditRepoLatestChildAuditsSearch(submissionRef))
         .returning(success(result))
 
