@@ -43,7 +43,7 @@ import uk.gov.hmrc.gform.notifier.NotifierModule
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorModule
 import uk.gov.hmrc.gform.playcomponents.{ ErrorHandler, PlayComponents, PlayComponentsModule }
 import uk.gov.hmrc.gform.proxy.ProxyModule
-import uk.gov.hmrc.gform.save4later.{ Save4Later, Save4LaterModule }
+import uk.gov.hmrc.gform.save4later.{ FormCacheWithFallback, FormMongoCache, Save4Later, Save4LaterModule }
 import uk.gov.hmrc.gform.submission.SubmissionModule
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsHttpApiModule
 import uk.gov.hmrc.gform.testonly.TestOnlyModule
@@ -53,8 +53,12 @@ import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.gform.obligation.ObligationModule
 import uk.gov.hmrc.gform.submission.destinations.DestinationModule
 import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorModule
+import uk.gov.hmrc.mongo.CurrentTimestampSupport
+import uk.gov.hmrc.mongo.cache.CacheIdType.SimpleCacheId
+import uk.gov.hmrc.mongo.cache.MongoCacheRepository
 import uk.gov.hmrc.play.bootstrap.config.AppName
 
+import scala.concurrent.duration._
 import scala.concurrent.Future
 
 class ApplicationLoader extends play.api.ApplicationLoader {
@@ -97,9 +101,22 @@ class ApplicationModule(context: Context)
   val save4later =
     new Save4Later(shortLivedCacheModule.shortLivedCache)
 
+  val formMongoCache = new FormMongoCache(
+    new MongoCacheRepository[String](
+      mongoModule.mongoComponent,
+      "forms",
+      true,
+      configModule.appConfig.formExpiryDays.days,
+      new CurrentTimestampSupport(),
+      SimpleCacheId
+    )
+  )
+
+  val formCacheWithFallback = new FormCacheWithFallback(formMongoCache, save4later)
+
   val formService: FormService[Future] =
     new FormService(
-      save4later,
+      formCacheWithFallback,
       fileUploadModule.fileUploadService,
       formTemplateModule.formTemplateService,
       formMetadaModule.formMetadataService
