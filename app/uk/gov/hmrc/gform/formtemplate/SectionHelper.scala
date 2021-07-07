@@ -30,12 +30,12 @@ object SectionHelper {
   def pages(sections: List[Section]): List[Page] =
     sections.flatMap(pages(_).toList)
 
-  def addToListRepeater(section: Section): Option[FormComponent] =
+  private def addToListRepeaterAndDefaultPages(section: Section): List[FormComponent] =
     section match {
-      case s: Section.AddToList => Some(s.addAnotherQuestion)
-      case _                    => None
+      case s: Section.AddToList => s.addAnotherQuestion +: s.defaultPage.map(_.fields).getOrElse(Nil)
+      case _                    => Nil
     }
 
-  def addToListRepeaters(sections: List[Section]): List[FormComponent] =
-    sections.flatMap(addToListRepeater(_))
+  def addToListIds(sections: List[Section]): List[FormComponent] =
+    sections.flatMap(addToListRepeaterAndDefaultPages(_))
 }
