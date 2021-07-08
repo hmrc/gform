@@ -42,7 +42,7 @@ object FormTemplateValidator {
     else Invalid("languages must contain en")
 
   def fieldIds(sections: List[Section]): List[FormComponentId] =
-    indexedFieldIds(sections).map(_._1) ::: SectionHelper.addToListRepeaters(sections).map(_.id)
+    indexedFieldIds(sections).map(_._1) ::: SectionHelper.addToListIds(sections).map(_.id)
 
   private def indexedFieldIds(sections: List[Section]): List[(FormComponentId, Int)] = indexedFields(sections).map {
     case (a, b) => a.id -> b
