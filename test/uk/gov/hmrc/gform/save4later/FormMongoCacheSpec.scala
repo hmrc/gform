@@ -17,25 +17,30 @@
 package uk.gov.hmrc.gform.save4later
 
 import akka.http.scaladsl.model.StatusCodes
+import org.scalacheck.Gen
+import org.scalacheck.rng.Seed
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{ Millis, Seconds, Span }
 import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach, FlatSpecLike, Matchers }
 import uk.gov.hmrc.gform.MongoComponentSupport
-import uk.gov.hmrc.gform.sharedmodel.ExampleData
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.FormGen
 import uk.gov.hmrc.http.{ HeaderCarrier, UpstreamErrorResponse }
 import uk.gov.hmrc.mongo.CurrentTimestampSupport
 import uk.gov.hmrc.mongo.cache.CacheIdType.SimpleCacheId
 import uk.gov.hmrc.mongo.cache.MongoCacheRepository
-import scala.concurrent.duration._
+
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
 
 class FormMongoCacheSpec
-    extends FlatSpecLike with Matchers with MongoComponentSupport with ExampleData with ScalaFutures
-    with BeforeAndAfterEach with BeforeAndAfterAll {
+    extends FlatSpecLike with Matchers with MongoComponentSupport with ScalaFutures with BeforeAndAfterEach
+    with BeforeAndAfterAll with FormGen {
 
   implicit val defaultPatience: PatienceConfig =
     PatienceConfig(timeout = Span(5, Seconds), interval = Span(500, Millis))
   implicit val hc: HeaderCarrier = HeaderCarrier()
+  val form = formGen.pureApply(Gen.Parameters.default, Seed(1))
+  val formId = form._id
 
   override protected def afterAll(): Unit = {
     mongoComponent.database.drop().toFuture().futureValue
