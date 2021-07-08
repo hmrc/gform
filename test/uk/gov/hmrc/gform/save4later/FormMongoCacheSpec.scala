@@ -17,11 +17,13 @@
 package uk.gov.hmrc.gform.save4later
 
 import akka.http.scaladsl.model.StatusCodes
+import com.typesafe.config.ConfigFactory.parseString
 import org.scalacheck.Gen
 import org.scalacheck.rng.Seed
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{ Millis, Seconds, Span }
 import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach, FlatSpecLike, Matchers }
+import uk.gov.hmrc.crypto.CryptoWithKeysFromConfig
 import uk.gov.hmrc.gform.MongoComponentSupport
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.FormGen
 import uk.gov.hmrc.http.{ HeaderCarrier, UpstreamErrorResponse }
@@ -60,6 +62,12 @@ class FormMongoCacheSpec
       1.minute,
       new CurrentTimestampSupport(),
       SimpleCacheId
+    ),
+    new CryptoWithKeysFromConfig(
+      baseConfigKey = "json.encryption",
+      parseString("""
+                    | json.encryption.key = "fqpLDZ4sumDsekHkeEBlCA=="
+        """.stripMargin)
     )
   )
 

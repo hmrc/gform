@@ -26,6 +26,7 @@ import play.api.inject.{ Injector, SimpleInjector }
 import play.api.mvc.EssentialFilter
 import play.api.routing.Router
 import play.api.libs.ws.ahc.AhcWSComponents
+import uk.gov.hmrc.crypto.CryptoWithKeysFromConfig
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.auditing.AuditingModule
 import uk.gov.hmrc.gform.config.ConfigModule
@@ -109,7 +110,8 @@ class ApplicationModule(context: Context)
       configModule.appConfig.formExpiryDays.days,
       new CurrentTimestampSupport(),
       SimpleCacheId
-    )
+    ),
+    new CryptoWithKeysFromConfig(baseConfigKey = "json.encryption", configModule.typesafeConfig)
   )
 
   val formCacheWithFallback = new FormCacheWithFallback(formMongoCache, save4later)

@@ -16,16 +16,13 @@
 
 package uk.gov.hmrc.gform.save4later
 
-import uk.gov.hmrc.gform.sharedmodel.UserId
 import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormId, FormIdData }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.http.HeaderCarrier
 
 trait FormPersistenceAlgebra[F[_]] {
   def find(formId: FormId)(implicit hc: HeaderCarrier): F[Option[Form]]
   def get(formIdData: FormId)(implicit hc: HeaderCarrier): F[Form]
   def get(formIdData: FormIdData)(implicit hc: HeaderCarrier): F[Form]
-  def getAll(userId: UserId, formTemplateId: FormTemplateId)(implicit hc: HeaderCarrier): F[List[Form]]
   def upsert(formId: FormId, form: Form)(implicit hc: HeaderCarrier): F[Unit]
   def delete(formId: FormId)(implicit hc: HeaderCarrier): F[Unit]
 }

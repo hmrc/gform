@@ -3,8 +3,11 @@ package uk.gov.hmrc.gform.it
 import uk.gov.hmrc.gform.MongoComponentSupport
 import uk.gov.hmrc.gform.formmetadata.FormMetadata
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateRaw }
+import uk.gov.hmrc.mongo.CurrentTimestampSupport
+import uk.gov.hmrc.mongo.cache.CacheIdType.SimpleCacheId
+import uk.gov.hmrc.mongo.cache.MongoCacheRepository
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
-
+import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait MongoDBSupport extends MongoComponentSupport {
@@ -34,5 +37,15 @@ trait MongoDBSupport extends MongoComponentSupport {
       collectionName = "formMetadata",
       domainFormat = FormMetadata.format,
       indexes = Seq.empty
+    )
+
+  val formCacheRepository: MongoCacheRepository[String] =
+    new MongoCacheRepository[String](
+      mongoComponent,
+      "forms",
+      true,
+      1.days,
+      new CurrentTimestampSupport(),
+      SimpleCacheId
     )
 }

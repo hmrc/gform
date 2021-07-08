@@ -18,17 +18,19 @@ package uk.gov.hmrc.gform.save4later
 
 import akka.http.scaladsl.model.StatusCodes
 import org.slf4j.{ Logger, LoggerFactory }
-import play.api.libs.json.Json
-import uk.gov.hmrc.gform.sharedmodel.UserId
+import play.api.libs.json.{ Format, Json }
+import uk.gov.hmrc.crypto.CryptoWithKeysFromConfig
 import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormId, FormIdData }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.http.{ HeaderCarrier, UpstreamErrorResponse }
 import uk.gov.hmrc.mongo.cache.{ DataKey, MongoCacheRepository }
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-class FormMongoCache(mongoCacheRepository: MongoCacheRepository[String])(implicit ec: ExecutionContext)
-    extends FormPersistenceAlgebra[Future] {
+class FormMongoCache(mongoCacheRepository: MongoCacheRepository[String], jsonCrypto: CryptoWithKeysFromConfig)(implicit
+  ec: ExecutionContext
+) extends FormPersistenceAlgebra[Future] {
+
+  implicit val formatFormEncrypted: Format[Form] = EncyryptedFormat.formatEncrypted[Form](jsonCrypto)(Form.format)
 
   private val formDataKey: DataKey[Form] = DataKey("form")
 
@@ -49,9 +51,6 @@ class FormMongoCache(mongoCacheRepository: MongoCacheRepository[String])(implici
   }
 
   override def get(formIdData: FormIdData)(implicit hc: HeaderCarrier): Future[Form] = get(formIdData.toFormId)
-
-  override def getAll(userId: UserId, formTemplateId: FormTemplateId)(implicit hc: HeaderCarrier): Future[List[Form]] =
-    ???
 
   override def upsert(formId: FormId, form: Form)(implicit hc: HeaderCarrier): Future[Unit] =
     mongoCacheRepository

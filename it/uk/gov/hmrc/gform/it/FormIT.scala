@@ -1,8 +1,6 @@
 package uk.gov.hmrc.gform.it
 
 import akka.http.scaladsl.model.StatusCodes
-import com.github.tomakehurst.wiremock.client.WireMock._
-import com.github.tomakehurst.wiremock.verification.LoggedRequest
 import com.mongodb.{ BasicDBObject, ReadPreference }
 import org.scalatest.time.{ Millis, Seconds, Span }
 import play.api.libs.json.Json
@@ -12,9 +10,10 @@ import uk.gov.hmrc.gform.sharedmodel.UserId
 import uk.gov.hmrc.gform.sharedmodel.form.FormIdData.Plain
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplateId }
+import uk.gov.hmrc.mongo.cache.DataKey
+
 import scala.concurrent.ExecutionContext.Implicits.global
-import java.time.Instant
-import scala.collection.JavaConverters._
+import java.time.{ Instant, ZoneOffset }
 
 class FormIT
     extends ITSpec with FormTemplateSample with FormDataSample with QueryParamsSample with Save4LaterServiceStubs
@@ -44,12 +43,8 @@ class FormIT
     newForm.status shouldBe StatusCodes.OK.intValue
     Json.parse(newForm.body).as[FormIdData] shouldBe Plain(UserId("123"), FormTemplateId("BASIC"))
 
-    And("The new form should be sent to save4later service")
-    val save4LaterRequests: Seq[LoggedRequest] =
-      findAll(putRequestedFor(urlEqualTo("/save4later/gform/123-BASIC/data/form"))).asScala.toList
-    save4LaterRequests.size shouldBe 1
-    val form = decryptAs[Form](save4LaterRequests.head.getBodyAsString)
-    form.formData.fields shouldBe Seq.empty
+    And("The new form should be saved in forms collection")
+    assertForm(startInstant)
 
     And("Saved in form metadata repo")
     assertFormMetadata(startInstant)
@@ -73,14 +68,29 @@ class FormIT
     response.status shouldBe StatusCodes.NoContent.intValue
 
     And("The new form should updated in save4later service")
-    verify(1, getRequestedFor(urlEqualTo("/save4later/gform/123-BASIC")))
-    val save4LaterRequests: Seq[LoggedRequest] =
-      findAll(putRequestedFor(urlEqualTo("/save4later/gform/123-BASIC/data/form"))).asScala.toList
-    save4LaterRequests.size shouldBe 1
-    val form = decryptAs[Form](save4LaterRequests.head.getBodyAsString)
-    form.formData.fields shouldBe Seq(FormField(FormComponentId("textField1"), "textField1Value"))
+    assertForm(startInstant, Seq(FormField(FormComponentId("textField1"), "textField1Value")), Set(0))
 
     assertFormMetadata(startInstant)
+  }
+
+  private def assertForm(
+    startInstant: Instant,
+    formFields: Seq[FormField] = Seq.empty,
+    visitIndex: Set[Int] = Set.empty
+  ): Unit = {
+    val encryptedForm = formCacheRepository.get("123-BASIC")(DataKey[String]("form")).futureValue.get
+    val form = decryptAs[Form](encryptedForm)
+    form._id shouldBe FormId("123-BASIC")
+    form.envelopeId shouldBe EnvelopeId("some-envelope-id")
+    form.userId shouldBe UserId("123")
+    form.formTemplateId shouldBe FormTemplateId("BASIC")
+    form.formData.fields shouldBe formFields
+    form.status shouldBe InProgress
+    form.visitsIndex shouldBe VisitIndex(visitIndex)
+    form.thirdPartyData shouldBe ThirdPartyData.empty
+    form.envelopeExpiryDate.get.ldt.toInstant(ZoneOffset.UTC).isAfter(startInstant) shouldBe true
+    form.componentIdToFileId shouldBe FormComponentIdToFileIdMapping.empty
+    ()
   }
 
   private def assertFormMetadata(startInstant: Instant): Unit = {
