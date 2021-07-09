@@ -41,7 +41,7 @@ class EmailVerificationSpec extends FlatSpec with Matchers with JsResultMatcher 
     val expected =
       VerifiedBy(
         FormComponentId("someFieldId"),
-        Notify(NotifierTemplateId("4f438fe6-680d-4610-9e55-b50f711326e4"))
+        Notify(NotifierTemplateId("4f438fe6-680d-4610-9e55-b50f711326e4"), None)
       )
     verifyPayload(jsonPayload, expected)
 

@@ -28,17 +28,21 @@ import cats.syntax.traverse._
 import uk.gov.hmrc.gform.notifier.{ NotifierEmail, NotifierEmailReference }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormComponentId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId }
-import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierEmailAddress
+import uk.gov.hmrc.gform.sharedmodel.notifier.{ NotifierEmailAddress, NotifierTemplateId }
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 
 object NotifierEmailBuilder {
-  def apply[M[_]](d: Destination.Email, structuredFormData: StructuredFormValue.ObjectStructure)(implicit
+  def apply[M[_]](
+    templateId: NotifierTemplateId,
+    d: Destination.Email,
+    structuredFormData: StructuredFormValue.ObjectStructure
+  )(implicit
     M: MonadError[M, String]
   ): M[NotifierEmail] =
     for {
       to              <- extractTo(d, structuredFormData)
       personalisation <- extractPersonalisation(d, structuredFormData)
-    } yield NotifierEmail(d.emailTemplateId, to, personalisation, NotifierEmailReference(""))
+    } yield NotifierEmail(templateId, to, personalisation, NotifierEmailReference(""))
 
   private def extractTo[M[_]](d: Destination.Email, structuredFormData: StructuredFormValue.ObjectStructure)(implicit
     M: MonadError[M, String]

@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.submission.destinations
 
 import cats.data.NonEmptyList
+import uk.gov.hmrc.gform.sharedmodel.LangADT
 import uk.gov.hmrc.gform.sharedmodel.form.FormData
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsModelTree
@@ -26,7 +27,8 @@ trait DestinationsSubmitterAlgebra[M[_]] {
   def send(
     submissionInfo: DestinationSubmissionInfo,
     modelTree: HandlebarsModelTree,
-    formData: Option[FormData] = None
+    formData: Option[FormData],
+    l: LangADT
   )(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]]
 
   def submitToList(
@@ -34,6 +36,7 @@ trait DestinationsSubmitterAlgebra[M[_]] {
     submissionInfo: DestinationSubmissionInfo,
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree,
-    formData: Option[FormData] = None
+    formData: Option[FormData],
+    l: LangADT
   )(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]]
 }

@@ -21,7 +21,7 @@ import cats.{ Applicative, MonadError }
 import org.scalacheck.Gen
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.notifier.NotifierAlgebra
-import uk.gov.hmrc.gform.sharedmodel.{ PdfHtml, SubmissionRef }
+import uk.gov.hmrc.gform.sharedmodel.{ LangADT, PdfHtml, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormData, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.{ HmrcDms, SubmissionConsolidator }
@@ -81,7 +81,9 @@ class DestinationSubmitterSpec
           si,
           HandlebarsTemplateProcessorModel.empty,
           theTree,
-          submitter
+          submitter,
+          None,
+          LangADT.En
         ) shouldBe Right(HandlebarsDestinationResponse(handlebarsHttpApi, httpResponse).some)
     }
   }
@@ -111,7 +113,9 @@ class DestinationSubmitterSpec
           si,
           HandlebarsTemplateProcessorModel.empty,
           theTree,
-          submitter
+          submitter,
+          None,
+          LangADT.En
         ) shouldBe Right(None)
     }
   }
@@ -154,7 +158,9 @@ class DestinationSubmitterSpec
           si,
           HandlebarsTemplateProcessorModel.empty,
           theTree,
-          submitter
+          submitter,
+          None,
+          LangADT.En
         ) shouldBe Right(HandlebarsDestinationResponse(handlebarsHttpApi, httpResponse).some)
     }
   }
@@ -196,7 +202,9 @@ class DestinationSubmitterSpec
           si,
           HandlebarsTemplateProcessorModel.empty,
           theTree,
-          submitter
+          submitter,
+          None,
+          LangADT.En
         ) shouldBe Left(
         genericLogMessage(
           si.formId,
@@ -230,7 +238,15 @@ class DestinationSubmitterSpec
         )
         .expectDestinationAudit(hmrcDms, None, None, si.formId, pdfData, si.submission.submissionRef, template, model)
         .sut
-        .submitIfIncludeIf(hmrcDms, si, HandlebarsTemplateProcessorModel.empty, theTree, submitter) shouldBe Right(None)
+        .submitIfIncludeIf(
+          hmrcDms,
+          si,
+          HandlebarsTemplateProcessorModel.empty,
+          theTree,
+          submitter,
+          None,
+          LangADT.En
+        ) shouldBe Right(None)
     }
   }
 
@@ -257,7 +273,15 @@ class DestinationSubmitterSpec
         .expectHmrcDmsSubmission(si, pdfData, instructionPdfData, structuredFormData, hmrcDms)
         .expectDestinationAudit(hmrcDms, None, None, si.formId, pdfData, si.submission.submissionRef, template, model)
         .sut
-        .submitIfIncludeIf(hmrcDms, si, HandlebarsTemplateProcessorModel.empty, theTree, submitter) shouldBe Right(None)
+        .submitIfIncludeIf(
+          hmrcDms,
+          si,
+          HandlebarsTemplateProcessorModel.empty,
+          theTree,
+          submitter,
+          None,
+          LangADT.En
+        ) shouldBe Right(None)
     }
   }
 
@@ -282,7 +306,7 @@ class DestinationSubmitterSpec
           requiredResult = false
         )
         .sut
-        .submitIfIncludeIf(hmrcDms, si, model, theTree, submitter) shouldBe Right(None)
+        .submitIfIncludeIf(hmrcDms, si, model, theTree, submitter, None, LangADT.En) shouldBe Right(None)
     }
   }
 
@@ -314,7 +338,9 @@ class DestinationSubmitterSpec
           si,
           HandlebarsTemplateProcessorModel.empty,
           theTree,
-          submitter
+          submitter,
+          None,
+          LangADT.En
         ) shouldBe Right(None)
     }
   }
@@ -341,7 +367,15 @@ class DestinationSubmitterSpec
           true
         )
         .sut
-        .submitIfIncludeIf(hmrcDms, si, HandlebarsTemplateProcessorModel.empty, theTree, submitter) shouldBe Left(
+        .submitIfIncludeIf(
+          hmrcDms,
+          si,
+          HandlebarsTemplateProcessorModel.empty,
+          theTree,
+          submitter,
+          None,
+          LangADT.En
+        ) shouldBe Left(
         genericLogMessage(si.formId, hmrcDms.id, "an error")
       )
     }
@@ -389,7 +423,8 @@ class DestinationSubmitterSpec
           model,
           modelTree,
           submitter,
-          Some(formData)
+          Some(formData),
+          LangADT.En
         ) shouldBe Right(None)
     }
   }
@@ -425,7 +460,8 @@ class DestinationSubmitterSpec
           model,
           modelTree,
           submitter,
-          Some(formData)
+          Some(formData),
+          LangADT.En
         ) shouldBe Right(None)
     }
   }
@@ -480,7 +516,8 @@ class DestinationSubmitterSpec
           model,
           modelTree,
           submitter,
-          Some(formData)
+          Some(formData),
+          LangADT.En
         ) shouldBe Right(None)
     }
   }
@@ -524,7 +561,8 @@ class DestinationSubmitterSpec
           model,
           modelTree,
           submitter,
-          Some(formData)
+          Some(formData),
+          LangADT.En
         ) shouldBe Left(genericLogMessage(submissionInfo.formId, submissionConsolidator.id, "some error"))
     }
   }

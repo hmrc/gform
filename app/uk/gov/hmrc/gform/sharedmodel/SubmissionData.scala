@@ -27,7 +27,8 @@ case class SubmissionData(
   variables: FrontEndSubmissionVariables,
   structuredFormData: StructuredFormValue.ObjectStructure,
   emailParameters: EmailParametersRecalculated,
-  attachments: Attachments
+  attachments: Attachments,
+  l: LangADT
 )
 
 object SubmissionData {

@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.gform.sharedmodel
 
+import cats.Show
+import cats.syntax.all._
 import play.api.libs.json.{ JsDefined, JsError, JsString, JsSuccess, JsUndefined, OFormat, Reads }
 import uk.gov.hmrc.gform.sharedmodel.email.EmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.OFormatWithTemplateReadFallback
@@ -25,16 +27,23 @@ sealed trait EmailVerifierService extends Product with Serializable
 
 object EmailVerifierService {
 
-  def notify(emailTemplateId: NotifierTemplateId) = Notify(emailTemplateId)
+  def notify(emailTemplateId: NotifierTemplateId, emailTemplateIdCy: Option[NotifierTemplateId]) =
+    Notify(emailTemplateId, emailTemplateIdCy)
   def digitalContact(emailTemplateId: EmailTemplateId) = DigitalContact(emailTemplateId)
 
-  case class Notify(emailTemplateId: NotifierTemplateId) extends EmailVerifierService
+  case class Notify(emailTemplateId: NotifierTemplateId, emailTemplateIdCy: Option[NotifierTemplateId])
+      extends EmailVerifierService {
+    def notifierTemplateId(l: LangADT): NotifierTemplateId = l match {
+      case LangADT.En => emailTemplateId
+      case LangADT.Cy => emailTemplateIdCy.getOrElse(emailTemplateId)
+    }
+  }
   case class DigitalContact(emailTemplateId: EmailTemplateId) extends EmailVerifierService
 
   private val templateReads: Reads[EmailVerifierService] = Reads { json =>
     ((json \ "service"), (json \ "emailTemplateId")) match {
       case (JsDefined(JsString("notify")), JsDefined(JsString(emailTemplateId))) =>
-        JsSuccess(notify(NotifierTemplateId(emailTemplateId)))
+        JsSuccess(notify(NotifierTemplateId(emailTemplateId), None))
       case (JsDefined(JsString("digitalContact")), JsDefined(JsString(emailTemplateId))) =>
         JsSuccess(digitalContact(EmailTemplateId(emailTemplateId)))
       case (JsDefined(_), JsUndefined()) => JsError(s"Missing field 'emailTemplateId' in json: $json")
@@ -45,5 +54,12 @@ object EmailVerifierService {
   }
 
   implicit val format: OFormat[EmailVerifierService] = OFormatWithTemplateReadFallback(templateReads)
+
+  implicit val show: Show[EmailVerifierService] = Show.show {
+    case EmailVerifierService.Notify(emailTemplateId, Some(emailTemplateIdCy)) =>
+      show"""{"en": "$emailTemplateId", "cy": "$emailTemplateIdCy"}"""
+    case EmailVerifierService.Notify(emailTemplateId, None)   => show"$emailTemplateId"
+    case EmailVerifierService.DigitalContact(emailTemplateId) => show"$emailTemplateId"
+  }
 
 }

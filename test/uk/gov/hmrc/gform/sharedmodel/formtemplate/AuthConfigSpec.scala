@@ -236,7 +236,7 @@ class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
                                            |  "emailService": "notify"
                                            |}""".stripMargin)
     authConfigValue shouldBe JsSuccess(
-      EmailAuthConfig(Notify(NotifierTemplateId("someTemplate")), None, None, None)
+      EmailAuthConfig(Notify(NotifierTemplateId("someTemplate"), None), None, None, None)
     )
   }
 
@@ -251,11 +251,76 @@ class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
                                            |}""".stripMargin)
     authConfigValue shouldBe JsSuccess(
       EmailAuthConfig(
-        Notify(NotifierTemplateId("someTemplate")),
+        Notify(NotifierTemplateId("someTemplate"), None),
         Some(toLocalisedString("useInfo")),
         Some(toLocalisedString("codeHelp")),
         Some(toLocalisedString("confirmation"))
       )
+    )
+  }
+
+  it should "parse email auth with 'emailService' (notify) having localised emailCodeTemplate" in {
+    val authConfigValue = toAuthConfig(s"""|{
+                                           |  "authModule": "email",
+                                           |  "emailCodeTemplate": {
+                                           |    "en": "someTemplate",
+                                           |    "cy": "someTemplateCy"
+                                           |  },
+                                           |  "emailService": "notify"
+                                           |}""".stripMargin)
+    authConfigValue shouldBe JsSuccess(
+      EmailAuthConfig(
+        Notify(NotifierTemplateId("someTemplate"), Some(NotifierTemplateId("someTemplateCy"))),
+        None,
+        None,
+        None
+      )
+    )
+  }
+
+  it should "parse email auth with 'emailService' (notify) having localised emailCodeTemplate with only english template version" in {
+    val authConfigValue = toAuthConfig(s"""|{
+                                           |  "authModule": "email",
+                                           |  "emailCodeTemplate": {
+                                           |    "en": "someTemplate"
+                                           |  },
+                                           |  "emailService": "notify"
+                                           |}""".stripMargin)
+    authConfigValue shouldBe JsSuccess(
+      EmailAuthConfig(
+        Notify(NotifierTemplateId("someTemplate"), None),
+        None,
+        None,
+        None
+      )
+    )
+  }
+
+  it should "return error with 'emailService' (notify) having localised emailCodeTemplate with missing english template version" in {
+    val authConfigValue = toAuthConfig(s"""|{
+                                           |  "authModule": "email",
+                                           |  "emailCodeTemplate": {
+                                           |    "cy": "someTemplateCy"
+                                           |  },
+                                           |  "emailService": "notify"
+                                           |}""".stripMargin)
+
+    authConfigValue.isError shouldBe true
+    authConfigValue.asInstanceOf[JsError].errors.flatMap(_._2) should contain(
+      JsonValidationError("Invalid email template id definition. Missing 'en' field with english template id")
+    )
+  }
+
+  it should "return error with 'emailService' (notify) having emailCodeTemplate of wrong type (not string or object)" in {
+    val authConfigValue = toAuthConfig(s"""|{
+                                           |  "authModule": "email",
+                                           |  "emailCodeTemplate": true,
+                                           |  "emailService": "notify"
+                                           |}""".stripMargin)
+
+    authConfigValue.isError shouldBe true
+    authConfigValue.asInstanceOf[JsError].errors.flatMap(_._2) should contain(
+      JsonValidationError("Invalid email template id definition. Expected json String or json Object, but got: true")
     )
   }
 

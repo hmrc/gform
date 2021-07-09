@@ -20,13 +20,15 @@ import cats.syntax.either._
 import cats.syntax.option._
 import julienrf.json.derived
 import play.api.libs.json._
+import uk.gov.hmrc.gform.sharedmodel.EmailVerifierService
+import uk.gov.hmrc.gform.sharedmodel.email.LocalisedEmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import UploadableConditioning._
 import cats.data.NonEmptyList
 import JsonUtils.nelFormat
 import uk.gov.hmrc.gform.sharedmodel.form.FormStatus
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.SubmissionConsolidator
-import uk.gov.hmrc.gform.sharedmodel.notifier.{ NotifierPersonalisationFieldId, NotifierTemplateId }
+import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierPersonalisationFieldId
 
 sealed trait DestinationWithCustomerId {
   def customerId(): Expr
@@ -92,7 +94,7 @@ object Destination {
 
   case class Email(
     id: DestinationId,
-    emailTemplateId: NotifierTemplateId,
+    emailVerifierService: EmailVerifierService,
     includeIf: String,
     failOnError: Boolean,
     to: FormComponentId,
@@ -308,7 +310,7 @@ object UploadableLogDestination {
 
 case class UploadableEmailDestination(
   id: DestinationId,
-  emailTemplateId: NotifierTemplateId,
+  emailTemplateId: LocalisedEmailTemplateId,
   convertSingleQuotes: Option[Boolean],
   includeIf: Option[String],
   failOnError: Option[Boolean],
@@ -319,7 +321,14 @@ case class UploadableEmailDestination(
     for {
       cvii <- addErrorInfo(id, "includeIf")(condition(convertSingleQuotes, includeIf))
     } yield Destination
-      .Email(id, emailTemplateId, cvii.getOrElse(true.toString), failOnError.getOrElse(true), to, personalisation)
+      .Email(
+        id,
+        emailTemplateId.toNotify,
+        cvii.getOrElse(true.toString),
+        failOnError.getOrElse(true),
+        to,
+        personalisation
+      )
 }
 
 object UploadableEmailDestination {

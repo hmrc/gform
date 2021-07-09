@@ -37,12 +37,12 @@ class EmailCodeVerificationController(
 
   def sendEmail() =
     Action.async(parse.json[ConfirmationCodeWithEmailService]) { implicit request =>
-      val ConfirmationCodeWithEmailService(notifierEmailAddress, code, emailVerifierService) = request.body
+      val ConfirmationCodeWithEmailService(notifierEmailAddress, code, emailVerifierService, lang) = request.body
       emailVerifierService match {
-        case EmailVerifierService.Notify(emailTemplateId) =>
+        case notify @ EmailVerifierService.Notify(_, _) =>
           val notifierEmail: NotifierEmail =
             NotifierEmail(
-              emailTemplateId,
+              notify.notifierTemplateId(lang),
               notifierEmailAddress,
               Map("confirmation code" -> code.code),
               NotifierEmailReference("")
