@@ -19,8 +19,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import julienrf.json.derived
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
-import uk.gov.hmrc.gform.sharedmodel.email.EmailTemplateId
-import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierTemplateId
+import uk.gov.hmrc.gform.sharedmodel.email.LocalisedEmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.{ EmailVerifierService, LocalisedString, ValueClassFormat }
 
 case class EnrolmentAuth(
@@ -208,7 +207,7 @@ object AuthConfig {
         maybeEnrolmentCheck            <- (json \ "enrolmentCheck").validateOpt[EnrolmentCheckVerb]
         maybeIvFailure                 <- (json \ "ivFailure").validateOpt[LocalisedString]
         maybeNotAllowedIn              <- (json \ "notAllowedIn").validateOpt[LocalisedString]
-        maybeEmailCodeTemplate         <- (json \ "emailCodeTemplate").validateOpt[String]
+        maybeEmailCodeTemplate         <- (json \ "emailCodeTemplate").validateOpt[LocalisedEmailTemplateId]
         maybeEmailUseInfo              <- (json \ "emailUseInfo").validateOpt[LocalisedString]
         maybeEmailCodeHelp             <- (json \ "emailCodeHelp").validateOpt[LocalisedString]
         maybeEmailConfirmation         <- (json \ "emailConfirmation").validateOpt[LocalisedString]
@@ -250,12 +249,12 @@ object AuthConfig {
                           }
                         case AuthModule.Email =>
                           maybeEmailCodeTemplate match {
-                            case Some(templateId) =>
+                            case Some(localisedEmailTemplateId) =>
                               maybeEmailService match {
                                 case Some("dc") | None =>
                                   JsSuccess(
                                     EmailAuthConfig(
-                                      EmailVerifierService.digitalContact(EmailTemplateId(templateId)),
+                                      localisedEmailTemplateId.toDigitalContact,
                                       maybeEmailUseInfo,
                                       maybeEmailCodeHelp,
                                       maybeEmailConfirmation
@@ -264,7 +263,7 @@ object AuthConfig {
                                 case Some("notify") =>
                                   JsSuccess(
                                     EmailAuthConfig(
-                                      EmailVerifierService.notify(NotifierTemplateId(templateId)),
+                                      localisedEmailTemplateId.toNotify,
                                       maybeEmailUseInfo,
                                       maybeEmailCodeHelp,
                                       maybeEmailConfirmation

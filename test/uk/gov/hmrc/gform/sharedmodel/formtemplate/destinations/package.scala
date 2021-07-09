@@ -101,7 +101,7 @@ package object destinations {
              |  ${optionalField("convertSingleQuotes", Option(false))}
              |  ${optionalField("includeIf", Option(destination.includeIf), "true")}
              |  ${optionalField("failOnError", Option(destination.failOnError), true)}
-             |  "emailTemplateId": "${email.emailTemplateId}",
+             |  "emailTemplateId": "${email.emailVerifierService}",
              |  "to": "$to",
              |  "personalisation": {
              |    ${email.personalisation.map { case (k, v) => s"${quote(k)}: ${quote(v)}" }.mkString(", ")}

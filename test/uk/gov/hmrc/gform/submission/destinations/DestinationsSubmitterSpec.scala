@@ -23,6 +23,7 @@ import org.scalacheck.Gen
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.libs.json._
 import uk.gov.hmrc.gform.Spec
+import uk.gov.hmrc.gform.sharedmodel.LangADT
 import uk.gov.hmrc.gform.sharedmodel.form.FormData
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
@@ -69,7 +70,8 @@ class DestinationsSubmitterSpec
               structuredFormValue,
               destinationModel
             ),
-            Some(formData)
+            Some(formData),
+            LangADT.En
           )
     }
   }
@@ -129,7 +131,8 @@ class DestinationsSubmitterSpec
             StructuredFormValue.ObjectStructure(Nil),
             initialModel
           ),
-          Some(formData)
+          Some(formData),
+          LangADT.En
         )
     }
   }
@@ -211,7 +214,8 @@ class DestinationsSubmitterSpec
           _: HandlebarsTemplateProcessorModel,
           _: HandlebarsModelTree,
           _: DestinationsSubmitter[F],
-          _: Option[FormData]
+          _: Option[FormData],
+          _: LangADT
         )(_: HeaderCarrier))
         .expects(where {
           (
@@ -221,6 +225,7 @@ class DestinationsSubmitterSpec
             tree: HandlebarsModelTree,
             _: DestinationsSubmitter[F],
             actualformData: Option[FormData],
+            _: LangADT,
             hc: HeaderCarrier
           ) =>
             destination === dest && info === submissionInfo && accModel === accumulatedModel && tree.value.model === modelInTree && hc === hc && actualformData

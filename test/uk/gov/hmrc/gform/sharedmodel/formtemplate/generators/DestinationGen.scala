@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 import org.scalacheck.Gen
+import uk.gov.hmrc.gform.sharedmodel.EmailVerifierService
 import uk.gov.hmrc.gform.sharedmodel.form.FormStatus
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.Expr
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, ProjectId }
@@ -146,7 +147,14 @@ trait DestinationGen {
                            FormComponentGen.formComponentIdGen
                          )
       failOnError <- PrimitiveGen.booleanGen
-    } yield Destination.Email(id, emailTemplateId, includeIf, failOnError, to, personalisation)
+    } yield Destination.Email(
+      id,
+      EmailVerifierService.Notify(emailTemplateId, None),
+      includeIf,
+      failOnError,
+      to,
+      personalisation
+    )
 
   def singularDestinationGen: Gen[Destination] =
     Gen.oneOf(hmrcDmsGen, handlebarsHttpApiGen, stateTransitionGen, logGen, emailGen, submissionConsolidatorGen)

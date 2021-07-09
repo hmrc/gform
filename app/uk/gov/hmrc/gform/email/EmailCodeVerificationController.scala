@@ -23,7 +23,7 @@ import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.notifier.{ NotifierAlgebra, NotifierEmail, NotifierEmailReference }
-import uk.gov.hmrc.gform.sharedmodel.EmailVerifierService
+import uk.gov.hmrc.gform.sharedmodel.{ EmailVerifierService, LangADT }
 import uk.gov.hmrc.gform.sharedmodel.email.ConfirmationCodeWithEmailService
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ EmailParameterValue, EmailParametersRecalculated, EmailTemplateVariable }
 
@@ -37,12 +37,16 @@ class EmailCodeVerificationController(
 
   def sendEmail() =
     Action.async(parse.json[ConfirmationCodeWithEmailService]) { implicit request =>
-      val ConfirmationCodeWithEmailService(notifierEmailAddress, code, emailVerifierService) = request.body
+      val ConfirmationCodeWithEmailService(notifierEmailAddress, code, emailVerifierService, lang) = request.body
       emailVerifierService match {
-        case EmailVerifierService.Notify(emailTemplateId) =>
+        case EmailVerifierService.Notify(emailTemplateId, maybeEmailTemplateIdCy) =>
+          val templateId = lang match {
+            case LangADT.En => emailTemplateId
+            case LangADT.Cy => maybeEmailTemplateIdCy.getOrElse(emailTemplateId)
+          }
           val notifierEmail: NotifierEmail =
             NotifierEmail(
-              emailTemplateId,
+              templateId,
               notifierEmailAddress,
               Map("confirmation code" -> code.code),
               NotifierEmailReference("")
