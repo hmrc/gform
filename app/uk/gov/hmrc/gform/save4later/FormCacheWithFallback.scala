@@ -47,7 +47,6 @@ class FormCacheWithFallback(formMongoCache: FormMongoCache, save4Later: Save4Lat
         StatusCodes.NotFound.intValue
       )
     case Some(form) =>
-      logger.debug(Json.prettyPrint(Json.toJson(form)) + "GETFORM")
       form
   }
 

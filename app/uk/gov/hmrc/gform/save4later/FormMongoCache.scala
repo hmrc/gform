@@ -46,7 +46,6 @@ class FormMongoCache(mongoCacheRepository: MongoCacheRepository[String], jsonCry
         StatusCodes.NotFound.intValue
       )
     case Some(form) =>
-      logger.debug(Json.prettyPrint(Json.toJson(form)) + "GETFORM")
       form
   }
 
