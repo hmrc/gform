@@ -64,8 +64,8 @@ trait ITSpec
     ()
   }
 
-  def decryptAs[T: Reads](json: String) =
-    Json.parse(jsonCrypto.decrypt(Crypted(Json.parse(json).toString())).value).as[T]
+  def decryptAs[T: Reads](value: String) =
+    Json.parse(jsonCrypto.decrypt(Crypted(value)).value).as[T]
 
   implicit lazy val baseUrl: String = s"http://localhost:$port/gform"
   implicit val wsClient: StandaloneAhcWSClient = StandaloneAhcWSClient()

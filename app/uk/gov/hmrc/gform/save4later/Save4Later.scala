@@ -21,9 +21,7 @@ import cats.instances.future._
 import cats.syntax.functor._
 import org.slf4j.LoggerFactory
 import play.api.libs.json.Json
-import uk.gov.hmrc.gform.sharedmodel.UserId
 import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormId, FormIdData }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.http.cache.client.ShortLivedCache
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -48,8 +46,6 @@ class Save4Later(cache: ShortLivedCache)(implicit ex: ExecutionContext) extends 
     }
 
   def get(formIdData: FormIdData)(implicit hc: HeaderCarrier): Future[Form] = get(formIdData.toFormId)
-
-  def getAll(userId: UserId, formTemplateId: FormTemplateId)(implicit hc: HeaderCarrier): Future[List[Form]] = ???
 
   def upsert(formId: FormId, form: Form)(implicit hc: HeaderCarrier): Future[Unit] = {
     LoggerFactory.getLogger(getClass.getName).debug(Json.prettyPrint(Json.toJson(form)) + "PUTFORM")

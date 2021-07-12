@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.save4later
+package uk.gov.hmrc.gform
 
-import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormId, FormIdData }
-import uk.gov.hmrc.http.HeaderCarrier
+import org.apache.commons.lang3.RandomStringUtils
+import uk.gov.hmrc.mongo.MongoComponent
 
-trait FormPersistenceAlgebra[F[_]] {
-  def find(formId: FormId)(implicit hc: HeaderCarrier): F[Option[Form]]
-  def get(formIdData: FormId)(implicit hc: HeaderCarrier): F[Form]
-  def get(formIdData: FormIdData)(implicit hc: HeaderCarrier): F[Form]
-  def upsert(formId: FormId, form: Form)(implicit hc: HeaderCarrier): F[Unit]
-  def delete(formId: FormId)(implicit hc: HeaderCarrier): F[Unit]
+trait MongoComponentSupport {
+  val mongoDbName: String = s"test-${RandomStringUtils.randomNumeric(5)}-${getClass.getSimpleName}"
+  val mongoDBURI: String = s"mongodb://localhost:27017/$mongoDbName"
+
+  val mongoComponent: MongoComponent = MongoComponent(mongoDBURI)
 }

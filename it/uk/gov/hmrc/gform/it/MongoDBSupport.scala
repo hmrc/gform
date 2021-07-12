@@ -1,21 +1,20 @@
 package uk.gov.hmrc.gform.it
 
-import org.apache.commons.lang3.RandomStringUtils
-import uk.gov.hmrc.mongo.MongoComponent
-import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
+import uk.gov.hmrc.gform.MongoComponentSupport
 import uk.gov.hmrc.gform.formmetadata.FormMetadata
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateRaw }
+import uk.gov.hmrc.mongo.CurrentTimestampSupport
+import uk.gov.hmrc.mongo.cache.CacheIdType.SimpleCacheId
+import uk.gov.hmrc.mongo.cache.MongoCacheRepository
+import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
+import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 
-trait MongoDBSupport {
+trait MongoDBSupport extends MongoComponentSupport {
 
-  val mongoDbName: String = s"test-${RandomStringUtils.randomNumeric(5)}-${getClass.getSimpleName}"
-  val mongoDBURI: String = s"mongodb://localhost:27017/$mongoDbName"
   val mongoSettings: Map[String, String] = Map(
     "mongodb.uri" -> mongoDBURI
   )
-  val mongoComponent: MongoComponent = MongoComponent(mongoDBURI)
-
   val formTemplateRepo: PlayMongoRepository[FormTemplate] =
     new PlayMongoRepository[FormTemplate](
       mongoComponent = mongoComponent,
@@ -38,5 +37,15 @@ trait MongoDBSupport {
       collectionName = "formMetadata",
       domainFormat = FormMetadata.format,
       indexes = Seq.empty
+    )
+
+  val formCacheRepository: MongoCacheRepository[String] =
+    new MongoCacheRepository[String](
+      mongoComponent,
+      "forms",
+      true,
+      1.days,
+      new CurrentTimestampSupport(),
+      SimpleCacheId
     )
 }

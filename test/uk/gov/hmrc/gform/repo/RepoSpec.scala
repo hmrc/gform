@@ -46,6 +46,11 @@ class RepoSpec extends FlatSpec with Matchers with DefaultPlayMongoRepositorySup
 
   private val DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
 
+  protected override def afterAll(): Unit = {
+    mongoComponent.database.drop().toFuture().futureValue
+    super.afterAll()
+  }
+
   trait TestFixture {
     implicit val now: LocalDateTime = LocalDateTime.now()
     val entity: MyEntity = buildEntity(1)
