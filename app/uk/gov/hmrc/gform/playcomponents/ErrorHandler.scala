@@ -91,7 +91,7 @@ class ErrorHandler(environment: Environment, configuration: Configuration, sourc
         val response = ErrResponse(s"Upstream5xx: ${e.message}")
         (response, InternalServerError(Json.toJson(response)))
     }
-    logger.info(response.toString, e)
+    logger.error(response.toString, e)
     Future.successful(result)
   }
 
