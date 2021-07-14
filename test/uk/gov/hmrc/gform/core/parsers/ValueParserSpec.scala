@@ -692,4 +692,8 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       )
     }
   }
+
+  it should "parse form.lang as LangCtx" in {
+    ValueParser.validate("${form.lang}") shouldBe Right(TextExpression(LangCtx))
+  }
 }

@@ -440,6 +440,7 @@ object FormTemplateValidator {
       case Value                 => Valid
       case FormTemplateCtx(_)    => Valid
       case LinkCtx(_)            => Valid
+      case LangCtx               => Valid
       case AddressLens(value, _) => validate(FormCtx(value), sections)
       case DateCtx(value) =>
         val invalidFCIds = value.leafExprs

@@ -161,6 +161,9 @@ object ValueParser {
     | "form" ~ "." ~ "id" ^^ { (loc, _, _, fieldName) =>
       FormTemplateCtx(FormTemplateProp.Id)
     }
+    | "form" ~ "." ~ "lang" ^^ { (loc, _, _, fieldName) =>
+      LangCtx
+    }
     | "form" ~ "." ~ FormComponentId.unanchoredIdValidation ^^ { (loc, _, _, fieldName) =>
       FormCtx(FormComponentId(fieldName))
     }
