@@ -69,6 +69,47 @@ class RepoSpec extends FlatSpec with Matchers with DefaultPlayMongoRepositorySup
       )
     )
 
+  "findDocumentAsJson" should "find the entity by given id as JsValue" in new TestFixture {
+    repository.collection.insertOne(entity).toFuture().futureValue
+    repository.findDocumentAsJson("id1").futureValue shouldBe Some(
+      Json.parse(
+        s"""
+           |{
+           | "_id":"id1",
+           | "num":1,
+           | "ref":"",
+           | "parentRefs":[],
+           | "createdDate":{
+           |     "$$date":"${DATE_TIME_FORMAT.format(now)}"
+           | },
+           | "updatedInstant":{
+           |   "$$date":"${DATE_TIME_FORMAT.format(now)}"
+           | }
+           |}
+           |""".stripMargin.split("\\n").map(_.trim).mkString
+      )
+    )
+  }
+
+  "getDocumentAsJson" should "get entity by given id as JsValue" in new TestFixture {
+    repository.collection.insertOne(entity).toFuture().futureValue
+    repository.getDocumentAsJson("id1").futureValue shouldBe
+      Json.parse(s"""
+                    |{
+                    | "_id":"id1",
+                    | "num":1,
+                    | "ref":"",
+                    | "parentRefs":[],
+                    | "createdDate":{
+                    |     "$$date":"${DATE_TIME_FORMAT.format(now)}"
+                    | },
+                    | "updatedInstant":{
+                    |   "$$date":"${DATE_TIME_FORMAT.format(now)}"
+                    | }
+                    |}
+                    |""".stripMargin.split("\\n").map(_.trim).mkString)
+  }
+
   "find" should "find the entity by given id" in new TestFixture {
     repository.collection.insertOne(entity).toFuture().futureValue
     repository.find("id1").futureValue shouldBe Some(entity)
@@ -80,7 +121,7 @@ class RepoSpec extends FlatSpec with Matchers with DefaultPlayMongoRepositorySup
     repository.findAll().futureValue shouldBe entities
   }
 
-  "get" should "return entity by given id" in new TestFixture {
+  "get" should "get entity by given id" in new TestFixture {
     repository.collection.insertOne(entity).toFuture().futureValue
     repository.get("id1").futureValue shouldBe entity
   }
