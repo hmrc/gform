@@ -42,6 +42,16 @@ class Repo[T: OWrites: Manifest](
 ) extends PlayMongoRepository[T](mongoComponent, name, formatT, indexes) {
   underlying =>
 
+  def findDocumentAsJson(id: String): Future[Option[JsValue]] =
+    underlying.collection
+      .find[Document](equal("_id", id))
+      .first()
+      .toFutureOption()
+      .map(_.map(json => Json.parse(json.toJson)))
+
+  def getDocumentAsJson(id: String): Future[JsValue] =
+    findDocumentAsJson(id).map(_.getOrElse(throw new NoSuchElementException(s"$name for given id: '$id' not found")))
+
   def find(id: String): Future[Option[T]] =
     underlying.collection
       .find(equal("_id", id))

@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.formtemplate
 
 import cats.implicits._
 import org.slf4j.LoggerFactory
+import play.api.libs.json.JsObject
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
@@ -39,7 +40,10 @@ class FormTemplateService(formTemplateRepo: Repo[FormTemplate], formTemplateRawR
   def get(id: FormTemplateId): Future[FormTemplate] = formTemplateRepo.get(id.value)
 
   def get(id: FormTemplateRawId): Future[FormTemplateRaw] =
-    formTemplateRawRepo.get(id.value)
+    formTemplateRawRepo.getDocumentAsJson(id.value).map {
+      case jsObject: JsObject => FormTemplateRaw(jsObject)
+      case other              => throw new RuntimeException(s"Expected JsObject type, got $other")
+    }
 
   def delete(formTemplateId: FormTemplateId): FOpt[Unit] =
     formTemplateRepo.delete(formTemplateId.value)
