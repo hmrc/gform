@@ -17,15 +17,15 @@
 package uk.gov.hmrc.gform.repo
 
 import org.mongodb.scala.model.Filters.and
-import org.mongodb.scala.model.{Filters, IndexModel}
+import org.mongodb.scala.model.{ Filters, IndexModel }
 import org.mongodb.scala.model.Indexes.ascending
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{FlatSpec, Matchers}
-import play.api.libs.json.{JsArray, JsNumber, JsString, Json, OFormat}
+import org.scalatest.{ FlatSpec, Matchers }
+import play.api.libs.json.{ JsArray, JsNumber, JsString, Json, OFormat }
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 
 import java.time.format.DateTimeFormatter
-import java.time.{Instant, LocalDateTime, ZoneOffset}
+import java.time.{ Instant, LocalDateTime, ZoneOffset }
 import scala.concurrent.ExecutionContext.Implicits.global
 
 case class MyEntity(
@@ -52,7 +52,7 @@ class RepoSpec extends FlatSpec with Matchers with DefaultPlayMongoRepositorySup
   }
 
   trait TestFixture {
-    implicit val now: LocalDateTime = LocalDateTime.of(2020,1,1,1,1,1,0)
+    implicit val now: LocalDateTime = LocalDateTime.of(2020, 1, 1, 1, 1, 1, 0)
     val entity: MyEntity = buildEntity(1)
   }
 
