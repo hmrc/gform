@@ -54,5 +54,5 @@ class FormMongoCache(mongoCacheRepository: MongoCacheRepository[String], jsonCry
       .map(_ => ())
 
   override def delete(formId: FormId)(implicit hc: HeaderCarrier): Future[Unit] =
-    mongoCacheRepository.delete(formId.value)(formDataKey)
+    mongoCacheRepository.deleteEntity(formId.value)
 }
