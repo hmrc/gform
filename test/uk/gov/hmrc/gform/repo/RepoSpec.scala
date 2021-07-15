@@ -17,15 +17,15 @@
 package uk.gov.hmrc.gform.repo
 
 import org.mongodb.scala.model.Filters.and
-import org.mongodb.scala.model.{ Filters, IndexModel }
+import org.mongodb.scala.model.{Filters, IndexModel}
 import org.mongodb.scala.model.Indexes.ascending
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{ FlatSpec, Matchers }
-import play.api.libs.json.{ JsArray, JsNumber, JsString, Json, OFormat }
+import org.scalatest.{FlatSpec, Matchers}
+import play.api.libs.json.{JsArray, JsNumber, JsString, Json, OFormat}
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 
 import java.time.format.DateTimeFormatter
-import java.time.{ Instant, LocalDateTime, ZoneOffset }
+import java.time.{Instant, LocalDateTime, ZoneOffset}
 import scala.concurrent.ExecutionContext.Implicits.global
 
 case class MyEntity(
@@ -44,7 +44,7 @@ object MyEntity {
 
 class RepoSpec extends FlatSpec with Matchers with DefaultPlayMongoRepositorySupport[MyEntity] with ScalaFutures {
 
-  private val DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+  private val DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
 
   protected override def afterAll(): Unit = {
     mongoComponent.database.drop().toFuture().futureValue
@@ -52,7 +52,7 @@ class RepoSpec extends FlatSpec with Matchers with DefaultPlayMongoRepositorySup
   }
 
   trait TestFixture {
-    implicit val now: LocalDateTime = LocalDateTime.now()
+    implicit val now: LocalDateTime = LocalDateTime.of(2020,1,1,1,1,1,0)
     val entity: MyEntity = buildEntity(1)
   }
 
