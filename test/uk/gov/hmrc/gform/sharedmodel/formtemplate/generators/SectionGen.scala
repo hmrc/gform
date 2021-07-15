@@ -81,6 +81,7 @@ trait SectionGen {
   def pageGen: Gen[Page] =
     for {
       title             <- smartStringGen
+      documentTitle     <- Gen.option(smartStringGen)
       description       <- Gen.option(smartStringGen)
       progressIndicator <- Gen.option(smartStringGen)
       shortName         <- Gen.option(smartStringGen)
@@ -93,6 +94,7 @@ trait SectionGen {
       presentationHint  <- Gen.option(PresentationHintGen.presentationHintGen)
     } yield Page(
       title,
+      documentTitle,
       description,
       progressIndicator,
       shortName,

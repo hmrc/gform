@@ -43,6 +43,7 @@ trait FormTemplateSupport {
         None,
         None,
         None,
+        None,
         formComponents,
         None,
         None,
@@ -132,6 +133,7 @@ trait FormTemplateSupport {
     Section.NonRepeatingPage(
       Page(
         toSmartString(name),
+        None,
         None,
         None,
         None,
