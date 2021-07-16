@@ -25,6 +25,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AcknowledgementSection, Ackn
 
 class AcknowledgementSectionMaker(json: JsValue) {
   val title: SmartString = (json \ "title").as[SmartString]
+  val documentTitle: Option[SmartString] = (json \ "documentTitle").asOpt[SmartString]
   val description: Option[SmartString] = (json \ "description").asOpt[SmartString]
   val shortName: Option[SmartString] = (json \ "shortName").asOpt[SmartString]
   val fields: List[FormComponent] = (json \ "fields").as[List[FormComponent]]
@@ -46,6 +47,7 @@ class AcknowledgementSectionMaker(json: JsValue) {
       sr <- showReference
     } yield AcknowledgementSection(
       title,
+      documentTitle,
       description,
       shortName,
       fields,

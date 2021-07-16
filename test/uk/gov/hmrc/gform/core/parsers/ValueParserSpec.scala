@@ -420,6 +420,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
           toSmartString("Declaration"),
           None,
           None,
+          None,
           Some(toSmartString("ContinueLabel")),
           Nil
         )
