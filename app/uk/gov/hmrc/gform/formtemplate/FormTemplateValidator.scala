@@ -420,11 +420,12 @@ object FormTemplateValidator {
       Monoid[ValidationResult].combineAll(List(checkField1, checkField2))
     }
 
+    // TODO verification of invalid references is newly done by LeafExpr logic. Investigate if this can be removed as duplicity.
     expr match {
       case Add(field1, field2)          => checkFields(field1, field2)
       case Subtraction(field1, field2)  => checkFields(field1, field2)
       case Multiply(field1, field2)     => checkFields(field1, field2)
-      case IfElse(cond, field1, field2) => checkFields(field1, field2) // TODO JoVl, check cond fields
+      case IfElse(cond, field1, field2) => checkFields(field1, field2) // cond is covered by LeafExpr
       case Else(field1, field2)         => checkFields(field1, field2)
       case Sum(value)                   => validate(value, sections)
       case Count(value)                 => validate(FormCtx(value), sections)
