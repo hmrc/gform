@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.save4later
 
 import akka.http.scaladsl.model.StatusCodes
-//import play.api.libs.json.Format
+import play.api.libs.json.Format
 import uk.gov.hmrc.crypto.CryptoWithKeysFromConfig
 import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormId, FormIdData }
 import uk.gov.hmrc.http.{ HeaderCarrier, UpstreamErrorResponse }
@@ -29,7 +29,7 @@ class FormMongoCache(mongoCacheRepository: MongoCacheRepository[String], jsonCry
   ec: ExecutionContext
 ) extends FormPersistenceAlgebra[Future] {
 
-  //implicit val formatFormEncrypted: Format[Form] = EncyryptedFormat.formatEncrypted[Form](jsonCrypto)(Form.format)
+  implicit val formatFormEncrypted: Format[Form] = EncyryptedFormat.formatEncrypted[Form](jsonCrypto)(Form.format)
 
   private val formDataKey: DataKey[Form] = DataKey("form")
 

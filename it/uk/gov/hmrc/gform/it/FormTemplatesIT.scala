@@ -174,7 +174,6 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
       toSmartString("Acknowledgement Page"),
       None,
       None,
-      None,
       List.empty,
       true,
       None,
