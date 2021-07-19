@@ -42,6 +42,7 @@ final case class ExprWithPath(path: TemplatePath, expr: Expr) {
     case Add(field1: Expr, field2: Expr)               => toReferenceInfo(field1, field2)
     case Multiply(field1: Expr, field2: Expr)          => toReferenceInfo(field1, field2)
     case Subtraction(field1: Expr, field2: Expr)       => toReferenceInfo(field1, field2)
+    case IfElse(cond, field1: Expr, field2: Expr)      => toReferenceInfo(field1, field2) // TODO JoVl, process cond exprs
     case Else(field1: Expr, field2: Expr)              => toReferenceInfo(field1, field2)
     case f @ FormCtx(formComponentId: FormComponentId) => ReferenceInfo.FormCtxExpr(path, f) :: Nil
     case s @ Sum(field1: Expr)                         => ReferenceInfo.SumExpr(path, s) :: Nil

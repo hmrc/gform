@@ -60,7 +60,7 @@
 
     <logger name="uk.gov" level="INFO"/>
 
-    <logger name="org.apache.fontbox" level="INFO"/>>
+    <logger name="org.apache.fontbox" level="INFO"/>
 
     <logger name="uk.gov.hmrc.gform.save4later.Save4Later" level="INFO"/>
 

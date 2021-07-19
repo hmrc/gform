@@ -33,6 +33,7 @@ sealed trait Expr {
 final case class Add(field1: Expr, field2: Expr) extends Expr
 final case class Multiply(field1: Expr, field2: Expr) extends Expr
 final case class Subtraction(field1: Expr, field2: Expr) extends Expr
+final case class IfElse(cond: BooleanExpr, field1: Expr, field2: Expr) extends Expr
 final case class Else(field1: Expr, field2: Expr) extends Expr
 final case class Sum(field1: Expr) extends Expr
 final case class Count(formComponentId: FormComponentId) extends Expr

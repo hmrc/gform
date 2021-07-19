@@ -424,6 +424,7 @@ object FormTemplateValidator {
       case Add(field1, field2)          => checkFields(field1, field2)
       case Subtraction(field1, field2)  => checkFields(field1, field2)
       case Multiply(field1, field2)     => checkFields(field1, field2)
+      case IfElse(cond, field1, field2) => checkFields(field1, field2) // TODO JoVl, check cond fields
       case Else(field1, field2)         => checkFields(field1, field2)
       case Sum(value)                   => validate(value, sections)
       case Count(value)                 => validate(FormCtx(value), sections)

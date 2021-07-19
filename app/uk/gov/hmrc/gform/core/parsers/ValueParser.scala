@@ -255,7 +255,14 @@ object ValueParser {
   lazy val product: Parser[Expr] = (parserExpression ~ "*" ~ parserExpression ^^ { (loc, expr1, _, expr2) =>
     Multiply(expr1, expr2)
   }
-    | orElseParser)
+    | ifElseParser)
+
+  lazy val ifElseParser: Parser[Expr] = {
+    ("if" ~> BooleanExprParser.p4 ~ "then" ~ parserExpression ~ "else" ~ parserExpression ^^ {
+      (_, cond, _, expr1, _, expr2) =>
+        IfElse(cond, expr1, expr2)
+    } | orElseParser)
+  }
 
   lazy val orElseParser: Parser[Expr] = parserExpression ~ "else" ~ parserExpression ^^ { (loc, expr1, _, expr2) =>
     Else(expr1, expr2)
