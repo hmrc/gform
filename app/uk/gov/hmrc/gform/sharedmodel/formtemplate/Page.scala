@@ -22,7 +22,7 @@ import uk.gov.hmrc.gform.ops.FormComponentOps
 
 case class Page(
   title: SmartString,
-  documentTitle: Option[SmartString],
+  noPIITitle: Option[SmartString],
   description: Option[SmartString],
   shortName: Option[SmartString],
   progressIndicator: Option[SmartString] = None,

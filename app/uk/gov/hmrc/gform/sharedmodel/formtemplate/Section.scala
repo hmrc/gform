@@ -90,7 +90,7 @@ object Section {
 
 case class DeclarationSection(
   title: SmartString,
-  documentTitle: Option[SmartString],
+  noPIITitle: Option[SmartString],
   description: Option[SmartString],
   shortName: Option[SmartString],
   continueLabel: Option[SmartString],
@@ -111,7 +111,6 @@ object DeclarationSection {
 
 case class AcknowledgementSection(
   title: SmartString,
-  documentTitle: Option[SmartString],
   description: Option[SmartString],
   shortName: Option[SmartString],
   fields: List[FormComponent],
@@ -153,7 +152,7 @@ object AcknowledgementSectionPdf {
 
 case class EnrolmentSection(
   title: SmartString,
-  documentTitle: Option[SmartString],
+  noPIITitle: Option[SmartString],
   shortName: Option[SmartString],
   fields: List[FormComponent],
   identifiers: NonEmptyList[IdentifierRecipe],

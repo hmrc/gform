@@ -77,7 +77,6 @@ trait ExampleAuthConfig extends DestinationGen {
       toSmartString("ack section with email param field"),
       None,
       None,
-      None,
       ackFormComponent,
       true,
       Some(
@@ -435,7 +434,6 @@ trait ExampleFormTemplate {
   def acknowledgementSection =
     AcknowledgementSection(
       toSmartString("Acknowledgement Page"),
-      None,
       Some(toSmartString("this page is to acknowledge submission")),
       Some(toSmartString("shortName for acknowledgement")),
       List(`fieldValue - info`),
