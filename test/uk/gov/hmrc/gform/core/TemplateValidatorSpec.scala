@@ -204,6 +204,7 @@ class TemplateValidatorSpec extends Spec {
           toSmartString("Declaration"),
           None,
           None,
+          None,
           Some(toSmartString("ContinueLabel")),
           List(mkFormComponent("declarationFullName", Value))
         )
@@ -681,6 +682,7 @@ class TemplateValidatorSpec extends Spec {
     Section.NonRepeatingPage(
       Page(
         toSmartString(name),
+        None,
         None,
         None,
         None,

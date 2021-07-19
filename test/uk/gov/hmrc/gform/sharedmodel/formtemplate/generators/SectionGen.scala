@@ -36,11 +36,12 @@ trait SectionGen {
   def enrolmentSectionGen: Gen[EnrolmentSection] =
     for {
       title       <- smartStringGen
+      noPIITitle  <- Gen.option(smartStringGen)
       shortName   <- Gen.option(smartStringGen)
       fields      <- PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen())
       identifiers <- PrimitiveGen.oneOrMoreGen(identifierRecipeGen)
       verifiers   <- PrimitiveGen.zeroOrMoreGen(verifierRecipeGen)
-    } yield EnrolmentSection(title, shortName, fields.toList, identifiers, verifiers)
+    } yield EnrolmentSection(title, noPIITitle, shortName, fields.toList, identifiers, verifiers)
 
   def acknowledgementSectionGen: Gen[AcknowledgementSection] =
     for {
@@ -72,15 +73,17 @@ trait SectionGen {
   def declarationSectionGen: Gen[DeclarationSection] =
     for {
       title         <- smartStringGen
+      noPIITitle    <- Gen.option(smartStringGen)
       description   <- Gen.option(smartStringGen)
       shortName     <- Gen.option(smartStringGen)
       continueLabel <- Gen.option(smartStringGen)
       fields        <- PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen())
-    } yield DeclarationSection(title, description, shortName, continueLabel, fields.toList)
+    } yield DeclarationSection(title, noPIITitle, description, shortName, continueLabel, fields.toList)
 
   def pageGen: Gen[Page] =
     for {
       title             <- smartStringGen
+      noPIITitle        <- Gen.option(smartStringGen)
       description       <- Gen.option(smartStringGen)
       progressIndicator <- Gen.option(smartStringGen)
       shortName         <- Gen.option(smartStringGen)
@@ -93,6 +96,7 @@ trait SectionGen {
       presentationHint  <- Gen.option(PresentationHintGen.presentationHintGen)
     } yield Page(
       title,
+      noPIITitle,
       description,
       progressIndicator,
       shortName,

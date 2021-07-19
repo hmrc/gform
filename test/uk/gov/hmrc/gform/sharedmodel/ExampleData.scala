@@ -101,6 +101,7 @@ trait ExampleAuthConfig extends DestinationGen {
       toSmartString("declaration section with email param field"),
       None,
       None,
+      None,
       Some(toSmartString("Declaration section with continueLabel")),
       decFormComponent
     )
@@ -108,6 +109,7 @@ trait ExampleAuthConfig extends DestinationGen {
   val decSectionWithGroupComponent =
     DeclarationSection(
       toSmartString("Declaration section with Group Component"),
+      None,
       None,
       None,
       Some(toSmartString("Declaration section with Group Component")),
@@ -362,6 +364,7 @@ trait ExampleSection { dependecies: ExampleFieldId with ExampleFieldValue with E
         None,
         None,
         None,
+        None,
         includeIf,
         validators,
         fields,
@@ -386,6 +389,7 @@ trait ExampleSection { dependecies: ExampleFieldId with ExampleFieldValue with E
     Section.RepeatingPage(
       Page(
         toSmartString("Repeating section"),
+        None,
         None,
         None,
         None,
@@ -442,6 +446,7 @@ trait ExampleFormTemplate {
   def declarationSection =
     DeclarationSection(
       toSmartString("Declaration"),
+      None,
       None,
       None,
       Some(toSmartString("ContinueLabel")),

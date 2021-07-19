@@ -110,6 +110,7 @@ class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
               EnrolmentSection(
                 toSmartString("t"),
                 None,
+                None,
                 List.empty,
                 NonEmptyList.of(
                   IdentifierRecipe("EtmpRegistrationNumber", FormCtx(FormComponentId("eeittReferenceNumber")))
@@ -155,6 +156,7 @@ class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
             RequireEnrolment(
               EnrolmentSection(
                 toSmartString("t"),
+                None,
                 None,
                 List.empty,
                 NonEmptyList.of(

@@ -420,6 +420,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
           toSmartString("Declaration"),
           None,
           None,
+          None,
           Some(toSmartString("ContinueLabel")),
           Nil
         )
@@ -452,6 +453,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
   val yourDetailsSection = Section.NonRepeatingPage(
     Page(
       toSmartString("Your details"),
+      None,
       None,
       None,
       None,
