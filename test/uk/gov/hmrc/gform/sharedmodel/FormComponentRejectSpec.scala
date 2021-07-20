@@ -109,6 +109,7 @@ class FormComponentRejectSpec extends Spec with TableDrivenPropertyChecks {
       ("invalid-repeated-section-cross-reference", "fields.[id=fieldB].label: fieldA belongs to different Repeated section"),
       ("invalid-group-field-reference",            "includeIf: fieldA belongs to Group component and cannot be referenced outside"),
       ("invalid-group-cross-reference",            "fields.[id=groupB].[id=fieldB].label: fieldA belongs to different Group component"),
+      ("nonexistent-field-reference-in-if-else",   "sections.fields.[id=textA].label: foo doesn't exist in the form"),
       ("nonexistent-field-reference",              "sections.fields.[id=textA].label: textB doesn't exist in the form"),
       ("empty-shortname-non-repeated",             "shortName is empty for title: 'Page A'. If you want to hide page title on summary page, use 'presentationHint': 'invisiblePageTitle' instead."),
       ("empty-shortname-repeated",                 "shortName is empty for title: 'Page A'. If you want to hide page title on summary page, use 'presentationHint': 'invisiblePageTitle' instead."),
