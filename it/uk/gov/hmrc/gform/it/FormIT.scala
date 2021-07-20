@@ -78,7 +78,8 @@ class FormIT
     formFields: Seq[FormField] = Seq.empty,
     visitIndex: Set[Int] = Set.empty
   ): Unit = {
-    val form = formCacheRepository.get[Form]("123-BASIC")(DataKey[Form]("form")).futureValue.get
+    val encryptedForm = formCacheRepository.get("123-BASIC")(DataKey[String]("form")).futureValue.get
+    val form = decryptAs[Form](encryptedForm)
     form._id shouldBe FormId("123-BASIC")
     form.envelopeId shouldBe EnvelopeId("some-envelope-id")
     form.userId shouldBe UserId("123")
