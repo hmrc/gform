@@ -29,6 +29,18 @@ sealed trait Expr {
     case Sum(l)              => Sum(l.rewrite)
     case otherwise           => otherwise
   }
+
+  def ifElses: List[IfElse] = this match {
+    case Else(l, r)        => l.ifElses ++ r.ifElses
+    case Add(l, r)         => l.ifElses ++ r.ifElses
+    case Multiply(l, r)    => l.ifElses ++ r.ifElses
+    case Subtraction(l, r) => l.ifElses ++ r.ifElses
+    case i @ IfElse(cond, l, r) =>
+      i :: implicitly[LeafExpr[BooleanExpr]]
+        .exprs(TemplatePath.root, cond)
+        .flatMap(_.expr.ifElses) ++ l.ifElses ++ r.ifElses
+    case otherwise => List.empty[IfElse]
+  }
 }
 final case class Add(field1: Expr, field2: Expr) extends Expr
 final case class Multiply(field1: Expr, field2: Expr) extends Expr

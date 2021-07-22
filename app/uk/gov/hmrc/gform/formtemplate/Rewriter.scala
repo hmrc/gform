@@ -16,11 +16,12 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
+import cats.implicits._
+import scala.util.{ Failure, Success, Try }
+import shapeless.syntax.typeable._
 import uk.gov.hmrc.gform.core.{ FOpt, fromOptA }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import cats.implicits._
-import scala.util.{ Failure, Success, Try }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
 
@@ -98,6 +99,12 @@ trait Rewriter {
       case dl: DestinationList => dl.acknowledgementSection.fields.flatMap(_.includeIf)
       case _                   => Nil
     }
+
+    val ifElses: List[IfElse] =
+      implicitly[LeafExpr[FormTemplate]]
+        .exprs(TemplatePath.root, formTemplate)
+        .flatMap(_.expr.cast[IfElse])
+        .flatMap(_.ifElses) // If-Then-Else is recursive structure, we need to check all nested once as well
 
     val includeIfs: List[IncludeIf] = formTemplate.sections.flatMap {
       case Section.NonRepeatingPage(page) => page.includeIf.toList
@@ -188,9 +195,27 @@ trait Rewriter {
           .map(booleanExpr => validIf -> ValidIf(booleanExpr)): Possible[(ValidIf, ValidIf)]
       }
 
+    // Updating of FormTemplate with rewritten IfElse expression would be complex, so we are not going to do it.
+    // We only need to raise an error when such rewrite is needed.
+    // Raising of an error is enough because no invalid IfElse exists in production.
+    val rewriteIfElseRules: Possible[List[Unit]] =
+      ifElses.traverse { ifElse =>
+        rewrite(ifElse.cond)
+          .flatMap { booleanExpr =>
+            if (booleanExpr == ifElse.cond) Right(())
+            else
+              Left(
+                UnexpectedState(
+                  "Operator '=' in combination with a choice component cannot be used in if-then-else expression. Use 'contains' operator instead. This is expression triggering this error: " + ifElse.cond
+                )
+              )
+          }: Possible[Unit]
+      }
+
     for {
       includeIfRules <- rewriteIncludeIfRules
       validIfRules   <- rewriteValidIfRules
+      _              <- rewriteIfElseRules
     } yield {
       val includeIfRulesLookup: Map[IncludeIf, IncludeIf] = includeIfRules.toMap
       val validIfRulesLookup: Map[ValidIf, ValidIf] = validIfRules.toMap
