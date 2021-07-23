@@ -294,7 +294,8 @@ class FormTemplateValidatorSpec
           )
         ),
         ("derived", List.empty, Valid),
-        ("readOnly", List(TotalValue), Valid)
+        ("readOnly", List(TotalValue), Valid),
+        ("readOnly", List.empty, Valid)
       )
 
       forAll(table) { (submitMode, presentationHint, expected) =>
