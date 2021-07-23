@@ -189,9 +189,9 @@ class RepoSpec extends FlatSpec with Matchers with DefaultPlayMongoRepositorySup
     repository.get(entity._id).futureValue shouldBe entityUpdated
   }
 
-  "upsertBulk" should "insert entities in bulk" in new TestFixture {
+  "insertBulk" should "insert entities in bulk" in new TestFixture {
     val entities = (1 to 10).map(i => buildEntity(i, s"r$i", List(s"p$i")))
-    val result = repository.upsertBulk(entities).futureValue
+    val result = repository.insertBulk(entities).value.futureValue
     result shouldBe Right(())
     repository.findAll().futureValue shouldBe entities
   }
@@ -201,6 +201,16 @@ class RepoSpec extends FlatSpec with Matchers with DefaultPlayMongoRepositorySup
     assert(repository.findAll().futureValue == List(entity))
 
     val result = repository.delete(entity._id).value.futureValue
+    result shouldBe Right(())
+    repository.findAll().futureValue shouldBe List.empty
+  }
+
+  "deleteAll" should "remove all entities from the collection" in new TestFixture {
+    val entities = (1 to 10).map(i => buildEntity(i, s"r$i", List(s"p$i")))
+    repository.collection.insertMany(entities).toFuture().futureValue
+    assert(repository.findAll().futureValue == entities)
+
+    val result = repository.deleteAll().value.futureValue
     result shouldBe Right(())
     repository.findAll().futureValue shouldBe List.empty
   }

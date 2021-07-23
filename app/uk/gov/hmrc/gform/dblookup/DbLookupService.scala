@@ -21,7 +21,7 @@ import uk.gov.hmrc.gform.formtemplate.Verifier
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel.dblookup.{ CollectionName, DbLookupId }
-
+import cats.implicits._
 import scala.concurrent.{ ExecutionContext, Future }
 
 trait DbLookupAlgebra[F[_]] {
@@ -38,5 +38,8 @@ class DbLookupService(mongoModule: MongoModule)(implicit ec: ExecutionContext)
     dbLookupRepo(collectionName).find(dbLookupId.id)
 
   def addMulti(dbLookupIds: Seq[DbLookupId], collectionName: CollectionName): Future[Either[UnexpectedState, Unit]] =
-    dbLookupRepo(collectionName).upsertBulk(dbLookupIds)
+    (for {
+      _ <- dbLookupRepo(collectionName).deleteAll()
+      _ <- dbLookupRepo(collectionName).insertBulk(dbLookupIds)
+    } yield ()).value
 }
