@@ -58,6 +58,7 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validateAddToListDefaultPage(formTemplate).toEither)
       _ <- fromOptA(DestinationsValidator.validateUniqueDestinationIds(formTemplate.destinations).toEither)
       _ <- fromOptA(DestinationsValidator.validateNoGroupInDeclaration(formTemplate.destinations).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateSubmitModePresentationHint(formTemplate).toEither)
     } yield ()
 
   }

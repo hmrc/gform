@@ -71,6 +71,21 @@ object FormTemplateValidator {
     duplicates.isEmpty.validationResult(someFieldsAreDefinedMoreThanOnce(duplicates))
   }
 
+  def validateSubmitModePresentationHint(formTemplate: FormTemplate): ValidationResult = {
+    val allFormComponents = formTemplate.destinations.allFormComponents ++ SectionHelper
+      .pages(formTemplate.sections)
+      .flatMap(_.allFormComponents)
+    allFormComponents.foldMap { fc =>
+      if (fc.derived && fc.presentationHint.exists(_.contains(TotalValue))) {
+        Invalid(
+          s"Form component ${fc.id} has invalid combination of submitMode (derived) and presentationHint (totalValue)"
+        )
+      } else {
+        Valid
+      }
+    }
+  }
+
   def validateInstructions(pages: List[Page]): ValidationResult =
     if (!pages.flatMap(_.instruction).flatMap(_.name).forall(_.nonEmpty)) {
       Invalid("One or more sections have instruction attribute with empty names")

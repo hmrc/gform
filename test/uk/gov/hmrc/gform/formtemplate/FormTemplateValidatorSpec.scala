@@ -24,7 +24,7 @@ import uk.gov.hmrc.gform.Helpers.toSmartString
 import uk.gov.hmrc.gform.core.parsers.ValueParser
 import uk.gov.hmrc.gform.core.{ Invalid, Valid }
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString, SmartString }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, Date, DateCtx, DateFormCtxVar, FormComponentId, FormCtx, InformationMessage, Instruction, Offset, StandardInfo }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, Date, DateCtx, DateFormCtxVar, FormComponentId, FormCtx, InformationMessage, Instruction, Offset, StandardInfo, Text, TextConstraint, TotalValue }
 import parseback.compat.cats._
 
 class FormTemplateValidatorSpec
@@ -278,6 +278,42 @@ class FormTemplateValidatorSpec
         )
         val result = FormTemplateValidator.validatePeriodFunReferenceConstraints(formTemplate)
         result shouldBe expectedResult
+      }
+    }
+  }
+
+  "validateSubmitModePresentationHint" should {
+    "validate submitMode and presentationHint combinations" in {
+      val table = Table(
+        ("submitMode", "presentationHint", "expected"),
+        (
+          "derived",
+          List(TotalValue),
+          Invalid(
+            "Form component derivedName has invalid combination of submitMode (derived) and presentationHint (totalValue)"
+          )
+        ),
+        ("derived", List.empty, Valid),
+        ("readOnly", List(TotalValue), Valid)
+      )
+
+      forAll(table) { (submitMode, presentationHint, expected) =>
+        val derived = submitMode == "derived"
+        val editable = submitMode != "readOnly"
+        val formTemplate = mkFormTemplate(
+          List(
+            mkSectionNonRepeatingPage(
+              name = "section1",
+              formComponents = List(
+                mkFormComponent("name"),
+                mkFormComponent("derivedName", Text(TextConstraint.default, FormCtx(FormComponentId("name"))), editable)
+                  .copy(derived = derived, presentationHint = Some(presentationHint))
+              )
+            )
+          )
+        )
+        val result = FormTemplateValidator.validateSubmitModePresentationHint(formTemplate)
+        result shouldBe expected
       }
     }
   }
