@@ -112,14 +112,19 @@ class Repo[T: OWrites: Manifest](
       .asEither
   }
 
-  def upsertBulk(t: Seq[T]): Future[Either[UnexpectedState, Unit]] =
+  def insertBulk(t: Seq[T]): FOpt[Unit] = EitherT {
     underlying.collection.insertMany(t, InsertManyOptions().ordered(false)).toFuture().asEither
+  }
 
   def delete(id: String): FOpt[Unit] = EitherT {
     underlying.collection
       .deleteOne(Filters.equal("_id", id))
       .toFuture()
       .asEither
+  }
+
+  def deleteAll(): FOpt[Unit] = EitherT {
+    underlying.collection.deleteMany(new Document()).toFuture().asEither
   }
 
   private def idSelector(item: T): Bson = Filters.equal("_id", idLens(item))
