@@ -35,6 +35,9 @@ sealed trait Expr {
     case Add(l, r)         => l.ifElses ++ r.ifElses
     case Multiply(l, r)    => l.ifElses ++ r.ifElses
     case Subtraction(l, r) => l.ifElses ++ r.ifElses
+    case Period(l, r)      => l.ifElses ++ r.ifElses
+    case Sum(l)            => l.ifElses
+    case PeriodExt(p, _)   => p.ifElses
     case i @ IfElse(cond, l, r) =>
       i :: implicitly[LeafExpr[BooleanExpr]]
         .exprs(TemplatePath.root, cond)
