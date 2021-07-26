@@ -28,6 +28,8 @@ class BasicParsersSpec extends FlatSpecLike with Matchers with TableDrivenProper
     val table = Table(
       ("input", "output"),
       ("P1Y", Some(List("P1Y"))),
+      ("P11Y", Some(List("P11Y"))),
+      ("P1.1Y", None),
       ("P-1Y", Some(List("P-1Y"))),
       ("P1M", Some(List("P1M"))),
       ("P-1M", Some(List("P-1M"))),
