@@ -39,7 +39,6 @@ class DbLookupService(mongoModule: MongoModule)(implicit ec: ExecutionContext)
 
   def addMulti(dbLookupIds: Seq[DbLookupId], collectionName: CollectionName): Future[Either[UnexpectedState, Unit]] =
     (for {
-      _ <- dbLookupRepo(collectionName).deleteAll()
-      _ <- dbLookupRepo(collectionName).insertBulk(dbLookupIds)
+      _ <- dbLookupRepo(collectionName).upsertBulk(dbLookupIds)
     } yield ()).value
 }
