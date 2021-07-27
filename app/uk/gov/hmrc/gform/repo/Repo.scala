@@ -19,10 +19,10 @@ package uk.gov.hmrc.gform.repo
 import cats.data.EitherT
 import cats.syntax.either._
 import com.mongodb.ReadPreference
-import org.bson.Document
+import org.mongodb.scala.Document
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model.Filters._
-import org.mongodb.scala.model.{ Filters, FindOneAndReplaceOptions, IndexModel, InsertManyOptions }
+import org.mongodb.scala.model.{ Filters, FindOneAndReplaceOptions, IndexModel, ReplaceOneModel, ReplaceOptions }
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
@@ -112,8 +112,19 @@ class Repo[T: OWrites: Manifest](
       .asEither
   }
 
-  def insertBulk(t: Seq[T]): FOpt[Unit] = EitherT {
-    underlying.collection.insertMany(t, InsertManyOptions().ordered(false)).toFuture().asEither
+  def upsertBulk(ts: Seq[T]): FOpt[Unit] = EitherT {
+    underlying.collection
+      .bulkWrite(
+        ts.map(t =>
+          new ReplaceOneModel(
+            idSelector(t),
+            t,
+            ReplaceOptions().upsert(true)
+          )
+        )
+      )
+      .toFuture()
+      .asEither
   }
 
   def delete(id: String): FOpt[Unit] = EitherT {
@@ -124,7 +135,7 @@ class Repo[T: OWrites: Manifest](
   }
 
   def deleteAll(): FOpt[Unit] = EitherT {
-    underlying.collection.deleteMany(new Document()).toFuture().asEither
+    underlying.collection.deleteMany(Document()).toFuture().asEither
   }
 
   private def idSelector(item: T): Bson = Filters.equal("_id", idLens(item))

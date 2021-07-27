@@ -189,11 +189,14 @@ class RepoSpec extends FlatSpec with Matchers with DefaultPlayMongoRepositorySup
     repository.get(entity._id).futureValue shouldBe entityUpdated
   }
 
-  "insertBulk" should "insert entities in bulk" in new TestFixture {
+  "upsertBulk" should "upsert entities in bulk" in new TestFixture {
     val entities = (1 to 10).map(i => buildEntity(i, s"r$i", List(s"p$i")))
-    val result = repository.insertBulk(entities).value.futureValue
-    result shouldBe Right(())
-    repository.findAll().futureValue shouldBe entities
+    val result1 = repository.upsertBulk(entities).value.futureValue
+    result1 shouldBe Right(())
+    val newEntities = (5 to 11).map(i => buildEntity(i, s"r$i", List(s"p$i")))
+    val result2 = repository.upsertBulk(newEntities).value.futureValue
+    result2 shouldBe Right(())
+    repository.findAll().futureValue shouldBe entities ++ List(buildEntity(11, s"r11", List(s"p11")))
   }
 
   "delete" should "remove the entity with given id" in new TestFixture {
