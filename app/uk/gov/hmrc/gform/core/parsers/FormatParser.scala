@@ -249,6 +249,8 @@ object FormatParser {
       TextFormat(Sterling(rm, false))
     } | "positiveSterling" ^^ { (loc, _) =>
       TextFormat(Sterling(rm, true))
+    } | "wholePositiveSterling" ^^ { (loc, _) =>
+      TextFormat(WholeSterling(true))
     } | "ukBankAccountNumber" ^^ { (loc, _) =>
       TextFormat(UkBankAccountNumber)
     } | "ukSortCode" ^^ { (loc, _) =>

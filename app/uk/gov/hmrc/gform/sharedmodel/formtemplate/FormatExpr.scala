@@ -162,6 +162,7 @@ object ShortText { val default = ShortText(0, 1000) }
 case class Lookup(register: Register, selectionCriteria: Option[List[SelectionCriteria]]) extends TextConstraint
 case class TextWithRestrictions(min: Int, max: Int) extends TextConstraint
 case class Sterling(roundingMode: RoundingMode, positiveOnly: Boolean) extends TextConstraint
+case class WholeSterling(positiveOnly: Boolean) extends TextConstraint
 case class ReferenceNumber(min: Int, max: Int) extends TextConstraint
 case object UkBankAccountNumber extends TextConstraint
 case object UkSortCodeFormat extends TextConstraint
