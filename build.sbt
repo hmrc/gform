@@ -26,6 +26,8 @@ val silencerVersion = "1.7.3"
 
 lazy val IntegrationTest = config("it") extend Test
 
+lazy val BenchmarkTest = config("benchmark") extend Test
+
 lazy val microservice = (project in file("."))
   .enablePlugins(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin, SbtArtifactory)
   .settings(
@@ -65,7 +67,8 @@ lazy val microservice = (project in file("."))
       Resolver.jcenterRepo,
       "bintray-djspiewak-maven" at "https://dl.bintray.com/djspiewak/maven",
       "ofsted-notify-java-client" at "https://dl.bintray.com/gov-uk-notify/maven/",
-      "HMRC-open-artefacts-maven2" at "https://open.artefacts.tax.service.gov.uk/maven2"
+      "HMRC-open-artefacts-maven2" at "https://open.artefacts.tax.service.gov.uk/maven2",
+      "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
     ),
     scalacOptions ++= Seq(
       "-Xfatal-warnings",
@@ -82,7 +85,8 @@ lazy val microservice = (project in file("."))
       "-P:silencer:pathFilters=target/.*",
       // Make sure you only exclude warnings for the project directories, i.e. make builds reproducible
       s"-P:silencer:sourceRoots=${baseDirectory.value.getCanonicalPath}"
-    )
+    ),
+    testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework")
   )
   .configs(IntegrationTest)
   .settings(
@@ -93,4 +97,9 @@ lazy val microservice = (project in file("."))
     addTestReportOption(IntegrationTest, "int-test-reports"),
     IntegrationTest / parallelExecution := false,
     scalafmtOnCompile := true
+  )
+  .configs(BenchmarkTest)
+  .settings(
+    inConfig(BenchmarkTest)(Defaults.testSettings),
+    BenchmarkTest / scalaSource  := baseDirectory.value / "/benchmark"
   )
