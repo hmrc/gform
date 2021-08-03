@@ -43,6 +43,13 @@ class FormTemplatesController(controllerComponents: ControllerComponents, formTe
       .fold(_.asBadRequest, _ => Results.NoContent)
   }
 
+  def getTitlesWithPII(filters: Option[String]) = Action(parse.text) { implicit request =>
+    O.asOkJson(
+      FormTemplatePIIRefsHelper
+        .getTitlesWithPII(request.body, filters.map(_.split(",").toList).getOrElse(List.empty))
+    )
+  }
+
   def get(id: FormTemplateId) = formTemplateAction("get", id) { _ =>
     formTemplateService
       .get(id)
