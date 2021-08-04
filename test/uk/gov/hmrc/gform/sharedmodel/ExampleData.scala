@@ -20,6 +20,7 @@ import java.time.LocalDateTime
 import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.Helpers._
 import uk.gov.hmrc.gform.fileupload.RouteEnvelopeRequest
+import uk.gov.hmrc.gform.sharedmodel.email.LocalisedEmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
@@ -419,7 +420,7 @@ trait ExampleFormTemplate {
 
   def formName = toLocalisedString("AAA999 dev test template")
 
-  def emailTemplateId = "test-email-template-id"
+  def emailTemplateId = LocalisedEmailTemplateId("test-email-template-id", None)
 
   def emailParameters =
     Some(

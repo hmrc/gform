@@ -31,6 +31,7 @@ import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.AvailableLanguages
+import uk.gov.hmrc.gform.sharedmodel.email.LocalisedEmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationId, Destinations }
@@ -429,7 +430,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       RequireMTDAgentEnrolment,
       EnrolmentAuth(ServiceId("TEST"), DoCheck(Always, RejectAccess, RegimeIdCheck(RegimeId("TEST"))))
     ),
-    "test-email-template-id",
+    LocalisedEmailTemplateId("test-email-template-id-en", Some("test-email-template-id-cy")),
     Some(
       NonEmptyList.of(
         EmailParameter("fullName", FormCtx("directorFullName")),

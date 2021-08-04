@@ -120,7 +120,7 @@ class NotifierEmailBuilderSpec
 
   private def withNotifier(destination: Destination.Email)(f: NotifierTemplateId => Assertion): Assertion =
     destination.emailVerifierService match {
-      case EmailVerifierService.DigitalContact(_)          => fail("Expected Notifier service, not DigitalContact service")
+      case EmailVerifierService.DigitalContact(_, _)       => fail("Expected Notifier service, not DigitalContact service")
       case EmailVerifierService.Notify(emailTemplateId, _) => f(emailTemplateId)
     }
 }
