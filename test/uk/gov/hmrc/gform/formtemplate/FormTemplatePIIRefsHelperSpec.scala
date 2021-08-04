@@ -16,25 +16,31 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
+import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatest.{ FlatSpecLike, Matchers }
 import uk.gov.hmrc.gform.formtemplate.FormTemplatePIIRefsHelper.{ PIIDetails, Pos }
 
-class FormTemplatePIIRefsHelperSpec extends FlatSpecLike with Matchers {
+class FormTemplatePIIRefsHelperSpec extends FlatSpecLike with Matchers with TableDrivenPropertyChecks {
 
   private val formTemplate: String =
     """{
       |  "_id" : "test",
       |  "formName" : "Test",
       |  "sections" : [ {
-      |    "title" : "Enter name",
+      |    "title" : "Enter company info",
       |    "fields" : [ {
-      |      "id" : "name",
+      |      "id" : "companyName",
       |      "type" : "text",
-      |      "label" : "Name",
+      |      "label" : "Company Name",
       |      "format" : "text"
-      |    } ]
+      |    }, {
+      |      "id" : "year",
+      |      "type" : "text",
+      |      "label" : "Year",
+      |      "format" : "text"
+      |    }]
       |  }, {
-      |    "title" : "Enter Email",
+      |    "title" : "Enter email",
       |    "fields" : [ {
       |      "id" : "email",
       |      "type" : "text",
@@ -42,7 +48,7 @@ class FormTemplatePIIRefsHelperSpec extends FlatSpecLike with Matchers {
       |      "format" : "text"
       |    } ]
       |  }, {
-      |    "title" : "Enter address for ${name + '-' + email}",
+      |    "title" : "Enter address for ${companyName + '-' + email}",
       |    "fields" : [ {
       |      "id" : "address",
       |      "type" : "address",
@@ -51,10 +57,10 @@ class FormTemplatePIIRefsHelperSpec extends FlatSpecLike with Matchers {
       |  }, {
       |    "id" : "atl",
       |    "type" : "addToList",
-      |    "title" : "Add To List ${name}",
+      |    "title" : "Add To List ${year}",
       |    "summaryName" : "owner",
-      |    "shortName" : "${name}",
-      |    "description" : "${name}",
+      |    "shortName" : "${nameATL}",
+      |    "description" : "${nameATL}",
       |    "addAnotherQuestion" : {
       |      "id" : "ownerFc",
       |      "type" : "choice",
@@ -65,15 +71,15 @@ class FormTemplatePIIRefsHelperSpec extends FlatSpecLike with Matchers {
       |    "pages" : [ {
       |      "title" : "Enter name ATL",
       |      "fields" : [ {
-      |        "id" : "nameATL",
+      |        "id" : "atlName",
       |        "type" : "text",
       |        "label" : "Name ATL",
       |        "format" : "text"
       |      } ]
       |    }, {
       |      "title" : {
-      |         "en": "Enter address for ${name} ATL",
-      |         "cy": "Rhowch gyfeiriad ar gyfer ${name} ATL"
+      |         "en": "Enter address for ${atlName} ATL",
+      |         "cy": "Rhowch gyfeiriad ar gyfer ${atlName} ATL"
       |      },
       |      "fields" : [ {
       |        "id" : "addressATL",
@@ -108,11 +114,34 @@ class FormTemplatePIIRefsHelperSpec extends FlatSpecLike with Matchers {
       |}""".stripMargin
 
   "getTitlesWithPII" should "return all titles with PII fields" in {
-    val result = FormTemplatePIIRefsHelper.getTitlesWithPII(formTemplate, List("name", "email"))
-    result shouldBe List(
-      PIIDetails(Pos(21, 21), "Enter address for ${name + '-' + email}", List("name", "email")),
-      PIIDetails(Pos(30, 30), "Add To List ${name}", List("name")),
-      PIIDetails(Pos(50, 51), "Enter address for ${name} ATL", List("name"))
+    val table = Table(
+      ("filters", "expected"),
+      (
+        List.empty,
+        List(
+          PIIDetails(Pos(26, 26), "Enter address for ${companyName + '-' + email}", List("companyName", "email")),
+          PIIDetails(Pos(35, 35), "Add To List ${year}", List("year")),
+          PIIDetails(Pos(55, 56), "Enter address for ${atlName} ATL", List("atlName"))
+        )
+      ),
+      (
+        List("name", "email"),
+        List(
+          PIIDetails(Pos(26, 26), "Enter address for ${companyName + '-' + email}", List("companyName", "email")),
+          PIIDetails(Pos(55, 56), "Enter address for ${atlName} ATL", List("atlName"))
+        )
+      ),
+      (
+        List("companyName"),
+        List(
+          PIIDetails(Pos(26, 26), "Enter address for ${companyName + '-' + email}", List("companyName"))
+        )
+      )
     )
+
+    forAll(table) { (filters, expected) =>
+      val result = FormTemplatePIIRefsHelper.getTitlesWithPII(formTemplate, filters)
+      result shouldBe expected
+    }
   }
 }

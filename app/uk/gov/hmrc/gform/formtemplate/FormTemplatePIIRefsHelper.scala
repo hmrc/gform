@@ -35,6 +35,7 @@ object FormTemplatePIIRefsHelper {
 
   def getTitlesWithPII(jsonStr: String, filters: List[String]): List[PIIDetails] = {
     val json = Json.parse(jsonStr)
+    val filtersLower = filters.map(_.toLowerCase)
     val titles = (json \ "sections").map { section =>
       val `type` = (section \ "type").asOpt[String]
       val sectionTitle = getPageTitle(section).toList
@@ -52,7 +53,8 @@ object FormTemplatePIIRefsHelper {
       val smartString = JsString(title).as[SmartString]
       val smartStringFCRefs = smartString.interpolations.flatMap(formComponentRefs)
       val filteredSmartStringFCRefs =
-        if (filters.isEmpty) smartStringFCRefs else smartStringFCRefs.filter(fcRef => filters.exists(fcRef.contains))
+        if (filtersLower.isEmpty) smartStringFCRefs
+        else smartStringFCRefs.filter(fcRef => filtersLower.exists(fcRef.toLowerCase.contains))
       if (filteredSmartStringFCRefs.isEmpty) {
         None
       } else {
