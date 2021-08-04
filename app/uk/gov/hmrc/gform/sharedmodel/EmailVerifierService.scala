@@ -47,7 +47,7 @@ object EmailVerifierService {
     }
   }
 
-  private val templateReads: Reads[EmailVerifierService] = Reads { json =>ExampleData.scala
+  private val templateReads: Reads[EmailVerifierService] = Reads { json =>
     ((json \ "service"), (json \ "emailTemplateId")) match {
       case (JsDefined(JsString("notify")), JsDefined(JsString(emailTemplateId))) =>
         JsSuccess(notify(NotifierTemplateId(emailTemplateId), None))

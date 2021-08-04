@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.sharedmodel.email
 
 import play.api.libs.json._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.OFormatWithTemplateReadFallback
 import uk.gov.hmrc.gform.sharedmodel.{ EmailVerifierService, LangADT, LocalisedString }
 import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierTemplateId
 
@@ -55,7 +56,5 @@ object LocalisedEmailTemplateId {
       JsError("Invalid email template id definition. Expected json String or json Object, but got: " + otherwise)
   }
 
-  private val writes: OWrites[LocalisedEmailTemplateId] = Json.format[LocalisedEmailTemplateId]
-
-  implicit val format: OFormat[LocalisedEmailTemplateId] = OFormat(reads, writes)
+  implicit val format: OFormat[LocalisedEmailTemplateId] = OFormatWithTemplateReadFallback(reads)
 }

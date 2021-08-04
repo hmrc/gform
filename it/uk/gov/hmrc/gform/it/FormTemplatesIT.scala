@@ -24,6 +24,7 @@ import org.scalatest.time.{ Millis, Seconds, Span }
 import play.api.libs.json.{ JsObject, Json }
 import uk.gov.hmrc.gform.Helpers.toSmartString
 import uk.gov.hmrc.gform.it.sample.FormTemplateSample
+import uk.gov.hmrc.gform.sharedmodel.email.LocalisedEmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PrintSummaryPdf
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.Section.NonRepeatingPage
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
@@ -153,7 +154,7 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
     formTemplate.authConfig shouldBe Anonymous
     formTemplate.displayHMRCLogo shouldBe true
     formTemplate.destinations shouldBe a[DestinationList]
-    formTemplate.emailTemplateId shouldBe "email_template_id"
+    formTemplate.emailTemplateId shouldBe LocalisedEmailTemplateId("email_template_id", None)
     val destinationList = formTemplate.destinations.asInstanceOf[DestinationList]
     destinationList.destinations shouldBe NonEmptyList.one(
       HmrcDms(
