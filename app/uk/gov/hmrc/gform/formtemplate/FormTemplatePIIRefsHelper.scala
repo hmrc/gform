@@ -33,6 +33,11 @@ object FormTemplatePIIRefsHelper {
     implicit val format: Format[PIIDetails] = Json.format[PIIDetails]
   }
 
+  case class PIIDetailsResponse(piis: List[PIIDetails], json: Option[String])
+  object PIIDetailsResponse {
+    implicit val format: Format[PIIDetailsResponse] = Json.format[PIIDetailsResponse]
+  }
+
   def getTitlesWithPII(jsonStr: String, filters: List[String]): List[PIIDetails] = {
     val json = Json.parse(jsonStr)
     val filtersLower = filters.map(_.toLowerCase)
