@@ -33,12 +33,6 @@ case class LocalisedEmailTemplateId(emailTemplateId: String, emailTemplateIdCy: 
       NotifierTemplateId(emailTemplateId),
       emailTemplateIdCy.map(NotifierTemplateId.apply)
     )
-
-  def getEmailTemplateId(lang: LangADT) =
-    lang match {
-      case LangADT.En => emailTemplateId
-      case LangADT.Cy => emailTemplateIdCy.getOrElse(emailTemplateId)
-    }
 }
 
 object LocalisedEmailTemplateId {

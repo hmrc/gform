@@ -52,7 +52,7 @@ class EmailCodeVerificationController(
           emailService
             .sendEmail(
               Some(notifierEmailAddress.value),
-              dc.emailTemplateId(lang).value,
+              dc.emailTemplateId(lang),
               EmailParametersRecalculated(
                 Map(EmailTemplateVariable("confirmationCode") -> EmailParameterValue(code.code))
               )
