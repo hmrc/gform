@@ -63,17 +63,23 @@ class SubmissionService(
   def submitForm(formIdData: FormIdData, customerId: String, submissionData: SubmissionData)(implicit
     hc: HeaderCarrier
   ): FOpt[Unit] =
-    // format: OFF
-      for {
-        form          <- formAlgebra.get(formIdData)
-        formTemplate  <- fromFutureA(formTemplateService.get(form.formTemplateId))
-        submission    <- findSubmission(SubmissionId(formIdData.toFormId, form.envelopeId))
-        submissionInfo = DestinationSubmissionInfo(customerId, submission)
-        modelTree     <- createModelTreeForSingleFormSubmission(form, formTemplate, submissionData, submission.submissionRef)
-        _             <- destinationsSubmitter.send(submissionInfo, modelTree, Some(form.formData), submissionData.l)
-        emailAddress   = email.getEmailAddress(form)
-        _             <- fromFutureA(email.sendEmail(emailAddress, formTemplate.emailTemplateId.toDigitalContact.emailTemplateId(submissionData.l), submissionData.emailParameters))
-      } yield ()
+    // format: OFFLocalisedEmailTemplateId.scala
+    for {
+      form         <- formAlgebra.get(formIdData)
+      formTemplate <- fromFutureA(formTemplateService.get(form.formTemplateId))
+      submission   <- findSubmission(SubmissionId(formIdData.toFormId, form.envelopeId))
+      submissionInfo = DestinationSubmissionInfo(customerId, submission)
+      modelTree <- createModelTreeForSingleFormSubmission(form, formTemplate, submissionData, submission.submissionRef)
+      _         <- destinationsSubmitter.send(submissionInfo, modelTree, Some(form.formData), submissionData.l)
+      emailAddress = email.getEmailAddress(form)
+      _ <- fromFutureA(
+             email.sendEmail(
+               emailAddress,
+               formTemplate.emailTemplateId.toDigitalContact.emailTemplateId(submissionData.l),
+               submissionData.emailParameters
+             )
+           )
+    } yield ()
   // format: ON
 
   private def createModelTreeForSingleFormSubmission(

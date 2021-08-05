@@ -36,7 +36,7 @@ case class LocalisedEmailTemplateId(emailTemplateId: String, emailTemplateIdCy: 
 }
 
 object LocalisedEmailTemplateId {
-  implicit val reads: Reads[LocalisedEmailTemplateId] = Reads {
+  val reads: Reads[LocalisedEmailTemplateId] = Reads {
     case JsString(emailTemplateId) => JsSuccess(LocalisedEmailTemplateId(emailTemplateId, None))
     case obj @ JsObject(_) =>
       obj.validate[LocalisedString].flatMap { localisedString =>
