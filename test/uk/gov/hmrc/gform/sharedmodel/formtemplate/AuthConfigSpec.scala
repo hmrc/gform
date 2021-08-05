@@ -179,7 +179,25 @@ class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
                                            |  "emailCodeTemplate": "someTemplate"
                                            |}""".stripMargin)
     authConfigValue shouldBe JsSuccess(
-      EmailAuthConfig(DigitalContact(EmailTemplateId("someTemplate")), None, None, None)
+      EmailAuthConfig(DigitalContact(EmailTemplateId("someTemplate"), None), None, None, None)
+    )
+  }
+
+  it should "parse email auth with no 'emailService' having localised emailCodeTemplate" in {
+    val authConfigValue = toAuthConfig(s"""|{
+                                           |  "authModule": "email",
+                                           |  "emailCodeTemplate": {
+                                           |      "en": "someTemplate-en",
+                                           |      "cy": "someTemplate-cy"
+                                           |    }
+                                           |}""".stripMargin)
+    authConfigValue shouldBe JsSuccess(
+      EmailAuthConfig(
+        DigitalContact(EmailTemplateId("someTemplate-en"), Some(EmailTemplateId("someTemplate-cy"))),
+        None,
+        None,
+        None
+      )
     )
   }
 
@@ -193,7 +211,7 @@ class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
                                            |}""".stripMargin)
     authConfigValue shouldBe JsSuccess(
       EmailAuthConfig(
-        DigitalContact(EmailTemplateId("someTemplate")),
+        DigitalContact(EmailTemplateId("someTemplate"), None),
         Some(toLocalisedString("useInfo")),
         Some(toLocalisedString("codeHelp")),
         Some(toLocalisedString("confirmation"))
@@ -208,7 +226,7 @@ class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
                                            |  "emailService": "dc"
                                            |}""".stripMargin)
     authConfigValue shouldBe JsSuccess(
-      EmailAuthConfig(DigitalContact(EmailTemplateId("someTemplate")), None, None, None)
+      EmailAuthConfig(DigitalContact(EmailTemplateId("someTemplate"), None), None, None, None)
     )
   }
 
@@ -223,11 +241,69 @@ class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
                                            |}""".stripMargin)
     authConfigValue shouldBe JsSuccess(
       EmailAuthConfig(
-        DigitalContact(EmailTemplateId("someTemplate")),
+        DigitalContact(EmailTemplateId("someTemplate"), None),
         Some(toLocalisedString("useInfo")),
         Some(toLocalisedString("codeHelp")),
         Some(toLocalisedString("confirmation"))
       )
+    )
+  }
+
+  it should "parse email auth with 'emailService' (dc) having localised emailCodeTemplate" in {
+    val authConfigValue = toAuthConfig(s"""|{
+                                           |  "authModule": "email",
+                                           |  "emailCodeTemplate": {
+                                           |      "en": "someTemplate-En",
+                                           |      "cy": "someTemplate-Cy"
+                                           |    },
+                                           |  "emailService": "dc"
+                                           |}""".stripMargin)
+    authConfigValue shouldBe JsSuccess(
+      EmailAuthConfig(
+        DigitalContact(EmailTemplateId("someTemplate-En"), Some(EmailTemplateId("someTemplate-Cy"))),
+        None,
+        None,
+        None
+      )
+    )
+  }
+
+  it should "parse email auth with 'emailService' (dc) having localised emailCodeTemplate with only english template version" in {
+    val authConfigValue = toAuthConfig(s"""|{
+                                           |  "authModule": "email",
+                                           |  "emailCodeTemplate": {
+                                           |      "en": "someTemplate-En"
+                                           |    },
+                                           |  "emailService": "dc"
+                                           |}""".stripMargin)
+    authConfigValue shouldBe JsSuccess(
+      EmailAuthConfig(DigitalContact(EmailTemplateId("someTemplate-En"), None), None, None, None)
+    )
+  }
+
+  it should "parse email auth with 'emailService' (dc) having localised emailCodeTemplate with only welsh template version" in {
+    val authConfigValue = toAuthConfig(s"""|{
+                                           |  "authModule": "email",
+                                           |  "emailCodeTemplate": {
+                                           |      "cy": "someTemplate-Cy"
+                                           |    },
+                                           |  "emailService": "dc"
+                                           |}""".stripMargin)
+    authConfigValue.isError shouldBe true
+    authConfigValue.asInstanceOf[JsError].errors.flatMap(_._2) should contain(
+      JsonValidationError("Invalid email template id definition. Missing 'en' field with english template id")
+    )
+  }
+
+  it should "return error with 'emailService' (dc) having emailCodeTemplate of wrong type (not string or object)" in {
+    val authConfigValue = toAuthConfig(s"""|{
+                                           |  "authModule": "email",
+                                           |  "emailCodeTemplate": true,
+                                           |  "emailService": "dc"
+                                           |}""".stripMargin)
+    authConfigValue.isError shouldBe true
+    authConfigValue.asInstanceOf[JsError].errors.flatMap(_._2) should contain(
+      JsonValidationError("Invalid email template id definition. Expected json String or json Object, but got: true")
     )
   }
 

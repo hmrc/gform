@@ -150,7 +150,7 @@ class DestinationSubmitter[M[_]](
     d.emailVerifierService match {
       case notify @ EmailVerifierService.Notify(_, _) =>
         submitToNotify(notify, d, submissionInfo, structuredFormData, l)
-      case EmailVerifierService.DigitalContact(_) =>
+      case EmailVerifierService.DigitalContact(_, _) =>
         raiseError(submissionInfo.formId, d.id, "DigitalContact destination support is not implemented")
     }
 

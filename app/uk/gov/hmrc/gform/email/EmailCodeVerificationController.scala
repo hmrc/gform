@@ -48,11 +48,11 @@ class EmailCodeVerificationController(
               NotifierEmailReference("")
             )
           notifierAlgebra.email(notifierEmail).map(_ => NoContent).toFuture
-        case EmailVerifierService.DigitalContact(emailTemplateId) =>
+        case dc @ EmailVerifierService.DigitalContact(_, _) =>
           emailService
             .sendEmail(
               Some(notifierEmailAddress.value),
-              emailTemplateId.value,
+              dc.emailTemplateId(lang).value,
               EmailParametersRecalculated(
                 Map(EmailTemplateVariable("confirmationCode") -> EmailParameterValue(code.code))
               )
