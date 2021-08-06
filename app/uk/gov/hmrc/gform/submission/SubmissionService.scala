@@ -63,7 +63,7 @@ class SubmissionService(
   def submitForm(formIdData: FormIdData, customerId: String, submissionData: SubmissionData)(implicit
     hc: HeaderCarrier
   ): FOpt[Unit] =
-  // format: OFF
+    // format: OFF
       for {
         form          <- formAlgebra.get(formIdData)
         formTemplate  <- fromFutureA(formTemplateService.get(form.formTemplateId))
