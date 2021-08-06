@@ -34,7 +34,7 @@ class FormIT
     save4laterPUTStub("123", "BASIC")
 
     Given("I have a form template")
-    post(basicFormTemplate.toString).to("/formtemplates").send()
+    post(basicFormTemplate().toString).to("/formtemplates").send()
 
     When("I request a new form for the template")
     val newForm = post(queryParamsSample.toString).to("/new-form/BASIC/123").send()
@@ -57,7 +57,7 @@ class FormIT
     save4laterGETStub("123", "BASIC", FormData(Seq.empty), InProgress)
 
     Given("I have setup a form instance")
-    post(basicFormTemplate.toString()).to("/formtemplates").send()
+    post(basicFormTemplate().toString).to("/formtemplates").send()
     post(queryParamsSample.toString).to("/new-form/BASIC/123").send()
     wireMockServer.resetRequests()
 

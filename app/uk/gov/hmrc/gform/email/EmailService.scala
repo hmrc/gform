@@ -20,6 +20,7 @@ import uk.gov.hmrc.gform.sharedmodel.form.Form
 import cats.implicits._
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.auditing.loggingHelpers
+import uk.gov.hmrc.gform.sharedmodel.email.EmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.EmailParametersRecalculated
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -30,23 +31,29 @@ class EmailService(emailConnector: EmailConnector) {
 
   def sendEmail(
     optemailAddress: Option[String],
-    templateId: String,
+    templateId: EmailTemplateId,
     emailParameters: EmailParametersRecalculated
   )(implicit
     hc: HeaderCarrier,
     mdc: ExecutionContext
   ): Future[Unit] = {
-    logger.info(s"Sending email, template: $templateId, headers: '${loggingHelpers.cleanHeaderCarrierHeader(hc)}'")
+    logger.info(
+      s"Sending email, template: ${templateId.value}, headers: '${loggingHelpers.cleanHeaderCarrierHeader(hc)}'"
+    )
     optemailAddress.fold(().pure[Future])(email => sendEmailTemplate(email, templateId, emailParameters))
   }
 
-  private def sendEmailTemplate(email: String, templateId: String, emailParameters: EmailParametersRecalculated)(
-    implicit hc: HeaderCarrier
+  private def sendEmailTemplate(
+    email: String,
+    templateId: EmailTemplateId,
+    emailParameters: EmailParametersRecalculated
+  )(implicit
+    hc: HeaderCarrier
   ) =
     emailConnector.sendEmail(
       new EmailTemplate(
         Seq(email),
-        templateId,
+        templateId.value,
         emailParametersRecalculatedToMap(emailParameters)
       )
     )

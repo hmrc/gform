@@ -29,7 +29,8 @@ object EmailVerifierService {
 
   def notify(emailTemplateId: NotifierTemplateId, emailTemplateIdCy: Option[NotifierTemplateId]) =
     Notify(emailTemplateId, emailTemplateIdCy)
-  def digitalContact(emailTemplateId: EmailTemplateId) = DigitalContact(emailTemplateId)
+  def digitalContact(emailTemplateId: EmailTemplateId, emailTemplateIdCy: Option[EmailTemplateId]) =
+    DigitalContact(emailTemplateId, emailTemplateIdCy)
 
   case class Notify(emailTemplateId: NotifierTemplateId, emailTemplateIdCy: Option[NotifierTemplateId])
       extends EmailVerifierService {
@@ -38,14 +39,20 @@ object EmailVerifierService {
       case LangADT.Cy => emailTemplateIdCy.getOrElse(emailTemplateId)
     }
   }
-  case class DigitalContact(emailTemplateId: EmailTemplateId) extends EmailVerifierService
+  case class DigitalContact(emailTemplateId: EmailTemplateId, emailTemplateIdCy: Option[EmailTemplateId])
+      extends EmailVerifierService {
+    def emailTemplateId(l: LangADT): EmailTemplateId = l match {
+      case LangADT.En => emailTemplateId
+      case LangADT.Cy => emailTemplateIdCy.getOrElse(emailTemplateId)
+    }
+  }
 
   private val templateReads: Reads[EmailVerifierService] = Reads { json =>
     ((json \ "service"), (json \ "emailTemplateId")) match {
       case (JsDefined(JsString("notify")), JsDefined(JsString(emailTemplateId))) =>
         JsSuccess(notify(NotifierTemplateId(emailTemplateId), None))
       case (JsDefined(JsString("digitalContact")), JsDefined(JsString(emailTemplateId))) =>
-        JsSuccess(digitalContact(EmailTemplateId(emailTemplateId)))
+        JsSuccess(digitalContact(EmailTemplateId(emailTemplateId), None))
       case (JsDefined(_), JsUndefined()) => JsError(s"Missing field 'emailTemplateId' in json: $json")
       case (JsDefined(unknown), _) =>
         JsError(s"Unsupported email service '$unknown'. Only 'notify' or 'digitalContact' are supported")
@@ -58,8 +65,10 @@ object EmailVerifierService {
   implicit val show: Show[EmailVerifierService] = Show.show {
     case EmailVerifierService.Notify(emailTemplateId, Some(emailTemplateIdCy)) =>
       show"""{"en": "$emailTemplateId", "cy": "$emailTemplateIdCy"}"""
-    case EmailVerifierService.Notify(emailTemplateId, None)   => show"$emailTemplateId"
-    case EmailVerifierService.DigitalContact(emailTemplateId) => show"$emailTemplateId"
+    case EmailVerifierService.Notify(emailTemplateId, None) => show"$emailTemplateId"
+    case EmailVerifierService.DigitalContact(emailTemplateId, Some(emailTemplateIdCy)) =>
+      show"""{"en": "$emailTemplateId", "cy": "$emailTemplateIdCy"}"""
+    case EmailVerifierService.DigitalContact(emailTemplateId, None) => show"$emailTemplateId"
   }
 
 }

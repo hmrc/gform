@@ -21,9 +21,10 @@ import com.mongodb.{ BasicDBObject, ReadPreference }
 import org.mongodb.scala.model.Filters
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.time.{ Millis, Seconds, Span }
-import play.api.libs.json.{ JsObject, Json }
+import play.api.libs.json.{ JsObject, JsString, JsValue, Json }
 import uk.gov.hmrc.gform.Helpers.toSmartString
 import uk.gov.hmrc.gform.it.sample.FormTemplateSample
+import uk.gov.hmrc.gform.sharedmodel.email.LocalisedEmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PrintSummaryPdf
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.Section.NonRepeatingPage
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
@@ -48,7 +49,7 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
   "create template" should "insert the template into mongo db" in {
 
     Given("I POST a form template")
-    val result = post(basicFormTemplate.toString()).to("/formtemplates").send()
+    val result = post(basicFormTemplate().toString).to("/formtemplates").send()
 
     Then("The form template should be saved successfully")
     result.status shouldBe StatusCodes.NoContent.intValue
@@ -65,9 +66,22 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
     assertBasicFormTemplate(formTemplates.head)
   }
 
+  it should "throw an error with LocalisedEmailTemplateId having Only Cy" in {
+    Given("I POST a form template")
+    val result = post(
+      basicFormTemplate(
+        "LOCALISEDEMAILTEMPLATE",
+        Json.obj("cy" -> "email_template_id-cy")
+      ).toString
+    ).to("/formtemplates").send()
+
+    Then("I receive an error")
+    result.status shouldBe StatusCodes.BadRequest.intValue
+  }
+
   "get all templates" should "return all form templates" in {
     Given("I POST a form template")
-    post(basicFormTemplate.toString()).to("/formtemplates").send()
+    post(basicFormTemplate().toString).to("/formtemplates").send()
 
     When("I get all form templates")
     val result = get("/formtemplates").send()
@@ -79,7 +93,7 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
 
   "get requested template" should "return the requested template" in {
     Given("I POST a form template")
-    post(basicFormTemplate.toString()).to("/formtemplates").send()
+    post(basicFormTemplate().toString).to("/formtemplates").send()
 
     When("I get the form template by id")
     val result = get("/formtemplates/BASIC").send()
@@ -89,21 +103,65 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
     assertBasicFormTemplate(Json.parse(result.body).as[FormTemplate])
   }
 
+  it should "return the requested template with LocalisedEmailTemplateId having both En and Cy" in {
+    Given("I POST a form template")
+    post(
+      basicFormTemplate(
+        "LOCALISEDEMAILTEMPLATE",
+        Json.obj("en" -> "email_template_id-en", "cy" -> "email_template_id-cy")
+      ).toString
+    ).to("/formtemplates").send()
+
+    When("I get the form template by id")
+    val result = get("/formtemplates/LOCALISEDEMAILTEMPLATE").send()
+
+    Then("I receive form template")
+    result.status shouldBe StatusCodes.OK.intValue
+    assertBasicFormTemplate(
+      Json.parse(result.body).as[FormTemplate],
+      LocalisedEmailTemplateId("email_template_id-en", Some("email_template_id-cy")),
+      "LOCALISEDEMAILTEMPLATE",
+      Json.obj("en" -> "email_template_id-en", "cy" -> "email_template_id-cy")
+    )
+  }
+
+  it should "return the requested template with LocalisedEmailTemplateId having Only En" in {
+    Given("I POST a form template")
+    post(
+      basicFormTemplate(
+        "LOCALISEDEMAILTEMPLATE",
+        Json.obj("en" -> "email_template_id-en")
+      ).toString
+    ).to("/formtemplates").send()
+
+    When("I get the form template by id")
+    val result = get("/formtemplates/LOCALISEDEMAILTEMPLATE").send()
+
+    Then("I receive form template")
+    result.status shouldBe StatusCodes.OK.intValue
+    assertBasicFormTemplate(
+      Json.parse(result.body).as[FormTemplate],
+      LocalisedEmailTemplateId("email_template_id-en", None),
+      "LOCALISEDEMAILTEMPLATE",
+      Json.obj("en" -> "email_template_id-en")
+    )
+  }
+
   "get requested template in raw format" should "return the requested template in raw format" in {
     Given("I POST a form template")
-    post(basicFormTemplate.toString()).to("/formtemplates").send()
+    post(basicFormTemplate().toString).to("/formtemplates").send()
 
     When("I get the form template by id")
     val result = get("/formtemplates/BASIC/raw").send()
 
     Then("I receive form template")
     result.status shouldBe StatusCodes.OK.intValue
-    Json.parse(result.body).as[JsObject] shouldBe basicFormTemplate
+    Json.parse(result.body).as[JsObject] shouldBe basicFormTemplate()
   }
 
   "delete template" should "delete the requested template" in {
     Given("I POST a form template")
-    post(basicFormTemplate.toString()).to("/formtemplates").send()
+    post(basicFormTemplate().toString).to("/formtemplates").send()
 
     When("I delete the form template by id")
     val result = delete("/formtemplates/BASIC").send()
@@ -115,7 +173,12 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
     getTemplateResponse.status shouldBe StatusCodes.NotFound.intValue
   }
 
-  def assertBasicFormTemplate(formTemplate: FormTemplate): Unit = {
+  def assertBasicFormTemplate(
+    formTemplate: FormTemplate,
+    localisedEmailTemplateId: LocalisedEmailTemplateId = LocalisedEmailTemplateId("email_template_id", None),
+    formTemplateId: String = "BASIC",
+    emailTemplateId: JsValue = JsString("email_template_id")
+  ): Unit = {
     formTemplate.formName shouldBe LocalisedString(Map(LangADT.En -> "Test form name"))
     formTemplate.sections.size shouldBe 1
     formTemplate.sections.head shouldBe a[NonRepeatingPage]
@@ -153,7 +216,7 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
     formTemplate.authConfig shouldBe Anonymous
     formTemplate.displayHMRCLogo shouldBe true
     formTemplate.destinations shouldBe a[DestinationList]
-    formTemplate.emailTemplateId shouldBe "email_template_id"
+    formTemplate.emailTemplateId shouldBe localisedEmailTemplateId
     val destinationList = formTemplate.destinations.asInstanceOf[DestinationList]
     destinationList.destinations shouldBe NonEmptyList.one(
       HmrcDms(
@@ -188,9 +251,11 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
       None,
       List.empty
     )
-
-    val formTemplateRaw = formTemplateRawRepo.collection.find(Filters.equal("_id", "BASIC")).toFuture().futureValue
-    formTemplateRaw shouldBe List(FormTemplateRaw(basicFormTemplate.as[JsObject]))
+    val formTemplateRaw =
+      formTemplateRawRepo.collection.find(Filters.equal("_id", formTemplateId)).toFuture().futureValue
+    formTemplateRaw shouldBe List(
+      FormTemplateRaw(basicFormTemplate(formTemplateId, emailTemplateId).as[JsObject])
+    )
     ()
   }
 }
