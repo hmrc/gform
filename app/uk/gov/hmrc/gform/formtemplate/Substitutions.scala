@@ -23,7 +23,7 @@ import uk.gov.hmrc.gform.core.parsers.ValueParser
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Expr, FormTemplateRaw, TextExpression, ValueExpr }
 
-case class Substitutions(expressions: Map[ExpressionId, Expr]) extends AnyVal
+case class Substitutions(expressions: Map[ExpressionId, Expr])
 
 object Substitutions {
   val empty = Substitutions(Map.empty[ExpressionId, Expr])
