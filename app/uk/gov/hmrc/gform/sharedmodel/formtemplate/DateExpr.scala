@@ -49,7 +49,9 @@ object OffsetUnit {
   implicit val format: OFormat[OffsetUnit] = derived.oformat()
 }
 
-case class OffsetYMD(offsets: List[OffsetUnit]) // Order matters, since OffsetUnit is not commutative
+case class OffsetYMD(offsets: List[OffsetUnit]) { // Order matters, since OffsetUnit is not commutative
+  def +(that: OffsetYMD) = OffsetYMD(offsets ++ that.offsets)
+}
 
 object OffsetYMD {
   def apply(offsets: OffsetUnit*): OffsetYMD =
