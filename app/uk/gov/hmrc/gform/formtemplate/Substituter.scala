@@ -27,10 +27,6 @@ trait Substituter[T] {
 
 object Substituter {
 
-  final def instance[T](f: (Substitutions, T) => T): Substituter[T] = new Substituter[T] {
-    final def substitute(substitutions: Substitutions, t: T): T = f(substitutions, t)
-  }
-
   implicit class SubstituterSyntax[T: Substituter](t: T) {
     def apply(substitutions: Substitutions): T = Substituter[T].substitute(substitutions, t)
   }
@@ -76,13 +72,12 @@ object Substituter {
     }
   }
 
-  implicit val smartStringSubstituter: Substituter[SmartString] = Substituter.instance { (substitutions, t) =>
+  implicit val smartStringSubstituter: Substituter[SmartString] = (substitutions, t) =>
     t.copy(
       interpolations = t.interpolations(substitutions)
     )
-  }
 
-  implicit val dateExprSubstituter: Substituter[DateExpr] = Substituter.instance { (substitutions, t) =>
+  implicit val dateExprSubstituter: Substituter[DateExpr] = (substitutions, t) =>
     t match {
       case d @ DateFormCtxVar(FormCtx(formComponentId)) =>
         substitutions.expressions.get(ExpressionId(formComponentId.value)) match {
@@ -97,7 +92,6 @@ object Substituter {
           case other                                 => DateExprWithOffset(other, offset)
         }
     }
-  }
 
   implicit val booleanExprSubstituter: Substituter[BooleanExpr] = new Substituter[BooleanExpr] {
     def substitute(substitutions: Substitutions, t: BooleanExpr): BooleanExpr = t match {
@@ -120,45 +114,38 @@ object Substituter {
     }
   }
 
-  implicit val includeIfSubstituter: Substituter[IncludeIf] = Substituter.instance { (substitutions, t) =>
+  implicit val includeIfSubstituter: Substituter[IncludeIf] = (substitutions, t) =>
     t.copy(booleanExpr = t.booleanExpr(substitutions))
-  }
 
-  implicit val validIfSubstituter: Substituter[ValidIf] = Substituter.instance { (substitutions, t) =>
+  implicit val validIfSubstituter: Substituter[ValidIf] = (substitutions, t) =>
     t.copy(booleanExpr = t.booleanExpr(substitutions))
-  }
 
-  implicit val validatorSubstituter: Substituter[Validator] = Substituter.instance { (substitutions, t) =>
+  implicit val validatorSubstituter: Substituter[Validator] = (substitutions, t) =>
     t match {
       case HmrcRosmRegistrationCheckValidator(errorMessage, regime, utr, postcode) =>
         HmrcRosmRegistrationCheckValidator(errorMessage(substitutions), regime, utr, postcode)
       case BankAccountModulusCheck(errorMessage, accountNumber, sortCode) =>
         BankAccountModulusCheck(errorMessage(substitutions), accountNumber, sortCode)
     }
-  }
 
-  implicit val overseasAddressValueSubstituter: Substituter[OverseasAddress.Value] = Substituter.instance {
-    (substitutions, t) =>
-      t.copy(
-        t.line1(substitutions),
-        t.line2(substitutions),
-        t.line3(substitutions),
-        t.city(substitutions),
-        t.postcode(substitutions),
-        t.country(substitutions)
-      )
-  }
+  implicit val overseasAddressValueSubstituter: Substituter[OverseasAddress.Value] = (substitutions, t) =>
+    t.copy(
+      t.line1(substitutions),
+      t.line2(substitutions),
+      t.line3(substitutions),
+      t.city(substitutions),
+      t.postcode(substitutions),
+      t.country(substitutions)
+    )
 
-  implicit val revealingChoiceElementSubstituter: Substituter[RevealingChoiceElement] = Substituter.instance {
-    (substitutions, t) =>
-      t.copy(
-        choice = t.choice(substitutions),
-        revealingFields = t.revealingFields(substitutions),
-        hint = t.hint(substitutions)
-      )
-  }
+  implicit val revealingChoiceElementSubstituter: Substituter[RevealingChoiceElement] = (substitutions, t) =>
+    t.copy(
+      choice = t.choice(substitutions),
+      revealingFields = t.revealingFields(substitutions),
+      hint = t.hint(substitutions)
+    )
 
-  implicit val componentTypeSubstituter: Substituter[ComponentType] = Substituter.instance { (substitutions, t) =>
+  implicit val componentTypeSubstituter: Substituter[ComponentType] = (substitutions, t) =>
     t match {
       case Text(constraint, value, displayWidth, toUpperCase, prefix, suffix) =>
         Text(
@@ -220,21 +207,16 @@ object Substituter {
       case t @ Time(_, _) => t
     }
 
-  }
+  implicit val formComponentValidatorSubstituter: Substituter[FormComponentValidator] = (substitutions, t) =>
+    t.copy(
+      validIf = t.validIf(substitutions),
+      errorMessage = t.errorMessage(substitutions)
+    )
 
-  implicit val formComponentValidatorSubstituter: Substituter[FormComponentValidator] = Substituter.instance {
-    (substitutions, t) =>
-      t.copy(
-        validIf = t.validIf(substitutions),
-        errorMessage = t.errorMessage(substitutions)
-      )
-  }
-
-  implicit val instructionSubstituter: Substituter[Instruction] = Substituter.instance { (substitutions, t) =>
+  implicit val instructionSubstituter: Substituter[Instruction] = (substitutions, t) =>
     t.copy(name = t.name(substitutions))
-  }
 
-  implicit val formComponentSubstituter: Substituter[FormComponent] = Substituter.instance { (substitutions, t) =>
+  implicit val formComponentSubstituter: Substituter[FormComponent] = (substitutions, t) =>
     t.copy(
       `type` = t.`type`(substitutions),
       label = t.label(substitutions),
@@ -246,9 +228,8 @@ object Substituter {
       validators = t.validators(substitutions),
       instruction = t.instruction(substitutions)
     )
-  }
 
-  implicit val pageSubstituter: Substituter[Page] = Substituter.instance { (substitutions, t) =>
+  implicit val pageSubstituter: Substituter[Page] = (substitutions, t) =>
     t.copy(
       title = t.title(substitutions),
       noPIITitle = t.noPIITitle(substitutions),
@@ -261,9 +242,8 @@ object Substituter {
       continueLabel = t.continueLabel(substitutions),
       instruction = t.instruction(substitutions)
     )
-  }
 
-  implicit val sectionSubstituter: Substituter[Section] = Substituter.instance { (substitutions, t) =>
+  implicit val sectionSubstituter: Substituter[Section] = (substitutions, t) =>
     t.fold[Section] { nonRepeatingPage =>
       nonRepeatingPage.copy(page = nonRepeatingPage.page(substitutions))
     } { repeatingPage =>
@@ -284,71 +264,58 @@ object Substituter {
         defaultPage = addToList.defaultPage(substitutions)
       )
     }
-  }
 
-  implicit val printSectionPageSubstituter: Substituter[PrintSection.Page] = Substituter.instance {
-    (substitutions, t) =>
-      t.copy(
-        title = t.title(substitutions),
-        instructions = t.instructions(substitutions)
-      )
-  }
-  implicit val printSectionPdfSubstituter: Substituter[PrintSection.Pdf] = Substituter.instance { (substitutions, t) =>
+  implicit val printSectionPageSubstituter: Substituter[PrintSection.Page] = (substitutions, t) =>
+    t.copy(
+      title = t.title(substitutions),
+      instructions = t.instructions(substitutions)
+    )
+  implicit val printSectionPdfSubstituter: Substituter[PrintSection.Pdf] = (substitutions, t) =>
     t.copy(
       header = t.header(substitutions),
       footer = t.footer(substitutions)
     )
-  }
-  implicit val printSectionPdfNotificationSubstituter: Substituter[PrintSection.PdfNotification] =
-    Substituter.instance { (substitutions, t) =>
-      t.copy(
-        header = t.header(substitutions),
-        footer = t.footer(substitutions)
-      )
-    }
+  implicit val printSectionPdfNotificationSubstituter: Substituter[PrintSection.PdfNotification] = (substitutions, t) =>
+    t.copy(
+      header = t.header(substitutions),
+      footer = t.footer(substitutions)
+    )
 
-  implicit val acknowledgementSectionPdfSubstituter: Substituter[AcknowledgementSectionPdf] = Substituter.instance {
-    (substitutions, t) =>
-      t.copy(
-        header = t.header(substitutions),
-        footer = t.footer(substitutions)
-      )
-  }
+  implicit val acknowledgementSectionPdfSubstituter: Substituter[AcknowledgementSectionPdf] = (substitutions, t) =>
+    t.copy(
+      header = t.header(substitutions),
+      footer = t.footer(substitutions)
+    )
 
-  implicit val acknowledgementSectionSubstituter: Substituter[AcknowledgementSection] = Substituter.instance {
-    (substitutions, t) =>
-      t.copy(
-        title = t.title(substitutions),
-        description = t.description(substitutions),
-        shortName = t.shortName(substitutions),
-        fields = t.fields(substitutions),
-        pdf = t.pdf(substitutions),
-        instructionPdf = t.instructionPdf(substitutions)
-      )
-  }
+  implicit val acknowledgementSectionSubstituter: Substituter[AcknowledgementSection] = (substitutions, t) =>
+    t.copy(
+      title = t.title(substitutions),
+      description = t.description(substitutions),
+      shortName = t.shortName(substitutions),
+      fields = t.fields(substitutions),
+      pdf = t.pdf(substitutions),
+      instructionPdf = t.instructionPdf(substitutions)
+    )
 
-  implicit val destinationSubstituter: Substituter[Destination] = Substituter.instance { (substitutions, t) =>
+  implicit val destinationSubstituter: Substituter[Destination] = (substitutions, t) =>
     t match {
       case d: Destination.HmrcDms                => d.copy(customerId = d.customerId(substitutions))
       case d: Destination.Composite              => d.copy(destinations = d.destinations(substitutions))
       case d: Destination.SubmissionConsolidator => d.copy(customerId = d.customerId(substitutions))
       case otherwise                             => otherwise
     }
-  }
 
-  implicit val declarationSectionSubstituter: Substituter[DeclarationSection] = Substituter.instance {
-    (substitutions, t) =>
-      t.copy(
-        title = t.title(substitutions),
-        noPIITitle = t.noPIITitle(substitutions),
-        description = t.description(substitutions),
-        shortName = t.shortName(substitutions),
-        continueLabel = t.continueLabel(substitutions),
-        fields = t.fields(substitutions)
-      )
-  }
+  implicit val declarationSectionSubstituter: Substituter[DeclarationSection] = (substitutions, t) =>
+    t.copy(
+      title = t.title(substitutions),
+      noPIITitle = t.noPIITitle(substitutions),
+      description = t.description(substitutions),
+      shortName = t.shortName(substitutions),
+      continueLabel = t.continueLabel(substitutions),
+      fields = t.fields(substitutions)
+    )
 
-  implicit val destinationsSubstituter: Substituter[Destinations] = Substituter.instance { (substitutions, t) =>
+  implicit val destinationsSubstituter: Substituter[Destinations] = (substitutions, t) =>
     t match {
       case Destinations.DestinationList(destinations, acknowledgementSection, declarationSection) =>
         Destinations.DestinationList(
@@ -364,24 +331,21 @@ object Substituter {
           pdfNotification(substitutions)
         )
     }
-  }
 
-  implicit val summarySectionSubstituter: Substituter[SummarySection] = Substituter.instance { (substitutions, t) =>
+  implicit val summarySectionSubstituter: Substituter[SummarySection] = (substitutions, t) =>
     t.copy(
       title = t.title(substitutions),
       header = t.header(substitutions),
       footer = t.footer(substitutions),
       continueLabel = t.continueLabel(substitutions)
     )
-  }
 
-  implicit val formTemplateSubstituter: Substituter[FormTemplate] = Substituter.instance { (substitutions, t) =>
+  implicit val formTemplateSubstituter: Substituter[FormTemplate] = (substitutions, t) =>
     t.copy(
       destinations = t.destinations(substitutions),
       sections = t.sections(substitutions),
       summarySection = t.summarySection(substitutions)
     )
-  }
 }
 
 trait SubstituteExpressions {
