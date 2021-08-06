@@ -75,7 +75,7 @@ object FormTemplateValidator {
     val ids: List[PageId] =
       sectionsList.flatMap(
         _.fold(_.page.id.toList)(_.page.id.toList)(p =>
-          p.id.toList ++ p.defaultPage.flatMap(_.id).toList ++ p.pages.toList.flatMap(_.id)
+          p.defaultPage.flatMap(_.id).toList ++ p.pages.toList.flatMap(_.id)
         )
       )
     val duplicateIds = ids.groupBy(identity).collect {

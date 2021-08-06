@@ -301,7 +301,6 @@ class FormTemplateValidatorSpec
             ),
             mkAddToList(
               name = "page3",
-              pageId = Some(PageId("page3")),
               pages = NonEmptyList.one(
                 mkSectionNonRepeatingPage(
                   name = "page4",
@@ -327,24 +326,23 @@ class FormTemplateValidatorSpec
             ),
             mkAddToList(
               name = "page3",
-              pageId = Some(PageId("page3")),
               defaultPage = Some(
                 mkSectionNonRepeatingPage(
                   name = "page2",
                   formComponents = List.empty,
-                  pageId = Some(PageId("page2"))
+                  pageId = Some(PageId("page1"))
                 ).page
               ),
               pages = NonEmptyList.one(
                 mkSectionNonRepeatingPage(
                   name = "page3",
                   formComponents = List.empty,
-                  pageId = Some(PageId("page3"))
+                  pageId = Some(PageId("page2"))
                 ).page
               )
             )
           ),
-          Invalid("Some page ids are defined more than once: page2,page3")
+          Invalid("Some page ids are defined more than once: page1,page2")
         )
       )
       forAll(table) { (sections, expected) =>

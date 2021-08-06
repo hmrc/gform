@@ -184,14 +184,12 @@ trait FormTemplateSupport {
 
   def mkAddToList(
     name: String,
-    pageId: Option[PageId],
     pages: NonEmptyList[Page],
     defaultPage: Option[Page] = None,
     addAnotherQuestion: FormComponent = addAnotherQuestion
   ) =
     Section.AddToList(
       toSmartString(name),
-      pageId,
       Some(toSmartString(name)),
       toSmartString(name),
       toSmartString(name),
