@@ -71,6 +71,21 @@ object FormTemplateValidator {
     duplicates.isEmpty.validationResult(someFieldsAreDefinedMoreThanOnce(duplicates))
   }
 
+  def validateUniquePageIds(sectionsList: List[Section]): ValidationResult = {
+    val ids: List[PageId] =
+      sectionsList.flatMap(
+        _.fold(_.page.id.toList)(_.page.id.toList)(p =>
+          p.id.toList ++ p.defaultPage.flatMap(_.id).toList ++ p.pages.toList.flatMap(_.id)
+        )
+      )
+    val duplicateIds = ids.groupBy(identity).collect {
+      case (_, ids) if ids.size > 1 => ids.head
+    }
+    duplicateIds.isEmpty.validationResult(
+      s"Some page ids are defined more than once: ${duplicateIds.toList.sortBy(_.id).map(_.id).mkString(",")}"
+    )
+  }
+
   def validateInstructions(pages: List[Page]): ValidationResult =
     if (!pages.flatMap(_.instruction).flatMap(_.name).forall(_.nonEmpty)) {
       Invalid("One or more sections have instruction attribute with empty names")

@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.formtemplate
 
 import cats.Eval
+import cats.data.NonEmptyList
 import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatest.{ Matchers, WordSpecLike }
 import parseback.LineStream
@@ -24,7 +25,7 @@ import uk.gov.hmrc.gform.Helpers.toSmartString
 import uk.gov.hmrc.gform.core.parsers.ValueParser
 import uk.gov.hmrc.gform.core.{ Invalid, Valid }
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString, SmartString }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, Date, DateCtx, DateFormCtxVar, FormComponentId, FormCtx, InformationMessage, Instruction, Offset, StandardInfo }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, Date, DateCtx, DateFormCtxVar, FormComponentId, FormCtx, InformationMessage, Instruction, Offset, PageId, StandardInfo }
 import parseback.compat.cats._
 
 class FormTemplateValidatorSpec
@@ -278,6 +279,76 @@ class FormTemplateValidatorSpec
         )
         val result = FormTemplateValidator.validatePeriodFunReferenceConstraints(formTemplate)
         result shouldBe expectedResult
+      }
+    }
+  }
+
+  "validateUniquePageIds" should {
+    "validate page ids are unique" in {
+      val table = Table(
+        ("sections", "expected"),
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List.empty,
+              pageId = Some(PageId("page1"))
+            ),
+            mkSectionRepeatingPage(
+              name = "page2",
+              formComponents = List.empty,
+              pageId = Some(PageId("page2"))
+            ),
+            mkAddToList(
+              name = "page3",
+              pageId = Some(PageId("page3")),
+              pages = NonEmptyList.one(
+                mkSectionNonRepeatingPage(
+                  name = "page4",
+                  formComponents = List.empty,
+                  pageId = Some(PageId("page4"))
+                ).page
+              )
+            )
+          ),
+          Valid
+        ),
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List.empty,
+              pageId = Some(PageId("page1"))
+            ),
+            mkSectionRepeatingPage(
+              name = "page2",
+              formComponents = List.empty,
+              pageId = Some(PageId("page2"))
+            ),
+            mkAddToList(
+              name = "page3",
+              pageId = Some(PageId("page3")),
+              defaultPage = Some(
+                mkSectionNonRepeatingPage(
+                  name = "page2",
+                  formComponents = List.empty,
+                  pageId = Some(PageId("page2"))
+                ).page
+              ),
+              pages = NonEmptyList.one(
+                mkSectionNonRepeatingPage(
+                  name = "page3",
+                  formComponents = List.empty,
+                  pageId = Some(PageId("page3"))
+                ).page
+              )
+            )
+          ),
+          Invalid("Some page ids are defined more than once: page2,page3")
+        )
+      )
+      forAll(table) { (sections, expected) =>
+        FormTemplateValidator.validateUniquePageIds(sections) shouldBe expected
       }
     }
   }

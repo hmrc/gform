@@ -16,11 +16,19 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
+import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.Helpers.toSmartString
 import uk.gov.hmrc.gform.sharedmodel.ExampleData
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 trait FormTemplateSupport {
+
+  val addAnotherQuestion =
+    mkFormComponent(
+      "addAnother",
+      Choice(YesNo, NonEmptyList.of(toSmartString("Yes"), toSmartString("No")), Horizontal, Nil, None, None),
+      false
+    )
 
   def mkFormTemplate(sections: List[Section.NonRepeatingPage]) = {
     val formTemplate = ExampleData.formTemplate.copy(sections = sections, emailParameters = None)
@@ -33,11 +41,13 @@ trait FormTemplateSupport {
   def mkSectionNonRepeatingPage(
     name: String = "Some Page",
     formComponents: List[FormComponent],
-    instruction: Option[Instruction] = None
+    instruction: Option[Instruction] = None,
+    pageId: Option[PageId] = None
   ) =
     Section.NonRepeatingPage(
       Page(
         toSmartString(name),
+        pageId,
         None,
         None,
         None,
@@ -139,6 +149,7 @@ trait FormTemplateSupport {
         None,
         None,
         None,
+        None,
         formComponents,
         None,
         None,
@@ -147,4 +158,51 @@ trait FormTemplateSupport {
       )
     )
 
+  def mkSectionRepeatingPage(
+    name: String = "Some Repeating Page",
+    formComponents: List[FormComponent],
+    pageId: Option[PageId] = None
+  ) =
+    Section.RepeatingPage(
+      Page(
+        toSmartString(name),
+        pageId,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        formComponents,
+        None,
+        None,
+        None,
+        None
+      ),
+      Constant("2")
+    )
+
+  def mkAddToList(
+    name: String,
+    pageId: Option[PageId],
+    pages: NonEmptyList[Page],
+    defaultPage: Option[Page] = None,
+    addAnotherQuestion: FormComponent = addAnotherQuestion
+  ) =
+    Section.AddToList(
+      toSmartString(name),
+      pageId,
+      Some(toSmartString(name)),
+      toSmartString(name),
+      toSmartString(name),
+      toSmartString(name),
+      None,
+      None,
+      pages,
+      addAnotherQuestion,
+      None,
+      None,
+      None,
+      defaultPage
+    )
 }

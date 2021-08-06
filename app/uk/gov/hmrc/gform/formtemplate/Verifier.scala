@@ -38,6 +38,7 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validateChoiceHelpText(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateChoiceHints(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateUniqueFields(sections).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateUniquePageIds(sections).toEither)
       _ <- fromOptA(FormTemplateValidator.validateForwardReference(sections).toEither)
       _ <- fromOptA(FormTemplateValidator.validate(componentTypes, formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateDependencyGraph(formTemplate).toEither)

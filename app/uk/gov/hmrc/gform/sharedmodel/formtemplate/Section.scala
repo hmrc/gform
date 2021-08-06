@@ -51,6 +51,7 @@ object Section {
 
   case class AddToList(
     title: SmartString,
+    id: Option[PageId],
     noPIITitle: Option[SmartString],
     description: SmartString,
     shortName: SmartString,

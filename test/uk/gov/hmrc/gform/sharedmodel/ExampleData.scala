@@ -366,6 +366,7 @@ trait ExampleSection { dependecies: ExampleFieldId with ExampleFieldValue with E
         None,
         None,
         None,
+        None,
         includeIf,
         validators,
         fields,
@@ -390,6 +391,7 @@ trait ExampleSection { dependecies: ExampleFieldId with ExampleFieldValue with E
     Section.RepeatingPage(
       Page(
         toSmartString("Repeating section"),
+        None,
         None,
         None,
         None,

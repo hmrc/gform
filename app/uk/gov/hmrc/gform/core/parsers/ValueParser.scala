@@ -22,6 +22,7 @@ import parseback._
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.BasicParsers._
 import uk.gov.hmrc.gform.sharedmodel.dblookup.CollectionName
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 object ValueParser {
@@ -148,6 +149,8 @@ object ValueParser {
     InternalLink.printAcknowledgementPdf
   } | "printSummaryPdf" ^^ { (loc, _) =>
     InternalLink.printSummaryPdf
+  } | PageId.unanchoredIdValidation ^^ { (loc, id) =>
+    PageLink(PageId(id))
   }
 
   private lazy val periodFun = "period(" ~ dateExpr ~ "," ~ dateExpr ~ ")"
