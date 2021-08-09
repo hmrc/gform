@@ -56,11 +56,11 @@ object FormTemplatePIIRefsHelper {
 
     titles.flatMap { title =>
       val smartString = JsString(title).as[SmartString]
-      val smartStringFCRefs = smartString.interpolations.flatMap(formComponentRefs)
-      val filteredSmartStringFCRefs =
-        if (filtersLower.isEmpty) smartStringFCRefs
-        else smartStringFCRefs.filter(fcRef => filtersLower.exists(fcRef.toLowerCase.contains))
-      if (filteredSmartStringFCRefs.isEmpty) {
+      val smartStringRefs = smartString.interpolations.flatMap(extractRefs)
+      val filteredSmartStringRefs =
+        if (filtersLower.isEmpty) smartStringRefs
+        else smartStringRefs.filter(fcRef => filtersLower.exists(fcRef.toLowerCase.contains))
+      if (filteredSmartStringRefs.isEmpty) {
         None
       } else {
         val matchPosition: Option[Pos] =
@@ -68,7 +68,7 @@ object FormTemplatePIIRefsHelper {
         val startLine: Int =
           matchPosition.map(pos => jsonStr.substring(0, pos.start).count(_ == '\n') + 1).getOrElse(-1)
         val endLine: Int = matchPosition.map(pos => jsonStr.substring(0, pos.end).count(_ == '\n') + 1).getOrElse(-1)
-        Some(PIIDetails(Pos(startLine, endLine), title, filteredSmartStringFCRefs))
+        Some(PIIDetails(Pos(startLine, endLine), title, filteredSmartStringRefs))
       }
     }
   }
@@ -100,25 +100,25 @@ object FormTemplatePIIRefsHelper {
     maybeNoPIITitle.fold[Option[String]](Some(title))(_ => None)
   }
 
-  private def formComponentRefs(expr: Expr): List[String] =
+  private def extractRefs(expr: Expr): List[String] =
     expr match {
-      case Add(field1, field2)                    => formComponentRefs(field1) ++ formComponentRefs(field2)
-      case Multiply(field1, field2)               => formComponentRefs(field1) ++ formComponentRefs(field2)
-      case Subtraction(field1, field2)            => formComponentRefs(field1) ++ formComponentRefs(field2)
-      case IfElse(_, field1, field2)              => formComponentRefs(field1) ++ formComponentRefs(field2)
-      case Else(field1, field2)                   => formComponentRefs(field1) ++ formComponentRefs(field2)
-      case Sum(field1)                            => formComponentRefs(field1)
+      case Add(field1, field2)                    => extractRefs(field1) ++ extractRefs(field2)
+      case Multiply(field1, field2)               => extractRefs(field1) ++ extractRefs(field2)
+      case Subtraction(field1, field2)            => extractRefs(field1) ++ extractRefs(field2)
+      case IfElse(_, field1, field2)              => extractRefs(field1) ++ extractRefs(field2)
+      case Else(field1, field2)                   => extractRefs(field1) ++ extractRefs(field2)
+      case Sum(field1)                            => extractRefs(field1)
       case Count(FormComponentId(value))          => List(value)
       case FormCtx(FormComponentId(value))        => List(value)
       case AddressLens(FormComponentId(value), _) => List(value)
-      case Period(dateCtx1, dateCtx2)             => formComponentRefs(dateCtx1) ++ formComponentRefs(dateCtx2)
-      case PeriodExt(period, func)                => formComponentRefs(period)
-      case ParamCtx(queryParam)                   => Nil
+      case Period(dateCtx1, dateCtx2)             => extractRefs(dateCtx1) ++ extractRefs(dateCtx2)
+      case PeriodExt(period, func)                => extractRefs(period)
+      case ParamCtx(queryParam)                   => List("param." + queryParam.value)
       case AuthCtx(value)                         => List("auth." + value.toString.toLowerCase)
-      case UserCtx(value)                         => Nil // TODO
+      case UserCtx(value)                         => Nil
       case Constant(value)                        => Nil
       case PeriodValue(value)                     => Nil
-      case HmrcRosmRegistrationCheck(value)       => Nil // TODO
+      case HmrcRosmRegistrationCheck(value)       => Nil
       case LinkCtx(link)                          => Nil
       case FormTemplateCtx(value)                 => Nil
       case DateCtx(value)                         => value.maybeFormCtx.toList.map(_.formComponentId.value)
