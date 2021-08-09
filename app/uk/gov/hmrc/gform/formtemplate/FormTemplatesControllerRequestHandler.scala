@@ -33,25 +33,35 @@ trait RequestHandlerAlg[F[_]] {
 }
 
 class FormTemplatesControllerRequestHandler[F[_]](
-  verifyAndSave: FormTemplate => FOpt[Unit],
+  verifyAndSave: FormTemplate => Substitutions => FOpt[Unit],
   save: FormTemplateRaw => FOpt[Unit]
 )(implicit ec: ExecutionContext) {
 
   val futureInterpreter = new RequestHandlerAlg[FOpt] {
     override def handleRequest(templateRaw: FormTemplateRaw): FOpt[Unit] = {
 
+      val expressionsContextOpt: Opt[Substitutions] = Substitutions.from(templateRaw)
+
       val formTemplateOpt: Opt[FormTemplate] = FormTemplate
         .transformAndReads(templateRaw.value)
         .fold(errors => UnexpectedState(errors.toString()).asLeft, valid => valid.asRight)
 
-      processAndPersistTemplate(formTemplateOpt, templateRaw)
+      val formTemplateWithSubstitutions = for {
+        expressionsContext <- expressionsContextOpt
+        formTemplate       <- formTemplateOpt
+      } yield (formTemplate, expressionsContext)
+
+      processAndPersistTemplate(formTemplateWithSubstitutions, templateRaw)
     }
   }
 
-  private def processAndPersistTemplate(formTemplateOpt: Opt[FormTemplate], templateRaw: FormTemplateRaw): FOpt[Unit] =
+  private def processAndPersistTemplate(
+    formTemplateOpt: Opt[(FormTemplate, Substitutions)],
+    templateRaw: FormTemplateRaw
+  ): FOpt[Unit] =
     for {
       ft <- fromOptA(formTemplateOpt)
-      _  <- verifyAndSave(ft)
+      _  <- verifyAndSave(ft._1)(ft._2)
       _  <- save(templateRaw)
     } yield ()
 }
