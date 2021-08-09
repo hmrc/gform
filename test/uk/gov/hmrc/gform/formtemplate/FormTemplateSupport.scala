@@ -30,7 +30,7 @@ trait FormTemplateSupport {
       false
     )
 
-  def mkFormTemplate(sections: List[Section.NonRepeatingPage]) = {
+  def mkFormTemplate(sections: List[Section]) = {
     val formTemplate = ExampleData.formTemplate.copy(sections = sections, emailParameters = None)
     formTemplate
   }

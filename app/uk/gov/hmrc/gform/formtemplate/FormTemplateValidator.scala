@@ -17,7 +17,6 @@
 package uk.gov.hmrc.gform.formtemplate
 
 import java.time.LocalDate
-
 import cats.Monoid
 import cats.implicits._
 import scalax.collection.Graph
@@ -32,6 +31,8 @@ import uk.gov.hmrc.gform.formtemplate.FormTemplateValidatorHelper._
 import uk.gov.hmrc.gform.models.constraints.ReferenceInfo.{ PeriodExpr, PeriodExtExpr }
 import uk.gov.hmrc.gform.sharedmodel.{ AvailableLanguages, LangADT }
 import shapeless.syntax.typeable._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
+
 import scala.Function.const
 import scala.util.{ Failure, Success, Try }
 
@@ -114,6 +115,14 @@ object FormTemplateValidator {
     }
 
   def validateInvalidReferences(formTemplate: FormTemplate): ValidationResult = {
+
+    val allPageIds: List[PageId] =
+      formTemplate.sections.flatMap(
+        _.fold(_.page.id.toList)(_.page.id.toList)(p =>
+          p.pageId :: (p.defaultPage.flatMap(_.id).toList ++ p.pages.toList.flatMap(_.id))
+        )
+      )
+
     val allFcIds: Set[FormComponentId] = formTemplate.sections
       .collect {
         case s: Section.NonRepeatingPage => s.page.allFormComponentIds.toSet
@@ -148,6 +157,8 @@ object FormTemplateValidator {
       case ReferenceInfo.PeriodExtExpr(path, PeriodExt(Period(DateCtx(dateExpr1), DateCtx(dateExpr2)), _))
           if dateExprInvalidRefs(dateExpr1, dateExpr2).nonEmpty =>
         invalid(path, dateExprInvalidRefs(dateExpr1, dateExpr2): _*)
+      case ReferenceInfo.LinkCtxExpr(path, LinkCtx(PageLink(pageId))) if !allPageIds.contains(pageId) =>
+        Invalid(s"${path.path}: Page id '${pageId.id}' doesn't exist in the form")
       case _ => Valid
     }
   }
