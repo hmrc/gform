@@ -21,7 +21,7 @@ import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
 
 import scala.util.matching.Regex
 
-case class PageId(id: String)
+case class PageId(id: String) extends AnyVal
 
 object PageId {
 
