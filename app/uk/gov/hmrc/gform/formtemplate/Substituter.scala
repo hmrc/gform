@@ -27,7 +27,7 @@ trait Substituter[T] {
 
 object Substituter {
 
-  implicit class SubstituterSyntax[T: Substituter](t: T) {
+  implicit private class SubstituterSyntax[T: Substituter](t: T) {
     def apply(substitutions: Substitutions): T = Substituter[T].substitute(substitutions, t)
   }
 
@@ -68,7 +68,18 @@ object Substituter {
       case f @ FormCtx(formComponentId) =>
         // Replace FormComponentId with top level expression if one exists
         substitutions.expressions.getOrElse(ExpressionId(formComponentId.value), f)
-      case otherwise => otherwise
+      case AddressLens(_, _)            => t
+      case AuthCtx(_)                   => t
+      case Constant(_)                  => t
+      case Count(_)                     => t
+      case FormTemplateCtx(_)           => t
+      case HmrcRosmRegistrationCheck(_) => t
+      case LangCtx                      => t
+      case LinkCtx(_)                   => t
+      case ParamCtx(_)                  => t
+      case PeriodValue(_)               => t
+      case UserCtx(_)                   => t
+      case Value                        => t
     }
   }
 
