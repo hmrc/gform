@@ -22,6 +22,7 @@ import uk.gov.hmrc.gform.ops.FormComponentOps
 
 case class Page(
   title: SmartString,
+  id: Option[PageId],
   noPIITitle: Option[SmartString],
   description: Option[SmartString],
   shortName: Option[SmartString],

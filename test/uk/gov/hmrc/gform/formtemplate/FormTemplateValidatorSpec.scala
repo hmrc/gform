@@ -17,15 +17,17 @@
 package uk.gov.hmrc.gform.formtemplate
 
 import cats.Eval
+import cats.data.NonEmptyList
 import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatest.{ Matchers, WordSpecLike }
 import parseback.LineStream
-import uk.gov.hmrc.gform.Helpers.toSmartString
+import uk.gov.hmrc.gform.Helpers.{ toLocalisedString, toSmartString }
 import uk.gov.hmrc.gform.core.parsers.ValueParser
 import uk.gov.hmrc.gform.core.{ Invalid, Valid }
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString, SmartString }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, Date, DateCtx, DateFormCtxVar, FormComponentId, FormCtx, InformationMessage, Instruction, Offset, StandardInfo }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, Date, DateCtx, DateFormCtxVar, FormComponentId, FormCtx, InformationMessage, Instruction, LinkCtx, Offset, PageId, StandardInfo }
 import parseback.compat.cats._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 
 class FormTemplateValidatorSpec
     extends WordSpecLike with Matchers with FormTemplateSupport with TableDrivenPropertyChecks {
@@ -278,6 +280,160 @@ class FormTemplateValidatorSpec
         )
         val result = FormTemplateValidator.validatePeriodFunReferenceConstraints(formTemplate)
         result shouldBe expectedResult
+      }
+    }
+  }
+
+  "validateUniquePageIds" should {
+    "validate page ids are unique" in {
+      val table = Table(
+        ("sections", "expected"),
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List.empty,
+              pageId = Some(PageId("page1"))
+            ),
+            mkSectionRepeatingPage(
+              name = "page2",
+              formComponents = List.empty,
+              pageId = Some(PageId("page2"))
+            ),
+            mkAddToList(
+              name = "page3",
+              pages = NonEmptyList.one(
+                mkSectionNonRepeatingPage(
+                  name = "page4",
+                  formComponents = List.empty,
+                  pageId = Some(PageId("page4"))
+                ).page
+              )
+            )
+          ),
+          Valid
+        ),
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List.empty,
+              pageId = Some(PageId("page1"))
+            ),
+            mkSectionRepeatingPage(
+              name = "page2",
+              formComponents = List.empty,
+              pageId = Some(PageId("page2"))
+            ),
+            mkAddToList(
+              name = "page3",
+              defaultPage = Some(
+                mkSectionNonRepeatingPage(
+                  name = "page2",
+                  formComponents = List.empty,
+                  pageId = Some(PageId("page1"))
+                ).page
+              ),
+              pages = NonEmptyList.one(
+                mkSectionNonRepeatingPage(
+                  name = "page3",
+                  formComponents = List.empty,
+                  pageId = Some(PageId("page2"))
+                ).page
+              )
+            )
+          ),
+          Invalid("Some page ids are defined more than once: page1,page2")
+        )
+      )
+      forAll(table) { (sections, expected) =>
+        FormTemplateValidator.validateUniquePageIds(sections) shouldBe expected
+      }
+    }
+  }
+
+  "validateInvalidReferences" should {
+    "validate and report non-existent page id references" in {
+      val table = Table(
+        ("sections", "expected"),
+        (
+          List(
+            mkSectionRepeatingPage(
+              name = "page1",
+              formComponents = List.empty,
+              pageId = Some(PageId("page1"))
+            ),
+            mkSectionNonRepeatingPage(
+              name = "page2",
+              formComponents = List(
+                mkFormComponent(
+                  "page2Comp1",
+                  InformationMessage(
+                    StandardInfo,
+                    SmartString(toLocalisedString("{0}"), List(LinkCtx(PageLink(PageId("page1")))))
+                  ),
+                  false
+                )
+              )
+            )
+          ),
+          Valid
+        ),
+        (
+          List(
+            mkSectionRepeatingPage(
+              name = "page1",
+              formComponents = List.empty,
+              pageId = Some(PageId("page1"))
+            ),
+            mkSectionNonRepeatingPage(
+              name = "page2",
+              formComponents = List(
+                mkFormComponent(
+                  "page2Comp1",
+                  InformationMessage(
+                    StandardInfo,
+                    SmartString(toLocalisedString("{0}"), List(LinkCtx(PageLink(PageId("invalid")))))
+                  ),
+                  false
+                )
+              )
+            )
+          ),
+          Invalid("sections.fields.[id=page2Comp1].infoText: Page id 'invalid' doesn't exist in the form")
+        ),
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List.empty,
+              pageId = Some(PageId("page1"))
+            ),
+            mkAddToList(
+              name = "page2",
+              pages = NonEmptyList.one(
+                mkSectionNonRepeatingPage(
+                  name = "page2",
+                  formComponents = List(
+                    mkFormComponent(
+                      "page2Comp1",
+                      InformationMessage(
+                        StandardInfo,
+                        SmartString(toLocalisedString("{0}"), List(LinkCtx(PageLink(PageId("invalid")))))
+                      ),
+                      false
+                    )
+                  ),
+                  pageId = Some(PageId("page2"))
+                ).page
+              )
+            )
+          ),
+          Invalid("sections.pages.fields.[id=page2Comp1].infoText: Page id 'invalid' doesn't exist in the form")
+        )
+      )
+      forAll(table) { (sections, expected) =>
+        FormTemplateValidator.validateInvalidReferences(mkFormTemplate(sections)) shouldBe expected
       }
     }
   }

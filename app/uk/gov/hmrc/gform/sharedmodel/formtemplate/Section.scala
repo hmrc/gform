@@ -64,6 +64,7 @@ object Section {
     infoMessage: Option[SmartString],
     defaultPage: Option[Page] = None
   ) extends Section {
+    val pageId: PageId = PageId(addAnotherQuestion.id.value)
     override lazy val expandedFormComponents: List[FormComponent] = pages.toList.flatMap(_.expandedFormComponents)
   }
 

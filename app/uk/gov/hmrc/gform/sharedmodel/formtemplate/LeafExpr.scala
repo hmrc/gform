@@ -60,7 +60,7 @@ final case class ExprWithPath(path: TemplatePath, expr: Expr) {
     case LangCtx                                       => Nil
     case FormTemplateCtx(value: FormTemplateProp)      => Nil
     case ParamCtx(_)                                   => Nil
-    case LinkCtx(_)                                    => Nil
+    case l @ LinkCtx(_)                                => ReferenceInfo.LinkCtxExpr(path, l) :: Nil
     case DateCtx(dateExpr)                             => dateExpr.referenceInfos
     case p @ Period(_, _)                              => ReferenceInfo.PeriodExpr(path, p) :: Nil
     case p @ PeriodExt(_, _)                           => ReferenceInfo.PeriodExtExpr(path, p) :: Nil
