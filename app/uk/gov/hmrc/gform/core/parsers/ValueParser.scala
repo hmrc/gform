@@ -55,7 +55,7 @@ object ValueParser {
   lazy val lastDate: Parser[PreviousDateValue] =
     nextOrPreviousValue("last", PreviousDateValue.apply)
 
-  lazy val exprFormCtx: Parser[Expr] = (quotedConstant
+  lazy val exprFormCtx: Parser[Expr] = (quotedLocalisedConstant
     | parserExpression)
 
   lazy val dateExprExactParser: Parser[DateExpr] = exactDayParser ~ exactMonthParser ~ exactYearParser ^^ {
@@ -205,7 +205,7 @@ object ValueParser {
     | periodFun ^^ { (loc, _, dateExpr1, _, dateExpr2, _) =>
       Period(DateCtx(dateExpr1), DateCtx(dateExpr2))
     }
-    | quotedConstant
+    | quotedLocalisedConstant
     | FormComponentId.unanchoredIdValidation ~ ".sum" ^^ { (loc, value, _) =>
       Sum(FormCtx(FormComponentId(value)))
     }
@@ -273,6 +273,12 @@ object ValueParser {
   lazy val alphabeticOnly: Parser[String] = """[a-zA-Z]\w*""".r ^^ { (loc, str) =>
     str
   }
+
+  lazy val quotedLocalisedConstant: Parser[Expr] = (quotedConstant ~ "," ~ quotedConstant ^^ { (_, en, _, cy) =>
+    IfElse(Equals(LangCtx, Constant("en")), en, cy)
+  }
+    |
+    quotedConstant)
 
   lazy val quotedConstant: Parser[Expr] = ("'" ~ anyConstant ~ "'" ^^ { (loc, _, str, _) =>
     str
