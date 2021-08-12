@@ -41,6 +41,7 @@ case class FormTemplate(
   save4LaterInfoText: Option[Save4LaterInfoText],
   summarySection: SummarySection,
   displayHMRCLogo: Boolean,
+  userResearchUrl: Option[UserResearchUrl] = None,
   referrerConfig: Option[ReferrerConfig] = None
 ) {
 

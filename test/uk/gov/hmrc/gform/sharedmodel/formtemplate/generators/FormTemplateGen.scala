@@ -65,6 +65,8 @@ trait FormTemplateGen {
       templateName <- templateNameGen
     } yield WebChat(ChatRoomId(roomId), templateName)
 
+  def userResearchUrlGen: Gen[UserResearchUrl] = PrimitiveGen.urlGen.map(UserResearchUrl(_))
+
   def formTemplateGen: Gen[FormTemplate] =
     for {
       id                       <- formTemplateIdGen
@@ -82,6 +84,7 @@ trait FormTemplateGen {
       save4LaterInfoText       <- Gen.option(Save4LaterInfoTextGen.save4LaterInfoTextGen)
       summarySection           <- SummarySectionGen.summarySectionGen
       displayHMRCLogo          <- PrimitiveGen.booleanGen
+      userResearchUrl          <- Gen.option(userResearchUrlGen)
     } yield FormTemplate(
       id,
       name,
@@ -98,7 +101,8 @@ trait FormTemplateGen {
       AvailableLanguages.default,
       save4LaterInfoText,
       summarySection,
-      displayHMRCLogo
+      displayHMRCLogo,
+      userResearchUrl
     )
 }
 
