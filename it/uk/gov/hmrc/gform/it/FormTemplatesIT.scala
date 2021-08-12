@@ -30,7 +30,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.Section.NonRepeatingPage
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AcknowledgementSection, Anonymous, AuthCtx, ContinueOrDeletePage, DeclarationSection, Default, FormTemplate, FormTemplateRaw, GG, LinkCtx, OnePerUser, Text, TextWithRestrictions, Value }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AcknowledgementSection, Anonymous, AuthCtx, ContinueOrDeletePage, DeclarationSection, Default, FormTemplate, FormTemplateRaw, GG, LinkCtx, OnePerUser, Text, TextWithRestrictions, UserResearchUrl, Value }
 import uk.gov.hmrc.gform.sharedmodel.{ AvailableLanguages, LangADT, LocalisedString, SmartString }
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -217,6 +217,7 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
     formTemplate.displayHMRCLogo shouldBe true
     formTemplate.destinations shouldBe a[DestinationList]
     formTemplate.emailTemplateId shouldBe localisedEmailTemplateId
+    formTemplate.userResearchUrl shouldBe Some(UserResearchUrl("https://test.service.gov.uk"))
     val destinationList = formTemplate.destinations.asInstanceOf[DestinationList]
     destinationList.destinations shouldBe NonEmptyList.one(
       HmrcDms(

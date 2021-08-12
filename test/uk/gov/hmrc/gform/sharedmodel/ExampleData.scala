@@ -463,6 +463,8 @@ trait ExampleFormTemplate {
     Some(toSmartString("ContinueLabel"))
   )
 
+  def userResearchUrl = UserResearchUrl("https://test.service.gov.uk")
+
   def formTemplate = FormTemplate(
     formTemplateId,
     formName,
@@ -479,7 +481,8 @@ trait ExampleFormTemplate {
     AvailableLanguages.default,
     None,
     summarySection,
-    true
+    true,
+    Some(userResearchUrl)
   )
 }
 

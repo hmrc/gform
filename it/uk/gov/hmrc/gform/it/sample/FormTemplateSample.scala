@@ -25,6 +25,7 @@ trait FormTemplateSample {
                   |        }
                   |    ],
                   |    "emailTemplateId": $emailTemplateId,
+                  |    "userResearchUrl": "https://test.service.gov.uk",
                   |    "sections": [
                   |        {
                   |            "title": "Page1",
