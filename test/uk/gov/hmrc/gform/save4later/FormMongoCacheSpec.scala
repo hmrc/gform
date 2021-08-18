@@ -72,13 +72,13 @@ class FormMongoCacheSpec
   )
 
   "upsert" should "insert the form against the given formId" in {
-    val result: Unit = formMongoCache.upsert(formId, form).futureValue
+    val result: Unit = formMongoCache.upsert(form).futureValue
     result shouldBe a[Unit]
     formMongoCache.find(formId).futureValue shouldBe Some(form)
   }
 
   "find" should "find the form for the given formId" in {
-    formMongoCache.upsert(formId, form).futureValue
+    formMongoCache.upsert(form).futureValue
     val result = formMongoCache.find(formId).futureValue
     result shouldBe Some(form)
   }
@@ -89,7 +89,7 @@ class FormMongoCacheSpec
   }
 
   "get" should "return the form for the given formId" in {
-    formMongoCache.upsert(formId, form).futureValue
+    formMongoCache.upsert(form).futureValue
     val result = formMongoCache.get(formId).futureValue
     result shouldBe form
   }
@@ -103,7 +103,7 @@ class FormMongoCacheSpec
   }
 
   "delete" should "remove the form with given id" in {
-    formMongoCache.upsert(formId, form).futureValue
+    formMongoCache.upsert(form).futureValue
     assert(formMongoCache.find(formId).futureValue.isDefined)
 
     val result = formMongoCache.delete(formId).futureValue

@@ -26,10 +26,21 @@ sealed trait FormIdData {
 
   val formTemplateId: FormTemplateId
 
-  def toFormId: FormId = this match {
-    case FormIdData.Plain(userId, formTemplateId) => FormId(userId, formTemplateId)
-    case FormIdData.WithAccessCode(userId, formTemplateId, accessCode) =>
-      FormId.fromAccessCode(userId, formTemplateId, accessCode)
+  def fold[A](f: FormIdData.Plain => A)(g: FormIdData.WithAccessCode => A): A = this match {
+    case p: FormIdData.Plain          => f(p)
+    case w: FormIdData.WithAccessCode => g(w)
+  }
+
+  def toFormId: FormId = fold { p =>
+    FormId(p.userId, p.formTemplateId)
+  } { w =>
+    FormId.fromAccessCode(w.userId, w.formTemplateId, w.accessCode)
+  }
+
+  def lowerCaseId: FormIdData = fold[FormIdData] { p =>
+    p.copy(formTemplateId = FormTemplateId(p.formTemplateId.value.toLowerCase))
+  } { w =>
+    w.copy(formTemplateId = FormTemplateId(w.formTemplateId.value.toLowerCase))
   }
 }
 

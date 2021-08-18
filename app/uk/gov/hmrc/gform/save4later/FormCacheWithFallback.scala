@@ -51,8 +51,8 @@ class FormCacheWithFallback(formMongoCache: FormMongoCache, save4Later: Save4Lat
 
   override def get(formIdData: FormIdData)(implicit hc: HeaderCarrier): Future[Form] = get(formIdData.toFormId)
 
-  override def upsert(formId: FormId, form: Form)(implicit hc: HeaderCarrier): Future[Unit] =
-    formMongoCache.upsert(formId, form)
+  override def upsert(form: Form)(implicit hc: HeaderCarrier): Future[Unit] =
+    formMongoCache.upsert(form)
 
   override def delete(formId: FormId)(implicit hc: HeaderCarrier): Future[Unit] =
     formMongoCache.delete(formId).flatMap(_ => save4Later.delete(formId))

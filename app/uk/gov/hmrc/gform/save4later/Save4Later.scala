@@ -47,9 +47,9 @@ class Save4Later(cache: ShortLivedCache)(implicit ex: ExecutionContext) extends 
 
   def get(formIdData: FormIdData)(implicit hc: HeaderCarrier): Future[Form] = get(formIdData.toFormId)
 
-  def upsert(formId: FormId, form: Form)(implicit hc: HeaderCarrier): Future[Unit] = {
+  def upsert(form: Form)(implicit hc: HeaderCarrier): Future[Unit] = {
     LoggerFactory.getLogger(getClass.getName).debug(Json.prettyPrint(Json.toJson(form)) + "PUTFORM")
-    cache.cache[Form](formId.value, formCacheKey, form).void
+    cache.cache[Form](form._id.value, formCacheKey, form).void
   }
 
   def delete(formId: FormId)(implicit hc: HeaderCarrier): Future[Unit] =

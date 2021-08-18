@@ -467,6 +467,7 @@ trait ExampleFormTemplate {
 
   def formTemplate = FormTemplate(
     formTemplateId,
+    formTemplateId,
     formName,
     Some(ResearchBanner),
     Default,

@@ -51,7 +51,7 @@ class FormTemplatesControllerRequestHandler[F[_]](
         formTemplate       <- formTemplateOpt
       } yield (formTemplate, expressionsContext)
 
-      processAndPersistTemplate(formTemplateWithSubstitutions, templateRaw)
+      processAndPersistTemplate(formTemplateWithSubstitutions, templateRaw.lowerCaseId)
     }
   }
 
@@ -89,6 +89,9 @@ object FormTemplatesControllerRequestHandler {
 
   val missingDmsFormId = (id: String) => s"For Destination $id, dmsFormId is missing."
 
+  private val noTemplateId: Reads[JsObject] =
+    Reads.failed("Template field _id must be provided and it must be a String")
+
   def normaliseJSON(jsonValue: JsValue): JsResult[JsObject] = {
 
     val drmValue =
@@ -102,6 +105,15 @@ object FormTemplatesControllerRequestHandler {
     val ensureDisplayHMRCLogo =
       (__ \ 'displayHMRCLogo).json
         .copyFrom((__ \ 'displayHMRCLogo).json.pick orElse Reads.pure(JsTrue))
+
+    val ensureOriginalId = (__ \ 'originalId).json.copyFrom((__ \ '_id).json.pick) orElse noTemplateId
+
+    val lowerCaseId: Reads[JsObject] = (__ \ '_id).json.copyFrom(
+      (__ \ '_id).json
+        .pick[JsString]
+        .map(jsString => JsString(jsString.value.toLowerCase))
+        .widen
+    ) orElse noTemplateId
 
     val pruneShowContinueOrDeletePage = (__ \ 'showContinueOrDeletePage).json.prune
 
@@ -206,8 +218,23 @@ object FormTemplatesControllerRequestHandler {
       }
 
     sectionValidations andKeep dmsFormIdValidations andKeep jsonValue.transform(
-      pruneShowContinueOrDeletePage andThen pruneAcknowledgementSection andThen prunePrintSection andThen pruneDeclarationSection and drmValue and drmShowContinueOrDeletePage and ensureDisplayHMRCLogo and ensureFormCategory and
-        ensureLanguages and ensureSummarySection and ensureParentFormSubmissionRefs and destinationsOrPrintSection and transformAndMoveAcknowledgementSection and moveDestinations and moveDeclarationSection reduce
+      pruneShowContinueOrDeletePage andThen
+        pruneAcknowledgementSection andThen
+        prunePrintSection andThen
+        pruneDeclarationSection and
+        drmValue and
+        drmShowContinueOrDeletePage and
+        ensureOriginalId and
+        lowerCaseId and
+        ensureDisplayHMRCLogo and
+        ensureFormCategory and
+        ensureLanguages and
+        ensureSummarySection and
+        ensureParentFormSubmissionRefs and
+        destinationsOrPrintSection and
+        transformAndMoveAcknowledgementSection and
+        moveDestinations and
+        moveDeclarationSection reduce
     )
   }
 }
