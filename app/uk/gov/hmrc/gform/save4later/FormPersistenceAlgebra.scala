@@ -23,6 +23,6 @@ trait FormPersistenceAlgebra[F[_]] {
   def find(formId: FormId)(implicit hc: HeaderCarrier): F[Option[Form]]
   def get(formIdData: FormId)(implicit hc: HeaderCarrier): F[Form]
   def get(formIdData: FormIdData)(implicit hc: HeaderCarrier): F[Form]
-  def upsert(formId: FormId, form: Form)(implicit hc: HeaderCarrier): F[Unit]
+  def upsert(form: Form)(implicit hc: HeaderCarrier): F[Unit]
   def delete(formId: FormId)(implicit hc: HeaderCarrier): F[Unit]
 }

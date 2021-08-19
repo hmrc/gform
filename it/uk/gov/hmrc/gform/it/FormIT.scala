@@ -31,17 +31,17 @@ class FormIT
   "new form" should "return create a new instance of form" in {
     val startInstant = Instant.now()
     createEnvelopeStub()
-    save4laterPUTStub("123", "BASIC")
+    save4laterPUTStub("123", "basic")
 
     Given("I have a form template")
     post(basicFormTemplate().toString).to("/formtemplates").send()
 
     When("I request a new form for the template")
-    val newForm = post(queryParamsSample.toString).to("/new-form/BASIC/123").send()
+    val newForm = post(queryParamsSample.toString).to("/new-form/basic/123").send()
 
     Then("The response should be OK")
     newForm.status shouldBe StatusCodes.OK.intValue
-    Json.parse(newForm.body).as[FormIdData] shouldBe Plain(UserId("123"), FormTemplateId("BASIC"))
+    Json.parse(newForm.body).as[FormIdData] shouldBe Plain(UserId("123"), FormTemplateId("basic"))
 
     And("The new form should be saved in forms collection")
     assertForm(startInstant)
@@ -53,16 +53,16 @@ class FormIT
   "update form" should "update form data in save4later service" in {
     val startInstant = Instant.now()
     createEnvelopeStub()
-    save4laterPUTStub("123", "BASIC")
-    save4laterGETStub("123", "BASIC", FormData(Seq.empty), InProgress)
+    save4laterPUTStub("123", "basic")
+    save4laterGETStub("123", "basic", FormData(Seq.empty), InProgress)
 
     Given("I have setup a form instance")
     post(basicFormTemplate().toString).to("/formtemplates").send()
-    post(queryParamsSample.toString).to("/new-form/BASIC/123").send()
+    post(queryParamsSample.toString).to("/new-form/basic/123").send()
     wireMockServer.resetRequests()
 
     And("I update the form instance with new data")
-    val response = put(formDataSample.toString).to("/forms/123/BASIC").send()
+    val response = put(formDataSample.toString).to("/forms/123/basic").send()
 
     Then("The response should be NoContent")
     response.status shouldBe StatusCodes.NoContent.intValue
@@ -78,12 +78,12 @@ class FormIT
     formFields: Seq[FormField] = Seq.empty,
     visitIndex: Set[Int] = Set.empty
   ): Unit = {
-    val encryptedForm = formCacheRepository.get("123-BASIC")(DataKey[String]("form")).futureValue.get
+    val encryptedForm = formCacheRepository.get("123-basic")(DataKey[String]("form")).futureValue.get
     val form = decryptAs[Form](encryptedForm)
-    form._id shouldBe FormId("123-BASIC")
+    form._id shouldBe FormId("123-basic")
     form.envelopeId shouldBe EnvelopeId("some-envelope-id")
     form.userId shouldBe UserId("123")
-    form.formTemplateId shouldBe FormTemplateId("BASIC")
+    form.formTemplateId shouldBe FormTemplateId("basic")
     form.formData.fields shouldBe formFields
     form.status shouldBe InProgress
     form.visitsIndex shouldBe VisitIndex(visitIndex)
@@ -101,9 +101,9 @@ class FormIT
       .map(_.toList)
       .futureValue
     formMetadatas.size shouldBe 1
-    formMetadatas.head._id shouldBe FormId("123-BASIC")
+    formMetadatas.head._id shouldBe FormId("123-basic")
     formMetadatas.head.userId shouldBe UserId("123")
-    formMetadatas.head.formTemplateId shouldBe FormTemplateId("BASIC")
+    formMetadatas.head.formTemplateId shouldBe FormTemplateId("basic")
     formMetadatas.head.submissionRef shouldBe None
     formMetadatas.head.parentFormSubmissionRefs shouldBe List.empty
     formMetadatas.head.createdAt.isAfter(startInstant) shouldBe true

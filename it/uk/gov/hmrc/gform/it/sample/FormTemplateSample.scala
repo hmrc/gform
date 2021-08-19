@@ -4,7 +4,7 @@ import play.api.libs.json.{ JsString, JsValue, Json }
 
 trait FormTemplateSample {
 
-  def basicFormTemplate(id: String = "BASIC", emailTemplateId: JsValue = JsString("email_template_id")) =
+  def basicFormTemplate(id: String = "basic", emailTemplateId: JsValue = JsString("email_template_id")) =
     Json.parse(s"""
                   |{
                   |    "_id": "$id",

@@ -62,7 +62,7 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
       .map(_.toList)
       .futureValue
     formTemplates.size shouldBe 2
-    formTemplates.map(_._id.value) shouldBe List("specimen-BASIC", "BASIC")
+    formTemplates.map(_._id.value) shouldBe List("specimen-basic", "basic")
     assertBasicFormTemplate(formTemplates.head)
   }
 
@@ -70,7 +70,7 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
     Given("I POST a form template")
     val result = post(
       basicFormTemplate(
-        "LOCALISEDEMAILTEMPLATE",
+        "localisedemailtemplate",
         Json.obj("cy" -> "email_template_id-cy")
       ).toString
     ).to("/formtemplates").send()
@@ -88,7 +88,7 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
 
     Then("I receive the list of all form templates")
     result.status shouldBe StatusCodes.OK.intValue
-    Json.parse(result.body).as[List[String]] shouldBe List("specimen-BASIC", "BASIC")
+    Json.parse(result.body).as[List[String]] shouldBe List("specimen-basic", "basic")
   }
 
   "get requested template" should "return the requested template" in {
@@ -96,7 +96,7 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
     post(basicFormTemplate().toString).to("/formtemplates").send()
 
     When("I get the form template by id")
-    val result = get("/formtemplates/BASIC").send()
+    val result = get("/formtemplates/basic").send()
 
     Then("I receive form template")
     result.status shouldBe StatusCodes.OK.intValue
@@ -107,20 +107,20 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
     Given("I POST a form template")
     post(
       basicFormTemplate(
-        "LOCALISEDEMAILTEMPLATE",
+        "localisedemailtemplate",
         Json.obj("en" -> "email_template_id-en", "cy" -> "email_template_id-cy")
       ).toString
     ).to("/formtemplates").send()
 
     When("I get the form template by id")
-    val result = get("/formtemplates/LOCALISEDEMAILTEMPLATE").send()
+    val result = get("/formtemplates/localisedemailtemplate").send()
 
     Then("I receive form template")
     result.status shouldBe StatusCodes.OK.intValue
     assertBasicFormTemplate(
       Json.parse(result.body).as[FormTemplate],
       LocalisedEmailTemplateId("email_template_id-en", Some("email_template_id-cy")),
-      "LOCALISEDEMAILTEMPLATE",
+      "localisedemailtemplate",
       Json.obj("en" -> "email_template_id-en", "cy" -> "email_template_id-cy")
     )
   }
@@ -129,20 +129,20 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
     Given("I POST a form template")
     post(
       basicFormTemplate(
-        "LOCALISEDEMAILTEMPLATE",
+        "localisedemailtemplate",
         Json.obj("en" -> "email_template_id-en")
       ).toString
     ).to("/formtemplates").send()
 
     When("I get the form template by id")
-    val result = get("/formtemplates/LOCALISEDEMAILTEMPLATE").send()
+    val result = get("/formtemplates/localisedemailtemplate").send()
 
     Then("I receive form template")
     result.status shouldBe StatusCodes.OK.intValue
     assertBasicFormTemplate(
       Json.parse(result.body).as[FormTemplate],
       LocalisedEmailTemplateId("email_template_id-en", None),
-      "LOCALISEDEMAILTEMPLATE",
+      "localisedemailtemplate",
       Json.obj("en" -> "email_template_id-en")
     )
   }
@@ -152,7 +152,7 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
     post(basicFormTemplate().toString).to("/formtemplates").send()
 
     When("I get the form template by id")
-    val result = get("/formtemplates/BASIC/raw").send()
+    val result = get("/formtemplates/basic/raw").send()
 
     Then("I receive form template")
     result.status shouldBe StatusCodes.OK.intValue
@@ -164,19 +164,19 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
     post(basicFormTemplate().toString).to("/formtemplates").send()
 
     When("I delete the form template by id")
-    val result = delete("/formtemplates/BASIC").send()
+    val result = delete("/formtemplates/basic").send()
 
     Then("The template should be deleted successfully")
     result.status shouldBe StatusCodes.NoContent.intValue
     result.body shouldBe ""
-    val getTemplateResponse = get("/formtemplates/BASIC").send()
+    val getTemplateResponse = get("/formtemplates/basic").send()
     getTemplateResponse.status shouldBe StatusCodes.NotFound.intValue
   }
 
   def assertBasicFormTemplate(
     formTemplate: FormTemplate,
     localisedEmailTemplateId: LocalisedEmailTemplateId = LocalisedEmailTemplateId("email_template_id", None),
-    formTemplateId: String = "BASIC",
+    formTemplateId: String = "basic",
     emailTemplateId: JsValue = JsString("email_template_id")
   ): Unit = {
     formTemplate.formName shouldBe LocalisedString(Map(LangADT.En -> "Test form name"))

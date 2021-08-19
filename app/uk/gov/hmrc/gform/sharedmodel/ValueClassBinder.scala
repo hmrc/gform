@@ -36,8 +36,9 @@ object ValueClassBinder {
   implicit val affinityGroupBinder: PathBindable[Option[AffinityGroup]] = mValueClassBinder(
     AffinityGroupUtil.affinityGroupName
   )
-  implicit val formTemplateIdBinder: PathBindable[FormTemplateId] = valueClassBinder(_.value)
-  implicit val formTemplateRawIdBinder: PathBindable[FormTemplateRawId] = valueClassBinder(_.value)
+  implicit val formTemplateIdBinder: PathBindable[FormTemplateId] = caseInsensitive(FormTemplateId.apply, _.value)
+  implicit val formTemplateRawIdBinder: PathBindable[FormTemplateRawId] =
+    caseInsensitive(FormTemplateRawId.apply, _.value)
 
   implicit val accessCodeBinder: PathBindable[AccessCode] = valueClassBinder(_.value)
   implicit val destinationIdBinder: PathBindable[DestinationId] = valueClassBinder(_.id)
@@ -100,4 +101,7 @@ object ValueClassBinder {
         ma.fold("")(a => stringBinder.unbind(key, fromAtoString(a)))
     }
   }
+
+  def caseInsensitive[A: Reads](f: String => A, g: A => String) =
+    implicitly[PathBindable[String]].transform[A](s => f(s.toLowerCase), a => g(a).toLowerCase)
 }

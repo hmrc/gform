@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
+import cats.instances.string._
+import cats.syntax.eq._
 import play.api.libs.json._
 
 case class FormTemplateRaw(value: JsObject) {
@@ -29,6 +31,21 @@ case class FormTemplateRaw(value: JsObject) {
     }
 
     FormTemplateRawId(id)
+  }
+
+  def lowerCaseId = FormTemplateRaw {
+    value \ "_id" match {
+      case JsDefined(JsString(id)) =>
+        if (id === id.toLowerCase) {
+          value // If _id is in lowercase do not touch the json.
+        } else {
+          /* _id is not lowercase, so let's lowercase it.
+           * Unfortunately this is causing reordering of fields in the json.
+           */
+          value + ("_id" -> JsString(id.toLowerCase))
+        }
+      case otherwise => value
+    }
   }
 }
 

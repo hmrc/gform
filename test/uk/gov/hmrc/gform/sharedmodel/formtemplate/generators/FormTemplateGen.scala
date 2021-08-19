@@ -87,6 +87,7 @@ trait FormTemplateGen {
       userResearchUrl          <- Gen.option(userResearchUrlGen)
     } yield FormTemplate(
       id,
+      id,
       name,
       developmentPhase,
       category,

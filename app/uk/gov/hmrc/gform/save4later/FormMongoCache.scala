@@ -48,9 +48,9 @@ class FormMongoCache(mongoCacheRepository: MongoCacheRepository[String], jsonCry
 
   override def get(formIdData: FormIdData)(implicit hc: HeaderCarrier): Future[Form] = get(formIdData.toFormId)
 
-  override def upsert(formId: FormId, form: Form)(implicit hc: HeaderCarrier): Future[Unit] =
+  override def upsert(form: Form)(implicit hc: HeaderCarrier): Future[Unit] =
     mongoCacheRepository
-      .put(formId.value)(formDataKey, form)
+      .put(form._id.value)(formDataKey, form)
       .map(_ => ())
 
   override def delete(formId: FormId)(implicit hc: HeaderCarrier): Future[Unit] =

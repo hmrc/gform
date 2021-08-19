@@ -103,12 +103,12 @@ class FormService[F[_]: Monad](
       envelopeId   <- fileUpload.createEnvelope(formTemplateId, expiryDate)
       formTemplate <- formTemplateAlgebra.get(formTemplateId)
       formIdData = createNewFormData(userId, formTemplate, envelopeId, affinityGroup)
-      formId = formIdData.toFormId
+      lowerCased = formIdData.lowerCaseId
       form = Form(
-               formId,
+               lowerCased.toFormId,
                envelopeId,
                userId,
-               formTemplateId,
+               lowerCased.formTemplateId,
                FormData(fields = Seq.empty),
                InProgress,
                VisitIndex.empty,
@@ -116,9 +116,9 @@ class FormService[F[_]: Monad](
                Some(EnvelopeExpiryDate(expiryDate)),
                FormComponentIdToFileIdMapping.empty
              )
-      _ <- formPersistence.upsert(formIdData.toFormId, form)
-      _ <- formMetadataAlgebra.upsert(formIdData)
-    } yield formIdData
+      _ <- formPersistence.upsert(form)
+      _ <- formMetadataAlgebra.upsert(lowerCased)
+    } yield lowerCased
   }
 
   def updateUserData(formIdData: FormIdData, userData: UserData)(implicit hc: HeaderCarrier): F[Unit] = {
@@ -126,18 +126,23 @@ class FormService[F[_]: Monad](
       // restrict size of user form data to 200K, to ensure PDF generator service does not blow up during submission
       throw new RuntimeException(s"Form data values size exceeds 200K [size=${userData.formData.valueBytesSize}]")
     }
+
+    val lowerCased = formIdData.lowerCaseId
+
     for {
       form <- get(formIdData)
       newForm = form
                   .copy(
+                    _id = lowerCased.toFormId,
+                    formTemplateId = lowerCased.formTemplateId,
                     formData = userData.formData,
                     status = newStatus(form, userData.formStatus),
                     visitsIndex = userData.visitsIndex,
                     thirdPartyData = userData.thirdPartyData,
                     componentIdToFileId = userData.componentIdToFileId
                   )
-      _ <- formPersistence.upsert(formIdData.toFormId, newForm)
-      _ <- refreshMetadata(form.formData != newForm.formData, formIdData, newForm.formData)
+      _ <- formPersistence.upsert(newForm)
+      _ <- refreshMetadata(form.formData != newForm.formData, lowerCased, newForm.formData)
     } yield ()
   }
 
@@ -156,7 +161,7 @@ class FormService[F[_]: Monad](
     for {
       form <- get(formId)
       newS = newStatus(form, status)
-      _ <- formPersistence.upsert(formId, form.copy(status = newS))
+      _ <- formPersistence.upsert(form.copy(status = newS))
     } yield newS
 
   def forceUpdateFormStatus(formIdData: FormIdData, newStatus: FormStatus)(implicit hc: HeaderCarrier): F[Unit] =
@@ -165,7 +170,7 @@ class FormService[F[_]: Monad](
   def forceUpdateFormStatus(formId: FormId, newStatus: FormStatus)(implicit hc: HeaderCarrier): F[Unit] =
     for {
       form <- get(formId)
-      _    <- formPersistence.upsert(formId, form.copy(status = newStatus))
+      _    <- formPersistence.upsert(form.copy(status = newStatus))
     } yield ()
 
   private def newStatus(form: Form, status: FormStatus) =

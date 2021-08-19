@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import org.scalatest.prop.TableDrivenPropertyChecks
-import play.api.libs.json._
+import play.api.libs.json.{ JsResult, _ }
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.formtemplate.FormTemplatesControllerRequestHandler
 
@@ -24,19 +24,21 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
 
   "normaliseJSON" should "ensure default values for missing fields" in {
 
-    val printSectionInput = Json.parse("""
-                                         |{
-                                         |  "printSection": {
-                                         |    "title": "Next Steps",
-                                         |    "summaryPdf": "TestSummaryPdf"
-                                         |  }
-                                         |}
+    val printSectionInput = Json.parse("""|{
+                                          |  "_id": "FooBar",
+                                          |  "printSection": {
+                                          |    "title": "Next Steps",
+                                          |    "summaryPdf": "TestSummaryPdf"
+                                          |  }
+                                          |}
       """.stripMargin)
 
     val summarySection = SummarySection.defaultJson(Default)
 
     val printSectionExpected = Json.parse(s"""
                                              |{
+                                             |  "_id": "foobar",
+                                             |  "originalId" : "FooBar",
                                              |  "draftRetrievalMethod": {
                                              |    "showContinueOrDeletePage": "true",
                                              |    "value": "onePerUser"
@@ -57,6 +59,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
 
     val destinationsInput = Json.parse("""
                                          |{
+                                         |  "_id": "FooBar",
                                          |  "formCategory": "letter",
                                          |  "draftRetrievalMethod": "formAccessCodeForAgents",
                                          |  "showContinueOrDeletePage": "false",
@@ -105,6 +108,8 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
 
     val destinationsExpected = Json.parse(s"""
                                              |{
+                                             |  "_id": "foobar",
+                                             |  "originalId": "FooBar",
                                              |  "draftRetrievalMethod": {
                                              |    "showContinueOrDeletePage": "false",
                                              |    "value": "formAccessCodeForAgents"
@@ -163,6 +168,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
 
     val input = Json.parse("""
                              |{
+                             |  "_id": "FooBar",
                              |  "testText": "hello",
                              |  "testJsonObj": {
                              |    "id": "transitionToSubmitted",
@@ -221,6 +227,8 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
 
     val expected = Json.parse(s"""
                                  |{
+                                 |  "_id": "foobar",
+                                 |  "originalId": "FooBar",
                                  |  "draftRetrievalMethod": {
                                  |    "showContinueOrDeletePage": "false",
                                  |    "value": "formAccessCodeForAgents"
@@ -289,6 +297,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
 
     val inputDraftRetrievalMethodIsNotPermitted = Json.parse("""
                                                                |{
+                                                               |  "_id": "FooBar",
                                                                |  "testText": "hello",
                                                                |  "testJsonObj": {
                                                                |    "id": "transitionToSubmitted",
@@ -347,7 +356,9 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
 
     val expectedDraftRetrievalMethodIsNotPermitted = Json.parse(s"""
                                                                    |{
-                                                                   |    "draftRetrievalMethod": {
+                                                                   |  "_id": "foobar",
+                                                                   |  "originalId": "FooBar",
+                                                                   |  "draftRetrievalMethod": {
                                                                    |    "showContinueOrDeletePage": "false",
                                                                    |    "value": "notPermitted"
                                                                    |  },
@@ -422,7 +433,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
     )
 
     forAll(t) { case (input, expected) =>
-      val result = FormTemplatesControllerRequestHandler.normaliseJSON(input)
+      val result: JsResult[JsValue] = FormTemplatesControllerRequestHandler.normaliseJSON(input)
       result should beJsSuccess(expected)
     }
   }
@@ -431,6 +442,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
 
     val input = Json.parse("""
                              |{
+                             |  "_id": "FooBar",
                              |  "destinations": [
                              |    {
                              |      "id": "HMRCDMS",
@@ -470,6 +482,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
 
     val input = Json.parse("""
                              |{
+                             |  "_id": "FooBar",
                              |  "formCategory": "letter",
                              |  "draftRetrievalMethod": "formAccessCodeForAgents",
                              |  "showContinueOrDeletePage": "false",
@@ -499,6 +512,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
 
     val input = Json.parse("""
                              |{
+                             |  "_id": "FooBar",
                              |  "formCategory": "letter",
                              |  "draftRetrievalMethod": "formAccessCodeForAgents",
                              |  "showContinueOrDeletePage": "false",
@@ -540,6 +554,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
 
     val input = Json.parse("""
                              |{
+                             |  "_id": "FooBar",
                              |  "printSection": {
                              |    "title": "Next Steps",
                              |    "summaryPdf": "TestSummaryPdf"
@@ -568,6 +583,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
 
     val input = Json.parse("""
                              |{
+                             |  "_id": "FooBar",
                              |  "printSection": {
                              |    "title": "Next Steps",
                              |    "summaryPdf": "TestSummaryPdf"
