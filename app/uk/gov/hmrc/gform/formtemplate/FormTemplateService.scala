@@ -35,7 +35,7 @@ class FormTemplateService(formTemplateRepo: Repo[FormTemplate], formTemplateRawR
   private val logger = LoggerFactory.getLogger(getClass)
 
   def save(formTemplateRaw: FormTemplateRaw): FOpt[Unit] =
-    formTemplateRawRepo.upsert(formTemplateRaw)
+    formTemplateRawRepo.replace(formTemplateRaw)
 
   def get(id: FormTemplateId): Future[FormTemplate] = formTemplateRepo.get(id.value)
 
@@ -65,8 +65,8 @@ class FormTemplateService(formTemplateRepo: Repo[FormTemplate], formTemplateRawR
     for {
       _                  <- verify(substitutedFormTemplate)
       formTemplateToSave <- rewrite(substitutedFormTemplate)
-      _                  <- formTemplateRepo.upsert(mkSpecimen(formTemplateToSave))
-      res                <- formTemplateRepo.upsert(formTemplateToSave)
+      _                  <- formTemplateRepo.replace(mkSpecimen(formTemplateToSave))
+      res                <- formTemplateRepo.replace(formTemplateToSave)
     } yield res
   }
 }

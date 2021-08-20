@@ -105,12 +105,22 @@ class Repo[T: OWrites: Manifest](
       .toFuture()
       .map(_.toList.map(d => Json.parse(d.toJson())))
 
+  // findOneAndReplace fails if json to be replaced by t is not compatible with type T
   def upsert(t: T): FOpt[Unit] = EitherT {
     underlying.collection
       .findOneAndReplace(idSelector(t), t, FindOneAndReplaceOptions().upsert(true))
       .toFuture()
       .asEither
   }
+
+  // replaceOne do not fails if json to be replaced by t is not compatible with type T
+  def replace(t: T): FOpt[Unit] =
+    EitherT {
+      underlying.collection
+        .replaceOne(idSelector(t), t, ReplaceOptions().upsert(true))
+        .toFuture()
+        .asEither
+    }
 
   def upsertBulk(ts: Seq[T]): FOpt[Unit] = EitherT {
     underlying.collection
