@@ -72,9 +72,23 @@ class FormTemplatesController(controllerComponents: ControllerComponents, formTe
       .asOkJson
   }
 
+  def getRawSensitive(id: String) = formTemplateAction("getRaw", FormTemplateId(id)) { _ =>
+    formTemplateService
+      .get(FormTemplateRawId(id))
+      .asOkJson
+  }
+
   def remove(formTemplateId: FormTemplateId) = formTemplateAction("remove", formTemplateId) { _ =>
     val result = for {
       r <- formTemplateService.delete(formTemplateId)
+    } yield r
+
+    result.fold(_.asBadRequest, deleteResults => Ok(Json.toJson(deleteResults)))
+  }
+
+  def removeSensitive(formTemplateId: String) = formTemplateAction("remove", FormTemplateId(formTemplateId)) { _ =>
+    val result = for {
+      r <- formTemplateService.delete(FormTemplateId(formTemplateId))
     } yield r
 
     result.fold(_.asBadRequest, deleteResults => Ok(Json.toJson(deleteResults)))
