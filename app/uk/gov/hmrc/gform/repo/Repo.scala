@@ -17,7 +17,9 @@
 package uk.gov.hmrc.gform.repo
 
 import cats.data.EitherT
+import cats.instances.long._
 import cats.syntax.either._
+import cats.syntax.eq._
 import com.mongodb.ReadPreference
 import org.mongodb.scala.Document
 import org.mongodb.scala.bson.conversions.Bson
@@ -137,11 +139,14 @@ class Repo[T: OWrites: Manifest](
       .asEither
   }
 
-  def delete(id: String): FOpt[Unit] = EitherT {
+  def delete(id: String): FOpt[DeleteResult] = EitherT {
     underlying.collection
       .deleteOne(Filters.equal("_id", id))
-      .toFuture()
-      .asEither
+      .toFuture
+      .map(wr => DeleteResult(id, wr.getDeletedCount() === 1).asRight)
+      .recover { case lastError =>
+        UnexpectedState(lastError.getMessage).asLeft
+      }
   }
 
   def deleteAll(): FOpt[Unit] = EitherT {
