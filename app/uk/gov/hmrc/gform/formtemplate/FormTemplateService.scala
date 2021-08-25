@@ -45,8 +45,12 @@ class FormTemplateService(formTemplateRepo: Repo[FormTemplate], formTemplateRawR
       case other              => throw new RuntimeException(s"Expected JsObject type, got $other")
     }
 
-  def delete(formTemplateId: FormTemplateId): FOpt[Unit] =
-    formTemplateRepo.delete(formTemplateId.value)
+  def delete(formTemplateId: FormTemplateId): FOpt[DeleteResults] =
+    for {
+      prodDeleted         <- formTemplateRepo.delete(formTemplateId.value)
+      prodSpecimenDeleted <- formTemplateRepo.delete("specimen-" + formTemplateId.value)
+      rawDeleted          <- formTemplateRawRepo.delete(formTemplateId.value)
+    } yield DeleteResults(prodDeleted, prodSpecimenDeleted, rawDeleted)
 
   def list(): Future[List[String]] =
     formTemplateRepo

@@ -77,7 +77,7 @@ class FormTemplatesController(controllerComponents: ControllerComponents, formTe
       r <- formTemplateService.delete(formTemplateId)
     } yield r
 
-    result.fold(_.asBadRequest, _ => NoContent)
+    result.fold(_.asBadRequest, deleteResults => Ok(Json.toJson(deleteResults)))
   }
 
   def all() = Action.async { implicit request =>

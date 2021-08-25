@@ -24,6 +24,8 @@ import org.scalatest.time.{ Millis, Seconds, Span }
 import play.api.libs.json.{ JsObject, JsString, JsValue, Json }
 import uk.gov.hmrc.gform.Helpers.toSmartString
 import uk.gov.hmrc.gform.it.sample.FormTemplateSample
+import uk.gov.hmrc.gform.repo.DeleteResult
+import uk.gov.hmrc.gform.formtemplate.DeleteResults
 import uk.gov.hmrc.gform.sharedmodel.email.LocalisedEmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PrintSummaryPdf
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.Section.NonRepeatingPage
@@ -167,8 +169,12 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
     val result = delete("/formtemplates/basic").send()
 
     Then("The template should be deleted successfully")
-    result.status shouldBe StatusCodes.NoContent.intValue
-    result.body shouldBe ""
+    result.status shouldBe StatusCodes.OK.intValue
+    Json.parse(result.body).as[DeleteResults] shouldBe DeleteResults(
+      DeleteResult("basic", true),
+      DeleteResult("specimen-basic", true),
+      DeleteResult("basic", true)
+    )
     val getTemplateResponse = get("/formtemplates/basic").send()
     getTemplateResponse.status shouldBe StatusCodes.NotFound.intValue
   }

@@ -204,7 +204,9 @@ class RepoSpec extends FlatSpec with Matchers with DefaultPlayMongoRepositorySup
     assert(repository.findAll().futureValue == List(entity))
 
     val result = repository.delete(entity._id).value.futureValue
-    result shouldBe Right(())
+    result shouldBe Right(DeleteResult("id1", true))
+    val result2 = repository.delete(entity._id).value.futureValue
+    result2 shouldBe Right(DeleteResult("id1", false)) // Repeated delete yields false
     repository.findAll().futureValue shouldBe List.empty
   }
 
