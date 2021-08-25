@@ -16,12 +16,16 @@
 
 package uk.gov.hmrc.gform.repo
 
+import com.mongodb.client.result.InsertOneResult
+import org.mongodb.scala.{ Document, MongoClient, MongoCollection, MongoDatabase }
+import org.mongodb.scala.bson.BsonDateTime
 import org.mongodb.scala.model.Filters.and
 import org.mongodb.scala.model.{ Filters, IndexModel }
 import org.mongodb.scala.model.Indexes.ascending
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{ FlatSpec, Matchers }
 import play.api.libs.json.{ JsArray, JsNumber, JsString, Json, OFormat }
+import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 
 import java.time.format.DateTimeFormatter
@@ -218,6 +222,54 @@ class RepoSpec extends FlatSpec with Matchers with DefaultPlayMongoRepositorySup
     val result = repository.deleteAll().value.futureValue
     result shouldBe Right(())
     repository.findAll().futureValue shouldBe List.empty
+  }
+
+  val customMongoClient: MongoClient = MongoClient()
+
+  val dbName = "test-" + this.getClass.getSimpleName // Taken from uk.gov.hmrc.mongo.test.MongoSupport
+  val repoSpecDatabase: MongoDatabase = customMongoClient.getDatabase(dbName)
+
+  val rawCollection: MongoCollection[Document] = repoSpecDatabase.getCollection("myEntity")
+
+  val doc: Document = Document(
+    "_id"         -> "id1",
+    "num"         -> 1,
+    "ref"         -> "ref",
+    "parentRefs"  -> List.empty[String],
+    "createdDate" -> BsonDateTime(123)
+  )
+
+  "upsert" should "will fail when schema of MyEntity is updated (ie. imcompatible version is stored in MongoDB)" in new TestFixture {
+
+    // Insert data incompatible with type MyEntity
+    val insertOneResult: InsertOneResult = rawCollection.insertOne(doc).toFuture().futureValue
+    insertOneResult.wasAcknowledged shouldBe true
+    insertOneResult.getInsertedId.asString.getValue shouldBe "id1"
+
+    // Upsert will fail, but only the first time
+    val firstUpsertResult = repository.upsert(entity).value.futureValue
+    firstUpsertResult shouldBe Left(
+      UnexpectedState(
+        """Failed to parse json as uk.gov.hmrc.gform.repo.MyEntity '{"ref":"ref","num":1,"createdDate":{"$date":{"$numberLong":"123"}},"parentRefs":[],"_id":"id1"}': List((/updatedInstant,List(JsonValidationError(List(error.path.missing),WrappedArray()))))"""
+      )
+    )
+
+    // Another attempt is going to succeed. This looks like a bug in mongo-db-driver.
+    val secondUpsertResult = repository.upsert(entity).value.futureValue
+    secondUpsertResult shouldBe Right(())
+  }
+
+  "replace" should "succeed where upsert is failing" in new TestFixture {
+
+    // Insert data incompatible with type MyEntity
+    val insertOneResult: InsertOneResult = rawCollection.insertOne(doc).toFuture().futureValue
+    insertOneResult.wasAcknowledged shouldBe true
+    insertOneResult.getInsertedId.asString.getValue shouldBe "id1"
+
+    // Replace will succeed on first try
+    val replaceResult = repository.replace(entity).value.futureValue
+
+    replaceResult shouldBe Right(())
   }
 
   def buildEntity(num: Int, ref: String = "", parentRefs: List[String] = List.empty)(implicit
