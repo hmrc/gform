@@ -82,7 +82,7 @@ trait Rewriter {
 
     val validIfsDeclaration = formTemplate.destinations match {
       case dl: Destinations.DestinationList =>
-        dl.declarationSection.fold(List.empty[ValidIf])(_.fields.flatMap(formComponentValidIf))
+        dl.declarationSection.toList.flatMap(_.fields.flatMap(formComponentValidIf))
       case dp: Destinations.DestinationPrint => Nil
     }
 

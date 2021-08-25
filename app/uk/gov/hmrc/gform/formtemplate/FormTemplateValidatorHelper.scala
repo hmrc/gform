@@ -68,7 +68,7 @@ object FormTemplateValidatorHelper {
     val acknowledgementAndDeclarationSectionDates = template.destinations match {
       case destinationList: DestinationList =>
         destinationList.acknowledgementSection.fields.flatMap(field => extractDatesFromField(field)) :::
-          destinationList.declarationSection.toList.map(_.fields.flatMap(field => extractDatesFromField(field)))
+          destinationList.declarationSection.toList.flatMap(_.fields.flatMap(field => extractDatesFromField(field)))
 
       case _ => Nil
     }
