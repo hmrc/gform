@@ -80,10 +80,6 @@ object FormTemplatesControllerRequestHandler {
     """Acknowledgement section is mandatory in case of destination section."""
   )
 
-  val mandatoryDeclarationForDestinationSection = JsError(
-    """Declaration section is mandatory in case of destination section."""
-  )
-
   val invalidDmsFormId = (id: String) =>
     s"For Destination $id, dmsFormId should have minimum 1 and maximum 12 characters."
 
@@ -183,11 +179,11 @@ object FormTemplatesControllerRequestHandler {
         case (Some(_), Some(_), _, _)          => onlyOneOfDestinationsAndPrintSection
         case (None, None, _, _)                => onlyOneOfDestinationsAndPrintSection
         case (Some(_), None, None, _)          => mandatoryAcknowledgementForDestinationSection
-        case (Some(_), None, _, None)          => mandatoryDeclarationForDestinationSection
         case (None, Some(_), Some(_), _)       => avoidAcknowledgementForPrintSection
         case (None, Some(_), _, Some(_))       => avoidDeclarationForPrintSection
         case (Some(_), None, Some(_), Some(_)) => JsSuccess(())
         case (None, Some(_), None, None)       => JsSuccess(())
+        case (Some(_), None, _, None)          => JsSuccess(())
       }
 
     val dmsFormIdValidations: JsResult[Unit] =

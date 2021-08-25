@@ -221,10 +221,10 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
     }
   }
 
-  "handle an invalid upsert request with Destinations but DeclarationSection is missing" in {
+  "handle an upsert request with DeclarationSection missing" in {
     withFixture(
       Json.parse(
-        invalidRequestBodyWithDestinationsWithoutDeclarationSection(
+        validRequestBodyWithDestinationsWithoutDeclarationSection(
           "hmrc",
           "${user.enrolledIdentifier}",
           Some(""""serviceId": "someId",""")
@@ -235,7 +235,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
       val eventualResult = handler.futureInterpreter.handleRequest(templateRaw)
 
       whenReady(eventualResult.value) { response =>
-        response should matchPattern { case Left(UnexpectedState(_)) =>
+        response should matchPattern { case Right(()) =>
         }
       }
     }
@@ -804,7 +804,7 @@ class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers w
        |  }
        |}""".stripMargin
 
-  private def invalidRequestBodyWithDestinationsWithoutDeclarationSection(
+  private def validRequestBodyWithDestinationsWithoutDeclarationSection(
     authModule: String,
     identifier: String,
     serviceId: Option[String]

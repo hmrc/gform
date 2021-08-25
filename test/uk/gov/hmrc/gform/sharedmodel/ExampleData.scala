@@ -134,10 +134,10 @@ trait ExampleAuthConfig extends DestinationGen {
       )
     )
 
-  def destinationList = DestinationList(NonEmptyList.of(hmrcDms), ackSection, decSection)
+  def destinationList = DestinationList(NonEmptyList.of(hmrcDms), ackSection, Some(decSection))
 
   def destinationListWithGroupComponentInDecSection =
-    DestinationList(NonEmptyList.of(hmrcDms), ackSection, decSectionWithGroupComponent)
+    DestinationList(NonEmptyList.of(hmrcDms), ackSection, Some(decSectionWithGroupComponent))
 
   def serviceId = ServiceId("TestServiceId")
 

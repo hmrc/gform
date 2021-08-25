@@ -24,8 +24,8 @@ import JsonUtils._
 
 sealed trait Destinations extends Product with Serializable {
   def allFormComponents: List[FormComponent] = this match {
-    case Destinations.DestinationList(_, acknowledgementSection, declarationSection) =>
-      acknowledgementSection.fields ++ declarationSection.fields
+    case Destinations.DestinationList(_, acknowledgementSection, declarationSection: Option[DeclarationSection]) =>
+      acknowledgementSection.fields ++ declarationSection.toList.flatMap(_.fields)
     case Destinations.DestinationPrint(_, _, _) => Nil
   }
 }
@@ -35,7 +35,7 @@ object Destinations {
   case class DestinationList(
     destinations: NonEmptyList[Destination],
     acknowledgementSection: AcknowledgementSection,
-    declarationSection: DeclarationSection
+    declarationSection: Option[DeclarationSection]
   ) extends Destinations
 
   case class DestinationPrint(
@@ -56,7 +56,7 @@ object Destinations {
 
   implicit val leafExprs: LeafExpr[Destinations] = (path: TemplatePath, t: Destinations) =>
     t match {
-      case DestinationList(destinations, acknowledgementSection, declarationSection) =>
+      case DestinationList(destinations, acknowledgementSection, declarationSection: Option[DeclarationSection]) =>
         LeafExpr(path + "destinations", destinations) ++
           LeafExpr(path + "declarationSection", declarationSection) ++
           LeafExpr(path + "acknowledgementSection", acknowledgementSection)

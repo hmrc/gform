@@ -419,13 +419,15 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
           )
         ),
         ackSection,
-        DeclarationSection(
-          toSmartString("Declaration"),
-          None,
-          None,
-          None,
-          Some(toSmartString("ContinueLabel")),
-          Nil
+        Some(
+          DeclarationSection(
+            toSmartString("Declaration"),
+            None,
+            None,
+            None,
+            Some(toSmartString("ContinueLabel")),
+            Nil
+          )
         )
       ),
     HmrcAgentWithEnrolmentModule(

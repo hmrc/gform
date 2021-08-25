@@ -200,13 +200,15 @@ class TemplateValidatorSpec extends Spec {
       DestinationList(
         NonEmptyList.of(hmrcDms),
         ackSection,
-        DeclarationSection(
-          toSmartString("Declaration"),
-          None,
-          None,
-          None,
-          Some(toSmartString("ContinueLabel")),
-          List(mkFormComponent("declarationFullName", Value))
+        Some(
+          DeclarationSection(
+            toSmartString("Declaration"),
+            None,
+            None,
+            None,
+            Some(toSmartString("ContinueLabel")),
+            List(mkFormComponent("declarationFullName", Value))
+          )
         )
       )
 

@@ -38,7 +38,11 @@ class DestinationsValidatorSpec extends Spec with ScalaCheckDrivenPropertyChecks
           whenever(uniqueD.id =!= id1 && uniqueD.id =!= id2) {
             val destinations =
               Destinations
-                .DestinationList(uniqueD :: d1WithId1 ::: d2WithId1 ::: d1WithId2 ::: d2WithId2, ackSection, decSection)
+                .DestinationList(
+                  uniqueD :: d1WithId1 ::: d2WithId1 ::: d1WithId2 ::: d2WithId2,
+                  ackSection,
+                  Some(decSection)
+                )
 
             DestinationsValidator.validateUniqueDestinationIds(destinations) should be(
               Invalid(DestinationsValidator.someDestinationIdsAreUsedMoreThanOnce(Set(id1, id2)))
@@ -53,7 +57,7 @@ class DestinationsValidatorSpec extends Spec with ScalaCheckDrivenPropertyChecks
     forAll(destinationGen, destinationGen) { (d1, d2) =>
       whenever(d1.id != d2.id) {
         DestinationsValidator.validateUniqueDestinationIds(
-          Destinations.DestinationList(NonEmptyList.of(d1, d2), ackSection, decSection)
+          Destinations.DestinationList(NonEmptyList.of(d1, d2), ackSection, Some(decSection))
         ) should be(Valid)
       }
     }
@@ -61,7 +65,7 @@ class DestinationsValidatorSpec extends Spec with ScalaCheckDrivenPropertyChecks
 
   "validateNoGroupInDeclaration" should "return an error when there is a Group component in Declaration section" in {
     val groupComponentId = DestinationsValidator.extractGroupComponentId(
-      destinationListWithGroupComponentInDecSection.declarationSection.fields
+      destinationListWithGroupComponentInDecSection.declarationSection.toList.flatMap(_.fields)
     )
 
     DestinationsValidator.validateNoGroupInDeclaration(destinationListWithGroupComponentInDecSection) should be(
