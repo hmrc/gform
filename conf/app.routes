@@ -3,13 +3,13 @@
 POST          /new-form/:formTemplateId/:userId                                                         uk.gov.hmrc.gform.form.FormController.newForm(userId: UserId, formTemplateId: FormTemplateId, affinityGroup: Option[AffinityGroup] = None)
 POST          /new-form/:formTemplateId/:userId/:affinityGroup                                          uk.gov.hmrc.gform.form.FormController.newForm(userId: UserId, formTemplateId: FormTemplateId, affinityGroup: Option[AffinityGroup])
 
-PUT           /forms/:userId/:formTemplateId                                                            uk.gov.hmrc.gform.form.FormController.updateFormDataPlain(userId: UserId, formTemplateId: FormTemplateId)
-PUT           /forms/:userId/:formTemplateId/:accessCode                                                uk.gov.hmrc.gform.form.FormController.updateFormData(userId: UserId, formTemplateId: FormTemplateId, accessCode: AccessCode)
+PUT           /forms/:userId/:formTemplateId                                                            uk.gov.hmrc.gform.form.FormController.updateFormDataPlain(userId: UserId, formTemplateId: String)
+PUT           /forms/:userId/:formTemplateId/:accessCode                                                uk.gov.hmrc.gform.form.FormController.updateFormData(userId: UserId, formTemplateId: String, accessCode: AccessCode)
 
 GET           /forms/all/:userId/:formTemplateId                                                        uk.gov.hmrc.gform.form.FormController.getAll(userId: UserId, formTemplateId: FormTemplateId)
 
-GET           /forms/:userId/:formTemplateId                                                            uk.gov.hmrc.gform.form.FormController.getPlain(userId: UserId, formTemplateId: FormTemplateId)
-GET           /forms/:userId/:formTemplateId/:accessCode                                                uk.gov.hmrc.gform.form.FormController.get(userId: UserId, formTemplateId: FormTemplateId, accessCode: AccessCode)
+GET           /forms/:userId/:formTemplateId                                                            uk.gov.hmrc.gform.form.FormController.getPlain(userId: UserId, formTemplateId: String)
+GET           /forms/:userId/:formTemplateId/:accessCode                                                uk.gov.hmrc.gform.form.FormController.get(userId: UserId, formTemplateId: String, accessCode: AccessCode)
 
 POST          /forms/:formId/delete                                                                     uk.gov.hmrc.gform.form.FormController.delete(formId: FormId)
 
