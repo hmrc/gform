@@ -56,11 +56,11 @@ class FormController(
         .asOkJson
     }
 
-  def getPlain(userId: UserId, formTemplateId: FormTemplateId): Action[AnyContent] =
-    getByFormIdData(FormIdData.Plain(userId, formTemplateId))
+  def getPlain(userId: UserId, formTemplateId: String): Action[AnyContent] =
+    getByFormIdData(FormIdData.Plain(userId, FormTemplateId(formTemplateId)))
 
-  def get(userId: UserId, formTemplateId: FormTemplateId, accessCode: AccessCode): Action[AnyContent] =
-    getByFormIdData(FormIdData.WithAccessCode(userId, formTemplateId, accessCode))
+  def get(userId: UserId, formTemplateId: String, accessCode: AccessCode): Action[AnyContent] =
+    getByFormIdData(FormIdData.WithAccessCode(userId, FormTemplateId(formTemplateId), accessCode))
 
   private def getByFormIdData(formIdData: FormIdData): Action[AnyContent] = formAction("getByFormIdData", formIdData) {
     implicit request =>
@@ -73,10 +73,10 @@ class FormController(
         }
   }
 
-  def updateFormDataPlain(userId: UserId, formTemplateId: FormTemplateId): Action[UserData] =
-    updateFormDataByFormIdData(FormIdData.Plain(userId, formTemplateId))
-  def updateFormData(userId: UserId, formTemplateId: FormTemplateId, accessCode: AccessCode): Action[UserData] =
-    updateFormDataByFormIdData(FormIdData.WithAccessCode(userId, formTemplateId, accessCode))
+  def updateFormDataPlain(userId: UserId, formTemplateId: String): Action[UserData] =
+    updateFormDataByFormIdData(FormIdData.Plain(userId, FormTemplateId(formTemplateId)))
+  def updateFormData(userId: UserId, formTemplateId: String, accessCode: AccessCode): Action[UserData] =
+    updateFormDataByFormIdData(FormIdData.WithAccessCode(userId, FormTemplateId(formTemplateId), accessCode))
 
   private def updateFormDataByFormIdData(formIdData: FormIdData): Action[UserData] =
     formAction(parse.json[UserData])("updateFormDataByFormIdData", formIdData) { implicit request =>
