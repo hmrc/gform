@@ -33,35 +33,39 @@ trait RequestHandlerAlg[F[_]] {
 }
 
 class FormTemplatesControllerRequestHandler[F[_]](
-  verifyAndSave: FormTemplate => Substitutions => FOpt[Unit],
+  verifyAndSave: FormTemplate => ExprSubstitutions => BooleanExprSubstitutions => FOpt[Unit],
   save: FormTemplateRaw => FOpt[Unit]
 )(implicit ec: ExecutionContext) {
 
   val futureInterpreter = new RequestHandlerAlg[FOpt] {
     override def handleRequest(templateRaw: FormTemplateRaw): FOpt[Unit] = {
 
-      val expressionsContextOpt: Opt[Substitutions] = Substitutions.from(templateRaw)
+      val expressionsContextOpt: Opt[ExprSubstitutions] = ExprSubstitutions.from(templateRaw)
+
+      val booleanExpressionsContextOpt: Opt[BooleanExprSubstitutions] =
+        BooleanExprSubstitutions.from(templateRaw)
 
       val formTemplateOpt: Opt[FormTemplate] = FormTemplate
         .transformAndReads(templateRaw.value)
         .fold(errors => UnexpectedState(errors.toString()).asLeft, valid => valid.asRight)
 
       val formTemplateWithSubstitutions = for {
-        expressionsContext <- expressionsContextOpt
-        formTemplate       <- formTemplateOpt
-      } yield (formTemplate, expressionsContext)
+        expressionsContext        <- expressionsContextOpt
+        booleanExpressionsContext <- booleanExpressionsContextOpt
+        formTemplate              <- formTemplateOpt
+      } yield (formTemplate, expressionsContext, booleanExpressionsContext)
 
       processAndPersistTemplate(formTemplateWithSubstitutions, templateRaw.lowerCaseId)
     }
   }
 
   private def processAndPersistTemplate(
-    formTemplateOpt: Opt[(FormTemplate, Substitutions)],
+    formTemplateOpt: Opt[(FormTemplate, ExprSubstitutions, BooleanExprSubstitutions)],
     templateRaw: FormTemplateRaw
   ): FOpt[Unit] =
     for {
       ft <- fromOptA(formTemplateOpt)
-      _  <- verifyAndSave(ft._1)(ft._2)
+      _  <- verifyAndSave(ft._1)(ft._2)(ft._3)
       _  <- save(templateRaw)
     } yield ()
 }

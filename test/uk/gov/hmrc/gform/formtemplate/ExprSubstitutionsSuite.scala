@@ -22,25 +22,25 @@ import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
-class SubstitutionsSuite extends FunSuite {
+class ExprSubstitutionsSuite extends FunSuite {
 
-  private def toSubstitutions(jsonStr: String): Opt[Substitutions] = {
+  private def toSubstitutions(jsonStr: String): Opt[ExprSubstitutions] = {
     val json: JsObject = Json.parse(jsonStr).as[JsObject]
 
-    Substitutions.from(FormTemplateRaw(json))
+    ExprSubstitutions.from(FormTemplateRaw(json))
   }
 
   test(
-    "Substitutions.from should return empty Substitutions when top-level field 'expressions' is not present in the json"
+    "ExprSubstitutions.from should return empty ExprSubstitutions when top-level field 'expressions' is not present in the json"
   ) {
     val inputJson = "{}"
 
-    val res: Opt[Substitutions] = toSubstitutions(inputJson)
+    val res: Opt[ExprSubstitutions] = toSubstitutions(inputJson)
 
-    assertEquals(res, Right(Substitutions.empty))
+    assertEquals(res, Right(ExprSubstitutions.empty))
   }
 
-  test("Substitutions.from should parse valid expressions") {
+  test("ExprSubstitutions.from should parse valid expressions") {
     val inputJson =
       """|{
          |  "expressions": {
@@ -49,9 +49,9 @@ class SubstitutionsSuite extends FunSuite {
          |  }
          |}""".stripMargin
 
-    val res: Opt[Substitutions] = toSubstitutions(inputJson)
+    val res: Opt[ExprSubstitutions] = toSubstitutions(inputJson)
 
-    val expected = Substitutions(
+    val expected = ExprSubstitutions(
       Map(
         ExpressionId("isHappy") -> IfElse(
           MatchRegex(FormCtx(FormComponentId("textBox1")), "[a-zA-Z0-9]{6}".r),
@@ -69,7 +69,7 @@ class SubstitutionsSuite extends FunSuite {
 
   }
 
-  test("Substitutions.from should fail when on invalid expressions") {
+  test("ExprSubstitutions.from should fail when on invalid expressions") {
     val inputJson =
       """|{
          |  "expressions": {
@@ -77,7 +77,7 @@ class SubstitutionsSuite extends FunSuite {
          |  }
          |}""".stripMargin
 
-    val res: Opt[Substitutions] = toSubstitutions(inputJson)
+    val res: Opt[ExprSubstitutions] = toSubstitutions(inputJson)
 
     val expected = Left(
       UnexpectedState(
@@ -92,13 +92,13 @@ class SubstitutionsSuite extends FunSuite {
 
   }
 
-  test("Substitutions.from should fail when top-level 'expressions' field is not JsObject") {
+  test("ExprSubstitutions.from should fail when top-level 'expressions' field is not JsObject") {
     val inputJson =
       """|{
          |  "expressions": "string-not-an-object"
          |}""".stripMargin
 
-    val res: Opt[Substitutions] = toSubstitutions(inputJson)
+    val res: Opt[ExprSubstitutions] = toSubstitutions(inputJson)
 
     val expected =
       Left(UnexpectedState("""Field 'expressions' needs to be a JsObject, but got JsString: "string-not-an-object""""))
@@ -106,7 +106,7 @@ class SubstitutionsSuite extends FunSuite {
     assertEquals(res, expected)
   }
 
-  test("Substitutions.from should fail when expression is not JsString") {
+  test("ExprSubstitutions.from should fail when expression is not JsString") {
     val inputJson =
       """|{
          |  "expressions": {
@@ -115,9 +115,9 @@ class SubstitutionsSuite extends FunSuite {
          |  }
          |}""".stripMargin
 
-    val res: Opt[Substitutions] = toSubstitutions(inputJson)
+    val res: Opt[ExprSubstitutions] = toSubstitutions(inputJson)
 
-    val expected = Left(UnexpectedState("Wrong expression, expected JsString, but got JsNumber: 123"))
+    val expected = Left(UnexpectedState("Wrong 'expressions', expected JsString, but got JsNumber: 123"))
 
     assertEquals(res, expected)
   }

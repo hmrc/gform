@@ -18,7 +18,6 @@ package uk.gov.hmrc.gform.formtemplate
 
 import cats.implicits._
 import scala.util.{ Failure, Success, Try }
-import shapeless.syntax.typeable._
 import uk.gov.hmrc.gform.core.{ FOpt, fromOptA }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
@@ -103,8 +102,7 @@ trait Rewriter {
     val ifElses: List[IfElse] =
       implicitly[LeafExpr[FormTemplate]]
         .exprs(TemplatePath.root, formTemplate)
-        .flatMap(_.expr.cast[IfElse])
-        .flatMap(_.ifElses) // If-Then-Else is recursive structure, we need to check all nested once as well
+        .flatMap(_.expr.ifElses)
 
     val includeIfs: List[IncludeIf] = formTemplate.sections.flatMap {
       case Section.NonRepeatingPage(page) => page.includeIf.toList
@@ -133,6 +131,12 @@ trait Rewriter {
         case Failure(f) =>
           Left(UnexpectedState(s"Expression '$exprString' is invalid. '$c' needs to be a number"))
       }
+
+    def invalidTopLevelBooleanExpr[A](id: BooleanExprId): Either[UnexpectedState, A] = Left(
+      UnexpectedState(
+        s"Top level 'booleanExpressions' named: ${id.id} is not defined."
+      )
+    )
 
     def rewrite(booleanExpr: BooleanExpr): Either[UnexpectedState, BooleanExpr] = booleanExpr match {
       case Not(booleanExpr) => rewrite(booleanExpr).map(Not(_))
@@ -179,7 +183,8 @@ trait Rewriter {
               validate(c, options.size, formComponentId, exprString, "Revealing choice").map(_ => rewriter)
             case otherwise => Right(be)
           }
-      case be => Right(be)
+      case TopLevelRef(id) => invalidTopLevelBooleanExpr(id)
+      case be              => Right(be)
     }
 
     type Possible[A] = Either[UnexpectedState, A]
@@ -202,8 +207,12 @@ trait Rewriter {
       ifElses.traverse { ifElse =>
         rewrite(ifElse.cond)
           .flatMap { booleanExpr =>
-            if (booleanExpr == ifElse.cond) Right(())
-            else
+            if (booleanExpr == ifElse.cond) {
+              booleanExpr match {
+                case TopLevelRef(id) => invalidTopLevelBooleanExpr(id)
+                case _               => Right(())
+              }
+            } else
               Left(
                 UnexpectedState(
                   "Operator '=' in combination with a choice component cannot be used in if-then-else expression. Use 'contains' operator instead. This is expression triggering this error: " + ifElse.cond

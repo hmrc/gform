@@ -31,7 +31,8 @@ trait FormTemplateAlgebra[F[_]] {
 
 class FormTemplateService(formTemplateRepo: Repo[FormTemplate], formTemplateRawRepo: Repo[FormTemplateRaw])(implicit
   ec: ExecutionContext
-) extends Verifier with Rewriter with SubstituteExpressions with FormTemplateAlgebra[Future] {
+) extends Verifier with Rewriter with SubstituteExpressions with SubstituteBooleanExprs
+    with FormTemplateAlgebra[Future] {
   private val logger = LoggerFactory.getLogger(getClass)
 
   def save(formTemplateRaw: FormTemplateRaw): FOpt[Unit] =
@@ -64,11 +65,18 @@ class FormTemplateService(formTemplateRepo: Repo[FormTemplate], formTemplateRawR
         }
       })
 
-  def verifyAndSave(formTemplate: FormTemplate)(expressionsContext: Substitutions): FOpt[Unit] = {
+  def verifyAndSave(
+    formTemplate: FormTemplate
+  )(
+    expressionsContext: ExprSubstitutions
+  )(
+    booleanExpressionsContext: BooleanExprSubstitutions
+  ): FOpt[Unit] = {
     val substitutedFormTemplate = substituteExpressions(formTemplate, expressionsContext)
+    val substitutedBooleanExprsFormTemplate = substituteBooleanExprs(substitutedFormTemplate, booleanExpressionsContext)
     for {
-      _                  <- verify(substitutedFormTemplate)
-      formTemplateToSave <- rewrite(substitutedFormTemplate)
+      _                  <- verify(substitutedBooleanExprsFormTemplate)
+      formTemplateToSave <- rewrite(substitutedBooleanExprsFormTemplate)
       _                  <- formTemplateRepo.replace(mkSpecimen(formTemplateToSave))
       res                <- formTemplateRepo.replace(formTemplateToSave)
     } yield res

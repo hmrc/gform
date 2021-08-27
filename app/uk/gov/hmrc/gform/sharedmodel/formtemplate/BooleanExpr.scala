@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
+import uk.gov.hmrc.gform.formtemplate.BooleanExprId
 import julienrf.json.derived
 import play.api.libs.json._
 import scala.util.matching.Regex
@@ -37,6 +38,10 @@ final case class MatchRegex(formCtx: FormCtx, regex: Regex) extends BooleanExpr
 
 final case class DateBefore(left: DateExpr, right: DateExpr) extends BooleanExpr
 final case class DateAfter(left: DateExpr, right: DateExpr) extends BooleanExpr
+
+// Instances of this class are eliminated in substitution process
+// So they never appear in MongoDB and thus don't need to be present on gform-frontend
+final case class TopLevelRef(booleanExprId: BooleanExprId) extends BooleanExpr
 
 final case class FormPhase(value: FormPhaseValue) extends BooleanExpr
 sealed trait FormPhaseValue
@@ -75,6 +80,7 @@ object BooleanExpr {
       case DateBefore(left: DateExpr, right: DateExpr)     => withPath(left.leafExprs ++ right.leafExprs: _*)
       case DateAfter(left: DateExpr, right: DateExpr)      => withPath(left.leafExprs ++ right.leafExprs: _*)
       case FormPhase(value: FormPhaseValue)                => Nil
+      case TopLevelRef(_)                                  => Nil
     }
     loop(be)
 
