@@ -32,7 +32,7 @@ import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.AvailableLanguages
 import uk.gov.hmrc.gform.sharedmodel.email.LocalisedEmailTemplateId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.{ GGLogin, NewForm, PageLink }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationId, Destinations }
@@ -707,6 +707,14 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
 
   it should "parse link.pageid as PageLink(PageId(pageid))" in {
     ValueParser.validate("${link.pageid}") shouldBe Right(TextExpression(LinkCtx(PageLink(PageId("pageid")))))
+  }
+
+  it should "parse link.newForm as PageLink(NewForm)" in {
+    ValueParser.validate("${link.newForm}") shouldBe Right(TextExpression(LinkCtx(NewForm)))
+  }
+
+  it should "parse link.ggLogin as PageLink(GGLogin)" in {
+    ValueParser.validate("${link.ggLogin}") shouldBe Right(TextExpression(LinkCtx(GGLogin)))
   }
 
 }

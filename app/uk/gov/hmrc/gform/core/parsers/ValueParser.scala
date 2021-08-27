@@ -149,6 +149,10 @@ object ValueParser {
     InternalLink.printAcknowledgementPdf
   } | "printSummaryPdf" ^^ { (loc, _) =>
     InternalLink.printSummaryPdf
+  } | "newForm" ^^ { (loc, _) =>
+    InternalLink.newForm
+  } | "ggLogin" ^^ { (loc, _) =>
+    InternalLink.ggLogin
   } | PageId.unanchoredIdValidation ^^ { (loc, id) =>
     PageLink(PageId(id))
   }
