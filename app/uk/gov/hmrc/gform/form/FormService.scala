@@ -22,7 +22,7 @@ import cats.syntax.eq._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.traverse._
-import uk.gov.hmrc.auth.core.AffinityGroup
+import uk.gov.hmrc.gform.sharedmodel.AffinityGroup
 import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
 import uk.gov.hmrc.gform.formmetadata.{ FormMetadata, FormMetadataAlgebra }
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra

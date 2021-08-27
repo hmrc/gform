@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory
 import play.api.http.HttpEntity
 import play.api.libs.json.Json
 import play.api.mvc._
-import uk.gov.hmrc.auth.core.AffinityGroup
+import uk.gov.hmrc.gform.sharedmodel.AffinityGroup
 import uk.gov.hmrc.gform.config.AppConfig
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra

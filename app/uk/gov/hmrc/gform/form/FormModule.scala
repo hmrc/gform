@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.form
 
-import uk.gov.hmrc.auth.core.AffinityGroup
+import uk.gov.hmrc.gform.sharedmodel.AffinityGroup
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.fileupload.FileUploadModule
