@@ -67,7 +67,8 @@ trait Rewriter {
   private def validateAndRewriteBooleanExprs(formTemplate: FormTemplate): Either[UnexpectedState, FormTemplate] = {
 
     val fcLookupDeclaration: Map[FormComponentId, ComponentType] = formTemplate.destinations match {
-      case dl: Destinations.DestinationList  => lookupFromPage(dl.declarationSection.fields)
+      case dl: Destinations.DestinationList =>
+        dl.declarationSection.fold(Map.empty[FormComponentId, ComponentType])(d => lookupFromPage(d.fields))
       case dp: Destinations.DestinationPrint => Map.empty[FormComponentId, ComponentType]
     }
 
@@ -80,7 +81,8 @@ trait Rewriter {
       }
 
     val validIfsDeclaration = formTemplate.destinations match {
-      case dl: Destinations.DestinationList  => dl.declarationSection.fields.flatMap(formComponentValidIf)
+      case dl: Destinations.DestinationList =>
+        dl.declarationSection.toList.flatMap(_.fields.flatMap(formComponentValidIf))
       case dp: Destinations.DestinationPrint => Nil
     }
 
@@ -262,7 +264,7 @@ trait Rewriter {
       def replaceDestinations(destinations: Destinations): Destinations = destinations match {
         case dl: Destinations.DestinationList =>
           dl.copy(
-            declarationSection = replaceDeclarationSection(dl.declarationSection),
+            declarationSection = dl.declarationSection.map(replaceDeclarationSection),
             acknowledgementSection = replaceAcknowledgementSection(dl.acknowledgementSection)
           )
         case dp: Destinations.DestinationPrint => dp

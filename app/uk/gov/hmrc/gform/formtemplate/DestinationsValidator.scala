@@ -42,7 +42,7 @@ object DestinationsValidator {
   def validateNoGroupInDeclaration(destinations: Destinations): ValidationResult = destinations match {
     case _: Destinations.DestinationPrint => Valid
     case destinationList: Destinations.DestinationList =>
-      val groupComponentId = extractGroupComponentId(destinationList.declarationSection.fields)
+      val groupComponentId = destinationList.declarationSection.flatMap(d => extractGroupComponentId(d.fields))
       groupComponentId match {
         case Some(id) => Invalid(groupComponentInDeclaration(id))
         case None     => Valid

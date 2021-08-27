@@ -810,7 +810,7 @@ class HandlebarsTemplateProcessorHelpersSpec extends Spec {
         val formTemplateWithDestination =
           formTemplate.copy(
             destinations =
-              Destinations.DestinationList(NonEmptyList.of(wrongDestination, destination), ackSection, decSection)
+              Destinations.DestinationList(NonEmptyList.of(wrongDestination, destination), ackSection, Some(decSection))
           )
 
         val tree: HandlebarsModelTree =

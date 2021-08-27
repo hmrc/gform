@@ -508,48 +508,6 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
-  it should "return validation error when destinations is present but declarationSection is missing" in {
-
-    val input = Json.parse("""
-                             |{
-                             |  "_id": "FooBar",
-                             |  "formCategory": "letter",
-                             |  "draftRetrievalMethod": "formAccessCodeForAgents",
-                             |  "showContinueOrDeletePage": "false",
-                             |  "parentFormSubmissionRefs": [
-                             |    "123",
-                             |    "456"
-                             |  ],
-                             |  "destinations": [
-                             |    {
-                             |      "id": "HMRCDMS",
-                             |      "type": "hmrcDms",
-                             |      "dmsFormId": "TST123",
-                             |      "customerId": "${auth.gg}",
-                             |      "classificationType": "BT-NRU-Environmental",
-                             |      "businessArea": "FinanceOpsCorpT"
-                             |    }
-                             |  ],
-                             |  "acknowledgementSection": {
-                             |    "shortName": "Acknowledgement Page",
-                             |    "title": "Acknowledgement Page",
-                             |    "fields": [
-                             |      {
-                             |        "type": "info",
-                             |        "id": "ackpageInfo",
-                             |        "label": "SomeContent",
-                             |        "infoText": "SomeContent"
-                             |      }
-                             |    ]
-                             |  }
-                             |}
-                           """.stripMargin)
-
-    FormTemplatesControllerRequestHandler.normaliseJSON(input) should be(
-      FormTemplatesControllerRequestHandler.mandatoryDeclarationForDestinationSection
-    )
-  }
-
   it should "return validation error when printSection is present and acknowledgementSection is also present" in {
 
     val input = Json.parse("""

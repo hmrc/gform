@@ -191,7 +191,7 @@ class DestinationsSubmitterSpec
   private def exampleTemplateWithDestinations(destination1: Destination, moreDestinations: Destination*): FormTemplate =
     formTemplate.copy(
       destinations =
-        Destinations.DestinationList(NonEmptyList.of(destination1, moreDestinations: _*), ackSection, decSection)
+        Destinations.DestinationList(NonEmptyList.of(destination1, moreDestinations: _*), ackSection, Some(decSection))
     )
 
   case class SubmitterParts[F[_]: Applicative](

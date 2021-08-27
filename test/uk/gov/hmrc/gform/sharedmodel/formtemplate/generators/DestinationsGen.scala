@@ -25,7 +25,7 @@ trait DestinationsGen {
   def destinationListGen: Gen[Destinations.DestinationList] =
     PrimitiveGen
       .oneOrMoreGen(DestinationGen.destinationGen)
-      .map(Destinations.DestinationList(_, ackSection, decSection))
+      .map(Destinations.DestinationList(_, ackSection, Some(decSection)))
 
   def destinationsGen: Gen[Destinations] =
     Gen.oneOf(destinationListGen, DestinationPrintGen.destinationPrintGen)
