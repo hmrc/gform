@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.gform.sharedmodel
 
-import uk.gov.hmrc.auth.core.AffinityGroup
-
 object AffinityGroupUtil {
 
   def affinityGroupNameO(affinityGroup: Option[AffinityGroup]): String = affinityGroup.fold("")(affinityGroupName)

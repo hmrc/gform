@@ -54,7 +54,7 @@ lazy val microservice = (project in file("."))
       compilerPlugin("com.github.ghik" % "silencer-plugin" % silencerVersion cross CrossVersion.full)
     ),
     routesImport ++= Seq(
-      "uk.gov.hmrc.auth.core.AffinityGroup",
+      "uk.gov.hmrc.gform.sharedmodel.AffinityGroup",
       "uk.gov.hmrc.gform.sharedmodel.notifier.NotifierEmailAddress",
       "uk.gov.hmrc.gform.sharedmodel.ValueClassBinder._",
       "uk.gov.hmrc.gform.sharedmodel._",
