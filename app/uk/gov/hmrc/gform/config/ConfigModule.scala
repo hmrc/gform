@@ -22,7 +22,7 @@ import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.playcomponents.PlayComponents
 import uk.gov.hmrc.gform.sharedmodel.config.ExposedConfig
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.ProfileName
-import uk.gov.hmrc.http.logging.Authorization
+import uk.gov.hmrc.http.Authorization
 import uk.gov.hmrc.play.audit.http.config.AuditingConfig
 import uk.gov.hmrc.play.bootstrap.config.{ AuditingConfigProvider, ControllerConfigs, ServicesConfig }
 

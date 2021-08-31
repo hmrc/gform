@@ -28,7 +28,6 @@ import uk.gov.hmrc.gform.sharedmodel.des.{ DesRegistrationRequest, DesRegistrati
 import uk.gov.hmrc.gform.sharedmodel._
 import uk.gov.hmrc.gform.wshttp.WSHttp
 import uk.gov.hmrc.http._
-import uk.gov.hmrc.http.logging.Authorization
 
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.reflect.runtime.universe.TypeTag
@@ -118,7 +117,7 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
     )
     val value = s"$baseUrl${desConfig.basePath}/enterprise/obligation-data/$idType/$idNumber/$regimeType?status=O"
     wSHttp.GET[Obligation](value).map(ServiceResponse.apply).recover {
-      case UpstreamErrorResponse.WithStatusCode(statusCode, _) if statusCode == StatusCodes.NotFound.intValue =>
+      case UpstreamErrorResponse.WithStatusCode(statusCode) if statusCode == StatusCodes.NotFound.intValue =>
         NotFound
       case other =>
         logger.error("Unknown problem when calling des obligation-data", other)

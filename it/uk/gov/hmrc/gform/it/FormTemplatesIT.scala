@@ -250,13 +250,15 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
       None,
       true
     )
-    destinationList.declarationSection shouldBe DeclarationSection(
-      toSmartString("Declaration Page"),
-      None,
-      None,
-      None,
-      None,
-      List.empty
+    destinationList.declarationSection shouldBe Some(
+      DeclarationSection(
+        toSmartString("Declaration Page"),
+        None,
+        None,
+        None,
+        None,
+        List.empty
+      )
     )
     val formTemplateRaw =
       formTemplateRawRepo.collection.find(Filters.equal("_id", formTemplateId)).toFuture().futureValue

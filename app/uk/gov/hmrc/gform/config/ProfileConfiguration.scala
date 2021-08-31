@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.config
 
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.ProfileName
-import uk.gov.hmrc.http.logging.Authorization
+import uk.gov.hmrc.http.Authorization
 
 case class ProfileConfiguration(
   name: ProfileName,

@@ -13,11 +13,11 @@ object Dependencies {
 
   val compile = Seq(
     ws,
-    "com.github.pureconfig"      %% "pureconfig"                % "0.14.0",
+    "com.github.pureconfig"      %% "pureconfig"                % "0.16.0",
     "uk.gov.hmrc.mongo"          %% "hmrc-mongo-play-27"        % hmrcMongoVersion,
-    "uk.gov.hmrc"                %% "http-caching-client"       % "9.2.0-play-27",
-    "uk.gov.hmrc"                %% "bootstrap-backend-play-27" % "3.2.0",
-    "uk.gov.hmrc"                %% "domain"                    % "5.10.0-play-27",
+    "uk.gov.hmrc"                %% "http-caching-client"       % "9.5.0-play-27",
+    "uk.gov.hmrc"                %% "bootstrap-backend-play-27" % "5.12.0",
+    "uk.gov.hmrc"                %% "domain"                    % "6.2.0-play-27",
     "com.typesafe.play"          %% "play-json"                 % "2.7.4",
     "com.codecommit"             %% "parseback-core"            % parsebackVersion,
     "com.codecommit"             %% "parseback-cats"            % parsebackVersion,
