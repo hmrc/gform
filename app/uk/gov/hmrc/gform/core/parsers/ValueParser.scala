@@ -149,10 +149,12 @@ object ValueParser {
     InternalLink.printAcknowledgementPdf
   } | "printSummaryPdf" ^^ { (loc, _) =>
     InternalLink.printSummaryPdf
+  } | "newForm" ~ "." ~ FormTemplateId.unanchoredIdValidation ^^ { (loc, _, _, id) =>
+    InternalLink.NewForm(FormTemplateId(id))
   } | "newForm" ^^ { (loc, _) =>
     InternalLink.newForm
-  } | "ggLogin" ^^ { (loc, _) =>
-    InternalLink.ggLogin
+  } | "newSession" ^^ { (loc, _) =>
+    InternalLink.newSession
   } | PageId.unanchoredIdValidation ^^ { (loc, id) =>
     PageLink(PageId(id))
   }

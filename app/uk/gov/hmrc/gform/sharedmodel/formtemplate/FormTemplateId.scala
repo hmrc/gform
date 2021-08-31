@@ -20,9 +20,14 @@ import cats.Show
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
 
+import scala.util.matching.Regex
+
 case class FormTemplateId(value: String) extends AnyVal
 
 object FormTemplateId {
+
+  private val idValidation: String = "[-_a-zA-Z0-9]+"
+  val unanchoredIdValidation: Regex = s"""$idValidation""".r
 
   implicit val show: Show[FormTemplateId] = Show.show(_.value)
 

@@ -32,7 +32,7 @@ import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.AvailableLanguages
 import uk.gov.hmrc.gform.sharedmodel.email.LocalisedEmailTemplateId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.{ GGLogin, NewForm, PageLink }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.{ NewForm, NewSession, PageLink }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationId, Destinations }
@@ -713,8 +713,14 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     ValueParser.validate("${link.newForm}") shouldBe Right(TextExpression(LinkCtx(NewForm)))
   }
 
-  it should "parse link.ggLogin as PageLink(GGLogin)" in {
-    ValueParser.validate("${link.ggLogin}") shouldBe Right(TextExpression(LinkCtx(GGLogin)))
+  it should "parse link.newForm.xxxx as PageLink(NewForm(xxxx))" in {
+    ValueParser.validate("${link.newForm.abc-def_123}") shouldBe Right(
+      TextExpression(LinkCtx(NewForm(FormTemplateId("abc-def_123"))))
+    )
+  }
+
+  it should "parse link.newSession as PageLink(NewSession)" in {
+    ValueParser.validate("${link.newSession}") shouldBe Right(TextExpression(LinkCtx(NewSession)))
   }
 
 }
