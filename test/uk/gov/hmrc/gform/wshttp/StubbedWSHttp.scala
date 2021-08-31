@@ -36,7 +36,7 @@ object TestWSHttp extends WSHttp {
 
   override def appName: String = ???
 
-  override lazy val configuration: Option[Config] = None
+  override def configuration: Config = ???
 
   override val hooks: Seq[HttpHook] = Seq.empty
 

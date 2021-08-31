@@ -68,7 +68,7 @@ class FormController(
         .get(formIdData)
         .asOkJson
         .recover {
-          case UpstreamErrorResponse.WithStatusCode(statusCode, _) if statusCode == StatusCodes.NotFound.intValue =>
+          case UpstreamErrorResponse.WithStatusCode(statusCode) if statusCode == StatusCodes.NotFound.intValue =>
             Result(header = ResponseHeader(NOT_FOUND), body = HttpEntity.NoEntity)
         }
   }

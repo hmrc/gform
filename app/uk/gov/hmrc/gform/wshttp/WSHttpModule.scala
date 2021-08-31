@@ -29,7 +29,7 @@ class WSHttpModule(auditingModule: AuditingModule, configModule: ConfigModule, p
   val auditableWSHttp: WSHttp = new WSHttpImpl(
     configModule.appConfig.appName,
     auditingModule.auditConnector,
-    Some(configModule.configuration.underlying),
+    configModule.configuration.underlying,
     playComponents.builtInComponents.actorSystem,
     playComponents.wsClient
   )

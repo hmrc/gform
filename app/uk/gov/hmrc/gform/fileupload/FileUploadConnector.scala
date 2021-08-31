@@ -85,7 +85,7 @@ class FileUploadConnector(config: FUConfig, wSHttp: WSHttp, timeProvider: TimePr
 
     val url = s"$baseUrl/file-upload/envelopes/${envelopeId.value}/files/${fileId.value}/content"
     wSHttp
-      .buildRequest(url)
+      .buildRequest(url, Seq.empty[(String, String)])
       .get
       .flatMap { response =>
         if (response.status < 200 || response.status > 299)

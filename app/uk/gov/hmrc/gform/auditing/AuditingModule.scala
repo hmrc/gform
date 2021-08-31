@@ -20,23 +20,40 @@ import play.api.inject.ApplicationLifecycle
 import play.api.mvc.Headers
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.config.ConfigModule
+import uk.gov.hmrc.gform.graphite.GraphiteModule
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.play.bootstrap.audit.DefaultAuditConnector
+import uk.gov.hmrc.play.audit.http.connector.{ AuditConnector, DatastreamMetrics }
+import uk.gov.hmrc.play.bootstrap.audit.{ DefaultAuditChannel, DefaultAuditConnector }
 import uk.gov.hmrc.play.bootstrap.backend.filters.{ BackendAuditFilter, DefaultBackendAuditFilter }
 import uk.gov.hmrc.play.bootstrap.config.DefaultHttpAuditEvent
 
 import scala.concurrent.ExecutionContext
 
-class AuditingModule(configModule: ConfigModule, akkaModule: AkkaModule, applicationLifecycle: ApplicationLifecycle)(
-  implicit ec: ExecutionContext
+class AuditingModule(
+  configModule: ConfigModule,
+  graphiteModule: GraphiteModule,
+  akkaModule: AkkaModule,
+  applicationLifecycle: ApplicationLifecycle
+)(implicit
+  ec: ExecutionContext
 ) {
   self =>
 
+  val datastreamMetrics: DatastreamMetrics = graphiteModule.datastreamMetrics
+
+  val defaultAuditChannel =
+    new DefaultAuditChannel(
+      configModule.auditingConfig,
+      akkaModule.materializer,
+      applicationLifecycle,
+      datastreamMetrics
+    )
+
   val auditConnector: AuditConnector =
-    new DefaultAuditConnector(configModule.auditingConfig, akkaModule.materializer, applicationLifecycle)
+    new DefaultAuditConnector(configModule.auditingConfig, defaultAuditChannel, applicationLifecycle, datastreamMetrics)
 
   val microserviceAuditFilter: BackendAuditFilter = new DefaultBackendAuditFilter(
+    configModule.configuration,
     configModule.controllerConfigs,
     auditConnector,
     new DefaultHttpAuditEvent(configModule.appConfig.appName),
@@ -47,7 +64,11 @@ class AuditingModule(configModule: ConfigModule, akkaModule: AkkaModule, applica
 object loggingHelpers {
   def cleanHeaders(headers: Headers) =
     s"headers: '${headers.remove("Authorization", "token", "customerId").toSimpleMap.toString()}'"
-  def cleanHeaderCarrierHeader(hc: HeaderCarrier): String =
-    s"headers, sessionId: '${hc.sessionId.getOrElse("")}', deviceId: '${hc.deviceID.getOrElse("")}' requestId: '${hc.requestId
-      .getOrElse("")}', request chain: '${hc.requestChain.value}'"
+  def cleanHeaderCarrierHeader(hc: HeaderCarrier): String = {
+    val sessionId = hc.sessionId.getOrElse("")
+    val deviceId = hc.deviceID.getOrElse("")
+    val requestId = hc.requestId.getOrElse("")
+    val requestChain = hc.requestChain.value
+    s"headers, sessionId: '$sessionId', deviceId: '$deviceId' requestId: '$requestId', request chain: '$requestChain'"
+  }
 }

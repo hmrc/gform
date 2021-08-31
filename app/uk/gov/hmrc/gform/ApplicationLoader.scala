@@ -85,7 +85,9 @@ class ApplicationModule(context: Context)
 
   protected val configModule = new ConfigModule(configuration, playComponents, controllerComponents, appName)
   private val metricsModule = new MetricsModule(configModule, playComponents, akkaModule, executionContext)
-  protected val auditingModule = new AuditingModule(configModule, akkaModule, applicationLifecycle)
+  private val graphiteModule = new GraphiteModule(environment, configuration, applicationLifecycle, metricsModule)
+  protected val auditingModule =
+    new AuditingModule(configModule, graphiteModule, akkaModule, applicationLifecycle)
   protected val wSHttpModule = new WSHttpModule(auditingModule, configModule, playComponents)
   private val proxyModule = new ProxyModule(configModule)
   private val notifierModule = new NotifierModule(configModule, proxyModule)
@@ -167,9 +169,6 @@ class ApplicationModule(context: Context)
       destinationModule,
       controllerComponents
     )
-
-  // Execute side effects
-  new GraphiteModule(environment, configuration, applicationLifecycle, metricsModule)
 
   val dbLookupModule = new DbLookupModule(controllerComponents, mongoModule)
 

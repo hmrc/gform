@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.submissionconsolidator
 
 import akka.actor.ActorSystem
 import com.github.tomakehurst.wiremock.client.WireMock._
-import com.typesafe.config.Config
+import com.typesafe.config.{ Config, ConfigFactory }
 import org.scalacheck.Gen
 import org.scalacheck.rng.Seed
 import org.scalamock.scalatest.MockFactory
@@ -45,7 +45,7 @@ class SubmissionConsolidatorConnectorSpec
   val wsHttp: WSHttp = new WSHttp {
     override val appName: String = "SubmissionConsolidatorConnectorSpec"
     override val actorSystem: ActorSystem = _actorSystem
-    override val configuration: Option[Config] = None
+    override val configuration: Config = ConfigFactory.load()
     override val auditConnector: AuditConnector = mock[AuditConnector]
     override val hooks: Seq[HttpHook] = Seq.empty
     override val wsClient: WSClient = _wsClient
