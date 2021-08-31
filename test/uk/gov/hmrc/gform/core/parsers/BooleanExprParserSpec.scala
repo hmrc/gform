@@ -219,7 +219,7 @@ class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues wit
     res should be('left)
 
     res.left.value match {
-      case UnexpectedState(msg) => spacesBeforeCaret(msg) shouldBe "${abc".length
+      case UnexpectedState(msg) => spacesBeforeCaret(msg) shouldBe "${abc|".length
       case _                    => fail("${expected an UnexpectedState}")
     }
 

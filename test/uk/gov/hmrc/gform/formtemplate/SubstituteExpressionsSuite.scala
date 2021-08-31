@@ -49,7 +49,7 @@ class SubstituteExpressionsSuite extends FunSuite with FormTemplateSupport {
 
     val sustitute = Add(Constant("1"), Constant("2"))
 
-    val substitutions = Substitutions(
+    val substitutions = ExprSubstitutions(
       Map(ExpressionId("isHappy") -> sustitute)
     )
 
@@ -198,14 +198,15 @@ class SubstituteExpressionsSuite extends FunSuite with FormTemplateSupport {
     }
   }
 
-  private def toFormTemplateAndSubstitutions[A](jsonStr: String)(f: (FormTemplate, Substitutions) => A) = {
+  private def toFormTemplateAndSubstitutions[A](jsonStr: String)(f: (FormTemplate, ExprSubstitutions) => A) = {
     val maybeNormalisedJson = FormTemplatesControllerRequestHandler.normaliseJSON(Json.parse(jsonStr))
 
     maybeNormalisedJson match {
       case JsError(error) => fail(s"Failed to normalise json $error")
       case JsSuccess(normalisedJson, _) =>
         val formTemplate: FormTemplate = normalisedJson.as[FormTemplate]
-        val maybeSubstitutions: Opt[Substitutions] = Substitutions.from(FormTemplateRaw(normalisedJson.as[JsObject]))
+        val maybeSubstitutions: Opt[ExprSubstitutions] =
+          ExprSubstitutions.from(FormTemplateRaw(normalisedJson.as[JsObject]))
 
         maybeSubstitutions match {
           case Left(unexpectedState) => fail(unexpectedState.error)

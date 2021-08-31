@@ -21,6 +21,7 @@ import scala.util.matching.Regex
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.BasicParsers._
 import uk.gov.hmrc.gform.core.parsers.ValueParser._
+import uk.gov.hmrc.gform.formtemplate.BooleanExprId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 object BooleanExprParser {
@@ -41,6 +42,9 @@ object BooleanExprParser {
     "no" ^^^ IsFalse |
     "form.phase.is.instructionPDF" ^^ { (loc, _) =>
       FormPhase(InstructionPDF)
+    } |
+    FormComponentId.unanchoredIdValidation ^^ { (_, fcId) =>
+      TopLevelRef(BooleanExprId(fcId))
     } |
     "(" ~> p4 <~ ")"
 

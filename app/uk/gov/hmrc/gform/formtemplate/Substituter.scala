@@ -21,125 +21,65 @@ import uk.gov.hmrc.gform.sharedmodel.SmartString
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 
-trait Substituter[T] {
-  def substitute(substitutions: Substitutions, t: T): T
+trait Substituter[A, T] {
+  def substitute(substitutions: A, t: T): T
 }
 
 object Substituter {
 
-  implicit private class SubstituterSyntax[T: Substituter](t: T) {
-    def apply(substitutions: Substitutions): T = Substituter[T].substitute(substitutions, t)
+  implicit class SubstituterSyntax[A, T](t: T)(implicit ev: Substituter[A, T]) {
+    def apply(substitutions: A): T = Substituter[A, T].substitute(substitutions, t)
   }
 
-  def apply[T](implicit substituter: Substituter[T]): Substituter[T] = substituter
+  def apply[A, T](implicit substituter: Substituter[A, T]): Substituter[A, T] = substituter
 
-  implicit def nonEmptyListSubstituter[T: Substituter] = new Substituter[NonEmptyList[T]] {
-    def substitute(substitutions: Substitutions, ts: NonEmptyList[T]): NonEmptyList[T] = {
-      val substituter = implicitly[Substituter[T]]
+  implicit def nonEmptyListSubstituter[A, T](implicit ev: Substituter[A, T]) =
+    new Substituter[A, NonEmptyList[T]] {
+      def substitute(substitutions: A, ts: NonEmptyList[T]): NonEmptyList[T] = {
+        val substituter = implicitly[Substituter[A, T]]
+        ts.map(t => substituter.substitute(substitutions, t))
+      }
+    }
+
+  implicit def listSubstituter[A, T](implicit ev: Substituter[A, T]) = new Substituter[A, List[T]] {
+    def substitute(substitutions: A, ts: List[T]): List[T] = {
+      val substituter = implicitly[Substituter[A, T]]
+      ts.map(t => substituter.substitute(substitutions, t))
+    }
+  }
+  implicit def optionSubstituter[A, T](implicit ev: Substituter[A, T]) = new Substituter[A, Option[T]] {
+    def substitute(substitutions: A, ts: Option[T]): Option[T] = {
+      val substituter = implicitly[Substituter[A, T]]
       ts.map(t => substituter.substitute(substitutions, t))
     }
   }
 
-  implicit def listSubstituter[T: Substituter] = new Substituter[List[T]] {
-    def substitute(substitutions: Substitutions, ts: List[T]): List[T] = {
-      val substituter = implicitly[Substituter[T]]
-      ts.map(t => substituter.substitute(substitutions, t))
-    }
-  }
-  implicit def optionSubstituter[T: Substituter] = new Substituter[Option[T]] {
-    def substitute(substitutions: Substitutions, ts: Option[T]): Option[T] = {
-      val substituter = implicitly[Substituter[T]]
-      ts.map(t => substituter.substitute(substitutions, t))
-    }
-  }
+  implicit def smartStringSubstituter[A](implicit ev: Substituter[A, Expr]): Substituter[A, SmartString] =
+    (substitutions, t) =>
+      t.copy(
+        interpolations = t.interpolations(substitutions)
+      )
 
-  implicit val exprSubstituter: Substituter[Expr] = new Substituter[Expr] {
-    def substitute(substitutions: Substitutions, t: Expr): Expr = t match {
-      case Else(l, r)        => Else(substitute(substitutions, l), substitute(substitutions, r))
-      case Add(l, r)         => Add(substitute(substitutions, l), substitute(substitutions, r))
-      case Multiply(l, r)    => Multiply(substitute(substitutions, l), substitute(substitutions, r))
-      case Subtraction(l, r) => Subtraction(substitute(substitutions, l), substitute(substitutions, r))
-      case Period(l, r)      => Period(substitute(substitutions, l), substitute(substitutions, r))
-      case Sum(l)            => Sum(substitute(substitutions, l))
-      case PeriodExt(p, pe)  => PeriodExt(substitute(substitutions, p), pe)
-      case DateCtx(dateExpr) => DateCtx(dateExpr(substitutions))
-      case i @ IfElse(cond, l, r) =>
-        IfElse(cond(substitutions), substitute(substitutions, l), substitute(substitutions, r))
-      case f @ FormCtx(formComponentId) =>
-        // Replace FormComponentId with top level expression if one exists
-        substitutions.expressions.getOrElse(ExpressionId(formComponentId.value), f)
-      case AddressLens(_, _)            => t
-      case AuthCtx(_)                   => t
-      case Constant(_)                  => t
-      case Count(_)                     => t
-      case FormTemplateCtx(_)           => t
-      case HmrcRosmRegistrationCheck(_) => t
-      case LangCtx                      => t
-      case LinkCtx(_)                   => t
-      case ParamCtx(_)                  => t
-      case PeriodValue(_)               => t
-      case UserCtx(_)                   => t
-      case Value                        => t
-    }
-  }
+  implicit def includeIfSubstituter[A](implicit
+    ev: Substituter[A, BooleanExpr]
+  ): Substituter[A, IncludeIf] = (substitutions, t) => t.copy(booleanExpr = t.booleanExpr(substitutions))
 
-  implicit val smartStringSubstituter: Substituter[SmartString] = (substitutions, t) =>
-    t.copy(
-      interpolations = t.interpolations(substitutions)
-    )
+  implicit def validIfSubstituter[A](implicit
+    ev: Substituter[A, BooleanExpr]
+  ): Substituter[A, ValidIf] = (substitutions, t) => t.copy(booleanExpr = t.booleanExpr(substitutions))
 
-  implicit val dateExprSubstituter: Substituter[DateExpr] = (substitutions, t) =>
-    t match {
-      case d @ DateFormCtxVar(FormCtx(formComponentId)) =>
-        substitutions.expressions.get(ExpressionId(formComponentId.value)) match {
-          case Some(DateCtx(dateExpr)) => dateExpr
-          case Some(ctx @ FormCtx(_))  => DateFormCtxVar(ctx)
-          case here                    => d
-        }
-      case d @ DateValueExpr(_) => d
-      case DateExprWithOffset(dExpr, offset) =>
-        dExpr(substitutions) match {
-          case DateExprWithOffset(expr, innerOffset) => DateExprWithOffset(expr, innerOffset + offset)
-          case other                                 => DateExprWithOffset(other, offset)
-        }
-    }
-
-  implicit val booleanExprSubstituter: Substituter[BooleanExpr] = new Substituter[BooleanExpr] {
-    def substitute(substitutions: Substitutions, t: BooleanExpr): BooleanExpr = t match {
-      case Equals(l, r)                     => Equals(l(substitutions), r(substitutions))
-      case GreaterThan(l, r)                => GreaterThan(l(substitutions), r(substitutions))
-      case GreaterThanOrEquals(l, r)        => GreaterThanOrEquals(l(substitutions), r(substitutions))
-      case LessThan(l, r)                   => LessThan(l(substitutions), r(substitutions))
-      case LessThanOrEquals(l, r)           => LessThanOrEquals(l(substitutions), r(substitutions))
-      case Not(e)                           => Not(substitute(substitutions, e))
-      case Or(left, right)                  => Or(substitute(substitutions, left), substitute(substitutions, right))
-      case And(left, right)                 => And(substitute(substitutions, left), substitute(substitutions, right))
-      case IsTrue                           => IsTrue
-      case IsFalse                          => IsFalse
-      case Contains(multiValueField, value) => Contains(multiValueField, value(substitutions))
-      case In(value, dataSource)            => In(value(substitutions), dataSource)
-      case m @ MatchRegex(formCtx, regex)   => m
-      case DateBefore(l, r)                 => DateBefore(l(substitutions), r(substitutions))
-      case DateAfter(l, r)                  => DateAfter(l(substitutions), r(substitutions))
-      case f @ FormPhase(value)             => f
-    }
-  }
-
-  implicit val includeIfSubstituter: Substituter[IncludeIf] = (substitutions, t) =>
-    t.copy(booleanExpr = t.booleanExpr(substitutions))
-
-  implicit val validIfSubstituter: Substituter[ValidIf] = (substitutions, t) =>
-    t.copy(booleanExpr = t.booleanExpr(substitutions))
-
-  implicit val validatorSubstituter: Substituter[Validator] = (substitutions, t) =>
+  implicit def validatorSubstituter[A](implicit
+    ev: Substituter[A, Expr]
+  ): Substituter[A, Validator] = (substitutions, t) =>
     t match {
       case HmrcRosmRegistrationCheckValidator(errorMessage, regime, utr, postcode) =>
         HmrcRosmRegistrationCheckValidator(errorMessage(substitutions), regime, utr, postcode)
       case BankAccountModulusCheck(errorMessage, accountNumber, sortCode) =>
         BankAccountModulusCheck(errorMessage(substitutions), accountNumber, sortCode)
     }
-
-  implicit val overseasAddressValueSubstituter: Substituter[OverseasAddress.Value] = (substitutions, t) =>
+  implicit def overseasAddressValueSubstituter[A](implicit
+    ev: Substituter[A, Expr]
+  ): Substituter[A, OverseasAddress.Value] = (substitutions, t) =>
     t.copy(
       t.line1(substitutions),
       t.line2(substitutions),
@@ -149,14 +89,19 @@ object Substituter {
       t.country(substitutions)
     )
 
-  implicit val revealingChoiceElementSubstituter: Substituter[RevealingChoiceElement] = (substitutions, t) =>
+  implicit def revealingChoiceElementSubstituter[A](implicit
+    ev: Substituter[A, Expr],
+    ev2: Substituter[A, BooleanExpr]
+  ): Substituter[A, RevealingChoiceElement] = (substitutions, t) =>
     t.copy(
       choice = t.choice(substitutions),
       revealingFields = t.revealingFields(substitutions),
       hint = t.hint(substitutions)
     )
-
-  implicit val componentTypeSubstituter: Substituter[ComponentType] = (substitutions, t) =>
+  implicit def componentTypeSubstituter[A](implicit
+    ev: Substituter[A, Expr],
+    ev2: Substituter[A, BooleanExpr]
+  ): Substituter[A, ComponentType] = (substitutions, t) =>
     t match {
       case Text(constraint, value, displayWidth, toUpperCase, prefix, suffix) =>
         Text(
@@ -218,16 +163,23 @@ object Substituter {
       case t @ Time(_, _) => t
     }
 
-  implicit val formComponentValidatorSubstituter: Substituter[FormComponentValidator] = (substitutions, t) =>
+  implicit def formComponentValidatorSubstituter[A](implicit
+    ev: Substituter[A, Expr],
+    ev2: Substituter[A, BooleanExpr]
+  ): Substituter[A, FormComponentValidator] = (substitutions, t) =>
     t.copy(
       validIf = t.validIf(substitutions),
       errorMessage = t.errorMessage(substitutions)
     )
 
-  implicit val instructionSubstituter: Substituter[Instruction] = (substitutions, t) =>
-    t.copy(name = t.name(substitutions))
+  implicit def instructionSubstituter[A](implicit
+    ev: Substituter[A, Expr]
+  ): Substituter[A, Instruction] = (substitutions, t) => t.copy(name = t.name(substitutions))
 
-  implicit val formComponentSubstituter: Substituter[FormComponent] = (substitutions, t) =>
+  implicit def formComponentSubstituter[A](implicit
+    ev: Substituter[A, Expr],
+    ev2: Substituter[A, BooleanExpr]
+  ): Substituter[A, FormComponent] = (substitutions, t) =>
     t.copy(
       `type` = t.`type`(substitutions),
       label = t.label(substitutions),
@@ -240,7 +192,10 @@ object Substituter {
       instruction = t.instruction(substitutions)
     )
 
-  implicit val pageSubstituter: Substituter[Page] = (substitutions, t) =>
+  implicit def pageSubstituter[A](implicit
+    ev: Substituter[A, Expr],
+    ev2: Substituter[A, BooleanExpr]
+  ): Substituter[A, Page] = (substitutions, t) =>
     t.copy(
       title = t.title(substitutions),
       noPIITitle = t.noPIITitle(substitutions),
@@ -254,7 +209,10 @@ object Substituter {
       instruction = t.instruction(substitutions)
     )
 
-  implicit val sectionSubstituter: Substituter[Section] = (substitutions, t) =>
+  implicit def sectionSubstituter[A](implicit
+    ev: Substituter[A, Expr],
+    ev2: Substituter[A, BooleanExpr]
+  ): Substituter[A, Section] = (substitutions, t) =>
     t.fold[Section] { nonRepeatingPage =>
       nonRepeatingPage.copy(page = nonRepeatingPage.page(substitutions))
     } { repeatingPage =>
@@ -275,30 +233,42 @@ object Substituter {
         defaultPage = addToList.defaultPage(substitutions)
       )
     }
-
-  implicit val printSectionPageSubstituter: Substituter[PrintSection.Page] = (substitutions, t) =>
+  implicit def printSectionPageSubstituter[A](implicit
+    ev: Substituter[A, Expr]
+  ): Substituter[A, PrintSection.Page] = (substitutions, t) =>
     t.copy(
       title = t.title(substitutions),
       instructions = t.instructions(substitutions)
     )
-  implicit val printSectionPdfSubstituter: Substituter[PrintSection.Pdf] = (substitutions, t) =>
+  implicit def printSectionPdfSubstituter[A](implicit
+    ev: Substituter[A, Expr]
+  ): Substituter[A, PrintSection.Pdf] = (substitutions, t) =>
     t.copy(
       header = t.header(substitutions),
       footer = t.footer(substitutions)
     )
-  implicit val printSectionPdfNotificationSubstituter: Substituter[PrintSection.PdfNotification] = (substitutions, t) =>
-    t.copy(
-      header = t.header(substitutions),
-      footer = t.footer(substitutions)
-    )
+  implicit def printSectionPdfNotificationSubstituter[A](implicit
+    ev: Substituter[A, Expr]
+  ): Substituter[A, PrintSection.PdfNotification] =
+    (substitutions, t) =>
+      t.copy(
+        header = t.header(substitutions),
+        footer = t.footer(substitutions)
+      )
 
-  implicit val acknowledgementSectionPdfSubstituter: Substituter[AcknowledgementSectionPdf] = (substitutions, t) =>
-    t.copy(
-      header = t.header(substitutions),
-      footer = t.footer(substitutions)
-    )
+  implicit def acknowledgementSectionPdfSubstituter[A](implicit
+    ev: Substituter[A, Expr]
+  ): Substituter[A, AcknowledgementSectionPdf] =
+    (substitutions, t) =>
+      t.copy(
+        header = t.header(substitutions),
+        footer = t.footer(substitutions)
+      )
 
-  implicit val acknowledgementSectionSubstituter: Substituter[AcknowledgementSection] = (substitutions, t) =>
+  implicit def acknowledgementSectionSubstituter[A](implicit
+    ev: Substituter[A, Expr],
+    ev2: Substituter[A, BooleanExpr]
+  ): Substituter[A, AcknowledgementSection] = (substitutions, t) =>
     t.copy(
       title = t.title(substitutions),
       description = t.description(substitutions),
@@ -307,8 +277,9 @@ object Substituter {
       pdf = t.pdf(substitutions),
       instructionPdf = t.instructionPdf(substitutions)
     )
-
-  implicit val destinationSubstituter: Substituter[Destination] = (substitutions, t) =>
+  implicit def destinationSubstituter[A](implicit
+    ev: Substituter[A, Expr]
+  ): Substituter[A, Destination] = (substitutions, t) =>
     t match {
       case d: Destination.HmrcDms                => d.copy(customerId = d.customerId(substitutions))
       case d: Destination.Composite              => d.copy(destinations = d.destinations(substitutions))
@@ -316,7 +287,10 @@ object Substituter {
       case otherwise                             => otherwise
     }
 
-  implicit val declarationSectionSubstituter: Substituter[DeclarationSection] = (substitutions, t) =>
+  implicit def declarationSectionSubstituter[A](implicit
+    ev: Substituter[A, Expr],
+    ev2: Substituter[A, BooleanExpr]
+  ): Substituter[A, DeclarationSection] = (substitutions, t) =>
     t.copy(
       title = t.title(substitutions),
       noPIITitle = t.noPIITitle(substitutions),
@@ -325,8 +299,10 @@ object Substituter {
       continueLabel = t.continueLabel(substitutions),
       fields = t.fields(substitutions)
     )
-
-  implicit val destinationsSubstituter: Substituter[Destinations] = (substitutions, t) =>
+  implicit def destinationsSubstituter[A](implicit
+    ev: Substituter[A, Expr],
+    ev2: Substituter[A, BooleanExpr]
+  ): Substituter[A, Destinations] = (substitutions, t) =>
     t match {
       case Destinations.DestinationList(destinations, acknowledgementSection, declarationSection) =>
         Destinations.DestinationList(
@@ -343,25 +319,23 @@ object Substituter {
         )
     }
 
-  implicit val summarySectionSubstituter: Substituter[SummarySection] = (substitutions, t) =>
+  implicit def summarySectionSubstituter[A](implicit
+    ev: Substituter[A, Expr]
+  ): Substituter[A, SummarySection] = (substitutions, t) =>
     t.copy(
-      title = t.title(substitutions),
+      title = t.title.apply(substitutions),
       header = t.header(substitutions),
       footer = t.footer(substitutions),
       continueLabel = t.continueLabel(substitutions)
     )
 
-  implicit val formTemplateSubstituter: Substituter[FormTemplate] = (substitutions, t) =>
+  implicit def formTemplateSubstituter[A](implicit
+    ev: Substituter[A, Expr],
+    ev2: Substituter[A, BooleanExpr]
+  ): Substituter[A, FormTemplate] = (substitutions, t) =>
     t.copy(
       destinations = t.destinations(substitutions),
       sections = t.sections(substitutions),
       summarySection = t.summarySection(substitutions)
     )
-}
-
-trait SubstituteExpressions {
-
-  def substituteExpressions(formTemplate: FormTemplate, substitutions: Substitutions): FormTemplate =
-    Substituter[FormTemplate].substitute(substitutions, formTemplate)
-
 }
