@@ -44,7 +44,12 @@ trait DesAlgebra[F[_]] {
   def testOnlyGet(url: String): Future[HttpResponse]
 }
 
-class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfig)(implicit ec: ExecutionContext)
+class DesConnector(
+  configuration: com.typesafe.config.Config,
+  wSHttp: WSHttp,
+  baseUrl: String,
+  desConfig: DesConnectorConfig
+)(implicit ec: ExecutionContext)
     extends DesAlgebra[Future] with LowPriorityHttpReadsJson with HttpReadsEither with HttpReadsHttpResponse {
 
   private val logger = LoggerFactory.getLogger(getClass)
@@ -115,8 +120,12 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
     logger.info(
       s"Des lookup, Tax Periods: '$idType, $idNumber, $regimeType', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}"
     )
-    val value = s"$baseUrl${desConfig.basePath}/enterprise/obligation-data/$idType/$idNumber/$regimeType?status=O"
-    wSHttp.GET[Obligation](value).map(ServiceResponse.apply).recover {
+    val url = s"$baseUrl${desConfig.basePath}/enterprise/obligation-data/$idType/$idNumber/$regimeType?status=O"
+
+    val hcConfig = HeaderCarrier.Config.fromConfig(configuration)
+    val allHeaders = HeaderCarrier.headersForUrl(hcConfig, url, Seq.empty[(String, String)])
+    logger.info("[lookupTaxPeriod] Headers" + allHeaders.mkString(","))
+    wSHttp.GET[Obligation](url).map(ServiceResponse.apply).recover {
       case UpstreamErrorResponse.WithStatusCode(statusCode) if statusCode == StatusCodes.NotFound.intValue =>
         NotFound
       case other =>

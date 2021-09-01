@@ -22,11 +22,19 @@ import uk.gov.hmrc.gform.wshttp.WSHttpModule
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-class ObligationModule(wSHttpModule: WSHttpModule, configModule: ConfigModule)(implicit ex: ExecutionContext) {
+class ObligationModule(
+  wSHttpModule: WSHttpModule,
+  configModule: ConfigModule
+)(implicit ex: ExecutionContext) {
 
   private val desConfig = configModule.desConfig
   private val desConnector: DesAlgebra[Future] =
-    new DesConnector(wSHttpModule.auditableWSHttp, configModule.serviceConfig.baseUrl("etmp-hod"), desConfig)
+    new DesConnector(
+      configModule.configuration.underlying,
+      wSHttpModule.auditableWSHttp,
+      configModule.serviceConfig.baseUrl("etmp-hod"),
+      desConfig
+    )
 
   private val obligationService = new ObligationService(desConnector)
   val obligationController = new ObligationController(configModule.controllerComponents, obligationService)
