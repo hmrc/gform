@@ -29,7 +29,6 @@ class ValidationModule(wSHttpModule: WSHttpModule, configModule: ConfigModule)(i
   private val desConfig = configModule.desConfig
   private val desConnector: DesAlgebra[Future] =
     new DesConnector(
-      configModule.configuration.underlying,
       wSHttpModule.auditableWSHttp,
       configModule.serviceConfig.baseUrl("etmp-hod"),
       desConfig

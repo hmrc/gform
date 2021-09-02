@@ -49,7 +49,6 @@ class TestOnlyModule(
     )
 
   val desConnector = new DesConnector(
-    configModule.configuration.underlying,
     wSHttpModule.auditableWSHttp,
     configModule.serviceConfig.baseUrl("etmp-hod"),
     configModule.desConfig
