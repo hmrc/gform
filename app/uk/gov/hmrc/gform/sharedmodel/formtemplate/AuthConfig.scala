@@ -16,10 +16,12 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
+import cats.data.NonEmptyList
 import julienrf.json.derived
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 import uk.gov.hmrc.gform.sharedmodel.email.LocalisedEmailTemplateId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils.nelFormat
 import uk.gov.hmrc.gform.sharedmodel.{ EmailVerifierService, LocalisedString, ValueClassFormat }
 
 case class EnrolmentAuth(
@@ -94,6 +96,7 @@ object AuthModule {
   case object AnonymousAccess extends AuthModule
   case object AWSALBAccess extends AuthModule
   case object OfstedModule extends AuthModule
+  case object Composite extends AuthModule
 
   private val hmrc = "hmrc"
   private val email = "email"
@@ -102,6 +105,7 @@ object AuthModule {
   private val anonymous = "anonymous"
   private val awsAlb = "awsAlbAuth"
   private val ofstedAuth = "ofsted"
+  private val composite = "composite"
 
   implicit val format: Format[AuthModule] = ADTFormat.formatEnumeration(
     hmrc         -> Hmrc,
@@ -110,7 +114,8 @@ object AuthModule {
     hmrcVerified -> HmrcVerified,
     anonymous    -> AnonymousAccess,
     awsAlb       -> AWSALBAccess,
-    ofstedAuth   -> OfstedModule
+    ofstedAuth   -> OfstedModule,
+    composite    -> Composite
   )
 
   def asString(o: AuthModule): String = o match {
@@ -121,6 +126,7 @@ object AuthModule {
     case AnonymousAccess => anonymous
     case AWSALBAccess    => awsAlb
     case OfstedModule    => ofstedAuth
+    case Composite       => composite
   }
 }
 
@@ -140,6 +146,7 @@ case class HmrcEnrolmentModule(enrolmentAuth: EnrolmentAuth) extends AuthConfig
 case class HmrcAgentModule(agentAccess: AgentAccess) extends AuthConfig
 case class HmrcAgentWithEnrolmentModule(agentAccess: AgentAccess, enrolmentAuth: EnrolmentAuth) extends AuthConfig
 case object OfstedUser extends AuthConfig
+case class Composite(configs: NonEmptyList[AuthConfig]) extends AuthConfig
 
 object HasEnrolmentSection {
   def unapply(ac: AuthConfig): Option[(ServiceId, EnrolmentSection, EnrolmentAction)] = ac match {
@@ -212,6 +219,8 @@ object AuthConfig {
         maybeEmailCodeHelp             <- (json \ "emailCodeHelp").validateOpt[LocalisedString]
         maybeEmailConfirmation         <- (json \ "emailConfirmation").validateOpt[LocalisedString]
         maybeEmailService              <- (json \ "emailService").validateOpt[String]
+        maybeCompositeConfigs          <- (json \ "configs").validateOpt[NonEmptyList[AuthConfig]]
+
         authConfig <- authModule match {
                         case AuthModule.AnonymousAccess => JsSuccess(Anonymous)
                         case AuthModule.AWSALBAccess    => JsSuccess(AWSALBAuth)
@@ -272,6 +281,32 @@ object AuthConfig {
                                 case Some(other) => JsError(s"Invalid 'emailService' value for email auth $other")
                               }
                             case None => JsError("Missing 'emailCodeTemplate' field for email auth")
+                          }
+                        case AuthModule.Composite =>
+                          maybeCompositeConfigs match {
+                            case Some(configs) =>
+                              if (
+                                configs
+                                  .filter(
+                                    List(
+                                      Anonymous,
+                                      AWSALBAuth,
+                                      HmrcAny,
+                                      HmrcVerified(_, _),
+                                      HmrcEnrolmentModule,
+                                      HmrcAgentModule(_),
+                                      HmrcAgentWithEnrolmentModule(_, _),
+                                      OfstedUser,
+                                      Composite(_)
+                                    ).contains _
+                                  )
+                                  .isEmpty
+                              )
+                                JsSuccess(Composite(configs))
+                              else
+                                JsError("Only hmrc and email auths are allowed inside composite auth")
+
+                            case None => JsError("Missing 'configs' field for composite auth")
                           }
                         case AuthModule.OfstedModule => JsSuccess(OfstedUser)
                       }
