@@ -424,6 +424,72 @@ class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
     )
   }
 
+  it should "parse composite auth with `hmrc` and `email` auths" in {
+    val authConfigValue = toAuthConfig(s"""|{
+                                           |  "authModule": "composite",
+                                           |  "configs": [
+                                           |    {
+                                           |      "authModule": "hmrc"
+                                           |    },
+                                           |    {
+                                           |      "authModule": "email",
+                                           |      "emailCodeTemplate": {
+                                           |        "en": "someTemplate-En",
+                                           |        "cy": "someTemplate-Cy"
+                                           |      }
+                                           |    }
+                                           |  ]
+                                           |}""".stripMargin)
+    authConfigValue shouldBe JsSuccess(
+      Composite(
+        NonEmptyList.of(
+          HmrcSimpleModule,
+          EmailAuthConfig(
+            DigitalContact(EmailTemplateId("someTemplate-En"), Some(EmailTemplateId("someTemplate-Cy"))),
+            None,
+            None,
+            None
+          )
+        )
+      )
+    )
+  }
+
+  it should "return error for composite auth without `configs`" in {
+    val authConfigValue = toAuthConfig(s"""|{
+                                           |  "authModule": "composite"
+                                           |}""".stripMargin)
+    authConfigValue.isError shouldBe true
+    authConfigValue.asInstanceOf[JsError].errors.flatMap(_._2) should contain(
+      JsonValidationError("Missing 'configs' field for composite auth")
+    )
+  }
+
+  it should "return error for composite auth having auths other than hmrc and email auths`" in {
+    val authConfigValue = toAuthConfig(s"""|{
+                                           |  "authModule": "composite",
+                                           |  "configs": [
+                                           |    {
+                                           |      "authModule": "hmrc"
+                                           |    },
+                                           |    {
+                                           |      "authModule": "email",
+                                           |      "emailCodeTemplate": {
+                                           |        "en": "someTemplate-En",
+                                           |        "cy": "someTemplate-Cy"
+                                           |      }
+                                           |    },
+                                           |    {
+                                           |      "authModule": "hmrcAny"
+                                           |    }
+                                           |  ]
+                                           |}""".stripMargin)
+    authConfigValue.isError shouldBe true
+    authConfigValue.asInstanceOf[JsError].errors.flatMap(_._2) should contain(
+      JsonValidationError("Only hmrc and email auths are allowed inside composite auth")
+    )
+  }
+
   "enrolmentActionMatch" should "return no action with input None" in {
     AuthConfig.enrolmentActionMatch(None) shouldBe NoAction
   }
