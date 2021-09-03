@@ -65,7 +65,7 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
     logger.info(s"Des registration, UTR: '$utr', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}")
 
     wSHttp
-      .doPost[DesRegistrationRequest](
+      .POST[DesRegistrationRequest, HttpResponse](
         s"$baseUrl${desConfig.basePath}/registration/organisation/utr/$utr",
         desRegistrationRequest,
         headers = authHeaders
