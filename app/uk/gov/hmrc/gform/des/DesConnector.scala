@@ -50,8 +50,11 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
   private val logger = LoggerFactory.getLogger(getClass)
 
   private implicit val hc = HeaderCarrier(
-    extraHeaders = Seq("Environment" -> desConfig.environment),
-    authorization = Some(Authorization(s"Bearer ${desConfig.authorizationToken}"))
+    extraHeaders = Seq("Environment" -> desConfig.environment)
+  )
+
+  private val authHeaders: Seq[(String, String)] = Seq(
+    "Authorization" -> s"Bearer ${desConfig.authorizationToken}"
   )
 
   def lookupRegistration(
@@ -65,7 +68,7 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
       .doPost[DesRegistrationRequest](
         s"$baseUrl${desConfig.basePath}/registration/organisation/utr/$utr",
         desRegistrationRequest,
-        List.empty[(String, String)]
+        headers = authHeaders
       )
       .map { httpResponse =>
         val status = httpResponse.status
@@ -115,21 +118,29 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
     logger.info(
       s"Des lookup, Tax Periods: '$idType, $idNumber, $regimeType', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}"
     )
-    val value = s"$baseUrl${desConfig.basePath}/enterprise/obligation-data/$idType/$idNumber/$regimeType?status=O"
-    wSHttp.GET[Obligation](value).map(ServiceResponse.apply).recover {
-      case UpstreamErrorResponse.WithStatusCode(statusCode) if statusCode == StatusCodes.NotFound.intValue =>
-        NotFound
-      case other =>
-        logger.error("Unknown problem when calling des obligation-data", other)
-        CannotRetrieveResponse
-    }
+
+    val url = s"$baseUrl${desConfig.basePath}/enterprise/obligation-data/$idType/$idNumber/$regimeType?status=O"
+
+    wSHttp
+      .GET[Obligation](
+        url,
+        headers = authHeaders
+      )
+      .map(ServiceResponse.apply)
+      .recover {
+        case UpstreamErrorResponse.WithStatusCode(statusCode) if statusCode == StatusCodes.NotFound.intValue =>
+          NotFound
+        case other =>
+          logger.error("Unknown problem when calling des obligation-data", other)
+          CannotRetrieveResponse
+      }
   }
 
   def testOnlyGet(url: String): Future[HttpResponse] =
     wSHttp
       .doGet(
         s"$baseUrl${desConfig.basePath}/$url",
-        List.empty[(String, String)]
+        headers = authHeaders
       )
 }
 
