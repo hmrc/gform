@@ -428,17 +428,17 @@ class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
     val authConfigValue = toAuthConfig(s"""|{
                                            |  "authModule": "composite",
                                            |  "configs": [
-                                           |      {
-                                           |         "authModule": "hmrc"
-                                           |       },
-                                           |       {
-                                           |          "authModule": "email",
-                                           |           "emailCodeTemplate": {
-                                           |                "en": "someTemplate-En",
-                                           |                 "cy": "someTemplate-Cy"
-                                           |            }
-                                           |         }
-                                           |        ]
+                                           |    {
+                                           |      "authModule": "hmrc"
+                                           |    },
+                                           |    {
+                                           |      "authModule": "email",
+                                           |      "emailCodeTemplate": {
+                                           |        "en": "someTemplate-En",
+                                           |        "cy": "someTemplate-Cy"
+                                           |      }
+                                           |    }
+                                           |  ]
                                            |}""".stripMargin)
     authConfigValue shouldBe JsSuccess(
       Composite(
@@ -469,20 +469,20 @@ class AuthConfigSpec extends Spec with ScalaCheckDrivenPropertyChecks {
     val authConfigValue = toAuthConfig(s"""|{
                                            |  "authModule": "composite",
                                            |  "configs": [
-                                           |      {
-                                           |         "authModule": "hmrc"
-                                           |       },
-                                           |       {
-                                           |          "authModule": "email",
-                                           |           "emailCodeTemplate": {
-                                           |                "en": "someTemplate-En",
-                                           |                 "cy": "someTemplate-Cy"
-                                           |            }
-                                           |       },
-                                           |       {
-                                           |         "authModule": "hmrcAny"
-                                           |       }
-                                           |     ]
+                                           |    {
+                                           |      "authModule": "hmrc"
+                                           |    },
+                                           |    {
+                                           |      "authModule": "email",
+                                           |      "emailCodeTemplate": {
+                                           |        "en": "someTemplate-En",
+                                           |        "cy": "someTemplate-Cy"
+                                           |      }
+                                           |    },
+                                           |    {
+                                           |      "authModule": "hmrcAny"
+                                           |    }
+                                           |  ]
                                            |}""".stripMargin)
     authConfigValue.isError shouldBe true
     authConfigValue.asInstanceOf[JsError].errors.flatMap(_._2) should contain(
