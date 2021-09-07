@@ -25,7 +25,7 @@ object InternalLink {
   case object PrintAcknowledgementPdf extends InternalLink
   case object PrintSummaryPdf extends InternalLink
   case object NewForm extends InternalLink
-  case class NewForm(formTemplateId: FormTemplateId) extends InternalLink
+  case class NewFormForTemplate(formTemplateId: FormTemplateId) extends InternalLink
   case object NewSession extends InternalLink
   case class PageLink(id: PageId) extends InternalLink
 
