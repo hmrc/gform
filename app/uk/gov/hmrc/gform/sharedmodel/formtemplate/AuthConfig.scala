@@ -285,23 +285,13 @@ object AuthConfig {
                         case AuthModule.Composite =>
                           maybeCompositeConfigs match {
                             case Some(configs) =>
-                              if (
-                                configs
-                                  .filter(
-                                    List(
-                                      Anonymous,
-                                      AWSALBAuth,
-                                      HmrcAny,
-                                      HmrcVerified(_, _),
-                                      HmrcEnrolmentModule,
-                                      HmrcAgentModule(_),
-                                      HmrcAgentWithEnrolmentModule(_, _),
-                                      OfstedUser,
-                                      Composite(_)
-                                    ).contains _
-                                  )
-                                  .isEmpty
-                              )
+                              val notAllowedConfigs = configs.toList.collectFirst {
+                                case v @ (Anonymous | AWSALBAuth | HmrcAny | HmrcVerified(_, _) |
+                                    HmrcEnrolmentModule(_) | HmrcAgentModule(_) | HmrcAgentWithEnrolmentModule(_, _) |
+                                    OfstedUser | Composite(_)) =>
+                                  v
+                              }
+                              if (notAllowedConfigs.isEmpty)
                                 JsSuccess(Composite(configs))
                               else
                                 JsError("Only hmrc and email auths are allowed inside composite auth")
