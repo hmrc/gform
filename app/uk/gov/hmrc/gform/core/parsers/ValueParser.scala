@@ -150,7 +150,7 @@ object ValueParser {
   } | "printSummaryPdf" ^^ { (loc, _) =>
     InternalLink.printSummaryPdf
   } | "newForm" ~ "." ~ FormTemplateId.unanchoredIdValidation ^^ { (loc, _, _, id) =>
-    InternalLink.NewForm(FormTemplateId(id))
+    InternalLink.NewFormForTemplate(FormTemplateId(id))
   } | "newForm" ^^ { (loc, _) =>
     InternalLink.newForm
   } | "newSession" ^^ { (loc, _) =>
