@@ -335,12 +335,12 @@ object FormTemplateValidator {
     case Choice(_, _, _, _, _, _)      => Valid
     case RevealingChoice(revealingChoiceElements, _) =>
       validate(revealingChoiceElements.toList.flatMap(_.revealingFields.map(_.`type`)), formTemplate)
-    case HmrcTaxPeriod(_, _, _)   => Valid
-    case Group(fvs, _, _, _, _)   => validate(fvs.map(_.`type`), formTemplate)
-    case FileUpload()             => Valid
-    case InformationMessage(_, _) => Valid
-    case Time(_, _)               => Valid
-    case OverseasAddress(_, _, _) => Valid
+    case HmrcTaxPeriod(_, _, _)      => Valid
+    case Group(fvs, _, _, _, _)      => validate(fvs.map(_.`type`), formTemplate)
+    case FileUpload()                => Valid
+    case InformationMessage(_, _)    => Valid
+    case Time(_, _)                  => Valid
+    case OverseasAddress(_, _, _, _) => Valid
   }
 
   def validateForwardReference(sections: List[Section]): ValidationResult = {
