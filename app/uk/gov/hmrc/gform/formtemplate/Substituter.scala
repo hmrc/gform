@@ -126,8 +126,8 @@ object Substituter {
       case d @ Date(_, _, _) => d
       case CalendarDate      => CalendarDate
       case a @ Address(_)    => a
-      case OverseasAddress(mandatoryFields, optionalFields, value) =>
-        OverseasAddress(mandatoryFields, optionalFields, value(substitutions))
+      case OverseasAddress(mandatoryFields, optionalFields, value, countryLookup) =>
+        OverseasAddress(mandatoryFields, optionalFields, value(substitutions), countryLookup)
 
       case Choice(tpe, options, orientation, selections, hints, optionHelpText) =>
         Choice(

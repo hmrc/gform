@@ -148,6 +148,8 @@ class FormComponentMaker(json: JsValue) {
   lazy val optLabelSize: Opt[Option[LabelSize]] =
     parse("labelSize", LabelSizeParser.validate)
 
+  lazy val optCountryLookup: Option[Boolean] = (json \ "countryLookup").asOpt[String].map(_.toBoolean)
+
   def optFieldValue(): Opt[FormComponent] =
     for {
       presHint    <- optMaybePresentationHintExpr
@@ -519,7 +521,7 @@ class FormComponentMaker(json: JsValue) {
       val mandatoryFields: List[Mandatory] = List(line2, postcode).flatten
       val optionalFields: List[Optional] = List(city).flatten
 
-      OverseasAddress(mandatoryFields, optionalFields, maybeOverseasAddressValue)
+      OverseasAddress(mandatoryFields, optionalFields, maybeOverseasAddressValue, optCountryLookup.getOrElse(true))
     }
   }
 

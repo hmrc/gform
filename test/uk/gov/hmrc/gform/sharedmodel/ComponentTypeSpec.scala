@@ -56,7 +56,8 @@ class ComponentTypeSpec extends FunSuite {
           toSmartString("600007"),
           toSmartString("Colombia")
         )
-      )
+      ),
+      true
     )
 
     assertEquals(componentType, expected)
@@ -74,7 +75,7 @@ class ComponentTypeSpec extends FunSuite {
                          |  "postcodeMandatory": "false"
                          |}""")
 
-    val expected = OverseasAddress(Nil, Nil, None)
+    val expected = OverseasAddress(Nil, Nil, None, true)
 
     assertEquals(componentType, expected)
 
@@ -88,7 +89,22 @@ class ComponentTypeSpec extends FunSuite {
                          |  "label": ""
                          |}""")
 
-    val expected = OverseasAddress(Nil, Nil, None)
+    val expected = OverseasAddress(Nil, Nil, None, true)
+
+    assertEquals(componentType, expected)
+
+  }
+
+  test("Overseas address with countryLookup") {
+    val componentType =
+      toComponentType("""|{
+                         |  "type": "overseasAddress",
+                         |  "id": "colombiaAddress",
+                         |  "label": "",
+                         |  "countryLookup": "false"
+                         |}""")
+
+    val expected = OverseasAddress(Nil, Nil, None, false)
 
     assertEquals(componentType, expected)
 
