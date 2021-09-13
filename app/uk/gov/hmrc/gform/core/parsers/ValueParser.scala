@@ -163,13 +163,16 @@ object ValueParser {
 
   private lazy val periodFun = "period(" ~ dateExpr ~ "," ~ dateExpr ~ ")"
 
-  private lazy val userEnrolmentFunc = "user" ~ "." ~ userFieldEnrolments ~ "." ~ "(count|[1-9][0-9]*)".r ^^ {
-    (loc, _, _, userField, _, func) =>
-      func match {
-        case "count"    => UserFuncCtx(userField, UserFieldFunc.Count)
-        case Int(value) => UserFuncCtx(userField, UserFieldFunc.Index(value))
-      }
+  private lazy val userFieldFunc: Parser[UserFieldFunc] = "count" ^^ { (_, _) =>
+    UserFieldFunc.Count
+  } | nonZeroPositiveInteger ^^ { (_, i) =>
+    UserFieldFunc.Index(i)
   }
+
+  private lazy val userEnrolmentFunc: Parser[UserFuncCtx] =
+    "user" ~ "." ~ userFieldEnrolments ~ "." ~ userFieldFunc ^^ { (_, _, _, userField, _, func) =>
+      UserFuncCtx(userField, func)
+    }
 
   lazy val contextField: Parser[Expr] = userEnrolmentFunc | ("user" ~ "." ~ userField ^^ { (loc, _, _, userField) =>
     UserCtx(userField)
@@ -330,7 +333,7 @@ object ValueParser {
       }
   )
 
-  lazy val userFieldEnrolments: Parser[UserField] = "enrolments" ~ "." ~ enrolment ^^ ((_, _, _, en) => en)
+  lazy val userFieldEnrolments: Parser[UserField.Enrolment] = "enrolments" ~ "." ~ enrolment ^^ ((_, _, _, en) => en)
 
   lazy val userField: Parser[UserField] = (
     "affinityGroup" ^^ const(UserField.AffinityGroup)
