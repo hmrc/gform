@@ -396,6 +396,7 @@ object FormTemplateValidator {
       case ParamCtx(_)           => Valid
       case AuthCtx(_)            => Valid
       case UserCtx(_)            => Valid
+      case UserFuncCtx(_, _)     => Valid
       case Constant(_)           => Valid
       case PeriodValue(_)        => Valid
       case Value                 => Valid

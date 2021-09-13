@@ -25,6 +25,8 @@ import uk.gov.hmrc.gform.sharedmodel.dblookup.CollectionName
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
+import scala.util.Try
+
 object ValueParser {
 
   implicit val W = Whitespace(() | """\s+""".r)
@@ -161,7 +163,15 @@ object ValueParser {
 
   private lazy val periodFun = "period(" ~ dateExpr ~ "," ~ dateExpr ~ ")"
 
-  lazy val contextField: Parser[Expr] = ("user" ~ "." ~ userField ^^ { (loc, _, _, userField) =>
+  private lazy val userEnrolmentFunc = "user" ~ "." ~ userFieldEnrolments ~ "." ~ "(count|[1-9][0-9]*)".r ^^ {
+    (loc, _, _, userField, _, func) =>
+      func match {
+        case "count"    => UserFuncCtx(userField, UserFieldFunc.Count)
+        case Int(value) => UserFuncCtx(userField, UserFieldFunc.Index(value))
+      }
+  }
+
+  lazy val contextField: Parser[Expr] = userEnrolmentFunc | ("user" ~ "." ~ userField ^^ { (loc, _, _, userField) =>
     UserCtx(userField)
   }
     | "form" ~ "." ~ "submissionReference" ^^ { (loc, _, _, fieldName) =>
@@ -320,9 +330,11 @@ object ValueParser {
       }
   )
 
+  lazy val userFieldEnrolments: Parser[UserField] = "enrolments" ~ "." ~ enrolment ^^ ((_, _, _, en) => en)
+
   lazy val userField: Parser[UserField] = (
     "affinityGroup" ^^ const(UserField.AffinityGroup)
-      | "enrolments" ~ "." ~ enrolment ^^ ((_, _, _, en) => en)
+      | userFieldEnrolments
       | "enrolledIdentifier" ^^ const(UserField.EnrolledIdentifier)
   )
 
@@ -353,4 +365,8 @@ object ValueParser {
   )
 
   private def const[A](a: A)(loc: List[Line], matched: String): A = a
+
+  object Int {
+    def unapply(s: String): Option[Int] = Try(s.toInt).toOption
+  }
 }

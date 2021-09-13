@@ -103,6 +103,7 @@ object FormCtx {
 final case class ParamCtx(queryParam: QueryParam) extends Expr
 final case class AuthCtx(value: AuthInfo) extends Expr
 final case class UserCtx(value: UserField) extends Expr
+final case class UserFuncCtx(value: UserField, func: UserFieldFunc) extends Expr
 final case class Constant(value: String) extends Expr
 final case class PeriodValue(value: String) extends Expr
 final case class HmrcRosmRegistrationCheck(value: RosmProp) extends Expr
@@ -137,6 +138,14 @@ object UserField {
   final case object EnrolledIdentifier extends UserField
 
   implicit val format: OFormat[UserField] = derived.oformat()
+}
+
+sealed trait UserFieldFunc
+object UserFieldFunc {
+  case object Count extends UserFieldFunc
+  case class Index(i: Int) extends UserFieldFunc
+
+  implicit val format: OFormat[UserFieldFunc] = derived.oformat()
 }
 
 final case class ServiceName(value: String) extends AnyVal

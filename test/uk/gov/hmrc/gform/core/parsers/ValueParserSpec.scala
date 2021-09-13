@@ -723,4 +723,68 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     ValueParser.validate("${link.newSession}") shouldBe Right(TextExpression(LinkCtx(NewSession)))
   }
 
+  it should "parse ${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.xxx} as UserFuncCtx" in {
+    val table = Table(
+      ("expr", "result"),
+      (
+        "${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.count}",
+        Right(
+          TextExpression(
+            UserFuncCtx(
+              UserField.Enrolment(ServiceName("HMCE-VATDEC-ORG"), IdentifierName("VATRegNo")),
+              UserFieldFunc.Count
+            )
+          )
+        )
+      ),
+      (
+        "${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.1}",
+        Right(
+          TextExpression(
+            UserFuncCtx(
+              UserField.Enrolment(ServiceName("HMCE-VATDEC-ORG"), IdentifierName("VATRegNo")),
+              UserFieldFunc.Index(1)
+            )
+          )
+        )
+      ),
+      (
+        "${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.11}",
+        Right(
+          TextExpression(
+            UserFuncCtx(
+              UserField.Enrolment(ServiceName("HMCE-VATDEC-ORG"), IdentifierName("VATRegNo")),
+              UserFieldFunc.Index(11)
+            )
+          )
+        )
+      ),
+      (
+        "${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.0}",
+        Left(
+          UnexpectedState(
+            """Unable to parse expression ${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.0}.
+              |Errors:
+              |${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.0}:1: unexpected characters; expected '(count|[1-9][0-9]*)' or '\s+'
+              |${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.0}                                           ^""".stripMargin
+          )
+        )
+      ),
+      (
+        "${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.unknown}",
+        Left(
+          UnexpectedState(
+            """Unable to parse expression ${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.unknown}.
+              |Errors:
+              |${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.unknown}:1: unexpected characters; expected '(count|[1-9][0-9]*)' or '\s+'
+              |${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.unknown}                                           ^""".stripMargin
+          )
+        )
+      )
+    )
+    forAll(table) { (expr, expected) =>
+      ValueParser.validate(expr) shouldBe expected
+    }
+  }
+
 }
