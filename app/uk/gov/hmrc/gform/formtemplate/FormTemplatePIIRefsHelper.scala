@@ -116,7 +116,6 @@ object FormTemplatePIIRefsHelper {
       case ParamCtx(queryParam)                   => List("param." + queryParam.value)
       case AuthCtx(value)                         => List("auth." + value.toString.toLowerCase)
       case UserCtx(value)                         => Nil
-      case UserFuncCtx(_, _)                      => Nil
       case Constant(value)                        => Nil
       case PeriodValue(value)                     => Nil
       case HmrcRosmRegistrationCheck(value)       => Nil

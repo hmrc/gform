@@ -103,7 +103,6 @@ object FormCtx {
 final case class ParamCtx(queryParam: QueryParam) extends Expr
 final case class AuthCtx(value: AuthInfo) extends Expr
 final case class UserCtx(value: UserField) extends Expr
-final case class UserFuncCtx(value: UserField, func: UserFieldFunc) extends Expr
 final case class Constant(value: String) extends Expr
 final case class PeriodValue(value: String) extends Expr
 final case class HmrcRosmRegistrationCheck(value: RosmProp) extends Expr
@@ -134,7 +133,8 @@ sealed trait UserField
 
 object UserField {
   final case object AffinityGroup extends UserField
-  final case class Enrolment(serviceName: ServiceName, identifierName: IdentifierName) extends UserField
+  final case class Enrolment(serviceName: ServiceName, identifierName: IdentifierName, func: Option[UserFieldFunc])
+      extends UserField
   final case object EnrolledIdentifier extends UserField
 
   implicit val format: OFormat[UserField] = derived.oformat()

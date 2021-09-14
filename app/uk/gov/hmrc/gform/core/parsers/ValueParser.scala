@@ -23,6 +23,7 @@ import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.BasicParsers._
 import uk.gov.hmrc.gform.sharedmodel.dblookup.CollectionName
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.UserField.Enrolment
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 import scala.util.Try
@@ -169,9 +170,9 @@ object ValueParser {
     UserFieldFunc.Index(i)
   }
 
-  private lazy val userEnrolmentFunc: Parser[UserFuncCtx] =
+  private lazy val userEnrolmentFunc: Parser[UserCtx] =
     "user" ~ "." ~ userFieldEnrolments ~ "." ~ userFieldFunc ^^ { (_, _, _, userField, _, func) =>
-      UserFuncCtx(userField, func)
+      UserCtx(Enrolment(userField.serviceName, userField.identifierName, Some(func)))
     }
 
   lazy val contextField: Parser[Expr] = userEnrolmentFunc | ("user" ~ "." ~ userField ^^ { (loc, _, _, userField) =>
@@ -342,7 +343,7 @@ object ValueParser {
   )
 
   lazy val enrolment: Parser[UserField.Enrolment] = serviceName ~ "." ~ identifierName ^^ { (_, sn, _, in) =>
-    UserField.Enrolment(sn, in)
+    UserField.Enrolment(sn, in, None)
   }
 
   lazy val serviceName: Parser[ServiceName] = """[^.!= }]+""".r ^^ { (loc, str) =>

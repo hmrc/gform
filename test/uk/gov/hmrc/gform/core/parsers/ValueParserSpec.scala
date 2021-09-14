@@ -33,6 +33,7 @@ import uk.gov.hmrc.gform.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.AvailableLanguages
 import uk.gov.hmrc.gform.sharedmodel.email.LocalisedEmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.{ NewForm, NewFormForTemplate, NewSession, PageLink }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.UserField.Enrolment
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationId, Destinations }
@@ -182,7 +183,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     forAll(validIdentifiersCombinations) { (serviceName, identifierName) ⇒
       val res = ValueParser.validate(s"$${user.enrolments.$serviceName.$identifierName}")
       res.right.value should be(
-        TextExpression(UserCtx(UserField.Enrolment(ServiceName(serviceName), IdentifierName(identifierName))))
+        TextExpression(UserCtx(UserField.Enrolment(ServiceName(serviceName), IdentifierName(identifierName), None)))
       )
     }
 
@@ -723,16 +724,15 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     ValueParser.validate("${link.newSession}") shouldBe Right(TextExpression(LinkCtx(NewSession)))
   }
 
-  it should "parse ${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.xxx} as UserFuncCtx" in {
+  it should "parse ${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.xxx} as UserCtx" in {
     val table = Table(
       ("expr", "result"),
       (
         "${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.count}",
         Right(
           TextExpression(
-            UserFuncCtx(
-              UserField.Enrolment(ServiceName("HMCE-VATDEC-ORG"), IdentifierName("VATRegNo")),
-              UserFieldFunc.Count
+            UserCtx(
+              Enrolment(ServiceName("HMCE-VATDEC-ORG"), IdentifierName("VATRegNo"), Some(UserFieldFunc.Count))
             )
           )
         )
@@ -741,9 +741,8 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
         "${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.1}",
         Right(
           TextExpression(
-            UserFuncCtx(
-              UserField.Enrolment(ServiceName("HMCE-VATDEC-ORG"), IdentifierName("VATRegNo")),
-              UserFieldFunc.Index(1)
+            UserCtx(
+              Enrolment(ServiceName("HMCE-VATDEC-ORG"), IdentifierName("VATRegNo"), Some(UserFieldFunc.Index(1)))
             )
           )
         )
@@ -752,9 +751,8 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
         "${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.11}",
         Right(
           TextExpression(
-            UserFuncCtx(
-              UserField.Enrolment(ServiceName("HMCE-VATDEC-ORG"), IdentifierName("VATRegNo")),
-              UserFieldFunc.Index(11)
+            UserCtx(
+              Enrolment(ServiceName("HMCE-VATDEC-ORG"), IdentifierName("VATRegNo"), Some(UserFieldFunc.Index(11)))
             )
           )
         )
@@ -765,7 +763,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
           UnexpectedState(
             """Unable to parse expression ${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.0}.
               |Errors:
-              |${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.0}:1: unexpected characters; expected '(count|[1-9][0-9]*)' or '\s+'
+              |${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.0}:1: unexpected characters; expected '[1-9][0-9]*' or 'count' or '\s+'
               |${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.0}                                           ^""".stripMargin
           )
         )
@@ -776,7 +774,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
           UnexpectedState(
             """Unable to parse expression ${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.unknown}.
               |Errors:
-              |${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.unknown}:1: unexpected characters; expected '(count|[1-9][0-9]*)' or '\s+'
+              |${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.unknown}:1: unexpected characters; expected '[1-9][0-9]*' or 'count' or '\s+'
               |${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.unknown}                                           ^""".stripMargin
           )
         )
