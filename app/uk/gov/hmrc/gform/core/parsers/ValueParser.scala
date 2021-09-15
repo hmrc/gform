@@ -26,8 +26,6 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.UserField.Enrolment
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
-import scala.util.Try
-
 object ValueParser {
 
   implicit val W = Whitespace(() | """\s+""".r)
