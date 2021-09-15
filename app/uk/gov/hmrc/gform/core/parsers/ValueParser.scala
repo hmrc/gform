@@ -23,6 +23,7 @@ import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.BasicParsers._
 import uk.gov.hmrc.gform.sharedmodel.dblookup.CollectionName
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.UserField.Enrolment
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 object ValueParser {
@@ -161,7 +162,18 @@ object ValueParser {
 
   private lazy val periodFun = "period(" ~ dateExpr ~ "," ~ dateExpr ~ ")"
 
-  lazy val contextField: Parser[Expr] = ("user" ~ "." ~ userField ^^ { (loc, _, _, userField) =>
+  private lazy val userFieldFunc: Parser[UserFieldFunc] = "count" ^^ { (_, _) =>
+    UserFieldFunc.Count
+  } | nonZeroPositiveInteger ^^ { (_, i) =>
+    UserFieldFunc.Index(i)
+  }
+
+  private lazy val userEnrolmentFunc: Parser[UserCtx] =
+    "user" ~ "." ~ userFieldEnrolments ~ "." ~ userFieldFunc ^^ { (_, _, _, userField, _, func) =>
+      UserCtx(Enrolment(userField.serviceName, userField.identifierName, Some(func)))
+    }
+
+  lazy val contextField: Parser[Expr] = userEnrolmentFunc | ("user" ~ "." ~ userField ^^ { (loc, _, _, userField) =>
     UserCtx(userField)
   }
     | "form" ~ "." ~ "submissionReference" ^^ { (loc, _, _, fieldName) =>
@@ -320,14 +332,16 @@ object ValueParser {
       }
   )
 
+  lazy val userFieldEnrolments: Parser[UserField.Enrolment] = "enrolments" ~ "." ~ enrolment ^^ ((_, _, _, en) => en)
+
   lazy val userField: Parser[UserField] = (
     "affinityGroup" ^^ const(UserField.AffinityGroup)
-      | "enrolments" ~ "." ~ enrolment ^^ ((_, _, _, en) => en)
+      | userFieldEnrolments
       | "enrolledIdentifier" ^^ const(UserField.EnrolledIdentifier)
   )
 
   lazy val enrolment: Parser[UserField.Enrolment] = serviceName ~ "." ~ identifierName ^^ { (_, sn, _, in) =>
-    UserField.Enrolment(sn, in)
+    UserField.Enrolment(sn, in, None)
   }
 
   lazy val serviceName: Parser[ServiceName] = """[^.!= }]+""".r ^^ { (loc, str) =>

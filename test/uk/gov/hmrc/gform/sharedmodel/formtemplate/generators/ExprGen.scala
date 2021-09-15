@@ -25,11 +25,18 @@ trait ExprGen {
 
   def identifierNameGen: Gen[IdentifierName] = PrimitiveGen.nonEmptyAlphaNumStrGen.map(IdentifierName(_))
 
+  val userFieldFuncIndexGen: Gen[UserFieldFunc.Index] = for {
+    index <- Gen.posNum[Int]
+  } yield UserFieldFunc.Index(index)
+
+  val userFieldFuncGen: Gen[UserFieldFunc] = Gen.oneOf[UserFieldFunc](UserFieldFunc.Count, userFieldFuncIndexGen)
+
   def enrolmentGen: Gen[UserField.Enrolment] =
     for {
-      serviceName    <- serviceNameGen
-      identifierName <- identifierNameGen
-    } yield UserField.Enrolment(serviceName, identifierName)
+      serviceName        <- serviceNameGen
+      identifierName     <- identifierNameGen
+      maybeUserFieldFunc <- Gen.option(userFieldFuncGen)
+    } yield UserField.Enrolment(serviceName, identifierName, maybeUserFieldFunc)
 
   def userFieldGen: Gen[UserField] = Gen.oneOf(Gen.const(UserField.AffinityGroup), enrolmentGen)
 

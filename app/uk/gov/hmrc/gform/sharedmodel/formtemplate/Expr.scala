@@ -133,10 +133,19 @@ sealed trait UserField
 
 object UserField {
   final case object AffinityGroup extends UserField
-  final case class Enrolment(serviceName: ServiceName, identifierName: IdentifierName) extends UserField
+  final case class Enrolment(serviceName: ServiceName, identifierName: IdentifierName, func: Option[UserFieldFunc])
+      extends UserField
   final case object EnrolledIdentifier extends UserField
 
   implicit val format: OFormat[UserField] = derived.oformat()
+}
+
+sealed trait UserFieldFunc
+object UserFieldFunc {
+  case object Count extends UserFieldFunc
+  case class Index(i: Int) extends UserFieldFunc
+
+  implicit val format: OFormat[UserFieldFunc] = derived.oformat()
 }
 
 final case class ServiceName(value: String) extends AnyVal
