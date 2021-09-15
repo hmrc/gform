@@ -369,8 +369,4 @@ object ValueParser {
   )
 
   private def const[A](a: A)(loc: List[Line], matched: String): A = a
-
-  object Int {
-    def unapply(s: String): Option[Int] = Try(s.toInt).toOption
-  }
 }
