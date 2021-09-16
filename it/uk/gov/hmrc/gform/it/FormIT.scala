@@ -5,7 +5,7 @@ import com.mongodb.{ BasicDBObject, ReadPreference }
 import org.scalatest.time.{ Millis, Seconds, Span }
 import play.api.libs.json.Json
 import uk.gov.hmrc.gform.it.sample.{ FormDataSample, FormTemplateSample, QueryParamsSample }
-import uk.gov.hmrc.gform.it.wiremock.{ FileUploadServiceStubs, Save4LaterServiceStubs }
+import uk.gov.hmrc.gform.it.wiremock.FileUploadServiceStubs
 import uk.gov.hmrc.gform.sharedmodel.UserId
 import uk.gov.hmrc.gform.sharedmodel.form.FormIdData.Plain
 import uk.gov.hmrc.gform.sharedmodel.form._
@@ -16,8 +16,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import java.time.{ Instant, ZoneOffset }
 
 class FormIT
-    extends ITSpec with FormTemplateSample with FormDataSample with QueryParamsSample with Save4LaterServiceStubs
-    with FileUploadServiceStubs {
+    extends ITSpec with FormTemplateSample with FormDataSample with QueryParamsSample with FileUploadServiceStubs {
   override implicit val defaultPatience: PatienceConfig =
     PatienceConfig(timeout = Span(15, Seconds), interval = Span(500, Millis))
 
@@ -31,7 +30,6 @@ class FormIT
   "new form" should "return create a new instance of form" in {
     val startInstant = Instant.now()
     createEnvelopeStub()
-    save4laterPUTStub("123", "basic")
 
     Given("I have a form template")
     post(basicFormTemplate().toString).to("/formtemplates").send()
@@ -50,11 +48,9 @@ class FormIT
     assertFormMetadata(startInstant)
   }
 
-  "update form" should "update form data in save4later service" in {
+  "update form" should "update form data in forms collection" in {
     val startInstant = Instant.now()
     createEnvelopeStub()
-    save4laterPUTStub("123", "basic")
-    save4laterGETStub("123", "basic", FormData(Seq.empty), InProgress)
 
     Given("I have setup a form instance")
     post(basicFormTemplate().toString).to("/formtemplates").send()
@@ -67,7 +63,7 @@ class FormIT
     Then("The response should be NoContent")
     response.status shouldBe StatusCodes.NoContent.intValue
 
-    And("The new form should updated in save4later service")
+    And("The new form should updated in forms collection")
     assertForm(startInstant, Seq(FormField(FormComponentId("textField1"), "textField1Value")), Set(0))
 
     assertFormMetadata(startInstant)

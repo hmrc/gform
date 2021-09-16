@@ -44,7 +44,7 @@ import uk.gov.hmrc.gform.notifier.NotifierModule
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorModule
 import uk.gov.hmrc.gform.playcomponents.{ ErrorHandler, PlayComponents, PlayComponentsModule }
 import uk.gov.hmrc.gform.proxy.ProxyModule
-import uk.gov.hmrc.gform.save4later.{ FormCacheWithFallback, FormMongoCache, Save4Later, Save4LaterModule }
+import uk.gov.hmrc.gform.save4later.FormMongoCache
 import uk.gov.hmrc.gform.submission.SubmissionModule
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsHttpApiModule
 import uk.gov.hmrc.gform.testonly.TestOnlyModule
@@ -96,13 +96,9 @@ class ApplicationModule(context: Context)
   val fileUploadModule = new FileUploadModule(configModule, wSHttpModule, timeModule, akkaModule)
   private val mongoModule = new MongoModule(configModule)
   val formTemplateModule = new FormTemplateModule(controllerComponents, mongoModule)
-  protected val shortLivedCacheModule = new Save4LaterModule(configModule, wSHttpModule)
   val pdfGeneratorModule = new PdfGeneratorModule(configModule, wSHttpModule)
 
   val formMetadaModule = new FormMetadataModule(mongoModule)
-
-  val save4later =
-    new Save4Later(shortLivedCacheModule.shortLivedCache)
 
   val formMongoCache = new FormMongoCache(
     new MongoCacheRepository[String](
@@ -116,11 +112,9 @@ class ApplicationModule(context: Context)
     new CryptoWithKeysFromConfig(baseConfigKey = "json.encryption", configModule.typesafeConfig)
   )
 
-  val formCacheWithFallback = new FormCacheWithFallback(formMongoCache, save4later)
-
   val formService: FormService[Future] =
     new FormService(
-      formCacheWithFallback,
+      formMongoCache,
       fileUploadModule.fileUploadService,
       formTemplateModule.formTemplateService,
       formMetadaModule.formMetadataService
