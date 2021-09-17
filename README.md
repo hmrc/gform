@@ -5,7 +5,7 @@
 
 Gform is a SaaS for authoring and running form submission journeys.
  
-This gform backend persists form templates in a mongo database.  It also persists incomplete form submissions in save4later.
+This gform backend persists form templates in a mongo database.  It also persists incomplete form submissions in mongo forms collection.
    
 When forms are submitted, they the submission data is written into a PDF file and sent to DMS via GIS using fileupload.
  
