@@ -62,6 +62,14 @@ class FormComponentMaker(json: JsValue) {
     case JsUndefined() => Right(EmailVerification.noVerification)
   }
 
+  lazy val optFileUploadProvider: Opt[FileUploadProvider] = (json \ "service") match {
+    case JsDefined(JsString("upscan"))     => Right(FileUploadProvider.Upscan)
+    case JsDefined(JsString("fileUpload")) => Right(FileUploadProvider.FileUploadFrontend)
+    case JsDefined(unknown) =>
+      Left(UnexpectedState(s"Unsupported file upload service '$unknown'. Only 'upscan' or 'fileUpload' are supported"))
+    case JsUndefined() => Right(FileUploadProvider.FileUploadFrontend)
+  }
+
   lazy val optMaybeFormatExpr
     : RoundingMode => Option[List[SelectionCriteria]] => EmailVerification => Opt[Option[FormatExpr]] = rm =>
     selectionCriteria =>
@@ -481,7 +489,9 @@ class FormComponentMaker(json: JsValue) {
                                  |""".stripMargin).asLeft
   }
 
-  private lazy val fileUploadOpt: Opt[FileUpload] = FileUpload().asRight
+  private lazy val fileUploadOpt: Opt[FileUpload] = for {
+    fileUploadProvider <- optFileUploadProvider
+  } yield FileUpload(fileUploadProvider)
 
   private lazy val infoOpt: Opt[InformationMessage] = (infoType, infoText) match {
     case (IsInfoType(StandardInfo), Some(infText))  => InformationMessage(StandardInfo, infText).asRight

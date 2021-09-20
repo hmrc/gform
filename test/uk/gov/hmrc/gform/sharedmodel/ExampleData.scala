@@ -168,7 +168,7 @@ trait ExampleFieldValue { dependecies: ExampleFieldId =>
   def `fieldValue - facePhoto` =
     FormComponent(
       `fieldId - facePhoto`,
-      FileUpload(),
+      FileUpload(FileUploadProvider.FileUploadFrontend),
       label = toSmartString("Attach evidence of your smile"),
       helpText = None,
       None,

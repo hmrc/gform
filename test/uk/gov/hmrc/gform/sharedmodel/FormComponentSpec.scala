@@ -1149,7 +1149,7 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("attachment1"),
-        FileUpload(),
+        FileUpload(FileUploadProvider.FileUploadFrontend),
         label = toSmartString("Attach evidence of your income"),
         helpText = None,
         None,

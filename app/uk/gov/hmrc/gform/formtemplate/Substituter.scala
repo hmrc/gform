@@ -159,8 +159,8 @@ object Substituter {
 
       case InformationMessage(infoType, infoText) =>
         InformationMessage(infoType, infoText(substitutions))
-      case FileUpload()   => FileUpload()
-      case t @ Time(_, _) => t
+      case f @ FileUpload(_) => f
+      case t @ Time(_, _)    => t
     }
 
   implicit def formComponentValidatorSubstituter[A](implicit
