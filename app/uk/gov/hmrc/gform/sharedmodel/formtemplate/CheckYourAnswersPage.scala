@@ -23,4 +23,8 @@ case class CheckYourAnswersPage(updateTitle: SmartString, noPIIUpdateTitle: Opti
 
 object CheckYourAnswersPage {
   implicit val format: Format[CheckYourAnswersPage] = Json.format[CheckYourAnswersPage]
+
+  implicit val leafExprs: LeafExpr[CheckYourAnswersPage] = (path: TemplatePath, t: CheckYourAnswersPage) =>
+    LeafExpr(path + "updateTitle", t.updateTitle) ++
+      LeafExpr(path + "noPIIUpdateTitle", t.noPIIUpdateTitle)
 }

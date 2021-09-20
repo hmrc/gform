@@ -87,7 +87,8 @@ object Section {
           LeafExpr(path + "addAnotherQuestion", a.addAnotherQuestion) ++
           LeafExpr(path + "instruction", a.instruction) ++
           LeafExpr(path + "infoMessage", a.infoMessage) ++
-          LeafExpr(path + "defaultPage", a.defaultPage)
+          LeafExpr(path + "defaultPage", a.defaultPage) ++
+          LeafExpr(path + "cyaPage", a.cyaPage)
     }
 }
 
