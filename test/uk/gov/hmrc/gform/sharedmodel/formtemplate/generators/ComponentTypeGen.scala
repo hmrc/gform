@@ -104,7 +104,8 @@ trait ComponentTypeGen {
       infoText <- SmartStringGen.smartStringGen
     } yield InformationMessage(infoType, infoText)
 
-  def fileUploadGen: Gen[FileUpload] = Gen.const(FileUpload())
+  def fileUploadGen: Gen[FileUpload] =
+    Gen.oneOf(FileUploadProvider.FileUploadFrontend, FileUploadProvider.Upscan).map(FileUpload(_))
 
   def localTimeGen(baseTime: LocalTime): Gen[LocalTime] =
     Gen.oneOf(

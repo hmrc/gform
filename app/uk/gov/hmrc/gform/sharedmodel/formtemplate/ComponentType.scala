@@ -256,7 +256,18 @@ case class Group(
 
 case class InformationMessage(infoType: InfoType, infoText: SmartString) extends ComponentType
 
-case class FileUpload() extends ComponentType
+sealed trait FileUploadProvider
+
+object FileUploadProvider {
+  case object Upscan extends FileUploadProvider
+  case object FileUploadFrontend extends FileUploadProvider
+
+  implicit val format: OFormat[FileUploadProvider] = derived.oformat()
+}
+
+case class FileUpload(
+  fileUploadProvider: FileUploadProvider
+) extends ComponentType
 
 case class StartTime(time: LocalTime) extends AnyVal
 
@@ -332,7 +343,7 @@ object ComponentType {
           LeafExpr(path + "repeatLabel", repeatLabel) ++
           LeafExpr(path + "repeatAddAnotherText", addAnotherText)
       case InformationMessage(_, infoText) => LeafExpr(path + "infoText", infoText)
-      case FileUpload()                    => Nil
+      case FileUpload(_)                   => Nil
       case Time(_, _)                      => Nil
 
     }
