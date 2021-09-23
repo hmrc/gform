@@ -25,7 +25,6 @@ import uk.gov.hmrc.gform.sharedmodel.form.Form
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
-import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -43,7 +42,6 @@ trait PdfAndXmlSummariesFactory {
 object PdfAndXmlSummariesFactory {
 
   def withPdf(pdfGeneratorService: PdfGeneratorService, pdfData: PdfHtml, instructionPdfData: Option[PdfHtml])(implicit
-    hc: HeaderCarrier,
     ec: ExecutionContext
   ): PdfAndXmlSummariesFactory = new PdfAndXmlSummariesFactory {
 
@@ -56,7 +54,7 @@ object PdfAndXmlSummariesFactory {
       hmrcDms: HmrcDms
     )(implicit now: Instant): Future[PdfAndXmlSummaries] =
       for {
-        pdf <- pdfGeneratorService.generatePDFBytes(pdfData.html)
+        pdf <- pdfGeneratorService.generatePDFBytesLocal(pdfData.html)
         instructionPdf <- instructionPdfData.fold(Future.successful(Option.empty[Array[Byte]]))(iPdfData =>
                             pdfGeneratorService.generatePDFBytesLocal(iPdfData.html).map(Option(_))
                           )

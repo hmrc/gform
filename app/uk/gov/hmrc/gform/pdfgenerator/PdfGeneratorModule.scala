@@ -16,16 +16,8 @@
 
 package uk.gov.hmrc.gform.pdfgenerator
 
-import uk.gov.hmrc.gform.config.ConfigModule
-import uk.gov.hmrc.gform.connectors.PdfGeneratorConnector
-import uk.gov.hmrc.gform.wshttp.WSHttpModule
+class PdfGeneratorModule() {
 
-import scala.concurrent.ExecutionContext
-
-class PdfGeneratorModule(configModule: ConfigModule, wSHttpModule: WSHttpModule)(implicit ex: ExecutionContext) {
-
-  val pdfGeneratorConnector = new PdfGeneratorConnector(configModule.serviceConfig, wSHttpModule.auditableWSHttp)
-
-  val pdfGeneratorService = new PdfGeneratorService(pdfGeneratorConnector)
+  val pdfGeneratorService = new PdfGeneratorService()
 
 }

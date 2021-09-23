@@ -40,7 +40,7 @@ class DmsModule(
       pdfGeneratorModule.pdfGeneratorService,
       PDDocument.load,
       config.formExpiryDays.longValue
-    )(Clock.systemDefaultZone, catsStdInstancesForFuture)
+    )(Clock.systemDefaultZone, catsStdInstancesForFuture, ex)
 
   lazy val dmsSubmissionController: DmsSubmissionController =
     new DmsSubmissionController(controllerComponents, dmsSubmissionService)

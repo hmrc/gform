@@ -35,6 +35,8 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Constant, FormTemplateId }
 import uk.gov.hmrc.gform.submission.{ DmsMetaData, PdfAndXmlSummaries, PdfSummary, Submission, SubmissionId }
 import uk.gov.hmrc.http.HeaderCarrier
 
+import scala.concurrent.ExecutionContext
+
 trait DmsSubmissionAlgebra[F[_]] {
   def submitToDms(dmsHtmlSubmission: DmsHtmlSubmission, fileAttachments: List[FileAttachment])(implicit
     hc: HeaderCarrier
@@ -49,14 +51,14 @@ class DmsSubmissionService[F[_]](
   pdfGenerator: PdfGeneratorAlgebra[F],
   documentLoader: Array[Byte] => PDDocument,
   formExpiryDays: Long
-)(implicit clock: Clock, M: Monad[F])
+)(implicit clock: Clock, M: Monad[F], ec: ExecutionContext)
     extends DmsSubmissionAlgebra[F] {
 
   override def submitToDms(dmsHtmlSubmission: DmsHtmlSubmission, fileAttachments: List[FileAttachment])(implicit
     hc: HeaderCarrier
   ): F[EnvelopeId] =
     pdfGenerator
-      .generatePDFBytes(decode(dmsHtmlSubmission.html))
+      .generatePDFBytesLocal(decode(dmsHtmlSubmission.html))
       .flatMap { byteArray =>
         submitPdfToDms(byteArray, dmsHtmlSubmission.metadata, fileAttachments)
       }
