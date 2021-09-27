@@ -96,7 +96,7 @@ class ApplicationModule(context: Context)
   val fileUploadModule = new FileUploadModule(configModule, wSHttpModule, timeModule, akkaModule)
   private val mongoModule = new MongoModule(configModule)
   val formTemplateModule = new FormTemplateModule(controllerComponents, mongoModule)
-  val pdfGeneratorModule = new PdfGeneratorModule(configModule, wSHttpModule)
+  val pdfGeneratorModule = new PdfGeneratorModule()
 
   val formMetadaModule = new FormMetadataModule(mongoModule)
 

@@ -122,10 +122,6 @@ class FormService[F[_]: Monad](
   }
 
   def updateUserData(formIdData: FormIdData, userData: UserData)(implicit hc: HeaderCarrier): F[Unit] = {
-    if (userData.formData.valueBytesSize > 200 * 1024) {
-      // restrict size of user form data to 200K, to ensure PDF generator service does not blow up during submission
-      throw new RuntimeException(s"Form data values size exceeds 200K [size=${userData.formData.valueBytesSize}]")
-    }
 
     val lowerCased = formIdData.lowerCaseId
 

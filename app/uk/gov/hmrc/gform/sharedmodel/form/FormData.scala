@@ -21,7 +21,6 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormComponentId
 
 case class FormData(fields: Seq[FormField]) {
   lazy val toData: Map[FormComponentId, String] = fields.map(x => x.id -> x.value).toMap
-  lazy val valueBytesSize: Int = fields.map(f => f.value.getBytes("UTF-8").length).sum
   def find(id: FormComponentId): Option[String] = toData.get(id)
 }
 

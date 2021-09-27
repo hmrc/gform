@@ -33,6 +33,8 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcD
 import uk.gov.hmrc.gform.submission._
 import uk.gov.hmrc.http.HeaderCarrier
 
+import scala.concurrent.ExecutionContext
+
 class DmsSubmissionServiceSpec extends Spec {
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
@@ -51,7 +53,7 @@ class DmsSubmissionServiceSpec extends Spec {
 
     fixture
       .expectCreateEnvelope(FormTemplateId(validSubmission.metadata.dmsFormId), expectedEnvId)
-      .expectGeneratePdfBytes(validSubmission.html, pdfContent)
+      .expectGeneratePdfBytesLocal(validSubmission.html, pdfContent)
       .expectLoadDocument(pdfContent, stubPdfDocument)
       .expectSubmitEnvelope(expectedSubmission, expectedPdfAndXmlSummaries, expectedHmrcDms, 0)
       .service
@@ -80,7 +82,7 @@ class DmsSubmissionServiceSpec extends Spec {
 
     fixture
       .expectCreateEnvelope(FormTemplateId(validSubmission.metadata.dmsFormId), expectedEnvId)
-      .expectGeneratePdfBytes(validSubmission.html, pdfContent)
+      .expectGeneratePdfBytesLocal(validSubmission.html, pdfContent)
       .expectLoadDocument(pdfContent, stubPdfDocument)
       .expectUploadAttachment(expectedEnvId, fileAttachments.head)
       .expectSubmitEnvelope(expectedSubmission, expectedPdfAndXmlSummaries, expectedDmsSubmission, 1)
@@ -142,10 +144,10 @@ class DmsSubmissionServiceSpec extends Spec {
       this
     }
 
-    def expectGeneratePdfBytes(pdfHtml: String, pdfBytes: Array[Byte]): Fixture = {
+    def expectGeneratePdfBytesLocal(pdfHtml: String, pdfBytes: Array[Byte]): Fixture = {
       (pdfGenerator
-        .generatePDFBytes(_: String)(_: HeaderCarrier))
-        .expects(pdfHtml, hc)
+        .generatePDFBytesLocal(_: String)(_: ExecutionContext))
+        .expects(pdfHtml, ec)
         .returning(pdfBytes)
 
       this
