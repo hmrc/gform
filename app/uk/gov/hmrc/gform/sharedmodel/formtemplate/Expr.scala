@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import julienrf.json.derived
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.parsers.ExprParsers
+import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieveAttribute, DataRetrieveId }
 
 sealed trait Expr {
   def rewrite: Expr = this match {
@@ -111,6 +112,7 @@ final case class FormTemplateCtx(value: FormTemplateProp) extends Expr
 final case class DateCtx(value: DateExpr) extends Expr
 final case object Value extends Expr
 final case object LangCtx extends Expr
+final case class DataRetrieveCtx(id: DataRetrieveId, attribute: DataRetrieveAttribute) extends Expr
 
 object Expr {
   implicit val format: OFormat[Expr] = derived.oformat()

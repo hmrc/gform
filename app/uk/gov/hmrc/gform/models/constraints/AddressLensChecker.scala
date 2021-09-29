@@ -20,14 +20,12 @@ import cats.implicits._
 import uk.gov.hmrc.gform.core.{ Invalid, Valid, ValidationResult }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
-class AddressLensChecker(formTemplate: FormTemplate) {
+class AddressLensChecker(formTemplate: FormTemplate, allExpressions: List[ExprWithPath]) {
 
   private val allAddressIds: Set[FormComponentId] = formTemplate.formComponents {
     case fc @ (IsAddress(_) | IsOverseasAddress(_)) =>
       fc.id
   }.toSet
-
-  private val allExpressions: List[ExprWithPath] = LeafExpr(TemplatePath.root, formTemplate)
 
   val result: ValidationResult =
     allExpressions.flatMap(_.referenceInfos).foldMap {

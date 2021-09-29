@@ -20,7 +20,7 @@ import cats.implicits._
 import uk.gov.hmrc.gform.core.{ Invalid, Valid, ValidationResult }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
-class FunctionsChecker(formTemplate: FormTemplate) {
+class FunctionsChecker(formTemplate: FormTemplate, allExpressions: List[ExprWithPath]) {
 
   private val allowedCountIds: Set[FormComponentId] = formTemplate.sections.collect { case s: Section.AddToList =>
     s.addAnotherQuestion.id
@@ -34,8 +34,6 @@ class FunctionsChecker(formTemplate: FormTemplate) {
     }
     .flatten
     .toSet
-
-  private val allExpressions: List[ExprWithPath] = LeafExpr(TemplatePath.root, formTemplate)
 
   val result: ValidationResult = allExpressions.flatMap(_.referenceInfos).foldMap {
     case ReferenceInfo.SumExpr(path, Sum(FormCtx(formComponentId))) if !allowedSumIds(formComponentId) =>

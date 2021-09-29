@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.models.constraints
 
-import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ DataRetrieveCtx, _ }
 
 sealed trait ReferenceInfo {
   def path: TemplatePath
@@ -30,4 +30,5 @@ object ReferenceInfo {
   final case class PeriodExpr(path: TemplatePath, period: Period) extends ReferenceInfo
   final case class PeriodExtExpr(path: TemplatePath, periodExt: PeriodExt) extends ReferenceInfo
   final case class LinkCtxExpr(path: TemplatePath, linkCtx: LinkCtx) extends ReferenceInfo
+  final case class DataRetrieveCtxExpr(path: TemplatePath, dataRetrieveCtx: DataRetrieveCtx) extends ReferenceInfo
 }

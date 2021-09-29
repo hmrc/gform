@@ -124,6 +124,7 @@ object FormTemplatePIIRefsHelper {
       case DateCtx(value)                         => value.maybeFormCtx.toList.map(_.formComponentId.value)
       case Value                                  => Nil
       case LangCtx                                => Nil
+      case DataRetrieveCtx(_, _)                  => Nil
     }
 
   implicit class JsLookupResultOps(result: JsLookupResult) {

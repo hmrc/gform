@@ -18,6 +18,8 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import SmartStringGen.smartStringGen
+import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieveId, ValidateBank }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.ExprGen.formCtxGen
 
 trait SectionGen {
 
@@ -87,6 +89,12 @@ trait SectionGen {
       restAfterUnderscore  <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen).map(_.map("_" + _).getOrElse(""))
     } yield PageId(first + restBeforeUnderscore + restAfterUnderscore)
 
+  def validateBankGen: Gen[ValidateBank] = for {
+    id                <- Gen.alphaStr
+    sortCodeExpr      <- formCtxGen
+    accountNumberExpr <- formCtxGen
+  } yield ValidateBank(DataRetrieveId(id), sortCodeExpr, accountNumberExpr)
+
   def pageGen: Gen[Page] =
     for {
       title             <- smartStringGen
@@ -102,6 +110,7 @@ trait SectionGen {
       continueIf        <- Gen.option(ContinueIfGen.continueIfGen)
       instruction       <- Gen.option(InstructionGen.instructionGen)
       presentationHint  <- Gen.option(PresentationHintGen.presentationHintGen)
+      dataRetrieve      <- Gen.option(validateBankGen)
     } yield Page(
       title,
       id,
@@ -115,7 +124,8 @@ trait SectionGen {
       continueLabel,
       continueIf,
       instruction,
-      presentationHint
+      presentationHint,
+      dataRetrieve
     )
 
   def nonRepeatingPageSectionGen: Gen[Section.NonRepeatingPage] = pageGen.map(Section.NonRepeatingPage)

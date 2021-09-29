@@ -147,7 +147,8 @@ class FormSpec extends FlatSpec with Matchers with ScalaCheckDrivenPropertyCheck
       ),
       QueryParams.empty,
       None,
-      BooleanExprCache.empty
+      BooleanExprCache.empty,
+      None
     ),
     Some(EnvelopeExpiryDate(LocalDateTime.of(2064, 12, 1, 0, 0, 40))),
     FormComponentIdToFileIdMapping.empty

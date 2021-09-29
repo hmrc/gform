@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import play.api.libs.json.{ Json, OFormat }
-import uk.gov.hmrc.gform.sharedmodel.SmartString
+import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieve, SmartString }
 import uk.gov.hmrc.gform.ops.FormComponentOps
 
 case class Page(
@@ -33,7 +33,8 @@ case class Page(
   continueLabel: Option[SmartString],
   continueIf: Option[ContinueIf],
   instruction: Option[Instruction],
-  presentationHint: Option[PresentationHint]
+  presentationHint: Option[PresentationHint],
+  dataRetrieve: Option[DataRetrieve]
 ) {
   lazy val expandedFormComponents: List[FormComponent] = fields.flatMap(_.expandedFormComponents)
 

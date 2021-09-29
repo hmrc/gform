@@ -50,6 +50,7 @@ object ExprSubstituter extends Substituter[ExprSubstitutions, FormTemplate] {
         case PeriodValue(_)               => t
         case UserCtx(_)                   => t
         case Value                        => t
+        case DataRetrieveCtx(_, _)        => t
       }
     }
 

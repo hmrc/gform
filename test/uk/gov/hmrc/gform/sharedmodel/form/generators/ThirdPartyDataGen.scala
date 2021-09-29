@@ -40,7 +40,8 @@ trait ThirdPartyDataGen {
       emailVerification,
       queryParams,
       None,
-      BooleanExprCache.empty
+      BooleanExprCache.empty,
+      None
     )
 }
 

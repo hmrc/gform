@@ -24,12 +24,11 @@ import scalax.collection.GraphEdge._
 import uk.gov.hmrc.gform.core.{ Invalid, Valid, ValidationResult }
 import uk.gov.hmrc.gform.core.ValidationResult.{ BooleanToValidationResultSyntax, validationResultMonoid }
 import uk.gov.hmrc.gform.models.constraints.{ AddressLensChecker, FunctionsChecker, MutualReferenceChecker, ReferenceInfo }
-import uk.gov.hmrc.gform.sharedmodel.SmartString
+import uk.gov.hmrc.gform.sharedmodel.{ AvailableLanguages, DataRetrieve, DataRetrieveId, LangADT, SmartString }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.graph.DependencyGraph._
 import uk.gov.hmrc.gform.formtemplate.FormTemplateValidatorHelper._
-import uk.gov.hmrc.gform.models.constraints.ReferenceInfo.{ PeriodExpr, PeriodExtExpr }
-import uk.gov.hmrc.gform.sharedmodel.{ AvailableLanguages, LangADT }
+import uk.gov.hmrc.gform.models.constraints.ReferenceInfo.{ DataRetrieveCtxExpr, PeriodExpr, PeriodExtExpr }
 import shapeless.syntax.typeable._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 
@@ -188,19 +187,28 @@ object FormTemplateValidator {
 
   }
 
-  def validateReferencesConstraints(formTemplate: FormTemplate): ValidationResult = {
+  def validateReferencesConstraints(
+    formTemplate: FormTemplate,
+    allExpressions: List[ExprWithPath]
+  ): ValidationResult = {
     val mrc = new MutualReferenceChecker(formTemplate)
-    val functionsChecker = new FunctionsChecker(formTemplate)
+    val functionsChecker = new FunctionsChecker(formTemplate, allExpressions)
 
     Monoid.combineAll(List(mrc.result, functionsChecker.result))
   }
 
-  def validateAddressReferencesConstraints(formTemplate: FormTemplate): ValidationResult = {
-    val addressLensChecker = new AddressLensChecker(formTemplate)
+  def validateAddressReferencesConstraints(
+    formTemplate: FormTemplate,
+    allExpressions: List[ExprWithPath]
+  ): ValidationResult = {
+    val addressLensChecker = new AddressLensChecker(formTemplate, allExpressions)
     addressLensChecker.result
   }
 
-  def validatePeriodFunReferenceConstraints(formTemplate: FormTemplate): ValidationResult = {
+  def validatePeriodFunReferenceConstraints(
+    formTemplate: FormTemplate,
+    allExpressions: List[ExprWithPath]
+  ): ValidationResult = {
 
     val fcIdToComponentType: Map[FormComponentId, ComponentType] =
       (formTemplate.destinations.allFormComponents ++ SectionHelper
@@ -230,8 +238,7 @@ object FormTemplateValidator {
         .getOrElse(Invalid(s"${path.path}: Expression $expr used in period function should be a date expression"))
     }
 
-    val referenceInfos = LeafExpr(TemplatePath.root, formTemplate).flatMap(_.referenceInfos)
-    val validations = referenceInfos.collect {
+    val validations = allExpressions.flatMap(_.referenceInfos).collect {
       case PeriodExpr(path, Period(expr1, expr2)) => List(validateExpr(expr1, path), validateExpr(expr2, path))
       case PeriodExtExpr(path, PeriodExt(Period(expr1, expr2), _)) =>
         List(validateExpr(expr1, path), validateExpr(expr2, path))
@@ -416,6 +423,7 @@ object FormTemplateValidator {
       case Period(dateCtx1, dateCtx2) =>
         checkFields(dateCtx1, dateCtx2)
       case PeriodExt(periodFun, _) => validate(periodFun, sections)
+      case DataRetrieveCtx(_, _)   => Valid
     }
   }
 
@@ -544,6 +552,55 @@ object FormTemplateValidator {
     }
 
     isNonInformationMessagePresent.find(!_.isValid).getOrElse(Valid)
+  }
+
+  def validateDataRetrieve(pages: List[Page]): ValidationResult = {
+    val ids = pages.flatMap(_.dataRetrieve).map(_.id)
+    val duplicates = ids.groupBy(identity).collect { case (fId, List(_, _, _*)) => fId }.toSet
+    duplicates.isEmpty.validationResult(
+      s"Some data retrieve ids are defined more than once: ${duplicates.toList.sortBy(_.value).map(_.value)}"
+    )
+  }
+
+  def validateDataRetrieveFormCtxReferences(pages: List[Page]): ValidationResult = {
+    val dataRetrieves: List[(Page, DataRetrieve)] = pages.flatMap(p => p.dataRetrieve.map(d => (p, d)))
+    dataRetrieves.map { case (page, dataRetrieve) =>
+      val pageFormComponentsIds = page.allFormComponents.map(_.id)
+      val formCtxExprs = dataRetrieve.formCtxExprs.collect { case ctx: FormCtx =>
+        ctx
+      }
+      val nonExistentFCRefs = formCtxExprs.map(_.formComponentId).filterNot(pageFormComponentsIds.contains)
+      nonExistentFCRefs.isEmpty.validationResult(
+        s"Data retrieve with id '${dataRetrieve.id.value}' refers to form components that does not exist in the page [${nonExistentFCRefs.map(_.value).mkString(",")}]"
+      )
+    }.combineAll
+  }
+
+  def validateDataRetrieveCtx(
+    formTemplate: FormTemplate,
+    pages: List[Page],
+    allExpressions: List[ExprWithPath]
+  ): ValidationResult = {
+
+    val referenceInfos: List[DataRetrieveCtxExpr] =
+      allExpressions.flatMap(_.referenceInfos).collect { case d: DataRetrieveCtxExpr =>
+        d
+      }
+
+    val dataRetrieves: Map[DataRetrieveId, DataRetrieve] = pages.flatMap(p => p.dataRetrieve.map(d => (d.id, d))).toMap
+
+    referenceInfos.map { r =>
+      val maybeDataRetrieve = dataRetrieves.get(r.dataRetrieveCtx.id)
+      maybeDataRetrieve.fold[ValidationResult](
+        Invalid(s"Data retrieve expression at path ${r.path} refers to non-existent id ${r.dataRetrieveCtx.id.value}")
+      ) { d =>
+        d.attributes
+          .contains(r.dataRetrieveCtx.attribute)
+          .validationResult(
+            s"Data retrieve expression at path ${r.path}, with id ${r.dataRetrieveCtx.id.value}, refers to non-existent attribute ${r.dataRetrieveCtx.attribute.exprId}"
+          )
+      }
+    }.combineAll
   }
 }
 
