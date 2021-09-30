@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import org.scalatest.{ FlatSpec, Matchers }
-import play.api.libs.json.{ JsError, JsResultException, Json, JsonValidationError, _ }
+import play.api.libs.json.{ JsError, Json, JsonValidationError, _ }
 import uk.gov.hmrc.gform.sharedmodel
 import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieve, DataRetrieveId, ValidateBank }
 
@@ -55,7 +55,7 @@ class DataRetrieveSpec extends FlatSpec with Matchers {
                |}
                |""".stripMargin)
       .validateOpt[DataRetrieve] shouldBe JsError(
-      s"Type of value is invalid for attribute 'type' [error=${JsResultException(Seq((JsPath(), Seq(JsonValidationError(Seq("error.expected.jsstring"))))))}]"
+      s"Type of value is invalid for attribute 'type' [error=${List((JsPath(), Seq(JsonValidationError(Seq("error.expected.jsstring")))))}]"
     )
   }
 

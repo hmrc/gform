@@ -24,11 +24,7 @@ import uk.gov.hmrc.gform.core.parsers.{ BasicParsers, ValueParser }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Expr, JsonUtils, OFormatWithTemplateReadFallback }
 
-import scala.util.Try
 import scala.util.matching.Regex
-
-sealed trait DataRetrieveType
-trait ValidateBankType extends DataRetrieveType
 
 case class DataRetrieveId(value: String) extends AnyVal
 
@@ -99,8 +95,12 @@ object DataRetrieve {
   def opt[T](jsValue: JsValue, path: String)(implicit r: Reads[T]): Opt[T] =
     jsValue \ path match {
       case JsDefined(json) =>
-        Try(json.as[T])
-          .fold(e => Left(UnexpectedState(s"Type of value is invalid for attribute '$path' [error=$e]")), Right(_))
+        json
+          .validate[T]
+          .fold(
+            invalid => Left(UnexpectedState(s"Type of value is invalid for attribute '$path' [error=$invalid]")),
+            valid => Right(valid)
+          )
       case _: JsUndefined => Left(UnexpectedState(s"'$path' attribute missing"))
     }
 

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.models.constraints
 
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ DataRetrieveCtx, _ }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 sealed trait ReferenceInfo {
   def path: TemplatePath
