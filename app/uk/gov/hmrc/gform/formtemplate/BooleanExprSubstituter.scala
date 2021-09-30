@@ -48,6 +48,7 @@ object BooleanExprSubstituter extends Substituter[BooleanExprSubstitutions, Form
         case PeriodValue(_)               => t
         case UserCtx(_)                   => t
         case Value                        => t
+        case DataRetrieveCtx(_, _)        => t
       }
     }
 

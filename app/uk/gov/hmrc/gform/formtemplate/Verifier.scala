@@ -33,6 +33,8 @@ trait Verifier {
 
     val languages = formTemplate.languages
 
+    val allExpressions: List[ExprWithPath] = LeafExpr(TemplatePath.root, formTemplate)
+
     for {
       _ <- fromOptA(FormTemplateValidator.validateLanguages(languages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateChoiceHelpText(pages).toEither)
@@ -52,13 +54,16 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validateEmailVerification(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateInstructions(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateInvalidReferences(formTemplate).toEither)
-      _ <- fromOptA(FormTemplateValidator.validateReferencesConstraints(formTemplate).toEither)
-      _ <- fromOptA(FormTemplateValidator.validateAddressReferencesConstraints(formTemplate).toEither)
-      _ <- fromOptA(FormTemplateValidator.validatePeriodFunReferenceConstraints(formTemplate).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateReferencesConstraints(formTemplate, allExpressions).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateAddressReferencesConstraints(formTemplate, allExpressions).toEither)
+      _ <- fromOptA(FormTemplateValidator.validatePeriodFunReferenceConstraints(formTemplate, allExpressions).toEither)
       _ <- fromOptA(FormTemplateValidator.validateSectionShortNames(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateAddToListDefaultPage(formTemplate).toEither)
       _ <- fromOptA(DestinationsValidator.validateUniqueDestinationIds(formTemplate.destinations).toEither)
       _ <- fromOptA(DestinationsValidator.validateNoGroupInDeclaration(formTemplate.destinations).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateDataRetrieve(pages).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateDataRetrieveFormCtxReferences(pages).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateDataRetrieveCtx(formTemplate, pages, allExpressions).toEither)
     } yield ()
 
   }

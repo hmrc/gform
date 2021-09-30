@@ -25,7 +25,7 @@ import uk.gov.hmrc.gform.Helpers.{ toLocalisedString, toSmartString }
 import uk.gov.hmrc.gform.core.parsers.ValueParser
 import uk.gov.hmrc.gform.core.{ Invalid, Valid }
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString, SmartString }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, Date, DateCtx, DateFormCtxVar, FormComponentId, FormCtx, InformationMessage, Instruction, LinkCtx, Offset, PageId, StandardInfo }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, Date, DateCtx, DateFormCtxVar, ExprWithPath, FormComponentId, FormCtx, InformationMessage, Instruction, LeafExpr, LinkCtx, Offset, PageId, StandardInfo, TemplatePath }
 import parseback.compat.cats._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 
@@ -278,7 +278,9 @@ class FormTemplateValidatorSpec
             )
           )
         )
-        val result = FormTemplateValidator.validatePeriodFunReferenceConstraints(formTemplate)
+        val allExpressions: List[ExprWithPath] = LeafExpr(TemplatePath.root, formTemplate)
+
+        val result = FormTemplateValidator.validatePeriodFunReferenceConstraints(formTemplate, allExpressions)
         result shouldBe expectedResult
       }
     }

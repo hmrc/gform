@@ -25,6 +25,7 @@ import uk.gov.hmrc.gform.sharedmodel.dblookup.CollectionName
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.UserField.Enrolment
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieveAttribute, DataRetrieveId }
 
 object ValueParser {
 
@@ -199,6 +200,10 @@ object ValueParser {
     }
     | "link" ~ "." ~ internalLinkParser ^^ { (loc, _, _, internalLink) =>
       LinkCtx(internalLink)
+    }
+    | "dataRetrieve" ~ "." ~ DataRetrieveId.unanchoredIdValidation ~ "." ~ DataRetrieveAttribute.unanchoredIdValidation ^^ {
+      (loc, _, _, dataRetrieveId, _, dataRetrieveAttribute) =>
+        DataRetrieveCtx(DataRetrieveId(dataRetrieveId), DataRetrieveAttribute.fromExpr(dataRetrieveAttribute))
     }
     | dateExprWithoutFormCtxFieldDate.map(
       DateCtx.apply

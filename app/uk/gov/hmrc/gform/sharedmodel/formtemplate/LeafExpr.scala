@@ -64,6 +64,7 @@ final case class ExprWithPath(path: TemplatePath, expr: Expr) {
     case DateCtx(dateExpr)                             => dateExpr.referenceInfos
     case p @ Period(_, _)                              => ReferenceInfo.PeriodExpr(path, p) :: Nil
     case p @ PeriodExt(_, _)                           => ReferenceInfo.PeriodExtExpr(path, p) :: Nil
+    case d @ DataRetrieveCtx(_, _)                     => ReferenceInfo.DataRetrieveCtxExpr(path, d) :: Nil
   }
 }
 
