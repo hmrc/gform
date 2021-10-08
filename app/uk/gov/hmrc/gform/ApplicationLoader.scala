@@ -33,7 +33,7 @@ import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.dblookup.DbLookupModule
 import uk.gov.hmrc.gform.dms.DmsModule
 import uk.gov.hmrc.gform.email.EmailModule
-import uk.gov.hmrc.gform.fileupload.FileUploadModule
+import uk.gov.hmrc.gform.fileupload.{ FileUploadFrontendAlgebra, FileUploadModule }
 import uk.gov.hmrc.gform.form.{ FormModule, FormService }
 import uk.gov.hmrc.gform.formmetadata.FormMetadataModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
@@ -49,6 +49,7 @@ import uk.gov.hmrc.gform.submission.SubmissionModule
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsHttpApiModule
 import uk.gov.hmrc.gform.testonly.TestOnlyModule
 import uk.gov.hmrc.gform.time.TimeModule
+import uk.gov.hmrc.gform.upscan.UpscanModule
 import uk.gov.hmrc.gform.validation.ValidationModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.gform.obligation.ObligationModule
@@ -100,6 +101,10 @@ class ApplicationModule(context: Context)
 
   val formMetadaModule = new FormMetadataModule(mongoModule)
 
+  val queryParameterCrypto =
+    new CryptoWithKeysFromConfig(baseConfigKey = "queryParameter.encryption", configModule.typesafeConfig)
+  val jsonCrypto = new CryptoWithKeysFromConfig(baseConfigKey = "json.encryption", configModule.typesafeConfig)
+
   val formMongoCache = new FormMongoCache(
     new MongoCacheRepository[String](
       mongoModule.mongoComponent,
@@ -109,7 +114,7 @@ class ApplicationModule(context: Context)
       new CurrentTimestampSupport(),
       SimpleCacheId
     ),
-    new CryptoWithKeysFromConfig(baseConfigKey = "json.encryption", configModule.typesafeConfig)
+    jsonCrypto
   )
 
   val formService: FormService[Future] =
@@ -166,6 +171,18 @@ class ApplicationModule(context: Context)
 
   val dbLookupModule = new DbLookupModule(controllerComponents, mongoModule)
 
+  val fileUploadFrontendAlgebra: FileUploadFrontendAlgebra[Future] = fileUploadModule.fileUploadFrontendConnector
+
+  val upscanModule = new UpscanModule(
+    formService,
+    wSHttpModule,
+    configModule,
+    queryParameterCrypto,
+    fileUploadFrontendAlgebra,
+    configModule.appConfig,
+    mongoModule
+  )
+
   override lazy val httpErrorHandler: HttpErrorHandler = new ErrorHandler(
     playComponents.context.environment,
     playComponents.context.initialConfiguration,
@@ -187,6 +204,7 @@ class ApplicationModule(context: Context)
     obligationModule,
     emailModule,
     dbLookupModule,
+    upscanModule,
     httpErrorHandler
   )
 

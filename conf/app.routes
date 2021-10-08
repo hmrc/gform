@@ -53,3 +53,7 @@ POST          /email                                                            
 
 GET           /dblookup/:id/:collectionName                                                             uk.gov.hmrc.gform.dblookup.DbLookupController.exists(id: DbLookupId, collectionName: CollectionName)
 PUT           /dblookup/:collectionName                                                                 uk.gov.hmrc.gform.dblookup.DbLookupController.add(collectionName: CollectionName)
+
+POST          /upscan/callback/:formComponentId/:envelopeId                                             uk.gov.hmrc.gform.upscan.UpscanController.callback(formComponentId: FormComponentId, envelopeId: EnvelopeId, formIdDataCrypted: Crypted)
+GET           /upscan/:reference                                                                        uk.gov.hmrc.gform.upscan.UpscanController.reference(reference: UpscanReference)
+DELETE        /upscan/:reference                                                                        uk.gov.hmrc.gform.upscan.UpscanController.deleteReference(reference: UpscanReference)

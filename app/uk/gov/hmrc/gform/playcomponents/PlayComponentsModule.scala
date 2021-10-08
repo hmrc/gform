@@ -35,6 +35,7 @@ import uk.gov.hmrc.gform.obligation.ObligationModule
 import uk.gov.hmrc.gform.submission.SubmissionModule
 import uk.gov.hmrc.gform.testonly.TestOnlyModule
 import uk.gov.hmrc.gform.validation.ValidationModule
+import uk.gov.hmrc.gform.upscan.UpscanModule
 import uk.gov.hmrc.play.bootstrap.filters.{ CacheControlConfig, CacheControlFilter, DefaultLoggingFilter, MDCFilter }
 import uk.gov.hmrc.play.health.HealthController
 
@@ -53,6 +54,7 @@ class PlayComponentsModule(
   obligationModule: ObligationModule,
   emailModule: EmailModule,
   dbLookupModule: DbLookupModule,
+  upscanModule: UpscanModule,
   errorHandler: HttpErrorHandler
 )(implicit ec: ExecutionContext) {
   private val logger = LoggerFactory.getLogger(getClass)
@@ -70,7 +72,8 @@ class PlayComponentsModule(
     dmsModule.dmsSubmissionController,
     obligationModule.obligationController,
     emailModule.emailCodeVerificationController,
-    dbLookupModule.dbLookupController
+    dbLookupModule.dbLookupController,
+    upscanModule.upscanController
   )
 
   private val healthController =

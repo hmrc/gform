@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.submissionconsolidator
 
 import akka.actor.ActorSystem
+import akka.util.ByteString
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.typesafe.config.{ Config, ConfigFactory }
 import org.scalacheck.Gen
@@ -28,6 +29,7 @@ import org.scalatest.time.{ Millis, Seconds, Span }
 import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
 import play.api.test.WsTestClient.InternalWSClient
+import scala.concurrent.{ ExecutionContext, Future }
 import uk.gov.hmrc.gform.WiremockSupport
 import uk.gov.hmrc.gform.wshttp.WSHttp
 import uk.gov.hmrc.http.HeaderCarrier
@@ -49,6 +51,8 @@ class SubmissionConsolidatorConnectorSpec
     override val auditConnector: AuditConnector = mock[AuditConnector]
     override val hooks: Seq[HttpHook] = Seq.empty
     override val wsClient: WSClient = _wsClient
+    override def getByteString(url: String)(implicit ec: ExecutionContext): Future[ByteString] =
+      Future.successful(ByteString.empty)
   }
 
   override def afterAll(): Unit = {

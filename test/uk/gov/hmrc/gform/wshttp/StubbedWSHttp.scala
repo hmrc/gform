@@ -17,8 +17,10 @@
 package uk.gov.hmrc.gform.wshttp
 
 import akka.actor.{ ActorSystem, Terminated }
+import akka.util.ByteString
 import com.typesafe.config.Config
 import play.api.libs.ws.WSClient
+import scala.concurrent.ExecutionContext
 import uk.gov.hmrc.http.hooks.HttpHook
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 
@@ -43,4 +45,7 @@ object TestWSHttp extends WSHttp {
   override protected def actorSystem: ActorSystem = ???
 
   override def wsClient: WSClient = ???
+
+  override def getByteString(url: String)(implicit ec: ExecutionContext): Future[ByteString] =
+    Future.successful(ByteString.empty)
 }

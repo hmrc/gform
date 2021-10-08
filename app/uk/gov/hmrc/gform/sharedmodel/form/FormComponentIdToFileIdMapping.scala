@@ -19,7 +19,10 @@ package uk.gov.hmrc.gform.sharedmodel.form
 import play.api.libs.json.Format
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, JsonUtils }
 
-case class FormComponentIdToFileIdMapping(mapping: Map[FormComponentId, FileId])
+case class FormComponentIdToFileIdMapping(mapping: Map[FormComponentId, FileId]) {
+  def +(formComponentId: FormComponentId, fileId: FileId): FormComponentIdToFileIdMapping =
+    FormComponentIdToFileIdMapping(mapping + (formComponentId -> fileId))
+}
 
 object FormComponentIdToFileIdMapping {
   val empty = FormComponentIdToFileIdMapping(Map.empty)
