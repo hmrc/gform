@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.config
 import com.typesafe.config.{ Config => TypeSafeConfig }
 import pureconfig._
 import pureconfig.generic.ProductHint
+import scala.concurrent.duration.FiniteDuration
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import pureconfig.generic.auto._ // It is now necessary to import `pureconfig.generic.auto._` everywhere a config is loaded or written, even though IntelliJ sees this as unused, its still required
 
@@ -29,7 +30,8 @@ case class AppConfig(
   formMaxAttachments: Int,
   formMaxAttachmentTotalSizeMB: Int,
   /*we can't override list in app-config-base:*/
-  contentTypesSeparatedByPipe: String
+  contentTypesSeparatedByPipe: String,
+  `upscan-confirmation-ttl`: FiniteDuration
 ) {
 
   def contentTypes: List[ContentType] = contentTypesSeparatedByPipe.split('|').toList.map(ContentType.apply)

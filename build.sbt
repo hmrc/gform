@@ -24,6 +24,8 @@ lazy val scoverageSettings = {
 
 val silencerVersion = "1.7.3"
 
+Global / onChangedBuildSource := ReloadOnSourceChanges
+
 lazy val IntegrationTest = config("it") extend Test
 
 lazy val BenchmarkTest = config("benchmark") extend Test
@@ -54,6 +56,7 @@ lazy val microservice = (project in file("."))
       compilerPlugin("com.github.ghik" % "silencer-plugin" % silencerVersion cross CrossVersion.full)
     ),
     routesImport ++= Seq(
+      "uk.gov.hmrc.crypto.Crypted",
       "uk.gov.hmrc.gform.sharedmodel.AffinityGroup",
       "uk.gov.hmrc.gform.sharedmodel.notifier.NotifierEmailAddress",
       "uk.gov.hmrc.gform.sharedmodel.ValueClassBinder._",
@@ -61,7 +64,8 @@ lazy val microservice = (project in file("."))
       "uk.gov.hmrc.gform.sharedmodel.form._",
       "uk.gov.hmrc.gform.sharedmodel.formtemplate._",
       "uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._",
-      "uk.gov.hmrc.gform.sharedmodel.dblookup._"
+      "uk.gov.hmrc.gform.sharedmodel.dblookup._",
+      "uk.gov.hmrc.gform.upscan.UpscanReference"
     ),
     resolvers ++= Seq(
       Resolver.jcenterRepo,

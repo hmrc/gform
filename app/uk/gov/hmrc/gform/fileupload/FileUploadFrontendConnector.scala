@@ -23,15 +23,16 @@ import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.core.FutureSyntax
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
+import uk.gov.hmrc.gform.upscan.UploadDetails
 import uk.gov.hmrc.gform.wshttp.{ FutureHttpResponseSyntax, WSHttp }
 
 import scala.concurrent.{ ExecutionContext, Future }
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
 import scala.concurrent.duration._
 
 class FileUploadFrontendConnector(config: FUConfig, wSHttp: WSHttp)(implicit ex: ExecutionContext, schduler: Scheduler)
-    extends Retrying {
+    extends FileUploadFrontendAlgebra[Future] with Retrying {
   private val logger = LoggerFactory.getLogger(getClass)
 
   def upload(envelopeId: EnvelopeId, fileId: FileId, fileName: String, body: ByteString, contentType: ContentType)(
@@ -51,6 +52,20 @@ class FileUploadFrontendConnector(config: FUConfig, wSHttp: WSHttp)(implicit ex:
       Seq(10.milliseconds, 100.milliseconds, 2.seconds),
       msg
     ).void
+  }
+
+  def uploadFile(
+    envelopeId: EnvelopeId,
+    fileId: FileId,
+    uploadDetails: UploadDetails,
+    bytes: ByteString
+  )(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+    val id = fileId.value
+    val fileName = id + "_" + uploadDetails.fileName
+    val url = s"$baseUrl/file-upload/upload/envelopes/${envelopeId.value}/files/$id"
+    wSHttp
+      .POSTFile(url, fileName, bytes, Seq.empty[(String, String)], uploadDetails.fileMimeType)
+      .failWithNonSuccessStatusCodes(url),
   }
 
   private lazy val baseUrl = config.fileUploadFrontendBaseUrl

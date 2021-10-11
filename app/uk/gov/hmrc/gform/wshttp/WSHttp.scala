@@ -35,7 +35,6 @@ trait WSHttp
     extends HttpGet with WSGet with HttpPut with WSPut with HttpPost with WSPost with HttpDelete with WSDelete
     with HttpHooks with HttpAuditing {
 
-  //TODO: body should be type of Stream not ByteString (do we want to blow up if few people will submit forms at the same time?)
   def POSTFile[O](
     url: String,
     fileName: String,
@@ -47,13 +46,6 @@ trait WSHttp
     val source: Source[FilePart[Source[ByteString, NotUsed]], NotUsed] = Source(
       FilePart(fileName, fileName, Some(contentType), Source.single(body)) :: Nil
     )
-    //    withTracing(POST_VERB, url) {
-    //      import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
-    //      val httpResponse = buildRequest(url).withHeaders(headers: _*).post(source).map(new WSHttpResponse(_))
-    //      executeHooks(url, POST_VERB, Option(s"""{"info":"multipart upload of $fileName"}"""), httpResponse)
-    //      mapErrors(POST_VERB, url, httpResponse).map(rds.read(POST_VERB, url, _))
-    //    }
-
     buildRequest(url, headers)
       .post(source)
       .map(wsResponse =>
@@ -65,6 +57,10 @@ trait WSHttp
       )
   }
 
+  def getByteString(
+    url: String
+  )(implicit ec: ExecutionContext): Future[ByteString]
+
 }
 
 class WSHttpImpl(
@@ -75,4 +71,9 @@ class WSHttpImpl(
   val wsClient: WSClient
 ) extends WSHttp {
   override val hooks = Seq(AuditingHook)
+
+  override def getByteString(
+    url: String
+  )(implicit ec: ExecutionContext): Future[ByteString] =
+    buildRequest(url, Seq.empty).get().map(_.bodyAsBytes)
 }
