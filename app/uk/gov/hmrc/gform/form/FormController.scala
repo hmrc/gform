@@ -85,6 +85,16 @@ class FormController(
       } yield NoContent
     }
 
+  def createFormFromLegacy(userId: UserId, formTemplateId: String): Action[FormIdData] =
+    createFormFromLegacyData(FormIdData.Plain(userId, FormTemplateId(formTemplateId)))
+
+  private def createFormFromLegacyData(formIdData: FormIdData): Action[FormIdData] =
+    formAction(parse.json[FormIdData])("createFormFromLegacyData", formIdData) { implicit request =>
+      for {
+        _ <- formService.createFormFromLegacy(formIdData, request.body)
+      } yield NoContent
+    }
+
   def delete(formId: FormId): Action[AnyContent] = formAction("delete", formId) { implicit request =>
     formService.delete(formId).asNoContent
   }

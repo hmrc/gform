@@ -422,6 +422,13 @@ trait ExampleFormTemplate {
 
   def formTemplateId = FormTemplateId("AAA999")
 
+  def legacyFormIds =
+    Some(
+      NonEmptyList.of(
+        FormTemplateId("AAA100")
+      )
+    )
+
   def formName = toLocalisedString("AAA999 dev test template")
 
   def emailTemplateId = LocalisedEmailTemplateId("test-email-template-id", None)
@@ -470,6 +477,7 @@ trait ExampleFormTemplate {
   def formTemplate = FormTemplate(
     formTemplateId,
     formTemplateId,
+    legacyFormIds,
     formName,
     Some(ResearchBanner),
     Default,
