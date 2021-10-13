@@ -39,6 +39,8 @@ trait FormAlgebra[F[_]] {
     queryParams: QueryParams
   )(implicit hc: HeaderCarrier): F[FormIdData]
 
+  def createFormFromLegacy(formIdData: FormIdData, newFormIdData: FormIdData)(implicit hc: HeaderCarrier): F[Form]
+
   def updateUserData(formIdData: FormIdData, userData: UserData)(implicit hc: HeaderCarrier): F[Unit]
 
   def updateFormStatus(formId: FormId, newStatus: FormStatus)(implicit hc: HeaderCarrier): F[FormStatus]

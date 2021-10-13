@@ -41,6 +41,7 @@ trait FormMetadataAlgebra[F[_]] {
   def upsert(formIdData: FormIdData): F[Unit]
   def touch(formIdData: FormIdData, parentFormSubmissionRefs: List[SubmissionRef]): F[Unit]
   def findByParentFormSubmissionRef(parentFormSubmissionRef: SubmissionRef): F[List[FormMetadata]]
+  def delete(formIdData: FormIdData): F[Unit]
 }
 
 class FormMetadataService(formMetadataRepo: Repo[FormMetadata])(implicit ec: ExecutionContext)
@@ -117,4 +118,12 @@ class FormMetadataService(formMetadataRepo: Repo[FormMetadata])(implicit ec: Exe
         case Left(UnexpectedState(error)) => Future.failed(new Exception(error))
         case Right(unit)                  => Future.successful(unit)
       }
+
+  override def delete(formIdData: FormIdData): Future[Unit] = {
+    val metadata = newFormMetadata(formIdData)
+    toFuture(formMetadataRepo.delete(metadata.formIdData.toFormId.value)) >>
+      Future.successful(
+        logger.info(show"FormMetadataService.delete($formIdData) - deleting $metadata)")
+      )
+  }
 }
