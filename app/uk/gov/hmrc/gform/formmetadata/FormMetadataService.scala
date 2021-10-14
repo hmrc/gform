@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.formmetadata
 
 import cats.instances.future._
 import cats.instances.list._
+import cats.syntax.functor._
 import cats.syntax.flatMap._
 import cats.syntax.option._
 import cats.syntax.show._
@@ -121,9 +122,10 @@ class FormMetadataService(formMetadataRepo: Repo[FormMetadata])(implicit ec: Exe
 
   override def delete(formIdData: FormIdData): Future[Unit] = {
     val metadata = newFormMetadata(formIdData)
-    toFuture(formMetadataRepo.delete(metadata.formIdData.toFormId.value)) >>
-      Future.successful(
-        logger.info(show"FormMetadataService.delete($formIdData) - deleting $metadata)")
-      )
+    toFuture(
+      formMetadataRepo
+        .delete(metadata.formIdData.toFormId.value)
+        .as(logger.info(show"FormMetadataService.delete($formIdData) - deleting $metadata)"))
+    )
   }
 }
