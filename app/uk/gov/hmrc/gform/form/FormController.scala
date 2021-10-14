@@ -73,6 +73,18 @@ class FormController(
         }
   }
 
+  def createPlainFormFromLegacy(userId: UserId, formTemplateId: FormTemplateId): Action[FormIdData] =
+    createFormFromLegacyData(FormIdData.Plain(userId, formTemplateId))
+  def createFormFromLegacy(userId: UserId, formTemplateId: FormTemplateId, accessCode: AccessCode): Action[FormIdData] =
+    createFormFromLegacyData(FormIdData.WithAccessCode(userId, formTemplateId, accessCode))
+
+  private def createFormFromLegacyData(formIdData: FormIdData): Action[FormIdData] =
+    formAction(parse.json[FormIdData])("createFormFromLegacyData", formIdData) { implicit request =>
+      formService
+        .createFormFromLegacy(formIdData, request.body)
+        .asOkJson
+    }
+
   def updateFormDataPlain(userId: UserId, formTemplateId: String): Action[UserData] =
     updateFormDataByFormIdData(FormIdData.Plain(userId, FormTemplateId(formTemplateId)))
   def updateFormData(userId: UserId, formTemplateId: String, accessCode: AccessCode): Action[UserData] =

@@ -45,5 +45,8 @@ class FormMetadataModule(mongoModule: MongoModule)(implicit ex: ExecutionContext
 
     override def findByParentFormSubmissionRef(parentFormSubmissionRef: SubmissionRef): FOpt[List[FormMetadata]] =
       fromFutureA(formMetadataService.findByParentFormSubmissionRef(parentFormSubmissionRef))
+
+    override def delete(formIdData: FormIdData): FOpt[Unit] =
+      fromFutureA(formMetadataService.delete(formIdData))
   }
 }

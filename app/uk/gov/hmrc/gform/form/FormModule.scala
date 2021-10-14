@@ -81,6 +81,11 @@ class FormModule(
 
     override def forceUpdateFormStatus(formId: FormId, newStatus: FormStatus)(implicit hc: HeaderCarrier): FOpt[Unit] =
       fromFutureA(formService.forceUpdateFormStatus(formId, newStatus))
+
+    override def createFormFromLegacy(formIdData: FormIdData, newFormIdData: FormIdData)(implicit
+      hc: HeaderCarrier
+    ): FOpt[Form] =
+      fromFutureA(formService.createFormFromLegacy(formIdData, newFormIdData))
   }
 
 }

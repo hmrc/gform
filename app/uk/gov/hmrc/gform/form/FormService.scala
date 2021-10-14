@@ -142,6 +142,19 @@ class FormService[F[_]: Monad](
     } yield ()
   }
 
+  def createFormFromLegacy(formIdData: FormIdData, newFormIdData: FormIdData)(implicit hc: HeaderCarrier): F[Form] = {
+    val lowerCased = newFormIdData.lowerCaseId
+
+    for {
+      form <- get(formIdData)
+      newForm = form.copy(_id = newFormIdData.toFormId, formTemplateId = newFormIdData.formTemplateId)
+      _ <- formPersistence.upsert(newForm)
+      _ <- formMetadataAlgebra.upsert(lowerCased)
+      _ <- formPersistence.delete(formIdData.toFormId)
+      _ <- formMetadataAlgebra.delete(formIdData)
+    } yield newForm
+  }
+
   private def refreshMetadata(toRefresh: Boolean, formIdData: FormIdData, formData: FormData) =
     if (toRefresh) for {
       formTemplate <- formTemplateAlgebra.get(formIdData.formTemplateId)
