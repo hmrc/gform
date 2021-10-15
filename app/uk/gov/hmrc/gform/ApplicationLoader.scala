@@ -102,7 +102,7 @@ class ApplicationModule(context: Context)
   val formMetadaModule = new FormMetadataModule(mongoModule)
 
   val queryParameterCrypto =
-    new CryptoWithKeysFromConfig(baseConfigKey = "queryParameter.encryption", configModule.typesafeConfig)
+    new CryptoWithKeysFromConfig(baseConfigKey = "upscan.callback.encryption", configModule.typesafeConfig)
   val jsonCrypto = new CryptoWithKeysFromConfig(baseConfigKey = "json.encryption", configModule.typesafeConfig)
 
   val formMongoCache = new FormMongoCache(

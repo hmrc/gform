@@ -58,6 +58,13 @@ class UpscanController(
     form.componentIdToFileId
   )
 
+  def encrypt = Action.async(parse.json) { implicit request =>
+    val formIdDataString = Json.stringify(request.body)
+
+    val formIdDataCrypted: Crypted = queryParameterCrypto.encrypt(PlainText(formIdDataString))
+    Ok(formIdDataCrypted.value).pure[Future]
+  }
+
   def callback(formComponentId: FormComponentId, envelopeId: EnvelopeId, formIdDataCrypted: Crypted): Action[JsValue] =
     Action.async(parse.json) { implicit request =>
       logger.info(s"Upscan callback - received notification for $formComponentId")
