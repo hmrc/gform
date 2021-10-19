@@ -93,7 +93,10 @@ class UpscanController(
           )
           for {
             file <- upscanService.download(upscanCallbackSuccess.downloadUrl)
-            _    <- fileUploadFrontendAlgebra.uploadFile(envelopeId, fileId, upscanCallbackSuccess.uploadDetails, file)
+            compressedFile = ImageCompressor.compressIfSupported(file, upscanCallbackSuccess)
+            _ <-
+              fileUploadFrontendAlgebra
+                .uploadFile(envelopeId, fileId, upscanCallbackSuccess.uploadDetails, compressedFile)
             form <- formService.get(formIdData)
             formUpd = setTransferred(form, formComponentId, fileId)
             _                  <- formService.updateUserData(formIdData, toUserData(formUpd))
