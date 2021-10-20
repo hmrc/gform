@@ -137,16 +137,22 @@ object SuccessfulResponseHttpClient {
 }
 
 class AuditingHttpClient(wsHttp: WSHttp)(implicit ec: ExecutionContext) extends HttpClient[FOpt] {
+
+  private def authHeaders(implicit hc: HeaderCarrier): Seq[(String, String)] =
+    hc.authorization.map(authToken => Seq("Authorization" -> authToken.value)).getOrElse(Seq.empty)
+
   private implicit val httpReads: HttpReads[HttpResponse] = HttpReadsInstances.readRaw
 
-  override def get(uri: String)(implicit hc: HeaderCarrier): FOpt[HttpResponse] = fromFutureA(wsHttp.GET(uri))
+  override def get(uri: String)(implicit hc: HeaderCarrier): FOpt[HttpResponse] = fromFutureA(
+    wsHttp.GET(uri, headers = authHeaders)
+  )
 
   override def post(uri: String, body: String)(implicit hc: HeaderCarrier): FOpt[HttpResponse] =
-    fromFutureA(wsHttp.POSTString[HttpResponse](uri, body))
+    fromFutureA(wsHttp.POSTString[HttpResponse](uri, body, headers = authHeaders))
 
   // TODO: Lance - when my pull request is merged, change this to use PUTString
   override def put(uri: String, body: String)(implicit hc: HeaderCarrier): FOpt[HttpResponse] =
-    fromFutureA(wsHttp.PUT(uri, Json.parse(body)))
+    fromFutureA(wsHttp.PUT(uri, Json.parse(body), headers = authHeaders))
 }
 
 class WSHttpHttpClient(wsHttp: WSHttp)(implicit ec: ExecutionContext) extends HttpClient[FOpt] {
