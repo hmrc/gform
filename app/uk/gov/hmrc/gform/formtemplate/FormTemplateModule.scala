@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.formtemplate
 
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
+import uk.gov.hmrc.gform.formredirect.{ FormRedirect, FormRedirectService }
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId, FormTemplateRaw }
@@ -32,9 +33,15 @@ class FormTemplateModule(controllerComponents: ControllerComponents, mongoModule
     new Repo[FormTemplate]("formTemplate", mongoModule.mongoComponent, _._id.value)
   private val formTemplateRawRepo: Repo[FormTemplateRaw] =
     new Repo[FormTemplateRaw]("formTemplateRaw", mongoModule.mongoComponent, _._id.value)
-  val formTemplateService: FormTemplateService = new FormTemplateService(formTemplateRepo, formTemplateRawRepo)
+  private val formRedirectRepo: Repo[FormRedirect] =
+    new Repo[FormRedirect]("formRedirect", mongoModule.mongoComponent, _._id.value)
+
+  val formTemplateService: FormTemplateService =
+    new FormTemplateService(formTemplateRepo, formTemplateRawRepo, formRedirectRepo)
+  val formRedirectService: FormRedirectService =
+    new FormRedirectService(formRedirectRepo)
   val formTemplatesController: FormTemplatesController =
-    new FormTemplatesController(controllerComponents, formTemplateService)
+    new FormTemplatesController(controllerComponents, formTemplateService, formRedirectService)
 
   val fOptFormTemplateAlgebra: FormTemplateAlgebra[FOpt] = new FormTemplateAlgebra[FOpt] {
     override def get(id: FormTemplateId): FOpt[FormTemplate] = fromFutureA(formTemplateService.get(id))

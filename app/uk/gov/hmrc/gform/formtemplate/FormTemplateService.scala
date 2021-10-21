@@ -19,17 +19,23 @@ package uk.gov.hmrc.gform.formtemplate
 import cats.implicits._
 import org.slf4j.LoggerFactory
 import play.api.libs.json.JsObject
-import uk.gov.hmrc.gform.core._
+import uk.gov.hmrc.gform.core.{ FOpt, _ }
+import uk.gov.hmrc.gform.formredirect.FormRedirect
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 import scala.concurrent.{ ExecutionContext, Future }
+import java.time.Instant
 
 trait FormTemplateAlgebra[F[_]] {
   def get(id: FormTemplateId): F[FormTemplate]
 }
 
-class FormTemplateService(formTemplateRepo: Repo[FormTemplate], formTemplateRawRepo: Repo[FormTemplateRaw])(implicit
+class FormTemplateService(
+  formTemplateRepo: Repo[FormTemplate],
+  formTemplateRawRepo: Repo[FormTemplateRaw],
+  formRedirectRepo: Repo[FormRedirect]
+)(implicit
   ec: ExecutionContext
 ) extends Verifier with Rewriter with SubstituteExpressions with SubstituteBooleanExprs
     with FormTemplateAlgebra[Future] {
@@ -48,6 +54,7 @@ class FormTemplateService(formTemplateRepo: Repo[FormTemplate], formTemplateRawR
 
   def delete(formTemplateId: FormTemplateId): FOpt[DeleteResults] =
     for {
+      _                   <- formRedirectRepo.deleteByFieldName("redirect", formTemplateId.value)
       prodDeleted         <- formTemplateRepo.delete(formTemplateId.value)
       prodSpecimenDeleted <- formTemplateRepo.delete("specimen-" + formTemplateId.value)
       rawDeleted          <- formTemplateRawRepo.delete(formTemplateId.value)
@@ -74,11 +81,18 @@ class FormTemplateService(formTemplateRepo: Repo[FormTemplate], formTemplateRawR
   ): FOpt[Unit] = {
     val substitutedFormTemplate = substituteExpressions(formTemplate, expressionsContext)
     val substitutedBooleanExprsFormTemplate = substituteBooleanExprs(substitutedFormTemplate, booleanExpressionsContext)
+
     for {
       _                  <- verify(substitutedBooleanExprsFormTemplate)
       formTemplateToSave <- rewrite(substitutedBooleanExprsFormTemplate)
       _                  <- formTemplateRepo.replace(mkSpecimen(formTemplateToSave))
-      res                <- formTemplateRepo.replace(formTemplateToSave)
+      _                  <- formRedirectRepo.deleteByFieldName("redirect", formTemplate._id.value)
+      _ <- formTemplate.legacyFormIds.fold(success(())) { legacyFormIds =>
+             legacyFormIds.traverse { id =>
+               formRedirectRepo.upsert(FormRedirect(id, formTemplate._id, Instant.now, Instant.now))
+             }.void
+           }
+      res <- formTemplateRepo.replace(formTemplateToSave)
     } yield res
   }
 }

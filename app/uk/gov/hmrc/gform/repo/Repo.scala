@@ -149,6 +149,16 @@ class Repo[T: OWrites: Manifest](
       }
   }
 
+  def deleteByFieldName(fieldName: String, id: String): FOpt[DeleteResult] = EitherT {
+    underlying.collection
+      .deleteMany(Filters.equal(fieldName, id))
+      .toFuture
+      .map(wr => DeleteResult(id, wr.getDeletedCount() > 0).asRight)
+      .recover { case lastError =>
+        UnexpectedState(lastError.getMessage).asLeft
+      }
+  }
+
   def deleteAll(): FOpt[Unit] = EitherT {
     underlying.collection.deleteMany(Document()).toFuture().asEither
   }

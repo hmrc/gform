@@ -214,6 +214,18 @@ class RepoSpec extends FlatSpec with Matchers with DefaultPlayMongoRepositorySup
     repository.findAll().futureValue shouldBe List.empty
   }
 
+  "deleteByFieldName" should "remove the entity with given id" in new TestFixture {
+    val entities = (1 to 10).map(i => buildEntity(i, s"id1", List(s"p$i")))
+    repository.collection.insertMany(entities).toFuture().futureValue
+    assert(repository.findAll().futureValue == entities)
+
+    val result = repository.deleteByFieldName("ref", "id1").value.futureValue
+    result shouldBe Right(DeleteResult("id1", true))
+    val result2 = repository.deleteByFieldName("ref", "id1").value.futureValue
+    result2 shouldBe Right(DeleteResult("id1", false))
+    repository.findAll().futureValue shouldBe List.empty
+  }
+
   "deleteAll" should "remove all entities from the collection" in new TestFixture {
     val entities = (1 to 10).map(i => buildEntity(i, s"r$i", List(s"p$i")))
     repository.collection.insertMany(entities).toFuture().futureValue

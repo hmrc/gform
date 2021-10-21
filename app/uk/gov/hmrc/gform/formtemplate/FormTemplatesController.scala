@@ -16,19 +16,26 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
+import akka.http.scaladsl.model.StatusCodes
 import cats.implicits._
 import org.slf4j.LoggerFactory
 import play.api.libs.json.Json
 import play.api.mvc.{ ControllerComponents, Results }
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
+import uk.gov.hmrc.gform.formredirect.FormRedirectService
 import uk.gov.hmrc.gform.formtemplate.FormTemplatePIIRefsHelper.PIIDetailsResponse
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, FormTemplateRaw, FormTemplateRawId }
+import uk.gov.hmrc.http.UpstreamErrorResponse
 
 import scala.concurrent.ExecutionContext
 
-class FormTemplatesController(controllerComponents: ControllerComponents, formTemplateService: FormTemplateService)(
-  implicit ex: ExecutionContext
+class FormTemplatesController(
+  controllerComponents: ControllerComponents,
+  formTemplateService: FormTemplateService,
+  formRedirectService: FormRedirectService
+)(implicit
+  ex: ExecutionContext
 ) extends BaseController(controllerComponents) {
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -61,8 +68,15 @@ class FormTemplatesController(controllerComponents: ControllerComponents, formTe
     }
 
   def get(id: FormTemplateId) = formTemplateAction("get", id) { _ =>
-    formTemplateService
+    formRedirectService
       .get(id)
+      .flatMap { fr =>
+        formTemplateService.get(fr.redirect)
+      }
+      .recoverWith {
+        case UpstreamErrorResponse.WithStatusCode(statusCode) if statusCode == StatusCodes.NotFound.intValue =>
+          formTemplateService.get(id)
+      }
       .asOkJson
   }
 
