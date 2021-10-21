@@ -56,7 +56,7 @@ object Section {
     shortName: SmartString,
     summaryName: SmartString,
     includeIf: Option[IncludeIf],
-    repeatsMax: Option[Expr],
+    limit: Option[AddToListLimit],
     pages: NonEmptyList[Page],
     addAnotherQuestion: FormComponent,
     instruction: Option[Instruction],
@@ -82,7 +82,7 @@ object Section {
           LeafExpr(path + "shortName", a.shortName) ++
           LeafExpr(path + "summaryName", a.summaryName) ++
           LeafExpr(path + "includeIf", a.includeIf) ++
-          LeafExpr(path + "repeatsMax", a.repeatsMax) ++
+          LeafExpr(path + "limit", a.limit) ++
           LeafExpr(path + "pages", a.pages) ++
           LeafExpr(path + "addAnotherQuestion", a.addAnotherQuestion) ++
           LeafExpr(path + "instruction", a.instruction) ++
