@@ -53,7 +53,7 @@ object SectionTemplateReads {
           case JsString(str) => PresentationHintParser.validateSingle(str).fold(e => JsError(e.error), JsSuccess(_))
           case unknown       => JsError("Expected String, got " + unknown)
         }
-      // we need this impilicit for Page and AddToList, so it wires the custom OFormat[PresentationHint] defined above
+      // we need this implicit for Page and AddToList, so it wires the custom OFormat[PresentationHint] defined above
       // Note: Both Page and AddToList have attribute PresentationHint
       implicit val pageFormat: OFormat[Page] = Json.format[Page]
       Json.format[AddToList].reads(json)

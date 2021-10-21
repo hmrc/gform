@@ -59,6 +59,7 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validatePeriodFunReferenceConstraints(formTemplate, allExpressions).toEither)
       _ <- fromOptA(FormTemplateValidator.validateSectionShortNames(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateAddToListDefaultPage(formTemplate).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateAddToListLimit(formTemplate).toEither)
       _ <- fromOptA(DestinationsValidator.validateUniqueDestinationIds(formTemplate.destinations).toEither)
       _ <- fromOptA(DestinationsValidator.validateNoGroupInDeclaration(formTemplate.destinations).toEither)
       _ <- fromOptA(FormTemplateValidator.validateDataRetrieve(pages).toEither)
