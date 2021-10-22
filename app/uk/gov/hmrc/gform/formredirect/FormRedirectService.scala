@@ -16,29 +16,17 @@
 
 package uk.gov.hmrc.gform.formredirect
 
-import akka.http.scaladsl.model.StatusCodes
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
-import uk.gov.hmrc.http.UpstreamErrorResponse
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.Future
 
 trait FormRedirectAlgebra[F[_]] {
-  def get(id: FormTemplateId): F[FormRedirect]
+  def get(id: FormTemplateId): F[Option[FormRedirect]]
 }
 
-class FormRedirectService(formRedirectRepo: Repo[FormRedirect])(implicit
-  ec: ExecutionContext
-) extends FormRedirectAlgebra[Future] {
+class FormRedirectService(formRedirectRepo: Repo[FormRedirect]) extends FormRedirectAlgebra[Future] {
 
-  override def get(id: FormTemplateId): Future[FormRedirect] =
-    formRedirectRepo.find(id.value) map {
-      case None =>
-        throw UpstreamErrorResponse(
-          s"Not found 'formRedirect' for the given id: '${id.value}'",
-          StatusCodes.NotFound.intValue
-        )
-      case Some(formRedirect) =>
-        formRedirect
-    }
+  override def get(id: FormTemplateId): Future[Option[FormRedirect]] =
+    formRedirectRepo.find(id.value)
 }

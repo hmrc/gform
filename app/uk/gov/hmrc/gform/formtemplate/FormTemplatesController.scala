@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
-import akka.http.scaladsl.model.StatusCodes
 import cats.implicits._
 import org.slf4j.LoggerFactory
 import play.api.libs.json.Json
@@ -26,8 +25,8 @@ import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.formredirect.FormRedirectService
 import uk.gov.hmrc.gform.formtemplate.FormTemplatePIIRefsHelper.PIIDetailsResponse
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, FormTemplateRaw, FormTemplateRawId }
-import uk.gov.hmrc.http.UpstreamErrorResponse
 
+import java.util.NoSuchElementException
 import scala.concurrent.ExecutionContext
 
 class FormTemplatesController(
@@ -68,14 +67,15 @@ class FormTemplatesController(
     }
 
   def get(id: FormTemplateId) = formTemplateAction("get", id) { _ =>
-    formRedirectService
+    formTemplateService
       .get(id)
-      .flatMap { fr =>
-        formTemplateService.get(fr.redirect)
-      }
-      .recoverWith {
-        case UpstreamErrorResponse.WithStatusCode(statusCode) if statusCode == StatusCodes.NotFound.intValue =>
-          formTemplateService.get(id)
+      .recoverWith { case _: NoSuchElementException =>
+        formRedirectService
+          .get(id)
+          .flatMap {
+            case None     => throw new NoSuchElementException(s"Not found 'formRedirect' for the given id: '${id.value}'")
+            case Some(fr) => formTemplateService.get(fr.redirect)
+          }
       }
       .asOkJson
   }
