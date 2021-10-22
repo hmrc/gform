@@ -88,9 +88,9 @@ class FormTemplateService(
       _                  <- formTemplateRepo.replace(mkSpecimen(formTemplateToSave))
       _                  <- formRedirectRepo.deleteByFieldName("redirect", formTemplate._id.value)
       _ <- formTemplate.legacyFormIds.fold(success(())) { legacyFormIds =>
-             legacyFormIds.traverse { id =>
-               formRedirectRepo.upsert(FormRedirect(id, formTemplate._id, Instant.now, Instant.now))
-             }.void
+             formRedirectRepo.upsertBulk(
+               legacyFormIds.map(FormRedirect(_, formTemplate._id, Instant.now, Instant.now)).toList
+             )
            }
       res <- formTemplateRepo.replace(formTemplateToSave)
     } yield res
