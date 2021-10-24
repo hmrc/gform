@@ -45,5 +45,7 @@ class FormTemplateModule(controllerComponents: ControllerComponents, mongoModule
 
   val fOptFormTemplateAlgebra: FormTemplateAlgebra[FOpt] = new FormTemplateAlgebra[FOpt] {
     override def get(id: FormTemplateId): FOpt[FormTemplate] = fromFutureA(formTemplateService.get(id))
+
+    override def find(id: FormTemplateId): FOpt[Option[FormTemplate]] = fromFutureA(formTemplateService.find(id))
   }
 }

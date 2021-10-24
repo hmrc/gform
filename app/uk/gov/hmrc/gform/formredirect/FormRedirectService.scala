@@ -22,11 +22,11 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import scala.concurrent.Future
 
 trait FormRedirectAlgebra[F[_]] {
-  def get(id: FormTemplateId): F[Option[FormRedirect]]
+  def find(id: FormTemplateId): F[Option[FormRedirect]]
 }
 
 class FormRedirectService(formRedirectRepo: Repo[FormRedirect]) extends FormRedirectAlgebra[Future] {
 
-  override def get(id: FormTemplateId): Future[Option[FormRedirect]] =
+  override def find(id: FormTemplateId): Future[Option[FormRedirect]] =
     formRedirectRepo.find(id.value)
 }

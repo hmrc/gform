@@ -56,6 +56,8 @@ class TestOnlyModule(
 
   val formTemplateAlgebra: FormTemplateAlgebra[Future] = new FormTemplateAlgebra[Future] {
     override def get(id: FormTemplateId): Future[FormTemplate] = formTemplateService.get(id)
+
+    override def find(id: FormTemplateId): Future[Option[FormTemplate]] = formTemplateService.find(id)
   }
 
   val testOnlyController: TestOnlyController =

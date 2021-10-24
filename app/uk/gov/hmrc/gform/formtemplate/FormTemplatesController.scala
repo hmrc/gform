@@ -24,10 +24,9 @@ import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.formredirect.FormRedirectService
 import uk.gov.hmrc.gform.formtemplate.FormTemplatePIIRefsHelper.PIIDetailsResponse
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, FormTemplateRaw, FormTemplateRawId }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId, FormTemplateRaw, FormTemplateRawId }
 
-import java.util.NoSuchElementException
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ ExecutionContext, Future }
 
 class FormTemplatesController(
   controllerComponents: ControllerComponents,
@@ -67,18 +66,20 @@ class FormTemplatesController(
     }
 
   def get(id: FormTemplateId) = formTemplateAction("get", id) { _ =>
+    findFormTemplate(id).asOkJson
+  }
+
+  private def findFormTemplate(id: FormTemplateId): Future[FormTemplate] =
     formTemplateService
-      .get(id)
-      .recoverWith { case _: NoSuchElementException =>
-        formRedirectService
-          .get(id)
-          .flatMap {
-            case None     => throw new NoSuchElementException(s"Not found 'formRedirect' for the given id: '${id.value}'")
-            case Some(fr) => formTemplateService.get(fr.redirect)
+      .find(id)
+      .flatMap {
+        case Some(ft) => Future.successful(ft)
+        case None =>
+          formRedirectService.find(id) flatMap {
+            case Some(fr) => findFormTemplate(fr.redirect)
+            case None     => Future.failed(new NoSuchElementException(s"'$id' not found"))
           }
       }
-      .asOkJson
-  }
 
   def getRaw(id: FormTemplateRawId) = formTemplateAction("getRaw", FormTemplateId(id.value)) { _ =>
     formTemplateService

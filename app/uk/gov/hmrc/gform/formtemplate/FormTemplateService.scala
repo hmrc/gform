@@ -29,6 +29,7 @@ import java.time.Instant
 
 trait FormTemplateAlgebra[F[_]] {
   def get(id: FormTemplateId): F[FormTemplate]
+  def find(id: FormTemplateId): F[Option[FormTemplate]]
 }
 
 class FormTemplateService(
@@ -45,6 +46,8 @@ class FormTemplateService(
     formTemplateRawRepo.replace(formTemplateRaw)
 
   def get(id: FormTemplateId): Future[FormTemplate] = formTemplateRepo.get(id.value)
+
+  def find(id: FormTemplateId): Future[Option[FormTemplate]] = formTemplateRepo.find(id.value)
 
   def get(id: FormTemplateRawId): Future[FormTemplateRaw] =
     formTemplateRawRepo.getDocumentAsJson(id.value).map {
