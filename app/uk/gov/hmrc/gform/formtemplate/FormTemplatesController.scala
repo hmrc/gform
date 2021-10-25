@@ -22,13 +22,18 @@ import play.api.libs.json.Json
 import play.api.mvc.{ ControllerComponents, Results }
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
+import uk.gov.hmrc.gform.formredirect.FormRedirectService
 import uk.gov.hmrc.gform.formtemplate.FormTemplatePIIRefsHelper.PIIDetailsResponse
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, FormTemplateRaw, FormTemplateRawId }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId, FormTemplateRaw, FormTemplateRawId }
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ ExecutionContext, Future }
 
-class FormTemplatesController(controllerComponents: ControllerComponents, formTemplateService: FormTemplateService)(
-  implicit ex: ExecutionContext
+class FormTemplatesController(
+  controllerComponents: ControllerComponents,
+  formTemplateService: FormTemplateService,
+  formRedirectService: FormRedirectService
+)(implicit
+  ex: ExecutionContext
 ) extends BaseController(controllerComponents) {
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -61,10 +66,20 @@ class FormTemplatesController(controllerComponents: ControllerComponents, formTe
     }
 
   def get(id: FormTemplateId) = formTemplateAction("get", id) { _ =>
-    formTemplateService
-      .get(id)
-      .asOkJson
+    findFormTemplate(id).asOkJson
   }
+
+  private def findFormTemplate(id: FormTemplateId): Future[FormTemplate] =
+    formTemplateService
+      .find(id)
+      .flatMap {
+        case Some(ft) => Future.successful(ft)
+        case None =>
+          formRedirectService.find(id) flatMap {
+            case Some(fr) => findFormTemplate(fr.redirect)
+            case None     => Future.failed(new NoSuchElementException(s"'$id' not found"))
+          }
+      }
 
   def getRaw(id: FormTemplateRawId) = formTemplateAction("getRaw", FormTemplateId(id.value)) { _ =>
     formTemplateService
