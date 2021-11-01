@@ -17,10 +17,16 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 
 import org.scalacheck.Gen
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.ProfileName
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.PageId
 
-trait ProfileNameGen {
-  def profileGen: Gen[ProfileName] = PrimitiveGen.nonEmptyAlphaNumStrGen.map(ProfileName(_))
+trait PageIdGen {
+
+  def pageIdGen: Gen[PageId] =
+    for {
+      first                <- Gen.oneOf(Gen.const("_"), Gen.alphaChar.map(_.toString))
+      restBeforeUnderscore <- PrimitiveGen.nonEmptyAlphaNumStrGen
+      restAfterUnderscore  <- Gen.option(PrimitiveGen.nonEmptyAlphaNumStrGen).map(_.map("_" + _).getOrElse(""))
+    } yield PageId(first + restBeforeUnderscore + restAfterUnderscore)
 }
 
-object ProfileNameGen extends ProfileNameGen
+object PageIdGen extends PageIdGen

@@ -24,7 +24,7 @@ object ReferenceKind {
   final case class Group(fc: FormComponentId) extends ReferenceKind
   final case class AddToList(fc: FormComponentId) extends ReferenceKind
   final case class RepeatingPage(index: Int)
-      extends ReferenceKind // Repeated section has no explixit identifier, so let's use its index instead
+      extends ReferenceKind // Repeated section has no explicit identifier, so let's use its index instead
 
   object Group {
     implicit val referenceKindDescriptor = new ReferenceKindDescriptor[Group] {

@@ -39,17 +39,17 @@ sealed trait Section extends Product with Serializable {
 }
 
 object Section {
-  case class NonRepeatingPage(page: Page) extends Section {
+  final case class NonRepeatingPage(page: Page) extends Section {
     override def title: SmartString = page.title
     override def expandedFormComponents: List[FormComponent] = page.expandedFormComponents
   }
 
-  case class RepeatingPage(page: Page, repeats: Expr) extends Section {
+  final case class RepeatingPage(page: Page, repeats: Expr) extends Section {
     override def title: SmartString = page.title
     override def expandedFormComponents: List[FormComponent] = page.expandedFormComponents
   }
 
-  case class AddToList(
+  final case class AddToList(
     title: SmartString,
     noPIITitle: Option[SmartString],
     description: SmartString,
@@ -78,6 +78,7 @@ object Section {
       case r: Section.RepeatingPage    => ExprWithPath(path, r.repeats) :: LeafExpr(path, r.page)
       case a: Section.AddToList =>
         LeafExpr(path + "title", a.title) ++
+          LeafExpr(path + "noPIITitle", a.noPIITitle) ++
           LeafExpr(path + "description", a.description) ++
           LeafExpr(path + "shortName", a.shortName) ++
           LeafExpr(path + "summaryName", a.summaryName) ++

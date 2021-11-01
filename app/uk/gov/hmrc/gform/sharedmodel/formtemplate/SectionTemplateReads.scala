@@ -17,7 +17,6 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import play.api.libs.json._
-import uk.gov.hmrc.gform.core.parsers.PresentationHintParser
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.Section.AddToList
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils.nelFormat
 
@@ -47,38 +46,15 @@ object SectionTemplateReads {
       case "addToList"        => readAddToList(json)
     }
 
-    private def readAddToList(json: JsValue) = {
-      implicit val presentationHintsReads: OFormat[PresentationHint] =
-        OFormatWithTemplateReadFallback {
-          case JsString(str) => PresentationHintParser.validateSingle(str).fold(e => JsError(e.error), JsSuccess(_))
-          case unknown       => JsError("Expected String, got " + unknown)
-        }
-      // we need this implicit for Page and AddToList, so it wires the custom OFormat[PresentationHint] defined above
-      // Note: Both Page and AddToList have attribute PresentationHint
-      implicit val pageFormat: OFormat[Page] = Json.format[Page]
-      Json.format[AddToList].reads(json)
-    }
+    private def readAddToList(json: JsValue) = Json.reads[AddToList].reads(json)
 
-    private def readNonRepeatingPage(json: JsValue) = {
-      implicit val presentationHintsReads: OFormat[PresentationHint] =
-        OFormatWithTemplateReadFallback {
-          case JsString(str) => PresentationHintParser.validateSingle(str).fold(e => JsError(e.error), JsSuccess(_))
-          case unknown       => JsError("Expected String, got " + unknown)
-        }
-      Json.format[Page].reads(json).map(Section.NonRepeatingPage)
-    }
+    private def readNonRepeatingPage(json: JsValue) = json.validate[Page].map(Section.NonRepeatingPage)
 
-    private def readRepeatingPage(json: JsValue) = {
-      implicit val presentationHintsReads: OFormat[PresentationHint] =
-        OFormatWithTemplateReadFallback {
-          case JsString(str) => PresentationHintParser.validateSingle(str).fold(e => JsError(e.error), JsSuccess(_))
-          case unknown       => JsError("Expected String, got " + unknown)
-        }
+    private def readRepeatingPage(json: JsValue) =
       for {
         repeats <- readRepeatsRangeOrRepeats(json)
-        page    <- Json.format[Page].reads(json)
+        page    <- json.validate[Page]
       } yield Section.RepeatingPage(page, repeats)
-    }
   }
 
   private def readRepeatsRangeOrRepeats(json: JsValue): JsResult[Expr] =

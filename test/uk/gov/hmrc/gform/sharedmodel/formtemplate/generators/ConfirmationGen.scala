@@ -17,10 +17,14 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 
 import org.scalacheck.Gen
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.ProfileName
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.Confirmation
 
-trait ProfileNameGen {
-  def profileGen: Gen[ProfileName] = PrimitiveGen.nonEmptyAlphaNumStrGen.map(ProfileName(_))
+trait ConfirmationGen {
+  def confirmationGen: Gen[Confirmation] =
+    for {
+      question <- FormComponentGen.formComponentGen(1)
+      pageId   <- PageIdGen.pageIdGen
+    } yield Confirmation(question, pageId)
 }
 
-object ProfileNameGen extends ProfileNameGen
+object ConfirmationGen extends ConfirmationGen

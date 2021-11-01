@@ -58,7 +58,8 @@ class FormComponentRejectSpec extends Spec with TableDrivenPropertyChecks {
       ("group-include-revealing-choice",            "Group cannot contains revealing choice as its element"),
       ("revealing-choice-unique-ids",               "Some FieldIds are defined more than once: List(companyName, tradingName)"),
       ("email-verification-forward-reference",      "id 'code' named in email verification is forward reference, which is not permitted"),
-      ("email-verification-invalid-reference",      "id 'code2' named in email verification does not exist in the form")
+      ("email-verification-invalid-reference",      "id 'code2' named in email verification does not exist in the form"),
+      ("confirming-invalid-page-id",                "No pageId 'bankAccountPage' found. Confirmation question 'confirmationQuestion' should confirm pageId: 'bankAccountPage'"),
       // format: on
     )
 
@@ -111,7 +112,7 @@ class FormComponentRejectSpec extends Spec with TableDrivenPropertyChecks {
       ("empty-shortname-non-repeated",             "shortName is empty for title: 'Page A'. If you want to hide page title on summary page, use 'presentationHint': 'invisiblePageTitle' instead."),
       ("empty-shortname-repeated",                 "shortName is empty for title: 'Page A'. If you want to hide page title on summary page, use 'presentationHint': 'invisiblePageTitle' instead."),
       ("empty-shortname-add-to-list",              "shortName is empty for title: 'Page $n'. If you want to hide page title on summary page, use 'presentationHint': 'invisiblePageTitle' instead."),
-         // format: on
+      // format: on
     )
 
     forAll(table) { case (fileName, expectedMessage) =>
