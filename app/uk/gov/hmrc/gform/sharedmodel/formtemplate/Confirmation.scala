@@ -16,19 +16,17 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
-import play.api.libs.json._
-import uk.gov.hmrc.gform.core.parsers.PresentationHintParser
+import play.api.libs.json.{ Json, OFormat }
 
-sealed trait PresentationHint
+final case class Confirmation(
+  question: FormComponent,
+  pageId: PageId
+)
 
-case object InvisibleInSummary extends PresentationHint
-case object SummariseGroupAsGrid extends PresentationHint
-case object TotalValue extends PresentationHint
-case object InvisiblePageTitle extends PresentationHint
+object Confirmation {
+  implicit val confirmationFormat: OFormat[Confirmation] = Json.format[Confirmation]
 
-object PresentationHint {
-  implicit val format: OFormat[PresentationHint] = OFormatWithTemplateReadFallback {
-    case JsString(str) => PresentationHintParser.validateSingle(str).fold(e => JsError(e.error), JsSuccess(_))
-    case unknown       => JsError("Expected String, got " + unknown)
-  }
+  implicit val leafExprs: LeafExpr[Confirmation] = (path: TemplatePath, t: Confirmation) =>
+    LeafExpr(path + "question", t.question)
+
 }

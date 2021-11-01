@@ -65,6 +65,7 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validateDataRetrieve(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateDataRetrieveFormCtxReferences(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateDataRetrieveCtx(formTemplate, pages, allExpressions).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateConfirmations(formTemplate, pages).toEither)
     } yield ()
 
   }

@@ -50,7 +50,7 @@ object FormTemplateValidator {
 
   private def indexedFields(sections: List[Section]): List[(FormComponent, Int)] =
     SectionHelper.pages(sections).zipWithIndex.flatMap { case (section, idx) =>
-      val standardFields = section.fields.map(_ -> idx)
+      val standardFields = (section.confirmation.map(_.question).toList ++ section.fields).map(_ -> idx)
       val subFields = section.fields
         .map(_.`type`)
         .collect {
@@ -621,11 +621,48 @@ object FormTemplateValidator {
       }
     }.combineAll
   }
+
+  def validateConfirmations(
+    formTemplate: FormTemplate,
+    pages: List[Page]
+  ): ValidationResult = {
+    val confirmationRelatedData: List[(Option[PageId], Option[Confirmation])] = pages.map { page =>
+      page.id -> page.confirmation
+    }
+
+    val confirmationValidation = confirmationRelatedData.foldLeft(ConfirmationPageValidation(Set.empty, Nil)) {
+      case (acc, (Some(pageId), None))    => acc.addPageId(pageId)
+      case (acc, (_, Some(confirmation))) => acc.validateConfirmation(confirmation)
+      case (acc, (None, None))            => acc
+    }
+
+    confirmationValidation.validationResult.combineAll
+
+  }
 }
 
 object IsEmailVerifiedBy {
   def unapply(formComponent: FormComponent): Option[(FormComponentId, FormComponentId)] = formComponent.`type` match {
     case Text(EmailVerifiedBy(fcId, _), _, _, _, _, _) => Some((formComponent.id, fcId))
     case _                                             => None
+  }
+}
+
+final case class ConfirmationPageValidation(
+  pageIds: Set[PageId],
+  validationResult: List[ValidationResult]
+) {
+  def addPageId(pageId: PageId) = this.copy(pageIds = pageIds + pageId)
+  def validateConfirmation(confirmation: Confirmation) = {
+    val pageId = confirmation.pageId
+    this.copy(
+      validationResult =
+        if (pageIds.contains(pageId))
+          validationResult
+        else
+          Invalid(
+            s"No pageId '${pageId.id}' found. Confirmation question '${confirmation.question.id.value}' should confirm pageId: '${pageId.id}'"
+          ) :: validationResult
+    )
   }
 }

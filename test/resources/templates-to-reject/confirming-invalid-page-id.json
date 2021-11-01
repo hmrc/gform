@@ -1,0 +1,44 @@
+{
+  "_id": "confirming-invalid-page-id",
+  "formName": "Confirmation page",
+  "description": "",
+  "emailTemplateId": "al_registration_confirmation",
+  "authConfig": {
+    "authModule": "anonymous"
+  },
+  "sections": [
+    {
+      "title": "Confirmation page",
+      "fields": [
+        {
+          "id": "contentInfo",
+          "label": "",
+          "type": "info",
+          "infoType": "noformat",
+          "infoText": "Check entered details"
+        }
+      ],
+      "confirmation": {
+        "question": {
+          "id": "confirmationQuestion",
+          "type": "choice",
+          "label": "I confirm that entered detail are correct",
+          "format": "yesno"
+        },
+        "pageId": "bankAccountPage"
+      }
+    }
+
+  ],
+  "acknowledgementSection": {
+    "title": "",
+    "fields": []
+  },
+  "destinations": [
+    {
+      "id": "transitionToSubmitted",
+      "type": "stateTransition",
+      "requiredState": "Submitted"
+    }
+  ]
+}
