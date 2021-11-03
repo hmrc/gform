@@ -74,8 +74,6 @@ object Substituter {
     t match {
       case HmrcRosmRegistrationCheckValidator(errorMessage, regime, utr, postcode) =>
         HmrcRosmRegistrationCheckValidator(errorMessage(substitutions), regime, utr, postcode)
-      case BankAccountModulusCheck(errorMessage, accountNumber, sortCode) =>
-        BankAccountModulusCheck(errorMessage(substitutions), accountNumber, sortCode)
     }
   implicit def overseasAddressValueSubstituter[A](implicit
     ev: Substituter[A, Expr]

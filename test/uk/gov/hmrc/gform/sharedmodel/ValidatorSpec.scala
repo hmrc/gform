@@ -40,23 +40,6 @@ class ValidatorSpec extends Spec {
       .as[Validator] shouldBe hMRCUTRPostcodeCheckValidator
   }
 
-  "BankAccountModulusValidator" should "Write and Read default JSON correctly" in {
-    verifyRoundTrip(bankAccountModulusCheckValidator)
-  }
-
-  it should "parse custom JSON correctly" in {
-    Json
-      .obj(
-        "validatorName" -> "bankAccountModulusCheck",
-        "errorMessage"  -> bankAccountModulusCheckValidator.errorMessage,
-        "parameters" -> Json.obj(
-          "accountNumber" -> customFormCtxJson(bankAccountModulusCheckValidator.accountNumber),
-          "sortCode"      -> customFormCtxJson(bankAccountModulusCheckValidator.sortCode)
-        )
-      )
-      .as[Validator] shouldBe bankAccountModulusCheckValidator
-  }
-
   private def verifyRoundTrip[T <: Validator: OFormat](t: T) = {
     val json: JsValue = Json.parse(Validator.format.writes(t).toString)
     val validator = json.as[Validator]

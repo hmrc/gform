@@ -44,7 +44,6 @@ DELETE        /formtemplates/:formTemplateId                                    
 GET           /exposed-config                                                                           uk.gov.hmrc.gform.config.ConfigController.exposedConfig()
 
 POST          /validate/des/:utr                                                                        uk.gov.hmrc.gform.validation.ValidationController.desRegistration(utr: String)
-POST          /validate/bank                                                                            uk.gov.hmrc.gform.validation.ValidationController.validateBank()
 
 POST          /dms/submit                                                                               uk.gov.hmrc.gform.dms.DmsSubmissionController.submitToDms()
 POST          /dms/submit-pdf                                                                           uk.gov.hmrc.gform.dms.DmsSubmissionController.submitPdfToDms()
