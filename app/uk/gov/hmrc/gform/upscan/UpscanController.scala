@@ -28,7 +28,7 @@ import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.fileupload.FileUploadFrontendAlgebra
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId, Form, FormIdData, UserData }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormComponentId
 
 class UpscanController(
   queryParameterCrypto: CryptoWithKeysFromConfig,
@@ -121,13 +121,12 @@ class UpscanController(
 
   def reference(upscanReference: UpscanReference): Action[AnyContent] =
     Action.async { request =>
-      upscanService.reference(upscanReference).map { maybeUpscanFileStatus =>
-        maybeUpscanFileStatus.fold[Result](NotFound)(upscanFileStatus => Ok(Json.toJson(upscanFileStatus)))
+      upscanService.reference(upscanReference).map { maybeUpscanConfirmation =>
+        maybeUpscanConfirmation.fold[Result](NotFound)(upscanConfirmation => Ok(Json.toJson(upscanConfirmation)))
       }
     }
   def deleteReference(upscanReference: UpscanReference): Action[AnyContent] =
     Action.async { request =>
       upscanService.deleteReference(upscanReference).map(_ => NoContent)
     }
-
 }
