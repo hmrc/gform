@@ -17,14 +17,21 @@
 package uk.gov.hmrc.gform.validation
 
 import cats.Functor
+import cats.syntax.functor._
+import uk.gov.hmrc.gform.bank_account_reputation.BankAccountReputationAlgebra
 import uk.gov.hmrc.gform.des.DesAlgebra
 import uk.gov.hmrc.gform.sharedmodel.ServiceCallResponse
 import uk.gov.hmrc.gform.sharedmodel.des.{ DesRegistrationRequest, DesRegistrationResponse }
+import uk.gov.hmrc.gform.sharedmodel.Account
+import uk.gov.hmrc.http.HeaderCarrier
 
-class ValidationService[F[_]: Functor](des: DesAlgebra[F]) {
+class ValidationService[F[_]: Functor](des: DesAlgebra[F], bankAccountReputation: BankAccountReputationAlgebra[F]) {
   def desRegistration(
     utr: String,
     desRegistrationRequest: DesRegistrationRequest
   ): F[ServiceCallResponse[DesRegistrationResponse]] =
     des.lookupRegistration(utr, desRegistrationRequest)
+
+  def bankAccountReputation(account: Account)(implicit hc: HeaderCarrier): F[Boolean] =
+    bankAccountReputation.exists(account).map(_.accountNumberWithSortCodeIsValid)
 }

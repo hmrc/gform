@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.validation
 
 import cats.instances.future._
+import uk.gov.hmrc.gform.bank_account_reputation.BankAccountReputationConnector
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.des.{ DesAlgebra, DesConnector }
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
@@ -29,6 +30,12 @@ class ValidationModule(wSHttpModule: WSHttpModule, configModule: ConfigModule)(i
   private val desConnector: DesAlgebra[Future] =
     new DesConnector(wSHttpModule.auditableWSHttp, configModule.serviceConfig.baseUrl("etmp-hod"), desConfig)
 
-  private val validationService = new ValidationService(desConnector)
+  private val bankAccountReputationConnector =
+    new BankAccountReputationConnector(
+      wSHttpModule.auditableWSHttp,
+      configModule.serviceConfig.baseUrl("bank-account-reputation")
+    )
+
+  private val validationService = new ValidationService(desConnector, bankAccountReputationConnector)
   val validationController = new ValidationController(configModule.controllerComponents, validationService)
 }
