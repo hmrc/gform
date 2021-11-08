@@ -28,6 +28,6 @@ trait UpscanAlgebra[F[_]] {
   def confirm(upscanCallbackSuccess: UpscanCallback.Success): F[UpscanConfirmation]
   def reject(upscanCallbackFailure: UpscanCallback.Failure): F[UpscanConfirmation]
 
-  def reference(upscanReference: UpscanReference): F[Option[UpscanConfirmation]]
+  def reference(upscanReference: UpscanReference): F[Option[UpscanFileStatus]]
   def deleteReference(upscanReference: UpscanReference): F[Unit]
 }

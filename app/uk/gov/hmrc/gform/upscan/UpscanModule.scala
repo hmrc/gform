@@ -47,7 +47,6 @@ class UpscanModule(
 
   val upscanController: UpscanController =
     new UpscanController(
-      appConfig,
       queryParameterCrypto,
       formService,
       upscanService,

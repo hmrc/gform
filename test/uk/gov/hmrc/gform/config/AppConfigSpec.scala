@@ -46,7 +46,6 @@ class AppConfigSpec extends FlatSpec with Matchers {
       ContentType("application/vnd.oasis.opendocument.presentation"),
       ContentType(".odp")
     )
-    appConfig.restrictedFileExtensionByPipe shouldBe "jfif|png"
   }
 
 }

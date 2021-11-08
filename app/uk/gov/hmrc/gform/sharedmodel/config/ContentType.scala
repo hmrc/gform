@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.gform.sharedmodel.config
 
-import cats.Eq
 import play.api.libs.json.{ Format, JsString }
 import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
 
@@ -42,6 +41,4 @@ object ContentType {
 
   implicit val format: Format[ContentType] =
     ValueClassFormat.vformat("contentType", ContentType(_), x => JsString(x.value))
-
-  implicit val equal: Eq[ContentType] = Eq.fromUniversalEquals
 }
