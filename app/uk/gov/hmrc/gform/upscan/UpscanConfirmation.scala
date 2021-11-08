@@ -21,7 +21,12 @@ import julienrf.json.derived
 import play.api.libs.json.{ Format, OFormat }
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
-case class UpscanConfirmation(_id: UpscanReference, status: UpscanFileStatus, confirmedAt: Instant)
+case class UpscanConfirmation(
+  _id: UpscanReference,
+  status: UpscanFileStatus,
+  failureDetails: FailureDetails,
+  confirmedAt: Instant
+)
 
 object UpscanConfirmation {
   implicit val format: OFormat[UpscanConfirmation] = {

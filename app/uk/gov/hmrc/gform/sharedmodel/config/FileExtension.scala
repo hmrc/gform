@@ -14,20 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.upscan
+package uk.gov.hmrc.gform.sharedmodel.config
 
-import akka.util.ByteString
-import scala.language.higherKinds
+import cats.Eq
 
-trait UpscanAlgebra[F[_]] {
+case class FileExtension(value: String) extends AnyVal
 
-  def download(
-    downloadUrl: String
-  ): F[ByteString]
-
-  def confirm(upscanCallbackSuccess: UpscanCallback.Success): F[UpscanConfirmation]
-  def reject(upscanCallbackFailure: UpscanCallback.Failure): F[UpscanConfirmation]
-
-  def reference(upscanReference: UpscanReference): F[Option[UpscanConfirmation]]
-  def deleteReference(upscanReference: UpscanReference): F[Unit]
+object FileExtension {
+  implicit val equal: Eq[FileExtension] = Eq.fromUniversalEquals
 }
