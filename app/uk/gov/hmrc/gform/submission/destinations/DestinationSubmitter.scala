@@ -94,6 +94,11 @@ class DestinationSubmitter[M[_]](
       Loggers.destinations.info(genericLogMessage(formId, destinationId, msg))
     }
 
+  private def logErrorInMonad(formId: FormId, destinationId: DestinationId, msg: String): M[Unit] =
+    monadError.pure {
+      Loggers.destinations.error(genericLogMessage(formId, destinationId, msg))
+    }
+
   private def submit(
     destination: Destination,
     submissionInfo: DestinationSubmissionInfo,
@@ -201,7 +206,7 @@ class DestinationSubmitter[M[_]](
       if (d.failOnError)
         raiseError(submissionInfo.formId, d.id, msg)
       else {
-        logInfoInMonad(submissionInfo.formId, d.id, "Failed execution but has 'failOnError' set to false. Ignoring.")
+        logErrorInMonad(submissionInfo.formId, d.id, "Failed execution but has 'failOnError' set to false. Ignoring.")
       }
     }
 
@@ -218,7 +223,7 @@ class DestinationSubmitter[M[_]](
         else if (d.failOnError)
           createFailureResponse(d, response, submissionInfo, modelTree)
         else {
-          logInfoInMonad(
+          logErrorInMonad(
             submissionInfo.formId,
             d.id,
             s"Returned status code ${response.status} but has 'failOnError' set to false. Ignoring."
