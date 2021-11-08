@@ -18,13 +18,12 @@ package uk.gov.hmrc.gform.upscan
 
 import akka.util.ByteString
 import java.time.Instant
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.Future
 
 class UpscanService(
   upscanConnector: UpscanConnector,
   upscanRepository: UpscanRepository
-)(implicit ec: ExecutionContext)
-    extends UpscanAlgebra[Future] {
+) extends UpscanAlgebra[Future] {
 
   def download(
     downloadUrl: String
@@ -32,16 +31,26 @@ class UpscanService(
 
   def confirm(upscanCallbackSuccess: UpscanCallback.Success): Future[UpscanConfirmation] =
     upscanRepository.upsert(
-      UpscanConfirmation(upscanCallbackSuccess.reference, upscanCallbackSuccess.fileStatus, Instant.now())
+      UpscanConfirmation(
+        upscanCallbackSuccess.reference,
+        upscanCallbackSuccess.fileStatus,
+        FailureDetails("", ""),
+        Instant.now()
+      )
     )
 
   def reject(upscanCallbackFailure: UpscanCallback.Failure): Future[UpscanConfirmation] =
     upscanRepository.upsert(
-      UpscanConfirmation(upscanCallbackFailure.reference, upscanCallbackFailure.fileStatus, Instant.now())
+      UpscanConfirmation(
+        upscanCallbackFailure.reference,
+        upscanCallbackFailure.fileStatus,
+        upscanCallbackFailure.failureDetails,
+        Instant.now()
+      )
     )
 
-  def reference(upscanReference: UpscanReference): Future[Option[UpscanFileStatus]] =
-    upscanRepository.find(upscanReference).map(_.map(_.status))
+  def reference(upscanReference: UpscanReference): Future[Option[UpscanConfirmation]] =
+    upscanRepository.find(upscanReference)
 
   def deleteReference(upscanReference: UpscanReference): Future[Unit] =
     upscanRepository.delete(upscanReference)
