@@ -21,7 +21,6 @@ import play.api.libs.json.Json
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
-import uk.gov.hmrc.gform.sharedmodel.Account
 import uk.gov.hmrc.gform.sharedmodel.des.DesRegistrationRequest
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -35,10 +34,5 @@ class ValidationController(controllerComponents: ControllerComponents, validatio
   def desRegistration(utr: String) = Action.async(parse.json[DesRegistrationRequest]) { implicit request =>
     logger.info(s"validate Address At Des, ${loggingHelpers.cleanHeaders(request.headers)}")
     validation.desRegistration(utr, request.body).map(a => Ok(Json.toJson(a)))
-  }
-
-  def validateBank() = Action.async(parse.json[Account]) { implicit request =>
-    logger.info(s"validate bank, ${loggingHelpers.cleanHeaders(request.headers)}'")
-    validation.bankAccountReputation(request.body).map(if (_) NoContent else NotFound)
   }
 }
