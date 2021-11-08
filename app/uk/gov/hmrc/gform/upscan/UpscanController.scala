@@ -97,7 +97,8 @@ class UpscanController(
       } yield upscanCallback match {
         case upscanCallbackSuccess: UpscanCallback.Success =>
           logger.info(
-            s"Upscan callback successful, fcId: $formComponentId, reference: ${upscanCallbackSuccess.reference}, fileMimeType: ${upscanCallbackSuccess.uploadDetails.fileMimeType}, fileName: ${upscanCallbackSuccess.uploadDetails.fileName}, size: ${upscanCallbackSuccess.uploadDetails.size}"
+            s"Upscan callback successful, fcId: $formComponentId, reference: ${upscanCallbackSuccess.reference}, fileMimeType: ${upscanCallbackSuccess.uploadDetails.fileMimeType}, " +
+              s"fileName: ${upscanCallbackSuccess.uploadDetails.fileName}, size: ${upscanCallbackSuccess.uploadDetails.size}"
           )
           val validated: Validated[FailureDetails, Unit] = validateFile(upscanCallbackSuccess.uploadDetails)
 
