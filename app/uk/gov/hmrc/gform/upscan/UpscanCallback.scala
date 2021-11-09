@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.upscan
 
 import java.time.Instant
 import julienrf.json.derived
-import play.api.libs.json.{ Format, JsError, JsResult, JsString, JsSuccess, JsValue, Reads }
+import play.api.libs.json.{ Format, JsError, JsResult, JsString, JsSuccess, JsValue, OFormat, Reads }
 
 sealed trait UpscanCallback
 
@@ -88,5 +88,5 @@ final case class FailureDetails(
 )
 
 object FailureDetails {
-  implicit val reads: Reads[FailureDetails] = derived.reads()
+  implicit val format: OFormat[FailureDetails] = derived.oformat()
 }
