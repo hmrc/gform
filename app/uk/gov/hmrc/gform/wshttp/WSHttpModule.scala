@@ -34,5 +34,5 @@ class WSHttpModule(auditingModule: AuditingModule, configModule: ConfigModule, p
     playComponents.wsClient
   )
 
-  val auditingHttpClient: HttpClient[FOpt] = new AuditingHttpClient(auditableWSHttp)
+  val auditingHttpClient: HttpClient[FOpt] = new AuditingHttpClient(auditableWSHttp, configModule.typesafeConfig)
 }
