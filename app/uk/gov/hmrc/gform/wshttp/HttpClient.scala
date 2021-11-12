@@ -158,20 +158,25 @@ class AuditingHttpClient(wsHttp: WSHttp, config: Config)(implicit ec: ExecutionC
   private implicit val httpReads: HttpReads[HttpResponse] = HttpReadsInstances.readRaw
 
   override def get(uri: String)(implicit hc: HeaderCarrier): FOpt[HttpResponse] = fromFutureA(
-    wsHttp.GET(uri, headers = authHeaders(uri))
+    wsHttp.GET(uri, headers = authHeaders(uri)).map(handleResponse("GET", uri))
   )
 
-  override def post(uri: String, body: String)(implicit hc: HeaderCarrier): FOpt[HttpResponse] = {
-    logger.debug(s"Sending POST to $uri ...")
-    fromFutureA(wsHttp.POSTString[HttpResponse](uri, body, headers = authHeaders(uri))).map { response =>
-      logger.debug(s"Sending POST to $uri, response status: ${response.status}, body: ${response.body}")
-      response
-    }
-  }
+  override def post(uri: String, body: String)(implicit hc: HeaderCarrier): FOpt[HttpResponse] =
+    fromFutureA(wsHttp.POSTString[HttpResponse](uri, body, headers = authHeaders(uri))).map(handleResponse("POST", uri))
 
   // TODO: Lance - when my pull request is merged, change this to use PUTString
   override def put(uri: String, body: String)(implicit hc: HeaderCarrier): FOpt[HttpResponse] =
-    fromFutureA(wsHttp.PUT(uri, Json.parse(body), headers = authHeaders(uri)))
+    fromFutureA(wsHttp.PUT(uri, Json.parse(body), headers = authHeaders(uri))).map(handleResponse("PUT", uri))
+
+  private def is2xx(status: Int) = status >= 200 && status < 300
+
+  def handleResponse(httpMethod: String, uri: String)(response: HttpResponse): HttpResponse =
+    if (is2xx(response.status)) {
+      response
+    } else {
+      logger.error(s"Sending $httpMethod to $uri, response status: ${response.status}, body: ${response.body}")
+      response
+    }
 }
 
 class WSHttpHttpClient(wsHttp: WSHttp)(implicit ec: ExecutionContext) extends HttpClient[FOpt] {
