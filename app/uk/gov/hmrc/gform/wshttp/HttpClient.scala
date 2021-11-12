@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.wshttp
 
 import cats.syntax.applicative._
 import cats.syntax.flatMap._
+import cats.instances.all._
 import cats.{ Endo, MonadError }
 import com.typesafe.config.Config
 import org.slf4j.LoggerFactory
@@ -140,6 +141,8 @@ object SuccessfulResponseHttpClient {
 
 class AuditingHttpClient(wsHttp: WSHttp, config: Config)(implicit ec: ExecutionContext) extends HttpClient[FOpt] {
 
+  private val logger = LoggerFactory.getLogger(getClass)
+
   val internalHostPatterns = HeaderCarrier.Config.fromConfig(config).internalHostPatterns
 
   private def isInternalCall(uri: String): Boolean =
@@ -158,8 +161,13 @@ class AuditingHttpClient(wsHttp: WSHttp, config: Config)(implicit ec: ExecutionC
     wsHttp.GET(uri, headers = authHeaders(uri))
   )
 
-  override def post(uri: String, body: String)(implicit hc: HeaderCarrier): FOpt[HttpResponse] =
-    fromFutureA(wsHttp.POSTString[HttpResponse](uri, body, headers = authHeaders(uri)))
+  override def post(uri: String, body: String)(implicit hc: HeaderCarrier): FOpt[HttpResponse] = {
+    logger.debug(s"Sending POST to $uri ...")
+    fromFutureA(wsHttp.POSTString[HttpResponse](uri, body, headers = authHeaders(uri))).map { response =>
+      logger.debug(s"Sending POST to $uri, response status: ${response.status}, body: ${response.body}")
+      response
+    }
+  }
 
   // TODO: Lance - when my pull request is merged, change this to use PUTString
   override def put(uri: String, body: String)(implicit hc: HeaderCarrier): FOpt[HttpResponse] =
