@@ -18,12 +18,15 @@ package uk.gov.hmrc.gform.wshttp
 
 import cats.syntax.applicative._
 import cats.syntax.flatMap._
+import cats.instances.all._
 import cats.{ Endo, MonadError }
+import com.typesafe.config.Config
 import org.slf4j.LoggerFactory
 import play.api.libs.json.{ JsValue, Json }
 import uk.gov.hmrc.gform.core.{ FOpt, _ }
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpReads, HttpReadsInstances, HttpResponse }
 
+import java.net.URL
 import scala.concurrent.ExecutionContext
 
 trait HttpClient[F[_]] {
@@ -136,23 +139,44 @@ object SuccessfulResponseHttpClient {
     s"Couldn't $method from URI '$uri'. Got response status code $statusCode"
 }
 
-class AuditingHttpClient(wsHttp: WSHttp)(implicit ec: ExecutionContext) extends HttpClient[FOpt] {
+class AuditingHttpClient(wsHttp: WSHttp, config: Config)(implicit ec: ExecutionContext) extends HttpClient[FOpt] {
 
-  private def authHeaders(implicit hc: HeaderCarrier): Seq[(String, String)] =
-    hc.authorization.map(authToken => Seq("Authorization" -> authToken.value)).getOrElse(Seq.empty)
+  private val logger = LoggerFactory.getLogger(getClass)
+
+  val internalHostPatterns = HeaderCarrier.Config.fromConfig(config).internalHostPatterns
+
+  private def isInternalCall(uri: String): Boolean =
+    internalHostPatterns.exists(x => x.pattern.matcher(new URL(uri).getHost).matches())
+
+  private def authHeaders(uri: String)(implicit hc: HeaderCarrier): Seq[(String, String)] =
+    if (isInternalCall(uri)) {
+      Seq.empty //No extra header for calls inside MDTP
+    } else {
+      hc.authorization.map(authToken => Seq("Authorization" -> authToken.value)).getOrElse(Seq.empty)
+    }
 
   private implicit val httpReads: HttpReads[HttpResponse] = HttpReadsInstances.readRaw
 
   override def get(uri: String)(implicit hc: HeaderCarrier): FOpt[HttpResponse] = fromFutureA(
-    wsHttp.GET(uri, headers = authHeaders)
+    wsHttp.GET(uri, headers = authHeaders(uri)).map(handleResponse("GET", uri))
   )
 
   override def post(uri: String, body: String)(implicit hc: HeaderCarrier): FOpt[HttpResponse] =
-    fromFutureA(wsHttp.POSTString[HttpResponse](uri, body, headers = authHeaders))
+    fromFutureA(wsHttp.POSTString[HttpResponse](uri, body, headers = authHeaders(uri))).map(handleResponse("POST", uri))
 
   // TODO: Lance - when my pull request is merged, change this to use PUTString
   override def put(uri: String, body: String)(implicit hc: HeaderCarrier): FOpt[HttpResponse] =
-    fromFutureA(wsHttp.PUT(uri, Json.parse(body), headers = authHeaders))
+    fromFutureA(wsHttp.PUT(uri, Json.parse(body), headers = authHeaders(uri))).map(handleResponse("PUT", uri))
+
+  private def is2xx(status: Int) = status >= 200 && status < 300
+
+  def handleResponse(httpMethod: String, uri: String)(response: HttpResponse): HttpResponse =
+    if (is2xx(response.status)) {
+      response
+    } else {
+      logger.error(s"Sending $httpMethod to $uri, response status: ${response.status}, body: ${response.body}")
+      response
+    }
 }
 
 class WSHttpHttpClient(wsHttp: WSHttp)(implicit ec: ExecutionContext) extends HttpClient[FOpt] {
