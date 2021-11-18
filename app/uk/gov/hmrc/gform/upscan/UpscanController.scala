@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.upscan
 import cats.data.Validated
 import cats.data.Validated.{ Invalid, Valid }
 import cats.instances.future._
-import cats.instances.int._
+import cats.instances.long._
 import cats.syntax.eq._
 import cats.syntax.either._
 import cats.syntax.applicative._
@@ -145,8 +145,8 @@ class UpscanController(
     }
 
   private def validateFile(uploadDetails: UploadDetails): Validated[FailureDetails, Unit] =
-    Valid(uploadDetails.fileName)
-      .ensure(FailureDetails("EntityTooSmall", ""))(_.length =!= 0)
+    Valid(uploadDetails)
+      .ensure(FailureDetails("EntityTooSmall", ""))(_.size =!= 0)
       .ensure(FailureDetails("EntityTooLarge", ""))(_ => validateFileSize(uploadDetails.size))
       .ensure(
         FailureDetails("InvalidFileType", uploadDetails.fileMimeType)
