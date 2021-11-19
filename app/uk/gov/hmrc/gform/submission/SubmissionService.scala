@@ -17,11 +17,13 @@
 package uk.gov.hmrc.gform.submission
 
 import cats.instances.future._
+import cats.syntax.applicative._
 import org.mongodb.scala.model.Filters.equal
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.core.{ fromFutureA, _ }
 import uk.gov.hmrc.gform.email.EmailService
 import uk.gov.hmrc.gform.form.FormAlgebra
+import uk.gov.hmrc.gform.formredirect.{ FormRedirect, FormRedirectService }
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
@@ -41,6 +43,7 @@ class SubmissionService(
   destinationProcessorModelService: DestinationsProcessorModelAlgebra[FOpt],
   destinationsSubmitter: DestinationsSubmitterAlgebra[FOpt],
   submissionRepo: Repo[Submission],
+  formRedirectService: FormRedirectService,
   email: EmailService,
   timeProvider: TimeProvider
 )(implicit ex: ExecutionContext) {
@@ -63,18 +66,39 @@ class SubmissionService(
   def submitForm(formIdData: FormIdData, customerId: String, submissionData: SubmissionData)(implicit
     hc: HeaderCarrier
   ): FOpt[Unit] =
-    // format: OFF
-      for {
-        form          <- formAlgebra.get(formIdData)
-        formTemplate  <- fromFutureA(formTemplateService.get(form.formTemplateId))
-        submission    <- findSubmission(SubmissionId(formIdData.toFormId, form.envelopeId))
-        submissionInfo = DestinationSubmissionInfo(customerId, submission)
-        modelTree     <- createModelTreeForSingleFormSubmission(form, formTemplate, submissionData, submission.submissionRef)
-        _             <- destinationsSubmitter.send(submissionInfo, modelTree, Some(form.formData), submissionData.l)
-        emailAddress   = email.getEmailAddress(form)
-        _             <- fromFutureA(email.sendEmail(emailAddress, formTemplate.emailTemplateId.toDigitalContact.emailTemplateId(submissionData.l), submissionData.emailParameters))
-      } yield ()
-  // format: ON
+    for {
+      form              <- formAlgebra.get(formIdData)
+      maybeFormRedirect <- fromFutureA(formRedirectService.find(formIdData.formTemplateId))
+      formTemplate      <- fromFutureA(formTemplateService.get(form.formTemplateId))
+      _                 <- removeOldFormData(formIdData, maybeFormRedirect)
+      submission        <- findSubmission(SubmissionId(formIdData.toFormId, form.envelopeId))
+      submissionInfo = DestinationSubmissionInfo(customerId, submission)
+      modelTree <- createModelTreeForSingleFormSubmission(form, formTemplate, submissionData, submission.submissionRef)
+      _         <- destinationsSubmitter.send(submissionInfo, modelTree, Some(form.formData), submissionData.l)
+      emailAddress = email.getEmailAddress(form)
+      _ <- fromFutureA(
+             email.sendEmail(
+               emailAddress,
+               formTemplate.emailTemplateId.toDigitalContact.emailTemplateId(submissionData.l),
+               submissionData.emailParameters
+             )
+           )
+    } yield ()
+
+  /* When FormTemplateId has a new current version, but user started journey with old FormTemplateId version, we need to migrate
+   * user data to the old FormTemplateId. This migration process (which happened elsewhere) is leaving current version data
+   * around (so we are able to redirect user to old data). When user is submitting old FormTemplateId data, we also need to clean
+   * current version data, since they actually belongs to old version, so when user starts new form there are no data to
+   * continue with.
+   */
+  private def removeOldFormData(formIdData: FormIdData, maybeFormRedirect: Option[FormRedirect])(implicit
+    hc: HeaderCarrier
+  ): FOpt[Unit] =
+    maybeFormRedirect
+      .fold[FOpt[Unit]](().pure[FOpt]) { formRedirect =>
+        val formIdDataForDeletion = formIdData.toFormIdWithFormTemplateId(formRedirect.redirect)
+        formAlgebra.delete(formIdDataForDeletion)
+      }
 
   private def createModelTreeForSingleFormSubmission(
     form: Form,

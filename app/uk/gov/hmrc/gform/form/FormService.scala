@@ -109,6 +109,7 @@ class FormService[F[_]: Monad](
                envelopeId,
                userId,
                lowerCased.formTemplateId,
+               formTemplate.version,
                FormData(fields = Seq.empty),
                InProgress,
                VisitIndex.empty,
@@ -165,6 +166,19 @@ class FormService[F[_]: Monad](
 
   private def resolveParentFormSubmissionRefs(fcIds: List[FormComponentId], formData: FormData): List[SubmissionRef] =
     fcIds.flatMap(fcId => formData.find(fcId).map(SubmissionRef(_)))
+
+  def changeVersion(formIdData: FormIdData, formTemplateId: FormTemplateId)(implicit
+    hc: HeaderCarrier
+  ): F[Unit] =
+    for {
+      form <- get(formIdData)
+      newForm = form.copy(
+                  _id = formIdData.toFormIdWithFormTemplateId(formTemplateId),
+                  formTemplateId = formTemplateId
+                )
+      _ <- formPersistence.upsert(newForm)
+      _ <- refreshMetadata(true, formIdData, form.formData)
+    } yield ()
 
   def updateFormStatus(formId: FormId, status: FormStatus)(implicit hc: HeaderCarrier): F[FormStatus] =
     for {

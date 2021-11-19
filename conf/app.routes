@@ -6,6 +6,9 @@ POST          /new-form/:formTemplateId/:userId/:affinityGroup                  
 PUT           /forms/:userId/:formTemplateId                                                            uk.gov.hmrc.gform.form.FormController.updateFormDataPlain(userId: UserId, formTemplateId: String)
 PUT           /forms/:userId/:formTemplateId/:accessCode                                                uk.gov.hmrc.gform.form.FormController.updateFormData(userId: UserId, formTemplateId: String, accessCode: AccessCode)
 
+PUT           /version/:userId/:formTemplateId                                                          uk.gov.hmrc.gform.form.FormController.changeVersionPlain(userId: UserId, formTemplateId: String)
+PUT           /version/:userId/:formTemplateId/:accessCode                                              uk.gov.hmrc.gform.form.FormController.changeVersion(userId: UserId, formTemplateId: String, accessCode: AccessCode)
+
 POST          /forms/:userId/:formTemplateId/from-legacy                                                uk.gov.hmrc.gform.form.FormController.createPlainFormFromLegacy(userId: UserId, formTemplateId: FormTemplateId)
 POST          /forms/:userId/:formTemplateId/:accessCode/from-legacy                                    uk.gov.hmrc.gform.form.FormController.createFormFromLegacy(userId: UserId, formTemplateId: FormTemplateId, accessCode: AccessCode)
 

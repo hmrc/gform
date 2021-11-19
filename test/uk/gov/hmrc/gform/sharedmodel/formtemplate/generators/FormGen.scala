@@ -34,21 +34,23 @@ trait FormGen {
 
   def formGen: Gen[Form] =
     for {
-      formId         <- formIdGen
-      envelopeId     <- envelopeIdGen
-      userId         <- userIdGen
-      formTemplateId <- FormTemplateGen.formTemplateIdGen
-      formData       <- formDataGen
-      status         <- formStatusGen
-      visitIndex     <- VisitIndexGen.visitIndexGen
-      thirdPartyData <- ThirdPartyDataGen.thirdPartyDataGen
-      expiryDate     <- Gen.option(EnvelopeExpiryDateGen.envelopeExpiryDateGen)
+      formId              <- formIdGen
+      envelopeId          <- envelopeIdGen
+      userId              <- userIdGen
+      formTemplateId      <- FormTemplateGen.formTemplateIdGen
+      formTemplateVersion <- FormTemplateVersionGen.formTemplateVersionGen
+      formData            <- formDataGen
+      status              <- formStatusGen
+      visitIndex          <- VisitIndexGen.visitIndexGen
+      thirdPartyData      <- ThirdPartyDataGen.thirdPartyDataGen
+      expiryDate          <- Gen.option(EnvelopeExpiryDateGen.envelopeExpiryDateGen)
       formComponentIdToFileIdMapping = FormComponentIdToFileIdMapping.empty
     } yield Form(
       formId,
       envelopeId,
       userId,
       formTemplateId,
+      formTemplateVersion,
       formData,
       status,
       visitIndex,

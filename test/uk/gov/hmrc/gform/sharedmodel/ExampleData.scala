@@ -472,6 +472,7 @@ trait ExampleFormTemplate {
   def formTemplate = FormTemplate(
     formTemplateId,
     formTemplateId,
+    None,
     legacyFormIds,
     formName,
     Some(ResearchBanner),
@@ -544,6 +545,7 @@ trait ExampleForm { dependsOn: ExampleFormField with ExampleFormTemplate =>
       envelopeId,
       userId,
       formTemplateId,
+      None,
       formData,
       InProgress,
       VisitIndex.empty,

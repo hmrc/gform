@@ -97,6 +97,19 @@ class FormController(
       } yield NoContent
     }
 
+  def changeVersionPlain(userId: UserId, formTemplateId: String): Action[FormTemplateId] =
+    changeVersion(FormIdData.Plain(userId, FormTemplateId(formTemplateId)))
+
+  def changeVersion(userId: UserId, formTemplateId: String, accessCode: AccessCode): Action[FormTemplateId] =
+    changeVersion(FormIdData.WithAccessCode(userId, FormTemplateId(formTemplateId), accessCode))
+
+  private def changeVersion(formIdData: FormIdData): Action[FormTemplateId] =
+    formAction(parse.json[FormTemplateId])("changeVersion", formIdData) { implicit request =>
+      for {
+        _ <- formService.changeVersion(formIdData, request.body)
+      } yield NoContent
+    }
+
   def delete(formId: FormId): Action[AnyContent] = formAction("delete", formId) { implicit request =>
     formService.delete(formId).asNoContent
   }

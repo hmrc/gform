@@ -92,6 +92,7 @@ class SubmissionModule(
     destinationModule.destinationsProcessorModelService,
     destinationsSubmitter,
     submissionRepo,
+    formTemplateModule.formRedirectService,
     emailModule.emailLogic,
     timeModule.timeProvider
   )
