@@ -24,7 +24,7 @@ import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.UserId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplateId, JsonUtils }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplateId, FormTemplateVersion, JsonUtils }
 
 import scala.util.Try
 
@@ -54,6 +54,7 @@ case class Form(
   envelopeId: EnvelopeId,
   userId: UserId,
   formTemplateId: FormTemplateId,
+  formTemplateVersion: Option[FormTemplateVersion],
   formData: FormData,
   status: FormStatus,
   visitsIndex: VisitIndex,
@@ -65,6 +66,7 @@ case class Form(
 object Form {
   private val thirdPartyData = "thirdPartyData"
   private val componentIdToFileId = "componentIdToFileId"
+  private val formTemplateVersion = "version"
 
   private val readVisitIndex: Reads[VisitIndex] =
     (__ \ "visitsIndex").readNullable[List[Int]].map(a => VisitIndex(a.fold(Set.empty[Int])(_.toSet)))
@@ -74,6 +76,12 @@ object Form {
       .readNullable[ThirdPartyData]
       .map(_.getOrElse(ThirdPartyData.empty))
       .orElse(JsonUtils.constReads(ThirdPartyData.empty))
+
+  private val formTemplateVersionWithFallback: Reads[Option[FormTemplateVersion]] =
+    (__ \ formTemplateVersion)
+      .readNullable[String]
+      .map(_.map(FormTemplateVersion.apply))
+      .orElse(JsonUtils.constReads(Option.empty[FormTemplateVersion]))
 
   private val componentIdToFileIdWithFallback: Reads[FormComponentIdToFileIdMapping] =
     (__ \ componentIdToFileId)
@@ -86,6 +94,7 @@ object Form {
       EnvelopeId.format and
       UserId.oformat and
       FormTemplateId.vformat and
+      formTemplateVersionWithFallback and
       FormData.format and
       FormStatus.format and
       readVisitIndex and
@@ -99,6 +108,7 @@ object Form {
       EnvelopeId.format.writes(form.envelopeId) ++
       UserId.oformat.writes(form.userId) ++
       FormTemplateId.oformat.writes(form.formTemplateId) ++
+      form.formTemplateVersion.map(FormTemplateVersion.oformat.writes).getOrElse(Json.obj()) ++
       FormData.format.writes(form.formData) ++
       FormStatus.format.writes(form.status) ++
       VisitIndex.format.writes(form.visitsIndex) ++

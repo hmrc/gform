@@ -31,6 +31,7 @@ class FormServiceSpec extends PlaySpec {
     EnvelopeId("env-id"),
     UserId("testUser"),
     FormTemplateId("temp-id"),
+    None,
     FormData(Seq(FormField(FormComponentId("a"), "1"))),
     InProgress,
     VisitIndex.empty,

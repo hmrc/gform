@@ -102,6 +102,7 @@ class FormSpec extends FlatSpec with Matchers with ScalaCheckDrivenPropertyCheck
     EnvelopeId("envelopeId"),
     uk.gov.hmrc.gform.sharedmodel.UserId("userId"),
     FormTemplateId("formTemplateId"),
+    None,
     FormData(
       List(
         FormField(
@@ -176,6 +177,7 @@ class FormSpec extends FlatSpec with Matchers with ScalaCheckDrivenPropertyCheck
     EnvelopeId("b66c5979-e885-49cd-9281-c7f42ce6b307"),
     uk.gov.hmrc.gform.sharedmodel.UserId("James007"),
     FormTemplateId("AAA999"),
+    None,
     FormData(
       List(
         FormField(FormComponentId("facePhoto"), "face-photo.jpg"),

@@ -37,6 +37,12 @@ sealed trait FormIdData {
     FormId.fromAccessCode(w.userId, w.formTemplateId, w.accessCode)
   }
 
+  def toFormIdWithFormTemplateId(formTemplateId: FormTemplateId): FormId = fold { p =>
+    FormId(p.userId, formTemplateId)
+  } { w =>
+    FormId.fromAccessCode(w.userId, formTemplateId, w.accessCode)
+  }
+
   def lowerCaseId: FormIdData = fold[FormIdData] { p =>
     p.copy(formTemplateId = FormTemplateId(p.formTemplateId.value.toLowerCase))
   } { w =>

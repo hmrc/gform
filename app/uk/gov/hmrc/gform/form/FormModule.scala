@@ -71,6 +71,11 @@ class FormModule(
     override def updateUserData(formIdData: FormIdData, userData: UserData)(implicit hc: HeaderCarrier): FOpt[Unit] =
       fromFutureA(formService.updateUserData(formIdData, userData))
 
+    override def changeVersion(formIdData: FormIdData, formTemplateId: FormTemplateId)(implicit
+      hc: HeaderCarrier
+    ): FOpt[Unit] =
+      fromFutureA(formService.changeVersion(formIdData, formTemplateId))
+
     def updateFormStatus(formId: FormId, newStatus: FormStatus)(implicit hc: HeaderCarrier): FOpt[FormStatus] =
       fromFutureA(formService.updateFormStatus(formId, newStatus))
 
