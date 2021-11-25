@@ -24,7 +24,7 @@ import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.formredirect.FormRedirectService
 import uk.gov.hmrc.gform.formtemplate.FormTemplatePIIRefsHelper.PIIDetailsResponse
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId, FormTemplateRaw, FormTemplateRawId }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId, FormTemplateRaw, FormTemplateRawId, FormTemplateWithRedirects }
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -67,6 +67,15 @@ class FormTemplatesController(
 
   def get(id: FormTemplateId) = formTemplateAction("get", id) { _ =>
     findFormTemplate(id).asOkJson
+  }
+
+  def getWithRedirects(id: FormTemplateId) = formTemplateAction("getWithRedirects", id) { _ =>
+    val formTemplateWithRedirects =
+      for {
+        formTemplate <- findFormTemplate(id)
+        redirects    <- formRedirectService.find(formTemplate._id)
+      } yield FormTemplateWithRedirects(formTemplate, redirects.map(_.redirect))
+    formTemplateWithRedirects.asOkJson
   }
 
   private def findFormTemplate(id: FormTemplateId): Future[FormTemplate] =
