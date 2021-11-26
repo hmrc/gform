@@ -20,7 +20,7 @@ import play.api.libs.json.{ Format, Json }
 import uk.gov.hmrc.gform.sharedmodel.SmartString
 
 case class CheckYourAnswersPage(
-  title: SmartString,
+  title: Option[SmartString],
   updateTitle: SmartString,
   noPIITitle: Option[SmartString],
   noPIIUpdateTitle: Option[SmartString],
