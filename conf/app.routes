@@ -43,6 +43,7 @@ GET           /formtemplates/:formTemplateId/raw/sensitive                      
 GET           /formtemplates/:formTemplateId/raw                                                        uk.gov.hmrc.gform.formtemplate.FormTemplatesController.getRaw(formTemplateId: FormTemplateRawId)
 DELETE        /formtemplates/:formTemplateId/sensitive                                                  uk.gov.hmrc.gform.formtemplate.FormTemplatesController.removeSensitive(formTemplateId: String)
 DELETE        /formtemplates/:formTemplateId                                                            uk.gov.hmrc.gform.formtemplate.FormTemplatesController.remove(formTemplateId: FormTemplateId)
+GET           /formtemplates-with-redirects/:formTemplateId                                             uk.gov.hmrc.gform.formtemplate.FormTemplatesController.getWithRedirects(formTemplateId: FormTemplateId)
 
 GET           /exposed-config                                                                           uk.gov.hmrc.gform.config.ConfigController.exposedConfig()
 
