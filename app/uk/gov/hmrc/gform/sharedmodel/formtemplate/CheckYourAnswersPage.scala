@@ -19,12 +19,25 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import play.api.libs.json.{ Format, Json }
 import uk.gov.hmrc.gform.sharedmodel.SmartString
 
-case class CheckYourAnswersPage(updateTitle: SmartString, noPIIUpdateTitle: Option[SmartString])
+case class CheckYourAnswersPage(
+  title: SmartString,
+  updateTitle: SmartString,
+  noPIITitle: Option[SmartString],
+  noPIIUpdateTitle: Option[SmartString],
+  header: Option[SmartString],
+  footer: Option[SmartString],
+  continueLabel: Option[SmartString]
+)
 
 object CheckYourAnswersPage {
   implicit val format: Format[CheckYourAnswersPage] = Json.format[CheckYourAnswersPage]
 
   implicit val leafExprs: LeafExpr[CheckYourAnswersPage] = (path: TemplatePath, t: CheckYourAnswersPage) =>
-    LeafExpr(path + "updateTitle", t.updateTitle) ++
-      LeafExpr(path + "noPIIUpdateTitle", t.noPIIUpdateTitle)
+    LeafExpr(path + "title", t.title) ++
+      LeafExpr(path + "noPIITitle", t.noPIITitle) ++
+      LeafExpr(path + "updateTitle", t.updateTitle) ++
+      LeafExpr(path + "noPIIUpdateTitle", t.noPIIUpdateTitle) ++
+      LeafExpr(path + "header", t.header) ++
+      LeafExpr(path + "footer", t.footer) ++
+      LeafExpr(path + "continueLabel", t.continueLabel)
 }
