@@ -66,15 +66,6 @@ object TextArea {
   val defaultDisplayCharCount = true
 }
 
-case class UkSortCode(value: Expr) extends ComponentType {
-  def fields(id: FormComponentId): NonEmptyList[FormComponentId] = UkSortCode.fields(id)
-}
-
-object UkSortCode {
-  val fields: FormComponentId => NonEmptyList[FormComponentId] = (id: FormComponentId) =>
-    NonEmptyList.of("1", "2", "3").map(id.withSuffix)
-}
-
 case class Date(
   constraintType: DateConstraintType,
   offset: Offset,
@@ -327,7 +318,6 @@ object ComponentType {
           LeafExpr(path + "suffix", suffix) ++
           LeafExpr(path + "format", constraint)
       case TextArea(constraint, expr, _, _, _) => ExprWithPath(path, expr) :: LeafExpr(path, constraint)
-      case UkSortCode(expr)                    => List(ExprWithPath(path, expr))
       case Date(_, _, _)                       => Nil
       case CalendarDate                        => Nil
       case Address(_)                          => Nil

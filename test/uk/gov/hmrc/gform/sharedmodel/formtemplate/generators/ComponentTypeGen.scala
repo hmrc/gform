@@ -41,8 +41,6 @@ trait ComponentTypeGen {
       rows         <- rowsGen
     } yield TextArea(constraint, value, displayWidth, rows)
 
-  def ukSortCodeGen: Gen[UkSortCode] = ExprGen.exprGen().map(UkSortCode(_))
-
   def dateGen: Gen[Date] =
     for {
       constraintType <- FormatExprGen.dateConstraintTypeGen
@@ -153,7 +151,6 @@ trait ComponentTypeGen {
         dateGen,
         textGen,
         textAreaGen,
-        ukSortCodeGen,
         addressGen,
         informationMessageGen,
         fileUploadGen,
@@ -165,7 +162,6 @@ trait ComponentTypeGen {
       Gen.oneOf(
         textGen,
         textAreaGen,
-        ukSortCodeGen,
         dateGen,
         addressGen,
         choiceGen,

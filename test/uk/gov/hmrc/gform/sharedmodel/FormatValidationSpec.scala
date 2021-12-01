@@ -47,25 +47,7 @@ class FormatValidationSpec extends Spec {
   it should "return UkVrn" in createTest("ukVrn", UkVrn)
   it should "return countryCode" in createTest("countryCode", CountryCode)
   it should "return nonUkCountryCode" in createTest("nonUkCountryCode", NonUkCountryCode)
-  it should "return UkSortCode Component" in {
-    reads.reads(makeJson("ukSortCode")) shouldBe JsSuccess(
-      FormComponent(
-        id = FormComponentId(id),
-        `type` = UkSortCode(Value),
-        label = toSmartString(label),
-        helpText = None,
-        shortName = None,
-        includeIf = None,
-        validIf = None,
-        mandatory = true,
-        editable = true,
-        submissible = true,
-        derived = false,
-        errorMessage = None,
-        presentationHint = None
-      )
-    )
-  }
+
   it should "return CompanyRegistrationNumber" in createTest("companyRegistrationNumber", CompanyRegistrationNumber)
 
   it should "return EORI" in createTest("EORI", EORI)

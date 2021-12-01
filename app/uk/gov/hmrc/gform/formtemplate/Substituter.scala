@@ -119,8 +119,6 @@ object Substituter {
           displayCharCount
         )
 
-      case UkSortCode(value) => UkSortCode(value(substitutions))
-
       case d @ Date(_, _, _) => d
       case CalendarDate      => CalendarDate
       case a @ Address(_)    => a

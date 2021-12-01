@@ -38,7 +38,6 @@ object FormComponentMakerService {
     json: JsValue
   ): Either[UnexpectedState, ComponentType] =
     (maybeFormatExpr, maybeValueExpr, multiLine) match {
-      case (Some(TextFormat(UkSortCodeFormat)), HasTextExpression(expr), IsNotMultiline()) => UkSortCode(expr).asRight
       case (Some(formatExpr), _, IsNotMultiline()) =>
         createTextObject(formatExpr, maybeValueExpr, maybeDisplayWidth, toUpperCase, maybePrefix, maybeSuffix, json)
       case (Some(formatExpr), _, IsMultiline()) =>

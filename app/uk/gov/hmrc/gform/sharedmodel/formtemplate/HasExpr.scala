@@ -27,7 +27,6 @@ object HasExpr {
     ct match {
       case Text(_, expr, _, _, _, _)  => Some(SingleExpr(expr))
       case TextArea(_, expr, _, _, _) => Some(SingleExpr(expr))
-      case UkSortCode(expr)           => Some(SingleExpr(expr))
       case Group(fields, _, _, _, _)  => Some(MultipleExpr(fields))
       case _                          => None
     }
