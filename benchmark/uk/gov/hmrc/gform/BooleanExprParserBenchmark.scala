@@ -46,7 +46,16 @@ object BooleanExprParserBenchmark extends Bench.LocalTime {
       "|| (businessIOSS10 match '^[^a-zA-Z0-9]*[iI][mM][^a-zA-Z0-9]*[0-9]{10}[^a-zA-Z0-9]*$')}"
   )
 
-  val expressions: Gen[String] = Gen.enumeration("Expression")(expressionsList: _*)
+  val list2: List[String] = List(
+    "${amountA=22}",
+    "${amountA=22 || amountB=33}",
+    "${amountA=22 || amountB=33 || amountC=22}",
+    "${amountA=22 || amountB=33 || amountC=22 || amountD=33}",
+    "${amountA=22 || amountB=33 || amountC=22 || amountD=33 || amountE=22}",
+    "${effectiveDate1 before TODAY || effectiveDate2 before TODAY || effectiveDate3 before TODAY || effectiveDate4 before TODAY || effectiveDate5 before TODAY}"
+  )
+
+  val expressions: Gen[String] = Gen.enumeration("Expression")(list2: _*)
 
   performance of "BooleanExprParser" in {
     measure method "validate" in {
