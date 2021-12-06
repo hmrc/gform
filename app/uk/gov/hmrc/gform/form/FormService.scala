@@ -169,7 +169,7 @@ class FormService[F[_]: Monad](
 
   def changeVersion(formIdData: FormIdData, formTemplateId: FormTemplateId)(implicit
     hc: HeaderCarrier
-  ): F[Unit] =
+  ): F[Form] =
     for {
       form <- get(formIdData)
       newForm = form.copy(
@@ -178,7 +178,7 @@ class FormService[F[_]: Monad](
                 )
       _ <- formPersistence.upsert(newForm)
       _ <- refreshMetadata(true, formIdData, form.formData)
-    } yield ()
+    } yield newForm
 
   def updateFormStatus(formId: FormId, status: FormStatus)(implicit hc: HeaderCarrier): F[FormStatus] =
     for {

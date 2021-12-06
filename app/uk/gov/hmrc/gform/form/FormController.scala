@@ -105,9 +105,7 @@ class FormController(
 
   private def changeVersion(formIdData: FormIdData): Action[FormTemplateId] =
     formAction(parse.json[FormTemplateId])("changeVersion", formIdData) { implicit request =>
-      for {
-        _ <- formService.changeVersion(formIdData, request.body)
-      } yield NoContent
+      formService.changeVersion(formIdData, request.body).asOkJson
     }
 
   def delete(formId: FormId): Action[AnyContent] = formAction("delete", formId) { implicit request =>

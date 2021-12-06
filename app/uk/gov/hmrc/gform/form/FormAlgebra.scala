@@ -43,7 +43,7 @@ trait FormAlgebra[F[_]] {
 
   def updateUserData(formIdData: FormIdData, userData: UserData)(implicit hc: HeaderCarrier): F[Unit]
 
-  def changeVersion(formIdData: FormIdData, formTemplateId: FormTemplateId)(implicit hc: HeaderCarrier): F[Unit]
+  def changeVersion(formIdData: FormIdData, formTemplateId: FormTemplateId)(implicit hc: HeaderCarrier): F[Form]
 
   def updateFormStatus(formId: FormId, newStatus: FormStatus)(implicit hc: HeaderCarrier): F[FormStatus]
 
