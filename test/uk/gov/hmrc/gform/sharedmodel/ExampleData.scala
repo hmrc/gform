@@ -415,16 +415,16 @@ trait ExampleSection { dependecies: ExampleFieldId with ExampleFieldValue with E
 trait ExampleFormTemplate {
   dependsOn: ExampleAuthConfig with ExampleSection with ExampleFieldId with ExampleFieldValue =>
 
-  def formTemplateId = FormTemplateId("AAA999")
+  def formTemplateId = FormTemplateId("aaa999")
 
   def legacyFormIds =
     Some(
       NonEmptyList.of(
-        FormTemplateId("AAA100")
+        FormTemplateId("aaa100")
       )
     )
 
-  def formName = toLocalisedString("AAA999 dev test template")
+  def formName = toLocalisedString("aaa999 dev test template")
 
   def emailTemplateId = LocalisedEmailTemplateId("test-email-template-id", None)
 

@@ -1,0 +1,35 @@
+{
+  "_id": "invalid-legacy-form-ids",
+  "formName": "Template",
+  "legacyFormIds": [
+    "Version-Test-1"
+  ],
+  "description": "",
+  "emailTemplateId": "al_registration_confirmation",
+  "authConfig": {
+    "authModule": "hmrc"
+  },
+  "sections": [
+    {
+      "title": "Page A",
+      "fields": [
+        {
+          "id": "fieldA",
+          "label": "Field A",
+          "format": "text"
+        }
+      ]
+    }
+  ],
+  "acknowledgementSection": {
+    "title": "Acknowledgement",
+    "fields": []
+  },
+  "destinations": [
+    {
+      "id": "transitionToSubmitted",
+      "type": "stateTransition",
+      "requiredState": "Submitted"
+    }
+  ]
+}
