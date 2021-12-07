@@ -41,7 +41,7 @@ class HelperSpec extends Spec {
         "maxSizePerItem" -> "5MB"
       ),
       "expiryDate" -> helper.envelopeExpiryDate(date),
-      "metadata"   -> Json.obj("application" -> "gform", "formTemplateId" -> "AAA999")
+      "metadata"   -> Json.obj("application" -> "gform", "formTemplateId" -> "aaa999")
     )
   }
 }

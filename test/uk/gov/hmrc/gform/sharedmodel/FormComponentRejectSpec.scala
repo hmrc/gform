@@ -52,6 +52,8 @@ class FormComponentRejectSpec extends Spec with TableDrivenPropertyChecks {
     val table = Table(
       // format: off
       ("json",                                      "expectedMessage"),
+      ("invalid-version",                           "version cannot contains uppercase letters. Found: V1"),
+      ("invalid-invalid-legacy-form-ids",           "legacyFormIds must be lowercase. Found: Version-Test-1"),
       ("revealing-choice-include-revealing-choice", "Revealing choice cannot contains revealing choice as its element"),
       ("revealing-choice-include-group",            "Revealing choice cannot contains group as its element"),
       ("group-include-group",                       "Group cannot contains group as its element"),

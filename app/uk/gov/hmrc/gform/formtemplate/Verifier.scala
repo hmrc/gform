@@ -36,6 +36,7 @@ trait Verifier {
     val allExpressions: List[ExprWithPath] = LeafExpr(TemplatePath.root, formTemplate)
 
     for {
+      _ <- fromOptA(FormTemplateValidator.validateLowercaseIds(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateLanguages(languages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateChoiceHelpText(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateChoiceHints(pages).toEither)
