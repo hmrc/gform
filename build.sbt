@@ -22,7 +22,7 @@ lazy val scoverageSettings = {
   )
 }
 
-val silencerVersion = "1.7.3"
+val silencerVersion = "1.7.6"
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
@@ -41,7 +41,7 @@ lazy val microservice = (project in file("."))
     publishingSettings,
     defaultSettings(),
     scalafmtOnCompile := true,
-    scalaVersion := "2.12.13",
+    scalaVersion := "2.12.15",
     Test / testOptions := (Test / testOptions).value
       .map {
         // Default Argument added by https://github.com/hmrc/sbt-settings
