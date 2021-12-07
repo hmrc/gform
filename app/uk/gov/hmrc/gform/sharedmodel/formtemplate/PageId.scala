@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
-import play.api.libs.json.{ Format, JsError, JsResult, JsString, JsSuccess }
+import cats.parse.Parser
+import play.api.libs.json.{Format, JsError, JsResult, JsString, JsSuccess}
 import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
 
 import scala.util.matching.Regex
@@ -28,6 +29,7 @@ object PageId {
   private val idValidation: String = "[_a-zA-Z]\\w*"
   private val anchoredIdValidation: Regex = s"""^$idValidation$$""".r
   val unanchoredIdValidation: Regex = s"""$idValidation""".r
+  val unanchoredIdValidationParser: Parser[String] = ???
 
   implicit val format: Format[PageId] =
     ValueClassFormat.validatedvformat("id", validate, p => JsString(p.id))

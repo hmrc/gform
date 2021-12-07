@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.gform.core.parsers
 
-import parseback._
+import cats.parse.Parser
+import uk.gov.hmrc.gform.core.parsers.BooleanExprParser.token
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.BasicParsers._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
@@ -28,23 +29,11 @@ object PresentationHintParser {
   def validateSingle(expression: String): Opt[PresentationHint] = validateWithParser(expression, presentationHint)
 
   lazy val presentationHints: Parser[List[PresentationHint]] =
-    (presentationHint ~ "," ~ presentationHints ^^ { (loc, presHint, _, presHints) =>
-      presHint :: presHints
-    }
-      | presentationHint ^^ { (loc, presHint) =>
-        List(presHint)
-      })
+    (((presentationHint <* token(",")) ~ presentationHints).map{case (presHint, presHints) => presHint :: presHints} |
+      presentationHint.map(x => List(x)))
 
-  lazy val presentationHint: Parser[PresentationHint] = ("summariseGroupAsGrid" ^^ { (loc, unparsed) =>
-    SummariseGroupAsGrid
-  }
-    | "invisibleInSummary" ^^ { (loc, unparsed) =>
-      InvisibleInSummary
-    }
-    | "totalValue" ^^ { (loc, unparsed) =>
-      TotalValue
-    }
-    | "invisiblePageTitle" ^^ { (loc, unparsed) =>
-      InvisiblePageTitle
-    })
+  lazy val presentationHint: Parser[PresentationHint] = token("summariseGroupAsGrid").map(_ => SummariseGroupAsGrid)|
+     token("invisibleInSummary").map(_ => InvisibleInSummary)
+     token("totalValue").map(x => TotalValue)
+     token("invisiblePageTitle").map(x => InvisiblePageTitle)
 }

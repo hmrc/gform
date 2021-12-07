@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.gform.core.parsers
 
-import parseback._
+import cats.parse.Parser
+import uk.gov.hmrc.gform.core.parsers.BooleanExprParser.token
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.BasicParsers._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
@@ -26,10 +27,10 @@ object LabelSizeParser {
   def validate(expression: String): Opt[LabelSize] = validateWithParser(expression, labelSize)
 
   lazy val labelSize: Parser[LabelSize] =
-    "xl" ^^ { (_, _) => ExtraLarge } |
-      "l" ^^ { (_, _) => Large } |
-      "m" ^^ { (_, _) => Medium } |
-      "s" ^^ { (_, _) => Small } |
-      "xs" ^^ { (_, _) => ExtraSmall }
+      token("xl").map(_ => ExtraLarge ) |
+      token("l").map(_ => Large ) |
+      token("m").map(_ => Medium ) |
+      token("s").map(_ => Small ) |
+      token("xs").map(_ => ExtraSmall )
 
 }

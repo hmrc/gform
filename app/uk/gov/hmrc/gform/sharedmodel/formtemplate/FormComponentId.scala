@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
+import cats.parse.Parser
+import cats.parse.Rfc5234
 import cats.{ Eq, Show }
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
@@ -54,6 +56,10 @@ object FormComponentId {
   val oformat: OFormat[FormComponentId] = ValueClassFormat.oformat("id", FormComponentId.apply, _.value)
 
   val idValidation: String = "[_a-zA-Z]\\w*"
+
+  val unanchoredIdValidationParser: Parser[String] =
+    ((Rfc5234.alpha | Parser.char('_').map(_ => '_')) ~ Rfc5234.alpha.rep0).map(x => x._1.toString + x._2.mkString(""))
+
   val unanchoredIdValidation: Regex = s"""$idValidation""".r
   val anchoredIdValidation: Regex = s"""^$idValidation$$""".r
 

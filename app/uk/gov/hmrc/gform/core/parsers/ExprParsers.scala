@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.gform.core.parsers
 
-import parseback._
+import cats.parse.Parser
+import uk.gov.hmrc.gform.core.parsers.BooleanExprParser.token
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.BasicParsers.validateWithParser
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormCtx }
@@ -25,7 +26,7 @@ object ExprParsers {
 
   def validateFormCtx(expression: String): Opt[FormCtx] = validateWithParser(expression, expr)
 
-  lazy val expr: Parser[FormCtx] = "${" ~ FormComponentId.unanchoredIdValidation ~ "}" ^^ { (loc, _, field, _) =>
+  lazy val expr: Parser[FormCtx] = ((token("${") *> FormComponentId.unanchoredIdValidationParser) <* token("}")).map {field =>
     FormCtx(FormComponentId(field))
   }
 }

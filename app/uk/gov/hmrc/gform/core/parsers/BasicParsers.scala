@@ -20,12 +20,13 @@ import cats.Eval
 import cats.data.ReaderT
 import cats.instances.either._
 import cats.syntax.either._
-import parseback._
-import parseback.compat.cats._
-import parseback.util.Catenable
+import cats.parse.{Parser, Parser0}
+import cats.parse.Rfc5234.digit
+import cats.parse.Parser.{char, charIn, string}
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.core.parsers.BooleanExprParser.token
 
 object BasicParsers {
 
@@ -54,63 +55,71 @@ object BasicParsers {
   def validateNonZeroPositiveNumber(expression: Int): Opt[Int] =
     validateWithParser(expression.toString, nonZeroPositiveInteger)
 
-  implicit val W = Whitespace(() | """\s+""".r)
-
   def nextOrPreviousValue[A](string: String, fn: (Int, Int) => A): Parser[A] =
-    string ~ exactMonthDay ^^ { (loc, _, month, day) =>
-      fn(month, day)
-    }
+    (token(string) *> exactMonthDay).map{ case ( month, day) => fn(month, day)}
 
-  lazy val exactMonthDay: Parser[(Int, Int)] = delimiter ~ exactMonthParser ~ delimiter ~ exactDayParser ^^ {
-    (loc, _, month, _, day) =>
-      (month, day)
-  }
+  lazy val exactMonthDay: Parser[(Int, Int)] = (((delimiter *> exactMonthParser) <* delimiter) ~ exactDayParser)
 
-  lazy val exactYearMonth: Parser[(Int, Int)] = exactYearParser ~ delimiter ~ exactMonthParser ~ delimiter ^^ {
-    (loc, year, _, month, _) =>
-      (year, month)
-  }
+  lazy val exactYearMonth: Parser[(Int, Int)] = ((exactYearParser <* delimiter) ~ exactMonthParser <* delimiter)
 
-  lazy val positiveIntegers: Parser[List[Int]] =
-    (positiveInteger ~ "," ~ positiveIntegers ^^ ((loc, x, _, xs) => x :: xs)
-      | positiveInteger ^^ ((loc, x) => List(x)))
+//  lazy val positiveIntegers: Parser[List[Int]] =
+//    (positiveInteger ~ "," ~ positiveIntegers ^^ ((loc, x, _, xs) => x :: xs)
+//      | positiveInteger ^^ ((loc, x) => List(x)))
+  lazy val positiveIntegers: Parser[List[Int]] = ((positiveInteger <* token(",")) ~ positiveIntegers).map{case (x,xs) => x :: xs} |
+    positiveInteger.map(x => List(x))
 
-  val anyWordFormat = """\w+""".r
-  val delimiter = "[- /.]".r
+  //val anyWordFormat = """\w+""".r
+
+  val delimiter = Parser.charIn('-', ' ', '/', '.')
+  //val delimiter = "[- /.]".r
 
   lazy val yearParser: Parser[Year] =
-    exactYearParser ^^ ((_, year) => Year.Exact(year)) |
-      "YYYY" ^^ ((_, _) => Year.Any) |
-      "next" ^^ ((_, _) => Year.Next) |
-      "previous" ^^ ((_, _) => Year.Previous)
+    exactYearParser.map(year => Year.Exact(year)) |
+      token("YYYY").map(_ => Year.Any) |
+      token("next").map(_ => Year.Next) |
+      token("previous").map(_ => Year.Previous)
 
   lazy val monthParser: Parser[Month] =
-    exactMonthParser ^^ ((_, month) => Month.Exact(month)) |
-      "MM" ^^ ((_, _) => Month.Any: Month)
+    exactMonthParser.map(month => Month.Exact(month)) |
+      token("MM").map(_ => Month.Any: Month)
 
   lazy val dayParser: Parser[Day] =
-    exactDayParser ^^ ((_, day) => Day.Exact(day)) |
-      "DD" ^^ ((_, _) => Day.Any) |
-      "firstDay" ^^ ((_, _) => Day.First) |
-      "lastDay" ^^ ((_, _) => Day.Last)
+    exactDayParser.map( day => Day.Exact(day)) |
+      token("DD").map(_ => Day.Any) |
+      token("firstDay").map(_ => Day.First) |
+      token("lastDay").map(_ => Day.Last)
 
-  lazy val exactYearParser: Parser[Int] = intParser("""(19|20)\d\d""")
+  //lazy val exactYearParser: Parser[Int] = intParser("""(19|20)\d\d""")
+  lazy val exactYearParser: Parser[Int] = ((string("19").map(_ => 1900) | string("20").map(_ => 2000)) ~ (digit.rep(2,2)))
+    .map { case (expr1, expr2) =>
+      expr1 + expr2.toString().toInt
+    }
 
-  lazy val exactMonthParser: Parser[Int] = intParser("""0[1-9]|1[012]""")
 
-  lazy val exactDayParser: Parser[Int] = intParser("""0[1-9]|[12][0-9]|3[01]""")
-
-  lazy val positiveInteger: Parser[Int] = intParser("""\d+""")
-
-  lazy val nonZeroPositiveInteger: Parser[Int] = intParser("""[1-9][0-9]*""")
-
-  lazy val anyInteger: Parser[Int] = intParser("""(\+|-)?\d+""")
-
-  lazy val plusOrMinus: Parser[String] = """[+-]""".r ^^ { (_, plusOrMinus) =>
-    plusOrMinus
+  //lazy val exactMonthParser: Parser[Int] = intParser("""0[1-9]|1[012]""")
+  lazy val exactMonthParser: Parser[Int] = (char('0').map(_ => 0) ~ charIn('1' to '9') | char('1').map(_ => 10) ~ charIn('1', '2', '3')).map {
+    case (expr1, expr2) => expr1 + expr2.toInt
   }
 
-  lazy val periodValueParser: Parser[String] = {
+  //lazy val exactDayParser: Parser[Int] = intParser("""0[1-9]|[12][0-9]|3[01]""")
+  lazy val exactDayParser: Parser[Int] = ((char('0').map(_ => 0) ~ digit)).map{case (x, y) => x + y.toInt } |
+    (charIn('1','2').map(x => x.toInt *10) ~ digit).map {case (x, y) => x + y.toInt} |
+    (char('3').map(_ => 30) ~ charIn('0','1').map(x => x.toInt)).map {case (x, y) => x + y}
+
+  //lazy val positiveInteger: Parser[Int] = intParser("""\d+""")
+  lazy val positiveInteger: Parser[Int] = digit.rep.map(x => x.toList.mkString("").toInt)
+
+  //lazy val nonZeroPositiveInteger: Parser[Int] = intParser("""[1-9][0-9]*""")
+  lazy val nonZeroPositiveInteger: Parser[Int] =  (charIn('1' to '9') ~ digit.rep0).map{case (x, y) => (x :: y).toList.mkString("").toInt}
+
+  //lazy val anyInteger: Parser[Int] = intParser("""(\+|-)?\d+""")
+  lazy val anyInteger: Parser[Int] = charIn('+', '-') *> digit.rep(1).map(x => x.toList.mkString("").toInt)
+
+  //lazy val plusOrMinus: Parser[String] = """[+-]""".r ^^ { (_, plusOrMinus) =>
+  lazy val plusOrMinus: Parser[String] = charIn('+', '-').map(x => x.toString)
+
+  lazy val periodValueParser: Parser[String] = Parser.unit.map(_ => "") //TODO
+  /*lazy val periodValueParser: Parser[String] = {
     val periodComps = List("Y", "M", "D")
     (periodComps.combinations(1) ++ periodComps.combinations(2) ++ periodComps.combinations(3))
       .map(_.map("(\\+|-)?\\d+" + _))
@@ -120,10 +129,5 @@ object BasicParsers {
         }
       )
       .reduce(_ | _)
-  }
-
-  private def intParser(str: String): Parser[Int] =
-    str.r ^^ { (_, number) =>
-      number.toInt
-    }
+  }*/
 }

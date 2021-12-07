@@ -16,7 +16,9 @@
 
 package uk.gov.hmrc.gform.core.parsers
 
-import parseback._
+import cats.parse.Rfc5234.{ alpha, digit, sp }
+import cats.parse.Parser
+import cats.parse.Parser.{ char, string }
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.BasicParsers._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._

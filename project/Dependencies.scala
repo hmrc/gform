@@ -19,10 +19,9 @@ object Dependencies {
     "uk.gov.hmrc"                %% "bootstrap-backend-play-27" % "5.12.0",
     "uk.gov.hmrc"                %% "domain"                    % "6.2.0-play-27",
     "com.typesafe.play"          %% "play-json"                 % "2.7.4",
-    "com.codecommit"             %% "parseback-core"            % parsebackVersion,
-    "com.codecommit"             %% "parseback-cats"            % parsebackVersion,
+    "org.typelevel"              %% "cats-parse"                % "0.3.6",
     "org.julienrf"               %% "play-json-derived-codecs"  % "4.0.1", //upgrading this has caused play-json comparability issue
-    "org.typelevel"              %% "cats-core"                 % "1.6.0",
+    "org.typelevel"              %% "cats-core"                 % "2.6.1",
     "org.typelevel"              %% "case-insensitive"          % "0.3.0",
     "com.openhtmltopdf"           % "openhtmltopdf-pdfbox"      % "1.0.6",
     "com.chuusai"                %% "shapeless"                 % "2.3.3",

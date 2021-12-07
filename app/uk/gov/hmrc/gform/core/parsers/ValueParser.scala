@@ -17,19 +17,22 @@
 package uk.gov.hmrc.gform.core.parsers
 
 import java.time.LocalDate
-
-import parseback._
+import cats.parse.Parser
+import cats.parse.Rfc5234.{alpha, digit, sp}
+import cats.parse.Parser
+import cats.parse.Parser.{char, map0, string}
+import uk.gov.hmrc.gform.core.parsers.BooleanExprParser.token
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.BasicParsers._
 import uk.gov.hmrc.gform.sharedmodel.dblookup.CollectionName
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.UserField.Enrolment
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieveAttribute, DataRetrieveId }
+import uk.gov.hmrc.gform.sharedmodel.{DataRetrieveAttribute, DataRetrieveId}
 
 object ValueParser {
 
-  implicit val W = Whitespace(() | """\s+""".r)
+
 
   def validate(expression: String): Opt[ValueExpr] =
     validateWithParser(expression, exprDeterminer).right.map(_.rewrite)
@@ -61,49 +64,40 @@ object ValueParser {
   lazy val exprFormCtx: Parser[Expr] = (quotedLocalisedConstant
     | parserExpression)
 
-  lazy val dateExprExactParser: Parser[DateExpr] = exactDayParser ~ exactMonthParser ~ exactYearParser ^^ {
-    (_, day, month, year) =>
-      DateValueExpr(ExactDateExprValue(year, month, day))
+  lazy val dateExprExactParser: Parser[DateExpr] = (exactDayParser ~ exactMonthParser ~ exactYearParser).map {
+    case ((day, month), year) => DateValueExpr(ExactDateExprValue(year, month, day))
   }
 
-  lazy val dateExprExactQuoted: Parser[DateExpr] = "'" ~ dateExprExactParser ~ "'" ^^ { (_, _, dateExpr, _) =>
-    dateExpr
-  } | dateExprExactParser
+  lazy val dateExprExactQuoted: Parser[DateExpr] = ((char('\'') *> dateExprExactParser) <* char('\'')) | dateExprExactParser
 
-  lazy val signedInt: Parser[Int] = plusOrMinus ~ positiveInteger ^^ { (_, plusOrMinus, i) =>
+  lazy val signedInt: Parser[Int] = (plusOrMinus ~ positiveInteger).map{ case (plusOrMinus, i) =>
     i * (plusOrMinus match {
       case "+" => 1
       case "-" => -1
     })
   }
 
-  lazy val signedYear: Parser[OffsetUnit] = signedInt ~ "y" ^^ { (_, year, _) =>
-    OffsetUnit.Year(year)
-  }
+  lazy val signedYear: Parser[OffsetUnit] = (signedInt <* token("y")).map( year => OffsetUnit.Year(year))
 
-  lazy val signedMonth: Parser[OffsetUnit] = signedInt ~ "m" ^^ { (_, month, _) =>
-    OffsetUnit.Month(month)
-  }
+  lazy val signedMonth: Parser[OffsetUnit] = (signedInt <* token("m")).map( month => OffsetUnit.Month(month))
 
-  lazy val signedDay: Parser[OffsetUnit] = signedInt ~ "d" ^^ { (_, day, _) =>
-    OffsetUnit.Day(day)
-  }
+  lazy val signedDay: Parser[OffsetUnit] = (signedInt <* token("d")).map(day => OffsetUnit.Day(day))
 
   private val offsets = List(signedYear, signedMonth, signedDay)
 
   private val perms1: List[Parser[OffsetYMD]] = offsets.map { ap =>
-    ap ^^ { (_, a) => OffsetYMD(a) }
+    ap.map(a => OffsetYMD(a))
   }
 
   private val perms2: Iterator[Parser[OffsetYMD]] =
     offsets.combinations(2).flatMap(_.permutations).map { case List(ap, bp) =>
-      ap ~ bp ^^ { (_, a, b) =>
+      (ap ~ bp).map{ case (a, b) =>
         OffsetYMD(a, b)
       }
     }
 
   private val perms3: Iterator[Parser[OffsetYMD]] = offsets.permutations.map { case List(ap, bp, cp) =>
-    ap ~ bp ~ cp ^^ { (_, a, b, c) =>
+    (ap ~ bp ~ cp).map{case ((a, b), c) =>
       OffsetYMD(a, b, c)
     }
   }
@@ -112,15 +106,14 @@ object ValueParser {
 
   lazy val offsetYMD: Parser[OffsetYMD] = allYMDVariations.reduce(_ | _)
 
-  lazy val dateExprTODAY: Parser[DateExpr] = "TODAY" ^^^ DateValueExpr(TodayDateExprValue)
+  lazy val dateExprTODAY: Parser[DateExpr] = token("TODAY").map(_ => DateValueExpr(TodayDateExprValue))
 
-  lazy val dateExprTODAYOffset: Parser[DateExpr] = dateExprTODAY ~ offsetYMD ^^ { (_, dateExprToday, offsetYMD) =>
+  lazy val dateExprTODAYOffset: Parser[DateExpr] = (dateExprTODAY ~ offsetYMD).map{case (dateExprToday, offsetYMD) =>
     DateExprWithOffset(dateExprToday, offsetYMD)
   } | dateExprTODAY
 
-  lazy val formCtxFieldDateWithOffset: Parser[DateExprWithOffset] = formCtxFieldDate ~ offsetYMD ^^ {
-    (_, dateExprCtx, offsetYMD) =>
-      DateExprWithOffset(dateExprCtx, offsetYMD)
+  lazy val formCtxFieldDateWithOffset: Parser[DateExprWithOffset] = (formCtxFieldDate ~ offsetYMD).map {
+    case (dateExprCtx, offsetYMD) => DateExprWithOffset(dateExprCtx, offsetYMD)
   }
 
   lazy val dateExpr: Parser[DateExpr] =
@@ -130,79 +123,47 @@ object ValueParser {
     dateExprExactQuoted | dateExprTODAYOffset | formCtxFieldDateWithOffset
 
   lazy val dataSourceParse: Parser[DataSource] = (
-    "service" ~ "." ~ "seiss" ^^ { (_, _, _, _) =>
-      DataSource.SeissEligible
-    }
-      | "mongo" ~ "." ~ alphabeticOnly ^^ { (_, _, _, name) =>
-        DataSource.Mongo(CollectionName(name))
-      }
-      | "user" ~ "." ~ "enrolments" ~ "." ~ enrolment ^^ { (_, _, _, _, _, enrolment) =>
-        DataSource.Enrolment(enrolment.serviceName, enrolment.identifierName)
-      }
-      | "delegated.classic.enrolments." ~ enrolment ^^ { (_, _, enrolment) =>
+    token("service.seiss").map( _ => DataSource.SeissEligible)
+      | (token("mongo.") *> alphabeticOnly).map(name => DataSource.Mongo(CollectionName(name)))
+      | (token("user.enrolments.") *> enrolment).map( enrolment => DataSource.Enrolment(enrolment.serviceName, enrolment.identifierName))
+      | (token("delegated.classic.enrolments.") *> enrolment).map(enrolment =>
         DataSource.DelegatedEnrolment(enrolment.serviceName, enrolment.identifierName)
-      }
+      )
   )
 
   lazy val expr: Parser[Expr] = (quotedConstant
-    | "${" ~> parserExpression <~ "}")
+    | (token("${") *> parserExpression) <* token("}"))
 
-  lazy val internalLinkParser: Parser[InternalLink] = "printAcknowledgementPdf" ^^ { (loc, _) =>
-    InternalLink.printAcknowledgementPdf
-  } | "printSummaryPdf" ^^ { (loc, _) =>
-    InternalLink.printSummaryPdf
-  } | "newForm" ~ "." ~ FormTemplateId.unanchoredIdValidation ^^ { (loc, _, _, id) =>
-    InternalLink.NewFormForTemplate(FormTemplateId(id))
-  } | "newForm" ^^ { (loc, _) =>
-    InternalLink.newForm
-  } | "newSession" ^^ { (loc, _) =>
-    InternalLink.newSession
-  } | PageId.unanchoredIdValidation ^^ { (loc, id) =>
-    PageLink(PageId(id))
-  }
+  lazy val internalLinkParser: Parser[InternalLink] = (
+    token("printAcknowledgementPdf").map(_  =>  InternalLink.printAcknowledgementPdf)
+    | token("printSummaryPdf").map( _ => InternalLink.printSummaryPdf)
+    | (token("newForm.") *> FormTemplateId.unanchoredIdValidationParser).map(id => InternalLink.NewFormForTemplate(FormTemplateId(id)))
+    | token("newForm").map( _ =>  InternalLink.newForm)
+    | token("newSession").map(_  => InternalLink.newSession)
+    | PageId.unanchoredIdValidationParser.map(id => PageLink(PageId(id)))
+  )
 
-  private lazy val periodFun = "period(" ~ dateExpr ~ "," ~ dateExpr ~ ")"
+  private lazy val periodFun = (((token("period(") *> dateExpr) <* token(",")) ~ dateExpr <* token(")"))
 
-  private lazy val userFieldFunc: Parser[UserFieldFunc] = "count" ^^ { (_, _) =>
-    UserFieldFunc.Count
-  } | nonZeroPositiveInteger ^^ { (_, i) =>
-    UserFieldFunc.Index(i)
-  }
+  private lazy val userFieldFunc: Parser[UserFieldFunc] = token("count").map(_ => UserFieldFunc.Count)|
+    nonZeroPositiveInteger.map(i => UserFieldFunc.Index(i))
 
   private lazy val userEnrolmentFunc: Parser[UserCtx] =
-    "user" ~ "." ~ userFieldEnrolments ~ "." ~ userFieldFunc ^^ { (_, _, _, userField, _, func) =>
+    (((token("user.") *> userFieldEnrolments) <* token(".")) ~ userFieldFunc).map{ case (userField,func) =>
       UserCtx(Enrolment(userField.serviceName, userField.identifierName, Some(func)))
     }
 
-  lazy val contextField: Parser[Expr] = userEnrolmentFunc | ("user" ~ "." ~ userField ^^ { (loc, _, _, userField) =>
-    UserCtx(userField)
-  }
-    | "form" ~ "." ~ "submissionReference" ^^ { (loc, _, _, fieldName) =>
-      FormTemplateCtx(FormTemplateProp.SubmissionReference)
-    }
-    | "form" ~ "." ~ "id" ^^ { (loc, _, _, fieldName) =>
-      FormTemplateCtx(FormTemplateProp.Id)
-    }
-    | "form" ~ "." ~ "lang" ^^ { (loc, _, _, fieldName) =>
-      LangCtx
-    }
-    | "form" ~ "." ~ FormComponentId.unanchoredIdValidation ^^ { (loc, _, _, fieldName) =>
-      FormCtx(FormComponentId(fieldName))
-    }
-    | "param" ~ "." ~ alphabeticOnly ^^ { (loc, _, _, param) =>
-      ParamCtx(QueryParam(param))
-    }
-    | "auth" ~ "." ~ authInfo ^^ { (loc, _, _, authInfo) =>
-      AuthCtx(authInfo)
-    }
-    | "hmrcRosmRegistrationCheck" ~ "." ~ rosmProp ^^ { (loc, _, _, rosmProp) =>
-      HmrcRosmRegistrationCheck(rosmProp)
-    }
-    | "link" ~ "." ~ internalLinkParser ^^ { (loc, _, _, internalLink) =>
-      LinkCtx(internalLink)
-    }
-    | "dataRetrieve" ~ "." ~ DataRetrieveId.unanchoredIdValidation ~ "." ~ DataRetrieveAttribute.unanchoredIdValidation ^^ {
-      (loc, _, _, dataRetrieveId, _, dataRetrieveAttribute) =>
+  lazy val contextField: Parser[Expr] = userEnrolmentFunc | ((token("user.")  *> userField).map(userField => UserCtx(userField))
+    | token("form.submissionReference").map(_ => FormTemplateCtx(FormTemplateProp.SubmissionReference))
+    | token("form.id").map(_ => FormTemplateCtx(FormTemplateProp.Id))
+    | token("form.lang").map(_ => LangCtx)
+    | (token("form.") *> FormComponentId.unanchoredIdValidationParser).map( fieldName => FormCtx(FormComponentId(fieldName)))
+    | (token("param.") *> alphabeticOnly).map(param => ParamCtx(QueryParam(param)))
+    | (token("auth.") *> authInfo).map(authInfo => AuthCtx(authInfo))
+    | (token("hmrcRosmRegistrationCheck.") *> rosmProp).map( rosmProp => HmrcRosmRegistrationCheck(rosmProp))
+    | (token("link.") *> internalLinkParser).map(internalLink =>  LinkCtx(internalLink))
+    | (((token("dataRetrieve.") *> DataRetrieveId.unanchoredIdValidationParser) <* token(".")) ~ DataRetrieveAttribute.unanchoredIdValidationparser).map {
+      case (dataRetrieveId, dataRetrieveAttribute) =>
         DataRetrieveCtx(DataRetrieveId(dataRetrieveId), DataRetrieveAttribute.fromExpr(dataRetrieveAttribute))
     }
     | dateExprWithoutFormCtxFieldDate.map(
