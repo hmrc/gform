@@ -21,7 +21,7 @@ import cats.data.ReaderT
 import cats.instances.either._
 import cats.syntax.either._
 import cats.parse.{ Parser, Parser0 }
-import cats.parse.Rfc5234.digit
+import cats.parse.Rfc5234.{ alpha, digit }
 import cats.parse.Parser.{ char, charIn, string }
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
@@ -70,7 +70,7 @@ object BasicParsers {
   } |
     positiveInteger.map(x => List(x))
 
-  //val anyWordFormat = """\w+""".r
+  val anyWordFormatParser = (digit | alpha | char('_')).rep.map(x => x.toList.mkString(""))
 
   val delimiter = Parser.charIn('-', ' ', '/', '.')
   //val delimiter = "[- /.]".r

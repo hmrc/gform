@@ -235,7 +235,7 @@ object ValueParser {
   lazy val ifElseParser: Parser[Expr] = {
     (((((token("if") *> BooleanExprParser.p4) <* token("then")) ~ parserExpression) <* token(
       "else"
-    )) ~ parserExpression).map { case ((cond, expr1) m expr2) =>
+    )) ~ parserExpression).map { case ((cond, expr1), expr2) =>
       IfElse(cond, expr1, expr2)
     } | orElseParser
   }
@@ -246,7 +246,7 @@ object ValueParser {
   } | contextField
 
   lazy val alphabeticOnly: Parser[String] =
-    (Parser.ignoreCaseCharIn('a' to 'Z') ~ (digit | alpha | char('_')).rep0).map { case (x, y) =>
+    (Parser.ignoreCaseCharIn('a' to 'z') ~ (digit | alpha | char('_')).rep0).map { case (x, y) =>
       (x :: y).mkString("")
     }
 
