@@ -18,9 +18,9 @@ package uk.gov.hmrc.gform.core.parsers
 
 import java.time.LocalDate
 import cats.parse.Parser
-import cats.parse.Rfc5234.{alpha, digit, sp}
+import cats.parse.Rfc5234.{ alpha, digit, sp }
 import cats.parse.Parser
-import cats.parse.Parser.{char, map0, string}
+import cats.parse.Parser.{ char, charIn, map0, not, string }
 import uk.gov.hmrc.gform.core.parsers.BooleanExprParser.token
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.BasicParsers._
@@ -28,30 +28,26 @@ import uk.gov.hmrc.gform.sharedmodel.dblookup.CollectionName
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.UserField.Enrolment
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.gform.sharedmodel.{DataRetrieveAttribute, DataRetrieveId}
+import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieveAttribute, DataRetrieveId }
 
 object ValueParser {
-
-
 
   def validate(expression: String): Opt[ValueExpr] =
     validateWithParser(expression, exprDeterminer).right.map(_.rewrite)
 
-  lazy val exprDeterminer: Parser[ValueExpr] = (dateExpression ^^ ((loc, expr) => DateExpression(expr))
-    | positiveIntegers ^^ ((loc, selections) => ChoiceExpression(selections))
-    | expr ^^ ((loc, expr) => TextExpression(expr)))
+  lazy val exprDeterminer: Parser[ValueExpr] = (dateExpression.map(expr => DateExpression(expr))
+    | positiveIntegers.map(selections => ChoiceExpression(selections))
+    | expr.map(expr => TextExpression(expr)))
 
-  lazy val dateExpression: Parser[DateValue] = (nextDate | lastDate | exactDate | today) ^^ { (loc, dateExpr) =>
-    dateExpr
-  }
+  lazy val dateExpression: Parser[DateValue] = nextDate | lastDate | exactDate | today
 
-  lazy val today: Parser[TodayDateValue.type] = "today" ^^ const(TodayDateValue)
+  lazy val today: Parser[TodayDateValue.type] = token("today").map(_ => TodayDateValue)
 
-  lazy val exactDate: Parser[ExactDateValue] = exactYearParser ~ exactMonthDay ^^ { (loc, year, month, day) =>
+  lazy val exactDate: Parser[ExactDateValue] = (exactYearParser ~ exactMonthDay).map { case (year, (month, day)) =>
     ExactDateValue(year, month, day)
-  } | exactYearMonth ~ "firstDay" ^^ { (loc, year, month, _) =>
+  } | (exactYearMonth <* token("firstDay")).map { case (year, month) =>
     ExactDateValue(year, month, 1)
-  } | exactYearMonth ~ "lastDay" ^^ { (loc, year, month, _) =>
+  } | (exactYearMonth <* token("lastDay")).map { case (year, month) =>
     ExactDateValue(year, month, LocalDate.of(year, month, 1).lengthOfMonth)
   }
 
@@ -68,18 +64,19 @@ object ValueParser {
     case ((day, month), year) => DateValueExpr(ExactDateExprValue(year, month, day))
   }
 
-  lazy val dateExprExactQuoted: Parser[DateExpr] = ((char('\'') *> dateExprExactParser) <* char('\'')) | dateExprExactParser
+  lazy val dateExprExactQuoted: Parser[DateExpr] =
+    ((char('\'') *> dateExprExactParser) <* char('\'')) | dateExprExactParser
 
-  lazy val signedInt: Parser[Int] = (plusOrMinus ~ positiveInteger).map{ case (plusOrMinus, i) =>
+  lazy val signedInt: Parser[Int] = (plusOrMinus ~ positiveInteger).map { case (plusOrMinus, i) =>
     i * (plusOrMinus match {
       case "+" => 1
       case "-" => -1
     })
   }
 
-  lazy val signedYear: Parser[OffsetUnit] = (signedInt <* token("y")).map( year => OffsetUnit.Year(year))
+  lazy val signedYear: Parser[OffsetUnit] = (signedInt <* token("y")).map(year => OffsetUnit.Year(year))
 
-  lazy val signedMonth: Parser[OffsetUnit] = (signedInt <* token("m")).map( month => OffsetUnit.Month(month))
+  lazy val signedMonth: Parser[OffsetUnit] = (signedInt <* token("m")).map(month => OffsetUnit.Month(month))
 
   lazy val signedDay: Parser[OffsetUnit] = (signedInt <* token("d")).map(day => OffsetUnit.Day(day))
 
@@ -91,13 +88,13 @@ object ValueParser {
 
   private val perms2: Iterator[Parser[OffsetYMD]] =
     offsets.combinations(2).flatMap(_.permutations).map { case List(ap, bp) =>
-      (ap ~ bp).map{ case (a, b) =>
+      (ap ~ bp).map { case (a, b) =>
         OffsetYMD(a, b)
       }
     }
 
   private val perms3: Iterator[Parser[OffsetYMD]] = offsets.permutations.map { case List(ap, bp, cp) =>
-    (ap ~ bp ~ cp).map{case ((a, b), c) =>
+    (ap ~ bp ~ cp).map { case ((a, b), c) =>
       OffsetYMD(a, b, c)
     }
   }
@@ -108,7 +105,7 @@ object ValueParser {
 
   lazy val dateExprTODAY: Parser[DateExpr] = token("TODAY").map(_ => DateValueExpr(TodayDateExprValue))
 
-  lazy val dateExprTODAYOffset: Parser[DateExpr] = (dateExprTODAY ~ offsetYMD).map{case (dateExprToday, offsetYMD) =>
+  lazy val dateExprTODAYOffset: Parser[DateExpr] = (dateExprTODAY ~ offsetYMD).map { case (dateExprToday, offsetYMD) =>
     DateExprWithOffset(dateExprToday, offsetYMD)
   } | dateExprTODAY
 
@@ -123,9 +120,11 @@ object ValueParser {
     dateExprExactQuoted | dateExprTODAYOffset | formCtxFieldDateWithOffset
 
   lazy val dataSourceParse: Parser[DataSource] = (
-    token("service.seiss").map( _ => DataSource.SeissEligible)
+    token("service.seiss").map(_ => DataSource.SeissEligible)
       | (token("mongo.") *> alphabeticOnly).map(name => DataSource.Mongo(CollectionName(name)))
-      | (token("user.enrolments.") *> enrolment).map( enrolment => DataSource.Enrolment(enrolment.serviceName, enrolment.identifierName))
+      | (token("user.enrolments.") *> enrolment).map(enrolment =>
+        DataSource.Enrolment(enrolment.serviceName, enrolment.identifierName)
+      )
       | (token("delegated.classic.enrolments.") *> enrolment).map(enrolment =>
         DataSource.DelegatedEnrolment(enrolment.serviceName, enrolment.identifierName)
       )
@@ -135,150 +134,140 @@ object ValueParser {
     | (token("${") *> parserExpression) <* token("}"))
 
   lazy val internalLinkParser: Parser[InternalLink] = (
-    token("printAcknowledgementPdf").map(_  =>  InternalLink.printAcknowledgementPdf)
-    | token("printSummaryPdf").map( _ => InternalLink.printSummaryPdf)
-    | (token("newForm.") *> FormTemplateId.unanchoredIdValidationParser).map(id => InternalLink.NewFormForTemplate(FormTemplateId(id)))
-    | token("newForm").map( _ =>  InternalLink.newForm)
-    | token("newSession").map(_  => InternalLink.newSession)
-    | PageId.unanchoredIdValidationParser.map(id => PageLink(PageId(id)))
+    token("printAcknowledgementPdf").map(_ => InternalLink.printAcknowledgementPdf)
+      | token("printSummaryPdf").map(_ => InternalLink.printSummaryPdf)
+      | (token("newForm.") *> FormTemplateId.unanchoredIdValidationParser).map(id =>
+        InternalLink.NewFormForTemplate(FormTemplateId(id))
+      )
+      | token("newForm").map(_ => InternalLink.newForm)
+      | token("newSession").map(_ => InternalLink.newSession)
+      | PageId.unanchoredIdValidationParser.map(id => PageLink(PageId(id)))
   )
 
-  private lazy val periodFun = (((token("period(") *> dateExpr) <* token(",")) ~ dateExpr <* token(")"))
+  private lazy val periodFun = ((token("period(") *> dateExpr) <* token(",")) ~ dateExpr <* token(")")
 
-  private lazy val userFieldFunc: Parser[UserFieldFunc] = token("count").map(_ => UserFieldFunc.Count)|
+  private lazy val userFieldFunc: Parser[UserFieldFunc] = token("count").map(_ => UserFieldFunc.Count) |
     nonZeroPositiveInteger.map(i => UserFieldFunc.Index(i))
 
   private lazy val userEnrolmentFunc: Parser[UserCtx] =
-    (((token("user.") *> userFieldEnrolments) <* token(".")) ~ userFieldFunc).map{ case (userField,func) =>
+    (((token("user.") *> userFieldEnrolments) <* token(".")) ~ userFieldFunc).map { case (userField, func) =>
       UserCtx(Enrolment(userField.serviceName, userField.identifierName, Some(func)))
     }
 
-  lazy val contextField: Parser[Expr] = userEnrolmentFunc | ((token("user.")  *> userField).map(userField => UserCtx(userField))
-    | token("form.submissionReference").map(_ => FormTemplateCtx(FormTemplateProp.SubmissionReference))
-    | token("form.id").map(_ => FormTemplateCtx(FormTemplateProp.Id))
-    | token("form.lang").map(_ => LangCtx)
-    | (token("form.") *> FormComponentId.unanchoredIdValidationParser).map( fieldName => FormCtx(FormComponentId(fieldName)))
-    | (token("param.") *> alphabeticOnly).map(param => ParamCtx(QueryParam(param)))
-    | (token("auth.") *> authInfo).map(authInfo => AuthCtx(authInfo))
-    | (token("hmrcRosmRegistrationCheck.") *> rosmProp).map( rosmProp => HmrcRosmRegistrationCheck(rosmProp))
-    | (token("link.") *> internalLinkParser).map(internalLink =>  LinkCtx(internalLink))
-    | (((token("dataRetrieve.") *> DataRetrieveId.unanchoredIdValidationParser) <* token(".")) ~ DataRetrieveAttribute.unanchoredIdValidationparser).map {
-      case (dataRetrieveId, dataRetrieveAttribute) =>
+  lazy val periodFnParser: Parser[PeriodFn] = string("sum").map(_ => PeriodFn.Sum) |
+    string("totalMonths").map(_ => PeriodFn.TotalMonths) |
+    string("years").map(_ => PeriodFn.Years) |
+    string("months").map(_ => PeriodFn.Months) |
+    string("days").map(_ => PeriodFn.Days)
+
+  lazy val contextField: Parser[Expr] =
+    userEnrolmentFunc | ((token("user.") *> userField).map(userField => UserCtx(userField))
+      | token("form.submissionReference").map(_ => FormTemplateCtx(FormTemplateProp.SubmissionReference))
+      | token("form.id").map(_ => FormTemplateCtx(FormTemplateProp.Id))
+      | token("form.lang").map(_ => LangCtx)
+      | (token("form.") *> FormComponentId.unanchoredIdValidationParser).map(fieldName =>
+        FormCtx(FormComponentId(fieldName))
+      )
+      | (token("param.") *> alphabeticOnly).map(param => ParamCtx(QueryParam(param)))
+      | (token("auth.") *> authInfo).map(authInfo => AuthCtx(authInfo))
+      | (token("hmrcRosmRegistrationCheck.") *> rosmProp).map(rosmProp => HmrcRosmRegistrationCheck(rosmProp))
+      | (token("link.") *> internalLinkParser).map(internalLink => LinkCtx(internalLink))
+      | (((token("dataRetrieve.") *> DataRetrieveId.unanchoredIdValidationParser) <* token(
+        "."
+      )) ~ DataRetrieveAttribute.unanchoredIdValidationparser).map { case (dataRetrieveId, dataRetrieveAttribute) =>
         DataRetrieveCtx(DataRetrieveId(dataRetrieveId), DataRetrieveAttribute.fromExpr(dataRetrieveAttribute))
-    }
-    | dateExprWithoutFormCtxFieldDate.map(
-      DateCtx.apply
-    ) // to parse date form fields with offset or date constants i.e TODAY, 01012020 etc (with or without offset)
-    | periodValueParser ^^ { (loc, period) =>
-      PeriodValue(period)
-    }
-    | (periodFun ~ "." ~ "sum|totalMonths|years|months|days".r mapWithLines {
-      case (loc, _ ~ (dateExpr1: DateExpr) ~ _ ~ (dateExpr2: DateExpr) ~ _ ~ _ ~ prop) =>
+      }
+      | dateExprWithoutFormCtxFieldDate.map(
+        DateCtx.apply
+      ) // to parse date form fields with offset or date constants i.e TODAY, 01012020 etc (with or without offset)
+      | periodValueParser.map(period => PeriodValue(period))
+      | ((periodFun <* string(".")) ~ periodFnParser).map { case ((dateExpr1: DateExpr, dateExpr2: DateExpr), prop) =>
         PeriodExt(
           Period(DateCtx(dateExpr1), DateCtx(dateExpr2)),
-          prop match {
-            case "sum"         => PeriodFn.Sum
-            case "totalMonths" => PeriodFn.TotalMonths
-            case "years"       => PeriodFn.Years
-            case "months"      => PeriodFn.Months
-            case "days"        => PeriodFn.Days
-            case _ =>
-              throw new IllegalArgumentException(
-                "period(*,*).prop value is invalid. Allowed prop values are sum,totalMonths,years,months,days"
-              )
-          }
+          prop
         )
-    })
-    | periodFun ^^ { (loc, _, dateExpr1, _, dateExpr2, _) =>
-      Period(DateCtx(dateExpr1), DateCtx(dateExpr2))
-    }
-    | quotedLocalisedConstant
-    | FormComponentId.unanchoredIdValidation ~ ".sum" ^^ { (loc, value, _) =>
-      Sum(FormCtx(FormComponentId(value)))
-    }
-    | FormComponentId.unanchoredIdValidation ~ ".count" ^^ { (loc, value, _) =>
-      Count(FormComponentId(value))
-    }
-    | FormComponentId.unanchoredIdValidation ~ "." ~ addressDetail ^^ { (loc, value, _, addressDetail) =>
-      AddressLens(FormComponentId(value), addressDetail)
-    }
-    | anyDigitConst ^^ { (loc, str) =>
-      str
-    }
-    | FormComponentId.unanchoredIdValidation ^^ { (loc, fn) =>
-      FormCtx(FormComponentId(fn))
-    })
+      }
+      | periodFun.map { case (dateExpr1, dateExpr2) =>
+        Period(DateCtx(dateExpr1), DateCtx(dateExpr2))
+      }
+      | quotedLocalisedConstant
+      | (FormComponentId.unanchoredIdValidationParser <* string(".sum")).map(value =>
+        Sum(FormCtx(FormComponentId(value)))
+      )
+      | (FormComponentId.unanchoredIdValidationParser <* string(".count")).map(value => Count(FormComponentId(value)))
+      | ((FormComponentId.unanchoredIdValidationParser <* string(".")) ~ addressDetail).map {
+        case (value, addressDetail) =>
+          AddressLens(FormComponentId(value), addressDetail)
+      }
+      | anyDigitConst
+      | FormComponentId.unanchoredIdValidationParser.map(fn => FormCtx(FormComponentId(fn))))
 
   lazy val addressDetail: Parser[AddressDetail] =
-    "line1" ^^^ AddressDetail.Line1 |
-      "line2" ^^^ AddressDetail.Line2 |
-      "line3" ^^^ AddressDetail.Line3 |
-      "line4" ^^^ AddressDetail.Line4 |
-      "postcode" ^^^ AddressDetail.Postcode |
-      "country" ^^^ AddressDetail.Country
+    string("line1").map(_ => AddressDetail.Line1) |
+      string("line2").map(_ => AddressDetail.Line2) |
+      string("line3").map(_ => AddressDetail.Line3) |
+      string("line4").map(_ => AddressDetail.Line4) |
+      string("postcode").map(_ => AddressDetail.Postcode) |
+      string("country").map(_ => AddressDetail.Country)
 
-  lazy val formCtxFieldDate: Parser[DateExpr] = "form" ~ "." ~ FormComponentId.unanchoredIdValidation ^^ {
-    (_, _, _, fieldName) =>
-      DateFormCtxVar(FormCtx(FormComponentId(fieldName)))
-  } | FormComponentId.unanchoredIdValidation ^^ { (_, fn) =>
+  lazy val formCtxFieldDate: Parser[DateExpr] = (string("form.") *> FormComponentId.unanchoredIdValidationParser).map {
+    fieldName => DateFormCtxVar(FormCtx(FormComponentId(fieldName)))
+  } | FormComponentId.unanchoredIdValidationParser.map { fn =>
     DateFormCtxVar(FormCtx(FormComponentId(fn)))
   }
 
-  lazy val parserExpression: Parser[Expr] = "(" ~ addExpression ~ ")" ^^ { (loc, _, expr, _) =>
-    expr
-  } | addExpression
+  lazy val parserExpression: Parser[Expr] = ((token("(") *> addExpression) <* token(")")) | addExpression
 
-  lazy val addExpression: Parser[Expr] = (parserExpression ~ "+" ~ parserExpression ^^ { (loc, expr1, _, expr2) =>
-    Add(expr1, expr2)
-  }
-    | subtractionExpression)
+  lazy val addExpression: Parser[Expr] = ((parserExpression <* token("+")) ~ parserExpression).map {
+    case (expr1, expr2) =>
+      Add(expr1, expr2)
+  } | subtractionExpression
 
   lazy val subtractionExpression: Parser[Expr] =
-    (parserExpression ~ "-" ~ parserExpression ^^ { (loc, expr1, _, expr2) =>
+    ((parserExpression <* token("-")) ~ parserExpression).map { case (expr1, expr2) =>
       Subtraction(expr1, expr2)
-    }
-      | product)
+    } | product
 
-  lazy val product: Parser[Expr] = (parserExpression ~ "*" ~ parserExpression ^^ { (loc, expr1, _, expr2) =>
+  lazy val product: Parser[Expr] = ((parserExpression <* token("*")) ~ parserExpression).map { case (expr1, expr2) =>
     Multiply(expr1, expr2)
-  }
-    | ifElseParser)
+  } | ifElseParser
 
   lazy val ifElseParser: Parser[Expr] = {
-    ("if" ~> BooleanExprParser.p4 ~ "then" ~ parserExpression ~ "else" ~ parserExpression ^^ {
-      (_, cond, _, expr1, _, expr2) =>
-        IfElse(cond, expr1, expr2)
-    } | orElseParser)
+    (((((token("if") *> BooleanExprParser.p4) <* token("then")) ~ parserExpression) <* token(
+      "else"
+    )) ~ parserExpression).map { case ((cond, expr1) m expr2) =>
+      IfElse(cond, expr1, expr2)
+    } | orElseParser
   }
 
-  lazy val orElseParser: Parser[Expr] = parserExpression ~ "else" ~ parserExpression ^^ { (loc, expr1, _, expr2) =>
-    Else(expr1, expr2)
-  } | contextField ^^ { (loc, value) =>
-    value
-  }
+  lazy val orElseParser: Parser[Expr] = ((parserExpression <* token("else")) ~ parserExpression).map {
+    case (expr1, expr2) =>
+      Else(expr1, expr2)
+  } | contextField
 
-  lazy val alphabeticOnly: Parser[String] = """[a-zA-Z]\w*""".r ^^ { (loc, str) =>
-    str
-  }
+  lazy val alphabeticOnly: Parser[String] =
+    (Parser.ignoreCaseCharIn('a' to 'Z') ~ (digit | alpha | char('_')).rep0).map { case (x, y) =>
+      (x :: y).mkString("")
+    }
 
-  lazy val quotedLocalisedConstant: Parser[Expr] = (quotedConstant ~ "," ~ quotedConstant ^^ { (_, en, _, cy) =>
-    IfElse(Equals(LangCtx, Constant("en")), en, cy)
-  }
-    |
-    quotedConstant)
+  lazy val quotedLocalisedConstant: Parser[Expr] = ((quotedConstant <* token(",")) ~ quotedConstant).map {
+    case (en, cy) =>
+      IfElse(Equals(LangCtx, Constant("en")), en, cy)
+  } | quotedConstant
 
-  lazy val quotedConstant: Parser[Expr] = ("'" ~ anyConstant ~ "'" ^^ { (loc, _, str, _) =>
-    str
-  }
-    |
-    "''".r ^^ { (loc, value) =>
-      Constant("")
-    })
+  lazy val quotedConstant: Parser[Expr] = anyConstant.surroundedBy(char('\'')) |
+    token("''").map(_ => Constant(""))
 
-  lazy val anyConstant: Parser[Constant] = """[^']+""".r ^^ { (loc, str) =>
-    Constant(str)
-  }
+  lazy val anyConstant = Parser.charsWhile(_ != '\'').map(Constant)
 
+  private val signParser = charIn('+', '-').?.map(x => x.map(_.toString).getOrElse("")).with1
+
+  lazy val anyDigitConst: Parser[Expr] =
+    (signParser ~ digit.rep).map { case (x, value) =>
+      Constant(x + value.toList.mkString(""))
+    }
+
+  /*
   lazy val anyDigitConst: Parser[Expr] = (
     // parse single digit, e.g. "9", "+9"
     """[+-]?\d""".r ^^ { (loc, str) =>
@@ -296,41 +285,42 @@ object ValueParser {
       | """[+-]?\d[\d,]*\.([\d]*\d)?""".r ^^ { (loc, str) =>
         Constant(str)
       }
-  )
+  )*/
 
-  lazy val userFieldEnrolments: Parser[UserField.Enrolment] = "enrolments" ~ "." ~ enrolment ^^ ((_, _, _, en) => en)
+  lazy val userFieldEnrolments: Parser[UserField.Enrolment] = string("enrolments.") *> enrolment
 
   lazy val userField: Parser[UserField] = (
-    "affinityGroup" ^^ const(UserField.AffinityGroup)
+    token("affinityGroup").map(_ => UserField.AffinityGroup)
       | userFieldEnrolments
-      | "enrolledIdentifier" ^^ const(UserField.EnrolledIdentifier)
+      | token("enrolledIdentifier").map(_ => UserField.EnrolledIdentifier)
   )
 
-  lazy val enrolment: Parser[UserField.Enrolment] = serviceName ~ "." ~ identifierName ^^ { (_, sn, _, in) =>
-    UserField.Enrolment(sn, in, None)
+  lazy val enrolment: Parser[UserField.Enrolment] = ((serviceName <* string(".")) ~ identifierName).map {
+    case (sn, in) =>
+      UserField.Enrolment(sn, in, None)
   }
 
-  lazy val serviceName: Parser[ServiceName] = """[^.!= }]+""".r ^^ { (loc, str) =>
-    ServiceName(str)
+  lazy val serviceName: Parser[ServiceName] = {
+    val chars = Set('.', '!', '=', ' ', '}')
+    Parser.charsWhile(c => !chars.contains(c)).map(ServiceName.apply)
   }
 
-  lazy val identifierName: Parser[IdentifierName] = """[^.!= }]+""".r ^^ { (loc, str) =>
-    IdentifierName(str)
+  lazy val identifierName: Parser[IdentifierName] = {
+    val chars = Set('.', '!', '=', ' ', '}')
+    Parser.charsWhile(c => !chars.contains(c)).map(IdentifierName.apply)
   }
 
-  lazy val authInfo: Parser[AuthInfo] = (
-    "gg" ^^ const(GG)
-      | "payenino" ^^ const(PayeNino)
-      | "sautr" ^^ const(SaUtr)
-      | "ctutr" ^^ const(CtUtr)
-      | "email" ^^ const(EmailId)
-  )
-  lazy val rosmProp: Parser[RosmProp] = (
-    "safeId" ^^ const(RosmSafeId)
-      | "organisationName" ^^ const(RosmOrganisationName)
-      | "organisationType" ^^ const(RosmOrganisationType)
-      | "isAGroup" ^^ const(RosmIsAGroup)
-  )
+  lazy val authInfo: Parser[AuthInfo] =
+    token("gg").map(_ => GG) |
+      token("payenino").map(_ => PayeNino) |
+      token("sautr").map(_ => SaUtr) |
+      token("ctutr").map(_ => CtUtr) |
+      token("email").map(_ => EmailId)
 
-  private def const[A](a: A)(loc: List[Line], matched: String): A = a
+  lazy val rosmProp: Parser[RosmProp] =
+    token("safeId").map(_ => RosmSafeId) |
+      token("organisationName").map(_ => RosmOrganisationName) |
+      token("organisationType").map(_ => RosmOrganisationType) |
+      token("isAGroup").map(_ => RosmIsAGroup)
+
 }

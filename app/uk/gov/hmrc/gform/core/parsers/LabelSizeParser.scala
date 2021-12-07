@@ -27,10 +27,10 @@ object LabelSizeParser {
   def validate(expression: String): Opt[LabelSize] = validateWithParser(expression, labelSize)
 
   lazy val labelSize: Parser[LabelSize] =
-      token("xl").map(_ => ExtraLarge ) |
-      token("l").map(_ => Large ) |
-      token("m").map(_ => Medium ) |
-      token("s").map(_ => Small ) |
-      token("xs").map(_ => ExtraSmall )
+    token("xl").map(_ => ExtraLarge) |
+      token("l").map(_ => Large) |
+      token("m").map(_ => Medium) |
+      token("s").map(_ => Small) |
+      token("xs").map(_ => ExtraSmall)
 
 }

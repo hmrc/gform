@@ -18,12 +18,12 @@ package uk.gov.hmrc.gform.sharedmodel
 
 import cats.parse.Parser
 import julienrf.json.derived
-import play.api.libs.json.{Format, Reads, _}
+import play.api.libs.json.{ Format, Reads, _ }
 import play.api.libs.json.Format._
 import uk.gov.hmrc.gform.core.Opt
-import uk.gov.hmrc.gform.core.parsers.{BasicParsers, ValueParser}
+import uk.gov.hmrc.gform.core.parsers.{ BasicParsers, ValueParser }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{Expr, JsonUtils, OFormatWithTemplateReadFallback}
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Expr, JsonUtils, OFormatWithTemplateReadFallback }
 
 import scala.util.matching.Regex
 
@@ -35,7 +35,7 @@ object DataRetrieveId {
 
   val idValidation: String = "[_a-zA-Z]\\w*"
   val unanchoredIdValidation: Regex = s"""$idValidation""".r
-  val unanchoredIdValidationParser: Parser[String] = ???
+  val unanchoredIdValidationParser: Parser[String] = Parser.failWith("Not implemented")
 
 }
 

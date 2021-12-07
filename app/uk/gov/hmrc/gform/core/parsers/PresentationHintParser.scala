@@ -29,11 +29,11 @@ object PresentationHintParser {
   def validateSingle(expression: String): Opt[PresentationHint] = validateWithParser(expression, presentationHint)
 
   lazy val presentationHints: Parser[List[PresentationHint]] =
-    (((presentationHint <* token(",")) ~ presentationHints).map{case (presHint, presHints) => presHint :: presHints} |
-      presentationHint.map(x => List(x)))
+    ((presentationHint <* token(",")) ~ presentationHints).map { case (presHint, presHints) => presHint :: presHints } |
+      presentationHint.map(x => List(x))
 
-  lazy val presentationHint: Parser[PresentationHint] = token("summariseGroupAsGrid").map(_ => SummariseGroupAsGrid)|
-     token("invisibleInSummary").map(_ => InvisibleInSummary)
-     token("totalValue").map(x => TotalValue)
-     token("invisiblePageTitle").map(x => InvisiblePageTitle)
+  lazy val presentationHint: Parser[PresentationHint] = token("summariseGroupAsGrid").map(_ => SummariseGroupAsGrid) |
+    token("invisibleInSummary").map(_ => InvisibleInSummary)
+  token("totalValue").map(x => TotalValue)
+  token("invisiblePageTitle").map(x => InvisiblePageTitle)
 }

@@ -29,9 +29,10 @@ object SelectionCriteriaParser {
   lazy val selectionCriteria = (
     ExprParsers.expr.map(expr => SelectionCriteriaExpr(expr))
       |
-      ((FormComponentId.unanchoredIdValidationParser <* token(".")) ~ FormatParser.alphabeticOnly).map { case (id, column) =>
-        SelectionCriteriaReference(FormCtx(FormComponentId(id)), CsvColumnName(column))
-      } |
-      FormatParser.alphabeticOnly.map(value =>  SelectionCriteriaSimpleValue(List(value)))
+        ((FormComponentId.unanchoredIdValidationParser <* token(".")) ~ FormatParser.alphabeticOnly).map {
+          case (id, column) =>
+            SelectionCriteriaReference(FormCtx(FormComponentId(id)), CsvColumnName(column))
+        } |
+        FormatParser.alphabeticOnly.map(value => SelectionCriteriaSimpleValue(List(value)))
   )
 }
