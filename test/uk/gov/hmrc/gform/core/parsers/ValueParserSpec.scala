@@ -30,7 +30,7 @@ import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate._
-import uk.gov.hmrc.gform.sharedmodel.AvailableLanguages
+import uk.gov.hmrc.gform.sharedmodel.{ AvailableLanguages, DataRetrieveAttribute, DataRetrieveId }
 import uk.gov.hmrc.gform.sharedmodel.email.LocalisedEmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.{ NewForm, NewFormForTemplate, NewSession, PageLink }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.UserField.Enrolment
@@ -48,6 +48,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     val res = ValueParser.validate("${1}")
     res.right.value should be(TextExpression(Constant("1")))
   }
+
   it should "parse integer with decimal point" in {
     val res = ValueParser.validate("${1.}")
     res.right.value should be(TextExpression(Constant("1.")))
@@ -793,4 +794,78 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     }
   }
 
+  it should "parse business bank existence - accountNumberIsWellFormatted" in {
+    val res = ValueParser.validate("${dataRetrieve.businessBankDetails.accountNumberIsWellFormatted}")
+    res.right.value should be(
+      TextExpression(
+        DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieveAttribute.AccountNumberIsWellFormatted)
+      )
+    )
+  }
+
+  it should "parse business bank existence - sortCodeIsPresentOnEISCD" in {
+    val res = ValueParser.validate("${dataRetrieve.businessBankDetails.sortCodeIsPresentOnEISCD}")
+    res.right.value should be(
+      TextExpression(
+        DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieveAttribute.SortCodeIsPresentOnEISCD)
+      )
+    )
+  }
+
+  it should "parse business bank existence - sortCodeBankName" in {
+    val res = ValueParser.validate("${dataRetrieve.businessBankDetails.sortCodeBankName}")
+    res.right.value should be(
+      TextExpression(DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieveAttribute.SortCodeBankName))
+    )
+  }
+
+  it should "parse business bank existence - nonStandardAccountDetailsRequiredForBacs" in {
+    val res = ValueParser.validate("${dataRetrieve.businessBankDetails.nonStandardAccountDetailsRequiredForBacs}")
+    res.right.value should be(
+      TextExpression(
+        DataRetrieveCtx(
+          DataRetrieveId("businessBankDetails"),
+          DataRetrieveAttribute.NonStandardAccountDetailsRequiredForBacs
+        )
+      )
+    )
+  }
+
+  it should "parse business bank existence - accountExists" in {
+    val res = ValueParser.validate("${dataRetrieve.businessBankDetails.accountExists}")
+    res.right.value should be(
+      TextExpression(DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieveAttribute.AccountExists))
+    )
+  }
+
+  it should "parse business bank existence - nameMatches" in {
+    val res = ValueParser.validate("${dataRetrieve.businessBankDetails.nameMatches}")
+    res.right.value should be(
+      TextExpression(DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieveAttribute.NameMatches))
+    )
+  }
+
+  it should "parse business bank existence - sortCodeSupportsDirectDebit" in {
+    val res = ValueParser.validate("${dataRetrieve.businessBankDetails.sortCodeSupportsDirectDebit}")
+    res.right.value should be(
+      TextExpression(
+        DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieveAttribute.SortCodeSupportsDirectDebit)
+      )
+    )
+  }
+
+  it should "parse business bank existence - sortCodeSupportsDirectCredit" in {
+    val res = ValueParser.validate("${dataRetrieve.businessBankDetails.sortCodeSupportsDirectCredit}")
+    res.right.value should be(
+      TextExpression(
+        DataRetrieveCtx(DataRetrieveId("businessBankDetails"), DataRetrieveAttribute.SortCodeSupportsDirectCredit)
+      )
+    )
+  }
+
+  it should "parse business bank existence - invalid attribute failure" in {
+    assertThrows[Exception] {
+      ValueParser.validate("${dataRetrieve.businessBankDetails.dummy}")
+    }
+  }
 }

@@ -635,7 +635,7 @@ object FormTemplateValidator {
         d.attributes
           .contains(r.dataRetrieveCtx.attribute)
           .validationResult(
-            s"Data retrieve expression at path ${r.path}, with id ${r.dataRetrieveCtx.id.value}, refers to non-existent attribute ${r.dataRetrieveCtx.attribute.exprId}"
+            s"Data retrieve expression at path ${r.path}, with id ${r.dataRetrieveCtx.id.value}, refers to non-existent attribute ${r.dataRetrieveCtx.attribute.name}"
           )
       }
     }.combineAll

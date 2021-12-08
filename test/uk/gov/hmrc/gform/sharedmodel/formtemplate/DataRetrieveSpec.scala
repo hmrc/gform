@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
+import play.api.libs.json.{ JsError, JsPath, Json, JsonValidationError }
 import org.scalatest.{ FlatSpec, Matchers }
-import play.api.libs.json.{ JsError, Json, JsonValidationError, _ }
-import uk.gov.hmrc.gform.sharedmodel
-import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieve, DataRetrieveId, ValidateBank }
+import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieve, DataRetrieveId }
+import uk.gov.hmrc.gform.sharedmodel.DataRetrieve.{ BusinessBankAccountExistence, ValidateBankDetails }
 
 class DataRetrieveSpec extends FlatSpec with Matchers {
 
@@ -35,10 +35,31 @@ class DataRetrieveSpec extends FlatSpec with Matchers {
                |  }
                |}
                |""".stripMargin)
-      .as[DataRetrieve] shouldBe ValidateBank(
+      .as[DataRetrieve] shouldBe ValidateBankDetails(
       DataRetrieveId("bankDetails"),
       FormCtx(FormComponentId("sortCode")),
       FormCtx(FormComponentId("accountNumber"))
+    )
+  }
+
+  it should "parse json as BusinessBankAccountExistence" in {
+    Json
+      .parse("""
+               |{
+               |  "type": "businessBankAccountExistence",
+               |  "id": "businessBankAccount",
+               |  "parameters": {
+               |    "sortCode": "${sortCode}",
+               |    "accountNumber": "${accountNumber}",
+               |    "companyName": "${companyName}"
+               |  }
+               |}
+               |""".stripMargin)
+      .as[DataRetrieve] shouldBe BusinessBankAccountExistence(
+      DataRetrieveId("businessBankAccount"),
+      FormCtx(FormComponentId("sortCode")),
+      FormCtx(FormComponentId("accountNumber")),
+      FormCtx(FormComponentId("companyName"))
     )
   }
 
@@ -91,7 +112,7 @@ class DataRetrieveSpec extends FlatSpec with Matchers {
     Json
       .parse("""
                |{
-               |   "ValidateBank":{
+               |   "ValidateBankDetails":{
                |      "id":"bankDetails",
                |      "sortCode":{
                |         "FormCtx":{
@@ -106,7 +127,7 @@ class DataRetrieveSpec extends FlatSpec with Matchers {
                |   }
                |}
                |""".stripMargin)
-      .as[DataRetrieve] shouldBe sharedmodel.ValidateBank(
+      .as[DataRetrieve] shouldBe ValidateBankDetails(
       DataRetrieveId("bankDetails"),
       FormCtx(FormComponentId("sortCode")),
       FormCtx(FormComponentId("accountNumber"))

@@ -37,27 +37,63 @@ object DataRetrieveId {
 }
 
 sealed trait DataRetrieveAttribute {
-  def exprId: String
-}
-case object DataRetrieveIsValid extends DataRetrieveAttribute {
-  override def exprId: String = "isValid"
+  def name: String
 }
 
-case object DataRetrieveAttribute {
+object DataRetrieveAttribute {
+
+  case object IsValid extends DataRetrieveAttribute {
+    override def name: String = "isValid"
+  }
+
+  case object AccountNumberIsWellFormatted extends DataRetrieveAttribute {
+    override def name: String = "accountNumberIsWellFormatted"
+  }
+
+  case object SortCodeIsPresentOnEISCD extends DataRetrieveAttribute {
+    override def name: String = "sortCodeIsPresentOnEISCD"
+  }
+
+  case object SortCodeBankName extends DataRetrieveAttribute {
+    override def name: String = "sortCodeBankName"
+  }
+
+  case object NonStandardAccountDetailsRequiredForBacs extends DataRetrieveAttribute {
+    override def name: String = "nonStandardAccountDetailsRequiredForBacs"
+  }
+
+  case object AccountExists extends DataRetrieveAttribute {
+    override def name: String = "accountExists"
+  }
+
+  case object NameMatches extends DataRetrieveAttribute {
+    override def name: String = "nameMatches"
+  }
+
+  case object SortCodeSupportsDirectDebit extends DataRetrieveAttribute {
+    override def name: String = "sortCodeSupportsDirectDebit"
+  }
+
+  case object SortCodeSupportsDirectCredit extends DataRetrieveAttribute {
+    override def name: String = "sortCodeSupportsDirectCredit"
+  }
 
   implicit val format: OFormat[DataRetrieveAttribute] = derived.oformat()
 
   val idValidation: String = "[_a-zA-Z]\\w*"
   val unanchoredIdValidation: Regex = s"""$idValidation""".r
 
-  def fromString(value: String): DataRetrieveAttribute = value match {
-    case "DataRetrieveIsValid" => DataRetrieveIsValid
-    case other                 => throw new IllegalArgumentException(s"Unknown DataRetrieveAttribute value $other")
-  }
-
-  def fromExpr(exprId: String): DataRetrieveAttribute = exprId match {
-    case "isValid" => DataRetrieveIsValid
-    case other     => throw new IllegalArgumentException(s"Unknown DataRetrieveAttribute value $other")
+  def fromName(name: String): DataRetrieveAttribute = name match {
+    case "isValid"                                  => IsValid
+    case "accountNumberIsWellFormatted"             => AccountNumberIsWellFormatted
+    case "sortCodeIsPresentOnEISCD"                 => SortCodeIsPresentOnEISCD
+    case "sortCodeBankName"                         => SortCodeBankName
+    case "nonStandardAccountDetailsRequiredForBacs" => NonStandardAccountDetailsRequiredForBacs
+    case "accountExists"                            => AccountExists
+    case "nameMatches"                              => NameMatches
+    case "sortCodeSupportsDirectDebit"              => SortCodeSupportsDirectDebit
+    case "sortCodeSupportsDirectCredit"             => SortCodeSupportsDirectCredit
+    case other                                      => throw new IllegalArgumentException(s"Unknown DataRetrieveAttribute name: $other")
   }
 }
 
@@ -66,12 +102,34 @@ sealed trait DataRetrieve {
   def attributes: List[DataRetrieveAttribute]
   def formCtxExprs: List[Expr]
 }
-case class ValidateBank(override val id: DataRetrieveId, sortCode: Expr, accountNumber: Expr) extends DataRetrieve {
-  override def attributes: List[DataRetrieveAttribute] = List(DataRetrieveIsValid)
-  override def formCtxExprs: List[Expr] = List(sortCode, accountNumber)
-}
 
 object DataRetrieve {
+
+  final case class ValidateBankDetails(override val id: DataRetrieveId, sortCode: Expr, accountNumber: Expr)
+      extends DataRetrieve {
+    override def attributes: List[DataRetrieveAttribute] = List(DataRetrieveAttribute.IsValid)
+    override def formCtxExprs: List[Expr] = List(sortCode, accountNumber)
+  }
+
+  final case class BusinessBankAccountExistence(
+    override val id: DataRetrieveId,
+    sortCode: Expr,
+    accountNumber: Expr,
+    companyName: Expr
+  ) extends DataRetrieve {
+    import DataRetrieveAttribute._
+    override def attributes: List[DataRetrieveAttribute] = List(
+      AccountNumberIsWellFormatted,
+      SortCodeIsPresentOnEISCD,
+      SortCodeBankName,
+      NonStandardAccountDetailsRequiredForBacs,
+      AccountExists,
+      NameMatches,
+      SortCodeSupportsDirectDebit,
+      SortCodeSupportsDirectCredit
+    )
+    override def formCtxExprs: List[Expr] = List(sortCode, accountNumber, accountNumber)
+  }
 
   val reads: Reads[DataRetrieve] = new Reads[DataRetrieve] {
     override def reads(json: JsValue): JsResult[DataRetrieve] =
@@ -86,7 +144,23 @@ object DataRetrieve {
                               accountNumberValue <- opt[String](parameters, "accountNumber")
                               sortCodeExpr       <- BasicParsers.validateWithParser(sortCodeValue, ValueParser.expr)
                               accountNumberExpr  <- BasicParsers.validateWithParser(accountNumberValue, ValueParser.expr)
-                            } yield ValidateBank(DataRetrieveId(idValue), sortCodeExpr, accountNumberExpr)
+                            } yield ValidateBankDetails(DataRetrieveId(idValue), sortCodeExpr, accountNumberExpr)
+                          case "businessBankAccountExistence" =>
+                            for {
+                              parameters         <- opt[JsObject](json, "parameters")
+                              sortCodeValue      <- opt[String](parameters, "sortCode")
+                              accountNumberValue <- opt[String](parameters, "accountNumber")
+                              companyNameValue   <- opt[String](parameters, "companyName")
+                              sortCodeExpr       <- BasicParsers.validateWithParser(sortCodeValue, ValueParser.expr)
+                              accountNumberExpr  <- BasicParsers.validateWithParser(accountNumberValue, ValueParser.expr)
+                              companyNameExpr    <- BasicParsers.validateWithParser(companyNameValue, ValueParser.expr)
+                            } yield BusinessBankAccountExistence(
+                              DataRetrieveId(idValue),
+                              sortCodeExpr,
+                              accountNumberExpr,
+                              companyNameExpr
+                            )
+
                           case other => Left(UnexpectedState(s"'type' value $other not recognized"))
                         }
       } yield dataRetrieve).fold(e => JsError(e.error), r => JsSuccess(r))
@@ -119,11 +193,11 @@ object DataRetrieveResult {
       implicitly[Format[Map[String, String]]],
       map =>
         map.map { case (key, value) =>
-          (DataRetrieveAttribute.fromString(key), value)
+          (DataRetrieveAttribute.fromName(key), value)
         },
       map =>
         map.map { case (key, value) =>
-          (key.toString, value)
+          (key.name, value)
         }
     )
 
