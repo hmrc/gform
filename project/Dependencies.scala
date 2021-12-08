@@ -46,6 +46,7 @@ object Dependencies {
     "com.github.tomakehurst"  % "wiremock-jre8"               % "2.27.1"            % scope,
     "org.scalameta"          %% "munit"                       % "0.7.22"            % scope,
     "uk.gov.hmrc.mongo"      %% "hmrc-mongo-test-play-27"     % hmrcMongoVersion    % scope,
-    "com.storm-enroute"      %% "scalameter"                  % "0.19"              % scope
+    "com.storm-enroute"      %% "scalameter"                  % "0.19"              % scope,
+    "com.typesafe"           %% "ssl-config-core"             % "0.4.3"             % scope // # Needed for it:test to run on JDK 17
   )
 }
