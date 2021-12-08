@@ -45,7 +45,8 @@ case class FormTemplate(
   summarySection: SummarySection,
   displayHMRCLogo: Boolean,
   userResearchUrl: Option[UserResearchUrl] = None,
-  referrerConfig: Option[ReferrerConfig] = None
+  referrerConfig: Option[ReferrerConfig] = None,
+  emailExpr: Option[Expr] = None
 ) {
 
   def formComponents[A](predicate: PartialFunction[FormComponent, A]): List[A] = sections.flatMap { section =>
