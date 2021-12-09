@@ -16,15 +16,39 @@
 
 package uk.gov.hmrc.gform.core.parsers
 
-import cats.Eval
 import org.scalatest.prop.TableDrivenPropertyChecks
-import parseback.compat.cats._
-import org.scalatest.{ FlatSpecLike, Matchers }
-import parseback.LineStream
+import org.scalatest.{ EitherValues, FlatSpecLike, Matchers }
 
-class BasicParsersSpec extends FlatSpecLike with Matchers with TableDrivenPropertyChecks {
+class BasicParsersSpec extends FlatSpecLike with Matchers with EitherValues with TableDrivenPropertyChecks {
 
-  "periodParser" should "parse period constants" in {
+  "anyWordFormatParser" should "parse parse simple text" in {
+    BasicParsers.anyWordFormatParser.parseAll("text").right.value shouldBe "text"
+  }
+
+  "positiveInteger" should "parse number" in {
+    BasicParsers.positiveInteger.parseAll("10").right.value shouldBe 10
+  }
+
+  "positiveIntegers" should "parse list of integers" in {
+    val ret = BasicParsers.positiveIntegers.parseAll("10 , 20, 30")
+    Console.println(s"\n\n $ret \n\n")
+    ret.right.value shouldBe (List(10, 20, 30))
+  }
+
+  "anyInteger" should "parse any number" in {
+    val table = Table(
+      ("input", "output"),
+      ("+10", 10),
+      ("+11", 11),
+      ("-11", -11),
+      ("11", 11)
+    )
+    forAll(table) { (input, output) =>
+      BasicParsers.anyInteger.parseAll(input).right.value shouldBe output
+    }
+  }
+
+  "periodParser" should "parse period constants" ignore {
     val table = Table(
       ("input", "output"),
       ("P1Y", Some(List("P1Y"))),
@@ -44,7 +68,7 @@ class BasicParsersSpec extends FlatSpecLike with Matchers with TableDrivenProper
       ("ABC", None)
     )
     forAll(table) { (input, output) =>
-      val result = BasicParsers.periodValueParser(LineStream[Eval](input)).value.toOption.map(_.toList)
+      val result = BasicParsers.periodValueParser.parseAll(input).right.toOption
       result shouldBe output
     }
   }

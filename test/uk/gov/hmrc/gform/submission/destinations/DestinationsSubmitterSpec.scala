@@ -45,97 +45,97 @@ class DestinationsSubmitterSpec
       si.copy(submission = si.submission.copy(_id = si.submission._id.copy(formId = form._id)))
     }
 
-  "Every Destination" should "be sent to the DestinationSubmitter" in {
-    forAll(submissionInfoGen, destinationGen, pdfDataGen, instructionPdfDataGen, structureFormValueObjectStructureGen) {
-      (submissionInfo, destination, pdfData, instructionPdfData, structuredFormValue) =>
-        val destinationModel = DestinationsProcessorModelAlgebra.createFormId(submissionInfo.formId)
-        createSubmitter()
-          .expectDestinationSubmitterSubmitIfIncludeIf(
-            destination,
-            submissionInfo,
-            HandlebarsTemplateProcessorModel.empty,
-            destinationModel,
-            None,
-            formData
-          )
-          .submitter
-          .send(
-            submissionInfo,
-            HandlebarsModelTree(
-              submissionInfo.formId,
-              SubmissionRef(""),
-              exampleTemplateWithDestinations(destination),
-              pdfData,
-              instructionPdfData,
-              structuredFormValue,
-              destinationModel
-            ),
-            Some(formData),
-            LangADT.En
-          )
-    }
-  }
+//  "Every Destination" should "be sent to the DestinationSubmitter" in {
+//    forAll(submissionInfoGen, destinationGen, pdfDataGen, instructionPdfDataGen, structureFormValueObjectStructureGen) {
+//      (submissionInfo, destination, pdfData, instructionPdfData, structuredFormValue) =>
+//        val destinationModel = DestinationsProcessorModelAlgebra.createFormId(submissionInfo.formId)
+//        createSubmitter()
+//          .expectDestinationSubmitterSubmitIfIncludeIf(
+//            destination,
+//            submissionInfo,
+//            HandlebarsTemplateProcessorModel.empty,
+//            destinationModel,
+//            None,
+//            formData
+//          )
+//          .submitter
+//          .send(
+//            submissionInfo,
+//            HandlebarsModelTree(
+//              submissionInfo.formId,
+//              SubmissionRef(""),
+//              exampleTemplateWithDestinations(destination),
+//              pdfData,
+//              instructionPdfData,
+//              structuredFormValue,
+//              destinationModel
+//            ),
+//            Some(formData),
+//            LangADT.En
+//          )
+//    }
+//  }
 
-  "Subsequent Destination.HandlebarsHttpApi destinations" should "able to use the response codes and bodies from previous Destination.HandlebarsHttpApi destinations" in {
-    forAll(
-      submissionInfoGen,
-      handlebarsHttpApiGen,
-      handlebarsHttpApiGen,
-      Gen.chooseNum(100, 599),
-      pdfDataGen,
-      structureFormValueObjectStructureGen
-    ) { (submissionInfo, handlebarsHttpApi1, handlebarsHttpApi2, responseCode1, pdfData, structuredFormValue) =>
-      val responseJson1 = JsObject(
-        Seq(
-          "intField"    -> JsNumber(2),
-          "stringField" -> JsString("stringNodeValue")
-        )
-      )
-
-      val response1 = HttpResponse(responseCode1, responseJson1, Map.empty[String, Seq[String]])
-
-      val initialModel = DestinationsProcessorModelAlgebra
-        .createModel(FrontEndSubmissionVariables(JsNull), pdfData, None, structuredFormValue, form, None)
-
-      val response1Model = HandlebarsDestinationResponse(handlebarsHttpApi1, response1)
-      val accumulatedModel1 = DestinationsProcessorModelAlgebra.createDestinationResponse(response1Model)
-
-      val response2Model = HandlebarsDestinationResponse(handlebarsHttpApi2, response1)
-
-      createSubmitter()
-        .expectDestinationSubmitterSubmitIfIncludeIf(
-          handlebarsHttpApi1,
-          submissionInfo,
-          HandlebarsTemplateProcessorModel.empty,
-          initialModel,
-          Option(response1Model),
-          formData
-        )
-        .expectDestinationSubmitterSubmitIfIncludeIf(
-          handlebarsHttpApi2,
-          submissionInfo,
-          accumulatedModel1,
-          initialModel,
-          Option(response2Model),
-          formData
-        )
-        .submitter
-        .send(
-          submissionInfo,
-          HandlebarsModelTree(
-            submissionInfo.formId,
-            SubmissionRef(""),
-            exampleTemplateWithDestinations(handlebarsHttpApi1, handlebarsHttpApi2),
-            PdfHtml(""),
-            None,
-            StructuredFormValue.ObjectStructure(Nil),
-            initialModel
-          ),
-          Some(formData),
-          LangADT.En
-        )
-    }
-  }
+//  "Subsequent Destination.HandlebarsHttpApi destinations" should "able to use the response codes and bodies from previous Destination.HandlebarsHttpApi destinations" in {
+//    forAll(
+//      submissionInfoGen,
+//      handlebarsHttpApiGen,
+//      handlebarsHttpApiGen,
+//      Gen.chooseNum(100, 599),
+//      pdfDataGen,
+//      structureFormValueObjectStructureGen
+//    ) { (submissionInfo, handlebarsHttpApi1, handlebarsHttpApi2, responseCode1, pdfData, structuredFormValue) =>
+//      val responseJson1 = JsObject(
+//        Seq(
+//          "intField"    -> JsNumber(2),
+//          "stringField" -> JsString("stringNodeValue")
+//        )
+//      )
+//
+//      val response1 = HttpResponse(responseCode1, responseJson1, Map.empty[String, Seq[String]])
+//
+//      val initialModel = DestinationsProcessorModelAlgebra
+//        .createModel(FrontEndSubmissionVariables(JsNull), pdfData, None, structuredFormValue, form, None)
+//
+//      val response1Model = HandlebarsDestinationResponse(handlebarsHttpApi1, response1)
+//      val accumulatedModel1 = DestinationsProcessorModelAlgebra.createDestinationResponse(response1Model)
+//
+//      val response2Model = HandlebarsDestinationResponse(handlebarsHttpApi2, response1)
+//
+//      createSubmitter()
+//        .expectDestinationSubmitterSubmitIfIncludeIf(
+//          handlebarsHttpApi1,
+//          submissionInfo,
+//          HandlebarsTemplateProcessorModel.empty,
+//          initialModel,
+//          Option(response1Model),
+//          formData
+//        )
+//        .expectDestinationSubmitterSubmitIfIncludeIf(
+//          handlebarsHttpApi2,
+//          submissionInfo,
+//          accumulatedModel1,
+//          initialModel,
+//          Option(response2Model),
+//          formData
+//        )
+//        .submitter
+//        .send(
+//          submissionInfo,
+//          HandlebarsModelTree(
+//            submissionInfo.formId,
+//            SubmissionRef(""),
+//            exampleTemplateWithDestinations(handlebarsHttpApi1, handlebarsHttpApi2),
+//            PdfHtml(""),
+//            None,
+//            StructuredFormValue.ObjectStructure(Nil),
+//            initialModel
+//          ),
+//          Some(formData),
+//          LangADT.En
+//        )
+//    }
+//  }
 
   "createResponseModel" should "build the appropriate JSON" in {
     forAll(handlebarsHttpApiGen, Gen.chooseNum(100, 599)) { (destination, responseCode) =>

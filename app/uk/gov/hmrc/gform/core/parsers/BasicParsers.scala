@@ -17,11 +17,11 @@
 package uk.gov.hmrc.gform.core.parsers
 
 import cats.Eval
-import cats.data.ReaderT
+import cats.data.{ NonEmptyList, ReaderT }
 import cats.instances.either._
 import cats.syntax.either._
 import cats.parse.{ Parser, Parser0 }
-import cats.parse.Rfc5234.{ alpha, digit }
+import cats.parse.Rfc5234.{ alpha, digit, sp, wsp }
 import cats.parse.Parser.{ char, charIn, string }
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
@@ -29,7 +29,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.core.parsers.BooleanExprParser.token
 
 object BasicParsers {
-
+  /*
   private def parse[A](parser: Parser[A]) = ReaderT[Opt, String, Catenable[A]] { expression =>
     parser(LineStream[Eval](expression)).value.leftMap { error =>
       val errors: String = error.map(_.render(expression)).mkString("\n")
@@ -45,12 +45,15 @@ object BasicParsers {
       case None            => Left(UnexpectedState(s"Unable to parse expression $expression"))
     }
   }
-
+   */
   def validateWithParser[A](expression: String, parser: Parser[A]): Opt[A] =
-    (for {
-      catenable <- parse(parser)
-      expr      <- reconstruct(catenable)
-    } yield expr).run(expression.trim)
+    parser.parseAll(expression).leftMap { error =>
+      UnexpectedState(error.toString)
+    }
+  //    (for {
+//      catenable <- parse(parser)
+//      expr      <- reconstruct(catenable)
+//    } yield expr).run(expression.trim)
 
   def validateNonZeroPositiveNumber(expression: Int): Opt[Int] =
     validateWithParser(expression.toString, nonZeroPositiveInteger)
@@ -62,15 +65,19 @@ object BasicParsers {
 
   lazy val exactYearMonth: Parser[(Int, Int)] = (exactYearParser <* delimiter) ~ exactMonthParser <* delimiter
 
-//  lazy val positiveIntegers: Parser[List[Int]] =
-//    (positiveInteger ~ "," ~ positiveIntegers ^^ ((loc, x, _, xs) => x :: xs)
-//      | positiveInteger ^^ ((loc, x) => List(x)))
-  lazy val positiveIntegers: Parser[List[Int]] = ((positiveInteger <* token(",")) ~ positiveIntegers).map {
-    case (x, xs) => x :: xs
-  } |
-    positiveInteger.map(x => List(x))
+  private[this] val whitespace: Parser[Unit] = Parser.charIn(" \t\r\n").void
+  private[this] val whitespaces0: Parser0[Unit] = whitespace.rep0.void
 
-  val anyWordFormatParser = (digit | alpha | char('_')).rep.map(x => x.toList.mkString(""))
+  lazy val positiveIntegers: Parser[List[Int]] = Parser.recursive[List[Int]] { recurse =>
+    val listSep = Parser.char(',').soft.surroundedBy(whitespaces0)
+
+    def rep[A](pa: Parser[A]): Parser[NonEmptyList[A]] =
+      pa.repSep(listSep).surroundedBy(whitespaces0)
+
+    rep(positiveInteger).map(x => x.toList)
+  }
+
+  val anyWordFormatParser: Parser[String] = (digit | alpha | char('_')).rep.map(x => x.toList.mkString(""))
 
   val delimiter = Parser.charIn('-', ' ', '/', '.')
   //val delimiter = "[- /.]".r
@@ -118,7 +125,10 @@ object BasicParsers {
   }
 
   //lazy val anyInteger: Parser[Int] = intParser("""(\+|-)?\d+""")
-  lazy val anyInteger: Parser[Int] = charIn('+', '-') *> digit.rep(1).map(x => x.toList.mkString("").toInt)
+  lazy val anyInteger: Parser[Int] = (charIn('+', '-').?.with1 ~ digit.rep(1)).map {
+    case (Some('-'), number) => number.toList.mkString("").toInt * -1
+    case (_, number)         => number.toList.mkString("").toInt
+  }
 
   //lazy val plusOrMinus: Parser[String] = """[+-]""".r ^^ { (_, plusOrMinus) =>
   lazy val plusOrMinus: Parser[String] = charIn('+', '-').map(x => x.toString)

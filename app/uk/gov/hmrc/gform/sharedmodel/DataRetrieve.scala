@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.sharedmodel
 
-import cats.parse.Parser
+import cats.parse.{ Parser, Rfc5234 }
 import julienrf.json.derived
 import play.api.libs.json.{ Format, Reads, _ }
 import play.api.libs.json.Format._
@@ -52,7 +52,8 @@ case object DataRetrieveAttribute {
 
   val idValidation: String = "[_a-zA-Z]\\w*"
   val unanchoredIdValidation: Regex = s"""$idValidation""".r
-  val unanchoredIdValidationparser: Parser[String] = ???
+  val unanchoredIdValidationparser: Parser[String] =
+    ((Rfc5234.alpha | Parser.char('_').map(_ => '_')) ~ Rfc5234.alpha.rep0).map(x => x._1.toString + x._2.mkString(""))
 
   def fromString(value: String): DataRetrieveAttribute = value match {
     case "DataRetrieveIsValid" => DataRetrieveIsValid

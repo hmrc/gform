@@ -60,10 +60,8 @@ object BooleanExprParser {
     FormCtx(FormComponentId(fcId))
   }
 
-  private val exprFormCtx: Parser[Expr] = ???
-
   private def comparisonParser(_token: String, f: (Expr, Expr) => BooleanExpr) =
-    ((exprFormCtx <* token(_token)) ~ exprFormCtx).map { case (expl, expr) =>
+    ((exprFormCtx <* string(_token)) ~ exprFormCtx).map { case (expl, expr) =>
       f(expl, expr)
     }
 

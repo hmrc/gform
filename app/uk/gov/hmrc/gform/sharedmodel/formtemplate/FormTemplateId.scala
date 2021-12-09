@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import cats.Show
-import cats.parse.Parser
+import cats.parse.{ Parser, Rfc5234 }
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
 
@@ -29,7 +29,8 @@ object FormTemplateId {
 
   private val idValidation: String = "[-_a-zA-Z0-9]+"
   val unanchoredIdValidation: Regex = s"""$idValidation""".r
-  val unanchoredIdValidationParser: Parser[String] = ???
+  val unanchoredIdValidationParser: Parser[String] =
+    ((Rfc5234.alpha | Parser.char('_').map(_ => '_')) ~ Rfc5234.alpha.rep0).map(x => x._1.toString + x._2.mkString(""))
 
   implicit val show: Show[FormTemplateId] = Show.show(_.value)
 

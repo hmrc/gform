@@ -19,10 +19,7 @@ package uk.gov.hmrc.gform.core.parsers
 import cats.Eval
 import cats.data.NonEmptyList
 import org.scalatest.prop.TableDrivenPropertyChecks
-import parseback.LineStream
-import parseback.compat.cats._
-import parseback.util.Catenable
-import parseback.util.Catenable.Single
+import cats.parse.Parser
 
 import scala.language.implicitConversions
 import uk.gov.hmrc.gform.Helpers._
@@ -552,54 +549,60 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
   }
 
   "Parser - contextField" should "parse form field with date offset as DateCtx (form.)" in {
-    val result = ValueParser.contextField(LineStream[Eval]("form.dateField + 1d")).value.toOption
-    result shouldBe Some(
-      Single(
-        DateCtx(DateExprWithOffset(DateFormCtxVar(FormCtx(FormComponentId("dateField"))), OffsetYMD(OffsetUnit.Day(1))))
-      )
-    )
+//    val result = ValueParser.contextField(LineStream[Eval]("form.dateField + 1d")).value.toOption
+//    result shouldBe Some(
+//      Single(
+//        DateCtx(DateExprWithOffset(DateFormCtxVar(FormCtx(FormComponentId("dateField"))), OffsetYMD(OffsetUnit.Day(1))))
+//      )
+//    )
+    fail("Refactor")
   }
 
   it should "parse form field with date offset as DateCtx" in {
-    val result = ValueParser.contextField(LineStream[Eval]("dateField + 1d")).value.toOption.flatMap(uncons)
-    result shouldBe Some(
-      DateCtx(DateExprWithOffset(DateFormCtxVar(FormCtx(FormComponentId("dateField"))), OffsetYMD(OffsetUnit.Day(1))))
-    )
+//    val result = ValueParser.contextField(LineStream[Eval]("dateField + 1d")).value.toOption.flatMap(uncons)
+//    result shouldBe Some(
+//      DateCtx(DateExprWithOffset(DateFormCtxVar(FormCtx(FormComponentId("dateField"))), OffsetYMD(OffsetUnit.Day(1))))
+//    )
+    fail("refactor")
   }
 
   it should "parse TODAY as DateCtx" in {
-    val result = ValueParser.contextField(LineStream[Eval]("TODAY")).value.toOption.flatMap(uncons)
-    result shouldBe Some(DateCtx(DateValueExpr(TodayDateExprValue)))
+//    val result = ValueParser.contextField(LineStream[Eval]("TODAY")).value.toOption.flatMap(uncons)
+//    result shouldBe Some(DateCtx(DateValueExpr(TodayDateExprValue)))
+    fail("refactor")
   }
 
   it should "parse TODAY with offset as DateCtx" in {
-    val result = ValueParser.contextField(LineStream[Eval]("TODAY + 1m")).value.toOption.flatMap(uncons)
-    result shouldBe Some(DateCtx(DateExprWithOffset(DateValueExpr(TodayDateExprValue), OffsetYMD(OffsetUnit.Month(1)))))
+//    val result = ValueParser.contextField(LineStream[Eval]("TODAY + 1m")).value.toOption.flatMap(uncons)
+//    result shouldBe Some(DateCtx(DateExprWithOffset(DateValueExpr(TodayDateExprValue), OffsetYMD(OffsetUnit.Month(1)))))
+    fail("refactor")
   }
 
   it should "parse TODAY with offset as DateCtx y m d" in {
-    val result = ValueParser.contextField(LineStream[Eval]("TODAY + 2y + 3m + 4d")).value.toOption.flatMap(uncons)
-    result shouldBe Some(
-      DateCtx(
-        DateExprWithOffset(
-          DateValueExpr(TodayDateExprValue),
-          OffsetYMD(OffsetUnit.Year(2), OffsetUnit.Month(3), OffsetUnit.Day(4))
-        )
-      )
-    )
+//    val result = ValueParser.contextField(LineStream[Eval]("TODAY + 2y + 3m + 4d")).value.toOption.flatMap(uncons)
+//    result shouldBe Some(
+//      DateCtx(
+//        DateExprWithOffset(
+//          DateValueExpr(TodayDateExprValue),
+//          OffsetYMD(OffsetUnit.Year(2), OffsetUnit.Month(3), OffsetUnit.Day(4))
+//        )
+//      )
+//    )
+    fail("refactor")
   }
 
   it should "parse fixed date string as DateCtx" in {
-    val result = ValueParser.contextField(LineStream[Eval]("01012020")).value.toOption.flatMap(uncons)
-    result shouldBe Some(DateCtx(DateValueExpr(ExactDateExprValue(2020, 1, 1))))
+//    val result = ValueParser.contextField(LineStream[Eval]("01012020")).value.toOption.flatMap(uncons)
+//    result shouldBe Some(DateCtx(DateValueExpr(ExactDateExprValue(2020, 1, 1))))
+    fail("refactor")
   }
 
-  private def uncons[A](cat: Catenable[A]) =
-    cat.uncons match {
-      case Some((expr, _)) =>
-        Some(expr)
-      case None => None
-    }
+//  private def uncons[A](cat: Catenable[A]) =
+//    cat.uncons match {
+//      case Some((expr, _)) =>
+//        Some(expr)
+//      case None => None
+//    }
 
   it should "support year/month/day offset for dates" in {
     val today = DateValueExpr(TodayDateExprValue)
