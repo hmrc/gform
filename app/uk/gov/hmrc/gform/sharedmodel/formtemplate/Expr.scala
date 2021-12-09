@@ -18,9 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import julienrf.json.derived
 import play.api.libs.json._
-import uk.gov.hmrc.gform.core.Opt
-import uk.gov.hmrc.gform.core.parsers.{ ExprParsers, ValueParser }
-import uk.gov.hmrc.gform.exceptions.UnexpectedState
+import uk.gov.hmrc.gform.core.parsers.ExprParsers
 import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieveAttribute, DataRetrieveId }
 
 sealed trait Expr {
@@ -117,20 +115,7 @@ final case object LangCtx extends Expr
 final case class DataRetrieveCtx(id: DataRetrieveId, attribute: DataRetrieveAttribute) extends Expr
 
 object Expr {
-  implicit val format: OFormat[Expr] = {
-    val reads: Reads[Expr] = Reads[Expr] {
-      case JsString(str) =>
-        val parsed: Opt[ValueExpr] = ValueParser.validate("${" + str + "}");
-        parsed match {
-          case Right(TextExpression(expr))  => JsSuccess(expr)
-          case Right(_)                     => JsError("Expected an expression, got " + str)
-          case Left(UnexpectedState(error)) => JsError("Error, expected valid expression, got " + error)
-        }
-
-      case otherwise => JsError(s"Expected String as JsValue for TextExpression, got: $otherwise")
-    }
-    OFormatWithTemplateReadFallback(reads)
-  }
+  implicit val format: OFormat[Expr] = derived.oformat()
 
   implicit val leafExprs: LeafExpr[Expr] = (path: TemplatePath, t: Expr) => List(ExprWithPath(path, t))
 

@@ -53,7 +53,10 @@ class FormTemplatesControllerRequestHandler[F[_]](
         expressionsContext        <- expressionsContextOpt
         booleanExpressionsContext <- booleanExpressionsContextOpt
         formTemplate              <- formTemplateOpt
-      } yield (formTemplate, expressionsContext, booleanExpressionsContext)
+      } yield {
+        val email = expressionsContext.expressions.get(ExpressionId("email"))
+        (formTemplate.copy(emailExpr = email), expressionsContext, booleanExpressionsContext)
+      }
 
       processAndPersistTemplate(formTemplateWithSubstitutions, templateRaw.lowerCaseId)
     }

@@ -69,6 +69,7 @@ object FormTemplate {
 
   implicit val leafExprs: LeafExpr[FormTemplate] = (path: TemplatePath, t: FormTemplate) =>
     LeafExpr(path + "sections", t.sections) ++
+      LeafExpr(path + "emailExpr", t.emailExpr) ++
       leafExprsNoSections.exprs(path, t)
 
   val leafExprsNoSections: LeafExpr[FormTemplate] = (path: TemplatePath, t: FormTemplate) =>
