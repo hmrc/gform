@@ -203,7 +203,7 @@ object ValueParser {
     }
     | "dataRetrieve" ~ "." ~ DataRetrieveId.unanchoredIdValidation ~ "." ~ DataRetrieveAttribute.unanchoredIdValidation ^^ {
       (loc, _, _, dataRetrieveId, _, dataRetrieveAttribute) =>
-        DataRetrieveCtx(DataRetrieveId(dataRetrieveId), DataRetrieveAttribute.fromExpr(dataRetrieveAttribute))
+        DataRetrieveCtx(DataRetrieveId(dataRetrieveId), DataRetrieveAttribute.fromName(dataRetrieveAttribute))
     }
     | dateExprWithoutFormCtxFieldDate.map(
       DateCtx.apply

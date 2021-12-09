@@ -15,10 +15,12 @@
  */
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
+
 import org.scalacheck.Gen
-import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import SmartStringGen.smartStringGen
-import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieveId, ValidateBank }
+import uk.gov.hmrc.gform.sharedmodel.DataRetrieve.ValidateBankDetails
+import uk.gov.hmrc.gform.sharedmodel.DataRetrieveId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.ExprGen.formCtxGen
 
 trait SectionGen {
@@ -82,11 +84,11 @@ trait SectionGen {
       fields        <- PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen())
     } yield DeclarationSection(title, noPIITitle, description, shortName, continueLabel, fields.toList)
 
-  def validateBankGen: Gen[ValidateBank] = for {
+  def validateBankDetailsGen: Gen[ValidateBankDetails] = for {
     id                <- Gen.alphaStr
     sortCodeExpr      <- formCtxGen
     accountNumberExpr <- formCtxGen
-  } yield ValidateBank(DataRetrieveId(id), sortCodeExpr, accountNumberExpr)
+  } yield ValidateBankDetails(DataRetrieveId(id), sortCodeExpr, accountNumberExpr)
 
   def pageGen: Gen[Page] =
     for {
@@ -103,7 +105,7 @@ trait SectionGen {
       continueIf        <- Gen.option(ContinueIfGen.continueIfGen)
       instruction       <- Gen.option(InstructionGen.instructionGen)
       presentationHint  <- Gen.option(PresentationHintGen.presentationHintGen)
-      dataRetrieve      <- Gen.option(validateBankGen)
+      dataRetrieve      <- Gen.option(validateBankDetailsGen)
       confirmation      <- Gen.option(ConfirmationGen.confirmationGen)
     } yield Page(
       title,
