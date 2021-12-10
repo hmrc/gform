@@ -63,6 +63,10 @@ class EmailService(emailConnector: EmailConnector) {
       (emailTemplateVariable.emailTemplateVariableId, emailParameterValue.value)
     }
 
-  def getEmailAddress(form: Form): Option[String] =
-    form.formData.fields.find(_.id.value == "email").map(_.value).filterNot(_.isEmpty)
+  def getEmailAddress(form: Form, maybeEmailAddress: Option[String]): Option[String] =
+    if (maybeEmailAddress.isDefined) {
+      maybeEmailAddress
+    } else {
+      form.formData.fields.find(_.id.value == "email").map(_.value).filterNot(_.isEmpty)
+    }
 }

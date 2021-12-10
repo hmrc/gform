@@ -28,7 +28,8 @@ case class SubmissionData(
   structuredFormData: StructuredFormValue.ObjectStructure,
   emailParameters: EmailParametersRecalculated,
   attachments: Attachments,
-  l: LangADT
+  l: LangADT,
+  maybeEmailAddress: Option[String]
 )
 
 object SubmissionData {
