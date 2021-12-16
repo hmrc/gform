@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
-import cats.parse.Parser
+import cats.parse.{ Parser, Rfc5234 }
 import play.api.libs.json.{ Format, JsError, JsResult, JsString, JsSuccess }
 import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
 
@@ -29,7 +29,8 @@ object PageId {
   private val idValidation: String = "[_a-zA-Z]\\w*"
   private val anchoredIdValidation: Regex = s"""^$idValidation$$""".r
   val unanchoredIdValidation: Regex = s"""$idValidation""".r
-  val unanchoredIdValidationParser: Parser[String] = Parser.fail[String]
+  val unanchoredIdValidationParser: Parser[String] =
+    ((Rfc5234.alpha | Parser.char('_').map(_ => '_')) ~ Rfc5234.alpha.rep0).map(x => x._1.toString + x._2.mkString(""))
 
   implicit val format: Format[PageId] =
     ValueClassFormat.validatedvformat("id", validate, p => JsString(p.id))

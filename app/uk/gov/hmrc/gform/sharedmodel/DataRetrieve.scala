@@ -35,7 +35,8 @@ object DataRetrieveId {
 
   val idValidation: String = "[_a-zA-Z]\\w*"
   val unanchoredIdValidation: Regex = s"""$idValidation""".r
-  val unanchoredIdValidationParser: Parser[String] = Parser.failWith("Not implemented")
+  val unanchoredIdValidationParser: Parser[String] =
+    ((Rfc5234.alpha | Parser.char('_').map(_ => '_')) ~ Rfc5234.alpha.rep0).map(x => x._1.toString + x._2.mkString(""))
 
 }
 

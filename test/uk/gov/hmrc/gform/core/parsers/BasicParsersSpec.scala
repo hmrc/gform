@@ -48,6 +48,18 @@ class BasicParsersSpec extends FlatSpecLike with Matchers with EitherValues with
     }
   }
 
+  "exactDayParser" should "parse exact day" in {
+    val table = Table(
+      ("input", "output"),
+      ("01", 1),
+      ("11", 11),
+      ("31", 31)
+    )
+    forAll(table) { (input, output) =>
+      BasicParsers.exactDayParser.parseAll(input).right.value shouldBe output
+    }
+  }
+
   "periodParser" should "parse period constants" ignore {
     val table = Table(
       ("input", "output"),
