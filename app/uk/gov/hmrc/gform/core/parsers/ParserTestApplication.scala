@@ -16,15 +16,24 @@
 
 package uk.gov.hmrc.gform.core.parsers
 
-import scala.util.parsing.combinator._
-import uk.gov.hmrc.gform.core.Opt
+import scala.util.parsing.input.CharSequenceReader
 
-import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+object ParserTestApplication extends App {
 
-object PresentationHintParser {
+  val x = new ValueParser.PackratReader(new CharSequenceReader("${1 * 2 + 3}"))
 
-  def validate(expression: String): Opt[List[PresentationHint]] = ???
+  val res = ValueParser.parse(ValueParser.exprDeterminer, x)
 
-  def validateSingle(expression: String): Opt[PresentationHint] = ???
+  Console.println(res)
+
+  val y = new ValueParser.PackratReader(
+    new CharSequenceReader(
+      "effectiveDate1 before TODAY || effectiveDate2 before TODAY || effectiveDate3 before TODAY || effectiveDate4 before TODAY || effectiveDate5 before TODAY}"
+    )
+  )
+
+  val res2 = ValueParser.parse(ValueParser.booleanExpr, y)
+
+  Console.println(res2.get)
 
 }

@@ -49,6 +49,7 @@ lazy val microservice = (project in file("."))
       .toSet
       .toSeq, // get rid of duplicates
     libraryDependencies ++= appDependencies,
+    dependencyOverrides += "org.scala-lang.modules" %% "scala-parser-combinators" % "2.1.0",
     routesImport ++= Seq(
       "uk.gov.hmrc.crypto.Crypted",
       "uk.gov.hmrc.gform.sharedmodel.AffinityGroup",
@@ -69,13 +70,13 @@ lazy val microservice = (project in file("."))
       "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
     ),
     scalacOptions ++= Seq(
-      "-Xfatal-warnings",
+    //  "-Xfatal-warnings",
       "-Xlint:-missing-interpolator,_",
       "-Yno-adapted-args",
       "-Ywarn-numeric-widen",
       "-Ywarn-value-discard",
-      "-Ywarn-dead-code",
-      "-deprecation",
+//      "-Ywarn-dead-code",
+//      "-deprecation",
       "-feature",
       "-unchecked",
       "-language:higherKinds",

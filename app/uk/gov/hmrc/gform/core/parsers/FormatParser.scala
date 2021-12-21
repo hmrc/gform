@@ -16,87 +16,75 @@
 
 package uk.gov.hmrc.gform.core.parsers
 
-import parseback._
+import scala.util.parsing.combinator._
 import uk.gov.hmrc.gform.core.Opt
-import uk.gov.hmrc.gform.core.parsers.BasicParsers._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.formtemplate.EmailVerification
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString }
 
-object FormatParser {
+trait FormatParser extends ValueParser {
 
   def validate(
     rm: RoundingMode,
     selectionCriteria: Option[List[SelectionCriteria]],
     emailVerification: EmailVerification
-  )(expression: String): Opt[FormatExpr] =
-    validateWithParser(expression, expr(rm)(selectionCriteria)(emailVerification))
+  )(expression: String): Opt[FormatExpr] = ???
 
-  lazy val expr: RoundingMode => Option[List[SelectionCriteria]] => EmailVerification => Parser[FormatExpr] = rm =>
-    selectionCriteria =>
-      emailVerification => {
-        dateFormat |
-          textFormat(rm)(selectionCriteria)(emailVerification) |
-          anyWordExpression
-      }
+  lazy val fortmatExpr: RoundingMode => Option[List[SelectionCriteria]] => EmailVerification => Parser[FormatExpr] =
+    rm =>
+      selectionCriteria =>
+        emailVerification => {
+          dateFormat |
+            textFormat(rm)(selectionCriteria)(emailVerification) |
+            anyWordExpression
+        }
 
   lazy val dateFormat: Parser[DateFormat] = {
-    anyDateConstraint ^^ { (loc, constraints) =>
+    anyDateConstraint ^^ { constraints =>
       DateFormat(constraints)
-    } | dateConstraints ^^ { (loc, constraints) =>
+    } | dateConstraints ^^ { constraints =>
       DateFormat(constraints)
     }
   }
 
   lazy val dateConstraints: Parser[DateConstraints] = {
-    dateConstraint ~ "," ~ dateConstraints ^^ { (loc, x, _, xs) =>
+    dateConstraint ~ "," ~ dateConstraints ^^ { case x ~ _ ~ xs =>
       DateConstraints(x :: xs.constraints)
-    } | dateConstraint ^^ { (loc, x) =>
+    } | dateConstraint ^^ { x =>
       DateConstraints(List(x))
     }
   }
 
   lazy val dateConstraint: Parser[DateConstraint] = {
-    beforeAfterPreciselyParser ~ exactDateExpr ~ offsetExpression ^^ { (loc, beforeOrAfter, dateExpr, offset) =>
+    beforeAfterPreciselyParser ~ exactDateExpr ~ offsetExpression ^^ { case beforeOrAfter ~ dateExpr ~ offset =>
       DateConstraint(beforeOrAfter, dateExpr, offset)
-    } | beforeAfterPreciselyParser ~ exactDateExpr ^^ { (loc, beforeOrAfter, dateExpr) =>
+    } | beforeAfterPreciselyParser ~ exactDateExpr ^^ { case beforeOrAfter ~ dateExpr =>
       DateConstraint(beforeOrAfter, dateExpr, OffsetDate(0))
     }
   }
 
-  lazy val anyDateConstraint: Parser[DateConstraintType] = "anyDate" ^^ { (loc, _) =>
-    AnyDate
-  }
+  lazy val anyDateConstraint: Parser[DateConstraintType] = "anyDate" ^^^ AnyDate
 
-  lazy val beforeAfterPreciselyParser: Parser[BeforeAfterPrecisely] = {
-    "after" ^^ { (loc, _) =>
-      After
-    } | "before" ^^ { (loc, _) =>
-      Before
-    } | "precisely" ^^ { (loc, _) =>
-      Precisely
-    }
-  }
+  lazy val beforeAfterPreciselyParser: Parser[BeforeAfterPrecisely] = (
+    "after" ^^^ After
+      | "before" ^^^ Before
+      | "precisely" ^^^ Precisely
+  )
 
-  lazy val exactDateExpr: Parser[DateConstraintInfo] = {
-    "today" ^^ { (loc, today) =>
-      Today
-    } | yearParser ~ delimiter ~ monthParser ~ delimiter ~ dayParser ^^ { (_, year, _, month, _, day) =>
-      ConcreteDate(year, month, day)
-    } | "${" ~ alphabeticOnly ~ "}" ^^ { (_, _, field, _) =>
-      DateField(FormComponentId(field))
-    }
-  }
+  lazy val exactDateExpr: Parser[DateConstraintInfo] = (
+    "today" ^^^ Today
+      | yearParser ~ delimiter ~ monthParser ~ delimiter ~ dayParser ^^ { case year ~ _ ~ month ~ _ ~ day =>
+        ConcreteDate(year, month, day)
+      } | "${" ~> alphabeticOnly <~ "}" ^^ { field =>
+        DateField(FormComponentId(field))
+      }
+  )
 
-  lazy val alphabeticOnly: Parser[String] = """\w+""".r ^^ { (loc, str) =>
-    str
-  }
-
-  lazy val anyWordExpression: Parser[FormatExpr] = anyWordFormat ^^ { (loc, anyWord) =>
+  lazy val anyWordExpression: Parser[FormatExpr] = anyWordFormat ^^ { anyWord =>
     OrientationFormat(anyWord)
   }
 
-  lazy val offsetExpression: Parser[OffsetDate] = anyInteger ^^ { (loc, offset) =>
+  lazy val offsetExpression: Parser[OffsetDate] = anyInteger ^^ { offset =>
     OffsetDate(offset)
   }
 
@@ -114,179 +102,117 @@ object FormatParser {
             countryCodeFormat
         }
 
-  lazy val countryCodeFormat: Parser[TextFormat] = {
-    "countryCode" ^^ { (loc, _) =>
-      TextFormat(CountryCode)
-    } | "nonUkCountryCode" ^^ { (loc, _) =>
-      TextFormat(NonUkCountryCode)
-    }
-  }
+  lazy val countryCodeFormat: Parser[TextFormat] = (
+    "countryCode" ^^^ TextFormat(CountryCode)
+      | "nonUkCountryCode" ^^^ TextFormat(NonUkCountryCode)
+  )
 
   lazy val basicFormat: Option[List[SelectionCriteria]] => Parser[TextFormat] =
     selectionCriteria => {
-      "shortText" ^^ { (_, _) =>
-        TextFormat(ShortText.default)
-      } | "shortText(" ~ positiveInteger ~ "," ~ positiveInteger ~ ")" ^^ { (_, _, min, _, max, _) =>
-        TextFormat(ShortText(min, max))
-      } | "text(" ~ positiveInteger ~ "," ~ positiveInteger ~ ")" ^^ { (_, _, min, _, max, _) =>
-        TextFormat(TextWithRestrictions(min, max))
-      } | "text" ^^ { (_, _) =>
-        TextFormat(TextConstraint.default)
-      } | "lookup(" ~ register ~ ")" ^^ { (_, _, register, _) =>
-        TextFormat(Lookup(register, selectionCriteria))
-      } | "submissionRef" ^^ { (_, _) =>
-        TextFormat(SubmissionRefFormat)
-      } | "referenceNumber(" ~ positiveInteger ~ ")" ^^ { (_, _, min, _) =>
-        TextFormat(ReferenceNumber(min, min))
-      } | "referenceNumber(" ~ positiveInteger ~ "," ~ positiveInteger ~ ")" ^^ { (_, _, min, _, max, _) =>
-        TextFormat(ReferenceNumber(min, max))
-      }
+      "shortText" ^^^ TextFormat(ShortText.default) |
+        "shortText(" ~> positiveInteger ~ "," ~ positiveInteger <~ ")" ^^ { case min ~ _ ~ max =>
+          TextFormat(ShortText(min, max))
+        } | "text(" ~> positiveInteger ~ "," ~ positiveInteger <~ ")" ^^ { case min ~ _ ~ max =>
+          TextFormat(TextWithRestrictions(min, max))
+        } | "text" ^^^ TextFormat(TextConstraint.default) |
+        "lookup(" ~> register <~ ")" ^^ { register =>
+          TextFormat(Lookup(register, selectionCriteria))
+        } | "submissionRef" ^^^ TextFormat(SubmissionRefFormat) |
+        "referenceNumber(" ~> positiveInteger <~ ")" ^^ { min =>
+          TextFormat(ReferenceNumber(min, min))
+        } | "referenceNumber(" ~> positiveInteger ~ "," ~ positiveInteger <~ ")" ^^ { case min ~ _ ~ max =>
+          TextFormat(ReferenceNumber(min, max))
+        }
     }
 
   lazy val register: Parser[Register] = {
-    "cashType" ^^ { (loc, _) =>
-      Register.CashType
-    } |
-      "country" ^^ { (loc, _) =>
-        Register.Country
-      } |
-      "currency" ^^ { (loc, _) =>
-        Register.Currency
-      } |
-      "intent" ^^ { (loc, _) =>
-        Register.Intent
-      } |
-      "intercept" ^^ { (loc, _) =>
-        Register.Intercept
-      } |
-      "origin" ^^ { (loc, _) =>
-        Register.Origin
-      } |
-      "port" ^^ { (loc, _) =>
-        Register.Port
-      } |
-      "transportMode" ^^ { (loc, _) =>
-        Register.TransportMode
-      } |
-      "originWho" ^^ { (loc, _) =>
-        Register.OriginWho
-      } |
-      "originMainPart" ^^ { (loc, _) =>
-        Register.OriginMainPart
-      } |
-      "originSellingSomething" ^^ { (loc, _) =>
-        Register.OriginSellingSomething
-      } |
-      "originSavingsEarnings" ^^ { (loc, _) =>
-        Register.OriginSavingsEarnings
-      } |
-      "intentBuyingWhat" ^^ { (loc, _) =>
-        Register.IntentBuyingWhat
-      } |
-      "intentBusiness" ^^ { (loc, _) =>
-        Register.IntentBusiness
-      } |
-      "intentLivingCostsAndFees" ^^ { (loc, _) =>
-        Register.IntentLivingCostsAndFees
-      } |
-      "intentOther" ^^ { (loc, _) =>
-        Register.IntentOther
-      } |
-      "intentBigPurchase" ^^ { (loc, _) =>
-        Register.IntentBigPurchase
-      }
+    "cashType" ^^^ Register.CashType |
+      "country" ^^^ Register.Country |
+      "currency" ^^^ Register.Currency |
+      "intent" ^^^ Register.Intent |
+      "intercept" ^^^ Register.Intercept |
+      "origin" ^^^ Register.Origin |
+      "port" ^^^ Register.Port |
+      "transportMode" ^^^ Register.TransportMode |
+      "originWho" ^^^ Register.OriginWho |
+      "originMainPart" ^^^ Register.OriginMainPart |
+      "originSellingSomething" ^^^ Register.OriginSellingSomething |
+      "originSavingsEarnings" ^^^ Register.OriginSavingsEarnings |
+      "intentBuyingWhat" ^^^ Register.IntentBuyingWhat |
+      "intentBusiness" ^^^ Register.IntentBusiness |
+      "intentLivingCostsAndFees" ^^^ Register.IntentLivingCostsAndFees |
+      "intentOther" ^^^ Register.IntentOther |
+      "intentBigPurchase" ^^^ Register.IntentBigPurchase
   }
 
   lazy val contactFormat: EmailVerification => Parser[TextFormat] = emailVerification => {
-    "telephoneNumber" ^^ { (loc, _) =>
-      TextFormat(TelephoneNumber)
-    } | "email" ^^ { (loc, _) =>
-      TextFormat(emailVerification.textConstraint)
-    }
+    "telephoneNumber" ^^^ TextFormat(TelephoneNumber) | "email" ^^^ TextFormat(emailVerification.textConstraint)
   }
 
   lazy val numberFormat: RoundingMode => Parser[TextFormat] = rm => {
-    "number" ~ numberArgs ^^ { (loc, _, na) =>
+    "number" ~> numberArgs ^^ { na =>
       TextFormat(Number(maxWholeDigits = na._1, maxFractionalDigits = na._2, rm, unit = na._3))
-    } | "number" ^^ { (loc, _) =>
-      TextFormat(Number(TextConstraint.defaultWholeDigits, TextConstraint.defaultFractionalDigits, rm))
-    }
+    } | "number" ^^^ TextFormat(Number(TextConstraint.defaultWholeDigits, TextConstraint.defaultFractionalDigits, rm))
   }
 
   lazy val positiveNumberFormat: RoundingMode => Parser[TextFormat] = rm => {
-    "positiveNumber" ~ numberArgs ^^ { (loc, _, na) =>
+    "positiveNumber" ~> numberArgs ^^ { na =>
       TextFormat(PositiveNumber(maxWholeDigits = na._1, maxFractionalDigits = na._2, rm, unit = na._3))
-    } | "positiveNumber" ^^ { (loc, _) =>
-      TextFormat(PositiveNumber(TextConstraint.defaultWholeDigits, TextConstraint.defaultFractionalDigits, rm))
-    }
+    } | "positiveNumber" ^^^ TextFormat(
+      PositiveNumber(TextConstraint.defaultWholeDigits, TextConstraint.defaultFractionalDigits, rm)
+    )
   }
 
   lazy val governmentIdFormat: Parser[TextFormat] = {
-    "utr" ^^ { (loc, _) =>
-      TextFormat(UTR)
-    } | "nino" ^^ { (loc, _) =>
-      TextFormat(NINO)
-    } | "ukVrn" ^^ { (loc, _) =>
-      TextFormat(UkVrn)
-    } | "companyRegistrationNumber" ^^ { (loc, _) =>
-      TextFormat(CompanyRegistrationNumber)
-    } | "EORI" ^^ { (loc, _) =>
-      TextFormat(EORI)
-    } | "UkEORI" ^^ { (loc, _) =>
-      TextFormat(UkEORI)
-    } | "childBenefitNumber" ^^ { (loc, _) =>
-      TextFormat(ChildBenefitNumber)
-    }
+    "utr" ^^^ TextFormat(UTR) |
+      "nino" ^^^ TextFormat(NINO) |
+      "ukVrn" ^^^ TextFormat(UkVrn) |
+      "companyRegistrationNumber" ^^^ TextFormat(CompanyRegistrationNumber) |
+      "EORI" ^^^ TextFormat(EORI) |
+      "UkEORI" ^^^ TextFormat(UkEORI) |
+      "childBenefitNumber" ^^^ TextFormat(ChildBenefitNumber)
   }
 
   lazy val positiveWholeNumberFormat: RoundingMode => Parser[TextFormat] = rm =>
-    "positiveWholeNumber" ^^ { (loc, _) =>
-      TextFormat(PositiveNumber(maxFractionalDigits = 0, roundingMode = rm))
-    }
+    "positiveWholeNumber" ^^^ TextFormat(PositiveNumber(maxFractionalDigits = 0, roundingMode = rm))
 
   lazy val moneyFormat: RoundingMode => Parser[TextFormat] = rm => {
-    "sterling" ^^ { (loc, _) =>
-      TextFormat(Sterling(rm, false))
-    } | "positiveSterling" ^^ { (loc, _) =>
-      TextFormat(Sterling(rm, true))
-    } | "wholePositiveSterling" ^^ { (loc, _) =>
-      TextFormat(WholeSterling(true))
-    } | "ukBankAccountNumber" ^^ { (loc, _) =>
-      TextFormat(UkBankAccountNumber)
-    } | "ukSortCode" ^^ { (loc, _) =>
-      TextFormat(UkSortCodeFormat)
-    }
+    "sterling" ^^^ TextFormat(Sterling(rm, false)) |
+      "positiveSterling" ^^^ TextFormat(Sterling(rm, true)) |
+      "wholePositiveSterling" ^^^ TextFormat(WholeSterling(true)) |
+      "ukBankAccountNumber" ^^^ TextFormat(UkBankAccountNumber) |
+      "ukSortCode" ^^^ TextFormat(UkSortCodeFormat)
   }
 
   lazy val numberArgs: Parser[(Int, Int, Option[LocalisedString])] = {
-    wholeFractional ~ "," ~ localisedString ~ ")" ^^ { (loc, wf, _, q, _) =>
+    wholeFractional ~ "," ~ localisedString ~ ")" ^^ { case wf ~ _ ~ q ~ _ =>
       (wf.w, wf.f, Option(q))
-    } | wholeFractional ~ ")" ^^ { (loc, wf, _) =>
+    } | wholeFractional <~ ")" ^^ { wf =>
       (wf.w, wf.f, None)
     }
   }
 
-  lazy val wholeFractional: Parser[WholeFractional] = "(" ~ positiveInteger ~ "," ~ positiveInteger ^^ {
-    (loc, _, whole, _, fractional) =>
+  lazy val wholeFractional: Parser[WholeFractional] = "(" ~> positiveInteger ~ "," ~ positiveInteger ^^ {
+    case whole ~ _ ~ fractional =>
       WholeFractional(whole, fractional)
   }
 
   case class WholeFractional(w: Int, f: Int)
 
-  lazy val quotedString: Parser[String] = "'" ~ "[^']+".r ~ "'" ^^ { (loc, _, s, _) =>
-    s
+  lazy val quotedString: Parser[String] = "'" ~> "[^']+".r <~ "'"
 
-  }
-  lazy val localisedString: Parser[LocalisedString] = english ~ "," ~ welsh ^^ { (loc, en, _, cy) =>
+  lazy val localisedString: Parser[LocalisedString] = english ~ "," ~ welsh ^^ { case en ~ _ ~ cy =>
     LocalisedString(en ++ cy)
   } | quotedString.map(value => LocalisedString(Map(LangADT.En -> value)))
 
-  def english: Parser[Map[LangADT, String]] = "'" ~ "en" ~ "'" ~ ":" ~ quotedString ^^ { (loc, _, s, _, _, en) =>
+  def english: Parser[Map[LangADT, String]] = "'" ~> "en" ~ "'" ~ ":" ~ quotedString ^^ { case _ ~ _ ~ _ ~ en =>
     Map(LangADT.En -> en)
   }
 
-  def welsh: Parser[Map[LangADT, String]] = "'" ~ "cy" ~ "'" ~ ":" ~ quotedString ^^ { (loc, _, s, _, _, cy) =>
+  def welsh: Parser[Map[LangADT, String]] = "'" ~> "cy" ~ "'" ~ ":" ~ quotedString ^^ { case _ ~ _ ~ _ ~ cy =>
     Map(LangADT.Cy -> cy)
   }
   //"format": "positiveNumber(11, 2, 'en':'litres','cy':'litrau')"
 }
+
+case object FormatParser extends FormatParser

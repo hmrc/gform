@@ -57,7 +57,7 @@ object SmartStringTemplateReader {
     def recurse(processed: String, unprocessed: String, interpolations: List[Expr]): JsResult[(String, List[Expr])] =
       unprocessed match {
         case pattern(pre, exprWithParentheses, post) =>
-          BasicParsers.validateWithParser(exprWithParentheses, ValueParser.expr) match {
+          ValueParser.validateWithParser(exprWithParentheses, ValueParser.expr) match {
             case Left(unexpectedState) =>
               JsError(
                 s"""Error while parsing "$s". Failed at the expression $exprWithParentheses: ${unexpectedState.toString}"""

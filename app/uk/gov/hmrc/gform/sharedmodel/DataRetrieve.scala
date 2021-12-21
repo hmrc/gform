@@ -159,7 +159,6 @@ object DataRetrieve {
                               accountNumberExpr,
                               companyNameExpr
                             )
-
                           case other => Left(UnexpectedState(s"'type' value $other not recognized"))
                         }
       } yield dataRetrieve).fold(e => JsError(e.error), r => JsSuccess(r))

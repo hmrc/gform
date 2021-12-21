@@ -20,79 +20,48 @@ import cats.Eval
 import cats.data.ReaderT
 import cats.instances.either._
 import cats.syntax.either._
-import parseback._
-import parseback.compat.cats._
-import parseback.util.Catenable
+import scala.util.parsing.combinator._
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
-object BasicParsers {
-
-  private def parse[A](parser: Parser[A]) = ReaderT[Opt, String, Catenable[A]] { expression =>
-    parser(LineStream[Eval](expression)).value.leftMap { error =>
-      val errors: String = error.map(_.render(expression)).mkString("\n")
-      UnexpectedState(s"""|Unable to parse expression $expression.
-                          |Errors:
-                          |$errors""".stripMargin)
-    }
-  }
-
-  private def reconstruct[A](cat: Catenable[A]) = ReaderT[Opt, String, A] { expression =>
-    cat.uncons match {
-      case Some((expr, _)) => Right(expr)
-      case None            => Left(UnexpectedState(s"Unable to parse expression $expression"))
-    }
-  }
-
-  def validateWithParser[A](expression: String, parser: Parser[A]): Opt[A] =
-    (for {
-      catenable <- parse(parser)
-      expr      <- reconstruct(catenable)
-    } yield expr).run(expression.trim)
-
-  def validateNonZeroPositiveNumber(expression: Int): Opt[Int] =
-    validateWithParser(expression.toString, nonZeroPositiveInteger)
-
-  implicit val W = Whitespace(() | """\s+""".r)
+trait BasicParsers extends RegexParsers {
 
   def nextOrPreviousValue[A](string: String, fn: (Int, Int) => A): Parser[A] =
-    string ~ exactMonthDay ^^ { (loc, _, month, day) =>
-      fn(month, day)
+    string ~ exactMonthDay ^^ { x =>
+      fn(x._2._1, x._2._2)
     }
 
   lazy val exactMonthDay: Parser[(Int, Int)] = delimiter ~ exactMonthParser ~ delimiter ~ exactDayParser ^^ {
-    (loc, _, month, _, day) =>
-      (month, day)
+    case _ ~ month ~ _ ~ day => (month, day)
   }
 
   lazy val exactYearMonth: Parser[(Int, Int)] = exactYearParser ~ delimiter ~ exactMonthParser ~ delimiter ^^ {
-    (loc, year, _, month, _) =>
-      (year, month)
+    case year ~ _ ~ month ~ _ => (year, month)
   }
 
   lazy val positiveIntegers: Parser[List[Int]] =
-    (positiveInteger ~ "," ~ positiveIntegers ^^ ((loc, x, _, xs) => x :: xs)
-      | positiveInteger ^^ ((loc, x) => List(x)))
+    (positiveInteger ~ "," ~ positiveIntegers ^^ { case x ~ _ ~ xs => x :: xs }
+      | positiveInteger ^^ (x => List(x)))
 
   val anyWordFormat = """\w+""".r
   val delimiter = "[- /.]".r
 
   lazy val yearParser: Parser[Year] =
-    exactYearParser ^^ ((_, year) => Year.Exact(year)) |
-      "YYYY" ^^ ((_, _) => Year.Any) |
-      "next" ^^ ((_, _) => Year.Next) |
-      "previous" ^^ ((_, _) => Year.Previous)
+    exactYearParser ^^ (year => Year.Exact(year)) |
+      "YYYY" ^^^ Year.Any |
+      "next" ^^^ Year.Next |
+      "previous" ^^^ Year.Previous
 
   lazy val monthParser: Parser[Month] =
-    exactMonthParser ^^ ((_, month) => Month.Exact(month)) |
-      "MM" ^^ ((_, _) => Month.Any: Month)
+    exactMonthParser ^^ (month => Month.Exact(month)) |
+      "MM" ^^^ (Month.Any: Month)
 
   lazy val dayParser: Parser[Day] =
-    exactDayParser ^^ ((_, day) => Day.Exact(day)) |
-      "DD" ^^ ((_, _) => Day.Any) |
-      "firstDay" ^^ ((_, _) => Day.First) |
-      "lastDay" ^^ ((_, _) => Day.Last)
+    exactDayParser ^^ (day => Day.Exact(day)) |
+      "DD" ^^^ Day.Any |
+      "firstDay" ^^^ Day.First |
+      "lastDay" ^^^ Day.Last
 
   lazy val exactYearParser: Parser[Int] = intParser("""(19|20)\d\d""")
 
@@ -106,16 +75,14 @@ object BasicParsers {
 
   lazy val anyInteger: Parser[Int] = intParser("""(\+|-)?\d+""")
 
-  lazy val plusOrMinus: Parser[String] = """[+-]""".r ^^ { (_, plusOrMinus) =>
-    plusOrMinus
-  }
+  lazy val plusOrMinus: Parser[String] = """[+-]""".r
 
   lazy val periodValueParser: Parser[String] = {
     val periodComps = List("Y", "M", "D")
     (periodComps.combinations(1) ++ periodComps.combinations(2) ++ periodComps.combinations(3))
       .map(_.map("(\\+|-)?\\d+" + _))
       .map(s =>
-        ("P" + s.mkString).r ^^ { (_, period) =>
+        ("P" + s.mkString).r ^^ { period =>
           period
         }
       )
@@ -123,7 +90,16 @@ object BasicParsers {
   }
 
   private def intParser(str: String): Parser[Int] =
-    str.r ^^ { (_, number) =>
+    str.r ^^ { number =>
       number.toInt
     }
+}
+
+case object BasicParsers extends BasicParsers {
+
+  def validateWithParser[A](expression: String, parser: Parser[A]): Opt[A] = ???
+
+  def validateNonZeroPositiveNumber(expression: Int): Opt[Int] =
+    validateWithParser(expression.toString, nonZeroPositiveInteger)
+
 }
