@@ -20,8 +20,7 @@ import cats.Eval
 import org.scalatest.flatspec.AnyFlatSpecLike
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks
-import parseback.compat.cats._
-import parseback.LineStream
+import org.scalatest.Matchers
 
 class BasicParsersSpec extends AnyFlatSpecLike with Matchers with TableDrivenPropertyChecks {
 
@@ -45,8 +44,8 @@ class BasicParsersSpec extends AnyFlatSpecLike with Matchers with TableDrivenPro
       ("ABC", None)
     )
     forAll(table) { (input, output) =>
-      val result = BasicParsers.periodValueParser(LineStream[Eval](input)).value.toOption.map(_.toList)
-      result shouldBe output
+      val result = ???
+      fail()
     }
   }
 }

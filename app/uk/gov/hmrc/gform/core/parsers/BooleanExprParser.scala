@@ -16,15 +16,13 @@
 
 package uk.gov.hmrc.gform.core.parsers
 
-import parseback._
+import scala.util.parsing.combinator._
 import scala.util.matching.Regex
 import uk.gov.hmrc.gform.core.Opt
-import uk.gov.hmrc.gform.core.parsers.BasicParsers._
-import uk.gov.hmrc.gform.core.parsers.ValueParser._
 import uk.gov.hmrc.gform.formtemplate.BooleanExprId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
-object BooleanExprParser {
+object BooleanExprParser extends RegexParsers {
 
   // Operator precedence, increasing
   //
@@ -34,82 +32,7 @@ object BooleanExprParser {
   // < <= = != >= > includes
   // ?
 
-  implicit val W: Whitespace = Whitespace(() | """\s+""".r)
+  //implicit val W: Whitespace = Whitespace(() | """\s+""".r)
 
-  private lazy val p0: Parser[BooleanExpr] = "true" ^^^ IsTrue |
-    "yes" ^^^ IsTrue |
-    "false" ^^^ IsFalse |
-    "no" ^^^ IsFalse |
-    "form.phase.is.instructionPDF" ^^ { (loc, _) =>
-      FormPhase(InstructionPDF)
-    } |
-    FormComponentId.unanchoredIdValidation ^^ { (_, fcId) =>
-      TopLevelRef(BooleanExprId(fcId))
-    } |
-    "(" ~> p4 <~ ")"
-
-  lazy val quoteRegexParse: Parser[Regex] = "'" ~> "[^']+".r <~ "'" ^^ { (loc, regex) =>
-    regex.r
-  }
-
-  private lazy val formCtxParse: Parser[FormCtx] = FormComponentId.unanchoredIdValidation ^^ { (_, fcId) =>
-    FormCtx(FormComponentId(fcId))
-  }
-
-  private lazy val p1: Parser[BooleanExpr] = (exprFormCtx ~ "<" ~ exprFormCtx ^^ { (loc, expr1, op, expr2) =>
-    LessThan(expr1, expr2)
-  }
-    | exprFormCtx ~ "<=" ~ exprFormCtx ^^ { (loc, expr1, op, expr2) =>
-      LessThanOrEquals(expr1, expr2)
-    }
-    | exprFormCtx ~ "=" ~ exprFormCtx ^^ { (loc, expr1, op, expr2) =>
-      Equals(expr1, expr2)
-    }
-    | exprFormCtx ~ "!=" ~ exprFormCtx ^^ { (loc, expr1, op, expr2) =>
-      Not(Equals(expr1, expr2))
-    }
-    | exprFormCtx ~ ">=" ~ exprFormCtx ^^ { (loc, expr1, op, expr2) =>
-      GreaterThanOrEquals(expr1, expr2)
-    }
-    | exprFormCtx ~ ">" ~ exprFormCtx ^^ { (loc, expr1, op, expr2) =>
-      GreaterThan(expr1, expr2)
-    }
-    | dateExpr ~ "before" ~ dateExpr ^^ { (_, expr1, _, expr2) =>
-      DateBefore(expr1, expr2)
-    }
-    | dateExpr ~ "after" ~ dateExpr ^^ { (_, expr1, _, expr2) =>
-      DateAfter(expr1, expr2)
-    }
-    | formCtxParse ~ "contains" ~ exprFormCtx ^^ { (_, formCtx, _, expr) =>
-      Contains(formCtx, expr)
-    }
-    | formCtxParse ~ "match" ~ quoteRegexParse ^^ { (_, formCtx, _, regex) =>
-      MatchRegex(formCtx, regex)
-    }
-    | contextField ~ "in" ~ dataSourceParse ^^ { (_, expr, _, dataSource) =>
-      In(expr, dataSource)
-    }
-    | p0)
-
-  private lazy val p2: Parser[BooleanExpr] = ("!" ~ p1 ^^ { (loc, _, e) =>
-    Not(e)
-  }
-    | p1)
-
-  private lazy val p3: Parser[BooleanExpr] = (p3 ~ "&&" ~ p2 ^^ { (loc, expr1, op, expr2) =>
-    And(expr1, expr2)
-  }
-    | p2)
-
-  lazy val p4: Parser[BooleanExpr] = (p4 ~ "||" ~ p3 ^^ { (loc, expr1, op, expr2) =>
-    Or(expr1, expr2)
-  }
-    | p3)
-
-  lazy val booleanExpr: Parser[BooleanExpr] = "${" ~ p4 ~ "}" ^^ { (loc, _, e, _) =>
-    e
-  }
-
-  def validate(expression: String): Opt[BooleanExpr] =
-    validateWithParser(expression, booleanExpr)
+  def validate(expression: String): Opt[BooleanExpr] = ???
 }

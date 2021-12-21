@@ -16,16 +16,26 @@
 
 package uk.gov.hmrc.gform.core.parsers
 
-import parseback._
+import scala.util.parsing.combinator._
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.BasicParsers.validateWithParser
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormCtx }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormCtx, ValueExpr }
 
-object ExprParsers {
+import scala.util.parsing.combinator.{ PackratParsers, RegexParsers }
+
+trait ExprParsers extends BasicParsers {
+
+  lazy val expr: Parser[FormCtx] = "${" ~> FormComponentId.unanchoredIdValidation <~ "}" ^^ { field =>
+    FormCtx(FormComponentId(field))
+  }
+}
+
+case object ExprParsers extends ExprParsers {
+
+  def validate(expression: String): Opt[ValueExpr] = ???
+
+  def validateWithParser[A](expression: String, parser: Parser[A]): Opt[A] = ???
 
   def validateFormCtx(expression: String): Opt[FormCtx] = validateWithParser(expression, expr)
 
-  lazy val expr: Parser[FormCtx] = "${" ~ FormComponentId.unanchoredIdValidation ~ "}" ^^ { (loc, _, field, _) =>
-    FormCtx(FormComponentId(field))
-  }
 }

@@ -18,7 +18,8 @@ package uk.gov.hmrc.gform
 
 import org.scalameter.api._
 import org.scalameter.picklers.noPickler.instance
-import uk.gov.hmrc.gform.core.parsers.BooleanExprParser
+import uk.gov.hmrc.gform.core.parsers.ValueParser
+import scala.util.parsing.input.CharSequenceReader
 
 object BooleanExprParserBenchmark extends Bench.LocalTime {
   val expressionsList: List[String] = List(
@@ -51,7 +52,8 @@ object BooleanExprParserBenchmark extends Bench.LocalTime {
   performance of "BooleanExprParser" in {
     measure method "validate" in {
       using(expressions) in { expression =>
-        BooleanExprParser.validate(expression)
+        val y = new ValueParser.PackratReader( new CharSequenceReader(expression))
+        ValueParser.parse(ValueParser.booleanExpr, y).get
       }
     }
   }

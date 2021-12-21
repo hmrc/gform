@@ -297,7 +297,7 @@ object TextExpression {
     val stdReads = Json.reads[TextExpression]
     val reads: Reads[TextExpression] = stdReads orElse Reads {
       case JsString(expression) =>
-        BasicParsers
+        ValueParser
           .validateWithParser(expression, ValueParser.expr)
           .fold(unexpectedState => JsError(unexpectedState.toString), expr => JsSuccess(TextExpression(expr)))
       case otherwise => JsError(s"Expected String as JsValue for TextExpression, got: $otherwise")
