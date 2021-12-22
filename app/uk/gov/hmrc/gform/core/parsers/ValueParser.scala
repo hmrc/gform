@@ -123,7 +123,7 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
   }
 
   lazy val dateExpr: Parser[DateExpr] =
-    dateExprExactQuoted | dateExprTODAYOffset | formCtxFieldDate | formCtxFieldDateWithOffset
+    dateExprTODAYOffset | formCtxFieldDateWithOffset | dateExprExactQuoted | formCtxFieldDate
 
   lazy val dateExprWithoutFormCtxFieldDate: Parser[DateExpr] =
     dateExprExactQuoted | dateExprTODAYOffset | formCtxFieldDateWithOffset
@@ -416,12 +416,6 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | exprFormCtx ~ ">" ~ exprFormCtx ^^ { case expr1 ~ _ ~ expr2 =>
       GreaterThan(expr1, expr2)
     }
-    | dateExpr ~ "before" ~ dateExpr ^^ { case expr1 ~ _ ~ expr2 =>
-      DateBefore(expr1, expr2)
-    }
-    | dateExpr ~ "after" ~ dateExpr ^^ { case expr1 ~ _ ~ expr2 =>
-      DateAfter(expr1, expr2)
-    }
     | formCtxParse ~ "(?i)\\Qcontains\\E".r ~ exprFormCtx ^^ { case formCtx ~ _ ~ expr =>
       Contains(formCtx, expr)
     }
@@ -430,6 +424,12 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     }
     | contextField ~ "in" ~ dataSourceParse ^^ { case expr ~ _ ~ dataSource =>
       In(expr, dataSource)
+    }
+    | dateExpr ~ "before" ~ dateExpr ^^ { case expr1 ~ _ ~ expr2 =>
+      DateBefore(expr1, expr2)
+    }
+    | dateExpr ~ "after" ~ dateExpr ^^ { case expr1 ~ _ ~ expr2 =>
+      DateAfter(expr1, expr2)
     }
     | p0)
 
@@ -508,7 +508,7 @@ case object ValueParser extends ValueParser {
     val y = new ValueParser.PackratReader(new CharSequenceReader(expression))
 
     Try {
-      ValueParser.parse(exprDeterminer, y).get.rewrite
+      ValueParser.parseAll(exprDeterminer, y).get.rewrite
     }.toEither.left.map(x => UnexpectedState(x.toString))
 
   }
@@ -517,7 +517,7 @@ case object ValueParser extends ValueParser {
     val y = new ValueParser.PackratReader(new CharSequenceReader(expression))
 
     Try {
-      ValueParser.parse(parser, y).get
+      ValueParser.parseAll(parser, y).get
     }.toEither.left.map(x => UnexpectedState(x.toString))
 
   }
