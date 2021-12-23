@@ -19,23 +19,27 @@ package uk.gov.hmrc.gform.core.parsers
 import scala.util.parsing.combinator._
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.BasicParsers.validateWithParser
+import uk.gov.hmrc.gform.core.parsers.LabelSizeParser.{ labelSize, parseAll }
+import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormCtx, ValueExpr }
 
+import scala.util.Try
 import scala.util.parsing.combinator.{ PackratParsers, RegexParsers }
 
-trait ExprParsers extends BasicParsers {
+trait ExprParsers extends RegexParsers {
 
-  lazy val expr: Parser[FormCtx] = "${" ~> FormComponentId.unanchoredIdValidation <~ "}" ^^ { field =>
+  val expr: Parser[FormCtx] = "${" ~> FormComponentId.unanchoredIdValidation <~ "}" ^^ { field =>
     FormCtx(FormComponentId(field))
   }
 }
 
 case object ExprParsers extends ExprParsers {
 
-  def validate(expression: String): Opt[ValueExpr] = ???
-
-  def validateWithParser[A](expression: String, parser: Parser[A]): Opt[A] = ???
-
-  def validateFormCtx(expression: String): Opt[FormCtx] = validateWithParser(expression, expr)
+  def validateFormCtx(expression: String): Opt[FormCtx] =
+    Try {
+      val res = parseAll(expr, expression)
+      Console.println(res)
+      res.get
+    }.toEither.left.map(x => UnexpectedState(x.toString))
 
 }

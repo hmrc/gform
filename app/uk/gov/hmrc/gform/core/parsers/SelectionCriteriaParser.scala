@@ -22,18 +22,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ CsvColumnName, FormComponent
 
 object SelectionCriteriaParser {
 
-  def validate(expression: String): Opt[SelectionCriteriaValue] = ???
+  def validate(expression: String): Opt[SelectionCriteriaValue] =
+    ValueParser.validateWithParser(expression, ValueParser.selectionCriteria)
 
-//  lazy val selectionCriteria = (
-//    ExprParsers.expr ^^ { (_, expr) =>
-//      SelectionCriteriaExpr(expr)
-//    }
-//      |
-//      FormComponentId.unanchoredIdValidation ~ "." ~ FormatParser.alphabeticOnly ^^ { (_, id, _, column) =>
-//        SelectionCriteriaReference(FormCtx(FormComponentId(id)), CsvColumnName(column))
-//      } |
-//      FormatParser.alphabeticOnly ^^ { (_, value) =>
-//        SelectionCriteriaSimpleValue(List(value))
-//      }
-//  )
 }

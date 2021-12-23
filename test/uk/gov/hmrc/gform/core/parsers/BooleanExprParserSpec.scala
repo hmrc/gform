@@ -284,16 +284,14 @@ class BooleanExprParserSpec extends AnyFlatSpec with Matchers with EitherValues 
     res shouldBe Right(DateBefore(DateValueExpr(TodayDateExprValue), DateFormCtxVar(FormCtx("startDate"))))
   }
 
-
   it should "parser today + 1d " in {
 
     val res = ValueParser.validateWithParser("TODAY + 1d", ValueParser.dateExpr)
 
     res shouldBe Right(
-        DateExprWithOffset(DateValueExpr(TodayDateExprValue), OffsetYMD(OffsetUnit.Day(1)))
+      DateExprWithOffset(DateValueExpr(TodayDateExprValue), OffsetYMD(OffsetUnit.Day(1)))
     )
   }
-
 
   it should "parse before - TODAY + offset" in {
     val res = BooleanExprParser.validate("${TODAY + 1d before startDate}")
@@ -306,13 +304,12 @@ class BooleanExprParserSpec extends AnyFlatSpec with Matchers with EitherValues 
     )
   }
 
-
   it should "parse date expression" in {
 
     val res = ValueParser.validateWithParser("startDate + 1d", ValueParser.dateExpr)
 
     res shouldBe Right(
-        DateExprWithOffset(DateFormCtxVar(FormCtx("startDate")), OffsetYMD(OffsetUnit.Day(1)))
+      DateExprWithOffset(DateFormCtxVar(FormCtx("startDate")), OffsetYMD(OffsetUnit.Day(1)))
     )
   }
 

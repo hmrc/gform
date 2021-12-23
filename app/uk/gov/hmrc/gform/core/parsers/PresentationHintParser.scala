@@ -18,13 +18,36 @@ package uk.gov.hmrc.gform.core.parsers
 
 import scala.util.parsing.combinator._
 import uk.gov.hmrc.gform.core.Opt
-
+import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
-object PresentationHintParser {
+import scala.util.Try
 
-  def validate(expression: String): Opt[List[PresentationHint]] = ???
+object PresentationHintParser extends RegexParsers {
 
-  def validateSingle(expression: String): Opt[PresentationHint] = ???
+  private def validateWithParser[A](expression: String, parser: Parser[A]): Opt[A] =
+    Try {
+      val res = parseAll(parser, expression)
+      Console.println(res)
+      res.get
+    }.toEither.left.map(x => UnexpectedState(x.toString))
+
+  def validate(expression: String): Opt[List[PresentationHint]] = validateWithParser(expression, presentationHints)
+
+  def validateSingle(expression: String): Opt[PresentationHint] = validateWithParser(expression, presentationHint)
+
+  lazy val presentationHints: Parser[List[PresentationHint]] =
+    presentationHint ~ "," ~ presentationHints ^^ { case presHint ~ _ ~ presHints =>
+      presHint :: presHints
+    } | presentationHint ^^ { presHint =>
+      List(presHint)
+    }
+
+  lazy val presentationHint: Parser[PresentationHint] = (
+    "summariseGroupAsGrid" ^^^ SummariseGroupAsGrid
+      | "invisibleInSummary" ^^^ InvisibleInSummary
+      | "totalValue" ^^^ TotalValue
+      | "invisiblePageTitle" ^^^ InvisiblePageTitle
+  )
 
 }

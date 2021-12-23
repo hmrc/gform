@@ -39,7 +39,6 @@ object BooleanExprParser extends RegexParsers {
 
   //implicit val W: Whitespace = Whitespace(() | """\s+""".r)
 
-
   def validate(expression: String): Opt[BooleanExpr] = {
     val y = new ValueParser.PackratReader(new CharSequenceReader(expression))
 
