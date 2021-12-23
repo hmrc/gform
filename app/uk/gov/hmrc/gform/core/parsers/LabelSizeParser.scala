@@ -18,10 +18,26 @@ package uk.gov.hmrc.gform.core.parsers
 
 import scala.util.parsing.combinator._
 import uk.gov.hmrc.gform.core.Opt
+import uk.gov.hmrc.gform.core.parsers.PresentationHintParser.parseAll
+import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+
+import scala.util.Try
 
 object LabelSizeParser extends RegexParsers {
 
-  def validate(expression: String): Opt[LabelSize] = ???
+  val labelSize: Parser[LabelSize] =
+    "xl" ^^^ ExtraLarge |
+      "l" ^^^ Large |
+      "m" ^^^ Medium |
+      "s" ^^^ Small |
+      "xs" ^^^ ExtraSmall
+
+  def validate(expression: String): Opt[LabelSize] =
+    Try {
+      val res = parseAll(labelSize, expression)
+      Console.println(res)
+      res.get
+    }.toEither.left.map(x => UnexpectedState(x.toString))
 
 }

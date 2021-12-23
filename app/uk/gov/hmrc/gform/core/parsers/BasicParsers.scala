@@ -20,10 +20,14 @@ import cats.Eval
 import cats.data.ReaderT
 import cats.instances.either._
 import cats.syntax.either._
+
 import scala.util.parsing.combinator._
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+
+import scala.util.Try
+import scala.util.parsing.input.CharSequenceReader
 
 trait BasicParsers extends RegexParsers {
 
@@ -79,7 +83,7 @@ trait BasicParsers extends RegexParsers {
 
   lazy val periodValueParser: Parser[String] = {
     val periodComps = List("Y", "M", "D")
-    (periodComps.combinations(1) ++ periodComps.combinations(2) ++ periodComps.combinations(3))
+    (periodComps.combinations(3) ++ periodComps.combinations(2) ++ periodComps.combinations(1))
       .map(_.map("(\\+|-)?\\d+" + _))
       .map(s =>
         ("P" + s.mkString).r ^^ { period =>
@@ -97,7 +101,12 @@ trait BasicParsers extends RegexParsers {
 
 case object BasicParsers extends BasicParsers {
 
-  def validateWithParser[A](expression: String, parser: Parser[A]): Opt[A] = ???
+  def validateWithParser[A](expression: String, parser: Parser[A]): Opt[A] =
+    Try {
+      val res = parseAll(parser, expression)
+      Console.println(res)
+      res.get
+    }.toEither.left.map(x => UnexpectedState(x.toString))
 
   def validateNonZeroPositiveNumber(expression: Int): Opt[Int] =
     validateWithParser(expression.toString, nonZeroPositiveInteger)

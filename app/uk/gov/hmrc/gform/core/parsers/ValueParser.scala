@@ -282,7 +282,7 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     (parserExpression ~ "-" ~ parserExpression ^^ { case expr1 ~ _ ~ expr2 =>
       Subtraction(expr1, expr2)
     } | contextField)
-*/
+   */
 
   lazy val _expr1: PackratParser[Expr] = "if" ~> p4 ~ "then" ~ _expr1 ~ "orElse" ~ _expr1 ^^ {
     case cond ~ _ ~ expr1 ~ _ ~ expr2 => IfElse(cond, expr1, expr2)
@@ -310,6 +310,10 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
 //  }
 
   lazy val alphabeticOnly: Parser[String] = """[a-zA-Z]\w*""".r ^^ { str =>
+    str
+  }
+
+  lazy val formatParserAlphabeticOnly: Parser[String] = """\w+""".r ^^ { str =>
     str
   }
 
@@ -465,45 +469,17 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
 
   ///================   selection criteria parser =========
 
-  lazy val alphabeticOnly2: Parser[String] = """\w+""".r ^^ { str =>
-    str
-  }
-
-  lazy val selectionCriteria =
+  lazy val selectionCriteria: Parser[SelectionCriteriaValue] =
     expressionParser_expr ^^ { expr =>
       SelectionCriteriaExpr(expr)
-    } | FormComponentId.unanchoredIdValidation ~ "." ~ alphabeticOnly2 ^^ { case id ~ _ ~ column =>
+    } | FormComponentId.unanchoredIdValidation ~ "." ~ formatParserAlphabeticOnly ^^ { case id ~ _ ~ column =>
       SelectionCriteriaReference(FormCtx(FormComponentId(id)), CsvColumnName(column))
     } |
-      alphabeticOnly ^^ { value =>
+      formatParserAlphabeticOnly ^^ { value =>
         SelectionCriteriaSimpleValue(List(value))
       }
 
-  ///// ========     Presentation Hit parser ===========
-
-  lazy val presentationHints: Parser[List[PresentationHint]] =
-    (presentationHint ~ "," ~ presentationHints ^^ { case presHint ~ _ ~ presHints =>
-      presHint :: presHints
-    }
-      | presentationHint ^^ { presHint =>
-        List(presHint)
-      })
-
-  lazy val presentationHint: Parser[PresentationHint] = (
-    "summariseGroupAsGrid" ^^^ SummariseGroupAsGrid
-      | "invisibleInSummary" ^^^ InvisibleInSummary
-      | "totalValue" ^^^ TotalValue
-      | "invisiblePageTitle" ^^^ InvisiblePageTitle
-  )
-
   ///// =========== Label size parser ========
-
-  lazy val labelSize: Parser[LabelSize] =
-    "xl" ^^^ ExtraLarge |
-      "l" ^^^ Large |
-      "m" ^^^ Medium |
-      "s" ^^^ Small |
-      "xs" ^^^ ExtraSmall
 
 }
 
@@ -514,7 +490,7 @@ case object ValueParser extends ValueParser {
 
     Try {
       val res = ValueParser.parse(exprDeterminer, y)
-      Console.println(s"\n\n${res}\n\n")
+      Console.println(s"\n\n$res\n\n")
       res.get.rewrite
     }.toEither.left.map(x => UnexpectedState(x.toString))
 
@@ -524,7 +500,9 @@ case object ValueParser extends ValueParser {
     val y = new ValueParser.PackratReader(new CharSequenceReader(expression))
 
     Try {
-      ValueParser.parseAll(parser, y).get
+      val res = ValueParser.parseAll(parser, y)
+      Console.println(res)
+      res.get
     }.toEither.left.map(x => UnexpectedState(x.toString))
 
   }

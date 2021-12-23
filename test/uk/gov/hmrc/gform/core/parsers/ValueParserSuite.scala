@@ -50,14 +50,10 @@ class ValueParserSuite extends FunSuite {
          |    if form.lang='en' then 'Director' orElse 'cy-Director'
          |orElse
          |    if form.lang='en' then 'Directors' orElse 'cy-Directors'""".stripMargin,
-      IfElse(Equals(Count("ownerFc"),Constant("1")),
-        IfElse(Equals(LangCtx,Constant("en")),
-          Constant("Director"),
-          Constant("cy-Director")),
-        IfElse(Equals(LangCtx,Constant("en"))
-          ,Constant("Directors"),
-          Constant("cy-Directors")
-        )
+      IfElse(
+        Equals(Count("ownerFc"), Constant("1")),
+        IfElse(Equals(LangCtx, Constant("en")), Constant("Director"), Constant("cy-Director")),
+        IfElse(Equals(LangCtx, Constant("en")), Constant("Directors"), Constant("cy-Directors"))
       )
     )
   )

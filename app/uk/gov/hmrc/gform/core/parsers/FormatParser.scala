@@ -18,17 +18,15 @@ package uk.gov.hmrc.gform.core.parsers
 
 import scala.util.parsing.combinator._
 import uk.gov.hmrc.gform.core.Opt
+import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.formtemplate.EmailVerification
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString }
 
-trait FormatParser extends ValueParser {
+import scala.util.Try
+import scala.util.parsing.input.CharSequenceReader
 
-  def validate(
-    rm: RoundingMode,
-    selectionCriteria: Option[List[SelectionCriteria]],
-    emailVerification: EmailVerification
-  )(expression: String): Opt[FormatExpr] = ???
+trait FormatParser extends ValueParser {
 
   lazy val fortmatExpr: RoundingMode => Option[List[SelectionCriteria]] => EmailVerification => Parser[FormatExpr] =
     rm =>
@@ -75,7 +73,7 @@ trait FormatParser extends ValueParser {
     "today" ^^^ Today
       | yearParser ~ delimiter ~ monthParser ~ delimiter ~ dayParser ^^ { case year ~ _ ~ month ~ _ ~ day =>
         ConcreteDate(year, month, day)
-      } | "${" ~> alphabeticOnly <~ "}" ^^ { field =>
+      } | "${" ~> formatParserAlphabeticOnly <~ "}" ^^ { field =>
         DateField(FormComponentId(field))
       }
   )
@@ -215,4 +213,24 @@ trait FormatParser extends ValueParser {
   //"format": "positiveNumber(11, 2, 'en':'litres','cy':'litrau')"
 }
 
-case object FormatParser extends FormatParser
+case object FormatParser extends FormatParser {
+
+  def validate(
+    rm: RoundingMode,
+    selectionCriteria: Option[List[SelectionCriteria]],
+    emailVerification: EmailVerification
+  )(expression: String): Opt[FormatExpr] =
+    validateWithParser(expression, fortmatExpr(rm)(selectionCriteria)(emailVerification))
+
+  def validateWithParser[A](expression: String, parser: Parser[A]): Opt[A] = {
+    val y = new PackratReader(new CharSequenceReader(expression))
+
+    Try {
+      val res = parseAll(parser, y)
+      Console.println(res)
+      res.get
+    }.toEither.left.map(x => UnexpectedState(x.toString))
+
+  }
+
+}
