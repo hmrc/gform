@@ -469,6 +469,8 @@ trait ExampleFormTemplate {
 
   def userResearchUrl = UserResearchUrl("https://test.service.gov.uk")
 
+  def accessibilityUrl = AccessibilityUrl(formTemplateId.value)
+
   def formTemplate = FormTemplate(
     formTemplateId,
     formTemplateId,
@@ -489,7 +491,10 @@ trait ExampleFormTemplate {
     None,
     summarySection,
     true,
-    Some(userResearchUrl)
+    Some(userResearchUrl),
+    None,
+    None,
+    Some(accessibilityUrl)
   )
 }
 

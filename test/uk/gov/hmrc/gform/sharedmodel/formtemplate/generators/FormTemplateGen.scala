@@ -69,6 +69,8 @@ trait FormTemplateGen {
 
   def userResearchUrlGen: Gen[UserResearchUrl] = PrimitiveGen.urlGen.map(UserResearchUrl(_))
 
+  def accessibilityUrlGen: Gen[AccessibilityUrl] = PrimitiveGen.urlGen.map(AccessibilityUrl(_))
+
   def formTemplateGen: Gen[FormTemplate] =
     for {
       id                       <- formTemplateIdGen
@@ -89,6 +91,7 @@ trait FormTemplateGen {
       summarySection           <- SummarySectionGen.summarySectionGen
       displayHMRCLogo          <- PrimitiveGen.booleanGen
       userResearchUrl          <- Gen.option(userResearchUrlGen)
+      accessibilityUrl         <- Gen.option(accessibilityUrlGen)
     } yield FormTemplate(
       id,
       id,
@@ -109,7 +112,10 @@ trait FormTemplateGen {
       save4LaterInfoText,
       summarySection,
       displayHMRCLogo,
-      userResearchUrl
+      userResearchUrl,
+      None,
+      None,
+      accessibilityUrl
     )
 }
 
