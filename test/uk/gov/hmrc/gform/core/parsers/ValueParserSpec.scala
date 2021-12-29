@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.gform.core.parsers
 
-import cats.Eval
 import cats.data.NonEmptyList
 import org.scalatest.prop.TableDrivenPropertyChecks
 
@@ -35,7 +34,6 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcD
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DestinationId, Destinations }
 
 import scala.language.implicitConversions
-import scala.util.parsing.input.CharSequenceReader
 
 class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
 

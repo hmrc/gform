@@ -16,9 +16,8 @@
 
 package uk.gov.hmrc.gform.core.parsers
 
-import scala.util.parsing.combinator._
 import uk.gov.hmrc.gform.core.Opt
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ CsvColumnName, FormComponentId, FormCtx, SelectionCriteriaValue }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.SelectionCriteriaValue
 
 object SelectionCriteriaParser {
 

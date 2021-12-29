@@ -16,18 +16,9 @@
 
 package uk.gov.hmrc.gform.core.parsers
 
-import cats.Eval
-import cats.data.ReaderT
-import cats.instances.either._
-import cats.syntax.either._
-
 import scala.util.parsing.combinator._
 import uk.gov.hmrc.gform.core.Opt
-import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-
-import scala.util.Try
-import scala.util.parsing.input.CharSequenceReader
 
 trait BasicParsers extends RegexParsers {
 
@@ -99,14 +90,7 @@ trait BasicParsers extends RegexParsers {
     }
 }
 
-case object BasicParsers extends BasicParsers {
-
-  def validateWithParser[A](expression: String, parser: Parser[A]): Opt[A] =
-    Try {
-      val res = parseAll(parser, expression)
-      Console.println(res)
-      res.get
-    }.toEither.left.map(x => UnexpectedState(x.toString))
+case object BasicParsers extends BasicParsers with ParsingHelper {
 
   def validateNonZeroPositiveNumber(expression: Int): Opt[Int] =
     validateWithParser(expression.toString, nonZeroPositiveInteger)

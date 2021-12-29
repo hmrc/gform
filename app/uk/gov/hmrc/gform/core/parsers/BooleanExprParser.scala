@@ -16,18 +16,10 @@
 
 package uk.gov.hmrc.gform.core.parsers
 
-import scala.util.parsing.combinator._
-import scala.util.matching.Regex
 import uk.gov.hmrc.gform.core.Opt
-import uk.gov.hmrc.gform.core.parsers.ValueParser.booleanExpr
-import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.formtemplate.BooleanExprId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
-import scala.util.Try
-import scala.util.parsing.input.CharSequenceReader
-
-object BooleanExprParser extends RegexParsers {
+object BooleanExprParser extends ValueParser with PackratParsingHelper {
 
   // Operator precedence, increasing
   //
@@ -39,14 +31,5 @@ object BooleanExprParser extends RegexParsers {
 
   //implicit val W: Whitespace = Whitespace(() | """\s+""".r)
 
-  def validate(expression: String): Opt[BooleanExpr] = {
-    val y = new ValueParser.PackratReader(new CharSequenceReader(expression))
-
-    Try {
-      val res = ValueParser.parseAll(booleanExpr, y)
-      Console.println(res)
-      res.get
-    }.toEither.left.map(x => UnexpectedState(x.toString))
-
-  }
+  def validate(expression: String): Opt[BooleanExpr] = validateWithParser(expression, booleanExpr)
 }
