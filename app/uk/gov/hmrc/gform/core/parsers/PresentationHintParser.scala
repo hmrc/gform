@@ -18,19 +18,9 @@ package uk.gov.hmrc.gform.core.parsers
 
 import scala.util.parsing.combinator._
 import uk.gov.hmrc.gform.core.Opt
-import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
-import scala.util.Try
-
-object PresentationHintParser extends RegexParsers {
-
-  private def validateWithParser[A](expression: String, parser: Parser[A]): Opt[A] =
-    Try {
-      val res = parseAll(parser, expression)
-      Console.println(res)
-      res.get
-    }.toEither.left.map(x => UnexpectedState(x.toString))
+object PresentationHintParser extends RegexParsers with ParsingHelper {
 
   def validate(expression: String): Opt[List[PresentationHint]] = validateWithParser(expression, presentationHints)
 

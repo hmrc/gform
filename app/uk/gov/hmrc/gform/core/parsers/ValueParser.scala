@@ -19,7 +19,6 @@ package uk.gov.hmrc.gform.core.parsers
 import java.time.LocalDate
 import scala.util.parsing.combinator._
 import uk.gov.hmrc.gform.core.Opt
-import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate.BooleanExprId
 import uk.gov.hmrc.gform.sharedmodel.dblookup.CollectionName
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
@@ -28,13 +27,9 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.UserField.Enrolment
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieveAttribute, DataRetrieveId }
 
-import scala.util.Try
 import scala.util.matching.Regex
-import scala.util.parsing.input.CharSequenceReader
 
 trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
-
-  //implicit val W = Whitespace(() | """\s+""".r)
 
   lazy val exprDeterminer: PackratParser[ValueExpr] = dateExpression ^^ (expr => DateExpression(expr)) |
     positiveIntegers ^^ (selections => ChoiceExpression(selections)) |
@@ -263,26 +258,6 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
   } | FormComponentId.unanchoredIdValidation ^^ { fn =>
     DateFormCtxVar(FormCtx(FormComponentId(fn)))
   }
-  /*
-  lazy val parserExpression: PackratParser[Expr] = "(" ~> product <~ ")" ^^ { expr =>
-    expr
-  } | product
-
-
-  lazy val product: PackratParser[Expr] = (parserExpression ~ "*" ~ parserExpression ^^ { case expr1 ~ _ ~ expr2 =>
-    Multiply(expr1, expr2)
-  } | addExpression)
-
-  lazy val addExpression: PackratParser[Expr] =
-    (parserExpression ~ "+" ~ parserExpression ^^ { case expr1 ~ _ ~ expr2 =>
-      Add(expr1, expr2)
-    } | subtractionExpression)
-
-  lazy val subtractionExpression: PackratParser[Expr] =
-    (parserExpression ~ "-" ~ parserExpression ^^ { case expr1 ~ _ ~ expr2 =>
-      Subtraction(expr1, expr2)
-    } | contextField)
-   */
 
   lazy val _expr1: PackratParser[Expr] = "if" ~> p4 ~ "then" ~ _expr1 ~ "orElse" ~ _expr1 ^^ {
     case cond ~ _ ~ expr1 ~ _ ~ expr2 => IfElse(cond, expr1, expr2)
@@ -295,19 +270,6 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
   val _else: PackratParser[Expr] = chainl1(_factor, "else" ^^^ Else)
 
   val _factor: PackratParser[Expr] = contextField | "(" ~> _expr1 <~ ")"
-
-//  lazy val ifElseParser: PackratParser[Expr] = {
-//    ("if" ~> p4 ~ "then" ~ parserExpression ~ "else" ~ parserExpression ^^ { case cond ~ _ ~ expr1 ~ _ ~ expr2 =>
-//      IfElse(cond, expr1, expr2)
-//    } | orElseParser)
-//  }
-//
-//  lazy val orElseParser: PackratParser[Expr] = parserExpression ~ "else" ~ parserExpression ^^ {
-//    case expr1 ~ _ ~ expr2 =>
-//      Else(expr1, expr2)
-//  } | contextField ^^ { value =>
-//    value
-//  }
 
   lazy val alphabeticOnly: Parser[String] = """[a-zA-Z]\w*""".r ^^ { str =>
     str
@@ -386,6 +348,14 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
   )
 
   //================= boolean parsers =========
+
+  // Operator precedence, increasing
+  //
+  // ||
+  // &&
+  // !
+  // < <= = != >= > includes
+  // ?
 
   private lazy val p0: Parser[BooleanExpr] = "true" ^^^ IsTrue |
     "yes" ^^^ IsTrue |
@@ -479,32 +449,10 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
         SelectionCriteriaSimpleValue(List(value))
       }
 
-  ///// =========== Label size parser ========
-
 }
 
-case object ValueParser extends ValueParser {
+object ValueParser extends ValueParser with PackratParsingHelper {
 
-  def validate(expression: String): Opt[ValueExpr] = {
-    val y = new ValueParser.PackratReader(new CharSequenceReader(expression))
-
-    Try {
-      val res = ValueParser.parse(exprDeterminer, y)
-      Console.println(s"\n\n$res\n\n")
-      res.get.rewrite
-    }.toEither.left.map(x => UnexpectedState(x.toString))
-
-  }
-
-  def validateWithParser[A](expression: String, parser: Parser[A]): Opt[A] = {
-    val y = new ValueParser.PackratReader(new CharSequenceReader(expression))
-
-    Try {
-      val res = ValueParser.parseAll(parser, y)
-      Console.println(res)
-      res.get
-    }.toEither.left.map(x => UnexpectedState(x.toString))
-
-  }
+  def validate(expression: String): Opt[ValueExpr] = validateWithParser(expression, exprDeterminer).map(_.rewrite)
 
 }

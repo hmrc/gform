@@ -16,15 +16,10 @@
 
 package uk.gov.hmrc.gform.core.parsers
 
-import scala.util.parsing.combinator._
 import uk.gov.hmrc.gform.core.Opt
-import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.formtemplate.EmailVerification
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString }
-
-import scala.util.Try
-import scala.util.parsing.input.CharSequenceReader
 
 trait FormatParser extends ValueParser {
 
@@ -213,7 +208,7 @@ trait FormatParser extends ValueParser {
   //"format": "positiveNumber(11, 2, 'en':'litres','cy':'litrau')"
 }
 
-case object FormatParser extends FormatParser {
+case object FormatParser extends FormatParser with ParsingHelper {
 
   def validate(
     rm: RoundingMode,
@@ -221,16 +216,5 @@ case object FormatParser extends FormatParser {
     emailVerification: EmailVerification
   )(expression: String): Opt[FormatExpr] =
     validateWithParser(expression, fortmatExpr(rm)(selectionCriteria)(emailVerification))
-
-  def validateWithParser[A](expression: String, parser: Parser[A]): Opt[A] = {
-    val y = new PackratReader(new CharSequenceReader(expression))
-
-    Try {
-      val res = parseAll(parser, y)
-      Console.println(res)
-      res.get
-    }.toEither.left.map(x => UnexpectedState(x.toString))
-
-  }
 
 }

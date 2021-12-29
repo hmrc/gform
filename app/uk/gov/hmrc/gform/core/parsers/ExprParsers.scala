@@ -16,15 +16,10 @@
 
 package uk.gov.hmrc.gform.core.parsers
 
-import scala.util.parsing.combinator._
 import uk.gov.hmrc.gform.core.Opt
-import uk.gov.hmrc.gform.core.parsers.BasicParsers.validateWithParser
-import uk.gov.hmrc.gform.core.parsers.LabelSizeParser.{ labelSize, parseAll }
-import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormCtx, ValueExpr }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormCtx }
 
-import scala.util.Try
-import scala.util.parsing.combinator.{ PackratParsers, RegexParsers }
+import scala.util.parsing.combinator.RegexParsers
 
 trait ExprParsers extends RegexParsers {
 
@@ -33,13 +28,8 @@ trait ExprParsers extends RegexParsers {
   }
 }
 
-case object ExprParsers extends ExprParsers {
+case object ExprParsers extends ExprParsers with ParsingHelper {
 
-  def validateFormCtx(expression: String): Opt[FormCtx] =
-    Try {
-      val res = parseAll(expr, expression)
-      Console.println(res)
-      res.get
-    }.toEither.left.map(x => UnexpectedState(x.toString))
+  def validateFormCtx(expression: String): Opt[FormCtx] = validateWithParser(expression, expr)
 
 }
