@@ -141,8 +141,8 @@ object DataRetrieve {
                               parameters         <- opt[JsObject](json, "parameters")
                               sortCodeValue      <- opt[String](parameters, "sortCode")
                               accountNumberValue <- opt[String](parameters, "accountNumber")
-                              sortCodeExpr       <- BasicParsers.validateWithParser(sortCodeValue, ValueParser.expr)
-                              accountNumberExpr  <- BasicParsers.validateWithParser(accountNumberValue, ValueParser.expr)
+                              sortCodeExpr       <- ValueParser.validateWithParser(sortCodeValue, ValueParser.expr)
+                              accountNumberExpr  <- ValueParser.validateWithParser(accountNumberValue, ValueParser.expr)
                             } yield ValidateBankDetails(DataRetrieveId(idValue), sortCodeExpr, accountNumberExpr)
                           case "businessBankAccountExistence" =>
                             for {
@@ -150,9 +150,9 @@ object DataRetrieve {
                               sortCodeValue      <- opt[String](parameters, "sortCode")
                               accountNumberValue <- opt[String](parameters, "accountNumber")
                               companyNameValue   <- opt[String](parameters, "companyName")
-                              sortCodeExpr       <- BasicParsers.validateWithParser(sortCodeValue, ValueParser.expr)
-                              accountNumberExpr  <- BasicParsers.validateWithParser(accountNumberValue, ValueParser.expr)
-                              companyNameExpr    <- BasicParsers.validateWithParser(companyNameValue, ValueParser.expr)
+                              sortCodeExpr       <- ValueParser.validateWithParser(sortCodeValue, ValueParser.expr)
+                              accountNumberExpr  <- ValueParser.validateWithParser(accountNumberValue, ValueParser.expr)
+                              companyNameExpr    <- ValueParser.validateWithParser(companyNameValue, ValueParser.expr)
                             } yield BusinessBankAccountExistence(
                               DataRetrieveId(idValue),
                               sortCodeExpr,
