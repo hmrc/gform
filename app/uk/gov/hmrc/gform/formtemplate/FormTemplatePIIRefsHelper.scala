@@ -125,6 +125,7 @@ object FormTemplatePIIRefsHelper {
       case Value                                  => Nil
       case LangCtx                                => Nil
       case DataRetrieveCtx(_, _)                  => Nil
+      case Size(FormComponentId(value), _)        => List(value)
     }
 
   implicit class JsLookupResultOps(result: JsLookupResult) {
