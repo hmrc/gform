@@ -16,9 +16,10 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
-import org.scalatest.{ FlatSpecLike, Matchers }
+import org.scalatest.flatspec.AnyFlatSpecLike
+import org.scalatest.matchers.should.Matchers
 
-class DateExprSpec extends FlatSpecLike with Matchers {
+class DateExprSpec extends AnyFlatSpecLike with Matchers {
 
   "leafExprs" should "return all leaf values for DateValueExpr" in {
     val leafs = DateValueExpr(TodayDateExprValue).leafExprs

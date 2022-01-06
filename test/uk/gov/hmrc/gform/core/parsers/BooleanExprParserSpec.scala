@@ -16,12 +16,14 @@
 
 package uk.gov.hmrc.gform.core.parsers
 
-import org.scalatest._
+import org.scalatest.{ EitherValues, OptionValues }
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 import scala.language.implicitConversions
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
-class BooleanExprParserSpec extends FlatSpec with Matchers with EitherValues with OptionValues {
+class BooleanExprParserSpec extends AnyFlatSpec with Matchers with EitherValues with OptionValues {
 
   implicit def implicitToFormComponentId(str: String): FormComponentId = FormComponentId(str)
 

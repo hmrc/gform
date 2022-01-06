@@ -17,7 +17,9 @@
 package uk.gov.hmrc.gform.sharedmodel
 
 import org.scalactic.source.Position
-import org.scalatest.{ Assertion, FlatSpec, Matchers }
+import org.scalatest.Assertion
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.Json
 import uk.gov.hmrc.gform.JsResultMatcher
 import uk.gov.hmrc.gform.formtemplate.EmailVerification
@@ -25,7 +27,7 @@ import uk.gov.hmrc.gform.sharedmodel.email.EmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormComponentId
 import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierTemplateId
 
-class EmailVerificationSpec extends FlatSpec with Matchers with JsResultMatcher {
+class EmailVerificationSpec extends AnyFlatSpec with Matchers with JsResultMatcher {
 
   import EmailVerification._
   import EmailVerifierService._

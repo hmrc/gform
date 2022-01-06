@@ -19,18 +19,18 @@ package uk.gov.hmrc.gform.sharedmodel.form
 import cats.data.NonEmptyList
 import java.time.LocalDate
 
-import org.scalatest.{ FlatSpec, Matchers }
 import java.time.LocalDateTime
-
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.libs.json._
 import play.api.libs.json.Writes.DefaultLocalDateTimeWrites
 import uk.gov.hmrc.gform.sharedmodel._
+import uk.gov.hmrc.gform.sharedmodel.email.EmailConfirmationCode
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.FormGen
-import uk.gov.hmrc.gform.sharedmodel.email.EmailConfirmationCode
 
-class FormSpec extends FlatSpec with Matchers with ScalaCheckDrivenPropertyChecks {
+class FormSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyChecks {
 
   val inputJson =
     """|{

@@ -16,11 +16,12 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
+import org.scalatest.flatspec.AnyFlatSpecLike
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks
-import org.scalatest.{ FlatSpecLike, Matchers }
 import uk.gov.hmrc.gform.formtemplate.FormTemplatePIIRefsHelper.{ PIIDetails, Pos }
 
-class FormTemplatePIIRefsHelperSpec extends FlatSpecLike with Matchers with TableDrivenPropertyChecks {
+class FormTemplatePIIRefsHelperSpec extends AnyFlatSpecLike with Matchers with TableDrivenPropertyChecks {
 
   private val formTemplate: String =
     """{

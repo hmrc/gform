@@ -23,7 +23,8 @@ import org.mongodb.scala.model.Filters.and
 import org.mongodb.scala.model.{ Filters, IndexModel }
 import org.mongodb.scala.model.Indexes.ascending
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{ FlatSpec, Matchers }
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.{ JsArray, JsNumber, JsString, Json, OFormat }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
@@ -46,7 +47,7 @@ object MyEntity {
   implicit val format: OFormat[MyEntity] = Json.format[MyEntity]
 }
 
-class RepoSpec extends FlatSpec with Matchers with DefaultPlayMongoRepositorySupport[MyEntity] with ScalaFutures {
+class RepoSpec extends AnyFlatSpec with Matchers with DefaultPlayMongoRepositorySupport[MyEntity] with ScalaFutures {
 
   private val DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
 

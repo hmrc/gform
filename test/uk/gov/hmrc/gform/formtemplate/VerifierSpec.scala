@@ -17,15 +17,16 @@
 package uk.gov.hmrc.gform.formtemplate
 
 import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.time.{ Millis, Seconds, Span }
-import org.scalatest.{ Matchers, WordSpecLike }
+import org.scalatest.wordspec.AnyWordSpecLike
 import uk.gov.hmrc.gform.Helpers.toSmartString
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.Instruction
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class VerifierSpec extends WordSpecLike with Matchers with ScalaFutures with FormTemplateSupport {
+class VerifierSpec extends AnyWordSpecLike with Matchers with ScalaFutures with FormTemplateSupport {
 
   implicit val defaultPatience = PatienceConfig(timeout = Span(6, Seconds), interval = Span(5, Millis))
 

@@ -21,8 +21,10 @@ import com.typesafe.config.ConfigFactory.parseString
 import org.scalacheck.Gen
 import org.scalacheck.rng.Seed
 import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.flatspec.AnyFlatSpecLike
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.time.{ Millis, Seconds, Span }
-import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach, FlatSpecLike, Matchers }
+import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach }
 import uk.gov.hmrc.crypto.CryptoWithKeysFromConfig
 import uk.gov.hmrc.gform.MongoComponentSupport
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.FormGen
@@ -35,7 +37,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
 class FormMongoCacheSpec
-    extends FlatSpecLike with Matchers with MongoComponentSupport with ScalaFutures with BeforeAndAfterEach
+    extends AnyFlatSpecLike with Matchers with MongoComponentSupport with ScalaFutures with BeforeAndAfterEach
     with BeforeAndAfterAll with FormGen {
 
   implicit val defaultPatience: PatienceConfig =

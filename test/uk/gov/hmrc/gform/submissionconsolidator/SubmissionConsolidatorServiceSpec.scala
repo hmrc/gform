@@ -22,7 +22,6 @@ import cats.data.EitherT
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{ Millis, Seconds, Span }
-import org.scalatest.{ Matchers, WordSpecLike }
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.core.FOpt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
@@ -45,9 +44,11 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 
 class SubmissionConsolidatorServiceSpec
-    extends WordSpecLike with MockFactory with Matchers with ScalaCheckDrivenPropertyChecks with ScalaFutures {
+    extends AnyWordSpecLike with MockFactory with Matchers with ScalaCheckDrivenPropertyChecks with ScalaFutures {
 
   override implicit val patienceConfig = PatienceConfig(Span(10, Seconds), Span(1, Millis))
   private val DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")

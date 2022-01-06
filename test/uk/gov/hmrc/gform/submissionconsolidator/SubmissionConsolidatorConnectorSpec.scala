@@ -23,8 +23,9 @@ import com.typesafe.config.{ Config, ConfigFactory }
 import org.scalacheck.Gen
 import org.scalacheck.rng.Seed
 import org.scalamock.scalatest.MockFactory
-import org.scalatest.{ FlatSpec, Matchers }
 import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.time.{ Millis, Seconds, Span }
 import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
@@ -39,7 +40,7 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class SubmissionConsolidatorConnectorSpec
-    extends FlatSpec with MockFactory with WiremockSupport with SCFormGen with ScalaFutures with Matchers {
+    extends AnyFlatSpec with MockFactory with WiremockSupport with SCFormGen with ScalaFutures with Matchers {
 
   override implicit val patienceConfig = PatienceConfig(Span(10, Seconds), Span(1, Millis))
   val _actorSystem: ActorSystem = ActorSystem("SubmissionConsolidatorConnectorSpec")

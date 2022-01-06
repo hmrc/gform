@@ -18,12 +18,24 @@ package uk.gov.hmrc.gform.fileupload
 
 import akka.actor.{ ActorSystem, Scheduler }
 import org.scalamock.function.StubFunction0
+import scala.concurrent.ExecutionContext
 import uk.gov.hmrc.gform.Spec
 
 import scala.concurrent.duration._
 import scala.concurrent.{ Await, Future }
 
+trait RetryingTest extends Retrying {
+  def runWith3Retries(
+    f: StubFunction0[Future[Int]]
+  )(implicit ec: ExecutionContext, s: Scheduler): Future[Int] =
+    retry(f(), Seq(10.milliseconds, 100.milliseconds), "")
+}
+
 class RetryingSpec extends Spec {
+
+  implicit val scheduler: Scheduler = ActorSystem().scheduler
+
+  val retryingTest = new RetryingTest {}
 
   "Retrying with 3 attempts" should
     "run a test function only once if the first attempt is successful" in {
@@ -66,13 +78,5 @@ class RetryingSpec extends Spec {
     intercept[Exception](Await.result(retryingTest.runWith3Retries(m), 2.seconds))
     Await.result(retryingTest.runWith3Retries(m), 2.seconds) should be(1)
     m.verify().repeated(4)
-  }
-
-  lazy val retryingTest = new RetryingTest {}
-
-  implicit val scheduler: Scheduler = ActorSystem().scheduler
-  trait RetryingTest extends Retrying {
-    def runWith3Retries(f: StubFunction0[Future[Int]]): Future[Int] =
-      retry(f(), Seq(10.milliseconds, 100.milliseconds), "")
   }
 }

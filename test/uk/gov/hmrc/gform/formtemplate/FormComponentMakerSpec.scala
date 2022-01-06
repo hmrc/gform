@@ -16,14 +16,15 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
-import org.scalatest.{ FlatSpecLike, Matchers }
+import org.scalatest.flatspec.AnyFlatSpecLike
+import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.Json
 import uk.gov.hmrc.gform.Helpers.toSmartString
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ CalendarDate, FormatExpr, Medium, RoundingMode, Text, TextArea, TextFormat, TextWithRestrictions, Value }
 
-class FormComponentMakerSpec extends FlatSpecLike with Matchers with FormTemplateSupport {
+class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemplateSupport {
 
   "optMaybeFormatExpr" should "parse and validate format expression" in {
     val formComponentMaker = new FormComponentMaker(Json.parse("""

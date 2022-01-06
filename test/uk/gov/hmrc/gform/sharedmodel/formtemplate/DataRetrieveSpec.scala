@@ -16,12 +16,13 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.{ JsError, JsPath, Json, JsonValidationError }
-import org.scalatest.{ FlatSpec, Matchers }
 import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieve, DataRetrieveId }
 import uk.gov.hmrc.gform.sharedmodel.DataRetrieve.{ BusinessBankAccountExistence, ValidateBankDetails }
 
-class DataRetrieveSpec extends FlatSpec with Matchers {
+class DataRetrieveSpec extends AnyFlatSpec with Matchers {
 
   "Json.parse" should "parse json as ValidateBankDetails" in {
     Json
