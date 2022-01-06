@@ -259,7 +259,7 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     DateFormCtxVar(FormCtx(FormComponentId(fn)))
   }
 
-  lazy val _expr1: PackratParser[Expr] = "if" ~> p4 ~ "then" ~ _expr1 ~ "orElse" ~ _expr1 ^^ {
+  lazy val _expr1: PackratParser[Expr] = "if" ~> p4 ~ "then" ~ _expr1 ~ "else" ~ _expr1 ^^ {
     case cond ~ _ ~ expr1 ~ _ ~ expr2 => IfElse(cond, expr1, expr2)
   } | _add
 
@@ -267,7 +267,7 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
 
   val _term: PackratParser[Expr] = chainl1(_else, "*" ^^^ Multiply)
 
-  val _else: PackratParser[Expr] = chainl1(_factor, "else" ^^^ Else)
+  val _else: PackratParser[Expr] = chainl1(_factor, "orElse" ^^^ Else)
 
   val _factor: PackratParser[Expr] = contextField | "(" ~> _expr1 <~ ")"
 

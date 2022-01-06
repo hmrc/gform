@@ -30,26 +30,26 @@ class ValueParserSuite extends FunSuite {
 
   val table: List[(String, Expr)] = List(
     (
-      "if a < b then foo orElse bar",
+      "if a < b then foo else bar",
       IfElse(LessThan("a", "b"), "foo", "bar")
     ),
     (
-      "if a < b then 'foo' orElse 'bar'",
+      "if a < b then 'foo' else 'bar'",
       IfElse(LessThan("a", "b"), Constant("foo"), Constant("bar"))
     ),
     (
-      "if a < b then foo else bar orElse baz",
+      "if a < b then foo orElse bar else baz",
       IfElse(LessThan("a", "b"), Else("foo", "bar"), "baz")
     ),
     (
-      "if a < b then 'foo' else 'bar' orElse 'baz'",
+      "if a < b then 'foo' orElse 'bar' else 'baz'",
       IfElse(LessThan("a", "b"), Else(Constant("foo"), Constant("bar")), Constant("baz"))
     ),
     (
       """|if ownerFc.count=1 then
-         |    if form.lang='en' then 'Director' orElse 'cy-Director'
-         |orElse
-         |    if form.lang='en' then 'Directors' orElse 'cy-Directors'""".stripMargin,
+         |    if form.lang='en' then 'Director' else 'cy-Director'
+         |else
+         |    if form.lang='en' then 'Directors' else 'cy-Directors'""".stripMargin,
       IfElse(
         Equals(Count("ownerFc"), Constant("1")),
         IfElse(Equals(LangCtx, Constant("en")), Constant("Director"), Constant("cy-Director")),
@@ -70,7 +70,7 @@ class ValueParserSuite extends FunSuite {
 
   val tableWithRegex: List[(String, Expr)] = List(
     (
-      "if textBox1 match '^[a-zA-Z0-9]{5}' then 'foo' orElse 'bar'",
+      "if textBox1 match '^[a-zA-Z0-9]{5}' then 'foo' else 'bar'",
       IfElse(MatchRegex("textBox1", "^[a-zA-Z0-9]{5}".r), Constant("foo"), Constant("bar"))
     )
   )
@@ -86,7 +86,7 @@ class ValueParserSuite extends FunSuite {
 
   val smartStringWithIfElse = List(
     (
-      "Hello ${if a < b then 'foo' orElse 'bar'} world",
+      "Hello ${if a < b then 'foo' else 'bar'} world",
       "Hello {0} world",
       List(
         IfElse(LessThan("a", "b"), Constant("foo"), Constant("bar"))
@@ -113,7 +113,7 @@ class ValueParserSuite extends FunSuite {
   }
 
   test("Localised String should expand to if-else expression") {
-    val full = ValueParser.validate("${if form.lang = 'en' then 'EN' orElse 'CY'}")
+    val full = ValueParser.validate("${if form.lang = 'en' then 'EN' else 'CY'}")
     val compact = ValueParser.validate("${'EN','CY'}")
 
     assertEquals(full, compact)
