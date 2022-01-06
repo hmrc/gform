@@ -28,7 +28,7 @@ import uk.gov.hmrc.gform.sharedmodel.{ AvailableLanguages, DataRetrieve, DataRet
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.graph.DependencyGraph._
 import uk.gov.hmrc.gform.formtemplate.FormTemplateValidatorHelper._
-import uk.gov.hmrc.gform.models.constraints.ReferenceInfo.{ DataRetrieveCtxExpr, PeriodExpr, PeriodExtExpr }
+import uk.gov.hmrc.gform.models.constraints.ReferenceInfo.{ DataRetrieveCtxExpr, PeriodExpr, PeriodExtExpr, SizeExpr }
 import shapeless.syntax.typeable._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 
@@ -175,6 +175,8 @@ object FormTemplateValidator {
       case ReferenceInfo.PeriodExtExpr(path, PeriodExt(Period(DateCtx(dateExpr1), DateCtx(dateExpr2)), _))
           if dateExprInvalidRefs(dateExpr1, dateExpr2).nonEmpty =>
         invalid(path, dateExprInvalidRefs(dateExpr1, dateExpr2): _*)
+      case ReferenceInfo.SizeExpr(path, Size(formComponentId, _)) if !allFcIds(formComponentId) =>
+        invalid(path, formComponentId)
       case ReferenceInfo.LinkCtxExpr(path, LinkCtx(PageLink(pageId))) if !allPageIds.contains(pageId) =>
         Invalid(s"${path.path}: Page id '${pageId.id}' doesn't exist in the form")
       case _ => Valid
@@ -294,6 +296,52 @@ object FormTemplateValidator {
       choice.hints.fold(false)(hints => choice.options.size != hints.size)
 
     validateChoice(sectionsList, check, "Choice components doesn't have equal number of choices and hints")
+  }
+
+  def validateChoiceSize(sectionsList: List[Page], allExpressions: List[ExprWithPath]): ValidationResult = {
+    val fcs: List[(FormComponentId, Int)] = allExpressions
+      .flatMap(_.referenceInfos)
+      .collect { case SizeExpr(_, Size(formComponentId, i)) =>
+        formComponentId -> i
+      }
+
+    def validateSize(
+      formComponentId: FormComponentId,
+      size: Int,
+      index: Int
+    ): ValidationResult = {
+      val maxIndex = size - 1
+      val exprStr = s"$formComponentId.$index.size"
+      if (index > maxIndex)
+        Invalid(
+          s"Expression '$exprStr' has wrong index $index. $formComponentId has only $size elements. Use index from 0 to $maxIndex"
+        )
+      else Valid
+    }
+
+    def validateSizeExpr(
+      sectionsList: List[Page],
+      formComponentId: FormComponentId,
+      index: Int
+    ): List[ValidationResult] =
+      sectionsList
+        .flatMap(_.fields)
+        .filter(_.id === formComponentId)
+        .map(fv => fv.`type`)
+        .collect {
+          case (choice: Choice)                   => validateSize(formComponentId, choice.options.size, index)
+          case (revealingChoice: RevealingChoice) => validateSize(formComponentId, revealingChoice.options.size, index)
+          case _ =>
+            Invalid(
+              s"Form component '$formComponentId' used in '$formComponentId.$index.size' expression should be choice or revealing choice type"
+            )
+        }
+
+    val validations = fcs.flatMap { case (fc, index) =>
+      validateSizeExpr(sectionsList, fc, index)
+    }
+
+    Monoid.combineAll(validations)
   }
 
   val userContextComponentType: List[FormComponent] => List[FormComponent] =
@@ -443,6 +491,7 @@ object FormTemplateValidator {
         checkFields(dateCtx1, dateCtx2)
       case PeriodExt(periodFun, _) => validate(periodFun, sections)
       case DataRetrieveCtx(_, _)   => Valid
+      case Size(value, _)          => validate(FormCtx(value), sections)
     }
   }
 

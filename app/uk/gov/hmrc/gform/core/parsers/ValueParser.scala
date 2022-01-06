@@ -238,6 +238,9 @@ object ValueParser {
     | FormComponentId.unanchoredIdValidation ~ ".count" ^^ { (loc, value, _) =>
       Count(FormComponentId(value))
     }
+    | FormComponentId.unanchoredIdValidation ~ "." ~ positiveInteger ~ ".size" ^^ { (loc, value, _, index, _) =>
+      Size(FormComponentId(value), index)
+    }
     | FormComponentId.unanchoredIdValidation ~ "." ~ addressDetail ^^ { (loc, value, _, addressDetail) =>
       AddressLens(FormComponentId(value), addressDetail)
     }

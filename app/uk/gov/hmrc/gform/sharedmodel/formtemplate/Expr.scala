@@ -56,6 +56,7 @@ final case class Count(formComponentId: FormComponentId) extends Expr
 final case class FormCtx(formComponentId: FormComponentId) extends Expr
 final case class AddressLens(formComponentId: FormComponentId, detail: AddressDetail) extends Expr
 final case class Period(dateCtx1: Expr, dateCtx2: Expr) extends Expr
+final case class Size(formComponentId: FormComponentId, index: Int) extends Expr
 sealed trait PeriodFn
 object PeriodFn {
   case object Sum extends PeriodFn
