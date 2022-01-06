@@ -323,7 +323,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     res.right.value should be(TextExpression(FormTemplateCtx(FormTemplateProp.SubmissionReference)))
   }
 
-  it should "parse else expression" in {
+  it should "parse orElse expression" in {
     implicit def liftToFormCtx(s: String): FormCtx = FormCtx(s)
     val table = Table(
       ("expression", "catenable"),
@@ -341,24 +341,24 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       ("a + b * c + d",              Add(Add("a", Multiply("b", "c")), "d")),
       ("a + (b * c) + d",            Add(Add("a", Multiply("b", "c")), "d")),
       ("(a + b) * (c + d)",          Multiply(Add("a", "b"), Add("c", "d"))),
-      ("a + b else c + d",           Add(Add("a", Else("b", "c")), "d")),
-      ("a + (b else c) + d",         Add(Add("a", Else("b", "c")), "d")),
-      ("(a + b) else (c + d)",       Else(Add("a", "b"), Add("c", "d"))),
+      ("a + b orElse c + d",           Add(Add("a", Else("b", "c")), "d")),
+      ("a + (b orElse c) + d",         Add(Add("a", Else("b", "c")), "d")),
+      ("(a + b) orElse (c + d)",       Else(Add("a", "b"), Add("c", "d"))),
 //      ("a - b + c - d",              Add(Subtraction("a", "b"), Subtraction("c", "d"))), //TODO - Not same, but mathematically valid.
       ("a - b - c - d",              Subtraction(Subtraction(Subtraction("a", "b"), "c"), "d")),
       ("a - (b - (c - d))",          Subtraction("a", Subtraction("b", Subtraction("c", "d")))),
       ("a - b * c - d",              Subtraction(Subtraction("a", Multiply("b", "c")), "d")),
-      ("a - b else c - d",           Subtraction(Subtraction("a", Else("b", "c")), "d")),
+      ("a - b orElse c - d",           Subtraction(Subtraction("a", Else("b", "c")), "d")),
       ("a * b + c * d",              Add(Multiply("a", "b"), Multiply("c", "d"))),
       ("a * b - c * d",              Subtraction(Multiply("a", "b"), Multiply("c", "d"))),
       ("a * b * c * d",              Multiply(Multiply(Multiply("a", "b"), "c"), "d")),
       ("a * (b * (c * d))",          Multiply("a", Multiply("b", Multiply("c", "d")))),
-      ("a * b else c * d",           Multiply(Multiply("a", Else("b", "c")), "d")),
-      ("a else b + c else d",        Add(Else("a", "b"), Else("c", "d"))),
-      ("a else b - c else d",        Subtraction(Else("a", "b"), Else("c", "d"))),
-      ("a else b * c else d",        Multiply(Else("a", "b"), Else("c", "d"))),
-      ("a else b else c else d",     Else("a", Else("b", Else("c", "d")))),
-      ("a else (b else (c else d))", Else("a", Else("b", Else("c", "d"))))
+      ("a * b orElse c * d",           Multiply(Multiply("a", Else("b", "c")), "d")),
+      ("a orElse b + c orElse d",        Add(Else("a", "b"), Else("c", "d"))),
+      ("a orElse b - c orElse d",        Subtraction(Else("a", "b"), Else("c", "d"))),
+      ("a orElse b * c orElse d",        Multiply(Else("a", "b"), Else("c", "d"))),
+      ("a orElse b orElse c orElse d",     Else("a", Else("b", Else("c", "d")))),
+      ("a orElse (b orElse (c orElse d))", Else("a", Else("b", Else("c", "d"))))
       // format: on
     )
 
