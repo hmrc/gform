@@ -17,8 +17,11 @@
 package uk.gov.hmrc.gform
 
 import org.scalamock.scalatest.MockFactory
-import org.scalatest.{ AppendedClues, DiagrammedAssertions, EitherValues, FlatSpec, Inside, Matchers, OptionValues, StreamlinedXml, TryValues }
+import org.scalatest.{ AppendedClues, EitherValues, Inside, OptionValues, StreamlinedXml, TryValues }
 import org.scalatest.concurrent.{ Eventually, ScalaFutures }
+import org.scalatest.diagrams.Diagrams
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.matchers.{ BeMatcher, MatchResult, Matcher }
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.ExampleData
@@ -26,7 +29,7 @@ import uk.gov.hmrc.gform.sharedmodel.ExampleData
 import scala.concurrent.ExecutionContext
 
 trait Spec
-    extends FlatSpec with Matchers with DiagrammedAssertions with TryValues with EitherValues with OptionValues
+    extends AnyFlatSpec with Matchers with Diagrams with TryValues with EitherValues with OptionValues
     with AppendedClues with ScalaFutures with StreamlinedXml with JsResultMatcher with MockFactory with Inside
     with Eventually with ExampleData {
 

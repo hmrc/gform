@@ -17,12 +17,13 @@
 package uk.gov.hmrc.gform.core.parsers
 
 import cats.Eval
+import org.scalatest.flatspec.AnyFlatSpecLike
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks
 import parseback.compat.cats._
-import org.scalatest.{ FlatSpecLike, Matchers }
 import parseback.LineStream
 
-class BasicParsersSpec extends FlatSpecLike with Matchers with TableDrivenPropertyChecks {
+class BasicParsersSpec extends AnyFlatSpecLike with Matchers with TableDrivenPropertyChecks {
 
   "periodParser" should "parse period constants" in {
     val table = Table(

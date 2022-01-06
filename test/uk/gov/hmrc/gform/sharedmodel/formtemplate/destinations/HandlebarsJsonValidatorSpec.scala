@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
 
-import org.scalatest.{ FlatSpec, Matchers }
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks
 
-class HandlebarsJsonValidatorSpec extends FlatSpec with TableDrivenPropertyChecks with Matchers {
+class HandlebarsJsonValidatorSpec extends AnyFlatSpec with TableDrivenPropertyChecks with Matchers {
   "null" should "be accepted" in {
     ok("null")
   }

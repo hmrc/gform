@@ -77,7 +77,7 @@ class JsonParseTestPresentationHint extends Spec {
 
   "A list of presentation hints" should "transform to and from Json correctly" in {
 
-    val hints = List(TotalValue, SummariseGroupAsGrid)
+    val hints: List[PresentationHint] = List(TotalValue, SummariseGroupAsGrid)
     Json.parse(Json.toJson(hints).toString()).validate[List[PresentationHint]] shouldBe (JsSuccess(hints))
 
   }

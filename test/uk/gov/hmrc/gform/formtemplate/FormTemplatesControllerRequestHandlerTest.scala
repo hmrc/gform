@@ -16,9 +16,10 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
-import org.scalatest.{ Matchers, WordSpec }
 import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.time.{ Millis, Seconds, Span }
+import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
@@ -27,7 +28,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateRa
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class FormTemplatesControllerRequestHandlerTest extends WordSpec with Matchers with ScalaFutures { // TODO Change to use an Id monad
+class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matchers with ScalaFutures { // TODO Change to use an Id monad
 
   implicit val defaultPatience = PatienceConfig(timeout = Span(6, Seconds), interval = Span(5, Millis))
 

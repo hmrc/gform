@@ -17,10 +17,11 @@
 package uk.gov.hmrc.gform.config
 
 import com.typesafe.config.ConfigFactory
-import org.scalatest.{ FlatSpec, Matchers }
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 
-class AppConfigSpec extends FlatSpec with Matchers {
+class AppConfigSpec extends AnyFlatSpec with Matchers {
 
   "AppConfig" should "be loadable" in {
 

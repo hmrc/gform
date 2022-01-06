@@ -18,7 +18,8 @@ package uk.gov.hmrc.gform.playcomponents
 
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{ Matchers, WordSpecLike }
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 import play.api.libs.json.JsResultException
 import play.api.libs.json.Json.toJson
 import play.api.mvc.RequestHeader
@@ -28,7 +29,7 @@ import play.api.mvc.Results.BadRequest
 import uk.gov.hmrc.gform.controllers.ErrResponse
 import uk.gov.hmrc.gform.core.UniqueIdGenerator
 
-class ErrorHandlerSpec extends WordSpecLike with MockFactory with Matchers with ScalaFutures {
+class ErrorHandlerSpec extends AnyWordSpecLike with MockFactory with Matchers with ScalaFutures {
 
   trait Fixture {
     val mockEnv = mock[Environment]

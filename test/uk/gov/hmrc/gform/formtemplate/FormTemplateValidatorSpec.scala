@@ -18,8 +18,9 @@ package uk.gov.hmrc.gform.formtemplate
 
 import cats.Eval
 import cats.data.NonEmptyList
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks
-import org.scalatest.{ Matchers, WordSpecLike }
+import org.scalatest.wordspec.AnyWordSpecLike
 import parseback.LineStream
 import uk.gov.hmrc.gform.Helpers.{ toLocalisedString, toSmartString }
 import uk.gov.hmrc.gform.core.parsers.ValueParser
@@ -30,7 +31,7 @@ import parseback.compat.cats._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 
 class FormTemplateValidatorSpec
-    extends WordSpecLike with Matchers with FormTemplateSupport with TableDrivenPropertyChecks {
+    extends AnyWordSpecLike with Matchers with FormTemplateSupport with TableDrivenPropertyChecks {
 
   "validate - for DateCtx" when {
     "expression refers to existing Form field" should {

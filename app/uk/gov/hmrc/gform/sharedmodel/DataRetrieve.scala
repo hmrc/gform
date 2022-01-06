@@ -17,8 +17,7 @@
 package uk.gov.hmrc.gform.sharedmodel
 
 import julienrf.json.derived
-import play.api.libs.json.{ Format, Reads, _ }
-import play.api.libs.json.Format._
+import play.api.libs.json.{ Format, JsDefined, JsError, JsObject, JsResult, JsSuccess, JsUndefined, JsValue, OFormat, Reads }
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.{ BasicParsers, ValueParser }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
@@ -189,17 +188,14 @@ case object DataRetrieveMissingInput extends DataRetrieveResult
 
 object DataRetrieveResult {
   implicit val dataRetrieveSuccessDataFormat: Format[Map[DataRetrieveAttribute, String]] =
-    invariantFunctorFormat.inmap[Map[String, String], Map[DataRetrieveAttribute, String]](
-      implicitly[Format[Map[String, String]]],
-      map =>
-        map.map { case (key, value) =>
-          (DataRetrieveAttribute.fromName(key), value)
+    implicitly[Format[Map[String, String]]]
+      .bimap[Map[DataRetrieveAttribute, String]](
+        _.map { case (key, value) =>
+          DataRetrieveAttribute.fromName(key) -> value
         },
-      map =>
-        map.map { case (key, value) =>
-          (key.name, value)
+        _.map { case (key, value) =>
+          key.name -> value
         }
-    )
-
+      )
   implicit val format: Format[DataRetrieveResult] = derived.oformat()
 }

@@ -16,12 +16,12 @@
 
 package uk.gov.hmrc.gform.sharedmodel
 
-import org.scalatest.{ FlatSpec, Matchers }
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
+import scala.util.Random
 import uk.gov.hmrc.gform.typeclasses.Rnd
 
-import scala.util.Random
-
-class AccessCodeSpec extends FlatSpec with Matchers {
+class AccessCodeSpec extends AnyFlatSpec with Matchers {
 
   "AccessCode" should "generate access code" in {
     implicit object FixedRandomInt extends Rnd[Int] {
