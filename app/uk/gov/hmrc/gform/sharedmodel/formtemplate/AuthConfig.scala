@@ -325,7 +325,7 @@ object EnrolmentAction {
 
 object LegacyFcEnrolmentVerifier {
   implicit val format: Format[LegacyFcEnrolmentVerifier] =
-    ValueClassFormat.oformat("legacyFcEnrolmentVerifier", LegacyFcEnrolmentVerifier.apply, _.value)
+    ValueClassFormat.oformat("value", LegacyFcEnrolmentVerifier.apply, _.value)
 
 }
 case class RegimeId(value: String) extends AnyVal
