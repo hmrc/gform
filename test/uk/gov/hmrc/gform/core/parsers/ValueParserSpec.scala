@@ -335,7 +335,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       ("a + (b + c + d)",            Add("a", Add(Add("b", "c"), "d"))),
       ("a + (b + (c + d))",          Add("a", Add("b", Add("c", "d")))),
       ("(a + b) + (c + d)",          Add(Add("a", "b"), Add("c", "d"))),
-      //("a + b - c + d",              Add(Add("a", Subtraction("b", "c")), "d")), //TODO - Not same, but mathematically valid.
+      ("a + b - c + d",              Add(Add("a", Subtraction("b", "c")), "d")),
       ("a + (b - c) + d",            Add(Add("a", Subtraction("b", "c")), "d")),
       ("(a + b) - (c + d)",          Subtraction(Add("a", "b"), Add("c", "d"))),
       ("a + b * c + d",              Add(Add("a", Multiply("b", "c")), "d")),
@@ -344,7 +344,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       ("a + b orElse c + d",           Add(Add("a", Else("b", "c")), "d")),
       ("a + (b orElse c) + d",         Add(Add("a", Else("b", "c")), "d")),
       ("(a + b) orElse (c + d)",       Else(Add("a", "b"), Add("c", "d"))),
-//      ("a - b + c - d",              Add(Subtraction("a", "b"), Subtraction("c", "d"))), //TODO - Not same, but mathematically valid.
+      ("a - b + c - d",              Add(Subtraction("a", "b"), Subtraction("c", "d"))),
       ("a - b - c - d",              Subtraction(Subtraction(Subtraction("a", "b"), "c"), "d")),
       ("a - (b - (c - d))",          Subtraction("a", Subtraction("b", Subtraction("c", "d")))),
       ("a - b * c - d",              Subtraction(Subtraction("a", Multiply("b", "c")), "d")),
