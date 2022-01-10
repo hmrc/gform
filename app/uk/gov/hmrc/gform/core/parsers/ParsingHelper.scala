@@ -29,9 +29,9 @@ trait ParsingHelper extends RegexParsers {
     parseAll(parser, expression) match {
       case Success(result, _) => Right(result)
       case Failure(msg, _) =>
-        Left(UnexpectedState(msg))
+        Left(UnexpectedState(s"Unable to parse expression $expression.\nErrors:\n$msg"))
       case Error(msg, _) =>
-        Left(UnexpectedState(msg))
+        Left(UnexpectedState(s"Unable to parse expression $expression.\nErrors:\n$msg"))
     }
 
 }
@@ -43,9 +43,9 @@ trait PackratParsingHelper extends RegexParsers with PackratParsers {
     parseAll(parser, input) match {
       case Success(result, _) => Right(result)
       case Failure(msg, _) =>
-        Left(UnexpectedState(msg))
+        Left(UnexpectedState(s"Unable to parse expression $expression.\nErrors:\n$msg"))
       case Error(msg, _) =>
-        Left(UnexpectedState(msg))
+        Left(UnexpectedState(s"Unable to parse expression $expression.\nErrors:\n$msg"))
     }
   }
 

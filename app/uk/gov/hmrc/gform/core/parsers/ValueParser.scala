@@ -121,7 +121,7 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     dateExprTODAYOffset | formCtxFieldDateWithOffset | dateExprExactQuoted | formCtxFieldDate
 
   lazy val dateExprWithoutFormCtxFieldDate: Parser[DateExpr] =
-    dateExprExactQuoted | dateExprTODAYOffset | formCtxFieldDateWithOffset
+    dateExprTODAYOffset | formCtxFieldDateWithOffset | dateExprExactQuoted
 
   lazy val dataSourceParse: Parser[DataSource] = (
     "service" ~ "." ~ "seiss" ^^ { _ =>
@@ -180,8 +180,9 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | "form" ~ "." ~ "lang" ^^ { _ =>
       LangCtx
     }
-    | "form" ~ "." ~ FormComponentId.unanchoredIdValidation ^^ { case _ ~ _ ~ fieldName =>
-      FormCtx(FormComponentId(fieldName))
+    | dateExprWithoutFormCtxFieldDate.map(DateCtx.apply) | "form" ~ "." ~ FormComponentId.unanchoredIdValidation ^^ {
+      case _ ~ _ ~ fieldName =>
+        FormCtx(FormComponentId(fieldName))
     }
     | "param" ~ "." ~ alphabeticOnly ^^ { case _ ~ _ ~ param =>
       ParamCtx(QueryParam(param))
@@ -198,10 +199,7 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | "dataRetrieve" ~ "." ~ DataRetrieveId.unanchoredIdValidation ~ "." ~ DataRetrieveAttribute.unanchoredIdValidation ^^ {
       case _ ~ _ ~ dataRetrieveId ~ _ ~ dataRetrieveAttribute =>
         DataRetrieveCtx(DataRetrieveId(dataRetrieveId), DataRetrieveAttribute.fromName(dataRetrieveAttribute))
-    }
-    | dateExprWithoutFormCtxFieldDate.map(
-      DateCtx.apply
-    ) // to parse date form fields with offset or date constants i.e TODAY, 01012020 etc (with or without offset)
+    } // to parse date form fields with offset or date constants i.e TODAY, 01012020 etc (with or without offset)
     | periodValueParser ^^ { period =>
       PeriodValue(period)
     }
