@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.gform.core.parsers
 
-import cats.Eval
 import org.scalatest.flatspec.AnyFlatSpecLike
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks
