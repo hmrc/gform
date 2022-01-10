@@ -77,7 +77,7 @@ class FormatParserSpec extends Spec {
     )
   }
 
-  "after previous-05-06 0" should "be parsed successfully" in { //ignored until handled in gform-frontend
+  "after previous-05-06 0" should "be parsed successfully" ignore { //ignored until handled in gform-frontend
     val res = validate("after previous-05-06 0")
     res.right.value should be(
       DateFormat(
@@ -88,27 +88,25 @@ class FormatParserSpec extends Spec {
     )
   }
 
-  "before anyFieldId anotherWord 9" should "throw exception" ignore {
+  "before anyFieldId anotherWord 9" should "throw exception" in {
     val res = validate("before anyFieldId anotherWord 9")
 
     res.left.value should be(
       UnexpectedState(
         """Unable to parse expression before anyFieldId anotherWord 9.
           |Errors:
-          |before anyFieldId anotherWord 9:1: unexpected characters; expected '${' or 'previous' or 'next' or '(19|20)\d\d' or 'today' or 'YYYY'
-          |before anyFieldId anotherWord 9       ^""".stripMargin
+          |'${' expected but 'a' found""".stripMargin
       )
     )
   }
 
-  "after 2016-6-9 9" should "throw exception" ignore {
+  "after 2016-6-9 9" should "throw exception" in {
     val res = validate("after 2016-6-9 9")
 
     res.left.value should be(
       UnexpectedState("""|Unable to parse expression after 2016-6-9 9.
                          |Errors:
-                         |after 2016-6-9 9:1: unexpected characters; expected 'MM' or '0[1-9]|1[012]' or '\s+'
-                         |after 2016-6-9 9           ^""".stripMargin)
+                         |'MM' expected but '6' found""".stripMargin)
     )
   }
 

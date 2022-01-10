@@ -139,7 +139,6 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
   )
 
   lazy val expr: PackratParser[Expr] = quotedConstant | "${" ~> _expr1 <~ "}"
-  //lazy val expr: PackratParser[Expr] = "${" ~> parserExpression <~ "}"
 
   lazy val internalLinkParser: Parser[InternalLink] = "printAcknowledgementPdf" ^^ { _ =>
     InternalLink.printAcknowledgementPdf

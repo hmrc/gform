@@ -51,13 +51,12 @@ class SelectionCriteriaParserSpec extends Spec {
     res.right.value should be(SelectionCriteriaSimpleValue(List("UK")))
   }
 
-  "FormCtx Expr and csv column name in invalid format" should "throw exception" ignore {
+  "FormCtx Expr and csv column name in invalid format" should "throw exception" in {
     val res = validate("${travelMethod}.CountryCode")
 
     res.left.value should be(UnexpectedState("""Unable to parse expression ${travelMethod}.CountryCode.
                                                |Errors:
-                                               |${travelMethod}.CountryCode:1: unexpected trailing characters
-                                               |${travelMethod}.CountryCode               ^""".stripMargin))
+                                               |end of input expected""".stripMargin))
   }
 
 }
