@@ -137,7 +137,7 @@ class HandlebarsJsonValidatorSpec extends AnyFlatSpec with TableDrivenPropertyCh
       ("json", "expectedMessage"),
       ("""{ "abc": "def" ] }""", "'}' expected but ']' found"),
       ("""[ "abc", "def" } ]""", "']' expected but '}' found"),
-      (""" "{{foo "}} """, "Line 1, Column 10: end of input expected"),
+      (""" "{{foo "}} """, "Line 1, Column 13: '\"' expected but end of source found"),
       ("""{{#each foo}}"abc"{{/wrong}}""", "Expected {{/each}}. Got {{/wrong}}.")
     )
 

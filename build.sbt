@@ -70,13 +70,13 @@ lazy val microservice = (project in file("."))
       "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
     ),
     scalacOptions ++= Seq(
-    //  "-Xfatal-warnings",
+      "-Xfatal-warnings",
       "-Xlint:-missing-interpolator,_",
       "-Yno-adapted-args",
       "-Ywarn-numeric-widen",
       "-Ywarn-value-discard",
-//      "-Ywarn-dead-code",
-//      "-deprecation",
+      "-Ywarn-dead-code",
+      "-deprecation",
       "-feature",
       "-unchecked",
       "-language:higherKinds",

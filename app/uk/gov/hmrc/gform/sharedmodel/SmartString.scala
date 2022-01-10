@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.sharedmodel
 import cats.instances.string._
 import cats.syntax.eq._
 import play.api.libs.json.{ Format, JsError, JsObject, JsResult, JsString, JsSuccess, JsValue, Reads }
-import uk.gov.hmrc.gform.core.parsers.{ BasicParsers, ValueParser }
+import uk.gov.hmrc.gform.core.parsers.ValueParser
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Expr, ExprWithPath, LeafExpr, OFormatWithTemplateReadFallback, TemplatePath }
 
 import scala.annotation.tailrec

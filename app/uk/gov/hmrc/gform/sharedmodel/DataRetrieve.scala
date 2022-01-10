@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.sharedmodel
 import julienrf.json.derived
 import play.api.libs.json.{ Format, JsDefined, JsError, JsObject, JsResult, JsSuccess, JsUndefined, JsValue, OFormat, Reads }
 import uk.gov.hmrc.gform.core.Opt
-import uk.gov.hmrc.gform.core.parsers.{ BasicParsers, ValueParser }
+import uk.gov.hmrc.gform.core.parsers.ValueParser
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Expr, JsonUtils, OFormatWithTemplateReadFallback }
 

@@ -19,7 +19,6 @@ package uk.gov.hmrc.gform.core.parsers
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 
-import scala.util.Try
 import scala.util.parsing.combinator.{ PackratParsers, RegexParsers }
 import scala.util.parsing.input.CharSequenceReader
 
