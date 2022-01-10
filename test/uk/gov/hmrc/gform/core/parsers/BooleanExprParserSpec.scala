@@ -215,19 +215,16 @@ class BooleanExprParserSpec extends AnyFlatSpec with Matchers with EitherValues 
   def spacesBeforeCaret(message: String): Int =
     "[ ]+(?=\\^)".r.unanchored.findAllIn(message).toList.last.length
 
-  it should "fail to parse anything but an equals operator" ignore {
+  it should "fail to parse anything but an equals operator" in {
     val res = BooleanExprParser.validate("${abc|=form.amountA}")
-
     res should be('left)
-
-    res.left.value match {
-      case UnexpectedState(msg) => spacesBeforeCaret(msg) shouldBe "${abc|".length
-      case _                    => fail("${expected an UnexpectedState}")
-    }
+    res.left.value shouldBe UnexpectedState("""Unable to parse expression ${abc|=form.amountA}.
+                                              |Errors:
+                                              |'}' expected but '|' found""".stripMargin)
 
   }
 
-  it should "fail to parse eeitt.businessUserx = XYZ}" ignore {
+  it should "fail to parse eeitt.businessUserx = XYZ}" in {
     val res = BooleanExprParser.validate("${eeitt.businessUserx=XYZ}")
 
     res should be('left)
@@ -236,9 +233,7 @@ class BooleanExprParserSpec extends AnyFlatSpec with Matchers with EitherValues 
       case UnexpectedState(msg) =>
         msg shouldBe """|Unable to parse expression ${eeitt.businessUserx=XYZ}.
                         |Errors:
-                        |${eeitt.businessUserx=XYZ}:1: unexpected characters; expected 'line2' or '\s+' or 'country' or 'postcode' or 'count' or 'line3' or 'sum' or '\d+' or 'line1' or 'line4'
-                        |${eeitt.businessUserx=XYZ}        ^
-                        |""".stripMargin.trim
+                        |'country' expected but 'b' found""".stripMargin.trim
       case _ => fail("expected an UnexpectedState")
     }
   }
@@ -324,15 +319,14 @@ class BooleanExprParserSpec extends AnyFlatSpec with Matchers with EitherValues 
     )
   }
 
-  it should "parse before - return error when offset is invalid" ignore {
+  it should "parse before - return error when offset is invalid" in {
     val res = BooleanExprParser.validate("${startDate *1d after endDate}")
 
     res shouldBe Left(
       UnexpectedState(
         """Unable to parse expression ${startDate *1d after endDate}.
           |Errors:
-          |${startDate *1d after endDate}:1: unexpected characters; expected '+' or '=' or '\s+' or '<=' or '*' or '>=' or '!=' or '-' or 'else' or '>' or '<'
-          |${startDate *1d after endDate}              ^""".stripMargin
+          |'>' expected but 'd' found""".stripMargin
       )
     )
   }
