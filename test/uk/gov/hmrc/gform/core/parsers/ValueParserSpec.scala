@@ -754,29 +754,27 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
             )
           )
         )
+      ),
+      (
+        "${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.0}",
+        Left(
+          UnexpectedState(
+            """Unable to parse expression ${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.0}.
+              |Errors:
+              |string matching regex '[1-9][0-9]*' expected but '0' found""".stripMargin
+          )
+        )
+      ),
+      (
+        "${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.unknown}",
+        Left(
+          UnexpectedState(
+            """Unable to parse expression ${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.unknown}.
+              |Errors:
+              |string matching regex '[1-9][0-9]*' expected but 'u' found""".stripMargin
+          )
+        )
       )
-//      (
-//        "${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.0}",
-//        Left(
-//          UnexpectedState(
-//            """Unable to parse expression ${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.0}.
-//              |Errors:
-//              |${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.0}:1: unexpected characters; expected '[1-9][0-9]*' or 'count' or '\s+'
-//              |${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.0}                                           ^""".stripMargin
-//          )
-//        )
-//      ),
-//      (
-//        "${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.unknown}",
-//        Left(
-//          UnexpectedState(
-//            """Unable to parse expression ${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.unknown}.
-//              |Errors:
-//              |${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.unknown}:1: unexpected characters; expected '[1-9][0-9]*' or 'count' or '\s+'
-//              |${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.unknown}                                           ^""".stripMargin
-//          )
-//        )
-//      )
     )
     forAll(table) { (expr, expected) =>
       ValueParser.validate(expr) shouldBe expected
