@@ -49,7 +49,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
       formComponentMaker.optMaybeFormatExpr(RoundingMode.defaultRoundingMode)(None)(EmailVerification.noVerification)
     result shouldBe Left(UnexpectedState("""|Unable to parse expression some-invalid-format.
                                             |Errors:
-                                            |'nonUkCountryCode' expected but 's' found""".stripMargin))
+                                            |end of input expected""".stripMargin))
   }
 
   "textOpt" should "parse text component" in {

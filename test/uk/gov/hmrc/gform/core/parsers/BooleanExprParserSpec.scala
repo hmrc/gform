@@ -231,9 +231,9 @@ class BooleanExprParserSpec extends AnyFlatSpec with Matchers with EitherValues 
 
     res.left.value match {
       case UnexpectedState(msg) =>
-        msg shouldBe """|Unable to parse expression ${eeitt.businessUserx=XYZ}.
-                        |Errors:
-                        |'country' expected but 'b' found""".stripMargin.trim
+        msg shouldBe ("""Unable to parse expression ${eeitt.businessUserx=XYZ}.
+                         |Errors:
+                         |'}' expected but '.' found""".stripMargin)
       case _ => fail("expected an UnexpectedState")
     }
   }
@@ -326,7 +326,7 @@ class BooleanExprParserSpec extends AnyFlatSpec with Matchers with EitherValues 
       UnexpectedState(
         """Unable to parse expression ${startDate *1d after endDate}.
           |Errors:
-          |'>' expected but 'd' found""".stripMargin
+          |'}' expected but '*' found""".stripMargin
       )
     )
   }

@@ -267,7 +267,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     res.left.value should be(
       UnexpectedState("""Unable to parse expression 2015-1-12.
                         |Errors:
-                        |string matching regex '0[1-9]|1[012]' expected but '1' found""".stripMargin)
+                        |end of input expected""".stripMargin)
     )
   }
 
@@ -275,14 +275,14 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     val res = ValueParser.validate("201568-01-12")
     res.left.value should be(UnexpectedState("""Unable to parse expression 201568-01-12.
                                                |Errors:
-                                               |',' expected but '-' found""".stripMargin))
+                                               |end of input expected""".stripMargin))
   }
 
   it should "throw exception on Date format" in {
     val res = ValueParser.validate("65841-351")
     res.left.value should be(UnexpectedState("""Unable to parse expression 65841-351.
                                                |Errors:
-                                               |',' expected but '-' found""".stripMargin))
+                                               |end of input expected""".stripMargin))
   }
 
   it should "parse next Date setting next year" in {
@@ -761,7 +761,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
           UnexpectedState(
             """Unable to parse expression ${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.0}.
               |Errors:
-              |string matching regex '[1-9][0-9]*' expected but '0' found""".stripMargin
+              |'}' expected but '.' found""".stripMargin
           )
         )
       ),
@@ -771,7 +771,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
           UnexpectedState(
             """Unable to parse expression ${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.unknown}.
               |Errors:
-              |string matching regex '[1-9][0-9]*' expected but 'u' found""".stripMargin
+              |'}' expected but '.' found""".stripMargin
           )
         )
       )
