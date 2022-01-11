@@ -95,7 +95,7 @@ class FormatParserSpec extends Spec {
       UnexpectedState(
         """Unable to parse expression before anyFieldId anotherWord 9.
           |Errors:
-          |'${' expected but 'a' found""".stripMargin
+          |end of input expected""".stripMargin
       )
     )
   }
@@ -106,7 +106,7 @@ class FormatParserSpec extends Spec {
     res.left.value should be(
       UnexpectedState("""|Unable to parse expression after 2016-6-9 9.
                          |Errors:
-                         |'MM' expected but '6' found""".stripMargin)
+                         |end of input expected""".stripMargin)
     )
   }
 

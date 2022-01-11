@@ -49,7 +49,6 @@ lazy val microservice = (project in file("."))
       .toSet
       .toSeq, // get rid of duplicates
     libraryDependencies ++= appDependencies,
-    dependencyOverrides += "org.scala-lang.modules" %% "scala-parser-combinators" % "2.1.0",
     routesImport ++= Seq(
       "uk.gov.hmrc.crypto.Crypted",
       "uk.gov.hmrc.gform.sharedmodel.AffinityGroup",

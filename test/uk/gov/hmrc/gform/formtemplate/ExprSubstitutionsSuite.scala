@@ -83,7 +83,7 @@ class ExprSubstitutionsSuite extends FunSuite {
       UnexpectedState(
         """|Unable to parse expression ${if myChoice contains 1 then 'happy'}.
            |Errors:
-           |'else' expected but '}' found""".stripMargin
+           |'}' expected but 'm' found""".stripMargin
       )
     )
 
