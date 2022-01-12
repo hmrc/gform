@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.submission
 
 import cats.implicits._
+import org.apache.commons.text.StringEscapeUtils
 import play.api.libs.json.Json
 import play.api.mvc.{ Action, AnyContent, ControllerComponents, Request }
 import uk.gov.hmrc.gform.controllers.BaseController
@@ -82,5 +83,8 @@ class SubmissionController(controllerComponents: ControllerComponents, submissio
   }
 
   def customerIdHeader(implicit request: Request[_]): String =
-    request.headers.get("customerId").getOrElse("")
+    request.headers
+      .get("customerId")
+      .map(StringEscapeUtils.unescapeHtml4)
+      .getOrElse("")
 }

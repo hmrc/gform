@@ -21,9 +21,10 @@ import cats.instances.option._
 import cats.syntax.eq._
 import com.fasterxml.jackson.databind.JsonNode
 import com.typesafe.config.{ ConfigFactory, ConfigRenderOptions }
-import java.time.LocalDateTime
 
+import java.time.LocalDateTime
 import akka.util.ByteString
+import org.apache.commons.text.StringEscapeUtils
 import org.slf4j.LoggerFactory
 import play.api.http.HttpEntity
 import play.api.libs.json._
@@ -89,8 +90,6 @@ class TestOnlyController(
     Action.async(parse.json[SubmissionData]) { implicit request =>
       val submissionData: SubmissionData = request.body
 
-      val customerId = request.headers.get("customerId").getOrElse("")
-
       for {
         formTemplate <- formTemplateAlgebra.get(formTemplateId)
         form         <- formAlgebra.get(formId)
@@ -100,7 +99,7 @@ class TestOnlyController(
                        SubmissionRef(form.envelopeId),
                        form.envelopeId,
                        0,
-                       DmsMetaData(formTemplate._id, customerId)
+                       DmsMetaData(formTemplate._id, customerIdHeader)
                      )
         model <- destinationsModelProcessorAlgebra
                    .create(
@@ -127,8 +126,6 @@ class TestOnlyController(
       val submissionData: SubmissionData = request.body
       logInfo("TestOnlyController.renderHandlebarPayload Got submission data")
 
-      val customerId = request.headers.get("customerId").getOrElse("")
-
       logInfo("TestOnlyController.renderHandlebarPayload Getting bits and pieces")
       for {
         formTemplate <- formTemplateAlgebra.get(formTemplateId)
@@ -141,7 +138,7 @@ class TestOnlyController(
                        SubmissionRef(form.envelopeId),
                        form.envelopeId,
                        0,
-                       DmsMetaData(formTemplate._id, customerId)
+                       DmsMetaData(formTemplate._id, customerIdHeader)
                      )
         _ = logInfo("TestOnlyController.renderHandlebarPayload Got submission")
         model <- destinationsModelProcessorAlgebra
@@ -287,4 +284,10 @@ class TestOnlyController(
 
   private def logInfo(message: String): Unit =
     logger.info(message)
+
+  private def customerIdHeader(implicit request: Request[_]): String =
+    request.headers
+      .get("customerId")
+      .map(StringEscapeUtils.unescapeHtml4)
+      .getOrElse("")
 }
