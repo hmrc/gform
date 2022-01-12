@@ -287,7 +287,7 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
   lazy val quotedConstant: Parser[Expr] = anyConstant | "''".r ^^^ Constant("")
 
   lazy val anyConstant: Parser[Constant] = """'[^']+'""".r ^^ { str =>
-    Constant(str.replaceAll("'", ""))
+    Constant(str.substring(1, str.length - 1))
   }
 
   lazy val anyDigitConst: Parser[Expr] = (
