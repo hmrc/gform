@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.submission
 
 import cats.implicits._
-import org.apache.commons.codec.binary.Base64
+import org.apache.commons.text.StringEscapeUtils
 import play.api.libs.json.Json
 import play.api.mvc.{ Action, AnyContent, ControllerComponents, Request }
 import uk.gov.hmrc.gform.controllers.BaseController
@@ -26,7 +26,6 @@ import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId, FormIdData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.{ SubmissionData, UserId }
 
-import java.nio.charset.StandardCharsets
 import scala.concurrent.ExecutionContext
 
 class SubmissionController(controllerComponents: ControllerComponents, submissionService: SubmissionService)(implicit
@@ -86,6 +85,6 @@ class SubmissionController(controllerComponents: ControllerComponents, submissio
   def customerIdHeader(implicit request: Request[_]): String =
     request.headers
       .get("customerId")
-      .map(customerId => new String(Base64.decodeBase64(customerId.getBytes(StandardCharsets.UTF_8))))
+      .map(StringEscapeUtils.unescapeHtml4)
       .getOrElse("")
 }

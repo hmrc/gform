@@ -24,7 +24,7 @@ import com.typesafe.config.{ ConfigFactory, ConfigRenderOptions }
 
 import java.time.LocalDateTime
 import akka.util.ByteString
-import org.apache.commons.codec.binary.Base64
+import org.apache.commons.text.StringEscapeUtils
 import org.slf4j.LoggerFactory
 import play.api.http.HttpEntity
 import play.api.libs.json._
@@ -46,8 +46,6 @@ import uk.gov.hmrc.gform.submission.destinations.DestinationsProcessorModelAlgeb
 import uk.gov.hmrc.gform.submission.{ DmsMetaData, Submission, SubmissionId }
 import uk.gov.hmrc.gform.submission.handlebars.{ FocussedHandlebarsModelTree, HandlebarsModelTree, RealHandlebarsTemplateProcessor }
 import uk.gov.hmrc.mongo.MongoComponent
-
-import java.nio.charset.StandardCharsets
 
 class TestOnlyController(
   controllerComponents: ControllerComponents,
@@ -290,6 +288,6 @@ class TestOnlyController(
   private def customerIdHeader(implicit request: Request[_]): String =
     request.headers
       .get("customerId")
-      .map(customerId => new String(Base64.decodeBase64(customerId.getBytes(StandardCharsets.UTF_8))))
+      .map(StringEscapeUtils.unescapeHtml4)
       .getOrElse("")
 }
