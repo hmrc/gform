@@ -179,6 +179,9 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | "form" ~ "." ~ "lang" ^^ { _ =>
       LangCtx
     }
+    | FormComponentId.unanchoredIdValidation ~ "." ~ addressDetail ^^ { case value ~ _ ~ addressDetail =>
+      AddressLens(FormComponentId(value), addressDetail)
+    }
     | dateExprWithoutFormCtxFieldDate.map(DateCtx.apply) | "form" ~ "." ~ FormComponentId.unanchoredIdValidation ^^ {
       case _ ~ _ ~ fieldName =>
         FormCtx(FormComponentId(fieldName))
@@ -233,9 +236,6 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | FormComponentId.unanchoredIdValidation ~ "." ~ positiveInteger <~ ".size" ^^ { case value ~ _ ~ index =>
       Size(FormComponentId(value), index)
     }
-    | FormComponentId.unanchoredIdValidation ~ "." ~ addressDetail ^^ { case value ~ _ ~ addressDetail =>
-      AddressLens(FormComponentId(value), addressDetail)
-    }
     | anyDigitConst |
     FormComponentId.unanchoredIdValidation ^^ { fn =>
       FormCtx(FormComponentId(fn))
@@ -284,10 +284,10 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     |
     quotedConstant)
 
-  lazy val quotedConstant: Parser[Expr] = "'" ~> anyConstant <~ "'" | "''".r ^^^ Constant("")
+  lazy val quotedConstant: Parser[Expr] = anyConstant | "''".r ^^^ Constant("")
 
-  lazy val anyConstant: Parser[Constant] = """[^']+""".r ^^ { str =>
-    Constant(str)
+  lazy val anyConstant: Parser[Constant] = """'[^']+'""".r ^^ { str =>
+    Constant(str.replaceAll("'", ""))
   }
 
   lazy val anyDigitConst: Parser[Expr] = (

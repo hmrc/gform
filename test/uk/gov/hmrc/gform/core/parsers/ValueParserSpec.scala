@@ -44,6 +44,11 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     res.right.value should be(TextExpression(Constant("1")))
   }
 
+  it should "parse constant" in {
+    val res = ValueParser.validate("${' '}")
+    res.right.value should be(TextExpression(Constant(" ")))
+  }
+
   it should "parse integer with decimal point" in {
     val res = ValueParser.validate("${1.}")
     res.right.value should be(TextExpression(Constant("1.")))
@@ -59,7 +64,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
   }
   it should "parse an anything except singe quote" in {
     val res = ValueParser.validate("${' --+===> '}")
-    res.right.value should be(TextExpression(Constant("--+===> ")))
+    res.right.value should be(TextExpression(Constant(" --+===> ")))
   }
   it should "parse double digit integer" in {
     val res = ValueParser.validate("${1234}")
@@ -128,7 +133,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
 
   it should "parse anything except singe quote" in {
     val res = ValueParser.validate("${' --+===>., '}")
-    res.right.value should be(TextExpression(Constant("--+===>., ")))
+    res.right.value should be(TextExpression(Constant(" --+===>., ")))
   }
 
   it should "fail to parse ${user.enrolledIdentifier" in {

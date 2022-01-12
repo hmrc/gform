@@ -102,13 +102,13 @@ trait FormatParser extends ValueParser {
 
   lazy val basicFormat: Option[List[SelectionCriteria]] => Parser[TextFormat] =
     selectionCriteria => {
-      "shortText" ^^^ TextFormat(ShortText.default) |
-        "shortText(" ~> positiveInteger ~ "," ~ positiveInteger <~ ")" ^^ { case min ~ _ ~ max =>
-          TextFormat(ShortText(min, max))
-        } | "text(" ~> positiveInteger ~ "," ~ positiveInteger <~ ")" ^^ { case min ~ _ ~ max =>
+      "shortText(" ~> positiveInteger ~ "," ~ positiveInteger <~ ")" ^^ { case min ~ _ ~ max =>
+        TextFormat(ShortText(min, max))
+      } | "shortText" ^^^ TextFormat(ShortText.default) |
+        "text(" ~> positiveInteger ~ "," ~ positiveInteger <~ ")" ^^ { case min ~ _ ~ max =>
           TextFormat(TextWithRestrictions(min, max))
         } | "text" ^^^ TextFormat(TextConstraint.default) |
-        "lookup(" ~> register <~ ")" ^^ { register =>
+        "lookup(" ~> register ~ ")" ^^ { case register ~ _ =>
           TextFormat(Lookup(register, selectionCriteria))
         } | "submissionRef" ^^^ TextFormat(SubmissionRefFormat) |
         "referenceNumber(" ~> positiveInteger <~ ")" ^^ { min =>
@@ -122,20 +122,20 @@ trait FormatParser extends ValueParser {
     "cashType" ^^^ Register.CashType |
       "country" ^^^ Register.Country |
       "currency" ^^^ Register.Currency |
-      "intent" ^^^ Register.Intent |
       "intercept" ^^^ Register.Intercept |
-      "origin" ^^^ Register.Origin |
       "port" ^^^ Register.Port |
       "transportMode" ^^^ Register.TransportMode |
       "originWho" ^^^ Register.OriginWho |
       "originMainPart" ^^^ Register.OriginMainPart |
       "originSellingSomething" ^^^ Register.OriginSellingSomething |
       "originSavingsEarnings" ^^^ Register.OriginSavingsEarnings |
+      "origin" ^^^ Register.Origin |
       "intentBuyingWhat" ^^^ Register.IntentBuyingWhat |
       "intentBusiness" ^^^ Register.IntentBusiness |
       "intentLivingCostsAndFees" ^^^ Register.IntentLivingCostsAndFees |
       "intentOther" ^^^ Register.IntentOther |
-      "intentBigPurchase" ^^^ Register.IntentBigPurchase
+      "intentBigPurchase" ^^^ Register.IntentBigPurchase |
+      "intent" ^^^ Register.Intent
   }
 
   lazy val contactFormat: EmailVerification => Parser[TextFormat] = emailVerification => {

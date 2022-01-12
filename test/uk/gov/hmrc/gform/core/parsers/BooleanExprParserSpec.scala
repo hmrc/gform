@@ -19,8 +19,10 @@ package uk.gov.hmrc.gform.core.parsers
 import org.scalatest.{ EitherValues, OptionValues }
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+
 import scala.language.implicitConversions
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.AddressDetail.Country
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 class BooleanExprParserSpec extends AnyFlatSpec with Matchers with EitherValues with OptionValues {
@@ -349,5 +351,13 @@ class BooleanExprParserSpec extends AnyFlatSpec with Matchers with EitherValues 
     val res = BooleanExprParser.validate("${startDate after endDate}")
 
     res shouldBe Right(DateAfter(DateFormCtxVar(FormCtx("startDate")), DateFormCtxVar(FormCtx("endDate"))))
+  }
+
+  it should "parse expression ${overseasAddress.country != 'United Kingdom'} from template-NETP" in {
+    val res = BooleanExprParser.validate("${overseasAddress.country != 'United Kingdom'}")
+    res.right.value shouldBe Not(
+      Equals(AddressLens(FormComponentId("overseasAddress"), Country), Constant("United Kingdom"))
+    )
+
   }
 }
