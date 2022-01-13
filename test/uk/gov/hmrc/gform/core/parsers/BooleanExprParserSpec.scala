@@ -22,6 +22,7 @@ import org.scalatest.matchers.should.Matchers
 
 import scala.language.implicitConversions
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
+import uk.gov.hmrc.gform.formtemplate.BooleanExprId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.AddressDetail.Country
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
@@ -358,6 +359,11 @@ class BooleanExprParserSpec extends AnyFlatSpec with Matchers with EitherValues 
     res.right.value shouldBe Not(
       Equals(AddressLens(FormComponentId("overseasAddress"), Country), Constant("United Kingdom"))
     )
-
   }
+
+  it should "parse single variable with prefix 'no' as boolean expression" in {
+    val res = BooleanExprParser.validate("${noCompanyName}")
+    res.right.value shouldBe TopLevelRef(BooleanExprId("noCompanyName"))
+  }
+
 }

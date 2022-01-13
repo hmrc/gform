@@ -278,11 +278,9 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     str
   }
 
-  lazy val quotedLocalisedConstant: Parser[Expr] = (quotedConstant ~ "," ~ quotedConstant ^^ { case en ~ _ ~ cy =>
+  lazy val quotedLocalisedConstant: Parser[Expr] = quotedConstant ~ "," ~ quotedConstant ^^ { case en ~ _ ~ cy =>
     IfElse(Equals(LangCtx, Constant("en")), en, cy)
-  }
-    |
-    quotedConstant)
+  } | quotedConstant
 
   lazy val quotedConstant: Parser[Expr] = anyConstant | "''".r ^^^ Constant("")
 
@@ -357,9 +355,9 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
   // ?
 
   private lazy val p0: Parser[BooleanExpr] = "true" ^^^ IsTrue |
-    "yes" ^^^ IsTrue |
-    "false" ^^^ IsFalse |
-    "no" ^^^ IsFalse |
+    "yes " ^^^ IsTrue |
+    "false " ^^^ IsFalse |
+    "no " ^^^ IsFalse |
     "form.phase.is.instructionPDF" ^^ { loc =>
       FormPhase(InstructionPDF)
     } |

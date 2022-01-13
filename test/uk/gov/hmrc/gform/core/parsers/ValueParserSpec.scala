@@ -861,4 +861,24 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       ValueParser.validate("${dataRetrieve.businessBankDetails.dummy}")
     }
   }
+
+  it should "parse quotedLocalisedConstant localized constant" in {
+    val res = ValueParser.parseAll(ValueParser.quotedLocalisedConstant, "'Are you', 'Wyt ti'")
+    res.get shouldBe IfElse(Equals(LangCtx, Constant("en")), Constant("Are you"), Constant("Wyt ti"))
+
+  }
+
+  it should "parse complex if-then-else expression from acceptance tests" in {
+
+    val res = ValueParser.validate("${if noCompanyName then 'Are you', 'Wyt ti' else ('Is ','Os ' + companyName)}")
+
+    res.right.value shouldBe TextExpression(
+      IfElse(
+        TopLevelRef(BooleanExprId("noCompanyName")),
+        IfElse(Equals(LangCtx, Constant("en")), Constant("Are you"), Constant("Wyt ti")),
+        Add(IfElse(Equals(LangCtx, Constant("en")), Constant("Is "), Constant("Os ")), FormCtx("companyName"))
+      )
+    )
+
+  }
 }
