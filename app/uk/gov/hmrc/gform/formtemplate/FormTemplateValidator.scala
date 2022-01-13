@@ -622,6 +622,21 @@ object FormTemplateValidator {
     isNonInformationMessagePresent.combineAll
   }
 
+  def validateSummarySection(formTemplate: FormTemplate): ValidationResult = {
+
+    def checkComponentTypes(fields: List[FormComponent]): List[ValidationResult] =
+      fields.map {
+        case IsInformationMessage(_) => Valid
+        case fc                      => Invalid(s"""Field '${fc.id}' is not Info field. All fields in 'summarySection' must be Info type.""")
+      }
+
+    val isNonInformationMessagePresent: List[ValidationResult] = checkComponentTypes(
+      formTemplate.summarySection.fields.fold(List.empty[FormComponent])(_.toList)
+    )
+
+    isNonInformationMessagePresent.combineAll
+  }
+
   def validateAddToListLimit(formTemplate: FormTemplate): ValidationResult = {
 
     def isInfo(field: FormComponent): ValidationResult =

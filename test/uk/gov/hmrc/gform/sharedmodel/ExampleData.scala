@@ -464,7 +464,8 @@ trait ExampleFormTemplate {
     toSmartString("Title"),
     toSmartString("Header"),
     toSmartString("Footer"),
-    Some(toSmartString("ContinueLabel"))
+    Some(toSmartString("ContinueLabel")),
+    None
   )
 
   def userResearchUrl = UserResearchUrl("https://test.service.gov.uk")

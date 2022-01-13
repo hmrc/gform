@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
+import cats.data.NonEmptyList
 import play.api.libs.json.{ JsValue, Json, OFormat }
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, SmartString }
 
@@ -23,16 +24,18 @@ case class SummarySection(
   title: SmartString,
   header: SmartString,
   footer: SmartString,
-  continueLabel: Option[SmartString]
+  continueLabel: Option[SmartString],
+  fields: Option[NonEmptyList[FormComponent]]
 )
 
-object SummarySection {
+object SummarySection extends JsonUtils {
 
   implicit val leafExprs: LeafExpr[SummarySection] = (path: TemplatePath, t: SummarySection) =>
     LeafExpr(path + "title", t.title) ++
       LeafExpr(path + "header", t.header) ++
       LeafExpr(path + "footer", t.footer) ++
-      LeafExpr(path + "continueLabel", t.continueLabel)
+      LeafExpr(path + "continueLabel", t.continueLabel) ++
+      LeafExpr(path + "fields", t.fields)
 
   def defaultJson(formCategory: FormCategory): JsValue = {
 
