@@ -324,13 +324,15 @@ object Substituter {
     }
 
   implicit def summarySectionSubstituter[A](implicit
-    ev: Substituter[A, Expr]
+    ev: Substituter[A, Expr],
+    ev2: Substituter[A, BooleanExpr]
   ): Substituter[A, SummarySection] = (substitutions, t) =>
     t.copy(
       title = t.title.apply(substitutions),
       header = t.header(substitutions),
       footer = t.footer(substitutions),
-      continueLabel = t.continueLabel(substitutions)
+      continueLabel = t.continueLabel(substitutions),
+      fields = t.fields(substitutions)
     )
 
   implicit def formTemplateSubstituter[A](implicit

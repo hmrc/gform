@@ -117,3 +117,7 @@ object IsAddress {
 object IsOverseasAddress {
   def unapply(fc: FormComponent): Option[OverseasAddress] = fc.`type`.cast[OverseasAddress]
 }
+
+object IsInformationMessage {
+  def unapply(fc: FormComponent): Option[InformationMessage] = fc.`type`.cast[InformationMessage]
+}

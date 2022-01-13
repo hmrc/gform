@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
+import cats.data.NonEmptyList
 import cats.implicits._
 import scala.util.{ Failure, Success, Try }
 import uk.gov.hmrc.gform.core.{ FOpt, fromOptA }
@@ -101,6 +102,9 @@ trait Rewriter {
       case _                   => Nil
     }
 
+    val summarySectionIncludeIfs: List[IncludeIf] =
+      formTemplate.summarySection.fields.fold(List.empty[IncludeIf])(_.toList.flatMap(_.includeIf))
+
     val ifElses: List[IfElse] =
       implicitly[LeafExpr[FormTemplate]]
         .exprs(TemplatePath.root, formTemplate)
@@ -111,7 +115,7 @@ trait Rewriter {
       case Section.RepeatingPage(page, _) => page.includeIf.toList
       case Section.AddToList(_, _, _, _, _, includeIf, _, pages, _, _, _, _, _, _) =>
         includeIf.toList ++ pages.toList.flatMap(_.includeIf.toList)
-    } ++ fieldsIncludeIfs ++ acknowledgementSectionIncludeIfs
+    } ++ fieldsIncludeIfs ++ acknowledgementSectionIncludeIfs ++ summarySectionIncludeIfs
 
     def validate(
       c: String,
@@ -264,8 +268,14 @@ trait Rewriter {
 
       def replaceFields(fields: List[FormComponent]): List[FormComponent] = fields.map(replaceFormComponentNested)
 
+      def replaceFieldsNel(fields: Option[NonEmptyList[FormComponent]]): Option[NonEmptyList[FormComponent]] =
+        fields.map(_.map(replaceFormComponentNested))
+
       def replaceDeclarationSection(declarationSection: DeclarationSection): DeclarationSection =
         declarationSection.copy(fields = replaceFields(declarationSection.fields))
+
+      def replaceSummarySection(summarySection: SummarySection): SummarySection =
+        summarySection.copy(fields = replaceFieldsNel(summarySection.fields))
 
       def replaceAcknowledgementSection(acknowledgementSection: AcknowledgementSection): AcknowledgementSection =
         acknowledgementSection.copy(fields = replaceFields(acknowledgementSection.fields))
@@ -297,6 +307,7 @@ trait Rewriter {
               )
             )
         },
+        summarySection = replaceSummarySection(formTemplate.summarySection),
         destinations = replaceDestinations(formTemplate.destinations)
       )
     }

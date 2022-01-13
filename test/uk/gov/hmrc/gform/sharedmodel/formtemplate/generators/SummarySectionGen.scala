@@ -27,7 +27,8 @@ trait SummarySectionGen {
       header        <- smartStringGen
       footer        <- smartStringGen
       continueLabel <- Gen.option(smartStringGen)
-    } yield SummarySection(title, header, footer, continueLabel)
+      fields        <- Gen.option(PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen()))
+    } yield SummarySection(title, header, footer, continueLabel, fields)
 }
 
 object SummarySectionGen extends SummarySectionGen
