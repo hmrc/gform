@@ -49,8 +49,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
       formComponentMaker.optMaybeFormatExpr(RoundingMode.defaultRoundingMode)(None)(EmailVerification.noVerification)
     result shouldBe Left(UnexpectedState("""|Unable to parse expression some-invalid-format.
                                             |Errors:
-                                            |some-invalid-format:1: unexpected trailing characters
-                                            |some-invalid-format    ^""".stripMargin))
+                                            |end of input expected""".stripMargin))
   }
 
   "textOpt" should "parse text component" in {
@@ -336,8 +335,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
     formComponentMaker.optFieldValue() shouldBe Left(
       UnexpectedState("""|Unable to parse expression invalid.
                          |Errors:
-                         |invalid:1: unexpected characters; expected 'l' or 'm' or 's' or 'xs' or 'xl'
-                         |invalid^""".stripMargin)
+                         |'xs' expected but 'i' found""".stripMargin)
     )
   }
 

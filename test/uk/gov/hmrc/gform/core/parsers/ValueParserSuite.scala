@@ -38,12 +38,23 @@ class ValueParserSuite extends FunSuite {
       IfElse(LessThan("a", "b"), Constant("foo"), Constant("bar"))
     ),
     (
-      "if a < b then foo else bar else baz",
+      "if a < b then foo orElse bar else baz",
       IfElse(LessThan("a", "b"), Else("foo", "bar"), "baz")
     ),
     (
-      "if a < b then 'foo' else 'bar' else 'baz'",
+      "if a < b then 'foo' orElse 'bar' else 'baz'",
       IfElse(LessThan("a", "b"), Else(Constant("foo"), Constant("bar")), Constant("baz"))
+    ),
+    (
+      """|if ownerFc.count=1 then
+         |    if form.lang='en' then 'Director' else 'cy-Director'
+         |else
+         |    if form.lang='en' then 'Directors' else 'cy-Directors'""".stripMargin,
+      IfElse(
+        Equals(Count("ownerFc"), Constant("1")),
+        IfElse(Equals(LangCtx, Constant("en")), Constant("Director"), Constant("cy-Director")),
+        IfElse(Equals(LangCtx, Constant("en")), Constant("Directors"), Constant("cy-Directors"))
+      )
     )
   )
 

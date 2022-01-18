@@ -16,18 +16,15 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
-import cats.Eval
 import cats.data.NonEmptyList
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatest.wordspec.AnyWordSpecLike
-import parseback.LineStream
 import uk.gov.hmrc.gform.Helpers.{ toLocalisedString, toSmartString }
 import uk.gov.hmrc.gform.core.parsers.ValueParser
 import uk.gov.hmrc.gform.core.{ Invalid, Valid }
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString, SmartString }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, Date, DateCtx, DateFormCtxVar, ExprWithPath, FormComponentId, FormCtx, InformationMessage, Instruction, LeafExpr, LinkCtx, Offset, PageId, StandardInfo, TemplatePath }
-import parseback.compat.cats._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 
 class FormTemplateValidatorSpec
@@ -270,7 +267,7 @@ class FormTemplateValidatorSpec
                     StandardInfo,
                     SmartString(
                       LocalisedString(Map(LangADT.En -> "{0}")),
-                      ValueParser.expr(LineStream[Eval](expression)).value.toSeq.flatMap(_.toList).toList
+                      ValueParser.validateWithParser(expression, ValueParser.expr).right.toSeq.toList
                     )
                   ),
                   true

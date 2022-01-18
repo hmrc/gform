@@ -83,8 +83,7 @@ class ExprSubstitutionsSuite extends FunSuite {
       UnexpectedState(
         """|Unable to parse expression ${if myChoice contains 1 then 'happy'}.
            |Errors:
-           |${if myChoice contains 1 then 'happy'}:1: unexpected characters; expected '+' or '\s+' or '*' or ',' or '-' or 'else'
-           |${if myChoice contains 1 then 'happy'}                                     ^""".stripMargin
+           |'}' expected but 'm' found""".stripMargin
       )
     )
 

@@ -16,12 +16,9 @@
 
 package uk.gov.hmrc.gform.core.parsers
 
-import cats.Eval
 import org.scalatest.flatspec.AnyFlatSpecLike
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks
-import parseback.compat.cats._
-import parseback.LineStream
 
 class BasicParsersSpec extends AnyFlatSpecLike with Matchers with TableDrivenPropertyChecks {
 
@@ -45,8 +42,9 @@ class BasicParsersSpec extends AnyFlatSpecLike with Matchers with TableDrivenPro
       ("ABC", None)
     )
     forAll(table) { (input, output) =>
-      val result = BasicParsers.periodValueParser(LineStream[Eval](input)).value.toOption.map(_.toList)
+      val result = BasicParsers.validateWithParser(input, BasicParsers.periodValueParser).toOption.map(List(_))
       result shouldBe output
+
     }
   }
 }

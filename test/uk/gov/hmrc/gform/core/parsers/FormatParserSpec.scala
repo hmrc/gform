@@ -38,6 +38,21 @@ class FormatParserSpec extends Spec {
     EmailVerification.NoVerification
   ) _
 
+  "shortText(1,35)" should "be parsed successfully " in {
+    val res = validate("shortText(1,35)")
+    res.right.value shouldBe TextFormat(ShortText(1, 35))
+  }
+
+  "lookup(originWho)" should "be parsed successfully " in {
+    val res = validate("lookup(originWho)")
+    res.right.value shouldBe TextFormat(Lookup(Register.OriginWho, None))
+  }
+
+  "lookup(intentBusiness)." should "be parsed successfully " in {
+    val res = validate("lookup(intentBusiness)")
+    res.right.value shouldBe TextFormat(Lookup(Register.IntentBusiness, None))
+  }
+
   "YYY-MM-DD" should "be passed as it is" in {
     val res = validate("anyDate")
     res.right.value should be(DateFormat(AnyDate))
@@ -95,8 +110,7 @@ class FormatParserSpec extends Spec {
       UnexpectedState(
         """Unable to parse expression before anyFieldId anotherWord 9.
           |Errors:
-          |before anyFieldId anotherWord 9:1: unexpected characters; expected '${' or 'previous' or 'next' or '(19|20)\d\d' or 'today' or 'YYYY'
-          |before anyFieldId anotherWord 9       ^""".stripMargin
+          |end of input expected""".stripMargin
       )
     )
   }
@@ -107,8 +121,7 @@ class FormatParserSpec extends Spec {
     res.left.value should be(
       UnexpectedState("""|Unable to parse expression after 2016-6-9 9.
                          |Errors:
-                         |after 2016-6-9 9:1: unexpected characters; expected 'MM' or '0[1-9]|1[012]' or '\s+'
-                         |after 2016-6-9 9           ^""".stripMargin)
+                         |end of input expected""".stripMargin)
     )
   }
 

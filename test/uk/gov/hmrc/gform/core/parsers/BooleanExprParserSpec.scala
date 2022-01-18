@@ -19,8 +19,11 @@ package uk.gov.hmrc.gform.core.parsers
 import org.scalatest.{ EitherValues, OptionValues }
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+
 import scala.language.implicitConversions
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
+import uk.gov.hmrc.gform.formtemplate.BooleanExprId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.AddressDetail.Country
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 class BooleanExprParserSpec extends AnyFlatSpec with Matchers with EitherValues with OptionValues {
@@ -217,13 +220,10 @@ class BooleanExprParserSpec extends AnyFlatSpec with Matchers with EitherValues 
 
   it should "fail to parse anything but an equals operator" in {
     val res = BooleanExprParser.validate("${abc|=form.amountA}")
-
     res should be('left)
-
-    res.left.value match {
-      case UnexpectedState(msg) => spacesBeforeCaret(msg) shouldBe "${abc|".length
-      case _                    => fail("${expected an UnexpectedState}")
-    }
+    res.left.value shouldBe UnexpectedState("""Unable to parse expression ${abc|=form.amountA}.
+                                              |Errors:
+                                              |'}' expected but '|' found""".stripMargin)
 
   }
 
@@ -234,11 +234,9 @@ class BooleanExprParserSpec extends AnyFlatSpec with Matchers with EitherValues 
 
     res.left.value match {
       case UnexpectedState(msg) =>
-        msg shouldBe """|Unable to parse expression ${eeitt.businessUserx=XYZ}.
-                        |Errors:
-                        |${eeitt.businessUserx=XYZ}:1: unexpected characters; expected 'line2' or '\s+' or 'country' or 'postcode' or 'count' or 'line3' or 'sum' or '\d+' or 'line1' or 'line4'
-                        |${eeitt.businessUserx=XYZ}        ^
-                        |""".stripMargin.trim
+        msg shouldBe ("""Unable to parse expression ${eeitt.businessUserx=XYZ}.
+                         |Errors:
+                         |'}' expected but '.' found""".stripMargin)
       case _ => fail("expected an UnexpectedState")
     }
   }
@@ -284,6 +282,15 @@ class BooleanExprParserSpec extends AnyFlatSpec with Matchers with EitherValues 
     res shouldBe Right(DateBefore(DateValueExpr(TodayDateExprValue), DateFormCtxVar(FormCtx("startDate"))))
   }
 
+  it should "parser today + 1d " in {
+
+    val res = ValueParser.validateWithParser("TODAY + 1d", ValueParser.dateExpr)
+
+    res shouldBe Right(
+      DateExprWithOffset(DateValueExpr(TodayDateExprValue), OffsetYMD(OffsetUnit.Day(1)))
+    )
+  }
+
   it should "parse before - TODAY + offset" in {
     val res = BooleanExprParser.validate("${TODAY + 1d before startDate}")
 
@@ -292,6 +299,15 @@ class BooleanExprParserSpec extends AnyFlatSpec with Matchers with EitherValues 
         DateExprWithOffset(DateValueExpr(TodayDateExprValue), OffsetYMD(OffsetUnit.Day(1))),
         DateFormCtxVar(FormCtx("startDate"))
       )
+    )
+  }
+
+  it should "parse date expression" in {
+
+    val res = ValueParser.validateWithParser("startDate + 1d", ValueParser.dateExpr)
+
+    res shouldBe Right(
+      DateExprWithOffset(DateFormCtxVar(FormCtx("startDate")), OffsetYMD(OffsetUnit.Day(1)))
     )
   }
 
@@ -313,8 +329,7 @@ class BooleanExprParserSpec extends AnyFlatSpec with Matchers with EitherValues 
       UnexpectedState(
         """Unable to parse expression ${startDate *1d after endDate}.
           |Errors:
-          |${startDate *1d after endDate}:1: unexpected characters; expected '+' or '=' or '\s+' or '<=' or '*' or '>=' or '!=' or '-' or 'else' or '>' or '<'
-          |${startDate *1d after endDate}              ^""".stripMargin
+          |'}' expected but '*' found""".stripMargin
       )
     )
   }
@@ -338,4 +353,17 @@ class BooleanExprParserSpec extends AnyFlatSpec with Matchers with EitherValues 
 
     res shouldBe Right(DateAfter(DateFormCtxVar(FormCtx("startDate")), DateFormCtxVar(FormCtx("endDate"))))
   }
+
+  it should "parse expression ${overseasAddress.country != 'United Kingdom'} from template-NETP" in {
+    val res = BooleanExprParser.validate("${overseasAddress.country != 'United Kingdom'}")
+    res.right.value shouldBe Not(
+      Equals(AddressLens(FormComponentId("overseasAddress"), Country), Constant("United Kingdom"))
+    )
+  }
+
+  it should "parse single variable with prefix 'no' as boolean expression" in {
+    val res = BooleanExprParser.validate("${noCompanyName}")
+    res.right.value shouldBe TopLevelRef(BooleanExprId("noCompanyName"))
+  }
+
 }

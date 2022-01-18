@@ -16,20 +16,19 @@
 
 package uk.gov.hmrc.gform.core.parsers
 
-import parseback._
+import scala.util.parsing.combinator._
 import uk.gov.hmrc.gform.core.Opt
-import uk.gov.hmrc.gform.core.parsers.BasicParsers._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
-object LabelSizeParser {
+object LabelSizeParser extends RegexParsers with ParsingHelper {
+
+  val labelSize: Parser[LabelSize] =
+    "xl" ^^^ ExtraLarge |
+      "l" ^^^ Large |
+      "m" ^^^ Medium |
+      "s" ^^^ Small |
+      "xs" ^^^ ExtraSmall
 
   def validate(expression: String): Opt[LabelSize] = validateWithParser(expression, labelSize)
-
-  lazy val labelSize: Parser[LabelSize] =
-    "xl" ^^ { (_, _) => ExtraLarge } |
-      "l" ^^ { (_, _) => Large } |
-      "m" ^^ { (_, _) => Medium } |
-      "s" ^^ { (_, _) => Small } |
-      "xs" ^^ { (_, _) => ExtraSmall }
 
 }

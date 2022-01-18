@@ -16,13 +16,8 @@
 
 package uk.gov.hmrc.gform.core.parsers
 
-import cats.Eval
 import cats.data.NonEmptyList
 import org.scalatest.prop.TableDrivenPropertyChecks
-import parseback.LineStream
-import parseback.compat.cats._
-import parseback.util.Catenable
-import parseback.util.Catenable.Single
 
 import scala.language.implicitConversions
 import uk.gov.hmrc.gform.Helpers._
@@ -49,6 +44,11 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     res.right.value should be(TextExpression(Constant("1")))
   }
 
+  it should "parse constant" in {
+    val res = ValueParser.validate("${' '}")
+    res.right.value should be(TextExpression(Constant(" ")))
+  }
+
   it should "parse integer with decimal point" in {
     val res = ValueParser.validate("${1.}")
     res.right.value should be(TextExpression(Constant("1.")))
@@ -64,7 +64,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
   }
   it should "parse an anything except singe quote" in {
     val res = ValueParser.validate("${' --+===> '}")
-    res.right.value should be(TextExpression(Constant("--+===> ")))
+    res.right.value should be(TextExpression(Constant(" --+===> ")))
   }
   it should "parse double digit integer" in {
     val res = ValueParser.validate("${1234}")
@@ -133,7 +133,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
 
   it should "parse anything except singe quote" in {
     val res = ValueParser.validate("${' --+===>., '}")
-    res.right.value should be(TextExpression(Constant("--+===>., ")))
+    res.right.value should be(TextExpression(Constant(" --+===>., ")))
   }
 
   it should "fail to parse ${user.enrolledIdentifier" in {
@@ -142,7 +142,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     res.left.value should be(
       UnexpectedState("""Unable to parse expression ${user.enrolledIdentifier.
                         |Errors:
-                        |${user.enrolledIdentifier: unexpected end-of-file; expected '}'""".stripMargin)
+                        |'}' expected but end of source found""".stripMargin)
     )
   }
 
@@ -153,8 +153,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       UnexpectedState(
         """Unable to parse expression ${user.enrolledIdentifiers}.
           |Errors:
-          |${user.enrolledIdentifiers}:1: unexpected characters; expected '+' or '}' or '\s+' or '*' or '-' or 'else'
-          |${user.enrolledIdentifiers}                         ^""".stripMargin
+          |'}' expected but 's' found""".stripMargin
       )
     )
   }
@@ -224,6 +223,13 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
+  it should "parse ${a * b  + c}" in {
+    val res = ValueParser.validate("${firstName * secondName + thirdname}")
+    res.right.value should be(
+      TextExpression(Add(Multiply(FormCtx("firstName"), FormCtx("secondName")), FormCtx("thirdname")))
+    )
+  }
+
   it should "parse string constant" in {
     val res = ValueParser.validate("'constant'")
     res.right.value should be(TextExpression(Constant("constant")))
@@ -263,26 +269,25 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
 
   it should "throw exception on 1 digit month " in {
     val res = ValueParser.validate("2015-1-12")
-    res.left.value should be(UnexpectedState("""Unable to parse expression 2015-1-12.
-                                               |Errors:
-                                               |2015-1-12:1: unexpected characters; expected '0[1-9]|1[012]' or '\s+'
-                                               |2015-1-12     ^""".stripMargin))
+    res.left.value should be(
+      UnexpectedState("""Unable to parse expression 2015-1-12.
+                        |Errors:
+                        |end of input expected""".stripMargin)
+    )
   }
 
   it should "throw exception on year digits" in {
     val res = ValueParser.validate("201568-01-12")
     res.left.value should be(UnexpectedState("""Unable to parse expression 201568-01-12.
                                                |Errors:
-                                               |201568-01-12:1: unexpected characters; expected ',' or '\s+'
-                                               |201568-01-12      ^""".stripMargin))
+                                               |end of input expected""".stripMargin))
   }
 
   it should "throw exception on Date format" in {
     val res = ValueParser.validate("65841-351")
     res.left.value should be(UnexpectedState("""Unable to parse expression 65841-351.
                                                |Errors:
-                                               |65841-351:1: unexpected characters; expected ',' or '\s+'
-                                               |65841-351     ^""".stripMargin))
+                                               |end of input expected""".stripMargin))
   }
 
   it should "parse next Date setting next year" in {
@@ -321,7 +326,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     res.right.value should be(TextExpression(FormTemplateCtx(FormTemplateProp.SubmissionReference)))
   }
 
-  it should "parse else expression" in {
+  it should "parse orElse expression" in {
     implicit def liftToFormCtx(s: String): FormCtx = FormCtx(s)
     val table = Table(
       ("expression", "catenable"),
@@ -339,24 +344,24 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       ("a + b * c + d",              Add(Add("a", Multiply("b", "c")), "d")),
       ("a + (b * c) + d",            Add(Add("a", Multiply("b", "c")), "d")),
       ("(a + b) * (c + d)",          Multiply(Add("a", "b"), Add("c", "d"))),
-      ("a + b else c + d",           Add(Add("a", Else("b", "c")), "d")),
-      ("a + (b else c) + d",         Add(Add("a", Else("b", "c")), "d")),
-      ("(a + b) else (c + d)",       Else(Add("a", "b"), Add("c", "d"))),
+      ("a + b orElse c + d",           Add(Add("a", Else("b", "c")), "d")),
+      ("a + (b orElse c) + d",         Add(Add("a", Else("b", "c")), "d")),
+      ("(a + b) orElse (c + d)",       Else(Add("a", "b"), Add("c", "d"))),
       ("a - b + c - d",              Add(Subtraction("a", "b"), Subtraction("c", "d"))),
       ("a - b - c - d",              Subtraction(Subtraction(Subtraction("a", "b"), "c"), "d")),
       ("a - (b - (c - d))",          Subtraction("a", Subtraction("b", Subtraction("c", "d")))),
       ("a - b * c - d",              Subtraction(Subtraction("a", Multiply("b", "c")), "d")),
-      ("a - b else c - d",           Subtraction(Subtraction("a", Else("b", "c")), "d")),
+      ("a - b orElse c - d",           Subtraction(Subtraction("a", Else("b", "c")), "d")),
       ("a * b + c * d",              Add(Multiply("a", "b"), Multiply("c", "d"))),
       ("a * b - c * d",              Subtraction(Multiply("a", "b"), Multiply("c", "d"))),
       ("a * b * c * d",              Multiply(Multiply(Multiply("a", "b"), "c"), "d")),
       ("a * (b * (c * d))",          Multiply("a", Multiply("b", Multiply("c", "d")))),
-      ("a * b else c * d",           Multiply(Multiply("a", Else("b", "c")), "d")),
-      ("a else b + c else d",        Add(Else("a", "b"), Else("c", "d"))),
-      ("a else b - c else d",        Subtraction(Else("a", "b"), Else("c", "d"))),
-      ("a else b * c else d",        Multiply(Else("a", "b"), Else("c", "d"))),
-      ("a else b else c else d",     Else("a", Else("b", Else("c", "d")))),
-      ("a else (b else (c else d))", Else("a", Else("b", Else("c", "d"))))
+      ("a * b orElse c * d",           Multiply(Multiply("a", Else("b", "c")), "d")),
+      ("a orElse b + c orElse d",        Add(Else("a", "b"), Else("c", "d"))),
+      ("a orElse b - c orElse d",        Subtraction(Else("a", "b"), Else("c", "d"))),
+      ("a orElse b * c orElse d",        Multiply(Else("a", "b"), Else("c", "d"))),
+      ("a orElse b orElse c orElse d",     Else("a", Else("b", Else("c", "d")))),
+      ("a orElse (b orElse (c orElse d))", Else("a", Else("b", Else("c", "d"))))
       // format: on
     )
 
@@ -393,7 +398,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     val res = ValueParser.validate("${name")
     res.left.value should be(UnexpectedState("""|Unable to parse expression ${name.
                                                 |Errors:
-                                                |${name: unexpected end-of-file; expected '}'""".stripMargin))
+                                                |'}' expected but end of source found""".stripMargin))
   }
 
   val plainFormTemplate = FormTemplate(
@@ -554,54 +559,43 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
   }
 
   "Parser - contextField" should "parse form field with date offset as DateCtx (form.)" in {
-    val result = ValueParser.contextField(LineStream[Eval]("form.dateField + 1d")).value.toOption
-    result shouldBe Some(
-      Single(
-        DateCtx(DateExprWithOffset(DateFormCtxVar(FormCtx(FormComponentId("dateField"))), OffsetYMD(OffsetUnit.Day(1))))
-      )
+    val result = ValueParser.parseAll(ValueParser.contextField, "form.dateField + 1d").get
+    result shouldBe DateCtx(
+      DateExprWithOffset(DateFormCtxVar(FormCtx(FormComponentId("dateField"))), OffsetYMD(OffsetUnit.Day(1)))
     )
   }
 
   it should "parse form field with date offset as DateCtx" in {
-    val result = ValueParser.contextField(LineStream[Eval]("dateField + 1d")).value.toOption.flatMap(uncons)
-    result shouldBe Some(
-      DateCtx(DateExprWithOffset(DateFormCtxVar(FormCtx(FormComponentId("dateField"))), OffsetYMD(OffsetUnit.Day(1))))
+    val result = ValueParser.parseAll(ValueParser.contextField, "dateField + 1d").get
+    result shouldBe DateCtx(
+      DateExprWithOffset(DateFormCtxVar(FormCtx(FormComponentId("dateField"))), OffsetYMD(OffsetUnit.Day(1)))
     )
   }
 
   it should "parse TODAY as DateCtx" in {
-    val result = ValueParser.contextField(LineStream[Eval]("TODAY")).value.toOption.flatMap(uncons)
-    result shouldBe Some(DateCtx(DateValueExpr(TodayDateExprValue)))
+    val result = ValueParser.parseAll(ValueParser.contextField, "TODAY").get
+    result shouldBe DateCtx(DateValueExpr(TodayDateExprValue))
   }
 
   it should "parse TODAY with offset as DateCtx" in {
-    val result = ValueParser.contextField(LineStream[Eval]("TODAY + 1m")).value.toOption.flatMap(uncons)
-    result shouldBe Some(DateCtx(DateExprWithOffset(DateValueExpr(TodayDateExprValue), OffsetYMD(OffsetUnit.Month(1)))))
+    val result = ValueParser.parseAll(ValueParser.contextField, "TODAY + 1m").get
+    result shouldBe DateCtx(DateExprWithOffset(DateValueExpr(TodayDateExprValue), OffsetYMD(OffsetUnit.Month(1))))
   }
 
   it should "parse TODAY with offset as DateCtx y m d" in {
-    val result = ValueParser.contextField(LineStream[Eval]("TODAY + 2y + 3m + 4d")).value.toOption.flatMap(uncons)
-    result shouldBe Some(
-      DateCtx(
-        DateExprWithOffset(
-          DateValueExpr(TodayDateExprValue),
-          OffsetYMD(OffsetUnit.Year(2), OffsetUnit.Month(3), OffsetUnit.Day(4))
-        )
+    val result = ValueParser.parseAll(ValueParser.contextField, "TODAY + 2y + 3m + 4d").get
+    result shouldBe DateCtx(
+      DateExprWithOffset(
+        DateValueExpr(TodayDateExprValue),
+        OffsetYMD(OffsetUnit.Year(2), OffsetUnit.Month(3), OffsetUnit.Day(4))
       )
     )
   }
 
   it should "parse fixed date string as DateCtx" in {
-    val result = ValueParser.contextField(LineStream[Eval]("01012020")).value.toOption.flatMap(uncons)
-    result shouldBe Some(DateCtx(DateValueExpr(ExactDateExprValue(2020, 1, 1))))
+    val result = ValueParser.parseAll(ValueParser.contextField, "01012020").get
+    result shouldBe DateCtx(DateValueExpr(ExactDateExprValue(2020, 1, 1)))
   }
-
-  private def uncons[A](cat: Catenable[A]) =
-    cat.uncons match {
-      case Some((expr, _)) =>
-        Some(expr)
-      case None => None
-    }
 
   it should "support year/month/day offset for dates" in {
     val today = DateValueExpr(TodayDateExprValue)
@@ -773,8 +767,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
           UnexpectedState(
             """Unable to parse expression ${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.0}.
               |Errors:
-              |${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.0}:1: unexpected characters; expected '[1-9][0-9]*' or 'count' or '\s+'
-              |${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.0}                                           ^""".stripMargin
+              |'}' expected but '.' found""".stripMargin
           )
         )
       ),
@@ -784,8 +777,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
           UnexpectedState(
             """Unable to parse expression ${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.unknown}.
               |Errors:
-              |${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.unknown}:1: unexpected characters; expected '[1-9][0-9]*' or 'count' or '\s+'
-              |${user.enrolments.HMCE-VATDEC-ORG.VATRegNo.unknown}                                           ^""".stripMargin
+              |'}' expected but '.' found""".stripMargin
           )
         )
       )
@@ -868,5 +860,25 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     assertThrows[Exception] {
       ValueParser.validate("${dataRetrieve.businessBankDetails.dummy}")
     }
+  }
+
+  it should "parse quotedLocalisedConstant localized constant" in {
+    val res = ValueParser.parseAll(ValueParser.quotedLocalisedConstant, "'Are you', 'Wyt ti'")
+    res.get shouldBe IfElse(Equals(LangCtx, Constant("en")), Constant("Are you"), Constant("Wyt ti"))
+
+  }
+
+  it should "parse complex if-then-else expression from acceptance tests" in {
+
+    val res = ValueParser.validate("${if noCompanyName then 'Are you', 'Wyt ti' else ('Is ','Os ' + companyName)}")
+
+    res.right.value shouldBe TextExpression(
+      IfElse(
+        TopLevelRef(BooleanExprId("noCompanyName")),
+        IfElse(Equals(LangCtx, Constant("en")), Constant("Are you"), Constant("Wyt ti")),
+        Add(IfElse(Equals(LangCtx, Constant("en")), Constant("Is "), Constant("Os ")), FormCtx("companyName"))
+      )
+    )
+
   }
 }

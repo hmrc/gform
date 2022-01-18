@@ -56,8 +56,7 @@ class SelectionCriteriaParserSpec extends Spec {
 
     res.left.value should be(UnexpectedState("""Unable to parse expression ${travelMethod}.CountryCode.
                                                |Errors:
-                                               |${travelMethod}.CountryCode:1: unexpected trailing characters
-                                               |${travelMethod}.CountryCode               ^""".stripMargin))
+                                               |end of input expected""".stripMargin))
   }
 
 }
