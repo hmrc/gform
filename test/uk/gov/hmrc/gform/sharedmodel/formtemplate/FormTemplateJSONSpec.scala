@@ -51,7 +51,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                              |    "title": "Next Steps",
                                              |    "summaryPdf": "TestSummaryPdf"
                                              |  },
-                                             |  "displayHMRCLogo": true,
+                                             |  "displayHMRCLogo": false,
                                              |  "parentFormSubmissionRefs": [],
                                              |  "summarySection": $summarySection
                                              |}
@@ -157,7 +157,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                              |      ]
                                              |   }
                                              |  },
-                                             |  "displayHMRCLogo": true,
+                                             |  "displayHMRCLogo": false,
                                              |  "parentFormSubmissionRefs": [
                                              |    "123",
                                              |    "456"
@@ -281,7 +281,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                  |      ]
                                  |    }
                                  |  },
-                                 |  "displayHMRCLogo": true,
+                                 |  "displayHMRCLogo": false,
                                  |  "testText": "hello",
                                  |  "testJsonArr": [
                                  |    "en",
@@ -410,7 +410,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                                                    |      ]
                                                                    |    }
                                                                    |  },
-                                                                   |  "displayHMRCLogo": true,
+                                                                   |  "displayHMRCLogo": false,
                                                                    |  "testText": "hello",
                                                                    |  "testJsonArr": [
                                                                    |    "en",

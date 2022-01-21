@@ -220,7 +220,7 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
       List(LinkCtx(link = PrintSummaryPdf), LinkCtx(link = PrintSummaryPdf))
     )
     formTemplate.authConfig shouldBe Anonymous
-    formTemplate.displayHMRCLogo shouldBe true
+    formTemplate.displayHMRCLogo shouldBe false
     formTemplate.destinations shouldBe a[DestinationList]
     formTemplate.emailTemplateId shouldBe localisedEmailTemplateId
     formTemplate.userResearchUrl shouldBe Some(UserResearchUrl("https://test.service.gov.uk"))

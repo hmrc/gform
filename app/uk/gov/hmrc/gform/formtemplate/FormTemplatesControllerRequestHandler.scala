@@ -107,7 +107,7 @@ object FormTemplatesControllerRequestHandler {
 
     val ensureDisplayHMRCLogo =
       (__ \ 'displayHMRCLogo).json
-        .copyFrom((__ \ 'displayHMRCLogo).json.pick orElse Reads.pure(JsTrue))
+        .copyFrom((__ \ 'displayHMRCLogo).json.pick orElse Reads.pure(JsFalse))
 
     val ensureOriginalId = (__ \ 'originalId).json.copyFrom((__ \ '_id).json.pick) orElse noTemplateId
 
