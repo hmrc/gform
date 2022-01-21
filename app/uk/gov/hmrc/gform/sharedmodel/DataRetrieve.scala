@@ -179,11 +179,7 @@ object DataRetrieve {
   implicit val format: OFormat[DataRetrieve] = OFormatWithTemplateReadFallback(reads)
 }
 
-sealed trait DataRetrieveResult
-case object DataRetrieveNotRequired extends DataRetrieveResult
-case class DataRetrieveSuccess(id: DataRetrieveId, data: Map[DataRetrieveAttribute, String]) extends DataRetrieveResult
-case object DataRetrieveFailed extends DataRetrieveResult
-case object DataRetrieveMissingInput extends DataRetrieveResult
+case class DataRetrieveResult(id: DataRetrieveId, data: Map[DataRetrieveAttribute, String], requestParams: JsValue)
 
 object DataRetrieveResult {
   implicit val dataRetrieveSuccessDataFormat: Format[Map[DataRetrieveAttribute, String]] =
