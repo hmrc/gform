@@ -52,38 +52,29 @@ object VisitIndex {
 case class Form(
   _id: FormId,
   envelopeId: EnvelopeId,
-  userId: UserId,
   formTemplateId: FormTemplateId,
   formTemplateVersion: Option[FormTemplateVersion],
-  formData: FormData,
   status: FormStatus,
   visitsIndex: VisitIndex,
-  thirdPartyData: ThirdPartyData,
   envelopeExpiryDate: Option[EnvelopeExpiryDate],
-  componentIdToFileId: FormComponentIdToFileIdMapping
+  componentIdToFileId: FormComponentIdToFileIdMapping,
+  sensitive: Sensitive
 )
 
 object Form {
-  private val thirdPartyData = "thirdPartyData"
   private val componentIdToFileId = "componentIdToFileId"
   private val formTemplateVersion = "version"
 
-  private val readVisitIndex: Reads[VisitIndex] =
+  val readVisitIndex: Reads[VisitIndex] =
     (__ \ "visitsIndex").readNullable[List[Int]].map(a => VisitIndex(a.fold(Set.empty[Int])(_.toSet)))
 
-  private val thirdPartyDataWithFallback: Reads[ThirdPartyData] =
-    (__ \ thirdPartyData)
-      .readNullable[ThirdPartyData]
-      .map(_.getOrElse(ThirdPartyData.empty))
-      .orElse(JsonUtils.constReads(ThirdPartyData.empty))
-
-  private val formTemplateVersionWithFallback: Reads[Option[FormTemplateVersion]] =
+  val formTemplateVersionWithFallback: Reads[Option[FormTemplateVersion]] =
     (__ \ formTemplateVersion)
       .readNullable[String]
       .map(_.map(FormTemplateVersion.apply))
       .orElse(JsonUtils.constReads(Option.empty[FormTemplateVersion]))
 
-  private val componentIdToFileIdWithFallback: Reads[FormComponentIdToFileIdMapping] =
+  val componentIdToFileIdWithFallback: Reads[FormComponentIdToFileIdMapping] =
     (__ \ componentIdToFileId)
       .readNullable[FormComponentIdToFileIdMapping]
       .map(_.getOrElse(FormComponentIdToFileIdMapping.empty))
@@ -92,33 +83,58 @@ object Form {
   private val reads: Reads[Form] = (
     (FormId.format: Reads[FormId]) and
       EnvelopeId.format and
-      UserId.oformat and
       FormTemplateId.vformat and
       formTemplateVersionWithFallback and
-      FormData.format and
       FormStatus.format and
       readVisitIndex and
-      thirdPartyDataWithFallback and
       EnvelopeExpiryDate.optionFormat and
-      componentIdToFileIdWithFallback
+      componentIdToFileIdWithFallback and
+      Sensitive.format
   )(Form.apply _)
 
   private val writes: OWrites[Form] = OWrites[Form](form =>
     FormId.format.writes(form._id) ++
       EnvelopeId.format.writes(form.envelopeId) ++
-      UserId.oformat.writes(form.userId) ++
       FormTemplateId.oformat.writes(form.formTemplateId) ++
       form.formTemplateVersion.map(FormTemplateVersion.oformat.writes).getOrElse(Json.obj()) ++
-      FormData.format.writes(form.formData) ++
       FormStatus.format.writes(form.status) ++
       VisitIndex.format.writes(form.visitsIndex) ++
-      Json.obj(thirdPartyData -> ThirdPartyData.format.writes(form.thirdPartyData)) ++
       EnvelopeExpiryDate.optionFormat.writes(form.envelopeExpiryDate) ++
-      Json.obj(componentIdToFileId -> FormComponentIdToFileIdMapping.format.writes(form.componentIdToFileId))
+      Json.obj(componentIdToFileId -> FormComponentIdToFileIdMapping.format.writes(form.componentIdToFileId)) ++
+      Sensitive.format.writes(form.sensitive)
   )
 
   implicit val format: OFormat[Form] = OFormat[Form](reads, writes)
+}
 
+case class Sensitive(
+  userId: UserId,
+  formData: FormData,
+  thirdPartyData: ThirdPartyData
+)
+
+object Sensitive {
+  private val thirdPartyData = "thirdPartyData"
+
+  private val thirdPartyDataWithFallback: Reads[ThirdPartyData] =
+    (__ \ thirdPartyData)
+      .readNullable[ThirdPartyData]
+      .map(_.getOrElse(ThirdPartyData.empty))
+      .orElse(JsonUtils.constReads(ThirdPartyData.empty))
+
+  private val reads: Reads[Sensitive] = (
+    (UserId.vformat: Reads[UserId]) and
+      FormData.format and
+      thirdPartyDataWithFallback
+  )(Sensitive.apply _)
+
+  private val writes: OWrites[Sensitive] = OWrites[Sensitive](sensitive =>
+    UserId.oformat.writes(sensitive.userId) ++
+      FormData.format.writes(sensitive.formData) ++
+      Json.obj(thirdPartyData -> ThirdPartyData.format.writes(sensitive.thirdPartyData))
+  )
+
+  implicit val format: OFormat[Sensitive] = OFormat[Sensitive](reads, writes)
 }
 
 sealed trait FormStatus

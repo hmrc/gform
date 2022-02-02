@@ -48,15 +48,17 @@ trait FormGen {
     } yield Form(
       formId,
       envelopeId,
-      userId,
       formTemplateId,
       formTemplateVersion,
-      formData,
       status,
       visitIndex,
-      thirdPartyData,
       expiryDate,
-      formComponentIdToFileIdMapping
+      formComponentIdToFileIdMapping,
+      Sensitive(
+        userId,
+        formData,
+        thirdPartyData
+      )
     )
 }
 

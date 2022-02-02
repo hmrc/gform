@@ -67,6 +67,6 @@ class EmailService(emailConnector: EmailConnector) {
     if (maybeEmailAddress.isDefined) {
       maybeEmailAddress
     } else {
-      form.formData.fields.find(_.id.value == "email").map(_.value).filterNot(_.isEmpty)
+      form.sensitive.formData.fields.find(_.id.value == "email").map(_.value).filterNot(_.isEmpty)
     }
 }

@@ -61,9 +61,9 @@ class DestinationsProcessorModelAlgebraSpec extends Spec with ScalaCheckDrivenPr
 
       val updForm =
         form
-          .modify(_.thirdPartyData.obligations)
+          .modify(_.sensitive.thirdPartyData.obligations)
           .setTo(RetrievedObligations(NonEmptyList(updTaxResponse1, updTaxResponse2 :: Nil)))
-          .modify(_.formData)
+          .modify(_.sensitive.formData)
           .setTo(FormData(List(FormField(formComponentId1, periodKey1), FormField(formComponentId2, periodKey2))))
 
       val model = DestinationsProcessorModelAlgebra.createHmrcTaxPeriods(updForm)

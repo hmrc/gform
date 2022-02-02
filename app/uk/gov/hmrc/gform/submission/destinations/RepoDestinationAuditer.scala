@@ -68,10 +68,10 @@ class RepoDestinationAuditer(
                  handlebarsDestinationResponseStatusCode,
                  handlebarsDestinationResponseErrorBody,
                  form.status,
-                 form.userId,
-                 getCaseworkerUsername(form.formData),
+                 form.sensitive.userId,
+                 getCaseworkerUsername(form.sensitive.formData),
                  getParentFormSubmissionRef(template, model),
-                 form.thirdPartyData.reviewData.getOrElse(Map.empty),
+                 form.sensitive.thirdPartyData.reviewData.getOrElse(Map.empty),
                  submissionReference,
                  summaryHtmlId
                )
@@ -96,10 +96,10 @@ class RepoDestinationAuditer(
                None,
                None,
                form.status,
-               form.userId,
-               getCaseworkerUsername(form.formData),
+               form.sensitive.userId,
+               getCaseworkerUsername(form.sensitive.formData),
                latestAudit.parentFormSubmissionRefs,
-               form.thirdPartyData.reviewData.getOrElse(Map.empty),
+               form.sensitive.thirdPartyData.reviewData.getOrElse(Map.empty),
                latestAudit.submissionRef,
                latestAudit.summaryHtmlId
              )

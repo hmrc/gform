@@ -29,7 +29,7 @@ class FormMongoCache(mongoCacheRepository: MongoCacheRepository[String], jsonCry
   ec: ExecutionContext
 ) extends FormPersistenceAlgebra[Future] {
 
-  implicit val formatFormEncrypted: Format[Form] = EncyryptedFormat.formatEncrypted[Form](jsonCrypto)(Form.format)
+  implicit val formatFormEncrypted: Format[Form] = EncryptedFormFormat.formatEncrypted(jsonCrypto)
 
   private val formDataKey: DataKey[Form] = DataKey("form")
 
@@ -46,7 +46,27 @@ class FormMongoCache(mongoCacheRepository: MongoCacheRepository[String], jsonCry
       form
   }
 
+  private def findLegacyForm(formId: FormId): Future[Option[Form]] = {
+    implicit val formatFormEncrypted: Format[Form] = EncyryptedFormat.formatEncrypted[Form](jsonCrypto)(Form.format)
+    mongoCacheRepository
+      .get[Form](formId.value)(formDataKey)
+  }
+
+  private def getLegacyForm(formId: FormId): Future[Form] = findLegacyForm(formId) map {
+    case None =>
+      throw UpstreamErrorResponse(
+        s"Not found 'legacy-form' for the given id: '${formId.value}'",
+        StatusCodes.NotFound.intValue
+      )
+    case Some(form) =>
+      form
+  }
+
   override def get(formIdData: FormIdData)(implicit hc: HeaderCarrier): Future[Form] = get(formIdData.toFormId)
+    .recoverWith {
+      case UpstreamErrorResponse.WithStatusCode(statusCode) if statusCode == StatusCodes.NotFound.intValue =>
+        getLegacyForm(formIdData.toFormId)
+    }
 
   override def upsert(form: Form)(implicit hc: HeaderCarrier): Future[Unit] =
     mongoCacheRepository

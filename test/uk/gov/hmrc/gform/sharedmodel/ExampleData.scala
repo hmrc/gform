@@ -549,15 +549,17 @@ trait ExampleForm { dependsOn: ExampleFormField with ExampleFormTemplate =>
     Form(
       formId,
       envelopeId,
-      userId,
       formTemplateId,
       None,
-      formData,
       InProgress,
       VisitIndex.empty,
-      ThirdPartyData.empty,
       envelopeExpiryDate,
-      FormComponentIdToFileIdMapping.empty
+      FormComponentIdToFileIdMapping.empty,
+      Sensitive(
+        userId,
+        formData,
+        ThirdPartyData.empty
+      )
     )
 
 }

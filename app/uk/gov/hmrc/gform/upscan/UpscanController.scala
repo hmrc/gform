@@ -60,10 +60,10 @@ class UpscanController(
     )
 
   private def toUserData(form: Form): UserData = UserData(
-    form.formData,
+    form.sensitive.formData,
     form.status,
     form.visitsIndex,
-    form.thirdPartyData,
+    form.sensitive.thirdPartyData,
     form.componentIdToFileId
   )
 
