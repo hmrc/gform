@@ -23,7 +23,7 @@ import julienrf.json.derived
 import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
-import uk.gov.hmrc.gform.sharedmodel.UserId
+import uk.gov.hmrc.gform.sharedmodel.{ UserId, ValueClassFormat }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplateId, FormTemplateVersion, JsonUtils }
 
 import scala.util.Try
@@ -155,6 +155,16 @@ object FormStatus {
   implicit val equal: Eq[FormStatus] = Eq.fromUniversalEquals
 
   implicit val format: OFormat[FormStatus] = derived.oformat()
+
+  val oformat: OFormat[FormStatus] = ValueClassFormat.validatedoformat(
+    "status",
+    statusStr =>
+      FormStatus.unapply(statusStr) match {
+        case Some(status) => JsSuccess(status)
+        case None         => JsError(s"Invalid workflow state: $statusStr")
+      },
+    _.toString
+  )
 
   val all: Set[FormStatus] =
     Set(

@@ -33,13 +33,13 @@ object EncryptedFormFormat {
         EnvelopeId.format.writes(form.envelopeId) ++
         FormTemplateId.oformat.writes(form.formTemplateId) ++
         form.formTemplateVersion.map(FormTemplateVersion.oformat.writes).getOrElse(Json.obj()) ++
-        FormStatus.format.writes(form.status) ++
+        FormStatus.oformat.writes(form.status) ++
         VisitIndex.format.writes(form.visitsIndex) ++
         EnvelopeExpiryDate.optionFormat.writes(form.envelopeExpiryDate) ++
         Json.obj(componentIdToFileId -> FormComponentIdToFileIdMapping.format.writes(form.componentIdToFileId)) ++
         Json.obj(data -> jsonCrypto.encrypt(PlainText(Json.toJson(form.sensitive).toString())).value)
 
-    private val sensitiveWithFallback: Reads[Sensitive] =
+    private val readSensitive: Reads[Sensitive] =
       (__ \ data)
         .read[String]
         .map(s => Json.parse(jsonCrypto.decrypt(Crypted(s)).value).as[Sensitive])
@@ -49,11 +49,11 @@ object EncryptedFormFormat {
         EnvelopeId.format and
         FormTemplateId.vformat and
         Form.formTemplateVersionWithFallback and
-        FormStatus.format and
+        FormStatus.oformat and
         Form.readVisitIndex and
         EnvelopeExpiryDate.optionFormat and
         Form.componentIdToFileIdWithFallback and
-        sensitiveWithFallback
+        readSensitive
     )(Form.apply _)
 
     override def reads(json: JsValue): JsResult[Form] = {
