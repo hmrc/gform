@@ -3,9 +3,10 @@ package uk.gov.hmrc.gform.it
 import akka.http.scaladsl.model.StatusCodes
 import com.mongodb.{ BasicDBObject, ReadPreference }
 import org.scalatest.time.{ Millis, Seconds, Span }
-import play.api.libs.json.Json
+import play.api.libs.json.{ Format, Json }
 import uk.gov.hmrc.gform.it.sample.{ FormDataSample, FormTemplateSample, QueryParamsSample }
 import uk.gov.hmrc.gform.it.wiremock.FileUploadServiceStubs
+import uk.gov.hmrc.gform.save4later.EncryptedFormFormat
 import uk.gov.hmrc.gform.sharedmodel.UserId
 import uk.gov.hmrc.gform.sharedmodel.form.FormIdData.Plain
 import uk.gov.hmrc.gform.sharedmodel.form._
@@ -74,8 +75,10 @@ class FormIT
     formFields: Seq[FormField] = Seq.empty,
     visitIndex: Set[Int] = Set.empty
   ): Unit = {
-    val encryptedForm = formCacheRepository.get("123-basic")(DataKey[String]("form")).futureValue.get
-    val form = decryptAs[Form](encryptedForm)
+    implicit val formatFormEncrypted: Format[Form] = EncryptedFormFormat.formatEncrypted(jsonCrypto)
+    val formDataKey: DataKey[Form] = DataKey("form")
+
+    val form = formCacheRepository.get[Form]("123-basic")(formDataKey).futureValue.get
     form._id shouldBe FormId("123-basic")
     form.envelopeId shouldBe EnvelopeId("some-envelope-id")
     form.userId shouldBe UserId("123")

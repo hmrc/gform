@@ -23,7 +23,7 @@ import julienrf.json.derived
 import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
-import uk.gov.hmrc.gform.sharedmodel.UserId
+import uk.gov.hmrc.gform.sharedmodel.{ UserId, ValueClassFormat }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplateId, FormTemplateVersion, JsonUtils }
 
 import scala.util.Try
@@ -68,22 +68,22 @@ object Form {
   private val componentIdToFileId = "componentIdToFileId"
   private val formTemplateVersion = "version"
 
-  private val readVisitIndex: Reads[VisitIndex] =
+  val readVisitIndex: Reads[VisitIndex] =
     (__ \ "visitsIndex").readNullable[List[Int]].map(a => VisitIndex(a.fold(Set.empty[Int])(_.toSet)))
 
-  private val thirdPartyDataWithFallback: Reads[ThirdPartyData] =
+  val thirdPartyDataWithFallback: Reads[ThirdPartyData] =
     (__ \ thirdPartyData)
       .readNullable[ThirdPartyData]
       .map(_.getOrElse(ThirdPartyData.empty))
       .orElse(JsonUtils.constReads(ThirdPartyData.empty))
 
-  private val formTemplateVersionWithFallback: Reads[Option[FormTemplateVersion]] =
+  val formTemplateVersionWithFallback: Reads[Option[FormTemplateVersion]] =
     (__ \ formTemplateVersion)
       .readNullable[String]
       .map(_.map(FormTemplateVersion.apply))
       .orElse(JsonUtils.constReads(Option.empty[FormTemplateVersion]))
 
-  private val componentIdToFileIdWithFallback: Reads[FormComponentIdToFileIdMapping] =
+  val componentIdToFileIdWithFallback: Reads[FormComponentIdToFileIdMapping] =
     (__ \ componentIdToFileId)
       .readNullable[FormComponentIdToFileIdMapping]
       .map(_.getOrElse(FormComponentIdToFileIdMapping.empty))
@@ -139,6 +139,16 @@ object FormStatus {
   implicit val equal: Eq[FormStatus] = Eq.fromUniversalEquals
 
   implicit val format: OFormat[FormStatus] = derived.oformat()
+
+  val oformat: OFormat[FormStatus] = ValueClassFormat.validatedoformat(
+    "status",
+    statusStr =>
+      FormStatus.unapply(statusStr) match {
+        case Some(status) => JsSuccess(status)
+        case None         => JsError(s"Invalid workflow state: $statusStr")
+      },
+    _.toString
+  )
 
   val all: Set[FormStatus] =
     Set(
