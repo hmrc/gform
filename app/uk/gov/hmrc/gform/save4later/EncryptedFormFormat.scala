@@ -20,40 +20,57 @@ import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.crypto.{ Crypted, CryptoWithKeysFromConfig, PlainText }
-import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeExpiryDate, EnvelopeId, Form, FormComponentIdToFileIdMapping, FormId, FormStatus, Sensitive, VisitIndex }
+import uk.gov.hmrc.gform.sharedmodel.UserId
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeExpiryDate, EnvelopeId, Form, FormComponentIdToFileIdMapping, FormData, FormId, FormStatus, ThirdPartyData, VisitIndex }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, FormTemplateVersion }
 
 object EncryptedFormFormat {
   def formatEncrypted(jsonCrypto: CryptoWithKeysFromConfig): Format[Form] = new Format[Form] {
-    private val data = "data"
+    private val userId = "userId"
     private val componentIdToFileId = "componentIdToFileId"
+    private val formData = "formData"
+    private val thirdPartyData = "thirdPartyData"
 
     override def writes(form: Form): JsValue =
       FormId.format.writes(form._id) ++
         EnvelopeId.format.writes(form.envelopeId) ++
+        Json.obj(userId -> jsonCrypto.encrypt(PlainText(Json.toJson(form.userId).toString())).value) ++
         FormTemplateId.oformat.writes(form.formTemplateId) ++
         form.formTemplateVersion.map(FormTemplateVersion.oformat.writes).getOrElse(Json.obj()) ++
+        Json.obj(formData -> jsonCrypto.encrypt(PlainText(Json.toJson(form.formData).toString())).value) ++
         FormStatus.oformat.writes(form.status) ++
         VisitIndex.format.writes(form.visitsIndex) ++
+        Json.obj(thirdPartyData -> jsonCrypto.encrypt(PlainText(Json.toJson(form.thirdPartyData).toString())).value) ++
         EnvelopeExpiryDate.optionFormat.writes(form.envelopeExpiryDate) ++
-        Json.obj(componentIdToFileId -> FormComponentIdToFileIdMapping.format.writes(form.componentIdToFileId)) ++
-        Json.obj(data -> jsonCrypto.encrypt(PlainText(Json.toJson(form.sensitive).toString())).value)
+        Json.obj(componentIdToFileId -> FormComponentIdToFileIdMapping.format.writes(form.componentIdToFileId))
 
-    private val readSensitive: Reads[Sensitive] =
-      (__ \ data)
+    private val readUserId: Reads[UserId] =
+      (__ \ userId)
         .read[String]
-        .map(s => Json.parse(jsonCrypto.decrypt(Crypted(s)).value).as[Sensitive])
+        .map(s => Json.parse(jsonCrypto.decrypt(Crypted(s)).value).as[UserId])
+
+    private val readFormData: Reads[FormData] =
+      (__ \ formData)
+        .read[String]
+        .map(s => Json.parse(jsonCrypto.decrypt(Crypted(s)).value).as[FormData])
+
+    private val readThirdPartyData: Reads[ThirdPartyData] =
+      (__ \ thirdPartyData)
+        .read[String]
+        .map(s => Json.parse(jsonCrypto.decrypt(Crypted(s)).value).as[ThirdPartyData])
 
     private val formReads: Reads[Form] = (
       (FormId.format: Reads[FormId]) and
         EnvelopeId.format and
+        readUserId and
         FormTemplateId.vformat and
         Form.formTemplateVersionWithFallback and
+        readFormData and
         FormStatus.oformat and
         Form.readVisitIndex and
+        readThirdPartyData and
         EnvelopeExpiryDate.optionFormat and
-        Form.componentIdToFileIdWithFallback and
-        readSensitive
+        Form.componentIdToFileIdWithFallback
     )(Form.apply _)
 
     override def reads(json: JsValue): JsResult[Form] = {

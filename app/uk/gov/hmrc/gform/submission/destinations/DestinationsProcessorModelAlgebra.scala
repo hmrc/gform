@@ -63,7 +63,7 @@ object DestinationsProcessorModelAlgebra {
       createInstructionPdfHtml(instructionPdfData) +
       createSubmissionReference(SubmissionRef(form.envelopeId).value) +
       createUploadedFiles(files) +
-      createCaseworker(form.sensitive.thirdPartyData.reviewData.flatMap(_.get("caseworker")))
+      createCaseworker(form.thirdPartyData.reviewData.flatMap(_.get("caseworker")))
 
   def createDestinationResponse(result: HandlebarsDestinationResponse): HandlebarsTemplateProcessorModel =
     HandlebarsTemplateProcessorModel(
@@ -169,7 +169,7 @@ object DestinationsProcessorModelAlgebra {
 
   def createHmrcTaxPeriods(form: Form): HandlebarsTemplateProcessorModel = {
 
-    val lookup: Map[FormComponentId, String] = form.sensitive.formData.fields.map(fd => fd.id -> fd.value).toMap
+    val lookup: Map[FormComponentId, String] = form.formData.fields.map(fd => fd.id -> fd.value).toMap
 
     def mkMap(od: ObligationDetail): Map[String, String] = Map(
       "periodKey"  -> od.periodKey,
@@ -181,13 +181,13 @@ object DestinationsProcessorModelAlgebra {
       val fcId = taxResponse.id.recalculatedTaxPeriodKey.fcId
       for {
         periodKey <- lookup.get(fcId)
-        obligationDetail <- form.sensitive.thirdPartyData.obligations
+        obligationDetail <- form.thirdPartyData.obligations
                               .findByPeriodKey(taxResponse.id.recalculatedTaxPeriodKey.hmrcTaxPeriod, periodKey)
       } yield Map(fcId.value -> objectNode(mkMap(obligationDetail).mapValues(textNode)))
     }
 
     val jsonNodes: Map[String, JsonNode] =
-      form.sensitive.thirdPartyData.obligations match {
+      form.thirdPartyData.obligations match {
         case NotChecked => Map.empty
         case RetrievedObligations(taxResponses) =>
           taxResponses.map(toJsonNode).toList.flatten.foldLeft(Map.empty[String, JsonNode])(_ ++ _)
@@ -197,7 +197,7 @@ object DestinationsProcessorModelAlgebra {
   }
 
   private def createRosmRegistration(form: Form): HandlebarsTemplateProcessorModel = {
-    val f = form.sensitive.thirdPartyData.desRegistrationResponse.fold("") _
+    val f = form.thirdPartyData.desRegistrationResponse.fold("") _
 
     HandlebarsTemplateProcessorModel(
       "hmrcRosmRegistrationCheck" -> objectNode(

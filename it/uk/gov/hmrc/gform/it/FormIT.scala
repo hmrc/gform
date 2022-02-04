@@ -81,12 +81,12 @@ class FormIT
     val form = formCacheRepository.get[Form]("123-basic")(formDataKey).futureValue.get
     form._id shouldBe FormId("123-basic")
     form.envelopeId shouldBe EnvelopeId("some-envelope-id")
-    form.sensitive.userId shouldBe UserId("123")
+    form.userId shouldBe UserId("123")
     form.formTemplateId shouldBe FormTemplateId("basic")
-    form.sensitive.formData.fields shouldBe formFields
+    form.formData.fields shouldBe formFields
     form.status shouldBe InProgress
     form.visitsIndex shouldBe VisitIndex(visitIndex)
-    form.sensitive.thirdPartyData shouldBe ThirdPartyData.empty
+    form.thirdPartyData shouldBe ThirdPartyData.empty
     form.envelopeExpiryDate.get.ldt.toInstant(ZoneOffset.UTC).isAfter(startInstant) shouldBe true
     form.componentIdToFileId shouldBe FormComponentIdToFileIdMapping.empty
     ()

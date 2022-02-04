@@ -107,17 +107,15 @@ class FormService[F[_]: Monad](
       form = Form(
                lowerCased.toFormId,
                envelopeId,
+               userId,
                lowerCased.formTemplateId,
                formTemplate.version,
+               FormData(fields = Seq.empty),
                InProgress,
                VisitIndex.empty,
+               ThirdPartyData.empty.copy(queryParams = queryParams),
                Some(EnvelopeExpiryDate(expiryDate)),
-               FormComponentIdToFileIdMapping.empty,
-               Sensitive(
-                 userId,
-                 FormData(fields = Seq.empty),
-                 ThirdPartyData.empty.copy(queryParams = queryParams)
-               )
+               FormComponentIdToFileIdMapping.empty
              )
       _ <- formPersistence.upsert(form)
       _ <- formMetadataAlgebra.upsert(lowerCased)
@@ -134,17 +132,14 @@ class FormService[F[_]: Monad](
                   .copy(
                     _id = lowerCased.toFormId,
                     formTemplateId = lowerCased.formTemplateId,
+                    formData = userData.formData,
                     status = newStatus(form, userData.formStatus),
                     visitsIndex = userData.visitsIndex,
-                    componentIdToFileId = userData.componentIdToFileId,
-                    sensitive = form.sensitive.copy(
-                      formData = userData.formData,
-                      thirdPartyData = userData.thirdPartyData
-                    )
+                    thirdPartyData = userData.thirdPartyData,
+                    componentIdToFileId = userData.componentIdToFileId
                   )
       _ <- formPersistence.upsert(newForm)
-      _ <-
-        refreshMetadata(form.sensitive.formData != newForm.sensitive.formData, lowerCased, newForm.sensitive.formData)
+      _ <- refreshMetadata(form.formData != newForm.formData, lowerCased, newForm.formData)
     } yield ()
   }
 
@@ -182,7 +177,7 @@ class FormService[F[_]: Monad](
                   formTemplateId = formTemplateId
                 )
       _ <- formPersistence.upsert(newForm)
-      _ <- refreshMetadata(true, formIdData, form.sensitive.formData)
+      _ <- refreshMetadata(true, formIdData, form.formData)
     } yield newForm
 
   def updateFormStatus(formId: FormId, status: FormStatus)(implicit hc: HeaderCarrier): F[FormStatus] =

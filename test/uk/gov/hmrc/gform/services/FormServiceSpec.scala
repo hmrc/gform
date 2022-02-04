@@ -29,17 +29,15 @@ class FormServiceSpec extends PlaySpec {
   val testFormInProgress = Form(
     FormId("testId"),
     EnvelopeId("env-id"),
+    UserId("testUser"),
     FormTemplateId("temp-id"),
     None,
+    FormData(Seq(FormField(FormComponentId("a"), "1"))),
     InProgress,
     VisitIndex.empty,
+    ThirdPartyData.empty,
     Some(EnvelopeExpiryDate(LocalDateTime.now.plusDays(1))),
-    FormComponentIdToFileIdMapping.empty,
-    Sensitive(
-      UserId("testUser"),
-      FormData(Seq(FormField(FormComponentId("a"), "1"))),
-      ThirdPartyData.empty
-    )
+    FormComponentIdToFileIdMapping.empty
   )
 
   val testFormSummary: Form = testFormInProgress.copy(status = Summary)

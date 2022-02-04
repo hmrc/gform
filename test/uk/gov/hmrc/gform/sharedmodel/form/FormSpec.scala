@@ -97,8 +97,12 @@ class FormSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyCh
        |  "ldt" : "2064-12-01T00:00:40"
        |}""".stripMargin
 
-  val sensitiveData = Sensitive(
+  val exampleForm = Form(
+    FormId("tax"),
+    EnvelopeId("envelopeId"),
     uk.gov.hmrc.gform.sharedmodel.UserId("userId"),
+    FormTemplateId("formTemplateId"),
+    None,
     FormData(
       List(
         FormField(
@@ -107,6 +111,8 @@ class FormSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyCh
         )
       )
     ),
+    Submitted,
+    VisitIndex(Set(1, 2, 3)),
     ThirdPartyData(
       None,
       RetrievedObligations(
@@ -144,19 +150,9 @@ class FormSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyCh
       None,
       BooleanExprCache.empty,
       None
-    )
-  )
-
-  val exampleForm = Form(
-    FormId("tax"),
-    EnvelopeId("envelopeId"),
-    FormTemplateId("formTemplateId"),
-    None,
-    Submitted,
-    VisitIndex(Set(1, 2, 3)),
+    ),
     Some(EnvelopeExpiryDate(LocalDateTime.of(2064, 12, 1, 0, 0, 40))),
-    FormComponentIdToFileIdMapping.empty,
-    sensitiveData
+    FormComponentIdToFileIdMapping.empty
   )
 
   "Format for Form" should "read json" in {
@@ -165,8 +161,7 @@ class FormSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyCh
 
   it should "fallback to empty ThirdPartyData if structure of ThirdPartyData is changed" in {
 
-    val formWithEmptyThirdParty =
-      exampleForm.copy(sensitive = sensitiveData.copy(thirdPartyData = ThirdPartyData.empty))
+    val formWithEmptyThirdParty = exampleForm.copy(thirdPartyData = ThirdPartyData.empty)
 
     val incompatibleJson = inputJson.replace(
       "hmrcTaxPeriod",
@@ -180,22 +175,20 @@ class FormSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyCh
   val form = Form(
     FormId("James007-AAA999"),
     EnvelopeId("b66c5979-e885-49cd-9281-c7f42ce6b307"),
+    uk.gov.hmrc.gform.sharedmodel.UserId("James007"),
     FormTemplateId("AAA999"),
     None,
+    FormData(
+      List(
+        FormField(FormComponentId("facePhoto"), "face-photo.jpg"),
+        FormField(FormComponentId("startDate-year"), "2008")
+      )
+    ),
     InProgress,
     VisitIndex(Set(1, 2, 3)),
+    ThirdPartyData.empty,
     Some(EnvelopeExpiryDate(LocalDateTime.now.plusDays(1))),
-    FormComponentIdToFileIdMapping.empty,
-    Sensitive(
-      uk.gov.hmrc.gform.sharedmodel.UserId("James007"),
-      FormData(
-        List(
-          FormField(FormComponentId("facePhoto"), "face-photo.jpg"),
-          FormField(FormComponentId("startDate-year"), "2008")
-        )
-      ),
-      ThirdPartyData.empty
-    )
+    FormComponentIdToFileIdMapping.empty
   )
 
   "case class Form" should "be serialized into json" in {
