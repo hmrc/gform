@@ -26,7 +26,6 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, FormTemplate
 
 object EncryptedFormFormat {
   def formatEncrypted(jsonCrypto: CryptoWithKeysFromConfig): Format[Form] = new Format[Form] {
-    private val userId = "userId"
     private val componentIdToFileId = "componentIdToFileId"
     private val formData = "formData"
     private val thirdPartyData = "thirdPartyData"
@@ -34,7 +33,7 @@ object EncryptedFormFormat {
     override def writes(form: Form): JsValue =
       FormId.format.writes(form._id) ++
         EnvelopeId.format.writes(form.envelopeId) ++
-        Json.obj(userId -> jsonCrypto.encrypt(PlainText(Json.toJson(form.userId).toString())).value) ++
+        UserId.oformat.writes(form.userId) ++
         FormTemplateId.oformat.writes(form.formTemplateId) ++
         form.formTemplateVersion.map(FormTemplateVersion.oformat.writes).getOrElse(Json.obj()) ++
         Json.obj(formData -> jsonCrypto.encrypt(PlainText(Json.toJson(form.formData).toString())).value) ++
@@ -43,11 +42,6 @@ object EncryptedFormFormat {
         Json.obj(thirdPartyData -> jsonCrypto.encrypt(PlainText(Json.toJson(form.thirdPartyData).toString())).value) ++
         EnvelopeExpiryDate.optionFormat.writes(form.envelopeExpiryDate) ++
         Json.obj(componentIdToFileId -> FormComponentIdToFileIdMapping.format.writes(form.componentIdToFileId))
-
-    private val readUserId: Reads[UserId] =
-      (__ \ userId)
-        .read[String]
-        .map(s => Json.parse(jsonCrypto.decrypt(Crypted(s)).value).as[UserId])
 
     private val readFormData: Reads[FormData] =
       (__ \ formData)
@@ -62,7 +56,7 @@ object EncryptedFormFormat {
     private val formReads: Reads[Form] = (
       (FormId.format: Reads[FormId]) and
         EnvelopeId.format and
-        readUserId and
+        UserId.oformat and
         FormTemplateId.vformat and
         Form.formTemplateVersionWithFallback and
         readFormData and
