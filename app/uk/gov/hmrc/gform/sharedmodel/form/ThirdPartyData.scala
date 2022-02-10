@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.sharedmodel.form
 
 import play.api.libs.json._
+import uk.gov.hmrc.gform.addresslookup.AddressLookupResult
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, JsonUtils }
 import uk.gov.hmrc.gform.sharedmodel.{ BooleanExprCache, DataRetrieveId, DataRetrieveResult, NotChecked, Obligations }
 import uk.gov.hmrc.gform.sharedmodel.des.DesRegistrationResponse
@@ -28,18 +29,25 @@ case class ThirdPartyData(
   queryParams: QueryParams,
   reviewData: Option[Map[String, String]] = None,
   booleanExprCache: BooleanExprCache,
-  dataRetrieve: Option[Map[DataRetrieveId, DataRetrieveResult]]
+  dataRetrieve: Option[Map[DataRetrieveId, DataRetrieveResult]],
+  postcodeLookup: Option[Map[FormComponentId, AddressLookupResult]],
+  selectedAddresses: Option[Map[FormComponentId, String]]
 ) {
 
   def reviewComments: Option[String] = reviewData.flatMap(_.get("caseworkerComment"))
 }
 
 object ThirdPartyData {
-  val empty = ThirdPartyData(None, NotChecked, Map.empty, QueryParams.empty, None, BooleanExprCache.empty, None)
+  val empty =
+    ThirdPartyData(None, NotChecked, Map.empty, QueryParams.empty, None, BooleanExprCache.empty, None, None, None)
 
   implicit val formatMap: Format[Map[FormComponentId, EmailAndCode]] =
     JsonUtils.formatMap(FormComponentId.apply, _.value)
   implicit val formatDataRetrieve: Format[Map[DataRetrieveId, DataRetrieveResult]] =
     JsonUtils.formatMap(a => DataRetrieveId(a), _.value)
+  implicit val formatPostcodeLookup: Format[Map[FormComponentId, AddressLookupResult]] =
+    JsonUtils.formatMap(a => FormComponentId(a), _.value)
+  implicit val formatSelectedAddresses: Format[Map[FormComponentId, String]] =
+    JsonUtils.formatMap(a => FormComponentId(a), _.value)
   implicit val format: OFormat[ThirdPartyData] = Json.format
 }

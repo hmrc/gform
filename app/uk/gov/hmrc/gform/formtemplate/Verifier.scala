@@ -69,6 +69,7 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validateDataRetrieveCtx(formTemplate, pages, allExpressions).toEither)
       _ <- fromOptA(FormTemplateValidator.validateConfirmations(formTemplate, pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateChoiceSize(pages, allExpressions).toEither)
+      _ <- fromOptA(FormTemplateValidator.validatePostcodeLookup(pages).toEither)
     } yield ()
 
   }
