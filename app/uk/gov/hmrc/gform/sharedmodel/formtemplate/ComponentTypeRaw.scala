@@ -27,6 +27,8 @@ case object DateRaw extends ComponentTypeRaw
 
 case object CalendarDateRaw extends ComponentTypeRaw
 
+case object TaxPeriodDateRaw extends ComponentTypeRaw
+
 case object AddressRaw extends ComponentTypeRaw
 
 case object ChoiceRaw extends ComponentTypeRaw
@@ -54,6 +56,7 @@ object ComponentTypeRaw {
       "text"            -> TextRaw,
       "date"            -> DateRaw,
       "calendarDate"    -> CalendarDateRaw,
+      "taxPeriodDate"   -> TaxPeriodDateRaw,
       "address"         -> AddressRaw,
       "choice"          -> ChoiceRaw,
       "revealingChoice" -> RevealingChoiceRaw,
