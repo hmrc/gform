@@ -41,6 +41,8 @@ trait ThirdPartyDataGen {
       queryParams,
       None,
       BooleanExprCache.empty,
+      None,
+      None,
       None
     )
 }

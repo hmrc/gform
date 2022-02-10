@@ -298,6 +298,23 @@ object FormTemplateValidator {
     validateChoice(sectionsList, check, "Choice components doesn't have equal number of choices and hints")
   }
 
+  def validatePostcodeLookup(sectionsList: List[Page]): ValidationResult = {
+    val postcodeLookups: List[List[FormComponentId]] = sectionsList.map { page =>
+      page.allFormComponents.collect { case fc @ IsPostcodeLookup() =>
+        fc.id
+      }
+    }
+    postcodeLookups.foldMap { lookups =>
+      if (lookups.size > 1) {
+        val invalid = lookups.mkString(", ")
+        Invalid(
+          s"Only one Postcode lookup on a page is allowed. Some page has ${lookups.size} postcode lookups: $invalid"
+        )
+      } else Valid
+    }
+
+  }
+
   def validateChoiceSize(sectionsList: List[Page], allExpressions: List[ExprWithPath]): ValidationResult = {
     val fcs: List[(FormComponentId, Int)] = allExpressions
       .flatMap(_.referenceInfos)
@@ -415,6 +432,7 @@ object FormTemplateValidator {
     case InformationMessage(_, _)    => Valid
     case Time(_, _)                  => Valid
     case OverseasAddress(_, _, _, _) => Valid
+    case PostcodeLookup              => Valid
   }
 
   def validateForwardReference(sections: List[Section]): ValidationResult = {

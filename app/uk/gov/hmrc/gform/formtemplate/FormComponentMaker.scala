@@ -246,6 +246,7 @@ class FormComponentMaker(json: JsValue) {
     case Some(HmrcTaxPeriodRaw)   => hmrcTaxPeriodOpt
     case Some(TimeRaw)            => timeOpt
     case Some(OverseasAddressRaw) => overseasAddressOpt
+    case Some(PostcodeLookupRaw)  => postcodeLookupOpt
   }
 
   lazy val textOpt: Opt[ComponentType] = {
@@ -280,6 +281,8 @@ class FormComponentMaker(json: JsValue) {
   }
 
   private lazy val calendarDateOpt: Opt[CalendarDate.type] = Right(CalendarDate)
+
+  private lazy val postcodeLookupOpt: Opt[PostcodeLookup.type] = Right(PostcodeLookup)
 
   private lazy val dateOpt: Opt[Date] = {
 

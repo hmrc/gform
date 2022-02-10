@@ -121,3 +121,7 @@ object IsOverseasAddress {
 object IsInformationMessage {
   def unapply(fc: FormComponent): Option[InformationMessage] = fc.`type`.cast[InformationMessage]
 }
+
+object IsPostcodeLookup {
+  def unapply(fc: FormComponent): Boolean = fc.`type`.cast[PostcodeLookup.type].isDefined
+}

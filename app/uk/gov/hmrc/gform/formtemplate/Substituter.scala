@@ -157,6 +157,7 @@ object Substituter {
         InformationMessage(infoType, infoText(substitutions))
       case f @ FileUpload(_) => f
       case t @ Time(_, _)    => t
+      case PostcodeLookup    => PostcodeLookup
     }
 
   implicit def formComponentValidatorSubstituter[A](implicit
