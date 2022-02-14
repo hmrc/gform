@@ -236,6 +236,7 @@ class FormComponentMaker(json: JsValue) {
   private lazy val componentTypeOpt: Opt[ComponentType] = `type` match {
     case Some(TextRaw) | None     => textOpt
     case Some(CalendarDateRaw)    => calendarDateOpt
+    case Some(TaxPeriodDateRaw)   => taxPeriodDateOpt
     case Some(DateRaw)            => dateOpt
     case Some(AddressRaw)         => addressOpt
     case Some(GroupRaw)           => groupOpt
@@ -281,6 +282,7 @@ class FormComponentMaker(json: JsValue) {
   }
 
   private lazy val calendarDateOpt: Opt[CalendarDate.type] = Right(CalendarDate)
+  private lazy val taxPeriodDateOpt: Opt[TaxPeriodDate.type] = Right(TaxPeriodDate)
 
   private lazy val postcodeLookupOpt: Opt[PostcodeLookup.type] = Right(PostcodeLookup)
 

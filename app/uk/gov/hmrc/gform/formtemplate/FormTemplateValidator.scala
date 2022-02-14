@@ -422,6 +422,7 @@ object FormTemplateValidator {
     case HasExpr(MultipleExpr(fields)) => Valid
     case Date(_, _, _)                 => Valid
     case CalendarDate                  => Valid
+    case TaxPeriodDate                 => Valid
     case Address(_)                    => Valid
     case Choice(_, _, _, _, _, _)      => Valid
     case RevealingChoice(revealingChoiceElements, _) =>
