@@ -90,6 +90,25 @@ class FormTemplatesController(
           }
       }
 
+  def getLatest(id: FormTemplateId) = formTemplateAction("getLatest", id) { _ =>
+    findLatestFormTemplateId(id)
+      .flatMap(id =>
+        formTemplateService
+          .find(id)
+          .flatMap {
+            case Some(ft) => Future.successful(ft)
+            case None     => Future.failed(new NoSuchElementException(s"Latest form template of '$id' not found"))
+          }
+      )
+      .asOkJson
+  }
+
+  private def findLatestFormTemplateId(id: FormTemplateId): Future[FormTemplateId] =
+    formRedirectService.find(id) flatMap {
+      case Some(fr) => findLatestFormTemplateId(fr.redirect)
+      case None     => Future.successful(id)
+    }
+
   def getRaw(id: FormTemplateRawId) = formTemplateAction("getRaw", FormTemplateId(id.value)) { _ =>
     formTemplateService
       .get(id)
