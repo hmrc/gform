@@ -66,4 +66,4 @@ POST          /upscan/callback/:formComponentId/:envelopeId                     
 GET           /upscan/:reference                                                                        uk.gov.hmrc.gform.upscan.UpscanController.reference(reference: UpscanReference)
 DELETE        /upscan/:reference                                                                        uk.gov.hmrc.gform.upscan.UpscanController.deleteReference(reference: UpscanReference)
 
-GET           /forms-data/:formTemplateId                                                              uk.gov.hmrc.gform.form.FormController.getFormCount(formTemplateId: FormTemplateId)
+GET           /forms-data/:formTemplateId                                                               uk.gov.hmrc.gform.form.FormController.getFormCount(formTemplateId: FormTemplateId)
