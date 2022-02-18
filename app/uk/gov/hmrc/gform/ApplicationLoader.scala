@@ -17,6 +17,8 @@
 package uk.gov.hmrc.gform
 
 import cats.instances.future._
+import org.mongodb.scala.model.{ IndexModel, IndexOptions }
+import org.mongodb.scala.model.Indexes.ascending
 import org.slf4j.LoggerFactory
 import play.api.ApplicationLoader.Context
 import play.api._
@@ -53,6 +55,8 @@ import uk.gov.hmrc.gform.upscan.UpscanModule
 import uk.gov.hmrc.gform.validation.ValidationModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.gform.obligation.ObligationModule
+import uk.gov.hmrc.gform.repo.Repo
+import uk.gov.hmrc.gform.sharedmodel.form.Form
 import uk.gov.hmrc.gform.submission.destinations.DestinationModule
 import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorModule
 import uk.gov.hmrc.mongo.CurrentTimestampSupport
@@ -117,12 +121,24 @@ class ApplicationModule(context: Context)
     jsonCrypto
   )
 
+  private val formRepo: Repo[Form] =
+    new Repo[Form](
+      "forms",
+      mongoModule.mongoComponent,
+      _._id.value,
+      Seq(
+        IndexModel(ascending("data.form.formTemplateId"), IndexOptions().name("formTemplateIdIdx").background(true))
+      )
+    )
+
   val formService: FormService[Future] =
     new FormService(
       formMongoCache,
       fileUploadModule.fileUploadService,
       formTemplateModule.formTemplateService,
-      formMetadaModule.formMetadataService
+      formMetadaModule.formMetadataService,
+      formRepo,
+      formTemplateModule.formTemplateService
     )
 
   val formModule =
