@@ -22,7 +22,7 @@ import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.fileupload.FileUploadModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.sharedmodel.UserId
-import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormId, FormIdData, FormOverview, FormStatus, QueryParams, SavedForm, UserData }
+import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormId, FormIdData, FormOverview, FormStatus, QueryParams, UserData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -91,9 +91,6 @@ class FormModule(
       hc: HeaderCarrier
     ): FOpt[Form] =
       fromFutureA(formService.createFormFromLegacy(formIdData, newFormIdData))
-
-    override def getCount(formTemplateId: FormTemplateId)(implicit ex: ExecutionContext): Future[SavedForm] =
-      formService.getCount(formTemplateId)
   }
 
 }

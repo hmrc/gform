@@ -22,8 +22,6 @@ import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.{ ExecutionContext, Future }
-
 trait FormAlgebra[F[_]] {
   def get(formId: FormId)(implicit hc: HeaderCarrier): F[Form]
 
@@ -52,6 +50,4 @@ trait FormAlgebra[F[_]] {
   def forceUpdateFormStatus(formIdData: FormIdData, newStatus: FormStatus)(implicit hc: HeaderCarrier): F[Unit]
 
   def forceUpdateFormStatus(formId: FormId, newStatus: FormStatus)(implicit hc: HeaderCarrier): F[Unit]
-
-  def getCount(formTemplateId: FormTemplateId)(implicit ex: ExecutionContext): Future[SavedForm]
 }

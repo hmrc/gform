@@ -17,8 +17,6 @@
 package uk.gov.hmrc.gform
 
 import cats.instances.future._
-import org.mongodb.scala.model.{ IndexModel, IndexOptions }
-import org.mongodb.scala.model.Indexes.ascending
 import org.slf4j.LoggerFactory
 import play.api.ApplicationLoader.Context
 import play.api._
@@ -32,6 +30,7 @@ import uk.gov.hmrc.crypto.CryptoWithKeysFromConfig
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.auditing.AuditingModule
 import uk.gov.hmrc.gform.config.ConfigModule
+import uk.gov.hmrc.gform.data.DataModule
 import uk.gov.hmrc.gform.dblookup.DbLookupModule
 import uk.gov.hmrc.gform.dms.DmsModule
 import uk.gov.hmrc.gform.email.EmailModule
@@ -55,8 +54,6 @@ import uk.gov.hmrc.gform.upscan.UpscanModule
 import uk.gov.hmrc.gform.validation.ValidationModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.gform.obligation.ObligationModule
-import uk.gov.hmrc.gform.repo.Repo
-import uk.gov.hmrc.gform.sharedmodel.form.Form
 import uk.gov.hmrc.gform.submission.destinations.DestinationModule
 import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorModule
 import uk.gov.hmrc.mongo.CurrentTimestampSupport
@@ -121,24 +118,12 @@ class ApplicationModule(context: Context)
     jsonCrypto
   )
 
-  private val formRepo: Repo[Form] =
-    new Repo[Form](
-      "forms",
-      mongoModule.mongoComponent,
-      _._id.value,
-      Seq(
-        IndexModel(ascending("data.form.formTemplateId"), IndexOptions().name("formTemplateIdIdx").background(true))
-      )
-    )
-
   val formService: FormService[Future] =
     new FormService(
       formMongoCache,
       fileUploadModule.fileUploadService,
       formTemplateModule.formTemplateService,
-      formMetadaModule.formMetadataService,
-      formRepo,
-      formTemplateModule.formTemplateService
+      formMetadaModule.formMetadataService
     )
 
   val formModule =
@@ -199,6 +184,12 @@ class ApplicationModule(context: Context)
     mongoModule
   )
 
+  val dataModule = new DataModule(
+    mongoModule,
+    formTemplateModule,
+    configModule
+  )
+
   override lazy val httpErrorHandler: HttpErrorHandler = new ErrorHandler(
     playComponents.context.environment,
     playComponents.context.initialConfiguration,
@@ -221,7 +212,8 @@ class ApplicationModule(context: Context)
     emailModule,
     dbLookupModule,
     upscanModule,
-    httpErrorHandler
+    httpErrorHandler,
+    dataModule
   )
 
   override lazy val httpRequestHandler: HttpRequestHandler = playComponentsModule.httpRequestHandler

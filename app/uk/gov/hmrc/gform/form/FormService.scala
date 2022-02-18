@@ -22,29 +22,23 @@ import cats.syntax.eq._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.traverse._
-import org.mongodb.scala.model.Filters.{ and, equal, notEqual, regex }
 import uk.gov.hmrc.gform.sharedmodel.AffinityGroup
 import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
 import uk.gov.hmrc.gform.formmetadata.{ FormMetadata, FormMetadataAlgebra }
-import uk.gov.hmrc.gform.formtemplate.{ FormTemplateAlgebra, FormTemplateService }
+import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.logging.Loggers
-import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.save4later.FormPersistenceAlgebra
 import uk.gov.hmrc.gform.sharedmodel.form._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ BySubmissionReference, FormAccessCodeForAgents, FormComponentId, FormTemplate, FormTemplateId, NotPermitted }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ BySubmissionReference, FormAccessCodeForAgents, FormComponentId, FormTemplate, FormTemplateId }
 import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, SubmissionRef, UserId }
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.HeaderCarrier
-
-import scala.concurrent.{ ExecutionContext, Future }
 
 class FormService[F[_]: Monad](
   formPersistence: FormPersistenceAlgebra[F],
   fileUpload: FileUploadAlgebra[F],
   formTemplateAlgebra: FormTemplateAlgebra[F],
-  formMetadataAlgebra: FormMetadataAlgebra[F],
-  formRepo: Repo[Form],
-  formTemplateService: FormTemplateService
+  formMetadataAlgebra: FormMetadataAlgebra[F]
 ) extends FormAlgebra[F] {
 
   def get(formId: FormId)(implicit hc: HeaderCarrier): F[Form] =
@@ -70,30 +64,6 @@ class FormService[F[_]: Monad](
 
       filteredForms.map { case (_, formMetadata) => FormOverview.fromFormMetadata(formMetadata) }
     }
-
-  def getCount(formTemplateId: FormTemplateId)(implicit ex: ExecutionContext): Future[SavedForm] = {
-    val baseQuery =
-      and(equal("data.form.formTemplateId", formTemplateId.value), notEqual("data.form.status", Submitted.toString))
-
-    val queryOfEmail = and(baseQuery, regex("data.form.userId", "^email"))
-
-    val queryOfGG = and(
-      baseQuery,
-      and(regex("data.form.userId", "^(?!email).*"), regex("data.form.userId", "^(?!anonymous-session).*"))
-    )
-
-    for {
-      formTemplate <- formTemplateService.get(formTemplateId)
-      res <- formTemplate.draftRetrievalMethod match {
-               case NotPermitted => Future.successful(SavedForm(formTemplateId, 0, 0))
-               case _ =>
-                 for {
-                   countOfEmail <- formRepo.count(queryOfEmail)
-                   countOfGG    <- formRepo.count(queryOfGG)
-                 } yield SavedForm(formTemplateId, countOfEmail, countOfGG)
-             }
-    } yield res
-  }
 
   def delete(formId: FormId)(implicit hc: HeaderCarrier): F[Unit] =
     formPersistence.delete(formId)
