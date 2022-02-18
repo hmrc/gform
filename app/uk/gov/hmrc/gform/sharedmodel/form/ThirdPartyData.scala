@@ -31,7 +31,8 @@ case class ThirdPartyData(
   booleanExprCache: BooleanExprCache,
   dataRetrieve: Option[Map[DataRetrieveId, DataRetrieveResult]],
   postcodeLookup: Option[Map[FormComponentId, AddressLookupResult]],
-  selectedAddresses: Option[Map[FormComponentId, String]]
+  selectedAddresses: Option[Map[FormComponentId, String]],
+  enteredAddresses: Option[Map[FormComponentId, FormData]]
 ) {
 
   def reviewComments: Option[String] = reviewData.flatMap(_.get("caseworkerComment"))
@@ -39,7 +40,7 @@ case class ThirdPartyData(
 
 object ThirdPartyData {
   val empty =
-    ThirdPartyData(None, NotChecked, Map.empty, QueryParams.empty, None, BooleanExprCache.empty, None, None, None)
+    ThirdPartyData(None, NotChecked, Map.empty, QueryParams.empty, None, BooleanExprCache.empty, None, None, None, None)
 
   implicit val formatMap: Format[Map[FormComponentId, EmailAndCode]] =
     JsonUtils.formatMap(FormComponentId.apply, _.value)
@@ -48,6 +49,8 @@ object ThirdPartyData {
   implicit val formatPostcodeLookup: Format[Map[FormComponentId, AddressLookupResult]] =
     JsonUtils.formatMap(a => FormComponentId(a), _.value)
   implicit val formatSelectedAddresses: Format[Map[FormComponentId, String]] =
+    JsonUtils.formatMap(a => FormComponentId(a), _.value)
+  implicit val formatEnteredAddresses: Format[Map[FormComponentId, FormData]] =
     JsonUtils.formatMap(a => FormComponentId(a), _.value)
   implicit val format: OFormat[ThirdPartyData] = Json.format
 }

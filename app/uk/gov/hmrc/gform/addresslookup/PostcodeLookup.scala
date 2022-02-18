@@ -16,7 +16,9 @@
 
 package uk.gov.hmrc.gform.addresslookup
 
+import cats.data.NonEmptyList
 import play.api.libs.json.{ Format, Json }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils
 
 object PostcodeLookup {
 
@@ -27,6 +29,16 @@ object PostcodeLookup {
 
   object Request {
     implicit val format: Format[Request] = Json.format[Request]
+  }
+
+  final case class Response(
+    filterDisabled: Boolean,
+    addresses: Option[NonEmptyList[PostcodeLookup.AddressRecord]]
+  )
+
+  object Response {
+    import JsonUtils._
+    implicit val format: Format[Response] = Json.format[Response]
   }
 
   // AddressRecord model taken from https://github.com/hmrc/address-lookup-frontend/tree/f1f4b9b35c51889e36cb5240cfc227f9c85485af/app/address/v2
