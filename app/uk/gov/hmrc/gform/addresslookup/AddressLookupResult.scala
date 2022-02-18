@@ -16,16 +16,13 @@
 
 package uk.gov.hmrc.gform.addresslookup
 
-import cats.data.NonEmptyList
 import play.api.libs.json.{ Format, Json }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils
 
 final case class AddressLookupResult(
   request: PostcodeLookup.Request,
-  addresses: Option[NonEmptyList[PostcodeLookup.AddressRecord]]
+  response: PostcodeLookup.Response
 )
 
 object AddressLookupResult {
-  import JsonUtils._
   implicit val format: Format[AddressLookupResult] = Json.format[AddressLookupResult]
 }

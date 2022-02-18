@@ -43,6 +43,7 @@ trait ThirdPartyDataGen {
       BooleanExprCache.empty,
       None,
       None,
+      None,
       None
     )
 }
