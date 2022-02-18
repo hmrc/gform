@@ -83,11 +83,7 @@ class FormTemplatesController(
       .find(id)
       .flatMap {
         case Some(ft) => Future.successful(ft)
-        case None =>
-          formRedirectService.find(id) flatMap {
-            case Some(fr) => findFormTemplate(fr.redirect)
-            case None     => Future.failed(new NoSuchElementException(s"'$id' not found"))
-          }
+        case None     => Future.failed(new NoSuchElementException(s"'$id' not found"))
       }
 
   def getLatest(id: FormTemplateId) = formTemplateAction("getLatest", id) { _ =>
