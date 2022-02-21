@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.data
+package uk.gov.hmrc.gform.formstatistics
 
 import org.mongodb.scala.model.Filters.{ and, equal, notEqual, regex }
 import uk.gov.hmrc.gform.formtemplate.FormTemplateService
@@ -24,12 +24,13 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, NotPermitted
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-trait DataAlgebra[F[_]] {
+trait FormStatisticsAlgebra[F[_]] {
   def getSavedFormCount(formTemplateId: FormTemplateId): F[SavedForm]
 }
 
-class DataService(formRepo: Repo[Form], formTemplateService: FormTemplateService)(implicit ec: ExecutionContext)
-    extends DataAlgebra[Future] {
+class FormStatisticsService(formRepo: Repo[Form], formTemplateService: FormTemplateService)(implicit
+  ec: ExecutionContext
+) extends FormStatisticsAlgebra[Future] {
 
   override def getSavedFormCount(formTemplateId: FormTemplateId): Future[SavedForm] = {
     val baseQuery =

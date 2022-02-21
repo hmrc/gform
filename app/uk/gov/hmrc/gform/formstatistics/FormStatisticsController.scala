@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.data
+package uk.gov.hmrc.gform.formstatistics
 
 import play.api.libs.json.Json
 import play.api.mvc.ControllerComponents
@@ -23,12 +23,15 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-class DataController(controllerComponents: ControllerComponents, dataService: DataAlgebra[Future])(implicit
+class FormStatisticsController(
+  controllerComponents: ControllerComponents,
+  formStatisticsService: FormStatisticsAlgebra[Future]
+)(implicit
   ex: ExecutionContext
 ) extends BaseController(controllerComponents) {
 
   def getFormCount(formTemplateId: FormTemplateId) = Action.async { _ =>
-    dataService
+    formStatisticsService
       .getSavedFormCount(formTemplateId)
       .map(savedForm => Ok(Json.toJson(savedForm)))
   }

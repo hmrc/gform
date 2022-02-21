@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.data
+package uk.gov.hmrc.gform.formstatistics
 
 import org.mongodb.scala.model.{ IndexModel, IndexOptions }
 import org.mongodb.scala.model.Indexes.ascending
@@ -28,7 +28,11 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-class DataModule(mongoModule: MongoModule, formTemplateModule: FormTemplateModule, configModule: ConfigModule)(implicit
+class FormStatisticsModule(
+  mongoModule: MongoModule,
+  formTemplateModule: FormTemplateModule,
+  configModule: ConfigModule
+)(implicit
   ex: ExecutionContext
 ) {
 
@@ -42,11 +46,12 @@ class DataModule(mongoModule: MongoModule, formTemplateModule: FormTemplateModul
       )
     )
 
-  val dataService: DataAlgebra[Future] = new DataService(formRepo, formTemplateModule.formTemplateService)
+  val formStatisticsService: FormStatisticsAlgebra[Future] =
+    new FormStatisticsService(formRepo, formTemplateModule.formTemplateService)
 
-  val dataController: DataController =
-    new DataController(configModule.controllerComponents, dataService)
+  val formStatisticsController: FormStatisticsController =
+    new FormStatisticsController(configModule.controllerComponents, formStatisticsService)
 
-  val foptDataService: DataAlgebra[FOpt] = (formTemplateId: FormTemplateId) =>
-    fromFutureA(dataService.getSavedFormCount(formTemplateId))
+  val foptFormStatisticsService: FormStatisticsAlgebra[FOpt] = (formTemplateId: FormTemplateId) =>
+    fromFutureA(formStatisticsService.getSavedFormCount(formTemplateId))
 }

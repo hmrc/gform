@@ -30,7 +30,7 @@ import uk.gov.hmrc.crypto.CryptoWithKeysFromConfig
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.auditing.AuditingModule
 import uk.gov.hmrc.gform.config.ConfigModule
-import uk.gov.hmrc.gform.data.DataModule
+import uk.gov.hmrc.gform.formstatistics.FormStatisticsModule
 import uk.gov.hmrc.gform.dblookup.DbLookupModule
 import uk.gov.hmrc.gform.dms.DmsModule
 import uk.gov.hmrc.gform.email.EmailModule
@@ -184,7 +184,7 @@ class ApplicationModule(context: Context)
     mongoModule
   )
 
-  val dataModule = new DataModule(
+  val formStatisticsModule = new FormStatisticsModule(
     mongoModule,
     formTemplateModule,
     configModule
@@ -213,7 +213,7 @@ class ApplicationModule(context: Context)
     dbLookupModule,
     upscanModule,
     httpErrorHandler,
-    dataModule
+    formStatisticsModule
   )
 
   override lazy val httpRequestHandler: HttpRequestHandler = playComponentsModule.httpRequestHandler
