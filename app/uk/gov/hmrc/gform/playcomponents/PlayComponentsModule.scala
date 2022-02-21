@@ -25,6 +25,7 @@ import scala.concurrent.ExecutionContext
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.auditing.AuditingModule
 import uk.gov.hmrc.gform.config.ConfigModule
+import uk.gov.hmrc.gform.formstatistics.FormStatisticsModule
 import uk.gov.hmrc.gform.dblookup.DbLookupModule
 import uk.gov.hmrc.gform.dms.DmsModule
 import uk.gov.hmrc.gform.email.EmailModule
@@ -55,7 +56,8 @@ class PlayComponentsModule(
   emailModule: EmailModule,
   dbLookupModule: DbLookupModule,
   upscanModule: UpscanModule,
-  errorHandler: HttpErrorHandler
+  errorHandler: HttpErrorHandler,
+  formStatisticsModule: FormStatisticsModule
 )(implicit ec: ExecutionContext) {
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -73,7 +75,8 @@ class PlayComponentsModule(
     obligationModule.obligationController,
     emailModule.emailCodeVerificationController,
     dbLookupModule.dbLookupController,
-    upscanModule.upscanController
+    upscanModule.upscanController,
+    formStatisticsModule.formStatisticsController
   )
 
   private val healthController =

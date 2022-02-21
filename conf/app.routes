@@ -65,3 +65,5 @@ POST          /upscan/encrypt                                                   
 POST          /upscan/callback/:formComponentId/:envelopeId                                             uk.gov.hmrc.gform.upscan.UpscanController.callback(formComponentId: FormComponentId, envelopeId: EnvelopeId, formIdDataCrypted: Crypted)
 GET           /upscan/:reference                                                                        uk.gov.hmrc.gform.upscan.UpscanController.reference(reference: UpscanReference)
 DELETE        /upscan/:reference                                                                        uk.gov.hmrc.gform.upscan.UpscanController.deleteReference(reference: UpscanReference)
+
+GET           /formStatistics/:formTemplateId                                                           uk.gov.hmrc.gform.formstatistics.FormStatisticsController.getFormCount(formTemplateId: FormTemplateId)
