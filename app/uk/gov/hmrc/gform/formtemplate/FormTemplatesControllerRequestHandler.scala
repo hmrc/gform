@@ -26,7 +26,7 @@ import scala.concurrent.ExecutionContext
 import scala.language.postfixOps
 import uk.gov.hmrc.gform.core.{ FOpt, Opt, fromOptA }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Default, FormCategory, FormTemplate, FormTemplateRaw, SummarySection }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Default, FormCategory, FormTemplate, FormTemplateRaw, Medium, SummarySection }
 
 trait RequestHandlerAlg[F[_]] {
   def handleRequest(templateRaw: FormTemplateRaw): F[Unit]
@@ -164,6 +164,48 @@ object FormTemplatesControllerRequestHandler {
         Json.obj()
       )
 
+    def transformProgressIndicatiorInArray =
+      __.read[JsArray].map { pages =>
+        JsArray(
+          pages.value.map {
+            case page: JsObject if page.value.contains("progressIndicator") =>
+              transformProgressIndicator(page)
+            case x => x
+          }
+        )
+      }
+
+    def transformProgressIndicator(data: JsObject) = {
+      import uk.gov.hmrc.gform.core.parsers.LabelSizeParser
+      import uk.gov.hmrc.gform.sharedmodel.formtemplate.LabelSize
+
+      val labelSize = (data \ "progressIndicatorSize")
+        .asOpt[String]
+        .flatMap(x => LabelSizeParser.validate(x).right.toOption)
+        .getOrElse(Medium)
+
+      data + ("progressIndicator" -> Json.obj(
+        "label"     -> (data("progressIndicator")),
+        "labelSize" -> LabelSize.format.writes(labelSize)
+      ))
+    }
+
+    val transformProgressIndicatorInSection =
+      (__ \ 'sections).json.update(transformProgressIndicatiorInArray) orElse __.read
+
+    val transformProgressIndicatorInPages =
+      (__ \ 'sections).json.update(
+        __.read[JsArray].map { sections =>
+          JsArray(
+            sections.value.map {
+              case section: JsObject if section.value.contains("pages") =>
+                section.transform((__ \ 'pages).json.update(transformProgressIndicatiorInArray)).get
+              case x => x
+            }
+          )
+        }
+      ) orElse __.read
+
     val moveDestinations =
       (__ \ 'destinations \ 'destinations).json
         .copyFrom((__ \ 'destinations).json.pick) orElse Reads.pure(Json.obj())
@@ -224,7 +266,9 @@ object FormTemplatesControllerRequestHandler {
       pruneShowContinueOrDeletePage andThen
         pruneAcknowledgementSection andThen
         prunePrintSection andThen
-        pruneDeclarationSection and
+        pruneDeclarationSection andThen
+        transformProgressIndicatorInSection andThen
+        transformProgressIndicatorInPages and
         drmValue and
         drmShowContinueOrDeletePage and
         ensureOriginalId and
