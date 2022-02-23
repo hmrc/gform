@@ -205,7 +205,7 @@ object Substituter {
     t.copy(
       title = t.title(substitutions),
       noPIITitle = t.noPIITitle(substitutions),
-      description = t.description.apply(substitutions),
+      description = t.description(substitutions),
       shortName = t.shortName(substitutions),
       progressIndicator = t.progressIndicator(substitutions),
       includeIf = t.includeIf(substitutions),
