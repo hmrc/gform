@@ -228,7 +228,8 @@ object Substituter {
         addAnotherQuestion = addToList.addAnotherQuestion(substitutions),
         instruction = addToList.instruction(substitutions),
         infoMessage = addToList.infoMessage(substitutions),
-        defaultPage = addToList.defaultPage(substitutions)
+        defaultPage = addToList.defaultPage(substitutions),
+        cyaPage = addToList.cyaPage(substitutions)
       )
     }
   implicit def addToListLimitSubstituter[A](implicit
@@ -335,6 +336,16 @@ object Substituter {
       footer = t.footer(substitutions),
       continueLabel = t.continueLabel(substitutions),
       fields = t.fields(substitutions)
+    )
+
+  implicit def cyaPageSubstituter[A](implicit
+    ev: Substituter[A, Expr]
+  ): Substituter[A, CheckYourAnswersPage] = (substitutions, t) =>
+    t.copy(
+      title = t.title.apply(substitutions),
+      header = t.header(substitutions),
+      footer = t.footer(substitutions),
+      continueLabel = t.continueLabel(substitutions)
     )
 
   implicit def formTemplateSubstituter[A](implicit
