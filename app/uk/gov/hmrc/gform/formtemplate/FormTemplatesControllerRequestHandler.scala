@@ -164,31 +164,31 @@ object FormTemplatesControllerRequestHandler {
         Json.obj()
       )
 
-    def transformProgressIndicatiorInArray =
-      __.read[JsArray].map { pages =>
-        JsArray(
-          pages.value.map {
-            case page: JsObject if page.value.contains("progressIndicator") =>
-              transformProgressIndicator(page)
-            case x => x
-          }
-        )
-      }
-
-    def transformProgressIndicator(data: JsObject) = {
+    val transformProgressIndicator = {
       import uk.gov.hmrc.gform.core.parsers.LabelSizeParser
       import uk.gov.hmrc.gform.sharedmodel.formtemplate.LabelSize
 
-      val labelSize = (data \ "progressIndicatorSize")
-        .asOpt[String]
-        .flatMap(x => LabelSizeParser.validate(x).right.toOption)
-        .getOrElse(Medium)
+      val pickProgressIndicatorSize = (__ \ 'progressIndicatorSize).json
+        .pick[JsString]
+        .map(x => LabelSizeParser.validate(x.value).right.toOption.getOrElse(Medium)) orElse Reads.pure(Medium)
 
-      data + ("progressIndicator" -> Json.obj(
-        "label"     -> (data("progressIndicator")),
-        "labelSize" -> LabelSize.format.writes(labelSize)
-      ))
+      val pickProgressIndicator = (__ \ 'progressIndicator).json.pick
+
+      val createProgressIndicator =
+        (pickProgressIndicator ~ pickProgressIndicatorSize).tupled.map(x =>
+          Json.obj("progressIndicator" -> Json.obj("label" -> x._1, "labelSize" -> LabelSize.format.writes(x._2)))
+        )
+
+      __.json.update(createProgressIndicator) andThen (__ \ 'progressIndicatorSize).json.prune orElse (__.read)
+
     }
+
+    val transformProgressIndicatiorInArray =
+      __.read[JsArray].map { pages =>
+        JsArray(
+          pages.value.map(_.transform(transformProgressIndicator).get)
+        )
+      }
 
     val transformProgressIndicatorInSection =
       (__ \ 'sections).json.update(transformProgressIndicatiorInArray) orElse __.read

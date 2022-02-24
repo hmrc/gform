@@ -597,7 +597,6 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
           |          "ExtraLarge": {}
           |        }
           |      },
-          |      "progressIndicatorSize": "xl",
           |      "fields": [
           |        {
           |          "id": "exampleChoice",
@@ -629,7 +628,6 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
           |              "Large": {}
           |            }
           |          },
-          |          "progressIndicatorSize": "l",
           |          "title": "Name",
           |          "fields": [
           |            {
