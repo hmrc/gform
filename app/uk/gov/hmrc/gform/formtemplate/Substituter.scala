@@ -60,6 +60,14 @@ object Substituter {
         interpolations = t.interpolations(substitutions)
       )
 
+  implicit def progressIndicator[A](implicit ev: Substituter[A, Expr]): Substituter[A, ProgressIndicator] =
+    new Substituter[A, ProgressIndicator] {
+      override def substitute(substitutions: A, ts: ProgressIndicator): ProgressIndicator = {
+        val substituter = implicitly[Substituter[A, SmartString]]
+        ts.copy(label = substituter.substitute(substitutions, ts.label))
+      }
+    }
+
   implicit def includeIfSubstituter[A](implicit
     ev: Substituter[A, BooleanExpr]
   ): Substituter[A, IncludeIf] = (substitutions, t) => t.copy(booleanExpr = t.booleanExpr(substitutions))

@@ -424,12 +424,309 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                                                    |}
                                 """.stripMargin)
 
+    val inputProgressIndicator =
+      Json.parse("""
+                   |{
+                   |  "_id": "gform-1668",
+                   |  "formName": "Add to list tttt",
+                   |  "description": "Add to list",
+                   |  "authConfig": {
+                   |    "authModule": "anonymous"
+                   |  },
+                   |  "emailTemplateId": "eeitt_submission_confirmation",
+                   |  "sections": [
+                   |    {
+                   |      "title": "Do you want to Add Owner Details",
+                   |      "progressIndicator":"Name",
+                   |      "progressIndicatorSize": "xl",
+                   |      "fields": [
+                   |        {
+                   |          "id": "exampleChoice",
+                   |          "type": "choice",
+                   |          "label": "So you want to add another something?",
+                   |          "format": "yesno"
+                   |        }
+                   |      ]
+                   |    },
+                   |    {
+                   |      "id": "owner",
+                   |      "type": "addToList",
+                   |      "title": "This is for AddToList",
+                   |      "summaryName": "owner",
+                   |      "shortName": "${ownerName}",
+                   |      "description": "${ownerName} ${OwnerAddress} ${exampleChoice}",
+                   |      "addAnotherQuestion": {
+                   |        "id": "ownerFc",
+                   |        "type": "choice",
+                   |        "label": "So you want to add another owner?",
+                   |        "format": "yesno",
+                   |        "helpText": "For children's homes, an individual provider may be more than one person."
+                   |      },
+                   |      "defaultPage": {
+                   |        "title": "Add details",
+                   |        "fields": [
+                   |          {
+                   |            "id": "dp1",
+                   |            "label": "",
+                   |            "type": "info",
+                   |            "infoType": "noformat",
+                   |            "infoText": "You must tell us about all directors"
+                   |          }
+                   |        ]
+                   |      },
+                   |      "limit": {
+                   |        "repeatsMax": "${'3'}",
+                   |        "field": {
+                   |          "id": "uploadText",
+                   |          "type": "info",
+                   |          "label": "",
+                   |          "infoText": "You can only add 3 items"
+                   |        }
+                   |      },
+                   |      "pages": [
+                   |        {
+                   |          "progressIndicator":"Name",
+                   |          "progressIndicatorSize": "l",
+                   |          "title": "Name",
+                   |          "fields": [
+                   |            {
+                   |              "id": "ownerName",
+                   |              "label": "Enter name",
+                   |              "labelSize": "xl",
+                   |              "type": "text",
+                   |              "format": "text"
+                   |            },
+                   |            {
+                   |              "id": "ownerName2",
+                   |              "label": "Enter name2",
+                   |              "labelSize": "l",
+                   |              "type": "text",
+                   |              "format": "text"
+                   |            }
+                   |          ]
+                   |        },
+                   |        {
+                   |          "progressIndicator": "Person ",
+                   |          "title": "Amount",
+                   |          "fields": [
+                   |            {
+                   |              "id": "Amount",
+                   |              "label": "Enter Age",
+                   |              "type": "text",
+                   |              "format": "text"
+                   |            }
+                   |          ]
+                   |        },
+                   |        {
+                   |          "progressIndicator": "Person ",
+                   |          "title": "Address",
+                   |          "fields": [
+                   |            {
+                   |              "id": "OwnerAddress",
+                   |              "label": "Enter Address",
+                   |              "type": "text",
+                   |              "format": "text"
+                   |            }
+                   |          ]
+                   |        }
+                   |      ]
+                   |    }
+                   |  ],
+                   |  "declarationSection": {
+                   |    "shortName": "Declaration",
+                   |    "title": "Declaration",
+                   |    "fields": []
+                   |  },
+                   |  "acknowledgementSection": {
+                   |    "shortName": "Acknowledgement Page",
+                   |    "title": "Acknowledgement Page",
+                   |    "fields": []
+                   |  },
+                   |  "destinations": [
+                   |    {
+                   |      "id": "transitionToSubmitted",
+                   |      "type": "stateTransition",
+                   |      "requiredState": "Submitted"
+                   |    }
+                   |  ]
+                   |}
+                   |""".stripMargin)
+
+    val expectedProgressIndicator =
+      Json.parse(
+        """
+          |{
+          |  "draftRetrievalMethod": {
+          |    "showContinueOrDeletePage": "true",
+          |    "value": "onePerUser"
+          |  },
+          |  "formCategory": "default",
+          |  "languages": [
+          |    "en"
+          |  ],
+          |  "authConfig": {
+          |    "authModule": "anonymous"
+          |  },
+          |  "destinations": {
+          |    "destinations": [
+          |      {
+          |        "id": "transitionToSubmitted",
+          |        "type": "stateTransition",
+          |        "requiredState": "Submitted"
+          |      }
+          |    ],
+          |    "declarationSection": {
+          |      "shortName": "Declaration",
+          |      "title": "Declaration",
+          |      "fields": []
+          |    },
+          |    "acknowledgementSection": {
+          |      "shortName": "Acknowledgement Page",
+          |      "title": "Acknowledgement Page",
+          |      "fields": [],
+          |      "displayFeedbackLink": true
+          |    }
+          |  },
+          |  "description": "Add to list",
+          |  "sections": [
+          |    {
+          |      "title": "Do you want to Add Owner Details",
+          |      "progressIndicator": {
+          |        "label": "Name",
+          |        "labelSize": "xl"
+          |      },
+          |      "fields": [
+          |        {
+          |          "id": "exampleChoice",
+          |          "type": "choice",
+          |          "label": "So you want to add another something?",
+          |          "format": "yesno"
+          |        }
+          |      ]
+          |    },
+          |    {
+          |      "summaryName": "owner",
+          |      "defaultPage": {
+          |        "title": "Add details",
+          |        "fields": [
+          |          {
+          |            "id": "dp1",
+          |            "label": "",
+          |            "type": "info",
+          |            "infoType": "noformat",
+          |            "infoText": "You must tell us about all directors"
+          |          }
+          |        ]
+          |      },
+          |      "pages": [
+          |        {
+          |          "progressIndicator": {
+          |            "label": "Name",
+          |            "labelSize": "l"
+          |          },
+          |          "title": "Name",
+          |          "fields": [
+          |            {
+          |              "id": "ownerName",
+          |              "label": "Enter name",
+          |              "labelSize": "xl",
+          |              "type": "text",
+          |              "format": "text"
+          |            },
+          |            {
+          |              "id": "ownerName2",
+          |              "label": "Enter name2",
+          |              "labelSize": "l",
+          |              "type": "text",
+          |              "format": "text"
+          |            }
+          |          ]
+          |        },
+          |        {
+          |          "progressIndicator": {
+          |            "label": "Person ",
+          |            "labelSize": "m"
+          |          },
+          |          "title": "Amount",
+          |          "fields": [
+          |            {
+          |              "id": "Amount",
+          |              "label": "Enter Age",
+          |              "type": "text",
+          |              "format": "text"
+          |            }
+          |          ]
+          |        },
+          |        {
+          |          "progressIndicator": {
+          |            "label": "Person ",
+          |            "labelSize": "m"
+          |          },
+          |          "title": "Address",
+          |          "fields": [
+          |            {
+          |              "id": "OwnerAddress",
+          |              "label": "Enter Address",
+          |              "type": "text",
+          |              "format": "text"
+          |            }
+          |          ]
+          |        }
+          |      ],
+          |      "limit": {
+          |        "repeatsMax": "${'3'}",
+          |        "field": {
+          |          "id": "uploadText",
+          |          "type": "info",
+          |          "label": "",
+          |          "infoText": "You can only add 3 items"
+          |        }
+          |      },
+          |      "description": "${ownerName} ${OwnerAddress} ${exampleChoice}",
+          |      "id": "owner",
+          |      "type": "addToList",
+          |      "title": "This is for AddToList",
+          |      "shortName": "${ownerName}",
+          |      "addAnotherQuestion": {
+          |        "id": "ownerFc",
+          |        "type": "choice",
+          |        "label": "So you want to add another owner?",
+          |        "format": "yesno",
+          |        "helpText": "For children's homes, an individual provider may be more than one person."
+          |      }
+          |    }
+          |  ],
+          |  "summarySection": {
+          |    "title": {
+          |      "en": "Check your answers",
+          |      "cy": "Gwiriwch eich atebion"
+          |    },
+          |    "header": {
+          |      "en": "Make sure the information you have given is correct",
+          |      "cy": "Gwnewch yn siŵr bod yr wybodaeth a roddwyd gennych yn gywir"
+          |    },
+          |    "footer": {
+          |      "en": "##Now send your form\n\nYou need to submit your form on the next screen.\n\nBefore you do this you can [print or save a PDF copy of your answers (opens in a new window or tab)](${link.printSummaryPdf}).",
+          |      "cy": "##Nawr anfonwch eich ffurflen\n\nMae angen i chi gyflwyno’ch ffurflen ar y sgrin nesaf.\n\nCyn i chi wneud hyn gallwch [argraffu neu gadw copi PDF o’ch atebion (yn agor ffenestr neu dab newydd)](${link.printSummaryPdf})."
+          |    }
+          |  },
+          |  "formName": "Add to list tttt",
+          |  "emailTemplateId": "eeitt_submission_confirmation",
+          |  "_id": "gform-1668",
+          |  "originalId": "gform-1668",
+          |  "displayHMRCLogo": false,
+          |  "parentFormSubmissionRefs": []
+          |}
+          |""".stripMargin
+      )
+
     val t = Table(
       ("input", "expected"),
       (printSectionInput, printSectionExpected),
       (destinationsInput, destinationsExpected),
       (input, expected),
-      (inputDraftRetrievalMethodIsNotPermitted, expectedDraftRetrievalMethodIsNotPermitted)
+      (inputDraftRetrievalMethodIsNotPermitted, expectedDraftRetrievalMethodIsNotPermitted),
+      (inputProgressIndicator, expectedProgressIndicator)
     )
 
     forAll(t) { case (input, expected) =>

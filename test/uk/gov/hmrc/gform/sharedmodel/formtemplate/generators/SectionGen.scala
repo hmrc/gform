@@ -97,7 +97,7 @@ trait SectionGen {
       noPIITitle        <- Gen.option(smartStringGen)
       description       <- Gen.option(smartStringGen)
       progressIndicator <- Gen.option(smartStringGen)
-      shortName         <- Gen.option(smartStringGen)
+      shortName         <- Gen.option(smartStringGen.map(x => ProgressIndicator(x)))
       includeIf         <- Gen.option(IncludeIfGen.includeIfGen)
       validators        <- Gen.option(ValidatorGen.validatorGen)
       fields            <- PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen())

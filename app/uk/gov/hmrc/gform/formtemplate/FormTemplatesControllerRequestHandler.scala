@@ -95,6 +95,9 @@ object FormTemplatesControllerRequestHandler {
   private val noTemplateId: Reads[JsObject] =
     Reads.failed("Template field _id must be provided and it must be a String")
 
+  private def list[A <: JsValue](reads: Reads[A]): Reads[JsArray] =
+    Reads.list(reads).map(JsArray.apply)
+
   def normaliseJSON(jsonValue: JsValue): JsResult[JsObject] = {
 
     val drmValue =
@@ -164,6 +167,28 @@ object FormTemplatesControllerRequestHandler {
         Json.obj()
       )
 
+    val transformProgressIndicator = {
+
+      val pickProgressIndicatorSize = (__ \ 'progressIndicatorSize).json.pick orElse (Reads.pure(JsString("m")))
+
+      val pickProgressIndicator = (__ \ 'progressIndicator).json.pick
+
+      val createProgressIndicator =
+        (pickProgressIndicator ~ pickProgressIndicatorSize).tupled.map { case (label, size) =>
+          Json.obj("progressIndicator" -> Json.obj("label" -> label, "labelSize" -> size))
+        }
+
+      __.json.update(createProgressIndicator) andThen (__ \ 'progressIndicatorSize).json.prune orElse (__.read)
+
+    }
+
+    val transformPages: Reads[JsObject] =
+      (__ \ 'pages).json.update(list(transformProgressIndicator)) orElse __.read
+
+    val transformProgressIndicators = (__ \ 'sections).json.update(
+      list(transformProgressIndicator) andThen list(transformPages)
+    ) orElse __.read
+
     val moveDestinations =
       (__ \ 'destinations \ 'destinations).json
         .copyFrom((__ \ 'destinations).json.pick) orElse Reads.pure(Json.obj())
@@ -224,6 +249,7 @@ object FormTemplatesControllerRequestHandler {
       pruneShowContinueOrDeletePage andThen
         pruneAcknowledgementSection andThen
         prunePrintSection andThen
+        transformProgressIndicators andThen
         pruneDeclarationSection and
         drmValue and
         drmShowContinueOrDeletePage and
