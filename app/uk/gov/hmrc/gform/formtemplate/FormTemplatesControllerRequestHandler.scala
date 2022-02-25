@@ -26,7 +26,7 @@ import scala.concurrent.ExecutionContext
 import scala.language.postfixOps
 import uk.gov.hmrc.gform.core.{ FOpt, Opt, fromOptA }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Default, FormCategory, FormTemplate, FormTemplateRaw, Medium, SummarySection }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Default, FormCategory, FormTemplate, FormTemplateRaw, SummarySection }
 
 trait RequestHandlerAlg[F[_]] {
   def handleRequest(templateRaw: FormTemplateRaw): F[Unit]
@@ -94,6 +94,9 @@ object FormTemplatesControllerRequestHandler {
 
   private val noTemplateId: Reads[JsObject] =
     Reads.failed("Template field _id must be provided and it must be a String")
+
+  private def list[A <: JsValue](reads: Reads[A]): Reads[JsArray] =
+    Reads.list(reads).map(JsArray.apply)
 
   def normaliseJSON(jsonValue: JsValue): JsResult[JsObject] = {
 
@@ -165,46 +168,26 @@ object FormTemplatesControllerRequestHandler {
       )
 
     val transformProgressIndicator = {
-      import uk.gov.hmrc.gform.core.parsers.LabelSizeParser
-      import uk.gov.hmrc.gform.sharedmodel.formtemplate.LabelSize
 
-      val pickProgressIndicatorSize = (__ \ 'progressIndicatorSize).json
-        .pick[JsString]
-        .map(x => LabelSizeParser.validate(x.value).right.toOption.getOrElse(Medium)) orElse Reads.pure(Medium)
+      val pickProgressIndicatorSize = (__ \ 'progressIndicatorSize).json.pick orElse (Reads.pure(JsString("m")))
 
       val pickProgressIndicator = (__ \ 'progressIndicator).json.pick
 
       val createProgressIndicator =
-        (pickProgressIndicator ~ pickProgressIndicatorSize).tupled.map(x =>
-          Json.obj("progressIndicator" -> Json.obj("label" -> x._1, "labelSize" -> LabelSize.format.writes(x._2)))
-        )
+        (pickProgressIndicator ~ pickProgressIndicatorSize).tupled.map { case (label, size) =>
+          Json.obj("progressIndicator" -> Json.obj("label" -> label, "labelSize" -> size))
+        }
 
       __.json.update(createProgressIndicator) andThen (__ \ 'progressIndicatorSize).json.prune orElse (__.read)
 
     }
 
-    val transformProgressIndicatiorInArray =
-      __.read[JsArray].map { pages =>
-        JsArray(
-          pages.value.map(_.transform(transformProgressIndicator).get)
-        )
-      }
+    val transformPages: Reads[JsObject] =
+      (__ \ 'pages).json.update(list(transformProgressIndicator)) orElse __.read
 
-    val transformProgressIndicatorInSection =
-      (__ \ 'sections).json.update(transformProgressIndicatiorInArray) orElse __.read
-
-    val transformProgressIndicatorInPages =
-      (__ \ 'sections).json.update(
-        __.read[JsArray].map { sections =>
-          JsArray(
-            sections.value.map {
-              case section: JsObject if section.value.contains("pages") =>
-                section.transform((__ \ 'pages).json.update(transformProgressIndicatiorInArray)).get
-              case x => x
-            }
-          )
-        }
-      ) orElse __.read
+    val transformProgressIndicators = (__ \ 'sections).json.update(
+      list(transformProgressIndicator) andThen list(transformPages)
+    ) orElse __.read
 
     val moveDestinations =
       (__ \ 'destinations \ 'destinations).json
@@ -266,9 +249,8 @@ object FormTemplatesControllerRequestHandler {
       pruneShowContinueOrDeletePage andThen
         pruneAcknowledgementSection andThen
         prunePrintSection andThen
-        pruneDeclarationSection andThen
-        transformProgressIndicatorInSection andThen
-        transformProgressIndicatorInPages and
+        transformProgressIndicators andThen
+        pruneDeclarationSection and
         drmValue and
         drmShowContinueOrDeletePage and
         ensureOriginalId and

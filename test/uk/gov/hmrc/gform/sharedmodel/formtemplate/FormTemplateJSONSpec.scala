@@ -593,9 +593,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
           |      "title": "Do you want to Add Owner Details",
           |      "progressIndicator": {
           |        "label": "Name",
-          |        "labelSize": {
-          |          "ExtraLarge": {}
-          |        }
+          |        "labelSize": "xl"
           |      },
           |      "fields": [
           |        {
@@ -624,9 +622,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
           |        {
           |          "progressIndicator": {
           |            "label": "Name",
-          |            "labelSize": {
-          |              "Large": {}
-          |            }
+          |            "labelSize": "l"
           |          },
           |          "title": "Name",
           |          "fields": [
@@ -649,9 +645,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
           |        {
           |          "progressIndicator": {
           |            "label": "Person ",
-          |            "labelSize": {
-          |              "Medium": {}
-          |            }
+          |            "labelSize": "m"
           |          },
           |          "title": "Amount",
           |          "fields": [
@@ -666,9 +660,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
           |        {
           |          "progressIndicator": {
           |            "label": "Person ",
-          |            "labelSize": {
-          |              "Medium": {}
-          |            }
+          |            "labelSize": "m"
           |          },
           |          "title": "Address",
           |          "fields": [
