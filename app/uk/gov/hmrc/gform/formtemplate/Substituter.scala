@@ -351,6 +351,9 @@ object Substituter {
   ): Substituter[A, CheckYourAnswersPage] = (substitutions, t) =>
     t.copy(
       title = t.title(substitutions),
+      updateTitle = t.updateTitle(substitutions),
+      noPIITitle = t.noPIITitle(substitutions),
+      noPIIUpdateTitle = t.noPIIUpdateTitle(substitutions),
       header = t.header(substitutions),
       footer = t.footer(substitutions),
       continueLabel = t.continueLabel(substitutions)
