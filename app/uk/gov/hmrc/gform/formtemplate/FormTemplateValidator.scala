@@ -299,12 +299,43 @@ object FormTemplateValidator {
   }
 
   def validatePostcodeLookup(sectionsList: List[Page]): ValidationResult = {
+    val pagesWithPostcodeLookups: List[(FormComponentId, Page)] = sectionsList.flatMap { page =>
+      page.fields.collect { case fc @ IsPostcodeLookup() =>
+        fc.id -> page
+      }
+    }
+    val noOtherComponentsAllowed: ValidationResult = pagesWithPostcodeLookups.foldMap { case (postcodeId, page) =>
+      val filteredFields = page.fields.filter {
+        case IsPostcodeLookup() | IsInformationMessage(_) => true
+        case _                                            => false
+      }
+      if (filteredFields.size === page.fields.size) {
+        Valid
+      } else
+        Invalid(
+          s"Postcode lookup '$postcodeId' cannot be on the page with other components (exception are info components)"
+        )
+    }
+    val noPostcodeLookupInReveliangChoiceOrGroup: ValidationResult = sectionsList
+      .flatMap { page =>
+        page.fields.collect {
+          case IsGroup(group)                     => group.fields
+          case IsRevealingChoice(revealingChoice) => revealingChoice.options.toList.flatMap(_.revealingFields)
+        }.flatten
+      }
+      .collectFirst { case fc @ IsPostcodeLookup() =>
+        fc
+      }
+      .fold[ValidationResult](Valid)(fc =>
+        Invalid(s"Postcode lookup '${fc.id.value}' cannot be inside Revealing choice or Group")
+      )
+
     val postcodeLookups: List[List[FormComponentId]] = sectionsList.map { page =>
       page.allFormComponents.collect { case fc @ IsPostcodeLookup() =>
         fc.id
       }
     }
-    postcodeLookups.foldMap { lookups =>
+    val singlePostcodeLookupOnly: ValidationResult = postcodeLookups.foldMap { lookups =>
       if (lookups.size > 1) {
         val invalid = lookups.mkString(", ")
         Invalid(
@@ -312,6 +343,14 @@ object FormTemplateValidator {
         )
       } else Valid
     }
+
+    Monoid.combineAll(
+      List(
+        singlePostcodeLookupOnly,
+        noPostcodeLookupInReveliangChoiceOrGroup,
+        noOtherComponentsAllowed
+      )
+    )
 
   }
 

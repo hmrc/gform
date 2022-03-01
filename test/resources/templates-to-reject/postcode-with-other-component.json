@@ -1,0 +1,37 @@
+{
+  "_id": "postcode-single",
+  "formName": "Postcode",
+  "description": "",
+  "emailTemplateId": "al_registration_confirmation",
+  "authConfig": {
+    "authModule": "anonymous"
+  },
+  "sections": [
+    {
+      "title": "Page",
+      "fields": [
+        {
+          "id": "postcode",
+          "label": "Postcode",
+          "type": "postcodeLookup"
+        },
+        {
+          "id": "amount",
+          "label": "Amount",
+          "format": "number"
+        }
+      ]
+    }
+  ],
+  "acknowledgementSection": {
+    "title": "",
+    "fields": []
+  },
+  "destinations": [
+    {
+      "id": "transitionToSubmitted",
+      "type": "stateTransition",
+      "requiredState": "Submitted"
+    }
+  ]
+}
