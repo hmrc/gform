@@ -20,6 +20,7 @@ import cats.implicits._
 import org.slf4j.LoggerFactory
 import play.api.libs.json.JsObject
 import uk.gov.hmrc.gform.core.{ FOpt, _ }
+import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formredirect.FormRedirect
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
@@ -82,10 +83,13 @@ class FormTemplateService(
   )(
     booleanExpressionsContext: BooleanExprSubstitutions
   ): FOpt[Unit] = {
-    val substitutedFormTemplate = substituteExpressions(formTemplate, expressionsContext)
-    val substitutedBooleanExprsFormTemplate = substituteBooleanExprs(substitutedFormTemplate, booleanExpressionsContext)
+
+    val exprSubstitutionsResolved: Either[UnexpectedState, ExprSubstitutions] = expressionsContext.resolveSelfReferences
 
     for {
+      expressionsContextSubstituted <- fromOptA(exprSubstitutionsResolved)
+      substitutedFormTemplate = substituteExpressions(formTemplate, expressionsContextSubstituted)
+      substitutedBooleanExprsFormTemplate = substituteBooleanExprs(substitutedFormTemplate, booleanExpressionsContext)
       _                  <- verify(substitutedBooleanExprsFormTemplate)
       formTemplateToSave <- rewrite(substitutedBooleanExprsFormTemplate)
       _                  <- formTemplateRepo.replace(mkSpecimen(formTemplateToSave))

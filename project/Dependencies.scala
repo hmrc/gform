@@ -27,7 +27,8 @@ object Dependencies {
     "com.github.jknack"           % "handlebars-jackson2"       % handlebarsVersion,
     "com.softwaremill.quicklens" %% "quicklens"                 % "1.4.11",
     "uk.gov.service.notify"       % "notifications-java-client" % "3.17.0-RELEASE",
-    "org.apache.commons"          % "commons-text"              % "1.9"
+    "org.apache.commons"          % "commons-text"              % "1.9",
+    "org.scala-graph"             %% "graph-core"               % "1.13.1",
   )
 
   def test(scope: String = "test,it") = Seq(
