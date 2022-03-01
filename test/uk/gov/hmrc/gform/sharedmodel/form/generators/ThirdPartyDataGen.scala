@@ -44,6 +44,7 @@ trait ThirdPartyDataGen {
       None,
       None,
       None,
+      None,
       None
     )
 }
