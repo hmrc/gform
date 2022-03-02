@@ -339,7 +339,7 @@ object Substituter {
     ev2: Substituter[A, BooleanExpr]
   ): Substituter[A, SummarySection] = (substitutions, t) =>
     t.copy(
-      title = t.title.apply(substitutions),
+      title = t.title(substitutions),
       header = t.header(substitutions),
       footer = t.footer(substitutions),
       continueLabel = t.continueLabel(substitutions),
