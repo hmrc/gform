@@ -26,7 +26,7 @@ case class Page(
   noPIITitle: Option[SmartString],
   description: Option[SmartString],
   shortName: Option[SmartString],
-  progressIndicator: Option[ProgressIndicator] = None,
+  progressIndicator: Option[SmartString] = None,
   includeIf: Option[IncludeIf],
   validators: Option[Validator],
   fields: List[FormComponent],
