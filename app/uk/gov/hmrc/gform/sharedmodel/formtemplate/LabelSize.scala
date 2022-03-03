@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
-import play.api.libs.json.{ JsError, JsString, JsSuccess, OFormat, Reads }
-import uk.gov.hmrc.gform.core.parsers.LabelSizeParser
+import julienrf.json.derived
+import play.api.libs.json.OFormat
 
 sealed trait LabelSize
 
@@ -28,15 +28,5 @@ case object Small extends LabelSize
 case object ExtraSmall extends LabelSize
 
 object LabelSize {
-
-  val fallbackFormat: Reads[LabelSize] = Reads {
-    case JsString(x) =>
-      LabelSizeParser
-        .validate(x)
-        .fold(failure => JsError(s"Unable to parse label size ${failure.error}"), JsSuccess.apply(_))
-    case x => JsError(s"unable to parse value $x as label size")
-  }
-
-  implicit val format: OFormat[LabelSize] = OFormatWithTemplateReadFallback(fallbackFormat)
-
+  implicit val format: OFormat[LabelSize] = derived.oformat()
 }
