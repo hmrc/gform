@@ -53,6 +53,7 @@ object Section {
     title: SmartString,
     noPIITitle: Option[SmartString],
     description: SmartString,
+    summaryDescription: SmartString,
     shortName: SmartString,
     summaryName: SmartString,
     includeIf: Option[IncludeIf],
@@ -80,6 +81,7 @@ object Section {
         LeafExpr(path + "title", a.title) ++
           LeafExpr(path + "noPIITitle", a.noPIITitle) ++
           LeafExpr(path + "description", a.description) ++
+          LeafExpr(path + "summaryDescription", a.summaryDescription) ++
           LeafExpr(path + "shortName", a.shortName) ++
           LeafExpr(path + "summaryName", a.summaryName) ++
           LeafExpr(path + "includeIf", a.includeIf) ++

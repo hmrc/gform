@@ -708,6 +708,7 @@ class TemplateValidatorSpec extends Spec {
       toSmartString(name),
       toSmartString(name),
       toSmartString(name),
+      toSmartString(name),
       None,
       None,
       pages,

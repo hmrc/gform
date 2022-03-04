@@ -200,6 +200,7 @@ trait FormTemplateSupport {
       toSmartString(name),
       toSmartString(name),
       toSmartString(name),
+      toSmartString(name),
       None,
       None,
       pages,

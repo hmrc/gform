@@ -220,6 +220,7 @@ object Substituter {
         title = addToList.title(substitutions),
         noPIITitle = addToList.noPIITitle(substitutions),
         description = addToList.description(substitutions),
+        summaryDescription = addToList.summaryDescription(substitutions),
         shortName = addToList.shortName(substitutions),
         summaryName = addToList.summaryName(substitutions),
         includeIf = addToList.includeIf(substitutions),

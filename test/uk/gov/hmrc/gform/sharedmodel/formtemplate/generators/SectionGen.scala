@@ -135,24 +135,26 @@ trait SectionGen {
 
   def addToListSectionGen: Gen[Section.AddToList] =
     for {
-      title            <- smartStringGen
-      noPIITitle       <- Gen.option(smartStringGen)
-      description      <- smartStringGen
-      shortName        <- smartStringGen
-      summaryName      <- smartStringGen
-      includeIf        <- Gen.option(IncludeIfGen.includeIfGen)
-      addToListLimit   <- Gen.option(AddToListLimitGen.addToListLimitGen)
-      pages            <- PrimitiveGen.oneOrMoreGen(pageGen)
-      formComponent    <- FormComponentGen.formComponentGen(0)
-      choice           <- ComponentTypeGen.choiceGen
-      instruction      <- Gen.option(InstructionGen.instructionGen)
-      presentationHint <- Gen.option(PresentationHintGen.presentationHintGen)
-      infoMessage      <- Gen.option(smartStringGen)
+      title              <- smartStringGen
+      noPIITitle         <- Gen.option(smartStringGen)
+      description        <- smartStringGen
+      summaryDescription <- smartStringGen
+      shortName          <- smartStringGen
+      summaryName        <- smartStringGen
+      includeIf          <- Gen.option(IncludeIfGen.includeIfGen)
+      addToListLimit     <- Gen.option(AddToListLimitGen.addToListLimitGen)
+      pages              <- PrimitiveGen.oneOrMoreGen(pageGen)
+      formComponent      <- FormComponentGen.formComponentGen(0)
+      choice             <- ComponentTypeGen.choiceGen
+      instruction        <- Gen.option(InstructionGen.instructionGen)
+      presentationHint   <- Gen.option(PresentationHintGen.presentationHintGen)
+      infoMessage        <- Gen.option(smartStringGen)
     } yield Section
       .AddToList(
         title,
         noPIITitle,
         description,
+        summaryDescription,
         shortName,
         summaryName,
         includeIf,
