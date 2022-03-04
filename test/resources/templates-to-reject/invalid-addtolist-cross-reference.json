@@ -6,6 +6,7 @@
       "type": "addToList",
       "title": "Add To List",
       "shortName": "Add To List",
+      "summaryDescription": "${fieldA}",
       "description": "${fieldA}",
       "summaryName": "Add To List",
       "addAnotherQuestion": {
@@ -33,6 +34,7 @@
       "title": "Add To List ${fieldA}",
       "shortName": "Add To List",
       "description": "${fieldB}",
+      "summaryDescription": "${fieldB}",
       "summaryName": "Add To List",
       "addAnotherQuestion": {
         "id": "addToListB",

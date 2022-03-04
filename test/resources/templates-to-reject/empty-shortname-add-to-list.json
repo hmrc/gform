@@ -6,6 +6,7 @@
       "type": "addToList",
       "title": "Add To List",
       "shortName": "Add To List",
+      "summaryDescription": "${fieldA}",
       "description": "${fieldA}",
       "summaryName": "Add To List",
       "addAnotherQuestion": {
