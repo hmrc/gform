@@ -163,7 +163,8 @@ trait FormatParser extends ValueParser {
       "companyRegistrationNumber" ^^^ TextFormat(CompanyRegistrationNumber) |
       "EORI" ^^^ TextFormat(EORI) |
       "UkEORI" ^^^ TextFormat(UkEORI) |
-      "childBenefitNumber" ^^^ TextFormat(ChildBenefitNumber)
+      "childBenefitNumber" ^^^ TextFormat(ChildBenefitNumber) |
+      "payeReference" ^^^ TextFormat(PayeReference)
   }
 
   lazy val positiveWholeNumberFormat: RoundingMode => Parser[TextFormat] = rm =>
