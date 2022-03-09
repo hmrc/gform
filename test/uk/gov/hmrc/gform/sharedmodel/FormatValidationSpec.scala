@@ -47,6 +47,7 @@ class FormatValidationSpec extends Spec {
   it should "return UkVrn" in createTest("ukVrn", UkVrn)
   it should "return countryCode" in createTest("countryCode", CountryCode)
   it should "return nonUkCountryCode" in createTest("nonUkCountryCode", NonUkCountryCode)
+  it should "return payeReference" in createTest("payeReference", PayeReference)
 
   it should "return CompanyRegistrationNumber" in createTest("companyRegistrationNumber", CompanyRegistrationNumber)
 

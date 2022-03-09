@@ -180,6 +180,7 @@ case class EmailVerifiedBy(formComponentId: FormComponentId, emailVerifierServic
 case object UTR extends TextConstraint
 case object NINO extends TextConstraint
 case object UkVrn extends TextConstraint
+case object PayeReference extends TextConstraint
 case object CountryCode extends TextConstraint
 case object NonUkCountryCode extends TextConstraint
 case object CompanyRegistrationNumber extends TextConstraint
