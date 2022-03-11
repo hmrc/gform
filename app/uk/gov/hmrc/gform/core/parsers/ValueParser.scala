@@ -260,9 +260,11 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     case cond ~ _ ~ expr1 ~ _ ~ expr2 => IfElse(cond, expr1, expr2)
   } | _add
 
-  lazy val _add: PackratParser[Expr] = chainl1(_substraction, "+" ^^^ Add)
+  lazy val _add: PackratParser[Expr] = chainl1(_subtraction, "+" ^^^ Add)
 
-  lazy val _substraction: PackratParser[Expr] = chainl1(_term, "-" ^^^ Subtraction)
+  lazy val _subtraction: PackratParser[Expr] = chainl1(_divide, "-" ^^^ Subtraction)
+
+  lazy val _divide: PackratParser[Expr] = chainl1(_term, "/" ^^^ Divide)
 
   val _term: PackratParser[Expr] = chainl1(_else, "*" ^^^ Multiply)
 

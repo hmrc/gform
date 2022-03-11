@@ -45,6 +45,7 @@ final case class ExprWithPath(path: TemplatePath, expr: Expr) {
     case Add(field1: Expr, field2: Expr)               => toReferenceInfo(field1, field2)
     case Multiply(field1: Expr, field2: Expr)          => toReferenceInfo(field1, field2)
     case Subtraction(field1: Expr, field2: Expr)       => toReferenceInfo(field1, field2)
+    case Divide(field1: Expr, field2: Expr)            => toReferenceInfo(field1, field2)
     case IfElse(cond, field1: Expr, field2: Expr)      => booleanExprRefInfo(cond) ++ toReferenceInfo(field1, field2)
     case Else(field1: Expr, field2: Expr)              => toReferenceInfo(field1, field2)
     case f @ FormCtx(formComponentId: FormComponentId) => ReferenceInfo.FormCtxExpr(path, f) :: Nil

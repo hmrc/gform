@@ -29,6 +29,7 @@ object ExprSubstituter extends Substituter[ExprSubstitutions, FormTemplate] {
         case Add(l, r)         => Add(substitute(substitutions, l), substitute(substitutions, r))
         case Multiply(l, r)    => Multiply(substitute(substitutions, l), substitute(substitutions, r))
         case Subtraction(l, r) => Subtraction(substitute(substitutions, l), substitute(substitutions, r))
+        case Divide(l, r)      => Divide(substitute(substitutions, l), substitute(substitutions, r))
         case Period(l, r)      => Period(substitute(substitutions, l), substitute(substitutions, r))
         case Sum(l)            => Sum(substitute(substitutions, l))
         case PeriodExt(p, pe)  => PeriodExt(substitute(substitutions, p), pe)

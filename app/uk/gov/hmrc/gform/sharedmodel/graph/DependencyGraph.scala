@@ -47,6 +47,7 @@ object DependencyGraph {
         case Add(field1, field2)         => eval(field1) ++ eval(field2)
         case Subtraction(field1, field2) => eval(field1) ++ eval(field2)
         case Multiply(field1, field2)    => eval(field1) ++ eval(field2)
+        case Divide(field1, field2)      => eval(field1) ++ eval(field2)
         case otherwise                   => List.empty
       }
 
