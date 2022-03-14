@@ -230,6 +230,20 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
+  it should "parse ${a / b}" in {
+    val res = ValueParser.validate("${firstName / secondName}")
+    res.right.value should be(
+      TextExpression(Divide(FormCtx("firstName"), FormCtx("secondName")))
+    )
+  }
+
+  it should "parse ${a * b  / c}" in {
+    val res = ValueParser.validate("${firstName * secondName / thirdname}")
+    res.right.value should be(
+      TextExpression(Divide(Multiply(FormCtx("firstName"), FormCtx("secondName")), FormCtx("thirdname")))
+    )
+  }
+
   it should "parse string constant" in {
     val res = ValueParser.validate("'constant'")
     res.right.value should be(TextExpression(Constant("constant")))
@@ -361,7 +375,9 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       ("a orElse b - c orElse d",        Subtraction(Else("a", "b"), Else("c", "d"))),
       ("a orElse b * c orElse d",        Multiply(Else("a", "b"), Else("c", "d"))),
       ("a orElse b orElse c orElse d",     Else("a", Else("b", Else("c", "d")))),
-      ("a orElse (b orElse (c orElse d))", Else("a", Else("b", Else("c", "d"))))
+      ("a orElse (b orElse (c orElse d))", Else("a", Else("b", Else("c", "d")))),
+      ("a / b / c / d",              Divide(Divide(Divide("a", "b"), "c"), "d")),
+      ("a + b / c * d",              Add("a", Divide("b", Multiply("c", "d"))))
       // format: on
     )
 
@@ -385,7 +401,8 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       (Add(Else(Else("a", "b"), "c"), "d"),             Add(Else("a", Else("b", "c")), "d")),
       (Subtraction(Else(Else("a", "b"), "c"), "d"),     Subtraction(Else("a", Else("b", "c")), "d")),
       (Multiply(Else(Else("a", "b"), "c"), "d"),        Multiply(Else("a", Else("b", "c")), "d")),
-      (Sum(Else(Else("a", "b"), "c")),                  Sum(Else("a", Else("b", "c"))))
+      (Sum(Else(Else("a", "b"), "c")),                  Sum(Else("a", Else("b", "c")))),
+      (Divide(Else(Else("a", "b"), "c"), "d"),          Divide(Else("a", Else("b", "c")), "d")),
       // format: on
     )
 

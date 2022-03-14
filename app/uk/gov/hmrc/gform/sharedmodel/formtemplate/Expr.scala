@@ -27,6 +27,7 @@ sealed trait Expr {
     case Add(l, r)           => Add(l.rewrite, r.rewrite)
     case Multiply(l, r)      => Multiply(l.rewrite, r.rewrite)
     case Subtraction(l, r)   => Subtraction(l.rewrite, r.rewrite)
+    case Divide(l, r)        => Divide(l.rewrite, r.rewrite)
     case Sum(l)              => Sum(l.rewrite)
     case otherwise           => otherwise
   }
@@ -36,6 +37,7 @@ sealed trait Expr {
     case Add(l, r)         => l.ifElses ++ r.ifElses
     case Multiply(l, r)    => l.ifElses ++ r.ifElses
     case Subtraction(l, r) => l.ifElses ++ r.ifElses
+    case Divide(l, r)      => l.ifElses ++ r.ifElses
     case Period(l, r)      => l.ifElses ++ r.ifElses
     case Sum(l)            => l.ifElses
     case PeriodExt(p, _)   => p.ifElses
@@ -49,6 +51,7 @@ sealed trait Expr {
 final case class Add(field1: Expr, field2: Expr) extends Expr
 final case class Multiply(field1: Expr, field2: Expr) extends Expr
 final case class Subtraction(field1: Expr, field2: Expr) extends Expr
+final case class Divide(field1: Expr, field2: Expr) extends Expr
 final case class IfElse(cond: BooleanExpr, field1: Expr, field2: Expr) extends Expr
 final case class Else(field1: Expr, field2: Expr) extends Expr
 final case class Sum(field1: Expr) extends Expr

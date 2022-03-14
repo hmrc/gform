@@ -58,6 +58,12 @@ trait ExprGen {
       f2 <- exprGen(maxDepth - 1)
     } yield Subtraction(f1, f2)
 
+  def divideGen(maxDepth: Int): Gen[Divide] =
+    for {
+      f1 <- exprGen(maxDepth - 1)
+      f2 <- exprGen(maxDepth - 1)
+    } yield Divide(f1, f2)
+
   def sumGen(maxDepth: Int): Gen[Sum] =
     exprGen(maxDepth - 1).map(Sum)
 
@@ -76,7 +82,7 @@ trait ExprGen {
     Gen.oneOf(formCtxGen, authCtxGen, userCtxGen, constantGen, Gen.const(Value), formTemplateCtxGen)
 
   def recursiveExprGen(maxDepth: Int = 3): Gen[Expr] =
-    Gen.oneOf(addGen(maxDepth), multiplyGen(maxDepth), subtractionGen(maxDepth), sumGen(maxDepth))
+    Gen.oneOf(addGen(maxDepth), multiplyGen(maxDepth), subtractionGen(maxDepth), sumGen(maxDepth), divideGen(maxDepth))
 
   def exprGen(maxDepth: Int = 3): Gen[Expr] =
     if (maxDepth <= 1) nonRecursiveExprGen

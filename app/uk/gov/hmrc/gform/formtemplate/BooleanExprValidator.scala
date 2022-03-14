@@ -31,6 +31,7 @@ class BooleanExprValidator(
     case Add(left, right)         => extractFcIds(left) ::: extractFcIds(right)
     case Subtraction(left, right) => extractFcIds(left) ::: extractFcIds(right)
     case Multiply(left, right)    => extractFcIds(left) ::: extractFcIds(right)
+    case Divide(left, right)      => extractFcIds(left) ::: extractFcIds(right)
     case Sum(field1)              => extractFcIds(field1)
     case FormCtx(fcId)            => List(fcId)
     case _                        => Nil
