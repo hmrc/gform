@@ -60,6 +60,22 @@ final case class FormCtx(formComponentId: FormComponentId) extends Expr
 final case class AddressLens(formComponentId: FormComponentId, detail: AddressDetail) extends Expr
 final case class Period(dateCtx1: Expr, dateCtx2: Expr) extends Expr
 final case class Size(formComponentId: FormComponentId, index: Int) extends Expr
+final case class Typed(expr: Expr, tpe: ExplicitExprType) extends Expr
+
+sealed trait ExplicitExprType extends Product with Serializable
+object ExplicitExprType {
+  case object Text extends ExplicitExprType
+  case class Sterling(
+    roundingMode: RoundingMode
+  ) extends ExplicitExprType
+  case class Number(
+    fractionalDigits: Int,
+    roundingMode: RoundingMode
+  ) extends ExplicitExprType
+
+  implicit val format: OFormat[ExplicitExprType] = derived.oformat()
+}
+
 sealed trait PeriodFn
 object PeriodFn {
   case object Sum extends PeriodFn

@@ -51,6 +51,7 @@ object BooleanExprSubstituter extends Substituter[BooleanExprSubstitutions, Form
         case Value                        => t
         case DataRetrieveCtx(_, _)        => t
         case Size(_, _)                   => t
+        case Typed(expr, tpe)             => Typed(substitute(substitutions, expr), tpe)
       }
     }
 

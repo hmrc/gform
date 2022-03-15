@@ -551,6 +551,7 @@ object FormTemplateValidator {
       case PeriodExt(periodFun, _) => validate(periodFun, sections)
       case DataRetrieveCtx(_, _)   => Valid
       case Size(value, _)          => validate(FormCtx(value), sections)
+      case Typed(expr, tpe)        => validate(expr, sections)
     }
   }
 

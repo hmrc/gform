@@ -127,6 +127,7 @@ object FormTemplatePIIRefsHelper {
       case LangCtx                                => Nil
       case DataRetrieveCtx(_, _)                  => Nil
       case Size(FormComponentId(value), _)        => List(value)
+      case Typed(expr, tpe)                       => extractRefs(expr)
     }
 
   implicit class JsLookupResultOps(result: JsLookupResult) {

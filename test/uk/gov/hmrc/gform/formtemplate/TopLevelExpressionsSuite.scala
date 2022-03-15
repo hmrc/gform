@@ -217,6 +217,31 @@ class TopLevelExpressionsSuite extends FunSuite {
   }
 
   test("TopLevelExpressions (11)") {
+    check(
+      Json.obj(
+        "rateChangeDate1" -> "01052021",
+        "rateChangeDate2" -> "01052022",
+        "bandAReduced1"   -> "if TODAY after rateChangeDate1 then 1 else 2",
+        "bandAReduced2"   -> "if TODAY after rateChangeDate2 then 3 else 4"
+      ),
+      Map(
+        ExpressionId("rateChangeDate1") -> DateCtx(DateValueExpr(ExactDateExprValue(2021, 5, 1))),
+        ExpressionId("rateChangeDate2") -> DateCtx(DateValueExpr(ExactDateExprValue(2022, 5, 1))),
+        ExpressionId("bandAReduced1") -> IfElse(
+          DateAfter(DateValueExpr(TodayDateExprValue), DateValueExpr(ExactDateExprValue(2021, 5, 1))),
+          Constant("1"),
+          Constant("2")
+        ),
+        ExpressionId("bandAReduced2") -> IfElse(
+          DateAfter(DateValueExpr(TodayDateExprValue), DateValueExpr(ExactDateExprValue(2022, 5, 1))),
+          Constant("3"),
+          Constant("4")
+        )
+      )
+    )
+  }
+
+  test("TopLevelExpressions (12)") {
     expressionsContextFromJson(
       Json.obj(
         "foo" -> "bar",
@@ -235,6 +260,69 @@ class TopLevelExpressionsSuite extends FunSuite {
         case Right(iterable) => fail("Failed cycle detection")
       }
     }
+  }
+
+  test("TopLevelExpressions - explicit type (1)") {
+    check(
+      Json.obj(
+        "foo" -> Json.obj(
+          "value" -> "123",
+          "type"  -> "text"
+        )
+      ),
+      Map(ExpressionId("foo") -> Typed(Constant("123"), ExplicitExprType.Text))
+    )
+  }
+
+  test("TopLevelExpressions - explicit type (2)") {
+    check(
+      Json.obj(
+        "foo" -> Json.obj(
+          "value" -> "123",
+          "type"  -> "sterling"
+        )
+      ),
+      Map(ExpressionId("foo") -> Typed(Constant("123"), ExplicitExprType.Sterling(RoundingMode.Down)))
+    )
+  }
+
+  test("TopLevelExpressions - explicit type (3)") {
+    check(
+      Json.obj(
+        "foo" -> Json.obj(
+          "value" -> "123",
+          "type"  -> "sterling",
+          "round" -> "Up"
+        )
+      ),
+      Map(ExpressionId("foo") -> Typed(Constant("123"), ExplicitExprType.Sterling(RoundingMode.Up)))
+    )
+  }
+
+  test("TopLevelExpressions - explicit type (4)") {
+    check(
+      Json.obj(
+        "foo" -> Json.obj(
+          "value" -> "123",
+          "type"  -> "number"
+        )
+      ),
+      Map(ExpressionId("foo") -> Typed(Constant("123"), ExplicitExprType.Number(2, RoundingMode.Down)))
+    )
+  }
+
+  test("TopLevelExpressions - explicit type (5)") {
+    check(
+      Json.obj(
+        "foo" -> Json.obj(
+          "value"            -> "123",
+          "type"             -> "number",
+          "fractionalDigits" -> 10,
+          "round"            -> "HalfUp"
+        )
+      ),
+      Map(ExpressionId("foo") -> Typed(Constant("123"), ExplicitExprType.Number(10, RoundingMode.HalfUp)))
+    )
   }
 
   private def check(json: JsValue, expressions: Map[ExpressionId, Expr]) =
