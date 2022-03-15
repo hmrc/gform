@@ -90,6 +90,17 @@ object TopLevelExpressions {
 
   def resolveExpr(expressions: Map[ExpressionId, Expr], expressionId: ExpressionId): Map[ExpressionId, Expr] = {
 
+    def loopDateExpr(dateExpr: DateExpr): DateExpr =
+      dateExpr match {
+        case d @ DateValueExpr(_) => d
+        case d @ DateFormCtxVar(FormCtx(formComponentId)) =>
+          expressions.get(ExpressionId(formComponentId.value)).fold[DateExpr](d) {
+            case DateCtx(value) => value
+            case _              => d
+          }
+        case DateExprWithOffset(dExpr, offset) => DateExprWithOffset(loopDateExpr(dExpr), offset)
+      }
+
     def loopBooleanExpr(t: BooleanExpr): BooleanExpr = t match {
       case Equals(l, r)                     => Equals(loop(l), loop(r))
       case GreaterThan(l, r)                => GreaterThan(loop(l), loop(r))
@@ -104,8 +115,8 @@ object TopLevelExpressions {
       case Contains(multiValueField, value) => Contains(multiValueField, loop(value))
       case In(value, dataSource)            => In(loop(value), dataSource)
       case m @ MatchRegex(formCtx, regex)   => m
-      case d @ DateBefore(l, r)             => d
-      case d @ DateAfter(l, r)              => d
+      case d @ DateBefore(l, r)             => DateBefore(loopDateExpr(l), loopDateExpr(r))
+      case d @ DateAfter(l, r)              => DateAfter(loopDateExpr(l), loopDateExpr(r))
       case f @ FormPhase(value)             => f
       case tl @ TopLevelRef(id)             => tl
     }
@@ -137,6 +148,7 @@ object TopLevelExpressions {
         case Value                        => e
         case DataRetrieveCtx(_, _)        => e
         case Size(_, _)                   => e
+        case Typed(expr, tpe)             => Typed(loop(expr), tpe)
       }
     expressions.get(expressionId).fold(expressions) { expr =>
       expressions + (expressionId -> loop(expr))

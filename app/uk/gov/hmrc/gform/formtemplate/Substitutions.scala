@@ -18,25 +18,66 @@ package uk.gov.hmrc.gform.formtemplate
 
 import cats.implicits._
 import julienrf.json.derived
-import play.api.libs.json.{ JsDefined, JsObject, JsString, JsUndefined, JsValue, OFormat }
+import play.api.libs.json.{ JsDefined, JsError, JsObject, JsString, JsSuccess, JsUndefined, JsValue, OFormat, Reads }
 import uk.gov.hmrc.gform.core.parsers.BooleanExprParser
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.BooleanExpr
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ ADTFormat, BooleanExpr, RoundingMode, TextConstraint }
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.core.parsers.ValueParser
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Expr, FormTemplateRaw, TextExpression, ValueExpr }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ ExplicitExprType, Expr, FormTemplateRaw, TextExpression, Typed, ValueExpr }
 
 sealed trait Substitutions[K, V] {
 
   def fieldName: String
 
-  def fromJsValue(jsValue: JsValue)(toKey: String => K)(f: String => Opt[V]): Opt[Map[K, V]] = {
+  val typedReads: Reads[Typed] = {
+    val textReads: Reads[ExplicitExprType.Text.type] = Reads.pure(ExplicitExprType.Text)
+    val sterlingReads: Reads[ExplicitExprType.Sterling] = Reads { json =>
+      for {
+        roundingMode <- (json \ "round").validateOpt[RoundingMode]
+      } yield ExplicitExprType.Sterling(roundingMode.getOrElse(RoundingMode.Down))
+    }
+    val numberReads: Reads[ExplicitExprType.Number] = Reads { json =>
+      for {
+        fractionalDigits <- (json \ "fractionalDigits").validateOpt[Int]
+        roundingMode     <- (json \ "round").validateOpt[RoundingMode]
+      } yield ExplicitExprType.Number(
+        fractionalDigits.getOrElse(TextConstraint.defaultFractionalDigits),
+        roundingMode.getOrElse(RoundingMode.defaultRoundingMode)
+      )
+    }
+
+    val exprTypeReads: Reads[ExplicitExprType] = ADTFormat.adtRead[ExplicitExprType](
+      "type",
+      "text"     -> textReads,
+      "number"   -> numberReads,
+      "sterling" -> sterlingReads
+    )
+
+    Reads { json =>
+      for {
+        expr <- (json \ "value").validate[String].flatMap { expr =>
+                  ExprSubstitutions.toExpression(expr) match {
+                    case Left(invalid) => JsError(invalid.error)
+                    case Right(expr)   => JsSuccess(expr)
+                  }
+                }
+        tpe <- json.validate[ExplicitExprType](exprTypeReads)
+      } yield Typed(expr, tpe)
+    }
+  }
+
+  def fromJsValue(
+    jsValue: JsValue
+  )(toKey: String => K)(f: String => Opt[V])(g: JsObject => Opt[V]): Opt[Map[K, V]] = {
+
     val maybeSubstitutions: Opt[List[(K, V)]] =
       jsValue match {
         case JsObject(fields) =>
           fields.toList.traverse { case (k, v) =>
             val maybeExpr: Opt[V] = v match {
               case JsString(exprStr) => f(exprStr)
+              case obj @ JsObject(_) => g(obj)
               case nonString =>
                 Left(
                   UnexpectedState(
@@ -81,10 +122,16 @@ object ExprSubstitutions extends Substitutions[ExpressionId, Expr] {
     }
   }
 
+  def toExpressionFromObj(obj: JsObject): Opt[Expr] =
+    obj.validate[Typed](typedReads) match {
+      case JsError(error)     => Left(UnexpectedState(JsError.toJson(error).toString()))
+      case JsSuccess(expr, _) => Right(expr)
+    }
+
   def from(templateRaw: FormTemplateRaw): Opt[ExprSubstitutions] =
     templateRaw.value \ fieldName match {
       case JsDefined(json) =>
-        fromJsValue(json)(ExpressionId.apply)(toExpression).map(ExprSubstitutions.apply)
+        fromJsValue(json)(ExpressionId.apply)(toExpression)(toExpressionFromObj).map(ExprSubstitutions.apply)
       case JsUndefined() => Right(ExprSubstitutions.empty)
     }
 }
@@ -105,7 +152,13 @@ object BooleanExprSubstitutions extends Substitutions[BooleanExprId, BooleanExpr
   def from(templateRaw: FormTemplateRaw): Opt[BooleanExprSubstitutions] =
     templateRaw.value \ "booleanExpressions" match {
       case JsDefined(json) =>
-        fromJsValue(json)(BooleanExprId.apply)(toBooleanExpression).map(BooleanExprSubstitutions.apply)
+        fromJsValue(json)(BooleanExprId.apply)(toBooleanExpression)(obj =>
+          Left(
+            UnexpectedState(
+              s"Expected JsString, but got " + obj.getClass.getSimpleName + ": " + obj
+            )
+          )
+        ).map(BooleanExprSubstitutions.apply)
 
       case JsUndefined() => Right(BooleanExprSubstitutions.empty)
     }
