@@ -54,7 +54,7 @@ object PdfAndXmlSummariesFactory {
       hmrcDms: HmrcDms
     )(implicit now: Instant): Future[PdfAndXmlSummaries] =
       for {
-        pdf <- pdfGeneratorService.generatePDFBytesLocal(pdfData.html)
+        pdf <- pdfGeneratorService.generatePDFBytesLocal(pdfData.html.replaceAllLiterally("<br>", "<br/>"))
         instructionPdf <- instructionPdfData.fold(Future.successful(Option.empty[Array[Byte]]))(iPdfData =>
                             pdfGeneratorService.generatePDFBytesLocal(iPdfData.html).map(Option(_))
                           )
