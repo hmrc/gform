@@ -317,7 +317,7 @@ object FormTemplateValidator {
   }
 
   def validateChoiceNoneChoiceUpperBound(sectionsList: List[Page]): ValidationResult = {
-    def check(choice: Choice): Boolean = choice.noneChoice.fold(false)(_ >= choice.options.size)
+    def check(choice: Choice): Boolean = choice.noneChoice.fold(false)(_ > choice.options.size)
 
     validateChoice(sectionsList, check, "noneChoice should be less than the number of choices")
   }
