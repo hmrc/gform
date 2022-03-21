@@ -48,6 +48,9 @@ class FormComponentSpec2 extends Spec {
           Vertical,
           List.empty[Int],
           None,
+          None,
+          None,
+          "or",
           None
         ),
         toSmartString("Select the tax type"),

@@ -26,7 +26,17 @@ trait FormTemplateSupport {
   val addAnotherQuestion =
     mkFormComponent(
       "addAnother",
-      Choice(YesNo, NonEmptyList.of(toSmartString("Yes"), toSmartString("No")), Horizontal, Nil, None, None),
+      Choice(
+        YesNo,
+        NonEmptyList.of(toSmartString("Yes"), toSmartString("No")),
+        Horizontal,
+        Nil,
+        None,
+        None,
+        None,
+        "or",
+        None
+      ),
       false
     )
 

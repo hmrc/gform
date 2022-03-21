@@ -62,7 +62,7 @@ trait ComponentTypeGen {
       selections  <- PrimitiveGen.zeroOrMoreGen(Gen.posNum[Int])
       hints       <- Gen.option(PrimitiveGen.oneOrMoreGen(SmartStringGen.smartStringGen))
       helpText    <- Gen.option(PrimitiveGen.oneOrMoreGen(SmartStringGen.smartStringGen))
-    } yield Choice(tpe, options, orientation, selections, hints, helpText)
+    } yield Choice(tpe, options, orientation, selections, hints, helpText, None, "or", None)
 
   def revealingChoiceElementGen: Gen[RevealingChoiceElement] =
     for {
