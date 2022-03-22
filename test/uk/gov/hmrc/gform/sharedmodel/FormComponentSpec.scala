@@ -399,7 +399,17 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("taxType"),
-        Choice(YesNo, yesNoLocalisedStrings, Horizontal, List(1), None, None),
+        Choice(
+          YesNo,
+          yesNoLocalisedStrings,
+          Horizontal,
+          List(1),
+          None,
+          None,
+          None,
+          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          None
+        ),
         toSmartString("Gas tax type?"),
         None,
         None,
@@ -698,6 +708,9 @@ class FormComponentSpec extends Spec {
           Vertical,
           List.empty[Int],
           None,
+          None,
+          None,
+          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
           None
         ),
         toSmartString("Select the tax type"),
@@ -736,6 +749,9 @@ class FormComponentSpec extends Spec {
           Vertical,
           List.empty[Int],
           None,
+          None,
+          None,
+          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
           None
         ),
         toSmartString("Select the tax type"),
@@ -775,6 +791,9 @@ class FormComponentSpec extends Spec {
           Vertical,
           List.empty[Int],
           None,
+          None,
+          None,
+          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
           None
         ),
         toSmartString("Select the tax type"),
@@ -814,6 +833,9 @@ class FormComponentSpec extends Spec {
           Horizontal,
           List.empty[Int],
           None,
+          None,
+          None,
+          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
           None
         ),
         toSmartString("Select the tax type"),
@@ -852,6 +874,9 @@ class FormComponentSpec extends Spec {
           Vertical,
           List.empty[Int],
           None,
+          None,
+          None,
+          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
           None
         ),
         toSmartString("Select the tax type"),
@@ -891,6 +916,9 @@ class FormComponentSpec extends Spec {
           Vertical,
           List.empty[Int],
           None,
+          None,
+          None,
+          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
           None
         ),
         toSmartString("Select the tax type"),
@@ -930,6 +958,9 @@ class FormComponentSpec extends Spec {
           Horizontal,
           List.empty[Int],
           None,
+          None,
+          None,
+          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
           None
         ),
         toSmartString("Select the tax type"),
@@ -958,7 +989,17 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("taxType"),
-        Choice(YesNo, yesNoLocalisedStrings, Horizontal, List.empty[Int], None, None),
+        Choice(
+          YesNo,
+          yesNoLocalisedStrings,
+          Horizontal,
+          List.empty[Int],
+          None,
+          None,
+          None,
+          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          None
+        ),
         toSmartString("Gas tax type?"),
         None,
         None,
@@ -986,7 +1027,17 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("taxType"),
-        Choice(YesNo, yesNoLocalisedStrings, Horizontal, List(1), None, None),
+        Choice(
+          YesNo,
+          yesNoLocalisedStrings,
+          Horizontal,
+          List(1),
+          None,
+          None,
+          None,
+          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          None
+        ),
         toSmartString("Gas tax type?"),
         None,
         None,
@@ -1014,7 +1065,17 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("taxType"),
-        Choice(YesNo, yesNoLocalisedStrings, Horizontal, List.empty[Int], None, None),
+        Choice(
+          YesNo,
+          yesNoLocalisedStrings,
+          Horizontal,
+          List.empty[Int],
+          None,
+          None,
+          None,
+          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          None
+        ),
         toSmartString("Gas tax type?"),
         None,
         None,
@@ -1045,7 +1106,17 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("taxType"),
-        Choice(YesNo, yesNoLocalisedStrings, Horizontal, List.empty[Int], None, None),
+        Choice(
+          YesNo,
+          yesNoLocalisedStrings,
+          Horizontal,
+          List.empty[Int],
+          None,
+          None,
+          None,
+          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          None
+        ),
         toSmartString("Gas tax type?"),
         None,
         None,
@@ -1072,7 +1143,17 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("taxType"),
-        Choice(YesNo, yesNoLocalisedStrings, Horizontal, List.empty[Int], None, None),
+        Choice(
+          YesNo,
+          yesNoLocalisedStrings,
+          Horizontal,
+          List.empty[Int],
+          None,
+          None,
+          None,
+          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          None
+        ),
         toSmartString("Gas tax type?"),
         None,
         None,
@@ -1510,6 +1591,9 @@ class FormComponentSpec extends Spec {
           Vertical,
           List(1),
           None,
+          None,
+          None,
+          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
           None
         ),
         toSmartString("Original invoice from the supplier"),

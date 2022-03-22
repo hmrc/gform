@@ -48,6 +48,9 @@ class FormComponentSpec2 extends Spec {
           Vertical,
           List.empty[Int],
           None,
+          None,
+          None,
+          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
           None
         ),
         toSmartString("Select the tax type"),

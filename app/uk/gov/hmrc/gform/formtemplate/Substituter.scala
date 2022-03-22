@@ -126,14 +126,27 @@ object Substituter {
       case OverseasAddress(mandatoryFields, optionalFields, value, countryLookup) =>
         OverseasAddress(mandatoryFields, optionalFields, value(substitutions), countryLookup)
 
-      case Choice(tpe, options, orientation, selections, hints, optionHelpText) =>
+      case Choice(
+            tpe,
+            options,
+            orientation,
+            selections,
+            hints,
+            optionHelpText,
+            dividerPositon,
+            dividerText,
+            noneChoice
+          ) =>
         Choice(
           tpe,
           options(substitutions),
           orientation,
           selections,
           hints(substitutions),
-          optionHelpText(substitutions)
+          optionHelpText(substitutions),
+          dividerPositon,
+          dividerText,
+          noneChoice
         )
 
       case RevealingChoice(options, multiValue) =>

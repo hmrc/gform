@@ -153,6 +153,12 @@ class FormComponentMaker(json: JsValue) {
       case JsUndefined() => Right(None)
     }
 
+  lazy val dividerPositon: Option[Int] = (json \ "dividerPosition").asOpt[Int]
+  lazy val dividerText: LocalisedString = (json \ "dividerText")
+    .asOpt[LocalisedString]
+    .getOrElse(LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")))
+  lazy val noneChoice: Option[Int] = (json \ "noneChoice").asOpt[Int]
+
   lazy val optLabelSize: Opt[Option[LabelSize]] =
     parse("labelSize", LabelSizeParser.validate)
 
@@ -374,12 +380,12 @@ class FormComponentMaker(json: JsValue) {
       maybeValueExpr    <- optMaybeValueExpr
       oChoice: Opt[Choice] = (maybeFormatExpr, choices, multivalue, maybeValueExpr) match {
                                // format: off
-        case (IsOrientation(VerticalOrientation),   Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections)) => Choice(Checkbox, NonEmptyList(x, xs),          Vertical,   selections, optionHints, optionHelpText).asRight
-        case (IsOrientation(VerticalOrientation),   Some(x :: xs), IsMultivalue(MultivalueNo),  Selections(selections)) => Choice(Radio,    NonEmptyList(x, xs),          Vertical,   selections, optionHints, optionHelpText).asRight
-        case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections)) => Choice(Checkbox, NonEmptyList(x, xs),          Horizontal, selections, optionHints, optionHelpText).asRight
-        case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueNo),  Selections(selections)) => Choice(Radio,    NonEmptyList(x, xs),          Horizontal, selections, optionHints, optionHelpText).asRight
-        case (IsOrientation(YesNoOrientation),      None,          IsMultivalue(MultivalueNo),  Selections(selections)) => Choice(YesNo,    NonEmptyList.of(toSmartString("Yes","Iawn"), toSmartString("No","Na")), Horizontal, selections, optionHints, optionHelpText).asRight
-        case (IsOrientation(YesNoOrientation),      _,             _,                           Selections(selections)) => Choice(YesNo,    NonEmptyList.of(toSmartString("Yes","Iawn"), toSmartString("No","Na")), Horizontal, selections, optionHints, optionHelpText).asRight
+        case (IsOrientation(VerticalOrientation),   Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections)) => Choice(Checkbox, NonEmptyList(x, xs),          Vertical,   selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice).asRight
+        case (IsOrientation(VerticalOrientation),   Some(x :: xs), IsMultivalue(MultivalueNo),  Selections(selections)) => Choice(Radio,    NonEmptyList(x, xs),          Vertical,   selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice).asRight
+        case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections)) => Choice(Checkbox, NonEmptyList(x, xs),          Horizontal, selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice).asRight
+        case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueNo),  Selections(selections)) => Choice(Radio,    NonEmptyList(x, xs),          Horizontal, selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice).asRight
+        case (IsOrientation(YesNoOrientation),      None,          IsMultivalue(MultivalueNo),  Selections(selections)) => Choice(YesNo,    NonEmptyList.of(toSmartString("Yes","Iawn"), toSmartString("No","Na")), Horizontal, selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice).asRight
+        case (IsOrientation(YesNoOrientation),      _,             _,                           Selections(selections)) => Choice(YesNo,    NonEmptyList.of(toSmartString("Yes","Iawn"), toSmartString("No","Na")), Horizontal, selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice).asRight
         // format: on
                                case (invalidFormat, invalidChoices, invalidMultivalue, invalidValue) =>
                                  UnexpectedState(
