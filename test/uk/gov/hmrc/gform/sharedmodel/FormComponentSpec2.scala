@@ -50,7 +50,7 @@ class FormComponentSpec2 extends Spec {
           None,
           None,
           None,
-          "or",
+          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
           None
         ),
         toSmartString("Select the tax type"),

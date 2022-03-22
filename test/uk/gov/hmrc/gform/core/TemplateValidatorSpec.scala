@@ -23,6 +23,7 @@ import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.Helpers._
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.formtemplate.FormTemplateValidator
+import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.DataSource.SeissEligible
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
@@ -647,7 +648,20 @@ class TemplateValidatorSpec extends Spec {
 
     val addToListPage = mkSection("addToListPage", List(mkFormComponent("fieldA", Value))).page
     val addAnotherQuestion =
-      mkFormComponent("addAnother", Choice(YesNo, yesNoLocalisedStrings, Horizontal, Nil, None, None, None, "or", None))
+      mkFormComponent(
+        "addAnother",
+        Choice(
+          YesNo,
+          yesNoLocalisedStrings,
+          Horizontal,
+          Nil,
+          None,
+          None,
+          None,
+          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          None
+        )
+      )
     val referenceToAddAnotherQuestion = mkFormComponent("fieldC", Count(FormComponentId("addAnother")))
 
     val sectionA = mkAddToList("AddToList", NonEmptyList.one(addToListPage), addAnotherQuestion)

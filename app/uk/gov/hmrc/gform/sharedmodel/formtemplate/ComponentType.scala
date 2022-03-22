@@ -166,7 +166,7 @@ case class Choice(
   hints: Option[NonEmptyList[SmartString]],
   optionHelpText: Option[NonEmptyList[SmartString]],
   dividerPositon: Option[Int],
-  dividerText: LocalisedString = LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "or in Welsh")),
+  dividerText: LocalisedString = LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
   noneChoice: Option[Int]
 ) extends ComponentType
 

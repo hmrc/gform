@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.formtemplate
 
 import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.Helpers.toSmartString
-import uk.gov.hmrc.gform.sharedmodel.ExampleData
+import uk.gov.hmrc.gform.sharedmodel.{ ExampleData, LangADT, LocalisedString }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 trait FormTemplateSupport {
@@ -34,7 +34,7 @@ trait FormTemplateSupport {
         None,
         None,
         None,
-        "or",
+        LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
         None
       ),
       false

@@ -19,6 +19,7 @@ import java.time.LocalTime
 
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidth.DisplayWidth
+import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 trait ComponentTypeGen {
@@ -62,7 +63,17 @@ trait ComponentTypeGen {
       selections  <- PrimitiveGen.zeroOrMoreGen(Gen.posNum[Int])
       hints       <- Gen.option(PrimitiveGen.oneOrMoreGen(SmartStringGen.smartStringGen))
       helpText    <- Gen.option(PrimitiveGen.oneOrMoreGen(SmartStringGen.smartStringGen))
-    } yield Choice(tpe, options, orientation, selections, hints, helpText, None, "or", None)
+    } yield Choice(
+      tpe,
+      options,
+      orientation,
+      selections,
+      hints,
+      helpText,
+      None,
+      LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+      None
+    )
 
   def revealingChoiceElementGen: Gen[RevealingChoiceElement] =
     for {

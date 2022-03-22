@@ -32,7 +32,17 @@ class RewriterSpec extends FunSuite with FormTemplateSupport {
 
     val yesNoLocalisedStrings = NonEmptyList.of(toSmartString("Yes"), toSmartString("No"))
 
-    val choice = Choice(YesNo, yesNoLocalisedStrings, Horizontal, Nil, None, None, None, "or", None)
+    val choice = Choice(
+      YesNo,
+      yesNoLocalisedStrings,
+      Horizontal,
+      Nil,
+      None,
+      None,
+      None,
+      LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+      None
+    )
 
     val fcChoice = mkFormComponent("a", choice, false)
     val fcText = mkFormComponent("b", Value)
@@ -87,7 +97,17 @@ class RewriterSpec extends FunSuite with FormTemplateSupport {
 
       val yesNoLocalisedStrings = NonEmptyList.of(toSmartString("Yes"), toSmartString("No"))
 
-      val choice = Choice(YesNo, yesNoLocalisedStrings, Horizontal, Nil, None, None, None, "or", None)
+      val choice = Choice(
+        YesNo,
+        yesNoLocalisedStrings,
+        Horizontal,
+        Nil,
+        None,
+        None,
+        None,
+        LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+        None
+      )
 
       val fcChoice = mkFormComponent("a", choice, false)
       val fcTextGenesis = mkFormComponent("b", Value)
