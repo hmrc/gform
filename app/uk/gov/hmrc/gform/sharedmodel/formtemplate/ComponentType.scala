@@ -24,7 +24,7 @@ import cats.data.NonEmptyList
 import julienrf.json.derived
 import play.api.libs.json._
 import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService.{ IsFalseish, IsTrueish }
-import uk.gov.hmrc.gform.sharedmodel.{ SmartString, ValueClassFormat }
+import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString, SmartString, ValueClassFormat }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.DisplayWidth.DisplayWidth
 import uk.gov.hmrc.gform.sharedmodel.structuredform.{ FieldName, RoboticsXml, StructuredFormDataFieldNamePurpose }
 
@@ -166,7 +166,7 @@ case class Choice(
   hints: Option[NonEmptyList[SmartString]],
   optionHelpText: Option[NonEmptyList[SmartString]],
   dividerPositon: Option[Int],
-  dividerText: String = "or",
+  dividerText: LocalisedString = LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "or in Welsh")),
   noneChoice: Option[Int]
 ) extends ComponentType
 

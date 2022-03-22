@@ -154,7 +154,9 @@ class FormComponentMaker(json: JsValue) {
     }
 
   lazy val dividerPositon: Option[Int] = (json \ "dividerPosition").asOpt[Int]
-  lazy val dividerText: String = (json \ "dividerText").asOpt[String].getOrElse("or")
+  lazy val dividerText: LocalisedString = (json \ "dividerText")
+    .asOpt[LocalisedString]
+    .getOrElse(LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "or in Welsh")))
   lazy val noneChoice: Option[Int] = (json \ "noneChoice").asOpt[Int]
 
   lazy val optLabelSize: Opt[Option[LabelSize]] =
