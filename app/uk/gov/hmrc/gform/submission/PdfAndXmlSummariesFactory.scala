@@ -54,7 +54,7 @@ object PdfAndXmlSummariesFactory {
       hmrcDms: HmrcDms
     )(implicit now: Instant): Future[PdfAndXmlSummaries] =
       for {
-        pdf <- pdfGeneratorService.generatePDFBytesLocal(pdfData.html.replaceAllLiterally("<br>", "<br/>"))
+        pdf <- pdfGeneratorService.generatePDFBytesLocal(decode(pdfData.html))
         instructionPdf <- instructionPdfData.fold(Future.successful(Option.empty[Array[Byte]]))(iPdfData =>
                             pdfGeneratorService.generatePDFBytesLocal(iPdfData.html).map(Option(_))
                           )
@@ -64,6 +64,8 @@ object PdfAndXmlSummariesFactory {
         roboticsXml = createRoboticsXml(formTemplate, structuredFormData, hmrcDms, submissionRef),
         formDataXml = createFormdataXml(formTemplate, structuredFormData, hmrcDms, submissionRef)
       )
+
+    private val decode = (html: String) => "[\\p{C}]".r.replaceAllIn(html, "").replaceAllLiterally("<br>", "<br/>")
 
     private def createPdfSummary(pdf: Array[Byte]) = {
       val pDDocument: PDDocument = PDDocument.load(pdf)
