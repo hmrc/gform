@@ -167,7 +167,8 @@ case class Choice(
   optionHelpText: Option[NonEmptyList[SmartString]],
   dividerPositon: Option[Int],
   dividerText: LocalisedString,
-  noneChoice: Option[Int]
+  noneChoice: Option[Int],
+  noneChoiceError: Option[LocalisedString]
 ) extends ComponentType
 
 sealed trait ChoiceType
@@ -330,7 +331,7 @@ object ComponentType {
       case TaxPeriodDate                       => Nil
       case Address(_)                          => Nil
       case OverseasAddress(_, _, value, _)     => LeafExpr(path, value)
-      case Choice(_, options, _, _, hints, optionHelpText, _, _, _) =>
+      case Choice(_, options, _, _, hints, optionHelpText, _, _, _, _) =>
         LeafExpr(path + "choices", options) ++
           LeafExpr(path + "hints", hints) ++
           LeafExpr(path + "optionHelpText", optionHelpText)

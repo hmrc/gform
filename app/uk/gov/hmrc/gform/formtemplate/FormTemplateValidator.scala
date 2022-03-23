@@ -328,6 +328,12 @@ object FormTemplateValidator {
     validateChoice(sectionsList, check, "noneChoice can only be used together with multivalue")
   }
 
+  def validateChoiceNoneChoiceAndError(sectionsList: List[Page]): ValidationResult = {
+    def check(choice: Choice): Boolean = choice.noneChoice.isDefined != choice.noneChoiceError.isDefined
+
+    validateChoice(sectionsList, check, "noneChoice and noneChoiceError should be defined")
+  }
+
   def validatePostcodeLookup(sectionsList: List[Page]): ValidationResult = {
     val pagesWithPostcodeLookups: List[(FormComponentId, Page)] = sectionsList.flatMap { page =>
       page.fields.collect { case fc @ IsPostcodeLookup() =>
@@ -487,13 +493,13 @@ object FormTemplateValidator {
   }
 
   def validate(componentType: ComponentType, formTemplate: FormTemplate): ValidationResult = componentType match {
-    case HasExpr(SingleExpr(expr))         => validate(expr, formTemplate.sections)
-    case HasExpr(MultipleExpr(fields))     => Valid
-    case Date(_, _, _)                     => Valid
-    case CalendarDate                      => Valid
-    case TaxPeriodDate                     => Valid
-    case Address(_)                        => Valid
-    case Choice(_, _, _, _, _, _, _, _, _) => Valid
+    case HasExpr(SingleExpr(expr))            => validate(expr, formTemplate.sections)
+    case HasExpr(MultipleExpr(fields))        => Valid
+    case Date(_, _, _)                        => Valid
+    case CalendarDate                         => Valid
+    case TaxPeriodDate                        => Valid
+    case Address(_)                           => Valid
+    case Choice(_, _, _, _, _, _, _, _, _, _) => Valid
     case RevealingChoice(revealingChoiceElements, _) =>
       validate(revealingChoiceElements.toList.flatMap(_.revealingFields.map(_.`type`)), formTemplate)
     case HmrcTaxPeriod(_, _, _)      => Valid
