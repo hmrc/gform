@@ -408,6 +408,7 @@ class FormComponentSpec extends Spec {
           None,
           None,
           LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          None,
           None
         ),
         toSmartString("Gas tax type?"),
@@ -711,6 +712,7 @@ class FormComponentSpec extends Spec {
           None,
           None,
           LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          None,
           None
         ),
         toSmartString("Select the tax type"),
@@ -752,6 +754,7 @@ class FormComponentSpec extends Spec {
           None,
           None,
           LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          None,
           None
         ),
         toSmartString("Select the tax type"),
@@ -794,6 +797,7 @@ class FormComponentSpec extends Spec {
           None,
           None,
           LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          None,
           None
         ),
         toSmartString("Select the tax type"),
@@ -836,6 +840,7 @@ class FormComponentSpec extends Spec {
           None,
           None,
           LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          None,
           None
         ),
         toSmartString("Select the tax type"),
@@ -877,6 +882,7 @@ class FormComponentSpec extends Spec {
           None,
           None,
           LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          None,
           None
         ),
         toSmartString("Select the tax type"),
@@ -919,6 +925,7 @@ class FormComponentSpec extends Spec {
           None,
           None,
           LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          None,
           None
         ),
         toSmartString("Select the tax type"),
@@ -961,6 +968,7 @@ class FormComponentSpec extends Spec {
           None,
           None,
           LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          None,
           None
         ),
         toSmartString("Select the tax type"),
@@ -998,6 +1006,7 @@ class FormComponentSpec extends Spec {
           None,
           None,
           LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          None,
           None
         ),
         toSmartString("Gas tax type?"),
@@ -1036,6 +1045,7 @@ class FormComponentSpec extends Spec {
           None,
           None,
           LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          None,
           None
         ),
         toSmartString("Gas tax type?"),
@@ -1074,6 +1084,7 @@ class FormComponentSpec extends Spec {
           None,
           None,
           LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          None,
           None
         ),
         toSmartString("Gas tax type?"),
@@ -1115,6 +1126,7 @@ class FormComponentSpec extends Spec {
           None,
           None,
           LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          None,
           None
         ),
         toSmartString("Gas tax type?"),
@@ -1152,6 +1164,7 @@ class FormComponentSpec extends Spec {
           None,
           None,
           LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          None,
           None
         ),
         toSmartString("Gas tax type?"),
@@ -1594,6 +1607,7 @@ class FormComponentSpec extends Spec {
           None,
           None,
           LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          None,
           None
         ),
         toSmartString("Original invoice from the supplier"),

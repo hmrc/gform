@@ -71,6 +71,7 @@ class JsonParseTestGroup extends Spec {
                 None,
                 None,
                 LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+                None,
                 None
               ),
               toSmartString("clabel"),
@@ -155,6 +156,7 @@ class JsonParseTestGroup extends Spec {
                 None,
                 None,
                 LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+                None,
                 None
               ),
               toSmartString("clabel"),

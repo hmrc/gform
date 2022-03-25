@@ -135,7 +135,8 @@ object Substituter {
             optionHelpText,
             dividerPositon,
             dividerText,
-            noneChoice
+            noneChoice,
+            noneChoiceError
           ) =>
         Choice(
           tpe,
@@ -146,7 +147,8 @@ object Substituter {
           optionHelpText(substitutions),
           dividerPositon,
           dividerText,
-          noneChoice
+          noneChoice,
+          noneChoiceError
         )
 
       case RevealingChoice(options, multiValue) =>

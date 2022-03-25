@@ -659,6 +659,7 @@ class TemplateValidatorSpec extends Spec {
           None,
           None,
           LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          None,
           None
         )
       )

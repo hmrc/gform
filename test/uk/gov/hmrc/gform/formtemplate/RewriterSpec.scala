@@ -41,6 +41,7 @@ class RewriterSpec extends FunSuite with FormTemplateSupport {
       None,
       None,
       LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+      None,
       None
     )
 
@@ -106,6 +107,7 @@ class RewriterSpec extends FunSuite with FormTemplateSupport {
         None,
         None,
         LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+        None,
         None
       )
 
