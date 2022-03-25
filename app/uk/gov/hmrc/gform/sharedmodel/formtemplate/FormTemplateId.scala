@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
-import cats.Show
+import cats.{ Eq, Show }
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
 
@@ -30,6 +30,7 @@ object FormTemplateId {
   val unanchoredIdValidation: Regex = s"""$idValidation""".r
 
   implicit val show: Show[FormTemplateId] = Show.show(_.value)
+  implicit val catsEq: Eq[FormTemplateId] = Eq.fromUniversalEquals
 
   implicit val mongoVformat: Format[FormTemplateId] =
     ValueClassFormat.vformat("_id", FormTemplateId.apply, x => JsString(x.value))
