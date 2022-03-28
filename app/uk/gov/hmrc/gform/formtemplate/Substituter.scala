@@ -367,6 +367,10 @@ object Substituter {
       continueLabel = t.continueLabel(substitutions)
     )
 
+  implicit def emailParameterSubstituter[A](implicit
+    ev: Substituter[A, Expr]
+  ): Substituter[A, EmailParameter] = (substitutions, t) => t.copy(value = t.value(substitutions))
+
   implicit def formTemplateSubstituter[A](implicit
     ev: Substituter[A, Expr],
     ev2: Substituter[A, BooleanExpr]
@@ -374,6 +378,7 @@ object Substituter {
     t.copy(
       destinations = t.destinations(substitutions),
       sections = t.sections(substitutions),
-      summarySection = t.summarySection(substitutions)
+      summarySection = t.summarySection(substitutions),
+      emailParameters = t.emailParameters(substitutions)
     )
 }
