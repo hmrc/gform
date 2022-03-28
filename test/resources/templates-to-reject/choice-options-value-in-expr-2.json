@@ -1,0 +1,68 @@
+{
+  "_id": "choice-options-value-in-expr-2",
+  "formName": "Choice",
+  "description": "",
+  "emailTemplateId": "",
+  "authConfig": {
+    "authModule": "hmrc"
+  },
+  "sections": [
+    {
+      "title": "Page",
+      "fields": [
+        {
+          "id": "trading",
+          "type": "revealingChoice",
+          "label": "Does your company trade under a different name?",
+          "choices": [
+            "Yes",
+            "No"
+          ],
+          "revealingFields": [
+            [
+              {
+                "id": "hasDifferentName",
+                "type": "choice",
+                "label": "Does your company trade under a different name?",
+                "choices": [
+                  {
+                    "value": "foo",
+                    "en": "A"
+                  },
+                  {
+                    "value": "bar",
+                    "en": "B"
+                  }
+                ]
+              }
+            ],
+            []
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Page B",
+      "includeIf": "${hasDifferentName contains 'baz'}",
+      "fields": [
+        {
+          "id": "dummy",
+          "type": "text",
+          "label": "Dummy",
+          "format": "shortText"
+        }
+      ]
+    }
+  ],
+  "acknowledgementSection": {
+    "title": "Acknowledgement",
+    "fields": []
+  },
+  "destinations": [
+    {
+      "id": "transitionToSubmitted",
+      "type": "stateTransition",
+      "requiredState": "Submitted"
+    }
+  ]
+}

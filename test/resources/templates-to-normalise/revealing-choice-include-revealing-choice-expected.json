@@ -1,0 +1,96 @@
+{
+  "draftRetrievalMethod": {
+    "showContinueOrDeletePage": "true",
+    "value": "onePerUser"
+  },
+  "formCategory": "default",
+  "languages": [
+    "en"
+  ],
+  "authConfig": {
+    "authModule": "hmrc"
+  },
+  "destinations": {
+    "destinations": [
+      {
+        "id": "queueDestination",
+        "type": "hmrcDms",
+        "dmsFormId": "TST1234",
+        "customerId": "${businessUtr}",
+        "classificationType": "",
+        "businessArea": ""
+      }
+    ],
+    "declarationSection": {
+      "title": "Declaration",
+      "fields": []
+    },
+    "acknowledgementSection": {
+      "title": "Acknowledgement",
+      "fields": [],
+      "displayFeedbackLink": true
+    }
+  },
+  "description": "",
+  "sections": [
+    {
+      "title": "Page",
+      "fields": [
+        {
+          "id": "tradesUnderDifferentName",
+          "label": "Does your company trade under a different name?",
+          "type": "revealingChoice",
+          "choices": [
+            {
+              "label": "Yes"
+            }
+          ],
+          "revealingFields": [
+            [
+              {
+                "id": "inner",
+                "type": "revealingChoice",
+                "label": "RC 2",
+                "choices": [
+                  {
+                    "label": "No"
+                  }
+                ],
+                "revealingFields": [
+                  [
+                    {
+                      "id": "tradingNameUnknownHelp",
+                      "type": "info",
+                      "label": "Sorry",
+                      "infoText": "Sorry"
+                    }
+                  ]
+                ]
+              }
+            ]
+          ]
+        }
+      ]
+    }
+  ],
+  "summarySection": {
+    "title": {
+      "en": "Check your answers",
+      "cy": "Gwiriwch eich atebion"
+    },
+    "header": {
+      "en": "Make sure the information you have given is correct",
+      "cy": "Gwnewch yn siŵr bod yr wybodaeth a roddwyd gennych yn gywir"
+    },
+    "footer": {
+      "en": "##Now send your form\n\nYou need to submit your form on the next screen.\n\nBefore you do this you can [print or save a PDF copy of your answers (opens in a new window or tab)](${link.printSummaryPdf}).",
+      "cy": "##Nawr anfonwch eich ffurflen\n\nMae angen i chi gyflwyno’ch ffurflen ar y sgrin nesaf.\n\nCyn i chi wneud hyn gallwch [argraffu neu gadw copi PDF o’ch atebion (yn agor ffenestr neu dab newydd)](${link.printSummaryPdf})."
+    }
+  },
+  "formName": "Revealing choice",
+  "emailTemplateId": "",
+  "_id": "revealing-choice-include-revealing-choice",
+  "originalId": "revealing-choice-include-revealing-choice",
+  "displayHMRCLogo": false,
+  "parentFormSubmissionRefs": []
+}

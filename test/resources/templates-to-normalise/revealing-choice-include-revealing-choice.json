@@ -1,9 +1,8 @@
 {
-  "_id": "revealing-choice-invalid-selections",
+  "_id": "revealing-choice-include-revealing-choice",
   "formName": "Revealing choice",
   "description": "",
   "emailTemplateId": "",
-
   "authConfig": {
     "authModule": "hmrc"
   },
@@ -15,30 +14,28 @@
           "id": "tradesUnderDifferentName",
           "type": "revealingChoice",
           "label": "Does your company trade under a different name?",
-	  "value": "0,1",
           "choices": [
-            {
-              "label": "Yes"
-            },
-            {
-              "label": "No"
-            }
+            "Yes"
           ],
           "revealingFields": [
-	    [
-              {
-                "id": "tradingName",
-                "type": "text",
-                "label": "Trading name",
-                "format": "shortText"
-              }
-            ],
             [
               {
-                "id": "tradingNameUnknownHelp",
-                "type": "info",
-                "label": "Sorry",
-                "infoText": "Sorry"
+                "id": "inner",
+                "type": "revealingChoice",
+                "label": "RC 2",
+                "choices": [
+                  "No"
+                ],
+                "revealingFields": [
+                  [
+                    {
+                      "id": "tradingNameUnknownHelp",
+                      "type": "info",
+                      "label": "Sorry",
+                      "infoText": "Sorry"
+                    }
+                  ]
+                ]
               }
             ]
           ]
@@ -48,15 +45,11 @@
   ],
   "declarationSection": {
     "title": "Declaration",
-    "fields": [
-
-    ]
+    "fields": []
   },
   "acknowledgementSection": {
     "title": "Acknowledgement",
-    "fields": [
-
-    ]
+    "fields": []
   },
   "destinations": [
     {

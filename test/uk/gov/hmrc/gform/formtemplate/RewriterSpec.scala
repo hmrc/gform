@@ -16,10 +16,8 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
-import cats.data.NonEmptyList
 import munit.FunSuite
 import scala.concurrent.Future
-import uk.gov.hmrc.gform.Helpers.toSmartString
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString, SmartString }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
@@ -29,8 +27,6 @@ class RewriterSpec extends FunSuite with FormTemplateSupport {
   val rewriter = new Rewriter {}
 
   test("Rewrite includeIf when Equals refers to Choice component") {
-
-    val yesNoLocalisedStrings = NonEmptyList.of(toSmartString("Yes"), toSmartString("No"))
 
     val choice = Choice(
       YesNo,
@@ -95,8 +91,6 @@ class RewriterSpec extends FunSuite with FormTemplateSupport {
 
   invalidIfElseTable.foreach { case (ifElse, expectedError) =>
     test("Detect if-then-else expression which has wrong Equals or Contains usage in " + ifElse) {
-
-      val yesNoLocalisedStrings = NonEmptyList.of(toSmartString("Yes"), toSmartString("No"))
 
       val choice = Choice(
         YesNo,

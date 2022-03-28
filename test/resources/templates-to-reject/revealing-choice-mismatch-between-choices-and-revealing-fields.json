@@ -14,9 +14,16 @@
           "id": "tradesUnderDifferentName",
           "type": "revealingChoice",
           "label": "Does your company trade under a different name?",
-          "choices": ["Yes", "No"],
+          "choices": [
+            {
+              "label": "Yes"
+            },
+            {
+              "label": "No"
+            }
+          ],
           "revealingFields": [
-	    [],
+            [],
             [
               {
                 "id": "tradingName",
@@ -40,15 +47,11 @@
   ],
   "declarationSection": {
     "title": "Declaration",
-    "fields": [
-
-    ]
+    "fields": []
   },
   "acknowledgementSection": {
     "title": "Acknowledgement",
-    "fields": [
-
-    ]
+    "fields": []
   },
   "destinations": [
     {

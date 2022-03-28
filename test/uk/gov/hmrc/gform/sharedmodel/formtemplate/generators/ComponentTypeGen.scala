@@ -15,6 +15,7 @@
  */
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
+import cats.data.NonEmptyList
 import java.time.LocalTime
 
 import org.scalacheck.Gen
@@ -55,10 +56,25 @@ trait ComponentTypeGen {
 
   def orientationGen: Gen[Orientation] = Gen.oneOf(Vertical, Horizontal)
 
+  def optionDataIndexBasedGen: Gen[OptionData.IndexBased] = for {
+    label <- SmartStringGen.smartStringGen
+  } yield OptionData.IndexBased(label)
+
+  def optionDataValueBasedGen: Gen[OptionData.ValueBased] = for {
+    label <- SmartStringGen.smartStringGen
+    value <- PrimitiveGen.nonEmptyAlphaNumStrGen
+  } yield OptionData.ValueBased(label, value)
+
+  def optionDataGen: Gen[NonEmptyList[OptionData]] =
+    Gen.oneOf(
+      PrimitiveGen.oneOrMoreGen(optionDataIndexBasedGen),
+      PrimitiveGen.oneOrMoreGen(optionDataValueBasedGen)
+    )
+
   def choiceGen: Gen[Choice] =
     for {
       tpe         <- choiceTypeGen
-      options     <- PrimitiveGen.oneOrMoreGen(SmartStringGen.smartStringGen)
+      options     <- optionDataGen
       orientation <- orientationGen
       selections  <- PrimitiveGen.zeroOrMoreGen(Gen.posNum[Int])
       hints       <- Gen.option(PrimitiveGen.oneOrMoreGen(SmartStringGen.smartStringGen))
@@ -78,7 +94,7 @@ trait ComponentTypeGen {
 
   def revealingChoiceElementGen: Gen[RevealingChoiceElement] =
     for {
-      choice          <- SmartStringGen.smartStringGen
+      choice          <- Gen.oneOf(optionDataIndexBasedGen, optionDataValueBasedGen)
       revealingFields <- PrimitiveGen.zeroOrMoreGen(FormComponentGen.formComponentGen(1))
       hint            <- Gen.option(SmartStringGen.smartStringGen)
       selected        <- PrimitiveGen.booleanGen

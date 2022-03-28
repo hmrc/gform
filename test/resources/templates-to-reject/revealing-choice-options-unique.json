@@ -1,0 +1,46 @@
+{
+  "_id": "revealing-choice-options-unique",
+  "formName": "Revealing choice",
+  "description": "",
+  "emailTemplateId": "",
+  "authConfig": {
+    "authModule": "hmrc"
+  },
+  "sections": [
+    {
+      "title": "Page",
+      "fields": [
+        {
+          "id": "companyName",
+          "type": "revealingChoice",
+          "label": "Does your company trade under a different name?",
+          "choices": [
+            {
+              "value": "foo",
+              "en": "Yes"
+            },
+            {
+              "value": "foo",
+              "en": "No"
+            }
+          ],
+          "revealingFields": [
+            [],
+            []
+          ]
+        }
+      ]
+    }
+  ],
+  "acknowledgementSection": {
+    "title": "Acknowledgement",
+    "fields": []
+  },
+  "destinations": [
+    {
+      "id": "transitionToSubmitted",
+      "type": "stateTransition",
+      "requiredState": "Submitted"
+    }
+  ]
+}

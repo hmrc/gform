@@ -267,13 +267,23 @@ object FormTemplateValidator {
     Monoid.combineAll(validations.flatten)
   }
 
+  def allFormComponents(sectionsList: List[Page]): List[FormComponent] = {
+    val nestedFields = sectionsList
+      .flatMap { page =>
+        page.fields.collect {
+          case IsGroup(group)                     => group.fields
+          case IsRevealingChoice(revealingChoice) => revealingChoice.options.toList.flatMap(_.revealingFields)
+        }.flatten
+      }
+    nestedFields ++ sectionsList.flatMap(_.fields)
+  }
+
   def validateChoice(
     sectionsList: List[Page],
     choiceChecker: Choice => Boolean,
     errorMessage: String
   ): ValidationResult = {
-    val choiceFieldIds: List[FormComponentId] = sectionsList
-      .flatMap(_.fields)
+    val choiceFieldIds = allFormComponents(sectionsList)
       .map(fv => (fv.id, fv.`type`))
       .collect {
         case (fId, choice: Choice) if choiceChecker(choice) =>
@@ -281,7 +291,21 @@ object FormTemplateValidator {
       }
 
     choiceFieldIds.isEmpty.validationResult(errorMessage + ": " + choiceFieldIds.mkString(","))
+  }
 
+  def validateRevealingChoice(
+    sectionsList: List[Page],
+    revealingChoiceChecker: RevealingChoice => Boolean,
+    errorMessage: String
+  ): ValidationResult = {
+    val revealingChoiceFieldIds = allFormComponents(sectionsList)
+      .map(fv => (fv.id, fv.`type`))
+      .collect {
+        case (fId, rc: RevealingChoice) if revealingChoiceChecker(rc) =>
+          fId
+      }
+
+    revealingChoiceFieldIds.isEmpty.validationResult(errorMessage + ": " + revealingChoiceFieldIds.mkString(","))
   }
 
   def validateChoiceHelpText(sectionsList: List[Page]): ValidationResult = {
@@ -299,25 +323,45 @@ object FormTemplateValidator {
   }
 
   def validateChoiceDividerPositionLowerBound(sectionsList: List[Page]): ValidationResult = {
-    def check(choice: Choice): Boolean = choice.dividerPositon.fold(false)(_ <= 0)
+    def check(choice: Choice): Boolean = choice.dividerPosition.fold(false)(_ <= 0)
 
     validateChoice(sectionsList, check, "dividerPosition should be greater than 0")
   }
 
   def validateChoiceDividerPositionUpperBound(sectionsList: List[Page]): ValidationResult = {
-    def check(choice: Choice): Boolean = choice.dividerPositon.fold(false)(_ >= choice.options.size)
+    def check(choice: Choice): Boolean = choice.dividerPosition.fold(false)(_ >= choice.options.size)
 
     validateChoice(sectionsList, check, "dividerPosition should be less than the number of choices")
   }
 
+  def validateChoiceNoneChoiceValue(sectionsList: List[Page]): ValidationResult = {
+    def check(choice: Choice): Boolean = {
+      val values = choice.options.collect { case OptionData.ValueBased(_, v) =>
+        v
+      }
+      choice.noneChoice.fold(false) {
+        case NoneChoice.IndexBased(index) => !values.isEmpty
+        case NoneChoice.ValueBased(value) => !values.contains(value)
+      }
+    }
+
+    validateChoice(sectionsList, check, "'noneChoice' should match one of choices 'value'")
+  }
+
   def validateChoiceNoneChoiceLowerBound(sectionsList: List[Page]): ValidationResult = {
-    def check(choice: Choice): Boolean = choice.noneChoice.fold(false)(_ <= 0)
+    def check(choice: Choice): Boolean = choice.noneChoice.fold(false) {
+      case NoneChoice.IndexBased(index) => index <= 0
+      case NoneChoice.ValueBased(value) => false
+    }
 
     validateChoice(sectionsList, check, "noneChoice should be greater than 0")
   }
 
   def validateChoiceNoneChoiceUpperBound(sectionsList: List[Page]): ValidationResult = {
-    def check(choice: Choice): Boolean = choice.noneChoice.fold(false)(_ > choice.options.size)
+    def check(choice: Choice): Boolean = choice.noneChoice.fold(false) {
+      case NoneChoice.IndexBased(index) => index > choice.options.size
+      case NoneChoice.ValueBased(value) => false
+    }
 
     validateChoice(sectionsList, check, "noneChoice should be less than the number of choices")
   }
@@ -332,6 +376,78 @@ object FormTemplateValidator {
     def check(choice: Choice): Boolean = choice.noneChoice.isDefined != choice.noneChoiceError.isDefined
 
     validateChoice(sectionsList, check, "noneChoice and noneChoiceError should be defined")
+  }
+
+  def validateChoiceOptions(sectionsList: List[Page]): ValidationResult = {
+    def checkUniformness(choice: Choice): Boolean = {
+      val indexed = choice.options.collect { case o: OptionData.IndexBased =>
+        o
+      }
+      indexed.size =!= 0 && indexed.size =!= choice.options.size
+    }
+
+    def checkUnique(choice: Choice): Boolean = {
+      val values = choice.options.collect { case OptionData.ValueBased(_, value) =>
+        value
+      }
+      values.size =!= values.distinct.size
+    }
+
+    def noComma(choice: Choice): Boolean = {
+      val values = choice.options.collect { case OptionData.ValueBased(_, value) =>
+        value
+      }
+      values.size =!= 0 && values.exists(_.contains(","))
+    }
+
+    List(
+      validateChoice(
+        sectionsList,
+        checkUniformness,
+        "Choice component has some options with 'value' and some options without 'value'"
+      ),
+      validateChoice(
+        sectionsList,
+        checkUnique,
+        "Choice component options 'value's needs to be unique"
+      ),
+      validateChoice(
+        sectionsList,
+        noComma,
+        "Choice component options 'value' cannot contain ',' (comma)"
+      )
+    ).combineAll
+  }
+
+  def validateRevealingChoiceOptions(sectionsList: List[Page]): ValidationResult = {
+    def checkUniformness(revealingChoice: RevealingChoice): Boolean = {
+      val choices = revealingChoice.options.map(_.choice)
+      val indexed = choices.collect { case o: OptionData.IndexBased =>
+        o
+      }
+      indexed.size =!= 0 && indexed.size =!= choices.size
+    }
+
+    def checkUnique(revealingChoice: RevealingChoice): Boolean = {
+      val choices = revealingChoice.options.map(_.choice)
+      val values = choices.collect { case OptionData.ValueBased(_, value) =>
+        value
+      }
+      values.size =!= values.distinct.size
+    }
+
+    List(
+      validateRevealingChoice(
+        sectionsList,
+        checkUniformness,
+        "Revealing choice component has some choices with 'value' and some choices without 'value'"
+      ),
+      validateRevealingChoice(
+        sectionsList,
+        checkUnique,
+        "Revealing choice component choices 'value's needs to be unique"
+      )
+    ).combineAll
   }
 
   def validatePostcodeLookup(sectionsList: List[Page]): ValidationResult = {

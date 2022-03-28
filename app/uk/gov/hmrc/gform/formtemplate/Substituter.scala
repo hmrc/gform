@@ -47,6 +47,7 @@ object Substituter {
       ts.map(t => substituter.substitute(substitutions, t))
     }
   }
+
   implicit def optionSubstituter[A, T](implicit ev: Substituter[A, T]) = new Substituter[A, Option[T]] {
     def substitute(substitutions: A, ts: Option[T]): Option[T] = {
       val substituter = implicitly[Substituter[A, T]]
@@ -75,6 +76,7 @@ object Substituter {
       case HmrcRosmRegistrationCheckValidator(errorMessage, regime, utr, postcode) =>
         HmrcRosmRegistrationCheckValidator(errorMessage(substitutions), regime, utr, postcode)
     }
+
   implicit def overseasAddressValueSubstituter[A](implicit
     ev: Substituter[A, Expr]
   ): Substituter[A, OverseasAddress.Value] = (substitutions, t) =>
@@ -87,6 +89,14 @@ object Substituter {
       t.country(substitutions)
     )
 
+  implicit def optionDataSubstituter[A](implicit
+    ev: Substituter[A, Expr]
+  ): Substituter[A, OptionData] = (substitutions, t) =>
+    t match {
+      case o: OptionData.IndexBased => o.copy(label = o.label(substitutions))
+      case o: OptionData.ValueBased => o.copy(label = o.label(substitutions))
+    }
+
   implicit def revealingChoiceElementSubstituter[A](implicit
     ev: Substituter[A, Expr],
     ev2: Substituter[A, BooleanExpr]
@@ -96,6 +106,7 @@ object Substituter {
       revealingFields = t.revealingFields(substitutions),
       hint = t.hint(substitutions)
     )
+
   implicit def componentTypeSubstituter[A](implicit
     ev: Substituter[A, Expr],
     ev2: Substituter[A, BooleanExpr]
@@ -248,6 +259,7 @@ object Substituter {
         cyaPage = addToList.cyaPage(substitutions)
       )
     }
+
   implicit def addToListLimitSubstituter[A](implicit
     ev: Substituter[A, Expr],
     ev2: Substituter[A, BooleanExpr]
@@ -256,6 +268,7 @@ object Substituter {
       repeatsMax = t.repeatsMax(substitutions),
       field = t.field(substitutions)
     )
+
   implicit def printSectionPageSubstituter[A](implicit
     ev: Substituter[A, Expr]
   ): Substituter[A, PrintSection.Page] = (substitutions, t) =>
@@ -263,6 +276,7 @@ object Substituter {
       title = t.title(substitutions),
       instructions = t.instructions(substitutions)
     )
+
   implicit def printSectionPdfSubstituter[A](implicit
     ev: Substituter[A, Expr]
   ): Substituter[A, PrintSection.Pdf] = (substitutions, t) =>
@@ -270,6 +284,7 @@ object Substituter {
       header = t.header(substitutions),
       footer = t.footer(substitutions)
     )
+
   implicit def printSectionPdfNotificationSubstituter[A](implicit
     ev: Substituter[A, Expr]
   ): Substituter[A, PrintSection.PdfNotification] =
@@ -300,6 +315,7 @@ object Substituter {
       pdf = t.pdf(substitutions),
       instructionPdf = t.instructionPdf(substitutions)
     )
+
   implicit def destinationSubstituter[A](implicit
     ev: Substituter[A, Expr]
   ): Substituter[A, Destination] = (substitutions, t) =>
@@ -322,6 +338,7 @@ object Substituter {
       continueLabel = t.continueLabel(substitutions),
       fields = t.fields(substitutions)
     )
+
   implicit def destinationsSubstituter[A](implicit
     ev: Substituter[A, Expr],
     ev2: Substituter[A, BooleanExpr]
