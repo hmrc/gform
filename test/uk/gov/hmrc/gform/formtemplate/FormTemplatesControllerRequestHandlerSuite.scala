@@ -73,6 +73,184 @@ class FormTemplatesControllerRequestHandlerSuite extends FunSuite {
 
   }
 
+  test(
+    "normaliseJSON should transform field 'choices' of 'choice' and 'revealongChoice' components"
+  ) {
+
+    val json = Json.parse(
+      """|{
+         |  "_id": "choices",
+         |  "sections": [
+         |    {
+         |      "title": "Page",
+         |      "fields": [
+         |        {
+         |          "type": "choice",
+         |          "id": "choice",
+         |          "label": "Basic choice",
+         |          "choices": [
+         |            {
+         |              "value": "foo",
+         |              "en": "Yes",
+         |              "cy": "Iawn"
+         |            },
+         |            {
+         |              "en": "No",
+         |              "cy": "Na"
+         |            },
+         |            "simple text"
+         |          ]
+         |        },
+         |        {
+         |          "id": "revealing",
+         |          "type": "revealingChoice",
+         |          "label": "Revealing choice",
+         |          "choices": [
+         |            {
+         |              "value": "bar",
+         |              "en": "Yes - rc",
+         |              "cy": "Iawn - rc"
+         |            },
+         |            {
+         |              "en": "en text",
+         |              "cy": "cy text"
+         |            },
+         |            "revealing choice text"
+         |          ],
+         |          "revealingFields": [
+         |            [
+         |              {
+         |                "type": "choice",
+         |                "id": "nestedChoice",
+         |                "label": "Nested choice",
+         |                "choices": [
+         |                  {
+         |                    "value": "nestedFoo",
+         |                    "en": "Nested Yes",
+         |                    "cy": "Nested Iawn"
+         |                  },
+         |                  {
+         |                    "en": "Nested No",
+         |                    "cy": "Nested Na"
+         |                  },
+         |                  "Nested simple text"
+         |                ]
+         |              }
+         |            ],
+         |            [],
+         |            []
+         |          ]
+         |        }
+         |      ]
+         |    }
+         |  ],
+         |  "acknowledgementSection": {
+         |    "shortName": "Acknowledgement Page",
+         |    "title": "Acknowledgement Page",
+         |    "fields": []
+         |  },
+         |  "destinations": [
+         |    {
+         |      "id": "transitionToSubmitted",
+         |      "type": "stateTransition",
+         |      "requiredState": "Submitted"
+         |    }
+         |  ]
+         |}""".stripMargin
+    )
+
+    val expected =
+      """|[
+         |  {
+         |    "title": "Page",
+         |    "fields": [
+         |      {
+         |        "id": "choice",
+         |        "label": "Basic choice",
+         |        "type": "choice",
+         |        "choices": [
+         |          {
+         |            "value": "foo",
+         |            "label": {
+         |              "en": "Yes",
+         |              "cy": "Iawn"
+         |            }
+         |          },
+         |          {
+         |            "label": {
+         |              "en": "No",
+         |              "cy": "Na"
+         |            }
+         |          },
+         |          {
+         |            "label": "simple text"
+         |          }
+         |        ]
+         |      },
+         |      {
+         |        "id": "revealing",
+         |        "label": "Revealing choice",
+         |        "type": "revealingChoice",
+         |        "choices": [
+         |          {
+         |            "value": "bar",
+         |            "label": {
+         |              "en": "Yes - rc",
+         |              "cy": "Iawn - rc"
+         |            }
+         |          },
+         |          {
+         |            "label": {
+         |              "en": "en text",
+         |              "cy": "cy text"
+         |            }
+         |          },
+         |          {
+         |            "label": "revealing choice text"
+         |          }
+         |        ],
+         |        "revealingFields": [
+         |          [
+         |            {
+         |              "id": "nestedChoice",
+         |              "label": "Nested choice",
+         |              "type": "choice",
+         |              "choices": [
+         |                {
+         |                  "value": "nestedFoo",
+         |                  "label": {
+         |                    "en": "Nested Yes",
+         |                    "cy": "Nested Iawn"
+         |                  }
+         |                },
+         |                {
+         |                  "label": {
+         |                    "en": "Nested No",
+         |                    "cy": "Nested Na"
+         |                  }
+         |                },
+         |                {
+         |                  "label": "Nested simple text"
+         |                }
+         |              ]
+         |            }
+         |          ],
+         |          [],
+         |          []
+         |        ]
+         |      }
+         |    ]
+         |  }
+         |]""".stripMargin
+
+    val JsSuccess(normalised, _) = FormTemplatesControllerRequestHandler.normaliseJSON(json)
+    normalised \ "sections" match {
+      case JsDefined(sections) => assertEquals(Json.prettyPrint(sections), Json.prettyPrint(Json.parse(expected)))
+      case otherwise           => fail(s"No sections field present in: $normalised")
+    }
+
+  }
+
   private def assertFieldValue(fieldName: String, expectedValue: String, json: JsValue)(implicit loc: Location) =
     json \ fieldName match {
       case JsDefined(JsString(str)) => assertEquals(str, expectedValue)

@@ -17,6 +17,8 @@
 package uk.gov.hmrc.gform.formtemplate
 
 import cats.instances.future._
+import cats.instances.string._
+import cats.syntax.eq._
 import cats.syntax.either._
 import play.api.libs.json._
 import play.api.libs.json.Reads._
@@ -95,6 +97,9 @@ object FormTemplatesControllerRequestHandler {
   private val noTemplateId: Reads[JsObject] =
     Reads.failed("Template field _id must be provided and it must be a String")
 
+  private def list[A <: JsValue](reads: Reads[A]): Reads[JsArray] =
+    Reads.list(reads).map(JsArray.apply)
+
   def normaliseJSON(jsonValue: JsValue): JsResult[JsObject] = {
 
     val drmValue =
@@ -164,13 +169,62 @@ object FormTemplatesControllerRequestHandler {
         Json.obj()
       )
 
+    val choicesFieldUpdater: Reads[JsValue] = Reads { json =>
+      json \ "value" match {
+        case JsDefined(JsString(value)) =>
+          (__ \ 'label \ 'value).json.prune.reads(
+            Json.obj(
+              "label" -> json,
+              "value" -> value
+            )
+          )
+        case _ => JsSuccess(Json.obj("label" -> json))
+      }
+    }
+
+    val updateChoicesField = (__ \ 'choices).json.update(list(choicesFieldUpdater))
+
+    val choicesUpdater: Reads[JsValue] = Reads { json =>
+      json \ "type" match {
+        case JsDefined(JsString(tpe)) if tpe === "choice" =>
+          json \ "format" match {
+            case JsDefined(JsString("yesno")) => JsSuccess(json)
+            case _                            => json.transform(updateChoicesField)
+          }
+        case _ => JsSuccess(json)
+      }
+    }
+
+    def revealingChoicesUpdater: Reads[JsValue] = Reads { json =>
+      json \ "type" match {
+        case JsDefined(JsString("revealingChoice")) =>
+          json.transform(
+            (__ \ 'revealingFields).json.update(
+              list(list(choicesUpdater andThen revealingChoicesUpdater))
+            ) andThen updateChoicesField
+          )
+        case _ => JsSuccess(json)
+      }
+    }
+
+    val fieldsReads: Reads[JsObject] =
+      (__ \ 'fields).json.update(list(choicesUpdater andThen revealingChoicesUpdater))
+    val regularFieldsOrAddToListFieldsReads = fieldsReads orElse (__ \ 'pages).json.update(list(fieldsReads))
+    val transformChoices: Reads[JsValue] = Reads { json =>
+      val updateSections: Reads[JsObject] =
+        (__ \ 'sections).json.update(list(regularFieldsOrAddToListFieldsReads))
+      json.transform(updateSections) orElse JsSuccess(json)
+    }
+
     val moveDestinations =
       (__ \ 'destinations \ 'destinations).json
         .copyFrom((__ \ 'destinations).json.pick) orElse Reads.pure(Json.obj())
 
     val moveDeclarationSection =
       (__ \ 'destinations \ 'declarationSection).json
-        .copyFrom((__ \ 'declarationSection).json.pick) orElse Reads.pure(Json.obj())
+        .copyFrom((__ \ 'declarationSection).json.pick.map { dsJson =>
+          dsJson.transform(fieldsReads).getOrElse(dsJson)
+        }) orElse Reads.pure(Json.obj())
 
     val pruneAcknowledgementSection = (__ \ 'acknowledgementSection).json.prune
 
@@ -224,6 +278,7 @@ object FormTemplatesControllerRequestHandler {
       pruneShowContinueOrDeletePage andThen
         pruneAcknowledgementSection andThen
         prunePrintSection andThen
+        transformChoices andThen
         pruneDeclarationSection and
         drmValue and
         drmShowContinueOrDeletePage and

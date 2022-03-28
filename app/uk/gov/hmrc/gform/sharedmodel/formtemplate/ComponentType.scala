@@ -22,6 +22,7 @@ import java.time.format.DateTimeFormatter
 import cats.Eq
 import cats.data.NonEmptyList
 import julienrf.json.derived
+import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService.{ IsFalseish, IsTrueish }
 import uk.gov.hmrc.gform.sharedmodel.{ LocalisedString, SmartString, ValueClassFormat }
@@ -158,16 +159,64 @@ object DisplayWidth extends Enumeration {
   implicit val displayWidthWrites: Writes[DisplayWidth] = Writes.enumNameWrites
 }
 
+sealed trait OptionData extends Product with Serializable
+
+object OptionData {
+
+  case class IndexBased(
+    label: SmartString
+  ) extends OptionData
+
+  case class ValueBased(
+    label: SmartString,
+    value: String
+  ) extends OptionData
+
+  private val templateReads: Reads[OptionData] = {
+
+    val indexBasedReads: Reads[OptionData] = Json.reads[IndexBased].widen[OptionData]
+    val valueBasedReads: Reads[OptionData] = Json.reads[ValueBased].widen[OptionData]
+
+    valueBasedReads | indexBasedReads
+  }
+
+  implicit val format: OFormat[OptionData] = OFormatWithTemplateReadFallback(templateReads)
+
+  implicit val leafExprs: LeafExpr[OptionData] = (path: TemplatePath, t: OptionData) =>
+    t match {
+      case OptionData.IndexBased(label)    => LeafExpr(path + "label", label)
+      case OptionData.ValueBased(label, _) => LeafExpr(path + "label", label)
+    }
+}
+
+sealed trait NoneChoice extends Product with Serializable
+
+object NoneChoice {
+
+  case class IndexBased(index: Int) extends NoneChoice
+  case class ValueBased(value: String) extends NoneChoice
+
+  private val templateReads: Reads[NoneChoice] = {
+
+    val indexBasedReads: Reads[NoneChoice] = Reads.IntReads.map(IndexBased.apply).widen[NoneChoice]
+    val valueBasedReads: Reads[NoneChoice] = Reads.StringReads.map(ValueBased.apply).widen[NoneChoice]
+
+    valueBasedReads | indexBasedReads
+  }
+
+  implicit val format: OFormat[NoneChoice] = OFormatWithTemplateReadFallback(templateReads)
+}
+
 case class Choice(
   `type`: ChoiceType,
-  options: NonEmptyList[SmartString],
+  options: NonEmptyList[OptionData],
   orientation: Orientation,
   selections: List[Int],
   hints: Option[NonEmptyList[SmartString]],
   optionHelpText: Option[NonEmptyList[SmartString]],
-  dividerPositon: Option[Int],
+  dividerPosition: Option[Int],
   dividerText: LocalisedString,
-  noneChoice: Option[Int],
+  noneChoice: Option[NoneChoice],
   noneChoiceError: Option[LocalisedString]
 ) extends ComponentType
 
@@ -182,7 +231,7 @@ object ChoiceType {
 }
 
 case class RevealingChoiceElement(
-  choice: SmartString,
+  choice: OptionData,
   revealingFields: List[FormComponent],
   hint: Option[SmartString],
   selected: Boolean

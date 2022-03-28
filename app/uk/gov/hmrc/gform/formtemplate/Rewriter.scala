@@ -119,23 +119,38 @@ trait Rewriter {
 
     def validate(
       c: String,
+      possibleValues: Set[String],
       optionsSize: Int,
       formComponentId: FormComponentId,
       exprString: String,
       componentDescription: String
     ): Either[UnexpectedState, Unit] =
-      Try(c.toInt) match {
-        case Success(index) =>
-          val maxIndex = optionsSize - 1
-          if (maxIndex < index) {
-            Left(
-              UnexpectedState(
-                s"Expression '$exprString' has wrong index $c. $componentDescription $formComponentId has only $optionsSize elements. Use index from 0 to $maxIndex"
+      if (possibleValues.isEmpty) {
+        Try(c.toInt) match {
+          case Success(index) =>
+            val maxIndex = optionsSize - 1
+            if (maxIndex < index) {
+              Left(
+                UnexpectedState(
+                  s"Expression '$exprString' has wrong index $c. $componentDescription $formComponentId has only $optionsSize elements. Use index from 0 to $maxIndex"
+                )
               )
+            } else Right(())
+          case Failure(f) =>
+            Left(UnexpectedState(s"Expression '$exprString' is invalid. '$c' needs to be a number"))
+        }
+
+      } else {
+        if (possibleValues(c)) {
+          Right(())
+        } else {
+          val possibleValuesStr = possibleValues.mkString(", ")
+          Left(
+            UnexpectedState(
+              s"Expression '$exprString' is invalid. '$c' is not one of the possible values: $possibleValuesStr"
             )
-          } else Right(())
-        case Failure(f) =>
-          Left(UnexpectedState(s"Expression '$exprString' is invalid. '$c' needs to be a number"))
+          )
+        }
       }
 
     def invalidTopLevelBooleanExpr[A](id: BooleanExprId): Either[UnexpectedState, A] = Left(
@@ -162,9 +177,18 @@ trait Rewriter {
           .get(formComponentId)
           .fold[Either[UnexpectedState, BooleanExpr]](missingFormComponentId(formComponentId)) {
             case Choice(_, options, _, _, _, _, _, _, _, _) =>
-              validate(c, options.size, formComponentId, exprString, "Choice").map(_ => be)
+              val possibleValues = options.collect { case OptionData.ValueBased(_, value) =>
+                value
+              }.toSet
+              validate(c, possibleValues, options.size, formComponentId, exprString, "Choice").map(_ => be)
             case RevealingChoice(options, _) =>
-              validate(c, options.size, formComponentId, exprString, "Revealing choice").map(_ => be)
+              val possibleValues = options
+                .map(_.choice)
+                .collect { case OptionData.ValueBased(_, value) =>
+                  value
+                }
+                .toSet
+              validate(c, possibleValues, options.size, formComponentId, exprString, "Revealing choice").map(_ => be)
             case otherwise => Right(be)
           }
       case be @ EqualsWithConstant(ctx @ FormCtx(formComponentId), Constant(c), swapped) =>
@@ -182,11 +206,21 @@ trait Rewriter {
           .get(formComponentId)
           .fold[Either[UnexpectedState, BooleanExpr]](missingFormComponentId(formComponentId)) {
             case Choice(Radio | YesNo, options, _, _, _, _, _, _, _, _) =>
-              validate(c, options.size, formComponentId, exprString, "Choice").map(_ => rewriter)
+              val possibleValues = options.collect { case OptionData.ValueBased(_, value) =>
+                value
+              }.toSet
+              validate(c, possibleValues, options.size, formComponentId, exprString, "Choice").map(_ => rewriter)
             case Choice(Checkbox, _, _, _, _, _, _, _, _, _) => invalidUsage("choice")
             case RevealingChoice(_, true)                    => invalidUsage("revealing choice")
             case RevealingChoice(options, false) =>
-              validate(c, options.size, formComponentId, exprString, "Revealing choice").map(_ => rewriter)
+              val possibleValues = options
+                .map(_.choice)
+                .collect { case OptionData.ValueBased(_, value) =>
+                  value
+                }
+                .toSet
+              validate(c, possibleValues, options.size, formComponentId, exprString, "Revealing choice")
+                .map(_ => rewriter)
             case otherwise => Right(be)
           }
       case TopLevelRef(id) => invalidTopLevelBooleanExpr(id)

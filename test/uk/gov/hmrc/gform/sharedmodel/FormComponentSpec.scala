@@ -30,7 +30,10 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 class FormComponentSpec extends Spec {
 
-  val yesNoLocalisedStrings = NonEmptyList.of(toSmartString("Yes", "Iawn"), toSmartString("No", "Na"))
+  val yesNoLocalisedStrings =
+    NonEmptyList.of(toSmartString("Yes", "Iawn"), toSmartString("No", "Na")).map(OptionData.IndexBased(_))
+
+  private val gases = NonEmptyList.of("Natural gas", "Other gas").map(l => OptionData.IndexBased(toSmartString(l)))
 
   "FieldValue json object" should "parse as Text if it not include 'type' field" in {
     val fieldValue = toFieldValue("""|{
@@ -695,8 +698,12 @@ class FormComponentSpec extends Spec {
          |  "id":"dutyType",
          |  "label":"Select the tax type",
          |  "choices": [
-         |    "Natural gas",
-         |    "Other gas"
+         |     {
+         |       "label": "Natural gas"
+         |     },
+         |     {
+         |       "label": "Other gas"
+         |     }
          |  ]
          |}""")
 
@@ -705,7 +712,7 @@ class FormComponentSpec extends Spec {
         FormComponentId("dutyType"),
         Choice(
           Radio,
-          NonEmptyList(toSmartString("Natural gas"), List(toSmartString("Other gas"))),
+          gases,
           Vertical,
           List.empty[Int],
           None,
@@ -736,8 +743,12 @@ class FormComponentSpec extends Spec {
          |  "id":"dutyType",
          |  "label":"Select the tax type",
          |  "choices": [
-         |    "Natural gas",
-         |    "Other gas"
+         |     {
+         |       "label": "Natural gas"
+         |     },
+         |     {
+         |       "label": "Other gas"
+         |     }
          |  ],
          |  "multivalue":"no"
          |}""")
@@ -747,7 +758,7 @@ class FormComponentSpec extends Spec {
         FormComponentId("dutyType"),
         Choice(
           Radio,
-          NonEmptyList(toSmartString("Natural gas"), List(toSmartString("Other gas"))),
+          gases,
           Vertical,
           List.empty[Int],
           None,
@@ -778,8 +789,12 @@ class FormComponentSpec extends Spec {
          |  "id":"dutyType",
          |  "label":"Select the tax type",
          |  "choices": [
-         |    "Natural gas",
-         |    "Other gas"
+         |     {
+         |       "label": "Natural gas"
+         |     },
+         |     {
+         |       "label": "Other gas"
+         |     }
          |  ],
          |  "multivalue":"no",
          |  "format":"vertical"
@@ -790,7 +805,7 @@ class FormComponentSpec extends Spec {
         FormComponentId("dutyType"),
         Choice(
           Radio,
-          NonEmptyList(toSmartString("Natural gas"), List(toSmartString("Other gas"))),
+          gases,
           Vertical,
           List.empty[Int],
           None,
@@ -821,8 +836,12 @@ class FormComponentSpec extends Spec {
          |  "id":"dutyType",
          |  "label":"Select the tax type",
          |  "choices": [
-         |    "Natural gas",
-         |    "Other gas"
+         |     {
+         |       "label": "Natural gas"
+         |     },
+         |     {
+         |       "label": "Other gas"
+         |     }
          |  ],
          |  "multivalue":"no",
          |  "format":"horizontal"
@@ -833,7 +852,7 @@ class FormComponentSpec extends Spec {
         FormComponentId("dutyType"),
         Choice(
           Radio,
-          NonEmptyList(toSmartString("Natural gas"), List(toSmartString("Other gas"))),
+          gases,
           Horizontal,
           List.empty[Int],
           None,
@@ -864,8 +883,12 @@ class FormComponentSpec extends Spec {
          |  "id":"dutyType",
          |  "label":"Select the tax type",
          |  "choices": [
-         |    "Natural gas",
-         |    "Other gas"
+         |     {
+         |       "label": "Natural gas"
+         |     },
+         |     {
+         |       "label": "Other gas"
+         |     }
          |  ],
          |  "multivalue":"yes"
          |}""")
@@ -875,7 +898,7 @@ class FormComponentSpec extends Spec {
         FormComponentId("dutyType"),
         Choice(
           Checkbox,
-          NonEmptyList(toSmartString("Natural gas"), List(toSmartString("Other gas"))),
+          gases,
           Vertical,
           List.empty[Int],
           None,
@@ -906,8 +929,12 @@ class FormComponentSpec extends Spec {
          |  "id":"dutyType",
          |  "label":"Select the tax type",
          |  "choices": [
-         |    "Natural gas",
-         |    "Other gas"
+         |     {
+         |       "label": "Natural gas"
+         |     },
+         |     {
+         |       "label": "Other gas"
+         |     }
          |  ],
          |  "multivalue":"yes",
          |  "format":"vertical"
@@ -918,7 +945,7 @@ class FormComponentSpec extends Spec {
         FormComponentId("dutyType"),
         Choice(
           Checkbox,
-          NonEmptyList(toSmartString("Natural gas"), List(toSmartString("Other gas"))),
+          gases,
           Vertical,
           List.empty[Int],
           None,
@@ -949,8 +976,12 @@ class FormComponentSpec extends Spec {
          |  "id":"dutyType",
          |  "label":"Select the tax type",
          |  "choices": [
-         |    "Natural gas",
-         |    "Other gas"
+         |     {
+         |       "label": "Natural gas"
+         |     },
+         |     {
+         |       "label": "Other gas"
+         |     }
          |  ],
          |  "multivalue":"yes",
          |  "format":"horizontal"
@@ -961,7 +992,7 @@ class FormComponentSpec extends Spec {
         FormComponentId("dutyType"),
         Choice(
           Checkbox,
-          NonEmptyList(toSmartString("Natural gas"), List(toSmartString("Other gas"))),
+          gases,
           Horizontal,
           List.empty[Int],
           None,
@@ -1109,8 +1140,12 @@ class FormComponentSpec extends Spec {
          |  "label":"Gas tax type?",
          |  "format":"yesno",
          |  "choices": [
-         |    "Natural gas",
-         |    "Other gas"
+         |     {
+         |       "label": "Natural gas"
+         |     },
+         |     {
+         |       "label": "Other gas"
+         |     }
          |  ]
          |}""")
 
@@ -1209,8 +1244,12 @@ class FormComponentSpec extends Spec {
          |  "id":"dutyType",
          |  "label":"Select the tax type",
          |  "choices": [
-         |    "Natural gas",
-         |    "Other gas"
+         |     {
+         |       "label": "Natural gas"
+         |     },
+         |     {
+         |       "label": "Other gas"
+         |     }
          |  ],
          |  "multivalue":"wrong-value"
          |}""")
@@ -1224,8 +1263,12 @@ class FormComponentSpec extends Spec {
          |  "id":"dutyType",
          |  "label":"Select the tax type",
          |  "choices": [
-         |    "Natural gas",
-         |    "Other gas"
+         |     {
+         |       "label": "Natural gas"
+         |     },
+         |     {
+         |       "label": "Other gas"
+         |     }
          |  ],
          |  "format":"wrong-value"
          |}""")
@@ -1591,7 +1634,17 @@ class FormComponentSpec extends Spec {
            "label": "Original invoice from the supplier",
            "shortName" : "$shortName",
            "format": "vertical",
-           "choices": ["Yes","No", "Not sure"],
+           "choices": [
+              {
+                "label": "Yes"
+              },
+              {
+                "label": "No"
+              },
+              {
+                "label": "Not sure"
+              }
+           ],
            "value": "1"
          }""")
 
@@ -1600,7 +1653,7 @@ class FormComponentSpec extends Spec {
         FormComponentId("haveIncludedInvoice"),
         Choice(
           Radio,
-          NonEmptyList.of(toSmartString("Yes"), toSmartString("No"), toSmartString("Not sure")),
+          NonEmptyList.of("Yes", "No", "Not sure").map(l => OptionData.IndexBased(toSmartString(l))),
           Vertical,
           List(1),
           None,

@@ -83,7 +83,7 @@ class FormComponentMaker(json: JsValue) {
   lazy val optionHelpText: Option[NonEmptyList[SmartString]] =
     (json \ "optionHelpText").asOpt[NonEmptyList[SmartString]]
   lazy val submitMode: Option[String] = (json \ "submitMode").asOpt[String]
-  lazy val choices: Option[List[SmartString]] = (json \ "choices").asOpt[List[SmartString]]
+  lazy val choices: Option[List[OptionData]] = (json \ "choices").asOpt[List[OptionData]]
 
   lazy val revealingFieldsJson: Option[List[List[JsValue]]] =
     (json \ "revealingFields").asOpt[List[List[JsValue]]]
@@ -157,7 +157,7 @@ class FormComponentMaker(json: JsValue) {
   lazy val dividerText: LocalisedString = (json \ "dividerText")
     .asOpt[LocalisedString]
     .getOrElse(LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")))
-  lazy val noneChoice: Option[Int] = (json \ "noneChoice").asOpt[Int]
+  lazy val noneChoice: Option[NoneChoice] = (json \ "noneChoice").asOpt[NoneChoice]
   lazy val noneChoiceError: Option[LocalisedString] = (json \ "noneChoiceError").asOpt[LocalisedString]
 
   lazy val optLabelSize: Opt[Option[LabelSize]] =
@@ -374,6 +374,7 @@ class FormComponentMaker(json: JsValue) {
     SmartString(LocalisedString(Map(LangADT.En -> stringEn, LangADT.Cy -> stringCy)), Nil)
 
   private lazy val choiceOpt: Opt[Choice] = {
+    val yesNo = NonEmptyList.of(toSmartString("Yes", "Iawn"), toSmartString("No", "Na")).map(OptionData.IndexBased(_))
     for {
       emailVerification <- optEmailVerification
       selectionCriteria <- optSelectionCriteria
@@ -385,8 +386,8 @@ class FormComponentMaker(json: JsValue) {
         case (IsOrientation(VerticalOrientation),   Some(x :: xs), IsMultivalue(MultivalueNo),  Selections(selections)) => Choice(Radio,    NonEmptyList(x, xs),          Vertical,   selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError).asRight
         case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueYes), Selections(selections)) => Choice(Checkbox, NonEmptyList(x, xs),          Horizontal, selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError).asRight
         case (IsOrientation(HorizontalOrientation), Some(x :: xs), IsMultivalue(MultivalueNo),  Selections(selections)) => Choice(Radio,    NonEmptyList(x, xs),          Horizontal, selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError).asRight
-        case (IsOrientation(YesNoOrientation),      None,          IsMultivalue(MultivalueNo),  Selections(selections)) => Choice(YesNo,    NonEmptyList.of(toSmartString("Yes","Iawn"), toSmartString("No","Na")), Horizontal, selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError).asRight
-        case (IsOrientation(YesNoOrientation),      _,             _,                           Selections(selections)) => Choice(YesNo,    NonEmptyList.of(toSmartString("Yes","Iawn"), toSmartString("No","Na")), Horizontal, selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError).asRight
+        case (IsOrientation(YesNoOrientation),      None,          IsMultivalue(MultivalueNo),  Selections(selections)) => Choice(YesNo,    yesNo, Horizontal, selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError).asRight
+        case (IsOrientation(YesNoOrientation),      _,             _,                           Selections(selections)) => Choice(YesNo,    yesNo, Horizontal, selections, optionHints, optionHelpText, dividerPositon, dividerText, noneChoice, noneChoiceError).asRight
         // format: on
                                case (invalidFormat, invalidChoices, invalidMultivalue, invalidValue) =>
                                  UnexpectedState(
@@ -413,7 +414,6 @@ class FormComponentMaker(json: JsValue) {
 
     val maybeRevealingFields: Option[Opt[List[List[FormComponent]]]] =
       revealingFields.map(_.traverse(_.traverse(_.optFieldValue())))
-
     (choices, maybeValueExpr, maybeRevealingFields) match {
       case (Some(options), Selections(selections), Some(Right(revealingFields))) =>
         def mkError[A](error: String): Either[String, A] = s"RevealingChoice error: $error".asLeft
@@ -484,10 +484,9 @@ class FormComponentMaker(json: JsValue) {
         res.leftMap(UnexpectedState)
       case _ =>
         UnexpectedState(s"""|Wrong revealing choice definition
-                            |choices : ${choices.getOrElse("MISSING - This field must be provided")}
-                            |selections: ${maybeValueExpr.getOrElse("")}
-                            |revealingFields: ${revealingFields
-          .getOrElse("MISSING - This field must be provided")}""".stripMargin).asLeft
+                            |choices : $choices
+                            |selections: $maybeValueExpr
+                            |revealingFields: $maybeRevealingFields""".stripMargin).asLeft
     }
   }
 

@@ -30,8 +30,12 @@ class FormComponentSpec2 extends Spec {
          |  "id":"dutyType",
          |  "label":"Select the tax type",
          |  "choices": [
-         |    "Natural gas",
-         |    "Other gas"
+         |     {
+         |       "label": "Natural gas"
+         |     },
+         |     {
+         |       "label": "Other gas"
+         |     }
          |  ],
          |  "multivalue":"no",
          |  "format":"vertical",
@@ -44,7 +48,68 @@ class FormComponentSpec2 extends Spec {
         FormComponentId("dutyType"),
         Choice(
           Radio,
-          NonEmptyList(toSmartString("Natural gas"), List(toSmartString("Other gas"))),
+          NonEmptyList.of("Natural gas", "Other gas").map(l => OptionData.IndexBased(toSmartString(l))),
+          Vertical,
+          List.empty[Int],
+          None,
+          None,
+          None,
+          LocalisedString(Map(LangADT.En -> "or", LangADT.Cy -> "neu")),
+          None,
+          None
+        ),
+        toSmartString("Select the tax type"),
+        None,
+        None,
+        None,
+        validIf = None,
+        mandatory = true,
+        editable = true,
+        submissible = true,
+        derived = false,
+        onlyShowOnSummary = false,
+        None,
+        Some(List(SummariseGroupAsGrid))
+      )
+    )
+  }
+
+  it should "parse 'choice' with choice as ValueBased" in {
+    val fieldValue = toFieldValue("""|{
+         |  "type": "choice",
+         |  "id":"dutyType",
+         |  "label":"Select the tax type",
+         |  "choices": [
+         |    {
+         |      "value": "foo",
+         |      "label": {
+         |        "en": "Yes",
+         |        "cy": "Iawn"
+         |      }
+         |    },
+         |    {
+         |      "value": "bar",
+         |      "label": {
+         |        "en": "No",
+         |        "cy": "Na"
+         |      }
+         |    }
+         |  ],
+         |  "multivalue":"no",
+         |  "format":"vertical",
+         |  "presentationHint" : "summariseGroupAsGrid"
+         |
+         |}""")
+
+    fieldValue should beJsSuccess(
+      FormComponent(
+        FormComponentId("dutyType"),
+        Choice(
+          Radio,
+          NonEmptyList.of(
+            OptionData.ValueBased(toSmartString("Yes", "Iawn"), "foo"),
+            OptionData.ValueBased(toSmartString("No", "Na"), "bar")
+          ),
           Vertical,
           List.empty[Int],
           None,

@@ -1,0 +1,55 @@
+{
+  "_id": "choice-options-uniformness-in-rc",
+  "formName": "Choice",
+  "description": "",
+  "emailTemplateId": "",
+  "authConfig": {
+    "authModule": "hmrc"
+  },
+  "sections": [
+    {
+      "title": "Page",
+      "fields": [
+        {
+          "id": "trading",
+          "type": "revealingChoice",
+          "label": "Does your company trade under a different name?",
+          "choices": [
+            "Yes",
+            "No"
+          ],
+          "revealingFields": [
+            [
+              {
+                "id": "hasDifferentName",
+                "type": "choice",
+                "label": "Does your company trade under a different name?",
+                "choices": [
+                  {
+                    "value": "foo",
+                    "en": "A"
+                  },
+                  {
+                    "en": "B"
+                  }
+                ]
+              }
+            ],
+            []
+          ]
+        }
+      ]
+    }
+  ],
+  "acknowledgementSection": {
+    "title": "Acknowledgement",
+    "fields": []
+  },
+  "destinations": [
+    {
+      "id": "transitionToSubmitted",
+      "type": "stateTransition",
+      "requiredState": "Submitted"
+    }
+  ]
+}

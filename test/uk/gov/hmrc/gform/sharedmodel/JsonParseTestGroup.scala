@@ -43,8 +43,12 @@ class JsonParseTestGroup extends Spec {
             "id": "cid",
             "label": "clabel",
             "choices": [
-              "A",
-              "B"
+               {
+                 "label": "A"
+               },
+               {
+                 "label": "B"
+               }
             ]
           }
         ],
@@ -64,7 +68,7 @@ class JsonParseTestGroup extends Spec {
               FormComponentId("cid"),
               Choice(
                 Radio,
-                NonEmptyList.of(toSmartString("A"), toSmartString("B")),
+                NonEmptyList.of("A", "B").map(l => OptionData.IndexBased(toSmartString(l))),
                 Vertical,
                 List(),
                 None,
@@ -128,8 +132,12 @@ class JsonParseTestGroup extends Spec {
             "id": "cid",
             "label": "clabel",
             "choices": [
-              "A",
-              "B"
+               {
+                 "label": "A"
+               },
+               {
+                 "label": "B"
+               }
             ]
           }
         ],
@@ -149,7 +157,7 @@ class JsonParseTestGroup extends Spec {
               FormComponentId("cid"),
               Choice(
                 Radio,
-                NonEmptyList.of(toSmartString("A"), toSmartString("B")),
+                NonEmptyList.of("A", "B").map(l => OptionData.IndexBased(toSmartString(l))),
                 Vertical,
                 List(),
                 None,
@@ -212,8 +220,12 @@ class JsonParseTestGroup extends Spec {
             "id": "cid",
             "label": "clabel",
             "choices": [
-              "A",
-              "B"
+               {
+                 "label": "A"
+               },
+               {
+                 "label": "B"
+               }
             ]
           }
         ],

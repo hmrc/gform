@@ -1,0 +1,56 @@
+{
+  "_id": "revealing-choice-with-yesno-choice",
+  "formName": "Choice label value",
+  "description": "",
+  "destinations": [
+    {
+      "id": "transitionToSubmitted",
+      "type": "stateTransition",
+      "requiredState": "Submitted"
+    }
+  ],
+  "authConfig": {
+    "authModule": "anonymous"
+  },
+  "emailTemplateId": "eeitt_submission_confirmation",
+  "sections": [
+    {
+      "title": "Text box",
+      "fields": [
+        {
+          "id": "revealing",
+          "type": "revealingChoice",
+          "label": "Trading Details",
+          "choices": [
+            {
+              "value": "nestedFoo",
+              "en": "Address",
+              "cy": "Nested Iawn"
+            },
+            {
+              "value": "nestedBar",
+              "en": "Date",
+              "cy": "Nested Iawn"
+            }
+          ],
+          "revealingFields": [
+            [],
+            [
+              {
+                "id": "exampleChoice",
+                "type": "choice",
+                "label": "So you want to add another something?",
+                "format": "yesno"
+              }
+            ]
+          ]
+        }
+      ]
+    }
+  ],
+  "acknowledgementSection": {
+    "shortName": "Acknowledgement Page",
+    "title": "Acknowledgement Page",
+    "fields": []
+  }
+}

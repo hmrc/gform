@@ -15,7 +15,14 @@
           "type": "revealingChoice",
           "label": "Does your company trade under a different name?",
 	  "value": "2",
-          "choices": ["Yes", "No"],
+          "choices": [
+            {
+              "label": "Yes"
+            },
+            {
+              "label": "No"
+            }
+          ],
           "revealingFields": [
 	    [
               {

@@ -1,0 +1,78 @@
+{
+  "draftRetrievalMethod": {
+    "showContinueOrDeletePage": "true",
+    "value": "onePerUser"
+  },
+  "formCategory": "default",
+  "languages": [
+    "en"
+  ],
+  "authConfig": {
+    "authModule": "anonymous"
+  },
+  "destinations": {
+    "destinations": [
+      {
+        "id": "transitionToSubmitted",
+        "type": "stateTransition",
+        "requiredState": "Submitted"
+      }
+    ],
+    "declarationSection": {
+      "title": "Declaration",
+      "fields": [
+        {
+          "id": "decChoice",
+          "type": "choice",
+          "label": "",
+          "shortName": "Signed",
+          "multivalue": "true",
+          "errorMessage": "You must check the box to sign the declaration",
+          "choices": [
+            {
+              "label": "I agree, and declare that all the details entered are correct and complete to the best of my knowledge and belief."
+            }
+          ]
+        }
+      ]
+    },
+    "acknowledgementSection": {
+      "title": "Your registration has been submitted Genesis",
+      "fields": [],
+      "displayFeedbackLink": true
+    }
+  },
+  "description": "",
+  "sections": [
+    {
+      "title": "Page A",
+      "fields": [
+        {
+          "id": "fieldA",
+          "label": "Field A",
+          "format": "text"
+        }
+      ]
+    }
+  ],
+  "summarySection": {
+    "title": {
+      "en": "Check your answers",
+      "cy": "Gwiriwch eich atebion"
+    },
+    "header": {
+      "en": "Make sure the information you have given is correct",
+      "cy": "Gwnewch yn siŵr bod yr wybodaeth a roddwyd gennych yn gywir"
+    },
+    "footer": {
+      "en": "##Now send your form\n\nYou need to submit your form on the next screen.\n\nBefore you do this you can [print or save a PDF copy of your answers (opens in a new window or tab)](${link.printSummaryPdf}).",
+      "cy": "##Nawr anfonwch eich ffurflen\n\nMae angen i chi gyflwyno’ch ffurflen ar y sgrin nesaf.\n\nCyn i chi wneud hyn gallwch [argraffu neu gadw copi PDF o’ch atebion (yn agor ffenestr neu dab newydd)](${link.printSummaryPdf})."
+    }
+  },
+  "formName": "Test",
+  "emailTemplateId": "al_registration_confirmation",
+  "_id": "choice-in-declaration-section",
+  "originalId": "choice-in-declaration-section",
+  "displayHMRCLogo": false,
+  "parentFormSubmissionRefs": []
+}

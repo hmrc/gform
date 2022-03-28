@@ -1,0 +1,48 @@
+{
+  "_id": "choice-in-declaration-section",
+  "formName": "Test",
+  "description": "",
+  "emailTemplateId": "al_registration_confirmation",
+  "authConfig": {
+    "authModule": "anonymous"
+  },
+  "sections": [
+    {
+      "title": "Page A",
+      "fields": [
+        {
+          "id": "fieldA",
+          "label": "Field A",
+          "format": "text"
+        }
+      ]
+    }
+  ],
+  "declarationSection": {
+    "title": "Declaration",
+    "fields": [
+      {
+        "id": "decChoice",
+        "type": "choice",
+        "label": "",
+        "shortName": "Signed",
+        "multivalue": "true",
+        "errorMessage": "You must check the box to sign the declaration",
+        "choices": [
+          "I agree, and declare that all the details entered are correct and complete to the best of my knowledge and belief."
+        ]
+      }
+    ]
+  },
+  "acknowledgementSection": {
+    "title": "Your registration has been submitted Genesis",
+    "fields": []
+  },
+  "destinations": [
+    {
+      "id": "transitionToSubmitted",
+      "type": "stateTransition",
+      "requiredState": "Submitted"
+    }
+  ]
+}

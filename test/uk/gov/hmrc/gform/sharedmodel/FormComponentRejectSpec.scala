@@ -65,6 +65,12 @@ class FormComponentRejectSpec extends Spec with TableDrivenPropertyChecks {
       ("postcode-with-other-component",             "Postcode lookup 'postcode' cannot be on the page with other components (exception are info components)"),
       ("postcode-multiple-instances",               "Only one Postcode lookup on a page is allowed. Some page has 2 postcode lookups: postcode, postcode2"),
       ("postcode-in-revealing-choice",              "Postcode lookup 'postcode' cannot be inside Revealing choice or Group"),
+      ("choice-options-uniformness",                "Choice component has some options with 'value' and some options without 'value': hasDifferentName"),
+      ("choice-options-uniformness-in-rc",          "Choice component has some options with 'value' and some options without 'value': hasDifferentName"),
+      ("choice-options-unique",                     "Choice component options 'value's needs to be unique: hasDifferentName"),
+      ("choice-options-unique-in-rc",               "Choice component options 'value's needs to be unique: hasDifferentName"),
+      ("revealing-choice-options-uniformness",      "Revealing choice component has some choices with 'value' and some choices without 'value': companyName"),
+      ("revealing-choice-options-unique",           "Revealing choice component choices 'value's needs to be unique: companyName"),
       // format: on
     )
 
@@ -89,6 +95,9 @@ class FormComponentRejectSpec extends Spec with TableDrivenPropertyChecks {
       ("choice-multivalue-equals-swapped", "Multivalue choice cannot be used together with '='. Replace '1 = simpleChoice' with 'simpleChoice contains 1' instead."),
       ("revealing-choice-wrong-index",     "Expression 'rChoice contains 10' has wrong index 10. Revealing choice rChoice has only 2 elements. Use index from 0 to 1"),
       ("component-level-include-if",       "Multivalue choice cannot be used together with '='. Replace 'choice = 0' with 'choice contains 0' instead."),
+      ("choice-options-value-in-expr-1",     "Expression 'hasDifferentName contains baz' is invalid. 'baz' is not one of the possible values: foo, bar"),
+      ("choice-options-value-in-expr-2",     "Expression 'hasDifferentName contains baz' is invalid. 'baz' is not one of the possible values: foo, bar"),
+      ("choice-options-value-in-expr-3",     "Expression 'trading contains baz' is invalid. 'baz' is not one of the possible values: foo, bar"),
       // format: on
     )
 

@@ -644,7 +644,7 @@ class TemplateValidatorSpec extends Spec {
 
   it should "allow reference to addAnotherQuestion of AddToList section" in {
 
-    val yesNoLocalisedStrings = NonEmptyList.of(toSmartString("Yes"), toSmartString("No"))
+    val yesNoLocalisedStrings = NonEmptyList.of(toSmartString("Yes"), toSmartString("No")).map(OptionData.IndexBased(_))
 
     val addToListPage = mkSection("addToListPage", List(mkFormComponent("fieldA", Value))).page
     val addAnotherQuestion =
