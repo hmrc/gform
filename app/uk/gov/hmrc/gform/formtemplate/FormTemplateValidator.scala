@@ -450,6 +450,35 @@ object FormTemplateValidator {
     ).combineAll
   }
 
+  def validateLabel(sectionsList: List[Page]): ValidationResult = {
+    def validateChoiceSingleChoice(sectionsList: List[Page]): ValidationResult = {
+      def check(choice: Choice): Boolean = choice.options.length <= 1
+
+      validateChoice(sectionsList, check, "more than one options in the choice component")
+    }
+    def isEmptyLabel(label: SmartString): Boolean =
+      label.rawValue(LangADT.En).trim == "" || label.rawValue(LangADT.Cy).trim == ""
+
+    val validationResults = sectionsList.flatMap { page =>
+      page.fields.collect {
+        case fc @ IsAddress(_) if isEmptyLabel(fc.label) =>
+          Invalid(s"address component ${fc.id} should have a non-blank label")
+        case fc @ IsOverseasAddress(_) if isEmptyLabel(fc.label) =>
+          Invalid(s"overseas address component ${fc.id} should have a non-blank label")
+        case fc @ IsRevealingChoice(_) if isEmptyLabel(fc.label) =>
+          Invalid(s"revealing choice component ${fc.id} should have a non-blank label")
+        case fc @ IsDate(_) if isEmptyLabel(fc.label) =>
+          Invalid(s"date component ${fc.id} should have a non-blank label")
+        case fc @ IsChoice(_) if isEmptyLabel(fc.label) && validateChoiceSingleChoice(sectionsList).isValid =>
+          Invalid(s"choice address component ${fc.id} should have a non-blank label")
+        case fc @ IsText(_) if isEmptyLabel(fc.label) && !fc.onlyShowOnSummary =>
+          Invalid(s"text component ${fc.id} should have a non-blank label, unless submitMode is summaryinfoonly")
+      }
+    }
+
+    Monoid[ValidationResult].combineAll(validationResults)
+  }
+
   def validatePostcodeLookup(sectionsList: List[Page]): ValidationResult = {
     val pagesWithPostcodeLookups: List[(FormComponentId, Page)] = sectionsList.flatMap { page =>
       page.fields.collect { case fc @ IsPostcodeLookup() =>
