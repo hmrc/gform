@@ -106,6 +106,10 @@ object IsTextArea {
   def unapply(fc: FormComponent): Option[TextArea] = fc.`type`.cast[TextArea]
 }
 
+object IsChoice {
+  def unapply(fc: FormComponent): Option[Choice] = fc.`type`.cast[Choice]
+}
+
 object IsRevealingChoice {
   def unapply(fc: FormComponent): Option[RevealingChoice] = fc.`type`.cast[RevealingChoice]
 }
@@ -124,4 +128,8 @@ object IsInformationMessage {
 
 object IsPostcodeLookup {
   def unapply(fc: FormComponent): Boolean = fc.`type`.cast[PostcodeLookup.type].isDefined
+}
+
+object IsDate {
+  def unapply(fc: FormComponent): Option[Date] = fc.`type`.cast[Date]
 }
