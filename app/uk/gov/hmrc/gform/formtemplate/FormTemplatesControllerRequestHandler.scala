@@ -216,6 +216,21 @@ object FormTemplatesControllerRequestHandler {
       json.transform(updateSections) orElse JsSuccess(json)
     }
 
+    val transformAddAnotheQuestion: Reads[JsValue] = Reads { json =>
+      val updateSections: Reads[JsObject] =
+        (__ \ 'sections).json.update(of[JsArray].map { case JsArray(arr) =>
+          JsArray(
+            arr.map(item =>
+              item
+                .transform((__ \ 'addAnotherQuestion).json.update(choicesUpdater))
+                .getOrElse(item)
+            )
+          )
+        })
+
+      json.transform(updateSections) orElse JsSuccess(json)
+    }
+
     val moveDestinations =
       (__ \ 'destinations \ 'destinations).json
         .copyFrom((__ \ 'destinations).json.pick) orElse Reads.pure(Json.obj())
@@ -279,6 +294,7 @@ object FormTemplatesControllerRequestHandler {
         pruneAcknowledgementSection andThen
         prunePrintSection andThen
         transformChoices andThen
+        transformAddAnotheQuestion andThen
         pruneDeclarationSection and
         drmValue and
         drmShowContinueOrDeletePage and

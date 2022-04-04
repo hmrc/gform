@@ -251,6 +251,144 @@ class FormTemplatesControllerRequestHandlerSuite extends FunSuite {
 
   }
 
+  test(
+    "normaliseJSON should transform field 'choices' of 'choice' components for addAnotherQuestion"
+  ) {
+
+    val json = Json.parse(
+      """|{
+         |  "_id": "choices",
+         |  "acknowledgementSection": {
+         |    "shortName": "Acknowledgement Page",
+         |    "title": "Acknowledgement Page",
+         |    "fields": []
+         |  },
+         |  "sections": [
+         |    {
+         |      "title": "Page A",
+         |      "fields": [
+         |        {
+         |          "id": "fieldA",
+         |          "label": "Field A",
+         |          "format": "text"
+         |        }
+         |      ]
+         |    },
+         |    {
+         |      "type": "addToList",
+         |      "title": "Add To List",
+         |      "shortName": "Add To List",
+         |      "summaryDescription": "${fieldA}",
+         |      "description": "${fieldA}",
+         |      "summaryName": "Add To List",
+         |      "pages": [
+         |        {
+         |          "title": "Page $n",
+         |          "shortName": "asdfa",
+         |          "fields": [
+         |            {
+         |              "id": "fieldA",
+         |              "type": "text",
+         |              "label": "Field A",
+         |              "format": "sterling"
+         |            }
+         |          ]
+         |        }
+         |      ],
+         |      "addAnotherQuestion": {
+         |        "id": "client",
+         |        "type": "choice",
+         |        "label": "label1",
+         |        "format": "label1",
+         |        "choices": [
+         |          {
+         |            "en": "Yes",
+         |            "cy": "Iawn"
+         |          },
+         |          {
+         |            "en": "No",
+         |            "cy": "Na"
+         |          }
+         |        ]
+         |      }
+         |    }
+         |  ],
+         |  "destinations": [
+         |    {
+         |      "id": "transitionToSubmitted",
+         |      "type": "stateTransition",
+         |      "requiredState": "Submitted"
+         |    }
+         |  ]
+         |}""".stripMargin
+    )
+
+    val expected =
+      """
+        | [
+        | {
+        |    "title": "Page A",
+        |    "fields": [
+        |      {
+        |        "id": "fieldA",
+        |        "label": "Field A",
+        |        "format": "text"
+        |      }
+        |    ]
+        |  },
+        |  {
+        |    "summaryName": "Add To List",
+        |    "pages": [
+        |      {
+        |        "title": "Page $n",
+        |        "shortName": "asdfa",
+        |        "fields": [
+        |          {
+        |            "id": "fieldA",
+        |            "type": "text",
+        |            "label": "Field A",
+        |            "format": "sterling"
+        |          }
+        |        ]
+        |      }
+        |    ],
+        |    "description": "${fieldA}",
+        |    "type": "addToList",
+        |    "title": "Add To List",
+        |    "shortName": "Add To List",
+        |    "summaryDescription": "${fieldA}",
+        |    "addAnotherQuestion": {
+        |      "format": "label1",
+        |      "id": "client",
+        |      "label": "label1",
+        |      "type": "choice",
+        |      "choices": [
+        |        {
+        |          "label": {
+        |            "en": "Yes",
+        |            "cy": "Iawn"
+        |          }
+        |        },
+        |        {
+        |          "label": {
+        |            "en": "No",
+        |            "cy": "Na"
+        |          }
+        |        }
+        |      ]
+        |    }
+        |  }
+        |]""".stripMargin
+
+    val JsSuccess(normalised, _) = FormTemplatesControllerRequestHandler.normaliseJSON(json)
+    normalised \ "sections" match {
+      case JsDefined(addAnotherQuestion) =>
+        assertEquals(Json.prettyPrint(addAnotherQuestion), Json.prettyPrint(Json.parse(expected)))
+      case otherwise => fail(s"No sections field present in: $normalised")
+    }
+
+  }
+
   private def assertFieldValue(fieldName: String, expectedValue: String, json: JsValue)(implicit loc: Location) =
     json \ fieldName match {
       case JsDefined(JsString(str)) => assertEquals(str, expectedValue)
