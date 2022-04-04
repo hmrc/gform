@@ -45,6 +45,26 @@ object DataRetrieveAttribute {
     override def name: String = "isValid"
   }
 
+  case object SupportsBACS extends DataRetrieveAttribute {
+    override def name: String = "supportsBACS"
+  }
+
+  case object DdiVoucherFlag extends DataRetrieveAttribute {
+    override def name: String = "ddiVoucherFlag"
+  }
+
+  case object DirectDebitsDisallowed extends DataRetrieveAttribute {
+    override def name: String = "directDebitsDisallowed"
+  }
+
+  case object DirectDebitInstructionsDisallowed extends DataRetrieveAttribute {
+    override def name: String = "directDebitInstructionsDisallowed"
+  }
+
+  case object Iban extends DataRetrieveAttribute {
+    override def name: String = "iban"
+  }
+
   case object AccountNumberIsWellFormatted extends DataRetrieveAttribute {
     override def name: String = "accountNumberIsWellFormatted"
   }
@@ -92,6 +112,11 @@ object DataRetrieveAttribute {
     case "nameMatches"                              => NameMatches
     case "sortCodeSupportsDirectDebit"              => SortCodeSupportsDirectDebit
     case "sortCodeSupportsDirectCredit"             => SortCodeSupportsDirectCredit
+    case "supportsBACS"                             => SupportsBACS
+    case "ddiVoucherFlag"                           => DdiVoucherFlag
+    case "directDebitsDisallowed"                   => DirectDebitsDisallowed
+    case "directDebitInstructionsDisallowed"        => DirectDebitInstructionsDisallowed
+    case "iban"                                     => Iban
     case other                                      => throw new IllegalArgumentException(s"Unknown DataRetrieveAttribute name: $other")
   }
 }
@@ -106,7 +131,18 @@ object DataRetrieve {
 
   final case class ValidateBankDetails(override val id: DataRetrieveId, sortCode: Expr, accountNumber: Expr)
       extends DataRetrieve {
-    override def attributes: List[DataRetrieveAttribute] = List(DataRetrieveAttribute.IsValid)
+    override def attributes: List[DataRetrieveAttribute] =
+      List(
+        DataRetrieveAttribute.IsValid,
+        DataRetrieveAttribute.SortCodeIsPresentOnEISCD,
+        DataRetrieveAttribute.SortCodeBankName,
+        DataRetrieveAttribute.NonStandardAccountDetailsRequiredForBacs,
+        DataRetrieveAttribute.SupportsBACS,
+        DataRetrieveAttribute.DdiVoucherFlag,
+        DataRetrieveAttribute.DirectDebitsDisallowed,
+        DataRetrieveAttribute.DirectDebitInstructionsDisallowed,
+        DataRetrieveAttribute.Iban
+      )
     override def formCtxExprs: List[Expr] = List(sortCode, accountNumber)
   }
 
