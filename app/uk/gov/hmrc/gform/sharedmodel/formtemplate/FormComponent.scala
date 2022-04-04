@@ -133,3 +133,7 @@ object IsPostcodeLookup {
 object IsDate {
   def unapply(fc: FormComponent): Option[Date] = fc.`type`.cast[Date]
 }
+
+object IsFileUpload {
+  def unapply(fc: FormComponent): Option[FileUpload] = fc.`type`.cast[FileUpload]
+}
