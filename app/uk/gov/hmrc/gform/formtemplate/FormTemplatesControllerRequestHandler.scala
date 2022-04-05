@@ -233,7 +233,7 @@ object FormTemplatesControllerRequestHandler {
 
     val transformConfirmationQuestion: Reads[JsValue] = Reads { json =>
       val questionReads: Reads[JsObject] = (__ \ 'confirmation \ 'question).json.update(choicesUpdater)
-      val updateSections: Reads[JsObject] =
+      val updatePageQuestions: Reads[JsObject] =
         (__ \ 'sections).json.update(of[JsArray].map { case JsArray(arr) =>
           JsArray(
             arr.map(item =>
@@ -245,8 +245,18 @@ object FormTemplatesControllerRequestHandler {
             )
           )
         })
+      val updateSectionQuestions: Reads[JsObject] =
+        (__ \ 'sections).json.update(of[JsArray].map { case JsArray(arr) =>
+          JsArray(
+            arr.map(item =>
+              item
+                .transform(questionReads)
+                .getOrElse(item)
+            )
+          )
+        })
 
-      json.transform(updateSections) orElse JsSuccess(json)
+      json.transform(updatePageQuestions andThen updateSectionQuestions) orElse JsSuccess(json)
     }
 
     val moveDestinations =
