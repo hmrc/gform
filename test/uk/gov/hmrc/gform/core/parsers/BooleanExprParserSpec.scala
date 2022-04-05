@@ -366,4 +366,15 @@ class BooleanExprParserSpec extends AnyFlatSpec with Matchers with EitherValues 
     res.right.value shouldBe TopLevelRef(BooleanExprId("noCompanyName"))
   }
 
+  it should "parse after with HmrcTaxPeriodCtx" in {
+    val res = BooleanExprParser.validate("${returnPeriod.periodTo after endDate}")
+
+    res shouldBe Right(
+      DateAfter(
+        HmrcTaxPeriodCtx(FormCtx("returnPeriod"), HmrcTaxPeriodInfo.PeriodTo),
+        DateFormCtxVar(FormCtx("endDate"))
+      )
+    )
+  }
+
 }

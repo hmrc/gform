@@ -98,6 +98,11 @@ object TopLevelExpressions {
             case DateCtx(value) => value
             case _              => d
           }
+        case d @ HmrcTaxPeriodCtx(FormCtx(fcId), _) =>
+          expressions.get(ExpressionId(fcId.value)).fold[DateExpr](d) {
+            case DateCtx(value) => value
+            case _              => d
+          }
         case DateExprWithOffset(dExpr, offset) => DateExprWithOffset(loopDateExpr(dExpr), offset)
       }
 

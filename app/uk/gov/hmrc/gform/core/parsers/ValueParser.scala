@@ -108,9 +108,14 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
 
   lazy val dateExprTODAY: Parser[DateExpr] = "TODAY" ^^^ DateValueExpr(TodayDateExprValue)
 
+  lazy val hmrcTaxPeriodExpr: Parser[DateExpr] =
+    FormComponentId.unanchoredIdValidation ~ "." ~ hmrcTaxPeriodInfo ^^ { case value ~ _ ~ hmrcTaxPeriodInfo =>
+      HmrcTaxPeriodCtx(FormCtx(FormComponentId(value)), hmrcTaxPeriodInfo)
+    } | dateExprTODAY
+
   lazy val dateExprTODAYOffset: Parser[DateExpr] = dateExprTODAY ~ offsetYMD ^^ { case dateExprToday ~ offsetYMD =>
     DateExprWithOffset(dateExprToday, offsetYMD)
-  } | dateExprTODAY
+  } | hmrcTaxPeriodExpr
 
   lazy val formCtxFieldDateWithOffset: Parser[DateExprWithOffset] = formCtxFieldDate ~ offsetYMD ^^ {
     case dateExprCtx ~ offsetYMD =>
@@ -232,7 +237,6 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | FormComponentId.unanchoredIdValidation <~ ".count" ^^ { value =>
       Count(FormComponentId(value))
     }
-
     | FormComponentId.unanchoredIdValidation ~ "." ~ positiveInteger <~ ".size" ^^ { case value ~ _ ~ index =>
       Size(FormComponentId(value), index)
     }
@@ -429,6 +433,10 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
   lazy val booleanExpr: Parser[BooleanExpr] = "${" ~ p4 ~ "}" ^^ { case _ ~ e ~ _ =>
     e
   }
+
+  lazy val hmrcTaxPeriodInfo: Parser[HmrcTaxPeriodInfo] = ("periodTo" ^^^ HmrcTaxPeriodInfo.PeriodTo
+    | "periodFrom" ^^^ HmrcTaxPeriodInfo.PeriodFrom
+    | "periodDue" ^^^ HmrcTaxPeriodInfo.PeriodDue)
 
   ///===============   expression parser =======
 

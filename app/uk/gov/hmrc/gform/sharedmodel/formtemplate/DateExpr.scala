@@ -25,18 +25,21 @@ sealed trait DateExpr {
     case DateValueExpr(_)             => DateCtx(this) :: Nil
     case DateFormCtxVar(formCtx)      => formCtx :: Nil
     case DateExprWithOffset(dExpr, _) => dExpr.leafExprs
+    case HmrcTaxPeriodCtx(formCtx, _) => formCtx :: Nil
   }
 
   def referenceInfos: List[ReferenceInfo] = this match {
     case DateValueExpr(_)             => Nil
     case DateFormCtxVar(formCtx)      => ReferenceInfo.FormCtxExpr(TemplatePath.leaf, formCtx) :: Nil
     case DateExprWithOffset(dExpr, _) => dExpr.referenceInfos
+    case HmrcTaxPeriodCtx(formCtx, _) => ReferenceInfo.FormCtxExpr(TemplatePath.leaf, formCtx) :: Nil
   }
 
   def maybeFormCtx: Option[FormCtx] = this match {
     case DateValueExpr(_)             => None
     case DateFormCtxVar(formCtx)      => Some(formCtx)
     case DateExprWithOffset(dExpr, _) => dExpr.maybeFormCtx
+    case HmrcTaxPeriodCtx(formCtx, _) => Some(formCtx)
   }
 }
 
@@ -71,6 +74,7 @@ object DateExprValue {
 case class DateValueExpr(value: DateExprValue) extends DateExpr
 case class DateFormCtxVar(formCtx: FormCtx) extends DateExpr
 case class DateExprWithOffset(dExpr: DateExpr, offset: OffsetYMD) extends DateExpr
+case class HmrcTaxPeriodCtx(formCtx: FormCtx, hmrcTaxPeriodInfo: HmrcTaxPeriodInfo) extends DateExpr
 
 object DateExpr {
   implicit val format: OFormat[DateExpr] = derived.oformat()
@@ -79,5 +83,6 @@ object DateExpr {
     case DateValueExpr(_)             => Nil
     case DateFormCtxVar(formCtx)      => formCtx :: Nil
     case DateExprWithOffset(dExpr, _) => allFormCtxExprs(dExpr)
+    case HmrcTaxPeriodCtx(formCtx, _) => formCtx :: Nil
   }
 }
