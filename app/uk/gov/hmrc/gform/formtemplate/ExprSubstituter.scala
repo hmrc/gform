@@ -65,6 +65,12 @@ object ExprSubstituter extends Substituter[ExprSubstitutions, FormTemplate] {
           case Some(ctx @ FormCtx(_))  => DateFormCtxVar(ctx)
           case here                    => d
         }
+      case d @ HmrcTaxPeriodCtx(FormCtx(fcId), _) =>
+        substitutions.expressions.get(ExpressionId(fcId.value)) match {
+          case Some(DateCtx(dateExpr)) => dateExpr
+          case Some(ctx @ FormCtx(_))  => DateFormCtxVar(ctx)
+          case here                    => d
+        }
       case d @ DateValueExpr(_) => d
       case DateExprWithOffset(dExpr, offset) =>
         dExpr(substitutions) match {

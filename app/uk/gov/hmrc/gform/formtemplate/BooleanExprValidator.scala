@@ -40,6 +40,7 @@ class BooleanExprValidator(
   private def extractFcIds(expr: DateExpr): List[FormComponentId] = expr match {
     case DateExprWithOffset(dateExpr, _)          => extractFcIds(dateExpr)
     case DateFormCtxVar(FormCtx(formComponentId)) => List(formComponentId)
+    case HmrcTaxPeriodCtx(FormCtx(fcId), _)       => List(fcId)
     case _                                        => Nil
   }
 

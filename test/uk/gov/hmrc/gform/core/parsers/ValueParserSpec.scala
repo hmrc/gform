@@ -898,4 +898,13 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
 
   }
+
+  it should "parse hmrcTaxPeriodCtx as DateCtx" in {
+    val res = ValueParser.validate("${returnTaxPeriod.periodTo}")
+    res.right.value shouldBe TextExpression(
+      DateCtx(
+        HmrcTaxPeriodCtx(FormCtx(FormComponentId("returnTaxPeriod")), HmrcTaxPeriodInfo.PeriodTo)
+      )
+    )
+  }
 }

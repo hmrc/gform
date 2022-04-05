@@ -36,4 +36,10 @@ class DateExprSpec extends AnyFlatSpecLike with Matchers {
       DateExprWithOffset(DateFormCtxVar(FormCtx(FormComponentId("someId"))), OffsetYMD(OffsetUnit.Day(1))).leafExprs
     leafs shouldBe List(FormCtx(FormComponentId("someId")))
   }
+
+  it should "return all leaf values for HmrcTaxPeriodCtx" in {
+    val leafs =
+      HmrcTaxPeriodCtx(FormCtx(FormComponentId("someId")), HmrcTaxPeriodInfo.PeriodTo).leafExprs
+    leafs shouldBe List(FormCtx(FormComponentId("someId")))
+  }
 }
