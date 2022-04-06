@@ -473,6 +473,8 @@ object FormTemplateValidator {
           Invalid(s"choice address component ${fc.id} should have a non-blank label")
         case fc @ IsText(_) if isEmptyLabel(fc.label) && !fc.onlyShowOnSummary =>
           Invalid(s"text component ${fc.id} should have a non-blank label, unless submitMode is summaryinfoonly")
+        case fc @ IsTextArea(_) if isEmptyLabel(fc.label) && !fc.onlyShowOnSummary =>
+          Invalid(s"text area component ${fc.id} should have a non-blank label, unless submitMode is summaryinfoonly")
         case fc @ IsFileUpload(_) if isEmptyLabel(fc.label) =>
           Invalid(s"fileUpload component ${fc.id} should have a non-blank label")
       }
