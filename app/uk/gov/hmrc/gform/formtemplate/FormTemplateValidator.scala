@@ -460,7 +460,7 @@ object FormTemplateValidator {
       label.rawValue(LangADT.En).trim == "" || label.rawValue(LangADT.Cy).trim == ""
 
     val validationResults = sectionsList.flatMap { page =>
-      page.allFormComponents.collect {
+      (page.allFormComponents ++ page.fields).collect {
         case fc @ IsAddress(_) if isEmptyLabel(fc.label) =>
           Invalid(s"address component ${fc.id} should have a non-blank label")
         case fc @ IsOverseasAddress(_) if isEmptyLabel(fc.label) =>
