@@ -79,8 +79,8 @@
       "cy": "Gwiriwch eich atebion"
     },
     "header": {
-      "en": "Make sure the information you have given is correct",
-      "cy": "Gwnewch yn siŵr bod yr wybodaeth a roddwyd gennych yn gywir"
+      "en": "Make sure the information you have given is correct.",
+      "cy": "Gwnewch yn siŵr bod yr wybodaeth a roddwyd gennych yn gywir."
     },
     "footer": {
       "en": "##Now send your form\n\nYou need to submit your form on the next screen.\n\nBefore you do this you can [print or save a PDF copy of your answers (opens in a new window or tab)](${link.printSummaryPdf}).",

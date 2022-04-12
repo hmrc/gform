@@ -207,8 +207,8 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
     formTemplate.parentFormSubmissionRefs shouldBe List.empty
     formTemplate.summarySection.title shouldBe toSmartString("Check your answers", "Gwiriwch eich atebion")
     formTemplate.summarySection.header shouldBe toSmartString(
-      "Make sure the information you have given is correct",
-      "Gwnewch yn siŵr bod yr wybodaeth a roddwyd gennych yn gywir"
+      "Make sure the information you have given is correct.",
+      "Gwnewch yn siŵr bod yr wybodaeth a roddwyd gennych yn gywir."
     )
     formTemplate.summarySection.footer shouldBe SmartString(
       LocalisedString(
