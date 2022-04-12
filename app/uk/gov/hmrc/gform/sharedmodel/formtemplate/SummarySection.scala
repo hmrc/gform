@@ -17,7 +17,7 @@
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import cats.data.NonEmptyList
-import play.api.libs.json.{ JsBoolean, JsValue, Json, OFormat }
+import play.api.libs.json.{ JsValue, Json, OFormat }
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, SmartString }
 
 case class SummarySection(
@@ -25,8 +25,7 @@ case class SummarySection(
   header: SmartString,
   footer: SmartString,
   continueLabel: Option[SmartString],
-  fields: Option[NonEmptyList[FormComponent]],
-  default: Option[Boolean] = None
+  fields: Option[NonEmptyList[FormComponent]]
 )
 
 object SummarySection extends JsonUtils {
@@ -49,14 +48,13 @@ object SummarySection extends JsonUtils {
         "cy" -> "Gwiriwch eich atebion"
       ),
       "header" -> Json.obj(
-        "en" -> "Make sure the information you have given is correct",
-        "cy" -> "Gwnewch yn siŵr bod yr wybodaeth a roddwyd gennych yn gywir"
+        "en" -> "Make sure the information you have given is correct.",
+        "cy" -> "Gwnewch yn siŵr bod yr wybodaeth a roddwyd gennych yn gywir."
       ),
       "footer" -> Json.obj(
         "en" -> s"##Now send your $categoryEn\n\nYou need to submit your $categoryEn on the next screen.\n\nBefore you do this you can [print or save a PDF copy of your answers (opens in a new window or tab)]($${link.printSummaryPdf}).",
         "cy" -> s"##Nawr anfonwch eich $categoryCy\n\nMae angen i chi gyflwyno’ch $categoryCy ar y sgrin nesaf.\n\nCyn i chi wneud hyn gallwch [argraffu neu gadw copi PDF o’ch atebion (yn agor ffenestr neu dab newydd)]($${link.printSummaryPdf})."
-      ),
-      "default" -> JsBoolean(true)
+      )
     )
   }
 
