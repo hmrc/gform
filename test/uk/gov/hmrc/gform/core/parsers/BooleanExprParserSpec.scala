@@ -377,4 +377,8 @@ class BooleanExprParserSpec extends AnyFlatSpec with Matchers with EitherValues 
     )
   }
 
+  it should "parse expression ${addToList.first}" in {
+    val res = BooleanExprParser.validate("${addToList.first}")
+    res.right.value shouldBe First(FormCtx(FormComponentId("addToList")))
+  }
 }

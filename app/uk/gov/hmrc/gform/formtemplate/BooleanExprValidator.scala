@@ -83,6 +83,7 @@ class BooleanExprValidator(
     case DateAfter(left, right)           => validateDateExprs(left, right)
     case MatchRegex(value, _)             => validateValueField(value)
     case TopLevelRef(_)                   => Nil
+    case First(value)                     => validateValueField(value)
   }
 }
 

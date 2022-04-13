@@ -124,6 +124,7 @@ object TopLevelExpressions {
       case d @ DateAfter(l, r)              => DateAfter(loopDateExpr(l), loopDateExpr(r))
       case f @ FormPhase(value)             => f
       case tl @ TopLevelRef(id)             => tl
+      case f @ First(_)                     => f
     }
 
     def loop(e: Expr): Expr =
