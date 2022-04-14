@@ -144,14 +144,20 @@ class UpscanController(
 
     }
 
-  private def validateFile(uploadDetails: UploadDetails): Validated[FailureDetails, Unit] =
+  private def validateFile(uploadDetails: UploadDetails): Validated[FailureDetails, Unit] = {
+    val fileNameCheckResult = validateFileExtension(uploadDetails.fileName)
+    val fileMimeTypeResult = validateFileType(ContentType(uploadDetails.fileMimeType))
     Valid(uploadDetails)
       .ensure(FailureDetails("EntityTooSmall", ""))(_.size =!= 0)
       .ensure(FailureDetails("EntityTooLarge", ""))(_ => validateFileSize(uploadDetails.size))
       .ensure(
-        FailureDetails("InvalidFileType", uploadDetails.fileMimeType)
-      )(_ => validateFileExtension(uploadDetails.fileName) && validateFileType(ContentType(uploadDetails.fileMimeType)))
+        FailureDetails(
+          "InvalidFileType",
+          "fileName: " + uploadDetails.fileName + " - " + fileNameCheckResult + ", fileMimeType: " + uploadDetails.fileMimeType + " - " + fileMimeTypeResult
+        )
+      )(_ => fileNameCheckResult && fileMimeTypeResult)
       .map(_ => ())
+  }
 
   private def getFileExtension(fileName: String): Option[String] =
     fileName.split("\\.").tail.lastOption
