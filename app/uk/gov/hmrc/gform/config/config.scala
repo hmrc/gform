@@ -33,7 +33,8 @@ case class AppConfig(
   /*we can't override list in app-config-base:*/
   contentTypesSeparatedByPipe: String,
   `upscan-confirmation-ttl`: FiniteDuration,
-  restrictedFileExtensionList: List[String]
+  restrictedFileExtensionList: List[String],
+  submittedFormExpiryHours: Int
 ) {
 
   def contentTypes: List[ContentType] = contentTypesSeparatedByPipe.split('|').toList.map(ContentType.apply)
@@ -51,6 +52,8 @@ object AppConfig {
     val appConfig = ConfigSource.fromConfig(config).loadOrThrow[AppConfig]
 
     appConfig.formExpiryDays.verifyThat(_ > 0, s"'formExpiryDays' must be positive, was ${appConfig.formExpiryDays}")
+    appConfig.submittedFormExpiryHours
+      .verifyThat(_ > 0, s"'submittedFormExpiryHours' must be positive, was ${appConfig.submittedFormExpiryHours}")
     appConfig.formMaxAttachments
       .verifyThat(_ > 0, s"'formMaxAttachments' must be positive, was ${appConfig.formMaxAttachments}")
     appConfig.formMaxAttachmentSizeMB

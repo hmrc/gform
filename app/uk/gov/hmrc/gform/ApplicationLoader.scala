@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform
 
+import uk.gov.hmrc.mongo.MongoUtils
 import cats.instances.future._
 import org.slf4j.LoggerFactory
 import play.api.ApplicationLoader.Context
@@ -63,6 +64,9 @@ import uk.gov.hmrc.play.bootstrap.config.AppName
 
 import scala.concurrent.duration._
 import scala.concurrent.Future
+
+import org.mongodb.scala.model.{ IndexModel, IndexOptions, Indexes }
+import java.util.concurrent.TimeUnit
 
 class ApplicationLoader extends play.api.ApplicationLoader {
   def load(context: Context): Application = {
@@ -114,7 +118,27 @@ class ApplicationModule(context: Context)
       configModule.appConfig.formExpiryDays.days,
       new CurrentTimestampSupport(),
       SimpleCacheId
-    ),
+    ) {
+      override def ensureIndexes: Future[Seq[String]] = {
+        val indexes = Seq(
+          IndexModel(
+            Indexes.ascending("modifiedDetails.lastUpdated"),
+            IndexOptions()
+              .background(false)
+              .name("lastUpdatedIndex")
+              .expireAfter(configModule.appConfig.formExpiryDays.days.toMillis, TimeUnit.MILLISECONDS)
+          ),
+          IndexModel(
+            Indexes.ascending("submitDetails.createdAt"),
+            IndexOptions()
+              .background(false)
+              .name("submittedLdtIndex")
+              .expireAfter(configModule.appConfig.submittedFormExpiryHours.minutes.toMillis, TimeUnit.MILLISECONDS)
+          )
+        )
+        MongoUtils.ensureIndexes(this.collection, indexes, true)
+      }
+    },
     jsonCrypto
   )
 

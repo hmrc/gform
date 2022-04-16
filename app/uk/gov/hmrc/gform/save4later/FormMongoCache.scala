@@ -22,8 +22,15 @@ import uk.gov.hmrc.crypto.CryptoWithKeysFromConfig
 import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormId, FormIdData }
 import uk.gov.hmrc.http.{ HeaderCarrier, UpstreamErrorResponse }
 import uk.gov.hmrc.mongo.cache.{ DataKey, MongoCacheRepository }
+import uk.gov.hmrc.gform.sharedmodel.form.Submitted
 
 import scala.concurrent.{ ExecutionContext, Future }
+
+import java.time.Instant
+
+import org.mongodb.scala.Document
+import org.mongodb.scala.model.{ Filters, FindOneAndUpdateOptions, IndexModel, IndexOptions, Indexes, ReturnDocument, Updates }
+import org.mongodb.scala.Document
 
 class FormMongoCache(mongoCacheRepository: MongoCacheRepository[String], jsonCrypto: CryptoWithKeysFromConfig)(implicit
   ec: ExecutionContext
@@ -71,6 +78,15 @@ class FormMongoCache(mongoCacheRepository: MongoCacheRepository[String], jsonCry
   override def upsert(form: Form)(implicit hc: HeaderCarrier): Future[Unit] =
     mongoCacheRepository
       .put(form._id.value)(formDataKey, form)
+      .andThen {
+        case _ if form.status == Submitted =>
+          mongoCacheRepository.collection
+            .findOneAndUpdate(
+              filter = Filters.equal("_id", form._id.value),
+              update = Updates.set("submitDetails.createdAt", Instant.now())
+            )
+            .toFuture()
+      }
       .map(_ => ())
 
   override def delete(formId: FormId)(implicit hc: HeaderCarrier): Future[Unit] =
