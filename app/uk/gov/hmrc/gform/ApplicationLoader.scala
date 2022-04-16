@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.gform
 
-import uk.gov.hmrc.mongo.MongoUtils
 import cats.instances.future._
 import org.slf4j.LoggerFactory
+import org.mongodb.scala.model.{ IndexModel, IndexOptions, Indexes }
 import play.api.ApplicationLoader.Context
 import play.api._
 import play.api.http._
@@ -58,6 +58,7 @@ import uk.gov.hmrc.gform.obligation.ObligationModule
 import uk.gov.hmrc.gform.submission.destinations.DestinationModule
 import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorModule
 import uk.gov.hmrc.mongo.CurrentTimestampSupport
+import uk.gov.hmrc.mongo.MongoUtils
 import uk.gov.hmrc.mongo.cache.CacheIdType.SimpleCacheId
 import uk.gov.hmrc.mongo.cache.MongoCacheRepository
 import uk.gov.hmrc.play.bootstrap.config.AppName
@@ -65,7 +66,6 @@ import uk.gov.hmrc.play.bootstrap.config.AppName
 import scala.concurrent.duration._
 import scala.concurrent.Future
 
-import org.mongodb.scala.model.{ IndexModel, IndexOptions, Indexes }
 import java.util.concurrent.TimeUnit
 
 class ApplicationLoader extends play.api.ApplicationLoader {
