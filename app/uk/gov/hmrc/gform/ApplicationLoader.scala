@@ -121,7 +121,7 @@ class ApplicationModule(context: Context)
     ) {
       override def ensureIndexes: Future[Seq[String]] = {
         val formExpiry = configModule.appConfig.formExpiryDays.days.toMillis
-        val submittedExpiry = configModule.appConfig.submittedFormExpiryHours.minutes.toMillis
+        val submittedExpiry = configModule.appConfig.submittedFormExpiryHours.hours.toMillis
         val indexes = Seq(
           IndexModel(
             Indexes.ascending("modifiedDetails.lastUpdated"),
