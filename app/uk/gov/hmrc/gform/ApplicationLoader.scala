@@ -120,26 +120,29 @@ class ApplicationModule(context: Context)
       SimpleCacheId
     ) {
       override def ensureIndexes: Future[Seq[String]] = {
+        val formExpiry = configModule.appConfig.formExpiryDays.days.toMillis
+        val submittedExpiry = configModule.appConfig.submittedFormExpiryHours.minutes.toMillis
         val indexes = Seq(
           IndexModel(
             Indexes.ascending("modifiedDetails.lastUpdated"),
             IndexOptions()
               .background(false)
               .name("lastUpdatedIndex")
-              .expireAfter(configModule.appConfig.formExpiryDays.days.toMillis, TimeUnit.MILLISECONDS)
+              .expireAfter(formExpiry, TimeUnit.MILLISECONDS)
           ),
           IndexModel(
             Indexes.ascending("submitDetails.createdAt"),
             IndexOptions()
               .background(false)
-              .name("submittedLdtIndex")
-              .expireAfter(configModule.appConfig.submittedFormExpiryHours.minutes.toMillis, TimeUnit.MILLISECONDS)
+              .name("submittedIndex")
+              .expireAfter(submittedExpiry, TimeUnit.MILLISECONDS)
           )
         )
         MongoUtils.ensureIndexes(this.collection, indexes, true)
       }
     },
-    jsonCrypto
+    jsonCrypto,
+    timeModule.timeProvider
   )
 
   val formService: FormService[Future] =
