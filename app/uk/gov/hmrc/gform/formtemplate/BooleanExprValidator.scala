@@ -16,13 +16,15 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
+import cats.implicits._
 import uk.gov.hmrc.gform.core.{ Invalid, Valid, ValidationResult }
 import uk.gov.hmrc.gform.core.ValidationResult.BooleanToValidationResultSyntax
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 class BooleanExprValidator(
   indexLookup: Map[FormComponentId, Int],
-  wrapperType: BooleanExprWrapperType
+  wrapperType: BooleanExprWrapperType,
+  addToListIds: List[FormComponentId]
 )(
   pageIdx: Int
 ) {
@@ -67,6 +69,16 @@ class BooleanExprValidator(
   private def validateValueField(expr: Expr): List[ValidationResult] =
     extractFcIds(expr).map(validateIdIdx)
 
+  private def validateAddToListId(expr: Expr): List[ValidationResult] =
+    extractFcIds(expr).map { fcId =>
+      addToListIds
+        .find(_ === fcId)
+        .map { _ =>
+          Valid
+        }
+        .getOrElse(Invalid(s"page id '${fcId.value}' does not exist in the form"))
+    }
+
   def apply(includeIf: BooleanExpr): List[ValidationResult] = includeIf match {
     case Equals(left, right)              => validateExprs(left, right)
     case GreaterThan(left, right)         => validateExprs(left, right)
@@ -83,7 +95,7 @@ class BooleanExprValidator(
     case DateAfter(left, right)           => validateDateExprs(left, right)
     case MatchRegex(value, _)             => validateValueField(value)
     case TopLevelRef(_)                   => Nil
-    case First(value)                     => validateValueField(value)
+    case First(value)                     => validateAddToListId(value)
   }
 }
 
