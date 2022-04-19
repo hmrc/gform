@@ -28,6 +28,7 @@ import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach }
 import uk.gov.hmrc.crypto.CryptoWithKeysFromConfig
 import uk.gov.hmrc.gform.MongoComponentSupport
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.FormGen
+import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.{ HeaderCarrier, UpstreamErrorResponse }
 import uk.gov.hmrc.mongo.CurrentTimestampSupport
 import uk.gov.hmrc.mongo.cache.CacheIdType.SimpleCacheId
@@ -70,7 +71,8 @@ class FormMongoCacheSpec
       parseString("""
                     | json.encryption.key = "fqpLDZ4sumDsekHkeEBlCA=="
         """.stripMargin)
-    )
+    ),
+    new TimeProvider()
   )
 
   "upsert" should "insert the form against the given formId" in {

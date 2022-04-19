@@ -19,13 +19,20 @@ package uk.gov.hmrc.gform.save4later
 import akka.http.scaladsl.model.StatusCodes
 import play.api.libs.json.Format
 import uk.gov.hmrc.crypto.CryptoWithKeysFromConfig
-import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormId, FormIdData }
+import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormId, FormIdData, Submitted }
+import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.{ HeaderCarrier, UpstreamErrorResponse }
 import uk.gov.hmrc.mongo.cache.{ DataKey, MongoCacheRepository }
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-class FormMongoCache(mongoCacheRepository: MongoCacheRepository[String], jsonCrypto: CryptoWithKeysFromConfig)(implicit
+import org.mongodb.scala.model.{ Filters, Updates }
+
+class FormMongoCache(
+  mongoCacheRepository: MongoCacheRepository[String],
+  jsonCrypto: CryptoWithKeysFromConfig,
+  timeProvider: TimeProvider
+)(implicit
   ec: ExecutionContext
 ) extends FormPersistenceAlgebra[Future] {
 
@@ -71,6 +78,15 @@ class FormMongoCache(mongoCacheRepository: MongoCacheRepository[String], jsonCry
   override def upsert(form: Form)(implicit hc: HeaderCarrier): Future[Unit] =
     mongoCacheRepository
       .put(form._id.value)(formDataKey, form)
+      .andThen {
+        case _ if form.status == Submitted =>
+          mongoCacheRepository.collection
+            .findOneAndUpdate(
+              filter = Filters.equal("_id", form._id.value),
+              update = Updates.set("submitDetails.createdAt", timeProvider.instant())
+            )
+            .toFuture()
+      }
       .map(_ => ())
 
   override def delete(formId: FormId)(implicit hc: HeaderCarrier): Future[Unit] =
