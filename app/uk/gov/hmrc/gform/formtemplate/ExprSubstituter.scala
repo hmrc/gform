@@ -99,6 +99,7 @@ object ExprSubstituter extends Substituter[ExprSubstitutions, FormTemplate] {
         case DateAfter(l, r)                  => DateAfter(l(substitutions), r(substitutions))
         case f @ FormPhase(value)             => f
         case t @ TopLevelRef(id)              => t
+        case f @ First(_)                     => f
       }
     }
 

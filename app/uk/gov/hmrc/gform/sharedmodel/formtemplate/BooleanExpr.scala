@@ -38,6 +38,7 @@ final case class MatchRegex(formCtx: FormCtx, regex: Regex) extends BooleanExpr
 
 final case class DateBefore(left: DateExpr, right: DateExpr) extends BooleanExpr
 final case class DateAfter(left: DateExpr, right: DateExpr) extends BooleanExpr
+final case class First(formCtx: FormCtx) extends BooleanExpr
 
 // Instances of this class are eliminated in substitution process
 // So they never appear in MongoDB and thus don't need to be present on gform-frontend
@@ -81,6 +82,7 @@ object BooleanExpr {
       case DateAfter(left: DateExpr, right: DateExpr)      => withPath(left.leafExprs ++ right.leafExprs: _*)
       case FormPhase(value: FormPhaseValue)                => Nil
       case TopLevelRef(_)                                  => Nil
+      case First(formCtx)                                  => withPath(formCtx)
     }
     loop(be)
 

@@ -75,6 +75,7 @@ object BooleanExprSubstituter extends Substituter[BooleanExprSubstitutions, Form
         case d @ DateAfter(l, r)              => d
         case f @ FormPhase(value)             => f
         case TopLevelRef(id)                  => substitutions.expressions.getOrElse(id, t)
+        case f @ First(_)                     => f
       }
     }
 

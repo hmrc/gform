@@ -413,6 +413,9 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | dateExpr ~ "after" ~ dateExpr ^^ { case expr1 ~ _ ~ expr2 =>
       DateAfter(expr1, expr2)
     }
+    | PageId.unanchoredIdValidation ~ ".first" ^^ { case value ~ _ =>
+      First(FormCtx(FormComponentId(value)))
+    }
     | p0)
 
   private lazy val p2: PackratParser[BooleanExpr] = ("!" ~> p1 ^^ { e =>
