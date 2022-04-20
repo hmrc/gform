@@ -10,10 +10,6 @@ import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import scala.concurrent.duration._
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
-// import org.mongodb.scala.model.{ IndexModel, IndexOptions, Indexes }
-// import uk.gov.hmrc.mongo.MongoUtils
-
-// import java.util.concurrent.TimeUnit
 
 trait MongoDBSupport extends MongoComponentSupport {
 
