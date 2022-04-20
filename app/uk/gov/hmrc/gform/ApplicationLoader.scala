@@ -121,7 +121,7 @@ class ApplicationModule(context: Context)
     ) {
       override def ensureIndexes: Future[Seq[String]] = {
         val formExpiry = configModule.appConfig.formExpiryDays.days.toMillis
-        //val submittedExpiry = configModule.appConfig.submittedFormExpiryHours.hours.toMillis
+        val submittedExpiry = configModule.appConfig.submittedFormExpiryHours.hours.toMillis
         val indexes = Seq(
           IndexModel(
             Indexes.ascending("modifiedDetails.lastUpdated"),
@@ -129,14 +129,14 @@ class ApplicationModule(context: Context)
               .background(false)
               .name("lastUpdatedIndex")
               .expireAfter(formExpiry, TimeUnit.MILLISECONDS)
-          ) //,
-          // IndexModel(
-          //   Indexes.ascending("submitDetails.createdAt"),
-          //   IndexOptions()
-          //     .background(false)
-          //     .name("submittedIndex")
-          //     .expireAfter(submittedExpiry, TimeUnit.MILLISECONDS)
-          // )
+          ),
+          IndexModel(
+            Indexes.ascending("submitDetails.createdAt"),
+            IndexOptions()
+              .background(false)
+              .name("submittedIndex")
+              .expireAfter(submittedExpiry, TimeUnit.MILLISECONDS)
+          )
         )
         MongoUtils.ensureIndexes(this.collection, indexes, true)
       }
