@@ -16,16 +16,26 @@
 
 package uk.gov.hmrc.gform.formstatistics
 
-import org.mongodb.scala.model.Filters.{ and, equal, notEqual, regex }
+import org.mongodb.scala.bson.Document
+import org.mongodb.scala.bson.{ BsonArray, BsonDocument }
+import org.mongodb.scala.model.Accumulators.{ first, sum }
+import org.mongodb.scala.model.{ Aggregates, Updates }
+import org.mongodb.scala.model.Filters.{ and, equal, gte, notEqual, regex }
+import org.mongodb.scala.model.Projections.{ computed, excludeId }
+import org.mongodb.scala.model.Sorts.descending
 import uk.gov.hmrc.gform.formtemplate.FormTemplateService
 import uk.gov.hmrc.gform.repo.Repo
-import uk.gov.hmrc.gform.sharedmodel.form.{ Form, SavedForm, Submitted }
+import uk.gov.hmrc.gform.sharedmodel.form.{ Form, SavedForm, SavedFormDetail, Submitted }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, NotPermitted }
+import uk.gov.hmrc.mongo.play.json.Codecs
+import uk.gov.hmrc.mongo.play.json.Codecs.JsonOps
 
+import java.time.LocalDate
 import scala.concurrent.{ ExecutionContext, Future }
 
 trait FormStatisticsAlgebra[F[_]] {
   def getSavedFormCount(formTemplateId: FormTemplateId): F[SavedForm]
+  def getSavedFormDetails(formTemplateId: FormTemplateId): F[Seq[SavedFormDetail]]
 }
 
 class FormStatisticsService(formRepo: Repo[Form], formTemplateService: FormTemplateService)(implicit
@@ -54,5 +64,70 @@ class FormStatisticsService(formRepo: Repo[Form], formTemplateService: FormTempl
                  } yield SavedForm(formTemplateId, countOfEmail, countOfGG)
              }
     } yield res
+  }
+
+  override def getSavedFormDetails(formTemplateId: FormTemplateId): Future[Seq[SavedFormDetail]] = {
+    val filter = Aggregates.filter(
+      and(
+        equal("data.form.formTemplateId", formTemplateId.value),
+        notEqual("data.form.status", Submitted.toString),
+        gte("modifiedDetails.createdAt", LocalDate.now().atStartOfDay().minusDays(30))
+      )
+    )
+
+    val project = Aggregates.project(
+      Updates.combine(
+        excludeId(),
+        computed(
+          "createdDate",
+          BsonDocument("$dateToString" -> Document("format" -> "%Y-%m-%d", "date" -> "$modifiedDetails.createdAt"))
+        ),
+        computed(
+          "email",
+          BsonDocument(
+            "$cond" -> BsonArray(
+              Document(
+                "$regexMatch" -> Document("input" -> "$data.form.userId", "regex" -> "^email")
+              ),
+              1.toBson(),
+              0.toBson()
+            )
+          )
+        ),
+        computed(
+          "gg",
+          BsonDocument(
+            "$cond" -> BsonArray(
+              Document(
+                "$and" -> Seq(
+                  Document(
+                    "$regexMatch" -> Document("input" -> "$data.form.userId", "regex" -> "^(?!email).*")
+                  ),
+                  Document(
+                    "$regexMatch" -> Document("input" -> "$data.form.userId", "regex" -> "^(?!anonymous-session).*")
+                  )
+                )
+              ),
+              1.toBson(),
+              0.toBson()
+            )
+          )
+        )
+      )
+    )
+    val sort = Aggregates.sort(descending("createdDate"))
+
+    val group = Aggregates.group(
+      "$createdDate",
+      first("createdDate", "$createdDate"),
+      sum("emailCount", "$email"),
+      sum("ggCount", "$gg")
+    )
+
+    val pipeline = List(filter, project, group, sort)
+
+    formRepo
+      .aggregate(pipeline)
+      .map(_.map(Codecs.fromBson[SavedFormDetail]))
   }
 }

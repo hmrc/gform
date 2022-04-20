@@ -35,4 +35,10 @@ class FormStatisticsController(
       .getSavedFormCount(formTemplateId)
       .map(savedForm => Ok(Json.toJson(savedForm)))
   }
+
+  def getFormCountDetails(formTemplateId: FormTemplateId) = Action.async { _ =>
+    formStatisticsService
+      .getSavedFormDetails(formTemplateId)
+      .map(savedFormDetail => Ok(Json.toJson(savedFormDetail)))
+  }
 }
