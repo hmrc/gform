@@ -79,16 +79,6 @@ class FormMongoCache(
   override def upsert(form: Form)(implicit hc: HeaderCarrier): Future[Unit] =
     mongoCacheRepository
       .put(form._id.value)(formDataKey, form)
-      .flatMap { case _ =>
-        Future.successful(())
-      // case _ if form.status == Submitted =>
-      //   mongoCacheRepository.collection
-      //     .findOneAndUpdate(
-      //       filter = Filters.equal("_id", form._id.value),
-      //       update = Updates.set("submitDetails.createdAt", timeProvider.instant())
-      //     )
-      //     .toFuture()
-      }
       .map(_ => ())
 
   override def delete(formId: FormId)(implicit hc: HeaderCarrier): Future[Unit] =
