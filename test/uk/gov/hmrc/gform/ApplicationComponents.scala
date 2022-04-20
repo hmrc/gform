@@ -26,10 +26,14 @@ trait ApplicationComponents extends GuiceOneAppPerTest with BeforeAndAfterAll {
 
   override def fakeApplication = new ApplicationLoader().load(context)
 
+  val settingsOverride: Map[String, String] = Map(
+    "microservice.metrics.graphite.enabled" -> "false"
+  )
+
   def context: ApplicationLoader.Context = {
     val classLoader = ApplicationLoader.getClass.getClassLoader
     val env = new Environment(new java.io.File("."), classLoader, Mode.Test)
-    Context.create(env)
+    Context.create(environment = env, initialSettings = settingsOverride)
   }
 
   override def beforeAll() {
