@@ -39,7 +39,6 @@ trait ITSpec
     "json.encryption.previousKeys"                  -> "",
     "microservice.services.file-upload.port"        -> s"$wiremockPort",
     "microservice.services.file-upload.path-prefix" -> ""
-    // "microservice.metrics.graphite.enabled"         -> "false"
   ) ++ mongoSettings
 
   override def fakeApplication(): Application = {

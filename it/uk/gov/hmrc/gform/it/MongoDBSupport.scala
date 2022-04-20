@@ -53,24 +53,6 @@ trait MongoDBSupport extends MongoComponentSupport {
       new CurrentTimestampSupport(),
       SimpleCacheId
     ) {
-      override def ensureIndexes: Future[Seq[String]] =
-        Future.successful(Seq())
-      // val indexes = Seq(
-      //   IndexModel(
-      //     Indexes.ascending("modifiedDetails.lastUpdated"),
-      //     IndexOptions()
-      //       .background(false)
-      //       .name("lastUpdatedIndex")
-      //       .expireAfter(10000, TimeUnit.MILLISECONDS)
-      //   ),
-      //   IndexModel(
-      //     Indexes.ascending("submitDetails.createdAt"),
-      //     IndexOptions()
-      //       .background(false)
-      //       .name("submittedIndex")
-      //       .expireAfter(10000, TimeUnit.MILLISECONDS)
-      //   )
-      // )
-      // MongoUtils.ensureIndexes(this.collection, indexes, true)
+      override def ensureIndexes: Future[Seq[String]] = Future.successful(Seq())
     }
 }

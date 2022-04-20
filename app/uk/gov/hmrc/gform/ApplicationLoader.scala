@@ -120,7 +120,6 @@ class ApplicationModule(context: Context)
       SimpleCacheId
     ) {
       override def ensureIndexes: Future[Seq[String]] = {
-        // Future.successful(Seq())
         val formExpiry = configModule.appConfig.formExpiryDays.days.toMillis
         val submittedExpiry = configModule.appConfig.submittedFormExpiryHours.hours.toMillis
         val indexes = Seq(

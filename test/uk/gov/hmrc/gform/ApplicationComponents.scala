@@ -14,35 +14,31 @@
  * limitations under the License.
  */
 
-// package uk.gov.hmrc.gform
+package uk.gov.hmrc.gform
 
-// import org.scalatest.{ BeforeAndAfterAll, TestSuite }
-// import org.scalatestplus.play.guice.GuiceOneAppPerTest
-// import play.api.ApplicationLoader.Context
-// import play.api._
+import org.scalatest.{ BeforeAndAfterAll, TestSuite }
+import org.scalatestplus.play.guice.GuiceOneAppPerTest
+import play.api.ApplicationLoader.Context
+import play.api._
 
-// trait ApplicationComponents extends GuiceOneAppPerTest with BeforeAndAfterAll {
-//   this: TestSuite =>
+trait ApplicationComponents extends GuiceOneAppPerTest with BeforeAndAfterAll {
+  this: TestSuite =>
 
-//   override def fakeApplication = new ApplicationLoader().load(context)
+  override def fakeApplication = new ApplicationLoader().load(context)
 
-//   val settingsOverride: Map[String, String] = Map(
-//     "microservice.metrics.graphite.enabled" -> "false"
-//   )
+  def context: ApplicationLoader.Context = {
+    val classLoader = ApplicationLoader.getClass.getClassLoader
+    val env = new Environment(new java.io.File("."), classLoader, Mode.Test)
+    Context.create(env)
+  }
 
-//   def context: ApplicationLoader.Context = {
-//     val classLoader = ApplicationLoader.getClass.getClassLoader
-//     val env = new Environment(new java.io.File("."), classLoader, Mode.Test)
-//     Context.create(environment = env, initialSettings = settingsOverride)
-//   }
+  override def beforeAll() {
+    super.beforeAll()
+    Play.start(fakeApplication)
+  }
 
-//   override def beforeAll() {
-//     super.beforeAll()
-//     Play.start(fakeApplication)
-//   }
-
-//   override def afterAll() {
-//     super.afterAll()
-//     Play.stop(fakeApplication)
-//   }
-// }
+  override def afterAll() {
+    super.afterAll()
+    Play.stop(fakeApplication)
+  }
+}

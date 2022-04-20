@@ -40,7 +40,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfterEach {
 
   override implicit val defaultPatience: PatienceConfig =
-    PatienceConfig(timeout = Span(30, Seconds), interval = Span(500, Millis))
+    PatienceConfig(timeout = Span(15, Seconds), interval = Span(500, Millis))
 
   override protected def afterEach(): Unit = {
     formTemplateRepo.collection.deleteMany(new BasicDBObject()).toFuture().futureValue

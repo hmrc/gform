@@ -14,31 +14,31 @@
  * limitations under the License.
  */
 
-// package uk.gov.hmrc.gform
+package uk.gov.hmrc.gform
 
-// import play.api.ApplicationLoader.Context
-// import play.api._
-// import play.api.i18n.I18nComponents
-// import play.api.mvc.EssentialFilter
-// import uk.gov.hmrc.gform.wshttp.{ TestWSHttp, WSHttp, WSHttpModule }
+import play.api.ApplicationLoader.Context
+import play.api._
+import play.api.i18n.I18nComponents
+import play.api.mvc.EssentialFilter
+import uk.gov.hmrc.gform.wshttp.{ TestWSHttp, WSHttp, WSHttpModule }
 
-// class StubApplicationLoader extends play.api.ApplicationLoader {
-//   def load(context: Context): Application = {
-//     LoggerConfigurator(context.environment.classLoader).foreach {
-//       _.configure(context.environment)
-//     }
-//     new StubApplicationModule(context).application
-//   }
-// }
+class StubApplicationLoader extends play.api.ApplicationLoader {
+  def load(context: Context): Application = {
+    LoggerConfigurator(context.environment.classLoader).foreach {
+      _.configure(context.environment)
+    }
+    new StubApplicationModule(context).application
+  }
+}
 
-// class StubApplicationModule(context: Context) extends BuiltInComponentsFromContext(context) with I18nComponents {
-//   self =>
-//   val module: ApplicationModule = new ApplicationModule(context) {
-//     override val wSHttpModule = new WSHttpModule(auditingModule, configModule, playComponents) {
-//       override val auditableWSHttp: WSHttp = TestWSHttp
-//     }
-//   }
-//   override def router: routing.Router = module.router
+class StubApplicationModule(context: Context) extends BuiltInComponentsFromContext(context) with I18nComponents {
+  self =>
+  val module: ApplicationModule = new ApplicationModule(context) {
+    override val wSHttpModule = new WSHttpModule(auditingModule, configModule, playComponents) {
+      override val auditableWSHttp: WSHttp = TestWSHttp
+    }
+  }
+  override def router: routing.Router = module.router
 
-//   override def httpFilters: Seq[EssentialFilter] = Seq.empty
-// }
+  override def httpFilters: Seq[EssentialFilter] = Seq.empty
+}
