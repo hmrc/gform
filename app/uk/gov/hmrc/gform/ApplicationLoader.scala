@@ -138,7 +138,7 @@ class ApplicationModule(context: Context)
               .expireAfter(submittedExpiry, TimeUnit.MILLISECONDS)
           )
         )
-        MongoUtils.ensureIndexes(this.collection, indexes, true)
+        MongoUtils.ensureIndexes(this.collection, indexes, false)
       }
     },
     jsonCrypto,
