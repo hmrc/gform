@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform
 
 import cats.instances.future._
 import org.slf4j.LoggerFactory
-import org.mongodb.scala.model.{ IndexModel, IndexOptions, Indexes }
+//import org.mongodb.scala.model.{ IndexModel, IndexOptions, Indexes }
 import play.api.ApplicationLoader.Context
 import play.api._
 import play.api.http._
@@ -58,7 +58,7 @@ import uk.gov.hmrc.gform.obligation.ObligationModule
 import uk.gov.hmrc.gform.submission.destinations.DestinationModule
 import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorModule
 import uk.gov.hmrc.mongo.CurrentTimestampSupport
-import uk.gov.hmrc.mongo.MongoUtils
+// import uk.gov.hmrc.mongo.MongoUtils
 import uk.gov.hmrc.mongo.cache.CacheIdType.SimpleCacheId
 import uk.gov.hmrc.mongo.cache.MongoCacheRepository
 import uk.gov.hmrc.play.bootstrap.config.AppName
@@ -66,7 +66,7 @@ import uk.gov.hmrc.play.bootstrap.config.AppName
 import scala.concurrent.duration._
 import scala.concurrent.Future
 
-import java.util.concurrent.TimeUnit
+// import java.util.concurrent.TimeUnit
 
 class ApplicationLoader extends play.api.ApplicationLoader {
   def load(context: Context): Application = {
@@ -118,29 +118,7 @@ class ApplicationModule(context: Context)
       configModule.appConfig.formExpiryDays.days,
       new CurrentTimestampSupport(),
       SimpleCacheId
-    ) {
-      override def ensureIndexes: Future[Seq[String]] = {
-        val formExpiry = configModule.appConfig.formExpiryDays.days.toMillis
-        val submittedExpiry = configModule.appConfig.submittedFormExpiryHours.hours.toMillis
-        val indexes = Seq(
-          IndexModel(
-            Indexes.ascending("modifiedDetails.lastUpdated"),
-            IndexOptions()
-              .background(false)
-              .name("lastUpdatedIndex")
-              .expireAfter(formExpiry, TimeUnit.MILLISECONDS)
-          ),
-          IndexModel(
-            Indexes.ascending("submitDetails.createdAt"),
-            IndexOptions()
-              .background(false)
-              .name("submittedIndex")
-              .expireAfter(submittedExpiry, TimeUnit.MILLISECONDS)
-          )
-        )
-        MongoUtils.ensureIndexes(this.collection, indexes, true)
-      }
-    },
+    ),
     jsonCrypto,
     timeModule.timeProvider
   )
