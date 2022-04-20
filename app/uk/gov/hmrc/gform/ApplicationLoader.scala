@@ -120,16 +120,17 @@ class ApplicationModule(context: Context)
       SimpleCacheId
     ) {
       override def ensureIndexes: Future[Seq[String]] = {
-        //val formExpiry = configModule.appConfig.formExpiryDays.days.toMillis
+        // Future.successful(Seq())
+        val formExpiry = configModule.appConfig.formExpiryDays.days.toMillis
         val submittedExpiry = configModule.appConfig.submittedFormExpiryHours.hours.toMillis
         val indexes = Seq(
-          // IndexModel(
-          //   Indexes.ascending("modifiedDetails.lastUpdated"),
-          //   IndexOptions()
-          //     .background(false)
-          //     .name("lastUpdatedIndex")
-          //     .expireAfter(formExpiry, TimeUnit.MILLISECONDS)
-          // ),
+          IndexModel(
+            Indexes.ascending("modifiedDetails.lastUpdated"),
+            IndexOptions()
+              .background(false)
+              .name("lastUpdatedIndex")
+              .expireAfter(formExpiry, TimeUnit.MILLISECONDS)
+          ),
           IndexModel(
             Indexes.ascending("submitDetails.createdAt"),
             IndexOptions()
@@ -138,7 +139,7 @@ class ApplicationModule(context: Context)
               .expireAfter(submittedExpiry, TimeUnit.MILLISECONDS)
           )
         )
-        MongoUtils.ensureIndexes(this.collection, indexes, false)
+        MongoUtils.ensureIndexes(this.collection, indexes, true)
       }
     },
     jsonCrypto,
