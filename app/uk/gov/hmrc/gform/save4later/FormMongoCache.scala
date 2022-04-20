@@ -78,7 +78,7 @@ class FormMongoCache(
   override def upsert(form: Form)(implicit hc: HeaderCarrier): Future[Unit] =
     mongoCacheRepository
       .put(form._id.value)(formDataKey, form)
-      .andThen {
+      .flatMap {
         case _ if form.status == Submitted =>
           mongoCacheRepository.collection
             .findOneAndUpdate(
@@ -86,6 +86,7 @@ class FormMongoCache(
               update = Updates.set("submitDetails.createdAt", timeProvider.instant())
             )
             .toFuture()
+        case _ => Future.successful(())
       }
       .map(_ => ())
 
