@@ -133,7 +133,7 @@ class ApplicationModule(context: Context)
           IndexModel(
             Indexes.ascending("submitDetails.createdAt"),
             IndexOptions()
-              .background(true)
+              .background(false)
               .name("submittedIndex")
               .expireAfter(submittedExpiry, TimeUnit.MILLISECONDS)
           )
