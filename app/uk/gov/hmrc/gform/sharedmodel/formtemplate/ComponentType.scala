@@ -155,7 +155,11 @@ object DisplayWidth extends Enumeration {
   type DisplayWidth = Value
   val XS, S, M, L, XL, XXL, DEFAULT = Value
 
-  implicit val displayWidthReads: Reads[DisplayWidth] = Reads.enumNameReads(DisplayWidth)
+  implicit val displayWidthReads: Reads[DisplayWidth] =
+    Reads.enumNameReads(DisplayWidth).preprocess {
+      case JsString(s) => JsString(s.toUpperCase)
+      case o           => o
+    }
   implicit val displayWidthWrites: Writes[DisplayWidth] = Writes.enumNameWrites
 }
 

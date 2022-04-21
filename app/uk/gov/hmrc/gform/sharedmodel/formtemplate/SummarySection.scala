@@ -25,7 +25,8 @@ case class SummarySection(
   header: SmartString,
   footer: SmartString,
   continueLabel: Option[SmartString],
-  fields: Option[NonEmptyList[FormComponent]]
+  fields: Option[NonEmptyList[FormComponent]],
+  displayWidth: DisplayWidth.DisplayWidth = DisplayWidth.M
 )
 
 object SummarySection extends JsonUtils {
@@ -58,5 +59,6 @@ object SummarySection extends JsonUtils {
     )
   }
 
-  implicit val format: OFormat[SummarySection] = Json.format[SummarySection]
+  val jsWithDefaults = Json.using[Json.WithDefaultValues]
+  implicit val format: OFormat[SummarySection] = jsWithDefaults.format[SummarySection]
 }
