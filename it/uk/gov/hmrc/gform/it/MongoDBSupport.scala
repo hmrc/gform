@@ -8,6 +8,7 @@ import uk.gov.hmrc.mongo.cache.CacheIdType.SimpleCacheId
 import uk.gov.hmrc.mongo.cache.MongoCacheRepository
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import scala.concurrent.duration._
+import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait MongoDBSupport extends MongoComponentSupport {
@@ -47,5 +48,7 @@ trait MongoDBSupport extends MongoComponentSupport {
       1.days,
       new CurrentTimestampSupport(),
       SimpleCacheId
-    )
+    ) {
+      override def ensureIndexes: Future[Seq[String]] = Future.successful(Seq())
+    }
 }
