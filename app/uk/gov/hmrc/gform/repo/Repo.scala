@@ -22,6 +22,7 @@ import cats.syntax.either._
 import cats.syntax.eq._
 import com.mongodb.ReadPreference
 import org.mongodb.scala.Document
+import org.mongodb.scala.bson.BsonValue
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model.Filters._
 import org.mongodb.scala.model.{ Filters, FindOneAndReplaceOptions, IndexModel, ReplaceOneModel, ReplaceOptions }
@@ -31,6 +32,7 @@ import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import org.mongodb.scala.model.Projections._
+
 import scala.concurrent.{ ExecutionContext, Future }
 
 class Repo[T: OWrites: Manifest](
@@ -98,6 +100,11 @@ class Repo[T: OWrites: Manifest](
   def count(selector: Bson): Future[Long] =
     underlying.collection
       .countDocuments(selector)
+      .toFuture()
+
+  def aggregate(pipeline: Seq[Bson]): Future[Seq[BsonValue]] =
+    underlying.collection
+      .aggregate[BsonValue](pipeline)
       .toFuture()
 
   def projection(includes: String*): Future[List[JsValue]] =
