@@ -67,3 +67,4 @@ GET           /upscan/:reference                                                
 DELETE        /upscan/:reference                                                                        uk.gov.hmrc.gform.upscan.UpscanController.deleteReference(reference: UpscanReference)
 
 GET           /formStatistics/:formTemplateId                                                           uk.gov.hmrc.gform.formstatistics.FormStatisticsController.getFormCount(formTemplateId: FormTemplateId)
+GET           /formStatistics/:formTemplateId/details                                                   uk.gov.hmrc.gform.formstatistics.FormStatisticsController.getFormCountDetails(formTemplateId: FormTemplateId)
