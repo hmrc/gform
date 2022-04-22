@@ -155,12 +155,20 @@ object DisplayWidth extends Enumeration {
   type DisplayWidth = Value
   val XS, S, M, L, XL, XXL, DEFAULT = Value
 
-  implicit val displayWidthReads: Reads[DisplayWidth] =
-    Reads.enumNameReads(DisplayWidth).preprocess {
+  implicit val displayWidthReads: Reads[DisplayWidth] = Reads.enumNameReads(DisplayWidth)
+  implicit val displayWidthWrites: Writes[DisplayWidth] = Writes.enumNameWrites
+}
+
+object SummaryDisplayWidth extends Enumeration {
+  type SummaryDisplayWidth = Value
+  val M, L, XL = Value
+
+  implicit val displayWidthReads: Reads[SummaryDisplayWidth] =
+    Reads.enumNameReads(SummaryDisplayWidth).preprocess {
       case JsString(s) => JsString(s.toUpperCase)
       case o           => o
     }
-  implicit val displayWidthWrites: Writes[DisplayWidth] = Writes.enumNameWrites
+  implicit val displayWidthWrites: Writes[SummaryDisplayWidth] = Writes.enumNameWrites
 }
 
 sealed trait OptionData extends Product with Serializable

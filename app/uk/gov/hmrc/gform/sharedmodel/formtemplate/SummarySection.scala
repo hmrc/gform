@@ -26,7 +26,7 @@ case class SummarySection(
   footer: SmartString,
   continueLabel: Option[SmartString],
   fields: Option[NonEmptyList[FormComponent]],
-  displayWidth: DisplayWidth.DisplayWidth = DisplayWidth.M
+  displayWidth: SummaryDisplayWidth.SummaryDisplayWidth = SummaryDisplayWidth.M
 )
 
 object SummarySection extends JsonUtils {
