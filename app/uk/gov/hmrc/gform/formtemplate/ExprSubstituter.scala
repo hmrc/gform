@@ -94,7 +94,7 @@ object ExprSubstituter extends Substituter[ExprSubstitutions, FormTemplate] {
         case IsFalse                          => IsFalse
         case Contains(multiValueField, value) => Contains(multiValueField, value(substitutions))
         case In(value, dataSource)            => In(value(substitutions), dataSource)
-        case m @ MatchRegex(formCtx, regex)   => m
+        case m @ MatchRegex(expr, regex)      => m
         case DateBefore(l, r)                 => DateBefore(l(substitutions), r(substitutions))
         case DateAfter(l, r)                  => DateAfter(l(substitutions), r(substitutions))
         case f @ FormPhase(value)             => f

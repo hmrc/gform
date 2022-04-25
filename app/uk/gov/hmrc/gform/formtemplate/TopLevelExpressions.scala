@@ -119,7 +119,7 @@ object TopLevelExpressions {
       case IsFalse                          => IsFalse
       case Contains(multiValueField, value) => Contains(multiValueField, loop(value))
       case In(value, dataSource)            => In(loop(value), dataSource)
-      case m @ MatchRegex(formCtx, regex)   => m
+      case m @ MatchRegex(expr, regex)      => m
       case d @ DateBefore(l, r)             => DateBefore(loopDateExpr(l), loopDateExpr(r))
       case d @ DateAfter(l, r)              => DateAfter(loopDateExpr(l), loopDateExpr(r))
       case f @ FormPhase(value)             => f

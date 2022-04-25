@@ -34,7 +34,7 @@ final case object IsTrue extends BooleanExpr
 final case object IsFalse extends BooleanExpr
 final case class Contains(multiValueField: FormCtx, value: Expr) extends BooleanExpr
 final case class In(value: Expr, dataSource: DataSource) extends BooleanExpr
-final case class MatchRegex(formCtx: FormCtx, regex: Regex) extends BooleanExpr
+final case class MatchRegex(expr: Expr, regex: Regex) extends BooleanExpr
 
 final case class DateBefore(left: DateExpr, right: DateExpr) extends BooleanExpr
 final case class DateAfter(left: DateExpr, right: DateExpr) extends BooleanExpr
@@ -77,7 +77,7 @@ object BooleanExpr {
       case IsFalse                                         => Nil
       case Contains(multiValueField: FormCtx, value: Expr) => withPath(value, multiValueField)
       case In(value: Expr, dataSource: DataSource)         => withPath(value)
-      case MatchRegex(formCtx: FormCtx, regex: Regex)      => withPath(formCtx)
+      case MatchRegex(expr: Expr, regex: Regex)            => withPath(expr)
       case DateBefore(left: DateExpr, right: DateExpr)     => withPath(left.leafExprs ++ right.leafExprs: _*)
       case DateAfter(left: DateExpr, right: DateExpr)      => withPath(left.leafExprs ++ right.leafExprs: _*)
       case FormPhase(value: FormPhaseValue)                => Nil
