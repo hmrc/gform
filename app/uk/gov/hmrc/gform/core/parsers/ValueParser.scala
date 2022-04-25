@@ -401,8 +401,8 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | formCtxParse ~ "(?i)\\Qcontains\\E".r ~ exprFormCtx ^^ { case formCtx ~ _ ~ expr =>
       Contains(formCtx, expr)
     }
-    | formCtxParse ~ "match" ~ quoteRegexParse ^^ { case formCtx ~ _ ~ regex =>
-      MatchRegex(formCtx, regex)
+    | exprFormCtx ~ "match" ~ quoteRegexParse ^^ { case expr ~ _ ~ regex =>
+      MatchRegex(expr, regex)
     }
     | contextField ~ "in" ~ dataSourceParse ^^ { case expr ~ _ ~ dataSource =>
       In(expr, dataSource)
