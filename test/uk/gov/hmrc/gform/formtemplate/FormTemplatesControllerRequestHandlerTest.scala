@@ -399,7 +399,7 @@ class FormTemplatesControllerRequestHandlerTest extends AnyWordSpec with Matcher
     val templateRaw = implicitly[Reads[FormTemplateRaw]].reads(json).get
     val formTemplate: Option[FormTemplate] = FormTemplate.transformAndReads(json).asOpt
     val verifySideEffect: Option[FOpt[Unit]] =
-      formTemplate.map(formTemplate => new Verifier {}.verify(formTemplate))
+      formTemplate.map(formTemplate => new Verifier {}.verify(formTemplate)(ExprSubstitutions.empty))
 
     f(sideEffect, verifySideEffect, templateRaw)
   }

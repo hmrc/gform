@@ -90,7 +90,7 @@ class FormTemplateService(
       expressionsContextSubstituted <- fromOptA(exprSubstitutionsResolved)
       substitutedFormTemplate = substituteExpressions(formTemplate, expressionsContextSubstituted)
       substitutedBooleanExprsFormTemplate = substituteBooleanExprs(substitutedFormTemplate, booleanExpressionsContext)
-      _                  <- verify(substitutedBooleanExprsFormTemplate)
+      _                  <- verify(substitutedBooleanExprsFormTemplate)(expressionsContext)
       formTemplateToSave <- rewrite(substitutedBooleanExprsFormTemplate)
       _                  <- formTemplateRepo.replace(mkSpecimen(formTemplateToSave))
       _                  <- formRedirectRepo.deleteByFieldName("redirect", formTemplate._id.value)
