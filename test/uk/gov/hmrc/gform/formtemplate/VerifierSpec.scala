@@ -45,7 +45,7 @@ class VerifierSpec extends AnyWordSpecLike with Matchers with ScalaFutures with 
         )
       )
 
-      val result = Verifier.verify(mkFormTemplate(sections))
+      val result = Verifier.verify(mkFormTemplate(sections))(ExprSubstitutions.empty)
 
       result.value.futureValue shouldBe Left(
         UnexpectedState("One or more sections have instruction attribute with negative order")

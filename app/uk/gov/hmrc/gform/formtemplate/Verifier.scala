@@ -23,7 +23,9 @@ import cats.implicits._
 import scala.concurrent.ExecutionContext
 
 trait Verifier {
-  def verify(formTemplate: FormTemplate)(implicit ec: ExecutionContext): FOpt[Unit] = {
+  def verify(
+    formTemplate: FormTemplate
+  )(expressionsContext: ExprSubstitutions)(implicit ec: ExecutionContext): FOpt[Unit] = {
 
     val sections = formTemplate.sections
 
@@ -34,6 +36,8 @@ trait Verifier {
     val languages = formTemplate.languages
 
     val allExpressions: List[ExprWithPath] = LeafExpr(TemplatePath.root, formTemplate)
+
+    val expressionIds: List[ExpressionId] = expressionsContext.expressions.keys.toList
 
     for {
       _ <- fromOptA(FormTemplateValidator.validateLowercaseIds(formTemplate).toEither)
@@ -49,7 +53,7 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validateChoiceNoneChoiceUpperBound(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateChoiceOptions(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateRevealingChoiceOptions(pages).toEither)
-      _ <- fromOptA(FormTemplateValidator.validateUniqueFields(sections).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateUniqueFields(sections, expressionIds).toEither)
       _ <- fromOptA(FormTemplateValidator.validateUniquePageIds(sections).toEither)
       _ <- fromOptA(FormTemplateValidator.validateForwardReference(sections).toEither)
       _ <- fromOptA(FormTemplateValidator.validate(componentTypes, formTemplate).toEither)
