@@ -59,7 +59,7 @@ class TemplateValidatorSpec extends Spec {
 
       val allSections = ds1 ::: ds2
 
-      val result = FormTemplateValidator.validateUniqueFields(allSections.toList)
+      val result = FormTemplateValidator.validateUniqueFields(allSections.toList, List.empty)
       result should be(Invalid(FormTemplateValidator.someFieldsAreDefinedMoreThanOnce(Set(id1, id2))))
     }
   }
@@ -798,7 +798,7 @@ class TemplateValidatorSpec extends Spec {
     val formComponent: String => FormComponent = formId => mkFormComponent(formId, Value)
 
     val validateSections: List[Section] => ValidationResult = sections =>
-      FormTemplateValidator.validateUniqueFields(sections)
+      FormTemplateValidator.validateUniqueFields(sections, List.empty)
 
     val validateFieldIds: List[FormComponent] => ValidationResult = { formComponents =>
       val sections = List(mkSection("section", formComponents))
