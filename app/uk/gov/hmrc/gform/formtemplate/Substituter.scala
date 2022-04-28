@@ -225,7 +225,7 @@ object Substituter {
       noPIITitle = t.noPIITitle(substitutions),
       description = t.description(substitutions),
       shortName = t.shortName(substitutions),
-      progressIndicator = t.progressIndicator(substitutions),
+      caption = t.caption(substitutions),
       includeIf = t.includeIf(substitutions),
       validators = t.validators(substitutions),
       fields = t.fields(substitutions),

@@ -92,27 +92,27 @@ trait SectionGen {
 
   def pageGen: Gen[Page] =
     for {
-      title             <- smartStringGen
-      id                <- Gen.option(PageIdGen.pageIdGen)
-      noPIITitle        <- Gen.option(smartStringGen)
-      description       <- Gen.option(smartStringGen)
-      progressIndicator <- Gen.option(smartStringGen)
-      shortName         <- Gen.option(smartStringGen)
-      includeIf         <- Gen.option(IncludeIfGen.includeIfGen)
-      validators        <- Gen.option(ValidatorGen.validatorGen)
-      fields            <- PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen())
-      continueLabel     <- Gen.option(smartStringGen)
-      continueIf        <- Gen.option(ContinueIfGen.continueIfGen)
-      instruction       <- Gen.option(InstructionGen.instructionGen)
-      presentationHint  <- Gen.option(PresentationHintGen.presentationHintGen)
-      dataRetrieve      <- Gen.option(validateBankDetailsGen)
-      confirmation      <- Gen.option(ConfirmationGen.confirmationGen)
+      title            <- smartStringGen
+      id               <- Gen.option(PageIdGen.pageIdGen)
+      noPIITitle       <- Gen.option(smartStringGen)
+      description      <- Gen.option(smartStringGen)
+      caption          <- Gen.option(smartStringGen)
+      shortName        <- Gen.option(smartStringGen)
+      includeIf        <- Gen.option(IncludeIfGen.includeIfGen)
+      validators       <- Gen.option(ValidatorGen.validatorGen)
+      fields           <- PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen())
+      continueLabel    <- Gen.option(smartStringGen)
+      continueIf       <- Gen.option(ContinueIfGen.continueIfGen)
+      instruction      <- Gen.option(InstructionGen.instructionGen)
+      presentationHint <- Gen.option(PresentationHintGen.presentationHintGen)
+      dataRetrieve     <- Gen.option(validateBankDetailsGen)
+      confirmation     <- Gen.option(ConfirmationGen.confirmationGen)
     } yield Page(
       title,
       id,
       noPIITitle,
       description,
-      progressIndicator,
+      caption,
       shortName,
       includeIf,
       validators,
