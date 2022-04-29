@@ -25,10 +25,11 @@ import org.apache.pdfbox.pdmodel.PDDocument
 import org.scalamock.function.MockFunction1
 import play.api.libs.Files.{ SingletonTemporaryFileCreator, TemporaryFile }
 import uk.gov.hmrc.gform.Spec
+import uk.gov.hmrc.gform.config.FileInfoConfig
 import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorAlgebra
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AllowedFileTypes, FormTemplateId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.submission._
 import uk.gov.hmrc.http.HeaderCarrier
@@ -128,8 +129,13 @@ class DmsSubmissionServiceSpec extends Spec {
   ) {
     def expectCreateEnvelope(formTemplateId: FormTemplateId, envelopeId: EnvelopeId): Fixture = {
       (fileUpload
-        .createEnvelope(_: FormTemplateId, _: LocalDateTime)(_: HeaderCarrier))
-        .expects(FormTemplateId(validSubmission.metadata.dmsFormId), fixedTime.plusDays(envelopeExpiryDays), hc)
+        .createEnvelope(_: FormTemplateId, _: AllowedFileTypes, _: LocalDateTime)(_: HeaderCarrier))
+        .expects(
+          FormTemplateId(validSubmission.metadata.dmsFormId),
+          FileInfoConfig.allAllowedFileTypes,
+          fixedTime.plusDays(envelopeExpiryDays),
+          hc
+        )
         .returning(envelopeId)
 
       this

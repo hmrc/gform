@@ -19,7 +19,6 @@ package uk.gov.hmrc.gform.config
 import com.typesafe.config.ConfigFactory
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 
 class AppConfigSpec extends AnyFlatSpec with Matchers {
 
@@ -31,22 +30,6 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
     appConfig.formMaxAttachments shouldBe 15
     appConfig.formMaxAttachmentSizeMB shouldBe 10
     appConfig.formMaxAttachmentTotalSizeMB shouldBe 25
-    appConfig.contentTypes shouldBe List(
-      ContentType.`application/pdf`,
-      ContentType.`image/jpeg`,
-      ContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
-      ContentType(".xlsx"),
-      ContentType("application/vnd.oasis.opendocument.spreadsheet"),
-      ContentType(".ods"),
-      ContentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
-      ContentType(".docx"),
-      ContentType("application/vnd.oasis.opendocument.text"),
-      ContentType(".odt"),
-      ContentType("application/vnd.openxmlformats-officedocument.presentationml.presentation"),
-      ContentType(".pptx"),
-      ContentType("application/vnd.oasis.opendocument.presentation"),
-      ContentType(".odp")
-    )
     appConfig.restrictedFileExtensionList shouldBe List("jfif", "png")
   }
 

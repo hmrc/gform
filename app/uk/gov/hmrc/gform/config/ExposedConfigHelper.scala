@@ -21,6 +21,6 @@ import uk.gov.hmrc.gform.sharedmodel.config.ExposedConfig
 object ExposedConfigHelper {
 
   def exposedConfig(appConfig: AppConfig) =
-    ExposedConfig(appConfig.formMaxAttachmentSizeMB, appConfig.formExpiryDays, appConfig.contentTypes)
+    ExposedConfig(appConfig.formMaxAttachmentSizeMB, appConfig.formExpiryDays)
 
 }

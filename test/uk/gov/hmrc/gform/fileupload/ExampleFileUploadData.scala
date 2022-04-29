@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.gform.fileupload
 
-import uk.gov.hmrc.gform.sharedmodel.config.ContentType
-
 trait ExampleFileUploadData {
 
   lazy val config = FUConfig(
@@ -26,14 +24,6 @@ trait ExampleFileUploadData {
     expiryDays = 30,
     maxSize = "20MB",
     maxSizePerItem = "5MB",
-    maxItems = 3,
-    contentTypes = List(
-      ContentType.`application/pdf`,
-      ContentType.`application/xml`,
-      ContentType.`image/jpeg`,
-      ContentType.`text/xml`,
-      ContentType.`application/vnd.ms-excel`,
-      ContentType.`application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`
-    )
+    maxItems = 3
   )
 }

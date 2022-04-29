@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.sharedmodel
 import java.time.LocalDateTime
 import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.Helpers._
+import uk.gov.hmrc.gform.config.FileInfoConfig
 import uk.gov.hmrc.gform.fileupload.RouteEnvelopeRequest
 import uk.gov.hmrc.gform.sharedmodel.email.LocalisedEmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.form._
@@ -492,6 +493,7 @@ trait ExampleFormTemplate {
     None,
     summarySection,
     true,
+    FileInfoConfig.allAllowedFileTypes,
     Some(userResearchUrl),
     None,
     None,

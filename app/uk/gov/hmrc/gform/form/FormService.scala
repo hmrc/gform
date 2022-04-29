@@ -100,8 +100,8 @@ class FormService[F[_]: Monad](
     val expiryDate = timeProvider.localDateTime().plusDays(expiryDays)
 
     for {
-      envelopeId   <- fileUpload.createEnvelope(formTemplateId, expiryDate)
       formTemplate <- formTemplateAlgebra.get(formTemplateId)
+      envelopeId   <- fileUpload.createEnvelope(formTemplateId, formTemplate.allowedFileTypes, expiryDate)
       formIdData = createNewFormData(userId, formTemplate, envelopeId, affinityGroup)
       lowerCased = formIdData.lowerCaseId
       form = Form(

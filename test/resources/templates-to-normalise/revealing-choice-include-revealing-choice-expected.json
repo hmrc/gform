@@ -32,6 +32,16 @@
     }
   },
   "description": "",
+  "allowedFileTypes": [
+    "pdf",
+    "jpg",
+    "xlsx",
+    "ods",
+    "docx",
+    "odt",
+    "pptx",
+    "odp"
+  ],
   "sections": [
     {
       "title": "Page",

@@ -25,7 +25,7 @@ import cats.syntax.traverse._
 import cats.{ Applicative, Monad }
 import uk.gov.hmrc.gform.dms.FileAttachment
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AllowedFileTypes, FormTemplateId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.submission.{ PdfAndXmlSummaries, Submission }
 import uk.gov.hmrc.http.HeaderCarrier
@@ -52,7 +52,9 @@ trait FileDownloadAlgebra[F[_]] {
 }
 
 trait FileUploadAlgebra[F[_]] {
-  def createEnvelope(formTypeId: FormTemplateId, expiryDate: LocalDateTime)(implicit hc: HeaderCarrier): F[EnvelopeId]
+  def createEnvelope(formTemplateId: FormTemplateId, allowedFileTypes: AllowedFileTypes, expiryDate: LocalDateTime)(
+    implicit hc: HeaderCarrier
+  ): F[EnvelopeId]
 
   def submitEnvelope(submission: Submission, summaries: PdfAndXmlSummaries, hmrcDms: HmrcDms)(implicit
     hc: HeaderCarrier

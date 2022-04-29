@@ -26,7 +26,7 @@ import uk.gov.hmrc.gform.dms.FileAttachment
 import uk.gov.hmrc.gform.fileupload.FileUploadService.FileIds._
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AllowedFileTypes, FormTemplateId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.submission.{ PdfAndXmlSummaries, Submission }
 import uk.gov.hmrc.gform.time.TimeProvider
@@ -42,10 +42,10 @@ class FileUploadService(
     extends FileUploadAlgebra[Future] with FileDownloadAlgebra[Future] {
   private val logger = LoggerFactory.getLogger(getClass)
 
-  def createEnvelope(formTypeId: FormTemplateId, expiryDate: LocalDateTime)(implicit
-    hc: HeaderCarrier
+  def createEnvelope(formTemplateId: FormTemplateId, allowedFileTypes: AllowedFileTypes, expiryDate: LocalDateTime)(
+    implicit hc: HeaderCarrier
   ): Future[EnvelopeId] = {
-    val f = fileUploadConnector.createEnvelope(formTypeId, expiryDate)
+    val f = fileUploadConnector.createEnvelope(formTemplateId, allowedFileTypes, expiryDate)
     f map { id =>
       logger.debug(s"env-id creation: $id")
     }
