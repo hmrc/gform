@@ -26,7 +26,7 @@ case class Page(
   noPIITitle: Option[SmartString],
   description: Option[SmartString],
   shortName: Option[SmartString],
-  progressIndicator: Option[SmartString] = None,
+  caption: Option[SmartString] = None,
   includeIf: Option[IncludeIf],
   validators: Option[Validator],
   fields: List[FormComponent],
@@ -68,7 +68,7 @@ object Page {
     LeafExpr(path + "title", t.title) ++
       LeafExpr(path + "description", t.description) ++
       LeafExpr(path + "shortName", t.shortName) ++
-      LeafExpr(path + "progressIndicator", t.progressIndicator) ++
+      LeafExpr(path + "caption", t.caption) ++
       LeafExpr(path + "continueLabel", t.continueLabel) ++
       LeafExpr(path + "includeIf", t.includeIf) ++
       LeafExpr(path + "validators", t.validators) ++
