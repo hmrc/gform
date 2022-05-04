@@ -25,6 +25,7 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.traverse._
 import org.apache.pdfbox.pdmodel.PDDocument
+import uk.gov.hmrc.gform.config.FileInfoConfig
 import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorAlgebra
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
@@ -68,7 +69,12 @@ class DmsSubmissionService[F[_]](
   ): F[EnvelopeId] = {
     val formTemplateId: FormTemplateId = FormTemplateId(metadata.dmsFormId)
     for {
-      envId <- fileUpload.createEnvelope(formTemplateId, LocalDateTime.now(clock).plusDays(formExpiryDays))
+      envId <-
+        fileUpload.createEnvelope(
+          formTemplateId,
+          FileInfoConfig.allAllowedFileTypes,
+          LocalDateTime.now(clock).plusDays(formExpiryDays)
+        )
       pdfDoc = documentLoader(pdfBytes)
       pdfSummary = PdfSummary(pdfDoc.getNumberOfPages.toLong, pdfBytes)
       _ = pdfDoc.close()

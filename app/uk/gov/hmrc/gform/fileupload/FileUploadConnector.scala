@@ -23,7 +23,7 @@ import play.api.libs.json.JsObject
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.core.FutureSyntax
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AllowedFileTypes, FormTemplateId }
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.gform.wshttp.{ FutureHttpResponseSyntax, WSHttp }
 import uk.gov.hmrc.http.HttpReads.Implicits.readFromJson
@@ -39,13 +39,13 @@ class FileUploadConnector(config: FUConfig, wSHttp: WSHttp, timeProvider: TimePr
     HttpReadsInstances.throwOnFailure(HttpReadsInstances.readEitherOf(HttpReadsInstances.readRaw))
 
   val helper = new Helper(config)
-  def createEnvelope(formTemplateId: FormTemplateId, expiryDate: LocalDateTime)(implicit
-    hc: HeaderCarrier
+  def createEnvelope(formTemplateId: FormTemplateId, allowedFileTypes: AllowedFileTypes, expiryDate: LocalDateTime)(
+    implicit hc: HeaderCarrier
   ): Future[EnvelopeId] = {
     logger.info(
       s"creating envelope, formTemplateId: '${formTemplateId.value}', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}"
     )
-    val requestBody = helper.createEnvelopeRequestBody(formTemplateId, expiryDate)
+    val requestBody = helper.createEnvelopeRequestBody(formTemplateId, allowedFileTypes, expiryDate)
 
     val url = s"$baseUrl/file-upload/envelopes"
 

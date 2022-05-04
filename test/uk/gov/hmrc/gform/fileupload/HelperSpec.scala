@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.fileupload
 
 import play.api.libs.json.Json
 import uk.gov.hmrc.gform.Spec
+import uk.gov.hmrc.gform.config.FileInfoConfig
 import uk.gov.hmrc.gform.sharedmodel.ExampleData
 
 class HelperSpec extends Spec {
@@ -26,15 +27,18 @@ class HelperSpec extends Spec {
     with ExampleFileUploadData {
     val date = form.envelopeExpiryDate.map(_.ldt).get
     val helper = new Helper(config)
-    helper.createEnvelopeRequestBody(formTemplateId, date) shouldBe Json.obj(
+    val allowedFileTypes = FileInfoConfig.allAllowedFileTypes
+    helper.createEnvelopeRequestBody(formTemplateId, allowedFileTypes, date) shouldBe Json.obj(
       "constraints" -> Json.obj(
         "contentTypes" -> Json.arr(
           "application/pdf",
-          "application/xml",
           "image/jpeg",
-          "text/xml",
-          "application/vnd.ms-excel",
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "application/vnd.oasis.opendocument.spreadsheet",
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "application/vnd.oasis.opendocument.text",
+          "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+          "application/vnd.oasis.opendocument.presentation"
         ),
         "maxItems"       -> 3,
         "maxSize"        -> "20MB",

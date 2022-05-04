@@ -21,8 +21,8 @@ import org.typelevel.ci.CIString
 import pureconfig._
 import pureconfig.generic.ProductHint
 import scala.concurrent.duration.FiniteDuration
-import uk.gov.hmrc.gform.sharedmodel.config.{ ContentType, FileExtension }
-import pureconfig.generic.auto._ // It is now necessary to import `pureconfig.generic.auto._` everywhere a config is loaded or written, even though IntelliJ sees this as unused, its still required
+import uk.gov.hmrc.gform.sharedmodel.config.FileExtension
+import pureconfig.generic.auto._
 
 case class AppConfig(
   appName: String,
@@ -30,14 +30,10 @@ case class AppConfig(
   formMaxAttachmentSizeMB: Int,
   formMaxAttachments: Int,
   formMaxAttachmentTotalSizeMB: Int,
-  /*we can't override list in app-config-base:*/
-  contentTypesSeparatedByPipe: String,
   `upscan-confirmation-ttl`: FiniteDuration,
   restrictedFileExtensionList: List[String],
   submittedFormExpiryHours: Int
 ) {
-
-  def contentTypes: List[ContentType] = contentTypesSeparatedByPipe.split('|').toList.map(ContentType.apply)
 
   def restrictedFileExtensions: List[FileExtension] =
     restrictedFileExtensionList.map(v => FileExtension(CIString(v)))
@@ -60,7 +56,6 @@ object AppConfig {
       .verifyThat(_ > 0, s"'formMaxAttachmentSizeMB' must be positive, was ${appConfig.formMaxAttachmentSizeMB}")
     appConfig.formMaxAttachmentTotalSizeMB
       .verifyThat(_ > 0, s"'formMaxAttachmentTotalSizeMB' must be positive, was ${appConfig.formMaxAttachmentSizeMB}")
-    appConfig.contentTypes.length.verifyThat(_ > 0, s"'contentTypesSeparatedByPipe' is not set")
 
     appConfig
   }

@@ -26,6 +26,7 @@ import play.api.libs.functional.syntax._
 
 import scala.concurrent.ExecutionContext
 import scala.language.postfixOps
+import uk.gov.hmrc.gform.config.FileInfoConfig
 import uk.gov.hmrc.gform.core.{ FOpt, Opt, fromOptA }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Default, FormCategory, FormTemplate, FormTemplateRaw, SummarySection }
@@ -101,6 +102,14 @@ object FormTemplatesControllerRequestHandler {
     Reads.list(reads).map(JsArray.apply)
 
   def normaliseJSON(jsonValue: JsValue): JsResult[JsObject] = {
+
+    val allowedFileTypes =
+      (__ \ 'allowedFileTypes).json
+        .copyFrom(
+          (__ \ 'allowedFileTypes).json.pick orElse Reads.pure(
+            JsArray(FileInfoConfig.allAllowedFileTypes.fileExtensions.map(e => JsString(e)).toList)
+          )
+        )
 
     val drmValue =
       (__ \ 'draftRetrievalMethod \ 'value).json
@@ -325,6 +334,7 @@ object FormTemplatesControllerRequestHandler {
         transformAddAnotheQuestion andThen
         transformConfirmationQuestion andThen
         pruneDeclarationSection and
+        allowedFileTypes and
         drmValue and
         drmShowContinueOrDeletePage and
         ensureOriginalId and

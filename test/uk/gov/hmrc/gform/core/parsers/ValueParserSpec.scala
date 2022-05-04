@@ -22,6 +22,7 @@ import org.scalatest.prop.TableDrivenPropertyChecks
 import scala.language.implicitConversions
 import uk.gov.hmrc.gform.Helpers._
 import uk.gov.hmrc.gform.Spec
+import uk.gov.hmrc.gform.config.FileInfoConfig
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate._
@@ -483,7 +484,8 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       Some(toSmartString("ContinueLabel")),
       None
     ),
-    true
+    true,
+    FileInfoConfig.allAllowedFileTypes
   )
 
   val yourDetailsSection = Section.NonRepeatingPage(

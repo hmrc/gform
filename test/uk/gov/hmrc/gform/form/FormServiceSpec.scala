@@ -27,7 +27,7 @@ import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.save4later.FormPersistenceAlgebra
 import uk.gov.hmrc.gform.sharedmodel.UserId
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, Form, FormIdData, QueryParams }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AllowedFileTypes, FormTemplateId }
 import uk.gov.hmrc.http.HeaderCarrier
 
 class FormServiceSpec extends Spec {
@@ -51,8 +51,8 @@ class FormServiceSpec extends Spec {
       .returning(().pure[Id])
 
     (fileUploadAlgebra
-      .createEnvelope(_: FormTemplateId, _: LocalDateTime)(_: HeaderCarrier))
-      .expects(formTemplateId, *, *)
+      .createEnvelope(_: FormTemplateId, _: AllowedFileTypes, _: LocalDateTime)(_: HeaderCarrier))
+      .expects(formTemplateId, *, *, *)
       .returning(EnvelopeId("ev").pure[Id])
 
     (formTemplateAlgebra

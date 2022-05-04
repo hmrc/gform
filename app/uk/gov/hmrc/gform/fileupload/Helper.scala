@@ -25,18 +25,22 @@ import org.slf4j.LoggerFactory
 import play.api.http.HeaderNames.LOCATION
 import play.api.libs.json.{ JsObject, Json }
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AllowedFileTypes, FormTemplateId, JsonUtils }
 import uk.gov.hmrc.http.HttpResponse
 
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ ExecutionContext, Future }
 
-class Helper(config: FUConfig) {
+class Helper(config: FUConfig) extends JsonUtils {
 
-  def createEnvelopeRequestBody(formTemplateId: FormTemplateId, expiryDate: LocalDateTime): JsObject =
+  def createEnvelopeRequestBody(
+    formTemplateId: FormTemplateId,
+    allowedFileTypes: AllowedFileTypes,
+    expiryDate: LocalDateTime
+  ): JsObject =
     Json.obj(
       "constraints" -> Json.obj(
-        "contentTypes"   -> contentTypesJson,
+        "contentTypes"   -> Json.toJson(allowedFileTypes.contentTypes),
         "maxItems"       -> config.maxItems,
         "maxSize"        -> config.maxSize,
         "maxSizePerItem" -> config.maxSizePerItem
@@ -56,7 +60,6 @@ class Helper(config: FUConfig) {
   private lazy val EnvelopeIdExtractor = "envelopes/([\\w\\d-]+)$".r.unanchored
   private[fileupload] def envelopeExpiryDate(expiryDate: LocalDateTime) = expiryDate.format(formatter)
   private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
-  private lazy val contentTypesJson = Json.toJson(config.contentTypes)
 }
 
 trait Retrying {

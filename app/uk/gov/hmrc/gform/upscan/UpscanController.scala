@@ -34,9 +34,10 @@ import uk.gov.hmrc.crypto.{ Crypted, CryptoWithKeysFromConfig, PlainText }
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.fileupload.FileUploadFrontendAlgebra
 import uk.gov.hmrc.gform.form.FormAlgebra
+import uk.gov.hmrc.gform.formtemplate.FormTemplateService
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId, Form, FormIdData, UserData }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormComponentId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AllowedFileTypes, FormComponentId }
 
 class UpscanController(
   appConfig: AppConfig,
@@ -44,6 +45,7 @@ class UpscanController(
   formService: FormAlgebra[Future],
   upscanService: UpscanService,
   fileUploadFrontendAlgebra: FileUploadFrontendAlgebra[Future],
+  formTemplateService: FormTemplateService,
   controllerComponents: ControllerComponents
 )(implicit ec: ExecutionContext)
     extends BaseController(controllerComponents) {
@@ -74,7 +76,11 @@ class UpscanController(
     Ok(formIdDataCrypted.value).pure[Future]
   }
 
-  def callback(formComponentId: FormComponentId, envelopeId: EnvelopeId, formIdDataCrypted: Crypted): Action[JsValue] =
+  def callback(
+    formComponentId: FormComponentId,
+    envelopeId: EnvelopeId,
+    formIdDataCrypted: Crypted
+  ): Action[JsValue] =
     Action.async(parse.json) { implicit request =>
       logger.info(s"Upscan callback - received notification for $formComponentId")
 
@@ -97,34 +103,38 @@ class UpscanController(
 
       } yield upscanCallback match {
         case upscanCallbackSuccess: UpscanCallback.Success =>
-          logger.info(
-            s"Upscan callback successful, fcId: $formComponentId, reference: ${upscanCallbackSuccess.reference}, fileMimeType: ${upscanCallbackSuccess.uploadDetails.fileMimeType}, fileName: ${upscanCallbackSuccess.uploadDetails.fileName}, size: ${upscanCallbackSuccess.uploadDetails.size}"
-          )
-          val validated: Validated[FailureDetails, Unit] = validateFile(upscanCallbackSuccess.uploadDetails)
+          formTemplateService.get(formIdData.formTemplateId).flatMap { formTemplate =>
+            logger.info(
+              s"Upscan callback successful, fcId: $formComponentId, reference: ${upscanCallbackSuccess.reference}, fileMimeType: ${upscanCallbackSuccess.uploadDetails.fileMimeType}, fileName: ${upscanCallbackSuccess.uploadDetails.fileName}, size: ${upscanCallbackSuccess.uploadDetails.size}"
+            )
+            val allowedFileTypes: AllowedFileTypes = formTemplate.allowedFileTypes
+            val validated: Validated[FailureDetails, Unit] =
+              validateFile(allowedFileTypes, upscanCallbackSuccess.uploadDetails)
 
-          validated match {
-            case Invalid(failureDetails) =>
-              for {
-                _ <- upscanService.reject(
-                       UpscanCallback.Failure(
-                         upscanCallbackSuccess.reference,
-                         UpscanFileStatus.Failed,
-                         failureDetails
+            validated match {
+              case Invalid(failureDetails) =>
+                for {
+                  _ <- upscanService.reject(
+                         UpscanCallback.Failure(
+                           upscanCallbackSuccess.reference,
+                           UpscanFileStatus.Failed,
+                           failureDetails
+                         )
                        )
-                     )
-              } yield NoContent
-            case Valid(_) =>
-              for {
-                file <- upscanService.download(upscanCallbackSuccess.downloadUrl)
-                compressedFile = ImageCompressor.compressIfSupported(file, upscanCallbackSuccess)
-                _ <-
-                  fileUploadFrontendAlgebra
-                    .uploadFile(envelopeId, fileId, upscanCallbackSuccess.uploadDetails, compressedFile)
-                form <- formService.get(formIdData)
-                formUpd = setTransferred(form, formComponentId, fileId)
-                _ <- formService.updateUserData(formIdData, toUserData(formUpd))
-                _ <- upscanService.confirm(upscanCallbackSuccess)
-              } yield NoContent
+                } yield NoContent
+              case Valid(_) =>
+                for {
+                  file <- upscanService.download(upscanCallbackSuccess.downloadUrl)
+                  compressedFile = ImageCompressor.compressIfSupported(file, upscanCallbackSuccess)
+                  _ <-
+                    fileUploadFrontendAlgebra
+                      .uploadFile(envelopeId, fileId, upscanCallbackSuccess.uploadDetails, compressedFile)
+                  form <- formService.get(formIdData)
+                  formUpd = setTransferred(form, formComponentId, fileId)
+                  _ <- formService.updateUserData(formIdData, toUserData(formUpd))
+                  _ <- upscanService.confirm(upscanCallbackSuccess)
+                } yield NoContent
+            }
           }
 
         case upscanCallbackFailure: UpscanCallback.Failure =>
@@ -144,9 +154,12 @@ class UpscanController(
 
     }
 
-  private def validateFile(uploadDetails: UploadDetails): Validated[FailureDetails, Unit] = {
+  private def validateFile(
+    allowedFileTypes: AllowedFileTypes,
+    uploadDetails: UploadDetails
+  ): Validated[FailureDetails, Unit] = {
     val fileNameCheckResult = validateFileExtension(uploadDetails.fileName)
-    val fileMimeTypeResult = validateFileType(ContentType(uploadDetails.fileMimeType))
+    val fileMimeTypeResult = validateFileType(allowedFileTypes, ContentType(uploadDetails.fileMimeType))
     Valid(uploadDetails)
       .ensure(FailureDetails("EntityTooSmall", ""))(_.size =!= 0)
       .ensure(FailureDetails("EntityTooLarge", ""))(_ => validateFileSize(uploadDetails.size))
@@ -167,8 +180,8 @@ class UpscanController(
       !appConfig.restrictedFileExtensions.map(_.value).contains(CIString(v))
     }
 
-  private def validateFileType(contentType: ContentType): Boolean =
-    appConfig.contentTypes.exists(_ === contentType)
+  private def validateFileType(allowedFileTypes: AllowedFileTypes, contentType: ContentType): Boolean =
+    allowedFileTypes.contentTypes.exists(_ === contentType)
 
   private def validateFileSize(size: Long): Boolean =
     size <= (appConfig.formMaxAttachmentSizeMB * 1024 * 1024).toLong

@@ -53,7 +53,17 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                              |  },
                                              |  "displayHMRCLogo": false,
                                              |  "parentFormSubmissionRefs": [],
-                                             |  "summarySection": $summarySection
+                                             |  "summarySection": $summarySection,
+                                             |  "allowedFileTypes": [
+                                             |    "pdf",
+                                             |    "jpg",
+                                             |    "xlsx",
+                                             |    "ods",
+                                             |    "docx",
+                                             |    "odt",
+                                             |    "pptx",
+                                             |    "odp"
+                                             |  ]
                                              |}
       """.stripMargin)
 
@@ -162,7 +172,17 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                              |    "123",
                                              |    "456"
                                              |  ],
-                                             |  "summarySection": $summarySection
+                                             |  "summarySection": $summarySection,
+                                             |  "allowedFileTypes": [
+                                             |    "pdf",
+                                             |    "jpg",
+                                             |    "xlsx",
+                                             |    "ods",
+                                             |    "docx",
+                                             |    "odt",
+                                             |    "pptx",
+                                             |    "odp"
+                                             |  ]
                                              |}
       """.stripMargin)
 
@@ -291,7 +311,17 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                  |    "123",
                                  |    "456"
                                  |  ],
-                                 |  "summarySection": $summarySection
+                                 |  "summarySection": $summarySection,
+                                 |  "allowedFileTypes": [
+                                 |    "pdf",
+                                 |    "jpg",
+                                 |    "xlsx",
+                                 |    "ods",
+                                 |    "docx",
+                                 |    "odt",
+                                 |    "pptx",
+                                 |    "odp"
+                                 |  ]
                                  |}
                                 """.stripMargin)
 
@@ -420,7 +450,17 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                                                    |    "123",
                                                                    |    "456"
                                                                    |  ],
-                                                                   |  "summarySection": $summarySection
+                                                                   |  "summarySection": $summarySection,
+                                                                   |  "allowedFileTypes": [
+                                                                   |    "pdf",
+                                                                   |    "jpg",
+                                                                   |    "xlsx",
+                                                                   |    "ods",
+                                                                   |    "docx",
+                                                                   |    "odt",
+                                                                   |    "pptx",
+                                                                   |    "odp"
+                                                                   |  ]
                                                                    |}
                                 """.stripMargin)
 

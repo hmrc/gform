@@ -207,6 +207,7 @@ class ApplicationModule(context: Context)
     configModule,
     queryParameterCrypto,
     fileUploadFrontendAlgebra,
+    formTemplateModule,
     configModule.appConfig,
     mongoModule
   )

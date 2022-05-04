@@ -21,6 +21,7 @@ import uk.gov.hmrc.crypto.CryptoWithKeysFromConfig
 import uk.gov.hmrc.gform.config.{ AppConfig, ConfigModule }
 import uk.gov.hmrc.gform.fileupload.FileUploadFrontendAlgebra
 import uk.gov.hmrc.gform.form.FormService
+import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 
@@ -30,6 +31,7 @@ class UpscanModule(
   configModule: ConfigModule,
   queryParameterCrypto: CryptoWithKeysFromConfig,
   fileUploadFrontendAlgebra: FileUploadFrontendAlgebra[Future],
+  formTemplateModule: FormTemplateModule,
   appConfig: AppConfig,
   mongoModule: MongoModule
 )(implicit
@@ -52,6 +54,7 @@ class UpscanModule(
       formService,
       upscanService,
       fileUploadFrontendAlgebra,
+      formTemplateModule.formTemplateService,
       configModule.controllerComponents
     )
 
