@@ -29,8 +29,8 @@ object ImageCompressor {
 
   private val logger: Logger = LoggerFactory.getLogger(getClass)
 
-  def compressIfSupported(input: ByteString, success: UpscanCallback.Success): ByteString =
-    if (success.uploadDetails.fileMimeType === "image/jpeg") {
+  def compressIfSupported(input: ByteString, success: UpscanCallback.Success, compression: Boolean): ByteString =
+    if (success.uploadDetails.fileMimeType === "image/jpeg" && compression) {
       val compressed = compress(input)
       val from = input.size
       val to = compressed.size

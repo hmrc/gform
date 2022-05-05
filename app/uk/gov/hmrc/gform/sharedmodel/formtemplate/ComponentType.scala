@@ -318,7 +318,7 @@ case class InformationMessage(infoType: InfoType, infoText: SmartString) extends
 sealed trait FileUploadProvider
 
 object FileUploadProvider {
-  case object Upscan extends FileUploadProvider
+  final case class Upscan(compression: Boolean) extends FileUploadProvider
   case object FileUploadFrontend extends FileUploadProvider
 
   implicit val format: OFormat[FileUploadProvider] = derived.oformat()
