@@ -37,7 +37,7 @@ import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateService
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId, Form, FormIdData, UserData }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AllowedFileTypes, FormComponentId }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AllowedFileTypes, FileUpload, FileUploadProvider, FormComponentId, IsFileUpload }
 
 class UpscanController(
   appConfig: AppConfig,
@@ -123,9 +123,16 @@ class UpscanController(
                        )
                 } yield NoContent
               case Valid(_) =>
+                val maybeFileUpload: Option[FileUpload] = formTemplate.formComponents {
+                  case fc @ IsFileUpload(fileupload) if fc.id === formComponentId => fileupload
+                }.headOption
+                val compression: Boolean = maybeFileUpload.fold(false) {
+                  case FileUpload(FileUploadProvider.Upscan(true)) => true
+                  case _                                           => false
+                }
                 for {
                   file <- upscanService.download(upscanCallbackSuccess.downloadUrl)
-                  compressedFile = ImageCompressor.compressIfSupported(file, upscanCallbackSuccess)
+                  compressedFile = ImageCompressor.compressIfSupported(file, upscanCallbackSuccess, compression)
                   _ <-
                     fileUploadFrontendAlgebra
                       .uploadFile(envelopeId, fileId, upscanCallbackSuccess.uploadDetails, compressedFile)
