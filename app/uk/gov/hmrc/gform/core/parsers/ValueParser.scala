@@ -237,13 +237,21 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | FormComponentId.unanchoredIdValidation <~ ".count" ^^ { value =>
       Count(FormComponentId(value))
     }
-    | FormComponentId.unanchoredIdValidation ~ "." ~ positiveInteger <~ ".size" ^^ { case value ~ _ ~ index =>
+    | FormComponentId.unanchoredIdValidation ~ "." ~ sizeRefTypeParser <~ ".size" ^^ { case value ~ _ ~ index =>
       Size(FormComponentId(value), index)
     }
     | anyDigitConst |
     FormComponentId.unanchoredIdValidation ^^ { fn =>
       FormCtx(FormComponentId(fn))
     })
+
+  lazy val sizeRefTypeParser: Parser[SizeRefType] =
+    positiveInteger ^^ { case index =>
+      SizeRefType.IndexBased(index)
+    } |
+      SizeRefType.regex ^^ { case value =>
+        SizeRefType.ValueBased(value)
+      }
 
   lazy val addressDetail: Parser[AddressDetail] =
     "line1" ^^^ AddressDetail.Line1 |
