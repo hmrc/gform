@@ -128,7 +128,7 @@ case object RoboticsXMLGeneratorSpec extends Spec {
     val expected: Elem =
       <gform id={formId.value} dms-id={dmsId} submission-reference={submissionRef.value}>{
         removeWhitespace(expectedFields)
-      }<dateSubmitted>02/01/2019</dateSubmitted></gform>
+      }<dateSubmitted>02/01/2019</dateSubmitted><datetimeSubmitted>2019-01-02T00:00:00Z</datetimeSubmitted></gform>
 
     val dateSubmitted = Instant.from(LocalDate.of(2019, 1, 2).atStartOfDay(ZoneId.of("Europe/London")))
 
