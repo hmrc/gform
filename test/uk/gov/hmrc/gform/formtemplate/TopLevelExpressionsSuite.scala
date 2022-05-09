@@ -262,6 +262,19 @@ class TopLevelExpressionsSuite extends FunSuite {
     }
   }
 
+  test("TopLevelExpressions (14)") {
+    check(
+      Json.obj(
+        "bar" -> "hello",
+        "foo" -> "bar.sum"
+      ),
+      Map(
+        ExpressionId("bar") -> FormCtx(FormComponentId("hello")),
+        ExpressionId("foo") -> Sum(FormCtx(FormComponentId("hello")))
+      )
+    )
+  }
+
   test("TopLevelExpressions - explicit type (1)") {
     check(
       Json.obj(
