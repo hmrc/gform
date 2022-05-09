@@ -59,8 +59,19 @@ final case class Count(formComponentId: FormComponentId) extends Expr
 final case class FormCtx(formComponentId: FormComponentId) extends Expr
 final case class AddressLens(formComponentId: FormComponentId, detail: AddressDetail) extends Expr
 final case class Period(dateCtx1: Expr, dateCtx2: Expr) extends Expr
-final case class Size(formComponentId: FormComponentId, index: Int) extends Expr
+final case class Size(formComponentId: FormComponentId, index: SizeRefType) extends Expr
 final case class Typed(expr: Expr, tpe: ExplicitExprType) extends Expr
+
+sealed trait SizeRefType extends Product with Serializable
+
+object SizeRefType {
+  case class IndexBased(index: Int) extends SizeRefType
+  case class ValueBased(value: String) extends SizeRefType
+
+  val regex = "[-_a-zA-Z0-9]+".r
+
+  implicit val format: OFormat[SizeRefType] = derived.oformat()
+}
 
 sealed trait ExplicitExprType extends Product with Serializable
 object ExplicitExprType {

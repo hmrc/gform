@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
+import cats.data.NonEmptyList
 import java.time.LocalDate
 import cats.Monoid
 import cats.implicits._
@@ -540,49 +541,91 @@ object FormTemplateValidator {
   }
 
   def validateChoiceSize(sectionsList: List[Page], allExpressions: List[ExprWithPath]): ValidationResult = {
-    val fcs: List[(FormComponentId, Int)] = allExpressions
+    val fcs: List[(FormComponentId, SizeRefType)] = allExpressions
       .flatMap(_.referenceInfos)
       .collect { case SizeExpr(_, Size(formComponentId, i)) =>
         formComponentId -> i
       }
 
+    def validateOptions(
+      options: List[OptionData]
+    ): List[ValidationResult] =
+      options.collect { case OptionData.ValueBased(_, index) =>
+        index match {
+          case SizeRefType.regex(_*) => Valid
+          case _ =>
+            Invalid(
+              s"Wrong value '$index'. Only ${SizeRefType.regex.regex} characters are allowed"
+            )
+        }
+      }
+
     def validateSize(
       formComponentId: FormComponentId,
-      size: Int,
-      index: Int
-    ): ValidationResult = {
-      val maxIndex = size - 1
-      val exprStr = s"$formComponentId.$index.size"
-      if (index > maxIndex)
-        Invalid(
-          s"Expression '$exprStr' has wrong index $index. $formComponentId has only $size elements. Use index from 0 to $maxIndex"
-        )
-      else Valid
-    }
+      options: NonEmptyList[OptionData],
+      index: SizeRefType
+    ): ValidationResult =
+      index match {
+        case SizeRefType.IndexBased(index) =>
+          val size = options.size
+          val maxIndex = size - 1
+          val exprStr = s"$formComponentId.$index.size"
+          if (index > maxIndex)
+            Invalid(
+              s"Expression '$exprStr' has wrong index $index. $formComponentId has only $size elements. Use index from 0 to $maxIndex"
+            )
+          else Valid
+        case SizeRefType.ValueBased(index) =>
+          val availableOptions = options.toList.collect { case OptionData.ValueBased(_, value) =>
+            value
+          }
+          val exprStr = s"$formComponentId.$index.size"
+          if (availableOptions.contains(index)) {
+            Valid
+          } else
+            Invalid(
+              s"Expression '$exprStr' has wrong value $index. $formComponentId has these values $availableOptions"
+            )
+      }
 
     def validateSizeExpr(
       sectionsList: List[Page],
       formComponentId: FormComponentId,
-      index: Int
+      index: SizeRefType
     ): List[ValidationResult] =
       sectionsList
         .flatMap(_.fields)
         .filter(_.id === formComponentId)
         .map(fv => fv.`type`)
         .collect {
-          case (choice: Choice)                   => validateSize(formComponentId, choice.options.size, index)
-          case (revealingChoice: RevealingChoice) => validateSize(formComponentId, revealingChoice.options.size, index)
+          case (choice: Choice) =>
+            validateSize(formComponentId, choice.options, index)
+          case (revealingChoice: RevealingChoice) =>
+            validateSize(formComponentId, revealingChoice.options.map(_.choice), index)
           case _ =>
             Invalid(
               s"Form component '$formComponentId' used in '$formComponentId.$index.size' expression should be choice or revealing choice type"
             )
         }
 
-    val validations = fcs.flatMap { case (fc, index) =>
+    def allChoiceData(
+      sectionsList: List[Page]
+    ): List[OptionData] =
+      sectionsList
+        .flatMap(_.fields)
+        .map(fv => fv.`type`)
+        .collect {
+          case choice: Choice                   => choice.options.toList
+          case revealingChoice: RevealingChoice => revealingChoice.options.map(_.choice).toList
+        }
+        .flatten
+
+    val optionDataValidations = validateOptions(allChoiceData(sectionsList))
+    val sizeExprValidations = fcs.flatMap { case (fc, index) =>
       validateSizeExpr(sectionsList, fc, index)
     }
 
-    Monoid.combineAll(validations)
+    Monoid.combineAll(optionDataValidations ++ sizeExprValidations)
   }
 
   val userContextComponentType: List[FormComponent] => List[FormComponent] =
