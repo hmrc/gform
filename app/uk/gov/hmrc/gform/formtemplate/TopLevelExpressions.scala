@@ -46,6 +46,13 @@ object TopLevelExpressions {
             } else {
               Nil
             }
+          case ReferenceInfo.SumExpr(_, Sum(FormCtx(FormComponentId(value)))) =>
+            val exId = ExpressionId(value)
+            if (expressionIdLookup(exId)) {
+              List(expressionId ~> exId)
+            } else {
+              Nil
+            }
           case _ => Nil
         }
     }
