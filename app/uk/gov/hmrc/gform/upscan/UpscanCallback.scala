@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.upscan
 import java.time.Instant
 import julienrf.json.derived
 import play.api.libs.json.{ Format, JsError, JsResult, JsString, JsSuccess, JsValue, OFormat, Reads }
+import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 
 sealed trait UpscanCallback
 
@@ -84,9 +85,14 @@ object UpscanFileStatus {
 
 final case class FailureDetails(
   failureReason: String,
-  message: String
+  message: String,
+  fileMimeType: ContentType
 )
 
 object FailureDetails {
+  def apply(
+    failureReason: String,
+    message: String
+  ): FailureDetails = FailureDetails(failureReason, message, ContentType(""))
   implicit val format: OFormat[FailureDetails] = derived.oformat()
 }

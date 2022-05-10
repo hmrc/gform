@@ -173,7 +173,8 @@ class UpscanController(
       .ensure(
         FailureDetails(
           "InvalidFileType",
-          "fileName: " + uploadDetails.fileName + " - " + fileNameCheckResult + ", fileMimeType: " + uploadDetails.fileMimeType + " - " + fileMimeTypeResult
+          "fileName: " + uploadDetails.fileName + " - " + fileNameCheckResult + ", fileMimeType: " + uploadDetails.fileMimeType + " - " + fileMimeTypeResult,
+          ContentType(uploadDetails.fileMimeType)
         )
       )(_ => fileNameCheckResult && fileMimeTypeResult)
       .map(_ => ())
