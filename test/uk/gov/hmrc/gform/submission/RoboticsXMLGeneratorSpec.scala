@@ -128,12 +128,21 @@ case object RoboticsXMLGeneratorSpec extends Spec {
     val expected: Elem =
       <gform id={formId.value} dms-id={dmsId} submission-reference={submissionRef.value}>{
         removeWhitespace(expectedFields)
-      }<dateSubmitted>02/01/2019</dateSubmitted></gform>
+      }<dateSubmitted>02/01/2019</dateSubmitted><datetimeSubmitted>2019-01-02T00:00:00Z</datetimeSubmitted></gform>
 
     val dateSubmitted = Instant.from(LocalDate.of(2019, 1, 2).atStartOfDay(ZoneId.of("Europe/London")))
 
+    val dateSubmittedBST = Instant.from(LocalDate.of(2019, 6, 1).atStartOfDay(ZoneId.of("Europe/London")))
+
+    val expectedBST: Elem =
+      <gform id={formId.value} dms-id={dmsId} submission-reference={submissionRef.value}>{
+        removeWhitespace(expectedFields)
+      }<dateSubmitted>01/06/2019</dateSubmitted><datetimeSubmitted>2019-06-01T00:00:00+01:00</datetimeSubmitted></gform>
+
     RoboticsXMLGenerator
       .apply(formId, dmsId, submissionRef, objectStructure, dateSubmitted) shouldBe expected
+    RoboticsXMLGenerator
+      .apply(formId, dmsId, submissionRef, objectStructure, dateSubmittedBST) shouldBe expectedBST
   }
 
   def removeWhitespace(ns: NodeSeq): NodeSeq = ns.map {
