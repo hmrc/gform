@@ -24,7 +24,7 @@ import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 case class UpscanConfirmation(
   _id: UpscanReference,
   status: UpscanFileStatus,
-  failureDetails: FailureDetails,
+  confirmationFailure: ConfirmationFailure,
   confirmedAt: Instant
 )
 
@@ -35,4 +35,14 @@ object UpscanConfirmation {
     implicit val dtf: Format[Instant] = MongoJavatimeFormats.instantFormat
     derived.oformat()
   }
+}
+
+sealed trait ConfirmationFailure extends Product with Serializable
+
+object ConfirmationFailure {
+  case object AllOk extends ConfirmationFailure
+  case class UpscanFailure(failureDetails: FailureDetails) extends ConfirmationFailure
+  case class GformValidationFailure(validationFailure: UpscanValidationFailure) extends ConfirmationFailure
+
+  implicit val format: Format[ConfirmationFailure] = derived.oformat()
 }

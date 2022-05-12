@@ -85,14 +85,19 @@ object UpscanFileStatus {
 
 final case class FailureDetails(
   failureReason: String,
-  message: String,
-  fileMimeType: ContentType
+  message: String
 )
 
 object FailureDetails {
-  def apply(
-    failureReason: String,
-    message: String
-  ): FailureDetails = FailureDetails(failureReason, message, ContentType(""))
   implicit val format: OFormat[FailureDetails] = derived.oformat()
+}
+
+sealed trait UpscanValidationFailure extends Product with Serializable
+
+object UpscanValidationFailure {
+  case object EntityTooLarge extends UpscanValidationFailure
+  case object EntityTooSmall extends UpscanValidationFailure
+  case class InvalidFileType(errorDetail: String, fileMimeType: ContentType) extends UpscanValidationFailure
+
+  implicit val format: Format[UpscanValidationFailure] = derived.oformat()
 }

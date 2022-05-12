@@ -34,17 +34,21 @@ class UpscanService(
       UpscanConfirmation(
         upscanCallbackSuccess.reference,
         upscanCallbackSuccess.fileStatus,
-        FailureDetails("", ""),
+        ConfirmationFailure.AllOk,
         Instant.now()
       )
     )
 
-  def reject(upscanCallbackFailure: UpscanCallback.Failure): Future[UpscanConfirmation] =
+  def reject(
+    reference: UpscanReference,
+    fileStatus: UpscanFileStatus,
+    confirmationFailure: ConfirmationFailure
+  ): Future[UpscanConfirmation] =
     upscanRepository.upsert(
       UpscanConfirmation(
-        upscanCallbackFailure.reference,
-        upscanCallbackFailure.fileStatus,
-        upscanCallbackFailure.failureDetails,
+        reference,
+        fileStatus,
+        confirmationFailure,
         Instant.now()
       )
     )

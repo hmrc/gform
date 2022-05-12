@@ -108,18 +108,16 @@ class UpscanController(
               s"Upscan callback successful, fcId: $formComponentId, reference: ${upscanCallbackSuccess.reference}, fileMimeType: ${upscanCallbackSuccess.uploadDetails.fileMimeType}, fileName: ${upscanCallbackSuccess.uploadDetails.fileName}, size: ${upscanCallbackSuccess.uploadDetails.size}"
             )
             val allowedFileTypes: AllowedFileTypes = formTemplate.allowedFileTypes
-            val validated: Validated[FailureDetails, Unit] =
+            val validated: Validated[UpscanValidationFailure, Unit] =
               validateFile(allowedFileTypes, upscanCallbackSuccess.uploadDetails)
 
             validated match {
-              case Invalid(failureDetails) =>
+              case Invalid(upscanValidationFailure) =>
                 for {
                   _ <- upscanService.reject(
-                         UpscanCallback.Failure(
-                           upscanCallbackSuccess.reference,
-                           UpscanFileStatus.Failed,
-                           failureDetails
-                         )
+                         upscanCallbackSuccess.reference,
+                         UpscanFileStatus.Failed,
+                         ConfirmationFailure.GformValidationFailure(upscanValidationFailure)
                        )
                 } yield NoContent
               case Valid(_) =>
@@ -153,7 +151,11 @@ class UpscanController(
             s"Upscan callback failed, fcId: $formComponentId. Reference $ref, status: $fileStatus, failureReason: $failureReason, message: $message"
           )
           for {
-            upscanConfirmation <- upscanService.reject(upscanCallbackFailure)
+            upscanConfirmation <- upscanService.reject(
+                                    upscanCallbackFailure.reference,
+                                    upscanCallbackFailure.fileStatus,
+                                    ConfirmationFailure.UpscanFailure(upscanCallbackFailure.failureDetails)
+                                  )
           } yield NoContent
       }
 
@@ -164,15 +166,14 @@ class UpscanController(
   private def validateFile(
     allowedFileTypes: AllowedFileTypes,
     uploadDetails: UploadDetails
-  ): Validated[FailureDetails, Unit] = {
+  ): Validated[UpscanValidationFailure, Unit] = {
     val fileNameCheckResult = validateFileExtension(uploadDetails.fileName)
     val fileMimeTypeResult = validateFileType(allowedFileTypes, ContentType(uploadDetails.fileMimeType))
     Valid(uploadDetails)
-      .ensure(FailureDetails("EntityTooSmall", ""))(_.size =!= 0)
-      .ensure(FailureDetails("EntityTooLarge", ""))(_ => validateFileSize(uploadDetails.size))
+      .ensure(UpscanValidationFailure.EntityTooSmall)(_.size =!= 0)
+      .ensure(UpscanValidationFailure.EntityTooLarge)(_ => validateFileSize(uploadDetails.size))
       .ensure(
-        FailureDetails(
-          "InvalidFileType",
+        UpscanValidationFailure.InvalidFileType(
           "fileName: " + uploadDetails.fileName + " - " + fileNameCheckResult + ", fileMimeType: " + uploadDetails.fileMimeType + " - " + fileMimeTypeResult,
           ContentType(uploadDetails.fileMimeType)
         )
