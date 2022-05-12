@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.gform.time
 
-import java.time.{ LocalDateTime, ZoneId }
+import java.time.LocalDateTime
 
 class FrozenTimeProvider extends TimeProvider {
-  override def localDateTime(zoneId: ZoneId): LocalDateTime = LocalDateTime.of(2017, 1, 12, 5, 45)
+  override def localDateTime: LocalDateTime = LocalDateTime.of(2017, 1, 12, 5, 45)
 }
 
 object FrozenTimeProvider {

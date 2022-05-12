@@ -18,9 +18,7 @@ package uk.gov.hmrc.gform.time
 import java.time._
 
 class TimeProvider {
-  // by default, the local date time is the time on the server (UTC)
-  // the method provides a way to get a current local time in any time zone i.e "Europe/London"
-  def localDateTime(zoneId: ZoneId = ZoneId.of("UTC")): LocalDateTime = LocalDateTime.now(zoneId)
+  def localDateTime(): LocalDateTime = LocalDateTime.now(ZoneId.of("Europe/London"))
   def instant(): Instant = Instant.now
 }
 
