@@ -22,7 +22,7 @@ import cats.syntax.eq._
 import com.fasterxml.jackson.databind.JsonNode
 import com.typesafe.config.{ ConfigFactory, ConfigRenderOptions }
 
-import java.time.LocalDateTime
+import java.time.{ LocalDateTime, ZoneId }
 import akka.util.ByteString
 import org.apache.commons.text.StringEscapeUtils
 import org.slf4j.LoggerFactory
@@ -95,7 +95,7 @@ class TestOnlyController(
         form         <- formAlgebra.get(formId)
         submission = Submission(
                        SubmissionId(formId, form.envelopeId),
-                       LocalDateTime.now(),
+                       LocalDateTime.now(ZoneId.of("Europe/London")),
                        SubmissionRef(form.envelopeId),
                        form.envelopeId,
                        0,
@@ -134,7 +134,7 @@ class TestOnlyController(
         _ = logInfo("TestOnlyController.renderHandlebarPayload Got form")
         submission = Submission(
                        SubmissionId(formId, form.envelopeId),
-                       LocalDateTime.now(),
+                       LocalDateTime.now(ZoneId.of("Europe/London")),
                        SubmissionRef(form.envelopeId),
                        form.envelopeId,
                        0,

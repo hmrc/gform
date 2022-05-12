@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.typeclasses
 
-import java.time.{ LocalDate, LocalDateTime }
+import java.time.{ LocalDate, LocalDateTime, ZoneId }
 
 trait Now[T] {
   def apply(): T
@@ -30,10 +30,10 @@ object Now {
   }
 
   implicit object LocalDateNow extends Now[LocalDate] {
-    def apply: LocalDate = LocalDate.now()
+    def apply: LocalDate = LocalDate.now(ZoneId.of("Europe/London"))
   }
 
   implicit object LocalDateTimeNow extends Now[LocalDateTime] {
-    def apply: LocalDateTime = LocalDateTime.now()
+    def apply: LocalDateTime = LocalDateTime.now(ZoneId.of("Europe/London"))
   }
 }

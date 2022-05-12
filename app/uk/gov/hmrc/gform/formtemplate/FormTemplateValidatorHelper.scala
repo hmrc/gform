@@ -15,7 +15,7 @@
  */
 
 package uk.gov.hmrc.gform.formtemplate
-import java.time.LocalDate
+import java.time.{ LocalDate, ZoneId }
 
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
@@ -47,10 +47,14 @@ object FormTemplateValidatorHelper {
           case exactDate: ExactDateValue =>
             ConcreteDate(Year.Exact(exactDate.year), Month.Exact(exactDate.month), Day.Exact(exactDate.day))
           case nextDate: NextDateValue =>
-            ConcreteDate(Year.Exact(LocalDate.now().getYear + 1), Month.Exact(nextDate.month), Day.Exact(nextDate.day))
+            ConcreteDate(
+              Year.Exact(LocalDate.now(ZoneId.of("Europe/London")).getYear + 1),
+              Month.Exact(nextDate.month),
+              Day.Exact(nextDate.day)
+            )
           case previousDate: PreviousDateValue =>
             ConcreteDate(
-              Year.Exact(LocalDate.now().getYear - 1),
+              Year.Exact(LocalDate.now(ZoneId.of("Europe/London")).getYear - 1),
               Month.Exact(previousDate.month),
               Day.Exact(previousDate.day)
             )
