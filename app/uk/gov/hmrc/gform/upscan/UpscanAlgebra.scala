@@ -26,7 +26,11 @@ trait UpscanAlgebra[F[_]] {
   ): F[ByteString]
 
   def confirm(upscanCallbackSuccess: UpscanCallback.Success): F[UpscanConfirmation]
-  def reject(upscanCallbackFailure: UpscanCallback.Failure): F[UpscanConfirmation]
+  def reject(
+    reference: UpscanReference,
+    fileStatus: UpscanFileStatus,
+    confirmationFailure: ConfirmationFailure
+  ): F[UpscanConfirmation]
 
   def reference(upscanReference: UpscanReference): F[Option[UpscanConfirmation]]
   def deleteReference(upscanReference: UpscanReference): F[Unit]
