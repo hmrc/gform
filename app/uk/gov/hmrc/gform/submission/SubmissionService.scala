@@ -34,6 +34,7 @@ import uk.gov.hmrc.gform.submission.destinations.{ DestinationSubmissionInfo, De
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsModelTree
 import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.HeaderCarrier
+import java.time.ZoneId
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -140,7 +141,7 @@ class SubmissionService(
     noOfAttachments: Int
   ) =
     Submission(
-      submittedDate = timeProvider.localDateTime(),
+      submittedDate = timeProvider.localDateTime(ZoneId.of("Europe/London")),
       submissionRef = SubmissionRef(envelopeId),
       envelopeId = envelopeId,
       _id = SubmissionId(formId, envelopeId),
