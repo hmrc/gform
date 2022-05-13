@@ -30,7 +30,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, NotPermitted
 import uk.gov.hmrc.mongo.play.json.Codecs
 import uk.gov.hmrc.mongo.play.json.Codecs.JsonOps
 
-import java.time.LocalDate
+import java.time.{ LocalDate, ZoneId }
 import scala.concurrent.{ ExecutionContext, Future }
 
 trait FormStatisticsAlgebra[F[_]] {
@@ -71,7 +71,7 @@ class FormStatisticsService(formRepo: Repo[Form], formTemplateService: FormTempl
       and(
         equal("data.form.formTemplateId", formTemplateId.value),
         notEqual("data.form.status", Submitted.toString),
-        gte("modifiedDetails.createdAt", LocalDate.now().atStartOfDay().minusDays(30))
+        gte("modifiedDetails.createdAt", LocalDate.now(ZoneId.of("Europe/London")).atStartOfDay().minusDays(30))
       )
     )
 

@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.time
 import java.time._
 
 class TimeProvider {
-  def localDateTime(): LocalDateTime = LocalDateTime.now()
+  def localDateTime(): LocalDateTime = LocalDateTime.now(ZoneId.of("Europe/London"))
   def instant(): Instant = Instant.now
 }
 
