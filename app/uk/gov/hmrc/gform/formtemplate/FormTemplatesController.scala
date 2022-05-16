@@ -86,10 +86,6 @@ class FormTemplatesController(
         case None     => Future.failed(new NoSuchElementException(s"'$id' not found"))
       }
 
-  def getLatest(id: FormTemplateId) = formTemplateAction("getLatest", id) { _ =>
-    findLatestFormTemplate(id).asOkJson
-  }
-
   private def findLatestFormTemplate(id: FormTemplateId): Future[FormTemplate] =
     findLatestFormTemplateId(id)
       .flatMap(id =>
