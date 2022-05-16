@@ -39,7 +39,6 @@ GET           /formtemplates                                                    
 POST          /formtemplates                                                                            uk.gov.hmrc.gform.formtemplate.FormTemplatesController.upsert
 GET           /formtemplates/get-titles-with-pii/:formTemplateRawId                                     uk.gov.hmrc.gform.formtemplate.FormTemplatesController.getTitlesWithPII(formTemplateRawId: FormTemplateRawId, filters: Option[String], includeJson: Boolean)
 GET           /formtemplates/:formTemplateId                                                            uk.gov.hmrc.gform.formtemplate.FormTemplatesController.get(formTemplateId: FormTemplateId)
-GET           /formtemplates/:formTemplateId/latest                                                     uk.gov.hmrc.gform.formtemplate.FormTemplatesController.getLatest(formTemplateId: FormTemplateId)
 GET           /formtemplates/:formTemplateId/raw/sensitive                                              uk.gov.hmrc.gform.formtemplate.FormTemplatesController.getRawSensitive(formTemplateId: String)
 GET           /formtemplates/:formTemplateId/raw                                                        uk.gov.hmrc.gform.formtemplate.FormTemplatesController.getRaw(formTemplateId: FormTemplateRawId)
 DELETE        /formtemplates/:formTemplateId/sensitive                                                  uk.gov.hmrc.gform.formtemplate.FormTemplatesController.removeSensitive(formTemplateId: String)
