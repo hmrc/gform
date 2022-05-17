@@ -564,29 +564,40 @@ object FormTemplateValidator {
       formComponentId: FormComponentId,
       options: NonEmptyList[OptionData],
       index: SizeRefType
-    ): ValidationResult =
+    ): ValidationResult = {
+      val availableOptions = options.toList.collect { case OptionData.ValueBased(_, value) =>
+        value
+      }
+      val availableOptionsStr = availableOptions.mkString(", ")
+      val size = options.size
+      val maxIndex = size - 1
       index match {
         case SizeRefType.IndexBased(index) =>
-          val size = options.size
-          val maxIndex = size - 1
           val exprStr = s"$formComponentId.$index.size"
-          if (index > maxIndex)
+          if (availableOptions.nonEmpty) {
+            Invalid(
+              s"Expression '$exprStr' can't use numeric index: $index. $formComponentId has these values: $availableOptionsStr"
+            )
+          } else if (index > maxIndex)
             Invalid(
               s"Expression '$exprStr' has wrong index $index. $formComponentId has only $size elements. Use index from 0 to $maxIndex"
             )
           else Valid
         case SizeRefType.ValueBased(index) =>
-          val availableOptions = options.toList.collect { case OptionData.ValueBased(_, value) =>
-            value
-          }
           val exprStr = s"$formComponentId.$index.size"
           if (availableOptions.contains(index)) {
             Valid
-          } else
+          } else if (availableOptions.nonEmpty)
             Invalid(
-              s"Expression '$exprStr' has wrong value $index. $formComponentId has these values $availableOptions"
+              s"Expression '$exprStr' has wrong value $index. $formComponentId has these values: $availableOptionsStr"
             )
+          else {
+            Invalid(
+              s"Expression '$exprStr' can't use value index: $index. Use numeric index from 0 to $maxIndex"
+            )
+          }
       }
+    }
 
     def validateSizeExpr(
       sectionsList: List[Page],
