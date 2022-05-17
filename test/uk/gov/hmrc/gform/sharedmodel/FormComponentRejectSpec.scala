@@ -71,7 +71,10 @@ class FormComponentRejectSpec extends Spec with TableDrivenPropertyChecks {
       ("choice-options-unique-in-rc",               "Choice component options 'value's needs to be unique: hasDifferentName"),
       ("revealing-choice-options-uniformness",      "Revealing choice component has some choices with 'value' and some choices without 'value': companyName"),
       ("revealing-choice-options-unique",           "Revealing choice component choices 'value's needs to be unique: companyName"),
-      // format: on
+      ("choice-index-size-expr-with-value",         "Expression 'hasDifferentName.0.size' can't use numeric index: 0. hasDifferentName has these values: foo, bar"),
+      ("choice-value-size-expr-with-index",         "Expression 'hasDifferentName.A.size' can't use value index: A. Use numeric index from 0 to 1"),
+      ("choice-value-size-expr-wrong-value",        "Expression 'hasDifferentName.baz.size' has wrong value baz. hasDifferentName has these values: foo, bar")
+      // format: on",
     )
 
     forAll(table) { case (fileName, expectedMessage) =>
