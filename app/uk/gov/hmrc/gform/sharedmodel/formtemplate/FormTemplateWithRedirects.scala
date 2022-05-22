@@ -21,8 +21,7 @@ import play.api.libs.json.OFormat
 
 final case class FormTemplateWithRedirects(
   formTemplate: FormTemplate,
-  redirect: Option[FormTemplateId], // FormTemplateId which has formTemplate._id in its legacyIds
-  latestFormTemplate: Option[FormTemplate]
+  redirects: Option[FormTemplateId] // FormTemplateId which has formTemplate._id in its legacyIds
 )
 
 object FormTemplateWithRedirects {
