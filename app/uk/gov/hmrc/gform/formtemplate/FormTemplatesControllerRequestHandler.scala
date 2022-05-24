@@ -178,16 +178,36 @@ object FormTemplatesControllerRequestHandler {
         Json.obj()
       )
 
+    val pruneIncludeIf = (__ \ 'label \ 'includeIf).json.prune
+    val pruneValue = (__ \ 'label \ 'value).json.prune
+
     val choicesFieldUpdater: Reads[JsValue] = Reads { json =>
-      json \ "value" match {
-        case JsDefined(JsString(value)) =>
-          (__ \ 'label \ 'value).json.prune.reads(
-            Json.obj(
-              "label" -> json,
-              "value" -> value
-            )
-          )
-        case _ => JsSuccess(Json.obj("label" -> json))
+      json \ "includeIf" match {
+        case JsDefined(JsString(includeIf)) =>
+          json \ "value" match {
+            case JsDefined(JsString(value)) =>
+              pruneValue
+                .andThen(pruneIncludeIf)
+                .reads(
+                  Json.obj(
+                    "label"     -> json,
+                    "value"     -> value,
+                    "includeIf" -> includeIf
+                  )
+                )
+            case _ => pruneIncludeIf.reads(Json.obj("label" -> json, "includeIf" -> includeIf))
+          }
+        case _ =>
+          json \ "value" match {
+            case JsDefined(JsString(value)) =>
+              pruneValue.reads(
+                Json.obj(
+                  "label" -> json,
+                  "value" -> value
+                )
+              )
+            case _ => JsSuccess(Json.obj("label" -> json))
+          }
       }
     }
 

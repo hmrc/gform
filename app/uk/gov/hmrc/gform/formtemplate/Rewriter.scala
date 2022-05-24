@@ -177,14 +177,14 @@ trait Rewriter {
           .get(formComponentId)
           .fold[Either[UnexpectedState, BooleanExpr]](missingFormComponentId(formComponentId)) {
             case Choice(_, options, _, _, _, _, _, _, _, _) =>
-              val possibleValues = options.collect { case OptionData.ValueBased(_, value) =>
+              val possibleValues = options.collect { case OptionData.ValueBased(_, value, _) =>
                 value
               }.toSet
               validate(c, possibleValues, options.size, formComponentId, exprString, "Choice").map(_ => be)
             case RevealingChoice(options, _) =>
               val possibleValues = options
                 .map(_.choice)
-                .collect { case OptionData.ValueBased(_, value) =>
+                .collect { case OptionData.ValueBased(_, value, _) =>
                   value
                 }
                 .toSet
@@ -206,7 +206,7 @@ trait Rewriter {
           .get(formComponentId)
           .fold[Either[UnexpectedState, BooleanExpr]](missingFormComponentId(formComponentId)) {
             case Choice(Radio | YesNo, options, _, _, _, _, _, _, _, _) =>
-              val possibleValues = options.collect { case OptionData.ValueBased(_, value) =>
+              val possibleValues = options.collect { case OptionData.ValueBased(_, value, _) =>
                 value
               }.toSet
               validate(c, possibleValues, options.size, formComponentId, exprString, "Choice").map(_ => rewriter)
@@ -215,7 +215,7 @@ trait Rewriter {
             case RevealingChoice(options, false) =>
               val possibleValues = options
                 .map(_.choice)
-                .collect { case OptionData.ValueBased(_, value) =>
+                .collect { case OptionData.ValueBased(_, value, _) =>
                   value
                 }
                 .toSet

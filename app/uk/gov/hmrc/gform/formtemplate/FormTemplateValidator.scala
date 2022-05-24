@@ -337,7 +337,7 @@ object FormTemplateValidator {
 
   def validateChoiceNoneChoiceValue(sectionsList: List[Page]): ValidationResult = {
     def check(choice: Choice): Boolean = {
-      val values = choice.options.collect { case OptionData.ValueBased(_, v) =>
+      val values = choice.options.collect { case OptionData.ValueBased(_, v, _) =>
         v
       }
       choice.noneChoice.fold(false) {
@@ -388,14 +388,14 @@ object FormTemplateValidator {
     }
 
     def checkUnique(choice: Choice): Boolean = {
-      val values = choice.options.collect { case OptionData.ValueBased(_, value) =>
+      val values = choice.options.collect { case OptionData.ValueBased(_, value, _) =>
         value
       }
       values.size =!= values.distinct.size
     }
 
     def noComma(choice: Choice): Boolean = {
-      val values = choice.options.collect { case OptionData.ValueBased(_, value) =>
+      val values = choice.options.collect { case OptionData.ValueBased(_, value, _) =>
         value
       }
       values.size =!= 0 && values.exists(_.contains(","))
@@ -431,7 +431,7 @@ object FormTemplateValidator {
 
     def checkUnique(revealingChoice: RevealingChoice): Boolean = {
       val choices = revealingChoice.options.map(_.choice)
-      val values = choices.collect { case OptionData.ValueBased(_, value) =>
+      val values = choices.collect { case OptionData.ValueBased(_, value, _) =>
         value
       }
       values.size =!= values.distinct.size
@@ -550,7 +550,7 @@ object FormTemplateValidator {
     def validateOptions(
       options: List[OptionData]
     ): List[ValidationResult] =
-      options.collect { case OptionData.ValueBased(_, index) =>
+      options.collect { case OptionData.ValueBased(_, index, _) =>
         index match {
           case SizeRefType.regex(_*) => Valid
           case _ =>
@@ -565,7 +565,7 @@ object FormTemplateValidator {
       options: NonEmptyList[OptionData],
       index: SizeRefType
     ): ValidationResult = {
-      val availableOptions = options.toList.collect { case OptionData.ValueBased(_, value) =>
+      val availableOptions = options.toList.collect { case OptionData.ValueBased(_, value, _) =>
         value
       }
       val availableOptionsStr = availableOptions.mkString(", ")
