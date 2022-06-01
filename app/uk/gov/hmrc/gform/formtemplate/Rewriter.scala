@@ -106,18 +106,16 @@ trait Rewriter {
       formTemplate.summarySection.fields.fold(List.empty[IncludeIf])(_.toList.flatMap(_.includeIf))
 
     val choiceIncludeIfs: List[IncludeIf] = formTemplate.sections.flatMap { section =>
-      section.formComponents {
-        case IsChoice(choice) =>
-          choice.options.collect {
-            case OptionData.ValueBased(_, _, Some(includeIf)) => includeIf
-            case OptionData.IndexBased(_, Some(includeIf))    => includeIf
-          }
-        case IsRevealingChoice(revealingChoice) =>
-          revealingChoice.options.toList.map(_.choice).collect {
-            case OptionData.ValueBased(_, _, Some(includeIf)) => includeIf
-            case OptionData.IndexBased(_, Some(includeIf))    => includeIf
-          }
-      }.flatten
+      section
+        .formComponents {
+          case IsChoice(choice)                   => choice.options.toList
+          case IsRevealingChoice(revealingChoice) => revealingChoice.options.toList.map(_.choice)
+        }
+        .flatten
+        .collect {
+          case OptionData.ValueBased(_, _, Some(includeIf)) => includeIf
+          case OptionData.IndexBased(_, Some(includeIf))    => includeIf
+        }
     }
 
     val ifElses: List[IfElse] =
