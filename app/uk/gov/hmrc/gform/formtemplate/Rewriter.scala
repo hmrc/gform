@@ -304,6 +304,13 @@ trait Rewriter {
               )
             )
           )
+        case IsChoice(choice) =>
+          replaceFormComponent(formComponent).copy(
+            `type` = choice.copy(options = choice.options.map {
+              case OptionData.ValueBased(l, v, i) => OptionData.ValueBased(l, v, replaceIncludeIf(i))
+              case OptionData.IndexBased(l, i)    => OptionData.IndexBased(l, replaceIncludeIf(i))
+            })
+          )
         case otherwise => replaceFormComponent(formComponent)
       }
 
