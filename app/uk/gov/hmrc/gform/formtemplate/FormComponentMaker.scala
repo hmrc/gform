@@ -379,7 +379,8 @@ class FormComponentMaker(json: JsValue) {
     SmartString(LocalisedString(Map(LangADT.En -> stringEn, LangADT.Cy -> stringCy)), Nil)
 
   private lazy val choiceOpt: Opt[Choice] = {
-    val yesNo = NonEmptyList.of(toSmartString("Yes", "Iawn"), toSmartString("No", "Na")).map(OptionData.IndexBased(_))
+    val yesNo =
+      NonEmptyList.of(toSmartString("Yes", "Iawn"), toSmartString("No", "Na")).map(OptionData.IndexBased(_, None))
     for {
       emailVerification <- optEmailVerification
       selectionCriteria <- optSelectionCriteria

@@ -105,6 +105,19 @@ trait Rewriter {
     val summarySectionIncludeIfs: List[IncludeIf] =
       formTemplate.summarySection.fields.fold(List.empty[IncludeIf])(_.toList.flatMap(_.includeIf))
 
+    val choiceIncludeIfs: List[IncludeIf] = formTemplate.sections.flatMap { section =>
+      section
+        .formComponents {
+          case IsChoice(choice)                   => choice.options.toList
+          case IsRevealingChoice(revealingChoice) => revealingChoice.options.toList.map(_.choice)
+        }
+        .flatten
+        .collect {
+          case OptionData.ValueBased(_, _, Some(includeIf)) => includeIf
+          case OptionData.IndexBased(_, Some(includeIf))    => includeIf
+        }
+    }
+
     val ifElses: List[IfElse] =
       implicitly[LeafExpr[FormTemplate]]
         .exprs(TemplatePath.root, formTemplate)
@@ -115,7 +128,7 @@ trait Rewriter {
       case Section.RepeatingPage(page, _) => page.includeIf.toList
       case Section.AddToList(_, _, _, _, _, _, includeIf, _, pages, _, _, _, _, _, _) =>
         includeIf.toList ++ pages.toList.flatMap(_.includeIf.toList)
-    } ++ fieldsIncludeIfs ++ acknowledgementSectionIncludeIfs ++ summarySectionIncludeIfs
+    } ++ fieldsIncludeIfs ++ acknowledgementSectionIncludeIfs ++ summarySectionIncludeIfs ++ choiceIncludeIfs
 
     def validate(
       c: String,
@@ -177,14 +190,14 @@ trait Rewriter {
           .get(formComponentId)
           .fold[Either[UnexpectedState, BooleanExpr]](missingFormComponentId(formComponentId)) {
             case Choice(_, options, _, _, _, _, _, _, _, _) =>
-              val possibleValues = options.collect { case OptionData.ValueBased(_, value) =>
+              val possibleValues = options.collect { case OptionData.ValueBased(_, value, _) =>
                 value
               }.toSet
               validate(c, possibleValues, options.size, formComponentId, exprString, "Choice").map(_ => be)
             case RevealingChoice(options, _) =>
               val possibleValues = options
                 .map(_.choice)
-                .collect { case OptionData.ValueBased(_, value) =>
+                .collect { case OptionData.ValueBased(_, value, _) =>
                   value
                 }
                 .toSet
@@ -206,7 +219,7 @@ trait Rewriter {
           .get(formComponentId)
           .fold[Either[UnexpectedState, BooleanExpr]](missingFormComponentId(formComponentId)) {
             case Choice(Radio | YesNo, options, _, _, _, _, _, _, _, _) =>
-              val possibleValues = options.collect { case OptionData.ValueBased(_, value) =>
+              val possibleValues = options.collect { case OptionData.ValueBased(_, value, _) =>
                 value
               }.toSet
               validate(c, possibleValues, options.size, formComponentId, exprString, "Choice").map(_ => rewriter)
@@ -215,7 +228,7 @@ trait Rewriter {
             case RevealingChoice(options, false) =>
               val possibleValues = options
                 .map(_.choice)
-                .collect { case OptionData.ValueBased(_, value) =>
+                .collect { case OptionData.ValueBased(_, value, _) =>
                   value
                 }
                 .toSet
@@ -290,6 +303,13 @@ trait Rewriter {
                 rcElement.copy(revealingFields = rcElement.revealingFields.map(replaceFormComponent))
               )
             )
+          )
+        case IsChoice(choice) =>
+          replaceFormComponent(formComponent).copy(
+            `type` = choice.copy(options = choice.options.map {
+              case OptionData.ValueBased(l, v, i) => OptionData.ValueBased(l, v, replaceIncludeIf(i))
+              case OptionData.IndexBased(l, i)    => OptionData.IndexBased(l, replaceIncludeIf(i))
+            })
           )
         case otherwise => replaceFormComponent(formComponent)
       }

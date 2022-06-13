@@ -31,9 +31,10 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 class FormComponentSpec extends Spec {
 
   val yesNoLocalisedStrings =
-    NonEmptyList.of(toSmartString("Yes", "Iawn"), toSmartString("No", "Na")).map(OptionData.IndexBased(_))
+    NonEmptyList.of(toSmartString("Yes", "Iawn"), toSmartString("No", "Na")).map(OptionData.IndexBased(_, None))
 
-  private val gases = NonEmptyList.of("Natural gas", "Other gas").map(l => OptionData.IndexBased(toSmartString(l)))
+  private val gases =
+    NonEmptyList.of("Natural gas", "Other gas").map(l => OptionData.IndexBased(toSmartString(l), None))
 
   "FieldValue json object" should "parse as Text if it not include 'type' field" in {
     val fieldValue = toFieldValue("""|{
@@ -1653,7 +1654,7 @@ class FormComponentSpec extends Spec {
         FormComponentId("haveIncludedInvoice"),
         Choice(
           Radio,
-          NonEmptyList.of("Yes", "No", "Not sure").map(l => OptionData.IndexBased(toSmartString(l))),
+          NonEmptyList.of("Yes", "No", "Not sure").map(l => OptionData.IndexBased(toSmartString(l), None)),
           Vertical,
           List(1),
           None,

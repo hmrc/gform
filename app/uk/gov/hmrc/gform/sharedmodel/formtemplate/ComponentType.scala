@@ -176,12 +176,14 @@ sealed trait OptionData extends Product with Serializable
 object OptionData {
 
   case class IndexBased(
-    label: SmartString
+    label: SmartString,
+    includeIf: Option[IncludeIf]
   ) extends OptionData
 
   case class ValueBased(
     label: SmartString,
-    value: String
+    value: String,
+    includeIf: Option[IncludeIf]
   ) extends OptionData
 
   private val templateReads: Reads[OptionData] = {
@@ -196,8 +198,10 @@ object OptionData {
 
   implicit val leafExprs: LeafExpr[OptionData] = (path: TemplatePath, t: OptionData) =>
     t match {
-      case OptionData.IndexBased(label)    => LeafExpr(path + "label", label)
-      case OptionData.ValueBased(label, _) => LeafExpr(path + "label", label)
+      case OptionData.IndexBased(label, includeIf) =>
+        LeafExpr(path + "label", label) ++ LeafExpr(path + "includeIf", includeIf)
+      case OptionData.ValueBased(label, _, includeIf) =>
+        LeafExpr(path + "label", label) ++ LeafExpr(path + "includeIf", includeIf)
     }
 }
 
