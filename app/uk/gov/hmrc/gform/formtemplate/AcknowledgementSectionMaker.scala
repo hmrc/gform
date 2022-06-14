@@ -29,6 +29,7 @@ class AcknowledgementSectionMaker(json: JsValue) {
   val description: Option[SmartString] = (json \ "description").asOpt[SmartString]
   val shortName: Option[SmartString] = (json \ "shortName").asOpt[SmartString]
   val fields: List[FormComponent] = (json \ "fields").as[List[FormComponent]]
+  val panelTitle: Option[SmartString] = (json \ "panelTitle").asOpt[SmartString]
   val displayFeedbackLink: Boolean = (json \ "displayFeedbackLink").as[Boolean]
 
   val showReference: Opt[Boolean] = (json \ "showReference") match {
@@ -53,7 +54,8 @@ class AcknowledgementSectionMaker(json: JsValue) {
       sr,
       acknowledgementSectionPdf,
       acknowledgementSectionInstructionPdf,
-      displayFeedbackLink
+      displayFeedbackLink,
+      panelTitle
     )
 
 }

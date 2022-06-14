@@ -249,7 +249,8 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
       true,
       None,
       None,
-      true
+      true,
+      None
     )
     destinationList.declarationSection shouldBe Some(
       DeclarationSection(

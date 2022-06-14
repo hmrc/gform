@@ -93,7 +93,8 @@ trait ExampleAuthConfig extends DestinationGen {
           Some(toSmartString("It's a Acknowledgement Section Instruction Pdf footer."))
         )
       ),
-      true
+      true,
+      None
     )
 
   val decFormComponent = List(buildFormComponent("fieldInDeclarationSections", Value))
@@ -448,7 +449,8 @@ trait ExampleFormTemplate {
       true,
       None,
       None,
-      true
+      true,
+      None
     )
 
   def declarationSection =
