@@ -314,7 +314,8 @@ object Substituter {
       shortName = t.shortName(substitutions),
       fields = t.fields(substitutions),
       pdf = t.pdf(substitutions),
-      instructionPdf = t.instructionPdf(substitutions)
+      instructionPdf = t.instructionPdf(substitutions),
+      panelTitle = t.panelTitle(substitutions)
     )
 
   implicit def destinationSubstituter[A](implicit

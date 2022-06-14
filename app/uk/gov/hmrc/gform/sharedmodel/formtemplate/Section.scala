@@ -124,7 +124,8 @@ case class AcknowledgementSection(
   showReference: Boolean,
   pdf: Option[AcknowledgementSectionPdf],
   instructionPdf: Option[AcknowledgementSectionPdf],
-  displayFeedbackLink: Boolean
+  displayFeedbackLink: Boolean,
+  panelTitle: Option[SmartString]
 )
 
 object AcknowledgementSection {
@@ -143,7 +144,8 @@ object AcknowledgementSection {
       LeafExpr(path + "shortName", t.shortName) ++
       LeafExpr(path + "fields", t.fields) ++
       LeafExpr(path + "pdf", t.pdf) ++
-      LeafExpr(path + "instructionPdf", t.instructionPdf)
+      LeafExpr(path + "instructionPdf", t.instructionPdf) ++
+      LeafExpr(path + "panelTitle", t.panelTitle)
 
 }
 
