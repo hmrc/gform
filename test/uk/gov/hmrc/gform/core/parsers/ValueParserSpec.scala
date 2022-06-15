@@ -341,6 +341,12 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     res.right.value should be(TextExpression(FormTemplateCtx(FormTemplateProp.SubmissionReference)))
   }
 
+  it should "parse fileSizeLimit" in {
+    val res = ValueParser.validate("${form.fileSizeLimit}")
+
+    res.right.value should be(TextExpression(FormTemplateCtx(FormTemplateProp.FileSizeLimit)))
+  }
+
   it should "parse orElse expression" in {
     implicit def liftToFormCtx(s: String): FormCtx = FormCtx(s)
     val table = Table(
@@ -485,7 +491,8 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       None
     ),
     true,
-    FileInfoConfig.allAllowedFileTypes
+    FileInfoConfig.allAllowedFileTypes,
+    None
   )
 
   val yourDetailsSection = Section.NonRepeatingPage(

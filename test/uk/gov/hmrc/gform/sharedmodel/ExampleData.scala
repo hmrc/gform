@@ -496,6 +496,7 @@ trait ExampleFormTemplate {
     summarySection,
     true,
     FileInfoConfig.allAllowedFileTypes,
+    None,
     Some(userResearchUrl),
     None,
     None,
