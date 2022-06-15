@@ -108,8 +108,9 @@ class UpscanController(
               s"Upscan callback successful, fcId: $formComponentId, reference: ${upscanCallbackSuccess.reference}, fileMimeType: ${upscanCallbackSuccess.uploadDetails.fileMimeType}, fileName: ${upscanCallbackSuccess.uploadDetails.fileName}, size: ${upscanCallbackSuccess.uploadDetails.size}"
             )
             val allowedFileTypes: AllowedFileTypes = formTemplate.allowedFileTypes
+            val fileSizeLimit = formTemplate.fileSizeLimit.getOrElse(appConfig.formMaxAttachments)
             val validated: Validated[UpscanValidationFailure, Unit] =
-              validateFile(allowedFileTypes, upscanCallbackSuccess.uploadDetails)
+              validateFile(allowedFileTypes, fileSizeLimit, upscanCallbackSuccess.uploadDetails)
 
             validated match {
               case Invalid(upscanValidationFailure) =>
@@ -165,13 +166,14 @@ class UpscanController(
 
   private def validateFile(
     allowedFileTypes: AllowedFileTypes,
+    fileSizeLimit: Int,
     uploadDetails: UploadDetails
   ): Validated[UpscanValidationFailure, Unit] = {
     val fileNameCheckResult = validateFileExtension(uploadDetails.fileName)
     val fileMimeTypeResult = validateFileType(allowedFileTypes, ContentType(uploadDetails.fileMimeType))
     Valid(uploadDetails)
       .ensure(UpscanValidationFailure.EntityTooSmall)(_.size =!= 0)
-      .ensure(UpscanValidationFailure.EntityTooLarge)(_ => validateFileSize(uploadDetails.size))
+      .ensure(UpscanValidationFailure.EntityTooLarge)(_ => validateFileSize(fileSizeLimit, uploadDetails.size))
       .ensure(
         UpscanValidationFailure.InvalidFileType(
           "fileName: " + uploadDetails.fileName + " - " + fileNameCheckResult + ", fileMimeType: " + uploadDetails.fileMimeType + " - " + fileMimeTypeResult,
@@ -192,8 +194,8 @@ class UpscanController(
   private def validateFileType(allowedFileTypes: AllowedFileTypes, contentType: ContentType): Boolean =
     allowedFileTypes.contentTypes.exists(_ === contentType)
 
-  private def validateFileSize(size: Long): Boolean =
-    size <= (appConfig.formMaxAttachmentSizeMB * 1024 * 1024).toLong
+  private def validateFileSize(fileSizeLimit: Int, size: Long): Boolean =
+    size <= (fileSizeLimit * 1024 * 1024).toLong
 
   def reference(upscanReference: UpscanReference): Action[AnyContent] =
     Action.async { request =>

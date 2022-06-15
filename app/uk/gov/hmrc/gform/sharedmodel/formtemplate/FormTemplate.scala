@@ -45,6 +45,7 @@ case class FormTemplate(
   summarySection: SummarySection,
   displayHMRCLogo: Boolean,
   allowedFileTypes: AllowedFileTypes,
+  fileSizeLimit: Option[Int],
   userResearchUrl: Option[UserResearchUrl] = None,
   referrerConfig: Option[ReferrerConfig] = None,
   emailExpr: Option[Expr] = None,

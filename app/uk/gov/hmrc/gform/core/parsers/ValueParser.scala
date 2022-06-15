@@ -181,6 +181,9 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | "form" ~ "." ~ "id" ^^ { _ =>
       FormTemplateCtx(FormTemplateProp.Id)
     }
+    | "form" ~ "." ~ "fileSizeLimit" ^^ { _ =>
+      FormTemplateCtx(FormTemplateProp.FileSizeLimit)
+    }
     | "form" ~ "." ~ "lang" ^^ { _ =>
       LangCtx
     }

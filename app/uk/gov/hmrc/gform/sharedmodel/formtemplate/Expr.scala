@@ -205,6 +205,7 @@ sealed trait FormTemplateProp extends Product with Serializable
 object FormTemplateProp {
   case object Id extends FormTemplateProp
   case object SubmissionReference extends FormTemplateProp
+  case object FileSizeLimit extends FormTemplateProp
 
   implicit val format: OFormat[FormTemplateProp] = derived.oformat()
 }
