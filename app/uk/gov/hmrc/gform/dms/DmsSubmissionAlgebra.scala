@@ -73,7 +73,8 @@ class DmsSubmissionService[F[_]](
         fileUpload.createEnvelope(
           formTemplateId,
           FileInfoConfig.allAllowedFileTypes,
-          LocalDateTime.now(clock).plusDays(formExpiryDays)
+          LocalDateTime.now(clock).plusDays(formExpiryDays),
+          None
         )
       pdfDoc = documentLoader(pdfBytes)
       pdfSummary = PdfSummary(pdfDoc.getNumberOfPages.toLong, pdfBytes)

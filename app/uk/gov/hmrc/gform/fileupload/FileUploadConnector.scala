@@ -39,13 +39,18 @@ class FileUploadConnector(config: FUConfig, wSHttp: WSHttp, timeProvider: TimePr
     HttpReadsInstances.throwOnFailure(HttpReadsInstances.readEitherOf(HttpReadsInstances.readRaw))
 
   val helper = new Helper(config)
-  def createEnvelope(formTemplateId: FormTemplateId, allowedFileTypes: AllowedFileTypes, expiryDate: LocalDateTime)(
-    implicit hc: HeaderCarrier
+  def createEnvelope(
+    formTemplateId: FormTemplateId,
+    allowedFileTypes: AllowedFileTypes,
+    expiryDate: LocalDateTime,
+    fileSizeLimit: Option[Int]
+  )(implicit
+    hc: HeaderCarrier
   ): Future[EnvelopeId] = {
     logger.info(
       s"creating envelope, formTemplateId: '${formTemplateId.value}', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}"
     )
-    val requestBody = helper.createEnvelopeRequestBody(formTemplateId, allowedFileTypes, expiryDate)
+    val requestBody = helper.createEnvelopeRequestBody(formTemplateId, allowedFileTypes, expiryDate, fileSizeLimit)
 
     val url = s"$baseUrl/file-upload/envelopes"
 
