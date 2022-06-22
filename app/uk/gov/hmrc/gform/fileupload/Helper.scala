@@ -39,7 +39,6 @@ class Helper(config: FUConfig) extends JsonUtils {
     expiryDate: LocalDateTime,
     fileSizeLimit: Option[Int]
   ): JsObject = {
-    println(s"fileSizeLimit: ${fileSizeLimit.getOrElse(config.maxSize).toString}")
     Json.obj(
       "constraints" -> Json.obj(
         "contentTypes"   -> Json.toJson(allowedFileTypes.contentTypes),
