@@ -52,8 +52,13 @@ trait FileDownloadAlgebra[F[_]] {
 }
 
 trait FileUploadAlgebra[F[_]] {
-  def createEnvelope(formTemplateId: FormTemplateId, allowedFileTypes: AllowedFileTypes, expiryDate: LocalDateTime)(
-    implicit hc: HeaderCarrier
+  def createEnvelope(
+    formTemplateId: FormTemplateId,
+    allowedFileTypes: AllowedFileTypes,
+    expiryDate: LocalDateTime,
+    fileSizeLimit: Option[Int]
+  )(implicit
+    hc: HeaderCarrier
   ): F[EnvelopeId]
 
   def submitEnvelope(submission: Submission, summaries: PdfAndXmlSummaries, hmrcDms: HmrcDms)(implicit

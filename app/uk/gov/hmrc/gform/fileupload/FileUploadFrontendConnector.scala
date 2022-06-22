@@ -65,7 +65,7 @@ class FileUploadFrontendConnector(config: FUConfig, wSHttp: WSHttp)(implicit ex:
     val url = s"$baseUrl/file-upload/upload/envelopes/${envelopeId.value}/files/$id"
     wSHttp
       .POSTFile(url, fileName, bytes, Seq.empty[(String, String)], uploadDetails.fileMimeType)
-      .failWithNonSuccessStatusCodes(url),
+      .failWithNonSuccessStatusCodes(url)
   }
 
   private lazy val baseUrl = config.fileUploadFrontendBaseUrl

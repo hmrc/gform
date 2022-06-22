@@ -42,10 +42,15 @@ class FileUploadService(
     extends FileUploadAlgebra[Future] with FileDownloadAlgebra[Future] {
   private val logger = LoggerFactory.getLogger(getClass)
 
-  def createEnvelope(formTemplateId: FormTemplateId, allowedFileTypes: AllowedFileTypes, expiryDate: LocalDateTime)(
-    implicit hc: HeaderCarrier
+  def createEnvelope(
+    formTemplateId: FormTemplateId,
+    allowedFileTypes: AllowedFileTypes,
+    expiryDate: LocalDateTime,
+    fileSizeLimit: Option[Int]
+  )(implicit
+    hc: HeaderCarrier
   ): Future[EnvelopeId] = {
-    val f = fileUploadConnector.createEnvelope(formTemplateId, allowedFileTypes, expiryDate)
+    val f = fileUploadConnector.createEnvelope(formTemplateId, allowedFileTypes, expiryDate, fileSizeLimit)
     f map { id =>
       logger.debug(s"env-id creation: $id")
     }

@@ -127,13 +127,15 @@ class DmsSubmissionServiceSpec extends Spec {
     documentLoader: MockFunction1[Array[Byte], PDDocument],
     clock: Clock
   ) {
+
     def expectCreateEnvelope(formTemplateId: FormTemplateId, envelopeId: EnvelopeId): Fixture = {
       (fileUpload
-        .createEnvelope(_: FormTemplateId, _: AllowedFileTypes, _: LocalDateTime)(_: HeaderCarrier))
+        .createEnvelope(_: FormTemplateId, _: AllowedFileTypes, _: LocalDateTime, _: Option[Int])(_: HeaderCarrier))
         .expects(
           FormTemplateId(validSubmission.metadata.dmsFormId),
           FileInfoConfig.allAllowedFileTypes,
           fixedTime.plusDays(envelopeExpiryDays),
+          None,
           hc
         )
         .returning(envelopeId)

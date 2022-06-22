@@ -28,7 +28,7 @@ class HelperSpec extends Spec {
     val date = form.envelopeExpiryDate.map(_.ldt).get
     val helper = new Helper(config)
     val allowedFileTypes = FileInfoConfig.allAllowedFileTypes
-    helper.createEnvelopeRequestBody(formTemplateId, allowedFileTypes, date) shouldBe Json.obj(
+    helper.createEnvelopeRequestBody(formTemplateId, allowedFileTypes, date, None) shouldBe Json.obj(
       "constraints" -> Json.obj(
         "contentTypes" -> Json.arr(
           "application/pdf",

@@ -36,13 +36,14 @@ class Helper(config: FUConfig) extends JsonUtils {
   def createEnvelopeRequestBody(
     formTemplateId: FormTemplateId,
     allowedFileTypes: AllowedFileTypes,
-    expiryDate: LocalDateTime
+    expiryDate: LocalDateTime,
+    fileSizeLimit: Option[Int]
   ): JsObject =
     Json.obj(
       "constraints" -> Json.obj(
         "contentTypes"   -> Json.toJson(allowedFileTypes.contentTypes),
         "maxItems"       -> config.maxItems,
-        "maxSize"        -> config.maxSize,
+        "maxSize"        -> fileSizeLimit.getOrElse(config.maxSize).toString,
         "maxSizePerItem" -> config.maxSizePerItem
       ),
       "expiryDate" -> envelopeExpiryDate(expiryDate),
