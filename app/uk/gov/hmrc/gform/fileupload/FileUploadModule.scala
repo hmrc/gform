@@ -56,7 +56,7 @@ class FileUploadModule(
     fileUploadFrontendBaseUrl,
     ac.formExpiryDays,
     s"${ac.formMaxAttachmentTotalSizeMB}MB", //heuristic to compute max size
-    s"${ac.formMaxAttachmentSizeMB}MB",
+    ac.formMaxAttachmentSizeMB.toString,
     ac.formMaxAttachments
   )
 

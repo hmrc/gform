@@ -23,7 +23,7 @@ trait ExampleFileUploadData {
     fileUploadFrontendBaseUrl = "http://fileuploadfrontend.whatever",
     expiryDays = 30,
     maxSize = "20MB",
-    maxSizePerItem = "5MB",
+    maxSizePerItem = "5",
     maxItems = 3
   )
 }

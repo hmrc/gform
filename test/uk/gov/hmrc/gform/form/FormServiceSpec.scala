@@ -51,8 +51,8 @@ class FormServiceSpec extends Spec {
       .returning(().pure[Id])
 
     (fileUploadAlgebra
-      .createEnvelope(_: FormTemplateId, _: AllowedFileTypes, _: LocalDateTime)(_: HeaderCarrier))
-      .expects(formTemplateId, *, *, *)
+      .createEnvelope(_: FormTemplateId, _: AllowedFileTypes, _: LocalDateTime, _: Option[Int])(_: HeaderCarrier))
+      .expects(formTemplateId, *, *, *, *)
       .returning(EnvelopeId("ev").pure[Id])
 
     (formTemplateAlgebra

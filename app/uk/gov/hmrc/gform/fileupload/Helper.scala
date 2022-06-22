@@ -36,18 +36,21 @@ class Helper(config: FUConfig) extends JsonUtils {
   def createEnvelopeRequestBody(
     formTemplateId: FormTemplateId,
     allowedFileTypes: AllowedFileTypes,
-    expiryDate: LocalDateTime
-  ): JsObject =
+    expiryDate: LocalDateTime,
+    fileSizeLimit: Option[Int]
+  ): JsObject = {
+    println(s"size ${fileSizeLimit.getOrElse(config.maxSizePerItem)}")
     Json.obj(
       "constraints" -> Json.obj(
         "contentTypes"   -> Json.toJson(allowedFileTypes.contentTypes),
         "maxItems"       -> config.maxItems,
         "maxSize"        -> config.maxSize,
-        "maxSizePerItem" -> config.maxSizePerItem
+        "maxSizePerItem" -> s"${fileSizeLimit.getOrElse(config.maxSizePerItem)}MB"
       ),
       "expiryDate" -> envelopeExpiryDate(expiryDate),
       "metadata"   -> Json.obj("application" -> "gform", "formTemplateId" -> s"${formTemplateId.value}")
     )
+  }
 
   /** There must be Location header. If not this is exceptional situation!
     */
