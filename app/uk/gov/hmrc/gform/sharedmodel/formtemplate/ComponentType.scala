@@ -368,6 +368,23 @@ object Time {
   implicit val format: OFormat[Time] = derived.oformat()
 }
 
+case class MiniSummaryList(rows: List[MiniSummaryList.Row]) extends ComponentType
+
+object MiniSummaryList {
+  case class Row(
+    key: Option[SmartString],
+    value: MiniSummaryListValue,
+    includeIf: Option[IncludeIf]
+  )
+  object Row {
+    implicit val format: Format[Row] = derived.oformat()
+    implicit val leafExprs: LeafExpr[Row] = (path: TemplatePath, t: Row) =>
+      LeafExpr(path + "key", t.key) ++ LeafExpr(path + "value", t.value) ++ LeafExpr(path + "includeIf", t.includeIf)
+  }
+  implicit val format: Format[MiniSummaryList] = derived.oformat()
+
+}
+
 object ComponentType {
 
   implicit def readsNonEmptyList[T: Reads] = Reads[NonEmptyList[T]] { json =>
@@ -409,7 +426,7 @@ object ComponentType {
       case InformationMessage(_, infoText) => LeafExpr(path + "infoText", infoText)
       case FileUpload(_)                   => Nil
       case Time(_, _)                      => Nil
-
+      case MiniSummaryList(rows)           => LeafExpr(path + "rows", rows)
     }
 
 }

@@ -49,6 +49,8 @@ case object OverseasAddressRaw extends ComponentTypeRaw
 
 case object PostcodeLookupRaw extends ComponentTypeRaw
 
+case object SummaryListRaw extends ComponentTypeRaw
+
 object ComponentTypeRaw {
 
   val componentMap: Map[String, ComponentTypeRaw] =
@@ -67,6 +69,7 @@ object ComponentTypeRaw {
       "time"            -> TimeRaw,
       "overseasAddress" -> OverseasAddressRaw,
       "postcodeLookup"  -> PostcodeLookupRaw,
+      "miniSummaryList" -> SummaryListRaw,
       ""                -> TextRaw
     )
 

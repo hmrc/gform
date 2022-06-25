@@ -24,6 +24,7 @@ import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
+import MiniSummaryList._
 
 trait Rewriter {
   def rewrite(formTemplate: FormTemplate): FOpt[FormTemplate] = fromOptA(validateAndRewriteBooleanExprs(formTemplate))
@@ -118,6 +119,15 @@ trait Rewriter {
         }
     }
 
+    val miniSummaryListIncludeIfs: List[IncludeIf] = formTemplate.sections.flatMap { section =>
+      section
+        .formComponents { case IsMiniSummaryList(summaryList) => summaryList.rows }
+        .flatten
+        .collect { case Row(_, _, Some(includeIf)) =>
+          includeIf
+        }
+    }
+
     val ifElses: List[IfElse] =
       implicitly[LeafExpr[FormTemplate]]
         .exprs(TemplatePath.root, formTemplate)
@@ -128,7 +138,7 @@ trait Rewriter {
       case Section.RepeatingPage(page, _) => page.includeIf.toList
       case Section.AddToList(_, _, _, _, _, _, includeIf, _, pages, _, _, _, _, _, _) =>
         includeIf.toList ++ pages.toList.flatMap(_.includeIf.toList)
-    } ++ fieldsIncludeIfs ++ acknowledgementSectionIncludeIfs ++ summarySectionIncludeIfs ++ choiceIncludeIfs
+    } ++ fieldsIncludeIfs ++ acknowledgementSectionIncludeIfs ++ summarySectionIncludeIfs ++ choiceIncludeIfs ++ miniSummaryListIncludeIfs
 
     def validate(
       c: String,

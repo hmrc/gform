@@ -308,3 +308,17 @@ object TextExpression {
 
   implicit val equal: Eq[TextExpression] = Eq.fromUniversalEquals
 }
+
+sealed trait MiniSummaryListValue
+
+object MiniSummaryListValue {
+  case class MiniSummaryListExpr(expr: Expr) extends MiniSummaryListValue
+  case class MiniSummaryListReference(expr: FormCtx) extends MiniSummaryListValue
+  implicit val format: OFormat[MiniSummaryListValue] = derived.oformat()
+
+  implicit val leafExprs: LeafExpr[MiniSummaryListValue] = (path: TemplatePath, t: MiniSummaryListValue) =>
+    t match {
+      case MiniSummaryListExpr(exp)      => LeafExpr(path + "expr", exp)
+      case MiniSummaryListReference(exp) => LeafExpr(path + "expr", exp)
+    }
+}

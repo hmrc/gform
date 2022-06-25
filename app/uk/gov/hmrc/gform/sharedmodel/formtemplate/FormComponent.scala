@@ -137,3 +137,7 @@ object IsDate {
 object IsFileUpload {
   def unapply(fc: FormComponent): Option[FileUpload] = fc.`type`.cast[FileUpload]
 }
+
+object IsMiniSummaryList {
+  def unapply(fc: FormComponent): Option[MiniSummaryList] = fc.`type`.cast[MiniSummaryList]
+}
