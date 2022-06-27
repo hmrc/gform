@@ -929,6 +929,7 @@ object FormTemplateValidator {
     def checkComponentTypes(fields: List[FormComponent]): List[ValidationResult] =
       fields.map {
         case IsInformationMessage(_) => Valid
+        case IsMiniSummaryList(_)    => Valid
         case fc                      => Invalid(s"""Field '${fc.id}' is not Info field. All fields in 'summarySection' must be Info type.""")
       }
 
