@@ -27,7 +27,7 @@ import cats.syntax.option._
 import cats.syntax.traverse._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.Opt
-import uk.gov.hmrc.gform.core.parsers.{ BasicParsers, FormatParser, LabelSizeParser, OverseasAddressParser, PresentationHintParser, ValueParser }
+import uk.gov.hmrc.gform.core.parsers.{ BasicParsers, FormatParser, LabelSizeParser, OverseasAddressParser, PresentationHintParser, SummaryListParser, ValueParser }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils._
@@ -170,6 +170,22 @@ class FormComponentMaker(json: JsValue) {
 
   lazy val optCountryLookup: Option[Boolean] = (json \ "countryLookup").asOpt[String].map(_.toBoolean)
 
+  private def getRow(json: JsValue): Opt[MiniSummaryList.Row] =
+    for {
+      key       <- toOpt((json \ "key").validateOpt[SmartString], "/key")
+      value     <- toOpt((json \ "value").validate[String], "/value").flatMap(SummaryListParser.validate)
+      includeIf <- toOpt((json \ "includeIf").validateOpt[IncludeIf], "/includeIf")
+
+    } yield MiniSummaryList.Row(key, value, includeIf)
+
+  lazy val rows: Opt[List[MiniSummaryList.Row]] =
+    for {
+      jsValues <- toOpt((json \ "rows").validate[List[JsValue]], "/rows")
+      rs       <- jsValues.map(getRow).sequence
+    } yield rs
+
+  lazy val summaryListOpt: Opt[MiniSummaryList] = rows.map(rs => MiniSummaryList(rs))
+
   def optFieldValue(): Opt[FormComponent] =
     for {
       presHint    <- optMaybePresentationHintExpr
@@ -260,6 +276,7 @@ class FormComponentMaker(json: JsValue) {
     case Some(TimeRaw)            => timeOpt
     case Some(OverseasAddressRaw) => overseasAddressOpt
     case Some(PostcodeLookupRaw)  => postcodeLookupOpt
+    case Some(SummaryListRaw)     => summaryListOpt
   }
 
   lazy val textOpt: Opt[ComponentType] = {

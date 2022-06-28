@@ -712,6 +712,8 @@ object FormTemplateValidator {
     case Time(_, _)                  => Valid
     case OverseasAddress(_, _, _, _) => Valid
     case PostcodeLookup              => Valid
+    // TODO: GFORMS-1720 proper validation here (maybe HasExpr?)
+    case MiniSummaryList(_) => Valid
   }
 
   def validateForwardReference(sections: List[Section]): ValidationResult = {
@@ -927,6 +929,7 @@ object FormTemplateValidator {
     def checkComponentTypes(fields: List[FormComponent]): List[ValidationResult] =
       fields.map {
         case IsInformationMessage(_) => Valid
+        case IsMiniSummaryList(_)    => Valid
         case fc                      => Invalid(s"""Field '${fc.id}' is not Info field. All fields in 'summarySection' must be Info type.""")
       }
 

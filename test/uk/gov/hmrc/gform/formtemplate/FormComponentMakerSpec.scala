@@ -22,7 +22,8 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.gform.Helpers.toSmartString
 import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ CalendarDate, FormatExpr, Medium, RoundingMode, Text, TextArea, TextFormat, TextWithRestrictions, Value }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.sharedmodel._
 
 class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemplateSupport {
 
@@ -339,4 +340,61 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
     )
   }
 
+  it should "parse summaryList" in {
+    val summaryListJson = Json.parse("""
+                                       |{
+                                       |          "id": "bankDetailsConfirmedInfo",
+                                       |          "type": "miniSummaryList",
+                                       |          "label": "summaryListLabel",
+                                       |          "rows": [
+                                       |            {
+                                       |              "includeIf": "${2 = 3}",
+                                       |              "key": "Sort Code",
+                                       |              "value": "sortCode"
+                                       |            },
+                                       |            {
+                                       |              "includeIf": "${15 = 11}",
+                                       |              "value": "${2 + 3}"
+                                       |            }
+                                       |          ]
+                                       |        }
+                                       |""".stripMargin)
+    val formComponentMaker = new FormComponentMaker(summaryListJson)
+    val result = formComponentMaker.optFieldValue()
+
+    result shouldBe Right(
+      FormComponent(
+        FormComponentId("bankDetailsConfirmedInfo"),
+        MiniSummaryList(
+          List(
+            MiniSummaryList.Row(
+              Some(SmartString(LocalisedString(Map(LangADT.En -> "Sort Code")), List())),
+              MiniSummaryListValue.Reference(FormCtx(FormComponentId("sortCode"))),
+              Some(IncludeIf(Equals(Constant("2"), Constant("3"))))
+            ),
+            MiniSummaryList.Row(
+              None,
+              MiniSummaryListValue.AnyExpr(Add(Constant("2"), Constant("3"))),
+              Some(IncludeIf(Equals(Constant("15"), Constant("11"))))
+            )
+          )
+        ),
+        SmartString(LocalisedString(Map(LangADT.En -> "summaryListLabel")), List()),
+        None,
+        None,
+        None,
+        None,
+        true,
+        true,
+        true,
+        false,
+        false,
+        None,
+        None,
+        List(),
+        None,
+        None
+      )
+    )
+  }
 }

@@ -108,6 +108,21 @@ object Substituter {
       hint = t.hint(substitutions)
     )
 
+  implicit def miniSummaryListRowSubstituter[A](implicit
+    ev: Substituter[A, Expr],
+    ev2: Substituter[A, BooleanExpr]
+  ): Substituter[A, MiniSummaryList.Row] = (substitutions, t) =>
+    t match {
+      case MiniSummaryList.Row(key, MiniSummaryListValue.AnyExpr(exp), includeIf) =>
+        MiniSummaryList.Row(
+          key(substitutions),
+          MiniSummaryListValue.AnyExpr(exp(substitutions)),
+          includeIf(substitutions)
+        )
+      case MiniSummaryList.Row(key, r, includeIf) =>
+        MiniSummaryList.Row(key.map(_(substitutions)), r, includeIf(substitutions))
+    }
+
   implicit def componentTypeSubstituter[A](implicit
     ev: Substituter[A, Expr],
     ev2: Substituter[A, BooleanExpr]
@@ -183,9 +198,10 @@ object Substituter {
 
       case InformationMessage(infoType, infoText) =>
         InformationMessage(infoType, infoText(substitutions))
-      case f @ FileUpload(_) => f
-      case t @ Time(_, _)    => t
-      case PostcodeLookup    => PostcodeLookup
+      case f @ FileUpload(_)     => f
+      case t @ Time(_, _)        => t
+      case PostcodeLookup        => PostcodeLookup
+      case MiniSummaryList(rows) => MiniSummaryList(rows(substitutions))
     }
 
   implicit def formComponentValidatorSubstituter[A](implicit
