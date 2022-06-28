@@ -19,12 +19,11 @@ package uk.gov.hmrc.gform.core.parsers
 import uk.gov.hmrc.gform.core.Opt
 
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormCtx, MiniSummaryListValue }
-import MiniSummaryListValue._
 
 trait SummaryListParser extends ValueParser {
   val parser: Parser[MiniSummaryListValue] = FormComponentId.unanchoredIdValidation ^^ { field =>
-    MiniSummaryListReference(FormCtx(FormComponentId(field)))
-  } | expr ^^ { field => MiniSummaryListExpr(field.rewrite) }
+    MiniSummaryListValue.MiniSummaryListReference(FormCtx(FormComponentId(field)))
+  } | expr ^^ { field => MiniSummaryListValue.MiniSummaryListExpr(field.rewrite) }
 }
 
 object SummaryListParser extends SummaryListParser with ParsingHelper {

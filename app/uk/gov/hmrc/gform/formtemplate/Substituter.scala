@@ -20,8 +20,6 @@ import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.sharedmodel.SmartString
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
-import MiniSummaryList._
-import MiniSummaryListValue._
 
 trait Substituter[A, T] {
   def substitute(substitutions: A, t: T): T
@@ -113,11 +111,16 @@ object Substituter {
   implicit def miniSummaryListRowSubstituter[A](implicit
     ev: Substituter[A, Expr],
     ev2: Substituter[A, BooleanExpr]
-  ): Substituter[A, Row] = (substitutions, t) =>
+  ): Substituter[A, MiniSummaryList.Row] = (substitutions, t) =>
     t match {
-      case Row(key, MiniSummaryListExpr(exp), includeIf) =>
-        Row(key(substitutions), MiniSummaryListExpr(exp(substitutions)), includeIf(substitutions))
-      case Row(key, r, includeIf) => Row(key.map(_(substitutions)), r, includeIf(substitutions))
+      case MiniSummaryList.Row(key, MiniSummaryListValue.MiniSummaryListExpr(exp), includeIf) =>
+        MiniSummaryList.Row(
+          key(substitutions),
+          MiniSummaryListValue.MiniSummaryListExpr(exp(substitutions)),
+          includeIf(substitutions)
+        )
+      case MiniSummaryList.Row(key, r, includeIf) =>
+        MiniSummaryList.Row(key.map(_(substitutions)), r, includeIf(substitutions))
     }
 
   implicit def componentTypeSubstituter[A](implicit

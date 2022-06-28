@@ -24,7 +24,6 @@ import uk.gov.hmrc.gform.core.Opt
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel._
-import MiniSummaryListValue._
 
 class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemplateSupport {
 
@@ -363,20 +362,19 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
     val formComponentMaker = new FormComponentMaker(summaryListJson)
     val result = formComponentMaker.optFieldValue()
 
-    import MiniSummaryList._
     result shouldBe Right(
       FormComponent(
         FormComponentId("bankDetailsConfirmedInfo"),
         MiniSummaryList(
           List(
-            Row(
+            MiniSummaryList.Row(
               Some(SmartString(LocalisedString(Map(LangADT.En -> "Sort Code")), List())),
-              MiniSummaryListReference(FormCtx(FormComponentId("sortCode"))),
+              MiniSummaryListValue.MiniSummaryListReference(FormCtx(FormComponentId("sortCode"))),
               Some(IncludeIf(Equals(Constant("2"), Constant("3"))))
             ),
-            Row(
+            MiniSummaryList.Row(
               None,
-              MiniSummaryListExpr(Add(Constant("2"), Constant("3"))),
+              MiniSummaryListValue.MiniSummaryListExpr(Add(Constant("2"), Constant("3"))),
               Some(IncludeIf(Equals(Constant("15"), Constant("11"))))
             )
           )

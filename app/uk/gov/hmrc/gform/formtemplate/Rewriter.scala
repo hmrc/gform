@@ -24,7 +24,6 @@ import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
-import MiniSummaryList._
 
 trait Rewriter {
   def rewrite(formTemplate: FormTemplate): FOpt[FormTemplate] = fromOptA(validateAndRewriteBooleanExprs(formTemplate))
@@ -123,7 +122,7 @@ trait Rewriter {
       section
         .formComponents { case IsMiniSummaryList(summaryList) => summaryList.rows }
         .flatten
-        .collect { case Row(_, _, Some(includeIf)) =>
+        .collect { case MiniSummaryList.Row(_, _, Some(includeIf)) =>
           includeIf
         }
     }
