@@ -113,10 +113,10 @@ object Substituter {
     ev2: Substituter[A, BooleanExpr]
   ): Substituter[A, MiniSummaryList.Row] = (substitutions, t) =>
     t match {
-      case MiniSummaryList.Row(key, MiniSummaryListValue.MiniSummaryListExpr(exp), includeIf) =>
+      case MiniSummaryList.Row(key, MiniSummaryListValue.AnyExpr(exp), includeIf) =>
         MiniSummaryList.Row(
           key(substitutions),
-          MiniSummaryListValue.MiniSummaryListExpr(exp(substitutions)),
+          MiniSummaryListValue.AnyExpr(exp(substitutions)),
           includeIf(substitutions)
         )
       case MiniSummaryList.Row(key, r, includeIf) =>

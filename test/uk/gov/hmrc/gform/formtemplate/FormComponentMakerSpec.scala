@@ -369,12 +369,12 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
           List(
             MiniSummaryList.Row(
               Some(SmartString(LocalisedString(Map(LangADT.En -> "Sort Code")), List())),
-              MiniSummaryListValue.MiniSummaryListReference(FormCtx(FormComponentId("sortCode"))),
+              MiniSummaryListValue.Reference(FormCtx(FormComponentId("sortCode"))),
               Some(IncludeIf(Equals(Constant("2"), Constant("3"))))
             ),
             MiniSummaryList.Row(
               None,
-              MiniSummaryListValue.MiniSummaryListExpr(Add(Constant("2"), Constant("3"))),
+              MiniSummaryListValue.AnyExpr(Add(Constant("2"), Constant("3"))),
               Some(IncludeIf(Equals(Constant("15"), Constant("11"))))
             )
           )

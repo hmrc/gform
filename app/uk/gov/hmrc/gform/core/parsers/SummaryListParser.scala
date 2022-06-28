@@ -22,8 +22,8 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormCtx, Mi
 
 trait SummaryListParser extends ValueParser {
   val parser: Parser[MiniSummaryListValue] = FormComponentId.unanchoredIdValidation ^^ { field =>
-    MiniSummaryListValue.MiniSummaryListReference(FormCtx(FormComponentId(field)))
-  } | expr ^^ { field => MiniSummaryListValue.MiniSummaryListExpr(field.rewrite) }
+    MiniSummaryListValue.Reference(FormCtx(FormComponentId(field)))
+  } | expr ^^ { field => MiniSummaryListValue.AnyExpr(field.rewrite) }
 }
 
 object SummaryListParser extends SummaryListParser with ParsingHelper {
