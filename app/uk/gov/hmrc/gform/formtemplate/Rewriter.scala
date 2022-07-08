@@ -73,7 +73,7 @@ trait Rewriter {
     }
 
     val fcLookup: Map[FormComponentId, ComponentType] =
-      formTemplate.sections.foldLeft(fcLookupDeclaration) {
+      formTemplate.formKind.allSections.foldLeft(fcLookupDeclaration) {
         case (acc, Section.NonRepeatingPage(page)) => acc ++ lookupFromPage(page.fields)
         case (acc, Section.RepeatingPage(page, _)) => acc ++ lookupFromPage(page.fields)
         case (acc, Section.AddToList(_, _, _, _, _, _, _, _, pages, _, _, _, _, _, _)) =>
@@ -86,12 +86,13 @@ trait Rewriter {
       case dp: Destinations.DestinationPrint => Nil
     }
 
-    def traverseFormComponents[A](f: FormComponent => List[A]): List[A] = formTemplate.sections.flatMap {
-      case Section.NonRepeatingPage(page) => page.fields.flatMap(f)
-      case Section.RepeatingPage(page, _) => page.fields.flatMap(f)
-      case Section.AddToList(_, _, _, _, _, _, _, _, pages, _, _, _, _, _, _) =>
-        pages.toList.flatMap(page => page.fields.flatMap(f))
-    }
+    def traverseFormComponents[A](f: FormComponent => List[A]): List[A] =
+      formTemplate.formKind.allSections.flatMap {
+        case Section.NonRepeatingPage(page) => page.fields.flatMap(f)
+        case Section.RepeatingPage(page, _) => page.fields.flatMap(f)
+        case Section.AddToList(_, _, _, _, _, _, _, _, pages, _, _, _, _, _, _) =>
+          pages.toList.flatMap(page => page.fields.flatMap(f))
+      }
 
     val validIfs: List[ValidIf] = traverseFormComponents(formComponentValidIf) ++ validIfsDeclaration
 
@@ -105,7 +106,7 @@ trait Rewriter {
     val summarySectionIncludeIfs: List[IncludeIf] =
       formTemplate.summarySection.fields.fold(List.empty[IncludeIf])(_.toList.flatMap(_.includeIf))
 
-    val choiceIncludeIfs: List[IncludeIf] = formTemplate.sections.flatMap { section =>
+    val choiceIncludeIfs: List[IncludeIf] = formTemplate.formKind.allSections.flatMap { section =>
       section
         .formComponents {
           case IsChoice(choice)                   => choice.options.toList
@@ -118,7 +119,7 @@ trait Rewriter {
         }
     }
 
-    val miniSummaryListIncludeIfs: List[IncludeIf] = formTemplate.sections.flatMap { section =>
+    val miniSummaryListIncludeIfs: List[IncludeIf] = formTemplate.formKind.allSections.flatMap { section =>
       section
         .formComponents { case IsMiniSummaryList(summaryList) => summaryList.rows }
         .flatten
@@ -132,7 +133,7 @@ trait Rewriter {
         .exprs(TemplatePath.root, formTemplate)
         .flatMap(_.expr.ifElses)
 
-    val includeIfs: List[IncludeIf] = formTemplate.sections.flatMap {
+    val includeIfs: List[IncludeIf] = formTemplate.formKind.allSections.flatMap {
       case Section.NonRepeatingPage(page) => page.includeIf.toList
       case Section.RepeatingPage(page, _) => page.includeIf.toList
       case Section.AddToList(_, _, _, _, _, _, includeIf, _, pages, _, _, _, _, _, _) =>
@@ -352,8 +353,8 @@ trait Rewriter {
         case dp: Destinations.DestinationPrint => dp
       }
 
-      formTemplate.copy(
-        sections = formTemplate.sections.map {
+      def updateSection(section: Section): Section =
+        section match {
           case s: Section.NonRepeatingPage =>
             s.copy(
               page = s.page.copy(includeIf = replaceIncludeIf(s.page.includeIf), fields = replaceFields(s.page.fields))
@@ -369,9 +370,28 @@ trait Rewriter {
                 page.copy(includeIf = replaceIncludeIf(page.includeIf), fields = replaceFields(page.fields))
               )
             )
-        },
-        summarySection = replaceSummarySection(formTemplate.summarySection),
-        destinations = replaceDestinations(formTemplate.destinations)
+        }
+
+      formTemplate.copy(
+        formKind = formTemplate.formKind.fold[FormKind](classic =>
+          classic.copy(
+            sections = classic.sections.map(updateSection)
+          )
+        )(taskList =>
+          taskList.copy(
+            sections = taskList.sections.map(taskSection =>
+              taskSection.copy(
+                tasks = taskSection.tasks.map(task =>
+                  task.copy(
+                    sections = task.sections.map(updateSection)
+                  )
+                )
+              )
+            )
+          )
+        ),
+        destinations = replaceDestinations(formTemplate.destinations),
+        summarySection = replaceSummarySection(formTemplate.summarySection)
       )
     }
   }

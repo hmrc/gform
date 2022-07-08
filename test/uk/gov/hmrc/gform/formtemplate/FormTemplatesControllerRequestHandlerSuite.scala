@@ -244,7 +244,7 @@ class FormTemplatesControllerRequestHandlerSuite extends FunSuite {
          |]""".stripMargin
 
     val JsSuccess(normalised, _) = FormTemplatesControllerRequestHandler.normaliseJSON(json)
-    normalised \ "sections" match {
+    normalised \ "formKind" \ "sections" match {
       case JsDefined(sections) => assertEquals(Json.prettyPrint(sections), Json.prettyPrint(Json.parse(expected)))
       case otherwise           => fail(s"No sections field present in: $normalised")
     }
@@ -381,7 +381,7 @@ class FormTemplatesControllerRequestHandlerSuite extends FunSuite {
         |]""".stripMargin
 
     val JsSuccess(normalised, _) = FormTemplatesControllerRequestHandler.normaliseJSON(json)
-    normalised \ "sections" match {
+    normalised \ "formKind" \ "sections" match {
       case JsDefined(addAnotherQuestion) =>
         assertEquals(Json.prettyPrint(addAnotherQuestion), Json.prettyPrint(Json.parse(expected)))
       case otherwise => fail(s"No sections field present in: $normalised")

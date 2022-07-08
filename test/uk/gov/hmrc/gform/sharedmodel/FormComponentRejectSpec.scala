@@ -43,8 +43,8 @@ class FormComponentRejectSpec extends Spec with TableDrivenPropertyChecks {
     )
 
     forAll(table) { case (fileName, expectedMessage) =>
-      val source = readFile(fileName)
-      formtemplate.verifyReadFailure[FormTemplate](expectedMessage, source)
+      val result = readAsFormTemplate(fileName)
+      result should beJsError(expectedMessage)
     }
   }
 

@@ -53,18 +53,21 @@
     "pptx",
     "odp"
   ],
-  "sections": [
-    {
-      "title": "Page A",
-      "fields": [
-        {
-          "id": "fieldA",
-          "label": "Field A",
-          "format": "text"
-        }
-      ]
-    }
-  ],
+  "formKind": {
+    "type": "classic",
+    "sections": [
+      {
+        "title": "Page A",
+        "fields": [
+          {
+            "id": "fieldA",
+            "label": "Field A",
+            "format": "text"
+          }
+        ]
+      }
+    ]
+  },
   "summarySection": {
     "title": {
       "en": "Check your answers",

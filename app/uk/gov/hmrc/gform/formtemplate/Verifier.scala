@@ -27,7 +27,7 @@ trait Verifier {
     formTemplate: FormTemplate
   )(expressionsContext: ExprSubstitutions)(implicit ec: ExecutionContext): FOpt[Unit] = {
 
-    val sections = formTemplate.sections
+    val sections = formTemplate.formKind.allSections
 
     val pages = SectionHelper.pages(sections)
 
@@ -88,15 +88,34 @@ trait Verifier {
 
   }
 
+  def updateSection(section: Section): Section =
+    section match {
+      case p: Section.NonRepeatingPage => p.copy(page = mkSpecimen(p.page))
+      case p: Section.RepeatingPage    => p.copy(page = mkSpecimen(p.page))
+      case l: Section.AddToList        => l.copy(pages = l.pages.map(mkSpecimen))
+    }
+
   def mkSpecimen(formTemplate: FormTemplate): FormTemplate =
     formTemplate.copy(
       _id = FormTemplateId("specimen-" + formTemplate._id.value),
       authConfig = Anonymous,
-      sections = formTemplate.sections.map {
-        case p: Section.NonRepeatingPage => p.copy(page = mkSpecimen(p.page))
-        case p: Section.RepeatingPage    => p.copy(page = mkSpecimen(p.page))
-        case l: Section.AddToList        => l.copy(pages = l.pages.map(mkSpecimen))
-      }
+      formKind = formTemplate.formKind.fold[FormKind](classic =>
+        classic.copy(
+          sections = classic.sections.map(updateSection)
+        )
+      )(taskList =>
+        taskList.copy(
+          sections = taskList.sections.map(taskSection =>
+            taskSection.copy(
+              tasks = taskSection.tasks.map(task =>
+                task.copy(
+                  sections = task.sections.map(updateSection)
+                )
+              )
+            )
+          )
+        )
+      )
     )
 
   private def mkSpecimen(page: Page): Page =

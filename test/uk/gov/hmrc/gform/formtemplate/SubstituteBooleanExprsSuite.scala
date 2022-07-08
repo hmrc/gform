@@ -72,14 +72,14 @@ class SubstituteBooleanExprsSuite extends FunSuite with FormTemplateSupport {
 
     toFormTemplateAndSubstitutions(jsonStr) { (formTemplate, substitutions) =>
       val res = substituteBooleanEpxrs.substituteBooleanExprs(formTemplate, substitutions)
-      val sectionA = res.sections(0)
+      val sectionA = res.formKind.allSections(0)
       sectionA match {
         case Section.NonRepeatingPage(page) =>
           val expectedBooleanExpr = IncludeIf(GreaterThan(FormCtx("AAA"), Constant("0")))
           assertEquals(page.includeIf, Some(expectedBooleanExpr))
         case unexpectedSection => fail(s"Unexpected Section $unexpectedSection")
       }
-      val sectionB = res.sections(1)
+      val sectionB = res.formKind.allSections(1)
       sectionB match {
         case Section.NonRepeatingPage(page) =>
           val expectedBooleanExpr =

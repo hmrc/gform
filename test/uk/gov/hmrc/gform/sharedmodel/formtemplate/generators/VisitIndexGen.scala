@@ -20,7 +20,7 @@ import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.form.VisitIndex
 
 trait VisitIndexGen {
-  def visitIndexGen = Gen.containerOf[Set, Int](Gen.posNum[Int]).map(VisitIndex(_))
+  def visitIndexGen = Gen.containerOf[Set, Int](Gen.posNum[Int]).map(VisitIndex.Classic(_))
 }
 
 object VisitIndexGen extends VisitIndexGen

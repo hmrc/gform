@@ -64,7 +64,7 @@ class SubstituteExpressionsSuite extends FunSuite with FormTemplateSupport {
 
     val substituted = substituteExpressions.substituteExpressions(formTemplate, substitutions)
 
-    assertEquals(substituted.sections, formTemplateExpected.sections)
+    assertEquals(substituted.formKind, formTemplateExpected.formKind)
   }
 
   test("SubstituteExpressions should allow alias DateExpr fragments") {
@@ -113,7 +113,7 @@ class SubstituteExpressionsSuite extends FunSuite with FormTemplateSupport {
 
     toFormTemplateAndSubstitutions(jsonStr) { (formTemplate, substitutions) =>
       val res = substituteExpressions.substituteExpressions(formTemplate, substitutions)
-      val section = res.sections(0)
+      val section = res.formKind.allSections(0)
       section match {
         case Section.NonRepeatingPage(page) =>
           val expectedDateCtx = DateCtx(
@@ -183,7 +183,7 @@ class SubstituteExpressionsSuite extends FunSuite with FormTemplateSupport {
 
     toFormTemplateAndSubstitutions(jsonStr) { (formTemplate, substitutions) =>
       val res = substituteExpressions.substituteExpressions(formTemplate, substitutions)
-      val section = res.sections(0)
+      val section = res.formKind.allSections(0)
       section match {
         case Section.NonRepeatingPage(page) =>
           val expectedAdd = Add(Add(FormCtx("a"), Add(FormCtx("foo"), FormCtx("bar"))), FormCtx("c"))

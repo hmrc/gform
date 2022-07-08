@@ -33,7 +33,8 @@ class NormaliseJsonSuite extends FunSuite {
   val table: List[String] = List(
     "revealing-choice-include-revealing-choice",
     "revealing-choice-with-yesno-choice",
-    "choice-in-declaration-section"
+    "choice-in-declaration-section",
+    "tasklist-choice"
   )
 
   table.foreach { case fileName =>

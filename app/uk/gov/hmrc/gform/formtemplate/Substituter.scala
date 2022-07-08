@@ -277,6 +277,34 @@ object Substituter {
       )
     }
 
+  implicit def taskSubstituter[A](implicit
+    ev: Substituter[A, Expr],
+    ev2: Substituter[A, BooleanExpr]
+  ): Substituter[A, Task] = (substitutions, t) =>
+    t.copy(
+      title = t.title(substitutions),
+      sections = t.sections(substitutions)
+    )
+
+  implicit def taskSectionSubstituter[A](implicit
+    ev: Substituter[A, Expr],
+    ev2: Substituter[A, BooleanExpr]
+  ): Substituter[A, TaskSection] = (substitutions, t) =>
+    t.copy(
+      title = t.title(substitutions),
+      tasks = t.tasks(substitutions)
+    )
+
+  implicit def formKindSubstituter[A](implicit
+    ev: Substituter[A, Expr],
+    ev2: Substituter[A, BooleanExpr]
+  ): Substituter[A, FormKind] = (substitutions, t) =>
+    t.fold[FormKind] { taskList =>
+      taskList.copy(sections = taskList.sections(substitutions))
+    } { classic =>
+      classic.copy(sections = classic.sections(substitutions))
+    }
+
   implicit def addToListLimitSubstituter[A](implicit
     ev: Substituter[A, Expr],
     ev2: Substituter[A, BooleanExpr]
@@ -412,7 +440,7 @@ object Substituter {
   ): Substituter[A, FormTemplate] = (substitutions, t) =>
     t.copy(
       destinations = t.destinations(substitutions),
-      sections = t.sections(substitutions),
+      formKind = t.formKind(substitutions),
       summarySection = t.summarySection(substitutions),
       emailParameters = t.emailParameters(substitutions)
     )

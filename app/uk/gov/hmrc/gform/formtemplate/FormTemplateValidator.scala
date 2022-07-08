@@ -136,13 +136,13 @@ object FormTemplateValidator {
   def validateInvalidReferences(formTemplate: FormTemplate): ValidationResult = {
 
     val allPageIds: List[PageId] =
-      formTemplate.sections.flatMap(
+      formTemplate.formKind.allSections.flatMap(
         _.fold(_.page.id.toList)(_.page.id.toList)(p =>
           p.pageId :: (p.defaultPage.flatMap(_.id).toList ++ p.pages.toList.flatMap(_.id))
         )
       )
 
-    val allFcIds: Set[FormComponentId] = formTemplate.sections
+    val allFcIds: Set[FormComponentId] = formTemplate.formKind.allSections
       .collect {
         case s: Section.NonRepeatingPage => s.page.allFormComponentIds.toSet
         case s: Section.RepeatingPage    => s.page.allFormComponentIds.toSet
@@ -199,11 +199,12 @@ object FormTemplateValidator {
         )
       } else Valid
 
-    val isEmptyShortNamePresent: List[ValidationResult] = formTemplate.sections.flatMap {
-      case s: Section.NonRepeatingPage => checkPage(s.page) :: Nil
-      case s: Section.RepeatingPage    => checkPage(s.page) :: Nil
-      case s: Section.AddToList        => s.pages.toList.map(page => checkPage(page))
-    }
+    val isEmptyShortNamePresent: List[ValidationResult] =
+      formTemplate.formKind.allSections.flatMap {
+        case s: Section.NonRepeatingPage => checkPage(s.page) :: Nil
+        case s: Section.RepeatingPage    => checkPage(s.page) :: Nil
+        case s: Section.AddToList        => s.pages.toList.map(page => checkPage(page))
+      }
 
     isEmptyShortNamePresent.find(!_.isValid).getOrElse(Valid)
 
@@ -234,7 +235,7 @@ object FormTemplateValidator {
 
     val fcIdToComponentType: Map[FormComponentId, ComponentType] =
       (formTemplate.destinations.allFormComponents ++ SectionHelper
-        .pages(formTemplate.sections)
+        .pages(formTemplate.formKind.allSections)
         .flatMap(_.allFormComponents))
         .map(f => (f.id, f.`type`))
         .toMap
@@ -696,7 +697,7 @@ object FormTemplateValidator {
   }
 
   def validate(componentType: ComponentType, formTemplate: FormTemplate): ValidationResult = componentType match {
-    case HasExpr(SingleExpr(expr))            => validate(expr, formTemplate.sections)
+    case HasExpr(SingleExpr(expr))            => validate(expr, formTemplate.formKind.allSections)
     case HasExpr(MultipleExpr(fields))        => Valid
     case Date(_, _, _)                        => Valid
     case CalendarDate                         => Valid
@@ -799,7 +800,7 @@ object FormTemplateValidator {
 
   def validateEmailParameter(formTemplate: FormTemplate): ValidationResult =
     formTemplate.emailParameters.fold[ValidationResult](Valid) { emailParams =>
-      val ids = fieldIds(formTemplate.sections)
+      val ids = fieldIds(formTemplate.formKind.allSections)
       emailParams
         .collect {
           case EmailParameter(_, FormCtx(value)) if !ids.contains(value) => value
@@ -859,7 +860,8 @@ object FormTemplateValidator {
     pf: (FormComponent => Boolean) => PartialFunction[ComponentType, Boolean]
   ): ValidationResult = {
 
-    val formComponents: List[FormComponent] = SectionHelper.pages(formTemplate.sections).flatMap(_.fields)
+    val formComponents: List[FormComponent] =
+      SectionHelper.pages(formTemplate.formKind.allSections).flatMap(_.fields)
 
     val rcElements: (FormComponent => Boolean) => Boolean = f =>
       formComponents.map(_.`type`).collect(pf(f)).forall(identity)
@@ -876,7 +878,7 @@ object FormTemplateValidator {
 
   def validateEmailVerification(formTemplate: FormTemplate): ValidationResult = {
 
-    val sections = formTemplate.sections
+    val sections: List[Section] = formTemplate.formKind.allSections
 
     val indexLookup: Map[FormComponentId, Int] = indexedFieldIds(sections).toMap
 
@@ -916,10 +918,11 @@ object FormTemplateValidator {
       }
     }
 
-    val isNonInformationMessagePresent: List[ValidationResult] = formTemplate.sections.flatMap {
-      case s: Section.AddToList => s.defaultPage.toList.flatMap(checkComponentTypes _)
-      case _                    => Nil
-    }
+    val isNonInformationMessagePresent: List[ValidationResult] =
+      formTemplate.formKind.allSections.flatMap {
+        case s: Section.AddToList => s.defaultPage.toList.flatMap(checkComponentTypes _)
+        case _                    => Nil
+      }
 
     isNonInformationMessagePresent.combineAll
   }
@@ -951,10 +954,11 @@ object FormTemplateValidator {
           )
       }
 
-    val isNonInformationMessagePresent: List[ValidationResult] = formTemplate.sections.map {
-      case s: Section.AddToList => s.limit.fold[ValidationResult](Valid)(limit => isInfo(limit.field))
-      case _                    => Valid
-    }
+    val isNonInformationMessagePresent: List[ValidationResult] =
+      formTemplate.formKind.allSections.map {
+        case s: Section.AddToList => s.limit.fold[ValidationResult](Valid)(limit => isInfo(limit.field))
+        case _                    => Valid
+      }
 
     isNonInformationMessagePresent.combineAll
   }

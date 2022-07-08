@@ -42,47 +42,50 @@
     "pptx",
     "odp"
   ],
-  "sections": [
-    {
-      "title": "Page",
-      "fields": [
-        {
-          "id": "tradesUnderDifferentName",
-          "label": "Does your company trade under a different name?",
-          "type": "revealingChoice",
-          "choices": [
-            {
-              "label": "Yes"
-            }
-          ],
-          "revealingFields": [
-            [
+  "formKind": {
+    "type": "classic",
+    "sections": [
+      {
+        "title": "Page",
+        "fields": [
+          {
+            "id": "tradesUnderDifferentName",
+            "label": "Does your company trade under a different name?",
+            "type": "revealingChoice",
+            "choices": [
               {
-                "id": "inner",
-                "type": "revealingChoice",
-                "label": "RC 2",
-                "choices": [
-                  {
-                    "label": "No"
-                  }
-                ],
-                "revealingFields": [
-                  [
-                    {
-                      "id": "tradingNameUnknownHelp",
-                      "type": "info",
-                      "label": "Sorry",
-                      "infoText": "Sorry"
-                    }
-                  ]
-                ]
+                "label": "Yes"
               }
+            ],
+            "revealingFields": [
+              [
+                {
+                  "id": "inner",
+                  "type": "revealingChoice",
+                  "label": "RC 2",
+                  "choices": [
+                    {
+                      "label": "No"
+                    }
+                  ],
+                  "revealingFields": [
+                    [
+                      {
+                        "id": "tradingNameUnknownHelp",
+                        "type": "info",
+                        "label": "Sorry",
+                        "infoText": "Sorry"
+                      }
+                    ]
+                  ]
+                }
+              ]
             ]
-          ]
-        }
-      ]
-    }
-  ],
+          }
+        ]
+      }
+    ]
+  },
   "summarySection": {
     "title": {
       "en": "Check your answers",
