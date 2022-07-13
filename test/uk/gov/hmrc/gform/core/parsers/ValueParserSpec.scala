@@ -479,7 +479,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       )
     ),
     None,
-    List.empty[Section],
+    FormKind.Classic(List.empty[Section]),
     Nil,
     AvailableLanguages.default,
     None,
@@ -544,7 +544,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   )
 
-  val formTemplateWithOneSection = plainFormTemplate.copy(sections = List(yourDetailsSection))
+  val formTemplateWithOneSection = plainFormTemplate.copy(formKind = FormKind.Classic(List(yourDetailsSection)))
 
   "Expr.validate" should "return Valid if expression include fieldName id present in the form template" in {
 

@@ -19,8 +19,7 @@
       }
     ],
     "acknowledgementSection": {
-      "shortName": "Acknowledgement Page",
-      "title": "Acknowledgement Page",
+      "title": "Confirmation page ",
       "fields": [],
       "displayFeedbackLink": true
     }
@@ -37,41 +36,29 @@
     "odp"
   ],
   "formKind": {
-    "type": "classic",
+    "type": "taskList",
     "sections": [
       {
-        "title": "Text box",
-        "fields": [
+        "title": "Check before you start",
+        "tasks": [
           {
-            "id": "revealing",
-            "label": "Trading Details",
-            "type": "revealingChoice",
-            "choices": [
+            "title": "Check eligibility",
+            "sections": [
               {
-                "value": "nestedFoo",
-                "label": {
-                  "en": "Address",
-                  "cy": "Nested Iawn"
-                }
-              },
-              {
-                "value": "nestedBar",
-                "label": {
-                  "en": "Date",
-                  "cy": "Nested Iawn"
-                }
+                "title": "Applicants age details page",
+                "fields": [
+                  {
+                    "id": "whichScheme",
+                    "type": "choice",
+                    "label": "When did the trade start?",
+                    "choices": [
+                      {
+                        "label": "Seed Enterprise Investment Scheme"
+                      }
+                    ]
+                  }
+                ]
               }
-            ],
-            "revealingFields": [
-              [],
-              [
-                {
-                  "id": "exampleChoice",
-                  "type": "choice",
-                  "label": "So you want to add another something?",
-                  "format": "yesno"
-                }
-              ]
             ]
           }
         ]
@@ -92,10 +79,10 @@
       "cy": "##Nawr anfonwch eich ffurflen\n\nMae angen i chi gyflwyno’ch ffurflen ar y sgrin nesaf.\n\nCyn i chi wneud hyn gallwch [argraffu neu gadw copi PDF o’ch atebion (yn agor ffenestr neu dab newydd)](${link.printSummaryPdf})."
     }
   },
-  "formName": "Choice label value",
+  "formName": "Task List",
   "emailTemplateId": "eeitt_submission_confirmation",
-  "_id": "revealing-choice-with-yesno-choice",
-  "originalId": "revealing-choice-with-yesno-choice",
+  "_id": "task-list",
+  "originalId": "task-list",
   "displayHMRCLogo": false,
   "parentFormSubmissionRefs": []
 }

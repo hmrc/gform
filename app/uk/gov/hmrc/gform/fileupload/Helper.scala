@@ -38,8 +38,7 @@ class Helper(config: FUConfig) extends JsonUtils {
     allowedFileTypes: AllowedFileTypes,
     expiryDate: LocalDateTime,
     fileSizeLimit: Option[Int]
-  ): JsObject = {
-    println(s"size ${fileSizeLimit.getOrElse(config.maxSizePerItem)}")
+  ): JsObject =
     Json.obj(
       "constraints" -> Json.obj(
         "contentTypes"   -> Json.toJson(allowedFileTypes.contentTypes),
@@ -50,7 +49,6 @@ class Helper(config: FUConfig) extends JsonUtils {
       "expiryDate" -> envelopeExpiryDate(expiryDate),
       "metadata"   -> Json.obj("application" -> "gform", "formTemplateId" -> s"${formTemplateId.value}")
     )
-  }
 
   /** There must be Location header. If not this is exceptional situation!
     */

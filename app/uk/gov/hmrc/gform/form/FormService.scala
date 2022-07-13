@@ -113,7 +113,7 @@ class FormService[F[_]: Monad](
                formTemplate.version,
                FormData(fields = Seq.empty),
                InProgress,
-               VisitIndex.empty,
+               VisitIndex.empty(formTemplate.formKind),
                ThirdPartyData.empty.copy(queryParams = queryParams),
                Some(EnvelopeExpiryDate(expiryDate)),
                FormComponentIdToFileIdMapping.empty

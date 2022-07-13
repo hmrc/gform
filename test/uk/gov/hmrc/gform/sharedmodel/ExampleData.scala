@@ -411,7 +411,7 @@ trait ExampleSection { dependecies: ExampleFieldId with ExampleFieldValue with E
       fields = List(`fieldValue - group`)
     )
 
-  def allSections = List(`section - about you`, `section - businessDetails`)
+  def allSections = FormKind.Classic(List(`section - about you`, `section - businessDetails`))
 }
 
 trait ExampleFormTemplate {
@@ -559,7 +559,7 @@ trait ExampleForm { dependsOn: ExampleFormField with ExampleFormTemplate =>
       None,
       formData,
       InProgress,
-      VisitIndex.empty,
+      VisitIndex.empty(FormKind.Classic(Nil)),
       ThirdPartyData.empty,
       envelopeExpiryDate,
       FormComponentIdToFileIdMapping.empty

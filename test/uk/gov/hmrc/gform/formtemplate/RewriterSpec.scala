@@ -61,7 +61,7 @@ class RewriterSpec extends FunSuite with FormTemplateSupport {
     val obtainedF: Future[Either[UnexpectedState, FormTemplate]] = rewriter.rewrite(formTemplate).value
 
     obtainedF.map { obtained =>
-      assertEquals(obtained.map(_.sections(1)), Right(expected))
+      assertEquals(obtained.map(_.formKind.allSections(1)), Right(expected))
     }
   }
 
@@ -125,7 +125,10 @@ class RewriterSpec extends FunSuite with FormTemplateSupport {
       val obtainedF: Future[Either[UnexpectedState, FormTemplate]] = rewriter.rewrite(formTemplate).value
 
       obtainedF.map { obtained =>
-        assertEquals(obtained.map(_.sections(1)), Left(UnexpectedState(expectedError)))
+        assertEquals(
+          obtained.map(_.formKind.allSections(1)),
+          Left(UnexpectedState(expectedError))
+        )
       }
     }
   }

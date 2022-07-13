@@ -38,7 +38,7 @@ case class FormTemplate(
   emailTemplateId: LocalisedEmailTemplateId,
   emailParameters: Option[NonEmptyList[EmailParameter]],
   webChat: Option[WebChat],
-  sections: List[Section],
+  formKind: FormKind,
   parentFormSubmissionRefs: List[FormComponentId],
   languages: AvailableLanguages,
   save4LaterInfoText: Option[Save4LaterInfoText],
@@ -52,11 +52,13 @@ case class FormTemplate(
   accessibilityUrl: Option[AccessibilityUrl] = None
 ) {
 
-  def formComponents[A](predicate: PartialFunction[FormComponent, A]): List[A] = sections.flatMap { section =>
-    section.formComponents(predicate)
-  }
+  def formComponents[A](predicate: PartialFunction[FormComponent, A]): List[A] =
+    formKind.allSections.flatMap { section =>
+      section.formComponents(predicate)
+    }
 
-  def expandedFormComponentsInMainSections: List[FormComponent] = sections.flatMap(_.expandedFormComponents)
+  def expandedFormComponentsInMainSections: List[FormComponent] =
+    formKind.allSections.flatMap(_.expandedFormComponents)
 }
 
 object FormTemplate {
@@ -71,7 +73,7 @@ object FormTemplate {
       .flatMap(format.reads)
 
   implicit val leafExprs: LeafExpr[FormTemplate] = (path: TemplatePath, t: FormTemplate) =>
-    LeafExpr(path + "sections", t.sections) ++
+    LeafExpr(path + "sections", t.formKind) ++
       LeafExpr(path + "emailExpr", t.emailExpr) ++
       leafExprsNoSections.exprs(path, t)
 

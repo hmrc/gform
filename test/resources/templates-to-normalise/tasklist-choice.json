@@ -1,0 +1,45 @@
+{
+  "_id": "task-list",
+  "formName": "Task List",
+  "description": "",
+  "emailTemplateId": "eeitt_submission_confirmation",
+  "authConfig": {
+    "authModule": "anonymous"
+  },
+  "sections": [
+    {
+      "title": "Check before you start",
+      "tasks": [
+        {
+          "title": "Check eligibility",
+          "sections": [
+            {
+              "title": "Applicants age details page",
+              "fields": [
+                {
+                  "id": "whichScheme",
+                  "type": "choice",
+                  "label": "When did the trade start?",
+                  "choices": [
+                    "Seed Enterprise Investment Scheme"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "acknowledgementSection": {
+    "title": "Confirmation page ",
+    "fields": []
+  },
+  "destinations": [
+    {
+      "id": "transitionToSubmitted",
+      "type": "stateTransition",
+      "requiredState": "Submitted"
+    }
+  ]
+}

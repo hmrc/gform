@@ -186,9 +186,9 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
     emailTemplateId: JsValue = JsString("email_template_id")
   ): Unit = {
     formTemplate.formName shouldBe LocalisedString(Map(LangADT.En -> "Test form name"))
-    formTemplate.sections.size shouldBe 1
-    formTemplate.sections.head shouldBe a[NonRepeatingPage]
-    val nonRepeatingPage = formTemplate.sections.head.asInstanceOf[NonRepeatingPage]
+    formTemplate.formKind.allSections.size shouldBe 1
+    formTemplate.formKind.allSections.head shouldBe a[NonRepeatingPage]
+    val nonRepeatingPage = formTemplate.formKind.allSections.head.asInstanceOf[NonRepeatingPage]
     nonRepeatingPage.page.title shouldBe toSmartString("Page1")
     val nonRepeatingPageFields = nonRepeatingPage.page.fields
     nonRepeatingPageFields.size shouldBe 1

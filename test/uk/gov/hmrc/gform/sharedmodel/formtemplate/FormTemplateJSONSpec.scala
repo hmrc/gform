@@ -29,7 +29,8 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                           |  "printSection": {
                                           |    "title": "Next Steps",
                                           |    "summaryPdf": "TestSummaryPdf"
-                                          |  }
+                                          |  },
+                                          |  "sections": []
                                           |}
       """.stripMargin)
 
@@ -51,6 +52,9 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                              |    "title": "Next Steps",
                                              |    "summaryPdf": "TestSummaryPdf"
                                              |  },
+                                             |  "formKind": {
+                                             |    "type": "taskList"
+                                             |  },
                                              |  "displayHMRCLogo": false,
                                              |  "parentFormSubmissionRefs": [],
                                              |  "summarySection": $summarySection,
@@ -63,7 +67,11 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                              |    "odt",
                                              |    "pptx",
                                              |    "odp"
-                                             |  ]
+                                             |  ],
+                                             |  "formKind": {
+                                             |    "type": "classic",
+                                             |    "sections": []
+                                             |  }
                                              |}
       """.stripMargin)
 
@@ -77,6 +85,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                          |    "123",
                                          |    "456"
                                          |  ],
+                                         |  "sections": [],
                                          |  "destinations": [
                                          |    {
                                          |      "id": "HMRCDMS",
@@ -182,7 +191,11 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                              |    "odt",
                                              |    "pptx",
                                              |    "odp"
-                                             |  ]
+                                             |  ],
+                                             |  "formKind": {
+                                             |    "type": "classic",
+                                             |    "sections": []
+                                             |  }
                                              |}
       """.stripMargin)
 
@@ -206,6 +219,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                              |    "123",
                              |    "456"
                              |  ],
+                             |  "sections": [],
                              |  "destinations": [
                              |    {
                              |      "id": "HMRCDMS",
@@ -321,7 +335,11 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                  |    "odt",
                                  |    "pptx",
                                  |    "odp"
-                                 |  ]
+                                 |  ],
+                                 |  "formKind": {
+                                 |    "type": "classic",
+                                 |    "sections": []
+                                 |  }
                                  |}
                                 """.stripMargin)
 
@@ -345,6 +363,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                                                |    "123",
                                                                |    "456"
                                                                |  ],
+                                                               |  "sections": [],
                                                                |  "destinations": [
                                                                |    {
                                                                |      "id": "HMRCDMS",
@@ -460,7 +479,11 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                                                    |    "odt",
                                                                    |    "pptx",
                                                                    |    "odp"
-                                                                   |  ]
+                                                                   |  ],
+                                                                   |  "formKind": {
+                                                                   |    "type": "classic",
+                                                                   |    "sections": []
+                                                                   |  }
                                                                    |}
                                 """.stripMargin)
 
@@ -496,7 +519,8 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                              | "printSection": {
                              |    "title": "Next Steps",
                              |    "summaryPdf": "TestSummaryPdf"
-                             |  }
+                             |  },
+                             |  "sections": []
                              |}
       """.stripMargin)
 
@@ -509,7 +533,8 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
 
     val input = Json.parse("""
                              |{
-                             |  "_id": "TST123"
+                             |  "_id": "TST123",
+                             |  "sections": []
                              |}
       """.stripMargin)
 
@@ -539,7 +564,8 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                              |      "classificationType": "BT-NRU-Environmental",
                              |      "businessArea": "FinanceOpsCorpT"
                              |    }
-                             |  ]
+                             |  ],
+                             |  "sections": []
                              |}
       """.stripMargin)
 
@@ -568,7 +594,8 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                              |        "infoText": "SomeContent"
                              |      }
                              |    ]
-                             |  }
+                             |  },
+                             |  "sections": []
                              |}
                            """.stripMargin)
 
@@ -599,7 +626,8 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                              |        }
                              |      }
                              |    ]
-                             |  }
+                             |  },
+                             |  "sections": []
                              |}
                            """.stripMargin)
 

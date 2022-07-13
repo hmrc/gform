@@ -101,6 +101,12 @@ object FormTemplatesControllerRequestHandler {
   private def list[A <: JsValue](reads: Reads[A]): Reads[JsArray] =
     Reads.list(reads).map(JsArray.apply)
 
+  // private def debug[A <: JsValue](r: Reads[A]): Reads[A] = Reads { json =>
+  //   val res = json.transform(r)
+  //   println("DEBUG json: " + json + "\n res: " + res)
+  //   res
+  // }
+
   def normaliseJSON(jsonValue: JsValue): JsResult[JsObject] = {
 
     val allowedFileTypes =
@@ -181,6 +187,17 @@ object FormTemplatesControllerRequestHandler {
     val pruneIncludeIf = (__ \ 'label \ 'includeIf).json.prune
     val pruneValue = (__ \ 'label \ 'value).json.prune
 
+    val determineFormKind: Reads[JsObject] = (__ \ 'sections \ 0 \ 'tasks).json.pick
+      .map(_ => JsString("taskList"))
+      .orElse(Reads.pure(JsString("classic")))
+      .flatMap { formKind =>
+        (__ \ 'formKind \ 'type).json.put(formKind)
+      }
+
+    val moveSections =
+      (__ \ 'formKind \ 'sections).json
+        .copyFrom((__ \ 'sections).json.pick) and (__ \ 'sections).json.prune reduce
+
     val choicesFieldUpdater: Reads[JsValue] = Reads { json =>
       json \ "includeIf" match {
         case JsDefined(JsString(includeIf)) =>
@@ -238,14 +255,22 @@ object FormTemplatesControllerRequestHandler {
 
     val fieldsReads: Reads[JsObject] =
       (__ \ 'fields).json.update(list(choicesUpdater andThen revealingChoicesUpdater))
-    val regularFieldsOrAddToListFieldsReads = fieldsReads orElse (__ \ 'pages).json.update(list(fieldsReads))
+
+    val regularFieldsOrAddToListFieldsReads =
+      fieldsReads orElse (__ \ 'pages).json.update(list(fieldsReads))
+
+    val regularFieldsOrAddToListFieldsReadsTaskList =
+      (__ \ 'tasks).json.update(list((__ \ 'sections).json.update(list(regularFieldsOrAddToListFieldsReads))))
+
     val transformChoices: Reads[JsValue] = Reads { json =>
       val updateSections: Reads[JsObject] =
-        (__ \ 'sections).json.update(list(regularFieldsOrAddToListFieldsReads))
+        (__ \ 'sections).json.update(
+          list(regularFieldsOrAddToListFieldsReads) orElse list(regularFieldsOrAddToListFieldsReadsTaskList)
+        )
       json.transform(updateSections) orElse JsSuccess(json)
     }
 
-    val transformAddAnotheQuestion: Reads[JsValue] = Reads { json =>
+    val transformAddAnotherQuestion: Reads[JsValue] = Reads { json =>
       val updateSections: Reads[JsObject] =
         (__ \ 'sections).json.update(of[JsArray].map { case JsArray(arr) =>
           JsArray(
@@ -351,8 +376,9 @@ object FormTemplatesControllerRequestHandler {
         pruneAcknowledgementSection andThen
         prunePrintSection andThen
         transformChoices andThen
-        transformAddAnotheQuestion andThen
+        transformAddAnotherQuestion andThen
         transformConfirmationQuestion andThen
+        moveSections andThen
         pruneDeclarationSection and
         allowedFileTypes and
         drmValue and
@@ -367,6 +393,7 @@ object FormTemplatesControllerRequestHandler {
         destinationsOrPrintSection and
         transformAndMoveAcknowledgementSection and
         moveDestinations and
+        determineFormKind and
         moveDeclarationSection reduce
     )
   }

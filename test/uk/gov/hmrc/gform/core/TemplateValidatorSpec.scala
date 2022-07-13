@@ -140,8 +140,8 @@ class TemplateValidatorSpec extends Spec {
         val componentType = Text(EORI, UserCtx(UserField.EnrolledIdentifier))
         val newFormComponents: List[FormComponent] = fc.copy(`type` = componentType) :: Nil
         val newPage = page.copy(fields = newFormComponents)
-        val newSections = List(Section.NonRepeatingPage(newPage))
-        val newTemplate = template.copy(sections = newSections).copy(authConfig = authConfig)
+        val newFormKind = FormKind.Classic(List(Section.NonRepeatingPage(newPage)))
+        val newTemplate = template.copy(formKind = newFormKind).copy(authConfig = authConfig)
 
         val isAUserCtx = userContextComponentType(formTemplate.expandedFormComponentsInMainSections)
 
@@ -168,7 +168,7 @@ class TemplateValidatorSpec extends Spec {
         ) :: Nil
       ) :: Nil
 
-    val formTemplateWithOneSection = formTemplate.copy(sections = sections)
+    val formTemplateWithOneSection = formTemplate.copy(formKind = FormKind.Classic(sections))
 
     val res = FormTemplateValidator.validateDependencyGraph(formTemplateWithOneSection)
     res should be(Invalid("Graph contains cycle Some(Cycle(a, a~>b, b, b~>a, a))"))
@@ -282,7 +282,7 @@ class TemplateValidatorSpec extends Spec {
       )
 
     val newFormTemplate =
-      formTemplate.copy(sections = List(newSection, newSection), emailParameters = newEmailParameters)
+      formTemplate.copy(formKind = FormKind.Classic(List(newSection, newSection)), emailParameters = newEmailParameters)
 
     val res = FormTemplateValidator.validateEmailParameter(newFormTemplate)
     res should be(Valid)
@@ -669,7 +669,7 @@ class TemplateValidatorSpec extends Spec {
     val sectionA = mkAddToList("AddToList", NonEmptyList.one(addToListPage), addAnotherQuestion)
     val sectionB = mkSection("NonRepeated", List(referenceToAddAnotherQuestion))
 
-    val formTemplateUpd = formTemplate.copy(sections = List(sectionA, sectionB))
+    val formTemplateUpd = formTemplate.copy(formKind = FormKind.Classic(List(sectionA, sectionB)))
 
     val res = FormTemplateValidator.validate(List(referenceToAddAnotherQuestion.`type`), formTemplateUpd)
     res shouldBe Valid
@@ -778,7 +778,7 @@ class TemplateValidatorSpec extends Spec {
     val section = mkSection("example", formComponents)
 
     formTemplate
-      .copy(sections = List(section), emailParameters = emailParameters, destinations = destinations)
+      .copy(formKind = FormKind.Classic(List(section)), emailParameters = emailParameters, destinations = destinations)
   }
 
   private def mkGroupFormComponent(formComponents: FormComponent*): FormComponent =

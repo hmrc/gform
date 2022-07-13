@@ -85,7 +85,7 @@ class FormIT
     form.formTemplateId shouldBe FormTemplateId("basic")
     form.formData.fields shouldBe formFields
     form.status shouldBe InProgress
-    form.visitsIndex shouldBe VisitIndex(visitIndex)
+    form.visitsIndex shouldBe VisitIndex.Classic(visitIndex)
     form.thirdPartyData shouldBe ThirdPartyData.empty
     form.envelopeExpiryDate.get.ldt.toInstant(ZoneOffset.UTC).isAfter(startInstant) shouldBe true
     form.componentIdToFileId shouldBe FormComponentIdToFileIdMapping.empty

@@ -17,37 +17,13 @@
 package uk.gov.hmrc.gform.sharedmodel.form
 
 import cats.Eq
-import cats.instances.string._
-import cats.syntax.eq._
+import cats.implicits._
 import julienrf.json.derived
 import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.{ UserId, ValueClassFormat }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, FormTemplateId, FormTemplateVersion, JsonUtils }
-
-import scala.util.Try
-
-case class VisitIndex(visitsIndex: Set[Int]) extends AnyVal
-
-object VisitIndex {
-
-  val key: String = "_visits_"
-
-  val formComponentId: FormComponentId = FormComponentId(key)
-
-  val empty: VisitIndex = VisitIndex(Set.empty)
-
-  implicit val format: OFormat[VisitIndex] = Json.format
-
-  def fromStrings(s: Seq[String]): VisitIndex =
-    if (s.isEmpty)
-      VisitIndex.empty
-    else
-      VisitIndex(s.flatMap { indexAsString =>
-        Try(indexAsString.toInt).toOption.fold(List.empty[Int])(_ :: Nil)
-      }.toSet)
-}
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, FormTemplateVersion, JsonUtils }
 
 case class Form(
   _id: FormId,
@@ -68,8 +44,7 @@ object Form {
   private val componentIdToFileId = "componentIdToFileId"
   private val formTemplateVersion = "version"
 
-  val readVisitIndex: Reads[VisitIndex] =
-    (__ \ "visitsIndex").readNullable[List[Int]].map(a => VisitIndex(a.fold(Set.empty[Int])(_.toSet)))
+  val readVisitIndex: Reads[VisitIndex] = VisitIndex.format
 
   val thirdPartyDataWithFallback: Reads[ThirdPartyData] =
     (__ \ thirdPartyData)

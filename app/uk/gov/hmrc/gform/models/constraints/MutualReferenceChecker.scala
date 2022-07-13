@@ -22,17 +22,19 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 class MutualReferenceChecker(formTemplate: FormTemplate) {
   private val validGroupReferences: ValidReferences[ReferenceKind.Group] =
-    ValidReferences.group(formTemplate.sections.collect {
-      case s: Section.NonRepeatingPage =>
-        s.page.fields.flatMap {
-          case fc @ IsGroup(group) => List(fc.id -> group)
-          case otherwise           => Nil
-        }
-      case s: Section.RepeatingPage => Nil
-      case s: Section.AddToList     => Nil
-    }.flatten)
+    ValidReferences.group(
+      formTemplate.formKind.allSections.collect {
+        case s: Section.NonRepeatingPage =>
+          s.page.fields.flatMap {
+            case fc @ IsGroup(group) => List(fc.id -> group)
+            case otherwise           => Nil
+          }
+        case s: Section.RepeatingPage => Nil
+        case s: Section.AddToList     => Nil
+      }.flatten
+    )
 
-  private val actualGroupRefs: Set[ReferenceWithPath[ReferenceKind.Group]] = formTemplate.sections
+  private val actualGroupRefs: Set[ReferenceWithPath[ReferenceKind.Group]] = formTemplate.formKind.allSections
     .collect { case s: Section.NonRepeatingPage =>
       s.page.fields.collect { case fc @ IsGroup(_) =>
         LeafExpr(TemplatePath("fields"), fc).flatMap(_.referenceInfos).collect {
@@ -47,7 +49,7 @@ class MutualReferenceChecker(formTemplate: FormTemplate) {
     .flatten
     .toSet
 
-  private val addToListRefs: Set[ReferenceWithPath[ReferenceKind.AddToList]] = formTemplate.sections
+  private val addToListRefs: Set[ReferenceWithPath[ReferenceKind.AddToList]] = formTemplate.formKind.allSections
     .collect { case a: Section.AddToList =>
       LeafExpr(TemplatePath.root, a).flatMap(_.referenceInfos).collect {
         case ReferenceInfo.FormCtxExpr(path, FormCtx(fcId)) =>
@@ -58,11 +60,11 @@ class MutualReferenceChecker(formTemplate: FormTemplate) {
     .toSet
 
   private val validAddToListReferences: ValidReferences[ReferenceKind.AddToList] = ValidReferences.addToList(
-    formTemplate.sections.collect { case s: Section.AddToList => s }
+    formTemplate.formKind.allSections.collect { case s: Section.AddToList => s }
   )
 
   private val repeatingPageRefs: Set[ReferenceWithPath[ReferenceKind.RepeatingPage]] =
-    formTemplate.sections.zipWithIndex
+    formTemplate.formKind.allSections.zipWithIndex
       .collect { case (s: Section.RepeatingPage, index) =>
         LeafExpr(TemplatePath.root, s).flatMap(_.referenceInfos).collect {
           case ReferenceInfo.FormCtxExpr(path, FormCtx(fcId)) =>
@@ -73,8 +75,9 @@ class MutualReferenceChecker(formTemplate: FormTemplate) {
       .toSet
 
   private val validRepeatedSectionReferences: ValidReferences[ReferenceKind.RepeatingPage] =
-    ValidReferences.repeatingPage(formTemplate.sections.zipWithIndex.collect { case (s: Section.RepeatingPage, index) =>
-      (s, index)
+    ValidReferences.repeatingPage(formTemplate.formKind.allSections.zipWithIndex.collect {
+      case (s: Section.RepeatingPage, index) =>
+        (s, index)
     })
 
   val result: ValidationResult = Monoid.combineAll(

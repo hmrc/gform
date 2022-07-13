@@ -45,7 +45,7 @@ trait FormTemplateSupport {
     )
 
   def mkFormTemplate(sections: List[Section]) = {
-    val formTemplate = ExampleData.formTemplate.copy(sections = sections, emailParameters = None)
+    val formTemplate = ExampleData.formTemplate.copy(formKind = FormKind.Classic(sections), emailParameters = None)
     formTemplate
   }
 
