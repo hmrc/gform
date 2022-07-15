@@ -155,9 +155,7 @@ object FormTemplateValidator {
 
     def dateExprInvalidRefs(dateExpr: DateExpr*): Seq[FormComponentId] =
       dateExpr.flatMap(
-        _.maybeFormCtx.fold(Option.empty[FormComponentId])(fCtx =>
-          if (!allFcIds(fCtx.formComponentId)) Some(fCtx.formComponentId) else None
-        )
+        _.maybeFormCtx.flatMap(fCtx => if (!allFcIds(fCtx.formComponentId)) List(fCtx.formComponentId) else List())
       )
 
     def invalid(path: TemplatePath, formComponentIds: FormComponentId*): Invalid =
@@ -256,7 +254,9 @@ object FormTemplateValidator {
         .cast[DateCtx]
         .map(
           _.value.maybeFormCtx
-            .fold[ValidationResult](Valid)(formCtx => validateFormComponentTypeDate(path, formCtx.formComponentId))
+            .foldLeft[ValidationResult](Valid)((v, formCtx) =>
+              v.combine(validateFormComponentTypeDate(path, formCtx.formComponentId))
+            )
         )
         .getOrElse(Invalid(s"${path.path}: Expression $expr used in period function should be a date expression"))
     }

@@ -57,27 +57,31 @@ object ExprSubstituter extends Substituter[ExprSubstitutions, FormTemplate] {
       }
     }
 
-  implicit val dateExprSubstituter: Substituter[ExprSubstitutions, DateExpr] = (substitutions, t) =>
-    t match {
-      case d @ DateFormCtxVar(FormCtx(formComponentId)) =>
-        substitutions.expressions.get(ExpressionId(formComponentId.value)) match {
-          case Some(DateCtx(dateExpr)) => dateExpr
-          case Some(ctx @ FormCtx(_))  => DateFormCtxVar(ctx)
-          case here                    => d
-        }
-      case d @ HmrcTaxPeriodCtx(FormCtx(fcId), _) =>
-        substitutions.expressions.get(ExpressionId(fcId.value)) match {
-          case Some(DateCtx(dateExpr)) => dateExpr
-          case Some(ctx @ FormCtx(_))  => DateFormCtxVar(ctx)
-          case here                    => d
-        }
-      case d @ DateValueExpr(_) => d
-      case DateExprWithOffset(dExpr, offset) =>
-        dExpr(substitutions) match {
-          case DateExprWithOffset(expr, innerOffset) => DateExprWithOffset(expr, innerOffset + offset)
-          case other                                 => DateExprWithOffset(other, offset)
-        }
-    }
+  implicit val dateExprSubstituter: Substituter[ExprSubstitutions, DateExpr] = (substitutions, t) => {
+    def aux(dExpr: DateExpr): DateExpr =
+      dExpr match {
+        case d @ DateFormCtxVar(FormCtx(formComponentId)) =>
+          substitutions.expressions.get(ExpressionId(formComponentId.value)) match {
+            case Some(DateCtx(dateExpr)) => dateExpr
+            case Some(ctx @ FormCtx(_))  => DateFormCtxVar(ctx)
+            case here                    => d
+          }
+        case d @ HmrcTaxPeriodCtx(FormCtx(fcId), _) =>
+          substitutions.expressions.get(ExpressionId(fcId.value)) match {
+            case Some(DateCtx(dateExpr)) => dateExpr
+            case Some(ctx @ FormCtx(_))  => DateFormCtxVar(ctx)
+            case here                    => d
+          }
+        case d @ DateValueExpr(_) => d
+        case DateExprWithOffset(dExpr, offset) =>
+          dExpr(substitutions) match {
+            case DateExprWithOffset(expr, innerOffset) => DateExprWithOffset(expr, innerOffset + offset)
+            case other                                 => DateExprWithOffset(other, offset)
+          }
+        case d @ DateIfElse(cond, field1, field2) => DateIfElse(cond, aux(field1), aux(field2))
+      }
+    aux(t)
+  }
 
   implicit val booleanExprSubstituter: Substituter[ExprSubstitutions, BooleanExpr] =
     new Substituter[ExprSubstitutions, BooleanExpr] {
