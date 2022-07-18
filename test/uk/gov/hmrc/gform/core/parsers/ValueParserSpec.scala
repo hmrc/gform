@@ -695,26 +695,26 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     }
   }
 
-  it should "parse DateIfElse DateCtx" in {
-    val result = ValueParser.parseAll(ValueParser.contextField, "if noCompanyName then 01012020 else 01012021").get
-    result shouldBe DateCtx(
-      DateIfElse(
-        TopLevelRef(BooleanExprId("noCompanyName")),
-        DateValueExpr(ExactDateExprValue(2020, 1, 1)),
-        DateValueExpr(ExactDateExprValue(2021, 1, 1))
-      )
-    )
-  }
-  it should "parse DateIfElse DateCtx 2" in {
-    val result = ValueParser.parseAll(ValueParser.contextField, "if 1 = 1 then 01012020 else 01012021").get
-    result shouldBe DateCtx(
-      DateIfElse(
-        TopLevelRef(BooleanExprId("noCompanyName")),
-        DateValueExpr(ExactDateExprValue(2020, 1, 1)),
-        DateValueExpr(ExactDateExprValue(2021, 1, 1))
-      )
-    )
-  }
+  // it should "parse DateIfElse DateCtx" in {
+  //   val result = ValueParser.parseAll(ValueParser.contextField, "if noCompanyName then 01012020 else 01012021").get
+  //   result shouldBe DateCtx(
+  //     DateIfElse(
+  //       TopLevelRef(BooleanExprId("noCompanyName")),
+  //       DateValueExpr(ExactDateExprValue(2020, 1, 1)),
+  //       DateValueExpr(ExactDateExprValue(2021, 1, 1))
+  //     )
+  //   )
+  // }
+  // it should "parse DateIfElse DateCtx 2" in {
+  //   val result = ValueParser.parseAll(ValueParser.contextField, "if 1 = 1 then 01012020 else 01012021").get
+  //   result shouldBe DateCtx(
+  //     DateIfElse(
+  //       TopLevelRef(BooleanExprId("noCompanyName")),
+  //       DateValueExpr(ExactDateExprValue(2020, 1, 1)),
+  //       DateValueExpr(ExactDateExprValue(2021, 1, 1))
+  //     )
+  //   )
+  // }
 
   it should "parse period(d1, d2) function" in {
     val res = ValueParser.validate("${period(d1, d2)}")
