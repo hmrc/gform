@@ -19,7 +19,7 @@ import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 
 trait ExprGen {
-  def authInfoGen: Gen[AuthInfo] = Gen.oneOf(GG, PayeNino, SaUtr, CtUtr)
+  def authInfoGen: Gen[AuthInfo] = Gen.oneOf(AuthInfo.GG, AuthInfo.PayeNino, AuthInfo.SaUtr, AuthInfo.CtUtr)
 
   def serviceNameGen: Gen[ServiceName] = PrimitiveGen.nonEmptyAlphaNumStrGen.map(ServiceName(_))
 

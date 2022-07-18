@@ -209,12 +209,12 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
 
   it should "parse ${firstName * auth.secondName}" in {
     val res = ValueParser.validate("${firstName * auth.sautr}")
-    res.right.value should be(TextExpression(Multiply(FormCtx("firstName"), AuthCtx(SaUtr))))
+    res.right.value should be(TextExpression(Multiply(FormCtx("firstName"), AuthCtx(AuthInfo.SaUtr))))
   }
 
   it should "parse ${auth.email}" in {
     val res = ValueParser.validate("${auth.email}")
-    res.right.value should be(TextExpression(AuthCtx(EmailId)))
+    res.right.value should be(TextExpression(AuthCtx(AuthInfo.EmailId)))
   }
 
   it should "parse ${a - b  * c}" in {

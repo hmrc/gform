@@ -542,7 +542,7 @@ class TemplateValidatorSpec extends Spec {
       Table(
         ("expr", "expected"),
         (In(FormCtx(FormComponentId("fieldA")), SeissEligible), Valid),
-        (In(AuthCtx(SaUtr), SeissEligible), Valid),
+        (In(AuthCtx(AuthInfo.SaUtr), SeissEligible), Valid),
         (In(ParamCtx(QueryParam("test")), SeissEligible), Valid)
       )
     forAll(table) { case (booleanExpr, expected) =>
