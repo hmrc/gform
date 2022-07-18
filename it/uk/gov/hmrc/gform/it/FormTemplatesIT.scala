@@ -32,7 +32,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.Section.NonRepeatingPage
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AccessibilityUrl, AcknowledgementSection, Anonymous, AuthCtx, ContinueOrDeletePage, DeclarationSection, Default, FormTemplate, FormTemplateRaw, GG, LinkCtx, OnePerUser, Text, TextWithRestrictions, UserResearchUrl, Value }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AccessibilityUrl, AcknowledgementSection, Anonymous, AuthCtx, AuthInfo, ContinueOrDeletePage, DeclarationSection, Default, FormTemplate, FormTemplateRaw, LinkCtx, OnePerUser, Text, TextWithRestrictions, UserResearchUrl, Value }
 import uk.gov.hmrc.gform.sharedmodel.{ AvailableLanguages, LangADT, LocalisedString, SmartString }
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -230,7 +230,7 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
       HmrcDms(
         DestinationId("HMRCDMS"),
         "TSTHMRCDMS",
-        AuthCtx(GG),
+        AuthCtx(AuthInfo.GG),
         "ClassificationType",
         "BusinessArea",
         "true",

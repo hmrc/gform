@@ -191,13 +191,19 @@ object IdentifierName {
 }
 
 sealed trait AuthInfo
-final case object GG extends AuthInfo
-final case object PayeNino extends AuthInfo
-final case object EmailId extends AuthInfo
-final case object SaUtr extends AuthInfo
-final case object CtUtr extends AuthInfo
 
 object AuthInfo {
+
+  final case object GG extends AuthInfo
+  final case object PayeNino extends AuthInfo
+  final case object EmailId extends AuthInfo
+  final case object SaUtr extends AuthInfo
+  final case object CtUtr extends AuthInfo
+  final case object Name extends AuthInfo
+  final case object ItmpName extends AuthInfo
+  final case object ItmpDateOfBirth extends AuthInfo
+  final case object ItmpAddress extends AuthInfo
+
   implicit val format: OFormat[AuthInfo] = derived.oformat()
 }
 

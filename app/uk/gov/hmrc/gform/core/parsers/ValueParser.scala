@@ -348,11 +348,15 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
   }
 
   lazy val authInfo: Parser[AuthInfo] = (
-    "gg" ^^^ GG
-      | "payenino" ^^^ PayeNino
-      | "sautr" ^^^ SaUtr
-      | "ctutr" ^^^ CtUtr
-      | "email" ^^^ EmailId
+    "gg" ^^^ AuthInfo.GG
+      | "payenino" ^^^ AuthInfo.PayeNino
+      | "sautr" ^^^ AuthInfo.SaUtr
+      | "ctutr" ^^^ AuthInfo.CtUtr
+      | "email" ^^^ AuthInfo.EmailId
+      | "name" ^^^ AuthInfo.Name
+      | "itmpName" ^^^ AuthInfo.ItmpName
+      | "itmpDateOfBirth" ^^^ AuthInfo.ItmpDateOfBirth
+      | "itmpAddress" ^^^ AuthInfo.ItmpAddress
   )
   lazy val rosmProp: Parser[RosmProp] = (
     "safeId" ^^^ RosmSafeId
