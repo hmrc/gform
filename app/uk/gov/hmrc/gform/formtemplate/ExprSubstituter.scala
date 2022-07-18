@@ -78,7 +78,8 @@ object ExprSubstituter extends Substituter[ExprSubstitutions, FormTemplate] {
             case DateExprWithOffset(expr, innerOffset) => DateExprWithOffset(expr, innerOffset + offset)
             case other                                 => DateExprWithOffset(other, offset)
           }
-        case d @ DateIfElse(cond, field1, field2) => DateIfElse(cond, aux(field1), aux(field2))
+        case DateIfElse(cond, field1, field2) => DateIfElse(cond, aux(field1), aux(field2))
+        case DateOrElse(field1, field2)       => DateOrElse(aux(field1), aux(field2))
       }
     aux(t)
   }

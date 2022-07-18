@@ -27,6 +27,7 @@ sealed trait DateExpr {
     case DateExprWithOffset(dExpr, _)  => dExpr.leafExprs
     case HmrcTaxPeriodCtx(formCtx, _)  => formCtx :: Nil
     case DateIfElse(_, field1, field2) => field1.leafExprs ++ field2.leafExprs
+    case DateOrElse(field1, field2)    => field1.leafExprs ++ field2.leafExprs
   }
 
   def referenceInfos: List[ReferenceInfo] = this match {
@@ -35,6 +36,7 @@ sealed trait DateExpr {
     case DateExprWithOffset(dExpr, _)  => dExpr.referenceInfos
     case HmrcTaxPeriodCtx(formCtx, _)  => ReferenceInfo.FormCtxExpr(TemplatePath.leaf, formCtx) :: Nil
     case DateIfElse(_, field1, field2) => field1.referenceInfos ++ field2.referenceInfos
+    case DateOrElse(field1, field2)    => field1.referenceInfos ++ field2.referenceInfos
   }
 
   def maybeFormCtx: List[FormCtx] = this match {
@@ -43,6 +45,7 @@ sealed trait DateExpr {
     case DateExprWithOffset(dExpr, _)  => dExpr.maybeFormCtx
     case HmrcTaxPeriodCtx(formCtx, _)  => List(formCtx)
     case DateIfElse(_, field1, field2) => field1.maybeFormCtx ++ field2.maybeFormCtx
+    case DateOrElse(field1, field2)    => field1.maybeFormCtx ++ field2.maybeFormCtx
   }
 }
 
@@ -79,6 +82,7 @@ case class DateFormCtxVar(formCtx: FormCtx) extends DateExpr
 case class DateExprWithOffset(dExpr: DateExpr, offset: OffsetYMD) extends DateExpr
 case class HmrcTaxPeriodCtx(formCtx: FormCtx, hmrcTaxPeriodInfo: HmrcTaxPeriodInfo) extends DateExpr
 case class DateIfElse(ifElse: BooleanExpr, field1: DateExpr, field2: DateExpr) extends DateExpr
+case class DateOrElse(field1: DateExpr, field2: DateExpr) extends DateExpr
 
 object DateExpr {
   implicit val format: OFormat[DateExpr] = derived.oformat()
@@ -89,5 +93,6 @@ object DateExpr {
     case DateExprWithOffset(dExpr, _)  => allFormCtxExprs(dExpr)
     case HmrcTaxPeriodCtx(formCtx, _)  => formCtx :: Nil
     case DateIfElse(_, field1, field2) => allFormCtxExprs(field1) ++ allFormCtxExprs(field2)
+    case DateOrElse(field1, field2)    => allFormCtxExprs(field1) ++ allFormCtxExprs(field2)
   }
 }

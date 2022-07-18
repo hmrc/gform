@@ -104,6 +104,7 @@ object TopLevelExpressions {
           expressions.get(ExpressionId(formComponentId.value)).fold[DateExpr](d) {
             case DateCtx(value)                                 => value
             case IfElse(cond, DateCtx(dExpr1), DateCtx(dExpr2)) => DateIfElse(cond, dExpr1, dExpr2)
+            case Else(DateCtx(dExpr1), DateCtx(dExpr2))         => DateOrElse(dExpr1, dExpr2)
             case _                                              => d
           }
         case d @ HmrcTaxPeriodCtx(FormCtx(fcId), _) =>
@@ -114,6 +115,7 @@ object TopLevelExpressions {
         case DateExprWithOffset(dExpr, offset) => DateExprWithOffset(loopDateExpr(dExpr), offset)
 
         case DateIfElse(cond, field1, field2) => DateIfElse(cond, loopDateExpr(field1), loopDateExpr(field2))
+        case DateOrElse(dExpr1, dExpr2)       => DateOrElse(loopDateExpr(dExpr1), loopDateExpr(dExpr2))
       }
 
     def loopBooleanExpr(t: BooleanExpr): BooleanExpr = t match {

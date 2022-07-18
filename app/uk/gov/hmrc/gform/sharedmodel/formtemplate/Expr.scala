@@ -132,6 +132,10 @@ object FormCtx {
   implicit val format: OFormat[FormCtx] = OFormatWithTemplateReadFallback(readsForTemplateJson)
 }
 
+// object Else {
+//   implicit val format: OFormat[Else] = derived.oformat()
+// }
+
 final case class ParamCtx(queryParam: QueryParam) extends Expr
 final case class AuthCtx(value: AuthInfo) extends Expr
 final case class UserCtx(value: UserField) extends Expr
