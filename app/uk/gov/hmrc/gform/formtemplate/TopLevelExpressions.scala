@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
+import org.slf4j.LoggerFactory
 import cats.syntax.all._
 import scalax.collection.Graph
 import scalax.collection.GraphPredef._
@@ -95,17 +96,20 @@ object TopLevelExpressions {
     )
   }
 
+  val logger = LoggerFactory.getLogger(getClass)
   def resolveExpr(expressions: Map[ExpressionId, Expr], expressionId: ExpressionId): Map[ExpressionId, Expr] = {
 
-    def loopDateExpr(dateExpr: DateExpr): DateExpr =
+    def loopDateExpr(dateExpr: DateExpr): DateExpr = {
+      logger.error(s"[loopDateExpr] $dateExpr")
+      logger.error(s"[loopDateExpr] [EXPRESSIONS] $expressions")
       dateExpr match {
         case d @ DateValueExpr(_) => d
         case d @ DateFormCtxVar(FormCtx(formComponentId)) =>
           expressions.get(ExpressionId(formComponentId.value)).fold[DateExpr](d) {
-            case DateCtx(value)                                 => value
-            case IfElse(cond, DateCtx(dExpr1), DateCtx(dExpr2)) => DateIfElse(cond, dExpr1, dExpr2)
-            case Else(DateCtx(dExpr1), DateCtx(dExpr2))         => DateOrElse(dExpr1, dExpr2)
-            case _                                              => d
+            case DateCtx(value)                                             => value
+            case IfElse(cond, Expr2DateExpr(dExpr1), Expr2DateExpr(dExpr2)) => DateIfElse(cond, dExpr1, dExpr2)
+            case Else(Expr2DateExpr(dExpr1), Expr2DateExpr(dExpr2))         => DateOrElse(dExpr1, dExpr2)
+            case _                                                          => d
           }
         case d @ HmrcTaxPeriodCtx(FormCtx(fcId), _) =>
           expressions.get(ExpressionId(fcId.value)).fold[DateExpr](d) {
@@ -117,6 +121,7 @@ object TopLevelExpressions {
         case DateIfElse(cond, field1, field2) => DateIfElse(cond, loopDateExpr(field1), loopDateExpr(field2))
         case DateOrElse(dExpr1, dExpr2)       => DateOrElse(loopDateExpr(dExpr1), loopDateExpr(dExpr2))
       }
+    }
 
     def loopBooleanExpr(t: BooleanExpr): BooleanExpr = t match {
       case Equals(l, r)                     => Equals(loop(l), loop(r))

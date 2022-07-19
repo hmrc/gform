@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.core.parsers
 
+import org.slf4j.LoggerFactory
 import java.time.LocalDate
 import scala.util.parsing.combinator._
 import uk.gov.hmrc.gform.core.Opt
@@ -31,6 +32,7 @@ import scala.util.matching.Regex
 
 trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
 
+  val logger = LoggerFactory.getLogger(getClass)
   lazy val exprDeterminer: PackratParser[ValueExpr] = dateExpression ^^ (expr => DateExpression(expr)) |
     positiveIntegers ^^ (selections => ChoiceExpression(selections)) |
     expr ^^ (expr => TextExpression(expr))
@@ -422,6 +424,7 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
       DateBefore(expr1, expr2)
     }
     | dateExpr ~ "after" ~ dateExpr ^^ { case expr1 ~ _ ~ expr2 =>
+      logger.error(s"[DATEAFTER] expr1: $expr1 expr2: $expr2")
       DateAfter(expr1, expr2)
     }
     | PageId.unanchoredIdValidation ~ ".first" ^^ { case value ~ _ =>

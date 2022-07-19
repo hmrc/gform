@@ -96,3 +96,11 @@ object DateExpr {
     case DateOrElse(field1, field2)    => allFormCtxExprs(field1) ++ allFormCtxExprs(field2)
   }
 }
+
+object Expr2DateExpr {
+  def unapply(expr: Expr): Option[DateExpr] = expr match {
+    case DateCtx(dExpr) => Some(dExpr)
+    case e @ FormCtx(_) => Some(DateFormCtxVar(e))
+    case _              => None
+  }
+}
