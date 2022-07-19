@@ -720,6 +720,7 @@ class TemplateValidatorSpec extends Spec {
   private def mkAddToList(name: String, pages: NonEmptyList[Page], addAnotherQuestion: FormComponent) =
     Section.AddToList(
       toSmartString(name),
+      None,
       Some(toSmartString(name)),
       toSmartString(name),
       toSmartString(name),

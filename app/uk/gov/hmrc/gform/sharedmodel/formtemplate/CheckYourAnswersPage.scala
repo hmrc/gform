@@ -21,6 +21,7 @@ import uk.gov.hmrc.gform.sharedmodel.SmartString
 
 case class CheckYourAnswersPage(
   title: Option[SmartString],
+  caption: Option[SmartString],
   updateTitle: SmartString,
   noPIITitle: Option[SmartString],
   noPIIUpdateTitle: Option[SmartString],
@@ -34,6 +35,7 @@ object CheckYourAnswersPage {
 
   implicit val leafExprs: LeafExpr[CheckYourAnswersPage] = (path: TemplatePath, t: CheckYourAnswersPage) =>
     LeafExpr(path + "title", t.title) ++
+      LeafExpr(path + "caption", t.caption) ++
       LeafExpr(path + "noPIITitle", t.noPIITitle) ++
       LeafExpr(path + "updateTitle", t.updateTitle) ++
       LeafExpr(path + "noPIIUpdateTitle", t.noPIIUpdateTitle) ++
