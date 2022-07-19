@@ -22,24 +22,30 @@ import uk.gov.hmrc.gform.models.constraints.ReferenceInfo
 
 sealed trait DateExpr {
   def leafExprs: List[Expr] = this match {
-    case DateValueExpr(_)             => DateCtx(this) :: Nil
-    case DateFormCtxVar(formCtx)      => formCtx :: Nil
-    case DateExprWithOffset(dExpr, _) => dExpr.leafExprs
-    case HmrcTaxPeriodCtx(formCtx, _) => formCtx :: Nil
+    case DateValueExpr(_)              => DateCtx(this) :: Nil
+    case DateFormCtxVar(formCtx)       => formCtx :: Nil
+    case DateExprWithOffset(dExpr, _)  => dExpr.leafExprs
+    case HmrcTaxPeriodCtx(formCtx, _)  => formCtx :: Nil
+    case DateIfElse(_, field1, field2) => field1.leafExprs ++ field2.leafExprs
+    case DateOrElse(field1, field2)    => field1.leafExprs ++ field2.leafExprs
   }
 
   def referenceInfos: List[ReferenceInfo] = this match {
-    case DateValueExpr(_)             => Nil
-    case DateFormCtxVar(formCtx)      => ReferenceInfo.FormCtxExpr(TemplatePath.leaf, formCtx) :: Nil
-    case DateExprWithOffset(dExpr, _) => dExpr.referenceInfos
-    case HmrcTaxPeriodCtx(formCtx, _) => ReferenceInfo.FormCtxExpr(TemplatePath.leaf, formCtx) :: Nil
+    case DateValueExpr(_)              => Nil
+    case DateFormCtxVar(formCtx)       => ReferenceInfo.FormCtxExpr(TemplatePath.leaf, formCtx) :: Nil
+    case DateExprWithOffset(dExpr, _)  => dExpr.referenceInfos
+    case HmrcTaxPeriodCtx(formCtx, _)  => ReferenceInfo.FormCtxExpr(TemplatePath.leaf, formCtx) :: Nil
+    case DateIfElse(_, field1, field2) => field1.referenceInfos ++ field2.referenceInfos
+    case DateOrElse(field1, field2)    => field1.referenceInfos ++ field2.referenceInfos
   }
 
-  def maybeFormCtx: Option[FormCtx] = this match {
-    case DateValueExpr(_)             => None
-    case DateFormCtxVar(formCtx)      => Some(formCtx)
-    case DateExprWithOffset(dExpr, _) => dExpr.maybeFormCtx
-    case HmrcTaxPeriodCtx(formCtx, _) => Some(formCtx)
+  def maybeFormCtx: List[FormCtx] = this match {
+    case DateValueExpr(_)              => Nil
+    case DateFormCtxVar(formCtx)       => List(formCtx)
+    case DateExprWithOffset(dExpr, _)  => dExpr.maybeFormCtx
+    case HmrcTaxPeriodCtx(formCtx, _)  => List(formCtx)
+    case DateIfElse(_, field1, field2) => field1.maybeFormCtx ++ field2.maybeFormCtx
+    case DateOrElse(field1, field2)    => field1.maybeFormCtx ++ field2.maybeFormCtx
   }
 }
 
@@ -75,14 +81,26 @@ case class DateValueExpr(value: DateExprValue) extends DateExpr
 case class DateFormCtxVar(formCtx: FormCtx) extends DateExpr
 case class DateExprWithOffset(dExpr: DateExpr, offset: OffsetYMD) extends DateExpr
 case class HmrcTaxPeriodCtx(formCtx: FormCtx, hmrcTaxPeriodInfo: HmrcTaxPeriodInfo) extends DateExpr
+case class DateIfElse(ifElse: BooleanExpr, field1: DateExpr, field2: DateExpr) extends DateExpr
+case class DateOrElse(field1: DateExpr, field2: DateExpr) extends DateExpr
 
 object DateExpr {
   implicit val format: OFormat[DateExpr] = derived.oformat()
 
   def allFormCtxExprs(dateExpr: DateExpr): List[FormCtx] = dateExpr match {
-    case DateValueExpr(_)             => Nil
-    case DateFormCtxVar(formCtx)      => formCtx :: Nil
-    case DateExprWithOffset(dExpr, _) => allFormCtxExprs(dExpr)
-    case HmrcTaxPeriodCtx(formCtx, _) => formCtx :: Nil
+    case DateValueExpr(_)              => Nil
+    case DateFormCtxVar(formCtx)       => formCtx :: Nil
+    case DateExprWithOffset(dExpr, _)  => allFormCtxExprs(dExpr)
+    case HmrcTaxPeriodCtx(formCtx, _)  => formCtx :: Nil
+    case DateIfElse(_, field1, field2) => allFormCtxExprs(field1) ++ allFormCtxExprs(field2)
+    case DateOrElse(field1, field2)    => allFormCtxExprs(field1) ++ allFormCtxExprs(field2)
+  }
+}
+
+object Expr2DateExpr {
+  def unapply(expr: Expr): Option[DateExpr] = expr match {
+    case DateCtx(dExpr) => Some(dExpr)
+    case e @ FormCtx(_) => Some(DateFormCtxVar(e))
+    case _              => None
   }
 }
