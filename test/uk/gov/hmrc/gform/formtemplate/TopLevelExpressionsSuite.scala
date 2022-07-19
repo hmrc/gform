@@ -262,6 +262,38 @@ class TopLevelExpressionsSuite extends FunSuite {
     }
   }
 
+  test("TopLevelExpressions (13)") {
+    check(
+      Json.obj(
+        "rateChangeDate" -> "if 1 = 1 then 01052022 else 01052021",
+        "bandAReduced"   -> "if TODAY before rateChangeDate then 3 else 4"
+      ),
+      Map(
+        ExpressionId(
+          "rateChangeDate"
+        ) -> IfElse(
+          Equals(Constant("1"), Constant("1")),
+          DateCtx(DateValueExpr(ExactDateExprValue(2022, 5, 1))),
+          DateCtx(DateValueExpr(ExactDateExprValue(2021, 5, 1)))
+        ),
+        ExpressionId(
+          "bandAReduced"
+        ) -> IfElse(
+          DateBefore(
+            DateValueExpr(TodayDateExprValue),
+            DateIfElse(
+              Equals(Constant("1"), Constant("1")),
+              DateValueExpr(ExactDateExprValue(2022, 5, 1)),
+              DateValueExpr(ExactDateExprValue(2021, 5, 1))
+            )
+          ),
+          Constant("3"),
+          Constant("4")
+        )
+      )
+    )
+  }
+
   test("TopLevelExpressions (14)") {
     check(
       Json.obj(
@@ -271,6 +303,29 @@ class TopLevelExpressionsSuite extends FunSuite {
       Map(
         ExpressionId("bar") -> FormCtx(FormComponentId("hello")),
         ExpressionId("foo") -> Sum(FormCtx(FormComponentId("hello")))
+      )
+    )
+  }
+
+  test("TopLevelExpressions (15)") {
+    check(
+      Json.obj(
+        "rateChangeDate" -> "01052022 orElse barId",
+        "bandAReduced"   -> "if TODAY before rateChangeDate then 3 else 4"
+      ),
+      Map(
+        ExpressionId("rateChangeDate") -> Else(
+          DateCtx(DateValueExpr(ExactDateExprValue(2022, 5, 1))),
+          FormCtx(FormComponentId("barId"))
+        ),
+        ExpressionId("bandAReduced") -> IfElse(
+          DateBefore(
+            DateValueExpr(TodayDateExprValue),
+            DateOrElse(DateValueExpr(ExactDateExprValue(2022, 5, 1)), DateFormCtxVar(FormCtx(FormComponentId("barId"))))
+          ),
+          Constant("3"),
+          Constant("4")
+        )
       )
     )
   }

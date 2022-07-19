@@ -43,6 +43,7 @@ class BooleanExprValidator(
     case DateExprWithOffset(dateExpr, _)          => extractFcIds(dateExpr)
     case DateFormCtxVar(FormCtx(formComponentId)) => List(formComponentId)
     case HmrcTaxPeriodCtx(FormCtx(fcId), _)       => List(fcId)
+    case DateIfElse(_, field1, field2)            => extractFcIds(field1) ++ extractFcIds(field2)
     case _                                        => Nil
   }
 
