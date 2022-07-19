@@ -261,6 +261,7 @@ object Substituter {
     } { addToList =>
       addToList.copy(
         title = addToList.title(substitutions),
+        caption = addToList.caption(substitutions),
         noPIITitle = addToList.noPIITitle(substitutions),
         description = addToList.description(substitutions),
         summaryDescription = addToList.summaryDescription(substitutions),
@@ -422,6 +423,7 @@ object Substituter {
   ): Substituter[A, CheckYourAnswersPage] = (substitutions, t) =>
     t.copy(
       title = t.title(substitutions),
+      caption = t.caption(substitutions),
       updateTitle = t.updateTitle(substitutions),
       noPIITitle = t.noPIITitle(substitutions),
       noPIIUpdateTitle = t.noPIIUpdateTitle(substitutions),

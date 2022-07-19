@@ -51,6 +51,7 @@ object Section {
 
   final case class AddToList(
     title: SmartString,
+    caption: Option[SmartString],
     noPIITitle: Option[SmartString],
     description: SmartString,
     summaryDescription: SmartString,
@@ -79,6 +80,7 @@ object Section {
       case r: Section.RepeatingPage    => ExprWithPath(path, r.repeats) :: LeafExpr(path, r.page)
       case a: Section.AddToList =>
         LeafExpr(path + "title", a.title) ++
+          LeafExpr(path + "caption", a.caption) ++
           LeafExpr(path + "noPIITitle", a.noPIITitle) ++
           LeafExpr(path + "description", a.description) ++
           LeafExpr(path + "summaryDescription", a.summaryDescription) ++

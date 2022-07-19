@@ -76,7 +76,7 @@ trait Rewriter {
       formTemplate.formKind.allSections.foldLeft(fcLookupDeclaration) {
         case (acc, Section.NonRepeatingPage(page)) => acc ++ lookupFromPage(page.fields)
         case (acc, Section.RepeatingPage(page, _)) => acc ++ lookupFromPage(page.fields)
-        case (acc, Section.AddToList(_, _, _, _, _, _, _, _, pages, _, _, _, _, _, _)) =>
+        case (acc, Section.AddToList(_, _, _, _, _, _, _, _, _, pages, _, _, _, _, _, _)) =>
           acc ++ pages.toList.flatMap(page => lookupFromPage(page.fields))
       }
 
@@ -90,7 +90,7 @@ trait Rewriter {
       formTemplate.formKind.allSections.flatMap {
         case Section.NonRepeatingPage(page) => page.fields.flatMap(f)
         case Section.RepeatingPage(page, _) => page.fields.flatMap(f)
-        case Section.AddToList(_, _, _, _, _, _, _, _, pages, _, _, _, _, _, _) =>
+        case Section.AddToList(_, _, _, _, _, _, _, _, _, pages, _, _, _, _, _, _) =>
           pages.toList.flatMap(page => page.fields.flatMap(f))
       }
 
@@ -136,7 +136,7 @@ trait Rewriter {
     val includeIfs: List[IncludeIf] = formTemplate.formKind.allSections.flatMap {
       case Section.NonRepeatingPage(page) => page.includeIf.toList
       case Section.RepeatingPage(page, _) => page.includeIf.toList
-      case Section.AddToList(_, _, _, _, _, _, includeIf, _, pages, _, _, _, _, _, _) =>
+      case Section.AddToList(_, _, _, _, _, _, _, includeIf, _, pages, _, _, _, _, _, _) =>
         includeIf.toList ++ pages.toList.flatMap(_.includeIf.toList)
     } ++ fieldsIncludeIfs ++ acknowledgementSectionIncludeIfs ++ summarySectionIncludeIfs ++ choiceIncludeIfs ++ miniSummaryListIncludeIfs
 
