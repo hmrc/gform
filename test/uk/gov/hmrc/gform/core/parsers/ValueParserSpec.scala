@@ -916,4 +916,9 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       )
     )
   }
+
+  it should "parse selectedCountry.column.InEU" in {
+    val res = ValueParser.validate("${selectedCountry.column.InEU}")
+    res.right.value should be(TextExpression(CsvCountryCheck(FormComponentId("selectedCountry"), "InEU")))
+  }
 }

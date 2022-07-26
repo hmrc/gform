@@ -66,6 +66,7 @@ final case class ExprWithPath(path: TemplatePath, expr: Expr) {
     case p @ Period(_, _)                              => ReferenceInfo.PeriodExpr(path, p) :: Nil
     case p @ PeriodExt(_, _)                           => ReferenceInfo.PeriodExtExpr(path, p) :: Nil
     case d @ DataRetrieveCtx(_, _)                     => ReferenceInfo.DataRetrieveCtxExpr(path, d) :: Nil
+    case c @ CsvCountryCheck(_, _)                     => ReferenceInfo.CsvCountryCheckExpr(path, c) :: Nil
     case s @ Size(_, _)                                => ReferenceInfo.SizeExpr(path, s) :: Nil
     case Typed(expr, tpe)                              => toReferenceInfo(expr)
   }

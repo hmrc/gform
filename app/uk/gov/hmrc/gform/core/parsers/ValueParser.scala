@@ -210,6 +210,9 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
       case _ ~ _ ~ dataRetrieveId ~ _ ~ dataRetrieveAttribute =>
         DataRetrieveCtx(DataRetrieveId(dataRetrieveId), DataRetrieveAttribute.fromName(dataRetrieveAttribute))
     } // to parse date form fields with offset or date constants i.e TODAY, 01012020 etc (with or without offset)
+    | FormComponentId.unanchoredIdValidation ~ ".column." ~ alphabeticOnly ^^ { case value ~ _ ~ column =>
+      CsvCountryCheck(FormComponentId(value), column)
+    }
     | periodValueParser ^^ { period =>
       PeriodValue(period)
     }
