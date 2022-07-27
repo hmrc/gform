@@ -165,6 +165,7 @@ object TopLevelExpressions {
         case UserCtx(_)                   => e
         case Value                        => e
         case DataRetrieveCtx(_, _)        => e
+        case CsvCountryCheck(_, _)        => e
         case Size(_, _)                   => e
         case Typed(expr, tpe)             => Typed(loop(expr), tpe)
       }

@@ -102,32 +102,33 @@ object FormTemplatePIIRefsHelper {
 
   private def extractRefs(expr: Expr): List[String] =
     expr match {
-      case Add(field1, field2)                    => extractRefs(field1) ++ extractRefs(field2)
-      case Multiply(field1, field2)               => extractRefs(field1) ++ extractRefs(field2)
-      case Subtraction(field1, field2)            => extractRefs(field1) ++ extractRefs(field2)
-      case Divide(field1, field2)                 => extractRefs(field1) ++ extractRefs(field2)
-      case IfElse(_, field1, field2)              => extractRefs(field1) ++ extractRefs(field2)
-      case Else(field1, field2)                   => extractRefs(field1) ++ extractRefs(field2)
-      case Sum(field1)                            => extractRefs(field1)
-      case Count(FormComponentId(value))          => List(value)
-      case FormCtx(FormComponentId(value))        => List(value)
-      case AddressLens(FormComponentId(value), _) => List(value)
-      case Period(dateCtx1, dateCtx2)             => extractRefs(dateCtx1) ++ extractRefs(dateCtx2)
-      case PeriodExt(period, func)                => extractRefs(period)
-      case ParamCtx(queryParam)                   => List("param." + queryParam.value)
-      case AuthCtx(value)                         => List("auth." + value.toString.toLowerCase)
-      case UserCtx(value)                         => Nil
-      case Constant(value)                        => Nil
-      case PeriodValue(value)                     => Nil
-      case HmrcRosmRegistrationCheck(value)       => Nil
-      case LinkCtx(link)                          => Nil
-      case FormTemplateCtx(value)                 => Nil
-      case DateCtx(value)                         => value.maybeFormCtx.toList.map(_.formComponentId.value)
-      case Value                                  => Nil
-      case LangCtx                                => Nil
-      case DataRetrieveCtx(_, _)                  => Nil
-      case Size(FormComponentId(value), _)        => List(value)
-      case Typed(expr, tpe)                       => extractRefs(expr)
+      case Add(field1, field2)                        => extractRefs(field1) ++ extractRefs(field2)
+      case Multiply(field1, field2)                   => extractRefs(field1) ++ extractRefs(field2)
+      case Subtraction(field1, field2)                => extractRefs(field1) ++ extractRefs(field2)
+      case Divide(field1, field2)                     => extractRefs(field1) ++ extractRefs(field2)
+      case IfElse(_, field1, field2)                  => extractRefs(field1) ++ extractRefs(field2)
+      case Else(field1, field2)                       => extractRefs(field1) ++ extractRefs(field2)
+      case Sum(field1)                                => extractRefs(field1)
+      case Count(FormComponentId(value))              => List(value)
+      case FormCtx(FormComponentId(value))            => List(value)
+      case AddressLens(FormComponentId(value), _)     => List(value)
+      case Period(dateCtx1, dateCtx2)                 => extractRefs(dateCtx1) ++ extractRefs(dateCtx2)
+      case PeriodExt(period, func)                    => extractRefs(period)
+      case ParamCtx(queryParam)                       => List("param." + queryParam.value)
+      case AuthCtx(value)                             => List("auth." + value.toString.toLowerCase)
+      case UserCtx(value)                             => Nil
+      case Constant(value)                            => Nil
+      case PeriodValue(value)                         => Nil
+      case HmrcRosmRegistrationCheck(value)           => Nil
+      case LinkCtx(link)                              => Nil
+      case FormTemplateCtx(value)                     => Nil
+      case DateCtx(value)                             => value.maybeFormCtx.toList.map(_.formComponentId.value)
+      case Value                                      => Nil
+      case LangCtx                                    => Nil
+      case DataRetrieveCtx(_, _)                      => Nil
+      case CsvCountryCheck(FormComponentId(value), _) => List(value)
+      case Size(FormComponentId(value), _)            => List(value)
+      case Typed(expr, tpe)                           => extractRefs(expr)
     }
 
   implicit class JsLookupResultOps(result: JsLookupResult) {

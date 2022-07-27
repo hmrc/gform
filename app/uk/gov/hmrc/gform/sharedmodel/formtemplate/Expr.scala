@@ -144,6 +144,7 @@ final case class DateCtx(value: DateExpr) extends Expr
 final case object Value extends Expr
 final case object LangCtx extends Expr
 final case class DataRetrieveCtx(id: DataRetrieveId, attribute: DataRetrieveAttribute) extends Expr
+final case class CsvCountryCheck(formComponentId: FormComponentId, column: String) extends Expr
 
 object Expr {
   implicit val format: OFormat[Expr] = derived.oformat()

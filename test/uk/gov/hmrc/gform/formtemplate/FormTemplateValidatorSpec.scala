@@ -26,6 +26,7 @@ import uk.gov.hmrc.gform.core.{ Invalid, Valid }
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString, SmartString }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, Date, DateCtx, DateFormCtxVar, ExprWithPath, FormComponentId, FormCtx, InformationMessage, Instruction, LeafExpr, LinkCtx, Offset, PageId, StandardInfo, TemplatePath }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.CsvCountryCheck
 
 class FormTemplateValidatorSpec
     extends AnyWordSpecLike with Matchers with FormTemplateSupport with TableDrivenPropertyChecks {
@@ -434,6 +435,26 @@ class FormTemplateValidatorSpec
       )
       forAll(table) { (sections, expected) =>
         FormTemplateValidator.validateInvalidReferences(mkFormTemplate(sections)) shouldBe expected
+      }
+    }
+  }
+
+  "validate - for CsvCountryCheck" when {
+    "expression refers to existing Form field" should {
+      "return Valid" in {
+        val sections = List(mkSectionNonRepeatingPage(formComponents = List(mkFormComponent(id = "someExistingId"))))
+        val result =
+          FormTemplateValidator.validate(CsvCountryCheck(FormComponentId("someExistingId"), "column"), sections)
+        result shouldBe Valid
+      }
+    }
+
+    "expression refers to non-existing Form field" should {
+      "return Invalid" in {
+        val sections = List(mkSectionNonRepeatingPage(formComponents = List(mkFormComponent(id = "someExistingId"))))
+        val result =
+          FormTemplateValidator.validate(CsvCountryCheck(FormComponentId("someNonExistingId"), "column"), sections)
+        result shouldBe Invalid("Form field 'someNonExistingId' is not defined in form template.")
       }
     }
   }
