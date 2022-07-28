@@ -8,7 +8,7 @@ object Dependencies {
 
   val parsebackVersion = "0.3"
   val handlebarsVersion = "4.2.0"
-  val hmrcMongoVersion = "0.50.0"
+  val hmrcMongoVersion = "0.68.0"
 
   val compile = Seq(
     "com.github.pureconfig"      %% "pureconfig"                % "0.16.0",

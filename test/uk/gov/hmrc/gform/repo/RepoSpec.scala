@@ -263,7 +263,7 @@ class RepoSpec extends AnyFlatSpec with Matchers with DefaultPlayMongoRepository
     val firstUpsertResult = repository.upsert(entity).value.futureValue
     firstUpsertResult shouldBe Left(
       UnexpectedState(
-        """Failed to parse json as uk.gov.hmrc.gform.repo.MyEntity '{"ref":"ref","num":1,"createdDate":{"$date":{"$numberLong":"123"}},"parentRefs":[],"_id":"id1"}': List((/updatedInstant,List(JsonValidationError(List(error.path.missing),WrappedArray()))))"""
+        """Failed to parse json as uk.gov.hmrc.gform.repo.MyEntity : List((/updatedInstant,List(JsonValidationError(List(error.path.missing),WrappedArray()))))"""
       )
     )
 
