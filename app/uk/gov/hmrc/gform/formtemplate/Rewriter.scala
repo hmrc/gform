@@ -123,7 +123,7 @@ trait Rewriter {
       section
         .formComponents { case IsMiniSummaryList(summaryList) => summaryList.rows }
         .flatten
-        .collect { case MiniSummaryList.Row(_, _, Some(includeIf)) =>
+        .collect { case MiniSummaryRow.ValueRow(_, _, Some(includeIf)) =>
           includeIf
         }
     }
