@@ -377,10 +377,15 @@ object MiniSummaryRow {
     includeIf: Option[IncludeIf]
   ) extends MiniSummaryRow
 
+  case class HeaderRow(
+    header: SmartString
+  ) extends MiniSummaryRow
+
   implicit val leafExprs: LeafExpr[MiniSummaryRow] = (path: TemplatePath, r: MiniSummaryRow) =>
     r match {
       case t: ValueRow =>
         LeafExpr(path + "key", t.key) ++ LeafExpr(path + "value", t.value) ++ LeafExpr(path + "includeIf", t.includeIf)
+      case t: HeaderRow => LeafExpr(path + "key", t.header)
     }
   implicit val format: Format[MiniSummaryRow] = derived.oformat()
 }

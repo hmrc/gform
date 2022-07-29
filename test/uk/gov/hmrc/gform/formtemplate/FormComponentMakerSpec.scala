@@ -353,6 +353,9 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                                        |              "value": "sortCode"
                                        |            },
                                        |            {
+                                       |              "header": "test header"
+                                       |            },
+                                       |            {
                                        |              "includeIf": "${15 = 11}",
                                        |              "value": "${2 + 3}"
                                        |            }
@@ -371,6 +374,9 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
               Some(SmartString(LocalisedString(Map(LangADT.En -> "Sort Code")), List())),
               MiniSummaryListValue.Reference(FormCtx(FormComponentId("sortCode"))),
               Some(IncludeIf(Equals(Constant("2"), Constant("3"))))
+            ),
+            MiniSummaryRow.HeaderRow(
+              SmartString(LocalisedString(Map(LangADT.En -> "test header")), List())
             ),
             MiniSummaryRow.ValueRow(
               None,
