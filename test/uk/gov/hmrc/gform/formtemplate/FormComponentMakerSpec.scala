@@ -353,6 +353,9 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                                        |              "value": "sortCode"
                                        |            },
                                        |            {
+                                       |              "header": "test header"
+                                       |            },
+                                       |            {
                                        |              "includeIf": "${15 = 11}",
                                        |              "value": "${2 + 3}"
                                        |            }
@@ -367,12 +370,15 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
         FormComponentId("bankDetailsConfirmedInfo"),
         MiniSummaryList(
           List(
-            MiniSummaryList.Row(
+            MiniSummaryRow.ValueRow(
               Some(SmartString(LocalisedString(Map(LangADT.En -> "Sort Code")), List())),
               MiniSummaryListValue.Reference(FormCtx(FormComponentId("sortCode"))),
               Some(IncludeIf(Equals(Constant("2"), Constant("3"))))
             ),
-            MiniSummaryList.Row(
+            MiniSummaryRow.HeaderRow(
+              SmartString(LocalisedString(Map(LangADT.En -> "test header")), List())
+            ),
+            MiniSummaryRow.ValueRow(
               None,
               MiniSummaryListValue.AnyExpr(Add(Constant("2"), Constant("3"))),
               Some(IncludeIf(Equals(Constant("15"), Constant("11"))))

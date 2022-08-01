@@ -170,18 +170,29 @@ class FormComponentMaker(json: JsValue) {
 
   lazy val optCountryLookup: Option[Boolean] = (json \ "countryLookup").asOpt[String].map(_.toBoolean)
 
-  private def getRow(json: JsValue): Opt[MiniSummaryList.Row] =
+  private def getValueRow(json: JsValue): Opt[MiniSummaryRow] =
     for {
       key       <- toOpt((json \ "key").validateOpt[SmartString], "/key")
       value     <- toOpt((json \ "value").validate[String], "/value").flatMap(SummaryListParser.validate)
       includeIf <- toOpt((json \ "includeIf").validateOpt[IncludeIf], "/includeIf")
 
-    } yield MiniSummaryList.Row(key, value, includeIf)
+    } yield MiniSummaryRow.ValueRow(key, value, includeIf)
 
-  lazy val rows: Opt[List[MiniSummaryList.Row]] =
+  private def getHeaderRow(json: JsValue): Opt[MiniSummaryRow] =
+    for {
+      header <- toOpt((json \ "header").validate[SmartString], "/header")
+    } yield MiniSummaryRow.HeaderRow(header)
+
+  lazy val rows: Opt[List[MiniSummaryRow]] =
     for {
       jsValues <- toOpt((json \ "rows").validate[List[JsValue]], "/rows")
-      rs       <- jsValues.map(getRow).sequence
+      rs <- jsValues
+              .traverse(j =>
+                getValueRow(j) match {
+                  case Right(r) => Right(r)
+                  case _        => getHeaderRow(j)
+                }
+              )
     } yield rs
 
   lazy val summaryListOpt: Opt[MiniSummaryList] = rows.map(rs => MiniSummaryList(rs))

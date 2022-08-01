@@ -111,16 +111,18 @@ object Substituter {
   implicit def miniSummaryListRowSubstituter[A](implicit
     ev: Substituter[A, Expr],
     ev2: Substituter[A, BooleanExpr]
-  ): Substituter[A, MiniSummaryList.Row] = (substitutions, t) =>
+  ): Substituter[A, MiniSummaryRow] = (substitutions, t) =>
     t match {
-      case MiniSummaryList.Row(key, MiniSummaryListValue.AnyExpr(exp), includeIf) =>
-        MiniSummaryList.Row(
+      case MiniSummaryRow.ValueRow(key, MiniSummaryListValue.AnyExpr(exp), includeIf) =>
+        MiniSummaryRow.ValueRow(
           key(substitutions),
           MiniSummaryListValue.AnyExpr(exp(substitutions)),
           includeIf(substitutions)
         )
-      case MiniSummaryList.Row(key, r, includeIf) =>
-        MiniSummaryList.Row(key.map(_(substitutions)), r, includeIf(substitutions))
+      case MiniSummaryRow.ValueRow(key, r, includeIf) =>
+        MiniSummaryRow.ValueRow(key.map(_(substitutions)), r, includeIf(substitutions))
+      case MiniSummaryRow.HeaderRow(header) =>
+        MiniSummaryRow.HeaderRow(header(substitutions))
     }
 
   implicit def componentTypeSubstituter[A](implicit

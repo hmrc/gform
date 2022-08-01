@@ -368,21 +368,31 @@ object Time {
   implicit val format: OFormat[Time] = derived.oformat()
 }
 
-case class MiniSummaryList(rows: List[MiniSummaryList.Row]) extends ComponentType
+sealed trait MiniSummaryRow extends Product with Serializable
 
-object MiniSummaryList {
-  case class Row(
+object MiniSummaryRow {
+  case class ValueRow(
     key: Option[SmartString],
     value: MiniSummaryListValue,
     includeIf: Option[IncludeIf]
-  )
-  object Row {
-    implicit val format: Format[Row] = derived.oformat()
-    implicit val leafExprs: LeafExpr[Row] = (path: TemplatePath, t: Row) =>
-      LeafExpr(path + "key", t.key) ++ LeafExpr(path + "value", t.value) ++ LeafExpr(path + "includeIf", t.includeIf)
-  }
-  implicit val format: Format[MiniSummaryList] = derived.oformat()
+  ) extends MiniSummaryRow
 
+  case class HeaderRow(
+    header: SmartString
+  ) extends MiniSummaryRow
+
+  implicit val leafExprs: LeafExpr[MiniSummaryRow] = (path: TemplatePath, r: MiniSummaryRow) =>
+    r match {
+      case t: ValueRow =>
+        LeafExpr(path + "key", t.key) ++ LeafExpr(path + "value", t.value) ++ LeafExpr(path + "includeIf", t.includeIf)
+      case t: HeaderRow => LeafExpr(path + "key", t.header)
+    }
+  implicit val format: Format[MiniSummaryRow] = derived.oformat()
+}
+
+case class MiniSummaryList(rows: List[MiniSummaryRow]) extends ComponentType
+object MiniSummaryList {
+  implicit val format: Format[MiniSummaryList] = derived.oformat()
 }
 
 object ComponentType {
