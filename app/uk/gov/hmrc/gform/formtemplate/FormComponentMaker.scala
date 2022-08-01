@@ -187,13 +187,12 @@ class FormComponentMaker(json: JsValue) {
     for {
       jsValues <- toOpt((json \ "rows").validate[List[JsValue]], "/rows")
       rs <- jsValues
-              .map(j =>
+              .traverse(j =>
                 getValueRow(j) match {
                   case Right(r) => Right(r)
                   case _        => getHeaderRow(j)
                 }
               )
-              .sequence
     } yield rs
 
   lazy val summaryListOpt: Opt[MiniSummaryList] = rows.map(rs => MiniSummaryList(rs))
