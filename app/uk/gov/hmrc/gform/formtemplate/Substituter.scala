@@ -284,7 +284,8 @@ object Substituter {
   ): Substituter[A, Task] = (substitutions, t) =>
     t.copy(
       title = t.title(substitutions),
-      sections = t.sections(substitutions)
+      sections = t.sections(substitutions),
+      summarySection = t.summarySection(substitutions)
     )
 
   implicit def taskSectionSubstituter[A](implicit
