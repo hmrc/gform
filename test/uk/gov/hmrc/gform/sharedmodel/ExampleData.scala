@@ -468,6 +468,8 @@ trait ExampleFormTemplate {
     toSmartString("Header"),
     toSmartString("Footer"),
     Some(toSmartString("ContinueLabel")),
+    None,
+    SummaryDisplayWidth.M,
     None
   )
 

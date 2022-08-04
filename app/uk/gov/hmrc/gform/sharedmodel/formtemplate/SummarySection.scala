@@ -26,7 +26,8 @@ case class SummarySection(
   footer: SmartString,
   continueLabel: Option[SmartString],
   fields: Option[NonEmptyList[FormComponent]],
-  displayWidth: SummaryDisplayWidth.SummaryDisplayWidth = SummaryDisplayWidth.M
+  displayWidth: SummaryDisplayWidth.SummaryDisplayWidth = SummaryDisplayWidth.M,
+  includeIf: Option[IncludeIf]
 )
 
 object SummarySection extends JsonUtils {
@@ -36,7 +37,8 @@ object SummarySection extends JsonUtils {
       LeafExpr(path + "header", t.header) ++
       LeafExpr(path + "footer", t.footer) ++
       LeafExpr(path + "continueLabel", t.continueLabel) ++
-      LeafExpr(path + "fields", t.fields)
+      LeafExpr(path + "fields", t.fields) ++
+      LeafExpr(path + "includeIf", t.includeIf)
 
   def defaultJson(formCategory: FormCategory): JsValue = {
 
