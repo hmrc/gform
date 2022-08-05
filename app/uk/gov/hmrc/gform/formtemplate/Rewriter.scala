@@ -104,7 +104,13 @@ trait Rewriter {
     }
 
     val summarySectionIncludeIfs: List[IncludeIf] =
-      formTemplate.summarySection.fields.fold(List.empty[IncludeIf])(_.toList.flatMap(_.includeIf))
+      formTemplate.summarySection.fields.fold(List.empty[IncludeIf])(_.toList.flatMap(_.includeIf)) ++
+        formTemplate.summarySection.includeIf ++
+        formTemplate.formKind.allSections.flatMap { section =>
+          section.formComponents { case IsSummarySection(ss) =>
+            ss.includeIf
+          }.flatten
+        }
 
     val choiceIncludeIfs: List[IncludeIf] = formTemplate.formKind.allSections.flatMap { section =>
       section
@@ -339,7 +345,10 @@ trait Rewriter {
         declarationSection.copy(fields = replaceFields(declarationSection.fields))
 
       def replaceSummarySection(summarySection: SummarySection): SummarySection =
-        summarySection.copy(fields = replaceFieldsNel(summarySection.fields))
+        summarySection.copy(
+          fields = replaceFieldsNel(summarySection.fields),
+          includeIf = replaceIncludeIf(summarySection.includeIf)
+        )
 
       def replaceAcknowledgementSection(acknowledgementSection: AcknowledgementSection): AcknowledgementSection =
         acknowledgementSection.copy(fields = replaceFields(acknowledgementSection.fields))
@@ -383,7 +392,8 @@ trait Rewriter {
               taskSection.copy(
                 tasks = taskSection.tasks.map(task =>
                   task.copy(
-                    sections = task.sections.map(updateSection)
+                    sections = task.sections.map(updateSection),
+                    summarySection = task.summarySection.map(replaceSummarySection)
                   )
                 )
               )
