@@ -141,7 +141,3 @@ object IsFileUpload {
 object IsMiniSummaryList {
   def unapply(fc: FormComponent): Option[MiniSummaryList] = fc.`type`.cast[MiniSummaryList]
 }
-
-object IsSummarySection {
-  def unapply(fc: FormComponent): Option[SummarySection] = fc.`type`.cast[SummarySection]
-}
