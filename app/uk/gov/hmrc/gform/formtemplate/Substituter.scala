@@ -123,6 +123,8 @@ object Substituter {
         MiniSummaryRow.ValueRow(key.map(_(substitutions)), r, includeIf(substitutions))
       case MiniSummaryRow.HeaderRow(header) =>
         MiniSummaryRow.HeaderRow(header(substitutions))
+      case MiniSummaryRow.ATLRow(atlId, includeIf, rows) =>
+        MiniSummaryRow.ATLRow(atlId, includeIf(substitutions), rows(substitutions))
     }
 
   implicit def componentTypeSubstituter[A](implicit

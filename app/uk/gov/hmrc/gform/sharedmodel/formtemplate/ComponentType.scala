@@ -381,11 +381,19 @@ object MiniSummaryRow {
     header: SmartString
   ) extends MiniSummaryRow
 
+  case class ATLRow(
+    atlId: FormComponentId,
+    includeIf: Option[IncludeIf],
+    rows: List[MiniSummaryRow]
+  ) extends MiniSummaryRow
+
   implicit val leafExprs: LeafExpr[MiniSummaryRow] = (path: TemplatePath, r: MiniSummaryRow) =>
     r match {
       case t: ValueRow =>
         LeafExpr(path + "key", t.key) ++ LeafExpr(path + "value", t.value) ++ LeafExpr(path + "includeIf", t.includeIf)
       case t: HeaderRow => LeafExpr(path + "key", t.header)
+      case t: ATLRow =>
+        LeafExpr(path + "key", t.atlId) ++ LeafExpr(path + "key", t.includeIf) ++ LeafExpr(path + "key", t.rows)
     }
   implicit val format: Format[MiniSummaryRow] = derived.oformat()
 }

@@ -183,19 +183,27 @@ class FormComponentMaker(json: JsValue) {
       header <- toOpt((json \ "header").validate[SmartString], "/header")
     } yield MiniSummaryRow.HeaderRow(header)
 
-  lazy val rows: Opt[List[MiniSummaryRow]] =
+  private def getATLRow(json: JsValue): Opt[MiniSummaryRow] =
     for {
-      jsValues <- toOpt((json \ "rows").validate[List[JsValue]], "/rows")
-      rs <- jsValues
-              .traverse(j =>
-                getValueRow(j) match {
-                  case Right(r) => Right(r)
-                  case _        => getHeaderRow(j)
-                }
-              )
-    } yield rs
+      atlId     <- toOpt((json \ "atlId").validate[FormComponentId], "/atlId")
+      includeIf <- toOpt((json \ "includeIf").validateOpt[IncludeIf], "/includeIf")
+      atlRows   <- rows(json, "repeat")
+    } yield MiniSummaryRow.ATLRow(atlId, includeIf, atlRows)
 
-  lazy val summaryListOpt: Opt[MiniSummaryList] = rows.map(rs => MiniSummaryList(rs))
+  def rows(json: JsValue, field: String): Opt[List[MiniSummaryRow]] = {
+    def loop(a: Opt[MiniSummaryRow], b: => Opt[MiniSummaryRow]): Opt[MiniSummaryRow] =
+      a match {
+        case Right(r) => Right(r)
+        case _        => b
+      }
+    for {
+      jsValues <- toOpt((json \ field).validate[List[JsValue]], s"/$field")
+      rs <- jsValues
+              .traverse(j => loop(loop(getValueRow(j), getHeaderRow(j)), getATLRow(j)))
+    } yield rs
+  }
+
+  lazy val summaryListOpt: Opt[MiniSummaryList] = rows(json, "rows").map(rs => MiniSummaryList(rs))
 
   def optFieldValue(): Opt[FormComponent] =
     for {

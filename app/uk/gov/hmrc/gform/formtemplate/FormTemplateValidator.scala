@@ -715,8 +715,16 @@ object FormTemplateValidator {
     case Time(_, _)                  => Valid
     case OverseasAddress(_, _, _, _) => Valid
     case PostcodeLookup              => Valid
-    // TODO: GFORMS-1720 proper validation here (maybe HasExpr?)
-    case MiniSummaryList(_) => Valid
+    case MiniSummaryList(ls)         => validateMiniSummaryList(ls, formTemplate)
+  }
+
+  def validateMiniSummaryList(rows: List[MiniSummaryRow], formTemplate: FormTemplate): ValidationResult = {
+    val atlIds = SectionHelper.addToListIds(formTemplate.formKind.allSections).map(_.id)
+    Monoid.combineAll(rows.map {
+      case MiniSummaryRow.ATLRow(atlId, _, _) =>
+        if (atlIds.contains(atlId)) Valid else Invalid(s"$atlId is not AddToList Id")
+      case _ => Valid
+    })
   }
 
   def validateForwardReference(sections: List[Section]): ValidationResult = {

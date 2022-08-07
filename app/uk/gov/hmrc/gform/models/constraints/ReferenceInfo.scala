@@ -33,4 +33,5 @@ object ReferenceInfo {
   final case class DataRetrieveCtxExpr(path: TemplatePath, dataRetrieveCtx: DataRetrieveCtx) extends ReferenceInfo
   final case class SizeExpr(path: TemplatePath, size: Size) extends ReferenceInfo
   final case class CsvCountryCheckExpr(path: TemplatePath, csvCountryCheck: CsvCountryCheck) extends ReferenceInfo
+  final case class MiniSummaryRowExpr(path: TemplatePath, miniSummaryRow: MiniSummaryRow) extends ReferenceInfo
 }
