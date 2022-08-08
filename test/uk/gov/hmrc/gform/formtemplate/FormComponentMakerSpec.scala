@@ -358,9 +358,17 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                                        |            {
                                        |              "includeIf": "${15 = 11}",
                                        |              "value": "${2 + 3}"
+                                       |            },
+                                       |            {
+                                       |              "atlId": "atlID",
+                                       |              "repeat": [
+                                       |                {
+                                       |                  "header": "test repeat header" 
+                                       |                }
+                                       |              ]
                                        |            }
                                        |          ]
-                                       |        }
+                                       |    }
                                        |""".stripMargin)
     val formComponentMaker = new FormComponentMaker(summaryListJson)
     val result = formComponentMaker.optFieldValue()
@@ -382,6 +390,15 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
               None,
               MiniSummaryListValue.AnyExpr(Add(Constant("2"), Constant("3"))),
               Some(IncludeIf(Equals(Constant("15"), Constant("11"))))
+            ),
+            MiniSummaryRow.ATLRow(
+              FormComponentId("atlID"),
+              None,
+              List(
+                MiniSummaryRow.HeaderRow(
+                  SmartString(LocalisedString(Map(LangADT.En -> "test repeat header")), List())
+                )
+              )
             )
           )
         ),
