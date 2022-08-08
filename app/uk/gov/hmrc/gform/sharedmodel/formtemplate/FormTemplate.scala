@@ -43,6 +43,7 @@ case class FormTemplate(
   languages: AvailableLanguages,
   save4LaterInfoText: Option[Save4LaterInfoText],
   summarySection: SummarySection,
+  submitSection: Option[SubmitSection],
   displayHMRCLogo: Boolean,
   allowedFileTypes: AllowedFileTypes,
   fileSizeLimit: Option[Int],
