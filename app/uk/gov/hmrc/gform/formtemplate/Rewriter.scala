@@ -107,7 +107,12 @@ trait Rewriter {
       formTemplate.summarySection.fields.fold(List.empty[IncludeIf])(_.toList.flatMap(_.includeIf)) ++
         formTemplate.summarySection.includeIf ++
         formTemplate.formKind.fold(_ => List.empty[IncludeIf])(taskList =>
-          taskList.sections.toList.flatMap(_.tasks.toList.flatMap(_.summarySection.flatMap(_.includeIf)))
+          taskList.sections.toList.flatMap(_.tasks.toList.flatMap(_.summarySection.flatMap(_.includeIf))) ++
+            taskList.sections.toList.flatMap(
+              _.tasks.toList.flatMap(
+                _.summarySection.toList.flatMap(_.fields.toList.flatMap(_.toList.flatMap(_.includeIf)))
+              )
+            )
         )
 
     val choiceIncludeIfs: List[IncludeIf] = formTemplate.formKind.allSections.flatMap { section =>
