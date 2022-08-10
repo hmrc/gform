@@ -1040,6 +1040,23 @@ object FormTemplateValidator {
     confirmationValidation.validationResult.combineAll
 
   }
+
+  def validateSubmitSection(formTemplate: FormTemplate): ValidationResult = {
+    val invalidReason = "Section 'submitSection' is required by the task list"
+    formTemplate.formKind.fold { _ =>
+      if (formTemplate.submitSection.isDefined) {
+        Invalid(invalidReason)
+      } else {
+        Valid
+      }
+    } { _ =>
+      if (formTemplate.submitSection.isEmpty) {
+        Invalid(invalidReason)
+      } else {
+        Valid
+      }
+    }
+  }
 }
 
 object IsEmailVerifiedBy {
