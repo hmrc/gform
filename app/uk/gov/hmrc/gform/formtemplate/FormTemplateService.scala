@@ -89,7 +89,12 @@ class FormTemplateService(
     for {
       expressionsContextSubstituted <- fromOptA(exprSubstitutionsResolved)
       substitutedFormTemplate = substituteExpressions(formTemplate, expressionsContextSubstituted)
-      substitutedBooleanExprsFormTemplate = substituteBooleanExprs(substitutedFormTemplate, booleanExpressionsContext)
+      substitutedBooleanExprsFormTemplate =
+        substituteBooleanExprs(
+          substitutedFormTemplate,
+          booleanExpressionsContext,
+          expressionsContextSubstituted
+        )
       _                  <- verify(substitutedBooleanExprsFormTemplate)(expressionsContext)
       formTemplateToSave <- rewrite(substitutedBooleanExprsFormTemplate)
       _                  <- formTemplateRepo.replace(mkSpecimen(formTemplateToSave))
