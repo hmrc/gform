@@ -38,8 +38,11 @@ class SubstituteBooleanExprsSuite extends FunSuite with FormTemplateSupport {
          |  "authConfig": {
          |    "authModule": "anonymous"
          |  },
+         |  "expressions": {
+         |    "zero": "0"
+         |  },
          |  "booleanExpressions": {
-         |    "myBoolExpr": "AAA > 0"
+         |    "myBoolExpr": "AAA > zero"
          |  },
          |  "sections": [
          |    {
@@ -70,8 +73,8 @@ class SubstituteBooleanExprsSuite extends FunSuite with FormTemplateSupport {
          |  ]
          |}""".stripMargin
 
-    toFormTemplateAndSubstitutions(jsonStr) { (formTemplate, substitutions) =>
-      val res = substituteBooleanEpxrs.substituteBooleanExprs(formTemplate, substitutions)
+    toFormTemplateAndSubstitutions(jsonStr) { (formTemplate, substitutions, expSubstitutions) =>
+      val res = substituteBooleanEpxrs.substituteBooleanExprs(formTemplate, substitutions, expSubstitutions)
       val sectionA = res.formKind.allSections(0)
       sectionA match {
         case Section.NonRepeatingPage(page) =>
@@ -90,7 +93,9 @@ class SubstituteBooleanExprsSuite extends FunSuite with FormTemplateSupport {
     }
   }
 
-  private def toFormTemplateAndSubstitutions[A](jsonStr: String)(f: (FormTemplate, BooleanExprSubstitutions) => A) = {
+  private def toFormTemplateAndSubstitutions[A](
+    jsonStr: String
+  )(f: (FormTemplate, BooleanExprSubstitutions, ExprSubstitutions) => A) = {
     val maybeNormalisedJson = FormTemplatesControllerRequestHandler.normaliseJSON(Json.parse(jsonStr))
 
     maybeNormalisedJson match {
@@ -99,10 +104,15 @@ class SubstituteBooleanExprsSuite extends FunSuite with FormTemplateSupport {
         val formTemplate: FormTemplate = normalisedJson.as[FormTemplate]
         val maybeBooleanExprSubstitutions: Opt[BooleanExprSubstitutions] =
           BooleanExprSubstitutions.from(FormTemplateRaw(normalisedJson.as[JsObject]))
+        val maybeExprSubstitutions: Opt[ExprSubstitutions] =
+          ExprSubstitutions.from(FormTemplateRaw(normalisedJson.as[JsObject]))
 
-        maybeBooleanExprSubstitutions match {
+        (for {
+          booleanExprSubstitutions <- maybeBooleanExprSubstitutions
+          exprSubstitutions        <- maybeExprSubstitutions
+        } yield f(formTemplate, booleanExprSubstitutions, exprSubstitutions)) match {
           case Left(unexpectedState) => fail(unexpectedState.error)
-          case Right(substitutions)  => f(formTemplate, substitutions)
+          case Right(result)         => result
         }
     }
   }
