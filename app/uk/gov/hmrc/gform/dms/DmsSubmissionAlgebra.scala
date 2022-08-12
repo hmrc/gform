@@ -105,7 +105,7 @@ object DmsSubmissionService {
       metadata.businessArea,
       "",
       true,
-      true,
+      "xml",
       true,
       metadata.backscan,
       false

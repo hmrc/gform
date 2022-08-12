@@ -52,7 +52,7 @@ class MetadataXmlSpec extends Spec {
       "some-business-area",
       "",
       true,
-      true,
+      "xml",
       true,
       Some(true),
       true

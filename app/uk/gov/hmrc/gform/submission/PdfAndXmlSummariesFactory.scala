@@ -25,6 +25,7 @@ import uk.gov.hmrc.gform.sharedmodel.form.Form
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
+import org.json.XML
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -61,7 +62,8 @@ object PdfAndXmlSummariesFactory {
       } yield PdfAndXmlSummaries(
         pdfSummary = createPdfSummary(pdf),
         instructionPdfSummary = instructionPdf.map(createPdfSummary),
-        roboticsXml = createRoboticsXml(formTemplate, structuredFormData, hmrcDms, submissionRef),
+        roboticsFile = createRoboticsFile(formTemplate, structuredFormData, hmrcDms, submissionRef),
+        roboticsFileExtension = Some(hmrcDms.dataOutputFormat),
         formDataXml = createFormdataXml(formTemplate, structuredFormData, hmrcDms, submissionRef)
       )
 
@@ -77,33 +79,38 @@ object PdfAndXmlSummariesFactory {
       hmrcDms: HmrcDms,
       submissionRef: SubmissionRef
     )(implicit now: Instant): Option[String] =
-      generateRoboticsXml(formTemplate, structuredFormData, hmrcDms, submissionRef, _.formdataXml)
+      generateRoboticsXml(formTemplate, structuredFormData, hmrcDms, submissionRef)
 
-    private def createRoboticsXml(
+    private def createRoboticsFile(
       formTemplate: FormTemplate,
       structuredFormData: StructuredFormValue.ObjectStructure,
       hmrcDms: HmrcDms,
       submissionRef: SubmissionRef
     )(implicit now: Instant): Option[String] =
-      generateRoboticsXml(formTemplate, structuredFormData, hmrcDms, submissionRef, _.roboticsXml)
+      generateRoboticsXml(formTemplate, structuredFormData, hmrcDms, submissionRef)
 
     private def generateRoboticsXml(
       formTemplate: FormTemplate,
       structuredFormData: StructuredFormValue.ObjectStructure,
       hmrcDms: HmrcDms,
-      submissionRef: SubmissionRef,
-      condition: HmrcDms => Boolean
-    )(implicit now: Instant) =
-      if (condition(hmrcDms)) {
-        Some(RoboticsXMLGenerator(formTemplate._id, hmrcDms.dmsFormId, submissionRef, structuredFormData, now))
-          .map(body =>
-            // No whitespace of anysort after xml declaration. Robot won't be able to process xml otherwise
-            XmlGeneratorService.xmlDec + <data xmlns:xfa="http://www.xfa.org/schema/xfa-data/1.0/">
+      submissionRef: SubmissionRef
+    )(implicit now: Instant): Option[String] =
+      hmrcDms.dataOutputFormat match {
+        case "XML" =>
+          Some(RoboticsXMLGenerator(formTemplate._id, hmrcDms.dmsFormId, submissionRef, structuredFormData, now))
+            .map(body =>
+              // No whitespace of anysort after xml declaration. Robot won't be able to process xml otherwise
+              XmlGeneratorService.xmlDec + <data xmlns:xfa="http://www.xfa.org/schema/xfa-data/1.0/">
                 {body}
               </data>
-          )
-      } else {
-        None
+            )
+        case "JSON" =>
+          Some(RoboticsXMLGenerator(formTemplate._id, hmrcDms.dmsFormId, submissionRef, structuredFormData, now))
+            .map { xml =>
+              val xmlJSONObj = XML.toJSONObject(xml.toString)
+              xmlJSONObj.toString
+            }
+        case _ => None
       }
   }
 }

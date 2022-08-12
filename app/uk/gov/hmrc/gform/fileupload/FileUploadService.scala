@@ -91,7 +91,7 @@ class FileUploadService(
 
     def uploadFormDataF: Future[Unit] =
       summaries.formDataXml
-        .map(elem => uploadXml(formdataXml, s"$fileNamePrefix-formdata.xml", elem))
+        .map(elem => uploadFile(formdataXml, s"$fileNamePrefix-formdata.xml", elem))
         .getOrElse(Future.successful(()))
 
     def uploadMetadataXmlF: Future[Unit] = {
@@ -104,23 +104,36 @@ class FileUploadService(
           submission.noOfAttachments + summaries.instructionPdfSummary.fold(0)(_ => 1),
           hmrcDms
         )
-      uploadXml(xml, s"$fileNamePrefix-metadata.xml", metadataXml)
+      uploadFile(xml, s"$fileNamePrefix-metadata.xml", metadataXml)
     }
 
-    def uploadRoboticsXmlF: Future[Unit] = summaries.roboticsXml match {
-      case Some(elem) => uploadXml(roboticsXml, s"$fileNamePrefix-robotic.xml", elem)
-      case _          => Future.successful(())
+    def uploadRoboticsContentF: Future[Unit] = summaries.roboticsFile match {
+      case Some(elem) =>
+        val roboticsFileExtension = summaries.roboticsFileExtension
+        uploadFile(
+          roboticsFileId(roboticsFileExtension),
+          s"$fileNamePrefix-robotic" + roboticsFileExtension,
+          elem,
+          roboticsFileExtension
+        )
+      case _ => Future.successful(())
     }
 
-    def uploadXml(fileId: FileId, fileName: String, xml: String): Future[Unit] =
+    def uploadFile(fileId: FileId, fileName: String, content: String, fileType: Option[String] = None): Future[Unit] = {
+      val contentType = fileType match {
+        case Some("JSON") => ContentType.`application/json`
+        case _            => ContentType.`application/xml`
+      }
+
       fileUploadFrontendConnector
-        .upload(submission.envelopeId, fileId, fileName, ByteString(xml.getBytes), ContentType.`application/xml`)
+        .upload(submission.envelopeId, fileId, fileName, ByteString(content.getBytes), contentType)
+    }
 
     for {
       _ <- uploadPfdF
       _ <- uploadInstructionPdfF
       _ <- uploadFormDataF
-      _ <- uploadRoboticsXmlF
+      _ <- uploadRoboticsContentF
       _ <- uploadMetadataXmlF
       _ <- fileUploadConnector.routeEnvelope(RouteEnvelopeRequest(submission.envelopeId, "dfs", "DMS"))
     } yield ()
@@ -156,6 +169,6 @@ object FileUploadService {
     val customerSummaryPdf = FileId("customerSummaryPdf")
     val formdataXml = FileId("formdataXml")
     val xml = FileId("xmlDocument")
-    val roboticsXml = FileId("roboticsXml")
+    def roboticsFileId(extension: Option[String]) = FileId(s"robotics${extension.getOrElse("xml").capitalize}")
   }
 }
