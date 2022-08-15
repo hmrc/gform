@@ -465,6 +465,7 @@ trait ExampleFormTemplate {
 
   def summarySection = SummarySection(
     toSmartString("Title"),
+    Some(toSmartString("Caption")),
     toSmartString("Header"),
     toSmartString("Footer"),
     Some(toSmartString("ContinueLabel")),

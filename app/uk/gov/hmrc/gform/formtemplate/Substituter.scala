@@ -417,6 +417,7 @@ object Substituter {
   ): Substituter[A, SummarySection] = (substitutions, t) =>
     t.copy(
       title = t.title(substitutions),
+      caption = t.caption(substitutions),
       header = t.header(substitutions),
       footer = t.footer(substitutions),
       continueLabel = t.continueLabel(substitutions),

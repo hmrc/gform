@@ -24,11 +24,12 @@ trait SummarySectionGen {
   def summarySectionGen: Gen[SummarySection] =
     for {
       title         <- smartStringGen
+      caption       <- Gen.option(smartStringGen)
       header        <- smartStringGen
       footer        <- smartStringGen
       continueLabel <- Gen.option(smartStringGen)
       fields        <- Gen.option(PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen()))
-    } yield SummarySection(title, header, footer, continueLabel, fields, SummaryDisplayWidth.M, None)
+    } yield SummarySection(title, caption, header, footer, continueLabel, fields, SummaryDisplayWidth.M, None)
 }
 
 object SummarySectionGen extends SummarySectionGen
