@@ -48,7 +48,7 @@ trait ExampleAuthConfig extends DestinationGen {
     "TestHmrcDmsBusinessArea",
     "",
     true,
-    true,
+    "xml",
     true,
     Some(true),
     true

@@ -49,7 +49,7 @@ object Destination {
     businessArea: String,
     includeIf: String,
     failOnError: Boolean,
-    roboticsXml: Boolean,
+    dataOutputFormat: String,
     formdataXml: Boolean,
     backscan: Option[Boolean],
     includeInstructionPdf: Boolean
@@ -147,7 +147,7 @@ case class UploadableHmrcDmsDestination(
   convertSingleQuotes: Option[Boolean],
   includeIf: Option[String],
   failOnError: Option[Boolean],
-  roboticsXml: Option[Boolean],
+  dataOutputFormat: Option[DataOutputFormat],
   formdataXml: Option[Boolean],
   closedStatus: Option[Boolean],
   includeInstructionPdf: Option[Boolean] = None
@@ -164,7 +164,7 @@ case class UploadableHmrcDmsDestination(
       businessArea,
       cii.getOrElse(true.toString),
       failOnError.getOrElse(true),
-      roboticsXml.getOrElse(false),
+      dataOutputFormat.getOrElse("").toString,
       formdataXml.getOrElse(false),
       closedStatus,
       includeInstructionPdf.getOrElse(false)

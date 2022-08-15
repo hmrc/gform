@@ -19,7 +19,7 @@ import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.EmailVerifierService
 import uk.gov.hmrc.gform.sharedmodel.form.FormStatus
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.Expr
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, ProjectId }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DataOutputFormat, Destination, DestinationId, ProjectId }
 import uk.gov.hmrc.gform.sharedmodel.notifier.{ NotifierPersonalisationFieldId, NotifierTemplateId }
 
 trait DestinationGen {
@@ -45,7 +45,6 @@ trait DestinationGen {
       businessArea          <- businessAreaGen
       includeIf             <- includeIfGen
       failOnError           <- PrimitiveGen.booleanGen
-      roboticsXml           <- PrimitiveGen.booleanGen
       formdataXml           <- PrimitiveGen.booleanGen
       backscan              <- Gen.option(PrimitiveGen.booleanGen)
       includeInstructionPdf <- PrimitiveGen.booleanGen
@@ -58,7 +57,7 @@ trait DestinationGen {
         businessArea,
         includeIf,
         failOnError,
-        roboticsXml,
+        DataOutputFormat.XML.toString,
         formdataXml,
         backscan,
         includeInstructionPdf

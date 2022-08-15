@@ -235,7 +235,7 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
         "BusinessArea",
         "true",
         true,
-        false,
+        "",
         false,
         None,
         false
