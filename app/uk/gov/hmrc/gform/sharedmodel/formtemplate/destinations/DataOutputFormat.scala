@@ -16,14 +16,33 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
 
-import play.api.libs.json.Format
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.ADTFormat
+import play.api.libs.json.{ Format, JsError, JsResult, JsString, JsSuccess, JsValue }
 
-sealed trait DataOutputFormat extends Product with Serializable
+sealed trait DataOutputFormat {
+  val content: String
+}
 
 object DataOutputFormat {
-  case object JSON extends DataOutputFormat
-  case object XML extends DataOutputFormat
+  case object JSON extends DataOutputFormat {
+    override val content: String = "json"
+  }
+  case object XML extends DataOutputFormat {
+    override val content: String = "xml"
+  }
 
-  implicit val format: Format[DataOutputFormat] = ADTFormat.formatEnumeration("json" -> JSON, "xml" -> XML)
+  implicit val format: Format[DataOutputFormat] = new Format[DataOutputFormat] {
+    override def writes(o: DataOutputFormat): JsValue = o match {
+      case JSON => JsString(JSON.content)
+      case XML  => JsString(XML.content)
+    }
+
+    override def reads(json: JsValue): JsResult[DataOutputFormat] =
+      json match {
+        case JsString("json") => JsSuccess(JSON)
+        case JsString("xml")  => JsSuccess(XML)
+        case JsString(err)    => JsError(s"dataOutputFormat on destination must be json or xml. $err is not allowed")
+        case _                => JsError("Failure")
+      }
+  }
+
 }
