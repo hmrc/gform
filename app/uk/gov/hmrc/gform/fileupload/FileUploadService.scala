@@ -109,19 +109,19 @@ class FileUploadService(
 
     def uploadRoboticsContentF: Future[Unit] = summaries.roboticsFile match {
       case Some(elem) =>
-        val roboticsFileExtension = summaries.roboticsFileExtension
+        val roboticsFileExtension = summaries.roboticsFileExtension.map(_.toLowerCase).getOrElse("xml")
         uploadFile(
           roboticsFileId(roboticsFileExtension),
-          s"$fileNamePrefix-robotic" + roboticsFileExtension,
+          s"$fileNamePrefix-robotic." + roboticsFileExtension,
           elem,
-          roboticsFileExtension
+          Some(roboticsFileExtension)
         )
       case _ => Future.successful(())
     }
 
     def uploadFile(fileId: FileId, fileName: String, content: String, fileType: Option[String] = None): Future[Unit] = {
       val contentType = fileType match {
-        case Some("JSON") => ContentType.`application/json`
+        case Some("json") => ContentType.`application/json`
         case _            => ContentType.`application/xml`
       }
 
@@ -169,6 +169,6 @@ object FileUploadService {
     val customerSummaryPdf = FileId("customerSummaryPdf")
     val formdataXml = FileId("formdataXml")
     val xml = FileId("xmlDocument")
-    def roboticsFileId(extension: Option[String]) = FileId(s"robotics${extension.getOrElse("xml").capitalize}")
+    def roboticsFileId(extension: String) = FileId(s"robotics${extension.capitalize}")
   }
 }
