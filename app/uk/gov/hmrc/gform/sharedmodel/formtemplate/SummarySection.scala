@@ -22,6 +22,7 @@ import uk.gov.hmrc.gform.sharedmodel.{ LangADT, SmartString }
 
 case class SummarySection(
   title: SmartString,
+  caption: Option[SmartString],
   header: SmartString,
   footer: SmartString,
   continueLabel: Option[SmartString],
@@ -34,6 +35,7 @@ object SummarySection extends JsonUtils {
 
   implicit val leafExprs: LeafExpr[SummarySection] = (path: TemplatePath, t: SummarySection) =>
     LeafExpr(path + "title", t.title) ++
+      LeafExpr(path + "caption", t.caption) ++
       LeafExpr(path + "header", t.header) ++
       LeafExpr(path + "footer", t.footer) ++
       LeafExpr(path + "continueLabel", t.continueLabel) ++
