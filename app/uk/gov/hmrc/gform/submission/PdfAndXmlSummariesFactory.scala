@@ -17,7 +17,6 @@
 package uk.gov.hmrc.gform.submission
 
 import java.time.Instant
-
 import org.apache.pdfbox.pdmodel.PDDocument
 import uk.gov.hmrc.gform.pdfgenerator.{ PdfGeneratorService, XmlGeneratorService }
 import uk.gov.hmrc.gform.sharedmodel.{ PdfHtml, SubmissionRef }
@@ -26,6 +25,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 import org.json.XML
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DataOutputFormat
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -79,7 +79,9 @@ object PdfAndXmlSummariesFactory {
       hmrcDms: HmrcDms,
       submissionRef: SubmissionRef
     )(implicit now: Instant): Option[String] =
-      generateRoboticsXml(formTemplate, structuredFormData, hmrcDms, submissionRef)
+      if (hmrcDms.formdataXml)
+        generateRoboticsFile(formTemplate, structuredFormData, hmrcDms, submissionRef, DataOutputFormat.XML.toString)
+      else None
 
     private def createRoboticsFile(
       formTemplate: FormTemplate,
@@ -87,30 +89,30 @@ object PdfAndXmlSummariesFactory {
       hmrcDms: HmrcDms,
       submissionRef: SubmissionRef
     )(implicit now: Instant): Option[String] =
-      generateRoboticsXml(formTemplate, structuredFormData, hmrcDms, submissionRef)
+      generateRoboticsFile(formTemplate, structuredFormData, hmrcDms, submissionRef, hmrcDms.dataOutputFormat)
 
-    private def generateRoboticsXml(
+    private def generateRoboticsFile(
       formTemplate: FormTemplate,
       structuredFormData: StructuredFormValue.ObjectStructure,
       hmrcDms: HmrcDms,
-      submissionRef: SubmissionRef
-    )(implicit now: Instant): Option[String] =
-      hmrcDms.dataOutputFormat match {
-        case "XML" =>
-          Some(RoboticsXMLGenerator(formTemplate._id, hmrcDms.dmsFormId, submissionRef, structuredFormData, now))
-            .map(body =>
-              // No whitespace of anysort after xml declaration. Robot won't be able to process xml otherwise
-              XmlGeneratorService.xmlDec + <data xmlns:xfa="http://www.xfa.org/schema/xfa-data/1.0/">
+      submissionRef: SubmissionRef,
+      dataOutputFormat: String
+    )(implicit now: Instant): Option[String] = dataOutputFormat match {
+      case "XML" =>
+        Some(RoboticsXMLGenerator(formTemplate._id, hmrcDms.dmsFormId, submissionRef, structuredFormData, now))
+          .map(body =>
+            // No whitespace of anysort after xml declaration. Robot won't be able to process xml otherwise
+            XmlGeneratorService.xmlDec + <data xmlns:xfa="http://www.xfa.org/schema/xfa-data/1.0/">
                 {body}
               </data>
-            )
-        case "JSON" =>
-          Some(RoboticsXMLGenerator(formTemplate._id, hmrcDms.dmsFormId, submissionRef, structuredFormData, now))
-            .map { xml =>
-              val xmlJSONObj = XML.toJSONObject(xml.toString)
-              xmlJSONObj.toString
-            }
-        case _ => None
-      }
+          )
+      case "JSON" =>
+        Some(RoboticsXMLGenerator(formTemplate._id, hmrcDms.dmsFormId, submissionRef, structuredFormData, now))
+          .map { xml =>
+            val xmlJSONObj = XML.toJSONObject(xml.toString)
+            xmlJSONObj.toString
+          }
+      case _ => None
+    }
   }
 }
