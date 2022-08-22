@@ -133,6 +133,21 @@ object FormTemplateValidator {
       Valid
     }
 
+  def validateCsvCountryCountCheck(formTemplate: FormTemplate): ValidationResult = {
+    val allExprs: List[ExprWithPath] = FormTemplate.leafExprs.exprs(TemplatePath.root, formTemplate)
+    val results = allExprs.collect { case ExprWithPath(path, CsvCountryCountCheck(fcId, _, _)) =>
+      val fc = SectionHelper.addToListFormComponents(formTemplate.formKind.allSections).filter(_.id == fcId).headOption
+      val result: ValidationResult = fc
+        .map {
+          case IsCountryLookup(fc) => Valid
+          case _                   => Invalid(s"$path: $fcId is not a country lookup component")
+        }
+        .getOrElse(Invalid(s"$path: $fcId is not within AddToList component"))
+      result
+    }
+    Monoid.combineAll(results)
+  }
+
   def validateInvalidReferences(formTemplate: FormTemplate): ValidationResult = {
 
     val allPageIds: List[PageId] =
@@ -804,8 +819,14 @@ object FormTemplateValidator {
       case PeriodExt(periodFun, _)   => validate(periodFun, sections)
       case DataRetrieveCtx(_, _)     => Valid
       case CsvCountryCheck(value, _) => validate(FormCtx(value), sections)
-      case Size(value, _)            => validate(FormCtx(value), sections)
-      case Typed(expr, tpe)          => validate(expr, sections)
+      case CsvCountryCountCheck(value, _, _) =>
+        SectionHelper
+          .addToListIds(sections)
+          .map(_.id)
+          .contains(value)
+          .validationResult(s"$value is not AddToList Id")
+      case Size(value, _)   => validate(FormCtx(value), sections)
+      case Typed(expr, tpe) => validate(expr, sections)
     }
   }
 

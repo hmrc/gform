@@ -210,6 +210,10 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
       case _ ~ _ ~ dataRetrieveId ~ _ ~ dataRetrieveAttribute =>
         DataRetrieveCtx(DataRetrieveId(dataRetrieveId), DataRetrieveAttribute.fromName(dataRetrieveAttribute))
     } // to parse date form fields with offset or date constants i.e TODAY, 01012020 etc (with or without offset)
+    | FormComponentId.unanchoredIdValidation ~ ".column." ~ alphabeticOnly ~ ".count('" ~ alphaNumericWithSpace ~ "')" ^^ {
+      case value ~ _ ~ column ~ _ ~ count ~ _ =>
+        CsvCountryCountCheck(FormComponentId(value), column, count)
+    }
     | FormComponentId.unanchoredIdValidation ~ ".column." ~ alphabeticOnly ^^ { case value ~ _ ~ column =>
       CsvCountryCheck(FormComponentId(value), column)
     }
@@ -291,6 +295,10 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
   val _factor: PackratParser[Expr] = contextField | "(" ~> _expr1 <~ ")"
 
   lazy val alphabeticOnly: Parser[String] = """[a-zA-Z]\w*""".r ^^ { str =>
+    str
+  }
+
+  lazy val alphaNumericWithSpace: Parser[String] = """[a-zA-Z\d ]*""".r ^^ { str =>
     str
   }
 

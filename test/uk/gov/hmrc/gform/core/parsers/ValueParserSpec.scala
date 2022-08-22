@@ -925,4 +925,18 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     val res = ValueParser.validate("${selectedCountry.column.InEU}")
     res.right.value should be(TextExpression(CsvCountryCheck(FormComponentId("selectedCountry"), "InEU")))
   }
+
+  it should "parse applicantNationality.column.InEU.count('1')" in {
+    val res = ValueParser.validate("${applicantNationality.column.InEU.count('1')}")
+    res.right.value should be(
+      TextExpression(CsvCountryCountCheck(FormComponentId("applicantNationality"), "InEU", "1"))
+    )
+  }
+
+  it should "parse applicantNationality.column.Name.count('United Kingdom')" in {
+    val res = ValueParser.validate("${applicantNationality.column.Name.count('United Kingdom')}")
+    res.right.value should be(
+      TextExpression(CsvCountryCountCheck(FormComponentId("applicantNationality"), "Name", "United Kingdom"))
+    )
+  }
 }

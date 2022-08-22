@@ -141,3 +141,11 @@ object IsFileUpload {
 object IsMiniSummaryList {
   def unapply(fc: FormComponent): Option[MiniSummaryList] = fc.`type`.cast[MiniSummaryList]
 }
+
+object IsCountryLookup {
+  def unapply(fc: FormComponent): Option[Text] =
+    fc.`type` match {
+      case t @ Text(Lookup(Register.Country, _), _, _, _, _, _) => Some(t)
+      case _                                                    => None
+    }
+}
