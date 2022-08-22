@@ -36,23 +36,24 @@ object BooleanExprSubstituter extends Substituter[BooleanExprSubstitutions, Form
         case d @ DateCtx(dateExpr) => d
         case i @ IfElse(cond, l, r) =>
           IfElse(cond(substitutions), substitute(substitutions, l), substitute(substitutions, r))
-        case f @ FormCtx(formComponentId) => f
-        case AddressLens(_, _)            => t
-        case AuthCtx(_)                   => t
-        case Constant(_)                  => t
-        case Count(_)                     => t
-        case FormTemplateCtx(_)           => t
-        case HmrcRosmRegistrationCheck(_) => t
-        case LangCtx                      => t
-        case LinkCtx(_)                   => t
-        case ParamCtx(_)                  => t
-        case PeriodValue(_)               => t
-        case UserCtx(_)                   => t
-        case Value                        => t
-        case DataRetrieveCtx(_, _)        => t
-        case CsvCountryCheck(_, _)        => t
-        case Size(_, _)                   => t
-        case Typed(expr, tpe)             => Typed(substitute(substitutions, expr), tpe)
+        case f @ FormCtx(formComponentId)  => f
+        case AddressLens(_, _)             => t
+        case AuthCtx(_)                    => t
+        case Constant(_)                   => t
+        case Count(_)                      => t
+        case FormTemplateCtx(_)            => t
+        case HmrcRosmRegistrationCheck(_)  => t
+        case LangCtx                       => t
+        case LinkCtx(_)                    => t
+        case ParamCtx(_)                   => t
+        case PeriodValue(_)                => t
+        case UserCtx(_)                    => t
+        case Value                         => t
+        case DataRetrieveCtx(_, _)         => t
+        case CsvCountryCheck(_, _)         => t
+        case CsvCountryCountCheck(_, _, _) => t
+        case Size(_, _)                    => t
+        case Typed(expr, tpe)              => Typed(substitute(substitutions, expr), tpe)
       }
     }
 

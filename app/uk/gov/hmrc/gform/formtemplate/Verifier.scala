@@ -85,6 +85,7 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validatePostcodeLookup(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateLabel(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateSubmitSection(formTemplate).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateCsvCountryCountCheck(formTemplate).toEither)
     } yield ()
 
   }
