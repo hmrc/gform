@@ -816,9 +816,10 @@ object FormTemplateValidator {
         )
       case Period(dateCtx1, dateCtx2) =>
         checkFields(dateCtx1, dateCtx2)
-      case PeriodExt(periodFun, _)   => validate(periodFun, sections)
-      case DataRetrieveCtx(_, _)     => Valid
-      case CsvCountryCheck(value, _) => validate(FormCtx(value), sections)
+      case PeriodExt(periodFun, _)           => validate(periodFun, sections)
+      case DataRetrieveCtx(_, _)             => Valid
+      case CsvCountryCheck(value, _)         => validate(FormCtx(value), sections)
+      case CsvOverseasCountryCheck(value, _) => validate(FormCtx(value), sections)
       case CsvCountryCountCheck(value, _, _) =>
         SectionHelper
           .addToListIds(sections)
