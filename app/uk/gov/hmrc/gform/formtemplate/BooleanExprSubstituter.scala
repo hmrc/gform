@@ -78,6 +78,7 @@ object BooleanExprSubstituter extends Substituter[BooleanExprSubstitutions, Form
         case f @ FormPhase(value)             => f
         case TopLevelRef(id)                  => substitutions.expressions.getOrElse(id, t)
         case f @ First(_)                     => f
+        case l @ IsLogin(_)                   => l
       }
     }
 
