@@ -137,6 +137,7 @@ object TopLevelExpressions {
       case f @ FormPhase(value)             => f
       case tl @ TopLevelRef(id)             => tl
       case f @ First(_)                     => f
+      case l @ IsLogin(_)                   => l
     }
 
     def loop(e: Expr): Expr =

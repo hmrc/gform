@@ -226,3 +226,12 @@ object HmrcTaxPeriodInfo {
 
   implicit val format: OFormat[HmrcTaxPeriodInfo] = derived.oformat()
 }
+
+sealed trait LoginInfo
+
+object LoginInfo {
+  final case object EmailLogin extends LoginInfo
+  final case object GGLogin extends LoginInfo
+
+  implicit val format: OFormat[LoginInfo] = derived.oformat()
+}

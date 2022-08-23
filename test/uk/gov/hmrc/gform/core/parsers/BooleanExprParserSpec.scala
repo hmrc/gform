@@ -381,4 +381,14 @@ class BooleanExprParserSpec extends AnyFlatSpec with Matchers with EitherValues 
     val res = BooleanExprParser.validate("${addToList.first}")
     res.right.value shouldBe First(FormCtx(FormComponentId("addToList")))
   }
+
+  it should "parse expression ${auth.emailLogin}" in {
+    val res = BooleanExprParser.validate("${auth.emailLogin}")
+    res.right.value shouldBe IsLogin(LoginInfo.EmailLogin)
+  }
+
+  it should "parse expression ${auth.ggLogin}" in {
+    val res = BooleanExprParser.validate("${auth.ggLogin}")
+    res.right.value shouldBe IsLogin(LoginInfo.GGLogin)
+  }
 }

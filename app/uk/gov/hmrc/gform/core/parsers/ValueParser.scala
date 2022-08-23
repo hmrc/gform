@@ -375,6 +375,10 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
       | "organisationType" ^^^ RosmOrganisationType
       | "isAGroup" ^^^ RosmIsAGroup
   )
+  lazy val loginInfo: Parser[LoginInfo] = (
+    "ggLogin" ^^^ LoginInfo.GGLogin
+      | "emailLogin" ^^^ LoginInfo.EmailLogin
+  )
 
   //================= boolean parsers =========
 
@@ -441,6 +445,9 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     }
     | PageId.unanchoredIdValidation ~ ".first" ^^ { case value ~ _ =>
       First(FormCtx(FormComponentId(value)))
+    }
+    | "auth" ~ "." ~ loginInfo ^^ { case _ ~ _ ~ loginInfo =>
+      IsLogin(loginInfo)
     }
     | p0)
 

@@ -81,22 +81,22 @@ class BooleanExprValidator(
     }
 
   def apply(includeIf: BooleanExpr): List[ValidationResult] = includeIf match {
-    case Equals(left, right)              => validateExprs(left, right)
-    case GreaterThan(left, right)         => validateExprs(left, right)
-    case GreaterThanOrEquals(left, right) => validateExprs(left, right)
-    case LessThan(left, right)            => validateExprs(left, right)
-    case LessThanOrEquals(left, right)    => validateExprs(left, right)
-    case Not(e)                           => apply(e)
-    case Or(left, right)                  => apply(left) ::: apply(right)
-    case And(left, right)                 => apply(left) ::: apply(right)
-    case IsFalse | IsTrue | FormPhase(_)  => List(Valid)
-    case Contains(collection, value)      => validateExprs(collection, value)
-    case In(value, _)                     => validateValueField(value)
-    case DateBefore(left, right)          => validateDateExprs(left, right)
-    case DateAfter(left, right)           => validateDateExprs(left, right)
-    case MatchRegex(value, _)             => validateValueField(value)
-    case TopLevelRef(_)                   => Nil
-    case First(value)                     => validateAddToListId(value)
+    case Equals(left, right)                          => validateExprs(left, right)
+    case GreaterThan(left, right)                     => validateExprs(left, right)
+    case GreaterThanOrEquals(left, right)             => validateExprs(left, right)
+    case LessThan(left, right)                        => validateExprs(left, right)
+    case LessThanOrEquals(left, right)                => validateExprs(left, right)
+    case Not(e)                                       => apply(e)
+    case Or(left, right)                              => apply(left) ::: apply(right)
+    case And(left, right)                             => apply(left) ::: apply(right)
+    case IsFalse | IsTrue | FormPhase(_) | IsLogin(_) => List(Valid)
+    case Contains(collection, value)                  => validateExprs(collection, value)
+    case In(value, _)                                 => validateValueField(value)
+    case DateBefore(left, right)                      => validateDateExprs(left, right)
+    case DateAfter(left, right)                       => validateDateExprs(left, right)
+    case MatchRegex(value, _)                         => validateValueField(value)
+    case TopLevelRef(_)                               => Nil
+    case First(value)                                 => validateAddToListId(value)
   }
 }
 
