@@ -95,7 +95,11 @@ trait Verifier {
     section match {
       case p: Section.NonRepeatingPage => p.copy(page = mkSpecimen(p.page))
       case p: Section.RepeatingPage    => p.copy(page = mkSpecimen(p.page))
-      case l: Section.AddToList        => l.copy(pages = l.pages.map(mkSpecimen))
+      case l: Section.AddToList =>
+        l.copy(
+          pages = l.pages.map(mkSpecimen),
+          includeIf = None
+        )
     }
 
   def mkSpecimen(formTemplate: FormTemplate): FormTemplate =
