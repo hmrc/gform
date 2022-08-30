@@ -71,10 +71,10 @@ Adds a new gform template
 Gets a list of all gform templates stored in this environment
 
 ##### GET /formtemplates/:formTemplateId
-Gets the gform template with the given ID (parsed internal format)
-
-##### GET /formtemplates/:formTemplateId/raw
 Gets the gform template with the given ID (raw format as originally POSTed)
+
+##### GET /formtemplates/:formTemplateId/internal
+Gets the gform template with the given ID (parsed internal format)
 
 ##### DELETE /formtemplates/:formTemplateId
 Deletes the gform template with the given ID

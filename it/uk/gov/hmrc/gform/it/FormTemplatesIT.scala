@@ -98,7 +98,7 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
     post(basicFormTemplate().toString).to("/formtemplates").send()
 
     When("I get the form template by id")
-    val result = get("/formtemplates/basic").send()
+    val result = get("/formtemplates/basic/internal").send()
 
     Then("I receive form template")
     result.status shouldBe StatusCodes.OK.intValue
@@ -115,7 +115,7 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
     ).to("/formtemplates").send()
 
     When("I get the form template by id")
-    val result = get("/formtemplates/localisedemailtemplate").send()
+    val result = get("/formtemplates/localisedemailtemplate/internal").send()
 
     Then("I receive form template")
     result.status shouldBe StatusCodes.OK.intValue
@@ -137,7 +137,7 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
     ).to("/formtemplates").send()
 
     When("I get the form template by id")
-    val result = get("/formtemplates/localisedemailtemplate").send()
+    val result = get("/formtemplates/localisedemailtemplate/internal").send()
 
     Then("I receive form template")
     result.status shouldBe StatusCodes.OK.intValue
@@ -154,7 +154,7 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
     post(basicFormTemplate().toString).to("/formtemplates").send()
 
     When("I get the form template by id")
-    val result = get("/formtemplates/basic/raw").send()
+    val result = get("/formtemplates/basic").send()
 
     Then("I receive form template")
     result.status shouldBe StatusCodes.OK.intValue
