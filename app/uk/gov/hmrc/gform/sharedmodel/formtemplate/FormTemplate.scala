@@ -35,7 +35,7 @@ case class FormTemplate(
   draftRetrievalMethod: DraftRetrievalMethod,
   destinations: Destinations,
   authConfig: formtemplate.AuthConfig,
-  emailTemplateId: LocalisedEmailTemplateId,
+  emailTemplateId: Option[LocalisedEmailTemplateId],
   emailParameters: Option[NonEmptyList[EmailParameter]],
   webChat: Option[WebChat],
   formKind: FormKind,

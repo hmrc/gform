@@ -471,7 +471,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       RequireMTDAgentEnrolment,
       EnrolmentAuth(ServiceId("TEST"), DoCheck(Always, RejectAccess, RegimeIdCheck(RegimeId("TEST"))))
     ),
-    LocalisedEmailTemplateId("test-email-template-id-en", Some("test-email-template-id-cy")),
+    Some(LocalisedEmailTemplateId("test-email-template-id-en", Some("test-email-template-id-cy"))),
     Some(
       NonEmptyList.of(
         EmailParameter("fullName", FormCtx("directorFullName")),

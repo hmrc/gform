@@ -121,7 +121,7 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
     result.status shouldBe StatusCodes.OK.intValue
     assertBasicFormTemplate(
       Json.parse(result.body).as[FormTemplate],
-      LocalisedEmailTemplateId("email_template_id-en", Some("email_template_id-cy")),
+      Some(LocalisedEmailTemplateId("email_template_id-en", Some("email_template_id-cy"))),
       "localisedemailtemplate",
       Json.obj("en" -> "email_template_id-en", "cy" -> "email_template_id-cy")
     )
@@ -143,7 +143,7 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
     result.status shouldBe StatusCodes.OK.intValue
     assertBasicFormTemplate(
       Json.parse(result.body).as[FormTemplate],
-      LocalisedEmailTemplateId("email_template_id-en", None),
+      Some(LocalisedEmailTemplateId("email_template_id-en", None)),
       "localisedemailtemplate",
       Json.obj("en" -> "email_template_id-en")
     )
@@ -181,7 +181,9 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
 
   def assertBasicFormTemplate(
     formTemplate: FormTemplate,
-    localisedEmailTemplateId: LocalisedEmailTemplateId = LocalisedEmailTemplateId("email_template_id", None),
+    localisedEmailTemplateId: Option[LocalisedEmailTemplateId] = Some(
+      LocalisedEmailTemplateId("email_template_id", None)
+    ),
     formTemplateId: String = "basic",
     emailTemplateId: JsValue = JsString("email_template_id")
   ): Unit = {
