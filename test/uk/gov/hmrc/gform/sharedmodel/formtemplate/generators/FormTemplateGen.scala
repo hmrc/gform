@@ -43,8 +43,8 @@ trait FormTemplateGen {
           )
     } yield draftRetrievalMethod
 
-  def emailTemplateIdGen: Gen[LocalisedEmailTemplateId] =
-    LocalisedEmailTemplateIdGen.localisedEmailTemplateIdGen
+  def emailTemplateIdGen: Gen[Option[LocalisedEmailTemplateId]] =
+    Gen.option(LocalisedEmailTemplateIdGen.localisedEmailTemplateIdGen)
 
   def emailParameterGen: Gen[EmailParameter] =
     for {

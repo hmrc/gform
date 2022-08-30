@@ -77,10 +77,12 @@ class SubmissionService(
       _         <- destinationsSubmitter.send(submissionInfo, modelTree, Some(form.formData), submissionData.l)
       emailAddress = email.getEmailAddress(form, submissionData.maybeEmailAddress)
       _ <- fromFutureA(
-             email.sendEmail(
-               emailAddress,
-               formTemplate.emailTemplateId.toDigitalContact.emailTemplateId(submissionData.l),
-               submissionData.emailParameters
+             formTemplate.emailTemplateId.fold(().pure[Future])(emailTemplateId =>
+               email.sendEmail(
+                 emailAddress,
+                 emailTemplateId.toDigitalContact.emailTemplateId(submissionData.l),
+                 submissionData.emailParameters
+               )
              )
            )
     } yield ()
