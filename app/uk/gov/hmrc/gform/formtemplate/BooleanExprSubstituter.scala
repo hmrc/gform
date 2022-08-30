@@ -77,9 +77,14 @@ object BooleanExprSubstituter extends Substituter[BooleanExprSubstitutions, Form
         case d @ DateBefore(l, r)             => d
         case d @ DateAfter(l, r)              => d
         case f @ FormPhase(value)             => f
-        case TopLevelRef(id)                  => substitutions.expressions.getOrElse(id, t)
-        case f @ First(_)                     => f
-        case l @ IsLogin(_)                   => l
+        case TopLevelRef(id) =>
+          substitute(
+            substitutions,
+            substitutions.expressions
+              .getOrElse(id, throw new NoSuchElementException(s"$id not found in booleanExpressions"))
+          )
+        case f @ First(_)   => f
+        case l @ IsLogin(_) => l
       }
     }
 
