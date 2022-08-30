@@ -41,7 +41,7 @@ GET           /formtemplates/get-titles-with-pii/:formTemplateRawId             
 GET           /formtemplates/:formTemplateId/internal                                                   uk.gov.hmrc.gform.formtemplate.FormTemplatesController.get(formTemplateId: FormTemplateId)
 GET           /formtemplates/:formTemplateId/latest                                                     uk.gov.hmrc.gform.formtemplate.FormTemplatesController.getLatest(formTemplateId: FormTemplateId)
 GET           /formtemplates/:formTemplateId/raw/sensitive                                              uk.gov.hmrc.gform.formtemplate.FormTemplatesController.getRawSensitive(formTemplateId: String)
-GET           /formtemplates/:formTemplateId                                                    uk.gov.hmrc.gform.formtemplate.FormTemplatesController.getRaw(formTemplateId: FormTemplateRawId)
+GET           /formtemplates/:formTemplateId                                                            uk.gov.hmrc.gform.formtemplate.FormTemplatesController.getRaw(formTemplateId: FormTemplateRawId)
 DELETE        /formtemplates/:formTemplateId/sensitive                                                  uk.gov.hmrc.gform.formtemplate.FormTemplatesController.removeSensitive(formTemplateId: String)
 DELETE        /formtemplates/:formTemplateId                                                            uk.gov.hmrc.gform.formtemplate.FormTemplatesController.remove(formTemplateId: FormTemplateId)
 GET           /formtemplates-with-redirects/:formTemplateId                                             uk.gov.hmrc.gform.formtemplate.FormTemplatesController.getWithRedirects(formTemplateId: FormTemplateId)
