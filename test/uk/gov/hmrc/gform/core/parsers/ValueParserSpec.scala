@@ -944,4 +944,37 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     val res = ValueParser.validate("${selectedCountry.country.column.InEU}")
     res.right.value should be(TextExpression(CsvOverseasCountryCheck(FormComponentId("selectedCountry"), "InEU")))
   }
+
+  it should "parse company registration number - name" in {
+    val res = ValueParser.validate("${dataRetrieve.companyRegistrationNumber.name}")
+    res.right.value should be(
+      TextExpression(
+        DataRetrieveCtx(DataRetrieveId("companyRegistrationNumber"), DataRetrieveAttribute.Name)
+      )
+    )
+  }
+
+  it should "parse company registration number - status" in {
+    val res = ValueParser.validate("${dataRetrieve.companyRegistrationNumber.status}")
+    res.right.value should be(
+      TextExpression(
+        DataRetrieveCtx(DataRetrieveId("companyRegistrationNumber"), DataRetrieveAttribute.Status)
+      )
+    )
+  }
+
+  it should "parse company registration number - registeredAddress" in {
+    val res = ValueParser.validate("${dataRetrieve.companyRegistrationNumber.registeredAddress}")
+    res.right.value should be(
+      TextExpression(
+        DataRetrieveCtx(DataRetrieveId("companyRegistrationNumber"), DataRetrieveAttribute.RegisteredAddress)
+      )
+    )
+  }
+
+  it should "parse company registration number - invalid attribute failure" in {
+    assertThrows[Exception] {
+      ValueParser.validate("${dataRetrieve.companyRegistrationNumber.surname}")
+    }
+  }
 }

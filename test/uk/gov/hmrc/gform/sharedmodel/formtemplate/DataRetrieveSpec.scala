@@ -134,4 +134,21 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       FormCtx(FormComponentId("accountNumber"))
     )
   }
+
+  it should "parse json as CompanyRegistrationNumber" in {
+    Json
+      .parse("""
+               |{
+               |  "type": "companyRegistrationNumber",
+               |  "id": "companyRegistration",
+               |  "parameters": {
+               |    "companyNumber": "${companyNumber}"
+               |  }
+               |}
+               |""".stripMargin)
+      .as[DataRetrieve] shouldBe DataRetrieve.CompanyRegistrationNumber(
+      DataRetrieveId("companyRegistration"),
+      FormCtx(FormComponentId("companyNumber"))
+    )
+  }
 }

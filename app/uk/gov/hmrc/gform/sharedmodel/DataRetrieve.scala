@@ -97,6 +97,22 @@ object DataRetrieveAttribute {
     override def name: String = "sortCodeSupportsDirectCredit"
   }
 
+  case object CompanyNumber extends DataRetrieveAttribute {
+    override def name: String = "companyNumber"
+  }
+
+  case object Name extends DataRetrieveAttribute {
+    override def name: String = "name"
+  }
+
+  case object Status extends DataRetrieveAttribute {
+    override def name: String = "status"
+  }
+
+  case object RegisteredAddress extends DataRetrieveAttribute {
+    override def name: String = "registeredAddress"
+  }
+
   implicit val format: OFormat[DataRetrieveAttribute] = derived.oformat()
 
   val idValidation: String = "[_a-zA-Z]\\w*"
@@ -117,6 +133,9 @@ object DataRetrieveAttribute {
     case "directDebitsDisallowed"                   => DirectDebitsDisallowed
     case "directDebitInstructionsDisallowed"        => DirectDebitInstructionsDisallowed
     case "iban"                                     => Iban
+    case "name"                                     => Name
+    case "status"                                   => Status
+    case "registeredAddress"                        => RegisteredAddress
     case other                                      => throw new IllegalArgumentException(s"Unknown DataRetrieveAttribute name: $other")
   }
 }
@@ -166,6 +185,19 @@ object DataRetrieve {
     override def formCtxExprs: List[Expr] = List(sortCode, accountNumber, accountNumber)
   }
 
+  final case class CompanyRegistrationNumber(
+    override val id: DataRetrieveId,
+    companyNumber: Expr
+  ) extends DataRetrieve {
+    import DataRetrieveAttribute._
+    override def attributes: List[DataRetrieveAttribute] = List(
+      Name,
+      Status,
+      RegisteredAddress
+    )
+    override def formCtxExprs: List[Expr] = List(companyNumber)
+  }
+
   val reads: Reads[DataRetrieve] = new Reads[DataRetrieve] {
     override def reads(json: JsValue): JsResult[DataRetrieve] =
       (for {
@@ -195,6 +227,12 @@ object DataRetrieve {
                               accountNumberExpr,
                               companyNameExpr
                             )
+                          case "companyRegistrationNumber" =>
+                            for {
+                              parameters        <- opt[JsObject](json, "parameters")
+                              companyNumber     <- opt[String](parameters, "companyNumber")
+                              companyNumberExpr <- ValueParser.validateWithParser(companyNumber, ValueParser.expr)
+                            } yield CompanyRegistrationNumber(DataRetrieveId(idValue), companyNumberExpr)
                           case other => Left(UnexpectedState(s"'type' value $other not recognized"))
                         }
       } yield dataRetrieve).fold(e => JsError(e.error), r => JsSuccess(r))
