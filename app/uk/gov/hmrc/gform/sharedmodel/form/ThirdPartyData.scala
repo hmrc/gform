@@ -21,6 +21,19 @@ import uk.gov.hmrc.gform.addresslookup.AddressLookupResult
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponentId, JsonUtils }
 import uk.gov.hmrc.gform.sharedmodel.{ BooleanExprCache, DataRetrieveId, DataRetrieveResult, NotChecked, Obligations }
 import uk.gov.hmrc.gform.sharedmodel.des.DesRegistrationResponse
+import uk.gov.hmrc.auth.core.retrieve.{ ItmpAddress, ItmpName }
+import java.time.LocalDate
+
+final case class ItmpRetrievals(
+  itmpName: Option[ItmpName],
+  itmpDateOfBirth: Option[LocalDate],
+  itmpAddress: Option[ItmpAddress]
+)
+object ItmpRetrievals {
+  implicit val itmpNameFormat: OFormat[ItmpName] = Json.format[ItmpName]
+  implicit val itmpAddressFormat: OFormat[ItmpAddress] = Json.format[ItmpAddress]
+  implicit val format: OFormat[ItmpRetrievals] = Json.format[ItmpRetrievals]
+}
 
 case class ThirdPartyData(
   desRegistrationResponse: Option[DesRegistrationResponse],
@@ -33,7 +46,8 @@ case class ThirdPartyData(
   postcodeLookup: Option[Map[FormComponentId, AddressLookupResult]],
   selectedAddresses: Option[Map[FormComponentId, String]],
   enteredAddresses: Option[Map[FormComponentId, FormData]],
-  confirmedAddresses: Option[Set[FormComponentId]]
+  confirmedAddresses: Option[Set[FormComponentId]],
+  itmpRetrievals: Option[ItmpRetrievals]
 ) {
 
   def reviewComments: Option[String] = reviewData.flatMap(_.get("caseworkerComment"))
@@ -48,6 +62,7 @@ object ThirdPartyData {
       QueryParams.empty,
       None,
       BooleanExprCache.empty,
+      None,
       None,
       None,
       None,
