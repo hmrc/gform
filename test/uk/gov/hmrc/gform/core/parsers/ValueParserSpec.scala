@@ -699,6 +699,30 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     }
   }
 
+  it should "parse day(TODAY) function" in {
+    val res = ValueParser.validate("${day(TODAY)}")
+    res.right.value should be(TextExpression(DateFunction(DateProjection.Day(DateValueExpr(TodayDateExprValue)))))
+  }
+  it should "parse year(01012020) function" in {
+    val res = ValueParser.validate("${year(01012020)}")
+    res.right.value should be(
+      TextExpression(DateFunction(DateProjection.Year(DateValueExpr(ExactDateExprValue(2020, 1, 1)))))
+    )
+  }
+
+  it should "parse month(dateField + 1d) function" in {
+    val res = ValueParser.validate("${day(dateField + 1d)}")
+    res.right.value should be(
+      TextExpression(
+        DateFunction(
+          DateProjection.Month(
+            DateExprWithOffset(DateFormCtxVar(FormCtx("dateField")), OffsetYMD(List(OffsetUnit.Day(1))))
+          )
+        )
+      )
+    )
+  }
+
   it should "parse period(d1, d2) function" in {
     val res = ValueParser.validate("${period(d1, d2)}")
     res.right.value should be(

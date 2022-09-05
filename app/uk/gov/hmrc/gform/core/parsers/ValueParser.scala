@@ -223,6 +223,15 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | periodValueParser ^^ { period =>
       PeriodValue(period)
     }
+    | "day(" ~ dateExpr ~ ")" ^^ { case _ ~ dateExpr ~ _ =>
+      DateFunction(DateProjection.Day(dateExpr))
+    }
+    | "month(" ~ dateExpr ~ ")" ^^ { case _ ~ dateExpr ~ _ =>
+      DateFunction(DateProjection.Month(dateExpr))
+    }
+    | "year(" ~ dateExpr ~ ")" ^^ { case _ ~ dateExpr ~ _ =>
+      DateFunction(DateProjection.Year(dateExpr))
+    }
     | (periodFun ~ "." ~ "sum|totalMonths|years|months|days".r ^^ {
       case _ ~ (dateExpr1: DateExpr) ~ _ ~ (dateExpr2: DateExpr) ~ _ ~ _ ~ prop =>
         PeriodExt(

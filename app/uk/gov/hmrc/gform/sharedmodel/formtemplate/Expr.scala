@@ -141,12 +141,26 @@ final case class HmrcRosmRegistrationCheck(value: RosmProp) extends Expr
 final case class LinkCtx(link: InternalLink) extends Expr
 final case class FormTemplateCtx(value: FormTemplateProp) extends Expr
 final case class DateCtx(value: DateExpr) extends Expr
+final case class DateFunction(value: DateProjection) extends Expr
 final case object Value extends Expr
 final case object LangCtx extends Expr
 final case class DataRetrieveCtx(id: DataRetrieveId, attribute: DataRetrieveAttribute) extends Expr
 final case class CsvCountryCheck(formComponentId: FormComponentId, column: String) extends Expr
 final case class CsvOverseasCountryCheck(formComponentId: FormComponentId, column: String) extends Expr
 final case class CsvCountryCountCheck(formComponentId: FormComponentId, column: String, value: String) extends Expr
+
+sealed trait DateProjection extends Product with Serializable {
+  def dateExpr: DateExpr
+}
+
+object DateProjection {
+
+  case class Day(dateExpr: DateExpr) extends DateProjection
+  case class Month(dateExpr: DateExpr) extends DateProjection
+  case class Year(dateExpr: DateExpr) extends DateProjection
+
+  implicit val format: OFormat[DateProjection] = derived.oformat()
+}
 
 object Expr {
   implicit val format: OFormat[Expr] = derived.oformat()

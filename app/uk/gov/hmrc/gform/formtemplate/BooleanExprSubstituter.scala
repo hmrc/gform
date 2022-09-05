@@ -34,6 +34,7 @@ object BooleanExprSubstituter extends Substituter[BooleanExprSubstitutions, Form
         case Sum(l)                => Sum(substitute(substitutions, l))
         case PeriodExt(p, pe)      => PeriodExt(substitute(substitutions, p), pe)
         case d @ DateCtx(dateExpr) => d
+        case d @ DateFunction(_)   => d
         case i @ IfElse(cond, l, r) =>
           IfElse(cond(substitutions), substitute(substitutions, l), substitute(substitutions, r))
         case f @ FormCtx(formComponentId)  => f

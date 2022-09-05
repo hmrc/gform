@@ -151,6 +151,7 @@ object TopLevelExpressions {
         case Sum(l)                        => Sum(loop(l))
         case PeriodExt(p, pe)              => PeriodExt(loop(p), pe)
         case d @ DateCtx(dateExpr)         => d
+        case d @ DateFunction(_)           => d
         case i @ IfElse(cond, l, r)        => IfElse(loopBooleanExpr(cond), loop(l), loop(r))
         case f @ FormCtx(formComponentId)  => expressions.getOrElse(ExpressionId(formComponentId.value), e)
         case AddressLens(_, _)             => e
