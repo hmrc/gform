@@ -35,7 +35,8 @@ case class Page(
   instruction: Option[Instruction],
   presentationHint: Option[PresentationHint],
   dataRetrieve: Option[DataRetrieve],
-  confirmation: Option[Confirmation]
+  confirmation: Option[Confirmation],
+  redirects: Option[List[RedirectCtx]]
 ) {
   lazy val expandedFormComponents: List[FormComponent] = fields.flatMap(_.expandedFormComponents)
 
@@ -73,6 +74,7 @@ object Page {
       LeafExpr(path + "includeIf", t.includeIf) ++
       LeafExpr(path + "validators", t.validators) ++
       LeafExpr(path + "instruction", t.instruction) ++
-      LeafExpr(path + "confirmation", t.confirmation)
+      LeafExpr(path + "confirmation", t.confirmation) ++
+      LeafExpr(path + "redirects", t.redirects)
 
 }

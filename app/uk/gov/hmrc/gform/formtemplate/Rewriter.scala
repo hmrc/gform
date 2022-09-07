@@ -137,6 +137,14 @@ trait Rewriter {
         }
     }
 
+    val pages: List[Page] = formTemplate.formKind.allSections.flatMap {
+      case Section.NonRepeatingPage(page)                                        => List(page)
+      case Section.RepeatingPage(page, _)                                        => List(page)
+      case Section.AddToList(_, _, _, _, _, _, _, _, _, pages, _, _, _, _, _, _) => pages.toList
+    }
+
+    val redirectsIncludeIfs: List[IncludeIf] = pages.flatMap(_.redirects).flatten.flatMap(_.ifExpr)
+
     val ifElses: List[IfElse] =
       implicitly[LeafExpr[FormTemplate]]
         .exprs(TemplatePath.root, formTemplate)
@@ -147,7 +155,7 @@ trait Rewriter {
       case Section.RepeatingPage(page, _) => page.includeIf.toList
       case Section.AddToList(_, _, _, _, _, _, _, includeIf, _, pages, _, _, _, _, _, _) =>
         includeIf.toList ++ pages.toList.flatMap(_.includeIf.toList)
-    } ++ fieldsIncludeIfs ++ acknowledgementSectionIncludeIfs ++ summarySectionIncludeIfs ++ choiceIncludeIfs ++ miniSummaryListIncludeIfs
+    } ++ fieldsIncludeIfs ++ acknowledgementSectionIncludeIfs ++ summarySectionIncludeIfs ++ choiceIncludeIfs ++ miniSummaryListIncludeIfs ++ redirectsIncludeIfs
 
     def validate(
       c: String,
@@ -369,17 +377,29 @@ trait Rewriter {
         section match {
           case s: Section.NonRepeatingPage =>
             s.copy(
-              page = s.page.copy(includeIf = replaceIncludeIf(s.page.includeIf), fields = replaceFields(s.page.fields))
+              page = s.page.copy(
+                includeIf = replaceIncludeIf(s.page.includeIf),
+                fields = replaceFields(s.page.fields),
+                redirects = s.page.redirects.map(_.map(r => r.copy(ifExpr = replaceIncludeIf(r.ifExpr))))
+              )
             )
           case s: Section.RepeatingPage =>
             s.copy(
-              page = s.page.copy(includeIf = replaceIncludeIf(s.page.includeIf), fields = replaceFields(s.page.fields))
+              page = s.page.copy(
+                includeIf = replaceIncludeIf(s.page.includeIf),
+                fields = replaceFields(s.page.fields),
+                redirects = s.page.redirects.map(_.map(r => r.copy(ifExpr = replaceIncludeIf(r.ifExpr))))
+              )
             )
           case s: Section.AddToList =>
             s.copy(
               includeIf = replaceIncludeIf(s.includeIf),
               pages = s.pages.map(page =>
-                page.copy(includeIf = replaceIncludeIf(page.includeIf), fields = replaceFields(page.fields))
+                page.copy(
+                  includeIf = replaceIncludeIf(page.includeIf),
+                  fields = replaceFields(page.fields),
+                  redirects = page.redirects.map(_.map(r => r.copy(ifExpr = replaceIncludeIf(r.ifExpr))))
+                )
               )
             )
         }

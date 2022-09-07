@@ -251,7 +251,8 @@ object Substituter {
       validators = t.validators(substitutions),
       fields = t.fields(substitutions),
       continueLabel = t.continueLabel(substitutions),
-      instruction = t.instruction(substitutions)
+      instruction = t.instruction(substitutions),
+      redirects = t.redirects(substitutions)
     )
 
   implicit def sectionSubstituter[A](implicit
@@ -452,5 +453,12 @@ object Substituter {
       formKind = t.formKind(substitutions),
       summarySection = t.summarySection(substitutions),
       emailParameters = t.emailParameters(substitutions)
+    )
+
+  implicit def redirectSubstituter[A](implicit
+    ev2: Substituter[A, BooleanExpr]
+  ): Substituter[A, RedirectCtx] = (substitutions, r) =>
+    r.copy(
+      ifExpr = r.ifExpr(substitutions)
     )
 }
