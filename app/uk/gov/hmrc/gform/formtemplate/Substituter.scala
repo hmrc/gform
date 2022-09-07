@@ -127,6 +127,21 @@ object Substituter {
         MiniSummaryRow.ATLRow(atlId, includeIf(substitutions), rows(substitutions))
     }
 
+  implicit def tableValue[A](implicit
+    ev: Substituter[A, Expr]
+  ): Substituter[A, TableValue] = (substitutions, t) =>
+    t match {
+      case TableValue(value, cssClass, colspan) => TableValue(value(substitutions), cssClass, colspan)
+    }
+
+  implicit def tableRowSubstituter[A](implicit
+    ev: Substituter[A, Expr],
+    ev2: Substituter[A, BooleanExpr]
+  ): Substituter[A, TableRow] = (substitutions, t) =>
+    t match {
+      case TableRow.ValueRow(values, includeIf) => TableRow.ValueRow(values(substitutions), includeIf(substitutions))
+    }
+
   implicit def componentTypeSubstituter[A](implicit
     ev: Substituter[A, Expr],
     ev2: Substituter[A, BooleanExpr]
@@ -202,10 +217,11 @@ object Substituter {
 
       case InformationMessage(infoType, infoText) =>
         InformationMessage(infoType, infoText(substitutions))
-      case f @ FileUpload(_)     => f
-      case t @ Time(_, _)        => t
-      case PostcodeLookup        => PostcodeLookup
-      case MiniSummaryList(rows) => MiniSummaryList(rows(substitutions))
+      case f @ FileUpload(_)       => f
+      case t @ Time(_, _)          => t
+      case PostcodeLookup          => PostcodeLookup
+      case MiniSummaryList(rows)   => MiniSummaryList(rows(substitutions))
+      case TableComp(header, rows) => TableComp(header(substitutions), rows(substitutions))
     }
 
   implicit def formComponentValidatorSubstituter[A](implicit

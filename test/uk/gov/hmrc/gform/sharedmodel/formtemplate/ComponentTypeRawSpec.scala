@@ -23,4 +23,8 @@ class ComponentTypeRawSpec extends FunSuite {
   test("deserialize summaryList") {
     JsString("miniSummaryList").validate[ComponentTypeRaw] shouldBe JsSuccess(SummaryListRaw)
   }
+
+  test("deserialize table") {
+    JsString("table").validate[ComponentTypeRaw] shouldBe JsSuccess(TableCompRaw)
+  }
 }

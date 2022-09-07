@@ -205,6 +205,34 @@ class FormComponentMaker(json: JsValue) {
 
   lazy val summaryListOpt: Opt[MiniSummaryList] = rows(json, "rows").map(rs => MiniSummaryList(rs))
 
+  lazy val tableCompOpt: Opt[TableComp] = {
+    def getValueRow(json: JsValue): Opt[TableValue] =
+      for {
+        cssClass <- toOpt((json \ "class").validateOpt[String], "/class")
+        colspan  <- toOpt((json \ "colspan").validateOpt[Int], "/colspan")
+        value    <- toOpt((json \ "value").validate[SmartString], "/value") //.flatMap(SummaryListParser.validate)
+
+      } yield TableValue(value, cssClass, colspan)
+    def values(json: JsValue): Opt[List[TableValue]] =
+      toOpt((json \ "values").validate[List[JsValue]], "/values").flatMap(_.traverse(getValueRow))
+    def getRow(json: JsValue): Opt[TableRow.ValueRow] =
+      for {
+        includeIf <- toOpt((json \ "includeIf").validateOpt[IncludeIf], "/includeIf")
+        values    <- values(json)
+      } yield TableRow.ValueRow(values, includeIf)
+
+    def rows(json: JsValue): Opt[List[TableRow.ValueRow]] =
+      for {
+        jsValues <- toOpt((json \ "rows").validate[List[JsValue]], s"/rows")
+        rs       <- jsValues.traverse(getRow)
+      } yield rs
+
+    for {
+      rows   <- rows(json)
+      header <- toOpt((json \ "header").validate[List[SmartString]], "/header")
+    } yield TableComp(header, rows)
+  }
+
   def optFieldValue(): Opt[FormComponent] =
     for {
       presHint    <- optMaybePresentationHintExpr
@@ -296,6 +324,7 @@ class FormComponentMaker(json: JsValue) {
     case Some(OverseasAddressRaw) => overseasAddressOpt
     case Some(PostcodeLookupRaw)  => postcodeLookupOpt
     case Some(SummaryListRaw)     => summaryListOpt
+    case Some(TableCompRaw)       => tableCompOpt
   }
 
   lazy val textOpt: Opt[ComponentType] = {
