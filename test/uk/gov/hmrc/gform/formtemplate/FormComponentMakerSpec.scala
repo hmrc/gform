@@ -492,7 +492,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
             SmartString(LocalisedString(Map(LangADT.En -> "Column 3")), List())
           ),
           List(
-            TableRow.ValueRow(
+            TableValueRow(
               List(
                 TableValue(
                   SmartString(LocalisedString(Map(LangADT.En -> "Row 1")), List()),
@@ -518,7 +518,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
               ),
               Some(IncludeIf(TopLevelRef(BooleanExprId("expression"))))
             ),
-            TableRow.ValueRow(
+            TableValueRow(
               List(
                 TableValue(
                   SmartString(LocalisedString(Map(LangADT.En -> "Row 2")), List()),
@@ -536,7 +536,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
               ),
               Some(IncludeIf(TopLevelRef(BooleanExprId("expression"))))
             ),
-            TableRow.ValueRow(
+            TableValueRow(
               List(
                 TableValue(
                   SmartString(LocalisedString(Map(LangADT.En -> "Total due")), List()),

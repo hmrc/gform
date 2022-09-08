@@ -215,13 +215,13 @@ class FormComponentMaker(json: JsValue) {
       } yield TableValue(value, cssClass, colspan)
     def values(json: JsValue): Opt[List[TableValue]] =
       toOpt((json \ "values").validate[List[JsValue]], "/values").flatMap(_.traverse(getValueRow))
-    def getRow(json: JsValue): Opt[TableRow.ValueRow] =
+    def getRow(json: JsValue): Opt[TableValueRow] =
       for {
         includeIf <- toOpt((json \ "includeIf").validateOpt[IncludeIf], "/includeIf")
         values    <- values(json)
-      } yield TableRow.ValueRow(values, includeIf)
+      } yield TableValueRow(values, includeIf)
 
-    def rows(json: JsValue): Opt[List[TableRow.ValueRow]] =
+    def rows(json: JsValue): Opt[List[TableValueRow]] =
       for {
         jsValues <- toOpt((json \ "rows").validate[List[JsValue]], s"/rows")
         rs       <- jsValues.traverse(getRow)

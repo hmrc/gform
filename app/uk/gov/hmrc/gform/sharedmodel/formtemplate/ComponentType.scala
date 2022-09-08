@@ -411,22 +411,18 @@ object TableValue {
   implicit val format: Format[TableValue] = derived.oformat()
 }
 
-sealed trait TableRow extends Product with Serializable
+case class TableValueRow(
+  values: List[TableValue],
+  includeIf: Option[IncludeIf]
+)
 
-object TableRow {
-  case class ValueRow(
-    values: List[TableValue],
-    includeIf: Option[IncludeIf]
-  ) extends TableRow
-
-  implicit val leafExprs: LeafExpr[TableRow] = (path: TemplatePath, r: TableRow) =>
-    r match {
-      case t: ValueRow => LeafExpr(path + "includeIf", t.includeIf) ++ LeafExpr(path + "values", t.values)
-    }
-  implicit val format: Format[TableRow] = derived.oformat()
+object TableValueRow {
+  implicit val leafExprs: LeafExpr[TableValueRow] = (path: TemplatePath, r: TableValueRow) =>
+    LeafExpr(path + "includeIf", r.includeIf) ++ LeafExpr(path + "values", r.values)
+  implicit val format: Format[TableValueRow] = derived.oformat()
 }
 
-case class TableComp(header: List[SmartString], rows: List[TableRow]) extends ComponentType
+case class TableComp(header: List[SmartString], rows: List[TableValueRow]) extends ComponentType
 
 object TableComp {
   implicit val format: Format[TableComp] = derived.oformat()

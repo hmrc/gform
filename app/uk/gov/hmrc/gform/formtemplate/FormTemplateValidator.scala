@@ -783,8 +783,8 @@ object FormTemplateValidator {
     case TableComp(header, rows)     => validateTableComp(header, rows)
   }
 
-  def validateTableComp(header: List[SmartString], rows: List[TableRow]): ValidationResult = {
-    val rowsNumbers = rows.collect { case TableRow.ValueRow(values, _) =>
+  def validateTableComp(header: List[SmartString], rows: List[TableValueRow]): ValidationResult = {
+    val rowsNumbers = rows.collect { case TableValueRow(values, _) =>
       values.map(_.colspan.getOrElse(1)).sum
     }.toSet
     if (rowsNumbers.size != 1 || rowsNumbers.head != header.size) {
