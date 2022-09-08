@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
-import play.api.libs.functional.syntax._
+import julienrf.json.derived
 import play.api.libs.json._
 
 final case class RedirectCtx(
@@ -25,16 +25,7 @@ final case class RedirectCtx(
 )
 
 object RedirectCtx {
-  private val reads: Reads[RedirectCtx] =
-    ((JsPath \ "if")
-      .read[IncludeIf] and
-      (JsPath \ "redirectUrl").read[String])(RedirectCtx.apply _)
-
-  private val writes: Writes[RedirectCtx] =
-    ((JsPath \ "if").write[IncludeIf] and
-      (JsPath \ "redirectUrl").write[String])(unlift(RedirectCtx.unapply))
-
-  implicit val format: Format[RedirectCtx] = Format[RedirectCtx](reads, writes)
+  implicit val format: OFormat[RedirectCtx] = derived.oformat()
 
   implicit val leafExprs: LeafExpr[RedirectCtx] = (path: TemplatePath, r: RedirectCtx) => LeafExpr(path + "if", r.`if`)
 }
