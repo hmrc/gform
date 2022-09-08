@@ -459,6 +459,6 @@ object Substituter {
     ev2: Substituter[A, BooleanExpr]
   ): Substituter[A, RedirectCtx] = (substitutions, r) =>
     r.copy(
-      ifExpr = r.ifExpr(substitutions)
+      `if` = r.`if`(substitutions)
     )
 }

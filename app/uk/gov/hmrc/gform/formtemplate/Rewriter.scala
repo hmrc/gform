@@ -143,7 +143,7 @@ trait Rewriter {
       case Section.AddToList(_, _, _, _, _, _, _, _, _, pages, _, _, _, _, _, _) => pages.toList
     }
 
-    val redirectsIncludeIfs: List[IncludeIf] = pages.flatMap(_.redirects).flatten.flatMap(_.ifExpr)
+    val redirectsIncludeIfs: List[IncludeIf] = pages.flatMap(_.redirects).flatMap(_.toList.map(_.`if`))
 
     val ifElses: List[IfElse] =
       implicitly[LeafExpr[FormTemplate]]
@@ -373,6 +373,11 @@ trait Rewriter {
         case dp: Destinations.DestinationPrint => dp
       }
 
+      def replaceRedirects(redirects: Option[NonEmptyList[RedirectCtx]]) =
+        redirects.flatMap(
+          _.toList.map(r => r.copy(`if` = replaceIncludeIf(Some(r.`if`)).getOrElse(r.`if`))).toNel
+        )
+
       def updateSection(section: Section): Section =
         section match {
           case s: Section.NonRepeatingPage =>
@@ -380,7 +385,7 @@ trait Rewriter {
               page = s.page.copy(
                 includeIf = replaceIncludeIf(s.page.includeIf),
                 fields = replaceFields(s.page.fields),
-                redirects = s.page.redirects.map(_.map(r => r.copy(ifExpr = replaceIncludeIf(r.ifExpr))))
+                redirects = replaceRedirects(s.page.redirects)
               )
             )
           case s: Section.RepeatingPage =>
@@ -388,7 +393,7 @@ trait Rewriter {
               page = s.page.copy(
                 includeIf = replaceIncludeIf(s.page.includeIf),
                 fields = replaceFields(s.page.fields),
-                redirects = s.page.redirects.map(_.map(r => r.copy(ifExpr = replaceIncludeIf(r.ifExpr))))
+                redirects = replaceRedirects(s.page.redirects)
               )
             )
           case s: Section.AddToList =>
@@ -398,7 +403,7 @@ trait Rewriter {
                 page.copy(
                   includeIf = replaceIncludeIf(page.includeIf),
                   fields = replaceFields(page.fields),
-                  redirects = page.redirects.map(_.map(r => r.copy(ifExpr = replaceIncludeIf(r.ifExpr))))
+                  redirects = replaceRedirects(page.redirects)
                 )
               )
             )

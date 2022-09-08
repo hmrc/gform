@@ -22,7 +22,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.RedirectCtx
 class RedirectGen {
   def redirectGen: Gen[RedirectCtx] =
     for {
-      ifExpr      <- Gen.option(IncludeIfGen.includeIfGen)
+      ifExpr      <- IncludeIfGen.includeIfGen
       redirectUrl <- Gen.alphaNumStr
     } yield RedirectCtx(ifExpr, redirectUrl)
 }
