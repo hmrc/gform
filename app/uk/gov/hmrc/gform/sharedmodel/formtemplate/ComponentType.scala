@@ -407,7 +407,7 @@ case class TableValue(value: SmartString, cssClass: Option[String], colspan: Opt
 
 object TableValue {
   implicit val leafExprs: LeafExpr[TableValue] = (path: TemplatePath, r: TableValue) =>
-    r match { case t: TableValue => LeafExpr(path + "value", t.value) }
+    LeafExpr(path + "value", r.value)
   implicit val format: Format[TableValue] = derived.oformat()
 }
 
