@@ -403,6 +403,31 @@ object MiniSummaryList {
   implicit val format: Format[MiniSummaryList] = derived.oformat()
 }
 
+case class TableValue(value: SmartString, cssClass: Option[String], colspan: Option[Int])
+
+object TableValue {
+  implicit val leafExprs: LeafExpr[TableValue] = (path: TemplatePath, r: TableValue) =>
+    LeafExpr(path + "value", r.value)
+  implicit val format: Format[TableValue] = derived.oformat()
+}
+
+case class TableValueRow(
+  values: List[TableValue],
+  includeIf: Option[IncludeIf]
+)
+
+object TableValueRow {
+  implicit val leafExprs: LeafExpr[TableValueRow] = (path: TemplatePath, r: TableValueRow) =>
+    LeafExpr(path + "includeIf", r.includeIf) ++ LeafExpr(path + "values", r.values)
+  implicit val format: Format[TableValueRow] = derived.oformat()
+}
+
+case class TableComp(header: List[SmartString], rows: List[TableValueRow]) extends ComponentType
+
+object TableComp {
+  implicit val format: Format[TableComp] = derived.oformat()
+}
+
 object ComponentType {
 
   implicit def readsNonEmptyList[T: Reads] = Reads[NonEmptyList[T]] { json =>
@@ -445,6 +470,7 @@ object ComponentType {
       case FileUpload(_)                   => Nil
       case Time(_, _)                      => Nil
       case MiniSummaryList(rows)           => LeafExpr(path + "rows", rows)
+      case TableComp(header, rows)         => LeafExpr(path + "header", header) ++ LeafExpr(path + "rows", rows)
     }
 
 }

@@ -420,4 +420,166 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
       )
     )
   }
+
+  it should "parse table" in {
+    val tableJson = Json.parse("""
+                                 | {
+                                 |   "id": "gformTable",
+                                 |   "type": "table",
+                                 |   "label": "Table of data",
+                                 |   "header": [
+                                 |     "Column 1",
+                                 |     "Column 2",
+                                 |     "Column 3"
+                                 |   ],
+                                 |   "rows": [
+                                 |     {
+                                 |       "includeIf": "${expression}",
+                                 |       "values": [
+                                 |         {
+                                 |           "class": "header",
+                                 |           "value": "Row 1"
+                                 |         },
+                                 |         {
+                                 |           "value": "${value1}"
+                                 |         },
+                                 |         {
+                                 |           "value": "${value2}"
+                                 |         }
+                                 |       ]
+                                 |     },
+                                 |     {
+                                 |       "includeIf": "${expression}",
+                                 |       "values": [
+                                 |         {
+                                 |           "class": "header",
+                                 |           "value": "Row 2"
+                                 |         },
+                                 |         {
+                                 |           "colspan": 2,
+                                 |           "value": "${value3}"
+                                 |         }
+                                 |       ]
+                                 |     },
+                                 |     {
+                                 |       "values": [
+                                 |         {
+                                 |           "class": "header-xl",
+                                 |           "value": "Total due"
+                                 |         },
+                                 |         {
+                                 |           "class": "header-xxl",
+                                 |           "value": "${total1}"
+                                 |         },
+                                 |         {
+                                 |           "class": "header-xxl",
+                                 |           "value": "${total2}"
+                                 |         }
+                                 |       ]
+                                 |     }
+                                 |   ]
+                                 | }
+                                 |""".stripMargin)
+    val tableMaker = new FormComponentMaker(tableJson)
+    val result = tableMaker.optFieldValue()
+    result shouldBe Right(
+      FormComponent(
+        FormComponentId("gformTable"),
+        TableComp(
+          List(
+            SmartString(LocalisedString(Map(LangADT.En -> "Column 1")), List()),
+            SmartString(LocalisedString(Map(LangADT.En -> "Column 2")), List()),
+            SmartString(LocalisedString(Map(LangADT.En -> "Column 3")), List())
+          ),
+          List(
+            TableValueRow(
+              List(
+                TableValue(
+                  SmartString(LocalisedString(Map(LangADT.En -> "Row 1")), List()),
+                  Some("header"),
+                  None
+                ),
+                TableValue(
+                  SmartString(
+                    LocalisedString(Map(LangADT.En -> "{0}")),
+                    List(FormCtx(FormComponentId("value1")))
+                  ),
+                  None,
+                  None
+                ),
+                TableValue(
+                  SmartString(
+                    LocalisedString(Map(LangADT.En -> "{0}")),
+                    List(FormCtx(FormComponentId("value2")))
+                  ),
+                  None,
+                  None
+                )
+              ),
+              Some(IncludeIf(TopLevelRef(BooleanExprId("expression"))))
+            ),
+            TableValueRow(
+              List(
+                TableValue(
+                  SmartString(LocalisedString(Map(LangADT.En -> "Row 2")), List()),
+                  Some("header"),
+                  None
+                ),
+                TableValue(
+                  SmartString(
+                    LocalisedString(Map(LangADT.En -> "{0}")),
+                    List(FormCtx(FormComponentId("value3")))
+                  ),
+                  None,
+                  Some(2)
+                )
+              ),
+              Some(IncludeIf(TopLevelRef(BooleanExprId("expression"))))
+            ),
+            TableValueRow(
+              List(
+                TableValue(
+                  SmartString(LocalisedString(Map(LangADT.En -> "Total due")), List()),
+                  Some("header-xl"),
+                  None
+                ),
+                TableValue(
+                  SmartString(
+                    LocalisedString(Map(LangADT.En -> "{0}")),
+                    List(FormCtx(FormComponentId("total1")))
+                  ),
+                  Some("header-xxl"),
+                  None
+                ),
+                TableValue(
+                  SmartString(
+                    LocalisedString(Map(LangADT.En -> "{0}")),
+                    List(FormCtx(FormComponentId("total2")))
+                  ),
+                  Some("header-xxl"),
+                  None
+                )
+              ),
+              None
+            )
+          )
+        ),
+        SmartString(LocalisedString(Map(LangADT.En -> "Table of data")), List()),
+        None,
+        None,
+        None,
+        None,
+        true,
+        true,
+        true,
+        false,
+        false,
+        None,
+        None,
+        List(),
+        None,
+        None
+      )
+    )
+  }
 }
