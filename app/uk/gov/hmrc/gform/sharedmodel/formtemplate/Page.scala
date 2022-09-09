@@ -16,7 +16,9 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
-import play.api.libs.json.{ Json, OFormat }
+import cats.data.NonEmptyList
+import julienrf.json.derived
+import play.api.libs.json.OFormat
 import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieve, SmartString }
 import uk.gov.hmrc.gform.ops.FormComponentOps
 
@@ -35,7 +37,8 @@ case class Page(
   instruction: Option[Instruction],
   presentationHint: Option[PresentationHint],
   dataRetrieve: Option[DataRetrieve],
-  confirmation: Option[Confirmation]
+  confirmation: Option[Confirmation],
+  redirects: Option[NonEmptyList[RedirectCtx]]
 ) {
   lazy val expandedFormComponents: List[FormComponent] = fields.flatMap(_.expandedFormComponents)
 
@@ -58,7 +61,8 @@ case class Page(
 }
 
 object Page {
-  implicit val pageFormat: OFormat[Page] = Json.format[Page]
+  import JsonUtils._
+  implicit val pageFormat: OFormat[Page] = derived.oformat()
 
   implicit val leafExprs: LeafExpr[Page] = (path: TemplatePath, t: Page) =>
     leafExprsNoFields.exprs(path, t) ++
@@ -73,6 +77,7 @@ object Page {
       LeafExpr(path + "includeIf", t.includeIf) ++
       LeafExpr(path + "validators", t.validators) ++
       LeafExpr(path + "instruction", t.instruction) ++
-      LeafExpr(path + "confirmation", t.confirmation)
+      LeafExpr(path + "confirmation", t.confirmation) ++
+      LeafExpr(path + "redirects", t.redirects)
 
 }

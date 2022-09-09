@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 
 import org.scalacheck.Gen
 import SmartStringGen.smartStringGen
+import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.sharedmodel.DataRetrieve.ValidateBankDetails
 import uk.gov.hmrc.gform.sharedmodel.DataRetrieveId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
@@ -109,6 +110,7 @@ trait SectionGen {
       presentationHint <- Gen.option(PresentationHintGen.presentationHintGen)
       dataRetrieve     <- Gen.option(validateBankDetailsGen)
       confirmation     <- Gen.option(ConfirmationGen.confirmationGen)
+      redirects        <- Gen.option(RedirectGen.redirectGen)
     } yield Page(
       title,
       id,
@@ -124,7 +126,8 @@ trait SectionGen {
       instruction,
       presentationHint,
       dataRetrieve,
-      confirmation
+      confirmation,
+      redirects.map(NonEmptyList.one(_))
     )
 
   def nonRepeatingPageSectionGen: Gen[Section.NonRepeatingPage] = pageGen.map(Section.NonRepeatingPage)
