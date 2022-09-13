@@ -129,11 +129,12 @@ class FormService[F[_]: Monad](
 
     for {
       form <- get(formIdData)
+      formData = if (lowerCased.formTemplateId.isSpecimen) FormData(Seq.empty[FormField]) else userData.formData
       newForm = form
                   .copy(
                     _id = lowerCased.toFormId,
                     formTemplateId = lowerCased.formTemplateId,
-                    formData = userData.formData,
+                    formData = formData,
                     status = newStatus(form, userData.formStatus),
                     visitsIndex = userData.visitsIndex,
                     thirdPartyData = userData.thirdPartyData,
