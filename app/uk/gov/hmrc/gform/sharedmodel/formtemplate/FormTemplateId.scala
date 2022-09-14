@@ -22,7 +22,9 @@ import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
 
 import scala.util.matching.Regex
 
-case class FormTemplateId(value: String) extends AnyVal
+case class FormTemplateId(value: String) extends AnyVal {
+  def isSpecimen: Boolean = value.startsWith("specimen-")
+}
 
 object FormTemplateId {
 
