@@ -217,11 +217,11 @@ object Substituter {
 
       case InformationMessage(infoType, infoText) =>
         InformationMessage(infoType, infoText(substitutions))
-      case f @ FileUpload(_)       => f
-      case t @ Time(_, _)          => t
-      case PostcodeLookup          => PostcodeLookup
-      case MiniSummaryList(rows)   => MiniSummaryList(rows(substitutions))
-      case TableComp(header, rows) => TableComp(header(substitutions), rows(substitutions))
+      case f @ FileUpload(_)     => f
+      case t @ Time(_, _)        => t
+      case PostcodeLookup        => PostcodeLookup
+      case MiniSummaryList(rows) => MiniSummaryList(rows(substitutions))
+      case t: TableComp          => t.copy(header = t.header(substitutions), rows = t.rows(substitutions))
     }
 
   implicit def formComponentValidatorSubstituter[A](implicit

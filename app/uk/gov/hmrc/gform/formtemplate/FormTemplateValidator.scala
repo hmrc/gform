@@ -780,7 +780,7 @@ object FormTemplateValidator {
     case OverseasAddress(_, _, _, _) => Valid
     case PostcodeLookup              => Valid
     case MiniSummaryList(ls)         => validateMiniSummaryList(ls, formTemplate)
-    case TableComp(header, rows)     => validateTableComp(header, rows)
+    case t: TableComp                => validateTableComp(t.header, t.rows)
   }
 
   def validateTableComp(header: List[SmartString], rows: List[TableValueRow]): ValidationResult = {

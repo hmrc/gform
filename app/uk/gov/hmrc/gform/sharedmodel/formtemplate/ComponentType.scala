@@ -422,7 +422,14 @@ object TableValueRow {
   implicit val format: Format[TableValueRow] = derived.oformat()
 }
 
-case class TableComp(header: List[SmartString], rows: List[TableValueRow]) extends ComponentType
+case class TableComp(
+  header: List[SmartString],
+  rows: List[TableValueRow],
+  caption: Option[String] = None,
+  captionClasses: String = "",
+  classes: String = "",
+  firstCellIsHeader: Boolean = false
+) extends ComponentType
 
 object TableComp {
   implicit val format: Format[TableComp] = derived.oformat()
@@ -470,7 +477,7 @@ object ComponentType {
       case FileUpload(_)                   => Nil
       case Time(_, _)                      => Nil
       case MiniSummaryList(rows)           => LeafExpr(path + "rows", rows)
-      case TableComp(header, rows)         => LeafExpr(path + "header", header) ++ LeafExpr(path + "rows", rows)
+      case t: TableComp                    => LeafExpr(path + "header", t.header) ++ LeafExpr(path + "rows", t.rows)
     }
 
 }
