@@ -427,6 +427,10 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                                  |   "id": "gformTable",
                                  |   "type": "table",
                                  |   "label": "Table of data",
+                                 |  "caption": "This is caption",
+                                 |  "captionClasses": "test-caption-classes",
+                                 |  "firstCellIsHeader": "false",
+                                 |  "classes": "test-classes",
                                  |   "header": [
                                  |     "Column 1",
                                  |     "Column 2",
@@ -562,7 +566,11 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
               ),
               None
             )
-          )
+          ),
+          Some("This is caption"),
+          "test-caption-classes",
+          "test-classes",
+          false
         ),
         SmartString(LocalisedString(Map(LangADT.En -> "Table of data")), List()),
         None,

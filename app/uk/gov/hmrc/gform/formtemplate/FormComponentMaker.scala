@@ -232,7 +232,7 @@ class FormComponentMaker(json: JsValue) {
       header         <- toOpt((json \ "header").validate[List[SmartString]], "/header")
       caption        <- toOpt((json \ "caption").validateOpt[String], "/caption")
       captionClasses <- toOpt((json \ "captionClasses").validateOpt[String].map(_.getOrElse("")), "/captionClasses")
-      classes        <- toOpt((json \ "caption").validateOpt[String].map(_.getOrElse("")), "/classes")
+      classes        <- toOpt((json \ "classes").validateOpt[String].map(_.getOrElse("")), "/classes")
       firstCellIsHeader <-
         toOpt(
           (json \ "firstCellIsHeader").validateOpt[String].map(_.getOrElse("false")).map(_.toBoolean),
