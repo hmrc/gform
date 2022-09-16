@@ -228,9 +228,17 @@ class FormComponentMaker(json: JsValue) {
       } yield rs
 
     for {
-      rows   <- rows(json)
-      header <- toOpt((json \ "header").validate[List[SmartString]], "/header")
-    } yield TableComp(header, rows)
+      rows           <- rows(json)
+      header         <- toOpt((json \ "header").validate[List[SmartString]], "/header")
+      caption        <- toOpt((json \ "caption").validateOpt[String], "/caption")
+      captionClasses <- toOpt((json \ "captionClasses").validateOpt[String].map(_.getOrElse("")), "/captionClasses")
+      classes        <- toOpt((json \ "classes").validateOpt[String].map(_.getOrElse("")), "/classes")
+      firstCellIsHeader <-
+        toOpt(
+          (json \ "firstCellIsHeader").validateOpt[String].map(_.getOrElse("false")).map(_.toBoolean),
+          "/firstCellIsHeader"
+        )
+    } yield TableComp(header, rows, caption, captionClasses, classes, firstCellIsHeader)
   }
 
   def optFieldValue(): Opt[FormComponent] =
