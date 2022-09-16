@@ -506,7 +506,8 @@ trait ExampleFormTemplate {
     Some(userResearchUrl),
     None,
     None,
-    Some(accessibilityUrl)
+    Some(accessibilityUrl),
+    None
   )
 }
 
