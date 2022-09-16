@@ -468,7 +468,8 @@ object Substituter {
       destinations = t.destinations(substitutions),
       formKind = t.formKind(substitutions),
       summarySection = t.summarySection(substitutions),
-      emailParameters = t.emailParameters(substitutions)
+      emailParameters = t.emailParameters(substitutions),
+      exitPages = t.exitPages(substitutions)
     )
 
   implicit def redirectSubstituter[A](implicit
@@ -476,5 +477,15 @@ object Substituter {
   ): Substituter[A, RedirectCtx] = (substitutions, r) =>
     r.copy(
       `if` = r.`if`(substitutions)
+    )
+
+  implicit def exitPageSubstituter[A](implicit
+    ev: Substituter[A, Expr],
+    ev2: Substituter[A, BooleanExpr]
+  ): Substituter[A, ExitPage] = (substitutions, t) =>
+    t.copy(
+      `if` = t.`if`(substitutions),
+      label = t.label(substitutions),
+      exitMessage = t.exitMessage(substitutions)
     )
 }

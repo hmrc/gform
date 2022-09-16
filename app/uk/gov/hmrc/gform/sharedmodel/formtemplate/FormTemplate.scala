@@ -47,10 +47,11 @@ case class FormTemplate(
   displayHMRCLogo: Boolean,
   allowedFileTypes: AllowedFileTypes,
   fileSizeLimit: Option[Int],
-  userResearchUrl: Option[UserResearchUrl] = None,
-  referrerConfig: Option[ReferrerConfig] = None,
-  emailExpr: Option[Expr] = None,
-  accessibilityUrl: Option[AccessibilityUrl] = None
+  userResearchUrl: Option[UserResearchUrl],
+  referrerConfig: Option[ReferrerConfig],
+  emailExpr: Option[Expr],
+  accessibilityUrl: Option[AccessibilityUrl],
+  exitPages: Option[NonEmptyList[ExitPage]]
 ) {
 
   def formComponents[A](predicate: PartialFunction[FormComponent, A]): List[A] =

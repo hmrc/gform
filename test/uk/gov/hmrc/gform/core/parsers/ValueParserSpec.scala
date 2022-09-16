@@ -496,6 +496,11 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     None,
     true,
     FileInfoConfig.allAllowedFileTypes,
+    None,
+    None,
+    None,
+    None,
+    None,
     None
   )
 
