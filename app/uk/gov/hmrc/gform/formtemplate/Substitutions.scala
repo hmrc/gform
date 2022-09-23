@@ -102,6 +102,7 @@ sealed trait Substitutions[K, V] {
 case class ExpressionId(id: String) extends AnyVal
 case class BooleanExprId(id: String) extends AnyVal
 
+class SpecimenExprSubstitutions extends ExprSubstitutions(Map.empty[ExpressionId, Expr])
 case class ExprSubstitutions(expressions: Map[ExpressionId, Expr]) {
   def resolveSelfReferences: Either[UnexpectedState, ExprSubstitutions] =
     TopLevelExpressions.resolveReferences(this)

@@ -198,6 +198,56 @@ class SubstituteExpressionsSuite extends FunSuite with FormTemplateSupport {
     }
   }
 
+  test("SubstituteExpression should substitue IfElse Expression in the SmartString ") {
+    val title =
+      smartStringWithExpr(IfElse(Equals(Constant("1"), Constant("1")), Constant("something"), Constant("else")))
+    val titleSubstituted = smartStringWithExpr(Constant("[dynamic value]"))
+
+    val section = sectionWithSmartString(title)
+    val sectionSubstituted = sectionWithSmartString(titleSubstituted)
+
+    val formTemplate = mkFormTemplate(List(section))
+    val formTemplateExpected = mkFormTemplate(List(sectionSubstituted))
+
+    val substituted = substituteExpressions.substituteExpressions(formTemplate, new SpecimenExprSubstitutions())
+
+    assertEquals(substituted.formKind, formTemplateExpected.formKind)
+  }
+
+  test("SubstituteExpression should substitue Else Expression in the SmartString ") {
+    val title =
+      smartStringWithExpr(Else(Constant("something"), Constant("else")))
+    val titleSubstituted = smartStringWithExpr(Constant("[dynamic value]"))
+
+    val section = sectionWithSmartString(title)
+    val sectionSubstituted = sectionWithSmartString(titleSubstituted)
+
+    val formTemplate = mkFormTemplate(List(section))
+    val formTemplateExpected = mkFormTemplate(List(sectionSubstituted))
+
+    val substituted = substituteExpressions.substituteExpressions(formTemplate, new SpecimenExprSubstitutions())
+
+    assertEquals(substituted.formKind, formTemplateExpected.formKind)
+  }
+
+  test(
+    "SubstituteExpression should substitue FormCtx(FormComponentId(value)) Expression in the SmartString wit Const(value) "
+  ) {
+    val title =
+      smartStringWithExpr(FormCtx(FormComponentId("compValue")))
+    val titleSubstituted = smartStringWithExpr(Constant("[compValue]"))
+
+    val section = sectionWithSmartString(title)
+    val sectionSubstituted = sectionWithSmartString(titleSubstituted)
+
+    val formTemplate = mkFormTemplate(List(section))
+    val formTemplateExpected = mkFormTemplate(List(sectionSubstituted))
+
+    val substituted = substituteExpressions.substituteExpressions(formTemplate, new SpecimenExprSubstitutions())
+
+    assertEquals(substituted.formKind, formTemplateExpected.formKind)
+  }
+
   private def toFormTemplateAndSubstitutions[A](jsonStr: String)(f: (FormTemplate, ExprSubstitutions) => A) = {
     val maybeNormalisedJson = FormTemplatesControllerRequestHandler.normaliseJSON(Json.parse(jsonStr))
 
