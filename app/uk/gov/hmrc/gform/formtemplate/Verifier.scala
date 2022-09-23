@@ -109,6 +109,7 @@ trait Verifier {
     formTemplate.copy(
       _id = FormTemplateId("specimen-" + formTemplate._id.value),
       authConfig = Anonymous,
+      exitPages = None,
       formKind = formTemplate.formKind.fold[FormKind](classic =>
         classic.copy(
           sections = classic.sections.map(updateSection)
