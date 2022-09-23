@@ -86,19 +86,26 @@ class FormTemplateService(
 
     val exprSubstitutionsResolved: Either[UnexpectedState, ExprSubstitutions] = expressionsContext.resolveSelfReferences
 
+    def substitute(template: FormTemplate) =
+      for {
+        expressionsContextSubstituted <- fromOptA(exprSubstitutionsResolved)
+        substitutedFormTemplate = substituteExpressions(template, expressionsContextSubstituted)
+        substitutedBooleanExprsFormTemplate =
+          substituteBooleanExprs(
+            substitutedFormTemplate,
+            booleanExpressionsContext,
+            expressionsContextSubstituted
+          )
+        _                   <- verify(substitutedBooleanExprsFormTemplate)(expressionsContext)
+        formTemplateUpdated <- rewrite(substitutedBooleanExprsFormTemplate)
+      } yield formTemplateUpdated
+
     for {
-      expressionsContextSubstituted <- fromOptA(exprSubstitutionsResolved)
-      substitutedFormTemplate = substituteExpressions(formTemplate, expressionsContextSubstituted)
-      substitutedBooleanExprsFormTemplate =
-        substituteBooleanExprs(
-          substitutedFormTemplate,
-          booleanExpressionsContext,
-          expressionsContextSubstituted
-        )
-      _                  <- verify(substitutedBooleanExprsFormTemplate)(expressionsContext)
-      formTemplateToSave <- rewrite(substitutedBooleanExprsFormTemplate)
-      _                  <- formTemplateRepo.replace(mkSpecimen(formTemplateToSave))
-      _                  <- formRedirectRepo.deleteByFieldName("redirect", formTemplate._id.value)
+      formTemplateToSave <- substitute(formTemplate)
+      specimentTemplateSubstituted = substituteExpressions(formTemplate, new SpecimenExprSubstitutions())
+      formTemplateSpecimenToSave <- substitute(specimentTemplateSubstituted)
+      _                          <- formTemplateRepo.replace(mkSpecimen(formTemplateSpecimenToSave))
+      _                          <- formRedirectRepo.deleteByFieldName("redirect", formTemplate._id.value)
       _ <- formTemplate.legacyFormIds.fold(success(())) { legacyFormIds =>
              formRedirectRepo.upsertBulk(
                legacyFormIds.map(FormRedirect(_, formTemplate._id, Instant.now, Instant.now)).toList

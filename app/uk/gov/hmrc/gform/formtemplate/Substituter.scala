@@ -55,11 +55,29 @@ object Substituter {
     }
   }
 
-  implicit def smartStringSubstituter[A](implicit ev: Substituter[A, Expr]): Substituter[A, SmartString] =
-    (substitutions, t) =>
+  private def updateSpecimenSmartString(smartString: SmartString): SmartString = {
+    val interpolationUpdated = smartString.interpolations.map {
+      case _: IfElse                       => Constant("[dynamic value]")
+      case s: Else                         => Constant("[dynamic value]")
+      case FormCtx(FormComponentId(value)) => Constant(s"[$value]")
+      case otherwise                       => otherwise
+    }
+    smartString.copy(interpolations = interpolationUpdated)
+  }
+
+  implicit def smartStringSubstituter[A](implicit
+    ev: Substituter[A, Expr]
+  ): Substituter[A, SmartString] = { (substitutions, t) =>
+    import shapeless._
+    val specimentTypable = Typeable[SpecimenExprSubstitutions]
+    if (specimentTypable.cast(substitutions).isEmpty) {
       t.copy(
         interpolations = t.interpolations(substitutions)
       )
+    } else {
+      updateSpecimenSmartString(t)
+    }
+  }
 
   implicit def includeIfSubstituter[A](implicit
     ev: Substituter[A, BooleanExpr]
