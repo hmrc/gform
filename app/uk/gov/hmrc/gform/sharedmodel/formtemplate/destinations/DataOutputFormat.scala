@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
 
-import play.api.libs.json.{ Format, JsError, JsResult, JsString, JsSuccess, JsValue }
+import play.api.libs.json.{ JsError, JsString, JsSuccess, OFormat, Reads }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.OFormatWithTemplateReadFallback
 
 sealed trait DataOutputFormat {
   val content: String
@@ -30,19 +31,13 @@ object DataOutputFormat {
     override val content: String = "xml"
   }
 
-  implicit val format: Format[DataOutputFormat] = new Format[DataOutputFormat] {
-    override def writes(o: DataOutputFormat): JsValue = o match {
-      case JSON => JsString(JSON.content)
-      case XML  => JsString(XML.content)
-    }
-
-    override def reads(json: JsValue): JsResult[DataOutputFormat] =
-      json match {
-        case JsString("json") => JsSuccess(JSON)
-        case JsString("xml")  => JsSuccess(XML)
-        case JsString(err)    => JsError(s"dataOutputFormat on destination must be json or xml. $err is not allowed")
-        case _                => JsError("Failure")
-      }
+  val templateReads: Reads[DataOutputFormat] = Reads {
+    case JsString("json") => JsSuccess(JSON)
+    case JsString("xml")  => JsSuccess(XML)
+    case JsString(err)    => JsError(s"dataOutputFormat on destination must be json or xml. $err is not allowed")
+    case _                => JsError("Failure")
   }
+
+  implicit val format: OFormat[DataOutputFormat] = OFormatWithTemplateReadFallback(templateReads)
 
 }
