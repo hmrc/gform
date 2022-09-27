@@ -24,7 +24,7 @@ import uk.gov.hmrc.gform.fileupload.RouteEnvelopeRequest
 import uk.gov.hmrc.gform.sharedmodel.email.LocalisedEmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DataOutputFormat, DestinationId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.DestinationGen
@@ -48,7 +48,7 @@ trait ExampleAuthConfig extends DestinationGen {
     "TestHmrcDmsBusinessArea",
     "",
     true,
-    "xml",
+    Some(DataOutputFormat.XML),
     true,
     Some(true),
     true
@@ -507,6 +507,7 @@ trait ExampleFormTemplate {
     None,
     None,
     Some(accessibilityUrl),
+    None,
     None
   )
 }

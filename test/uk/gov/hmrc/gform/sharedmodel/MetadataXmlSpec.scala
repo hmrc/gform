@@ -22,8 +22,8 @@ import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.fileupload.{ MetadataXml, ReconciliationId }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DataOutputFormat, DestinationId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
 import uk.gov.hmrc.gform.submission._
 
 import scala.xml.{ Elem, Utility }
@@ -52,7 +52,7 @@ class MetadataXmlSpec extends Spec {
       "some-business-area",
       "",
       true,
-      "xml",
+      Some(DataOutputFormat.XML),
       true,
       Some(true),
       true

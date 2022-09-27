@@ -30,6 +30,7 @@ import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorAlgebra
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DataOutputFormat
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Constant, FormTemplateId }
@@ -105,7 +106,7 @@ object DmsSubmissionService {
       metadata.businessArea,
       "",
       true,
-      "xml",
+      Some(DataOutputFormat.XML),
       true,
       metadata.backscan,
       false

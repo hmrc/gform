@@ -51,7 +51,8 @@ case class FormTemplate(
   referrerConfig: Option[ReferrerConfig],
   emailExpr: Option[Expr],
   accessibilityUrl: Option[AccessibilityUrl],
-  exitPages: Option[NonEmptyList[ExitPage]]
+  exitPages: Option[NonEmptyList[ExitPage]],
+  expressionsOutput: Option[ExpressionOutput]
 ) {
 
   def formComponents[A](predicate: PartialFunction[FormComponent, A]): List[A] =

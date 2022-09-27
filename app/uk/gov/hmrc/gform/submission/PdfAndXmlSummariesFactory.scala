@@ -63,7 +63,7 @@ object PdfAndXmlSummariesFactory {
         pdfSummary = createPdfSummary(pdf),
         instructionPdfSummary = instructionPdf.map(createPdfSummary),
         roboticsFile = createRoboticsFile(formTemplate, structuredFormData, hmrcDms, submissionRef),
-        roboticsFileExtension = Some(hmrcDms.dataOutputFormat),
+        roboticsFileExtension = hmrcDms.dataOutputFormat.map(_.content),
         formDataXml = createFormdataXml(formTemplate, structuredFormData, hmrcDms, submissionRef)
       )
 
@@ -80,7 +80,7 @@ object PdfAndXmlSummariesFactory {
       submissionRef: SubmissionRef
     )(implicit now: Instant): Option[String] =
       if (hmrcDms.formdataXml)
-        generateRoboticsFile(formTemplate, structuredFormData, hmrcDms, submissionRef, DataOutputFormat.XML.toString)
+        generateRoboticsFile(formTemplate, structuredFormData, hmrcDms, submissionRef, Some(DataOutputFormat.XML))
       else None
 
     private def createRoboticsFile(
@@ -96,23 +96,23 @@ object PdfAndXmlSummariesFactory {
       structuredFormData: StructuredFormValue.ObjectStructure,
       hmrcDms: HmrcDms,
       submissionRef: SubmissionRef,
-      dataOutputFormat: String
-    )(implicit now: Instant): Option[String] = dataOutputFormat match {
-      case "XML" =>
-        Some(RoboticsXMLGenerator(formTemplate._id, hmrcDms.dmsFormId, submissionRef, structuredFormData, now))
-          .map(body =>
-            // No whitespace of anysort after xml declaration. Robot won't be able to process xml otherwise
-            XmlGeneratorService.xmlDec + <data xmlns:xfa="http://www.xfa.org/schema/xfa-data/1.0/">
+      dataOutputFormat: Option[DataOutputFormat]
+    )(implicit now: Instant): Option[String] =
+      dataOutputFormat.flatMap {
+        case DataOutputFormat.XML =>
+          Some(RoboticsXMLGenerator(formTemplate._id, hmrcDms.dmsFormId, submissionRef, structuredFormData, now))
+            .map(body =>
+              // No whitespace of anysort after xml declaration. Robot won't be able to process xml otherwise
+              XmlGeneratorService.xmlDec + <data xmlns:xfa="http://www.xfa.org/schema/xfa-data/1.0/">
                 {body}
-              </data>
-          )
-      case "JSON" =>
-        Some(RoboticsXMLGenerator(formTemplate._id, hmrcDms.dmsFormId, submissionRef, structuredFormData, now))
-          .map { xml =>
-            val xmlJSONObj = XML.toJSONObject(xml.toString)
-            xmlJSONObj.toString
-          }
-      case _ => None
-    }
+                </data>
+            )
+        case DataOutputFormat.JSON =>
+          Some(RoboticsXMLGenerator(formTemplate._id, hmrcDms.dmsFormId, submissionRef, structuredFormData, now))
+            .map { xml =>
+              val xmlJSONObj = XML.toJSONObject(xml.toString)
+              xmlJSONObj.toString
+            }
+      }
   }
 }
