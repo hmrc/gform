@@ -46,11 +46,12 @@ class FileUploadService(
     formTemplateId: FormTemplateId,
     allowedFileTypes: AllowedFileTypes,
     expiryDate: LocalDateTime,
-    fileSizeLimit: Option[Int]
+    fileSizeLimit: Option[Int],
+    objectStore: Boolean
   )(implicit
     hc: HeaderCarrier
   ): Future[EnvelopeId] = {
-    val f = fileUploadConnector.createEnvelope(formTemplateId, allowedFileTypes, expiryDate, fileSizeLimit)
+    val f = fileUploadConnector.createEnvelope(formTemplateId, allowedFileTypes, expiryDate, fileSizeLimit, objectStore)
     f map { id =>
       logger.debug(s"env-id creation: $id")
     }

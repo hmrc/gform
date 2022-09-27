@@ -52,7 +52,8 @@ case class FormTemplate(
   emailExpr: Option[Expr],
   accessibilityUrl: Option[AccessibilityUrl],
   exitPages: Option[NonEmptyList[ExitPage]],
-  expressionsOutput: Option[ExpressionOutput]
+  expressionsOutput: Option[ExpressionOutput],
+  objectStore: Option[Boolean]
 ) {
 
   def formComponents[A](predicate: PartialFunction[FormComponent, A]): List[A] =

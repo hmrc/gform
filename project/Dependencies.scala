@@ -11,24 +11,25 @@ object Dependencies {
   val hmrcMongoVersion = "0.68.0"
 
   val compile = Seq(
-    "com.github.pureconfig"      %% "pureconfig"                % "0.16.0",
-    "uk.gov.hmrc.mongo"          %% "hmrc-mongo-play-28"        % hmrcMongoVersion,
-    "uk.gov.hmrc"                %% "http-caching-client"       % "9.5.0-play-28",
-    "uk.gov.hmrc"                %% "bootstrap-backend-play-28" % "5.12.0",
-    "uk.gov.hmrc"                %% "domain"                    % "6.2.0-play-28",
-    "org.scala-lang.modules"     %% "scala-parser-combinators"  % "1.1.2",
-    "org.julienrf"               %% "play-json-derived-codecs"  % "10.0.2",
-    "org.typelevel"              %% "cats-core"                 % "1.6.0",
-    "org.typelevel"              %% "case-insensitive"          % "0.3.0",
-    "com.openhtmltopdf"           % "openhtmltopdf-pdfbox"      % "1.0.6",
-    "com.chuusai"                %% "shapeless"                 % "2.3.3",
-    "org.scala-graph"            %% "graph-core"                % "1.12.5",
-    "com.github.jknack"           % "handlebars"                % handlebarsVersion,
-    "com.github.jknack"           % "handlebars-jackson2"       % handlebarsVersion,
-    "com.softwaremill.quicklens" %% "quicklens"                 % "1.4.11",
-    "uk.gov.service.notify"       % "notifications-java-client" % "3.17.3-RELEASE",
-    "org.apache.commons"          % "commons-text"              % "1.9",
-    "org.scala-graph"             %% "graph-core"               % "1.13.1",
+    "com.github.pureconfig"      %% "pureconfig"                  % "0.16.0",
+    "uk.gov.hmrc.mongo"          %% "hmrc-mongo-play-28"          % hmrcMongoVersion,
+    "uk.gov.hmrc"                %% "http-caching-client"         % "9.5.0-play-28",
+    "uk.gov.hmrc"                %% "bootstrap-backend-play-28"   % "5.12.0",
+    "uk.gov.hmrc"                %% "domain"                      % "6.2.0-play-28",
+    "org.scala-lang.modules"     %% "scala-parser-combinators"    % "1.1.2",
+    "org.julienrf"               %% "play-json-derived-codecs"    % "10.0.2",
+    "org.typelevel"              %% "cats-core"                   % "1.6.0",
+    "org.typelevel"              %% "case-insensitive"            % "0.3.0",
+    "com.openhtmltopdf"           % "openhtmltopdf-pdfbox"        % "1.0.6",
+    "com.chuusai"                %% "shapeless"                   % "2.3.3",
+    "org.scala-graph"            %% "graph-core"                  % "1.12.5",
+    "com.github.jknack"           % "handlebars"                  % handlebarsVersion,
+    "com.github.jknack"           % "handlebars-jackson2"         % handlebarsVersion,
+    "com.softwaremill.quicklens" %% "quicklens"                   % "1.4.11",
+    "uk.gov.service.notify"       % "notifications-java-client"   % "3.17.3-RELEASE",
+    "org.apache.commons"          % "commons-text"                % "1.9",
+    "org.scala-graph"            %% "graph-core"                  % "1.13.1",
+    "uk.gov.hmrc.objectstore"    %% "object-store-client-play-28" % "0.39.0"
   )
 
   def test(scope: String = "test,it") = Seq(

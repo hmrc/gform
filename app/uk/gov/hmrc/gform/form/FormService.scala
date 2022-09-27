@@ -102,7 +102,13 @@ class FormService[F[_]: Monad](
     for {
       formTemplate <- formTemplateAlgebra.get(formTemplateId)
       envelopeId <-
-        fileUpload.createEnvelope(formTemplateId, formTemplate.allowedFileTypes, expiryDate, formTemplate.fileSizeLimit)
+        fileUpload.createEnvelope(
+          formTemplateId,
+          formTemplate.allowedFileTypes,
+          expiryDate,
+          formTemplate.fileSizeLimit,
+          formTemplate.objectStore.getOrElse(false)
+        )
       formIdData = createNewFormData(userId, formTemplate, envelopeId, affinityGroup)
       lowerCased = formIdData.lowerCaseId
       form = Form(
