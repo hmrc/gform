@@ -56,7 +56,8 @@ trait FileUploadAlgebra[F[_]] {
     formTemplateId: FormTemplateId,
     allowedFileTypes: AllowedFileTypes,
     expiryDate: LocalDateTime,
-    fileSizeLimit: Option[Int]
+    fileSizeLimit: Option[Int],
+    objectStore: Boolean
   )(implicit
     hc: HeaderCarrier
   ): F[EnvelopeId]

@@ -35,6 +35,7 @@ import uk.gov.hmrc.gform.formstatistics.FormStatisticsModule
 import uk.gov.hmrc.gform.dblookup.DbLookupModule
 import uk.gov.hmrc.gform.dms.DmsModule
 import uk.gov.hmrc.gform.email.EmailModule
+import uk.gov.hmrc.gform.envelope.EnvelopeModule
 import uk.gov.hmrc.gform.fileupload.{ FileUploadFrontendAlgebra, FileUploadModule }
 import uk.gov.hmrc.gform.form.{ FormModule, FormService }
 import uk.gov.hmrc.gform.formmetadata.FormMetadataModule
@@ -65,7 +66,6 @@ import uk.gov.hmrc.play.bootstrap.config.AppName
 
 import scala.concurrent.duration._
 import scala.concurrent.Future
-
 import java.util.concurrent.TimeUnit
 
 class ApplicationLoader extends play.api.ApplicationLoader {
@@ -99,8 +99,10 @@ class ApplicationModule(context: Context)
   private val notifierModule = new NotifierModule(configModule, proxyModule)
   private val emailModule = new EmailModule(configModule, wSHttpModule, notifierModule)
   private val timeModule = new TimeModule
-  val fileUploadModule = new FileUploadModule(configModule, wSHttpModule, timeModule, akkaModule)
   private val mongoModule = new MongoModule(configModule)
+  private val envelopeModule = new EnvelopeModule(mongoModule, configModule)
+  val fileUploadModule =
+    new FileUploadModule(configModule, wSHttpModule, timeModule, akkaModule, envelopeModule)
   val formTemplateModule = new FormTemplateModule(controllerComponents, mongoModule)
   val pdfGeneratorModule = new PdfGeneratorModule()
 
@@ -183,7 +185,13 @@ class ApplicationModule(context: Context)
     )
 
   private val dmsModule =
-    new DmsModule(fileUploadModule, pdfGeneratorModule, configModule.appConfig, controllerComponents)
+    new DmsModule(
+      fileUploadModule,
+      pdfGeneratorModule,
+      formTemplateModule.formTemplateService,
+      configModule.appConfig,
+      controllerComponents
+    )
   private val obligationModule = new ObligationModule(wSHttpModule, configModule)
   private val testOnlyModule =
     new TestOnlyModule(
@@ -241,7 +249,8 @@ class ApplicationModule(context: Context)
     dbLookupModule,
     upscanModule,
     httpErrorHandler,
-    formStatisticsModule
+    formStatisticsModule,
+    envelopeModule
   )
 
   override lazy val httpRequestHandler: HttpRequestHandler = playComponentsModule.httpRequestHandler

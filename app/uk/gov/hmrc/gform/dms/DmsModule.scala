@@ -17,12 +17,12 @@
 package uk.gov.hmrc.gform.dms
 
 import java.time.Clock
-
 import cats.instances.future._
 import org.apache.pdfbox.pdmodel.PDDocument
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.config.AppConfig
 import uk.gov.hmrc.gform.fileupload.FileUploadModule
+import uk.gov.hmrc.gform.formtemplate.FormTemplateService
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorModule
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -30,6 +30,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 class DmsModule(
   fileUploadModule: FileUploadModule,
   pdfGeneratorModule: PdfGeneratorModule,
+  formTemplateService: FormTemplateService,
   config: AppConfig,
   controllerComponents: ControllerComponents
 )(implicit ex: ExecutionContext) {
@@ -38,6 +39,7 @@ class DmsModule(
     new DmsSubmissionService(
       fileUploadModule.fileUploadService,
       pdfGeneratorModule.pdfGeneratorService,
+      formTemplateService,
       PDDocument.load,
       config.formExpiryDays.longValue
     )(Clock.systemDefaultZone, catsStdInstancesForFuture, ex)

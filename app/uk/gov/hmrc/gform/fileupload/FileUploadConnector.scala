@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory
 import play.api.libs.json.JsObject
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.core.FutureSyntax
+import uk.gov.hmrc.gform.envelope.{ EnvelopeAlgebra, EnvelopeData }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AllowedFileTypes, FormTemplateId }
 import uk.gov.hmrc.gform.time.TimeProvider
@@ -32,7 +33,12 @@ import uk.gov.hmrc.http._
 import java.time.LocalDateTime
 import scala.concurrent.{ ExecutionContext, Future }
 
-class FileUploadConnector(config: FUConfig, wSHttp: WSHttp, timeProvider: TimeProvider)(implicit ex: ExecutionContext) {
+class FileUploadConnector(
+  config: FUConfig,
+  wSHttp: WSHttp,
+  timeProvider: TimeProvider,
+  envelopeService: EnvelopeAlgebra[Future]
+)(implicit ex: ExecutionContext) {
   private val logger = LoggerFactory.getLogger(getClass)
 
   implicit val legacyRawReads: HttpReads[HttpResponse] =
@@ -43,30 +49,41 @@ class FileUploadConnector(config: FUConfig, wSHttp: WSHttp, timeProvider: TimePr
     formTemplateId: FormTemplateId,
     allowedFileTypes: AllowedFileTypes,
     expiryDate: LocalDateTime,
-    fileSizeLimit: Option[Int]
+    fileSizeLimit: Option[Int],
+    objectStore: Boolean
   )(implicit
     hc: HeaderCarrier
   ): Future[EnvelopeId] = {
     logger.info(
       s"creating envelope, formTemplateId: '${formTemplateId.value}', ${loggingHelpers.cleanHeaderCarrierHeader(hc)}"
     )
-    val requestBody = helper.createEnvelopeRequestBody(formTemplateId, allowedFileTypes, expiryDate, fileSizeLimit)
 
-    val url = s"$baseUrl/file-upload/envelopes"
+    if (objectStore) {
+      val newEnvelope = EnvelopeData.newEnvelope
+      for {
+        _   <- envelopeService.save(EnvelopeData.newEnvelope)
+        res <- Future.successful(newEnvelope._id)
+      } yield res
+    } else {
 
-    wSHttp
-      .POST[JsObject, HttpResponse](url, requestBody, headers)
-      .flatMap { response =>
-        val status = response.status
-        if (status == StatusCodes.Created.intValue) {
-          Future.successful(helper.extractEnvelopId(response))
-        } else {
-          Future.failed(
-            new Exception(s"POST to $url failed with status $status. Response body: '${response.body}'")
-          )
-        }
-      } recoverWith { case ex =>
-      Future.failed(new Exception(s"POST to $url failed. $ex"))
+      val requestBody = helper.createEnvelopeRequestBody(formTemplateId, allowedFileTypes, expiryDate, fileSizeLimit)
+
+      val url = s"$baseUrl/file-upload/envelopes"
+
+      wSHttp
+        .POST[JsObject, HttpResponse](url, requestBody, headers)
+        .flatMap { response =>
+          val status = response.status
+          if (status == StatusCodes.Created.intValue) {
+            Future.successful(helper.extractEnvelopId(response))
+          } else {
+            Future.failed(
+              new Exception(s"POST to $url failed with status $status. Response body: '${response.body}'")
+            )
+          }
+        } recoverWith { case ex =>
+        Future.failed(new Exception(s"POST to $url failed. $ex"))
+      }
     }
   }
 

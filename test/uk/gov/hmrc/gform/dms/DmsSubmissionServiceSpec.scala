@@ -19,7 +19,6 @@ package uk.gov.hmrc.gform.dms
 import java.nio.file.FileSystems
 import java.time._
 import java.util.UUID
-
 import cats.Id
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.scalamock.function.MockFunction1
@@ -27,6 +26,7 @@ import play.api.libs.Files.{ SingletonTemporaryFileCreator, TemporaryFile }
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.config.FileInfoConfig
 import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
+import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorAlgebra
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AllowedFileTypes, FormTemplateId }
@@ -50,10 +50,13 @@ class DmsSubmissionServiceSpec extends Spec {
     val expectedSubmission =
       DmsSubmissionService.createSubmission(validSubmission.metadata, expectedEnvId, fixedTime, 0)
 
+    val formTemplateId = FormTemplateId(validSubmission.metadata.dmsFormId)
+
     (stubPdfDocument.getNumberOfPages _).when().returning(numberOfPages)
 
     fixture
-      .expectCreateEnvelope(FormTemplateId(validSubmission.metadata.dmsFormId), expectedEnvId)
+      .expectGetFormTemplate(formTemplateId)
+      .expectCreateEnvelope(formTemplateId, expectedEnvId)
       .expectGeneratePdfBytesLocal(validSubmission.html, pdfContent)
       .expectLoadDocument(pdfContent, stubPdfDocument)
       .expectSubmitEnvelope(expectedSubmission, expectedPdfAndXmlSummaries, expectedHmrcDms, 0)
@@ -82,6 +85,7 @@ class DmsSubmissionServiceSpec extends Spec {
     (stubPdfDocument.getNumberOfPages _).when().returning(numberOfPages)
 
     fixture
+      .expectGetFormTemplate(formTemplateId)
       .expectCreateEnvelope(FormTemplateId(validSubmission.metadata.dmsFormId), expectedEnvId)
       .expectGeneratePdfBytesLocal(validSubmission.html, pdfContent)
       .expectLoadDocument(pdfContent, stubPdfDocument)
@@ -107,6 +111,7 @@ class DmsSubmissionServiceSpec extends Spec {
     tmpPdf.deleteOnExit()
 
     fixture
+      .expectGetFormTemplate(formTemplateId)
       .expectCreateEnvelope(FormTemplateId(validSubmission.metadata.dmsFormId), expectedEnvId)
       .expectLoadDocument(pdfContent, stubPdfDocument)
       .expectSubmitEnvelope(expectedSubmission, expectedPdfAndXmlSummaries, expectedHmrcDms, 0)
@@ -124,18 +129,33 @@ class DmsSubmissionServiceSpec extends Spec {
     service: DmsSubmissionService[Id],
     fileUpload: FileUploadAlgebra[Id],
     pdfGenerator: PdfGeneratorAlgebra[Id],
+    formTemplateAlgebra: FormTemplateAlgebra[Id],
     documentLoader: MockFunction1[Array[Byte], PDDocument],
     clock: Clock
   ) {
 
+    def expectGetFormTemplate(formTemplateId: FormTemplateId): Fixture = {
+      (formTemplateAlgebra
+        .get(_: FormTemplateId))
+        .expects(
+          FormTemplateId(validSubmission.metadata.dmsFormId)
+        )
+        .returning(formTemplate)
+
+      this
+    }
+
     def expectCreateEnvelope(formTemplateId: FormTemplateId, envelopeId: EnvelopeId): Fixture = {
       (fileUpload
-        .createEnvelope(_: FormTemplateId, _: AllowedFileTypes, _: LocalDateTime, _: Option[Int])(_: HeaderCarrier))
+        .createEnvelope(_: FormTemplateId, _: AllowedFileTypes, _: LocalDateTime, _: Option[Int], _: Boolean)(
+          _: HeaderCarrier
+        ))
         .expects(
           FormTemplateId(validSubmission.metadata.dmsFormId),
           FileInfoConfig.allAllowedFileTypes,
           fixedTime.plusDays(envelopeExpiryDays),
           None,
+          false,
           hc
         )
         .returning(envelopeId)
@@ -188,12 +208,14 @@ class DmsSubmissionServiceSpec extends Spec {
     val fileUpload = mock[FileUploadAlgebra[Id]]
     val pdfGenerator = mock[PdfGeneratorAlgebra[Id]]
     val documentLoader = mockFunction[Array[Byte], PDDocument]
+    val formTemplateAlgebra = mock[FormTemplateAlgebra[Id]]
     implicit val clock = Clock.fixed(fixedTime.toInstant(ZoneOffset.UTC), ZoneId.systemDefault)
 
     Fixture(
-      new DmsSubmissionService(fileUpload, pdfGenerator, documentLoader, envelopeExpiryDays),
+      new DmsSubmissionService(fileUpload, pdfGenerator, formTemplateAlgebra, documentLoader, envelopeExpiryDays),
       fileUpload,
       pdfGenerator,
+      formTemplateAlgebra,
       documentLoader,
       clock
     )

@@ -29,6 +29,7 @@ import uk.gov.hmrc.gform.formstatistics.FormStatisticsModule
 import uk.gov.hmrc.gform.dblookup.DbLookupModule
 import uk.gov.hmrc.gform.dms.DmsModule
 import uk.gov.hmrc.gform.email.EmailModule
+import uk.gov.hmrc.gform.envelope.EnvelopeModule
 import uk.gov.hmrc.gform.form.FormModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.metrics.MetricsModule
@@ -57,7 +58,8 @@ class PlayComponentsModule(
   dbLookupModule: DbLookupModule,
   upscanModule: UpscanModule,
   errorHandler: HttpErrorHandler,
-  formStatisticsModule: FormStatisticsModule
+  formStatisticsModule: FormStatisticsModule,
+  envelopeModule: EnvelopeModule
 )(implicit ec: ExecutionContext) {
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -76,7 +78,8 @@ class PlayComponentsModule(
     emailModule.emailCodeVerificationController,
     dbLookupModule.dbLookupController,
     upscanModule.upscanController,
-    formStatisticsModule.formStatisticsController
+    formStatisticsModule.formStatisticsController,
+    envelopeModule.envelopeController
   )
 
   private val healthController =

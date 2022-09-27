@@ -68,3 +68,5 @@ DELETE        /upscan/:reference                                                
 
 GET           /formStatistics/:formTemplateId                                                           uk.gov.hmrc.gform.formstatistics.FormStatisticsController.getFormCount(formTemplateId: FormTemplateId)
 GET           /formStatistics/:formTemplateId/details                                                   uk.gov.hmrc.gform.formstatistics.FormStatisticsController.getFormCountDetails(formTemplateId: FormTemplateId)
+
+GET           /envelopes/:envelopeId                                                                    uk.gov.hmrc.gform.envelope.EnvelopeController.getEnvelope(envelopeId: EnvelopeId)

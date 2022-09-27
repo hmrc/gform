@@ -20,6 +20,7 @@ import akka.util.ByteString
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
+import uk.gov.hmrc.gform.envelope.EnvelopeModule
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.time.TimeModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
@@ -31,11 +32,17 @@ class FileUploadModule(
   configModule: ConfigModule,
   wSHttpModule: WSHttpModule,
   timeModule: TimeModule,
-  akkaModule: AkkaModule
+  akkaModule: AkkaModule,
+  envelopeModule: EnvelopeModule
 )(implicit ex: ExecutionContext) {
 
   val fileUploadConnector: FileUploadConnector =
-    new FileUploadConnector(config, wSHttpModule.auditableWSHttp, timeModule.timeProvider)
+    new FileUploadConnector(
+      config,
+      wSHttpModule.auditableWSHttp,
+      timeModule.timeProvider,
+      envelopeModule.envelopeService
+    )
 
   val fileUploadFrontendConnector: FileUploadFrontendConnector =
     new FileUploadFrontendConnector(config, wSHttpModule.auditableWSHttp)(ex, akkaModule.actorSystem.scheduler)
