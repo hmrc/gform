@@ -49,7 +49,7 @@ object Destination {
     businessArea: String,
     includeIf: String,
     failOnError: Boolean,
-    dataOutputFormat: String,
+    dataOutputFormat: Option[DataOutputFormat],
     formdataXml: Boolean,
     backscan: Option[Boolean],
     includeInstructionPdf: Boolean
@@ -164,7 +164,7 @@ case class UploadableHmrcDmsDestination(
       businessArea,
       cii.getOrElse(true.toString),
       failOnError.getOrElse(true),
-      dataOutputFormat.getOrElse("").toString,
+      dataOutputFormat,
       formdataXml.getOrElse(false),
       closedStatus,
       includeInstructionPdf.getOrElse(false)

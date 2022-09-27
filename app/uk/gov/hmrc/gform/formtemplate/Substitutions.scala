@@ -100,6 +100,9 @@ sealed trait Substitutions[K, V] {
 }
 
 case class ExpressionId(id: String) extends AnyVal
+object ExpressionId {
+  implicit val format: OFormat[ExpressionId] = derived.oformat()
+}
 case class BooleanExprId(id: String) extends AnyVal
 
 class SpecimenExprSubstitutions extends ExprSubstitutions(Map.empty[ExpressionId, Expr])

@@ -124,6 +124,9 @@ object ExprSubstituter extends Substituter[ExprSubstitutions, FormTemplate] {
 
   def substitute(substitutions: ExprSubstitutions, t: FormTemplate): FormTemplate =
     implicitly[Substituter[ExprSubstitutions, FormTemplate]].substitute(substitutions, t)
+
+  def substituteExpr(substitutions: ExprSubstitutions, t: Expr): Expr =
+    implicitly[Substituter[ExprSubstitutions, Expr]].substitute(substitutions, t)
 }
 
 trait SubstituteExpressions {

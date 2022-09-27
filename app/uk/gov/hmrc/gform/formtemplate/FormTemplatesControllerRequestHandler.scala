@@ -16,20 +16,16 @@
 
 package uk.gov.hmrc.gform.formtemplate
 
-import cats.instances.future._
-import cats.instances.string._
-import cats.syntax.eq._
-import cats.syntax.either._
+import cats.implicits._
 import play.api.libs.json._
 import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
-
 import scala.concurrent.ExecutionContext
 import scala.language.postfixOps
 import uk.gov.hmrc.gform.config.FileInfoConfig
 import uk.gov.hmrc.gform.core.{ FOpt, Opt, fromOptA }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Default, FormCategory, FormTemplate, FormTemplateRaw, SummarySection }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Default, Expr, ExpressionOutput, FormCategory, FormTemplate, FormTemplateRaw, SummarySection }
 
 trait RequestHandlerAlg[F[_]] {
   def handleRequest(templateRaw: FormTemplateRaw): F[Unit]
@@ -56,13 +52,41 @@ class FormTemplatesControllerRequestHandler[F[_]](
         expressionsContext        <- expressionsContextOpt
         booleanExpressionsContext <- booleanExpressionsContextOpt
         formTemplate              <- formTemplateOpt
+        expressionsOutput         <- substituteExpressionsOutput(formTemplate.expressionsOutput, expressionsContext)
       } yield {
         val email = expressionsContext.expressions.get(ExpressionId("email"))
-        (formTemplate.copy(emailExpr = email), expressionsContext, booleanExpressionsContext)
+        (
+          formTemplate.copy(emailExpr = email, expressionsOutput = expressionsOutput),
+          expressionsContext,
+          booleanExpressionsContext
+        )
       }
 
       processAndPersistTemplate(formTemplateWithSubstitutions, templateRaw.lowerCaseId)
     }
+  }
+
+  private def substituteExpressionsOutput(
+    maybeExpressionsOutput: Option[ExpressionOutput],
+    exprSubstitutions: ExprSubstitutions
+  ): Opt[Option[ExpressionOutput]] = maybeExpressionsOutput.traverse[Opt, ExpressionOutput] { expressionOutput =>
+    val lookup = exprSubstitutions.expressions
+    expressionOutput.lookup.toList
+      .traverse { case (expressionId, _) =>
+        lookup
+          .get(expressionId)
+          .fold[Opt[(ExpressionId, Expr)]](
+            Left(
+              UnexpectedState(
+                s"ExpressionId: '${expressionId.id}' defined in expressionsOutput doesn't exist in expressions"
+              )
+            )
+          ) { expr =>
+            val exprSubs = ExprSubstituter.substituteExpr(exprSubstitutions, expr)
+            Right(expressionId -> exprSubs)
+          }
+      }
+      .map(tuples => ExpressionOutput(tuples.toMap))
   }
 
   private def processAndPersistTemplate(

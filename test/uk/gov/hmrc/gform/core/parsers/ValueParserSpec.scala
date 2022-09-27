@@ -449,7 +449,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
             "TestHmrcDmsBusinessArea",
             "",
             true,
-            DataOutputFormat.XML.toString,
+            Some(DataOutputFormat.XML),
             true,
             Some(true),
             true
@@ -496,6 +496,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     None,
     true,
     FileInfoConfig.allAllowedFileTypes,
+    None,
     None,
     None,
     None,

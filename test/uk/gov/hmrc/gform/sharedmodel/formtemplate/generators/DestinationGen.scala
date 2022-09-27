@@ -57,7 +57,7 @@ trait DestinationGen {
         businessArea,
         includeIf,
         failOnError,
-        DataOutputFormat.XML.toString,
+        Some(DataOutputFormat.XML),
         formdataXml,
         backscan,
         includeInstructionPdf
