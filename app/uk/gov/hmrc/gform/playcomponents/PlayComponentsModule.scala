@@ -23,6 +23,7 @@ import play.api.routing.Router
 
 import scala.concurrent.ExecutionContext
 import uk.gov.hmrc.gform.akka.AkkaModule
+import uk.gov.hmrc.gform.api.ApiModule
 import uk.gov.hmrc.gform.auditing.AuditingModule
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.formstatistics.FormStatisticsModule
@@ -59,7 +60,8 @@ class PlayComponentsModule(
   upscanModule: UpscanModule,
   errorHandler: HttpErrorHandler,
   formStatisticsModule: FormStatisticsModule,
-  envelopeModule: EnvelopeModule
+  envelopeModule: EnvelopeModule,
+  apiModule: ApiModule
 )(implicit ec: ExecutionContext) {
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -79,7 +81,8 @@ class PlayComponentsModule(
     dbLookupModule.dbLookupController,
     upscanModule.upscanController,
     formStatisticsModule.formStatisticsController,
-    envelopeModule.envelopeController
+    envelopeModule.envelopeController,
+    apiModule.companyInformationController
   )
 
   private val healthController =

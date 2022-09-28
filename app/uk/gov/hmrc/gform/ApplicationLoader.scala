@@ -29,6 +29,7 @@ import play.api.routing.Router
 import play.api.libs.ws.ahc.AhcWSComponents
 import uk.gov.hmrc.crypto.CryptoWithKeysFromConfig
 import uk.gov.hmrc.gform.akka.AkkaModule
+import uk.gov.hmrc.gform.api.ApiModule
 import uk.gov.hmrc.gform.auditing.AuditingModule
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.formstatistics.FormStatisticsModule
@@ -232,6 +233,8 @@ class ApplicationModule(context: Context)
     playComponents.context.devContext.map(_.sourceMapper)
   )
 
+  private val apiModule = new ApiModule(configModule, wSHttpModule)
+
   val playComponentsModule = new PlayComponentsModule(
     playComponents,
     akkaModule,
@@ -250,7 +253,8 @@ class ApplicationModule(context: Context)
     upscanModule,
     httpErrorHandler,
     formStatisticsModule,
-    envelopeModule
+    envelopeModule,
+    apiModule
   )
 
   override lazy val httpRequestHandler: HttpRequestHandler = playComponentsModule.httpRequestHandler

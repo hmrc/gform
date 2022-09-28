@@ -70,3 +70,5 @@ GET           /formStatistics/:formTemplateId                                   
 GET           /formStatistics/:formTemplateId/details                                                   uk.gov.hmrc.gform.formstatistics.FormStatisticsController.getFormCountDetails(formTemplateId: FormTemplateId)
 
 GET           /envelopes/:envelopeId                                                                    uk.gov.hmrc.gform.envelope.EnvelopeController.getEnvelope(envelopeId: EnvelopeId)
+
+GET           /company-profile/:companyNumber                                                           uk.gov.hmrc.gform.api.CompanyInformationController.getCompanyProfile(companyNumber: String)
