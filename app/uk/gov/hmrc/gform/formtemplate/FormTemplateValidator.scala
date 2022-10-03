@@ -1141,6 +1141,27 @@ object FormTemplateValidator {
       }
     }
   }
+
+  def validateAddToListInfoFields(formTemplate: FormTemplate): ValidationResult = {
+
+    def isInfo(field: FormComponent): ValidationResult =
+      field.`type` match {
+        case InformationMessage(_, _) => Valid
+        case _ =>
+          Invalid(
+            s"AddToList.fields must be Info types. Field '${field.id.value}' is not an Info type."
+          )
+      }
+
+    val isNonInformation: List[ValidationResult] =
+      formTemplate.formKind.allSections.map {
+        case s: Section.AddToList =>
+          s.fields.fold[ValidationResult](Valid)(fields => fields.toList.map(f => isInfo(f)).combineAll)
+        case _ => Valid
+      }
+
+    isNonInformation.combineAll
+  }
 }
 
 object IsEmailVerifiedBy {

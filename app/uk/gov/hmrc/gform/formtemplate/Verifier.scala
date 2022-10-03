@@ -78,6 +78,7 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validateSummarySection(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateAddToListDefaultPage(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateAddToListLimit(formTemplate).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateAddToListInfoFields(formTemplate).toEither)
       _ <- fromOptA(DestinationsValidator.validateUniqueDestinationIds(formTemplate.destinations).toEither)
       _ <- fromOptA(DestinationsValidator.validateNoGroupInDeclaration(formTemplate.destinations).toEither)
       _ <- fromOptA(FormTemplateValidator.validateDataRetrieve(pages).toEither)
