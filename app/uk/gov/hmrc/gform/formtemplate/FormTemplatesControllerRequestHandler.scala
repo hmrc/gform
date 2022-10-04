@@ -281,7 +281,7 @@ object FormTemplatesControllerRequestHandler {
       (__ \ 'fields).json.update(list(choicesUpdater andThen revealingChoicesUpdater))
 
     val regularFieldsOrAddToListFieldsReads =
-      fieldsReads orElse (__ \ 'pages).json.update(list(fieldsReads))
+      (__ \ 'pages).json.update(list(fieldsReads)) orElse fieldsReads
 
     val regularFieldsOrAddToListFieldsReadsTaskList =
       (__ \ 'tasks).json.update(list((__ \ 'sections).json.update(list(regularFieldsOrAddToListFieldsReads))))

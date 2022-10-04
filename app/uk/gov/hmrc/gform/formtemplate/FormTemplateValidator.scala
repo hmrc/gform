@@ -176,7 +176,9 @@ object FormTemplateValidator {
       .collect {
         case s: Section.NonRepeatingPage => s.page.allFormComponentIds.toSet
         case s: Section.RepeatingPage    => s.page.allFormComponentIds.toSet
-        case s: Section.AddToList        => (s.addAnotherQuestion.id :: s.pages.toList.flatMap(_.allFormComponentIds)).toSet
+        case s: Section.AddToList =>
+          (s.addAnotherQuestion.id :: s.pages.toList
+            .flatMap(_.allFormComponentIds) ::: s.fields.map(_.toList.map(_.id)).getOrElse(Nil)).toSet
       }
       .toSet
       .flatten
@@ -1140,6 +1142,27 @@ object FormTemplateValidator {
         Valid
       }
     }
+  }
+
+  def validateAddToListInfoFields(formTemplate: FormTemplate): ValidationResult = {
+
+    def isInfo(field: FormComponent): ValidationResult =
+      field.`type` match {
+        case InformationMessage(_, _) => Valid
+        case _ =>
+          Invalid(
+            s"AddToList.fields must be Info types. Field '${field.id.value}' is not an Info type."
+          )
+      }
+
+    val isNonInformation: List[ValidationResult] =
+      formTemplate.formKind.allSections.map {
+        case s: Section.AddToList =>
+          s.fields.fold[ValidationResult](Valid)(fields => fields.toList.map(f => isInfo(f)).combineAll)
+        case _ => Valid
+      }
+
+    isNonInformation.combineAll
   }
 }
 

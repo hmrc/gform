@@ -32,8 +32,9 @@ object SectionHelper {
 
   private def addToListRepeaterAndDefaultPages(section: Section): List[FormComponent] =
     section match {
-      case s: Section.AddToList => s.addAnotherQuestion +: s.defaultPage.map(_.fields).getOrElse(Nil)
-      case _                    => Nil
+      case s: Section.AddToList =>
+        (s.addAnotherQuestion +: s.defaultPage.map(_.fields).getOrElse(Nil)) ++ s.fields.map(_.toList).getOrElse(Nil)
+      case _ => Nil
     }
 
   def addToListIds(sections: List[Section]): List[FormComponent] =

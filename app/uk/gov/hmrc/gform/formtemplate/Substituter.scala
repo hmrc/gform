@@ -313,7 +313,8 @@ object Substituter {
         instruction = addToList.instruction(substitutions),
         infoMessage = addToList.infoMessage(substitutions),
         defaultPage = addToList.defaultPage(substitutions),
-        cyaPage = addToList.cyaPage(substitutions)
+        cyaPage = addToList.cyaPage(substitutions),
+        fields = addToList.fields(substitutions)
       )
     }
 
