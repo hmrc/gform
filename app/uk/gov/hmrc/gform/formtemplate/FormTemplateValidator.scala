@@ -176,7 +176,9 @@ object FormTemplateValidator {
       .collect {
         case s: Section.NonRepeatingPage => s.page.allFormComponentIds.toSet
         case s: Section.RepeatingPage    => s.page.allFormComponentIds.toSet
-        case s: Section.AddToList        => (s.addAnotherQuestion.id :: s.pages.toList.flatMap(_.allFormComponentIds)).toSet
+        case s: Section.AddToList =>
+          (s.addAnotherQuestion.id :: s.pages.toList
+            .flatMap(_.allFormComponentIds) ::: s.fields.map(_.toList.map(_.id)).getOrElse(Nil)).toSet
       }
       .toSet
       .flatten
