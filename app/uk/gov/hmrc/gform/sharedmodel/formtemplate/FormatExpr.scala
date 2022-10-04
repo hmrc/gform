@@ -226,6 +226,7 @@ object Register {
   case object IntentBusiness extends Register
   case object IntentOther extends Register
   case object IntentLivingCostsAndFees extends Register
+  case object SicCode extends Register
 
   implicit val format: OFormat[Register] = derived.oformat()
 }
