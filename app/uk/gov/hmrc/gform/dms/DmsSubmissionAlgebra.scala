@@ -26,7 +26,6 @@ import cats.syntax.traverse._
 import org.apache.pdfbox.pdmodel.PDDocument
 import uk.gov.hmrc.gform.config.FileInfoConfig
 import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
-import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorAlgebra
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId }
@@ -51,7 +50,6 @@ trait DmsSubmissionAlgebra[F[_]] {
 class DmsSubmissionService[F[_]](
   fileUpload: FileUploadAlgebra[F],
   pdfGenerator: PdfGeneratorAlgebra[F],
-  formTemplateAlgebra: FormTemplateAlgebra[F],
   documentLoader: Array[Byte] => PDDocument,
   formExpiryDays: Long
 )(implicit clock: Clock, M: Monad[F], ec: ExecutionContext)
@@ -70,15 +68,15 @@ class DmsSubmissionService[F[_]](
     implicit hc: HeaderCarrier
   ): F[EnvelopeId] = {
     val formTemplateId: FormTemplateId = FormTemplateId(metadata.dmsFormId)
+    val objectStore = false //it will send to the file-upload until switching gform to the object-store completely
     for {
-      formTemplate <- formTemplateAlgebra.get(formTemplateId)
       envId <-
         fileUpload.createEnvelope(
           formTemplateId,
           FileInfoConfig.allAllowedFileTypes,
           LocalDateTime.now(clock).plusDays(formExpiryDays),
           None,
-          formTemplate.objectStore.getOrElse(false)
+          objectStore
         )
       pdfDoc = documentLoader(pdfBytes)
       pdfSummary = PdfSummary(pdfDoc.getNumberOfPages.toLong, pdfBytes)
