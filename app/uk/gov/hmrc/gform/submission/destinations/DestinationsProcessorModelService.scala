@@ -20,6 +20,7 @@ import cats.Monad
 import cats.instances.option._
 import cats.syntax.functor._
 import cats.syntax.traverse._
+import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
 import uk.gov.hmrc.gform.fileupload.{ FileDownloadAlgebra, UploadedFile }
 import uk.gov.hmrc.gform.sharedmodel.{ FrontEndSubmissionVariables, PdfHtml }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, Form }
@@ -27,20 +28,30 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HandlebarsTemplat
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 import uk.gov.hmrc.http.HeaderCarrier
 
-class DestinationsProcessorModelService[M[_]: Monad](fileDownloadAlgebra: Option[FileDownloadAlgebra[M]])
-    extends DestinationsProcessorModelAlgebra[M] {
+class DestinationsProcessorModelService[M[_]: Monad](
+  fileDownloadAlgebra: Option[FileDownloadAlgebra[M]],
+  envelopeAlgebra: Option[EnvelopeAlgebra[M]]
+) extends DestinationsProcessorModelAlgebra[M] {
   override def create(
     form: Form,
     frontEndSubmissionVariables: FrontEndSubmissionVariables,
     pdfData: PdfHtml,
     instructionPdfData: Option[PdfHtml],
-    structuredFormData: StructuredFormValue.ObjectStructure
+    structuredFormData: StructuredFormValue.ObjectStructure,
+    objectStore: Boolean
   )(implicit hc: HeaderCarrier): M[HandlebarsTemplateProcessorModel] =
     for {
-      files <- uploadedFiles(form.envelopeId)
+      files <- uploadedFiles(form.envelopeId, objectStore)
     } yield DestinationsProcessorModelAlgebra
       .createModel(frontEndSubmissionVariables, pdfData, instructionPdfData, structuredFormData, form, files)
 
-  private def uploadedFiles(envelopedId: EnvelopeId)(implicit hc: HeaderCarrier): M[Option[List[UploadedFile]]] =
-    fileDownloadAlgebra.traverse(_.allUploadedFiles(envelopedId))
+  private def uploadedFiles(envelopedId: EnvelopeId, objectStore: Boolean)(implicit
+    hc: HeaderCarrier
+  ): M[Option[List[UploadedFile]]] =
+    if (objectStore) {
+      envelopeAlgebra.traverse(_.allUploadedFiles(envelopedId))
+    } else {
+      fileDownloadAlgebra.traverse(_.allUploadedFiles(envelopedId))
+    }
+
 }

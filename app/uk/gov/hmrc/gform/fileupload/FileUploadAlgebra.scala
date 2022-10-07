@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.gform.fileupload
 import java.time.LocalDateTime
-
 import akka.util.ByteString
 import cats.instances.list._
 import cats.syntax.flatMap._
@@ -62,11 +61,13 @@ trait FileUploadAlgebra[F[_]] {
     hc: HeaderCarrier
   ): F[EnvelopeId]
 
-  def submitEnvelope(submission: Submission, summaries: PdfAndXmlSummaries, hmrcDms: HmrcDms)(implicit
-    hc: HeaderCarrier
+  def submitEnvelope(submission: Submission, summaries: PdfAndXmlSummaries, hmrcDms: HmrcDms, objectStore: Boolean)(
+    implicit hc: HeaderCarrier
   ): F[Unit]
 
   def deleteFile(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): F[Unit]
 
-  def uploadAttachment(envelopeId: EnvelopeId, fileAttachment: FileAttachment)(implicit hc: HeaderCarrier): F[Unit]
+  def uploadAttachment(envelopeId: EnvelopeId, fileAttachment: FileAttachment, objectStore: Boolean)(implicit
+    hc: HeaderCarrier
+  ): F[Unit]
 }

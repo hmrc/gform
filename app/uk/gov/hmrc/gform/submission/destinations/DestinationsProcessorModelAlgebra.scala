@@ -40,7 +40,8 @@ trait DestinationsProcessorModelAlgebra[M[_]] {
     frontEndSubmissionVariables: FrontEndSubmissionVariables,
     pdfData: PdfHtml,
     instructionPdfHtml: Option[PdfHtml],
-    structuredFormData: StructuredFormValue.ObjectStructure
+    structuredFormData: StructuredFormValue.ObjectStructure,
+    objectStore: Boolean
   )(implicit hc: HeaderCarrier): M[HandlebarsTemplateProcessorModel]
 }
 

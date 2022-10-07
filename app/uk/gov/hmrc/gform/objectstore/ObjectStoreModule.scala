@@ -16,20 +16,40 @@
 
 package uk.gov.hmrc.gform.objectstore
 
-import akka.actor.ActorSystem
+import play.api.libs.ws.WSClient
+import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.config.ConfigModule
+import uk.gov.hmrc.objectstore.client.RetentionPeriod
 import uk.gov.hmrc.objectstore.client.config.ObjectStoreClientConfig
-import uk.gov.hmrc.objectstore.client.play.PlayObjectStoreClientEither
+import uk.gov.hmrc.objectstore.client.play.PlayObjectStoreClient
 
 import scala.concurrent.ExecutionContext
 
 class ObjectStoreModule(
   configModule: ConfigModule,
-  objectStoreClient: PlayObjectStoreClientEither,
-  objectStoreClientConfig: ObjectStoreClientConfig
-)(implicit ex: ExecutionContext, system: ActorSystem) {
+  wsClient: WSClient,
+  akkaModule: AkkaModule
+)(implicit ex: ExecutionContext) {
 
-  val objectStoreController: ObjectStoreController =
-    new ObjectStoreController(configModule.controllerComponents, objectStoreClient, objectStoreClientConfig)
+  private val baseUrl = configModule.serviceConfig.baseUrl("object-store")
+  private val authorizationToken = configModule.typesafeConfig.getString("internal-auth.token")
+  private val defaultRetentionPeriod = RetentionPeriod
+    .parse(configModule.typesafeConfig.getString("object-store.default-retention-period"))
+    .fold(m => throw new IllegalStateException(m), identity)
+
+  private val objectStoreClientConfig = ObjectStoreClientConfig(
+    baseUrl,
+    configModule.appConfig.appName,
+    authorizationToken,
+    defaultRetentionPeriod
+  )
+
+  val objectStoreClient = new PlayObjectStoreClient(wsClient, objectStoreClientConfig)(akkaModule.materializer, ex)
+
+  val objectStoreConnector: ObjectStoreConnector =
+    new ObjectStoreConnector(objectStoreClient, objectStoreClientConfig)(
+      ex,
+      akkaModule.actorSystem
+    )
 
 }

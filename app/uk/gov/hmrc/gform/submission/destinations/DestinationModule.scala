@@ -18,6 +18,7 @@ package uk.gov.hmrc.gform.submission.destinations
 
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core._
+import uk.gov.hmrc.gform.envelope.{ EnvelopeAlgebra, EnvelopeModule }
 import uk.gov.hmrc.gform.fileupload.{ FileDownloadAlgebra, FileUploadModule }
 import uk.gov.hmrc.gform.form.FormModule
 import uk.gov.hmrc.gform.formmetadata.FormMetadataModule
@@ -37,7 +38,8 @@ class DestinationModule(
   mongoModule: MongoModule,
   formModule: FormModule,
   fileUploadModule: FileUploadModule,
-  metadataModule: FormMetadataModule
+  metadataModule: FormMetadataModule,
+  envelopeModule: EnvelopeModule
 )(implicit ex: ExecutionContext) {
   val destinationAuditer: Option[RepoDestinationAuditer] =
     if (configModule.DestinationsServicesConfig.auditDestinations) {
@@ -69,9 +71,23 @@ class DestinationModule(
       None
     }
 
+  private val envelopeServiceIfPopulating: Option[EnvelopeAlgebra[FOpt]] =
+    if (configModule.DestinationsServicesConfig.populateHandlebarsModelWithDocuments) {
+      Loggers.destinations.info(
+        "The envelopeService IS configured for the submission service, so the Handlebars model WILL be populated with uploaded documents"
+      )
+      Some(envelopeModule.foptEnvelopeService)
+    } else {
+      Loggers.destinations.info(
+        "The envelopeService IS NOT configured for the submission service, so the Handlebars model WILL NOT be populated with uploaded documents"
+      )
+      None
+    }
+
   val destinationsProcessorModelService: DestinationsProcessorModelAlgebra[FOpt] =
     new DestinationsProcessorModelService[FOpt](
-      fileDownloadServiceIfPopulating
+      fileDownloadServiceIfPopulating,
+      envelopeServiceIfPopulating
     )
 
   val futureDestinationsProcessorModelService: DestinationsProcessorModelAlgebra[Future] =
@@ -81,10 +97,11 @@ class DestinationModule(
         frontEndSubmissionVariables: FrontEndSubmissionVariables,
         pdfData: PdfHtml,
         instructionPdfHtml: Option[PdfHtml],
-        structuredFormData: StructuredFormValue.ObjectStructure
+        structuredFormData: StructuredFormValue.ObjectStructure,
+        objectStore: Boolean
       )(implicit hc: HeaderCarrier): Future[HandlebarsTemplateProcessorModel] =
         destinationsProcessorModelService
-          .create(form, frontEndSubmissionVariables, pdfData, instructionPdfHtml, structuredFormData)
+          .create(form, frontEndSubmissionVariables, pdfData, instructionPdfHtml, structuredFormData, objectStore)
           .toFuture
     }
 }

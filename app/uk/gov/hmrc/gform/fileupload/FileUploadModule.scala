@@ -21,6 +21,7 @@ import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.envelope.EnvelopeModule
+import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.time.TimeModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
@@ -33,7 +34,8 @@ class FileUploadModule(
   wSHttpModule: WSHttpModule,
   timeModule: TimeModule,
   akkaModule: AkkaModule,
-  envelopeModule: EnvelopeModule
+  envelopeModule: EnvelopeModule,
+  objectStoreModule: ObjectStoreModule
 )(implicit ex: ExecutionContext) {
 
   val fileUploadConnector: FileUploadConnector =
@@ -48,7 +50,13 @@ class FileUploadModule(
     new FileUploadFrontendConnector(config, wSHttpModule.auditableWSHttp)(ex, akkaModule.actorSystem.scheduler)
 
   val fileUploadService: FileUploadService =
-    new FileUploadService(fileUploadConnector, fileUploadFrontendConnector, timeModule.timeProvider)
+    new FileUploadService(
+      fileUploadConnector,
+      fileUploadFrontendConnector,
+      timeModule.timeProvider,
+      objectStoreModule.objectStoreConnector,
+      envelopeModule.envelopeService
+    )
 
   val foptFileDownloadService = new FileDownloadAlgebra[FOpt] {
     override def getEnvelope(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): FOpt[Envelope] =
