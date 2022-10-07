@@ -74,12 +74,12 @@ class DestinationModule(
   private val envelopeServiceIfPopulating: Option[EnvelopeAlgebra[FOpt]] =
     if (configModule.DestinationsServicesConfig.populateHandlebarsModelWithDocuments) {
       Loggers.destinations.info(
-        "The fileDownloadService IS configured for the submission service, so the Handlebars model WILL be populated with uploaded documents"
+        "The envelopeService IS configured for the submission service, so the Handlebars model WILL be populated with uploaded documents"
       )
       Some(envelopeModule.foptEnvelopeService)
     } else {
       Loggers.destinations.info(
-        "The fileDownloadService IS NOT configured for the submission service, so the Handlebars model WILL NOT be populated with uploaded documents"
+        "The envelopeService IS NOT configured for the submission service, so the Handlebars model WILL NOT be populated with uploaded documents"
       )
       None
     }
