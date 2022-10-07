@@ -177,7 +177,7 @@ class FileUploadService(
         envelopeData <- envelopeService.get(envelopeId)
         _ <- {
           val newEnvelopeData =
-            envelopeData.files ::: List(
+            envelopeData.files :+
               EnvelopeFile(
                 fileId.value,
                 fileName,
@@ -185,7 +185,6 @@ class FileUploadService(
                 contentType,
                 0L,
                 Map.empty[String, List[String]]
-              )
             )
           envelopeService.save(EnvelopeData(envelopeId, newEnvelopeData))
         }
