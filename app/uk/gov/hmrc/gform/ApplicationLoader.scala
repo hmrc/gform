@@ -191,7 +191,6 @@ class ApplicationModule(context: Context)
     new DmsModule(
       fileUploadModule,
       pdfGeneratorModule,
-      formTemplateModule.formTemplateService,
       configModule.appConfig,
       controllerComponents
     )
