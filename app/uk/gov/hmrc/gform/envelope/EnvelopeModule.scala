@@ -16,19 +16,25 @@
 
 package uk.gov.hmrc.gform.envelope
 
+import akka.util.ByteString
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.mongo.MongoModule
+import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
+import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-class EnvelopeModule(mongoModule: MongoModule, configModule: ConfigModule)(implicit ex: ExecutionContext) {
+class EnvelopeModule(mongoModule: MongoModule, configModule: ConfigModule, objectStoreModule: ObjectStoreModule)(
+  implicit ex: ExecutionContext
+) {
   private val envelopeRepo: Repo[EnvelopeData] =
     new Repo[EnvelopeData]("envelope", mongoModule.mongoComponent, _._id.value)
 
-  val envelopeService: EnvelopeAlgebra[Future] = new EnvelopeService(envelopeRepo)
+  val envelopeService: EnvelopeAlgebra[Future] =
+    new EnvelopeService(envelopeRepo, objectStoreModule.objectStoreConnector)
 
   val envelopeController: EnvelopeController =
     new EnvelopeController(configModule.controllerComponents, envelopeService)
@@ -39,6 +45,9 @@ class EnvelopeModule(mongoModule: MongoModule, configModule: ConfigModule)(impli
 
     override def get(envelopeId: EnvelopeId): FOpt[EnvelopeData] =
       fromFutureA(envelopeService.get(envelopeId))
+
+    override def getFileBytes(envelopeId: EnvelopeId, fileName: String)(implicit hc: HeaderCarrier): FOpt[ByteString] =
+      fromFutureA(envelopeService.getFileBytes(envelopeId, fileName))
   }
 
 }

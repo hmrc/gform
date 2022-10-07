@@ -17,28 +17,29 @@
 package uk.gov.hmrc.gform.submission.destinations
 
 import java.time.Instant
-
 import cats.instances.future._
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA, success }
-import uk.gov.hmrc.gform.fileupload.{ File, FileUploadService }
+import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
+import uk.gov.hmrc.gform.fileupload.{ Available, Envelope, File, FileUploadService }
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorService
 import uk.gov.hmrc.gform.sharedmodel.PdfHtml
-import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, Submitted }
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId, Submitted }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 import uk.gov.hmrc.gform.submission.PdfAndXmlSummariesFactory
 import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ ExecutionContext }
 
 class DmsSubmitter(
   fileUploadService: FileUploadService,
   formService: FormAlgebra[FOpt],
   formTemplateService: FormTemplateAlgebra[FOpt],
-  pdfGeneratorService: PdfGeneratorService
+  pdfGeneratorService: PdfGeneratorService,
+  envelopeAlgebra: EnvelopeAlgebra[FOpt]
 )(implicit ec: ExecutionContext)
     extends DmsSubmitterAlgebra[FOpt] {
   private val logger = LoggerFactory.getLogger(getClass)
@@ -60,10 +61,22 @@ class DmsSubmitter(
                        .withPdf(pdfGeneratorService, pdfData, instructionPdfData)
                        .apply(form, formTemplate, structuredFormData, customerId, submission.submissionRef, hmrcDms)
                    )
-      res             <- fromFutureA(fileUploadService.submitEnvelope(submission, summaries, hmrcDms))
-      envelopeDetails <- fromFutureA(fileUploadService.getEnvelope(submission.envelopeId))
-      _               <- success(logFileSizeBreach(submission.envelopeId, envelopeDetails.files))
-      _               <- formService.updateFormStatus(submissionInfo.formId, Submitted)
+      res <-
+        fromFutureA(
+          fileUploadService.submitEnvelope(submission, summaries, hmrcDms, formTemplate.objectStore.getOrElse(false))
+        )
+      envelopeDetails <- formTemplate.objectStore match {
+                           case Some(true) =>
+                             envelopeAlgebra.get(submission.envelopeId).map { ed =>
+                               val files: List[File] =
+                                 ed.files.map(f => File(FileId(f.fileId), Available, f.fileName, f.length))
+                               Envelope(files)
+                             }
+                           case _ => fromFutureA(fileUploadService.getEnvelope(submission.envelopeId))
+
+                         }
+      _ <- success(logFileSizeBreach(submission.envelopeId, envelopeDetails.files))
+      _ <- formService.updateFormStatus(submissionInfo.formId, Submitted)
     } yield res
   }
 

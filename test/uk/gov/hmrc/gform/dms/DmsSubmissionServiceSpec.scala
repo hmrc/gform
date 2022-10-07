@@ -59,7 +59,7 @@ class DmsSubmissionServiceSpec extends Spec {
       .expectCreateEnvelope(formTemplateId, expectedEnvId)
       .expectGeneratePdfBytesLocal(validSubmission.html, pdfContent)
       .expectLoadDocument(pdfContent, stubPdfDocument)
-      .expectSubmitEnvelope(expectedSubmission, expectedPdfAndXmlSummaries, expectedHmrcDms, 0)
+      .expectSubmitEnvelope(expectedSubmission, expectedPdfAndXmlSummaries, expectedHmrcDms, 0, false)
       .service
       .submitToDms(validSubmission, List.empty) shouldBe expectedEnvId
   }
@@ -89,8 +89,8 @@ class DmsSubmissionServiceSpec extends Spec {
       .expectCreateEnvelope(FormTemplateId(validSubmission.metadata.dmsFormId), expectedEnvId)
       .expectGeneratePdfBytesLocal(validSubmission.html, pdfContent)
       .expectLoadDocument(pdfContent, stubPdfDocument)
-      .expectUploadAttachment(expectedEnvId, fileAttachments.head)
-      .expectSubmitEnvelope(expectedSubmission, expectedPdfAndXmlSummaries, expectedDmsSubmission, 1)
+      .expectUploadAttachment(expectedEnvId, fileAttachments.head, false)
+      .expectSubmitEnvelope(expectedSubmission, expectedPdfAndXmlSummaries, expectedDmsSubmission, 1, false)
       .service
       .submitToDms(validSubmission, fileAttachments) shouldBe expectedEnvId
   }
@@ -114,7 +114,7 @@ class DmsSubmissionServiceSpec extends Spec {
       .expectGetFormTemplate(formTemplateId)
       .expectCreateEnvelope(FormTemplateId(validSubmission.metadata.dmsFormId), expectedEnvId)
       .expectLoadDocument(pdfContent, stubPdfDocument)
-      .expectSubmitEnvelope(expectedSubmission, expectedPdfAndXmlSummaries, expectedHmrcDms, 0)
+      .expectSubmitEnvelope(expectedSubmission, expectedPdfAndXmlSummaries, expectedHmrcDms, 0, false)
       .service
       .submitPdfToDms(pdfContent, validSubmission.metadata, List.empty) shouldBe expectedEnvId
   }
@@ -163,10 +163,14 @@ class DmsSubmissionServiceSpec extends Spec {
       this
     }
 
-    def expectUploadAttachment(envelopeId: EnvelopeId, fileAttachment: FileAttachment): Fixture = {
+    def expectUploadAttachment(
+      envelopeId: EnvelopeId,
+      fileAttachment: FileAttachment,
+      objectStore: Boolean
+    ): Fixture = {
       (fileUpload
-        .uploadAttachment(_: EnvelopeId, _: FileAttachment)(_: HeaderCarrier))
-        .expects(envelopeId, fileAttachment, hc)
+        .uploadAttachment(_: EnvelopeId, _: FileAttachment, _: Boolean)(_: HeaderCarrier))
+        .expects(envelopeId, fileAttachment, objectStore, hc)
         .returning(())
 
       this
@@ -193,11 +197,12 @@ class DmsSubmissionServiceSpec extends Spec {
       submission: Submission,
       pdfAndXmlSummaries: PdfAndXmlSummaries,
       hmrcDms: HmrcDms,
-      numberOfAttachments: Int
+      numberOfAttachments: Int,
+      objectStore: Boolean
     ): Fixture = {
       (fileUpload
-        .submitEnvelope(_: Submission, _: PdfAndXmlSummaries, _: HmrcDms)(_: HeaderCarrier))
-        .expects(submission, pdfAndXmlSummaries, hmrcDms, hc)
+        .submitEnvelope(_: Submission, _: PdfAndXmlSummaries, _: HmrcDms, _: Boolean)(_: HeaderCarrier))
+        .expects(submission, pdfAndXmlSummaries, hmrcDms, objectStore, hc)
         .returning(())
 
       this

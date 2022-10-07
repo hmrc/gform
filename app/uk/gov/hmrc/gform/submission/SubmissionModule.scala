@@ -29,6 +29,7 @@ import uk.gov.hmrc.gform.submission.handlebars.HandlebarsHttpApiModule
 import uk.gov.hmrc.gform.time.TimeModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.gform.core._
+import uk.gov.hmrc.gform.envelope.EnvelopeModule
 import uk.gov.hmrc.gform.notifier.NotifierModule
 import uk.gov.hmrc.gform.repo.{ Repo, RepoAlgebra }
 import uk.gov.hmrc.gform.submission.destinations.{ DestinationModule, DestinationSubmitter, DestinationsSubmitter, DestinationsSubmitterAlgebra, DmsSubmitter, StateTransitionService }
@@ -49,7 +50,8 @@ class SubmissionModule(
   submissionConsolidatorModule: SubmissionConsolidatorModule,
   handlebarsHttpApiModule: HandlebarsHttpApiModule,
   destinationModule: DestinationModule,
-  notifierModule: NotifierModule
+  notifierModule: NotifierModule,
+  envelopeModule: EnvelopeModule
 )(implicit ex: ExecutionContext) {
 
   //TODO: this should be replaced with save4later for submissions
@@ -68,7 +70,8 @@ class SubmissionModule(
     fileUploadModule.fileUploadService,
     formModule.fOptFormService,
     formTemplateModule.fOptFormTemplateAlgebra,
-    pdfGeneratorModule.pdfGeneratorService
+    pdfGeneratorModule.pdfGeneratorService,
+    envelopeModule.foptEnvelopeService
   )
 
   private val stateTransitionService = new StateTransitionService(formModule.fOptFormService)

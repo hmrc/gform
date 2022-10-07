@@ -21,28 +21,40 @@ import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.UniqueIdGenerator
-import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
+import uk.gov.hmrc.gform.sharedmodel.config.ContentType
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId }
 
 case class EnvelopeData(
   _id: EnvelopeId,
   files: List[EnvelopeFile]
 )
 
-case class EnvelopeFile(fileId: FileId, fileName: String, status: FileStatus, length: Long)
+case class EnvelopeFile(
+  fileId: String,
+  fileName: String,
+  status: FileStatus,
+  contentType: ContentType,
+  length: Long,
+  metadata: Map[String, List[String]]
+)
 
 object EnvelopeFile {
   val fileWrites: Writes[EnvelopeFile] =
-    ((__ \ "id").write[FileId] and
+    ((__ \ "id").write[String] and
       (JsPath \ "name").write[String] and
       (JsPath \ "status").write[FileStatus] and
-      (JsPath \ "length").write[Long])(unlift(EnvelopeFile.unapply))
+      (JsPath \ "contentType").write[ContentType] and
+      (JsPath \ "length").write[Long] and
+      (JsPath \ "metadata").write[Map[String, List[String]]])(unlift(EnvelopeFile.unapply))
 
   val fileReads: Reads[EnvelopeFile] = (
-    (JsPath \ "id").format[String].map(FileId(_)) and
-      (JsPath \ "name").format[String] and
-      (JsPath \ "status").format[FileStatus] and
-      (JsPath \ "length").format[Long]
-  )(EnvelopeFile.apply(_, _, _, _))
+    (JsPath \ "id").read[String] and
+      (JsPath \ "name").read[String] and
+      (JsPath \ "status").read[FileStatus] and
+      (JsPath \ "contentType").read[ContentType] and
+      (JsPath \ "length").read[Long] and
+      (JsPath \ "metadata").read[Map[String, List[String]]]
+  )(EnvelopeFile.apply(_, _, _, _, _, _))
 
   implicit val fileFormat: Format[EnvelopeFile] = Format[EnvelopeFile](fileReads, fileWrites)
 }

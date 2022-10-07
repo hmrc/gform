@@ -19,11 +19,12 @@ package uk.gov.hmrc.gform.fileupload
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.UUID
-
 import akka.util.ByteString
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.dms.FileAttachment
+import uk.gov.hmrc.gform.envelope.{ EnvelopeAlgebra, EnvelopeData, EnvelopeFile }
 import uk.gov.hmrc.gform.fileupload.FileUploadService.FileIds._
+import uk.gov.hmrc.gform.objectstore.ObjectStoreConnector
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AllowedFileTypes, FormTemplateId }
@@ -37,7 +38,9 @@ import uk.gov.hmrc.http.HeaderCarrier
 class FileUploadService(
   fileUploadConnector: FileUploadConnector,
   fileUploadFrontendConnector: FileUploadFrontendConnector,
-  timeModule: TimeProvider = new TimeProvider
+  timeModule: TimeProvider = new TimeProvider,
+  objectStoreConnector: ObjectStoreConnector,
+  envelopeService: EnvelopeAlgebra[Future]
 )(implicit ex: ExecutionContext)
     extends FileUploadAlgebra[Future] with FileDownloadAlgebra[Future] {
   private val logger = LoggerFactory.getLogger(getClass)
@@ -58,41 +61,54 @@ class FileUploadService(
     f
   }
 
-  def submitEnvelope(submission: Submission, summaries: PdfAndXmlSummaries, hmrcDms: HmrcDms)(implicit
-    hc: HeaderCarrier
+  def submitEnvelope(submission: Submission, summaries: PdfAndXmlSummaries, hmrcDms: HmrcDms, objectStore: Boolean)(
+    implicit hc: HeaderCarrier
   ): Future[Unit] = {
     logger.debug(s"env-id submit: ${submission.envelopeId}")
     val date = timeModule.localDateTime().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
     val fileNamePrefix = s"${submission.submissionRef.withoutHyphens}-$date"
 
     def uploadPfdF: Future[Unit] = {
-      val (fileId, fileNameSuffix) =
+      val (fileId, fileNameSuffix) = {
         if (hmrcDms.includeInstructionPdf)
           (customerSummaryPdf, "customerSummary")
         else (pdf, "iform")
-      fileUploadFrontendConnector.upload(
+      }
+
+      uploadFile(
         submission.envelopeId,
         fileId,
         s"$fileNamePrefix-$fileNameSuffix.pdf",
         ByteString(summaries.pdfSummary.pdfContent),
-        ContentType.`application/pdf`
+        ContentType.`application/pdf`,
+        objectStore
       )
     }
 
     def uploadInstructionPdfF: Future[Unit] =
       summaries.instructionPdfSummary.fold(Future.successful(())) { iPdf =>
-        fileUploadFrontendConnector.upload(
+        uploadFile(
           submission.envelopeId,
           pdf,
           s"$fileNamePrefix-iform.pdf",
           ByteString(iPdf.pdfContent),
-          ContentType.`application/pdf`
+          ContentType.`application/pdf`,
+          objectStore
         )
       }
 
     def uploadFormDataF: Future[Unit] =
       summaries.formDataXml
-        .map(elem => uploadFile(formdataXml, s"$fileNamePrefix-formdata.xml", elem))
+        .map(elem =>
+          uploadFile(
+            submission.envelopeId,
+            formdataXml,
+            s"$fileNamePrefix-formdata.xml",
+            ByteString(elem.getBytes),
+            ContentType.`application/xml`,
+            objectStore
+          )
+        )
         .getOrElse(Future.successful(()))
 
     def uploadMetadataXmlF: Future[Unit] = {
@@ -105,29 +121,28 @@ class FileUploadService(
           submission.noOfAttachments + summaries.instructionPdfSummary.fold(0)(_ => 1),
           hmrcDms
         )
-      uploadFile(xml, s"$fileNamePrefix-metadata.xml", metadataXml)
+      uploadFile(
+        submission.envelopeId,
+        xml,
+        s"$fileNamePrefix-metadata.xml",
+        ByteString(metadataXml.getBytes),
+        ContentType.`application/xml`,
+        objectStore
+      )
     }
 
     def uploadRoboticsContentF: Future[Unit] = summaries.roboticsFile match {
       case Some(elem) =>
         val roboticsFileExtension = summaries.roboticsFileExtension.map(_.toLowerCase).getOrElse("xml")
         uploadFile(
+          submission.envelopeId,
           roboticsFileId(roboticsFileExtension),
           s"$fileNamePrefix-robotic." + roboticsFileExtension,
-          elem,
-          Some(roboticsFileExtension)
+          ByteString(elem.getBytes),
+          getContentType(roboticsFileExtension),
+          objectStore
         )
       case _ => Future.successful(())
-    }
-
-    def uploadFile(fileId: FileId, fileName: String, content: String, fileType: Option[String] = None): Future[Unit] = {
-      val contentType = fileType match {
-        case Some("json") => ContentType.`application/json`
-        case _            => ContentType.`application/xml`
-      }
-
-      fileUploadFrontendConnector
-        .upload(submission.envelopeId, fileId, fileName, ByteString(content.getBytes), contentType)
     }
 
     for {
@@ -136,9 +151,55 @@ class FileUploadService(
       _ <- uploadFormDataF
       _ <- uploadRoboticsContentF
       _ <- uploadMetadataXmlF
-      _ <- fileUploadConnector.routeEnvelope(RouteEnvelopeRequest(submission.envelopeId, "dfs", "DMS"))
+      _ <- if (objectStore) Future.successful(())
+           else fileUploadConnector.routeEnvelope(RouteEnvelopeRequest(submission.envelopeId, "dfs", "DMS"))
     } yield ()
   }
+
+  private def getContentType(contentType: String) = contentType match {
+    case "json" => ContentType.`application/json`
+    case "pdf"  => ContentType.`application/pdf`
+    case _      => ContentType.`application/xml`
+  }
+
+  private def uploadFile(
+    envelopeId: EnvelopeId,
+    fileId: FileId,
+    fileName: String,
+    content: ByteString,
+    contentType: ContentType,
+    objectStore: Boolean
+  )(implicit
+    hc: HeaderCarrier
+  ): Future[Unit] =
+    if (objectStore) {
+      for {
+        envelopeData <- envelopeService.get(envelopeId)
+        _ <- {
+          val newEnvelopeData =
+            envelopeData.files ::: List(
+              EnvelopeFile(
+                fileId.value,
+                fileName,
+                uk.gov.hmrc.gform.envelope.Available,
+                contentType,
+                0L,
+                Map.empty[String, List[String]]
+              )
+            )
+          envelopeService.save(EnvelopeData(envelopeId, newEnvelopeData))
+        }
+        res <- objectStoreConnector.uploadFile(
+                 envelopeId,
+                 fileName,
+                 content,
+                 Some(contentType.value)
+               )
+      } yield res
+    } else {
+      fileUploadFrontendConnector
+        .upload(envelopeId, fileId, fileName, content, contentType)
+    }
 
   def getEnvelope(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): Future[Envelope] =
     fileUploadConnector.getEnvelope(envelopeId)
@@ -149,15 +210,16 @@ class FileUploadService(
   def deleteFile(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): Future[Unit] =
     fileUploadConnector.deleteFile(envelopeId, fileId)
 
-  def uploadAttachment(envelopeId: EnvelopeId, fileAttachment: FileAttachment)(implicit
+  def uploadAttachment(envelopeId: EnvelopeId, fileAttachment: FileAttachment, objectStore: Boolean)(implicit
     hc: HeaderCarrier
   ): Future[Unit] =
-    fileUploadFrontendConnector.upload(
+    uploadFile(
       envelopeId,
       FileId(UUID.randomUUID().toString),
       fileAttachment.filename.getFileName.toString,
       ByteString(fileAttachment.bytes),
-      ContentType(fileAttachment.contentType.getOrElse("application/json"))
+      ContentType(fileAttachment.contentType.getOrElse("application/json")),
+      objectStore
     )
 
 }

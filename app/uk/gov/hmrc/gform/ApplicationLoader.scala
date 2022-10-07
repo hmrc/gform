@@ -44,6 +44,7 @@ import uk.gov.hmrc.gform.graphite.GraphiteModule
 import uk.gov.hmrc.gform.metrics.MetricsModule
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.notifier.NotifierModule
+import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorModule
 import uk.gov.hmrc.gform.playcomponents.{ ErrorHandler, PlayComponents, PlayComponentsModule }
 import uk.gov.hmrc.gform.proxy.ProxyModule
@@ -100,9 +101,10 @@ class ApplicationModule(context: Context)
   private val emailModule = new EmailModule(configModule, wSHttpModule, notifierModule)
   private val timeModule = new TimeModule
   private val mongoModule = new MongoModule(configModule)
-  private val envelopeModule = new EnvelopeModule(mongoModule, configModule)
+  val objectStoreModule = new ObjectStoreModule(configModule, wsClient, akkaModule)
+  private val envelopeModule = new EnvelopeModule(mongoModule, configModule, objectStoreModule)
   val fileUploadModule =
-    new FileUploadModule(configModule, wSHttpModule, timeModule, akkaModule, envelopeModule)
+    new FileUploadModule(configModule, wSHttpModule, timeModule, akkaModule, envelopeModule, objectStoreModule)
   val formTemplateModule = new FormTemplateModule(controllerComponents, mongoModule)
   val pdfGeneratorModule = new PdfGeneratorModule()
 
@@ -159,7 +161,7 @@ class ApplicationModule(context: Context)
     new FormModule(configModule, formTemplateModule, fileUploadModule, formService)
 
   val destinationModule =
-    new DestinationModule(configModule, mongoModule, formModule, fileUploadModule, formMetadaModule)
+    new DestinationModule(configModule, mongoModule, formModule, fileUploadModule, formMetadaModule, envelopeModule)
 
   val validationModule = new ValidationModule(wSHttpModule, configModule)
 
@@ -181,7 +183,8 @@ class ApplicationModule(context: Context)
       submissionConsolidatorModule,
       handlebarsModule,
       destinationModule,
-      notifierModule
+      notifierModule,
+      envelopeModule
     )
 
   private val dmsModule =

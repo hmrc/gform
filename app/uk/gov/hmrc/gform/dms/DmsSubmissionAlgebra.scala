@@ -82,15 +82,16 @@ class DmsSubmissionService[F[_]](
         )
       pdfDoc = documentLoader(pdfBytes)
       pdfSummary = PdfSummary(pdfDoc.getNumberOfPages.toLong, pdfBytes)
+      objectStore = formTemplate.objectStore.getOrElse(false)
       _ = pdfDoc.close()
       _ <- fileAttachments.traverse { fileAttachment =>
-             fileUpload.uploadAttachment(envId, fileAttachment)
+             fileUpload.uploadAttachment(envId, fileAttachment, objectStore)
            }
       submission = DmsSubmissionService
                      .createSubmission(metadata, envId, LocalDateTime.now(clock), fileAttachments.size)
       summaries = PdfAndXmlSummaries(pdfSummary)
       hmrcDms = DmsSubmissionService.createHmrcDms(metadata)
-      _ <- fileUpload.submitEnvelope(submission, summaries, hmrcDms)
+      _ <- fileUpload.submitEnvelope(submission, summaries, hmrcDms, objectStore)
     } yield envId
   }
 
