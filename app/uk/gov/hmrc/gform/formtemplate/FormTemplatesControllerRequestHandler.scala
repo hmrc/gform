@@ -70,23 +70,25 @@ class FormTemplatesControllerRequestHandler[F[_]](
     maybeExpressionsOutput: Option[ExpressionOutput],
     exprSubstitutions: ExprSubstitutions
   ): Opt[Option[ExpressionOutput]] = maybeExpressionsOutput.traverse[Opt, ExpressionOutput] { expressionOutput =>
-    val lookup = exprSubstitutions.expressions
-    expressionOutput.lookup.toList
-      .traverse { case (expressionId, _) =>
-        lookup
-          .get(expressionId)
-          .fold[Opt[(ExpressionId, Expr)]](
-            Left(
-              UnexpectedState(
-                s"ExpressionId: '${expressionId.id}' defined in expressionsOutput doesn't exist in expressions"
+    exprSubstitutions.resolveSelfReferences.flatMap { resolveSelfReferences =>
+      val lookup = resolveSelfReferences.expressions
+      expressionOutput.lookup.toList
+        .traverse { case (expressionId, _) =>
+          lookup
+            .get(expressionId)
+            .fold[Opt[(ExpressionId, Expr)]](
+              Left(
+                UnexpectedState(
+                  s"ExpressionId: '${expressionId.id}' defined in expressionsOutput doesn't exist in expressions"
+                )
               )
-            )
-          ) { expr =>
-            val exprSubs = ExprSubstituter.substituteExpr(exprSubstitutions, expr)
-            Right(expressionId -> exprSubs)
-          }
-      }
-      .map(tuples => ExpressionOutput(tuples.toMap))
+            ) { expr =>
+              val exprSubs = ExprSubstituter.substituteExpr(exprSubstitutions, expr)
+              Right(expressionId -> exprSubs)
+            }
+        }
+        .map(tuples => ExpressionOutput(tuples.toMap))
+    }
   }
 
   private def processAndPersistTemplate(
