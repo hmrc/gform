@@ -185,7 +185,7 @@ class FileUploadService(
                 contentType,
                 0L,
                 Map.empty[String, List[String]]
-            )
+              )
           envelopeService.save(EnvelopeData(envelopeId, newEnvelopeData))
         }
         res <- objectStoreConnector.uploadFile(
