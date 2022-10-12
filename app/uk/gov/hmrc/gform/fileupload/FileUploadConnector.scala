@@ -59,9 +59,9 @@ class FileUploadConnector(
     )
 
     if (objectStore) {
-      val newEnvelope = EnvelopeData.newEnvelope
+      val newEnvelope = EnvelopeData.createEnvelope
       for {
-        _   <- envelopeService.save(EnvelopeData.newEnvelope)
+        _   <- envelopeService.save(newEnvelope)
         res <- Future.successful(newEnvelope._id)
       } yield res
     } else {
