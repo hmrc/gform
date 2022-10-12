@@ -61,7 +61,8 @@ object EnvelopeFile {
 
 object EnvelopeData {
 
-  val newEnvelope = EnvelopeData(EnvelopeId(UniqueIdGenerator.uuidStringGenerator.generate), List.empty[EnvelopeFile])
+  def createEnvelope =
+    EnvelopeData(EnvelopeId(UniqueIdGenerator.uuidStringGenerator.generate), List.empty[EnvelopeFile])
 
   implicit val show: Show[EnvelopeData] = Show.show(_._id.value)
 
