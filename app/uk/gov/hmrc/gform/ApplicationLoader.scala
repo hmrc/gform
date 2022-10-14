@@ -53,6 +53,7 @@ import uk.gov.hmrc.gform.submission.SubmissionModule
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsHttpApiModule
 import uk.gov.hmrc.gform.testonly.TestOnlyModule
 import uk.gov.hmrc.gform.time.TimeModule
+import uk.gov.hmrc.gform.translation.TranslationModule
 import uk.gov.hmrc.gform.upscan.UpscanModule
 import uk.gov.hmrc.gform.validation.ValidationModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
@@ -106,6 +107,7 @@ class ApplicationModule(context: Context)
   val fileUploadModule =
     new FileUploadModule(configModule, wSHttpModule, timeModule, akkaModule, envelopeModule, objectStoreModule)
   val formTemplateModule = new FormTemplateModule(controllerComponents, mongoModule)
+  private val translationModule = new TranslationModule(formTemplateModule, configModule)
   val pdfGeneratorModule = new PdfGeneratorModule()
 
   val formMetadaModule = new FormMetadataModule(mongoModule)
@@ -252,7 +254,8 @@ class ApplicationModule(context: Context)
     upscanModule,
     httpErrorHandler,
     formStatisticsModule,
-    envelopeModule
+    envelopeModule,
+    translationModule
   )
 
   override lazy val httpRequestHandler: HttpRequestHandler = playComponentsModule.httpRequestHandler
