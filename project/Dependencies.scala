@@ -18,7 +18,7 @@ object Dependencies {
     "uk.gov.hmrc"                %% "domain"                      % "6.2.0-play-28",
     "org.scala-lang.modules"     %% "scala-parser-combinators"    % "1.1.2",
     "org.julienrf"               %% "play-json-derived-codecs"    % "10.0.2",
-    "org.typelevel"              %% "cats-core"                   % "1.6.0",
+    "org.typelevel"              %% "cats-core"                   % "2.8.0",
     "org.typelevel"              %% "case-insensitive"            % "0.3.0",
     "com.openhtmltopdf"           % "openhtmltopdf-pdfbox"        % "1.0.6",
     "com.chuusai"                %% "shapeless"                   % "2.3.3",
@@ -29,7 +29,12 @@ object Dependencies {
     "uk.gov.service.notify"       % "notifications-java-client"   % "3.17.3-RELEASE",
     "org.apache.commons"          % "commons-text"                % "1.9",
     "org.scala-graph"            %% "graph-core"                  % "1.13.1",
-    "uk.gov.hmrc.objectstore"    %% "object-store-client-play-28" % "0.39.0"
+    "uk.gov.hmrc.objectstore"    %% "object-store-client-play-28" % "0.39.0",
+    "io.circe"                   %% "circe-core"                  % "0.14.3",
+    "io.circe"                   %% "circe-generic"               % "0.14.3",
+    "io.circe"                   %% "circe-parser"                % "0.14.3",
+    "io.circe"                   %% "circe-literal"               % "0.14.3",
+    "com.github.tototoshi"       %% "scala-csv"                   % "1.3.10"
   )
 
   def test(scope: String = "test,it") = Seq(

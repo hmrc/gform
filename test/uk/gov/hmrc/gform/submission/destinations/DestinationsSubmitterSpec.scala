@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.gform.submission.destinations
 
+import cats.Id
 import cats.data.NonEmptyList
 import cats.syntax.applicative._
 import cats.{ Applicative, Monad }
@@ -49,7 +50,7 @@ class DestinationsSubmitterSpec
     forAll(submissionInfoGen, destinationGen, pdfDataGen, instructionPdfDataGen, structureFormValueObjectStructureGen) {
       (submissionInfo, destination, pdfData, instructionPdfData, structuredFormValue) =>
         val destinationModel = DestinationsProcessorModelAlgebra.createFormId(submissionInfo.formId)
-        createSubmitter()
+        createSubmitter[Id]()
           .expectDestinationSubmitterSubmitIfIncludeIf(
             destination,
             submissionInfo,
@@ -102,7 +103,7 @@ class DestinationsSubmitterSpec
 
       val response2Model = HandlebarsDestinationResponse(handlebarsHttpApi2, response1)
 
-      createSubmitter()
+      createSubmitter[Id]()
         .expectDestinationSubmitterSubmitIfIncludeIf(
           handlebarsHttpApi1,
           submissionInfo,
