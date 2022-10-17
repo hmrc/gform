@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.formtemplate
 
 import cats.data.NonEmptyList
+
 import java.time.LocalDate
 import cats.Monoid
 import cats.implicits._
@@ -1163,6 +1164,23 @@ object FormTemplateValidator {
       }
 
     isNonInformation.combineAll
+  }
+
+  def validateUpscanForObjectStore(formTemplate: FormTemplate, pages: List[Page]): ValidationResult = {
+
+    def checkComponentTypes(fields: List[FormComponent]): List[ValidationResult] = {
+      val fileUploads: List[(FileUpload, FormComponent)] = fields.collect { case f @ IsFileUpload(fileUpload) =>
+        fileUpload -> f
+      }
+      fileUploads.map {
+        case (FileUpload(FileUploadProvider.Upscan(_)), _) => Valid
+        case (_, fc)                                       => Invalid(s"The service of file-upload component ${fc.id} must be Upscan for object-store")
+      }
+    }
+
+    if (formTemplate.isObjectStore) {
+      checkComponentTypes(pages.flatMap(_.allFormComponents)).combineAll
+    } else Valid
   }
 }
 

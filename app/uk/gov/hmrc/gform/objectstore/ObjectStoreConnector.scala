@@ -24,7 +24,7 @@ import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.objectstore.client.config.ObjectStoreClientConfig
 import uk.gov.hmrc.objectstore.client.play.PlayObjectStoreClient
-import uk.gov.hmrc.objectstore.client.Path
+import uk.gov.hmrc.objectstore.client.{ ObjectSummaryWithMd5, Path }
 import uk.gov.hmrc.objectstore.client.play.Implicits._
 import uk.gov.hmrc.gform.models.helpers.ObjectStoreHelper._
 
@@ -40,14 +40,13 @@ class ObjectStoreConnector(
 
   def uploadFile(envelopeId: EnvelopeId, fileName: String, content: ByteString, contentType: Option[String])(implicit
     hc: HeaderCarrier
-  ): Future[Unit] =
+  ): Future[ObjectSummaryWithMd5] =
     objectStoreClient
       .putObject(
         path = directory(envelopeId.value).file(fileName),
         content = toSource(content),
         contentType = contentType
       )
-      .map(_ => ())
 
   def getFileBytes(envelopeId: EnvelopeId, fileName: String)(implicit hc: HeaderCarrier): Future[ByteString] =
     objectStoreClient

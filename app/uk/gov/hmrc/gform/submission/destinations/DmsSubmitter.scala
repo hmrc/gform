@@ -63,18 +63,15 @@ class DmsSubmitter(
                    )
       res <-
         fromFutureA(
-          fileUploadService.submitEnvelope(submission, summaries, hmrcDms, formTemplate.objectStore.getOrElse(false))
+          fileUploadService.submitEnvelope(submission, summaries, hmrcDms, formTemplate.isObjectStore)
         )
-      envelopeDetails <- formTemplate.objectStore match {
-                           case Some(true) =>
-                             envelopeAlgebra.get(submission.envelopeId).map { ed =>
-                               val files: List[File] =
-                                 ed.files.map(f => File(FileId(f.fileId), Available, f.fileName, f.length))
-                               Envelope(files)
-                             }
-                           case _ => fromFutureA(fileUploadService.getEnvelope(submission.envelopeId))
-
-                         }
+      envelopeDetails <- if (formTemplate.isObjectStore) {
+                           envelopeAlgebra.get(submission.envelopeId).map { ed =>
+                             val files: List[File] =
+                               ed.files.map(f => File(FileId(f.fileId), Available, f.fileName, f.length))
+                             Envelope(files)
+                           }
+                         } else fromFutureA(fileUploadService.getEnvelope(submission.envelopeId))
       _ <- success(logFileSizeBreach(submission.envelopeId, envelopeDetails.files))
       _ <- formService.updateFormStatus(submissionInfo.formId, Submitted)
     } yield res

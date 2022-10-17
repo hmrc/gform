@@ -20,8 +20,8 @@ import cats.Monad
 import cats.instances.option._
 import cats.syntax.functor._
 import cats.syntax.traverse._
-import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
 import uk.gov.hmrc.gform.fileupload.{ FileDownloadAlgebra, UploadedFile }
+import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 import uk.gov.hmrc.gform.sharedmodel.{ FrontEndSubmissionVariables, PdfHtml }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, Form }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.HandlebarsTemplateProcessorModel
@@ -30,7 +30,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 class DestinationsProcessorModelService[M[_]: Monad](
   fileDownloadAlgebra: Option[FileDownloadAlgebra[M]],
-  envelopeAlgebra: Option[EnvelopeAlgebra[M]]
+  objectStoreAlgebra: Option[ObjectStoreAlgebra[M]]
 ) extends DestinationsProcessorModelAlgebra[M] {
   override def create(
     form: Form,
@@ -49,7 +49,7 @@ class DestinationsProcessorModelService[M[_]: Monad](
     hc: HeaderCarrier
   ): M[Option[List[UploadedFile]]] =
     if (objectStore) {
-      envelopeAlgebra.traverse(_.allUploadedFiles(envelopedId))
+      objectStoreAlgebra.traverse(_.allUploadedFiles(envelopedId))
     } else {
       fileDownloadAlgebra.traverse(_.allUploadedFiles(envelopedId))
     }

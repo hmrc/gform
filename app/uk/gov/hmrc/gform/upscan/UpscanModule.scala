@@ -23,6 +23,7 @@ import uk.gov.hmrc.gform.fileupload.FileUploadFrontendAlgebra
 import uk.gov.hmrc.gform.form.FormService
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.mongo.MongoModule
+import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 
 class UpscanModule(
@@ -33,7 +34,8 @@ class UpscanModule(
   fileUploadFrontendAlgebra: FileUploadFrontendAlgebra[Future],
   formTemplateModule: FormTemplateModule,
   appConfig: AppConfig,
-  mongoModule: MongoModule
+  mongoModule: MongoModule,
+  objectStoreModule: ObjectStoreModule
 )(implicit
   ec: ExecutionContext
 ) {
@@ -55,7 +57,8 @@ class UpscanModule(
       upscanService,
       fileUploadFrontendAlgebra,
       formTemplateModule.formTemplateService,
-      configModule.controllerComponents
+      configModule.controllerComponents,
+      objectStoreModule.objectStoreService
     )
 
 }

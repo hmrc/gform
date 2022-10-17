@@ -108,7 +108,7 @@ class TestOnlyController(
                      submissionData.pdfData,
                      submissionData.instructionPDFData,
                      submissionData.structuredFormData,
-                     formTemplate.objectStore.getOrElse(false)
+                     formTemplate.isObjectStore
                    )
       } yield {
         val jsValue: JsValue = Json.toJson[JsonNode](model.model)
@@ -149,7 +149,7 @@ class TestOnlyController(
                      submissionData.pdfData,
                      submissionData.instructionPDFData,
                      submissionData.structuredFormData,
-                     formTemplate.objectStore.getOrElse(false)
+                     formTemplate.isObjectStore
                    )
         _ = logInfo("TestOnlyController.renderHandlebarPayload Got model")
       } yield {

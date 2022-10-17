@@ -107,7 +107,7 @@ class FormService[F[_]: Monad](
           formTemplate.allowedFileTypes,
           expiryDate,
           formTemplate.fileSizeLimit,
-          formTemplate.objectStore.getOrElse(false)
+          formTemplate.isObjectStore
         )
       formIdData = createNewFormData(userId, formTemplate, envelopeId, affinityGroup)
       lowerCased = formIdData.lowerCaseId

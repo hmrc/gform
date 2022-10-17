@@ -54,8 +54,7 @@ class FileUploadModule(
       fileUploadConnector,
       fileUploadFrontendConnector,
       timeModule.timeProvider,
-      objectStoreModule.objectStoreConnector,
-      envelopeModule.envelopeService
+      objectStoreModule.objectStoreService
     )
 
   val foptFileDownloadService = new FileDownloadAlgebra[FOpt] {
