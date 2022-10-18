@@ -189,7 +189,7 @@ class FormBundleSubmissionService[F[_]](
                          pdfHtmlByFormId(id),
                          None,
                          submissionDataByFormId(id).structuredFormData,
-                         formTemplate.objectStore.getOrElse(false)
+                         formTemplate.isObjectStore
                        )
         treeModel = DestinationsProcessorModelAlgebra.createBundledFormTree(formTree)
       } yield baseModel + treeModel

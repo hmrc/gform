@@ -35,6 +35,7 @@ import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.fileupload.FileUploadFrontendAlgebra
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateService
+import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId, Form, FormIdData, UserData }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AllowedFileTypes, FileUpload, FileUploadProvider, FormComponentId, IsFileUpload }
@@ -46,7 +47,8 @@ class UpscanController(
   upscanService: UpscanService,
   fileUploadFrontendAlgebra: FileUploadFrontendAlgebra[Future],
   formTemplateService: FormTemplateService,
-  controllerComponents: ControllerComponents
+  controllerComponents: ControllerComponents,
+  objectStoreAlgebra: ObjectStoreAlgebra[Future]
 )(implicit ec: ExecutionContext)
     extends BaseController(controllerComponents) {
 
@@ -132,9 +134,20 @@ class UpscanController(
                 for {
                   file <- upscanService.download(upscanCallbackSuccess.downloadUrl)
                   compressedFile = ImageCompressor.compressIfSupported(file, upscanCallbackSuccess, compression)
-                  _ <-
-                    fileUploadFrontendAlgebra
-                      .uploadFile(envelopeId, fileId, upscanCallbackSuccess.uploadDetails, compressedFile)
+                  uploadDetails = upscanCallbackSuccess.uploadDetails
+                  _ <- if (formTemplate.isObjectStore) {
+                         val fileName = fileId.value + "_" + uploadDetails.fileName
+                         objectStoreAlgebra.uploadFile(
+                           envelopeId,
+                           fileId,
+                           fileName,
+                           compressedFile,
+                           ContentType(uploadDetails.fileMimeType)
+                         )
+                       } else {
+                         fileUploadFrontendAlgebra
+                           .uploadFile(envelopeId, fileId, uploadDetails, compressedFile)
+                       }
                   form <- formService.get(formIdData)
                   formUpd = setTransferred(form, formComponentId, fileId)
                   _ <- formService.updateUserData(formIdData, toUserData(formUpd))

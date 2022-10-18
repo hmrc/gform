@@ -102,8 +102,8 @@ class ApplicationModule(context: Context)
   private val emailModule = new EmailModule(configModule, wSHttpModule, notifierModule)
   private val timeModule = new TimeModule
   private val mongoModule = new MongoModule(configModule)
-  val objectStoreModule = new ObjectStoreModule(configModule, wsClient, akkaModule)
-  private val envelopeModule = new EnvelopeModule(mongoModule, configModule, objectStoreModule)
+  private val envelopeModule = new EnvelopeModule(mongoModule, configModule)
+  private val objectStoreModule = new ObjectStoreModule(configModule, wsClient, akkaModule, envelopeModule)
   val fileUploadModule =
     new FileUploadModule(configModule, wSHttpModule, timeModule, akkaModule, envelopeModule, objectStoreModule)
   val formTemplateModule = new FormTemplateModule(controllerComponents, mongoModule)
@@ -163,7 +163,7 @@ class ApplicationModule(context: Context)
     new FormModule(configModule, formTemplateModule, fileUploadModule, formService)
 
   val destinationModule =
-    new DestinationModule(configModule, mongoModule, formModule, fileUploadModule, formMetadaModule, envelopeModule)
+    new DestinationModule(configModule, mongoModule, formModule, fileUploadModule, formMetadaModule, objectStoreModule)
 
   val validationModule = new ValidationModule(wSHttpModule, configModule)
 
@@ -221,7 +221,8 @@ class ApplicationModule(context: Context)
     fileUploadFrontendAlgebra,
     formTemplateModule,
     configModule.appConfig,
-    mongoModule
+    mongoModule,
+    objectStoreModule
   )
 
   val formStatisticsModule = new FormStatisticsModule(

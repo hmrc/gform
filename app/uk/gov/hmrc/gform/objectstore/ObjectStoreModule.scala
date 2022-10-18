@@ -16,19 +16,26 @@
 
 package uk.gov.hmrc.gform.objectstore
 
+import akka.util.ByteString
 import play.api.libs.ws.WSClient
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.config.ConfigModule
-import uk.gov.hmrc.objectstore.client.RetentionPeriod
+import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
+import uk.gov.hmrc.gform.envelope.{ EnvelopeData, EnvelopeModule }
+import uk.gov.hmrc.gform.sharedmodel.config.ContentType
+import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.objectstore.client.{ ObjectSummaryWithMd5, RetentionPeriod }
 import uk.gov.hmrc.objectstore.client.config.ObjectStoreClientConfig
 import uk.gov.hmrc.objectstore.client.play.PlayObjectStoreClient
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ ExecutionContext, Future }
 
 class ObjectStoreModule(
   configModule: ConfigModule,
   wsClient: WSClient,
-  akkaModule: AkkaModule
+  akkaModule: AkkaModule,
+  envelopeModule: EnvelopeModule
 )(implicit ex: ExecutionContext) {
 
   private val baseUrl = configModule.serviceConfig.baseUrl("object-store")
@@ -52,4 +59,23 @@ class ObjectStoreModule(
       akkaModule.actorSystem
     )
 
+  val objectStoreService: ObjectStoreAlgebra[Future] =
+    new ObjectStoreService(objectStoreConnector, envelopeModule.envelopeService)
+
+  val foptObjectStoreService: ObjectStoreAlgebra[FOpt] = new ObjectStoreAlgebra[FOpt] {
+    override def getFileBytes(envelopeId: EnvelopeId, fileName: String)(implicit hc: HeaderCarrier): FOpt[ByteString] =
+      fromFutureA(objectStoreService.getFileBytes(envelopeId, fileName))
+
+    override def uploadFile(
+      envelopeId: EnvelopeId,
+      fileId: FileId,
+      fileName: String,
+      content: ByteString,
+      contentType: ContentType
+    )(implicit hc: HeaderCarrier): FOpt[ObjectSummaryWithMd5] =
+      fromFutureA(objectStoreService.uploadFile(envelopeId, fileId, fileName, content, contentType))
+
+    override def getEnvelope(envelopeId: EnvelopeId): FOpt[EnvelopeData] =
+      fromFutureA(objectStoreService.getEnvelope(envelopeId))
+  }
 }

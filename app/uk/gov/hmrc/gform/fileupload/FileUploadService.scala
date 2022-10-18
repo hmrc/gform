@@ -22,9 +22,8 @@ import java.util.UUID
 import akka.util.ByteString
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.dms.FileAttachment
-import uk.gov.hmrc.gform.envelope.{ EnvelopeAlgebra, EnvelopeData, EnvelopeFile }
 import uk.gov.hmrc.gform.fileupload.FileUploadService.FileIds._
-import uk.gov.hmrc.gform.objectstore.ObjectStoreConnector
+import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AllowedFileTypes, FormTemplateId }
@@ -39,8 +38,7 @@ class FileUploadService(
   fileUploadConnector: FileUploadConnector,
   fileUploadFrontendConnector: FileUploadFrontendConnector,
   timeModule: TimeProvider = new TimeProvider,
-  objectStoreConnector: ObjectStoreConnector,
-  envelopeService: EnvelopeAlgebra[Future]
+  objectStoreService: ObjectStoreAlgebra[Future]
 )(implicit ex: ExecutionContext)
     extends FileUploadAlgebra[Future] with FileDownloadAlgebra[Future] {
   private val logger = LoggerFactory.getLogger(getClass)
@@ -173,28 +171,7 @@ class FileUploadService(
     hc: HeaderCarrier
   ): Future[Unit] =
     if (objectStore) {
-      for {
-        envelopeData <- envelopeService.get(envelopeId)
-        _ <- {
-          val newEnvelopeData =
-            envelopeData.files :+
-              EnvelopeFile(
-                fileId.value,
-                fileName,
-                uk.gov.hmrc.gform.envelope.Available,
-                contentType,
-                0L,
-                Map.empty[String, List[String]]
-              )
-          envelopeService.save(EnvelopeData(envelopeId, newEnvelopeData))
-        }
-        res <- objectStoreConnector.uploadFile(
-                 envelopeId,
-                 fileName,
-                 content,
-                 Some(contentType.value)
-               )
-      } yield res
+      objectStoreService.uploadFile(envelopeId, fileId, fileName, content, contentType).map(_ => ())
     } else {
       fileUploadFrontendConnector
         .upload(envelopeId, fileId, fileName, content, contentType)

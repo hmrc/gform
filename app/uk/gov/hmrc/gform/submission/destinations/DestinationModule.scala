@@ -18,12 +18,12 @@ package uk.gov.hmrc.gform.submission.destinations
 
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core._
-import uk.gov.hmrc.gform.envelope.{ EnvelopeAlgebra, EnvelopeModule }
 import uk.gov.hmrc.gform.fileupload.{ FileDownloadAlgebra, FileUploadModule }
 import uk.gov.hmrc.gform.form.FormModule
 import uk.gov.hmrc.gform.formmetadata.FormMetadataModule
 import uk.gov.hmrc.gform.logging.Loggers
 import uk.gov.hmrc.gform.mongo.MongoModule
+import uk.gov.hmrc.gform.objectstore.{ ObjectStoreAlgebra, ObjectStoreModule }
 import uk.gov.hmrc.gform.repo.{ Repo, RepoAlgebra }
 import uk.gov.hmrc.gform.sharedmodel.{ FrontEndSubmissionVariables, PdfHtml }
 import uk.gov.hmrc.gform.sharedmodel.form.Form
@@ -39,7 +39,7 @@ class DestinationModule(
   formModule: FormModule,
   fileUploadModule: FileUploadModule,
   metadataModule: FormMetadataModule,
-  envelopeModule: EnvelopeModule
+  objectStoreModule: ObjectStoreModule
 )(implicit ex: ExecutionContext) {
   val destinationAuditer: Option[RepoDestinationAuditer] =
     if (configModule.DestinationsServicesConfig.auditDestinations) {
@@ -71,15 +71,15 @@ class DestinationModule(
       None
     }
 
-  private val envelopeServiceIfPopulating: Option[EnvelopeAlgebra[FOpt]] =
+  private val objectStoreServiceIfPopulating: Option[ObjectStoreAlgebra[FOpt]] =
     if (configModule.DestinationsServicesConfig.populateHandlebarsModelWithDocuments) {
       Loggers.destinations.info(
-        "The envelopeService IS configured for the submission service, so the Handlebars model WILL be populated with uploaded documents"
+        "The objectStoreService IS configured for the submission service, so the Handlebars model WILL be populated with uploaded documents"
       )
-      Some(envelopeModule.foptEnvelopeService)
+      Some(objectStoreModule.foptObjectStoreService)
     } else {
       Loggers.destinations.info(
-        "The envelopeService IS NOT configured for the submission service, so the Handlebars model WILL NOT be populated with uploaded documents"
+        "The objectStoreService IS NOT configured for the submission service, so the Handlebars model WILL NOT be populated with uploaded documents"
       )
       None
     }
@@ -87,7 +87,7 @@ class DestinationModule(
   val destinationsProcessorModelService: DestinationsProcessorModelAlgebra[FOpt] =
     new DestinationsProcessorModelService[FOpt](
       fileDownloadServiceIfPopulating,
-      envelopeServiceIfPopulating
+      objectStoreServiceIfPopulating
     )
 
   val futureDestinationsProcessorModelService: DestinationsProcessorModelAlgebra[Future] =
