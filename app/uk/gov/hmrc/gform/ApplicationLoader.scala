@@ -256,7 +256,8 @@ class ApplicationModule(context: Context)
     httpErrorHandler,
     formStatisticsModule,
     envelopeModule,
-    translationModule
+    translationModule,
+    objectStoreModule
   )
 
   override lazy val httpRequestHandler: HttpRequestHandler = playComponentsModule.httpRequestHandler

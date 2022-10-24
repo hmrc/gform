@@ -70,6 +70,7 @@ GET           /formStatistics/:formTemplateId                                   
 GET           /formStatistics/:formTemplateId/details                                                   uk.gov.hmrc.gform.formstatistics.FormStatisticsController.getFormCountDetails(formTemplateId: FormTemplateId)
 
 GET           /envelopes/:envelopeId                                                                    uk.gov.hmrc.gform.envelope.EnvelopeController.getEnvelope(envelopeId: EnvelopeId)
+DELETE        /envelopes/:envelopeId/files/:fileId                                                      uk.gov.hmrc.gform.objectstore.ObjectStoreController.deleteFile(envelopeId: EnvelopeId, fileId: FileId)
 
 GET           /translation/:formTemplateId                                                              uk.gov.hmrc.gform.translation.TranslationController.generateTranslatebleCsv(formTemplateId: FormTemplateId)
 GET           /translation/:formTemplateId/brief                                                        uk.gov.hmrc.gform.translation.TranslationController.generateBriefTranslatebleCsv(formTemplateId: FormTemplateId)
