@@ -21,6 +21,8 @@ import play.api.libs.json._
 import uk.gov.hmrc.gform.core.parsers.ExprParsers
 import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieveAttribute, DataRetrieveId }
 
+import uk.gov.hmrc.gform.translation.TranslatableConstant
+
 sealed trait Expr {
   def rewrite: Expr = this match {
     case Else(Else(l, r), e) => Else(l.rewrite, Else(r.rewrite, e.rewrite).rewrite).rewrite
@@ -46,6 +48,29 @@ sealed trait Expr {
         .exprs(TemplatePath.root, cond)
         .flatMap(_.expr.ifElses) ++ l.ifElses ++ r.ifElses
     case otherwise => List.empty[IfElse]
+  }
+
+  def constants: List[TranslatableConstant] = this match {
+    case Else(l, r)        => l.constants ++ r.constants
+    case Add(l, r)         => l.constants ++ r.constants
+    case Multiply(l, r)    => l.constants ++ r.constants
+    case Subtraction(l, r) => l.constants ++ r.constants
+    case Divide(l, r)      => l.constants ++ r.constants
+    case Period(l, r)      => l.constants ++ r.constants
+    case Sum(l)            => l.constants
+    case PeriodExt(p, _)   => p.constants
+    case IfElse(cond, l, r) =>
+      cond match {
+        case Equals(LangCtx, Constant("en")) =>
+          (l, r) match {
+            case (en @ Constant(_), cy @ Constant(_)) => TranslatableConstant.Translated(en, cy) :: Nil
+            case _                                    => Nil
+          }
+        case _ => l.constants ++ r.constants // Can translatable text be in cond ?
+      }
+
+    case c @ Constant(_) => TranslatableConstant(c) :: Nil
+    case otherwise       => List.empty[TranslatableConstant]
   }
 }
 final case class Add(field1: Expr, field2: Expr) extends Expr

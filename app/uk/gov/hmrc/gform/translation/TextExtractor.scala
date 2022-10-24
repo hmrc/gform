@@ -23,6 +23,7 @@ import io.circe.CursorOp._
 import io.circe.parser._
 import java.io.{ BufferedOutputStream, BufferedReader, StringReader }
 import play.api.libs.json.JsString
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.Constant
 import uk.gov.hmrc.gform.sharedmodel.{ LangADT, SmartStringTemplateReader }
 
 case class Lang(en: String, cy: String)
@@ -68,7 +69,10 @@ object Instruction {
 }
 
 object Translator {
-  def apply(json: Json, paths: List[List[Instruction]]) = new Translator(json, paths)
+  def apply(json: Json, paths: List[List[Instruction]]) = {
+    val topLevelExprData = TopLevelExprData.from(json)
+    new Translator(json, paths, topLevelExprData)
+  }
 
   import ReductionInProgress._
   import Instruction._
@@ -123,14 +127,12 @@ object Translator {
     }
 }
 
-class Translator(json: Json, paths: List[List[Instruction]]) {
+class Translator(json: Json, paths: List[List[Instruction]], val topLevelExprData: TopLevelExprData) {
 
   import Translator._
   import Instruction._
 
-  private def annotateJson[A](
-    operation: (HCursor, List[HCursor => ACursor]) => A
-  ): A = {
+  private val smartStringCursors: List[HCursor => ACursor] = {
     def loop(instructions: List[Instruction], cursor: HCursor): List[List[Instruction]] = {
       val reducingInProgress: List[ReductionInProgress] = resolveInstruction(instructions, cursor)
       val instructionsList: List[List[Instruction]] = eliminateDeepTraverse(reducingInProgress)
@@ -150,13 +152,76 @@ class Translator(json: Json, paths: List[List[Instruction]]) {
         loop(path, topCursor).map(generateOpHistory)
       }
 
-    val cursors: List[HCursor => ACursor] = cursorOps.map(history => (cursor: HCursor) => cursor.replay(history))
-
-    operation(topCursor, cursors)
-
+    val cursors: List[HCursor => ACursor] = replyCursorOps(cursorOps)
+    cursors
   }
 
-  private def toTranslateJson(rows: List[Row])(topCursor: HCursor, cursors: List[HCursor => ACursor]): Json = {
+  private def applyOperations[A](
+    smartStringOperation: (HCursor, List[HCursor => ACursor]) => HCursor,
+    topLevelOperation: (HCursor, List[HCursor => ACursor]) => HCursor
+  ): HCursor = {
+    val topLevelCursors: List[HCursor => ACursor] = replyCursorOps(topLevelExprData.cursorOps)
+    topLevelOperation(smartStringOperation(json.hcursor, smartStringCursors), topLevelCursors)
+  }
+
+  private def replyCursorOps(cursorOps: List[List[CursorOp]]): List[HCursor => ACursor] =
+    cursorOps.map(history => (cursor: HCursor) => cursor.replay(history))
+
+  private def modifyTopLevelExpression(
+    topCursor: HCursor,
+    cursors: List[HCursor => ACursor]
+  )(
+    manipulateExpr: (PathWithTranslatableConstants, String, String) => String
+  ): HCursor =
+    cursors
+      .foldLeft(topCursor) { case (acc, f) =>
+        val aCursor = f(acc)
+        aCursor.withFocus { json =>
+          val path = CursorOp.opsToPath(aCursor.history)
+          val maybeTranslationState: Option[PathWithTranslatableConstants] = topLevelExprData.forPath(path)
+
+          maybeTranslationState match {
+            case None => json
+            case Some(translationState) =>
+              aCursor.as[String].toOption.fold(json) { currentExpr0 =>
+                val finalExpr = manipulateExpr(translationState, currentExpr0, path)
+                Json.fromString(finalExpr)
+              }
+          }
+        }.root
+      }
+
+  private def translateExpressions(
+    rows: List[Row]
+  )(topCursor: HCursor, cursors: List[HCursor => ACursor]): HCursor =
+    modifyTopLevelExpression(topCursor, cursors) { case (translationState, expr, path) =>
+      val rowsForPath = rows.filter(_.path === path)
+      rowsForPath.foldRight(expr) { case (row, currentExpr) =>
+        translationState.constants.find(_.enString === row.en) match {
+          case None => currentExpr
+          case Some(TranslatableConstant.NonTranslated(Constant(en))) =>
+            currentExpr.replace(s"'$en'", s"'${row.en}','${row.cy}'")
+          case Some(TranslatableConstant.Translated(Constant(en), Constant(cy))) =>
+            currentExpr.replace(s"'$en','$cy'", s"'${row.en}','${row.cy}'")
+        }
+      }
+    }
+
+  private def toTranslateJsonDebugTopLevelExpression(topCursor: HCursor, cursors: List[HCursor => ACursor]): HCursor =
+    modifyTopLevelExpression(topCursor, cursors) { case (translationState, currentExpr, _) =>
+      translationState.constants.foldRight(currentExpr) { case (translatableConstant, currentExprAcc) =>
+        translatableConstant match {
+          case TranslatableConstant.NonTranslated(Constant(en)) =>
+            currentExprAcc.replace(s"'$en'", s"'✅'")
+          case TranslatableConstant.Translated(Constant(en), Constant(cy)) =>
+            currentExprAcc.replace(s"'$en','$cy'", s"'✅','✅'")
+        }
+      }
+    }
+
+  private def toTranslateJson(
+    rows: List[Row]
+  )(topCursor: HCursor, cursors: List[HCursor => ACursor]): HCursor = {
     val lookup: Map[String, Row] = rows.map(row => row.path -> row).toMap
     cursors
       .foldLeft(topCursor) { case (acc, f) =>
@@ -178,11 +243,9 @@ class Translator(json: Json, paths: List[List[Instruction]]) {
           }
         }.root
       }
-      .focus
-      .get
   }
 
-  private def toTranslateJsonDebug(topCursor: HCursor, cursors: List[HCursor => ACursor]): Json =
+  private def toTranslateJsonDebug(topCursor: HCursor, cursors: List[HCursor => ACursor]): HCursor =
     cursors
       .foldLeft(topCursor) { case (acc, f) =>
         val aCursor = f(acc)
@@ -190,12 +253,10 @@ class Translator(json: Json, paths: List[List[Instruction]]) {
           Json.fromString("✅") // Useful for debugging to quickly spot what is translated
         }.root
       }
-      .focus
-      .get
 
-  private def toFetchRows(topCursor: HCursor, cursors: List[HCursor => ACursor]): List[Row] =
+  private def smartStringsRows(cursors: List[HCursor => ACursor]): List[Row] =
     cursors.foldLeft(List.empty[Row]) { case (rows, f) =>
-      val aCursor = f(topCursor)
+      val aCursor = f(json.hcursor)
       val attemptLang = aCursor.as[Lang]
       val attemptString = aCursor.as[String]
       val path = CursorOp.opsToPath(aCursor.history)
@@ -212,20 +273,31 @@ class Translator(json: Json, paths: List[List[Instruction]]) {
 
     }
 
-  def fetchRows: List[Row] = annotateJson(toFetchRows)
+  def fetchRows: List[Row] = smartStringsRows(smartStringCursors) ++ topLevelExprData.toRows
 
   def rowsForTranslation: List[TranslatableRow] = fetchRows
-    .filterNot(row => TextExtractor.doesnNeedTranslation(row.en))
+    .filterNot(row => TextExtractor.doesntNeedTranslation(row.en))
     .map(row => TranslatableRow(row.en, row.cy))
     .distinct
 
   def untranslatedRowsForTranslation: List[TranslatableRow] = fetchRows
-    .filterNot(row => TextExtractor.doesnNeedTranslation(row.en) || row.cy.trim.nonEmpty)
+    .filterNot(row => TextExtractor.doesntNeedTranslation(row.en) || row.cy.trim.nonEmpty)
     .map(row => TranslatableRow(row.en, row.cy))
     .distinct
 
-  def translateJson(rows: List[Row]): Json = annotateJson(toTranslateJson(rows))
-  def translateJsonDebug: Json = annotateJson(toTranslateJsonDebug)
+  def translateJson(
+    expressionRows: List[Row]
+  ): Json =
+    applyOperations(
+      toTranslateJson(expressionRows),
+      translateExpressions(expressionRows)
+    ).focus.get
+
+  def translateJsonDebug: Json =
+    applyOperations(
+      toTranslateJsonDebug,
+      toTranslateJsonDebugTopLevelExpression
+    ).focus.get
 }
 
 object TextExtractor {
@@ -233,7 +305,7 @@ object TextExtractor {
   def unescapeNewLine(s: String) = s.replaceAll("\\\\n", "\n")
   def escapeNewLine(s: String) = s.replace("\n", "\\n")
 
-  def doesnNeedTranslation(s: String): Boolean =
+  def doesntNeedTranslation(s: String): Boolean =
     s.trim.isEmpty || SmartStringTemplateReader.templateReads
       .reads(JsString(s))
       .fold(
@@ -439,15 +511,22 @@ object TextExtractor {
     translatableRows
   }
 
-  private def translateRows(translatableRows: List[TranslatableRow], rows: List[Row]): List[Row] = {
+  private def translateRows(
+    translatableRows: List[TranslatableRow],
+    rows: List[Row],
+    topLevelExprData: TopLevelExprData
+  ): List[Row] = {
     val lookup = translatableRows.map(tr => tr.en -> tr.cy).toMap
+
+    val isTopLevelExpression: Set[String] = topLevelExprData.paths
 
     rows.map { row =>
       lookup.get(escapeNewLine(row.en)) match {
-        case None if TextExtractor.doesnNeedTranslation(row.en) => row.copy(cy = row.en)
-        case None if row.cy.nonEmpty                            => row
-        case None                                               => throw new Exception(s"Cannot find translation for row ${row.path}, text: ${row.en}")
-        case Some(welshTranslation)                             => row.copy(en = row.en, cy = unescapeNewLine(welshTranslation))
+        case None if TextExtractor.doesntNeedTranslation(row.en) => row.copy(cy = row.en)
+        case None if row.cy.nonEmpty                             => row
+        case None if isTopLevelExpression(row.path)              => row
+        case None                                                => throw new Exception(s"Cannot find translation for row ${row.path}, text: ${row.en}")
+        case Some(welshTranslation)                              => row.copy(en = row.en, cy = unescapeNewLine(welshTranslation))
       }
     }
   }
@@ -456,14 +535,14 @@ object TextExtractor {
     val translatableRows: List[TranslatableRow] = readCvsFromString(csv)
     val json: Json = parse(jsonString).toOption.get
 
+    val translator = Translator(json, gformPaths)
+
     val rows: List[Row] =
-      Translator(json, gformPaths).fetchRows.map(row =>
-        row.copy(en = unescapeNewLine(row.en), cy = unescapeNewLine(row.cy))
-      )
+      translator.fetchRows.map(row => row.copy(en = unescapeNewLine(row.en), cy = unescapeNewLine(row.cy)))
 
-    val translatedRows: List[Row] = translateRows(translatableRows, rows)
+    val translatedRows: List[Row] = translateRows(translatableRows, rows, translator.topLevelExprData)
 
-    val res = Translator(json, gformPaths).translateJson(translatedRows)
+    val res = translator.translateJson(translatedRows)
     res.spaces2.replaceAll(" :", ":")
   }
 
@@ -487,6 +566,7 @@ object TextExtractor {
 
   def debug(source: String): String = {
     val json = parse(source).toOption.get
-    Translator(json, gformPaths).translateJsonDebug.spaces2
+    val translator = Translator(json, gformPaths)
+    translator.translateJsonDebug.spaces2
   }
 }
