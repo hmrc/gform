@@ -358,6 +358,7 @@ object TextExtractor {
       ) :: root,
       List(Pure(DownField("errorMessage")), TraverseArray, Pure(DownField("validators"))) ++ root,
       List(TraverseArray, Pure(DownField("choices"))) ++ root,
+      List(TraverseArray, Pure(DownField("optionHelpText"))) ++ root,
       List(TraverseArray, Pure(DownField("hints"))) ++ root,
       Pure(DownField("key")) :: miniSummaryList
     )
