@@ -62,6 +62,9 @@ class ObjectStoreModule(
   val objectStoreService: ObjectStoreAlgebra[Future] =
     new ObjectStoreService(objectStoreConnector, envelopeModule.envelopeService)
 
+  val objectStoreController: ObjectStoreController =
+    new ObjectStoreController(configModule.controllerComponents, objectStoreService)
+
   val foptObjectStoreService: ObjectStoreAlgebra[FOpt] = new ObjectStoreAlgebra[FOpt] {
     override def getFileBytes(envelopeId: EnvelopeId, fileName: String)(implicit hc: HeaderCarrier): FOpt[ByteString] =
       fromFutureA(objectStoreService.getFileBytes(envelopeId, fileName))
@@ -77,5 +80,8 @@ class ObjectStoreModule(
 
     override def getEnvelope(envelopeId: EnvelopeId): FOpt[EnvelopeData] =
       fromFutureA(objectStoreService.getEnvelope(envelopeId))
+
+    override def deleteFile(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): FOpt[Unit] =
+      fromFutureA(objectStoreService.deleteFile(envelopeId, fileId))
   }
 }

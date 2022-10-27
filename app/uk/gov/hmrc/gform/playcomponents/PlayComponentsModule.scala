@@ -33,6 +33,7 @@ import uk.gov.hmrc.gform.envelope.EnvelopeModule
 import uk.gov.hmrc.gform.form.FormModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.metrics.MetricsModule
+import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.obligation.ObligationModule
 import uk.gov.hmrc.gform.submission.SubmissionModule
 import uk.gov.hmrc.gform.testonly.TestOnlyModule
@@ -61,7 +62,8 @@ class PlayComponentsModule(
   errorHandler: HttpErrorHandler,
   formStatisticsModule: FormStatisticsModule,
   envelopeModule: EnvelopeModule,
-  translationModule: TranslationModule
+  translationModule: TranslationModule,
+  objectStoreModule: ObjectStoreModule
 )(implicit ec: ExecutionContext) {
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -82,6 +84,7 @@ class PlayComponentsModule(
     upscanModule.upscanController,
     formStatisticsModule.formStatisticsController,
     envelopeModule.envelopeController,
+    objectStoreModule.objectStoreController,
     translationModule.translationController
   )
 

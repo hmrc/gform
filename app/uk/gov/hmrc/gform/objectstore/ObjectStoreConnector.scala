@@ -61,4 +61,9 @@ class ObjectStoreConnector(
           } yield res
         case _ => Future.failed(new RuntimeException("File not found"))
       }
+
+  def deleteFile(envelopeId: EnvelopeId, fileName: String)(implicit hc: HeaderCarrier): Future[Unit] =
+    objectStoreClient.deleteObject(
+      path = directory(envelopeId.value).file(fileName)
+    )
 }
