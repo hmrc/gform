@@ -32,7 +32,8 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 class ObjectStoreConnector(
   objectStoreClient: PlayObjectStoreClient,
-  objectStoreClientConfig: ObjectStoreClientConfig
+  objectStoreClientConfig: ObjectStoreClientConfig,
+  zipDirectory: String
 )(implicit ex: ExecutionContext, actorSystem: ActorSystem) {
 
   private def directory(folderName: String): Path.Directory =
@@ -65,5 +66,11 @@ class ObjectStoreConnector(
   def deleteFile(envelopeId: EnvelopeId, fileName: String)(implicit hc: HeaderCarrier): Future[Unit] =
     objectStoreClient.deleteObject(
       path = directory(envelopeId.value).file(fileName)
+    )
+
+  def zipFiles(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): Future[ObjectSummaryWithMd5] =
+    objectStoreClient.zip(
+      from = directory(envelopeId.value),
+      to = Path.Directory(zipDirectory).file(s"${envelopeId.value}.zip")
     )
 }

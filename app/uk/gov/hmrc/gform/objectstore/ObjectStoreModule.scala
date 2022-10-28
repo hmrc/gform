@@ -43,6 +43,7 @@ class ObjectStoreModule(
   private val defaultRetentionPeriod = RetentionPeriod
     .parse(configModule.typesafeConfig.getString("object-store.default-retention-period"))
     .fold(m => throw new IllegalStateException(m), identity)
+  private val zipDirectory = configModule.typesafeConfig.getString("object-store.zip-directory")
 
   private val objectStoreClientConfig = ObjectStoreClientConfig(
     baseUrl,
@@ -54,7 +55,7 @@ class ObjectStoreModule(
   val objectStoreClient = new PlayObjectStoreClient(wsClient, objectStoreClientConfig)(akkaModule.materializer, ex)
 
   val objectStoreConnector: ObjectStoreConnector =
-    new ObjectStoreConnector(objectStoreClient, objectStoreClientConfig)(
+    new ObjectStoreConnector(objectStoreClient, objectStoreClientConfig, zipDirectory)(
       ex,
       akkaModule.actorSystem
     )
@@ -83,5 +84,8 @@ class ObjectStoreModule(
 
     override def deleteFile(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): FOpt[Unit] =
       fromFutureA(objectStoreService.deleteFile(envelopeId, fileId))
+
+    override def zipFiles(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): FOpt[Unit] =
+      fromFutureA(objectStoreService.zipFiles(envelopeId))
   }
 }
