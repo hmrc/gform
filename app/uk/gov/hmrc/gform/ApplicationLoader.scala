@@ -186,7 +186,8 @@ class ApplicationModule(context: Context)
       handlebarsModule,
       destinationModule,
       notifierModule,
-      envelopeModule
+      envelopeModule,
+      objectStoreModule
     )
 
   private val dmsModule =

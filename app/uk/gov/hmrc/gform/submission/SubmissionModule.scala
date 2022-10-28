@@ -31,6 +31,7 @@ import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.envelope.EnvelopeModule
 import uk.gov.hmrc.gform.notifier.NotifierModule
+import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.repo.{ Repo, RepoAlgebra }
 import uk.gov.hmrc.gform.submission.destinations.{ DestinationModule, DestinationSubmitter, DestinationsSubmitter, DestinationsSubmitterAlgebra, DmsSubmitter, StateTransitionService }
 import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorModule
@@ -51,7 +52,8 @@ class SubmissionModule(
   handlebarsHttpApiModule: HandlebarsHttpApiModule,
   destinationModule: DestinationModule,
   notifierModule: NotifierModule,
-  envelopeModule: EnvelopeModule
+  envelopeModule: EnvelopeModule,
+  objectStoreModule: ObjectStoreModule
 )(implicit ex: ExecutionContext) {
 
   //TODO: this should be replaced with save4later for submissions
@@ -97,7 +99,8 @@ class SubmissionModule(
     submissionRepo,
     formTemplateModule.formRedirectService,
     emailModule.emailLogic,
-    timeModule.timeProvider
+    timeModule.timeProvider,
+    objectStoreModule.foptObjectStoreService
   )
 
   val submissionController = new SubmissionController(configModule.controllerComponents, submissionService)
