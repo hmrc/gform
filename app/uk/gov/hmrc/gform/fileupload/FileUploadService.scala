@@ -21,6 +21,7 @@ import java.time.format.DateTimeFormatter
 import java.util.UUID
 import akka.util.ByteString
 import org.slf4j.LoggerFactory
+import uk.gov.hmrc.gform.core.FutureSyntax
 import uk.gov.hmrc.gform.dms.FileAttachment
 import uk.gov.hmrc.gform.fileupload.FileUploadService.FileIds._
 import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
@@ -171,7 +172,7 @@ class FileUploadService(
     hc: HeaderCarrier
   ): Future[Unit] =
     if (objectStore) {
-      objectStoreService.uploadFile(envelopeId, fileId, fileName, content, contentType).map(_ => ())
+      objectStoreService.uploadFile(envelopeId, fileId, fileName, content, contentType).void
     } else {
       fileUploadFrontendConnector
         .upload(envelopeId, fileId, fileName, content, contentType)

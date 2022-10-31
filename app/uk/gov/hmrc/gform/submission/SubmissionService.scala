@@ -77,7 +77,8 @@ class SubmissionService(
       submissionInfo = DestinationSubmissionInfo(customerId, submission)
       modelTree <- createModelTreeForSingleFormSubmission(form, formTemplate, submissionData, submission.submissionRef)
       _         <- destinationsSubmitter.send(submissionInfo, modelTree, Some(form.formData), submissionData.l)
-      _         <- objectStoreAlgebra.zipFiles(submission.envelopeId)
+      _ <-
+        if (formTemplate.isObjectStore) objectStoreAlgebra.zipFiles(submission.envelopeId) else fromFutureA(Future.unit)
       emailAddress = email.getEmailAddress(form, submissionData.maybeEmailAddress)
       _ <- fromFutureA(
              formTemplate.emailTemplateId.fold(().pure[Future])(emailTemplateId =>
