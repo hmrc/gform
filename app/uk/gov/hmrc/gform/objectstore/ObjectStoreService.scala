@@ -128,5 +128,5 @@ class ObjectStoreService(objectStoreConnector: ObjectStoreConnector, envelopeSer
   }
 
   override def zipFiles(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): Future[Unit] =
-    objectStoreConnector.zipFiles(envelopeId).map(_ => ())
+    objectStoreConnector.zipFiles(envelopeId).void
 }
