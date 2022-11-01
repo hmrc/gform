@@ -153,8 +153,10 @@ trait Rewriter {
     val includeIfs: List[IncludeIf] = formTemplate.formKind.allSections.flatMap {
       case Section.NonRepeatingPage(page) => page.includeIf.toList
       case Section.RepeatingPage(page, _) => page.includeIf.toList
-      case Section.AddToList(_, _, _, _, _, _, _, includeIf, _, pages, _, _, _, _, _, _, _) =>
-        includeIf.toList ++ pages.toList.flatMap(_.includeIf.toList)
+      case Section.AddToList(_, _, _, _, _, _, _, includeIf, _, pages, _, _, _, _, _, _, fields) =>
+        includeIf.toList ++ pages.toList.flatMap(_.includeIf.toList) ++ fields.fold(List.empty[IncludeIf])(
+          _.toList.flatMap(_.includeIf.toList)
+        )
     } ++ fieldsIncludeIfs ++ acknowledgementSectionIncludeIfs ++ summarySectionIncludeIfs ++ choiceIncludeIfs ++ miniSummaryListIncludeIfs ++ redirectsIncludeIfs
 
     def validate(
