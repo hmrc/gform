@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.envelope
+package uk.gov.hmrc.gform.sharedmodel.envelope
 
 import cats.Show
-import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
+import play.api.libs.json.Reads._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.UniqueIdGenerator
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
-import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId }
+import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 
 case class EnvelopeData(
   _id: EnvelopeId,

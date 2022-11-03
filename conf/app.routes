@@ -77,3 +77,5 @@ GET           /translation/:formTemplateId/brief                                
 GET           /translation/:formTemplateId/internal                                                     uk.gov.hmrc.gform.translation.TranslationController.generateInternalCsv(formTemplateId: FormTemplateId)
 GET           /translation/:formTemplateId/debug                                                        uk.gov.hmrc.gform.translation.TranslationController.translateCsvDebug(formTemplateId: FormTemplateId)
 POST          /translation/:formTemplateId                                                              uk.gov.hmrc.gform.translation.TranslationController.translateCsv(formTemplateId: FormTemplateId)
+
+POST          /sdes/callback                                                                            uk.gov.hmrc.gform.sdes.SdesCallbackController.callback

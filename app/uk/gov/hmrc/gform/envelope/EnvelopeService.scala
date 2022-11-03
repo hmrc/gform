@@ -16,11 +16,12 @@
 
 package uk.gov.hmrc.gform.envelope
 
+import cats.syntax.functor._
 import cats.instances.future._
-import cats.syntax.flatMap._
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.repo.Repo
+import uk.gov.hmrc.gform.sharedmodel.envelope.EnvelopeData
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -36,10 +37,10 @@ class EnvelopeService(envelopeRepo: Repo[EnvelopeData])(implicit
 ) extends EnvelopeAlgebra[Future] {
   private val logger = LoggerFactory.getLogger(getClass)
 
-  override def save(envelope: EnvelopeData): Future[Unit] =
-    envelopeRepo.upsert(envelope).toFuture >>
-      Future.successful(logger.info(s"EnvelopeAlgebra.save(${envelope._id.value}) - upserting $envelope)"))
+  override def save(envelope: EnvelopeData): Future[Unit] = envelopeRepo
+    .upsert(envelope)
+    .toFuture
+    .as(logger.info(s"EnvelopeAlgebra.save(${envelope._id.value}) - upserting $envelope)"))
 
-  override def get(envelopeId: EnvelopeId): Future[EnvelopeData] =
-    envelopeRepo.get(envelopeId.value)
+  override def get(envelopeId: EnvelopeId): Future[EnvelopeData] = envelopeRepo.get(envelopeId.value)
 }

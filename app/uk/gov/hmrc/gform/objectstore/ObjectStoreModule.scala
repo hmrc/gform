@@ -21,8 +21,9 @@ import play.api.libs.ws.WSClient
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
-import uk.gov.hmrc.gform.envelope.{ EnvelopeData, EnvelopeModule }
+import uk.gov.hmrc.gform.envelope.EnvelopeModule
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
+import uk.gov.hmrc.gform.sharedmodel.envelope.EnvelopeData
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.objectstore.client.{ ObjectSummaryWithMd5, RetentionPeriod }
@@ -85,7 +86,7 @@ class ObjectStoreModule(
     override def deleteFile(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): FOpt[Unit] =
       fromFutureA(objectStoreService.deleteFile(envelopeId, fileId))
 
-    override def zipFiles(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): FOpt[Unit] =
+    override def zipFiles(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): FOpt[ObjectSummaryWithMd5] =
       fromFutureA(objectStoreService.zipFiles(envelopeId))
   }
 }
