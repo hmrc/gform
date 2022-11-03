@@ -52,8 +52,8 @@ class SdesService(
     val notifyRequest = createNotifyRequest(objWithSummary, sdesSubmission._id.value)
     logger.debug(s"SDES notification request: ${Json.stringify(Json.toJson(notifyRequest))}")
     for {
-      _ <- repoSdesSubmission.upsert(sdesSubmission).toFuture
       _ <- sdesConnector.notifySDES(notifyRequest)
+      _ <- repoSdesSubmission.upsert(sdesSubmission).toFuture
     } yield ()
   }
 
