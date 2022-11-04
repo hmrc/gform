@@ -24,9 +24,10 @@ import cats.{ Applicative, Monad }
 import cats.syntax.functor._
 import cats.syntax.flatMap._
 import org.slf4j.LoggerFactory
-import uk.gov.hmrc.gform.envelope.{ EnvelopeAlgebra, EnvelopeData, EnvelopeFile }
+import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
 import uk.gov.hmrc.gform.fileupload.{ File, UploadedFile }
 import uk.gov.hmrc.gform.sharedmodel.config.ContentType
+import uk.gov.hmrc.gform.sharedmodel.envelope.{ Available, EnvelopeData, EnvelopeFile }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.objectstore.client.ObjectSummaryWithMd5
@@ -68,7 +69,7 @@ trait ObjectStoreAlgebra[F[_]] {
 
   def deleteFile(envelopeId: EnvelopeId, fileIds: FileId)(implicit hc: HeaderCarrier): F[Unit]
 
-  def zipFiles(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): F[Unit]
+  def zipFiles(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): F[ObjectSummaryWithMd5]
 }
 
 class ObjectStoreService(objectStoreConnector: ObjectStoreConnector, envelopeService: EnvelopeAlgebra[Future])(implicit
@@ -101,7 +102,7 @@ class ObjectStoreService(objectStoreConnector: ObjectStoreConnector, envelopeSer
             EnvelopeFile(
               fileId.value,
               fileName,
-              uk.gov.hmrc.gform.envelope.Available,
+              Available,
               contentType,
               res.contentLength,
               Map.empty[String, List[String]]
@@ -127,6 +128,6 @@ class ObjectStoreService(objectStoreConnector: ObjectStoreConnector, envelopeSer
     } yield ()
   }
 
-  override def zipFiles(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): Future[Unit] =
-    objectStoreConnector.zipFiles(envelopeId).void
+  override def zipFiles(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): Future[ObjectSummaryWithMd5] =
+    objectStoreConnector.zipFiles(envelopeId)
 }

@@ -27,6 +27,7 @@ import uk.gov.hmrc.gform.formredirect.{ FormRedirect, FormRedirectService }
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 import uk.gov.hmrc.gform.repo.Repo
+import uk.gov.hmrc.gform.sdes.SdesAlgebra
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.{ SubmissionData, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.form._
@@ -47,7 +48,8 @@ class SubmissionService(
   formRedirectService: FormRedirectService,
   email: EmailService,
   timeProvider: TimeProvider,
-  objectStoreAlgebra: ObjectStoreAlgebra[FOpt]
+  objectStoreAlgebra: ObjectStoreAlgebra[FOpt],
+  sdesAlgebra: SdesAlgebra[FOpt]
 )(implicit ex: ExecutionContext) {
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -78,7 +80,12 @@ class SubmissionService(
       modelTree <- createModelTreeForSingleFormSubmission(form, formTemplate, submissionData, submission.submissionRef)
       _         <- destinationsSubmitter.send(submissionInfo, modelTree, Some(form.formData), submissionData.l)
       _ <-
-        if (formTemplate.isObjectStore) objectStoreAlgebra.zipFiles(submission.envelopeId) else fromFutureA(Future.unit)
+        if (formTemplate.isObjectStore)
+          for {
+            objectSummary <- objectStoreAlgebra.zipFiles(submission.envelopeId)
+            _             <- sdesAlgebra.notifySDES(submission.envelopeId, objectSummary)
+          } yield ()
+        else fromFutureA(Future.unit)
       emailAddress = email.getEmailAddress(form, submissionData.maybeEmailAddress)
       _ <- fromFutureA(
              formTemplate.emailTemplateId.fold(().pure[Future])(emailTemplateId =>

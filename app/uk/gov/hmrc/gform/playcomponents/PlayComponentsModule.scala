@@ -35,6 +35,7 @@ import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.metrics.MetricsModule
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.obligation.ObligationModule
+import uk.gov.hmrc.gform.sdes.SdesModule
 import uk.gov.hmrc.gform.submission.SubmissionModule
 import uk.gov.hmrc.gform.testonly.TestOnlyModule
 import uk.gov.hmrc.gform.translation.TranslationModule
@@ -63,7 +64,8 @@ class PlayComponentsModule(
   formStatisticsModule: FormStatisticsModule,
   envelopeModule: EnvelopeModule,
   translationModule: TranslationModule,
-  objectStoreModule: ObjectStoreModule
+  objectStoreModule: ObjectStoreModule,
+  sdesModule: SdesModule
 )(implicit ec: ExecutionContext) {
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -85,7 +87,8 @@ class PlayComponentsModule(
     formStatisticsModule.formStatisticsController,
     envelopeModule.envelopeController,
     objectStoreModule.objectStoreController,
-    translationModule.translationController
+    translationModule.translationController,
+    sdesModule.sdesCallbackController
   )
 
   private val healthController =

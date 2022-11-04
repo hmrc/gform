@@ -58,6 +58,7 @@ import uk.gov.hmrc.gform.upscan.UpscanModule
 import uk.gov.hmrc.gform.validation.ValidationModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.gform.obligation.ObligationModule
+import uk.gov.hmrc.gform.sdes.SdesModule
 import uk.gov.hmrc.gform.submission.destinations.DestinationModule
 import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorModule
 import uk.gov.hmrc.mongo.CurrentTimestampSupport
@@ -171,6 +172,8 @@ class ApplicationModule(context: Context)
 
   private val submissionConsolidatorModule = new SubmissionConsolidatorModule(wSHttpModule, formModule, configModule)
 
+  val sdesModule = new SdesModule(configModule, wSHttpModule, mongoModule)
+
   private val submissionModule =
     new SubmissionModule(
       configModule,
@@ -187,7 +190,8 @@ class ApplicationModule(context: Context)
       destinationModule,
       notifierModule,
       envelopeModule,
-      objectStoreModule
+      objectStoreModule,
+      sdesModule
     )
 
   private val dmsModule =
@@ -258,7 +262,8 @@ class ApplicationModule(context: Context)
     formStatisticsModule,
     envelopeModule,
     translationModule,
-    objectStoreModule
+    objectStoreModule,
+    sdesModule
   )
 
   override lazy val httpRequestHandler: HttpRequestHandler = playComponentsModule.httpRequestHandler

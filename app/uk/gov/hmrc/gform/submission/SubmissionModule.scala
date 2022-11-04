@@ -33,6 +33,7 @@ import uk.gov.hmrc.gform.envelope.EnvelopeModule
 import uk.gov.hmrc.gform.notifier.NotifierModule
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.repo.{ Repo, RepoAlgebra }
+import uk.gov.hmrc.gform.sdes.SdesModule
 import uk.gov.hmrc.gform.submission.destinations.{ DestinationModule, DestinationSubmitter, DestinationsSubmitter, DestinationsSubmitterAlgebra, DmsSubmitter, StateTransitionService }
 import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorModule
 
@@ -53,7 +54,8 @@ class SubmissionModule(
   destinationModule: DestinationModule,
   notifierModule: NotifierModule,
   envelopeModule: EnvelopeModule,
-  objectStoreModule: ObjectStoreModule
+  objectStoreModule: ObjectStoreModule,
+  sdesModule: SdesModule
 )(implicit ex: ExecutionContext) {
 
   //TODO: this should be replaced with save4later for submissions
@@ -100,7 +102,8 @@ class SubmissionModule(
     formTemplateModule.formRedirectService,
     emailModule.emailLogic,
     timeModule.timeProvider,
-    objectStoreModule.foptObjectStoreService
+    objectStoreModule.foptObjectStoreService,
+    sdesModule.foptSdesService
   )
 
   val submissionController = new SubmissionController(configModule.controllerComponents, submissionService)
