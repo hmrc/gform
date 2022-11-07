@@ -70,6 +70,8 @@ trait ObjectStoreAlgebra[F[_]] {
   def deleteFile(envelopeId: EnvelopeId, fileIds: FileId)(implicit hc: HeaderCarrier): F[Unit]
 
   def zipFiles(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): F[ObjectSummaryWithMd5]
+
+  def deleteZipFile(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): F[Unit]
 }
 
 class ObjectStoreService(objectStoreConnector: ObjectStoreConnector, envelopeService: EnvelopeAlgebra[Future])(implicit
@@ -130,4 +132,7 @@ class ObjectStoreService(objectStoreConnector: ObjectStoreConnector, envelopeSer
 
   override def zipFiles(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): Future[ObjectSummaryWithMd5] =
     objectStoreConnector.zipFiles(envelopeId)
+
+  override def deleteZipFile(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): Future[Unit] =
+    objectStoreConnector.deleteZipFile(envelopeId)
 }

@@ -33,7 +33,7 @@ case class AppConfig(
   `upscan-confirmation-ttl`: FiniteDuration,
   restrictedFileExtensionList: List[String],
   submittedFormExpiryHours: Int,
-  `sdes-confirmation-ttl`: FiniteDuration
+  `sdes-confirmation-ttl-days`: Int
 ) {
 
   def restrictedFileExtensions: List[FileExtension] =

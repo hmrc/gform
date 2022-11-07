@@ -16,7 +16,9 @@
 
 package uk.gov.hmrc.gform.sharedmodel.sdes
 
-import play.api.libs.json.{ Format, Json, OFormat }
+import cats.Eq
+import julienrf.json.derived
+import play.api.libs.json.{ Format, OFormat }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.ADTFormat
 
 final case class CallBackNotification(
@@ -27,7 +29,10 @@ final case class CallBackNotification(
 )
 
 object CallBackNotification {
-  implicit val format: OFormat[CallBackNotification] = Json.format[CallBackNotification]
+  implicit val format: OFormat[CallBackNotification] = {
+    implicit val notificationStatusFormat: Format[NotificationStatus] = NotificationStatus.format
+    derived.oformat()
+  }
 }
 
 sealed trait NotificationStatus extends Product with Serializable
@@ -41,6 +46,9 @@ object NotificationStatus {
   case object FileProcessingFailure extends NotificationStatus
 
   case object FileProcessed extends NotificationStatus
+
+  implicit val catsEq: Eq[NotificationStatus] = Eq.fromUniversalEquals
+
   implicit val format: Format[NotificationStatus] =
     ADTFormat.formatEnumeration(
       "FileReady"             -> FileReady,
