@@ -31,6 +31,7 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
     appConfig.formMaxAttachmentSizeMB shouldBe 10
     appConfig.formMaxAttachmentTotalSizeMB shouldBe 25
     appConfig.restrictedFileExtensionList shouldBe List("jfif", "png")
+    appConfig.`sdes-confirmation-ttl-days` shouldBe 180
   }
 
 }

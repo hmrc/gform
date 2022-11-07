@@ -36,6 +36,8 @@ class ObjectStoreConnector(
   zipDirectory: String
 )(implicit ex: ExecutionContext, actorSystem: ActorSystem) {
 
+  private val zipExtension = ".zip"
+
   private def directory(folderName: String): Path.Directory =
     Path.Directory(s"envelopes/$folderName")
 
@@ -60,7 +62,8 @@ class ObjectStoreConnector(
             content <- o.content.asString
             res     <- Future.successful(ByteString(content.getBytes()))
           } yield res
-        case _ => Future.failed(new RuntimeException("File not found"))
+        case _ =>
+          Future.failed(new RuntimeException(s"File $fileName not found in path: ${directory(envelopeId.value)}"))
       }
 
   def deleteFile(envelopeId: EnvelopeId, fileName: String)(implicit hc: HeaderCarrier): Future[Unit] =
@@ -71,6 +74,11 @@ class ObjectStoreConnector(
   def zipFiles(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): Future[ObjectSummaryWithMd5] =
     objectStoreClient.zip(
       from = directory(envelopeId.value),
-      to = Path.Directory(zipDirectory).file(s"${envelopeId.value}.zip")
+      to = Path.Directory(zipDirectory).file(s"${envelopeId.value}$zipExtension")
+    )
+
+  def deleteZipFile(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): Future[Unit] =
+    objectStoreClient.deleteObject(
+      path = Path.Directory(zipDirectory).file(s"${envelopeId.value}$zipExtension")
     )
 }

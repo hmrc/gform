@@ -21,7 +21,7 @@ import uk.gov.hmrc.gform.repo.Repo
 import org.slf4j.LoggerFactory
 import play.api.libs.json.Json
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
-import uk.gov.hmrc.gform.sharedmodel.sdes.{ FileAudit, FileChecksum, FileMetaData, SdesNotifyRequest, SdesSubmission }
+import uk.gov.hmrc.gform.sharedmodel.sdes.{ CorrelationId, FileAudit, FileChecksum, FileMetaData, SdesNotifyRequest, SdesSubmission }
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.objectstore.client.ObjectSummaryWithMd5
 
@@ -29,9 +29,11 @@ import java.util.Base64
 import scala.concurrent.{ ExecutionContext, Future }
 
 trait SdesAlgebra[F[_]] {
-  def notifySDES(envelopeId: EnvelopeId, objWithSummary: ObjectSummaryWithMd5)(implicit
-    hc: HeaderCarrier
-  ): F[Unit]
+  def notifySDES(envelopeId: EnvelopeId, objWithSummary: ObjectSummaryWithMd5)(implicit hc: HeaderCarrier): F[Unit]
+
+  def saveSdesSubmission(sdesSubmission: SdesSubmission): F[Unit]
+
+  def findSdesSubmission(correlationId: CorrelationId): F[Option[SdesSubmission]]
 }
 
 class SdesService(
@@ -53,7 +55,7 @@ class SdesService(
     logger.debug(s"SDES notification request: ${Json.stringify(Json.toJson(notifyRequest))}")
     for {
       _ <- sdesConnector.notifySDES(notifyRequest)
-      _ <- repoSdesSubmission.upsert(sdesSubmission).toFuture
+      _ <- saveSdesSubmission(sdesSubmission)
     } yield ()
   }
 
@@ -73,4 +75,10 @@ class SdesService(
       ),
       FileAudit(correlationId)
     )
+
+  override def saveSdesSubmission(sdesSubmission: SdesSubmission): Future[Unit] =
+    repoSdesSubmission.upsert(sdesSubmission).toFuture
+
+  override def findSdesSubmission(correlationId: CorrelationId): Future[Option[SdesSubmission]] =
+    repoSdesSubmission.find(correlationId.value)
 }

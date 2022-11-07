@@ -20,20 +20,23 @@ import org.mongodb.scala.model.{ IndexModel, IndexOptions, Indexes }
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.mongo.MongoModule
+import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
-import uk.gov.hmrc.gform.sharedmodel.sdes.SdesSubmission
+import uk.gov.hmrc.gform.sharedmodel.sdes.{ CorrelationId, SdesSubmission }
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.objectstore.client.ObjectSummaryWithMd5
 
 import java.util.concurrent.TimeUnit
+import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ ExecutionContext, Future }
 
 class SdesModule(
   configModule: ConfigModule,
   wSHttpModule: WSHttpModule,
-  mongoModule: MongoModule
+  mongoModule: MongoModule,
+  objectStoreModule: ObjectStoreModule
 )(implicit ex: ExecutionContext) {
 
   private val sdesBaseUrl = configModule.serviceConfig.baseUrl("sdes")
@@ -60,7 +63,7 @@ class SdesModule(
           IndexOptions()
             .background(false)
             .name("confirmedAtIndex")
-            .expireAfter(configModule.appConfig.`sdes-confirmation-ttl`.toMillis, TimeUnit.MILLISECONDS)
+            .expireAfter(configModule.appConfig.`sdes-confirmation-ttl-days`.days.toMillis, TimeUnit.MILLISECONDS)
         )
       )
     )
@@ -71,13 +74,20 @@ class SdesModule(
   val sdesService: SdesAlgebra[Future] =
     new SdesService(sdesConnector, repoSdesSubmission, sdesRecipientOrSender, sdesInformationType, fileLocationUrl)
 
-  val sdesCallbackController: SdesCallbackController = new SdesCallbackController(configModule.controllerComponents)
+  val sdesCallbackController: SdesCallbackController =
+    new SdesCallbackController(configModule.controllerComponents, sdesService, objectStoreModule.objectStoreService)
 
   val foptSdesService: SdesAlgebra[FOpt] = new SdesAlgebra[FOpt] {
     override def notifySDES(envelopeId: EnvelopeId, objWithSummary: ObjectSummaryWithMd5)(implicit
       hc: HeaderCarrier
     ): FOpt[Unit] =
       fromFutureA(sdesService.notifySDES(envelopeId, objWithSummary))
+
+    override def saveSdesSubmission(sdesSubmission: SdesSubmission): FOpt[Unit] =
+      fromFutureA(sdesService.saveSdesSubmission(sdesSubmission))
+
+    override def findSdesSubmission(correlationId: CorrelationId): FOpt[Option[SdesSubmission]] =
+      fromFutureA(sdesService.findSdesSubmission(correlationId))
   }
 
 }
