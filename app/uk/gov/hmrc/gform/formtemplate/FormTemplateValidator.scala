@@ -783,18 +783,7 @@ object FormTemplateValidator {
     case OverseasAddress(_, _, _, _) => Valid
     case PostcodeLookup              => Valid
     case MiniSummaryList(ls)         => validateMiniSummaryList(ls, formTemplate)
-    case t: TableComp                => validateTableComp(t.header, t.rows)
-  }
-
-  def validateTableComp(header: List[SmartString], rows: List[TableValueRow]): ValidationResult = {
-    val rowsNumbers = rows.collect { case TableValueRow(values, _) =>
-      values.map(_.colspan.getOrElse(1)).sum
-    }.toSet
-    if (rowsNumbers.size != 1 || rowsNumbers.head != header.size) {
-      Invalid("the number of header columns and row values do not match")
-    } else {
-      Valid
-    }
+    case t: TableComp                => TableCompValidator.validateTableComp(t)
   }
 
   def validateMiniSummaryList(rows: List[MiniSummaryRow], formTemplate: FormTemplate): ValidationResult = {

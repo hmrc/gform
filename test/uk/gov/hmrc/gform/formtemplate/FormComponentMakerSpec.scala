@@ -363,7 +363,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                                        |              "atlId": "atlID",
                                        |              "repeat": [
                                        |                {
-                                       |                  "header": "test repeat header" 
+                                       |                  "header": "test repeat header"
                                        |                }
                                        |              ]
                                        |            }
@@ -501,6 +501,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                 TableValue(
                   SmartString(LocalisedString(Map(LangADT.En -> "Row 1")), List()),
                   Some("header"),
+                  None,
                   None
                 ),
                 TableValue(
@@ -509,6 +510,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                     List(FormCtx(FormComponentId("value1")))
                   ),
                   None,
+                  None,
                   None
                 ),
                 TableValue(
@@ -516,6 +518,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                     LocalisedString(Map(LangADT.En -> "{0}")),
                     List(FormCtx(FormComponentId("value2")))
                   ),
+                  None,
                   None,
                   None
                 )
@@ -527,6 +530,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                 TableValue(
                   SmartString(LocalisedString(Map(LangADT.En -> "Row 2")), List()),
                   Some("header"),
+                  None,
                   None
                 ),
                 TableValue(
@@ -535,7 +539,8 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                     List(FormCtx(FormComponentId("value3")))
                   ),
                   None,
-                  Some(2)
+                  Some(2),
+                  None
                 )
               ),
               Some(IncludeIf(TopLevelRef(BooleanExprId("expression"))))
@@ -545,6 +550,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                 TableValue(
                   SmartString(LocalisedString(Map(LangADT.En -> "Total due")), List()),
                   Some("header-xl"),
+                  None,
                   None
                 ),
                 TableValue(
@@ -553,6 +559,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                     List(FormCtx(FormComponentId("total1")))
                   ),
                   Some("header-xxl"),
+                  None,
                   None
                 ),
                 TableValue(
@@ -561,6 +568,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                     List(FormCtx(FormComponentId("total2")))
                   ),
                   Some("header-xxl"),
+                  None,
                   None
                 )
               ),

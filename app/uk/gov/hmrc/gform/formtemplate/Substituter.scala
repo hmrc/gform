@@ -149,7 +149,7 @@ object Substituter {
     ev: Substituter[A, Expr]
   ): Substituter[A, TableValue] = (substitutions, t) =>
     t match {
-      case TableValue(value, cssClass, colspan) => TableValue(value(substitutions), cssClass, colspan)
+      case TableValue(value, cssClass, colspan, rowspan) => TableValue(value(substitutions), cssClass, colspan, rowspan)
     }
 
   implicit def tableRowSubstituter[A](implicit

@@ -210,9 +210,9 @@ class FormComponentMaker(json: JsValue) {
       for {
         cssClass <- toOpt((json \ "class").validateOpt[String], "/class")
         colspan  <- toOpt((json \ "colspan").validateOpt[Int], "/colspan")
-        value    <- toOpt((json \ "value").validate[SmartString], "/value") //.flatMap(SummaryListParser.validate)
-
-      } yield TableValue(value, cssClass, colspan)
+        rowspan  <- toOpt((json \ "rowspan").validateOpt[Int], "/rowspan")
+        value    <- toOpt((json \ "value").validate[SmartString], "/value")
+      } yield TableValue(value, cssClass, colspan, rowspan)
     def values(json: JsValue): Opt[List[TableValue]] =
       toOpt((json \ "values").validate[List[JsValue]], "/values").flatMap(_.traverse(getValueRow))
     def getRow(json: JsValue): Opt[TableValueRow] =
