@@ -403,7 +403,7 @@ object MiniSummaryList {
   implicit val format: Format[MiniSummaryList] = derived.oformat()
 }
 
-case class TableValue(value: SmartString, cssClass: Option[String], colspan: Option[Int])
+case class TableValue(value: SmartString, cssClass: Option[String], colspan: Option[Int], rowspan: Option[Int])
 
 object TableValue {
   implicit val leafExprs: LeafExpr[TableValue] = (path: TemplatePath, r: TableValue) =>
