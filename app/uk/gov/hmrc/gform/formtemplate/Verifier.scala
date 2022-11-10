@@ -31,7 +31,8 @@ trait Verifier {
 
     val pages = SectionHelper.pages(sections)
 
-    val componentTypes: List[ComponentType] = pages.flatMap(_.fields.map(_.`type`))
+    val formComponents: List[FormComponent] = pages.flatMap(_.fields) ++ formTemplate.destinations.allFormComponents
+    val componentTypes: List[ComponentType] = formComponents.map(_.`type`)
 
     val languages = formTemplate.languages
 
