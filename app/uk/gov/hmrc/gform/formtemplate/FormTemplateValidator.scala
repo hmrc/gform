@@ -217,9 +217,7 @@ object FormTemplateValidator {
     }
 
     val addToListPageToDisplayAfterRemoveRefs: List[PageId] = formTemplate.formKind.allSections.collect {
-      case s: Section.NonRepeatingPage => List.empty[PageId]
-      case s: Section.RepeatingPage    => List.empty[PageId]
-      case s: Section.AddToList        => s.pageIdToDisplayAfterRemove.toList
+      case s: Section.AddToList => s.pageIdToDisplayAfterRemove.toList
     }.flatten
 
     val pageValidationResults: List[ValidationResult] = addToListPageToDisplayAfterRemoveRefs
