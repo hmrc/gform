@@ -155,6 +155,7 @@ trait SectionGen {
       instruction        <- Gen.option(InstructionGen.instructionGen)
       presentationHint   <- Gen.option(PresentationHintGen.presentationHintGen)
       infoMessage        <- Gen.option(smartStringGen)
+      maybePageId        <- Gen.option(PageIdGen.pageIdGen)
     } yield Section
       .AddToList(
         title,
@@ -170,7 +171,8 @@ trait SectionGen {
         formComponent.copy(`type` = choice),
         instruction,
         presentationHint,
-        infoMessage
+        infoMessage,
+        pageIdToDisplayAfterRemove = maybePageId
       )
 
   def sectionGen: Gen[Section] = Gen.oneOf(nonRepeatingPageSectionGen, repeatingPageSectionGen, addToListSectionGen)

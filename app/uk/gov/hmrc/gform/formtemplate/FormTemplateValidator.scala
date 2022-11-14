@@ -194,7 +194,7 @@ object FormTemplateValidator {
     def invalid(path: TemplatePath, formComponentIds: FormComponentId*): Invalid =
       Invalid(s"${path.path}: ${formComponentIds.mkString(",")} doesn't exist in the form")
 
-    allExprs.flatMap(_.referenceInfos).foldMap {
+    val exprValidationResults: ValidationResult = allExprs.flatMap(_.referenceInfos).foldMap {
       case ReferenceInfo.FormCtxExpr(path, FormCtx(formComponentId)) if !allFcIds(formComponentId) =>
         invalid(path, formComponentId)
       case ReferenceInfo.SumExpr(path, Sum(FormCtx(formComponentId))) if !allFcIds(formComponentId) =>
@@ -215,6 +215,21 @@ object FormTemplateValidator {
         invalid(path, formComponentId)
       case _ => Valid
     }
+
+    val addToListPageToDisplayAfterRemoveRefs: List[PageId] = formTemplate.formKind.allSections.collect {
+      case s: Section.AddToList => s.pageIdToDisplayAfterRemove.toList
+    }.flatten
+
+    val pageValidationResults: List[ValidationResult] = addToListPageToDisplayAfterRemoveRefs
+      .map(pageId =>
+        if (!allPageIds.contains(pageId)) {
+          Invalid(s"$pageId: doesn't exist in the form")
+        } else {
+          Valid
+        }
+      )
+
+    exprValidationResults.combine(pageValidationResults.combineAll)
   }
 
   def validateSectionShortNames(formTemplate: FormTemplate): ValidationResult = {

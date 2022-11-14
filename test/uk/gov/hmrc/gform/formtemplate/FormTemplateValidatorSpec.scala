@@ -431,6 +431,66 @@ class FormTemplateValidatorSpec
             )
           ),
           Invalid("sections.pages.fields.[id=page2Comp1].infoText: Page id 'invalid' doesn't exist in the form")
+        ),
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List.empty,
+              pageId = Some(PageId("page1"))
+            ),
+            mkAddToList(
+              name = "page2",
+              pageIdToDisplayAfterRemove = Some(PageId("invalid")),
+              pages = NonEmptyList.one(
+                mkSectionNonRepeatingPage(
+                  name = "page2",
+                  formComponents = List(
+                    mkFormComponent(
+                      "page2Comp1",
+                      InformationMessage(
+                        StandardInfo,
+                        SmartString(toLocalisedString("foo"), List())
+                      ),
+                      false
+                    )
+                  ),
+                  pageId = Some(PageId("page2"))
+                ).page
+              )
+            )
+          ),
+          Invalid("PageId(invalid): doesn't exist in the form")
+        ),
+        (
+          List(
+            mkSectionNonRepeatingPage(
+              name = "page1",
+              formComponents = List.empty,
+              pageId = Some(PageId("page1"))
+            ),
+            mkAddToList(
+              name = "page2",
+              pageIdToDisplayAfterRemove = Some(PageId("page1")),
+              pages = NonEmptyList.one(
+                mkSectionNonRepeatingPage(
+                  name = "page2",
+                  formComponents = List(
+                    mkFormComponent(
+                      "page2Comp1",
+                      InformationMessage(
+                        StandardInfo,
+                        SmartString(toLocalisedString("foo"), List())
+                      ),
+                      false
+                    )
+                  ),
+                  pageId = Some(PageId("page2"))
+                ).page
+              )
+            )
+          ),
+          Valid
         )
       )
       forAll(table) { (sections, expected) =>

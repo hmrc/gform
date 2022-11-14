@@ -209,7 +209,8 @@ trait FormTemplateSupport {
     name: String,
     pages: NonEmptyList[Page],
     defaultPage: Option[Page] = None,
-    addAnotherQuestion: FormComponent = addAnotherQuestion
+    addAnotherQuestion: FormComponent = addAnotherQuestion,
+    pageIdToDisplayAfterRemove: Option[PageId] = None
   ) =
     Section.AddToList(
       toSmartString(name),
@@ -226,6 +227,7 @@ trait FormTemplateSupport {
       None,
       None,
       None,
-      defaultPage
+      defaultPage,
+      pageIdToDisplayAfterRemove = pageIdToDisplayAfterRemove
     )
 }
