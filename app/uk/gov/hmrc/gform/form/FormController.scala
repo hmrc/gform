@@ -112,6 +112,10 @@ class FormController(
     formService.delete(formId).asNoContent
   }
 
+  def unstuck(formId: FormId): Action[AnyContent] = formAction("unstuck", formId) { implicit request =>
+    formService.unstuck(formId).asNoContent
+  }
+
   def deleteFile(
     userId: UserId,
     formTemplateId: FormTemplateId,

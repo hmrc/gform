@@ -18,6 +18,7 @@ GET           /forms/:userId/:formTemplateId                                    
 GET           /forms/:userId/:formTemplateId/:accessCode                                                uk.gov.hmrc.gform.form.FormController.get(userId: UserId, formTemplateId: String, accessCode: AccessCode)
 
 POST          /forms/:formId/delete                                                                     uk.gov.hmrc.gform.form.FormController.delete(formId: FormId)
+POST          /forms/:formId/unstuck                                                                    uk.gov.hmrc.gform.form.FormController.unstuck(formId: FormId)
 
 POST          /forms/:formId/enrolment-callback                                                         uk.gov.hmrc.gform.form.FormController.enrolmentCallBack(formId: FormId)
 
@@ -66,6 +67,7 @@ POST          /upscan/callback/:formComponentId/:envelopeId                     
 GET           /upscan/:reference                                                                        uk.gov.hmrc.gform.upscan.UpscanController.reference(reference: UpscanReference)
 DELETE        /upscan/:reference                                                                        uk.gov.hmrc.gform.upscan.UpscanController.deleteReference(reference: UpscanReference)
 
+GET           /formStatistics/signed-forms                                                              uk.gov.hmrc.gform.formstatistics.FormStatisticsController.getSignedFormDetails()
 GET           /formStatistics/:formTemplateId                                                           uk.gov.hmrc.gform.formstatistics.FormStatisticsController.getFormCount(formTemplateId: FormTemplateId)
 GET           /formStatistics/:formTemplateId/details                                                   uk.gov.hmrc.gform.formstatistics.FormStatisticsController.getFormCountDetails(formTemplateId: FormTemplateId)
 

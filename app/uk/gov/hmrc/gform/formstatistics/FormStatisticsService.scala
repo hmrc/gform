@@ -16,16 +16,17 @@
 
 package uk.gov.hmrc.gform.formstatistics
 
+import java.time.LocalDateTime
 import org.mongodb.scala.bson.Document
 import org.mongodb.scala.bson.{ BsonArray, BsonDocument }
 import org.mongodb.scala.model.Accumulators.{ first, sum }
 import org.mongodb.scala.model.{ Aggregates, Updates }
-import org.mongodb.scala.model.Filters.{ and, equal, gte, notEqual, regex }
+import org.mongodb.scala.model.Filters.{ and, equal, gte, lte, notEqual, regex }
 import org.mongodb.scala.model.Projections.{ computed, excludeId }
-import org.mongodb.scala.model.Sorts.descending
+import org.mongodb.scala.model.Sorts.{ ascending, descending }
 import uk.gov.hmrc.gform.formtemplate.FormTemplateService
 import uk.gov.hmrc.gform.repo.Repo
-import uk.gov.hmrc.gform.sharedmodel.form.{ Form, SavedForm, SavedFormDetail, Submitted }
+import uk.gov.hmrc.gform.sharedmodel.form.{ Form, SavedForm, SavedFormDetail, Signed, SignedFormDetails, Submitted }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, NotPermitted }
 import uk.gov.hmrc.mongo.play.json.Codecs
 import uk.gov.hmrc.mongo.play.json.Codecs.JsonOps
@@ -36,6 +37,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 trait FormStatisticsAlgebra[F[_]] {
   def getSavedFormCount(formTemplateId: FormTemplateId): F[SavedForm]
   def getSavedFormDetails(formTemplateId: FormTemplateId): F[Seq[SavedFormDetail]]
+  def getSignedFormDetails(): F[Seq[SignedFormDetails]]
 }
 
 class FormStatisticsService(formRepo: Repo[Form], formTemplateService: FormTemplateService)(implicit
@@ -129,5 +131,34 @@ class FormStatisticsService(formRepo: Repo[Form], formTemplateService: FormTempl
     formRepo
       .aggregate(pipeline)
       .map(_.map(Codecs.fromBson[SavedFormDetail]))
+  }
+
+  def getSignedFormDetails(): Future[Seq[SignedFormDetails]] = {
+    val filter = Aggregates.filter(
+      equal("data.form.status", Signed.toString)
+    )
+
+    val project = Aggregates.project(
+      Updates.combine(
+        computed("lastUpdated", "$modifiedDetails.lastUpdated"),
+        computed("envelopeId", "$data.form.envelopeId"),
+        computed("formTemplateId", "$data.form.formTemplateId")
+      )
+    )
+
+    val ignoreRecent = Aggregates.filter(
+      lte(
+        "lastUpdated",
+        LocalDateTime.now(ZoneId.of("Europe/London")).minusMinutes(2)
+      ) // Let's return forms which are older than 2 minutes
+    )
+
+    val sort = Aggregates.sort(ascending("lastUpdated"))
+
+    val pipeline = List(filter, project, ignoreRecent, sort)
+
+    formRepo
+      .aggregate(pipeline)
+      .map(_.map(Codecs.fromBson[SignedFormDetails]))
   }
 }
