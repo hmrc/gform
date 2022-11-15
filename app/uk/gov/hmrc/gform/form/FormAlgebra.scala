@@ -31,6 +31,8 @@ trait FormAlgebra[F[_]] {
 
   def delete(formId: FormId)(implicit hc: HeaderCarrier): F[Unit]
 
+  def unstuck(formId: FormId)(implicit hc: HeaderCarrier): F[Unit]
+
   def create(
     userId: UserId,
     formTemplateId: FormTemplateId,

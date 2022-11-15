@@ -28,7 +28,7 @@ import uk.gov.hmrc.gform.formmetadata.{ FormMetadata, FormMetadataAlgebra }
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.logging.Loggers
 import uk.gov.hmrc.gform.save4later.FormPersistenceAlgebra
-import uk.gov.hmrc.gform.sharedmodel.form._
+import uk.gov.hmrc.gform.sharedmodel.form.{ FormStatus, _ }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ BySubmissionReference, FormAccessCodeForAgents, FormComponentId, FormTemplate, FormTemplateId }
 import uk.gov.hmrc.gform.sharedmodel.{ AccessCode, SubmissionRef, UserId }
 import uk.gov.hmrc.gform.time.TimeProvider
@@ -67,6 +67,9 @@ class FormService[F[_]: Monad](
 
   def delete(formId: FormId)(implicit hc: HeaderCarrier): F[Unit] =
     formPersistence.delete(formId)
+
+  def unstuck(formId: FormId)(implicit hc: HeaderCarrier): F[Unit] =
+    forceUpdateFormStatus(formId, InProgress)
 
   private def createNewFormData(
     userId: UserId,

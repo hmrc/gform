@@ -59,6 +59,9 @@ class FormModule(
     override def delete(formId: FormId)(implicit hc: HeaderCarrier): FOpt[Unit] =
       fromFutureA(formService.delete(formId))
 
+    override def unstuck(formId: FormId)(implicit hc: HeaderCarrier): FOpt[Unit] =
+      fromFutureA(formService.unstuck(formId))
+
     override def create(
       userId: UserId,
       formTemplateId: FormTemplateId,

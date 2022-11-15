@@ -41,4 +41,12 @@ class FormStatisticsController(
       .getSavedFormDetails(formTemplateId)
       .map(savedFormDetail => Ok(Json.toJson(savedFormDetail)))
   }
+
+  def getSignedFormDetails() = Action.async { _ =>
+    formStatisticsService
+      .getSignedFormDetails()
+      .map { signedFormDetails =>
+        Ok(Json.toJson(signedFormDetails))
+      }
+  }
 }
