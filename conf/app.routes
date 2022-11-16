@@ -81,3 +81,4 @@ GET           /translation/:formTemplateId/debug                                
 POST          /translation/:formTemplateId                                                              uk.gov.hmrc.gform.translation.TranslationController.translateCsv(formTemplateId: FormTemplateId)
 
 POST          /sdes/callback                                                                            uk.gov.hmrc.gform.sdes.SdesCallbackController.callback
+GET           /sdes/search/:processed/:page/:pageSize                                                   uk.gov.hmrc.gform.sdes.SdesController.search(processed: Boolean, page: Int, pageSize: Int)

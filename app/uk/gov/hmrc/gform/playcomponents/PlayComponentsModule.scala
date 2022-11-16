@@ -88,7 +88,8 @@ class PlayComponentsModule(
     envelopeModule.envelopeController,
     objectStoreModule.objectStoreController,
     translationModule.translationController,
-    sdesModule.sdesCallbackController
+    sdesModule.sdesCallbackController,
+    sdesModule.sdesController
   )
 
   private val healthController =

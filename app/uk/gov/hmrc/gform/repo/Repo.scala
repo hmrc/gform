@@ -102,6 +102,11 @@ class Repo[T: OWrites: Manifest](
       .countDocuments(selector)
       .toFuture()
 
+  def countAll(): Future[Long] =
+    underlying.collection
+      .countDocuments()
+      .toFuture()
+
   def aggregate(pipeline: Seq[Bson]): Future[Seq[BsonValue]] =
     underlying.collection
       .aggregate[BsonValue](pipeline)

@@ -22,8 +22,10 @@ import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.repo.Repo
+import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
-import uk.gov.hmrc.gform.sharedmodel.sdes.{ CorrelationId, SdesSubmission }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
+import uk.gov.hmrc.gform.sharedmodel.sdes.{ CorrelationId, SdesSubmission, SdesSubmissionPageData }
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.objectstore.client.ObjectSummaryWithMd5
@@ -72,22 +74,39 @@ class SdesModule(
     new SdesConnector(wSHttpModule.auditableWSHttp, sdesBaseUrl, sdesBasePath, sdesHeaders)
 
   val sdesService: SdesAlgebra[Future] =
-    new SdesService(sdesConnector, repoSdesSubmission, sdesRecipientOrSender, sdesInformationType, fileLocationUrl)
+    new SdesService(
+      sdesConnector,
+      repoSdesSubmission,
+      sdesRecipientOrSender,
+      sdesInformationType,
+      fileLocationUrl
+    )
 
   val sdesCallbackController: SdesCallbackController =
     new SdesCallbackController(configModule.controllerComponents, sdesService, objectStoreModule.objectStoreService)
 
+  val sdesController: SdesController =
+    new SdesController(configModule.controllerComponents, sdesService)
+
   val foptSdesService: SdesAlgebra[FOpt] = new SdesAlgebra[FOpt] {
-    override def notifySDES(envelopeId: EnvelopeId, objWithSummary: ObjectSummaryWithMd5)(implicit
+    override def notifySDES(
+      envelopeId: EnvelopeId,
+      formTemplateId: FormTemplateId,
+      submissionRef: SubmissionRef,
+      objWithSummary: ObjectSummaryWithMd5
+    )(implicit
       hc: HeaderCarrier
     ): FOpt[Unit] =
-      fromFutureA(sdesService.notifySDES(envelopeId, objWithSummary))
+      fromFutureA(sdesService.notifySDES(envelopeId, formTemplateId, submissionRef, objWithSummary))
 
     override def saveSdesSubmission(sdesSubmission: SdesSubmission): FOpt[Unit] =
       fromFutureA(sdesService.saveSdesSubmission(sdesSubmission))
 
     override def findSdesSubmission(correlationId: CorrelationId): FOpt[Option[SdesSubmission]] =
       fromFutureA(sdesService.findSdesSubmission(correlationId))
+
+    override def search(processed: Boolean, page: Int, pageSize: Int): FOpt[SdesSubmissionPageData] =
+      fromFutureA(sdesService.search(processed, page, pageSize))
   }
 
 }
