@@ -17,10 +17,11 @@
 package uk.gov.hmrc.gform.sharedmodel.sdes
 
 import julienrf.json.derived
-import play.api.libs.json.{ Format, JsString, OFormat }
-import uk.gov.hmrc.gform.sharedmodel.ValueClassFormat
+import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.sdes.NotificationStatus.FileReady
+import uk.gov.hmrc.gform.sharedmodel.{ SubmissionRef, ValueClassFormat }
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
 import java.time.Instant
@@ -29,6 +30,8 @@ import java.util.UUID
 final case class SdesSubmission(
   _id: CorrelationId,
   envelopeId: EnvelopeId,
+  formTemplateId: FormTemplateId,
+  submissionRef: SubmissionRef,
   submittedAt: Instant = Instant.now,
   isProcessed: Boolean = false,
   status: NotificationStatus,
@@ -37,8 +40,14 @@ final case class SdesSubmission(
 )
 
 object SdesSubmission {
-  def createSdesSubmission(envelopeId: EnvelopeId) =
-    SdesSubmission(CorrelationId(UUID.randomUUID().toString), envelopeId, status = FileReady)
+  def createSdesSubmission(envelopeId: EnvelopeId, formTemplateId: FormTemplateId, submissionRef: SubmissionRef) =
+    SdesSubmission(
+      CorrelationId(UUID.randomUUID().toString),
+      envelopeId,
+      formTemplateId,
+      submissionRef,
+      status = FileReady
+    )
 
   implicit val formatUUID: Format[UUID] =
     Format(_.validate[String].map(UUID.fromString), uuid => JsString(uuid.toString))
@@ -46,6 +55,8 @@ object SdesSubmission {
   implicit val format: OFormat[SdesSubmission] = {
     implicit val dtf: Format[Instant] = MongoJavatimeFormats.instantFormat
     implicit val envelopeIdFormat: Format[EnvelopeId] = EnvelopeId.vformat
+    implicit val formTemplateIdFormat: Format[FormTemplateId] = FormTemplateId.vformat
+    implicit val submissionRefFormat: Format[SubmissionRef] = SubmissionRef.vformat
     derived.oformat()
   }
 }

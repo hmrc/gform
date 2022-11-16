@@ -83,7 +83,8 @@ class SubmissionService(
         if (formTemplate.isObjectStore)
           for {
             objectSummary <- objectStoreAlgebra.zipFiles(submission.envelopeId)
-            _             <- sdesAlgebra.notifySDES(submission.envelopeId, objectSummary)
+            _ <-
+              sdesAlgebra.notifySDES(submission.envelopeId, formTemplate._id, submission.submissionRef, objectSummary)
           } yield ()
         else fromFutureA(Future.unit)
       emailAddress = email.getEmailAddress(form, submissionData.maybeEmailAddress)
