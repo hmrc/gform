@@ -27,7 +27,7 @@ import cats.syntax.option._
 import cats.syntax.traverse._
 import play.api.libs.json._
 import uk.gov.hmrc.gform.core.Opt
-import uk.gov.hmrc.gform.core.parsers.{ BasicParsers, FormatParser, LabelSizeParser, OverseasAddressParser, PresentationHintParser, SummaryListParser, ValueParser }
+import uk.gov.hmrc.gform.core.parsers.{ AddressParser, BasicParsers, FormatParser, LabelSizeParser, OverseasAddressParser, PresentationHintParser, SummaryListParser, ValueParser }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.formtemplate.FormComponentMakerService._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.JsonUtils._
@@ -357,13 +357,35 @@ class FormComponentMaker(json: JsValue) {
     } yield result
   }
 
-  private lazy val addressOpt: Opt[Address] = international match {
-    case IsInternational(InternationalYes) => Address(international = true).asRight
-    case IsInternational(InternationalNo)  => Address(international = false).asRight
+  private val internationalOpt: Opt[Boolean] = international match {
+    case IsInternational(InternationalYes) => true.asRight
+    case IsInternational(InternationalNo)  => false.asRight
     case invalidInternational =>
       UnexpectedState(s"""|Unsupported type of value for address field
                           |Id: $id
                           |Total: $invalidInternational""".stripMargin).asLeft
+  }
+
+  private def mandatoryCityForNonInternationnal(
+    maybeCityMandatory: Option[Address.Configurable.Mandatory],
+    international: Boolean
+  ): Opt[Unit] =
+    if (international && maybeCityMandatory.contains(Address.Configurable.Mandatory.City))
+      Left(UnexpectedState("'cityMandatory' is not compatible with 'international' address toggle"))
+    else
+      Right(())
+
+  private lazy val addressOpt: Opt[Address] = {
+
+    import Address.Configurable._
+    for {
+      city          <- AddressParser.mandatoryField(mandatoryCity, Mandatory.City)
+      international <- internationalOpt
+      _             <- mandatoryCityForNonInternationnal(city, international)
+    } yield {
+      val mandatoryFields: List[Mandatory] = List(city).flatten
+      Address(international, mandatoryFields)
+    }
   }
 
   private lazy val calendarDateOpt: Opt[CalendarDate.type] = Right(CalendarDate)

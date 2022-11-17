@@ -85,7 +85,10 @@ case object PostcodeLookup extends ComponentType
 
 case object TaxPeriodDate extends ComponentType
 
-case class Address(international: Boolean) extends ComponentType {
+case class Address(
+  international: Boolean,
+  mandatoryFields: List[Address.Configurable.Mandatory]
+) extends ComponentType {
   def fields(id: FormComponentId): NonEmptyList[FormComponentId] = Address.fields(id)
 
   def alternateNamesFor(fcId: FormComponentId): Map[StructuredFormDataFieldNamePurpose, FieldName] =
@@ -94,6 +97,14 @@ case class Address(international: Boolean) extends ComponentType {
 }
 
 object Address {
+  object Configurable {
+    sealed trait Mandatory
+    object Mandatory {
+      case object City extends Mandatory
+      implicit val format: OFormat[Mandatory] = derived.oformat()
+    }
+  }
+
   val mandatoryFields: FormComponentId => List[FormComponentId] = id => List("street1").map(id.withSuffix)
   val optionalFields: FormComponentId => List[FormComponentId] = id =>
     List("street2", "street3", "street4", "uk", "postcode", "country").map(id.withSuffix)
@@ -461,7 +472,7 @@ object ComponentType {
       case CalendarDate                        => Nil
       case PostcodeLookup                      => Nil
       case TaxPeriodDate                       => Nil
-      case Address(_)                          => Nil
+      case Address(_, _)                       => Nil
       case OverseasAddress(_, _, value, _)     => LeafExpr(path, value)
       case Choice(_, options, _, _, hints, optionHelpText, _, _, _, _) =>
         LeafExpr(path + "choices", options) ++

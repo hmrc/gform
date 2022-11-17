@@ -50,7 +50,7 @@ trait ComponentTypeGen {
       value          <- Gen.option(DateValueGen.dateValueGen)
     } yield Date(constraintType, offset, value)
 
-  def addressGen: Gen[Address] = PrimitiveGen.booleanGen.map(Address(_))
+  def addressGen: Gen[Address] = PrimitiveGen.booleanGen.map(Address(_, List.empty[Address.Configurable.Mandatory]))
 
   def choiceTypeGen: Gen[ChoiceType] = Gen.oneOf(Radio, Checkbox, YesNo)
 

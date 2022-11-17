@@ -786,7 +786,7 @@ object FormTemplateValidator {
     case Date(_, _, _)                        => Valid
     case CalendarDate                         => Valid
     case TaxPeriodDate                        => Valid
-    case Address(_)                           => Valid
+    case Address(_, _)                        => Valid
     case Choice(_, _, _, _, _, _, _, _, _, _) => Valid
     case RevealingChoice(revealingChoiceElements, _) =>
       validate(revealingChoiceElements.toList.flatMap(_.revealingFields.map(_.`type`)), formTemplate)
