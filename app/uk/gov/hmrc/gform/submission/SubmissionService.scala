@@ -22,6 +22,7 @@ import org.mongodb.scala.model.Filters.equal
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.core.{ fromFutureA, _ }
 import uk.gov.hmrc.gform.email.EmailService
+import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.formredirect.{ FormRedirect, FormRedirectService }
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
@@ -48,6 +49,7 @@ class SubmissionService(
   formRedirectService: FormRedirectService,
   email: EmailService,
   timeProvider: TimeProvider,
+  envelopeAlgebra: EnvelopeAlgebra[FOpt],
   objectStoreAlgebra: ObjectStoreAlgebra[FOpt],
   sdesAlgebra: SdesAlgebra[FOpt]
 )(implicit ex: ExecutionContext) {
@@ -79,14 +81,9 @@ class SubmissionService(
       submissionInfo = DestinationSubmissionInfo(customerId, submission)
       modelTree <- createModelTreeForSingleFormSubmission(form, formTemplate, submissionData, submission.submissionRef)
       _         <- destinationsSubmitter.send(submissionInfo, modelTree, Some(form.formData), submissionData.l)
-      _ <-
-        if (formTemplate.isObjectStore)
-          for {
-            objectSummary <- objectStoreAlgebra.zipFiles(submission.envelopeId)
-            _ <-
-              sdesAlgebra.notifySDES(submission.envelopeId, formTemplate._id, submission.submissionRef, objectSummary)
-          } yield ()
-        else fromFutureA(Future.unit)
+      _ <- if (formTemplate.isObjectStore)
+             zipAndNotify(submission.envelopeId, formTemplate._id, submission.submissionRef)
+           else fromFutureA(Future.unit)
       emailAddress = email.getEmailAddress(form, submissionData.maybeEmailAddress)
       _ <- fromFutureA(
              formTemplate.emailTemplateId.fold(().pure[Future])(emailTemplateId =>
@@ -97,6 +94,21 @@ class SubmissionService(
                )
              )
            )
+    } yield ()
+
+  private def zipAndNotify(envelopeId: EnvelopeId, formTemplateId: FormTemplateId, submissionRef: SubmissionRef)(
+    implicit hc: HeaderCarrier
+  ): FOpt[Unit] =
+    for {
+      envelope <- envelopeAlgebra.get(envelopeId)
+      _ <- if (envelope.files.size > 0) {
+             for {
+               objectSummary <- objectStoreAlgebra.zipFiles(envelopeId)
+               _ <-
+                 sdesAlgebra
+                   .notifySDES(envelopeId, formTemplateId, submissionRef, objectSummary)
+             } yield ()
+           } else fromFutureA(Future.unit)
     } yield ()
 
   /* When FormTemplateId has a new current version, but user started journey with old FormTemplateId version, we need to migrate

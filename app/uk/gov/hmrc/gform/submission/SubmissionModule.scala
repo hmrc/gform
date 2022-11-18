@@ -102,6 +102,7 @@ class SubmissionModule(
     formTemplateModule.formRedirectService,
     emailModule.emailLogic,
     timeModule.timeProvider,
+    envelopeModule.foptEnvelopeService,
     objectStoreModule.foptObjectStoreService,
     sdesModule.foptSdesService
   )
