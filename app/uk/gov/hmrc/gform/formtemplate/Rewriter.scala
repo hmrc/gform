@@ -145,6 +145,13 @@ trait Rewriter {
 
     val redirectsIncludeIfs: List[IncludeIf] = pages.flatMap(_.redirects).flatMap(_.toList.map(_.`if`))
 
+    val confirmationRedirectsIncludeIfs: List[IncludeIf] =
+      for {
+        page         <- pages
+        confirmation <- page.confirmation.toList
+        redirect     <- confirmation.redirects.toList
+      } yield redirect.`if`
+
     val ifElses: List[IfElse] =
       implicitly[LeafExpr[FormTemplate]]
         .exprs(TemplatePath.root, formTemplate)
@@ -157,7 +164,7 @@ trait Rewriter {
         includeIf.toList ++ pages.toList.flatMap(_.includeIf.toList) ++ fields.fold(List.empty[IncludeIf])(
           _.toList.flatMap(_.includeIf.toList)
         )
-    } ++ fieldsIncludeIfs ++ acknowledgementSectionIncludeIfs ++ summarySectionIncludeIfs ++ choiceIncludeIfs ++ miniSummaryListIncludeIfs ++ redirectsIncludeIfs
+    } ++ fieldsIncludeIfs ++ acknowledgementSectionIncludeIfs ++ summarySectionIncludeIfs ++ choiceIncludeIfs ++ miniSummaryListIncludeIfs ++ redirectsIncludeIfs ++ confirmationRedirectsIncludeIfs
 
     def validate(
       c: String,
@@ -380,6 +387,12 @@ trait Rewriter {
           _.toList.map(r => r.copy(`if` = replaceIncludeIf(Some(r.`if`)).getOrElse(r.`if`))).toNel
         )
 
+      def replaceConfirmationRedirects(redirects: NonEmptyList[ConfirmationRedirectCtx]) =
+        redirects.map(r => r.copy(`if` = replaceIncludeIf(Some(r.`if`)).getOrElse(r.`if`)))
+
+      def replaceConfirmation(confirmation: Option[Confirmation]): Option[Confirmation] =
+        confirmation.map(c => c.copy(redirects = replaceConfirmationRedirects(c.redirects)))
+
       def updateSection(section: Section): Section =
         section match {
           case s: Section.NonRepeatingPage =>
@@ -387,7 +400,8 @@ trait Rewriter {
               page = s.page.copy(
                 includeIf = replaceIncludeIf(s.page.includeIf),
                 fields = replaceFields(s.page.fields),
-                redirects = replaceRedirects(s.page.redirects)
+                redirects = replaceRedirects(s.page.redirects),
+                confirmation = replaceConfirmation(s.page.confirmation)
               )
             )
           case s: Section.RepeatingPage =>
@@ -395,7 +409,8 @@ trait Rewriter {
               page = s.page.copy(
                 includeIf = replaceIncludeIf(s.page.includeIf),
                 fields = replaceFields(s.page.fields),
-                redirects = replaceRedirects(s.page.redirects)
+                redirects = replaceRedirects(s.page.redirects),
+                confirmation = replaceConfirmation(s.page.confirmation)
               )
             )
           case s: Section.AddToList =>
@@ -405,7 +420,8 @@ trait Rewriter {
                 page.copy(
                   includeIf = replaceIncludeIf(page.includeIf),
                   fields = replaceFields(page.fields),
-                  redirects = replaceRedirects(page.redirects)
+                  redirects = replaceRedirects(page.redirects),
+                  confirmation = replaceConfirmation(page.confirmation)
                 )
               ),
               fields = replaceFieldsNel(s.fields)

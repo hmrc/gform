@@ -14,21 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel.formtemplate
+package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 
-import play.api.libs.json.{ Json, OFormat }
-import cats.data.NonEmptyList
+import org.scalacheck.Gen
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.ConfirmationRedirectCtx
 
-final case class Confirmation(
-  question: FormComponent,
-  redirects: NonEmptyList[ConfirmationRedirectCtx]
-)
-
-object Confirmation {
-  import JsonUtils._
-  implicit val confirmationFormat: OFormat[Confirmation] = Json.format[Confirmation]
-
-  implicit val leafExprs: LeafExpr[Confirmation] = (path: TemplatePath, t: Confirmation) =>
-    LeafExpr(path + "question", t.question) ++ LeafExpr(path + "redirects", t.redirects)
-
+class ConfirmationRedirectGen {
+  def redirectGen: Gen[ConfirmationRedirectCtx] =
+    for {
+      ifExpr <- IncludeIfGen.includeIfGen
+      pageId <- PageIdGen.pageIdGen
+    } yield ConfirmationRedirectCtx(ifExpr, pageId)
 }
+
+object ConfirmationRedirectGen extends ConfirmationRedirectGen

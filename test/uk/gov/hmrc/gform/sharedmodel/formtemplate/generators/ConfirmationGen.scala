@@ -22,9 +22,10 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.Confirmation
 trait ConfirmationGen {
   def confirmationGen: Gen[Confirmation] =
     for {
-      question <- FormComponentGen.formComponentGen(1)
-      pageId   <- PageIdGen.pageIdGen
-    } yield Confirmation(question, pageId)
+      question  <- FormComponentGen.formComponentGen(1)
+      pageId    <- PageIdGen.pageIdGen
+      redirects <- Gen.option(PrimitiveGen.oneOrMoreGen(ConfirmationRedirectGen.redirectGen))
+    } yield Confirmation(question, pageId, redirects)
 }
 
 object ConfirmationGen extends ConfirmationGen
