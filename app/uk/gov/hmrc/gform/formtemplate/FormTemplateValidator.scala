@@ -1208,7 +1208,7 @@ final case class ConfirmationPageValidation(
           Valid
         else
           Invalid(
-            s"No confirmation pageId: ${pageId.id}' found. "
+            s"No confirmation pageId: ${pageId.id} found."
           )
       )
     this.copy(

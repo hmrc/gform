@@ -25,7 +25,16 @@
           "label": "I confirm that entered detail are correct",
           "format": "yesno"
         },
-        "pageId": "bankAccountPage"
+        "redirects": [
+            {
+              "if": "${contentInfo = 0}",
+              "pageId": "bankAccountPage1"
+            },
+            {
+              "if": "${contentInfo = 1}",
+              "pageId": "bankAccountPage2"
+            }
+         ]
       }
     }
 

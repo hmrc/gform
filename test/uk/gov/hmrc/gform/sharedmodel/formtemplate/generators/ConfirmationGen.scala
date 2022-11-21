@@ -23,9 +23,8 @@ trait ConfirmationGen {
   def confirmationGen: Gen[Confirmation] =
     for {
       question  <- FormComponentGen.formComponentGen(1)
-      pageId    <- PageIdGen.pageIdGen
-      redirects <- Gen.option(PrimitiveGen.oneOrMoreGen(ConfirmationRedirectGen.redirectGen))
-    } yield Confirmation(question, pageId, redirects)
+      redirects <- PrimitiveGen.oneOrMoreGen(ConfirmationRedirectGen.redirectGen)
+    } yield Confirmation(question, redirects)
 }
 
 object ConfirmationGen extends ConfirmationGen
