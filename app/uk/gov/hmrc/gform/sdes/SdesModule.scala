@@ -77,8 +77,8 @@ class SdesModule(
     new SdesService(
       sdesConnector,
       repoSdesSubmission,
-      sdesRecipientOrSender,
       sdesInformationType,
+      sdesRecipientOrSender,
       fileLocationUrl
     )
 
