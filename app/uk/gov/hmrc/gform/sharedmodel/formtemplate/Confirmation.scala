@@ -21,7 +21,7 @@ import cats.data.NonEmptyList
 
 final case class Confirmation(
   question: FormComponent,
-  redirects: NonEmptyList[ConfirmationRedirectCtx]
+  redirects: NonEmptyList[ConfirmationRedirect]
 )
 
 object Confirmation {

@@ -500,7 +500,7 @@ object Substituter {
 
   implicit def confirmationRedirectSubstituter[A](implicit
     ev2: Substituter[A, BooleanExpr]
-  ): Substituter[A, ConfirmationRedirectCtx] = (substitutions, r) =>
+  ): Substituter[A, ConfirmationRedirect] = (substitutions, r) =>
     r.copy(
       `if` = r.`if`(substitutions)
     )

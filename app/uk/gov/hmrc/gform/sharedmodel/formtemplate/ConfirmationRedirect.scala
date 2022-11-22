@@ -19,14 +19,14 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 import julienrf.json.derived
 import play.api.libs.json._
 
-final case class ConfirmationRedirectCtx(
+final case class ConfirmationRedirect(
   `if`: IncludeIf,
   pageId: PageId
 )
 
-object ConfirmationRedirectCtx {
-  implicit val format: OFormat[ConfirmationRedirectCtx] = derived.oformat()
+object ConfirmationRedirect {
+  implicit val format: OFormat[ConfirmationRedirect] = derived.oformat()
 
-  implicit val leafExprs: LeafExpr[ConfirmationRedirectCtx] = (path: TemplatePath, r: ConfirmationRedirectCtx) =>
+  implicit val leafExprs: LeafExpr[ConfirmationRedirect] = (path: TemplatePath, r: ConfirmationRedirect) =>
     LeafExpr(path + "if", r.`if`)
 }

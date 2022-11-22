@@ -387,7 +387,7 @@ trait Rewriter {
           _.toList.map(r => r.copy(`if` = replaceIncludeIf(Some(r.`if`)).getOrElse(r.`if`))).toNel
         )
 
-      def replaceConfirmationRedirects(redirects: NonEmptyList[ConfirmationRedirectCtx]) =
+      def replaceConfirmationRedirects(redirects: NonEmptyList[ConfirmationRedirect]) =
         redirects.map(r => r.copy(`if` = replaceIncludeIf(Some(r.`if`)).getOrElse(r.`if`)))
 
       def replaceConfirmation(confirmation: Option[Confirmation]): Option[Confirmation] =
