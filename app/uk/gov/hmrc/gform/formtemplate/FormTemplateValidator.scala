@@ -210,6 +210,7 @@ object FormTemplateValidator {
       case ReferenceInfo.SizeExpr(path, Size(formComponentId, _)) if !allFcIds(formComponentId) =>
         invalid(path, formComponentId)
       case ReferenceInfo.LinkCtxExpr(path, LinkCtx(PageLink(pageId))) if !allPageIds.contains(pageId) =>
+        lxol.pp.log(pageId, "[77777]")
         Invalid(s"${path.path}: Page id '${pageId.id}' doesn't exist in the form")
       case ReferenceInfo.CsvCountryCheckExpr(path, CsvCountryCheck(formComponentId, _)) if !allFcIds(formComponentId) =>
         invalid(path, formComponentId)

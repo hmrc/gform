@@ -72,12 +72,14 @@ trait Rewriter {
       case dp: Destinations.DestinationPrint => Map.empty[FormComponentId, ComponentType]
     }
 
+    def questionFcid(page: Page) = lookupFromPage(page.confirmation.toList.map(_.question))
+
     val fcLookup: Map[FormComponentId, ComponentType] =
       formTemplate.formKind.allSections.foldLeft(fcLookupDeclaration) {
-        case (acc, Section.NonRepeatingPage(page)) => acc ++ lookupFromPage(page.fields)
-        case (acc, Section.RepeatingPage(page, _)) => acc ++ lookupFromPage(page.fields)
+        case (acc, Section.NonRepeatingPage(page)) => acc ++ lookupFromPage(page.fields) ++ questionFcid(page)
+        case (acc, Section.RepeatingPage(page, _)) => acc ++ lookupFromPage(page.fields) ++ questionFcid(page)
         case (acc, Section.AddToList(_, _, _, _, _, _, _, _, _, pages, _, _, _, _, _, _, _, _)) =>
-          acc ++ pages.toList.flatMap(page => lookupFromPage(page.fields))
+          acc ++ pages.toList.flatMap(page => lookupFromPage(page.fields) ++ questionFcid(page))
       }
 
     val validIfsDeclaration = formTemplate.destinations match {
