@@ -1201,15 +1201,18 @@ final case class ConfirmationPageValidation(
 ) {
   def addPageId(pageId: PageId) = this.copy(pageIds = pageIds + pageId)
   def validateConfirmation(confirmation: Confirmation) = {
-    val pageId = confirmation.pageId
-    this.copy(
-      validationResult =
+    val confirmationPageIdValidations: List[ValidationResult] = confirmation.redirects.toList
+      .map(_.pageId)
+      .map(pageId =>
         if (pageIds.contains(pageId))
-          validationResult
+          Valid
         else
           Invalid(
-            s"No pageId '${pageId.id}' found. Confirmation question '${confirmation.question.id.value}' should confirm pageId: '${pageId.id}'"
-          ) :: validationResult
+            s"No confirmation pageId: ${pageId.id} found."
+          )
+      )
+    this.copy(
+      validationResult = confirmationPageIdValidations ++ validationResult
     )
   }
 }

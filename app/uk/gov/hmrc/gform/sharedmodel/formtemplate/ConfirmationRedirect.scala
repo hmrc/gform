@@ -16,19 +16,17 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
-import play.api.libs.json.{ Json, OFormat }
-import cats.data.NonEmptyList
+import julienrf.json.derived
+import play.api.libs.json._
 
-final case class Confirmation(
-  question: FormComponent,
-  redirects: NonEmptyList[ConfirmationRedirect]
+final case class ConfirmationRedirect(
+  `if`: IncludeIf,
+  pageId: PageId
 )
 
-object Confirmation {
-  import JsonUtils._
-  implicit val confirmationFormat: OFormat[Confirmation] = Json.format[Confirmation]
+object ConfirmationRedirect {
+  implicit val format: OFormat[ConfirmationRedirect] = derived.oformat()
 
-  implicit val leafExprs: LeafExpr[Confirmation] = (path: TemplatePath, t: Confirmation) =>
-    LeafExpr(path + "question", t.question) ++ LeafExpr(path + "redirects", t.redirects)
-
+  implicit val leafExprs: LeafExpr[ConfirmationRedirect] = (path: TemplatePath, r: ConfirmationRedirect) =>
+    LeafExpr(path + "if", r.`if`)
 }

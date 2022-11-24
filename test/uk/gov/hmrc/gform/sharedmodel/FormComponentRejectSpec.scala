@@ -61,7 +61,7 @@ class FormComponentRejectSpec extends Spec with TableDrivenPropertyChecks {
       ("revealing-choice-unique-ids",               "Some FieldIds are defined more than once: List(companyName, tradingName)"),
       ("email-verification-forward-reference",      "id 'code' named in email verification is forward reference, which is not permitted"),
       ("email-verification-invalid-reference",      "id 'code2' named in email verification does not exist in the form"),
-      ("confirming-invalid-page-id",                "No pageId 'bankAccountPage' found. Confirmation question 'confirmationQuestion' should confirm pageId: 'bankAccountPage'"),
+      ("confirming-invalid-page-id",                "No confirmation pageId: bankAccountPage1 found."),
       ("postcode-with-other-component",             "Postcode lookup 'postcode' cannot be on the page with other components (exception are info components)"),
       ("postcode-multiple-instances",               "Only one Postcode lookup on a page is allowed. Some page has 2 postcode lookups: postcode, postcode2"),
       ("postcode-in-revealing-choice",              "Postcode lookup 'postcode' cannot be inside Revealing choice or Group"),

@@ -498,6 +498,13 @@ object Substituter {
       `if` = r.`if`(substitutions)
     )
 
+  implicit def confirmationRedirectSubstituter[A](implicit
+    ev2: Substituter[A, BooleanExpr]
+  ): Substituter[A, ConfirmationRedirect] = (substitutions, r) =>
+    r.copy(
+      `if` = r.`if`(substitutions)
+    )
+
   implicit def exitPageSubstituter[A](implicit
     ev: Substituter[A, Expr],
     ev2: Substituter[A, BooleanExpr]

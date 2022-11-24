@@ -54,7 +54,7 @@ case class Page(
       case IsGroup(group)                     => group.fields
       case IsRevealingChoice(revealingChoice) => revealingChoice.options.toList.flatMap(_.revealingFields)
       case otherwise                          => Nil
-    })
+    } ++ confirmation.toList.map(_.question))
     .map(_.id)
 
   val numericFields: List[FormComponentId] = allFormComponents.filter(_.isNumeric).map(_.id)
