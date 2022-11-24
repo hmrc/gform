@@ -17,8 +17,6 @@
 package uk.gov.hmrc.gform.sdes
 
 import org.mongodb.scala.model.Filters.equal
-import org.slf4j.LoggerFactory
-import play.api.libs.json.Json
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
@@ -55,7 +53,6 @@ class SdesService(
 )(implicit
   ec: ExecutionContext
 ) extends SdesAlgebra[Future] {
-  private val logger = LoggerFactory.getLogger(getClass)
 
   override def notifySDES(
     envelopeId: EnvelopeId,
@@ -67,7 +64,6 @@ class SdesService(
   ): Future[Unit] = {
     val sdesSubmission = SdesSubmission.createSdesSubmission(envelopeId, formTemplateId, submissionRef)
     val notifyRequest = createNotifyRequest(objWithSummary, sdesSubmission._id.value)
-    logger.debug(s"SDES notification request: ${Json.stringify(Json.toJson(notifyRequest))}")
     for {
       _ <- sdesConnector.notifySDES(notifyRequest)
       _ <- saveSdesSubmission(sdesSubmission)
