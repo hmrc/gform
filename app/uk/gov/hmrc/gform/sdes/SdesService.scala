@@ -67,7 +67,6 @@ class SdesService(
   ): Future[Unit] = {
     val sdesSubmission = SdesSubmission.createSdesSubmission(envelopeId, formTemplateId, submissionRef)
     val notifyRequest = createNotifyRequest(objWithSummary, sdesSubmission._id.value)
-    logger.debug(s"SDES notification request: ${Json.stringify(Json.toJson(notifyRequest))}")
     for {
       _ <- sdesConnector.notifySDES(notifyRequest)
       _ <- saveSdesSubmission(sdesSubmission)
