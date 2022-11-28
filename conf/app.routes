@@ -80,5 +80,9 @@ GET           /translation/:formTemplateId/internal                             
 GET           /translation/:formTemplateId/debug                                                        uk.gov.hmrc.gform.translation.TranslationController.translateCsvDebug(formTemplateId: FormTemplateId)
 POST          /translation/:formTemplateId                                                              uk.gov.hmrc.gform.translation.TranslationController.translateCsv(formTemplateId: FormTemplateId)
 
+GET           /notification-banner                                                                      uk.gov.hmrc.gform.notificationbanner.NotificationBannerController.findNotificationBanner()
+POST          /notification-banner                                                                      uk.gov.hmrc.gform.notificationbanner.NotificationBannerController.upsertNotificationBanner()
+DELETE        /notification-banner                                                                      uk.gov.hmrc.gform.notificationbanner.NotificationBannerController.deleteNotificationBanner()
+
 POST          /sdes/callback                                                                            uk.gov.hmrc.gform.sdes.SdesCallbackController.callback
 GET           /sdes/search/:processed/:page/:pageSize                                                   uk.gov.hmrc.gform.sdes.SdesController.search(processed: Boolean, page: Int, pageSize: Int)

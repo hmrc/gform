@@ -43,6 +43,7 @@ import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
 import uk.gov.hmrc.gform.graphite.GraphiteModule
 import uk.gov.hmrc.gform.metrics.MetricsModule
 import uk.gov.hmrc.gform.mongo.MongoModule
+import uk.gov.hmrc.gform.notificationbanner.NotificationBannerModule
 import uk.gov.hmrc.gform.notifier.NotifierModule
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorModule
@@ -109,6 +110,7 @@ class ApplicationModule(context: Context)
     new FileUploadModule(configModule, wSHttpModule, timeModule, akkaModule, envelopeModule, objectStoreModule)
   val formTemplateModule = new FormTemplateModule(controllerComponents, mongoModule)
   private val translationModule = new TranslationModule(formTemplateModule, configModule)
+  private val notificationBannerModule = new NotificationBannerModule(mongoModule, configModule)
   val pdfGeneratorModule = new PdfGeneratorModule()
 
   val formMetadaModule = new FormMetadataModule(mongoModule)
@@ -263,7 +265,8 @@ class ApplicationModule(context: Context)
     envelopeModule,
     translationModule,
     objectStoreModule,
-    sdesModule
+    sdesModule,
+    notificationBannerModule
   )
 
   override lazy val httpRequestHandler: HttpRequestHandler = playComponentsModule.httpRequestHandler
