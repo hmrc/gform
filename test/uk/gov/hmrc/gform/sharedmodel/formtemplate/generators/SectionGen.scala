@@ -148,8 +148,9 @@ trait SectionGen {
       shortName          <- smartStringGen
       summaryName        <- smartStringGen
       includeIf          <- Gen.option(IncludeIfGen.includeIfGen)
-      addToListLimit     <- Gen.option(AddToListLimitGen.addToListLimitGen)
       pages              <- PrimitiveGen.oneOrMoreGen(pageGen)
+      repeatsUntil       <- Gen.option(IncludeIfGen.includeIfGen)
+      repeatsWhile       <- Gen.option(IncludeIfGen.includeIfGen)
       formComponent      <- FormComponentGen.formComponentGen(0)
       choice             <- ComponentTypeGen.choiceGen
       instruction        <- Gen.option(InstructionGen.instructionGen)
@@ -166,8 +167,9 @@ trait SectionGen {
         shortName,
         summaryName,
         includeIf,
-        addToListLimit,
         pages,
+        repeatsUntil,
+        repeatsWhile,
         formComponent.copy(`type` = choice),
         instruction,
         presentationHint,

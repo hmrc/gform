@@ -1045,26 +1045,6 @@ object FormTemplateValidator {
     isNonInformationMessagePresent.combineAll
   }
 
-  def validateAddToListLimit(formTemplate: FormTemplate): ValidationResult = {
-
-    def isInfo(field: FormComponent): ValidationResult =
-      field.`type` match {
-        case InformationMessage(_, _) => Valid
-        case _ =>
-          Invalid(
-            s"AddToList.limit.field must be an Info type. Field '${field.id.value}' is not an Info type."
-          )
-      }
-
-    val isNonInformationMessagePresent: List[ValidationResult] =
-      formTemplate.formKind.allSections.map {
-        case s: Section.AddToList => s.limit.fold[ValidationResult](Valid)(limit => isInfo(limit.field))
-        case _                    => Valid
-      }
-
-    isNonInformationMessagePresent.combineAll
-  }
-
   def validateDataRetrieve(pages: List[Page]): ValidationResult = {
     val ids = pages.flatMap(_.dataRetrieve).map(_.id)
     val duplicates = ids.groupBy(identity).collect { case (fId, List(_, _, _*)) => fId }.toSet

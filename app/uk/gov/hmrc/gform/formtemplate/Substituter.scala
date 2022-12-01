@@ -307,8 +307,9 @@ object Substituter {
         shortName = addToList.shortName(substitutions),
         summaryName = addToList.summaryName(substitutions),
         includeIf = addToList.includeIf(substitutions),
-        limit = addToList.limit(substitutions),
         pages = addToList.pages(substitutions),
+        repeatsUntil = addToList.repeatsUntil(substitutions),
+        repeatsWhile = addToList.repeatsWhile(substitutions),
         addAnotherQuestion = addToList.addAnotherQuestion(substitutions),
         instruction = addToList.instruction(substitutions),
         infoMessage = addToList.infoMessage(substitutions),
@@ -346,15 +347,6 @@ object Substituter {
     } { classic =>
       classic.copy(sections = classic.sections(substitutions))
     }
-
-  implicit def addToListLimitSubstituter[A](implicit
-    ev: Substituter[A, Expr],
-    ev2: Substituter[A, BooleanExpr]
-  ): Substituter[A, AddToListLimit] = (substitutions, t) =>
-    t.copy(
-      repeatsMax = t.repeatsMax(substitutions),
-      field = t.field(substitutions)
-    )
 
   implicit def printSectionPageSubstituter[A](implicit
     ev: Substituter[A, Expr]
