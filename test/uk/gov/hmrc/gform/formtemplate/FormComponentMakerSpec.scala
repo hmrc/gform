@@ -427,6 +427,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                                  |   "id": "gformTable",
                                  |   "type": "table",
                                  |   "label": "Table of data",
+                                 |   "summaryValue": "Summary value",
                                  |  "caption": "This is caption",
                                  |  "captionClasses": "test-caption-classes",
                                  |  "firstCellIsHeader": "false",
@@ -575,6 +576,7 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
               None
             )
           ),
+          toSmartString("Summary value"),
           Some("This is caption"),
           "test-caption-classes",
           "test-classes",

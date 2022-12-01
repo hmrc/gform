@@ -239,7 +239,12 @@ object Substituter {
       case t @ Time(_, _)        => t
       case PostcodeLookup        => PostcodeLookup
       case MiniSummaryList(rows) => MiniSummaryList(rows(substitutions))
-      case t: TableComp          => t.copy(header = t.header(substitutions), rows = t.rows(substitutions))
+      case t: TableComp =>
+        t.copy(
+          header = t.header(substitutions),
+          rows = t.rows(substitutions),
+          summaryValue = t.summaryValue(substitutions)
+        )
     }
 
   implicit def formComponentValidatorSubstituter[A](implicit

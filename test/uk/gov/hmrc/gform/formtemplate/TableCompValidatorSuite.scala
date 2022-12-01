@@ -34,7 +34,8 @@ class TableCompValidatorSuite extends FunSuite {
           ),
           Option.empty[IncludeIf]
         )
-      )
+      ),
+      toSmartString("Summary value")
     )
     val res = TableCompValidator.validateTableComp(table)
     assertEquals(res, Invalid("The number of header columns and row values do not match"))
@@ -60,7 +61,8 @@ class TableCompValidatorSuite extends FunSuite {
           ),
           Option.empty[IncludeIf]
         )
-      )
+      ),
+      toSmartString("Summary value")
     )
     val res = TableCompValidator.validateTableComp(table)
     assertEquals(res, Invalid("The number of header columns and row values do not match"))
@@ -86,7 +88,8 @@ class TableCompValidatorSuite extends FunSuite {
           ),
           Option.empty[IncludeIf]
         )
-      )
+      ),
+      toSmartString("Summary value")
     )
     val res = TableCompValidator.validateTableComp(table)
     assertEquals(res, Invalid("The number of header columns and row values do not match"))
@@ -105,7 +108,8 @@ class TableCompValidatorSuite extends FunSuite {
           ),
           Option.empty[IncludeIf]
         )
-      )
+      ),
+      toSmartString("Summary value")
     )
     val res = TableCompValidator.validateTableComp(table)
     assertEquals(res, Invalid("The number of header columns and row values do not match"))
@@ -126,7 +130,8 @@ class TableCompValidatorSuite extends FunSuite {
           ),
           Option.empty[IncludeIf]
         )
-      )
+      ),
+      toSmartString("Summary value")
     )
     val res = TableCompValidator.validateTableComp(table)
     assertEquals(res, Invalid("The number of header columns and row values do not match"))
@@ -146,7 +151,8 @@ class TableCompValidatorSuite extends FunSuite {
           ),
           Option.empty[IncludeIf]
         )
-      )
+      ),
+      toSmartString("Summary value")
     )
     val res = TableCompValidator.validateTableComp(table)
     assertEquals(res, Invalid("The number of header columns and row values do not match"))
@@ -166,7 +172,8 @@ class TableCompValidatorSuite extends FunSuite {
           ),
           Option.empty[IncludeIf]
         )
-      )
+      ),
+      toSmartString("Summary value")
     )
     val res = TableCompValidator.validateTableComp(table)
     assertEquals(res, Invalid("Invalid colspan value 0. Colspan must be number greater than 0"))
@@ -186,7 +193,8 @@ class TableCompValidatorSuite extends FunSuite {
           ),
           Option.empty[IncludeIf]
         )
-      )
+      ),
+      toSmartString("Summary value")
     )
     val res = TableCompValidator.validateTableComp(table)
     assertEquals(res, Invalid("The number of header columns and row values do not match"))
@@ -210,7 +218,8 @@ class TableCompValidatorSuite extends FunSuite {
           ),
           Option.empty[IncludeIf]
         )
-      )
+      ),
+      toSmartString("Summary value")
     )
     val res = TableCompValidator.validateTableComp(table)
     assertEquals(res, Invalid("The number of header columns and row values do not match"))
@@ -228,7 +237,8 @@ class TableCompValidatorSuite extends FunSuite {
           ),
           Option.empty[IncludeIf]
         )
-      )
+      ),
+      toSmartString("Summary value")
     )
 
     val res = TableCompValidator.validateTableComp(table)
@@ -266,7 +276,8 @@ class TableCompValidatorSuite extends FunSuite {
           ),
           Option.empty[IncludeIf]
         )
-      )
+      ),
+      toSmartString("Summary value")
     )
 
     val res = TableCompValidator.validateTableComp(table)
@@ -301,7 +312,8 @@ class TableCompValidatorSuite extends FunSuite {
           ),
           Option.empty[IncludeIf]
         )
-      )
+      ),
+      toSmartString("Summary value")
     )
 
     val res = TableCompValidator.validateTableComp(table)
@@ -321,7 +333,8 @@ class TableCompValidatorSuite extends FunSuite {
           ),
           Option.empty[IncludeIf]
         )
-      )
+      ),
+      toSmartString("Summary value")
     )
 
     val res = TableCompValidator.validateTableComp(table)
@@ -354,7 +367,8 @@ class TableCompValidatorSuite extends FunSuite {
           ),
           Option.empty[IncludeIf]
         )
-      )
+      ),
+      toSmartString("Summary value")
     )
 
     val res = TableCompValidator.validateTableComp(table)
@@ -418,7 +432,8 @@ class TableCompValidatorSuite extends FunSuite {
           ),
           Option.empty[IncludeIf]
         )
-      )
+      ),
+      toSmartString("Summary value")
     )
 
     val res = TableCompValidator.validateTableComp(table)
@@ -446,7 +461,8 @@ class TableCompValidatorSuite extends FunSuite {
           ),
           Option.empty[IncludeIf]
         )
-      )
+      ),
+      toSmartString("Summary value")
     )
 
     val expectedTable = TableComp(
@@ -466,7 +482,8 @@ class TableCompValidatorSuite extends FunSuite {
           ),
           Option.empty[IncludeIf]
         )
-      )
+      ),
+      toSmartString("Summary value")
     )
 
     val res = TableCompValidator.normaliseTableComp(table)
@@ -498,7 +515,8 @@ class TableCompValidatorSuite extends FunSuite {
           ),
           Option.empty[IncludeIf]
         )
-      )
+      ),
+      toSmartString("Summary value")
     )
 
     val expectedTable = TableComp(
@@ -528,7 +546,8 @@ class TableCompValidatorSuite extends FunSuite {
           ),
           Option.empty[IncludeIf]
         )
-      )
+      ),
+      toSmartString("Summary value")
     )
 
     val res = TableCompValidator.normaliseTableComp(table)
@@ -572,7 +591,8 @@ class TableCompValidatorSuite extends FunSuite {
           ),
           Option.empty[IncludeIf]
         )
-      )
+      ),
+      toSmartString("Summary value")
     )
 
     val expectedTable = TableComp(
@@ -622,7 +642,8 @@ class TableCompValidatorSuite extends FunSuite {
           ),
           Option.empty[IncludeIf]
         )
-      )
+      ),
+      toSmartString("Summary value")
     )
 
     val res = TableCompValidator.normaliseTableComp(table)
@@ -642,7 +663,8 @@ class TableCompValidatorSuite extends FunSuite {
           ),
           Option.empty[IncludeIf]
         )
-      )
+      ),
+      toSmartString("Summary value")
     )
 
     val expectedTable = TableComp(
@@ -660,7 +682,8 @@ class TableCompValidatorSuite extends FunSuite {
           ),
           Option.empty[IncludeIf]
         )
-      )
+      ),
+      toSmartString("Summary value")
     )
 
     val res = TableCompValidator.normaliseTableComp(table)
@@ -680,7 +703,8 @@ class TableCompValidatorSuite extends FunSuite {
           ),
           Option.empty[IncludeIf]
         )
-      )
+      ),
+      toSmartString("Summary value")
     )
 
     val expectedTable = TableComp(
@@ -694,7 +718,8 @@ class TableCompValidatorSuite extends FunSuite {
           ),
           Option.empty[IncludeIf]
         )
-      )
+      ),
+      toSmartString("Summary value")
     )
 
     val res = TableCompValidator.normaliseTableComp(table)
@@ -731,7 +756,8 @@ class TableCompValidatorSuite extends FunSuite {
           ),
           Option.empty[IncludeIf]
         )
-      )
+      ),
+      toSmartString("Summary value")
     )
 
     val expectedTable = TableComp(
@@ -766,7 +792,8 @@ class TableCompValidatorSuite extends FunSuite {
           ),
           Option.empty[IncludeIf]
         )
-      )
+      ),
+      toSmartString("Summary value")
     )
 
     val res = TableCompValidator.normaliseTableComp(table)
@@ -826,7 +853,8 @@ class TableCompValidatorSuite extends FunSuite {
           ),
           Option.empty[IncludeIf]
         )
-      )
+      ),
+      toSmartString("Summary value")
     )
 
     val expectedTable = TableComp(
@@ -888,7 +916,8 @@ class TableCompValidatorSuite extends FunSuite {
           ),
           Option.empty[IncludeIf]
         )
-      )
+      ),
+      toSmartString("Summary value")
     )
 
     val res = TableCompValidator.normaliseTableComp(table)
@@ -948,7 +977,8 @@ class TableCompValidatorSuite extends FunSuite {
           ),
           Option.empty[IncludeIf]
         )
-      )
+      ),
+      toSmartString("Summary value")
     )
 
     val expectedTable = TableComp(
@@ -1013,7 +1043,8 @@ class TableCompValidatorSuite extends FunSuite {
           ),
           Option.empty[IncludeIf]
         )
-      )
+      ),
+      toSmartString("Summary value")
     )
 
     val res = TableCompValidator.normaliseTableComp(table)
@@ -1078,7 +1109,8 @@ class TableCompValidatorSuite extends FunSuite {
           ),
           Option.empty[IncludeIf]
         )
-      )
+      ),
+      toSmartString("Summary value")
     )
 
     val expectedTable = TableComp(
@@ -1144,7 +1176,8 @@ class TableCompValidatorSuite extends FunSuite {
           ),
           Option.empty[IncludeIf]
         )
-      )
+      ),
+      toSmartString("Summary value")
     )
 
     val res = TableCompValidator.normaliseTableComp(table)
