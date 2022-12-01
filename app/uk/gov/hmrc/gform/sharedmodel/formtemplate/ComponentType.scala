@@ -436,6 +436,7 @@ object TableValueRow {
 case class TableComp(
   header: List[SmartString],
   rows: List[TableValueRow],
+  summaryValue: SmartString,
   caption: Option[String] = None,
   captionClasses: String = "",
   classes: String = "",
@@ -488,7 +489,11 @@ object ComponentType {
       case FileUpload(_)                   => Nil
       case Time(_, _)                      => Nil
       case MiniSummaryList(rows)           => LeafExpr(path + "rows", rows)
-      case t: TableComp                    => LeafExpr(path + "header", t.header) ++ LeafExpr(path + "rows", t.rows)
+      case t: TableComp =>
+        LeafExpr(path + "header", t.header) ++ LeafExpr(path + "rows", t.rows) ++ LeafExpr(
+          path + "summaryValue",
+          t.summaryValue
+        )
     }
 
 }
