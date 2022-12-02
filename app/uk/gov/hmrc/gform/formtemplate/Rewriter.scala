@@ -185,7 +185,7 @@ trait Rewriter {
           ) =>
         includeIf.toList ++ pages.toList.flatMap(_.includeIf.toList) ++ fields.fold(List.empty[IncludeIf])(
           _.toList.flatMap(_.includeIf.toList)
-        )
+        ) ++ repeatsUntil.toList ++ repeatsWhile.toList
     } ++ fieldsIncludeIfs ++ acknowledgementSectionIncludeIfs ++ summarySectionIncludeIfs ++ choiceIncludeIfs ++ miniSummaryListIncludeIfs ++ redirectsIncludeIfs ++ confirmationRedirectsIncludeIfs
 
     def validate(
