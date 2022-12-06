@@ -78,5 +78,4 @@ class TestOnlyModule(
       configModule.serviceConfig,
       proxyActions
     )
-  val pdfGeneratorStub = new PdfGeneratorStubController(configModule.controllerComponents)
 }
