@@ -132,6 +132,7 @@ object FormTemplatePIIRefsHelper {
       case CsvCountryCountCheck(FormComponentId(value), _, _) => List(value)
       case Size(FormComponentId(value), _)                    => List(value)
       case Typed(expr, tpe)                                   => extractRefs(expr)
+      case IndexOf(FormComponentId(value), _)                 => List(value)
     }
 
   implicit class JsLookupResultOps(result: JsLookupResult) {

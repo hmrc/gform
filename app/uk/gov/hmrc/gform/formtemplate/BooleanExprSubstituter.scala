@@ -56,6 +56,7 @@ object BooleanExprSubstituter extends Substituter[BooleanExprSubstitutions, Form
         case CsvCountryCountCheck(_, _, _) => t
         case Size(_, _)                    => t
         case Typed(expr, tpe)              => Typed(substitute(substitutions, expr), tpe)
+        case IndexOf(_, _)                 => t
       }
     }
 

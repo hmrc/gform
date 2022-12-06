@@ -173,6 +173,7 @@ final case class DataRetrieveCtx(id: DataRetrieveId, attribute: DataRetrieveAttr
 final case class CsvCountryCheck(formComponentId: FormComponentId, column: String) extends Expr
 final case class CsvOverseasCountryCheck(formComponentId: FormComponentId, column: String) extends Expr
 final case class CsvCountryCountCheck(formComponentId: FormComponentId, column: String, value: String) extends Expr
+final case class IndexOf(formComponentId: FormComponentId, index: Int) extends Expr
 
 sealed trait DateProjection extends Product with Serializable {
   def dateExpr: DateExpr

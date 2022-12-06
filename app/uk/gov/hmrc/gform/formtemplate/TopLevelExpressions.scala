@@ -172,6 +172,7 @@ object TopLevelExpressions {
         case CsvCountryCountCheck(_, _, _) => e
         case Size(_, _)                    => e
         case Typed(expr, tpe)              => Typed(loop(expr), tpe)
+        case IndexOf(_, _)                 => e
       }
     expressions.get(expressionId).fold(expressions) { expr =>
       expressions + (expressionId -> loop(expr))
