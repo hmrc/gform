@@ -39,4 +39,5 @@ object ReferenceInfo {
   final case class CsvCountryCountCheckExpr(path: TemplatePath, csvCountryCountCheck: CsvCountryCountCheck)
       extends ReferenceInfo
   final case class MiniSummaryRowExpr(path: TemplatePath, miniSummaryRow: MiniSummaryRow) extends ReferenceInfo
+  final case class IndexOfExpr(path: TemplatePath, indexOf: IndexOf) extends ReferenceInfo
 }
