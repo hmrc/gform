@@ -327,6 +327,7 @@ object TextExtractor {
       Pure(DownField("description")) :: root,
       Pure(DownField("summaryDescription")) :: root,
       Pure(DownField("caption")) :: root,
+      Pure(DownField("continueLabel")) :: root,
       Pure(DownField("label")) :: confirmationQuestion,
       TraverseArray :: Pure(DownField("choices")) :: confirmationQuestion,
       Pure(DownField("label")) :: addAnotherQuestion,
