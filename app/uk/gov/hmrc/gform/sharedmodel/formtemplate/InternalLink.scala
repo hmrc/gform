@@ -27,12 +27,14 @@ object InternalLink {
   case object NewForm extends InternalLink
   case class NewFormForTemplate(formTemplateId: FormTemplateId) extends InternalLink
   case object NewSession extends InternalLink
+  case object SignOut extends InternalLink
   case class PageLink(id: PageId) extends InternalLink
 
   val printAcknowledgementPdf: InternalLink = PrintAcknowledgementPdf
   val printSummaryPdf: InternalLink = PrintSummaryPdf
   val newForm: InternalLink = NewForm
   val newSession: InternalLink = NewSession
+  val signOut: InternalLink = SignOut
 
   implicit val format: OFormat[InternalLink] = derived.oformat()
 }
