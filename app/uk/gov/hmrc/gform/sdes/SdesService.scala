@@ -96,7 +96,7 @@ class SdesService(
   override def search(processed: Boolean, page: Int, pageSize: Int): Future[SdesSubmissionPageData] = {
 
     val query = equal("isProcessed", processed)
-    val sort = equal("submittedAt", 1)
+    val sort = equal("submittedAt", -1)
 
     val skip = page * pageSize
     for {
