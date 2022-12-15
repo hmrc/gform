@@ -53,8 +53,7 @@ case class FormTemplate(
   accessibilityUrl: Option[AccessibilityUrl],
   exitPages: Option[NonEmptyList[ExitPage]],
   expressionsOutput: Option[ExpressionOutput],
-  objectStore: Option[Boolean],
-  hideSaveAndComeBackButton: Option[Boolean]
+  objectStore: Option[Boolean]
 ) {
 
   def formComponents[A](predicate: PartialFunction[FormComponent, A]): List[A] =

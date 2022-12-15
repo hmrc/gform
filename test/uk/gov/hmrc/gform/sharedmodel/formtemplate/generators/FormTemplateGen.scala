@@ -123,7 +123,6 @@ trait FormTemplateGen {
       accessibilityUrl,
       None,
       None,
-      None,
       None
     )
 }

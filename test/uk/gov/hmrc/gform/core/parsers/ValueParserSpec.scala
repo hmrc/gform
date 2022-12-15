@@ -503,7 +503,6 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     None,
     None,
     None,
-    None,
     None
   )
 
@@ -547,6 +546,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
           errorMessage = None
         )
       ),
+      None,
       None,
       None,
       None,

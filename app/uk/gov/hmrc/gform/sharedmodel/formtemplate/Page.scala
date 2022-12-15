@@ -38,7 +38,8 @@ case class Page(
   presentationHint: Option[PresentationHint],
   dataRetrieve: Option[DataRetrieve],
   confirmation: Option[Confirmation],
-  redirects: Option[NonEmptyList[RedirectCtx]]
+  redirects: Option[NonEmptyList[RedirectCtx]],
+  hideSaveAndComeBackButton: Option[Boolean]
 ) {
   lazy val expandedFormComponents: List[FormComponent] = fields.flatMap(_.expandedFormComponents)
 
