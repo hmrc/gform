@@ -127,12 +127,6 @@ object FormTemplatesControllerRequestHandler {
   private def list[A <: JsValue](reads: Reads[A]): Reads[JsArray] =
     Reads.list(reads).map(JsArray.apply)
 
-  // private def debug[A <: JsValue](r: Reads[A]): Reads[A] = Reads { json =>
-  //   val res = json.transform(r)
-  //   println("DEBUG json: " + json + "\n res: " + res)
-  //   res
-  // }
-
   def normaliseJSON(jsonValue: JsValue): JsResult[JsObject] = {
 
     val allowedFileTypes =

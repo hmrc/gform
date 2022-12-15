@@ -229,7 +229,7 @@ class TestOnlyController(
   private def fromOption[A, B](a: Option[A], s: B): EitherT[Option, B, A] = EitherT.fromOption(a, s)
 
   def removeTemplates() = Action.async { _ =>
-    println("purging mongo database ....")
+    logger.info("purging mongo database ....")
     formTemplatesRepo.collection.drop().toFuture().map(_ => Results.Ok("Mongo purged")).recover { case e =>
       e.printStackTrace()
       Results.InternalServerError(e.toString)
