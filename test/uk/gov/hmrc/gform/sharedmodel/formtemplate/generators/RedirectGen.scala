@@ -18,12 +18,13 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 
 import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.RedirectCtx
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.SmartStringGen.smartStringGen
 
 class RedirectGen {
   def redirectGen: Gen[RedirectCtx] =
     for {
       ifExpr      <- IncludeIfGen.includeIfGen
-      redirectUrl <- Gen.alphaNumStr
+      redirectUrl <- smartStringGen
     } yield RedirectCtx(ifExpr, redirectUrl)
 }
 

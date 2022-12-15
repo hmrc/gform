@@ -18,10 +18,11 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import julienrf.json.derived
 import play.api.libs.json._
+import uk.gov.hmrc.gform.sharedmodel.SmartString
 
 final case class RedirectCtx(
   `if`: IncludeIf,
-  redirectUrl: String
+  redirectUrl: SmartString
 )
 
 object RedirectCtx {

@@ -155,6 +155,8 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     InternalLink.newForm
   } | "newSession" ^^ { _ =>
     InternalLink.newSession
+  } | "signOut" ^^ { _ =>
+    InternalLink.signOut
   } | PageId.unanchoredIdValidation ^^ { id =>
     PageLink(PageId(id))
   }
