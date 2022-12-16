@@ -200,7 +200,7 @@ class ApplicationModule(context: Context)
     new DmsModule(
       fileUploadModule,
       pdfGeneratorModule,
-      configModule.appConfig,
+      configModule,
       controllerComponents
     )
   private val obligationModule = new ObligationModule(wSHttpModule, configModule)

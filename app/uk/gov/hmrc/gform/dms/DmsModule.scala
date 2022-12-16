@@ -16,29 +16,32 @@
 
 package uk.gov.hmrc.gform.dms
 
-import java.time.Clock
 import cats.instances.future._
 import org.apache.pdfbox.pdmodel.PDDocument
 import play.api.mvc.ControllerComponents
-import uk.gov.hmrc.gform.config.AppConfig
+import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.fileupload.FileUploadModule
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorModule
 
+import java.time.Clock
 import scala.concurrent.{ ExecutionContext, Future }
 
 class DmsModule(
   fileUploadModule: FileUploadModule,
   pdfGeneratorModule: PdfGeneratorModule,
-  config: AppConfig,
+  configModule: ConfigModule,
   controllerComponents: ControllerComponents
 )(implicit ex: ExecutionContext) {
+
+  private val isObjectStoreEnable = configModule.typesafeConfig.getBoolean("object-store.enable-dms-services")
 
   private lazy val dmsSubmissionService: DmsSubmissionService[Future] =
     new DmsSubmissionService(
       fileUploadModule.fileUploadService,
       pdfGeneratorModule.pdfGeneratorService,
       PDDocument.load,
-      config.formExpiryDays.longValue
+      configModule.appConfig.formExpiryDays.longValue,
+      isObjectStoreEnable
     )(Clock.systemDefaultZone, catsStdInstancesForFuture, ex)
 
   lazy val dmsSubmissionController: DmsSubmissionController =
