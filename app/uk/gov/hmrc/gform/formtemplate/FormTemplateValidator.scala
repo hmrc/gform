@@ -538,6 +538,20 @@ object FormTemplateValidator {
     ).combineAll
   }
 
+  def validatePageRedirects(sectionsList: List[Page]): ValidationResult = {
+    val redirectCtxs: List[RedirectCtx] = sectionsList.flatMap(_.redirects.toList).flatMap(_.toList)
+    redirectCtxs.map { redirectCtx =>
+      val rawValue = redirectCtx.redirectUrl.rawValue(LangADT.En).trim
+      val singleExpressionOnly = rawValue === "{0}"
+      val validationResult: ValidationResult = redirectCtx.redirectUrl.interpolations match {
+        case Nil                                       => Valid // Free text is ok
+        case LinkCtx(_) :: Nil if singleExpressionOnly => Valid
+        case _                                         => Invalid(s"redirectUrl: $rawValue is not valid. Only 'text only' or single link expression is allowed")
+      }
+      validationResult
+    }.combineAll
+  }
+
   def validateLabel(sectionsList: List[Page]): ValidationResult = {
     def validateChoiceSingleChoice(sectionsList: List[Page]): ValidationResult = {
       def check(choice: Choice): Boolean = choice.options.length <= 1
