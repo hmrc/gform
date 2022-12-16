@@ -57,7 +57,13 @@ class DmsSubmissionServiceSpec extends Spec {
       .expectCreateEnvelope(formTemplateId, expectedEnvId)
       .expectGeneratePdfBytesLocal(validSubmission.html, pdfContent)
       .expectLoadDocument(pdfContent, stubPdfDocument)
-      .expectSubmitEnvelope(expectedSubmission, expectedPdfAndXmlSummaries, expectedHmrcDms, 0, false)
+      .expectSubmitEnvelope(
+        expectedSubmission,
+        expectedPdfAndXmlSummaries,
+        expectedHmrcDms,
+        0,
+        fixture.objectStoreEnable
+      )
       .service
       .submitToDms(validSubmission, List.empty) shouldBe expectedEnvId
   }
@@ -86,8 +92,14 @@ class DmsSubmissionServiceSpec extends Spec {
       .expectCreateEnvelope(FormTemplateId(validSubmission.metadata.dmsFormId), expectedEnvId)
       .expectGeneratePdfBytesLocal(validSubmission.html, pdfContent)
       .expectLoadDocument(pdfContent, stubPdfDocument)
-      .expectUploadAttachment(expectedEnvId, fileAttachments.head, false)
-      .expectSubmitEnvelope(expectedSubmission, expectedPdfAndXmlSummaries, expectedDmsSubmission, 1, false)
+      .expectUploadAttachment(expectedEnvId, fileAttachments.head, fixture.objectStoreEnable)
+      .expectSubmitEnvelope(
+        expectedSubmission,
+        expectedPdfAndXmlSummaries,
+        expectedDmsSubmission,
+        1,
+        fixture.objectStoreEnable
+      )
       .service
       .submitToDms(validSubmission, fileAttachments) shouldBe expectedEnvId
   }
@@ -110,7 +122,13 @@ class DmsSubmissionServiceSpec extends Spec {
     fixture
       .expectCreateEnvelope(FormTemplateId(validSubmission.metadata.dmsFormId), expectedEnvId)
       .expectLoadDocument(pdfContent, stubPdfDocument)
-      .expectSubmitEnvelope(expectedSubmission, expectedPdfAndXmlSummaries, expectedHmrcDms, 0, false)
+      .expectSubmitEnvelope(
+        expectedSubmission,
+        expectedPdfAndXmlSummaries,
+        expectedHmrcDms,
+        0,
+        fixture.objectStoreEnable
+      )
       .service
       .submitPdfToDms(pdfContent, validSubmission.metadata, List.empty) shouldBe expectedEnvId
   }
@@ -126,7 +144,8 @@ class DmsSubmissionServiceSpec extends Spec {
     fileUpload: FileUploadAlgebra[Id],
     pdfGenerator: PdfGeneratorAlgebra[Id],
     documentLoader: MockFunction1[Array[Byte], PDDocument],
-    clock: Clock
+    clock: Clock,
+    objectStoreEnable: Boolean
   ) {
 
     def expectCreateEnvelope(formTemplateId: FormTemplateId, envelopeId: EnvelopeId): Fixture = {
@@ -139,7 +158,7 @@ class DmsSubmissionServiceSpec extends Spec {
           FileInfoConfig.allAllowedFileTypes,
           fixedTime.plusDays(envelopeExpiryDays),
           None,
-          false,
+          objectStoreEnable,
           hc
         )
         .returning(envelopeId)
@@ -198,13 +217,15 @@ class DmsSubmissionServiceSpec extends Spec {
     val pdfGenerator = mock[PdfGeneratorAlgebra[Id]]
     val documentLoader = mockFunction[Array[Byte], PDDocument]
     implicit val clock = Clock.fixed(fixedTime.toInstant(ZoneOffset.UTC), ZoneId.systemDefault)
+    val objectStoreEnable = true
 
     Fixture(
-      new DmsSubmissionService(fileUpload, pdfGenerator, documentLoader, envelopeExpiryDays),
+      new DmsSubmissionService(fileUpload, pdfGenerator, documentLoader, envelopeExpiryDays, objectStoreEnable),
       fileUpload,
       pdfGenerator,
       documentLoader,
-      clock
+      clock,
+      objectStoreEnable
     )
   }
 }
