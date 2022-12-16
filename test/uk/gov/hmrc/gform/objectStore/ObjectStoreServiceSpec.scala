@@ -76,7 +76,7 @@ class ObjectStoreServiceSpec extends AnyFlatSpec with Matchers with ScalaFutures
       .futureValue shouldBe expectedObjectSummary
   }
 
-  "deleteFile" should "return Runtime exception when stored data does not exist any file" in {
+  "deleteFile" should "get file information, delete and store the file info" in {
 
     fixture
       .expectGetForDelete(envelopeId)
