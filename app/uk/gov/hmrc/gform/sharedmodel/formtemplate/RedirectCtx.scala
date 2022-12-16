@@ -28,5 +28,6 @@ final case class RedirectCtx(
 object RedirectCtx {
   implicit val format: OFormat[RedirectCtx] = derived.oformat()
 
-  implicit val leafExprs: LeafExpr[RedirectCtx] = (path: TemplatePath, r: RedirectCtx) => LeafExpr(path + "if", r.`if`)
+  implicit val leafExprs: LeafExpr[RedirectCtx] = (path: TemplatePath, r: RedirectCtx) =>
+    LeafExpr(path + "if", r.`if`) ++ LeafExpr(path + "redirectUrl", r.redirectUrl)
 }
