@@ -51,7 +51,8 @@ class DmsSubmissionService[F[_]](
   fileUpload: FileUploadAlgebra[F],
   pdfGenerator: PdfGeneratorAlgebra[F],
   documentLoader: Array[Byte] => PDDocument,
-  formExpiryDays: Long
+  formExpiryDays: Long,
+  objectStoreEnable: Boolean
 )(implicit clock: Clock, M: Monad[F], ec: ExecutionContext)
     extends DmsSubmissionAlgebra[F] {
 
@@ -68,7 +69,6 @@ class DmsSubmissionService[F[_]](
     implicit hc: HeaderCarrier
   ): F[EnvelopeId] = {
     val formTemplateId: FormTemplateId = FormTemplateId(metadata.dmsFormId)
-    val objectStore = false //it will send to the file-upload until switching gform to the object-store completely
     for {
       envId <-
         fileUpload.createEnvelope(
@@ -76,19 +76,19 @@ class DmsSubmissionService[F[_]](
           FileInfoConfig.allAllowedFileTypes,
           LocalDateTime.now(clock).plusDays(formExpiryDays),
           None,
-          objectStore
+          objectStoreEnable
         )
       pdfDoc = documentLoader(pdfBytes)
       pdfSummary = PdfSummary(pdfDoc.getNumberOfPages.toLong, pdfBytes)
       _ = pdfDoc.close()
       _ <- fileAttachments.traverse { fileAttachment =>
-             fileUpload.uploadAttachment(envId, fileAttachment, objectStore)
+             fileUpload.uploadAttachment(envId, fileAttachment, objectStoreEnable)
            }
       submission = DmsSubmissionService
                      .createSubmission(metadata, envId, LocalDateTime.now(clock), fileAttachments.size)
       summaries = PdfAndXmlSummaries(pdfSummary)
       hmrcDms = DmsSubmissionService.createHmrcDms(metadata)
-      _ <- fileUpload.submitEnvelope(submission, summaries, hmrcDms, objectStore)
+      _ <- fileUpload.submitEnvelope(submission, summaries, hmrcDms, objectStoreEnable)
     } yield envId
   }
 
