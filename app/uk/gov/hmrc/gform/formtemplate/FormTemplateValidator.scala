@@ -1148,9 +1148,10 @@ object FormTemplateValidator {
 
   def validateAddToListInfoFields(formTemplate: FormTemplate): ValidationResult = {
 
-    def isInfo(field: FormComponent): ValidationResult =
+    def isInfoOrTable(field: FormComponent): ValidationResult =
       field.`type` match {
         case InformationMessage(_, _) => Valid
+        case _: TableComp             => Valid
         case _ =>
           Invalid(
             s"AddToList.fields must be Info types. Field '${field.id.value}' is not an Info type."
@@ -1160,7 +1161,7 @@ object FormTemplateValidator {
     val isNonInformation: List[ValidationResult] =
       formTemplate.formKind.allSections.map {
         case s: Section.AddToList =>
-          s.fields.fold[ValidationResult](Valid)(fields => fields.toList.map(f => isInfo(f)).combineAll)
+          s.fields.fold[ValidationResult](Valid)(fields => fields.toList.map(f => isInfoOrTable(f)).combineAll)
         case _ => Valid
       }
 
