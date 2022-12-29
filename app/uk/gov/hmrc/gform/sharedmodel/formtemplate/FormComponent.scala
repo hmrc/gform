@@ -40,7 +40,8 @@ case class FormComponent(
   presentationHint: Option[List[PresentationHint]] = None,
   validators: List[FormComponentValidator] = Nil,
   instruction: Option[Instruction] = None,
-  labelSize: Option[LabelSize] = None
+  labelSize: Option[LabelSize] = None,
+  notPII: Boolean = false
 ) {
   private def updateField(i: Int, fc: FormComponent): FormComponent =
     fc.copy(
