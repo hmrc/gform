@@ -200,6 +200,27 @@ trait FormTemplateSupport {
       notPII
     )
 
+  def mkFormComponentWithValidators(id: String, validators: List[FormComponentValidator] = Nil) =
+    FormComponent(
+      FormComponentId(id),
+      Text(ShortText.default, Value),
+      toSmartString(id),
+      None,
+      None,
+      None,
+      None,
+      true,
+      false,
+      true,
+      false,
+      false,
+      None,
+      None,
+      validators,
+      None,
+      None
+    )
+
   def mkSection(name: String, formComponents: List[FormComponent], instruction: Option[Instruction]) =
     Section.NonRepeatingPage(
       Page(
