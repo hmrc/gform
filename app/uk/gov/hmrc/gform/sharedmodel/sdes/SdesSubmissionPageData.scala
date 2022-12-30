@@ -16,8 +16,10 @@
 
 package uk.gov.hmrc.gform.sharedmodel.sdes
 
-import julienrf.json.derived
-import play.api.libs.json.OFormat
+import play.api.libs.json.{ Format, Json, OFormat }
+import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
+import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 
 import java.time.Instant
 
@@ -28,18 +30,23 @@ case class SdesSubmissionPageData(
 )
 
 object SdesSubmissionPageData {
-  implicit val format: OFormat[SdesSubmissionPageData] = derived.oformat()
+  implicit val format: OFormat[SdesSubmissionPageData] = Json.format
 }
 
 case class SdesSubmissionData(
-  envelopeId: String,
-  formTemplateId: String,
-  submissionRef: String,
+  correlationId: CorrelationId,
+  envelopeId: EnvelopeId,
+  formTemplateId: FormTemplateId,
+  submissionRef: SubmissionRef,
   submittedAt: Instant,
-  status: String,
+  status: NotificationStatus,
   failureReason: String
 )
 
 object SdesSubmissionData {
-  implicit val format: OFormat[SdesSubmissionData] = derived.oformat()
+  implicit val correlationIdFormat: Format[CorrelationId] = CorrelationId.vformat
+  implicit val envelopeIdFormat: Format[EnvelopeId] = EnvelopeId.vformat
+  implicit val formTemplateIdFormat: Format[FormTemplateId] = FormTemplateId.vformat
+  implicit val submissionRefFormat: Format[SubmissionRef] = SubmissionRef.vformat
+  implicit val format: OFormat[SdesSubmissionData] = Json.format
 }
