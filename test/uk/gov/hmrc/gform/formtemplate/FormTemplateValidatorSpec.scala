@@ -518,4 +518,42 @@ class FormTemplateValidatorSpec
       }
     }
   }
+
+  "validateErrorMessageConstraints" should {
+
+    "errorMessage in NonRepeatingPage" in {
+
+      val table = Table(
+        ("errorMessage", "expectedResult"),
+        (toSmartString("no references"), Valid),
+        (
+          SmartString(toLocalisedString("{0}"), List(FormCtx(FormComponentId("fcId1")))),
+          Invalid("errorMessage: '{0}' contains PII fcId: fcId1")
+        )
+      )
+
+      forAll(table) { (errorMessage, expectedResult) =>
+        val formTemplate = mkFormTemplate(
+          List(
+            mkSectionNonRepeatingPage(
+              name = "section1",
+              formComponents = List(
+                mkFormComponentWithNotPII(id = "fcId1", notPII = false)
+              )
+            ),
+            mkSectionNonRepeatingPage(
+              name = "section2",
+              formComponents = List(
+                mkFormComponentWithErrorMessage(id = "fcId2", errorMessage = Some(errorMessage))
+              )
+            )
+          )
+        )
+        val allExpressions: List[ExprWithPath] = LeafExpr(TemplatePath.root, formTemplate)
+
+        val result = FormTemplateValidator.validateErrorMessageConstraints(formTemplate, allExpressions)
+        result shouldBe expectedResult
+      }
+    }
+  }
 }

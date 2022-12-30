@@ -281,7 +281,7 @@ object FormTemplateValidator {
       ss   <- OptionT.liftF(allErrorMessages)
       fcId <- OptionT.liftF(ss.interpolations).collect { case FormCtx(fcId) => fcId }
       if !allNoPIIFcIds.contains(fcId)
-    } yield Invalid(s""" errorMessage: '${ss.rawValue(LangADT.En)}' contains PII fcId: $fcId """)
+    } yield Invalid(s"""errorMessage: '${ss.rawValue(LangADT.En)}' contains PII fcId: $fcId""")
     Monoid.combineAll(invalidResults.value.flatten)
   }
 

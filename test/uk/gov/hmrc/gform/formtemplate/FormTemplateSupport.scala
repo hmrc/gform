@@ -20,6 +20,7 @@ import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.Helpers.toSmartString
 import uk.gov.hmrc.gform.sharedmodel.{ ExampleData, LangADT, LocalisedString }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
+import uk.gov.hmrc.gform.sharedmodel.SmartString
 
 trait FormTemplateSupport {
 
@@ -155,6 +156,48 @@ trait FormTemplateSupport {
       Nil,
       None,
       labelSize
+    )
+
+  def mkFormComponentWithErrorMessage(id: String, errorMessage: Option[SmartString] = None) =
+    FormComponent(
+      FormComponentId(id),
+      Text(ShortText.default, Value),
+      toSmartString(id),
+      None,
+      None,
+      None,
+      None,
+      true,
+      false,
+      true,
+      false,
+      false,
+      errorMessage,
+      None,
+      Nil,
+      None
+    )
+
+  def mkFormComponentWithNotPII(id: String, notPII: Boolean = false) =
+    FormComponent(
+      FormComponentId(id),
+      Text(ShortText.default, Value),
+      toSmartString(id),
+      None,
+      None,
+      None,
+      None,
+      true,
+      false,
+      true,
+      false,
+      false,
+      None,
+      None,
+      Nil,
+      None,
+      None,
+      notPII
     )
 
   def mkSection(name: String, formComponents: List[FormComponent], instruction: Option[Instruction]) =
