@@ -54,9 +54,9 @@ object SdesSubmission {
 
   implicit val format: OFormat[SdesSubmission] = {
     implicit val dtf: Format[Instant] = MongoJavatimeFormats.instantFormat
+    implicit val correlationIdFormat: Format[CorrelationId] = CorrelationId.mongoVformat
     implicit val envelopeIdFormat: Format[EnvelopeId] = EnvelopeId.vformat
     implicit val formTemplateIdFormat: Format[FormTemplateId] = FormTemplateId.vformat
-    implicit val submissionRefFormat: Format[SubmissionRef] = SubmissionRef.vformat
     derived.oformat()
   }
 }
@@ -64,6 +64,8 @@ object SdesSubmission {
 final case class CorrelationId(value: String) extends AnyVal
 
 object CorrelationId {
-  implicit val mongoVformat: Format[CorrelationId] =
+  val mongoVformat: Format[CorrelationId] =
     ValueClassFormat.vformat("_id", CorrelationId.apply, x => JsString(x.value))
+  val vformat: Format[CorrelationId] =
+    ValueClassFormat.vformat("correlationId", CorrelationId.apply, x => JsString(x.value))
 }

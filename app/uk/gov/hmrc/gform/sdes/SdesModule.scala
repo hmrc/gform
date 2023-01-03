@@ -86,7 +86,7 @@ class SdesModule(
     new SdesCallbackController(configModule.controllerComponents, sdesService, objectStoreModule.objectStoreService)
 
   val sdesController: SdesController =
-    new SdesController(configModule.controllerComponents, sdesService)
+    new SdesController(configModule.controllerComponents, sdesService, objectStoreModule.objectStoreService)
 
   val foptSdesService: SdesAlgebra[FOpt] = new SdesAlgebra[FOpt] {
     override def notifySDES(
@@ -98,6 +98,11 @@ class SdesModule(
       hc: HeaderCarrier
     ): FOpt[Unit] =
       fromFutureA(sdesService.notifySDES(envelopeId, formTemplateId, submissionRef, objWithSummary))
+
+    override def notifySDES(sdesSubmission: SdesSubmission, objWithSummary: ObjectSummaryWithMd5)(implicit
+      hc: HeaderCarrier
+    ): FOpt[Unit] =
+      fromFutureA(sdesService.notifySDES(sdesSubmission, objWithSummary))
 
     override def saveSdesSubmission(sdesSubmission: SdesSubmission): FOpt[Unit] =
       fromFutureA(sdesService.saveSdesSubmission(sdesSubmission))

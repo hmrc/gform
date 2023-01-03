@@ -19,10 +19,16 @@ package uk.gov.hmrc.gform.sdes
 import play.api.libs.json.Json
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.controllers.BaseController
+import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
+import uk.gov.hmrc.gform.sharedmodel.sdes.CorrelationId
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-class SdesController(cc: ControllerComponents, sdesAlgebra: SdesAlgebra[Future])(implicit
+class SdesController(
+  cc: ControllerComponents,
+  sdesAlgebra: SdesAlgebra[Future],
+  objectStoreAlgebra: ObjectStoreAlgebra[Future]
+)(implicit
   ex: ExecutionContext
 ) extends BaseController(cc) {
 
@@ -30,5 +36,20 @@ class SdesController(cc: ControllerComponents, sdesAlgebra: SdesAlgebra[Future])
     sdesAlgebra
       .search(processed, page, pageSize)
       .map(pageData => Ok(Json.toJson(pageData)))
+  }
+
+  def notifySDES(correlationId: CorrelationId) = Action.async { implicit request =>
+    for {
+      sdesSubmission <- sdesAlgebra.findSdesSubmission(correlationId)
+      _ <- sdesSubmission match {
+             case Some(submission) =>
+               for {
+                 objSummary <- objectStoreAlgebra.zipFiles(submission.envelopeId)
+                 _          <- sdesAlgebra.notifySDES(submission, objSummary)
+               } yield ()
+             case None =>
+               Future.failed(new RuntimeException(s"Correlation id [$correlationId] not found in mongo collection"))
+           }
+    } yield NoContent
   }
 }

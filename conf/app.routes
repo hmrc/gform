@@ -86,3 +86,4 @@ DELETE        /notification-banner                                              
 
 POST          /sdes/callback                                                                            uk.gov.hmrc.gform.sdes.SdesCallbackController.callback
 GET           /sdes/search/:processed/:page/:pageSize                                                   uk.gov.hmrc.gform.sdes.SdesController.search(processed: Boolean, page: Int, pageSize: Int)
+POST          /sdes/notify/:correlationId                                                               uk.gov.hmrc.gform.sdes.SdesController.notifySDES(correlationId: CorrelationId)

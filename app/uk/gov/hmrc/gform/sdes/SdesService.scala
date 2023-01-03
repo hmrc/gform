@@ -22,10 +22,12 @@ import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
+import uk.gov.hmrc.gform.sharedmodel.sdes.NotificationStatus.FileReady
 import uk.gov.hmrc.gform.sharedmodel.sdes._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.objectstore.client.ObjectSummaryWithMd5
 
+import java.time.Instant
 import java.util.Base64
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -36,6 +38,10 @@ trait SdesAlgebra[F[_]] {
     submissionRef: SubmissionRef,
     objWithSummary: ObjectSummaryWithMd5
   )(implicit hc: HeaderCarrier): F[Unit]
+
+  def notifySDES(sdesSubmission: SdesSubmission, objWithSummary: ObjectSummaryWithMd5)(implicit
+    hc: HeaderCarrier
+  ): F[Unit]
 
   def saveSdesSubmission(sdesSubmission: SdesSubmission): F[Unit]
 
@@ -106,16 +112,36 @@ class SdesService(
     } yield SdesSubmissionPageData(
       sdesSubmissions.map(s =>
         SdesSubmissionData(
-          s.envelopeId.value,
-          s.formTemplateId.value,
-          s.submissionRef.value,
+          s._id,
+          s.envelopeId,
+          s.formTemplateId,
+          s.submissionRef,
           s.submittedAt,
-          s.status.toString,
+          s.status,
           s.failureReason.getOrElse("")
         )
       ),
       count,
       countAll
     )
+  }
+
+  override def notifySDES(sdesSubmission: SdesSubmission, objWithSummary: ObjectSummaryWithMd5)(implicit
+    hc: HeaderCarrier
+  ): Future[Unit] = {
+    val notifyRequest = createNotifyRequest(objWithSummary, sdesSubmission._id.value)
+    for {
+      _ <- sdesConnector.notifySDES(notifyRequest)
+      _ <-
+        saveSdesSubmission(
+          sdesSubmission.copy(
+            submittedAt = Instant.now,
+            isProcessed = false,
+            status = FileReady,
+            failureReason = None,
+            confirmedAt = None
+          )
+        )
+    } yield ()
   }
 }
