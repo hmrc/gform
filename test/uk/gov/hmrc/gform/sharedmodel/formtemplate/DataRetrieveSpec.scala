@@ -151,4 +151,21 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       FormCtx(FormComponentId("companyNumber"))
     )
   }
+
+  it should "parse json as NinoInsights" in {
+    Json
+      .parse("""
+               |{
+               |  "type": "ninoInsights",
+               |  "id": "ninoCheck",
+               |  "parameters": {
+               |    "nino": "${nino}"
+               |  }
+               |}
+               |""".stripMargin)
+      .as[DataRetrieve] shouldBe DataRetrieve.NinoInsights(
+      DataRetrieveId("ninoCheck"),
+      FormCtx(FormComponentId("nino"))
+    )
+  }
 }
