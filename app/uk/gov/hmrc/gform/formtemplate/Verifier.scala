@@ -70,7 +70,7 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validateInstructions(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateInvalidReferences(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateReferencesConstraints(formTemplate, allExpressions).toEither)
-      _ <- fromOptA(FormTemplateValidator.validateErrorMessageConstraints(formTemplate, allExpressions).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateErrorMessageConstraints(allExpressions).toEither)
       _ <- fromOptA(FormTemplateValidator.validateAddressReferencesConstraints(formTemplate, allExpressions).toEither)
       _ <- fromOptA(FormTemplateValidator.validatePeriodFunReferenceConstraints(formTemplate, allExpressions).toEither)
       _ <- fromOptA(

@@ -30,6 +30,8 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.CsvCountryCheck
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.IsTrue
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormComponentValidator
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.ValidIf
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.Constant
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.IfElse
 
 class FormTemplateValidatorSpec
     extends AnyWordSpecLike with Matchers with FormTemplateSupport with TableDrivenPropertyChecks {
@@ -531,7 +533,7 @@ class FormTemplateValidatorSpec
         (toSmartString("no references"), Valid),
         (
           SmartString(toLocalisedString("{0}"), List(FormCtx(FormComponentId("fcId1")))),
-          Invalid("errorMessage: '{0}' contains PII fcId: fcId1")
+          Invalid("sections.fields.[id=fcId2].errorMessage contains PII fcId: fcId1")
         )
       )
 
@@ -554,7 +556,7 @@ class FormTemplateValidatorSpec
         )
         val allExpressions: List[ExprWithPath] = LeafExpr(TemplatePath.root, formTemplate)
 
-        val result = FormTemplateValidator.validateErrorMessageConstraints(formTemplate, allExpressions)
+        val result = FormTemplateValidator.validateErrorMessageConstraints(allExpressions)
         result shouldBe expectedResult
       }
     }
@@ -567,9 +569,12 @@ class FormTemplateValidatorSpec
         (
           FormComponentValidator(
             ValidIf(IsTrue),
-            SmartString(toLocalisedString("{0}"), List(FormCtx(FormComponentId("fcId1"))))
+            SmartString(
+              toLocalisedString("{0}"),
+              List(IfElse(IsTrue, FormCtx(FormComponentId("fcId1")), Constant("bar")))
+            )
           ),
-          Invalid("errorMessage: '{0}' contains PII fcId: fcId1")
+          Invalid("sections.fields.[id=fcId2].validators.errorMessage contains PII fcId: fcId1")
         )
       )
 
@@ -592,7 +597,7 @@ class FormTemplateValidatorSpec
         )
         val allExpressions: List[ExprWithPath] = LeafExpr(TemplatePath.root, formTemplate)
 
-        val result = FormTemplateValidator.validateErrorMessageConstraints(formTemplate, allExpressions)
+        val result = FormTemplateValidator.validateErrorMessageConstraints(allExpressions)
         result shouldBe expectedResult
       }
     }

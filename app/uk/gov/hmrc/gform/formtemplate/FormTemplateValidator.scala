@@ -36,7 +36,6 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 
 import scala.Function.const
 import scala.util.{ Failure, Success, Try }
-import cats.data.OptionT
 
 object FormTemplateValidator {
 
@@ -272,38 +271,13 @@ object FormTemplateValidator {
   }
 
   def validateErrorMessageConstraints(
-    formTemplate: FormTemplate,
     allExpressions: List[ExprWithPath]
   ): ValidationResult = {
-    val allErrorMessages = errorMessages(formTemplate)
-    lazy val allNoPIIFcIds = noPIIFcIds(formTemplate)
-    val invalidResults = for {
-      ss   <- OptionT.liftF(allErrorMessages)
-      fcId <- OptionT.liftF(ss.interpolations).collect { case FormCtx(fcId) => fcId }
-      if !allNoPIIFcIds.contains(fcId)
-    } yield Invalid(s"""errorMessage: '${ss.rawValue(LangADT.En)}' contains PII fcId: $fcId""")
-    Monoid.combineAll(invalidResults.value.flatten)
-  }
-
-  private def noPIIFcIds(formTemplate: FormTemplate): List[FormComponentId] =
-    (formTemplate.destinations.allFormComponents ++
-      SectionHelper.allSectionsFormComponents(formTemplate.formKind.allSections))
-      .filter(_.notPII)
-      .map(f => f.id)
-
-  private def errorMessages(formTemplate: FormTemplate): List[SmartString] = {
-    val pagesErrorMessages: List[SmartString] =
-      formTemplate.formKind.allSections
-        .flatMap(
-          _.fold(_.page.validators.toList)(_.page.validators.toList) { p =>
-            p.defaultPage.flatMap(_.validators).toList ++ p.pages.toList.flatMap(_.validators.toList)
-          }
-        )
-        .map(_.errorMessage)
-    val formComponentsErrorMessages: List[SmartString] = (formTemplate.destinations.allFormComponents ++ SectionHelper
-      .allSectionsFormComponents(formTemplate.formKind.allSections))
-      .flatMap(c => c.errorMessage.toList ++ c.validators.map(_.errorMessage))
-    pagesErrorMessages ++ formComponentsErrorMessages
+    val invalidResults: List[ValidationResult] = allExpressions.flatMap(_.referenceInfos) collect {
+      case FormCtxExpr(path, FormCtx(FormComponentId(fcId))) if path.subpaths.contains("errorMessage") =>
+        Invalid(s"""${path.path} contains PII fcId: $fcId""")
+    }
+    Monoid.combineAll(invalidResults)
   }
 
   def validateAddressReferencesConstraints(
