@@ -45,8 +45,4 @@ object SectionHelper {
       case s: Section.AddToList => s.pages.toList.flatMap(_.fields)
       case _                    => Nil
     }
-  def allSectionsFormComponents(sections: List[Section]): List[FormComponent] =
-    pages(sections).flatMap(_.allFormComponents) ++
-      addToListFormComponents(sections) ++
-      sections.flatMap(addToListRepeaterAndDefaultPages)
 }
