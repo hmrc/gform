@@ -1014,4 +1014,22 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       ValueParser.validate("${dataRetrieve.companyRegistrationNumber.surname}")
     }
   }
+
+  it should "parse nino insights - riskScore" in {
+    val res = ValueParser.validate("${dataRetrieve.ninoInsights.riskScore}")
+    res.right.value should be(
+      TextExpression(
+        DataRetrieveCtx(DataRetrieveId("ninoInsights"), DataRetrieveAttribute.RiskScore)
+      )
+    )
+  }
+
+  it should "parse nino insights - reason" in {
+    val res = ValueParser.validate("${dataRetrieve.ninoInsights.reason}")
+    res.right.value should be(
+      TextExpression(
+        DataRetrieveCtx(DataRetrieveId("ninoInsights"), DataRetrieveAttribute.Reason)
+      )
+    )
+  }
 }
