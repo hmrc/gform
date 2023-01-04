@@ -271,14 +271,23 @@ object FormTemplateValidator {
   }
 
   def validateErrorMessageConstraints(
+    formTemplate: FormTemplate,
     allExpressions: List[ExprWithPath]
   ): ValidationResult = {
+    lazy val allNoPIIFcIds = noPIIFcIds(formTemplate)
     val invalidResults: List[ValidationResult] = allExpressions.flatMap(_.referenceInfos) collect {
-      case FormCtxExpr(path, FormCtx(FormComponentId(fcId))) if path.subpaths.contains("errorMessage") =>
-        Invalid(s"""${path.path} contains PII fcId: $fcId""")
+      case FormCtxExpr(path, FormCtx(fcId))
+          if path.subpaths.contains("errorMessage") && !allNoPIIFcIds.contains(fcId) =>
+        Invalid(s"""${path.path} contains PII fcId: ${fcId.value}""")
     }
     Monoid.combineAll(invalidResults)
   }
+
+  private def noPIIFcIds(formTemplate: FormTemplate): List[FormComponentId] =
+    (formTemplate.destinations.allFormComponents ++
+      SectionHelper.allSectionsFormComponents(formTemplate.formKind.allSections))
+      .filter(_.notPII)
+      .map(f => f.id)
 
   def validateAddressReferencesConstraints(
     formTemplate: FormTemplate,
