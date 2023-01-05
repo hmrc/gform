@@ -101,6 +101,10 @@ object DataRetrieveAttribute {
     override def name: String = "reason"
   }
 
+  case object AccountName extends DataRetrieveAttribute {
+    override def name: String = "accountName"
+  }
+
   implicit val format: OFormat[DataRetrieveAttribute] = derived.oformat()
 
   val idValidation: String = "[_a-zA-Z]\\w*"
@@ -122,6 +126,7 @@ object DataRetrieveAttribute {
     case "registeredAddress"                        => RegisteredAddress
     case "riskScore"                                => RiskScore
     case "reason"                                   => Reason
+    case "accountName"                              => AccountName
     case other                                      => throw new IllegalArgumentException(s"Unknown DataRetrieveAttribute name: $other")
   }
 }
@@ -195,6 +200,55 @@ object DataRetrieve {
     override def formCtxExprs: List[Expr] = List(nino)
   }
 
+  final case class PersonalBankAccountExistence(
+    override val id: DataRetrieveId,
+    sortCode: Expr,
+    accountNumber: Expr,
+    firstName: Expr,
+    lastName: Expr
+  ) extends DataRetrieve {
+    import DataRetrieveAttribute._
+
+    override def attributes: List[DataRetrieveAttribute] = List(
+      AccountNumberIsWellFormatted,
+      AccountExists,
+      NameMatches,
+      AccountName,
+      NonStandardAccountDetailsRequiredForBacs,
+      SortCodeIsPresentOnEISCD,
+      SortCodeSupportsDirectDebit,
+      SortCodeSupportsDirectCredit,
+      SortCodeBankName,
+      Iban
+    )
+
+    override def formCtxExprs: List[Expr] = List(sortCode, accountNumber, firstName, lastName)
+  }
+
+  final case class PersonalBankAccountExistenceWithName(
+    override val id: DataRetrieveId,
+    sortCode: Expr,
+    accountNumber: Expr,
+    name: Expr
+  ) extends DataRetrieve {
+    import DataRetrieveAttribute._
+
+    override def attributes: List[DataRetrieveAttribute] = List(
+      AccountNumberIsWellFormatted,
+      AccountExists,
+      NameMatches,
+      AccountName,
+      NonStandardAccountDetailsRequiredForBacs,
+      SortCodeIsPresentOnEISCD,
+      SortCodeSupportsDirectDebit,
+      SortCodeSupportsDirectCredit,
+      SortCodeBankName,
+      Iban
+    )
+
+    override def formCtxExprs: List[Expr] = List(sortCode, accountNumber, name)
+  }
+
   val reads: Reads[DataRetrieve] = new Reads[DataRetrieve] {
     override def reads(json: JsValue): JsResult[DataRetrieve] =
       (for {
@@ -224,6 +278,38 @@ object DataRetrieve {
                               accountNumberExpr,
                               companyNameExpr
                             )
+                          case "personalBankAccountExistence" =>
+                            for {
+                              parameters         <- opt[JsObject](json, "parameters")
+                              sortCodeValue      <- opt[String](parameters, "sortCode")
+                              accountNumberValue <- opt[String](parameters, "accountNumber")
+                              sortCodeExpr       <- ValueParser.validateWithParser(sortCodeValue, ValueParser.expr)
+                              accountNumberExpr  <- ValueParser.validateWithParser(accountNumberValue, ValueParser.expr)
+                              res <- if ((parameters \ "name").toOption.nonEmpty) {
+                                       for {
+                                         name <- opt[String](parameters, "name")
+                                         name <- ValueParser.validateWithParser(name, ValueParser.expr)
+                                       } yield PersonalBankAccountExistenceWithName(
+                                         DataRetrieveId(idValue),
+                                         sortCodeExpr,
+                                         accountNumberExpr,
+                                         name
+                                       )
+                                     } else {
+                                       for {
+                                         firstName <- opt[String](parameters, "firstName")
+                                         lastName  <- opt[String](parameters, "lastName")
+                                         firstName <- ValueParser.validateWithParser(firstName, ValueParser.expr)
+                                         lastName  <- ValueParser.validateWithParser(lastName, ValueParser.expr)
+                                       } yield PersonalBankAccountExistence(
+                                         DataRetrieveId(idValue),
+                                         sortCodeExpr,
+                                         accountNumberExpr,
+                                         firstName,
+                                         lastName
+                                       )
+                                     }
+                            } yield res
                           case "companyRegistrationNumber" =>
                             for {
                               parameters        <- opt[JsObject](json, "parameters")
