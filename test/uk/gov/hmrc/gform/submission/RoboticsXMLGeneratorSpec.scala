@@ -124,7 +124,8 @@ case object RoboticsXMLGeneratorSpec extends Spec {
     val formId = FormTemplateId("formId")
     val dmsId = "dmsId"
     val submissionRef = SubmissionRef("submissionRef")
-    val l = LangADT.En
+    val lEn = LangADT.En
+    val lCy = LangADT.Cy
 
     val expected: Elem =
       <gform id={formId.value} dms-id={dmsId} submission-reference={submissionRef.value}>{
@@ -138,12 +139,12 @@ case object RoboticsXMLGeneratorSpec extends Spec {
     val expectedBST: Elem =
       <gform id={formId.value} dms-id={dmsId} submission-reference={submissionRef.value}>{
         removeWhitespace(expectedFields)
-      }<dateSubmitted>01/06/2019</dateSubmitted><datetimeSubmitted>2019-06-01T00:00:00+01:00</datetimeSubmitted><userLangauge>EN</userLangauge></gform>
+      }<dateSubmitted>01/06/2019</dateSubmitted><datetimeSubmitted>2019-06-01T00:00:00+01:00</datetimeSubmitted><userLangauge>CY</userLangauge></gform>
 
     RoboticsXMLGenerator
-      .apply(formId, dmsId, submissionRef, objectStructure, dateSubmitted, l) shouldBe expected
+      .apply(formId, dmsId, submissionRef, objectStructure, dateSubmitted, lEn) shouldBe expected
     RoboticsXMLGenerator
-      .apply(formId, dmsId, submissionRef, objectStructure, dateSubmittedBST, l) shouldBe expectedBST
+      .apply(formId, dmsId, submissionRef, objectStructure, dateSubmittedBST, lCy) shouldBe expectedBST
   }
 
   def removeWhitespace(ns: NodeSeq): NodeSeq = ns.map {
