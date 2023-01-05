@@ -168,4 +168,42 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       FormCtx(FormComponentId("nino"))
     )
   }
+
+  it should "parse json as PersonalBankAccountExistence" in {
+    Json
+      .parse("""
+               |{
+               |  "type": "personalBankAccountExistence",
+               |  "id": "personalBankDetails",
+               |  "parameters": {
+               |    "sortCode": "${sortCode}",
+               |    "accountNumber": "${accNumber}",
+               |    "firstName": "${firstName}",
+               |    "lastName": "${lastName}"
+               |  }
+               |}
+               |""".stripMargin)
+      .as[DataRetrieve] shouldBe DataRetrieve.PersonalBankAccountExistence(
+      DataRetrieveId("personalBankDetails"),
+      FormCtx(FormComponentId("sortCode")),
+      FormCtx(FormComponentId("accNumber")),
+      FormCtx(FormComponentId("firstName")),
+      FormCtx(FormComponentId("lastName"))
+    )
+  }
+
+  it should "return error when name, firstName and lastName are missing for PersonalBankAccountExistence" in {
+    Json
+      .parse("""
+               |{
+               |  "type": "personalBankAccountExistence",
+               |  "id": "personalBankDetails",
+               |  "parameters": {
+               |    "sortCode": "${sortCode}",
+               |    "accountNumber": "${accNumber}"
+               |  }
+               |}
+               |""".stripMargin)
+      .validateOpt[DataRetrieve] shouldBe JsError("'firstName' attribute missing")
+  }
 }

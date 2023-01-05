@@ -1032,4 +1032,22 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
       )
     )
   }
+
+  it should "parse personal bank account existence - accountExists" in {
+    val res = ValueParser.validate("${dataRetrieve.personalBankAccountExistence.accountExists}")
+    res.right.value should be(
+      TextExpression(
+        DataRetrieveCtx(DataRetrieveId("personalBankAccountExistence"), DataRetrieveAttribute.AccountExists)
+      )
+    )
+  }
+
+  it should "parse personal bank account existence - nameMatches" in {
+    val res = ValueParser.validate("${dataRetrieve.personalBankAccountExistence.nameMatches}")
+    res.right.value should be(
+      TextExpression(
+        DataRetrieveCtx(DataRetrieveId("personalBankAccountExistence"), DataRetrieveAttribute.NameMatches)
+      )
+    )
+  }
 }
