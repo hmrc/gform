@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.submission
 import java.time.Instant
 import org.apache.pdfbox.pdmodel.PDDocument
 import uk.gov.hmrc.gform.pdfgenerator.{ PdfGeneratorService, XmlGeneratorService }
-import uk.gov.hmrc.gform.sharedmodel.{ PdfHtml, SubmissionRef }
+import uk.gov.hmrc.gform.sharedmodel.{ LangADT, PdfHtml, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.form.Form
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
@@ -36,7 +36,8 @@ trait PdfAndXmlSummariesFactory {
     structuredFormData: StructuredFormValue.ObjectStructure,
     customerId: String,
     submissionRef: SubmissionRef,
-    hmrcDms: HmrcDms
+    hmrcDms: HmrcDms,
+    l: LangADT
   )(implicit now: Instant): Future[PdfAndXmlSummaries]
 }
 
@@ -52,7 +53,8 @@ object PdfAndXmlSummariesFactory {
       structuredFormData: StructuredFormValue.ObjectStructure,
       customerId: String,
       submissionRef: SubmissionRef,
-      hmrcDms: HmrcDms
+      hmrcDms: HmrcDms,
+      l: LangADT
     )(implicit now: Instant): Future[PdfAndXmlSummaries] =
       for {
         pdf <- pdfGeneratorService.generatePDFBytesLocal(pdfData.html.replaceAllLiterally("<br>", "<br/>"))
@@ -62,9 +64,9 @@ object PdfAndXmlSummariesFactory {
       } yield PdfAndXmlSummaries(
         pdfSummary = createPdfSummary(pdf),
         instructionPdfSummary = instructionPdf.map(createPdfSummary),
-        roboticsFile = createRoboticsFile(formTemplate, structuredFormData, hmrcDms, submissionRef),
+        roboticsFile = createRoboticsFile(formTemplate, structuredFormData, hmrcDms, submissionRef, l),
         roboticsFileExtension = hmrcDms.dataOutputFormat.map(_.content),
-        formDataXml = createFormdataXml(formTemplate, structuredFormData, hmrcDms, submissionRef)
+        formDataXml = createFormdataXml(formTemplate, structuredFormData, hmrcDms, submissionRef, l)
       )
 
     private def createPdfSummary(pdf: Array[Byte]) = {
@@ -77,30 +79,33 @@ object PdfAndXmlSummariesFactory {
       formTemplate: FormTemplate,
       structuredFormData: StructuredFormValue.ObjectStructure,
       hmrcDms: HmrcDms,
-      submissionRef: SubmissionRef
+      submissionRef: SubmissionRef,
+      l: LangADT
     )(implicit now: Instant): Option[String] =
       if (hmrcDms.formdataXml)
-        generateRoboticsFile(formTemplate, structuredFormData, hmrcDms, submissionRef, Some(DataOutputFormat.XML))
+        generateRoboticsFile(formTemplate, structuredFormData, hmrcDms, submissionRef, Some(DataOutputFormat.XML), l)
       else None
 
     private def createRoboticsFile(
       formTemplate: FormTemplate,
       structuredFormData: StructuredFormValue.ObjectStructure,
       hmrcDms: HmrcDms,
-      submissionRef: SubmissionRef
+      submissionRef: SubmissionRef,
+      l: LangADT
     )(implicit now: Instant): Option[String] =
-      generateRoboticsFile(formTemplate, structuredFormData, hmrcDms, submissionRef, hmrcDms.dataOutputFormat)
+      generateRoboticsFile(formTemplate, structuredFormData, hmrcDms, submissionRef, hmrcDms.dataOutputFormat, l)
 
     private def generateRoboticsFile(
       formTemplate: FormTemplate,
       structuredFormData: StructuredFormValue.ObjectStructure,
       hmrcDms: HmrcDms,
       submissionRef: SubmissionRef,
-      dataOutputFormat: Option[DataOutputFormat]
+      dataOutputFormat: Option[DataOutputFormat],
+      l: LangADT
     )(implicit now: Instant): Option[String] =
       dataOutputFormat.flatMap {
         case DataOutputFormat.XML =>
-          Some(RoboticsXMLGenerator(formTemplate._id, hmrcDms.dmsFormId, submissionRef, structuredFormData, now))
+          Some(RoboticsXMLGenerator(formTemplate._id, hmrcDms.dmsFormId, submissionRef, structuredFormData, now, l))
             .map(body =>
               // No whitespace of anysort after xml declaration. Robot won't be able to process xml otherwise
               XmlGeneratorService.xmlDec + <data xmlns:xfa="http://www.xfa.org/schema/xfa-data/1.0/">
@@ -108,7 +113,7 @@ object PdfAndXmlSummariesFactory {
                 </data>
             )
         case DataOutputFormat.JSON =>
-          Some(RoboticsXMLGenerator(formTemplate._id, hmrcDms.dmsFormId, submissionRef, structuredFormData, now))
+          Some(RoboticsXMLGenerator(formTemplate._id, hmrcDms.dmsFormId, submissionRef, structuredFormData, now, l))
             .map { xml =>
               val xmlJSONObj = XML.toJSONObject(xml.toString)
               xmlJSONObj.toString

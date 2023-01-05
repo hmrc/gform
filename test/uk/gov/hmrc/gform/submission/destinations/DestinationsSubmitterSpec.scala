@@ -241,7 +241,8 @@ class DestinationsSubmitterSpec
       submissionInfo: DestinationSubmissionInfo,
       pdfData: PdfHtml,
       instructionPdfData: Option[PdfHtml],
-      structuredFormData: StructuredFormValue.ObjectStructure
+      structuredFormData: StructuredFormValue.ObjectStructure,
+      l: LangADT
     ): SubmitterParts[F] = {
       (destinationSubmitter
         .submitToDms(
@@ -249,9 +250,10 @@ class DestinationsSubmitterSpec
           _: PdfHtml,
           _: Option[PdfHtml],
           _: StructuredFormValue.ObjectStructure,
-          _: HmrcDms
+          _: HmrcDms,
+          _: LangADT
         )(_: HeaderCarrier))
-        .expects(submissionInfo, pdfData, instructionPdfData, structuredFormData, destination, hc)
+        .expects(submissionInfo, pdfData, instructionPdfData, structuredFormData, destination, l, hc)
         .returning(().pure)
       this
     }

@@ -25,14 +25,14 @@ import uk.gov.hmrc.gform.fileupload.{ Available, Envelope, File, FileUploadServi
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorService
-import uk.gov.hmrc.gform.sharedmodel.PdfHtml
+import uk.gov.hmrc.gform.sharedmodel.{ LangADT, PdfHtml }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId, Submitted }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 import uk.gov.hmrc.gform.submission.PdfAndXmlSummariesFactory
 import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.{ ExecutionContext }
+import scala.concurrent.ExecutionContext
 
 class DmsSubmitter(
   fileUploadService: FileUploadService,
@@ -49,7 +49,8 @@ class DmsSubmitter(
     pdfData: PdfHtml,
     instructionPdfData: Option[PdfHtml],
     structuredFormData: StructuredFormValue.ObjectStructure,
-    hmrcDms: HmrcDms
+    hmrcDms: HmrcDms,
+    l: LangADT
   )(implicit hc: HeaderCarrier): FOpt[Unit] = {
     import submissionInfo._
     implicit val now: Instant = Instant.now()
@@ -59,7 +60,7 @@ class DmsSubmitter(
       summaries <- fromFutureA(
                      PdfAndXmlSummariesFactory
                        .withPdf(pdfGeneratorService, pdfData, instructionPdfData)
-                       .apply(form, formTemplate, structuredFormData, customerId, submission.submissionRef, hmrcDms)
+                       .apply(form, formTemplate, structuredFormData, customerId, submission.submissionRef, hmrcDms, l)
                    )
       res <-
         fromFutureA(
