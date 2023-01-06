@@ -42,7 +42,8 @@ trait DestinationSubmitterAlgebra[M[_]] {
     pdfData: PdfHtml,
     instructionPdfData: Option[PdfHtml],
     structuredFormData: StructuredFormValue.ObjectStructure,
-    hmrcDms: HmrcDms
+    hmrcDms: HmrcDms,
+    l: LangADT
   )(implicit hc: HeaderCarrier): M[Unit]
 }
 

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.gform.submission.destinations
 
-import uk.gov.hmrc.gform.sharedmodel.PdfHtml
+import uk.gov.hmrc.gform.sharedmodel.{ LangADT, PdfHtml }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 import uk.gov.hmrc.http.HeaderCarrier
@@ -27,6 +27,7 @@ trait DmsSubmitterAlgebra[F[_]] {
     pdfData: PdfHtml,
     instructionPdfData: Option[PdfHtml],
     structuredFormData: StructuredFormValue.ObjectStructure,
-    hmrcDms: HmrcDms
+    hmrcDms: HmrcDms,
+    l: LangADT
   )(implicit hc: HeaderCarrier): F[Unit]
 }

@@ -115,7 +115,8 @@ class DestinationSubmitter[M[_]](
           modelTree.value.pdfData,
           modelTree.value.instructionPdfData,
           modelTree.value.structuredFormData,
-          d
+          d,
+          l
         ).map(_ => None)
       case d: Destination.HandlebarsHttpApi => submitToHandlebars(d, accumulatedModel, modelTree, submissionInfo)
       case d: Destination.Composite =>
@@ -200,9 +201,10 @@ class DestinationSubmitter[M[_]](
     pdfData: PdfHtml,
     instructionPdfData: Option[PdfHtml],
     structuredFormData: StructuredFormValue.ObjectStructure,
-    d: Destination.HmrcDms
+    d: Destination.HmrcDms,
+    l: LangADT
   )(implicit hc: HeaderCarrier): M[Unit] =
-    monadError.handleErrorWith(dms(submissionInfo, pdfData, instructionPdfData, structuredFormData, d)) { msg =>
+    monadError.handleErrorWith(dms(submissionInfo, pdfData, instructionPdfData, structuredFormData, d, l)) { msg =>
       if (d.failOnError)
         raiseError(submissionInfo.formId, d.id, msg)
       else {

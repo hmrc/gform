@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.submission
 import java.time.{ Instant, ZoneId }
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME
-import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
+import uk.gov.hmrc.gform.sharedmodel.{ LangADT, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue.{ ArrayNode, ObjectStructure, TextNode }
 import uk.gov.hmrc.gform.sharedmodel.structuredform.{ Field, RoboticsXml, StructuredFormValue }
@@ -32,11 +32,12 @@ object RoboticsXMLGenerator {
     dmsId: String,
     submissionReference: SubmissionRef,
     structuredForm: ObjectStructure,
-    now: Instant
+    now: Instant,
+    l: LangADT
   ): NodeSeq =
     <gform id={formId.value} dms-id={dmsId} submission-reference={submissionReference.withoutHyphens}>{
       buildObjectStructureXml(structuredForm)
-    }{dateSubmitted(now)}{datetimeSubmitted(now)}</gform>
+    }{dateSubmitted(now)}{datetimeSubmitted(now)}{userLangauge(l)}</gform>
 
   private val dateSubmittedFormater = DateTimeFormatter.ofPattern("dd/MM/yyyy").withZone(ZoneId.of("Europe/London"))
 
@@ -81,5 +82,7 @@ object RoboticsXMLGenerator {
     case Some(i) => <new seqNum ={i.toString}></new>.attributes
     case None    => <new></new>.attributes
   }
+
+  private def userLangauge(l: LangADT) = <userLangauge>{l.langADTToString.toUpperCase}</userLangauge>
 
 }
