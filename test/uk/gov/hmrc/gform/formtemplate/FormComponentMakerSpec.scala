@@ -366,6 +366,11 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                                        |                  "header": "test repeat header"
                                        |                }
                                        |              ]
+                                       |            },
+                                       |            {
+                                       |              "key": "Number + Date",
+                                       |              "value": "${numericAmount} - ${enteredDate}",
+                                       |              "includeIf": "${1 = 1}"
                                        |            }
                                        |          ]
                                        |    }
@@ -399,6 +404,14 @@ class FormComponentMakerSpec extends AnyFlatSpecLike with Matchers with FormTemp
                   SmartString(LocalisedString(Map(LangADT.En -> "test repeat header")), List())
                 )
               )
+            ),
+            MiniSummaryRow.SmartStringRow(
+              Some(SmartString(LocalisedString(Map(LangADT.En -> "Number + Date")), List())),
+              SmartString(
+                LocalisedString(Map(LangADT.En -> "{0} - {1}")),
+                List(FormCtx(FormComponentId("numericAmount")), FormCtx(FormComponentId("enteredDate")))
+              ),
+              Some(IncludeIf(Equals(Constant("1"), Constant("1"))))
             )
           )
         ),

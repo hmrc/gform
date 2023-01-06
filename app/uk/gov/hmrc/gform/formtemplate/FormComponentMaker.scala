@@ -178,6 +178,14 @@ class FormComponentMaker(json: JsValue) {
 
     } yield MiniSummaryRow.ValueRow(key, value, includeIf)
 
+  private def getSmartStringRow(json: JsValue): Opt[MiniSummaryRow] =
+    for {
+      key       <- toOpt((json \ "key").validateOpt[SmartString], "/key")
+      value     <- toOpt((json \ "value").validate[SmartString], "/value")
+      includeIf <- toOpt((json \ "includeIf").validateOpt[IncludeIf], "/includeIf")
+
+    } yield MiniSummaryRow.SmartStringRow(key, value, includeIf)
+
   private def getHeaderRow(json: JsValue): Opt[MiniSummaryRow] =
     for {
       header <- toOpt((json \ "header").validate[SmartString], "/header")
@@ -199,7 +207,7 @@ class FormComponentMaker(json: JsValue) {
     for {
       jsValues <- toOpt((json \ field).validate[List[JsValue]], s"/$field")
       rs <- jsValues
-              .traverse(j => loop(loop(getValueRow(j), getHeaderRow(j)), getATLRow(j)))
+              .traverse(j => loop(loop(loop(getValueRow(j), getHeaderRow(j)), getATLRow(j)), getSmartStringRow(j)))
     } yield rs
   }
 

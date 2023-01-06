@@ -139,6 +139,8 @@ object Substituter {
         )
       case MiniSummaryRow.ValueRow(key, r, includeIf) =>
         MiniSummaryRow.ValueRow(key.map(_(substitutions)), r, includeIf(substitutions))
+      case MiniSummaryRow.SmartStringRow(key, r, includeIf) =>
+        MiniSummaryRow.SmartStringRow(key.map(_(substitutions)), r(substitutions), includeIf(substitutions))
       case MiniSummaryRow.HeaderRow(header) =>
         MiniSummaryRow.HeaderRow(header(substitutions))
       case MiniSummaryRow.ATLRow(atlId, includeIf, rows) =>

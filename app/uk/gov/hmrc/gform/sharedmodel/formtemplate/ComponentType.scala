@@ -388,6 +388,12 @@ object MiniSummaryRow {
     includeIf: Option[IncludeIf]
   ) extends MiniSummaryRow
 
+  case class SmartStringRow(
+    key: Option[SmartString],
+    value: SmartString,
+    includeIf: Option[IncludeIf]
+  ) extends MiniSummaryRow
+
   case class HeaderRow(
     header: SmartString
   ) extends MiniSummaryRow
@@ -402,6 +408,8 @@ object MiniSummaryRow {
     r match {
       case t: ValueRow =>
         LeafExpr(path + "key", t.key) ++ LeafExpr(path + "value", t.value) ++ LeafExpr(path + "includeIf", t.includeIf)
+      case s: SmartStringRow =>
+        LeafExpr(path + "key", s.key) ++ LeafExpr(path + "value", s.value) ++ LeafExpr(path + "includeIf", s.includeIf)
       case t: HeaderRow => LeafExpr(path + "key", t.header)
       case t: ATLRow =>
         LeafExpr(path + "key", t.atlId) ++ LeafExpr(path + "key", t.includeIf) ++ LeafExpr(path + "key", t.rows)
