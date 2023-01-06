@@ -27,6 +27,11 @@ import uk.gov.hmrc.gform.sharedmodel.{ LangADT, LocalisedString, SmartString }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ AnyDate, Date, DateCtx, DateFormCtxVar, ExprWithPath, FormComponentId, FormCtx, InformationMessage, Instruction, LeafExpr, LinkCtx, Offset, PageId, StandardInfo, TemplatePath }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.CsvCountryCheck
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.IsTrue
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormComponentValidator
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.ValidIf
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.Constant
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.IfElse
 
 class FormTemplateValidatorSpec
     extends AnyWordSpecLike with Matchers with FormTemplateSupport with TableDrivenPropertyChecks {
@@ -515,6 +520,158 @@ class FormTemplateValidatorSpec
         val result =
           FormTemplateValidator.validate(CsvCountryCheck(FormComponentId("someNonExistingId"), "column"), sections)
         result shouldBe Invalid("Form field 'someNonExistingId' is not defined in form template.")
+      }
+    }
+  }
+
+  "validateErrorMessageConstraints" should {
+
+    "errorMessage in NonRepeatingPage when noPII is false" in {
+
+      val table = Table(
+        ("errorMessage", "expectedResult"),
+        (toSmartString("no references"), Valid),
+        (
+          SmartString(toLocalisedString("{0}"), List(FormCtx(FormComponentId("fcId1")))),
+          Invalid("sections.fields.[id=fcId2].errorMessage contains PII fcId: fcId1")
+        )
+      )
+
+      forAll(table) { (errorMessage, expectedResult) =>
+        val formTemplate = mkFormTemplate(
+          List(
+            mkSectionNonRepeatingPage(
+              name = "section1",
+              formComponents = List(
+                mkFormComponentWithNotPII(id = "fcId1", notPII = false)
+              )
+            ),
+            mkSectionNonRepeatingPage(
+              name = "section2",
+              formComponents = List(
+                mkFormComponentWithErrorMessage(id = "fcId2", errorMessage = Some(errorMessage))
+              )
+            )
+          )
+        )
+        val allExpressions: List[ExprWithPath] = LeafExpr(TemplatePath.root, formTemplate)
+
+        val result = FormTemplateValidator.validateErrorMessageConstraints(formTemplate, allExpressions)
+        result shouldBe expectedResult
+      }
+    }
+
+    "errorMessage in NonRepeatingPage when noPII is true" in {
+
+      val table = Table(
+        ("errorMessage", "expectedResult"),
+        (toSmartString("no references"), Valid),
+        (SmartString(toLocalisedString("{0}"), List(FormCtx(FormComponentId("fcId1")))), Valid)
+      )
+
+      forAll(table) { (errorMessage, expectedResult) =>
+        val formTemplate = mkFormTemplate(
+          List(
+            mkSectionNonRepeatingPage(
+              name = "section1",
+              formComponents = List(
+                mkFormComponentWithNotPII(id = "fcId1", notPII = true)
+              )
+            ),
+            mkSectionNonRepeatingPage(
+              name = "section2",
+              formComponents = List(
+                mkFormComponentWithErrorMessage(id = "fcId2", errorMessage = Some(errorMessage))
+              )
+            )
+          )
+        )
+        val allExpressions: List[ExprWithPath] = LeafExpr(TemplatePath.root, formTemplate)
+
+        val result = FormTemplateValidator.validateErrorMessageConstraints(formTemplate, allExpressions)
+        result shouldBe expectedResult
+      }
+    }
+
+    "validators in NonRepeatingPage when noPII is false" in {
+
+      val table = Table(
+        ("validator", "expectedResult"),
+        (FormComponentValidator(ValidIf(IsTrue), toSmartString("no references")), Valid),
+        (
+          FormComponentValidator(
+            ValidIf(IsTrue),
+            SmartString(
+              toLocalisedString("{0}"),
+              List(IfElse(IsTrue, FormCtx(FormComponentId("fcId1")), Constant("bar")))
+            )
+          ),
+          Invalid("sections.fields.[id=fcId2].validators.errorMessage contains PII fcId: fcId1")
+        )
+      )
+
+      forAll(table) { (validator, expectedResult) =>
+        val formTemplate = mkFormTemplate(
+          List(
+            mkSectionNonRepeatingPage(
+              name = "section1",
+              formComponents = List(
+                mkFormComponentWithNotPII(id = "fcId1", notPII = false)
+              )
+            ),
+            mkSectionNonRepeatingPage(
+              name = "section2",
+              formComponents = List(
+                mkFormComponentWithValidators(id = "fcId2", validators = validator :: Nil)
+              )
+            )
+          )
+        )
+        val allExpressions: List[ExprWithPath] = LeafExpr(TemplatePath.root, formTemplate)
+
+        val result = FormTemplateValidator.validateErrorMessageConstraints(formTemplate, allExpressions)
+        result shouldBe expectedResult
+      }
+    }
+
+    "validators in NonRepeatingPage when noPII is true" in {
+
+      val table = Table(
+        ("validator", "expectedResult"),
+        (FormComponentValidator(ValidIf(IsTrue), toSmartString("no references")), Valid),
+        (
+          FormComponentValidator(
+            ValidIf(IsTrue),
+            SmartString(
+              toLocalisedString("{0}"),
+              List(IfElse(IsTrue, FormCtx(FormComponentId("fcId1")), Constant("bar")))
+            )
+          ),
+          Valid
+        )
+      )
+
+      forAll(table) { (validator, expectedResult) =>
+        val formTemplate = mkFormTemplate(
+          List(
+            mkSectionNonRepeatingPage(
+              name = "section1",
+              formComponents = List(
+                mkFormComponentWithNotPII(id = "fcId1", notPII = true)
+              )
+            ),
+            mkSectionNonRepeatingPage(
+              name = "section2",
+              formComponents = List(
+                mkFormComponentWithValidators(id = "fcId2", validators = validator :: Nil)
+              )
+            )
+          )
+        )
+        val allExpressions: List[ExprWithPath] = LeafExpr(TemplatePath.root, formTemplate)
+
+        val result = FormTemplateValidator.validateErrorMessageConstraints(formTemplate, allExpressions)
+        result shouldBe expectedResult
       }
     }
   }

@@ -26,6 +26,8 @@ case class TemplatePath(path: String) extends AnyVal {
     TemplatePath(subPath)
   else
     TemplatePath(path + "." + subPath)
+
+  def subpaths: List[String] = path.split('.').toList
 }
 
 object TemplatePath {
