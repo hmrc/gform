@@ -264,6 +264,9 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | FormComponentId.unanchoredIdValidation ~ "." ~ sizeRefTypeParser <~ ".size" ^^ { case value ~ _ ~ index =>
       Size(FormComponentId(value), index)
     }
+    | "removeSpaces(" ~ FormComponentId.unanchoredIdValidation ~ ")" ^^ { case _ ~ value ~ _ =>
+      RemoveSpaces(FormComponentId(value))
+    }
     | FormComponentId.unanchoredIdValidation ~ "[" ~ nonZeroPositiveInteger ~ "]" ^^ {
       case formComponentId ~ _ ~ index ~ _ =>
         IndexOf(

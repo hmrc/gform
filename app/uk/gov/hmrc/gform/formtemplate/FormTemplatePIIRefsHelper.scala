@@ -133,6 +133,7 @@ object FormTemplatePIIRefsHelper {
       case Size(FormComponentId(value), _)                    => List(value)
       case Typed(expr, tpe)                                   => extractRefs(expr)
       case IndexOf(FormComponentId(value), _)                 => List(value)
+      case RemoveSpaces(FormComponentId(value))               => List(value)
     }
 
   implicit class JsLookupResultOps(result: JsLookupResult) {

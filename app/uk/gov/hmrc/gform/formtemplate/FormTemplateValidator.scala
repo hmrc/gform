@@ -215,6 +215,8 @@ object FormTemplateValidator {
         invalid(path, formComponentId)
       case ReferenceInfo.IndexOfExpr(path, IndexOf(formComponentId, _)) if !allFcIds(formComponentId) =>
         invalid(path, formComponentId)
+      case ReferenceInfo.RemoveSpacesExpr(path, RemoveSpaces(formComponentId)) if !allFcIds(formComponentId) =>
+        invalid(path, formComponentId)
       case _ => Valid
     }
 
@@ -932,6 +934,7 @@ object FormTemplateValidator {
       case Size(value, _)              => validate(FormCtx(value), sections)
       case Typed(expr, tpe)            => validate(expr, sections)
       case IndexOf(formComponentId, _) => validate(FormCtx(formComponentId), sections)
+      case RemoveSpaces(_)             => Valid
     }
   }
 
