@@ -37,7 +37,7 @@ object RoboticsXMLGenerator {
   ): NodeSeq =
     <gform id={formId.value} dms-id={dmsId} submission-reference={submissionReference.withoutHyphens}>{
       buildObjectStructureXml(structuredForm)
-    }{dateSubmitted(now)}{datetimeSubmitted(now)}{userLangauge(l)}</gform>
+    }{dateSubmitted(now)}{datetimeSubmitted(now)}{userLanguage(l)}</gform>
 
   private val dateSubmittedFormater = DateTimeFormatter.ofPattern("dd/MM/yyyy").withZone(ZoneId.of("Europe/London"))
 
@@ -83,6 +83,6 @@ object RoboticsXMLGenerator {
     case None    => <new></new>.attributes
   }
 
-  private def userLangauge(l: LangADT) = <userLangauge>{l.langADTToString.toUpperCase}</userLangauge>
+  private def userLanguage(l: LangADT) = <userLanguage>{l.langADTToString.toUpperCase}</userLanguage>
 
 }
