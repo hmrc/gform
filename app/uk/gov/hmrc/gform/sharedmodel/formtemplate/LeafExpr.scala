@@ -75,6 +75,7 @@ final case class ExprWithPath(path: TemplatePath, expr: Expr) {
     case s @ Size(_, _)                                => ReferenceInfo.SizeExpr(path, s) :: Nil
     case Typed(expr, tpe)                              => toReferenceInfo(expr)
     case s @ IndexOf(_, _)                             => ReferenceInfo.IndexOfExpr(path, s) :: Nil
+    case r @ RemoveSpaces(_)                           => ReferenceInfo.RemoveSpacesExpr(path, r) :: Nil
   }
 }
 

@@ -59,6 +59,7 @@ object ExprSubstituter extends Substituter[ExprSubstitutions, FormTemplate] {
         case Size(_, _)                      => t
         case Typed(expr, tpe)                => Typed(substitute(substitutions, expr), tpe)
         case IndexOf(formComponentId, index) => t
+        case RemoveSpaces(_)                 => t
       }
     }
 

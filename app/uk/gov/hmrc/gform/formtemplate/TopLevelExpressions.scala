@@ -173,6 +173,7 @@ object TopLevelExpressions {
         case Size(_, _)                    => e
         case Typed(expr, tpe)              => Typed(loop(expr), tpe)
         case IndexOf(_, _)                 => e
+        case RemoveSpaces(_)               => e
       }
     expressions.get(expressionId).fold(expressions) { expr =>
       expressions + (expressionId -> loop(expr))
