@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.gform.sharedmodel
 
-import java.time.LocalDateTime
 import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.Helpers._
 import uk.gov.hmrc.gform.config.FileInfoConfig
@@ -24,13 +23,13 @@ import uk.gov.hmrc.gform.fileupload.RouteEnvelopeRequest
 import uk.gov.hmrc.gform.sharedmodel.email.LocalisedEmailTemplateId
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DataOutputFormat, DestinationId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DataOutputFormat, DestinationId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.DestinationGen
 import uk.gov.hmrc.gform.submission.{ DmsMetaData, Submission, SubmissionId }
 
-import scala.collection.immutable.List
+import java.time.LocalDateTime
 
 object ExampleData extends ExampleData
 
@@ -82,15 +81,17 @@ trait ExampleAuthConfig extends DestinationGen {
       ackFormComponent,
       true,
       Some(
-        AcknowledgementSectionPdf(
+        PdfCtx(
           Some(toSmartString("It's a Acknowledgement Section Pdf header.")),
-          Some(toSmartString("It's a Acknowledgement Section Pdf footer."))
+          Some(toSmartString("It's a Acknowledgement Section Pdf footer.")),
+          None
         )
       ),
       Some(
-        AcknowledgementSectionPdf(
+        PdfCtx(
           Some(toSmartString("It's a Acknowledgement Section Instruction Pdf header.")),
-          Some(toSmartString("It's a Acknowledgement Section Instruction Pdf footer."))
+          Some(toSmartString("It's a Acknowledgement Section Instruction Pdf footer.")),
+          None
         )
       ),
       true,
@@ -475,6 +476,7 @@ trait ExampleFormTemplate {
     Some(toSmartString("ContinueLabel")),
     None,
     SummaryDisplayWidth.M,
+    None,
     None
   )
 

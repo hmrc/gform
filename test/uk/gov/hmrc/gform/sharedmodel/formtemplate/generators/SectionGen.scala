@@ -16,13 +16,13 @@
 
 package uk.gov.hmrc.gform.sharedmodel.formtemplate.generators
 
-import org.scalacheck.Gen
-import SmartStringGen.smartStringGen
 import cats.data.NonEmptyList
+import org.scalacheck.Gen
 import uk.gov.hmrc.gform.sharedmodel.DataRetrieve.ValidateBankDetails
 import uk.gov.hmrc.gform.sharedmodel.DataRetrieveId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.ExprGen.formCtxGen
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.SmartStringGen.smartStringGen
 
 trait SectionGen {
 
@@ -55,8 +55,8 @@ trait SectionGen {
       shortName           <- Gen.option(smartStringGen)
       fields              <- PrimitiveGen.oneOrMoreGen(FormComponentGen.formComponentGen())
       showReference       <- PrimitiveGen.booleanGen
-      pdf                 <- Gen.option(acknowledgementSectionPdfGen)
-      instructionPdf      <- Gen.option(acknowledgementSectionPdfGen)
+      pdf                 <- Gen.option(pdfContextGen)
+      instructionPdf      <- Gen.option(pdfContextGen)
       displayFeedbackLink <- PrimitiveGen.booleanGen
       panelTitle          <- Gen.option(smartStringGen)
     } yield AcknowledgementSection(
@@ -71,11 +71,11 @@ trait SectionGen {
       panelTitle
     )
 
-  def acknowledgementSectionPdfGen: Gen[AcknowledgementSectionPdf] =
+  def pdfContextGen: Gen[PdfCtx] =
     for {
       header <- Gen.option(smartStringGen)
       footer <- Gen.option(smartStringGen)
-    } yield AcknowledgementSectionPdf(header, footer)
+    } yield PdfCtx(header, footer, None)
 
   def declarationSectionGen: Gen[DeclarationSection] =
     for {
