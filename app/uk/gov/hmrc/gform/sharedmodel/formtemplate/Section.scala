@@ -129,8 +129,8 @@ case class AcknowledgementSection(
   shortName: Option[SmartString],
   fields: List[FormComponent],
   showReference: Boolean,
-  pdf: Option[SectionPdf],
-  instructionPdf: Option[SectionPdf],
+  pdf: Option[PdfCtx],
+  instructionPdf: Option[PdfCtx],
   displayFeedbackLink: Boolean,
   panelTitle: Option[SmartString]
 )
@@ -154,20 +154,6 @@ object AcknowledgementSection {
       LeafExpr(path + "instructionPdf", t.instructionPdf) ++
       LeafExpr(path + "panelTitle", t.panelTitle)
 
-}
-
-case class SectionPdf(
-  header: Option[SmartString],
-  footer: Option[SmartString],
-  tabularFormat: Option[Boolean]
-)
-
-object SectionPdf {
-  implicit val format: OFormat[SectionPdf] = Json.format[SectionPdf]
-
-  implicit val leafExprs: LeafExpr[SectionPdf] = (path: TemplatePath, t: SectionPdf) =>
-    LeafExpr(path + "header", t.header) ++
-      LeafExpr(path + "footer", t.footer)
 }
 
 case class EnrolmentSection(

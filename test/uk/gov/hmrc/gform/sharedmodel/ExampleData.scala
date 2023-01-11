@@ -81,14 +81,14 @@ trait ExampleAuthConfig extends DestinationGen {
       ackFormComponent,
       true,
       Some(
-        SectionPdf(
+        PdfCtx(
           Some(toSmartString("It's a Acknowledgement Section Pdf header.")),
           Some(toSmartString("It's a Acknowledgement Section Pdf footer.")),
           None
         )
       ),
       Some(
-        SectionPdf(
+        PdfCtx(
           Some(toSmartString("It's a Acknowledgement Section Instruction Pdf header.")),
           Some(toSmartString("It's a Acknowledgement Section Instruction Pdf footer.")),
           None

@@ -380,9 +380,9 @@ object Substituter {
         footer = t.footer(substitutions)
       )
 
-  implicit def sectionPdfSubstituter[A](implicit
+  implicit def pdfContextSubstituter[A](implicit
     ev: Substituter[A, Expr]
-  ): Substituter[A, SectionPdf] =
+  ): Substituter[A, PdfCtx] =
     (substitutions, t) =>
       t.copy(
         header = t.header(substitutions),

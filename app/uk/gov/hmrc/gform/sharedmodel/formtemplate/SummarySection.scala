@@ -29,7 +29,7 @@ case class SummarySection(
   fields: Option[NonEmptyList[FormComponent]],
   displayWidth: SummaryDisplayWidth.SummaryDisplayWidth = SummaryDisplayWidth.M,
   includeIf: Option[IncludeIf],
-  pdf: Option[SectionPdf]
+  pdf: Option[PdfCtx]
 )
 
 object SummarySection extends JsonUtils {
