@@ -100,9 +100,12 @@ trait Rewriter {
 
     val fieldsIncludeIfs: List[IncludeIf] = traverseFormComponents(formComponentIncludeIf)
 
-    val acknowledgementSectionIncludeIfs: List[IncludeIf] = formTemplate.destinations match {
-      case dl: DestinationList => dl.acknowledgementSection.fields.flatMap(_.includeIf)
-      case _                   => Nil
+    val destinationsIncludeIfs: List[IncludeIf] = formTemplate.destinations match {
+      case dl: DestinationList =>
+        dl.acknowledgementSection.fields.flatMap(_.includeIf) ++ dl.declarationSection.fold(List.empty[IncludeIf])(
+          _.fields.flatMap(_.includeIf)
+        )
+      case _ => Nil
     }
 
     val summarySectionIncludeIfs: List[IncludeIf] =
@@ -187,7 +190,7 @@ trait Rewriter {
         includeIf.toList ++ pages.toList.flatMap(_.includeIf.toList) ++ fields.fold(List.empty[IncludeIf])(
           _.toList.flatMap(_.includeIf.toList)
         ) ++ repeatsUntil.toList ++ repeatsWhile.toList
-    } ++ fieldsIncludeIfs ++ acknowledgementSectionIncludeIfs ++ summarySectionIncludeIfs ++ choiceIncludeIfs ++ miniSummaryListIncludeIfs ++ redirectsIncludeIfs ++ confirmationRedirectsIncludeIfs
+    } ++ fieldsIncludeIfs ++ destinationsIncludeIfs ++ summarySectionIncludeIfs ++ choiceIncludeIfs ++ miniSummaryListIncludeIfs ++ redirectsIncludeIfs ++ confirmationRedirectsIncludeIfs
 
     def validate(
       c: String,
