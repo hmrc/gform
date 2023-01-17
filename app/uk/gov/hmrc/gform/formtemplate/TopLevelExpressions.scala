@@ -174,6 +174,8 @@ object TopLevelExpressions {
         case Typed(expr, tpe)              => Typed(loop(expr), tpe)
         case IndexOf(_, _)                 => e
         case RemoveSpaces(_)               => e
+        case NumberedList(_)               => e
+        case BulletedList(_)               => e
       }
     expressions.get(expressionId).fold(expressions) { expr =>
       expressions + (expressionId -> loop(expr))
