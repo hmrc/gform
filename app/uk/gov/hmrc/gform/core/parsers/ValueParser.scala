@@ -382,6 +382,12 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     IdentifierName(str)
   }
 
+  lazy val itmpNameFocus: Parser[ItmpNameFocus] = (
+    "givenName" ^^^ ItmpNameFocus.GivenName
+      | "middleName" ^^^ ItmpNameFocus.MiddleName
+      | "familyName" ^^^ ItmpNameFocus.FamilyName
+  )
+
   lazy val authInfo: Parser[AuthInfo] = (
     "gg" ^^^ AuthInfo.GG
       | "payenino" ^^^ AuthInfo.PayeNino
@@ -389,6 +395,9 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
       | "ctutr" ^^^ AuthInfo.CtUtr
       | "email" ^^^ AuthInfo.EmailId
       | "name" ^^^ AuthInfo.Name
+      | "itmpName" ~ "." ~ itmpNameFocus ^^ { case _ ~ _ ~ focus =>
+        AuthInfo.ItmpNameLens(focus)
+      }
       | "itmpName" ^^^ AuthInfo.ItmpName
       | "itmpDateOfBirth" ^^^ AuthInfo.ItmpDateOfBirth
       | "itmpAddress" ^^^ AuthInfo.ItmpAddress

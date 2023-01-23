@@ -118,4 +118,25 @@ class ValueParserSuite extends FunSuite {
 
     assertEquals(full, compact)
   }
+
+  test("parse expression ${auth.itmpName}") {
+    val res = ValueParser.validate("${auth.itmpName}")
+    res.right.value shouldBe TextExpression(AuthCtx(AuthInfo.ItmpName))
+  }
+
+  test("parse expression ${auth.itmpName.givenName}") {
+    val res = ValueParser.validate("${auth.itmpName.givenName}")
+    res.right.value shouldBe TextExpression(AuthCtx(AuthInfo.ItmpNameLens(ItmpNameFocus.GivenName)))
+  }
+
+  test("parse expression ${auth.itmpName.middleName}") {
+    val res = ValueParser.validate("${auth.itmpName.middleName}")
+    res.right.value shouldBe TextExpression(AuthCtx(AuthInfo.ItmpNameLens(ItmpNameFocus.MiddleName)))
+  }
+
+  test("parse expression ${auth.itmpName.familyName}") {
+    val res = ValueParser.validate("${auth.itmpName.familyName}")
+    res.right.value shouldBe TextExpression(AuthCtx(AuthInfo.ItmpNameLens(ItmpNameFocus.FamilyName)))
+  }
+
 }
