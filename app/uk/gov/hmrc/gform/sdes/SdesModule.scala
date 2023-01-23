@@ -30,8 +30,6 @@ import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.objectstore.client.ObjectSummaryWithMd5
 
-import java.util.concurrent.TimeUnit
-import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ ExecutionContext, Future }
 
 class SdesModule(
@@ -65,9 +63,9 @@ class SdesModule(
           IndexOptions()
             .background(false)
             .name("confirmedAtIndex")
-            .expireAfter(configModule.appConfig.`sdes-confirmation-ttl-days`.days.toMillis, TimeUnit.MILLISECONDS)
         )
-      )
+      ),
+      replaceIndexes = true
     )
 
   val sdesConnector: SdesConnector =
@@ -110,8 +108,10 @@ class SdesModule(
     override def findSdesSubmission(correlationId: CorrelationId): FOpt[Option[SdesSubmission]] =
       fromFutureA(sdesService.findSdesSubmission(correlationId))
 
-    override def search(processed: Boolean, page: Int, pageSize: Int): FOpt[SdesSubmissionPageData] =
-      fromFutureA(sdesService.search(processed, page, pageSize))
+    override def search(processed: Boolean, daysBefore: Long, page: Int, pageSize: Int): FOpt[SdesSubmissionPageData] =
+      fromFutureA(sdesService.search(processed, daysBefore, page, pageSize))
+
+    override def removeDaysBefore(daysBefore: Long): FOpt[Unit] = fromFutureA(sdesService.removeDaysBefore(daysBefore))
   }
 
 }

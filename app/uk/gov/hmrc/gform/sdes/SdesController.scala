@@ -32,9 +32,9 @@ class SdesController(
   ex: ExecutionContext
 ) extends BaseController(cc) {
 
-  def search(processed: Boolean, page: Int, pageSize: Int) = Action.async { _ =>
+  def search(processed: Boolean, daysBefore: Long, page: Int, pageSize: Int) = Action.async { _ =>
     sdesAlgebra
-      .search(processed, page, pageSize)
+      .search(processed, daysBefore, page, pageSize)
       .map(pageData => Ok(Json.toJson(pageData)))
   }
 
@@ -51,5 +51,9 @@ class SdesController(
                Future.failed(new RuntimeException(s"Correlation id [$correlationId] not found in mongo collection"))
            }
     } yield NoContent
+  }
+
+  def deleteByDays(daysBefore: Long) = Action.async { _ =>
+    sdesAlgebra.removeDaysBefore(daysBefore).map(_ => Ok)
   }
 }
