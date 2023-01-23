@@ -234,6 +234,16 @@ object IdentifierName {
   implicit val format: OFormat[IdentifierName] = derived.oformat()
 }
 
+sealed trait ItmpNameFocus
+
+object ItmpNameFocus {
+  case object GivenName extends ItmpNameFocus
+  case object MiddleName extends ItmpNameFocus
+  case object FamilyName extends ItmpNameFocus
+
+  implicit val format: OFormat[ItmpNameFocus] = derived.oformat()
+}
+
 sealed trait AuthInfo
 
 object AuthInfo {
@@ -245,6 +255,7 @@ object AuthInfo {
   final case object CtUtr extends AuthInfo
   final case object Name extends AuthInfo
   final case object ItmpName extends AuthInfo
+  final case class ItmpNameLens(focus: ItmpNameFocus) extends AuthInfo
   final case object ItmpDateOfBirth extends AuthInfo
   final case object ItmpAddress extends AuthInfo
 
