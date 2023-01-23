@@ -39,11 +39,12 @@ class Repo[T: OWrites: Manifest](
   name: String,
   mongoComponent: MongoComponent,
   idLens: T => String,
-  indexes: Seq[IndexModel] = Seq.empty
+  indexes: Seq[IndexModel] = Seq.empty,
+  replaceIndexes: Boolean = false
 )(implicit
   formatT: Format[T],
   ec: ExecutionContext
-) extends PlayMongoRepository[T](mongoComponent, name, formatT, indexes) {
+) extends PlayMongoRepository[T](mongoComponent, name, formatT, indexes, None, replaceIndexes) {
   underlying =>
 
   def findDocumentAsJson(id: String): Future[Option[JsValue]] =

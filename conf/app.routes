@@ -85,5 +85,6 @@ POST          /notification-banner                                              
 DELETE        /notification-banner                                                                      uk.gov.hmrc.gform.notificationbanner.NotificationBannerController.deleteNotificationBanner()
 
 POST          /sdes/callback                                                                            uk.gov.hmrc.gform.sdes.SdesCallbackController.callback
-GET           /sdes/search/:processed/:page/:pageSize                                                   uk.gov.hmrc.gform.sdes.SdesController.search(processed: Boolean, page: Int, pageSize: Int)
+GET           /sdes/search/:processed/:daysBefore/:page/:pageSize                                       uk.gov.hmrc.gform.sdes.SdesController.search(processed: Boolean, daysBefore: Long, page: Int, pageSize: Int)
 POST          /sdes/notify/:correlationId                                                               uk.gov.hmrc.gform.sdes.SdesController.notifySDES(correlationId: CorrelationId)
+DELETE        /sdes/:daysBefore                                                                         uk.gov.hmrc.gform.sdes.SdesController.deleteByDays(daysBefore: Long)

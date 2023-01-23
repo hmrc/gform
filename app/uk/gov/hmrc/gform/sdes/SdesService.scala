@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.gform.sdes
 
-import org.mongodb.scala.model.Filters.equal
+import cats.syntax.traverse._
+import org.mongodb.scala.model.Filters.{ and, equal, lt }
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
@@ -28,6 +29,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.objectstore.client.ObjectSummaryWithMd5
 
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 import java.util.Base64
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -47,7 +49,9 @@ trait SdesAlgebra[F[_]] {
 
   def findSdesSubmission(correlationId: CorrelationId): F[Option[SdesSubmission]]
 
-  def search(processed: Boolean, page: Int, pageSize: Int): F[SdesSubmissionPageData]
+  def search(processed: Boolean, daysBefore: Long, page: Int, pageSize: Int): F[SdesSubmissionPageData]
+
+  def removeDaysBefore(daysBefore: Long): F[Unit]
 }
 
 class SdesService(
@@ -99,9 +103,22 @@ class SdesService(
   override def findSdesSubmission(correlationId: CorrelationId): Future[Option[SdesSubmission]] =
     repoSdesSubmission.find(correlationId.value)
 
-  override def search(processed: Boolean, page: Int, pageSize: Int): Future[SdesSubmissionPageData] = {
+  override def search(
+    processed: Boolean,
+    daysBefore: Long,
+    page: Int,
+    pageSize: Int
+  ): Future[SdesSubmissionPageData] = {
 
-    val query = equal("isProcessed", processed)
+    val query =
+      if (daysBefore > 0)
+        and(
+          equal("isProcessed", false),
+          lt("submittedAt", Instant.now().minus(daysBefore, ChronoUnit.DAYS).truncatedTo(ChronoUnit.DAYS))
+        )
+      else
+        equal("isProcessed", false)
+
     val sort = equal("submittedAt", -1)
 
     val skip = page * pageSize
@@ -142,6 +159,17 @@ class SdesService(
             confirmedAt = None
           )
         )
+    } yield ()
+  }
+
+  override def removeDaysBefore(daysBefore: Long): Future[Unit] = {
+    val query = and(
+      equal("isProcessed", false),
+      lt("submittedAt", Instant.now().minus(daysBefore, ChronoUnit.DAYS).truncatedTo(ChronoUnit.DAYS))
+    )
+    for {
+      submissions <- repoSdesSubmission.search(query)
+      _           <- submissions.traverse(s => repoSdesSubmission.delete(s._id.value)).toFuture
     } yield ()
   }
 }
