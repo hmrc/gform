@@ -43,7 +43,8 @@ case class FormComponent(
   labelSize: Option[LabelSize] = None,
   errorShortName: Option[SmartString] = None,
   errorShortNameStart: Option[SmartString] = None,
-  errorExample: Option[SmartString] = None
+  errorExample: Option[SmartString] = None,
+  notPII: Boolean = false
 ) {
   private def updateField(i: Int, fc: FormComponent): FormComponent =
     fc.copy(
