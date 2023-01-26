@@ -87,6 +87,8 @@ final case class Period(dateCtx1: Expr, dateCtx2: Expr) extends Expr
 final case class Size(formComponentId: FormComponentId, index: SizeRefType) extends Expr
 final case class Typed(expr: Expr, tpe: ExplicitExprType) extends Expr
 final case class RemoveSpaces(formComponentId: FormComponentId) extends Expr
+final case class NumberedList(formComponentId: FormComponentId) extends Expr
+final case class BulletedList(formComponentId: FormComponentId) extends Expr
 
 sealed trait SizeRefType extends Product with Serializable
 
