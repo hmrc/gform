@@ -133,6 +133,13 @@ class ApplicationModule(context: Context)
         val submittedExpiry = configModule.appConfig.submittedFormExpiryHours.hours.toMillis
         val indexes = Seq(
           IndexModel(
+            Indexes.ascending("modifiedDetails.createdAt"),
+            IndexOptions()
+              .background(false)
+              .name("createdAtIndex")
+              .expireAfter(formExpiry, TimeUnit.MILLISECONDS)
+          ),
+          IndexModel(
             Indexes.ascending("modifiedDetails.lastUpdated"),
             IndexOptions()
               .background(false)
