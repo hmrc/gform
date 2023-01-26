@@ -40,10 +40,23 @@ case class SdesSubmissionData(
   submissionRef: SubmissionRef,
   submittedAt: Instant,
   status: NotificationStatus,
-  failureReason: String
+  failureReason: String,
+  lastUpdated: Option[Instant]
 )
 
 object SdesSubmissionData {
+
+  def fromSdesSubmission(sdesSubmission: SdesSubmission) = SdesSubmissionData(
+    sdesSubmission._id,
+    sdesSubmission.envelopeId,
+    sdesSubmission.formTemplateId,
+    sdesSubmission.submissionRef,
+    sdesSubmission.submittedAt,
+    sdesSubmission.status,
+    sdesSubmission.failureReason.getOrElse(""),
+    sdesSubmission.lastUpdated
+  )
+
   implicit val correlationIdFormat: Format[CorrelationId] = CorrelationId.vformat
   implicit val envelopeIdFormat: Format[EnvelopeId] = EnvelopeId.vformat
   implicit val formTemplateIdFormat: Format[FormTemplateId] = FormTemplateId.vformat

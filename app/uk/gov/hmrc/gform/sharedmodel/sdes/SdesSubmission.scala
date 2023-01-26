@@ -36,7 +36,8 @@ final case class SdesSubmission(
   isProcessed: Boolean = false,
   status: NotificationStatus,
   failureReason: Option[String] = None,
-  confirmedAt: Option[Instant] = None
+  confirmedAt: Option[Instant] = None,
+  lastUpdated: Option[Instant] = None
 )
 
 object SdesSubmission {
@@ -57,6 +58,7 @@ object SdesSubmission {
     implicit val correlationIdFormat: Format[CorrelationId] = CorrelationId.mongoVformat
     implicit val envelopeIdFormat: Format[EnvelopeId] = EnvelopeId.vformat
     implicit val formTemplateIdFormat: Format[FormTemplateId] = FormTemplateId.vformat
+    implicit val submissionRefFormat: Format[SubmissionRef] = SubmissionRef.vformat
     derived.oformat()
   }
 }
