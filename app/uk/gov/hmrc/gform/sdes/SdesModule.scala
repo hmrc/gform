@@ -27,7 +27,7 @@ import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.sdes.{ CorrelationId, SdesSubmission, SdesSubmissionPageData }
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 import uk.gov.hmrc.objectstore.client.ObjectSummaryWithMd5
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -99,7 +99,7 @@ class SdesModule(
 
     override def notifySDES(sdesSubmission: SdesSubmission, objWithSummary: ObjectSummaryWithMd5)(implicit
       hc: HeaderCarrier
-    ): FOpt[Unit] =
+    ): FOpt[HttpResponse] =
       fromFutureA(sdesService.notifySDES(sdesSubmission, objWithSummary))
 
     override def saveSdesSubmission(sdesSubmission: SdesSubmission): FOpt[Unit] =
@@ -108,10 +108,11 @@ class SdesModule(
     override def findSdesSubmission(correlationId: CorrelationId): FOpt[Option[SdesSubmission]] =
       fromFutureA(sdesService.findSdesSubmission(correlationId))
 
-    override def search(processed: Boolean, daysBefore: Long, page: Int, pageSize: Int): FOpt[SdesSubmissionPageData] =
-      fromFutureA(sdesService.search(processed, daysBefore, page, pageSize))
+    override def search(page: Int, pageSize: Int, processed: Option[Boolean]): FOpt[SdesSubmissionPageData] =
+      fromFutureA(sdesService.search(page, pageSize, processed))
 
-    override def removeDaysBefore(daysBefore: Long): FOpt[Unit] = fromFutureA(sdesService.removeDaysBefore(daysBefore))
+    override def deleteSdesSubmission(correlation: CorrelationId): FOpt[Unit] =
+      fromFutureA(sdesService.deleteSdesSubmission(correlation))
   }
 
 }

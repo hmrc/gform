@@ -16,20 +16,22 @@
 
 package uk.gov.hmrc.gform.sdes
 
-import cats.syntax.traverse._
-import org.mongodb.scala.model.Filters.{ and, equal, lt }
+import cats.syntax.functor._
+import cats.syntax.show._
+import org.mongodb.scala.model.Filters.{ equal, exists }
+import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.core._
+import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
 import uk.gov.hmrc.gform.sharedmodel.sdes.NotificationStatus.FileReady
 import uk.gov.hmrc.gform.sharedmodel.sdes._
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 import uk.gov.hmrc.objectstore.client.ObjectSummaryWithMd5
 
 import java.time.Instant
-import java.time.temporal.ChronoUnit
 import java.util.Base64
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -43,15 +45,15 @@ trait SdesAlgebra[F[_]] {
 
   def notifySDES(sdesSubmission: SdesSubmission, objWithSummary: ObjectSummaryWithMd5)(implicit
     hc: HeaderCarrier
-  ): F[Unit]
+  ): F[HttpResponse]
 
   def saveSdesSubmission(sdesSubmission: SdesSubmission): F[Unit]
 
   def findSdesSubmission(correlationId: CorrelationId): F[Option[SdesSubmission]]
 
-  def search(processed: Boolean, daysBefore: Long, page: Int, pageSize: Int): F[SdesSubmissionPageData]
+  def search(page: Int, pageSize: Int, processed: Option[Boolean]): F[SdesSubmissionPageData]
 
-  def removeDaysBefore(daysBefore: Long): F[Unit]
+  def deleteSdesSubmission(correlation: CorrelationId): F[Unit]
 }
 
 class SdesService(
@@ -63,6 +65,7 @@ class SdesService(
 )(implicit
   ec: ExecutionContext
 ) extends SdesAlgebra[Future] {
+  private val logger = LoggerFactory.getLogger(getClass)
 
   override def notifySDES(
     envelopeId: EnvelopeId,
@@ -104,20 +107,12 @@ class SdesService(
     repoSdesSubmission.find(correlationId.value)
 
   override def search(
-    processed: Boolean,
-    daysBefore: Long,
     page: Int,
-    pageSize: Int
+    pageSize: Int,
+    processed: Option[Boolean]
   ): Future[SdesSubmissionPageData] = {
 
-    val query =
-      if (daysBefore > 0)
-        and(
-          equal("isProcessed", false),
-          lt("submittedAt", Instant.now().minus(daysBefore, ChronoUnit.DAYS).truncatedTo(ChronoUnit.DAYS))
-        )
-      else
-        equal("isProcessed", false)
+    val query = processed.fold(exists("_id"))(p => equal("isProcessed", p))
 
     val sort = equal("submittedAt", -1)
 
@@ -135,7 +130,8 @@ class SdesService(
           s.submissionRef,
           s.submittedAt,
           s.status,
-          s.failureReason.getOrElse("")
+          s.failureReason.getOrElse(""),
+          s.lastUpdated
         )
       ),
       count,
@@ -145,31 +141,30 @@ class SdesService(
 
   override def notifySDES(sdesSubmission: SdesSubmission, objWithSummary: ObjectSummaryWithMd5)(implicit
     hc: HeaderCarrier
-  ): Future[Unit] = {
+  ): Future[HttpResponse] = {
     val notifyRequest = createNotifyRequest(objWithSummary, sdesSubmission._id.value)
     for {
-      _ <- sdesConnector.notifySDES(notifyRequest)
+      res <- sdesConnector.notifySDES(notifyRequest)
       _ <-
         saveSdesSubmission(
           sdesSubmission.copy(
-            submittedAt = Instant.now,
+            lastUpdated = Some(Instant.now),
             isProcessed = false,
             status = FileReady,
             failureReason = None,
             confirmedAt = None
           )
         )
-    } yield ()
+    } yield res
   }
 
-  override def removeDaysBefore(daysBefore: Long): Future[Unit] = {
-    val query = and(
-      equal("isProcessed", false),
-      lt("submittedAt", Instant.now().minus(daysBefore, ChronoUnit.DAYS).truncatedTo(ChronoUnit.DAYS))
-    )
-    for {
-      submissions <- repoSdesSubmission.search(query)
-      _           <- submissions.traverse(s => repoSdesSubmission.delete(s._id.value)).toFuture
-    } yield ()
-  }
+  override def deleteSdesSubmission(correlationId: CorrelationId): Future[Unit] =
+    repoSdesSubmission
+      .delete(correlationId.value)
+      .as(logger.info(show"SdesService.deleteSdesSubmission(${correlationId.value}) - deleting)"))
+      .value
+      .flatMap {
+        case Left(UnexpectedState(error)) => Future.failed(new Exception(error))
+        case Right(unit)                  => Future.successful(unit)
+      }
 }

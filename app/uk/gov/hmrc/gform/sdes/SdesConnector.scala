@@ -21,7 +21,6 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.gform.sharedmodel.sdes.SdesNotifyRequest
 import uk.gov.hmrc.gform.wshttp.{ FutureHttpResponseSyntax, WSHttp }
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpReads, HttpReadsInstances, HttpResponse }
-import uk.gov.hmrc.gform.core.FutureSyntax
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -33,13 +32,12 @@ class SdesConnector(wSHttp: WSHttp, sdesBaseUrl: String, sdesBasePath: String, h
   implicit val legacyRawReads: HttpReads[HttpResponse] =
     HttpReadsInstances.throwOnFailure(HttpReadsInstances.readEitherOf(HttpReadsInstances.readRaw))
 
-  def notifySDES(payload: SdesNotifyRequest)(implicit hc: HeaderCarrier): Future[Unit] = {
+  def notifySDES(payload: SdesNotifyRequest)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     logger.debug(s"SDES notification request: ${Json.stringify(Json.toJson(payload))}")
     val url = s"$sdesBaseUrl$sdesBasePath/notification/fileready"
     wSHttp
       .POST[SdesNotifyRequest, HttpResponse](url, payload, headers)
       .failWithNonSuccessStatusCodes(url)
-      .void
   }
 
 }

@@ -20,7 +20,7 @@ import play.api.libs.json.Json
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
-import uk.gov.hmrc.gform.sharedmodel.sdes.CorrelationId
+import uk.gov.hmrc.gform.sharedmodel.sdes.{ CorrelationId, SdesSubmissionData }
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -32,28 +32,46 @@ class SdesController(
   ex: ExecutionContext
 ) extends BaseController(cc) {
 
-  def search(processed: Boolean, daysBefore: Long, page: Int, pageSize: Int) = Action.async { _ =>
+  def search(page: Int, pageSize: Int, processed: Option[Boolean]) = Action.async { _ =>
     sdesAlgebra
-      .search(processed, daysBefore, page, pageSize)
+      .search(page, pageSize, processed)
       .map(pageData => Ok(Json.toJson(pageData)))
+  }
+
+  def find(correlationId: CorrelationId) = Action.async { _ =>
+    sdesAlgebra.findSdesSubmission(correlationId).flatMap {
+      case Some(s) => Future.successful(Ok(Json.toJson(SdesSubmissionData.fromSdesSubmission(s))))
+      case None    => Future.failed(new RuntimeException(s"Correlation id [$correlationId] not found in mongo collection"))
+    }
   }
 
   def notifySDES(correlationId: CorrelationId) = Action.async { implicit request =>
     for {
       sdesSubmission <- sdesAlgebra.findSdesSubmission(correlationId)
-      _ <- sdesSubmission match {
-             case Some(submission) =>
-               for {
-                 objSummary <- objectStoreAlgebra.zipFiles(submission.envelopeId)
-                 _          <- sdesAlgebra.notifySDES(submission, objSummary)
-               } yield ()
-             case None =>
-               Future.failed(new RuntimeException(s"Correlation id [$correlationId] not found in mongo collection"))
-           }
-    } yield NoContent
+      result <- sdesSubmission match {
+                  case Some(submission) =>
+                    for {
+                      objSummary <- objectStoreAlgebra.zipFiles(submission.envelopeId)
+                      res        <- sdesAlgebra.notifySDES(submission, objSummary)
+                    } yield res
+                  case None =>
+                    Future.failed(
+                      new RuntimeException(s"Correlation id [$correlationId] not found in mongo collection")
+                    )
+                }
+    } yield {
+      val status = result.status
+      if (status >= 200 && status < 300) {
+        Ok
+      } else {
+        BadRequest(result.body)
+      }
+    }
   }
 
-  def deleteByDays(daysBefore: Long) = Action.async { _ =>
-    sdesAlgebra.removeDaysBefore(daysBefore).map(_ => Ok)
+  def remove(correlationId: CorrelationId) = Action.async { _ =>
+    sdesAlgebra.deleteSdesSubmission(correlationId).map { _ =>
+      NoContent
+    }
   }
 }
