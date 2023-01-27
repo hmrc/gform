@@ -308,6 +308,49 @@ object FormTemplateValidator {
     Monoid.combineAll(invalidResults)
   }
 
+  def validateNoPIITitleConstraints(
+    formTemplate: FormTemplate,
+    allExpressions: List[ExprWithPath]
+  ): ValidationResult = {
+    val exprRefs: List[(Expr, FormComponentId)] = allExpressions.flatMap(x =>
+      x.referenceInfos.collect { case FormCtxExpr(_, FormCtx(fcId)) =>
+        (x.expr, fcId)
+      }
+    )
+    val idsWithNoPII = noPIIFcIds(formTemplate)
+    type PIIErrorMessage = String
+    type PIIFormComponentId = String
+    def check(
+      title: SmartString,
+      noPIITitle: Option[SmartString],
+      piiErrorMessage: PIIErrorMessage
+    ): List[(PIIErrorMessage, PIIFormComponentId)] = {
+      val exprs = noPIITitle.fold(title.interpolations)(_ => List.empty)
+      val fcIds = exprRefs.collect { case (e, fcId) if exprs.contains(e) => fcId }
+      fcIds.filterNot(idsWithNoPII.contains).map(_.value).distinct.map(x => (piiErrorMessage, x))
+    }
+
+    val titleMessage = "can only be used in title if it does not contain PII or noPIITitle is defined"
+    val updateTitleMessage = "can only be used in updateTitle if it does not contain PII or noPIIUpdateTitle is defined"
+    formTemplate.formKind.allSections
+      .flatMap(
+        _.fold(n => check(n.page.title, n.page.noPIITitle, titleMessage))(r =>
+          check(r.title, r.page.noPIITitle, titleMessage)
+        )(a =>
+          check(a.title, a.noPIITitle, titleMessage)
+            ++ a.defaultPage.toList.flatMap(p => check(p.title, p.noPIITitle, titleMessage))
+            ++ a.pages.toList.flatMap(p => check(p.title, p.noPIITitle, titleMessage))
+            ++ a.cyaPage.toList.flatMap(c => c.title.toList.flatMap(t => check(t, c.noPIITitle, titleMessage)))
+            ++ a.cyaPage.toList.flatMap(c => check(c.updateTitle, c.noPIIUpdateTitle, updateTitleMessage))
+        )
+      )
+      .headOption
+      .map { case (piiErrorMessage, piiFcId) =>
+        Invalid(s"Field id [$piiFcId] $piiErrorMessage")
+      }
+      .getOrElse(Valid)
+  }
+
   private def noPIIFcIds(formTemplate: FormTemplate): List[FormComponentId] =
     (formTemplate.destinations.allFormComponents ++
       SectionHelper.allSectionsFormComponents(formTemplate.formKind.allSections))
