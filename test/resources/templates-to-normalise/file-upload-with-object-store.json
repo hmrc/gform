@@ -1,0 +1,36 @@
+{
+  "_id": "file-upload-with-object-store",
+  "formName": "file-upload-with-object-store",
+  "description": "",
+  "objectStore": true,
+  "authConfig": {
+    "authModule": "anonymous"
+  },
+  "sections": [
+    {
+      "title": "Page A",
+      "fields": [
+        {
+          "id": "fileId",
+          "type": "file",
+          "label": "Upload reference"
+        }
+      ]
+    }
+  ],
+  "declarationSection": {
+    "title": "Declaration",
+    "fields": []
+  },
+  "acknowledgementSection": {
+    "title": "Your registration has been submitted Genesis",
+    "fields": []
+  },
+  "destinations": [
+    {
+      "id": "transitionToSubmitted",
+      "type": "stateTransition",
+      "requiredState": "Submitted"
+    }
+  ]
+}

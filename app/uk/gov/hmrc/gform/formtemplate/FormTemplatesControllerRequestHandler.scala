@@ -273,8 +273,20 @@ object FormTemplatesControllerRequestHandler {
       }
     }
 
+    val fileUploadUpdater: Reads[JsValue] = Reads { json =>
+      jsonValue \ "objectStore" match {
+        case JsDefined(JsBoolean(bool)) if bool =>
+          json \ "type" match {
+            case JsDefined(JsString("file")) =>
+              json.validate(__.json.update((__ \ 'service).json.put(JsString("upscan"))))
+            case _ => JsSuccess(json)
+          }
+        case _ => JsSuccess(json)
+      }
+    }
+
     val fieldsReads: Reads[JsObject] =
-      (__ \ 'fields).json.update(list(choicesUpdater andThen revealingChoicesUpdater))
+      (__ \ 'fields).json.update(list(choicesUpdater andThen revealingChoicesUpdater andThen fileUploadUpdater))
 
     val regularFieldsOrAddToListFieldsReads =
       (__ \ 'pages).json.update(list(fieldsReads)) orElse fieldsReads
