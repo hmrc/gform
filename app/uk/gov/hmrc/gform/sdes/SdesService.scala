@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.sdes
 
 import cats.syntax.functor._
 import cats.syntax.show._
-import org.mongodb.scala.model.Filters.{ equal, exists }
+import org.mongodb.scala.model.Filters.equal
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
@@ -51,8 +51,13 @@ trait SdesAlgebra[F[_]] {
 
   def findSdesSubmission(correlationId: CorrelationId): F[Option[SdesSubmission]]
 
-  def search(page: Int, pageSize: Int, processed: Option[Boolean], formTemplateId: Option[FormTemplateId],
-             status: Option[NotificationStatus]): F[SdesSubmissionPageData]
+  def search(
+    page: Int,
+    pageSize: Int,
+    processed: Option[Boolean],
+    formTemplateId: Option[FormTemplateId],
+    status: Option[NotificationStatus]
+  ): F[SdesSubmissionPageData]
 
   def deleteSdesSubmission(correlation: CorrelationId): F[Unit]
 }

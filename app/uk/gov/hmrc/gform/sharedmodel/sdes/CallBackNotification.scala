@@ -64,6 +64,7 @@ object NotificationStatus {
     )
 
   def fromName(notificationStatus: NotificationStatus): String = notificationStatus match {
+    case NotNotified           => "NotNotified"
     case FileReady             => "FileReady"
     case FileReceived          => "FileReceived"
     case FileProcessingFailure => "FileProcessingFailure"

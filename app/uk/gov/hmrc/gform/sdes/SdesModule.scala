@@ -26,7 +26,7 @@ import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
-import uk.gov.hmrc.gform.sharedmodel.sdes.{ CorrelationId, SdesSubmission, SdesSubmissionPageData }
+import uk.gov.hmrc.gform.sharedmodel.sdes.{ CorrelationId, NotificationStatus, SdesSubmission, SdesSubmissionPageData }
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 import uk.gov.hmrc.objectstore.client.ObjectSummaryWithMd5
@@ -113,9 +113,13 @@ class SdesModule(
     override def findSdesSubmission(correlationId: CorrelationId): FOpt[Option[SdesSubmission]] =
       fromFutureA(sdesService.findSdesSubmission(correlationId))
 
-    override def search(page: Int, pageSize: Int, processed: Option[Boolean],
-                        formTemplateId: Option[FormTemplateId],
-                        status: Option[NotificationStatus]): FOpt[SdesSubmissionPageData] =
+    override def search(
+      page: Int,
+      pageSize: Int,
+      processed: Option[Boolean],
+      formTemplateId: Option[FormTemplateId],
+      status: Option[NotificationStatus]
+    ): FOpt[SdesSubmissionPageData] =
       fromFutureA(sdesService.search(page, pageSize, processed, formTemplateId, status))
 
     override def deleteSdesSubmission(correlation: CorrelationId): FOpt[Unit] =
