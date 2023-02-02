@@ -20,7 +20,7 @@ import julienrf.json.derived
 import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
-import uk.gov.hmrc.gform.sharedmodel.sdes.NotificationStatus.FileReady
+import uk.gov.hmrc.gform.sharedmodel.sdes.NotificationStatus.NotNotified
 import uk.gov.hmrc.gform.sharedmodel.{ SubmissionRef, ValueClassFormat }
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
@@ -32,11 +32,12 @@ final case class SdesSubmission(
   envelopeId: EnvelopeId,
   formTemplateId: FormTemplateId,
   submissionRef: SubmissionRef,
-  submittedAt: Instant = Instant.now,
+  submittedAt: Option[Instant] = None,
   isProcessed: Boolean = false,
   status: NotificationStatus,
   failureReason: Option[String] = None,
   confirmedAt: Option[Instant] = None,
+  createdAt: Instant = Instant.now,
   lastUpdated: Option[Instant] = None
 )
 
@@ -47,7 +48,7 @@ object SdesSubmission {
       envelopeId,
       formTemplateId,
       submissionRef,
-      status = FileReady
+      status = NotNotified
     )
 
   implicit val formatUUID: Format[UUID] =

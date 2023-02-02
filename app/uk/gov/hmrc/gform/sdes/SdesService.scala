@@ -78,8 +78,13 @@ class SdesService(
     val sdesSubmission = SdesSubmission.createSdesSubmission(envelopeId, formTemplateId, submissionRef)
     val notifyRequest = createNotifyRequest(objWithSummary, sdesSubmission._id.value)
     for {
-      _ <- sdesConnector.notifySDES(notifyRequest)
       _ <- saveSdesSubmission(sdesSubmission)
+      _ <- sdesConnector
+             .notifySDES(notifyRequest)
+             .map(_ => saveSdesSubmission(sdesSubmission.copy(submittedAt = Some(Instant.now), status = FileReady)))
+             .recoverWith { case _ =>
+               Future.unit //it doesn't break the submission when the service is unavailable
+             }
     } yield ()
   }
 
@@ -114,7 +119,7 @@ class SdesService(
 
     val query = processed.fold(exists("_id"))(p => equal("isProcessed", p))
 
-    val sort = equal("submittedAt", -1)
+    val sort = equal("createdAt", -1)
 
     val skip = page * pageSize
     for {
@@ -131,6 +136,7 @@ class SdesService(
           s.submittedAt,
           s.status,
           s.failureReason.getOrElse(""),
+          s.createdAt,
           s.lastUpdated
         )
       ),
@@ -148,6 +154,7 @@ class SdesService(
       _ <-
         saveSdesSubmission(
           sdesSubmission.copy(
+            submittedAt = Some(sdesSubmission.submittedAt.getOrElse(Instant.now)),
             lastUpdated = Some(Instant.now),
             isProcessed = false,
             status = FileReady,

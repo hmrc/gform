@@ -181,7 +181,7 @@ class ApplicationModule(context: Context)
 
   private val submissionConsolidatorModule = new SubmissionConsolidatorModule(wSHttpModule, formModule, configModule)
 
-  val sdesModule = new SdesModule(configModule, wSHttpModule, mongoModule, objectStoreModule)
+  val sdesModule = new SdesModule(configModule, wSHttpModule, mongoModule, objectStoreModule, akkaModule)
 
   private val submissionModule =
     new SubmissionModule(
