@@ -39,18 +39,24 @@ sealed trait NotificationStatus extends Product with Serializable
 
 object NotificationStatus {
 
-  case object FileReady extends NotificationStatus
+  case object NotNotified
+      extends NotificationStatus //Indicates that the file couldn't be notified for any system reasons
 
-  case object FileReceived extends NotificationStatus
+  case object FileReady
+      extends NotificationStatus //Indicates that the file specified in the notification is available to download from SDES
 
-  case object FileProcessingFailure extends NotificationStatus
+  case object FileReceived extends NotificationStatus //Indicates that the specified has been stored in SDES
 
-  case object FileProcessed extends NotificationStatus
+  case object FileProcessingFailure extends NotificationStatus //The file specified has failed processing
+
+  case object FileProcessed
+      extends NotificationStatus //The file has passed all integrity checks and have been delivered to the recipient system in HMRC
 
   implicit val catsEq: Eq[NotificationStatus] = Eq.fromUniversalEquals
 
   implicit val format: Format[NotificationStatus] =
     ADTFormat.formatEnumeration(
+      "NotNotified"           -> NotNotified,
       "FileReady"             -> FileReady,
       "FileReceived"          -> FileReceived,
       "FileProcessingFailure" -> FileProcessingFailure,

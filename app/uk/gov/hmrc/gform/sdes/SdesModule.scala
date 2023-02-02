@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.sdes
 
 import org.mongodb.scala.model.{ IndexModel, IndexOptions, Indexes }
+import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.mongo.MongoModule
@@ -36,7 +37,8 @@ class SdesModule(
   configModule: ConfigModule,
   wSHttpModule: WSHttpModule,
   mongoModule: MongoModule,
-  objectStoreModule: ObjectStoreModule
+  objectStoreModule: ObjectStoreModule,
+  akkaModule: AkkaModule
 )(implicit ex: ExecutionContext) {
 
   private val sdesBaseUrl = configModule.serviceConfig.baseUrl("sdes")
@@ -69,7 +71,10 @@ class SdesModule(
     )
 
   val sdesConnector: SdesConnector =
-    new SdesConnector(wSHttpModule.auditableWSHttp, sdesBaseUrl, sdesBasePath, sdesHeaders)
+    new SdesConnector(wSHttpModule.auditableWSHttp, sdesBaseUrl, sdesBasePath, sdesHeaders)(
+      ex,
+      akkaModule.actorSystem.scheduler
+    )
 
   val sdesService: SdesAlgebra[Future] =
     new SdesService(
