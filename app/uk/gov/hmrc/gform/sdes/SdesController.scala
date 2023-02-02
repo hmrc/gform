@@ -32,9 +32,11 @@ class SdesController(
   ex: ExecutionContext
 ) extends BaseController(cc) {
 
-  def search(page: Int, pageSize: Int, processed: Option[Boolean]) = Action.async { _ =>
+  def search(page: Int, pageSize: Int, processed: Option[Boolean],
+             formTemplateId: Option[FormTemplateId],
+             status: Option[NotificationStatus]) = Action.async { _ =>
     sdesAlgebra
-      .search(page, pageSize, processed)
+      .search(page, pageSize, processed, formTemplateId, status)
       .map(pageData => Ok(Json.toJson(pageData)))
   }
 

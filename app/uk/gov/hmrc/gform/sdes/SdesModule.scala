@@ -113,8 +113,10 @@ class SdesModule(
     override def findSdesSubmission(correlationId: CorrelationId): FOpt[Option[SdesSubmission]] =
       fromFutureA(sdesService.findSdesSubmission(correlationId))
 
-    override def search(page: Int, pageSize: Int, processed: Option[Boolean]): FOpt[SdesSubmissionPageData] =
-      fromFutureA(sdesService.search(page, pageSize, processed))
+    override def search(page: Int, pageSize: Int, processed: Option[Boolean],
+                        formTemplateId: Option[FormTemplateId],
+                        status: Option[NotificationStatus]): FOpt[SdesSubmissionPageData] =
+      fromFutureA(sdesService.search(page, pageSize, processed, formTemplateId, status))
 
     override def deleteSdesSubmission(correlation: CorrelationId): FOpt[Unit] =
       fromFutureA(sdesService.deleteSdesSubmission(correlation))

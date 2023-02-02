@@ -89,7 +89,12 @@ class Repo[T: OWrites: Manifest](
       .toFuture()
       .map(_.toList)
 
-  def page(selector: Bson, orderBy: Bson, skip: Int, limit: Int): Future[List[T]] =
+  def page(
+    selector: Bson,
+    orderBy: Bson,
+    skip: Int,
+    limit: Int
+  ): Future[List[T]] =
     underlying.collection
       .find(selector)
       .sort(orderBy)

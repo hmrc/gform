@@ -51,7 +51,8 @@ trait SdesAlgebra[F[_]] {
 
   def findSdesSubmission(correlationId: CorrelationId): F[Option[SdesSubmission]]
 
-  def search(page: Int, pageSize: Int, processed: Option[Boolean]): F[SdesSubmissionPageData]
+  def search(page: Int, pageSize: Int, processed: Option[Boolean], formTemplateId: Option[FormTemplateId],
+             status: Option[NotificationStatus]): F[SdesSubmissionPageData]
 
   def deleteSdesSubmission(correlation: CorrelationId): F[Unit]
 }
@@ -114,12 +115,13 @@ class SdesService(
   override def search(
     page: Int,
     pageSize: Int,
-    processed: Option[Boolean]
+    processed: Option[Boolean],
+    formTemplateId: Option[FormTemplateId],
+    status: Option[NotificationStatus]
   ): Future[SdesSubmissionPageData] = {
 
-    val query = processed.fold(exists("_id"))(p => equal("isProcessed", p))
-
-    val sort = equal("createdAt", -1)
+    val query = equal("isProcessed", processed)
+    val sort = equal("submittedAt", -1)
 
     val skip = page * pageSize
     for {
