@@ -18,7 +18,8 @@ package uk.gov.hmrc.gform.sdes
 
 import cats.syntax.functor._
 import cats.syntax.show._
-import org.mongodb.scala.model.Filters.equal
+import org.mongodb.scala.model.Filters
+import org.mongodb.scala.model.Filters.{ equal, exists }
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
@@ -26,7 +27,7 @@ import uk.gov.hmrc.gform.repo.Repo
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
-import uk.gov.hmrc.gform.sharedmodel.sdes.NotificationStatus.FileReady
+import uk.gov.hmrc.gform.sharedmodel.sdes.NotificationStatus.{ FileReady, fromName }
 import uk.gov.hmrc.gform.sharedmodel.sdes._
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 import uk.gov.hmrc.objectstore.client.ObjectSummaryWithMd5
@@ -125,14 +126,19 @@ class SdesService(
     status: Option[NotificationStatus]
   ): Future[SdesSubmissionPageData] = {
 
-    val query = equal("isProcessed", processed)
+    val queryByTemplateId =
+      formTemplateId.fold(exists("_id"))(t => equal("formTemplateId", t.value))
+    val query = status.fold(queryByTemplateId)(s => Filters.and(equal("status", fromName(s)), queryByTemplateId))
+
+    val queryNotProcessed = Filters.and(equal("isProcessed", false), queryByTemplateId)
+
     val sort = equal("submittedAt", -1)
 
     val skip = page * pageSize
     for {
       sdesSubmissions <- repoSdesSubmission.page(query, sort, skip, pageSize)
-      count           <- repoSdesSubmission.count(query)
-      countAll        <- repoSdesSubmission.countAll()
+      count           <- repoSdesSubmission.count(queryNotProcessed)
+      countAll        <- repoSdesSubmission.count(queryByTemplateId)
     } yield SdesSubmissionPageData(
       sdesSubmissions.map(s =>
         SdesSubmissionData(
