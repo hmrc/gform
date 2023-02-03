@@ -39,7 +39,6 @@ import uk.gov.hmrc.gform.time.TimeProvider
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ ExecutionContext, Future }
-//import org.mongodb.scala.model.Filters.and
 
 class SubmissionService(
   formAlgebra: FormAlgebra[FOpt],
@@ -182,8 +181,6 @@ class SubmissionService(
   def submissionPageDetails(formTemplateId: FormTemplateId, page: Int, pageSize: Int): Future[SubmissionPageData] = {
     val query = equal("formTemplateId", formTemplateId.value)
     val sort = equal("submittedDate", -1)
-    //val templateIdFilter = equal("formTemplateId", formTemplateId)
-    //val jointQuery = and(query, templateIdFilter)
     val skip = page * pageSize
     for {
       submissions <- submissionRepo.page(query, sort, skip, pageSize)

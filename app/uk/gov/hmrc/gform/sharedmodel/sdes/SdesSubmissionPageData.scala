@@ -20,7 +20,6 @@ import play.api.libs.json.{ Format, Json, OFormat }
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
-//import uk.gov.hmrc.gform.sharedmodel.sdes.NotificationStatus
 
 import java.time.Instant
 

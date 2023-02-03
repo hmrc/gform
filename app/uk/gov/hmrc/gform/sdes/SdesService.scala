@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.sdes
 import cats.syntax.functor._
 import cats.syntax.show._
 import org.mongodb.scala.model.Filters
-import org.mongodb.scala.model.Filters.{ equal, exists }
+import org.mongodb.scala.model.Filters.{ equal, exists, regex }
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
@@ -127,12 +127,12 @@ class SdesService(
   ): Future[SdesSubmissionPageData] = {
 
     val queryByTemplateId =
-      formTemplateId.fold(exists("_id"))(t => equal("formTemplateId", t.value))
+      formTemplateId.fold(exists("_id"))(t => regex("formTemplateId", t.value))
     val query = status.fold(queryByTemplateId)(s => Filters.and(equal("status", fromName(s)), queryByTemplateId))
 
     val queryNotProcessed = Filters.and(equal("isProcessed", false), queryByTemplateId)
 
-    val sort = equal("submittedAt", -1)
+    val sort = equal("createdAt", -1)
 
     val skip = page * pageSize
     for {
