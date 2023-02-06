@@ -140,7 +140,7 @@ case class EmailAuthConfig(
   emailConfirmation: Option[LocalisedString]
 ) extends AuthConfig
 case object HmrcAny extends AuthConfig
-case class HmrcVerified(ivFailure: LocalisedString, notAllowedIn: LocalisedString) extends AuthConfig
+case class HmrcVerified(ivFailure: LocalisedString, notAllowedIn: LocalisedString, minimumCL: String) extends AuthConfig
 case object HmrcSimpleModule extends AuthConfig
 case class HmrcEnrolmentModule(enrolmentAuth: EnrolmentAuth) extends AuthConfig
 case class HmrcAgentModule(agentAccess: AgentAccess) extends AuthConfig
@@ -214,6 +214,7 @@ object AuthConfig {
         maybeEnrolmentCheck            <- (json \ "enrolmentCheck").validateOpt[EnrolmentCheckVerb]
         maybeIvFailure                 <- (json \ "ivFailure").validateOpt[LocalisedString]
         maybeNotAllowedIn              <- (json \ "notAllowedIn").validateOpt[LocalisedString]
+        maybeMinimumCL                 <- (json \ "minimumCL").validateOpt[String]
         maybeEmailCodeTemplate         <- (json \ "emailCodeTemplate").validateOpt[LocalisedEmailTemplateId]
         maybeEmailUseInfo              <- (json \ "emailUseInfo").validateOpt[LocalisedString]
         maybeEmailCodeHelp             <- (json \ "emailCodeHelp").validateOpt[LocalisedString]
@@ -226,12 +227,15 @@ object AuthConfig {
                         case AuthModule.AWSALBAccess    => JsSuccess(AWSALBAuth)
                         case AuthModule.HmrcAny         => JsSuccess(HmrcAny)
                         case AuthModule.HmrcVerified =>
-                          (maybeIvFailure, maybeNotAllowedIn) match {
-                            case (Some(ivFailure), Some(notAllowedIn)) =>
-                              JsSuccess(HmrcVerified(ivFailure, notAllowedIn))
-                            case (Some(_), None) => JsError(s"Missing 'notAllowedIn' field")
-                            case (None, Some(_)) => JsError(s"Missing 'ivFailure' field")
-                            case (None, None)    => JsError(s"Missing 'notAllowedIn' and 'ivFailure' fields")
+                          (maybeIvFailure, maybeNotAllowedIn, maybeMinimumCL) match {
+                            case (Some(ivFailure), Some(notAllowedIn), Some(maybeMinimumCL)) =>
+                              JsSuccess(HmrcVerified(ivFailure, notAllowedIn, maybeMinimumCL))
+                            case (otherIvFailure, otherNotAllowedIn, otherMinimumCL) =>
+                              JsError(
+                                s"Missing ${otherIvFailure.map(_ => "").getOrElse("ivFailure ")}" +
+                                  s"${otherNotAllowedIn.map(_ => "").getOrElse("notAllowedIn ")}" +
+                                  s"${otherMinimumCL.map(_ => "").getOrElse("minimumCL ")}field"
+                              )
                           }
                         case AuthModule.Hmrc =>
                           maybeServiceId match {
@@ -286,7 +290,7 @@ object AuthConfig {
                           maybeCompositeConfigs match {
                             case Some(configs) =>
                               val notAllowedConfigs = configs.toList.collectFirst {
-                                case v @ (Anonymous | AWSALBAuth | HmrcAny | HmrcVerified(_, _) |
+                                case v @ (Anonymous | AWSALBAuth | HmrcAny | HmrcVerified(_, _, _) |
                                     HmrcEnrolmentModule(_) | HmrcAgentModule(_) | HmrcAgentWithEnrolmentModule(_, _) |
                                     OfstedUser | Composite(_)) =>
                                   v
