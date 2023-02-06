@@ -32,3 +32,5 @@ POST          /gform/test-only/file-upload-interceptor/set-response/*path       
 GET           /gform/test-only/file-upload-interceptor/get-responses             uk.gov.hmrc.gform.testonly.FUInterceptorController.getPredefinedResponses()
 
 GET           /gform/test-only/getFromDes/*path                                  uk.gov.hmrc.gform.testonly.TestOnlyController.getFromDes(path: String)
+
+GET           /gform/test-only/object-store/envelopes/:envelopeId                uk.gov.hmrc.gform.testonly.TestOnlyObjectStoreController.downloadZip(envelopeId: EnvelopeId)

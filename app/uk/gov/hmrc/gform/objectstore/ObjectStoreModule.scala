@@ -16,6 +16,9 @@
 
 package uk.gov.hmrc.gform.objectstore
 
+import akka.NotUsed
+import akka.stream.Materializer
+import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import play.api.libs.ws.WSClient
 import uk.gov.hmrc.gform.akka.AkkaModule
@@ -26,9 +29,10 @@ import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.envelope.EnvelopeData
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.objectstore.client.{ ObjectSummaryWithMd5, RetentionPeriod }
+import uk.gov.hmrc.objectstore.client
 import uk.gov.hmrc.objectstore.client.config.ObjectStoreClientConfig
 import uk.gov.hmrc.objectstore.client.play.PlayObjectStoreClient
+import uk.gov.hmrc.objectstore.client.{ ObjectSummaryWithMd5, RetentionPeriod }
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -91,5 +95,10 @@ class ObjectStoreModule(
 
     override def deleteZipFile(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): FOpt[Unit] =
       fromFutureA(objectStoreService.deleteZipFile(envelopeId))
+
+    override def getZipFile(
+      envelopeId: EnvelopeId
+    )(implicit hc: HeaderCarrier, m: Materializer): FOpt[Option[client.Object[Source[ByteString, NotUsed]]]] =
+      fromFutureA(objectStoreService.getZipFile(envelopeId))
   }
 }

@@ -16,13 +16,16 @@
 
 package uk.gov.hmrc.gform.objectstore
 
+import akka.NotUsed
+import akka.stream.Materializer
+import akka.stream.scaladsl.Source
 import akka.util.ByteString
-import cats.syntax.traverse._
 import cats.instances.list._
 import cats.syntax.eq._
-import cats.{ Applicative, Monad }
-import cats.syntax.functor._
 import cats.syntax.flatMap._
+import cats.syntax.functor._
+import cats.syntax.traverse._
+import cats.{ Applicative, Monad }
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
 import uk.gov.hmrc.gform.fileupload.{ File, UploadedFile }
@@ -30,6 +33,7 @@ import uk.gov.hmrc.gform.sharedmodel.config.ContentType
 import uk.gov.hmrc.gform.sharedmodel.envelope.{ Available, EnvelopeData, EnvelopeFile }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.objectstore.client
 import uk.gov.hmrc.objectstore.client.ObjectSummaryWithMd5
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -72,6 +76,10 @@ trait ObjectStoreAlgebra[F[_]] {
   def zipFiles(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): F[ObjectSummaryWithMd5]
 
   def deleteZipFile(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): F[Unit]
+
+  def getZipFile(
+    envelopeId: EnvelopeId
+  )(implicit hc: HeaderCarrier, m: Materializer): F[Option[client.Object[Source[ByteString, NotUsed]]]]
 }
 
 class ObjectStoreService(objectStoreConnector: ObjectStoreConnector, envelopeService: EnvelopeAlgebra[Future])(implicit
@@ -135,4 +143,9 @@ class ObjectStoreService(objectStoreConnector: ObjectStoreConnector, envelopeSer
 
   override def deleteZipFile(envelopeId: EnvelopeId)(implicit hc: HeaderCarrier): Future[Unit] =
     objectStoreConnector.deleteZipFile(envelopeId)
+
+  override def getZipFile(
+    envelopeId: EnvelopeId
+  )(implicit hc: HeaderCarrier, m: Materializer): Future[Option[client.Object[Source[ByteString, NotUsed]]]] =
+    objectStoreConnector.getZipFile(envelopeId)
 }

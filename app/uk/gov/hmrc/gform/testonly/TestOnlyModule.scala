@@ -17,6 +17,7 @@
 package uk.gov.hmrc.gform.testonly
 
 import play.api.mvc.ControllerComponents
+import uk.gov.hmrc.gform.akka.AkkaModule
 
 import scala.concurrent.Future
 import uk.gov.hmrc.gform.config.ConfigModule
@@ -24,6 +25,7 @@ import uk.gov.hmrc.gform.des.DesConnector
 import uk.gov.hmrc.gform.form.FormService
 import uk.gov.hmrc.gform.formtemplate.{ FormTemplateAlgebra, FormTemplateService }
 import uk.gov.hmrc.gform.mongo.MongoModule
+import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.playcomponents.PlayComponents
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId }
 import uk.gov.hmrc.gform.submission.destinations.DestinationModule
@@ -39,7 +41,9 @@ class TestOnlyModule(
   formService: FormService[Future],
   formTemplateService: FormTemplateService,
   destinationModule: DestinationModule,
-  controllerComponents: ControllerComponents
+  controllerComponents: ControllerComponents,
+  objectStoreModule: ObjectStoreModule,
+  akkaModule: AkkaModule
 )(implicit ex: ExecutionContext) {
 
   val enrolmentConnector =
@@ -78,4 +82,9 @@ class TestOnlyModule(
       configModule.serviceConfig,
       proxyActions
     )
+
+  val testOnlyObjectStoreController: TestOnlyObjectStoreController = new TestOnlyObjectStoreController(
+    configModule.controllerComponents,
+    objectStoreModule.objectStoreService
+  )(ex, akkaModule.materializer)
 }

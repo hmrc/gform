@@ -110,7 +110,8 @@ class PlayComponentsModule(
       errorHandler,
       prodRoutes,
       testOnlyModule.testOnlyController,
-      testOnlyModule.fUInterceptor
+      testOnlyModule.fUInterceptor,
+      testOnlyModule.testOnlyObjectStoreController
     )
 
   lazy val router: Router = {
