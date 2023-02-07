@@ -220,7 +220,9 @@ class ApplicationModule(context: Context)
       formService,
       formTemplateModule.formTemplateService,
       destinationModule,
-      controllerComponents
+      controllerComponents,
+      objectStoreModule,
+      akkaModule
     )
 
   val dbLookupModule = new DbLookupModule(controllerComponents, mongoModule)

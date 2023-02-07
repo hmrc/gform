@@ -20,13 +20,14 @@ import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
+import uk.gov.hmrc.gform.models.helpers.ObjectStoreHelper._
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.objectstore.client
 import uk.gov.hmrc.objectstore.client.config.ObjectStoreClientConfig
+import uk.gov.hmrc.objectstore.client.play.Implicits._
 import uk.gov.hmrc.objectstore.client.play.PlayObjectStoreClient
 import uk.gov.hmrc.objectstore.client.{ ObjectSummaryWithMd5, Path }
-import uk.gov.hmrc.objectstore.client.play.Implicits._
-import uk.gov.hmrc.gform.models.helpers.ObjectStoreHelper._
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -81,4 +82,11 @@ class ObjectStoreConnector(
     objectStoreClient.deleteObject(
       path = Path.Directory(zipDirectory).file(s"${envelopeId.value}$zipExtension")
     )
+
+  def getZipFile(envelopeId: EnvelopeId)(implicit
+    hc: HeaderCarrier
+  ): Future[Option[client.Object[Source[ByteString, NotUsed]]]] =
+    objectStoreClient
+      .getObject(path = Path.Directory(zipDirectory).file(s"${envelopeId.value}$zipExtension"))
+
 }
