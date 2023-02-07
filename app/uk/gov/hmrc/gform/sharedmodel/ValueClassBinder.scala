@@ -26,7 +26,7 @@ import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId, FormId, FormStat
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplateId, FormTemplateRawId, SectionNumber }
 import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierEmailAddress
-
+import uk.gov.hmrc.gform.sharedmodel.sdes._
 object ValueClassBinder {
 
   implicit val jLiteralAffinityGroup = new JavascriptLiteral[AffinityGroup] {
@@ -48,7 +48,9 @@ object ValueClassBinder {
   implicit val fileIdBinder: PathBindable[FileId] = valueClassBinder(_.value)
   implicit val dbLookupIdBinder: PathBindable[DbLookupId] = valueClassBinder(_.id)
   implicit val collectionNameBinder: PathBindable[CollectionName] = valueClassBinder(_.name)
-  //implicit val accessCodeBinder: PathBindable[Option[AccessCode]] = mValueClassBinder(_.value)
+  implicit val notificationStatusBinder: QueryStringBindable[NotificationStatus] = valueClassQueryBinder(
+    NotificationStatus.fromName
+  )
   implicit val reads: Reads[Crypted] = Reads {
     case JsString(str) => JsSuccess(Crypted(str))
     case unknown       => JsError(s"Failed to read Crypted. Expected JsString, but found $unknown")

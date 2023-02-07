@@ -20,7 +20,8 @@ import play.api.libs.json.Json
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.gform.controllers.BaseController
 import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
-import uk.gov.hmrc.gform.sharedmodel.sdes.{ CorrelationId, SdesSubmissionData }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
+import uk.gov.hmrc.gform.sharedmodel.sdes.{ CorrelationId, NotificationStatus, SdesSubmissionData }
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -32,9 +33,15 @@ class SdesController(
   ex: ExecutionContext
 ) extends BaseController(cc) {
 
-  def search(page: Int, pageSize: Int, processed: Option[Boolean]) = Action.async { _ =>
+  def search(
+    page: Int,
+    pageSize: Int,
+    processed: Option[Boolean],
+    formTemplateId: Option[FormTemplateId],
+    status: Option[NotificationStatus]
+  ) = Action.async { _ =>
     sdesAlgebra
-      .search(page, pageSize, processed)
+      .search(page, pageSize, processed, formTemplateId, status)
       .map(pageData => Ok(Json.toJson(pageData)))
   }
 

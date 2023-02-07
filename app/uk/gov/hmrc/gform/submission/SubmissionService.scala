@@ -181,7 +181,6 @@ class SubmissionService(
   def submissionPageDetails(formTemplateId: FormTemplateId, page: Int, pageSize: Int): Future[SubmissionPageData] = {
     val query = equal("formTemplateId", formTemplateId.value)
     val sort = equal("submittedDate", -1)
-
     val skip = page * pageSize
     for {
       submissions <- submissionRepo.page(query, sort, skip, pageSize)
