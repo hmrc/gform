@@ -127,6 +127,7 @@ object FormTemplatePIIRefsHelper {
       case Value                                              => Nil
       case LangCtx                                            => Nil
       case DataRetrieveCtx(_, _)                              => Nil
+      case DataRetrieveCount(_)                               => Nil
       case CsvCountryCheck(FormComponentId(value), _)         => List(value)
       case CsvOverseasCountryCheck(FormComponentId(value), _) => List(value)
       case CsvCountryCountCheck(FormComponentId(value), _, _) => List(value)

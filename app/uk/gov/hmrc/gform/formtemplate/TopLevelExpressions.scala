@@ -167,6 +167,7 @@ object TopLevelExpressions {
         case UserCtx(_)                    => e
         case Value                         => e
         case DataRetrieveCtx(_, _)         => e
+        case DataRetrieveCount(_)          => e
         case CsvCountryCheck(_, _)         => e
         case CsvOverseasCountryCheck(_, _) => e
         case CsvCountryCountCheck(_, _, _) => e

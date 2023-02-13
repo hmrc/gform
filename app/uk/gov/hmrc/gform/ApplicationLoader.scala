@@ -31,6 +31,7 @@ import uk.gov.hmrc.crypto.CryptoWithKeysFromConfig
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.auditing.AuditingModule
 import uk.gov.hmrc.gform.config.ConfigModule
+import uk.gov.hmrc.gform.employments.EmploymentsModule
 import uk.gov.hmrc.gform.formstatistics.FormStatisticsModule
 import uk.gov.hmrc.gform.dblookup.DbLookupModule
 import uk.gov.hmrc.gform.dms.DmsModule
@@ -211,6 +212,7 @@ class ApplicationModule(context: Context)
       controllerComponents
     )
   private val obligationModule = new ObligationModule(wSHttpModule, configModule)
+  private val employmentsModule = new EmploymentsModule(wSHttpModule, configModule)
   private val testOnlyModule =
     new TestOnlyModule(
       mongoModule,
@@ -266,6 +268,7 @@ class ApplicationModule(context: Context)
     validationModule,
     dmsModule,
     obligationModule,
+    employmentsModule,
     emailModule,
     dbLookupModule,
     upscanModule,

@@ -105,6 +105,30 @@ object DataRetrieveAttribute {
     override def name: String = "accountName"
   }
 
+  case object EmployerName extends DataRetrieveAttribute {
+    override def name: String = "employerName"
+  }
+
+  case object SequenceNumber extends DataRetrieveAttribute {
+    override def name: String = "sequenceNumber"
+  }
+
+  case object WorksNumber extends DataRetrieveAttribute {
+    override def name: String = "worksNumber"
+  }
+
+  case object TaxDistrictNumber extends DataRetrieveAttribute {
+    override def name: String = "taxDistrictNumber"
+  }
+
+  case object PayeNumber extends DataRetrieveAttribute {
+    override def name: String = "payeNumber"
+  }
+
+  case object Director extends DataRetrieveAttribute {
+    override def name: String = "director"
+  }
+
   implicit val format: OFormat[DataRetrieveAttribute] = derived.oformat()
 
   val idValidation: String = "[_a-zA-Z]\\w*"
@@ -127,6 +151,12 @@ object DataRetrieveAttribute {
     case "riskScore"                                => RiskScore
     case "reason"                                   => Reason
     case "accountName"                              => AccountName
+    case "employerName"                             => EmployerName
+    case "sequenceNumber"                           => SequenceNumber
+    case "worksNumber"                              => WorksNumber
+    case "taxDistrictNumber"                        => TaxDistrictNumber
+    case "payeNumber"                               => PayeNumber
+    case "director"                                 => Director
     case other                                      => throw new IllegalArgumentException(s"Unknown DataRetrieveAttribute name: $other")
   }
 }
@@ -249,6 +279,24 @@ object DataRetrieve {
     override def formCtxExprs: List[Expr] = List(sortCode, accountNumber, name)
   }
 
+  final case class Employments(
+    override val id: DataRetrieveId,
+    nino: Expr,
+    taxYear: Expr
+  ) extends DataRetrieve {
+    import DataRetrieveAttribute._
+    override def attributes: List[DataRetrieveAttribute] = List(
+      EmployerName,
+      SequenceNumber,
+      WorksNumber,
+      TaxDistrictNumber,
+      PayeNumber,
+      Director
+    )
+
+    override def formCtxExprs: List[Expr] = List(nino)
+  }
+
   val reads: Reads[DataRetrieve] = new Reads[DataRetrieve] {
     override def reads(json: JsValue): JsResult[DataRetrieve] =
       (for {
@@ -322,6 +370,14 @@ object DataRetrieve {
                               nino       <- opt[String](parameters, "nino")
                               ninoExpr   <- ValueParser.validateWithParser(nino, ValueParser.expr)
                             } yield NinoInsights(DataRetrieveId(idValue), ninoExpr)
+                          case "employments" =>
+                            for {
+                              parameters  <- opt[JsObject](json, "parameters")
+                              nino        <- opt[String](parameters, "nino")
+                              taxYear     <- opt[String](parameters, "taxYear")
+                              ninoExpr    <- ValueParser.validateWithParser(nino, ValueParser.expr)
+                              taxYearExpr <- ValueParser.validateWithParser(taxYear, ValueParser.expr)
+                            } yield Employments(DataRetrieveId(idValue), ninoExpr, taxYearExpr)
                           case other => Left(UnexpectedState(s"'type' value $other not recognized"))
                         }
       } yield dataRetrieve).fold(e => JsError(e.error), r => JsSuccess(r))
@@ -342,7 +398,14 @@ object DataRetrieve {
   implicit val format: OFormat[DataRetrieve] = OFormatWithTemplateReadFallback(reads)
 }
 
-case class DataRetrieveResult(id: DataRetrieveId, data: Map[DataRetrieveAttribute, String], requestParams: JsValue)
+sealed trait RetrieveDataType extends Product with Serializable
+
+object RetrieveDataType {
+  case class ObjectType(data: Map[DataRetrieveAttribute, String]) extends RetrieveDataType
+  case class ListType(data: List[Map[DataRetrieveAttribute, String]]) extends RetrieveDataType
+}
+
+case class DataRetrieveResult(id: DataRetrieveId, data: RetrieveDataType, requestParams: JsValue)
 
 object DataRetrieveResult {
   implicit val dataRetrieveSuccessDataFormat: Format[Map[DataRetrieveAttribute, String]] =
@@ -355,5 +418,21 @@ object DataRetrieveResult {
           key.name -> value
         }
       )
+  implicit val retrieveDataTypeFormat: Format[RetrieveDataType] = {
+
+    val reads: Reads[RetrieveDataType] = Reads {
+      case a: JsArray =>
+        implicitly[Reads[List[Map[DataRetrieveAttribute, String]]]].reads(a).map(RetrieveDataType.ListType)
+      case other => implicitly[Reads[Map[DataRetrieveAttribute, String]]].reads(other).map(RetrieveDataType.ObjectType)
+    }
+
+    val writes: Writes[RetrieveDataType] = Writes[RetrieveDataType] {
+
+      case RetrieveDataType.ObjectType(data) => Json.toJson(data)
+      case RetrieveDataType.ListType(data)   => Json.toJson(data)
+    }
+
+    Format[RetrieveDataType](reads, writes)
+  }
   implicit val format: Format[DataRetrieveResult] = derived.oformat()
 }
