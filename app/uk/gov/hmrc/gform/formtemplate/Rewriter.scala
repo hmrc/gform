@@ -421,16 +421,13 @@ trait Rewriter {
 
       def replaceDestination(destination: Destination) =
         destination match {
-          case h @ HmrcDms(_, _, _, _, _, includeIf, _, _, _, _, _) =>
-            h.copy(includeIf = replaceDesIncludeIf(includeIf))
-          case c @ Destination.Composite(_, includeIf, _) => c.copy(includeIf = replaceDesIncludeIf(includeIf))
-          case e @ Email(_, _, includeIf, _, _, _)        => e.copy(includeIf = replaceDesIncludeIf(includeIf))
-          case h @ HandlebarsHttpApi(_, _, _, _, _, _, includeIf, _) =>
-            h.copy(includeIf = replaceDesIncludeIf(includeIf))
-          case l @ Log(_)                              => l
-          case s @ StateTransition(_, _, includeIf, _) => s.copy(includeIf = replaceDesIncludeIf(includeIf))
-          case s @ SubmissionConsolidator(_, _, _, _, includeIf, _) =>
-            s.copy(includeIf = replaceDesIncludeIf(includeIf))
+          case h: HmrcDms                => h.copy(includeIf = replaceDesIncludeIf(h.includeIf))
+          case c: Destination.Composite  => c.copy(includeIf = replaceDesIncludeIf(c.includeIf))
+          case e: Email                  => e.copy(includeIf = replaceDesIncludeIf(e.includeIf))
+          case h: HandlebarsHttpApi      => h.copy(includeIf = replaceDesIncludeIf(h.includeIf))
+          case l: Log                    => l
+          case s: StateTransition        => s.copy(includeIf = replaceDesIncludeIf(s.includeIf))
+          case s: SubmissionConsolidator => s.copy(includeIf = replaceDesIncludeIf(s.includeIf))
         }
 
       def replaceDesIncludeIf(desIncludeIfValue: DestinationIncludeIf) = desIncludeIfValue match {
