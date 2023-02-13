@@ -403,14 +403,29 @@ object Substituter {
       panelTitle = t.panelTitle(substitutions)
     )
 
+  implicit def desIncludeIfValueSubstituter[A](implicit
+    ev: Substituter[A, IncludeIf]
+  ): Substituter[A, DestinationIncludeIf] = (substitutions, t) =>
+    t match {
+      case d @ DestinationIncludeIf.IncludeIfValue(includeIf) => d.copy(value = includeIf(substitutions))
+      case otherwise                                          => otherwise
+    }
+
   implicit def destinationSubstituter[A](implicit
-    ev: Substituter[A, Expr]
+    ev: Substituter[A, Expr],
+    ev2: Substituter[A, DestinationIncludeIf]
   ): Substituter[A, Destination] = (substitutions, t) =>
     t match {
-      case d: Destination.HmrcDms                => d.copy(customerId = d.customerId(substitutions))
-      case d: Destination.Composite              => d.copy(destinations = d.destinations(substitutions))
-      case d: Destination.SubmissionConsolidator => d.copy(customerId = d.customerId(substitutions))
-      case otherwise                             => otherwise
+      case d: Destination.HmrcDms =>
+        d.copy(customerId = d.customerId(substitutions), includeIf = d.includeIf(substitutions))
+      case d: Destination.Composite =>
+        d.copy(destinations = d.destinations(substitutions), includeIf = d.includeIf(substitutions))
+      case d: Destination.SubmissionConsolidator =>
+        d.copy(customerId = d.customerId(substitutions), includeIf = d.includeIf(substitutions))
+      case d: Destination.Email             => d.copy(includeIf = d.includeIf(substitutions))
+      case d: Destination.HandlebarsHttpApi => d.copy(includeIf = d.includeIf(substitutions))
+      case d: Destination.StateTransition   => d.copy(includeIf = d.includeIf(substitutions))
+      case otherwise                        => otherwise
     }
 
   implicit def declarationSectionSubstituter[A](implicit

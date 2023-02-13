@@ -29,7 +29,8 @@ case class SubmissionData(
   emailParameters: EmailParametersRecalculated,
   attachments: Attachments,
   l: LangADT,
-  maybeEmailAddress: Option[String]
+  maybeEmailAddress: Option[String],
+  desIncludeIfEval: FrontEndSubmissionDesIncludeIfEval
 )
 
 object SubmissionData {

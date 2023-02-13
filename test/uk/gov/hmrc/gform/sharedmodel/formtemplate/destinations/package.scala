@@ -20,6 +20,7 @@ import cats.Show
 import cats.instances.string._
 import cats.syntax.show._
 import play.api.libs.json.{ JsValue, Writes }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.StringValue
 
 package object destinations {
   def createUploadableJson(destination: Destination): String = destination match {
@@ -27,7 +28,7 @@ package object destinations {
       import composite._
       s"""|{
           |  "id": "${id.id}",
-          |  ${optionalField("includeIf", Option(destination.includeIf), "true")}
+          |  "includeIf":  "${getDesIncludeIfValue(destination.includeIf)}",
           |  "${Destination.typeDiscriminatorFieldName}": "${Destination.composite}",
           |  "destinations": [
           ${composite.destinations.map(createUploadableJson).toList.mkString(",\n|")}
@@ -38,7 +39,7 @@ package object destinations {
       import stateTransition._
       s"""|{
           |  "id": "${id.id}",
-          |  ${optionalField("includeIf", Option(destination.includeIf), "true")}
+          |  "includeIf":  "${getDesIncludeIfValue(destination.includeIf)}",
           |  ${optionalField("failOnError", Option(destination.failOnError), true)}
           |  "${Destination.typeDiscriminatorFieldName}": "${Destination.stateTransition}",
           |  "requiredState": "${requiredState.toString}"
@@ -48,7 +49,7 @@ package object destinations {
       import hmrcDms._
       s"""|{
           |  "id": "${id.id}",
-          |  ${optionalField("includeIf", Option(destination.includeIf), "true")}
+          |  "includeIf":  "${getDesIncludeIfValue(destination.includeIf)}",
           |  ${optionalField("failOnError", Option(destination.failOnError), true)}
           |  "${Destination.typeDiscriminatorFieldName}": "${Destination.hmrcDms}",
           |  "dmsFormId": "$dmsFormId",
@@ -64,7 +65,7 @@ package object destinations {
     case submissionConsolidator: Destination.SubmissionConsolidator =>
       s"""|{
           |  "id": "${submissionConsolidator.id.id}",
-          |  ${optionalField("includeIf", Option(submissionConsolidator.includeIf), "true")}
+          |  "includeIf":  "${getDesIncludeIfValue(destination.includeIf)}",
           |  ${optionalField("failOnError", Option(submissionConsolidator.failOnError), true)}
           |  ${optionalField("formData", submissionConsolidator.formData)}
           |  "${Destination.typeDiscriminatorFieldName}": "${Destination.submissionConsolidator}",
@@ -78,7 +79,7 @@ package object destinations {
           |  "id": "${id.id}",
           |  ${optionalField("payload", payload)}
           |  ${optionalField("convertSingleQuotes", Option(false))}
-          |  ${optionalField("includeIf", Option(destination.includeIf), "true")}
+          |  "includeIf":  "${getDesIncludeIfValue(destination.includeIf)}",
           |  ${optionalField("failOnError", Option(destination.failOnError), true)}
           |  ${optionalField("payloadType", Option(handlebars.payloadType), TemplateType.JSON)}
           |  "${Destination.typeDiscriminatorFieldName}": "${Destination.handlebarsHttpApi}",
@@ -99,7 +100,7 @@ package object destinations {
       show"""|{
              |  "id": "$id",
              |  ${optionalField("convertSingleQuotes", Option(false))}
-             |  ${optionalField("includeIf", Option(destination.includeIf), "true")}
+             |  "includeIf":  "${getDesIncludeIfValue(destination.includeIf)}",
              |  ${optionalField("failOnError", Option(destination.failOnError), true)}
              |  "emailTemplateId": "${email.emailVerifierService}",
              |  "to": "$to",
@@ -120,4 +121,10 @@ package object destinations {
   def quote[T](s: T)(implicit show: Show[T]) = show""""$s""""
 
   def write[T](t: T)(implicit w: Writes[T]): JsValue = w.writes(t)
+
+  private def getDesIncludeIfValue(includeIf: DestinationIncludeIf): String =
+    includeIf match {
+      case StringValue(s) => s
+      case _              => "true"
+    }
 }

@@ -15,6 +15,7 @@
       {
         "id": "transitionToSubmitted",
         "type": "stateTransition",
+        "includeIf": "true",
         "requiredState": "Submitted"
       }
     ],

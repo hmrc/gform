@@ -345,9 +345,27 @@ object FormTemplatesControllerRequestHandler {
       json.transform(updatePageQuestions andThen updateSectionQuestions) orElse JsSuccess(json)
     }
 
+    val transformDestinations: Reads[JsValue] = Reads { json =>
+      val transformIncludeIfs: Reads[JsValue] = Reads { json =>
+        json \ "includeIf" match {
+          case JsDefined(JsString(_)) => JsSuccess(json)
+          case JsUndefined()          => json.validate(__.json.update((__ \ 'includeIf).json.put(JsString("true"))))
+        }
+      }
+      json.transform(j =>
+        j.validate(of[JsArray].map { case JsArray(arr) =>
+          JsArray(
+            arr.map(item => item.transform(transformIncludeIfs).getOrElse(item))
+          )
+        })
+      ) orElse JsSuccess(json)
+    }
+
     val moveDestinations =
       (__ \ 'destinations \ 'destinations).json
-        .copyFrom((__ \ 'destinations).json.pick) orElse Reads.pure(Json.obj())
+        .copyFrom((__ \ 'destinations).json.pick.map { dJson =>
+          dJson.transform(transformDestinations).getOrElse(dJson)
+        }) orElse Reads.pure(Json.obj())
 
     val moveDeclarationSection =
       (__ \ 'destinations \ 'declarationSection).json
