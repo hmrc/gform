@@ -19,9 +19,9 @@ package uk.gov.hmrc.gform.sharedmodel
 import play.api.libs.json.{ Format, Json }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
 
-case class FrontEndSubmissionDesIncludeIfEval(exprEval: List[(DestinationId, Boolean)])
+case class DestinationIncludeIfEval(exprEval: List[(DestinationId, Boolean)])
 
-object FrontEndSubmissionDesIncludeIfEval {
-  val empty = FrontEndSubmissionDesIncludeIfEval(List.empty[(DestinationId, Boolean)])
-  implicit val format: Format[FrontEndSubmissionDesIncludeIfEval] = Json.format[FrontEndSubmissionDesIncludeIfEval]
+object DestinationIncludeIfEval {
+  val empty = DestinationIncludeIfEval(List.empty[(DestinationId, Boolean)])
+  implicit val format: Format[DestinationIncludeIfEval] = Json.format[DestinationIncludeIfEval]
 }

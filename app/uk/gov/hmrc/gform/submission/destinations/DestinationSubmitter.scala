@@ -22,7 +22,7 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import uk.gov.hmrc.gform.logging.Loggers
 import uk.gov.hmrc.gform.notifier.NotifierAlgebra
-import uk.gov.hmrc.gform.sharedmodel.{ EmailVerifierService, FrontEndSubmissionDesIncludeIfEval, LangADT, PdfHtml }
+import uk.gov.hmrc.gform.sharedmodel.{ DestinationIncludeIfEval, EmailVerifierService, LangADT, PdfHtml }
 import uk.gov.hmrc.gform.sharedmodel.form.{ FormData, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
@@ -50,17 +50,17 @@ class DestinationSubmitter[M[_]](
     submitter: DestinationsSubmitterAlgebra[M],
     formData: Option[FormData],
     l: LangADT,
-    desIncludeIfEval: FrontEndSubmissionDesIncludeIfEval
+    destIncludeIfEval: DestinationIncludeIfEval
   )(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
     monadError.pure(
       DestinationSubmitterAlgebra
-        .isIncludeIf(destination, accumulatedModel, modelTree, handlebarsTemplateProcessor, desIncludeIfEval)
+        .isIncludeIf(destination, accumulatedModel, modelTree, handlebarsTemplateProcessor, destIncludeIfEval)
     ) flatMap { include =>
       if (include)
         for {
           _ <- logInfoInMonad(submissionInfo.formId, destination.id, "Included")
           result <-
-            submit(destination, submissionInfo, accumulatedModel, modelTree, submitter, formData, l, desIncludeIfEval)
+            submit(destination, submissionInfo, accumulatedModel, modelTree, submitter, formData, l, destIncludeIfEval)
           _ <- audit(destination, result.map(_.status), None, submissionInfo, modelTree)
         } yield result
       else
@@ -109,7 +109,7 @@ class DestinationSubmitter[M[_]](
     submitter: DestinationsSubmitterAlgebra[M],
     formData: Option[FormData],
     l: LangADT,
-    desIncludeIfEval: FrontEndSubmissionDesIncludeIfEval
+    destIncludeIfEval: DestinationIncludeIfEval
   )(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
     destination match {
       case d: Destination.HmrcDms =>
@@ -124,7 +124,7 @@ class DestinationSubmitter[M[_]](
       case d: Destination.HandlebarsHttpApi => submitToHandlebars(d, accumulatedModel, modelTree, submissionInfo)
       case d: Destination.Composite =>
         submitter
-          .submitToList(d.destinations, submissionInfo, accumulatedModel, modelTree, formData, l, desIncludeIfEval)
+          .submitToList(d.destinations, submissionInfo, accumulatedModel, modelTree, formData, l, destIncludeIfEval)
       case d: Destination.StateTransition => stateTransitionAlgebra(d, submissionInfo.formId).map(_ => None)
       case d: Destination.Log             => log(d, accumulatedModel, modelTree).map(_ => None)
       case d: Destination.Email =>

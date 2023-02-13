@@ -24,7 +24,7 @@ import org.scalacheck.Gen
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.libs.json._
 import uk.gov.hmrc.gform.Spec
-import uk.gov.hmrc.gform.sharedmodel.{ FrontEndSubmissionDesIncludeIfEval, FrontEndSubmissionVariables, LangADT, PdfHtml, SubmissionRef }
+import uk.gov.hmrc.gform.sharedmodel.{ DestinationIncludeIfEval, FrontEndSubmissionVariables, LangADT, PdfHtml, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.form.FormData
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
@@ -57,7 +57,7 @@ class DestinationsSubmitterSpec
             destinationModel,
             None,
             formData,
-            FrontEndSubmissionDesIncludeIfEval.empty
+            DestinationIncludeIfEval.empty
           )
           .submitter
           .send(
@@ -73,7 +73,7 @@ class DestinationsSubmitterSpec
             ),
             Some(formData),
             LangADT.En,
-            FrontEndSubmissionDesIncludeIfEval.empty
+            DestinationIncludeIfEval.empty
           )
     }
   }
@@ -112,7 +112,7 @@ class DestinationsSubmitterSpec
           initialModel,
           Option(response1Model),
           formData,
-          FrontEndSubmissionDesIncludeIfEval.empty
+          DestinationIncludeIfEval.empty
         )
         .expectDestinationSubmitterSubmitIfIncludeIf(
           handlebarsHttpApi2,
@@ -121,7 +121,7 @@ class DestinationsSubmitterSpec
           initialModel,
           Option(response2Model),
           formData,
-          FrontEndSubmissionDesIncludeIfEval.empty
+          DestinationIncludeIfEval.empty
         )
         .submitter
         .send(
@@ -137,7 +137,7 @@ class DestinationsSubmitterSpec
           ),
           Some(formData),
           LangADT.En,
-          FrontEndSubmissionDesIncludeIfEval.empty
+          DestinationIncludeIfEval.empty
         )
     }
   }
@@ -211,7 +211,7 @@ class DestinationsSubmitterSpec
       modelInTree: HandlebarsTemplateProcessorModel,
       response: Option[HandlebarsDestinationResponse],
       formData: FormData,
-      desIncludeIfEval: FrontEndSubmissionDesIncludeIfEval
+      desIncludeIfEval: DestinationIncludeIfEval
     ): SubmitterParts[F] = {
       (destinationSubmitter
         .submitIfIncludeIf(
@@ -222,7 +222,7 @@ class DestinationsSubmitterSpec
           _: DestinationsSubmitter[F],
           _: Option[FormData],
           _: LangADT,
-          _: FrontEndSubmissionDesIncludeIfEval
+          _: DestinationIncludeIfEval
         )(_: HeaderCarrier))
         .expects(where {
           (
@@ -233,7 +233,7 @@ class DestinationsSubmitterSpec
             _: DestinationsSubmitter[F],
             actualformData: Option[FormData],
             _: LangADT,
-            _: FrontEndSubmissionDesIncludeIfEval,
+            _: DestinationIncludeIfEval,
             hc: HeaderCarrier
           ) =>
             destination === dest && info === submissionInfo && accModel === accumulatedModel && tree.value.model === modelInTree && hc === hc && actualformData

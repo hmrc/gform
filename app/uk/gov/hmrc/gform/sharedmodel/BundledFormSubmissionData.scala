@@ -23,7 +23,7 @@ import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
 case class BundledFormSubmissionData(
   formIdData: FormIdData,
   structuredFormData: StructuredFormValue.ObjectStructure,
-  desIncludeIfEval: FrontEndSubmissionDesIncludeIfEval
+  destIncludeIfEval: DestinationIncludeIfEval
 )
 
 object BundledFormSubmissionData {
