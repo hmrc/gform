@@ -20,8 +20,7 @@ import cats.{ Eq, Monoid }
 import cats.syntax.eq._
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 
-//TODO: use either
-sealed trait ValidationResult {
+sealed trait ValidationResult extends Product with Serializable {
   def isValid: Boolean = this === Valid
   def toEither: Opt[Unit] = this match {
     case Valid           => Right(())
