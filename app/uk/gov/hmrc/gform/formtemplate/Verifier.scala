@@ -135,7 +135,8 @@ trait Verifier {
   private def mkSpecimen(page: Page): Page =
     (removeIncludeIf _ andThen mkComponentsOptional _ andThen noValidators _)(page)
 
-  private def removeIncludeIf(section: Page): Page = section.copy(includeIf = None)
+  private def removeIncludeIf(section: Page): Page =
+    section.copy(includeIf = None, fields = section.fields.map(i => i.copy(includeIf = None)))
 
   private def mkComponentsOptional(page: Page): Page =
     page.copy(
