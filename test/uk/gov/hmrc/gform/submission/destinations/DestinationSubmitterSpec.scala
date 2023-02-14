@@ -24,7 +24,7 @@ import uk.gov.hmrc.gform.notifier.NotifierAlgebra
 import uk.gov.hmrc.gform.sharedmodel.{ DestinationIncludeIfEval, LangADT, PdfHtml, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.form.{ Form, FormData, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.StringValue
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.HandlebarValue
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.{ HmrcDms, SubmissionConsolidator }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.{ DestinationGen, FormTemplateGen, PrimitiveGen }
@@ -45,10 +45,10 @@ class DestinationSubmitterSpec
       dsi.copy(submission = dsi.submission.copy(_id = dsi.submission._id.copy(formId = form._id)))
     }
 
-  def getDesIncludeIfValue(includeIf: DestinationIncludeIf): String =
+  def getHandlebarValue(includeIf: DestinationIncludeIf): String =
     includeIf match {
-      case StringValue(s) => s
-      case _              => ""
+      case HandlebarValue(s) => s
+      case _                 => ""
     }
 
   "A Destination.HandlebarsHttpApi" should "be sent to the HandlebarsHttpApiSubmitter when includeIf is evaluated to true" in {
@@ -66,7 +66,7 @@ class DestinationSubmitterSpec
 
       createSubmitter
         .expectIncludeIfEvaluation(
-          getDesIncludeIfValue(handlebarsHttpApi.includeIf),
+          getHandlebarValue(handlebarsHttpApi.includeIf),
           HandlebarsTemplateProcessorModel.empty,
           FocussedHandlebarsModelTree(theTree),
           requiredResult = true
@@ -110,7 +110,7 @@ class DestinationSubmitterSpec
 
       createSubmitter
         .expectIncludeIfEvaluation(
-          getDesIncludeIfValue(handlebarsHttpApi.includeIf),
+          getHandlebarValue(handlebarsHttpApi.includeIf),
           HandlebarsTemplateProcessorModel.empty,
           FocussedHandlebarsModelTree(theTree),
           requiredResult = false
@@ -140,7 +140,7 @@ class DestinationSubmitterSpec
     ) { (si, generatedHandlebarsHttpApi, template, responseCode, pdfData, structuredFormData) =>
       val httpResponse = HttpResponse(responseCode, "foo")
       val handlebarsHttpApi =
-        generatedHandlebarsHttpApi.copy(failOnError = false, includeIf = StringValue(true.toString))
+        generatedHandlebarsHttpApi.copy(failOnError = false, includeIf = HandlebarValue(true.toString))
       val model = HandlebarsTemplateProcessorModel()
       val theTree = tree(si.formId, model, si.submission.submissionRef, template, pdfData, None, structuredFormData)
 
@@ -179,7 +179,7 @@ class DestinationSubmitterSpec
   it should "raise an error if the endpoint returns an error and failOnError is true" in {
     forAll(
       submissionInfoGen,
-      handlebarsHttpApiGen(includeIf = Some(StringValue(true.toString)), failOnError = Some(true)),
+      handlebarsHttpApiGen(includeIf = Some(HandlebarValue(true.toString)), failOnError = Some(true)),
       formTemplateGen,
       Gen.chooseNum(300, 500),
       pdfDataGen,
@@ -230,7 +230,7 @@ class DestinationSubmitterSpec
   "A Destination.DmsSubmission" should "be processed when includeIf is not set" in {
     forAll(
       submissionInfoGen,
-      hmrcDmsGen(includeIf = Some(StringValue(true.toString))),
+      hmrcDmsGen(includeIf = Some(HandlebarValue(true.toString))),
       formTemplateGen,
       pdfDataGen,
       instructionPdfDataGen,
@@ -278,7 +278,7 @@ class DestinationSubmitterSpec
 
       createSubmitter
         .expectIncludeIfEvaluation(
-          getDesIncludeIfValue(hmrcDms.includeIf),
+          getHandlebarValue(hmrcDms.includeIf),
           HandlebarsTemplateProcessorModel.empty,
           FocussedHandlebarsModelTree(theTree),
           requiredResult = true
@@ -314,7 +314,7 @@ class DestinationSubmitterSpec
 
       createSubmitter
         .expectIncludeIfEvaluation(
-          getDesIncludeIfValue(hmrcDms.includeIf),
+          getHandlebarValue(hmrcDms.includeIf),
           HandlebarsTemplateProcessorModel.empty,
           FocussedHandlebarsModelTree(theTree),
           requiredResult = false
@@ -336,7 +336,7 @@ class DestinationSubmitterSpec
   it should "return without raising an error if the endpoint returns an error but failOnError is false" in {
     forAll(
       submissionInfoGen,
-      hmrcDmsGen(includeIf = Some(StringValue(true.toString)), failOnError = Some(false)),
+      hmrcDmsGen(includeIf = Some(HandlebarValue(true.toString)), failOnError = Some(false)),
       formTemplateGen,
       pdfDataGen,
       instructionPdfDataGen,
@@ -380,7 +380,7 @@ class DestinationSubmitterSpec
   it should "raise a failure if the endpoint returns an error and failOnError is true" in {
     forAll(
       submissionInfoGen,
-      hmrcDmsGen(failOnError = Some(true), includeIf = Some(StringValue(true.toString))),
+      hmrcDmsGen(failOnError = Some(true), includeIf = Some(HandlebarValue(true.toString))),
       formTemplateGen,
       pdfDataGen,
       instructionPdfDataGen,
@@ -424,7 +424,7 @@ class DestinationSubmitterSpec
 
   "A submission to destination SubmissionConsolidator" should "send to submission-consolidator when includeIf is true" in {
     forAll(
-      submissionConsolidatorGen.map(_.copy(includeIf = StringValue("true"))),
+      submissionConsolidatorGen.map(_.copy(includeIf = HandlebarValue("true"))),
       submissionInfoGen,
       formTemplateGen,
       structureFormValueObjectStructureGen
@@ -441,7 +441,7 @@ class DestinationSubmitterSpec
       )
       createSubmitter
         .expectIncludeIfEvaluation(
-          getDesIncludeIfValue(submissionConsolidator.includeIf),
+          getHandlebarValue(submissionConsolidator.includeIf),
           HandlebarsTemplateProcessorModel.empty,
           FocussedHandlebarsModelTree(modelTree),
           true
@@ -473,7 +473,7 @@ class DestinationSubmitterSpec
 
   it should "not be sent to the submission-consolidator when includeIf is false" in {
     forAll(
-      submissionConsolidatorGen.map(_.copy(includeIf = StringValue("false"))),
+      submissionConsolidatorGen.map(_.copy(includeIf = HandlebarValue("false"))),
       submissionInfoGen,
       formTemplateGen,
       structureFormValueObjectStructureGen
@@ -490,7 +490,7 @@ class DestinationSubmitterSpec
       )
       createSubmitter
         .expectIncludeIfEvaluation(
-          getDesIncludeIfValue(submissionConsolidator.includeIf),
+          getHandlebarValue(submissionConsolidator.includeIf),
           HandlebarsTemplateProcessorModel.empty,
           FocussedHandlebarsModelTree(modelTree),
           false
@@ -512,7 +512,7 @@ class DestinationSubmitterSpec
   it should "return without raising an error if the endpoint returns an error but failOnError is false" in {
 
     forAll(
-      submissionConsolidatorGen.map(_.copy(includeIf = StringValue("true"), failOnError = false)),
+      submissionConsolidatorGen.map(_.copy(includeIf = HandlebarValue("true"), failOnError = false)),
       submissionInfoGen,
       formTemplateGen,
       structureFormValueObjectStructureGen
@@ -529,7 +529,7 @@ class DestinationSubmitterSpec
       )
       createSubmitter
         .expectIncludeIfEvaluation(
-          getDesIncludeIfValue(submissionConsolidator.includeIf),
+          getHandlebarValue(submissionConsolidator.includeIf),
           HandlebarsTemplateProcessorModel.empty,
           FocussedHandlebarsModelTree(modelTree),
           true
@@ -568,7 +568,7 @@ class DestinationSubmitterSpec
 
   it should "raise a failure if the endpoint returns an error and failOnError is true" in {
     forAll(
-      submissionConsolidatorGen.map(_.copy(includeIf = StringValue("true"), failOnError = true)),
+      submissionConsolidatorGen.map(_.copy(includeIf = HandlebarValue("true"), failOnError = true)),
       submissionInfoGen,
       formTemplateGen,
       structureFormValueObjectStructureGen
@@ -585,7 +585,7 @@ class DestinationSubmitterSpec
       )
       createSubmitter
         .expectIncludeIfEvaluation(
-          getDesIncludeIfValue(submissionConsolidator.includeIf),
+          getHandlebarValue(submissionConsolidator.includeIf),
           HandlebarsTemplateProcessorModel.empty,
           FocussedHandlebarsModelTree(modelTree),
           true

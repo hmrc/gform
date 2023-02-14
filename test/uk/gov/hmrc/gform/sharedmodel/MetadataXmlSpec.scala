@@ -50,7 +50,7 @@ class MetadataXmlSpec extends Spec {
       Constant("TestHmrcDmsCustomerId"),
       "some-classification-type",
       "some-business-area",
-      DestinationIncludeIf.StringValue(""),
+      DestinationIncludeIf.HandlebarValue(""),
       true,
       Some(DataOutputFormat.XML),
       true,

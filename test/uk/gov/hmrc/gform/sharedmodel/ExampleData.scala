@@ -45,7 +45,7 @@ trait ExampleAuthConfig extends DestinationGen {
     Constant("TestHmrcDmsCustomerId"),
     "TestHmrcDmsClassificationType",
     "TestHmrcDmsBusinessArea",
-    DestinationIncludeIf.StringValue(""),
+    DestinationIncludeIf.HandlebarValue(""),
     true,
     Some(DataOutputFormat.XML),
     true,

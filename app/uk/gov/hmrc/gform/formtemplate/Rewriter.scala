@@ -431,7 +431,7 @@ trait Rewriter {
         }
 
       def replaceDesIncludeIf(desIncludeIfValue: DestinationIncludeIf) = desIncludeIfValue match {
-        case s @ DestinationIncludeIf.StringValue(_) => s
+        case s @ DestinationIncludeIf.HandlebarValue(_) => s
         case i @ DestinationIncludeIf.IncludeIfValue(includeIf) =>
           i.copy(value = replaceIncludeIf(Some(includeIf)).getOrElse(IncludeIf(IsTrue)))
       }

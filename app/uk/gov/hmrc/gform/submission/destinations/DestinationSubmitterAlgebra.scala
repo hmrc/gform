@@ -57,7 +57,7 @@ object DestinationSubmitterAlgebra {
     destIncludeIfEval: DestinationIncludeIfEval
   ): Boolean =
     destination.includeIf match {
-      case DestinationIncludeIf.StringValue(value) =>
+      case DestinationIncludeIf.HandlebarValue(value) =>
         handlebarsTemplateProcessor(
           value,
           accumulatedModel,

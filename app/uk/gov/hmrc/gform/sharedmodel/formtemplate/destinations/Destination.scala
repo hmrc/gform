@@ -29,7 +29,7 @@ import cats.data.NonEmptyList
 import JsonUtils.nelFormat
 import uk.gov.hmrc.gform.core.parsers.BooleanExprParser
 import uk.gov.hmrc.gform.sharedmodel.form.FormStatus
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.{ IncludeIfValue, StringValue }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.{ HandlebarValue, IncludeIfValue }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.SubmissionConsolidator
 import uk.gov.hmrc.gform.sharedmodel.notifier.NotifierPersonalisationFieldId
 
@@ -40,15 +40,15 @@ sealed trait DestinationWithCustomerId {
 sealed trait DestinationIncludeIf extends Product with Serializable
 
 object DestinationIncludeIf {
-  case class StringValue(value: String) extends DestinationIncludeIf
+  case class HandlebarValue(value: String) extends DestinationIncludeIf
   case class IncludeIfValue(value: IncludeIf) extends DestinationIncludeIf
 
   private val templateReads: Reads[DestinationIncludeIf] = Reads { json =>
     json match {
       case JsString(exprAsStr) =>
-        BooleanExprParser.validate(exprAsStr) fold (_ => JsSuccess(StringValue(exprAsStr)), expr =>
+        BooleanExprParser.validate(exprAsStr) fold (_ => JsSuccess(HandlebarValue(exprAsStr)), expr =>
           JsSuccess(IncludeIfValue(IncludeIf(expr))))
-      case JsUndefined() => JsSuccess(StringValue(true.toString))
+      case JsUndefined() => JsSuccess(HandlebarValue(true.toString))
     }
   }
 
@@ -101,7 +101,7 @@ object Destination {
 
   case class Log(id: DestinationId) extends Destination {
     val failOnError: Boolean = false
-    val includeIf: DestinationIncludeIf = DestinationIncludeIf.StringValue(true.toString)
+    val includeIf: DestinationIncludeIf = DestinationIncludeIf.HandlebarValue(true.toString)
   }
 
   case class SubmissionConsolidator(
@@ -384,7 +384,8 @@ object UploadableConditioning {
     includeIf: Option[DestinationIncludeIf]
   ): Either[String, DestinationIncludeIf] =
     includeIf match {
-      case Some(StringValue(s))    => addErrorInfo(id, "includeIf")(condition(convertSingleQuotes, s)).map(StringValue)
+      case Some(HandlebarValue(s)) =>
+        addErrorInfo(id, "includeIf")(condition(convertSingleQuotes, s)).map(HandlebarValue)
       case Some(IncludeIfValue(i)) => Right(IncludeIfValue(i))
       case _                       => Left(s"${id.id}/includeIf error")
     }

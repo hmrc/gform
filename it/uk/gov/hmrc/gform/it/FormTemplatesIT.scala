@@ -235,7 +235,7 @@ class FormTemplatesIT extends ITSpec with FormTemplateSample with BeforeAndAfter
         AuthCtx(AuthInfo.GG),
         "ClassificationType",
         "BusinessArea",
-        DestinationIncludeIf.StringValue("true"),
+        DestinationIncludeIf.HandlebarValue("true"),
         true,
         None,
         false,

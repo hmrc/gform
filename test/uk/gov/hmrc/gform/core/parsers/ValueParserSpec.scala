@@ -447,7 +447,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
             Constant("TestHmrcDmsCustomerId"),
             "TestHmrcDmsClassificationType",
             "TestHmrcDmsBusinessArea",
-            DestinationIncludeIf.StringValue(""),
+            DestinationIncludeIf.HandlebarValue(""),
             true,
             Some(DataOutputFormat.XML),
             true,

@@ -104,7 +104,7 @@ object DmsSubmissionService {
       Constant(metadata.customerId),
       metadata.classificationType,
       metadata.businessArea,
-      DestinationIncludeIf.StringValue(""),
+      DestinationIncludeIf.HandlebarValue(""),
       true,
       Some(DataOutputFormat.XML),
       true,
