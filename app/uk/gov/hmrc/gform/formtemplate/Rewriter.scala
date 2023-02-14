@@ -18,11 +18,14 @@ package uk.gov.hmrc.gform.formtemplate
 
 import cats.data.NonEmptyList
 import cats.implicits._
+
 import scala.util.{ Failure, Success, Try }
 import uk.gov.hmrc.gform.core.{ FOpt, fromOptA }
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationIncludeIf, Destinations }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.IncludeIfValue
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.{ Email, HandlebarsHttpApi, HmrcDms, Log, StateTransition, SubmissionConsolidator }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destinations.DestinationList
 
 trait Rewriter {
@@ -104,7 +107,14 @@ trait Rewriter {
       case dl: DestinationList =>
         dl.acknowledgementSection.fields.flatMap(_.includeIf) ++ dl.declarationSection.fold(List.empty[IncludeIf])(
           _.fields.flatMap(_.includeIf)
-        )
+        ) ++ dl.destinations.toList.collect {
+          case HmrcDms(_, _, _, _, _, IncludeIfValue(includeIf), _, _, _, _, _)  => includeIf
+          case HandlebarsHttpApi(_, _, _, _, _, _, IncludeIfValue(includeIf), _) => includeIf
+          case Destination.Composite(_, IncludeIfValue(includeIf), _)            => includeIf
+          case StateTransition(_, _, IncludeIfValue(includeIf), _)               => includeIf
+          case SubmissionConsolidator(_, _, _, _, IncludeIfValue(includeIf), _)  => includeIf
+          case Email(_, _, IncludeIfValue(includeIf), _, _, _)                   => includeIf
+        }
       case _ => Nil
     }
 
@@ -403,9 +413,27 @@ trait Rewriter {
         case dl: Destinations.DestinationList =>
           dl.copy(
             declarationSection = dl.declarationSection.map(replaceDeclarationSection),
-            acknowledgementSection = replaceAcknowledgementSection(dl.acknowledgementSection)
+            acknowledgementSection = replaceAcknowledgementSection(dl.acknowledgementSection),
+            destinations = dl.destinations.map(replaceDestination)
           )
         case dp: Destinations.DestinationPrint => dp
+      }
+
+      def replaceDestination(destination: Destination) =
+        destination match {
+          case h: HmrcDms                => h.copy(includeIf = replaceDesIncludeIf(h.includeIf))
+          case c: Destination.Composite  => c.copy(includeIf = replaceDesIncludeIf(c.includeIf))
+          case e: Email                  => e.copy(includeIf = replaceDesIncludeIf(e.includeIf))
+          case h: HandlebarsHttpApi      => h.copy(includeIf = replaceDesIncludeIf(h.includeIf))
+          case l: Log                    => l
+          case s: StateTransition        => s.copy(includeIf = replaceDesIncludeIf(s.includeIf))
+          case s: SubmissionConsolidator => s.copy(includeIf = replaceDesIncludeIf(s.includeIf))
+        }
+
+      def replaceDesIncludeIf(desIncludeIfValue: DestinationIncludeIf) = desIncludeIfValue match {
+        case s @ DestinationIncludeIf.HandlebarValue(_) => s
+        case i @ DestinationIncludeIf.IncludeIfValue(includeIf) =>
+          i.copy(value = replaceIncludeIf(Some(includeIf)).getOrElse(IncludeIf(IsTrue)))
       }
 
       def replaceRedirects(redirects: Option[NonEmptyList[RedirectCtx]]) =

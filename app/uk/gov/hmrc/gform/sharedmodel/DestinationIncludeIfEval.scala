@@ -16,16 +16,12 @@
 
 package uk.gov.hmrc.gform.sharedmodel
 
-import play.api.libs.json.{ Json, OFormat }
-import uk.gov.hmrc.gform.sharedmodel.form.FormIdData
-import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
+import play.api.libs.json.{ Format, Json }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
 
-case class BundledFormSubmissionData(
-  formIdData: FormIdData,
-  structuredFormData: StructuredFormValue.ObjectStructure,
-  destIncludeIfEval: DestinationIncludeIfEval
-)
+case class DestinationIncludeIfEval(exprEval: List[(DestinationId, Boolean)])
 
-object BundledFormSubmissionData {
-  implicit val format: OFormat[BundledFormSubmissionData] = Json.format[BundledFormSubmissionData]
+object DestinationIncludeIfEval {
+  val empty = DestinationIncludeIfEval(List.empty[(DestinationId, Boolean)])
+  implicit val format: Format[DestinationIncludeIfEval] = Json.format[DestinationIncludeIfEval]
 }

@@ -80,7 +80,9 @@ class SubmissionService(
       submission        <- findSubmission(SubmissionId(formIdData.toFormId, form.envelopeId))
       submissionInfo = DestinationSubmissionInfo(customerId, submission)
       modelTree <- createModelTreeForSingleFormSubmission(form, formTemplate, submissionData, submission.submissionRef)
-      _         <- destinationsSubmitter.send(submissionInfo, modelTree, Some(form.formData), submissionData.l)
+      _ <-
+        destinationsSubmitter
+          .send(submissionInfo, modelTree, Some(form.formData), submissionData.l, submissionData.destIncludeIfEval)
       _ <- if (formTemplate.isObjectStore)
              zipAndNotify(submission.envelopeId, formTemplate._id, submission.submissionRef)
            else fromFutureA(Future.unit)

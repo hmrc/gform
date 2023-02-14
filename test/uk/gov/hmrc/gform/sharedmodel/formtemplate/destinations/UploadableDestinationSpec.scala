@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.TextExpression
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.HandlebarValue
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.generators.DestinationGen
 
 class UploadableDestinationSpec extends Spec with ScalaCheckDrivenPropertyChecks {
@@ -42,7 +43,7 @@ class UploadableDestinationSpec extends Spec with ScalaCheckDrivenPropertyChecks
       val expected = withQuotes.copy(
         uri = replaceQuotes(withQuotes.uri),
         payload = withQuotes.payload.map(v => replaceQuotes(v)),
-        includeIf = replaceQuotes(withQuotes.includeIf)
+        includeIf = replaceHandlebarValue(withQuotes.includeIf)
       )
 
       createUploadable(withQuotes, Some(true)).toHandlebarsHttpApiDestination shouldBe Right(expected)
@@ -67,7 +68,7 @@ class UploadableDestinationSpec extends Spec with ScalaCheckDrivenPropertyChecks
     forAll(DestinationGen.hmrcDmsGen) { destination =>
       val withQuotes = addQuotes(destination, """"'abc'"""")
       val expected = withQuotes.copy(
-        includeIf = replaceQuotes(withQuotes.includeIf)
+        includeIf = replaceHandlebarValue(withQuotes.includeIf)
       )
 
       createUploadable(withQuotes, Some(true)).toHmrcDmsDestination shouldBe Right(expected)
@@ -92,12 +93,18 @@ class UploadableDestinationSpec extends Spec with ScalaCheckDrivenPropertyChecks
     forAll(DestinationGen.submissionConsolidatorGen) { destination =>
       val withQuotes = addQuotes(destination, """"'abc'"""")
       val expected = withQuotes.copy(
-        includeIf = replaceQuotes(withQuotes.includeIf),
+        includeIf = replaceHandlebarValue(withQuotes.includeIf),
         formData = withQuotes.formData.map(replaceQuotes)
       )
       createUploadable(withQuotes, Some(true)).toSubmissionConsolidatorDestination shouldBe Right(expected)
     }
   }
+
+  private def replaceHandlebarValue(includeIf: DestinationIncludeIf) =
+    includeIf match {
+      case HandlebarValue(s) => HandlebarValue(replaceQuotes(s))
+      case _                 => HandlebarValue("")
+    }
 
   private def createUploadable(
     destination: Destination.HandlebarsHttpApi,
@@ -160,15 +167,15 @@ class UploadableDestinationSpec extends Spec with ScalaCheckDrivenPropertyChecks
     destination.copy(
       uri = q,
       payload = Some(q),
-      includeIf = q
+      includeIf = HandlebarValue(q)
     )
 
   private def addQuotes(destination: Destination.SubmissionConsolidator, q: String) =
     destination.copy(
       formData = Some(q),
-      includeIf = q
+      includeIf = HandlebarValue(q)
     )
 
   private def addQuotes(destination: Destination.HmrcDms, q: String) =
-    destination.copy(includeIf = q)
+    destination.copy(includeIf = HandlebarValue(q))
 }

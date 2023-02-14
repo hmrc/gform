@@ -81,6 +81,7 @@ class FormTemplateJSONSuite extends FunSuite {
              |  "destinations": {
              |    "destinations": [
              |      {
+             |        "includeIf": "true",
              |        "id": "transitionToSubmitted",
              |        "type": "stateTransition",
              |        "requiredState": "Submitted"
@@ -208,6 +209,7 @@ class FormTemplateJSONSuite extends FunSuite {
              |  "destinations": {
              |    "destinations": [
              |      {
+             |        "includeIf": "true",
              |        "id": "transitionToSubmitted",
              |        "type": "stateTransition",
              |        "requiredState": "Submitted"
