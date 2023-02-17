@@ -230,6 +230,20 @@ object DataRetrieve {
     override def formCtxExprs: List[Expr] = List(nino)
   }
 
+  final case class BankAccountInsights(
+    override val id: DataRetrieveId,
+    sortCode: Expr,
+    accountNumber: Expr
+  ) extends DataRetrieve {
+    import DataRetrieveAttribute._
+    override def attributes: List[DataRetrieveAttribute] = List(
+      RiskScore,
+      Reason
+    )
+
+    override def formCtxExprs: List[Expr] = List(sortCode, accountNumber)
+  }
+
   final case class PersonalBankAccountExistence(
     override val id: DataRetrieveId,
     sortCode: Expr,
@@ -378,6 +392,14 @@ object DataRetrieve {
                               ninoExpr    <- ValueParser.validateWithParser(nino, ValueParser.expr)
                               taxYearExpr <- ValueParser.validateWithParser(taxYear, ValueParser.expr)
                             } yield Employments(DataRetrieveId(idValue), ninoExpr, taxYearExpr)
+                          case "bankAccountInsights" =>
+                            for {
+                              parameters         <- opt[JsObject](json, "parameters")
+                              sortCodeValue      <- opt[String](parameters, "sortCode")
+                              accountNumberValue <- opt[String](parameters, "accountNumber")
+                              sortCodeExpr       <- ValueParser.validateWithParser(sortCodeValue, ValueParser.expr)
+                              accountNumberExpr  <- ValueParser.validateWithParser(accountNumberValue, ValueParser.expr)
+                            } yield BankAccountInsights(DataRetrieveId(idValue), sortCodeExpr, accountNumberExpr)
                           case other => Left(UnexpectedState(s"'type' value $other not recognized"))
                         }
       } yield dataRetrieve).fold(e => JsError(e.error), r => JsSuccess(r))

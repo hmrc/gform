@@ -169,6 +169,25 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
     )
   }
 
+  it should "parse json as BankAccountInsights" in {
+    Json
+      .parse("""
+               |{
+               |  "type": "bankAccountInsights",
+               |  "id": "bankCheck",
+               |  "parameters": {
+               |    "sortCode": "${sortCode}",
+               |    "accountNumber": "${accountNumber}"
+               |  }
+               |}
+               |""".stripMargin)
+      .as[DataRetrieve] shouldBe DataRetrieve.BankAccountInsights(
+      DataRetrieveId("bankCheck"),
+      FormCtx(FormComponentId("sortCode")),
+      FormCtx(FormComponentId("accountNumber"))
+    )
+  }
+
   it should "parse json as PersonalBankAccountExistence" in {
     Json
       .parse("""

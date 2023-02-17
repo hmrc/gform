@@ -1034,6 +1034,24 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     )
   }
 
+  it should "parse bank account insights - riskScore" in {
+    val res = ValueParser.validate("${dataRetrieve.bankCheck.riskScore}")
+    res.right.value should be(
+      TextExpression(
+        DataRetrieveCtx(DataRetrieveId("bankCheck"), DataRetrieveAttribute.RiskScore)
+      )
+    )
+  }
+
+  it should "parse bank account insights - reason" in {
+    val res = ValueParser.validate("${dataRetrieve.bankCheck.reason}")
+    res.right.value should be(
+      TextExpression(
+        DataRetrieveCtx(DataRetrieveId("bankCheck"), DataRetrieveAttribute.Reason)
+      )
+    )
+  }
+
   it should "parse personal bank account existence - accountExists" in {
     val res = ValueParser.validate("${dataRetrieve.personalBankAccountExistence.accountExists}")
     res.right.value should be(
