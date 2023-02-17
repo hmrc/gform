@@ -58,7 +58,7 @@ trait SdesAlgebra[F[_]] {
     processed: Option[Boolean],
     formTemplateId: Option[FormTemplateId],
     status: Option[NotificationStatus],
-    showBeforeDate: Option[Boolean]
+    showBeforeAt: Option[Boolean]
   ): F[SdesSubmissionPageData]
 
   def deleteSdesSubmission(correlation: CorrelationId): F[Unit]
@@ -125,7 +125,7 @@ class SdesService(
     processed: Option[Boolean],
     formTemplateId: Option[FormTemplateId],
     status: Option[NotificationStatus],
-    showBeforeDate: Option[Boolean]
+    showBeforeAt: Option[Boolean]
   ): Future[SdesSubmissionPageData] = {
 
     val queryByTemplateId =
@@ -134,7 +134,7 @@ class SdesService(
       processed.fold(queryByTemplateId)(p => Filters.and(equal("isProcessed", p), queryByTemplateId))
     val queryByStatus =
       status.fold(queryByProcessed)(s => Filters.and(equal("status", fromName(s)), queryByProcessed))
-    val query = if (showBeforeDate.getOrElse(false)) {
+    val query = if (showBeforeAt.getOrElse(false)) {
       Filters.and(queryByStatus, lt("createdAt", LocalDateTime.now().minusHours(10)))
     } else {
       queryByStatus
