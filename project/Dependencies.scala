@@ -9,12 +9,14 @@ object Dependencies {
   val parsebackVersion = "0.3"
   val handlebarsVersion = "4.2.0"
   val hmrcMongoVersion = "0.68.0"
+  val bootstrapVersion = "5.12.0"
 
   val compile = Seq(
     "com.github.pureconfig"      %% "pureconfig"                  % "0.16.0",
-    "uk.gov.hmrc.mongo"          %% "hmrc-mongo-play-28"          % hmrcMongoVersion,
+    "uk.gov.hmrc.mongo"          %% "hmrc-mongo-work-item-repo-play-28" % hmrcMongoVersion,
+    "uk.gov.hmrc"                %% "play-scheduling-play-28"     % "8.1.0",
     "uk.gov.hmrc"                %% "http-caching-client"         % "9.5.0-play-28",
-    "uk.gov.hmrc"                %% "bootstrap-backend-play-28"   % "5.12.0",
+    "uk.gov.hmrc"                %% "bootstrap-backend-play-28"   % bootstrapVersion,
     "uk.gov.hmrc"                %% "domain"                      % "6.2.0-play-28",
     "org.scala-lang.modules"     %% "scala-parser-combinators"    % "1.1.2",
     "org.julienrf"               %% "play-json-derived-codecs"    % "10.0.2",
@@ -39,6 +41,7 @@ object Dependencies {
 
   def test(scope: String = "test,it") = Seq(
     "uk.gov.hmrc"            %% "service-integration-test"    % "1.1.0-play-28"     % scope,
+    "uk.gov.hmrc"            %% "bootstrap-test-play-28"      % bootstrapVersion    % scope,
     "org.scalatestplus"      %% "scalacheck-1-14"             % "3.1.1.0"           % scope,
     "org.pegdown"             % "pegdown"                     % "1.6.0"             % scope,
     "com.typesafe.play"      %% "play-test"                   % PlayVersion.current % scope,

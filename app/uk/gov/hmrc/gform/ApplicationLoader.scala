@@ -60,6 +60,7 @@ import uk.gov.hmrc.gform.upscan.UpscanModule
 import uk.gov.hmrc.gform.validation.ValidationModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.gform.obligation.ObligationModule
+import uk.gov.hmrc.gform.scheduler.SchedulerModule
 import uk.gov.hmrc.gform.sdes.SdesModule
 import uk.gov.hmrc.gform.submission.destinations.DestinationModule
 import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorModule
@@ -255,6 +256,8 @@ class ApplicationModule(context: Context)
     playComponents.context.devContext.map(_.sourceMapper)
   )
 
+  val schedulerModule = new SchedulerModule(configModule, mongoModule, sdesModule, akkaModule)
+
   val playComponentsModule = new PlayComponentsModule(
     playComponents,
     akkaModule,
@@ -278,7 +281,8 @@ class ApplicationModule(context: Context)
     translationModule,
     objectStoreModule,
     sdesModule,
-    notificationBannerModule
+    notificationBannerModule,
+    schedulerModule
   )
 
   override lazy val httpRequestHandler: HttpRequestHandler = playComponentsModule.httpRequestHandler
