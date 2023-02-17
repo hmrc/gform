@@ -77,6 +77,49 @@ trait JsonUtils {
   }
 
   def safeCast[A, B >: A](reads: Reads[A]): Reads[B] = reads.asInstanceOf[Reads[B]]
+
+  /** Returns a new format that reads an object of type T with an option
+    * to preprocess the input JSON. The preprocessing allows the
+    * addition of a default value for a missing field.
+    */
+  def withDefaultMissingField[T, A](format: OFormat[T], fieldName: String, defaultValue: JsValue)(implicit
+    aReads: Reads[A]
+  ) = {
+    val reads = format.composeWith(Reads[JsValue] {
+      case obj @ JsObject(_) =>
+        (obj \ fieldName).asOpt[A] match {
+          case Some(b) =>
+            JsSuccess(obj)
+          case _ => JsSuccess(obj + (fieldName -> defaultValue))
+        }
+      case _ => JsError("Object expected")
+    })
+    val writes: Writes[T] = format
+    Format(reads, writes)
+  }
+
+  /**  Reads a JSON array or a single object into a list of objects of type T.
+    *
+    * The function is useful when working with JSON data that may
+    * contain a variable number of elements in an array, and allows
+    * for syntax like `t` instead of `[t]` into `List(t)` for reading
+    * a single element.
+    */
+  def listReads[T](implicit reads: Reads[T]): Reads[List[T]] = {
+    case JsObject(fields) if fields.isEmpty => JsSuccess(List.empty[T])
+    case obj: JsObject                      => obj.validate[T].map(List(_))
+    case JsArray(values) =>
+      values
+        .map(_.validate[T])
+        .foldLeft[JsResult[List[T]]](JsSuccess(Nil)) { (acc, res) =>
+          for {
+            xs <- acc
+            x  <- res
+          } yield x :: xs
+        }
+        .map(_.reverse)
+    case _ => JsSuccess(List.empty[T])
+  }
 }
 
 object JsonUtils extends JsonUtils

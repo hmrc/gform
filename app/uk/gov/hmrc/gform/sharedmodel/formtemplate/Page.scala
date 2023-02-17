@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.sharedmodel.formtemplate
 
 import cats.data.NonEmptyList
 import julienrf.json.derived
-import play.api.libs.json.OFormat
+import play.api.libs.json._
 import uk.gov.hmrc.gform.sharedmodel.{ DataRetrieve, SmartString }
 import uk.gov.hmrc.gform.ops.FormComponentOps
 
@@ -36,7 +36,7 @@ case class Page(
   continueIf: Option[ContinueIf],
   instruction: Option[Instruction],
   presentationHint: Option[PresentationHint],
-  dataRetrieve: Option[DataRetrieve],
+  dataRetrieve: List[DataRetrieve],
   confirmation: Option[Confirmation],
   redirects: Option[NonEmptyList[RedirectCtx]],
   hideSaveAndComeBackButton: Option[Boolean]
@@ -60,10 +60,11 @@ case class Page(
 
   val numericFields: List[FormComponentId] = allFormComponents.filter(_.isNumeric).map(_.id)
 }
-
 object Page {
   import JsonUtils._
-  implicit val pageFormat: OFormat[Page] = derived.oformat()
+
+  implicit val pageFormat =
+    JsonUtils.withDefaultMissingField[Page, JsArray](derived.oformat(), "dataRetrieve", JsArray())
 
   implicit val leafExprs: LeafExpr[Page] = (path: TemplatePath, t: Page) =>
     leafExprsNoFields.exprs(path, t) ++
@@ -79,6 +80,7 @@ object Page {
       LeafExpr(path + "validators", t.validators) ++
       LeafExpr(path + "instruction", t.instruction) ++
       LeafExpr(path + "confirmation", t.confirmation) ++
-      LeafExpr(path + "redirects", t.redirects)
+      LeafExpr(path + "redirects", t.redirects) ++
+      LeafExpr(path + "dataRetrieve", t.dataRetrieve)
 
 }

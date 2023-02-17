@@ -24,6 +24,9 @@ import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Expr, JsonUtils, OFormatWithTemplateReadFallback }
 
 import scala.util.matching.Regex
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.IncludeIf
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.LeafExpr
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.TemplatePath
 
 case class DataRetrieveId(value: String) extends AnyVal
 
@@ -233,7 +236,8 @@ object DataRetrieve {
   final case class BankAccountInsights(
     override val id: DataRetrieveId,
     sortCode: Expr,
-    accountNumber: Expr
+    accountNumber: Expr,
+    `if`: Option[IncludeIf] = None
   ) extends DataRetrieve {
     import DataRetrieveAttribute._
     override def attributes: List[DataRetrieveAttribute] = List(
@@ -397,9 +401,10 @@ object DataRetrieve {
                               parameters         <- opt[JsObject](json, "parameters")
                               sortCodeValue      <- opt[String](parameters, "sortCode")
                               accountNumberValue <- opt[String](parameters, "accountNumber")
+                              `if`               <- optOption[IncludeIf](json, "if")
                               sortCodeExpr       <- ValueParser.validateWithParser(sortCodeValue, ValueParser.expr)
                               accountNumberExpr  <- ValueParser.validateWithParser(accountNumberValue, ValueParser.expr)
-                            } yield BankAccountInsights(DataRetrieveId(idValue), sortCodeExpr, accountNumberExpr)
+                            } yield BankAccountInsights(DataRetrieveId(idValue), sortCodeExpr, accountNumberExpr, `if`)
                           case other => Left(UnexpectedState(s"'type' value $other not recognized"))
                         }
       } yield dataRetrieve).fold(e => JsError(e.error), r => JsSuccess(r))
@@ -417,7 +422,26 @@ object DataRetrieve {
       case _: JsUndefined => Left(UnexpectedState(s"'$path' attribute missing"))
     }
 
+  def optOption[T](jsValue: JsValue, path: String)(implicit r: Reads[T]): Opt[Option[T]] =
+    jsValue \ path match {
+      case JsDefined(json) =>
+        json
+          .validateOpt[T]
+          .fold(
+            invalid => Left(UnexpectedState(s"Type of value is invalid for attribute '$path' [error=$invalid]")),
+            valid => Right(valid)
+          )
+      case _: JsUndefined => Right(None)
+    }
+
   implicit val format: OFormat[DataRetrieve] = OFormatWithTemplateReadFallback(reads)
+  implicit val dataRetrieveListReads: Reads[List[DataRetrieve]] = JsonUtils.listReads[DataRetrieve]
+
+  implicit val leafExprs: LeafExpr[DataRetrieve] = (path: TemplatePath, t: DataRetrieve) =>
+    t match {
+      case b: BankAccountInsights => LeafExpr(path + "if", b.`if`)
+      case _                      => List()
+    }
 }
 
 sealed trait RetrieveDataType extends Product with Serializable

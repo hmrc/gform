@@ -712,7 +712,7 @@ class TemplateValidatorSpec extends Spec {
         None,
         None,
         None,
-        None,
+        List(),
         None,
         None,
         None

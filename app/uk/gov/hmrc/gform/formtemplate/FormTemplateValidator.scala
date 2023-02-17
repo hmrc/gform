@@ -863,7 +863,15 @@ object FormTemplateValidator {
               .map(verifyIncludeIf(idx).apply)
               .getOrElse(List(Valid))
 
-            verifiedValidIf ++ verifiedIncludeIf ++ verifiedComponentIncludeIfs
+            val verifiedDataRetrieveIncludeIf = page.dataRetrieve
+              .flatMap {
+                case b: DataRetrieve.BankAccountInsights => b.`if`
+                case _                                   => None
+              }
+              .map(_.booleanExpr)
+              .flatMap(verifyIncludeIf(idx).apply)
+
+            verifiedValidIf ++ verifiedIncludeIf ++ verifiedComponentIncludeIfs ++ verifiedDataRetrieveIncludeIf
           }
       )
   }
