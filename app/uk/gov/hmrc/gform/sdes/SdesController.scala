@@ -39,7 +39,7 @@ class SdesController(
     processed: Option[Boolean],
     formTemplateId: Option[FormTemplateId],
     status: Option[NotificationStatus],
-    showBeforeDate: Boolean
+    showBeforeDate: Option[Boolean]
   ) = Action.async { _ =>
     sdesAlgebra
       .search(page, pageSize, processed, formTemplateId, status, showBeforeDate)

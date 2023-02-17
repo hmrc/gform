@@ -19,7 +19,7 @@ package uk.gov.hmrc.gform.sdes
 import cats.syntax.functor._
 import cats.syntax.show._
 import org.mongodb.scala.model.Filters
-import org.mongodb.scala.model.Filters.{ equal, exists, lt, regex }
+import org.mongodb.scala.model.Filters.{ equal, exists, lt }
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
@@ -32,7 +32,7 @@ import uk.gov.hmrc.gform.sharedmodel.sdes._
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 import uk.gov.hmrc.objectstore.client.ObjectSummaryWithMd5
 
-import java.time.{ Instant, LocalDate }
+import java.time.{ Instant, LocalDateTime }
 import java.util.Base64
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -58,7 +58,7 @@ trait SdesAlgebra[F[_]] {
     processed: Option[Boolean],
     formTemplateId: Option[FormTemplateId],
     status: Option[NotificationStatus],
-    showBeforeDate: Boolean
+    showBeforeDate: Option[Boolean]
   ): F[SdesSubmissionPageData]
 
   def deleteSdesSubmission(correlation: CorrelationId): F[Unit]
@@ -125,16 +125,17 @@ class SdesService(
     processed: Option[Boolean],
     formTemplateId: Option[FormTemplateId],
     status: Option[NotificationStatus],
-    showBeforeDate: Boolean
+    showBeforeDate: Option[Boolean]
   ): Future[SdesSubmissionPageData] = {
 
     val queryByTemplateId =
-      formTemplateId.fold(exists("_id"))(t => regex("formTemplateId", t.value))
-    //val queryByProcessed = processed.fold() // TODO
+      formTemplateId.fold(exists("_id"))(t => equal("formTemplateId", t.value))
+    val queryByProcessed =
+      processed.fold(queryByTemplateId)(p => Filters.and(equal("isProcessed", p), queryByTemplateId))
     val queryByStatus =
-      status.fold(Filters.or(queryByTemplateId))(s => Filters.and(equal("status", fromName(s)), queryByTemplateId))
-    val query = if (showBeforeDate) {
-      Filters.and(queryByStatus, lt("createdAt", LocalDate.now().minusDays(1)))
+      status.fold(queryByProcessed)(s => Filters.and(equal("status", fromName(s)), queryByProcessed))
+    val query = if (showBeforeDate.getOrElse(false)) {
+      Filters.and(queryByStatus, lt("createdAt", LocalDateTime.now().minusHours(10)))
     } else {
       queryByStatus
     }
@@ -144,7 +145,6 @@ class SdesService(
     val sort = equal("createdAt", -1)
 
     val skip = page * pageSize
-    println(Console.BLUE + query)
     for {
       sdesSubmissions <- repoSdesSubmission.page(query, sort, skip, pageSize)
       count           <- repoSdesSubmission.count(queryNotProcessed)

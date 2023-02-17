@@ -119,7 +119,7 @@ class SdesModule(
       processed: Option[Boolean],
       formTemplateId: Option[FormTemplateId],
       status: Option[NotificationStatus],
-      showBeforeDate: Boolean
+      showBeforeDate: Option[Boolean]
     ): FOpt[SdesSubmissionPageData] =
       fromFutureA(sdesService.search(page, pageSize, processed, formTemplateId, status, showBeforeDate))
 
