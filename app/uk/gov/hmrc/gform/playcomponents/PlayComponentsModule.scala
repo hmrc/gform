@@ -29,6 +29,7 @@ import uk.gov.hmrc.gform.formstatistics.FormStatisticsModule
 import uk.gov.hmrc.gform.dblookup.DbLookupModule
 import uk.gov.hmrc.gform.dms.DmsModule
 import uk.gov.hmrc.gform.email.EmailModule
+import uk.gov.hmrc.gform.employments.EmploymentsModule
 import uk.gov.hmrc.gform.envelope.EnvelopeModule
 import uk.gov.hmrc.gform.form.FormModule
 import uk.gov.hmrc.gform.formtemplate.FormTemplateModule
@@ -36,6 +37,7 @@ import uk.gov.hmrc.gform.metrics.MetricsModule
 import uk.gov.hmrc.gform.notificationbanner.NotificationBannerModule
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.obligation.ObligationModule
+import uk.gov.hmrc.gform.scheduler.SchedulerModule
 import uk.gov.hmrc.gform.sdes.SdesModule
 import uk.gov.hmrc.gform.submission.SubmissionModule
 import uk.gov.hmrc.gform.testonly.TestOnlyModule
@@ -58,6 +60,7 @@ class PlayComponentsModule(
   validationModule: ValidationModule,
   dmsModule: DmsModule,
   obligationModule: ObligationModule,
+  employmentsModule: EmploymentsModule,
   emailModule: EmailModule,
   dbLookupModule: DbLookupModule,
   upscanModule: UpscanModule,
@@ -67,7 +70,8 @@ class PlayComponentsModule(
   translationModule: TranslationModule,
   objectStoreModule: ObjectStoreModule,
   sdesModule: SdesModule,
-  notificationBannerModule: NotificationBannerModule
+  notificationBannerModule: NotificationBannerModule,
+  schedulerModule: SchedulerModule
 )(implicit ec: ExecutionContext) {
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -83,6 +87,7 @@ class PlayComponentsModule(
     validationModule.validationController,
     dmsModule.dmsSubmissionController,
     obligationModule.obligationController,
+    employmentsModule.employmentsController,
     emailModule.emailCodeVerificationController,
     dbLookupModule.dbLookupController,
     upscanModule.upscanController,

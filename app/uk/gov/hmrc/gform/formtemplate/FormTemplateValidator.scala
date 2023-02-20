@@ -30,7 +30,7 @@ import uk.gov.hmrc.gform.sharedmodel.{ AvailableLanguages, DataRetrieve, DataRet
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.graph.DependencyGraph._
 import uk.gov.hmrc.gform.formtemplate.FormTemplateValidatorHelper._
-import uk.gov.hmrc.gform.models.constraints.ReferenceInfo.{ DataRetrieveCtxExpr, DateFunctionExpr, FormCtxExpr, PeriodExpr, PeriodExtExpr, SizeExpr }
+import uk.gov.hmrc.gform.models.constraints.ReferenceInfo.{ DataRetrieveCountExpr, DataRetrieveCtxExpr, DateFunctionExpr, FormCtxExpr, PeriodExpr, PeriodExtExpr, SizeExpr }
 import shapeless.syntax.typeable._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.PageLink
 
@@ -917,6 +917,7 @@ object FormTemplateValidator {
         checkFields(dateCtx1, dateCtx2)
       case PeriodExt(periodFun, _)           => validate(periodFun, sections)
       case DataRetrieveCtx(_, _)             => Valid
+      case DataRetrieveCount(_)              => Valid
       case CsvCountryCheck(value, _)         => validate(FormCtx(value), sections)
       case CsvOverseasCountryCheck(value, _) => validate(FormCtx(value), sections)
       case CsvCountryCountCheck(value, _, _) =>
@@ -1125,6 +1126,27 @@ object FormTemplateValidator {
             s"Data retrieve expression at path ${r.path}, with id ${r.dataRetrieveCtx.id.value}, refers to non-existent attribute ${r.dataRetrieveCtx.attribute.name}"
           )
       }
+    }.combineAll
+  }
+
+  def validateDataRetrieveCount(
+    formTemplate: FormTemplate,
+    pages: List[Page],
+    allExpressions: List[ExprWithPath]
+  ): ValidationResult = {
+
+    val referenceInfos: List[DataRetrieveCountExpr] =
+      allExpressions.flatMap(_.referenceInfos).collect { case d: DataRetrieveCountExpr =>
+        d
+      }
+
+    val dataRetrieves: Set[DataRetrieveId] = pages.flatMap(p => p.dataRetrieve.map(_.id)).toSet
+
+    referenceInfos.map { r =>
+      if (dataRetrieves(r.dataRetrieveCount.id))
+        Valid
+      else
+        Invalid(s"Data retrieve expression at path ${r.path} refers to non-existent id ${r.dataRetrieveCount.id.value}")
     }.combineAll
   }
 

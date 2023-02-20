@@ -23,10 +23,11 @@ import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.mongo.MongoModule
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
 import uk.gov.hmrc.gform.repo.Repo
+import uk.gov.hmrc.gform.scheduler.sdes.SdesWorkItemRepo
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
-import uk.gov.hmrc.gform.sharedmodel.sdes.{ CorrelationId, NotificationStatus, SdesSubmission, SdesSubmissionPageData }
+import uk.gov.hmrc.gform.sharedmodel.sdes._
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 import uk.gov.hmrc.objectstore.client.ObjectSummaryWithMd5
@@ -71,10 +72,9 @@ class SdesModule(
     )
 
   val sdesConnector: SdesConnector =
-    new SdesConnector(wSHttpModule.auditableWSHttp, sdesBaseUrl, sdesBasePath, sdesHeaders)(
-      ex,
-      akkaModule.actorSystem.scheduler
-    )
+    new SdesConnector(wSHttpModule.auditableWSHttp, sdesBaseUrl, sdesBasePath, sdesHeaders)
+
+  val sdesNotificationRepository = new SdesWorkItemRepo(mongoModule.mongoComponent)
 
   val sdesService: SdesAlgebra[Future] =
     new SdesService(
@@ -82,7 +82,8 @@ class SdesModule(
       repoSdesSubmission,
       sdesInformationType,
       sdesRecipientOrSender,
-      fileLocationUrl
+      fileLocationUrl,
+      sdesNotificationRepository
     )
 
   val sdesCallbackController: SdesCallbackController =
@@ -92,15 +93,25 @@ class SdesModule(
     new SdesController(configModule.controllerComponents, sdesService, objectStoreModule.objectStoreService)
 
   val foptSdesService: SdesAlgebra[FOpt] = new SdesAlgebra[FOpt] {
-    override def notifySDES(
+
+    override def pushWorkItem(
       envelopeId: EnvelopeId,
       formTemplateId: FormTemplateId,
       submissionRef: SubmissionRef,
       objWithSummary: ObjectSummaryWithMd5
+    ): FOpt[Unit] =
+      fromFutureA(sdesService.pushWorkItem(envelopeId, formTemplateId, submissionRef, objWithSummary))
+
+    override def notifySDES(
+      correlationId: CorrelationId,
+      envelopeId: EnvelopeId,
+      formTemplateId: FormTemplateId,
+      submissionRef: SubmissionRef,
+      notifyRequest: SdesNotifyRequest
     )(implicit
       hc: HeaderCarrier
-    ): FOpt[Unit] =
-      fromFutureA(sdesService.notifySDES(envelopeId, formTemplateId, submissionRef, objWithSummary))
+    ): FOpt[HttpResponse] =
+      fromFutureA(sdesService.notifySDES(correlationId, envelopeId, formTemplateId, submissionRef, notifyRequest))
 
     override def notifySDES(sdesSubmission: SdesSubmission, objWithSummary: ObjectSummaryWithMd5)(implicit
       hc: HeaderCarrier
@@ -125,6 +136,7 @@ class SdesModule(
 
     override def deleteSdesSubmission(correlation: CorrelationId): FOpt[Unit] =
       fromFutureA(sdesService.deleteSdesSubmission(correlation))
+
   }
 
 }

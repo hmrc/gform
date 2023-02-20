@@ -31,6 +31,7 @@ import uk.gov.hmrc.crypto.CryptoWithKeysFromConfig
 import uk.gov.hmrc.gform.akka.AkkaModule
 import uk.gov.hmrc.gform.auditing.AuditingModule
 import uk.gov.hmrc.gform.config.ConfigModule
+import uk.gov.hmrc.gform.employments.EmploymentsModule
 import uk.gov.hmrc.gform.formstatistics.FormStatisticsModule
 import uk.gov.hmrc.gform.dblookup.DbLookupModule
 import uk.gov.hmrc.gform.dms.DmsModule
@@ -59,6 +60,7 @@ import uk.gov.hmrc.gform.upscan.UpscanModule
 import uk.gov.hmrc.gform.validation.ValidationModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
 import uk.gov.hmrc.gform.obligation.ObligationModule
+import uk.gov.hmrc.gform.scheduler.SchedulerModule
 import uk.gov.hmrc.gform.sdes.SdesModule
 import uk.gov.hmrc.gform.submission.destinations.DestinationModule
 import uk.gov.hmrc.gform.submissionconsolidator.SubmissionConsolidatorModule
@@ -211,6 +213,7 @@ class ApplicationModule(context: Context)
       controllerComponents
     )
   private val obligationModule = new ObligationModule(wSHttpModule, configModule)
+  private val employmentsModule = new EmploymentsModule(wSHttpModule, configModule)
   private val testOnlyModule =
     new TestOnlyModule(
       mongoModule,
@@ -253,6 +256,8 @@ class ApplicationModule(context: Context)
     playComponents.context.devContext.map(_.sourceMapper)
   )
 
+  val schedulerModule = new SchedulerModule(configModule, mongoModule, sdesModule, akkaModule)
+
   val playComponentsModule = new PlayComponentsModule(
     playComponents,
     akkaModule,
@@ -266,6 +271,7 @@ class ApplicationModule(context: Context)
     validationModule,
     dmsModule,
     obligationModule,
+    employmentsModule,
     emailModule,
     dbLookupModule,
     upscanModule,
@@ -275,7 +281,8 @@ class ApplicationModule(context: Context)
     translationModule,
     objectStoreModule,
     sdesModule,
-    notificationBannerModule
+    notificationBannerModule,
+    schedulerModule
   )
 
   override lazy val httpRequestHandler: HttpRequestHandler = playComponentsModule.httpRequestHandler

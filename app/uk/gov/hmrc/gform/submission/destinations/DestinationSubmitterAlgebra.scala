@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.submission.destinations
 
 import cats.instances.string._
 import cats.syntax.eq._
-import uk.gov.hmrc.gform.sharedmodel.{ LangADT, PdfHtml }
+import uk.gov.hmrc.gform.sharedmodel.{ DestinationIncludeIfEval, LangADT, PdfHtml }
 import uk.gov.hmrc.gform.sharedmodel.form.FormData
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
@@ -34,7 +34,8 @@ trait DestinationSubmitterAlgebra[M[_]] {
     modelTree: HandlebarsModelTree,
     submitter: DestinationsSubmitterAlgebra[M],
     formData: Option[FormData],
-    l: LangADT
+    l: LangADT,
+    destIncludeIfEval: DestinationIncludeIfEval
   )(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]]
 
   def submitToDms(
@@ -52,12 +53,19 @@ object DestinationSubmitterAlgebra {
     destination: Destination,
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree,
-    handlebarsTemplateProcessor: HandlebarsTemplateProcessor
+    handlebarsTemplateProcessor: HandlebarsTemplateProcessor,
+    destIncludeIfEval: DestinationIncludeIfEval
   ): Boolean =
-    handlebarsTemplateProcessor(
-      destination.includeIf,
-      accumulatedModel,
-      FocussedHandlebarsModelTree(modelTree, modelTree.value.model),
-      TemplateType.Plain
-    ) === true.toString
+    destination.includeIf match {
+      case DestinationIncludeIf.HandlebarValue(value) =>
+        handlebarsTemplateProcessor(
+          value,
+          accumulatedModel,
+          FocussedHandlebarsModelTree(modelTree, modelTree.value.model),
+          TemplateType.Plain
+        ) === true.toString
+      case DestinationIncludeIf.IncludeIfValue(_) =>
+        destIncludeIfEval.exprEval.find(_._1 === destination.id).map(_._2).getOrElse(false)
+    }
+
 }

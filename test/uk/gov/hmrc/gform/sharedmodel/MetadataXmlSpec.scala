@@ -22,7 +22,7 @@ import uk.gov.hmrc.gform.Spec
 import uk.gov.hmrc.gform.fileupload.{ MetadataXml, ReconciliationId }
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DataOutputFormat, DestinationId }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DataOutputFormat, DestinationId, DestinationIncludeIf }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.submission._
 
@@ -50,7 +50,7 @@ class MetadataXmlSpec extends Spec {
       Constant("TestHmrcDmsCustomerId"),
       "some-classification-type",
       "some-business-area",
-      "",
+      DestinationIncludeIf.HandlebarValue(""),
       true,
       Some(DataOutputFormat.XML),
       true,

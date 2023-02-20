@@ -39,9 +39,6 @@ sealed trait NotificationStatus extends Product with Serializable
 
 object NotificationStatus {
 
-  case object NotNotified
-      extends NotificationStatus //Indicates that the file couldn't be notified for any system reasons
-
   case object FileReady
       extends NotificationStatus //Indicates that the file specified in the notification is available to download from SDES
 
@@ -56,7 +53,6 @@ object NotificationStatus {
 
   implicit val format: Format[NotificationStatus] =
     ADTFormat.formatEnumeration(
-      "NotNotified"           -> NotNotified,
       "FileReady"             -> FileReady,
       "FileReceived"          -> FileReceived,
       "FileProcessingFailure" -> FileProcessingFailure,
@@ -64,7 +60,6 @@ object NotificationStatus {
     )
 
   def fromName(notificationStatus: NotificationStatus): String = notificationStatus match {
-    case NotNotified           => "NotNotified"
     case FileReady             => "FileReady"
     case FileReceived          => "FileReceived"
     case FileProcessingFailure => "FileProcessingFailure"

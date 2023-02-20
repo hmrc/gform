@@ -80,9 +80,11 @@ class SubmissionService(
       submission        <- findSubmission(SubmissionId(formIdData.toFormId, form.envelopeId))
       submissionInfo = DestinationSubmissionInfo(customerId, submission)
       modelTree <- createModelTreeForSingleFormSubmission(form, formTemplate, submissionData, submission.submissionRef)
-      _         <- destinationsSubmitter.send(submissionInfo, modelTree, Some(form.formData), submissionData.l)
+      _ <-
+        destinationsSubmitter
+          .send(submissionInfo, modelTree, Some(form.formData), submissionData.l, submissionData.destIncludeIfEval)
       _ <- if (formTemplate.isObjectStore)
-             zipAndNotify(submission.envelopeId, formTemplate._id, submission.submissionRef)
+             zipAndPushWorkItem(submission.envelopeId, formTemplate._id, submission.submissionRef)
            else fromFutureA(Future.unit)
       emailAddress = email.getEmailAddress(form, submissionData.maybeEmailAddress)
       _ <- fromFutureA(
@@ -96,7 +98,7 @@ class SubmissionService(
            )
     } yield ()
 
-  private def zipAndNotify(envelopeId: EnvelopeId, formTemplateId: FormTemplateId, submissionRef: SubmissionRef)(
+  private def zipAndPushWorkItem(envelopeId: EnvelopeId, formTemplateId: FormTemplateId, submissionRef: SubmissionRef)(
     implicit hc: HeaderCarrier
   ): FOpt[Unit] =
     for {
@@ -105,8 +107,7 @@ class SubmissionService(
              for {
                objectSummary <- objectStoreAlgebra.zipFiles(envelopeId)
                _ <-
-                 sdesAlgebra
-                   .notifySDES(envelopeId, formTemplateId, submissionRef, objectSummary)
+                 sdesAlgebra.pushWorkItem(envelopeId, formTemplateId, submissionRef, objectSummary)
              } yield ()
            } else fromFutureA(Future.unit)
     } yield ()

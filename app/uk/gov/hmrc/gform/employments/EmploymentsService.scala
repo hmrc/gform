@@ -14,18 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel
+package uk.gov.hmrc.gform.employments
 
-import play.api.libs.json.{ Json, OFormat }
-import uk.gov.hmrc.gform.sharedmodel.form.FormIdData
-import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
+import uk.gov.hmrc.gform.des.DesAlgebra
+import uk.gov.hmrc.gform.sharedmodel.des.EmploymentsResponse
+import uk.gov.hmrc.gform.sharedmodel.ServiceCallResponse
 
-case class BundledFormSubmissionData(
-  formIdData: FormIdData,
-  structuredFormData: StructuredFormValue.ObjectStructure,
-  destIncludeIfEval: DestinationIncludeIfEval
-)
-
-object BundledFormSubmissionData {
-  implicit val format: OFormat[BundledFormSubmissionData] = Json.format[BundledFormSubmissionData]
+class EmploymentsService[F[_]](desConnector: DesAlgebra[F]) {
+  def callDES(nino: String, taxYear: Int): F[ServiceCallResponse[List[EmploymentsResponse]]] =
+    desConnector.lookupEmployment(nino, taxYear)
 }

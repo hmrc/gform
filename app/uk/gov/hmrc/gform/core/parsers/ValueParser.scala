@@ -214,7 +214,11 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | "dataRetrieve" ~ "." ~ DataRetrieveId.unanchoredIdValidation ~ "." ~ DataRetrieveAttribute.unanchoredIdValidation ^^ {
       case _ ~ _ ~ dataRetrieveId ~ _ ~ dataRetrieveAttribute =>
         DataRetrieveCtx(DataRetrieveId(dataRetrieveId), DataRetrieveAttribute.fromName(dataRetrieveAttribute))
-    } // to parse date form fields with offset or date constants i.e TODAY, 01012020 etc (with or without offset)
+    }
+    | "count(" ~ "dataRetrieve" ~ "." ~ DataRetrieveId.unanchoredIdValidation ~ ")" ^^ {
+      case _ ~ _ ~ _ ~ dataRetrieveId ~ _ =>
+        DataRetrieveCount(DataRetrieveId(dataRetrieveId))
+    }
     | FormComponentId.unanchoredIdValidation ~ ".column." ~ alphabeticOnly ~ ".count('" ~ alphaNumericWithSpace ~ "')" ^^ {
       case value ~ _ ~ column ~ _ ~ count ~ _ =>
         CsvCountryCountCheck(FormComponentId(value), column, count)

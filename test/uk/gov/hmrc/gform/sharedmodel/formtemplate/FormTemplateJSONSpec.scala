@@ -142,6 +142,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                              |      {
                                              |        "id": "HMRCDMS",
                                              |        "type": "hmrcDms",
+                                             |        "includeIf": "true",
                                              |        "dmsFormId": "TST123",
                                              |        "customerId": "$${auth.gg}",
                                              |        "classificationType": "BT-NRU-Environmental",
@@ -281,6 +282,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                  |      {
                                  |        "id": "HMRCDMS",
                                  |        "type": "hmrcDms",
+                                 |        "includeIf": "true",
                                  |        "dmsFormId": "TST123",
                                  |        "customerId": "$${auth.gg}",
                                  |        "classificationType": "BT-NRU-Environmental",
@@ -425,6 +427,7 @@ class FormTemplateJSONSpec extends Spec with TableDrivenPropertyChecks {
                                                                    |      {
                                                                    |        "id": "HMRCDMS",
                                                                    |        "type": "hmrcDms",
+                                                                   |        "includeIf": "true",
                                                                    |        "dmsFormId": "TST123",
                                                                    |        "customerId": "$${auth.gg}",
                                                                    |        "classificationType": "BT-NRU-Environmental",

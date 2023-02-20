@@ -15,6 +15,7 @@
       {
         "id": "queueDestination",
         "type": "hmrcDms",
+        "includeIf": "true",
         "dmsFormId": "TST1234",
         "customerId": "${businessUtr}",
         "classificationType": "",

@@ -29,11 +29,10 @@ import uk.gov.hmrc.gform.fileupload.FileUploadAlgebra
 import uk.gov.hmrc.gform.pdfgenerator.PdfGeneratorAlgebra
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FormId }
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DataOutputFormat
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DataOutputFormat, DestinationId, DestinationIncludeIf }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Constant, FormTemplateId }
-import uk.gov.hmrc.gform.submission.{ DmsMetaData, PdfAndXmlSummaries, PdfSummary, Submission, SubmissionId }
+import uk.gov.hmrc.gform.submission._
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext
@@ -105,7 +104,7 @@ object DmsSubmissionService {
       Constant(metadata.customerId),
       metadata.classificationType,
       metadata.businessArea,
-      "",
+      DestinationIncludeIf.HandlebarValue(""),
       true,
       Some(DataOutputFormat.XML),
       true,

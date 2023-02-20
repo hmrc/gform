@@ -14,18 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.gform.sharedmodel
+package uk.gov.hmrc.gform.scheduler.sdes
 
-import play.api.libs.json.{ Json, OFormat }
-import uk.gov.hmrc.gform.sharedmodel.form.FormIdData
-import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
+import uk.gov.hmrc.gform.scheduler.WorkItemRepo
+import uk.gov.hmrc.gform.sharedmodel.sdes.SdesWorkItem
+import uk.gov.hmrc.mongo.MongoComponent
 
-case class BundledFormSubmissionData(
-  formIdData: FormIdData,
-  structuredFormData: StructuredFormValue.ObjectStructure,
-  destIncludeIfEval: DestinationIncludeIfEval
-)
+import scala.concurrent.ExecutionContext
 
-object BundledFormSubmissionData {
-  implicit val format: OFormat[BundledFormSubmissionData] = Json.format[BundledFormSubmissionData]
-}
+class SdesWorkItemRepo(mongoComponent: MongoComponent)(implicit
+  ec: ExecutionContext
+) extends WorkItemRepo[SdesWorkItem](mongoComponent, "sdesWorkItem")

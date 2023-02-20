@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory
 import play.api.libs.json._
 import uk.gov.hmrc.gform.auditing.loggingHelpers
 import uk.gov.hmrc.gform.config.DesConnectorConfig
-import uk.gov.hmrc.gform.sharedmodel.des.{ DesRegistrationRequest, DesRegistrationResponse, DesRegistrationResponseError }
+import uk.gov.hmrc.gform.sharedmodel.des.{ DesRegistrationRequest, DesRegistrationResponse, DesRegistrationResponseError, EmploymentsResponse }
 import uk.gov.hmrc.gform.sharedmodel._
 import uk.gov.hmrc.gform.wshttp.WSHttp
 import uk.gov.hmrc.http._
@@ -34,12 +34,18 @@ import scala.reflect.runtime.universe.TypeTag
 import scala.util.{ Failure, Success, Try }
 
 trait DesAlgebra[F[_]] {
+
   def lookupRegistration(
     utr: String,
     desRegistrationRequest: DesRegistrationRequest
   ): F[ServiceCallResponse[DesRegistrationResponse]]
 
   def lookupTaxPeriod(idType: String, idNumber: String, regimeType: String): F[ServiceCallResponse[Obligation]]
+
+  def lookupEmployment(
+    nino: String,
+    taxYear: Int
+  ): F[ServiceCallResponse[List[EmploymentsResponse]]]
 
   def testOnlyGet(url: String): Future[HttpResponse]
 }
@@ -134,6 +140,32 @@ class DesConnector(wSHttp: WSHttp, baseUrl: String, desConfig: DesConnectorConfi
           logger.error("Unknown problem when calling des obligation-data", other)
           CannotRetrieveResponse
       }
+  }
+
+  def lookupEmployment(
+    nino: String,
+    taxYear: Int
+  ): Future[ServiceCallResponse[List[EmploymentsResponse]]] = {
+    logger.info(
+      s"Des employments called, ${loggingHelpers.cleanHeaderCarrierHeader(hc)}"
+    )
+
+    val url = s"$baseUrl${desConfig.basePath}/individuals/$nino/employment/$taxYear"
+
+    wSHttp
+      .GET[List[EmploymentsResponse]](
+        url,
+        headers = authHeaders
+      )
+      .map(ServiceResponse.apply)
+      .recover {
+        case UpstreamErrorResponse.WithStatusCode(statusCode) if statusCode == StatusCodes.NotFound.intValue =>
+          NotFound
+        case other =>
+          logger.error("Unknown problem when calling des employments", other)
+          CannotRetrieveResponse
+      }
+
   }
 
   def testOnlyGet(url: String): Future[HttpResponse] =

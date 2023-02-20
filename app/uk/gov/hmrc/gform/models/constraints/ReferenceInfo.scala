@@ -32,6 +32,7 @@ object ReferenceInfo {
   final case class PeriodExtExpr(path: TemplatePath, periodExt: PeriodExt) extends ReferenceInfo
   final case class LinkCtxExpr(path: TemplatePath, linkCtx: LinkCtx) extends ReferenceInfo
   final case class DataRetrieveCtxExpr(path: TemplatePath, dataRetrieveCtx: DataRetrieveCtx) extends ReferenceInfo
+  final case class DataRetrieveCountExpr(path: TemplatePath, dataRetrieveCount: DataRetrieveCount) extends ReferenceInfo
   final case class SizeExpr(path: TemplatePath, size: Size) extends ReferenceInfo
   final case class CsvCountryCheckExpr(path: TemplatePath, csvCountryCheck: CsvCountryCheck) extends ReferenceInfo
   final case class CsvOverseasCountryCheckExpr(path: TemplatePath, csvOverseasCountryCheck: CsvOverseasCountryCheck)

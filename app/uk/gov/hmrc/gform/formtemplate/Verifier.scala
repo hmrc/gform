@@ -84,6 +84,7 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validateDataRetrieve(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateDataRetrieveFormCtxReferences(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateDataRetrieveCtx(formTemplate, pages, allExpressions).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateDataRetrieveCount(formTemplate, pages, allExpressions).toEither)
       _ <- fromOptA(FormTemplateValidator.validateConfirmations(formTemplate, pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateChoiceSize(pages, allExpressions).toEither)
       _ <- fromOptA(FormTemplateValidator.validatePostcodeLookup(pages).toEither)
@@ -134,7 +135,8 @@ trait Verifier {
   private def mkSpecimen(page: Page): Page =
     (removeIncludeIf _ andThen mkComponentsOptional _ andThen noValidators _)(page)
 
-  private def removeIncludeIf(section: Page): Page = section.copy(includeIf = None)
+  private def removeIncludeIf(section: Page): Page =
+    section.copy(includeIf = None, fields = section.fields.map(i => i.copy(includeIf = None)))
 
   private def mkComponentsOptional(page: Page): Page =
     page.copy(

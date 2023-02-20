@@ -32,7 +32,7 @@ import uk.gov.hmrc.gform.sharedmodel.formtemplate.InternalLink.{ NewForm, NewFor
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.UserField.Enrolment
 import uk.gov.hmrc.gform.sharedmodel.formtemplate._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DataOutputFormat, DestinationId, Destinations }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ DataOutputFormat, DestinationId, DestinationIncludeIf, Destinations }
 
 import scala.language.implicitConversions
 
@@ -447,7 +447,7 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
             Constant("TestHmrcDmsCustomerId"),
             "TestHmrcDmsClassificationType",
             "TestHmrcDmsBusinessArea",
-            "",
+            DestinationIncludeIf.HandlebarValue(""),
             true,
             Some(DataOutputFormat.XML),
             true,
@@ -1030,6 +1030,24 @@ class ValueParserSpec extends Spec with TableDrivenPropertyChecks {
     res.right.value should be(
       TextExpression(
         DataRetrieveCtx(DataRetrieveId("ninoInsights"), DataRetrieveAttribute.Reason)
+      )
+    )
+  }
+
+  it should "parse bank account insights - riskScore" in {
+    val res = ValueParser.validate("${dataRetrieve.bankCheck.riskScore}")
+    res.right.value should be(
+      TextExpression(
+        DataRetrieveCtx(DataRetrieveId("bankCheck"), DataRetrieveAttribute.RiskScore)
+      )
+    )
+  }
+
+  it should "parse bank account insights - reason" in {
+    val res = ValueParser.validate("${dataRetrieve.bankCheck.reason}")
+    res.right.value should be(
+      TextExpression(
+        DataRetrieveCtx(DataRetrieveId("bankCheck"), DataRetrieveAttribute.Reason)
       )
     )
   }

@@ -53,6 +53,7 @@ object ExprSubstituter extends Substituter[ExprSubstitutions, FormTemplate] {
         case UserCtx(_)                      => t
         case Value                           => t
         case DataRetrieveCtx(_, _)           => t
+        case DataRetrieveCount(_)            => t
         case CsvCountryCheck(_, _)           => t
         case CsvOverseasCountryCheck(_, _)   => t
         case CsvCountryCountCheck(_, _, _)   => t
