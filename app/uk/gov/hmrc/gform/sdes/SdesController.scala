@@ -38,10 +38,11 @@ class SdesController(
     pageSize: Int,
     processed: Option[Boolean],
     formTemplateId: Option[FormTemplateId],
-    status: Option[NotificationStatus]
+    status: Option[NotificationStatus],
+    showBeforeAt: Option[Boolean]
   ) = Action.async { _ =>
     sdesAlgebra
-      .search(page, pageSize, processed, formTemplateId, status)
+      .search(page, pageSize, processed, formTemplateId, status, showBeforeAt)
       .map(pageData => Ok(Json.toJson(pageData)))
   }
 
