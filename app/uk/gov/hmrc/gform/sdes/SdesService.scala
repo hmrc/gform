@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory
 import uk.gov.hmrc.gform.core._
 import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.repo.Repo
+import uk.gov.hmrc.gform.scheduler.sdes.SdesWorkItemRepo
 import uk.gov.hmrc.gform.sharedmodel.SubmissionRef
 import uk.gov.hmrc.gform.sharedmodel.form.EnvelopeId
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
@@ -33,16 +34,26 @@ import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 import uk.gov.hmrc.objectstore.client.ObjectSummaryWithMd5
 
 import java.time.Instant
-import java.util.Base64
+import java.util.{ Base64, UUID }
 import scala.concurrent.{ ExecutionContext, Future }
 
 trait SdesAlgebra[F[_]] {
-  def notifySDES(
+
+  def pushWorkItem(
     envelopeId: EnvelopeId,
     formTemplateId: FormTemplateId,
     submissionRef: SubmissionRef,
     objWithSummary: ObjectSummaryWithMd5
-  )(implicit hc: HeaderCarrier): F[Unit]
+  ): F[Unit]
+  def notifySDES(
+    correlationId: CorrelationId,
+    envelopeId: EnvelopeId,
+    formTemplateId: FormTemplateId,
+    submissionRef: SubmissionRef,
+    notifyRequest: SdesNotifyRequest
+  )(implicit
+    hc: HeaderCarrier
+  ): F[HttpResponse]
 
   def notifySDES(sdesSubmission: SdesSubmission, objWithSummary: ObjectSummaryWithMd5)(implicit
     hc: HeaderCarrier
@@ -68,31 +79,40 @@ class SdesService(
   repoSdesSubmission: Repo[SdesSubmission],
   informationType: String,
   recipientOrSender: String,
-  fileLocationUrl: String
+  fileLocationUrl: String,
+  sdesNotificationRepository: SdesWorkItemRepo
 )(implicit
   ec: ExecutionContext
 ) extends SdesAlgebra[Future] {
   private val logger = LoggerFactory.getLogger(getClass)
 
-  override def notifySDES(
+  override def pushWorkItem(
     envelopeId: EnvelopeId,
     formTemplateId: FormTemplateId,
     submissionRef: SubmissionRef,
     objWithSummary: ObjectSummaryWithMd5
+  ): Future[Unit] = {
+    val correlationId = UUID.randomUUID().toString
+    val sdesNotifyRequest = createNotifyRequest(objWithSummary, correlationId)
+    val sdesWorkItem =
+      SdesWorkItem(CorrelationId(correlationId), envelopeId, formTemplateId, submissionRef, sdesNotifyRequest)
+    sdesNotificationRepository.pushNew(sdesWorkItem).void
+  }
+
+  override def notifySDES(
+    correlationId: CorrelationId,
+    envelopeId: EnvelopeId,
+    formTemplateId: FormTemplateId,
+    submissionRef: SubmissionRef,
+    notifyRequest: SdesNotifyRequest
   )(implicit
     hc: HeaderCarrier
-  ): Future[Unit] = {
-    val sdesSubmission = SdesSubmission.createSdesSubmission(envelopeId, formTemplateId, submissionRef)
-    val notifyRequest = createNotifyRequest(objWithSummary, sdesSubmission._id.value)
+  ): Future[HttpResponse] = {
+    val sdesSubmission = SdesSubmission.createSdesSubmission(correlationId, envelopeId, formTemplateId, submissionRef)
     for {
-      _ <- saveSdesSubmission(sdesSubmission)
-      _ <- sdesConnector
-             .notifySDES(notifyRequest)
-             .map(_ => saveSdesSubmission(sdesSubmission.copy(submittedAt = Some(Instant.now), status = FileReady)))
-             .recoverWith { case _ =>
-               Future.unit //it doesn't break the submission when the service is unavailable
-             }
-    } yield ()
+      res <- sdesConnector.notifySDES(notifyRequest)
+      _   <- saveSdesSubmission(sdesSubmission.copy(submittedAt = Some(Instant.now), status = FileReady))
+    } yield res
   }
 
   private def createNotifyRequest(
