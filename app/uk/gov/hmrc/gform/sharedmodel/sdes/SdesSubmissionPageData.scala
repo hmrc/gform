@@ -41,7 +41,6 @@ case class SdesSubmissionData(
   submittedAt: Option[Instant],
   status: NotificationStatus,
   failureReason: String,
-  createdAt: Instant,
   lastUpdated: Option[Instant]
 )
 
@@ -55,7 +54,6 @@ object SdesSubmissionData {
     sdesSubmission.submittedAt,
     sdesSubmission.status,
     sdesSubmission.failureReason.getOrElse(""),
-    sdesSubmission.createdAt,
     sdesSubmission.lastUpdated
   )
 
