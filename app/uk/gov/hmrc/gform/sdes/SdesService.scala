@@ -180,7 +180,6 @@ class SdesService(
           s.submittedAt,
           s.status,
           s.failureReason.getOrElse(""),
-          s.createdAt,
           s.lastUpdated
         )
       ),
