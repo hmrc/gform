@@ -27,7 +27,8 @@ case class CheckYourAnswersPage(
   noPIIUpdateTitle: Option[SmartString],
   header: Option[SmartString],
   footer: Option[SmartString],
-  continueLabel: Option[SmartString]
+  continueLabel: Option[SmartString],
+  presentationHint: Option[PresentationHint]
 )
 
 object CheckYourAnswersPage {
