@@ -16,13 +16,14 @@
 
 package uk.gov.hmrc.gform.submission.destinations
 
+import cats.syntax.eq._
 import cats.MonadError
 import cats.syntax.applicative._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import uk.gov.hmrc.gform.logging.Loggers
 import uk.gov.hmrc.gform.notifier.NotifierAlgebra
-import uk.gov.hmrc.gform.sharedmodel.{ DestinationIncludeIfEval, EmailVerifierService, LangADT, PdfHtml }
+import uk.gov.hmrc.gform.sharedmodel.{ DestinationEvaluation, EmailVerifierService, LangADT, PdfHtml }
 import uk.gov.hmrc.gform.sharedmodel.form.{ FormData, FormId }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
 import uk.gov.hmrc.gform.sharedmodel.structuredform.StructuredFormValue
@@ -50,17 +51,35 @@ class DestinationSubmitter[M[_]](
     submitter: DestinationsSubmitterAlgebra[M],
     formData: Option[FormData],
     l: LangADT,
-    destIncludeIfEval: DestinationIncludeIfEval
+    destinationEvaluation: DestinationEvaluation
   )(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
     monadError.pure(
       DestinationSubmitterAlgebra
-        .isIncludeIf(destination, accumulatedModel, modelTree, handlebarsTemplateProcessor, destIncludeIfEval)
+        .isIncludeIf(destination, accumulatedModel, modelTree, handlebarsTemplateProcessor, destinationEvaluation)
     ) flatMap { include =>
       if (include)
         for {
           _ <- logInfoInMonad(submissionInfo.formId, destination.id, "Included")
+          maybeCustomerId =
+            destinationEvaluation.evaluation
+              .find(_.destinationId === destination.id)
+              .flatMap(_.customerId)
           result <-
-            submit(destination, submissionInfo, accumulatedModel, modelTree, submitter, formData, l, destIncludeIfEval)
+            submit(
+              destination,
+              maybeCustomerId.fold(submissionInfo)(customerId =>
+                submissionInfo.copy(submission =
+                  submissionInfo.submission
+                    .copy(dmsMetaData = submissionInfo.submission.dmsMetaData.copy(customerId = customerId))
+                )
+              ),
+              accumulatedModel,
+              modelTree,
+              submitter,
+              formData,
+              l,
+              destinationEvaluation
+            )
           _ <- audit(destination, result.map(_.status), None, submissionInfo, modelTree)
         } yield result
       else
@@ -109,7 +128,7 @@ class DestinationSubmitter[M[_]](
     submitter: DestinationsSubmitterAlgebra[M],
     formData: Option[FormData],
     l: LangADT,
-    destIncludeIfEval: DestinationIncludeIfEval
+    destinationEvaluation: DestinationEvaluation
   )(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
     destination match {
       case d: Destination.HmrcDms =>
@@ -124,7 +143,15 @@ class DestinationSubmitter[M[_]](
       case d: Destination.HandlebarsHttpApi => submitToHandlebars(d, accumulatedModel, modelTree, submissionInfo)
       case d: Destination.Composite =>
         submitter
-          .submitToList(d.destinations, submissionInfo, accumulatedModel, modelTree, formData, l, destIncludeIfEval)
+          .submitToList(
+            d.destinations,
+            submissionInfo,
+            accumulatedModel,
+            modelTree,
+            formData,
+            l,
+            destinationEvaluation
+          )
       case d: Destination.StateTransition => stateTransitionAlgebra(d, submissionInfo.formId).map(_ => None)
       case d: Destination.Log             => log(d, accumulatedModel, modelTree).map(_ => None)
       case d: Destination.Email =>

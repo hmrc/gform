@@ -22,9 +22,9 @@ import cats.syntax.applicative._
 import cats.syntax.either._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
-import uk.gov.hmrc.gform.sharedmodel.{ DestinationIncludeIfEval, LangADT }
 import uk.gov.hmrc.gform.sharedmodel.form.FormData
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
+import uk.gov.hmrc.gform.sharedmodel.{ DestinationEvaluation, LangADT }
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsModelTree
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -36,7 +36,7 @@ class DestinationsSubmitter[M[_]: Monad](destinationSubmitter: DestinationSubmit
     modelTree: HandlebarsModelTree,
     formData: Option[FormData],
     l: LangADT,
-    destIncludeIfEval: DestinationIncludeIfEval
+    destinationEvaluation: DestinationEvaluation
   )(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] =
     modelTree.value.formTemplate.destinations match {
       case list: Destinations.DestinationList =>
@@ -47,7 +47,7 @@ class DestinationsSubmitter[M[_]: Monad](destinationSubmitter: DestinationSubmit
           modelTree,
           formData,
           l,
-          destIncludeIfEval
+          destinationEvaluation
         )
 
       case _ => Option.empty[HandlebarsDestinationResponse].pure[M]
@@ -60,7 +60,7 @@ class DestinationsSubmitter[M[_]: Monad](destinationSubmitter: DestinationSubmit
     modelTree: HandlebarsModelTree,
     formData: Option[FormData],
     l: LangADT,
-    destIncludeIfEval: DestinationIncludeIfEval
+    destinationEvaluation: DestinationEvaluation
   )(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]] = {
     case class TailRecParameter(
       remainingDestinations: List[Destination],
@@ -79,7 +79,7 @@ class DestinationsSubmitter[M[_]: Monad](destinationSubmitter: DestinationSubmit
             this,
             formData,
             l,
-            destIncludeIfEval
+            destinationEvaluation
           )
           .map(submitterResult =>
             TailRecParameter(

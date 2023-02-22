@@ -30,7 +30,7 @@ case class SubmissionData(
   attachments: Attachments,
   l: LangADT,
   maybeEmailAddress: Option[String],
-  destIncludeIfEval: DestinationIncludeIfEval
+  destinationEvaluation: DestinationEvaluation
 )
 
 object SubmissionData {

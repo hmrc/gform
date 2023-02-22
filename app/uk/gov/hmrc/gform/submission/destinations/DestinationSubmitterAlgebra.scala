@@ -18,7 +18,7 @@ package uk.gov.hmrc.gform.submission.destinations
 
 import cats.instances.string._
 import cats.syntax.eq._
-import uk.gov.hmrc.gform.sharedmodel.{ DestinationIncludeIfEval, LangADT, PdfHtml }
+import uk.gov.hmrc.gform.sharedmodel.{ DestinationEvaluation, LangADT, PdfHtml }
 import uk.gov.hmrc.gform.sharedmodel.form.FormData
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.Destination.HmrcDms
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations._
@@ -35,7 +35,7 @@ trait DestinationSubmitterAlgebra[M[_]] {
     submitter: DestinationsSubmitterAlgebra[M],
     formData: Option[FormData],
     l: LangADT,
-    destIncludeIfEval: DestinationIncludeIfEval
+    destinationEvaluation: DestinationEvaluation
   )(implicit hc: HeaderCarrier): M[Option[HandlebarsDestinationResponse]]
 
   def submitToDms(
@@ -54,7 +54,7 @@ object DestinationSubmitterAlgebra {
     accumulatedModel: HandlebarsTemplateProcessorModel,
     modelTree: HandlebarsModelTree,
     handlebarsTemplateProcessor: HandlebarsTemplateProcessor,
-    destIncludeIfEval: DestinationIncludeIfEval
+    destinationEvaluation: DestinationEvaluation
   ): Boolean =
     destination.includeIf match {
       case DestinationIncludeIf.HandlebarValue(value) =>
@@ -65,7 +65,7 @@ object DestinationSubmitterAlgebra {
           TemplateType.Plain
         ) === true.toString
       case DestinationIncludeIf.IncludeIfValue(_) =>
-        destIncludeIfEval.exprEval.find(_._1 === destination.id).map(_._2).getOrElse(false)
+        destinationEvaluation.evaluation.find(_.destinationId === destination.id).exists(_.includeIf.getOrElse(false))
     }
 
 }
