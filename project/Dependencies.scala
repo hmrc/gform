@@ -8,7 +8,7 @@ object Dependencies {
 
   val parsebackVersion = "0.3"
   val handlebarsVersion = "4.2.0"
-  val hmrcMongoVersion = "0.68.0"
+  val hmrcMongoVersion = "0.74.0"
   val bootstrapVersion = "5.12.0"
 
   val compile = Seq(

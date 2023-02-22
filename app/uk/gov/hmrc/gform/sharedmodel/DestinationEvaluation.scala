@@ -16,12 +16,18 @@
 
 package uk.gov.hmrc.gform.sharedmodel
 
-import play.api.libs.json.{ Format, Json }
+import play.api.libs.json.{ Format, Json, OFormat }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationId
 
-case class DestinationIncludeIfEval(exprEval: List[(DestinationId, Boolean)])
+case class DestinationResult(destinationId: DestinationId, includeIf: Option[Boolean], customerId: Option[String])
 
-object DestinationIncludeIfEval {
-  val empty = DestinationIncludeIfEval(List.empty[(DestinationId, Boolean)])
-  implicit val format: Format[DestinationIncludeIfEval] = Json.format[DestinationIncludeIfEval]
+object DestinationResult {
+  implicit val format: Format[DestinationResult] = Json.format[DestinationResult]
+}
+
+case class DestinationEvaluation(evaluation: List[DestinationResult])
+
+object DestinationEvaluation {
+  val empty = DestinationEvaluation(List.empty[DestinationResult])
+  implicit val format: OFormat[DestinationEvaluation] = Json.format[DestinationEvaluation]
 }

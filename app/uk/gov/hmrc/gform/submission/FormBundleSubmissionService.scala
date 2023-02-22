@@ -30,7 +30,7 @@ import play.api.libs.json.JsObject
 import uk.gov.hmrc.gform.form.{ BundledFormTreeNode, FormAlgebra }
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
 import uk.gov.hmrc.gform.repo.RepoAlgebra
-import uk.gov.hmrc.gform.sharedmodel.{ BundledFormSubmissionData, DestinationIncludeIfEval, FrontEndSubmissionVariables, LangADT, PdfHtml, SubmissionRef }
+import uk.gov.hmrc.gform.sharedmodel.{ BundledFormSubmissionData, DestinationEvaluation, FrontEndSubmissionVariables, LangADT, PdfHtml, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.form._
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId }
 import uk.gov.hmrc.gform.submission.destinations.{ DestinationAuditAlgebra, DestinationSubmissionInfo, DestinationsProcessorModelAlgebra, DestinationsSubmitterAlgebra, FormTreeAlgebra, PdfSummaryAlgebra }
@@ -105,7 +105,7 @@ class FormBundleSubmissionService[F[_]](
              modelTree,
              None,
              LangADT.En,
-             DestinationIncludeIfEval(submissionData.toList.flatMap(_.destIncludeIfEval.exprEval))
+             DestinationEvaluation(submissionData.toList.flatMap(_.destinationEvaluation.evaluation))
            )
       _ <- logger.info(show"Ran submitter").pure[F]
       _ <- transitionAllChildNodesToSubmitted(modelTree)
