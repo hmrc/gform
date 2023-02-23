@@ -168,12 +168,17 @@ sealed trait DataRetrieve {
   def id: DataRetrieveId
   def attributes: List[DataRetrieveAttribute]
   def formCtxExprs: List[Expr]
+  def `if`: Option[IncludeIf]
 }
 
 object DataRetrieve {
 
-  final case class ValidateBankDetails(override val id: DataRetrieveId, sortCode: Expr, accountNumber: Expr)
-      extends DataRetrieve {
+  final case class ValidateBankDetails(
+    override val id: DataRetrieveId,
+    sortCode: Expr,
+    accountNumber: Expr,
+    override val `if`: Option[IncludeIf] = None
+  ) extends DataRetrieve {
     override def attributes: List[DataRetrieveAttribute] =
       List(
         DataRetrieveAttribute.IsValid,
@@ -191,7 +196,8 @@ object DataRetrieve {
     override val id: DataRetrieveId,
     sortCode: Expr,
     accountNumber: Expr,
-    companyName: Expr
+    companyName: Expr,
+    override val `if`: Option[IncludeIf] = None
   ) extends DataRetrieve {
     import DataRetrieveAttribute._
     override def attributes: List[DataRetrieveAttribute] = List(
@@ -209,7 +215,8 @@ object DataRetrieve {
 
   final case class CompanyRegistrationNumber(
     override val id: DataRetrieveId,
-    companyNumber: Expr
+    companyNumber: Expr,
+    override val `if`: Option[IncludeIf] = None
   ) extends DataRetrieve {
     import DataRetrieveAttribute._
     override def attributes: List[DataRetrieveAttribute] = List(
@@ -222,7 +229,8 @@ object DataRetrieve {
 
   final case class NinoInsights(
     override val id: DataRetrieveId,
-    nino: Expr
+    nino: Expr,
+    override val `if`: Option[IncludeIf] = None
   ) extends DataRetrieve {
     import DataRetrieveAttribute._
     override def attributes: List[DataRetrieveAttribute] = List(
@@ -237,7 +245,7 @@ object DataRetrieve {
     override val id: DataRetrieveId,
     sortCode: Expr,
     accountNumber: Expr,
-    `if`: Option[IncludeIf] = None
+    override val `if`: Option[IncludeIf] = None
   ) extends DataRetrieve {
     import DataRetrieveAttribute._
     override def attributes: List[DataRetrieveAttribute] = List(
@@ -253,7 +261,8 @@ object DataRetrieve {
     sortCode: Expr,
     accountNumber: Expr,
     firstName: Expr,
-    lastName: Expr
+    lastName: Expr,
+    override val `if`: Option[IncludeIf] = None
   ) extends DataRetrieve {
     import DataRetrieveAttribute._
 
@@ -277,7 +286,8 @@ object DataRetrieve {
     override val id: DataRetrieveId,
     sortCode: Expr,
     accountNumber: Expr,
-    name: Expr
+    name: Expr,
+    override val `if`: Option[IncludeIf] = None
   ) extends DataRetrieve {
     import DataRetrieveAttribute._
 
@@ -300,7 +310,8 @@ object DataRetrieve {
   final case class Employments(
     override val id: DataRetrieveId,
     nino: Expr,
-    taxYear: Expr
+    taxYear: Expr,
+    override val `if`: Option[IncludeIf] = None
   ) extends DataRetrieve {
     import DataRetrieveAttribute._
     override def attributes: List[DataRetrieveAttribute] = List(
@@ -435,7 +446,6 @@ object DataRetrieve {
     }
 
   implicit val format: OFormat[DataRetrieve] = OFormatWithTemplateReadFallback(reads)
-  implicit val dataRetrieveListReads: Reads[List[DataRetrieve]] = JsonUtils.listReads[DataRetrieve]
 
   implicit val leafExprs: LeafExpr[DataRetrieve] = (path: TemplatePath, t: DataRetrieve) =>
     t match {

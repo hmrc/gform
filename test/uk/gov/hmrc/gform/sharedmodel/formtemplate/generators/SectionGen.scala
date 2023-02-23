@@ -108,9 +108,12 @@ trait SectionGen {
       continueIf       <- Gen.option(ContinueIfGen.continueIfGen)
       instruction      <- Gen.option(InstructionGen.instructionGen)
       presentationHint <- Gen.option(PresentationHintGen.presentationHintGen)
-      dataRetrieve     <- Gen.choose(0, 10).flatMap(size => Gen.listOfN(size, validateBankDetailsGen))
-      confirmation     <- Gen.option(ConfirmationGen.confirmationGen)
-      redirects        <- Gen.option(RedirectGen.redirectGen)
+      dataRetrieve <-
+        Gen.option(
+          Gen.choose(1, 10).flatMap(size => Gen.listOfN(size, validateBankDetailsGen)).map(NonEmptyList.fromListUnsafe)
+        )
+      confirmation <- Gen.option(ConfirmationGen.confirmationGen)
+      redirects    <- Gen.option(RedirectGen.redirectGen)
     } yield Page(
       title,
       id,
@@ -125,7 +128,7 @@ trait SectionGen {
       continueIf,
       instruction,
       presentationHint,
-      dataRetrieve.toList,
+      dataRetrieve,
       confirmation,
       redirects.map(NonEmptyList.one(_)),
       None
