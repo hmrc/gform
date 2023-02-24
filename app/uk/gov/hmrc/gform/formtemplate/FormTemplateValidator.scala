@@ -863,7 +863,14 @@ object FormTemplateValidator {
               .map(verifyIncludeIf(idx).apply)
               .getOrElse(List(Valid))
 
-            verifiedValidIf ++ verifiedIncludeIf ++ verifiedComponentIncludeIfs
+            val verifiedDataRetrieveIncludeIf =
+              for {
+                dataRetrieve <- page.dataRetrieves()
+                iff          <- dataRetrieve.`if`.toList
+                result       <- verifyIncludeIf(idx).apply(iff.booleanExpr)
+              } yield result
+
+            verifiedValidIf ++ verifiedIncludeIf ++ verifiedComponentIncludeIfs ++ verifiedDataRetrieveIncludeIf
           }
       )
   }
@@ -1081,7 +1088,7 @@ object FormTemplateValidator {
   }
 
   def validateDataRetrieve(pages: List[Page]): ValidationResult = {
-    val ids = pages.flatMap(_.dataRetrieve).map(_.id)
+    val ids = pages.flatMap(_.dataRetrieves()).map(_.id)
     val duplicates = ids.groupBy(identity).collect { case (fId, List(_, _, _*)) => fId }.toSet
     duplicates.isEmpty.validationResult(
       s"Some data retrieve ids are defined more than once: ${duplicates.toList.sortBy(_.value).map(_.value)}"
@@ -1089,7 +1096,7 @@ object FormTemplateValidator {
   }
 
   def validateDataRetrieveFormCtxReferences(pages: List[Page]): ValidationResult = {
-    val dataRetrieves: List[(Page, DataRetrieve)] = pages.flatMap(p => p.dataRetrieve.map(d => (p, d)))
+    val dataRetrieves: List[(Page, DataRetrieve)] = pages.flatMap(p => p.dataRetrieves().map(d => (p, d)))
     dataRetrieves.map { case (page, dataRetrieve) =>
       val pageFormComponentsIds = page.allFormComponents.map(_.id)
       val formCtxExprs = dataRetrieve.formCtxExprs.collect { case ctx: FormCtx =>
@@ -1113,7 +1120,8 @@ object FormTemplateValidator {
         d
       }
 
-    val dataRetrieves: Map[DataRetrieveId, DataRetrieve] = pages.flatMap(p => p.dataRetrieve.map(d => (d.id, d))).toMap
+    val dataRetrieves: Map[DataRetrieveId, DataRetrieve] =
+      pages.flatMap(p => p.dataRetrieves().map(d => (d.id, d))).toMap
 
     referenceInfos.map { r =>
       val maybeDataRetrieve = dataRetrieves.get(r.dataRetrieveCtx.id)
@@ -1140,7 +1148,7 @@ object FormTemplateValidator {
         d
       }
 
-    val dataRetrieves: Set[DataRetrieveId] = pages.flatMap(p => p.dataRetrieve.map(_.id)).toSet
+    val dataRetrieves: Set[DataRetrieveId] = pages.flatMap(p => p.dataRetrieves().map(_.id)).toSet
 
     referenceInfos.map { r =>
       if (dataRetrieves(r.dataRetrieveCount.id))

@@ -36,7 +36,7 @@ case class Page(
   continueIf: Option[ContinueIf],
   instruction: Option[Instruction],
   presentationHint: Option[PresentationHint],
-  dataRetrieve: Option[DataRetrieve],
+  dataRetrieve: Option[NonEmptyList[DataRetrieve]],
   confirmation: Option[Confirmation],
   redirects: Option[NonEmptyList[RedirectCtx]],
   hideSaveAndComeBackButton: Option[Boolean]
@@ -59,9 +59,11 @@ case class Page(
     .map(_.id)
 
   val numericFields: List[FormComponentId] = allFormComponents.filter(_.isNumeric).map(_.id)
-}
 
+  def dataRetrieves(): List[DataRetrieve] = dataRetrieve.toList.flatMap(_.toList)
+}
 object Page {
+
   import JsonUtils._
   implicit val pageFormat: OFormat[Page] = derived.oformat()
 
@@ -79,6 +81,7 @@ object Page {
       LeafExpr(path + "validators", t.validators) ++
       LeafExpr(path + "instruction", t.instruction) ++
       LeafExpr(path + "confirmation", t.confirmation) ++
-      LeafExpr(path + "redirects", t.redirects)
+      LeafExpr(path + "redirects", t.redirects) ++
+      LeafExpr(path + "dataRetrieve", t.dataRetrieve)
 
 }

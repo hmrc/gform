@@ -24,6 +24,9 @@ import uk.gov.hmrc.gform.exceptions.UnexpectedState
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ Expr, JsonUtils, OFormatWithTemplateReadFallback }
 
 import scala.util.matching.Regex
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.IncludeIf
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.LeafExpr
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.TemplatePath
 
 case class DataRetrieveId(value: String) extends AnyVal
 
@@ -165,12 +168,17 @@ sealed trait DataRetrieve {
   def id: DataRetrieveId
   def attributes: List[DataRetrieveAttribute]
   def formCtxExprs: List[Expr]
+  def `if`: Option[IncludeIf]
 }
 
 object DataRetrieve {
 
-  final case class ValidateBankDetails(override val id: DataRetrieveId, sortCode: Expr, accountNumber: Expr)
-      extends DataRetrieve {
+  final case class ValidateBankDetails(
+    override val id: DataRetrieveId,
+    sortCode: Expr,
+    accountNumber: Expr,
+    override val `if`: Option[IncludeIf] = None
+  ) extends DataRetrieve {
     override def attributes: List[DataRetrieveAttribute] =
       List(
         DataRetrieveAttribute.IsValid,
@@ -188,7 +196,8 @@ object DataRetrieve {
     override val id: DataRetrieveId,
     sortCode: Expr,
     accountNumber: Expr,
-    companyName: Expr
+    companyName: Expr,
+    override val `if`: Option[IncludeIf]
   ) extends DataRetrieve {
     import DataRetrieveAttribute._
     override def attributes: List[DataRetrieveAttribute] = List(
@@ -206,7 +215,8 @@ object DataRetrieve {
 
   final case class CompanyRegistrationNumber(
     override val id: DataRetrieveId,
-    companyNumber: Expr
+    companyNumber: Expr,
+    override val `if`: Option[IncludeIf]
   ) extends DataRetrieve {
     import DataRetrieveAttribute._
     override def attributes: List[DataRetrieveAttribute] = List(
@@ -219,7 +229,8 @@ object DataRetrieve {
 
   final case class NinoInsights(
     override val id: DataRetrieveId,
-    nino: Expr
+    nino: Expr,
+    override val `if`: Option[IncludeIf]
   ) extends DataRetrieve {
     import DataRetrieveAttribute._
     override def attributes: List[DataRetrieveAttribute] = List(
@@ -233,7 +244,8 @@ object DataRetrieve {
   final case class BankAccountInsights(
     override val id: DataRetrieveId,
     sortCode: Expr,
-    accountNumber: Expr
+    accountNumber: Expr,
+    override val `if`: Option[IncludeIf]
   ) extends DataRetrieve {
     import DataRetrieveAttribute._
     override def attributes: List[DataRetrieveAttribute] = List(
@@ -249,7 +261,8 @@ object DataRetrieve {
     sortCode: Expr,
     accountNumber: Expr,
     firstName: Expr,
-    lastName: Expr
+    lastName: Expr,
+    override val `if`: Option[IncludeIf]
   ) extends DataRetrieve {
     import DataRetrieveAttribute._
 
@@ -273,7 +286,8 @@ object DataRetrieve {
     override val id: DataRetrieveId,
     sortCode: Expr,
     accountNumber: Expr,
-    name: Expr
+    name: Expr,
+    override val `if`: Option[IncludeIf]
   ) extends DataRetrieve {
     import DataRetrieveAttribute._
 
@@ -296,7 +310,8 @@ object DataRetrieve {
   final case class Employments(
     override val id: DataRetrieveId,
     nino: Expr,
-    taxYear: Expr
+    taxYear: Expr,
+    override val `if`: Option[IncludeIf]
   ) extends DataRetrieve {
     import DataRetrieveAttribute._
     override def attributes: List[DataRetrieveAttribute] = List(
@@ -324,7 +339,8 @@ object DataRetrieve {
                               accountNumberValue <- opt[String](parameters, "accountNumber")
                               sortCodeExpr       <- ValueParser.validateWithParser(sortCodeValue, ValueParser.expr)
                               accountNumberExpr  <- ValueParser.validateWithParser(accountNumberValue, ValueParser.expr)
-                            } yield ValidateBankDetails(DataRetrieveId(idValue), sortCodeExpr, accountNumberExpr)
+                              `if`               <- optOption[IncludeIf](json, "if")
+                            } yield ValidateBankDetails(DataRetrieveId(idValue), sortCodeExpr, accountNumberExpr, `if`)
                           case "businessBankAccountExistence" =>
                             for {
                               parameters         <- opt[JsObject](json, "parameters")
@@ -334,11 +350,13 @@ object DataRetrieve {
                               sortCodeExpr       <- ValueParser.validateWithParser(sortCodeValue, ValueParser.expr)
                               accountNumberExpr  <- ValueParser.validateWithParser(accountNumberValue, ValueParser.expr)
                               companyNameExpr    <- ValueParser.validateWithParser(companyNameValue, ValueParser.expr)
+                              `if`               <- optOption[IncludeIf](json, "if")
                             } yield BusinessBankAccountExistence(
                               DataRetrieveId(idValue),
                               sortCodeExpr,
                               accountNumberExpr,
-                              companyNameExpr
+                              companyNameExpr,
+                              `if`
                             )
                           case "personalBankAccountExistence" =>
                             for {
@@ -347,6 +365,7 @@ object DataRetrieve {
                               accountNumberValue <- opt[String](parameters, "accountNumber")
                               sortCodeExpr       <- ValueParser.validateWithParser(sortCodeValue, ValueParser.expr)
                               accountNumberExpr  <- ValueParser.validateWithParser(accountNumberValue, ValueParser.expr)
+                              `if`               <- optOption[IncludeIf](json, "if")
                               res <- if ((parameters \ "name").toOption.nonEmpty) {
                                        for {
                                          name <- opt[String](parameters, "name")
@@ -355,7 +374,8 @@ object DataRetrieve {
                                          DataRetrieveId(idValue),
                                          sortCodeExpr,
                                          accountNumberExpr,
-                                         name
+                                         name,
+                                         `if`
                                        )
                                      } else {
                                        for {
@@ -368,7 +388,8 @@ object DataRetrieve {
                                          sortCodeExpr,
                                          accountNumberExpr,
                                          firstName,
-                                         lastName
+                                         lastName,
+                                         `if`
                                        )
                                      }
                             } yield res
@@ -377,13 +398,15 @@ object DataRetrieve {
                               parameters        <- opt[JsObject](json, "parameters")
                               companyNumber     <- opt[String](parameters, "companyNumber")
                               companyNumberExpr <- ValueParser.validateWithParser(companyNumber, ValueParser.expr)
-                            } yield CompanyRegistrationNumber(DataRetrieveId(idValue), companyNumberExpr)
+                              `if`              <- optOption[IncludeIf](json, "if")
+                            } yield CompanyRegistrationNumber(DataRetrieveId(idValue), companyNumberExpr, `if`)
                           case "ninoInsights" =>
                             for {
                               parameters <- opt[JsObject](json, "parameters")
                               nino       <- opt[String](parameters, "nino")
                               ninoExpr   <- ValueParser.validateWithParser(nino, ValueParser.expr)
-                            } yield NinoInsights(DataRetrieveId(idValue), ninoExpr)
+                              `if`       <- optOption[IncludeIf](json, "if")
+                            } yield NinoInsights(DataRetrieveId(idValue), ninoExpr, `if`)
                           case "employments" =>
                             for {
                               parameters  <- opt[JsObject](json, "parameters")
@@ -391,15 +414,17 @@ object DataRetrieve {
                               taxYear     <- opt[String](parameters, "taxYear")
                               ninoExpr    <- ValueParser.validateWithParser(nino, ValueParser.expr)
                               taxYearExpr <- ValueParser.validateWithParser(taxYear, ValueParser.expr)
-                            } yield Employments(DataRetrieveId(idValue), ninoExpr, taxYearExpr)
+                              `if`        <- optOption[IncludeIf](json, "if")
+                            } yield Employments(DataRetrieveId(idValue), ninoExpr, taxYearExpr, `if`)
                           case "bankAccountInsights" =>
                             for {
                               parameters         <- opt[JsObject](json, "parameters")
                               sortCodeValue      <- opt[String](parameters, "sortCode")
                               accountNumberValue <- opt[String](parameters, "accountNumber")
+                              `if`               <- optOption[IncludeIf](json, "if")
                               sortCodeExpr       <- ValueParser.validateWithParser(sortCodeValue, ValueParser.expr)
                               accountNumberExpr  <- ValueParser.validateWithParser(accountNumberValue, ValueParser.expr)
-                            } yield BankAccountInsights(DataRetrieveId(idValue), sortCodeExpr, accountNumberExpr)
+                            } yield BankAccountInsights(DataRetrieveId(idValue), sortCodeExpr, accountNumberExpr, `if`)
                           case other => Left(UnexpectedState(s"'type' value $other not recognized"))
                         }
       } yield dataRetrieve).fold(e => JsError(e.error), r => JsSuccess(r))
@@ -417,7 +442,25 @@ object DataRetrieve {
       case _: JsUndefined => Left(UnexpectedState(s"'$path' attribute missing"))
     }
 
+  def optOption[T](jsValue: JsValue, path: String)(implicit r: Reads[T]): Opt[Option[T]] =
+    jsValue \ path match {
+      case JsDefined(json) =>
+        json
+          .validateOpt[T]
+          .fold(
+            invalid => Left(UnexpectedState(s"Type of value is invalid for attribute '$path' [error=$invalid]")),
+            valid => Right(valid)
+          )
+      case _: JsUndefined => Right(None)
+    }
+
   implicit val format: OFormat[DataRetrieve] = OFormatWithTemplateReadFallback(reads)
+
+  implicit val leafExprs: LeafExpr[DataRetrieve] = (path: TemplatePath, t: DataRetrieve) =>
+    t match {
+      case b: BankAccountInsights => LeafExpr(path + "if", b.`if`)
+      case _                      => List()
+    }
 }
 
 sealed trait RetrieveDataType extends Product with Serializable
