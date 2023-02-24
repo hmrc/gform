@@ -60,7 +60,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       DataRetrieveId("businessBankAccount"),
       FormCtx(FormComponentId("sortCode")),
       FormCtx(FormComponentId("accountNumber")),
-      FormCtx(FormComponentId("companyName"))
+      FormCtx(FormComponentId("companyName")),
+      None
     )
   }
 
@@ -148,7 +149,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
                |""".stripMargin)
       .as[DataRetrieve] shouldBe DataRetrieve.CompanyRegistrationNumber(
       DataRetrieveId("companyRegistration"),
-      FormCtx(FormComponentId("companyNumber"))
+      FormCtx(FormComponentId("companyNumber")),
+      None
     )
   }
 
@@ -165,7 +167,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
                |""".stripMargin)
       .as[DataRetrieve] shouldBe DataRetrieve.NinoInsights(
       DataRetrieveId("ninoCheck"),
-      FormCtx(FormComponentId("nino"))
+      FormCtx(FormComponentId("nino")),
+      None
     )
   }
 
@@ -184,7 +187,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       .as[DataRetrieve] shouldBe DataRetrieve.BankAccountInsights(
       DataRetrieveId("bankCheck"),
       FormCtx(FormComponentId("sortCode")),
-      FormCtx(FormComponentId("accountNumber"))
+      FormCtx(FormComponentId("accountNumber")),
+      None
     )
   }
 
@@ -228,7 +232,8 @@ class DataRetrieveSpec extends AnyFlatSpec with Matchers {
       FormCtx(FormComponentId("sortCode")),
       FormCtx(FormComponentId("accNumber")),
       FormCtx(FormComponentId("firstName")),
-      FormCtx(FormComponentId("lastName"))
+      FormCtx(FormComponentId("lastName")),
+      None
     )
   }
 
