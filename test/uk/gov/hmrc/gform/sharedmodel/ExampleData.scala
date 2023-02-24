@@ -84,6 +84,7 @@ trait ExampleAuthConfig extends DestinationGen {
         PdfCtx(
           Some(toSmartString("It's a Acknowledgement Section Pdf header.")),
           Some(toSmartString("It's a Acknowledgement Section Pdf footer.")),
+          None,
           None
         )
       ),
@@ -91,6 +92,7 @@ trait ExampleAuthConfig extends DestinationGen {
         PdfCtx(
           Some(toSmartString("It's a Acknowledgement Section Instruction Pdf header.")),
           Some(toSmartString("It's a Acknowledgement Section Instruction Pdf footer.")),
+          None,
           None
         )
       ),
