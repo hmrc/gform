@@ -22,7 +22,8 @@ import uk.gov.hmrc.gform.sharedmodel.SmartString
 case class PdfCtx(
   header: Option[SmartString],
   footer: Option[SmartString],
-  tabularFormat: Option[Boolean]
+  tabularFormat: Option[Boolean],
+  includeSignatureBox: Option[Boolean]
 )
 
 object PdfCtx {
