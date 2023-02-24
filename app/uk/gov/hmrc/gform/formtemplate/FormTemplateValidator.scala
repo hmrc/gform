@@ -438,7 +438,7 @@ object FormTemplateValidator {
 
   def validateChoiceNoneChoiceValue(sectionsList: List[Page]): ValidationResult = {
     def check(choice: Choice): Boolean = {
-      val values = choice.options.collect { case OptionData.ValueBased(_, v, _) =>
+      val values = choice.options.collect { case OptionData.ValueBased(_, _, _, _, v) =>
         v
       }
       choice.noneChoice.fold(false) {
@@ -489,14 +489,14 @@ object FormTemplateValidator {
     }
 
     def checkUnique(choice: Choice): Boolean = {
-      val values = choice.options.collect { case OptionData.ValueBased(_, value, _) =>
+      val values = choice.options.collect { case OptionData.ValueBased(_, _, _, _, value) =>
         value
       }
       values.size =!= values.distinct.size
     }
 
     def noComma(choice: Choice): Boolean = {
-      val values = choice.options.collect { case OptionData.ValueBased(_, value, _) =>
+      val values = choice.options.collect { case OptionData.ValueBased(_, _, _, _, value) =>
         value
       }
       values.size =!= 0 && values.exists(_.contains(","))
@@ -532,7 +532,7 @@ object FormTemplateValidator {
 
     def checkUnique(revealingChoice: RevealingChoice): Boolean = {
       val choices = revealingChoice.options.map(_.choice)
-      val values = choices.collect { case OptionData.ValueBased(_, value, _) =>
+      val values = choices.collect { case OptionData.ValueBased(_, _, _, _, value) =>
         value
       }
       values.size =!= values.distinct.size
@@ -665,12 +665,12 @@ object FormTemplateValidator {
     def validateOptions(
       options: List[OptionData]
     ): List[ValidationResult] =
-      options.collect { case OptionData.ValueBased(_, index, _) =>
-        index match {
+      options.collect { case OptionData.ValueBased(_, _, _, _, value) =>
+        value match {
           case SizeRefType.regex(_*) => Valid
           case _ =>
             Invalid(
-              s"Wrong value '$index'. Only ${SizeRefType.regex.regex} characters are allowed"
+              s"Wrong value '$value'. Only ${SizeRefType.regex.regex} characters are allowed"
             )
         }
       }
@@ -680,7 +680,7 @@ object FormTemplateValidator {
       options: NonEmptyList[OptionData],
       index: SizeRefType
     ): ValidationResult = {
-      val availableOptions = options.toList.collect { case OptionData.ValueBased(_, value, _) =>
+      val availableOptions = options.toList.collect { case OptionData.ValueBased(_, _, _, _, value) =>
         value
       }
       val availableOptionsStr = availableOptions.mkString(", ")

@@ -185,16 +185,31 @@ object SummaryDisplayWidth extends Enumeration {
 sealed trait OptionData extends Product with Serializable
 
 object OptionData {
+  final case class Dynamic(formComponentId: FormComponentId)
+
+  object Dynamic {
+
+    val templateReads: Reads[Dynamic] = Reads.StringReads.map(d => Dynamic(FormComponentId(d)))
+    implicit val format: Format[Dynamic] = OFormatWithTemplateReadFallback(templateReads)
+
+    implicit val leafExprs: LeafExpr[Dynamic] = (path: TemplatePath, t: Dynamic) => {
+      LeafExpr(path, t.formComponentId)
+    }
+  }
 
   case class IndexBased(
     label: SmartString,
-    includeIf: Option[IncludeIf]
+    hint: Option[SmartString],
+    includeIf: Option[IncludeIf],
+    dynamic: Option[OptionData.Dynamic]
   ) extends OptionData
 
   case class ValueBased(
     label: SmartString,
-    value: String,
-    includeIf: Option[IncludeIf]
+    hint: Option[SmartString],
+    includeIf: Option[IncludeIf],
+    dynamic: Option[OptionData.Dynamic],
+    value: String
   ) extends OptionData
 
   private val templateReads: Reads[OptionData] = {
@@ -209,10 +224,16 @@ object OptionData {
 
   implicit val leafExprs: LeafExpr[OptionData] = (path: TemplatePath, t: OptionData) =>
     t match {
-      case OptionData.IndexBased(label, includeIf) =>
-        LeafExpr(path + "label", label) ++ LeafExpr(path + "includeIf", includeIf)
-      case OptionData.ValueBased(label, _, includeIf) =>
-        LeafExpr(path + "label", label) ++ LeafExpr(path + "includeIf", includeIf)
+      case OptionData.IndexBased(label, hint, includeIf, dynamic) =>
+        LeafExpr(path + "label", label) ++
+          LeafExpr(path + "hint", hint) ++
+          LeafExpr(path + "includeIf", includeIf) ++
+          LeafExpr(path + "dynamic", dynamic)
+      case OptionData.ValueBased(label, hint, includeIf, dynamic, _) =>
+        LeafExpr(path + "label", label) ++
+          LeafExpr(path + "hint", hint) ++
+          LeafExpr(path + "includeIf", includeIf) ++
+          LeafExpr(path + "dynamic", dynamic)
     }
 }
 

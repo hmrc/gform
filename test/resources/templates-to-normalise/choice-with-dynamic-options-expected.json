@@ -1,0 +1,98 @@
+{
+  "draftRetrievalMethod": {
+    "showContinueOrDeletePage": "true",
+    "value": "onePerUser"
+  },
+  "formCategory": "default",
+  "languages": [
+    "en"
+  ],
+  "authConfig": {
+    "authModule": "anonymous"
+  },
+  "destinations": {
+    "destinations": [
+      {
+        "id": "transitionToSubmitted",
+        "type": "stateTransition",
+        "includeIf": "true",
+        "requiredState": "Submitted"
+      }
+    ],
+    "declarationSection": {
+      "shortName": "Declaration",
+      "title": "Declaration",
+      "fields": []
+    },
+    "acknowledgementSection": {
+      "shortName": "Acknowledgement Page",
+      "title": "Acknowledgement Page",
+      "fields": [],
+      "displayFeedbackLink": true
+    }
+  },
+  "description": "",
+  "allowedFileTypes": [
+    "pdf",
+    "jpg",
+    "xlsx",
+    "ods",
+    "docx",
+    "odt",
+    "pptx",
+    "odp"
+  ],
+  "formKind": {
+    "type": "classic",
+    "sections": [
+      {
+        "title": "Bank Account Validation",
+        "fields": [
+          {
+            "label": "Multivalue choice",
+            "id": "choiceMulti",
+            "type": "choice",
+            "choices": [
+              {
+                "value": "NON",
+                "dynamic": "employerName",
+                "hint": "This is some hint ${'hint-expr'}",
+                "label": {
+                  "en": "${'employerName'}",
+                  "cy": "${'employerName'}"
+                }
+              },
+              {
+                "value": "NONE",
+                "label": {
+                  "en": "None of the above",
+                  "cy": "None of the above"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "summarySection": {
+    "title": {
+      "en": "Check your answers",
+      "cy": "Gwiriwch eich atebion"
+    },
+    "header": {
+      "en": "Make sure the information you have given is correct.",
+      "cy": "Gwnewch yn siŵr bod yr wybodaeth a roddwyd gennych yn gywir."
+    },
+    "footer": {
+      "en": "##Now send your form\n\nYou need to submit your form on the next screen.\n\nBefore you do this you can [print or save a PDF copy of your answers (opens in a new window or tab)](${link.printSummaryPdf}).",
+      "cy": "##Nawr anfonwch eich ffurflen\n\nMae angen i chi gyflwyno’ch ffurflen ar y sgrin nesaf.\n\nCyn i chi wneud hyn gallwch [argraffu neu gadw copi PDF o’ch atebion (yn agor ffenestr neu dab newydd)](${link.printSummaryPdf})."
+    }
+  },
+  "formName": "Choice with dynamic options",
+  "emailTemplateId": "eeitt_submission_confirmation",
+  "_id": "choice-with-dynamic-options",
+  "originalId": "choice-with-dynamic-options",
+  "displayHMRCLogo": false,
+  "parentFormSubmissionRefs": []
+}

@@ -138,8 +138,8 @@ trait Rewriter {
         }
         .flatten
         .collect {
-          case OptionData.ValueBased(_, _, Some(includeIf)) => includeIf
-          case OptionData.IndexBased(_, Some(includeIf))    => includeIf
+          case OptionData.ValueBased(_, _, Some(includeIf), _, _) => includeIf
+          case OptionData.IndexBased(_, _, Some(includeIf), _)    => includeIf
         }
     }
 
@@ -244,6 +244,22 @@ trait Rewriter {
       )
     )
 
+    def invalidDynamicUsage(
+      formComponentId: FormComponentId,
+      exprString: String
+    ): Either[UnexpectedState, BooleanExpr] =
+      Left(
+        UnexpectedState(
+          s"FormComponentId $formComponentId use dynamic option. Dynamic options can't be checked for equality with a numeric index in expressions: $exprString. To resolve this specify value for options."
+        )
+      )
+
+    def isDynamic(options: NonEmptyList[OptionData]): Boolean =
+      options.exists {
+        case OptionData.IndexBased(_, _, _, Some(_)) => true
+        case _                                       => false
+      }
+
     def rewrite(booleanExpr: BooleanExpr): Either[UnexpectedState, BooleanExpr] = booleanExpr match {
       case Not(booleanExpr) => rewrite(booleanExpr).map(Not(_))
       case And(booleanExprL, booleanExprR) =>
@@ -261,15 +277,17 @@ trait Rewriter {
         fcLookup
           .get(formComponentId)
           .fold[Either[UnexpectedState, BooleanExpr]](missingFormComponentId(formComponentId)) {
+            case Choice(_, options, _, _, _, _, _, _, _, _) if isDynamic(options) =>
+              invalidDynamicUsage(formComponentId, exprString)
             case Choice(_, options, _, _, _, _, _, _, _, _) =>
-              val possibleValues = options.collect { case OptionData.ValueBased(_, value, _) =>
+              val possibleValues = options.collect { case OptionData.ValueBased(_, _, _, _, value) =>
                 value
               }.toSet
               validate(c, possibleValues, options.size, formComponentId, exprString, "Choice").map(_ => be)
             case RevealingChoice(options, _) =>
               val possibleValues = options
                 .map(_.choice)
-                .collect { case OptionData.ValueBased(_, value, _) =>
+                .collect { case OptionData.ValueBased(_, _, _, _, value) =>
                   value
                 }
                 .toSet
@@ -290,8 +308,10 @@ trait Rewriter {
         fcLookup
           .get(formComponentId)
           .fold[Either[UnexpectedState, BooleanExpr]](missingFormComponentId(formComponentId)) {
+            case Choice(_, options, _, _, _, _, _, _, _, _) if isDynamic(options) =>
+              invalidDynamicUsage(formComponentId, exprString)
             case Choice(Radio | YesNo, options, _, _, _, _, _, _, _, _) =>
-              val possibleValues = options.collect { case OptionData.ValueBased(_, value, _) =>
+              val possibleValues = options.collect { case OptionData.ValueBased(_, _, _, _, value) =>
                 value
               }.toSet
               validate(c, possibleValues, options.size, formComponentId, exprString, "Choice").map(_ => rewriter)
@@ -300,7 +320,7 @@ trait Rewriter {
             case RevealingChoice(options, false) =>
               val possibleValues = options
                 .map(_.choice)
-                .collect { case OptionData.ValueBased(_, value, _) =>
+                .collect { case OptionData.ValueBased(_, _, _, _, value) =>
                   value
                 }
                 .toSet
@@ -379,8 +399,8 @@ trait Rewriter {
         case IsChoice(choice) =>
           replaceFormComponent(formComponent).copy(
             `type` = choice.copy(options = choice.options.map {
-              case OptionData.ValueBased(l, v, i) => OptionData.ValueBased(l, v, replaceIncludeIf(i))
-              case OptionData.IndexBased(l, i)    => OptionData.IndexBased(l, replaceIncludeIf(i))
+              case OptionData.ValueBased(l, h, i, d, v) => OptionData.ValueBased(l, h, replaceIncludeIf(i), d, v)
+              case OptionData.IndexBased(l, h, i, d)    => OptionData.IndexBased(l, h, replaceIncludeIf(i), d)
             })
           )
         case otherwise => replaceFormComponent(formComponent)
