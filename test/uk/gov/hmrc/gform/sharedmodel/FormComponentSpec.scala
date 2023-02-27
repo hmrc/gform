@@ -626,7 +626,7 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("homeAddress"),
-        Address(international = false, List.empty[Address.Configurable.Mandatory]),
+        Address(international = false, List.empty[Address.Configurable.Mandatory], false),
         toSmartString("Home"),
         None,
         None,
@@ -652,7 +652,7 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("homeAddress"),
-        Address(international = true, List.empty[Address.Configurable.Mandatory]),
+        Address(international = true, List.empty[Address.Configurable.Mandatory], false),
         toSmartString("Home"),
         None,
         None,
@@ -678,7 +678,7 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("homeAddress"),
-        Address(international = false, List.empty[Address.Configurable.Mandatory]),
+        Address(international = false, List.empty[Address.Configurable.Mandatory], false),
         toSmartString("Home"),
         None,
         None,
@@ -1612,7 +1612,7 @@ class FormComponentSpec extends Spec {
     fieldValue should beJsSuccess(
       FormComponent(
         FormComponentId("homeAddress"),
-        Address(international = false, List.empty[Address.Configurable.Mandatory]),
+        Address(international = false, List.empty[Address.Configurable.Mandatory], false),
         toSmartString("Home"),
         None,
         Some(toSmartString(shortName)),
