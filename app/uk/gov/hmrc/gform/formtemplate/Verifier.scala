@@ -66,6 +66,7 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validateDates(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateGroup(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateRevealingChoice(formTemplate).toEither)
+      _ <- fromOptA(FormTemplateValidator.validateRevealingChoiceHint(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateEmailVerification(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateInstructions(pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validateInvalidReferences(formTemplate).toEither)

@@ -995,6 +995,22 @@ object FormTemplateValidator {
       fields.forall(f)
     })
 
+  def validateRevealingChoiceHint(formTemplate: FormTemplate): ValidationResult = {
+    val formComponents: List[FormComponent] =
+      SectionHelper.pages(formTemplate.formKind.allSections).flatMap(_.fields)
+
+    val invalidResults: List[ValidationResult] = formComponents.map { case c =>
+      c.`type` match {
+        case r: RevealingChoice
+            if c.presentationHint.toList.flatten
+              .contains(SeparateInSummary) && r.options.filter(_.revealingFields.size > 1).nonEmpty =>
+          Invalid(s"separateInSummary can only be used where there is no more than one revealed fields for ${c.id}")
+        case _ => Valid
+      }
+    }
+    Monoid.combineAll(invalidResults)
+  }
+
   def validateRevealingChoice(formTemplate: FormTemplate): ValidationResult =
     validateComponents("Revealing choice", formTemplate)(f => { case RevealingChoice(options, _) =>
       options.forall(_.revealingFields.forall(f))
