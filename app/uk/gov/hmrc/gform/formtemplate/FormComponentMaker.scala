@@ -484,7 +484,10 @@ class FormComponentMaker(json: JsValue) {
 
   private lazy val choiceOpt: Opt[Choice] = {
     val yesNo =
-      NonEmptyList.of(toSmartString("Yes", "Iawn"), toSmartString("No", "Na")).map(OptionData.IndexBased(_, None))
+      NonEmptyList
+        .of(toSmartString("Yes", "Iawn"), toSmartString("No", "Na"))
+        .map(OptionData.IndexBased(_, None, None, None))
+
     for {
       emailVerification <- optEmailVerification
       selectionCriteria <- optSelectionCriteria

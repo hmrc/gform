@@ -204,9 +204,6 @@ object FormTemplatesControllerRequestHandler {
         Json.obj()
       )
 
-    val pruneIncludeIf = (__ \ 'label \ 'includeIf).json.prune
-    val pruneValue = (__ \ 'label \ 'value).json.prune
-
     val determineFormKind: Reads[JsObject] = (__ \ 'sections \ 0 \ 'tasks).json.pick
       .map(_ => JsString("taskList"))
       .orElse(Reads.pure(JsString("classic")))
@@ -218,34 +215,31 @@ object FormTemplatesControllerRequestHandler {
       (__ \ 'formKind \ 'sections).json
         .copyFrom((__ \ 'sections).json.pick) and (__ \ 'sections).json.prune reduce
 
-    val choicesFieldUpdater: Reads[JsValue] = Reads { json =>
-      json \ "includeIf" match {
-        case JsDefined(JsString(includeIf)) =>
-          json \ "value" match {
-            case JsDefined(JsString(value)) =>
-              pruneValue
-                .andThen(pruneIncludeIf)
-                .reads(
-                  Json.obj(
-                    "label"     -> json,
-                    "value"     -> value,
-                    "includeIf" -> includeIf
-                  )
-                )
-            case _ => pruneIncludeIf.reads(Json.obj("label" -> json, "includeIf" -> includeIf))
-          }
-        case _ =>
-          json \ "value" match {
-            case JsDefined(JsString(value)) =>
-              pruneValue.reads(
-                Json.obj(
-                  "label" -> json,
-                  "value" -> value
-                )
-              )
-            case _ => JsSuccess(Json.obj("label" -> json))
-          }
+    def getDownField(fieldName: String, json: JsValue): JsObject =
+      (json \ fieldName) match {
+        case JsDefined(field) => Json.obj(fieldName -> field)
+        case JsUndefined()    => Json.obj()
       }
+
+    val choicesFieldUpdater: Reads[JsValue] = Reads { json =>
+      json match {
+        case JsObject(_) =>
+          val includeIfField = getDownField("includeIf", json)
+          val valueField = getDownField("value", json)
+          val hintField = getDownField("hint", json)
+          val dynamicField = getDownField("dynamic", json)
+          val enField = getDownField("en", json)
+          val cyField = getDownField("cy", json)
+
+          val labelField: JsObject = Json.obj("label" -> (enField ++ cyField))
+
+          val newJson: JsObject = includeIfField ++ valueField ++ hintField ++ dynamicField ++ labelField
+
+          JsSuccess(newJson)
+
+        case otherwise => JsSuccess(Json.obj("label" -> otherwise))
+      }
+
     }
 
     val updateChoicesField = (__ \ 'choices).json.update(list(choicesFieldUpdater))

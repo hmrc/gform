@@ -6,7 +6,6 @@ import sbt.Keys.{ resolvers, _ }
 import sbt._
 import uk.gov.hmrc.DefaultBuildSettings.{ addTestReportOption, defaultSettings, scalaSettings }
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
-import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
 import uk.gov.hmrc.versioning.SbtGitVersioning
 import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
 
@@ -35,7 +34,6 @@ lazy val microservice = (project in file("."))
     majorVersion := 0,
     PlayKeys.playDefaultPort := 9196,
     scalaSettings,
-    publishingSettings,
     defaultSettings(),
     scalafmtOnCompile := true,
     scalaVersion := "2.12.15",

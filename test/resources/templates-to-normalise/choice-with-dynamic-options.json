@@ -1,0 +1,53 @@
+{
+  "_id": "choice-with-dynamic-options",
+  "formName": "Choice with dynamic options",
+  "description": "",
+  "destinations": [
+    {
+      "id": "transitionToSubmitted",
+      "type": "stateTransition",
+      "includeIf": "true",
+      "requiredState": "Submitted"
+    }
+  ],
+  "authConfig": {
+    "authModule": "anonymous"
+  },
+  "emailTemplateId": "eeitt_submission_confirmation",
+  "sections": [
+    {
+      "title": "Bank Account Validation",
+      "fields": [
+        {
+          "type": "choice",
+          "label": "Multivalue choice",
+          "id": "choiceMulti",
+          "choices": [
+            {
+              "en": "${'employerName'}",
+              "cy": "${'employerName'}",
+              "hint": "This is some hint ${'hint-expr'}",
+              "value": "NON",
+              "dynamic": "employerName"
+            },
+            {
+              "en": "None of the above",
+              "cy": "None of the above",
+              "value": "NONE"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "declarationSection": {
+    "shortName": "Declaration",
+    "title": "Declaration",
+    "fields": []
+  },
+  "acknowledgementSection": {
+    "shortName": "Acknowledgement Page",
+    "title": "Acknowledgement Page",
+    "fields": []
+  }
+}
