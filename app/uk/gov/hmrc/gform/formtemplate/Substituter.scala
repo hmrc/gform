@@ -185,10 +185,10 @@ object Substituter {
           displayCharCount
         )
 
-      case d @ Date(_, _, _) => d
-      case CalendarDate      => CalendarDate
-      case TaxPeriodDate     => TaxPeriodDate
-      case a @ Address(_, _) => a
+      case d @ Date(_, _, _)    => d
+      case CalendarDate         => CalendarDate
+      case TaxPeriodDate        => TaxPeriodDate
+      case a @ Address(_, _, _) => a
       case OverseasAddress(mandatoryFields, optionalFields, value, countryLookup) =>
         OverseasAddress(mandatoryFields, optionalFields, value(substitutions), countryLookup)
 

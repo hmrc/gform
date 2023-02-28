@@ -169,7 +169,7 @@ class FormComponentMaker(json: JsValue) {
     parse("labelSize", LabelSizeParser.validate)
 
   lazy val optCountryLookup: Option[Boolean] = (json \ "countryLookup").asOpt[String].map(_.toBoolean)
-
+  lazy val optCountyDisplayed: Option[Boolean] = (json \ "countyDisplayed").asOpt[String].map(_.toBoolean)
   private def getValueRow(json: JsValue): Opt[MiniSummaryRow] =
     for {
       key       <- toOpt((json \ "key").validateOpt[SmartString], "/key")
@@ -393,7 +393,7 @@ class FormComponentMaker(json: JsValue) {
       _             <- mandatoryCityForNonInternationnal(city, international)
     } yield {
       val mandatoryFields: List[Mandatory] = List(city).flatten
-      Address(international, mandatoryFields)
+      Address(international, mandatoryFields, optCountyDisplayed.getOrElse(false))
     }
   }
 
