@@ -94,6 +94,7 @@ trait Verifier {
       _ <- fromOptA(FormTemplateValidator.validateCsvCountryCountCheck(formTemplate).toEither)
       _ <- fromOptA(FormTemplateValidator.validateCsvOverseasCountryCheck(formTemplate, pages).toEither)
       _ <- fromOptA(FormTemplateValidator.validatePageRedirects(pages).toEither)
+      _ <- fromOptA(DestinationsValidator.validateDestinationIncludeIfs(formTemplate.destinations).toEither)
     } yield ()
 
   }

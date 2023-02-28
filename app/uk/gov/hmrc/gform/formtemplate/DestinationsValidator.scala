@@ -19,6 +19,7 @@ package uk.gov.hmrc.gform.formtemplate
 import cats.data.NonEmptyList
 import uk.gov.hmrc.gform.core.ValidationResult.BooleanToValidationResultSyntax
 import uk.gov.hmrc.gform.core.{ Invalid, Valid, ValidationResult }
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.DestinationIncludeIf.{ HandlebarValue, IncludeIfValue }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormComponent, FormComponentId, IsGroup }
 import uk.gov.hmrc.gform.sharedmodel.formtemplate.destinations.{ Destination, DestinationId, Destinations }
 
@@ -37,6 +38,28 @@ object DestinationsValidator {
       val destinationIds = extractIds(destinationList.destinations)
       val duplicates = destinationIds.toList.groupBy(identity).collect { case (dId, List(_, _, _*)) => dId }.toSet
       duplicates.isEmpty.validationResult(someDestinationIdsAreUsedMoreThanOnce(duplicates))
+  }
+
+  def validateDestinationIncludeIfs(destinations: Destinations): ValidationResult = destinations match {
+    case destinationList: Destinations.DestinationList =>
+      val hasIncludeIfValue = destinationList.destinations.exists(_.includeIf match {
+        case IncludeIfValue(_) => true
+        case _                 => false
+      })
+      val hasHandlebarValue = destinationList.destinations.exists(_.includeIf match {
+        case HandlebarValue(_) => true
+        case _                 => false
+      })
+
+      if (hasIncludeIfValue && hasHandlebarValue) {
+        Invalid(
+          "IncludeIf statements in destinations are not valid. It must be the combination of handlebar or expression."
+        )
+      } else {
+        Valid
+      }
+
+    case _ => Valid
   }
 
   def validateNoGroupInDeclaration(destinations: Destinations): ValidationResult = destinations match {
