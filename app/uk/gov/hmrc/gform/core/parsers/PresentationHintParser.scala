@@ -38,6 +38,7 @@ object PresentationHintParser extends RegexParsers with ParsingHelper {
       | "invisibleInSummary" ^^^ InvisibleInSummary
       | "totalValue" ^^^ TotalValue
       | "invisiblePageTitle" ^^^ InvisiblePageTitle
+      | "separateInSummary" ^^^ SeparateInSummary
   )
 
 }
