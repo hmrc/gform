@@ -108,8 +108,17 @@ class ApplicationModule(context: Context)
   private val mongoModule = new MongoModule(configModule)
   private val envelopeModule = new EnvelopeModule(mongoModule, configModule)
   private val objectStoreModule = new ObjectStoreModule(configModule, wsClient, akkaModule, envelopeModule)
+  private val sdesModule = new SdesModule(configModule, wSHttpModule, mongoModule, objectStoreModule, akkaModule)
   val fileUploadModule =
-    new FileUploadModule(configModule, wSHttpModule, timeModule, akkaModule, envelopeModule, objectStoreModule)
+    new FileUploadModule(
+      configModule,
+      wSHttpModule,
+      timeModule,
+      akkaModule,
+      envelopeModule,
+      objectStoreModule,
+      sdesModule
+    )
   val formTemplateModule = new FormTemplateModule(controllerComponents, mongoModule)
   private val translationModule = new TranslationModule(formTemplateModule, configModule)
   private val notificationBannerModule = new NotificationBannerModule(mongoModule, configModule)
@@ -182,8 +191,6 @@ class ApplicationModule(context: Context)
   private val handlebarsModule = new HandlebarsHttpApiModule(wSHttpModule, configModule)
 
   private val submissionConsolidatorModule = new SubmissionConsolidatorModule(wSHttpModule, formModule, configModule)
-
-  val sdesModule = new SdesModule(configModule, wSHttpModule, mongoModule, objectStoreModule, akkaModule)
 
   private val submissionModule =
     new SubmissionModule(

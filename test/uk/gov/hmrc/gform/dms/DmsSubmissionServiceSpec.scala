@@ -62,7 +62,8 @@ class DmsSubmissionServiceSpec extends Spec {
         expectedPdfAndXmlSummaries,
         expectedHmrcDms,
         0,
-        fixture.objectStoreEnable
+        fixture.objectStoreEnable,
+        formTemplateId
       )
       .service
       .submitToDms(validSubmission, List.empty) shouldBe expectedEnvId
@@ -88,8 +89,10 @@ class DmsSubmissionServiceSpec extends Spec {
 
     (stubPdfDocument.getNumberOfPages _).when().returning(numberOfPages)
 
+    val formTemplateId = FormTemplateId(validSubmission.metadata.dmsFormId)
+
     fixture
-      .expectCreateEnvelope(FormTemplateId(validSubmission.metadata.dmsFormId), expectedEnvId)
+      .expectCreateEnvelope(formTemplateId, expectedEnvId)
       .expectGeneratePdfBytesLocal(validSubmission.html, pdfContent)
       .expectLoadDocument(pdfContent, stubPdfDocument)
       .expectUploadAttachment(expectedEnvId, fileAttachments.head, fixture.objectStoreEnable)
@@ -98,7 +101,8 @@ class DmsSubmissionServiceSpec extends Spec {
         expectedPdfAndXmlSummaries,
         expectedDmsSubmission,
         1,
-        fixture.objectStoreEnable
+        fixture.objectStoreEnable,
+        formTemplateId
       )
       .service
       .submitToDms(validSubmission, fileAttachments) shouldBe expectedEnvId
@@ -119,15 +123,18 @@ class DmsSubmissionServiceSpec extends Spec {
     val tmpPdf: TemporaryFile = SingletonTemporaryFileCreator.create("agents", ".pdf")
     tmpPdf.deleteOnExit()
 
+    val formTemplateId = FormTemplateId(validSubmission.metadata.dmsFormId)
+
     fixture
-      .expectCreateEnvelope(FormTemplateId(validSubmission.metadata.dmsFormId), expectedEnvId)
+      .expectCreateEnvelope(formTemplateId, expectedEnvId)
       .expectLoadDocument(pdfContent, stubPdfDocument)
       .expectSubmitEnvelope(
         expectedSubmission,
         expectedPdfAndXmlSummaries,
         expectedHmrcDms,
         0,
-        fixture.objectStoreEnable
+        fixture.objectStoreEnable,
+        formTemplateId
       )
       .service
       .submitPdfToDms(pdfContent, validSubmission.metadata, List.empty) shouldBe expectedEnvId
@@ -201,11 +208,14 @@ class DmsSubmissionServiceSpec extends Spec {
       pdfAndXmlSummaries: PdfAndXmlSummaries,
       hmrcDms: HmrcDms,
       numberOfAttachments: Int,
-      objectStore: Boolean
+      objectStore: Boolean,
+      formTemplateId: FormTemplateId
     ): Fixture = {
       (fileUpload
-        .submitEnvelope(_: Submission, _: PdfAndXmlSummaries, _: HmrcDms, _: Boolean)(_: HeaderCarrier))
-        .expects(submission, pdfAndXmlSummaries, hmrcDms, objectStore, hc)
+        .submitEnvelope(_: Submission, _: PdfAndXmlSummaries, _: HmrcDms, _: Boolean, _: FormTemplateId)(
+          _: HeaderCarrier
+        ))
+        .expects(submission, pdfAndXmlSummaries, hmrcDms, objectStore, formTemplateId, hc)
         .returning(())
 
       this

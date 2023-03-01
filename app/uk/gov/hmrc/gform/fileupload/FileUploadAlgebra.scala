@@ -61,8 +61,14 @@ trait FileUploadAlgebra[F[_]] {
     hc: HeaderCarrier
   ): F[EnvelopeId]
 
-  def submitEnvelope(submission: Submission, summaries: PdfAndXmlSummaries, hmrcDms: HmrcDms, objectStore: Boolean)(
-    implicit hc: HeaderCarrier
+  def submitEnvelope(
+    submission: Submission,
+    summaries: PdfAndXmlSummaries,
+    hmrcDms: HmrcDms,
+    objectStore: Boolean,
+    formTemplateId: FormTemplateId
+  )(implicit
+    hc: HeaderCarrier
   ): F[Unit]
 
   def deleteFile(envelopeId: EnvelopeId, fileId: FileId)(implicit hc: HeaderCarrier): F[Unit]

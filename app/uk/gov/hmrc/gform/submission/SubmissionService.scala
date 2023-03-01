@@ -26,13 +26,10 @@ import uk.gov.hmrc.gform.envelope.EnvelopeAlgebra
 import uk.gov.hmrc.gform.form.FormAlgebra
 import uk.gov.hmrc.gform.formredirect.{ FormRedirect, FormRedirectService }
 import uk.gov.hmrc.gform.formtemplate.FormTemplateAlgebra
-import uk.gov.hmrc.gform.objectstore.ObjectStoreAlgebra
 import uk.gov.hmrc.gform.repo.Repo
-import uk.gov.hmrc.gform.sdes.SdesAlgebra
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplateId
-import uk.gov.hmrc.gform.sharedmodel.{ SubmissionData, SubmissionRef }
 import uk.gov.hmrc.gform.sharedmodel.form._
-import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormTemplate
+import uk.gov.hmrc.gform.sharedmodel.formtemplate.{ FormTemplate, FormTemplateId }
+import uk.gov.hmrc.gform.sharedmodel.{ SubmissionData, SubmissionRef }
 import uk.gov.hmrc.gform.submission.destinations.{ DestinationSubmissionInfo, DestinationsProcessorModelAlgebra, DestinationsSubmitterAlgebra }
 import uk.gov.hmrc.gform.submission.handlebars.HandlebarsModelTree
 import uk.gov.hmrc.gform.time.TimeProvider
@@ -49,9 +46,7 @@ class SubmissionService(
   formRedirectService: FormRedirectService,
   email: EmailService,
   timeProvider: TimeProvider,
-  envelopeAlgebra: EnvelopeAlgebra[FOpt],
-  objectStoreAlgebra: ObjectStoreAlgebra[FOpt],
-  sdesAlgebra: SdesAlgebra[FOpt]
+  envelopeAlgebra: EnvelopeAlgebra[FOpt]
 )(implicit ex: ExecutionContext) {
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -89,9 +84,6 @@ class SubmissionService(
             submissionData.l,
             submissionData.destinationEvaluation
           )
-      _ <- if (formTemplate.isObjectStore)
-             zipAndPushWorkItem(submission.envelopeId, formTemplate._id, submission.submissionRef)
-           else fromFutureA(Future.unit)
       emailAddress = email.getEmailAddress(form, submissionData.maybeEmailAddress)
       _ <- fromFutureA(
              formTemplate.emailTemplateId.fold(().pure[Future])(emailTemplateId =>
@@ -102,20 +94,6 @@ class SubmissionService(
                )
              )
            )
-    } yield ()
-
-  private def zipAndPushWorkItem(envelopeId: EnvelopeId, formTemplateId: FormTemplateId, submissionRef: SubmissionRef)(
-    implicit hc: HeaderCarrier
-  ): FOpt[Unit] =
-    for {
-      envelope <- envelopeAlgebra.get(envelopeId)
-      _ <- if (envelope.files.size > 0) {
-             for {
-               objectSummary <- objectStoreAlgebra.zipFiles(envelopeId)
-               _ <-
-                 sdesAlgebra.pushWorkItem(envelopeId, formTemplateId, submissionRef, objectSummary)
-             } yield ()
-           } else fromFutureA(Future.unit)
     } yield ()
 
   /* When FormTemplateId has a new current version, but user started journey with old FormTemplateId version, we need to migrate

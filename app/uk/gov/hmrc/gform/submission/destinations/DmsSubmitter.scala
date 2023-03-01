@@ -64,7 +64,7 @@ class DmsSubmitter(
                    )
       res <-
         fromFutureA(
-          fileUploadService.submitEnvelope(submission, summaries, hmrcDms, formTemplate.isObjectStore)
+          fileUploadService.submitEnvelope(submission, summaries, hmrcDms, formTemplate.isObjectStore, formTemplate._id)
         )
       envelopeDetails <- if (formTemplate.isObjectStore) {
                            envelopeAlgebra.get(submission.envelopeId).map { ed =>

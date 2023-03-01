@@ -22,6 +22,7 @@ import uk.gov.hmrc.gform.config.ConfigModule
 import uk.gov.hmrc.gform.core.{ FOpt, fromFutureA }
 import uk.gov.hmrc.gform.envelope.EnvelopeModule
 import uk.gov.hmrc.gform.objectstore.ObjectStoreModule
+import uk.gov.hmrc.gform.sdes.SdesModule
 import uk.gov.hmrc.gform.sharedmodel.form.{ EnvelopeId, FileId }
 import uk.gov.hmrc.gform.time.TimeModule
 import uk.gov.hmrc.gform.wshttp.WSHttpModule
@@ -35,7 +36,8 @@ class FileUploadModule(
   timeModule: TimeModule,
   akkaModule: AkkaModule,
   envelopeModule: EnvelopeModule,
-  objectStoreModule: ObjectStoreModule
+  objectStoreModule: ObjectStoreModule,
+  sdesModule: SdesModule
 )(implicit ex: ExecutionContext) {
 
   val fileUploadConnector: FileUploadConnector =
@@ -54,7 +56,8 @@ class FileUploadModule(
       fileUploadConnector,
       fileUploadFrontendConnector,
       timeModule.timeProvider,
-      objectStoreModule.objectStoreService
+      objectStoreModule.objectStoreService,
+      sdesModule.sdesService
     )
 
   val foptFileDownloadService = new FileDownloadAlgebra[FOpt] {
