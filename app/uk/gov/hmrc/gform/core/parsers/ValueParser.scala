@@ -277,6 +277,11 @@ trait ValueParser extends RegexParsers with PackratParsers with BasicParsers {
     | "bulletedList(" ~ FormComponentId.unanchoredIdValidation ~ ")" ^^ { case _ ~ value ~ _ =>
       BulletedList(FormComponentId(value))
     }
+    | "substring(" ~ (_expr1 ^^ (expr =>
+      TextExpression(expr)
+    )) ~ ", " ~ positiveInteger ~ ", " ~ positiveInteger ~ ")" ^^ { case _ ~ value ~ _ ~ from ~ _ ~ to ~ _ =>
+      Substring(value, from, to)
+    }
     | FormComponentId.unanchoredIdValidation ~ "[" ~ nonZeroPositiveInteger ~ "]" ^^ {
       case formComponentId ~ _ ~ index ~ _ =>
         IndexOf(

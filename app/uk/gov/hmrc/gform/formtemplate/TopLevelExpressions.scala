@@ -177,6 +177,7 @@ object TopLevelExpressions {
         case RemoveSpaces(_)               => e
         case NumberedList(_)               => e
         case BulletedList(_)               => e
+        case Substring(_, _, _)            => e
       }
     expressions.get(expressionId).fold(expressions) { expr =>
       expressions + (expressionId -> loop(expr))
