@@ -87,7 +87,7 @@ class DmsSubmissionService[F[_]](
                      .createSubmission(metadata, envId, LocalDateTime.now(clock), fileAttachments.size)
       summaries = PdfAndXmlSummaries(pdfSummary)
       hmrcDms = DmsSubmissionService.createHmrcDms(metadata)
-      _ <- fileUpload.submitEnvelope(submission, summaries, hmrcDms, objectStoreEnable)
+      _ <- fileUpload.submitEnvelope(submission, summaries, hmrcDms, objectStoreEnable, formTemplateId)
     } yield envId
   }
 
